@@ -88,7 +88,7 @@
         <param name="location">Location to open to.</param>
         <summary>Open maps to this location.</summary>
         <returns>Task to wait.</returns>
-        <remarks>To be added.</remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="OpenMapsAsync">
@@ -112,9 +112,7 @@
         <param name="options">Options to use.</param>
         <summary>Open maps to this location.</summary>
         <returns>Task to wait.</returns>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

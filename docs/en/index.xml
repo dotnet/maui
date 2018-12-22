@@ -78,7 +78,7 @@
           <AttributeName>System.Runtime.Versioning.TargetFramework(".NETCore,Version=v5.0", FrameworkDisplayName=".NET for Windows Universal")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+f86f55df68f22837a757fbe3042c854816b1ea0d")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+da60123513ad6e4ab1a2724085807e80efa1bbc8")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>
@@ -101,6 +101,8 @@
       <Type Name="Browser" Kind="Class" />
       <Type Name="BrowserLaunchMode" Kind="Enumeration" />
       <Type Name="Clipboard" Kind="Class" />
+      <Type Name="ColorConverters" Kind="Class" />
+      <Type Name="ColorExtensions" Kind="Class" />
       <Type Name="Compass" Kind="Class" />
       <Type Name="CompassChangedEventArgs" Kind="Class" />
       <Type Name="CompassData" Kind="Structure" />
@@ -154,11 +156,14 @@
       <Type Name="Placemark" Kind="Class" />
       <Type Name="PlacemarkExtensions" Kind="Class" />
       <Type Name="Platform" Kind="Class" />
+      <Type Name="PointExtensions" Kind="Class" />
       <Type Name="Preferences" Kind="Class" />
+      <Type Name="RectangleExtensions" Kind="Class" />
       <Type Name="SecureStorage" Kind="Class" />
       <Type Name="SensorSpeed" Kind="Enumeration" />
       <Type Name="Share" Kind="Class" />
       <Type Name="ShareTextRequest" Kind="Class" />
+      <Type Name="SizeExtensions" Kind="Class" />
       <Type Name="Sms" Kind="Class" />
       <Type Name="SmsMessage" Kind="Class" />
       <Type Name="SpeechOptions" Kind="Class" />
@@ -170,6 +175,260 @@
   </Types>
   <Title>Untitled</Title>
   <ExtensionMethods>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="System.Drawing.Color" />
+      </Targets>
+      <Member MemberName="AddLuminosity">
+        <MemberSignature Language="C#" Value="public static System.Drawing.Color AddLuminosity (this System.Drawing.Color color, float delta);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color AddLuminosity(valuetype System.Drawing.Color color, float32 delta) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.AddLuminosity(System.Drawing.Color,System.Single)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.Color</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
+          <Parameter Name="delta" Type="System.Single" />
+        </Parameters>
+        <Docs>
+          <param name="color">The color to add luminosity to.</param>
+          <param name="delta">The delta to add to the current luminosity.</param>
+          <summary>Adds luminosity to the existing color</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.ColorExtensions" Member="M:Xamarin.Essentials.ColorExtensions.AddLuminosity(System.Drawing.Color,System.Single)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="System.Drawing.Color" />
+      </Targets>
+      <Member MemberName="MultiplyAlpha">
+        <MemberSignature Language="C#" Value="public static System.Drawing.Color MultiplyAlpha (this System.Drawing.Color color, float percentage);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color MultiplyAlpha(valuetype System.Drawing.Color color, float32 percentage) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.MultiplyAlpha(System.Drawing.Color,System.Single)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.Color</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
+          <Parameter Name="percentage" Type="System.Single" />
+        </Parameters>
+        <Docs>
+          <param name="color">The current color to manipulate.</param>
+          <param name="percentage">The percentage from 0-1f</param>
+          <summary>Multiplies the current alpha by a percentage (0-1f)</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.ColorExtensions" Member="M:Xamarin.Essentials.ColorExtensions.MultiplyAlpha(System.Drawing.Color,System.Single)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Drawing.Color" />
+      </Targets>
+      <Member MemberName="ToPlatformColor">
+        <MemberSignature Language="C#" Value="public static Android.Graphics.Color ToPlatformColor (this System.Drawing.Color color);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Android.Graphics.Color ToPlatformColor(valuetype System.Drawing.Color color) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.ToPlatformColor(System.Drawing.Color)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Android.Graphics.Color</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="color">The color to use as a base.</param>
+          <summary>Converts the color to the platform specific color.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.ColorExtensions" Member="M:Xamarin.Essentials.ColorExtensions.ToPlatformColor(System.Drawing.Color)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Android.Graphics.Color" />
+      </Targets>
+      <Member MemberName="ToSystemColor">
+        <MemberSignature Language="C#" Value="public static System.Drawing.Color ToSystemColor (this Android.Graphics.Color color);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color ToSystemColor(valuetype Android.Graphics.Color color) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.ToSystemColor(Android.Graphics.Color)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.Color</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="color" Type="Android.Graphics.Color" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="color">The color to use as a base.</param>
+          <summary>Converts the color to the system specific color.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.ColorExtensions" Member="M:Xamarin.Essentials.ColorExtensions.ToSystemColor(Android.Graphics.Color)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:UIKit.UIColor" />
+      </Targets>
+      <Member MemberName="ToSystemColor">
+        <MemberSignature Language="C#" Value="public static System.Drawing.Color ToSystemColor (this UIKit.UIColor color);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color ToSystemColor(class UIKit.UIColor color) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.ToSystemColor(UIKit.UIColor)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.Color</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="color" Type="UIKit.UIColor" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="color">The color to use as a base.</param>
+          <summary>Converts the color to the system specific color.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.ColorExtensions" Member="M:Xamarin.Essentials.ColorExtensions.ToSystemColor(UIKit.UIColor)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Windows.UI.Color" />
+      </Targets>
+      <Member MemberName="ToSystemColor">
+        <MemberSignature Language="C#" Value="public static System.Drawing.Color ToSystemColor (this Windows.UI.Color color);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color ToSystemColor(valuetype Windows.UI.Color color) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.ToSystemColor(Windows.UI.Color)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.Color</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="color" Type="Windows.UI.Color" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="color">The color to use as a base.</param>
+          <summary>Converts the color to the system specific color.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.ColorExtensions" Member="M:Xamarin.Essentials.ColorExtensions.ToSystemColor(Windows.UI.Color)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="System.Drawing.Color" />
+      </Targets>
+      <Member MemberName="ToUInt">
+        <MemberSignature Language="C#" Value="public static uint ToUInt (this System.Drawing.Color color);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig unsigned int32 ToUInt(valuetype System.Drawing.Color color) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.ToUInt(System.Drawing.Color)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.UInt32</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="color">The color to use as a base.</param>
+          <summary>Converts the color to a UInt representation.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.ColorExtensions" Member="M:Xamarin.Essentials.ColorExtensions.ToUInt(System.Drawing.Color)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="System.Drawing.Color" />
+      </Targets>
+      <Member MemberName="WithAlpha">
+        <MemberSignature Language="C#" Value="public static System.Drawing.Color WithAlpha (this System.Drawing.Color color, int alpha);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color WithAlpha(valuetype System.Drawing.Color color, int32 alpha) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.WithAlpha(System.Drawing.Color,System.Int32)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.Color</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
+          <Parameter Name="alpha" Type="System.Int32" />
+        </Parameters>
+        <Docs>
+          <param name="color">The color to use as a base.</param>
+          <param name="alpha">The alpha to set 0-255.</param>
+          <summary>Creates a new color based on this color, but with a new alpha (0-255).</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.ColorExtensions" Member="M:Xamarin.Essentials.ColorExtensions.WithAlpha(System.Drawing.Color,System.Int32)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="System.Drawing.Color" />
+      </Targets>
+      <Member MemberName="WithHue">
+        <MemberSignature Language="C#" Value="public static System.Drawing.Color WithHue (this System.Drawing.Color color, float hue);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color WithHue(valuetype System.Drawing.Color color, float32 hue) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.WithHue(System.Drawing.Color,System.Single)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.Color</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
+          <Parameter Name="hue" Type="System.Single" />
+        </Parameters>
+        <Docs>
+          <param name="color">The color to use as a base.</param>
+          <param name="hue">The hue to set 0-360.</param>
+          <summary>Creates a new color based on this color, but with a new hue (0-360).</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.ColorExtensions" Member="M:Xamarin.Essentials.ColorExtensions.WithHue(System.Drawing.Color,System.Single)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="System.Drawing.Color" />
+      </Targets>
+      <Member MemberName="WithLuminosity">
+        <MemberSignature Language="C#" Value="public static System.Drawing.Color WithLuminosity (this System.Drawing.Color color, float luminosity);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color WithLuminosity(valuetype System.Drawing.Color color, float32 luminosity) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.WithLuminosity(System.Drawing.Color,System.Single)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.Color</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
+          <Parameter Name="luminosity" Type="System.Single" />
+        </Parameters>
+        <Docs>
+          <param name="color">The color to use as a base.</param>
+          <param name="luminosity">The luminosity to set 0-100.</param>
+          <summary>Creates a new color based on this color, but with a new luminosity (0-100).</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.ColorExtensions" Member="M:Xamarin.Essentials.ColorExtensions.WithLuminosity(System.Drawing.Color,System.Single)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="System.Drawing.Color" />
+      </Targets>
+      <Member MemberName="WithSaturation">
+        <MemberSignature Language="C#" Value="public static System.Drawing.Color WithSaturation (this System.Drawing.Color color, float saturation);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color WithSaturation(valuetype System.Drawing.Color color, float32 saturation) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.WithSaturation(System.Drawing.Color,System.Single)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.Color</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
+          <Parameter Name="saturation" Type="System.Single" />
+        </Parameters>
+        <Docs>
+          <param name="color">The color to use as a base.</param>
+          <param name="saturation">The saturation to set 0-100.</param>
+          <summary>Creates a new color based on this color, but with a new saturation (0-100).</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.ColorExtensions" Member="M:Xamarin.Essentials.ColorExtensions.WithSaturation(System.Drawing.Color,System.Single)" />
+      </Member>
+    </ExtensionMethod>
     <ExtensionMethod>
       <Targets>
         <Target Type="T:Xamarin.Essentials.Location" />
@@ -314,6 +573,600 @@
           <summary>To be added.</summary>
         </Docs>
         <Link Type="Xamarin.Essentials.PlacemarkExtensions" Member="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapLaunchOptions)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Drawing.Point" />
+      </Targets>
+      <Member MemberName="ToPlatformPoint">
+        <MemberSignature Language="C#" Value="public static Android.Graphics.Point ToPlatformPoint (this System.Drawing.Point point);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Android.Graphics.Point ToPlatformPoint(valuetype System.Drawing.Point point) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.ToPlatformPoint(System.Drawing.Point)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Android.Graphics.Point</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="point" Type="System.Drawing.Point" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="point">The point to convert.</param>
+          <summary>Converts the point ot the platform representation.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.PointExtensions" Member="M:Xamarin.Essentials.PointExtensions.ToPlatformPoint(System.Drawing.Point)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Drawing.PointF" />
+      </Targets>
+      <Member MemberName="ToPlatformPoint">
+        <MemberSignature Language="C#" Value="public static CoreGraphics.CGPoint ToPlatformPoint (this System.Drawing.PointF point);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype CoreGraphics.CGPoint ToPlatformPoint(valuetype System.Drawing.PointF point) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.ToPlatformPoint(System.Drawing.PointF)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>CoreGraphics.CGPoint</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="point" Type="System.Drawing.PointF" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="point">The point to convert.</param>
+          <summary>Converts the point ot the platform representation.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.PointExtensions" Member="M:Xamarin.Essentials.PointExtensions.ToPlatformPoint(System.Drawing.PointF)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Drawing.PointF" />
+      </Targets>
+      <Member MemberName="ToPlatformPointF">
+        <MemberSignature Language="C#" Value="public static Android.Graphics.PointF ToPlatformPointF (this System.Drawing.PointF point);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Android.Graphics.PointF ToPlatformPointF(valuetype System.Drawing.PointF point) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.ToPlatformPointF(System.Drawing.PointF)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Android.Graphics.PointF</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="point" Type="System.Drawing.PointF" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="point">The point to convert.</param>
+          <summary>Converts the point ot the platform representation.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.PointExtensions" Member="M:Xamarin.Essentials.PointExtensions.ToPlatformPointF(System.Drawing.PointF)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Android.Graphics.Point" />
+      </Targets>
+      <Member MemberName="ToSystemPoint">
+        <MemberSignature Language="C#" Value="public static System.Drawing.Point ToSystemPoint (this Android.Graphics.Point point);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Point ToSystemPoint(class Android.Graphics.Point point) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.ToSystemPoint(Android.Graphics.Point)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.Point</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="point" Type="Android.Graphics.Point" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="point">The point to convert.</param>
+          <summary>Converts the point ot the system representation.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.PointExtensions" Member="M:Xamarin.Essentials.PointExtensions.ToSystemPoint(Android.Graphics.Point)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:CoreGraphics.CGPoint" />
+      </Targets>
+      <Member MemberName="ToSystemPoint">
+        <MemberSignature Language="C#" Value="public static System.Drawing.Point ToSystemPoint (this CoreGraphics.CGPoint point);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Point ToSystemPoint(valuetype CoreGraphics.CGPoint point) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.ToSystemPoint(CoreGraphics.CGPoint)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.Point</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="point" Type="CoreGraphics.CGPoint" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="point">The point to convert.</param>
+          <summary>Converts the point ot the system representation.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.PointExtensions" Member="M:Xamarin.Essentials.PointExtensions.ToSystemPoint(CoreGraphics.CGPoint)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Windows.Foundation.Point" />
+      </Targets>
+      <Member MemberName="ToSystemPoint">
+        <MemberSignature Language="C#" Value="public static System.Drawing.Point ToSystemPoint (this Windows.Foundation.Point point);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Point ToSystemPoint(valuetype Windows.Foundation.Point point) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.ToSystemPoint(Windows.Foundation.Point)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.Point</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="point" Type="Windows.Foundation.Point" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="point">The point to convert.</param>
+          <summary>Converts the point ot the system representation.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.PointExtensions" Member="M:Xamarin.Essentials.PointExtensions.ToSystemPoint(Windows.Foundation.Point)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Android.Graphics.PointF" />
+      </Targets>
+      <Member MemberName="ToSystemPointF">
+        <MemberSignature Language="C#" Value="public static System.Drawing.PointF ToSystemPointF (this Android.Graphics.PointF point);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.PointF ToSystemPointF(class Android.Graphics.PointF point) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.ToSystemPointF(Android.Graphics.PointF)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.PointF</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="point" Type="Android.Graphics.PointF" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="point">The point to convert.</param>
+          <summary>Converts the point ot the system representation.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.PointExtensions" Member="M:Xamarin.Essentials.PointExtensions.ToSystemPointF(Android.Graphics.PointF)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:CoreGraphics.CGPoint" />
+      </Targets>
+      <Member MemberName="ToSystemPointF">
+        <MemberSignature Language="C#" Value="public static System.Drawing.PointF ToSystemPointF (this CoreGraphics.CGPoint point);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.PointF ToSystemPointF(valuetype CoreGraphics.CGPoint point) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.ToSystemPointF(CoreGraphics.CGPoint)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.PointF</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="point" Type="CoreGraphics.CGPoint" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="point">The point to convert.</param>
+          <summary>Converts the point ot the system representation.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.PointExtensions" Member="M:Xamarin.Essentials.PointExtensions.ToSystemPointF(CoreGraphics.CGPoint)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Windows.Foundation.Point" />
+      </Targets>
+      <Member MemberName="ToSystemPointF">
+        <MemberSignature Language="C#" Value="public static System.Drawing.PointF ToSystemPointF (this Windows.Foundation.Point point);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.PointF ToSystemPointF(valuetype Windows.Foundation.Point point) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.ToSystemPointF(Windows.Foundation.Point)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.PointF</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="point" Type="Windows.Foundation.Point" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="point">The point to convert.</param>
+          <summary>Converts the point ot the system representation.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.PointExtensions" Member="M:Xamarin.Essentials.PointExtensions.ToSystemPointF(Windows.Foundation.Point)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Drawing.Rectangle" />
+      </Targets>
+      <Member MemberName="ToPlatformRectangle">
+        <MemberSignature Language="C#" Value="public static Android.Graphics.Rect ToPlatformRectangle (this System.Drawing.Rectangle rect);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Android.Graphics.Rect ToPlatformRectangle(valuetype System.Drawing.Rectangle rect) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.ToPlatformRectangle(System.Drawing.Rectangle)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Android.Graphics.Rect</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="rect" Type="System.Drawing.Rectangle" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="rect">The base rectangle to convert.</param>
+          <summary>Convert to platform rectangle.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.RectangleExtensions" Member="M:Xamarin.Essentials.RectangleExtensions.ToPlatformRectangle(System.Drawing.Rectangle)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Drawing.RectangleF" />
+      </Targets>
+      <Member MemberName="ToPlatformRectangle">
+        <MemberSignature Language="C#" Value="public static CoreGraphics.CGRect ToPlatformRectangle (this System.Drawing.RectangleF rect);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype CoreGraphics.CGRect ToPlatformRectangle(valuetype System.Drawing.RectangleF rect) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.ToPlatformRectangle(System.Drawing.RectangleF)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>CoreGraphics.CGRect</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="rect" Type="System.Drawing.RectangleF" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="rect">The base rectangle to convert.</param>
+          <summary>Convert to platform rectangle.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.RectangleExtensions" Member="M:Xamarin.Essentials.RectangleExtensions.ToPlatformRectangle(System.Drawing.RectangleF)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Drawing.RectangleF" />
+      </Targets>
+      <Member MemberName="ToPlatformRectangleF">
+        <MemberSignature Language="C#" Value="public static Android.Graphics.RectF ToPlatformRectangleF (this System.Drawing.RectangleF rect);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Android.Graphics.RectF ToPlatformRectangleF(valuetype System.Drawing.RectangleF rect) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.ToPlatformRectangleF(System.Drawing.RectangleF)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Android.Graphics.RectF</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="rect" Type="System.Drawing.RectangleF" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="rect">The base rectangle to convert.</param>
+          <summary>Convert to platform rectangle.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.RectangleExtensions" Member="M:Xamarin.Essentials.RectangleExtensions.ToPlatformRectangleF(System.Drawing.RectangleF)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Android.Graphics.Rect" />
+      </Targets>
+      <Member MemberName="ToSystemRectangle">
+        <MemberSignature Language="C#" Value="public static System.Drawing.Rectangle ToSystemRectangle (this Android.Graphics.Rect rect);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Rectangle ToSystemRectangle(class Android.Graphics.Rect rect) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangle(Android.Graphics.Rect)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.Rectangle</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="rect" Type="Android.Graphics.Rect" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="rect">The base rectangle to convert.</param>
+          <summary>Convert to system rectangle.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.RectangleExtensions" Member="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangle(Android.Graphics.Rect)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:CoreGraphics.CGRect" />
+      </Targets>
+      <Member MemberName="ToSystemRectangle">
+        <MemberSignature Language="C#" Value="public static System.Drawing.Rectangle ToSystemRectangle (this CoreGraphics.CGRect rect);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Rectangle ToSystemRectangle(valuetype CoreGraphics.CGRect rect) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangle(CoreGraphics.CGRect)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.Rectangle</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="rect" Type="CoreGraphics.CGRect" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="rect">The base rectangle to convert.</param>
+          <summary>Convert to system rectangle.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.RectangleExtensions" Member="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangle(CoreGraphics.CGRect)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Windows.Foundation.Rect" />
+      </Targets>
+      <Member MemberName="ToSystemRectangle">
+        <MemberSignature Language="C#" Value="public static System.Drawing.Rectangle ToSystemRectangle (this Windows.Foundation.Rect rect);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Rectangle ToSystemRectangle(valuetype Windows.Foundation.Rect rect) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangle(Windows.Foundation.Rect)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.Rectangle</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="rect" Type="Windows.Foundation.Rect" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="rect">The base rectangle to convert.</param>
+          <summary>Convert to system rectangle.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.RectangleExtensions" Member="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangle(Windows.Foundation.Rect)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Android.Graphics.RectF" />
+      </Targets>
+      <Member MemberName="ToSystemRectangleF">
+        <MemberSignature Language="C#" Value="public static System.Drawing.RectangleF ToSystemRectangleF (this Android.Graphics.RectF rect);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.RectangleF ToSystemRectangleF(class Android.Graphics.RectF rect) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangleF(Android.Graphics.RectF)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.RectangleF</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="rect" Type="Android.Graphics.RectF" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="rect">The base rectangle to convert.</param>
+          <summary>Convert to system rectangle.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.RectangleExtensions" Member="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangleF(Android.Graphics.RectF)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:CoreGraphics.CGRect" />
+      </Targets>
+      <Member MemberName="ToSystemRectangleF">
+        <MemberSignature Language="C#" Value="public static System.Drawing.RectangleF ToSystemRectangleF (this CoreGraphics.CGRect rect);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.RectangleF ToSystemRectangleF(valuetype CoreGraphics.CGRect rect) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangleF(CoreGraphics.CGRect)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.RectangleF</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="rect" Type="CoreGraphics.CGRect" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="rect">The base rectangle to convert.</param>
+          <summary>Convert to system rectangle.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.RectangleExtensions" Member="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangleF(CoreGraphics.CGRect)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Windows.Foundation.Rect" />
+      </Targets>
+      <Member MemberName="ToSystemRectangleF">
+        <MemberSignature Language="C#" Value="public static System.Drawing.RectangleF ToSystemRectangleF (this Windows.Foundation.Rect rect);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.RectangleF ToSystemRectangleF(valuetype Windows.Foundation.Rect rect) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangleF(Windows.Foundation.Rect)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.RectangleF</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="rect" Type="Windows.Foundation.Rect" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="rect">The base rectangle to convert.</param>
+          <summary>Convert to system rectangle.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.RectangleExtensions" Member="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangleF(Windows.Foundation.Rect)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Drawing.Size" />
+      </Targets>
+      <Member MemberName="ToPlatformSize">
+        <MemberSignature Language="C#" Value="public static Android.Util.Size ToPlatformSize (this System.Drawing.Size size);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Android.Util.Size ToPlatformSize(valuetype System.Drawing.Size size) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.ToPlatformSize(System.Drawing.Size)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Android.Util.Size</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="size" Type="System.Drawing.Size" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="size">Base size to convert.</param>
+          <summary>Convert to platform Size.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.SizeExtensions" Member="M:Xamarin.Essentials.SizeExtensions.ToPlatformSize(System.Drawing.Size)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Drawing.SizeF" />
+      </Targets>
+      <Member MemberName="ToPlatformSize">
+        <MemberSignature Language="C#" Value="public static CoreGraphics.CGSize ToPlatformSize (this System.Drawing.SizeF size);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype CoreGraphics.CGSize ToPlatformSize(valuetype System.Drawing.SizeF size) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.ToPlatformSize(System.Drawing.SizeF)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>CoreGraphics.CGSize</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="size" Type="System.Drawing.SizeF" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="size">Base size to convert.</param>
+          <summary>Convert to platform Size.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.SizeExtensions" Member="M:Xamarin.Essentials.SizeExtensions.ToPlatformSize(System.Drawing.SizeF)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Drawing.SizeF" />
+      </Targets>
+      <Member MemberName="ToPlatformSizeF">
+        <MemberSignature Language="C#" Value="public static Android.Util.SizeF ToPlatformSizeF (this System.Drawing.SizeF size);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Android.Util.SizeF ToPlatformSizeF(valuetype System.Drawing.SizeF size) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.ToPlatformSizeF(System.Drawing.SizeF)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Android.Util.SizeF</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="size" Type="System.Drawing.SizeF" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="size">Base size to convert.</param>
+          <summary>Convert to platform SizeF.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.SizeExtensions" Member="M:Xamarin.Essentials.SizeExtensions.ToPlatformSizeF(System.Drawing.SizeF)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="Android.Util.Size" />
+      </Targets>
+      <Member MemberName="ToSystemSize">
+        <MemberSignature Language="C#" Value="public static System.Drawing.Size ToSystemSize (this Android.Util.Size size);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Size ToSystemSize(class Android.Util.Size size) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.ToSystemSize(Android.Util.Size)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.Size</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="size" Type="Android.Util.Size" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="size">Base size to convert.</param>
+          <summary>Convert to system Size.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.SizeExtensions" Member="M:Xamarin.Essentials.SizeExtensions.ToSystemSize(Android.Util.Size)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:CoreGraphics.CGSize" />
+      </Targets>
+      <Member MemberName="ToSystemSize">
+        <MemberSignature Language="C#" Value="public static System.Drawing.Size ToSystemSize (this CoreGraphics.CGSize size);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Size ToSystemSize(valuetype CoreGraphics.CGSize size) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.ToSystemSize(CoreGraphics.CGSize)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.Size</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="size" Type="CoreGraphics.CGSize" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="size">Base size to convert.</param>
+          <summary>Convert to system Size.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.SizeExtensions" Member="M:Xamarin.Essentials.SizeExtensions.ToSystemSize(CoreGraphics.CGSize)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Windows.Foundation.Size" />
+      </Targets>
+      <Member MemberName="ToSystemSize">
+        <MemberSignature Language="C#" Value="public static System.Drawing.Size ToSystemSize (this Windows.Foundation.Size size);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Size ToSystemSize(valuetype Windows.Foundation.Size size) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.ToSystemSize(Windows.Foundation.Size)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.Size</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="size" Type="Windows.Foundation.Size" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="size">Base size to convert.</param>
+          <summary>Convert to system Size.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.SizeExtensions" Member="M:Xamarin.Essentials.SizeExtensions.ToSystemSize(Windows.Foundation.Size)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="Android.Util.SizeF" />
+      </Targets>
+      <Member MemberName="ToSystemSizeF">
+        <MemberSignature Language="C#" Value="public static System.Drawing.SizeF ToSystemSizeF (this Android.Util.SizeF size);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.SizeF ToSystemSizeF(class Android.Util.SizeF size) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.ToSystemSizeF(Android.Util.SizeF)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.SizeF</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="size" Type="Android.Util.SizeF" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="size">Base size to convert.</param>
+          <summary>Convert to system SizeF.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.SizeExtensions" Member="M:Xamarin.Essentials.SizeExtensions.ToSystemSizeF(Android.Util.SizeF)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:CoreGraphics.CGSize" />
+      </Targets>
+      <Member MemberName="ToSystemSizeF">
+        <MemberSignature Language="C#" Value="public static System.Drawing.SizeF ToSystemSizeF (this CoreGraphics.CGSize size);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.SizeF ToSystemSizeF(valuetype CoreGraphics.CGSize size) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.ToSystemSizeF(CoreGraphics.CGSize)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.SizeF</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="size" Type="CoreGraphics.CGSize" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="size">Base size to convert.</param>
+          <summary>Convert to system SizeF.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.SizeExtensions" Member="M:Xamarin.Essentials.SizeExtensions.ToSystemSizeF(CoreGraphics.CGSize)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Windows.Foundation.Size" />
+      </Targets>
+      <Member MemberName="ToSystemSizFe">
+        <MemberSignature Language="C#" Value="public static System.Drawing.SizeF ToSystemSizFe (this Windows.Foundation.Size size);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.SizeF ToSystemSizFe(valuetype Windows.Foundation.Size size) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.ToSystemSizFe(Windows.Foundation.Size)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.SizeF</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="size" Type="Windows.Foundation.Size" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="size">Base size to convert.</param>
+          <summary>Convert to system SizeF.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.SizeExtensions" Member="M:Xamarin.Essentials.SizeExtensions.ToSystemSizFe(Windows.Foundation.Size)" />
       </Member>
     </ExtensionMethod>
   </ExtensionMethods>

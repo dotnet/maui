@@ -97,6 +97,23 @@
       <Member Id="M:Xamarin.Essentials.Clipboard.SetTextAsync(System.String)" />
       <Member Id="P:Xamarin.Essentials.Clipboard.HasText" />
     </Type>
+    <Type Name="Xamarin.Essentials.ColorConverters" Id="T:Xamarin.Essentials.ColorConverters">
+      <Member Id="M:Xamarin.Essentials.ColorConverters.FromHex(System.String)" />
+      <Member Id="M:Xamarin.Essentials.ColorConverters.FromHsl(System.Single,System.Single,System.Single)" />
+      <Member Id="M:Xamarin.Essentials.ColorConverters.FromHsla(System.Single,System.Single,System.Single,System.Int32)" />
+      <Member Id="M:Xamarin.Essentials.ColorConverters.FromUInt(System.UInt32)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.ColorExtensions" Id="T:Xamarin.Essentials.ColorExtensions">
+      <Member Id="M:Xamarin.Essentials.ColorExtensions.AddLuminosity(System.Drawing.Color,System.Single)" />
+      <Member Id="M:Xamarin.Essentials.ColorExtensions.MultiplyAlpha(System.Drawing.Color,System.Single)" />
+      <Member Id="M:Xamarin.Essentials.ColorExtensions.ToPlatformColor(System.Drawing.Color)" />
+      <Member Id="M:Xamarin.Essentials.ColorExtensions.ToSystemColor(Windows.UI.Color)" />
+      <Member Id="M:Xamarin.Essentials.ColorExtensions.ToUInt(System.Drawing.Color)" />
+      <Member Id="M:Xamarin.Essentials.ColorExtensions.WithAlpha(System.Drawing.Color,System.Int32)" />
+      <Member Id="M:Xamarin.Essentials.ColorExtensions.WithHue(System.Drawing.Color,System.Single)" />
+      <Member Id="M:Xamarin.Essentials.ColorExtensions.WithLuminosity(System.Drawing.Color,System.Single)" />
+      <Member Id="M:Xamarin.Essentials.ColorExtensions.WithSaturation(System.Drawing.Color,System.Single)" />
+    </Type>
     <Type Name="Xamarin.Essentials.Compass" Id="T:Xamarin.Essentials.Compass">
       <Member Id="E:Xamarin.Essentials.Compass.ReadingChanged" />
       <Member Id="M:Xamarin.Essentials.Compass.Start(Xamarin.Essentials.SensorSpeed)" />
@@ -456,6 +473,12 @@
     <Type Name="Xamarin.Essentials.Platform" Id="T:Xamarin.Essentials.Platform">
       <Member Id="P:Xamarin.Essentials.Platform.MapServiceToken" />
     </Type>
+    <Type Name="Xamarin.Essentials.PointExtensions" Id="T:Xamarin.Essentials.PointExtensions">
+      <Member Id="M:Xamarin.Essentials.PointExtensions.ToPlatformPoint(System.Drawing.Point)" />
+      <Member Id="M:Xamarin.Essentials.PointExtensions.ToPlatformPoint(System.Drawing.PointF)" />
+      <Member Id="M:Xamarin.Essentials.PointExtensions.ToSystemPoint(Windows.Foundation.Point)" />
+      <Member Id="M:Xamarin.Essentials.PointExtensions.ToSystemPointF(Windows.Foundation.Point)" />
+    </Type>
     <Type Name="Xamarin.Essentials.Preferences" Id="T:Xamarin.Essentials.Preferences">
       <Member Id="M:Xamarin.Essentials.Preferences.Clear" />
       <Member Id="M:Xamarin.Essentials.Preferences.Clear(System.String)" />
@@ -492,6 +515,12 @@
       <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.String)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.String,System.String)" />
     </Type>
+    <Type Name="Xamarin.Essentials.RectangleExtensions" Id="T:Xamarin.Essentials.RectangleExtensions">
+      <Member Id="M:Xamarin.Essentials.RectangleExtensions.ToPlatformRectangle(System.Drawing.Rectangle)" />
+      <Member Id="M:Xamarin.Essentials.RectangleExtensions.ToPlatformRectangle(System.Drawing.RectangleF)" />
+      <Member Id="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangle(Windows.Foundation.Rect)" />
+      <Member Id="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangleF(Windows.Foundation.Rect)" />
+    </Type>
     <Type Name="Xamarin.Essentials.SecureStorage" Id="T:Xamarin.Essentials.SecureStorage">
       <Member Id="M:Xamarin.Essentials.SecureStorage.GetAsync(System.String)" />
       <Member Id="M:Xamarin.Essentials.SecureStorage.Remove(System.String)" />
@@ -517,6 +546,12 @@
       <Member Id="P:Xamarin.Essentials.ShareTextRequest.Text" />
       <Member Id="P:Xamarin.Essentials.ShareTextRequest.Title" />
       <Member Id="P:Xamarin.Essentials.ShareTextRequest.Uri" />
+    </Type>
+    <Type Name="Xamarin.Essentials.SizeExtensions" Id="T:Xamarin.Essentials.SizeExtensions">
+      <Member Id="M:Xamarin.Essentials.SizeExtensions.ToPlatformSize(System.Drawing.Size)" />
+      <Member Id="M:Xamarin.Essentials.SizeExtensions.ToPlatformSize(System.Drawing.SizeF)" />
+      <Member Id="M:Xamarin.Essentials.SizeExtensions.ToSystemSize(Windows.Foundation.Size)" />
+      <Member Id="M:Xamarin.Essentials.SizeExtensions.ToSystemSizFe(Windows.Foundation.Size)" />
     </Type>
     <Type Name="Xamarin.Essentials.Sms" Id="T:Xamarin.Essentials.Sms">
       <Member Id="M:Xamarin.Essentials.Sms.ComposeAsync" />

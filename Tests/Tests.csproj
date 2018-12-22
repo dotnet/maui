@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <IsPackable>false</IsPackable>
-    <Configurations>Debug;Release;Samples</Configurations>
+    <Configurations>Debug;Release;Samples;Docs</Configurations>
     <AssemblyName>XamarinEssentialsTests</AssemblyName>
   </PropertyGroup>
 
