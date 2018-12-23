@@ -1,26 +1,10 @@
-﻿using System;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using AppKit;
-using CoreFoundation;
+﻿using AppKit;
 using Foundation;
-using ObjCRuntime;
 
 namespace Xamarin.Essentials
 {
     public static partial class DeviceDisplay
     {
-        const uint kIOPMAssertionLevelOff = 0;
-        const uint kIOPMAssertionLevelOn = 255;
-        static readonly CFString keepScreenOnName = "PreventUserIdleDisplaySleep";
-        static readonly CFString kIOPMAssertionTypePreventUserIdleDisplaySleep = "PreventUserIdleDisplaySleep";
-
-        [DllImport("/System/Library/Frameworks/IOKit.framework/IOKit")]
-        static extern uint IOPMAssertionCreateWithName(IntPtr type, uint level, IntPtr name, out uint id);
-
-        [DllImport("/System/Library/Frameworks/IOKit.framework/IOKit")]
-        static extern uint IOPMAssertionRelease(uint id);
-
         static uint keepScreenOnId = 0;
         static NSObject screenMetricsObserver;
 
@@ -38,22 +22,11 @@ namespace Xamarin.Essentials
 
                 if (value)
                 {
-                    var result = IOPMAssertionCreateWithName(
-                        kIOPMAssertionTypePreventUserIdleDisplaySleep.Handle,
-                        kIOPMAssertionLevelOn,
-                        keepScreenOnName.Handle,
-                        out keepScreenOnId);
-
-                    // failed to turn on
-                    if (result != 0 && value)
-                        keepScreenOnId = 0;
+                    IOKit.PreventUserIdleDisplaySleep("KeepScreenOn", out keepScreenOnId);
                 }
                 else
                 {
-                    var result = IOPMAssertionRelease(keepScreenOnId);
-
-                    // successfully turned off
-                    if (result == 0 && !value)
+                    if (IOKit.AllowUserIdleDisplaySleep(keepScreenOnId))
                         keepScreenOnId = 0;
                 }
             }

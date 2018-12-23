@@ -1,29 +1,44 @@
-﻿namespace Xamarin.Essentials
+﻿using System;
+using CoreFoundation;
+
+namespace Xamarin.Essentials
 {
     public static partial class Battery
     {
-        static void StartBatteryListeners() =>
-            throw new System.PlatformNotSupportedException();
+        static CFRunLoopSource powerSourceNotification;
 
-        static void StopBatteryListeners() =>
-            throw new System.PlatformNotSupportedException();
+        static void StartBatteryListeners()
+        {
+            powerSourceNotification = IOKit.CreatePowerSourceNotification(PowerSourceNotification);
+            CFRunLoop.Current.AddSource(powerSourceNotification, CFRunLoop.ModeDefault);
+        }
 
-        static double PlatformChargeLevel =>
-            throw new System.PlatformNotSupportedException();
+        static void StopBatteryListeners()
+        {
+            if (powerSourceNotification != null)
+            {
+                CFRunLoop.Current.RemoveSource(powerSourceNotification, CFRunLoop.ModeDefault);
+                powerSourceNotification = null;
+            }
+        }
 
-        static BatteryState PlatformState =>
-            throw new System.PlatformNotSupportedException();
+        static void PowerSourceNotification()
+            => MainThread.BeginInvokeOnMainThread(OnBatteryInfoChanged);
 
-        static BatteryPowerSource PlatformPowerSource =>
-            throw new System.PlatformNotSupportedException();
+        static double PlatformChargeLevel => IOKit.GetInternalBatteryChargeLevel();
 
-        static void StartEnergySaverListeners() =>
-            throw new System.PlatformNotSupportedException();
+        static BatteryState PlatformState => IOKit.GetInternalBatteryState();
 
-        static void StopEnergySaverListeners() =>
-            throw new System.PlatformNotSupportedException();
+        static BatteryPowerSource PlatformPowerSource => IOKit.GetProvidingPowerSource();
 
-        static EnergySaverStatus PlatformEnergySaverStatus =>
-            throw new System.PlatformNotSupportedException();
+        static void StartEnergySaverListeners()
+        {
+        }
+
+        static void StopEnergySaverListeners()
+        {
+        }
+
+        static EnergySaverStatus PlatformEnergySaverStatus => EnergySaverStatus.Off;
     }
 }
