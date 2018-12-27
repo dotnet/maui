@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using Xamarin.Forms.Internals;
+using WSelectionChangedEventArgs = System.Windows.Controls.SelectionChangedEventArgs;
 
 namespace Xamarin.Forms.Platform.WPF
 {
@@ -64,7 +65,7 @@ namespace Xamarin.Forms.Platform.WPF
 			Control.SelectedIndex = Element.SelectedIndex;
 		}
 
-		private void OnControlSelectionChanged(object sender, SelectionChangedEventArgs e)
+		private void OnControlSelectionChanged(object sender, WSelectionChangedEventArgs e)
 		{
 			if (Element != null)
 				Element.SelectedIndex = Control.SelectedIndex;

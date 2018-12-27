@@ -11,10 +11,10 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 
 		public ObservableCollection<CollectionViewGalleryTestItem> Items { get; }
 
-		public DemoFilteredItemSource()
+		public DemoFilteredItemSource(int count = 50)
 		{
 			_source = new List<CollectionViewGalleryTestItem>();
-			var count = 50;
+			
 			string[] images = 
 			{
 				"cover1.jpg", 

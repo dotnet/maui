@@ -6,6 +6,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
+using WSelectionChangedEventArgs = Windows.UI.Xaml.Controls.SelectionChangedEventArgs;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -116,7 +117,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		void OnControlSelectionChanged(object sender, SelectionChangedEventArgs e)
+		void OnControlSelectionChanged(object sender, WSelectionChangedEventArgs e)
 		{
 			if (Element != null)
 				Element.SelectedIndex = Control.SelectedIndex;

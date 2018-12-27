@@ -20,6 +20,7 @@ using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ListView;
 using System.Collections.ObjectModel;
 using UwpScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility;
+using WSelectionChangedEventArgs = Windows.UI.Xaml.Controls.SelectionChangedEventArgs;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -738,7 +739,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		void OnControlSelectionChanged(object sender, SelectionChangedEventArgs e)
+		void OnControlSelectionChanged(object sender, WSelectionChangedEventArgs e)
 		{
 			if (Element.SelectedItem != List.SelectedItem)
 			{

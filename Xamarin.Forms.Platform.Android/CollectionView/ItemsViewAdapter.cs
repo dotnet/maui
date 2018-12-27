@@ -1,23 +1,20 @@
 using System;
-using System.Diagnostics;
 using Android.Content;
 using Android.Support.V7.Widget;
-using Android.Views;
 using Android.Widget;
 using AView = Android.Views.View;
+using Object = Java.Lang.Object;
 using ViewGroup = Android.Views.ViewGroup;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	// TODO hartez 2018/07/25 14:39:29 Split up CollectionViewAdapter into one for templates, one for text	
 	// TODO hartez 2018/07/25 14:43:04 Experiment with an ItemSource property change as _adapter.notifyDataSetChanged	
-	// TODO hartez 2018/07/25 14:44:15 Template property changed should do a whole new adapter; and that way we can cache the template
 
 	public class ItemsViewAdapter : RecyclerView.Adapter
 	{
 		protected readonly ItemsView ItemsView;
 		readonly Func<IVisualElementRenderer, Context, AView> _createView;
-		readonly IItemsViewSource _itemsSource;
+		internal readonly IItemsViewSource ItemsSource;
 
 		internal ItemsViewAdapter(ItemsView itemsView, Func<IVisualElementRenderer, Context, AView> createView = null)
 		{
@@ -25,7 +22,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			ItemsView = itemsView;
 			_createView = createView;
-			_itemsSource = ItemsSourceFactory.Create(itemsView.ItemsSource, this);
+			ItemsSource = ItemsSourceFactory.Create(itemsView.ItemsSource, this);
 
 			if (_createView == null)
 			{
@@ -33,15 +30,26 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
+		public override void OnViewRecycled(Object holder)
+		{
+			if (holder is TemplatedItemViewHolder templatedItemViewHolder)
+			{
+				templatedItemViewHolder.View.Parent = null;
+			}
+
+			base.OnViewRecycled(holder);
+		}
+
 		public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
 		{
 			switch (holder)
 			{
 				case TextViewHolder textViewHolder:
-					textViewHolder.TextView.Text = _itemsSource[position].ToString();
+					textViewHolder.TextView.Text = ItemsSource[position].ToString();
 					break;
 				case TemplatedItemViewHolder templateViewHolder:
-					BindableObject.SetInheritedBindingContext(templateViewHolder.View, _itemsSource[position]);
+					templateViewHolder.View.Parent = ItemsView;
+					BindableObject.SetInheritedBindingContext(templateViewHolder.View, ItemsSource[position]);
 					break;
 			}
 		}
@@ -60,16 +68,23 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			// Realize the content, create a renderer out of it, and use that
-			var templateElement = template.CreateContent() as View;
+			var templateElement = (View)template.CreateContent();
 			var itemContentControl = _createView(CreateRenderer(templateElement, context), context);
 
 			return new TemplatedItemViewHolder(itemContentControl, templateElement);
 		}
 
-		IVisualElementRenderer CreateRenderer(View view, Context context)
+		static IVisualElementRenderer CreateRenderer(View view, Context context)
 		{
 			if (view == null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
+
+			if (context == null)
+			{
+				throw new ArgumentNullException(nameof(context));
+			}
 
 			var renderer = Platform.CreateRenderer(view, context);
 			Platform.SetRenderer(view, renderer);
@@ -77,7 +92,7 @@ namespace Xamarin.Forms.Platform.Android
 			return renderer;
 		}
 
-		public override int ItemCount => _itemsSource.Count;
+		public override int ItemCount => ItemsSource.Count;
 
 		public override int GetItemViewType(int position)
 		{
@@ -89,31 +104,11 @@ namespace Xamarin.Forms.Platform.Android
 			return 42;
 		}
 
-		internal class TextViewHolder : RecyclerView.ViewHolder
-		{
-			public TextView TextView { get; }
-
-			public TextViewHolder(TextView itemView) : base(itemView)
-			{
-				TextView = itemView;
-			}
-		}
-
-		internal class TemplatedItemViewHolder : RecyclerView.ViewHolder
-		{
-			public View View { get; }
-
-			public TemplatedItemViewHolder(AView itemView, View rootElement) : base(itemView)
-			{
-				View = rootElement;
-			}
-		}
-
 		public virtual int GetPositionForItem(object item)
 		{
-			for (int n = 0; n < _itemsSource.Count; n++)
+			for (int n = 0; n < ItemsSource.Count; n++)
 			{
-				if (_itemsSource[n] == item)
+				if (ItemsSource[n] == item)
 				{
 					return n;
 				}
@@ -122,5 +117,4 @@ namespace Xamarin.Forms.Platform.Android
 			return -1;
 		}
 	}
-	
 }

@@ -90,10 +90,15 @@
     <Compile Include="CollectionView\PositionalSmoothScroller.cs" />
     <Compile Include="CollectionView\PropertyChangedEventArgsExtensions.cs" />
     <Compile Include="CollectionView\ScrollHelper.cs" />
+    <Compile Include="CollectionView\SelectableItemsViewAdapter.cs" />
+    <Compile Include="CollectionView\SelectableItemsViewRenderer.cs" />
+    <Compile Include="CollectionView\SelectableViewHolder.cs" />
     <Compile Include="CollectionView\SizedItemContentView.cs" />
     <Compile Include="CollectionView\SnapManager.cs" />
     <Compile Include="CollectionView\StartPagerSnapHelper.cs" />
     <Compile Include="CollectionView\StartSnapHelper.cs" />
+    <Compile Include="CollectionView\TemplatedItemViewHolder.cs" />
+    <Compile Include="CollectionView\TextViewHolder.cs" />
     <Compile Include="Elevation.cs" />
     <Compile Include="Extensions\EntryRendererExtensions.cs" />
     <Compile Include="Extensions\FragmentManagerExtensions.cs" />

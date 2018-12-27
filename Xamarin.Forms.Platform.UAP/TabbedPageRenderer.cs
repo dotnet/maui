@@ -19,6 +19,7 @@ using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.TabbedPage
 using VisualElementSpecifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.VisualElement;
 using PageSpecifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.Page;
 using Windows.UI.Xaml.Input;
+using WSelectionChangedEventArgs = Windows.UI.Xaml.Controls.SelectionChangedEventArgs;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -298,7 +299,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+		void OnSelectionChanged(object sender, WSelectionChangedEventArgs e)
 		{
 			if (Element == null)
 				return;

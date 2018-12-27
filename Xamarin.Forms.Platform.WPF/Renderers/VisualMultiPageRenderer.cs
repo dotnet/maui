@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.WPF.Controls;
+using WSelectionChangedEventArgs = Xamarin.Forms.Platform.WPF.Controls.SelectionChangedEventArgs;
 
 namespace Xamarin.Forms.Platform.WPF
 {
@@ -55,7 +56,7 @@ namespace Xamarin.Forms.Platform.WPF
 			Control.SelectedItem = Element.CurrentPage;
 		}
 		
-		private void Control_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		private void Control_SelectionChanged(object sender, WSelectionChangedEventArgs e)
 		{
 			Element.CurrentPage = e.NewElement as TContainer;
 		}
