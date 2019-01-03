@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Microsoft.Graphics.Canvas.UI.Xaml;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
@@ -28,9 +29,28 @@ namespace Xamarin.Forms.Platform.UWP
 
 			_measured = true;
 
-			var result = new Size { Width = ((BitmapSource)Control.Source).PixelWidth, Height = ((BitmapSource)Control.Source).PixelHeight };
-
-			return new SizeRequest(result);
+			if (Control.Source is BitmapSource bitmap)
+			{
+				return new SizeRequest(
+					new Size
+					{
+						Width = bitmap.PixelWidth,
+						Height = bitmap.PixelHeight
+					});
+			}
+			else if (Control.Source is CanvasImageSource canvas)
+			{
+				return new SizeRequest(
+					new Size
+					{
+						Width = canvas.SizeInPixels.Width,
+						Height = canvas.SizeInPixels.Height
+					});
+			}
+			else
+			{
+				throw new InvalidCastException($"\"{Control.Source.GetType().FullName}\" is not supported.");
+			}
 		}
 
 		protected override void Dispose(bool disposing)

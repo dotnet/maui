@@ -49,6 +49,7 @@
     <Compile Include="CollectionViewRenderer.cs" />
     <Compile Include="FormsCancelButton.cs" />
     <Compile Include="AlertDialog.cs" />
+    <Compile Include="FontImageSourceHandler.cs" />
     <Compile Include="Items\ItemContentControl.cs" />
     <Compile Include="FormsPivot.cs" />
     <Compile Include="AlignmentExtensions.cs" />
@@ -257,6 +258,9 @@
     </PackageReference>
     <PackageReference Include="NETStandard.Library">
       <Version>2.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="Win2D.uwp">
+      <Version>1.20.0</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

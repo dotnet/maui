@@ -220,6 +220,9 @@
     <Content Include="menuIcon.png" />
     <Content Include="seth.png" />
     <BundleResource Include="photo.jpg" />
+    <BundleResource Include="ionicons.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </BundleResource>
     <BundleResource Include="WebImages\XamarinLogo.png" />
     <BundleResource Include="Images\FlowerBuds.jpg" />
     <BundleResource Include="Images\FlowerBuds%402x.jpg" />
