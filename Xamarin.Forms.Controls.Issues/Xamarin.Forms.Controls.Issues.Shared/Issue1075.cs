@@ -22,6 +22,9 @@ namespace Xamarin.Forms.Controls.Issues
 		// BoxView doesn't update color
 		public Issue1075 ()
 		{
+			var instructions = new Label { Text = "Tap the 'Change to blue' button below. If the BoxView does not " +
+				"turn blue, this test has failed." };
+
 			Label header = new Label
 			{
 				Text = "Picker",
@@ -51,6 +54,7 @@ namespace Xamarin.Forms.Controls.Issues
 			// Create BoxView for displaying pickedColor
 			BoxView boxView = new BoxView
 			{
+				BackgroundColor = Color.Gray,
 				WidthRequest = 150,
 				HeightRequest = 150,
 				HorizontalOptions = LayoutOptions.Center,
@@ -59,7 +63,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var button = new Button {
 				Text = "Change to blue",
-				Command = new Command (() => boxView.BackgroundColor = Color.Aqua)
+				Command = new Command (() => boxView.BackgroundColor = Color.Blue)
 			};
 
 			picker.SelectedIndexChanged += (sender, args) =>
@@ -84,6 +88,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				Children = 
 				{
+					instructions,
 					header,
 					picker,
 					boxView,
