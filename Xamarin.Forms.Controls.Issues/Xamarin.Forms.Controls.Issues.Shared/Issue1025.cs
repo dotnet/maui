@@ -9,8 +9,11 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		public Issue1025 ()
 		{
-			BackgroundColor = Color.FromHex("#dae1eb");
-			Content = new StackLayout {
+			var instructions = new Label { Text = "The StackLayout below should contain two buttons and some text. " +
+				"If the StackLayout appears empty, this test has failed." };
+			
+			var layout = new StackLayout {
+				BackgroundColor = Color.FromHex("#dae1eb"),
 				Orientation = StackOrientation.Vertical,
 				Children = {
 					new Image {},
@@ -19,6 +22,11 @@ namespace Xamarin.Forms.Controls.Issues
 					new Button {BackgroundColor = Color.FromHex ("#fec240"), Text = "Create an account" },
 					new Button {BackgroundColor = Color.FromHex ("#04acdb"), Text = "Login" },
 				}
+			};
+
+			Content = new StackLayout
+			{
+				Children = { instructions, layout }
 			};
 		}
 	}	
