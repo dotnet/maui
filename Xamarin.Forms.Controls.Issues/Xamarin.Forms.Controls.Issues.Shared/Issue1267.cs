@@ -1,6 +1,11 @@
 ﻿using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
+#if UITEST
+using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
+#endif
+
 namespace Xamarin.Forms.Controls.Issues
 {
 	public class PersonCell:ViewCell
@@ -41,10 +46,14 @@ namespace Xamarin.Forms.Controls.Issues
 
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Github, 1267, "Star '*' in Grid layout throws exception", PlatformAffected.WinPhone)]
-	public class Issue1267 : ContentPage
+	public class Issue1267 : TestContentPage
 	{
-		public Issue1267 ()
+		const string Success = "If this is visible, the test has passed.";
+
+		protected override void Init()
 		{
+			var instructions = new Label { Text = Success };
+
 			var lv = new ListView { 
 				ItemsSource = new []{
 					new {FirstName = "foo", LastName="bar", Zip="1234", City="Gotham City"},
@@ -63,8 +72,17 @@ namespace Xamarin.Forms.Controls.Issues
 				},
 				ItemTemplate = new DataTemplate (typeof(PersonCell)),
 			};
-			Content = lv;
+
+			Content = new StackLayout { Children = { instructions, lv } };
 		}
+
+#if UITEST
+		[Test]
+		public void StarInGridDoesNotCrash()
+		{
+			RunningApp.WaitForElement(Success);
+		}
+#endif
 	}
 }
 
