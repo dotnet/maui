@@ -1,19 +1,23 @@
-﻿using System.Diagnostics;
-
-using Xamarin.Forms.CustomAttributes;
+﻿using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
+
+#if UITEST
+using Xamarin.UITest;
+using NUnit.Framework;
+#endif
 
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Github, 1028, "ViewCell in TableView raises exception - root page is ContentPage, Content is TableView" ,PlatformAffected.WinPhone, NavigationBehavior.PushModalAsync)]
-	public class Issue1028 : ContentPage 
+	public class Issue1028 : TestContentPage 
 	{
 		// Issue1028, ViewCell with StackLayout causes exception when nested in a table section. This occurs when the app's root page is a ContentPage with a TableView.
-		public Issue1028 ()
+		protected override void Init()
 		{
-			Content = new TableView {
-				Root = new TableRoot ("Table Title") {
+			Content = new TableView
+			{
+				Root = new TableRoot("Table Title") {
 					new TableSection ("Section 1 Title") {
 						new ViewCell {
 							View = new StackLayout {
@@ -28,5 +32,13 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 		}
-	}            
+#if UITEST
+		[Test]
+		public void ViewCellInTableViewDoesNotCrash()
+		{
+			// If we can see this element, then we didn't crash.
+			RunningApp.WaitForElement("Custom Slider View:");
+		}
+#endif
+	}
 }
