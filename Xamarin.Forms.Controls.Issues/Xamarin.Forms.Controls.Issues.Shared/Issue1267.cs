@@ -8,6 +8,7 @@ using Xamarin.Forms.Core.UITests;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+	[Preserve (AllMembers=true)]
 	public class PersonCell:ViewCell
 	{
 		public PersonCell ()
