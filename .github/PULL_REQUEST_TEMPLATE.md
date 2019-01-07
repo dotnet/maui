@@ -14,12 +14,22 @@ List all API changes here (or just put None), example:
 
 Added: 
  
-- string - string Class.Property { get; set; } 
-- void Class.Method();
+- `string Class.Property { get; set; }`
+- `void Class.Method();`
 
 Changed:
 
- - object Cell.OldPropertyName => object Cell.NewPropertyName
+ - `object Cell.OldPropertyName` => `object Cell.NewPropertyName`
+ 
+If there is an entirely new API, then you can use a more verbose style:
+
+```csharp
+public static class NewClass {
+    public static int SomeProperty { get; set; }
+    public static void SomeMethod(string value);
+}
+```
+
 
 ### Behavioral Changes ###
 
