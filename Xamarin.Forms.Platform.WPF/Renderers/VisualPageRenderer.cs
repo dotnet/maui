@@ -112,7 +112,7 @@ namespace Xamarin.Forms.Platform.WPF
 				{
 					if (appBar.DataContext is ToolbarItem toolbarItem)
 					{
-						toolbarItem.Activate();
+						((IMenuItemController)toolbarItem).Activate();
 					}
 				};
 

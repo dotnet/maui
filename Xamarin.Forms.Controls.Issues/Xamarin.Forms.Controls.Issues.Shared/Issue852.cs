@@ -9,14 +9,19 @@ using Xamarin.Forms.Internals;
 #if UITEST
 using NUnit.Framework;
 using Xamarin.UITest;
+using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Github, 852, "Async loading of Content causes UI element to be unclickable", PlatformAffected.Android | PlatformAffected.iOS)]
-	public class Issue852 : ContentPage
+	public class Issue852 : TestContentPage
 	{
+		protected override void Init() { }
+		const string UsernameId = "username852";
+		const string PasswordId = "password852";
+
 #if APP
 		StackLayout _loggingInStackLayout;
 		Button _loginButton;
@@ -78,6 +83,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				IsPassword = false,
 				Placeholder = "Username",
+				AutomationId = UsernameId
 			};
 			usernameEntry.SetBinding(Entry.TextProperty, new Binding("Username"));
 			usernameEntry.Focused += (s, e) => welcomeLabel.Text = "Clicked User";
@@ -86,6 +92,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				IsPassword = true,
 				Placeholder = "Password",
+				AutomationId = PasswordId
 			};
 			passwordEntry.SetBinding(Entry.TextProperty, new Binding("Password", BindingMode.TwoWay));
 			passwordEntry.Focused += (s, e) => welcomeLabel.Text = "Clicked Password";
@@ -123,32 +130,31 @@ namespace Xamarin.Forms.Controls.Issues
 			await Task.Delay(2000);
 			return false; //for this test we are always going ot fail, want to show login screen and error
 		}
+
+			// Can't tell if it wasn't working in iOS or Android, but in either case we can probably just use automationID
+			// instead of querying on the placeholder text
+
+		
 #endif
 #if UITEST
 		[Test]
 		[UiTest (typeof(ContentPage))]
 		public void Issue852TestsEntriesClickable ()
 		{
-			// TODO: Fix ME
+			RunningApp.WaitForElement (q => q.Marked ("Welcome to the System"));
+			RunningApp.WaitForElement (UsernameId);
+			RunningApp.WaitForElement (PasswordId);
+			RunningApp.WaitForElement (q => q.Button ("Login"));
+			RunningApp.Screenshot ("All elements present");
 
-			//App.WaitForElement (q => q.Marked ("Welcome to the System"));
-			//App.WaitForElement (PlatformQueries.EntryWithPlaceholder ("Username"));
-			//App.WaitForElement (PlatformQueries.EntryWithPlaceholder ("Password"));
-			//App.WaitForElement (q => q.Button ("Login"));
-			//App.Screenshot ("All elements present");
+			RunningApp.Tap (UsernameId);
+			RunningApp.WaitForElement (q => q.Marked ("Clicked User"));
+			RunningApp.EnterText (UsernameId, "Usertest");
+			RunningApp.Screenshot ("User entered");
 
-			//App.Tap (PlatformQueries.EntryWithPlaceholder ("Username"));
-			//App.WaitForElement (q => q.Marked ("Clicked User"));
-			//App.EnterText (PlatformQueries.EntryWithPlaceholder ("Username"), "Usertest");
-			//App.Screenshot ("User entered");
-
-			//App.Tap (PlatformQueries.EntryWithPlaceholder ("Password"));
-			//App.WaitForElement (q => q.Marked ("Clicked Password"));
-			//App.EnterText (PlatformQueries.EntryWithPlaceholder ("Password"), "Userpass");
-			//App.Screenshot ("Password entered");
-
-			//App.Screenshot ("Enties clickable");
-			Assert.Inconclusive ("Fix Test");
+			RunningApp.Tap (PasswordId);
+			RunningApp.WaitForElement (q => q.Marked ("Clicked Password"));
+			RunningApp.EnterText (PasswordId, "Userpass");
 		}
 #endif
 	}

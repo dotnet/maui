@@ -168,7 +168,7 @@ namespace Xamarin.Forms
 			ApplyQueryAttributes(Content as Page, query);
 		}
 
-		static void ApplyQueryAttributes(object content, IDictionary<string, string> query)
+		internal static void ApplyQueryAttributes(object content, IDictionary<string, string> query)
 		{
 			if (content is IQueryAttributable attributable)
 				attributable.ApplyQueryAttributes(query);

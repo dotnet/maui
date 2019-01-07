@@ -454,5 +454,36 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.That(layout.Children[2].Bounds, Is.EqualTo(new Rectangle(0, 200, 300, 100)));
 		}
+
+		[Test]
+		public void PaddingOnLayout()
+		//https://github.com/xamarin/Xamarin.Forms/issues/2663
+		{
+			var label0 = new Label {
+				IsPlatformEnabled = true,
+			};
+			var label1 = new Label {
+				IsPlatformEnabled = true,
+			};
+			var label2 = new Label {
+				IsPlatformEnabled = true,
+			};
+			var layout = new FlexLayout {
+				IsPlatformEnabled = true,
+				JustifyContent = FlexJustify.SpaceBetween,
+				AlignItems = FlexAlignItems.Start,
+
+				Padding = new Thickness(20,10,20,0),
+				Children = {
+					label0,
+					label1,
+					label2,
+				}
+			};
+
+			layout.Layout(new Rectangle(0, 0, 500, 300));
+			Assert.That(layout.Children[0].Bounds, Is.EqualTo(new Rectangle(20, 10, 100, 20)));
+			Assert.That(layout.Children[2].Bounds, Is.EqualTo(new Rectangle(380, 10, 100, 20)));
+		}
 	}
 }

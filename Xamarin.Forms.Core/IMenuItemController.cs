@@ -1,10 +1,11 @@
+using System.ComponentModel;
+
 namespace Xamarin.Forms
 {
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public interface IMenuItemController
 	{
 		bool IsEnabled { get; set; }
-		string IsEnabledPropertyName { get; }
-
 		void Activate();
 	}
 }

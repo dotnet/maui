@@ -189,42 +189,42 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 
 			var backgroundDrawable = _backgroundTracker?.BackgroundDrawable;
-
 			RectF drawableBounds = null;
 
-			if ((int)Build.VERSION.SdkInt >= 18 && backgroundDrawable != null)
+			if(Drawable != null)
 			{
-				var outlineBounds = backgroundDrawable.GetPaddingBounds(canvas.Width, canvas.Height);
-				var width = (float)MeasuredWidth;
-				var height = (float)MeasuredHeight;
-
-				var widthRatio = 1f;
-				var heightRatio = 1f;
-
-				if (Element.Aspect == Aspect.AspectFill && OnThisPlatform().GetIsShadowEnabled())
-					Internals.Log.Warning(nameof(ImageButtonRenderer), "AspectFill isn't fully supported when using shadows. Image may be clipped incorrectly to Border");
-
-				switch (Element.Aspect)
+				if ((int)Build.VERSION.SdkInt >= 18 && backgroundDrawable != null)
 				{
-					case Aspect.Fill:
-						break;
-					case Aspect.AspectFill:
-					case Aspect.AspectFit:
-						heightRatio = (float)Drawable.IntrinsicHeight / height;
-						widthRatio = (float)Drawable.IntrinsicWidth / width;
-						break;
+					var outlineBounds = backgroundDrawable.GetPaddingBounds(canvas.Width, canvas.Height);
+					var width = (float)MeasuredWidth;
+					var height = (float)MeasuredHeight;
+
+					var widthRatio = 1f;
+					var heightRatio = 1f;
+
+					if (Element.Aspect == Aspect.AspectFill && OnThisPlatform().GetIsShadowEnabled())
+						Internals.Log.Warning(nameof(ImageButtonRenderer), "AspectFill isn't fully supported when using shadows. Image may be clipped incorrectly to Border");
+
+					switch (Element.Aspect)
+					{
+						case Aspect.Fill:
+							break;
+						case Aspect.AspectFill:
+						case Aspect.AspectFit:
+							heightRatio = (float)Drawable.IntrinsicHeight / height;
+							widthRatio = (float)Drawable.IntrinsicWidth / width;
+							break;
+					}
+
+					drawableBounds = new RectF(outlineBounds.Left * widthRatio, outlineBounds.Top * heightRatio, outlineBounds.Right * widthRatio, outlineBounds.Bottom * heightRatio);
 				}
 
-				drawableBounds = new RectF(outlineBounds.Left * widthRatio, outlineBounds.Top * heightRatio, outlineBounds.Right * widthRatio, outlineBounds.Bottom * heightRatio);
+				if (drawableBounds != null)
+					Drawable.SetBounds((int)drawableBounds.Left, (int)drawableBounds.Top, (int)drawableBounds.Right, (int)drawableBounds.Bottom);
 			}
 
-			if (drawableBounds != null)
-				Drawable.SetBounds((int)drawableBounds.Left, (int)drawableBounds.Top, (int)drawableBounds.Right, (int)drawableBounds.Bottom);
-
-
-
 			base.Draw(canvas);
-			if (_backgroundTracker.BackgroundDrawable != null)
+			if (_backgroundTracker?.BackgroundDrawable != null)
 				_backgroundTracker.BackgroundDrawable.DrawOutline(canvas, canvas.Width, canvas.Height);
 		}
 

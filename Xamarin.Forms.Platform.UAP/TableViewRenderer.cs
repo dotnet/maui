@@ -2,6 +2,7 @@
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using WItemsControl = Windows.UI.Xaml.Controls.ItemsControl;
+using WSelectionChangedEventArgs = Windows.UI.Xaml.Controls.SelectionChangedEventArgs;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -73,7 +74,7 @@ namespace Xamarin.Forms.Platform.UWP
 			_ignoreSelectionEvent = false;
 		}
 
-		void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+		void OnSelectionChanged(object sender, WSelectionChangedEventArgs e)
 		{
 			if (!_ignoreSelectionEvent)
 			{

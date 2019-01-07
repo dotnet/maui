@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Build.Tasks
 			if (field == null)
 				return;
 			Context.IL.Emit(OpCodes.Ldarg_0);
-			Context.IL.Emit(OpCodes.Ldloc, Context.Variables[(IElementNode)parentNode]);
+			Context.IL.Append(Context.Variables[(IElementNode)parentNode].LoadAs(field.FieldType, Context.Module));
 			Context.IL.Emit(OpCodes.Stfld, field);
 		}
 

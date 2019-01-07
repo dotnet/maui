@@ -207,7 +207,7 @@ namespace Xamarin.Forms.Internals
 						(var retval, bool success) = _getter((TSource)sourceObject);
 						if (success) //if the getter failed, return the FallbackValue
 							value = GetSourceValue(retval, property.ReturnType);
-					} catch (Exception ex) when (ex is NullReferenceException || ex is KeyNotFoundException || ex is IndexOutOfRangeException) {
+					} catch (Exception ex) when (ex is NullReferenceException || ex is KeyNotFoundException || ex is IndexOutOfRangeException || ex is ArgumentOutOfRangeException) {
 					}
 				}
 				if (!BindingExpression.TryConvert(ref value, property, property.ReturnType, true)) {

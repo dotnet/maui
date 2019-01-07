@@ -119,14 +119,15 @@ namespace Xamarin.Forms.Build.Tasks
 		void SetNameScope(ElementNode node, VariableDefinition ns)
 		{
 			var module = Context.Body.Method.Module;
-			Context.IL.Emit(OpCodes.Ldloc, Context.Variables[node]);
-			Context.IL.Emit(OpCodes.Ldloc, ns);
+			var parameterTypes = new[] {
+				("Xamarin.Forms.Core", "Xamarin.Forms", "BindableObject"),
+				("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "INameScope"),
+			};
+			Context.IL.Append(Context.Variables[node].LoadAs(module.GetTypeDefinition(parameterTypes[0]), module));
+			Context.IL.Append(ns.LoadAs(module.GetTypeDefinition(parameterTypes[1]), module));
 			Context.IL.Emit(OpCodes.Call, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "NameScope"),
 																	   methodName: "SetNameScope",
-																	   parameterTypes: new[] {
-																		   ("Xamarin.Forms.Core", "Xamarin.Forms", "BindableObject"),
-																		   ("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "INameScope"),
-																	   },
+																	   parameterTypes: parameterTypes,
 																	   isStatic: true));
 		}
 
@@ -137,10 +138,11 @@ namespace Xamarin.Forms.Build.Tasks
 			namesInNamescope.Add(str);
 
 			var module = Context.Body.Method.Module;
-			Context.IL.Emit(OpCodes.Ldloc, namescopeVarDef);
+			var namescopeType = ("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "INameScope");
+			Context.IL.Append(namescopeVarDef.LoadAs(module.GetTypeDefinition(namescopeType), module));
 			Context.IL.Emit(OpCodes.Ldstr, str);
-			Context.IL.Emit(OpCodes.Ldloc, element);
-			Context.IL.Emit(OpCodes.Callvirt, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "INameScope"),
+			Context.IL.Append(element.LoadAs(module.TypeSystem.Object, module));
+			Context.IL.Emit(OpCodes.Callvirt, module.ImportMethodReference(namescopeType,
 																		   methodName: "RegisterName",
 																		   parameterTypes: new[] {
 																			   ("mscorlib", "System", "String"),
@@ -154,14 +156,16 @@ namespace Xamarin.Forms.Build.Tasks
 				return;
 
 			var module = Context.Body.Method.Module;
+			var elementType = ("Xamarin.Forms.Core", "Xamarin.Forms", "Element");
+			var elementTypeRef = module.GetTypeDefinition(elementType);
 
 			var nop = Instruction.Create(OpCodes.Nop);
-			Context.IL.Emit(OpCodes.Ldloc, element);
-			Context.IL.Emit(OpCodes.Callvirt, module.ImportPropertyGetterReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Element"), propertyName: "StyleId"));
+			Context.IL.Append(element.LoadAs(elementTypeRef, module));
+			Context.IL.Emit(OpCodes.Callvirt, module.ImportPropertyGetterReference(elementType, propertyName: "StyleId"));
 			Context.IL.Emit(OpCodes.Brtrue, nop);
-			Context.IL.Emit(OpCodes.Ldloc, element);
+			Context.IL.Append(element.LoadAs(elementTypeRef, module));
 			Context.IL.Emit(OpCodes.Ldstr, str);
-			Context.IL.Emit(OpCodes.Callvirt, module.ImportPropertySetterReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Element"), propertyName: "StyleId"));
+			Context.IL.Emit(OpCodes.Callvirt, module.ImportPropertySetterReference(elementType, propertyName: "StyleId"));
 			Context.IL.Append(nop);
 		}
 	}

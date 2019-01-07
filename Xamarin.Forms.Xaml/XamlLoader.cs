@@ -61,13 +61,15 @@ namespace Xamarin.Forms.Xaml
 	{
 		public static void Load(object view, Type callingType)
 		{
-			var xaml = GetXamlForType(callingType);
+			var xaml = GetXamlForType(callingType, out var useDesignProperties);
 			if (string.IsNullOrEmpty(xaml))
 				throw new XamlParseException(string.Format("No embeddedresource found for {0}", callingType), new XmlLineInfo());
-			Load(view, xaml);
+			Load(view, xaml, useDesignProperties);
 		}
 
-		public static void Load(object view, string xaml)
+		public static void Load(object view, string xaml) => Load(view, xaml, false);
+
+		public static void Load(object view, string xaml, bool useDesignProperties)
 		{
 			using (var textReader = new StringReader(xaml))
 			using (var reader = XmlReader.Create(textReader)) {
@@ -89,13 +91,15 @@ namespace Xamarin.Forms.Xaml
 #pragma warning disable 0618
 						ExceptionHandler = ResourceLoader.ExceptionHandler ?? (Internals.XamlLoader.DoNotThrowOnExceptions ? e => { } : (Action<Exception>)null)
 #pragma warning restore 0618
-					});
+					}, useDesignProperties);
 					break;
 				}
 			}
 		}
 
-		public static object Create(string xaml, bool doNotThrow = false)
+		public static object Create(string xaml, bool doNotThrow = false) => Create(xaml, doNotThrow, false);
+
+		public static object Create(string xaml, bool doNotThrow, bool useDesignProperties)
 		{
 			doNotThrow = doNotThrow || ResourceLoader.ExceptionHandler != null;
 			var exceptionHandler = doNotThrow ? (ResourceLoader.ExceptionHandler ?? (e => { })) : null;
@@ -123,18 +127,20 @@ namespace Xamarin.Forms.Xaml
 					inflatedView = rootnode.Root = visitorContext.Values[rootnode];
 					visitorContext.RootElement = inflatedView as BindableObject;
 
-					Visit(rootnode, visitorContext);
+					Visit(rootnode, visitorContext, useDesignProperties);
 					break;
 				}
 			}
 			return inflatedView;
 		}
 
-		static void Visit(RootNode rootnode, HydrationContext visitorContext)
+		static void Visit(RootNode rootnode, HydrationContext visitorContext, bool useDesignProperties)
 		{
 			rootnode.Accept(new XamlNodeVisitor((node, parent) => node.Parent = parent), null); //set parents for {StaticResource}
 			rootnode.Accept(new ExpandMarkupsVisitor(visitorContext), null);
-			rootnode.Accept(new PruneIgnoredNodesVisitor(), null);
+			rootnode.Accept(new PruneIgnoredNodesVisitor(useDesignProperties), null);
+			if (useDesignProperties)
+				rootnode.Accept(new RemoveDuplicateDesignNodes(), null);
 			rootnode.Accept(new NamescopingVisitor(visitorContext), null); //set namescopes for {x:Reference}
 			rootnode.Accept(new CreateValuesVisitor(visitorContext), null);
 			rootnode.Accept(new RegisterXNamesVisitor(visitorContext), null);
@@ -142,22 +148,26 @@ namespace Xamarin.Forms.Xaml
 			rootnode.Accept(new ApplyPropertiesVisitor(visitorContext, true), null);
 		}
 
-		static string GetXamlForType(Type type)
+		static string GetXamlForType(Type type, out bool useDesignProperties)
 		{
+			useDesignProperties = false;
 			//the Previewer might want to provide it's own xaml for this... let them do that
 			//the check at the end is preferred (using ResourceLoader). keep this until all the previewers are updated
 
 			string xaml;
 #pragma warning disable 0618
-			if (ResourceLoader.ResourceProvider == null && (xaml = Internals.XamlLoader.XamlFileProvider?.Invoke(type)) != null)
+			if (ResourceLoader.ResourceProvider2 == null && (xaml = Internals.XamlLoader.XamlFileProvider?.Invoke(type)) != null)
 				return xaml;
 #pragma warning restore 0618
 
 			var assembly = type.GetTypeInfo().Assembly;
 			var resourceId = XamlResourceIdAttribute.GetResourceIdForType(type);
 
-			var alternateXaml = ResourceLoader.ResourceProvider?.Invoke(assembly.GetName(), XamlResourceIdAttribute.GetPathForType(type));
+			var rlr = ResourceLoader.ResourceProvider2?.Invoke(new ResourceLoader.ResourceLoadingQuery { AssemblyName = assembly.GetName(), ResourcePath = XamlResourceIdAttribute.GetPathForType(type) });
+			var alternateXaml = rlr?.ResourceContent;
+
 			if (alternateXaml != null) {
+				useDesignProperties = rlr.UseDesignProperties;
 				return alternateXaml;
 			}
 

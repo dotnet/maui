@@ -38,9 +38,11 @@ namespace Xamarin.Forms.Xaml
 	static class XamlParser
 	{
 		public const string XFUri = "http://xamarin.com/schemas/2014/forms";
+		public const string XFDesignUri = "http://xamarin.com/schemas/2014/forms/design";
 		public const string X2006Uri = "http://schemas.microsoft.com/winfx/2006/xaml";
 		public const string X2009Uri = "http://schemas.microsoft.com/winfx/2009/xaml";
 		public const string McUri = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+
 
 		public static void ParseXaml(RootNode rootNode, XmlReader reader)
 		{

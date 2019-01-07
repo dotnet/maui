@@ -154,13 +154,13 @@ namespace Xamarin.Forms.Build.Tasks
 							tr.InterfaceType.FullName.StartsWith(@interface, StringComparison.Ordinal) &&
 							tr.InterfaceType.IsGenericInstance && (tr.InterfaceType as GenericInstanceType).HasGenericArguments)) != null)
 			{
-				interfaceReference = iface.InterfaceType as GenericInstanceType;
-				genericArguments = (iface.InterfaceType as GenericInstanceType).GenericArguments;
+				interfaceReference = (iface.InterfaceType as GenericInstanceType).ResolveGenericParameters(typeRef);
+				genericArguments = interfaceReference.GenericArguments;
 				return true;
 			}
 			var baseTypeRef = typeDef.BaseType;
 			if (baseTypeRef != null && baseTypeRef.FullName != "System.Object")
-				return baseTypeRef.ImplementsGenericInterface(@interface, out interfaceReference, out genericArguments);
+				return baseTypeRef.ResolveGenericParameters(typeRef).ImplementsGenericInterface(@interface, out interfaceReference, out genericArguments);
 			return false;
 		}
 
@@ -383,7 +383,7 @@ namespace Xamarin.Forms.Build.Tasks
 				else if (genericParameter.Type == GenericParameterType.Type)
 					args.Add(genericdeclType.GenericArguments[genericParameter.Position]);
 			}
-			return self.GetElementType().MakeGenericInstanceType(args.ToArray());
+			return self.ElementType.MakeGenericInstanceType(args.ToArray());
 		}
 
 		static Dictionary<TypeReference, TypeDefinition> resolves = new Dictionary<TypeReference, TypeDefinition>();

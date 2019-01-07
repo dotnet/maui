@@ -35,10 +35,12 @@ namespace Xamarin.Forms.Core.XamlC
 			if (resourceId == null)
 				throw new XamlParseException($"Resource '{value}' not found.", node);
 
+			var resourceDictionaryType = ("Xamarin.Forms.Core", "Xamarin.Forms", "ResourceDictionary");
 
 			//abuse the converter, produce some side effect, but leave the stack untouched
 			//public void SetAndLoadSource(Uri value, string resourceID, Assembly assembly, System.Xml.IXmlLineInfo lineInfo)
-			yield return Create(Ldloc, context.Variables[rdNode]); //the resourcedictionary
+			foreach (var instruction in context.Variables[rdNode].LoadAs(module.GetTypeDefinition(resourceDictionaryType), module))
+				yield return instruction;
 			foreach (var instruction in (new UriTypeConverter()).ConvertFromString(value, context, node))
 				yield return instruction; //the Uri
 
@@ -55,7 +57,7 @@ namespace Xamarin.Forms.Core.XamlC
 
 			foreach (var instruction in node.PushXmlLineInfo(context))
 				yield return instruction; //lineinfo
-			yield return Create(Callvirt, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms", "ResourceDictionary"),
+			yield return Create(Callvirt, module.ImportMethodReference(resourceDictionaryType,
 			                                                           methodName: "SetAndLoadSource",
 			                                                           parameterTypes: new[] { ("System", "System", "Uri"), ("mscorlib", "System", "String"), ("mscorlib", "System.Reflection", "Assembly"), ("System.Xml.ReaderWriter", "System.Xml", "IXmlLineInfo") }));
 			//ldloc the stored uri as return value

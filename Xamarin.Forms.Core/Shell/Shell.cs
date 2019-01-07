@@ -253,7 +253,7 @@ namespace Xamarin.Forms
 
 			switch (element) {
 			case MenuShellItem menuShellItem:
-				menuShellItem.MenuItem.Activate();
+				((IMenuItemController)menuShellItem.MenuItem).Activate();
 				break;
 			case ShellItem i:
 				shellItem = i;
@@ -268,7 +268,7 @@ namespace Xamarin.Forms
 				shellContent = c;
 				break;
 			case MenuItem m:
-				m.Activate();
+				((IMenuItemController)m).Activate();
 				break;
 			}
 
@@ -409,11 +409,7 @@ namespace Xamarin.Forms
 			}
 
 			if (!(element is BaseShellItem baseShellItem))
-			{
 				baseShellItem = element?.Parent as BaseShellItem;
-				if(baseShellItem == null)
-					return;
-			}
 
 			//filter the query to only apply the keys with matching prefix
 			var filteredQuery = new Dictionary<string, string>(query.Count);
@@ -426,7 +422,10 @@ namespace Xamarin.Forms
 				filteredQuery.Add(key, q.Value);
 			}
 
-			baseShellItem.ApplyQueryAttributes(filteredQuery);
+			if (baseShellItem != null)
+				baseShellItem.ApplyQueryAttributes(filteredQuery);
+			else if (isLastItem)
+				ShellContent.ApplyQueryAttributes(element, query);
 		}
 
 		ShellNavigationState GetNavigationState(ShellItem shellItem, ShellSection shellSection, ShellContent shellContent, IReadOnlyList<Page> sectionStack)

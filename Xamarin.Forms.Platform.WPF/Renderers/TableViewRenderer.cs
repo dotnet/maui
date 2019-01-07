@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using WList = System.Windows.Controls.ListView;
+using WSelectionChangedEventArgs = System.Windows.Controls.SelectionChangedEventArgs;
 
 namespace Xamarin.Forms.Platform.WPF
 {
@@ -66,7 +67,7 @@ namespace Xamarin.Forms.Platform.WPF
 		}
 
 	
-		private void Control_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		private void Control_SelectionChanged(object sender, WSelectionChangedEventArgs e)
 		{
 			foreach (object item in e.AddedItems)
 			{

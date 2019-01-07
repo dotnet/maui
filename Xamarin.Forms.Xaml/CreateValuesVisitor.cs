@@ -83,10 +83,11 @@ namespace Xamarin.Forms.Xaml
 					if (value == null)
 						value = Activator.CreateInstance(type);
 				}
-				catch (TargetInvocationException e) {
-					if (e.InnerException is XamlParseException || e.InnerException is XmlException)
-						throw e.InnerException;
-					throw;
+				catch (TargetInvocationException e) when (e.InnerException is XamlParseException || e.InnerException is XmlException) {
+					throw e.InnerException;
+				}
+				catch (MissingMemberException mme) {
+					throw new XamlParseException(mme.Message, node, mme);
 				}
 			}
 

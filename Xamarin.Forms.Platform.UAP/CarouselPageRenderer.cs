@@ -4,6 +4,7 @@ using System.ComponentModel;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Xamarin.Forms.Internals;
+using WSelectionChangedEventArgs = Windows.UI.Xaml.Controls.SelectionChangedEventArgs;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -154,7 +155,7 @@ namespace Xamarin.Forms.Platform.UWP
 			Page?.SendAppearing();
 		}
 
-		void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+		void OnSelectionChanged(object sender, WSelectionChangedEventArgs e)
 		{
 			if (_fromUpdate)
 				return;

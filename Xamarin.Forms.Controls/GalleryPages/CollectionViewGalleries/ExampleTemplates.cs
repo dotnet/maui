@@ -10,7 +10,8 @@
 				{
 					RowDefinitions = new RowDefinitionCollection { new RowDefinition(), new RowDefinition() },
 					WidthRequest = 100,
-					HeightRequest = 100
+					HeightRequest = 100,
+					Padding = new Thickness(10)
 				};
 
 				var image = new Image

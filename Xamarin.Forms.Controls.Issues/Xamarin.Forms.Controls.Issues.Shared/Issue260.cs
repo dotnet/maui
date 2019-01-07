@@ -10,11 +10,6 @@ namespace Xamarin.Forms.Controls.Issues
 	[Issue (IssueTracker.Github, 260, "Layout issue for TableView", PlatformAffected.WinPhone)]
 	public class Issue260 : ContentPage
 	{
-		// Issue: #229
-		// ToolbarItems broken on Android
-
-		// Doesn't seem to working on All Platforms
-
 		public Issue260 ()
 		{
 			var items = Enumerable.Range (0, 50).Select (i => new TextCell {

@@ -438,9 +438,8 @@ namespace Xamarin.Forms.Build.Tasks
 					var en = nodes[i];
 					yield return Instruction.Create(OpCodes.Dup);
 					yield return Instruction.Create(OpCodes.Ldc_I4, i);
-					yield return Instruction.Create(OpCodes.Ldloc, context.Variables[en]);
-					if (context.Variables[en].VariableType.IsValueType)
-						yield return Instruction.Create(OpCodes.Box, module.ImportReference(context.Variables[en].VariableType));
+					foreach (var instruction in context.Variables[en].LoadAs(module.TypeSystem.Object, module))
+						yield return instruction;
 					yield return Instruction.Create(OpCodes.Stelem_Ref);
 				}
 			}

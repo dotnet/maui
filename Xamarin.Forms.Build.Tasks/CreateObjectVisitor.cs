@@ -106,7 +106,7 @@ namespace Xamarin.Forms.Build.Tasks
 				}
 				ctorInfo = factoryCtorInfo;
 				if (!typedef.IsValueType) //for ctor'ing typedefs, we first have to ldloca before the params
-					Context.IL.Append(PushCtorXArguments(factoryCtorInfo, node));
+					Context.IL.Append(PushCtorXArguments(factoryCtorInfo.ResolveGenericParameters(typeref, Module), node));
 			} else if (node.Properties.ContainsKey(XmlName.xFactoryMethod)) {
 				var factoryMethod = (string)(node.Properties [XmlName.xFactoryMethod] as ValueNode).Value;
 				factoryMethodInfo = typedef.AllMethods().FirstOrDefault(md => !md.IsConstructor &&
@@ -117,7 +117,7 @@ namespace Xamarin.Forms.Build.Tasks
 					throw new XamlParseException(
 						String.Format("No static method found for {0}::{1} ({2})", typedef.FullName, factoryMethod, null), node);
 				}
-				Context.IL.Append(PushCtorXArguments(factoryMethodInfo, node));
+				Context.IL.Append(PushCtorXArguments(factoryMethodInfo.ResolveGenericParameters(typeref, Module), node));
 			}
 			if (ctorInfo == null && factoryMethodInfo == null) {
 				parameterizedCtorInfo = typedef.Methods.FirstOrDefault(md => md.IsConstructor &&
@@ -134,7 +134,7 @@ namespace Xamarin.Forms.Build.Tasks
 			if (parameterizedCtorInfo != null && ValidateCtorArguments(parameterizedCtorInfo, node, out missingCtorParameter)) {
 				ctorInfo = parameterizedCtorInfo;
 //				IL_0000:  ldstr "foo"
-				Context.IL.Append(PushCtorArguments(parameterizedCtorInfo, node));
+				Context.IL.Append(PushCtorArguments(parameterizedCtorInfo.ResolveGenericParameters(typeref, Module), node));
 			}
 			ctorInfo = ctorInfo ?? typedef.Methods.FirstOrDefault(md => md.IsConstructor && !md.HasParameters && !md.IsStatic);
 			if (parameterizedCtorInfo != null && ctorInfo == null)
@@ -147,6 +147,9 @@ namespace Xamarin.Forms.Build.Tasks
 				md.IsStatic &&
 				md.IsSpecialName &&
 				md.Name == "op_Implicit" && md.Parameters [0].ParameterType.FullName == "System.String");
+
+			if (!typedef.IsValueType && ctorInfo == null && factoryMethodInfo == null)
+				throw new XamlParseException($"Missing default constructor for '{typedef.FullName}'.", node);
 
 			if (ctorinforef != null || factorymethodinforef != null || typedef.IsValueType) {
 				VariableDefinition vardef = new VariableDefinition(typeref);
@@ -184,7 +187,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 					var ctor = Module.ImportReference(ctorinforef);
 					Context.IL.Emit(OpCodes.Ldloca, vardef);
-					Context.IL.Append(PushCtorXArguments(factoryCtorInfo, node));
+					Context.IL.Append(PushCtorXArguments(ctor, node));
 					Context.IL.Emit(OpCodes.Call, ctor);
 				} else {
 //					IL_0000:  ldloca.s 0
@@ -261,7 +264,7 @@ namespace Xamarin.Forms.Build.Tasks
 			return true;
 		}
 
-		IEnumerable<Instruction> PushCtorArguments(MethodDefinition ctorinfo, ElementNode enode)
+		IEnumerable<Instruction> PushCtorArguments(MethodReference ctorinfo, ElementNode enode)
 		{
 			foreach (var parameter in ctorinfo.Parameters)
 			{
@@ -276,7 +279,8 @@ namespace Xamarin.Forms.Build.Tasks
 				ValueNode vnode = null;
 
 				if (node is IElementNode && (vardef = Context.Variables[node as IElementNode]) != null)
-					yield return Instruction.Create(OpCodes.Ldloc, vardef);
+					foreach (var instruction in vardef.LoadAs(parameter.ParameterType.ResolveGenericParameters(ctorinfo), Module))
+						yield return instruction;
 				else if ((vnode = node as ValueNode) != null)
 				{
 					foreach (var instruction in vnode.PushConvertedValue(Context,
@@ -288,7 +292,7 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 		}
 
-		IEnumerable<Instruction> PushCtorXArguments(MethodDefinition factoryCtorInfo, ElementNode enode)
+		IEnumerable<Instruction> PushCtorXArguments(MethodReference factoryCtorInfo, ElementNode enode)
 		{
 			if (!enode.Properties.ContainsKey(XmlName.xArguments))
 				yield break;
@@ -312,7 +316,8 @@ namespace Xamarin.Forms.Build.Tasks
 				ValueNode vnode = null;
 
 				if (arg is IElementNode && (vardef = Context.Variables[arg as IElementNode]) != null)
-					yield return Instruction.Create(OpCodes.Ldloc, vardef);
+					foreach (var instruction in vardef.LoadAs(parameter.ParameterType.ResolveGenericParameters(factoryCtorInfo), Module))
+						yield return instruction;
 				else if ((vnode = arg as ValueNode) != null)
 				{
 					foreach (var instruction in vnode.PushConvertedValue(Context,
