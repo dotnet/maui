@@ -1,57 +1,61 @@
-#if __ANDROID81__
-#else
+#if __ANDROID_28__
 using System;
 using System.ComponentModel;
 using Android.Content;
+using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
-using Android.Support.V7.Widget;
+using Android.Support.V4.View;
+using Android.Support.V4.Widget;
 using Android.Util;
 using Android.Views;
-using Xamarin.Forms.Internals;
-using AView = Android.Views.View;
-using static System.String;
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android.FastRenderers;
-using MButton = Android.Support.Design.Button.MaterialButton;
 using Xamarin.Forms.Platform.Android.Material;
-using Android.Content.Res;
-using Android.Support.V4.Widget;
-using AMotionEventActions = Android.Views.MotionEventActions;
-using Android.Support.V4.View;
-using AColor = Android.Graphics.Color;
-using AViewCompat = Android.Support.V4.View.ViewCompat;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using ADrawableCompat = Android.Support.V4.Graphics.Drawable.DrawableCompat;
+using AColor = Android.Graphics.Color;
+using AView = Android.Views.View;
+using AViewCompat = Android.Support.V4.View.ViewCompat;
+using MButton = Android.Support.Design.Button.MaterialButton;
 
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Button), typeof(MaterialButtonRenderer), new[] { typeof(VisualRendererMarker.Material) })]
+
 namespace Xamarin.Forms.Platform.Android.Material
 {
-	public class MaterialButtonRenderer : MButton, IVisualElementRenderer, AView.IOnAttachStateChangeListener,
-		AView.IOnFocusChangeListener, AView.IOnClickListener, AView.IOnTouchListener, IViewRenderer, ITabStop, IBorderVisualElementRenderer
+	public class MaterialButtonRenderer : MButton,
+		IBorderVisualElementRenderer, IVisualElementRenderer, IViewRenderer, ITabStop,
+		AView.IOnAttachStateChangeListener, AView.IOnFocusChangeListener, AView.IOnClickListener, AView.IOnTouchListener
 	{
-		float _defaultFontSize;
+		int _defaultCornerRadius = -1;
+		int _defaultBorderWidth = -1;
+		ColorStateList _defaultBorderColor;
+		float _defaultFontSize = -1;
 		int? _defaultLabelFor;
-		readonly int _defaultCornerRadius = 5;
-		Typeface _defaultTypeface;
-		int _imageHeight = -1;
 		int _defaultIconPadding = -1;
-		bool _isDisposed;
+		Typeface _defaultTypeface;
+
+		bool _disposed;
 		bool _inputTransparent;
-		Lazy<TextColorSwitcher> _textColorSwitcher;
-		readonly AutomationPropertiesProvider _automationPropertiesProvider;
+		Thickness _paddingDeltaPix;
+		int _imageHeight = -1;
+
+		Button _button;
+
+		IPlatformElementConfiguration<PlatformConfiguration.Android, Button> _platformElementConfiguration;
 		VisualElementTracker _tracker;
 		VisualElementRenderer _visualElementRenderer;
-		Thickness _paddingDeltaPix = new Thickness();
-		IPlatformElementConfiguration<PlatformConfiguration.Android, Button> _platformElementConfiguration;
-		private Button _button;
+
+		readonly AutomationPropertiesProvider _automationPropertiesProvider;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
 
-		public MaterialButtonRenderer(Context context) : base(new ContextThemeWrapper(context, Resource.Style.XamarinFormsMaterialTheme))
+		public MaterialButtonRenderer(Context context)
+			: base(new ContextThemeWrapper(context, Resource.Style.XamarinFormsMaterialTheme))
 		{
 			VisualElement.VerifyVisualFlagEnabled();
+
 			_automationPropertiesProvider = new AutomationPropertiesProvider(this);
 
 			SoundEffectsEnabled = false;
@@ -63,123 +67,51 @@ namespace Xamarin.Forms.Platform.Android.Material
 			Tag = this;
 		}
 
-		public Color BackgroundColor => Element?.BackgroundColor != Color.Default ? Element.BackgroundColor : Color.Black;
-		public VisualElement Element => Button;
-		AView IVisualElementRenderer.View => this;
-		ViewGroup IVisualElementRenderer.ViewGroup => null;
-		VisualElementTracker IVisualElementRenderer.Tracker => _tracker;
+		protected MButton Control => this;
 
-		Button Button
+		protected Button Element
 		{
 			get => _button;
 			set
 			{
+				if (_button == value)
+					return;
+
+				var oldElement = _button;
+
 				_button = value;
 				_platformElementConfiguration = null;
-			}
-		}
 
-		AView ITabStop.TabStop => this;
+				Performance.Start(out string reference);
 
-		void IOnClickListener.OnClick(AView v) => ButtonElementManager.OnClick(Button, Button, v);
+				if (oldElement != null)
+				{
+					oldElement.PropertyChanged -= OnElementPropertyChanged;
+				}
 
-		bool IOnTouchListener.OnTouch(AView v, MotionEvent e) => ButtonElementManager.OnTouch(Button, Button, v, e);
+				_button.PropertyChanged += OnElementPropertyChanged;
 
-		void IOnAttachStateChangeListener.OnViewAttachedToWindow(AView attachedView)
-		{
-			UpdateText();
-		}
-
-		void IOnAttachStateChangeListener.OnViewDetachedFromWindow(AView detachedView)
-		{
-		}
-
-		void IOnFocusChangeListener.OnFocusChange(AView v, bool hasFocus)
-		{
-			((IElementController)Button).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, hasFocus);
-		}
-
-		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
-		{
-			UpdateText();
-
-			AView view = this;
-
-			// with material something is removing the padding between it being set and 
-			// the measure call that's requested here
-			UpdatePadding();
-			view.Measure(widthConstraint, heightConstraint);
-
-			return new SizeRequest(new Size(MeasuredWidth, MeasuredHeight), MinimumSize());
-		}
-
-		void IVisualElementRenderer.SetElement(VisualElement element)
-		{
-			if (element == null)
-			{
-				throw new ArgumentNullException(nameof(element));
-			}
-
-			if (!(element is Button))
-			{
-				throw new ArgumentException($"{nameof(element)} must be of type {nameof(Button)}");
-			}
-
-			VisualElement oldElement = Button;
-			Button = (Button)element;
-
-			Performance.Start(out string reference);
-
-			if (oldElement != null)
-			{
-				oldElement.PropertyChanged -= OnElementPropertyChanged;
-			}
-
-
-			element.PropertyChanged += OnElementPropertyChanged;
-
-			if (_tracker == null)
-			{
 				// Can't set up the tracker in the constructor because it access the Element (for now)
-				SetTracker(new VisualElementTracker(this));
+				if (_tracker == null)
+					_tracker = new VisualElementTracker(this);
+
+				if (_visualElementRenderer == null)
+					_visualElementRenderer = new VisualElementRenderer(this);
+
+				OnElementChanged(new ElementChangedEventArgs<Button>(oldElement, Element));
+
+				_button.SendViewInitialized(this);
+
+				Performance.Stop(reference);
 			}
-			if (_visualElementRenderer == null)
-			{
-				_visualElementRenderer = new VisualElementRenderer(this);
-			}
-
-			OnElementChanged(new ElementChangedEventArgs<Button>(oldElement as Button, Button));
-
-			SendVisualElementInitialized(element, this);
-
-			Performance.Stop(reference);
-		}
-
-		void IVisualElementRenderer.SetLabelFor(int? id)
-		{
-			if (_defaultLabelFor == null)
-			{
-				_defaultLabelFor = ViewCompat.GetLabelFor(this);
-			}
-
-			ViewCompat.SetLabelFor(this, (int)(id ?? _defaultLabelFor));
-		}
-
-		void IVisualElementRenderer.UpdateLayout() => _tracker?.UpdateLayout();
-
-		void IViewRenderer.MeasureExactly()
-		{
-			ViewRenderer.MeasureExactly(this, Element, Context);
 		}
 
 		protected override void Dispose(bool disposing)
 		{
-			if (_isDisposed)
-			{
+			if (_disposed)
 				return;
-			}
 
-			_isDisposed = true;
+			_disposed = true;
 
 			if (disposing)
 			{
@@ -211,27 +143,19 @@ namespace Xamarin.Forms.Platform.Android.Material
 			return base.OnTouchEvent(e);
 		}
 
-		Size MinimumSize()
-		{
-			return new Size();
-		}
-
 		protected virtual void OnElementChanged(ElementChangedEventArgs<Button> e)
 		{
-			if (e.NewElement != null && !_isDisposed)
+			if (e.NewElement != null && !_disposed)
 			{
 				this.EnsureId();
 
-				_textColorSwitcher = new Lazy<TextColorSwitcher>(
-					() => new TextColorSwitcher(TextColors, e.NewElement.UseLegacyColorManagement()));
-
+				UpdateBorder();
 				UpdateFont();
-				UpdateText();
-				UpdateBitmap();
-				UpdateTextColor();
-				UpdateInputTransparent();
-				UpdateBackgroundColor();
+				UpdateImage();
 				UpdatePadding();
+				UpdateText();
+				UpdatePrimaryColors();
+				UpdateInputTransparent();
 
 				ElevationHelper.SetElevation(this, e.NewElement);
 			}
@@ -241,89 +165,34 @@ namespace Xamarin.Forms.Platform.Android.Material
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == Button.TextProperty.PropertyName)
-			{
-				UpdateText();
-			}
-			else if (e.PropertyName == Button.TextColorProperty.PropertyName)
-			{
-				UpdateTextColor();
-			}
-			else if (e.PropertyName == Button.FontProperty.PropertyName)
-			{
-				UpdateFont();
-			}
-			else if (e.PropertyName == Button.ImageProperty.PropertyName)
-			{
-				UpdateBitmap();
-			}
-			else if (e.PropertyName == VisualElement.IsVisibleProperty.PropertyName)
-			{
-				UpdateText();
-			}
-			else if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
-			{
-				UpdateInputTransparent();
-			}
-			else if (e.PropertyName == Button.PaddingProperty.PropertyName)
-			{
-				UpdatePadding();
-			}
-			else if (e.PropertyName == Button.BorderWidthProperty.PropertyName || e.PropertyName == Button.CornerRadiusProperty.PropertyName || e.PropertyName == Button.BorderColorProperty.PropertyName)
+			if (e.PropertyName == Button.BorderWidthProperty.PropertyName || e.PropertyName == Button.BorderColorProperty.PropertyName || e.PropertyName == Button.CornerRadiusProperty.PropertyName)
 				UpdateBorder();
+			else if (e.PropertyName == Button.FontProperty.PropertyName)
+				UpdateFont();
+			else if (e.PropertyName == Button.ImageProperty.PropertyName)
+				UpdateImage();
+			else if (e.PropertyName == Button.PaddingProperty.PropertyName)
+				UpdatePadding();
+			else if (e.PropertyName == Button.TextProperty.PropertyName || e.PropertyName == VisualElement.IsVisibleProperty.PropertyName)
+				UpdateText();
+			else if (e.PropertyName == Button.TextColorProperty.PropertyName || e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+				UpdatePrimaryColors();
+			else if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
+				UpdateInputTransparent();
 
 			ElementPropertyChanged?.Invoke(this, e);
 		}
 
-		private void UpdateBorder()
+		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
-			int cornerRadius = _defaultCornerRadius;
-
-			if (Element.IsSet(Button.CornerRadiusProperty) && Button.CornerRadius != (int)Button.CornerRadiusProperty.DefaultValue)
-				cornerRadius = Button.CornerRadius;
-
-			this.CornerRadius = (int)Context.ToPixels(cornerRadius);
-
-			int[][] States =
-			{
-				new int[0]
-			};
-
-			Color borderColor = Button.BorderColor;
-			if (borderColor.IsDefault)
-			{
-				StrokeColor = new global::Android.Content.Res.ColorStateList
-				(
-					States,
-					new int[] { AColor.Transparent }
-				);
-
-				StrokeWidth = 0;
-			}
-			else
-			{
-				StrokeColor = new global::Android.Content.Res.ColorStateList
-				(
-					States,
-					new int[] { borderColor.ToAndroid() }
-				);
-
-				StrokeWidth = (int)Button.BorderWidth;
-			}
-		}
-
-		protected override void OnLayout(bool changed, int l, int t, int r, int b)
-		{
-			if (Element == null || _isDisposed)
-			{
+			if (_disposed || Element == null)
 				return;
-			}
 
 			if (_imageHeight > -1)
 			{
 				// We've got an image (and no text); it's already centered horizontally,
 				// we just need to adjust the padding so it centers vertically
-				var diff = ((b - Context.ToPixels(Button.Padding.Bottom + Button.Padding.Top)) - t - _imageHeight) / 2;
+				var diff = ((bottom - Context.ToPixels(Element.Padding.Bottom + Element.Padding.Top)) - top - _imageHeight) / 2;
 				diff = Math.Max(diff, 0);
 				UpdateContentEdge(new Thickness(0, diff, 0, -diff));
 			}
@@ -332,75 +201,40 @@ namespace Xamarin.Forms.Platform.Android.Material
 				UpdateContentEdge();
 			}
 
-
-
-
-			base.OnLayout(changed, l, t, r, b);
+			base.OnLayout(changed, left, top, right, bottom);
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
-
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+
 			var images = TextViewCompat.GetCompoundDrawablesRelative(this);
-			if (images.Length > 0 && images[0] != null && Button.ContentLayout.Position == Button.ButtonContentLayout.ImagePosition.Right)
+			if (images.Length > 0 && images[0] != null && Element.ContentLayout.Position == Button.ButtonContentLayout.ImagePosition.Right)
 			{
 				var bounds = images[0].Bounds;
 				int width = images[0].IntrinsicWidth;
 				Icon.SetBounds(-bounds.Left, bounds.Top, width - bounds.Left, bounds.Bottom);
 				TextViewCompat.SetCompoundDrawablesRelative(this, null, null, Icon, null);
 			}
-
 		}
 
-		void SetTracker(VisualElementTracker tracker)
+		void UpdateImage()
 		{
-			_tracker = tracker;
-		}
-
-		void UpdateBackgroundColor()
-		{
-			int[][] States =
-			{
-				new int[0] {  }
-			};
-
-			ColorStateList colorStateList = new ColorStateList(
-						States,
-						new int[] { BackgroundColor.ToAndroid() }
-				);
-
-			AViewCompat.SetBackgroundTintList(this, colorStateList);
-		}
-
-		internal void OnNativeFocusChanged(bool hasFocus)
-		{
-		}
-
-		internal void SendVisualElementInitialized(VisualElement element, AView nativeView)
-		{
-			element.SendViewInitialized(nativeView);
-		}
-
-		void UpdateBitmap()
-		{
-			if (Element == null || _isDisposed)
-			{
+			if (_disposed || Element == null)
 				return;
-			}
 
-			FileImageSource elementImage = Button.Image;
+			FileImageSource elementImage = Element.Image;
 			string imageFile = elementImage?.File;
 			_imageHeight = -1;
 
-			if (elementImage == null || IsNullOrEmpty(imageFile))
+			if (elementImage == null || string.IsNullOrEmpty(imageFile))
 			{
 				SetCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
 				return;
 			}
 
 			Drawable image = Context.GetDrawable(imageFile);
-			Button.ButtonContentLayout layout = Button.ContentLayout;
+			Button.ButtonContentLayout layout = Element.ContentLayout;
 
 			if (_defaultIconPadding == -1)
 				_defaultIconPadding = IconPadding;
@@ -417,7 +251,7 @@ namespace Xamarin.Forms.Platform.Android.Material
 				IconGravity = IconGravityTextStart;
 				// setting the icon property causes the base class to calculate things like padding
 				// required to set the image to the start of the text
-				if (IsNullOrEmpty(Button.Text))
+				if (string.IsNullOrEmpty(Element.Text))
 					IconPadding = 0;
 				else
 					IconPadding = (int)Context.ToPixels(layout.Spacing) + _defaultIconPadding;
@@ -444,87 +278,133 @@ namespace Xamarin.Forms.Platform.Android.Material
 			}
 		}
 
-
-
 		void UpdateFont()
 		{
-			if (Element == null || _isDisposed)
-			{
+			if (_disposed || Element == null)
 				return;
-			}
 
-			Font font = Button.Font;
-
-			if (font == Font.Default && _defaultFontSize == 0f)
-			{
+			Font font = Element.Font;
+			if (font == Font.Default && _defaultTypeface == null && _defaultFontSize < 0f)
 				return;
-			}
 
-			if (_defaultFontSize == 0f)
-			{
+			if (_defaultTypeface == null)
 				_defaultTypeface = Typeface;
-				_defaultFontSize = TextSize;
-			}
 
 			if (font == Font.Default)
-			{
 				Typeface = _defaultTypeface;
-				SetTextSize(ComplexUnitType.Px, _defaultFontSize);
-			}
 			else
-			{
 				Typeface = font.ToTypeface();
+
+			if (_defaultFontSize < 0f)
+				_defaultFontSize = TextSize;
+
+			if (Element.FontSize < 0f)
+				SetTextSize(ComplexUnitType.Px, _defaultFontSize);
+			else
 				SetTextSize(ComplexUnitType.Sp, font.ToScaledPixel());
-			}
-		}
-
-		void UpdateInputTransparent()
-		{
-			if (Element == null || _isDisposed)
-			{
-				return;
-			}
-
-			_inputTransparent = Element.InputTransparent;
 		}
 
 		void UpdateText()
 		{
-			if (Element == null || _isDisposed)
-			{
+			if (_disposed || Element == null)
 				return;
-			}
 
 			string oldText = Text;
-			Text = Button.Text;
+			Text = Element.Text;
 
 			// If we went from or to having no text, we need to update the image position
-			if (IsNullOrEmpty(oldText) != IsNullOrEmpty(Text))
+			if (string.IsNullOrEmpty(oldText) != string.IsNullOrEmpty(Text))
 			{
-				UpdateBitmap();
+				UpdateImage();
 			}
-		}
-
-		void UpdateTextColor()
-		{
-			if (Element == null || _isDisposed || _textColorSwitcher == null)
-				return;
-
-			if (Button.TextColor == Color.Default)
-				_textColorSwitcher.Value.UpdateTextColor(this, Button.TextColor);
-			else
-				_textColorSwitcher.Value.UpdateTextColor(this, Color.White);
 		}
 
 		void UpdatePadding()
 		{
 			if (Element.IsSet(Button.PaddingProperty))
+			{
 				SetPadding(
-					(int)(Context.ToPixels(Button.Padding.Left) + _paddingDeltaPix.Left),
-					(int)(Context.ToPixels(Button.Padding.Top) + _paddingDeltaPix.Top),
-					(int)(Context.ToPixels(Button.Padding.Right) + _paddingDeltaPix.Right),
-					(int)(Context.ToPixels(Button.Padding.Bottom) + _paddingDeltaPix.Bottom)
-				);
+					(int)(Context.ToPixels(Element.Padding.Left) + _paddingDeltaPix.Left),
+					(int)(Context.ToPixels(Element.Padding.Top) + _paddingDeltaPix.Top),
+					(int)(Context.ToPixels(Element.Padding.Right) + _paddingDeltaPix.Right),
+					(int)(Context.ToPixels(Element.Padding.Bottom) + _paddingDeltaPix.Bottom));
+			}
+		}
+
+		void UpdateBorder()
+		{
+			if (_disposed || Element == null)
+				return;
+
+			var cornerRadius = Element.CornerRadius;
+			if (cornerRadius >= 0f || _defaultCornerRadius >= 0f)
+			{
+				if (_defaultCornerRadius < 0f)
+					_defaultCornerRadius = CornerRadius;
+
+				if (cornerRadius < 0f)
+					CornerRadius = _defaultCornerRadius;
+				else
+					CornerRadius = (int)Context.ToPixels(cornerRadius);
+			}
+
+			Color borderColor = Element.BorderColor;
+			if (!borderColor.IsDefault || _defaultBorderColor != null)
+			{
+				if (_defaultBorderColor == null)
+					_defaultBorderColor = StrokeColor;
+
+				if (borderColor.IsDefault)
+					StrokeColor = _defaultBorderColor;
+				else
+					base.StrokeColor = new ColorStateList(new[] { new int[0] }, new int[] { borderColor.ToAndroid() });
+			}
+
+			double borderWidth = Element.BorderWidth;
+			if (borderWidth >= 0f || _defaultBorderWidth >= 0f)
+			{
+				if (_defaultBorderWidth < 0)
+					_defaultBorderWidth = StrokeWidth;
+
+				if (borderWidth < 0f)
+					StrokeWidth = _defaultBorderWidth;
+				else
+					base.StrokeWidth = (int)Context.ToPixels(borderWidth);
+			}
+		}
+
+		void UpdateInputTransparent()
+		{
+			if (_disposed || Element == null)
+				return;
+
+			_inputTransparent = Element.InputTransparent;
+		}
+
+		void UpdatePrimaryColors()
+		{
+			if (_disposed || Element == null)
+				return;
+
+			// background
+			Color backgroundColor = Element.BackgroundColor;
+			AColor background;
+			if (backgroundColor.IsDefault)
+				background = MaterialColors.Light.PrimaryColor;
+			else
+				background = backgroundColor.ToAndroid();
+
+			// text
+			Color textColor = Element.TextColor;
+			AColor text;
+			if (textColor.IsDefault)
+				text = MaterialColors.Light.OnPrimaryColor;
+			else
+				text = textColor.ToAndroid();
+
+			// apply
+			SetTextColor(MaterialColors.CreateButtonTextColors(background, text));
+			AViewCompat.SetBackgroundTintList(this, MaterialColors.CreateButtonBackgroundColors(background));
 		}
 
 		void UpdateContentEdge(Thickness? delta = null)
@@ -533,6 +413,33 @@ namespace Xamarin.Forms.Platform.Android.Material
 			UpdatePadding();
 		}
 
+		IPlatformElementConfiguration<PlatformConfiguration.Android, Button> OnThisPlatform() =>
+			_platformElementConfiguration ?? (_platformElementConfiguration = Element.OnThisPlatform());
+
+		// IOnAttachStateChangeListener
+
+		void IOnAttachStateChangeListener.OnViewAttachedToWindow(AView attachedView) =>
+			UpdateText();
+
+		void IOnAttachStateChangeListener.OnViewDetachedFromWindow(AView detachedView)
+		{
+		}
+
+		// IOnFocusChangeListener
+
+		void IOnFocusChangeListener.OnFocusChange(AView v, bool hasFocus) =>
+			Element.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, hasFocus);
+
+		// IOnClickListener
+
+		void IOnClickListener.OnClick(AView v) => ButtonElementManager.OnClick(Element, Element, v);
+
+		// IOnTouchListener
+
+		bool IOnTouchListener.OnTouch(AView v, MotionEvent e) => ButtonElementManager.OnTouch(Element, Element, v, e);
+
+		// IBorderVisualElementRenderer
+
 		float IBorderVisualElementRenderer.ShadowRadius => ShadowRadius;
 		float IBorderVisualElementRenderer.ShadowDx => ShadowDx;
 		float IBorderVisualElementRenderer.ShadowDy => ShadowDy;
@@ -540,15 +447,51 @@ namespace Xamarin.Forms.Platform.Android.Material
 		bool IBorderVisualElementRenderer.UseDefaultPadding() => OnThisPlatform().UseDefaultPadding();
 		bool IBorderVisualElementRenderer.UseDefaultShadow() => OnThisPlatform().UseDefaultShadow();
 		bool IBorderVisualElementRenderer.IsShadowEnabled() => true;
+		VisualElement IBorderVisualElementRenderer.Element => Element;
 		AView IBorderVisualElementRenderer.View => this;
 
-		IPlatformElementConfiguration<PlatformConfiguration.Android, Button> OnThisPlatform()
-		{
-			if (_platformElementConfiguration == null)
-				_platformElementConfiguration = Button.OnThisPlatform();
+		// IVisualElementRenderer
 
-			return _platformElementConfiguration;
+		VisualElement IVisualElementRenderer.Element => Element;
+		VisualElementTracker IVisualElementRenderer.Tracker => _tracker;
+		ViewGroup IVisualElementRenderer.ViewGroup => null;
+		AView IVisualElementRenderer.View => this;
+
+		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
+		{
+			UpdateText();
+
+			AView view = this;
+
+			// with material something is removing the padding between it being set and 
+			// the measure call that's requested here
+			UpdatePadding();
+			view.Measure(widthConstraint, heightConstraint);
+
+			return new SizeRequest(new Size(MeasuredWidth, MeasuredHeight), new Size());
 		}
+
+		void IVisualElementRenderer.SetElement(VisualElement element) =>
+			Element = (element as Button) ?? throw new ArgumentException("Element must be of type Button.");
+
+		void IVisualElementRenderer.SetLabelFor(int? id)
+		{
+			if (_defaultLabelFor == null)
+				_defaultLabelFor = ViewCompat.GetLabelFor(this);
+			ViewCompat.SetLabelFor(this, (int)(id ?? _defaultLabelFor));
+		}
+
+		void IVisualElementRenderer.UpdateLayout() =>
+			_tracker?.UpdateLayout();
+
+		// IViewRenderer
+
+		void IViewRenderer.MeasureExactly() =>
+			ViewRenderer.MeasureExactly(this, Element, Context);
+
+		// ITabStop
+
+		AView ITabStop.TabStop => this;
 	}
 }
 #endif

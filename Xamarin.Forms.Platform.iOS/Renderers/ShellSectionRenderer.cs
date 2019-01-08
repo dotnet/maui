@@ -316,13 +316,7 @@ namespace Xamarin.Forms.Platform.iOS
 		protected virtual async void UpdateTabBarItem()
 		{
 			Title = ShellSection.Title;
-			var imageSource = ShellSection.Icon;
-			UIImage icon = null;
-			if (imageSource != null)
-			{
-				var source = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(imageSource);
-				icon = await source.LoadImageAsync(imageSource);
-			}
+			var icon = await ShellSection.Icon.GetNativeImageAsync();
 			TabBarItem = new UITabBarItem(ShellSection.Title, icon, null);
 		}
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Foundation;
 using UIKit;
@@ -88,8 +89,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public static async Task SetImage(IImageVisualElementRenderer renderer, IImageElement imageElement, Image oldElement = null)
 		{
-			_ = renderer ?? throw new ArgumentNullException($"{nameof(ImageElementManager)}.{nameof(SetImage)} {nameof(renderer)} cannot be null");
-			_ = imageElement ?? throw new ArgumentNullException($"{nameof(ImageElementManager)}.{nameof(SetImage)} {nameof(imageElement)} cannot be null");
+			_ = renderer ?? throw new ArgumentNullException(nameof(renderer), $"{nameof(ImageElementManager)}.{nameof(SetImage)} {nameof(renderer)} cannot be null");
+			_ = imageElement ?? throw new ArgumentNullException(nameof(imageElement), $"{nameof(ImageElementManager)}.{nameof(SetImage)} {nameof(imageElement)} cannot be null");
 
 			var Element = renderer.Element;
 			var Control = renderer.GetImage();
@@ -115,37 +116,14 @@ namespace Xamarin.Forms.Platform.iOS
 				renderer.SetImage(null);
 			}
 
-			IImageSourceHandler handler;
 			imageController?.SetIsLoading(true);
 			try
 			{
-				if (source != null &&
-				   (handler = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
-				{
-					UIImage uiimage;
-					try
-					{
-						uiimage = await handler.LoadImageAsync(source, scale: (float)UIScreen.MainScreen.Scale);
-					}
-					catch (OperationCanceledException)
-					{
-						uiimage = null;
-					}
+				var uiimage = await source.GetNativeImageAsync();
+				if (renderer.IsDisposed)
+					return;
 
-					if (renderer.IsDisposed)
-						return;
-
-					var imageView = Control;
-					if (imageView != null)
-					{
-						renderer.SetImage(uiimage);
-					}
-				}
-				else
-				{
-					renderer.SetImage(null);
-				}
-
+				renderer.SetImage(Control == null ? null : uiimage);
 			}
 			finally
 			{
@@ -153,6 +131,24 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			(imageElement as IViewController)?.NativeSizeChanged();
+		}
+
+		internal static async Task<UIImage> GetNativeImageAsync(this ImageSource source, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			IImageSourceHandler handler;
+			if (source != null && (handler = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
+			{
+				try
+				{
+					return await handler.LoadImageAsync(source, scale: (float)UIScreen.MainScreen.Scale, cancelationToken: cancellationToken);
+				}
+				catch (OperationCanceledException ex)
+				{
+					Internals.Log.Warning(source.GetType().Name, "Error loading image: {0}", ex);
+				}
+			}
+
+			return null;
 		}
 	}
 }

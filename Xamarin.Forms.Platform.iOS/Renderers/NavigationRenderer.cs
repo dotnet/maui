@@ -748,8 +748,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				try
 				{
-					var source = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(masterDetailPage.Master.Icon);
-					var icon = await source.LoadImageAsync(masterDetailPage.Master.Icon);
+					var icon = await masterDetailPage.Master.Icon.GetNativeImageAsync();
 					containerController.NavigationItem.LeftBarButtonItem = new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, handler);
 				}
 				catch (Exception)
@@ -1127,12 +1126,10 @@ namespace Xamarin.Forms.Platform.iOS
 				}
 				else
 				{
-					var source = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(titleIcon);
-					var image = await source.LoadImageAsync(titleIcon);
-
+					var image = await titleIcon.GetNativeImageAsync();
 					try
 					{
-						titleViewContainer.Icon = new UIImageView(image) { };
+						titleViewContainer.Icon = new UIImageView(image);
 					}
 					catch
 					{

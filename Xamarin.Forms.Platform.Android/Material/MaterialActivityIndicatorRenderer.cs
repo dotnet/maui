@@ -3,30 +3,28 @@ using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Content.Res;
-using Android.Graphics;
 using Android.Support.V4.View;
 using Android.Views;
+using Android.Widget;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android.FastRenderers;
 using Xamarin.Forms.Platform.Android.Material;
-using AColor = Android.Graphics.Color;
 using AProgressBar = Android.Widget.ProgressBar;
 using AView = Android.Views.View;
 
-[assembly: ExportRenderer(typeof(Xamarin.Forms.ProgressBar), typeof(MaterialProgressBarRenderer), new[] { typeof(VisualRendererMarker.Material) })]
+[assembly: ExportRenderer(typeof(Xamarin.Forms.ActivityIndicator), typeof(MaterialActivityIndicatorRenderer), new[] { typeof(VisualRendererMarker.Material) })]
 
 namespace Xamarin.Forms.Platform.Android.Material
 {
-	public class MaterialProgressBarRenderer : AProgressBar,
+	public class MaterialActivityIndicatorRenderer : FrameLayout,
 		IVisualElementRenderer, IViewRenderer, ITabStop
 	{
-		const int MaximumValue = 10000;
-
 		int? _defaultLabelFor;
 
 		bool _disposed;
 
-		ProgressBar _element;
+		ActivityIndicator _element;
+		AProgressBar _control;
 
 		VisualElementTracker _visualElementTracker;
 		VisualElementRenderer _visualElementRenderer;
@@ -35,21 +33,22 @@ namespace Xamarin.Forms.Platform.Android.Material
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
 
-		public MaterialProgressBarRenderer(Context context)
-			: base(new ContextThemeWrapper(context, Resource.Style.XamarinFormsMaterialProgressBarHorizontal), null, Resource.Style.XamarinFormsMaterialProgressBarHorizontal)
+		public MaterialActivityIndicatorRenderer(Context context)
+			: base(context)
 		{
 			VisualElement.VerifyVisualFlagEnabled();
 
-			Indeterminate = false;
-			Max = MaximumValue;
+			_control = new AProgressBar(new ContextThemeWrapper(context, Resource.Style.XamarinFormsMaterialProgressBarCircular), null, Resource.Style.XamarinFormsMaterialProgressBarCircular);
+			_control.Indeterminate = true;
+			AddView(_control);
 
 			_visualElementRenderer = new VisualElementRenderer(this);
 			_motionEventHelper = new MotionEventHelper();
 		}
 
-		protected AProgressBar Control => this;
+		protected AProgressBar Control => _control;
 
-		protected ProgressBar Element
+		protected ActivityIndicator Element
 		{
 			get { return _element; }
 			set
@@ -60,7 +59,7 @@ namespace Xamarin.Forms.Platform.Android.Material
 				var oldElement = _element;
 				_element = value;
 
-				OnElementChanged(new ElementChangedEventArgs<ProgressBar>(oldElement, _element));
+				OnElementChanged(new ElementChangedEventArgs<ActivityIndicator>(oldElement, _element));
 
 				_element?.SendViewInitialized(this);
 
@@ -94,7 +93,7 @@ namespace Xamarin.Forms.Platform.Android.Material
 			base.Dispose(disposing);
 		}
 
-		protected virtual void OnElementChanged(ElementChangedEventArgs<ProgressBar> e)
+		protected virtual void OnElementChanged(ElementChangedEventArgs<ActivityIndicator> e)
 		{
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(e.OldElement, e.NewElement));
 
@@ -112,7 +111,7 @@ namespace Xamarin.Forms.Platform.Android.Material
 
 				e.NewElement.PropertyChanged += OnElementPropertyChanged;
 
-				UpdateProgress();
+				UpdatIsRunning();
 				UpdateColors();
 
 				ElevationHelper.SetElevation(this, e.NewElement);
@@ -123,9 +122,9 @@ namespace Xamarin.Forms.Platform.Android.Material
 		{
 			ElementPropertyChanged?.Invoke(this, e);
 
-			if (e.PropertyName == ProgressBar.ProgressProperty.PropertyName)
-				UpdateProgress();
-			else if (e.PropertyName == ProgressBar.ProgressColorProperty.PropertyName || e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+			if (e.PropertyName == ActivityIndicator.IsRunningProperty.PropertyName)
+				UpdatIsRunning();
+			else if (e.PropertyName == ActivityIndicator.ColorProperty.PropertyName || e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateColors();
 		}
 
@@ -142,56 +141,25 @@ namespace Xamarin.Forms.Platform.Android.Material
 			if (Element == null || Control == null)
 				return;
 
-			Color progressColor = Element.ProgressColor;
-			Color backgroundColor = Element.BackgroundColor;
+			// TODO: BackgroundColor is not supported by this control.
 
-			var defaultProgress = MaterialColors.Light.PrimaryColor;
+			Color progressColor = Element.Color;
 
-			if (progressColor.IsDefault && backgroundColor.IsDefault)
+			if (progressColor.IsDefault)
 			{
-				// reset everything to defaults
-				ProgressTintList = ColorStateList.ValueOf(defaultProgress);
-				ProgressBackgroundTintList = ColorStateList.ValueOf(defaultProgress);
-				ProgressBackgroundTintMode = PorterDuff.Mode.SrcIn;
-			}
-			else if (progressColor.IsDefault && !backgroundColor.IsDefault)
-			{
-				// handle the case where only the background is set
-				var background = backgroundColor.ToAndroid();
-
-				// TODO: Potentially override primary color to match material design.
-				ProgressTintList = ColorStateList.ValueOf(defaultProgress);
-				ProgressBackgroundTintList = ColorStateList.ValueOf(background);
-
-				// TODO: Potentially override background alpha to match material design.
-				ProgressBackgroundTintMode = PorterDuff.Mode.SrcOver;
-			}
-			else if (!progressColor.IsDefault && backgroundColor.IsDefault)
-			{
-				// handle the case where only the progress is set
-				var progress = progressColor.ToAndroid();
-
-				ProgressTintList = ColorStateList.ValueOf(progress);
-				ProgressBackgroundTintList = ColorStateList.ValueOf(progress);
-				ProgressBackgroundTintMode = PorterDuff.Mode.SrcIn;
+				var progress = MaterialColors.Light.PrimaryColor;
+				_control.IndeterminateTintList = ColorStateList.ValueOf(progress);
 			}
 			else
 			{
-				// handle the case where both are set
-				var background = backgroundColor.ToAndroid();
 				var progress = progressColor.ToAndroid();
-
-				ProgressTintList = ColorStateList.ValueOf(progress);
-				ProgressBackgroundTintList = ColorStateList.ValueOf(background);
-
-				// TODO: Potentially override alpha to match material design.
-				ProgressBackgroundTintMode = PorterDuff.Mode.SrcOver;
+				_control.IndeterminateTintList = ColorStateList.ValueOf(progress);
 			}
 		}
 
-		void UpdateProgress()
+		void UpdatIsRunning()
 		{
-			Control.Progress = (int)(Element.Progress * MaximumValue);
+			_control.Visibility = Element.IsRunning ? ViewStates.Visible : ViewStates.Gone;
 		}
 
 		// IVisualElementRenderer
@@ -206,12 +174,12 @@ namespace Xamarin.Forms.Platform.Android.Material
 
 		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
 		{
-			Measure(widthConstraint, heightConstraint);
+			_control.Measure(widthConstraint, heightConstraint);
 			return new SizeRequest(new Size(Control.MeasuredWidth, Control.MeasuredHeight), new Size());
 		}
 
 		void IVisualElementRenderer.SetElement(VisualElement element) =>
-			Element = (element as ProgressBar) ?? throw new ArgumentException("Element must be of type ProgressBar.");
+			Element = (element as ActivityIndicator) ?? throw new ArgumentException("Element must be of type ActivityIndicator.");
 
 		void IVisualElementRenderer.SetLabelFor(int? id)
 		{
@@ -227,11 +195,11 @@ namespace Xamarin.Forms.Platform.Android.Material
 		// IViewRenderer
 
 		void IViewRenderer.MeasureExactly() =>
-			ViewRenderer.MeasureExactly(this, Element, Context);
+			ViewRenderer.MeasureExactly(_control, Element, Context);
 
 		// ITabStop
 
-		AView ITabStop.TabStop => this;
+		AView ITabStop.TabStop => _control;
 	}
 }
 #endif

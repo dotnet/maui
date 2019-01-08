@@ -7,7 +7,7 @@ using Android.Support.V4.Graphics.Drawable;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public class FormsEditText : EditText, IDescendantFocusToggler
+	public class FormsEditText : EditText, IDescendantFocusToggler, IFormsEditText
 	{
 		DescendantFocusToggler _descendantFocusToggler;
 
@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			this.HideKeyboard();
 
-			OnKeyboardBackPressed?.Invoke(this, EventArgs.Empty);
+			_onKeyboardBackPressed?.Invoke(this, EventArgs.Empty);
 			return true;
 		}
 
@@ -44,11 +44,22 @@ namespace Xamarin.Forms.Platform.Android
 		protected override void OnSelectionChanged(int selStart, int selEnd)
 		{
 			base.OnSelectionChanged(selStart, selEnd);
-			SelectionChanged?.Invoke(this, new SelectionChangedEventArgs(selStart, selEnd));
+			_selectionChanged?.Invoke(this, new SelectionChangedEventArgs(selStart, selEnd));
 		}
 
-		internal event EventHandler OnKeyboardBackPressed;
-		internal event EventHandler<SelectionChangedEventArgs> SelectionChanged;
+		event EventHandler _onKeyboardBackPressed;
+		event EventHandler IFormsEditText.OnKeyboardBackPressed
+		{
+			add => _onKeyboardBackPressed += value;
+			remove => _onKeyboardBackPressed -= value;
+		}
+
+		event EventHandler<SelectionChangedEventArgs> _selectionChanged;
+		event EventHandler<SelectionChangedEventArgs> IFormsEditText.SelectionChanged
+		{
+			add => _selectionChanged += value;
+			remove => _selectionChanged -= value;
+		}
 	}
 
 	public class SelectionChangedEventArgs : EventArgs

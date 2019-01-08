@@ -37,20 +37,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 			target.ImageView.Image = null;
 
-			IImageSourceHandler handler;
-
-			if (source != null && (handler = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
+			var uiimage = await source.GetNativeImageAsync().ConfigureAwait(false);
+			if (uiimage != null)
 			{
-				UIImage uiimage;
-				try
-				{
-					uiimage = await handler.LoadImageAsync(source).ConfigureAwait(false);
-				}
-				catch (TaskCanceledException)
-				{
-					uiimage = null;
-				}
-
 				NSRunLoop.Main.BeginInvokeOnMainThread(() =>
 				{
 					if (target.Cell != null)
@@ -59,11 +48,11 @@ namespace Xamarin.Forms.Platform.iOS
 						target.SetNeedsLayout();
 					}
 					else
+					{
 						uiimage?.Dispose();
+					}
 				});
 			}
-			else
-				target.ImageView.Image = null;
 		}
 	}
 }

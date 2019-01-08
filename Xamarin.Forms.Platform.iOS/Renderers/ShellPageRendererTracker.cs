@@ -203,8 +203,7 @@ namespace Xamarin.Forms.Platform.iOS
 				}
 				else
 				{
-					var source = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(image);
-					var icon = await source.LoadImageAsync(image);
+					var icon = await image.GetNativeImageAsync();
 					NavigationItem.LeftBarButtonItem =
 						new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => command?.Execute(commandParameter)) { Enabled = enabled };
 				}
@@ -212,8 +211,7 @@ namespace Xamarin.Forms.Platform.iOS
 			else if (IsRootPage && _flyoutBehavior == FlyoutBehavior.Flyout)
 			{
 				ImageSource image = "3bar.png";
-				var source = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(image);
-				var icon = await source.LoadImageAsync(image);
+				var icon = await image.GetNativeImageAsync();
 				NavigationItem.LeftBarButtonItem = new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, OnMenuButtonPressed);
 			}
 			else
@@ -463,8 +461,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		async void SetSearchBarIcon(UISearchBar searchBar, ImageSource source, UISearchBarIcon icon)
 		{
-			var image = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source);
-			var result = await image.LoadImageAsync(source);
+			var result = await source.GetNativeImageAsync();
 			searchBar.SetImageforSearchBarIcon(result, icon, UIControlState.Normal);
 		}
 

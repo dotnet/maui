@@ -21,6 +21,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		public static Type StyleClass { get; set; }
 
+		public static Type LayoutClass { get; set; }
+
 		internal static async Task<Drawable> GetFormsDrawable(this Context context, ImageSource imageSource)
 		{
 			if (imageSource is FileImageSource fileSource)
@@ -107,6 +109,11 @@ namespace Xamarin.Forms.Platform.Android
 			return IdFromTitle(name, ResourceClass);
 		}
 
+		public static int GetLayoutByName(string name)
+		{
+			return IdFromTitle(name, LayoutClass);
+		}
+
 		public static int GetStyleByName(string name)
 		{
 			return IdFromTitle(name, StyleClass);
@@ -117,7 +124,7 @@ namespace Xamarin.Forms.Platform.Android
 			DrawableClass = masterAssembly.GetTypes().FirstOrDefault(x => x.Name == "Drawable" || x.Name == "Resource_Drawable");
 			ResourceClass = masterAssembly.GetTypes().FirstOrDefault(x => x.Name == "Id" || x.Name == "Resource_Id");
 			StyleClass = masterAssembly.GetTypes().FirstOrDefault(x => x.Name == "Style" || x.Name == "Resource_Style");
-			
+			LayoutClass = masterAssembly.GetTypes().FirstOrDefault(x => x.Name == "Layout" || x.Name == "Resource_Layout");
 		}
 
 		internal static int IdFromTitle(string title, Type type)
