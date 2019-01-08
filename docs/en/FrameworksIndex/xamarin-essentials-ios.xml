@@ -526,6 +526,7 @@
     <Type Name="Xamarin.Essentials.SmsMessage" Id="T:Xamarin.Essentials.SmsMessage">
       <Member Id="M:Xamarin.Essentials.SmsMessage.#ctor" />
       <Member Id="M:Xamarin.Essentials.SmsMessage.#ctor(System.String,System.Collections.Generic.IEnumerable{System.String})" />
+      <Member Id="M:Xamarin.Essentials.SmsMessage.#ctor(System.String,System.String)" />
       <Member Id="P:Xamarin.Essentials.SmsMessage.Body" />
       <Member Id="P:Xamarin.Essentials.SmsMessage.Recipients" />
     </Type>
