@@ -95,6 +95,8 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				UpdateIsRefreshing();
 			else if (e.PropertyName == ListView.IsPullToRefreshEnabledProperty.PropertyName)
 				UpdatePullToRefreshEnabled();
+			else if (e.PropertyName == ListView.SelectedItemProperty.PropertyName)
+				UpdateSelectedItem();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -434,6 +436,11 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			{
 				_listView.UpdatePullToRefreshEnabled(isPullToRefreshEnabled);
 			}
+		}
+
+		private void UpdateSelectedItem()
+		{
+			_listView?.SetSeletedItem(Element.SelectedItem);
 		}
 
 		private void UpdateGrouping()
