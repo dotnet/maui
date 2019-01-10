@@ -10,6 +10,7 @@ using Android.Support.V4.Content;
 using Path = System.IO.Path;
 using Xamarin.Forms.Internals;
 using AndroidAppCompat = Android.Support.V7.Content.Res.AppCompatResources;
+using System.ComponentModel;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -75,6 +76,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		[Obsolete("GetDrawable(this Resources, string) is obsolete as of version 2.5. "
 			+ "Please use GetDrawable(this Context, string) instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static Drawable GetDrawable(this Resources resource, string name)
 		{
 			int id = IdFromTitle(name, DrawableClass);

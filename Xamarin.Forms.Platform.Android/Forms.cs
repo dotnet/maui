@@ -21,6 +21,7 @@ using Xamarin.Forms.Platform.Android;
 using Resource = Android.Resource;
 using Trace = System.Diagnostics.Trace;
 using ALayoutDirection = Android.Views.LayoutDirection;
+using System.ComponentModel;
 
 namespace Xamarin.Forms
 {
@@ -31,6 +32,7 @@ namespace Xamarin.Forms
 		static bool? s_isLollipopOrNewer;
 
 		[Obsolete("Context is obsolete as of version 2.5. Please use a local context instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static Context Context { get; internal set; }
 
 		// One per process; does not change, suitable for loading resources (e.g., ResourceProvider)
@@ -83,6 +85,7 @@ namespace Xamarin.Forms
 		/// <param name="visibility">Title bar visibility enum</param>
 		[Obsolete("SetTitleBarVisibility(AndroidTitleBarVisibility) is obsolete as of version 2.5. "
 			+ "Please use SetTitleBarVisibility(Activity, AndroidTitleBarVisibility) instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetTitleBarVisibility(AndroidTitleBarVisibility visibility)
 		{
 			if ((Activity)Context == null)

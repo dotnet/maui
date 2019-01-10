@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms
@@ -15,6 +16,7 @@ namespace Xamarin.Forms
 		bool useLegacyFallback;
 		T android;
 		[Obsolete]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public T Android {
 			get { return android; }
 			set {
@@ -25,6 +27,7 @@ namespace Xamarin.Forms
 
 		T ios;
 		[Obsolete]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public T iOS {
 			get { return ios; }
 			set {
@@ -35,6 +38,7 @@ namespace Xamarin.Forms
 
 		T winPhone;
 		[Obsolete]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public T WinPhone {
 			get { return winPhone; }
 			set {

@@ -65,6 +65,7 @@ namespace Xamarin.Forms.Platform.Android
 		}		  		
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use VisualElementRenderer(Context) instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		protected VisualElementRenderer() : this(Forms.Context)
 		{
 		}

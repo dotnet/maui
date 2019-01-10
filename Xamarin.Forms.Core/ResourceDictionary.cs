@@ -24,6 +24,7 @@ namespace Xamarin.Forms
 
 		[TypeConverter(typeof(TypeTypeConverter))]
 		[Obsolete("Use Source")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Type MergedWith {
 			get { return _mergedWith; }
 			set {

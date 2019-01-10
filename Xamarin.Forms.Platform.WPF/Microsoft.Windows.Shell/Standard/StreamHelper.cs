@@ -8,6 +8,7 @@
 namespace Standard
 {
     using System;
+	using System.ComponentModel;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Runtime.InteropServices;
@@ -251,7 +252,8 @@ namespace Standard
         /// </remarks>
         [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "Standard.HRESULT.ThrowIfFailed(System.String)")]
         [Obsolete("The method is not implemented", true)]
-        public void Clone(out IStream ppstm)
+        [EditorBrowsable(EditorBrowsableState.Never)]
+		public void Clone(out IStream ppstm)
         {
             ppstm = null;
             HRESULT.STG_E_INVALIDFUNCTION.ThrowIfFailed("The method is not implemented.");
@@ -478,7 +480,8 @@ namespace Standard
         /// </remarks>
         [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "Standard.HRESULT.ThrowIfFailed(System.String)")]
         [Obsolete("The method is not implemented", true)]
-        public void UnlockRegion(long libOffset, long cb, int dwLockType)
+        [EditorBrowsable(EditorBrowsableState.Never)]
+		public void UnlockRegion(long libOffset, long cb, int dwLockType)
         {
             HRESULT.STG_E_INVALIDFUNCTION.ThrowIfFailed("The method is not implemented.");
         }

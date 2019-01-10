@@ -34,6 +34,7 @@ namespace Xamarin.Forms.Maps.Android
 		}
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use MapRenderer(Context) instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public MapRenderer()
 		{
 			AutoPackage = false;

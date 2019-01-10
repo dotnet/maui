@@ -633,6 +633,7 @@ namespace Xamarin.Forms
 		public event EventHandler<FocusEventArgs> Focused;
 
 		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public virtual SizeRequest GetSizeRequest(double widthConstraint, double heightConstraint)
 		{
 			SizeRequest cachedResult;
@@ -776,6 +777,7 @@ namespace Xamarin.Forms
 		}
 
 		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		protected virtual SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
 		{
 			if (!IsPlatformEnabled)

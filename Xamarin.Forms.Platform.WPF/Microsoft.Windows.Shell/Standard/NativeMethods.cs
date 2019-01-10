@@ -3103,7 +3103,8 @@
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Obsolete("Use SafeDC.GetDC instead.", true)]
-        public static void GetDC() { }
+        [EditorBrowsable(EditorBrowsableState.Never)]
+		public static void GetDC() { }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [DllImport("gdi32.dll")]

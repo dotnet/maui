@@ -75,6 +75,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		[Obsolete("SetPage is obsolete as of version 1.3.0. Please use protected LoadApplication (Application app) instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetPage(Page page)
 		{
 			var application = new DefaultApplication { MainPage = page };

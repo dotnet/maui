@@ -7,6 +7,7 @@ namespace Standard
 {
     using System;
     using System.Collections.Generic;
+	using System.ComponentModel;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.IO;
@@ -409,7 +410,8 @@ namespace Standard
         /// <returns></returns>
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Obsolete]
-        public static string GenerateToString<T>(T @object) where T : struct
+        [EditorBrowsable(EditorBrowsableState.Never)]
+		public static string GenerateToString<T>(T @object) where T : struct
         {
             var sbRet = new StringBuilder();
             foreach (PropertyInfo property in typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance))

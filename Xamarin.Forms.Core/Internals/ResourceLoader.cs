@@ -10,6 +10,7 @@ namespace Xamarin.Forms.Internals
 		static Func<AssemblyName, string, string> resourceProvider;
 
 		[Obsolete("You shouldn't have used this one to begin with, don't use the other one either")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		//takes a resource path, returns string content
 		public static Func<AssemblyName, string, string> ResourceProvider {
 			get => resourceProvider;
@@ -32,6 +33,7 @@ namespace Xamarin.Forms.Internals
 		}
 
 		[Obsolete("Can't touch this")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static bool CanProvideContentFor(ResourceLoadingQuery rlq)
 		{
 			if (_resourceProvider2 == null)

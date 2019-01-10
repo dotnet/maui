@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using Android.Content;
 using Android.Content.Res;
 using Android.Support.V4.Content;
@@ -16,6 +17,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		[Obsolete("ToAndroid(this Color, int) is obsolete as of version 2.5. Please use ToAndroid(this Color, int, Context) instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static AColor ToAndroid(this Color self, int defaultColorResourceId)
 		{
 			if (self == Color.Default)

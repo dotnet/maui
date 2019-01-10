@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
@@ -42,6 +43,7 @@ namespace Xamarin.Forms
 		}
 
 		[Obsolete("Foreground is obsolete as of version 3.1.0. Please use the TextColor property instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static readonly BindableProperty ForegroundColorProperty = TextColorProperty;
 
 #pragma warning disable 618
@@ -72,6 +74,7 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty LineHeightProperty = LineHeightElement.LineHeightProperty;
 
 		[Obsolete("Font is obsolete as of version 1.3.0. Please use the Font properties directly.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Font Font
 		{
 			get { return (Font)GetValue(FontElement.FontProperty); }

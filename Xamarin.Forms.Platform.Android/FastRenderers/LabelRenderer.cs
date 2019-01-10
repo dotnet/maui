@@ -40,6 +40,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		}
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use LabelRenderer(Context) instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public LabelRenderer() : base(Forms.Context)
 		{
 			_labelTextColorDefault = TextColors;

@@ -315,6 +315,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		[Obsolete("CreateRenderer(VisualElement) is obsolete as of version 2.5. Please use CreateRendererWithContext(VisualElement, Context) instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IVisualElementRenderer CreateRenderer(VisualElement element)
 		{
 			// If there's a previewer context set, use that when created 
@@ -1163,6 +1164,7 @@ namespace Xamarin.Forms.Platform.Android
 			IOnTouchListener _touchListener;
 
 			[Obsolete("This constructor is obsolete as of version 2.5. Please use DefaultRenderer(Context) instead.")]
+			[EditorBrowsable(EditorBrowsableState.Never)]
 			public DefaultRenderer()
 			{
 			}

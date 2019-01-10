@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using Android.Content;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
@@ -13,7 +14,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 	    }
 
 	    [Obsolete("This constructor is obsolete as of version 2.5. Please use FrameRenderer(Context) instead.")]
-	    public FrameRenderer()
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public FrameRenderer()
 	    {
 		   
 	    }

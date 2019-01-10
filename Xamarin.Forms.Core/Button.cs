@@ -39,6 +39,7 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
 
 		[Obsolete("BorderRadiusProperty is obsolete as of 2.5.0. Please use CornerRadius instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static readonly BindableProperty BorderRadiusProperty = BindableProperty.Create("BorderRadius", typeof(int), typeof(Button), defaultValue: DefaultBorderRadius,
 			propertyChanged: BorderRadiusPropertyChanged);
 
@@ -80,6 +81,7 @@ namespace Xamarin.Forms
 		}
 
 		[Obsolete("BorderRadius is obsolete as of 2.5.0. Please use CornerRadius instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public int BorderRadius
 		{
 			get { return (int)GetValue(BorderRadiusProperty); }

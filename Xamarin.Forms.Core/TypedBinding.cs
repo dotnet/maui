@@ -63,6 +63,7 @@ namespace Xamarin.Forms.Internals
 		readonly PropertyChangedProxy [] _handlers;
 
 		[Obsolete("deprecated one. kept for backcompat")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public TypedBinding(Func<TSource, TProperty> getter, Action<TSource, TProperty> setter, Tuple<Func<TSource, object>, string> [] handlers)
 				: this (s=>(getter(s), true), setter, handlers)
 		{

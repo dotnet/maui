@@ -21,6 +21,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use EntryRenderer(Context) instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public EntryRenderer()
 		{
 			AutoPackage = false;
@@ -57,6 +58,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use EntryRenderer(Context) instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		internal EntryRendererBase()
 		{
 			AutoPackage = false;

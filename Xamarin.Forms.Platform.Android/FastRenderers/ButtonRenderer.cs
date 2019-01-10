@@ -44,6 +44,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		}
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use ButtonRenderer(Context) instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public ButtonRenderer() : base(Forms.Context)
 		{
 			_automationPropertiesProvider = new AutomationPropertiesProvider(this);
