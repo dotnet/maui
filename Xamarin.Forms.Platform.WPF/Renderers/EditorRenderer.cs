@@ -27,6 +27,7 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateTextColor();
 				UpdateFont();
 				UpdateMaxLength();
+				UpdateIsReadOnly();
 			}
 
 			base.OnElementChanged(e);
@@ -51,6 +52,8 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateFont();
 			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
 				UpdateMaxLength();
+			else if (e.PropertyName == InputView.IsReadOnlyProperty.PropertyName)
+				UpdateIsReadOnly();
 		}
 		
 		void NativeOnTextChanged(object sender, System.Windows.Controls.TextChangedEventArgs textChangedEventArgs)
@@ -137,6 +140,11 @@ namespace Xamarin.Forms.Platform.WPF
 
 			_isDisposed = true;
 			base.Dispose(disposing);
+		}
+
+		void UpdateIsReadOnly()
+		{
+			Control.IsReadOnly = Element.IsReadOnly;
 		}
 	}
 }

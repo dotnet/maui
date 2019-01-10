@@ -154,5 +154,20 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.True(result == isEnabled ? true : false);
 		}
+
+		[TestCase(true)]
+		public void IsReadOnlyTest(bool isReadOnly)
+		{
+			Entry entry = new Entry();
+			entry.SetValue(InputView.IsReadOnlyProperty, isReadOnly);
+			Assert.AreEqual(isReadOnly, entry.IsReadOnly);
+		}
+
+		[Test]
+		public void IsReadOnlyDefaultValueTest()
+		{
+			Entry entry = new Entry();
+			Assert.AreEqual(entry.IsReadOnly, false);
+		}
 	}
 }

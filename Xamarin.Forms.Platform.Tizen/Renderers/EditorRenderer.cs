@@ -16,6 +16,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(InputView.IsSpellCheckEnabledProperty, UpdateIsSpellCheckEnabled);
 			RegisterPropertyHandler(Editor.PlaceholderProperty, UpdatePlaceholder);
 			RegisterPropertyHandler(Editor.PlaceholderColorProperty, UpdatePlaceholderColor);
+			RegisterPropertyHandler(InputView.IsReadOnlyProperty, UpdateIsReadOnly);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Editor> e)
@@ -152,6 +153,11 @@ namespace Xamarin.Forms.Platform.Tizen
 				return s;
 
 			return null;
+		}
+
+		void UpdateIsReadOnly()
+		{
+			Control.IsEditable = !Element.IsReadOnly;
 		}
 	}
 }

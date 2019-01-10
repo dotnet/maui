@@ -30,5 +30,19 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual (initialText, oldText);
 			Assert.AreEqual (finalText, newText);
 		}
+
+		[TestCase(true)]
+		public void IsReadOnlyTest(bool isReadOnly)
+		{
+			Editor editor = new Editor();
+			editor.SetValue(InputView.IsReadOnlyProperty, isReadOnly);
+			Assert.AreEqual(isReadOnly, editor.IsReadOnly);
+		}
+		[Test]
+		public void IsReadOnlyDefaultValueTest()
+		{
+			Editor editor = new Editor();
+			Assert.AreEqual(editor.IsReadOnly, false);
+		}
 	}
 }

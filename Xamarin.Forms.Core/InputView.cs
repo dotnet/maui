@@ -8,6 +8,8 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty MaxLengthProperty = BindableProperty.Create(nameof(MaxLength), typeof(int), typeof(int), int.MaxValue);
 
+		public static readonly BindableProperty IsReadOnlyProperty = BindableProperty.Create(nameof(IsReadOnly), typeof(bool), typeof(InputView), false);
+
 		public int MaxLength
 		{
 			get { return (int)GetValue(MaxLengthProperty); }
@@ -28,6 +30,12 @@ namespace Xamarin.Forms
 		{
 			get { return (bool)GetValue(IsSpellCheckEnabledProperty); }
 			set { SetValue(IsSpellCheckEnabledProperty, value); }
+		}
+
+		public bool IsReadOnly
+		{
+			get { return (bool)GetValue(IsReadOnlyProperty); }
+			set { SetValue(IsReadOnlyProperty, value); }
 		}
 	}
 }

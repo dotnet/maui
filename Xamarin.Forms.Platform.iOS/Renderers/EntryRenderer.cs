@@ -126,6 +126,7 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateCursorSelection();
 
 			UpdateCursorColor();
+			UpdateIsReadOnly();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -171,6 +172,8 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateCursorSelection();
 			else if (e.PropertyName == Specifics.CursorColorProperty.PropertyName)
 				UpdateCursorColor();
+			else if (e.PropertyName == Xamarin.Forms.InputView.IsReadOnlyProperty.PropertyName)
+				UpdateIsReadOnly();
 
 			base.OnElementPropertyChanged(sender, e);
 		}
@@ -478,5 +481,10 @@ namespace Xamarin.Forms.Platform.iOS
 				_nativeSelectionIsUpdating = false;
 			}
 		}
-	}
+
+        void UpdateIsReadOnly()
+        {
+            Control.UserInteractionEnabled = !Element.IsReadOnly;
+        }
+    }
 }

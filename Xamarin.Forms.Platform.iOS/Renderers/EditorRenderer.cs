@@ -79,6 +79,8 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateTextAlignment();
 			UpdateMaxLength();
 			UpdateAutoSizeOption();
+			UpdateReadOnly();
+			UpdateUserInteraction();
 		}
 
 		private void UpdateAutoSizeOption()
@@ -134,8 +136,8 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateKeyboard();
 			else if (e.PropertyName == Editor.IsTextPredictionEnabledProperty.PropertyName)
 				UpdateKeyboard();
-			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
-				UpdateEditable();
+			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName || e.PropertyName == Xamarin.Forms.InputView.IsReadOnlyProperty.PropertyName)
+				UpdateUserInteraction();
 			else if (e.PropertyName == Editor.TextColorProperty.PropertyName)
 				UpdateTextColor();
 			else if (e.PropertyName == Editor.FontAttributesProperty.PropertyName)
@@ -275,6 +277,19 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			var newLength = textView.Text.Length + text.Length - range.Length;
 			return newLength <= Element.MaxLength;
+		}
+
+		void UpdateReadOnly()
+		{
+			Control.UserInteractionEnabled = !Element.IsReadOnly;
+		}
+
+		void UpdateUserInteraction()
+		{
+			if (Element.IsEnabled && Element.IsReadOnly)
+				UpdateReadOnly();
+			else
+				UpdateEditable();
 		}
 
 		internal class FormsUITextView : UITextView
