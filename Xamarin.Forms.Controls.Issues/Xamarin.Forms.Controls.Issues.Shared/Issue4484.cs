@@ -32,9 +32,9 @@ namespace Xamarin.Forms.Controls.Issues
 					Orientation = StackOrientation.Horizontal,
 					Children =
 					{
-						new Button(){ Image = "bank", AutomationId="bank"},
-						new Image(){Source = "bank"},
-						new ImageButton{Source = "bank"}
+						new Button(){ Image = "bank.png", AutomationId="bank"},
+						new Image(){Source = "bank.png"},
+						new ImageButton{Source = "bank.png"}
 					}
 				});
 
@@ -44,7 +44,7 @@ namespace Xamarin.Forms.Controls.Issues
 				{
 					new Label()
 					{
-						Text = "Rotate device. If it doesn't crash then test has passed",
+						Text = "You should see 3 images. Rotate device. If it doesn't crash then test has passed",
 						AutomationId = "Instructions"
 					}
 				}
