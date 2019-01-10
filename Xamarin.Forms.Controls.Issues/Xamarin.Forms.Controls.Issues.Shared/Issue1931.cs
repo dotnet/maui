@@ -91,8 +91,8 @@ namespace Xamarin.Forms.Controls.Issues
 			PushAsync(RootPage());
 		}
 
-		
-#if UITEST
+//TODO: Enable this on iOS12 again
+#if UITEST && __ANDROID__
 		[Test]
 		public void ScrollViewInHeaderDisposesProperly()
 		{
