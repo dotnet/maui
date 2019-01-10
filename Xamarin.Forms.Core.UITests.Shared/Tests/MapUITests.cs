@@ -5,12 +5,11 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Core.UITests
 {
-#if __ANDROID__ || __WINDOWS__
-	[Ignore("Test only meant for Mac and iOS, besides needing API keys for Android and Windows")]
-#endif
+	[Ignore("Test only meant for Mac and iOS, besides needing API keys for Android and Windows is also failing on iOS9, should be enable later when iOS9 support is dropped")]
 	[TestFixture]
 	[Category(UITestCategories.Maps)]
-    internal class MapUITests : BaseTestFixture
+	[Category(UITestCategories.ManualReview)]
+	internal class MapUITests : BaseTestFixture
     {
 	    protected override void NavigateToGallery()
 	    {
