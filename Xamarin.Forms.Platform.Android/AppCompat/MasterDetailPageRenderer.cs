@@ -401,6 +401,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		void UpdateFlowDirection()
 		{
 			this.UpdateFlowDirection(Element);
+			_detailLayout.UpdateFlowDirection();
 		}
 
 		void UpdateIsPresented()

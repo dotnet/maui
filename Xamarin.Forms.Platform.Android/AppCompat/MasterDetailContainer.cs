@@ -57,6 +57,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			}
 		}
 
+		public void UpdateFlowDirection() => _pageContainer?.UpdateFlowDirection(_parent);
+
 		protected override void AddChildView(VisualElement childView)
 		{
 			_pageContainer = null;
@@ -100,6 +102,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				fc?.SetOnCreateCallback(pc =>
 				{
 					_pageContainer = pc;
+					UpdateFlowDirection();
 					SetDefaultBackgroundColor(pc.Child);
 				});
 
