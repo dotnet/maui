@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace Xamarin.Forms.Maps
 {
-	public class Pin : BindableObject
+	public class Pin : Element
 	{
 		public static readonly BindableProperty TypeProperty = BindableProperty.Create("Type", typeof(PinType), typeof(Pin), default(PinType));
 

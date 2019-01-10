@@ -40,6 +40,72 @@
     <EmbeddedResource Include="GalleryPages\crimson.jpg" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="3.0.2" />
+    <Compile Update="GalleryPages\BindableLayoutGalleryPage.xaml.cs">
+      <DependentUpon>BindableLayoutGalleryPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="GalleryPages\VisualStateManagerGalleries\OnPlatformExample.xaml.cs">
+      <DependentUpon>OnPlatformExample.xaml</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="GalleryPages\BindableLayoutGalleryPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="GalleryPages\MapWithItemsSourceGallery.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="GalleryPages\TitleView.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="GalleryPages\VisualStateManagerGalleries\ButtonDisabledStatesGallery.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="GalleryPages\VisualStateManagerGalleries\DatePickerDisabledStatesGallery.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="GalleryPages\VisualStateManagerGalleries\PickerDisabledStatesGallery.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="GalleryPages\VisualStateManagerGalleries\SearchBarDisabledStatesGallery.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="GalleryPages\VisualStateManagerGalleries\TimePickerDisabledStatesGallery.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="GalleryPages\VisualStateManagerGalleries\ValidationExample.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="GalleryPages\XamlPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="ControlGalleryPages\BehaviorsAndTriggers.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="GalleryPages\StyleXamlGallery.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="GalleryPages\XamlNativeViews.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="GalleryPages\MacTwitterDemo.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="HanselForms\MyAbout.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="HanselForms\BlogPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="HanselForms\TwitterPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="CompressedLayout.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="ControlGalleryPages\LayoutAddPerformance.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="GalleryPages\ControlTemplateXamlPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
   </ItemGroup>
   <Target Name="CreateControllGalleryConfig" BeforeTargets="Build">
     <CreateItem Include="blank.config">
