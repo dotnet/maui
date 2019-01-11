@@ -44,6 +44,7 @@ namespace Xamarin.Forms.Platform.macOS.Controls
 		public void SetColor (NSColor color)
 		{
 			_colorToRenderer = color;
+			SetNeedsDisplayInRect(Bounds);
 		}
 
 		public void SetCornerRadius (float topLeft, float topRight, float bottomLeft, float bottomRight)
@@ -52,6 +53,7 @@ namespace Xamarin.Forms.Platform.macOS.Controls
 			_topRight = topRight;
 			_bottomLeft = bottomLeft;
 			_bottomRight = bottomRight;
+			SetNeedsDisplayInRect(Bounds);
 		}
 	}
 }
