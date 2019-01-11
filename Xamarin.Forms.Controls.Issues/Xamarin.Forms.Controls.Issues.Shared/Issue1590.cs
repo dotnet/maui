@@ -9,15 +9,21 @@ using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
+#if UITEST
+using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
+#endif
+
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1590, "ListView.IsGroupingEnabled results ins ArguementOutOfRangeException", PlatformAffected.Android)]
-	public class Issue1590 : ContentPage
+	[Issue (IssueTracker.Github, 1590, "ListView.IsGroupingEnabled results ins ArguementOutOfRangeException", 
+		PlatformAffected.Android)]
+	public class Issue1590 : TestContentPage
 	{
 		ListView _listView;
 
-		public Issue1590()
+		protected override void Init()
 		{
 			var vm = new RootPageViewModel();
 			Content = BuildListView(vm);
@@ -43,6 +49,16 @@ namespace Xamarin.Forms.Controls.Issues
 
 			return new StackLayout { Children = { _listView } };
 		}
+
+#if UITEST
+		[Test]
+		[Category(UITestCategories.ListView)]
+		public void ListViewIsGroupingEnabledDoesNotCrash()
+		{
+			RunningApp.WaitForElement("First");
+		}
+#endif
+
 	}
 
 	[Preserve (AllMembers=true)]
@@ -52,7 +68,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			get
 			{
-				var titles = new[] {"First", "Second", "Third", "Forth", "Fifth"};
+				var titles = new[] {"First", "Second", "Third", "Fourth", "Fifth"};
 
 				return titles.Select(section => new MediaListSection(section)
 				{
