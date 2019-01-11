@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Controls.Issues
 		string _disappearText = "You should see 4 images. Clicking this should cause the images to all disappear";
 		string _appearText = "Clicking this should cause the images to all appear";
 		string _theListView = "theListViewAutomationId";
-		string _fileName = "coffee";
+		string _fileName = "coffee.png";
 
 		protected override void Init()
 		{
