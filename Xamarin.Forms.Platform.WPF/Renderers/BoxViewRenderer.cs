@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Platform.WPF
 					SetNativeControl(rectangle);
 				}
 
-				UpdateColor();
+				UpdateBackground();
 				UpdateCornerRadius();
 			}
 
@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Platform.WPF
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == BoxView.ColorProperty.PropertyName)
-				UpdateColor();
+				UpdateBackground();
 			else if (e.PropertyName == BoxView.CornerRadiusProperty.PropertyName)
 				UpdateCornerRadius();
 		}
@@ -54,7 +54,7 @@ namespace Xamarin.Forms.Platform.WPF
 			UpdateSize();
 		}
 
-		void UpdateColor()
+		protected override void UpdateBackground()
 		{
 			Color color = Element.Color != Color.Default ? Element.Color : Element.BackgroundColor;
 			_border.UpdateDependencyColor(Border.BackgroundProperty, color);
