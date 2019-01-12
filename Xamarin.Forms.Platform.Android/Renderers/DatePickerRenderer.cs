@@ -92,7 +92,7 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateFont();
 		}
 
-		internal override void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
+		protected override void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
 		{
 			base.OnFocusChangeRequested(sender, e);
 

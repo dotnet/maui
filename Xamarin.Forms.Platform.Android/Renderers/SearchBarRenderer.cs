@@ -51,11 +51,27 @@ namespace Xamarin.Forms.Platform.Android
 			return new SearchView(Context);
 		}
 
+		protected override void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
+		{
+			if (!e.Focus)
+			{
+				Control.HideKeyboard();
+			}
+
+			base.OnFocusChangeRequested(sender, e);
+
+			if (e.Focus)
+			{
+				// Post this to the main looper queue so it doesn't happen until the other focus stuff has resolved
+				// Otherwise, ShowKeyboard will be called before this control is truly focused, and we will potentially
+				// be displaying the wrong keyboard
+				Control?.PostShowKeyboard();
+			}
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<SearchBar> e)
 		{
 			base.OnElementChanged(e);
-
-			HandleKeyboardOnFocus = true;
 
 			SearchView searchView = Control;
 
@@ -188,7 +204,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 			catch (Java.Lang.UnsupportedOperationException)
 			{
-				// silently catch these as they happen in the previewer due to some bugs in upstread android
+				// silently catch these as they happen in the previewer due to some bugs in Android
 			}
 		}
 

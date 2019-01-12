@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Android.Content;
 using Android.Content.Res;
+using Android.OS;
 using Android.Text;
 using Android.Text.Method;
 using Android.Util;
@@ -71,11 +72,27 @@ namespace Xamarin.Forms.Platform.Android
 			return new FormsEditText(Context);
 		}
 
+		protected override void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
+		{
+			if (!e.Focus)
+			{
+				Control.HideKeyboard();
+			}
+
+			base.OnFocusChangeRequested(sender, e);
+
+			if (e.Focus)
+			{
+				// Post this to the main looper queue so it doesn't happen until the other focus stuff has resolved
+				// Otherwise, ShowKeyboard will be called before this control is truly focused, and we will potentially
+				// be displaying the wrong keyboard
+				Control?.PostShowKeyboard();
+			}
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Entry> e)
 		{
 			base.OnElementChanged(e);
-
-			HandleKeyboardOnFocus = true;
 
 			if (e.OldElement == null)
 			{
