@@ -8,18 +8,27 @@ using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
+#if UITEST
+using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
+#endif
+
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Github, 1685, "Entry clears when upadting text from native with one-way binding", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.WinPhone, NavigationBehavior.PushModalAsync)]
-	public class Issue1685 : ContentPage
+	public class Issue1685 : TestContentPage
 	{
+		const string ButtonId = "Button1685";
+		const string Success = "Success";
+
+		[Preserve (AllMembers=true)]
 		class Test : INotifyPropertyChanged
 		{
 			public event PropertyChangedEventHandler PropertyChanged;
 
-			decimal _entryValue = decimal.Zero;
-			public decimal EntryValue
+			string _entryValue = "0";
+			public string EntryValue
 			{
 				get
 				{
@@ -33,15 +42,11 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 
 			void OnPropertyChanged(string caller) {
-				var handler = PropertyChanged;
-				if (handler != null) 
-				{
-					handler(this, new PropertyChangedEventArgs(caller));
-				}
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(caller));
 			}
 		}
 
-		public Issue1685()
+		protected override void Init()
 		{
 			Title = "EntryBindingBug";
 
@@ -53,13 +58,14 @@ namespace Xamarin.Forms.Controls.Issues
 			entry.SetBinding(Entry.TextProperty, "EntryValue", BindingMode.OneWay);
 
 			var button = new Button() {
-				Text = "Click me"
+				Text = "Click me",
+				AutomationId = ButtonId
 			};
 
 			button.Clicked += (sender, e) => 
 			{
 				var context = BindingContext as Test;
-				context.EntryValue = context.EntryValue + 1;
+				context.EntryValue = Success;
 			};
 
 			var root = new StackLayout() {
@@ -74,5 +80,16 @@ namespace Xamarin.Forms.Controls.Issues
 			Content = root;
 
 		}
+
+#if UITEST
+		[Test]
+		[NUnit.Framework.Category(UITestCategories.Entry)]
+		public void EntryOneWayBindingShouldUpdate()
+		{
+			RunningApp.WaitForElement(ButtonId);
+			RunningApp.Tap(ButtonId);
+			RunningApp.WaitForElement(Success);
+		}
+#endif
 	}
 }
