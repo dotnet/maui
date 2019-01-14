@@ -127,6 +127,7 @@
       <Project>{aba078c4-f9bb-4924-8b2b-10fe0d2f5491}</Project>
       <Name>Xamarin.Forms.Maps.iOS</Name>
       <IsAppExtension>false</IsAppExtension>
+      <IsWatchApp>false</IsWatchApp>
     </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
       <Project>{7d13bac2-c6a4-416a-b07e-c169b199e52b}</Project>
@@ -140,10 +141,13 @@
       <Project>{271193c1-6e7c-429c-a36d-3f1be5267231}</Project>
       <Name>Xamarin.Forms.Platform.iOS</Name>
       <IsAppExtension>false</IsAppExtension>
+      <IsWatchApp>false</IsWatchApp>
     </ProjectReference>
     <ProjectReference Include="..\Stubs\Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS %28Forwarders%29.csproj">
       <Project>{39b3457f-01d8-43d0-8e84-d8c4f73cf48d}</Project>
       <Name>Xamarin.Forms.Platform.iOS (Forwarders)</Name>
+      <IsAppExtension>false</IsAppExtension>
+      <IsWatchApp>false</IsWatchApp>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
