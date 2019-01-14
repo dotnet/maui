@@ -77,7 +77,7 @@ namespace Xamarin.Forms.Platform.Android.Material
 		}
 
 
-		internal override void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
+		protected override void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
 		{
 			e.Result = true;
 
