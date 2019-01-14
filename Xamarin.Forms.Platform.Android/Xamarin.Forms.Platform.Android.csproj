@@ -71,7 +71,9 @@
     <Compile Include="CollectionView\CarouselViewRenderer.cs" />
     <Compile Include="CollectionView\DataChangeObserver.cs" />
     <Compile Include="CollectionView\EmptySource.cs" />
+    <Compile Include="CollectionView\SingleSnapHelper.cs" />
     <Compile Include="CollectionView\EmptyViewAdapter.cs" />
+    <Compile Include="CollectionView\EndSingleSnapHelper.cs" />
     <Compile Include="CollectionView\ItemsViewAdapter.cs" />
     <Compile Include="CollectionView\EdgeSnapHelper.cs" />
     <Compile Include="CollectionView\EndSnapHelper.cs" />
@@ -89,7 +91,7 @@
     <Compile Include="CollectionView\SelectableViewHolder.cs" />
     <Compile Include="CollectionView\SizedItemContentView.cs" />
     <Compile Include="CollectionView\SnapManager.cs" />
-    <Compile Include="CollectionView\StartPagerSnapHelper.cs" />
+    <Compile Include="CollectionView\StartSingleSnapHelper.cs" />
     <Compile Include="CollectionView\StartSnapHelper.cs" />
     <Compile Include="CollectionView\TemplatedItemViewHolder.cs" />
     <Compile Include="CollectionView\TextViewHolder.cs" />

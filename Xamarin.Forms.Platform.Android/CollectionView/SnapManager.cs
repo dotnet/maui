@@ -65,11 +65,11 @@ namespace Xamarin.Forms.Platform.Android
 				switch (alignment)
 				{
 					case SnapPointsAlignment.Start:
-						return new StartPagerSnapHelper();
+						return new StartSingleSnapHelper();
 					case SnapPointsAlignment.Center:
-						return new PagerSnapHelper();
+						return new SingleSnapHelper();
 					case SnapPointsAlignment.End:
-						break;
+						return new EndSingleSnapHelper();
 					default:
 						throw new ArgumentOutOfRangeException(nameof(alignment), alignment, null);
 				}

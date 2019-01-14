@@ -1,9 +1,11 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using CoreGraphics;
 using Foundation;
 using UIKit;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -53,7 +55,7 @@ namespace Xamarin.Forms.Platform.iOS
 			HandlePropertyChanged(propertyChanged);
 		}
 
-		protected virtual void HandlePropertyChanged(PropertyChangedEventArgs  propertyChanged)
+		protected virtual void HandlePropertyChanged(PropertyChangedEventArgs propertyChanged)
 		{
 		}
 
@@ -214,6 +216,103 @@ namespace Xamarin.Forms.Platform.iOS
 		public void SetNeedCellSizeUpdate()
 		{
 			_needCellSizeUpdate = true;
+		}
+		
+		public override CGPoint TargetContentOffset(CGPoint proposedContentOffset, CGPoint scrollingVelocity)
+		{
+			var snapPointsType = _itemsLayout.SnapPointsType;
+
+			if (snapPointsType == SnapPointsType.None)
+			{
+				// Nothing to do here; fall back to the default
+				return base.TargetContentOffset(proposedContentOffset, scrollingVelocity);
+			}
+
+			var alignment = _itemsLayout.SnapPointsAlignment;
+
+			if (snapPointsType == SnapPointsType.MandatorySingle)
+			{
+				// Mandatory snapping, single element
+				return ScrollSingle(alignment, proposedContentOffset, scrollingVelocity);
+			}
+
+			// Get the viewport of the UICollectionView at the proposed content offset
+			var viewport = new CGRect(proposedContentOffset, CollectionView.Bounds.Size);
+
+			// And find all the elements currently visible in the viewport
+			var visibleElements = LayoutAttributesForElementsInRect(viewport);
+
+			if (visibleElements.Length == 0)
+			{
+				// Nothing to see here; fall back to the default
+				return base.TargetContentOffset(proposedContentOffset, scrollingVelocity);
+			}
+
+			if (visibleElements.Length == 1)
+			{
+				// If there is only one item in the viewport,  then we need to align the viewport with it
+				return SnapHelpers.AdjustContentOffset(proposedContentOffset, visibleElements[0].Frame, viewport,
+					alignment, ScrollDirection);
+			}
+
+			// If there are multiple items in the viewport, we need to choose the one which is 
+			// closest to the relevant part of the viewport while being sufficiently visible
+
+			// Find the spot in the viewport we're trying to align with
+			var alignmentTarget = SnapHelpers.FindAlignmentTarget(alignment, proposedContentOffset, 
+				CollectionView, ScrollDirection);
+
+			// Find the closest sufficiently visible candidate
+			var bestCandidate = SnapHelpers.FindBestSnapCandidate(visibleElements, viewport, alignmentTarget);
+			
+			if (bestCandidate != null)
+			{
+				return SnapHelpers.AdjustContentOffset(proposedContentOffset, bestCandidate.Frame, viewport, alignment,
+					ScrollDirection);
+			}
+
+			// If we got this far an nothing matched, it means that we have multiple items but somehow
+			// none of them fit at least half in the viewport. So just fall back to the first item
+			return SnapHelpers.AdjustContentOffset(proposedContentOffset, visibleElements[0].Frame, viewport, alignment,
+					ScrollDirection);
+		}
+
+		CGPoint ScrollSingle(SnapPointsAlignment alignment, CGPoint proposedContentOffset, CGPoint scrollingVelocity)
+		{
+			// Get the viewport of the UICollectionView at the current content offset
+			var contentOffset = CollectionView.ContentOffset;
+			var viewport = new CGRect(contentOffset, CollectionView.Bounds.Size);
+								
+			// Find the spot in the viewport we're trying to align with
+			var alignmentTarget = SnapHelpers.FindAlignmentTarget(alignment, contentOffset, CollectionView, ScrollDirection);
+
+			var visibleElements = LayoutAttributesForElementsInRect(viewport);
+
+			// Find the current aligned item
+			var currentItem = SnapHelpers.FindBestSnapCandidate(visibleElements, viewport, alignmentTarget);
+
+			if (currentItem == null)
+			{
+				// Somehow we don't currently have an item in the viewport near the target; fall back to the
+				// default behavior
+				return base.TargetContentOffset(proposedContentOffset, scrollingVelocity);
+			}
+
+			// Determine the index of the current item
+			var currentIndex = visibleElements.IndexOf(currentItem);
+
+			// Figure out the step size when jumping to the "next" element 
+			var span = 1;
+			if (_itemsLayout is GridItemsLayout gridItemsLayout)
+			{
+				span = gridItemsLayout.Span;
+			}
+
+			// Find the next item in the
+			currentItem = SnapHelpers.FindNextItem(visibleElements, ScrollDirection, span, scrollingVelocity, currentIndex);
+
+			return SnapHelpers.AdjustContentOffset(CollectionView.ContentOffset, currentItem.Frame, viewport, alignment,
+				ScrollDirection);
 		}
 	}
 }

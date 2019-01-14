@@ -276,9 +276,10 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateFlowDirection();
 
 			// Keep track of the ItemsLayout's property changes
-			_layout.PropertyChanged += LayoutOnPropertyChanged;
-
-			// TODO hartez 2018/09/17 13:16:12 This propertychanged handler needs to be torn down in Dispose and TearDownElement	
+			if (_layout != null)
+			{
+				_layout.PropertyChanged += LayoutOnPropertyChanged;
+			}
 
 			// Listen for ScrollTo requests
 			ItemsView.ScrollToRequested += ScrollToRequested;
@@ -289,6 +290,12 @@ namespace Xamarin.Forms.Platform.Android
 			if (oldElement == null)
 			{
 				return;
+			}
+
+			// Stop listening for layout property changes
+			if (_layout != null)
+			{
+				_layout.PropertyChanged -= LayoutOnPropertyChanged;
 			}
 
 			// Stop listening for property changes
