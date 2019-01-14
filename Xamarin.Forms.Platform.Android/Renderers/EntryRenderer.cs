@@ -94,11 +94,6 @@ namespace Xamarin.Forms.Platform.Android
 			((IElementController)Element).SetValueFromRenderer(Entry.TextProperty, s.ToString());
 		}
 
-		protected override FormsEditText CreateNativeControl()
-		{
-			return new FormsEditText(Context);
-		}
-
 		protected override void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
 		{
 			if (!e.Focus)
