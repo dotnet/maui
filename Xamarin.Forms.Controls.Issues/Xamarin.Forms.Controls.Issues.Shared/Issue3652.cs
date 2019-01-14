@@ -2,6 +2,13 @@
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
+
+#if UITEST
+using Xamarin.UITest;
+using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
+#endif
+
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
@@ -49,7 +56,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				var label = new Label();
 				label.SetBinding(Label.TextProperty, "Description");
-
+				label.AutomationId = "pandabear";
 				var menu = new MenuItem { Text = "Remove" };
 				menu.Command = new Command(() => ((ListItemViewModel)BindingContext).Remove.Execute((this, BindingContext)));
 				ContextActions.Add(menu);
@@ -102,5 +109,41 @@ namespace Xamarin.Forms.Controls.Issues
 			public Command Remove =>
 				new Command(() => MessagingCenter.Send(this, "Remove", this));
 		}
+
+#if UITEST && !__WINDOWS__
+		[Test]
+		public void TestRemovingContextMenuItems()
+		{
+			for(int i = 1; i <= 3; i++)
+			{
+				string searchFor = $"Remove me using the context menu. #{i}";
+				RunningApp.WaitForElement(searchFor);
+
+				RunningApp.ActivateContextMenu(searchFor);
+				RunningApp.WaitForElement(c => c.Marked("Remove"));
+				RunningApp.Tap(c => c.Marked("Remove"));
+			}
+
+
+			for (int i = 4; i <= 6; i++)
+			{
+				RunningApp.Tap("Add an item");
+				string searchFor = $"Remove me using the context menu. #{i}";
+
+				RunningApp.ActivateContextMenu(searchFor);
+				RunningApp.WaitForElement(c => c.Marked("Remove"));
+				RunningApp.Tap(c => c.Marked("Remove"));
+			}
+
+
+			for (int i = 1; i <= 6; i++)
+			{
+				string searchFor = $"Remove me using the context menu. #{i}";
+				RunningApp.WaitForNoElement(c => c.Marked("Remove"));
+			}
+
+		}
+#endif
+
 	}
 }
