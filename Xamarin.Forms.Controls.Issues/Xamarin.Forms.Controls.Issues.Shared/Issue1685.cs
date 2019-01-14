@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.PlatformConfiguration;
+using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 
 #if UITEST
 using NUnit.Framework;
@@ -49,7 +51,7 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override void Init()
 		{
 			Title = "EntryBindingBug";
-
+            On<iOS>().SetUseSafeArea(true);
 			BindingContext = new Test();
 
 			var entry = new Entry() {
@@ -88,7 +90,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			RunningApp.WaitForElement(ButtonId);
 			RunningApp.Tap(ButtonId);
-			RunningApp.WaitForElement(Success);
+			RunningApp.WaitForElement(c => c.Text(Success));
 		}
 #endif
 	}
