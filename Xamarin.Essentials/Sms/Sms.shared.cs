@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -31,14 +30,24 @@ namespace Xamarin.Essentials
         {
         }
 
+        public SmsMessage(string body, string recipient)
+        {
+            Body = body;
+            if (!string.IsNullOrWhiteSpace(recipient))
+                Recipients.Add(recipient);
+        }
+
         public SmsMessage(string body, IEnumerable<string> recipients)
         {
             Body = body;
-            Recipients = recipients?.Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
+            if (recipients != null)
+            {
+                Recipients.AddRange(recipients.Where(x => !string.IsNullOrWhiteSpace(x)));
+            }
         }
 
         public string Body { get; set; }
 
-        public List<string> Recipients { get; set; }
+        public List<string> Recipients { get; set; } = new List<string>();
     }
 }

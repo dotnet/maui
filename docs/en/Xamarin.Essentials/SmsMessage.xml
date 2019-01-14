@@ -26,8 +26,10 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Creates a new instance of SmsMessage</summary>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -46,6 +48,28 @@
       <Docs>
         <param name="body">Content of the message</param>
         <param name="recipients">Recipients to receive the message.</param>
+        <summary>Creates a new instance of SmsMessage</summary>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public SmsMessage (string body, string recipient);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string body, string recipient) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SmsMessage.#ctor(System.String,System.String)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="body" Type="System.String" />
+        <Parameter Name="recipient" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="body">Content of the message</param>
+        <param name="recipient">Recipient to receive the message.</param>
         <summary>Creates a new instance of SmsMessage</summary>
         <remarks>
           <para />
