@@ -11,6 +11,9 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		public NoCaretField() : base(new RectangleF())
 		{
+			SpellCheckingType = UITextSpellCheckingType.No;
+			AutocorrectionType = UITextAutocorrectionType.No;
+			AutocapitalizationType = UITextAutocapitalizationType.None;
 		}
 
 		public override RectangleF GetCaretRectForPosition(UITextPosition position)
