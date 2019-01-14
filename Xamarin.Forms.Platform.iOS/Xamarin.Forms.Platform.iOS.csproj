@@ -129,6 +129,7 @@
     <Compile Include="CollectionView\ListViewLayout.cs" />
     <Compile Include="CollectionView\ObservableItemsSource.cs" />
     <Compile Include="CollectionView\PropertyChangedEventArgsExtensions.cs" />
+    <Compile Include="CollectionView\SnapHelpers.cs" />
     <Compile Include="CollectionView\TemplatedCell.cs" />
     <Compile Include="CollectionView\HorizontalTemplatedCell.cs" />
     <Compile Include="CollectionView\VerticalTemplatedCell.cs" />
