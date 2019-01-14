@@ -47,30 +47,5 @@ namespace Xamarin.Forms
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
-
-
-		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
-		{
-			base.OnPropertyChanged(propertyName);
-
-			if (propertyName == VisualProperty.PropertyName ||
-				propertyName == BackgroundColorProperty.PropertyName ||
-				propertyName == ProgressColorProperty.PropertyName ||
-				propertyName == HeightRequestProperty.PropertyName)
-			{
-				// Todo fix reset behavior if user sets back 
-				if ((this as IVisualController).EffectiveVisual == VisualMarker.Material)
-				{
-					if (BackgroundColor == Color.Default)
-						BackgroundColor = Color.FromRgb(179, 215, 243);
-
-					if (ProgressColor == Color.Default)
-						ProgressColor = Color.FromRgb(33, 150, 243);
-
-					if (!IsSet(HeightRequestProperty))
-						HeightRequest = 5;
-				}
-			}
-		}
 	}
 }

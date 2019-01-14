@@ -38,6 +38,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		}
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use FrameRenderer(Context) instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public FrameRenderer() : base(Forms.Context)
 		{
 			_gestureManager = new GestureManager(this);

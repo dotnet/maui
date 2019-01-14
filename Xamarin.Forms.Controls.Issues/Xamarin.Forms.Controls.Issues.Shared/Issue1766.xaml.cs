@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Controls.Issues
 {	
 #if APP
 	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Github, 1766, "Editor.IsEnabled = false", PlatformAffected.WinPhone)]
+	[Issue (IssueTracker.Github, 1766, "[WP8] ListView with button fires .ItemTapped instead of .Clicked", PlatformAffected.WinPhone)]
 	public partial class Issue1766 : ContentPage
 	{	
 		public Issue1766 ()

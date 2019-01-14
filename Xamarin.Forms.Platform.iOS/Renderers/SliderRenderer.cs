@@ -121,33 +121,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		async void UpdateThumbImage()
 		{
-			IImageSourceHandler handler;
-			FileImageSource source = Element.ThumbImage;
-			if (source != null && (handler = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
-			{
-				UIImage uiimage;
-				try
-				{
-					uiimage = await handler.LoadImageAsync(source, scale: (float)UIScreen.MainScreen.Scale);
-				}
-				catch (OperationCanceledException)
-				{
-					uiimage = null;
-				}
-				UISlider slider = Control;
-				if (slider != null && uiimage != null)
-				{
-					slider.SetThumbImage(uiimage, UIControlState.Normal);
-				}
-			}
-			else
-			{
-				UISlider slider = Control;
-				if (slider != null)
-				{
-					slider.SetThumbImage(null, UIControlState.Normal);
-				}
-			}
+			var uiimage = await Element.ThumbImage.GetNativeImageAsync();
+			Control?.SetThumbImage(uiimage, UIControlState.Normal);
+			
 			((IVisualElementController)Element).NativeSizeChanged();
 		}
 

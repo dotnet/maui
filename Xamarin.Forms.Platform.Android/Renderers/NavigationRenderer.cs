@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Views;
@@ -21,6 +22,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use NavigationRenderer(Context) instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public NavigationRenderer()
 		{
 			AutoPackage = false;

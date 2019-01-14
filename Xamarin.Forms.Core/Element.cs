@@ -88,6 +88,7 @@ namespace Xamarin.Forms
 		}
 
 		[Obsolete("ParentView is obsolete as of version 2.1.0. Please use Parent instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public VisualElement ParentView
 		{
 			get

@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using Android.App;
 using Android.Content;
 using Android.OS;
@@ -10,6 +11,7 @@ namespace Xamarin.Forms.Platform.Android
 	{
 #pragma warning disable 618
 		[Obsolete("ContentPage.CreateFragment() is obsolete as of version 3.2. Please use ContentPage.CreateSupportFragment() instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static Fragment CreateFragment(this ContentPage view, Context context)
 		{
 			if (!Forms.IsInitialized)

@@ -49,6 +49,10 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				_collectionViewController.UpdateItemsSource();
 			}
+			else if (changedProperty.IsOneOf(ItemsView.EmptyViewProperty, ItemsView.EmptyViewTemplateProperty))
+			{
+				_collectionViewController.UpdateEmptyView();
+			}
 		}
 
 		protected virtual ItemsViewLayout SelectLayout(IItemsLayout layoutSpecification)
@@ -90,6 +94,7 @@ namespace Xamarin.Forms.Platform.iOS
 			SetNativeControl(_collectionViewController.View);
 			_collectionViewController.CollectionView.BackgroundColor = UIColor.Clear;
 			_collectionViewController.CollectionView.WeakDelegate = _layout;
+			_collectionViewController.UpdateEmptyView();
 
 			// Listen for ScrollTo requests
 			newElement.ScrollToRequested += ScrollToRequested;

@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
@@ -8,6 +9,7 @@ namespace Xamarin.Forms
 	public class Frame : ContentView, IElementConfiguration<Frame>, IPaddingElement, IBorderElement
 	{
 		[Obsolete("OutlineColorProperty is obsolete as of version 3.0.0. Please use BorderColorProperty instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static readonly BindableProperty OutlineColorProperty = BorderElement.BorderColorProperty;
 
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
@@ -36,6 +38,7 @@ namespace Xamarin.Forms
 		}
 
 		[Obsolete("OutlineColor is obsolete as of version 3.0.0. Please use BorderColor instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Color OutlineColor
 		{
 			get { return (Color)GetValue(OutlineColorProperty); }

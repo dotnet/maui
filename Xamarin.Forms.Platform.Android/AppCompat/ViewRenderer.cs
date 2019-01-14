@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using Android.Content;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
@@ -10,6 +11,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		}
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use ViewRenderer(Context) instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		protected ViewRenderer() 
 		{
 		}

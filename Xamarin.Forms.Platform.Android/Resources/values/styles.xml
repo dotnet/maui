@@ -1,7 +1,11 @@
 ﻿<?xml version="1.0" encoding="UTF-8" ?>
 <resources>
-  <style name="XamarinFormsMaterialTheme" parent="Theme.MaterialComponents">
+  <style name="XamarinFormsMaterialTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
   </style>
-  <style name="XamarinFormsMaterialProgressBarHorizontal" parent="android:Widget.ProgressBar.Horizontal">
+  <style name="XamarinFormsMaterialProgressBarHorizontal" parent="Widget.AppCompat.ProgressBar.Horizontal">
+  </style>
+  <style name="XamarinFormsMaterialProgressBarCircular" parent="Widget.AppCompat.ProgressBar">
+  </style>
+  <style name="XamarinFormsMaterialTextInputLayoutFilledBox" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
   </style>
 </resources>

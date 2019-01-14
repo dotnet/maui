@@ -33,8 +33,9 @@ namespace Xamarin.Forms
 		public static void SetTargetIdiom(TargetIdiom value) => Idiom = value;
 
         [Obsolete("TargetPlatform is obsolete as of version 2.3.4. Please use RuntimePlatform instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable 0618
-        public static TargetPlatform OS
+		public static TargetPlatform OS
         {
             get
             {
@@ -114,7 +115,8 @@ namespace Xamarin.Forms
         }
 
         [Obsolete("OnPlatform is obsolete as of version 2.3.4. Please use 'switch (Device.RuntimePlatform)' instead.")]
-        public static void OnPlatform(Action iOS = null, Action Android = null, Action WinPhone = null, Action Default = null)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void OnPlatform(Action iOS = null, Action Android = null, Action WinPhone = null, Action Default = null)
         {
             switch (OS)
             {
@@ -145,7 +147,8 @@ namespace Xamarin.Forms
         }
 
         [Obsolete("OnPlatform<> (generic) is obsolete as of version 2.3.4. Please use 'switch (Device.RuntimePlatform)' instead.")]
-        public static T OnPlatform<T>(T iOS, T Android, T WinPhone)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static T OnPlatform<T>(T iOS, T Android, T WinPhone)
         {
             switch (OS)
             {

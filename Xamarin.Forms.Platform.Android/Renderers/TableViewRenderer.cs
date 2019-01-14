@@ -3,6 +3,7 @@ using Android.Content;
 using Android.Views;
 using AView = Android.Views.View;
 using AListView = Android.Widget.ListView;
+using System.ComponentModel;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -17,6 +18,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use TableViewRenderer(Context) instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public TableViewRenderer()
 		{
 			AutoPackage = false;

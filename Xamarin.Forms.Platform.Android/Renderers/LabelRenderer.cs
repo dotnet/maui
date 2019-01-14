@@ -37,6 +37,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use LabelRenderer(Context) instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public LabelRenderer()
 		{
 			AutoPackage = false;

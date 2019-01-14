@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
@@ -233,6 +234,7 @@ namespace Xamarin.Forms.Build.Tasks
 		}
 
 		[Obsolete]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static MethodDefinition GetMethod(this TypeReference typeRef, Func<MethodDefinition, bool> predicate)
 		{
 			TypeReference declaringTypeReference;
@@ -240,6 +242,7 @@ namespace Xamarin.Forms.Build.Tasks
 		}
 
 		[Obsolete]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static MethodDefinition GetMethod(this TypeReference typeRef, Func<MethodDefinition, bool> predicate,
 			out TypeReference declaringTypeRef)
 		{

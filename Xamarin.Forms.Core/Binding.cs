@@ -94,6 +94,7 @@ namespace Xamarin.Forms
 		}
 
 		[Obsolete]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static Binding Create<TSource>(Expression<Func<TSource, object>> propertyGetter, BindingMode mode = BindingMode.Default, IValueConverter converter = null, object converterParameter = null,
 											  string stringFormat = null)
 		{
@@ -171,6 +172,7 @@ namespace Xamarin.Forms
 		}
 
 		[Obsolete]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		static string GetBindingPath<TSource>(Expression<Func<TSource, object>> propertyGetter)
 		{
 			Expression expr = propertyGetter.Body;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
@@ -73,6 +74,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		[Obsolete("OnReceivedError is obsolete as of version 2.3.0. This method was deprecated in API level 23.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public override void OnReceivedError(global::Android.Webkit.WebView view, ClientError errorCode, string description, string failingUrl)
 		{
 			_navigationResult = WebNavigationResult.Failure;

@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 
 namespace Xamarin.Forms
 {
@@ -83,6 +84,7 @@ namespace Xamarin.Forms
 		}
 
 		[Obsolete("BoldSystemFontOfSize is obsolete as of version 1.2.0. Please use SystemFontOfSize (double, FontAttributes) instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static Font BoldSystemFontOfSize(double size)
 		{
 			var result = new Font { FontSize = size, FontAttributes = FontAttributes.Bold };
@@ -90,6 +92,7 @@ namespace Xamarin.Forms
 		}
 
 		[Obsolete("BoldSystemFontOfSize is obsolete as of version 1.2.0. Please use SystemFontOfSize (NamedSize, FontAttributes) instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static Font BoldSystemFontOfSize(NamedSize size)
 		{
 			var result = new Font { NamedSize = size, FontAttributes = FontAttributes.Bold };

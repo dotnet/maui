@@ -362,7 +362,7 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			var drawable = await Context.GetFormsDrawable(source);
 			menuItem.SetIcon(drawable);
-			drawable.Dispose();
+			drawable?.Dispose();
 		}
 
 		void SetupMenu()

@@ -1,53 +1,32 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
+using CoreGraphics;
 using Foundation;
+using MaterialComponents;
 using UIKit;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using SizeF = CoreGraphics.CGSize;
-using MButton = MaterialComponents.Button;
 using Xamarin.Forms;
+using MButton = MaterialComponents.Button;
 
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Button), typeof(Xamarin.Forms.Platform.iOS.Material.MaterialButtonRenderer), new[] { typeof(VisualRendererMarker.Material) })]
+
 namespace Xamarin.Forms.Platform.iOS.Material
 {
 	public class MaterialButtonRenderer : ViewRenderer<Button, MButton>
 	{
+		UIColor _defaultBorderColor;
+		nfloat _defaultBorderWidth = -1;
 
-		UIColor _buttonTextColorDefaultDisabled;
-		UIColor _buttonTextColorDefaultHighlighted;
-		UIColor _buttonTextColorDefaultNormal;
-		bool _useLegacyColorManagement;
+		ButtonScheme _defaultButtonScheme;
+		ButtonScheme _buttonScheme;
+
 		bool _titleChanged;
-		SizeF _titleSize;
+		CGSize _titleSize;
 		UIEdgeInsets _paddingDelta = new UIEdgeInsets();
-
-		// This looks like it should be a const under iOS Classic,
-		// but that doesn't work under iOS 
-		// ReSharper disable once BuiltInTypeReferenceStyle
-		// Under iOS Classic Resharper wants to suggest this use the built-in type ref
-		// but under iOS that suggestion won't work
-		readonly nfloat _minimumButtonHeight = 44; // Apple docs
-		readonly nfloat _defaultCornerRadius = 5;
-
-		static readonly UIControlState[] s_controlStates = { UIControlState.Normal, UIControlState.Highlighted, UIControlState.Disabled };
 
 		public MaterialButtonRenderer()
 		{
 			VisualElement.VerifyVisualFlagEnabled();
-		}
-
-		public override SizeF SizeThatFits(SizeF size)
-		{
-			var result = base.SizeThatFits(size);
-
-			if (result.Height < _minimumButtonHeight)
-			{
-				result.Height = _minimumButtonHeight;
-			}
-
-			return result;
 		}
 
 		protected override void Dispose(bool disposing)
@@ -61,25 +40,31 @@ namespace Xamarin.Forms.Platform.iOS.Material
 			base.Dispose(disposing);
 		}
 
+		public override CGSize SizeThatFits(CGSize size)
+		{
+			var result = base.SizeThatFits(size);
+
+			if (result.Height < _buttonScheme.MinimumHeight)
+				result.Height = _buttonScheme.MinimumHeight;
+
+			return result;
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Button> e)
 		{
+			// recreate the scheme
+			_buttonScheme?.Dispose();
+			_buttonScheme = CreateButtonScheme();
+
 			base.OnElementChanged(e);
 
 			if (e.NewElement != null)
 			{
 				if (Control == null)
 				{
+					_defaultButtonScheme = CreateButtonScheme();
+
 					SetNativeControl(CreateNativeControl());
-
-					Debug.Assert(Control != null, "Control != null");
-
-					SetControlPropertiesFromProxy();
-
-					_useLegacyColorManagement = e.NewElement.UseLegacyColorManagement();
-
-					_buttonTextColorDefaultNormal = Control.TitleColor(UIControlState.Normal);
-					_buttonTextColorDefaultHighlighted = Control.TitleColor(UIControlState.Highlighted);
-					_buttonTextColorDefaultDisabled = Control.TitleColor(UIControlState.Disabled);
 
 					Control.TouchUpInside += OnButtonTouchUpInside;
 					Control.TouchDown += OnButtonTouchDown;
@@ -91,7 +76,24 @@ namespace Xamarin.Forms.Platform.iOS.Material
 				UpdateImage();
 				UpdateTextColor();
 				UpdatePadding();
+
+				ApplyTheme();
 			}
+		}
+
+		protected virtual ButtonScheme CreateButtonScheme()
+		{
+			return new ButtonScheme
+			{
+				ColorScheme = MaterialColors.Light.CreateColorScheme(),
+				ShapeScheme = new ShapeScheme(),
+				TypographyScheme = new TypographyScheme(),
+			};
+		}
+
+		protected virtual void ApplyTheme()
+		{
+			ContainedButtonThemer.ApplyScheme(_buttonScheme, Control);
 		}
 
 		protected override MButton CreateNativeControl()
@@ -103,18 +105,41 @@ namespace Xamarin.Forms.Platform.iOS.Material
 		{
 			base.OnElementPropertyChanged(sender, e);
 
+			var updatedTheme = false;
 			if (e.PropertyName == Button.TextProperty.PropertyName)
+			{
 				UpdateText();
+			}
 			else if (e.PropertyName == Button.TextColorProperty.PropertyName)
+			{
 				UpdateTextColor();
+				updatedTheme = true;
+			}
 			else if (e.PropertyName == Button.FontProperty.PropertyName)
+			{
 				UpdateFont();
-			else if (e.PropertyName == Button.BorderWidthProperty.PropertyName || e.PropertyName == Button.CornerRadiusProperty.PropertyName || e.PropertyName == Button.BorderColorProperty.PropertyName)
+				updatedTheme = true;
+			}
+			else if (e.PropertyName == Button.BorderWidthProperty.PropertyName || e.PropertyName == Button.BorderColorProperty.PropertyName)
+			{
 				UpdateBorder();
+			}
+			else if (e.PropertyName == Button.CornerRadiusProperty.PropertyName)
+			{
+				UpdateCornerRadius();
+				updatedTheme = true;
+			}
 			else if (e.PropertyName == Button.ImageProperty.PropertyName)
+			{
 				UpdateImage();
+			}
 			else if (e.PropertyName == Button.PaddingProperty.PropertyName)
+			{
 				UpdatePadding();
+			}
+
+			if (updatedTheme)
+				ApplyTheme();
 		}
 
 		protected override void SetAccessibilityLabel()
@@ -122,7 +147,7 @@ namespace Xamarin.Forms.Platform.iOS.Material
 			// If we have not specified an AccessibilityLabel and the AccessibilityLabel is currently bound to the Title,
 			// exit this method so we don't set the AccessibilityLabel value and break the binding.
 			// This may pose a problem for users who want to explicitly set the AccessibilityLabel to null, but this
-			// will prevent us from inadvertently breaking UI Tests that are using Query.Marked to get the dynamic Title 
+			// will prevent us from inadvertently breaking UI Tests that are using Query.Marked to get the dynamic Title
 			// of the Button.
 
 			var elemValue = (string)Element?.GetValue(AutomationProperties.NameProperty);
@@ -132,84 +157,98 @@ namespace Xamarin.Forms.Platform.iOS.Material
 			base.SetAccessibilityLabel();
 		}
 
-		void SetControlPropertiesFromProxy()
-		{
-			foreach (UIControlState uiControlState in s_controlStates)
-			{
-				Control.SetTitleColor(UIButton.Appearance.TitleColor(uiControlState), uiControlState); // if new values are null, old values are preserved.
-				Control.SetTitleShadowColor(UIButton.Appearance.TitleShadowColor(uiControlState), uiControlState);
-				Control.SetBackgroundImage(UIButton.Appearance.BackgroundImageForState(uiControlState), uiControlState);
-			}
-		}
-
 		void OnButtonTouchUpInside(object sender, EventArgs eventArgs)
 		{
-			((IButtonController)Element)?.SendReleased();
-			((IButtonController)Element)?.SendClicked();
+			Element?.SendReleased();
+			Element?.SendClicked();
 		}
 
 		void OnButtonTouchDown(object sender, EventArgs eventArgs)
 		{
-			((IButtonController)Element)?.SendPressed();
+			Element?.SendPressed();
+		}
+
+		protected override void SetBackgroundColor(Color color)
+		{
+			if (_buttonScheme?.ColorScheme is SemanticColorScheme colorScheme)
+			{
+				if (color.IsDefault)
+				{
+					colorScheme.PrimaryColor = _defaultButtonScheme.ColorScheme.PrimaryColor;
+					colorScheme.OnSurfaceColor = _defaultButtonScheme.ColorScheme.OnSurfaceColor;
+				}
+				else
+				{
+					UIColor uiColor = color.ToUIColor();
+
+					colorScheme.PrimaryColor = uiColor;
+					colorScheme.OnSurfaceColor = uiColor;
+				}
+			}
 		}
 
 		void UpdateBorder()
 		{
-			var uiButton = Control;
-			var button = Element;
+			// NOTE: borders are not a "supported" style of the contained
+			// button, thus we don't use the themer here.
 
-			if (button.BorderColor != Color.Default)
-				uiButton.SetBorderColor(button.BorderColor.ToUIColor(), UIControlState.Normal);
+			// BorderColor
 
-			uiButton.SetBorderWidth(Math.Max(0f, (float)button.BorderWidth), UIControlState.Normal);
+			Color borderColor = Element.BorderColor;
 
-			nfloat cornerRadius = _defaultCornerRadius;
+			if (_defaultBorderColor == null)
+				_defaultBorderColor = Control.GetBorderColor(UIControlState.Normal);
 
-			if (button.IsSet(Button.CornerRadiusProperty) && button.CornerRadius != (int)Button.CornerRadiusProperty.DefaultValue)
-				cornerRadius = button.CornerRadius;
+			if (borderColor.IsDefault)
+				Control.SetBorderColor(_defaultBorderColor, UIControlState.Normal);
+			else
+				Control.SetBorderColor(borderColor.ToUIColor(), UIControlState.Normal);
 
-			uiButton.Layer.CornerRadius = cornerRadius; 
+			// BorderWidth
+
+			double borderWidth = Element.BorderWidth;
+
+			if (_defaultBorderWidth == -1)
+				_defaultBorderWidth = Control.GetBorderWidth(UIControlState.Normal);
+
+			if (borderWidth == (double)Button.BorderWidthProperty.DefaultValue)
+				Control.SetBorderWidth(_defaultBorderWidth, UIControlState.Normal);
+			else
+				Control.SetBorderWidth((nfloat)borderWidth, UIControlState.Normal);
+		}
+
+		void UpdateCornerRadius()
+		{
+			int cornerRadius = Element.CornerRadius;
+
+			if (cornerRadius == (int)Button.CornerRadiusProperty.DefaultValue)
+				_buttonScheme.CornerRadius = _defaultButtonScheme.CornerRadius;
+			else
+				_buttonScheme.CornerRadius = cornerRadius;
 		}
 
 		void UpdateFont()
 		{
-			Control.SetTitleFont(Element.ToUIFont(), UIControlState.Normal);
+			if (_buttonScheme.TypographyScheme is TypographyScheme typographyScheme)
+			{
+				if (Element.Font == (Font)Button.FontProperty.DefaultValue)
+					typographyScheme.Button = _defaultButtonScheme.TypographyScheme.Button;
+				else
+					typographyScheme.Button = Element.ToUIFont();
+			}
 		}
 
-		async void UpdateImage()
+		void UpdateTextColor()
 		{
-			IImageSourceHandler handler;
-			FileImageSource source = Element.Image;
-			if (source != null && (handler = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
+			if (_buttonScheme.ColorScheme is SemanticColorScheme colorScheme)
 			{
-				UIImage uiimage;
-				try
-				{
-					uiimage = await handler.LoadImageAsync(source, scale: (float)UIScreen.MainScreen.Scale);
-				}
-				catch (OperationCanceledException)
-				{
-					uiimage = null;
-				}
-				UIButton button = Control;
-				if (button != null && uiimage != null)
-				{
-					button.SetImage(uiimage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal), UIControlState.Normal);
+				Color textColor = Element.TextColor;
 
-					button.ImageView.ContentMode = UIViewContentMode.ScaleAspectFit;
-
-					ComputeEdgeInsets(Control, Element.ContentLayout);
-
-					// disable tint for now
-					// Control.SetImageTintColor(UIColor.White, UIControlState.Normal);
-				}
+				if (textColor.IsDefault)
+					colorScheme.OnPrimaryColor = _defaultButtonScheme.ColorScheme.OnPrimaryColor;
+				else
+					colorScheme.OnPrimaryColor = textColor.ToUIColor();
 			}
-			else
-			{
-				Control.SetImage(null, UIControlState.Normal);
-				ClearEdgeInsets(Control);
-			}
-			((IVisualElementController)Element).NativeSizeChanged();
 		}
 
 		void UpdateText()
@@ -223,24 +262,30 @@ namespace Xamarin.Forms.Platform.iOS.Material
 			}
 		}
 
-		void UpdateTextColor()
+		async void UpdateImage()
 		{
-			if (Element.TextColor == Color.Default)
+			UIButton button = Control;
+			if (button == null)
+				return;
+
+			var uiimage = await Element.Image.GetNativeImageAsync();
+			if (uiimage != null)
 			{
-				Control.SetTitleColor(_buttonTextColorDefaultNormal, UIControlState.Normal);
-				Control.SetTitleColor(_buttonTextColorDefaultHighlighted, UIControlState.Highlighted);
-				Control.SetTitleColor(_buttonTextColorDefaultDisabled, UIControlState.Disabled);
+				button.SetImage(uiimage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal), UIControlState.Normal);
+				button.ImageView.ContentMode = UIViewContentMode.ScaleAspectFit;
+
+				ComputeEdgeInsets(Control, Element.ContentLayout);
+
+				// disable tint for now
+				// button.SetImageTintColor(UIColor.White, UIControlState.Normal);
 			}
 			else
 			{
-				var color = Element.TextColor.ToUIColor();
-
-				Control.SetTitleColor(color, UIControlState.Normal);
-				Control.SetTitleColor(color, UIControlState.Highlighted);
-				Control.SetTitleColor(_useLegacyColorManagement ? _buttonTextColorDefaultDisabled : color, UIControlState.Disabled);
-
-				Control.TintColor = color;
+				button.SetImage(null, UIControlState.Normal);
+				ClearEdgeInsets();
 			}
+
+			Element.NativeSizeChanged();
 		}
 
 		void UpdatePadding(UIButton button = null)
@@ -260,25 +305,30 @@ namespace Xamarin.Forms.Platform.iOS.Material
 			}
 		}
 
-		void UpdateContentEdge(UIButton button, UIEdgeInsets? delta = null)
+		void UpdateContentEdge(UIButton button = null, UIEdgeInsets? delta = null)
 		{
-			_paddingDelta = delta ?? new UIEdgeInsets();
-			UpdatePadding(button);
-		}
-
-		void ClearEdgeInsets(UIButton button)
-		{
-			if (button == null)
+			var uiElement = button ?? Control;
+			if (uiElement == null)
 				return;
 
-			Control.ImageEdgeInsets = new UIEdgeInsets(0, 0, 0, 0);
-			Control.TitleEdgeInsets = new UIEdgeInsets(0, 0, 0, 0);
-			UpdateContentEdge(Control);
+			_paddingDelta = delta ?? new UIEdgeInsets();
+			UpdatePadding(uiElement);
+		}
+
+		void ClearEdgeInsets(UIButton button = null)
+		{
+			var uiElement = button ?? Control;
+			if (uiElement == null)
+				return;
+
+			uiElement.ImageEdgeInsets = new UIEdgeInsets(0, 0, 0, 0);
+			uiElement.TitleEdgeInsets = new UIEdgeInsets(0, 0, 0, 0);
+			UpdateContentEdge(uiElement);
 		}
 
 		void ComputeEdgeInsets(UIButton button, Button.ButtonContentLayout layout)
 		{
-			if (button?.ImageView?.Image == null || string.IsNullOrEmpty(button.TitleLabel?.Text))
+			if (button?.ImageView?.Image == null || string.IsNullOrEmpty(button?.TitleLabel?.Text))
 				return;
 
 			var position = layout.Position;
@@ -330,14 +380,5 @@ namespace Xamarin.Forms.Platform.iOS.Material
 			button.ImageEdgeInsets = new UIEdgeInsets(-imageVertOffset, horizontalImageOffset, imageVertOffset, -horizontalImageOffset);
 			button.TitleEdgeInsets = new UIEdgeInsets(titleVertOffset, -horizontalTitleOffset, -titleVertOffset, horizontalTitleOffset);
 		}
-
-
-		//protected override void OnElementChanged(ElementChangedEventArgs<Button> e)
-		//{
-		//	base.OnElementChanged(e);
-		//	SetNativeControl(new MButton());
-		//	Control.BackgroundColor = Element.BackgroundColor.ToUIColor();
-		//	Control.SetTitle(Element.Text, UIControlState.Normal);
-		//}
 	}
 }

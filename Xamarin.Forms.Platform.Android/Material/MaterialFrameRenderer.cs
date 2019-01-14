@@ -1,54 +1,54 @@
-#if __ANDROID81__
-#else
+﻿#if __ANDROID_28__
 using System;
 using System.ComponentModel;
-using System.Threading.Tasks;
 using Android.Content;
-using Android.Graphics.Drawables;
 using Android.Support.V4.View;
-using Android.Support.V7.Widget;
 using Android.Views;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android.FastRenderers;
 using Xamarin.Forms.Platform.Android.Material;
-using MaterialCardView = Android.Support.Design.Card.MaterialCardView;
-using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
+using MaterialCardView = Android.Support.Design.Card.MaterialCardView;
 
-// this won't go here permanently it's just for testing at this point
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Frame), typeof(MaterialFrameRenderer), new[] { typeof(VisualRendererMarker.Material) })]
+
 namespace Xamarin.Forms.Platform.Android.Material
 {
-	public class MaterialFrameRenderer : MaterialCardView, IVisualElementRenderer, IEffectControlProvider, IViewRenderer, ITabStop
+	public class MaterialFrameRenderer : MaterialCardView,
+		IVisualElementRenderer, IEffectControlProvider, IViewRenderer, ITabStop
 	{
 		float _defaultElevation = -1f;
 		float _defaultCornerRadius = -1f;
+		int _defaultStrokeWidth = -1;
+		int? _defaultBackgroundColor;
+		int? _defaultStrokeColor;
 		int? _defaultLabelFor;
 
 		bool _disposed;
+
 		Frame _element;
 
-		VisualElementPackager _visualElementPackager;
 		VisualElementTracker _visualElementTracker;
+		VisualElementPackager _visualElementPackager;
 
 		readonly GestureManager _gestureManager;
 		readonly EffectControlProvider _effectControlProvider;
-		readonly MotionEventHelper _motionEventHelper = new MotionEventHelper();
+		readonly MotionEventHelper _motionEventHelper;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
 
-		public MaterialFrameRenderer(Context context) : base(new ContextThemeWrapper(context, Resource.Style.XamarinFormsMaterialTheme))
+		public MaterialFrameRenderer(Context context)
+			: base(new ContextThemeWrapper(context, Resource.Style.XamarinFormsMaterialTheme))
 		{
 			VisualElement.VerifyVisualFlagEnabled();
+
 			_gestureManager = new GestureManager(this);
 			_effectControlProvider = new EffectControlProvider(this);
-			UseCompatPadding = true;
+			_motionEventHelper = new MotionEventHelper();
 		}
 
-		protected CardView Control => this;
-
-		AView ITabStop.TabStop => this;
+		protected MaterialCardView Control => this;
 
 		protected Frame Element
 		{
@@ -58,90 +58,40 @@ namespace Xamarin.Forms.Platform.Android.Material
 				if (_element == value)
 					return;
 
-				Frame oldElement = _element;
+				var oldElement = _element;
 				_element = value;
 
 				OnElementChanged(new ElementChangedEventArgs<Frame>(oldElement, _element));
 
-				_element?.SendViewInitialized(Control);
+				_element?.SendViewInitialized(this);
+
+				_motionEventHelper.UpdateElement(_element);
+
+				if (!string.IsNullOrEmpty(Element.AutomationId))
+					ContentDescription = Element.AutomationId;
 			}
-		}
-
-		VisualElement IVisualElementRenderer.Element => Element;
-		ViewGroup IVisualElementRenderer.ViewGroup => this;
-		AView IVisualElementRenderer.View => this;
-
-		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
-		{
-			Context context = Context;
-			return new SizeRequest(new Size(context.ToPixels(20), context.ToPixels(20)));
-		}
-
-		void IVisualElementRenderer.SetElement(VisualElement element)
-		{
-			var frame = element as Frame;
-			if (frame == null)
-				throw new ArgumentException("Element must be of type Frame");
-			Element = frame;
-			_motionEventHelper.UpdateElement(frame);
-
-			if (!string.IsNullOrEmpty(Element.AutomationId))
-				ContentDescription = Element.AutomationId;
-		}
-
-		void IVisualElementRenderer.SetLabelFor(int? id)
-		{
-			if (_defaultLabelFor == null)
-				_defaultLabelFor = ViewCompat.GetLabelFor(this);
-
-			ViewCompat.SetLabelFor(this, (int)(id ?? _defaultLabelFor));
-		}
-
-		VisualElementTracker IVisualElementRenderer.Tracker => _visualElementTracker;
-
-		void IVisualElementRenderer.UpdateLayout()
-		{
-			VisualElementTracker tracker = _visualElementTracker;
-			tracker?.UpdateLayout();
-		}
-
-		void IEffectControlProvider.RegisterEffect(Effect effect)
-		{
-			_effectControlProvider.RegisterEffect(effect);
-		}
-
-		void IViewRenderer.MeasureExactly()
-		{
-			ViewRenderer.MeasureExactly(this, Element, Context);
 		}
 
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
 				return;
-
 			_disposed = true;
 
 			if (disposing)
 			{
 				_gestureManager?.Dispose();
 
-				if (_visualElementTracker != null)
-				{
-					_visualElementTracker.Dispose();
-					_visualElementTracker = null;
-				}
+				_visualElementTracker?.Dispose();
+				_visualElementTracker = null;
 
-				if (_visualElementPackager != null)
-				{
-					_visualElementPackager.Dispose();
-					_visualElementPackager = null;
-				}
+				_visualElementPackager?.Dispose();
+				_visualElementPackager = null;
 
-				int count = ChildCount;
+				var count = ChildCount;
 				for (var i = 0; i < count; i++)
 				{
-					AView child = GetChildAt(i);
+					var child = GetChildAt(i);
 					child.Dispose();
 				}
 
@@ -152,7 +102,6 @@ namespace Xamarin.Forms.Platform.Android.Material
 					if (Platform.GetRenderer(Element) == this)
 						Element.ClearValue(Platform.RendererProperty);
 				}
-
 			}
 
 			base.Dispose(disposing);
@@ -170,7 +119,6 @@ namespace Xamarin.Forms.Platform.Android.Material
 			if (e.NewElement != null)
 			{
 				this.EnsureId();
-				//this.SetBackground(_backgroundDrawable);
 
 				if (_visualElementTracker == null)
 				{
@@ -180,39 +128,14 @@ namespace Xamarin.Forms.Platform.Android.Material
 				}
 
 				e.NewElement.PropertyChanged += OnElementPropertyChanged;
+
 				UpdateShadow();
-				UpdateBackgroundColor();
 				UpdateCornerRadius();
-				UpdateBorderColor();
+				UpdateBorder();
+				UpdateBackgroundColor();
 
 				ElevationHelper.SetElevation(this, e.NewElement);
 			}
-		}
-
-		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
-		{
-			if (Element == null)
-				return;
-
-			var children = ((IElementController)Element).LogicalChildren;
-			for (var i = 0; i < children.Count; i++)
-			{
-				var visualElement = children[i] as VisualElement;
-				if (visualElement == null)
-					continue;
-				IVisualElementRenderer renderer = Android.Platform.GetRenderer(visualElement);
-				renderer?.UpdateLayout();
-			}
-		}
-
-		public override bool OnTouchEvent(MotionEvent e)
-		{
-			if (_gestureManager.OnTouchEvent(e) || base.OnTouchEvent(e))
-			{
-				return true;
-			}
-
-			return _motionEventHelper.HandleMotionEvent(Parent, e);
 		}
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -221,63 +144,47 @@ namespace Xamarin.Forms.Platform.Android.Material
 
 			if (e.PropertyName == Frame.HasShadowProperty.PropertyName)
 				UpdateShadow();
-			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
-				UpdateBackgroundColor();
 			else if (e.PropertyName == Frame.CornerRadiusProperty.PropertyName)
 				UpdateCornerRadius();
 			else if (e.PropertyName == Frame.BorderColorProperty.PropertyName)
-				UpdateBorderColor();
+				UpdateBorder();
+			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+				UpdateBackgroundColor();
 		}
 
-		void UpdateBackgroundColor()
+		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
-			if (_disposed)
+			if (Element == null)
 				return;
 
-			Color bgColor = Element.BackgroundColor;
-
-			int[][] States =
+			var children = Element.LogicalChildren;
+			for (var i = 0; i < children.Count; i++)
 			{
-				new int[0]
-			};
-
-			CardBackgroundColor = new global::Android.Content.Res.ColorStateList
-				(
-					States,
-					new int[] { bgColor.IsDefault ? AColor.White : bgColor.ToAndroid() }
-				);
-			
+				if (children[i] is VisualElement visualElement)
+				{
+					var renderer = Platform.GetRenderer(visualElement);
+					renderer?.UpdateLayout();
+				}
+			}
 		}
 
-		void UpdateBorderColor()
+		public override bool OnTouchEvent(MotionEvent e)
 		{
-			if (_disposed)
-				return;
+			if (_gestureManager.OnTouchEvent(e) || base.OnTouchEvent(e))
+				return true;
 
-			Color borderColor = Element.BorderColor;
-			if (borderColor.IsDefault)
-			{
-				StrokeColor = AColor.Transparent;
-				StrokeWidth = 0;
-			}
-			else
-			{
-				StrokeColor = borderColor.ToAndroid();
-				StrokeWidth = 25;
-			}
-
+			return _motionEventHelper.HandleMotionEvent(Parent, e);
 		}
 
 		void UpdateShadow()
 		{
-			if (_disposed)
+			if (_disposed || Element == null)
 				return;
 
-			float elevation = _defaultElevation;
+			// set the default elevation on the first time
+			if (_defaultElevation < 0)
+				_defaultElevation = CardElevation;
 
-			if (elevation == -1f)
-				_defaultElevation = elevation = CardElevation;
-			 
 			if (Element.HasShadow)
 				CardElevation = _defaultElevation;
 			else
@@ -286,23 +193,111 @@ namespace Xamarin.Forms.Platform.Android.Material
 
 		void UpdateCornerRadius()
 		{
-			if (_disposed)
+			if (_disposed || Element == null)
 				return;
 
-			if (_defaultCornerRadius == -1f)
-			{
+			var cornerRadius = Element.CornerRadius;
+			if (cornerRadius < 0f && _defaultCornerRadius < 0f)
+				return;
+
+			if (_defaultCornerRadius < 0f)
 				_defaultCornerRadius = Radius;
+
+			if (cornerRadius < 0f)
+				Radius = _defaultCornerRadius;
+			else
+				Radius = (int)Context.ToPixels(cornerRadius);
+
+			UpdateBorder();
+		}
+
+		void UpdateBorder()
+		{
+			if (_disposed || Element == null)
+				return;
+
+			var borderColor = Element.BorderColor;
+			if (borderColor.IsDefault && _defaultStrokeColor == null && _defaultStrokeWidth < 0f)
+				return;
+
+			if (_defaultStrokeColor == null)
+				_defaultStrokeColor = StrokeColor;
+			if (_defaultStrokeWidth < 0)
+				_defaultStrokeWidth = StrokeWidth;
+
+			if (borderColor.IsDefault)
+			{
+				StrokeColor = _defaultStrokeColor.Value;
+				StrokeWidth = _defaultStrokeWidth;
+			}
+			else
+			{
+				StrokeColor = borderColor.ToAndroid();
+				StrokeWidth = (int)Context.ToPixels(1);
 			}
 
-			float cornerRadius = Element.CornerRadius;
-
-			if (cornerRadius == -1f)
-				cornerRadius = _defaultCornerRadius;
-			else
-				cornerRadius = Context.ToPixels(cornerRadius);
-
-			this.Radius = cornerRadius;
+			// update the native and forms view with the border
+			SetContentPadding(0, 0, 0, 0);
 		}
+
+		void UpdateBackgroundColor()
+		{
+			if (_disposed || Element == null)
+				return;
+
+			var bgColor = Element.BackgroundColor;
+			if (bgColor.IsDefault && _defaultBackgroundColor == null)
+				return;
+
+			if (_defaultBackgroundColor == null)
+				_defaultBackgroundColor = CardBackgroundColor.DefaultColor;
+
+			SetCardBackgroundColor(bgColor.IsDefault ? _defaultBackgroundColor.Value : bgColor.ToAndroid());
+		}
+
+		// IVisualElementRenderer
+
+		VisualElement IVisualElementRenderer.Element => Element;
+
+		VisualElementTracker IVisualElementRenderer.Tracker => _visualElementTracker;
+
+		ViewGroup IVisualElementRenderer.ViewGroup => this;
+
+		AView IVisualElementRenderer.View => this;
+
+		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
+		{
+			var context = Context;
+			return new SizeRequest(new Size(context.ToPixels(20), context.ToPixels(20)));
+		}
+
+		void IVisualElementRenderer.SetElement(VisualElement element) =>
+			Element = (element as Frame) ?? throw new ArgumentException("Element must be of type Frame.");
+
+		void IVisualElementRenderer.SetLabelFor(int? id)
+		{
+			if (_defaultLabelFor == null)
+				_defaultLabelFor = ViewCompat.GetLabelFor(this);
+
+			ViewCompat.SetLabelFor(this, (int)(id ?? _defaultLabelFor));
+		}
+
+		void IVisualElementRenderer.UpdateLayout() =>
+			_visualElementTracker?.UpdateLayout();
+
+		// IEffectControlProvider
+
+		void IEffectControlProvider.RegisterEffect(Effect effect) =>
+			_effectControlProvider?.RegisterEffect(effect);
+
+		// IViewRenderer
+
+		void IViewRenderer.MeasureExactly() =>
+			ViewRenderer.MeasureExactly(this, Element, Context);
+
+		// ITabStop
+
+		AView ITabStop.TabStop => this;
 	}
 }
 #endif

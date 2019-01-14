@@ -7,10 +7,12 @@ using Android.Widget;
 using AButton = Android.Widget.Button;
 using AView = Android.Views.View;
 using Xamarin.Forms.Internals;
+using System.ComponentModel;
 
 namespace Xamarin.Forms.Platform.Android
 {
 	[Obsolete("ActionSheetRenderer is obsolete as of version 1.3.2. ActionSheet now uses default implementation.")]
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class ActionSheetRenderer : Dialog, AView.IOnClickListener
 	{
 		readonly ActionSheetArguments _arguments;

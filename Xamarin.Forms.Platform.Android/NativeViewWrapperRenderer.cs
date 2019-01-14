@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using Android.Content;
 using Xamarin.Forms.Internals;
 
@@ -11,6 +12,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use NativeViewWrapperRenderer(Context) instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public NativeViewWrapperRenderer()
 		{
 		}
