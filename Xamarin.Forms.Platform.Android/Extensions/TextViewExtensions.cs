@@ -74,18 +74,18 @@ namespace Xamarin.Forms.Platform.Android
 
 		public static void RecalculateSpanPositions(this TextView textView, Label element, SpannableString spannableString, SizeRequest finalSize)
 		{
-			if (element?.FormattedText?.Spans == null
-				|| element.FormattedText.Spans.Count == 0)
+			var layout = textView.Layout;
+			if (layout == null)
+				return;
+
+			if (element?.FormattedText?.Spans == null || element.FormattedText.Spans.Count == 0)
+				return;
+
+			if (spannableString == null || spannableString.IsDisposed())
 				return;
 
 			var labelWidth = finalSize.Request.Width;
-
 			if (labelWidth <= 0 || finalSize.Request.Height <= 0)
-				return;
-
-			var layout = textView.Layout;
-
-			if (layout == null)
 				return;
 
 			var text = spannableString.ToString();
