@@ -33,17 +33,18 @@ namespace Xamarin.Forms.Controls.Issues
 
 			Content.BindingContext = _model;
 		}
-
+		[Preserve(AllMembers = true)]
 		class MyItem
 		{
 			public String Description { get; set; }
 		}
-
+		[Preserve(AllMembers = true)]
 		class MyItemsViewModel
 		{
 			public List<MyItem> MyItems { get; set; } = new List<MyItem>();
 		}
 
+		[Preserve(AllMembers = true)]
 		class MyViewCell : ViewCell
 		{
 			Label label;
