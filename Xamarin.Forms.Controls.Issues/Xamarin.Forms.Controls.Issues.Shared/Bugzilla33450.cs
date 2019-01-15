@@ -3,13 +3,13 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 33450, "[iOS] Cell with ContextAction has a different layout")]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 33450, "[iOS] Cell with ContextAction has a different layout")]
 	public class Bugzilla33450 : TestContentPage // or TestMasterDetailPage, etc ...
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
-			var list = new ListView { ItemTemplate = new DataTemplate (typeof(MyImageCell)) };
+			var list = new ListView { ItemTemplate = new DataTemplate(typeof(MyImageCell)) };
 
 			list.ItemsSource = new[] {
 				"One",
@@ -24,10 +24,15 @@ namespace Xamarin.Forms.Controls.Issues
 				"Ten",
 			};
 
-			Content = list;
+			Content = new StackLayout
+			{
+				Children = {
+					new Label { Text = "The following list contains cells with and without context actions, but all of the cells should be laid out identically. If the cells do not look identical, this test has failed." },
+					list }
+			};
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class MyImageCell : ImageCell
 		{
 			static bool s_addContextAction = false;
@@ -36,8 +41,8 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				ImageSource = "bank.png";
 				SetBinding(TextProperty, new Binding("."));
-			
-				if(s_addContextAction)
+
+				if (s_addContextAction)
 				{
 					ContextActions.Add(new MenuItem() { Text = "Delete" });
 				}

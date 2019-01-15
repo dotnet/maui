@@ -142,6 +142,8 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Label> e)
 		{
+			_perfectSizeValid = false;
+
 			if (e.OldElement != null)
 			{
 				e.OldElement.PropertyChanging -= ElementPropertyChanging;

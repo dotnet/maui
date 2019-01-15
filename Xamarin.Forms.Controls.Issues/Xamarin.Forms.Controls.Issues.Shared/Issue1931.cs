@@ -55,6 +55,7 @@ namespace Xamarin.Forms.Controls.Issues
 			return page;
 		}
 
+		[Preserve(AllMembers = true)]
 		public class Item2 : System.ComponentModel.INotifyPropertyChanged
 		{
 			public string Name
