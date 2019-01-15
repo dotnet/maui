@@ -31,7 +31,9 @@ namespace Xamarin.Forms.Controls
 			var btn3 = new Button { Text = "End" };
 			var btn7 = new Button { Text = "Toggle Scroll Bar Visibility" };
 			var btn6 = new Button { Text = "MakeVisible", HorizontalOptions= LayoutOptions.CenterAndExpand, BackgroundColor = Color.Accent };
-			
+			var btn8 = new Button { Text = "Toogle Orientation" };
+			var btn9 = new Button { Text = "Default Scroll Bar Visibility" };
+
 			var label = new Label { Text = string.Format ("X: {0}, Y: {1}", 0, 0) };
 			
 			root.Children.Add (label);
@@ -42,6 +44,8 @@ namespace Xamarin.Forms.Controls
 			btnStack.Children.Add (btn2);
 			btnStack.Children.Add (btn3);
 			btnStack.Children.Add(btn7);
+			btnStack.Children.Add(btn9);
+			btnStack.Children.Add(btn8);
 
 			btnStack1.Children.Add (btn);
 			btnStack1.Children.Add (btn4);
@@ -120,6 +124,24 @@ namespace Xamarin.Forms.Controls
 					_scrollview.VerticalScrollBarVisibility = ScrollBarVisibility.Always;
 					_scrollview.HorizontalScrollBarVisibility = ScrollBarVisibility.Always;
 				}
+			};
+
+			btn8.Clicked += (object sender, EventArgs e) =>
+			{
+				if (_scrollview.Orientation == ScrollOrientation.Horizontal)
+				{
+					_scrollview.Orientation = ScrollOrientation.Vertical;
+				}
+				else
+				{
+					_scrollview.Orientation = ScrollOrientation.Horizontal;
+				}
+			};
+
+			btn9.Clicked += (object sender, EventArgs e) =>
+			{
+				_scrollview.VerticalScrollBarVisibility = ScrollBarVisibility.Default;
+				_scrollview.HorizontalScrollBarVisibility = ScrollBarVisibility.Default;
 			};
 
 			_stack.Padding = new Size (20, 60);

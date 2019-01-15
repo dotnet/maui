@@ -111,7 +111,7 @@ namespace Xamarin.Forms.Platform.UWP
 			else if (e.PropertyName == ScrollView.OrientationProperty.PropertyName)
 				UpdateOrientation();
 			else if (e.PropertyName == ScrollView.VerticalScrollBarVisibilityProperty.PropertyName)
-				UpdateVerticalScrollBarVisibiilty();
+				UpdateVerticalScrollBarVisibility();
 			else if (e.PropertyName == ScrollView.HorizontalScrollBarVisibilityProperty.PropertyName)
 				UpdateHorizontalScrollBarVisibility();
 		}
@@ -267,7 +267,12 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateOrientation()
 		{
-			if (Element.Orientation == ScrollOrientation.Horizontal || Element.Orientation == ScrollOrientation.Both)
+			//Only update the horizontal scroll bar visibility if the user has not set a desired state.
+			if (Element.HorizontalScrollBarVisibility != ScrollBarVisibility.Default)
+				return;
+
+			var orientation = Element.Orientation;
+			if (orientation == ScrollOrientation.Horizontal || orientation == ScrollOrientation.Both)
 			{
 				Control.HorizontalScrollBarVisibility = UwpScrollBarVisibility.Auto;
 			}
@@ -292,16 +297,24 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		void UpdateVerticalScrollBarVisibiilty()
+		void UpdateVerticalScrollBarVisibility()
 		{
 			Control.VerticalScrollBarVisibility = ScrollBarVisibilityToUwp(Element.VerticalScrollBarVisibility);
 		}
 
 		void UpdateHorizontalScrollBarVisibility()
 		{
+			var horizontalVisibility = Element.HorizontalScrollBarVisibility;
+
+			if (horizontalVisibility == ScrollBarVisibility.Default)
+			{
+				UpdateOrientation();
+				return;
+			}
+
 			var orientation = Element.Orientation;
 			if (orientation == ScrollOrientation.Horizontal || orientation == ScrollOrientation.Both)
-				Control.HorizontalScrollBarVisibility = ScrollBarVisibilityToUwp(Element.HorizontalScrollBarVisibility);
+				Control.HorizontalScrollBarVisibility = ScrollBarVisibilityToUwp(horizontalVisibility);
 		}
 	}
 }
