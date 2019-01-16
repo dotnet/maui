@@ -46,7 +46,6 @@ using Xamarin.Forms.Platform.Android;
 [assembly: ExportRenderer (typeof (ScrollView), typeof (ScrollViewRenderer))]
 [assembly: ExportRenderer (typeof (ActivityIndicator), typeof (ActivityIndicatorRenderer))]
 [assembly: ExportRenderer (typeof (Frame), typeof (FrameRenderer))]
-[assembly: ExportRenderer (typeof (NavigationMenu), typeof (NavigationMenuRenderer))]
 [assembly: ExportRenderer (typeof (OpenGLView), typeof (OpenGLViewRenderer))]
 
 [assembly: ExportRenderer (typeof (TabbedPage), typeof (TabbedRenderer))]

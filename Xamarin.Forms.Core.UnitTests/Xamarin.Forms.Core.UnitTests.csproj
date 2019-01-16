@@ -122,7 +122,6 @@
     <Compile Include="MockViewModel.cs" />
     <Compile Include="MotionTests.cs" />
     <Compile Include="MultiPageTests.cs" />
-    <Compile Include="NavigationMenuUnitTests.cs" />
     <Compile Include="NavigationModelTests.cs" />
     <Compile Include="NavigationProxyTests.cs" />
     <Compile Include="NavigationUnitTest.cs" />

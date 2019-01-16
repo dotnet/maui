@@ -94,7 +94,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\KeyboardObserver.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\LabelRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\ListViewRenderer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Renderers\NavigationMenuRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\NavigationRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\OpenGLViewRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\PageRenderer.cs" />

@@ -99,10 +99,6 @@
 	{
 	}
 
-	internal class _NavigationMenuRenderer
-	{
-	}
-
 	internal class _OpenGLViewRenderer
 	{
 	}

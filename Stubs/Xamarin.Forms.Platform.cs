@@ -105,15 +105,12 @@ namespace Xamarin.Forms.Platform
 	[RenderWith (typeof (FrameRenderer))]
 	internal class _FrameRenderer { }
 
-#if !WINDOWS_PHONE && !WINDOWS_PHONE_APP && !TIZEN4_0
-	[RenderWith (typeof (NavigationMenuRenderer))]
-	internal class _NavigationMenuRenderer { }
 
+#if !WINDOWS_PHONE && !WINDOWS_PHONE_APP && !TIZEN4_0
 	[RenderWith (typeof (OpenGLViewRenderer))]
 #else
 	[RenderWith (null)]
 #endif
-	
 	internal class _OpenGLViewRenderer { }
 
 #if !WINDOWS_PHONE && !WINDOWS_PHONE_APP && !TIZEN4_0

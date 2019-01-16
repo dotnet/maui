@@ -210,7 +210,6 @@
     <Compile Include="Renderers\IShellTabLayoutAppearanceTracker.cs" />
     <Compile Include="Renderers\IShellToolbarAppearanceTracker.cs" />
     <Compile Include="Renderers\IShellToolbarTracker.cs" />
-    <Compile Include="Renderers\IToolbarButton.cs" />
     <Compile Include="Renderers\KeyboardExtensions.cs" />
     <Compile Include="AppCompat\PickerRenderer.cs" />
     <Compile Include="AppCompat\ViewRenderer.cs" />
@@ -237,8 +236,6 @@
     <Compile Include="Renderers\ShellToolbarTracker.cs" />
     <Compile Include="Renderers\ShellSectionRenderer.cs" />
     <Compile Include="Renderers\StreamImagesourceHandler.cs" />
-    <Compile Include="Renderers\ToolbarButton.cs" />
-    <Compile Include="Renderers\ToolbarImageButton.cs" />
     <Compile Include="Renderers\ViewCellExtensions.cs" />
     <Compile Include="Renderers\ViewGroupExtensions.cs" />
     <AndroidResource Include="Resources\Layout\RootLayout.axml" />
@@ -270,7 +267,6 @@
     <Compile Include="Renderers\ListViewAdapter.cs" />
     <Compile Include="Renderers\ListViewRenderer.cs" />
     <Compile Include="Renderers\MasterDetailRenderer.cs" />
-    <Compile Include="Renderers\NavigationMenuRenderer.cs" />
     <Compile Include="Renderers\NavigationRenderer.cs" />
     <Compile Include="Renderers\ObjectJavaBox.cs" />
     <Compile Include="Renderers\CarouselPageAdapter.cs" />

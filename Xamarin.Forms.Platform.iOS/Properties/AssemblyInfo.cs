@@ -39,7 +39,6 @@ using UIKit;
 [assembly: ExportRenderer(typeof(ScrollView), typeof(ScrollViewRenderer))]
 [assembly: ExportRenderer(typeof(ActivityIndicator), typeof(ActivityIndicatorRenderer))]
 [assembly: ExportRenderer(typeof(Frame), typeof(FrameRenderer))]
-[assembly: ExportRenderer(typeof(NavigationMenu), typeof(NavigationMenuRenderer))]
 [assembly: ExportRenderer(typeof(ListView), typeof(ListViewRenderer))]
 [assembly: ExportRenderer (typeof (CollectionView), typeof (CollectionViewRenderer))]
 [assembly: ExportRenderer(typeof(OpenGLView), typeof(OpenGLViewRenderer))]
