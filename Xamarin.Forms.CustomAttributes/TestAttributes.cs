@@ -713,7 +713,8 @@ namespace Xamarin.Forms.CustomAttributes
 
 		public enum Switch
 		{
-			IsToggled
+			IsToggled,
+			OnColor
 		}
 
 		public enum TimePicker
