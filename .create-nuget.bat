@@ -9,7 +9,8 @@ set NUGET_EXE=%NUGET_DIR%NuGet.exe
 
 mkdir Xamarin.Forms.Platform.MacOS\bin\debug\
 mkdir Xamarin.Forms.Platform.Tizen\bin\debug\tizen40\
-mkdir Xamarin.Forms.Platform.MacOS\bin\debug\
+mkdir Xamarin.Forms.Maps.Tizen\bin\debug\Tizen40
+mkdir Xamarin.Forms.Maps.MacOS\bin\debug
 mkdir Xamarin.Forms.Platform.UAP\bin\debug\
 mkdir Xamarin.Forms.Platform.ios\bin\debug\
 mkdir Stubs\Xamarin.Forms.Platform.iOS\bin\iPhone\debug\
@@ -97,9 +98,11 @@ echo foo > Stubs\Xamarin.Forms.Platform.iOS\bin\iPhone\debug\Xamarin.Forms.Platf
 
 echo foo > Xamarin.Forms.Platform.MacOS\bin\debug\Xamarin.forms.Platform.macOS.dll
 echo foo > Xamarin.Forms.Platform.MacOS\bin\debug\Xamarin.forms.Platform.dll
+echo foo > Xamarin.Forms.Maps.MacOS\bin\debug\Xamarin.Forms.Maps.macOS.dll
 
 mkdir Stubs\Xamarin.Forms.Platform.Tizen\bin\debug\tizen40
 echo foo > Stubs\Xamarin.Forms.Platform.Tizen\bin\debug\tizen40\Xamarin.Forms.Platform.dll
+echo foo > Xamarin.Forms.Maps.Tizen\bin\debug\Tizen40\Xamarin.Forms.Maps.Tizen.dll
 
 mkdir Xamarin.Forms.Platform.Tizen\bin\debug\tizen40
 echo foo > Xamarin.Forms.Platform.Tizen\bin\debug\tizen40\Xamarin.forms.Platform.tizen.dll

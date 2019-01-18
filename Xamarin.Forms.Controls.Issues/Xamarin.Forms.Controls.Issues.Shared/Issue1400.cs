@@ -88,8 +88,8 @@ namespace Xamarin.Forms.Controls.Issues
             List.ItemsSource = newlist;
         }
     }
-
-    public class MyData : INotifyPropertyChanged
+	[Preserve(AllMembers = true)]
+	public class MyData : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -113,8 +113,8 @@ namespace Xamarin.Forms.Controls.Issues
             if (PropertyChanged != null) PropertyChanged(this, e);
         }
     }
-
-    public class MyGroup : ObservableCollection<MyData>, INotifyPropertyChanged
+	[Preserve(AllMembers = true)]
+	public class MyGroup : ObservableCollection<MyData>, INotifyPropertyChanged
     {
 	    string _headertitle;
 
@@ -131,7 +131,7 @@ namespace Xamarin.Forms.Controls.Issues
             }
         }
     }
-
+	[Preserve(AllMembers = true)]
 	internal class VCTest : ViewCell
     {
         public VCTest()
@@ -141,7 +141,7 @@ namespace Xamarin.Forms.Controls.Issues
             View = label;
         }
     }
-
+	[Preserve(AllMembers = true)]
 	internal class VCHeader : ViewCell
     {
         public VCHeader()

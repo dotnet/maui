@@ -52,6 +52,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			Title = "EntryBindingBug";
             On<iOS>().SetUseSafeArea(true);
+
 			BindingContext = new Test();
 
 			var entry = new Entry() {

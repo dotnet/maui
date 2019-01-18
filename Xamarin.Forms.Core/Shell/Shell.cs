@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
 
@@ -324,6 +325,35 @@ namespace Xamarin.Forms
 
 		public static Shell CurrentShell => Application.Current?.MainPage as Shell;
 
+		Uri GetAbsoluteUri(Uri relativeUri)
+		{
+			if (CurrentItem == null)
+				throw new InvalidOperationException("Relative path is used after selecting Current item.");
+
+			var parseUri = Regex.Match(relativeUri.OriginalString, @"(?<u>.+?)(\?(?<q>.+?))?(#(?<f>.+))?$").Groups;
+			var url = parseUri["u"].Value;
+			var query = parseUri["q"].Value;
+			var fragment = parseUri["f"].Value;
+
+			Element item = CurrentItem;
+			var list = new List<string> { url.Trim('/') };
+			while (item != null)
+			{
+				var route = Routing.GetRoute(item)?.Trim('/');
+				if (string.IsNullOrEmpty(route))
+					break;
+				list.Insert(0, route);
+				item = item.Parent;
+			}
+			var parentUriBuilder = new UriBuilder(RouteScheme)
+			{
+				Path = string.Join("/", list),
+				Query = query,
+				Fragment = fragment
+			};
+			return parentUriBuilder.Uri;
+		}
+
 		public async Task GoToAsync(ShellNavigationState state, bool animate = true)
 		{
 			// FIXME: This should not be none, we need to compute the delta and set flags correctly
@@ -333,7 +363,7 @@ namespace Xamarin.Forms
 
 			_accumulateNavigatedEvents = true;
 
-			var uri = state.Location;
+			var uri = state.Location.IsAbsoluteUri ? state.Location : GetAbsoluteUri(state.Location);
 			var queryString = uri.Query;
 			var queryData = ParseQueryString(queryString);
 			var path = uri.AbsolutePath;

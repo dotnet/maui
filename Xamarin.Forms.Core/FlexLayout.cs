@@ -344,6 +344,8 @@ namespace Xamarin.Forms
 			if (   e.PropertyName == WidthRequestProperty.PropertyName
 				|| e.PropertyName == HeightRequestProperty.PropertyName) {
 				var item = (sender as FlexLayout)?._root ?? GetFlexItem((BindableObject)sender);
+				if (item == null)
+					return;
 				item.Width = ((View)sender).WidthRequest < 0 ? float.NaN : (float)((View)sender).WidthRequest;
 				item.Height = ((View)sender).HeightRequest < 0 ? float.NaN : (float)((View)sender).HeightRequest;
 				InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);

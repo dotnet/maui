@@ -30,6 +30,7 @@ namespace Xamarin.Forms.Platform.iOS
 					Remove(args);
 					break;
 				case NotifyCollectionChangedAction.Replace:
+					Replace(args);
 					break;
 				case NotifyCollectionChangedAction.Move:
 					Move(args);
@@ -47,6 +48,14 @@ namespace Xamarin.Forms.Platform.iOS
 			var newPath = NSIndexPath.Create(0, args.NewStartingIndex);
 
 			_collectionView.MoveItem(oldPath, newPath);
+		}
+		
+		private void Replace(NotifyCollectionChangedEventArgs args)
+		{
+			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _itemsSource.IndexOf(args.NewItems[0]);
+			var count = args.NewItems.Count;
+
+			_collectionView.ReloadItems(CreateIndexesFrom(startIndex, count));
 		}
 
 		static NSIndexPath[] CreateIndexesFrom(int startIndex, int count)
