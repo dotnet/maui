@@ -8,7 +8,7 @@ using UwpScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class ScrollViewRenderer : ViewRenderer<ScrollView, ScrollViewer>
+	public class ScrollViewRenderer : ViewRenderer<ScrollView, ScrollViewer>, IDontGetFocus
 	{
 		VisualElement _currentView;
 		bool _checkedForRtlScroll = false;

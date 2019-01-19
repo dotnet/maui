@@ -49,6 +49,7 @@
     <Compile Include="CollectionViewRenderer.cs" />
     <Compile Include="FormsCancelButton.cs" />
     <Compile Include="AlertDialog.cs" />
+    <Compile Include="IDontGetFocus.cs" />
     <Compile Include="FontImageSourceHandler.cs" />
     <Compile Include="Items\ItemContentControl.cs" />
     <Compile Include="FormsPivot.cs" />

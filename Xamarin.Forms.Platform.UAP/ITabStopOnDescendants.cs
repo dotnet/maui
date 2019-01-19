@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.Forms.Platform.UWP
 {
-	public interface ITabStopOnDescendants
+	public interface ITabStopOnDescendants: IDontGetFocus
 	{
 	}
 }
