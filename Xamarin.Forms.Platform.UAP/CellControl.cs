@@ -103,8 +103,9 @@ namespace Xamarin.Forms.Platform.UWP
 			if (lv != null)
 			{
 				lv.SetValue(MeasuredEstimateProperty, result.Height);
-				SetDafaultColor();
 			}
+
+			SetDefaultSwitchColor();
 
 			return result;
 		}
@@ -202,7 +203,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		void SetDafaultColor()
+		void SetDefaultSwitchColor()
 		{
 			if (_defaultOnColor == null && Cell is SwitchCell)
 			{
