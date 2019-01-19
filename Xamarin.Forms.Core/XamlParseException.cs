@@ -1,17 +1,43 @@
-using System;
+﻿using System;
 using System.Xml;
 
 namespace Xamarin.Forms.Xaml
 {
+#if NETSTANDARD2_0
+	[Serializable]
+#endif
 	public class XamlParseException : Exception
 	{
 		readonly string _unformattedMessage;
 
-		internal XamlParseException (string message, IServiceProvider serviceProvider, Exception innerException = null) : this (message, GetLineInfo(serviceProvider), innerException)
+		public XamlParseException()
 		{
 		}
 
-		public XamlParseException(string message, IXmlLineInfo xmlInfo, Exception innerException = null) : base(FormatMessage(message, xmlInfo), innerException)
+		public XamlParseException(string message)
+		   : base(message)
+		{
+		}
+
+		public XamlParseException(string message, Exception innerException)
+		   : base(message, innerException)
+		{
+		}
+
+#if NETSTANDARD2_0
+		protected XamlParseException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
+			: base(info, context)
+		{
+		}
+#endif
+
+		internal XamlParseException(string message, IServiceProvider serviceProvider, Exception innerException = null)
+			: this(message, GetLineInfo(serviceProvider), innerException)
+		{
+		}
+
+		public XamlParseException(string message, IXmlLineInfo xmlInfo, Exception innerException = null)
+			: base(FormatMessage(message, xmlInfo), innerException)
 		{
 			_unformattedMessage = message;
 			XmlInfo = xmlInfo;
