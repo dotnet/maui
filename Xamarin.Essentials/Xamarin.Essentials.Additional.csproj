@@ -2,8 +2,8 @@
   <PropertyGroup>
     <!--Work around so the conditions work below-->
     <TargetFrameworks></TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">netstandard1.0;netstandard2.0;Xamarin.iOS10;MonoAndroid71;MonoAndroid80;MonoAndroid81;uap10.0.16299</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netstandard1.0;netstandard2.0;Xamarin.iOS10;MonoAndroid71;MonoAndroid80;MonoAndroid81;</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">netstandard1.0;netstandard2.0;Xamarin.iOS10;Xamarin.Mac20;MonoAndroid71;MonoAndroid80;MonoAndroid81;uap10.0.16299</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netstandard1.0;netstandard2.0;Xamarin.iOS10;Xamarin.Mac20;MonoAndroid71;MonoAndroid80;MonoAndroid81;</TargetFrameworks>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <RootNamespace>Xamarin.Essentials</RootNamespace>
     <PackageId>Xamarin.Essentials</PackageId>
@@ -102,6 +102,28 @@
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors" />
     <Reference Include="OpenTK-1.0" />
+  </ItemGroup>
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.Mac')) ">
+    <!--
+      BEGIN IMPORTS
+      macOS is very similar to iOS, and in some cases, exactly the same. So, we will
+      just use the iOS source.
+    -->
+    <Compile Include="Geocoding\Geocoding.ios.cs" />
+    <Compile Include="Geolocation\Geolocation.ios.cs" />
+    <Compile Include="Geolocation\GeolocationRequest.ios.cs" />
+    <Compile Include="MainThread\MainThread.ios.cs" />
+    <Compile Include="Map\Map.ios.cs" />
+    <Compile Include="Preferences\Preferences.ios.cs" />
+    <Compile Include="SecureStorage\SecureStorage.ios.cs" />
+    <Compile Include="Types\LocationExtensions.ios.cs" />
+    <Compile Include="Types\PlacemarkExtensions.ios.cs" />
+    <!-- END IMPORTS -->
+    <Compile Include="**\*.mac.cs" />
+    <Compile Include="**\*.mac.*.cs" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors" />
+    <Reference Include="OpenTK" />
   </ItemGroup>
   <ItemGroup>
     <None Include="**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
