@@ -7,6 +7,8 @@ variables:
   value: ''
 - name: Suffix
   value: ''
+- name: ProvisionatorExecutablePath
+  value: 'Xamarin.Forms.Build/provisionator.sh'
 - group: Xamarin.Forms
 - group: XQA Secrets
 

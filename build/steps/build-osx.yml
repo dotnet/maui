@@ -5,12 +5,12 @@ steps:
     displayName: 'Add QA cert password to keychain'
     inputs:
       type: InlineScript
-      script: '$(Build.Repository.LocalPath)/Xamarin.Forms.Build/provisionator.sh keychain set $(p12CertName) $(.p12.Password)'
+      script: '$(Build.Repository.LocalPath)/$(ProvisionatorExecutablePath) keychain set $(p12CertName) $(la.p12.Password)'
 
   - bash: '$(Build.Repository.LocalPath)/$(ProvisionatorExecutablePath) keychain set github.com $(GitHub.Token) || echo "PAT already set"'
     displayName: 'Initialize PAT'
 
-  - bash: '$(Build.Repository.LocalPath)/Xamarin.Forms.Build/provisionator.sh $(Build.Repository.LocalPath)/Xamarin.Forms.Build/provisioning.csx $(provisionator.extraArguments)'
+  - bash: '$(Build.Repository.LocalPath)/$(ProvisionatorExecutablePath) $(Build.Repository.LocalPath)/Xamarin.Forms.Build/provisioning.csx $(provisionator.extraArguments)'
     displayName: Provisioning
 
   - task: NuGetToolInstaller@0
