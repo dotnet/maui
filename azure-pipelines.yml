@@ -25,6 +25,8 @@ variables:
   value: ''
 - name: AppleCodesignProfileUrl
   value: ''
+- name: ProvisionatorExecutablePath
+  value: 'Xamarin.Forms.Build/provisionator.sh'
 - group: Xamarin.Forms
 - group: XQA Secrets
 
@@ -39,7 +41,10 @@ trigger:
     exclude:
     - README.md
 
-pr: none
+pr:
+- master
+- 3.4.0
+- 3.5.0
 
 jobs:
 - job: Phase_1

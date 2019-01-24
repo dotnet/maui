@@ -10,6 +10,7 @@ using Windows.UI.Popups;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
 using NativeAutomationProperties = Windows.UI.Xaml.Automation.AutomationProperties;
 
@@ -462,7 +463,15 @@ namespace Xamarin.Forms.Platform.UWP
 					options.SetResult(null);
 			};
 
-			actionSheet.ShowAt(((Page)sender).GetOrCreateRenderer().ContainerElement);
+			try
+			{
+				actionSheet.ShowAt(((Page)sender).GetOrCreateRenderer().ContainerElement);
+			}
+			catch (ArgumentException) // if the page is not in the visual tree
+			{
+				if (Window.Current.Content is FrameworkElement mainPage)
+					actionSheet.ShowAt(mainPage);
+			}
 		}
 
 		static async void OnPageAlert(Page sender, AlertArguments options)
