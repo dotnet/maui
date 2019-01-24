@@ -26,7 +26,7 @@
 
 			var collectionView = new CollectionView {ItemsLayout = itemsLayout, ItemTemplate = itemTemplate};
 
-			var generator = new ItemsSourceGenerator(collectionView, initialItems);
+			var generator = new ItemsSourceGenerator(collectionView, initialItems, ItemsSourceType.ObservableCollection);
 			
 			var remover = new ItemRemover(collectionView);
 			var adder = new ItemAdder(collectionView);
@@ -40,7 +40,7 @@
 
 			layout.Children.Add(adder);
 			Grid.SetRow(adder, 2);
-
+			
 			layout.Children.Add(replacer);
 			Grid.SetRow(replacer, 3);
 
@@ -52,7 +52,7 @@
 
 			Content = layout;
 
-			generator.GenerateObservableCollection();
+			generator.GenerateItems();
 		}
 	}
 }

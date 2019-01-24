@@ -1,15 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 
 namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 {
-	internal class ItemRemover : CollectionModifier 
+	internal class ItemRemover : ObservableCollectionModifier
 	{
 		public ItemRemover(CollectionView cv) : base(cv, "Remove")
 		{
 		}
 
-		protected override void ModifyCollection(ObservableCollection<CollectionViewGalleryTestItem> observableCollection, params int[] indexes)
+		protected override void ModifyObservableCollection(ObservableCollection<CollectionViewGalleryTestItem> observableCollection, params int[] indexes)
 		{
 			var index = indexes[0];
 

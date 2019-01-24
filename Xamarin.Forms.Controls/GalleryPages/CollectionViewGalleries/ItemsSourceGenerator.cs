@@ -27,15 +27,24 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 		}
 	}
 
+	internal enum ItemsSourceType
+	{
+		List,
+		ObservableCollection,
+		MultiTestObservableCollection
+	}
+
 	internal class ItemsSourceGenerator : ContentView
 	{
 		readonly ItemsView _cv;
+		private readonly ItemsSourceType _itemsSourceType;
 		readonly Entry _entry;
 
-		public ItemsSourceGenerator(ItemsView cv, int initialItems = 1000)
+		public ItemsSourceGenerator(ItemsView cv, int initialItems = 1000, 
+			ItemsSourceType itemsSourceType = ItemsSourceType.List)
 		{
 			_cv = cv;
-
+			_itemsSourceType = itemsSourceType;
 			var layout = new StackLayout
 			{
 				Orientation = StackOrientation.Horizontal,
@@ -68,6 +77,22 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 
 		public void GenerateItems()
 		{
+			switch (_itemsSourceType)
+			{
+				case ItemsSourceType.List:
+					GenerateList();	
+					break;
+				case ItemsSourceType.ObservableCollection:
+					GenerateObservableCollection();
+					break;
+				case ItemsSourceType.MultiTestObservableCollection:
+					GenerateMultiTestObservableCollection();
+					break;
+			}
+		}
+
+		void GenerateList()
+		{
 			if (int.TryParse(_entry.Text, out int count))
 			{
 				var items = new List<CollectionViewGalleryTestItem>();
@@ -82,7 +107,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 			}
 		}
 
-		public void GenerateObservableCollection()
+		void GenerateObservableCollection()
 		{
 			if (int.TryParse(_entry.Text, out int count))
 			{
@@ -95,6 +120,22 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 				}
 
 				_cv.ItemsSource = new ObservableCollection<CollectionViewGalleryTestItem>(items);
+			}
+		}
+
+		void GenerateMultiTestObservableCollection()
+		{
+			if (int.TryParse(_entry.Text, out int count))
+			{
+				var items = new MultiTestObservableCollection<CollectionViewGalleryTestItem>();
+
+				for (int n = 0; n < count; n++)
+				{
+					items.Add(new CollectionViewGalleryTestItem(DateTime.Now.AddDays(n),
+						$"{_images[n % _images.Length]}, {n}", _images[n % _images.Length], n));
+				}
+
+				_cv.ItemsSource = items;
 			}
 		}
 

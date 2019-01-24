@@ -16,6 +16,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			switch (itemsSource)
 			{
+				// TODO hartez ObservableItemSource should be taking an INotifyCollectionChanged in its constructor
 				case IList _ when itemsSource is INotifyCollectionChanged:
 					return new ObservableItemsSource(itemsSource, adapter);
 				case IEnumerable<object> generic:
