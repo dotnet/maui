@@ -40,7 +40,7 @@ using Xamarin.Forms.Controls.Issues;
 //[assembly: ExportRenderer(typeof(AndroidHelpText.HintLabel), typeof(HintLabel))]
 [assembly: ExportRenderer(typeof(QuickCollectNavigationPage), typeof(QuickCollectNavigationPageRenderer))]
 [assembly: ExportRenderer(typeof(Issue4782.Issue4782ImageButton), typeof(Issue4782ImageButtonImageButtonRenderer))]
-
+[assembly: ExportRenderer(typeof(Issue4561.CustomView), typeof(Issue4561CustomViewRenderer))]
 
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.Issues.NoFlashTestNavigationPage), typeof(Xamarin.Forms.ControlGallery.Android.NoFlashTestNavigationPage))]
 
@@ -683,6 +683,78 @@ namespace Xamarin.Forms.ControlGallery.Android
 		{
 			_gridChild = ViewGroup.GetChildAt(0);
 			_gridChild.SetOnTouchListener(this);
+		}
+	}
+
+	[Preserve]
+	public class Issue4561CustomView : LinearLayout
+	{
+		public Issue4561CustomView(Context context)
+			: base(context)
+		{
+			Initialize();
+		}
+
+		public Issue4561CustomView(Context context, IAttributeSet attrs) :
+			base(context, attrs)
+		{
+			Initialize();
+		}
+
+		public Issue4561CustomView(Context context, IAttributeSet attrs, int defStyle) :
+			base(context, attrs, defStyle)
+		{
+			Initialize();
+		}
+
+		void Initialize()
+		{
+			var editText1 = new EditText(Context)
+			{
+				InputType = InputTypes.NumberFlagDecimal,
+				Id = 12345,
+				Text = "customEdit1"
+			};
+			var editText2 = new EditText(Context)
+			{
+				InputType = InputTypes.NumberFlagDecimal,
+				Id = 123456,
+				Text = "customEdit2"
+			};
+
+			editText1.LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.WrapContent);
+			editText2.LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.WrapContent);
+
+			editText1.NextFocusForwardId = editText2.Id;
+			editText2.NextFocusForwardId = editText1.Id;
+
+			AddView(editText1);
+			AddView(editText2);
+
+			Orientation = Orientation.Vertical;
+		}
+	}
+
+	[Preserve]
+	public class Issue4561CustomViewRenderer : ViewRenderer<Issue4561.CustomView, Issue4561CustomView>
+	{
+		public Issue4561CustomViewRenderer(Context context) : base(context)
+		{
+		}
+
+		protected override Issue4561CustomView CreateNativeControl() => new Issue4561CustomView(Context);
+
+		protected override void OnElementChanged(ElementChangedEventArgs<Issue4561.CustomView> e)
+		{
+			base.OnElementChanged(e);
+			if (Element != null)
+			{
+				if (Control == null)
+				{
+					var view = CreateNativeControl();
+					SetNativeControl(view);
+				}
+			}
 		}
 	}
 
