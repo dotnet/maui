@@ -7,15 +7,14 @@ steps:
     condition: eq(variables['provisioningSign'], 'true')
     inputs:
       type: InlineScript
-      script: '$(Build.Repository.LocalPath)/Xamarin.Forms.Build/provisionator.sh keychain set pb_dev_iphone.p12 $(.p12.Password)'
-
+      script: '$(Build.Repository.LocalPath)/$(ProvisionatorExecutablePath) keychain set $(p12CertName) $(la.p12.Password)'
 
   - bash: '$(Build.Repository.LocalPath)/$(ProvisionatorExecutablePath) keychain set github.com $(GitHub.Token) || echo "PAT already set"'
     displayName: 'Initialize PAT'
     condition: eq(variables['provisioningSign'], 'true')
 
 
-  - bash: '$(Build.Repository.LocalPath)/Xamarin.Forms.Build/provisionator.sh $(Build.Repository.LocalPath)/Xamarin.Forms.Build/provisioning_sign.csx -v'
+  - bash: '$(Build.Repository.LocalPath)/$(ProvisionatorExecutablePath) $(Build.Repository.LocalPath)/Xamarin.Forms.Build/provisioning_sign.csx $(provisionator.extraArguments)'
     displayName: Provisioning
     condition: eq(variables['provisioningSign'], 'true')
     env:
