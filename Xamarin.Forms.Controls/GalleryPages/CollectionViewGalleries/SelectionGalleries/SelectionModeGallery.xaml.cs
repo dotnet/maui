@@ -22,19 +22,49 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionG
 			Grid.Children.Add(selectionModeSelector);
 
 			CollectionView.SelectionChanged += CollectionViewOnSelectionChanged;
-			CollectionView.SelectionChangedCommand = new Command(() =>
-				SelectedItemsCommand.Text = 
-				$"SelectionChangedCommand, selection is: {((CollectionViewGalleryTestItem)CollectionView.SelectedItem).Caption}");
+			CollectionView.SelectionChangedCommand = new Command(UpdateSelectionInfoCommand);
+
+			UpdateSelectionInfo(Enumerable.Empty<CollectionViewGalleryTestItem>(), Enumerable.Empty<CollectionViewGalleryTestItem>());
+			UpdateSelectionInfoCommand();
 		}
 
 		void CollectionViewOnSelectionChanged(object sender, SelectionChangedEventArgs args)
 		{
-			var previous = ToList(args.PreviousSelection);
-			var current = ToList(args.CurrentSelection);
-			SelectedItemsEvent.Text = $"Selected (from event): {current}; Was: {previous}";
+			UpdateSelectionInfo(args.CurrentSelection, args.PreviousSelection);
 		}
 
-		static string ToList(IReadOnlyList<object> items)
+		void UpdateSelectionInfo(IEnumerable<object> currentSelectedItems, IEnumerable<object> previousSelectedItems)
+		{
+			var previous = ToList(previousSelectedItems);
+			var current = ToList(currentSelectedItems);
+
+			if (string.IsNullOrEmpty(previous))
+			{
+				previous = "[none]";
+			}
+
+			if (string.IsNullOrEmpty(current))
+			{
+				current = "[none]";
+			}
+
+			SelectedItemsEvent.Text = $"Selection (event): {current}";
+			PreviousItemsEvent.Text = $"Previous (event): {previous}";
+		}
+
+		void UpdateSelectionInfoCommand()
+		{
+			var current = "[none]";
+
+			if (CollectionView.SelectedItem != null)
+			{
+				current = ((CollectionViewGalleryTestItem)CollectionView?.SelectedItem)?.Caption;
+			}
+
+			SelectedItemsCommand.Text = $"Selection (command): {current}";
+		}
+
+		static string ToList(IEnumerable<object> items)
 		{
 			if (items == null)
 			{

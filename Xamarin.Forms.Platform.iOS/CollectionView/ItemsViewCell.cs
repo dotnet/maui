@@ -12,6 +12,13 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			CollectionView.VerifyCollectionViewFlagEnabled(nameof(ItemsViewCell));
 			ContentView.BackgroundColor = UIColor.Clear;
+
+			var selectedBackgroundView = new UIView
+			{
+				BackgroundColor = UIColor.Gray
+			};
+
+			SelectedBackgroundView = selectedBackgroundView;
 		}
 
 		protected void InitializeContentConstraints(UIView nativeView)

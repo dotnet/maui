@@ -20,20 +20,20 @@ namespace Xamarin.Forms.Platform.Android
 			
 			if (changedProperty.Is(SelectableItemsView.SelectedItemProperty))
 			{
-				UpdateSelection();
+				UpdateNativeSelection();
 			}
 		}
 
 		protected override void SetUpNewElement(ItemsView newElement)
 		{
-			if (!(newElement is SelectableItemsView))
+			if (newElement != null && !(newElement is SelectableItemsView))
 			{
 				throw new ArgumentException($"{nameof(newElement)} must be of type {typeof(SelectableItemsView).Name}");
 			}
 
 			base.SetUpNewElement(newElement);
 
-			UpdateSelection();
+			UpdateNativeSelection();
 		}
 
 		protected override void UpdateAdapter()
@@ -70,7 +70,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
-		void UpdateSelection()
+		void UpdateNativeSelection()
 		{
 			var mode = SelectableItemsView.SelectionMode;
 			var selectedItem = SelectableItemsView.SelectedItem;

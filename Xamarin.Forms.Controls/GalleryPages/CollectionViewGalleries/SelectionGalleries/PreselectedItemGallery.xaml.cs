@@ -22,6 +22,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionG
 			CollectionView.ItemsSource = _demoFilteredItemSource.Items;
 
 			CollectionView.SelectedItem = _demoFilteredItemSource.Items.Skip(2).First();
+			CollectionView.SelectionMode = SelectionMode.Single;
 		}
 	}
 }

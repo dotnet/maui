@@ -32,14 +32,16 @@
 				<RowDefinition Height="Auto"></RowDefinition>
 				<RowDefinition Height="Auto"></RowDefinition>
 				<RowDefinition Height="Auto"></RowDefinition>
+				<RowDefinition Height="Auto"></RowDefinition>
 				<RowDefinition Height="*"></RowDefinition>
 			</Grid.RowDefinitions>
 
-			<Label x:Name="SelectedItemsEvent" Grid.Row="1"/>
+			<Label x:Name="SelectedItemsEvent" Grid.Row="1" HeightRequest="50" Margin="2" />
+			<Label x:Name="PreviousItemsEvent" Grid.Row="2" HeightRequest="50" Margin="2" />
 
-			<Label x:Name="SelectedItemsCommand" Grid.Row="2"/>
+			<Label x:Name="SelectedItemsCommand" Grid.Row="3" HeightRequest="50" Margin="2" />
 
-			<CollectionView x:Name="CollectionView" Grid.Row="3">
+			<CollectionView x:Name="CollectionView" Grid.Row="4">
 				<CollectionView.ItemsLayout>
 					<GridItemsLayout Span="3" Orientation="Vertical"></GridItemsLayout>
 				</CollectionView.ItemsLayout>

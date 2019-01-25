@@ -53,10 +53,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		void SelectableOnClicked(object sender, int adapterPosition)
 		{
-			UpdateSelection(adapterPosition);
+			UpdateFormsSelection(adapterPosition);
 		}
 
-		void UpdateSelection(int adapterPosition)
+		void UpdateFormsSelection(int adapterPosition)
 		{
 			var mode = SelectableItemsView.SelectionMode;
 
