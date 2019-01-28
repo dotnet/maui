@@ -13,7 +13,9 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			base.OnSelectedChanged();
 
-			VisualStateManager.GoToState(View, IsSelected ? "Selected" : "Normal");
+			VisualStateManager.GoToState(View, IsSelected 
+				? VisualStateManager.CommonStates.Selected 
+				: VisualStateManager.CommonStates.Normal);
 		}
 	}
 }

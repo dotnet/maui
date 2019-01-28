@@ -9,7 +9,7 @@ namespace Xamarin.Forms.Platform.iOS
 {
 	// TODO hartez 2018/06/01 14:17:00 Implement Dispose override ?	
 	// TODO hartez 2018/06/01 14:21:24 Add a method for updating the layout	
-	internal class CollectionViewController : UICollectionViewController
+	public class ItemsViewController : UICollectionViewController
 	{
 		IItemsViewSource _itemsSource;
 		readonly ItemsView _itemsView;
@@ -21,7 +21,9 @@ namespace Xamarin.Forms.Platform.iOS
 		UIView _emptyUIView;
 		VisualElement _emptyViewFormsElement;
 
-		public CollectionViewController(ItemsView itemsView, ItemsViewLayout layout) : base(layout)
+		protected UICollectionViewDelegator Delegator { get; set; }
+
+		public ItemsViewController(ItemsView itemsView, ItemsViewLayout layout) : base(layout)
 		{
 			_itemsView = itemsView;
 			_itemsSource = ItemsSourceFactory.Create(_itemsView.ItemsSource, CollectionView);
@@ -29,6 +31,10 @@ namespace Xamarin.Forms.Platform.iOS
 
 			_layout.GetPrototype = GetPrototype;
 			_layout.UniformSize = false; // todo hartez Link this to ItemsView.ItemSizingStrategy hint
+
+			Delegator = new UICollectionViewDelegator(_layout);
+
+			CollectionView.Delegate = Delegator;
 		}
 
 		public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
@@ -126,6 +132,11 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			return NSIndexPath.Create(-1, -1);
+		}
+
+		protected object GetItemAtIndex(NSIndexPath index)
+		{
+			return _itemsSource[index.Row];
 		}
 
 		void ApplyTemplateAndDataContext(TemplatedCell cell, NSIndexPath indexPath)

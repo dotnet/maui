@@ -9,11 +9,12 @@ namespace Xamarin.Forms
 {
 	public static class VisualStateManager
 	{
-		internal class CommonStates
+		public class CommonStates
 		{
 			public const string Normal = "Normal";
 			public const string Disabled = "Disabled";
 			public const string Focused = "Focused";
+			public const string Selected = "Selected";
 		}
 
 		public static readonly BindableProperty VisualStateGroupsProperty =

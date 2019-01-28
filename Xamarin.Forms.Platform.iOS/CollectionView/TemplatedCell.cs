@@ -69,5 +69,23 @@ namespace Xamarin.Forms.Platform.iOS
 				ContentView.Subviews[n].RemoveFromSuperview();
 			}
 		}
+
+		public override bool Selected
+		{
+			get => base.Selected;
+			set
+			{
+				base.Selected = value;
+
+				var element = VisualElementRenderer?.Element;
+
+				if (element != null)
+				{
+					VisualStateManager.GoToState(element, value 
+						? VisualStateManager.CommonStates.Selected 
+						: VisualStateManager.CommonStates.Normal);
+				}
+			}
+		}
 	}
 }

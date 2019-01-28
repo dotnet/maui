@@ -56,10 +56,6 @@ namespace Xamarin.Forms.Platform.iOS
 				if (!PageIsChildOfPlatform(sender))
 					return;
 
-				var pageRoot = sender;
-				while (!Application.IsApplicationOrNull(pageRoot.RealParent))
-					pageRoot = (Page)pageRoot.RealParent;
-
 				PresentActionSheet(arguments);
 			});
 		}

@@ -49,7 +49,18 @@ namespace Xamarin.Forms.Platform.Android
 
 		void Move(NotifyCollectionChangedEventArgs args)
 		{
-			_adapter.NotifyItemMoved(args.OldStartingIndex, args.NewStartingIndex);
+			var count = args.NewItems.Count;
+
+			if (count == 1)
+			{
+				// For a single item, we can use NotifyItemMoved and get the animation
+				_adapter.NotifyItemMoved(args.OldStartingIndex, args.NewStartingIndex);
+				return;
+			}
+
+			var start = Math.Min(args.OldStartingIndex, args.NewStartingIndex);
+			var end = Math.Max(args.OldStartingIndex, args.NewStartingIndex) + count;
+			_adapter.NotifyItemRangeChanged(start, end);
 		}
 
 		void Add(NotifyCollectionChangedEventArgs args)
@@ -68,7 +79,17 @@ namespace Xamarin.Forms.Platform.Android
 
 		void Remove(NotifyCollectionChangedEventArgs args)
 		{
-			var startIndex = args.OldStartingIndex > -1 ? args.OldStartingIndex : _itemsSource.IndexOf(args.OldItems[0]);
+			var startIndex = args.OldStartingIndex;
+
+			if (startIndex < 0)
+			{
+				// INCC implementation isn't giving us enough information to know where the removed items were in the
+				// collection. So the best we can do is a NotifyDataSetChanged()
+				_adapter.NotifyDataSetChanged();
+				return;
+			}
+
+			// If we have a start index, we can be more clever about removing the item(s) (and get the nifty animations)
 			var count = args.OldItems.Count;
 
 			if (count == 1)
@@ -83,15 +104,27 @@ namespace Xamarin.Forms.Platform.Android
 		void Replace(NotifyCollectionChangedEventArgs args)
 		{
 			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _itemsSource.IndexOf(args.NewItems[0]);
-			var count = args.NewItems.Count;
+			var newCount = args.NewItems.Count;
 
-			if (count == 1)
+			if (newCount == args.OldItems.Count)
 			{
-				_adapter.NotifyItemChanged(startIndex);
+				// We are replacing one set of items with a set of equal size; we can do a simple item or range 
+				// notification to the adapter
+				if (newCount == 1)
+				{
+					_adapter.NotifyItemChanged(startIndex);
+				}
+				else
+				{
+					_adapter.NotifyItemRangeChanged(startIndex, newCount);
+				}
+
 				return;
 			}
-
-			_adapter.NotifyItemRangeChanged(startIndex, count);
+			
+			// The original and replacement sets are of unequal size; this means that everything currently in view will 
+			// have to be updated. So we just have to use NotifyDataSetChanged and let the RecyclerView update everything
+			_adapter.NotifyDataSetChanged();
 		}
 	}
 }

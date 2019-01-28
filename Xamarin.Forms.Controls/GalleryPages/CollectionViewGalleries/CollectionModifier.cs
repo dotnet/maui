@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 
 namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 {
 	internal abstract class CollectionModifier : ContentView
 	{
-		readonly CollectionView _cv;
+		protected readonly CollectionView _cv;
 		protected readonly Entry Entry;
 
-		protected CollectionModifier (CollectionView cv, string buttonText)
+		protected CollectionModifier(CollectionView cv, string buttonText)
 		{
 			_cv = cv;
 
@@ -19,9 +18,9 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 			};
 
 			var button = new Button { Text = buttonText };
-			var label = new Label { Text = "Index:", VerticalTextAlignment = TextAlignment.Center };
+			var label = new Label { Text = LabelText, VerticalTextAlignment = TextAlignment.Center };
 
-			Entry = new Entry { Keyboard = Keyboard.Numeric, Text = "0", WidthRequest = 200 };
+			Entry = new Entry { Keyboard = Keyboard.Numeric, Text = InitialEntryText, WidthRequest = 100 };
 
 			layout.Children.Add(label);
 			layout.Children.Add(Entry);
@@ -34,17 +33,15 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 
 		void ButtonOnClicked(object sender, EventArgs e)
 		{
-			if (!ParseIndexes(out int[] indexes))
-			{
-				return;
-			}
+			OnButtonClicked();
+		}
 
-			if (!(_cv.ItemsSource is ObservableCollection<CollectionViewGalleryTestItem> observableCollection))
-			{
-				return;
-			}
+		protected virtual string LabelText => "Index:";
 
-			ModifyCollection(observableCollection, indexes);
+		protected virtual string InitialEntryText => "0";
+
+		protected virtual void OnButtonClicked()
+		{
 		}
 
 		protected virtual bool ParseIndexes(out int[] indexes)
@@ -55,10 +52,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 				return false;
 			}
 
-			indexes = new[] {index};
+			indexes = new[] { index };
 			return true;
 		}
-
-		protected abstract void ModifyCollection(ObservableCollection<CollectionViewGalleryTestItem> observableCollection, params int[] indexes);
 	}
 }

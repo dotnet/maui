@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using CoreGraphics;
 using Foundation;
@@ -9,7 +8,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	public abstract class ItemsViewLayout : UICollectionViewFlowLayout, IUICollectionViewDelegateFlowLayout
+	public abstract class ItemsViewLayout : UICollectionViewFlowLayout
 	{
 		readonly ItemsLayout _itemsLayout;
 		bool _determiningCellSize;
@@ -68,7 +67,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public abstract void ConstrainTo(CGSize size);
 
-		[Export("collectionView:willDisplayCell:forItemAtIndexPath:")]
 		public virtual void WillDisplayCell(UICollectionView collectionView, UICollectionViewCell cell, NSIndexPath path)
 		{
 			if (_needCellSizeUpdate)
@@ -79,21 +77,18 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
-		[Export("collectionView:layout:insetForSectionAtIndex:")]
 		public virtual UIEdgeInsets GetInsetForSection(UICollectionView collectionView, UICollectionViewLayout layout,
 			nint section)
 		{
 			return UIEdgeInsets.Zero;
 		}
 
-		[Export("collectionView:layout:minimumInteritemSpacingForSectionAtIndex:")]
 		public virtual nfloat GetMinimumInteritemSpacingForSection(UICollectionView collectionView,
 			UICollectionViewLayout layout, nint section)
 		{
 			return (nfloat)0.0;
 		}
 
-		[Export("collectionView:layout:minimumLineSpacingForSectionAtIndex:")]
 		public virtual nfloat GetMinimumLineSpacingForSection(UICollectionView collectionView,
 			UICollectionViewLayout layout, nint section)
 		{

@@ -409,6 +409,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue3558.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3541.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3840.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue4561.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3913.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3979.xaml.cs">
       <DependentUpon>Issue3979.xaml</DependentUpon>
