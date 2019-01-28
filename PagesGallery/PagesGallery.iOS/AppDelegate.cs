@@ -21,6 +21,7 @@ namespace PagesGallery.iOS
 		public override bool FinishedLaunching(UIApplication app, NSDictionary options)
 		{
 			Forms.Init();
+			FormsMaterial.Init();
 			LoadApplication(new App());
 
 			return base.FinishedLaunching(app, options);

@@ -65,6 +65,7 @@ using UIKit;
 [assembly: ExportImageSourceHandler(typeof(UriImageSource), typeof(ImageLoaderSourceHandler))]
 [assembly: InternalsVisibleTo("iOSUnitTests")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.Platform")]
+[assembly: InternalsVisibleTo("Xamarin.Forms.Material.iOS")]
 [assembly: Xamarin.Forms.Dependency(typeof(Deserializer))]
 [assembly: Xamarin.Forms.Dependency(typeof(ResourcesProvider))]
 [assembly: ResolutionGroupName("Xamarin")]

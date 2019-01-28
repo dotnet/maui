@@ -162,6 +162,8 @@ namespace Xamarin.Forms.ControlGallery.iOS
 			// Forms.SetFlags("CollectionView_Experimental", "Visual_Experimental", "Shell_Experimental");
 			Forms.Init();
 			FormsMaps.Init();
+			FormsMaterial.Init();
+
 			Forms.ViewInitialized += (object sender, ViewInitializedEventArgs e) =>
 			{
 				// http://developer.xamarin.com/recipes/testcloud/set-accessibilityidentifier-ios/

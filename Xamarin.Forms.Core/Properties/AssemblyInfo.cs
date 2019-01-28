@@ -20,6 +20,7 @@ using Xamarin.Forms.StyleSheets;
 [assembly: InternalsVisibleTo("Xamarin.Forms.Xaml.UnitTests")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.UITests")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.FlexLayout.UnitTests")]
+[assembly: InternalsVisibleTo("Xamarin.Forms.Material.iOS")]
 
 [assembly: InternalsVisibleTo("Xamarin.Forms.Core.iOS.UITests")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.Core.Android.UITests")]

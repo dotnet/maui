@@ -56,6 +56,9 @@ steps:
           Xamarin.Forms.Platform.iOS/bin/$(BuildConfiguration)/**/*.dll
           Xamarin.Forms.Platform.iOS/bin/$(BuildConfiguration)/**/*.pdb
           Xamarin.Forms.Platform.iOS/bin/$(BuildConfiguration)/**/*.mdb
+          Xamarin.Forms.Material.iOS/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Material.iOS/bin/$(BuildConfiguration)/**/*.pdb
+          Xamarin.Forms.Material.iOS/bin/$(BuildConfiguration)/**/*.mdb
           Xamarin.Forms.Platform.WP8/bin/$(BuildConfiguration)/**/*.dll
           Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.dll
           Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.pri

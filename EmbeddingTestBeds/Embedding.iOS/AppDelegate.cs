@@ -26,6 +26,7 @@ namespace Embedding.iOS
 		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
 			Forms.Init();
+			FormsMaterial.Init();
 
 			Shared = this;
 			_window = new UIWindow(UIScreen.MainScreen.Bounds);

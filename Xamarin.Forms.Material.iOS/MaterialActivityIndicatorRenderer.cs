@@ -5,7 +5,6 @@ using UIKit;
 using Xamarin.Forms;
 using MActivityIndicator = MaterialComponents.ActivityIndicator;
 
-[assembly: ExportRenderer(typeof(Xamarin.Forms.ActivityIndicator), typeof(Xamarin.Forms.Platform.iOS.Material.MaterialActivityIndicatorRenderer), new[] { typeof(VisualRendererMarker.Material) })]
 
 namespace Xamarin.Forms.Platform.iOS.Material
 {

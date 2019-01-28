@@ -149,6 +149,10 @@
       <IsAppExtension>false</IsAppExtension>
       <IsWatchApp>false</IsWatchApp>
     </ProjectReference>
+    <ProjectReference Include="..\Xamarin.Forms.Material.iOS\Xamarin.Forms.Material.iOS.csproj">
+      <Project>{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}</Project>
+      <Name>Xamarin.Forms.Material.iOS</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="bank%402x.png" />
@@ -309,7 +313,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="3.0.2" />
     <PackageReference Include="Xamarin.Insights" Version="1.12.3" />
-    <PackageReference Include="Xamarin.iOS.MaterialComponents" Version="72.2.0" />
+    <PackageReference Include="Xamarin.iOS.MaterialComponents" Version="72.2.0.1" />
     <PackageReference Include="Xamarin.TestCloud.Agent" Version="0.21.7" />
   </ItemGroup>
   <ItemGroup>

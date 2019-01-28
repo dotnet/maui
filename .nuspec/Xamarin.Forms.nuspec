@@ -35,9 +35,6 @@
       <group targetFramework="tizen40">
         <dependency id="Tizen.NET" version="4.0.0"/>
       </group>
-      <group targetFramework="Xamarin.iOS10">
-        <dependency id="Xamarin.iOS.MaterialComponents" version="72.2.0"/>
-      </group>
     </dependencies>
     <references>    
         <group> 
@@ -49,7 +46,7 @@
             <reference file="Xamarin.Forms.Core.dll" /> 
             <reference file="Xamarin.Forms.Platform.dll" /> 
             <reference file="Xamarin.Forms.Xaml.dll" /> 
-            <reference file="Xamarin.Forms.Platform.iOS.dll" /> 
+            <reference file="Xamarin.Forms.Platform.iOS.dll" />
         </group>    
         <group targetFramework="MonoAndroid90"> 
             <reference file="Xamarin.Forms.Core.dll" /> 
