@@ -8,8 +8,6 @@ using UIKit;
 using Xamarin.Forms;
 using MButton = MaterialComponents.Button;
 
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Button), typeof(Xamarin.Forms.Platform.iOS.Material.MaterialButtonRenderer), new[] { typeof(VisualRendererMarker.Material) })]
-
 namespace Xamarin.Forms.Platform.iOS.Material
 {
 	public class MaterialButtonRenderer : ViewRenderer<Button, MButton>

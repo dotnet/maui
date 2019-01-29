@@ -43,9 +43,6 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xamarin.iOS.MaterialComponents" Version="72.2.0" />
-  </ItemGroup>
-  <ItemGroup>
     <BundleResource Include="Resources\3bar%402x.png" />
   </ItemGroup>
   <ItemGroup>
@@ -151,9 +148,6 @@
     <Compile Include="Flags.cs" />
     <Compile Include="Renderers\ImageElementManager.cs" />
     <Compile Include="IVisualNativeElementRenderer.cs" />
-    <Compile Include="Material\MaterialButtonRenderer.cs" />
-    <Compile Include="Material\MaterialEntryRenderer.cs" />
-    <Compile Include="Material\MaterialProgressBarRenderer.cs" />
     <Compile Include="NativeViewWrapper.cs" />
     <Compile Include="NativeViewWrapperRenderer.cs" />
     <Compile Include="PlatformEffect.cs" />
@@ -214,10 +208,6 @@
     <Compile Include="NativeValueConverterService.cs" />
     <Compile Include="NativeBindingService.cs" />
     <Compile Include="Extensions\AccessibilityExtensions.cs" />
-    <Compile Include="Material\MaterialFrameRenderer.cs" />
-    <Compile Include="Material\MaterialColors.cs" />
-    <Compile Include="Material\MaterialSliderRenderer.cs" />
-    <Compile Include="Material\MaterialActivityIndicatorRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\StringResources.ar.resx" />

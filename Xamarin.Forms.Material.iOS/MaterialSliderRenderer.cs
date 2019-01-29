@@ -6,8 +6,6 @@ using UIKit;
 using Xamarin.Forms;
 using MSlider = MaterialComponents.Slider;
 
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Slider), typeof(Xamarin.Forms.Platform.iOS.Material.MaterialSliderRenderer), new[] { typeof(VisualRendererMarker.Material) })]
-
 namespace Xamarin.Forms.Platform.iOS.Material
 {
 	public class MaterialSliderRenderer : ViewRenderer<Slider, MSlider>

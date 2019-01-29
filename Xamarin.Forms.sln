@@ -39,6 +39,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuspec", ".nuspec", "{7E12
 		.nuspec\Xamarin.Forms.Platform.WPF.nuspec = .nuspec\Xamarin.Forms.Platform.WPF.nuspec
 		.nuspec\Xamarin.Forms.props = .nuspec\Xamarin.Forms.props
 		.nuspec\Xamarin.Forms.targets = .nuspec\Xamarin.Forms.targets
+		.nuspec\Xamarin.Forms.Visual.Material.nuspec = .nuspec\Xamarin.Forms.Visual.Material.nuspec
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Core", "Xamarin.Forms.Core\Xamarin.Forms.Core.csproj", "{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}"
@@ -176,6 +177,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Platform.Tize
 	ProjectSection(ProjectDependencies) = postProject
 		{83790029-272E-45AF-A41D-E7716684E5B8} = {83790029-272E-45AF-A41D-E7716684E5B8}
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xamarin.Forms.Material", "Xamarin.Forms.Material", "{F6F6A11F-CA66-4C7E-AB84-CD21D817C2CD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Material.iOS", "Xamarin.Forms.Material.iOS\Xamarin.Forms.Material.iOS.csproj", "{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -1537,6 +1542,30 @@ Global
 		{39B3457F-01D8-43D0-8E84-D8C4F73CF48E}.Release|x64.Build.0 = Release|Any CPU
 		{39B3457F-01D8-43D0-8E84-D8C4F73CF48E}.Release|x86.ActiveCfg = Release|Any CPU
 		{39B3457F-01D8-43D0-8E84-D8C4F73CF48E}.Release|x86.Build.0 = Release|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Debug|ARM.Build.0 = Debug|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Debug|x64.Build.0 = Debug|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Debug|x86.Build.0 = Debug|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Release|ARM.ActiveCfg = Release|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Release|ARM.Build.0 = Release|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Release|iPhone.Build.0 = Release|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Release|x64.ActiveCfg = Release|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Release|x64.Build.0 = Release|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Release|x86.ActiveCfg = Release|Any CPU
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1602,6 +1631,7 @@ Global
 		{C4340D4E-BDDB-4053-BFBC-CF4F043FAE87} = {132FB9A4-613F-44CE-95D5-758D32D231DD}
 		{65BC4888-CC59-428A-9B75-540CF1C09480} = {32F608E2-6406-4DCF-9105-E2A7CB7085CF}
 		{39B3457F-01D8-43D0-8E84-D8C4F73CF48E} = {5A2DADBC-9510-4DD1-BE58-01501F2DF65D}
+		{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4} = {F6F6A11F-CA66-4C7E-AB84-CD21D817C2CD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {650AE971-2F29-46A8-822C-FB4FCDC6A9A0}
