@@ -106,7 +106,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public void NotifyItemSelected (object item) {
 
 			if (ItemSelected != null)
-				ItemSelected (this, new SelectedItemChangedEventArgs (item));
+				ItemSelected (this, new SelectedItemChangedEventArgs (item, Items?.IndexOf(item) ?? -1));
 		}
 
 		public NativeListView ()
@@ -322,7 +322,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public void NotifyItemSelected (object item) {
 
 			if (ItemSelected != null)
-				ItemSelected (this, new SelectedItemChangedEventArgs (item));
+				ItemSelected (this, new SelectedItemChangedEventArgs (item, Items?.IndexOf(item) ?? -1));
 		}
 
 		public NativeListView2 ()

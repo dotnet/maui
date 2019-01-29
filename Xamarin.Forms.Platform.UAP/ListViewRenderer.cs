@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Platform.UWP
 		bool _subscribedToItemClick;
 		bool _subscribedToTapped;
 		bool _disposed;
-		CollectionViewSource _collectionViewSource;
+		CollectionViewSource _collectionViewSource;	
 
 		UwpScrollBarVisibility? _defaultHorizontalScrollVisibility;
 		UwpScrollBarVisibility? _defaultVerticalScrollVisibility;
@@ -75,7 +75,7 @@ namespace Xamarin.Forms.Platform.UWP
 				ReloadData();
 
 				if (Element.SelectedItem != null)
-					OnElementItemSelected(null, new SelectedItemChangedEventArgs(Element.SelectedItem));
+					OnElementItemSelected(null, new SelectedItemChangedEventArgs(Element.SelectedItem, TemplatedItemsView.TemplatedItems.GetGlobalIndexOfItem(Element.SelectedItem)));
 
 				UpdateGrouping();
 				UpdateHeader();

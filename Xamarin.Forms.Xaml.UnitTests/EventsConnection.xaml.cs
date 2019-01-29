@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		{
 			var eh = Clicked;
 			if (eh != null)
-				eh (this, new ItemTappedEventArgs ("foo", "bar"));
+				eh (this, new ItemTappedEventArgs ("foo", "bar", -1));
 		}
 	}
 
