@@ -1,11 +1,20 @@
 ﻿<?xml version="1.0" encoding="UTF-8" ?>
 <resources>
   <style name="XamarinFormsMaterialTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
+    <item name="materialButtonStyle">@style/XamarinFormsMaterialButton</item>
   </style>
   <style name="XamarinFormsMaterialProgressBarHorizontal" parent="Widget.AppCompat.ProgressBar.Horizontal">
   </style>
   <style name="XamarinFormsMaterialProgressBarCircular" parent="Widget.AppCompat.ProgressBar">
   </style>
-  <style name="XamarinFormsMaterialTextInputLayoutFilledBox" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+  <style name="XamarinFormsMaterialButton" parent="Widget.MaterialComponents.Button">
+    <item name="android:insetTop">0dp</item>
+    <item name="android:insetBottom">0dp</item>
+    <item name="android:minHeight">36dp</item>
+    <item name="android:paddingTop">8dp</item>
+    <item name="android:paddingBottom">8dp</item>
+  </style>
+  <style name="XamarinFormsMaterialEntryFilled" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
+    <item name="boxCollapsedPaddingTop">8dp</item>
   </style>
 </resources>

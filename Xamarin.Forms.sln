@@ -40,6 +40,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuspec", ".nuspec", "{7E12
 		.nuspec\Xamarin.Forms.props = .nuspec\Xamarin.Forms.props
 		.nuspec\Xamarin.Forms.targets = .nuspec\Xamarin.Forms.targets
 		.nuspec\Xamarin.Forms.Visual.Material.nuspec = .nuspec\Xamarin.Forms.Visual.Material.nuspec
+		.nuspec\Xamarin.Forms.Visual.Material.targets = .nuspec\Xamarin.Forms.Visual.Material.targets
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Core", "Xamarin.Forms.Core\Xamarin.Forms.Core.csproj", "{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}"

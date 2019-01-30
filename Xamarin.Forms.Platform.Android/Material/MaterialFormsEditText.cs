@@ -51,8 +51,8 @@ namespace Xamarin.Forms.Platform.Android.Material
 		// https://github.com/material-components/material-components-android/issues/120
 		// https://stackoverflow.com/questions/50487871/how-to-make-the-hint-text-of-textinputlayout-vertically-center
 
-		static Thickness _centeredText = new Thickness(12, 8, 12, 27);
-		static Thickness _alignedWithUnderlineText = new Thickness(12, 20, 12, 16);
+		static Thickness _centeredText = new Thickness(16, 8, 12, 27);
+		static Thickness _alignedWithUnderlineText = new Thickness(16, 20, 12, 16);
 
 		public MaterialFormsEditText(Context context) : base(context)
 		{

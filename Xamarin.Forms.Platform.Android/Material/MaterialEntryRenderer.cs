@@ -1,4 +1,5 @@
 ﻿#if __ANDROID_28__
+using System.Threading.Tasks;
 using Android.Content;
 using Android.Content.Res;
 using Android.OS;
@@ -15,24 +16,6 @@ namespace Xamarin.Forms.Platform.Android.Material
 {
 	public sealed class MaterialEntryRenderer : EntryRendererBase<MaterialFormsTextInputLayout>
 	{
-		// values based on
-		// copying to match iOS
-		// TODO generalize into xplat classes
-		// https://github.com/material-components/material-components-ios/blob/develop/components/TextFields/src/ColorThemer/MDCFilledTextFieldColorThemer.m		
-		const float kFilledTextFieldActiveAlpha = 0.87f;
-		const float kFilledTextFieldOnSurfaceAlpha = 0.6f;
-		const float kFilledTextFieldDisabledAlpha = 0.38f;
-		const float kFilledTextFieldSurfaceOverlayAlpha = 0.04f;
-		const float kFilledTextFieldIndicatorLineAlpha = 0.42f;
-		const float kFilledTextFieldIconAlpha = 0.54f;
-
-		// the idea of this value is that I want Active to be the exact color the user specified
-		// and then all the other colors decrease according to the Material theme setup
-		static float kFilledPlaceHolderOffset = 1f - kFilledTextFieldActiveAlpha;
-
-
-		AColor _previousTextColor = AColor.Transparent;
-
 		bool _disposed;
 		private MaterialFormsEditText _textInputEditText;
 		private MaterialFormsTextInputLayout _textInputLayout;
@@ -125,8 +108,6 @@ namespace Xamarin.Forms.Platform.Android.Material
 			Device.BeginInvokeOnMainThread(() => UpdatePlaceholderColor());
 		}
 
-		AColor TextColor => Element.TextColor != Color.Default ? Element.TextColor.ToAndroid() : MaterialColors.Light.PrimaryColor;
-
 		protected internal override void UpdateColor() => ApplyTheme();
 
 		protected override void UpdateBackgroundColor()
@@ -134,17 +115,7 @@ namespace Xamarin.Forms.Platform.Android.Material
 			if (_textInputLayout == null)
 				return;
 
-			if (Element.BackgroundColor == Color.Default)
-			{
-				if (Element.TextColor != Color.Default)
-					_textInputLayout.BoxBackgroundColor = MaterialColors.CreateEntryFilledInputBackgroundColor(TextColor);
-				else
-					_textInputLayout.BoxBackgroundColor = MaterialColors.CreateEntryFilledInputBackgroundColor(MaterialColors.Light.PrimaryColorVariant);
-			}
-			else
-			{
-				_textInputLayout.BoxBackgroundColor = Element.BackgroundColor.ToAndroid();
-			}
+			_textInputLayout.BoxBackgroundColor = MaterialColors.CreateEntryFilledInputBackgroundColor(Element.BackgroundColor, Element.TextColor);
 		}
 
 		protected internal override void UpdatePlaceHolderText()
@@ -160,34 +131,21 @@ namespace Xamarin.Forms.Platform.Android.Material
 				return;
 
 			// set text color
-			var textColor = TextColor;
+			var textColor = MaterialColors.GetEntryTextColor(Element.TextColor);
 			UpdateTextColor(Color.FromUint((uint)textColor.ToArgb()));
-			var colors = MaterialColors.CreateEntryUnderlineColors(textColor, textColor.WithAlpha(kFilledTextFieldOnSurfaceAlpha));
 
-			// Ensure that we SetBackgroundTintList when focused to override the themes accent color which gets
-			// applied to the underline
-			if (_previousTextColor != textColor)
-			{
-				if(HasFocus)
-					_previousTextColor = textColor;				
+			var placeHolderColors = MaterialColors.GetPlaceHolderColor(Element.PlaceholderColor, Element.TextColor);
+			var underlineColors = MaterialColors.GetUnderlineColor(Element.TextColor);
 
-				ViewCompat.SetBackgroundTintList(_textInputEditText, colors);
-			}
+			var colors = MaterialColors.CreateEntryUnderlineColors(underlineColors.FocusedColor, underlineColors.UnFocusedColor);
 
-			// set placeholder color
-			AColor placeholderColor;
-			if (Element.PlaceholderColor == Color.Default)
-				if (Element.TextColor == Color.Default)
-					placeholderColor = MaterialColors.Light.OnSurfaceColor;
-				else
-					placeholderColor = textColor;
+			ViewCompat.SetBackgroundTintList(_textInputEditText, colors);
+
+						
+			if (HasFocus || !string.IsNullOrWhiteSpace(_textInputEditText.Text))
+				_textInputLayout.DefaultHintTextColor = MaterialColors.CreateEntryFilledPlaceholderColors(placeHolderColors.FloatingColor, placeHolderColors.FloatingColor);
 			else
-				placeholderColor = Element.PlaceholderColor.ToAndroid();
-
-			if (!HasFocus)
-				placeholderColor = placeholderColor.WithAlpha(kFilledTextFieldOnSurfaceAlpha + kFilledPlaceHolderOffset);
-
-			_textInputLayout.DefaultHintTextColor = MaterialColors.CreateEntryFilledPlaceholderColors(placeholderColor);
+				_textInputLayout.DefaultHintTextColor = MaterialColors.CreateEntryFilledPlaceholderColors(placeHolderColors.InlineColor, placeHolderColors.FloatingColor);
 		}
 
 		protected internal override void UpdateFont()

@@ -4,6 +4,10 @@ namespace Xamarin.Forms.Controls
 {
 	internal class EntryCoreGalleryPage : CoreGalleryPage<Entry>
 	{
+		public EntryCoreGalleryPage()
+		{
+		}
+
 		protected override bool SupportsTapGestureRecognizer
 		{
 			get { return false; }

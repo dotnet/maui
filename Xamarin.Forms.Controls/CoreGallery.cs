@@ -287,6 +287,8 @@ namespace Xamarin.Forms.Controls
 				new GalleryPageFactory(() => new CellForceUpdateSizeGalleryPage(), "Cell Force Update Size Gallery"),
 				new GalleryPageFactory(() => new AppearingGalleryPage(), "Appearing Gallery"),
 				new GalleryPageFactory(() => new EntryCoreGalleryPage(), "Entry Gallery"),
+				new GalleryPageFactory(() => new EntryCoreGalleryPage{ Visual = VisualMarker.Material }, "Entry Gallery (Material)"),
+				new GalleryPageFactory(() => new MaterialEntryGalleryPage(), "Entry Material Demos"),
 				new GalleryPageFactory(() => new NavBarTitleTestPage(), "Titles And Navbar Windows"),
 				new GalleryPageFactory(() => new PanGestureGalleryPage(), "Pan gesture Gallery"),
 				new GalleryPageFactory(() => new SwipeGestureGalleryPage(), "Swipe gesture Gallery"),

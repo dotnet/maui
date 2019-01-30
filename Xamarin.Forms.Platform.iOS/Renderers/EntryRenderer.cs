@@ -116,11 +116,12 @@ namespace Xamarin.Forms.Platform.iOS
 			_cursorPositionChangePending = Element.IsSet(Entry.CursorPositionProperty);
 			_selectionLengthChangePending = Element.IsSet(Entry.SelectionLengthProperty);
 
+			// Font needs to be set before Text and Placeholder so that they layout correctly when set
+			UpdateFont();
 			UpdatePlaceholder();
 			UpdatePassword();
 			UpdateText();
 			UpdateColor();
-			UpdateFont();
 			UpdateKeyboard();
 			UpdateAlignment();
 			UpdateAdjustsFontSizeToFitWidth();
@@ -246,7 +247,7 @@ namespace Xamarin.Forms.Platform.iOS
 			Control.AdjustsFontSizeToFitWidth = Element.OnThisPlatform().AdjustsFontSizeToFitWidth();
 		}
 
-		void UpdateFont()
+		protected internal virtual void UpdateFont()
 		{
 			if (initialSize == CGSize.Empty)
 			{
