@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using CoreAnimation;
 using CoreGraphics;
 using MaterialComponents;
 using UIKit;
@@ -12,6 +13,9 @@ namespace Xamarin.Forms.Platform.iOS.Material
 	{
 		SemanticColorScheme _defaultColorScheme;
 		SemanticColorScheme _colorScheme;
+
+		CAShapeLayer _backgroundLayer;
+		CGPoint _center;
 
 		public MaterialActivityIndicatorRenderer()
 		{
@@ -32,6 +36,14 @@ namespace Xamarin.Forms.Platform.iOS.Material
 					_defaultColorScheme = CreateColorScheme();
 
 					SetNativeControl(CreateNativeControl());
+
+					_backgroundLayer = new CAShapeLayer
+					{
+						LineWidth = 4,
+						FillColor = UIColor.Clear.CGColor,
+						Hidden = true
+					};
+					Control.Layer.InsertSublayer(_backgroundLayer, 0);
 				}
 
 				UpdateColor();
@@ -55,8 +67,22 @@ namespace Xamarin.Forms.Platform.iOS.Material
 		{
 			return new MActivityIndicator
 			{
-				IndicatorMode = ActivityIndicatorMode.Indeterminate
+				IndicatorMode = ActivityIndicatorMode.Indeterminate,
+				StrokeWidth = 4,
+				Radius = 24
 			};
+		}
+
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			if (_center != Control.Center)
+			{
+				_center = Control.Center;
+				_backgroundLayer.Path = UIBezierPath.FromArc(_center, Control.Radius - 2, 0, 360, true).CGPath;
+			}
+			SetBackgroundColor(Element.BackgroundColor);
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -80,36 +106,16 @@ namespace Xamarin.Forms.Platform.iOS.Material
 
 		protected override void SetBackgroundColor(Color color)
 		{
-			// Do not call base to avoid the actual background view changing color.
-			//base.SetBackgroundColor(color);
-
-			if (Control == null)
+			if (_backgroundLayer == null)
 				return;
 
-			// TODO: Investigate whether or not we want to look for the track
-			//       layer and change the color. This will be brittle.
-			//       For now, just show/hide the track.
-
-			if (color.IsDefault)
-				Control.TrackEnabled = false;
-			else
-				Control.TrackEnabled = true;
-
-			// handle the actual background color next to the main color
-			UpdateColor();
+			_backgroundLayer.Hidden = color.IsDefault;
+			_backgroundLayer.StrokeColor = color.ToCGColor();
 		}
 
 		void UpdateColor()
 		{
-			Color color = Element.Color;
-			Color backColor = Element.BackgroundColor;
-
-			if (!color.IsDefault)
-				_colorScheme.PrimaryColor = color.ToUIColor();
-			else if (!backColor.IsDefault)
-				_colorScheme.PrimaryColor = backColor.ToUIColor();
-			else
-				_colorScheme.PrimaryColor = _defaultColorScheme.PrimaryColor;
+			_colorScheme.PrimaryColor = Element.Color.IsDefault ? _defaultColorScheme.PrimaryColor : Element.Color.ToUIColor();
 		}
 
 		void UpdateIsRunning()
