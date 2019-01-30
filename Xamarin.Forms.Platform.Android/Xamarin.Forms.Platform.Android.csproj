@@ -101,7 +101,6 @@
     <Compile Include="FastRenderers\AutomationPropertiesProvider.cs" />
     <Compile Include="AppCompat\PageExtensions.cs" />
     <Compile Include="Extensions\JavaObjectExtensions.cs" />
-    <Compile Include="FastRenderers\ButtonElementManager.cs" />
     <Compile Include="FastRenderers\ButtonRenderer.cs" />
     <Compile Include="AppCompat\FormsViewPager.cs" />
     <Compile Include="AppCompat\FragmentContainer.cs" />
@@ -311,6 +310,9 @@
     <Compile Include="Renderers\IPopupTrigger.cs" />
     <Compile Include="Material\MaterialActivityIndicatorRenderer.cs" />
     <Compile Include="Material\MaterialColors.cs" />
+    <Compile Include="ButtonElementManager.cs" />
+    <Compile Include="IButtonLayoutRenderer.cs" />
+    <Compile Include="ButtonLayoutManager.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

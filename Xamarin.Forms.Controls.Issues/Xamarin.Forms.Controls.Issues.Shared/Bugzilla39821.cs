@@ -123,7 +123,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public void DoesNotCrash()
 		{
 			RunningApp.Tap(q => q.Marked("Animate"));
-			RunningApp.WaitForElement(q => q.Marked("Success"));
+			RunningApp.WaitForElement(q => q.Marked("Success"), timeout:TimeSpan.FromSeconds(25));
 		}
 #endif
 	}

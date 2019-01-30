@@ -75,7 +75,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			RunningApp.WaitForElement(ButtonId);
 			RunningApp.DoubleTap(ButtonId);
-			RunningApp.WaitForElement(Success);
+			RunningApp.WaitForElement(Success, timeout: TimeSpan.FromSeconds(25));
 		}
 #endif
 	}

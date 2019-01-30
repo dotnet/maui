@@ -4,9 +4,8 @@ using System.ComponentModel;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
-using Android.Graphics.Drawables;
 using Android.Support.V4.View;
-using Android.Support.V4.Widget;
+using Android.Support.V7.Widget;
 using Android.Util;
 using Android.Views;
 using Xamarin.Forms;
@@ -16,7 +15,6 @@ using Xamarin.Forms.Platform.Android.Material;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
-using AViewCompat = Android.Support.V4.View.ViewCompat;
 using MButton = Android.Support.Design.Button.MaterialButton;
 
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Button), typeof(MaterialButtonRenderer), new[] { typeof(VisualRendererMarker.Material) })]
@@ -24,7 +22,7 @@ using MButton = Android.Support.Design.Button.MaterialButton;
 namespace Xamarin.Forms.Platform.Android.Material
 {
 	public class MaterialButtonRenderer : MButton,
-		IBorderVisualElementRenderer, IVisualElementRenderer, IViewRenderer, ITabStop,
+		IBorderVisualElementRenderer, IButtonLayoutRenderer, IVisualElementRenderer, IViewRenderer, ITabStop,
 		AView.IOnAttachStateChangeListener, AView.IOnFocusChangeListener, AView.IOnClickListener, AView.IOnTouchListener
 	{
 		int _defaultCornerRadius = -1;
@@ -32,19 +30,17 @@ namespace Xamarin.Forms.Platform.Android.Material
 		ColorStateList _defaultBorderColor;
 		float _defaultFontSize = -1;
 		int? _defaultLabelFor;
-		int _defaultIconPadding = -1;
 		Typeface _defaultTypeface;
 
 		bool _disposed;
 		bool _inputTransparent;
-		Thickness _paddingDeltaPix;
-		int _imageHeight = -1;
 
 		Button _button;
 
 		IPlatformElementConfiguration<PlatformConfiguration.Android, Button> _platformElementConfiguration;
 		VisualElementTracker _tracker;
 		VisualElementRenderer _visualElementRenderer;
+		ButtonLayoutManager _buttonLayoutManager;
 
 		readonly AutomationPropertiesProvider _automationPropertiesProvider;
 
@@ -57,6 +53,11 @@ namespace Xamarin.Forms.Platform.Android.Material
 			VisualElement.VerifyVisualFlagEnabled();
 
 			_automationPropertiesProvider = new AutomationPropertiesProvider(this);
+			_buttonLayoutManager = new ButtonLayoutManager(this,
+				alignIconWithText: true,
+				preserveInitialPadding: true,
+				borderAdjustsPadding: false,
+				maintainLegacyMeasurements: false);
 
 			SoundEffectsEnabled = false;
 			SetOnClickListener(this);
@@ -122,6 +123,8 @@ namespace Xamarin.Forms.Platform.Android.Material
 				_automationPropertiesProvider?.Dispose();
 				_tracker?.Dispose();
 				_visualElementRenderer?.Dispose();
+				_buttonLayoutManager?.Dispose();
+				_buttonLayoutManager = null;
 
 				if (Element != null)
 				{
@@ -149,11 +152,9 @@ namespace Xamarin.Forms.Platform.Android.Material
 			{
 				this.EnsureId();
 
+				_buttonLayoutManager?.Update();
 				UpdateBorder();
 				UpdateFont();
-				UpdateImage();
-				UpdatePadding();
-				UpdateText();
 				UpdatePrimaryColors();
 				UpdateInputTransparent();
 
@@ -169,12 +170,6 @@ namespace Xamarin.Forms.Platform.Android.Material
 				UpdateBorder();
 			else if (e.PropertyName == Button.FontProperty.PropertyName)
 				UpdateFont();
-			else if (e.PropertyName == Button.ImageProperty.PropertyName)
-				UpdateImage();
-			else if (e.PropertyName == Button.PaddingProperty.PropertyName)
-				UpdatePadding();
-			else if (e.PropertyName == Button.TextProperty.PropertyName || e.PropertyName == VisualElement.IsVisibleProperty.PropertyName)
-				UpdateText();
 			else if (e.PropertyName == Button.TextColorProperty.PropertyName || e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdatePrimaryColors();
 			else if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
@@ -185,97 +180,14 @@ namespace Xamarin.Forms.Platform.Android.Material
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
-			if (_disposed || Element == null)
-				return;
-
-			if (_imageHeight > -1)
-			{
-				// We've got an image (and no text); it's already centered horizontally,
-				// we just need to adjust the padding so it centers vertically
-				var diff = ((bottom - Context.ToPixels(Element.Padding.Bottom + Element.Padding.Top)) - top - _imageHeight) / 2;
-				diff = Math.Max(diff, 0);
-				UpdateContentEdge(new Thickness(0, diff, 0, -diff));
-			}
-			else
-			{
-				UpdateContentEdge();
-			}
-
+			_buttonLayoutManager?.OnLayout(changed, left, top, right, bottom);
 			base.OnLayout(changed, left, top, right, bottom);
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
+			_buttonLayoutManager?.Update();
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
-
-			var images = TextViewCompat.GetCompoundDrawablesRelative(this);
-			if (images.Length > 0 && images[0] != null && Element.ContentLayout.Position == Button.ButtonContentLayout.ImagePosition.Right)
-			{
-				var bounds = images[0].Bounds;
-				int width = images[0].IntrinsicWidth;
-				Icon.SetBounds(-bounds.Left, bounds.Top, width - bounds.Left, bounds.Bottom);
-				TextViewCompat.SetCompoundDrawablesRelative(this, null, null, Icon, null);
-			}
-		}
-
-		void UpdateImage()
-		{
-			if (_disposed || Element == null)
-				return;
-
-			FileImageSource elementImage = Element.Image;
-			string imageFile = elementImage?.File;
-			_imageHeight = -1;
-
-			if (elementImage == null || string.IsNullOrEmpty(imageFile))
-			{
-				SetCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
-				return;
-			}
-
-			Drawable image = Context.GetDrawable(imageFile);
-			Button.ButtonContentLayout layout = Element.ContentLayout;
-
-			if (_defaultIconPadding == -1)
-				_defaultIconPadding = IconPadding;
-
-			if (_defaultIconPadding == -1)
-				_defaultIconPadding = 0;
-
-			// disable tint for now
-			IconTint = null;
-			Icon = image;
-
-			if (layout.Position == Button.ButtonContentLayout.ImagePosition.Right || layout.Position == Button.ButtonContentLayout.ImagePosition.Left)
-			{
-				IconGravity = IconGravityTextStart;
-				// setting the icon property causes the base class to calculate things like padding
-				// required to set the image to the start of the text
-				if (string.IsNullOrEmpty(Element.Text))
-					IconPadding = 0;
-				else
-					IconPadding = (int)Context.ToPixels(layout.Spacing) + _defaultIconPadding;
-
-				image?.Dispose();
-				image = TextViewCompat.GetCompoundDrawablesRelative(this)[0];
-			}
-
-			switch (layout.Position)
-			{
-				case Button.ButtonContentLayout.ImagePosition.Top:
-					TextViewCompat.SetCompoundDrawablesRelativeWithIntrinsicBounds(this, null, image, null, null);
-					break;
-				case Button.ButtonContentLayout.ImagePosition.Bottom:
-					TextViewCompat.SetCompoundDrawablesRelativeWithIntrinsicBounds(this, null, null, null, image);
-					break;
-				case Button.ButtonContentLayout.ImagePosition.Right:
-					// this gets set and updated inside OnMeasure
-					break;
-				default:
-					// Defaults to image on the left
-					TextViewCompat.SetCompoundDrawablesRelative(this, image, null, null, null);
-					break;
-			}
 		}
 
 		void UpdateFont()
@@ -304,33 +216,6 @@ namespace Xamarin.Forms.Platform.Android.Material
 				SetTextSize(ComplexUnitType.Sp, font.ToScaledPixel());
 		}
 
-		void UpdateText()
-		{
-			if (_disposed || Element == null)
-				return;
-
-			string oldText = Text;
-			Text = Element.Text;
-
-			// If we went from or to having no text, we need to update the image position
-			if (string.IsNullOrEmpty(oldText) != string.IsNullOrEmpty(Text))
-			{
-				UpdateImage();
-			}
-		}
-
-		void UpdatePadding()
-		{
-			if (Element.IsSet(Button.PaddingProperty))
-			{
-				SetPadding(
-					(int)(Context.ToPixels(Element.Padding.Left) + _paddingDeltaPix.Left),
-					(int)(Context.ToPixels(Element.Padding.Top) + _paddingDeltaPix.Top),
-					(int)(Context.ToPixels(Element.Padding.Right) + _paddingDeltaPix.Right),
-					(int)(Context.ToPixels(Element.Padding.Bottom) + _paddingDeltaPix.Bottom));
-			}
-		}
-
 		void UpdateBorder()
 		{
 			if (_disposed || Element == null)
@@ -357,7 +242,7 @@ namespace Xamarin.Forms.Platform.Android.Material
 				if (borderColor.IsDefault)
 					StrokeColor = _defaultBorderColor;
 				else
-					base.StrokeColor = new ColorStateList(new[] { new int[0] }, new int[] { borderColor.ToAndroid() });
+					StrokeColor = new ColorStateList(new[] { new int[0] }, new int[] { borderColor.ToAndroid() });
 			}
 
 			double borderWidth = Element.BorderWidth;
@@ -366,10 +251,15 @@ namespace Xamarin.Forms.Platform.Android.Material
 				if (_defaultBorderWidth < 0)
 					_defaultBorderWidth = StrokeWidth;
 
+				// TODO: The Material button does not support borders:
+				//       https://github.com/xamarin/Xamarin.Forms/issues/4951
+				if (borderWidth > 1)
+					borderWidth = 1;
+
 				if (borderWidth < 0f)
 					StrokeWidth = _defaultBorderWidth;
 				else
-					base.StrokeWidth = (int)Context.ToPixels(borderWidth);
+					StrokeWidth = (int)Context.ToPixels(borderWidth);
 			}
 		}
 
@@ -404,13 +294,7 @@ namespace Xamarin.Forms.Platform.Android.Material
 
 			// apply
 			SetTextColor(MaterialColors.CreateButtonTextColors(background, text));
-			AViewCompat.SetBackgroundTintList(this, MaterialColors.CreateButtonBackgroundColors(background));
-		}
-
-		void UpdateContentEdge(Thickness? delta = null)
-		{
-			_paddingDeltaPix = delta ?? new Thickness();
-			UpdatePadding();
+			ViewCompat.SetBackgroundTintList(this, MaterialColors.CreateButtonBackgroundColors(background));
 		}
 
 		IPlatformElementConfiguration<PlatformConfiguration.Android, Button> OnThisPlatform() =>
@@ -419,11 +303,10 @@ namespace Xamarin.Forms.Platform.Android.Material
 		// IOnAttachStateChangeListener
 
 		void IOnAttachStateChangeListener.OnViewAttachedToWindow(AView attachedView) =>
-			UpdateText();
+			_buttonLayoutManager?.OnViewAttachedToWindow(attachedView);
 
-		void IOnAttachStateChangeListener.OnViewDetachedFromWindow(AView detachedView)
-		{
-		}
+		void IOnAttachStateChangeListener.OnViewDetachedFromWindow(AView detachedView) =>
+			_buttonLayoutManager?.OnViewDetachedFromWindow(detachedView);
 
 		// IOnFocusChangeListener
 
@@ -432,11 +315,13 @@ namespace Xamarin.Forms.Platform.Android.Material
 
 		// IOnClickListener
 
-		void IOnClickListener.OnClick(AView v) => ButtonElementManager.OnClick(Element, Element, v);
+		void IOnClickListener.OnClick(AView v) =>
+			ButtonElementManager.OnClick(Element, Element, v);
 
 		// IOnTouchListener
 
-		bool IOnTouchListener.OnTouch(AView v, MotionEvent e) => ButtonElementManager.OnTouch(Element, Element, v, e);
+		bool IOnTouchListener.OnTouch(AView v, MotionEvent e) =>
+			ButtonElementManager.OnTouch(Element, Element, v, e);
 
 		// IBorderVisualElementRenderer
 
@@ -450,6 +335,11 @@ namespace Xamarin.Forms.Platform.Android.Material
 		VisualElement IBorderVisualElementRenderer.Element => Element;
 		AView IBorderVisualElementRenderer.View => this;
 
+		// IButtonLayoutRenderer
+
+		Button IButtonLayoutRenderer.Element => Element;
+		AppCompatButton IButtonLayoutRenderer.View => this;
+
 		// IVisualElementRenderer
 
 		VisualElement IVisualElementRenderer.Element => Element;
@@ -459,15 +349,8 @@ namespace Xamarin.Forms.Platform.Android.Material
 
 		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
 		{
-			UpdateText();
-
-			AView view = this;
-
-			// with material something is removing the padding between it being set and 
-			// the measure call that's requested here
-			UpdatePadding();
-			view.Measure(widthConstraint, heightConstraint);
-
+			_buttonLayoutManager?.Update();
+			Measure(widthConstraint, heightConstraint);
 			return new SizeRequest(new Size(MeasuredWidth, MeasuredHeight), new Size());
 		}
 

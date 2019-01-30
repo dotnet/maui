@@ -1,13 +1,18 @@
 ﻿<?xml version="1.0" encoding="UTF-8" ?>
 <resources>
+
+  <!-- Material Base Theme -->
   <style name="XamarinFormsMaterialTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
     <item name="materialButtonStyle">@style/XamarinFormsMaterialButton</item>
   </style>
+
+  <!-- Material Progress Bars -->
   <style name="XamarinFormsMaterialProgressBarHorizontal" parent="Widget.AppCompat.ProgressBar.Horizontal">
   </style>
   <style name="XamarinFormsMaterialProgressBarCircular" parent="Widget.AppCompat.ProgressBar">
     <item name="android:background">@drawable/MaterialActivityIndicatorBackground</item>
   </style>
+  <!-- Material Buttons (All Styles) -->
   <style name="XamarinFormsMaterialButton" parent="Widget.MaterialComponents.Button">
     <item name="android:insetTop">0dp</item>
     <item name="android:insetBottom">0dp</item>

@@ -713,7 +713,7 @@ namespace Xamarin.Forms
 
 			if (includeMargins)
 			{
-				if (!margin.IsDefault)
+				if (!margin.IsEmpty)
 				{
 					result.Minimum = new Size(result.Minimum.Width + margin.HorizontalThickness, result.Minimum.Height + margin.VerticalThickness);
 					result.Request = new Size(result.Request.Width + margin.HorizontalThickness, result.Request.Height + margin.VerticalThickness);

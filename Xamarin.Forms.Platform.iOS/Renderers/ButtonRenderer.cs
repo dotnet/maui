@@ -1,24 +1,25 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using Foundation;
 using UIKit;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using Specifics = Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using SizeF = CoreGraphics.CGSize;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	public class ButtonRenderer : ViewRenderer<Button, UIButton>, IImageVisualElementRenderer
+	public class ButtonRenderer : ViewRenderer<Button, UIButton>, IImageVisualElementRenderer, IButtonLayoutRenderer
 	{
 		bool _isDisposed;
 		UIColor _buttonTextColorDefaultDisabled;
 		UIColor _buttonTextColorDefaultHighlighted;
 		UIColor _buttonTextColorDefaultNormal;
 		bool _useLegacyColorManagement;
-		bool _titleChanged;
-		SizeF _titleSize;
-		UIEdgeInsets _paddingDelta = new UIEdgeInsets();
+
+		ButtonLayoutManager _buttonLayoutManager;
 
 		// This looks like it should be a const under iOS Classic,
 		// but that doesn't work under iOS 
@@ -31,22 +32,20 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public bool IsDisposed => _isDisposed;
 
-		public ButtonRenderer() : base()
+		IImageVisualElementRenderer IButtonLayoutRenderer.ImageVisualElementRenderer => this;
+		nfloat IButtonLayoutRenderer.MinimumHeight => _minimumButtonHeight;
+
+		public ButtonRenderer()
 		{
 			BorderElementManager.Init(this);
-			ImageElementManager.Init(this);
+
+			_buttonLayoutManager = new ButtonLayoutManager(this);
 		}
 
 		public override SizeF SizeThatFits(SizeF size)
 		{
-			var result = base.SizeThatFits(size);
-
-			if (result.Height < _minimumButtonHeight)
-			{
-				result.Height = _minimumButtonHeight;
-			}
-
-			return result;
+			var measured = base.SizeThatFits(size);
+			return _buttonLayoutManager?.SizeThatFits(size, measured) ?? measured;
 		}
 
 		protected override void Dispose(bool disposing)
@@ -58,7 +57,8 @@ namespace Xamarin.Forms.Platform.iOS
 				Control.TouchUpInside -= OnButtonTouchUpInside;
 				Control.TouchDown -= OnButtonTouchDown;
 				BorderElementManager.Dispose(this);
-				ImageElementManager.Dispose(this);
+				_buttonLayoutManager?.Dispose();
+				_buttonLayoutManager = null;
 			}
 
 			_isDisposed = true;
@@ -90,11 +90,9 @@ namespace Xamarin.Forms.Platform.iOS
 					Control.TouchDown += OnButtonTouchDown;
 				}
 
-				UpdateText();
 				UpdateFont();
-				UpdateImage();
 				UpdateTextColor();
-				UpdatePadding();
+				_buttonLayoutManager?.Update();
 			}
 		}
 
@@ -107,16 +105,10 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == Button.TextProperty.PropertyName)
-				UpdateText();
-			else if (e.PropertyName == Button.TextColorProperty.PropertyName)
+			if (e.PropertyName == Button.TextColorProperty.PropertyName)
 				UpdateTextColor();
 			else if (e.PropertyName == Button.FontProperty.PropertyName)
 				UpdateFont();
-			else if (e.PropertyName == Button.ImageProperty.PropertyName)
-				UpdateImage();
-			else if (e.PropertyName == Button.PaddingProperty.PropertyName)
-				UpdatePadding();
 		}
 
 		protected override void SetAccessibilityLabel()
@@ -159,46 +151,9 @@ namespace Xamarin.Forms.Platform.iOS
 			Control.TitleLabel.Font = Element.ToUIFont();
 		}
 
-		async void UpdateImage()
-		{
-			try
-			{
-				await ImageElementManager.SetImage(this, Element);
-			}
-			catch (Exception ex)
-			{
-				Internals.Log.Warning(nameof(ImageRenderer), "Error loading image: {0}", ex);
-			}
-		}
-
-		public void SetImage(UIImage image)
-		{
-			if (image != null)
-			{
-				UIButton button = Control;
-				button.SetImage(image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal), UIControlState.Normal);
-				button.ImageView.ContentMode = UIViewContentMode.ScaleAspectFit;
-				ComputeEdgeInsets(Control, Element.ContentLayout);
-			}
-			else
-			{
-				Control.SetImage(null, UIControlState.Normal);
-				ClearEdgeInsets(Control);
-			}
-		}
+		public void SetImage(UIImage image) => _buttonLayoutManager.SetImage(image);
 
 		public UIImageView GetImage() => Control?.ImageView;
-
-		void UpdateText()
-		{
-			var newText = Element.Text;
-
-			if (Control.Title(UIControlState.Normal) != newText)
-			{
-				Control.SetTitle(Element.Text, UIControlState.Normal);
-				_titleChanged = true;
-			}
-		}
 
 		void UpdateTextColor()
 		{
@@ -218,90 +173,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 				Control.TintColor = color;
 			}
-		}
-
-		void UpdatePadding(UIButton button = null)
-		{
-			var uiElement = button ?? Control;
-			if (uiElement == null)
-				return;
-			uiElement.ContentEdgeInsets = new UIEdgeInsets(
-				(float)(Element.Padding.Top + _paddingDelta.Top),
-				(float)(Element.Padding.Left + _paddingDelta.Left),
-				(float)(Element.Padding.Bottom + _paddingDelta.Bottom),
-				(float)(Element.Padding.Right + _paddingDelta.Right)
-			);
-		}
-
-		void UpdateContentEdge(UIButton button, UIEdgeInsets? delta = null)
-		{
-			_paddingDelta = delta ?? new UIEdgeInsets ();
-			UpdatePadding(button);
-		}
-
-		void ClearEdgeInsets(UIButton button)
-		{
-			if (button == null)
-				return;
-
-			Control.ImageEdgeInsets = new UIEdgeInsets(0, 0, 0, 0);
-			Control.TitleEdgeInsets = new UIEdgeInsets(0, 0, 0, 0);
-			UpdateContentEdge (Control);
-		}
-
-		void ComputeEdgeInsets(UIButton button, Button.ButtonContentLayout layout)
-		{
-			if (button?.ImageView?.Image == null || string.IsNullOrEmpty(button.TitleLabel?.Text))
-				return;
-
-			var position = layout.Position;
-			var spacing = (nfloat)(layout.Spacing / 2);
-
-			if (position == Button.ButtonContentLayout.ImagePosition.Left)
-			{
-				button.ImageEdgeInsets = new UIEdgeInsets(0, -spacing, 0, spacing);
-				button.TitleEdgeInsets = new UIEdgeInsets(0, spacing, 0, -spacing);
-				UpdateContentEdge (button, new UIEdgeInsets(0, 2 * spacing, 0, 2 * spacing));
-				return;
-			}
-
-			if (_titleChanged)
-			{
-				var stringToMeasure = new NSString(button.TitleLabel.Text);
-				UIStringAttributes attribs = new UIStringAttributes { Font = button.TitleLabel.Font };
-				_titleSize = stringToMeasure.GetSizeUsingAttributes(attribs);
-				_titleChanged = false;
-			}
-
-			var labelWidth = _titleSize.Width;
-			var imageWidth = button.ImageView.Image.Size.Width;
-
-			if (position == Button.ButtonContentLayout.ImagePosition.Right)
-			{
-				button.ImageEdgeInsets = new UIEdgeInsets(0, labelWidth + spacing, 0, -labelWidth - spacing);
-				button.TitleEdgeInsets = new UIEdgeInsets(0, -imageWidth - spacing, 0, imageWidth + spacing);
-				UpdateContentEdge (button, new UIEdgeInsets(0, 2 * spacing, 0, 2 * spacing));
-				return;
-			}
-
-			var imageVertOffset = (_titleSize.Height / 2);
-			var titleVertOffset = (button.ImageView.Image.Size.Height / 2);
-
-			var edgeOffset = (float)Math.Min(imageVertOffset, titleVertOffset);
-
-			UpdateContentEdge (button, new UIEdgeInsets (edgeOffset, 0, edgeOffset, 0));
-
-			var horizontalImageOffset = labelWidth / 2;
-			var horizontalTitleOffset = imageWidth / 2;
-
-			if (position == Button.ButtonContentLayout.ImagePosition.Bottom)
-			{
-				imageVertOffset = -imageVertOffset;
-				titleVertOffset = -titleVertOffset;
-			}
-
-			button.ImageEdgeInsets = new UIEdgeInsets(-imageVertOffset, horizontalImageOffset, imageVertOffset, -horizontalImageOffset);
-			button.TitleEdgeInsets = new UIEdgeInsets(titleVertOffset, -horizontalTitleOffset, -titleVertOffset, horizontalTitleOffset);
 		}
 	}
 }

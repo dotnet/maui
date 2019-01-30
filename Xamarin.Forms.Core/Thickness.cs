@@ -24,7 +24,7 @@ namespace Xamarin.Forms
 			get { return Top + Bottom; }
 		}
 
-		internal bool IsDefault
+		internal bool IsEmpty
 		{
 			get { return Left == 0 && Top == 0 && Right == 0 && Bottom == 0; }
 		}

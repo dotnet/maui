@@ -102,12 +102,12 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.Tap(q => q.Marked(ButtonText));
 			RunningApp.WaitForElement(q => q.Marked("x: 100"));
 			RunningApp.WaitForElement(q => q.Marked("y: 100"));
-			RunningApp.WaitForElement(q => q.Marked("z: True"));
+			RunningApp.WaitForElement(q => q.Marked("z: True"), timeout: TimeSpan.FromSeconds(25));
 			RunningApp.WaitForElement(q => q.Marked("a: True"));
 			RunningApp.Tap(q => q.Marked(ButtonText));
 			RunningApp.WaitForElement(q => q.Marked("x: 200"));
 			RunningApp.WaitForElement(q => q.Marked("y: 100"));
-			RunningApp.WaitForElement(q => q.Marked("z: True"));
+			RunningApp.WaitForElement(q => q.Marked("z: True"), timeout: TimeSpan.FromSeconds(25));
 			RunningApp.WaitForElement(q => q.Marked("a: False"));
 		}
 

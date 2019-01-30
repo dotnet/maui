@@ -1,30 +1,24 @@
-﻿
-using Android.Views;
+﻿using Android.Views;
 using AView = Android.Views.View;
-using AMotionEventActions = Android.Views.MotionEventActions;
 
-
-namespace Xamarin.Forms.Platform.Android.FastRenderers
+namespace Xamarin.Forms.Platform.Android
 {
 	public static class ButtonElementManager
 	{
-
 		public static bool OnTouch(VisualElement element, IButtonController buttonController, AView v, MotionEvent e)
 		{
-			switch (e.Action)
+			switch (e.ActionMasked)
 			{
-				case AMotionEventActions.Down:
+				case MotionEventActions.Down:
 					buttonController?.SendPressed();
 					break;
-				case AMotionEventActions.Up:
+				case MotionEventActions.Up:
 					buttonController?.SendReleased();
 					break;
 			}
 
 			return false;
 		}
-
-
 
 		public static void OnClick(VisualElement element, IButtonController buttonController, AView v)
 		{
