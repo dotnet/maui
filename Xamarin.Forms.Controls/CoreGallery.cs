@@ -401,7 +401,29 @@ namespace Xamarin.Forms.Controls
 				_pages.Insert(1, new GalleryPageFactory(() => new TitleView(true), "TitleView"));
 			}
 
-			var template = new DataTemplate(typeof(TextCell));
+			_pages.Sort((x, y) => string.Compare(x.Title, y.Title, true));
+
+			var template = new DataTemplate(() =>
+			{
+				var cell = new TextCell();
+				cell.ContextActions.Add(new MenuItem
+				{
+					Text = "Select Visual",
+					Command = new Command(async () =>
+					{
+						var buttons = typeof(VisualMarker).GetProperties().Select(p => p.Name);
+						var selection = await rootPage.DisplayActionSheet("Select Visual", "Cancel", null, buttons.ToArray());
+						if (cell.BindingContext is GalleryPageFactory pageFactory)
+						{
+							var page = pageFactory.Realize();
+							if (typeof(VisualMarker).GetProperty(selection)?.GetValue(null) is IVisual visual)
+								page.Visual = visual;
+							await PushPage(page);
+						}
+					})
+				});
+				return cell;
+			});
 			template.SetBinding(TextCell.TextProperty, "Title");
 
 			BindingContext = _pages;
@@ -450,6 +472,14 @@ namespace Xamarin.Forms.Controls
 
 			await PushPage(page);
 		}
+
+		public void FilterPages(string filter)
+		{
+			if (string.IsNullOrWhiteSpace(filter))
+				ItemsSource = _pages;
+			else
+				ItemsSource = _pages.Where(p => p.Title.IndexOf(filter, StringComparison.InvariantCultureIgnoreCase) != -1);
+		}
 	}
 	[Preserve(AllMembers = true)]
 	internal class CoreRootPage : ContentPage
@@ -467,6 +497,11 @@ namespace Xamarin.Forms.Controls
 			var searchBar = new SearchBar()
 			{
 				AutomationId = "SearchBar"
+			};
+
+			searchBar.TextChanged += (sender, e) =>
+			{
+				corePageView.FilterPages(e.NewTextValue);
 			};
 
 			var testCasesButton = new Button
