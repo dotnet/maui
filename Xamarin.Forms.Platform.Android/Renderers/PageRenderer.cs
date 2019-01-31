@@ -121,8 +121,6 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (!string.IsNullOrEmpty(view.BackgroundImage))
 				this.SetBackground(Context.GetDrawable(view.BackgroundImage));
-			else
-				this.SetBackground(null);
 		}
 	}
 }

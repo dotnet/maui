@@ -183,7 +183,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (control is IPopupTrigger popupElement)
 				popupElement.ShowPopupOnFocus = true;
 
-			return control;
+			return control?.Focusable == true ? control : null;
 		}
 
 		public ViewGroup ViewGroup => this;
