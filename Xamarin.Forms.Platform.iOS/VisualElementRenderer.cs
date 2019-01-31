@@ -175,36 +175,35 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			int tabIndex = Element.TabIndex;
 			int attempt = 0;
-			NativeView control = null;
 
 			do
 			{
 				element = element.FindNextElement(forwardDirection, tabIndexes, ref tabIndex);
 #if __MACOS__
 				var renderer = Platform.GetRenderer(element);
-				control = (renderer as ITabStop)?.TabStop;
-#else
-				element.Focus();
+				var control = (renderer as ITabStop)?.TabStop;
+				if (control != null && control.AcceptsFirstResponder())
+					return control;
 #endif
-			} while (!(control != null || element.IsFocused || ++attempt >= maxAttempts));
-			return control;
+				element.Focus();
+			} while (!(element.IsFocused || ++attempt >= maxAttempts));
+			return null;
 		}
 
 #if __MACOS__
-		public override NativeView NextKeyView {
-			get {
-				return Element == null ? null : (FocusSearch(forwardDirection: true) ?? base.NextKeyView);
+		public override void KeyUp(NSEvent theEvent)
+		{
+			if (theEvent.KeyCode == (ushort)NSKey.Tab)
+			{
+				bool shift = (theEvent.ModifierFlags & NSEventModifierMask.ShiftKeyMask) == NSEventModifierMask.ShiftKeyMask;
+				var nextControl = FocusSearch(forwardDirection: !shift);
+				if (nextControl != null)
+				{
+					Window?.MakeFirstResponder(nextControl);
+					return;
+				}
 			}
-			set {
-				if (Element != null && value != null) // setting the value to null throws an exception
-					base.NextKeyView = value;
-			}
-		}
-
-		public override NativeView PreviousKeyView {
-			get {
-				return Element == null ? null : (FocusSearch(forwardDirection: false) ?? base.PreviousKeyView);
-			}
+			base.KeyUp(theEvent);
 		}
 #else
 		UIKeyCommand [] tabCommands = {
