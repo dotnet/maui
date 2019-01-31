@@ -380,8 +380,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			string backgroundImage = view.BackgroundImage;
 			if (!string.IsNullOrEmpty(backgroundImage))
 				this.SetBackground(Context.GetDrawable(backgroundImage));
-			else
-				this.SetBackground(null);
 		}
 
 		void UpdateDetail()
