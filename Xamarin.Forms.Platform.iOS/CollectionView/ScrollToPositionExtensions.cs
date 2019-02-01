@@ -24,6 +24,7 @@ namespace Xamarin.Forms.Platform.iOS
 			switch (scrollToPosition)
 			{
 				case ScrollToPosition.MakeVisible:
+					return UICollectionViewScrollPosition.None;
 				case ScrollToPosition.Start:
 					return isLtr ? UICollectionViewScrollPosition.Right : UICollectionViewScrollPosition.Left;
 				case ScrollToPosition.End:
@@ -41,6 +42,7 @@ namespace Xamarin.Forms.Platform.iOS
 			switch (scrollToPosition)
 			{
 				case ScrollToPosition.MakeVisible:
+					return UICollectionViewScrollPosition.None;
 				case ScrollToPosition.Start:
 					return UICollectionViewScrollPosition.Top;
 				case ScrollToPosition.End:
