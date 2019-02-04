@@ -34,17 +34,16 @@ trigger:
   branches:
     include:
     - master
-    - 3.3.0
-    - 3.4.0
-    - 3.5.0
+    - 3.*
+    - 4.*
   paths:
     exclude:
     - README.md
 
 pr:
 - master
-- 3.4.0
-- 3.5.0
+- 3.*
+- 4.*
 
 jobs:
 - job: Phase_1
