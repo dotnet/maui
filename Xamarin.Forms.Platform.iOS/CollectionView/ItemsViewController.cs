@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		IItemsViewSource _itemsSource;
 		readonly ItemsView _itemsView;
-		readonly ItemsViewLayout _layout;
+		ItemsViewLayout _layout;
 		bool _initialConstraintsSet;
 		bool _wasEmpty;
 
@@ -27,14 +27,36 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			_itemsView = itemsView;
 			_itemsSource = ItemsSourceFactory.Create(_itemsView.ItemsSource, CollectionView);
+
+			UpdateLayout(layout);
+		}
+
+		public void UpdateLayout(ItemsViewLayout layout)
+		{
 			_layout = layout;
-
 			_layout.GetPrototype = GetPrototype;
-			_layout.UniformSize = false; // todo hartez Link this to ItemsView.ItemSizingStrategy hint
 
-			Delegator = new UICollectionViewDelegator(_layout);
+			// If we're updating from a previous layout, we should keep any settings for the SelectableItemsViewController around
+			var selectableItemsViewController = Delegator?.SelectableItemsViewController;
+			Delegator = new UICollectionViewDelegator(_layout)
+			{
+				SelectableItemsViewController = selectableItemsViewController
+			};
 
 			CollectionView.Delegate = Delegator;
+
+			if (CollectionView.CollectionViewLayout != _layout)
+			{
+				// We're updating from a previous layout
+
+				// Make sure the new layout is sized properly
+				_layout.ConstrainTo(CollectionView.Bounds.Size);
+				
+				CollectionView.SetCollectionViewLayout(_layout, false);
+				
+				// Reload the data so the currently visible cells get laid out according to the new layout
+				CollectionView.ReloadData();
+			}
 		}
 
 		public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)

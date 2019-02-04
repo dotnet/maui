@@ -43,6 +43,10 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				ItemsViewController.UpdateEmptyView();
 			}
+			else if (changedProperty.Is(ItemsView.ItemSizingStrategyProperty))
+			{
+				UpdateItemSizingStrategy();
+			}
 		}
 
 		protected virtual ItemsViewLayout SelectLayout(IItemsLayout layoutSpecification)
@@ -79,7 +83,7 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 			}
 
-			_layout = SelectLayout(newElement.ItemsLayout);
+			UpdateLayout();
 			ItemsViewController = CreateController(newElement, _layout);
 			SetNativeControl(ItemsViewController.View);
 			ItemsViewController.CollectionView.BackgroundColor = UIColor.Clear;
@@ -87,6 +91,32 @@ namespace Xamarin.Forms.Platform.iOS
 
 			// Listen for ScrollTo requests
 			newElement.ScrollToRequested += ScrollToRequested;
+		}
+
+		protected virtual void UpdateLayout()
+		{
+			_layout = SelectLayout(Element.ItemsLayout);
+			_layout.ItemSizingStrategy = Element.ItemSizingStrategy;
+
+			if (ItemsViewController != null)
+			{
+				ItemsViewController.UpdateLayout(_layout);
+			}
+		}
+
+		protected virtual void UpdateItemSizingStrategy()
+		{
+			if (ItemsViewController?.CollectionView?.VisibleCells.Length == 0)
+			{
+				// The CollectionView isn't really up and running yet, so we can just set the strategy and move on
+				_layout.ItemSizingStrategy = Element.ItemSizingStrategy;
+			}
+			else
+			{
+				// We're changing the strategy for a CollectionView mid-stream; 
+				// we'll just have to swap out the whole UICollectionViewLayout
+				UpdateLayout();
+			}
 		}
 
 		protected virtual ItemsViewController CreateController(ItemsView newElement, ItemsViewLayout layout)

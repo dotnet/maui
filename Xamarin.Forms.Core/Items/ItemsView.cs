@@ -65,6 +65,15 @@ namespace Xamarin.Forms
 			set => SetValue(ItemTemplateProperty, value);
 		}
 
+		public static readonly BindableProperty ItemSizingStrategyProperty =
+			BindableProperty.Create(nameof(ItemSizingStrategy), typeof(ItemSizingStrategy), typeof(ItemsView));
+
+		public ItemSizingStrategy ItemSizingStrategy
+		{
+			get => (ItemSizingStrategy)GetValue(ItemSizingStrategyProperty);
+			set => SetValue(ItemSizingStrategyProperty, value);
+		}
+
 		public void ScrollTo(int index, int groupIndex = -1,
 			ScrollToPosition position = ScrollToPosition.MakeVisible, bool animate = true)
 		{

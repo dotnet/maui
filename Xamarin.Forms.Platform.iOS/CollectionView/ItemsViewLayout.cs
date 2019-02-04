@@ -51,7 +51,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void LayoutOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChanged)
 		{
-			HandlePropertyChanged(propertyChanged);
 		}
 
 		protected virtual void HandlePropertyChanged(PropertyChangedEventArgs propertyChanged)
@@ -62,8 +61,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public Func<UICollectionViewCell> GetPrototype { get; set; }
 
-		// TODO hartez 2018/09/14 17:24:22 Long term, this needs to use the ItemSizingStrategy enum and not be locked into bool	
-		public bool UniformSize { get; set; }
+		internal ItemSizingStrategy ItemSizingStrategy { get; set; }
 
 		public abstract void ConstrainTo(CGSize size);
 
@@ -140,7 +138,7 @@ namespace Xamarin.Forms.Platform.iOS
 			//		has at least one item), Autolayout will kick in for the first cell and size it correctly
 			// If GetPrototype() _can_ return a cell, this estimate will be updated once that cell is measured
 			EstimatedItemSize = new CGSize(1, 1);
-			
+
 			if (!(GetPrototype() is ItemsViewCell prototype))
 			{
 				_determiningCellSize = false;
@@ -152,7 +150,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			var measure = prototype.Measure();
 
-			if (UniformSize)
+			if (ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
 			{
 				// This is the size we'll give all of our cells from here on out
 				ItemSize = measure;
@@ -212,7 +210,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			_needCellSizeUpdate = true;
 		}
-		
+
 		public override CGPoint TargetContentOffset(CGPoint proposedContentOffset, CGPoint scrollingVelocity)
 		{
 			var snapPointsType = _itemsLayout.SnapPointsType;
@@ -254,12 +252,12 @@ namespace Xamarin.Forms.Platform.iOS
 			// closest to the relevant part of the viewport while being sufficiently visible
 
 			// Find the spot in the viewport we're trying to align with
-			var alignmentTarget = SnapHelpers.FindAlignmentTarget(alignment, proposedContentOffset, 
+			var alignmentTarget = SnapHelpers.FindAlignmentTarget(alignment, proposedContentOffset,
 				CollectionView, ScrollDirection);
 
 			// Find the closest sufficiently visible candidate
 			var bestCandidate = SnapHelpers.FindBestSnapCandidate(visibleElements, viewport, alignmentTarget);
-			
+
 			if (bestCandidate != null)
 			{
 				return SnapHelpers.AdjustContentOffset(proposedContentOffset, bestCandidate.Frame, viewport, alignment,
@@ -277,7 +275,7 @@ namespace Xamarin.Forms.Platform.iOS
 			// Get the viewport of the UICollectionView at the current content offset
 			var contentOffset = CollectionView.ContentOffset;
 			var viewport = new CGRect(contentOffset, CollectionView.Bounds.Size);
-								
+
 			// Find the spot in the viewport we're trying to align with
 			var alignmentTarget = SnapHelpers.FindAlignmentTarget(alignment, contentOffset, CollectionView, ScrollDirection);
 
