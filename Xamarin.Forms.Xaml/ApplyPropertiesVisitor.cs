@@ -505,8 +505,14 @@ namespace Xamarin.Forms.Xaml
 							   property.ReturnTypeInfo.GetGenericTypeDefinition() == typeof(Nullable<>);
 				if ((convertedValue == null && (!property.ReturnTypeInfo.IsValueType || nullable)) ||
 					(property.ReturnType.IsInstanceOfType(convertedValue))) {
-					bindable.SetValue(property, convertedValue);
-					return true;
+					try {
+						bindable.SetValue(property, convertedValue);
+						return true;
+					}
+					catch (Exception e) {
+						exception = e;
+						return false;
+					}
 				}
 
 				// This might be a collection; see if we can add to it
@@ -558,8 +564,14 @@ namespace Xamarin.Forms.Xaml
 			if (convertedValue != null && !propertyInfo.PropertyType.IsInstanceOfType(convertedValue))
 				return false;
 
-			setter.Invoke(element, new object [] { convertedValue });
-			return true;
+			try {
+				setter.Invoke(element, new object[] { convertedValue });
+				return true;
+			}
+			catch (Exception e) {
+				exception = e;
+				return false;
+			}
 		}
 
 		static bool TryGetProperty(object element, string localName, out object value, IXmlLineInfo lineInfo, HydrationContext context, out Exception exception, out object targetProperty)

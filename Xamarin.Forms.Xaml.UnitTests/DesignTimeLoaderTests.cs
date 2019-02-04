@@ -480,6 +480,22 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var o = XamlLoader.Create(xaml, true);
 			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 		}
+
+		[Test]
+		public void CanIgnoreSettingPropertyThatThrows()
+		{
+			var xaml = @"
+					<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
+						xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
+						xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+						<local:SettingPropertyThrows TestValue=""Test"" TestBP=""bar""/>
+					</ContentPage>";
+
+			var exceptions = new List<Exception>();
+			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
+			Assert.That(exceptions.Count, Is.EqualTo(2));
+		}
 	}
 
 	public class InstantiateThrows
@@ -487,5 +503,17 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public InstantiateThrows() => throw new InvalidOperationException();
 		public static InstantiateThrows CreateInstance() => throw new InvalidOperationException();
 		public InstantiateThrows(int value) => throw new InvalidOperationException();
+	}
+
+	public class SettingPropertyThrows : View
+	{
+		public static readonly BindableProperty TestBPProperty =
+			BindableProperty.Create("TestBP", typeof(string), typeof(SettingPropertyThrows), default(string),
+				propertyChanged: (b,o,n)=>throw new Exception());
+
+		public string TestValue {
+			get { return null; }
+			set { throw new InvalidOperationException(); }
+		}
 	}
 }
