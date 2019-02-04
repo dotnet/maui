@@ -22,6 +22,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			Device.PlatformServices = null;
 			XamlLoader.FallbackTypeResolver = null;
 			XamlLoader.ValueCreatedCallback = null;
+			XamlLoader.InstantiationFailedCallback = null;
 			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = null;
 		}
 
@@ -450,5 +451,41 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 			Assert.That(myButton.BackgroundColor, Is.Not.EqualTo(Color.Blue));
 		}
+
+		[Test]
+		public void CanReplaceTypeWhenInstantiationThrows()
+		{
+			var xaml = @"
+					<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
+						xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
+						xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests""
+						xmlns:missing=""clr-namespace:MissingNamespace;assembly=MissingAssembly"">
+						<StackLayout>
+							<local:InstantiateThrows />
+							<local:InstantiateThrows x:FactoryMethod=""CreateInstance"" />
+							<local:InstantiateThrows>
+								<x:Arguments>
+									<x:Int32>1</x:Int32>
+								</x:Arguments>
+							</local:InstantiateThrows>
+							<missing:Test>
+								<x:Arguments>
+									<x:Int32>1</x:Int32>
+								</x:Arguments>
+							</missing:Test>
+						</StackLayout>
+					</ContentPage>";
+			XamlLoader.FallbackTypeResolver = (p, type) => type ?? typeof(Button);
+			XamlLoader.InstantiationFailedCallback = (type) => new Button();
+			var o = XamlLoader.Create(xaml, true);
+			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
+		}
+	}
+
+	public class InstantiateThrows
+	{
+		public InstantiateThrows() => throw new InvalidOperationException();
+		public static InstantiateThrows CreateInstance() => throw new InvalidOperationException();
+		public InstantiateThrows(int value) => throw new InvalidOperationException();
 	}
 }
