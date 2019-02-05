@@ -13,12 +13,11 @@ namespace Xamarin.Forms.Xaml.Internals
 
 		internal XamlServiceProvider(INode node, HydrationContext context)
 		{
-			object targetObject;
-			if (node != null && node.Parent != null && context.Values.TryGetValue(node.Parent, out targetObject))
+			if (context != null && node != null && node.Parent != null && context.Values.TryGetValue(node.Parent, out object targetObject))
 				IProvideValueTarget = new XamlValueTargetProvider(targetObject, node, context, null);
 			if (context != null)
 				IRootObjectProvider = new XamlRootObjectProvider(context.RootElement);
-			if (node != null)
+			if (context != null && node != null)
 			{
 				IXamlTypeResolver = new XamlTypeResolver(node.NamespaceResolver, XamlParser.GetElementType,
 					context.RootElement.GetType().GetTypeInfo().Assembly);
@@ -26,8 +25,7 @@ namespace Xamarin.Forms.Xaml.Internals
 				Add(typeof(IReferenceProvider), new ReferenceProvider(node));
 			}
 
-			var xmlLineInfo = node as IXmlLineInfo;
-			if (xmlLineInfo != null)
+			if (node is IXmlLineInfo xmlLineInfo)
 				IXmlLineInfoProvider = new XmlLineInfoProvider(xmlLineInfo);
 
 			IValueConverterProvider = new ValueConverterProvider();
