@@ -12,6 +12,11 @@ namespace Xamarin.Forms.Platform.Android
 
 		public override AView FindSnapView(RecyclerView.LayoutManager layoutManager)
 		{
+			if (!CanSnap)
+			{
+				return null;
+			}
+
 			if (layoutManager.ItemCount == 0)
 			{
 				return null;

@@ -26,8 +26,7 @@ namespace Xamarin.Forms.Platform.Android
 			var snapPointsType = itemsLayout.SnapPointsType;
 
 			// Clear our the existing snap helper (if any)
-			_snapHelper?.AttachToRecyclerView(null);
-			_snapHelper = null;
+			DetachSnapHelper();
 
 			if (snapPointsType == SnapPointsType.None)
 			{
@@ -52,7 +51,7 @@ namespace Xamarin.Forms.Platform.Android
 					case SnapPointsAlignment.Start:
 						return new StartSnapHelper();
 					case SnapPointsAlignment.Center:
-						return new LinearSnapHelper();
+						return new CenterSnapHelper();
 					case SnapPointsAlignment.End:
 						return new EndSnapHelper();
 					default:
@@ -75,14 +74,20 @@ namespace Xamarin.Forms.Platform.Android
 				}
 			}
 
-			// The default LinearSnapHelper snaps to center
-			return new LinearSnapHelper();
+			// Use center snapping as the default
+			return new CenterSnapHelper();
+		}
+
+		void DetachSnapHelper()
+		{
+			_snapHelper?.AttachToRecyclerView(null);
+			_snapHelper?.Dispose();
+			_snapHelper = null;
 		}
 
 		public void Dispose()
 		{
-			_recyclerView?.Dispose();
-			_snapHelper?.Dispose();
+			DetachSnapHelper();
 		}
 	}
 }

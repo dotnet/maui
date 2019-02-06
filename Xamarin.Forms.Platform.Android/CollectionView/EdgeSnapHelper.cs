@@ -3,7 +3,7 @@ using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	internal abstract class EdgeSnapHelper : LinearSnapHelper
+	internal abstract class EdgeSnapHelper : NongreedySnapHelper
 	{
 		protected static OrientationHelper CreateOrientationHelper(RecyclerView.LayoutManager layoutManager)
 		{
