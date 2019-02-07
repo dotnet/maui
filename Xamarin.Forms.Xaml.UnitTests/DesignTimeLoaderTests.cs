@@ -476,7 +476,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 						</StackLayout>
 					</ContentPage>";
 			XamlLoader.FallbackTypeResolver = (p, type) => type ?? typeof(Button);
-			XamlLoader.InstantiationFailedCallback = (type) => new Button();
+			XamlLoader.InstantiationFailedCallback = (xmltype, type, exception) => new Button();
 			var o = XamlLoader.Create(xaml, true);
 			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 		}
@@ -493,7 +493,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 							</StackLayout>
 						</ContentPage>";
 			XamlLoader.FallbackTypeResolver = (p, type) => type ?? typeof(Button);
-			XamlLoader.InstantiationFailedCallback = type => new Button();
+			XamlLoader.InstantiationFailedCallback = (xmltype, type, exception) => new Button();
 			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 		}
 

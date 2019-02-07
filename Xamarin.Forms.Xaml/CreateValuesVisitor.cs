@@ -85,7 +85,7 @@ namespace Xamarin.Forms.Xaml
 							value = Activator.CreateInstance(type);
 						}
 						catch (TargetInvocationException tie) {
-							value = XamlLoader.InstantiationFailedCallback?.Invoke(new XamlLoader.CallbackTypeInfo { XmlNamespace = node.XmlType.NamespaceUri, XmlTypeName = node.XmlType.Name }) ?? throw tie;
+							value = XamlLoader.InstantiationFailedCallback?.Invoke(new XamlLoader.CallbackTypeInfo { XmlNamespace = node.XmlType.NamespaceUri, XmlTypeName = node.XmlType.Name }, type, tie) ?? throw tie;
 						}
 					}
 				}
@@ -191,7 +191,7 @@ namespace Xamarin.Forms.Xaml
 				return ctorInfo.Invoke(arguments);
 			}
 			catch (Exception e) when (e is TargetInvocationException || e is MissingMemberException) {
-				return XamlLoader.InstantiationFailedCallback?.Invoke(new XamlLoader.CallbackTypeInfo { XmlNamespace = node.XmlType.NamespaceUri, XmlTypeName = node.XmlType.Name }) ?? throw e;
+				return XamlLoader.InstantiationFailedCallback?.Invoke(new XamlLoader.CallbackTypeInfo { XmlNamespace = node.XmlType.NamespaceUri, XmlTypeName = node.XmlType.Name }, nodeType, e) ?? throw e;
 			}
 
 		}
@@ -207,7 +207,7 @@ namespace Xamarin.Forms.Xaml
 					return Activator.CreateInstance(nodeType, arguments);
 				}
 				catch (Exception e) when (e is TargetInvocationException || e is MissingMemberException) {
-					return XamlLoader.InstantiationFailedCallback?.Invoke(new XamlLoader.CallbackTypeInfo { XmlNamespace = node.XmlType.NamespaceUri, XmlTypeName = node.XmlType.Name }) ?? throw e;
+					return XamlLoader.InstantiationFailedCallback?.Invoke(new XamlLoader.CallbackTypeInfo { XmlNamespace = node.XmlType.NamespaceUri, XmlTypeName = node.XmlType.Name }, nodeType, e) ?? throw e;
 				}
 			}
 
@@ -240,7 +240,7 @@ namespace Xamarin.Forms.Xaml
 				return mi.Invoke(null, arguments);
 			}
 			catch (Exception e) when (e is TargetInvocationException || e is MissingMemberException) {
-				return XamlLoader.InstantiationFailedCallback?.Invoke(new XamlLoader.CallbackTypeInfo { XmlNamespace = node.XmlType.NamespaceUri, XmlTypeName = node.XmlType.Name}) ?? throw e;
+				return XamlLoader.InstantiationFailedCallback?.Invoke(new XamlLoader.CallbackTypeInfo { XmlNamespace = node.XmlType.NamespaceUri, XmlTypeName = node.XmlType.Name}, nodeType, e) ?? throw e;
 			}
 		}
 
