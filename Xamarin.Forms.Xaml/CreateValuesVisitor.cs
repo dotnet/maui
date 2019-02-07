@@ -233,14 +233,14 @@ namespace Xamarin.Forms.Xaml
 				}
 				return true;
 			};
-			var mi = nodeType.GetRuntimeMethods().FirstOrDefault(isMatch);
-			if (mi == null)
-				throw new MissingMemberException($"No static method found for {nodeType.FullName}::{factoryMethod} ({string.Join(", ", types.Select(t => t.FullName))})");
 			try {
+				var mi = nodeType.GetRuntimeMethods().FirstOrDefault(isMatch);
+				if (mi == null)
+					throw new MissingMemberException($"No static method found for {nodeType.FullName}::{factoryMethod} ({string.Join(", ", types.Select(t => t.FullName))})");
 				return mi.Invoke(null, arguments);
 			}
-			catch (TargetInvocationException tie) {
-				return XamlLoader.InstantiationFailedCallback?.Invoke(new XamlLoader.CallbackTypeInfo { XmlNamespace = node.XmlType.NamespaceUri, XmlTypeName = node.XmlType.Name}) ?? throw tie;
+			catch (Exception e) when (e is TargetInvocationException || e is MissingMemberException) {
+				return XamlLoader.InstantiationFailedCallback?.Invoke(new XamlLoader.CallbackTypeInfo { XmlNamespace = node.XmlType.NamespaceUri, XmlTypeName = node.XmlType.Name}) ?? throw e;
 			}
 		}
 

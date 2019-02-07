@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
@@ -453,7 +453,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		[Test]
-		public void CanReplaceTypeWhenInstantiationThrows()
+		public void CanProvideInstanceWhenInstantiationThrows()
 		{
 			var xaml = @"
 					<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
@@ -478,6 +478,22 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			XamlLoader.FallbackTypeResolver = (p, type) => type ?? typeof(Button);
 			XamlLoader.InstantiationFailedCallback = (type) => new Button();
 			var o = XamlLoader.Create(xaml, true);
+			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
+		}
+
+		[Test]
+		public void CanProvideInstanceWhenReplacedTypeConstructorInvalid()
+		{
+			var xaml = @"
+						<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
+							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
+							xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+							<StackLayout>
+								<local:ReplacedType x:FactoryMethod=""CreateInstance"" />
+							</StackLayout>
+						</ContentPage>";
+			XamlLoader.FallbackTypeResolver = (p, type) => type ?? typeof(Button);
+			XamlLoader.InstantiationFailedCallback = type => new Button();
 			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 		}
 
