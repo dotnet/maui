@@ -5,7 +5,7 @@
 	<StackLayout>
 		<Label BindingContext="{x:Reference slider}"
 			   x:Name="label"
-			   Text="{Binding Value, StringFormat='{}Slider value is {0:F3}'}"
+			   Text="{Binding Value, StringFormat='Slider value is {0:F3}'}"
 			   Font="Large"
 			   HorizontalOptions="Center"
 			   VerticalOptions="CenterAndExpand" />

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 
 using Xamarin.Forms.Core.UnitTests;
 
@@ -25,9 +25,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void UnescapedBraces([Values(false, true)]bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
-					Assert.Throws<XamlParseException>(() => MockCompiler.Compile(typeof(Gh2756)));
+					Assert.Throws(new XamlParseExceptionConstraint(8, 16), () => MockCompiler.Compile(typeof(Gh2756)));
 				else
-					Assert.Throws<XamlParseException>(() => new Gh2756(useCompiledXaml));
+					Assert.Throws(new XamlParseExceptionConstraint(8, 16), () => new Gh2756(useCompiledXaml));
 			}
 		}
 	}

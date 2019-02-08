@@ -12,11 +12,11 @@
         <StackLayout Margin="10, 0">
             <Label Text="{Binding Name}" />
             <Slider Value="{Binding Hue}" />
-            <Label Text="{Binding Hue, StringFormat='{}Hue = {0:F2}'}" />
+            <Label Text="{Binding Hue, StringFormat='Hue = {0:F2}'}" />
             <Slider Value="{Binding Saturation}" />
-            <Label Text="{Binding Saturation, StringFormat='{}Saturation = {0:F2}'}" />
+            <Label Text="{Binding Saturation, StringFormat='Saturation = {0:F2}'}" />
             <Slider Value="{Binding Luminosity}" />
-            <Label Text="{Binding Luminosity, StringFormat='{}Luminosity = {0:F2}'}" />
+            <Label Text="{Binding Luminosity, StringFormat='Luminosity = {0:F2}'}" />
         </StackLayout>
     </StackLayout> 
 </ContentPage>

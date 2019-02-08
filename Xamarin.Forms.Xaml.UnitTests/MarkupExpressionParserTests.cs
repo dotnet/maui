@@ -248,11 +248,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		[Test]
-		public void BracesNeedsToBeEscaped()
+		public void NonStartingBracesDoNotNeedToBeEscaped()
 		{
 			var bindingString = "{Binding Foo, StringFormat='Hello {0}'}";
 
-			Assert.Throws<XamlParseException>(() => new MarkupExtensionParser().ParseExpression(ref bindingString, new Internals.XamlServiceProvider(null, null)
+			Assert.DoesNotThrow(() => new MarkupExtensionParser().ParseExpression(ref bindingString, new Internals.XamlServiceProvider(null, null)
 			{
 				IXamlTypeResolver = typeResolver,
 			}));

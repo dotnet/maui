@@ -141,10 +141,10 @@ namespace Xamarin.Forms.Xaml
 			else
 				str_value = GetNextPiece(ref remaining, out var next);
 
-			if (str_value != null && !str_value.StartsWith("{}", StringComparison.Ordinal) && str_value.Length > 2 && str_value.IndexOf('{') != -1)
+			if (str_value != null && !str_value.StartsWith("{}", StringComparison.Ordinal) && str_value.Length > 2 && str_value.StartsWith("{", StringComparison.Ordinal))
 			{
 				var lineInfo = (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) as IXmlLineInfoProvider != null) ? (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) as IXmlLineInfoProvider).XmlLineInfo : new XmlLineInfo();
-				throw new XamlParseException("Strings containing `{` needs to be escaped. Start the string with `{}`", lineInfo);
+				throw new XamlParseException("Strings starting with `{` needs to be escaped. Start the string with `{}`", lineInfo);
 			}
 
 			SetPropertyValue(prop, str_value, value, serviceProvider);
