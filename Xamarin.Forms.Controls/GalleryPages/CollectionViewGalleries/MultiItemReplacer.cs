@@ -32,8 +32,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 			var index1 = indexes[0];
 			var index2 = indexes[1];
 
-			if (index1 > -1 && index2 > -1 && index1 < observableCollection.Count &&
-				index2 < observableCollection.Count && index1 < index2)
+			if (index1 > -1 && index2 < observableCollection.Count && index1 <= index2)
 			{
 				var newItems = new List<CollectionViewGalleryTestItem>();
 
@@ -45,11 +44,11 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 
 				if (_withIndex)
 				{
-					observableCollection.TestReplaceWithListAndIndex(index1, index2 - index1, newItems);
+					observableCollection.TestReplaceWithListAndIndex(index1, index2 - index1 + 1, newItems);
 				}
 				else
 				{
-					observableCollection.TestReplaceWithList(index1, index2 - index1, newItems);
+					observableCollection.TestReplaceWithList(index1, index2 - index1 + 1, newItems);
 				}
 			}
 		}

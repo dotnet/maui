@@ -29,16 +29,15 @@
 			var index1 = indexes[0];
 			var index2 = indexes[1];
 
-			if (index1 > -1 && index2 > -1 && index1 < observableCollection.Count &&
-				index2 < observableCollection.Count && index1 < index2)
+			if (index1 > -1 && index2 < observableCollection.Count && index1 <= index2)
 			{
 				if (_withIndex)
 				{
-					observableCollection.TestRemoveWithListAndIndex(index1, index2 - index1);
+					observableCollection.TestRemoveWithListAndIndex(index1, (index2 - index1) + 1);
 				}
 				else
 				{
-					observableCollection.TestRemoveWithList(index1, index2 - index1);
+					observableCollection.TestRemoveWithList(index1, (index2 - index1) + 1);
 				}
 			}
 		}
