@@ -71,6 +71,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
+		[Ignore("Fails intermittently on TestCloud")]
+		[Category(Core.UITests.UITestCategories.ManualReview)]
 		public void AnimationCancel()
 		{
 			RunningApp.WaitForElement(ButtonId);
