@@ -63,6 +63,7 @@ namespace Xamarin.Forms.Controls
 			);
 
 			// NOTE: Currently the ability to programmatically enable/disable mixed content only exists on Android
+			// NOTE: Currently the ability to programmatically enable/disable zoom only exists on Android
 			if (Device.RuntimePlatform == Device.Android)
 			{
 				var mixedContentTestPage = "https://mixed-content-test.appspot.com/";
@@ -81,13 +82,36 @@ namespace Xamarin.Forms.Controls
 					Url = mixedContentTestPage
 				};
 
+				var enableZoomControlsWebView = new WebView() { HeightRequest = 200 };
+				enableZoomControlsWebView.On<Android>().SetEnableZoomControls(true);
+				enableZoomControlsWebView.On<Android>().SetDisplayZoomControls(false);
+				enableZoomControlsWebView.Source = new UrlWebViewSource
+				{
+					Url = "https://www.xamarin.com"
+				};
+
+				var displayZoomControlsWebView = new WebView() { HeightRequest = 200 };
+				displayZoomControlsWebView.On<Android>().SetEnableZoomControls(true);
+				displayZoomControlsWebView.On<Android>().SetDisplayZoomControls(true);
+				displayZoomControlsWebView.Source = new UrlWebViewSource
+				{
+					Url = "https://www.xamarin.com"
+				};
+
 				var mixedContentDisallowedContainer = new ViewContainer<WebView>(Test.WebView.MixedContentDisallowed,
 					mixedContentDisallowedWebView);
 				var mixedContentAllowedContainer = new ViewContainer<WebView>(Test.WebView.MixedContentAllowed,
 					mixedContentAllowedWebView);
 
+				var enableZoomControlsContainer = new ViewContainer<WebView>(Test.WebView.EnableZoomControls,
+					enableZoomControlsWebView);
+				var displayZoomControlsWebViewContainer = new ViewContainer<WebView>(Test.WebView.DisplayZoomControls,
+					displayZoomControlsWebView);
+
 				Add(mixedContentDisallowedContainer);
 				Add(mixedContentAllowedContainer);
+				Add(enableZoomControlsContainer);
+				Add(displayZoomControlsWebViewContainer);
 			}
 
 

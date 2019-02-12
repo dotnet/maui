@@ -106,6 +106,30 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		public void TestEnableZoomControls()
+		{
+			var defaultWebView = new WebView();
+
+			var enableZoomControlsWebView = new WebView();
+			enableZoomControlsWebView.On<Android>().SetEnableZoomControls(true);
+
+			Assert.AreEqual(defaultWebView.On<Android>().EnableZoomControls(), false);
+			Assert.AreEqual(enableZoomControlsWebView.On<Android>().EnableZoomControls(), true);
+		}
+
+		[Test]
+		public void TestDisplayZoomControls()
+		{
+			var defaultWebView = new WebView();
+
+			var displayZoomControlsWebView = new WebView();
+			displayZoomControlsWebView.On<Android>().SetDisplayZoomControls(false);
+
+			Assert.AreEqual(defaultWebView.On<Android>().DisplayZoomControls(), true);
+			Assert.AreEqual(displayZoomControlsWebView.On<Android>().DisplayZoomControls(), false);
+		}
+
+		[Test]
 		public void TestWindowsSetAllowJavaScriptAlertsFlag()
 		{
 			var defaultWebView = new WebView();
