@@ -305,6 +305,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ISampleNativeControl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\UITestHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ViewHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1544.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1677.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1801.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1734.cs" />

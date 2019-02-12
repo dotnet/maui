@@ -50,7 +50,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			SetupMetrics(self);
 
-			return (float)Math.Round(dp * s_displayDensity);
+			return (float)Math.Ceiling(dp * s_displayDensity);
 		}
 
 		public static bool HasRtlSupport(this Context self) =>

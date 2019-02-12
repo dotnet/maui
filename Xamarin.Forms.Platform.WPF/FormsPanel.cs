@@ -26,6 +26,10 @@ namespace Xamarin.Forms.Platform.WPF
 
 			Element.IsInNativeLayout = true;
 
+			var presentationSource = PresentationSource.FromVisual(this);
+			var stepX = presentationSource.CompositionTarget.TransformFromDevice.M11;
+			var stepY = presentationSource.CompositionTarget.TransformFromDevice.M22;
+
 			for (var i = 0; i < ElementController.LogicalChildren.Count; i++)
 			{
 				var child = ElementController.LogicalChildren[i] as VisualElement;
@@ -36,8 +40,15 @@ namespace Xamarin.Forms.Platform.WPF
 				if (renderer == null)
 					continue;
 				Rectangle bounds = child.Bounds;
-
-				renderer.GetNativeElement().Arrange(new Rect(bounds.X, bounds.Y, Math.Max(0, bounds.Width), Math.Max(0, bounds.Height)));
+				var control = renderer.GetNativeElement();
+				var width = Math.Max(0, bounds.Width);
+				var height = Math.Max(0, bounds.Height);
+				if (stepX != 1 && stepY != 1 && stepX != 0 && stepY != 0)
+				{
+					control.Width = width = Math.Ceiling(width / stepX) * stepX;
+					control.Height = height = Math.Ceiling(height / stepY) * stepY;
+				}
+				control.Arrange(new Rect(bounds.X, bounds.Y, width, height));
 			}
 
 			Element.IsInNativeLayout = false;
