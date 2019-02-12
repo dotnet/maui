@@ -152,6 +152,8 @@
     <ProjectReference Include="..\Xamarin.Forms.Material.iOS\Xamarin.Forms.Material.iOS.csproj">
       <Project>{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}</Project>
       <Name>Xamarin.Forms.Material.iOS</Name>
+      <IsAppExtension>false</IsAppExtension>
+      <IsWatchApp>false</IsWatchApp>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
