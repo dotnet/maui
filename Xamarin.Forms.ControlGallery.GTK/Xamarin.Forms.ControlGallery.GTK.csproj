@@ -20,7 +20,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;HAVE_OPENTK;__GTK__</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -30,7 +30,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;HAVE_OPENTK;__GTK__</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -69,10 +69,6 @@
       <HintPath>..\Xamarin.Forms.Platform.GTK\Libs\gtk-sharp\gtk-sharp-2.0\gtk-sharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="OpenTK, Version=2.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Xamarin.Forms.Platform.GTK\Libs\OpenTK\OpenTK.dll</HintPath>
-    </Reference>
     <Reference Include="pango-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Xamarin.Forms.Platform.GTK\Libs\gtk-sharp\gtk-sharp-2.0\pango-sharp.dll</HintPath>
@@ -90,13 +86,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AdvancedOpenGLView.cs" />
-    <Compile Include="BasicOpenGLView.cs" />
+    <PackageReference Include="OpenTK" Version="3.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\xamarin.forms.controls\gallerypages\openglgalleries\AdvancedOpenGLGallery.cs">
+      <Link>GalleryPages\AdvancedOpenGLGallery.cs</Link>
+    </Compile>
+    <Compile Include="..\xamarin.forms.controls\gallerypages\openglgalleries\BasicOpenGLGallery.cs">
+      <Link>GalleryPages\BasicOpenGLGallery.cs</Link>
+    </Compile>
+    <Compile Include="PlatformSpecificCoreGalleryFactory.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RegistrarValidationService.cs" />
     <Compile Include="SampleNativeControl.cs" />
-    <Compile Include="StringProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

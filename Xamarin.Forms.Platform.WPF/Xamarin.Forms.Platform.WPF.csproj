@@ -53,8 +53,8 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="OpenTK" Version="2.0.0" />
-    <PackageReference Include="OpenTK.GLControl" Version="1.1.2349.61993" />
+    <PackageReference Include="OpenTK" Version="3.0.1" />
+    <PackageReference Include="OpenTK.GLControl" Version="3.0.1" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Xamarin.Forms.Platform.UAP\TextBlockExtensions.cs">
@@ -196,9 +196,6 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="app.config" />
-    <None Include="OpenTK.dll.config">
-      <SubType>Designer</SubType>
-    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

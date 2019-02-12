@@ -15,12 +15,11 @@
     <dependencies>
       <group>
         <dependency id="Xamarin.Forms" version="$version$" />
+        <dependency id="OpenTK" version="3.0.1" />
       </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="..\Xamarin.Forms.Platform.GTK\Libs\OpenTK\OpenTK.dll" target="lib\net45"/>
-    <file src="..\Xamarin.Forms.Platform.GTK\Libs\OpenTK\OpenTK.dll.config" target="content"/>
     <file src="..\Xamarin.Forms.Platform.GTK\Libs\webkit-sharp\webkit-sharp.dll" target="lib\net45"/>
     <file src="..\Xamarin.Forms.Platform.GTK\Libs\webkit-sharp\webkit-sharp.dll.config" target="content"/>
     <file src="..\Xamarin.Forms.Platform.GTK\bin\$Configuration$\Xamarin.Forms.Platform.GTK.dll" target="lib\net45"/>

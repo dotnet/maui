@@ -19,7 +19,6 @@ using AColor = Android.Graphics.Color;
 
 [assembly: Dependency (typeof (CacheService))]
 [assembly: Dependency (typeof (TestCloudService))]
-[assembly: Dependency (typeof (StringProvider))]
 [assembly: ExportRenderer (typeof (DisposePage), typeof (DisposePageRenderer))]
 [assembly: ExportRenderer (typeof (DisposeLabel), typeof (DisposeLabelRenderer))]
 [assembly: ExportRenderer (typeof (CustomButton), typeof (CustomButtonRenderer))]

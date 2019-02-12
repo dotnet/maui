@@ -66,10 +66,6 @@
       <HintPath>Libs\gtk-sharp\Mono.Cairo\Mono.Cairo.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="OpenTK, Version=3.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Libs\OpenTK\OpenTK.dll</HintPath>
-    </Reference>
     <Reference Include="pango-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Libs\gtk-sharp\gtk-sharp-2.0\pango-sharp.dll</HintPath>
@@ -91,6 +87,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Libs\webkit-sharp\webkit-sharp.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="OpenTK" Version="3.0.1" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Xamarin.Forms.Core\Properties\GlobalAssemblyInfo.cs">
@@ -239,10 +238,7 @@
     <Content Include="Libs\gtk-sharp\Mono.Cairo\Mono.Cairo.dll" />
     <Content Include="Libs\gtk-sharp\Mono.Posix\Mono.Posix.dll" />
     <Content Include="Libs\gtk-sharp\README.txt" />
-    <Content Include="Libs\OpenTK\OpenTK.dll" />
-    <Content Include="Libs\OpenTK\README.txt" />
     <Content Include="Libs\webkit-sharp\webkit-sharp.dll.config" />
-    <None Include="Libs\OpenTK\OpenTK.dll.config" />
     <None Include="webkit-sharp.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

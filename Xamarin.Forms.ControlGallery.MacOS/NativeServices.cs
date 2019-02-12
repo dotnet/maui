@@ -6,7 +6,6 @@ using Xamarin.Forms.Controls;
 using Xamarin.Forms.Platform.MacOS;
 
 [assembly: Dependency(typeof(TestCloudService))]
-[assembly: Dependency(typeof(StringProvider))]
 [assembly: Dependency(typeof(CacheService))]
 [assembly: ExportRenderer(typeof(DisposePage), typeof(DisposePageRenderer))]
 [assembly: ExportRenderer(typeof(DisposeLabel), typeof(DisposeLabelRenderer))]
@@ -49,14 +48,6 @@ namespace Xamarin.Forms.ControlGallery.MacOS
 				((DisposeLabel)Element).SendRendererDisposed();
 			}
 			base.Dispose(disposing);
-		}
-	}
-
-	public class StringProvider : IStringProvider
-	{
-		public string CoreGalleryTitle
-		{
-			get { return "iOS Core Gallery"; }
 		}
 	}
 
