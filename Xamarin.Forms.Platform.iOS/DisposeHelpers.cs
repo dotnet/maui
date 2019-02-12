@@ -1,4 +1,9 @@
+#if __MOBILE__
 namespace Xamarin.Forms.Platform.iOS
+#else
+
+namespace Xamarin.Forms.Platform.MacOS
+#endif
 {
 	internal static class DisposeHelpers
 	{
@@ -27,9 +32,11 @@ namespace Xamarin.Forms.Platform.iOS
 				{
 					if (renderer.ViewController != null)
 					{
+#if __MOBILE__
 						var modalWrapper = renderer.ViewController.ParentViewController as ModalWrapper;
 						if (modalWrapper != null)
 							modalWrapper.Dispose();
+#endif
 					}
 
 					renderer.NativeView.RemoveFromSuperview();
@@ -47,14 +54,16 @@ namespace Xamarin.Forms.Platform.iOS
 			if (rendererToRemove.Element != null && Platform.GetRenderer(rendererToRemove.Element) == rendererToRemove)
 				rendererToRemove.Element.ClearValue(Platform.RendererProperty);
 
-			var subviews = rendererToRemove.NativeView.Subviews;
-			for (var i = 0; i < subviews.Length; i++)
+			if (rendererToRemove.NativeView != null)
 			{
-				if (subviews[i] is IVisualElementRenderer childRenderer)
-					DisposeRendererAndChildren(childRenderer);
+				var subviews = rendererToRemove.NativeView.Subviews;
+				for (var i = 0; i < subviews.Length; i++)
+				{
+					if (subviews[i] is IVisualElementRenderer childRenderer)
+						DisposeRendererAndChildren(childRenderer);
+				}
+				rendererToRemove.NativeView.RemoveFromSuperview();
 			}
-
-			rendererToRemove.NativeView.RemoveFromSuperview();
 			rendererToRemove.Dispose();
 		}
 	}

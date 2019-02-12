@@ -11,8 +11,9 @@ namespace Xamarin.Forms.Platform.MacOS
 		const string HeaderIdentifier = nameof(TextCell);
 		const string ItemIdentifier = nameof(ViewCell);
 
-		readonly NSTableView _nsTableView;
-		readonly TableView _tableView;
+		NSTableView _nsTableView;
+		TableView _tableView;
+		bool _disposed;
 
 		public TableViewDataSource(TableViewRenderer tableViewRenderer)
 		{
@@ -39,7 +40,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			var cell = _tableView.Model.GetCell(sectionIndex, itemIndexInSection);
 			_tableView.Model.RowSelected(cell);
 			if (AutomaticallyDeselect)
-				_nsTableView.DeselectRow(row);
+				_nsTableView?.DeselectRow(row);
 		}
 
 		public override nint GetRowCount(NSTableView tableView)
@@ -89,6 +90,20 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			var nativeCell = CellNSView.GetNativeCell(tableView, cell, id, isHeader);
 			return nativeCell;
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if(disposing)
+			{
+				if(!_disposed)
+				{
+					_nsTableView = null;
+					_tableView = null;
+					_disposed = true;
+				}
+			}
+			base.Dispose(disposing);
 		}
 
 		void GetComputedIndexes(nint row, out int sectionIndex, out int itemIndexInSection, out bool isHeader)

@@ -40,23 +40,13 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		protected override void Dispose(bool disposing)
 		{
-			if (disposing && !_disposed)
-			{
-				_disposed = true;
+			if (_disposed)
+				return;
 
-				var viewsToLookAt = new Stack<NSView>(Subviews);
-				while (viewsToLookAt.Count > 0)
-				{
-					var view = viewsToLookAt.Pop();
-					var viewCellRenderer = view as ViewCellNSView;
-					if (viewCellRenderer != null)
-						viewCellRenderer.Dispose();
-					else
-					{
-						foreach (var child in view.Subviews)
-							viewsToLookAt.Push(child);
-					}
-				}
+			if (disposing)
+			{
+				foreach (NSView subview in Subviews)
+					DisposeSubviews(subview);
 
 				if (Element != null)
 				{
@@ -64,19 +54,51 @@ namespace Xamarin.Forms.Platform.MacOS
 					templatedItems.CollectionChanged -= OnCollectionChanged;
 					templatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
 				}
-			}
 
-			if (disposing)
-			{
-				ClearHeader();
+				if (_dataSource != null)
+				{
+					_dataSource.Dispose();
+					_dataSource = null;
+				}
+
+				if (_headerRenderer != null)
+				{
+					_headerRenderer.Element?.DisposeModalAndChildRenderers();
+					_headerRenderer = null;
+				}
 				if (_footerRenderer != null)
 				{
-					Platform.DisposeModelAndChildrenRenderers(_footerRenderer.Element);
+					_footerRenderer.Element?.DisposeModalAndChildRenderers();
 					_footerRenderer = null;
 				}
 			}
 
+			_disposed = true;
+
+
 			base.Dispose(disposing);
+		}
+
+		void DisposeSubviews(NSView view)
+		{
+			var ver = view as IVisualElementRenderer;
+
+			if (ver == null)
+			{
+				// VisualElementRenderers should implement their own dispose methods that will appropriately dispose and remove their child views.
+				// Attempting to do this work twice could cause a SIGSEGV (only observed in iOS8), so don't do this work here.
+				// Non-renderer views, such as separator lines, etc., can be removed here.
+
+				if (view is NSClipView)
+					return;
+
+				foreach (NSView subView in view.Subviews)
+					DisposeSubviews(subView);
+
+				view.RemoveFromSuperview();
+			}
+
+			view.Dispose();
 		}
 
 		protected override void SetBackgroundColor(Color color)
@@ -229,7 +251,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			_table.HeaderView = null;
 			if (_headerRenderer == null)
 				return;
-			Platform.DisposeModelAndChildrenRenderers(_headerRenderer.Element);
+			_headerRenderer.Element.DisposeModalAndChildRenderers();
 			_headerRenderer = null;
 		}
 

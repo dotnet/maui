@@ -15,8 +15,9 @@ namespace Xamarin.Forms.Platform.MacOS
 		static int s_sectionCount;
 		readonly nfloat _defaultSectionHeight;
 		readonly Dictionary<DataTemplate, int> _templateToId = new Dictionary<DataTemplate, int>();
-		readonly NSTableView _nsTableView;
-		protected readonly ListView List;
+		NSTableView _nsTableView;
+		ListView List;
+		bool _disposed;
 
 		ITemplatedItemsView<Cell> TemplatedItemsView => List;
 
@@ -183,6 +184,26 @@ namespace Xamarin.Forms.Platform.MacOS
 			else
 				throw new NotSupportedException();
 			return nativeCell;
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (_disposed)
+				return;
+
+			if (disposing)
+			{
+				if (List != null)
+				{
+					List.ItemSelected -= OnItemSelected;
+					List = null;
+				}
+				_nsTableView = null;
+			}
+
+			_disposed = true;
+
+			base.Dispose(disposing);
 		}
 
 		protected virtual Cell GetCellForPath(NSIndexPath indexPath, bool isGroupHeader)

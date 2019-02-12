@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Platform.MacOS
 					view.IsPlatformEnabled = newvalue != null;
 			});
 
-		readonly PlatformRenderer PlatformRenderer;
+		readonly PlatformRenderer _renderer;
 
 		bool _appeared;
 		bool _disposed;
@@ -26,12 +26,12 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		internal Platform()
 		{
-			PlatformRenderer = new PlatformRenderer(this);
+			_renderer = new PlatformRenderer(this);
 
 			MessagingCenter.Subscribe(this, Page.AlertSignalName, (Page sender, AlertArguments arguments) =>
 			{
 				var alert = NSAlert.WithMessage(arguments.Title, arguments.Cancel, arguments.Accept, null, arguments.Message);
-				var result = alert.RunSheetModal(PlatformRenderer.View.Window);
+				var result = alert.RunSheetModal(_renderer.View.Window);
 				if (arguments.Accept == null)
 					arguments.SetResult(result == 1);
 				else
@@ -57,7 +57,7 @@ namespace Xamarin.Forms.Platform.MacOS
 					alert.Layout();
 				}
 
-				var result = (int)alert.RunSheetModal(PlatformRenderer.View.Window);
+				var result = (int)alert.RunSheetModal(_renderer.View.Window);
 				var titleResult = string.Empty;
 				if (result == 1)
 					titleResult = arguments.Cancel;
@@ -102,8 +102,10 @@ namespace Xamarin.Forms.Platform.MacOS
 			MessagingCenter.Unsubscribe<Page, AlertArguments>(this, Page.AlertSignalName);
 			MessagingCenter.Unsubscribe<Page, bool>(this, Page.BusySetSignalName);
 
-			DisposeModelAndChildrenRenderers(Page);
-			PlatformRenderer.Dispose();
+			Page.DisposeModalAndChildRenderers();
+			//foreach (var modal in _modals)
+				//modal.DisposeModalAndChildRenderers();
+			_renderer.Dispose();
 		}
 
 		public static IVisualElementRenderer CreateRenderer(VisualElement element)
@@ -130,50 +132,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			base.OnBindingContextChanged();
 		}
 
-		internal NSViewController ViewController => PlatformRenderer;
-
-		internal static void DisposeModelAndChildrenRenderers(Element view)
-		{
-			foreach (VisualElement child in view.Descendants())
-				DisposeRenderer(child);
-
-			DisposeRenderer(view);
-		}
-
-		static void DisposeRenderer(Element view)
-		{
-			IVisualElementRenderer renderer = GetRenderer((VisualElement)view);
-			if (renderer?.ViewController?.ParentViewController != null)
-				renderer?.ViewController?.RemoveFromParentViewController();
-
-			renderer?.NativeView?.RemoveFromSuperview();
-			renderer?.Dispose();
-
-			view.ClearValue(RendererProperty);
-		}
-
-		internal static void DisposeRendererAndChildren(IVisualElementRenderer rendererToRemove)
-		{
-			if (rendererToRemove == null || rendererToRemove.Element == null)
-				return;
-
-			if (GetRenderer(rendererToRemove.Element) == rendererToRemove)
-				rendererToRemove.Element.ClearValue(RendererProperty);
-
-			if (rendererToRemove.NativeView != null)
-			{
-				var subviews = rendererToRemove.NativeView.Subviews;
-				for (var i = 0; i < subviews.Length; i++)
-				{
-					var childRenderer = subviews[i] as IVisualElementRenderer;
-					if (childRenderer != null)
-						DisposeRendererAndChildren(childRenderer);
-				}
-
-				rendererToRemove.NativeView.RemoveFromSuperview();
-			}
-			rendererToRemove.Dispose();
-		}
+		internal NSViewController ViewController => _renderer;
 
 		internal void LayoutSubviews()
 		{
@@ -185,7 +144,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (rootRenderer == null)
 				return;
 
-			rootRenderer.SetElementSize(new Size(PlatformRenderer.View.Bounds.Width, PlatformRenderer.View.Bounds.Height));
+			rootRenderer.SetElementSize(new Size(_renderer.View.Bounds.Width, _renderer.View.Bounds.Height));
 		}
 
 		internal void SetPage(Page newRoot)
@@ -203,14 +162,14 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			Page.DescendantRemoved += HandleChildRemoved;
 
-			TargetApplication.NavigationProxy.Inner = PlatformRenderer.Navigation;
+			TargetApplication.NavigationProxy.Inner = _renderer.Navigation;
 		}
 
 		internal void DidAppear()
 		{
-			PlatformRenderer.Navigation.AnimateModalPages = false;
-			TargetApplication.NavigationProxy.Inner = PlatformRenderer.Navigation;
-			PlatformRenderer.Navigation.AnimateModalPages = true;
+			_renderer.Navigation.AnimateModalPages = false;
+			TargetApplication.NavigationProxy.Inner = _renderer.Navigation;
+			_renderer.Navigation.AnimateModalPages = true;
 		}
 
 		internal void WillAppear()
@@ -259,10 +218,10 @@ namespace Xamarin.Forms.Platform.MacOS
 				var viewRenderer = CreateRenderer(view);
 				SetRenderer(view, viewRenderer);
 
-				PlatformRenderer.View.AddSubview(viewRenderer.NativeView);
+				_renderer.View.AddSubview(viewRenderer.NativeView);
 				if (viewRenderer.ViewController != null)
-					PlatformRenderer.AddChildViewController(viewRenderer.ViewController);
-				viewRenderer.SetElementSize(new Size(PlatformRenderer.View.Bounds.Width, PlatformRenderer.View.Bounds.Height));
+					_renderer.AddChildViewController(viewRenderer.ViewController);
+				viewRenderer.SetElementSize(new Size(_renderer.View.Bounds.Width, _renderer.View.Bounds.Height));
 			}
 			else
 				Console.Error.WriteLine("A Renderer was already found, potential view double add");
@@ -271,7 +230,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		void HandleChildRemoved(object sender, ElementEventArgs e)
 		{
 			var view = e.Element;
-			DisposeModelAndChildrenRenderers(view);
+			view.DisposeModalAndChildRenderers();
 		}
 	}
 }

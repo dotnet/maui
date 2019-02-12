@@ -107,14 +107,21 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		protected override void Dispose(bool disposing)
 		{
-			base.Dispose(disposing);
-
-			if (disposing && Control != null && ManageNativeControlLifetime)
+			if (disposing)
 			{
-				Control.RemoveFromSuperview();
-				Control.Dispose();
-				Control = null;
+				_elementPropertyChanged = null;
+				_controlChanging = null;
+				_controlChanged = null;
+
+				if (Control != null && ManageNativeControlLifetime)
+				{
+					Control.RemoveFromSuperview();
+					Control.Dispose();
+					Control = null;
+				}
 			}
+
+			base.Dispose(disposing);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<TView> e)

@@ -115,7 +115,7 @@
       <Name>Xamarin.Forms.Maps</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj">
-      <Project>{67F9D3A8-F71E-4428-913F-C37AE82CDB24}</Project>
+      <Project>{D31A6537-ED9C-4EBD-B231-A8D4FE44126A}</Project>
       <Name>Xamarin.Forms.Platform</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Platform.MacOS\Xamarin.Forms.Platform.MacOS.csproj">

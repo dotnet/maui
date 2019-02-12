@@ -39,12 +39,16 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		protected override void Dispose(bool disposing)
 		{
-			if (!_disposed)
+			if (disposing)
 			{
-				_platformNavigation.Dispose();
-				_platformNavigation = null;
+				if (!_disposed)
+				{
+					_platformNavigation.Dispose();
+					_platformNavigation = null;
+					Platform = null;
+				}
+				_disposed = true;
 			}
-			_disposed = true;
 			base.Dispose(disposing);
 		}
 	}

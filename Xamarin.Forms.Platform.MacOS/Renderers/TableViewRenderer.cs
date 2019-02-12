@@ -7,6 +7,7 @@ namespace Xamarin.Forms.Platform.MacOS
 	public class TableViewRenderer : ViewRenderer<TableView, NSView>
 	{
 		const int DefaultRowHeight = 44;
+		bool _disposed;
 
 		internal NSTableView TableView { get; set; }
 
@@ -17,15 +18,19 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		protected override void Dispose(bool disposing)
 		{
+			if (_disposed)
+				return;
+
 			if (disposing)
 			{
 				var viewsToLookAt = new Stack<NSView>(Subviews);
 				while (viewsToLookAt.Count > 0)
 				{
 					var view = viewsToLookAt.Pop();
-					var viewCellRenderer = view as IVisualElementRenderer;
+					var viewCellRenderer = view as ViewCellNSView;
 					if (viewCellRenderer != null)
 					{
+						viewCellRenderer.RemoveFromSuperview();
 						viewCellRenderer.Dispose();
 					}
 					else
@@ -35,6 +40,7 @@ namespace Xamarin.Forms.Platform.MacOS
 					}
 				}
 			}
+			_disposed = true;
 
 			base.Dispose(disposing);
 		}
