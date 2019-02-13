@@ -66,6 +66,8 @@ namespace Xamarin.Forms.Platform.MacOS
 				{
 					decisionToken.Use();
 				}
+				
+				_sentNavigating = false;
 			}
 		}
 
