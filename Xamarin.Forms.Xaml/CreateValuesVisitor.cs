@@ -80,8 +80,14 @@ namespace Xamarin.Forms.Xaml
 						if (converted != null && converted.GetType() == type)
 							value = converted;
 					}
-					if (value == null)
-						value = Activator.CreateInstance(type);
+					if (value == null) {
+						try {
+							value = Activator.CreateInstance(type);
+						}
+						catch (TargetInvocationException tie) {
+							value = XamlLoader.InstantiationFailedCallback?.Invoke(new XamlLoader.CallbackTypeInfo { XmlNamespace = node.XmlType.NamespaceUri, XmlTypeName = node.XmlType.Name }, type, tie) ?? throw tie;
+						}
+					}
 				}
 				catch (TargetInvocationException e) when (e.InnerException is XamlParseException || e.InnerException is XmlException) {
 					throw e.InnerException;
@@ -181,7 +187,13 @@ namespace Xamarin.Forms.Xaml
 							ci.GetParameters().Length != 0 && ci.IsPublic &&
 							ci.GetParameters().All(pi => pi.CustomAttributes.Any(attr => attr.AttributeType == typeof (ParameterAttribute))));
 			object[] arguments = CreateArgumentsArray(node, ctorInfo);
-			return ctorInfo.Invoke(arguments);
+			try {
+				return ctorInfo.Invoke(arguments);
+			}
+			catch (Exception e) when (e is TargetInvocationException || e is MissingMemberException) {
+				return XamlLoader.InstantiationFailedCallback?.Invoke(new XamlLoader.CallbackTypeInfo { XmlNamespace = node.XmlType.NamespaceUri, XmlTypeName = node.XmlType.Name }, nodeType, e) ?? throw e;
+			}
+
 		}
 
 		public object CreateFromFactory(Type nodeType, IElementNode node)
@@ -191,7 +203,12 @@ namespace Xamarin.Forms.Xaml
 			if (!node.Properties.ContainsKey(XmlName.xFactoryMethod))
 			{
 				//non-default ctor
-				return Activator.CreateInstance(nodeType, arguments);
+				try {
+					return Activator.CreateInstance(nodeType, arguments);
+				}
+				catch (Exception e) when (e is TargetInvocationException || e is MissingMemberException) {
+					return XamlLoader.InstantiationFailedCallback?.Invoke(new XamlLoader.CallbackTypeInfo { XmlNamespace = node.XmlType.NamespaceUri, XmlTypeName = node.XmlType.Name }, nodeType, e) ?? throw e;
+				}
 			}
 
 			var factoryMethod = ((string)((ValueNode)node.Properties[XmlName.xFactoryMethod]).Value);
@@ -216,10 +233,15 @@ namespace Xamarin.Forms.Xaml
 				}
 				return true;
 			};
-			var mi = nodeType.GetRuntimeMethods().FirstOrDefault(isMatch);
-			if (mi == null)
-				throw new MissingMemberException($"No static method found for {nodeType.FullName}::{factoryMethod} ({string.Join(", ", types.Select(t => t.FullName))})");
-			return mi.Invoke(null, arguments);
+			try {
+				var mi = nodeType.GetRuntimeMethods().FirstOrDefault(isMatch);
+				if (mi == null)
+					throw new MissingMemberException($"No static method found for {nodeType.FullName}::{factoryMethod} ({string.Join(", ", types.Select(t => t.FullName))})");
+				return mi.Invoke(null, arguments);
+			}
+			catch (Exception e) when (e is TargetInvocationException || e is MissingMemberException) {
+				return XamlLoader.InstantiationFailedCallback?.Invoke(new XamlLoader.CallbackTypeInfo { XmlNamespace = node.XmlType.NamespaceUri, XmlTypeName = node.XmlType.Name}, nodeType, e) ?? throw e;
+			}
 		}
 
 		public object[] CreateArgumentsArray(IElementNode enode)

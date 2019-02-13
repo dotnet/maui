@@ -317,5 +317,6 @@ namespace Xamarin.Forms.Xaml
 
 		internal static Func<IList<FallbackTypeInfo>, Type, Type> FallbackTypeResolver { get; set; }
 		internal static Action<CallbackTypeInfo, object> ValueCreatedCallback  { get; set; }
+		internal static Func<CallbackTypeInfo, Type, Exception, object> InstantiationFailedCallback { get; set; }
 	}
 }

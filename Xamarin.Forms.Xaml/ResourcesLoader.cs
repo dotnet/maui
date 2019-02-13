@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using Xamarin.Forms;
 using System.Xml;
@@ -11,10 +10,15 @@ namespace Xamarin.Forms.Xaml
 	{
 		public T CreateFromResource<T>(string resourcePath, Assembly assembly, IXmlLineInfo lineInfo) where T: new()
 		{
-			var alternateResource = Xamarin.Forms.Internals.ResourceLoader.ResourceProvider?.Invoke(assembly.GetName(), resourcePath);
+			var resourceLoadingResponse = Forms.Internals.ResourceLoader.ResourceProvider2?.Invoke(new Forms.Internals.ResourceLoader.ResourceLoadingQuery {
+				AssemblyName = assembly.GetName(),
+				ResourcePath = resourcePath
+			});
+
+			var alternateResource = resourceLoadingResponse?.ResourceContent;
 			if (alternateResource != null) {
 				var rd = new T();
-				rd.LoadFromXaml(alternateResource);
+				XamlLoader.Load(rd, alternateResource, resourceLoadingResponse.UseDesignProperties);
 				return rd;
 			}
 
@@ -35,7 +39,12 @@ namespace Xamarin.Forms.Xaml
 
 		public string GetResource(string resourcePath, Assembly assembly, IXmlLineInfo lineInfo)
 		{
-			var alternateResource = Xamarin.Forms.Internals.ResourceLoader.ResourceProvider?.Invoke(assembly.GetName(), resourcePath);
+			var resourceLoadingResponse = Forms.Internals.ResourceLoader.ResourceProvider2?.Invoke(new Forms.Internals.ResourceLoader.ResourceLoadingQuery {
+				AssemblyName = assembly.GetName(),
+				ResourcePath = resourcePath
+			});
+
+			var alternateResource = resourceLoadingResponse?.ResourceContent;
 			if (alternateResource != null)
 				return alternateResource;
 

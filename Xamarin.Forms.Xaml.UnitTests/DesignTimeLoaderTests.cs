@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
@@ -22,6 +22,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			Device.PlatformServices = null;
 			XamlLoader.FallbackTypeResolver = null;
 			XamlLoader.ValueCreatedCallback = null;
+			XamlLoader.InstantiationFailedCallback = null;
 			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = null;
 		}
 
@@ -449,6 +450,86 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var myButton = (Button)page.Content;
 
 			Assert.That(myButton.BackgroundColor, Is.Not.EqualTo(Color.Blue));
+		}
+
+		[Test]
+		public void CanProvideInstanceWhenInstantiationThrows()
+		{
+			var xaml = @"
+					<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
+						xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
+						xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests""
+						xmlns:missing=""clr-namespace:MissingNamespace;assembly=MissingAssembly"">
+						<StackLayout>
+							<local:InstantiateThrows />
+							<local:InstantiateThrows x:FactoryMethod=""CreateInstance"" />
+							<local:InstantiateThrows>
+								<x:Arguments>
+									<x:Int32>1</x:Int32>
+								</x:Arguments>
+							</local:InstantiateThrows>
+							<missing:Test>
+								<x:Arguments>
+									<x:Int32>1</x:Int32>
+								</x:Arguments>
+							</missing:Test>
+						</StackLayout>
+					</ContentPage>";
+			XamlLoader.FallbackTypeResolver = (p, type) => type ?? typeof(Button);
+			XamlLoader.InstantiationFailedCallback = (xmltype, type, exception) => new Button();
+			var o = XamlLoader.Create(xaml, true);
+			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
+		}
+
+		[Test]
+		public void CanProvideInstanceWhenReplacedTypeConstructorInvalid()
+		{
+			var xaml = @"
+						<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
+							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
+							xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+							<StackLayout>
+								<local:ReplacedType x:FactoryMethod=""CreateInstance"" />
+							</StackLayout>
+						</ContentPage>";
+			XamlLoader.FallbackTypeResolver = (p, type) => type ?? typeof(Button);
+			XamlLoader.InstantiationFailedCallback = (xmltype, type, exception) => new Button();
+			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
+		}
+
+		[Test]
+		public void CanIgnoreSettingPropertyThatThrows()
+		{
+			var xaml = @"
+					<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
+						xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
+						xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+						<local:SettingPropertyThrows TestValue=""Test"" TestBP=""bar""/>
+					</ContentPage>";
+
+			var exceptions = new List<Exception>();
+			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
+			Assert.That(exceptions.Count, Is.EqualTo(2));
+		}
+	}
+
+	public class InstantiateThrows
+	{
+		public InstantiateThrows() => throw new InvalidOperationException();
+		public static InstantiateThrows CreateInstance() => throw new InvalidOperationException();
+		public InstantiateThrows(int value) => throw new InvalidOperationException();
+	}
+
+	public class SettingPropertyThrows : View
+	{
+		public static readonly BindableProperty TestBPProperty =
+			BindableProperty.Create("TestBP", typeof(string), typeof(SettingPropertyThrows), default(string),
+				propertyChanged: (b,o,n)=>throw new Exception());
+
+		public string TestValue {
+			get { return null; }
+			set { throw new InvalidOperationException(); }
 		}
 	}
 }
