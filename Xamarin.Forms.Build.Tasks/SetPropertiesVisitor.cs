@@ -1038,17 +1038,14 @@ namespace Xamarin.Forms.Build.Tasks
 
 			if (bpRef == null)
 				return false;
-
-			var valueNode = node as ValueNode;
-			if (valueNode != null && valueNode.CanConvertValue(context, bpRef))
+				
+			if (node is ValueNode valueNode && valueNode.CanConvertValue(context, bpRef))
 				return true;
 
-			var elementNode = node as IElementNode;
-			if (elementNode == null)
+			if (!(node is IElementNode elementNode))
 				return false;
 
-			VariableDefinition varValue;
-			if (!context.Variables.TryGetValue(elementNode, out varValue))
+			if (!context.Variables.TryGetValue(elementNode, out VariableDefinition varValue))
 				return false;
 
 			var bpTypeRef = bpRef.GetBindablePropertyType(iXmlLineInfo, module);

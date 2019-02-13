@@ -1,18 +1,16 @@
-﻿using System;
+using System;
 
 using Xamarin.Forms;
 
 using NUnit.Framework;
+using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
+	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class TypeMismatch : ContentPage
 	{
-		public TypeMismatch ()
-		{
-			InitializeComponent ();
-		}
-
+		public TypeMismatch() => InitializeComponent();
 		public TypeMismatch (bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
@@ -21,11 +19,16 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
-			[TestCase (false)]
-//			[TestCase (true)]
-			public void ThrowsOnMismatchingType (bool useCompiledXaml)
+			[SetUp] public void Setup() => Device.PlatformServices = new MockPlatformServices();
+			[TearDown] public void TearDown() => Device.PlatformServices = null;
+
+			[Test]
+			public void ThrowsOnMismatchingType ([Values(true, false)]bool useCompiledXaml)
 			{
-				Assert.Throws (new XamlParseExceptionConstraint (7, 16, m => m.StartsWith ("Cannot assign property", StringComparison.Ordinal)), () => new TypeMismatch (useCompiledXaml));
+				if (useCompiledXaml)
+					Assert.Throws(new XamlParseExceptionConstraint(7, 16, m => m.StartsWith("No property, bindable property", StringComparison.Ordinal)), () => MockCompiler.Compile(typeof(TypeMismatch)));
+				else
+					Assert.Throws(new XamlParseExceptionConstraint(7, 16, m => m.StartsWith("Cannot assign property", StringComparison.Ordinal)), () => new TypeMismatch(useCompiledXaml));
 			}
 		}
 	}
