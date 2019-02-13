@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
@@ -346,9 +347,66 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 		}
 
-		//TODO: Implement ScrollTo
 		void OnScrollToRequested(object sender, ScrollToRequestedEventArgs e)
 		{
+			var templatedItems = TemplatedItemsView.TemplatedItems;
+			var scrollArgs = (ITemplatedItemsListScrollToRequestedEventArgs)e;
+
+			var row = templatedItems?.GetGlobalIndexOfItem(scrollArgs.Item) ?? -1;
+			if (row == -1)
+				return;
+
+			var rowRect = _table.RectForRow(row);
+			var rowHeight = rowRect.Height;
+			var clipView = _table.Superview as NSClipView;
+			var clipViewHeight = clipView.Frame.Height;
+			var scrollToPosition = e.Position;
+
+			if (scrollToPosition == ScrollToPosition.MakeVisible)
+			{
+				var topVisibleY = clipView.Bounds.Y;
+				var bottomVisibleY = clipView.Bounds.Y + clipViewHeight - rowHeight;
+
+				if (topVisibleY > rowRect.Y)
+				{
+					scrollToPosition = ScrollToPosition.Start;
+				}
+				else if (bottomVisibleY < rowRect.Y)
+				{
+					scrollToPosition = ScrollToPosition.End;
+				}
+				else
+				{
+					return;
+				}
+			}
+
+			nfloat y = 0;
+			var scrollOrigin = rowRect.Location;
+
+			if (scrollToPosition == ScrollToPosition.Center)
+			{
+				y = (scrollOrigin.Y - clipViewHeight / 2) + rowHeight / 2;
+			}
+			else if (scrollToPosition == ScrollToPosition.End)
+			{
+				y = scrollOrigin.Y - clipViewHeight + rowHeight;
+			}
+			else
+			{
+				y = scrollOrigin.Y;
+			}
+
+			scrollOrigin.Y = y;
+
+			if (e.ShouldAnimate)
+			{
+				((NSView)clipView.Animator).SetBoundsOrigin(scrollOrigin);
+			}
+			else
+			{
+				clipView.SetBoundsOrigin(scrollOrigin);
+			}
 		}
 
 		//TODO: Implement Footer
