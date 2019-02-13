@@ -61,6 +61,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 				entry.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 				entry.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
+				
+				entry.InputAssistantItem.LeadingBarButtonGroups = null;
+				entry.InputAssistantItem.TrailingBarButtonGroups = null;
 
 				_defaultTextColor = entry.TextColor;
 
