@@ -4,49 +4,53 @@ using System.ComponentModel;
 using Android.Content;
 using Android.Support.V4.View;
 using Android.Views;
+using Android.Widget;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android.FastRenderers;
 using Xamarin.Forms.Platform.Android.Material;
-using AProgressBar = Android.Widget.ProgressBar;
 using AView = Android.Views.View;
 
-[assembly: ExportRenderer(typeof(ProgressBar), typeof(MaterialProgressBarRenderer), new[] { typeof(VisualRendererMarker.Material) })]
+[assembly: ExportRenderer(typeof(Xamarin.Forms.Slider), typeof(MaterialSliderRenderer), new[] { typeof(VisualRendererMarker.Material) })]
 
 namespace Xamarin.Forms.Platform.Android.Material
 {
-	public class MaterialProgressBarRenderer : AProgressBar,
+	public class MaterialSliderRenderer : SeekBar,
+		SeekBar.IOnSeekBarChangeListener,
 		IVisualElementRenderer, IViewRenderer, ITabStop
 	{
-		const int MaximumValue = 10000;
+		const double MaximumValue = 10000.0;
 
 		int? _defaultLabelFor;
 
 		bool _disposed;
 
-		ProgressBar _element;
+		Slider _element;
 
 		VisualElementTracker _visualElementTracker;
 		VisualElementRenderer _visualElementRenderer;
 		MotionEventHelper _motionEventHelper;
 
+		double _max = 0.0;
+		double _min = 0.0;
+
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
 
-		public MaterialProgressBarRenderer(Context context)
-			: base(new ContextThemeWrapper(context, Resource.Style.XamarinFormsMaterialProgressBarHorizontal), null, Resource.Style.XamarinFormsMaterialProgressBarHorizontal)
+		public MaterialSliderRenderer(Context context)
+			: base(new ContextThemeWrapper(context, Resource.Style.XamarinFormsMaterialSlider), null, Resource.Style.XamarinFormsMaterialSlider)
 		{
 			VisualElement.VerifyVisualFlagEnabled();
 
-			Indeterminate = false;
-			Max = MaximumValue;
+			SetOnSeekBarChangeListener(this);
+			Max = (int)MaximumValue;
 
 			_visualElementRenderer = new VisualElementRenderer(this);
 			_motionEventHelper = new MotionEventHelper();
 		}
 
-		protected AProgressBar Control => this;
+		protected SeekBar Control => this;
 
-		protected ProgressBar Element
+		protected Slider Element
 		{
 			get { return _element; }
 			set
@@ -57,12 +61,18 @@ namespace Xamarin.Forms.Platform.Android.Material
 				var oldElement = _element;
 				_element = value;
 
-				OnElementChanged(new ElementChangedEventArgs<ProgressBar>(oldElement, _element));
+				OnElementChanged(new ElementChangedEventArgs<Slider>(oldElement, _element));
 
 				_element?.SendViewInitialized(this);
 
 				_motionEventHelper.UpdateElement(_element);
 			}
+		}
+
+		double Value
+		{
+			get { return _min + (_max - _min) * (Control.Progress / MaximumValue); }
+			set { Control.Progress = (int)((value - _min) / (_max - _min) * MaximumValue); }
 		}
 
 		protected override void Dispose(bool disposing)
@@ -91,7 +101,7 @@ namespace Xamarin.Forms.Platform.Android.Material
 			base.Dispose(disposing);
 		}
 
-		protected virtual void OnElementChanged(ElementChangedEventArgs<ProgressBar> e)
+		protected virtual void OnElementChanged(ElementChangedEventArgs<Slider> e)
 		{
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(e.OldElement, e.NewElement));
 
@@ -109,7 +119,7 @@ namespace Xamarin.Forms.Platform.Android.Material
 
 				e.NewElement.PropertyChanged += OnElementPropertyChanged;
 
-				UpdateProgress();
+				UpdateValue();
 				UpdateColors();
 
 				ElevationHelper.SetElevation(this, e.NewElement);
@@ -119,9 +129,10 @@ namespace Xamarin.Forms.Platform.Android.Material
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			ElementPropertyChanged?.Invoke(this, e);
-			if (e.PropertyName == ProgressBar.ProgressProperty.PropertyName)
-				UpdateProgress();
-			else if (e.PropertyName == ProgressBar.ProgressColorProperty.PropertyName || e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+
+			if (e.IsOneOf(Slider.ValueProperty, Slider.MinimumProperty, Slider.MaximumProperty))
+				UpdateValue();
+			else if (e.IsOneOf(VisualElement.BackgroundColorProperty, Slider.MaximumTrackColorProperty, Slider.MinimumTrackColorProperty, Slider.ThumbColorProperty))
 				UpdateColors();
 		}
 
@@ -138,12 +149,38 @@ namespace Xamarin.Forms.Platform.Android.Material
 			if (Element == null || Control == null)
 				return;
 
-			this.ApplyProgressBarColors(Element.ProgressColor, Element.BackgroundColor);
+			Color backgroundColor = Element.MaximumTrackColor;
+			if (backgroundColor == Color.Default)
+				backgroundColor = Element.BackgroundColor;
+			Color progressColor = Element.MinimumTrackColor;
+			Color thumbColor = Element.ThumbColor;
+
+			this.ApplySeekBarColors(progressColor, backgroundColor, thumbColor);
 		}
 
-		void UpdateProgress()
+		void UpdateValue()
 		{
-			Control.Progress = (int)(Element.Progress * MaximumValue);
+			_min = Element.Minimum;
+			_max = Element.Maximum;
+			Value = Element.Value;
+		}
+
+		// SeekBar.IOnSeekBarChangeListener
+
+		void SeekBar.IOnSeekBarChangeListener.OnProgressChanged(SeekBar seekBar, int progress, bool fromUser)
+		{
+			if (fromUser)
+				((IElementController)Element).SetValueFromRenderer(Slider.ValueProperty, Value);
+		}
+
+		void SeekBar.IOnSeekBarChangeListener.OnStartTrackingTouch(SeekBar seekBar)
+		{
+			((ISliderController)Element)?.SendDragStarted();
+		}
+
+		void SeekBar.IOnSeekBarChangeListener.OnStopTrackingTouch(SeekBar seekBar)
+		{
+			((ISliderController)Element)?.SendDragCompleted();
 		}
 
 		// IVisualElementRenderer
@@ -159,11 +196,11 @@ namespace Xamarin.Forms.Platform.Android.Material
 		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
 		{
 			Measure(widthConstraint, heightConstraint);
-			return new SizeRequest(new Size(Control.MeasuredWidth, Context.ToPixels(4)), new Size(Context.ToPixels(4), Context.ToPixels(4)));
+			return new SizeRequest(new Size(Control.MeasuredWidth, Control.MeasuredHeight), new Size());
 		}
 
 		void IVisualElementRenderer.SetElement(VisualElement element) =>
-			Element = (element as ProgressBar) ?? throw new ArgumentException("Element must be of type ProgressBar.");
+			Element = (element as Slider) ?? throw new ArgumentException($"Element must be of type {nameof(Slider)}.");
 
 		void IVisualElementRenderer.SetLabelFor(int? id)
 		{

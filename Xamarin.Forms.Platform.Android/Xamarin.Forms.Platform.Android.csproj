@@ -315,6 +315,8 @@
     <Compile Include="ButtonElementManager.cs" />
     <Compile Include="IButtonLayoutRenderer.cs" />
     <Compile Include="ButtonLayoutManager.cs" />
+    <Compile Include="Material\MaterialSliderRenderer.cs" />
+    <AndroidResource Include="Resources\color\white_disabled_material.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
@@ -402,6 +404,14 @@
     <AndroidResource Include="Resources\drawable\MaterialActivityIndicatorBackground.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\MaterialProgressBar.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\color\" />
   </ItemGroup>
   <Target Name="BeforeBuild" Condition=" '$(CreateAllAndroidTargets)' == 'true' ">
     <!--  create 8.1 binaries-->

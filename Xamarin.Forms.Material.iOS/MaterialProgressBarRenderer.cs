@@ -10,8 +10,6 @@ namespace Xamarin.Forms.Platform.iOS.Material
 {
 	public class MaterialProgressBarRenderer : ViewRenderer<ProgressBar, MProgressView>
 	{
-		const float BackgroundAlpha = 0.3f;
-
 		BasicColorScheme _defaultColorScheme;
 		BasicColorScheme _colorScheme;
 
@@ -51,7 +49,7 @@ namespace Xamarin.Forms.Platform.iOS.Material
 			var cs = MaterialColors.Light.CreateColorScheme();
 			return new BasicColorScheme(
 				cs.PrimaryColor,
-				cs.PrimaryColor.ColorWithAlpha(BackgroundAlpha),
+				cs.PrimaryColor.ColorWithAlpha(MaterialColors.SliderTrackAlpha),
 				cs.PrimaryColor);
 		}
 
@@ -123,9 +121,6 @@ namespace Xamarin.Forms.Platform.iOS.Material
 
 		void UpdateAllColors()
 		{
-			// TODO: Fix this once Google implements the new way.
-			//       Right now, copy what is done with the activity indicator.
-
 			Color progressColor = Element.ProgressColor;
 			Color backgroundColor = Element.BackgroundColor;
 
@@ -144,8 +139,6 @@ namespace Xamarin.Forms.Platform.iOS.Material
 					// handle the case where only the background is set
 					var background = backgroundColor.ToUIColor();
 
-					// TODO: Potentially override background alpha to match material design.
-					// TODO: Potentially override primary color to match material design.
 					_colorScheme = new BasicColorScheme(
 						_defaultColorScheme.PrimaryColor,
 						background,
@@ -160,9 +153,10 @@ namespace Xamarin.Forms.Platform.iOS.Material
 					// handle the case where only the progress is set
 					var progress = progressColor.ToUIColor();
 
+					progress.GetRGBA(out _, out _, out _, out var alpha);
 					_colorScheme = new BasicColorScheme(
 						progress,
-						progress.ColorWithAlpha(BackgroundAlpha),
+						progress.ColorWithAlpha(alpha * MaterialColors.SliderTrackAlpha),
 						progress);
 				}
 				else
@@ -171,7 +165,6 @@ namespace Xamarin.Forms.Platform.iOS.Material
 					var background = backgroundColor.ToUIColor();
 					var progress = progressColor.ToUIColor();
 
-					// TODO: Potentially override alpha to match material design.
 					_colorScheme = new BasicColorScheme(
 						progress,
 						background,

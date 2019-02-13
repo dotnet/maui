@@ -38,9 +38,7 @@ namespace Xamarin.Forms
 		}, propertyChanged: (bindable, oldValue, newValue) =>
 		{
 			var slider = (Slider)bindable;
-			EventHandler<ValueChangedEventArgs> eh = slider.ValueChanged;
-			if (eh != null)
-				eh(slider, new ValueChangedEventArgs((double)oldValue, (double)newValue));
+			slider.ValueChanged?.Invoke(slider, new ValueChangedEventArgs((double)oldValue, (double)newValue));
 		});
 
 		public static readonly BindableProperty MinimumTrackColorProperty = BindableProperty.Create(nameof(MinimumTrackColor), typeof(Color), typeof(Slider), Color.Default);
