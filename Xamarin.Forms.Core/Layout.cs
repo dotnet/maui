@@ -261,8 +261,6 @@ namespace Xamarin.Forms
 			for (var i = 0; i < LogicalChildrenInternal.Count; i++)
 				CompressedLayout.SetHeadlessOffset((VisualElement)LogicalChildrenInternal[i], isHeadless ? new Point(headlessOffset.X + Bounds.X, headlessOffset.Y + Bounds.Y) : new Point());
 
-			_lastLayoutSize = new Size(width, height);
-
 			LayoutChildren(x, y, w, h);
 
 			for (var i = 0; i < oldBounds.Length; i++)
@@ -275,6 +273,8 @@ namespace Xamarin.Forms
 					return;
 				}
 			}
+
+			_lastLayoutSize = new Size(width, height);
 		}
 
 		internal static void LayoutChildIntoBoundingRegion(View child, Rectangle region, SizeRequest childSizeRequest)
