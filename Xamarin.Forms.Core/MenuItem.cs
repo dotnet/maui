@@ -69,6 +69,9 @@ namespace Xamarin.Forms
 			set => SetValueCore(IsEnabledPropertyKey, value);
 		}
 
+		[Obsolete("This property is obsolete as of 3.5.0. Please use MenuItem.IsEnabledProperty.PropertyName instead.")]
+		public string IsEnabledPropertyName => MenuItem.IsEnabledProperty.PropertyName;
+
 		public event EventHandler Clicked;
 
 		protected virtual void OnClicked() => Clicked?.Invoke(this, EventArgs.Empty);

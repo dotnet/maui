@@ -450,12 +450,5 @@ namespace Xamarin.Forms
 
 			_titleView = newTitleView;
 		}
-
-		// This is a dummy property for the Previewer
-		// Platform isn't needed anymore, but the Previewer will still try to set it via reflection
-		// and throw an NRE if it's not available; this fake property keeps it happy.
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		[Obsolete("This property is no longer used as of version 3.4.")]
-		internal object Platform { get; set; }
 	}
 }

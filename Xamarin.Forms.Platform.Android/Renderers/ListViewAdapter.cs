@@ -250,9 +250,11 @@ namespace Xamarin.Forms.Platform.Android
 				}
 				cell = (Cell)boxedCell.Element;
 
-				// We are going to re-set the Platform here because in some cases (headers mostly) its possible this is unset and
-				// when the binding context gets updated the measure passes will all fail. By applying this here the Update call
-				// further down will result in correct layouts.
+#pragma warning disable CS0618 // Type or member is obsolete
+				// The Platform property is no longer necessary, but we have to set it because some third-party
+				// library might still be retrieving it and using it
+				cell.Platform = _listView.Platform;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				ICellController cellController = cell;
 				cellController.SendDisappearing();

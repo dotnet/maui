@@ -3,7 +3,10 @@
 
 #if __ANDROID__
 using Android.Content.Res;
+using Android.Graphics;
 using AColor = Android.Graphics.Color;
+using AProgressBar = Android.Widget.ProgressBar;
+using ASeekBar = Android.Widget.AbsSeekBar;
 #else
 using MaterialComponents;
 using AColor = UIKit.UIColor;
@@ -19,6 +22,15 @@ namespace Xamarin.Forms.Platform.iOS.Material
 	// https://github.com/material-components/material-components-android/blob/3637c23078afc909e42833fd1c5fd47bb3271b5f/lib/java/com/google/android/material/color/res/values/colors.xml
 	internal static class MaterialColors
 	{
+		// https://github.com/material-components/material-components-ios/blob/v76.0.0/components/Slider/src/ColorThemer/MDCSliderColorThemer.m#L21
+		const float kSliderBaselineDisabledFillAlpha = 0.32f;
+		const float kSliderBaselineEnabledBackgroundAlpha = 0.24f;
+		const float kSliderBaselineDisabledBackgroundAlpha = 0.12f;
+		const float kSliderBaselineEnabledTicksAlpha = 0.54f;
+		const float kSliderBaselineDisabledTicksAlpha = 0.12f;
+
+		public const float SliderTrackAlpha = kSliderBaselineEnabledBackgroundAlpha;
+
 		// values based on
 		// copying to match iOS
 		// TODO generalize into xplat classes
@@ -96,7 +108,7 @@ namespace Xamarin.Forms.Platform.iOS.Material
 		};
 
 		public static readonly int[][] EntryUnderlineStates =
-{
+		{
 			new []{ global::Android.Resource.Attribute.StateFocused  },
 			new []{ -global::Android.Resource.Attribute.StateFocused  },
 		};
@@ -137,6 +149,71 @@ namespace Xamarin.Forms.Platform.iOS.Material
 
 		internal static AColor WithAlpha(this AColor color, double alpha) =>
 			new AColor(color.R, color.G, color.B, (byte)(alpha * 255));
+
+		internal static void ApplySeekBarColors(this ASeekBar seekBar, Color progressColor, Color backgroundColor, Color thumbColor)
+		{
+			seekBar.ApplyProgressBarColors(progressColor, backgroundColor);
+
+			if (thumbColor.IsDefault)
+			{
+				// reset everything to defaults
+				seekBar.ThumbTintList = seekBar.ProgressTintList;
+			}
+			else
+			{
+				// handle the case where the thumb is set
+				var thumb = thumbColor.ToAndroid();
+
+				seekBar.ThumbTintList = ColorStateList.ValueOf(thumb);
+			}
+		}
+
+		internal static void ApplyProgressBarColors(this AProgressBar progressBar, Color progressColor, Color backgroundColor)
+		{
+			AColor defaultProgress = Dark.PrimaryColor;
+
+			if (progressColor.IsDefault)
+			{
+				if (backgroundColor.IsDefault)
+				{
+					// reset everything to defaults
+					progressBar.ProgressTintList = ColorStateList.ValueOf(defaultProgress);
+					progressBar.ProgressBackgroundTintList = ColorStateList.ValueOf(defaultProgress);
+					progressBar.ProgressBackgroundTintMode = PorterDuff.Mode.SrcIn;
+				}
+				else
+				{
+					// handle the case where only the background is set
+					var background = backgroundColor.ToAndroid();
+
+					progressBar.ProgressTintList = ColorStateList.ValueOf(defaultProgress);
+					progressBar.ProgressBackgroundTintList = ColorStateList.ValueOf(background);
+					progressBar.ProgressBackgroundTintMode = PorterDuff.Mode.SrcOver;
+				}
+			}
+			else
+			{
+				if (backgroundColor.IsDefault)
+				{
+					// handle the case where only the progress is set
+					var progress = progressColor.ToAndroid();
+
+					progressBar.ProgressTintList = ColorStateList.ValueOf(progress);
+					progressBar.ProgressBackgroundTintList = ColorStateList.ValueOf(progress);
+					progressBar.ProgressBackgroundTintMode = PorterDuff.Mode.SrcIn;
+				}
+				else
+				{
+					// handle the case where both are set
+					var background = backgroundColor.ToAndroid();
+					var progress = progressColor.ToAndroid();
+
+					progressBar.ProgressTintList = ColorStateList.ValueOf(progress);
+					progressBar.ProgressBackgroundTintList = ColorStateList.ValueOf(background);
+					progressBar.ProgressBackgroundTintMode = PorterDuff.Mode.SrcOver;
+				}
+			}
+		}
 #endif
 
 
@@ -231,6 +308,15 @@ namespace Xamarin.Forms.Platform.iOS.Material
 		}
 
 
+
+		static AColor WithMultipliedAlpha(AColor color, float alpha)
+		{
+#if __ANDROID__
+			return color.WithAlpha(color.A / 255f * alpha);
+#else
+			return color.ColorWithAlpha(color.CGColor.Alpha / 255f * alpha);
+#endif
+		}
 
 		static AColor WithAlpha(AColor color, float alpha)
 		{

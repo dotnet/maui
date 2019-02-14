@@ -251,7 +251,16 @@ namespace Xamarin.Forms.Platform.Android
 			PopupManager.ResetBusyCount(this);
 
 			Platform = new Platform(this);
-			
+
+			if (_application != null)
+			{
+#pragma warning disable CS0618 // Type or member is obsolete
+			// The Platform property is no longer necessary, but we have to set it because some third-party
+			// library might still be retrieving it and using it
+			_application.Platform = Platform;
+#pragma warning restore CS0618 // Type or member is obsolete
+			}
+
 			Platform.SetPage(page);
 			_layout.AddView(Platform.GetViewGroup());
 		}

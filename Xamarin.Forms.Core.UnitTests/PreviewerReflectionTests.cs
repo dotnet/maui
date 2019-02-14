@@ -2,12 +2,21 @@ using System;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Core.UnitTests
 {
 	[TestFixture]
 	public class PreviewerReflectionTests
 	{
+		class FakePlatform : IPlatform
+		{
+			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
+			{
+				throw new NotImplementedException();
+			}
+		}
+
 		[Test]
 		public void PageHasPlatformProperty()
 		{
@@ -16,7 +25,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var setPlatform = page.GetType ().GetProperty ("Platform", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 			Assert.That(setPlatform, Is.Not.Null, "Previewer requires that Page have a property called 'Platform'");
 
-			TestDelegate setValue = () => setPlatform.SetValue(page, new object(), null);
+			TestDelegate setValue = () => setPlatform.SetValue(page, new FakePlatform(), null);
 			Assert.That(setValue, Throws.Nothing, "'Page.Platform' must have a setter");
 		}
 

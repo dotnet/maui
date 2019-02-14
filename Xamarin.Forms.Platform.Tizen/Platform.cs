@@ -77,6 +77,9 @@ namespace Xamarin.Forms.Platform.Tizen
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public interface ITizenPlatform : IDisposable
+#pragma warning disable CS0618 // Type or member is obsolete
+		, IPlatform
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		void SetPage(Page page);
 		bool SendBackButtonPressed();
@@ -166,6 +169,12 @@ namespace Xamarin.Forms.Platform.Tizen
 			_navModel.Push(newRoot, null);
 
 			Page = newRoot;
+
+#pragma warning disable CS0618 // Type or member is obsolete
+			// The Platform property is no longer necessary, but we have to set it because some third-party
+			// library might still be retrieving it and using it
+			Page.Platform = this;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			IVisualElementRenderer pageRenderer = Platform.CreateRenderer(Page);
 			var naviItem = _internalNaviframe.Push(pageRenderer.NativeView);
@@ -552,6 +561,11 @@ namespace Xamarin.Forms.Platform.Tizen
 				page = (Page)page.RealParent;
 
 			return Page == page || _navModel.Roots.Contains(page);
+		}
+
+		SizeRequest IPlatform.GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
+		{
+			return Platform.GetNativeSize(view, widthConstraint, heightConstraint);
 		}
 	}
 }
