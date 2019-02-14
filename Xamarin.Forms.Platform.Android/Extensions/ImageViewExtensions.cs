@@ -64,7 +64,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			// Check if the source on the new image has changed since the image was loaded
-			if (!Equals(newView?.Source, newImageSource))
+			if (newView != null && !Equals(newView?.Source, newImageSource))
 			{
 				bitmap?.Dispose();
 				return;
