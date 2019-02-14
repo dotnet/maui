@@ -14,7 +14,6 @@
       <DependentUpon>Bugzilla60787.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)Issue1332.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2102.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1588.xaml.cs">
       <DependentUpon>Issue1588.xaml</DependentUpon>
@@ -22,7 +21,6 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue4629.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue4384.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Issue1760_1.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue4782.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue4484.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3509.cs" />
@@ -877,6 +875,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue3622.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue4138.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue4314.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue5172.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">
