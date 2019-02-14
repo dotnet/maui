@@ -2,7 +2,7 @@
 
 namespace Xamarin.Forms
 {
-	[AttributeUsage(AttributeTargets.Class)]
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 	public class QueryPropertyAttribute : Attribute
 	{
 		public string Name { get;  }
