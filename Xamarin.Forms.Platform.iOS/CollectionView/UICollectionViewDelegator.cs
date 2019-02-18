@@ -7,9 +7,17 @@ namespace Xamarin.Forms.Platform.iOS
 	public class UICollectionViewDelegator : UICollectionViewDelegateFlowLayout
 	{
 		public ItemsViewLayout ItemsViewLayout { get; private set; }
-		public SelectableItemsViewController SelectableItemsViewController { get; set; }
+		public ItemsViewController ItemsViewController { get; private set; }
+		public SelectableItemsViewController SelectableItemsViewController
+		{
+			get => ItemsViewController as SelectableItemsViewController;
+		}
 
-		public UICollectionViewDelegator(ItemsViewLayout itemsViewLayout) => ItemsViewLayout = itemsViewLayout;
+		public UICollectionViewDelegator(ItemsViewLayout itemsViewLayout, ItemsViewController itemsViewController)
+		{
+			ItemsViewLayout = itemsViewLayout;
+			ItemsViewController = itemsViewController;
+		}
 
 		public override void WillDisplayCell(UICollectionView collectionView, UICollectionViewCell cell, NSIndexPath path)
 		{
@@ -57,6 +65,11 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void ItemDeselected(UICollectionView collectionView, NSIndexPath indexPath)
 		{
 			SelectableItemsViewController?.ItemDeselected(collectionView, indexPath);
+		}
+
+		public override void CellDisplayingEnded(UICollectionView collectionView, UICollectionViewCell cell, NSIndexPath indexPath)
+		{
+			ItemsViewController.RemoveLogicalChild(cell);
 		}
 	}
 }

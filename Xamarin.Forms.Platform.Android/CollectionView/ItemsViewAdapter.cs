@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (holder is TemplatedItemViewHolder templatedItemViewHolder)
 			{
-				templatedItemViewHolder.View.Parent = null;
+				ItemsView.RemoveLogicalChild(templatedItemViewHolder.View);
 			}
 
 			base.OnViewRecycled(holder);
@@ -47,9 +47,8 @@ namespace Xamarin.Forms.Platform.Android
 				case TextViewHolder textViewHolder:
 					textViewHolder.TextView.Text = ItemsSource[position].ToString();
 					break;
-				case TemplatedItemViewHolder templateViewHolder:
-					templateViewHolder.View.Parent = ItemsView;
-					BindableObject.SetInheritedBindingContext(templateViewHolder.View, ItemsSource[position]);
+				case TemplatedItemViewHolder templatedItemViewHolder:
+					BindableObject.SetInheritedBindingContext(templatedItemViewHolder.View, ItemsSource[position]);
 					break;
 			}
 		}
@@ -69,6 +68,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			// Realize the content, create a renderer out of it, and use that
 			var templateElement = (View)template.CreateContent();
+			ItemsView.AddLogicalChild(templateElement);
 			var itemContentControl = _createView(CreateRenderer(templateElement, context), context);
 
 			return new TemplatedItemViewHolder(itemContentControl, templateElement);

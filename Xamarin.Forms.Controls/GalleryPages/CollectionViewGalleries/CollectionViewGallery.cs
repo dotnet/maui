@@ -20,6 +20,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 					GalleryBuilder.NavButton("CarouselView Galleries", () => new CarouselViewGallery(), Navigation),
 					GalleryBuilder.NavButton("EmptyView Galleries", () => new EmptyViewGallery(), Navigation),
 					GalleryBuilder.NavButton("Selection Galleries", () => new SelectionGallery(), Navigation),
+					GalleryBuilder.NavButton("Propagation Galleries", () => new PropagationGallery(), Navigation),
 				}
 			};
 		}

@@ -12,7 +12,6 @@ namespace Xamarin.Forms.Platform.iOS
 			: base(selectableItemsView, layout)
 		{
 			SelectableItemsView = selectableItemsView;
-			Delegator.SelectableItemsViewController = this;
 		}
 
 		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection

@@ -224,6 +224,48 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 			});
 		}
 
+		public static DataTemplate PropagationTemplate()
+		{
+			return new DataTemplate(() =>
+			{
+				var templateLayout = new Grid
+				{
+					BackgroundColor = Color.Bisque,
+					RowDefinitions = new RowDefinitionCollection { new RowDefinition { Height = GridLength.Auto } },
+					WidthRequest = 100,
+					HeightRequest = 140
+				};
+
+				var buttonLayout = new StackLayout { Orientation = StackOrientation.Horizontal };
+
+				var button1 = new Button
+				{
+					Margin = new Thickness(5),
+					Text = "Button 1"
+				};
+
+				var button2 = new Button
+				{
+					Margin = new Thickness(5),
+					Text = "Button 2"
+				};
+
+				var button3 = new Button
+				{
+					Margin = new Thickness(5),
+					Text = "Button 3"
+				};
+
+				buttonLayout.Children.Add(button1);
+				buttonLayout.Children.Add(button2);
+				buttonLayout.Children.Add(button3);
+
+				templateLayout.Children.Add(buttonLayout);
+
+				return templateLayout;
+			});
+		}
+		
 		public static DataTemplate VariableSizeTemplate()
 		{
 			var indexHeightConverter = new IndexRequestConverter(3, 50, 150);
