@@ -1,7 +1,7 @@
 ﻿using System;
-using SizeF = CoreGraphics.CGSize;
 using AppKit;
 using System.ComponentModel;
+using Xamarin.Forms.Platform.macOS.Controls;
 
 namespace Xamarin.Forms.Platform.MacOS
 {
@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			{
 				if (Control == null)
 				{
-					SetNativeControl(new NSSlider { Continuous = true });
+					SetNativeControl(new FormsNSSlider());
 					Control.Activated += OnControlActivated;
 				}
 

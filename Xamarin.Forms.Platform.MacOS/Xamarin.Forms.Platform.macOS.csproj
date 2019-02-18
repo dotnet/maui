@@ -237,6 +237,7 @@
       <Link>VisualElementRenderer.cs</Link>
     </Compile>
     <Compile Include="Extensions\NSMenuExtensions.cs" />
+    <Compile Include="Controls\FormsNSSlider.cs" />
     <Compile Include="..\Xamarin.Forms.Platform.iOS\DisposeHelpers.cs">
       <Link>DisposeHelpers.cs</Link>
     </Compile>
