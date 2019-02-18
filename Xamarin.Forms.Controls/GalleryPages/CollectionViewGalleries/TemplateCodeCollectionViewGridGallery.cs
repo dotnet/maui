@@ -18,7 +18,7 @@
 
 			var itemTemplate = ExampleTemplates.PhotoTemplate();
 
-			var collectionView = new CollectionView {ItemsLayout = itemsLayout, ItemTemplate = itemTemplate};
+			var collectionView = new CollectionView {ItemsLayout = itemsLayout, ItemTemplate = itemTemplate, AutomationId = "collectionview" };
 
 			var generator = new ItemsSourceGenerator(collectionView, 100);
 			var spanSetter = new SpanSetter(collectionView);

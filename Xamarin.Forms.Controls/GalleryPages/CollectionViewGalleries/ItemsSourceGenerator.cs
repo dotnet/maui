@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 
 		public override string ToString()
 		{
-			return $"{Date:D}";
+			return $"Item: {Index}";
 		}
 	}
 
@@ -51,9 +51,9 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 				HorizontalOptions = LayoutOptions.Fill
 			};
 
-			var button = new Button { Text = "Update" };
+			var button = new Button { Text = "Update", AutomationId = "btnUpdate"  };
 			var label = new Label { Text = "Item count:", VerticalTextAlignment = TextAlignment.Center };
-			_entry = new Entry { Keyboard = Keyboard.Numeric, Text = initialItems.ToString(), WidthRequest = 200 };
+			_entry = new Entry { Keyboard = Keyboard.Numeric, Text = initialItems.ToString(), WidthRequest = 200, AutomationId = "entryUpdate" };
 
 			layout.Children.Add(label);
 			layout.Children.Add(_entry);
@@ -100,7 +100,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 				for (int n = 0; n < count; n++)
 				{
 					items.Add(new CollectionViewGalleryTestItem(DateTime.Now.AddDays(n),
-						$"{_images[n % _images.Length]}, {n}", _images[n % _images.Length], n));
+						$"Item: {n}", _images[n % _images.Length], n));
 				}
 
 				_cv.ItemsSource = items;
@@ -116,7 +116,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 				for (int n = 0; n < count; n++)
 				{
 					items.Add(new CollectionViewGalleryTestItem(DateTime.Now.AddDays(n),
-						$"{_images[n % _images.Length]}, {n}", _images[n % _images.Length], n));
+						$"Item: {n}", _images[n % _images.Length], n));
 				}
 
 				_cv.ItemsSource = new ObservableCollection<CollectionViewGalleryTestItem>(items);

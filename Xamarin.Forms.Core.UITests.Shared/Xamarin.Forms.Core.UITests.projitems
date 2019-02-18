@@ -56,5 +56,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\ParsingUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\UITestCustomExceptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\ViewInspector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tests\CollectionViewUITests.cs" />
   </ItemGroup>
 </Project>
