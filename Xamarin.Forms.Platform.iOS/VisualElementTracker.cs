@@ -31,7 +31,11 @@ namespace Xamarin.Forms.Platform.MacOS
 		CALayer _layer;
 		int _updateCount;
 
-		public VisualElementTracker(IVisualElementRenderer renderer, bool trackFrame = true)
+		public VisualElementTracker(IVisualElementRenderer renderer) : this(renderer, true)
+		{
+		}
+
+		public VisualElementTracker(IVisualElementRenderer renderer, bool trackFrame)
 		{
 			Renderer = renderer ?? throw new ArgumentNullException("renderer");
 

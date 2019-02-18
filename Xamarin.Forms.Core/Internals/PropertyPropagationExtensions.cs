@@ -21,5 +21,17 @@ namespace Xamarin.Forms.Internals
 					view.PropagatePropertyChanged(propertyName);
 			}
 		}
+
+		internal static void PropagatePropertyChanged(string propertyName, Element element)
+		{
+			if (propertyName == null || propertyName == VisualElement.FlowDirectionProperty.PropertyName)
+				Element.SetFlowDirectionFromParent(element);
+
+			if (propertyName == null || propertyName == VisualElement.VisualProperty.PropertyName)
+				Element.SetVisualfromParent(element);
+
+			if (element is IPropertyPropagationController view)
+					view.PropagatePropertyChanged(propertyName);
+		}
 	}
 }

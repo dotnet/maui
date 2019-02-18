@@ -17,10 +17,10 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 				HorizontalOptions = LayoutOptions.Fill
 			};
 
-			var button = new Button { Text = buttonText };
+			var button = new Button { Text = buttonText, AutomationId = $"btn{buttonText}" };
 			var label = new Label { Text = LabelText, VerticalTextAlignment = TextAlignment.Center };
 
-			Entry = new Entry { Keyboard = Keyboard.Numeric, Text = InitialEntryText, WidthRequest = 100 };
+			Entry = new Entry { Keyboard = Keyboard.Numeric, Text = InitialEntryText, WidthRequest = 100, AutomationId = $"entry{buttonText}" };
 
 			layout.Children.Add(label);
 			layout.Children.Add(Entry);
