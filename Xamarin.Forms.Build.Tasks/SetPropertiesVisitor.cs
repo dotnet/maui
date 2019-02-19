@@ -827,7 +827,7 @@ namespace Xamarin.Forms.Build.Tasks
 			var bpRef = GetBindablePropertyReference(parent, propertyName.NamespaceURI, ref localName, out System.Boolean attached, context, iXmlLineInfo);
 
 			//If the target is an event, connect
-			if (CanConnectEvent(parent, localName, attached))
+			if (CanConnectEvent(parent, localName, valueNode, attached))
 				return ConnectEvent(parent, localName, valueNode, iXmlLineInfo, context);
 
 			//If Value is DynamicResource, SetDynamicResource
@@ -890,9 +890,9 @@ namespace Xamarin.Forms.Build.Tasks
 			return bpRef;
 		}
 
-		static bool CanConnectEvent(VariableDefinition parent, string localName, bool attached)
+		static bool CanConnectEvent(VariableDefinition parent, string localName, INode valueNode, bool attached)
 		{
-			return !attached && parent.VariableType.GetEvent(ed => ed.Name == localName, out _) != null;
+			return !attached && valueNode is ValueNode && parent.VariableType.GetEvent(ed => ed.Name == localName, out _) != null;
 		}
 
 		static IEnumerable<Instruction> ConnectEvent(VariableDefinition parent, string localName, INode valueNode, IXmlLineInfo iXmlLineInfo, ILContext context)
