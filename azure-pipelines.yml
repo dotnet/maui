@@ -11,7 +11,6 @@ resources:
     - repository: xamarin-templates
       type: github
       name: xamarin/yaml-templates
-      ref: refs/heads/sign-artifacts
       endpoint: xamarin
 
 jobs:
@@ -79,6 +78,8 @@ jobs:
       dependsOn: build
       pool:
         name: VSEng-XamarinCustom
+        demands:
+          - corpnet
       condition: and(succeeded(), startsWith(variables['Build.SourceBranch'],'refs/tags/'))
       steps:
         # don't checkout code and sign the packages
