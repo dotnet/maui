@@ -70,7 +70,7 @@ namespace Xamarin.Forms
 		// Why is bundle a param if never used?
 		public static void Init(Context activity, Bundle bundle)
 		{
-			Assembly resourceAssembly = Assembly.GetCallingAssembly();
+			Assembly resourceAssembly = AppDomain.GetEntryAssembly ();
 			SetupInit(activity, resourceAssembly);
 		}
 
