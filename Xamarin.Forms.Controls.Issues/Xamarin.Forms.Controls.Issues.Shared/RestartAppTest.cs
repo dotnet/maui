@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public static bool Reinit;
 
 		public const string ForceRestart = "ForceRestart";
-		public const string Success = "Android CoreGallery";
+		public const string Success = "Android Core Gallery";
 		public const string ReinitOk = "Tap Reinit, back out of app, relaunch, and expect 'true': {0}";
 		public const string RestartButton = "Restart";
 		public const string ReinitButton = "Reinit";
