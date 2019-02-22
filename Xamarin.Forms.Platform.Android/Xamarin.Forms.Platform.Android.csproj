@@ -317,6 +317,9 @@
     <Compile Include="ButtonLayoutManager.cs" />
     <Compile Include="Material\MaterialSliderRenderer.cs" />
     <AndroidResource Include="Resources\color\white_disabled_material.xml" />
+    <Compile Include="IStepperRenderer.cs" />
+    <Compile Include="StepperRendererManager.cs" />
+    <Compile Include="Material\MaterialStepperRenderer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

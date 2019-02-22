@@ -234,7 +234,17 @@
             <Label Text="Custom (Disabled)" Margin="0,0,0,-10" />
             <Slider Minimum="-100" Maximum="100" IsEnabled="false"
                     ThumbColor="{StaticResource DarkRedColor}" MaximumTrackColor="{StaticResource SecondaryColor}" MinimumTrackColor="{StaticResource PrimaryColor}" />
+            
+            <Label Text="Steppers" FontSize="Large" />
+            <Label Text="Default" Margin="0,0,0,-10" />
+            <Stepper HorizontalOptions="Start" />
 
+            <Label Text="Height 100" Margin="0,0,0,-10" />
+            <Stepper HeightRequest="100"></Stepper>
+            
+            <Label Text="Red background" Margin="0,0,0,-10" />
+            <Stepper BackgroundColor="Red"></Stepper>
+            
         </StackLayout>
     </ScrollView>
 
