@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public static MethodReference ImportCtorReference(this ModuleDefinition module, TypeReference type, TypeReference[] parameterTypes)
 		{
-			var ctorKey = $"{type}.ctor({(parameterTypes == null ? "" : string.Join(",", parameterTypes.Select(tr => (tr.Scope.Name, tr.Namespace, tr.Name))))})";
+			var ctorKey = $"{type}.ctor({(parameterTypes == null ? "" : string.Join(",", parameterTypes.Select(SerializeTypeReference)))})";
 			if (MethodRefCache.TryGetValue((module, ctorKey), out var ctorRef))
 				return ctorRef;
 			ctorRef = module.ImportCtorReference(type, classArguments: null, predicate: md => {
@@ -88,7 +88,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public static MethodReference ImportCtorReference(this ModuleDefinition module, (string assemblyName, string clrNamespace, string typeName) type, int paramCount, TypeReference[] classArguments)
 		{
-			var ctorKey = $"{type}<{(string.Join(",", classArguments.Select(tr => (tr.Scope.Name, tr.Namespace, tr.Name))))}>.ctor({(string.Join(",", Enumerable.Repeat("_", paramCount)))})";
+			var ctorKey = $"{type}<{string.Join(",", classArguments.Select(SerializeTypeReference))}>.ctor({(string.Join(",", Enumerable.Repeat("_", paramCount)))})";
 			if (!MethodRefCache.TryGetValue((module, ctorKey), out var ctorRef))
 				MethodRefCache.Add((module, ctorKey), ctorRef = module.ImportCtorReference(module.GetTypeDefinition(type), classArguments, predicate: md => md.Parameters.Count == paramCount));
 			return ctorRef;
@@ -302,6 +302,13 @@ namespace Xamarin.Forms.Build.Tasks
 				yield break;
 			foreach (var property in typedef.BaseType.ResolveCached().Properties(true))
 				yield return property;
+		}
+
+		static string SerializeTypeReference(TypeReference tr)
+		{
+			var serialized = $"{tr.Scope.Name},{tr.Namespace},{tr.Name}";
+			var gitr = tr as GenericInstanceType;
+			return gitr == null ? serialized : $"{serialized}<{string.Join(",", gitr.GenericArguments.Select(SerializeTypeReference))}>";
 		}
 	}
 }
