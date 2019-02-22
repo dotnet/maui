@@ -3,7 +3,7 @@ using Xamarin.Forms.Internals;
 using System.Runtime.InteropServices;
 using Xamarin.Forms;
 
-[assembly: AssemblyTitle("Xamarin.Forms.Material.iOS")]
+[assembly: AssemblyTitle("Xamarin.Forms.Material")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCulture("")]
