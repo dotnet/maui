@@ -77,7 +77,7 @@ namespace Xamarin.Forms.Controls
 			};
 		}
 
-		Grid CreateValuePicker(string title, Action<double> changed)
+		internal static Grid CreateValuePicker(string title, Action<double> changed)
 		{
 			// 50%
 			Slider slider = new Slider(0, 100, 50);

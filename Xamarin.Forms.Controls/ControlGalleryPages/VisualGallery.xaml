@@ -31,18 +31,23 @@
                 <ActivityIndicator Color="{StaticResource PrimaryColor}" IsRunning="false" HorizontalOptions="FillAndExpand" />
             </StackLayout>
 
-            <Label Text="Custom Background Color" Margin="0,0,0,-10" />
+            <Label Text="Custom Background Color + Height 200" Margin="0,0,0,-10" />
             <StackLayout Orientation="Horizontal">
-                <ActivityIndicator BackgroundColor="{StaticResource SecondaryColor}" IsRunning="true" HorizontalOptions="FillAndExpand" />
-                <ActivityIndicator BackgroundColor="{StaticResource SecondaryColor}" IsRunning="false" HorizontalOptions="FillAndExpand" />
+                <ActivityIndicator HeightRequest="200" BackgroundColor="{StaticResource SecondaryColor}" IsRunning="true" HorizontalOptions="FillAndExpand" />
+                <ActivityIndicator HeightRequest="200" BackgroundColor="{StaticResource SecondaryColor}" IsRunning="false" HorizontalOptions="FillAndExpand" />
             </StackLayout>
 
-            <Label Text="Custom" Margin="0,0,0,-10" />
-            <StackLayout Orientation="Horizontal">
+            <Label Text="Custom + Height 144 (Max)" Margin="0,0,0,-10" />
+            <StackLayout Orientation="Horizontal" BackgroundColor="Lime">
+                <ActivityIndicator HeightRequest="144" Color="{StaticResource PrimaryColor}" BackgroundColor="{StaticResource SecondaryColor}" IsRunning="true" HorizontalOptions="FillAndExpand" />
+                <ActivityIndicator HeightRequest="144" Color="{StaticResource PrimaryColor}" BackgroundColor="{StaticResource SecondaryColor}" IsRunning="false" HorizontalOptions="FillAndExpand" />
+            </StackLayout>
+
+            <Label Text="Default size" Margin="0,0,0,-10" />
+            <StackLayout Orientation="Horizontal" BackgroundColor="Yellow">
                 <ActivityIndicator Color="{StaticResource PrimaryColor}" BackgroundColor="{StaticResource SecondaryColor}" IsRunning="true" HorizontalOptions="FillAndExpand" />
                 <ActivityIndicator Color="{StaticResource PrimaryColor}" BackgroundColor="{StaticResource SecondaryColor}" IsRunning="false" HorizontalOptions="FillAndExpand" />
             </StackLayout>
-
 
             <Label Text="Progress Bars" FontSize="Large" />
 
