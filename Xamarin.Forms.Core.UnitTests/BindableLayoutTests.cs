@@ -1,8 +1,10 @@
 ﻿using NUnit.Framework;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 
 namespace Xamarin.Forms.Core.UnitTests
@@ -69,6 +71,21 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.IsTrue(IsLayoutWithItemsSource(itemsSource, layout));
 
 			itemsSource.Remove(1);
+			Assert.IsTrue(IsLayoutWithItemsSource(itemsSource, layout));
+		}
+
+		[Test]
+		public void TracksRemoveAll()
+		{
+			var layout = new StackLayout
+			{
+				IsPlatformEnabled = true,
+			};
+
+			var itemsSource = new ObservableRangeCollection<int>(Enumerable.Range(0, 10));
+			BindableLayout.SetItemsSource(layout, itemsSource);
+
+			itemsSource.RemoveAll();
 			Assert.IsTrue(IsLayoutWithItemsSource(itemsSource, layout));
 		}
 
@@ -377,6 +394,27 @@ namespace Xamarin.Forms.Core.UnitTests
 			}
 		}
 
+		class ObservableRangeCollection<T> : ObservableCollection<T>
+		{
+			public ObservableRangeCollection(IEnumerable<T> collection)
+				: base(collection)
+			{
+			}
+
+			public void RemoveAll()
+			{
+				CheckReentrancy();
+
+				var changedItems = new List<T>(Items);
+				foreach (var i in changedItems)
+					Items.Remove(i);
+
+				OnPropertyChanged(new PropertyChangedEventArgs("Count"));
+				OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
+				OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, changedItems, 0));
+			}
+ 		}     
+      
 		class MyDataTemplateSelectorTest : DataTemplateSelector
 		{
 			readonly Func<object, BindableObject, DataTemplate> _func;
