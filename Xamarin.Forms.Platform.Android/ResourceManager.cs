@@ -138,6 +138,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		static int GetId(Type type, string memberName)
 		{
+			// This may legitimately be null in designer scenarios
+			if (type == null)
+				return 0;
+
 			object value = null;
 			var fields = type.GetFields();
 			for (int i = 0; i < fields.Length; i++)

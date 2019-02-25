@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Threading.Tasks;
 using CoreGraphics;
+using Foundation;
 using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
@@ -263,9 +264,15 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				// TODO: Do not use the title label as it is not yet updated and
 				//       if we move the image, then we technically have more
-				//       space and will require a new laoyt pass.
+				//       space and will require a new layout pass.
 
-				var titleRect = control.TitleLabel.Bounds.Size;
+				var title =
+					control.CurrentAttributedTitle ??
+					new NSAttributedString(control.CurrentTitle, new UIStringAttributes { Font = control.TitleLabel.Font });
+				var titleRect = title.GetBoundingRect(
+					control.Bounds.Size,
+					NSStringDrawingOptions.UsesLineFragmentOrigin | NSStringDrawingOptions.UsesFontLeading,
+					null);
 
 				var titleWidth = titleRect.Width;
 				var titleHeight = titleRect.Height;

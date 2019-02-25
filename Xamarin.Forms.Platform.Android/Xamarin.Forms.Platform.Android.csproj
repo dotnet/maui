@@ -145,13 +145,24 @@
     <Compile Include="IBorderVisualElementRenderer.cs" />
     <Compile Include="IDeviceInfoProvider.cs" />
     <Compile Include="ITabStop.cs" />
+    <Compile Include="Material\MaterialFormsTextInputLayoutBase.cs" />
+    <Compile Include="Material\MaterialFormsEditTextBase.cs" />
+    <Compile Include="Material\MaterialFormsEditTextManager.cs" />
+    <Compile Include="Material\MaterialPickerTextInputLayout.cs" />
+    <Compile Include="Material\MaterialFormsTextInputLayout.cs" />
+    <Compile Include="Material\MaterialPickerEditText.cs" />
     <Compile Include="Material\MaterialContextThemeWrapper.cs" />
     <Compile Include="Material\MaterialFrameRenderer.cs" />
     <Compile Include="Material\MaterialFormsEditText.cs" />
     <Compile Include="Material\MaterialButtonRenderer.cs" />
     <Compile Include="Material\MaterialEntryRenderer.cs" />
+    <Compile Include="Material\MaterialDatePickerRenderer.cs" />
+    <Compile Include="Material\MaterialPickerRenderer.cs" />
+    <Compile Include="Material\MaterialTimePickerRenderer.cs" />
     <Compile Include="Material\MaterialProgressBarRenderer.cs" />
     <Compile Include="IPickerRenderer.cs" />
+    <Compile Include="PickerManager.cs" />
+    <Compile Include="Renderers\CircularProgress.cs" />
     <Compile Include="Renderers\PickerEditText.cs" />
     <Compile Include="Renderers\FontImageSourceHandler.cs" />
     <Compile Include="Renderers\FormsWebViewClient.cs" />
@@ -317,6 +328,9 @@
     <Compile Include="ButtonLayoutManager.cs" />
     <Compile Include="Material\MaterialSliderRenderer.cs" />
     <AndroidResource Include="Resources\color\white_disabled_material.xml" />
+    <Compile Include="IStepperRenderer.cs" />
+    <Compile Include="StepperRendererManager.cs" />
+    <Compile Include="Material\MaterialStepperRenderer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
@@ -393,15 +407,22 @@
       <Generator>MSBuild:UpdateGeneratedFiles</Generator>
       <SubType>Designer</SubType>
     </AndroidResource>
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFrameworkVersion)' == 'v9.0' ">
     <AndroidResource Include="Resources\values\styles.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
+    <AndroidResource Include="Resources\Layout\MaterialPickerTextInput.axml">
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+      <SubType>Designer</SubType>
+    </AndroidResource>
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\MaterialActivityIndicatorBackground.xml">
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable-v24\MaterialActivityIndicatorBackground.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>
@@ -410,9 +431,7 @@
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Resources\color\" />
-  </ItemGroup>
+  <ItemGroup />
   <Target Name="BeforeBuild" Condition=" '$(CreateAllAndroidTargets)' == 'true' ">
     <!--  create 8.1 binaries-->
     <MSBuild Targets="Restore" Projects="@(ProjectToBuild)">

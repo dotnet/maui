@@ -322,6 +322,7 @@ namespace Xamarin.Forms.Controls
 				new GalleryPageFactory(() => new PickerCoreGalleryPage(), "Picker Gallery"),
 				new GalleryPageFactory(() => new ProgressBarCoreGalleryPage(), "ProgressBar Gallery"),
 				new GalleryPageFactory(() => new MaterialProgressBarGallery(), "[Material] ProgressBar & Slider Gallery"),
+				new GalleryPageFactory(() => new MaterialActivityIndicatorGallery(), "[Material] ActivityIndicator Gallery"),
 				new GalleryPageFactory(() => new ScrollGallery(), "ScrollView Gallery"),
 				new GalleryPageFactory(() => new ScrollGallery(ScrollOrientation.Horizontal), "ScrollView Gallery Horizontal"),
 				new GalleryPageFactory(() => new ScrollGallery(ScrollOrientation.Both), "ScrollView Gallery 2D"),

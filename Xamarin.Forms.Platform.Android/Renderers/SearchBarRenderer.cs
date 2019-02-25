@@ -20,6 +20,7 @@ namespace Xamarin.Forms.Platform.Android
 		InputTypes _inputType;
 		TextColorSwitcher _textColorSwitcher;
 		TextColorSwitcher _hintColorSwitcher;
+		float _defaultHeight => Context.ToPixels(42);
 
 		public SearchBarRenderer(Context context) : base(context)
 		{
@@ -45,6 +46,16 @@ namespace Xamarin.Forms.Platform.Android
 			((ISearchBarController)Element).OnSearchButtonPressed();
 			ClearFocus(Control);
 			return true;
+		}
+
+		public override SizeRequest GetDesiredSize(int widthConstraint, int heightConstraint)
+		{
+			var sizerequest = base.GetDesiredSize(widthConstraint, heightConstraint);
+			if (Build.VERSION.SdkInt == BuildVersionCodes.N && heightConstraint == 0 && sizerequest.Request.Height == 0)
+			{
+				sizerequest.Request = new Size(sizerequest.Request.Width, _defaultHeight);
+			}
+			return sizerequest;
 		}
 
 		protected override SearchView CreateNativeControl()

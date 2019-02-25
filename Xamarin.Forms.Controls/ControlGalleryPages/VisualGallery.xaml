@@ -31,18 +31,23 @@
                 <ActivityIndicator Color="{StaticResource PrimaryColor}" IsRunning="false" HorizontalOptions="FillAndExpand" />
             </StackLayout>
 
-            <Label Text="Custom Background Color" Margin="0,0,0,-10" />
+            <Label Text="Custom Background Color + Height 200" Margin="0,0,0,-10" />
             <StackLayout Orientation="Horizontal">
-                <ActivityIndicator BackgroundColor="{StaticResource SecondaryColor}" IsRunning="true" HorizontalOptions="FillAndExpand" />
-                <ActivityIndicator BackgroundColor="{StaticResource SecondaryColor}" IsRunning="false" HorizontalOptions="FillAndExpand" />
+                <ActivityIndicator HeightRequest="200" BackgroundColor="{StaticResource SecondaryColor}" IsRunning="true" HorizontalOptions="FillAndExpand" />
+                <ActivityIndicator HeightRequest="200" BackgroundColor="{StaticResource SecondaryColor}" IsRunning="false" HorizontalOptions="FillAndExpand" />
             </StackLayout>
 
-            <Label Text="Custom" Margin="0,0,0,-10" />
-            <StackLayout Orientation="Horizontal">
+            <Label Text="Custom + Height 144 (Max)" Margin="0,0,0,-10" />
+            <StackLayout Orientation="Horizontal" BackgroundColor="Lime">
+                <ActivityIndicator HeightRequest="144" Color="{StaticResource PrimaryColor}" BackgroundColor="{StaticResource SecondaryColor}" IsRunning="true" HorizontalOptions="FillAndExpand" />
+                <ActivityIndicator HeightRequest="144" Color="{StaticResource PrimaryColor}" BackgroundColor="{StaticResource SecondaryColor}" IsRunning="false" HorizontalOptions="FillAndExpand" />
+            </StackLayout>
+
+            <Label Text="Default size" Margin="0,0,0,-10" />
+            <StackLayout Orientation="Horizontal" BackgroundColor="Yellow">
                 <ActivityIndicator Color="{StaticResource PrimaryColor}" BackgroundColor="{StaticResource SecondaryColor}" IsRunning="true" HorizontalOptions="FillAndExpand" />
                 <ActivityIndicator Color="{StaticResource PrimaryColor}" BackgroundColor="{StaticResource SecondaryColor}" IsRunning="false" HorizontalOptions="FillAndExpand" />
             </StackLayout>
-
 
             <Label Text="Progress Bars" FontSize="Large" />
 
@@ -235,6 +240,37 @@
             <Slider Minimum="-100" Maximum="100" IsEnabled="false"
                     ThumbColor="{StaticResource DarkRedColor}" MaximumTrackColor="{StaticResource SecondaryColor}" MinimumTrackColor="{StaticResource PrimaryColor}" />
 
+
+            <Label Text="Pickers" FontSize="Large"></Label>
+            <Label Text="Date Picker" Margin="0,0,0,-10" />
+            <DatePicker></DatePicker>
+            <Label Text="Time Picker" Margin="0,0,0,-10" />
+            <TimePicker></TimePicker>
+            <Label Text="Picker" Margin="0,0,0,-10" />
+            <Picker  Title="Select a monkey">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Baboon</x:String>
+                        <x:String>Capuchin Monkey</x:String>
+                        <x:String>Blue Monkey</x:String>
+                        <x:String>Squirrel Monkey</x:String>
+                        <x:String>Golden Lion Tamarin</x:String>
+                        <x:String>Howler Monkey</x:String>
+                        <x:String>Japanese Macaque</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+            
+            <Label Text="Steppers" FontSize="Large" />
+            <Label Text="Default" Margin="0,0,0,-10" />
+            <Stepper HorizontalOptions="Start" />
+
+            <Label Text="Height 100" Margin="0,0,0,-10" />
+            <Stepper HeightRequest="100"></Stepper>
+            
+            <Label Text="Red background" Margin="0,0,0,-10" />
+            <Stepper BackgroundColor="Red"></Stepper>
+            
         </StackLayout>
     </ScrollView>
 

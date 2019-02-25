@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using CoreAnimation;
 using CoreGraphics;
@@ -11,11 +12,17 @@ namespace Xamarin.Forms.Platform.iOS.Material
 {
 	public class MaterialActivityIndicatorRenderer : ViewRenderer<ActivityIndicator, MActivityIndicator>
 	{
+		// by Material spec the stroke width is 1/12 of the diameter, 
+		// but Android's native progress indicator is 1/10 of the diameter.
+		const float _strokeRatio = 10;
+		const float _defaultRadius = 22;
+		const float _defaultStrokeWidth = 4;
+		const float _defaultSize = 2 * _defaultRadius + _defaultStrokeWidth;
+
 		SemanticColorScheme _defaultColorScheme;
 		SemanticColorScheme _colorScheme;
 
 		CAShapeLayer _backgroundLayer;
-		CGPoint _center;
 
 		public MaterialActivityIndicatorRenderer()
 		{
@@ -39,7 +46,7 @@ namespace Xamarin.Forms.Platform.iOS.Material
 
 					_backgroundLayer = new CAShapeLayer
 					{
-						LineWidth = 4,
+						LineWidth = Control.StrokeWidth,
 						FillColor = UIColor.Clear.CGColor,
 						Hidden = true
 					};
@@ -48,6 +55,7 @@ namespace Xamarin.Forms.Platform.iOS.Material
 
 				UpdateColor();
 				UpdateIsRunning();
+				SetBackgroundColor(Element.BackgroundColor);
 
 				ApplyTheme();
 			}
@@ -68,8 +76,8 @@ namespace Xamarin.Forms.Platform.iOS.Material
 			return new MActivityIndicator
 			{
 				IndicatorMode = ActivityIndicatorMode.Indeterminate,
-				StrokeWidth = 4,
-				Radius = 24
+				StrokeWidth = _defaultStrokeWidth,
+				Radius = _defaultRadius
 			};
 		}
 
@@ -77,12 +85,28 @@ namespace Xamarin.Forms.Platform.iOS.Material
 		{
 			base.LayoutSubviews();
 
-			if (_center != Control.Center)
-			{
-				_center = Control.Center;
-				_backgroundLayer.Path = UIBezierPath.FromArc(_center, Control.Radius - 2, 0, 360, true).CGPath;
-			}
-			SetBackgroundColor(Element.BackgroundColor);
+			// try get the radius for this size
+			var min = NMath.Min(Control.Bounds.Width, Control.Bounds.Height);
+			var stroke = min / _strokeRatio;
+			var radius = min / 2;
+
+			// but, in the end use the limit set by the control
+			Control.Radius = radius;
+			Control.StrokeWidth = Control.Radius / (_strokeRatio / 2);
+
+			_backgroundLayer.LineWidth = Control.StrokeWidth;
+			_backgroundLayer.Path = UIBezierPath.FromArc(Control.Center, Control.Radius - Control.StrokeWidth / 2, 0, 360, true).CGPath;
+		}
+
+		public override CGSize SizeThatFits(CGSize size)
+		{
+			if (nfloat.IsInfinity(size.Width))
+				size.Width = _defaultSize;
+			if (nfloat.IsInfinity(size.Height))
+				size.Height = _defaultSize;
+			var min = NMath.Min(size.Width, size.Height);
+			size.Width = size.Height = min;
+			return size;
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

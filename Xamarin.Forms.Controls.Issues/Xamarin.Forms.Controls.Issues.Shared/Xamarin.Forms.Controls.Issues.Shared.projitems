@@ -428,8 +428,13 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue4600.cs" />
+<<<<<<< HEAD
     <Compile Include="$(MSBuildThisFileDirectory)Issue5057.xaml.cs">
       <DependentUpon>Issue5057.xaml</DependentUpon>
+=======
+    <Compile Include="$(MSBuildThisFileDirectory)Issue5003.xaml.cs">
+      <DependentUpon>Issue5003.xaml</DependentUpon>
+>>>>>>> 3.6.0
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)LegacyComponents\NonAppCompatSwitch.cs" />
@@ -1097,6 +1102,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue5057.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue5003.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </EmbeddedResource>

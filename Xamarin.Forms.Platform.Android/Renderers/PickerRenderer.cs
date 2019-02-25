@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override EditText CreateNativeControl()
 		{
-			return new PickerEditText(Context, this);
+			return new PickerEditText(Context);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Picker> e)

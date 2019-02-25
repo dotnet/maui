@@ -40,6 +40,5 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.That(layout.NullableInt, Is.Null);
 			}
 		}
-
 	}
 }

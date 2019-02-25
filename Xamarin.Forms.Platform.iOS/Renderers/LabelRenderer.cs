@@ -133,7 +133,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			base.Dispose(disposing);
 			if (disposing)
 			{
-				if(Element != null)
+				if (Element != null)
 				{
 					Element.PropertyChanging -= ElementPropertyChanging;
 				}
@@ -215,6 +215,14 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			if (!Element.IsSet(Label.TextDecorationsProperty))
 				return;
+
+#if __MOBILE__
+			if (!(Control.AttributedText?.Length > 0))
+				return;
+#else
+			if (!(Control.AttributedStringValue?.Length > 0))
+				return;
+#endif
 
 			var textDecorations = Element.TextDecorations;
 #if __MOBILE__
