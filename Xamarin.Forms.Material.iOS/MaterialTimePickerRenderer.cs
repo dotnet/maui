@@ -1,18 +1,18 @@
-﻿using UIKit;
+﻿using System.ComponentModel;
+using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS.Material
 {
-	public class MaterialEntryRenderer : EntryRendererBase<MaterialTextField>, IMaterialEntryRenderer
+	public class MaterialTimePickerRenderer : TimePickerRendererBase<MaterialTextField>, IMaterialEntryRenderer
 	{
-
-		public MaterialEntryRenderer()
+		public MaterialTimePickerRenderer()
 		{
 			VisualElement.VerifyVisualFlagEnabled();
 		}
 
 		protected override MaterialTextField CreateNativeControl()
 		{
-			var field = new MaterialTextField(this, Element);
+			var field = new NoCaretMaterialTextField(this, Element);
 			return field;
 		}
 
@@ -27,8 +27,7 @@ namespace Xamarin.Forms.Platform.iOS.Material
 			Control?.ApplyTypographyScheme(Element);
 		}
 
-
-		protected internal override void UpdateColor()
+		protected internal override void UpdateTextColor()
 		{
 			Control?.UpdateTextColor(this);
 		}
@@ -39,16 +38,21 @@ namespace Xamarin.Forms.Platform.iOS.Material
 			Control?.ApplyTheme(this);
 		}
 
-		protected internal override void UpdatePlaceholder()
+		internal void UpdatePlaceholder()
 		{
 			Control?.UpdatePlaceholder(this);
-			
 		}
 
+		protected override void OnElementChanged(ElementChangedEventArgs<TimePicker> e)
+		{
+			base.OnElementChanged(e);
+			UpdatePlaceholder();
+		}
+
+		string IMaterialEntryRenderer.Placeholder => string.Empty;
+		Color IMaterialEntryRenderer.PlaceholderColor => Color.Default;
 
 		Color IMaterialEntryRenderer.TextColor => Element?.TextColor ?? Color.Default;
-		Color IMaterialEntryRenderer.PlaceholderColor => Element?.PlaceholderColor ?? Color.Default;
 		Color IMaterialEntryRenderer.BackgroundColor => Element?.BackgroundColor ?? Color.Default;
-		string IMaterialEntryRenderer.Placeholder => Element?.Placeholder ?? string.Empty;
 	}
 }

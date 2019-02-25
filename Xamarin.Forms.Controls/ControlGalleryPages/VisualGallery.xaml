@@ -239,6 +239,27 @@
             <Label Text="Custom (Disabled)" Margin="0,0,0,-10" />
             <Slider Minimum="-100" Maximum="100" IsEnabled="false"
                     ThumbColor="{StaticResource DarkRedColor}" MaximumTrackColor="{StaticResource SecondaryColor}" MinimumTrackColor="{StaticResource PrimaryColor}" />
+
+
+            <Label Text="Pickers" FontSize="Large"></Label>
+            <Label Text="Date Picker" Margin="0,0,0,-10" />
+            <DatePicker></DatePicker>
+            <Label Text="Time Picker" Margin="0,0,0,-10" />
+            <TimePicker></TimePicker>
+            <Label Text="Picker" Margin="0,0,0,-10" />
+            <Picker  Title="Select a monkey">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Baboon</x:String>
+                        <x:String>Capuchin Monkey</x:String>
+                        <x:String>Blue Monkey</x:String>
+                        <x:String>Squirrel Monkey</x:String>
+                        <x:String>Golden Lion Tamarin</x:String>
+                        <x:String>Howler Monkey</x:String>
+                        <x:String>Japanese Macaque</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
             
             <Label Text="Steppers" FontSize="Large" />
             <Label Text="Default" Margin="0,0,0,-10" />

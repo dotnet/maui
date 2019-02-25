@@ -1,7 +1,5 @@
 ﻿#if __ANDROID_28__
-using System.Threading.Tasks;
 using Android.Content;
-using Android.Content.Res;
 using Android.OS;
 using Android.Support.V4.View;
 using Android.Util;
@@ -9,7 +7,6 @@ using Android.Views;
 using Android.Widget;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android.Material;
-using AColor = Android.Graphics.Color;
 
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Entry), typeof(MaterialEntryRenderer), new[] { typeof(VisualRendererMarker.Material) })]
 namespace Xamarin.Forms.Platform.Android.Material
@@ -17,8 +14,8 @@ namespace Xamarin.Forms.Platform.Android.Material
 	public sealed class MaterialEntryRenderer : EntryRendererBase<MaterialFormsTextInputLayout>
 	{
 		bool _disposed;
-		private MaterialFormsEditText _textInputEditText;
-		private MaterialFormsTextInputLayout _textInputLayout;
+		MaterialFormsEditText _textInputEditText;
+		MaterialFormsTextInputLayout _textInputLayout;
 
 		public MaterialEntryRenderer(Context context) :
 			base(MaterialContextThemeWrapper.Create(context))
@@ -36,8 +33,6 @@ namespace Xamarin.Forms.Platform.Android.Material
 			var view = inflater.Inflate(Resource.Layout.TextInputLayoutFilledBox, null);
 			_textInputLayout = (MaterialFormsTextInputLayout)view;
 			_textInputEditText = _textInputLayout.FindViewById<MaterialFormsEditText>(Resource.Id.materialformsedittext);
-			_textInputEditText.FocusChange += TextInputEditTextFocusChange;
-			_textInputLayout.Hint = Element.Placeholder;
 
 			return _textInputLayout;
 		}
@@ -99,16 +94,7 @@ namespace Xamarin.Forms.Platform.Android.Material
 			base.Dispose(disposing);
 		}
 
-
-		void TextInputEditTextFocusChange(object sender, FocusChangeEventArgs e)
-		{
-			// TODO figure out better way to do this
-			// this is a hack that changes the active underline color from the accent color to whatever the user 
-			// specified
-			Device.BeginInvokeOnMainThread(() => UpdatePlaceholderColor());
-		}
-
-		protected internal override void UpdateColor() => ApplyTheme();
+		protected override void UpdateTextColor() => ApplyTheme();
 
 		protected override void UpdateBackgroundColor()
 		{
@@ -120,33 +106,13 @@ namespace Xamarin.Forms.Platform.Android.Material
 
 		protected internal override void UpdatePlaceHolderText()
 		{
-			_textInputLayout.Hint = Element.Placeholder;
+			_textInputLayout.SetHint(Element.Placeholder, Element);
+			Element.InvalidateMeasureNonVirtual(Internals.InvalidationTrigger.VerticalOptionsChanged);
 		}
 
-		protected internal override void UpdatePlaceholderColor() => ApplyTheme();
-
-		void ApplyTheme()
-		{
-			if (_textInputLayout == null)
-				return;
-
-			// set text color
-			var textColor = MaterialColors.GetEntryTextColor(Element.TextColor);
-			UpdateTextColor(Color.FromUint((uint)textColor.ToArgb()));
-
-			var placeHolderColors = MaterialColors.GetPlaceHolderColor(Element.PlaceholderColor, Element.TextColor);
-			var underlineColors = MaterialColors.GetUnderlineColor(Element.TextColor);
-
-			var colors = MaterialColors.CreateEntryUnderlineColors(underlineColors.FocusedColor, underlineColors.UnFocusedColor);
-
-			ViewCompat.SetBackgroundTintList(_textInputEditText, colors);
-
-						
-			if (HasFocus || !string.IsNullOrWhiteSpace(_textInputEditText.Text))
-				_textInputLayout.DefaultHintTextColor = MaterialColors.CreateEntryFilledPlaceholderColors(placeHolderColors.FloatingColor, placeHolderColors.FloatingColor);
-			else
-				_textInputLayout.DefaultHintTextColor = MaterialColors.CreateEntryFilledPlaceholderColors(placeHolderColors.InlineColor, placeHolderColors.FloatingColor);
-		}
+		
+		protected override void UpdatePlaceholderColor() => ApplyTheme();
+		void ApplyTheme() => _textInputLayout?.ApplyTheme(Element.TextColor, Element.PlaceholderColor);
 
 		protected internal override void UpdateFont()
 		{

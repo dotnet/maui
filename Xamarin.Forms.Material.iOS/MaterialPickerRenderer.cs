@@ -1,18 +1,18 @@
-﻿using UIKit;
+﻿using System.ComponentModel;
+using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS.Material
 {
-	public class MaterialEntryRenderer : EntryRendererBase<MaterialTextField>, IMaterialEntryRenderer
+	public class MaterialPickerRenderer : PickerRendererBase<MaterialTextField>, IMaterialEntryRenderer
 	{
-
-		public MaterialEntryRenderer()
+		public MaterialPickerRenderer()
 		{
 			VisualElement.VerifyVisualFlagEnabled();
 		}
 
 		protected override MaterialTextField CreateNativeControl()
 		{
-			var field = new MaterialTextField(this, Element);
+			var field = new ReadOnlyMaterialTextField(this, Element);
 			return field;
 		}
 
@@ -26,9 +26,9 @@ namespace Xamarin.Forms.Platform.iOS.Material
 			base.UpdateFont();
 			Control?.ApplyTypographyScheme(Element);
 		}
+		
 
-
-		protected internal override void UpdateColor()
+		protected internal override void UpdateTextColor()
 		{
 			Control?.UpdateTextColor(this);
 		}
@@ -42,13 +42,18 @@ namespace Xamarin.Forms.Platform.iOS.Material
 		protected internal override void UpdatePlaceholder()
 		{
 			Control?.UpdatePlaceholder(this);
-			
 		}
 
+		protected override void OnElementChanged(ElementChangedEventArgs<Picker> e)
+		{
+			base.OnElementChanged(e);
+			UpdatePlaceholder();
+		}
 
+		string IMaterialEntryRenderer.Placeholder => string.Empty;
+		Color IMaterialEntryRenderer.PlaceholderColor => Color.Default;
 		Color IMaterialEntryRenderer.TextColor => Element?.TextColor ?? Color.Default;
-		Color IMaterialEntryRenderer.PlaceholderColor => Element?.PlaceholderColor ?? Color.Default;
 		Color IMaterialEntryRenderer.BackgroundColor => Element?.BackgroundColor ?? Color.Default;
-		string IMaterialEntryRenderer.Placeholder => Element?.Placeholder ?? string.Empty;
+		
 	}
 }

@@ -10,7 +10,24 @@ using Specifics = Xamarin.Forms.PlatformConfiguration.iOSSpecific.Entry;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	public class EntryRenderer : ViewRenderer<Entry, UITextField>
+	public class EntryRenderer : EntryRendererBase<UITextField>
+	{
+		public EntryRenderer()
+		{
+			Frame = new RectangleF(0, 20, 320, 40);
+		}
+
+		protected override UITextField CreateNativeControl()
+		{
+			var textField = new UITextField(RectangleF.Empty);
+			textField.BorderStyle = UITextBorderStyle.RoundedRect;
+			textField.ClipsToBounds = true;
+			return textField;
+		}
+	}
+
+	public abstract class EntryRendererBase<TControl> : ViewRenderer<Entry, TControl>
+		where TControl : UITextField
 	{
 		UIColor _defaultTextColor;
 
@@ -30,9 +47,8 @@ namespace Xamarin.Forms.Platform.iOS
 		static readonly int baseHeight = 30;
 		static CGSize initialSize = CGSize.Empty;
 
-		public EntryRenderer()
+		public EntryRendererBase()
 		{
-			Frame = new RectangleF(0, 20, 320, 40);
 		}
 
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -77,13 +93,8 @@ namespace Xamarin.Forms.Platform.iOS
 			base.Dispose(disposing);
 		}
 
-		protected override UITextField CreateNativeControl()
-		{
-			var textField = new UITextField(RectangleF.Empty);
-			textField.BorderStyle = UITextBorderStyle.RoundedRect;
-			textField.ClipsToBounds = true;
-			return textField;
-		}
+		abstract protected override TControl CreateNativeControl();
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Entry> e)
 		{
 			base.OnElementChanged(e);
