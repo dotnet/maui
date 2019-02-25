@@ -7,7 +7,7 @@ using Android.Widget;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android.Material;
 
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Picker), typeof(MaterialPickerRenderer), new[] { typeof(VisualRendererMarker.Material) })]
+[assembly: ExportRenderer(typeof(Xamarin.Forms.Picker), typeof(MaterialPickerRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
 
 namespace Xamarin.Forms.Platform.Android.Material
 {

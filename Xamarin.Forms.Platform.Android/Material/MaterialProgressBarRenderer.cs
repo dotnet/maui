@@ -10,7 +10,7 @@ using Xamarin.Forms.Platform.Android.Material;
 using AProgressBar = Android.Widget.ProgressBar;
 using AView = Android.Views.View;
 
-[assembly: ExportRenderer(typeof(ProgressBar), typeof(MaterialProgressBarRenderer), new[] { typeof(VisualRendererMarker.Material) })]
+[assembly: ExportRenderer(typeof(ProgressBar), typeof(MaterialProgressBarRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
 
 namespace Xamarin.Forms.Platform.Android.Material
 {

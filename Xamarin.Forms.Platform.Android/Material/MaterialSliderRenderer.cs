@@ -10,7 +10,7 @@ using Xamarin.Forms.Platform.Android.FastRenderers;
 using Xamarin.Forms.Platform.Android.Material;
 using AView = Android.Views.View;
 
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Slider), typeof(MaterialSliderRenderer), new[] { typeof(VisualRendererMarker.Material) })]
+[assembly: ExportRenderer(typeof(Xamarin.Forms.Slider), typeof(MaterialSliderRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
 
 namespace Xamarin.Forms.Platform.Android.Material
 {

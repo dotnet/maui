@@ -8,7 +8,7 @@ using Android.Widget;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android.Material;
 
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Entry), typeof(MaterialEntryRenderer), new[] { typeof(VisualRendererMarker.Material) })]
+[assembly: ExportRenderer(typeof(Xamarin.Forms.Entry), typeof(MaterialEntryRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
 namespace Xamarin.Forms.Platform.Android.Material
 {
 	public sealed class MaterialEntryRenderer : EntryRendererBase<MaterialFormsTextInputLayout>
