@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml;
@@ -53,9 +54,23 @@ namespace Xamarin.Forms
 
 		static void Register(Assembly assembly, Dictionary<string, IVisual> mappings)
 		{
-			foreach (var type in assembly.GetExportedTypes())
-				if (typeof(IVisual).IsAssignableFrom(type) && type != typeof(IVisual))
-					Register(type, mappings);
+			if (assembly.IsDynamic)
+				return;
+
+			try
+			{
+				foreach (var type in assembly.GetExportedTypes())
+					if (typeof(IVisual).IsAssignableFrom(type) && type != typeof(IVisual))
+						Register(type, mappings);
+			}
+			catch(NotSupportedException)
+			{
+				Log.Warning("Visual", $"Cannot scan assembly {assembly.FullName} for Visual types.");
+			}
+			catch (FileNotFoundException)
+			{
+				Log.Warning("Visual", $"Unable to load a dependent assembly for {assembly.FullName}. It cannot be scanned for Visual types.");
+			}
 		}
 
 		static void Register(Type visual, Dictionary<string, IVisual> mappings)
