@@ -35,6 +35,10 @@ namespace Xamarin.Forms.Core.Design
 					new System.ComponentModel.TypeConverterAttribute (typeof (NonExclusiveEnumConverter<NamedSize>))));
 			}
 
+			AddCallback(typeof(VisualElement), builder => builder.AddCustomAttributes(
+			   "Visual",
+			   new System.ComponentModel.TypeConverterAttribute(typeof(VisualDesignTypeConverter))));
+
 			// TODO: OnPlatform/OnIdiom
 			// These two should be proper markup extensions, to follow WPF syntax for those.
 			// That would allow us to turn on XAML validation, which otherwise fails.
@@ -42,7 +46,7 @@ namespace Xamarin.Forms.Core.Design
 			// the language service can find the type by its name. That class can be internal 
 			// though, since its visibility in the markup is controlled by the EditorBrowsableAttribute.
 			// Make OnPlatform/OnIdiom visible for intellisense, and set as markup extension. 
-			AddCallback (typeof (OnPlatform<>), builder => builder.AddCustomAttributes (new Attribute[] {
+			AddCallback(typeof (OnPlatform<>), builder => builder.AddCustomAttributes (new Attribute[] {
 				new EditorBrowsableAttribute (EditorBrowsableState.Always),
 				//new System.ComponentModel.TypeConverterAttribute(typeof(AnythingConverter)),
 				//new System.Windows.Markup.MarkupExtensionReturnTypeAttribute (),

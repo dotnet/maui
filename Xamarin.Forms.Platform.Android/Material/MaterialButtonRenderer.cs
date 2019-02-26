@@ -17,7 +17,7 @@ using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
 using MButton = Android.Support.Design.Button.MaterialButton;
 
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Button), typeof(MaterialButtonRenderer), new[] { typeof(VisualRendererMarker.Material) })]
+[assembly: ExportRenderer(typeof(Xamarin.Forms.Button), typeof(MaterialButtonRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
 
 namespace Xamarin.Forms.Platform.Android.Material
 {

@@ -10,7 +10,7 @@ using Xamarin.Forms.Platform.Android.Material;
 using AView = Android.Views.View;
 using MaterialCardView = Android.Support.Design.Card.MaterialCardView;
 
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Frame), typeof(MaterialFrameRenderer), new[] { typeof(VisualRendererMarker.Material) })]
+[assembly: ExportRenderer(typeof(Xamarin.Forms.Frame), typeof(MaterialFrameRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
 
 namespace Xamarin.Forms.Platform.Android.Material
 {

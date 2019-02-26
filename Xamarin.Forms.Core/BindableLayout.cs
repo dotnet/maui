@@ -223,9 +223,9 @@ namespace Xamarin.Forms
 					{
 						if (e.OldStartingIndex == -1)
 							goto case NotifyCollectionChangedAction.Reset;
-						for (int i = 0; i < e.OldItems.Count; ++i)
+						for (int i = 0; i < e.OldItems.Count; i++)
 						{
-							layout.Children.RemoveAt(i + e.OldStartingIndex);
+							layout.Children.RemoveAt(e.OldStartingIndex);
 						}
 					}
 					break;
