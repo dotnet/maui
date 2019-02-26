@@ -1,4 +1,5 @@
-﻿using UIKit;
+﻿using CoreGraphics;
+using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS.Material
 {
@@ -44,7 +45,6 @@ namespace Xamarin.Forms.Platform.iOS.Material
 			Control?.UpdatePlaceholder(this);
 			
 		}
-
 
 		Color IMaterialEntryRenderer.TextColor => Element?.TextColor ?? Color.Default;
 		Color IMaterialEntryRenderer.PlaceholderColor => Element?.PlaceholderColor ?? Color.Default;

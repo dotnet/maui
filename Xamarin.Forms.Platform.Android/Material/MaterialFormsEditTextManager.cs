@@ -61,7 +61,16 @@ namespace Xamarin.Forms.Platform.Android.Material
 			}
 
 			Context Context = textInputEditText.Context;
-			textInputEditText.SetPadding((int)Context.ToPixels(rect.Left), (int)Context.ToPixels(rect.Top), (int)Context.ToPixels(rect.Right), (int)Context.ToPixels(rect.Bottom));
+			var left = (int)Context.ToPixels(rect.Left);
+			var top = (int)Context.ToPixels(rect.Top);
+			var right = (int)Context.ToPixels(rect.Right);
+			var bottom = (int)Context.ToPixels(rect.Bottom);
+
+			if(textInputEditText.PaddingLeft != left ||
+			   textInputEditText.PaddingTop != top ||
+			   textInputEditText.PaddingRight != right ||
+			   textInputEditText.PaddingBottom != bottom)
+				textInputEditText.SetPadding(left, top, right, bottom);
 		}
 	}
 }

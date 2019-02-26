@@ -60,8 +60,11 @@
       <Link>MaterialColors.cs</Link>
     </Compile>
     <Compile Include="IMaterialEntryRenderer.cs" />
+    <Compile Include="MaterialEditorRenderer.cs" />
     <Compile Include="MaterialPickerRenderer.cs" />
     <Compile Include="MaterialDatePickerRenderer.cs" />
+    <Compile Include="MaterialMultiLineTextField.cs" />
+    <Compile Include="MaterialTextManager.cs" />
     <Compile Include="MaterialTimePickerRenderer.cs" />
     <Compile Include="MaterialTextField.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

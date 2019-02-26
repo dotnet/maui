@@ -145,6 +145,7 @@
     <Compile Include="IBorderVisualElementRenderer.cs" />
     <Compile Include="IDeviceInfoProvider.cs" />
     <Compile Include="ITabStop.cs" />
+    <Compile Include="Material\MaterialEditorRenderer.cs" />
     <Compile Include="Material\MaterialFormsTextInputLayoutBase.cs" />
     <Compile Include="Material\MaterialFormsEditTextBase.cs" />
     <Compile Include="Material\MaterialFormsEditTextManager.cs" />

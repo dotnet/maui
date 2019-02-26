@@ -1,22 +1,21 @@
 ﻿#if __ANDROID_28__
 using Android.Content;
-using Android.OS;
-using Android.Support.V4.View;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android.Material;
 
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Entry), typeof(MaterialEntryRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
+[assembly: ExportRenderer(typeof(Xamarin.Forms.Editor), typeof(MaterialEditorRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
 namespace Xamarin.Forms.Platform.Android.Material
 {
-	public sealed class MaterialEntryRenderer : EntryRendererBase<MaterialFormsTextInputLayout>
+	public sealed class MaterialEditorRenderer : EditorRendererBase<MaterialFormsTextInputLayout>
 	{
+		bool _disposed;
 		MaterialFormsEditText _textInputEditText;
 		MaterialFormsTextInputLayout _textInputLayout;
 
-		public MaterialEntryRenderer(Context context) :
+		public MaterialEditorRenderer(Context context) :
 			base(MaterialContextThemeWrapper.Create(context))
 		{
 			VisualElement.VerifyVisualFlagEnabled();
@@ -32,11 +31,12 @@ namespace Xamarin.Forms.Platform.Android.Material
 			var view = inflater.Inflate(Resource.Layout.TextInputLayoutFilledBox, null);
 			_textInputLayout = (MaterialFormsTextInputLayout)view;
 			_textInputEditText = _textInputLayout.FindViewById<MaterialFormsEditText>(Resource.Id.materialformsedittext);
+			UpdatePlaceholderText();
 
 			return _textInputLayout;
 		}
 
-		protected override void OnElementChanged(ElementChangedEventArgs<Entry> e)
+		protected override void OnElementChanged(ElementChangedEventArgs<Editor> e)
 		{
 			base.OnElementChanged(e);
 			UpdateBackgroundColor();
@@ -46,15 +46,18 @@ namespace Xamarin.Forms.Platform.Android.Material
 
 		protected override void UpdateBackgroundColor()
 		{
-			if (_textInputLayout == null)
+			if (_disposed || _textInputLayout == null)
 				return;
 
 			_textInputLayout.BoxBackgroundColor = MaterialColors.CreateEntryFilledInputBackgroundColor(Element.BackgroundColor, Element.TextColor);
 		}
 
-		protected internal override void UpdatePlaceHolderText()
+		protected internal override void UpdatePlaceholderText()
 		{
-			_textInputLayout.SetHint(Element.Placeholder, Element);
+			if (_disposed || _textInputLayout == null)
+				return;
+
+			_textInputLayout?.SetHint(Element.Placeholder, Element);
 		}
 
 		
@@ -63,9 +66,18 @@ namespace Xamarin.Forms.Platform.Android.Material
 
 		protected internal override void UpdateFont()
 		{
+			if (_disposed || _textInputLayout == null)
+				return;
+
 			base.UpdateFont();
 			_textInputLayout.Typeface = Element.ToTypeface();
 			_textInputEditText.SetTextSize(ComplexUnitType.Sp, (float)Element.FontSize);
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			_disposed = true;
+			base.Dispose(disposing);
 		}
 	}
 }

@@ -12,23 +12,27 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.iOS.Material
 {
-	public class MaterialTextField : MTextField
+	internal interface IMaterialTextField
 	{
-		SemanticColorScheme _colorScheme;
-		TypographyScheme _typographyScheme;
-		MTextInputControllerBase _activeTextinputController;
+		SemanticColorScheme ColorScheme { get; set; }
+		TypographyScheme TypographyScheme { get; set; }
+		MTextInputControllerBase ActiveTextInputController { get; set; }
+
+		ITextInput TextInput { get; }
+	}
+
+	public class MaterialTextField : MTextField, IMaterialTextField
+	{
+		public SemanticColorScheme ColorScheme { get; set; }
+		public TypographyScheme TypographyScheme { get; set; }
+		public MTextInputControllerBase ActiveTextInputController { get; set; }
+
+		public ITextInput TextInput => this;
 
 		public MaterialTextField(IMaterialEntryRenderer element, IFontElement fontElement)
 		{
 			VisualElement.VerifyVisualFlagEnabled();
-			ClearButtonMode = UITextFieldViewMode.Never;
-			_activeTextinputController = new MTextInputControllerFilled(this);
-			TextInsetsMode = TextInputTextInsetsMode.IfContent;
-			_typographyScheme = CreateTypographyScheme();
-			_colorScheme = (SemanticColorScheme)CreateColorScheme();
-			ApplyTypographyScheme(fontElement);
-			ApplyTheme(element);
-
+			MaterialTextManager.Init(element, this, fontElement);
 		}
 
 		public override CGSize SizeThatFits(CGSize size)
@@ -41,74 +45,15 @@ namespace Xamarin.Forms.Platform.iOS.Material
 			return result;
 		}
 
-		internal void ApplyTypographyScheme(IFontElement fontElement)
-		{
-			Font = fontElement?.ToUIFont();
-			_typographyScheme.Subtitle1 = Font;
-			TextFieldTypographyThemer.ApplyTypographyScheme(_typographyScheme, this);
-			TextFieldTypographyThemer.ApplyTypographyScheme(_typographyScheme, _activeTextinputController);
-		}
+		internal void ApplyTypographyScheme(IFontElement fontElement) =>
+			MaterialTextManager.ApplyTypographyScheme(this, fontElement);
 
-		internal void ApplyTheme(IMaterialEntryRenderer element)
-		{
-			if (element == null)
-				return;
+		internal void ApplyTheme(IMaterialEntryRenderer element) => MaterialTextManager.ApplyTheme(this, element);
 
-			if (_activeTextinputController == null)
-				return;
-
-			FilledTextFieldColorThemer.ApplySemanticColorScheme(_colorScheme, (MTextInputControllerFilled)_activeTextinputController);
-
-			var textColor = MaterialColors.GetEntryTextColor(element.TextColor);
-			var placeHolderColors = MaterialColors.GetPlaceHolderColor(element.PlaceholderColor, element.TextColor);
-			var underlineColors = MaterialColors.GetUnderlineColor(element.TextColor);
-
-			TextColor = textColor;
-			_activeTextinputController.InlinePlaceholderColor = placeHolderColors.InlineColor;
-			_activeTextinputController.FloatingPlaceholderNormalColor = placeHolderColors.InlineColor;
-			_activeTextinputController.FloatingPlaceholderActiveColor = placeHolderColors.FloatingColor;
-
-			// BackgroundColor
-			_activeTextinputController.BorderFillColor = MaterialColors.CreateEntryFilledInputBackgroundColor(element.BackgroundColor, element.TextColor);
-
-			_activeTextinputController.ActiveColor = underlineColors.FocusedColor;
-			_activeTextinputController.NormalColor = underlineColors.UnFocusedColor;
-		}
-
-		internal void UpdatePlaceholder(IMaterialEntryRenderer element)
-		{
-			var placeholderText = element.Placeholder ?? String.Empty;
-			_activeTextinputController.PlaceholderText = placeholderText;
-			ApplyTheme(element);
-
-			var previous = _activeTextinputController.FloatingPlaceholderScale;
-			if (String.IsNullOrWhiteSpace(placeholderText))
-				_activeTextinputController.FloatingPlaceholderScale = 0;
-			else
-				_activeTextinputController.FloatingPlaceholderScale = (float)TextInputControllerBase.FloatingPlaceholderScaleDefault;
-
-			if (previous != _activeTextinputController.FloatingPlaceholderScale && element is IVisualElementRenderer controller)
-				controller.Element?.InvalidateMeasureInternal(InvalidationTrigger.VerticalOptionsChanged);
-		}
+		internal void UpdatePlaceholder(IMaterialEntryRenderer element) => MaterialTextManager.UpdatePlaceholder(this, element);
 
 
-		internal void UpdateTextColor(IMaterialEntryRenderer element)
-		{
-			var uIColor = MaterialColors.GetEntryTextColor(element.TextColor);
-			_colorScheme.OnSurfaceColor = uIColor;
-			_colorScheme.PrimaryColor = uIColor;
-		}
-
-		protected virtual IColorScheming CreateColorScheme()
-		{
-			var returnValue = MaterialColors.Light.CreateColorScheme();
-			return returnValue;
-		}
-
-		protected virtual TypographyScheme CreateTypographyScheme()
-		{
-			return new TypographyScheme();
-		}
+		internal void UpdateTextColor(IMaterialEntryRenderer element) => MaterialTextManager.UpdateTextColor(this, element);
 	}
 
 

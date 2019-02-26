@@ -247,7 +247,7 @@
             <Label Text="Time Picker" Margin="0,0,0,-10" />
             <TimePicker></TimePicker>
             <Label Text="Picker" Margin="0,0,0,-10" />
-            <Picker  Title="Select a monkey">
+            <Picker Title="Select a monkey">
                 <Picker.ItemsSource>
                     <x:Array Type="{x:Type x:String}">
                         <x:String>Baboon</x:String>
@@ -271,6 +271,11 @@
             <Label Text="Red background" Margin="0,0,0,-10" />
             <Stepper BackgroundColor="Red"></Stepper>
             
+            <Label Text="Editors" FontSize="Large"></Label>
+            <Label Text="Normal" Margin="0,0,0,-10" />
+            <Editor HeightRequest="200"></Editor>
+            <Label Text="Place Holder" Margin="0,0,0,-10" />
+            <Editor Placeholder="Place Holder" HeightRequest="200"></Editor>
         </StackLayout>
     </ScrollView>
 
