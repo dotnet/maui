@@ -1,5 +1,5 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <Target Name="ValidateTargetFrameworkVersionForMaterial" BeforeTargets="BeforeCompile">
+    <Target Name="ValidateTargetFrameworkVersionForMaterial" BeforeTargets="CoreCompile" Condition="'$(XFDisableTargetFrameworkValidation)' != 'True'">
         <PropertyGroup>
             <MinTargetFrameworkVersionForMaterial>9.0</MinTargetFrameworkVersionForMaterial>
             <TargetFrameworkVersionWithoutV>$(TargetFrameworkVersion.TrimStart('vV'))</TargetFrameworkVersionWithoutV>
