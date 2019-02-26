@@ -114,8 +114,14 @@ namespace Xamarin.Forms.Xaml
 				var xfExtendedTypeConverter = xfTypeConverter as IExtendedTypeConverter;
 				if (xfExtendedTypeConverter != null)
 					return value = xfExtendedTypeConverter.ConvertFromInvariantString(str, serviceProvider);
-				if (xfTypeConverter != null)
-					return value = xfTypeConverter.ConvertFromInvariantString(str);
+				if (xfTypeConverter != null) {
+					try {
+						return value = xfTypeConverter.ConvertFromInvariantString(str);
+					}
+					catch (Exception e) {
+						throw new XamlParseException("Type conversion failed", serviceProvider, e);
+					}
+				}
 				var converterType = converter?.GetType();
 				if (converterType != null)
 				{
