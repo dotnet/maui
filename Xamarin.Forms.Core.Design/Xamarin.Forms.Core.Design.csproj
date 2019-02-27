@@ -50,7 +50,6 @@
     <Compile Include="..\Xamarin.Forms.Core\Properties\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="VisualDesignTypeConverter.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(OS)' != 'Unix' ">
     <Compile Include="AttributeTableBuilder.cs" />
@@ -58,6 +57,7 @@
     <Compile Include="NonExclusiveEnumConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RegisterMetadata.cs" />
+    <Compile Include="VisualDesignTypeConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
