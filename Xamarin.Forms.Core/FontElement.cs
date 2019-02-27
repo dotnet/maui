@@ -60,9 +60,8 @@ namespace Xamarin.Forms
 
 			SetCancelEvents(bindable, true);
 
-			var values = bindable.GetValues(FontSizeProperty, FontAttributesProperty);
-			var fontSize = (double)values[0];
-			var fontAttributes = (FontAttributes)values[1];
+			var fontSize = (double)bindable.GetValue(FontSizeProperty);
+			var fontAttributes = (FontAttributes)bindable.GetValue(FontAttributesProperty);
 			var fontFamily = (string)newValue;
 
 			if (fontFamily != null)
@@ -81,10 +80,9 @@ namespace Xamarin.Forms
 
 			SetCancelEvents(bindable, true);
 
-			var values = bindable.GetValues(FontFamilyProperty, FontAttributesProperty);
 			var fontSize = (double)newValue;
-			var fontAttributes = (FontAttributes)values[1];
-			var fontFamily = (string)values[0];
+			var fontAttributes = (FontAttributes)bindable.GetValue(FontAttributesProperty);
+			var fontFamily = (string)bindable.GetValue(FontFamilyProperty);
 
 			if (fontFamily != null)
 				bindable.SetValue(FontProperty, Font.OfSize(fontFamily, fontSize).WithAttributes(fontAttributes));
@@ -107,10 +105,9 @@ namespace Xamarin.Forms
 
 			SetCancelEvents(bindable, true);
 
-			var values = bindable.GetValues(FontFamilyProperty, FontSizeProperty);
-			var fontSize = (double)values[1];
+			var fontSize = (double)bindable.GetValue(FontSizeProperty);
 			var fontAttributes = (FontAttributes)newValue;
-			var fontFamily = (string)values[0];
+			var fontFamily = (string)bindable.GetValue(FontFamilyProperty);
 
 			if (fontFamily != null)
 				bindable.SetValue(FontProperty, Font.OfSize(fontFamily, fontSize).WithAttributes(fontAttributes));

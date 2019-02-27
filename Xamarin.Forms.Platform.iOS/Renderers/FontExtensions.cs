@@ -145,8 +145,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		internal static UIFont ToNSFont(this Label label)
 #endif
 		{
-			var values = label.GetValues(Label.FontFamilyProperty, Label.FontSizeProperty, Label.FontAttributesProperty);
-			return ToUIFont((string)values[0], (float)(double)values[1], (FontAttributes)values[2]) ??
+			return ToUIFont(label.FontFamily, (float)label.FontSize, label.FontAttributes) ??
 					UIFont.SystemFontOfSize(UIFont.LabelFontSize);
 		}
 
