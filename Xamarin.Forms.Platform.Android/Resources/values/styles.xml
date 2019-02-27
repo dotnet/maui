@@ -19,7 +19,6 @@
     <item name="android:progressDrawable">@drawable/MaterialProgressBar</item>
   </style>
   <style name="XamarinFormsMaterialProgressBarCircular" parent="Widget.AppCompat.ProgressBar">
-    <item name="android:background">@drawable/MaterialActivityIndicatorBackground</item>
   </style>
   <!-- Material Buttons (All Styles) -->
   <style name="XamarinFormsMaterialButton" parent="Widget.MaterialComponents.Button">

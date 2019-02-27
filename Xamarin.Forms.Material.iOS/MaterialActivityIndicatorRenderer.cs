@@ -4,11 +4,11 @@ using CoreAnimation;
 using CoreGraphics;
 using MaterialComponents;
 using UIKit;
-using Xamarin.Forms;
+using Xamarin.Forms.Platform.iOS;
 using MActivityIndicator = MaterialComponents.ActivityIndicator;
 
 
-namespace Xamarin.Forms.Platform.iOS.Material
+namespace Xamarin.Forms.Material.iOS
 {
 	public class MaterialActivityIndicatorRenderer : ViewRenderer<ActivityIndicator, MActivityIndicator>
 	{
@@ -18,16 +18,9 @@ namespace Xamarin.Forms.Platform.iOS.Material
 		const float _defaultRadius = 22;
 		const float _defaultStrokeWidth = 4;
 		const float _defaultSize = 2 * _defaultRadius + _defaultStrokeWidth;
-
 		SemanticColorScheme _defaultColorScheme;
 		SemanticColorScheme _colorScheme;
-
 		CAShapeLayer _backgroundLayer;
-
-		public MaterialActivityIndicatorRenderer()
-		{
-			VisualElement.VerifyVisualFlagEnabled();
-		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<ActivityIndicator> e)
 		{
@@ -137,10 +130,7 @@ namespace Xamarin.Forms.Platform.iOS.Material
 			_backgroundLayer.StrokeColor = color.ToCGColor();
 		}
 
-		void UpdateColor()
-		{
-			_colorScheme.PrimaryColor = Element.Color.IsDefault ? _defaultColorScheme.PrimaryColor : Element.Color.ToUIColor();
-		}
+		void UpdateColor() => _colorScheme.PrimaryColor = Element.Color.IsDefault ? _defaultColorScheme.PrimaryColor : Element.Color.ToUIColor();
 
 		void UpdateIsRunning()
 		{

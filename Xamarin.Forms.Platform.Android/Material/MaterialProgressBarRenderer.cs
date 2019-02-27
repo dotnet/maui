@@ -6,43 +6,46 @@ using Android.Support.V4.View;
 using Android.Views;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android.FastRenderers;
-using Xamarin.Forms.Platform.Android.Material;
+using Xamarin.Forms.Material.Android;
 using AProgressBar = Android.Widget.ProgressBar;
 using AView = Android.Views.View;
+using Xamarin.Forms.Platform.Android;
 
 [assembly: ExportRenderer(typeof(ProgressBar), typeof(MaterialProgressBarRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
 
-namespace Xamarin.Forms.Platform.Android.Material
+namespace Xamarin.Forms.Material.Android
 {
 	public class MaterialProgressBarRenderer : AProgressBar,
 		IVisualElementRenderer, IViewRenderer, ITabStop
 	{
 		const int MaximumValue = 10000;
-
 		int? _defaultLabelFor;
-
 		bool _disposed;
-
 		ProgressBar _element;
-
 		VisualElementTracker _visualElementTracker;
 		VisualElementRenderer _visualElementRenderer;
 		MotionEventHelper _motionEventHelper;
-
-		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
-		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
-
+		
 		public MaterialProgressBarRenderer(Context context)
 			: base(new ContextThemeWrapper(context, Resource.Style.XamarinFormsMaterialProgressBarHorizontal), null, Resource.Style.XamarinFormsMaterialProgressBarHorizontal)
 		{
-			VisualElement.VerifyVisualFlagEnabled();
-
 			Indeterminate = false;
 			Max = MaximumValue;
 
 			_visualElementRenderer = new VisualElementRenderer(this);
 			_motionEventHelper = new MotionEventHelper();
 		}
+
+		public override bool OnTouchEvent(MotionEvent e)
+		{
+			if (_visualElementRenderer.OnTouchEvent(e) || base.OnTouchEvent(e))
+				return true;
+
+			return _motionEventHelper.HandleMotionEvent(Parent, e);
+		}
+
+		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
+		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
 
 		protected AProgressBar Control => this;
 
@@ -83,8 +86,8 @@ namespace Xamarin.Forms.Platform.Android.Material
 				{
 					Element.PropertyChanged -= OnElementPropertyChanged;
 
-					if (Platform.GetRenderer(Element) == this)
-						Element.ClearValue(Platform.RendererProperty);
+					if (Platform.Android.Platform.GetRenderer(Element) == this)
+						Element.ClearValue(Platform.Android.Platform.RendererProperty);
 				}
 			}
 
@@ -125,14 +128,6 @@ namespace Xamarin.Forms.Platform.Android.Material
 				UpdateColors();
 		}
 
-		public override bool OnTouchEvent(MotionEvent e)
-		{
-			if (_visualElementRenderer.OnTouchEvent(e) || base.OnTouchEvent(e))
-				return true;
-
-			return _motionEventHelper.HandleMotionEvent(Parent, e);
-		}
-
 		void UpdateColors()
 		{
 			if (Element == null || Control == null)
@@ -141,29 +136,23 @@ namespace Xamarin.Forms.Platform.Android.Material
 			this.ApplyProgressBarColors(Element.ProgressColor, Element.BackgroundColor);
 		}
 
-		void UpdateProgress()
-		{
-			Control.Progress = (int)(Element.Progress * MaximumValue);
-		}
+		void UpdateProgress() => Control.Progress = (int)(Element.Progress * MaximumValue);
 
 		// IVisualElementRenderer
-
 		VisualElement IVisualElementRenderer.Element => Element;
-
 		VisualElementTracker IVisualElementRenderer.Tracker => _visualElementTracker;
-
 		ViewGroup IVisualElementRenderer.ViewGroup => null;
-
 		AView IVisualElementRenderer.View => this;
+		void IVisualElementRenderer.SetElement(VisualElement element) =>
+			Element = (element as ProgressBar) ?? throw new ArgumentException("Element must be of type ProgressBar.");
+		void IVisualElementRenderer.UpdateLayout() =>
+			_visualElementTracker?.UpdateLayout();
 
 		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
 		{
 			Measure(widthConstraint, heightConstraint);
 			return new SizeRequest(new Size(Control.MeasuredWidth, Context.ToPixels(4)), new Size(Context.ToPixels(4), Context.ToPixels(4)));
 		}
-
-		void IVisualElementRenderer.SetElement(VisualElement element) =>
-			Element = (element as ProgressBar) ?? throw new ArgumentException("Element must be of type ProgressBar.");
 
 		void IVisualElementRenderer.SetLabelFor(int? id)
 		{
@@ -173,16 +162,11 @@ namespace Xamarin.Forms.Platform.Android.Material
 			ViewCompat.SetLabelFor(this, (int)(id ?? _defaultLabelFor));
 		}
 
-		void IVisualElementRenderer.UpdateLayout() =>
-			_visualElementTracker?.UpdateLayout();
-
 		// IViewRenderer
-
 		void IViewRenderer.MeasureExactly() =>
 			ViewRenderer.MeasureExactly(this, Element, Context);
 
 		// ITabStop
-
 		AView ITabStop.TabStop => this;
 	}
 }

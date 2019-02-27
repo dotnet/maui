@@ -46,7 +46,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public override void Setup()
 		{
 			base.Setup();
-			Device.SetFlags(new List<string> { ExperimentalFlags.VisualExperimental });
 			Device.PlatformServices = new MockPlatformServices();
 			Internals.Registrar.RegisterAll(new[] {
 				typeof (TestHandlerAttribute)

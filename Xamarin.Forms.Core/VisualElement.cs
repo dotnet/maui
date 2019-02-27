@@ -927,9 +927,6 @@ namespace Xamarin.Forms
 
 		static void OnVisualChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			if(newValue != Xamarin.Forms.VisualMarker.Default)
-				VerifyVisualFlagEnabled();
-
 			var self = bindable as IVisualController;
 			var newVisual = (IVisual)newValue;
 
@@ -1064,14 +1061,6 @@ namespace Xamarin.Forms
 				throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(bool)));
 
 			}
-		}
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void VerifyVisualFlagEnabled(
-			string constructorHint = null,
-			[CallerMemberName] string memberName = "")
-		{
-			ExperimentalFlags.VerifyFlagEnabled(nameof(Visual), ExperimentalFlags.VisualExperimental);
 		}
 	}
 }

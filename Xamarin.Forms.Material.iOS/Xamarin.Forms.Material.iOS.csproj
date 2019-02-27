@@ -60,6 +60,7 @@
       <Link>MaterialColors.cs</Link>
     </Compile>
     <Compile Include="IMaterialEntryRenderer.cs" />
+    <Compile Include="IMaterialTextField.cs" />
     <Compile Include="MaterialEditorRenderer.cs" />
     <Compile Include="MaterialPickerRenderer.cs" />
     <Compile Include="MaterialDatePickerRenderer.cs" />
@@ -67,6 +68,7 @@
     <Compile Include="MaterialTextManager.cs" />
     <Compile Include="MaterialTimePickerRenderer.cs" />
     <Compile Include="MaterialTextField.cs" />
+    <Compile Include="NoCaretMaterialTextField.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MaterialActivityIndicatorRenderer.cs" />
     <Compile Include="MaterialButtonRenderer.cs" />
@@ -76,6 +78,7 @@
     <Compile Include="MaterialSliderRenderer.cs" />
     <Compile Include="MaterialStepperRenderer.cs" />
     <Compile Include="FormsMaterial.cs" />
+    <Compile Include="ReadOnlyMaterialTextField.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj">

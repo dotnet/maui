@@ -1,15 +1,14 @@
 ﻿#if __ANDROID_28__
 using Android.Content;
-using Android.OS;
-using Android.Support.V4.View;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
 using Xamarin.Forms;
-using Xamarin.Forms.Platform.Android.Material;
+using Xamarin.Forms.Material.Android;
+using Xamarin.Forms.Platform.Android;
 
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Entry), typeof(MaterialEntryRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
-namespace Xamarin.Forms.Platform.Android.Material
+namespace Xamarin.Forms.Material.Android
 {
 	public sealed class MaterialEntryRenderer : EntryRendererBase<MaterialFormsTextInputLayout>
 	{
@@ -19,12 +18,7 @@ namespace Xamarin.Forms.Platform.Android.Material
 		public MaterialEntryRenderer(Context context) :
 			base(MaterialContextThemeWrapper.Create(context))
 		{
-			VisualElement.VerifyVisualFlagEnabled();
 		}
-
-		IElementController ElementController => Element as IElementController;
-
-		protected override EditText EditText => _textInputEditText;
 
 		protected override MaterialFormsTextInputLayout CreateNativeControl()
 		{
@@ -52,12 +46,8 @@ namespace Xamarin.Forms.Platform.Android.Material
 			_textInputLayout.BoxBackgroundColor = MaterialColors.CreateEntryFilledInputBackgroundColor(Element.BackgroundColor, Element.TextColor);
 		}
 
-		protected internal override void UpdatePlaceHolderText()
-		{
-			_textInputLayout.SetHint(Element.Placeholder, Element);
-		}
-
-		
+		protected internal override void UpdatePlaceHolderText() => _textInputLayout.SetHint(Element.Placeholder, Element);
+		protected override EditText EditText => _textInputEditText;
 		protected override void UpdatePlaceholderColor() => ApplyTheme();
 		void ApplyTheme() => _textInputLayout?.ApplyTheme(Element.TextColor, Element.PlaceholderColor);
 

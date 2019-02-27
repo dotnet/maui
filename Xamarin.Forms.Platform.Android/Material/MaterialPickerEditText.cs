@@ -3,34 +3,23 @@ using System;
 using Android.Content;
 using Android.Graphics;
 using Android.Runtime;
-using Android.Support.Design.Widget;
 using Android.Util;
 using Android.Views;
+using Xamarin.Forms.Platform.Android;
 
-namespace Xamarin.Forms.Platform.Android.Material
+namespace Xamarin.Forms.Material.Android
 {
 	public class MaterialPickerEditText : MaterialFormsEditTextBase
 	{
 		bool _isDisposed = false;
-		public MaterialPickerEditText(Context context) : base(context)
-		{
-			PickerManager.Init(this);
-		}
 
-		protected MaterialPickerEditText(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
-		{
-			PickerManager.Init(this);
-		}
+		public MaterialPickerEditText(Context context) : base(context) => PickerManager.Init(this);
 
-		public MaterialPickerEditText(Context context, IAttributeSet attrs) : base(context, attrs)
-		{
-			PickerManager.Init(this);
-		}
+		protected MaterialPickerEditText(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer) => PickerManager.Init(this);
 
-		public MaterialPickerEditText(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
-		{
-			PickerManager.Init(this);
-		}
+		public MaterialPickerEditText(Context context, IAttributeSet attrs) : base(context, attrs) => PickerManager.Init(this);
+
+		public MaterialPickerEditText(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr) => PickerManager.Init(this);
 
 		public override bool OnTouchEvent(MotionEvent e)
 		{
@@ -42,7 +31,6 @@ namespace Xamarin.Forms.Platform.Android.Material
 		{
 			base.OnFocusChanged(gainFocus, direction, previouslyFocusedRect);
 			PickerManager.OnFocusChanged(gainFocus, this, (IPopupTrigger)Parent.Parent);
-
 		}
 
 		protected override void Dispose(bool disposing)

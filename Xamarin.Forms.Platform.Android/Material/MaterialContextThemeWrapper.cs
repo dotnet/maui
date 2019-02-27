@@ -1,8 +1,9 @@
 ﻿#if __ANDROID_28__
 using Android.Content;
 using Android.Views;
+using Xamarin.Forms.Platform.Android;
 
-namespace Xamarin.Forms.Platform.Android.Material
+namespace Xamarin.Forms.Material.Android
 {
 	public class MaterialContextThemeWrapper : ContextThemeWrapper
 	{

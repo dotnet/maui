@@ -7,45 +7,48 @@ using Android.Views;
 using Android.Widget;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android.FastRenderers;
-using Xamarin.Forms.Platform.Android.Material;
+using Xamarin.Forms.Material.Android;
 using AView = Android.Views.View;
+using Xamarin.Forms.Platform.Android;
 
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Slider), typeof(MaterialSliderRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
 
-namespace Xamarin.Forms.Platform.Android.Material
+namespace Xamarin.Forms.Material.Android
 {
 	public class MaterialSliderRenderer : SeekBar,
 		SeekBar.IOnSeekBarChangeListener,
 		IVisualElementRenderer, IViewRenderer, ITabStop
 	{
 		const double MaximumValue = 10000.0;
-
 		int? _defaultLabelFor;
-
 		bool _disposed;
-
 		Slider _element;
-
 		VisualElementTracker _visualElementTracker;
 		VisualElementRenderer _visualElementRenderer;
 		MotionEventHelper _motionEventHelper;
-
 		double _max = 0.0;
 		double _min = 0.0;
-
-		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
-		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
 
 		public MaterialSliderRenderer(Context context)
 			: base(new ContextThemeWrapper(context, Resource.Style.XamarinFormsMaterialSlider), null, Resource.Style.XamarinFormsMaterialSlider)
 		{
-			VisualElement.VerifyVisualFlagEnabled();
-
 			SetOnSeekBarChangeListener(this);
 			Max = (int)MaximumValue;
 
 			_visualElementRenderer = new VisualElementRenderer(this);
 			_motionEventHelper = new MotionEventHelper();
+		}
+
+		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
+
+		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
+
+		public override bool OnTouchEvent(MotionEvent e)
+		{
+			if (_visualElementRenderer.OnTouchEvent(e) || base.OnTouchEvent(e))
+				return true;
+
+			return _motionEventHelper.HandleMotionEvent(Parent, e);
 		}
 
 		protected SeekBar Control => this;
@@ -69,12 +72,6 @@ namespace Xamarin.Forms.Platform.Android.Material
 			}
 		}
 
-		double Value
-		{
-			get { return _min + (_max - _min) * (Control.Progress / MaximumValue); }
-			set { Control.Progress = (int)((value - _min) / (_max - _min) * MaximumValue); }
-		}
-
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
@@ -88,13 +85,14 @@ namespace Xamarin.Forms.Platform.Android.Material
 
 				_visualElementRenderer?.Dispose();
 				_visualElementRenderer = null;
+				SetOnSeekBarChangeListener(null);
 
 				if (Element != null)
 				{
 					Element.PropertyChanged -= OnElementPropertyChanged;
 
-					if (Platform.GetRenderer(Element) == this)
-						Element.ClearValue(Platform.RendererProperty);
+					if (Platform.Android.Platform.GetRenderer(Element) == this)
+						Element.ClearValue(Platform.Android.Platform.RendererProperty);
 				}
 			}
 
@@ -136,14 +134,6 @@ namespace Xamarin.Forms.Platform.Android.Material
 				UpdateColors();
 		}
 
-		public override bool OnTouchEvent(MotionEvent e)
-		{
-			if (_visualElementRenderer.OnTouchEvent(e) || base.OnTouchEvent(e))
-				return true;
-
-			return _motionEventHelper.HandleMotionEvent(Parent, e);
-		}
-
 		void UpdateColors()
 		{
 			if (Element == null || Control == null)
@@ -157,7 +147,12 @@ namespace Xamarin.Forms.Platform.Android.Material
 
 			this.ApplySeekBarColors(progressColor, backgroundColor, thumbColor);
 		}
-
+		
+		double Value
+		{
+			get { return _min + (_max - _min) * (Control.Progress / MaximumValue); }
+			set { Control.Progress = (int)((value - _min) / (_max - _min) * MaximumValue); }
+		}
 		void UpdateValue()
 		{
 			_min = Element.Minimum;
@@ -166,41 +161,31 @@ namespace Xamarin.Forms.Platform.Android.Material
 		}
 
 		// SeekBar.IOnSeekBarChangeListener
-
 		void SeekBar.IOnSeekBarChangeListener.OnProgressChanged(SeekBar seekBar, int progress, bool fromUser)
 		{
 			if (fromUser)
 				((IElementController)Element).SetValueFromRenderer(Slider.ValueProperty, Value);
 		}
 
-		void SeekBar.IOnSeekBarChangeListener.OnStartTrackingTouch(SeekBar seekBar)
-		{
-			((ISliderController)Element)?.SendDragStarted();
-		}
+		void SeekBar.IOnSeekBarChangeListener.OnStartTrackingTouch(SeekBar seekBar) => ((ISliderController)Element)?.SendDragStarted();
 
-		void SeekBar.IOnSeekBarChangeListener.OnStopTrackingTouch(SeekBar seekBar)
-		{
-			((ISliderController)Element)?.SendDragCompleted();
-		}
+		void SeekBar.IOnSeekBarChangeListener.OnStopTrackingTouch(SeekBar seekBar) => ((ISliderController)Element)?.SendDragCompleted();
 
 		// IVisualElementRenderer
-
 		VisualElement IVisualElementRenderer.Element => Element;
-
 		VisualElementTracker IVisualElementRenderer.Tracker => _visualElementTracker;
-
 		ViewGroup IVisualElementRenderer.ViewGroup => null;
-
 		AView IVisualElementRenderer.View => this;
+		void IVisualElementRenderer.SetElement(VisualElement element) =>
+			Element = (element as Slider) ?? throw new ArgumentException($"Element must be of type {nameof(Slider)}.");
+		void IVisualElementRenderer.UpdateLayout() =>
+			_visualElementTracker?.UpdateLayout();
 
 		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
 		{
 			Measure(widthConstraint, heightConstraint);
 			return new SizeRequest(new Size(Control.MeasuredWidth, Control.MeasuredHeight), new Size());
 		}
-
-		void IVisualElementRenderer.SetElement(VisualElement element) =>
-			Element = (element as Slider) ?? throw new ArgumentException($"Element must be of type {nameof(Slider)}.");
 
 		void IVisualElementRenderer.SetLabelFor(int? id)
 		{
@@ -210,16 +195,12 @@ namespace Xamarin.Forms.Platform.Android.Material
 			ViewCompat.SetLabelFor(this, (int)(id ?? _defaultLabelFor));
 		}
 
-		void IVisualElementRenderer.UpdateLayout() =>
-			_visualElementTracker?.UpdateLayout();
 
 		// IViewRenderer
-
 		void IViewRenderer.MeasureExactly() =>
 			ViewRenderer.MeasureExactly(this, Element, Context);
 
 		// ITabStop
-
 		AView ITabStop.TabStop => this;
 	}
 }

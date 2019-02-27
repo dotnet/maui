@@ -417,7 +417,7 @@
     </AndroidResource>
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="Resources\drawable\MaterialActivityIndicatorBackground.xml">
+    <AndroidResource Include="Resources\drawable-v21\MaterialActivityIndicatorBackground.xml">
       <Generator>MSBuild:UpdateGeneratedFiles</Generator>
       <SubType>Designer</SubType>
     </AndroidResource>
@@ -432,7 +432,12 @@
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <AndroidResource Include="Resources\values-v21\styles.xml">
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
   <Target Name="BeforeBuild" Condition=" '$(CreateAllAndroidTargets)' == 'true' ">
     <!--  create 8.1 binaries-->
     <MSBuild Targets="Restore" Projects="@(ProjectToBuild)">

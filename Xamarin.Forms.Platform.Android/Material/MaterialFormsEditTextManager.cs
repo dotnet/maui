@@ -2,13 +2,12 @@
 using System;
 using Android.Content;
 using Android.Support.Design.Widget;
+using Xamarin.Forms.Platform.Android;
 
-
-namespace Xamarin.Forms.Platform.Android.Material
+namespace Xamarin.Forms.Material.Android
 {
 	internal static class MaterialFormsEditTextManager
 	{
-
 		// These paddings are a hack to center the hint
 		// once this issue is resolved we can get rid of these paddings
 		// https://github.com/material-components/material-components-android/issues/120
@@ -19,8 +18,6 @@ namespace Xamarin.Forms.Platform.Android.Material
 
 		public static void Init(TextInputEditText textInputEditText)
 		{
-			VisualElement.VerifyVisualFlagEnabled();
-
 			textInputEditText.TextChanged += OnTextChanged;
 			textInputEditText.FocusChange += OnFocusChanged;
 		}

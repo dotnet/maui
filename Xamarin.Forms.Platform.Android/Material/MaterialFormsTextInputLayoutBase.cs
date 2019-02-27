@@ -4,12 +4,10 @@ using Android.Content;
 using Android.Support.Design.Widget;
 using Android.Runtime;
 using Android.Util;
-using Android.Views;
-using Android.Graphics;
 using Android.Support.V4.View;
 using Android.Content.Res;
 
-namespace Xamarin.Forms.Platform.Android.Material
+namespace Xamarin.Forms.Material.Android
 {
 	public class MaterialFormsTextInputLayoutBase : TextInputLayout
 	{
@@ -25,27 +23,18 @@ namespace Xamarin.Forms.Platform.Android.Material
 
 		public MaterialFormsTextInputLayoutBase(Context context) : base(context)
 		{
-			Init();
 		}
 
 		public MaterialFormsTextInputLayoutBase(Context context, IAttributeSet attrs) : base(context, attrs)
 		{
-			Init();
 		}
 
 		public MaterialFormsTextInputLayoutBase(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 		{
-			Init();
 		}
 
 		protected MaterialFormsTextInputLayoutBase(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
-			Init();
-		}
-
-		void Init()
-		{
-			VisualElement.VerifyVisualFlagEnabled();	
 		}
 
 		void ResetTextColors(Color formsTextColor, Color formsPlaceHolderColor)
@@ -64,7 +53,6 @@ namespace Xamarin.Forms.Platform.Android.Material
 
 			_focusedFilledColorList = MaterialColors.CreateEntryFilledPlaceholderColors(placeHolderColors.FloatingColor, placeHolderColors.FloatingColor);
 			_unfocusedEmptyColorList = MaterialColors.CreateEntryFilledPlaceholderColors(placeHolderColors.InlineColor, placeHolderColors.FloatingColor);
-
 
 			var textColor = MaterialColors.GetEntryTextColor(formsTextColor).ToArgb();
 			EditText.SetTextColor(new ColorStateList(s_colorStates, new[] { textColor, textColor }));
@@ -109,7 +97,6 @@ namespace Xamarin.Forms.Platform.Android.Material
 		void OnFocusChange(object sender, FocusChangeEventArgs e) => 
 			Device.BeginInvokeOnMainThread(() => ApplyTheme());
 
-
 		internal void SetHint(string hint, VisualElement element)
 		{
 			if (HintEnabled != !String.IsNullOrWhiteSpace(hint))
@@ -124,7 +111,6 @@ namespace Xamarin.Forms.Platform.Android.Material
 				Hint = hint ?? String.Empty;
 			}
 		}
-
 
 		protected override void Dispose(bool disposing)
 		{

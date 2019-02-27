@@ -4,13 +4,14 @@ using Android.Content;
 using Android.Views;
 using Android.Widget;
 using Xamarin.Forms;
-using Xamarin.Forms.Platform.Android.Material;
+using Xamarin.Forms.Material.Android;
+using Xamarin.Forms.Platform.Android;
 using AButton = Android.Widget.Button;
 using MButton = Android.Support.Design.Button.MaterialButton;
 
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Stepper), typeof(MaterialStepperRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
 
-namespace Xamarin.Forms.Platform.Android.Material
+namespace Xamarin.Forms.Material.Android
 {
 	public class MaterialStepperRenderer : ViewRenderer<Stepper, LinearLayout>, IStepperRenderer
 	{
@@ -21,8 +22,6 @@ namespace Xamarin.Forms.Platform.Android.Material
 
 		public MaterialStepperRenderer(Context context) : base(context)
 		{
-			VisualElement.VerifyVisualFlagEnabled();
-
 			AutoPackage = false;
 		}
 

@@ -3,8 +3,9 @@ using System;
 using Android.Content;
 using Android.Runtime;
 using Android.Util;
+using Xamarin.Forms.Platform.Android;
 
-namespace Xamarin.Forms.Platform.Android.Material
+namespace Xamarin.Forms.Material.Android
 {
 	public class MaterialPickerTextInputLayout : MaterialFormsTextInputLayoutBase, IPopupTrigger
 	{

@@ -4,8 +4,9 @@ using Android.Content;
 using Android.Views;
 using Android.Runtime;
 using Android.Util;
+using Xamarin.Forms.Platform.Android;
 
-namespace Xamarin.Forms.Platform.Android.Material
+namespace Xamarin.Forms.Material.Android
 {
 	public class MaterialFormsEditText : MaterialFormsEditTextBase, IFormsEditText
 	{
@@ -47,8 +48,8 @@ namespace Xamarin.Forms.Platform.Android.Material
 			remove => _onKeyboardBackPressed -= value;
 		}
 
-		event EventHandler<SelectionChangedEventArgs> _selectionChanged;
-		event EventHandler<SelectionChangedEventArgs> IFormsEditText.SelectionChanged
+		event EventHandler<Platform.Android.SelectionChangedEventArgs> _selectionChanged;
+		event EventHandler<Platform.Android.SelectionChangedEventArgs> IFormsEditText.SelectionChanged
 		{
 			add => _selectionChanged += value;
 			remove => _selectionChanged -= value;
@@ -57,7 +58,7 @@ namespace Xamarin.Forms.Platform.Android.Material
 		protected override void OnSelectionChanged(int selStart, int selEnd)
 		{
 			base.OnSelectionChanged(selStart, selEnd);
-			_selectionChanged?.Invoke(this, new SelectionChangedEventArgs(selStart, selEnd));
+			_selectionChanged?.Invoke(this, new Platform.Android.SelectionChangedEventArgs(selStart, selEnd));
 		}
 	}
 }

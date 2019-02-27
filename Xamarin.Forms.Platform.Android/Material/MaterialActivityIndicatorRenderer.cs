@@ -7,36 +7,29 @@ using Android.Views;
 using Android.Widget;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android.FastRenderers;
-using Xamarin.Forms.Platform.Android.Material;
+using Xamarin.Forms.Material.Android;
 using AProgressBar = Android.Widget.ProgressBar;
 using AView = Android.Views.View;
+using Xamarin.Forms.Platform.Android;
 
 [assembly: ExportRenderer(typeof(ActivityIndicator), typeof(MaterialActivityIndicatorRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
 
-namespace Xamarin.Forms.Platform.Android.Material
+namespace Xamarin.Forms.Material.Android
 {
 	public class MaterialActivityIndicatorRenderer : FrameLayout,
 		IVisualElementRenderer, IViewRenderer, ITabStop
 	{
 		int? _defaultLabelFor;
-
 		bool _disposed;
-
 		ActivityIndicator _element;
 		CircularProgress _control;
-
 		VisualElementTracker _visualElementTracker;
 		VisualElementRenderer _visualElementRenderer;
 		MotionEventHelper _motionEventHelper;
 
-		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
-		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
-
 		public MaterialActivityIndicatorRenderer(Context context)
 			: base(context)
 		{
-			VisualElement.VerifyVisualFlagEnabled();
-
 			_control = new CircularProgress(new ContextThemeWrapper(context, Resource.Style.XamarinFormsMaterialProgressBarCircular), null, Resource.Style.XamarinFormsMaterialProgressBarCircular)
 			{
 				// limiting size to compare iOS realization
@@ -49,6 +42,18 @@ namespace Xamarin.Forms.Platform.Android.Material
 
 			_visualElementRenderer = new VisualElementRenderer(this);
 			_motionEventHelper = new MotionEventHelper();
+		}
+
+		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
+
+		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
+
+		public override bool OnTouchEvent(MotionEvent e)
+		{
+			if (_visualElementRenderer.OnTouchEvent(e) || base.OnTouchEvent(e))
+				return true;
+
+			return _motionEventHelper.HandleMotionEvent(Parent, e);
 		}
 
 		protected AProgressBar Control => _control;
@@ -90,8 +95,8 @@ namespace Xamarin.Forms.Platform.Android.Material
 				{
 					Element.PropertyChanged -= OnElementPropertyChanged;
 
-					if (Platform.GetRenderer(Element) == this)
-						Element.ClearValue(Platform.RendererProperty);
+					if (Platform.Android.Platform.GetRenderer(Element) == this)
+						Element.ClearValue(Platform.Android.Platform.RendererProperty);
 				}
 			}
 
@@ -136,14 +141,6 @@ namespace Xamarin.Forms.Platform.Android.Material
 				UpdateBackgroundColor();
 		}
 
-		public override bool OnTouchEvent(MotionEvent e)
-		{
-			if (_visualElementRenderer.OnTouchEvent(e) || base.OnTouchEvent(e))
-				return true;
-
-			return _motionEventHelper.HandleMotionEvent(Parent, e);
-		}
-
 		void UpdateIsRunning()
 		{
 			if (Element != null && _control != null)
@@ -163,13 +160,9 @@ namespace Xamarin.Forms.Platform.Android.Material
 		}
 
 		// IVisualElementRenderer
-
 		VisualElement IVisualElementRenderer.Element => Element;
-
 		VisualElementTracker IVisualElementRenderer.Tracker => _visualElementTracker;
-
 		ViewGroup IVisualElementRenderer.ViewGroup => null;
-
 		AView IVisualElementRenderer.View => this;
 
 		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
@@ -194,12 +187,10 @@ namespace Xamarin.Forms.Platform.Android.Material
 			_visualElementTracker?.UpdateLayout();
 
 		// IViewRenderer
-
 		void IViewRenderer.MeasureExactly() =>
 			ViewRenderer.MeasureExactly(_control, Element, Context);
 
 		// ITabStop
-
 		AView ITabStop.TabStop => _control;
 	}
 }

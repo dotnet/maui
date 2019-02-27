@@ -156,8 +156,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		}
 
 		abstract protected void UpdateTextColor();
-		abstract protected internal void UpdateTitleColor();
-		abstract protected internal void UpdatePlaceHolderText();
+		abstract protected void UpdateTitleColor();
+		abstract protected void UpdatePlaceHolderText();
 	}
 
 	public class PickerRenderer : PickerRendererBase<EditText>
@@ -181,7 +181,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		protected override EditText EditText => Control;
 
-		protected internal override void UpdateTitleColor()
+		protected override void UpdateTitleColor()
 		{
 			_hintColorSwitcher = _hintColorSwitcher ?? new TextColorSwitcher(EditText.HintTextColors, Element.UseLegacyColorManagement());
 			_hintColorSwitcher.UpdateTextColor(EditText, Element.TitleColor, EditText.SetHintTextColor);
@@ -192,6 +192,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			_textColorSwitcher = _textColorSwitcher ?? new TextColorSwitcher(EditText.TextColors, Element.UseLegacyColorManagement());
 			_textColorSwitcher.UpdateTextColor(EditText, Element.TextColor);
 		}
-		protected internal override void UpdatePlaceHolderText() => EditText.Hint = Element.Title;
+		protected override void UpdatePlaceHolderText() => EditText.Hint = Element.Title;
 	}
 }

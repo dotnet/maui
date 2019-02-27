@@ -9,8 +9,9 @@ using System.Collections.Generic;
 using ObjCRuntime;
 using Foundation;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.Platform.iOS;
 
-namespace Xamarin.Forms.Platform.iOS.Material
+namespace Xamarin.Forms.Material.iOS
 {
 	internal static class MaterialTextManager
 	{

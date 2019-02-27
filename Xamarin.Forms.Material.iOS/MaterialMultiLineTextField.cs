@@ -6,22 +6,27 @@ using MMultilineTextField = MaterialComponents.MultilineTextField;
 using MTextInputControllerBase = MaterialComponents.TextInputControllerBase;
 using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms.Platform.iOS.Material
+namespace Xamarin.Forms.Material.iOS
 {
 	public class MaterialMultilineTextField : MMultilineTextField, IMaterialTextField
 	{
+		CGSize _contentSize;
+
+		public MaterialMultilineTextField(IMaterialEntryRenderer element, IFontElement fontElement) => MaterialTextManager.Init(element, this, fontElement);
+
 		public SemanticColorScheme ColorScheme { get; set; }
 		public TypographyScheme TypographyScheme { get; set; }
 		public MTextInputControllerBase ActiveTextInputController { get; set; }
 		public ITextInput TextInput => this;
-		internal bool AutoSizeWithChanges { get; set; } = false;
-		CGSize _contentSize;
 
-
-		public MaterialMultilineTextField(IMaterialEntryRenderer element, IFontElement fontElement)
+		public override CGRect Frame
 		{
-			VisualElement.VerifyVisualFlagEnabled();
-			MaterialTextManager.Init(element, this, fontElement);
+			get => base.Frame;
+			set
+			{
+				base.Frame = value;
+				UpdateIfTextViewShouldStopExpanding();
+			}
 		}
 
 		public override CGSize SizeThatFits(CGSize size)
@@ -75,16 +80,6 @@ namespace Xamarin.Forms.Platform.iOS.Material
 			}
 		}
 
-		public override CGRect Frame
-		{
-			get => base.Frame;
-			set
-			{
-				base.Frame = value;
-				UpdateIfTextViewShouldStopExpanding();
-			}
-		}
-
 		int NumberOfLines
 		{
 			get
@@ -96,14 +91,10 @@ namespace Xamarin.Forms.Platform.iOS.Material
 			}
 		}
 
+		internal bool AutoSizeWithChanges { get; set; } = false;
 		internal void ApplyTypographyScheme(IFontElement fontElement) => MaterialTextManager.ApplyTypographyScheme(this, fontElement);
-
 		internal void ApplyTheme(IMaterialEntryRenderer element) => MaterialTextManager.ApplyTheme(this, element);
-
 		internal void UpdatePlaceholder(IMaterialEntryRenderer element) => MaterialTextManager.UpdatePlaceholder(this, element);
-
 		internal void UpdateTextColor(IMaterialEntryRenderer element) => MaterialTextManager.UpdateTextColor(this, element);
-
-
 	}
 }

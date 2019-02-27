@@ -1,17 +1,16 @@
 #if __ANDROID_28__
-using System.ComponentModel;
 using Android.Content;
-using Android.Support.V4.View;
 using Android.Views;
 using Android.Widget;
 using Xamarin.Forms;
-using Xamarin.Forms.Platform.Android.Material;
+using Xamarin.Forms.Material.Android;
+using Xamarin.Forms.Platform.Android;
 
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Picker), typeof(MaterialPickerRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
 
-namespace Xamarin.Forms.Platform.Android.Material
+namespace Xamarin.Forms.Material.Android
 {
-	public class MaterialPickerRenderer : AppCompat.PickerRendererBase<MaterialPickerTextInputLayout>
+	public class MaterialPickerRenderer : Platform.Android.AppCompat.PickerRendererBase<MaterialPickerTextInputLayout>
 	{
 		MaterialPickerTextInputLayout _textInputLayout;
 		MaterialPickerEditText _textInputEditText;
@@ -19,7 +18,6 @@ namespace Xamarin.Forms.Platform.Android.Material
 		public MaterialPickerRenderer(Context context) : base(MaterialContextThemeWrapper.Create(context))
 		{
 		}
-
 
 		protected override EditText EditText => _textInputEditText;
 
@@ -41,15 +39,10 @@ namespace Xamarin.Forms.Platform.Android.Material
 			_textInputLayout.BoxBackgroundColor = MaterialColors.CreateEntryFilledInputBackgroundColor(Element.BackgroundColor, Element.TextColor);
 		}
 
-		protected internal override void UpdatePlaceHolderText()
-		{
-			_textInputLayout.SetHint(string.Empty, Element);
-		}
-
-		protected internal override void UpdateTitleColor() => ApplyTheme();
+		protected override void UpdatePlaceHolderText() => _textInputLayout.SetHint(string.Empty, Element);
+		protected override void UpdateTitleColor() => ApplyTheme();
 		protected override void UpdateTextColor() => ApplyTheme();
-
-		void ApplyTheme() => _textInputLayout?.ApplyTheme(Element.TextColor, Color.Default);
+		protected virtual void ApplyTheme() => _textInputLayout?.ApplyTheme(Element.TextColor, Color.Default);
 	}
 }
 #endif

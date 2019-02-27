@@ -1,33 +1,24 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using CoreGraphics;
-using Foundation;
 using MaterialComponents;
 using UIKit;
-using Xamarin.Forms;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using Specifics = Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using Xamarin.Forms.Platform.iOS;
 using MButton = MaterialComponents.Button;
 
-namespace Xamarin.Forms.Platform.iOS.Material
+namespace Xamarin.Forms.Material.iOS
 {
 	public class MaterialButtonRenderer : ViewRenderer<Button, MButton>, IImageVisualElementRenderer, IButtonLayoutRenderer
 	{
 		bool _isDisposed;
-
 		UIColor _defaultBorderColor;
 		nfloat _defaultBorderWidth = -1;
-
 		ButtonScheme _defaultButtonScheme;
 		ButtonScheme _buttonScheme;
-
 		ButtonLayoutManager _buttonLayoutManager;
 
 		public MaterialButtonRenderer()
 		{
-			VisualElement.VerifyVisualFlagEnabled();
-
 			_buttonLayoutManager = new ButtonLayoutManager(this,
 				preserveInitialPadding: true,
 				spacingAdjustsPadding: false,
@@ -84,7 +75,6 @@ namespace Xamarin.Forms.Platform.iOS.Material
 				UpdateBorder();
 				UpdateTextColor();
 				_buttonLayoutManager?.Update();
-
 				ApplyTheme();
 			}
 		}
@@ -99,15 +89,8 @@ namespace Xamarin.Forms.Platform.iOS.Material
 			};
 		}
 
-		protected virtual void ApplyTheme()
-		{
-			ContainedButtonThemer.ApplyScheme(_buttonScheme, Control);
-		}
-
-		protected override MButton CreateNativeControl()
-		{
-			return new MButton();
-		}
+		protected virtual void ApplyTheme() => ContainedButtonThemer.ApplyScheme(_buttonScheme, Control);
+		protected override MButton CreateNativeControl() => new MButton();
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
@@ -159,10 +142,7 @@ namespace Xamarin.Forms.Platform.iOS.Material
 			Element?.SendClicked();
 		}
 
-		void OnButtonTouchDown(object sender, EventArgs eventArgs)
-		{
-			Element?.SendPressed();
-		}
+		void OnButtonTouchDown(object sender, EventArgs eventArgs) => Element?.SendPressed();
 
 		protected override void SetBackgroundColor(Color color)
 		{
@@ -187,9 +167,6 @@ namespace Xamarin.Forms.Platform.iOS.Material
 		{
 			// NOTE: borders are not a "supported" style of the contained
 			// button, thus we don't use the themer here.
-
-			// BorderColor
-
 			Color borderColor = Element.BorderColor;
 
 			if (_defaultBorderColor == null)
@@ -199,8 +176,6 @@ namespace Xamarin.Forms.Platform.iOS.Material
 				Control.SetBorderColor(_defaultBorderColor, UIControlState.Normal);
 			else
 				Control.SetBorderColor(borderColor.ToUIColor(), UIControlState.Normal);
-
-			// BorderWidth
 
 			double borderWidth = Element.BorderWidth;
 
@@ -263,19 +238,13 @@ namespace Xamarin.Forms.Platform.iOS.Material
 		}
 
 		// IImageVisualElementRenderer
-
 		bool IImageVisualElementRenderer.IsDisposed => _isDisposed;
-
 		void IImageVisualElementRenderer.SetImage(UIImage image) => _buttonLayoutManager.SetImage(image);
-
 		UIImageView IImageVisualElementRenderer.GetImage() => Control?.ImageView;
 
 		// IButtonLayoutRenderer
-
 		UIButton IButtonLayoutRenderer.Control => Control;
-
 		IImageVisualElementRenderer IButtonLayoutRenderer.ImageVisualElementRenderer => this;
-
 		nfloat IButtonLayoutRenderer.MinimumHeight => _buttonScheme?.MinimumHeight ?? -1;
 	}
 }

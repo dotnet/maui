@@ -54,11 +54,6 @@ namespace Xamarin.Forms.Platform.Android
 			base.Dispose(disposing);
 		}
 
-		public override bool DispatchTouchEvent(MotionEvent e)
-		{
-			return base.DispatchTouchEvent(e);
-		}
-
 		protected override void OnElementChanged(ElementChangedEventArgs<DatePicker> e)
 		{
 			base.OnElementChanged(e);
