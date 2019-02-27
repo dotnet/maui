@@ -51,6 +51,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public virtual void SetBackgroundColor(UITableViewCell tableViewCell, Cell cell, UIColor color)
 		{
+			tableViewCell.TextLabel.BackgroundColor = color;
+			tableViewCell.ContentView.BackgroundColor = color;
 			tableViewCell.BackgroundColor = color;
 		}
 
