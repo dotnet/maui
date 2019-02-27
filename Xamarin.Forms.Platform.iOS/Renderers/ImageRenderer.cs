@@ -202,9 +202,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				var iconcolor = fontsource.Color != Color.Default ? fontsource.Color : Color.White;
 				var imagesize = new SizeF((float)fontsource.Size, (float)fontsource.Size);
-				var hasFontFamily = fontsource.FontFamily != null && UIFont.FamilyNames.Contains(fontsource.FontFamily);
-				var font = hasFontFamily ?
-					UIFont.FromName(fontsource.FontFamily, (float)fontsource.Size) :
+				var font = UIFont.FromName(fontsource.FontFamily ?? string.Empty, (float)fontsource.Size) ??
 					UIFont.SystemFontOfSize((float)fontsource.Size);
 
 				UIGraphics.BeginImageContextWithOptions(imagesize, false, 0f);
