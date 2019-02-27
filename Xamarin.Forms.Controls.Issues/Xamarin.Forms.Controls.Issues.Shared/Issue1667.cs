@@ -109,7 +109,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.Screenshot("Text selection from char 2 length 3.");
 
 			RunningApp.Tap("CursorTextEntry");
-			Assert.AreEqual("0", RunningApp.WaitForElement("SelectionLength")[0].Text);
+			Assert.AreEqual("0", RunningApp.WaitForElement("SelectionLength")[0].ReadText());
 		}
 
 #if __IOS__

@@ -32,6 +32,7 @@ namespace Xamarin.Forms.Controls.Issues
 			ScrollView scroll = null;
 			scroll = new ScrollView
 			{
+				AutomationId = "scrollView",
 				Content = new StackLayout
 				{
 					Children =
@@ -84,7 +85,13 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement(_failedText);
 			RunningApp.Tap(_button1);
 			RunningApp.Tap(_button2);
+#if __WINDOWS__
+			var label = RunningApp.WaitForElement(_failedText);
+			Assert.AreEqual(0, label[0].Rect.Height);
+			Assert.AreEqual(0, label[0].Rect.Width);
+#else
 			RunningApp.WaitForNoElement(_failedText);
+#endif
 		}
 #endif
 	}

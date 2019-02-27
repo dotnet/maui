@@ -294,7 +294,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void NoCrashFromDisposedBitmapWhenSwitchingPages()
 		{
-			RunningApp.WaitForElement("Success");
+			RunningApp.WaitForElement("Success", timeout: TimeSpan.FromSeconds(20));
 		}
 #endif
 	}

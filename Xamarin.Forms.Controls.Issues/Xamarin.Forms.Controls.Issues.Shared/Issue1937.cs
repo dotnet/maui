@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
+using System.Threading.Tasks;
 
 #if UITEST
 using Xamarin.UITest;
@@ -95,14 +96,14 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.Tap(q => q.Marked("FAST_TIMER"));
 			RunningApp.WaitForElement(q => q.Marked("COMPLETE"), timeout:TimeSpan.FromSeconds(2));
 			var result = RunningApp.WaitForElement(q => q.Marked("RESULT"))[0];
-			var timerTicks = int.Parse(result.Text);
+			var timerTicks = int.Parse(result.ReadText());
 			//If fps > 50 then result must be 50. For small fps we use comparing with 35.
 			Assert.IsTrue(timerTicks > 35, $"Expected timer ticks are greater than 35. Actual: {timerTicks}");
 
 			RunningApp.Tap(q => q.Marked("SLOW_TIMER"));
 			RunningApp.WaitForElement(q => q.Marked("COMPLETE"), timeout:TimeSpan.FromSeconds(2));
 			result = RunningApp.WaitForElement(q => q.Marked("RESULT"))[0];
-			timerTicks = int.Parse(result.Text);
+			timerTicks = int.Parse(result.ReadText());
 			Assert.IsTrue(timerTicks < 11, $"Expected timer ticks are less than 11. Actual: {timerTicks}");
 		}
 #endif

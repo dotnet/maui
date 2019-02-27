@@ -89,12 +89,12 @@ namespace Xamarin.Forms.Controls.Issues
 			var element = RunningApp.WaitForElement(_paddingLabel).First();
 
 			bool usesSafeAreaInsets = false;
-			if (element.Text != "25, 25, 25, 25")
+			if (element.ReadText() != "25, 25, 25, 25")
 				usesSafeAreaInsets = true;
 
-			Assert.AreNotEqual(element.Text, "0, 0, 0, 0");
+			Assert.AreNotEqual(element.ReadText(), "0, 0, 0, 0");
 			if (!usesSafeAreaInsets)
-				Assert.AreEqual(element.Text, "25, 25, 25, 25");
+				Assert.AreEqual(element.ReadText(), "25, 25, 25, 25");
 
 			// disable Safe Area Insets
 			RunningApp.Tap(_safeAreaAutomationId);
@@ -102,18 +102,18 @@ namespace Xamarin.Forms.Controls.Issues
 			element = RunningApp.WaitForElement(_paddingLabel).First();
 
 			if (usesSafeAreaInsets)
-				Assert.AreEqual(element.Text, "0, 0, 0, 0");
+				Assert.AreEqual(element.ReadText(), "0, 0, 0, 0");
 			else
-				Assert.AreEqual(element.Text, "25, 25, 25, 25");
+				Assert.AreEqual(element.ReadText(), "25, 25, 25, 25");
 
 			// enable Safe Area insets
 			RunningApp.Tap(_safeAreaAutomationId);
 			RunningApp.WaitForElement($"{_safeAreaText}{true}");
 			element = RunningApp.WaitForElement(_paddingLabel).First();
-			Assert.AreNotEqual(element.Text, "0, 0, 0, 0");
+			Assert.AreNotEqual(element.ReadText(), "0, 0, 0, 0");
 
 			if (!usesSafeAreaInsets)
-				Assert.AreEqual(element.Text, "25, 25, 25, 25");
+				Assert.AreEqual(element.ReadText(), "25, 25, 25, 25");
 
 
 			// Set Padding and then disable safe area insets
@@ -121,7 +121,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.Tap(_safeAreaAutomationId);
 			RunningApp.WaitForElement($"{_safeAreaText}{false}");
 			element = RunningApp.WaitForElement(_paddingLabel).First();
-			Assert.AreEqual(element.Text, "25, 25, 25, 25");
+			Assert.AreEqual(element.ReadText(), "25, 25, 25, 25");
 
 		}
 #endif
