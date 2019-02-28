@@ -15,21 +15,10 @@ resources:
 
 jobs:
 
-  - job: build
-    displayName: Build
-    strategy:
-      matrix:
-        Windows:
-          vmImage: vs2017-win2016
-          SolutionName: Xamarin.Essentials.sln
-        WindowsLibrary:
-          vmImage: vs2017-win2016
-          SolutionName: Xamarin.Essentials/Xamarin.Essentials.csproj
-        MacLibrary:
-          vmImage: macos-10.13
-          SolutionName: Xamarin.Essentials/Xamarin.Essentials.csproj
+  - job: build_windows
+    displayName: Build Windows Library
     pool:
-      vmImage: $(vmImage)
+      vmImage: vs2017-win2016
     steps:
       # if this is a tagged build, then update the version number
       - powershell: |
@@ -39,17 +28,11 @@ jobs:
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$tagVersion")
         displayName: Set NuGet Version to Tag Number
         condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
-      # make sure to select the correct Xamarin and mono for macOS
-      - ${{ if eq(variables['vmImage'], 'macos-10.13') }}:
-        - bash: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh $(MONO_VERSION)
-          displayName: Switch to the latest Xamarin SDK
-        - bash: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XCODE_VERSION).app;sudo xcode-select --switch /Applications/Xcode_$(XCODE_VERSION).app/Contents/Developer
-          displayName: Switch to the latest Xcode
       # restore, build and pack the packages
       - task: MSBuild@1
         displayName: Build Solution
         inputs:
-          solution: $(SolutionName)
+          solution: Xamarin.Essentials/Xamarin.Essentials.csproj
           configuration: Release
           msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
       - task: MSBuild@1
@@ -58,13 +41,67 @@ jobs:
           solution: Xamarin.Essentials/Xamarin.Essentials.csproj
           configuration: Release
           msbuildArguments: '/t:Pack /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
-      # only publish the packages on Windows when building the library
-      - ${{ if eq(variables['Agent.JobName'], 'WindowsLibrary') }}:
-        - task: PublishBuildArtifacts@1
-          displayName: 'Publish Unsigned NuGets'
-          inputs:
-            artifactName: nuget
-            pathToPublish: '$(Build.ArtifactStagingDirectory)/nuget'
+      # publish the packages
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Unsigned NuGets'
+        inputs:
+          artifactName: nuget
+          pathToPublish: '$(Build.ArtifactStagingDirectory)/nuget'
+      # make sure we are following the rules
+      - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+        displayName: Component Detection
+        inputs:
+          scanType: LogOnly
+
+  - job: build_macos
+    displayName: Build macOS Library
+    pool:
+      vmImage: macos-10.13
+    steps:
+      # if this is a tagged build, then update the version number
+      - powershell: |
+          $buildSourceBranch = "$(Build.SourceBranch)"
+          $tagVersion = $buildSourceBranch.Substring($buildSourceBranch.LastIndexOf("/") + 1)
+          Write-Host("Branch = $buildSourceBranch, Version = $tagVersion");
+          Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$tagVersion")
+        displayName: Set NuGet Version to Tag Number
+        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+      # make sure to select the correct Xamarin and mono
+      - bash: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh $(MONO_VERSION)
+        displayName: Switch to the latest Xamarin SDK
+      - bash: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XCODE_VERSION).app;sudo xcode-select --switch /Applications/Xcode_$(XCODE_VERSION).app/Contents/Developer
+        displayName: Switch to the latest Xcode
+      # restore, build and pack the packages
+      - task: MSBuild@1
+        displayName: Build Solution
+        inputs:
+          solution: Xamarin.Essentials/Xamarin.Essentials.csproj
+          configuration: Release
+          msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
+      - task: MSBuild@1
+        displayName: Pack NuGets
+        inputs:
+          solution: Xamarin.Essentials/Xamarin.Essentials.csproj
+          configuration: Release
+          msbuildArguments: '/t:Pack /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
+      # make sure we are following the rules
+      - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+        displayName: Component Detection
+        inputs:
+          scanType: LogOnly
+
+  - job: build_samples
+    displayName: Build Samples
+    pool:
+      vmImage: vs2017-win2016
+    steps:
+      # restore, build and pack the packages
+      - task: MSBuild@1
+        displayName: Build Solution
+        inputs:
+          solution: Xamarin.Essentials.sln
+          configuration: Release
+          msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
       # make sure we are following the rules
       - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
         displayName: Component Detection
@@ -75,7 +112,7 @@ jobs:
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - job: signing
       displayName: Signing NuGets
-      dependsOn: build
+      dependsOn: build_windows
       pool:
         name: VSEng-XamarinCustom
         demands:
