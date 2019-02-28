@@ -1107,9 +1107,4 @@
       <Generator>MSBuild:Compile</Generator>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <Compile Update="H:\github\Xamarin.Forms\Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\VisualGallery.xaml.cs">
-      <DependentUpon>VisualControlsPage.xaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
 </Project>
