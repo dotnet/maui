@@ -1,4 +1,5 @@
 using Android.Content;
+using Android.Support.V4.Widget;
 using Android.Views;
 using Android.Widget;
 
@@ -52,7 +53,7 @@ namespace Xamarin.Forms.Platform.Android
 				_renderer.LastX = ev.RawX;
 				if (ev.Action == MotionEventActions.Move)
 				{
-					var parent = (global::Android.Widget.ScrollView)Parent;
+					var parent = (NestedScrollView)Parent;
 					parent.ScrollBy(0, (int)dY);
 					// Fall through to base.OnTouchEvent, it'll take care of the X scrolling 					
 				}

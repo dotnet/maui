@@ -119,7 +119,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void LayoutSubviews()
 		{
-			_shellScrollTracker.OnLayoutSubviews();
+			_shellScrollTracker?.OnLayoutSubviews();
 
 			base.LayoutSubviews();
 
