@@ -9,6 +9,7 @@
     <RootNamespace>Xamarin.Forms.Material.iOS</RootNamespace>
     <AssemblyName>Xamarin.Forms.Material</AssemblyName>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
+    <PackageId>Xamarin.Forms.Material.iOS</PackageId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -56,7 +57,7 @@
     <PackageReference Include="Xamarin.iOS.MaterialComponents" Version="72.2.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Xamarin.Forms.Platform.Android\Material\MaterialColors.cs">
+    <Compile Include="..\Xamarin.Forms.Material.Android\MaterialColors.cs">
       <Link>MaterialColors.cs</Link>
     </Compile>
     <Compile Include="IMaterialEntryRenderer.cs" />
