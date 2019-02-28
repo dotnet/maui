@@ -42,15 +42,16 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 #if TEST_EXPERIMENTAL_RENDERERS
 			// CollectionView lets us test CollectionView stuff until it's officially released
-			Forms.SetFlags("FastRenderers_Experimental"/*, "CollectionView_Experimental", "Visual_Experimental", "Shell_Experimental"*/); 
+			Forms.SetFlags("FastRenderers_Experimental"/*, "CollectionView_Experimental", "Shell_Experimental"*/); 
 #else
 			// Fake_Flag is here so we can test for flag initialization issues
 			// CollectionView lets us test CollectionView stuff until it's officially released
-			Forms.SetFlags("Fake_Flag"/*, "CollectionView_Experimental", "Visual_Experimental", "Shell_Experimental" */); 
+			Forms.SetFlags("Fake_Flag"/*, "CollectionView_Experimental", "Shell_Experimental" */); 
 #endif
 			Forms.Init(this, bundle);
 
 			FormsMaps.Init(this, bundle);
+			FormsMaterial.Init(this, bundle);
 			AndroidAppLinks.Init(this);
 			Forms.ViewInitialized += (sender, e) => {
 				//				if (!string.IsNullOrWhiteSpace(e.View.StyleId)) {

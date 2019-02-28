@@ -29,6 +29,7 @@ namespace Xamarin.Forms.Core.UITests
 			{
 				AppiumOptions options = new AppiumOptions();
 				options.AddAdditionalCapability("app", "0d4424f6-1e29-4476-ac00-ba22c3789cb6_ph1m9x8skttmg!App");
+				options.AddAdditionalCapability("appArguments", "RunningAsUITests");
 				Session = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), options);
 				Assert.IsNotNull(Session);
 				Session.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);

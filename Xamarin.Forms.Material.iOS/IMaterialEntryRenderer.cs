@@ -6,7 +6,7 @@ using System.Text;
 using Foundation;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS.Material
+namespace Xamarin.Forms.Material.iOS
 {
 	public interface IMaterialEntryRenderer
 	{

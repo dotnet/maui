@@ -36,13 +36,15 @@ namespace Xamarin.Forms.Xaml
 		public bool StopOnResourceDictionary { get; }
 		public bool VisitNodeOnDataTemplate => true;
 		public bool SkipChildren(INode node, INode parentNode) => false;
-		public bool IsResourceDictionary(ElementNode node) => typeof(ResourceDictionary).IsAssignableFrom(Context.Types[node]);
+		public bool IsResourceDictionary(ElementNode node) => Context.Types.TryGetValue(node, out var type) && typeof(ResourceDictionary).IsAssignableFrom(type);
 
 		public void Visit(ValueNode node, INode parentNode)
 		{
 			var parentElement = parentNode as IElementNode;
 			var value = Values [node];
-			var source = Values [parentNode];
+			if (!Values.TryGetValue(parentNode, out var source) && Context.ExceptionHandler != null)
+				return;
+
 			XmlName propertyName;
 
 			if (TryGetPropertyName(node, parentNode, out propertyName)) {
@@ -95,7 +97,8 @@ namespace Xamarin.Forms.Xaml
 				parentElement = parentNode as IElementNode;
 			}
 
-			var value = Values[node];
+			if (!Values.TryGetValue(node, out var value) && Context.ExceptionHandler != null)
+				return;
 
 			if (propertyName != XmlName.Empty || TryGetPropertyName(node, parentNode, out propertyName)) {
 				if (Skips.Contains(propertyName))
@@ -103,12 +106,14 @@ namespace Xamarin.Forms.Xaml
 				if (parentElement.SkipProperties.Contains(propertyName))
 					return;
 
-				var source = Values[parentNode];
+				if (!Values.TryGetValue(parentNode, out var source) && Context.ExceptionHandler != null)
+					return;
 				ProvideValue(ref value, node, source, propertyName);
 				SetPropertyValue(source, propertyName, value, Context.RootElement, node, Context, node);
 			}
 			else if (IsCollectionItem(node, parentNode) && parentNode is IElementNode) {
-				var source = Values[parentNode];
+				if (!Values.TryGetValue(parentNode, out var source) && Context.ExceptionHandler != null)
+					return;
 				ProvideValue(ref value, node, source, XmlName.Empty);
 				string contentProperty;
 				Exception xpe = null;
@@ -143,7 +148,8 @@ namespace Xamarin.Forms.Xaml
 					throw xpe;
 			}
 			else if (IsCollectionItem(node, parentNode) && parentNode is ListNode) {
-				var source = Values[parentNode.Parent];
+				if (!Values.TryGetValue(parentNode.Parent, out var source) && Context.ExceptionHandler != null)
+					return;
 				ProvideValue(ref value, node, source, XmlName.Empty);
 				var parentList = (ListNode)parentNode;
 				if (Skips.Contains(parentList.XmlName))

@@ -232,7 +232,11 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				RunningApp.Tap($"TestSpan{i}");
 				RunningApp.TapCoordinates(target.X + 5, target.Y + 5);
+#if __WINDOWS__
+				RunningApp.TapCoordinates(target.X + target.Width - 10, target.Y + 2);
+#else
 				RunningApp.TapCoordinates(target.X + target.CenterX, target.Y + 2);
+#endif
 
 
 				RunningApp.WaitForElement($"{kGesture1}{i}");
@@ -242,7 +246,13 @@ namespace Xamarin.Forms.Controls.Issues
 
 			RunningApp.Tap($"TestSpan5");
 			RunningApp.TapCoordinates(target.X + 5, target.Y + 5);
+
+#if __WINDOWS__
+			RunningApp.TapCoordinates(target.X + target.Width - 10, target.Y + 2);
+#else
 			RunningApp.TapCoordinates(target.X + target.CenterX, target.Y + 2);
+#endif
+
 
 			RunningApp.WaitForElement($"{kGesture1}4");
 			RunningApp.WaitForElement($"{kGesture2}4");

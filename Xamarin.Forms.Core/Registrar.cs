@@ -153,9 +153,6 @@ namespace Xamarin.Forms.Internals
 
 		bool LookupHandlerType(Type viewType, Type visualType, out Type handlerType)
 		{
-			if (_defaultVisualType != visualType)
-				VisualElement.VerifyVisualFlagEnabled();
-
 			visualType = visualType ?? _defaultVisualType;
 			while (viewType != null && viewType != typeof(Element))
 			{

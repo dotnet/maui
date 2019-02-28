@@ -27,11 +27,11 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
     /// </summary>
     sealed partial class App
     {
-        /// <summary>
-        /// Initializes the singleton application object.  This is the first line of authored code
-        /// executed, and as such is the logical equivalent of main() or WinMain().
-        /// </summary>
-        public App()
+		/// <summary>
+		/// Initializes the singleton application object.  This is the first line of authored code
+		/// executed, and as such is the logical equivalent of main() or WinMain().
+		/// </summary>
+		public App()
         {
             InitializeComponent();
             Suspending += OnSuspending;
@@ -44,9 +44,14 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
         /// <param name="e">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
-
+			/* uncomment if you want to run tests without preloading
+			 * issues list or change other behavior based on if tests
+			 * are running in UI Harness
+			 * if (!String.IsNullOrWhiteSpace(e.Arguments) &&
+				e.Arguments.Contains("RunningAsUITests"))
+				Controls.App.PreloadTestCasesIssuesList = false;*/
 #if DEBUG
-            if (System.Diagnostics.Debugger.IsAttached)
+			if (System.Diagnostics.Debugger.IsAttached)
             {
              //   DebugSettings.EnableFrameRateCounter = true;
             }

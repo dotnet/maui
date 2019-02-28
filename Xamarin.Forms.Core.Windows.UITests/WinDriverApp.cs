@@ -631,6 +631,15 @@ namespace Xamarin.Forms.Core.UITests
 			}
 			catch (InvalidOperationException)
 			{
+				ProcessException();
+			}
+			catch(WebDriverException)
+			{
+				ProcessException();
+			}
+
+			void ProcessException()
+			{
 				// Some elements aren't "clickable" from an automation perspective (e.g., Frame renders as a Border
 				// with content in it; if the content is just a TextBlock, we'll end up here)
 
@@ -638,6 +647,7 @@ namespace Xamarin.Forms.Core.UITests
 				// and Tap in that spot
 				PointF p = ElementToClickablePoint(element);
 				TapCoordinates(p.X, p.Y);
+
 			}
 		}
 

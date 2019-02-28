@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		[Test]
-		public void ContentPageWithMissingType()
+		public void ContentPageWithMissingTypeMockviewReplacement()
 		{
 			XamlLoader.FallbackTypeResolver = (p, type) => type ?? typeof(MockView);
 
@@ -66,6 +66,28 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 			var page = (ContentPage) XamlLoader.Create(xaml, true);
 			Assert.That(page.Content, Is.TypeOf<MockView>());
+		}
+
+		[Test]
+		public void ContentPageWithMissingTypeNoReplacement()
+		{
+			XamlLoader.FallbackTypeResolver = (p, type) => type;
+
+			var xaml = @"
+					<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
+						xmlns:local=""clr-namespace:MissingNamespace;assembly=MissingAssembly""
+						xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
+						<ContentPage.Content>
+							<local:MyCustomButton Foo=""Bar"">
+								<local:MyCustomButton.Qux>
+									<Label />
+								</local:MyCustomButton.Qux>
+							</local:MyCustomButton>
+						</ContentPage.Content>
+					</ContentPage>";
+
+			var page = (ContentPage)XamlLoader.Create(xaml, true);
+			Assert.That(page.Content, Is.Null);
 		}
 
 		[Test]

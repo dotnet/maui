@@ -16,9 +16,9 @@
 				return;
 
 			_warnedAboutMaterial = true;
-			if (Device.RuntimePlatform == Device.iOS)
-				Internals.Log.Warning("Visual", "Material needs to be registered on iOS by calling FormsMaterial.Init() after the Xamarin.Forms.Forms.Init method call.");
-			else if (Device.RuntimePlatform != Device.Android)
+			if (Device.RuntimePlatform == Device.iOS || Device.RuntimePlatform == Device.Android)
+				Internals.Log.Warning("Visual", $"Material needs to be registered on {Device.RuntimePlatform} by calling FormsMaterial.Init() after the Xamarin.Forms.Forms.Init method call.");
+			else
 				Internals.Log.Warning("Visual", $"Material is currently not support on {Device.RuntimePlatform}.");
 		}
 

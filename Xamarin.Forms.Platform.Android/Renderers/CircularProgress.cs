@@ -42,7 +42,15 @@ namespace Xamarin.Forms.Platform.Android
 		public void SetColor(Color color)
 		{
 			var progress = color.IsDefault ? DefaultColor : color.ToAndroid();
-			IndeterminateTintList = ColorStateList.ValueOf(progress);
+
+			if (Forms.IsLollipopOrNewer)
+			{
+				IndeterminateTintList = ColorStateList.ValueOf(progress);
+			}
+			else
+			{
+				(Indeterminate ? IndeterminateDrawable : ProgressDrawable).SetColorFilter(color.ToAndroid(), PorterDuff.Mode.SrcIn);
+			}
 		}
 
 		public void SetBackgroundColor(Color color)

@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			base.UpdateIsReadOnly();
 			bool isReadOnly = !Element.IsReadOnly;
-			Control.SetCursorVisible(isReadOnly);
+			EditText.SetCursorVisible(isReadOnly);
 		}
 
 		protected override void UpdatePlaceholderColor()
@@ -86,7 +86,7 @@ namespace Xamarin.Forms.Platform.Android
 			// Fire Completed and dismiss keyboard for hardware / physical keyboards
 			if (actionId == ImeAction.Done || actionId == _currentInputImeFlag || (actionId == ImeAction.ImeNull && e.KeyCode == Keycode.Enter && e.Action == KeyEventActions.Up))
 			{
-				Control.ClearFocus();
+				EditText.ClearFocus();
 				v.HideKeyboard();
 				((IEntryController)Element).SendCompleted();
 			}
@@ -114,7 +114,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (!e.Focus)
 			{
-				Control.HideKeyboard();
+				EditText.HideKeyboard();
 			}
 
 			base.OnFocusChangeRequested(sender, e);
@@ -124,7 +124,7 @@ namespace Xamarin.Forms.Platform.Android
 				// Post this to the main looper queue so it doesn't happen until the other focus stuff has resolved
 				// Otherwise, ShowKeyboard will be called before this control is truly focused, and we will potentially
 				// be displaying the wrong keyboard
-				Control?.PostShowKeyboard();
+				EditText?.PostShowKeyboard();
 			}
 		}
 
@@ -179,7 +179,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (disposing)
 			{
-				if (Control != null && Control is IFormsEditText formsEditContext)
+				if (EditText != null && EditText is IFormsEditText formsEditContext)
 				{
 					formsEditContext.OnKeyboardBackPressed -= OnKeyboardBackPressed;
 					formsEditContext.SelectionChanged -= SelectionChanged;
@@ -203,10 +203,10 @@ namespace Xamarin.Forms.Platform.Android
 				if (EditText.Text != Element.Text)
 				{
 					EditText.Text = Element.Text;
-					if (Control.IsFocused)
+					if (EditText.IsFocused)
 					{
 						EditText.SetSelection(EditText.Text.Length);
-						Control.ShowKeyboard();
+						EditText.ShowKeyboard();
 					}
 				}
 			}
@@ -382,10 +382,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateCursorSelection()
 		{
-			if (_nativeSelectionIsUpdating || Control == null || Element == null)
+			if (_nativeSelectionIsUpdating || Control == null || Element == null || EditText == null)
 				return;
 
-			if (!Element.IsReadOnly && Control.RequestFocus())
+			if (!Element.IsReadOnly && EditText.RequestFocus())
 			{
 				try
 				{
@@ -472,8 +472,8 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			bool isReadOnly = !Element.IsReadOnly;
 
-			Control.FocusableInTouchMode = isReadOnly;
-			Control.Focusable = isReadOnly;
+			EditText.FocusableInTouchMode = isReadOnly;
+			EditText.Focusable = isReadOnly;
 		}
 	}
 }

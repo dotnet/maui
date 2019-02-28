@@ -12,6 +12,7 @@ using Xamarin.Forms.Platform.Android;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCulture("")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.Platform")]
+[assembly: InternalsVisibleTo("Xamarin.Forms.Material")]
 
 // The following attributes are used to specify the signing key for the assembly, 
 // if desired. See the Mono documentation for more information about signing.

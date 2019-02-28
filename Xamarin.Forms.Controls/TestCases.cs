@@ -192,6 +192,14 @@ namespace Xamarin.Forms.Controls
 				_filter = filter;
 
 				PageToAction.Clear();
+				if(String.IsNullOrWhiteSpace(filter) && !Controls.App.PreloadTestCasesIssuesList)
+				{
+					if (_section != null)
+					{
+						Root.Remove(_section);
+					}
+					return;
+				}
 
 				var issueCells = Enumerable.Empty<TextCell>();
 

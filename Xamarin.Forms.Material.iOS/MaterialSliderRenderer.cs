@@ -4,20 +4,15 @@ using CoreGraphics;
 using MaterialComponents;
 using UIKit;
 using Xamarin.Forms;
+using Xamarin.Forms.Platform.iOS;
 using MSlider = MaterialComponents.Slider;
 
-namespace Xamarin.Forms.Platform.iOS.Material
+namespace Xamarin.Forms.Material.iOS
 {
 	public class MaterialSliderRenderer : ViewRenderer<Slider, MSlider>
 	{
 		SemanticColorScheme _defaultColorScheme;
 		SemanticColorScheme _colorScheme;
-
-		public MaterialSliderRenderer()
-		{
-			VisualElement.VerifyVisualFlagEnabled();
-		}
-
 		protected override void Dispose(bool disposing)
 		{
 			if (Control != null)
@@ -56,11 +51,6 @@ namespace Xamarin.Forms.Platform.iOS.Material
 			}
 		}
 
-		protected virtual SemanticColorScheme CreateColorScheme()
-		{
-			return MaterialColors.Light.CreateColorScheme();
-		}
-
 		protected virtual void ApplyTheme()
 		{
 			SliderColorThemer.ApplySemanticColorScheme(CreateColorScheme(), Control);
@@ -72,10 +62,6 @@ namespace Xamarin.Forms.Platform.iOS.Material
 			OverrideThemeColors();
 		}
 
-		protected override MSlider CreateNativeControl()
-		{
-			return new MSlider { StatefulApiEnabled = true };
-		}
 
 		public override CGSize SizeThatFits(CGSize size)
 		{
@@ -114,15 +100,12 @@ namespace Xamarin.Forms.Platform.iOS.Material
 				ApplyTheme();
 		}
 
-		void UpdateMaximum()
-		{
-			Control.MaximumValue = (nfloat)Element.Maximum;
-		}
+		protected override MSlider CreateNativeControl() => new MSlider { StatefulApiEnabled = true };
+		protected virtual SemanticColorScheme CreateColorScheme() => MaterialColors.Light.CreateColorScheme();
 
-		void UpdateMinimum()
-		{
-			Control.MinimumValue = (nfloat)Element.Minimum;
-		}
+		void UpdateMaximum() => Control.MaximumValue = (nfloat)Element.Maximum;
+		void UpdateMinimum() => Control.MinimumValue = (nfloat)Element.Minimum;
+		void OnControlValueChanged(object sender, EventArgs eventArgs) => Element.SetValueFromRenderer(Slider.ValueProperty, Control.Value);
 
 		void UpdateValue()
 		{
@@ -161,11 +144,6 @@ namespace Xamarin.Forms.Platform.iOS.Material
 
 			if (!thumbColor.IsDefault)
 				Control.SetThumbColor(thumbColor.ToUIColor(), UIControlState.Normal);
-		}
-
-		void OnControlValueChanged(object sender, EventArgs eventArgs)
-		{
-			Element.SetValueFromRenderer(Slider.ValueProperty, Control.Value);
 		}
 	}
 }
