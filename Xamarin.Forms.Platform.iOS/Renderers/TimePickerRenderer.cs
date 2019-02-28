@@ -159,6 +159,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			_picker.Date = new DateTime(1, 1, 1).Add(Element.Time).ToNSDate();
 			Control.Text = DateTime.Today.Add(Element.Time).ToString(Element.Format);
+			Element.InvalidateMeasureNonVirtual(Internals.InvalidationTrigger.MeasureChanged);
 		}
 	}
 }
