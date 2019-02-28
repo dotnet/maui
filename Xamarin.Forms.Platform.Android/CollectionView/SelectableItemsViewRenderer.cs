@@ -42,19 +42,6 @@ namespace Xamarin.Forms.Platform.Android
 			SwapAdapter(ItemsViewAdapter, true);
 		}
 
-		void ClearSelection()
-		{
-			for (int i = 0, size = ChildCount; i < size; i++)
-			{
-				var holder = GetChildViewHolder(GetChildAt(i));
-				
-				if (holder is SelectableViewHolder selectable)
-				{
-					selectable.IsSelected = false;
-				}
-			}
-		}
-
 		void MarkItemSelected(object selectedItem)
 		{
 			var position = ItemsViewAdapter.GetPositionForItem(selectedItem);
@@ -79,7 +66,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				if (mode == SelectionMode.None || mode == SelectionMode.Single)
 				{
-					ClearSelection();
+					SelectableItemsViewAdapter.ClearNativeSelection();
 				}
 
 				// If the mode is Multiple and SelectedItem is set to null, don't do anything
@@ -88,7 +75,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (mode != SelectionMode.Multiple)
 			{
-				ClearSelection();
+				SelectableItemsViewAdapter.ClearNativeSelection();
 				MarkItemSelected(selectedItem);
 			}
 

@@ -15,11 +15,8 @@
 
 			<Label x:Name="SelectedItemsCommand" Grid.Row="2"/>
 
-			<CollectionView x:Name="CollectionView" Grid.Row="3">
-				<CollectionView.ItemsLayout>
-					<GridItemsLayout Span="3" Orientation="Vertical"></GridItemsLayout>
-				</CollectionView.ItemsLayout>
-			</CollectionView>
-		</Grid>
+            <CollectionView x:Name="CollectionView" Grid.Row="3" />
+
+        </Grid>
     </ContentPage.Content>
 </ContentPage>
