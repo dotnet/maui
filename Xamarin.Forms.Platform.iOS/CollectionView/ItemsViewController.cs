@@ -13,6 +13,7 @@ namespace Xamarin.Forms.Platform.iOS
 		ItemsViewLayout _layout;
 		bool _initialConstraintsSet;
 		bool _wasEmpty;
+		bool _currentBackgroundIsEmptyView;
 
 		UIView _backgroundUIView;
 		UIView _emptyUIView;
@@ -232,20 +233,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (emptyView == null)
 			{
-				// Nope, no EmptyView set. So nothing to display. If there _was_ a background view on the UICollectionView, 
-				// we should restore it here (in case the EmptyView _used to be_ set, and has been un-set)
-				if(_backgroundUIView != null)
-				{
-					CollectionView.BackgroundView = _backgroundUIView;
-				}
-
-				// Also, clear the cached version
+				// Clear the cached Forms and native views
 				_emptyUIView = null;
-
-				return;
+				_emptyViewFormsElement = null;
 			}
-
-			if (_emptyUIView == null)
+			else
 			{
 				// Create the native renderer for the EmptyView, and keep the actual Forms element (if any)
 				// around for updating the layout later
@@ -253,18 +245,25 @@ namespace Xamarin.Forms.Platform.iOS
 				_emptyUIView = NativeView;
 				_emptyViewFormsElement = FormsElement;
 			}
+
+			// If the empty view is being displayed, we might need to update it
+			UpdateEmptyViewVisibility(_itemsSource?.Count == 0);
 		}
 
 		void UpdateEmptyViewVisibility(bool isEmpty)
 		{
-			if (isEmpty)
+			if (isEmpty && _emptyUIView != null)
 			{
-				// Cache any existing background view so we can restore it later
-				_backgroundUIView = CollectionView.BackgroundView;
+				if (!_currentBackgroundIsEmptyView)
+				{
+					// Cache any existing background view so we can restore it later
+					_backgroundUIView = CollectionView.BackgroundView;
+				}
 
-				// Replace any current background with the EmptyView. This will also set the native view's frame
+				// Replace any current background with the EmptyView. This will also set the native empty view's frame
 				// to match the UICollectionView's frame
 				CollectionView.BackgroundView = _emptyUIView;
+				_currentBackgroundIsEmptyView = true;
 
 				if (_emptyViewFormsElement != null)
 				{
@@ -276,10 +275,12 @@ namespace Xamarin.Forms.Platform.iOS
 			else
 			{
 				// Is the empty view currently in the background? Swap back to the default.
-				if (CollectionView.BackgroundView == _emptyUIView)
+				if (_currentBackgroundIsEmptyView)
 				{
 					CollectionView.BackgroundView = _backgroundUIView;
 				}
+
+				_currentBackgroundIsEmptyView = false;
 			}
 		}
 
