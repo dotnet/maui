@@ -408,41 +408,27 @@ namespace Xamarin.Forms.Xaml
 			var namespaceURI = xmlType.NamespaceUri;
 			var elementName = xmlType.Name;
 			var typeArguments = xmlType.TypeArguments;
-			potentialTypes = null;			
+			potentialTypes = null;
 
-			foreach (var xmlnsDef in xmlnsDefinitions)
-			{
+			foreach (var xmlnsDef in xmlnsDefinitions) {
 				if (xmlnsDef.XmlNamespace != namespaceURI)
 					continue;
 				lookupAssemblies.Add(xmlnsDef);
 			}
 
-			if (lookupAssemblies.Count == 0)
-			{
-				if (defaultAssemblyName == null)
-					return null;
-
-				string ns;
-				string typename;
-				string asmstring;
-				string targetPlatform;
-
-				XmlnsHelper.ParseXmlns(namespaceURI, out typename, out ns, out asmstring, out targetPlatform);
+			if (lookupAssemblies.Count == 0) {
+				XmlnsHelper.ParseXmlns(namespaceURI, out _, out var ns, out var asmstring, out _);
 				asmstring = asmstring ?? defaultAssemblyName;
 				if (namespaceURI != null && ns != null)
-					lookupAssemblies.Add(new XmlnsDefinitionAttribute(namespaceURI, ns)
-					{
-						AssemblyName = asmstring
-					});
+					lookupAssemblies.Add(new XmlnsDefinitionAttribute(namespaceURI, ns) { AssemblyName = asmstring });
 			}
 
 			var lookupNames = new List<string>();
-			if (elementName != "DataTemplate" && !elementName.EndsWith("Extension"))
+			if (elementName != "DataTemplate" && !elementName.EndsWith("Extension", StringComparison.Ordinal))
 				lookupNames.Add(elementName + "Extension");
 			lookupNames.Add(elementName);
 
-			for (var i = 0; i < lookupNames.Count; i++)
-			{
+			for (var i = 0; i < lookupNames.Count; i++) {
 				var name = lookupNames[i];
 				if (name.Contains(":"))
 					name = name.Substring(name.LastIndexOf(':') + 1);
@@ -453,9 +439,8 @@ namespace Xamarin.Forms.Xaml
 			
 			potentialTypes = new List<XamlLoader.FallbackTypeInfo>();
 			foreach (string typeName in lookupNames)
-				foreach (XmlnsDefinitionAttribute xmlnsDefinitionAttribute in lookupAssemblies)				
-					potentialTypes.Add(new XamlLoader.FallbackTypeInfo
-					{
+				foreach (XmlnsDefinitionAttribute xmlnsDefinitionAttribute in lookupAssemblies)	
+					potentialTypes.Add(new XamlLoader.FallbackTypeInfo {
 						ClrNamespace = xmlnsDefinitionAttribute.ClrNamespace,
 						TypeName = typeName,
 						AssemblyName = xmlnsDefinitionAttribute.AssemblyName,
