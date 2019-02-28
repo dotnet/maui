@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Android.Content;
 using Android.Support.V7.Widget;
 using Object = Java.Lang.Object;
@@ -8,6 +9,7 @@ namespace Xamarin.Forms.Platform.Android
 	public class SelectableItemsViewAdapter : ItemsViewAdapter
 	{
 		protected readonly SelectableItemsView SelectableItemsView;
+		List<SelectableViewHolder> _currentViewHolders = new List<SelectableViewHolder>();
 
 		internal SelectableItemsViewAdapter(SelectableItemsView selectableItemsView, 
 			Func<IVisualElementRenderer, Context, global::Android.Views.View> createView = null) : base(selectableItemsView, createView)
@@ -27,6 +29,9 @@ namespace Xamarin.Forms.Platform.Android
 			// Watch for clicks so the user can select the item held by this ViewHolder
 			selectable.Clicked += SelectableOnClicked;
 
+			// Keep track of the view holders here so we can clear the native selection
+			_currentViewHolders.Add(selectable);
+
 			var selectedItem = SelectableItemsView.SelectedItem;
 			if (selectedItem == null)
 			{
@@ -44,11 +49,20 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (holder is SelectableViewHolder selectable)
 			{
+				_currentViewHolders.Remove(selectable);
 				selectable.Clicked -= SelectableOnClicked;
 				selectable.IsSelected = false;
 			}
 
 			base.OnViewRecycled(holder);
+		}
+
+		internal void ClearNativeSelection()
+		{
+			for (int i = 0; i < _currentViewHolders.Count; i++)
+			{
+				_currentViewHolders[i].IsSelected = false;
+			}
 		}
 
 		void SelectableOnClicked(object sender, int adapterPosition)

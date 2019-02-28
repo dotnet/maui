@@ -41,7 +41,6 @@ namespace Xamarin.Forms.Platform.Android
 		void TimePickerDialog.IOnTimeSetListener.OnTimeSet(ATimePicker view, int hourOfDay, int minute)
 		{
 			ElementController.SetValueFromRenderer(TimePicker.TimeProperty, new TimeSpan(hourOfDay, minute, 0));
-
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 
 			if (Forms.IsLollipopOrNewer)
@@ -134,6 +133,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			var timeFormat = Is24HourView ? "HH:mm" : Element.Format;
 			EditText.Text = DateTime.Today.Add(time).ToString(timeFormat);
+			Element.InvalidateMeasureNonVirtual(Internals.InvalidationTrigger.MeasureChanged);
 		}
 
 		void UpdateFont()

@@ -85,7 +85,10 @@ namespace Xamarin.Forms.Xaml
 
 				return converterProvider.Convert(value, propertyType, minforetriever, serviceProvider);
 			}
-			return value.ConvertTo(propertyType, () => pi, serviceProvider);
+			var ret = value.ConvertTo(propertyType, () => pi, serviceProvider, out Exception exception);
+			if (exception != null)
+				throw exception;
+			return ret;
 		}
 
 		object GetValue()

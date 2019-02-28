@@ -11,7 +11,10 @@ namespace Xamarin.Forms.Xaml
 	{
 		public object Convert(object value, Type toType, Func<MemberInfo> minfoRetriever, IServiceProvider serviceProvider)
 		{
-			return value.ConvertTo(toType, minfoRetriever, serviceProvider);
+			var ret = value.ConvertTo(toType, minfoRetriever, serviceProvider, out Exception exception);
+			if (exception != null)
+				throw exception;
+			return ret;
 		}
 	}
 }

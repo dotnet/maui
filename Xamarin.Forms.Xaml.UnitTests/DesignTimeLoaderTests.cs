@@ -534,6 +534,22 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 			Assert.That(exceptions.Count, Is.EqualTo(2));
 		}
+
+		[Test]
+		public void IgnoreConverterException()
+		{
+			var xaml = @"
+					<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
+						xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
+						xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+						<Label BackgroundColor=""AlmostPink"" />
+					</ContentPage>";
+
+			var exceptions = new List<Exception>();
+			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
+			Assert.That(exceptions.Count, Is.EqualTo(1));
+		}
 	}
 
 	public class InstantiateThrows

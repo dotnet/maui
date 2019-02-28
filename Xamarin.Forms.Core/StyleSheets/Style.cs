@@ -103,7 +103,10 @@ namespace Xamarin.Forms.StyleSheets
 						throw new XamlParseException($"Multiple methods with name '{property.DeclaringType}.Get{property.PropertyName}' found.", serviceProvider, innerException: e);
 					}
 				};
-			return value.ConvertTo(property.ReturnType, minforetriever, serviceProvider);
+			var ret = value.ConvertTo(property.ReturnType, minforetriever, serviceProvider, out Exception exception);
+			if (exception != null)
+				throw exception;
+			return ret;
 		}
 
 		public void UnApply(IStylable styleable)
