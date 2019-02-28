@@ -79,7 +79,14 @@ namespace Xamarin.Forms.Xaml
 					if (value == null && node.CollectionItems.Any() && node.CollectionItems.First() is ValueNode) {
 						var serviceProvider = new XamlServiceProvider(node, Context);
 						var converted = ((ValueNode)node.CollectionItems.First()).Value.ConvertTo(type, () => type.GetTypeInfo(),
-							serviceProvider);
+							serviceProvider, out Exception exception);
+						if (exception != null) {
+							if (Context.ExceptionHandler != null) {
+								Context.ExceptionHandler(exception);
+								return;
+							}
+							throw exception;
+						} 
 						if (converted != null && converted.GetType() == type)
 							value = converted;
 					}
@@ -294,7 +301,9 @@ namespace Xamarin.Forms.Xaml
 					enode.SkipProperties.Add(name);
 				var value = Context.Values[node];
 				var serviceProvider = new XamlServiceProvider(enode, Context);
-				var convertedValue = value.ConvertTo(parameter.ParameterType, () => parameter, serviceProvider);
+				var convertedValue = value.ConvertTo(parameter.ParameterType, () => parameter, serviceProvider, out Exception e);
+				if (e != null)
+					throw e;
 				array[i] = convertedValue;
 			}
 
