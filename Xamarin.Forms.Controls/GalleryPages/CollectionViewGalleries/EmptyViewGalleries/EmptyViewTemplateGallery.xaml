@@ -20,7 +20,7 @@
 						<StackLayout> 
 							<Label FontAttributes="Bold" FontSize="18" Margin="10,25,10,10"
 									HorizontalOptions="Fill" HorizontalTextAlignment="Center" 
-									Text="{Binding Filter, StringFormat='{}Your filter term of {0} did not match any records'}"></Label>
+									Text="{Binding Filter, StringFormat='Your filter term of {0} did not match any records'}"></Label>
 						</StackLayout>
 					</DataTemplate>
 				</CollectionView.EmptyViewTemplate>

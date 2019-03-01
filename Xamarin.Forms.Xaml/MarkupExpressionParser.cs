@@ -46,10 +46,7 @@ namespace Xamarin.Forms.Xaml
 				return expression.Substring(2);
 
 			if (expression[expression.Length - 1] != '}')
-			{
-				var lineInfo = (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) as IXmlLineInfoProvider != null) ? (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) as IXmlLineInfoProvider).XmlLineInfo : new XmlLineInfo();
-				throw new XamlParseException("Expression must end with '}'", lineInfo);
-			}
+				throw new Exception("Expression must end with '}'");
 
 			int len;
 			string match;
@@ -117,6 +114,7 @@ namespace Xamarin.Forms.Xaml
 
 		protected void HandleProperty(string prop, IServiceProvider serviceProvider, ref string remaining, bool isImplicit)
 		{
+			char next;
 			object value = null;
 			string str_value;
 
@@ -139,13 +137,7 @@ namespace Xamarin.Forms.Xaml
 				str_value = value as string;
 			}
 			else
-				str_value = GetNextPiece(ref remaining, out var next);
-
-			if (str_value != null && !str_value.StartsWith("{}", StringComparison.Ordinal) && str_value.Length > 2 && str_value.StartsWith("{", StringComparison.Ordinal))
-			{
-				var lineInfo = (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) as IXmlLineInfoProvider != null) ? (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) as IXmlLineInfoProvider).XmlLineInfo : new XmlLineInfo();
-				throw new XamlParseException("Strings starting with `{` needs to be escaped. Start the string with `{}`", lineInfo);
-			}
+				str_value = GetNextPiece(ref remaining, out next);
 
 			SetPropertyValue(prop, str_value, value, serviceProvider);
 		}
