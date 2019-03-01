@@ -24,6 +24,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			XamlLoader.ValueCreatedCallback = null;
 			XamlLoader.InstantiationFailedCallback = null;
 			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = null;
+#pragma warning disable 0618
+			Xamarin.Forms.Xaml.Internals.XamlLoader.DoNotThrowOnExceptions = false;
+#pragma warning restore 0618
 		}
 
 		[Test]
@@ -552,6 +555,21 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		[Test]
+		public void IgnoreMarkupExtensionException()
+		{
+			var xaml = @"
+						<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
+							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"">
+							<ListView ItemsSource=""{x:Static Foo}"" />
+						</ContentPage>";
+
+			var exceptions = new List<Exception>();
+			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
+			Assert.That(exceptions.Count, Is.GreaterThan(1));
+    }
+
+    [Test]
 		public void CanResolveRootNode()
 		{
 			string assemblyName = null;
