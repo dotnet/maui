@@ -179,7 +179,7 @@ namespace Xamarin.Forms.Platform.iOS
 							table.AddGestureRecognizer(_globalCloser);
 
 							_closer = new UITapGestureRecognizer(close);
-							contentCell.AddGestureRecognizer(_closer);
+							contentCell.ContentCell.AddGestureRecognizer(_closer);
 						}
 					}
 				}
