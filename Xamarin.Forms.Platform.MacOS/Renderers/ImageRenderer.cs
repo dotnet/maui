@@ -31,14 +31,13 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Image> e)
 		{
-			if (Control == null)
-			{
-				var imageView = new FormsNSImageView();
-				SetNativeControl(imageView);
-			}
-
 			if (e.NewElement != null)
 			{
+				if (Control == null)
+				{
+					var imageView = new FormsNSImageView();
+					SetNativeControl(imageView);
+				}
 				SetAspect();
 				SetImage(e.OldElement);
 				SetOpacity();
