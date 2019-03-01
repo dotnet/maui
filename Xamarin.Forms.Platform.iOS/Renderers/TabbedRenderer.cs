@@ -73,6 +73,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			UpdateBarBackgroundColor();
 			UpdateBarTextColor();
+			UpdateSelectedTabColors();
 
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 		}
@@ -210,6 +211,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			UpdateBarBackgroundColor();
 			UpdateBarTextColor();
+			UpdateSelectedTabColors();
 		}
 
 		void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -234,6 +236,8 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdatePrefersStatusBarHiddenOnPages();
 			else if (e.PropertyName == PreferredStatusBarUpdateAnimationProperty.PropertyName)
 				UpdateCurrentPagePreferredStatusBarUpdateAnimation();
+			else if (e.PropertyName == TabbedPage.SelectedTabColorProperty.PropertyName || e.PropertyName == TabbedPage.UnselectedTabColorProperty.PropertyName)
+				UpdateSelectedTabColors();
 		}
 
 		public override UIViewController ChildViewControllerForStatusBarHidden()
@@ -402,6 +406,25 @@ namespace Xamarin.Forms.Platform.iOS
 			};
 			icons?.Item1?.Dispose();
 			icons?.Item2?.Dispose();
+		}
+
+		void UpdateSelectedTabColors()
+		{
+			if (Tabbed == null || TabBar == null || TabBar.Items == null)
+				return;
+
+			if (Tabbed.IsSet(TabbedPage.SelectedTabColorProperty) && Tabbed.SelectedTabColor != Color.Default)
+				TabBar.SelectedImageTintColor = Tabbed.SelectedTabColor.ToUIColor();
+			else
+				TabBar.SelectedImageTintColor = null;
+
+			if (!Forms.IsiOS10OrNewer)
+				return;
+
+			if (Tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) && Tabbed.UnselectedTabColor != Color.Default)
+				TabBar.UnselectedItemTintColor = Tabbed.UnselectedTabColor.ToUIColor();
+			else
+				TabBar.UnselectedItemTintColor = null;
 		}
 
 		/// <summary>
