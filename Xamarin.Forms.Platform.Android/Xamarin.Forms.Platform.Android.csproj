@@ -144,6 +144,7 @@
     <Compile Include="GetDesiredSizeDelegate.cs" />
     <Compile Include="IBorderVisualElementRenderer.cs" />
     <Compile Include="IDeviceInfoProvider.cs" />
+    <Compile Include="ILayoutChanges.cs" />
     <Compile Include="ITabStop.cs" />
     <Compile Include="IPickerRenderer.cs" />
     <Compile Include="PickerManager.cs" />

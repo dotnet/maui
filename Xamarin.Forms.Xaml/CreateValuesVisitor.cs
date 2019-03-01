@@ -118,8 +118,17 @@ namespace Xamarin.Forms.Xaml
 				foreach (var cnode in node.CollectionItems)
 					cnode.Accept(visitor, node);
 
-				value = markup.ProvideValue(serviceProvider);
-
+				try {
+					value = markup.ProvideValue(serviceProvider);
+				}
+				catch (Exception e) {
+					var xamlpe = e as XamlParseException ?? new XamlParseException("Markup extension failed", serviceProvider, e);
+					if (Context.ExceptionHandler != null) {
+						Context.ExceptionHandler(xamlpe);
+					}
+					else
+						throw xamlpe;
+				}
 				if (!node.Properties.TryGetValue(XmlName.xKey, out INode xKey))
 					xKey = null;
 

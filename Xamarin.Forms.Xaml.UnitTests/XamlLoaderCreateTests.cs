@@ -10,6 +10,17 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	[TestFixture]
 	public class XamlLoaderCreateTests
 	{
+		[TearDown]
+		public void TearDown()
+		{
+			Device.PlatformServices = null;
+			XamlLoader.FallbackTypeResolver = null;
+			XamlLoader.ValueCreatedCallback = null;
+			XamlLoader.InstantiationFailedCallback = null;
+			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = null;
+			Xamarin.Forms.Xaml.Internals.XamlLoader.DoNotThrowOnExceptions = false;
+		}
+
 		[Test]
 		public void CreateFromXaml ()
 		{

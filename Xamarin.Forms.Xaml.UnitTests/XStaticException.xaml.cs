@@ -33,6 +33,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void Setup()
 			{
 				Device.PlatformServices = new MockPlatformServices();
+
+				//there's a test not resetting the values correctly, but can't find which one...
+				Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = null;
+#pragma warning disable 0618
+				Xamarin.Forms.Xaml.Internals.XamlLoader.DoNotThrowOnExceptions = false;
+#pragma warning restore 0618
 			}
 
 			[TearDown]

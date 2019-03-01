@@ -31,12 +31,6 @@ namespace Xamarin.Forms.Platform.Android
 			remove { _elementPropertyChanged -= value; }
 		}
 
-		event EventHandler<AView.LayoutChangeEventArgs> IVisualElementRenderer.LayoutChange
-		{
-			add =>_flyoutRenderer.AndroidView.LayoutChange += value;
-			remove => _flyoutRenderer.AndroidView.LayoutChange -= value;
-		}
-
 		VisualElement IVisualElementRenderer.Element => Element;
 
 		VisualElementTracker IVisualElementRenderer.Tracker => null;
