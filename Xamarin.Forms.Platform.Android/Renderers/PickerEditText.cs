@@ -16,6 +16,11 @@ namespace Xamarin.Forms.Platform.Android
 			PickerManager.Init(this);
 		}
 
+		public PickerEditText(Context context, IPickerRenderer pickerRenderer) : this(context)
+		{
+
+		}
+
 		public override bool OnTouchEvent(MotionEvent e)
 		{
 			PickerManager.OnTouchEvent(this, e);
