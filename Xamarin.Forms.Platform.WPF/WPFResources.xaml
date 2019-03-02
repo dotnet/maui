@@ -382,7 +382,7 @@
 
 	<DataTemplate x:Key="EntryCell">
 
-		<wpf:FormsTextBox Grid.Column="1" Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" />
+		<wpf:FormsTextBox Grid.Column="1" Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" IsEnabled="{Binding IsEnabled}"/>
 
 	</DataTemplate>
 

@@ -19,6 +19,13 @@ namespace Xamarin.Forms.Controls
 				Content = new SwapHierachyStackLayout (hierarchy)
 			};
 
+			var clearSelectedTabColorButton = new Button { Text = "Button" };
+			clearSelectedTabColorButton.Clicked += (s, a) =>
+			{
+				UnselectedTabColor = Color.Default;
+				SelectedTabColor = Color.Default;
+			};
+
 			var tabTwo = new ContentPage {
 				Title = "Testing 345",
 				Content = new StackLayout {
@@ -28,16 +35,16 @@ namespace Xamarin.Forms.Controls
 							BackgroundColor = Color.Red,
 							VerticalOptions = LayoutOptions.FillAndExpand,
 							HorizontalOptions = LayoutOptions.FillAndExpand
-						},
-						new Button { Text = "Button" },
+						}, clearSelectedTabColorButton
 					}
 				}
 			};
 
+			UnselectedTabColor = Color.HotPink;
+			SelectedTabColor = Color.Green;
+
 			Children.Add (tabOne);
 			Children.Add (tabTwo);
-
 		}
 	}
 }
-
