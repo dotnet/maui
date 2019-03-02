@@ -8,6 +8,11 @@ namespace Xamarin.Forms
 {
 	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController
 	{
+
+		public new static readonly BindableProperty NavigationProperty = NavigableElement.NavigationProperty;
+
+		public new static readonly BindableProperty StyleProperty = NavigableElement.StyleProperty;
+
 		public static readonly BindableProperty InputTransparentProperty = BindableProperty.Create("InputTransparent", typeof(bool), typeof(VisualElement), default(bool));
 
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create("IsEnabled", typeof(bool),
