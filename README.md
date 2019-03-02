@@ -40,6 +40,7 @@ If you want to use the latest dev build then you should read [this blog post](ht
 
 ## Getting Started ##
 
+### Windows ###
 ##### Install Visual Studio 2017 #####
 
 VS 2017 is required for developing Xamarin.Forms. If you do not already have it installed, you can download it [here](https://www.visualstudio.com/downloads/download-visual-studio-vs). VS 2017 Community is completely free. If you are installing VS 2017 for the first time, select the "Custom" installation type and select the following from the features list to install:
@@ -52,6 +53,22 @@ The Android 7.0 Nougat API 24 SDK is required for developing Xamarin.Forms. It c
 
 We also recommend installing [Xamarin Android Device Manager](https://developer.xamarin.com/guides/android/getting_started/installation/android-emulator/xamarin-device-manager/) This will use the HAXM tools installed above and allow you to configure Android Virtual Devices (AVDs) that emulate Android devices.
 If you already have VS 2017 installed, you can verify that these features are installed by modifying the VS 2017 installation via the Visual Studio Installer.
+
+### Mac ###
+#### Install Visual Studio for Mac ####
+
+If you do not already have it installed, instructions to download and setup can be found [here](https://docs.microsoft.com/en-us/visualstudio/mac/installation?view=vsmac-2017).
+
+Because of current Multi-Targeting limitations with Visual Studio for Mac you will need to manually build/restore some projects before you are able to work on the Xamarin Forms solution.
+
+Here are two different options we've put together to help make this process easier
+- Branches 3.5+ come with a Cake script target that you can use to build and open VSMac
+```sh
+./build.sh --target vsmac
+```
+- When working on an earlier branch that does not have the cake scripts then you can use the following [build.sh] script(https://gist.github.com/PureWeen/92c1e1aff0c257c3decf0bcb8d6e9296)
+
+If you are on Visual Studio for Mac 2017 you will need to turn off automatic package restore (Visual Studio => Preferences => Nuget => General => uncheck the Package Restore box) before working on the Xamarin.Forms solution. This step is no longer needed with Visual Studio for Mac 2019
 
 ##### Solution Configuration #####
 
