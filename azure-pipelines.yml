@@ -49,9 +49,8 @@ jobs:
           pathToPublish: '$(Build.ArtifactStagingDirectory)/nuget'
       # make sure we are following the rules
       - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+        condition: eq(variables['Build.SourceBranch'], 'refs/heads/master') # only run this on master
         displayName: Component Detection
-        inputs:
-          scanType: LogOnly
 
   - job: build_macos
     displayName: Build macOS Library
