@@ -49,8 +49,10 @@ jobs:
           pathToPublish: '$(Build.ArtifactStagingDirectory)/nuget'
       # make sure we are following the rules
       - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-        condition: eq(variables['Build.SourceBranch'], 'refs/heads/master') # only run this on master
+        condition: eq(variables['System.TeamProject'], 'devdiv') # Only run on non-public builds
         displayName: Component Detection
+        inputs:
+          scanType: LogOnly
 
   - job: build_macos
     displayName: Build macOS Library
@@ -86,6 +88,7 @@ jobs:
       # make sure we are following the rules
       - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
         displayName: Component Detection
+        condition: eq(variables['System.TeamProject'], 'devdiv') # Only run on non-public builds
         inputs:
           scanType: LogOnly
 
@@ -101,11 +104,6 @@ jobs:
           solution: Xamarin.Essentials.sln
           configuration: Release
           msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
-      # make sure we are following the rules
-      - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-        displayName: Component Detection
-        inputs:
-          scanType: LogOnly
 
   # only sign the packages when running on Windows, and using the private server which has the certificates
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
