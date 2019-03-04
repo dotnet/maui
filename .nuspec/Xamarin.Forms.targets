@@ -143,4 +143,36 @@
  			<Compile Include="@(_CSSOutputs)" />
  		</ItemGroup>
 	</Target>
+  
+ <!-- 
+    Platform Specific Targets.
+    We can't use a framework specific targets file because it breaks shared projects i.e.  /build/MonoAndroid10/Xamarin.Forms.targets
+  -->
+
+  <!-- MonoAndroid targets. -->
+  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == 'MonoAndroid'">
+    <CoreCompileDependsOn>
+      IncludeProguardForAndroid;
+      $(CoreCompileDependsOn);
+    </CoreCompileDependsOn>
+    <PrepareForBuildDependsOn>
+      ValidateTargetFrameworkVersionForForms;
+      $(PrepareForBuildDependsOn);
+    </PrepareForBuildDependsOn>
+  </PropertyGroup>
+  
+  <Target Name="IncludeProguardForAndroid">
+    <ItemGroup>
+      <ProguardConfiguration Include="$(MSBuildThisFileDirectory)MonoAndroid10\proguard.cfg" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="ValidateTargetFrameworkVersionForForms" Condition="'$(XFDisableTargetFrameworkValidation)' != 'True'">
+    <PropertyGroup>
+      <MinTargetFrameworkVersionForForms>8.1</MinTargetFrameworkVersionForForms>
+      <TargetFrameworkVersionWithoutV>$(TargetFrameworkVersion.TrimStart('vV'))</TargetFrameworkVersionWithoutV>
+    </PropertyGroup>
+    <Error Code="XF005"  Condition="$(TargetFrameworkVersionWithoutV) &lt; $(MinTargetFrameworkVersionForForms)"
+           Text="The %24(TargetFrameworkVersion) for $(ProjectName) ($(TargetFrameworkVersion)) is less than the minimum required %24(TargetFrameworkVersion) for Xamarin.Forms ($(MinTargetFrameworkVersionForForms)). You need to increase the %24(TargetFrameworkVersion) for $(ProjectName)."   />
+  </Target>
 </Project>

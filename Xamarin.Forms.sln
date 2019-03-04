@@ -26,7 +26,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuspec", ".nuspec", "{7E12C50D-A570-4DF1-94E1-8599843FA87C}"
 	ProjectSection(SolutionItems) = preProject
 		.nuspec\proguard.cfg = .nuspec\proguard.cfg
-		.nuspec\Xamarin.Forms.Android.targets = .nuspec\Xamarin.Forms.Android.targets
 		.nuspec\Xamarin.Forms.AppLinks.nuspec = .nuspec\Xamarin.Forms.AppLinks.nuspec
 		.nuspec\Xamarin.Forms.Debug.targets = .nuspec\Xamarin.Forms.Debug.targets
 		.nuspec\Xamarin.Forms.DefaultItems.props = .nuspec\Xamarin.Forms.DefaultItems.props
