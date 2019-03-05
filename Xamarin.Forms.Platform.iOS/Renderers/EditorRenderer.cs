@@ -31,15 +31,23 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Editor> e)
 		{
-			// create label so it can get updated during the initial setup loop
-			_placeholderLabel = new UILabel
+			bool initializing = false;
+			if (e.NewElement != null && _placeholderLabel == null)
 			{
-				BackgroundColor = UIColor.Clear
-			};
+				initializing = true;
+				// create label so it can get updated during the initial setup loop
+				_placeholderLabel = new UILabel
+				{
+					BackgroundColor = UIColor.Clear
+				};
+			}
 
 			base.OnElementChanged(e);
 
-			CreatePlaceholderLabel();
+			if (e.NewElement != null && initializing)
+			{
+				CreatePlaceholderLabel();
+			}
 		}
 
 		protected internal override void UpdateFont()
@@ -63,6 +71,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void CreatePlaceholderLabel()
 		{
+			if (Control == null)
+				return;
+
 			Control.AddSubview(_placeholderLabel);
 
 			var edgeInsets = TextView.TextContainerInset;
