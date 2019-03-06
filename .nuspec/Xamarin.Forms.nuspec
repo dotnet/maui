@@ -154,7 +154,6 @@
     <file src="..\Xamarin.Forms.Xaml.Design\bin\$Configuration$\Xamarin.Forms.Xaml.Design.dll" target="lib\tizen40\Design" />
     
     <!--Android 10-->
-    <file src="Xamarin.Forms.Android.targets" target="build\MonoAndroid10\Xamarin.Forms.targets" />
     <file src="proguard.cfg" target="build\MonoAndroid10\proguard.cfg" />
     
     <!--Android 81-->
