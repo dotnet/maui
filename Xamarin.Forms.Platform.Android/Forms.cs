@@ -30,6 +30,7 @@ namespace Xamarin.Forms
 		const int TabletCrossover = 600;
 
 		static bool? s_isLollipopOrNewer;
+		static bool? s_isMarshmallowOrNewer;
 
 		[Obsolete("Context is obsolete as of version 2.5. Please use a local context instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -52,6 +53,16 @@ namespace Xamarin.Forms
 				if (!s_isLollipopOrNewer.HasValue)
 					s_isLollipopOrNewer = (int)Build.VERSION.SdkInt >= 21;
 				return s_isLollipopOrNewer.Value;
+			}
+		}
+
+		internal static bool IsMarshmallowOrNewer
+		{
+			get
+			{
+				if (!s_isMarshmallowOrNewer.HasValue)
+					s_isMarshmallowOrNewer = (int)Build.VERSION.SdkInt >= 23;
+				return s_isMarshmallowOrNewer.Value;
 			}
 		}
 
