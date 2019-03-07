@@ -1,6 +1,9 @@
 using System;
 using System.ComponentModel;
 using Android.Content;
+using Android.Support.V4.Content;
+using AColor = Android.Graphics.Color;
+using AColorRes = Android.Resource.Color;
 using Android.Views;
 
 namespace Xamarin.Forms.Platform.Android
@@ -117,7 +120,9 @@ namespace Xamarin.Forms.Platform.Android
 				bool isDefaultBkgndColor = bkgndColor.IsDefault;
 				if (page.Parent is BaseShellItem && isDefaultBkgndColor)
 				{
-					var color = Context.Resources.GetColor(global::Android.Resource.Color.BackgroundLight, Context.Theme);
+					var color = Forms.IsMarshmallowOrNewer ?
+						Context.Resources.GetColor(AColorRes.BackgroundLight, Context.Theme) :
+						new AColor(ContextCompat.GetColor(Context, global::Android.Resource.Color.BackgroundLight));
 					SetBackgroundColor(color);
 				}
 				else if (!isDefaultBkgndColor || setBkndColorEvenWhenItsDefault)
