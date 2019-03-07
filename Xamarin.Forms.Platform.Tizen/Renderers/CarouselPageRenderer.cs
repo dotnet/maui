@@ -142,10 +142,10 @@ namespace Xamarin.Forms.Platform.Tizen
 			// To update TabIndex order
 			CustomFocusManager.StartReorderTabIndex();
 
+			Element.UpdateFocusTreePolicy();
+
 			if (IsChangedByScroll())
 				return;
-
-			Element.UpdateFocusTreePolicy();
 
 			if (Element.CurrentPage != Element.Children[_pageIndex])
 			{
