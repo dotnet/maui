@@ -722,9 +722,9 @@ namespace Xamarin.Forms.Platform.UWP
 			List.SelectedIndex = index;
 		}
 
-		void OnListItemClicked(int index, Cell cell = null)
+		void OnListItemClicked(int index)
 		{
-			Element.NotifyRowTapped(index, cell);
+			Element.NotifyRowTapped(index);
 			_itemWasClicked = true;
 		}
 
@@ -735,7 +735,7 @@ namespace Xamarin.Forms.Platform.UWP
 				var templatedItems = TemplatedItemsView.TemplatedItems;
 				var selectedItemIndex = templatedItems.GetGlobalIndexOfItem(e.ClickedItem);
 
-				OnListItemClicked(selectedItemIndex, e.ClickedItem as Cell);
+				OnListItemClicked(selectedItemIndex);
 			}
 		}
 
