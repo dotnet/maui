@@ -2,7 +2,7 @@
 
 namespace Xamarin.Essentials
 {
-    public static partial class PhoneDialer
+    public static partial class Screenshot
     {
         public static bool CanCapture => PlatformCanCapture;
 

@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<view:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:view="clr-namespace:Samples.View;assembly=Samples"
+             xmlns:viewModel="clr-namespace:Samples.ViewModel;assembly=Samples"
+             x:Class="Samples.View.ScreenshotPage">
+
+    <view:BasePage.BindingContext>
+        <viewModel:ScreenshotViewModel />
+    </view:BasePage.BindingContext>
+    <ContentPage.Content>
+        <StackLayout>
+            <Button Text="Welcome to Xamarin.Forms!"
+                    Command="{Binding ScreenshotCommand}"
+                VerticalOptions="Start" 
+                HorizontalOptions="CenterAndExpand" />
+            <Image VerticalOptions="FillAndExpand" 
+                   HorizontalOptions="FillAndExpand" MinimumHeightRequest="400" MinimumWidthRequest="400" Source="{Binding Screenshot}" />
+        </StackLayout>
+    </ContentPage.Content>
+</view:BasePage>

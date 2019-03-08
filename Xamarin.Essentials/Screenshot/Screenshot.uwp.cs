@@ -1,18 +1,46 @@
-﻿using Windows.ApplicationModel.Calls;
-using Windows.Foundation.Metadata;
+﻿using System;
+using System.IO;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
+using Windows.Graphics.Display;
+using Windows.Graphics.Imaging;
+using Windows.Storage;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Media.Imaging;
 
 namespace Xamarin.Essentials
 {
-    public static partial class PhoneDialer
+    public static partial class Screenshot
     {
-        internal static bool IsSupported =>
-             ApiInformation.IsTypePresent("Windows.ApplicationModel.Calls.PhoneCallManager");
+        internal static bool PlatformCanCapture => true;
 
-        static void PlatformOpen(string number)
+        static async Task<MediaFile> PlatformCaptureAsync()
         {
-            ValidateOpen(number);
+            var element = Window.Current.Content as FrameworkElement;
+            var fileOnDisk = await ApplicationData.Current.LocalFolder.CreateFileAsync(Path.ChangeExtension(Path.GetRandomFileName(), ".png"));
+            var renderTargetBitmap = new RenderTargetBitmap();
+            await renderTargetBitmap.RenderAsync(element, (int)element.ActualWidth, (int)element.ActualHeight);
+            var pixels = await renderTargetBitmap.GetPixelsAsync();
 
-            PhoneCallManager.ShowPhoneCallUI(number, string.Empty);
+            var mediaFile = new MediaFile(fileOnDisk.Path);
+
+            using (var stream = await fileOnDisk.OpenAsync(FileAccessMode.ReadWrite))
+            {
+                var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, stream);
+                var bytes = pixels.ToArray();
+                encoder.SetPixelData(
+                    BitmapPixelFormat.Bgra8,
+                    BitmapAlphaMode.Ignore,
+                    (uint)element.ActualWidth,
+                    (uint)element.ActualHeight,
+                    96,
+                    96,
+                    bytes);
+
+                await encoder.FlushAsync();
+            }
+
+            return mediaFile;
         }
     }
 }

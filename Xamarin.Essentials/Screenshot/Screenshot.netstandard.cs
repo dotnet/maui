@@ -2,7 +2,7 @@
 
 namespace Xamarin.Essentials
 {
-    public static partial class PhoneDialer
+    public static partial class Screenshot
     {
         static bool PlatformCanCapture =>
             throw new NotImplementedInReferenceAssemblyException();

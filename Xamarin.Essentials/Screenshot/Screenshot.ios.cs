@@ -1,24 +1,31 @@
 ﻿using System;
+using System.IO;
+using System.Threading.Tasks;
 using CoreTelephony;
 using Foundation;
 using UIKit;
 
 namespace Xamarin.Essentials
 {
-    public static partial class PhoneDialer
+    public static partial class Screenshot
     {
-        const string noNetworkProviderCode = "65535";
+        internal static bool PlatformCanCapture => UIScreen.MainScreen != null;
 
-        internal static bool IsSupported => UIApplication.SharedApplication.CanOpenUrl(CreateNsUrl(new string('0', 10)));
-
-        static void PlatformOpen(string number)
+        static string GetTempFileName()
         {
-            ValidateOpen(number);
-
-            var nsUrl = CreateNsUrl(number);
-            UIApplication.SharedApplication.OpenUrl(nsUrl);
+            var docFolder = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            var libFolder = Path.Combine(docFolder, "..", "Library");
+            var tempFileName = Path.ChangeExtension(Path.Combine(libFolder, Path.GetTempFileName()), ".png");
+            return tempFileName;
         }
 
-        static NSUrl CreateNsUrl(string number) => new NSUrl(new Uri($"tel:{number}").AbsoluteUri);
+        static Task<MediaFile> PlatformCaptureAsync()
+        {
+            var img = UIScreen.MainScreen.Capture();
+            var bytes = img.AsPNG().ToArray();
+            var file = new MediaFile(GetTempFileName());
+            File.WriteAllBytes(file.Filepath, bytes);
+            return Task.FromResult(file);
+        }
     }
 }
