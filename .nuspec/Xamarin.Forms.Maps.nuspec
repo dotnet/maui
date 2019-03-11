@@ -65,8 +65,8 @@
     <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\tizen40" />
 
     <!-- Xaml Design-time Stuff -->
-    <file src="..\Xamarin.Forms.Maps.Design\bin\$Configuration$\Xamarin.Forms.Maps.Design.dll" target="lib\netstandard2.0" />
-    <file src="..\Xamarin.Forms.Maps.Design\bin\$Configuration$\Xamarin.Forms.Maps.Design.dll" target="lib\netstandard1.0" />
+    <file src="..\Xamarin.Forms.Maps.Design\bin\$Configuration$\Xamarin.Forms.Maps.Design.dll" target="lib\netstandard2.0\Design" />
+    <file src="..\Xamarin.Forms.Maps.Design\bin\$Configuration$\Xamarin.Forms.Maps.Design.dll" target="lib\netstandard1.0\Design" />
 
 </files>
 </package>
