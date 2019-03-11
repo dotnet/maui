@@ -933,7 +933,7 @@ namespace Xamarin.Forms.Build.Tasks
 				declaringType = declaringType.DeclaringType;
 			var handler = declaringType.AllMethods().FirstOrDefault(md => md.Name == value as string);
 			if (handler == null) 
-				throw new XamlParseException($"EventHandler \"{value}\" not found in type \"{context.Body.Method.DeclaringType.FullName}\"", iXmlLineInfo);
+				throw new XamlParseException($"EventHandler \"{value}\" not found in type \"{declaringType}\"", iXmlLineInfo);
 
 			//check if the handler signature matches the Invoke signature;
 			var invoke = module.ImportReference(eventinfo.EventType.ResolveCached().GetMethods().First(md => md.Name == "Invoke"));
