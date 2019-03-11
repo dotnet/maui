@@ -92,13 +92,13 @@ namespace Xamarin.Forms.Xaml
 			var serviceProvider = new XamlServiceProvider(node, Context);
 			serviceProvider.Add(typeof (IXmlNamespaceResolver), nsResolver);
 
-			return new MarkupExpansionParser().Parse(match, ref expression, serviceProvider);
+			return new MarkupExpansionParser { ExceptionHandler = Context.ExceptionHandler}.Parse(match, ref expression, serviceProvider);
 		}
 
 		public class MarkupExpansionParser : MarkupExpressionParser, IExpressionParser<INode>
 		{
 			IElementNode node;
-
+			internal Action<Exception> ExceptionHandler { get; set; }
 			object IExpressionParser.Parse(string match, ref string remaining, IServiceProvider serviceProvider)
 			{
 				return Parse(match, ref remaining, serviceProvider);
@@ -137,8 +137,14 @@ namespace Xamarin.Forms.Xaml
 				else
 				{
 					//The order of lookup is to look for the Extension-suffixed class name first and then look for the class name without the Extension suffix.
-					if (!typeResolver.TryResolve(match + "Extension", out type) && !typeResolver.TryResolve(match, out type))
-						throw new XamlParseException($"MarkupExtension not found for {match}", serviceProvider);
+					if (!typeResolver.TryResolve(match + "Extension", out type) && !typeResolver.TryResolve(match, out type)) {
+						var ex = new XamlParseException($"MarkupExtension not found for {match}", serviceProvider);
+						if (ExceptionHandler != null) {
+							ExceptionHandler(ex);
+							return null;
+						}
+						throw ex;
+					}
 				}
 
 				var namespaceuri = nsResolver.LookupNamespace(prefix) ?? "";
