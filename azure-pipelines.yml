@@ -57,6 +57,7 @@ jobs:
         condition: and(startsWith(variables['Build.SourceBranch'], 'refs/tags/'), eq(variables['System.TeamProject'], 'devdiv'))
         displayName: Component Detection - Report
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
+        condition: eq(variables['System.TeamProject'], 'devdiv')
         displayName: 'PoliCheck'
         inputs:
           targetType: F
