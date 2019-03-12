@@ -49,10 +49,14 @@ jobs:
           pathToPublish: '$(Build.ArtifactStagingDirectory)/nuget'
       # make sure we are following the rules
       - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-        condition: eq(variables['System.TeamProject'], 'devdiv') # Only run on non-public builds
+        condition: and(not(startsWith(variables['Build.SourceBranch'], 'refs/tags/')), eq(variables['System.TeamProject'], 'devdiv'))
         displayName: Component Detection
         inputs:
           scanType: LogOnly
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
+        displayName: 'PoliCheck'
+        inputs:
+          targetType: F
 
   - job: build_macos
     displayName: Build macOS Library
@@ -85,12 +89,6 @@ jobs:
           solution: Xamarin.Essentials/Xamarin.Essentials.csproj
           configuration: Release
           msbuildArguments: '/t:Pack /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
-      # make sure we are following the rules
-      - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-        displayName: Component Detection
-        condition: eq(variables['System.TeamProject'], 'devdiv') # Only run on non-public builds
-        inputs:
-          scanType: LogOnly
 
   - job: build_samples
     displayName: Build Samples
