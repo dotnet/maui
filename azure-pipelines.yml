@@ -47,20 +47,22 @@ jobs:
         inputs:
           artifactName: nuget
           pathToPublish: '$(Build.ArtifactStagingDirectory)/nuget'
-      # make sure we are following the rules
-      - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-        condition: and(not(startsWith(variables['Build.SourceBranch'], 'refs/tags/')), eq(variables['System.TeamProject'], 'devdiv'))
-        displayName: Component Detection - Log
-        inputs:
-          scanType: LogOnly
-      - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-        condition: and(startsWith(variables['Build.SourceBranch'], 'refs/tags/'), eq(variables['System.TeamProject'], 'devdiv'))
-        displayName: Component Detection - Report
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
-        condition: eq(variables['System.TeamProject'], 'devdiv')
-        displayName: 'PoliCheck'
-        inputs:
-          targetType: F
+
+      - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+        # make sure we are following the rules
+        - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+          condition: not(startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+          displayName: Component Detection - Log
+          inputs:
+            scanType: LogOnly
+        - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+          condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+          displayName: Component Detection - Report
+        - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
+          condition: eq(variables['System.TeamProject'], 'devdiv')
+          displayName: 'PoliCheck'
+          inputs:
+            targetType: F
 
   - job: build_macos
     displayName: Build macOS Library
