@@ -31,6 +31,7 @@
       <group targetFramework="uap10.0">
         <dependency id="NETStandard.Library" version="2.0.1"/>
         <dependency id="Microsoft.NETCore.UniversalWindowsPlatform" version="6.0.12" />
+        <dependency id="Win2D.uwp" version="1.20.0" />
       </group>
       <group targetFramework="tizen40">
         <dependency id="Tizen.NET" version="4.0.0"/>
