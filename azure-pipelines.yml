@@ -50,9 +50,12 @@ jobs:
       # make sure we are following the rules
       - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
         condition: and(not(startsWith(variables['Build.SourceBranch'], 'refs/tags/')), eq(variables['System.TeamProject'], 'devdiv'))
-        displayName: Component Detection
+        displayName: Component Detection - Log
         inputs:
           scanType: LogOnly
+      - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+        condition: and(startsWith(variables['Build.SourceBranch'], 'refs/tags/'), eq(variables['System.TeamProject'], 'devdiv'))
+        displayName: Component Detection - Report
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
         displayName: 'PoliCheck'
         inputs:
@@ -125,6 +128,4 @@ jobs:
           inputs:
             artifactName: nuget-signed
             pathToPublish: '$(Build.ArtifactStagingDirectory)/signed'
-        # make sure we are following the rules
-        - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-          displayName: 'Component Detection'
+
