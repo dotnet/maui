@@ -559,8 +559,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		{
 			var xaml = @"
 						<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
-							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"">
-							<ListView ItemsSource=""{x:Static Foo}"" />
+							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
+								xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+								<StackLayout>
+									<ListView ItemsSource=""{x:Static Foo}"" />
+									<ListView ItemsSource=""{local:Missing Test}"" />
+								</StackLayout>
 						</ContentPage>";
 
 			var exceptions = new List<Exception>();

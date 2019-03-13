@@ -1519,6 +1519,28 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.False (invalidated);
 		}
 
+
+		[Test]
+		//https://github.com/xamarin/Xamarin.Forms/issues/4933
+		public void GridHeightCorrectWhenAspectFitImageGetsShrinked()
+		{
+			var contentGrid = new Grid
+			{
+				HorizontalOptions = LayoutOptions.FillAndExpand,
+				VerticalOptions = LayoutOptions.Center,
+				RowDefinitions = new RowDefinitionCollection()
+				{
+					new RowDefinition(){Height = GridLength.Auto}
+				}
+			};
+			//image will have "EVERYTHING IS 100 x 20" size so grid should shrink it and itself to 50x10
+			contentGrid.Children.Add(new Image() { IsPlatformEnabled = true }, 0, 0);
+			var measurement = contentGrid.Measure(50, 100);
+			Assert.AreEqual(50, measurement.Request.Width);
+			Assert.AreEqual(10, measurement.Request.Height);
+		}
+
+
 		// because the constraint is internal, we need this
 		public enum HackLayoutConstraint
 		{

@@ -560,9 +560,9 @@ namespace Xamarin.Forms
 			{
 				double myValue;
 
-				if (TryGetTextAppearance(themeDefault, out myValue))
+				if (TryGetTextAppearance(themeDefault, out myValue) && myValue > 0)
 					return myValue;
-				if (TryGetTextAppearance(deviceDefault, out myValue))
+				if (TryGetTextAppearance(deviceDefault, out myValue) && myValue > 0)
 					return myValue;
 				return defaultValue;
 			}
