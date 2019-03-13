@@ -25,6 +25,7 @@ using Android.Text.Method;
 using Xamarin.Forms.Controls.Issues;
 
 
+[assembly: ExportRenderer(typeof(Issue5461.ScrollbarFadingEnabledFalseScrollView), typeof(ScrollbarFadingEnabledFalseScrollViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue1942.CustomGrid), typeof(Issue1942GridRenderer))]
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.Effects.AttachedStateEffectLabel), typeof(AttachedStateEffectLabelRenderer))]
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.LegacyComponents.NonAppCompatSwitch), typeof(NonAppCompatSwitchRenderer))]
@@ -55,6 +56,16 @@ namespace Xamarin.Forms.ControlGallery.Android
 	{
 		public NonAppCompatSwitchRenderer(Context context) : base(context)
 		{
+		}
+	}
+
+	public class ScrollbarFadingEnabledFalseScrollViewRenderer : ScrollViewRenderer
+	{
+		public ScrollbarFadingEnabledFalseScrollViewRenderer(Context context) : base(context)
+		{
+			// I do a cast here just so this will fail just to be sure we don't change the base types
+			var castingTest = (global::Android.Support.V4.Widget.NestedScrollView)this;
+			castingTest.ScrollbarFadingEnabled = false;
 		}
 	}
 

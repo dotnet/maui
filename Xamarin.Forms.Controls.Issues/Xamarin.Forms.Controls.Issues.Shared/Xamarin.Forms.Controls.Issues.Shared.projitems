@@ -14,6 +14,7 @@
       <DependentUpon>Bugzilla60787.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Issue5461.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2102.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1588.xaml.cs">
       <DependentUpon>Issue1588.xaml</DependentUpon>

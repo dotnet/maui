@@ -1,11 +1,12 @@
 using Android.Content;
 using Android.Support.V4.Widget;
+using Android.Graphics;
 using Android.Views;
 using Android.Widget;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public class AHorizontalScrollView : HorizontalScrollView
+	public class AHorizontalScrollView : HorizontalScrollView, IScrollView
 	{
 		readonly ScrollViewRenderer _renderer;
 
@@ -68,5 +69,38 @@ namespace Xamarin.Forms.Platform.Android
 
 			_renderer.UpdateScrollPosition(Context.FromPixels(l), Context.FromPixels(t));
 		}
+
+		public override void Draw(Canvas canvas)
+		{
+			try
+			{
+				base.Draw(canvas);
+			}
+			catch (Java.Lang.NullPointerException npe)
+			when (npe.Message.Contains("ScrollBarDrawable.mutate()"))
+			{
+				// This will most likely never run since UpdateScrollBars is called 
+				// when the scrollbars visibilities are updated but I left it here
+				// just in case there's an edge case that causes an exception
+				this.HandleScrollBarVisibilityChange();
+			}
+		}
+
+		public override bool HorizontalScrollBarEnabled
+		{
+			get { return base.HorizontalScrollBarEnabled; }
+			set
+			{
+				base.HorizontalScrollBarEnabled = value;
+				this.HandleScrollBarVisibilityChange();
+			}
+		}
+
+		void IScrollView.AwakenScrollBars()
+		{
+			base.AwakenScrollBars();
+		}
+
+		bool IScrollView.ScrollBarsInitialized { get; set; } = false;
 	}
 }
