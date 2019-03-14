@@ -527,6 +527,8 @@ namespace Xamarin.Forms.Build.Tasks
 				il.Emit(Ret);
 			}
 			else {
+				var locs = new Dictionary<TypeReference, VariableDefinition>();
+
 				if (tSourceRef.IsValueType)
 					il.Emit(Ldarga_S, (byte)0);
 				else
@@ -534,6 +536,19 @@ namespace Xamarin.Forms.Build.Tasks
 
 				for (int i = 0; i < properties.Count; i++) {
 					(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg) = properties[i];
+
+					if (i > 0 && propDeclTypeRef.IsValueType) {
+						var importedPropDeclTypeRef = module.ImportReference(propDeclTypeRef);
+
+						if (!locs.TryGetValue(importedPropDeclTypeRef, out var loc)) {
+							loc = new VariableDefinition(importedPropDeclTypeRef);
+							getter.Body.Variables.Add(loc);
+							locs[importedPropDeclTypeRef] = loc;
+						}
+
+						il.Emit(Stloc, loc);
+						il.Emit(Ldloca, loc);
+					}
 
 					if (!property.PropertyType.IsValueType) { //if part of the path is null, return (default(T), false)
 						var nop = Create(Nop);
@@ -543,8 +558,14 @@ namespace Xamarin.Forms.Build.Tasks
 						il.Emit(Brfalse, nop);
 						il.Emit(Pop);
 						if (tPropertyRef.IsValueType) {
-							var defaultValueVarDef = new VariableDefinition(tPropertyRef);
-							getter.Body.Variables.Add(defaultValueVarDef);
+							var importedTPropertyRef = module.ImportReference(tPropertyRef);
+
+							if (!locs.TryGetValue(importedTPropertyRef, out var defaultValueVarDef)) {
+								defaultValueVarDef = new VariableDefinition(tPropertyRef);
+								getter.Body.Variables.Add(defaultValueVarDef);
+								locs[importedTPropertyRef] = defaultValueVarDef;
+							}
+
 							il.Emit(Ldloca_S, defaultValueVarDef);
 							il.Emit(Initobj, tPropertyRef);
 							il.Emit(Ldloc, defaultValueVarDef);
