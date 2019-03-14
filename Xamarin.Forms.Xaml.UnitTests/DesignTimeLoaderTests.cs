@@ -564,22 +564,21 @@ namespace Xamarin.Forms.Xaml.UnitTests
 								<StackLayout>
 									<ListView ItemsSource=""{x:Static Foo}"" />
 									<ListView ItemsSource=""{local:Missing Test}"" />
+									<Label Text=""{Binding Foo"" />
 								</StackLayout>
 						</ContentPage>";
-
 			var exceptions = new List<Exception>();
 			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
 			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 			Assert.That(exceptions.Count, Is.GreaterThan(1));
-    }
+		}
 
-    [Test]
+		[Test]
 		public void CanResolveRootNode()
 		{
 			string assemblyName = null;
 			string clrNamespace = null;
 			string typeName = null;
-
 
 			XamlLoader.FallbackTypeResolver = (fallbackTypeInfos, type) =>
 			{

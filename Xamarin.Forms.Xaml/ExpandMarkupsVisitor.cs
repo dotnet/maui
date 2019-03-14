@@ -78,17 +78,28 @@ namespace Xamarin.Forms.Xaml
 			if (expression.StartsWith("{}", StringComparison.Ordinal))
 				return new ValueNode(expression.Substring(2), null);
 
-			if (expression[expression.Length - 1] != '}')
-				throw new Exception("Expression must end with '}'");
+			if (expression[expression.Length - 1] != '}') {
+				var ex = new XamlParseException("Expression must end with '}'", xmlLineInfo);
+				if (Context.ExceptionHandler != null) {
+					Context.ExceptionHandler(ex);
+					return null;
+				}
+				throw ex;
+			}
 
-			int len;
-			string match;
-			if (!MarkupExpressionParser.MatchMarkup(out match, expression, out len))
+			if (!MarkupExpressionParser.MatchMarkup(out var match, expression, out var len))
 				throw new Exception();
-			expression = expression.Substring(len).TrimStart();
-			if (expression.Length == 0)
-				throw new Exception("Expression did not end in '}'");
 
+			expression = expression.Substring(len).TrimStart();
+			if (expression.Length == 0) {
+				var ex = new XamlParseException("Expression did not end in '}'", xmlLineInfo);
+				if (Context.ExceptionHandler != null)
+				{
+					Context.ExceptionHandler(ex);
+					return null;
+				}
+				throw ex;
+			}
 			var serviceProvider = new XamlServiceProvider(node, Context);
 			serviceProvider.Add(typeof (IXmlNamespaceResolver), nsResolver);
 
