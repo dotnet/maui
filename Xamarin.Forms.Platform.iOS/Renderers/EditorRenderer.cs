@@ -9,6 +9,9 @@ namespace Xamarin.Forms.Platform.iOS
 {
 	public class EditorRenderer : EditorRendererBase<UITextView>
 	{
+		// Using same placeholder color as for the Entry
+		readonly UIColor _defaultPlaceholderColor = ColorExtensions.SeventyPercentGrey;
+
 		UILabel _placeholderLabel;
 
 		public EditorRenderer()
@@ -63,10 +66,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected internal override void UpdatePlaceholderColor()
 		{
-			if (Element.PlaceholderColor == Color.Default)
-				_placeholderLabel.TextColor = UIColor.DarkGray;
+			Color placeholderColor = Element.PlaceholderColor;
+			if (placeholderColor.IsDefault)
+				_placeholderLabel.TextColor = _defaultPlaceholderColor;
 			else
-				_placeholderLabel.TextColor = Element.PlaceholderColor.ToUIColor();
+				_placeholderLabel.TextColor = placeholderColor.ToUIColor();
 		}
 
 		void CreatePlaceholderLabel()
