@@ -61,6 +61,8 @@ namespace Xamarin.Forms
 			if (result != null && result.Parent != this)
 				OnChildAdded(result);
 
+			if (result == null)
+				throw new InvalidOperationException($"No Content found for {nameof(ShellContent)}, Title:{Title}, Route {Route}");
 
 			if (_delayedQueryParams != null && result  != null) {
 				ApplyQueryAttributes(result, _delayedQueryParams);
@@ -137,6 +139,10 @@ namespace Xamarin.Forms
 					shellContent.ContentCache = newElement;
 					// parent new item
 					shellContent.OnChildAdded(newElement);
+				}
+				else if(newValue != null)
+				{
+					throw new InvalidOperationException($"{nameof(ShellContent)} {nameof(Content)} should be of type {nameof(Page)}. Title {shellContent?.Title}, Route {shellContent?.Route} ");
 				}
 			}
 
