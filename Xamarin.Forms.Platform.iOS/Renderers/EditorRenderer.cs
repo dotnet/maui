@@ -60,7 +60,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			_placeholderLabel.Text = Element.Placeholder;
 		}
-
+		
 		protected internal override void UpdatePlaceholderColor()
 		{
 			if (Element.PlaceholderColor == Color.Default)

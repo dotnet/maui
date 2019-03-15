@@ -20,7 +20,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 				{
 					HeightRequest = 100, WidthRequest = 100,
 					HorizontalOptions = LayoutOptions.Center,
-					VerticalOptions = LayoutOptions.Center
+					VerticalOptions = LayoutOptions.Center,
+					AutomationId = "photo"
 				};
 
 				image.SetBinding(Image.SourceProperty, new Binding("Image"));
