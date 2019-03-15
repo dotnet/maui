@@ -236,7 +236,7 @@
     </Style>
 
     <DataTemplate x:Key="TextCell">
-		<StackPanel>
+		<StackPanel AutomationProperties.AutomationId="{Binding AutomationId}">
 			<TextBlock
 				Text="{Binding Text}"
 				Style="{ThemeResource BaseTextBlockStyle}"

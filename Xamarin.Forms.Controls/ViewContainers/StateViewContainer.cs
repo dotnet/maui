@@ -24,8 +24,11 @@ namespace Xamarin.Forms.Controls
 				BindingContext = view,
 				AutomationId = name + "StateLabel"
 			};
-			if (name != "Focus")
-				stateValueLabel.SetBinding (Label.TextProperty, name, converter: new GenericValueConverter (o => o.ToString()));
+
+			if(name == "Focus" || name == "Unfocused" || name == "Focused")
+				stateValueLabel.SetBinding(Label.TextProperty, "IsFocused", converter: new GenericValueConverter(o => o.ToString()));
+			else
+				stateValueLabel.SetBinding (Label.TextProperty, name, converter: new GenericValueConverter (o => o.ToString()));			
 
 			StateChangeButton = new Button {
 				Text = "Change State: " + name,
