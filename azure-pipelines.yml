@@ -9,6 +9,7 @@ variables:
   IOS_SIM_RUNTIME: 'iOS 12.1'
   ANDROID_EMU_TARGET: 'system-images;android-26;google_apis;x86'
   ANDROID_EMU_DEVICE: 'Nexus 5X'
+  RunPoliCheck: 'false'
 
 resources:
   repositories:
@@ -67,7 +68,7 @@ jobs:
           condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
           displayName: Component Detection - Report
         - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
-          condition: eq(variables['System.TeamProject'], 'devdiv')
+          condition: eq(variables['RunPoliCheck'], 'true')
           displayName: 'PoliCheck'
           inputs:
             targetType: F
