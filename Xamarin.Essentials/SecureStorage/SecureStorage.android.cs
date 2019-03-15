@@ -14,6 +14,8 @@ namespace Xamarin.Essentials
 {
     public static partial class SecureStorage
     {
+        static readonly object locker = new object();
+
         static Task<string> PlatformGetAsync(string key)
         {
             var context = Platform.AppContext;
@@ -24,11 +26,14 @@ namespace Xamarin.Essentials
             string decryptedData = null;
             if (!string.IsNullOrEmpty(encStr))
             {
-                var encData = Convert.FromBase64String(encStr);
-                var ks = new AndroidKeyStore(context, Alias, AlwaysUseAsymmetricKeyStorage);
                 try
                 {
-                    decryptedData = ks.Decrypt(encData);
+                    var encData = Convert.FromBase64String(encStr);
+                    lock (locker)
+                    {
+                        var ks = new AndroidKeyStore(context, Alias, AlwaysUseAsymmetricKeyStorage);
+                        decryptedData = ks.Decrypt(encData);
+                    }
                 }
                 catch (AEADBadTagException)
                 {
@@ -44,8 +49,12 @@ namespace Xamarin.Essentials
         {
             var context = Platform.AppContext;
 
-            var ks = new AndroidKeyStore(context, Alias, AlwaysUseAsymmetricKeyStorage);
-            var encryptedData = ks.Encrypt(data);
+            byte[] encryptedData = null;
+            lock (locker)
+            {
+                var ks = new AndroidKeyStore(context, Alias, AlwaysUseAsymmetricKeyStorage);
+                encryptedData = ks.Encrypt(data);
+            }
 
             var encStr = Convert.ToBase64String(encryptedData);
             Preferences.Set(Utils.Md5Hash(key), encStr, Alias);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
 
 namespace Xamarin.Essentials
 {
@@ -34,6 +35,27 @@ namespace Xamarin.Essentials
             }
 
             return Task.CompletedTask;
+        }
+
+        static async Task PlatformRequestAsync(ShareFileRequest request)
+        {
+            var storageFile = request.File.File ?? await StorageFile.GetFileFromPathAsync(request.File.FullPath);
+
+            var dataTransferManager = DataTransferManager.GetForCurrentView();
+
+            dataTransferManager.DataRequested += ShareTextHandler;
+
+            DataTransferManager.ShowShareUI();
+
+            void ShareTextHandler(DataTransferManager sender, DataRequestedEventArgs e)
+            {
+                var newRequest = e.Request;
+
+                newRequest.Data.SetStorageItems(new IStorageItem[] { storageFile });
+                newRequest.Data.Properties.Title = request.Title ?? AppInfo.Name;
+
+                dataTransferManager.DataRequested -= ShareTextHandler;
+            }
         }
     }
 }

@@ -6,5 +6,8 @@ namespace Xamarin.Essentials
     {
         static Task PlatformRequestAsync(ShareTextRequest request) =>
             throw new NotImplementedInReferenceAssemblyException();
+
+        static Task PlatformRequestAsync(ShareFileRequest request) =>
+            throw new NotImplementedInReferenceAssemblyException();
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿using System.IO;
+using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 
@@ -12,12 +13,18 @@ namespace Samples.ViewModel
         string uri;
         string subject;
         string title;
+        string shareFileAttachmentContents;
+        string shareFileAttachmentName;
+        string shareFileTitle;
 
         public ICommand RequestCommand { get; }
+
+        public ICommand RequestFileCommand { get; }
 
         public ShareViewModel()
         {
             RequestCommand = new Command(OnRequest);
+            RequestFileCommand = new Command(OnFileRequest);
         }
 
         public bool ShareText
@@ -56,6 +63,24 @@ namespace Samples.ViewModel
             set => SetProperty(ref title, value);
         }
 
+        public string ShareFileTitle
+        {
+            get => shareFileTitle;
+            set => SetProperty(ref shareFileTitle, value);
+        }
+
+        public string ShareFileAttachmentContents
+        {
+            get => shareFileAttachmentContents;
+            set => SetProperty(ref shareFileAttachmentContents, value);
+        }
+
+        public string ShareFileAttachmentName
+        {
+            get => shareFileAttachmentName;
+            set => SetProperty(ref shareFileAttachmentName, value);
+        }
+
         async void OnRequest()
         {
             await Share.RequestAsync(new ShareTextRequest
@@ -65,6 +90,23 @@ namespace Samples.ViewModel
                 Uri = ShareUri ? Uri : null,
                 Title = Title
             });
+        }
+
+        async void OnFileRequest()
+        {
+            if (!string.IsNullOrWhiteSpace(ShareFileAttachmentContents))
+            {
+                // create a temprary file
+                var fn = string.IsNullOrWhiteSpace(ShareFileAttachmentName) ? "Attachment.txt" : ShareFileAttachmentName.Trim();
+                var file = Path.Combine(FileSystem.CacheDirectory, fn);
+                File.WriteAllText(file, ShareFileAttachmentContents);
+
+                await Share.RequestAsync(new ShareFileRequest
+                {
+                    Title = Title,
+                    File = new ShareFile(file)
+                });
+            }
         }
     }
 }

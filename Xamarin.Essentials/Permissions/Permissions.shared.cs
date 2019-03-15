@@ -7,7 +7,10 @@ namespace Xamarin.Essentials
     internal static partial class Permissions
     {
         internal static void EnsureDeclared(PermissionType permission) =>
-            PlatformEnsureDeclared(permission);
+            PlatformEnsureDeclared(permission, true);
+
+        internal static bool EnsureDeclared(PermissionType permission, bool throwIfMissing) =>
+            PlatformEnsureDeclared(permission, throwIfMissing);
 
         internal static Task<PermissionStatus> CheckStatusAsync(PermissionType permission) =>
             PlatformCheckStatusAsync(permission);

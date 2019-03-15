@@ -107,7 +107,7 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets or tsets the main text or message to share.</summary>
+        <summary>Gets or sets the main text or message to share.</summary>
         <value>The main text.</value>
         <remarks>
           <para />

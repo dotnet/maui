@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows.Input;
 using Xamarin.Essentials;
@@ -9,11 +10,13 @@ namespace Samples.ViewModel
 {
     public class EmailViewModel : BaseViewModel
     {
-        string subject;
-        string body;
-        string recipientsTo;
+        string subject = "Hello World!";
+        string body = "This is the email body.\nWe hope you like it!";
+        string recipientsTo = "someone@example.org";
         string recipientsCc;
         string recipientsBcc;
+        string attachmentContents;
+        string attachmentName;
         bool isHtml;
 
         public EmailViewModel()
@@ -53,6 +56,18 @@ namespace Samples.ViewModel
             set => SetProperty(ref recipientsBcc, value);
         }
 
+        public string AttachmentContents
+        {
+            get => attachmentContents;
+            set => SetProperty(ref attachmentContents, value);
+        }
+
+        public string AttachmentName
+        {
+            get => attachmentName;
+            set => SetProperty(ref attachmentName, value);
+        }
+
         public bool IsHtml
         {
             get => isHtml;
@@ -67,7 +82,7 @@ namespace Samples.ViewModel
             IsBusy = true;
             try
             {
-                await Email.ComposeAsync(new EmailMessage
+                var message = new EmailMessage
                 {
                     Subject = Subject,
                     Body = Body,
@@ -75,7 +90,19 @@ namespace Samples.ViewModel
                     To = Split(RecipientsTo),
                     Cc = Split(RecipientsCc),
                     Bcc = Split(RecipientsBcc),
-                });
+                };
+
+                if (!string.IsNullOrWhiteSpace(AttachmentName) || !string.IsNullOrWhiteSpace(AttachmentContents))
+                {
+                    // create a temprary file
+                    var fn = string.IsNullOrWhiteSpace(AttachmentName) ? "Attachment.txt" : AttachmentName.Trim();
+                    var file = Path.Combine(FileSystem.CacheDirectory, fn);
+                    File.WriteAllText(file, AttachmentContents);
+
+                    message.Attachments.Add(new EmailAttachment(file));
+                }
+
+                await Email.ComposeAsync(message);
             }
             finally
             {

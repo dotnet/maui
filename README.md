@@ -92,7 +92,7 @@ If building on Visual Studio 2017, you will need the following SDKs and workload
 
 ### You will need the following SDKs
 
-* Android 8.1 SDK Installed
+* Android 9.0, 8.1, 8.0, 7.1, 7.0, & 6.0 SDK Installed
 * UWP 10.0.16299 SDK Installed
 
 If using Visual Studio for Mac the project can be built at the command line with MSBuild. To change the project type that you are working with, simply edit Xamarin.Essentials.csproj and modify the TargetFrameworks for only the project type you want to use.
@@ -110,3 +110,4 @@ Here are some frequently asked questions about Xamarin.Essentials, but be sure t
 ## License
 
 Please see the [License](LICENSE).
+

@@ -8,6 +8,10 @@
         <viewmodels:EmailViewModel />
     </views:BasePage.BindingContext>
 
+    <views:BasePage.ToolbarItems>
+        <ToolbarItem Text="Send" Command="{Binding SendEmailCommand}" IsEnabled="{Binding IsNotBusy}" />
+    </views:BasePage.ToolbarItems>
+
     <StackLayout>
         <Label Text="Easily send email messages." FontAttributes="Bold" Margin="12" />
 
@@ -17,12 +21,15 @@
 
                 <Button Text="Send Email" Command="{Binding SendEmailCommand}" IsEnabled="{Binding IsNotBusy}" />
 
-                <Label Text="Recipients To:" />
+                <Label Text="Recipients" FontAttributes="Bold" Margin="0,6,0,0" />
+                <Label Text="To:" />
                 <Entry Text="{Binding RecipientsTo}" />
-                <Label Text="Recipients CC:" />
+                <Label Text="CC:" />
                 <Entry Text="{Binding RecipientsCc}" />
-                <Label Text="Recipients BCC:" />
+                <Label Text="BCC:" />
                 <Entry Text="{Binding RecipientsBcc}" />
+
+                <Label Text="Message" FontAttributes="Bold" Margin="0,6,0,0" />
                 <Label Text="Subject:" />
                 <Entry Text="{Binding Subject}" />
                 <StackLayout Orientation="Horizontal">
@@ -33,6 +40,15 @@
                 <Editor Text="{Binding Body}" Keyboard="Chat"
                         AutoSize="TextChanges"
                         VerticalOptions="FillAndExpand" HeightRequest="100" />
+
+                <Label Text="Attachment" FontAttributes="Bold" Margin="0,6,0,0" />
+                <Label Text="File Name:" />
+                <Entry Text="{Binding AttachmentName}" />
+                <Label Text="File Contents:" />
+                <Editor Text="{Binding AttachmentContents}" Keyboard="Chat"
+                        VerticalOptions="FillAndExpand" HeightRequest="200" />
+
+                <Button Text="Send Email" Command="{Binding SendEmailCommand}" IsEnabled="{Binding IsNotBusy}" />
 
             </StackLayout>
         </ScrollView>

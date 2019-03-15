@@ -58,6 +58,24 @@
         <remarks></remarks>
       </Docs>
     </Member>
+    <Member MemberName="Attachments">
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.List&lt;Xamarin.Essentials.EmailAttachment&gt; Attachments { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.List`1&lt;class Xamarin.Essentials.EmailAttachment&gt; Attachments" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.EmailMessage.Attachments" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Collections.Generic.List&lt;Xamarin.Essentials.EmailAttachment&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets a list of file attachments.</summary>
+        <value></value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Bcc">
       <MemberSignature Language="C#" Value="public System.Collections.Generic.List&lt;string&gt; Bcc { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.List`1&lt;string&gt; Bcc" />
