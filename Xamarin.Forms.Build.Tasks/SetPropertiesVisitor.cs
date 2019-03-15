@@ -396,7 +396,7 @@ namespace Xamarin.Forms.Build.Tasks
 			TypeReference tPropertyRef = tSourceRef;
 			if (properties != null && properties.Count > 0) {
 				var lastProp = properties[properties.Count - 1];
-				tPropertyRef = lastProp.property.ResolveGenericPropertyType(lastProp.propDeclTypeRef, module);
+				tPropertyRef = lastProp.property.PropertyType.ResolveGenericParameters(lastProp.propDeclTypeRef);
 			}
 			tPropertyRef = module.ImportReference(tPropertyRef);
 			var valuetupleRef = context.Module.ImportReference(module.ImportReference(("mscorlib", "System", "ValueTuple`2")).MakeGenericInstanceType(new[] { tPropertyRef, module.TypeSystem.Boolean }));
@@ -478,7 +478,7 @@ namespace Xamarin.Forms.Build.Tasks
 					var indexType = indexer.GetMethod.Parameters[0].ParameterType;
 					if (!TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String) && !TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32))
 						throw new XamlParseException($"Binding: Unsupported indexer index type: {indexType.FullName}", lineInfo);
-					previousPartTypeRef = indexer.ResolveGenericPropertyType(indexerDeclTypeRef, module);
+					previousPartTypeRef = indexer.PropertyType.ResolveGenericParameters(indexerDeclTypeRef);
 				}
 			}
 			return properties;
@@ -1160,7 +1160,7 @@ namespace Xamarin.Forms.Build.Tasks
 			var property = parent.VariableType.GetProperty(pd => pd.Name == localName, out declaringTypeReference);
 			if (property == null)
 				return false;
-			var propertyType = property.ResolveGenericPropertyType(declaringTypeReference, module);
+			var propertyType = property.PropertyType.ResolveGenericParameters(declaringTypeReference);
 			var propertySetter = property.SetMethod;
 			if (propertySetter == null || !propertySetter.IsPublic || propertySetter.IsStatic)
 				return false;
@@ -1224,7 +1224,7 @@ namespace Xamarin.Forms.Build.Tasks
 			module.ImportReference(parent.VariableType.ResolveCached());
 			var propertySetterRef = module.ImportReference(module.ImportReference(propertySetter).ResolveGenericParameters(declaringTypeReference, module));
 			propertySetterRef.ImportTypes(module);
-			var propertyType = property.ResolveGenericPropertyType(declaringTypeReference, module);
+			var propertyType = property.PropertyType.ResolveGenericParameters(declaringTypeReference);
 			var valueNode = node as ValueNode;
 			var elementNode = node as IElementNode;
 

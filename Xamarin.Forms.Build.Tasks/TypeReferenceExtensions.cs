@@ -368,8 +368,19 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public static TypeReference ResolveGenericParameters(this TypeReference self, TypeReference declaringTypeReference)
 		{
+			var genericdeclType = declaringTypeReference as GenericInstanceType;
+			if (genericdeclType == null)
+				return self;
+
+			var genericParameterSelf = self as GenericParameter;
+			if (genericParameterSelf != null)
+				return genericdeclType.GenericArguments[genericParameterSelf.Position];
+
 			var genericself = self as GenericInstanceType;
-			return genericself == null ? self : genericself.ResolveGenericParameters(declaringTypeReference);
+			if (genericself != null)
+				return genericself.ResolveGenericParameters(declaringTypeReference);
+
+			return self;
 		}
 
 		public static GenericInstanceType ResolveGenericParameters(this GenericInstanceType self, TypeReference declaringTypeReference)
@@ -378,13 +389,18 @@ namespace Xamarin.Forms.Build.Tasks
 			if (genericdeclType == null)
 				return self;
 
+			return self.ResolveGenericParameters(genericdeclType);
+		}
+
+		public static GenericInstanceType ResolveGenericParameters(this GenericInstanceType self, GenericInstanceType declaringTypeReference)
+		{
 			List<TypeReference> args = new List<TypeReference>();
 			for (var i = 0; i < self.GenericArguments.Count; i++) {
 				var genericParameter = self.GenericArguments[i] as GenericParameter;
 				if (genericParameter == null)
 					args.Add(self.GenericArguments[i].ResolveGenericParameters(declaringTypeReference));
 				else if (genericParameter.Type == GenericParameterType.Type)
-					args.Add(genericdeclType.GenericArguments[genericParameter.Position]);
+					args.Add(declaringTypeReference.GenericArguments[genericParameter.Position]);
 			}
 			return self.ElementType.MakeGenericInstanceType(args.ToArray());
 		}

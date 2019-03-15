@@ -151,6 +151,17 @@ namespace Xamarin.Forms.XamlcUnitTests
 			Assert.False(TestInheritsFromOrImplements(test.GetType("Xamarin.Forms.Effect"), core.GetType("Xamarin.Forms.Effect")));
 		}
 
+		[Test]
+		public void TestResolveSelectedGenericParameter()
+		{
+			var imported = module.ImportReference(typeof(Bar<byte>));
+			var baseType = (GenericInstanceType)imported.Resolve().BaseType;
+			var resolvedType = baseType.GenericArguments[0].ResolveGenericParameters(imported);
+
+			Assert.AreEqual("System", resolvedType.Namespace);
+			Assert.AreEqual("Byte", resolvedType.Name);
+		}
+
 		[TestCase(typeof(Bar<byte>), 1)]
 		[TestCase(typeof(Quux<byte>), 2)]
 		[TestCase(typeof(Corge<byte>), 3)]

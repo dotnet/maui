@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Build.Tasks
 			var owner = bpRef.DeclaringType;
 			var bpName = bpRef.Name.EndsWith("Property", StringComparison.Ordinal) ? bpRef.Name.Substring(0, bpRef.Name.Length - 8) : bpRef.Name;
 			var property = owner.GetProperty(pd => pd.Name == bpName, out propertyDeclaringType);
-			var propertyType = property?.ResolveGenericPropertyType(propertyDeclaringType, module);
+			var propertyType = property?.PropertyType?.ResolveGenericParameters(propertyDeclaringType);
 			var staticGetter = owner.GetMethods(md => md.Name == $"Get{bpName}" &&
 												md.IsStatic &&
 												md.IsPublic &&
