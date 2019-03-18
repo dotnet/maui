@@ -97,6 +97,9 @@ namespace Xamarin.Forms
 #else
 			Device.SetIdiom(TargetIdiom.Desktop);
 			Device.SetFlowDirection(NSApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
+			var mojave = new NSOperatingSystemVersion(10, 14, 0);
+			if (NSProcessInfo.ProcessInfo.IsOperatingSystemAtLeastVersion(mojave))
+				NSApplication.SharedApplication.Appearance = NSAppearance.GetAppearance(NSAppearance.NameAqua);
 #endif
 			Device.SetFlags(s_flags);
 			Device.PlatformServices = new IOSPlatformServices();
