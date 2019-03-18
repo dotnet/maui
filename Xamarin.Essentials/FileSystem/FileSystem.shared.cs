@@ -75,5 +75,8 @@ namespace Xamarin.Essentials
             // leave it up to the sender
             return null;
         }
+
+        public Task<Stream> OpenReadAsync()
+            => PlatformOpenReadAsync();
     }
 }

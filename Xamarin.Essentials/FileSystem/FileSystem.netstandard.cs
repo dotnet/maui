@@ -22,5 +22,8 @@ namespace Xamarin.Essentials
 
         internal void PlatformInit(FileBase file) =>
             throw new NotImplementedInReferenceAssemblyException();
+
+        Task<Stream> PlatformOpenReadAsync() =>
+            throw new NotImplementedInReferenceAssemblyException();
     }
 }

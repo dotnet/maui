@@ -44,5 +44,8 @@ namespace Xamarin.Essentials
 
         // we can't do anything here, but Windows will take care of it
         internal static string PlatformGetContentType(string extension) => null;
+
+        Task<Stream> PlatformOpenReadAsync() =>
+            File.OpenStreamForReadAsync();
     }
 }
