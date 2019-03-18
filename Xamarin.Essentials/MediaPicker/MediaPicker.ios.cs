@@ -68,15 +68,4 @@ namespace Xamarin.Essentials
             }
         }
     }
-
-    public partial class MediaFile
-    {
-        public MediaFile(string file)
-        {
-            FilePath = file;
-        }
-
-        Task<Stream> PlatformOpenReadAsync() =>
-            Task.FromResult((Stream)File.OpenRead(FilePath));
-    }
 }

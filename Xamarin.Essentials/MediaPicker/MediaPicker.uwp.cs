@@ -32,19 +32,4 @@ namespace Xamarin.Essentials
             return new MediaFile(result);
         }
     }
-
-    public partial class MediaFile
-    {
-        readonly IStorageFile file;
-
-        public MediaFile(IStorageFile file)
-        {
-            this.file = file;
-
-            FilePath = file.Path;
-        }
-
-        Task<Stream> PlatformOpenReadAsync() =>
-            file.OpenStreamForReadAsync();
-    }
 }

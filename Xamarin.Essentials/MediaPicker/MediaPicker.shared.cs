@@ -17,13 +17,24 @@ namespace Xamarin.Essentials
     {
     }
 
-    public partial class MediaFile
+    public partial class MediaFile : FileBase
     {
-        public string FilePath { get; }
+        public MediaFile(string fullPath)
+            : base(fullPath)
+        {
+            ExperimentalFeatures.VerifyEnabled(ExperimentalFeatures.MediaPicker);
+        }
 
-        public string FileName => Path.GetFileName(FilePath);
+        public MediaFile(string fullPath, string contentType)
+            : base(fullPath, contentType)
+        {
+            ExperimentalFeatures.VerifyEnabled(ExperimentalFeatures.MediaPicker);
+        }
 
-        public Task<Stream> OpenReadAsync() =>
-            PlatformOpenReadAsync();
+        public MediaFile(FileBase file)
+            : base(file)
+        {
+            ExperimentalFeatures.VerifyEnabled(ExperimentalFeatures.MediaPicker);
+        }
     }
 }
