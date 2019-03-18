@@ -32,4 +32,14 @@ namespace Xamarin.Essentials
             return new MediaFile(result);
         }
     }
+
+    public partial class MediaFile
+    {
+        internal MediaFile(IStorageFile file)
+           : this(file?.Path)
+        {
+            File = file;
+            ContentType = file?.ContentType;
+        }
+    }
 }
