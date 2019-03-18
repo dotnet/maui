@@ -56,7 +56,11 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionG
 		{
 			var current = "[none]";
 
-			if (CollectionView.SelectedItem != null)
+			if(CollectionView.SelectionMode == SelectionMode.Multiple)
+			{
+				current = ToList(CollectionView?.SelectedItems);
+			}
+			else if (CollectionView.SelectionMode == SelectionMode.Single)
 			{
 				current = ((CollectionViewGalleryTestItem)CollectionView?.SelectedItem)?.Caption;
 			}
