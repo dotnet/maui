@@ -36,29 +36,29 @@ namespace Xamarin.Forms.Platform.Android
 		public virtual void SetAppearance(BottomNavigationView bottomView, ShellAppearance appearance)
 		{
 			IShellAppearanceElement controller = appearance;
-			var background = controller.EffectiveTabBarBackgroundColor;
-			var foreground = controller.EffectiveTabBarForegroundColor;
-			var disabled = controller.EffectiveTabBarDisabledColor;
-			var unselected = controller.EffectiveTabBarUnselectedColor;
-			var title = controller.EffectiveTabBarTitleColor;
+			var backgroundColor = controller.EffectiveTabBarBackgroundColor;
+			var foregroundColor = controller.EffectiveTabBarForegroundColor; // currently unused
+			var disabledColor = controller.EffectiveTabBarDisabledColor;
+			var unselectedColor = controller.EffectiveTabBarUnselectedColor;
+			var titleColor = controller.EffectiveTabBarTitleColor;
 
 
 			if (_defaultList == null)
 			{
 #if __ANDROID_28__
-				_defaultList = bottomView.ItemTextColor ?? MakeColorStateList(title.ToAndroid().ToArgb(), disabled.ToAndroid().ToArgb(), unselected.ToAndroid().ToArgb());
+				_defaultList = bottomView.ItemTextColor ?? MakeColorStateList(titleColor.ToAndroid().ToArgb(), disabledColor.ToAndroid().ToArgb(), unselectedColor.ToAndroid().ToArgb());
 #else
 				_defaultList = bottomView.ItemTextColor;
 #endif
 			}
 
-			var colorStateList = MakeColorStateList(title, disabled, unselected);
+			var colorStateList = MakeColorStateList(titleColor, disabledColor, unselectedColor);
 			bottomView.ItemTextColor = colorStateList;
 			bottomView.ItemIconTintList = colorStateList;
 
 			colorStateList.Dispose();
 
-			SetBackgroundColor(bottomView, background);
+			SetBackgroundColor(bottomView, backgroundColor);
 		}
 
 		protected virtual void SetBackgroundColor(BottomNavigationView bottomView, Color color)
