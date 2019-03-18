@@ -12,7 +12,6 @@ using AProgressBar = Android.Widget.ProgressBar;
 using AView = Android.Views.View;
 using Xamarin.Forms.Platform.Android;
 
-[assembly: ExportRenderer(typeof(ActivityIndicator), typeof(MaterialActivityIndicatorRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
 
 namespace Xamarin.Forms.Material.Android
 {

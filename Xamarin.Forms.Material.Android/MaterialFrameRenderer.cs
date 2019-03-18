@@ -11,7 +11,6 @@ using AView = Android.Views.View;
 using MaterialCardView = Android.Support.Design.Card.MaterialCardView;
 using Xamarin.Forms.Platform.Android;
 
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Frame), typeof(MaterialFrameRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
 
 namespace Xamarin.Forms.Material.Android
 {

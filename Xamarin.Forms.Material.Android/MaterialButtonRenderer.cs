@@ -18,7 +18,6 @@ using AView = Android.Views.View;
 using MButton = Android.Support.Design.Button.MaterialButton;
 using Xamarin.Forms.Platform.Android;
 
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Button), typeof(MaterialButtonRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
 
 namespace Xamarin.Forms.Material.Android
 {
