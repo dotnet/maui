@@ -14,16 +14,22 @@ namespace Xamarin.Essentials
             switch (permission)
             {
                 case PermissionType.LocationWhenInUse:
-                    if (!info.ContainsKey(new NSString("NSLocationWhenInUseUsageDescription")) && throwIfMissing)
-                        throw new PermissionException("You must set `NSLocationWhenInUseUsageDescription` in your Info.plist file to enable authorization requests for location updates.");
-                    else
-                        return false;
+                    if (!info.ContainsKey(new NSString("NSLocationWhenInUseUsageDescription")))
+                    {
+                        if (throwIfMissing)
+                            throw new PermissionException("You must set `NSLocationWhenInUseUsageDescription` in your Info.plist file to enable authorization requests for location updates.");
+                        else
+                            return false;
+                    }
                     break;
                 case PermissionType.Photos:
-                    if (!info.ContainsKey(new NSString("NSPhotoLibraryUsageDescription")) && throwIfMissing)
-                        throw new PermissionException("You must set `NSPhotoLibraryUsageDescription` in your Info.plist file to enable authorization requests for access to the photo library.");
-                    else
-                        return false;
+                    if (!info.ContainsKey(new NSString("NSPhotoLibraryUsageDescription")))
+                    {
+                        if (throwIfMissing)
+                            throw new PermissionException("You must set `NSPhotoLibraryUsageDescription` in your Info.plist file to enable authorization requests for access to the photo library.");
+                        else
+                            return false;
+                    }
                     break;
             }
 
