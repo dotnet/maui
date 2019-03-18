@@ -80,9 +80,11 @@ namespace Xamarin.Forms.Xaml
 							else //Attached BP
 								name = new XmlName(reader.NamespaceURI, reader.LocalName);
 
+							INode prop = null;
 							if (reader.IsEmptyElement)
-								throw new XamlParseException($"Unexpected empty element '<{reader.Name}/>'", (IXmlLineInfo)reader);
-							var prop = ReadNode(reader);
+								Debug.WriteLine($"Unexpected empty element '<{reader.Name} />'", (IXmlLineInfo)reader);
+							else
+								prop = ReadNode(reader);
 							if (prop != null)
 								node.Properties.Add(name, prop);
 						}
@@ -156,10 +158,7 @@ namespace Xamarin.Forms.Xaml
 
 						IList<XmlType> typeArguments = null;
 						if (attributes.Any(kvp => kvp.Key == XmlName.xTypeArguments))
-						{
-							typeArguments =
-								((ValueNode)attributes.First(kvp => kvp.Key == XmlName.xTypeArguments).Value).Value as IList<XmlType>;
-						}
+							typeArguments = ((ValueNode)attributes.First(kvp => kvp.Key == XmlName.xTypeArguments).Value).Value as IList<XmlType>;
 
 						node = new ElementNode(new XmlType(elementNsUri, elementName, typeArguments), elementNsUri,
 							reader as IXmlNamespaceResolver, elementXmlInfo.LineNumber, elementXmlInfo.LinePosition);
