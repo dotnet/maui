@@ -15,7 +15,7 @@ var IOS_TEST_RESULTS_PATH = "./xunit-ios.xml";
 var ANDROID_PROJ = "./DeviceTests.Android/DeviceTests.Android.csproj";
 var ANDROID_APK_PATH = "./DeviceTests.Android/bin/Release/com.xamarin.essentials.devicetests-Signed.apk";
 var ANDROID_TEST_RESULTS_PATH = "./xunit-android.xml";
-var ANDROID_AVD = "CABOODLE";
+var ANDROID_AVD = EnvironmentVariable("ANDROID_AVD") ?? "CABOODLE";
 var ANDROID_PKG_NAME = "com.xamarin.essentials.devicetests";
 var ANDROID_EMU_TARGET = EnvironmentVariable("ANDROID_EMU_TARGET") ?? "system-images;android-26;google_apis;x86";
 var ANDROID_EMU_DEVICE = EnvironmentVariable("ANDROID_EMU_DEVICE") ?? "Nexus 5X";
@@ -24,7 +24,7 @@ var UWP_PROJ = "./DeviceTests.UWP/DeviceTests.UWP.csproj";
 var UWP_TEST_RESULTS_PATH = "./xunit-uwp.xml";
 var UWP_PACKAGE_ID = "ec0cc741-fd3e-485c-81be-68815c480690";
 
-var TCP_LISTEN_TIMEOUT = 60;
+var TCP_LISTEN_TIMEOUT = 120;
 var TCP_LISTEN_PORT = 10578;
 var TCP_LISTEN_HOST = System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName())
         .AddressList.First(f => f.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).ToString();
@@ -176,10 +176,14 @@ Task ("test-android-emu")
     .IsDependentOn ("build-android")
     .Does (() =>
 {
-    if (EnvironmentVariable("ANDROID_SKIP_AVD_CREATE") == null) {
-        var avdSettings = new AndroidAvdManagerToolSettings  { SdkRoot = ANDROID_HOME };
+    var avdSettings = new AndroidAvdManagerToolSettings  { SdkRoot = ANDROID_HOME };
+    Information ("Available AVDs:");
+    foreach (var avd in AndroidAvdListAvds (avdSettings)) {
+        Information (" - " + avd);
+    }
 
-        // Create the AVD if necessary
+    // Create the AVD if necessary
+    if (EnvironmentVariable("ANDROID_SKIP_AVD_CREATE") == null) {
         Information ("Creating AVD if necessary: {0}...", ANDROID_AVD);
         if (!AndroidAvdListAvds (avdSettings).Any (a => a.Name == ANDROID_AVD))
             AndroidAvdCreate (ANDROID_AVD, ANDROID_EMU_TARGET, ANDROID_EMU_DEVICE, force: true, settings: avdSettings);
@@ -300,6 +304,11 @@ Task ("test-uwp-emu")
     uninstallPS();
     
     // Install the appx
+    var dependencies = GetFiles("./**/AppPackages/**/Dependencies/x86/*.appx");
+    foreach (var dep in dependencies) {
+        Information("Installing Dependency appx: {0}", dep);
+        StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(dep).FullPath + "\"");
+    }
     var appxBundlePath = GetFiles("./**/AppPackages/**/*.appxbundle").First ();
     Information("Installing appx: {0}", appxBundlePath);
     StartProcess ("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(appxBundlePath).FullPath + "\"");

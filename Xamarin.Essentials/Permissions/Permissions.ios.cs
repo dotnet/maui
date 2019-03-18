@@ -7,22 +7,27 @@ namespace Xamarin.Essentials
 {
     internal static partial class Permissions
     {
-        static void PlatformEnsureDeclared(PermissionType permission)
+        static bool PlatformEnsureDeclared(PermissionType permission, bool throwIfMissing)
         {
             var info = NSBundle.MainBundle.InfoDictionary;
 
             switch (permission)
             {
                 case PermissionType.LocationWhenInUse:
-                    if (!info.ContainsKey(new NSString("NSLocationWhenInUseUsageDescription")))
+                    if (!info.ContainsKey(new NSString("NSLocationWhenInUseUsageDescription")) && throwIfMissing)
                         throw new PermissionException("You must set `NSLocationWhenInUseUsageDescription` in your Info.plist file to enable authorization requests for location updates.");
+                    else
+                        return false;
                     break;
-
                 case PermissionType.Photos:
-                    if (!info.ContainsKey(new NSString("NSPhotoLibraryUsageDescription")))
+                    if (!info.ContainsKey(new NSString("NSPhotoLibraryUsageDescription")) && throwIfMissing)
                         throw new PermissionException("You must set `NSPhotoLibraryUsageDescription` in your Info.plist file to enable authorization requests for access to the photo library.");
+                    else
+                        return false;
                     break;
             }
+
+            return true;
         }
 
         static Task<PermissionStatus> PlatformCheckStatusAsync(PermissionType permission)
@@ -52,6 +57,10 @@ namespace Xamarin.Essentials
             switch (permission)
             {
                 case PermissionType.LocationWhenInUse:
+
+                    if (!MainThread.IsMainThread)
+                        throw new PermissionException("Permission request must be invoked on main thread.");
+
                     return await RequestLocationAsync();
                 case PermissionType.Photos:
                     return await RequestPhotosAsync();

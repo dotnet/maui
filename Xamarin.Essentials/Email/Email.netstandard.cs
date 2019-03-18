@@ -10,4 +10,10 @@ namespace Xamarin.Essentials
         static Task PlatformComposeAsync(EmailMessage message) =>
             throw new NotImplementedInReferenceAssemblyException();
     }
+
+    public partial class EmailAttachment
+    {
+        string PlatformGetContentType(string extension) =>
+            throw new NotImplementedInReferenceAssemblyException();
+    }
 }

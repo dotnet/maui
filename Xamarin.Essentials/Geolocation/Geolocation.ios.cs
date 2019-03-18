@@ -45,8 +45,10 @@ namespace Xamarin.Essentials
             manager.DesiredAccuracy = request.PlatformDesiredAccuracy;
             manager.Delegate = listener;
 
+#if __IOS__
             // we're only listening for a single update
             manager.PausesLocationUpdatesAutomatically = false;
+#endif
 
             manager.StartUpdatingLocation();
 

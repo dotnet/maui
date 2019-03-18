@@ -56,6 +56,8 @@ namespace Xamarin.Essentials
 
         public double? Course { get; set; }
 
+        public bool IsFromMockProvider { get; set; }
+
         public static double CalculateDistance(double latitudeStart, double longitudeStart, Location locationEnd, DistanceUnits units) =>
             CalculateDistance(latitudeStart, longitudeStart, locationEnd.Latitude, locationEnd.Longitude, units);
 

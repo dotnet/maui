@@ -6,8 +6,19 @@ namespace Xamarin.Essentials
 {
     public static partial class MainThread
     {
-        static bool PlatformIsMainThread =>
-            CoreApplication.MainView.CoreWindow?.Dispatcher?.HasThreadAccess ?? false;
+        static bool PlatformIsMainThread
+        {
+            get
+            {
+                // if there is no main window, then this is either a service
+                // or the UI is not yet constructed, so the main thread is the
+                // current thread
+                if (CoreApplication.MainView.CoreWindow == null)
+                    return true;
+
+                return CoreApplication.MainView.CoreWindow.Dispatcher?.HasThreadAccess ?? false;
+            }
+        }
 
         static void PlatformBeginInvokeOnMainThread(Action action)
         {

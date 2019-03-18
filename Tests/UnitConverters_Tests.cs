@@ -130,9 +130,41 @@ namespace Tests
         [InlineData(42.93708, -75.6107, -33.92528, 18.42389, 12789.5628)] // new york -> cape town
         [InlineData(45.80721, 15.96757, 19.432608, -99.133209, 10264.4796)] // zagreb -> mexico city
         [InlineData(43.623409, -79.368683, 42.35866, -71.05674, 690.2032)] // toronto -> boston, ma
+        [InlineData(37.720134, -122.182552, 37.720266, -122.181969, .0533)]
         public void CoordinatesToKilometers(double lat1, double lon1, double lat2, double lon2, double distance)
         {
             Assert.Equal(distance, UnitConverters.CoordinatesToKilometers(lat1, lon1, lat2, lon2), 4);
+            var location1 = new Location(lat1, lon1);
+            var location2 = new Location(lat2, lon2);
+            Assert.Equal(distance, Location.CalculateDistance(location1, location2, DistanceUnits.Kilometers), 4);
+            Assert.Equal(distance, Location.CalculateDistance(location2, location1, DistanceUnits.Kilometers), 4);
+            Assert.Equal(distance, location1.CalculateDistance(location2, DistanceUnits.Kilometers), 4);
+            Assert.Equal(distance, location2.CalculateDistance(location1, DistanceUnits.Kilometers), 4);
+            Assert.Equal(distance, LocationExtensions.CalculateDistance(location1, location2, DistanceUnits.Kilometers), 4);
+            Assert.Equal(distance, LocationExtensions.CalculateDistance(location2, location1, DistanceUnits.Kilometers), 4);
+        }
+
+        [Theory]
+        [InlineData(55.85781, -4.24253, 51.509865, -0.118092, 554.3128)] // glasgow -> london
+        [InlineData(36.12, -86.67, 33.94, -118.40, 2886.4444)] // nashville, tn -> los angeles, ca
+        [InlineData(51.509865, -0.118092, -33.92528, 18.42389, 9671.1251)] // london -> cape town
+        [InlineData(51.509865, -0.118092, 40.42028, -3.70577, 1263.4938)] // london -> madrid
+        [InlineData(42.93708, -75.6107, -33.92528, 18.42389, 12789.5628)] // new york -> cape town
+        [InlineData(45.80721, 15.96757, 19.432608, -99.133209, 10264.4796)] // zagreb -> mexico city
+        [InlineData(43.623409, -79.368683, 42.35866, -71.05674, 690.2032)] // toronto -> boston, ma
+        [InlineData(37.720134, -122.182552, 37.720266, -122.181969, .0533)]
+        public void CoordinatesToMiles(double lat1, double lon1, double lat2, double lon2, double distance)
+        {
+            distance = UnitConverters.KilometersToMiles(distance);
+            Assert.Equal(distance, UnitConverters.CoordinatesToMiles(lat1, lon1, lat2, lon2), 3);
+            var location1 = new Location(lat1, lon1);
+            var location2 = new Location(lat2, lon2);
+            Assert.Equal(distance, Location.CalculateDistance(location1, location2, DistanceUnits.Miles), 3);
+            Assert.Equal(distance, Location.CalculateDistance(location2, location1, DistanceUnits.Miles), 3);
+            Assert.Equal(distance, location1.CalculateDistance(location2, DistanceUnits.Miles), 3);
+            Assert.Equal(distance, location2.CalculateDistance(location1, DistanceUnits.Miles), 3);
+            Assert.Equal(distance, LocationExtensions.CalculateDistance(location1, location2, DistanceUnits.Miles), 3);
+            Assert.Equal(distance, LocationExtensions.CalculateDistance(location2, location1, DistanceUnits.Miles), 3);
         }
     }
 }

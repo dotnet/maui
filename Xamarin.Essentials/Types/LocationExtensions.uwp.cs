@@ -32,7 +32,8 @@ namespace Xamarin.Essentials
                 Altitude = location.Coordinate.Point.Position.Altitude,
                 Accuracy = location.Coordinate.Accuracy,
                 Speed = (!location.Coordinate.Speed.HasValue || double.IsNaN(location.Coordinate.Speed.Value)) ? default : location.Coordinate.Speed,
-                Course = (!location.Coordinate.Heading.HasValue || double.IsNaN(location.Coordinate.Heading.Value)) ? default : location.Coordinate.Heading
+                Course = (!location.Coordinate.Heading.HasValue || double.IsNaN(location.Coordinate.Heading.Value)) ? default : location.Coordinate.Heading,
+                IsFromMockProvider = false
             };
 
         internal static Location ToLocation(this Geocoordinate coordinate) =>

@@ -16,7 +16,7 @@
       <para>Each platform uses the platform provided native API's for storing data securely:</para>
       <list type="bullet">
         <item>
-          <term>iOS: Data is stored in KeyChain. Additional information on SecAccessible at: <see cref="https://developer.xamarin.com/api/type/Security.SecAccessible/" /></term>
+          <term>iOS: Data is stored in KeyChain. Additional information on SecAccessible at: <see cref="T:Security.SecAccessible" /></term>
         </item>
         <item>
           <term>Android: Encryption keys are stored in KeyStore and encrypted data is stored in a named shared preference container (PackageId.Xamarin.Essentials).</term>
@@ -44,7 +44,7 @@
       <Docs>
         <summary>iOS: Default SecAccessible to use for all Get/Set calls to KeyChain. Default value is AfterFirstUnlock.</summary>
         <value>The SecAccessible to use for all KeyChain access.</value>
-        <remarks>For more information see: <see cref="https://developer.xamarin.com/api/type/Security.SecAccessible/" /></remarks>
+        <remarks>For more information see: <see cref="T:Security.SecAccessible" /></remarks>
       </Docs>
     </Member>
     <Member MemberName="GetAsync">

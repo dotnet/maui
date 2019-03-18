@@ -23,7 +23,8 @@ namespace Xamarin.Essentials
 
     public enum DeviceType
     {
-        Physical = 0,
-        Virtual = 1
+        Unknown = 0,
+        Physical = 1,
+        Virtual = 2
     }
 }

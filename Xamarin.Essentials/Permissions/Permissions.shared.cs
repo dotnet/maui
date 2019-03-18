@@ -7,18 +7,16 @@ namespace Xamarin.Essentials
     internal static partial class Permissions
     {
         internal static void EnsureDeclared(PermissionType permission) =>
-            PlatformEnsureDeclared(permission);
+            PlatformEnsureDeclared(permission, true);
+
+        internal static bool EnsureDeclared(PermissionType permission, bool throwIfMissing) =>
+            PlatformEnsureDeclared(permission, throwIfMissing);
 
         internal static Task<PermissionStatus> CheckStatusAsync(PermissionType permission) =>
             PlatformCheckStatusAsync(permission);
 
-        internal static Task<PermissionStatus> RequestAsync(PermissionType permission)
-        {
-            if (!MainThread.IsMainThread)
-                throw new PermissionException("Permission request must be invoked on main thread.");
-
-            return PlatformRequestAsync(permission);
-        }
+        internal static Task<PermissionStatus> RequestAsync(PermissionType permission) =>
+            PlatformRequestAsync(permission);
 
         internal static async Task RequireAsync(PermissionType permission)
         {

@@ -75,7 +75,7 @@ namespace Xamarin.Essentials
         static DeviceIdiom DetectIdiom(UiMode uiMode)
         {
             if (uiMode.HasFlag(UiMode.TypeNormal))
-                return DeviceIdiom.Phone;
+                return DeviceIdiom.Unknown;
             else if (uiMode.HasFlag(UiMode.TypeTelevision))
                 return DeviceIdiom.TV;
             else if (uiMode.HasFlag(UiMode.TypeDesk))
@@ -95,6 +95,7 @@ namespace Xamarin.Essentials
                 Build.Model.Contains("Emulator") ||
                 Build.Model.Contains("Android SDK built for x86") ||
                 Build.Manufacturer.Contains("Genymotion") ||
+                Build.Manufacturer.Contains("VS Emulator") ||
                 (Build.Brand.StartsWith("generic", StringComparison.InvariantCulture) && Build.Device.StartsWith("generic", StringComparison.InvariantCulture)) ||
                 Build.Product.Equals("google_sdk", StringComparison.InvariantCulture);
 

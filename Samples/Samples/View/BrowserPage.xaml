@@ -20,10 +20,27 @@
                         Command="{Binding OpenUriCommand}"
                         IsEnabled="{Binding IsNotBusy}" />
 
-                <Label Text="Browser Launch Type:" />
+
+                <Label Text="Launch Type:" />
                 <Picker HorizontalOptions="FillAndExpand"
                         ItemsSource="{Binding BrowserLaunchModes}"
                         SelectedIndex="{Binding BrowserType, Mode=TwoWay}" />
+
+                <Label Text="Launch Options:" Margin="0,20,0,0"/>
+                <Label Text="Title Mode:" />
+                <Picker HorizontalOptions="FillAndExpand"
+                        ItemsSource="{Binding BrowserTitleModes}"
+                        SelectedIndex="{Binding BrowserTitleType, Mode=TwoWay}" />
+
+                <Label Text="Toolbar Color:" />
+                <Picker HorizontalOptions="FillAndExpand"
+                        ItemsSource="{Binding AllColors}"
+                        SelectedIndex="{Binding ToolbarColor, Mode=TwoWay}" />
+
+                <Label Text="Control Tint Color (iOS):" />
+                <Picker HorizontalOptions="FillAndExpand"
+                        ItemsSource="{Binding AllColors}"
+                        SelectedIndex="{Binding ControlColor, Mode=TwoWay}" />
 
                 <Label Text="{Binding BrowserStatus}" />
             </StackLayout>

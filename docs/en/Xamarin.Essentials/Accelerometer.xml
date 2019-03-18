@@ -54,6 +54,25 @@
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="ShakeDetected">
+      <MemberSignature Language="C#" Value="public static event EventHandler ShakeDetected;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler ShakeDetected" />
+      <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.Accelerometer.ShakeDetected" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.EventHandler</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Event triggered when a shake has been detected on the device.</summary>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Start">
       <MemberSignature Language="C#" Value="public static void Start (Xamarin.Essentials.SensorSpeed sensorSpeed);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Start(valuetype Xamarin.Essentials.SensorSpeed sensorSpeed) cil managed" />

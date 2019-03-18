@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿using System;
+using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 
@@ -31,7 +32,14 @@ namespace Samples.ViewModel
 
         async void OnLaunch()
         {
-            await Launcher.OpenAsync(LaunchUri);
+            try
+            {
+                await Launcher.OpenAsync(LaunchUri);
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlertAsync($"Uri {LaunchUri} could not be launched: {ex}");
+            }
         }
 
         async void OnLaunchMail()
@@ -41,8 +49,15 @@ namespace Samples.ViewModel
 
         async void CanLaunch()
         {
-            var canBeLaunched = await Launcher.CanOpenAsync(LaunchUri);
-            await DisplayAlertAsync($"Uri {LaunchUri} can be Launched: {canBeLaunched}");
+            try
+            {
+                var canBeLaunched = await Launcher.CanOpenAsync(LaunchUri);
+                await DisplayAlertAsync($"Uri {LaunchUri} can be launched: {canBeLaunched}");
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlertAsync($"Uri {LaunchUri} could not be verified as launchable: {ex}");
+            }
         }
     }
 }

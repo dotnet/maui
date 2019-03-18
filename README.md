@@ -10,7 +10,6 @@ iOS, Android, and UWP offer unique operating system and platform APIs that devel
 
 | Build Server | Type         | Platform | Status                                                                                                                                                                                 |
 |--------------|--------------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Jenkins      | Build        | Windows  | [![Jenkins Build Status](https://jenkins.mono-project.com/buildStatus/icon?job=Components-Essentials)](https://jenkins.mono-project.com/view/Components/job/Components-Essentials/)        |
 | VSTS         | Build        | Windows  | ![VSTS Build Status](https://devdiv.visualstudio.com/_apis/public/build/definitions/0bdbc590-a062-4c3f-b0f6-9383f67865ee/8538/badge)                                                   |
 | Jenkins      | Device Tests | macOS    | [![Build Status](https://jenkins.mono-project.com/buildStatus/icon?job=Components-Essentials-DeviceTests-Mac)](https://jenkins.mono-project.com/job/Components-Essentials-DeviceTests-Mac) |
 | App Center   | Sample App   | Android  | [![Build status](https://build.appcenter.ms/v0.1/apps/7a1f46ca-ba2f-477e-aacc-ff013c7d5f7a/branches/master/badge)](https://appcenter.ms) |
@@ -26,7 +25,6 @@ Try out Xamarin.Essentials on your device!
 Xamarin.Essentials is available via:
 
 * NuGet Official Releases: [![NuGet](https://img.shields.io/nuget/vpre/Xamarin.Essentials.svg?label=NuGet)](https://www.nuget.org/packages/Xamarin.Essentials)
-* MyGet Development Feed: https://www.myget.org/F/xamarin-essentials/api/v3/index.json
 
 Please read our [Getting Started with Xamarin.Essentials guide](https://docs.microsoft.com/xamarin/essentials/get-started) for full setup instructions.
 
@@ -94,7 +92,7 @@ If building on Visual Studio 2017, you will need the following SDKs and workload
 
 ### You will need the following SDKs
 
-* Android 8.1 SDK Installed
+* Android 9.0, 8.1, 8.0, 7.1, 7.0, & 6.0 SDK Installed
 * UWP 10.0.16299 SDK Installed
 
 If using Visual Studio for Mac the project can be built at the command line with MSBuild. To change the project type that you are working with, simply edit Xamarin.Essentials.csproj and modify the TargetFrameworks for only the project type you want to use.
@@ -102,8 +100,7 @@ If using Visual Studio for Mac the project can be built at the command line with
 To build through the command line, navigate to where Xamarin.Essentials.csproj exists then run:
 
 ```csharp
-dotnet restore
-msbuild Xamarin.Essentials.csproj
+msbuild /restore Xamarin.Essentials.csproj
 ```
 
 ## FAQ
@@ -113,3 +110,4 @@ Here are some frequently asked questions about Xamarin.Essentials, but be sure t
 ## License
 
 Please see the [License](LICENSE).
+

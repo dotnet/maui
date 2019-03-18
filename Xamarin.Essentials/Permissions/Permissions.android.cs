@@ -18,13 +18,13 @@ namespace Xamarin.Essentials
         static Dictionary<PermissionType, (int requestCode, TaskCompletionSource<PermissionStatus> tcs)> requests =
             new Dictionary<PermissionType, (int, TaskCompletionSource<PermissionStatus>)>();
 
-        static void PlatformEnsureDeclared(PermissionType permission)
+        static bool PlatformEnsureDeclared(PermissionType permission, bool throwIfMissing)
         {
             var androidPermissions = permission.ToAndroidPermissions(onlyRuntimePermissions: false);
 
             // No actual android permissions required here, just return
             if (androidPermissions == null || !androidPermissions.Any())
-                return;
+                return true;
 
             var context = Platform.AppContext;
 
@@ -35,8 +35,15 @@ namespace Xamarin.Essentials
 
                 // If the manifest is missing any of the permissions we need, throw
                 if (!requestedPermissions?.Any(r => r.Equals(ap, StringComparison.OrdinalIgnoreCase)) ?? false)
-                    throw new PermissionException($"You need to declare the permission: `{ap}` in your AndroidManifest.xml");
+                {
+                    if (throwIfMissing)
+                        throw new PermissionException($"You need to declare the permission: `{ap}` in your AndroidManifest.xml");
+                    else
+                        return false;
+                }
             }
+
+            return true;
         }
 
         static Task<PermissionStatus> PlatformCheckStatusAsync(PermissionType permission)
@@ -101,6 +108,9 @@ namespace Xamarin.Essentials
             if (!doRequest)
                 return await tcs.Task;
 
+            if (!MainThread.IsMainThread)
+                throw new PermissionException("Permission request must be invoked on main thread.");
+
             var androidPermissions = permission.ToAndroidPermissions(onlyRuntimePermissions: true).ToArray();
 
             ActivityCompat.RequestPermissions(Platform.GetCurrentActivity(true), androidPermissions, requestCode);
@@ -163,6 +173,9 @@ namespace Xamarin.Essentials
                     break;
                 case PermissionType.Vibrate:
                     permissions.Add((Manifest.Permission.Vibrate, true));
+                    break;
+                case PermissionType.WriteExternalStorage:
+                    permissions.Add((Manifest.Permission.WriteExternalStorage, false));
                     break;
             }
 

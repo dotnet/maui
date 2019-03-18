@@ -29,5 +29,6 @@
         LocationWhenInUse,
         NetworkState,
         Vibrate,
+        WriteExternalStorage,
     }
 }

@@ -1,0 +1,94 @@
+<Type Name="EmailAttachment" FullName="Xamarin.Essentials.EmailAttachment">
+  <TypeSignature Language="C#" Value="public class EmailAttachment : Xamarin.Essentials.FileBase" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit EmailAttachment extends Xamarin.Essentials.FileBase" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.EmailAttachment" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+    <BaseTypeName FrameworkAlternate="xamarin-essentials">Xamarin.Essentials.FileBase</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Email file attachment.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public EmailAttachment (string fullPath);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string fullPath) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.EmailAttachment.#ctor(System.String)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="fullPath" Type="System.String" Index="0" FrameworkAlternate="xamarin-essentials;xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp" />
+      </Parameters>
+      <Docs>
+        <param name="fullPath">Full path and filename to file.</param>
+        <summary>Email attachment from filename.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public EmailAttachment (Xamarin.Essentials.FileBase file);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class Xamarin.Essentials.FileBase file) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.EmailAttachment.#ctor(Xamarin.Essentials.FileBase)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="file" Type="Xamarin.Essentials.FileBase" />
+      </Parameters>
+      <Docs>
+        <param name="file">Existing file.</param>
+        <summary>Email attachment from existing file.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public EmailAttachment (string fullPath, string contentType);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string fullPath, string contentType) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.EmailAttachment.#ctor(System.String,System.String)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="fullPath" Type="System.String" />
+        <Parameter Name="contentType" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="fullPath">Full path and filename to file.</param>
+        <param name="contentType"></param>
+        <summary>Explicit content type of file.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AttachmentName">
+      <MemberSignature Language="C#" Value="public string AttachmentName { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string AttachmentName" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.EmailAttachment.AttachmentName" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the intended name of the file to be shared.</summary>
+        <value></value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

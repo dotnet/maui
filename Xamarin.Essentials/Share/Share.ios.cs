@@ -31,6 +31,28 @@ namespace Xamarin.Essentials
 
             return vc.PresentViewControllerAsync(activityController, true);
         }
+
+        static Task PlatformRequestAsync(ShareFileRequest request)
+        {
+            var items = new List<NSObject>();
+
+            var fileUrl = NSUrl.FromFilename(request.File.FullPath);
+            if (!string.IsNullOrEmpty(request.Title))
+                items.Add(new ShareActivityItemSource(fileUrl, request.Title)); // Share with title (subject)
+            else
+                items.Add(fileUrl); // No title specified
+
+            var activityController = new UIActivityViewController(items.ToArray(), null);
+
+            var vc = Platform.GetCurrentViewController();
+
+            if (activityController.PopoverPresentationController != null)
+            {
+                activityController.PopoverPresentationController.SourceView = vc.View;
+            }
+
+            return vc.PresentViewControllerAsync(activityController, true);
+        }
     }
 
     class ShareActivityItemSource : UIActivityItemSource

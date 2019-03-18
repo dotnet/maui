@@ -4,7 +4,7 @@
 <dict>
 	<key>keychain-access-groups</key>
 	<array>
-		<string>com.xamarin.essentials.devicetests</string>
+		<string>$(AppIdentifierPrefix)$(CFBundleIdentifier)</string>
 	</array>
 </dict>
 </plist>

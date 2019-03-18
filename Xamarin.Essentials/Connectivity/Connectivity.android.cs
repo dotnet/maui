@@ -18,7 +18,9 @@ namespace Xamarin.Essentials
 
             conectivityReceiver = new ConnectivityBroadcastReceiver(OnConnectivityChanged);
 
+#pragma warning disable CS0618 // Type or member is obsolete
             Platform.AppContext.RegisterReceiver(conectivityReceiver, new IntentFilter(ConnectivityManager.ConnectivityAction));
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         static void StopListeners()
@@ -62,6 +64,13 @@ namespace Xamarin.Essentials
                                 if (capabilities == null)
                                     continue;
 
+                                var info = manager.GetNetworkInfo(network);
+
+#pragma warning disable CS0618 // Type or member is obsolete
+                                if (info == null || !info.IsAvailable)
+#pragma warning restore CS0618 // Type or member is obsolete
+                                    continue;
+
                                 // Check to see if it has the internet capability
                                 if (!capabilities.HasCapability(NetCapability.Internet))
                                 {
@@ -69,8 +78,6 @@ namespace Xamarin.Essentials
                                     currentAccess = IsBetterAccess(currentAccess, NetworkAccess.Local);
                                     continue;
                                 }
-
-                                var info = manager.GetNetworkInfo(network);
 
                                 ProcessNetworkInfo(info);
                             }
@@ -92,12 +99,16 @@ namespace Xamarin.Essentials
 
                     void ProcessNetworkInfo(NetworkInfo info)
                     {
+#pragma warning disable CS0618 // Type or member is obsolete
                         if (info == null || !info.IsAvailable)
+#pragma warning restore CS0618 // Type or member is obsolete
                             return;
 
                         if (info.IsConnected)
                             currentAccess = IsBetterAccess(currentAccess, NetworkAccess.Internet);
+#pragma warning disable CS0618 // Type or member is obsolete
                         else if (info.IsConnectedOrConnecting)
+#pragma warning restore CS0618 // Type or member is obsolete
                             currentAccess = IsBetterAccess(currentAccess, NetworkAccess.ConstrainedInternet);
                     }
 
@@ -151,10 +162,12 @@ namespace Xamarin.Essentials
 
                 ConnectionProfile? ProcessNetworkInfo(NetworkInfo info)
                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                     if (info == null || !info.IsAvailable || !info.IsConnectedOrConnecting)
                         return null;
 
                     return GetConnectionType(info.Type, info.TypeName);
+#pragma warning restore CS0618 // Type or member is obsolete
                 }
             }
         }
@@ -216,11 +229,13 @@ namespace Xamarin.Essentials
 
         public override async void OnReceive(Context context, Intent intent)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             if (intent.Action != ConnectivityManager.ConnectivityAction)
+#pragma warning restore CS0618 // Type or member is obsolete
                 return;
 
-            // await 500ms to ensure that the the connection manager updates
-            await Task.Delay(500);
+            // await 1500ms to ensure that the the connection manager updates
+            await Task.Delay(1500);
             onChanged?.Invoke();
         }
     }

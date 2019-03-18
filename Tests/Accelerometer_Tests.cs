@@ -1,4 +1,5 @@
-﻿using Xamarin.Essentials;
+﻿using System;
+using Xamarin.Essentials;
 using Xunit;
 
 namespace Tests
@@ -54,5 +55,55 @@ namespace Tests
                 Assert.NotEqual(data1.GetHashCode(), data2.GetHashCode());
             }
         }
+
+        [Fact]
+        public void InitialShaking()
+        {
+            var q = new AccelerometerQueue();
+            Assert.False(q.IsShaking);
+        }
+
+        [Fact]
+        public void ShakingTests()
+        {
+            var now = DateTime.UtcNow;
+            var q = new AccelerometerQueue();
+            q.Add(GetShakeTime(now, 0), false);
+            q.Add(GetShakeTime(now, .3), false);
+            q.Add(GetShakeTime(now, .6), false);
+            q.Add(GetShakeTime(now, .9), false);
+            Assert.False(q.IsShaking);
+
+            // The oldest two entries will be removed.
+            q.Add(GetShakeTime(now, 1.2), true);
+            q.Add(GetShakeTime(now, 1.5), true);
+            Assert.False(q.IsShaking);
+
+            // Another entry should be removed, now 3 out of 4 are true.
+            q.Add(GetShakeTime(now, 1.8), true);
+            Assert.True(q.IsShaking);
+
+            q.Add(GetShakeTime(now, 2.1), false);
+            Assert.True(q.IsShaking);
+
+            q.Add(GetShakeTime(now, 2.4), false);
+            Assert.False(q.IsShaking);
+        }
+
+        [Fact]
+        public void ClearQueue()
+        {
+            var now = DateTime.UtcNow;
+            var q = new AccelerometerQueue();
+            q.Add(GetShakeTime(now, 0), true);
+            q.Add(GetShakeTime(now, .1), true);
+            q.Add(GetShakeTime(now, .3), true);
+            Assert.True(q.IsShaking);
+            q.Clear();
+            Assert.False(q.IsShaking);
+        }
+
+        long GetShakeTime(DateTime now, double seconds) =>
+            now.AddSeconds(seconds).Nanoseconds();
     }
 }

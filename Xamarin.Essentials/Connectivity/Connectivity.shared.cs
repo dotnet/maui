@@ -15,7 +15,7 @@ namespace Xamarin.Essentials
 
         public static NetworkAccess NetworkAccess => PlatformNetworkAccess;
 
-        public static IEnumerable<ConnectionProfile> ConnectionProfiles => PlatformConnectionProfiles;
+        public static IEnumerable<ConnectionProfile> ConnectionProfiles => PlatformConnectionProfiles.Distinct();
 
         public static event EventHandler<ConnectivityChangedEventArgs> ConnectivityChanged
         {

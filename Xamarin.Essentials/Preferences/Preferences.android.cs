@@ -28,7 +28,7 @@ namespace Xamarin.Essentials
                 using (var sharedPreferences = GetSharedPreferences(sharedName))
                 using (var editor = sharedPreferences.Edit())
                 {
-                    editor.Remove(key).Commit();
+                    editor.Remove(key).Apply();
                 }
             }
         }
@@ -40,7 +40,7 @@ namespace Xamarin.Essentials
                 using (var sharedPreferences = GetSharedPreferences(sharedName))
                 using (var editor = sharedPreferences.Edit())
                 {
-                    editor.Clear().Commit();
+                    editor.Clear().Apply();
                 }
             }
         }
