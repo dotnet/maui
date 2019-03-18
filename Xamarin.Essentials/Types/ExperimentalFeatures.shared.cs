@@ -9,6 +9,7 @@ namespace Xamarin.Essentials
     {
         public const string ShareFileRequest = "ShareFileRequest_Experimental";
         public const string EmailAttachments = "EmailAttachments_Experimental";
+        public const string MediaPicker = "MediaPicker_Experimental";
 
         static List<string> enabledFeatures;
 
