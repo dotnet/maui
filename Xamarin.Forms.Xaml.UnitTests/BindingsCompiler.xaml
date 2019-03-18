@@ -18,6 +18,7 @@
 			<Entry Text="{Binding Text, Mode=TwoWay}" x:Name="entry0"/>
             <Label Text="{Binding .}" x:Name="label7" x:DataType="sys:Int32"/>
             <Label Text="{Binding Text, Mode=OneTime}" x:Name="label8" />
+			<Label Text="{Binding StructModel.Text}" x:Name="label9" />
 		</StackLayout>
 		<Label Text="{Binding Text}" x:Name="labelWithUncompiledBinding" />
 	</StackLayout>

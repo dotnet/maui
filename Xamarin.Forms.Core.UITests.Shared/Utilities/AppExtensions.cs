@@ -9,29 +9,45 @@ namespace Xamarin.Forms.Core.UITests
 {
 	internal static class AppExtensions
 	{
-		public static AppRect ScreenBounds (this IApp app)
+		public static AppRect ScreenBounds(this IApp app)
 		{
-			return app.Query (Queries.Root ()).First().Rect;
+			return app.Query(Queries.Root()).First().Rect;
 		}
 
-		public static void NavigateBack (this IApp app)
+		public static void NavigateBack(this IApp app)
 		{
 			app.Back();
 		}
 
-		public static void NavigateToGallery (this IApp app, string page)
+		public static void NavigateToGallery(this IApp app, string page)
+		{
+			NavigateToGallery(app, page, null);
+		}
+
+		public static void NavigateToGallery(this IApp app, string page, string visual)
 		{
 			const string goToTestButtonQuery = "* marked:'GoToTestButton'";
 
 			app.WaitForElement(q => q.Raw(goToTestButtonQuery), "Timed out waiting for Go To Test button to disappear", TimeSpan.FromSeconds(10));
 
-			var text = Regex.Match (page, "'(?<text>[^']*)'").Groups["text"].Value;
+			var text = Regex.Match(page, "'(?<text>[^']*)'").Groups["text"].Value;
 
 			app.WaitForElement("SearchBar");
-			app.EnterText (q => q.Raw ("* marked:'SearchBar'"), text);
+			app.EnterText(q => q.Raw("* marked:'SearchBar'"), text);
 
-			app.Tap (q => q.Raw (goToTestButtonQuery));
-			app.WaitForNoElement (o => o.Raw (goToTestButtonQuery), "Timed out waiting for Go To Test button to disappear", TimeSpan.FromMinutes(2));
+			if(!String.IsNullOrWhiteSpace(visual))
+			{
+				app.DismissKeyboard();
+				app.ActivateContextMenu($"{text}AutomationId");
+				app.Tap("Select Visual");
+				app.Tap("Material");
+			}
+			else
+			{
+				app.Tap(q => q.Raw(goToTestButtonQuery));
+			}
+
+			app.WaitForNoElement(o => o.Raw(goToTestButtonQuery), "Timed out waiting for Go To Test button to disappear", TimeSpan.FromMinutes(2));
 		}
 
 
@@ -43,7 +59,8 @@ namespace Xamarin.Forms.Core.UITests
 			{
 				elements = app.Query(elementQuery);
 				tryCount++;
-				if (elements.Length == 0 && onFail != null) onFail();
+				if (elements.Length == 0 && onFail != null)
+					onFail();
 			}
 
 			return elements;

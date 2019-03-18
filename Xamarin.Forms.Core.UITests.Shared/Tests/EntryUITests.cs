@@ -1,8 +1,10 @@
 using NUnit.Framework;
+using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.CustomAttributes;
 
 namespace Xamarin.Forms.Core.UITests
 {
+
 	[TestFixture]
 	[Category(UITestCategories.Entry)]
 	internal class EntryUITests : _ViewUITests
@@ -17,9 +19,20 @@ namespace Xamarin.Forms.Core.UITests
 			App.NavigateToGallery(GalleryQueries.EntryGallery);
 		}
 
-		// TODO
+		[Test]
+		[UiTest(typeof(Entry), "Focus")]
 		public override void _Focus()
 		{
+			var remote = new StateViewContainerRemote(App, Test.VisualElement.Focus, PlatformViewType);
+			remote.GoTo();
+			bool isFocused = System.Convert.ToBoolean( App.Query("FocusStateLabel")[0].ReadText());
+			Assert.IsFalse(isFocused);
+			remote.TapView();
+			isFocused = System.Convert.ToBoolean(App.Query("FocusStateLabel")[0].ReadText());
+			Assert.IsTrue(isFocused);
+			App.Tap("FocusStateLabel");
+			isFocused = System.Convert.ToBoolean(App.Query("FocusStateLabel")[0].ReadText());
+			Assert.IsFalse(isFocused);
 		}
 
 		[UiTestExempt(ExemptReason.CannotTest, "Invalid interaction")]
@@ -27,7 +40,6 @@ namespace Xamarin.Forms.Core.UITests
 		{
 		}
 
-		// TODO
 		public override void _IsFocused()
 		{
 		}
@@ -37,6 +49,8 @@ namespace Xamarin.Forms.Core.UITests
 		{
 		}
 
+
+		
 		// TODO
 		// Implement control specific ui tests
 		[Test]
