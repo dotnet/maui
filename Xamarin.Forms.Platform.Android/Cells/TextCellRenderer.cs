@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Views;
@@ -20,6 +21,7 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateHeight();
 			UpdateIsEnabled();
 			UpdateFlowDirection();
+			UpdateAutomationId();
 			View.SetImageVisible(false);
 
 			return View;
@@ -37,6 +39,13 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateHeight();
 			else if (args.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateFlowDirection();
+			else if (args.PropertyName == VisualElement.AutomationIdProperty.PropertyName)
+				UpdateAutomationId();
+		}
+
+		void UpdateAutomationId()
+		{
+			View.ContentDescription = Cell.AutomationId;
 		}
 
 		void UpdateDetailText()

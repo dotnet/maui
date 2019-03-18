@@ -16,6 +16,8 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		internal static void HandleScrollBarVisibilityChange(this IScrollView scrollView)
 		{
+			if (Build.VERSION.SdkInt <= BuildVersionCodes.Kitkat)
+				return;
 
 			// According to the Android Documentation
 			// * <p>AwakenScrollBars method should be invoked every time a subclass directly updates

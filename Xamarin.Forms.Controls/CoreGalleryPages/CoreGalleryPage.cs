@@ -98,6 +98,19 @@ namespace Xamarin.Forms.Controls
 				_isVisibleStateViewContainer.View.IsVisible = !_isVisibleStateViewContainer.View.IsVisible;
 			});
 
+
+			_isFocusedStateViewContainer.StateChangeButton.Command = new Command(() => {
+				
+				if ((bool)isFocusedView.GetValue(VisualElement.IsFocusedProperty))
+				{
+					isFocusedView.SetValueCore(IsFocusedPropertyKey, false);
+				}
+				else
+				{
+					isFocusedView.SetValueCore(IsFocusedPropertyKey, true);
+				}
+			});
+
 			_focusStateViewContainer.StateChangeButton.Command = new Command (() => {
 				if (_focusStateViewContainer.View.IsFocused) {
 					_focusStateViewContainer.View.Unfocus ();

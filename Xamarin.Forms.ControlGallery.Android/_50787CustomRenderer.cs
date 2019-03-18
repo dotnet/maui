@@ -1,4 +1,5 @@
-﻿using Android.Content;
+﻿#if !FORMS_APPLICATION_ACTIVITY && !PRE_APPLICATION_CLASS
+using Android.Content;
 using Xamarin.Forms;
 using Xamarin.Forms.ControlGallery.Android;
 using Xamarin.Forms.Platform.Android.AppCompat;
@@ -25,3 +26,4 @@ namespace Xamarin.Forms.ControlGallery.Android
 		}
 	}
 }
+#endif

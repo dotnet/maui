@@ -10,7 +10,7 @@ using Xamarin.Forms.Platform.Android;
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Entry), typeof(MaterialEntryRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
 namespace Xamarin.Forms.Material.Android
 {
-	public sealed class MaterialEntryRenderer : EntryRendererBase<MaterialFormsTextInputLayout>
+	public class MaterialEntryRenderer : EntryRendererBase<MaterialFormsTextInputLayout>
 	{
 		MaterialFormsEditText _textInputEditText;
 		MaterialFormsTextInputLayout _textInputLayout;
