@@ -46,13 +46,8 @@
         <ReturnType>Xamarin.Essentials.BarometerData</ReturnType>
       </ReturnValue>
       <Docs>
-<<<<<<< HEAD
-        <summary>Get the current reading of the barometer</summary>
-        <value>The reading</value>
-=======
         <summary>Gets the current barometer pressure data</summary>
         <value>Pressure in hPA</value>
->>>>>>> dev/1.2.0
         <remarks></remarks>
       </Docs>
     </Member>
