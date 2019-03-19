@@ -52,7 +52,7 @@ jobs:
         inputs:
           solution: Xamarin.Essentials/Xamarin.Essentials.Additional.csproj
           configuration: Release
-          msbuildArguments: '/restore /t:Build /p:AdditionalOnly=true /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
+          msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
       - task: MSBuild@1
         displayName: Pack additional NuGets
         inputs:
@@ -60,12 +60,6 @@ jobs:
           configuration: Release
           msbuildArguments: '/t:Pack /p:AdditionalOnly=true /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
       # build and run the tests
-      - task: MSBuild@1
-        displayName: Build for tests
-        inputs:
-          solution: Xamarin.Essentials/Xamarin.Essentials.csproj
-          configuration: Release
-          msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
       - task: DotNetCoreCLI@2
         displayName: Run tests
         inputs:
@@ -131,7 +125,7 @@ jobs:
         inputs:
           solution: Xamarin.Essentials/Xamarin.Essentials.Additional.csproj
           configuration: Release
-          msbuildArguments: '/restore /t:Build /p:AdditionalOnly=true /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
+          msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
       - task: MSBuild@1
         displayName: Pack additional NuGets
         inputs:
@@ -139,12 +133,6 @@ jobs:
           configuration: Release
           msbuildArguments: '/t:Pack /p:AdditionalOnly=true /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
       # build and run the tests
-      - task: MSBuild@1
-        displayName: Build for tests
-        inputs:
-          solution: Xamarin.Essentials/Xamarin.Essentials.csproj
-          configuration: Release
-          msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
       - task: DotNetCoreCLI@2
         displayName: Run tests
         inputs:
