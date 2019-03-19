@@ -60,7 +60,7 @@ jobs:
           solution: Xamarin.Essentials.Community/Xamarin.Essentials.Community.csproj
           configuration: Release
           msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
-      - task: task: NuGetCommand@2
+      - task: NuGetCommand@2
         displayName: Pack community NuGets
         inputs:
           command: pack
@@ -134,7 +134,7 @@ jobs:
           solution: Xamarin.Essentials.Community/Xamarin.Essentials.Community.csproj
           configuration: Release
           msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
-      - task: task: NuGetCommand@2
+      - task: NuGetCommand@2
         displayName: Pack community NuGets
         inputs:
           command: pack
