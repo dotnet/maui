@@ -1,9 +1,7 @@
 using System;
 using System.ComponentModel;
-using Android.App;
 using Android.Content;
 using Android.Webkit;
-using Android.Widget;
 using Android.OS;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using Xamarin.Forms.Internals;
@@ -22,6 +20,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected internal IWebViewController ElementController => Element;
 		protected internal bool IgnoreSourceChanges { get; set; }
+		protected internal string UrlCanceled { get; set; }
 
 		public WebViewRenderer(Context context) : base(context)
 		{
@@ -42,7 +41,23 @@ namespace Xamarin.Forms.Platform.Android
 
 		public void LoadUrl(string url)
 		{
-			Control.LoadUrl(url);
+			if (!SendNavigatingCanceled(url))
+				Control.LoadUrl(url);
+		}
+
+		protected internal bool SendNavigatingCanceled(string url)
+		{
+			if (Element == null || string.IsNullOrWhiteSpace(url))
+				return true;
+
+			if (url == AssetBaseUrl)
+				return false;
+
+			var args = new WebNavigatingEventArgs(WebNavigationEvent.NewPage, new UrlWebViewSource { Url = url }, url);
+			ElementController.SendNavigating(args);
+			UpdateCanGoBackForward();
+			UrlCanceled = args.Cancel ? null : url;
+			return args.Cancel;
 		}
 
 		protected override void Dispose(bool disposing)

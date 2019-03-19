@@ -1,17 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-
-using Android.App;
-using Android.Content;
 using Android.Graphics;
-using Android.OS;
 using Android.Runtime;
-using Android.Views;
 using Android.Webkit;
-using Android.Widget;
+using WView = Android.Webkit.WebView;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -19,42 +11,50 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		WebNavigationResult _navigationResult = WebNavigationResult.Success;
 		WebViewRenderer _renderer;
+		string _lastUrlNavigatedCancel;
 
 		public FormsWebViewClient(WebViewRenderer renderer)
-		{
-			if (renderer == null)
-				throw new ArgumentNullException("renderer");
-			_renderer = renderer;
-		}
+			=> _renderer = renderer ?? throw new ArgumentNullException("renderer");
 
 		protected FormsWebViewClient(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
-
 		}
 
-		public override void OnPageStarted(global::Android.Webkit.WebView view, string url, Bitmap favicon)
+		bool SendNavigatingCanceled(string url) => _renderer?.SendNavigatingCanceled(url) ?? true;
+
+		[Obsolete("ShouldOverrideUrlLoading(view,url) is obsolete as of version 4.0.0. This method was deprecated in API level 24.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		// api 19-23
+		public override bool ShouldOverrideUrlLoading(WView view, string url)
+			=> SendNavigatingCanceled(url);
+
+		// api 24+
+		public override bool ShouldOverrideUrlLoading(WView view, IWebResourceRequest request)
+			=> SendNavigatingCanceled(request?.Url?.ToString());
+
+		public override void OnPageStarted(WView view, string url, Bitmap favicon)
 		{
-			if (_renderer?.Element == null || url == WebViewRenderer.AssetBaseUrl)
+			if (_renderer == null || string.IsNullOrWhiteSpace(url) || url == WebViewRenderer.AssetBaseUrl)
 				return;
 
-			var args = new WebNavigatingEventArgs(WebNavigationEvent.NewPage, new UrlWebViewSource { Url = url }, url);
+			var cancel = false;
+			if (!url.Equals(_renderer.UrlCanceled, StringComparison.OrdinalIgnoreCase))
+				cancel = SendNavigatingCanceled(url);
+			_renderer.UrlCanceled = null;
 
-			_renderer.ElementController.SendNavigating(args);
-			_navigationResult = WebNavigationResult.Success;
-
-			_renderer.UpdateCanGoBackForward();
-
-			if (args.Cancel)
+			if (cancel)
 			{
-				_renderer.Control.StopLoading();
+				_navigationResult = WebNavigationResult.Cancel;
+				view.StopLoading();
 			}
 			else
 			{
+				_navigationResult = WebNavigationResult.Success;
 				base.OnPageStarted(view, url, favicon);
 			}
 		}
 
-		public override void OnPageFinished(global::Android.Webkit.WebView view, string url)
+		public override void OnPageFinished(WView view, string url)
 		{
 			if (_renderer?.Element == null || url == WebViewRenderer.AssetBaseUrl)
 				return;
@@ -64,9 +64,14 @@ namespace Xamarin.Forms.Platform.Android
 			_renderer.ElementController.SetValueFromRenderer(WebView.SourceProperty, source);
 			_renderer.IgnoreSourceChanges = false;
 
-			var args = new WebNavigatedEventArgs(WebNavigationEvent.NewPage, source, url, _navigationResult);
+			bool navigate = _navigationResult == WebNavigationResult.Failure ? !url.Equals(_lastUrlNavigatedCancel, StringComparison.OrdinalIgnoreCase) : true;
+			_lastUrlNavigatedCancel = _navigationResult == WebNavigationResult.Cancel ? url : null;
 
-			_renderer.ElementController.SendNavigated(args);
+			if (navigate)
+			{
+				var args = new WebNavigatedEventArgs(WebNavigationEvent.NewPage, source, url, _navigationResult);
+				_renderer.ElementController.SendNavigated(args);
+			}
 
 			_renderer.UpdateCanGoBackForward();
 
@@ -75,7 +80,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		[Obsolete("OnReceivedError is obsolete as of version 2.3.0. This method was deprecated in API level 23.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public override void OnReceivedError(global::Android.Webkit.WebView view, ClientError errorCode, string description, string failingUrl)
+		public override void OnReceivedError(WView view, ClientError errorCode, string description, string failingUrl)
 		{
 			_navigationResult = WebNavigationResult.Failure;
 			if (errorCode == ClientError.Timeout)
@@ -85,7 +90,7 @@ namespace Xamarin.Forms.Platform.Android
 #pragma warning restore 618
 		}
 
-		public override void OnReceivedError(global::Android.Webkit.WebView view, IWebResourceRequest request, WebResourceError error)
+		public override void OnReceivedError(WView view, IWebResourceRequest request, WebResourceError error)
 		{
 			_navigationResult = WebNavigationResult.Failure;
 			if (error.ErrorCode == ClientError.Timeout)
