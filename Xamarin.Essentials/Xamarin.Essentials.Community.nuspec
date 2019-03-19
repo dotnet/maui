@@ -59,6 +59,6 @@
   <files>
     <file src="bin/Release/xamarin.mac20/Xamarin.Essentials.xml" target="lib/xamarinmac20/Xamarin.Essentials.xml" />
     <file src="bin/Release/xamarin.mac20/Xamarin.Essentials.dll" target="lib/xamarinmac20/Xamarin.Essentials.dll" />
-    <file src="nugetreadme.txt" target="readme.txt" />
+    <file src="../nugetreadme.txt" target="readme.txt" />
   </files>
 </package>
