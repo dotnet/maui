@@ -7,7 +7,7 @@ namespace Xamarin.Essentials
 {
     internal static partial class Permissions
     {
-        static void PlatformEnsureDeclared(PermissionType permission)
+        static bool PlatformEnsureDeclared(PermissionType permission, bool throwIfMissing)
         {
             var info = NSBundle.MainBundle.InfoDictionary;
 
@@ -19,6 +19,8 @@ namespace Xamarin.Essentials
                 if (!info.ContainsKey(new NSString("NSLocationWhenInUseUsageDescription")))
                     Console.WriteLine("You must set `NSLocationWhenInUseUsageDescription` in your Info.plist file to enable a user-friendly message.");
             }
+
+            return true;
         }
 
         static Task<PermissionStatus> PlatformCheckStatusAsync(PermissionType permission)
