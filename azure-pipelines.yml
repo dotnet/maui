@@ -67,6 +67,8 @@ jobs:
           packagesToPack: Xamarin.Essentials/Xamarin.Essentials.Community.nuspec
           versioningScheme: byEnvVar
           versionEnvVar: NugetPackageVersion
+          packDestination: $(Build.ArtifactStagingDirectory)/nuget
+          basePath: $(Build.SourcesDirectory)/Xamarin.Essentials
       # publish the packages
       - task: PublishBuildArtifacts@1
         displayName: Publish unsigned NuGets
@@ -131,7 +133,7 @@ jobs:
       - task: MSBuild@1
         displayName: Build community project
         inputs:
-          solution: Xamarin.Essentials.Community/Xamarin.Essentials.Community.csproj
+          solution: Xamarin.Essentials/Xamarin.Essentials.Community.csproj
           configuration: Release
           msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
       - task: NuGetCommand@2
@@ -141,6 +143,8 @@ jobs:
           packagesToPack: Xamarin.Essentials/Xamarin.Essentials.Community.nuspec
           versioningScheme: byEnvVar
           versionEnvVar: NugetPackageVersion
+          packDestination: $(Build.ArtifactStagingDirectory)/nuget
+          basePath: $(Build.SourcesDirectory)/Xamarin.Essentials
 
   - job: build_samples
     displayName: Build Samples
