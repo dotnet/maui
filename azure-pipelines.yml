@@ -46,19 +46,6 @@ jobs:
           solution: Xamarin.Essentials/Xamarin.Essentials.csproj
           configuration: Release
           msbuildArguments: '/t:Pack /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
-      # restore, build and pack the ADDITIONAL packages
-      - task: MSBuild@1
-        displayName: Build additional project
-        inputs:
-          solution: Xamarin.Essentials/Xamarin.Essentials.Additional.csproj
-          configuration: Release
-          msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
-      - task: MSBuild@1
-        displayName: Pack additional NuGets
-        inputs:
-          solution: Xamarin.Essentials/Xamarin.Essentials.Additional.csproj
-          configuration: Release
-          msbuildArguments: '/t:Pack /p:AdditionalOnly=true /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
       # build and run the tests
       - task: DotNetCoreCLI@2
         displayName: Run tests
@@ -66,6 +53,20 @@ jobs:
           command: test
           projects: 'Tests/Tests.csproj'
           arguments: '--configuration Release'
+      # restore, build and pack the COMMUNITY packages
+      - task: MSBuild@1
+        displayName: Build community project
+        inputs:
+          solution: Xamarin.Essentials.Community/Xamarin.Essentials.Community.csproj
+          configuration: Release
+          msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
+      - task: task: NuGetCommand@2
+        displayName: Pack community NuGets
+        inputs:
+          command: pack
+          packagesToPack: Xamarin.Essentials/Xamarin.Essentials.Community.nuspec
+          versioningScheme: byEnvVar
+          versionEnvVar: NugetPackageVersion
       # publish the packages
       - task: PublishBuildArtifacts@1
         displayName: Publish unsigned NuGets
@@ -119,19 +120,6 @@ jobs:
           solution: Xamarin.Essentials/Xamarin.Essentials.csproj
           configuration: Release
           msbuildArguments: '/t:Pack /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
-      # restore, build and pack the ADDITIONAL packages
-      - task: MSBuild@1
-        displayName: Build additional project
-        inputs:
-          solution: Xamarin.Essentials/Xamarin.Essentials.Additional.csproj
-          configuration: Release
-          msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
-      - task: MSBuild@1
-        displayName: Pack additional NuGets
-        inputs:
-          solution: Xamarin.Essentials/Xamarin.Essentials.Additional.csproj
-          configuration: Release
-          msbuildArguments: '/t:Pack /p:AdditionalOnly=true /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
       # build and run the tests
       - task: DotNetCoreCLI@2
         displayName: Run tests
@@ -139,6 +127,20 @@ jobs:
           command: test
           projects: 'Tests/Tests.csproj'
           arguments: '--configuration Release'
+      # restore, build and pack the COMMUNITY packages
+      - task: MSBuild@1
+        displayName: Build community project
+        inputs:
+          solution: Xamarin.Essentials.Community/Xamarin.Essentials.Community.csproj
+          configuration: Release
+          msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
+      - task: task: NuGetCommand@2
+        displayName: Pack community NuGets
+        inputs:
+          command: pack
+          packagesToPack: Xamarin.Essentials/Xamarin.Essentials.Community.nuspec
+          versioningScheme: byEnvVar
+          versionEnvVar: NugetPackageVersion
 
   - job: build_samples
     displayName: Build Samples
@@ -152,11 +154,11 @@ jobs:
           solution: Xamarin.Essentials.sln
           configuration: Release
           msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
-      # restore and build the ADDITIONAL solution
+      # restore and build the COMMUNITY solution
       - task: MSBuild@1
-        displayName: Build additional solution
+        displayName: Build community solution
         inputs:
-          solution: Xamarin.Essentials.Additional.sln
+          solution: Xamarin.Essentials.Community.sln
           configuration: Release
           msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
 
