@@ -18,7 +18,7 @@
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <PackageCertificateKeyFile>Samples.UWP_TemporaryKey.pfx</PackageCertificateKeyFile>
-    <PackageCertificateThumbprint>C6BC5BC8980F7F989B31D5313F863DE37B9AB9C2</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>14BD7347CBFCD5496C3BCD7EE1688BEE6B4BC1FD</PackageCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
     <DebugSymbols>true</DebugSymbols>
@@ -126,11 +126,11 @@
     <UseDotNetNativeToolchain>true</UseDotNetNativeToolchain>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AppCenter" Version="1.10.0" />
-    <PackageReference Include="Microsoft.AppCenter.Analytics" Version="1.10.0" />
-    <PackageReference Include="Microsoft.AppCenter.Crashes" Version="1.10.0" />
-    <PackageReference Include="Microsoft.AppCenter.Distribute" Version="1.10.0" />
-    <PackageReference Include="Xamarin.Forms" Version="3.3.0.967583" />
+    <PackageReference Include="Microsoft.AppCenter" Version="1.13.0" />
+    <PackageReference Include="Microsoft.AppCenter.Analytics" Version="1.13.0" />
+    <PackageReference Include="Microsoft.AppCenter.Crashes" Version="1.13.0" />
+    <PackageReference Include="Microsoft.AppCenter.Distribute" Version="1.13.0" />
+    <PackageReference Include="Xamarin.Forms" Version="3.5.0.129452" />
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.1.5" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
   </ItemGroup>

@@ -15,7 +15,7 @@ var IOS_TEST_RESULTS_PATH = "./xunit-ios.xml";
 var ANDROID_PROJ = "./DeviceTests.Android/DeviceTests.Android.csproj";
 var ANDROID_APK_PATH = "./DeviceTests.Android/bin/Release/com.xamarin.essentials.devicetests-Signed.apk";
 var ANDROID_TEST_RESULTS_PATH = "./xunit-android.xml";
-var ANDROID_AVD = "CABOODLE";
+var ANDROID_AVD = EnvironmentVariable("ANDROID_AVD") ?? "CABOODLE";
 var ANDROID_PKG_NAME = "com.xamarin.essentials.devicetests";
 var ANDROID_EMU_TARGET = EnvironmentVariable("ANDROID_EMU_TARGET") ?? "system-images;android-26;google_apis;x86";
 var ANDROID_EMU_DEVICE = EnvironmentVariable("ANDROID_EMU_DEVICE") ?? "Nexus 5X";
@@ -176,10 +176,14 @@ Task ("test-android-emu")
     .IsDependentOn ("build-android")
     .Does (() =>
 {
-    if (EnvironmentVariable("ANDROID_SKIP_AVD_CREATE") == null) {
-        var avdSettings = new AndroidAvdManagerToolSettings  { SdkRoot = ANDROID_HOME };
+    var avdSettings = new AndroidAvdManagerToolSettings  { SdkRoot = ANDROID_HOME };
+    Information ("Available AVDs:");
+    foreach (var avd in AndroidAvdListAvds (avdSettings)) {
+        Information (" - " + avd);
+    }
 
-        // Create the AVD if necessary
+    // Create the AVD if necessary
+    if (EnvironmentVariable("ANDROID_SKIP_AVD_CREATE") == null) {
         Information ("Creating AVD if necessary: {0}...", ANDROID_AVD);
         if (!AndroidAvdListAvds (avdSettings).Any (a => a.Name == ANDROID_AVD))
             AndroidAvdCreate (ANDROID_AVD, ANDROID_EMU_TARGET, ANDROID_EMU_DEVICE, force: true, settings: avdSettings);

@@ -258,6 +258,26 @@
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="IsFromMockProvider">
+      <MemberSignature Language="C#" Value="public bool IsFromMockProvider { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance bool IsFromMockProvider" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Location.IsFromMockProvider" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Inform if location is from GPS or from Mock.</summary>
+        <value>True if is from Mock and False if from GPS.</value>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Latitude">
       <MemberSignature Language="C#" Value="public double Latitude { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance float64 Latitude" />

@@ -33,7 +33,7 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="BarometerData">
+    <Member MemberName="Reading">
       <MemberSignature Language="C#" Value="public Xamarin.Essentials.BarometerData Reading { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.BarometerData Reading" />
       <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.BarometerChangedEventArgs.Reading" />
@@ -48,24 +48,6 @@
       <Docs>
         <summary>Gets the current barometer pressure data</summary>
         <value>Pressure in hPA</value>
-        <remarks></remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Reading">
-      <MemberSignature Language="C#" Value="public Xamarin.Essentials.BarometerData Reading { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.BarometerData Reading" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.BarometerChangedEventArgs.Reading" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Xamarin.Essentials.BarometerData</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Get the current reading of the barometer</summary>
-        <value>The reading</value>
         <remarks></remarks>
       </Docs>
     </Member>

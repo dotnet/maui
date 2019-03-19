@@ -3,13 +3,7 @@
     <Assembly Name="Xamarin.Essentials" Version="1.0.0.0">
       <Attributes>
         <Attribute>
-          <AttributeName>System.Diagnostics.Debuggable(System.Diagnostics.DebuggableAttribute+DebuggingModes.IgnoreSymbolStoreSequencePoints)</AttributeName>
-        </Attribute>
-        <Attribute>
           <AttributeName>System.Reflection.AssemblyCompany("Microsoft")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Reflection.AssemblyConfiguration("Release")</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>System.Reflection.AssemblyCopyright("© Microsoft Corporation. All rights reserved.")</AttributeName>
@@ -36,13 +30,13 @@
           <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("XamarinEssentialsTests")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("XamarinEssentialsDeviceTestsAndroid")</AttributeName>
-        </Attribute>
-        <Attribute>
           <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("XamarinEssentialsDeviceTestsUWP")</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("XamarinEssentialsDeviceTestsiOS")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("XamarinEssentialsDeviceTestsAndroid")</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>System.Runtime.CompilerServices.RuntimeCompatibility(WrapNonExceptionThrows=true)</AttributeName>
@@ -55,6 +49,9 @@
         </Attribute>
         <Attribute FrameworkAlternate="xamarin-essentials-android">
           <AttributeName>Android.LinkerSafe</AttributeName>
+        </Attribute>
+        <Attribute FrameworkAlternate="xamarin-essentials-android">
+          <AttributeName>Android.Runtime.ResourceDesigner("Xamarin.Essentials.Resource", IsApplication=false)</AttributeName>
         </Attribute>
         <Attribute FrameworkAlternate="xamarin-essentials-android">
           <AttributeName>System.Reflection.AssemblyProduct("Xamarin.Essentials (MonoAndroid81)")</AttributeName>
@@ -78,7 +75,13 @@
           <AttributeName>System.Runtime.Versioning.TargetFramework(".NETCore,Version=v5.0", FrameworkDisplayName=".NET for Windows Universal")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+da60123513ad6e4ab1a2724085807e80efa1bbc8")</AttributeName>
+          <AttributeName>System.Diagnostics.Debuggable(System.Diagnostics.DebuggableAttribute+DebuggingModes.IgnoreSymbolStoreSequencePoints)</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyConfiguration("Release")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+7ceee2ec3cc4caab1bb281521d7e9ecf471edc7a")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>
@@ -100,6 +103,8 @@
       <Type Name="BatteryState" Kind="Enumeration" />
       <Type Name="Browser" Kind="Class" />
       <Type Name="BrowserLaunchMode" Kind="Enumeration" />
+      <Type Name="BrowserLaunchOptions" Kind="Class" />
+      <Type Name="BrowserTitleMode" Kind="Enumeration" />
       <Type Name="Clipboard" Kind="Class" />
       <Type Name="ColorConverters" Kind="Class" />
       <Type Name="ColorExtensions" Kind="Class" />
@@ -120,12 +125,16 @@
       <Type Name="DisplayRotation" Kind="Enumeration" />
       <Type Name="DistanceUnits" Kind="Enumeration" />
       <Type Name="Email" Kind="Class" />
+      <Type Name="EmailAttachment" Kind="Class" />
       <Type Name="EmailBodyFormat" Kind="Enumeration" />
       <Type Name="EmailMessage" Kind="Class" />
       <Type Name="EnergySaverStatus" Kind="Enumeration" />
       <Type Name="EnergySaverStatusChangedEventArgs" Kind="Class" />
       <Type Name="FeatureNotEnabledException" Kind="Class" />
       <Type Name="FeatureNotSupportedException" Kind="Class" />
+      <Type Name="FileBase" Kind="Class" />
+      <Type Name="FileProvider" Kind="Class" />
+      <Type Name="FileProviderLocation" Kind="Enumeration" />
       <Type Name="FileSystem" Kind="Class" />
       <Type Name="Flashlight" Kind="Class" />
       <Type Name="Geocoding" Kind="Class" />
@@ -162,6 +171,8 @@
       <Type Name="SecureStorage" Kind="Class" />
       <Type Name="SensorSpeed" Kind="Enumeration" />
       <Type Name="Share" Kind="Class" />
+      <Type Name="ShareFile" Kind="Class" />
+      <Type Name="ShareFileRequest" Kind="Class" />
       <Type Name="ShareTextRequest" Kind="Class" />
       <Type Name="SizeExtensions" Kind="Class" />
       <Type Name="Sms" Kind="Class" />
@@ -221,6 +232,28 @@
           <summary>Multiplies the current alpha by a percentage (0-1f)</summary>
         </Docs>
         <Link Type="Xamarin.Essentials.ColorExtensions" Member="M:Xamarin.Essentials.ColorExtensions.MultiplyAlpha(System.Drawing.Color,System.Single)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="System.Drawing.Color" />
+      </Targets>
+      <Member MemberName="ToInt">
+        <MemberSignature Language="C#" Value="public static int ToInt (this System.Drawing.Color color);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig int32 ToInt(valuetype System.Drawing.Color color) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.ToInt(System.Drawing.Color)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Int32</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="color">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.ColorExtensions" Member="M:Xamarin.Essentials.ColorExtensions.ToInt(System.Drawing.Color)" />
       </Member>
     </ExtensionMethod>
     <ExtensionMethod>

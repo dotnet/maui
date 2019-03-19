@@ -16,7 +16,7 @@ namespace Xamarin.Essentials
 
             var time = (long)duration.TotalMilliseconds;
 #if __ANDROID_26__
-            if (Platform.HasApiLevel(BuildVersionCodes.O))
+            if (Platform.HasApiLevelO)
             {
                 Platform.Vibrator.Vibrate(VibrationEffect.CreateOneShot(time, VibrationEffect.DefaultAmplitude));
                 return;

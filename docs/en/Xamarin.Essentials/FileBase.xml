@@ -1,0 +1,73 @@
+<Type Name="FileBase" FullName="Xamarin.Essentials.FileBase">
+  <TypeSignature Language="C#" Value="public abstract class FileBase" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract beforefieldinit FileBase extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.FileBase" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>A representation of a file and its content type.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public FileBase (Xamarin.Essentials.FileBase file);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class Xamarin.Essentials.FileBase file) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.FileBase.#ctor(Xamarin.Essentials.FileBase)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="file" Type="Xamarin.Essentials.FileBase" />
+      </Parameters>
+      <Docs>
+        <param name="file">An existing FileBase instance to use.</param>
+        <summary>FileBase from an existing instance.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ContentType">
+      <MemberSignature Language="C#" Value="public string ContentType { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string ContentType" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.FileBase.ContentType" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the file's content type.</summary>
+        <value></value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FullPath">
+      <MemberSignature Language="C#" Value="public string FullPath { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string FullPath" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.FileBase.FullPath" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the full path and filename.</summary>
+        <value></value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

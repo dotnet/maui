@@ -26,9 +26,14 @@ namespace Xamarin.Essentials
             ValidateOpen(number);
 
             var phoneNumber = string.Empty;
-            if (Platform.HasApiLevel(BuildVersionCodes.N))
+#if __ANDROID_24__
+            if (Platform.HasApiLevelN)
                 phoneNumber = PhoneNumberUtils.FormatNumber(number, Java.Util.Locale.GetDefault(Java.Util.Locale.Category.Format).Country);
             else if (Platform.HasApiLevel(BuildVersionCodes.Lollipop))
+#else
+            if (Platform.HasApiLevel(BuildVersionCodes.Lollipop))
+#endif
+
                 phoneNumber = PhoneNumberUtils.FormatNumber(number, Java.Util.Locale.Default.Country);
             else
 #pragma warning disable CS0618

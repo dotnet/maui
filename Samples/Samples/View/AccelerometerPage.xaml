@@ -9,11 +9,12 @@
     </views:BasePage.BindingContext>
 
     <StackLayout>
-        <Label Text="Retrieve acceleration data of the device in 3D space." FontAttributes="Bold" Margin="12" />
+        <Label Text="Retrieve acceleration data of the device in 3D space. Additionally, this page will detect if you shake your device." FontAttributes="Bold" Margin="12" />
 
         <ScrollView>
             <Grid Padding="12,0,12,12">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -40,6 +41,8 @@
 
                 <Button Grid.Row="5" Grid.Column="1" Text="Stop" Command="{Binding StopCommand}"
                     IsEnabled="{Binding IsActive}" />
+
+                <Label Grid.Row="6" Grid.ColumnSpan="2" Text="{Binding ShakeTime}"/>
             </Grid>
         </ScrollView>
     </StackLayout>

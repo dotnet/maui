@@ -14,13 +14,13 @@ namespace Xamarin.Essentials
         const string appManifestFilename = "AppxManifest.xml";
         const string appManifestXmlns = "http://schemas.microsoft.com/appx/manifest/foundation/windows10";
 
-        static void PlatformEnsureDeclared(PermissionType permission)
+        static bool PlatformEnsureDeclared(PermissionType permission, bool throwIfMissing)
         {
             var uwpCapabilities = permission.ToUWPCapabilities();
 
             // If no actual UWP capabilities are required here, just return
             if (uwpCapabilities == null || !uwpCapabilities.Any())
-                return;
+                return true;
 
             var doc = XDocument.Load(appManifestFilename, LoadOptions.None);
             var reader = doc.CreateReader();
@@ -31,8 +31,15 @@ namespace Xamarin.Essentials
                 // If the manifest doesn't contain a capability we need, throw
                 if ((!doc.Root.XPathSelectElements($"//x:DeviceCapability[@Name='{cap}']", namespaceManager)?.Any() ?? false) &&
                     (!doc.Root.XPathSelectElements($"//x:Capability[@Name='{cap}']", namespaceManager)?.Any() ?? false))
-                    throw new PermissionException($"You need to declare the capability `{cap}` in your AppxManifest.xml file");
+                {
+                    if (throwIfMissing)
+                        throw new PermissionException($"You need to declare the capability `{cap}` in your AppxManifest.xml file");
+                    else
+                        return false;
+                }
             }
+
+            return true;
         }
 
         static Task<PermissionStatus> PlatformCheckStatusAsync(PermissionType permission)

@@ -11,6 +11,7 @@ namespace Samples.ViewModel
         double x;
         double y;
         double z;
+        string shakeTime = string.Empty;
         bool isActive;
         int speed = 0;
 
@@ -23,6 +24,12 @@ namespace Samples.ViewModel
         public ICommand StartCommand { get; }
 
         public ICommand StopCommand { get; }
+
+        public string ShakeTime
+        {
+            get => shakeTime;
+            set => SetProperty(ref shakeTime, value);
+        }
 
         public double X
         {
@@ -60,14 +67,19 @@ namespace Samples.ViewModel
         public override void OnAppearing()
         {
             Accelerometer.ReadingChanged += OnReadingChanged;
+            Accelerometer.ShakeDetected += Accelerometer_OnShaked;
+
             base.OnAppearing();
         }
+
+        void Accelerometer_OnShaked(object sender, EventArgs e) =>
+            ShakeTime = $"Shake detected: {DateTime.Now.ToLongTimeString()}";
 
         public override void OnDisappearing()
         {
             OnStop();
             Accelerometer.ReadingChanged -= OnReadingChanged;
-
+            Accelerometer.ShakeDetected -= Accelerometer_OnShaked;
             base.OnDisappearing();
         }
 

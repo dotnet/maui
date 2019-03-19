@@ -45,6 +45,9 @@ namespace Xamarin.Essentials
 
         public static uint ToUInt(this Color color) =>
             (uint)((color.A << 24) | (color.R << 16) | (color.G << 8) | (color.B << 0));
+
+        public static int ToInt(this Color color) =>
+            (color.A << 24) | (color.R << 16) | (color.G << 8) | (color.B << 0);
     }
 }
 #endif

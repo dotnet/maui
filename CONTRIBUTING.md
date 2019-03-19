@@ -10,9 +10,69 @@ Please see our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 You will need to complete a Contribution License Agreement before any pull request can be accepted. Complete the CLA at https://cla.dotnetfoundation.org/.
 
-## Contributing Code
+## Contributing Code - Best Practices
 
-Check out [A Beginner's Guide for Contributing to Xamarin.Essentials](https://github.com/xamarin/Essentials/wiki/A-Beginner's-Guide-for-Contributing-to-Xamarin.Essentials).
+### Enums
+* Always use `Unknown` at index 0 for return types that may have a value that is not known
+* Always use `Default` at index 0 for option types that can use the system default option
+* Follow naming guidelines for tense... `SensorSpeed` not `SensorSpeeds`
+* Assign values (0,1,2,3) for all enums
+
+### Property Names
+* Include units only if one of the platforms includes it in their implementation. For instance HeadingMagneticNorth implies degrees on all platforms, but PressureInHectopascals is needed since platforms don't provide a consistent API for this.
+
+### Units
+* Use the standard units and most well accepted units when possible. For instance Hectopascals are used on UWP/Android and iOS uses Kilopascals so we have chosen Hectopascals.
+
+### Style
+* Prefer using `==` when checking for null instead of `is`
+
+### Exceptions
+
+We currently have different ways of indicating that nothing can be done:
+
+ - do nothing
+ - throw `FeatureNotSupportedException`
+ - throw `PlatformNotSupportedException`
+ - throw `FeatureNotEnabledException`
+
+One case where we do nothing is in Android's energy saver API: if we are not Lollipop, then we just fall through:
+https://github.com/xamarin/Essentials/blob/1.0.0/Xamarin.Essentials/Battery/Battery.android.cs#L12-L48
+
+One case where we throw `FeatureNotSupportedException` is with the sensors: if there is no sensor X, then we throw.
+
+One case (and the only case so far) where we throw `PlatformNotSupportedException` is in Android's text-to-speech API: if we try and speak, but we couldn't initialize, then we throw.
+
+So far, I was able to determine that we throw `FeatureNotSupportedException` for:
+ - the sensors on all platforms if we aren't able to access the hardware
+    - we throw in the start and the stop (this one may be overkill, we can probably first check to see if it is started, and if not then just do nothing)
+ - the Android external browser if there was no browser installed
+ - the email API
+    - Android: if there is no `message/rfc822` intent handler
+    - iOS: (if the mail VC can't send, or if the `mailto:` doesn't have an app, or if trying to send HTML over the `mailto:` protocol
+    - UWP: if the `EmailManager` is not available, or if trying to send HTML
+ - the flashlight API on all platforms if there is no camera flash hardware
+ - the phone dialler 
+    - Android / iOS: if the OS can't handle the `tel:` protocol
+    - UWP: the `PhoneCallManager` is missing
+ - the sms API
+    - Android: if there is no `smsto:` intent handler
+    - iOS: (if the message VC can't send
+    - UWP: if the `ChatMessageManager` is not available
+ - the vibration API on UWP if the `VibrationDevice` is not available or if no hardware was found
+
+We throw a `PlatformNotSupportedException` for:
+ - Android when we aren't able to initialize the text-to-speech engine
+
+We throw a `FeatureNotEnabledException` for:
+ - Geolocation if no providers are found
+
+We do "nothing":
+ - the Vibration API on iOS and android never actually checks, it just starts it
+ - the Map API on Android and UWP just starts the URI, assuming that something will be there
+ - the Geolocation API always assumes that there is a GPS and throws a `FeatureNotEnabledException` if there was no way to get the hardware
+ - the KeepScreenOn feature just assumes the window flag will be honoured (probably is, but is there an api level/hardware limit?)
+ - the energy saver API on android pre-Lollipop
 
 ## Documentation - mdoc
 

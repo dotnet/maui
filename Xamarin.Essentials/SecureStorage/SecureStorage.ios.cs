@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 using Foundation;
@@ -99,8 +100,31 @@ namespace Xamarin.Essentials
             using (var newRecord = CreateRecordForNewKeyValue(key, value, service))
             {
                 var result = SecKeyChain.Add(newRecord);
-                if (result != SecStatusCode.Success)
-                    throw new Exception($"Error adding record: {result}");
+
+                switch (result)
+                {
+                    case SecStatusCode.DuplicateItem:
+                        {
+                            Debug.WriteLine("Duplicate item found. Attempting to remove and add again.");
+
+                            // try to remove and add again
+                            if (Remove(key, service))
+                            {
+                                result = SecKeyChain.Add(newRecord);
+                                if (result != SecStatusCode.Success)
+                                    throw new Exception($"Error adding record: {result}");
+                            }
+                            else
+                            {
+                                Debug.WriteLine("Unable to remove key.");
+                            }
+                        }
+                        break;
+                    case SecStatusCode.Success:
+                        return;
+                    default:
+                        throw new Exception($"Error adding record: {result}");
+                }
             }
         }
 

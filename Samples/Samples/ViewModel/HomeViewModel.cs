@@ -166,7 +166,7 @@ namespace Samples.ViewModel
                     "📲",
                     "Share",
                     typeof(SharePage),
-                    "Send text and website uris to other apps.",
+                    "Send text, website uris and files to other apps.",
                     new[] { "data", "transfer", "share", "communication" }),
                 new SampleItem(
                     "💬",

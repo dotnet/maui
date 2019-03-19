@@ -1,6 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Foundation;
 using MessageUI;
+using MobileCoreServices;
 using UIKit;
 
 namespace Xamarin.Essentials
@@ -37,15 +39,24 @@ namespace Xamarin.Essentials
             // create the controller
             var controller = new MFMailComposeViewController();
             if (!string.IsNullOrEmpty(message?.Body))
-                controller.SetMessageBody(message.Body, message?.BodyFormat == EmailBodyFormat.Html);
+                controller.SetMessageBody(message.Body, message.BodyFormat == EmailBodyFormat.Html);
             if (!string.IsNullOrEmpty(message?.Subject))
                 controller.SetSubject(message.Subject);
-            if (message?.To.Count > 0)
+            if (message?.To?.Count > 0)
                 controller.SetToRecipients(message.To.ToArray());
-            if (message?.Cc.Count > 0)
+            if (message?.Cc?.Count > 0)
                 controller.SetCcRecipients(message.Cc.ToArray());
-            if (message?.Bcc.Count > 0)
+            if (message?.Bcc?.Count > 0)
                 controller.SetBccRecipients(message.Bcc.ToArray());
+
+            if (message?.Attachments?.Count > 0)
+            {
+                foreach (var attachment in message.Attachments)
+                {
+                    var data = NSData.FromFile(attachment.FullPath);
+                    controller.AddAttachmentData(data, attachment.ContentType, attachment.AttachmentName);
+                }
+            }
 
             // show the controller
             var tcs = new TaskCompletionSource<bool>();
@@ -64,11 +75,8 @@ namespace Xamarin.Essentials
             var url = GetMailToUri(message);
 
             var tcs = new TaskCompletionSource<bool>();
-            NSRunLoop.Main.InvokeOnMainThread(() =>
-            {
-                var nsurl = NSUrl.FromString(url);
-                UIApplication.SharedApplication.OpenUrl(nsurl, new UIApplicationOpenUrlOptions(), r => tcs.TrySetResult(r));
-            });
+            var nsurl = NSUrl.FromString(url);
+            UIApplication.SharedApplication.OpenUrl(nsurl, new UIApplicationOpenUrlOptions(), r => tcs.TrySetResult(r));
             return tcs.Task;
         }
     }

@@ -19,8 +19,30 @@ namespace Xamarin.Essentials
             if (filename == null)
                 throw new ArgumentNullException(nameof(filename));
 
-            filename = filename.Replace('/', Path.DirectorySeparatorChar);
-            return Package.Current.InstalledLocation.OpenStreamForReadAsync(filename);
+            return Package.Current.InstalledLocation.OpenStreamForReadAsync(NormalizePath(filename));
         }
+
+        internal static string NormalizePath(string path)
+            => path.Replace('/', Path.DirectorySeparatorChar);
+    }
+
+    public partial class FileBase
+    {
+        internal FileBase(IStorageFile file)
+            : this(file?.Path)
+        {
+            File = file;
+            ContentType = file?.ContentType;
+        }
+
+        internal void PlatformInit(FileBase file)
+        {
+            File = file.File;
+        }
+
+        internal IStorageFile File { get; set; }
+
+        // we can't do anything here, but Windows will take care of it
+        internal static string PlatformGetContentType(string extension) => null;
     }
 }

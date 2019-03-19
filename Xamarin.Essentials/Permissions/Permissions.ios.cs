@@ -6,15 +6,22 @@ namespace Xamarin.Essentials
 {
     internal static partial class Permissions
     {
-        static void PlatformEnsureDeclared(PermissionType permission)
+        static bool PlatformEnsureDeclared(PermissionType permission, bool throwIfMissing)
         {
             var info = NSBundle.MainBundle.InfoDictionary;
 
             if (permission == PermissionType.LocationWhenInUse)
             {
                 if (!info.ContainsKey(new NSString("NSLocationWhenInUseUsageDescription")))
-                    throw new PermissionException("You must set `NSLocationWhenInUseUsageDescription` in your Info.plist file to enable Authorization Requests for Location updates.");
+                {
+                    if (throwIfMissing)
+                        throw new PermissionException("You must set `NSLocationWhenInUseUsageDescription` in your Info.plist file to enable Authorization Requests for Location updates.");
+                    else
+                        return false;
+                }
             }
+
+            return true;
         }
 
         static Task<PermissionStatus> PlatformCheckStatusAsync(PermissionType permission)

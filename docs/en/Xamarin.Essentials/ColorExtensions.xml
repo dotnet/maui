@@ -65,6 +65,28 @@
         <remarks></remarks>
       </Docs>
     </Member>
+    <Member MemberName="ToInt">
+      <MemberSignature Language="C#" Value="public static int ToInt (this System.Drawing.Color color);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig int32 ToInt(valuetype System.Drawing.Color color) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.ToInt(System.Drawing.Color)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
+      </Parameters>
+      <Docs>
+        <param name="color">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="ToPlatformColor">
       <MemberSignature Language="C#" Value="public static Android.Graphics.Color ToPlatformColor (this System.Drawing.Color color);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Android.Graphics.Color ToPlatformColor(valuetype System.Drawing.Color color) cil managed" />

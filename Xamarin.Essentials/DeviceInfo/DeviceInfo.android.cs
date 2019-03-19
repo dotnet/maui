@@ -95,6 +95,7 @@ namespace Xamarin.Essentials
                 Build.Model.Contains("Emulator") ||
                 Build.Model.Contains("Android SDK built for x86") ||
                 Build.Manufacturer.Contains("Genymotion") ||
+                Build.Manufacturer.Contains("VS Emulator") ||
                 (Build.Brand.StartsWith("generic", StringComparison.InvariantCulture) && Build.Device.StartsWith("generic", StringComparison.InvariantCulture)) ||
                 Build.Product.Equals("google_sdk", StringComparison.InvariantCulture);
 

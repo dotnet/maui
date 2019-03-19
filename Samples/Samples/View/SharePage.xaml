@@ -9,11 +9,13 @@
     </views:BasePage.BindingContext>
 
     <StackLayout>
-        <Label Text="Share text and websites to other applications on the users device." FontAttributes="Bold" Margin="12" />
+        <Label Text="Share text, websites and files to other applications on the users device." FontAttributes="Bold" Margin="12" />
 
         <ScrollView>
             <StackLayout Padding="12,0,12,12" Spacing="6">
 
+                <Label Text="Share Text" FontAttributes="Bold" Margin="0,6,0,0" />
+                
                 <Label Text="Title (Optional)" />
                 <Entry Text="{Binding Title}" />
 
@@ -34,7 +36,22 @@
 
                 <Entry Text="{Binding Uri}" Placeholder="Enter URI to share here." />
 
-                <Button Text="Request Transfer" Command="{Binding RequestCommand}" />
+                <Button Text="Share Text" Command="{Binding RequestCommand}" />
+
+                <BoxView Margin="0,4,0,4" HeightRequest="1" BackgroundColor="Gray" HorizontalOptions="FillAndExpand" />
+
+                <Label Text="Share File" FontAttributes="Bold" Margin="0,6,0,0" />
+
+                <Label Text="Title (Optional)" />
+                <Entry Text="{Binding ShareFileTitle}" />
+
+                <Label Text="File Name:" />
+                <Entry Text="{Binding ShareFileAttachmentName}" />
+                <Label Text="File Contents:" />
+                <Editor Text="{Binding ShareFileAttachmentContents}" Keyboard="Chat"
+                        VerticalOptions="FillAndExpand" HeightRequest="200" />
+
+                <Button Text="Share File" Command="{Binding RequestFileCommand}" />
 
             </StackLayout>
         </ScrollView>
