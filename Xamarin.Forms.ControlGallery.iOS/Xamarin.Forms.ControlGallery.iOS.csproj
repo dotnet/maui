@@ -312,6 +312,22 @@
     <BundleResource Include="Resources\xamarin_logo%403x.png" />
     <BundleResource Include="Resources\xamarin_logo%402x.png" />
     <BundleResource Include="Resources\xamarin_logo.png" />
+    <BundleResource Include="..\Xamarin.Forms.ControlGallery.MacOS\Resources\Fonts\Roboto-Bold.ttf">
+      <Link>Resources\Fonts\Roboto-Bold.ttf</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </BundleResource>
+    <BundleResource Include="..\Xamarin.Forms.ControlGallery.MacOS\Resources\Fonts\Roboto-BoldItalic.ttf">
+      <Link>Resources\Fonts\Roboto-BoldItalic.ttf</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </BundleResource>
+    <BundleResource Include="..\Xamarin.Forms.ControlGallery.MacOS\Resources\Fonts\Roboto-Italic.ttf">
+      <Link>Resources\Fonts\Roboto-Italic.ttf</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </BundleResource>
+    <BundleResource Include="..\Xamarin.Forms.ControlGallery.MacOS\Resources\Fonts\Roboto-Regular.ttf">
+      <Link>Resources\Fonts\Roboto-Regular.ttf</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </BundleResource>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
@@ -378,6 +394,9 @@
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon20.png">
       <Visible>false</Visible>
     </ImageAsset>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\Fonts\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
 </Project>
