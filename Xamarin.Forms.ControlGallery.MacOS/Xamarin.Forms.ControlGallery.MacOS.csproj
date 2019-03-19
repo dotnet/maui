@@ -115,7 +115,7 @@
       <Name>Xamarin.Forms.Maps</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj">
-      <Project>{67F9D3A8-F71E-4428-913F-C37AE82CDB24}</Project>
+      <Project>{D31A6537-ED9C-4EBD-B231-A8D4FE44126A}</Project>
       <Name>Xamarin.Forms.Platform</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Platform.MacOS\Xamarin.Forms.Platform.MacOS.csproj">
@@ -381,9 +381,24 @@
     <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Images\Vegetables%402x.jpg">
       <Link>Images\Vegetables%402x.jpg</Link>
     </BundleResource>
+    <BundleResource Include="Resources\Fonts\Roboto-Bold.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </BundleResource>
+    <BundleResource Include="Resources\Fonts\Roboto-BoldItalic.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </BundleResource>
+    <BundleResource Include="Resources\Fonts\Roboto-Italic.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </BundleResource>
+    <BundleResource Include="Resources\Fonts\Roboto-Regular.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </BundleResource>
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="Main.storyboard" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\Fonts\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
   <Target Name="_VerifyBuildSignature" />
