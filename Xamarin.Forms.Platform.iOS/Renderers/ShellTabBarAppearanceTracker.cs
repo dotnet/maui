@@ -27,11 +27,13 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public void SetAppearance(UITabBarController controller, ShellAppearance appearance)
 		{
-			var background = appearance.BackgroundColor;
-			var foreground = appearance.ForegroundColor;
-			var titleColor = appearance.TitleColor;
-			var disabledColor = appearance.DisabledColor;
-			var unselectedColor = appearance.UnselectedColor;
+			IShellAppearanceElement el = appearance;
+			var backgroundColor = el.EffectiveTabBarBackgroundColor;
+			var foregroundColor = el.EffectiveTabBarForegroundColor;
+			var titleColor = el.EffectiveTabBarTitleColor;
+			var disabledColor = el.EffectiveTabBarDisabledColor;
+			var unselectedColor = el.EffectiveTabBarUnselectedColor;
+
 			var tabBar = controller.TabBar;
 
 			if (_blurView == null)
@@ -52,10 +54,10 @@ namespace Xamarin.Forms.Platform.iOS
 			tabBar.InsertSubview(_colorView, 0);
 			tabBar.InsertSubview(_blurView, 0);
 
-			if (!background.IsDefault)
-				_colorView.BackgroundColor = background.ToUIColor();
-			if (!foreground.IsDefault)
-				tabBar.TintColor = foreground.ToUIColor();
+			if (!backgroundColor.IsDefault)
+				_colorView.BackgroundColor = backgroundColor.ToUIColor();
+			if (!foregroundColor.IsDefault)
+				tabBar.TintColor = foregroundColor.ToUIColor();
 			if (!unselectedColor.IsDefault)
 				tabBar.UnselectedItemTintColor = unselectedColor.ToUIColor();
 		}
@@ -69,7 +71,7 @@ namespace Xamarin.Forms.Platform.iOS
 		}
 
 		#region IDisposable Support
-		
+
 		protected virtual void Dispose(bool disposing)
 		{
 			if (!_disposed)

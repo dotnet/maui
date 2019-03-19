@@ -21,6 +21,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 					HeightRequest = 100, WidthRequest = 100,
 					HorizontalOptions = LayoutOptions.Center,
 					VerticalOptions = LayoutOptions.Center,
+					Margin = new Thickness(2, 5, 2, 2),
 					AutomationId = "photo"
 				};
 
@@ -30,7 +31,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 				{
 					FontSize = 12,
 					HorizontalOptions = LayoutOptions.Fill,
-					HorizontalTextAlignment = TextAlignment.Center
+					HorizontalTextAlignment = TextAlignment.Center,
+					Margin = new Thickness(2, 0, 2, 2)
 				};
 
 				caption.SetBinding(Label.TextProperty, new Binding("Caption"));

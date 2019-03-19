@@ -658,7 +658,12 @@ namespace Xamarin.Forms.Xaml
 			if (serviceProvider != null)
 				((XamlValueTargetProvider)serviceProvider.IProvideValueTarget).TargetProperty = targetProperty;
 
-			addMethod.Invoke(collection, new [] { value.ConvertTo(addMethod.GetParameters() [0].ParameterType, (Func<TypeConverter>)null, serviceProvider, out exception) });
+			try {
+				addMethod.Invoke(collection, new[] { value.ConvertTo(addMethod.GetParameters()[0].ParameterType, (Func<TypeConverter>)null, serviceProvider, out exception) });
+			}
+			catch (Exception e) {
+				exception = e;
+			}
 			return exception == null;
 		}
 

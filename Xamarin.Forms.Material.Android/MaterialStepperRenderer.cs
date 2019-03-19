@@ -9,7 +9,6 @@ using Xamarin.Forms.Platform.Android;
 using AButton = Android.Widget.Button;
 using MButton = Android.Support.Design.Button.MaterialButton;
 
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Stepper), typeof(MaterialStepperRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
 
 namespace Xamarin.Forms.Material.Android
 {

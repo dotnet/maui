@@ -646,6 +646,42 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 			Assert.That(exceptions.Count, Is.GreaterThan(1));
 		}
+
+		[Test]
+		public void IgnoreFindByNameInvalidCastException()
+		{
+			var xaml = @"
+						<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
+							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"">
+							<Label x:Name=""MyName"" />
+						</ContentPage>";
+
+			var exceptions = new List<Exception>();
+			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+			var content = (ContentPage)XamlLoader.Create(xaml, true);
+			Assert.DoesNotThrow(() => content.FindByName<Button>("MyName"));
+			Assert.That(exceptions.Count, Is.GreaterThanOrEqualTo(1));
+		}
+    
+		[Test]
+		public void TextAsRandomContent()
+		{
+			var xaml = @"
+						<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
+							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
+								xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+								<StackLayout>
+									<Label>xyz</Label>
+									<StackLayout>foo</StackLayout>
+									<Label><Label.FormattedText>bar</Label.FormattedText></Label>
+								</StackLayout>
+						</ContentPage>";
+			XamlLoader.Create(xaml, true);
+			var exceptions = new List<Exception>();
+			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
+			Assert.That(exceptions.Count, Is.GreaterThanOrEqualTo(1));
+		}
 	}
 
 	public class InstantiateThrows

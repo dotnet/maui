@@ -7,8 +7,7 @@ namespace Xamarin.Forms.Platform.Android
 	public class SelectableItemsViewRenderer : ItemsViewRenderer
 	{
 		SelectableItemsView SelectableItemsView => (SelectableItemsView)ItemsView;
-
-		SelectableItemsViewAdapter SelectableItemsViewAdapter => (SelectableItemsViewAdapter)ItemsViewAdapter; 
+		SelectableItemsViewAdapter SelectableItemsViewAdapter => (SelectableItemsViewAdapter)ItemsViewAdapter;
 
 		public SelectableItemsViewRenderer(Context context) : base(context)
 		{
@@ -17,8 +16,10 @@ namespace Xamarin.Forms.Platform.Android
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs changedProperty)
 		{
 			base.OnElementPropertyChanged(sender, changedProperty);
-			
-			if (changedProperty.Is(SelectableItemsView.SelectedItemProperty))
+
+			if (changedProperty.IsOneOf(SelectableItemsView.SelectedItemProperty, 
+				SelectableItemsView.SelectedItemsProperty, 
+				SelectableItemsView.SelectionModeProperty))
 			{
 				UpdateNativeSelection();
 			}
@@ -42,44 +43,31 @@ namespace Xamarin.Forms.Platform.Android
 			SwapAdapter(ItemsViewAdapter, true);
 		}
 
-		void MarkItemSelected(object selectedItem)
-		{
-			var position = ItemsViewAdapter.GetPositionForItem(selectedItem);
-			var selectedHolder = FindViewHolderForAdapterPosition(position);
-			if (selectedHolder == null)
-			{
-				return;
-			}
-
-			if (selectedHolder is SelectableViewHolder selectable)
-			{
-				selectable.IsSelected = true;
-			}
-		}
-
 		void UpdateNativeSelection()
 		{
 			var mode = SelectableItemsView.SelectionMode;
-			var selectedItem = SelectableItemsView.SelectedItem;
 
-			if (selectedItem == null)
+			SelectableItemsViewAdapter.ClearNativeSelection();
+
+			switch (mode)
 			{
-				if (mode == SelectionMode.None || mode == SelectionMode.Single)
-				{
-					SelectableItemsViewAdapter.ClearNativeSelection();
-				}
+				case SelectionMode.None:
+					return;
 
-				// If the mode is Multiple and SelectedItem is set to null, don't do anything
-				return;
+				case SelectionMode.Single:
+					var selectedItem = SelectableItemsView.SelectedItem;
+					SelectableItemsViewAdapter.MarkNativeSelection(selectedItem);
+					return;
+
+				case SelectionMode.Multiple:
+					var selectedItems = SelectableItemsView.SelectedItems;
+					
+					foreach(var item in selectedItems)
+					{
+						SelectableItemsViewAdapter.MarkNativeSelection(item);
+					}
+					return;
 			}
-
-			if (mode != SelectionMode.Multiple)
-			{
-				SelectableItemsViewAdapter.ClearNativeSelection();
-				MarkItemSelected(selectedItem);
-			}
-
-			// TODO hartez 2018/11/06 22:32:07 This doesn't cover all the possible cases yet; need to handle multiple selection	
 		}
 	}
 }

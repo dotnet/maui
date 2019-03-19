@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Xamarin.Forms;
+﻿using System.Linq;
 using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionGalleries
@@ -14,9 +8,9 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionG
 	{
 		readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource();
 
-		public PreselectedItemGallery ()
+		public PreselectedItemGallery()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 
 			CollectionView.ItemTemplate = ExampleTemplates.PhotoTemplate();
 			CollectionView.ItemsSource = _demoFilteredItemSource.Items;

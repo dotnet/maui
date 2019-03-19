@@ -20,6 +20,8 @@
 							new SelectionModeGallery(), Navigation),
 						GalleryBuilder.NavButton("Preselected Item", () =>
 							new PreselectedItemGallery(), Navigation),
+						GalleryBuilder.NavButton("Preselected Items", () =>
+							new PreselectedItemsGallery(), Navigation),
 					}
 				}
 			};
