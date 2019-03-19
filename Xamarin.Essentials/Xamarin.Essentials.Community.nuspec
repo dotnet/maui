@@ -60,5 +60,16 @@
     <file src="bin/Release/xamarin.mac20/Xamarin.Essentials.xml" target="lib/xamarinmac20/Xamarin.Essentials.xml" />
     <file src="bin/Release/xamarin.mac20/Xamarin.Essentials.dll" target="lib/xamarinmac20/Xamarin.Essentials.dll" />
     <file src="../nugetreadme.txt" target="readme.txt" />
+    <!-- dummy files to allow installs -->
+    <file src="../nugetreadme.txt" target="lib/monoandroid60/_._" />
+    <file src="../nugetreadme.txt" target="lib/monoandroid70/_._" />
+    <file src="../nugetreadme.txt" target="lib/monoandroid71/_._" />
+    <file src="../nugetreadme.txt" target="lib/monoandroid80/_._" />
+    <file src="../nugetreadme.txt" target="lib/monoandroid81/_._" />
+    <file src="../nugetreadme.txt" target="lib/monoandroid90/_._" />
+    <file src="../nugetreadme.txt" target="lib/netstandard10/_._" />
+    <file src="../nugetreadme.txt" target="lib/netstandard20/_._" />
+    <file src="../nugetreadme.txt" target="lib/uap10.0.16299/_._" />
+    <file src="../nugetreadme.txt" target="lib/xamarinios10/_._" />
   </files>
 </package>
