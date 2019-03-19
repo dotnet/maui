@@ -104,6 +104,19 @@ jobs:
           solution: Xamarin.Essentials/Xamarin.Essentials.csproj
           configuration: Release
           msbuildArguments: '/t:Pack /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
+      # restore, build and pack the ADDITIONAL packages
+      - task: MSBuild@1
+        displayName: Build Solution
+        inputs:
+          solution: Xamarin.Essentials/Xamarin.Essentials.Additional.csproj
+          configuration: Release
+          msbuildArguments: '/restore /t:Build /p:AdditionalOnly=true /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
+      - task: MSBuild@1
+        displayName: Pack NuGets
+        inputs:
+          solution: Xamarin.Essentials/Xamarin.Essentials.Additional.csproj
+          configuration: Release
+          msbuildArguments: '/t:Pack /p:AdditionalOnly=true /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
       - task: DotNetCoreCLI@2
         inputs:
           command: test
@@ -115,11 +128,18 @@ jobs:
     pool:
       vmImage: vs2017-win2016
     steps:
-      # restore, build and pack the packages
+      # restore and build the solution
       - task: MSBuild@1
         displayName: Build Solution
         inputs:
           solution: Xamarin.Essentials.sln
+          configuration: Release
+          msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
+      # restore and build the ADDITIONAL solution
+      - task: MSBuild@1
+        displayName: Build Solution
+        inputs:
+          solution: Xamarin.Essentials.Additional.sln
           configuration: Release
           msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
 
