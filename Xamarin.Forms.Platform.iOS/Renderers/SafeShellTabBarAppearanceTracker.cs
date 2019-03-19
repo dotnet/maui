@@ -21,9 +21,13 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public void SetAppearance(UITabBarController controller, ShellAppearance appearance)
 		{
-			var background = appearance.BackgroundColor;
-			var foreground = appearance.ForegroundColor;
-			var unselectedColor = appearance.UnselectedColor;
+			IShellAppearanceElement appearanceElement = appearance;
+			var backgroundColor = appearanceElement.EffectiveTabBarBackgroundColor;
+			var foregroundColor = appearanceElement.EffectiveTabBarForegroundColor; // currently unused
+			var disabledColor = appearanceElement.EffectiveTabBarDisabledColor; // unused on iOS
+			var unselectedColor = appearanceElement.EffectiveTabBarUnselectedColor;
+			var titleColor = appearanceElement.EffectiveTabBarTitleColor;
+
 			var tabBar = controller.TabBar;
 
 			if (_defaultTint == null)
@@ -33,10 +37,10 @@ namespace Xamarin.Forms.Platform.iOS
 				_defaultUnselectedTint = tabBar.UnselectedItemTintColor;
 			}
 
-			if (!background.IsDefault)
-				tabBar.BarTintColor = background.ToUIColor();
-			if (!foreground.IsDefault)
-				tabBar.TintColor = foreground.ToUIColor();
+			if (!backgroundColor.IsDefault)
+				tabBar.BarTintColor = backgroundColor.ToUIColor();
+			if (!titleColor.IsDefault)
+				tabBar.TintColor = titleColor.ToUIColor();
 			if (!unselectedColor.IsDefault)
 				tabBar.UnselectedItemTintColor = unselectedColor.ToUIColor();
 		}

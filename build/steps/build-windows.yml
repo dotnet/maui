@@ -45,7 +45,6 @@ steps:
           Xamarin.Forms.Build.Tasks/bin/**/*.dll
           Xamarin.Forms.Core.Design/bin/**/*.dll
           Xamarin.Forms.Xaml.Design/bin/**/*.dll
-          Xamarin.Forms.Maps.Design/bin/**/*.dll
           Xamarin.Forms.Maps/bin/$(BuildConfiguration)/**/*.dll
           Xamarin.Forms.Maps/bin/$(BuildConfiguration)/**/*.mdb
           Xamarin.Forms.Maps/bin/$(BuildConfiguration)/**/*.pdb
