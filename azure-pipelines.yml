@@ -59,7 +59,13 @@ jobs:
           solution: Xamarin.Essentials/Xamarin.Essentials.Additional.csproj
           configuration: Release
           msbuildArguments: '/t:Pack /p:AdditionalOnly=true /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
-      # run the tests
+      # build and run the tests
+      - task: MSBuild@1
+        displayName: Build Solution
+        inputs:
+          solution: Tests/Tests.csproj
+          configuration: Release
+          msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
       - task: DotNetCoreCLI@2
         inputs:
           command: test
@@ -131,7 +137,13 @@ jobs:
           solution: Xamarin.Essentials/Xamarin.Essentials.Additional.csproj
           configuration: Release
           msbuildArguments: '/t:Pack /p:AdditionalOnly=true /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
-      # run the tests
+      # build and run the tests
+      - task: MSBuild@1
+        displayName: Build Solution
+        inputs:
+          solution: Tests/Tests.csproj
+          configuration: Release
+          msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
       - task: DotNetCoreCLI@2
         inputs:
           command: test
