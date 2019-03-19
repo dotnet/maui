@@ -20,8 +20,8 @@ resources:
 
 jobs:
 
-  - job: build_windows
-    displayName: Build Windows Library
+  - job: build_library
+    displayName: Build Library
     pool:
       vmImage: vs2017-win2016
     steps:
@@ -31,49 +31,50 @@ jobs:
           $tagVersion = $buildSourceBranch.Substring($buildSourceBranch.LastIndexOf("/") + 1)
           Write-Host("Branch = $buildSourceBranch, Version = $tagVersion");
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$tagVersion")
-        displayName: Set NuGet Version to Tag Number
+        displayName: Set NuGet version to Tag number
         condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
       # restore, build and pack the packages
       - task: MSBuild@1
-        displayName: Build Solution
+        displayName: Build core project
         inputs:
           solution: Xamarin.Essentials/Xamarin.Essentials.csproj
           configuration: Release
           msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
       - task: MSBuild@1
-        displayName: Pack NuGets
+        displayName: Pack core NuGets
         inputs:
           solution: Xamarin.Essentials/Xamarin.Essentials.csproj
           configuration: Release
           msbuildArguments: '/t:Pack /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
       # restore, build and pack the ADDITIONAL packages
       - task: MSBuild@1
-        displayName: Build Solution
+        displayName: Build additional project
         inputs:
           solution: Xamarin.Essentials/Xamarin.Essentials.Additional.csproj
           configuration: Release
           msbuildArguments: '/restore /t:Build /p:AdditionalOnly=true /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
       - task: MSBuild@1
-        displayName: Pack NuGets
+        displayName: Pack additional NuGets
         inputs:
           solution: Xamarin.Essentials/Xamarin.Essentials.Additional.csproj
           configuration: Release
           msbuildArguments: '/t:Pack /p:AdditionalOnly=true /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
       # build and run the tests
       - task: MSBuild@1
-        displayName: Build Solution
+        displayName: Build for tests
         inputs:
-          solution: Tests/Tests.csproj
+          solution: Xamarin.Essentials/Xamarin.Essentials.csproj
           configuration: Release
           msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
       - task: DotNetCoreCLI@2
+        displayName: Run tests
         inputs:
           command: test
           projects: 'Tests/Tests.csproj'
           arguments: '--configuration Release'
       # publish the packages
       - task: PublishBuildArtifacts@1
-        displayName: 'Publish Unsigned NuGets'
+        displayName: Publish unsigned NuGets
         inputs:
           artifactName: nuget
           pathToPublish: '$(Build.ArtifactStagingDirectory)/nuget'
@@ -104,7 +105,7 @@ jobs:
           $tagVersion = $buildSourceBranch.Substring($buildSourceBranch.LastIndexOf("/") + 1)
           Write-Host("Branch = $buildSourceBranch, Version = $tagVersion");
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$tagVersion")
-        displayName: Set NuGet Version to Tag Number
+        displayName: Set NuGet version to Tag number
         condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
       # make sure to select the correct Xamarin and mono
       - bash: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh $(MONO_VERSION)
@@ -113,38 +114,39 @@ jobs:
         displayName: Switch to the latest Xcode
       # restore, build and pack the packages
       - task: MSBuild@1
-        displayName: Build Solution
+        displayName: Build core project
         inputs:
           solution: Xamarin.Essentials/Xamarin.Essentials.csproj
           configuration: Release
           msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
       - task: MSBuild@1
-        displayName: Pack NuGets
+        displayName: Pack core NuGets
         inputs:
           solution: Xamarin.Essentials/Xamarin.Essentials.csproj
           configuration: Release
           msbuildArguments: '/t:Pack /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
       # restore, build and pack the ADDITIONAL packages
       - task: MSBuild@1
-        displayName: Build Solution
+        displayName: Build additional project
         inputs:
           solution: Xamarin.Essentials/Xamarin.Essentials.Additional.csproj
           configuration: Release
           msbuildArguments: '/restore /t:Build /p:AdditionalOnly=true /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
       - task: MSBuild@1
-        displayName: Pack NuGets
+        displayName: Pack additional NuGets
         inputs:
           solution: Xamarin.Essentials/Xamarin.Essentials.Additional.csproj
           configuration: Release
           msbuildArguments: '/t:Pack /p:AdditionalOnly=true /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
       # build and run the tests
       - task: MSBuild@1
-        displayName: Build Solution
+        displayName: Build for tests
         inputs:
-          solution: Tests/Tests.csproj
+          solution: Xamarin.Essentials/Xamarin.Essentials.csproj
           configuration: Release
           msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
       - task: DotNetCoreCLI@2
+        displayName: Run tests
         inputs:
           command: test
           projects: 'Tests/Tests.csproj'
@@ -157,14 +159,14 @@ jobs:
     steps:
       # restore and build the solution
       - task: MSBuild@1
-        displayName: Build Solution
+        displayName: Build core solution
         inputs:
           solution: Xamarin.Essentials.sln
           configuration: Release
           msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
       # restore and build the ADDITIONAL solution
       - task: MSBuild@1
-        displayName: Build Solution
+        displayName: Build additional solution
         inputs:
           solution: Xamarin.Essentials.Additional.sln
           configuration: Release
@@ -181,13 +183,13 @@ jobs:
       vmImage: vs2017-win2016
     steps:
       - script: 'certutil -importpfx $(Build.SourcesDirectory)\DeviceTests\DeviceTests.UWP\DeviceTests.UWP_TemporaryKey.pfx'
-        displayName: 'Run certutil'
+        displayName: Install app certificate
       - powershell: |
           cd DeviceTests
           .\build.ps1 --target=test-uwp-emu --settings_skipverification=true --verbosity=diagnostic
-        displayName: 'Run Device Tests - UWP'
+        displayName: Run device tests
       - task: PublishTestResults@2
-        displayName: 'Publish Test Results'
+        displayName: Publish test results
         inputs:
           testResultsFormat: XUnit
           testResultsFiles: '**/xunit-*.xml'
@@ -206,19 +208,19 @@ jobs:
       - bash: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XCODE_VERSION).app;sudo xcode-select --switch /Applications/Xcode_$(XCODE_VERSION).app/Contents/Developer
         displayName: Switch to the latest Xcode
       - task: InstallAppleCertificate@2
-        displayName: 'Install an Apple certificate'
+        displayName: Install the Apple certificate
         inputs:
           certSecureFile: 'Components iOS Certificate.p12'
       - task: InstallAppleProvisioningProfile@1
-        displayName: 'Install an Apple provisioning profile'
+        displayName: Install the Apple provisioning profile
         inputs:
           provProfileSecureFile: 'Components iOS Provisioning.mobileprovision'
       - bash: |
           cd DeviceTests
           sh ./build.sh --target=test-ios-emu --settings_skipverification=true --verbosity=diagnostic
-        displayName: 'Run Device Tests - iOS'
+        displayName: Run device tests
       - task: PublishTestResults@2
-        displayName: 'Publish Test Results'
+        displayName: Publish test results
         inputs:
           testResultsFormat: XUnit
           testResultsFiles: '**/xunit-*.xml'
@@ -243,9 +245,9 @@ jobs:
           PATH="$ANDROID_HOME/emulator:$PATH"
           cd DeviceTests
           sh ./build.sh --target=test-android-emu --settings_skipverification=true --verbosity=diagnostic
-        displayName: 'Run Device Tests - Android'
+        displayName: Run device tests
       - task: PublishTestResults@2
-        displayName: 'Publish Test Results'
+        displayName: Publish test results
         inputs:
           testResultsFormat: XUnit
           testResultsFiles: '**/xunit-*.xml'
@@ -269,7 +271,7 @@ jobs:
             targetFolder: '$(Build.ArtifactStagingDirectory)/signed'
         # publish the signed packages
         - task: PublishBuildArtifacts@1
-          displayName: 'Publish Signed NuGets'
+          displayName: Publish signed NuGets
           inputs:
             artifactName: nuget-signed
             pathToPublish: '$(Build.ArtifactStagingDirectory)/signed'
