@@ -20,8 +20,8 @@ resources:
 
 jobs:
 
-  - job: build_library
-    displayName: Build Library
+  - job: build_windows
+    displayName: Build Windows Library
     pool:
       vmImage: vs2017-win2016
     steps:
