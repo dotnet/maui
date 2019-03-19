@@ -241,6 +241,13 @@
     <Compile Include="..\Xamarin.Forms.Platform.iOS\DisposeHelpers.cs">
       <Link>DisposeHelpers.cs</Link>
     </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.iOS\Renderers\ImageElementManager.cs">
+      <Link>Renderers\ImageElementManager.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.iOS\Renderers\IImageVisualElementRenderer.cs">
+      <Link>Renderers\IImageVisualElementRenderer.cs</Link>
+    </Compile>
+    <Compile Include="Extensions\ImageExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj">

@@ -8,7 +8,6 @@ using Foundation;
 using UIKit;
 using Xamarin.Forms.Internals;
 using RectangleF = CoreGraphics.CGRect;
-using System.Linq;
 
 namespace Xamarin.Forms.Platform.iOS
 {

@@ -1,14 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Foundation;
-using UIKit;
 
+#if __MOBILE__
+using UIKit;
+using NativeImage = UIKit.UIImage;
 namespace Xamarin.Forms.Platform.iOS
+#else
+using AppKit;
+using CoreAnimation;
+using NativeImage = AppKit.NSImage;
+namespace Xamarin.Forms.Platform.MacOS
+#endif
 {
 	public static class ImageElementManager
 	{
@@ -70,8 +74,11 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				return;
 			}
-
+#if __MOBILE__
 			Control.ContentMode = imageElement.Aspect.ToUIViewContentMode();
+#else
+			Control.Layer.ContentsGravity = imageElement.Aspect.ToNSViewContentMode();
+#endif
 		}
 
 		public static void SetOpacity(IImageVisualElementRenderer renderer, IImageElement imageElement)
@@ -83,8 +90,11 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				return;
 			}
-
+#if __MOBILE__
 			Control.Opaque = imageElement.IsOpaque;
+#else
+			(Control as FormsNSImageView)?.SetIsOpaque(imageElement.IsOpaque);
+#endif
 		}
 
 		public static async Task SetImage(IImageVisualElementRenderer renderer, IImageElement imageElement, Image oldElement = null)
@@ -133,14 +143,19 @@ namespace Xamarin.Forms.Platform.iOS
 			(imageElement as IViewController)?.NativeSizeChanged();
 		}
 
-		internal static async Task<UIImage> GetNativeImageAsync(this ImageSource source, CancellationToken cancellationToken = default(CancellationToken))
+		internal static async Task<NativeImage> GetNativeImageAsync(this ImageSource source, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			IImageSourceHandler handler;
 			if (source != null && (handler = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
 			{
 				try
 				{
-					return await handler.LoadImageAsync(source, scale: (float)UIScreen.MainScreen.Scale, cancelationToken: cancellationToken);
+#if __MOBILE__
+					float scale = (float)UIScreen.MainScreen.Scale;
+#else
+					float scale = (float)NSScreen.MainScreen.BackingScaleFactor;
+#endif
+					return await handler.LoadImageAsync(source, scale: scale, cancelationToken: cancellationToken);
 				}
 				catch (OperationCanceledException ex)
 				{

@@ -1,18 +1,13 @@
 ﻿using System;
 using AppKit;
 using CoreAnimation;
+using CoreGraphics;
 
 namespace Xamarin.Forms.Platform.MacOS
 {
-	internal class FormsNSImageView : NSView
+	internal class FormsNSImageView : NSImageView
 	{
 		bool _isOpaque;
-
-		public FormsNSImageView()
-		{
-			Layer = new CALayer();
-			WantsLayer = true;
-		}
 
 		public void SetIsOpaque(bool isOpaque)
 		{
