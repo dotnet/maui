@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
 using AppKit;
 using CoreGraphics;
 using Foundation;
@@ -18,7 +19,7 @@ namespace Xamarin.Forms.ControlGallery.MacOS
 		{
 			ObjCRuntime.Runtime.MarshalManagedException += (sender, args) =>
 			{
-				Console.WriteLine(args.Exception.ToString());
+				Console.WriteLine(args.Exception);
 			};
 
 			var style = NSWindowStyle.Closable | NSWindowStyle.Resizable | NSWindowStyle.Titled;
@@ -35,12 +36,15 @@ namespace Xamarin.Forms.ControlGallery.MacOS
 			get { return _window; }
 		}
 
+
 		public override void DidFinishLaunching(NSNotification notification)
 		{
 			Forms.Init();
 			FormsMaps.Init();
 
 			var app = new App();
+			SetupMenu(app);
+
 			// When the native control gallery loads up, it'll let us know so we can add the nested native controls
 			MessagingCenter.Subscribe<NestedNativeControlGalleryPage>(this, NestedNativeControlGalleryPage.ReadyForNativeControlsMessage, AddNativeControls);
 			MessagingCenter.Subscribe<Bugzilla40911>(this, Bugzilla40911.ReadyToSetUp40911Test, SetUp40911Test);
@@ -50,6 +54,75 @@ namespace Xamarin.Forms.ControlGallery.MacOS
 
 			LoadApplication(app);
 			base.DidFinishLaunching(notification);
+		}
+
+		void SetupMenu(Application app)
+		{
+			NativeMenuItemCreator = (menuItem) =>
+			{
+				if (menuItem is SeparatorMenuItem)
+				{
+					return NSMenuItem.SeparatorItem;
+				}
+
+				var nsMenuItem = new NSMenuItem { Title = menuItem.Text };
+				if (menuItem.Text == "Small icons")
+				{
+					nsMenuItem.State = NSCellStateValue.On;
+					nsMenuItem.Activated += CheckableNsMenuItem_Activated;
+				}
+
+				return nsMenuItem;
+			};
+
+			var menu = new Menu();
+
+			var appMenu = new Menu();
+
+			appMenu.Items.Add(new MenuItem { Text = "App menu test" });
+			menu.Add(appMenu);
+
+			var fileMenu = new Menu { Text = "File" };
+			fileMenu.Items.Add(new MenuItem { Text = "New" });
+			fileMenu.Items.Add(new MenuItem { Text = "Open" });
+			menu.Add(fileMenu);
+
+			var viewMenu = new Menu { Text = "View" };
+			var smallIconsMenuItem = new MenuItem { Text = "Small icons" };
+			smallIconsMenuItem.Clicked += CheckableMenuItem_Clicked;
+			viewMenu.Items.Add(smallIconsMenuItem);
+			viewMenu.Items.Add(new MenuItem { Text = "Large icons" });
+			viewMenu.Items.Add(new SeparatorMenuItem());
+			viewMenu.Items.Add(new MenuItem { Text = "List", IsEnabled = false });
+			viewMenu.Items.Add(new MenuItem { Text = "Details" });
+			menu.Add(viewMenu);
+
+			Element.SetMenu(app, menu);
+
+			void CheckableNsMenuItem_Activated(object sender, EventArgs e)
+			{
+				// switch state for checkable menu item
+				var nsMenuItem = sender as NSMenuItem;
+				nsMenuItem.State = nsMenuItem.State == NSCellStateValue.On ? NSCellStateValue.Off : NSCellStateValue.On;
+			}
+
+			void CheckableMenuItem_Clicked(object sender, EventArgs e)
+			{
+				var menuItem = sender as MenuItem;
+				var alert = new NSAlert { MessageText = $"{menuItem.Text} has been clicked!" };
+				alert.RunModal();
+			}
+		}
+
+		protected override void SetupMainAppMenu(NSMenu nativeMenu)
+		{
+			base.SetupMainAppMenu(nativeMenu);
+
+			// reorder menu items - it can be needed if we add submenus as they are added after simple items
+			var appMenu = nativeMenu.ItemAt(0);
+			var testMenuItem = appMenu.Submenu.Items.Last();
+			appMenu.Submenu.RemoveItem(testMenuItem);
+			appMenu.Submenu.InsertItem(testMenuItem, 0);
 		}
 
 		void AddNativeControls(NestedNativeControlGalleryPage page)
