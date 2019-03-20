@@ -1,19 +1,7 @@
-﻿using System.Collections.Generic;
-
-namespace Xamarin.Essentials
+﻿namespace Xamarin.Essentials
 {
     public static partial class Connectivity
     {
-        static NetworkAccess PlatformNetworkAccess =>
-            throw new System.PlatformNotSupportedException();
-
-        static IEnumerable<ConnectionProfile> PlatformConnectionProfiles =>
-            throw new System.PlatformNotSupportedException();
-
-        static void StartListeners() =>
-            throw new System.PlatformNotSupportedException();
-
-        static void StopListeners() =>
-            throw new System.PlatformNotSupportedException();
+        // macOS code is exactly the same as iOS, so we use that file directly.
     }
 }
