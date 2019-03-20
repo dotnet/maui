@@ -4,6 +4,6 @@ namespace Xamarin.Essentials
 {
     public static partial class MainThread
     {
-        // macOS code is exactly the same as iOS, se we use that file directly.
+        // macOS code is exactly the same as iOS, so we use that file directly.
     }
 }

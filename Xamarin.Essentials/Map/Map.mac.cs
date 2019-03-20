@@ -6,7 +6,7 @@ namespace Xamarin.Essentials
 {
     public static partial class Map
     {
-        // macOS code is exactly the same as iOS, se we use that file directly.
+        // macOS code is exactly the same as iOS, so we use that file directly.
 
         // There is one small difference, iOS uses a MKPlacemarkAddress object
         // to AddressBook in order to create a strongly typed object. On macOS,
