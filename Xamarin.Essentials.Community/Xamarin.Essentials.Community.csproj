@@ -1,9 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
-    <!--Work around so the conditions work below-->
-    <TargetFrameworks></TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">Xamarin.Mac20;;netstandard1.0;netstandard2.0;Xamarin.iOS10;MonoAndroid60;MonoAndroid70;MonoAndroid71;MonoAndroid80;MonoAndroid81;MonoAndroid90;uap10.0.16299</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">Xamarin.Mac20;;netstandard1.0;netstandard2.0;Xamarin.iOS10;MonoAndroid60;MonoAndroid70;MonoAndroid71;MonoAndroid80;MonoAndroid81;MonoAndroid90;</TargetFrameworks>
+    <TargetFrameworks>Xamarin.Mac20</TargetFrameworks>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <RootNamespace>Xamarin.Essentials</RootNamespace>
     <PackageId>Xamarin.Essentials.Community</PackageId>
@@ -56,44 +53,10 @@
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02" PrivateAssets="All" />    
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\nugetreadme.txt" PackagePath="readme.txt" Pack="true" />
-    <PackageReference Include="mdoc" Version="5.7.4.3" PrivateAssets="All" />
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.6.61" PrivateAssets="All" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-    <Compile Include="**\*.shared.cs" />
-    <Compile Include="**\*.shared.*.cs" />
-  </ItemGroup>
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard1.')) ">
-    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
-  </ItemGroup>
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard')) ">
-    <Compile Include="**\*.netstandard.cs" />
-    <Compile Include="**\*.netstandard.*.cs" />
-  </ItemGroup>
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('uap10.0')) ">
-    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.1.5" />
-    <SDKReference Include="WindowsMobile, Version=10.0.16299.0">
-      <Name>Windows Mobile Extensions for the UWP</Name>
-    </SDKReference>
-    <Compile Include="**\*.uwp.cs" />
-    <Compile Include="**\*.uwp.*.cs" />
-  </ItemGroup>
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) ">
-    <Compile Include="**\*.android.cs" />
-    <Compile Include="**\*.android.*.cs" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors" />
-    <AndroidResource Include="Resources\xml\*.xml" />
-    <PackageReference Include="Xamarin.Android.Support.Compat" Version="28.0.0.1" />
-    <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="28.0.0.1" />
-    <PackageReference Include="Xamarin.Android.Support.Core.Utils" Version="28.0.0.1" />
-  </ItemGroup>
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
-    <Compile Include="**\*.ios.cs" />
-    <Compile Include="**\*.ios.*.cs" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors" />
-    <Reference Include="OpenTK-1.0" />
+    <Compile Include="..\Xamarin.Essentials\**\*.shared.cs" Link="%(RecursiveDir)%(FileName)%(Extension)" />
+    <Compile Include="..\Xamarin.Essentials\**\*.shared.*.cs" Link="%(RecursiveDir)%(FileName)%(Extension)" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.Mac')) ">
     <!--
@@ -101,26 +64,22 @@
       macOS is very similar to iOS, and in some cases, exactly the same. So, we will
       just use the iOS source.
     -->
-    <Compile Include="Geocoding\Geocoding.ios.cs" />
-    <Compile Include="Geolocation\Geolocation.ios.cs" />
-    <Compile Include="Geolocation\GeolocationRequest.ios.cs" />
-    <Compile Include="MainThread\MainThread.ios.cs" />
-    <Compile Include="Map\Map.ios.cs" />
-    <Compile Include="Preferences\Preferences.ios.cs" />
-    <Compile Include="SecureStorage\SecureStorage.ios.cs" />
-    <Compile Include="Types\LocationExtensions.ios.cs" />
-    <Compile Include="Types\PlacemarkExtensions.ios.cs" />
+    <Compile Include="..\Xamarin.Essentials\Geocoding\Geocoding.ios.cs" Link="Geocoding\Geocoding.ios.cs" />
+    <Compile Include="..\Xamarin.Essentials\Geolocation\Geolocation.ios.cs" Link="Geolocation\Geolocation.ios.cs" />
+    <Compile Include="..\Xamarin.Essentials\Geolocation\GeolocationRequest.ios.cs" Link="Geolocation\GeolocationRequest.ios.cs" />
+    <Compile Include="..\Xamarin.Essentials\MainThread\MainThread.ios.cs" Link="MainThread\MainThread.ios.cs" />
+    <Compile Include="..\Xamarin.Essentials\Map\Map.ios.cs" Link="Map\Map.ios.cs" />
+    <Compile Include="..\Xamarin.Essentials\Preferences\Preferences.ios.cs" Link="Preferences\Preferences.ios.cs" />
+    <Compile Include="..\Xamarin.Essentials\SecureStorage\SecureStorage.ios.cs" Link="SecureStorage\SecureStorage.ios.cs" />
+    <Compile Include="..\Xamarin.Essentials\Types\LocationExtensions.ios.cs" Link="Types\LocationExtensions.ios.cs" />
+    <Compile Include="..\Xamarin.Essentials\Types\PlacemarkExtensions.ios.cs" Link="Types\PlacemarkExtensions.ios.cs" />
     <!-- END IMPORTS -->
-    <Compile Include="**\*.mac.cs" />
-    <Compile Include="**\*.mac.*.cs" />
+    <Compile Include="..\Xamarin.Essentials\**\*.mac.cs" Link="%(RecursiveDir)%(FileName)%(Extension)" />
+    <Compile Include="..\Xamarin.Essentials\**\*.mac.*.cs" Link="%(RecursiveDir)%(FileName)%(Extension)" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors" />
     <Reference Include="OpenTK" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
-  </ItemGroup>
   <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
-  <Import Project="$(MSBuildThisFileDirectory)mdoc.targets" />
   <Import Project="$(MSBuildThisFileDirectory)..\CodeStyles.targets" />
 </Project>
