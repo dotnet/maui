@@ -2,11 +2,17 @@
 <resources>
 
   <attr name="materialOutlinedButtonStyle" format="reference"/>
+  <attr name="materialSliderStyle" format="reference"/>
+  <attr name="materialProgressBarHorizontalStyle" format="reference"/>
+  <attr name="materialProgressBarCircularStyle" format="reference"/>
 
   <!-- Material Base Theme -->
   <style name="XamarinFormsMaterialTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
     <item name="materialButtonStyle">@style/XamarinFormsMaterialButton</item>
     <item name="materialOutlinedButtonStyle">@style/XamarinFormsMaterialButtonOutlined</item>
+    <item name="materialSliderStyle">@style/XamarinFormsMaterialSlider</item>
+    <item name="materialProgressBarHorizontalStyle">@style/XamarinFormsMaterialProgressBarHorizontal</item>
+    <item name="materialProgressBarCircularStyle">@style/XamarinFormsMaterialProgressBarCircular</item>
   </style>
 
   <!-- Material Sliders -->
