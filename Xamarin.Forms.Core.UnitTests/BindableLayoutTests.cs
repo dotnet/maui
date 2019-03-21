@@ -49,10 +49,10 @@ namespace Xamarin.Forms.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			var itemsSource = new ObservableCollection<int>();
+			var itemsSource = new ObservableCollection<int>() { 0, 1, 2, 3, 4 };
 			BindableLayout.SetItemsSource(layout, itemsSource);
 
-			itemsSource.Insert(0, 1);
+			itemsSource.Insert(2, 5);
 			Assert.IsTrue(IsLayoutWithItemsSource(itemsSource, layout));
 		}
 
@@ -413,8 +413,8 @@ namespace Xamarin.Forms.Core.UnitTests
 				OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
 				OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, changedItems, 0));
 			}
- 		}     
-      
+		}
+
 		class MyDataTemplateSelectorTest : DataTemplateSelector
 		{
 			readonly Func<object, BindableObject, DataTemplate> _func;
