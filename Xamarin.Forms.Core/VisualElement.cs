@@ -8,7 +8,6 @@ namespace Xamarin.Forms
 {
 	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController
 	{
-
 		public new static readonly BindableProperty NavigationProperty = NavigableElement.NavigationProperty;
 
 		public new static readonly BindableProperty StyleProperty = NavigableElement.StyleProperty;
