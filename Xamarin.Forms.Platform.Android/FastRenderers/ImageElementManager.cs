@@ -15,7 +15,9 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		{
 			renderer.ElementPropertyChanged += OnElementPropertyChanged;
 			renderer.ElementChanged += OnElementChanged;
-			renderer.LayoutChange += OnLayoutChange;
+
+			if(renderer is ILayoutChanges layoutChanges)
+				layoutChanges.LayoutChange += OnLayoutChange;
 		}
 
 		static void OnLayoutChange(object sender, global::Android.Views.View.LayoutChangeEventArgs e)
@@ -28,7 +30,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		{
 			renderer.ElementPropertyChanged -= OnElementPropertyChanged;
 			renderer.ElementChanged -= OnElementChanged;
-			renderer.LayoutChange -= OnLayoutChange;
+			if (renderer is ILayoutChanges layoutChanges)
+				layoutChanges.LayoutChange -= OnLayoutChange;
 		}
 
 		async static void OnElementChanged(object sender, VisualElementChangedEventArgs e)

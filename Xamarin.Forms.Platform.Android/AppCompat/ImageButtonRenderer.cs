@@ -21,7 +21,8 @@ namespace Xamarin.Forms.Platform.Android
 		IImageRendererController,
 		AView.IOnFocusChangeListener,
 		AView.IOnClickListener,
-		AView.IOnTouchListener
+		AView.IOnTouchListener,
+		ILayoutChanges
 	{
 		bool _inputTransparent;
 		bool _disposed;
