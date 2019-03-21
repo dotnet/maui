@@ -20,8 +20,7 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		public static bool ShouldRunTest (IApp app)
 		{
-			var appAs = app as iOSApp;
-			return (appAs != null && appAs.Device.IsTablet);
+			return (app is iOSApp appAs && appAs.Device.IsTablet);
 		}
 	}
 #endif
@@ -35,27 +34,27 @@ namespace Xamarin.Forms.Controls.Issues
 			await Navigation.PushModalAsync (new Issue1461Page (MasterBehavior.Popover, false));
 		}
 
-#if UITEST
-		[Test]
-		[UiTest (typeof (MasterDetailPage), "IsPresented")]
-		[UiTest (typeof (MasterDetailPage), "Master")]
-		public void Test1 ()
-		{
-			if (Issue1461Helpers.ShouldRunTest (RunningApp)) {
-				RunningApp.SetOrientationLandscape ();
-				var query = RunningApp.Query (q => q.Marked ("Master_Label"));
-				Assert.IsTrue (!query.Any (), "Master should not present");
-				RunningApp.Screenshot ("Master should not present");
-				RunningApp.SetOrientationPortrait ();
-				query = RunningApp.Query (q => q.Marked ("Master_Label"));
-				Assert.IsTrue (!query.Any (), "Master should not present");
-				RunningApp.Screenshot ("Master should not present");
-				RunningApp.Tap (q => q.Marked ("Go Back"));
-			} else {
-				Assert.Inconclusive ("Only run on iOS Tablet");
-			}
-		}
-#endif
+//#if UITEST
+//		[Test]
+//		[UiTest (typeof (MasterDetailPage), "IsPresented")]
+//		[UiTest (typeof (MasterDetailPage), "Master")]
+//		public void Test1 ()
+//		{
+//			if (Issue1461Helpers.ShouldRunTest (RunningApp)) {
+//				RunningApp.SetOrientationLandscape ();
+//				var query = RunningApp.Query (q => q.Marked ("Master_Label"));
+//				Assert.IsTrue (!query.Any (), "Master should not present");
+//				RunningApp.Screenshot ("Master should not present");
+//				RunningApp.SetOrientationPortrait ();
+//				query = RunningApp.Query (q => q.Marked ("Master_Label"));
+//				Assert.IsTrue (!query.Any (), "Master should not present");
+//				RunningApp.Screenshot ("Master should not present");
+//				RunningApp.Tap (q => q.Marked ("Go Back"));
+//			} else {
+//				Assert.Inconclusive ("Only run on iOS Tablet");
+//			}
+//		}
+//#endif
 	}
 
 	[Preserve (AllMembers = true)]
@@ -67,43 +66,43 @@ namespace Xamarin.Forms.Controls.Issues
 			await Navigation.PushModalAsync (new Issue1461Page (MasterBehavior.Default, null));
 		}
 
-#if UITEST
-		[Test]
-		[UiTest (typeof (MasterDetailPage), "IsPresented")]
-		[UiTest (typeof (MasterDetailPage), "Master")]
-		public void Test2 ()
-		{
-			if (Issue1461Helpers.ShouldRunTest(RunningApp)) {
-				RunningApp.SetOrientationLandscape ();
-				var query = RunningApp.Query (q => q.Marked ("Master_Label"));
-				Assert.IsTrue (query.Any (), "Master should be present");
-				RunningApp.Screenshot ("Master should not present");
-				RunningApp.SetOrientationPortrait ();
-				query = RunningApp.Query (q => q.Marked ("Master_Label"));
-				Assert.IsTrue (!query.Any (), "Master should not present");
-				RunningApp.Screenshot ("Master should not present");
-				RunningApp.Tap (q => q.Marked ("Go Back"));
-			} else {
-				Assert.Inconclusive ("Only run on iOS Tablet");
-			}
-		}
+//#if UITEST
+//		[Test]
+//		[UiTest (typeof (MasterDetailPage), "IsPresented")]
+//		[UiTest (typeof (MasterDetailPage), "Master")]
+//		public void Test2 ()
+//		{
+//			if (Issue1461Helpers.ShouldRunTest(RunningApp)) {
+//				RunningApp.SetOrientationLandscape ();
+//				var query = RunningApp.Query (q => q.Marked ("Master_Label"));
+//				Assert.IsTrue (query.Any (), "Master should be present");
+//				RunningApp.Screenshot ("Master should not present");
+//				RunningApp.SetOrientationPortrait ();
+//				query = RunningApp.Query (q => q.Marked ("Master_Label"));
+//				Assert.IsTrue (!query.Any (), "Master should not present");
+//				RunningApp.Screenshot ("Master should not present");
+//				RunningApp.Tap (q => q.Marked ("Go Back"));
+//			} else {
+//				Assert.Inconclusive ("Only run on iOS Tablet");
+//			}
+//		}
 
-		#if UITEST
-		[Test]
-		[UiTest (typeof (MasterDetailPage), "Button")]
-		public void TestButton ()
-		{
-			if (Issue1461Helpers.ShouldRunTest(RunningApp)) {
-				RunningApp.SetOrientationLandscape ();
-				RunningApp.WaitForNoElement (q => q.Marked ("bank"));
-				RunningApp.SetOrientationPortrait ();
-				RunningApp.WaitForElement (q => q.Marked ("bank"));
-			} else {
-				Assert.Inconclusive ("Only run on iOS Tablet");
-			}
-		}
-		#endif
-#endif
+//		#if UITEST
+//		[Test]
+//		[UiTest (typeof (MasterDetailPage), "Button")]
+//		public void TestButton ()
+//		{
+//			if (Issue1461Helpers.ShouldRunTest(RunningApp)) {
+//				RunningApp.SetOrientationLandscape ();
+//				RunningApp.WaitForNoElement (q => q.Marked ("bank"));
+//				RunningApp.SetOrientationPortrait ();
+//				RunningApp.WaitForElement (q => q.Marked ("bank"));
+//			} else {
+//				Assert.Inconclusive ("Only run on iOS Tablet");
+//			}
+//		}
+//		#endif
+//#endif
 	}
 
 	[Preserve (AllMembers = true)]
@@ -115,27 +114,27 @@ namespace Xamarin.Forms.Controls.Issues
 			await Navigation.PushModalAsync (new Issue1461Page (MasterBehavior.SplitOnLandscape, null));
 		}
 
-#if UITEST
-		[Test]
-		[UiTest (typeof (MasterDetailPage), "IsPresented")]
-		[UiTest (typeof (MasterDetailPage), "Master")]
-		public void Test3 ()
-		{
-			if (Issue1461Helpers.ShouldRunTest(RunningApp)) {
-				RunningApp.SetOrientationLandscape ();
-				var query = RunningApp.Query (q => q.Marked ("Master_Label"));
-				Assert.IsTrue (query.Any (), "Master should be present");
-				RunningApp.Screenshot ("Master should not present");
-				RunningApp.SetOrientationPortrait ();
-				query = RunningApp.Query (q => q.Marked ("Master_Label"));
-				Assert.IsTrue (!query.Any (), "Master should not present");
-				RunningApp.Screenshot ("Master should not present");
-				RunningApp.Tap (q => q.Marked ("Go Back"));
-			} else {
-				Assert.Inconclusive ("Only run on iOS Tablet");
-			}
-		}
-#endif
+//#if UITEST
+//		[Test]
+//		[UiTest (typeof (MasterDetailPage), "IsPresented")]
+//		[UiTest (typeof (MasterDetailPage), "Master")]
+//		public void Test3 ()
+//		{
+//			if (Issue1461Helpers.ShouldRunTest(RunningApp)) {
+//				RunningApp.SetOrientationLandscape ();
+//				var query = RunningApp.Query (q => q.Marked ("Master_Label"));
+//				Assert.IsTrue (query.Any (), "Master should be present");
+//				RunningApp.Screenshot ("Master should not present");
+//				RunningApp.SetOrientationPortrait ();
+//				query = RunningApp.Query (q => q.Marked ("Master_Label"));
+//				Assert.IsTrue (!query.Any (), "Master should not present");
+//				RunningApp.Screenshot ("Master should not present");
+//				RunningApp.Tap (q => q.Marked ("Go Back"));
+//			} else {
+//				Assert.Inconclusive ("Only run on iOS Tablet");
+//			}
+//		}
+//#endif
 	}
 
 	[Preserve (AllMembers = true)]
@@ -147,28 +146,28 @@ namespace Xamarin.Forms.Controls.Issues
 			await Navigation.PushModalAsync (new Issue1461Page (MasterBehavior.SplitOnPortrait, null));
 		}
 
-#if UITEST
-		[Test]
-		[UiTest (typeof (MasterDetailPage), "IsPresented")]
-		[UiTest (typeof (MasterDetailPage), "Master")]
-		public void Test4 ()
-		{
-			if (Issue1461Helpers.ShouldRunTest(RunningApp)) {
-				RunningApp.SetOrientationPortrait ();
-				var s = RunningApp.Query (q => q.Marked ("Master_Label"));
-				Assert.IsTrue (s.Any (), "Master should be present");
-				RunningApp.Screenshot ("Master should  present");
+//#if UITEST
+//		[Test]
+//		[UiTest (typeof (MasterDetailPage), "IsPresented")]
+//		[UiTest (typeof (MasterDetailPage), "Master")]
+//		public void Test4 ()
+//		{
+//			if (Issue1461Helpers.ShouldRunTest(RunningApp)) {
+//				RunningApp.SetOrientationPortrait ();
+//				var s = RunningApp.Query (q => q.Marked ("Master_Label"));
+//				Assert.IsTrue (s.Any (), "Master should be present");
+//				RunningApp.Screenshot ("Master should  present");
 
-				RunningApp.SetOrientationLandscape ();
-				s = RunningApp.Query (q => q.Marked ("Master_Label"));
-				Assert.IsTrue (!s.Any (), "Master should not present on landscape");
-				RunningApp.Screenshot ("Master should not present");
-				RunningApp.Tap (q => q.Marked ("Go Back"));
-			} else {
-				Assert.Inconclusive ("Only run on iOS Tablet");
-			}
-		}
-#endif
+//				RunningApp.SetOrientationLandscape ();
+//				s = RunningApp.Query (q => q.Marked ("Master_Label"));
+//				Assert.IsTrue (!s.Any (), "Master should not present on landscape");
+//				RunningApp.Screenshot ("Master should not present");
+//				RunningApp.Tap (q => q.Marked ("Go Back"));
+//			} else {
+//				Assert.Inconclusive ("Only run on iOS Tablet");
+//			}
+//		}
+//#endif
 	}
 
 	[Preserve (AllMembers = true)]
@@ -180,29 +179,29 @@ namespace Xamarin.Forms.Controls.Issues
 			await Navigation.PushModalAsync (new Issue1461Page (MasterBehavior.Split, null));
 		}
 
-#if UITEST
-		[Test]
-		[UiTest (typeof (MasterDetailPage), "IsPresented")]
-		[UiTest (typeof (MasterDetailPage), "Master")]
-		public void Test5 ()
-		{
-			if (Issue1461Helpers.ShouldRunTest(RunningApp)) {
-				RunningApp.SetOrientationPortrait ();
-				var s = RunningApp.Query (q => q.Marked ("Master_Label"));
-				Assert.IsTrue (s.Any (), "Master should be present");
-				RunningApp.Screenshot ("Master should be present");
+//#if UITEST
+//		[Test]
+//		[UiTest (typeof (MasterDetailPage), "IsPresented")]
+//		[UiTest (typeof (MasterDetailPage), "Master")]
+//		public void Test5 ()
+//		{
+//			if (Issue1461Helpers.ShouldRunTest(RunningApp)) {
+//				RunningApp.SetOrientationPortrait ();
+//				var s = RunningApp.Query (q => q.Marked ("Master_Label"));
+//				Assert.IsTrue (s.Any (), "Master should be present");
+//				RunningApp.Screenshot ("Master should be present");
 
-				RunningApp.SetOrientationLandscape ();
-				s = RunningApp.Query (q => q.Marked ("Master_Label"));
+//				RunningApp.SetOrientationLandscape ();
+//				s = RunningApp.Query (q => q.Marked ("Master_Label"));
 
-				Assert.IsTrue (s.Any (), "Master should  be present");
-				RunningApp.Screenshot ("Master should be present");
-				RunningApp.Tap (q => q.Marked ("Go Back"));
-			} else {
-				Assert.Inconclusive ("Only run on iOS Tablet");
-			}
-		}
-#endif
+//				Assert.IsTrue (s.Any (), "Master should  be present");
+//				RunningApp.Screenshot ("Master should be present");
+//				RunningApp.Tap (q => q.Marked ("Go Back"));
+//			} else {
+//				Assert.Inconclusive ("Only run on iOS Tablet");
+//			}
+//		}
+//#endif
 	}
 
 	internal sealed class Issue1461Page : MasterDetailPage

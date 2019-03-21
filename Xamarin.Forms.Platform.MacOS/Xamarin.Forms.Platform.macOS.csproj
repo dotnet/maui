@@ -182,9 +182,6 @@
     <Compile Include="..\Xamarin.Forms.Platform.iOS\Extensions\UIViewExtensions.cs">
       <Link>Extensions\UIViewExtensions.cs</Link>
     </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.iOS\Renderers\FontExtensions.cs">
-      <Link>Extensions\FontExtensions.cs</Link>
-    </Compile>
     <Compile Include="..\Xamarin.Forms.Platform.iOS\Renderers\FormattedStringExtensions.cs">
       <Link>Extensions\FormattedStringExtensions.cs</Link>
     </Compile>
@@ -248,6 +245,10 @@
       <Link>Renderers\IImageVisualElementRenderer.cs</Link>
     </Compile>
     <Compile Include="Extensions\ImageExtensions.cs" />
+    <Compile Include="Extensions\FontExtensions.cs" />
+    <Compile Include="..\Xamarin.Forms.Platform.iOS\Extensions\FontExtensions.Shared.cs">
+      <Link>Extensions\FontExtensions.Shared.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj">

@@ -3,27 +3,33 @@ using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
+#if UITEST
+using NUnit.Framework;
+#endif
+
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1760, "Content set after an await is not visible", PlatformAffected.Android)]
 	public class Issue1760 : TestMasterDetailPage
 	{
-		const string Before = "Before";
-		const string After = "After";
+		public const string Before = "Before";
+		public const string After = "After";
 		const int Wait = 3;
 
 		protected override void Init()
 		{
-			Master = new _1760Master();
-			Detail = new _1760TestPage();
+			Master = new _1760Master(true);
+			Detail = new _1760TestPage(true);
 			IsPresented = true;
 		}
 
 		[Preserve(AllMembers = true)]
 		public class _1760Master : ContentPage
 		{
-			public _1760Master()
+			readonly bool _scrollEnabled;
+
+			public _1760Master(bool scrollEnabled)
 			{
 				var instructions = new Label { Text = $"Select one of the menu items. The detail page text should change to {Before}. After {Wait} seconds the text should change to {After}." };
 
@@ -36,12 +42,14 @@ namespace Xamarin.Forms.Controls.Issues
 
 				Content = new StackLayout{Children = { instructions, menuView }};
 				Title = "GH 1760 Test App";
+
+				_scrollEnabled = scrollEnabled;
 			}
 
 			void OnMenuClicked(object sender, SelectedItemChangedEventArgs e)
 			{
 				var mainPage = (MasterDetailPage)Parent;
-				mainPage.Detail = new _1760TestPage();
+				mainPage.Detail = new _1760TestPage(_scrollEnabled);
 				mainPage.IsPresented = false;
 			}
 		}
@@ -49,6 +57,8 @@ namespace Xamarin.Forms.Controls.Issues
 		[Preserve(AllMembers = true)]
 		public class _1760TestPage : ContentPage
 		{
+			readonly bool _scrollEnabled;
+
 			public async Task DisplayPage()
 			{
 				IsBusy = true;
@@ -66,8 +76,9 @@ namespace Xamarin.Forms.Controls.Issues
 				set => _headerPageContent.Content = value;
 			}
 
-			public _1760TestPage()
+			public _1760TestPage(bool scrollEnabled)
 			{
+				_scrollEnabled = scrollEnabled;
 				CreateHeaderPage();
 				DisplayPage();
 			}
@@ -84,11 +95,57 @@ namespace Xamarin.Forms.Controls.Issues
 
 				Title = "_1760 Test Page";
 
-				Content = new ScrollView
+				if (_scrollEnabled)
 				{
-					Content = _headerPageContent
-				};
+					Content = new ScrollView
+					{
+						Content = _headerPageContent
+					};
+				}
+				else
+				{
+					var _headerLabel = new Label
+					{
+						Text = Title,
+						TextColor = Color.FromHex("333333"),
+						HeightRequest = 25,
+					};
+
+					var headerLayout = new RelativeLayout
+					{
+						BackgroundColor = Color.White,
+						HorizontalOptions = LayoutOptions.Start,
+						VerticalOptions = LayoutOptions.Start,
+					};
+
+					headerLayout.Children.Add(_headerLabel,
+						Forms.Constraint.Constant(0),
+						Forms.Constraint.Constant(0),
+						Forms.Constraint.RelativeToParent(parent => parent.Width));
+
+					Content = new StackLayout
+					{
+						HorizontalOptions = LayoutOptions.FillAndExpand,
+						VerticalOptions = LayoutOptions.FillAndExpand,
+						Children = {
+							_headerLabel, _headerPageContent
+						}
+					};
+				}
 			}
 		}
+
+#if UITEST && __ANDROID__
+		[Test]
+		public void Issue1760Test()
+		{
+			RunningApp.WaitForElement(Before);
+			RunningApp.WaitForElement(After);
+
+			RunningApp.Tap("Test Page 1");
+			RunningApp.WaitForElement(Before);
+			RunningApp.WaitForElement(After);
+		}
+#endif
 	}
 }

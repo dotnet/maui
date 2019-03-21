@@ -61,7 +61,7 @@ namespace Xamarin.Forms.Internals
 
 		public Page Pop(Page ancestralNav)
 		{
-			ancestralNav = AncestorToRoot(ancestralNav);
+			ancestralNav = ancestralNav.AncestorToRoot();
 			foreach (List<Page> stack in _navTree)
 			{
 				if (stack.Contains(ancestralNav))
@@ -111,7 +111,7 @@ namespace Xamarin.Forms.Internals
 
 		public void PopToRoot(Page ancestralNav)
 		{
-			ancestralNav = AncestorToRoot(ancestralNav);
+			ancestralNav = ancestralNav.AncestorToRoot();
 			foreach (List<Page> stack in _navTree)
 			{
 				if (stack.Contains(ancestralNav))
@@ -136,7 +136,7 @@ namespace Xamarin.Forms.Internals
 				return;
 			}
 
-			ancestralNav = AncestorToRoot(ancestralNav);
+			ancestralNav = ancestralNav.AncestorToRoot();
 
 			foreach (List<Page> stack in _navTree)
 			{
@@ -167,14 +167,6 @@ namespace Xamarin.Forms.Internals
 			}
 
 			return found;
-		}
-
-		Page AncestorToRoot(Page ancestor)
-		{
-			Page result = ancestor;
-			while (!Application.IsApplicationOrNull(result.RealParent))
-				result = (Page)result.RealParent;
-			return result;
 		}
 	}
 }

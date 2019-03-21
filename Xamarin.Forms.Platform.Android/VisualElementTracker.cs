@@ -115,6 +115,8 @@ namespace Xamarin.Forms.Platform.Android
 			//On Width or Height changes, the anchors needs to be updated
 			UpdateAnchorX();
 			UpdateAnchorY();
+
+			MaybeRequestLayout();
 		}
 
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -127,6 +129,12 @@ namespace Xamarin.Forms.Platform.Android
 			if (e.PropertyName == Layout.IsClippedToBoundsProperty.PropertyName)
 			{
 				UpdateClipToBounds();
+				return;
+			}
+
+			if (e.Is(Platform.RendererProperty))
+			{
+				_renderer.View.Invalidate();
 				return;
 			}
 

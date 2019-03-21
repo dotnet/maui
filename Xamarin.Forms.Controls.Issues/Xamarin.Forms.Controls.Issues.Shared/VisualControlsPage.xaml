@@ -69,6 +69,9 @@
             <Label Text="Custom" Margin="0,0,0,-10" />
             <ProgressBar Progress="0.5" ProgressColor="{StaticResource PrimaryColor}" BackgroundColor="{StaticResource SecondaryColor}" />
 
+            <Label Text="Height 20" Margin="0,0,0,-10" />
+            <ProgressBar Progress="0.5" HeightRequest="20" ProgressColor="{StaticResource PrimaryColor}" BackgroundColor="{StaticResource SecondaryColor}" />
+
 
             <Label Text="Buttons" FontSize="Large" />
 

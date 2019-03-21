@@ -2,20 +2,25 @@
 using Android.Content;
 using Android.Views;
 using Xamarin.Forms.Platform.Android;
+using AndroidAppCompat = Android.Support.V7.Content.Res.AppCompatResources;
 
 namespace Xamarin.Forms.Material.Android
 {
 	public class MaterialContextThemeWrapper : ContextThemeWrapper
 	{
-		public MaterialContextThemeWrapper(Context context) : base(context, Resource.Style.XamarinFormsMaterialTheme)
+		public MaterialContextThemeWrapper(Context context) : this(context, Resource.Style.XamarinFormsMaterialTheme)
 		{
 		}
 
-
-		public static Context Create(Context context)
+		MaterialContextThemeWrapper(Context context, int themeResId) : base(context, themeResId)
 		{
-			if (context is MaterialContextThemeWrapper)
-				return context;
+
+		}
+
+		public static MaterialContextThemeWrapper Create(Context context)
+		{
+			if (context is MaterialContextThemeWrapper materialContext)
+				return materialContext;
 
 			return new MaterialContextThemeWrapper(context);
 		}
