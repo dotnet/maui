@@ -161,18 +161,12 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			get
 			{
-				// Use the ActualHeight of the _masterPresenter to automatically adjust for the Master Title
-				double height = _masterPresenter?.ActualHeight ?? 0;
-
-				// If there's no content, use the height of the control to make sure the background color expands.
-				if (height == 0)
-					height = ActualHeight;
-
+				double height = ActualHeight;
 				double width = 0;
 
 				// On first load, the _commandBar will still occupy space by the time this is called.
 				// Check ShouldShowToolbar to make sure the _commandBar will still be there on render.
-				if (_firstLoad && _commandBar != null && ShouldShowToolbar)
+				if ((_firstLoad || !ShouldShowSplitMode) && _commandBar != null && ShouldShowToolbar)
 				{
 					height -= _commandBar.ActualHeight;
 					_firstLoad = false;
