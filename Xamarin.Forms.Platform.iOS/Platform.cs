@@ -313,10 +313,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 		bool PageIsChildOfPlatform(Page page)
 		{
-			while (!Application.IsApplicationOrNull(page.RealParent))
-				page = (Page)page.RealParent;
-
-			return Page == page || _modals.Contains(page);
+			var parent = page.AncestorToRoot();
+			return Page == parent || _modals.Contains(parent);
 		}
 
 		// Creates a UIAlertAction which includes a call to hide the presenting UIWindow at the end

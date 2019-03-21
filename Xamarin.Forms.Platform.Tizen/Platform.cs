@@ -557,10 +557,8 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		bool PageIsChildOfPlatform(Page page)
 		{
-			while (!Application.IsApplicationOrNull(page.RealParent))
-				page = (Page)page.RealParent;
-
-			return Page == page || _navModel.Roots.Contains(page);
+			var parent = page.AncestorToRoot();
+			return Page == parent || _navModel.Roots.Contains(parent);
 		}
 
 		SizeRequest IPlatform.GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
