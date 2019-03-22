@@ -7,10 +7,24 @@ variables:
   value: ''
 - name: Suffix
   value: ''
-- name: ProvisionatorExecutablePath
-  value: 'Xamarin.Forms.Build/provisionator.sh'
+- name: major
+  value: 3
+- name: minor
+  value: 4
+- name: patch
+  value: 0
+- name: buildversion
+  value: $[counter('$(Build.SourceBranchName)_counter', 1)]
 - group: Xamarin.Forms
 - group: XQA Secrets
+- group: xamops-azdev-secrets
+
+resources:
+  repositories:
+    - repository: xamarin-templates
+      type: github
+      name: xamarin/yaml-templates
+      endpoint: xamarin
 
 trigger:
   branches:
@@ -67,6 +81,33 @@ jobs:
   steps:
      - template: build/steps/build-windows-test.yml
 
+- template: build/steps/build-android.yml
+  parameters:
+    name: android_legacy
+    displayName: Build Android [Legacy Renderers]
+    vmImage: Hosted Mac Internal
+    targetFolder: Xamarin.Forms.ControlGallery.Android/legacyRenderers/
+    androidProjectArguments: '/t:"Rebuild;SignAndroidPackage"'
+    dependsOn: Phase_1
+
+- template: build/steps/build-android.yml
+  parameters:
+    name: android_preappcompact
+    displayName: Build Android [Pre-AppCompat]
+    vmImage: Hosted Mac Internal
+    targetFolder: Xamarin.Forms.ControlGallery.Android/preAppCompat
+    androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /p:DefineConstants="TRACE DEBUG FORMS_APPLICATION_ACTIVITY APP"'
+    dependsOn: Phase_1
+
+- template: build/steps/build-android.yml
+  parameters:
+    name: android_fast
+    displayName: Build Android [Fast Renderers]
+    vmImage: Hosted Mac Internal
+    targetFolder: Xamarin.Forms.ControlGallery.Android/newRenderers/
+    androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /p:DefineConstants="TRACE DEBUG TEST_EXPERIMENTAL_RENDERERS APP"'
+    dependsOn: Phase_1
+
 - job: Phase_4
   displayName: OSX Phase
   dependsOn: Phase_1
@@ -78,6 +119,10 @@ jobs:
       - sh
       - msbuild
       - Xamarin.iOS
+  variables:
+    provisioningOSX : $(provisioning)
+    provisionator.osxPath : 'build/provisioning/provisioning.csx'
+    provisionator.signPath : 'build/provisioning/provisioning_sign.csx'
   steps:
      - template: build/steps/build-osx.yml
 
@@ -85,6 +130,9 @@ jobs:
   displayName: Nuget Phase
   dependsOn:
    - Phase_3
+   - android_legacy
+   - android_preappcompact
+   - android_fast
   condition: succeeded()
   pool:
     name: Hosted VS2017
