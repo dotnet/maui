@@ -18,7 +18,6 @@ using Android.Views;
 using Xamarin.Forms.Internals;
 using ActionBarDrawerToggle = Android.Support.V7.App.ActionBarDrawerToggle;
 using AView = Android.Views.View;
-using AColor = Android.Graphics.Color;
 using AToolbar = Android.Support.V7.Widget.Toolbar;
 using Fragment = Android.Support.V4.App.Fragment;
 using FragmentManager = Android.Support.V4.App.FragmentManager;
@@ -133,8 +132,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			{
 				if (_toolbarVisible == value)
 					return;
+
 				_toolbarVisible = value;
-				RequestLayout();
+
+				if (!IsLayoutRequested)
+					RequestLayout();
 			}
 		}
 

@@ -458,6 +458,11 @@ namespace Xamarin.Forms.Platform.Android
 
 		internal void SetPage(Page newRoot)
 		{
+			if (Page == newRoot)
+			{
+				return;
+			}
+
 			var layout = false;
 			List<IVisualElementRenderer> toDispose = null;
 

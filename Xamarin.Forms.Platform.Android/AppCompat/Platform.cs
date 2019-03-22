@@ -6,7 +6,6 @@ using Android.Content;
 using Android.OS;
 using Android.Views;
 using Android.Views.Animations;
-using ARelativeLayout = Android.Widget.RelativeLayout;
 using AView = Android.Views.View;
 using Xamarin.Forms.Internals;
 
@@ -251,6 +250,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		internal void SetPage(Page newRoot)
 		{
+			if (Page == newRoot)
+			{
+				return;
+			}
+
 			if (Page != null)
 			{
 				foreach (var rootPage in _navModel.Roots)
@@ -285,7 +289,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			pageRenderer.View.ImportantForAccessibility = importantForAccessibility;
 			if (forceFocus)
 				pageRenderer.View.SendAccessibilityEvent(global::Android.Views.Accessibility.EventTypes.ViewFocused);
-			
+
 		}
 
 		void SetPageInternal(Page newRoot)
