@@ -26,8 +26,7 @@ namespace Xamarin.Essentials
         static async Task<MediaFile> PlatformCaptureAsync()
         {
             var path = GetTempFileName();
-
-            var view = Platform.GetCurrentActivity(false)?.FindViewById(Resource.Id.Content).RootView;
+            var view = Platform.GetCurrentActivity(false).Window.DecorView.RootView;
             view.DrawingCacheEnabled = true;
             var bitmap = Bitmap.CreateBitmap(view.GetDrawingCache(true));
             using (var stream = File.Create(path))
