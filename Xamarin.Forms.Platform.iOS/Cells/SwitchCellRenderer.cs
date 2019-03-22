@@ -73,7 +73,7 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateOnColor(realCell, boolCell);
 		}
 
-		void OnSwitchValueChanged(object sender, EventArgs eventArgs)
+		static void OnSwitchValueChanged(object sender, EventArgs eventArgs)
 		{
 			var view = (UIView)sender;
 			var sw = (UISwitch)view;

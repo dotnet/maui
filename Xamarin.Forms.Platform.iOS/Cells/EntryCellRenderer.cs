@@ -154,22 +154,35 @@ namespace Xamarin.Forms.Platform.iOS
 
 			public event EventHandler TextFieldTextChanged;
 
-			bool OnShouldReturn(UITextField view)
+			static bool OnShouldReturn(UITextField view)
 			{
-				var handler = KeyboardDoneButtonPressed;
-				if (handler != null)
-					handler(this, EventArgs.Empty);
+                var realCell = GetRealCell<EntryCellTableViewCell>(view);
+                var handler = realCell?.KeyboardDoneButtonPressed;
+                if (handler != null)
+                    handler(realCell, EventArgs.Empty);
 
-				TextField.ResignFirstResponder();
+                view.ResignFirstResponder();
 				return true;
 			}
 
-			void TextFieldOnEditingChanged(object sender, EventArgs eventArgs)
+            static void TextFieldOnEditingChanged(object sender, EventArgs eventArgs)
 			{
-				var handler = TextFieldTextChanged;
-				if (handler != null)
-					handler(this, EventArgs.Empty);
-			}
+                var realCell = GetRealCell<EntryCellTableViewCell>(sender as UIView);
+                var handler = realCell?.TextFieldTextChanged;
+                if (handler != null)
+                    handler(realCell, EventArgs.Empty);
+            }
+
+            static T GetRealCell<T>(UIView view) where T : UIView
+            {
+                T realCell = null;
+                while (view.Superview != null && realCell == null)
+                {
+                    view = view.Superview;
+                    realCell = view as T;
+                }
+                return realCell;
+            }
 		}
 	}
 }
