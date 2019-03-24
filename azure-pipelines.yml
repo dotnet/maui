@@ -10,7 +10,7 @@ variables:
 - name: major
   value: 3
 - name: minor
-  value: 5
+  value: 6
 - name: patch
   value: 0
 - name: buildversion
