@@ -1,0 +1,66 @@
+parameters:
+  name: ''            # in the form type_platform_host
+  displayName: ''     # the human name
+  vmImage: ''         # the VM image
+  targetFolder: ''    # the bootstrapper target
+  dependsOn: []       # the dependiencies
+  preBuildSteps: []   # any steps to run before the build
+  postBuildSteps: []  # any additional steps to run after the build
+  slnPath : 'Xamarin.Forms.sln'
+  buildTaskPath : 'Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj'
+  androidPath : 'Xamarin.Forms.ControlGallery.Android'
+  androidProjectPath : 'Xamarin.Forms.ControlGallery.Android/Xamarin.Forms.ControlGallery.Android.csproj'
+  androidProjectArguments : ''
+  buildConfiguration : 'Debug'
+  nugetVersion: 4.8.1
+  apkTargetFolder: '$(build.artifactstagingdirectory)/androidApp'
+
+jobs:
+  - job: ${{ parameters.name }}
+    displayName: ${{ parameters.displayName }}
+    timeoutInMinutes: 120
+    pool:
+      name: ${{ parameters.vmImage }}
+    dependsOn: ${{ parameters.dependsOn }}
+    steps:
+      - checkout: self
+
+      - task: NuGetToolInstaller@0
+        displayName: 'Use NuGet ${{ parameters.nugetVersion }}'
+        inputs:
+          versionSpec: ${{ parameters.nugetVersion }}
+          checkLatest: true
+
+      - task: NuGetCommand@2
+        displayName: 'NuGet restore ${{ parameters.slnPath }}'
+        inputs:
+          restoreSolution: ${{ parameters.slnPath }}
+
+      - task: MSBuild@1
+        displayName: 'Build ${{ parameters.buildTaskPath  }}'
+        inputs:
+          solution: ${{ parameters.buildTaskPath }}
+
+      - task: MSBuild@1
+        displayName: 'Build Android ${{ parameters.name }}'
+        inputs:
+          solution: ${{ parameters.androidProjectPath }}
+          configuration: ${{ parameters.buildConfiguration }}
+          msbuildArguments: ${{ parameters.androidProjectArguments }}
+
+      - task: CopyFiles@2
+        displayName: 'Copy ${{ parameters.name }}'
+        inputs:
+          SourceFolder: ${{ parameters.androidPath }}/bin/Debug/
+          Contents: '**/*.apk'
+          TargetFolder: ${{ parameters.targetFolder }}
+          CleanTargetFolder: true
+          OverWrite: true
+
+      - task: CopyFiles@2
+        displayName: 'Copy Android apk ${{ parameters.name }} for UITest'
+        inputs:
+          Contents: |
+            ${{ parameters.targetFolder }}/$(ApkName)
+          TargetFolder: ${{ parameters.apkTargetFolder }}
+          CleanTargetFolder: true

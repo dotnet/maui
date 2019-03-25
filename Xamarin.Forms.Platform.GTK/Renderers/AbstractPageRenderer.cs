@@ -225,10 +225,9 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			{
 				hasParentNavigation = parent is NavigationPage;
 
-				if (hasParentNavigation) break;
-
 				current = parent;
 
+				if (hasParentNavigation) break;
 			}
 			var hasAncestorNavigationPage = hasParentNavigation && NavigationPage.GetHasNavigationBar(current);
 			return hasAncestorNavigationPage;

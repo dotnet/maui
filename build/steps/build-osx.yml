@@ -1,39 +1,40 @@
 steps:
   - checkout: self
-    submodules: true
 
-  - task: ms-devlabs.utilitytasks.task-Shellpp.Shell++@0
-    displayName: 'Add QA cert password to keychain'
+  - task: xamops.azdevex.provisionator-task.provisionator@1
+    displayName: Provisionate keychain
     condition: eq(variables['provisioningSign'], 'true')
     inputs:
-      type: InlineScript
-      script: '$(Build.Repository.LocalPath)/$(ProvisionatorExecutablePath) keychain set $(p12CertName) $(la.p12.Password)'
+      provisioning_extra_args: keychain set $(p12CertName) $(la.p12.Password)
 
-  - bash: '$(Build.Repository.LocalPath)/$(ProvisionatorExecutablePath) keychain set github.com $(GitHub.Token) || echo "PAT already set"'
-    displayName: 'Initialize PAT'
-    condition: eq(variables['provisioningSign'], 'true')
-
-
-  - bash: '$(Build.Repository.LocalPath)/$(ProvisionatorExecutablePath) $(Build.Repository.LocalPath)/Xamarin.Forms.Build/provisioning_sign.csx $(provisionator.extraArguments)'
-    displayName: Provisioning
+  - task: xamops.azdevex.provisionator-task.provisionator@1
+    displayName: Provisionate Sign iOS
     condition: eq(variables['provisioningSign'], 'true')
     env:
       APPLECODESIGNIDENTITY: $(AppleCodesignIdentity)
       APPLECODESIGNIDENTITYURL: $(AppleCodesignIdentityUrl)
       APPLECODESIGNPROFILEURL: $(AppleCodesignProfileUrl)
+    inputs:
+      provisioning_script: $(provisionator.signPath)
+      provisioning_extra_args: $(provisionator.extraArguments)
 
+  - task: xamops.azdevex.provisionator-task.provisionator@1
+    displayName: Provisionate Xamarin
+    condition: eq(variables['provisioningOSX'], 'true')
+    inputs:
+      provisioning_script: $(provisionator.osxPath)
+      provisioning_extra_args: $(provisionator.extraArguments)
 
   - task: NuGetToolInstaller@0
-    displayName: 'Use NuGet 4.8.1'
+    displayName: 'Use NuGet $(nugetVersion)'
     inputs:
-      versionSpec: 4.8.1
+      versionSpec: $(nugetVersion)
       checkLatest: true
-
 
   - task: NuGetCommand@2
     displayName: 'NuGet restore'
     inputs:
-      restoreSolution: Xamarin.Forms.sln
+      restoreSolution: $(slnPath)
 
 
   - task: MSBuild@1
@@ -43,64 +44,10 @@ steps:
 
 
   - task: XamariniOS@2
-    displayName: 'Build Xamarin.iOS solution Xamarin.Forms.sln'
+    displayName: 'Build Xamarin.iOS solution $(slnPath)'
     inputs:
-      solutionFile: Xamarin.Forms.sln
-      configuration: '$(BuildConfiguration)'
-
-
-  - task: MSBuild@1
-    displayName: 'Build Android [Legacy Renderers]'
-    inputs:
-      solution: Xamarin.Forms.ControlGallery.Android/Xamarin.Forms.ControlGallery.Android.csproj
-      configuration: '$(BuildConfiguration)'
-      msbuildArguments: '/t:"Rebuild;SignAndroidPackage"'
-
-
-  - task: CopyFiles@2
-    displayName: 'Copy  [Legacy Renderers]'
-    inputs:
-      SourceFolder: Xamarin.Forms.ControlGallery.Android/bin/Debug/
-      Contents: '**/*.apk'
-      TargetFolder: Xamarin.Forms.ControlGallery.Android/legacyRenderers/
-      CleanTargetFolder: true
-      OverWrite: true
-
-
-  - task: MSBuild@1
-    displayName: 'Build Android [Fast Renderers]'
-    inputs:
-      solution: Xamarin.Forms.ControlGallery.Android/Xamarin.Forms.ControlGallery.Android.csproj
-      configuration: '$(BuildConfiguration)'
-      msbuildArguments: '/t:"Rebuild;SignAndroidPackage" /p:DefineConstants="TRACE DEBUG TEST_EXPERIMENTAL_RENDERERS APP"'
-
-
-  - task: CopyFiles@2
-    displayName: 'Copy [Fast Renderers]'
-    inputs:
-      SourceFolder: Xamarin.Forms.ControlGallery.Android/bin/Debug/
-      Contents: '**/*.apk'
-      TargetFolder: Xamarin.Forms.ControlGallery.Android/newRenderers/
-      CleanTargetFolder: true
-      OverWrite: true
-
-
-  - task: MSBuild@1
-    displayName: 'Build Android [Pre-AppCompat]'
-    inputs:
-      solution: Xamarin.Forms.ControlGallery.Android/Xamarin.Forms.ControlGallery.Android.csproj
-      configuration: '$(BuildConfiguration)'
-      msbuildArguments: '/t:"Rebuild;SignAndroidPackage" /p:DefineConstants="TRACE DEBUG FORMS_APPLICATION_ACTIVITY APP"'
-
-
-  - task: CopyFiles@2
-    displayName: 'Copy  [Pre-AppCompat]'
-    inputs:
-      SourceFolder: Xamarin.Forms.ControlGallery.Android/bin/Debug/
-      Contents: '**/*.apk'
-      TargetFolder: Xamarin.Forms.ControlGallery.Android/preAppCompat/
-      CleanTargetFolder: true
-      OverWrite: true
+      solutionFile: $(slnPath)
+      configuration: $(buildConfiguration)
 
 
   - task: CopyFiles@2
@@ -132,18 +79,6 @@ steps:
       TargetFolder: '$(build.artifactstagingdirectory)/android'
       CleanTargetFolder: true
       flattenFolders: true
-
-
-  - task: CopyFiles@2
-    displayName: 'Copy Android apk''s for UITest'
-    inputs:
-      Contents: |
-       Xamarin.Forms.ControlGallery.Android/newRenderers/$(ApkName)
-       Xamarin.Forms.ControlGallery.Android/legacyRenderers/$(ApkName)
-       Xamarin.Forms.ControlGallery.Android/preAppCompat/$(ApkName)
-
-      TargetFolder: '$(build.artifactstagingdirectory)/androidApp'
-      CleanTargetFolder: true
 
 
   - task: PublishBuildArtifacts@1

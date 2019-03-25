@@ -23,13 +23,21 @@ steps:
 
 
   - powershell: |
-       $formsNugetVersion = $env:major + "." + $env:minor + "." + $env:patch + "." + $env:buildversion
-       if($env:SUFFIX)
+       $preXamForms = $env:XAMARINFORMSPACKAGEVERSION
+       $prefix = $env:SUFFIX
+       Write-Host("Pre FormsVersion = $preXamForms $prefix")
+
+       if(!$preXamForms)
        {
-          $formsNugetVersion = $formsNugetVersion +"-"+$env:SUFFIX
+          $formsNugetVersion = $env:major + "." + $env:minor + "." + $env:patch + "." + $env:buildversion
+          if($prefix)
+          {
+            $formsNugetVersion = $formsNugetVersion +"-"+$prefix
+          }
+          Write-Host("FormsVersion = $formsNugetVersion")
+          Write-Host("##{0}[task.setvariable variable=XamarinFormsPackageVersion]{1}" -f "vso",$formsNugetVersion.ToString() )
        }
-       Write-Host("FormsVersion = $formsNugetVersion")
-       Write-Host("##{0}[task.setvariable variable=XamarinFormsPackageVersion]{1}" -f "vso",$formsNugetVersion.ToString() )
+
     failOnStderr: true
     displayName: 'Set Nuget version'
 
@@ -43,6 +51,7 @@ steps:
       versioningScheme: byEnvVar
       versionEnvVar: XamarinFormsPackageVersion
       buildProperties: 'IdAppend=$(FormsIdAppend)'
+      configuration: $(buildConfiguration)
 
 
   - task: NuGetCommand@2

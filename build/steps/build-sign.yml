@@ -1,64 +1,21 @@
+parameters:
+  name: ''            # in the form type_platform_host
+  displayName: ''     # the human name
+  vmImage: ''         # the VM image
+  targetFolder: ''    # the bootstrapper target
+  dependsOn: []       # the dependiencies
+  preBuildSteps: []   # any steps to run before the build
+  postBuildSteps: []  # any additional steps to run after the build
+  signBuild: false
+
 steps:
-  - task: JenkinsQueueJob@2
-    displayName: 'Queue Jenkins Job: sign-from-vsts'
-    inputs:
-      serverEndpoint: 'Xamarin Code Signing Jenkins'
-
-      jobName: 'sign-from-vsts'
-
-      isParameterizedJob: true
-
-      jobParameters: |
-       REPO=xamarin/xamarin.forms
-       COMMIT=$(Build.SourceVersion)
-       JOB_ID=$(System.DefinitionId)
-       BUILD_ID=$(Build.BuildId)
-
-  - powershell: |
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        Function Dump-Host {
-            [cmdletbinding()]
-            Param(
-                $Message,
-                [parameter(ValueFromPipeline)]$Data)
-            Process {
-                $_ = $Data
-                if ($Message) {
-                    $Message = $ExecutionContext.InvokeCommand.ExpandString($Message)
-                    Write-Host $Message
-                } else {
-                    Write-Host $Data
-                }
-                $Data
-            }
-        }
-
-        $output = "$(Build.ArtifactStagingDirectory)/nuget/signed"
-        $ciSystem = "vsts-devdiv"
-        $jobId =  "$(System.DefinitionId)"
-        $buildId = "$(Build.BuildId)"
-        $token = "$(GitHub.Token)"
-
-        $url = "https://dl.internalx.com/$ciSystem/$jobId-$buildId/metadata.json"
-
-        Write-Host "Getting manifest from $url"
-        $manifest = [string](Invoke-WebRequest -Uri $url -UseBasicParsing -Headers @{"Authorization"="token $token"} ) | Dump-Host | ConvertFrom-Json
-
-        #check if our output dir exists
-        if (!(Test-Path $output -PathType Container)) {
-            New-Item -ItemType Directory -Force -Path $output
-        }
-
-        foreach ($file in $manifest)
-        {
-            $fileUrl = $file.url
-            $fileName = [IO.Path]::GetFileName($fileUrl)
-            Write-Host "Downloading artifact to $output/$fileName"
-            Invoke-WebRequest -Uri $fileUrl -Headers @{"Authorization"="token $token"} -OutFile "$output/$fileName"
-        }
-
-    displayName: 'Download from dl.internalx.com'
-    failOnStderr: true
+  - template: sign-artifacts.yml@xamarin-templates
+    parameters:
+      targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
+      sourceRepo: 'xamarin/xamarin.forms'
+      jenkinsEndpoint: Xamarin Code Signing Jenkins
+      jenkinsJob: sign-from-vsts
+      artifactHost: 'https://dl.internalx.com/vsts-devdiv'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: nuget signed'
