@@ -11,6 +11,9 @@ parameters:
   androidPath : 'Xamarin.Forms.ControlGallery.Android'
   androidProjectPath : 'Xamarin.Forms.ControlGallery.Android/Xamarin.Forms.ControlGallery.Android.csproj'
   androidProjectArguments : ''
+  buildConfiguration : 'Debug'
+  nugetVersion: 4.8.1
+  apkTargetFolder: '$(build.artifactstagingdirectory)/androidApp'
 
 jobs:
   - job: ${{ parameters.name }}
@@ -23,13 +26,13 @@ jobs:
       - checkout: self
 
       - task: NuGetToolInstaller@0
-        displayName: 'Use NuGet 4.8.1'
+        displayName: 'Use NuGet ${{ parameters.nugetVersion }}'
         inputs:
-          versionSpec: 4.8.1
+          versionSpec: ${{ parameters.nugetVersion }}
           checkLatest: true
 
       - task: NuGetCommand@2
-        displayName: 'NuGet restore'
+        displayName: 'NuGet restore ${{ parameters.slnPath }}'
         inputs:
           restoreSolution: ${{ parameters.slnPath }}
 
@@ -42,7 +45,7 @@ jobs:
         displayName: 'Build Android ${{ parameters.name }}'
         inputs:
           solution: ${{ parameters.androidProjectPath }}
-          configuration: '$(BuildConfiguration)'
+          configuration: ${{ parameters.buildConfiguration }}
           msbuildArguments: ${{ parameters.androidProjectArguments }}
 
       - task: CopyFiles@2
@@ -55,9 +58,9 @@ jobs:
           OverWrite: true
 
       - task: CopyFiles@2
-        displayName: 'Copy Android apk''s for UITest'
+        displayName: 'Copy Android apk ${{ parameters.name }} for UITest'
         inputs:
           Contents: |
-            $ {{ parameters.targetFolder }}/$(ApkName)
-          TargetFolder: '$(build.artifactstagingdirectory)/androidApp'
+            ${{ parameters.targetFolder }}/$(ApkName)
+          TargetFolder: ${{ parameters.apkTargetFolder }}
           CleanTargetFolder: true
