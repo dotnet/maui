@@ -95,8 +95,6 @@ steps:
        Write-Host "Sign: $sign"
        $publicTags = $tags -join ';'
        Write-Host "##vso[task.setvariable variable=publictags;isOutput=true;]$publicTags"
-       Write-Host "##vso[task.setvariable variable=sign;isOutput=true]$sign"
-
-
+       Write-Host "##vso[task.setvariable variable=signnuget;isOutput=true;]$sign"
     displayName: 'Tag and name build'
     name: prepare

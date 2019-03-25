@@ -902,6 +902,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue5172.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5204.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2204.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue4356.cs">
+      <DependentUpon>Issue4356.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">
@@ -1019,6 +1022,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)VisualControlsPage.xaml">
       <SubType>Designer</SubType>
+       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue4356.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

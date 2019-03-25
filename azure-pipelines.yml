@@ -1,34 +1,29 @@
 variables:
-- name: BuildConfiguration
+- name: DefaultBuildConfiguration
   value: Debug
-- name: BuildPlatform
+- name: DefaultBuildPlatform
   value: 'any cpu'
-- name: XamarinFormsPackageVersion
-  value: ''
-- name: Suffix
-  value: ''
+- name: ApkName
+  value: AndroidControlGallery.AndroidControlGallery.apk
+- name: IpaName
+  value: XamarinFormsControlGalleryiOS.ipa
+- name: SolutionFile
+  value: Xamarin.Forms.sln
 - name: major
   value: 4
 - name: minor
   value: 0
 - name: patch
-  value: 1
+  value: 0
 - name: buildversion
-  value: $[counter('versioncounter', 1000)]
-- name: sign
-  value: 'false'
-- name: provisioning
-  value: 'true'
-- name: AppleCodesignIdentity
-  value: ''
-- name: AppleCodesignIdentityUrl
-  value: ''
-- name: AppleCodesignProfileUrl
-  value: ''
-- name: ProvisionatorExecutablePath
-  value: 'Xamarin.Forms.Build/provisionator.sh'
-- group: Xamarin.Forms
-- group: XQA Secrets
+  value: $[counter('$(Build.SourceBranchName)_counter', 1)]
+
+resources:
+  repositories:
+    - repository: xamarin-templates
+      type: github
+      name: xamarin/yaml-templates
+      endpoint: xamarin
 
 trigger:
   branches:
@@ -64,11 +59,11 @@ jobs:
   strategy:
     matrix:
       debug:
-        BuildConfiguration: 'Debug'
-        BuildPlatform: 'any cpu'
+        BuildConfiguration: $(DefaultBuildConfiguration)
+        BuildPlatform: $(DefaultBuildPlatform)
       release:
         BuildConfiguration: 'Release'
-        BuildPlatform: 'any cpu'
+        BuildPlatform: $(DefaultBuildPlatform)
   steps:
      - template: build/steps/build-windows.yml
 
@@ -82,11 +77,41 @@ jobs:
   strategy:
     matrix:
       debug:
-        BuildConfiguration: 'Debug'
+        BuildConfiguration: $(DefaultBuildConfiguration)
       release:
         BuildConfiguration: 'Release'
   steps:
      - template: build/steps/build-windows-test.yml
+
+- template: build/steps/build-android.yml
+  parameters:
+    name: android_legacy
+    displayName: Build Android [Legacy Renderers]
+    vmImage: Hosted Mac Internal
+    targetFolder: Xamarin.Forms.ControlGallery.Android/legacyRenderers/
+    androidProjectArguments: '/t:"Rebuild;SignAndroidPackage"'
+    dependsOn: Phase_1
+    buildConfiguration: $(DefaultBuildConfiguration)
+
+- template: build/steps/build-android.yml
+  parameters:
+    name: android_preappcompact
+    displayName: Build Android [Pre-AppCompat]
+    vmImage: Hosted Mac Internal
+    targetFolder: Xamarin.Forms.ControlGallery.Android/preAppCompat
+    androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /p:DefineConstants="TRACE DEBUG FORMS_APPLICATION_ACTIVITY APP"'
+    dependsOn: Phase_1
+    buildConfiguration: $(DefaultBuildConfiguration)
+
+- template: build/steps/build-android.yml
+  parameters:
+    name: android_fast
+    displayName: Build Android [Fast Renderers]
+    vmImage: Hosted Mac Internal
+    targetFolder: Xamarin.Forms.ControlGallery.Android/newRenderers/
+    androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /p:DefineConstants="TRACE DEBUG TEST_EXPERIMENTAL_RENDERERS APP"'
+    dependsOn: Phase_1
+    buildConfiguration: $(DefaultBuildConfiguration)
 
 - job: Phase_4
   displayName: OSX Phase
@@ -100,8 +125,12 @@ jobs:
       - msbuild
       - Xamarin.iOS
   variables:
-    provisioningOSX : true
-    provisioningSign : $(provisioning)
+    provisioningOSX : $(provisioning)
+    provisionator.osxPath : 'build/provisioning/provisioning.csx'
+    provisionator.signPath : 'build/provisioning/provisioning_sign.csx'
+    buildConfiguration: $(DefaultBuildConfiguration)
+    slnPath: $(SolutionFile)
+    nugetVersion: 4.8.1
   steps:
      - template: build/steps/build-osx.yml
 
@@ -109,23 +138,27 @@ jobs:
   displayName: Nuget Phase
   dependsOn:
    - Phase_3
+   - android_legacy
+   - android_preappcompact
+   - android_fast
   condition: succeeded()
   pool:
     name: Hosted VS2017
     demands: DotNetFramework
   variables:
     FormsIdAppend: ''
+    buildConfiguration: $(DefaultBuildConfiguration)
   steps:
      - template: build/steps/build-nuget.yml
 
 - job: Phase_6
   displayName: Sign Phase
   dependsOn: Phase_5
-  condition: and(succeeded(), eq(dependencies.Phase_1.outputs['prepare.sign'], 'true'))
   pool:
     name: VSEng-Xamarin-Forms
   variables:
-    sign: $[dependencies.Phase_1.outputs['prepare.sign']]
+    signBuild: $[dependencies.Phase_1.outputs['prepare.signnuget']]
+    displayName: Sign Phase
   steps:
      - template: build/steps/build-sign.yml
 
