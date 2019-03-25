@@ -30,7 +30,7 @@ steps:
        if(!$preXamForms)
        {
           $formsNugetVersion = $env:major + "." + $env:minor + "." + $env:patch + "." + $env:buildversion
-          if(!$prefix)
+          if($prefix)
           {
             $formsNugetVersion = $formsNugetVersion +"-"+$prefix
           }
