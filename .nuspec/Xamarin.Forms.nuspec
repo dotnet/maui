@@ -105,10 +105,12 @@
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.*pdb" target="lib\netstandard2.0" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.*mdb" target="lib\netstandard2.0" />
     <file src="..\docs\Xamarin.Forms.Core.xml" target="lib\netstandard2.0" />
+    <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\netstandard2.0" />
+    <file src="..\docs\**\Xamarin.Forms.Core.xml" target="lib\netstandard2.0" />
+    <file src="..\docs\**\Xamarin.Forms.Xaml.xml" target="lib\netstandard2.0" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.dll" target="lib\netstandard2.0" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.*pdb" target="lib\netstandard2.0" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.*mdb" target="lib\netstandard2.0" />
-    <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\netstandard2.0" />
     <file src="..\Xamarin.Forms.Platform\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Platform.dll" target="lib\netstandard2.0" />
     <file src="..\Xamarin.Forms.Platform\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Platform.*pdb" target="lib\netstandard2.0" />
     <file src="..\Xamarin.Forms.Platform\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Platform.*mdb" target="lib\netstandard2.0" />
@@ -140,7 +142,6 @@
     <file src="..\Xamarin.Forms.Xaml.Design\bin\$Configuration$\Xamarin.Forms.Xaml.Design.dll" target="lib\netstandard2.0\Design" />
     <file src="..\Xamarin.Forms.Core.Design\bin\$Configuration$\Xamarin.Forms.Core.Design.dll" target="lib\netstandard1.0\Design" />
     <file src="..\Xamarin.Forms.Xaml.Design\bin\$Configuration$\Xamarin.Forms.Xaml.Design.dll" target="lib\netstandard1.0\Design" />
-
     <file src="..\Xamarin.Forms.Core.Design\bin\$Configuration$\Xamarin.Forms.Core.Design.dll" target="lib\MonoAndroid90\Design" /> 
     <file src="..\Xamarin.Forms.Xaml.Design\bin\$Configuration$\Xamarin.Forms.Xaml.Design.dll" target="lib\MonoAndroid90\Design" />
     <file src="..\Xamarin.Forms.Core.Design\bin\$Configuration$\Xamarin.Forms.Core.Design.dll" target="lib\MonoAndroid81\Design" />
@@ -165,9 +166,11 @@
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="lib\MonoAndroid81" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.*pdb" target="lib\MonoAndroid81" />
     <file src="..\docs\Xamarin.Forms.Core.xml" target="lib\MonoAndroid81" />
+    <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\MonoAndroid81" />
+    <file src="..\docs\**\Xamarin.Forms.Core.xml" target="lib\MonoAndroid81" />
+    <file src="..\docs\**\Xamarin.Forms.Xaml.xml" target="lib\MonoAndroid81" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.dll" target="lib\MonoAndroid81" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.*pdb" target="lib\MonoAndroid81" />
-    <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\MonoAndroid81" />
     <file src="..\Stubs\Xamarin.Forms.Platform.Android\bin\$Configuration$\MonoAndroid81\Xamarin.Forms.Platform.dll" target="lib\MonoAndroid81" />
     
     <!--Android 90-->
@@ -178,9 +181,11 @@
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="lib\MonoAndroid90" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.*pdb" target="lib\MonoAndroid90" />
     <file src="..\docs\Xamarin.Forms.Core.xml" target="lib\MonoAndroid90" />
+    <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\MonoAndroid90" />
+    <file src="..\docs\**\Xamarin.Forms.Core.xml" target="lib\MonoAndroid90" />
+    <file src="..\docs\**\Xamarin.Forms.Xaml.xml" target="lib\MonoAndroid90" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.dll" target="lib\MonoAndroid90" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.*pdb" target="lib\MonoAndroid90" />
-    <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\MonoAndroid90" />
     <file src="..\Stubs\Xamarin.Forms.Platform.Android\bin\$Configuration$\MonoAndroid90\Xamarin.Forms.Platform.dll" target="lib\MonoAndroid90" />
 
     <!--iPhone Unified-->
@@ -191,10 +196,12 @@
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.*pdb" target="lib\Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.*mdb" target="lib\Xamarin.iOS10" />
     <file src="..\docs\Xamarin.Forms.Core.xml" target="lib\Xamarin.iOS10" />
+    <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\Xamarin.iOS10" />
+    <file src="..\docs\**\Xamarin.Forms.Core.xml" target="lib\Xamarin.iOS10" />
+    <file src="..\docs\**\Xamarin.Forms.Xaml.xml" target="lib\Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.dll" target="lib\Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.*pdb" target="lib\Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.*mdb" target="lib\Xamarin.iOS10" />
-    <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\Xamarin.iOS10" />
     <file src="..\Stubs\Xamarin.Forms.Platform.iOS\bin\iPhone\$Configuration$\Xamarin.Forms.Platform.dll" target="lib\Xamarin.iOS10" />
 
     <!--UWP-->
