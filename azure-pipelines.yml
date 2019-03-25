@@ -1,12 +1,14 @@
 variables:
-- name: BuildConfiguration
+- name: DefaultBuildConfiguration
   value: Debug
-- name: BuildPlatform
+- name: DefaultBuildPlatform
   value: 'any cpu'
-- name: XamarinFormsPackageVersion
-  value: ''
-- name: Suffix
-  value: ''
+- name: ApkName
+  value: AndroidControlGallery.AndroidControlGallery.apk
+- name: IpaName
+  value: XamarinFormsControlGalleryiOS.ipa
+- name: SolutionFile
+  value: Xamarin.Forms.sln
 - name: major
   value: 3
 - name: minor
@@ -15,9 +17,6 @@ variables:
   value: 0
 - name: buildversion
   value: $[counter('$(Build.SourceBranchName)_counter', 1)]
-- group: Xamarin.Forms
-- group: XQA Secrets
-- group: xamops-azdev-secrets
 
 resources:
   repositories:
@@ -60,11 +59,11 @@ jobs:
   strategy:
     matrix:
       debug:
-        BuildConfiguration: 'Debug'
-        BuildPlatform: 'any cpu'
+        BuildConfiguration: $(DefaultBuildConfiguration)
+        BuildPlatform: $(DefaultBuildPlatform)
       release:
         BuildConfiguration: 'Release'
-        BuildPlatform: 'any cpu'
+        BuildPlatform: $(DefaultBuildPlatform)
   steps:
      - template: build/steps/build-windows.yml
 
@@ -78,7 +77,7 @@ jobs:
   strategy:
     matrix:
       debug:
-        BuildConfiguration: 'Debug'
+        BuildConfiguration: $(DefaultBuildConfiguration)
       release:
         BuildConfiguration: 'Release'
   steps:
@@ -92,6 +91,7 @@ jobs:
     targetFolder: Xamarin.Forms.ControlGallery.Android/legacyRenderers/
     androidProjectArguments: '/t:"Rebuild;SignAndroidPackage"'
     dependsOn: Phase_1
+    buildConfiguration: $(DefaultBuildConfiguration)
 
 - template: build/steps/build-android.yml
   parameters:
@@ -101,6 +101,7 @@ jobs:
     targetFolder: Xamarin.Forms.ControlGallery.Android/preAppCompat
     androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /p:DefineConstants="TRACE DEBUG FORMS_APPLICATION_ACTIVITY APP"'
     dependsOn: Phase_1
+    buildConfiguration: $(DefaultBuildConfiguration)
 
 - template: build/steps/build-android.yml
   parameters:
@@ -110,6 +111,7 @@ jobs:
     targetFolder: Xamarin.Forms.ControlGallery.Android/newRenderers/
     androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /p:DefineConstants="TRACE DEBUG TEST_EXPERIMENTAL_RENDERERS APP"'
     dependsOn: Phase_1
+    buildConfiguration: $(DefaultBuildConfiguration)
 
 - job: Phase_4
   displayName: OSX Phase
@@ -126,6 +128,9 @@ jobs:
     provisioningOSX : $(provisioning)
     provisionator.osxPath : 'build/provisioning/provisioning.csx'
     provisionator.signPath : 'build/provisioning/provisioning_sign.csx'
+    buildConfiguration: $(DefaultBuildConfiguration)
+    slnPath: $(SolutionFile)
+    nugetVersion: 4.8.1
   steps:
      - template: build/steps/build-osx.yml
 
@@ -142,17 +147,18 @@ jobs:
     demands: DotNetFramework
   variables:
     FormsIdAppend: ''
+    buildConfiguration: $(DefaultBuildConfiguration)
   steps:
      - template: build/steps/build-nuget.yml
 
 - job: Phase_6
   displayName: Sign Phase
   dependsOn: Phase_5
-  condition: and(succeeded(), eq(dependencies.Phase_1.outputs['prepare.sign'], 'true'))
   pool:
     name: VSEng-Xamarin-Forms
   variables:
-    sign: $[dependencies.Phase_1.outputs['prepare.sign']]
+    signBuild: $[dependencies.Phase_1.outputs['prepare.signnuget']]
+    displayName: Sign Phase
   steps:
      - template: build/steps/build-sign.yml
 

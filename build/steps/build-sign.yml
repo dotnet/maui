@@ -1,3 +1,13 @@
+parameters:
+  name: ''            # in the form type_platform_host
+  displayName: ''     # the human name
+  vmImage: ''         # the VM image
+  targetFolder: ''    # the bootstrapper target
+  dependsOn: []       # the dependiencies
+  preBuildSteps: []   # any steps to run before the build
+  postBuildSteps: []  # any additional steps to run after the build
+  signBuild: false
+
 steps:
   - template: sign-artifacts.yml@xamarin-templates
     parameters:
@@ -5,6 +15,7 @@ steps:
       sourceRepo: 'xamarin/xamarin.forms'
       jenkinsEndpoint: Xamarin Code Signing Jenkins
       jenkinsJob: sign-from-vsts
+      artifactHost: 'https://dl.internalx.com/vsts-devdiv'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: nuget signed'

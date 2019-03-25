@@ -26,16 +26,15 @@ steps:
       provisioning_extra_args: $(provisionator.extraArguments)
 
   - task: NuGetToolInstaller@0
-    displayName: 'Use NuGet 4.8.1'
+    displayName: 'Use NuGet $(nugetVersion)'
     inputs:
-      versionSpec: 4.8.1
+      versionSpec: $(nugetVersion)
       checkLatest: true
-
 
   - task: NuGetCommand@2
     displayName: 'NuGet restore'
     inputs:
-      restoreSolution: Xamarin.Forms.sln
+      restoreSolution: $(slnPath)
 
 
   - task: MSBuild@1
@@ -45,10 +44,10 @@ steps:
 
 
   - task: XamariniOS@2
-    displayName: 'Build Xamarin.iOS solution Xamarin.Forms.sln'
+    displayName: 'Build Xamarin.iOS solution $(slnPath)'
     inputs:
-      solutionFile: Xamarin.Forms.sln
-      configuration: '$(BuildConfiguration)'
+      solutionFile: $(slnPath)
+      configuration: $(buildConfiguration)
 
 
   - task: CopyFiles@2
