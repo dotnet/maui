@@ -10,9 +10,9 @@ variables:
 - name: SolutionFile
   value: Xamarin.Forms.sln
 - name: major
-  value: 3
+  value: 4
 - name: minor
-  value: 6
+  value: 0
 - name: patch
   value: 0
 - name: buildversion
