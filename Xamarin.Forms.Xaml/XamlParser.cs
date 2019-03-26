@@ -80,16 +80,23 @@ namespace Xamarin.Forms.Xaml
 							else //Attached BP
 								name = new XmlName(reader.NamespaceURI, reader.LocalName);
 
+							if (node.Properties.ContainsKey(name))
+								throw new XamlParseException($"'{reader.Name}' is a duplicate property name.", (IXmlLineInfo)reader);
+
 							INode prop = null;
 							if (reader.IsEmptyElement)
 								Debug.WriteLine($"Unexpected empty element '<{reader.Name} />'", (IXmlLineInfo)reader);
 							else
 								prop = ReadNode(reader);
+
 							if (prop != null)
 								node.Properties.Add(name, prop);
 						}
 						// 2. Xaml2009 primitives, x:Arguments, ...
 						else if (reader.NamespaceURI == X2009Uri && reader.LocalName == "Arguments") {
+							if (node.Properties.ContainsKey(XmlName.xArguments))
+								throw new XamlParseException($"'x:Arguments' is a duplicate directive name.", (IXmlLineInfo)reader);
+
 							var prop = ReadNode(reader);
 							if (prop != null)
 								node.Properties.Add(XmlName.xArguments, prop);
@@ -97,6 +104,9 @@ namespace Xamarin.Forms.Xaml
 						// 3. DataTemplate (should be handled by 4.)
 						else if (node.XmlType.NamespaceUri == XFUri &&
 								 (node.XmlType.Name == "DataTemplate" || node.XmlType.Name == "ControlTemplate")) {
+							if (node.Properties.ContainsKey(XmlName._CreateContent))
+								throw new XamlParseException($"Multiple child elements in {node.XmlType.Name}", (IXmlLineInfo)reader);
+
 							var prop = ReadNode(reader, true);
 							if (prop != null)
 								node.Properties.Add(XmlName._CreateContent, prop);
