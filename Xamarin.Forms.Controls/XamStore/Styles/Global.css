@@ -1,0 +1,8 @@
+﻿.shell {
+    background-color: #11313F;
+    -xf-FlyoutBackgroundColor: #CC0000;
+}
+
+^Shell {
+    -xf-flyout-background-color: #CC0000;
+}
