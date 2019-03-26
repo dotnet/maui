@@ -29,13 +29,19 @@
 						GalleryBuilder.NavButton("Add/Remove Items (Grid, initially empty)", () =>
 							new ObservableCodeCollectionViewGallery(initialItems: 0), Navigation),
 
-						GalleryBuilder.NavButton("Multi-item add/remove, no index", 
+						GalleryBuilder.NavButton("Add/Remove Items (List, initially empty)", () =>
+							new ObservableCodeCollectionViewGallery(grid: false, initialItems: 0), Navigation),
+
+						GalleryBuilder.NavButton("Multi-item add/remove, no index",
 							() => new ObservableMultiItemCollectionViewGallery(), Navigation),
 
-						GalleryBuilder.NavButton("Multi-item add/remove, with index", 
+						GalleryBuilder.NavButton("Multi-item add/remove, with index",
 							() => new ObservableMultiItemCollectionViewGallery(withIndex: true), Navigation),
 
-						GalleryBuilder.NavButton("Reset", () => new ObservableCollectionResetGallery(), Navigation)
+						GalleryBuilder.NavButton("Reset", () => new ObservableCollectionResetGallery(), Navigation),
+
+						GalleryBuilder.NavButton("Add Items with timer to Empty Collection", () =>
+							new ObservableCodeCollectionViewGallery(grid: false, initialItems: 0, addItemsWithTimer: true), Navigation)
 					}
 				}
 			};

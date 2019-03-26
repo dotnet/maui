@@ -8,13 +8,14 @@ using ViewGroup = Android.Views.ViewGroup;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	// TODO hartez 2018/07/25 14:43:04 Experiment with an ItemSource property change as _adapter.notifyDataSetChanged	
+	// TODO hartez 2018/07/25 14:43:04 Experiment with an ItemSource property change as _adapter.notifyDataSetChanged
 
 	public class ItemsViewAdapter : RecyclerView.Adapter
 	{
 		protected readonly ItemsView ItemsView;
 		readonly Func<IVisualElementRenderer, Context, AView> _createView;
 		internal readonly IItemsViewSource ItemsSource;
+		bool _disposed;
 
 		internal ItemsViewAdapter(ItemsView itemsView, Func<IVisualElementRenderer, Context, AView> createView = null)
 		{
@@ -72,6 +73,21 @@ namespace Xamarin.Forms.Platform.Android
 			var itemContentControl = _createView(CreateRenderer(templateElement, context), context);
 
 			return new TemplatedItemViewHolder(itemContentControl, templateElement);
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!_disposed)
+			{
+				if (disposing)
+				{
+					ItemsSource?.Dispose();
+				}
+
+				_disposed = true;
+
+				base.Dispose(disposing);
+			}
 		}
 
 		static IVisualElementRenderer CreateRenderer(View view, Context context)

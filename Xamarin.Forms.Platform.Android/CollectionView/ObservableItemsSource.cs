@@ -7,13 +7,13 @@ namespace Xamarin.Forms.Platform.Android
 {
 	internal class ObservableItemsSource : IItemsViewSource
 	{
-		// TODO hartez 2018/07/30 14:40:11 We may need to implement IDisposable to make sure this all gets cleaned up	
 		readonly RecyclerView.Adapter _adapter;
 		readonly IList _itemsSource;
+		bool _disposed;
 
-		public ObservableItemsSource(IEnumerable itemSource, RecyclerView.Adapter adapter)
+		public ObservableItemsSource(IList itemSource, RecyclerView.Adapter adapter)
 		{
-			_itemsSource = (IList)itemSource;
+			_itemsSource = itemSource;
 			_adapter = adapter;
 
 			((INotifyCollectionChanged)itemSource).CollectionChanged += CollectionChanged;
@@ -22,6 +22,24 @@ namespace Xamarin.Forms.Platform.Android
 		public int Count => _itemsSource.Count;
 
 		public object this[int index] => _itemsSource[index];
+
+		public void Dispose()
+		{
+			Dispose(true);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!_disposed)
+			{
+				if (disposing)
+				{
+					((INotifyCollectionChanged)_itemsSource).CollectionChanged -= CollectionChanged;
+				}
+
+				_disposed = true;
+			}
+		}
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
 		{

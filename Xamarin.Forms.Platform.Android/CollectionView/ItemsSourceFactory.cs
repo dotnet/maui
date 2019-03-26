@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				// TODO hartez ObservableItemSource should be taking an INotifyCollectionChanged in its constructor
 				case IList _ when itemsSource is INotifyCollectionChanged:
-					return new ObservableItemsSource(itemsSource, adapter);
+					return new ObservableItemsSource(itemsSource as IList, adapter);
 				case IEnumerable<object> generic:
 					return new ListSource(generic);
 			}
