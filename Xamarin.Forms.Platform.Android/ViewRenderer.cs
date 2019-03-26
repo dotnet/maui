@@ -143,6 +143,12 @@ namespace Xamarin.Forms.Platform.Android
 				{
 					Control.OnFocusChangeListener = null;
 				}
+
+				if (Element != null && _focusChangeHandler != null)
+				{
+					Element.FocusChangeRequested -= _focusChangeHandler;
+				}
+				_focusChangeHandler = null;
 			}
 
 			base.Dispose(disposing);
@@ -158,17 +164,8 @@ namespace Xamarin.Forms.Platform.Android
 					}
 					_container = null;
 				}
-
-				if (Element != null && _focusChangeHandler != null)
-				{
-					Element.FocusChangeRequested -= _focusChangeHandler;
-				
-				}
-				_focusChangeHandler = null;
 				_disposed = true;
 			}
-
-			
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<TView> e)
