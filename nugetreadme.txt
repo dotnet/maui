@@ -17,7 +17,3 @@ If you are upgrading from an earlier preview the stable version contains several
 We have documented a full transition guide when migrating from older versions. 
 
 See our full release notes for more information: http://aka.ms/essentials-releasenotes
-
-## Feedback, Issues, & Feature Requests
-
-We would love to hear from you simply head to: http://aka.ms/essentialsfeedback
