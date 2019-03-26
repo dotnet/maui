@@ -2,6 +2,7 @@
 using Android.Content;
 using Android.Util;
 using Android.Views;
+using Android.Views.InputMethods;
 using Android.Widget;
 using Xamarin.Forms;
 using Xamarin.Forms.Material.Android;
@@ -26,6 +27,7 @@ namespace Xamarin.Forms.Material.Android
 			var view = inflater.Inflate(Resource.Layout.TextInputLayoutFilledBox, null);
 			_textInputLayout = (MaterialFormsTextInputLayout)view;
 			_textInputEditText = _textInputLayout.FindViewById<MaterialFormsEditText>(Resource.Id.materialformsedittext);
+			_textInputEditText.ImeOptions = ImeAction.Done;
 			UpdatePlaceholderText();
 
 			return _textInputLayout;

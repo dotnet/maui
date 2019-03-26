@@ -10,6 +10,7 @@ using Android.Util;
 using Android.Views;
 using Java.Lang;
 using Android.Widget;
+using Android.Views.InputMethods;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -31,7 +32,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override FormsEditText CreateNativeControl()
 		{
-			return new FormsEditText(Context);
+			return new FormsEditText(Context)
+			{
+				ImeOptions = ImeAction.Done
+			};
 		}
 
 		protected override EditText EditText => Control;
