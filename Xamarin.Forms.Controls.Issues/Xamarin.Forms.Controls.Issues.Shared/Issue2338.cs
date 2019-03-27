@@ -293,13 +293,17 @@ namespace Xamarin.Forms.Controls.Issues
 				{
 					base.OnAppearing();
 					await Task.Delay(500);
+#pragma warning disable 4014
 					Detail.Navigation.PushAsync(new ContentPage());
 					Detail.Navigation.PushModalAsync(new NavigationPage(new ContentPage() { Title = "Details 2" }));
+#pragma warning restore 4014
 
 					var navPage = new NavigationPage(new ContentPage() { Title = "Details" });
 					Detail = navPage;
 					Application.Current.MainPage = Issue2338TestHelper.CreateSuccessPage(nameof(Issue2338_MasterDetailsPage));
+#pragma warning disable 4014
 					navPage.PushAsync(new ContentPage() { Title = "Details 2" });
+#pragma warning restore 4014
 				}
 			}
 		}
@@ -331,7 +335,10 @@ namespace Xamarin.Forms.Controls.Issues
 					base.OnAppearing();
 					await Task.Delay(500);
 					var contentPage = new ContentPage();
+
+#pragma warning disable 4014
 					Detail.Navigation.PushAsync(contentPage);
+#pragma warning restore 4014
 
 					contentPage.Appearing += (_, __) =>
 					{

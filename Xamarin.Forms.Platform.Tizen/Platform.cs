@@ -104,7 +104,9 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		readonly HashSet<EvasObject> _alerts = new HashSet<EvasObject>();
 
+#pragma warning disable 0067
 		public event EventHandler<RootNativeViewChangedEventArgs> RootNativeViewChanged;
+#pragma warning restore 0067
 
 		internal DefaultPlatform(EvasObject parent)
 		{

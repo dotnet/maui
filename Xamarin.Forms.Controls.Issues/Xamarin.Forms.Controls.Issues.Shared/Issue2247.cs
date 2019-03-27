@@ -13,7 +13,6 @@ namespace Xamarin.Forms.Controls.Issues
 	public class Issue2247 : TestContentPage
 	{
 		ListView _listView;
-		bool _isRefreshing;
 
 		protected override void Init()
 		{

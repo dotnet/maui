@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		protected override void Init()
 		{
-			PushAsync(new RootPage());
+			PushAsync(new _35132RootPage());
 		}
 
 		[Preserve(AllMembers = true)]
@@ -51,9 +51,9 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		[Preserve(AllMembers = true)]
-		public class RootPage : ContentPage
+		public class _35132RootPage : ContentPage
 		{
-			public RootPage()
+			public _35132RootPage()
 			{
 				var button = new Button { Text = "Open" };
 				button.Clicked += Button_Clicked;

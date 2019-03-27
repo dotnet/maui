@@ -148,6 +148,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var result = DisplayResults();
 
+#pragma warning disable 4014
 			PerformanceDataManager.PostScenarioResults(ViewModel.Scenario,
 				result,
 				ViewModel.TestRunReferenceId,
@@ -158,6 +159,7 @@ namespace Xamarin.Forms.Controls.Issues
 				_BuildInfo,
 				ViewModel.ActualRenderTime,
 				_PerformanceProvider.Statistics);
+#pragma warning restore 4014
 		}
 
 		void NextButton_Clicked(object sender, EventArgs e)

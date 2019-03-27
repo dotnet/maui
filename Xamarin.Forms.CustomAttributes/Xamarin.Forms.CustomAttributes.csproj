@@ -7,7 +7,6 @@
   <PropertyGroup>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>0169</NoWarn>
   </PropertyGroup>
 </Project>

@@ -3,5 +3,6 @@
     <__XFBuildTasksLocation>$(_XFBuildTasksLocation)</__XFBuildTasksLocation>
     <__XFBuildTasksLocation Condition="'$(__XFBuildTasksLocation)' == '' AND '$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory).nuspec\netstandard2.0\</__XFBuildTasksLocation>
     <__XFBuildTasksLocation Condition="'$(__XFBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory).nuspec\net46\</__XFBuildTasksLocation>
+	<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
  </Project> 

@@ -131,9 +131,11 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		[TearDown]
-		public void TearDown() 
+		public override void TearDown() 
 		{
 			RunningApp.SetOrientationPortrait ();
+
+			base.TearDown();
 		}
 #endif
 	}

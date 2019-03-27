@@ -54,7 +54,6 @@
     <AndroidSupportedAbis>armeabi-v7a;x86</AndroidSupportedAbis>
     <Debugger>Xamarin</Debugger>
     <DevInstrumentationEnabled>True</DevInstrumentationEnabled>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>
     </NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -72,7 +71,6 @@
     <AndroidSupportedAbis>armeabi-v7a,x86</AndroidSupportedAbis>
     <MandroidI18n />
     <MonoDroidExtraArgs />
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>
     </NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>

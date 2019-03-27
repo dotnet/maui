@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Controls.Issues
 	public class Bugzilla32871 : TestContentPage
 	{
 
-		public static class Id
+		public static class Ids
 		{
 			public const string ValueEntry = nameof(ValueEntry);
 			public const string ValueLabel = nameof(ValueLabel);
@@ -56,23 +56,23 @@ namespace Xamarin.Forms.Controls.Issues
 			var stack = new StackLayout();
 
 			// text to be coerced
-			var entryValue = new Entry() { AutomationId = Id.ValueEntry };
+			var entryValue = new Entry() { AutomationId = Ids.ValueEntry };
 			stack.Children.Add(entryValue);
 
 			// feedback of the value coerced from text
-			s_labelValue = new Label() { Text = "value: [none]", AutomationId = Id.ValueLabel };
+			s_labelValue = new Label() { Text = "value: [none]", AutomationId = Ids.ValueLabel };
 			stack.Children.Add(s_labelValue);
 
 			// the type being coerced from text
-			var entryType = new Entry() { AutomationId = Id.TypeEntry };
+			var entryType = new Entry() { AutomationId = Ids.TypeEntry };
 			stack.Children.Add(entryType);
 
 			// feedback of the type being coerced from text
-			var labelType = new Label() { Text = "type: [none]", AutomationId = Id.TypeLabel };
+			var labelType = new Label() { Text = "type: [none]", AutomationId = Ids.TypeLabel };
 			stack.Children.Add(labelType);
 
 			// create view model of the type being coerced; clear text
-			var bindButton = new Button() { Text = "Bind", AutomationId = Id.BindButton };
+			var bindButton = new Button() { Text = "Bind", AutomationId = Ids.BindButton };
 			stack.Children.Add(bindButton);
 			bindButton.Clicked += (o, e) =>
 			{
@@ -99,7 +99,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void Issue32871Test()
 		{
-			RunningApp.WaitForElement(q => q.Marked(Id.BindButton));
+			RunningApp.WaitForElement(q => q.Marked(Ids.BindButton));
 
 			var types = new Type[] {
 				typeof(double),
@@ -143,9 +143,9 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 		public void Theory(Type type, string[] values)
 		{
-			RunningApp.ClearText(Id.TypeEntry);
-			RunningApp.EnterText(Id.TypeEntry, type.FullName);
-			RunningApp.Tap(Id.BindButton);
+			RunningApp.ClearText(Ids.TypeEntry);
+			RunningApp.EnterText(Ids.TypeEntry, type.FullName);
+			RunningApp.Tap(Ids.BindButton);
 			RunningApp.WaitForElement(q => q.Marked($"type: {type.FullName}"));
 
 			foreach (var value in values)
@@ -157,14 +157,14 @@ namespace Xamarin.Forms.Controls.Issues
 
 			Console.WriteLine($"TEST CASE: type={type.FullName}, value={value}");
 
-			RunningApp.ClearText(Id.ValueEntry);
+			RunningApp.ClearText(Ids.ValueEntry);
 
 			var input = string.Empty;
 			var output = string.Empty;
 			foreach (var c in value)
 			{
 				input += c;
-				RunningApp.EnterText(Id.ValueEntry, $"{c}");
+				RunningApp.EnterText(Ids.ValueEntry, $"{c}");
 
 				if (TryParse(type, input, ref output))
 					input = output;

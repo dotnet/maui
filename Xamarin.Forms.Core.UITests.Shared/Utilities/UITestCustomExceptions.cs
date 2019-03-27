@@ -80,16 +80,16 @@ namespace Xamarin.Forms.Core.UITests
 
 	internal class UITestErrorException : Exception
 	{
-		readonly string message;
+		readonly string _message;
 
 		public UITestErrorException (string message, [CallerMemberName] string caller = null)
 		{
-			message = string.Format ("Test error: {0}, {1}", caller, message);
+			_message = string.Format ("Test error: {0}, {1}", caller, message);
 		}
 
 		public override string Message
 		{
-			get { return message; }
+			get { return _message; }
 		}
 	}
 }

@@ -182,7 +182,9 @@ namespace Xamarin.Forms.Controls
 
             UniformMatrix4(_mMVPMatrixHandle, _mModelViewProjectionMatrix);
 
+#pragma warning disable 0618
             GL.DrawArrays(BeginMode.Triangles, 0, 3);
+#pragma warning restore 0618
             GL.Finish();
             GL.DisableVertexAttribArray(_mPositionHandle);
             GL.DisableVertexAttribArray(_mColorHandle);

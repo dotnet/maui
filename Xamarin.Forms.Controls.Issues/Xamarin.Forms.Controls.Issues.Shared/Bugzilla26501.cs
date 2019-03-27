@@ -132,8 +132,6 @@ namespace Xamarin.Forms.Controls.Issues
 
 		ListView _familyListView;
 
-		List<FamilyViewModel> _itemSource;
-
 		void UpdateData ()
 		{
 			Device.BeginInvokeOnMainThread (() => _familyListView.ItemsSource = _demoDataSource);

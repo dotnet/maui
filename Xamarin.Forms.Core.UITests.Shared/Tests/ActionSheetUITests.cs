@@ -26,7 +26,11 @@ namespace Xamarin.Forms.Core.UITests
 			base.TestSetup();
 #if !__MACOS__
 			screenSize = App.Query(q => q.Marked("ActionSheetPage"))[0].Rect;
+#else
+			screenSize = new AppRect();
 #endif
+
+
 		}
 
 		[Test]

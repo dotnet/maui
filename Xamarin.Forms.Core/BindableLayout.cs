@@ -173,7 +173,6 @@ namespace Xamarin.Forms
 				return;
 			}
 
-			int i = 0;
 			foreach (object item in _itemsSource)
 			{
 				layout.Children.Add(CreateItemView(item, layout));

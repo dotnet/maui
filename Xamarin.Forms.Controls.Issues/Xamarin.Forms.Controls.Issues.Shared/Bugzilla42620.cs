@@ -193,7 +193,7 @@ namespace Xamarin.Forms.Controls.Issues
 			rhs = temp;
 		}
 
-		public static class Id
+		public static class Ids
 		{
 			public const string AddRow = "R";
 			public const string AddColumn = "C";
@@ -224,7 +224,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			RunningApp.EnterText("batch", string.Join("", _buttons));
 			RunningApp.DismissKeyboard();
-			RunningApp.Tap(Id.Batch);
+			RunningApp.Tap(Ids.Batch);
 
 			foreach (var result in _result)
 				RunningApp.WaitForElement(q => q.Marked($"{result}"));
@@ -233,7 +233,7 @@ namespace Xamarin.Forms.Controls.Issues
 			_result.Clear();
 		}
 
-		public void AddHoizontal()
+		public void AddHorizontal()
 		{
 			// new block gets new id
 			var id = _id++;
@@ -253,9 +253,10 @@ namespace Xamarin.Forms.Controls.Issues
 			var column = _totalWidth - 1;
 			var width = 1;
 
-			Tap(Id.AddHorizontal);
+			Tap(Ids.AddHorizontal);
 			WaitForElement($"{id}: {column}x{row} {width}x{height}");
 		}
+
 		public void AddVertical()
 		{
 			// new block gets new id
@@ -276,21 +277,24 @@ namespace Xamarin.Forms.Controls.Issues
 			var row = _totalHeight - 1;
 			var height = 1;
 
-			Tap(Id.AddVertical);
+			Tap(Ids.AddVertical);
 			WaitForElement($"{id}: {column}x{row} {width}x{height}");
 		}
+
 		public void AddRowDef()
 		{
-			Tap(Id.AddRow);
+			Tap(Ids.AddRow);
 			_rowDef++;
 			_totalHeight = Math.Max(_rowDef, _totalHeight);
 		}
+
 		public void AddColumnDef()
 		{
-			Tap(Id.AddColumn);
+			Tap(Ids.AddColumn);
 			_colDef++;
 			_totalWidth = Math.Max(_colDef, _totalWidth);
 		}
+
 		[Test]
 		public void Issue42620Test()
 		{
@@ -318,7 +322,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 		public void Issue42620Test(string command)
 		{
-			RunningApp.WaitForElement(q => q.Marked(Id.Clear));
+			RunningApp.WaitForElement(q => q.Marked(Ids.Clear));
 
 			_totalWidth = 0;
 			_totalHeight = 0;
@@ -327,7 +331,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			foreach (var c in command)
 			{
-				if (c == 'H') AddHoizontal();
+				if (c == 'H') AddHorizontal();
 				if (c == 'V') AddVertical();
 				if (c == 'R') AddRowDef();
 				if (c == 'C') AddColumnDef();

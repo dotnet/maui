@@ -15,13 +15,13 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		protected override void Init()
 		{
-			PushAsync(new RootPage());
+			PushAsync(new _51503RootPage());
 		}
 
 		[Preserve(AllMembers = true)]
-		class RootPage : ContentPage
+		class _51503RootPage : ContentPage
 		{
-			public RootPage()
+			public _51503RootPage()
 			{
 				Button button = new Button
 				{

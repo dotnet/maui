@@ -30,7 +30,6 @@ namespace Xamarin.Forms.Controls.Issues
 		const string TargetAutomationId = "controlinsideofframe";
 		const string NoTaps = "No taps yet";
 		const string Tapped = "Frame was tapped";
-		ContentPage _menu;
 
 #if UITEST
 		[Test, TestCaseSource(nameof(TestCases))]
@@ -74,14 +73,11 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				// These controls show a pop-up which we have to cancel/done out of before we can continue
 #if __ANDROID__
-				var cancelButtonText = "Cancel";
 				RunningApp.Back();
 #elif __IOS__
 				var cancelButtonText = "Done";
 				RunningApp.WaitForElement(q => q.Marked(cancelButtonText));
 				RunningApp.Tap(q => q.Marked(cancelButtonText));
-#else
-				var cancelButtonText = "DismissButton";
 #endif
 
 			}
@@ -175,11 +171,6 @@ namespace Xamarin.Forms.Controls.Issues
 
 		ContentPage BuildMenu()
 		{
-			if (_menu != null)
-			{
-				return _menu;
-			}
-
 			var layout = new Grid
 			{
 				VerticalOptions = LayoutOptions.Fill,

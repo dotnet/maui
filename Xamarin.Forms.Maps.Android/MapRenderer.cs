@@ -243,7 +243,7 @@ namespace Xamarin.Forms.Maps.Android
 				pin.PropertyChanged += PinOnPropertyChanged;
 
 				// associate pin with marker for later lookup in event handlers
-				pin.Id = marker.Id;
+				pin.MarkerId = marker.Id;
 				return marker;
 			}));
 		}
@@ -274,7 +274,7 @@ namespace Xamarin.Forms.Maps.Android
 
 		protected Marker GetMarkerForPin(Pin pin)
 		{
-			return _markers?.Find(m => m.Id == (string)pin.Id);
+			return _markers?.Find(m => m.Id == (string)pin.MarkerId);
 		}
 
 		void MapOnMarkerClick(object sender, GoogleMap.InfoWindowClickEventArgs eventArgs)
@@ -287,7 +287,7 @@ namespace Xamarin.Forms.Maps.Android
 			for (var i = 0; i < Map.Pins.Count; i++)
 			{
 				Pin pin = Map.Pins[i];
-				if ((string)pin.Id != marker.Id)
+				if ((string)pin.MarkerId != marker.Id)
 				{
 					continue;
 				}
