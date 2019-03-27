@@ -7,7 +7,12 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
-	[ContentProperty("Items")]
+	public class FlyoutItem : ShellItem
+	{
+		public ShellSectionCollection Tabs => Items;
+	}
+
+	[ContentProperty(nameof(Items))]
 	public class ShellItem : ShellGroupItem, IShellItemController, IElementConfiguration<ShellItem>, IPropertyPropagationController
 	{
 		#region PropertyKeys
