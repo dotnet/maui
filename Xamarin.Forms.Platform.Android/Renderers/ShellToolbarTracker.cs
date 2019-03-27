@@ -9,6 +9,7 @@ using Android.Views;
 using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using ActionBarDrawerToggle = Android.Support.V7.App.ActionBarDrawerToggle;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
@@ -130,7 +131,7 @@ namespace Xamarin.Forms.Platform.Android
 				{
 					UpdateTitleView(_shellContext.AndroidContext, _toolbar, null);
 
-					_drawerToggle.Dispose();
+					_drawerToggle?.Dispose();
 					if (_searchView != null)
 					{
 						_searchView.View.RemoveFromParent();
@@ -235,10 +236,85 @@ namespace Xamarin.Forms.Platform.Android
 			var backButtonHandler = Shell.GetBackButtonBehavior(page);
 			toolbar.SetNavigationOnClickListener(this);
 
+			var activity = (FormsAppCompatActivity)context;
+
 			if (backButtonHandler != null)
 			{
-				using (var icon = await context.GetFormsDrawable(backButtonHandler.IconOverride))
-				using (var mutatedIcon = icon.GetConstantState().NewDrawable().Mutate())
+				await UpdateDrawerArrowFromBackButtonBehavior(context, toolbar, drawerLayout, backButtonHandler, activity);
+			}
+			else
+			{
+				await UpdateDrawerArrow(context, toolbar, drawerLayout, activity);
+			}
+		}
+
+		protected virtual async Task UpdateDrawerArrow(Context context, Toolbar toolbar, DrawerLayout drawerLayout, FormsAppCompatActivity activity)
+		{
+			if (_drawerToggle == null)
+			{
+				_drawerToggle = new ActionBarDrawerToggle((Activity)context, drawerLayout, toolbar,
+					R.String.Ok, R.String.Ok)
+				{
+					ToolbarNavigationClickListener = this,
+				};
+
+				await UpdateDrawerArrowFromFlyoutIcon(context, _drawerToggle);
+
+				_drawerToggle.DrawerSlideAnimationEnabled = false;
+				drawerLayout.AddDrawerListener(_drawerToggle);
+			}
+
+			if (CanNavigateBack)
+			{
+				_drawerToggle.DrawerIndicatorEnabled = false;
+				using (var icon = new DrawerArrowDrawable(activity.SupportActionBar.ThemedContext))
+				{
+					icon.SetColorFilter(TintColor.ToAndroid(Color.White), PorterDuff.Mode.SrcAtop);
+					icon.Progress = 1;
+					toolbar.NavigationIcon = icon;
+				}
+			}
+			else if (_flyoutBehavior == FlyoutBehavior.Flyout)
+			{
+				toolbar.NavigationIcon = null;
+				var drawable = _drawerToggle.DrawerArrowDrawable;
+				drawable.SetColorFilter(TintColor.ToAndroid(Color.White), PorterDuff.Mode.SrcAtop);
+				_drawerToggle.DrawerIndicatorEnabled = true;
+			}
+			else
+			{
+				_drawerToggle.DrawerIndicatorEnabled = false;
+			}
+			_drawerToggle.SyncState();
+		}
+
+		protected virtual async Task UpdateDrawerArrowFromBackButtonBehavior(Context context, Toolbar toolbar, DrawerLayout drawerLayout, BackButtonBehavior backButtonHandler, FormsAppCompatActivity activity)
+		{
+			var behavior = backButtonHandler;
+			var command = behavior.Command;
+			var commandParameter = behavior.CommandParameter;
+			var image = behavior.IconOverride;
+			var text = behavior.TextOverride;
+			var enabled = behavior.IsEnabled;
+
+			Drawable icon = null;
+
+			if (image != null)
+				icon = await context.GetFormsDrawable(image);
+
+			if (text != null)
+				icon = new FlyoutIconDrawerDrawable(context, TintColor, icon, text);
+
+			if (CanNavigateBack && icon == null)
+			{
+				icon = new DrawerArrowDrawable(activity.SupportActionBar.ThemedContext);
+				(icon as DrawerArrowDrawable).Progress = 1;
+			}
+
+			var iconState = icon.GetConstantState();
+			if (iconState != null)
+			{
+				using (var mutatedIcon = iconState.NewDrawable().Mutate())
 				{
 					mutatedIcon.SetColorFilter(TintColor.ToAndroid(Color.White), PorterDuff.Mode.SrcAtop);
 					toolbar.NavigationIcon = mutatedIcon;
@@ -246,40 +322,27 @@ namespace Xamarin.Forms.Platform.Android
 			}
 			else
 			{
-				var activity = (FormsAppCompatActivity)context;
-				if (_drawerToggle == null)
-				{
-					_drawerToggle = new ActionBarDrawerToggle((Activity)context, drawerLayout, toolbar,
-						R.String.Ok, R.String.Ok)
-					{
-						ToolbarNavigationClickListener = this,
-					};
-					_drawerToggle.DrawerSlideAnimationEnabled = false;
-					drawerLayout.AddDrawerListener(_drawerToggle);
-				}
+				toolbar.NavigationIcon = icon;
+			}
+		}
 
-				if (CanNavigateBack)
+		protected virtual async Task UpdateDrawerArrowFromFlyoutIcon(Context context, ActionBarDrawerToggle actionBarDrawerToggle)
+		{
+			Element item = Page;
+			ImageSource icon = null;
+			while (!Application.IsApplicationOrNull(item))
+			{
+				if (item is IShellController shell)
 				{
-					_drawerToggle.DrawerIndicatorEnabled = false;
-					using (var icon = new DrawerArrowDrawable(activity.SupportActionBar.ThemedContext))
+					icon = shell.FlyoutIcon;
+					if (icon != null)
 					{
-						icon.SetColorFilter(TintColor.ToAndroid(Color.White), PorterDuff.Mode.SrcAtop);
-						icon.Progress = 1;
-						toolbar.NavigationIcon = icon;
+						var drawable = await context.GetFormsDrawable(icon);
+						actionBarDrawerToggle.DrawerArrowDrawable = new FlyoutIconDrawerDrawable(context, TintColor, drawable, null);
 					}
+					return;
 				}
-				else if (_flyoutBehavior == FlyoutBehavior.Flyout)
-				{
-					toolbar.NavigationIcon = null;
-					using (var drawable = _drawerToggle.DrawerArrowDrawable)
-						drawable.SetColorFilter(TintColor.ToAndroid(Color.White), PorterDuff.Mode.SrcAtop);
-					_drawerToggle.DrawerIndicatorEnabled = true;
-				}
-				else
-				{
-					_drawerToggle.DrawerIndicatorEnabled = false;
-				}
-				_drawerToggle.SyncState();
+				item = item?.Parent;
 			}
 		}
 
@@ -451,6 +514,52 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdateToolbarItems()
 		{
 			UpdateToolbarItems(_toolbar, Page);
+		}
+
+		class FlyoutIconDrawerDrawable : DrawerArrowDrawable
+		{
+			Drawable _iconBitmap;
+			string _text;
+			Color _defaultColor;
+			float _defaultSize;
+
+			Color _pressedBackgroundColor => _defaultColor.AddLuminosity(-.12);//<item name="highlight_alpha_material_light" format="float" type="dimen">0.12</item>
+
+			protected override void Dispose(bool disposing)
+			{
+				base.Dispose(disposing);
+				if (disposing && _iconBitmap != null)
+				{
+					_iconBitmap.Dispose();
+				}
+			}
+
+			public FlyoutIconDrawerDrawable(Context context, Color defaultColor, Drawable icon, string text) : base(context)
+			{
+				_defaultColor = defaultColor;
+				_defaultSize = Forms.GetFontSizeNormal(context);
+				_iconBitmap = icon;
+				_text = text;
+			}
+
+			public override void Draw(Canvas canvas)
+			{
+				bool pressed = false;
+				if (_iconBitmap != null)
+				{
+					_iconBitmap.SetBounds(Bounds.Left, Bounds.Top, Bounds.Right, Bounds.Bottom);
+					_iconBitmap.Draw(canvas);
+				}
+				else if (!string.IsNullOrEmpty(_text))
+				{
+					var paint = new Paint { AntiAlias = true };
+					paint.TextSize = _defaultSize;
+					paint.Color = pressed ? _pressedBackgroundColor.ToAndroid() : _defaultColor.ToAndroid();
+					paint.SetStyle(Paint.Style.Fill);
+					var y = (Bounds.Height() + paint.TextSize) / 2;
+					canvas.DrawText(_text, 0, y, paint);
+				}
+			}
 		}
 	}
 }

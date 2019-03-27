@@ -566,6 +566,9 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty MenuItemTemplateProperty =
 			BindableProperty.Create(nameof(MenuItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime);
 
+		public static readonly BindableProperty FlyoutIconProperty =
+			BindableProperty.Create(nameof(FlyoutIcon), typeof(ImageSource), typeof(Shell), null);
+
 		ShellNavigatedEventArgs _accumulatedEvent;
 		bool _accumulateNavigatedEvents;
 		View _flyoutHeaderView;
@@ -586,6 +589,13 @@ namespace Xamarin.Forms
 
 		public event EventHandler<ShellNavigatedEventArgs> Navigated;
 		public event EventHandler<ShellNavigatingEventArgs> Navigating;
+
+
+		public ImageSource FlyoutIcon
+		{
+			get => (ImageSource)GetValue(FlyoutIconProperty);
+			set => SetValue(FlyoutIconProperty, value);
+		}
 
 		public ShellItem CurrentItem {
 			get => (ShellItem)GetValue(CurrentItemProperty);

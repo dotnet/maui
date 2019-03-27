@@ -66,6 +66,25 @@ namespace Xamarin.Forms
 			}
 		}
 
+		public static float GetFontSizeNormal(Context context)
+		{
+			float size = 50;
+			if (!IsLollipopOrNewer)
+				return size;
+
+			// Android 5.0+
+			//this doesn't seem to work
+			using (var value = new TypedValue())
+			{
+				if (context.Theme.ResolveAttribute(Resource.Attribute.TextSize, value, true)) 
+				{
+					size = value.Data;
+				}
+			}
+
+			return size;
+		}
+
 		public static Color GetColorButtonNormal(Context context)
 		{
 			if (!_ColorButtonNormalSet)

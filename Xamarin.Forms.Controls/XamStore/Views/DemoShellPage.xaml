@@ -35,7 +35,7 @@
                     StyleClass="MainTab"
                     HorizontalOptions="FillAndExpand"
                     VerticalOptions="Fill"
-                    Image="button_bookmark.png"
+                    Image="icon_bookmark.png"
                     Command="{Binding ToggleCommand}" 
                     CommandParameter="bookmarked">
                     <Button.Triggers>

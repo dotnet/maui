@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Controls.XamStore
 		public BasePage(string title, Color tint)
 		{
 			Title = title;
-
+			Shell.SetShellForegroundColor(this, tint);
 			var grid = new Grid()
 			{
 				Padding = 20,
@@ -209,7 +209,7 @@ namespace Xamarin.Forms.Controls.XamStore
 						Navigation.PushAsync(page);
 					}),
 				2, 14);
-
+			
 			grid.Children.Add(MakeButton("Show Alert",
 				async () => {
 					var result = await DisplayAlert("Title", "Message", "Ok", "Cancel");
@@ -219,6 +219,19 @@ namespace Xamarin.Forms.Controls.XamStore
 			grid.Children.Add(MakeButton("Navigate to 'demo' route",
 				async () => await Shell.CurrentShell.GoToAsync("demo", true)),
 			1, 15);
+
+			grid.Children.Add(MakeButton("Go Back with Text",
+			async () => {
+					var page = (Page)Activator.CreateInstance(GetType());
+					Shell.SetShellForegroundColor(page, Color.Pink);
+					Shell.SetBackButtonBehavior(page, new BackButtonBehavior()
+					{
+						//IconOverride = "calculator.png",
+						
+						TextOverride = "back"
+					});
+					await Navigation.PushAsync(page);
+				}),2, 15);
 
 			grid.Children.Add(new Label {
 				Text = "Navigate to",
