@@ -31,7 +31,17 @@ namespace Xamarin.Forms.Controls
 					break;
 			}
 
-			var i = 0;
+			grid.Children.Add(new ImageButton
+			{
+				Source = new FontImageSource
+				{
+					Glyph = Ionicons[Ionicons.Length - 1].ToString(),
+					FontFamily = fontFamily,
+					Size = 20
+				},
+			});
+
+			var i = 1;
 			foreach (char c in Ionicons)
 			{
 				grid.Children.Add(new Image

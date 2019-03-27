@@ -54,14 +54,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			_measured = true;
 
-
-			var result = new Size
-			{
-				Width = ((BitmapSource)_image.Source).PixelWidth,
-				Height = ((BitmapSource)_image.Source).PixelHeight
-			};
-
-			return new SizeRequest(result);
+			return _image.Source.GetDesiredSize();
 		}
 
 

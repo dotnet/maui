@@ -44,6 +44,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AccessibilityExtensions.cs" />
+    <Compile Include="Extensions\ImageExtensions.cs" />
     <Compile Include="IImageVisualElementRenderer.cs" />
     <Compile Include="ImageButtonRenderer.cs" />
     <Compile Include="CollectionViewRenderer.cs" />
