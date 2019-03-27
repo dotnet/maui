@@ -51,15 +51,17 @@ namespace Xamarin.Forms.Controls.Issues
 
 			// Tap the control
 			var y = target.CenterY;
+			var x = target.CenterX;
 
 			// In theory we want to tap the center of the control. But Stepper lays out differently than the other controls,
 			// (it doesn't center vertically within its layout), so we need to adjust for it until someone fixes it
 			if (menuItem == "Stepper")
 			{
 				y = target.Y;
+				x = target.X;
 			}
 
-			RunningApp.TapCoordinates(target.CenterX, y);
+			RunningApp.TapCoordinates(x, y);
 
 			if(menuItem == nameof(DatePicker) || menuItem == nameof(TimePicker))
 			{

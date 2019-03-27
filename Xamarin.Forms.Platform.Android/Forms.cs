@@ -88,18 +88,18 @@ namespace Xamarin.Forms
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetTitleBarVisibility(AndroidTitleBarVisibility visibility)
 		{
-			if ((Activity)Context == null)
+			if (Context.GetActivity() == null)
 				throw new NullReferenceException("Must be called after Xamarin.Forms.Forms.Init() method");
 
 			if (visibility == AndroidTitleBarVisibility.Never)
 			{
-				if (!((Activity)Context).Window.Attributes.Flags.HasFlag(WindowManagerFlags.Fullscreen))
-					((Activity)Context).Window.AddFlags(WindowManagerFlags.Fullscreen);
+				if (!Context.GetActivity().Window.Attributes.Flags.HasFlag(WindowManagerFlags.Fullscreen))
+					Context.GetActivity().Window.AddFlags(WindowManagerFlags.Fullscreen);
 			}
 			else
 			{
-				if (((Activity)Context).Window.Attributes.Flags.HasFlag(WindowManagerFlags.Fullscreen))
-					((Activity)Context).Window.ClearFlags(WindowManagerFlags.Fullscreen);
+				if (Context.GetActivity().Window.Attributes.Flags.HasFlag(WindowManagerFlags.Fullscreen))
+					Context.GetActivity().Window.ClearFlags(WindowManagerFlags.Fullscreen);
 			}
 		}
 

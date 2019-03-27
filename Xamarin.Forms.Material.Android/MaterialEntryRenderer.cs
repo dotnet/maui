@@ -6,6 +6,7 @@ using Android.Widget;
 using Xamarin.Forms;
 using Xamarin.Forms.Material.Android;
 using Xamarin.Forms.Platform.Android;
+using AView = Android.Views.View;
 
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Entry), typeof(MaterialEntryRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
 namespace Xamarin.Forms.Material.Android
@@ -19,6 +20,8 @@ namespace Xamarin.Forms.Material.Android
 			base(MaterialContextThemeWrapper.Create(context))
 		{
 		}
+
+		protected override AView ControlUsedForAutomation => EditText;
 
 		protected override MaterialFormsTextInputLayout CreateNativeControl()
 		{

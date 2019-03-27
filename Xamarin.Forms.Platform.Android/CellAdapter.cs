@@ -244,7 +244,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				var appCompatActivity = view.Context as AppCompatActivity;
 				if (appCompatActivity == null)
-					_actionMode = ((Activity)view.Context).StartActionMode(this);
+					_actionMode = view.Context.GetActivity().StartActionMode(this);
 				else
 					_supportActionMode = appCompatActivity.StartSupportActionMode(this);
 			}

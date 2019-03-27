@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Xamarin.Forms.Core.UITests
@@ -36,10 +37,15 @@ namespace Xamarin.Forms.Core.UITests
 			// renderer, then we *do* need to check the parent control for the property
 			// So we query the control's parent and see if it's a Container (legacy); if so, 
 			// we adjust the query to look at the parent of the current control
-			var parent = App.Query(appQuery => appQuery.Raw(ViewQuery + " parent * index:0"));
-			if (parent.Length > 0 && parent[0].Label.EndsWith(ContainerLabel))
+			//var text = Regex.Match(query, "'(?<text>[^']*)'").Groups["text"].Value;
+			//var parent = App.Query(appQuery => appQuery.Raw(ViewQuery + " parent * index:0"));
+			var parent = App.Query(appQuery => appQuery.Raw(ViewQuery).Parent());
+			//parent = App.Query(appQuery => appQuery.Raw(ViewQuery).Parent().Parent());
+
+			var parentElement = parent.FirstOrDefault(x => x.Label?.EndsWith(ContainerLabel) == true);
+			if (parentElement != null)
 			{
-				query = query + " parent * index:0";
+				query = query + $" parent * index:{Array.IndexOf(parent, parentElement)}";
 			}
 
 			return query;

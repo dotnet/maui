@@ -19,6 +19,7 @@ namespace Xamarin.Forms.Material.Android
 
 		MButton _downButton;
 		MButton _upButton;
+		bool _inputTransparent;
 
 		public MaterialStepperRenderer(Context context) : base(context)
 		{
@@ -61,6 +62,7 @@ namespace Xamarin.Forms.Material.Android
 			}
 
 			StepperRendererManager.UpdateButtons(this, _downButton, _upButton);
+			UpdateInputTransparent();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -68,6 +70,25 @@ namespace Xamarin.Forms.Material.Android
 			base.OnElementPropertyChanged(sender, e);
 
 			StepperRendererManager.UpdateButtons(this, _downButton, _upButton, e);
+
+			if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
+				UpdateInputTransparent();
+		}
+
+		void UpdateInputTransparent()
+		{
+			if (Element == null)
+				return;
+
+			_inputTransparent = Element.InputTransparent;
+		}
+
+		public override bool OnTouchEvent(MotionEvent e)
+		{
+			if (!Enabled || _inputTransparent)
+				return false;
+
+			return base.OnTouchEvent(e);
 		}
 
 		protected override void UpdateBackgroundColor()

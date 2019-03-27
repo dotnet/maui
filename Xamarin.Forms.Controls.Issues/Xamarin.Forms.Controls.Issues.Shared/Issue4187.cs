@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
+using System.Linq;
 
 #if UITEST
 using NUnit.Framework;
@@ -124,7 +125,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		Picker GenerateNewPicker()
 		{
-			var picker = new Picker();
+			var picker = new Picker() { ClassId = "PickerEditText" };
 			for (int i = 1; i < 100; i++)
 				picker.Items.Add($"item {i}");
 			return picker;
@@ -140,11 +141,17 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 #if UITEST && __ANDROID__
+
+		UITest.Queries.AppResult[] GetPickerEditText(UITest.IApp RunningApp) =>
+			RunningApp.Query(q => q.TextField()).Where(x => x.Class.Contains("PickerEditText")).ToArray();
+
 		[Test]
 		public void Issue4187Test()
 		{
 			RunningApp.WaitForElement("Text 1");
-			Assert.AreEqual(7, RunningApp.Query(q => q.TextField().Class("PickerEditText")).Length, "picker count");
+			UITest.Queries.AppResult[] fields = RunningApp.Query(q => q.TextField());
+
+			Assert.AreEqual(7, GetPickerEditText(RunningApp).Length, "picker count");
 			TapOnPicker(1);
 			Assert.IsTrue(DialogIsOpened(), "#1");
 			RunningApp.Tap("Text 2");
@@ -175,7 +182,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		void TapOnPicker(int index)
 		{
-			var picker = RunningApp.Query(q => q.TextField().Class("PickerEditText"))[index];
+			var picker = GetPickerEditText(RunningApp)[index];
 			var location = picker.Rect;
 			RunningApp.TapCoordinates(location.X + 10, location.Y + location.Height / 2);
 		}

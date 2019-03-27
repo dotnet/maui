@@ -5,6 +5,7 @@ using Android.Widget;
 using Xamarin.Forms;
 using Xamarin.Forms.Material.Android;
 using Xamarin.Forms.Platform.Android;
+using AView = Android.Views.View;
 
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Picker), typeof(MaterialPickerRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
 
@@ -20,6 +21,7 @@ namespace Xamarin.Forms.Material.Android
 		}
 
 		protected override EditText EditText => _textInputEditText;
+		protected override AView ControlUsedForAutomation => EditText;
 
 		protected override MaterialPickerTextInputLayout CreateNativeControl()
 		{
@@ -29,6 +31,12 @@ namespace Xamarin.Forms.Material.Android
 			_textInputEditText = _textInputLayout.FindViewById<MaterialPickerEditText>(Resource.Id.materialformsedittext);
 			
 			return _textInputLayout;
+		}
+
+		protected override void OnElementChanged(ElementChangedEventArgs<Picker> e)
+		{
+			base.OnElementChanged(e);
+			UpdateBackgroundColor();
 		}
 
 		protected override void UpdateBackgroundColor()
