@@ -40,8 +40,10 @@ namespace Xamarin.Forms.Material.Android
 		VisualElementRenderer _visualElementRenderer;
 		ButtonLayoutManager _buttonLayoutManager;
 		readonly AutomationPropertiesProvider _automationPropertiesProvider;
-		
-		public MaterialButtonRenderer(Context context)
+
+		public MaterialButtonRenderer(Context context) : this(context, null) { }
+
+		public MaterialButtonRenderer(Context context, BindableObject element)
 			: base(new ContextThemeWrapper(context, Resource.Style.XamarinFormsMaterialTheme))
 		{
 			_automationPropertiesProvider = new AutomationPropertiesProvider(this);
