@@ -107,12 +107,15 @@ namespace Xamarin.Forms.Platform.iOS
 				Url = new NSUrl(deepLinkUri.AppLinkUri.ToString())
 			};
 
-			using (var uiimage = await deepLinkUri.Thumbnail.GetNativeImageAsync())
+			if (deepLinkUri.Thumbnail != null)
 			{
-				if (uiimage == null)
-					throw new InvalidOperationException("AppLinkEntry Thumbnail must be set to a valid source");
+				using (var uiimage = await deepLinkUri.Thumbnail.GetNativeImageAsync())
+				{
+					if (uiimage == null)
+						throw new InvalidOperationException("AppLinkEntry Thumbnail must be set to a valid source");
 
-				searchableAttributeSet.ThumbnailData = uiimage.AsPNG();
+					searchableAttributeSet.ThumbnailData = uiimage.AsPNG();
+				}
 			}
 
 			return searchableAttributeSet;
