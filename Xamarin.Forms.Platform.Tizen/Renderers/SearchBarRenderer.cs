@@ -21,6 +21,10 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(SearchBar.PlaceholderColorProperty, PlaceholderColorPropertyHandler);
 			RegisterPropertyHandler(SearchBar.TextProperty, TextPropertyHandler);
 			RegisterPropertyHandler(SearchBar.TextColorProperty, TextColorPropertyHandler);
+			RegisterPropertyHandler(InputView.KeyboardProperty, UpdateKeyboard);
+			RegisterPropertyHandler(InputView.MaxLengthProperty, UpdateMaxLength);
+			RegisterPropertyHandler(InputView.IsSpellCheckEnabledProperty, UpdateIsSpellCheckEnabled);
+			RegisterPropertyHandler(InputView.IsReadOnlyProperty, UpdateIsReadOnly);
 		}
 
 
@@ -50,6 +54,8 @@ namespace Xamarin.Forms.Platform.Tizen
 
 				Control.TextChanged += OnTextChanged;
 				Control.Activated += OnActivated;
+				Control.PrependMarkUpFilter(MaxLengthFilter);
+
 			}
 			base.OnElementChanged(e);
 		}
@@ -170,6 +176,37 @@ namespace Xamarin.Forms.Platform.Tizen
 		void TextPropertyHandler()
 		{
 			Control.Text = Element.Text;
+		}
+
+		void UpdateKeyboard(bool initialize)
+		{
+			if (initialize && Element.Keyboard == Keyboard.Default)
+				return;
+			Control.UpdateKeyboard(Element.Keyboard, Element.IsSpellCheckEnabled, true);
+		}
+
+		void UpdateIsSpellCheckEnabled()
+		{
+			Control.InputHint = Element.Keyboard.ToInputHints(Element.IsSpellCheckEnabled, true);
+		}
+
+		void UpdateMaxLength()
+		{
+			if (Control.Text.Length > Element.MaxLength)
+				Control.Text = Control.Text.Substring(0, Element.MaxLength);
+		}
+
+		string MaxLengthFilter(ElmSharp.Entry entry, string s)
+		{
+			if (entry.Text.Length < Element.MaxLength)
+				return s;
+
+			return null;
+		}
+
+		void UpdateIsReadOnly()
+		{
+			Control.IsEditable = !Element.IsReadOnly;
 		}
 	}
 }
