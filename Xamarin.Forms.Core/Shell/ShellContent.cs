@@ -74,11 +74,6 @@ namespace Xamarin.Forms
 
 		void IShellContentController.RecyclePage(Page page)
 		{
-			if (ContentCache == page)
-			{
-				OnChildRemoved(page);
-				ContentCache = null;
-			}
 		}
 
 		Page _contentCache;
