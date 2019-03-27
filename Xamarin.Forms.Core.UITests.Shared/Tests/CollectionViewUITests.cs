@@ -280,7 +280,7 @@ namespace Xamarin.Forms.Core.UITests
 			}
 		}
 
-        [TestCase("EmptyView", "EmptyView (load simulation)", "photo")]
+		[TestCase("EmptyView", "EmptyView (load simulation)", "photo")]
         public void VisitAndCheckItem(string collectionTestName, string subgallery, string item)
         {
             VisitInitialGallery(collectionTestName);
@@ -290,5 +290,18 @@ namespace Xamarin.Forms.Core.UITests
 
             App.WaitForElement(t => t.Marked(item));
         }
+		
+        [TestCase("DataTemplate Galleries", "DataTemplateSelector")]
+        void VisitAndCheckForItems(string collectionTestName, string subGallery)
+        {
+            VisitInitialGallery(collectionTestName);
+            
+            App.WaitForElement(t => t.Marked(subGallery));
+            App.Tap(t => t.Marked(subGallery));
+
+            App.WaitForElement("weekend");
+            App.WaitForElement("weekday");
+        }
+        
     }
 }

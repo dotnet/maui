@@ -3,6 +3,8 @@ using Android.Content;
 using Android.Support.V7.Widget;
 using Android.Views;
 using Android.Widget;
+using Java.Lang;
+using Object = Java.Lang.Object;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -10,12 +12,24 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		public object EmptyView { get; set; }
 		public DataTemplate EmptyViewTemplate { get; set; }
+		protected readonly ItemsView ItemsView;
 
 		public override int ItemCount => 1;
 
-		public EmptyViewAdapter()
+		public EmptyViewAdapter(ItemsView itemsView)
 		{
 			CollectionView.VerifyCollectionViewFlagEnabled(nameof(EmptyViewAdapter));
+			ItemsView = itemsView;
+		}
+
+		public override void OnViewRecycled(Object holder)
+		{
+			if (holder is TemplatedItemViewHolder templatedItemViewHolder)
+			{
+				templatedItemViewHolder.Recycle(ItemsView);
+			}
+
+			base.OnViewRecycled(holder);
 		}
 
 		public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
@@ -25,20 +39,25 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			}
 
+			if (holder is TemplatedItemViewHolder templatedItemViewHolder)
+			{
+				// Use EmptyView as the binding context for the template
+				templatedItemViewHolder.Bind(EmptyView, ItemsView);
+			}
+
 			if (!(holder is EmptyViewHolder emptyViewHolder))
 			{
 				return;
 			}
-
-			// Use EmptyView as the binding context for the template
-			BindableObject.SetInheritedBindingContext(emptyViewHolder.View, EmptyView);
 		}
 
 		public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
 		{
 			var context = parent.Context;
 
-			if (EmptyViewTemplate == null)
+			var template = EmptyViewTemplate;
+
+			if (template == null)
 			{
 				if (!(EmptyView is View formsView))
 				{
@@ -47,29 +66,13 @@ namespace Xamarin.Forms.Platform.Android
 				}
 
 				// EmptyView is a Forms View; display that
-				var itemContentControl = new SizedItemContentView(CreateRenderer(formsView, context), context,
-					() => parent.Width, () => parent.Height);
+				var itemContentControl = new SizedItemContentView(context, () => parent.Width, () => parent.Height);
+				itemContentControl.RealizeContent(formsView);
 				return new EmptyViewHolder(itemContentControl, formsView);
 			}
 
-			// We have a template, so create a view from it
-			var templateElement = EmptyViewTemplate.CreateContent() as View;
-			var templatedItemContentControl = new SizedItemContentView(CreateRenderer(templateElement, context), 
-				context, () => parent.Width, () => parent.Height);
-			return new EmptyViewHolder(templatedItemContentControl, templateElement);
-		}
-
-		IVisualElementRenderer CreateRenderer(View view, Context context)
-		{
-			if (view == null)
-			{
-				throw new ArgumentNullException(nameof(view));
-			}
-
-			var renderer = Platform.CreateRenderer(view, context);
-			Platform.SetRenderer(view, renderer);
-
-			return renderer;
+			var itemContentView = new SizedItemContentView(parent.Context, () => parent.Width, () => parent.Height);
+			return new TemplatedItemViewHolder(itemContentView, template);
 		}
 
 		static TextView CreateTextView(string text, Context context)

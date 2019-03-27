@@ -8,8 +8,8 @@ namespace Xamarin.Forms.Platform.Android
 		readonly Func<int> _width;
 		readonly Func<int> _height;
 
-		public SizedItemContentView(IVisualElementRenderer content, Context context, Func<int> width, Func<int> height) 
-			: base(content, context)
+		public SizedItemContentView(Context context, Func<int> width, Func<int> height) 
+			: base(context)
 		{
 			_width = width;
 			_height = height;
@@ -17,6 +17,12 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
+			if (Content == null)
+			{
+				SetMeasuredDimension(0, 0);
+				return;
+			}
+
 			var targetWidth = _width();
 			var targetHeight = _height();
 

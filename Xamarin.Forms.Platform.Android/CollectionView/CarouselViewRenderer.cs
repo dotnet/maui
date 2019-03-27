@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Platform.Android
 			// So we give it an alternate delegate for creating the views
 
 			ItemsViewAdapter = new ItemsViewAdapter(ItemsView, 
-				(renderer, context) => new SizedItemContentView(renderer, context, () => Width, () => Height));
+				(view, context) => new SizedItemContentView(context, () => Width, () => Height));
 
 			SwapAdapter(ItemsViewAdapter, false);
 		}

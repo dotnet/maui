@@ -57,6 +57,9 @@
 	<Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="GalleryPages\CollectionViewGalleries\SelectionGalleries\PreselectedItemsGallery.xaml">
+       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="GalleryPages\CollectionViewGalleries\DataTemplateSelectorGallery.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="GalleryPages\MapWithItemsSourceGallery.xaml">

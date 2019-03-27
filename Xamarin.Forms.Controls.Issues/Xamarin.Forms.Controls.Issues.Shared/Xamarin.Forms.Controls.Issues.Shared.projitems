@@ -17,6 +17,10 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue4919.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5461.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CollectionViewBindingErrors.xaml.cs">
+      <DependentUpon>CollectionViewBindingErrors.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue2102.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1588.xaml.cs">
       <DependentUpon>Issue1588.xaml</DependentUpon>
@@ -1133,6 +1137,12 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue5003.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)CollectionViewBindingErrors.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </EmbeddedResource>
   </ItemGroup>
 </Project>

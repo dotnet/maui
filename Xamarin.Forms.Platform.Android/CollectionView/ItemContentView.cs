@@ -1,3 +1,4 @@
+using System;
 using Android.Content;
 using Android.Views;
 
@@ -5,21 +6,31 @@ namespace Xamarin.Forms.Platform.Android
 {
 	internal class ItemContentView : ViewGroup
 	{
-		protected readonly IVisualElementRenderer Content;
+		protected IVisualElementRenderer Content;
 
-		public ItemContentView(IVisualElementRenderer content, Context context) : base(context)
+		public ItemContentView(Context context) : base(context)
 		{
-			Content = content;
-			AddContent();
 		}
 
-		void AddContent()
+		internal void RealizeContent(View view)
 		{
+			Content = CreateRenderer(view, Context);
 			AddView(Content.View);
+		}
+
+		internal void Recycle()
+		{
+			RemoveView(Content.View);
+			Content = null;
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
+			if (Content == null)
+			{
+				return;
+			}
+
 			var size = Context.FromPixels(r - l, b - t);
 
 			Content.Element.Layout(new Rectangle(Point.Zero, size));
@@ -29,6 +40,12 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
+			if (Content == null)
+			{
+				SetMeasuredDimension(0, 0);
+				return;
+			}
+
 			int pixelWidth = MeasureSpec.GetSize(widthMeasureSpec);
 			int pixelHeight = MeasureSpec.GetSize(heightMeasureSpec);
 
@@ -52,6 +69,24 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			SetMeasuredDimension(pixelWidth, pixelHeight);
+		}
+
+		static IVisualElementRenderer CreateRenderer(View view, Context context)
+		{
+			if (view == null)
+			{
+				throw new ArgumentNullException(nameof(view));
+			}
+
+			if (context == null)
+			{
+				throw new ArgumentNullException(nameof(context));
+			}
+
+			var renderer = Platform.CreateRenderer(view, context);
+			Platform.SetRenderer(view, renderer);
+
+			return renderer;
 		}
 	}
 }
