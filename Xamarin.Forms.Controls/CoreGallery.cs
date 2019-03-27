@@ -580,6 +580,7 @@ namespace Xamarin.Forms.Controls
 
 			foreach (var page in Issues.Helpers.ViewHelper.GetAllPages())
 			{
+				page.Visual = VisualMarker.Default;
 				if (!DependencyService.Get<IRegistrarValidationService>().Validate(page, out string message))
 					throw new InvalidOperationException(message);
 			}

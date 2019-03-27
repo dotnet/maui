@@ -131,7 +131,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			AddView(_masterLayout);
 
-			var activity = Context as Activity;
+			var activity = Context.GetActivity();
 			activity?.ActionBar?.SetDisplayShowHomeEnabled(true);
 			activity?.ActionBar?.SetHomeButtonEnabled(true);
 

@@ -56,7 +56,7 @@ namespace Xamarin.Forms.Core.UITests
 		[Test]
 		[UiTest(typeof(Entry), "Completed")]
 		[Category(UITestCategories.UwpIgnore)]
-		public void Completed()
+		public virtual void Completed()
 		{
 			var remote = new EventViewContainerRemote(App, Test.Entry.Completed, PlatformViewType);
 			remote.GoTo();

@@ -180,6 +180,13 @@ namespace Xamarin.Forms.Core.UnitTests
 			}
 		}
 
+
+		[SetUp]
+		public void Setup()
+		{
+			VisualElement.SetDefaultVisual(VisualMarker.Default);
+		}
+
 		[Test]
 		public void TestConstructor ()
 		{

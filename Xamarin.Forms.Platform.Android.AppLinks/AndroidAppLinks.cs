@@ -76,9 +76,9 @@ namespace Xamarin.Forms.Platform.Android.AppLinks
 			FirebaseAppIndex.Instance.Update(indexable);
 			GMSTask gmsTask = FirebaseUserActions.Instance
 												 .Start(indexAction)
-												 .AddOnSuccessListener(Context as Activity,
+												 .AddOnSuccessListener(Context.GetActivity(),
 																	   new AndroidActionSuccessListener(appLink as AppLinkEntry, indexAction))
-												 .AddOnFailureListener(Context as Activity,
+												 .AddOnFailureListener(Context.GetActivity(),
 																	   new AndroidActionFailureListener(appLink as AppLinkEntry, indexAction));
 		}
 

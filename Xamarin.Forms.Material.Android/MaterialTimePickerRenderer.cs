@@ -5,6 +5,7 @@ using Android.Widget;
 using Xamarin.Forms;
 using Xamarin.Forms.Material.Android;
 using Xamarin.Forms.Platform.Android;
+using AView = Android.Views.View;
 
 
 namespace Xamarin.Forms.Material.Android
@@ -19,6 +20,7 @@ namespace Xamarin.Forms.Material.Android
 		}
 
 		protected override EditText EditText => _textInputEditText;
+		protected override AView ControlUsedForAutomation => EditText;
 
 		protected override MaterialPickerTextInputLayout CreateNativeControl()
 		{
@@ -35,6 +37,7 @@ namespace Xamarin.Forms.Material.Android
 		{
 			base.OnElementChanged(e);
 			_textInputLayout.SetHint(string.Empty, Element);
+			UpdateBackgroundColor();
 		}
 
 		protected override void UpdateBackgroundColor()

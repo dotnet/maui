@@ -183,7 +183,9 @@ namespace Xamarin.Forms.Internals
 				// Only go through this process if we have not registered something for this type;
 				// we don't want RenderWith renderers to override ExportRenderers that are already registered.
 				// Plus, there's no need to do this again if we already have a renderer registered.
-				if (!_handlers.TryGetValue(viewType, out Dictionary<Type, Type> visualRenderers) || !visualRenderers.ContainsKey(visualType))
+				if (!_handlers.TryGetValue(viewType, out Dictionary<Type, Type> visualRenderers) || 
+					!(visualRenderers.ContainsKey(visualType) ||
+					  visualRenderers.ContainsKey(_defaultVisualType)))
 				{
 					// get RenderWith attribute for just this type, do not inherit attributes from base types
 					var attribute = viewType.GetTypeInfo().GetCustomAttributes<RenderWithAttribute>(false).FirstOrDefault();

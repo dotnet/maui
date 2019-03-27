@@ -12,6 +12,7 @@ using Android.Widget;
 using Xamarin.Forms;
 using Xamarin.Forms.ControlGallery.Android;
 using Xamarin.Forms.Controls.Issues;
+using Xamarin.Forms.Platform.Android;
 using AView = Android.Views.View;
 
 [assembly: ExportRenderer(typeof(Bugzilla38989._38989CustomViewCell), typeof(_38989CustomViewCellRenderer))]
@@ -25,7 +26,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 			var nativeView = convertView;
 
 			if (nativeView == null)
-				nativeView = (context as Activity).LayoutInflater.Inflate(Resource.Layout.Layout38989, null);
+				nativeView = (context.GetActivity()).LayoutInflater.Inflate(Resource.Layout.Layout38989, null);
 
 			return nativeView;
 		}
