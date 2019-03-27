@@ -15,7 +15,6 @@
       <group>
         <dependency id="Xamarin.Forms" version="$version$"/>
         <dependency id="Newtonsoft.Json" version="10.0.3"/>
-        <dependency id="modernhttpclient" version="2.4.2"/>
       </group>
     </dependencies>
   </metadata>
