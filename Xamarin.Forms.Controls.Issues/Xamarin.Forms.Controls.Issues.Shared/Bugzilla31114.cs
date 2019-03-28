@@ -377,7 +377,7 @@ namespace Xamarin.Forms.Controls.Issues
 						}
 					}
 				}
-				catch (Exception ex)
+				catch 
 				{
 				}
 			}
@@ -396,7 +396,7 @@ namespace Xamarin.Forms.Controls.Issues
 							RefreshFromQuickComplete(this, new ListItemEventArgs(item));
 					}
 				}
-				catch (Exception ex)
+				catch
 				{
 
 				}

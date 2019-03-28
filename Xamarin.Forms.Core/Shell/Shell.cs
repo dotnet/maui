@@ -12,7 +12,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
-	[ContentProperty("Items")]
+	[ContentProperty(nameof(Items))]
 	public class Shell : Page, IShellController, IPropertyPropagationController
 	{
 		public static readonly BindableProperty BackButtonBehaviorProperty =
@@ -336,8 +336,8 @@ namespace Xamarin.Forms
 			var fragment = parseUri["f"].Value;
 
 			Element item = CurrentItem;
-			var list = new List<string> { url.Trim('/') };
-			while (item != null)
+			var list = new List<string>();
+			while (item != null && !(item is IApplicationController))
 			{
 				var route = Routing.GetRoute(item)?.Trim('/');
 				if (string.IsNullOrEmpty(route))
@@ -345,6 +345,13 @@ namespace Xamarin.Forms
 				list.Insert(0, route);
 				item = item.Parent;
 			}
+
+			var isGlobalRegisteredRoute = Routing.CompareWithRegisteredRoutes(url);
+			if (isGlobalRegisteredRoute)
+				list.RemoveRange(1, list.Count - 1);
+
+			list.Add(url.Trim('/'));
+
 			var parentUriBuilder = new UriBuilder(RouteScheme)
 			{
 				Path = string.Join("/", list),
@@ -364,6 +371,7 @@ namespace Xamarin.Forms
 			_accumulateNavigatedEvents = true;
 
 			var uri = state.Location.IsAbsoluteUri ? state.Location : GetAbsoluteUri(state.Location);
+
 			var queryString = uri.Query;
 			var queryData = ParseQueryString(queryString);
 			var path = uri.AbsolutePath;
@@ -372,7 +380,7 @@ namespace Xamarin.Forms
 
 			var parts = path.Substring(1).Split('/').ToList();
 
-			if (path.Length < 2)
+			if (parts.Count < 2)
 				throw new InvalidOperationException("Path must be at least 2 items long in Shell navigation");
 
 			var shellRoute = parts[0];
@@ -407,6 +415,18 @@ namespace Xamarin.Forms
 				}
 			}
 
+			if (Routing.CompareWithRegisteredRoutes(shellItemRoute))
+			{
+				var shellItem = ShellItem.GetShellItemFromRouteName(shellItemRoute);
+
+				ApplyQueryAttributes(shellItem, queryData, parts.Count == 1);
+
+				if (CurrentItem != shellItem)
+					SetValueFromRenderer(CurrentItemProperty, shellItem);
+
+				if (parts.Count > 0)
+					await ((IShellItemController)shellItem).GoToPart(parts, queryData);
+			}
 			_accumulateNavigatedEvents = false;
 
 			// this can be null in the event that no navigation actually took place!
@@ -546,6 +566,9 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty MenuItemTemplateProperty =
 			BindableProperty.Create(nameof(MenuItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime);
 
+		public static readonly BindableProperty FlyoutIconProperty =
+			BindableProperty.Create(nameof(FlyoutIcon), typeof(ImageSource), typeof(Shell), null);
+
 		ShellNavigatedEventArgs _accumulatedEvent;
 		bool _accumulateNavigatedEvents;
 		View _flyoutHeaderView;
@@ -566,6 +589,13 @@ namespace Xamarin.Forms
 
 		public event EventHandler<ShellNavigatedEventArgs> Navigated;
 		public event EventHandler<ShellNavigatingEventArgs> Navigating;
+
+
+		public ImageSource FlyoutIcon
+		{
+			get => (ImageSource)GetValue(FlyoutIconProperty);
+			set => SetValue(FlyoutIconProperty, value);
+		}
 
 		public ShellItem CurrentItem {
 			get => (ShellItem)GetValue(CurrentItemProperty);
@@ -610,6 +640,7 @@ namespace Xamarin.Forms
 		}
 
 		public ShellItemCollection Items => (ShellItemCollection)GetValue(ItemsProperty);
+		public ShellItemCollection Flyout => Items;
 
 		public DataTemplate ItemTemplate {
 			get => (DataTemplate)GetValue(ItemTemplateProperty);
@@ -895,7 +926,7 @@ namespace Xamarin.Forms
 		{
 			var page = WalkToPage(this);
 
-			while (page != this)
+			while (page != this && page != null)
 			{
 				if (page.IsSet(FlyoutBehaviorProperty))
 					return GetFlyoutBehavior(page);
@@ -1027,7 +1058,7 @@ namespace Xamarin.Forms
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, LogicalChildren);
-			if(FlyoutHeaderView != null)
+			if (FlyoutHeaderView != null)
 				PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { FlyoutHeaderView });
 		}
 		#endregion

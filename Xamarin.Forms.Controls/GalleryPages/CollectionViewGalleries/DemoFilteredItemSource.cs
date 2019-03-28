@@ -8,10 +8,11 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 	internal class DemoFilteredItemSource
 	{
 		readonly List<CollectionViewGalleryTestItem> _source;
+		private readonly Func<string, CollectionViewGalleryTestItem, bool> _filter;
 
 		public ObservableCollection<CollectionViewGalleryTestItem> Items { get; }
 
-		public DemoFilteredItemSource(int count = 50)
+		public DemoFilteredItemSource(int count = 50, Func<string, CollectionViewGalleryTestItem, bool> filter = null)
 		{
 			_source = new List<CollectionViewGalleryTestItem>();
 			
@@ -32,11 +33,18 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 					$"{images[n % images.Length]}, {n}", images[n % images.Length], n));
 			}
 			Items = new ObservableCollection<CollectionViewGalleryTestItem>(_source);
+
+			_filter = filter ?? ItemMatches;
+		}
+
+		private bool ItemMatches(string filter, CollectionViewGalleryTestItem item)
+		{
+			return item.Caption.ToLower().Contains(filter.ToLower());
 		}
 
 		public void FilterItems(string filter)
 		{
-			var filteredItems = _source.Where(item => item.Caption.ToLower().Contains(filter.ToLower())).ToList();
+			var filteredItems = _source.Where(item => _filter(filter, item)).ToList();
 
 			foreach (CollectionViewGalleryTestItem collectionViewGalleryTestItem in _source)
 			{

@@ -19,21 +19,12 @@ namespace Xamarin.Forms.Controls.Issues
 		public class Issue2927Cell : TextCell, INotifyPropertyChanged
 		{
 			int _numberOfTimesTapped;
-			string _text;
 			string _cellId;
 
 			public Issue2927Cell (string id)
 			{
 				_cellId = id;
 				NumberOfTimesTapped = 0;
-			}
-
-			void OnPropertyChanged (string prop)
-			{
-				var handler = PropertyChanged;
-				if (handler != null) {
-					handler(this, new PropertyChangedEventArgs(prop));
-				}
 			}
 
 			public int NumberOfTimesTapped
@@ -44,17 +35,6 @@ namespace Xamarin.Forms.Controls.Issues
 					Text = _cellId + " " + _numberOfTimesTapped.ToString ();
 				}
 			}
-
-			public string Text {
-				get { return _text; }
-				set { 
-					_text = value;
-					OnPropertyChanged ("Text");
-				}
-			}
-
-			public event PropertyChangedEventHandler PropertyChanged;
-
 		}
 
 		protected override void Init ()

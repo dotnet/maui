@@ -66,6 +66,25 @@ namespace Xamarin.Forms
 			}
 		}
 
+		public static float GetFontSizeNormal(Context context)
+		{
+			float size = 50;
+			if (!IsLollipopOrNewer)
+				return size;
+
+			// Android 5.0+
+			//this doesn't seem to work
+			using (var value = new TypedValue())
+			{
+				if (context.Theme.ResolveAttribute(Resource.Attribute.TextSize, value, true)) 
+				{
+					size = value.Data;
+				}
+			}
+
+			return size;
+		}
+
 		public static Color GetColorButtonNormal(Context context)
 		{
 			if (!_ColorButtonNormalSet)
@@ -99,18 +118,18 @@ namespace Xamarin.Forms
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetTitleBarVisibility(AndroidTitleBarVisibility visibility)
 		{
-			if ((Activity)Context == null)
+			if (Context.GetActivity() == null)
 				throw new NullReferenceException("Must be called after Xamarin.Forms.Forms.Init() method");
 
 			if (visibility == AndroidTitleBarVisibility.Never)
 			{
-				if (!((Activity)Context).Window.Attributes.Flags.HasFlag(WindowManagerFlags.Fullscreen))
-					((Activity)Context).Window.AddFlags(WindowManagerFlags.Fullscreen);
+				if (!Context.GetActivity().Window.Attributes.Flags.HasFlag(WindowManagerFlags.Fullscreen))
+					Context.GetActivity().Window.AddFlags(WindowManagerFlags.Fullscreen);
 			}
 			else
 			{
-				if (((Activity)Context).Window.Attributes.Flags.HasFlag(WindowManagerFlags.Fullscreen))
-					((Activity)Context).Window.ClearFlags(WindowManagerFlags.Fullscreen);
+				if (Context.GetActivity().Window.Attributes.Flags.HasFlag(WindowManagerFlags.Fullscreen))
+					Context.GetActivity().Window.ClearFlags(WindowManagerFlags.Fullscreen);
 			}
 		}
 

@@ -195,7 +195,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 #pragma warning disable 618
 				// Disabled the warning so we have a test that this obsolete stuff still works
-				Control.Adapter = new NativeListViewAdapter(Forms.Context as Activity, e.NewElement);
+				Control.Adapter = new NativeListViewAdapter(Forms.Context.GetActivity(), e.NewElement);
 #pragma warning restore 618
 				Control.ItemClick += Clicked;
 			}
@@ -215,7 +215,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 #pragma warning disable 618
 				// Disabled the warning so we have a test that this obsolete stuff still works
-				Control.Adapter = new NativeListViewAdapter(Forms.Context as Activity, Element);
+				Control.Adapter = new NativeListViewAdapter(Forms.Context.GetActivity(), Element);
 #pragma warning restore 618
 			}
 		}
@@ -293,7 +293,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 			if (view == null)
 			{// no view to re-use, create new
-				view = (context as Activity).LayoutInflater.Inflate(Resource.Layout.NativeAndroidCell, null);
+				view = (context.GetActivity()).LayoutInflater.Inflate(Resource.Layout.NativeAndroidCell, null);
 			}
 			else
 			{ // re-use, clear image
@@ -382,7 +382,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 				// subscribe
 #pragma warning disable 618
 				// Disabled the warning so we have a test that this obsolete stuff still works
-				Control.Adapter = new NativeAndroidListViewAdapter(Forms.Context as Activity, e.NewElement);
+				Control.Adapter = new NativeAndroidListViewAdapter(Forms.Context.GetActivity(), e.NewElement);
 #pragma warning restore 618
 				Control.ItemClick += Clicked;
 			}
@@ -407,7 +407,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 #pragma warning disable 618
 				// Disabled the warning so we have a test that this obsolete stuff still works
-				Control.Adapter = new NativeAndroidListViewAdapter(Forms.Context as Activity, Element);
+				Control.Adapter = new NativeAndroidListViewAdapter(Forms.Context.GetActivity(), Element);
 #pragma warning restore 618
 			}
 		}

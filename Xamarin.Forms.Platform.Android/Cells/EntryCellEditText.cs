@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void OnFocusChanged(bool gainFocus, FocusSearchDirection direction, Rect previouslyFocusedRect)
 		{
-			Window window = ((Activity)Context).Window;
+			Window window = Context.GetActivity().Window;
 			if (gainFocus)
 			{
 				_startingMode = window.Attributes.SoftInputMode;

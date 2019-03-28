@@ -9,10 +9,10 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		protected override void Init()
 		{
-			PushAsync(RootPage());
+			PushAsync(CreateRootPage());
 		}
 
-		ContentPage RootPage()
+		ContentPage CreateRootPage()
 		{
 			var activityIndicator = new ActivityIndicator {VerticalOptions = LayoutOptions.Center, 
 				IsRunning = true, IsVisible = true, WidthRequest = 200, HeightRequest = 100 };

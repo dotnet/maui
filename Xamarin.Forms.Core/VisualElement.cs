@@ -61,13 +61,20 @@ namespace Xamarin.Forms
 			BindableProperty.Create(nameof(Visual), typeof(IVisual), typeof(VisualElement), Forms.VisualMarker.MatchParent,
 									validateValue: (b, v) => v != null, propertyChanged: OnVisualChanged);
 
+		static IVisual _defaultVisual = Xamarin.Forms.VisualMarker.Default;
+		IVisual _effectiveVisual = _defaultVisual;
+
 		public IVisual Visual
 		{
 			get { return (IVisual)GetValue(VisualProperty); }
 			set { SetValue(VisualProperty, value); }
 		}
 
-		IVisual _effectiveVisual = Xamarin.Forms.VisualMarker.Default;
+		internal static void SetDefaultVisual(IVisual visual)
+		{
+			_defaultVisual = visual;
+		}
+
 		IVisual IVisualController.EffectiveVisual
 		{
 			get { return _effectiveVisual; }
@@ -392,12 +399,6 @@ namespace Xamarin.Forms
 			set => SetValue(ScaleYProperty, value);
 		}
 
-		public Style Style
-		{
-			get { return (Style)GetValue(StyleProperty); }
-			set { SetValue(StyleProperty, value); }
-		}
-
 		public int TabIndex
 		{
 			get => (int)GetValue(TabIndexProperty);
@@ -417,20 +418,6 @@ namespace Xamarin.Forms
 		protected virtual void OnTabStopPropertyChanged(bool oldValue, bool newValue) { }
 
 		protected virtual bool TabStopDefaultValueCreator() => true;
-
-		[TypeConverter(typeof(ListStringTypeConverter))]
-		public IList<string> StyleClass
-		{
-			get { return @class; }
-			set { @class = value; }
-		}
-
-		[TypeConverter(typeof(ListStringTypeConverter))]
-		public IList<string> @class
-		{
-			get { return _mergedStyle.StyleClass; }
-			set { _mergedStyle.StyleClass = value; }
-		}
 
 		public double TranslationX
 		{

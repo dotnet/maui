@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using Foundation;
 using UIKit;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	// TODO hartez 2018/06/01 14:17:00 Implement Dispose override ?	
 	// TODO hartez 2018/06/01 14:21:24 Add a method for updating the layout	
 	public class ItemsViewController : UICollectionViewController
 	{
@@ -16,6 +16,7 @@ namespace Xamarin.Forms.Platform.iOS
 		bool _safeForReload;
 		bool _wasEmpty;
 		bool _currentBackgroundIsEmptyView;
+		bool _disposed;
 
 		UIView _backgroundUIView;
 		UIView _emptyUIView;
@@ -57,6 +58,21 @@ namespace Xamarin.Forms.Platform.iOS
 				
 				// Reload the data so the currently visible cells get laid out according to the new layout
 				CollectionView.ReloadData();
+			}
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!_disposed)
+			{
+				if (disposing)
+				{
+					_itemsSource?.Dispose();
+				}
+
+				_disposed = true;
+
+				base.Dispose(disposing);
 			}
 		}
 
@@ -212,12 +228,22 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void ApplyTemplateAndDataContext(TemplatedCell cell, NSIndexPath indexPath)
 		{
-			// We need to create a renderer, which means we need a template
-			var view = _itemsView.ItemTemplate.CreateContent() as View;
-			_itemsView.AddLogicalChild(view);
+			var template = _itemsView.ItemTemplate;
+			var item = _itemsSource[indexPath.Row];
+
+			// Run this through the extension method in case it's really a DataTemplateSelector
+			template = template.SelectDataTemplate(item, _itemsView);
+
+			// Create the content and renderer for the view and 
+			var view = template.CreateContent() as View;
 			var renderer = CreateRenderer(view);
-			BindableObject.SetInheritedBindingContext(view, _itemsSource[indexPath.Row]);
 			cell.SetRenderer(renderer);
+
+			// Bind the view to the data item
+			view.BindingContext = _itemsSource[indexPath.Row];
+
+			// And make sure it's a "child" of the ItemsView
+			_itemsView.AddLogicalChild(view);
 		}
 
 		internal void RemoveLogicalChild(UICollectionViewCell cell)
@@ -342,6 +368,9 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (emptyViewTemplate != null)
 			{
+				// Run this through the extension method in case it's really a DataTemplateSelector
+				emptyViewTemplate = emptyViewTemplate.SelectDataTemplate(emptyView, _itemsView);
+
 				// We have a template; turn it into a Forms view 
 				var templateElement = emptyViewTemplate.CreateContent() as View;
 				var renderer = CreateRenderer(templateElement);

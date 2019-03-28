@@ -7,7 +7,12 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
-	[ContentProperty("Items")]
+	public class FlyoutItem : ShellItem
+	{
+		public ShellSectionCollection Tabs => Items;
+	}
+
+	[ContentProperty(nameof(Items))]
 	public class ShellItem : ShellGroupItem, IShellItemController, IElementConfiguration<ShellItem>, IPropertyPropagationController
 	{
 		#region PropertyKeys
@@ -120,6 +125,20 @@ namespace Xamarin.Forms
 
 			result.Route = Routing.GenerateImplicitRoute(shellSection.Route);
 
+			result.Items.Add(shellSection);
+			result.SetBinding(TitleProperty, new Binding(nameof(Title), BindingMode.OneWay, source: shellSection));
+			result.SetBinding(IconProperty, new Binding(nameof(Icon), BindingMode.OneWay, source: shellSection));
+			result.SetBinding(FlyoutDisplayOptionsProperty, new Binding(nameof(FlyoutDisplayOptions), BindingMode.OneTime, source: shellSection));
+			return result;
+		}
+
+		internal static ShellItem GetShellItemFromRouteName(string route)
+		{
+			var shellContent = new ShellContent { Route = route, Content = Routing.GetOrCreateContent(route) };
+			var result = new ShellItem();
+			var shellSection = new ShellSection();
+			shellSection.Items.Add(shellContent);
+			result.Route = Routing.GenerateImplicitRoute(shellSection.Route);
 			result.Items.Add(shellSection);
 			result.SetBinding(TitleProperty, new Binding(nameof(Title), BindingMode.OneWay, source: shellSection));
 			result.SetBinding(IconProperty, new Binding(nameof(Icon), BindingMode.OneWay, source: shellSection));

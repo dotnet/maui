@@ -15,14 +15,14 @@ namespace Xamarin.Forms.Maps.WPF
 			Geocoder.GetAddressesForPositionFuncAsync = GetAddressesForPositionAsync;
 		}
 
-		static async Task<IEnumerable<string>> GetAddressesForPositionAsync(Position position)
+		static Task<IEnumerable<string>> GetAddressesForPositionAsync(Position position)
 		{
-			return new List<string>();
+			return Task.FromResult<IEnumerable<string>>(new List<string>());
 		}
 
-		static async Task<IEnumerable<Position>> GetPositionsForAddress(string address)
+		static Task<IEnumerable<Position>> GetPositionsForAddress(string address)
 		{
-			return new List<Position>();
+			return Task.FromResult<IEnumerable<Position>>(new List<Position>());
 		}
 	}
 }

@@ -76,7 +76,9 @@ namespace Xamarin.Forms.Platform.iOS
 		void CreatePlaceholderLabel()
 		{
 			if (Control == null)
+			{
 				return;
+			}
 
 			Control.AddSubview(_placeholderLabel);
 

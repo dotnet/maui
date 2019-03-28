@@ -73,6 +73,7 @@ namespace Xamarin.Forms.Controls
 
         void Render()
         {
+#pragma warning disable 0618
             GL.ClearColor(0, 0, 0, 0);
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
@@ -82,6 +83,7 @@ namespace Xamarin.Forms.Controls
             GL.Vertex3(0.0, 0.6, 0.0);
             GL.Vertex3(-0.2, -0.3, 0.0);
             GL.Vertex3(0.2, -0.3, 0.0);
+#pragma warning restore 0618
 
             GL.End();
 

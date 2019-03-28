@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Controls.Issues
 		Label _result;
 		Label _instructions2;
 
-		ContentPage RootPage()
+		ContentPage CreateRootPage()
 		{
 			var page = new ContentPage();
 			page.Title = "GH1931 Root";
@@ -168,7 +168,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-			PushAsync(RootPage());
+			PushAsync(CreateRootPage());
 		}
 
 

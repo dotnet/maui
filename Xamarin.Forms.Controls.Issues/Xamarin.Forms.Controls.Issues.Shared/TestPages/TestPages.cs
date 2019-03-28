@@ -241,7 +241,7 @@ namespace Xamarin.Forms.Controls
 					RunningApp.TestServer.Get("version");
 					return;
 				}
-				catch (Exception ex)
+				catch 
 				{
 				}
 
@@ -368,7 +368,7 @@ namespace Xamarin.Forms.Controls
 		}
 
 		[TearDown]
-		public void TearDown()
+		public virtual void TearDown()
 		{
 			if (Isolate)
 			{
@@ -461,7 +461,7 @@ namespace Xamarin.Forms.Controls
 		}
 
 		[TearDown]
-		public void TearDown()
+		public virtual void TearDown()
 		{
 			if (Isolate)
 			{
@@ -551,7 +551,7 @@ namespace Xamarin.Forms.Controls
 		}
 
 		[TearDown]
-		public void TearDown()
+		public virtual void TearDown()
 		{
 			if (Isolate)
 			{

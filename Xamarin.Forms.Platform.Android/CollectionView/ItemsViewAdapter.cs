@@ -13,20 +13,21 @@ namespace Xamarin.Forms.Platform.Android
 	public class ItemsViewAdapter : RecyclerView.Adapter
 	{
 		protected readonly ItemsView ItemsView;
-		readonly Func<IVisualElementRenderer, Context, AView> _createView;
+		readonly Func<View, Context, ItemContentView> _createItemContentView;
 		internal readonly IItemsViewSource ItemsSource;
+		bool _disposed;
 
-		internal ItemsViewAdapter(ItemsView itemsView, Func<IVisualElementRenderer, Context, AView> createView = null)
+		internal ItemsViewAdapter(ItemsView itemsView, Func<View, Context, ItemContentView> createItemContentView = null)
 		{
 			CollectionView.VerifyCollectionViewFlagEnabled(nameof(ItemsViewAdapter));
 
 			ItemsView = itemsView;
-			_createView = createView;
+			_createItemContentView = createItemContentView;
 			ItemsSource = ItemsSourceFactory.Create(itemsView.ItemsSource, this);
 
-			if (_createView == null)
+			if (_createItemContentView == null)
 			{
-				_createView = (renderer, context) => new ItemContentView(renderer, context);
+				_createItemContentView = (view, context) => new ItemContentView(context);
 			}
 		}
 
@@ -34,7 +35,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (holder is TemplatedItemViewHolder templatedItemViewHolder)
 			{
-				ItemsView.RemoveLogicalChild(templatedItemViewHolder.View);
+				templatedItemViewHolder.Recycle(ItemsView);
 			}
 
 			base.OnViewRecycled(holder);
@@ -48,7 +49,7 @@ namespace Xamarin.Forms.Platform.Android
 					textViewHolder.TextView.Text = ItemsSource[position].ToString();
 					break;
 				case TemplatedItemViewHolder templatedItemViewHolder:
-					BindableObject.SetInheritedBindingContext(templatedItemViewHolder.View, ItemsSource[position]);
+					templatedItemViewHolder.Bind(ItemsSource[position], ItemsView);
 					break;
 			}
 		}
@@ -66,30 +67,8 @@ namespace Xamarin.Forms.Platform.Android
 				return new TextViewHolder(view);
 			}
 
-			// Realize the content, create a renderer out of it, and use that
-			var templateElement = (View)template.CreateContent();
-			ItemsView.AddLogicalChild(templateElement);
-			var itemContentControl = _createView(CreateRenderer(templateElement, context), context);
-
-			return new TemplatedItemViewHolder(itemContentControl, templateElement);
-		}
-
-		static IVisualElementRenderer CreateRenderer(View view, Context context)
-		{
-			if (view == null)
-			{
-				throw new ArgumentNullException(nameof(view));
-			}
-
-			if (context == null)
-			{
-				throw new ArgumentNullException(nameof(context));
-			}
-
-			var renderer = Platform.CreateRenderer(view, context);
-			Platform.SetRenderer(view, renderer);
-
-			return renderer;
+			var itemContentView = new ItemContentView(parent.Context);
+			return new TemplatedItemViewHolder(itemContentView, template);
 		}
 
 		public override int ItemCount => ItemsSource.Count;
@@ -102,6 +81,21 @@ namespace Xamarin.Forms.Platform.Android
 			// Then we don't have to check _itemsView.ItemTemplate == null in OnCreateViewHolder, we can just use
 			// the viewType parameter.
 			return 42;
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (!_disposed)
+			{
+				if (disposing)
+				{
+					ItemsSource?.Dispose();
+				}
+
+				_disposed = true;
+
+				base.Dispose(disposing);
+			}
 		}
 
 		public virtual int GetPositionForItem(object item)

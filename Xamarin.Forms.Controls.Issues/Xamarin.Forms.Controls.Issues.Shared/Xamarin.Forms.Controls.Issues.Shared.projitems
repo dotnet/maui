@@ -11,12 +11,17 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Issue5555.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59172.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue5376.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60787.xaml.cs">
       <DependentUpon>Bugzilla60787.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue4919.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5461.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CollectionViewBindingErrors.xaml.cs">
+      <DependentUpon>CollectionViewBindingErrors.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue2102.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1588.xaml.cs">
       <DependentUpon>Issue1588.xaml</DependentUpon>
@@ -576,8 +581,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue4748.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)VisualControlsPage.xaml.cs">
       <SubType>Code</SubType>
-      <DependentUpon>%(Filename)</DependentUpon>
+      <DependentUpon>VisualControlsPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Issue5470.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_Template.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla56298.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42620.cs" />
@@ -1022,7 +1028,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)VisualControlsPage.xaml">
       <SubType>Designer</SubType>
-       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue4356.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
@@ -1133,6 +1139,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue5003.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)CollectionViewBindingErrors.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </EmbeddedResource>

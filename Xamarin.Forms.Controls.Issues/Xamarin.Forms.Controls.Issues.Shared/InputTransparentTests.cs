@@ -23,7 +23,6 @@ namespace Xamarin.Forms.Controls.Issues
 	public class InputTransparentTests : TestNavigationPage
 	{
 		const string TargetAutomationId = "inputtransparenttarget";
-		ContentPage _menu;
 
 #if UITEST
 		[Test, TestCaseSource(nameof(TestCases))]
@@ -51,29 +50,28 @@ namespace Xamarin.Forms.Controls.Issues
 
 			// Tap the control
 			var y = target.CenterY;
+			var x = target.CenterX;
 
 			// In theory we want to tap the center of the control. But Stepper lays out differently than the other controls,
 			// (it doesn't center vertically within its layout), so we need to adjust for it until someone fixes it
 			if (menuItem == "Stepper")
 			{
 				y = target.Y;
+				x = target.X;
 			}
 
-			RunningApp.TapCoordinates(target.CenterX, y);
+			RunningApp.TapCoordinates(x, y);
 
 			if(menuItem == nameof(DatePicker) || menuItem == nameof(TimePicker))
 			{
 				// These controls show a pop-up which we have to cancel/done out of before we can continue
 #if __ANDROID__
-				var cancelButtonText = "Cancel";
 				System.Threading.Tasks.Task.Delay(1000).Wait();
 				RunningApp.Back();
 #elif __IOS__
 				var cancelButtonText = "Done";
 				RunningApp.WaitForElement(q => q.Marked(cancelButtonText));
 				RunningApp.Tap(q => q.Marked(cancelButtonText));
-#else
-				var cancelButtonText = "Cancel";
 #endif
 			}
 
@@ -158,11 +156,6 @@ namespace Xamarin.Forms.Controls.Issues
 
 		ContentPage BuildMenu()
 		{
-			if (_menu != null)
-			{
-				return _menu;
-			}
-
 			var layout = new Grid
 			{
 				VerticalOptions = LayoutOptions.Fill, HorizontalOptions = LayoutOptions.Fill,

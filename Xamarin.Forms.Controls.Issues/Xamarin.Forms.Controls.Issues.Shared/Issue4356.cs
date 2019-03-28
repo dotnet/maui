@@ -74,7 +74,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var articlelistingitem = mi.CommandParameter;
 
 			if (articlelistingitem != null)
-				DisplayAlert("Alert", "I'm not deleting just refreshing...", "Ok");
+				await DisplayAlert("Alert", "I'm not deleting just refreshing...", "Ok");
 			ViewModel.LoadFavoritesCommand.Execute(null);
 		}
 

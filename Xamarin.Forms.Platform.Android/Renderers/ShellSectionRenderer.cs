@@ -41,14 +41,18 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 
 			var stack = shellSection.Stack.ToList();
-			bool result = ((IShellController)_shellContext.Shell).ProposeNavigation(ShellNavigationSource.ShellContentChanged, 
+			bool result = ((IShellController)_shellContext.Shell).ProposeNavigation(ShellNavigationSource.ShellContentChanged,
 				(ShellItem)shellSection.Parent, shellSection, shellContent, stack, true);
 
 			if (result)
 			{
+				var page = ((IShellContentController)shellContent).Page;
+				if (page == null)
+					throw new ArgumentNullException(nameof(page), "Shell Content Page is Null");
+
 				ShellSection.SetValueFromRenderer(ShellSection.CurrentItemProperty, shellContent);
 
-				_toolbarTracker.Page = ((IShellContentController)shellContent).Page;
+				_toolbarTracker.Page = page;
 			}
 			else
 			{

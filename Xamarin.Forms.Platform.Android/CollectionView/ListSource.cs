@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	internal class ListSource : List<object>, IItemsViewSource
+	sealed class ListSource : List<object>, IItemsViewSource
 	{
 		public ListSource()
 		{
@@ -20,6 +20,11 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				Add(item);
 			}
+		}
+
+		public void Dispose()
+		{
+			
 		}
 	}
 }

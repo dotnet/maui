@@ -11,8 +11,8 @@ namespace Xamarin.Forms.Platform.Android
 		protected readonly SelectableItemsView SelectableItemsView;
 		List<SelectableViewHolder> _currentViewHolders = new List<SelectableViewHolder>();
 
-		internal SelectableItemsViewAdapter(SelectableItemsView selectableItemsView, 
-			Func<IVisualElementRenderer, Context, global::Android.Views.View> createView = null) : base(selectableItemsView, createView)
+		internal SelectableItemsViewAdapter(SelectableItemsView selectableItemsView,
+			Func<View, Context, ItemContentView> createView = null) : base(selectableItemsView, createView)
 		{
 			SelectableItemsView = selectableItemsView;
 		}

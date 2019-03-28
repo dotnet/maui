@@ -80,7 +80,10 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				_scrollEnabled = scrollEnabled;
 				CreateHeaderPage();
+#pragma warning disable 4014
+				// The lack of `await` here is from the original repro code and is intentional
 				DisplayPage();
+#pragma warning restore 4014
 			}
 
 			void CreateHeaderPage()

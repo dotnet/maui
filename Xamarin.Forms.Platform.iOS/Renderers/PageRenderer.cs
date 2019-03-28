@@ -258,7 +258,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateShellInsetPadding()
 		{
-			var setInsets = Shell.GetSetPaddingInsets(Element);
+			var setInsets = Shell.GetSetPaddingInsets(Element) || Shell.GetSetPaddingInsets(Element?.Parent);
 			if (setInsets)
 			{
 				nfloat topPadding = 0;

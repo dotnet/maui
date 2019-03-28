@@ -18,8 +18,6 @@ namespace Xamarin.Forms.Controls.Issues
 	[Issue (IssueTracker.Github, 264, "PopModal NRE", PlatformAffected.Android | PlatformAffected.iOS)]
 	public class Issue264 : TestContentPage
 	{
-		Page _current;
-
 		protected override void Init ()
 		{
 			var aboutBtn = new Button {

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
@@ -61,7 +62,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			_context = context;
 		}
-		
+
 		public async void OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
 		{
 			_flyoutBehavior = behavior;
@@ -180,9 +181,12 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			List<UIBarButtonItem> items = new List<UIBarButtonItem>();
-			foreach (var item in Page.ToolbarItems)
+			if (Page != null)
 			{
-				items.Add(item.ToUIBarButtonItem(false, true));
+				foreach (var item in Page.ToolbarItems)
+				{
+					items.Add(item.ToUIBarButtonItem(false, true));
+				}
 			}
 
 			items.Reverse();
@@ -195,29 +199,58 @@ namespace Xamarin.Forms.Platform.iOS
 				var commandParameter = behavior.CommandParameter;
 				var image = behavior.IconOverride;
 				var enabled = behavior.IsEnabled;
+
 				if (image == null)
 				{
 					var text = BackButtonBehavior.TextOverride;
 					NavigationItem.LeftBarButtonItem =
-						new UIBarButtonItem(text, UIBarButtonItemStyle.Plain, (s, e) => command?.Execute(commandParameter)) { Enabled = enabled };
+						new UIBarButtonItem(text, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, command, commandParameter, IsRootPage)) { Enabled = enabled };
 				}
 				else
 				{
 					var icon = await image.GetNativeImageAsync();
 					NavigationItem.LeftBarButtonItem =
-						new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => command?.Execute(commandParameter)) { Enabled = enabled };
+						new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, command, commandParameter, IsRootPage)) { Enabled = enabled };
 				}
 			}
 			else if (IsRootPage && _flyoutBehavior == FlyoutBehavior.Flyout)
 			{
-				ImageSource image = "3bar.png";
-				var icon = await image.GetNativeImageAsync();
-				NavigationItem.LeftBarButtonItem = new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, OnMenuButtonPressed);
+
+				await SetDrawerArrowDrawableFromFlyoutIcon();
 			}
 			else
 			{
 				NavigationItem.LeftBarButtonItem = null;
 			}
+		}
+
+		static void LeftBarButtonItemHandler(UIViewController controller, ICommand command, object commandParameter, bool isRootPage)
+		{
+			if (command == null && !isRootPage && controller?.ParentViewController is UINavigationController navigationController)
+			{
+				navigationController.PopViewController(true);
+				return;
+			}
+			command?.Execute(commandParameter);
+		}
+
+		async Task SetDrawerArrowDrawableFromFlyoutIcon()
+		{
+			Element item = Page;
+			ImageSource image = null;
+			while (!Application.IsApplicationOrNull(item))
+			{
+				if (item is IShellController shell)
+				{
+					image = shell.FlyoutIcon;
+					item = null;
+				}
+				item = item?.Parent;
+			}
+			if (image == null)
+				image = "3bar.png";
+			var icon = await image.GetNativeImageAsync();
+			NavigationItem.LeftBarButtonItem = new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, OnMenuButtonPressed);
 		}
 
 		void OnMenuButtonPressed(object sender, EventArgs e)

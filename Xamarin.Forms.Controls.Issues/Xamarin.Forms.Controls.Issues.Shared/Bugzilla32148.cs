@@ -31,7 +31,10 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			Title = "Contacts";
 			Content = CreateContent();
+
+#pragma warning disable 4014
 			LoadContactsAsync();
+#pragma warning restore 4014
 		}
 
 		Layout CreateContent()

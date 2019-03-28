@@ -12,7 +12,11 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
-	[ContentProperty("Content")]
+	public class TabContent : ShellContent
+	{
+	}
+
+	[ContentProperty(nameof(Content))]
 	public class ShellContent : BaseShellItem, IShellContentController
 	{
 		static readonly BindablePropertyKey MenuItemsPropertyKey =
@@ -74,11 +78,6 @@ namespace Xamarin.Forms
 
 		void IShellContentController.RecyclePage(Page page)
 		{
-			if (ContentCache == page)
-			{
-				OnChildRemoved(page);
-				ContentCache = null;
-			}
 		}
 
 		Page _contentCache;

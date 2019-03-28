@@ -29,28 +29,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			_measured = true;
 
-			if (Control.Source is BitmapSource bitmap)
-			{
-				return new SizeRequest(
-					new Size
-					{
-						Width = bitmap.PixelWidth,
-						Height = bitmap.PixelHeight
-					});
-			}
-			else if (Control.Source is CanvasImageSource canvas)
-			{
-				return new SizeRequest(
-					new Size
-					{
-						Width = canvas.SizeInPixels.Width,
-						Height = canvas.SizeInPixels.Height
-					});
-			}
-			else
-			{
-				throw new InvalidCastException($"\"{Control.Source.GetType().FullName}\" is not supported.");
-			}
+			return Control.Source.GetDesiredSize();
 		}
 
 		protected override void Dispose(bool disposing)

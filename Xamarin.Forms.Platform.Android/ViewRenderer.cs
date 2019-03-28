@@ -57,6 +57,7 @@ namespace Xamarin.Forms.Platform.Android
 		SoftInput _startingInputMode;
 
 		public TNativeView Control { get; private set; }
+		protected virtual AView ControlUsedForAutomation => Control;
 
 		AView ITabStop.TabStop => Control;
 
@@ -108,7 +109,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (isInViewCell)
 				{
-					Window window = ((Activity)Context).Window;
+					Window window = Context.GetActivity().Window;
 					if (hasFocus)
 					{
 						_startingInputMode = window.Attributes.SoftInputMode;
@@ -143,6 +144,12 @@ namespace Xamarin.Forms.Platform.Android
 				{
 					Control.OnFocusChangeListener = null;
 				}
+
+				if (Element != null && _focusChangeHandler != null)
+				{
+					Element.FocusChangeRequested -= _focusChangeHandler;
+				}
+				_focusChangeHandler = null;
 			}
 
 			base.Dispose(disposing);
@@ -158,17 +165,8 @@ namespace Xamarin.Forms.Platform.Android
 					}
 					_container = null;
 				}
-
-				if (Element != null && _focusChangeHandler != null)
-				{
-					Element.FocusChangeRequested -= _focusChangeHandler;
-				
-				}
-				_focusChangeHandler = null;
 				_disposed = true;
 			}
-
-			
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<TView> e)
@@ -224,7 +222,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			ContentDescription = id + "_Container";
-			AutomationPropertiesProvider.SetAutomationId(Control, Element, id);
+			AutomationPropertiesProvider.SetAutomationId(ControlUsedForAutomation, Element, id);
 		}
 
 		protected override void SetContentDescription()
@@ -236,7 +234,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			AutomationPropertiesProvider.SetContentDescription(
-				Control, Element, ref _defaultContentDescription, ref _defaultHint);
+				ControlUsedForAutomation, Element, ref _defaultContentDescription, ref _defaultHint);
 		}
 
 		protected override void SetFocusable()
@@ -247,7 +245,7 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			}
 
-			AutomationPropertiesProvider.SetFocusable(Control, Element, ref _defaultFocusable);
+			AutomationPropertiesProvider.SetFocusable(ControlUsedForAutomation, Element, ref _defaultFocusable);
 		}
 
 		protected void SetNativeControl(TNativeView control)

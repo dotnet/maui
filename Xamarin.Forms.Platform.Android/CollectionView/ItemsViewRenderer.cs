@@ -31,6 +31,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		EmptyViewAdapter _emptyViewAdapter;
 		DataChangeObserver _dataChangeViewObserver;
+		bool _watchingForEmpty;
 
 		public ItemsViewRenderer(Context context) : base(context)
 		{
@@ -214,7 +215,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			// Stop watching the old adapter to see if it's empty (if we _are_ watching)
 			Unwatch(ItemsViewAdapter ?? GetAdapter());
-			
+
 			UpdateAdapter();
 
 			UpdateEmptyView();
@@ -228,22 +229,30 @@ namespace Xamarin.Forms.Platform.Android
 
 		void Unwatch(Adapter adapter)
 		{
-			if (adapter != null && _dataChangeViewObserver != null)
+			if (_watchingForEmpty && adapter != null && _dataChangeViewObserver != null)
 			{
 				adapter.UnregisterAdapterDataObserver(_dataChangeViewObserver);
 			}
+
+			_watchingForEmpty = false;
 		}
 
 		// TODO hartez 2018/10/24 19:25:14 I don't like these method names; too generic 	
 		// TODO hartez 2018/11/05 22:37:42 Also, thinking all the EmptyView stuff should be moved to a helper	
 		void Watch(Adapter adapter)
 		{
+			if (_watchingForEmpty)
+			{
+				return;
+			}
+
 			if (_dataChangeViewObserver == null)
 			{
 				_dataChangeViewObserver = new DataChangeObserver(UpdateEmptyViewVisibility);
 			}
 
 			adapter.RegisterAdapterDataObserver(_dataChangeViewObserver);
+			_watchingForEmpty = true;
 		}
 
 		protected virtual void SetUpNewElement(ItemsView newElement)
@@ -369,7 +378,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual void UpdateEmptyView()
 		{
-			if (ItemsViewAdapter == null)
+			if (ItemsViewAdapter == null || ItemsView == null)
 			{
 				return;
 			}
@@ -381,7 +390,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				if (_emptyViewAdapter == null)
 				{
-					_emptyViewAdapter = new EmptyViewAdapter();
+					_emptyViewAdapter = new EmptyViewAdapter(ItemsView);
 				}
 
 				_emptyViewAdapter.EmptyView = emptyView;

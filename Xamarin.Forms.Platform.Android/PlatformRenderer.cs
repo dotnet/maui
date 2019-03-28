@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (e.Action != MotionEventActions.Up)
 				return base.DispatchTouchEvent(e);
 
-			global::Android.Views.View currentView = ((Activity)Context).CurrentFocus;
+			global::Android.Views.View currentView = Context.GetActivity().CurrentFocus;
 			bool result = base.DispatchTouchEvent(e);
 
 			do
@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Platform.Android
 				if (!(currentView is EditText))
 					break;
 
-				global::Android.Views.View newCurrentView = ((Activity)Context).CurrentFocus;
+				global::Android.Views.View newCurrentView = Context.GetActivity().CurrentFocus;
 
 				if (currentView != newCurrentView)
 					break;
@@ -61,7 +61,7 @@ namespace Xamarin.Forms.Platform.Android
 					break;
 
 				Context.HideKeyboard(currentView);
-				((Activity)Context).Window.DecorView.ClearFocus();
+				Context.GetActivity().Window.DecorView.ClearFocus();
 			} while (false);
 
 			return result;

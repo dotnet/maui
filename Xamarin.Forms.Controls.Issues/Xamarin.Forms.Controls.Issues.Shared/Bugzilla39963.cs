@@ -27,10 +27,12 @@ namespace Xamarin.Forms.Controls.Issues
 						<p>This only happens when a local image is loaded.</p>
 						</body></html>";
 
+#pragma warning disable 0219
 			var workingHtml = @"<html><body>
 						<p></p>
 						<p>Without local image, everything works fine.</p>
 						</body></html>";
+#pragma warning restore 0219
 
 			WebView webView = new WebView {
 				Source = new HtmlWebViewSource() {

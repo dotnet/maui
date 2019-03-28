@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Controls.XamStore
 		public BasePage(string title, Color tint)
 		{
 			Title = title;
-
+			Shell.SetShellForegroundColor(this, tint);
 			var grid = new Grid()
 			{
 				Padding = 20,
@@ -209,13 +209,39 @@ namespace Xamarin.Forms.Controls.XamStore
 						Navigation.PushAsync(page);
 					}),
 				2, 14);
-
+			
 			grid.Children.Add(MakeButton("Show Alert",
 				async () => {
 					var result = await DisplayAlert("Title", "Message", "Ok", "Cancel");
 					Console.WriteLine($"Alert result: {result}");
 				}), 0, 15);
 
+			grid.Children.Add(MakeButton("Navigate to 'demo' route",
+				async () => await Shell.CurrentShell.GoToAsync("demo", true)),
+			1, 15);
+
+			grid.Children.Add(MakeButton("Go Back with Text",
+			async () => {
+					var page = (Page)Activator.CreateInstance(GetType());
+					Shell.SetShellForegroundColor(page, Color.Pink);
+					Shell.SetBackButtonBehavior(page, new BackButtonBehavior()
+					{
+						//IconOverride = "calculator.png",
+						
+						TextOverride = "back"
+					});
+					await Navigation.PushAsync(page);
+				}),2, 15);
+
+			grid.Children.Add(new Label {
+				Text = "Navigate to",
+				VerticalOptions = LayoutOptions.CenterAndExpand
+			}, 0, 16);
+			var navEntry = new Entry { Text = "demo/demo" };
+			grid.Children.Add(navEntry, 1, 16);
+			grid.Children.Add(MakeButton("GO!",
+				async () => await Shell.CurrentShell.GoToAsync(navEntry.Text, true)),
+			2, 16);
 
 			Content = new ScrollView { Content = grid };
 
@@ -282,7 +308,7 @@ namespace Xamarin.Forms.Controls.XamStore
 			});
 		}
 
-		private class CustomSearchHandler : SearchHandler
+		internal class CustomSearchHandler : SearchHandler
 		{
 			protected async override void OnQueryChanged(string oldValue, string newValue)
 			{

@@ -4,6 +4,7 @@ using Android.Content;
 using Android.Util;
 using Android.Views.InputMethods;
 using AApplicationInfoFlags = Android.Content.PM.ApplicationInfoFlags;
+using AActivity = Android.App.Activity;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -80,6 +81,20 @@ namespace Xamarin.Forms.Platform.Android
 
 			using (DisplayMetrics metrics = context.Resources.DisplayMetrics)
 				s_displayDensity = metrics.Density;
+		}
+
+		public static AActivity GetActivity(this Context context)
+		{
+			if (context == null)
+				return null;
+
+			if (context is AActivity activity)
+				return activity;
+
+			if (context is ContextWrapper contextWrapper)
+				return contextWrapper.BaseContext.GetActivity();
+
+			return null;
 		}
 	}
 }
