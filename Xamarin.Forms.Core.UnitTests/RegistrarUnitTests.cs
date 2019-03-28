@@ -20,6 +20,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			
 		}
 	}
+
 	public class VisualMarkerUnitTests : IVisual { }
 	public class RegisteredWithNobodyMarker : IVisual { }
 
@@ -30,7 +31,18 @@ namespace Xamarin.Forms.Core.UnitTests
 	internal class RenderWithChildTarget : IRegisterable { }
 	internal class RenderWithSetAsNewDefault : IRegisterable { }
 
-	internal class VisualButtonTarget : IRegisterable { }
+	internal class VisualButtonTarget : IRegisterable
+	{
+		public object Param1 { get; }
+		public object Param2 { get; }
+
+		public VisualButtonTarget() { }
+		public VisualButtonTarget(object param1, object param2) {
+			Param1 = param1;
+			Param2 = param2;
+		}
+	}
+
 	internal class VisualSliderTarget : IRegisterable { }
 	internal class ButtonChildTarget : IRegisterable { }
 	internal class ButtonChild : Button, IRegisterable { }
@@ -113,6 +125,18 @@ namespace Xamarin.Forms.Core.UnitTests
 			buttonTarget = Internals.Registrar.Registered.GetHandler(typeof(Button));
 			Assert.IsNotNull(buttonTarget);
 			Assert.That(buttonTarget, Is.InstanceOf<ButtonTarget>());
+
+
+			Button button = new Button();
+			object someObject = new object();
+			buttonTarget = Internals.Registrar.Registered.GetHandler(typeof(Button), button, new VisualMarkerUnitTests(), someObject);
+			Assert.IsNotNull(buttonTarget);
+			Assert.That(buttonTarget, Is.InstanceOf<VisualButtonTarget>());
+
+			var visualButtonTarget = (VisualButtonTarget)buttonTarget;
+			Assert.AreEqual(visualButtonTarget.Param1, someObject);
+			Assert.AreEqual(visualButtonTarget.Param2, button);
+
 		}
 
 		[Test]
