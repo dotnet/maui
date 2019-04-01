@@ -152,4 +152,14 @@ namespace Xamarin.Forms.Controls.GalleryPages
 			}
 		}
 	}
+
+	class MapItemTemplateSelector : DataTemplateSelector
+	{
+		public DataTemplate DataTemplate { get; set; }
+
+		protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
+		{
+			return DataTemplate;
+		}
+	}
 }

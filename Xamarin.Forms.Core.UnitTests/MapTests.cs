@@ -11,140 +11,148 @@ namespace Xamarin.Forms.Core.UnitTests
 	public class MapTests : BaseTestFixture
 	{
 		[Test]
-		public void AddPin ()
+		public void AddPin()
 		{
-			var map = new Map ();
+			var map = new Map();
 
-			var home = new Pin {
+			var home = new Pin
+			{
 				Label = "Home",
-				Position = new Position (88, 2),
+				Position = new Position(88, 2),
 				Type = PinType.Place,
 				Address = "123 My Place"
 			};
 
-			map.Pins.Add (home);
+			map.Pins.Add(home);
 
-			Assert.AreEqual (map.Pins.Count, 1);
-			Assert.AreEqual (map.Pins[0].Label, "Home");
-			var mall = new Pin {
+			Assert.AreEqual(map.Pins.Count, 1);
+			Assert.AreEqual(map.Pins[0].Label, "Home");
+			var mall = new Pin
+			{
 				Label = "Mall",
-				Position = new Position (-12, -67),
+				Position = new Position(-12, -67),
 				Type = PinType.Place,
 				Address = "123 Fun"
 			};
 
-			map.Pins.Add (mall);
+			map.Pins.Add(mall);
 
-			Assert.AreEqual (map.Pins.Count, 2);
-			Assert.AreEqual (map.Pins[1].Position.Latitude, -12);
+			Assert.AreEqual(map.Pins.Count, 2);
+			Assert.AreEqual(map.Pins[1].Position.Latitude, -12);
 		}
 
 		[Test]
-		public void AddPinWithoutName ()
+		public void AddPinWithoutName()
 		{
-			var map = new Map ();
-			var noNamePin = new Pin {
-				Position = new Position (50, 50),
+			var map = new Map();
+			var noNamePin = new Pin
+			{
+				Position = new Position(50, 50),
 				Type = PinType.Generic,
 				Address = "123 Fun"
 			};
 
-			var exception = Assert.Throws<ArgumentException> (() => map.Pins.Add (noNamePin));
-			Assert.That (exception.Message, Is.EqualTo ("Pin must have a Label to be added to a map"));
+			var exception = Assert.Throws<ArgumentException>(() => map.Pins.Add(noNamePin));
+			Assert.That(exception.Message, Is.EqualTo("Pin must have a Label to be added to a map"));
 		}
 
 		[Test]
-		public void AddPinWithoutAddress ()
+		public void AddPinWithoutAddress()
 		{
-			var map = new Map ();
-			var noAddressPin = new Pin {
-				Position = new Position (37.9, -20.87),
+			var map = new Map();
+			var noAddressPin = new Pin
+			{
+				Position = new Position(37.9, -20.87),
 				Label = "I have no address",
 				Type = PinType.SearchResult
 			};
 
-			map.Pins.Add (noAddressPin);
-			Assert.AreEqual (map.Pins.Count, 1);
-			Assert.AreEqual (map.Pins[0].Label, "I have no address");
-			Assert.AreEqual (map.Pins[0].Address, null);
+			map.Pins.Add(noAddressPin);
+			Assert.AreEqual(map.Pins.Count, 1);
+			Assert.AreEqual(map.Pins[0].Label, "I have no address");
+			Assert.AreEqual(map.Pins[0].Address, null);
 		}
 
 		[Test]
-		public void Constructor ()
+		public void Constructor()
 		{
-			var center = new Position (15.5, 176);
-			var span = new MapSpan (center, 1, 2);
-			var map = new Map (span);
+			var center = new Position(15.5, 176);
+			var span = new MapSpan(center, 1, 2);
+			var map = new Map(span);
 
-			Assert.AreEqual (1, map.LastMoveToRegion.LatitudeDegrees);
-			Assert.AreEqual (2, map.LastMoveToRegion.LongitudeDegrees);
-			var position = new Position (15.5, 176);
-			Assert.AreEqual (position, map.LastMoveToRegion.Center);
+			Assert.AreEqual(1, map.LastMoveToRegion.LatitudeDegrees);
+			Assert.AreEqual(2, map.LastMoveToRegion.LongitudeDegrees);
+			var position = new Position(15.5, 176);
+			Assert.AreEqual(position, map.LastMoveToRegion.Center);
 		}
 
 		[Test]
-		public void RemovePin ()
+		public void RemovePin()
 		{
-			var map = new Map ();
-			var genericPlace = new Pin {
+			var map = new Map();
+			var genericPlace = new Pin
+			{
 				Label = "Generic",
-				Position = new Position (-12, -67),
+				Position = new Position(-12, -67),
 				Type = PinType.Generic,
 				Address = "XXX"
 			};
 
-			var mall = new Pin {
+			var mall = new Pin
+			{
 				Label = "Mall",
-				Position = new Position (-29, -87),
+				Position = new Position(-29, -87),
 				Type = PinType.Place,
 				Address = "123 Fun"
 			};
 
-			map.Pins.Add (genericPlace);
-			Assert.AreEqual (map.Pins.Count, 1);
+			map.Pins.Add(genericPlace);
+			Assert.AreEqual(map.Pins.Count, 1);
 
-			map.Pins.Add (mall);
-			Assert.AreEqual (map.Pins.Count, 2);
+			map.Pins.Add(mall);
+			Assert.AreEqual(map.Pins.Count, 2);
 
-			map.Pins.Remove (genericPlace);
-			Assert.AreEqual (map.Pins.Count, 1);
+			map.Pins.Remove(genericPlace);
+			Assert.AreEqual(map.Pins.Count, 1);
 
-			Assert.True (map.Pins.Contains (mall));
-			Assert.False (map.Pins.Contains (genericPlace));
+			Assert.True(map.Pins.Contains(mall));
+			Assert.False(map.Pins.Contains(genericPlace));
 		}
 
 		[Test]
-		public void VisibleRegion ()
+		public void VisibleRegion()
 		{
-			var map = new Map (new MapSpan (new Position (), 0, 0));
-			map.MoveToRegion (new MapSpan (new Position (1, 2), 3, 4));
-			Assert.AreEqual (null, map.VisibleRegion);
+			var map = new Map(new MapSpan(new Position(), 0, 0));
+			map.MoveToRegion(new MapSpan(new Position(1, 2), 3, 4));
+			Assert.AreEqual(null, map.VisibleRegion);
 
 			bool signaled = false;
-			MessagingCenter.Subscribe<Map, MapSpan> (this, "MapMoveToRegion", (s, a) => {
+			MessagingCenter.Subscribe<Map, MapSpan>(this, "MapMoveToRegion", (s, a) =>
+			{
 				signaled = true;
 				map.SetVisibleRegion(a);
 			}, map);
 
-			map.MoveToRegion (new MapSpan (new Position (1, 2), 3, 4));
-			Assert.AreEqual (new MapSpan (new Position (1, 2), 3, 4), map.LastMoveToRegion);
-			Assert.True (signaled);
+			map.MoveToRegion(new MapSpan(new Position(1, 2), 3, 4));
+			Assert.AreEqual(new MapSpan(new Position(1, 2), 3, 4), map.LastMoveToRegion);
+			Assert.True(signaled);
 		}
 
 		[Test]
-		public void VisibleRegionDoubleSet ()
+		public void VisibleRegionDoubleSet()
 		{
-			var map = new Map ();
+			var map = new Map();
 
 			bool signaled = false;
-			map.PropertyChanged += (sender, args) => {
+			map.PropertyChanged += (sender, args) =>
+			{
 				if (args.PropertyName == "VisibleRegion")
 					signaled = true;
 			};
 
 			map.SetVisibleRegion(map.VisibleRegion);
 
-			Assert.False (signaled);
+			Assert.False(signaled);
 		}
 
 		[Test]
@@ -292,9 +300,42 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			map.ItemTemplate = GetItemTemplate("Address 2");
 			Assert.IsTrue(IsMapWithItemsSource(itemsSource, map));
-			foreach(Pin pin in map.Pins)
+			foreach (Pin pin in map.Pins)
 			{
 				Assert.IsTrue(pin.Address == "Address 2");
+			}
+		}
+
+		[Test]
+		public void ItemTemplateSelectorIsSet()
+		{
+			var map = new Map();
+
+			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 3));
+			map.ItemsSource = itemsSource;
+			map.ItemTemplateSelector = new TestDataTemplateSelector("Address 2");
+
+			Assert.IsTrue(IsMapWithItemsSource(itemsSource, map));
+			foreach (Pin pin in map.Pins)
+			{
+				Assert.IsTrue(pin.Address == "Address 2");
+			}
+		}
+
+		[Test]
+		public void ItemTemplateTakesPrecendenceOverItemTemplateSelector()
+		{
+			var map = new Map();
+
+			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));
+			map.ItemsSource = itemsSource;
+			map.ItemTemplate = GetItemTemplate("Address 1");
+			map.ItemTemplateSelector = new TestDataTemplateSelector("Address 2");
+
+			Assert.IsTrue(IsMapWithItemsSource(itemsSource, map));
+			foreach (Pin pin in map.Pins)
+			{
+				Assert.AreEqual(pin.Address, "Address 1");
 			}
 		}
 
@@ -395,16 +436,16 @@ namespace Xamarin.Forms.Core.UnitTests
 				return true;
 			}
 
-			if (map.ItemTemplate == null)
+			if (map.ItemTemplate == null && map.ItemTemplateSelector == null)
 			{
-				// If ItemsSource is set but ItemTemplate is not, there should not be any Pins
+				// If ItemsSource is set but neither ItemTemplate and ItemTemplate is, there should not be any Pins
 				return !map.Pins.Any();
 			}
 
 			int i = 0;
 			foreach (object item in itemsSource)
 			{
-				// Pins collection order are not tracked, so just make sure a Pin for item exists
+				// Pins collection order is not tracked, so just make sure a Pin for item exists
 				if (!map.Pins.Any(p => Equals(item, p.BindingContext)))
 				{
 					return false;
@@ -426,14 +467,19 @@ namespace Xamarin.Forms.Core.UnitTests
 			});
 		}
 
-		static DataTemplateSelector GetDataTemplateSelector()
+		static DataTemplateSelector GetDataTemplateSelector(string address = null)
 		{
-			return new TestDataTemplateSelector();
+			return new TestDataTemplateSelector(address);
 		}
 
 		class TestDataTemplateSelector : DataTemplateSelector
 		{
-			readonly DataTemplate dt = GetItemTemplate();
+			readonly DataTemplate dt;
+
+			public TestDataTemplateSelector(string address = null)
+			{
+				dt = GetItemTemplate(address);
+			}
 
 			protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
 			{
