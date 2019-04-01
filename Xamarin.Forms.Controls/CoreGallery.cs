@@ -217,6 +217,7 @@ namespace Xamarin.Forms.Controls
 				new CoreViewContainer ("SwapRoot - NavigationPage", typeof(CoreNavigationPage)),
 				new CoreViewContainer ("SwapRoot - TabbedPage", typeof(CoreTabbedPage)),
 				new CoreViewContainer ("SwapRoot - BottomNavigation TabbedPage", typeof(CoreTabbedPageAsBottomNavigation)),
+				new CoreViewContainer ("SwapRoot - Store Shell", typeof(XamStore.StoreShell)),
 			};
 
 			var template = new DataTemplate(typeof(TextCell));

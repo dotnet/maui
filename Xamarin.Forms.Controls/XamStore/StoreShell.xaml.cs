@@ -5,16 +5,22 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms.Controls.XamStore
 {
+	[Preserve(AllMembers = true)]
 	[XamlCompilation(XamlCompilationOptions.Compile)]
-	public partial class StoreShell : Shell
+	public partial class StoreShell : TestShell
 	{
-		public StoreShell()
+		public StoreShell() 
 		{
 			InitializeComponent();
+		}
+
+		protected override void Init()
+		{
 			var fontFamily = "";
 			switch (Device.RuntimePlatform)
 			{
@@ -39,6 +45,8 @@ namespace Xamarin.Forms.Controls.XamStore
 			Routing.RegisterRoute("demo", typeof(DemoShellPage));
 			Routing.RegisterRoute("demo/demo", typeof(DemoShellPage));
 		}
+
+
 
 		//bool allow = false;
 

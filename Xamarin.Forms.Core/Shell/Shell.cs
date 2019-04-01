@@ -572,9 +572,15 @@ namespace Xamarin.Forms
 		ShellNavigatedEventArgs _accumulatedEvent;
 		bool _accumulateNavigatedEvents;
 		View _flyoutHeaderView;
+		bool _checkExperimentalFlag = true;
 
-		public Shell()
+		public Shell() : this(true)
 		{
+		}
+
+		internal Shell(bool checkFlag)
+		{
+			_checkExperimentalFlag = checkFlag;
 			VerifyShellFlagEnabled(constructorHint: nameof(Shell));
 			((INotifyCollectionChanged)Items).CollectionChanged += (s, e) => SendStructureChanged();
 		}
@@ -582,9 +588,10 @@ namespace Xamarin.Forms
 		internal const string ShellExperimental = ExperimentalFlags.ShellExperimental;
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		internal static void VerifyShellFlagEnabled(string constructorHint = null, [CallerMemberName] string memberName = "")
+		internal void VerifyShellFlagEnabled(string constructorHint = null, [CallerMemberName] string memberName = "")
 		{
-			ExperimentalFlags.VerifyFlagEnabled("Shell", ShellExperimental, constructorHint, memberName);
+			if(_checkExperimentalFlag)
+				ExperimentalFlags.VerifyFlagEnabled("Shell", ShellExperimental, constructorHint, memberName);
 		}
 
 		public event EventHandler<ShellNavigatedEventArgs> Navigated;
