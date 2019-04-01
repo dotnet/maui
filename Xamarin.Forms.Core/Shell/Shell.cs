@@ -323,7 +323,7 @@ namespace Xamarin.Forms
 			OnNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
 		}
 
-		public static Shell CurrentShell => Application.Current?.MainPage as Shell;
+		public static Shell Current => Application.Current?.MainPage as Shell;
 
 		Uri GetAbsoluteUri(Uri relativeUri)
 		{
