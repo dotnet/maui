@@ -16,7 +16,16 @@ namespace Xamarin.Forms
 	public class Shell : Page, IShellController, IPropertyPropagationController
 	{
 		public static readonly BindableProperty BackButtonBehaviorProperty =
-			BindableProperty.CreateAttached("BackButtonBehavior", typeof(BackButtonBehavior), typeof(Shell), null, BindingMode.OneTime);
+			BindableProperty.CreateAttached("BackButtonBehavior", typeof(BackButtonBehavior), typeof(Shell), null, BindingMode.OneTime,
+				propertyChanged: OnBackButonBehaviorPropertyChanged);
+
+		static void OnBackButonBehaviorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (oldValue is BackButtonBehavior oldHandlerBehavior)
+				SetInheritedBindingContext(oldHandlerBehavior, null);
+			if (newValue is BackButtonBehavior newHandlerBehavior)
+				SetInheritedBindingContext(newHandlerBehavior, bindable.BindingContext);
+		}
 
 		public static readonly BindableProperty FlyoutBehaviorProperty =
 			BindableProperty.CreateAttached("FlyoutBehavior", typeof(FlyoutBehavior), typeof(Shell), FlyoutBehavior.Flyout,
