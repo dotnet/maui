@@ -18,12 +18,6 @@
       </group>
       <group targetFramework="MonoAndroid81">
         <dependency id="Xamarin.GooglePlayServices.Maps" version="60.1142.1"/>
-        <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="27.0.2"/>
-        <dependency id="Xamarin.Android.Support.v7.AppCompat" version="27.0.2"/>
-        <dependency id="Xamarin.Forms" version="$version$"/>
-      </group>
-      <group targetFramework="MonoAndroid90">
-        <dependency id="Xamarin.GooglePlayServices.Maps" version="60.1142.1"/>
         <dependency id="Xamarin.Android.Support.v7.AppCompat" version="28.0.0.1"/>
         <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="28.0.0.1"/>
         <dependency id="Xamarin.Forms" version="$version$"/>
