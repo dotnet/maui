@@ -61,7 +61,7 @@ namespace Xamarin.Forms
 							BindableProperty.Create(nameof(ClearIcon), typeof(ImageSource), typeof(SearchHandler), null, BindingMode.OneTime);
 
 		public static readonly BindableProperty ClearPlaceholderCommandParameterProperty =
-			BindableProperty.Create(nameof(ClearPlaceholderCommandParameter), typeof(object), typeof(SearchHandler), null, BindingMode.OneTime,
+			BindableProperty.Create(nameof(ClearPlaceholderCommandParameter), typeof(object), typeof(SearchHandler), null,
 				propertyChanged: OnClearPlaceholderCommandParameterChanged);
 
 		public static readonly BindableProperty ClearPlaceholderCommandProperty =
@@ -69,7 +69,7 @@ namespace Xamarin.Forms
 				propertyChanged: OnClearPlaceholderCommandChanged);
 
 		public static readonly BindableProperty ClearPlaceholderEnabledProperty =
-			BindableProperty.Create(nameof(ClearPlaceholderEnabled), typeof(bool), typeof(SearchHandler), false, BindingMode.OneWay);
+			BindableProperty.Create(nameof(ClearPlaceholderEnabled), typeof(bool), typeof(SearchHandler), false);
 
 		public static readonly BindableProperty ClearPlaceholderHelpTextProperty =
 			BindableProperty.Create(nameof(ClearPlaceholderHelpText), typeof(string), typeof(SearchHandler), null, BindingMode.OneTime,
@@ -84,7 +84,7 @@ namespace Xamarin.Forms
 				propertyChanged: (b, o, n) => ((SearchHandler)b).UpdateAutomationProperties());
 
 		public static readonly BindableProperty CommandParameterProperty =
-					BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(SearchHandler), null, BindingMode.OneTime,
+					BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(SearchHandler), null,
 				propertyChanged: OnCommandParameterChanged);
 
 		public static readonly BindableProperty CommandProperty =
