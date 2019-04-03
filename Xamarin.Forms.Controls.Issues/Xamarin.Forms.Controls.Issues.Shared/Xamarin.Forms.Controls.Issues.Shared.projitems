@@ -1153,9 +1153,4 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <Compile Update="H:\github\Xamarin.Forms\Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Issue4684.xaml.cs">
-      <DependentUpon>Issue4684.xaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
 </Project>
