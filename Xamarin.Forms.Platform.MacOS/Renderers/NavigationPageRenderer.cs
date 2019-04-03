@@ -305,15 +305,8 @@ namespace Xamarin.Forms.Platform.MacOS
 			target?.Dispose();
 			if (removeFromStack)
 			{
-				var newStack = new Stack<NavigationChildPageWrapper>();
-				foreach (var stack in _currentStack)
-				{
-					if (stack.Page != page)
-					{
-						newStack.Push(stack);
-					}
-				}
-				_currentStack = newStack;
+				var newSource = _currentStack.Reverse().Where(w => w.Page != page);
+				_currentStack = new Stack<NavigationChildPageWrapper>(newSource);
 			}
 		}
 
