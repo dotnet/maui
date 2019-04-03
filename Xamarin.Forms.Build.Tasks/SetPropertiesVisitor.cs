@@ -475,7 +475,7 @@ namespace Xamarin.Forms.Build.Tasks
 					var indexerName = defaultMemberAttribute?.ConstructorArguments?.FirstOrDefault().Value as string ?? "Item";
 					var indexer = previousPartTypeRef.GetProperty(pd => pd.Name == indexerName && pd.GetMethod != null && pd.GetMethod.IsPublic, out var indexerDeclTypeRef);
 					properties.Add((indexer, indexerDeclTypeRef, indexArg));
-					var indexType = indexer.GetMethod.Parameters[0].ParameterType;
+					var indexType = indexer.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(indexerDeclTypeRef);
 					if (!TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String) && !TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32))
 						throw new XamlParseException($"Binding: Unsupported indexer index type: {indexType.FullName}", lineInfo);
 					previousPartTypeRef = indexer.PropertyType.ResolveGenericParameters(indexerDeclTypeRef);
@@ -536,7 +536,6 @@ namespace Xamarin.Forms.Build.Tasks
 
 				for (int i = 0; i < properties.Count; i++) {
 					(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg) = properties[i];
-
 					if (i > 0 && propDeclTypeRef.IsValueType) {
 						var importedPropDeclTypeRef = module.ImportReference(propDeclTypeRef);
 
@@ -580,9 +579,10 @@ namespace Xamarin.Forms.Build.Tasks
 					}
 
 					if (indexArg != null) {
-						if (TypeRefComparer.Default.Equals(property.GetMethod.Parameters[0].ParameterType, module.TypeSystem.String))
+						var indexType = property.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(propDeclTypeRef);
+						if (TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String))
 							il.Emit(Ldstr, indexArg);
-						else if (TypeRefComparer.Default.Equals(property.GetMethod.Parameters[0].ParameterType, module.TypeSystem.Int32) && int.TryParse(indexArg, out int index))
+						else if (TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32) && int.TryParse(indexArg, out int index))
 							il.Emit(Ldc_I4, index);
 						else
 							throw new XamlParseException($"Binding: {indexArg} could not be parsed as an index for a {property.Name}", node as IXmlLineInfo);
@@ -655,22 +655,20 @@ namespace Xamarin.Forms.Build.Tasks
 			else
 				il.Emit(Ldarg_0);
 			for (int i = 0; i < properties.Count - 1; i++) {
-				var property = properties[i].property;
-				var propDeclType = properties[i].propDeclTypeRef;
-				var indexerArg = properties[i].indexArg;
-
-				if (indexerArg != null) {
-					if (TypeRefComparer.Default.Equals(property.GetMethod.Parameters[0].ParameterType, module.TypeSystem.String))
-						il.Emit(Ldstr, indexerArg);
-					else if (TypeRefComparer.Default.Equals(property.GetMethod.Parameters[0].ParameterType, module.TypeSystem.Int32)) {
-						if (!int.TryParse(indexerArg, out var index))
-							throw new XamlParseException($"Binding: {indexerArg} could not be parsed as an index for a {property.Name}", node as IXmlLineInfo);
+				(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg) = properties[i];
+				if (indexArg != null) {
+					var indexType = property.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(propDeclTypeRef);
+					if (TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String))
+						il.Emit(Ldstr, indexArg);
+					else if (TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32)) {
+						if (!int.TryParse(indexArg, out var index))
+							throw new XamlParseException($"Binding: {indexArg} could not be parsed as an index for a {property.Name}", node as IXmlLineInfo);
 						il.Emit(Ldc_I4, index);
 					}
 				}
 
 				var getMethod = module.ImportReference(property.GetMethod);
-				getMethod = module.ImportReference(getMethod.ResolveGenericParameters(propDeclType, module));
+				getMethod = module.ImportReference(getMethod.ResolveGenericParameters(propDeclTypeRef, module));
 
 				if (property.GetMethod.IsVirtual)
 					il.Emit(Callvirt, getMethod);
@@ -678,13 +676,14 @@ namespace Xamarin.Forms.Build.Tasks
 					il.Emit(Call, getMethod);
 			}
 
-			var indexer = properties.Last().indexArg;
-			if (indexer != null) {
-				if(TypeRefComparer.Default.Equals(properties.Last().property.GetMethod.Parameters[0].ParameterType, module.TypeSystem.String))
-					il.Emit(Ldstr, indexer);
-				else if (TypeRefComparer.Default.Equals(properties.Last().property.GetMethod.Parameters[0].ParameterType, module.TypeSystem.Int32)) {
-					if (!int.TryParse(indexer, out int index))
-						throw new XamlParseException($"Binding: {indexer} could not be parsed as an index for a {properties.Last().property.Name}", node as IXmlLineInfo);
+			(PropertyDefinition lastProperty, TypeReference lastPropDeclTypeRef, string lastIndexArg) = properties.Last();
+			if (lastIndexArg != null) {
+				var indexType = lastProperty.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(lastPropDeclTypeRef);
+				if (TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String))
+					il.Emit(Ldstr, lastIndexArg);
+				else if (TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32)) {
+					if (!int.TryParse(lastIndexArg, out int index))
+						throw new XamlParseException($"Binding: {lastIndexArg} could not be parsed as an index for a {lastProperty.Name}", node as IXmlLineInfo);
 					il.Emit(Ldc_I4, index);
 				}
 			}
@@ -764,23 +763,20 @@ namespace Xamarin.Forms.Build.Tasks
 					il.Emit(Ldarg_0);
 				var lastGetterTypeRef = tSourceRef;
 				for (int j = 0; j < i; j++) {
-					var propTuple = properties [j];
-					var property = propTuple.property;
-					var indexerArg = propTuple.indexArg;
-					var propDeclType = propTuple.propDeclTypeRef;
-
-					if (indexerArg != null) {
-						if (TypeRefComparer.Default.Equals(property.GetMethod.Parameters[0].ParameterType, module.TypeSystem.String))
-							il.Emit(Ldstr, indexerArg);
-						else if (TypeRefComparer.Default.Equals(property.GetMethod.Parameters[0].ParameterType, module.TypeSystem.Int32)) {
-							if (!int.TryParse(indexerArg, out var index))
-								throw new XamlParseException($"Binding: {indexerArg} could not be parsed as an index for a {property.Name}", node as IXmlLineInfo);
+					(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg) = properties[j];
+					if (indexArg != null) {
+						var indexType = property.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(propDeclTypeRef);
+						if (TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String))
+							il.Emit(Ldstr, indexArg);
+						else if (TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32)) {
+							if (!int.TryParse(indexArg, out var index))
+								throw new XamlParseException($"Binding: {indexArg} could not be parsed as an index for a {property.Name}", node as IXmlLineInfo);
 							il.Emit(Ldc_I4, index);
 						}
 					}
 
 					var getMethod = module.ImportReference(property.GetMethod);
-					getMethod = module.ImportReference(getMethod.ResolveGenericParameters(propDeclType, module));
+					getMethod = module.ImportReference(getMethod.ResolveGenericParameters(propDeclTypeRef, module));
 
 					if (property.GetMethod.IsVirtual)
 						il.Emit(Callvirt, getMethod);

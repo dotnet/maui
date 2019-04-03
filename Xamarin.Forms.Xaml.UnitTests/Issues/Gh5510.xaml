@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+        xmlns="http://xamarin.com/schemas/2014/forms"
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+        xmlns:local="using:Xamarin.Forms.Xaml.UnitTests"
+        x:Class="Xamarin.Forms.Xaml.UnitTests.Gh5510"
+        x:DataType="local:Gh5510VM">
+   <StackLayout>
+        <Label Text="Name"/>
+        <Entry Text="{Binding Name}" TextColor="Red" x:Name="entry">
+            <Entry.Triggers>
+                <DataTrigger TargetType="Entry" Binding="{Binding Errors[Name]}" Value="{x:Null}">
+                    <Setter Property="TextColor" Value="Black" />
+                </DataTrigger>
+            </Entry.Triggers>
+        </Entry>
+        <Button Text="Clear error"/>
+    </StackLayout>
+</ContentPage>
