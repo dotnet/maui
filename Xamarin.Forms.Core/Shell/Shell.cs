@@ -35,7 +35,16 @@ namespace Xamarin.Forms
 			BindableProperty.CreateAttached("NavBarIsVisible", typeof(bool), typeof(Shell), true);
 
 		public static readonly BindableProperty SearchHandlerProperty =
-			BindableProperty.CreateAttached("SearchHandler", typeof(SearchHandler), typeof(Shell), null, BindingMode.OneTime);
+			BindableProperty.CreateAttached("SearchHandler", typeof(SearchHandler), typeof(Shell), null, BindingMode.OneTime,
+				propertyChanged: OnSearchHandlerPropertyChanged);
+
+		static void OnSearchHandlerPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (oldValue is SearchHandler oldHandler)
+				SetInheritedBindingContext(oldHandler, null);
+			if (newValue is SearchHandler newHandler)
+				SetInheritedBindingContext(newHandler, bindable.BindingContext);
+		}
 
 		public static readonly BindableProperty SetPaddingInsetsProperty =
 			BindableProperty.CreateAttached("SetPaddingInsets", typeof(bool), typeof(Shell), false);
@@ -1069,14 +1078,11 @@ namespace Xamarin.Forms
 			return element;
 		}
 
-
-		#region IPropertyPropagationController
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, LogicalChildren);
 			if (FlyoutHeaderView != null)
 				PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { FlyoutHeaderView });
 		}
-		#endregion
 	}
 }
