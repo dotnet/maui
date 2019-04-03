@@ -549,7 +549,7 @@ namespace Xamarin.Forms.Build.Tasks
 						il.Emit(Ldloca, loc);
 					}
 
-					if (!property.PropertyType.IsValueType) { //if part of the path is null, return (default(T), false)
+					if (!propDeclTypeRef.IsValueType) { //if part of the path is null, return (default(T), false)
 						var nop = Create(Nop);
 						il.Emit(Dup);
 						il.Emit(Ldnull);
