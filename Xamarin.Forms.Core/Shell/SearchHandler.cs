@@ -7,8 +7,6 @@ namespace Xamarin.Forms
 {
 	public class SearchHandler : BindableObject, ISearchHandlerController
 	{
-		#region ISearchHandlerController
-
 		event EventHandler<ListProxyChangedEventArgs> ISearchHandlerController.ListProxyChanged
 		{
 			add { _listProxyChanged += value; }
@@ -40,14 +38,13 @@ namespace Xamarin.Forms
 		void ISearchHandlerController.ItemSelected(object obj)
 		{
 			OnItemSelected(obj);
+			SetValueCore(SelectedItemPropertyKey, obj);
 		}
 
 		void ISearchHandlerController.QueryConfirmed()
 		{
 			OnQueryConfirmed();
 		}
-
-		#endregion ISearchHandlerController
 
 		public static readonly BindableProperty ClearIconHelpTextProperty =
 			BindableProperty.Create(nameof(ClearIconHelpText), typeof(string), typeof(SearchHandler), null, BindingMode.OneTime,
@@ -58,14 +55,14 @@ namespace Xamarin.Forms
 				propertyChanged: (b, o, n) => ((SearchHandler)b).UpdateAutomationProperties());
 
 		public static readonly BindableProperty ClearIconProperty =
-							BindableProperty.Create(nameof(ClearIcon), typeof(ImageSource), typeof(SearchHandler), null, BindingMode.OneTime);
+			BindableProperty.Create(nameof(ClearIcon), typeof(ImageSource), typeof(SearchHandler), null, BindingMode.OneTime);
 
 		public static readonly BindableProperty ClearPlaceholderCommandParameterProperty =
 			BindableProperty.Create(nameof(ClearPlaceholderCommandParameter), typeof(object), typeof(SearchHandler), null,
 				propertyChanged: OnClearPlaceholderCommandParameterChanged);
 
 		public static readonly BindableProperty ClearPlaceholderCommandProperty =
-					BindableProperty.Create(nameof(ClearPlaceholderCommand), typeof(ICommand), typeof(SearchHandler), null, BindingMode.OneTime,
+			BindableProperty.Create(nameof(ClearPlaceholderCommand), typeof(ICommand), typeof(SearchHandler), null, BindingMode.OneTime,
 				propertyChanged: OnClearPlaceholderCommandChanged);
 
 		public static readonly BindableProperty ClearPlaceholderEnabledProperty =
@@ -76,15 +73,15 @@ namespace Xamarin.Forms
 				propertyChanged: (b, o, n) => ((SearchHandler)b).UpdateAutomationProperties());
 
 		public static readonly BindableProperty ClearPlaceholderIconProperty =
-					BindableProperty.Create(nameof(ClearPlaceholderIcon), typeof(ImageSource), typeof(SearchHandler), null, BindingMode.OneTime,
-						propertyChanged: (b, o, n) => ((SearchHandler)b).UpdateAutomationProperties());
+			BindableProperty.Create(nameof(ClearPlaceholderIcon), typeof(ImageSource), typeof(SearchHandler), null, BindingMode.OneTime,
+				propertyChanged: (b, o, n) => ((SearchHandler)b).UpdateAutomationProperties());
 
 		public static readonly BindableProperty ClearPlaceholderNameProperty =
 			BindableProperty.Create(nameof(ClearPlaceholderName), typeof(string), typeof(SearchHandler), null, BindingMode.OneTime,
 				propertyChanged: (b, o, n) => ((SearchHandler)b).UpdateAutomationProperties());
 
 		public static readonly BindableProperty CommandParameterProperty =
-					BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(SearchHandler), null,
+			BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(SearchHandler), null,
 				propertyChanged: OnCommandParameterChanged);
 
 		public static readonly BindableProperty CommandProperty =
@@ -125,6 +122,11 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty SearchBoxVisibilityProperty =
 			BindableProperty.Create(nameof(SearchBoxVisibility), typeof(SearchBoxVisiblity), typeof(SearchHandler), SearchBoxVisiblity.Expanded, BindingMode.OneWay);
+
+		static readonly BindablePropertyKey SelectedItemPropertyKey =
+			BindableProperty.CreateReadOnly (nameof(SelectedItem), typeof(object), typeof(SearchHandler), null, BindingMode.OneWayToSource);
+
+		public static BindableProperty SelectedItemProperty = SelectedItemPropertyKey.BindableProperty;
 
 		public static readonly BindableProperty ShowsResultsProperty =
 			BindableProperty.Create(nameof(ShowsResults), typeof(bool), typeof(SearchHandler), false, BindingMode.OneTime);
@@ -256,6 +258,8 @@ namespace Xamarin.Forms
 			get { return (SearchBoxVisiblity)GetValue(SearchBoxVisibilityProperty); }
 			set { SetValue(SearchBoxVisibilityProperty, value); }
 		}
+
+		public object SelectedItem => GetValue(SelectedItemProperty);
 
 		public bool ShowsResults
 		{
