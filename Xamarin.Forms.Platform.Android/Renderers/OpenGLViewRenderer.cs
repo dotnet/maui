@@ -8,7 +8,7 @@ using Object = Java.Lang.Object;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	internal class OpenGLViewRenderer : ViewRenderer<OpenGLView, GLSurfaceView>
+	public class OpenGLViewRenderer : ViewRenderer<OpenGLView, GLSurfaceView>
 	{
 		bool _disposed;
 
