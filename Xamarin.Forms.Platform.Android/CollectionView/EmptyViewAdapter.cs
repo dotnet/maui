@@ -10,10 +10,35 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public class EmptyViewAdapter : RecyclerView.Adapter
 	{
-		public object EmptyView { get; set; }
-		public DataTemplate EmptyViewTemplate { get; set; }
-		protected readonly ItemsView ItemsView;
+		int _itemViewType;
+		object _emptyView;
+		DataTemplate _emptyViewTemplate;
 
+		public object EmptyView
+		{
+			get => _emptyView;
+			set
+			{
+				_emptyView = value;
+
+				// Change _itemViewType to force OnCreateViewHolder to run again and use this new EmptyView
+				_itemViewType += 1;
+			}
+		}
+		
+		public DataTemplate EmptyViewTemplate
+		{
+			get => _emptyViewTemplate;
+			set
+			{
+				_emptyViewTemplate = value;
+				
+				// Change _itemViewType to force OnCreateViewHolder to run again and use this new template
+				_itemViewType += 1;
+			}
+		}
+
+		protected readonly ItemsView ItemsView;
 		public override int ItemCount => 1;
 
 		public EmptyViewAdapter(ItemsView itemsView)
@@ -73,6 +98,11 @@ namespace Xamarin.Forms.Platform.Android
 
 			var itemContentView = new SizedItemContentView(parent.Context, () => parent.Width, () => parent.Height);
 			return new TemplatedItemViewHolder(itemContentView, template);
+		}
+
+		public override int GetItemViewType(int position)
+		{
+			return _itemViewType;
 		}
 
 		static TextView CreateTextView(string text, Context context)

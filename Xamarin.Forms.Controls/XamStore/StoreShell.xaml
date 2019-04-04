@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<Shell xmlns="http://xamarin.com/schemas/2014/forms"
+<localTest:TestShell xmlns="http://xamarin.com/schemas/2014/forms"
 			xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			xmlns:local="clr-namespace:Xamarin.Forms.Controls.XamStore"
+			xmlns:localTest="clr-namespace:Xamarin.Forms.Controls"
 			Route="xamstore"
 			RouteHost="www.xamarin.com"
 			RouteScheme="http"
@@ -100,4 +101,4 @@
 		<MenuItem Text="Parent Guide" />
 		<MenuItem Text="About Xam Store" />
 	</Shell.MenuItems>
-</Shell>
+</localTest:TestShell>

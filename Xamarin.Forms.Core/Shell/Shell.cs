@@ -16,7 +16,16 @@ namespace Xamarin.Forms
 	public class Shell : Page, IShellController, IPropertyPropagationController
 	{
 		public static readonly BindableProperty BackButtonBehaviorProperty =
-			BindableProperty.CreateAttached("BackButtonBehavior", typeof(BackButtonBehavior), typeof(Shell), null, BindingMode.OneTime);
+			BindableProperty.CreateAttached("BackButtonBehavior", typeof(BackButtonBehavior), typeof(Shell), null, BindingMode.OneTime,
+				propertyChanged: OnBackButonBehaviorPropertyChanged);
+
+		static void OnBackButonBehaviorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (oldValue is BackButtonBehavior oldHandlerBehavior)
+				SetInheritedBindingContext(oldHandlerBehavior, null);
+			if (newValue is BackButtonBehavior newHandlerBehavior)
+				SetInheritedBindingContext(newHandlerBehavior, bindable.BindingContext);
+		}
 
 		public static readonly BindableProperty FlyoutBehaviorProperty =
 			BindableProperty.CreateAttached("FlyoutBehavior", typeof(FlyoutBehavior), typeof(Shell), FlyoutBehavior.Flyout,
@@ -26,7 +35,16 @@ namespace Xamarin.Forms
 			BindableProperty.CreateAttached("NavBarIsVisible", typeof(bool), typeof(Shell), true);
 
 		public static readonly BindableProperty SearchHandlerProperty =
-			BindableProperty.CreateAttached("SearchHandler", typeof(SearchHandler), typeof(Shell), null, BindingMode.OneTime);
+			BindableProperty.CreateAttached("SearchHandler", typeof(SearchHandler), typeof(Shell), null, BindingMode.OneTime,
+				propertyChanged: OnSearchHandlerPropertyChanged);
+
+		static void OnSearchHandlerPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (oldValue is SearchHandler oldHandler)
+				SetInheritedBindingContext(oldHandler, null);
+			if (newValue is SearchHandler newHandler)
+				SetInheritedBindingContext(newHandler, bindable.BindingContext);
+		}
 
 		public static readonly BindableProperty SetPaddingInsetsProperty =
 			BindableProperty.CreateAttached("SetPaddingInsets", typeof(bool), typeof(Shell), false);
@@ -323,7 +341,7 @@ namespace Xamarin.Forms
 			OnNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
 		}
 
-		public static Shell CurrentShell => Application.Current?.MainPage as Shell;
+		public static Shell Current => Application.Current?.MainPage as Shell;
 
 		Uri GetAbsoluteUri(Uri relativeUri)
 		{
@@ -572,9 +590,15 @@ namespace Xamarin.Forms
 		ShellNavigatedEventArgs _accumulatedEvent;
 		bool _accumulateNavigatedEvents;
 		View _flyoutHeaderView;
+		bool _checkExperimentalFlag = true;
 
-		public Shell()
+		public Shell() : this(true)
 		{
+		}
+
+		internal Shell(bool checkFlag)
+		{
+			_checkExperimentalFlag = checkFlag;
 			VerifyShellFlagEnabled(constructorHint: nameof(Shell));
 			((INotifyCollectionChanged)Items).CollectionChanged += (s, e) => SendStructureChanged();
 		}
@@ -582,9 +606,10 @@ namespace Xamarin.Forms
 		internal const string ShellExperimental = ExperimentalFlags.ShellExperimental;
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		internal static void VerifyShellFlagEnabled(string constructorHint = null, [CallerMemberName] string memberName = "")
+		internal void VerifyShellFlagEnabled(string constructorHint = null, [CallerMemberName] string memberName = "")
 		{
-			ExperimentalFlags.VerifyFlagEnabled("Shell", ShellExperimental, constructorHint, memberName);
+			if(_checkExperimentalFlag)
+				ExperimentalFlags.VerifyFlagEnabled("Shell", ShellExperimental, constructorHint, memberName);
 		}
 
 		public event EventHandler<ShellNavigatedEventArgs> Navigated;
@@ -1053,14 +1078,11 @@ namespace Xamarin.Forms
 			return element;
 		}
 
-
-		#region IPropertyPropagationController
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, LogicalChildren);
 			if (FlyoutHeaderView != null)
 				PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { FlyoutHeaderView });
 		}
-		#endregion
 	}
 }

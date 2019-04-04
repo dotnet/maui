@@ -56,7 +56,12 @@ namespace Xamarin.Forms.Controls
 							
 							await Navigation.PushAsync (page);
 
-						} else {
+						}
+						else if (page is Shell)
+						{
+							Application.Current.MainPage = page;
+						}
+						else {
 							await Navigation.PushModalAsync (page);
 						}
 					}; 

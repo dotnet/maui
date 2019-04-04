@@ -1,4 +1,5 @@
-﻿using Xamarin.Forms.CustomAttributes;
+﻿using System.Collections.Generic;
+using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
 #if UITEST
@@ -10,8 +11,7 @@ using NUnit.Framework;
 namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
-	[Category(UITestCategories.ManualReview)]
-	[Ignore("Ignoring until we have a lane to run CollectionView test (or CV is not behind a flag")] 
+	[Category(UITestCategories.CollectionView)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 4600, "[iOS] CollectionView crash with empty ObservableCollection", PlatformAffected.iOS)]
@@ -20,8 +20,9 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override void Init()
 		{
 #if APP
-			PushAsync(
-				new GalleryPages.CollectionViewGalleries.ObservableCodeCollectionViewGallery(initialItems: 0));
+			Device.SetFlags(new List<string>(Device.Flags ?? new List<string>()) { "CollectionView_Experimental" });
+
+			PushAsync(new GalleryPages.CollectionViewGalleries.ObservableCodeCollectionViewGallery(initialItems: 0));
 #endif
 		}
 

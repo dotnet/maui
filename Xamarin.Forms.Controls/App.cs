@@ -124,7 +124,6 @@ namespace Xamarin.Forms.Controls
 			mdp.Master.Icon.SetAutomationPropertiesName("MDPICON");
 			return mdp;
 
-			//Device.SetFlags(new[] { "Shell_Experimental" });
             //return new XamStore.StoreShell();
         }
 

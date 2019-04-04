@@ -34,11 +34,11 @@
                 <RowDefinition Height="*"></RowDefinition>
             </Grid.RowDefinitions>
 
-            <SearchBar x:Name="SearchBar" Placeholder="Filter" />
+            <SearchBar x:Name="SearchBar" Placeholder="Filter" AutomationId="FilterItems" />
 
             <StackLayout Orientation="Horizontal" Grid.Row="1">
                 <Label Text="Toggle Between EmptyViews"/>
-                <Switch x:Name="EmptyViewSwitch"/>
+                <Switch x:Name="EmptyViewSwitch" AutomationId="ToggleEmptyView"/>
             </StackLayout> 
 
             <CollectionView x:Name="CollectionView" Grid.Row="2">

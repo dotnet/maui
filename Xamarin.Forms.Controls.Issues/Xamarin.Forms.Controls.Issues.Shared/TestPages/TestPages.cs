@@ -562,6 +562,71 @@ namespace Xamarin.Forms.Controls
 
 		protected abstract void Init();
 	}
+
+
+
+
+	public abstract class TestShell : Shell
+	{
+#if UITEST
+		public IApp RunningApp => AppSetup.RunningApp;
+
+		protected virtual bool Isolate => true;
+#endif
+
+		protected TestShell() : base(false)
+		{
+#if APP
+			Init();
+#endif
+		}
+
+#if UITEST
+		[SetUp]
+		public void Setup()
+		{
+			if (Isolate)
+			{
+				AppSetup.BeginIsolate();
+			}
+			else
+			{
+				AppSetup.EnsureMemory();
+				AppSetup.EnsureConnection();
+			}
+
+			AppSetup.NavigateToIssue(GetType(), RunningApp);
+		}
+
+		[TearDown]
+		public virtual void TearDown()
+		{
+			if (Isolate)
+			{
+				AppSetup.EndIsolate();
+			}
+		}
+
+		public void ShowFlyout()
+		{
+			RunningApp.WaitForElement("OK");
+			RunningApp.Tap("OK");
+		}
+
+
+		public void TapInFlyout(string text)
+		{
+			ShowFlyout();
+			RunningApp.WaitForElement(text);
+			RunningApp.Tap(text);
+		}
+
+
+#endif
+
+		protected abstract void Init();
+
+	}
 }
 
 #if UITEST

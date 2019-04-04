@@ -194,7 +194,15 @@ namespace Xamarin.Forms
 
 		protected void ApplyBindings() => ApplyBindings(skipBindingContext: false, fromBindingContextChanged: false);
 
-		protected virtual void OnBindingContextChanged() => BindingContextChanged?.Invoke(this, EventArgs.Empty);
+		protected virtual void OnBindingContextChanged()
+		{
+			BindingContextChanged?.Invoke(this, EventArgs.Empty);
+			if (Shell.GetBackButtonBehavior(this) is BackButtonBehavior buttonBehavior)
+				SetInheritedBindingContext(buttonBehavior, BindingContext);
+
+			if (Shell.GetSearchHandler(this) is SearchHandler searchHandler)
+				SetInheritedBindingContext(searchHandler, BindingContext);
+		}
 
 		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
 			=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

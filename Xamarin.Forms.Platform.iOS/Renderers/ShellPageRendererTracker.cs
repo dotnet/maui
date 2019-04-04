@@ -250,7 +250,9 @@ namespace Xamarin.Forms.Platform.iOS
 			if (image == null)
 				image = "3bar.png";
 			var icon = await image.GetNativeImageAsync();
-			NavigationItem.LeftBarButtonItem = new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, OnMenuButtonPressed);
+			var barButtonItem = new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, OnMenuButtonPressed);
+			barButtonItem.AccessibilityIdentifier = "OK";
+			NavigationItem.LeftBarButtonItem = barButtonItem;
 		}
 
 		void OnMenuButtonPressed(object sender, EventArgs e)

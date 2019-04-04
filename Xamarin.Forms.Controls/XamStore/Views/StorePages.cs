@@ -217,7 +217,7 @@ namespace Xamarin.Forms.Controls.XamStore
 				}), 0, 15);
 
 			grid.Children.Add(MakeButton("Navigate to 'demo' route",
-				async () => await Shell.CurrentShell.GoToAsync("demo", true)),
+				async () => await Shell.Current.GoToAsync("demo", true)),
 			1, 15);
 
 			grid.Children.Add(MakeButton("Go Back with Text",
@@ -240,7 +240,7 @@ namespace Xamarin.Forms.Controls.XamStore
 			var navEntry = new Entry { Text = "demo/demo" };
 			grid.Children.Add(navEntry, 1, 16);
 			grid.Children.Add(MakeButton("GO!",
-				async () => await Shell.CurrentShell.GoToAsync(navEntry.Text, true)),
+				async () => await Shell.Current.GoToAsync(navEntry.Text, true)),
 			2, 16);
 
 			Content = new ScrollView { Content = grid };
