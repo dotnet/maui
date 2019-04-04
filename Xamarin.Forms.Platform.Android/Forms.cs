@@ -25,32 +25,8 @@ using System.ComponentModel;
 
 namespace Xamarin.Forms
 {
-	public struct ActivationOptions
-	{
-		public struct EffectScope
-		{
-			public string Name;
-			public ExportEffectAttribute[] Effects;
-		}
-
-		public ActivationOptions(Context activity, Bundle bundle, Assembly resourceAssembly)
-		{
-			this = default(ActivationOptions);
-			this.Activity = activity;
-			this.Bundle = bundle;
-			this.ResourceAssembly = resourceAssembly;
-		}
-		public Context Activity;
-		public Bundle Bundle;
-		public Assembly ResourceAssembly;
-		public HandlerAttribute[] Handlers;
-		public EffectScope[] EffectScopes;
-		public ActivationFlags Flags;
-	}
-
 	public static class Forms
 	{
-
 		const int TabletCrossover = 600;
 
 		static bool? s_isLollipopOrNewer;
@@ -124,25 +100,13 @@ namespace Xamarin.Forms
 		// Why is bundle a param if never used?
 		public static void Init(Context activity, Bundle bundle)
 		{
-			Assembly resourceAssembly;
-
-			resourceAssembly = Assembly.GetCallingAssembly();
-
+			Assembly resourceAssembly = Assembly.GetCallingAssembly();
 			SetupInit(activity, resourceAssembly);
 		}
 
 		public static void Init(Context activity, Bundle bundle, Assembly resourceAssembly)
 		{
 			SetupInit(activity, resourceAssembly);
-		}
-
-		public static void Init(ActivationOptions activation)
-		{
-			SetupInit(
-				activation.Activity,
-				activation.ResourceAssembly,
-				activation
-			);
 		}
 
 		/// <summary>
@@ -192,7 +156,7 @@ namespace Xamarin.Forms
 				viewInitialized(self, new ViewInitializedEventArgs { View = self, NativeView = nativeView });
 		}
 
-		static void SetupInit(Context activity, Assembly resourceAssembly, ActivationOptions? maybeOptions = null)
+		static void SetupInit(Context activity, Assembly resourceAssembly)
 		{
 			if (!IsInitialized)
 			{
@@ -244,40 +208,8 @@ namespace Xamarin.Forms
 
 			if (!IsInitialized)
 			{
-				if (maybeOptions.HasValue)
-				{
-					var options = maybeOptions.Value;
-					var handlers = options.Handlers;
-					var flags = options.Flags;
-					var effectScopes = options.EffectScopes;
-
-					// renderers
-					Registrar.RegisterRenderers(handlers);
-
-					// effects
-					if (effectScopes != null)
-					{
-						for (var i = 0; i < effectScopes.Length; i++)
-						{
-							var effectScope = effectScopes[0];
-							Registrar.RegisterEffects(effectScope.Name, effectScope.Effects);
-						}
-					}
-
-					// css
-					var noCss = (flags & ActivationFlags.NoCss) != 0;
-					if (!noCss)
-						Registrar.RegisterSytlesheets();
-				}
-				else
-				{
-					// Only need to do this once
-					Registrar.RegisterAll(new[] {
-						typeof(ExportRendererAttribute),
-						typeof(ExportCellAttribute),
-						typeof(ExportImageSourceHandlerAttribute)
-					});
-				}
+				// Only need to do this once
+				Registrar.RegisterAll(new[] { typeof(ExportRendererAttribute), typeof(ExportCellAttribute), typeof(ExportImageSourceHandlerAttribute) });
 			}
 
 			// This could change as a result of a config change, so we need to check it every time

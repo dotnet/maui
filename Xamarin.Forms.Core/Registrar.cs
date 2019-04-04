@@ -6,13 +6,6 @@ using System.Reflection;
 
 namespace Xamarin.Forms
 {
-	[Flags]
-	public enum ActivationFlags
-	{
-		NoCss = 1 << 0,
-	}
-
-
 	// Previewer uses reflection to bind to this method; Removal or modification of visibility will break previewer.
 	internal static class Registrar
 	{
@@ -248,55 +241,9 @@ namespace Xamarin.Forms.Internals
 
 		public static Registrar<IRegisterable> Registered { get; internal set; }
 
-		//typeof(ExportRendererAttribute);
-		//typeof(ExportCellAttribute);
-		//typeof(ExportImageSourceHandlerAttribute);
-		public static void RegisterRenderers(HandlerAttribute[] attributes)
+		public static void RegisterAll(Type[] attrTypes)
 		{
-			var length = attributes.Length;
-			for (var i = 0; i < length; i++)
-			{
-				var attribute = attributes[i];
-				if (attribute.ShouldRegister())
-					Registered.Register(attribute.HandlerType, attribute.TargetType, attribute.SupportedVisuals);
-			}
-		}
-
-		public static void RegisterSytlesheets()
-		{
-			var assembly = typeof(StyleSheets.StylePropertyAttribute).GetTypeInfo().Assembly;
-
-#if NETSTANDARD2_0
-			object[] styleAttributes = assembly.GetCustomAttributes(typeof(StyleSheets.StylePropertyAttribute), true);
-#else
-			object[] styleAttributes = assembly.GetCustomAttributes(typeof(StyleSheets.StylePropertyAttribute)).ToArray();
-#endif
-			var stylePropertiesLength = styleAttributes.Length;
-			for (var i = 0; i < stylePropertiesLength; i++)
-			{
-				var attribute = (StyleSheets.StylePropertyAttribute)styleAttributes[i];
-				if (StyleProperties.TryGetValue(attribute.CssPropertyName, out var attrList))
-					attrList.Add(attribute);
-				else
-					StyleProperties[attribute.CssPropertyName] = new List<StyleSheets.StylePropertyAttribute> { attribute };
-			}
-		}
-
-		public static void RegisterEffects(string resolutionName, ExportEffectAttribute[] effectAttributes)
-		{
-			var exportEffectsLength = effectAttributes.Length;
-			for (var i = 0; i < exportEffectsLength; i++)
-			{
-				var effect = effectAttributes[i];
-				Effects[resolutionName + "." + effect.Id] = effect.Type;
-			}
-		}
-
-		public static void RegisterAll(Type[] attrTypes, ActivationFlags flags = default(ActivationFlags))
-		{
-			Assembly[] assemblies;
-			assemblies = Device.GetAssemblies();
-
+			Assembly[] assemblies = Device.GetAssemblies();
 			if (ExtraAssemblies != null)
 				assemblies = assemblies.Union(ExtraAssemblies).ToArray();
 
@@ -330,8 +277,13 @@ namespace Xamarin.Forms.Internals
 						Log.Warning(nameof(Registrar), "Could not load assembly: {0} for Attibute {1} | Some renderers may not be loaded", assembly.FullName, attrType.FullName);
 						continue;
 					}
-
-					RegisterRenderers((HandlerAttribute[])attributes);
+					var length = attributes.Length;
+					for (var i = 0; i < length; i++)
+					{
+						var attribute = (HandlerAttribute)attributes[i];
+						if (attribute.ShouldRegister())
+							Registered.Register(attribute.HandlerType, attribute.TargetType, attribute.SupportedVisuals);
+					}
 				}
 
 				string resolutionName = assembly.FullName;
@@ -344,12 +296,28 @@ namespace Xamarin.Forms.Internals
 #else
 				object[] effectAttributes = assembly.GetCustomAttributes(typeof(ExportEffectAttribute)).ToArray();
 #endif
-				RegisterEffects(resolutionName, (ExportEffectAttribute[])effectAttributes);
-			}
+				var exportEffectsLength = effectAttributes.Length;
+				for (var i = 0; i < exportEffectsLength; i++)
+				{
+					var effect = (ExportEffectAttribute)effectAttributes[i];
+					Effects[resolutionName + "." + effect.Id] = effect.Type;
+				}
 
-			var noCss = (flags & ActivationFlags.NoCss) != 0;
-			if (!noCss)
-				RegisterSytlesheets();
+#if NETSTANDARD2_0
+				object[] styleAttributes = assembly.GetCustomAttributes(typeof(StyleSheets.StylePropertyAttribute), true);
+#else
+				object[] styleAttributes = assembly.GetCustomAttributes(typeof(StyleSheets.StylePropertyAttribute)).ToArray();
+#endif
+				var stylePropertiesLength = styleAttributes.Length;
+				for (var i = 0; i < stylePropertiesLength; i++)
+				{
+					var attribute = (StyleSheets.StylePropertyAttribute)styleAttributes[i];
+					if (StyleProperties.TryGetValue(attribute.CssPropertyName, out var attrList))
+						attrList.Add(attribute);
+					else
+						StyleProperties[attribute.CssPropertyName] = new List<StyleSheets.StylePropertyAttribute> { attribute };
+				}
+			}
 
 			DependencyService.Initialize(assemblies);
 		}
