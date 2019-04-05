@@ -58,9 +58,10 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			}
 
-			if (Forms.IsLollipopOrNewer)
+			if (Forms.IsMarshmallowOrNewer)
 			{
 				// We're looking for the foreground ripple effect, which is not available on older APIs
+				// Limiting this to Marshmallow and newer, because View.setForeground() is not available on lower APIs
 				_selectableItemDrawable = GetSelectableItemDrawable();
 				ItemView.Foreground = _selectableItemDrawable;
 			}
