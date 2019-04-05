@@ -607,7 +607,6 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			string clrNamespace = null;
 			string typeName = null;
 
-
 			XamlLoader.FallbackTypeResolver = (fallbackTypeInfos, type) =>
 			{
 				assemblyName = fallbackTypeInfos?[1].AssemblyName;
@@ -681,6 +680,24 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
 			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 			Assert.That(exceptions.Count, Is.GreaterThanOrEqualTo(1));
+		}
+
+		[Test]
+		public void MissingGenericRootTypeProvidesCorrectTypeName()
+		{
+			var xaml = @"
+					<local:GenericContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
+						xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
+						xmlns:local=""clr-namespace:MissingNamespace""
+						x:TypeArguments=""x:Object"" />";
+
+			XamlLoader.FallbackTypeResolver = (p, type) =>
+			{
+				Assert.That(p.Select(i => i.TypeName), Has.Some.EqualTo("GenericContentPage`1"));
+				return typeof(ContentPage);
+			};
+
+			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 		}
 	}
 
