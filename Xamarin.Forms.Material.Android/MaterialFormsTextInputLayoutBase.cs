@@ -113,16 +113,14 @@ namespace Xamarin.Forms.Material.Android
 
 		internal void SetHint(string hint, VisualElement element)
 		{
-			if (HintEnabled != !String.IsNullOrWhiteSpace(hint))
+			HintEnabled = !string.IsNullOrWhiteSpace(hint);
+			if (HintEnabled)
 			{
-				HintEnabled = !String.IsNullOrWhiteSpace(hint);
-				Hint = hint ?? String.Empty;
-				EditText.Hint = String.Empty;
 				element?.InvalidateMeasureNonVirtual(Internals.InvalidationTrigger.VerticalOptionsChanged);
-			}
-			else
-			{
-				Hint = hint ?? String.Empty;
+				Hint = hint;
+				// EditText.Hint => Hint
+				// It is impossible to reset it but you can make it invisible.
+				EditText.SetHintTextColor(global::Android.Graphics.Color.Transparent);
 			}
 		}
 
