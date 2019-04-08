@@ -5,28 +5,24 @@ namespace Xamarin.Forms
 {
 	public abstract class Behavior : BindableObject, IAttachedObject
 	{
-		internal Behavior(Type associatedType)
+		protected Behavior() : this(typeof(BindableObject))
 		{
-			if (associatedType == null)
-				throw new ArgumentNullException("associatedType");
-			AssociatedType = associatedType;
 		}
+
+		internal Behavior(Type associatedType) => AssociatedType = associatedType ?? throw new ArgumentNullException(nameof(associatedType));
 
 		protected Type AssociatedType { get; }
 
 		void IAttachedObject.AttachTo(BindableObject bindable)
 		{
 			if (bindable == null)
-				throw new ArgumentNullException("bindable");
+				throw new ArgumentNullException(nameof(bindable));
 			if (!AssociatedType.IsInstanceOfType(bindable))
 				throw new InvalidOperationException("bindable not an instance of AssociatedType");
 			OnAttachedTo(bindable);
 		}
 
-		void IAttachedObject.DetachFrom(BindableObject bindable)
-		{
-			OnDetachingFrom(bindable);
-		}
+		void IAttachedObject.DetachFrom(BindableObject bindable) => OnDetachingFrom(bindable);
 
 		protected virtual void OnAttachedTo(BindableObject bindable)
 		{
