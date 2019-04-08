@@ -437,7 +437,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// Sets placeholder's internal text and style.
 		/// </summary>
 		/// <param name="markupText">Markup text to be used as a placeholder.</param>
-		void SetInternalPlaceholderAndStyle(string markupText)
+		protected virtual void SetInternalPlaceholderAndStyle(string markupText)
 		{
 			SetPartText("elm.guide", markupText ?? "");
 		}

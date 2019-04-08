@@ -91,6 +91,14 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			return _editfieldLayout;
 		}
 
+		protected ELayout EditfieldLayout
+		{
+			get
+			{
+				return _editfieldLayout;
+			}
+		}
+
 		protected virtual ELayout CreateEditFieldLayout(EvasObject parent)
 		{
 			var layout = new ELayout(parent);
