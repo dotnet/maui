@@ -11,9 +11,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resource\arrow_left.png" />
+    <None Remove="Resource\dots_horizontal.png" />
+    <None Remove="Resource\menu.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\Xamarin.Forms.Core\Properties\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resource\arrow_left.png" />
+    <EmbeddedResource Include="Resource\dots_horizontal.png" />
+    <EmbeddedResource Include="Resource\menu.png" />
   </ItemGroup>
 
   <ItemGroup>
