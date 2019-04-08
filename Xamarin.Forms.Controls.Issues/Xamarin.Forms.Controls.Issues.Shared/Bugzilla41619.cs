@@ -3,20 +3,27 @@ using Xamarin.Forms.Internals;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
+
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 41619, "[WinRT/UWP] Slider binding works incorrectly", PlatformAffected.WinRT)]
+
+#if UITEST
+	[NUnit.Framework.Category(UITestCategories.Slider)]
+#endif
 	public class Bugzilla41619 : TestContentPage
 	{
+		const double _success = 6; 
 		protected override void Init()
 		{
-			var vm = new Bugzilla41619ViewModel { SliderValue = 5 };
+			var vm = new Bugzilla41619ViewModel();
 			BindingContext = vm;
 			var label = new Label();
 			label.SetBinding(Label.TextProperty, "SliderValue");
@@ -32,7 +39,7 @@ namespace Xamarin.Forms.Controls.Issues
 				{
 					label,
 					slider,
-					new Label { Text = "The initial slider value above should be 5." }
+					new Label { Text = $"The initial slider value above should be {_success}." }
 				}
 			};
 		}
@@ -40,7 +47,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Preserve(AllMembers = true)]
 		class Bugzilla41619ViewModel : INotifyPropertyChanged
 		{
-			private double _sliderValue;
+			private double _sliderValue = _success;
 
 			public double SliderValue
 			{
@@ -59,5 +66,14 @@ namespace Xamarin.Forms.Controls.Issues
 				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 			}
 		}
+
+
+#if UITEST
+		[Test]
+		public void SliderBinding()
+		{ 
+			RunningApp.WaitForElement(_success.ToString());
+		}
+#endif
 	}
 }
