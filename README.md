@@ -56,18 +56,25 @@ We also recommend installing [Xamarin Android Device Manager](https://developer.
 If you already have VS 2017 installed, you can verify that these features are installed by modifying the VS 2017 installation via the Visual Studio Installer.
 
 ### Mac ###
-#### Install Visual Studio for Mac ####
+#### Install Visual Studio for Mac 2019 ####
 
 If you do not already have it installed, instructions to download and setup can be found [here](https://docs.microsoft.com/en-us/visualstudio/mac/installation?view=vsmac-2017).
 
 Because of current Multi-Targeting limitations with Visual Studio for Mac you will need to manually build/restore some projects before you are able to work on the Xamarin Forms solution.
 
-Here are two different options we've put together to help make this process easier
+Here are a few different options we've put together to help make this process easier
 - Branches 3.5+ come with a Cake script target that you can use to build and open VSMac
 ```sh
 ./build.sh --target vsmac
 ```
 - When working on an earlier branch that does not have the cake scripts then you can use the following [build.sh] script(https://gist.github.com/PureWeen/92c1e1aff0c257c3decf0bcb8d6e9296)
+
+- If you don't want to run any scripts then
+  - Open Xamarin.Forms.sln
+  - Wait for VSMAC to finish restoring all projects
+  - from the command line run:
+    - `msbuild Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj`
+  - Now you should be able to run and deploy everything. The only reason you would need to do this process again is if you clean the solution folder or delete the bin/obj folders that are part of the `Xamarin.Forms.Build.Tasks.csproj`
 
 If you are on Visual Studio for Mac 2017 you will need to turn off automatic package restore (Visual Studio => Preferences => Nuget => General => uncheck the Package Restore box) before working on the Xamarin.Forms solution. This step is no longer needed with Visual Studio for Mac 2019
 
@@ -121,4 +128,3 @@ We follow the style used by the [.NET Foundation](https://github.com/dotnet/core
 ### Reporting Bugs ###
 
 We use [GitHub Issues](https://github.com/xamarin/Xamarin.Forms/issues) to track issues. If at all possible, please submit a [reproduction of your bug](https://gist.github.com/jassmith/92405c300e54a01dcc6d) along with your bug report.
-

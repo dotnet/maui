@@ -165,10 +165,7 @@ namespace Xamarin.Forms.Xaml
 
 						var attributes = ParseXamlAttributes(reader, out xmlns);
 						var prefixes = PrefixesToIgnore(xmlns);
-
-						IList<XmlType> typeArguments = null;
-						if (attributes.Any(kvp => kvp.Key == XmlName.xTypeArguments))
-							typeArguments = ((ValueNode)attributes.First(kvp => kvp.Key == XmlName.xTypeArguments).Value).Value as IList<XmlType>;
+						var typeArguments = GetTypeArguments(attributes);
 
 						node = new ElementNode(new XmlType(elementNsUri, elementName, typeArguments), elementNsUri,
 							reader as IXmlNamespaceResolver, elementXmlInfo.LineNumber, elementXmlInfo.LinePosition);
@@ -193,6 +190,15 @@ namespace Xamarin.Forms.Xaml
 				}
 			}
 			throw new XamlParseException("Closing PropertyElement expected", (IXmlLineInfo)reader);
+		}
+
+		internal static IList<XmlType> GetTypeArguments(XmlReader reader) => GetTypeArguments(ParseXamlAttributes(reader, out _));
+
+		static IList<XmlType> GetTypeArguments(IList<KeyValuePair<XmlName, INode>> attributes)
+		{
+			return attributes.Any(kvp => kvp.Key == XmlName.xTypeArguments)
+				? ((ValueNode)attributes.First(kvp => kvp.Key == XmlName.xTypeArguments).Value).Value as IList<XmlType>
+				: null;
 		}
 
 		static IList<KeyValuePair<XmlName, INode>> ParseXamlAttributes(XmlReader reader, out IList<KeyValuePair<string,string>> xmlns)

@@ -119,7 +119,8 @@ namespace Xamarin.Forms.Xaml
 						continue;
 					}
 
-					var rootnode = new RuntimeRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), null, (IXmlNamespaceResolver)reader);
+					var typeArguments = XamlParser.GetTypeArguments(reader);
+					var rootnode = new RuntimeRootNode(new XmlType(reader.NamespaceURI, reader.Name, typeArguments), null, (IXmlNamespaceResolver)reader);
 					XamlParser.ParseXaml(rootnode, reader);
 					var visitorContext = new HydrationContext {
 						ExceptionHandler = exceptionHandler,

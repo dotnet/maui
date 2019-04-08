@@ -29,7 +29,6 @@ namespace Xamarin.Forms.Material.Android
 			_textInputLayout = (MaterialFormsTextInputLayout)view;
 			_textInputEditText = _textInputLayout.FindViewById<MaterialFormsEditText>(Resource.Id.materialformsedittext);
 			_textInputEditText.ImeOptions = ImeAction.Done;
-			UpdatePlaceholderText();
 
 			return _textInputLayout;
 		}
