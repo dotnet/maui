@@ -18,6 +18,7 @@ Platform/Feature               | Package name                              | Sta
 Core             | `Xamarin.Forms` | [![NuGet](https://img.shields.io/nuget/v/Xamarin.Forms.svg?style=flat-square&label=nuget)](https://www.nuget.org/packages/Xamarin.Forms/)| [![MyGet](https://img.shields.io/myget/xamarinforms-ci/vpre/Xamarin.Forms.svg?style=flat-square&label=myget)](https://myget.org/feed/xamarinforms-ci/package/nuget/Xamarin.Forms)
 Maps                 | `Xamarin.Forms.Maps`    | [![NuGet](https://img.shields.io/nuget/v/Xamarin.Forms.Maps.svg?style=flat-square&label=nuget)](https://www.nuget.org/packages/Xamarin.Forms.Maps/) | [![MyGet](https://img.shields.io/myget/xamarinforms-ci/vpre/Xamarin.Forms.Maps.svg?style=flat-square&label=myget)](https://myget.org/feed/xamarinforms-ci/package/nuget/Xamarin.Forms.Maps)
 Pages  | `Xamarin.Forms.Pages`  | [![NuGet](https://img.shields.io/nuget/v/Xamarin.Forms.Pages.svg?style=flat-square&label=nuget)](https://www.nuget.org/packages/Xamarin.Forms.Pages/) | [![MyGet](https://img.shields.io/myget/xamarinforms-ci/vpre/Xamarin.Forms.Pages.svg?style=flat-square&label=myget)](https://myget.org/feed/xamarin.forms-ci/package/nuget/Xamarin.Forms.Pages)
+AppLinks  | `Xamarin.Forms.AppLinks`  | [![NuGet](https://img.shields.io/nuget/v/Xamarin.Forms.AppLinks.svg?style=flat-square&label=nuget)](https://www.nuget.org/packages/Xamarin.Forms.AppLinks/) | [![MyGet](https://img.shields.io/myget/xamarinforms-ci/vpre/Xamarin.Forms.AppLinks.svg?style=flat-square&label=myget)](https://myget.org/feed/xamarin.forms-ci/package/nuget/Xamarin.Forms.AppLinks)
 
 If you want to use the latest dev build then you should read [this blog post](https://blog.xamarin.com/try-the-latest-in-xamarin-forms-with-nightly-builds):
 
@@ -40,6 +41,7 @@ If you want to use the latest dev build then you should read [this blog post](ht
 
 ## Getting Started ##
 
+### Windows ###
 ##### Install Visual Studio 2017 #####
 
 VS 2017 is required for developing Xamarin.Forms. If you do not already have it installed, you can download it [here](https://www.visualstudio.com/downloads/download-visual-studio-vs). VS 2017 Community is completely free. If you are installing VS 2017 for the first time, select the "Custom" installation type and select the following from the features list to install:
@@ -52,6 +54,29 @@ The Android 7.0 Nougat API 24 SDK is required for developing Xamarin.Forms. It c
 
 We also recommend installing [Xamarin Android Device Manager](https://developer.xamarin.com/guides/android/getting_started/installation/android-emulator/xamarin-device-manager/) This will use the HAXM tools installed above and allow you to configure Android Virtual Devices (AVDs) that emulate Android devices.
 If you already have VS 2017 installed, you can verify that these features are installed by modifying the VS 2017 installation via the Visual Studio Installer.
+
+### Mac ###
+#### Install Visual Studio for Mac 2019 ####
+
+If you do not already have it installed, instructions to download and setup can be found [here](https://docs.microsoft.com/en-us/visualstudio/mac/installation?view=vsmac-2017).
+
+Because of current Multi-Targeting limitations with Visual Studio for Mac you will need to manually build/restore some projects before you are able to work on the Xamarin Forms solution.
+
+Here are a few different options we've put together to help make this process easier
+- Branches 3.5+ come with a Cake script target that you can use to build and open VSMac
+```sh
+./build.sh --target vsmac
+```
+- When working on an earlier branch that does not have the cake scripts then you can use the following [build.sh] script(https://gist.github.com/PureWeen/92c1e1aff0c257c3decf0bcb8d6e9296)
+
+- If you don't want to run any scripts then
+  - Open Xamarin.Forms.sln
+  - Wait for VSMAC to finish restoring all projects
+  - from the command line run:
+    - `msbuild Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj`
+  - Now you should be able to run and deploy everything. The only reason you would need to do this process again is if you clean the solution folder or delete the bin/obj folders that are part of the `Xamarin.Forms.Build.Tasks.csproj`
+
+If you are on Visual Studio for Mac 2017 you will need to turn off automatic package restore (Visual Studio => Preferences => Nuget => General => uncheck the Package Restore box) before working on the Xamarin.Forms solution. This step is no longer needed with Visual Studio for Mac 2019
 
 ##### Solution Configuration #####
 
@@ -103,4 +128,3 @@ We follow the style used by the [.NET Foundation](https://github.com/dotnet/core
 ### Reporting Bugs ###
 
 We use [GitHub Issues](https://github.com/xamarin/Xamarin.Forms/issues) to track issues. If at all possible, please submit a [reproduction of your bug](https://gist.github.com/jassmith/92405c300e54a01dcc6d) along with your bug report.
-
