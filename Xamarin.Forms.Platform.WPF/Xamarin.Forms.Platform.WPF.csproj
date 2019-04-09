@@ -163,6 +163,7 @@
     <Compile Include="Renderers\EditorRenderer.cs" />
     <Compile Include="Renderers\EntryRenderer.cs" />
     <Compile Include="Renderers\FrameRenderer.cs" />
+    <Compile Include="Renderers\ImageButtonRenderer.cs" />
     <Compile Include="Renderers\ImageRenderer.cs" />
     <Compile Include="Renderers\LabelRenderer.cs" />
     <Compile Include="Renderers\LayoutRenderer.cs" />
