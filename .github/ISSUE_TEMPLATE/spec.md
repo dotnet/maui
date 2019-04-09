@@ -1,8 +1,8 @@
 ---
 name: Spec
 about: An official specification for enhancements
-title: ''
-labels: ''
+title: "[Spec]  "
+labels: t/enhancement ➕, proposal-open
 assignees: ''
 
 ---

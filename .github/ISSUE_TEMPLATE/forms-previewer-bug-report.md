@@ -2,7 +2,7 @@
 name: Forms Previewer Bug report
 about: Having a problem with the Previewer? Report it here!
 title: ''
-labels: forms-previewer
+labels: forms-previewer, s/unverified
 assignees: ''
 
 ---
