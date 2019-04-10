@@ -4,17 +4,29 @@ using System.Text;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
+#if UITEST
+using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
+#endif
+
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 41205, "UWP CreateDefault passes string instead of object")]
-	public class Bugzilla41205 : ContentPage
+#if UITEST
+	[NUnit.Framework.Category(UITestCategories.ListView)]
+#endif
+	public class Bugzilla41205 : TestContentPage
 	{
+		const string _success = "Pass";
+
+		[Preserve(AllMembers = true)]
 		public class ViewModel
 		{
-			public string Text { get { return "Pass"; } }
+			public string Text { get { return _success; } }
 		}
 
+		[Preserve(AllMembers = true)]
 		public class CustomListView : ListView
 		{
 			protected override Cell CreateDefault(object item)
@@ -29,19 +41,27 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 		}
 
-		public Bugzilla41205()
+		protected override void Init()
 		{
 			var listView = new CustomListView
 			{
-				ItemsSource = new []
+				ItemsSource = new[]
 				{
-					new ViewModel(), 
+					new ViewModel(),
 					new ViewModel(),
 				}
 			};
 
 			Content = listView;
 		}
+
+#if UITEST
+		[Test]
+		public void CreateDefaultPassesStringInsteadOfObject()
+		{
+			RunningApp.WaitForElement(_success);
+		}
+#endif
 
 	}
 }
