@@ -15,7 +15,6 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override void Init()
 		{
 			BackgroundColor = Color.Maroon;
-			
 			PushAsync(new MasterDetailPage
 			{
 				Title = "Bugzilla Issue 44476",
@@ -52,5 +51,17 @@ namespace Xamarin.Forms.Controls.Issues
 				},
 			});
 		}
+
+#if UITEST
+		[Test]
+		[Description("Verify that label with text 'This should be visible' is visible")]
+		[UiTest(typeof(MasterDetailPage))]
+		public void Issue44476TestUnwantedMargin()
+		{
+			RunningApp.WaitForElement(q => q.Marked("This should be visible."));
+		}
+#endif
 	}
+
+
 }
