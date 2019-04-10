@@ -26,8 +26,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var gcButton = new Button { Text = "GC", AutomationId = "GC" };
 			gcButton.Clicked += (sender, args) =>
 			{
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
+				GarbageCollectionHelper.Collect();
 
 				if (_44166MDP.Counter > 0)
 				{

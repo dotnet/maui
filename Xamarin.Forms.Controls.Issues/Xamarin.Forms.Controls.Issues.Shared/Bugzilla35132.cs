@@ -63,8 +63,7 @@ namespace Xamarin.Forms.Controls.Issues
 			async void Button_Clicked(object sender, EventArgs e)
 			{
 				Debug.WriteLine(">>>>>>>> Invoking Garbage Collector");
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
+				GarbageCollectionHelper.Collect();
 
 				await Navigation.PushAsync(new BugPage());
 			}

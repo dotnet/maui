@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Controls.Issues
 				((Label)((StackLayout)Content).Children [0]).Text =
 						string.Format ("Page1. But Page2 IsAlive = {0}", _page2Tracker.IsAlive);
 				await Task.Delay (1000);
-				GC.Collect ();
+				GarbageCollectionHelper.Collect();
 			}
 		}
 

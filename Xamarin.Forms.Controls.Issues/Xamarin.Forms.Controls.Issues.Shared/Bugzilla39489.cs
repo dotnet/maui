@@ -93,8 +93,7 @@ namespace Xamarin.Forms.Controls.Issues
 		void GCbutton_Clicked(object sender, EventArgs e)
 		{
 			System.Diagnostics.Debug.WriteLine(">>>>>>>> Running Garbage Collection");
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			GarbageCollectionHelper.Collect();
 			System.Diagnostics.Debug.WriteLine($">>>>>>>> GC.GetTotalMemory = {GC.GetTotalMemory(true):n0}");
 		}
 

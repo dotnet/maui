@@ -59,6 +59,8 @@ namespace Xamarin.Forms.Controls.Issues
 						result.Text = "Click 'Push page' again";
 						return;
 					}
+
+					GarbageCollectionHelper.Collect();
 					result.Text = list[list.Count - 2].IsAlive ? "Failed" : "Success";
 				})
 			};
@@ -76,9 +78,7 @@ namespace Xamarin.Forms.Controls.Issues
 							await Navigation.PushAsync(page);
 							await page.Navigation.PopAsync();
 
-							GC.Collect();
-							GC.WaitForPendingFinalizers();
-							GC.Collect();
+							GarbageCollectionHelper.Collect();
 
 							list.Add(wref);
 							if (list.Count > 1)

@@ -51,8 +51,7 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 			doGC.Clicked += (sender, e) => {
-				GC.Collect ();
-				GC.WaitForPendingFinalizers();
+				GarbageCollectionHelper.Collect();
 				instanceCount.Text = $"Instances: {_45926SecondPage.InstanceCounter.ToString()}";
 				messageCount.Text = $"Messages: {_45926SecondPage.MessageCounter.ToString()}";
 			};

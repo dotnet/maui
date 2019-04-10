@@ -50,8 +50,7 @@ namespace Xamarin.Forms.Controls.Issues
 								Text = "Garbage Collection Things",
 								Command = new Command(() =>
 								{
-									GC.Collect();
-									GC.WaitForPendingFinalizers();
+									GarbageCollectionHelper.Collect();
 									AttachedStateEffects.Clear();
 								}),
 							},
@@ -76,16 +75,14 @@ namespace Xamarin.Forms.Controls.Issues
 			// needed otherwise UWP crashes
 			await Task.Delay(100);
 			await Navigation.PopAsync();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			GarbageCollectionHelper.Collect();
 		}
 
 		void OnAllEventsDetached(object sender, EventArgs args)
 		{
 			AttachedStateEffects.Clear();
 			AttachedStateEffects.AllEventsDetached -= OnAllEventsDetached;
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			GarbageCollectionHelper.Collect();
 			AllEffectsHaveDetached.Text = "Success";
 		}
 

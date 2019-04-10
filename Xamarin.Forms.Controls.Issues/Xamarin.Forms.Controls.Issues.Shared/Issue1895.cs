@@ -26,9 +26,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		static Page CreateWeakReferencedPage()
 		{
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
+			GarbageCollectionHelper.Collect();
 
 			var result = CreatePage();
 			s_pageRefs.Add(new WeakReference(result));

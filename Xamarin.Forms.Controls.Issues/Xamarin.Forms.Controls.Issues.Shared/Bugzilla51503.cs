@@ -36,8 +36,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			async void Button_Clicked(object sender, EventArgs e)
 			{
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
+				GarbageCollectionHelper.Collect();
 
 				await Navigation.PushAsync(new ChildPage());
 			}

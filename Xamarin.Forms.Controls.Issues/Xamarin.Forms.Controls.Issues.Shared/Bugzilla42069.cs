@@ -53,9 +53,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var collectButton = new Button { Text = "Collect" };
 			collectButton.Clicked += (sender, args) =>
 			{
-				GC.Collect();
-				GC.Collect();
-				GC.Collect();
+				GarbageCollectionHelper.Collect();
 			};
 
 			var startPage = new ContentPage

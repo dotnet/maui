@@ -52,8 +52,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var collectButton = new Button { Text = "Garbage", Command = new Command(o =>
 			{
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
+				GarbageCollectionHelper.Collect();
 				_layout.Children.Add(new Label {Text = "Success"});
 			}) };
 			_layout.Children.Add(collectButton);

@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				_resultLabel.Text = $"Page2 IsAlive = {_page2Tracker.IsAlive} ({n++})";
                 await Task.Delay(1000);
-				GC.Collect();
+				GarbageCollectionHelper.Collect();
 			}
 
 			_resultLabel.Text = $"Page2 IsAlive = {_page2Tracker.IsAlive}";

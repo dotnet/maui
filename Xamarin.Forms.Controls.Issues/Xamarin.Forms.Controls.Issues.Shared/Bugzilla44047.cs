@@ -44,9 +44,7 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		public Page2()
 		{
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
+			GarbageCollectionHelper.Collect();
 
 			Title = "Page2";
 			System.Diagnostics.Debug.WriteLine("Constructor");

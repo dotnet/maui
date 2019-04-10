@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Controls.Issues
 			while (_page2Tracker.IsAlive && _tabTracker.IsAlive && watch.ElapsedMilliseconds < Timeout) 
 			{
 				await Task.Delay (1000);
-				GC.Collect ();
+				GarbageCollectionHelper.Collect();
 			}
 
 			watch.Stop();

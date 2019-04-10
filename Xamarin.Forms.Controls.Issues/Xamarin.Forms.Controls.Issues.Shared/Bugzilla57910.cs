@@ -41,7 +41,7 @@ namespace Xamarin.Forms.Controls.Issues
 			async void Button_Clicked(object sender, EventArgs e)
 			{
 				await Navigation.PushAsync(new ListPage());
-				GC.Collect();
+				GarbageCollectionHelper.Collect();
 			}
 		}
 

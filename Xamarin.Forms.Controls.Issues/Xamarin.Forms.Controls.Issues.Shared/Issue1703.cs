@@ -25,14 +25,14 @@ namespace Xamarin.Forms.Controls.Issues
 
 		static Page CreateWeakReferencedPage()
 		{
-			GC.Collect();
+			GarbageCollectionHelper.Collect();
 			var result = CreatePage();
 			s_pageRefs.Add(new WeakReference(result));
 
 			// Add a second unreferenced page to prove that the problem only exists
 			// when pages are actually navigated to/from
 			s_pageRefs.Add(new WeakReference(CreatePage()));
-			GC.Collect();
+			GarbageCollectionHelper.Collect();
 			return result;
 		}
 

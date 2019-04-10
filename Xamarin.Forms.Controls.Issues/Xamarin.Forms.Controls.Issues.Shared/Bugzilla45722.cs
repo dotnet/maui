@@ -98,8 +98,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var collect = new Button() { Text = Collect };
 			collect.Clicked += (sender, args) =>
 			{
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
+				GarbageCollectionHelper.Collect();
 			};
 
 			Title = "Bugzilla 45722";
