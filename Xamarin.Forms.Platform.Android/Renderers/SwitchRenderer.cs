@@ -55,6 +55,9 @@ namespace Xamarin.Forms.Platform.Android
 					Element.Toggled -= HandleToggled;
 
 				Control.SetOnCheckedChangeListener(null);
+
+				_defaultTrackDrawable.Dispose();
+				_defaultTrackDrawable = null;
 			}
 
 			base.Dispose(disposing);
@@ -114,13 +117,13 @@ namespace Xamarin.Forms.Platform.Android
 					{
 						if (Build.VERSION.SdkInt >= BuildVersionCodes.JellyBean)
 						{
-							Control.TrackDrawable.SetColorFilter(Element.OnColor.ToAndroid(), PorterDuff.Mode.Multiply);
+							Control.TrackDrawable?.SetColorFilter(Element.OnColor.ToAndroid(), PorterDuff.Mode.Multiply);
 						}
 					}
 				}
 				else
 				{
-					Control.TrackDrawable.ClearColorFilter();
+					Control.TrackDrawable?.ClearColorFilter();
 				}
 			}
 		}
