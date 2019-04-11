@@ -10,6 +10,7 @@ using Android.Widget;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android.FastRenderers;
 using AView = Android.Views.View;
+using AViewCompat = Android.Support.V4.View.ViewCompat;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -48,7 +49,7 @@ namespace Xamarin.Forms.Platform.Android
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			base.OnLayout(changed, l, t, r, b);
-			ClipBounds = new Rect(0,0, Width, Height);
+			AViewCompat.SetClipBounds(this, new Rect(0, 0, Width, Height));
 
 			// After a direct (non-animated) scroll operation, we may need to make adjustments
 			// to align the target item; if an adjustment is pending, execute it here.
