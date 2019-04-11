@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
@@ -64,30 +65,27 @@ namespace Xamarin.Forms
 			callback(DisplayedPage);
 		}
 
-		Task IShellSectionController.GoToPart(List<string> parts, Dictionary<string, string> queryData)
+		Task IShellSectionController.GoToPart(NavigationRequest request, Dictionary<string, string> queryData)
 		{
-			var shellContentRoute = parts[0];
+			ShellContent shellContent = request.Request.Content;
 
-			var items = Items;
-			for (int i = 0; i < items.Count; i++)
+			if (shellContent == null)
+				return Task.FromResult(true);
+
+			
+			if(request.Request.GlobalRoutes.Count > 0)
 			{
-				ShellContent shellContent = items[i];
-				if (Routing.CompareRoutes(shellContent.Route, shellContentRoute, out var isImplicit))
+				// TODO get rid of this hack and fix so if there's a stack the current page doesn't display
+				Device.BeginInvokeOnMainThread(async () =>
 				{
-					Shell.ApplyQueryAttributes(shellContent, queryData, parts.Count == 1);
-
-					if (CurrentItem != shellContent)
-						SetValueFromRenderer(CurrentItemProperty, shellContent);
-
-					if (!isImplicit)
-						parts.RemoveAt(0);
-					if (parts.Count > 0)
-					{
-						return GoToAsync(parts, queryData, false);
-					}
-					break;
-				}
+					await GoToAsync(request.Request.GlobalRoutes, queryData, false);
+				});
 			}
+
+			Shell.ApplyQueryAttributes(shellContent, queryData, request.Request.GlobalRoutes.Count == 0);
+
+			if (CurrentItem != shellContent)
+				SetValueFromRenderer(CurrentItemProperty, shellContent);
 
 			return Task.FromResult(true);
 		}
@@ -190,10 +188,7 @@ namespace Xamarin.Forms
 
 		ShellItem ShellItem => Parent as ShellItem;
 
-#if DEBUG
-		[Obsolete("Please dont use this in core code... its SUPER hard to debug when this happens", true)]
-#endif
-		public static implicit operator ShellSection(ShellContent shellContent)
+		internal static ShellSection CreateFromShellContent(ShellContent shellContent)
 		{
 			var shellSection = new ShellSection();
 
@@ -205,6 +200,19 @@ namespace Xamarin.Forms
 			shellSection.SetBinding(TitleProperty, new Binding("Title", BindingMode.OneWay, source: shellContent));
 			shellSection.SetBinding(IconProperty, new Binding("Icon", BindingMode.OneWay, source: shellContent));
 			return shellSection;
+		}
+
+		internal static ShellSection CreateFromTemplatedPage(TemplatedPage page)
+		{
+			return CreateFromShellContent((ShellContent)page);
+		}
+
+#if DEBUG
+		[Obsolete("Please dont use this in core code... its SUPER hard to debug when this happens", true)]
+#endif
+		public static implicit operator ShellSection(ShellContent shellContent)
+		{
+			return CreateFromShellContent(shellContent);
 		}
 
 #if DEBUG

@@ -30,7 +30,6 @@
     <WarningLevel>4</WarningLevel>
     <AndroidLinkMode>None</AndroidLinkMode>
     <AndroidDexTool Condition=" '$(MSBuildAssemblyVersion)' != '15.0'">d8</AndroidDexTool>
-    <AndroidEnableDesugar Condition=" '$(MSBuildAssemblyVersion)' != '15.0'">true</AndroidEnableDesugar>
     <AndroidEnableMultiDex Condition=" '$(MSBuildAssemblyVersion)' == '15.0'">true</AndroidEnableMultiDex>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -42,8 +41,9 @@
     <WarningLevel>4</WarningLevel>
     <AndroidManagedSymbols>true</AndroidManagedSymbols>
     <AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
-    <EnableProguard>true</EnableProguard>
     <AndroidLinkMode>Full</AndroidLinkMode>
+    <AndroidDexTool>d8</AndroidDexTool>
+    <AndroidLinkTool>r8</AndroidLinkTool>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Android" />

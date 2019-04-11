@@ -24,31 +24,19 @@ namespace Xamarin.Forms
 
 		#region IShellItemController
 
-		Task IShellItemController.GoToPart(List<string> parts, Dictionary<string, string> queryData)
+		Task IShellItemController.GoToPart(NavigationRequest request, Dictionary<string, string> queryData)
 		{
-			var shellSectionRoute = parts[0];
+			var shellSection = request.Request.Section;
 
-			var items = Items;
-			for (int i = 0; i < items.Count; i++)
-			{
-				var shellSection = items[i];
-				if (Routing.CompareRoutes(shellSection.Route, shellSectionRoute, out var isImplicit))
-				{
-					Shell.ApplyQueryAttributes(shellSection, queryData, parts.Count == 1);
+			if (shellSection == null)
+				return Task.FromResult(true);
 
-					if (CurrentItem != shellSection)
-						SetValueFromRenderer(CurrentItemProperty, shellSection);
+			Shell.ApplyQueryAttributes(shellSection, queryData, request.Request.Content == null);
 
-					if (!isImplicit)
-						parts.RemoveAt(0);
-					if (parts.Count > 0)
-					{
-						return ((IShellSectionController)shellSection).GoToPart(parts, queryData);
-					}
-					break;
-				}
-			}
-			return Task.FromResult(true);
+			if (CurrentItem != shellSection)
+				SetValueFromRenderer(CurrentItemProperty, shellSection);
+
+			return ((IShellSectionController)shellSection).GoToPart(request, queryData);
 		}
 
 		bool IShellItemController.ProposeSection(ShellSection shellSection, bool setValue)
@@ -116,10 +104,7 @@ namespace Xamarin.Forms
 			}
 		}
 
-#if DEBUG
-		[Obsolete ("Please dont use this in core code... its SUPER hard to debug when this happens", true)]
-#endif
-		public static implicit operator ShellItem(ShellSection shellSection)
+		internal static ShellItem CreateFromShellSection(ShellSection shellSection)
 		{
 			var result = new ShellItem();
 
@@ -130,6 +115,14 @@ namespace Xamarin.Forms
 			result.SetBinding(IconProperty, new Binding(nameof(Icon), BindingMode.OneWay, source: shellSection));
 			result.SetBinding(FlyoutDisplayOptionsProperty, new Binding(nameof(FlyoutDisplayOptions), BindingMode.OneTime, source: shellSection));
 			return result;
+		}
+
+#if DEBUG
+		[Obsolete ("Please dont use this in core code... its SUPER hard to debug when this happens", true)]
+#endif
+		public static implicit operator ShellItem(ShellSection shellSection)
+		{
+			return CreateFromShellSection(shellSection);
 		}
 
 		internal static ShellItem GetShellItemFromRouteName(string route)

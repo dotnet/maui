@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Xamarin.Forms
 {
+
+	[DebuggerDisplay("Location = {Location}")]
 	public class ShellNavigationState
 	{
 		public Uri Location { get; set; }
