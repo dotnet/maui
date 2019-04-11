@@ -140,9 +140,17 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected bool TabStop { get; set; } = true;
 
-		protected void UpdateTabStop() => TabStop = Element.IsTabStop;
+		protected void UpdateTabStop()
+		{
+			TabStop = Element.IsTabStop;
+			UpdateParentPageTraversalOrder();
+		}
 
-		protected void UpdateTabIndex() => TabIndex = Element.TabIndex;
+		protected void UpdateTabIndex()
+		{
+			TabIndex = Element.TabIndex;
+			UpdateParentPageTraversalOrder();
+		}
 
 		bool CheckCustomNextFocus(AView focused, FocusSearchDirection direction)
 		{
@@ -350,6 +358,8 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateTabStop();
 			else if (e.PropertyName == VisualElement.TabIndexProperty.PropertyName)
 				UpdateTabIndex();
+			else if (e.PropertyName == nameof(Element.Parent))
+				UpdateParentPageTraversalOrder();
 
 			ElementPropertyChanged?.Invoke(this, e);
 		}
@@ -375,6 +385,16 @@ namespace Xamarin.Forms.Platform.Android
 
 				renderer?.UpdateLayout();
 			}
+		}
+
+		void UpdateParentPageTraversalOrder()
+		{
+			IViewParent parentRenderer = Parent;
+			while (parentRenderer != null && !(parentRenderer is IOrderedTraversalController))
+				parentRenderer = parentRenderer.Parent;
+
+			if (parentRenderer is IOrderedTraversalController controller)
+				controller.UpdateTraversalOrder();
 		}
 
 		protected virtual void OnRegisterEffect(PlatformEffect effect)

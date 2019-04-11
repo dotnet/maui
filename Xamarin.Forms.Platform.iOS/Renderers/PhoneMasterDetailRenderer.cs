@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Platform.iOS
 		VisualElementTracker _tracker;
 
 		Page Page => Element as Page;
-		
+
 
 		public PhoneMasterDetailRenderer()
 		{
@@ -325,10 +325,14 @@ namespace Xamarin.Forms.Platform.iOS
 
 			((MasterDetailPage)Element).Master.PropertyChanged += HandleMasterPropertyChanged;
 
-			_masterController.View.AddSubview(masterRenderer.NativeView);
+			UIView masterView = masterRenderer.NativeView;
+
+			_masterController.View.AddSubview(masterView);
 			_masterController.AddChildViewController(masterRenderer.ViewController);
 
-			_detailController.View.AddSubview(detailRenderer.NativeView);
+			UIView detailView = detailRenderer.NativeView;
+
+			_detailController.View.AddSubview(detailView);
 			_detailController.AddChildViewController(detailRenderer.ViewController);
 
 			SetNeedsStatusBarAppearanceUpdate();
