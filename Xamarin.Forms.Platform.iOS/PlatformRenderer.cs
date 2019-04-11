@@ -104,6 +104,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.ViewDidLoad();
 			SetNeedsStatusBarAppearanceUpdate();
+			SetNeedsUpdateOfHomeIndicatorAutoHidden();
 		}
 
 		public override UIViewController ChildViewControllerForStatusBarStyle()
@@ -149,6 +150,11 @@ namespace Xamarin.Forms.Platform.iOS
 			return ChildViewControllers?.LastOrDefault();
 		}
 
+		public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden
+		{
+			get => (UIViewController)Platform.GetRenderer(this.Platform.Page);
+		}
+
 		public override bool ShouldAutorotate()
 		{
 			if ((ChildViewControllers != null) && (ChildViewControllers.Length > 0))
@@ -192,6 +198,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.ViewDidLoad();
 			SetNeedsStatusBarAppearanceUpdate();
+			SetNeedsUpdateOfHomeIndicatorAutoHidden();
 		}
 	}
 }

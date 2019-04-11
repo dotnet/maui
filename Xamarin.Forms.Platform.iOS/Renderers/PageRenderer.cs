@@ -171,6 +171,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			_appeared = true;
 			UpdateStatusBarPrefersHidden();
+			SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
 			if (Element.Parent is CarouselPage)
 				return;
@@ -291,6 +292,8 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateUseSafeArea();
 			else if (Forms.IsiOS11OrNewer && e.PropertyName == PlatformConfiguration.iOSSpecific.Page.SafeAreaInsetsProperty.PropertyName)
 				UpdateUseSafeArea();
+			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName)
+				UpdateHomeIndicatorAutoHidden();
 		}
 
 		public override UIKit.UIStatusBarAnimation PreferredStatusBarUpdateAnimation
@@ -433,5 +436,15 @@ namespace Xamarin.Forms.Platform.iOS
 				view = view.Superview;
 			}
 		}
+
+		void UpdateHomeIndicatorAutoHidden()
+		{
+			if (Element == null)
+				return;
+
+			SetNeedsUpdateOfHomeIndicatorAutoHidden();
+		}
+
+		public override bool PrefersHomeIndicatorAutoHidden => ((Page)Element).OnThisPlatform().PrefersHomeIndicatorAutoHidden();
 	}
 }

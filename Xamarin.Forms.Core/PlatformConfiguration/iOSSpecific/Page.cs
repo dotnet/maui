@@ -153,5 +153,29 @@
 		{
 			element.SetValue(ModalPresentationStyleProperty, value);
 		}
+
+		public static readonly BindableProperty PrefersHomeIndicatorAutoHiddenProperty = 
+			BindableProperty.Create(nameof(PrefersHomeIndicatorAutoHidden), typeof(bool), typeof(Page), false);
+
+		public static bool GetPrefersHomeIndicatorAutoHidden(BindableObject element)
+		{
+			return (bool)element.GetValue(PrefersHomeIndicatorAutoHiddenProperty);
+		}
+
+		public static void SetPrefersHomeIndicatorAutoHidden(BindableObject element, bool value)
+		{
+			element.SetValue(PrefersHomeIndicatorAutoHiddenProperty, value);
+		}
+
+		public static bool PrefersHomeIndicatorAutoHidden(this IPlatformElementConfiguration<iOS, FormsElement> config)
+		{
+			return GetPrefersHomeIndicatorAutoHidden(config.Element);
+		}
+
+		public static IPlatformElementConfiguration<iOS, FormsElement> SetPrefersHomeIndicatorAutoHidden(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
+		{
+			SetPrefersHomeIndicatorAutoHidden(config.Element, value);
+			return config;
+		}
 	}
 }
