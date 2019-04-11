@@ -238,6 +238,9 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateCurrentPagePreferredStatusBarUpdateAnimation();
 			else if (e.PropertyName == TabbedPage.SelectedTabColorProperty.PropertyName || e.PropertyName == TabbedPage.UnselectedTabColorProperty.PropertyName)
 				UpdateSelectedTabColors();
+			else if (e.PropertyName == PrefersHomeIndicatorAutoHiddenProperty.PropertyName)
+				UpdatePrefersHomeIndicatorAutoHiddenOnPages();
+
 		}
 
 		public override UIViewController ChildViewControllerForStatusBarHidden()
@@ -260,6 +263,27 @@ namespace Xamarin.Forms.Platform.iOS
 			for (var i = 0; i < ViewControllers.Length; i++)
 			{
 				Tabbed.GetPageByIndex(i).OnThisPlatform().SetPrefersStatusBarHidden(Tabbed.OnThisPlatform().PrefersStatusBarHidden());
+			}
+		}
+
+		public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden
+		{
+			get
+			{
+				var current = Tabbed.CurrentPage;
+				if (current == null)
+					return null;
+
+				return GetViewController(current);
+			}
+		}
+
+		void UpdatePrefersHomeIndicatorAutoHiddenOnPages()
+		{
+			bool isHomeIndicatorHidden = Tabbed.OnThisPlatform().PrefersHomeIndicatorAutoHidden();
+			for (var i = 0; i < ViewControllers.Length; i++)
+			{
+				Tabbed.GetPageByIndex(i).OnThisPlatform().SetPrefersHomeIndicatorAutoHidden(isHomeIndicatorHidden);
 			}
 		}
 

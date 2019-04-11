@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Foundation;
 using UIKit;
-using PageUIStatusBarAnimation = Xamarin.Forms.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using PageUIStatusBarAnimation = Xamarin.Forms.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	public class PageRenderer : UIViewController, IVisualElementRenderer, IEffectControlProvider
+	public class PageRenderer : UIViewController, IVisualElementRenderer, IEffectControlProvider, IAccessibilityElementsController
 	{
 		bool _appeared;
 		bool _disposed;
@@ -15,7 +16,10 @@ namespace Xamarin.Forms.Platform.iOS
 		VisualElementPackager _packager;
 		VisualElementTracker _tracker;
 
+		internal PageContainer Container => NativeView as PageContainer;
+
 		Page Page => Element as Page;
+		IAccessibilityElementsController AccessibilityElementsController => this;
 
 		bool UsingSafeArea => (Forms.IsiOS11OrNewer) ? Page.On<PlatformConfiguration.iOS>().UsingSafeArea() : false;
 		Thickness SafeAreaInsets => Page.On<PlatformConfiguration.iOS>().SafeAreaInsets();
@@ -26,12 +30,60 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
-			VisualElementRenderer<VisualElement>.RegisterEffect(effect, View);
+			VisualElementRenderer<VisualElement>.RegisterEffect(effect, NativeView);
 		}
 
 		public VisualElement Element { get; private set; }
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
+
+		public List<NSObject> GetAccessibilityElements()
+		{
+			if (Container == null || Element == null)
+				return null;
+
+			var children = Element.Descendants();
+			SortedDictionary<int, List<VisualElement>> tabIndexes = null;
+			List<NSObject> views = new List<NSObject>();
+			foreach (var child in children)
+			{
+				if (!(child is VisualElement ve))
+					continue;
+
+				tabIndexes = ve.GetSortedTabIndexesOnParentPage(out _);
+				break;
+			}
+
+			if (tabIndexes == null)
+				return null;
+
+			foreach (var idx in tabIndexes?.Keys)
+			{
+				var tabGroup = tabIndexes[idx];
+				foreach (var child in tabGroup)
+				{
+					if (child is Layout ||
+						!(
+							child is VisualElement ve && ve.IsTabStop
+							&& AutomationProperties.GetIsInAccessibleTree(ve) != false // accessible == true
+							&& ve.GetRenderer().NativeView is ITabStop tabStop)
+						 )
+						continue;
+
+					var thisControl = tabStop.TabStop;
+
+					if (thisControl == null)
+						continue;
+
+					if (views.Contains(thisControl))
+						break; // we've looped to the beginning
+
+					views.Add(thisControl);
+				}
+			}
+
+			return views;
+		}
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
@@ -51,11 +103,13 @@ namespace Xamarin.Forms.Platform.iOS
 
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 
-			if (Element != null && !string.IsNullOrEmpty(Element.AutomationId))
-				SetAutomationId(Element.AutomationId);
-
 			if (element != null)
+			{
+				if (!string.IsNullOrEmpty(element.AutomationId))
+					SetAutomationId(element.AutomationId);
+
 				element.SendViewInitialized(NativeView);
+			}
 
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 		}
@@ -65,9 +119,24 @@ namespace Xamarin.Forms.Platform.iOS
 			Element.Layout(new Rectangle(Element.X, Element.Y, size.Width, size.Height));
 		}
 
+		public override void LoadView()
+		{
+			View = new PageContainer(this);
+		}
+
+		public override void ViewWillLayoutSubviews()
+		{
+			base.ViewWillLayoutSubviews();
+
+			AccessibilityElementsController.ResetAccessibilityElements();
+		}
+
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
+
+			if (_disposed)
+				return;
 
 			if (Element.Parent is BaseShellItem)
 				Element.Layout(View.Bounds.ToRectangle());
@@ -78,16 +147,14 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void ViewSafeAreaInsetsDidChange()
 		{
 			UpdateShellInsetPadding();
-			var page = (Element as Page);
-			if (page != null && Forms.IsiOS11OrNewer)
+			if (Page != null && Forms.IsiOS11OrNewer)
 			{
 				var insets = NativeView.SafeAreaInsets;
-				if (page.Parent is TabbedPage)
+				if (Page.Parent is TabbedPage)
 				{
 					insets.Bottom = 0;
 				}
-				page.On<PlatformConfiguration.iOS>().SetSafeAreaInsets(new Thickness(insets.Left, insets.Top, insets.Right, insets.Bottom));
-
+				Page.On<PlatformConfiguration.iOS>().SetSafeAreaInsets(new Thickness(insets.Left, insets.Top, insets.Right, insets.Bottom));
 			}
 
 			base.ViewSafeAreaInsetsDidChange();
@@ -104,6 +171,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			_appeared = true;
 			UpdateStatusBarPrefersHidden();
+			SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
 			if (Element.Parent is CarouselPage)
 				return;
@@ -130,13 +198,16 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.ViewDidLoad();
 
-			var uiTapGestureRecognizer = new UITapGestureRecognizer(a => View.EndEditing(true));
+			if (NativeView == null)
+				return;
+
+			var uiTapGestureRecognizer = new UITapGestureRecognizer(a => NativeView.EndEditing(true));
 
 			uiTapGestureRecognizer.ShouldRecognizeSimultaneously = (recognizer, gestureRecognizer) => true;
 			uiTapGestureRecognizer.ShouldReceiveTouch = OnShouldReceiveTouch;
 			uiTapGestureRecognizer.DelaysTouchesBegan =
 				uiTapGestureRecognizer.DelaysTouchesEnded = uiTapGestureRecognizer.CancelsTouchesInView = false;
-			View.AddGestureRecognizer(uiTapGestureRecognizer);
+			NativeView.AddGestureRecognizer(uiTapGestureRecognizer);
 
 			UpdateBackground();
 
@@ -147,16 +218,16 @@ namespace Xamarin.Forms.Platform.iOS
 			_tracker = new VisualElementTracker(this, !(Element.Parent is BaseShellItem));
 
 			_events = new EventTracker(this);
-			_events.LoadEvents(View);
+			_events.LoadEvents(NativeView);
 
-			Element.SendViewInitialized(View);
+			Element.SendViewInitialized(NativeView);
 		}
 
 		public override void ViewWillDisappear(bool animated)
 		{
 			base.ViewWillDisappear(animated);
 
-			View.Window?.EndEditing(true);
+			NativeView?.Window?.EndEditing(true);
 		}
 
 		protected override void Dispose(bool disposing)
@@ -189,6 +260,7 @@ namespace Xamarin.Forms.Platform.iOS
 				}
 
 				Element = null;
+				Container?.Dispose();
 				_disposed = true;
 			}
 
@@ -220,6 +292,8 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateUseSafeArea();
 			else if (Forms.IsiOS11OrNewer && e.PropertyName == PlatformConfiguration.iOSSpecific.Page.SafeAreaInsetsProperty.PropertyName)
 				UpdateUseSafeArea();
+			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName)
+				UpdateHomeIndicatorAutoHidden();
 		}
 
 		public override UIKit.UIStatusBarAnimation PreferredStatusBarUpdateAnimation
@@ -238,6 +312,11 @@ namespace Xamarin.Forms.Platform.iOS
 						return UIKit.UIStatusBarAnimation.None;
 				}
 			}
+		}
+
+		void IAccessibilityElementsController.ResetAccessibilityElements()
+		{
+			Container?.ClearAccessibilityElements();
 		}
 
 		void UpdateUseSafeArea()
@@ -297,7 +376,7 @@ namespace Xamarin.Forms.Platform.iOS
 				UIView.Animate(0.25, () => SetNeedsStatusBarAppearanceUpdate());
 			else
 				SetNeedsStatusBarAppearanceUpdate();
-			View.SetNeedsLayout();
+			NativeView?.SetNeedsLayout();
 		}
 
 		bool OnShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
@@ -327,17 +406,20 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateBackground()
 		{
+			if (NativeView == null)
+				return;
+
 			string bgImage = ((Page)Element).BackgroundImage;
 			if (!string.IsNullOrEmpty(bgImage))
 			{
-				View.BackgroundColor = ColorExtensions.FromPatternImageFromBundle(bgImage);
+				NativeView.BackgroundColor = ColorExtensions.FromPatternImageFromBundle(bgImage);
 				return;
 			}
 			Color bgColor = Element.BackgroundColor;
 			if (bgColor.IsDefault)
-				View.BackgroundColor = UIColor.White;
+				NativeView.BackgroundColor = UIColor.White;
 			else
-				View.BackgroundColor = bgColor.ToUIColor();
+				NativeView.BackgroundColor = bgColor.ToUIColor();
 		}
 
 		void UpdateTitle()
@@ -354,5 +436,15 @@ namespace Xamarin.Forms.Platform.iOS
 				view = view.Superview;
 			}
 		}
+
+		void UpdateHomeIndicatorAutoHidden()
+		{
+			if (Element == null)
+				return;
+
+			SetNeedsUpdateOfHomeIndicatorAutoHidden();
+		}
+
+		public override bool PrefersHomeIndicatorAutoHidden => ((Page)Element).OnThisPlatform().PrefersHomeIndicatorAutoHidden();
 	}
 }

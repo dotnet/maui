@@ -161,9 +161,23 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		protected bool TabStop { get; set; } = true;
 
-		protected void UpdateTabStop () => TabStop = Element?.IsTabStop ?? true;
+		protected void UpdateTabStop()
+		{
+			if (Element == null)
+				return;
 
-		protected void UpdateTabIndex() => TabIndex = Element?.TabIndex ?? 0;
+			TabStop = Element.IsTabStop;
+			UpdateParentPageAccessibilityElements();
+		}
+
+		protected void UpdateTabIndex()
+		{
+			if (Element == null)
+				return;
+
+			TabIndex = Element.TabIndex;
+			UpdateParentPageAccessibilityElements();
+		}
 
 		public NativeView FocusSearch(bool forwardDirection)
 		{
@@ -481,6 +495,18 @@ namespace Xamarin.Forms.Platform.MacOS
 			var clippableLayout = Element as Layout;
 			if (clippableLayout != null)
 				ClipsToBounds = clippableLayout.IsClippedToBounds;
+#endif
+		}
+
+		void UpdateParentPageAccessibilityElements()
+		{
+#if __MOBILE__
+			UIView parentRenderer = Superview;
+			while (parentRenderer != null && !(parentRenderer is IAccessibilityElementsController))
+				parentRenderer = parentRenderer.Superview;
+
+			if (parentRenderer is IAccessibilityElementsController controller)
+				controller.ResetAccessibilityElements();
 #endif
 		}
 

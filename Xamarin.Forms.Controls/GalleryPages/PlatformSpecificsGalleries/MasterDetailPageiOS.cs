@@ -143,6 +143,11 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 			{
 				Text = "Toggle PreferredStatusBarUpdateAnimation"
 			};
+			
+			var togglePrefersHomeIndicatorAutoHiddenButton = new Button
+			{
+				Text = "Toggle PrefersHomeIndicatorAutoHidden"
+			};
 
 			togglePrefersStatusBarHiddenButtonForPageButton.Command = new Command(() =>
 			{
@@ -165,10 +170,17 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 				else
 					page.On<iOS>().SetPreferredStatusBarUpdateAnimation(UIStatusBarAnimation.Fade);
 			});
+
+			togglePrefersHomeIndicatorAutoHiddenButton.Command = new Command(() =>
+			{
+				var isIndicatorAutoHidden = page.On<iOS>().PrefersHomeIndicatorAutoHidden();
+				page.On<iOS>().SetPrefersHomeIndicatorAutoHidden(!isIndicatorAutoHidden);
+			});
 			
 			content.Children.Add(navigateButton);
 			content.Children.Add(togglePrefersStatusBarHiddenButtonForPageButton);
 			content.Children.Add(togglePreferredStatusBarUpdateAnimationButton);
+			content.Children.Add(togglePrefersHomeIndicatorAutoHiddenButton);
 
 			page.Content = content;
 

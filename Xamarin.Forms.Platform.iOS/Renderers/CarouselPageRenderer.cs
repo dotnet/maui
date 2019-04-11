@@ -250,8 +250,11 @@ namespace Xamarin.Forms.Platform.iOS
 				Platform.SetRenderer(page, renderer);
 			}
 
-			UIView container = new PageContainer(page);
-			container.AddSubview(renderer.NativeView);
+			UIView container = new CarouselPageContainer(page);
+
+			UIView view = renderer.NativeView;
+
+			container.AddSubview(view);
 			_containerMap[page] = container;
 
 			AddChildViewController(renderer.ViewController);
@@ -378,9 +381,9 @@ namespace Xamarin.Forms.Platform.iOS
 				ScrollToPage(CarouselPage.GetIndex(current), animated);
 		}
 
-		class PageContainer : UIView
+		class CarouselPageContainer : UIView
 		{
-			public PageContainer(VisualElement element)
+			public CarouselPageContainer(VisualElement element)
 			{
 				Element = element;
 			}

@@ -231,6 +231,7 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateBarTextColor();
 			UpdateUseLargeTitles();
 			UpdateHideNavigationBarSeparator();
+			SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
 			// If there is already stuff on the stack we need to push it
 			navPage.Pages.ForEach(async p => await PushPageAsync(p, false));
@@ -1296,6 +1297,8 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			return (UIViewController)Platform.GetRenderer(Current);
 		}
+
+		public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden => (UIViewController)Platform.GetRenderer(Current);
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{

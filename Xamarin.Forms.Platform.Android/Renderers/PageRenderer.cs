@@ -1,14 +1,19 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Android.Content;
+using Android.OS;
 using Android.Support.V4.Content;
+using Android.Support.V7.Widget;
+using Android.Views;
+using Android.Views.Accessibility;
 using AColor = Android.Graphics.Color;
 using AColorRes = Android.Resource.Color;
-using Android.Views;
+using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public class PageRenderer : VisualElementRenderer<Page>
+	public class PageRenderer : VisualElementRenderer<Page>, IOrderedTraversalController
 	{
 		public PageRenderer(Context context) : base(context)
 		{
@@ -28,6 +33,8 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		IPageController PageController => Element as IPageController;
+
+		IOrderedTraversalController OrderedTraversalController => this;
 
 		double _previousHeight;
 
@@ -128,6 +135,72 @@ namespace Xamarin.Forms.Platform.Android
 				else if (!isDefaultBkgndColor || setBkndColorEvenWhenItsDefault)
 					SetBackgroundColor(bkgndColor.ToAndroid());
 			}
+		}
+
+		void IOrderedTraversalController.UpdateTraversalOrder()
+		{
+			// traversal order wasn't added until API 22
+			if ((int)Build.VERSION.SdkInt < 22)
+				return;
+
+			// since getting and updating the traversal order is expensive, let's only do it when a screen reader is active
+			// note that this does NOT get auto updated when you enable TalkBack, so the page will need to be reloaded to enable this path 
+			var am = AccessibilityManager.FromContext(Context);
+			if (!am.IsEnabled)
+				return;
+
+			SortedDictionary<int, List<VisualElement>> tabIndexes = null;
+			foreach (var child in Element.LogicalChildren)
+			{
+				if (!(child is VisualElement ve))
+					continue;
+
+				tabIndexes = ve.GetSortedTabIndexesOnParentPage(out _);
+				break;
+			}
+
+			if (tabIndexes == null)
+				return;
+
+			AView prevControl = null;
+			foreach (var idx in tabIndexes?.Keys)
+			{
+				var tabGroup = tabIndexes[idx];
+				foreach (var child in tabGroup)
+				{
+					if (child is Layout || 
+						!(
+							child is VisualElement ve && ve.IsTabStop
+							&& AutomationProperties.GetIsInAccessibleTree(ve) != false // accessible == true
+							&& ve.GetRenderer().View is ITabStop tabStop)
+						 )
+						continue;
+
+					var thisControl = tabStop.TabStop;
+
+					if (thisControl == null)
+						continue;
+
+					// this element should be the first thing focused after the root
+					if (prevControl == null)
+					{
+						thisControl.AccessibilityTraversalAfter = NoId;
+					}
+					else
+					{
+						if (thisControl != prevControl)
+							thisControl.AccessibilityTraversalAfter = prevControl.Id;
+					}
+
+					prevControl = thisControl;
+				}
+			}
+		}
+
+		protected override void OnLayout(bool changed, int l, int t, int r, int b)
+		{
+			base.OnLayout(changed, l, t, r, b);
+			OrderedTraversalController.UpdateTraversalOrder();
 		}
 	}
 }

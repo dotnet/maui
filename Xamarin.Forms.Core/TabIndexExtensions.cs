@@ -1,10 +1,16 @@
 using System.Collections.Generic;
 using Xamarin.Forms.Internals;
+using System.Linq;
 
 namespace Xamarin.Forms
 {
 	public static class TabIndexExtensions
 	{
+		public static SortedDictionary<int, List<VisualElement>> GetSortedTabIndexesOnParentPage(this VisualElement element, out int countChildrensWithTabStopWithoutThis)
+		{
+			return new SortedDictionary<int, List<VisualElement>>(TabIndexExtensions.GetTabIndexesOnParentPage(element, out countChildrensWithTabStopWithoutThis));
+		}
+
 		public static IDictionary<int, List<VisualElement>> GetTabIndexesOnParentPage(this VisualElement element, out int countChildrensWithTabStopWithoutThis)
 		{
 			countChildrensWithTabStopWithoutThis = 0;
@@ -32,7 +38,9 @@ namespace Xamarin.Forms
 
 		public static VisualElement FindNextElement(this VisualElement element, bool forwardDirection, IDictionary<int, List<VisualElement>> tabIndexes, ref int tabIndex)
 		{
-			var tabGroup = tabIndexes[tabIndex];
+			if (!tabIndexes.TryGetValue(tabIndex, out var tabGroup))
+				return null;
+
 			if (!forwardDirection)
 			{
 				// search prev element in same TabIndex group

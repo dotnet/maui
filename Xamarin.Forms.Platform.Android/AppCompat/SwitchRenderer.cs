@@ -66,7 +66,10 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				if (Element != null)
 					Element.Toggled -= HandleToggled;
 
-				Control.SetOnCheckedChangeListener(null);
+				Control?.SetOnCheckedChangeListener(null);
+
+				_defaultTrackDrawable?.Dispose();
+				_defaultTrackDrawable = null;
 			}
 
 			base.Dispose(disposing);
@@ -118,12 +121,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				}
 				else
 				{
-					Control.TrackDrawable.SetColorFilter(Element.OnColor.ToAndroid(), PorterDuff.Mode.Multiply);
+					Control.TrackDrawable?.SetColorFilter(Element.OnColor.ToAndroid(), PorterDuff.Mode.Multiply);
 				}
 			}
 			else
 			{
-				Control.TrackDrawable.ClearColorFilter();
+				Control.TrackDrawable?.ClearColorFilter();
 			}
 		}
 

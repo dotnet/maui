@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Xamarin.Forms.Internals;
@@ -6,15 +7,8 @@ using Xamarin.Forms.Internals;
 namespace Xamarin.Forms.Core.UnitTests
 {
 	[TestFixture]
-	public class ShellTests : BaseTestFixture
+	public class ShellTests : ShellTestBase
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			Device.SetFlags(new[] { Shell.ShellExperimental });
-			base.Setup();
-
-		}
 
 		[Test]
 		public void DefaultState()
@@ -77,26 +71,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual(shellItem, shell.CurrentItem);
 		}
 
-		ShellSection MakeSimpleShellSection(string route, string contentRoute)
-		{
-			return MakeSimpleShellSection(route, contentRoute, new ShellTestPage());
-		}
-
-		ShellSection MakeSimpleShellSection (string route, string contentRoute, ContentPage contentPage)
-		{
-			var shellSection = new ShellSection();
-			shellSection.Route = route;
-			var shellContent = new ShellContent { Content = contentPage, Route = contentRoute };
-			shellSection.Items.Add(shellContent);
-			return shellSection;
-		}
-
-		[QueryProperty("SomeQueryParameter", "SomeQueryParameter")]
-		public class ShellTestPage : ContentPage
-		{
-			public string SomeQueryParameter { get; set; }
-		}
-
 		[Test]
 		public void SimpleGoTo()
 		{
@@ -126,6 +100,37 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("app:///s/two/tabfour/content/"));
 		}
+
+		[Test]
+		public async Task CaseIgnoreRouting()
+		{
+			var routes = new[] { "Tab1", "TAB2", "@-_-@", "+:~", "=%", "Super_Simple+-Route.doc", "1/2", @"1\2/3", "app://tab" };
+
+			foreach (var route in routes)
+			{
+				var formattedRoute = Routing.FormatRoute(route);
+				Routing.RegisterRoute(formattedRoute, typeof(ShellItem));
+
+				var content1 = Routing.GetOrCreateContent(formattedRoute);
+				Assert.IsNotNull(content1);
+				Assert.AreEqual(Routing.GetRoute(content1), formattedRoute);
+			}
+
+			Assert.Catch(typeof(ArgumentException), () => Routing.RegisterRoute("app://IMPL_tab21", typeof(ShellItem)));
+
+			Assert.Catch(typeof(ArgumentException), () => Routing.RegisterRoute(@"app:\\IMPL_tab21", typeof(ShellItem)));
+
+			Assert.Catch(typeof(ArgumentException), () => Routing.RegisterRoute(string.Empty, typeof(ShellItem)));
+
+			Assert.Catch(typeof(ArgumentNullException), () => Routing.RegisterRoute(null, typeof(ShellItem)));
+
+			Assert.Catch(typeof(ArgumentException), () => Routing.RegisterRoute("tab1/IMPL_tab11", typeof(ShellItem)));
+
+			Assert.Catch(typeof(ArgumentException), () => Routing.RegisterRoute("IMPL_shell", typeof(ShellItem)));
+
+			Assert.Catch(typeof(ArgumentException), () => Routing.RegisterRoute("app://tab2/IMPL_tab21", typeof(ShellItem)));
+		}
+
 
 		[Test]
 		public async Task RelativeGoTo()
@@ -165,6 +170,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			await shell.GoToAsync("/tab23");
 			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("app:///s/two/tab23/content/"));
 
+			/*
+			 * removing support for .. notation for now
 			await shell.GoToAsync("../one/tab11");
 			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("app:///s/one/tab11/content/"));
 
@@ -180,6 +187,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			await shell.GoToAsync(new ShellNavigationState($"../one/tab11#fragment"));
 			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("app:///s/one/tab11/content/"));
+			*/
 		}
 
 		[Test]
@@ -312,6 +320,55 @@ namespace Xamarin.Forms.Core.UnitTests
 			shell.FlyoutHeaderTemplate = null;
 
 			Assert.AreEqual(((IShellController)shell).FlyoutHeader, label);
+		}
+
+		[Test]
+		public async Task FlyoutNavigateToImplicitContentPage()
+		{
+			var shell = new Shell();
+			var shellITem = new ShellItem() { FlyoutDisplayOptions = FlyoutDisplayOptions.AsMultipleItems,  };
+			var shellSection = new ShellSection() { Title = "can navigate to" };
+			shellSection.Items.Add(new ContentPage());
+
+			var shellSection2 = new ShellSection() { Title = "can navigate to" };
+			shellSection2.Items.Add(new ContentPage());
+
+			var implicitSection = CreateShellSection(new ContentPage(), asImplicit: true);
+
+			shellITem.Items.Add(shellSection);
+			shellITem.Items.Add(shellSection2);
+			shellITem.Items.Add(implicitSection);
+
+			shell.Items.Add(shellITem);
+			IShellController shellController = (IShellController)shell;
+
+			await shellController.OnFlyoutItemSelectedAsync(shellSection2);
+			Assert.AreEqual(shellSection2, shell.CurrentItem.CurrentItem);
+
+			await shellController.OnFlyoutItemSelectedAsync(shellSection);
+			Assert.AreEqual(shellSection, shell.CurrentItem.CurrentItem);
+
+			await shellController.OnFlyoutItemSelectedAsync(implicitSection);
+			Assert.AreEqual(implicitSection, shell.CurrentItem.CurrentItem);
+
+		}
+
+
+		[Test]
+		public async Task UriNavigationTests()
+		{
+			var shell = new Shell();
+			var item1 = CreateShellItem(asImplicit: true, shellContentRoute: "rootlevelcontent1");
+			var item2 = CreateShellItem(asImplicit: true, shellContentRoute: "rootlevelcontent2");
+
+			shell.Items.Add(item1);
+			shell.Items.Add(item2);
+
+			shell.GoToAsync("//rootlevelcontent2");
+			Assert.AreEqual(shell.CurrentItem, item2);
+
+			shell.GoToAsync("//rootlevelcontent1");
+			Assert.AreEqual(shell.CurrentItem, item1);
 		}
 	}
 }
