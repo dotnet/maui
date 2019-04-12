@@ -327,7 +327,7 @@ namespace Xamarin.Forms.Platform.Android
 					menuItem.SetChecked(true);
 			}
 
-			_bottomView.Visibility = end == 1 ? ViewStates.Gone : ViewStates.Visible;
+			UpdateTabBarVisibility();
 
 			_bottomView.SetShiftMode(false, false);
 
@@ -383,7 +383,7 @@ namespace Xamarin.Forms.Platform.Android
 					visible = false;
 			}
 
-			_bottomView.Visibility = (visible) ? ViewStates.Visible : ViewStates.Gone;
+			_bottomView.Visibility = visible ? ViewStates.Visible : ViewStates.Gone;
 		}
 	}
 }
