@@ -30,6 +30,56 @@
         <dependency id="Tizen.NET" version="4.0.0"/>
       </group>
     </dependencies>
+    
+    <!-- DO NOT DELETE THESE REFERENCES -->
+    <!-- IF YOU DELETE THESE REFERENCES THE PACKAGE WILL NOT WORK ON MAC -->
+    <!-- https://github.com/xamarin/Xamarin.Forms/pull/2575 -->
+    <!-- DO NOT DELETE THESE REFERENCES -->
+    <references>
+      <group>
+        <reference file="Xamarin.Forms.Core.dll" />
+        <reference file="Xamarin.Forms.Platform.dll" />
+        <reference file="Xamarin.Forms.Xaml.dll" />
+      </group>
+      <group targetFramework="Xamarin.iOS10">
+        <reference file="Xamarin.Forms.Core.dll" />
+        <reference file="Xamarin.Forms.Platform.dll" />
+        <reference file="Xamarin.Forms.Xaml.dll" />
+        <reference file="Xamarin.Forms.Platform.iOS.dll" />
+      </group>
+      <group targetFramework="MonoAndroid90">
+        <reference file="Xamarin.Forms.Core.dll" />
+        <reference file="Xamarin.Forms.Platform.dll" />
+        <reference file="Xamarin.Forms.Xaml.dll" />
+        <reference file="FormsViewGroup.dll" />
+        <reference file="Xamarin.Forms.Platform.Android.dll" />
+      </group>
+      <group targetFramework="MonoAndroid81">
+        <reference file="Xamarin.Forms.Core.dll" />
+        <reference file="Xamarin.Forms.Platform.dll" />
+        <reference file="Xamarin.Forms.Xaml.dll" />
+        <reference file="FormsViewGroup.dll" />
+        <reference file="Xamarin.Forms.Platform.Android.dll" />
+      </group>
+      <group targetFramework="uap10.0">
+        <reference file="Xamarin.Forms.Core.dll" />
+        <reference file="Xamarin.Forms.Platform.dll" />
+        <reference file="Xamarin.Forms.Xaml.dll" />
+        <reference file="Xamarin.Forms.Platform.UAP.dll" />
+      </group>
+      <group targetFramework="Xamarin.Mac">
+        <reference file="Xamarin.Forms.Core.dll" />
+        <reference file="Xamarin.Forms.Platform.macOS.dll" />
+        <reference file="Xamarin.Forms.Platform.dll" />
+        <reference file="Xamarin.Forms.Xaml.dll" />
+      </group>
+      <group targetFramework="tizen40">
+        <reference file="Xamarin.Forms.Core.dll" />
+        <reference file="Xamarin.Forms.Platform.Tizen.dll" />
+        <reference file="Xamarin.Forms.Platform.dll" />
+        <reference file="Xamarin.Forms.Xaml.dll" />
+      </group>
+    </references>
   </metadata>
 
   <files>
