@@ -65,7 +65,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			UpdatePulsingStatus();
 		}
 
-		void UpdateProgressColor(bool initialize)
+		protected virtual void UpdateProgressColor(bool initialize)
 		{
 			if (initialize && Element.ProgressColor.IsDefault)
 				return;
