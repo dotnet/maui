@@ -6,15 +6,18 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
+using System.ComponentModel;
 
 namespace Xamarin.Forms
 {
+	[EditorBrowsable(EditorBrowsableState.Always)]
 	public class Tab : ShellSection
 	{
 		public ShellContentCollection Content => Items;
 	}
 
 	[ContentProperty(nameof(Items))]
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController
 	{
 		#region PropertyKeys

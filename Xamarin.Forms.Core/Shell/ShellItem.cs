@@ -4,15 +4,18 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
+using System.ComponentModel;
 
 namespace Xamarin.Forms
 {
+	[EditorBrowsable(EditorBrowsableState.Always)]
 	public class FlyoutItem : ShellItem
 	{
 		public ShellSectionCollection Tabs => Items;
 	}
 
 	[ContentProperty(nameof(Items))]
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class ShellItem : ShellGroupItem, IShellItemController, IElementConfiguration<ShellItem>, IPropertyPropagationController
 	{
 		#region PropertyKeys
