@@ -336,7 +336,8 @@ namespace Xamarin.Forms.Platform.iOS
 			_detailController.AddChildViewController(detailRenderer.ViewController);
 
 			SetNeedsStatusBarAppearanceUpdate();
-			SetNeedsUpdateOfHomeIndicatorAutoHidden();
+			if (Forms.IsiOS11OrNewer)
+				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 		}
 
 		void UpdateLeftBarButton()

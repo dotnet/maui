@@ -231,7 +231,8 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateBarTextColor();
 			UpdateUseLargeTitles();
 			UpdateHideNavigationBarSeparator();
-			SetNeedsUpdateOfHomeIndicatorAutoHidden();
+			if (Forms.IsiOS11OrNewer)
+				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
 			// If there is already stuff on the stack we need to push it
 			navPage.Pages.ForEach(async p => await PushPageAsync(p, false));
@@ -724,9 +725,9 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (NavPage == null)
 				return;
-			if (_ignorePopCall) 
+			if (_ignorePopCall)
 				return;
-			
+
 			_ignorePopCall = true;
 			if (Element.Navigation.NavigationStack.Contains(pageBeingRemoved))
 				await (NavPage as INavigationPageController)?.RemoveAsyncInner(pageBeingRemoved, false, true);
@@ -1347,7 +1348,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 								break;
 							}
-							else if(view.Class.Name == "UINavigationItemButtonView")
+							else if (view.Class.Name == "UINavigationItemButtonView")
 							{
 								if (view.Subviews.Length == 0)
 									NavBarLabel = null;
@@ -1475,7 +1476,7 @@ namespace Xamarin.Forms.Platform.iOS
 					if (_child.Element.Bounds != layoutBounds)
 						Layout.LayoutChildIntoBoundingRegion(_child.Element, layoutBounds);
 				}
-				else if(_icon != null && Superview != null)
+				else if (_icon != null && Superview != null)
 				{
 					_icon.Center = new PointF(Superview.Frame.Width / 2 - Frame.X, Superview.Frame.Height / 2);
 				}
