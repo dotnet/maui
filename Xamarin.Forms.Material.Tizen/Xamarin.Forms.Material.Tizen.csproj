@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>tizen40</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <RootNamespace>Xamarin.Forms.Material.Tizen</RootNamespace>
+    <AssemblyName>Xamarin.Forms.Material</AssemblyName>
+    <OutputType>Library</OutputType>
+    <PackageId>Xamarin.Forms.Material.Tizen</PackageId>
+    <DefineConstants>__TIZEN__</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Xamarin.Forms.Material.Android\MaterialColors.cs">
+      <Link>MaterialColors.cs</Link>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Tizen.NET" Version="4.0.0" />
+    <PackageReference Include="Tizen.NET.MaterialComponents" Version="0.9.5-preview" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj" />
+    <ProjectReference Include="..\Xamarin.Forms.Platform.Tizen\Xamarin.Forms.Platform.Tizen.csproj" />
+  </ItemGroup>
+</Project>

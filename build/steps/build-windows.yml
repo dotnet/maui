@@ -51,6 +51,9 @@ steps:
           Xamarin.Forms.Material.Android/bin/$(BuildConfiguration)/**/*.dll
           Xamarin.Forms.Material.Android/bin/$(BuildConfiguration)/**/*.pdb
           Xamarin.Forms.Material.Android/bin/$(BuildConfiguration)/**/*.mdb
+          Xamarin.Forms.Material.Tizen/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Material.Tizen/bin/$(BuildConfiguration)/**/*.pdb
+          Xamarin.Forms.Material.Tizen/bin/$(BuildConfiguration)/**/*.mdb
           Xamarin.Forms.Platform.WP8/bin/$(BuildConfiguration)/**/*.dll
           Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.pdb
           Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.dll

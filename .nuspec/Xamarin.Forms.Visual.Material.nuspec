@@ -26,6 +26,10 @@
       <group targetFramework="Xamarin.iOS10">
         <dependency id="Xamarin.iOS.MaterialComponents" version="72.2.0.1"/>
       </group>
+      <group targetFramework="tizen40">
+        <dependency id="Tizen.NET" version="4.0.0"/>
+        <dependency id="Tizen.NET.MaterialComponents" version="0.9.5-preview"/>
+      </group>
     </dependencies>
   </metadata>
   <files>
@@ -46,5 +50,9 @@
     <file src="..\Xamarin.Forms.Material.iOS\bin\$Configuration$\Xamarin.Forms.Material.dll" target="lib\Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Material.iOS\bin\$Configuration$\Xamarin.Forms.Material.*pdb" target="lib\Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Material.iOS\bin\$Configuration$\Xamarin.Forms.Material.*mdb" target="lib\Xamarin.iOS10" />
+
+    <!--Tizen-->
+    <file src="..\Xamarin.Forms.Material.Tizen\bin\$Configuration$\tizen40\Xamarin.Forms.Material.dll" target="lib\tizen40" />
+    <file src="..\Xamarin.Forms.Material.Tizen\bin\$Configuration$\tizen40\Xamarin.Forms.Material.*pdb" target="lib\tizen40" />
   </files>
 </package>

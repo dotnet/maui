@@ -8,16 +8,23 @@ using AProgressBar = Android.Widget.ProgressBar;
 using ASeekBar = Android.Widget.AbsSeekBar;
 using PlatformColor = Android.Graphics.Color;
 using Xamarin.Forms.Platform.Android;
-#else
+#elif __IOS__
 using MaterialComponents;
 using Xamarin.Forms.Platform.iOS;
 using PlatformColor = UIKit.UIColor;
+#elif __TIZEN__
+using System;
+using Tizen.NET.MaterialComponents;
+using Xamarin.Forms.Platform.Tizen;
+using PlatformColor = ElmSharp.Color;
 #endif
 
 #if __ANDROID__
 namespace Xamarin.Forms.Material.Android
-#else
+#elif __IOS__
 namespace Xamarin.Forms.Material.iOS
+#elif __TIZEN__
+namespace Xamarin.Forms.Material.Tizen
 #endif
 {
 	// Colors from material-components-android
@@ -266,6 +273,26 @@ namespace Xamarin.Forms.Material.iOS
 					OnSurfaceColor = OnSurfaceColor,
 				};
 			}
+#elif __TIZEN__
+			class FormsLightColors : MColors
+			{
+				public override PlatformColor PrimaryColor => MaterialColors.Light.PrimaryColor;
+				public override PlatformColor PrimaryColorVariant => MaterialColors.Light.PrimaryColorVariant;
+				public override PlatformColor OnPrimaryColor => MaterialColors.Light.OnPrimaryColor;
+				public override PlatformColor SecondaryColor => MaterialColors.Light.SecondaryColor;
+				public override PlatformColor OnSecondaryColor => MaterialColors.Light.OnSecondaryColor;
+
+				public override PlatformColor BackgroundColor => MaterialColors.Light.BackgroundColor;
+				public override PlatformColor ErrorColor => MaterialColors.Light.ErrorColor;
+				public override PlatformColor SurfaceColor => MaterialColors.Light.SurfaceColor;
+				public override PlatformColor OnBackgroundColor => MaterialColors.Light.OnBackgroundColor;
+				public override PlatformColor OnSurfaceColor => MaterialColors.Light.OnSurfaceColor;
+			};
+
+			public static MColors CreateColorScheme()
+			{
+				return new FormsLightColors();
+			}
 #endif
 
 		}
@@ -306,6 +333,26 @@ namespace Xamarin.Forms.Material.iOS
 					OnSurfaceColor = OnSurfaceColor,
 				};
 			}
+#elif __TIZEN__
+			class FormsDarkColors : MColors
+			{
+				public override PlatformColor PrimaryColor => MaterialColors.Dark.PrimaryColor;
+				public override PlatformColor PrimaryColorVariant => MaterialColors.Dark.PrimaryColorVariant;
+				public override PlatformColor OnPrimaryColor => MaterialColors.Dark.OnPrimaryColor;
+				public override PlatformColor SecondaryColor => MaterialColors.Dark.SecondaryColor;
+				public override PlatformColor OnSecondaryColor => MaterialColors.Dark.OnSecondaryColor;
+
+				public override PlatformColor BackgroundColor => MaterialColors.Dark.BackgroundColor;
+				public override PlatformColor ErrorColor => MaterialColors.Dark.ErrorColor;
+				public override PlatformColor SurfaceColor => MaterialColors.Dark.SurfaceColor;
+				public override PlatformColor OnBackgroundColor => MaterialColors.Dark.OnBackgroundColor;
+				public override PlatformColor OnSurfaceColor => MaterialColors.Dark.OnSurfaceColor;
+			};
+
+			public static MColors CreateColorScheme()
+			{
+				return new FormsDarkColors();
+			}
 #endif
 
 		}
@@ -315,8 +362,10 @@ namespace Xamarin.Forms.Material.iOS
 		{
 #if __ANDROID__
 			return color.ToAndroid();
-#else
+#elif __IOS__
 			return color.ToUIColor();
+#elif __TIZEN__
+			return color.ToNative();
 #endif
 		}
 
@@ -326,8 +375,10 @@ namespace Xamarin.Forms.Material.iOS
 		{
 #if __ANDROID__
 			return color.WithAlpha(color.A / 255f * alpha);
-#else
+#elif __IOS__
 			return color.ColorWithAlpha(color.CGColor.Alpha / 255f * alpha);
+#elif __TIZEN__
+			return color.WithAlpha(color.A / 255f * alpha);
 #endif
 		}
 
@@ -335,8 +386,10 @@ namespace Xamarin.Forms.Material.iOS
 		{
 #if __ANDROID__
 			return color.WithAlpha(alpha);
-#else
+#elif __IOS__
 			return color.ColorWithAlpha(alpha);
+#elif __TIZEN__
+			return color.WithAlpha(alpha);
 #endif
 		}
 
@@ -345,9 +398,10 @@ namespace Xamarin.Forms.Material.iOS
 		{
 #if __ANDROID__
 			return PlatformColor.Rgb(red, green, blue);
-#else
+#elif __IOS__
 			return PlatformColor.FromRGB(red, green, blue);
-
+#elif __TIZEN__
+			return PlatformColor.FromRgb(red, green, blue);
 #endif
 		}
 	}
