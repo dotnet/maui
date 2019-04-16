@@ -381,7 +381,7 @@ namespace Xamarin.Forms.Platform.iOS
 		protected virtual void UpdateSearchVisibility(UISearchController searchController)
 		{
 			var visibility = SearchHandler.SearchBoxVisibility;
-			if (visibility == SearchBoxVisiblity.Hidden)
+			if (visibility == SearchBoxVisibility.Hidden)
 			{
 				if (searchController != null)
 				{
@@ -391,12 +391,12 @@ namespace Xamarin.Forms.Platform.iOS
 						NavigationItem.TitleView = null;
 				}
 			}
-			else if (visibility == SearchBoxVisiblity.Collapsable || visibility == SearchBoxVisiblity.Expanded)
+			else if (visibility == SearchBoxVisibility.Collapsible || visibility == SearchBoxVisibility.Expanded)
 			{
 				if (Forms.IsiOS11OrNewer)
 				{
 					NavigationItem.SearchController = _searchController;
-					NavigationItem.HidesSearchBarWhenScrolling = visibility == SearchBoxVisiblity.Collapsable;
+					NavigationItem.HidesSearchBarWhenScrolling = visibility == SearchBoxVisibility.Collapsible;
 				}
 				else
 				{
@@ -417,7 +417,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			_searchController = new UISearchController(_resultsRenderer?.ViewController);
 			var visibility = SearchHandler.SearchBoxVisibility;
-			if (visibility != SearchBoxVisiblity.Hidden)
+			if (visibility != SearchBoxVisibility.Hidden)
 			{
 				if (Forms.IsiOS11OrNewer)
 					NavigationItem.SearchController = _searchController;
@@ -438,7 +438,7 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateSearchIsEnabled(_searchController);
 			searchBar.SearchButtonClicked += SearchButtonClicked;
 			if (Forms.IsiOS11OrNewer)
-				NavigationItem.HidesSearchBarWhenScrolling = visibility == SearchBoxVisiblity.Collapsable;
+				NavigationItem.HidesSearchBarWhenScrolling = visibility == SearchBoxVisibility.Collapsible;
 
 			var icon = SearchHandler.QueryIcon;
 			if (icon != null)

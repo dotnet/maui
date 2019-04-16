@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Controls
 		public ButtonGallery ()
 		{
 			//ShellAppearance.SetNavBarVisible(this, false);
-			Shell.SetSearchHandler(this, new SearchHandler() { SearchBoxVisibility = SearchBoxVisiblity.Collapsable });
+			Shell.SetSearchHandler(this, new SearchHandler() { SearchBoxVisibility = SearchBoxVisibility.Collapsible });
 			BackgroundColor = new Color (0.9);
 
 			var normal = new Button { Text = "Normal Button" };

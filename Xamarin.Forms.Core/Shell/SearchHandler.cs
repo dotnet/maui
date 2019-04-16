@@ -121,7 +121,7 @@ namespace Xamarin.Forms
 				propertyChanged: OnQueryChanged);
 
 		public static readonly BindableProperty SearchBoxVisibilityProperty =
-			BindableProperty.Create(nameof(SearchBoxVisibility), typeof(SearchBoxVisiblity), typeof(SearchHandler), SearchBoxVisiblity.Expanded, BindingMode.OneWay);
+			BindableProperty.Create(nameof(SearchBoxVisibility), typeof(SearchBoxVisibility), typeof(SearchHandler), SearchBoxVisibility.Expanded, BindingMode.OneWay);
 
 		static readonly BindablePropertyKey SelectedItemPropertyKey =
 			BindableProperty.CreateReadOnly (nameof(SelectedItem), typeof(object), typeof(SearchHandler), null, BindingMode.OneWayToSource);
@@ -253,9 +253,9 @@ namespace Xamarin.Forms
 			set { SetValue(QueryIconNameProperty, value); }
 		}
 
-		public SearchBoxVisiblity SearchBoxVisibility
+		public SearchBoxVisibility SearchBoxVisibility
 		{
-			get { return (SearchBoxVisiblity)GetValue(SearchBoxVisibilityProperty); }
+			get { return (SearchBoxVisibility)GetValue(SearchBoxVisibilityProperty); }
 			set { SetValue(SearchBoxVisibilityProperty, value); }
 		}
 

@@ -421,7 +421,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			SearchHandler = Shell.GetSearchHandler(page);
-			if (SearchHandler != null && SearchHandler.SearchBoxVisibility != SearchBoxVisiblity.Hidden)
+			if (SearchHandler != null && SearchHandler.SearchBoxVisibility != SearchBoxVisibility.Hidden)
 			{
 				var context = _shellContext.AndroidContext;
 				if (_searchView == null)
@@ -438,7 +438,7 @@ namespace Xamarin.Forms.Platform.Android
 					_searchView.SearchConfirmed += OnSearchConfirmed;
 				}
 
-				if (SearchHandler.SearchBoxVisibility == SearchBoxVisiblity.Collapsable)
+				if (SearchHandler.SearchBoxVisibility == SearchBoxVisibility.Collapsible)
 				{
 					var placeholder = new Java.Lang.String(SearchHandler.Placeholder);
 					var item = menu.Add(placeholder);
@@ -457,7 +457,7 @@ namespace Xamarin.Forms.Platform.Android
 					item.SetActionView(_searchView.View);
 					item.Dispose();
 				}
-				else if (SearchHandler.SearchBoxVisibility == SearchBoxVisiblity.Expanded)
+				else if (SearchHandler.SearchBoxVisibility == SearchBoxVisibility.Expanded)
 				{
 					_searchView.ShowKeyboardOnAttached = false;
 					if (_searchView.View.Parent != _toolbar)
@@ -482,7 +482,7 @@ namespace Xamarin.Forms.Platform.Android
 		void OnSearchViewAttachedToWindow(object sender, AView.ViewAttachedToWindowEventArgs e)
 		{
 			// We only need to do this tint hack when using collapsed search handlers
-			if (SearchHandler.SearchBoxVisibility != SearchBoxVisiblity.Collapsable)
+			if (SearchHandler.SearchBoxVisibility != SearchBoxVisibility.Collapsible)
 				return;
 
 			for (int i = 0; i < _toolbar.ChildCount; i++)
