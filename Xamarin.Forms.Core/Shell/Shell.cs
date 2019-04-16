@@ -574,9 +574,6 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty FlyoutIsPresentedProperty =
 			BindableProperty.Create(nameof(FlyoutIsPresented), typeof(bool), typeof(Shell), false, BindingMode.TwoWay);
 
-		public static readonly BindableProperty GroupHeaderTemplateProperty =
-			BindableProperty.Create(nameof(GroupHeaderTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime);
-
 		public static readonly BindableProperty ItemsProperty = ItemsPropertyKey.BindableProperty;
 
 		public static readonly BindableProperty ItemTemplateProperty =
@@ -669,12 +666,6 @@ namespace Xamarin.Forms
 		{
 			get => (bool)GetValue(FlyoutIsPresentedProperty);
 			set => SetValue(FlyoutIsPresentedProperty, value);
-		}
-
-		public DataTemplate GroupHeaderTemplate
-		{
-			get => (DataTemplate)GetValue(GroupHeaderTemplateProperty);
-			set => SetValue(GroupHeaderTemplateProperty, value);
 		}
 
 		public ShellItemCollection Items => (ShellItemCollection)GetValue(ItemsProperty);
