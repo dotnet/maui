@@ -9,6 +9,7 @@ parameters:
   signBuild: false
 
 steps:
+  - checkout: none
   - template: sign-artifacts.yml@xamarin-templates
     parameters:
       targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
