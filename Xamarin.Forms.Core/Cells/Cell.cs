@@ -8,22 +8,22 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
-	public abstract class Cell : Element, ICellController, IElementConfiguration<Cell>, IFlowDirectionController, IPropertyPropagationController, IVisualController
+	// Don't add IElementConfiguration<Cell> because it kills performance on UWP structures that use Cells
+	public abstract class Cell : Element, ICellController, IFlowDirectionController, IPropertyPropagationController, IVisualController
 	{
 		public const int DefaultCellHeight = 40;
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create("IsEnabled", typeof(bool), typeof(Cell), true, propertyChanged: OnIsEnabledPropertyChanged);
 
 		ObservableCollection<MenuItem> _contextActions;
+		readonly Lazy<ElementConfiguration> _elementConfiguration;
 
 		double _height = -1;
 
 		bool _nextCallToForceUpdateSizeQueued;
 
-		readonly Lazy<PlatformConfigurationRegistry<Cell>> _platformConfigurationRegistry;
-
 		public Cell()
 		{
-			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Cell>>(() => new PlatformConfigurationRegistry<Cell>(this));
+			_elementConfiguration = new Lazy<ElementConfiguration>(() => new ElementConfiguration(this));
 		}
 
 		EffectiveFlowDirection _effectiveFlowDirection = default(EffectiveFlowDirection);
@@ -49,6 +49,9 @@ namespace Xamarin.Forms
 			get { return _effectiveVisual; }
 			set
 			{
+				if (value == _effectiveVisual)
+					return;
+
 				_effectiveVisual = value;
 				OnPropertyChanged(VisualElement.VisualProperty.PropertyName);
 			}
@@ -125,11 +128,6 @@ namespace Xamarin.Forms
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler ForceUpdateSizeRequested;
-
-		public IPlatformElementConfiguration<T, Cell> On<T>() where T : IConfigPlatform
-		{
-			return _platformConfigurationRegistry.Value.On<T>();
-		}
 
 		public void ForceUpdateSize()
 		{
@@ -257,5 +255,39 @@ namespace Xamarin.Forms
 			if (e.PropertyName == "RowHeight")
 				OnPropertyChanging("RenderHeight");
 		}
+
+
+		#region Nested IElementConfiguration<Cell> Implementation
+		// This creates a nested class to keep track of IElementConfiguration<Cell> because adding 
+		// IElementConfiguration<Cell> to the Cell itself tanks performance on UWP ListViews
+		// Issue has been logged with UWP
+		public IPlatformElementConfiguration<T, Cell> On<T>() where T : IConfigPlatform
+		{
+			return GetElementConfiguration().On<T>();
+		}
+
+		IElementConfiguration<Cell> GetElementConfiguration()
+		{
+			return _elementConfiguration.Value;
+		}
+
+		class ElementConfiguration : IElementConfiguration<Cell>
+		{
+			readonly Lazy<PlatformConfigurationRegistry<Cell>> _platformConfigurationRegistry;
+			public ElementConfiguration(Cell cell)
+			{
+				_platformConfigurationRegistry = 
+					new Lazy<PlatformConfigurationRegistry<Cell>>(() => new PlatformConfigurationRegistry<Cell>(cell));
+			}
+
+			public IPlatformElementConfiguration<T, Cell> On<T>() where T : IConfigPlatform
+			{
+				return _platformConfigurationRegistry.Value.On<T>();
+			}
+
+			internal PlatformConfigurationRegistry<Cell> Registry => _platformConfigurationRegistry.Value;
+		}
+		#endregion
+
 	}
 }

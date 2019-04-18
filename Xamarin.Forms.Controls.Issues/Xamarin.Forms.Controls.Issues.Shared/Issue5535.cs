@@ -36,7 +36,6 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement("FilterItems");
 			RunningApp.Tap("FilterItems");	
 			RunningApp.EnterText("abcdef");
-			RunningApp.PressEnter();
 		
 			// Default empty view
 			RunningApp.WaitForElement("Nothing to see here.");

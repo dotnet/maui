@@ -202,6 +202,9 @@ namespace Xamarin.Forms
 
 			if (Shell.GetSearchHandler(this) is SearchHandler searchHandler)
 				SetInheritedBindingContext(searchHandler, BindingContext);
+
+			if (Shell.GetTitleView(this) is View titleView)
+				SetInheritedBindingContext(titleView, BindingContext);
 		}
 
 		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)

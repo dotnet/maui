@@ -22,14 +22,16 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.EmptyViewG
 
 			CollectionView.ItemsSource = _demoFilteredItemSource.Items;
 
-			SearchBar.SearchCommand = new Command(() =>
-			{
-				_demoFilteredItemSource.FilterItems(SearchBar.Text);
-			});
+			SearchBar.TextChanged += SearchBarTextChanged;
 
 			EmptyViewSwitch.Toggled += EmptyViewSwitchToggled;
 
 			SwitchEmptyView();
+		}
+
+		private void SearchBarTextChanged(object sender, TextChangedEventArgs e)
+		{
+			_demoFilteredItemSource.FilterItems(SearchBar.Text);
 		}
 
 		private void EmptyViewSwitchToggled(object sender, ToggledEventArgs e)

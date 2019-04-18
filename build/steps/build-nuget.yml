@@ -59,7 +59,7 @@ steps:
     inputs:
       command: push
       packagesToPush: '$(Build.ArtifactStagingDirectory)/nuget/debug/*.nupkg'
-      publishVstsFeed: '13fa23d7-5f2f-47f1-a87c-45a9f173dd74'
+      publishVstsFeed: '$(VstsFeed)'
       allowPackageConflicts: true
 
 

@@ -64,6 +64,9 @@ namespace Xamarin.Forms.Platform.Android
 			_bottomView.SetBackgroundColor(Color.White.ToAndroid());
 			_bottomView.SetOnNavigationItemSelectedListener(this);
 
+			if(ShellItem == null)
+				throw new ArgumentException("Active Shell Item not set. Have you added any Shell Items to your Shell?", nameof(ShellItem));
+
 			HookEvents(ShellItem);
 			SetupMenu();
 

@@ -16,8 +16,6 @@ namespace Xamarin.Forms
 
 	public interface IShellController : IPageController
 	{
-		event EventHandler HeaderChanged;
-
 		event EventHandler StructureChanged;
 
 		View FlyoutHeader { get; }

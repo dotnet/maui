@@ -187,19 +187,12 @@ namespace Xamarin.Forms
 		List<(IAppearanceObserver Observer, Element Pivot)> _appearanceObservers = new List<(IAppearanceObserver Observer, Element Pivot)>();
 		List<IFlyoutBehaviorObserver> _flyoutBehaviorObservers = new List<IFlyoutBehaviorObserver>();
 
-		event EventHandler IShellController.HeaderChanged
-		{
-			add { _headerChanged += value; }
-			remove { _headerChanged -= value; }
-		}
-
 		event EventHandler IShellController.StructureChanged
 		{
 			add { _structureChanged += value; }
 			remove { _structureChanged -= value; }
 		}
 
-		event EventHandler _headerChanged;
 		event EventHandler _structureChanged;
 
 		View IShellController.FlyoutHeader => FlyoutHeaderView;
@@ -574,9 +567,6 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty FlyoutIsPresentedProperty =
 			BindableProperty.Create(nameof(FlyoutIsPresented), typeof(bool), typeof(Shell), false, BindingMode.TwoWay);
 
-		public static readonly BindableProperty GroupHeaderTemplateProperty =
-			BindableProperty.Create(nameof(GroupHeaderTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime);
-
 		public static readonly BindableProperty ItemsProperty = ItemsPropertyKey.BindableProperty;
 
 		public static readonly BindableProperty ItemTemplateProperty =
@@ -671,12 +661,6 @@ namespace Xamarin.Forms
 			set => SetValue(FlyoutIsPresentedProperty, value);
 		}
 
-		public DataTemplate GroupHeaderTemplate
-		{
-			get => (DataTemplate)GetValue(GroupHeaderTemplateProperty);
-			set => SetValue(GroupHeaderTemplateProperty, value);
-		}
-
 		public ShellItemCollection Items => (ShellItemCollection)GetValue(ItemsProperty);
 		public ShellItemCollection Flyout => Items;
 
@@ -717,8 +701,14 @@ namespace Xamarin.Forms
 				_flyoutHeaderView = value;
 				if (_flyoutHeaderView != null)
 					OnChildAdded(_flyoutHeaderView);
-				_headerChanged?.Invoke(this, EventArgs.Empty);
 			}
+		}
+
+		protected override void OnBindingContextChanged()
+		{
+			base.OnBindingContextChanged();
+			if (FlyoutHeaderView != null)
+				SetInheritedBindingContext(FlyoutHeaderView, BindingContext);
 		}
 
 		List<List<Element>> IShellController.GenerateFlyoutGrouping()
@@ -1042,10 +1032,6 @@ namespace Xamarin.Forms
 				else
 					FlyoutHeaderView = null;
 			}
-			else
-			{
-				FlyoutHeaderView.BindingContext = newVal;
-			}
 		}
 
 		void OnFlyoutHeaderTemplateChanged(DataTemplate oldValue, DataTemplate newValue)
@@ -1060,7 +1046,6 @@ namespace Xamarin.Forms
 			else
 			{
 				var newHeaderView = (View)newValue.CreateContent(FlyoutHeader, this);
-				newHeaderView.BindingContext = FlyoutHeader;
 				FlyoutHeaderView = newHeaderView;
 			}
 		}

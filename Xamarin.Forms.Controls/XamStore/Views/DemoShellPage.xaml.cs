@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Controls.XamStore
 			InitializeComponent();
 			ViewModel = new HomeViewModel();
 			NavigationPage.SetBackButtonTitle(this, "");
-			//AddSearchHandler("Search", SearchBoxVisiblity.Expanded);
+			//AddSearchHandler("Search", SearchBoxVisibility.Expanded);
 		}
 
 		protected override void OnAppearing()
@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Controls.XamStore
 			(sender as ListView).SelectedItem = null;
 		}
 
-		protected void AddSearchHandler(string placeholder, SearchBoxVisiblity visibility)
+		protected void AddSearchHandler(string placeholder, SearchBoxVisibility visibility)
 		{
 			var searchHandler = new BasePage.CustomSearchHandler();
 
