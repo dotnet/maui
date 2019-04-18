@@ -82,35 +82,49 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
+		static void RegisterHandler(Type target, Type handler, Type filter)
+		{
+			Type current = Registrar.Registered.GetHandlerType(target);
+			if (current != filter)
+				return;
+
+			Registrar.Registered.Register(target, handler);
+		}
+
+		// This is currently being used by the previewer please do not change or remove this
+		static void RegisterHandlers()
+		{
+			RegisterHandler(typeof(NavigationPage), typeof(NavigationPageRenderer), typeof(NavigationRenderer));
+			RegisterHandler(typeof(TabbedPage), typeof(TabbedPageRenderer), typeof(TabbedRenderer));
+			RegisterHandler(typeof(MasterDetailPage), typeof(MasterDetailPageRenderer), typeof(MasterDetailRenderer));
+			RegisterHandler(typeof(Switch), typeof(AppCompat.SwitchRenderer), typeof(SwitchRenderer));
+			RegisterHandler(typeof(Picker), typeof(AppCompat.PickerRenderer), typeof(PickerRenderer));
+			RegisterHandler(typeof(CarouselPage), typeof(AppCompat.CarouselPageRenderer), typeof(CarouselPageRenderer));
+
+			if (Forms.Flags.Contains(Flags.FastRenderersExperimental))
+			{
+				RegisterHandler(typeof(Button), typeof(FastRenderers.ButtonRenderer), typeof(ButtonRenderer));
+				RegisterHandler(typeof(Label), typeof(FastRenderers.LabelRenderer), typeof(LabelRenderer));
+				RegisterHandler(typeof(Image), typeof(FastRenderers.ImageRenderer), typeof(ImageRenderer));
+				RegisterHandler(typeof(Frame), typeof(FastRenderers.FrameRenderer), typeof(FrameRenderer));
+			}
+			else
+			{
+				RegisterHandler(typeof(Button), typeof(AppCompat.ButtonRenderer), typeof(ButtonRenderer));
+				RegisterHandler(typeof(Frame), typeof(AppCompat.FrameRenderer), typeof(FrameRenderer));
+			}
+		}
+
 		protected void LoadApplication(Application application)
 		{
-			if(!_activityCreated)
+			if (!_activityCreated)
 			{
-			    throw new InvalidOperationException("Activity OnCreate was not called prior to loading the application. Did you forget a base.OnCreate call?");
+				throw new InvalidOperationException("Activity OnCreate was not called prior to loading the application. Did you forget a base.OnCreate call?");
 			}
-			
+
 			if (!_renderersAdded)
 			{
-				RegisterHandlerForDefaultRenderer(typeof(NavigationPage), typeof(NavigationPageRenderer), typeof(NavigationRenderer));
-				RegisterHandlerForDefaultRenderer(typeof(TabbedPage), typeof(TabbedPageRenderer), typeof(TabbedRenderer));
-				RegisterHandlerForDefaultRenderer(typeof(MasterDetailPage), typeof(MasterDetailPageRenderer), typeof(MasterDetailRenderer));
-				RegisterHandlerForDefaultRenderer(typeof(Switch), typeof(AppCompat.SwitchRenderer), typeof(SwitchRenderer));
-				RegisterHandlerForDefaultRenderer(typeof(Picker), typeof(AppCompat.PickerRenderer), typeof(PickerRenderer));
-				RegisterHandlerForDefaultRenderer(typeof(CarouselPage), typeof(AppCompat.CarouselPageRenderer), typeof(CarouselPageRenderer));
-
-				if (Forms.Flags.Contains(Flags.FastRenderersExperimental))
-				{
-					RegisterHandlerForDefaultRenderer(typeof(Button), typeof(FastRenderers.ButtonRenderer), typeof(ButtonRenderer));
-					RegisterHandlerForDefaultRenderer(typeof(Label), typeof(FastRenderers.LabelRenderer), typeof(LabelRenderer));
-					RegisterHandlerForDefaultRenderer(typeof(Image), typeof(FastRenderers.ImageRenderer), typeof(ImageRenderer));
-					RegisterHandlerForDefaultRenderer(typeof(Frame), typeof(FastRenderers.FrameRenderer), typeof(FrameRenderer));
-				}
-				else
-				{
-					RegisterHandlerForDefaultRenderer(typeof(Button), typeof(AppCompat.ButtonRenderer), typeof(ButtonRenderer));
-					RegisterHandlerForDefaultRenderer(typeof(Frame), typeof(AppCompat.FrameRenderer), typeof(FrameRenderer));
-				}
-
+				RegisterHandlers();
 				_renderersAdded = true;
 			}
 
@@ -326,7 +340,7 @@ namespace Xamarin.Forms.Platform.Android
 			PopupManager.ResetBusyCount(this);
 
 			Platform = new AppCompat.Platform(this);
-			
+
 			Platform.SetPage(page);
 			_layout.AddView(Platform);
 			_layout.BringToFront();
@@ -345,13 +359,10 @@ namespace Xamarin.Forms.Platform.Android
 				_application.SendSleep();
 		}
 
+		// This is currently being used by the previewer please do not change or remove this
 		void RegisterHandlerForDefaultRenderer(Type target, Type handler, Type filter)
 		{
-			Type current = Registrar.Registered.GetHandlerType(target);
-			if (current != filter)
-				return;
-
-			Registrar.Registered.Register(target, handler);
+			RegisterHandler(target, handler, filter);
 		}
 
 		void SetMainPage()
