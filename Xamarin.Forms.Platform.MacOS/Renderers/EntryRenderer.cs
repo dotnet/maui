@@ -93,13 +93,12 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			base.OnElementChanged(e);
 
-			if (Control == null)
-			{
-				CreateControl();
-			}
-
 			if (e.NewElement != null)
 			{
+				if (Control == null)
+				{
+					CreateControl();
+				}
 				UpdateControl();
 			}
 		}
