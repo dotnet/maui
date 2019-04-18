@@ -7,26 +7,16 @@ steps:
     - task: NuGetCommand@2
       displayName: 'NuGet restore'
       inputs:
-        restoreSolution: Xamarin.Forms.sln
-
+        restoreSolution: $(SolutionFile)
 
     - task: MSBuild@1
-      displayName: 'Build solution Xamarin.Forms.sln'
+      displayName: 'Build solution'
       inputs:
-        solution: Xamarin.Forms.sln
-        msbuildVersion: 15.0
+        solution: $(SolutionFile)
         platform: '$(BuildPlatform)'
         configuration: '$(BuildConfiguration)'
         msbuildArguments: '/nowarn:VSX1000 /p:CreateAllAndroidTargets=true'
         clean: true
-
-
-    - task: DeleteFiles@1
-      displayName: 'Delete files from $(Build.ArtifactStagingDirectory)'
-      inputs:
-        SourceFolder: '$(Build.ArtifactStagingDirectory)'
-        Contents: '**/*'
-
 
     - task: CopyFiles@2
       displayName: 'Copy Files dlls'

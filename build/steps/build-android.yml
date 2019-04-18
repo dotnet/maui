@@ -2,6 +2,7 @@ parameters:
   name: ''            # in the form type_platform_host
   displayName: ''     # the human name
   vmImage: ''         # the VM image
+  vmPool: 'Hosted Mac Internal'         # the VM pool
   targetFolder: ''    # the bootstrapper target
   dependsOn: []       # the dependiencies
   preBuildSteps: []   # any steps to run before the build
@@ -64,3 +65,9 @@ jobs:
             ${{ parameters.targetFolder }}/$(ApkName)
           TargetFolder: ${{ parameters.apkTargetFolder }}
           CleanTargetFolder: true
+
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Artifact: AndroidApps'
+        inputs:
+          PathtoPublish: '$(build.artifactstagingdirectory)'
+          ArtifactName: OSXArtifacts

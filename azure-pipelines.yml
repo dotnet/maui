@@ -45,7 +45,7 @@ jobs:
   displayName: Prepare Build Phase
   condition: succeeded()
   pool:
-    name: Hosted VS2017
+    name: $(winVmImage)
   steps:
      - template: build/steps/build-prepare.yml
 
@@ -54,8 +54,7 @@ jobs:
   dependsOn: Phase_1
   condition: succeeded()
   pool:
-    name: Hosted VS2017
-    demands: msbuild
+    name: $(winVmImage)
   strategy:
     matrix:
       debug:
@@ -72,7 +71,7 @@ jobs:
   dependsOn: Phase_2
   condition: succeeded()
   pool:
-    name: Hosted VS2017
+    name: $(winVmImage)
     demands: vstest
   strategy:
     matrix:
@@ -87,7 +86,7 @@ jobs:
   parameters:
     name: android_legacy
     displayName: Build Android [Legacy Renderers]
-    vmImage: Hosted Mac Internal
+    vmImage: $(macOSVmImage)
     targetFolder: Xamarin.Forms.ControlGallery.Android/legacyRenderers/
     androidProjectArguments: '/t:"Rebuild;SignAndroidPackage"'
     dependsOn: Phase_1
@@ -97,7 +96,7 @@ jobs:
   parameters:
     name: android_preappcompact
     displayName: Build Android [Pre-AppCompat]
-    vmImage: Hosted Mac Internal
+    vmImage: $(macOSVmImage)
     targetFolder: Xamarin.Forms.ControlGallery.Android/preAppCompat
     androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /p:DefineConstants="TRACE DEBUG FORMS_APPLICATION_ACTIVITY APP"'
     dependsOn: Phase_1
@@ -107,7 +106,7 @@ jobs:
   parameters:
     name: android_fast
     displayName: Build Android [Fast Renderers]
-    vmImage: Hosted Mac Internal
+    vmImage: $(macOSVmImage)
     targetFolder: Xamarin.Forms.ControlGallery.Android/newRenderers/
     androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /p:DefineConstants="TRACE DEBUG TEST_EXPERIMENTAL_RENDERERS APP"'
     dependsOn: Phase_1
@@ -118,7 +117,7 @@ jobs:
   dependsOn: Phase_1
   condition: succeeded()
   pool:
-    name: Hosted Mac Internal
+    name: $(macOSVmImage)
     demands:
       - Agent.OS -equals darwin
       - sh
@@ -131,6 +130,8 @@ jobs:
     buildConfiguration: $(DefaultBuildConfiguration)
     slnPath: $(SolutionFile)
     nugetVersion: 4.8.1
+    iOSCertSecureFileName: 'Xamarin Forms iOS Certificate.p12'
+    iOSProvisioningSecureFileName: 'Xamarin Forms iOS Provisioning.mobileprovision'
   steps:
      - template: build/steps/build-osx.yml
 
@@ -143,24 +144,25 @@ jobs:
    - android_fast
   condition: succeeded()
   pool:
-    name: Hosted VS2017
-    demands: DotNetFramework
+    name: $(winVmImage)
   variables:
     FormsIdAppend: ''
     buildConfiguration: $(DefaultBuildConfiguration)
   steps:
      - template: build/steps/build-nuget.yml
 
-- job: Phase_6
-  displayName: Sign Phase
-  dependsOn: Phase_5
-  pool:
-    name: VSEng-Xamarin-Forms
-  variables:
-    signBuild: $[dependencies.Phase_1.outputs['prepare.signnuget']]
+  # only sign the packages when running on Windows, and using the private server which has the certificates
+- ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+  - job: Phase_6
     displayName: Sign Phase
-  steps:
-     - template: build/steps/build-sign.yml
+    dependsOn: Phase_5
+    pool:
+      name: $(signVmImage)
+    variables:
+      signBuild: $[dependencies.Phase_1.outputs['prepare.signnuget']]
+      displayName: Sign Phase
+    steps:
+      - template: build/steps/build-sign.yml
 
 
 
