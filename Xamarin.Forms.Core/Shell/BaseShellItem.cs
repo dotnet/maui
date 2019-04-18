@@ -67,6 +67,9 @@ namespace Xamarin.Forms
 			get { return _effectiveVisual; }
 			set
 			{
+				if (value == _effectiveVisual)
+					return;
+
 				_effectiveVisual = value;
 				OnPropertyChanged(VisualElement.VisualProperty.PropertyName);
 			}

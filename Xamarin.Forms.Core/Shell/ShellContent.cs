@@ -89,7 +89,8 @@ namespace Xamarin.Forms
 
 		internal override ReadOnlyCollection<Element> LogicalChildrenInternal => _logicalChildrenReadOnly ?? (_logicalChildrenReadOnly = new ReadOnlyCollection<Element>(_logicalChildren));
 
-		Page ContentCache {
+		Page ContentCache
+		{
 			get { return _contentCache; }
 			set
 			{

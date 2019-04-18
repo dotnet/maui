@@ -187,19 +187,12 @@ namespace Xamarin.Forms
 		List<(IAppearanceObserver Observer, Element Pivot)> _appearanceObservers = new List<(IAppearanceObserver Observer, Element Pivot)>();
 		List<IFlyoutBehaviorObserver> _flyoutBehaviorObservers = new List<IFlyoutBehaviorObserver>();
 
-		event EventHandler IShellController.HeaderChanged
-		{
-			add { _headerChanged += value; }
-			remove { _headerChanged -= value; }
-		}
-
 		event EventHandler IShellController.StructureChanged
 		{
 			add { _structureChanged += value; }
 			remove { _structureChanged -= value; }
 		}
 
-		event EventHandler _headerChanged;
 		event EventHandler _structureChanged;
 
 		View IShellController.FlyoutHeader => FlyoutHeaderView;
@@ -708,8 +701,14 @@ namespace Xamarin.Forms
 				_flyoutHeaderView = value;
 				if (_flyoutHeaderView != null)
 					OnChildAdded(_flyoutHeaderView);
-				_headerChanged?.Invoke(this, EventArgs.Empty);
 			}
+		}
+
+		protected override void OnBindingContextChanged()
+		{
+			base.OnBindingContextChanged();
+			if (FlyoutHeaderView != null)
+				SetInheritedBindingContext(FlyoutHeaderView, BindingContext);
 		}
 
 		List<List<Element>> IShellController.GenerateFlyoutGrouping()
@@ -1033,10 +1032,6 @@ namespace Xamarin.Forms
 				else
 					FlyoutHeaderView = null;
 			}
-			else
-			{
-				FlyoutHeaderView.BindingContext = newVal;
-			}
 		}
 
 		void OnFlyoutHeaderTemplateChanged(DataTemplate oldValue, DataTemplate newValue)
@@ -1051,7 +1046,6 @@ namespace Xamarin.Forms
 			else
 			{
 				var newHeaderView = (View)newValue.CreateContent(FlyoutHeader, this);
-				newHeaderView.BindingContext = FlyoutHeader;
 				FlyoutHeaderView = newHeaderView;
 			}
 		}

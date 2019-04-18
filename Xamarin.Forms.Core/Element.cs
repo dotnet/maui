@@ -338,6 +338,10 @@ namespace Xamarin.Forms
 		{
 			base.OnPropertyChanged(propertyName);
 
+			IPropertyPropagationController titleView = Shell.GetTitleView(this) ?? NavigationPage.GetTitleView(this);
+			if(titleView != null)
+				PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { titleView });
+
 			if (_effects == null || _effects.Count == 0)
 				return;
 

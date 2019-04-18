@@ -386,8 +386,6 @@ namespace Xamarin.Forms.Platform.Android
 			}
 			else
 			{
-				// FIXME
-				titleView.Parent = _shellContext.Shell;
 				_titleViewContainer = new ContainerView(context, titleView);
 				_titleViewContainer.MatchHeight = _titleViewContainer.MatchWidth = true;
 				_titleViewContainer.LayoutParameters = new Toolbar.LayoutParams(LP.MatchParent, LP.MatchParent)

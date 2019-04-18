@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Controls
 	[Preserve]
 	[QueryProperty("Text", "welcome")]
 	[XamlCompilation(XamlCompilationOptions.Compile)]
-	public partial class ShellContent : ContentPage
+	public partial class ShellContentTest : ContentPage
 	{
 		private class MySearchHandler : SearchHandler
 		{
@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Controls
 
 		private string _text;
 
-		public ShellContent()
+		public ShellContentTest()
 		{
 			InitializeComponent();
 
@@ -89,7 +89,7 @@ namespace Xamarin.Forms.Controls
 
 		private void InsertClicked(object sender, EventArgs e)
 		{
-			Navigation.InsertPageBefore(new ShellContent(), this);
+			Navigation.InsertPageBefore(new ShellContentTest(), this);
 		}
 
 		private void ToggleClicked(object sender, EventArgs e)
@@ -122,7 +122,7 @@ namespace Xamarin.Forms.Controls
 
 		private async void PushClicked(object sender, EventArgs e)
 		{
-			await Navigation.PushAsync(new ShellContent()
+			await Navigation.PushAsync(new ShellContentTest()
 			{
 				Text = Text + "1"
 			});
