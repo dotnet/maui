@@ -12,6 +12,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls
 {
+	[Preserve(AllMembers = true)]
 	public class ContactsPage : ContentPage
 	{
 		public ContactsPage()
@@ -48,6 +49,7 @@ namespace Xamarin.Forms.Controls
 		}
 	}
 
+	[Preserve(AllMembers = true)]
 	public class ContactViewModel : ViewModelBase2
 	{
 		string _name;
@@ -66,6 +68,7 @@ namespace Xamarin.Forms.Controls
 		}
 	}
 
+	[Preserve(AllMembers = true)]
 	public class Group<TItem> : ObservableCollection<TItem>
 	{
 		public Group(string name, IEnumerable<TItem> items)
@@ -78,6 +81,7 @@ namespace Xamarin.Forms.Controls
 		public string Name { get; set; }
 	}
 
+	[Preserve(AllMembers = true)]
 	public class ViewModelBase2 : INotifyPropertyChanged
 	{
 		public event PropertyChangedEventHandler PropertyChanged;
