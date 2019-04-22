@@ -67,9 +67,16 @@ namespace Xamarin.Forms.Platform.UWP
 
 			_page = page;
 
+			var current = Windows.UI.Xaml.Application.Current;
+
+			if (!current.Resources.ContainsKey("RootContainerStyle"))
+			{
+				Windows.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(Forms.GetTabletResources());
+			}
+
 			_container = new Canvas
 			{
-				Style = (Windows.UI.Xaml.Style)Windows.UI.Xaml.Application.Current.Resources["RootContainerStyle"]
+				Style = (Windows.UI.Xaml.Style)current.Resources["RootContainerStyle"]
 			};
 
 			_page.Content = _container;

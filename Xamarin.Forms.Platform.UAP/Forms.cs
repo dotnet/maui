@@ -83,7 +83,7 @@ namespace Xamarin.Forms
 			return FlowDirection.MatchParent;
 		}
 
-		static Windows.UI.Xaml.ResourceDictionary GetTabletResources()
+		internal static Windows.UI.Xaml.ResourceDictionary GetTabletResources()
 		{
 			return new Windows.UI.Xaml.ResourceDictionary {
 				Source = new Uri("ms-appx:///Xamarin.Forms.Platform.UAP/Resources.xbf")

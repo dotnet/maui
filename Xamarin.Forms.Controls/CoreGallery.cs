@@ -10,6 +10,8 @@ using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries;
+using Xamarin.Forms.Controls.Issues;
+
 namespace Xamarin.Forms.Controls
 {
 	[Preserve(AllMembers = true)]
@@ -561,6 +563,14 @@ namespace Xamarin.Forms.Controls
 
 				}
 			};
+
+			var secondaryWindowService = DependencyService.Get<ISecondaryWindowService>();
+			if (secondaryWindowService != null)
+			{
+				var openSecondWindowButton = new Button() { Text = "Open Secondary Window" };
+				openSecondWindowButton.Clicked += (obj, args) => { secondaryWindowService.OpenSecondaryWindow(new Issue2482()); };
+				stackLayout.Children.Add(openSecondWindowButton);
+			}
 
 			this.SetAutomationPropertiesName("Gallery");
 			this.SetAutomationPropertiesHelpText("Lists all gallery pages");

@@ -26,19 +26,24 @@ namespace Xamarin.Forms.Platform.UWP
 {
 	internal abstract class WindowsBasePlatformServices : IPlatformServices
 	{
+		const string WrongThreadError = "RPC_E_WRONG_THREAD";
 		readonly CoreDispatcher _dispatcher;
 
 		protected WindowsBasePlatformServices(CoreDispatcher dispatcher)
 		{
-			if (dispatcher == null)
-				throw new ArgumentNullException(nameof(dispatcher));
-
-			_dispatcher = dispatcher;
+			_dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 		}
 
-		public void BeginInvokeOnMainThread(Action action)
+		public async void BeginInvokeOnMainThread(Action action)
 		{
-			_dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => action()).WatchForError();
+			if (CoreApplication.Views.Count == 1)
+			{
+				// This is the normal scenario - one window only
+				_dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => action()).WatchForError();
+				return;
+			}
+
+			await TryAllDispatchers(action);
 		}
 
 		public Ticker CreateTicker()
@@ -115,7 +120,23 @@ namespace Xamarin.Forms.Platform.UWP
 			return new WindowsIsolatedStorage(ApplicationData.Current.LocalFolder);
 		}
 
-		public bool IsInvokeRequired => !_dispatcher.HasThreadAccess;
+		public bool IsInvokeRequired
+		{
+			get
+			{
+				if (CoreApplication.Views.Count == 1)
+				{
+					return !_dispatcher.HasThreadAccess;
+				}
+
+				if (Window.Current?.Dispatcher != null)
+				{
+					return !Window.Current.Dispatcher.HasThreadAccess;
+				}
+
+				return true;
+			}
+		}
 
 		public string RuntimePlatform => Device.UWP;
 
@@ -151,6 +172,91 @@ namespace Xamarin.Forms.Platform.UWP
 		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
 			return Platform.GetNativeSize(view, widthConstraint, heightConstraint);
+		}
+
+		async Task TryAllDispatchers(Action action)
+		{
+			// Our best bet is Window.Current; most of the time, that's the Dispatcher we need
+			var currentWindow = Window.Current;
+
+			if (currentWindow?.Dispatcher != null)
+			{
+				try
+				{
+					await TryDispatch(currentWindow.Dispatcher, action);
+					return;
+				}
+				catch (Exception ex) when (ex.Message.Contains(WrongThreadError))
+				{
+					// The current window is not the one we need 
+				}
+			}
+
+			// Either Window.Current was the wrong Dispatcher, or Window.Current was null because we're on a 
+			// non-UI thread (e.g., one from the thread pool). So now it's time to try all the available Dispatchers 
+
+			var views = CoreApplication.Views;
+
+			for (int n = 0; n < views.Count; n++)
+			{
+				var dispatcher = views[n].Dispatcher;
+
+				if (dispatcher == null || dispatcher == currentWindow?.Dispatcher)
+				{
+					// Obviously null Dispatchers are no good, and we already tried the one from currentWindow
+					continue;
+				}
+
+				// We need to ignore Deactivated/Never Activated windows, but it's possible we can't access their 
+				// properties from this thread. So we'll check those using the Dispatcher
+				bool activated = false;
+
+				await TryDispatch(dispatcher, () => {
+					var mode = views[n].CoreWindow.ActivationMode;
+					activated = (mode == CoreWindowActivationMode.ActivatedInForeground
+						|| mode == CoreWindowActivationMode.ActivatedNotForeground);
+				});
+
+				if (!activated)
+				{
+					// This is a deactivated (or not yet activated) window; move on
+					continue;
+				}
+
+				try
+				{
+					await TryDispatch(dispatcher, action);
+					return;
+				}
+				catch (Exception ex) when (ex.Message.Contains(WrongThreadError))
+				{
+					// This was the incorrect dispatcher; move on to try another one
+				}
+			}
+		}
+
+		async Task<bool> TryDispatch(CoreDispatcher dispatcher, Action action)
+		{
+			if (dispatcher == null)
+			{
+				throw new ArgumentNullException(nameof(dispatcher));
+			}
+
+			var taskCompletionSource = new TaskCompletionSource<bool>();
+
+			await dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+				try
+				{
+					action();
+					taskCompletionSource.SetResult(true);
+				}
+				catch (Exception ex)
+				{
+					taskCompletionSource.SetException(ex);
+				}
+			});
+
+			return await taskCompletionSource.Task;
 		}
 	}
 }

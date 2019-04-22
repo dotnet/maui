@@ -1,10 +1,15 @@
-﻿using Windows.UI.Xaml.Media;
+﻿using Windows.ApplicationModel.Core;
+using System;
+using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.UWP
 {
 	internal class WindowsTicker : Ticker
 	{
+		[ThreadStatic]
+		static Ticker s_ticker;
+
 		protected override void DisableTimer()
 		{
 			CompositionTarget.Rendering -= RenderingFrameEventHandler;
@@ -18,6 +23,23 @@ namespace Xamarin.Forms.Platform.UWP
 		void RenderingFrameEventHandler(object sender, object args)
 		{
 			SendSignals();
+		}
+
+		protected override Ticker GetTickerInstance()
+		{
+			if (CoreApplication.Views.Count > 1)
+			{
+				// We've got multiple windows open, we'll need to use the local ThreadStatic Ticker instead of the 
+				// singleton in the base class 
+				if (s_ticker == null)
+				{
+					s_ticker = new WindowsTicker();
+				}
+
+				return s_ticker;
+			}
+
+			return base.GetTickerInstance();
 		}
 	}
 }

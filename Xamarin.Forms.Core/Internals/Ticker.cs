@@ -42,7 +42,22 @@ namespace Xamarin.Forms.Internals
 		public static Ticker Default
 		{
 			internal set { s_ticker = value; }
-			get { return s_ticker ?? (s_ticker =  Device.PlatformServices.CreateTicker()); }
+			get
+			{
+				if (s_ticker == null)
+				{
+					s_ticker = Device.PlatformServices.CreateTicker();
+				}
+
+				return s_ticker.GetTickerInstance(); 
+			}
+		}
+
+		protected virtual Ticker GetTickerInstance()
+		{
+			// This method is provided so platforms can override it and return something other than
+			// the normal Ticker singleton
+			return s_ticker;
 		}
 
 		public virtual int Insert(Func<long, bool> timeout)
