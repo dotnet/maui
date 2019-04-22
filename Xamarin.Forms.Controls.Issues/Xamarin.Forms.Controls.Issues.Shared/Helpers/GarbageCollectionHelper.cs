@@ -10,7 +10,9 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
+
 			GC.Collect();
+			GC.WaitForPendingFinalizers();
 		}
 	}
 }
