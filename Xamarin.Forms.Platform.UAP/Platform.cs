@@ -254,7 +254,10 @@ namespace Xamarin.Forms.Platform.UWP
 
 		internal bool BackButtonPressed()
 		{
-			Page lastRoot = _navModel.Roots.Last();
+			Page lastRoot = _navModel.Roots.LastOrDefault();
+
+			if (lastRoot == null)
+				return false;
 
 			bool handled = lastRoot.SendBackButtonPressed();
 
