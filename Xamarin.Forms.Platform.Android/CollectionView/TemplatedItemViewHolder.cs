@@ -1,13 +1,12 @@
 using System;
-using Android.Content;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {
 	internal class TemplatedItemViewHolder : SelectableViewHolder
 	{
-		private readonly ItemContentView _itemContentView;
-		private readonly DataTemplate _template;
+		readonly ItemContentView _itemContentView;
+		readonly DataTemplate _template;
 
 		public View View { get; private set; }
 
@@ -33,6 +32,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public void Recycle(ItemsView itemsView)
 		{
+			View.BindingContext = null;
 			itemsView.RemoveLogicalChild(View);
 			_itemContentView.Recycle();
 		}

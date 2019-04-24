@@ -244,17 +244,29 @@ namespace Xamarin.Forms.Platform.iOS
 
 			// And make sure it's a "child" of the ItemsView
 			_itemsView.AddLogicalChild(view);
+
+			cell.ContentSizeChanged += CellContentSizeChanged;
 		}
 
-		internal void RemoveLogicalChild(UICollectionViewCell cell)
+		void CellContentSizeChanged(object sender, EventArgs e)
+		{
+			Layout?.InvalidateLayout();
+		}
+
+		internal void PrepareCellForRemoval(UICollectionViewCell cell)
 		{
 			if (cell is TemplatedCell templatedCell)
 			{
+				templatedCell.ContentSizeChanged -= CellContentSizeChanged;
+
 				var oldView = templatedCell.VisualElementRenderer?.Element;
 				if (oldView != null)
 				{
+					oldView.BindingContext = null;
 					_itemsView.RemoveLogicalChild(oldView);
 				}
+
+				templatedCell.PrepareForRemoval();
 			}
 		}
 

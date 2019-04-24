@@ -24,10 +24,6 @@
 							new TemplateCodeCollectionViewGridGallery (), Navigation),
 						GalleryBuilder.NavButton("Horizontal Grid (Code)", () => 
 							new TemplateCodeCollectionViewGridGallery (ItemsLayoutOrientation.Horizontal), Navigation),
-
-						GalleryBuilder.NavButton("ItemSizing Strategy", () => 
-							new VariableSizeTemplateGridGallery (ItemsLayoutOrientation.Horizontal), Navigation),
-
                         GalleryBuilder.NavButton("DataTemplateSelector", () =>
                             new DataTemplateSelectorGallery(), Navigation),
 					}

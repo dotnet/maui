@@ -1,8 +1,5 @@
-using System;
-using System.Diagnostics;
 using CoreGraphics;
 using Foundation;
-using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -20,10 +17,7 @@ namespace Xamarin.Forms.Platform.iOS
 			var measure = VisualElementRenderer.Element.Measure(ConstrainedDimension, 
 				double.PositiveInfinity, MeasureFlags.IncludeMargins);
 
-			var height = VisualElementRenderer.Element.Height > 0 
-				? VisualElementRenderer.Element.Height : measure.Request.Height;
-
-			return new CGSize(ConstrainedDimension, height);
+			return new CGSize(ConstrainedDimension, measure.Request.Height);
 		}
 
 		public override void ConstrainTo(CGSize constraint)

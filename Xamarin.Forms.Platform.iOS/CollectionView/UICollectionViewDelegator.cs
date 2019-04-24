@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void CellDisplayingEnded(UICollectionView collectionView, UICollectionViewCell cell, NSIndexPath indexPath)
 		{
-			ItemsViewController.RemoveLogicalChild(cell);
+			ItemsViewController.PrepareCellForRemoval(cell);
 		}
 	}
 }
