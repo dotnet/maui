@@ -27,7 +27,7 @@ namespace Xamarin.Forms
 
 		#region IShellItemController
 
-		Task IShellItemController.GoToPart(NavigationRequest request, Dictionary<string, string> queryData)
+		internal Task GoToPart(NavigationRequest request, Dictionary<string, string> queryData)
 		{
 			var shellSection = request.Request.Section;
 
@@ -39,7 +39,7 @@ namespace Xamarin.Forms
 			if (CurrentItem != shellSection)
 				SetValueFromRenderer(CurrentItemProperty, shellSection);
 
-			return ((IShellSectionController)shellSection).GoToPart(request, queryData);
+			return shellSection.GoToPart(request, queryData);
 		}
 
 		bool IShellItemController.ProposeSection(ShellSection shellSection, bool setValue)
