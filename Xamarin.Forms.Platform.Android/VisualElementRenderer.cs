@@ -166,7 +166,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (CheckCustomNextFocus(focused, direction))
 				return base.FocusSearch(focused, direction);
 
-			VisualElement element = Element as VisualElement;
+			var element = Element as ITabStopElement;
 			int maxAttempts = 0;
 			var tabIndexes = element?.GetTabIndexesOnParentPage(out maxAttempts);
 			if (tabIndexes == null)
@@ -183,7 +183,7 @@ namespace Xamarin.Forms.Platform.Android
 			do
 			{
 				element = element.FindNextElement(forwardDirection, tabIndexes, ref tabIndex);
-				var renderer = element.GetRenderer();
+				var renderer = (element as VisualElement)?.GetRenderer();
 				control = (renderer as ITabStop)?.TabStop;
 			} while (!(control?.Focusable == true || ++attempt >= maxAttempts));
 

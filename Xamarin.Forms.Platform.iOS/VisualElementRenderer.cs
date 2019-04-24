@@ -192,7 +192,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			do
 			{
-				element = element.FindNextElement(forwardDirection, tabIndexes, ref tabIndex);
+				element = element.FindNextElement(forwardDirection, tabIndexes, ref tabIndex) as VisualElement;
 #if __MACOS__
 				var renderer = Platform.GetRenderer(element);
 				var control = (renderer as ITabStop)?.TabStop;

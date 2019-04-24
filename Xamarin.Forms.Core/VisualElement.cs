@@ -6,7 +6,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
-	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController
+	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, ITabStopElement
 	{
 		public new static readonly BindableProperty NavigationProperty = NavigableElement.NavigationProperty;
 

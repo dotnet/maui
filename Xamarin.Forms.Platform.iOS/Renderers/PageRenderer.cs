@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Platform.iOS
 				return null;
 
 			var children = Element.Descendants();
-			SortedDictionary<int, List<VisualElement>> tabIndexes = null;
+			SortedDictionary<int, List<ITabStopElement>> tabIndexes = null;
 			List<NSObject> views = new List<NSObject>();
 			foreach (var child in children)
 			{
