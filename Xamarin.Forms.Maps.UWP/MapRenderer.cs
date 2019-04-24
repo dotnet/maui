@@ -37,6 +37,7 @@ namespace Xamarin.Forms.Maps.UWP
 					Control.MapServiceToken = FormsMaps.AuthenticationToken;
 					Control.ZoomLevelChanged += async (s, a) => await UpdateVisibleRegion();
 					Control.CenterChanged += async (s, a) => await UpdateVisibleRegion();
+					Control.MapTapped += OnMapTapped;
 				}
 
 				MessagingCenter.Subscribe<Map, MapSpan>(this, "MapMoveToRegion", async (s, a) => await MoveToRegion(a), mapModel);
@@ -294,6 +295,11 @@ namespace Xamarin.Forms.Maps.UWP
 		void UpdateHasScrollEnabled()
 		{
 			Control.PanInteractionMode = Element.HasScrollEnabled ? MapPanInteractionMode.Auto : MapPanInteractionMode.Disabled;
+		}
+
+		void OnMapTapped(MapControl sender, MapInputEventArgs args)
+		{
+			Element?.SendMapClicked(new Position(args.Location.Position.Latitude, args.Location.Position.Longitude));
 		}
 	}
 }

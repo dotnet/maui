@@ -27,6 +27,10 @@ namespace Xamarin.Forms.Maps.MacOS
 		object _lastTouchedView;
 		bool _disposed;
 
+#if __MOBILE__
+		UITapGestureRecognizer _mapClickedGestureRecognizer;
+#endif
+
 		const string MoveMessageName = "MapMoveToRegion";
 
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -76,6 +80,10 @@ namespace Xamarin.Forms.Maps.MacOS
 				}
 				mkMapView.RemoveFromSuperview();
 #if __MOBILE__
+				mkMapView.RemoveGestureRecognizer(_mapClickedGestureRecognizer);
+				_mapClickedGestureRecognizer.Dispose();
+				_mapClickedGestureRecognizer = null;
+
 				if (FormsMaps.IsiOs9OrNewer)
 				{
 					// This renderer is done with the MKMapView; we can put it in the pool
@@ -138,6 +146,9 @@ namespace Xamarin.Forms.Maps.MacOS
 
 					mapView.GetViewForAnnotation = GetViewForAnnotation;
 					mapView.RegionChanged += MkMapViewOnRegionChanged;
+#if __MOBILE__
+					mapView.AddGestureRecognizer(_mapClickedGestureRecognizer = new UITapGestureRecognizer(OnMapClicked));
+#endif
 				}
 
 				MessagingCenter.Subscribe<Map, MapSpan>(this, MoveMessageName, (s, a) => MoveToRegion(a), mapModel);
@@ -279,6 +290,20 @@ namespace Xamarin.Forms.Maps.MacOS
 
 			targetPin.SendTap();
 		}
+
+#if __MOBILE__
+		void OnMapClicked(UITapGestureRecognizer recognizer)
+		{
+			if (Element == null)
+			{
+				return;
+			}
+
+			var tapPoint = recognizer.LocationInView(Control);
+			var tapGPS = ((MKMapView)Control).ConvertPoint(tapPoint, Control);
+			((Map)Element).SendMapClicked(new Position(tapGPS.Latitude, tapGPS.Longitude));
+		}
+#endif
 
 		void UpdateRegion()
 		{

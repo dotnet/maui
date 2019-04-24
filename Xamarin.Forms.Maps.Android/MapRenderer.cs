@@ -82,13 +82,14 @@ namespace Xamarin.Forms.Maps.Android
 				}
 
 				if (NativeMap != null)
- 				{
- 					NativeMap.MyLocationEnabled = false;
- 					NativeMap.SetOnCameraMoveListener(null);
- 					NativeMap.InfoWindowClick -= MapOnMarkerClick;
- 					NativeMap.Dispose();
+				{
+					NativeMap.MyLocationEnabled = false;
+					NativeMap.SetOnCameraMoveListener(null);
+					NativeMap.InfoWindowClick -= MapOnMarkerClick;
+					NativeMap.MapClick -= OnMapClick;
+					NativeMap.Dispose();
 					NativeMap = null;
-				 }
+				}
 
 				Control?.OnDestroy();
 			}
@@ -123,6 +124,7 @@ namespace Xamarin.Forms.Maps.Android
 				{
 					NativeMap.SetOnCameraMoveListener(null);
 					NativeMap.InfoWindowClick -= MapOnMarkerClick;
+					NativeMap.MapClick -= OnMapClick;
 					NativeMap = null;
 				}
 
@@ -203,6 +205,7 @@ namespace Xamarin.Forms.Maps.Android
 
 			map.SetOnCameraMoveListener(this);
 			map.InfoWindowClick += MapOnMarkerClick;
+			map.MapClick += OnMapClick;
 
 			map.UiSettings.ZoomControlsEnabled = Map.HasZoomEnabled;
 			map.UiSettings.ZoomGesturesEnabled = Map.HasZoomEnabled;
@@ -299,6 +302,11 @@ namespace Xamarin.Forms.Maps.Android
 			// only consider event handled if a handler is present.
 			// Else allow default behavior of displaying an info window.
 			targetPin?.SendTap();
+		}
+
+		void OnMapClick(object sender, GoogleMap.MapClickEventArgs e)
+		{
+			Map.SendMapClicked(new Position(e.Point.Latitude, e.Point.Longitude));
 		}
 
 		void MoveToRegion(MapSpan span, bool animate)
