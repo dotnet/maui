@@ -32,7 +32,9 @@ namespace Xamarin.Forms
 
 		public static VisualElement FindNextElement(this VisualElement element, bool forwardDirection, IDictionary<int, List<VisualElement>> tabIndexes, ref int tabIndex)
 		{
-			var tabGroup = tabIndexes[tabIndex];
+			if (!tabIndexes.TryGetValue(tabIndex, out var tabGroup))
+				return null;
+
 			if (!forwardDirection)
 			{
 				// search prev element in same TabIndex group

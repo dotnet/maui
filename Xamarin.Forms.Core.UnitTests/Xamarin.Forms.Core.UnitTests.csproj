@@ -86,6 +86,7 @@
     <Compile Include="RegionTests.cs" />
     <Compile Include="ShellTests.cs" />
     <Compile Include="SpanTests.cs" />
+    <Compile Include="TabIndexTests.cs" />
     <Compile Include="TitleViewUnitTests.cs" />
     <Compile Include="TemplatedViewUnitTests.cs" />
     <Compile Include="TemplatedPageUnitTests.cs" />
