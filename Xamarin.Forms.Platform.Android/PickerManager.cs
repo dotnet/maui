@@ -79,8 +79,6 @@ namespace Xamarin.Forms.Platform.Android
 						renderer1.OnClick();
 					else if (picker?.Parent?.Parent?.Parent is IPickerRenderer renderer2)
 						renderer2.OnClick();
-					else
-						throw new System.Exception("Renderer not found temp check for Shane things");
 				}
 			}
 		}
