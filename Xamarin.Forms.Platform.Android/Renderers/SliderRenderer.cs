@@ -122,7 +122,7 @@ namespace Xamarin.Forms.Platform.Android
 					UpdateMinimumTrackColor();
 				else if (e.PropertyName == Slider.MaximumTrackColorProperty.PropertyName)
 					UpdateMaximumTrackColor();
-				else if (e.PropertyName == Slider.ThumbImageProperty.PropertyName)
+				else if (e.PropertyName == Slider.ThumbImageSourceProperty.PropertyName)
 					UpdateThumbImage();
 				else if (e.PropertyName == Slider.ThumbColorProperty.PropertyName)
 					UpdateThumbColor();
@@ -133,7 +133,8 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			UpdateMinimumTrackColor();
 			UpdateMaximumTrackColor();
-			if (!string.IsNullOrEmpty(Element.ThumbImage))
+			var thumbImage = Element.ThumbImageSource;
+			if (thumbImage != null && !thumbImage.IsEmpty)
 			{
 				UpdateThumbImage();
 			}
@@ -195,13 +196,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		private void UpdateThumbImage()
 		{
-			if (Element != null)
+			this.ApplyDrawableAsync(Slider.ThumbImageSourceProperty, Context, drawable =>
 			{
-				if (string.IsNullOrEmpty(Element.ThumbImage))
-					Control.SetThumb(defaultthumb);
-				else
-					Control.SetThumb(Context.GetDrawable(Element.ThumbImage));
-			}
+				Control.SetThumb(drawable ?? defaultthumb);
+			});
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)

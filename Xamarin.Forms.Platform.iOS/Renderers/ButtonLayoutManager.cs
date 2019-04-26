@@ -141,7 +141,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (e.PropertyName == Button.PaddingProperty.PropertyName)
 				UpdatePadding();
-			else if (e.PropertyName == Button.ImageProperty.PropertyName)
+			else if (e.PropertyName == Button.ImageSourceProperty.PropertyName)
 				_ = UpdateImageAsync();
 			else if (e.PropertyName == Button.TextProperty.PropertyName)
 				UpdateText();

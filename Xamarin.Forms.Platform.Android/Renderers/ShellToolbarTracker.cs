@@ -300,7 +300,7 @@ namespace Xamarin.Forms.Platform.Android
 			Drawable icon = null;
 
 			if (image != null)
-				icon = await context.GetFormsDrawable(image);
+				icon = await context.GetFormsDrawableAsync(image);
 
 			if (text != null)
 				icon = new FlyoutIconDrawerDrawable(context, TintColor, icon, text);
@@ -337,7 +337,7 @@ namespace Xamarin.Forms.Platform.Android
 					icon = shell.FlyoutIcon;
 					if (icon != null)
 					{
-						var drawable = await context.GetFormsDrawable(icon);
+						var drawable = await context.GetFormsDrawableAsync(icon);
 						actionBarDrawerToggle.DrawerArrowDrawable = new FlyoutIconDrawerDrawable(context, TintColor, drawable, null);
 					}
 					return;
@@ -348,18 +348,19 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem)
 		{
-			FileImageSource icon = toolBarItem.Icon;
-			if (!string.IsNullOrEmpty(icon))
+			_shellContext.ApplyDrawableAsync(toolBarItem, ToolbarItem.IconImageSourceProperty, baseDrawable =>
 			{
-				using (var baseDrawable = context.GetFormsDrawable(icon))
-				using (var constant = baseDrawable.GetConstantState())
-				using (var newDrawable = constant.NewDrawable())
-				using (var iconDrawable = newDrawable.Mutate())
+				if (baseDrawable != null)
 				{
-					iconDrawable.SetColorFilter(TintColor.ToAndroid(Color.White), PorterDuff.Mode.SrcAtop);
-					menuItem.SetIcon(iconDrawable);
+					using (var constant = baseDrawable.GetConstantState())
+					using (var newDrawable = constant.NewDrawable())
+					using (var iconDrawable = newDrawable.Mutate())
+					{
+						iconDrawable.SetColorFilter(TintColor.ToAndroid(Color.White), PorterDuff.Mode.SrcAtop);
+						menuItem.SetIcon(iconDrawable);
+					}
 				}
-			}
+			});
 		}
 
 		protected virtual void UpdateNavBarVisible(Toolbar toolbar, Page page)

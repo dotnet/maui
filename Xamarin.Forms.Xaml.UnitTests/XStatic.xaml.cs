@@ -137,7 +137,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void xStaticAndImplicitOperators(bool useCompiledXaml)
 			{
 				var layout = new XStatic(useCompiledXaml);
-				Assert.AreEqual("ic_close.png", layout.ToolbarItems[0].Icon.File);
+				Assert.AreEqual("ic_close.png", (layout.ToolbarItems[0].IconImageSource as FileImageSource).File);
 			}
 
 			[TestCase(false)]

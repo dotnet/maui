@@ -112,13 +112,13 @@ namespace Xamarin.Forms.Controls
 		{
 			var item = new ToolbarItem
 			{
-				Icon = "coffee.png",
+				IconImageSource = "coffee.png",
 				Text = "Item 1",
 			};
 
 			var item2 = new ToolbarItem
 			{
-				Icon = "bank.png",
+				IconImageSource = "bank.png",
 				Text = "Item 2",
 			};
 

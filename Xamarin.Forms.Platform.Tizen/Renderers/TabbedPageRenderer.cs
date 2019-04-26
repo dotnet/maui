@@ -271,13 +271,19 @@ namespace Xamarin.Forms.Platform.Tizen
 		EToolbarItem AddToolbarItem(Page newItem, int index)
 		{
 			EToolbarItem toolbarItem;
+
+			// TODO: investigate if we can use the other image source types: stream, font, uri
+
+			var iconSource = newItem.IconImageSource as FileImageSource;
+			var icon = iconSource.IsNullOrEmpty() ? null : ResourcePath.GetPath(iconSource);
+
 			if (index == 0)
 			{
-				toolbarItem = _toolbar.Prepend(newItem.Title, string.IsNullOrEmpty(newItem.Icon) ? null : ResourcePath.GetPath(newItem.Icon));
+				toolbarItem = _toolbar.Prepend(newItem.Title, icon);
 			}
 			else
 			{
-				toolbarItem = _toolbar.InsertAfter(_toolbarItemList[index - 1], newItem.Title, string.IsNullOrEmpty(newItem.Icon) ? null : ResourcePath.GetPath(newItem.Icon));
+				toolbarItem = _toolbar.InsertAfter(_toolbarItemList[index - 1], newItem.Title, icon);
 			}
 			_toolbarItemList.Insert(index, toolbarItem);
 			_itemToItemPage.Add(toolbarItem, newItem);

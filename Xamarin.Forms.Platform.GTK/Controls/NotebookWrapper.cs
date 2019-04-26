@@ -1,5 +1,6 @@
 ﻿using Gdk;
 using Gtk;
+using Xamarin.Forms.Platform.GTK.Extensions;
 
 namespace Xamarin.Forms.Platform.GTK.Controls
 {
@@ -95,11 +96,9 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			}
 		}
 
-		public void SetBackgroundImage(string backgroundImagePath)
+		public async void SetBackgroundImage(ImageSource imageSource)
 		{
-			_backgroundPixbuf = !string.IsNullOrEmpty(backgroundImagePath)
-				? new Pixbuf(backgroundImagePath)
-				: null;
+			_backgroundPixbuf = await imageSource.GetNativeImageAsync();
 
 			for (int i = 0; i < _noteBook.NPages; i++)
 			{

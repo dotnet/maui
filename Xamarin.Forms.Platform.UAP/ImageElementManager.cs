@@ -112,33 +112,20 @@ namespace Xamarin.Forms.Platform.UWP
 
 			imageController?.SetIsLoading(true);
 
-			ImageSource source = imageElement.Source;
-			IImageSourceHandler handler;
-			if (source != null && (handler = Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
+			try
 			{
-				Windows.UI.Xaml.Media.ImageSource imagesource;
+				var imagesource = await imageElement.Source.ToWindowsImageSourceAsync();
 
-				try
-				{
-					imagesource = await handler.LoadImageAsync(source);
-				}
-				catch (OperationCanceledException)
-				{
-					imagesource = null;
-				}
+				if (renderer.IsDisposed)
+					return;
 
-				// In the time it takes to await the imagesource, some zippy little app
-				// might have disposed of this Image already.
 				if (Control != null)
-				{
 					renderer.SetImage(imagesource);
-				}
 
 				RefreshImage(imageElement as IViewController);
 			}
-			else
+			finally
 			{
-				renderer.SetImage(null);
 				imageController?.SetIsLoading(false);
 			}
 		}

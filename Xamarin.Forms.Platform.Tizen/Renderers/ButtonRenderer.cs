@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(Button.FontSizeProperty, UpdateFontSize);
 			RegisterPropertyHandler(Button.FontAttributesProperty, UpdateFontAttributes);
 			RegisterPropertyHandler(Button.TextColorProperty, UpdateTextColor);
-			RegisterPropertyHandler(Button.ImageProperty, UpdateBitmap);
+			RegisterPropertyHandler(Button.ImageSourceProperty, UpdateBitmap);
 			RegisterPropertyHandler(Button.BorderColorProperty, UpdateBorder);
 			RegisterPropertyHandler(Button.CornerRadiusProperty, UpdateBorder);
 			RegisterPropertyHandler(Button.BorderWidthProperty, UpdateBorder);
@@ -105,10 +105,10 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateBitmap()
 		{
-			if (!string.IsNullOrEmpty(Element.Image))
+			if (!Element.ImageSource.IsNullOrEmpty())
 			{
 				Control.Image = new Native.Image(Control);
-				var task = Control.Image.LoadFromImageSourceAsync(Element.Image);
+				_ = Control.Image.LoadFromImageSourceAsync(Element.ImageSource);
 			}
 			else
 			{

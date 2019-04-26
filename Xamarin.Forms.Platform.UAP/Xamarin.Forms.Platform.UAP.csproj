@@ -114,7 +114,6 @@
     <Compile Include="WindowsPlatformServices.cs" />
     <Compile Include="WindowsResourcesProvider.cs" />
     <Compile Include="ActivityIndicatorRenderer.cs" />
-    <Compile Include="AsyncValue.cs" />
     <Compile Include="BackgroundTracker.cs" />
     <Compile Include="BoolToVisibilityConverter.cs" />
     <Compile Include="BoxViewRenderer.cs" />
@@ -133,7 +132,7 @@
     <Compile Include="ExportRendererAttribute.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="FileImageSourceHandler.cs" />
-    <Compile Include="FileImageSourcePathConverter.cs" />
+    <Compile Include="ImageSourceIconElementConverter.cs" />
     <Compile Include="FontExtensions.cs" />
     <Compile Include="FormsButton.cs" />
     <Compile Include="FrameRenderer.cs" />
@@ -141,6 +140,7 @@
     <Compile Include="HeightConverter.cs" />
     <Compile Include="ICellRenderer.cs" />
     <Compile Include="IImageSourceHandler.cs" />
+    <Compile Include="IIconElementHandler.cs" />
     <Compile Include="ImageConverter.cs" />
     <Compile Include="ImageRenderer.cs" />
     <Compile Include="IVisualElementRenderer.cs" />

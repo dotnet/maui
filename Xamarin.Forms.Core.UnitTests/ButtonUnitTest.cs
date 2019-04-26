@@ -121,12 +121,12 @@ namespace Xamarin.Forms.Core.UnitTests
 			var button = new Button ();
 			button.BindingContext = context;
 			var source = new FileImageSource ();
-			button.Image = source;
+			button.ImageSource = source;
 			Assert.AreSame (context, source.BindingContext);
 
 			button = new Button ();
 			source = new FileImageSource ();
-			button.Image = source;
+			button.ImageSource = source;
 			button.BindingContext = context;
 			Assert.AreSame (context, source.BindingContext);
 		}
@@ -135,7 +135,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void TestImageSourcePropertiesChangedTriggerResize ()
 		{
 			var source = new FileImageSource ();
-			var button = new Button { Image = source };
+			var button = new Button { ImageSource = source };
 			bool fired = false;
 			button.MeasureInvalidated += (sender, e) => fired = true;
 			Assert.Null (source.File);

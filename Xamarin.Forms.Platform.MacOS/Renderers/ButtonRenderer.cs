@@ -76,7 +76,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				UpdateBorder();
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackgroundVisibility();
-			else if (e.PropertyName == Button.ImageProperty.PropertyName)
+			else if (e.PropertyName == Button.ImageSourceProperty.PropertyName)
 				UpdateImage();
 		}
 
@@ -112,30 +112,19 @@ namespace Xamarin.Forms.Platform.MacOS
 			Control.Font = Element.Font.ToNSFont();
 		}
 
-		async void UpdateImage()
+		void UpdateImage()
 		{
-			IImageSourceHandler handler;
-			FileImageSource source = Element.Image;
-			if (source != null && (handler = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
+			this.ApplyNativeImageAsync(Button.ImageSourceProperty, image =>
 			{
-				NSImage uiimage;
-				try
-				{
-					uiimage = await handler.LoadImageAsync(source);
-				}
-				catch (OperationCanceledException)
-				{
-					uiimage = null;
-				}
 				NSButton button = Control;
-				if (button != null && uiimage != null)
+				if (button != null && image != null)
 				{
-					button.Image = uiimage;
+					button.Image = image;
 					if (!string.IsNullOrEmpty(button.Title))
 						button.ImagePosition = Element.ToNSCellImagePosition();
+					((IVisualElementController)Element).NativeSizeChanged();
 				}
-			}
-			((IVisualElementController)Element).NativeSizeChanged();
+			});
 		}
 
 		void UpdateText()

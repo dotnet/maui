@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Controls
 				await Navigation.PushModalAsync (new TabbedPage {
 					ItemTemplate = new DataTemplate (() => {
 						var page = new ContentPage();
-						page.SetBinding (BackgroundImageProperty, ".");
+						page.SetBinding (BackgroundImageSourceProperty, ".");
 						return page;
 					}),
 
@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Controls
 				await Navigation.PushModalAsync (new CarouselPage {
 					ItemTemplate = new DataTemplate (() => {
 						var page = new ContentPage();
-						page.SetBinding (BackgroundImageProperty, ".");
+						page.SetBinding (BackgroundImageSourceProperty, ".");
 						return page;
 					}),
 
@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Controls
 							FontSize = 42
 						}})
 					{
-						BackgroundImage = "oasis.jpg"
+						BackgroundImageSource = "oasis.jpg"
 					}
 				);
 			};
@@ -59,7 +59,7 @@ namespace Xamarin.Forms.Controls
 			var carousel = new Button { Text = "CarouselPage" };
 			carousel.Clicked += async (sender, args) => {
 				await Navigation.PushAsync (new CarouselPage {
-					BackgroundImage = "crimson.jpg",
+					BackgroundImageSource = "crimson.jpg",
 					ItemsSource = new[] { "test1", "test2" }
 				});
 			};
@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Controls
 			var tabbed = new Button { Text = "TabbedPage" };
 			tabbed.Clicked += async (sender, args) => {
 				await Navigation.PushAsync (new TabbedPage {
-					BackgroundImage = "crimson.jpg",
+					BackgroundImageSource = "crimson.jpg",
 					ItemsSource = new[] { "test1", "test2" }
 				});
 			};
@@ -77,7 +77,7 @@ namespace Xamarin.Forms.Controls
 				await Navigation.PushModalAsync (new MasterDetailPage {
 					Master = new ContentPage { Title = "Master" },
 					Detail = new ContentPage(),
-					BackgroundImage = "crimson.jpg",
+					BackgroundImageSource = "crimson.jpg",
 				});
 			};
 

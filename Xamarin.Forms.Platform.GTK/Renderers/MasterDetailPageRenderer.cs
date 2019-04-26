@@ -117,7 +117,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 		private async void HandleMasterPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == Xamarin.Forms.Page.IconProperty.PropertyName)
+			if (e.PropertyName == Xamarin.Forms.Page.IconImageSourceProperty.PropertyName)
 				await UpdateHamburguerIconAsync();
 		}
 
@@ -195,26 +195,18 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			}
 		}
 
-		private async Task UpdateHamburguerIconAsync()
+		private Task UpdateHamburguerIconAsync()
 		{
-			var hamburguerIcon = Page.Master.Icon;
-
-			if (hamburguerIcon != null)
+			return Page.Master.ApplyNativeImageAsync(Xamarin.Forms.Page.IconImageSourceProperty, image =>
 			{
-				IImageSourceHandler handler =
-					Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(hamburguerIcon);
-
-				var image = await handler.LoadImageAsync(hamburguerIcon);
 				Widget.UpdateHamburguerIcon(image);
 
-				var navigationPage = Page.Detail as NavigationPage;
-
-				if (navigationPage != null)
+				if (Page.Detail is NavigationPage navigationPage)
 				{
 					var navigationRenderer = Platform.GetRenderer(navigationPage) as IToolbarTracker;
 					navigationRenderer?.NativeToolbarTracker.UpdateToolBar();
 				}
-			}
+			});
 		}
 
 		private MasterBehaviorType GetMasterBehavior(MasterBehavior masterBehavior)

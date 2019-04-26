@@ -8,7 +8,7 @@ using Control = Gtk.Widget;
 
 namespace Xamarin.Forms.Platform.GTK
 {
-	public class VisualElementRenderer<TElement, TNativeElement> : Container, IVisualElementRenderer, IDisposable, IEffectControlProvider
+	public class VisualElementRenderer<TElement, TNativeElement> : Container, IVisualNativeElementRenderer, IVisualElementRenderer, IDisposable, IEffectControlProvider
 		where TElement : VisualElement
 		where TNativeElement : Control
 	{
@@ -49,6 +49,8 @@ namespace Xamarin.Forms.Platform.GTK
 		}
 
 		public TNativeElement Control { get; set; }
+
+		Control IVisualNativeElementRenderer.Control => Control;
 
 		public TElement Element { get; set; }
 

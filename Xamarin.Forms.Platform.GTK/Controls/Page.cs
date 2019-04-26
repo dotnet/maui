@@ -62,21 +62,9 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			_contentContainerWrapper.SetBackgroundColor(backgroundColor);
 		}
 
-		public void SetBackgroundImage(string backgroundImagePath)
+		public async void SetBackgroundImage(ImageSource imageSource)
 		{
-			if (string.IsNullOrEmpty(backgroundImagePath))
-			{
-				return;
-			}
-
-			try
-			{
-				_image.Pixbuf = new Pixbuf(backgroundImagePath);
-			}
-			catch (Exception ex)
-			{
-				Internals.Log.Warning("Page BackgroundImage", "Could not load background image: {0}", ex);
-			}
+			_image.Pixbuf = await imageSource.GetNativeImageAsync();
 		}
 
 		public void PushModal(Widget modal)

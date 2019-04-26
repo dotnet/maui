@@ -200,20 +200,20 @@ namespace Xamarin.Forms.Platform.MacOS
 		protected virtual NSTabViewItem GetTabViewItem(Page page, IVisualElementRenderer pageRenderer)
 		{
 			var tvi = new NSTabViewItem { ViewController = pageRenderer.ViewController, Label = page.Title ?? "" };
-			if (!string.IsNullOrEmpty (page.Icon)) {
-				var image = GetTabViewItemIcon (page.Icon);
-				if (image != null)
-					tvi.Image = image;
-			}
+			_ = this.ApplyNativeImageAsync(page, Page.IconImageSourceProperty, icon =>
+			{
+				if (icon != null)
+				{
+					var image = GetTabViewItemIcon(icon);
+					if (image != null)
+						tvi.Image = image;
+				}
+			});
 			return tvi;
 		}
 
-		protected virtual NSImage GetTabViewItemIcon(string imageName)
+		protected virtual NSImage GetTabViewItemIcon(NSImage image)
 		{
-			var image = NSImage.ImageNamed (imageName);
-			if(image == null)
-				image = new NSImage (imageName);
-
 			if (image == null)
 				return null;
 
@@ -239,21 +239,22 @@ namespace Xamarin.Forms.Platform.MacOS
 				var index = TabbedPage.GetIndex(page);
 				TabViewItems[index].Label = page.Title;
 			}
-			else if (e.PropertyName == Page.IconProperty.PropertyName)
+			else if (e.PropertyName == Page.IconImageSourceProperty.PropertyName)
 			{
 				var page = (Page)sender;
 
 				var index = TabbedPage.GetIndex(page);
-				TabViewItems[index].Label = page.Title;
+				var item = TabViewItems[index];
 
-				if (!string.IsNullOrEmpty(page.Icon))
+				item.Label = page.Title;
+
+				_ = this.ApplyNativeImageAsync(page, Page.IconImageSourceProperty, icon =>
 				{
-					TabViewItems[index].Image = new NSImage(page.Icon);
-				}
-				else if (TabViewItems[index].Image != null)
-				{
-					TabViewItems[index].Image = new NSImage();
-				}
+					if (icon != null)
+						item.Image = icon;
+					else if (item.Image != null)
+						item.Image = new NSImage();
+				});
 			}
 		}
 

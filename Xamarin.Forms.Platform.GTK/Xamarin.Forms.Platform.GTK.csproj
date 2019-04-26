@@ -167,6 +167,7 @@
     <Compile Include="IDesiredSizeProvider.cs" />
     <Compile Include="IVisualElementRenderer.cs" />
     <Compile Include="GtkToolbarTracker.cs" />
+    <Compile Include="IVisualNativeElementRenderer.cs" />
     <Compile Include="Packagers\LayoutElementPackager.cs" />
     <Compile Include="Packagers\PageElementPackager.cs" />
     <Compile Include="Packagers\VisualElementPackager.cs" />

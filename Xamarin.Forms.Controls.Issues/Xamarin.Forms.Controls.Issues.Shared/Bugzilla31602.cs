@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Controls.Issues
 			public SidemenuPage ()
 			{
 				Title = "Side";
-				Icon = "menuIcon.png";
+				IconImageSource = "menuIcon.png";
 				var lbl = new Label { Text = "SideMenu" };
 				var btn = new Button { Text = "Menu Opener"  };
 
@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 
 			public void ChangeIcon() {
-				Icon = "bank.png";
+				IconImageSource = "bank.png";
 			}
 		}
 

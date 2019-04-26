@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				UpdateBorder();
 			else if (e.PropertyName == Button.BorderWidthProperty.PropertyName)
 				UpdateBorder();
-			else if (e.PropertyName == Button.ImageProperty.PropertyName || e.PropertyName == Button.ContentLayoutProperty.PropertyName)
+			else if (e.PropertyName == Button.ImageSourceProperty.PropertyName || e.PropertyName == Button.ContentLayoutProperty.PropertyName)
 				UpdateContent();
 		}
 
@@ -161,17 +161,17 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 		private void UpdateContent()
 		{
-			if (!string.IsNullOrEmpty(Element.Image))
+			this.ApplyNativeImageAsync(Button.ImageSourceProperty, image =>
 			{
-				Control.SetImageFromFile(Element.Image);
-				Control.ImageSpacing = (uint)Element.ContentLayout.Spacing;
-				Control.SetImagePosition(Element.ContentLayout.Position.AsPositionType());
-				Control.ImageWidget.Visible = true;
-			}
-			else
-			{
-				Control.ImageWidget.Visible = false;
-			}
+				if (image != null)
+				{
+					Control.ImageWidget.Pixbuf = image;
+					Control.ImageSpacing = (uint)Element.ContentLayout.Spacing;
+					Control.SetImagePosition(Element.ContentLayout.Position.AsPositionType());
+				}
+
+				Control.ImageWidget.Visible = image != null;
+			});
 		}
 	}
 }

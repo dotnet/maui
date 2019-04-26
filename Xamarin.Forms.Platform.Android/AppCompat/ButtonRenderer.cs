@@ -6,6 +6,7 @@ using Android.Support.V7.Widget;
 using Android.Util;
 using Android.Views;
 using Xamarin.Forms.Platform.Android.FastRenderers;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
@@ -201,12 +202,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			remove => ((IVisualElementRenderer)this).ElementChanged -= value;
 		}
 
-		Button IButtonLayoutRenderer.Element => Element;
 		AppCompatButton IButtonLayoutRenderer.View => Control;
-		event EventHandler<VisualElementChangedEventArgs> IButtonLayoutRenderer.ElementChanged
-		{
-			add => ((IVisualElementRenderer)this).ElementChanged += value;
-			remove => ((IVisualElementRenderer)this).ElementChanged -= value;
-		}
 	}
 }

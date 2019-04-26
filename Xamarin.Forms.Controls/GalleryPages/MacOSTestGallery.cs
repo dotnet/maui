@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Controls
 			var lst2 = new ListView { ItemTemplate = new DataTemplate(typeof(DemoSwitchCell)), BackgroundColor = Color.Yellow, HeightRequest = 300, RowHeight = 50, ItemsSource = items, };
 			var lst3 = new ListView { ItemTemplate = new DataTemplate(typeof(DemoImageCell)), BackgroundColor = Color.Yellow, HeightRequest = 300, RowHeight = 50, ItemsSource = items, };
 
-			var bigbUtton = new Button { WidthRequest = 200, HeightRequest = 300, Image = "bank.png" };
+			var bigbUtton = new Button { WidthRequest = 200, HeightRequest = 300, ImageSource = "bank.png" };
 
 			var picker = new DatePicker();
 
@@ -118,7 +118,7 @@ namespace Xamarin.Forms.Controls
 								timePicker,
 								bigbUtton,
 								new Button { Text = "Click Me", BackgroundColor = Color.Gray },
-								new Button { Image = "bank.png", BackgroundColor = Color.Gray },
+								new Button { ImageSource = "bank.png", BackgroundColor = Color.Gray },
 								CreateButton(new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Left, 10)),
 								CreateButton(new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Top, 10)),
 								CreateButton(new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Bottom, 10)),
@@ -182,9 +182,9 @@ namespace Xamarin.Forms.Controls
 
 			var tp = new TabbedPage { BarTextColor = Color.Red, BarBackgroundColor = Color.Yellow };
 
-			var master = new ContentPage { Icon = "bank.png", BackgroundColor = Color.Red, Title = "Master", Content = lyout };
+			var master = new ContentPage { IconImageSource = "bank.png", BackgroundColor = Color.Red, Title = "Master", Content = lyout };
 
-			var detail = new ContentPage { Icon = "bank.png", BackgroundColor = Color.Blue, Title = "Detail", Content = new Label { Text = "This is Detail Page" } };
+			var detail = new ContentPage { IconImageSource = "bank.png", BackgroundColor = Color.Blue, Title = "Detail", Content = new Label { Text = "This is Detail Page" } };
 
 			tp.Children.Add(master);
 			tp.Children.Add(detail);
@@ -199,7 +199,7 @@ namespace Xamarin.Forms.Controls
 			btnGo.Clicked += (sender, e) =>
 			{
 				tp.CurrentPage.Title = "Tile changed";
-				tp.CurrentPage.Icon = null;
+				tp.CurrentPage.IconImageSource = null;
 			};
 
 			btnGo1.Clicked += (sender, e) =>
@@ -288,7 +288,7 @@ namespace Xamarin.Forms.Controls
 
 			};
 
-			return new ContentPage { Icon = "bank.png", BackgroundColor = _pageID % 2 == 0 ? Color.Blue : Color.Green, Title = label.Text, Content = lyout };
+			return new ContentPage { IconImageSource = "bank.png", BackgroundColor = _pageID % 2 == 0 ? Color.Blue : Color.Green, Title = label.Text, Content = lyout };
 		}
 
 		static StackLayout MakeNewStackLayout()
@@ -323,7 +323,7 @@ namespace Xamarin.Forms.Controls
 			return new Button
 			{
 				Text = "Click Me On Mac",
-				Image = "bank.png",
+				ImageSource = "bank.png",
 				Font = Font.OfSize("Helvetica", 14),
 				ContentLayout = layout,
 				BackgroundColor = Color.Black,

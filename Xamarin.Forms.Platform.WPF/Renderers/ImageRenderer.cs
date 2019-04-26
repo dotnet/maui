@@ -78,41 +78,24 @@ namespace Xamarin.Forms.Platform.WPF
 				return;
 			}
 
+			var source = Element.Source;
+
 			Element.SetIsLoading(true);
-			
-			ImageSource source = Element.Source;
-			IImageSourceHandler handler;
-			if (source != null && (handler = Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
+			try
 			{
-				System.Windows.Media.ImageSource imagesource;
+				var imagesource = await source.ToWindowsImageSourceAsync();
 
-				try
-				{
-					imagesource = await handler.LoadImageAsync(source);
-				}
-				catch (OperationCanceledException)
-				{
-					imagesource = null;
-				}
-
-				// In the time it takes to await the imagesource, some zippy little app
-				// might have disposed of this Image already.
-				if (Control != null)
-				{
+				// only set if we are still on the same image
+				if (Control != null && Element.Source == source)
 					Control.Source = imagesource;
-				}
-
-				RefreshImage();
 			}
-			else
+			finally
 			{
-				Control.Source = null;
-				Element.SetIsLoading(false);
+				// only mark as finished if we are still on the same image
+				if (Element.Source == source)
+					Element.SetIsLoading(false);
 			}
-		}
 
-		void RefreshImage()
-		{
 			((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.RendererReady);
 		}
 	}

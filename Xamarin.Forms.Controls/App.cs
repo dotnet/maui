@@ -37,6 +37,8 @@ namespace Xamarin.Forms.Controls
 			SetMainPage(CreateDefaultMainPage());
 
 			//TestMainPageSwitches();
+
+			//SetMainPage(new ImageSourcesGallery());
 		}
 
 		protected override void OnStart()
@@ -109,7 +111,7 @@ namespace Xamarin.Forms.Controls
 		{
 			var layout = new StackLayout { BackgroundColor = Color.Red };
 			layout.Children.Add(new Label { Text = "This is master Page" });
-			var master = new ContentPage { Title = "Master", Content = layout, BackgroundColor = Color.SkyBlue, Icon ="menuIcon" };
+			var master = new ContentPage { Title = "Master", Content = layout, BackgroundColor = Color.SkyBlue, IconImageSource ="menuIcon" };
 			master.On<iOS>().SetUseSafeArea(true);
 			var mdp = new MasterDetailPage
 			{
@@ -117,11 +119,11 @@ namespace Xamarin.Forms.Controls
 				Master = master,
 				Detail = CoreGallery.GetMainPage()
 			};
-			master.Icon.AutomationId = "btnMDPAutomationID";
+			master.IconImageSource.AutomationId = "btnMDPAutomationID";
 			mdp.SetAutomationPropertiesName("Main page");
 			mdp.SetAutomationPropertiesHelpText("Main page help text");
-			mdp.Master.Icon.SetAutomationPropertiesHelpText("This as MDP icon");
-			mdp.Master.Icon.SetAutomationPropertiesName("MDPICON");
+			mdp.Master.IconImageSource.SetAutomationPropertiesHelpText("This as MDP icon");
+			mdp.Master.IconImageSource.SetAutomationPropertiesName("MDPICON");
 			return mdp;
 
             //return new XamStore.StoreShell();

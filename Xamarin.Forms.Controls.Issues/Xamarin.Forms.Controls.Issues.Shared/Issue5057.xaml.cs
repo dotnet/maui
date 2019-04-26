@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		void BtnSetBkgndImg_Clicked(object sender, System.EventArgs e)
 		{
-			BackgroundImage = "test.jpg";
+			BackgroundImageSource = "test.jpg";
 		}
 
 		void BtnSetBkgndColorDefault_Clicked(object sender, System.EventArgs e)
@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		void BtnSetBkgndImgNull_Clicked(object sender, System.EventArgs e)
 		{
-			BackgroundImage = null;
+			BackgroundImageSource = null;
 		}
 	}
 #endif

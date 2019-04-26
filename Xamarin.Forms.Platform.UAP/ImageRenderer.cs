@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			_measured = true;
 
-			return Control.Source.GetDesiredSize();
+			return new SizeRequest(Control.Source.GetImageSourceSize());
 		}
 
 		protected override void Dispose(bool disposing)

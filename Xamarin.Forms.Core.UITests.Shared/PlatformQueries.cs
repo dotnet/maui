@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Core.UITests
 				{ BorderElement.BorderColorProperty, Tuple.Create(new[] { "getBackground" }, false) },
 				{ Button.CornerRadiusProperty, Tuple.Create(new[] { "getBackground" }, false) },
 				{ Button.BorderWidthProperty, Tuple.Create(new[] { "getBackground" }, false) },
-				{ Button.ImageProperty, Tuple.Create(new[] { "getBackground" }, false) },
+				{ Button.ImageSourceProperty, Tuple.Create(new[] { "getBackground" }, false) },
 				{ Button.FontProperty, Tuple.Create(new[] { "getTypeface", "isBold" }, false) },
 				{ Button.TextProperty, Tuple.Create(new[] { "getText" }, false) },
 				{ Button.TextColorProperty, Tuple.Create(new[] { "getCurrentTextColor" }, false) },

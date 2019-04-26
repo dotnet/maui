@@ -21,8 +21,12 @@ namespace Xamarin.Forms
 		public const string ActionSheetSignalName = "Xamarin.ShowActionSheet";
 
 		internal static readonly BindableProperty IgnoresContainerAreaProperty = BindableProperty.Create("IgnoresContainerArea", typeof(bool), typeof(Page), false);
+		
+		public static readonly BindableProperty BackgroundImageSourceProperty = BindableProperty.Create(nameof(BackgroundImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
 
-		public static readonly BindableProperty BackgroundImageProperty = BindableProperty.Create("BackgroundImage", typeof(string), typeof(Page), default(string));
+		[Obsolete("BackgroundImageProperty is obsolete as of 4.0.0. Please use BackgroundImageSourceProperty instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static readonly BindableProperty BackgroundImageProperty = BackgroundImageSourceProperty;
 
 		public static readonly BindableProperty IsBusyProperty = BindableProperty.Create("IsBusy", typeof(bool), typeof(Page), false, propertyChanged: (bo, o, n) => ((Page)bo).OnPageBusyChanged());
 
@@ -30,7 +34,11 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create("Title", typeof(string), typeof(Page), null);
 
-		public static readonly BindableProperty IconProperty = BindableProperty.Create("Icon", typeof(FileImageSource), typeof(Page), default(FileImageSource));
+		public static readonly BindableProperty IconImageSourceProperty = BindableProperty.Create(nameof(IconImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
+
+		[Obsolete("IconProperty is obsolete as of 4.0.0. Please use IconImageSourceProperty instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static readonly BindableProperty IconProperty = IconImageSourceProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<Page>> _platformConfigurationRegistry;
 
@@ -54,16 +62,32 @@ namespace Xamarin.Forms
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Page>>(() => new PlatformConfigurationRegistry<Page>(this));
 		}
 
-		public string BackgroundImage
+		[Obsolete("BackgroundImage is obsolete as of 4.0.0. Please use BackgroundImageSource instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public FileImageSource BackgroundImage
 		{
-			get { return (string)GetValue(BackgroundImageProperty); }
+			get { return GetValue(BackgroundImageProperty) as FileImageSource; }
 			set { SetValue(BackgroundImageProperty, value); }
 		}
 
+		public ImageSource BackgroundImageSource
+		{
+			get { return (ImageSource)GetValue(BackgroundImageSourceProperty); }
+			set { SetValue(BackgroundImageSourceProperty, value); }
+		}
+
+		[Obsolete("Icon is obsolete as of 4.0.0. Please use IconImageSource instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public FileImageSource Icon
 		{
-			get { return (FileImageSource)GetValue(IconProperty); }
+			get { return GetValue(IconProperty) as FileImageSource; }
 			set { SetValue(IconProperty, value); }
+		}
+
+		public ImageSource IconImageSource
+		{
+			get { return (ImageSource)GetValue(IconImageSourceProperty); }
+			set { SetValue(IconImageSourceProperty, value); }
 		}
 
 		public bool IsBusy

@@ -99,7 +99,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			public MenuPage ()
 			{
-				Icon = "bank.png";
+				IconImageSource = "bank.png";
 				Title = "Carsousel Memory Bug";
 				BackgroundColor = Color.FromHex ("#000000");
 

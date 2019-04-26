@@ -19,16 +19,16 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 
 			// built-in Xamarin.Forms controls
-			Children.Add (new XamarinFormsPage {Title = "DEMOA", Icon = "bank.png"});
+			Children.Add (new XamarinFormsPage {Title = "DEMOA", IconImageSource = "bank.png"});
 
 			// custom renderer for the list, using a native built-in cell type
-			Children.Add (new NativeListPage {Title = "DEMOB", Icon = "bank.png"});
+			Children.Add (new NativeListPage {Title = "DEMOB", IconImageSource = "bank.png"});
 
 			// built in Xamarin.Forms list, but with a native cell custom-renderer
-			Children.Add (new XamarinFormsNativeCellPage {Title = "DEMOC", Icon = "bank.png"});
+			Children.Add (new XamarinFormsNativeCellPage {Title = "DEMOC", IconImageSource = "bank.png"});
 
 			// custom renderer for the list, using a native cell that has been custom-defined in native code
-			Children.Add (new NativeListViewPage2 {Title = "DEMOD", Icon = "bank.png"});
+			Children.Add (new NativeListViewPage2 {Title = "DEMOD", IconImageSource = "bank.png"});
 		}
 
 #if UITEST

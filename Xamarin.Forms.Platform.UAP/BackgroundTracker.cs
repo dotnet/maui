@@ -21,7 +21,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		protected override void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == Page.BackgroundImageProperty.PropertyName)
+			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == Page.BackgroundImageSourceProperty.PropertyName)
 			{
 				UpdateBackground();
 			}
@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateBackground();
 		}
 
-		void UpdateBackground()
+		async void UpdateBackground()
 		{
 			if (Element == null)
 				return;
@@ -46,14 +46,10 @@ namespace Xamarin.Forms.Platform.UWP
 			if (element == null)
 				return;
 
-			string backgroundImage = Element.BackgroundImage;
+			var backgroundImage = await Element.BackgroundImageSource.ToWindowsImageSourceAsync();
 			if (backgroundImage != null)
 			{
-				Uri uri;
-				if (!Uri.TryCreate(backgroundImage, UriKind.RelativeOrAbsolute, out uri) || !uri.IsAbsoluteUri)
-					uri = new Uri("ms-appx:///" + backgroundImage);
-
-				element.SetValue(_backgroundProperty, new ImageBrush { ImageSource = new BitmapImage(uri) });
+				element.SetValue(_backgroundProperty, new ImageBrush { ImageSource = backgroundImage });
 			}
 			else
 			{

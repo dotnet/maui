@@ -36,6 +36,7 @@
   <ItemGroup>
     <EmbeddedResource Include="BuildNumber.txt" />
     <EmbeddedResource Include="GalleryPages\crimson.jpg" />
+    <EmbeddedResource Include="coffee.png" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="3.0.2" />
     <Compile Update="GalleryPages\BindableLayoutGalleryPage.xaml.cs">

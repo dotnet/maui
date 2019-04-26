@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Controls
 				var delete = new MenuItem { Text = "Delete", IsDestructive = true };
 				delete.SetBinding (MenuItem.CommandProperty, "Delete");
 
-				var mark = new MenuItem { Text = "Mark",  Icon = "calculator.png" };
+				var mark = new MenuItem { Text = "Mark",  IconImageSource = "calculator.png" };
 				var move = new MenuItem { Text = "Move" };
 
 				//move.Clicked += async (sender, e) => await Navigation.PopAsync();

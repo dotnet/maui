@@ -84,8 +84,8 @@ namespace Xamarin.Forms.Controls
 
 			var imageContainer = new ViewContainer<Button> (Test.Button.Image, 
 				new Button {
-					Text = "Image", 
-					Image = new FileImageSource { File = "bank.png" }
+					Text = "Image",
+					ImageSource = new FileImageSource { File = "bank.png" }
 				}
 			)
 			;

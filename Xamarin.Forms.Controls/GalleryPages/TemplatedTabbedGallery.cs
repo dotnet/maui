@@ -76,7 +76,7 @@ namespace Xamarin.Forms.Controls
 			ItemTemplate = new DataTemplate (() => {
 				var page = new ContentPage();
 				page.SetBinding (TitleProperty, "Title");
-				page.SetBinding (IconProperty, "Icon");
+				page.SetBinding (IconImageSourceProperty, "Icon");
 
 				var layout = new StackLayout();
 

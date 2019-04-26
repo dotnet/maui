@@ -283,7 +283,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackground();
-			else if (e.PropertyName == Page.BackgroundImageProperty.PropertyName)
+			else if (e.PropertyName == Page.BackgroundImageSourceProperty.PropertyName)
 				UpdateBackground();
 			else if (e.PropertyName == Page.TitleProperty.PropertyName)
 				UpdateTitle();
@@ -410,17 +410,18 @@ namespace Xamarin.Forms.Platform.iOS
 			if (NativeView == null)
 				return;
 
-			string bgImage = ((Page)Element).BackgroundImage;
-			if (!string.IsNullOrEmpty(bgImage))
+			_ = this.ApplyNativeImageAsync(Page.BackgroundImageSourceProperty, bgImage =>
 			{
-				NativeView.BackgroundColor = ColorExtensions.FromPatternImageFromBundle(bgImage);
-				return;
-			}
-			Color bgColor = Element.BackgroundColor;
-			if (bgColor.IsDefault)
-				NativeView.BackgroundColor = UIColor.White;
-			else
-				NativeView.BackgroundColor = bgColor.ToUIColor();
+				if (NativeView == null)
+					return;
+
+				if (bgImage != null)
+					NativeView.BackgroundColor = UIColor.FromPatternImage(bgImage);
+				else if (Element.BackgroundColor.IsDefault)
+					NativeView.BackgroundColor = UIColor.White;
+				else
+					NativeView.BackgroundColor = Element.BackgroundColor.ToUIColor();
+			});
 		}
 
 		void UpdateTitle()

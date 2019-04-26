@@ -4,18 +4,6 @@ namespace Xamarin.Forms.Platform.GTK.Extensions
 {
 	public static class PageExtensions
 	{
-		internal static bool ShouldDisplayNativeWindow(this Page page)
-		{
-			var parentPage = page.Parent as Page;
-
-			if (parentPage != null)
-			{
-				return string.IsNullOrEmpty(parentPage.BackgroundImage);
-			}
-
-			return true;
-		}
-
 		public static GtkFormsContainer CreateContainer(this Page view)
 		{
 			if (!Forms.IsInitialized)

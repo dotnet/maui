@@ -27,9 +27,9 @@ namespace Xamarin.Forms.Controls.Issues
 
 		public Issue1705_2()
 		{
-			_page1 = new ContentPage { Title = "TabPage1", Icon = "bank.png" };
+			_page1 = new ContentPage { Title = "TabPage1", IconImageSource = "bank.png" };
 			_page1.Content = new StackLayout { Padding = new Thickness(0, 16), Children = { new Label { Text = "This is TabPage1 using bank.png icon.", FontAttributes = FontAttributes.Bold } } };
-			_page2 = new ContentPage { Title = "TabPage2", Icon = "coffee.png" };
+			_page2 = new ContentPage { Title = "TabPage2", IconImageSource = "coffee.png" };
 			_page2.Content = new StackLayout { Padding = new Thickness(0, 16), Children = { new Label { Text = "This is TabPage2 using coffee.png icon.", FontAttributes = FontAttributes.Bold } } };
 			_page3 = new ContentPage { Title = "TabPage3" };
 			_page3.Content = new StackLayout { Padding = new Thickness(0, 16), Children = { new Label { Text = "This is TabPage3 without icon.", FontAttributes = FontAttributes.Bold } } };

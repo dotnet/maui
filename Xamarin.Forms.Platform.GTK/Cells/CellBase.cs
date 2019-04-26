@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using Xamarin.Forms.Platform.GTK.Extensions;
 
 namespace Xamarin.Forms.Platform.GTK.Cells
 {
@@ -131,12 +132,11 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 			{
 				var menuItem = new ImageMenuItem(item.Text);
 
-				string icon = item.Icon;
-
-				if (!string.IsNullOrEmpty(icon))
+				_ = item.ApplyNativeImageAsync(MenuItem.IconImageSourceProperty, icon =>
 				{
-					menuItem.Image = new Gtk.Image(icon);
-				}
+					if (icon != null)
+						menuItem.Image = new Gtk.Image(icon);
+				});
 
 				menuItem.ButtonPressEvent += (sender, args) =>
 				{

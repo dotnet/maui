@@ -46,7 +46,7 @@ namespace Xamarin.Forms.Controls.Issues
 				})
 			};
 
-			Master = new ContentPage { Title = "master", Icon = "menuIcon.png", Content = listView };
+			Master = new ContentPage { Title = "master", IconImageSource = "menuIcon.png", Content = listView };
 
 			listView.ItemSelected += (sender, e) => {
 				Detail = CreateDetailPage (string.Format("Page {0}", (e.SelectedItem as Person).Name));
@@ -103,8 +103,8 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			var tbiBank = new ToolbarItem { Command = new Command (() => { }), Icon = "bank.png" };
-			var tbiCalc = new ToolbarItem { Command = new Command (() => { }), Icon = "calculator.png" };
+			var tbiBank = new ToolbarItem { Command = new Command (() => { }), IconImageSource = "bank.png" };
+			var tbiCalc = new ToolbarItem { Command = new Command (() => { }), IconImageSource = "calculator.png" };
 
 			page.ToolbarItems.Add (tbiBank);
 			page.ToolbarItems.Add (tbiCalc);

@@ -173,7 +173,7 @@ namespace Xamarin.Forms.Controls.Issues
 						var item = new MenuItem { Text = $"hello menu item {i}.{j}" };
 						if (withImage)
 						{
-							item.Icon = Icon = "bank.png";
+							item.IconImageSource = IconImageSource = "bank.png";
 						}
 						if (addShortcut)
 						{

@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Xamarin.Forms.Internals;
 using WButton = System.Windows.Controls.Button;
 using WImage = System.Windows.Controls.Image;
 using WThickness = System.Windows.Thickness;
@@ -45,7 +46,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == Button.TextProperty.PropertyName || e.PropertyName == Button.ImageProperty.PropertyName)
+			if (e.PropertyName == Button.TextProperty.PropertyName || e.PropertyName == Button.ImageSourceProperty.PropertyName)
 				UpdateContent();
 			else if (e.PropertyName == Button.TextColorProperty.PropertyName)
 				UpdateTextColor();
@@ -74,21 +75,22 @@ namespace Xamarin.Forms.Platform.WPF
 			Control.BorderThickness = Element.BorderWidth <= 0d ? new WThickness(1) : new WThickness(Element.BorderWidth);
 		}
 
-		void UpdateContent()
+		async void UpdateContent()
 		{
 			var text = Element.Text;
-			var elementImage = Element.Image;
+			var elementImage = await Element.ImageSource.ToWindowsImageSourceAsync();
 
 			// No image, just the text
 			if (elementImage == null)
 			{
 				Control.Content = text;
+				Element?.InvalidateMeasureNonVirtual(InvalidationTrigger.RendererReady);
 				return;
 			}
 
 			var image = new WImage
 			{
-				Source = new BitmapImage(new Uri("/" + elementImage.File, UriKind.Relative)),
+				Source = elementImage,
 				Width = 30,
 				Height = 30,
 				VerticalAlignment = VerticalAlignment.Center,
@@ -99,6 +101,7 @@ namespace Xamarin.Forms.Platform.WPF
 			if (string.IsNullOrEmpty(text))
 			{
 				Control.Content = image;
+				Element?.InvalidateMeasureNonVirtual(InvalidationTrigger.RendererReady);
 				return;
 			}
 
@@ -142,6 +145,7 @@ namespace Xamarin.Forms.Platform.WPF
 			container.Children.Add(textBlock);
 
 			Control.Content = container;
+			Element?.InvalidateMeasureNonVirtual(InvalidationTrigger.RendererReady);
 		}
 
 		void UpdateFont()

@@ -36,7 +36,7 @@ namespace Xamarin.Forms.Controls.Issues
                     cell.ContextActions.Add(new MenuItem
                     {
                         Text = "Action",
-                        Icon = "icon",
+                        IconImageSource = "icon",
                         IsDestructive = true,
                         Command = new Command(() => DisplayAlert("TITLE", "Context action invoked", "Ok")),
                     });

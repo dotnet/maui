@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Xamarin.Forms.Platform.GTK.Extensions;
 
 namespace Xamarin.Forms.Platform.GTK.Renderers
 {
@@ -84,42 +85,19 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				Control.Pixbuf = null;
 			}
 
-			IImageSourceHandler handler;
-
 			((IImageController)Element).SetIsLoading(true);
 
-			if (source != null
-				&& (handler = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
-			{
-				Pixbuf image;
+			var image = await source.GetNativeImageAsync();
 
-				try
-				{
-					image = await handler.LoadImageAsync(source);
-				}
-				catch (OperationCanceledException)
-				{
-					image = null;
-					Internals.Log.Warning("Image loading", "Image load cancelled");
-				}
-				catch(Exception ex)
-				{
-					image = null;
-					Internals.Log.Warning("Image loading", $"Image load failed: {ex}");
-				}
-
-				var imageView = Control;
-				if (imageView != null)
-					imageView.Pixbuf = image;
-
-				if (!_isDisposed)
-					((IVisualElementController)Element).NativeSizeChanged();
-			}
-			else
-				Control.Pixbuf = null;
+			var imageView = Control;
+			if (imageView != null)
+				imageView.Pixbuf = image;
 
 			if (!_isDisposed)
+			{
+				((IVisualElementController)Element).NativeSizeChanged();
 				((IImageController)Element).SetIsLoading(false);
+			}
 		}
 
 		void SetAspect()

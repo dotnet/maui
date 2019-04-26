@@ -83,21 +83,29 @@ namespace Xamarin.Forms.Platform.Android
 				foreach (var element in group)
 				{
 					string title = null;
-					ImageSource icon = null;
+					BindableObject bindable = null;
+					BindableProperty property = null;
 					if (element is BaseShellItem shellItem)
 					{
 						title = shellItem.Title;
-						icon = shellItem.FlyoutIcon;
+						bindable = shellItem;
+						property = BaseShellItem.FlyoutIconProperty;
 					}
 					else if (element is MenuItem menuItem)
 					{
 						title = menuItem.Text;
-						icon = menuItem.Icon;
+						bindable = menuItem;
+						property = MenuItem.IconImageSourceProperty;
 					}
 
 					var item = menu.Add(gid, id++, 0, new Java.Lang.String(title));
-					if (icon != null)
-						SetMenuItemIcon(item, icon);
+					if (bindable != null && property != null)
+					{
+						_ = _shellContext.ApplyDrawableAsync(bindable, property, drawable =>
+						{
+							item.SetIcon(drawable);
+						});
+					}
 				}
 				gid++;
 			}
@@ -106,13 +114,6 @@ namespace Xamarin.Forms.Platform.Android
 		void OnShellStructureChanged(object sender, EventArgs e)
 		{
 			BuildMenu();
-		}
-
-		async void SetMenuItemIcon(IMenuItem menuItem, ImageSource source)
-		{
-			var drawable = await Context.GetFormsDrawable(source);
-			menuItem.SetIcon(drawable);
-			drawable?.Dispose();
 		}
 	}
 }

@@ -156,11 +156,11 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 		{
 			base.UpdateBackgroundImage();
 
-			var parent = Widget?.Parent as EventBox;
-
-			if (parent != null)
+			if (Widget?.Parent is EventBox parent)
 			{
-				parent.VisibleWindow = Page.CurrentPage?.ShouldDisplayNativeWindow() ?? true;
+				parent.VisibleWindow = Page.CurrentPage?.Parent is Page parentPage
+					? parentPage.BackgroundImageSource.IsEmpty
+					: true;
 			}
 		}
 
@@ -258,7 +258,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 		{
 			if (e.PropertyName == Xamarin.Forms.Page.TitleProperty.PropertyName)
 				UpdateTitle();
-			else if (e.PropertyName == Xamarin.Forms.Page.IconProperty.PropertyName)
+			else if (e.PropertyName == Xamarin.Forms.Page.IconImageSourceProperty.PropertyName)
 				UpdateIcon();
 		}
 

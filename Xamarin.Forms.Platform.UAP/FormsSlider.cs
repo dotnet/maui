@@ -2,6 +2,7 @@
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media.Imaging;
+using WImageSource = Windows.UI.Xaml.Media.ImageSource;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -11,7 +12,7 @@ namespace Xamarin.Forms.Platform.UWP
 		internal Thumb ImageThumb { get; set; }
 
 		public static readonly DependencyProperty ThumbImageProperty = 
-			DependencyProperty.Register(nameof(ThumbImage), typeof(BitmapImage), 
+			DependencyProperty.Register(nameof(ThumbImage), typeof(WImageSource), 
 			typeof(FormsSlider), new PropertyMetadata(null, PropertyChangedCallback));
 
 		static void PropertyChangedCallback(DependencyObject dependencyObject,
@@ -40,9 +41,9 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		public BitmapImage ThumbImage
+		public WImageSource ThumbImage
 		{
-			get { return (BitmapImage)GetValue(ThumbImageProperty); }
+			get { return (WImageSource)GetValue(ThumbImageProperty); }
 			set { SetValue(ThumbImageProperty, value); }
 		}
 

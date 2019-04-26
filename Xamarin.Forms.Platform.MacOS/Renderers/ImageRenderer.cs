@@ -92,36 +92,20 @@ namespace Xamarin.Forms.Platform.MacOS
 				Control.Layer.Contents = null;
 			}
 
-			IImageSourceHandler handler;
+			if (!_isDisposed)
+				Element.SetIsLoading(true);
 
-			Element.SetIsLoading(true);
-
-			if (source != null && (handler = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
+			using (var nsImage = await source.GetNativeImageAsync())
 			{
-				NSImage nsImage;
-				try
-				{
-					nsImage = await handler.LoadImageAsync(source, scale: (float)NSScreen.MainScreen.BackingScaleFactor);
-				}
-				catch (OperationCanceledException)
-				{
-					nsImage = null;
-				}
-
-				var imageView = Control;
-				if (imageView != null)
-					imageView.Layer.Contents = nsImage != null ? nsImage.CGImage : null;
-				if (nsImage != null)
-					nsImage.Dispose();
-
-				if (!_isDisposed)
-					((IVisualElementController)Element).NativeSizeChanged();
+				if (!_isDisposed && Control is NSView imageView)
+					imageView.Layer.Contents = nsImage?.CGImage;
 			}
-			else
-				Control.Layer.Contents = null;
 
 			if (!_isDisposed)
+			{
+				((IVisualElementController)Element).NativeSizeChanged();
 				Element.SetIsLoading(false);
+			}
 		}
 
 		void SetOpacity()

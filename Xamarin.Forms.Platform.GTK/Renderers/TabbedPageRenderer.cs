@@ -87,7 +87,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 		protected override void UpdateBackgroundImage()
 		{
-			Widget?.SetBackgroundImage(Page.BackgroundImage);
+			Widget?.SetBackgroundImage(Page.BackgroundImageSource);
 		}
 
 		protected override void Dispose(bool disposing)
@@ -142,7 +142,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			Widget.InsertPage(
 				pageRenderer.Container,
 				page.Title,
-				page.Icon?.ToPixbuf(new Size(DefaultIconWidth, DefaultIconHeight)),
+				page.IconImageSource?.ToPixbuf(new Size(DefaultIconWidth, DefaultIconHeight)),
 				index);
 
 			Widget.ShowAll();
@@ -185,11 +185,11 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 				Widget.SetTabLabelText(index, page.Title);
 			}
-			else if (e.PropertyName == Xamarin.Forms.Page.IconProperty.PropertyName)
+			else if (e.PropertyName == Xamarin.Forms.Page.IconImageSourceProperty.PropertyName)
 			{
 				var page = (Page)sender;
 				var index = TabbedPage.GetIndex(page);
-				var icon = page.Icon;
+				var icon = page.IconImageSource;
 
 				Widget.SetTabIcon(index, icon.ToPixbuf());
 			}
