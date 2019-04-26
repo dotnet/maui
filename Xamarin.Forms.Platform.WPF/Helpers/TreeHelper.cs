@@ -146,7 +146,7 @@ namespace Xamarin.Forms.Platform.WPF.Helpers
 					}
 
 					//recurse tree
-					foreach (T descendant in FindChildren<T>(child))
+					foreach (T descendant in FindChildren<T>(child, forceUsingTheVisualTreeHelper))
 					{
 						yield return descendant;
 					}
