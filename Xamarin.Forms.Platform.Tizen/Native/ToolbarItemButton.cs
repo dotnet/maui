@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			{
 				UpdateIsEnabled();
 			}
-			else if (e.PropertyName == ToolbarItem.IconProperty.PropertyName)
+			else if (e.PropertyName == ToolbarItem.IconImageSourceProperty.PropertyName)
 			{
 				UpdateIcon();
 			}
