@@ -47,9 +47,6 @@ namespace Xamarin.Forms
 				SetInheritedBindingContext(newHandler, bindable.BindingContext);
 		}
 
-		public static readonly BindableProperty SetPaddingInsetsProperty =
-			BindableProperty.CreateAttached("SetPaddingInsets", typeof(bool), typeof(Shell), false);
-
 		public static readonly BindableProperty TabBarIsVisibleProperty =
 			BindableProperty.CreateAttached("TabBarIsVisible", typeof(bool), typeof(Shell), true);
 
@@ -67,9 +64,6 @@ namespace Xamarin.Forms
 
 		public static SearchHandler GetSearchHandler(BindableObject obj) => (SearchHandler)obj.GetValue(SearchHandlerProperty);
 		public static void SetSearchHandler(BindableObject obj, SearchHandler handler) => obj.SetValue(SearchHandlerProperty, handler);
-
-		public static bool GetSetPaddingInsets(BindableObject obj) => (bool)obj.GetValue(SetPaddingInsetsProperty);
-		public static void SetSetPaddingInsets(BindableObject obj, bool value) => obj.SetValue(SetPaddingInsetsProperty, value);
 
 		public static bool GetTabBarIsVisible(BindableObject obj) => (bool)obj.GetValue(TabBarIsVisibleProperty);
 		public static void SetTabBarIsVisible(BindableObject obj, bool value) => obj.SetValue(TabBarIsVisibleProperty, value);

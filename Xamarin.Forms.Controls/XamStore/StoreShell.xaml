@@ -58,7 +58,7 @@
 
 	<ShellItem Route="store" x:Name="_storeItem" FlyoutDisplayOptions="AsMultipleItems">
 		<ShellContent Route="home" Style="{StaticResource GreenShell}" Title="Home" Icon="home.png" FlyoutIcon="homeflyout.png" ContentTemplate="{DataTemplate local:HomePage}" />
-        <ShellContent Route="list" Title="List"  Icon="games.png" FlyoutIcon="gamesflyout.png" ContentTemplate="{DataTemplate local:DemoShellPage}" Shell.SetPaddingInsets="true" />
+        <ShellContent Route="list" Title="List"  Icon="games.png" FlyoutIcon="gamesflyout.png" ContentTemplate="{DataTemplate local:DemoShellPage}" />
 		<ShellContent Route="games" Style="{StaticResource GreenShell}" Title="Games" Icon="games.png" FlyoutIcon="gamesflyout.png" ContentTemplate="{DataTemplate local:GamesPage}" />
 		<ShellContent Route="movies" Style="{StaticResource MoviesShell}" Title="Movies &amp; TV" 
 					  Icon="film.png" FlyoutIcon="filmflyout.png" ContentTemplate="{DataTemplate local:MoviesPage}">
