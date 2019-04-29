@@ -61,6 +61,26 @@ namespace Xamarin.Forms.Core.UnitTests
 
 
 		[Test]
+		public async Task GlobalNavigateTwice()
+		{
+
+			var shell = new Shell();
+			var item1 = CreateShellItem(asImplicit: true, shellContentRoute: "rootlevelcontent1");
+
+			shell.Items.Add(item1);
+			Routing.RegisterRoute("cat", typeof(ContentPage));
+			Routing.RegisterRoute("details", typeof(ContentPage));
+
+			await shell.GoToAsync("cat");
+			await shell.GoToAsync("details");
+
+			Assert.AreEqual("app:///rootlevelcontent1/cat/details", shell.CurrentState.Location.ToString());
+			await shell.GoToAsync("//rootlevelcontent1/details");
+			Assert.AreEqual("app:///rootlevelcontent1/details", shell.CurrentState.Location.ToString());
+		}
+
+
+		[Test]
 		public async Task GlobalRegisterAbsoluteMatching()	
 		{
 			var shell = new Shell() { RouteScheme = "app", Route = "shellroute" };
