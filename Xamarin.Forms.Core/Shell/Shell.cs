@@ -420,7 +420,7 @@ namespace Xamarin.Forms
 			}
 			else
 			{
-				await CurrentItem.CurrentItem.GoToAsync(navigationRequest.Request.GlobalRoutes, queryData, animate);
+				await CurrentItem.CurrentItem.GoToAsync(navigationRequest, queryData, animate);
 			}
 			
 			//if (Routing.CompareWithRegisteredRoutes(shellItemRoute))

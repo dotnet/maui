@@ -75,13 +75,12 @@ namespace Xamarin.Forms
 			if (shellContent == null)
 				return Task.FromResult(true);
 
-			
-			if(request.Request.GlobalRoutes.Count > 0)
+			if (request.Request.GlobalRoutes.Count > 0)
 			{
 				// TODO get rid of this hack and fix so if there's a stack the current page doesn't display
 				Device.BeginInvokeOnMainThread(async () =>
 				{
-					await GoToAsync(request.Request.GlobalRoutes, queryData, false);
+					await GoToAsync(request, queryData, false);
 				});
 			}
 
@@ -226,8 +225,9 @@ namespace Xamarin.Forms
 			return (ShellSection)(ShellContent)page;
 		}
 
-		public virtual async Task GoToAsync(List<string> routes, IDictionary<string, string> queryData, bool animate)
+		internal async Task GoToAsync(NavigationRequest request, IDictionary<string, string> queryData, bool animate)
 		{
+			List<string> routes = request.Request.GlobalRoutes;
 			if (routes == null || routes.Count == 0)
 			{
 				await Navigation.PopToRootAsync(animate);
@@ -248,9 +248,12 @@ namespace Xamarin.Forms
 						continue;
 					}
 
-					while (_navStack.Count > i + 1)
+					if (request.StackRequest == NavigationRequest.WhatToDoWithTheStack.ReplaceIt)
 					{
-						await OnPopAsync(false);
+						while (_navStack.Count > i + 1)
+						{
+							await OnPopAsync(false);
+						}
 					}
 				}
 
