@@ -501,7 +501,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 			{
-				if (_child == null)
+				if (_child?.Element == null)
 				{
 					SetMeasuredDimension(0, 0);
 					return;
@@ -513,8 +513,8 @@ namespace Xamarin.Forms.Platform.Android
 
 				var width = (int)ctx.FromPixels(MeasureSpecFactory.GetSize(widthMeasureSpec));
 
-				SizeRequest request = _child.Element.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-				Xamarin.Forms.Layout.LayoutChildIntoBoundingRegion(_child.Element, new Rectangle(0, 0, width, request.Request.Height));
+				SizeRequest request = element.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
+				Xamarin.Forms.Layout.LayoutChildIntoBoundingRegion(element, new Rectangle(0, 0, width, request.Request.Height));
 
 				int widthSpec = MeasureSpecFactory.MakeMeasureSpec((int)ctx.ToPixels(width), MeasureSpecMode.Exactly);
 				int heightSpec = MeasureSpecFactory.MakeMeasureSpec((int)ctx.ToPixels(request.Request.Height), MeasureSpecMode.Exactly);
