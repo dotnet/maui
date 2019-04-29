@@ -63,7 +63,7 @@ namespace Xamarin.Forms.Controls.Issues
 			public Page2 ()
 			{
 				Master = new Page () { Title = "Master", 
-					Icon = "Icon.png" 
+					IconImageSource = "Icon.png" 
 				};
 				Detail = new Page () { Title = "Detail" };
 			}

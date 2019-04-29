@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public sealed class FileImageSourceHandler : IImageSourceHandler
+	public sealed class FileImageSourceHandler : IImageSourceHandler, IIconElementHandler
 	{
 		public Task<Windows.UI.Xaml.Media.ImageSource> LoadImageAsync(ImageSource imagesource, CancellationToken cancellationToken = new CancellationToken())
 		{
@@ -15,6 +16,19 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				string file = filesource.File;
 				image = new BitmapImage(new Uri("ms-appx:///" + file));
+			}
+
+			return Task.FromResult(image);
+		}
+
+		public Task<IconElement> LoadIconElementAsync(ImageSource imagesource, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			IconElement image = null;
+
+			if (imagesource is FileImageSource filesource)
+			{
+				string file = filesource.File;
+				image = new BitmapIcon { UriSource = new Uri("ms-appx:///" + file) };
 			}
 
 			return Task.FromResult(image);

@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var master = new ContentPage {
 				Title = "Master",
-				Icon = "bank.png",
+				IconImageSource = "bank.png",
 				Content = listView
 			};
 
@@ -114,8 +114,8 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			tabOne.SetValue (IconProperty, "bank.png");
-			tabTwo.SetValue (IconProperty, "coffee.png");
+			tabOne.SetValue (IconImageSourceProperty, "bank.png");
+			tabTwo.SetValue (IconImageSourceProperty, "coffee.png");
 			Children.Add (tabOne);
 			Children.Add (tabTwo);
 		}

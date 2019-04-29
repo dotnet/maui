@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Controls
 			var minTrackColorContainer = new ValueViewContainer<Slider> (Test.Slider.MinimumTrackColor, new Slider { MinimumTrackColor = Color.Red, Value = 0.5 }, "Value", value => value.ToString ());
 			var maxTrackColorContainer = new ValueViewContainer<Slider> (Test.Slider.MaximumTrackColor, new Slider { MaximumTrackColor = Color.Red, Value = 0.5 }, "Value", value => value.ToString ());
 			var thumbColorContainer = new ValueViewContainer<Slider> (Test.Slider.ThumbColor, new Slider { ThumbColor = Color.Red, Value = 0.5 }, "Value", value => value.ToString ());
-			var thumbImageContainer = new ValueViewContainer<Slider> (Test.Slider.ThumbImage, new Slider { ThumbImage = "coffee.png", Value = 0.5 }, "Value", value => value.ToString ());
+			var thumbImageContainer = new ValueViewContainer<Slider> (Test.Slider.ThumbImage, new Slider { ThumbImageSource = "coffee.png", Value = 0.5 }, "Value", value => value.ToString ());
 
 			var dragStartedContainer = new EventViewContainer<Slider>(Test.Slider.DragStarted, new Slider { Value = 0.5 });
 			dragStartedContainer.View.DragStarted += (sender, args) => dragStartedContainer.EventFired();

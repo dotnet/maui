@@ -6,7 +6,7 @@ namespace Xamarin.Forms
 	static class ImageElement
 	{
 
-		public static readonly BindableProperty FileImageProperty = BindableProperty.Create("Image", typeof(FileImageSource), typeof(IImageElement), default(FileImageSource),
+		public static readonly BindableProperty ImageProperty = BindableProperty.Create("Image", typeof(ImageSource), typeof(IImageElement), default(ImageSource),
 	propertyChanging: OnImageSourceChanging, propertyChanged: OnImageSourceChanged);
 
 		public static readonly BindableProperty SourceProperty = BindableProperty.Create(nameof(IImageElement.Source), typeof(ImageSource), typeof(IImageElement), default(ImageSource),

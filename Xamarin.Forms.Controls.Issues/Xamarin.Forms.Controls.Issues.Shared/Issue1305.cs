@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var settings = new ToolbarItem
 			{
-				Icon = "bank.png",
+				IconImageSource = "bank.png",
 				Text = "Settings",
 				Command = new Command(ShowSettingsPage),
 			};
@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			Title = "Test Page";
 
-			Icon = "Icon.png";
+			IconImageSource = "Icon.png";
 
 		}
 
@@ -44,7 +44,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			Title = "Settings";
 
-			Icon = "bank.png";
+			IconImageSource = "bank.png";
 		}
 	}
 }

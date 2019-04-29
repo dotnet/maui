@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Controls.Issues
 				var contentPage = new ContentPage()
 				{
 					Content = grid,
-					Icon = "coffee.png"
+					IconImageSource = "coffee.png"
 				};
 
 				return contentPage;
@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Controls.Issues
 			Children.Add((createPage()));
 			Children.Add(new ContentPage()
 			{
-				Icon = "calculator.png",
+				IconImageSource = "calculator.png",
 				Content = new Button()
 				{
 					Text = "Click Me",

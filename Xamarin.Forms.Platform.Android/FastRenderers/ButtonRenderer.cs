@@ -13,7 +13,7 @@ using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
-	internal sealed class ButtonRenderer : AppCompatButton,
+	public class ButtonRenderer : AppCompatButton,
 		IBorderVisualElementRenderer, IButtonLayoutRenderer, IVisualElementRenderer, IViewRenderer, ITabStop,
 		AView.IOnAttachStateChangeListener, AView.IOnFocusChangeListener, AView.IOnClickListener, AView.IOnTouchListener
 	{
@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		BorderBackgroundManager _backgroundTracker;
 		ButtonLayoutManager _buttonLayoutManager;
 		IPlatformElementConfiguration<PlatformConfiguration.Android, Button> _platformElementConfiguration;
-		private Button _button;
+		Button _button;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
@@ -46,7 +46,12 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			Initialize();
 		}
 
-		public VisualElement Element => Button;
+		protected Button Element => Button;
+		protected AppCompatButton Control => this;
+
+		VisualElement IBorderVisualElementRenderer.Element => Element;
+
+		VisualElement IVisualElementRenderer.Element => Element;
 		AView IVisualElementRenderer.View => this;
 		ViewGroup IVisualElementRenderer.ViewGroup => null;
 		VisualElementTracker IVisualElementRenderer.Tracker => _tracker;
@@ -191,7 +196,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			return new Size();
 		}
 
-		void OnElementChanged(ElementChangedEventArgs<Button> e)
+		protected virtual void OnElementChanged(ElementChangedEventArgs<Button> e)
 		{
 			if (e.NewElement != null && !_isDisposed)
 			{
@@ -212,7 +217,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(e.OldElement, e.NewElement));
 		}
 
-		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Button.TextColorProperty.PropertyName)
 			{
@@ -345,12 +350,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			return _platformElementConfiguration;
 		}
 
-		Button IButtonLayoutRenderer.Element => Button;
 		AppCompatButton IButtonLayoutRenderer.View => this;
-		event EventHandler<VisualElementChangedEventArgs> IButtonLayoutRenderer.ElementChanged
-		{
-			add => ((IVisualElementRenderer)this).ElementChanged += value;
-			remove => ((IVisualElementRenderer)this).ElementChanged -= value;
-		}
 	}
 }

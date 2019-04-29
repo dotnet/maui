@@ -361,7 +361,7 @@ namespace Xamarin.Forms.Platform.MacOS
 					var tbI = new ToolbarItem
 					{
 						Text = item.Title,
-						Icon = item.Icon,
+						IconImageSource = item.IconImageSource,
 						Command = new Command(() => tabbedPage.SelectedItem = item)
 					};
 					items.Add(tbI);
@@ -371,8 +371,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			UpdateGroup(_tabbedGroup, items, ToolbarItemWidth, ToolbarItemSpacing);
 		}
 
-		void UpdateGroup(NativeToolbarGroup group, IList<ToolbarItem> toolbarItems, double itemWidth,
-		   double itemSpacing)
+		void UpdateGroup(NativeToolbarGroup group, IList<ToolbarItem> toolbarItems, double itemWidth, double itemSpacing)
 		{
 			int count = toolbarItems.Count;
 			group.Items.Clear();
@@ -404,10 +403,12 @@ namespace Xamarin.Forms.Platform.MacOS
 					button.Activated += (sender, e) => ((IMenuItemController)element).Activate();
 
 					button.BezelStyle = NSBezelStyle.TexturedRounded;
-					if (!string.IsNullOrEmpty(element.Icon))
-						button.Image = new NSImage(element.Icon);
-
-					button.SizeToFit();
+					_ = element.ApplyNativeImageAsync(ToolbarItem.IconImageSourceProperty, image =>
+					{
+						if (image != null)
+							button.Image = image;
+						button.SizeToFit();
+					});
 
 					button.Enabled = item.Enabled = element.IsEnabled;
 					element.PropertyChanged -= ToolBarItemPropertyChanged;

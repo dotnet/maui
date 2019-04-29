@@ -34,10 +34,10 @@ namespace Xamarin.Forms.Controls.Issues
 			base.OnAppearing();
 			BarTextColor = Color.White;
 			Children.RemoveAt(1);
-			Children.Insert(1, new ContentPage { Title = "Page5", Icon = "Loyalty.png" });
+			Children.Insert(1, new ContentPage { Title = "Page5", IconImageSource = "Loyalty.png" });
 
 			Children.RemoveAt(3);
-			Children.Insert(2, new ContentPage { Title = "Page6", Icon = "Gift.png" });
+			Children.Insert(2, new ContentPage { Title = "Page6", IconImageSource = "Gift.png" });
 			BarTextColor = Color.White;
 		}
 

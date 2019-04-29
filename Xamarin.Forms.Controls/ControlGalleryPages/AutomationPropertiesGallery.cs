@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Controls
 			this.SetAutomationPropertiesName("Accessibility Gallery Page");
 			this.SetAutomationPropertiesHelpText("Demonstrates accessibility settings");
 
-			var toolbarItem = new ToolbarItem { Icon = "coffee.png" };
+			var toolbarItem = new ToolbarItem { IconImageSource = "coffee.png" };
 			toolbarItem.SetAutomationPropertiesName(toolbarItemName);
 			ToolbarItems.Add(toolbarItem);
 			toolbarItem.Command = new Command(() => { Navigation.PushAsync(new ContentPage()); });

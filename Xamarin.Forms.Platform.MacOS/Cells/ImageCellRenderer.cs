@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			return result;
 		}
 
-		protected override async void HandlePropertyChanged(object sender, PropertyChangedEventArgs args)
+		protected override void HandlePropertyChanged(object sender, PropertyChangedEventArgs args)
 		{
 			var tvc = (CellNSView)sender;
 			var imageCell = (ImageCell)tvc.Cell;
@@ -32,37 +32,18 @@ namespace Xamarin.Forms.Platform.MacOS
 			base.HandlePropertyChanged(sender, args);
 
 			if (args.PropertyName == ImageCell.ImageSourceProperty.PropertyName)
-				await SetImage(imageCell, tvc);
+				SetImage(imageCell, tvc);
 		}
 
-		static async Task SetImage(ImageCell cell, CellNSView target)
+		static void SetImage(ImageCell cell, CellNSView target)
 		{
-			var source = cell.ImageSource;
-
 			target.ImageView.Image = null;
 
-			IImageSourceHandler handler;
-
-			if (source != null && (handler = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
+			_ = cell.ApplyNativeImageAsync(ImageCell.ImageSourceProperty, image =>
 			{
-				NSImage uiimage;
-				try
-				{
-					uiimage = await handler.LoadImageAsync(source).ConfigureAwait(false);
-				}
-				catch (TaskCanceledException)
-				{
-					uiimage = null;
-				}
-
-				NSRunLoop.Main.BeginInvokeOnMainThread(() =>
-				{
-					target.ImageView.Image = uiimage;
-					target.NeedsLayout = true;
-				});
-			}
-			else
-				target.ImageView.Image = null;
+				target.ImageView.Image = image;
+				target.NeedsLayout = true;
+			});
 		}
 	}
 }

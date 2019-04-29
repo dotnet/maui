@@ -66,7 +66,7 @@ namespace Xamarin.Forms.Controls
 			};
 			var share = new ToolbarItem
 			{
-				Icon = "ic_share.png",
+				IconImageSource = "ic_share.png",
 				Text = "Share",
 				//Command = new Command(() => CrossShare.Current
 				//  .Share("Be sure to read @shanselman's " + item.Title + " " + item.Link))

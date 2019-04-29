@@ -31,6 +31,8 @@ namespace Xamarin.Forms
 				Store.CreateDirectoryAsync(CacheName).Wait();
 		}
 
+		public override bool IsEmpty => Uri == null;
+
 		public TimeSpan CacheValidity
 		{
 			get { return _cacheValidity; }

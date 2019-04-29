@@ -36,5 +36,10 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			return res;
 		}
+
+		internal static string GetPath(ImageSource icon)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

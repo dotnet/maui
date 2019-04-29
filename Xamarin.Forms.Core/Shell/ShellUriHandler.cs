@@ -9,19 +9,36 @@ namespace Xamarin.Forms
 
 	internal class ShellUriHandler
 	{
-		static readonly char[] _pathSeparator = { '/', '\\' };
+		static readonly char[] _pathSeparators = { '/', '\\' };
+		const string _pathSeparator = "/";
 
-		static Uri FormatUri(Uri path)
+		internal static Uri FormatUri(Uri path)
 		{
 			if (path.IsAbsoluteUri)
-				return path;
+				return new Uri(FormatUri(path.OriginalString), UriKind.Absolute);
 
 			return new Uri(FormatUri(path.OriginalString), UriKind.Relative);
 		}
 
-		static string FormatUri(string path)
+		internal static string FormatUri(string path)
 		{
-			return path.Replace("\\", "/");
+			return path.Replace(_pathSeparators[1], _pathSeparator[0]);
+		}
+
+		internal static Uri CreateUri(string path)
+		{
+			path = FormatUri(path);
+
+			// on iOS if the uri starts with // it'll instantiate as absolute with
+			// file: as the default scheme where as android just crashes
+			// so this checks if it starts with / and just forces relative
+			if (path.StartsWith(_pathSeparator, StringComparison.Ordinal))
+				return new Uri(path, UriKind.Relative);
+
+			if (Uri.TryCreate(path, UriKind.Absolute, out Uri result))
+				return result;
+
+			return new Uri(path, UriKind.Relative);
 		}
 
 		public static Uri ConvertToStandardFormat(Shell shell, Uri request)
@@ -33,7 +50,7 @@ namespace Xamarin.Forms
 			else
 				pathAndQuery = request.OriginalString;
 
-			var segments = new List<string>(pathAndQuery.Split(_pathSeparator, StringSplitOptions.RemoveEmptyEntries));
+			var segments = new List<string>(pathAndQuery.Split(_pathSeparators, StringSplitOptions.RemoveEmptyEntries));
 
 
 			if (segments[0] != shell.RouteHost)
@@ -42,27 +59,27 @@ namespace Xamarin.Forms
 			if (segments[1] != shell.Route)
 				segments.Insert(1, shell.Route);
 
-			var path = String.Join("/", segments.ToArray());
+			var path = String.Join(_pathSeparator, segments.ToArray());
 			string uri = $"{shell.RouteScheme}://{path}";
 
 			return new Uri(uri);
 		}
 
-		public static NavigationRequest GetNavigationRequest(Shell shell, Uri uri)
+		internal static NavigationRequest GetNavigationRequest(Shell shell, Uri uri, bool enableRelativeShellRoutes = false)
 		{
 			uri = FormatUri(uri);
 			// figure out the intent of the Uri
 			NavigationRequest.WhatToDoWithTheStack whatDoIDo = NavigationRequest.WhatToDoWithTheStack.PushToIt;
 			if (uri.IsAbsoluteUri)
 				whatDoIDo = NavigationRequest.WhatToDoWithTheStack.ReplaceIt;
-			else if (uri.OriginalString.StartsWith("//") || uri.OriginalString.StartsWith("\\\\"))
+			else if (uri.OriginalString.StartsWith("//", StringComparison.Ordinal) || uri.OriginalString.StartsWith("\\\\", StringComparison.Ordinal))
 				whatDoIDo = NavigationRequest.WhatToDoWithTheStack.ReplaceIt;
 			else
 				whatDoIDo = NavigationRequest.WhatToDoWithTheStack.PushToIt;
 
 			Uri request = ConvertToStandardFormat(shell, uri);
 
-			var possibleRouteMatches = GenerateRoutePaths(shell, request, uri);
+			var possibleRouteMatches = GenerateRoutePaths(shell, request, uri, enableRelativeShellRoutes);
 
 
 			if (possibleRouteMatches.Count == 0)
@@ -85,8 +102,7 @@ namespace Xamarin.Forms
 			var theWinningRoute = possibleRouteMatches[0];
 			RequestDefinition definition =
 				new RequestDefinition(
-					ConvertToStandardFormat(shell, new Uri(theWinningRoute.PathFull, UriKind.RelativeOrAbsolute)),
-					new Uri(theWinningRoute.PathNoImplicit, UriKind.RelativeOrAbsolute),
+					ConvertToStandardFormat(shell, CreateUri(theWinningRoute.PathFull)),
 					theWinningRoute.Item,
 					theWinningRoute.Section,
 					theWinningRoute.Content,
@@ -100,19 +116,24 @@ namespace Xamarin.Forms
 		internal static List<RouteRequestBuilder> GenerateRoutePaths(Shell shell, Uri request)
 		{
 			request = FormatUri(request);
-			return GenerateRoutePaths(shell, request, request);
+			return GenerateRoutePaths(shell, request, request, false);
 		}
 
-		internal static List<RouteRequestBuilder> GenerateRoutePaths(Shell shell, Uri request, Uri originalRequest)
+		internal static List<RouteRequestBuilder> GenerateRoutePaths(Shell shell, Uri request, Uri originalRequest, bool enableRelativeShellRoutes)
 		{
-			request = FormatUri(request);
-			originalRequest = FormatUri(originalRequest);
-
 			var routeKeys = Routing.GetRouteKeys();
 			for (int i = 0; i < routeKeys.Length; i++)
 			{
+				if (routeKeys[i] == originalRequest.OriginalString)
+				{
+					var builder = new RouteRequestBuilder(routeKeys[i], routeKeys[i], null, new string[] { routeKeys[i] });
+					return new List<RouteRequestBuilder> { builder };
+				}
 				routeKeys[i] = FormatUri(routeKeys[i]);
 			}
+
+			request = FormatUri(request);
+			originalRequest = FormatUri(originalRequest);
 
 			List<RouteRequestBuilder> possibleRoutePaths = new List<RouteRequestBuilder>();
 			if (!request.IsAbsoluteUri)
@@ -121,22 +142,23 @@ namespace Xamarin.Forms
 			string localPath = request.LocalPath;
 
 			bool relativeMatch = false;
-			if (!originalRequest.IsAbsoluteUri && !originalRequest.OriginalString.StartsWith("/") && !originalRequest.OriginalString.StartsWith("\\"))
+			if (!originalRequest.IsAbsoluteUri &&
+				!originalRequest.OriginalString.StartsWith("//", StringComparison.Ordinal))
 				relativeMatch = true;
 
-			var segments = localPath.Split(_pathSeparator, StringSplitOptions.RemoveEmptyEntries);
+			var segments = localPath.Split(_pathSeparator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
 
 			if (!relativeMatch)
 			{
 				for (int i = 0; i < routeKeys.Length; i++)
 				{
 					var route = routeKeys[i];
-					var uri = ConvertToStandardFormat(shell, new Uri(route, UriKind.RelativeOrAbsolute));
-					// Todo is this supported?
+					var uri = ConvertToStandardFormat(shell, CreateUri(route));
 					if (uri.Equals(request))
 					{
-						var builder = new RouteRequestBuilder(route, route, null, segments);
-						return new List<RouteRequestBuilder> { builder };
+						throw new Exception($"Global routes currently cannot be the only page on the stack, so absolute routing to global routes is not supported. For now, just navigate to: {originalRequest.OriginalString.Replace("//","")}");
+						//var builder = new RouteRequestBuilder(route, route, null, segments);
+						//return new List<RouteRequestBuilder> { builder };
 					}
 				}
 			}
@@ -160,24 +182,42 @@ namespace Xamarin.Forms
 
 				while (currentLocation.Shell != null)
 				{
-					List<RouteRequestBuilder> pureRoutesMatch = new List<RouteRequestBuilder>();
-					List<RouteRequestBuilder> pureGlobalRoutesMatch = new List<RouteRequestBuilder>();
+					var pureRoutesMatch = new List<RouteRequestBuilder>();
+					var pureGlobalRoutesMatch = new List<RouteRequestBuilder>();
 
-					SearchPath(currentLocation.LowestChild, null, segments, pureRoutesMatch, 0);
+					//currently relative routes to shell routes isn't supported as we aren't creating navigation stacks
+					if (enableRelativeShellRoutes)
+					{
+						SearchPath(currentLocation.LowestChild, null, segments, pureRoutesMatch, 0);
+						ExpandOutGlobalRoutes(pureRoutesMatch, routeKeys);
+						pureRoutesMatch = GetBestMatches(pureRoutesMatch);
+						if (pureRoutesMatch.Count > 0)
+						{
+							return pureRoutesMatch;
+						}
+					}
+
+
 					SearchPath(currentLocation.LowestChild, null, segments, pureGlobalRoutesMatch, 0, ignoreGlobalRoutes: false);
-					pureRoutesMatch = GetBestMatches(pureRoutesMatch);
+					ExpandOutGlobalRoutes(pureGlobalRoutesMatch, routeKeys);
 					pureGlobalRoutesMatch = GetBestMatches(pureGlobalRoutesMatch);
-
-					if (pureRoutesMatch.Count > 0)
-						return pureRoutesMatch;
-
 					if (pureGlobalRoutesMatch.Count > 0)
+					{
+						// currently relative routes to shell routes isn't supported as we aren't creating navigation stacks
+						// So right now we will just throw an exception so that once this is implemented
+						// GotoAsync doesn't start acting inconsistently and all of a suddent starts creating routes
+						if (!enableRelativeShellRoutes && pureGlobalRoutesMatch[0].SegmentsMatched.Count > 0)
+						{
+							throw new Exception($"Relative routing to shell elements is currently not supported. Try prefixing your uri with ///: ///{originalRequest}");
+						}
+
 						return pureGlobalRoutesMatch;
+					}
 
 					currentLocation.Pop();
 				}
 
-				string searchPath = String.Join("/", segments);
+				string searchPath = String.Join(_pathSeparator, segments);
 
 				if (routeKeys.Contains(searchPath))
 				{
@@ -209,45 +249,50 @@ namespace Xamarin.Forms
 					return bestMatches;
 
 				bestMatches.Clear();
-				foreach (var possibleRoutePath in possibleRoutePaths)
-				{
-					while (routeKeys.Contains(possibleRoutePath.NextSegment) || routeKeys.Contains(possibleRoutePath.RemainingPath))
-					{
-						if(routeKeys.Contains(possibleRoutePath.NextSegment))
-							possibleRoutePath.AddGlobalRoute(possibleRoutePath.NextSegment, possibleRoutePath.NextSegment);
-						else
-							possibleRoutePath.AddGlobalRoute(possibleRoutePath.RemainingPath, possibleRoutePath.RemainingPath);
-					}
-
-					while (!possibleRoutePath.IsFullMatch)
-					{
-						NodeLocation nodeLocation = new NodeLocation();
-						nodeLocation.SetNode(possibleRoutePath.LowestChild);
-						List<RouteRequestBuilder> pureGlobalRoutesMatch = new List<RouteRequestBuilder>();
-						while (nodeLocation.Shell != null && pureGlobalRoutesMatch.Count == 0)
-						{
-							SearchPath(nodeLocation.LowestChild, null, possibleRoutePath.RemainingSegments, pureGlobalRoutesMatch, 0, ignoreGlobalRoutes: false);
-							nodeLocation.Pop();
-						}
-
-						// nothing found or too many things found
-						if (pureGlobalRoutesMatch.Count != 1)
-						{
-							break;
-						}
-
-
-						for (var i = 0; i < pureGlobalRoutesMatch[0].GlobalRouteMatches.Count; i++)
-						{
-							var match = pureGlobalRoutesMatch[0];
-							possibleRoutePath.AddGlobalRoute(match.GlobalRouteMatches[i], match.SegmentsMatched[i]);
-						}
-					}
-				}
+				ExpandOutGlobalRoutes(possibleRoutePaths, routeKeys);
 			}
 
 			possibleRoutePaths = GetBestMatches(possibleRoutePaths);
 			return possibleRoutePaths;
+		}
+
+		internal static void ExpandOutGlobalRoutes(List<RouteRequestBuilder> possibleRoutePaths, string[] routeKeys)
+		{
+			foreach (var possibleRoutePath in possibleRoutePaths)
+			{
+				while (routeKeys.Contains(possibleRoutePath.NextSegment) || routeKeys.Contains(possibleRoutePath.RemainingPath))
+				{
+					if (routeKeys.Contains(possibleRoutePath.NextSegment))
+						possibleRoutePath.AddGlobalRoute(possibleRoutePath.NextSegment, possibleRoutePath.NextSegment);
+					else
+						possibleRoutePath.AddGlobalRoute(possibleRoutePath.RemainingPath, possibleRoutePath.RemainingPath);
+				}
+
+				while (!possibleRoutePath.IsFullMatch)
+				{
+					NodeLocation nodeLocation = new NodeLocation();
+					nodeLocation.SetNode(possibleRoutePath.LowestChild);
+					List<RouteRequestBuilder> pureGlobalRoutesMatch = new List<RouteRequestBuilder>();
+					while (nodeLocation.Shell != null && pureGlobalRoutesMatch.Count == 0)
+					{
+						SearchPath(nodeLocation.LowestChild, null, possibleRoutePath.RemainingSegments, pureGlobalRoutesMatch, 0, ignoreGlobalRoutes: false);
+						nodeLocation.Pop();
+					}
+
+					// nothing found or too many things found
+					if (pureGlobalRoutesMatch.Count != 1 || pureGlobalRoutesMatch[0].GlobalRouteMatches.Count == 0)
+					{
+						break;
+					}
+
+
+					for (var i = 0; i < pureGlobalRoutesMatch[0].GlobalRouteMatches.Count; i++)
+					{
+						var match = pureGlobalRoutesMatch[0];
+						possibleRoutePath.AddGlobalRoute(match.GlobalRouteMatches[i], match.SegmentsMatched[i]);
+					}
+				}
+			}
 		}
 
 		internal static List<RouteRequestBuilder> GetBestMatches(List<RouteRequestBuilder> possibleRoutePaths)
@@ -341,7 +386,7 @@ namespace Xamarin.Forms
 				if (Content != null && !Routing.IsImplicit(Content))
 					paths.Add(Content.Route);
 
-				string uri = String.Join("/", paths);
+				string uri = String.Join(_pathSeparator, paths);
 				return new Uri($"{Shell.RouteScheme}://{uri}");
 			}
 
@@ -485,10 +530,10 @@ namespace Xamarin.Forms
 			for (var i = 0; i < keys.Length; i++)
 			{
 				var key = FormatUri(keys[i]);
-				if (key.StartsWith("/") && !(node is Shell))
+				if (key.StartsWith(_pathSeparator, StringComparison.Ordinal) && !(node is Shell))
 					continue;
 
-				var segments = key.Split(_pathSeparator, StringSplitOptions.RemoveEmptyEntries);
+				var segments = key.Split(_pathSeparator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
 
 				if (segments[0] == route)
 				{
@@ -511,7 +556,7 @@ namespace Xamarin.Forms
 			{
 				get
 				{
-					var segments = _path.Split(_pathSeparator, StringSplitOptions.RemoveEmptyEntries).ToList().Skip(1).ToList();
+					var segments = _path.Split(_pathSeparator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries).ToList().Skip(1).ToList();
 
 					if (segments.Count == 0)
 						return new object[0];
@@ -526,7 +571,7 @@ namespace Xamarin.Forms
 			{
 				get
 				{
-					var segments = _path.Split(_pathSeparator, StringSplitOptions.RemoveEmptyEntries);
+					var segments = _path.Split(_pathSeparator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
 
 					if (segments.Length == 0)
 						return string.Empty;
@@ -539,7 +584,7 @@ namespace Xamarin.Forms
 			{
 				get
 				{
-					var segments = _path.Split(_pathSeparator, StringSplitOptions.RemoveEmptyEntries).ToList().Skip(1).ToList();
+					var segments = _path.Split(_pathSeparator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries).ToList().Skip(1).ToList();
 
 					if (segments.Count == 0)
 						return true;
@@ -669,7 +714,7 @@ namespace Xamarin.Forms
 				if (nextMatch >= _allSegments.Length)
 					return null;
 
-				return Routing.FormatRoute(String.Join("/", _allSegments.Skip(nextMatch)));
+				return Routing.FormatRoute(String.Join(_uriSeparator, _allSegments.Skip(nextMatch)));
 			}
 		}
 		public string[] RemainingSegments
@@ -686,7 +731,7 @@ namespace Xamarin.Forms
 
 		string MakeUriString(List<string> segments)
 		{
-			if (segments[0].StartsWith("/") || segments[0].StartsWith("\\"))
+			if (segments[0].StartsWith(_uriSeparator, StringComparison.Ordinal) || segments[0].StartsWith("\\", StringComparison.Ordinal))
 				return String.Join(_uriSeparator, segments);
 
 			return $"//{String.Join(_uriSeparator, segments)}";
@@ -704,7 +749,7 @@ namespace Xamarin.Forms
 
 
 	[DebuggerDisplay("RequestDefinition = {Request}, StackRequest = {StackRequest}")]
-	public class NavigationRequest
+	internal class NavigationRequest
 	{
 		public enum WhatToDoWithTheStack
 		{
@@ -728,25 +773,23 @@ namespace Xamarin.Forms
 
 
 	[DebuggerDisplay("Full = {FullUri}, Short = {ShortUri}")]
-	public class RequestDefinition
+	internal class RequestDefinition
 	{
-		public RequestDefinition(Uri fullUri, Uri shortUri, ShellItem item, ShellSection section, ShellContent content, List<string> globalRoutes)
+		public RequestDefinition(Uri fullUri, ShellItem item, ShellSection section, ShellContent content, List<string> globalRoutes)
 		{
 			FullUri = fullUri;
-			ShortUri = shortUri;
 			Item = item;
 			Section = section;
 			Content = content;
 			GlobalRoutes = globalRoutes;
 		}
 
-		public RequestDefinition(string fullUri, string shortUri, ShellItem item, ShellSection section, ShellContent content, List<string> globalRoutes) :
-			this(new Uri(fullUri, UriKind.Absolute), new Uri(shortUri, UriKind.Absolute), item, section, content, globalRoutes)
+		public RequestDefinition(string fullUri, ShellItem item, ShellSection section, ShellContent content, List<string> globalRoutes) :
+			this(new Uri(fullUri, UriKind.Absolute), item, section, content, globalRoutes)
 		{
 		}
 
 		public Uri FullUri { get; }
-		public Uri ShortUri { get; }
 		public ShellItem Item { get; }
 		public ShellSection Section { get; }
 		public ShellContent Content { get; }

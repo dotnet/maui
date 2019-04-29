@@ -40,8 +40,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var longerTest = new Button() { Text = "Manual Color Tests", BackgroundColor = Color.Blue };
 
-			Children.Add(new ContentPage() { Title = "Page 1", Content = popButton1, Icon = "coffee.png" });
-			Children.Add(new ContentPage() { Title = "Page 2", Content = popButton2, Icon = "bank.png" });
+			Children.Add(new ContentPage() { Title = "Page 1", Content = popButton1, IconImageSource = "coffee.png" });
+			Children.Add(new ContentPage() { Title = "Page 2", Content = popButton2, IconImageSource = "bank.png" });
 			Button btnChangeBarText = null;
 			Button btnChangeBarItemColorText = null;
 			Button btnChangeBarSelectedItemColorText = null;
@@ -128,7 +128,7 @@ namespace Xamarin.Forms.Controls.Issues
 					{
 						Content = new Label() { Text = (Children.Count + 1).ToString() },
 						Title = (Children.Count + 1).ToString(),
-						Icon = "calculator.png"
+						IconImageSource = "calculator.png"
 					});
 					btnRemovePage.IsEnabled = true;
 				}),
@@ -178,8 +178,8 @@ namespace Xamarin.Forms.Controls.Issues
 									Children.Remove(Children.Last());
 								}
 
-								Children.Insert(1, new ContentPage(){ Icon = "bank.png" });
-								Children.Insert(1, new ContentPage(){ Icon = "bank.png" });
+								Children.Insert(1, new ContentPage(){ IconImageSource = "bank.png" });
+								Children.Insert(1, new ContentPage(){ IconImageSource = "bank.png" });
 								int i = 0;
 								Device.StartTimer(TimeSpan.FromSeconds(3), () =>
 								{
@@ -199,7 +199,7 @@ namespace Xamarin.Forms.Controls.Issues
 										{
 											throw new Exception("Removing page caused Current Page to Change");
 										}
-										Children.Insert(1, new ContentPage(){ Icon = "bank.png" });
+										Children.Insert(1, new ContentPage(){ IconImageSource = "bank.png" });
 										CurrentPage = Children[1];
 									}
 									else if(i == 2)
@@ -246,7 +246,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				Title = "Test",
 				Content = layout,
-				Icon = "calculator.png"
+				IconImageSource = "calculator.png"
 			});
 		}
 

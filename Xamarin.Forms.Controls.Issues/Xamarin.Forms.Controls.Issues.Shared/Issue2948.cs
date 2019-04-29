@@ -68,7 +68,7 @@ namespace Xamarin.Forms.Controls.Issues
 			public ContractsPage ()
 			{
 				Title = "Contracts";
-				Icon = "bank.png";
+				IconImageSource = "bank.png";
 
 				var grid = new Grid();
 				grid.ColumnDefinitions.Add(new ColumnDefinition());

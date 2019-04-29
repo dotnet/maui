@@ -106,7 +106,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 		protected override void UpdateBackgroundImage()
 		{
-			Widget?.SetBackgroundImage(Page.BackgroundImage);
+			Widget?.SetBackgroundImage(Page.BackgroundImageSource);
 		}
 
 		private void Init()

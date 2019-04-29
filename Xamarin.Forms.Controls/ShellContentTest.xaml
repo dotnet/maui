@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 Title="Welcome"
 			 Routing.Route="shellcontent"
-			 Shell.SetPaddingInsets="true"
 			 Shell.TabBarIsVisible="false"
              x:Class="Xamarin.Forms.Controls.ShellContentTest">
 	<Page.ToolbarItems>

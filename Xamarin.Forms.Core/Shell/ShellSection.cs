@@ -68,7 +68,7 @@ namespace Xamarin.Forms
 			callback(DisplayedPage);
 		}
 
-		Task IShellSectionController.GoToPart(NavigationRequest request, Dictionary<string, string> queryData)
+		internal Task GoToPart(NavigationRequest request, Dictionary<string, string> queryData)
 		{
 			ShellContent shellContent = request.Request.Content;
 

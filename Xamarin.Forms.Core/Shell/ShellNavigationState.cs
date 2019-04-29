@@ -7,11 +7,32 @@ namespace Xamarin.Forms
 	[DebuggerDisplay("Location = {Location}")]
 	public class ShellNavigationState
 	{
-		public Uri Location { get; set; }
+		Uri _fullLocation;
+
+		internal Uri FullLocation
+		{
+			get => _fullLocation;
+			set
+			{
+				_fullLocation = value;
+				Location = Routing.RemoveImplicit(value);
+			}
+		}
+
+		public Uri Location
+		{
+			get;
+			private set;
+		}
 
 		public ShellNavigationState() { }
-		public ShellNavigationState(string location) => Location = new Uri(location, UriKind.RelativeOrAbsolute);
-		public ShellNavigationState(Uri location) => Location = location;
+		public ShellNavigationState(string location)
+		{
+			FullLocation = ShellUriHandler.CreateUri(location);
+
+		}
+
+		public ShellNavigationState(Uri location) => FullLocation = location;
 		public static implicit operator ShellNavigationState(Uri uri) => new ShellNavigationState(uri);
 		public static implicit operator ShellNavigationState(string value) => new ShellNavigationState(value);
 	}

@@ -426,9 +426,6 @@ namespace Xamarin.Forms.Platform.UWP
 			if (Control == null || Element == null)
 				return;
 
-			if (!Element.IsSet(Specifics.HeaderIconsEnabledProperty))
-				return;
-
 			bool headerIconsEnabled = Element.OnThisPlatform().GetHeaderIconsEnabled();
 			bool invalidateMeasure = false;
 

@@ -1,4 +1,3 @@
-using System;
 using Android.Content;
 using Android.Views;
 
@@ -16,10 +15,17 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			Content = CreateRenderer(view, Context);
 			AddView(Content.View);
+			Content.Element.MeasureInvalidated += ElementMeasureInvalidated;
+		}
+
+		void ElementMeasureInvalidated(object sender, System.EventArgs e)
+		{
+			RequestLayout();
 		}
 
 		internal void Recycle()
 		{
+			Content.Element.MeasureInvalidated -= ElementMeasureInvalidated;
 			RemoveView(Content.View);
 			Content = null;
 		}
@@ -54,18 +60,17 @@ namespace Xamarin.Forms.Platform.Android
 
 			SizeRequest measure = Content.Element.Measure(width, height, MeasureFlags.IncludeMargins);
 
+			// When we implement ItemSizingStrategy.MeasureFirstItem for Android, these next two clauses will need to
+			// be updated to use the static width/height
+
 			if (pixelWidth == 0)
 			{
-				pixelWidth = (int)Context.ToPixels(Content.Element.Width > 0
-					? Content.Element.Width
-					: measure.Request.Width);
+				pixelWidth = (int)Context.ToPixels(measure.Request.Width);
 			}
 
 			if (pixelHeight == 0)
 			{
-				pixelHeight = (int)Context.ToPixels(Content.Element.Height > 0
-					? Content.Element.Height
-					: measure.Request.Height);
+				pixelHeight = (int)Context.ToPixels(measure.Request.Height);
 			}
 
 			SetMeasuredDimension(pixelWidth, pixelHeight);
@@ -73,16 +78,6 @@ namespace Xamarin.Forms.Platform.Android
 
 		static IVisualElementRenderer CreateRenderer(View view, Context context)
 		{
-			if (view == null)
-			{
-				throw new ArgumentNullException(nameof(view));
-			}
-
-			if (context == null)
-			{
-				throw new ArgumentNullException(nameof(context));
-			}
-
 			var renderer = Platform.CreateRenderer(view, context);
 			Platform.SetRenderer(view, renderer);
 

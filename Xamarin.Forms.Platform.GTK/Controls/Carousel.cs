@@ -174,21 +174,9 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			} while (_root.Children.Length > 0);
 		}
 
-		public void SetBackgroundImage(string backgroundImagePath)
+		public async void SetBackgroundImage(ImageSource imageSource)
 		{
-			if(string.IsNullOrEmpty(backgroundImagePath))
-			{
-				return;
-			}
-
-			try
-			{
-				_image.Pixbuf = new Pixbuf(backgroundImagePath);
-			}
-			catch (Exception ex)
-			{
-				Internals.Log.Warning("CarouselPage BackgroundImage", "Could not load background image: {0}", ex);
-			}
+			_image.Pixbuf = await imageSource.GetNativeImageAsync();
 		}
 
 		protected override void OnSizeAllocated(Gdk.Rectangle allocation)

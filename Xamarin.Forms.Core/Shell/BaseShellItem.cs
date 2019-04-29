@@ -6,7 +6,7 @@ using Xamarin.Forms.Internals;
 namespace Xamarin.Forms
 {
 	[DebuggerDisplay("Title = {Title}, Route = {Route}")]
-	public class BaseShellItem : NavigableElement, IPropertyPropagationController, IVisualController, IFlowDirectionController
+	public class BaseShellItem : NavigableElement, IPropertyPropagationController, IVisualController, IFlowDirectionController, ITabStopElement
 	{
 		#region PropertyKeys
 
@@ -28,6 +28,34 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty TitleProperty =
 			BindableProperty.Create(nameof(Title), typeof(string), typeof(BaseShellItem), null, BindingMode.OneTime);
+
+		public static readonly BindableProperty TabIndexProperty =
+			BindableProperty.Create(nameof(TabIndex),
+							typeof(int),
+							typeof(BaseShellItem),
+							defaultValue: 0,
+							propertyChanged: OnTabIndexPropertyChanged,
+							defaultValueCreator: TabIndexDefaultValueCreator);
+
+		public static readonly BindableProperty IsTabStopProperty =
+			BindableProperty.Create(nameof(IsTabStop),
+									typeof(bool),
+									typeof(BaseShellItem),
+									defaultValue: true,
+									propertyChanged: OnTabStopPropertyChanged,
+									defaultValueCreator: TabStopDefaultValueCreator);
+
+		static void OnTabIndexPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
+			((BaseShellItem)bindable).OnTabIndexPropertyChanged((int)oldValue, (int)newValue);
+
+		static object TabIndexDefaultValueCreator(BindableObject bindable) =>
+			((BaseShellItem)bindable).TabIndexDefaultValueCreator();
+
+		static void OnTabStopPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
+			((BaseShellItem)bindable).OnTabStopPropertyChanged((bool)oldValue, (bool)newValue);
+
+		static object TabStopDefaultValueCreator(BindableObject bindable) =>
+			((BaseShellItem)bindable).TabStopDefaultValueCreator();
 
 		public ImageSource FlyoutIcon
 		{
@@ -60,6 +88,26 @@ namespace Xamarin.Forms
 			get { return (string)GetValue(TitleProperty); }
 			set { SetValue(TitleProperty, value); }
 		}
+
+		public int TabIndex
+		{
+			get => (int)GetValue(TabIndexProperty);
+			set => SetValue(TabIndexProperty, value);
+		}
+
+		protected virtual void OnTabIndexPropertyChanged(int oldValue, int newValue) { }
+
+		protected virtual int TabIndexDefaultValueCreator() => 0;
+
+		public bool IsTabStop
+		{
+			get => (bool)GetValue(IsTabStopProperty);
+			set => SetValue(IsTabStopProperty, value);
+		}
+
+		protected virtual void OnTabStopPropertyChanged(bool oldValue, bool newValue) { }
+
+		protected virtual bool TabStopDefaultValueCreator() => true;
 
 		IVisual _effectiveVisual = Xamarin.Forms.VisualMarker.Default;
 		IVisual IVisualController.EffectiveVisual

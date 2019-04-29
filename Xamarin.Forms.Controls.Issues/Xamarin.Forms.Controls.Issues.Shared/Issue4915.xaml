@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Xamarin.Forms.Controls.Issues.Issue4915ContentPage"
+             xmlns:local="clr-namespace:Xamarin.Forms.Controls"
+            BackgroundImage="{Binding Image}"
+            Icon="{Binding Image}">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Name="MenuItem1" Order="Primary" Icon="{Binding Image}" Text="Item 1" Priority="0" />
+    </ContentPage.ToolbarItems>
+    <ContentPage.Content>
+        <StackLayout>
+            <Button Image="{Binding Image}"></Button>
+            <Slider ThumbImage="{Binding Image}"></Slider>
+            <Label Text="Verify that Button.Image, MenuItem.Icon, Page.BackgroundImage, Page.Icon, Slider.ThumbImage all have coffee cups"></Label>
+            <Label Text="Nothing Crashed"></Label>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

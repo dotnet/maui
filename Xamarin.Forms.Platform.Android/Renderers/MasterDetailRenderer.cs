@@ -277,7 +277,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void HandleMasterPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == Page.TitleProperty.PropertyName || e.PropertyName == Page.IconProperty.PropertyName)
+			if (e.PropertyName == Page.TitleProperty.PropertyName || e.PropertyName == Page.IconImageSourceProperty.PropertyName)
 				Platform?.UpdateMasterDetailToggle(true);
 		}
 
@@ -299,7 +299,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 			else if (e.PropertyName == "IsGestureEnabled")
 				SetGestureState();
-			else if (e.PropertyName == Page.BackgroundImageProperty.PropertyName)
+			else if (e.PropertyName == Page.BackgroundImageSourceProperty.PropertyName)
 				UpdateBackgroundImage(_page);
 			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackgroundColor(_page);
@@ -353,8 +353,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateBackgroundImage(Page view)
 		{
-			if (!string.IsNullOrEmpty(view.BackgroundImage))
-				this.SetBackground(Context.GetDrawable(view.BackgroundImage));
+			_ = this.ApplyDrawableAsync(view, Page.BackgroundImageSourceProperty, Context, drawable =>
+			{
+				this.SetBackground(drawable);
+			});
 		}
 
 		void UpdateDetail()

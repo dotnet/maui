@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Controls.Issues
 			BarBackgroundColor = Color.Purple;
 			BarTextColor = Color.White;
 			Title = root.Title;
-			Icon = root.Icon;
+			IconImageSource = root.IconImageSource;
 		}
 	}
 }

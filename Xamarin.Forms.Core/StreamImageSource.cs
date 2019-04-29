@@ -10,6 +10,8 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty StreamProperty = BindableProperty.Create("Stream", typeof(Func<CancellationToken, Task<Stream>>), typeof(StreamImageSource),
 			default(Func<CancellationToken, Task<Stream>>));
 
+		public override bool IsEmpty => Stream == null;
+
 		public virtual Func<CancellationToken, Task<Stream>> Stream
 		{
 			get { return (Func<CancellationToken, Task<Stream>>)GetValue(StreamProperty); }

@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var thePage = new TabbedPage();
 			thePage.Children.Add(_theContent);
-			thePage.ToolbarItems.Add(new ToolbarItem() { Text = "Refresh", Icon = "coffee.png" });
+			thePage.ToolbarItems.Add(new ToolbarItem() { Text = "Refresh", IconImageSource = "coffee.png" });
 
 			PushAsync(thePage);
 		}

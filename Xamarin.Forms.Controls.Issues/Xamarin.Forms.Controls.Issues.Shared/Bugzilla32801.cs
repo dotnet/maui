@@ -17,8 +17,8 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		protected override void Init ()
 		{
-			Children.Add (new NavigationPage (new TestDemoPage (1)) { Title = "Tab", Icon = "bank.png" });
-			Children.Add (new NavigationPage (new TestDemoPage (1)) { Title = "Tab 1", Icon = "bank.png" });
+			Children.Add (new NavigationPage (new TestDemoPage (1)) { Title = "Tab", IconImageSource = "bank.png" });
+			Children.Add (new NavigationPage (new TestDemoPage (1)) { Title = "Tab 1", IconImageSource = "bank.png" });
 
 		}
 

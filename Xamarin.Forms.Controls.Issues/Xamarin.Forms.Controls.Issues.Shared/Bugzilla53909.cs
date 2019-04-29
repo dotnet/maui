@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 
             var tbi = new ToolbarItem();
-            tbi.Icon = "synchronize.png";
+            tbi.IconImageSource = "synchronize.png";
             tbi.Order = ToolbarItemOrder.Primary;
             tbi.Priority = 0;
 

@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Android.Content;
 using Android.Graphics;
 using Android.Util;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using static System.String;
 using AButton = Android.Widget.Button;
@@ -39,6 +40,7 @@ namespace Xamarin.Forms.Platform.Android
 			AutoPackage = false;
 			_visualElementRenderer = this;
 			_backgroundTracker = new BorderBackgroundManager(this);
+			
 		}
 
 		AButton NativeButton
@@ -136,7 +138,7 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateEnabled();
 			else if (e.PropertyName == Button.FontProperty.PropertyName)
 				UpdateFont();
-			else if (e.PropertyName == Button.ImageProperty.PropertyName)
+			else if (e.PropertyName == Button.ImageSourceProperty.PropertyName)
 				UpdateBitmap();
 			else if (e.PropertyName == VisualElement.IsVisibleProperty.PropertyName)
 				UpdateText();
@@ -167,17 +169,14 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateBitmap()
 		{
-			var elementImage = Element.Image;
-			var imageFile = elementImage?.File;
+			var elementImage = Element.ImageSource;
 			_imageHeight = -1;
 
-			if (elementImage == null || IsNullOrEmpty(imageFile))
+			if (elementImage == null || elementImage.IsEmpty)
 			{
 				Control.SetCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
 				return;
 			}
-
-			var image = Context.GetDrawable(imageFile);
 
 			if (IsNullOrEmpty(Element.Text))
 			{
@@ -186,39 +185,51 @@ namespace Xamarin.Forms.Platform.Android
 				// (which handles the horizontal centering) and some tricksy padding (in OnLayout)
 				// to handle the vertical centering 
 
-				// Clear any previous padding and set the image as top/center
-				UpdateContentEdge();
-				Control.SetCompoundDrawablesWithIntrinsicBounds(null, image, null, null);
+				this.ApplyDrawableAsync(Button.ImageSourceProperty, Context, image =>
+				{
+					// Clear any previous padding and set the image as top/center
+					UpdateContentEdge();
+					Control.SetCompoundDrawablesWithIntrinsicBounds(null, image, null, null);
 
-				// Keep track of the image height so we can use it in OnLayout
-				_imageHeight = image?.IntrinsicHeight ?? -1;
+					// Keep track of the image height so we can use it in OnLayout
+					_imageHeight = image?.IntrinsicHeight ?? -1;
 
-				image?.Dispose();
+					// Invalidating here causes a crazy amount of increased measure invalidations
+					// when I tested with Issue4484 it caused about 800 calls to invalidate measure vs the 8 without this
+					// I'm pretty sure it gets into a layout / invalidation loop where these are invalidating mid layout				
+					//Element?.InvalidateMeasureNonVirtual(InvalidationTrigger.MeasureChanged);
+				});
 				return;
 			}
 
-			var layout = Element.ContentLayout;
-
-			Control.CompoundDrawablePadding = (int)layout.Spacing;
-
-			switch (layout.Position)
+			this.ApplyDrawableAsync(Button.ImageSourceProperty, Context, image =>
 			{
-				case Button.ButtonContentLayout.ImagePosition.Top:
-					Control.SetCompoundDrawablesWithIntrinsicBounds(null, image, null, null);
-					break;
-				case Button.ButtonContentLayout.ImagePosition.Bottom:
-					Control.SetCompoundDrawablesWithIntrinsicBounds(null, null, null, image);
-					break;
-				case Button.ButtonContentLayout.ImagePosition.Right:
-					Control.SetCompoundDrawablesWithIntrinsicBounds(null, null, image, null);
-					break;
-				default:
-					// Defaults to image on the left
-					Control.SetCompoundDrawablesWithIntrinsicBounds(image, null, null, null);
-					break;
-			}
+				var layout = Element.ContentLayout;
 
-			image?.Dispose();
+				Control.CompoundDrawablePadding = (int)layout.Spacing;
+
+				switch (layout.Position)
+				{
+					case Button.ButtonContentLayout.ImagePosition.Top:
+						Control.SetCompoundDrawablesWithIntrinsicBounds(null, image, null, null);
+						break;
+					case Button.ButtonContentLayout.ImagePosition.Bottom:
+						Control.SetCompoundDrawablesWithIntrinsicBounds(null, null, null, image);
+						break;
+					case Button.ButtonContentLayout.ImagePosition.Right:
+						Control.SetCompoundDrawablesWithIntrinsicBounds(null, null, image, null);
+						break;
+					default:
+						// Defaults to image on the left
+						Control.SetCompoundDrawablesWithIntrinsicBounds(image, null, null, null);
+						break;
+				}
+
+				// Invalidating here causes a crazy amount of increased measure invalidations
+				// when I tested with Issue4484 it caused about 800 calls to invalidate measure vs the 8 without this
+				// I'm pretty sure it gets into a layout / invalidation loop where these are invalidating mid layout				
+				//Element?.InvalidateMeasureNonVirtual(InvalidationTrigger.MeasureChanged);
+			});
 		}
 
 		void UpdateEnabled()

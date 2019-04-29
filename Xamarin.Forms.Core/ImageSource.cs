@@ -20,6 +20,8 @@ namespace Xamarin.Forms
 		{
 		}
 
+		public virtual bool IsEmpty => false;
+
 		protected CancellationTokenSource CancellationTokenSource
 		{
 			get { return _cancellationTokenSource; }

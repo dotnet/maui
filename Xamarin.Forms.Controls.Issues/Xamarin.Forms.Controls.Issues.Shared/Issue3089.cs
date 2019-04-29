@@ -110,7 +110,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			public ListPageCode()
 			{
-				Icon = "coffee.png";
+				IconImageSource = "coffee.png";
 				ListView view = new ListView(ListViewCachingStrategy.RecycleElement);
 				Content = view;
 

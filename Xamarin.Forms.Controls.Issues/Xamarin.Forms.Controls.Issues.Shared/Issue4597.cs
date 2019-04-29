@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override void Init()
 		{
 			_image = new Image() { Source = _fileName, AutomationId = _fileName, ClassId = "Something" };
-			_button = new Button() { Image = _fileName, AutomationId = _fileName };
+			_button = new Button() { ImageSource = _fileName, AutomationId = _fileName };
 			_imageButton = new ImageButton() { Source = _fileName, AutomationId = _fileName };
 			_listView = new ListView()
 			{
@@ -63,7 +63,7 @@ namespace Xamarin.Forms.Controls.Issues
 					if (button.Text == _disappearText)
 					{
 						_image.Source = null;
-						_button.Image = null;
+						_button.ImageSource = null;
 						_imageButton.Source = null;
 						_listView.ItemsSource = new string[] { null };
 						Device.BeginInvokeOnMainThread(() => button.Text = _appearText);
@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Controls.Issues
 					else
 					{
 						_image.Source = _fileName;
-						_button.Image = _fileName;
+						_button.ImageSource = _fileName;
 						_imageButton.Source = _fileName;
 						_listView.ItemsSource = new string[] { _fileName };
 						Device.BeginInvokeOnMainThread(() => button.Text = _disappearText);

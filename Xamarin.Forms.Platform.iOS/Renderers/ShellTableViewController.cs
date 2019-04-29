@@ -1,4 +1,5 @@
-﻿using CoreGraphics;
+﻿using CoreAnimation;
+using CoreGraphics;
 using System;
 using UIKit;
 
@@ -40,10 +41,20 @@ namespace Xamarin.Forms.Platform.iOS
 		public void LayoutParallax()
 		{
 			var parent = TableView.Superview;
-
-			TableView.Frame = parent.Bounds;
+			TableView.Frame = parent.Bounds.Inset(0, SafeAreaOffset);
 			if (_headerView != null)
-				_headerView.Frame = new CGRect(0, _headerOffset, parent.Frame.Width, _headerSize);
+			{
+				_headerView.Frame = new CGRect(0, _headerOffset + SafeAreaOffset, parent.Frame.Width, _headerSize);
+
+				if (_headerOffset < 0 && _headerSize + _headerOffset >= 0)
+				{
+					CAShapeLayer shapeLayer = new CAShapeLayer();
+					CGRect rect = new CGRect(0, _headerOffset * -1, parent.Frame.Width, _headerSize + _headerOffset);
+					var path = CGPath.FromRect(rect);
+					shapeLayer.Path = path;
+					_headerView.Layer.Mask = shapeLayer;
+				}
+			}
 		}
 
 		public override void ViewDidLoad()
@@ -53,18 +64,18 @@ namespace Xamarin.Forms.Platform.iOS
 			TableView.SeparatorStyle = UITableViewCellSeparatorStyle.None;
 			if (Forms.IsiOS11OrNewer)
 				TableView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
-			TableView.ContentInset = new UIEdgeInsets((nfloat)_headerMax, 0, 0, 0);
+			TableView.ContentInset = new UIEdgeInsets((nfloat)_headerMax + SafeAreaOffset, 0, 0, 0);
 			TableView.Source = _source;
 		}
 
 		protected override void Dispose(bool disposing)
 		{
-			if(disposing)
+			if (disposing)
 			{
 				if ((_context?.Shell as IShellController) != null)
 					((IShellController)_context.Shell).StructureChanged -= OnStructureChanged;
 			}
-			
+
 			base.Dispose(disposing);
 		}
 
@@ -81,7 +92,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 				case FlyoutHeaderBehavior.Scroll:
 					_headerSize = _headerMax;
-					_headerOffset = Math.Min (0, -(_headerMax + e.ContentOffset.Y));
+					_headerOffset = Math.Min(0, -(_headerMax + e.ContentOffset.Y));
 					break;
 
 				case FlyoutHeaderBehavior.CollapseOnScroll:
@@ -91,5 +102,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			LayoutParallax();
 		}
+
+		float SafeAreaOffset => (float)Platform.SafeAreaInsetsForWindow.Top;
 	}
 }

@@ -97,26 +97,6 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			RecreateContainer();
 		}
 
-		public void SetImageFromFile(string fileName)
-		{
-			if (string.IsNullOrEmpty(fileName))
-				return;
-
-			try
-			{
-				var iconPixBuf = new Pixbuf(fileName);
-
-				if (iconPixBuf != null)
-				{
-					ImageWidget.Pixbuf = iconPixBuf;
-				}
-			}
-			catch (Exception ex)
-			{
-				Internals.Log.Warning("Image Loading", $"Image failed to load: {ex}");
-			}
-		}
-
 		public override void Destroy()
 		{
 			base.Destroy();

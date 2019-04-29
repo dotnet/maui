@@ -47,9 +47,6 @@ namespace Xamarin.Forms
 				SetInheritedBindingContext(newHandler, bindable.BindingContext);
 		}
 
-		public static readonly BindableProperty SetPaddingInsetsProperty =
-			BindableProperty.CreateAttached("SetPaddingInsets", typeof(bool), typeof(Shell), false);
-
 		public static readonly BindableProperty TabBarIsVisibleProperty =
 			BindableProperty.CreateAttached("TabBarIsVisible", typeof(bool), typeof(Shell), true);
 
@@ -67,9 +64,6 @@ namespace Xamarin.Forms
 
 		public static SearchHandler GetSearchHandler(BindableObject obj) => (SearchHandler)obj.GetValue(SearchHandlerProperty);
 		public static void SetSearchHandler(BindableObject obj, SearchHandler handler) => obj.SetValue(SearchHandlerProperty, handler);
-
-		public static bool GetSetPaddingInsets(BindableObject obj) => (bool)obj.GetValue(SetPaddingInsetsProperty);
-		public static void SetSetPaddingInsets(BindableObject obj, bool value) => obj.SetValue(SetPaddingInsetsProperty, value);
 
 		public static bool GetTabBarIsVisible(BindableObject obj) => (bool)obj.GetValue(TabBarIsVisibleProperty);
 		public static void SetTabBarIsVisible(BindableObject obj, bool value) => obj.SetValue(TabBarIsVisibleProperty, value);
@@ -363,12 +357,10 @@ namespace Xamarin.Forms
 						var content = section.Items[k];
 
 						string longUri = $"{RouteScheme}://{RouteHost}/{Routing.GetRoute(this)}/{Routing.GetRoute(item)}/{Routing.GetRoute(section)}/{Routing.GetRoute(content)}";
-						string shortUri = $"{RouteScheme}://{RouteHost}/{Routing.GetRoutePathIfNotImplicit(this)}{Routing.GetRoutePathIfNotImplicit(item)}{Routing.GetRoutePathIfNotImplicit(section)}{Routing.GetRoutePathIfNotImplicit(content)}";
 
 						longUri = longUri.TrimEnd('/');
-						shortUri = shortUri.TrimEnd('/');
 
-						routes.Add(new RequestDefinition(longUri, shortUri, item, section, content, new List<string>()));
+						routes.Add(new RequestDefinition(longUri, item, section, content, new List<string>()));
 					}
 				}
 			}
@@ -376,7 +368,12 @@ namespace Xamarin.Forms
 			return routes;
 		}
 
-		public async Task GoToAsync(ShellNavigationState state, bool animate = true)
+		public Task GoToAsync(ShellNavigationState state, bool animate = true)
+		{
+			return GoToAsync(state, animate, false);
+		}
+
+		internal async Task GoToAsync(ShellNavigationState state, bool animate, bool enableRelativeShellRoutes)
 		{
 			// FIXME: This should not be none, we need to compute the delta and set flags correctly
 			var accept = ProposeNavigation(ShellNavigationSource.Unknown, state, true);
@@ -385,7 +382,7 @@ namespace Xamarin.Forms
 
 			_accumulateNavigatedEvents = true;
 
-			var navigationRequest = ShellUriHandler.GetNavigationRequest(this, state.Location);
+			var navigationRequest = ShellUriHandler.GetNavigationRequest(this, state.FullLocation, enableRelativeShellRoutes);
 			var uri = navigationRequest.Request.FullUri;
 			var queryString = navigationRequest.Query;
 			var queryData = ParseQueryString(queryString);
@@ -419,7 +416,7 @@ namespace Xamarin.Forms
 				parts.RemoveAt(0);
 
 				if (parts.Count > 0)
-					await ((IShellItemController)shellItem).GoToPart(navigationRequest, queryData);
+					await shellItem.GoToPart(navigationRequest, queryData);
 			}
 			else
 			{
@@ -502,29 +499,20 @@ namespace Xamarin.Forms
 			if (shellItem != null)
 			{
 				var shellItemRoute = shellItem.Route;
-				//if (!shellItemRoute.StartsWith(Routing.ImplicitPrefix, StringComparison.Ordinal))
-				{
-					stateBuilder.Append(shellItemRoute);
-					stateBuilder.Append("/");
-				}
+				stateBuilder.Append(shellItemRoute);
+				stateBuilder.Append("/");
 
 				if (shellSection != null)
 				{
 					var shellSectionRoute = shellSection.Route;
-					//if (!shellSectionRoute.StartsWith(Routing.ImplicitPrefix, StringComparison.Ordinal))
-					{
-						stateBuilder.Append(shellSectionRoute);
-						stateBuilder.Append("/");
-					}
+					stateBuilder.Append(shellSectionRoute);
+					stateBuilder.Append("/");
 
 					if (shellContent != null)
 					{
 						var shellContentRoute = shellContent.Route;
-						//if (!shellContentRoute.StartsWith(Routing.ImplicitPrefix, StringComparison.Ordinal))
-						{
-							stateBuilder.Append(shellContentRoute);
-							stateBuilder.Append("/");
-						}
+						stateBuilder.Append(shellContentRoute);
+						stateBuilder.Append("/");
 					}
 
 					if (!stackAtRoot)

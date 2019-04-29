@@ -1,8 +1,10 @@
-﻿using Android.Support.V7.Widget;
+﻿using Android.Runtime;
+using Android.Support.V7.Widget;
 using Android.Views;
 using Android.Widget;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using Xamarin.Forms.Internals;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
@@ -68,15 +70,83 @@ namespace Xamarin.Forms.Platform.Android
 			elementHolder.Element = item.Element;
 		}
 
+		class LinearLayoutWithFocus : LinearLayout, ITabStop, IVisualElementRenderer
+		{
+			public LinearLayoutWithFocus(global::Android.Content.Context context) : base(context)
+			{
+			}
+
+			AView ITabStop.TabStop => this;
+
+#region IVisualElementRenderer
+
+			VisualElement IVisualElementRenderer.Element => Content?.BindingContext as VisualElement;
+
+			VisualElementTracker IVisualElementRenderer.Tracker => null;
+
+			ViewGroup IVisualElementRenderer.ViewGroup => this;
+
+			AView IVisualElementRenderer.View => this;
+
+			SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint) => new SizeRequest(new Size(100, 100));
+
+			void IVisualElementRenderer.SetElement(VisualElement element) { }
+
+			void IVisualElementRenderer.SetLabelFor(int? id) { }
+
+			void IVisualElementRenderer.UpdateLayout() { }
+
+#pragma warning disable 67
+			public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
+			public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
+#pragma warning restore 67
+
+#endregion IVisualElementRenderer
+
+			internal View Content { get; set; }
+
+			public override AView FocusSearch([GeneratedEnum] FocusSearchDirection direction)
+			{
+				var element = Content?.BindingContext as ITabStopElement;
+				if (element == null)
+					return base.FocusSearch(direction);
+
+				int maxAttempts = 0;
+				var tabIndexes = element?.GetTabIndexesOnParentPage(out maxAttempts);
+				if (tabIndexes == null)
+					return base.FocusSearch(direction);
+
+				int tabIndex = element.TabIndex;
+				AView control = null;
+				int attempt = 0;
+				bool forwardDirection = !(
+					(direction & FocusSearchDirection.Backward) != 0 ||
+					(direction & FocusSearchDirection.Left) != 0 ||
+					(direction & FocusSearchDirection.Up) != 0);
+
+				do
+				{
+					element = element.FindNextElement(forwardDirection, tabIndexes, ref tabIndex);
+					var renderer = (element as BindableObject).GetValue(Platform.RendererProperty);
+					control = (renderer as ITabStop)?.TabStop;
+				} while (!(control?.Focusable == true || ++attempt >= maxAttempts));
+
+				return control?.Focusable == true ? control : null;
+			}
+		}
+
 		public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
 		{
 			var template = _templateMap[viewType];
 
 			var content = (View)template.CreateContent();
 
-			var linearLayout = new LinearLayout(parent.Context);
-			linearLayout.Orientation = Orientation.Vertical;
-			linearLayout.LayoutParameters = new RecyclerView.LayoutParams(LP.MatchParent, LP.WrapContent);
+			var linearLayout = new LinearLayoutWithFocus(parent.Context)
+			{
+				Orientation = Orientation.Vertical,
+				LayoutParameters = new RecyclerView.LayoutParams(LP.MatchParent, LP.WrapContent),
+				Content = content
+			};
 
 			var bar = new AView(parent.Context);
 			bar.SetBackgroundColor(Color.Black.MultiplyAlpha(0.14).ToAndroid());
@@ -183,9 +253,11 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			readonly Action<Element> _selectedCallback;
 			Element _element;
+			AView _itemView;
 
 			public ElementViewHolder(View view, AView itemView, AView bar, Action<Element> selectedCallback) : base(itemView)
 			{
+				_itemView = itemView;
 				itemView.Click += OnClicked;
 				View = view;
 				Bar = bar;
@@ -203,13 +275,17 @@ namespace Xamarin.Forms.Platform.Android
 						return;
 
 					if (_element != null && _element is BaseShellItem)
+					{
+						_element.ClearValue(Platform.RendererProperty);
 						_element.PropertyChanged -= OnElementPropertyChanged;
+					}
 
 					_element = value;
 					View.BindingContext = value;
 
 					if (_element != null)
 					{
+						_element.SetValue(Platform.RendererProperty, _itemView);
 						_element.PropertyChanged += OnElementPropertyChanged;
 						UpdateVisualState();
 					}

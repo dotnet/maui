@@ -56,7 +56,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				Control.SetOnCheckedChangeListener(null);
 
-				_defaultTrackDrawable.Dispose();
+				_defaultTrackDrawable?.Dispose();
 				_defaultTrackDrawable = null;
 			}
 

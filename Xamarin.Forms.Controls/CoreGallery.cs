@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Controls
 
 			var toCrashButton = new Button { Text = "Crash Me" };
 
-			var masterPage = new ContentPage { Title = "Menu", Icon = "bank.png", Content = toCrashButton };
+			var masterPage = new ContentPage { Title = "Menu", IconImageSource = "bank.png", Content = toCrashButton };
 			var detailPage = new CoreRootPage(this, NavigationBehavior.PushModalAsync) { Title = "DetailPage" };
 
 			bool toggle = false;
@@ -138,7 +138,7 @@ namespace Xamarin.Forms.Controls
 			Children.Add(new NavigationPage(new Page())
 			{
 				Title = "Rubriques",
-				Icon = "coffee.png",
+				IconImageSource = "coffee.png",
 				BarBackgroundColor = Color.Blue,
 				BarTextColor = Color.Aqua
 			});

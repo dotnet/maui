@@ -240,7 +240,7 @@ namespace Xamarin.Forms.Platform.UWP
 		Page _currentPage;
 		readonly NavigationModel _navModel = new NavigationModel();
 		readonly ToolbarTracker _toolbarTracker = new ToolbarTracker();
-		readonly FileImageSourcePathConverter _fileImageSourcePathConverter = new FileImageSourcePathConverter();
+		readonly ImageSourceIconElementConverter _imageSourceIconElementConverter = new ImageSourceIconElementConverter();
 		Windows.UI.Xaml.Controls.ProgressBar GetBusyIndicator()
 		{
 			if (_busyIndicator == null)
@@ -261,7 +261,10 @@ namespace Xamarin.Forms.Platform.UWP
 
 		internal bool BackButtonPressed()
 		{
-			Page lastRoot = _navModel.Roots.Last();
+			Page lastRoot = _navModel.Roots.LastOrDefault();
+
+			if (lastRoot == null)
+				return false;
 
 			bool handled = lastRoot.SendBackButtonPressed();
 
@@ -414,12 +417,12 @@ namespace Xamarin.Forms.Platform.UWP
 
 				var button = new AppBarButton();
 				button.SetBinding(AppBarButton.LabelProperty, "Text");
-				button.SetBinding(AppBarButton.IconProperty, "Icon", _fileImageSourcePathConverter);
+				button.SetBinding(AppBarButton.IconProperty, "Icon", _imageSourceIconElementConverter);
 				button.Command = new MenuItemCommand(item);
 				button.DataContext = item;
 				button.SetValue(NativeAutomationProperties.AutomationIdProperty, item.AutomationId);
 				button.SetAutomationPropertiesName(item);
-				button.SetAutomationPropertiesAccessibilityView(item);							   
+				button.SetAutomationPropertiesAccessibilityView(item);
 				button.SetAutomationPropertiesHelpText(item);
 				button.SetAutomationPropertiesLabeledBy(item);
 
@@ -513,9 +516,11 @@ namespace Xamarin.Forms.Platform.UWP
 			if (options.Accept != null)
 				alertDialog.PrimaryButtonText = options.Accept;
 
-			while (s_currentAlert != null)
+			var currentAlert = s_currentAlert;
+			while (currentAlert != null)
 			{
-				await s_currentAlert;
+				await currentAlert;
+				currentAlert = s_currentAlert;
 			}
 
 			s_currentAlert = ShowAlert(alertDialog);

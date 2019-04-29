@@ -5,7 +5,7 @@
 		public BaseView()
 		{
 			SetBinding(Page.TitleProperty, new Binding(HBaseViewModel.TitlePropertyName));
-			SetBinding(Page.IconProperty, new Binding(HBaseViewModel.IconPropertyName));
+			SetBinding(Page.IconImageSourceProperty, new Binding(HBaseViewModel.IconPropertyName));
 		}
 	}
 

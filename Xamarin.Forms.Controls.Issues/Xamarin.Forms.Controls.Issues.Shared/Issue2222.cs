@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		protected override void Init ()
 		{
-			var tbItem = new ToolbarItem { Text = "hello", Icon="wrongName" };
+			var tbItem = new ToolbarItem { Text = "hello", IconImageSource="wrongName" };
 			ToolbarItems.Add(tbItem);
 
 			PushAsync (new Issue22221 ());

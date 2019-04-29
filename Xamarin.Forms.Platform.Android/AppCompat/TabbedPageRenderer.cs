@@ -520,21 +520,25 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					tab.SetText(page.Title);
 				}
 			}
-			else if (e.PropertyName == Page.IconProperty.PropertyName)
+			else if (e.PropertyName == Page.IconImageSourceProperty.PropertyName)
 			{
 				var page = (Page)sender;
 				var index = Element.Children.IndexOf(page);
-				FileImageSource icon = page.Icon;
-
 				if (IsBottomTabPlacement)
 				{
 					var menuItem = _bottomNavigationView.Menu.GetItem(index);
-					menuItem.SetIcon(GetIconDrawable(icon));
+					_ = this.ApplyDrawableAsync(page, Page.IconImageSourceProperty, Context, icon =>
+					{
+						menuItem.SetIcon(icon);
+					});
 				}
 				else
 				{
 					TabLayout.Tab tab = _tabLayout.GetTabAt(index);
-					SetTabIcon(tab, icon);
+					_ = this.ApplyDrawableAsync(page, Page.IconImageSourceProperty, Context, icon =>
+					{
+						SetTabIcon(tab, icon);
+					});
 				}
 			}
 		}
@@ -655,12 +659,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			for (var i = 0; i < Element.Children.Count; i++)
 			{
 				Page child = Element.Children[i];
-				FileImageSource icon = child.Icon;
-				if (string.IsNullOrEmpty(icon))
-					continue;
-
 				var menuItem = bottomNavigationView.Menu.GetItem(i);
-				menuItem.SetIcon(GetIconDrawable(icon));
+				_ = this.ApplyDrawableAsync(child, Page.IconImageSourceProperty, Context, icon =>
+				{
+					menuItem.SetIcon(icon);
+				});
 			}
 		}
 
@@ -677,22 +680,18 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			for (var i = 0; i < Element.Children.Count; i++)
 			{
 				Page child = Element.Children[i];
-				FileImageSource icon = child.Icon;
-				if (string.IsNullOrEmpty(icon))
-					continue;
-
 				TabLayout.Tab tab = tabs.GetTabAt(i);
-				SetTabIcon(tab, icon);
+				_ = this.ApplyDrawableAsync(child, Page.IconImageSourceProperty, Context, icon =>
+				{
+					SetTabIcon(tab, icon);
+				});
 			}
 		}
 
-		protected virtual Drawable GetIconDrawable(FileImageSource icon) =>
-			Context.GetDrawable(icon);
-
-		protected virtual void SetTabIcon(TabLayout.Tab tab, FileImageSource icon)
+		void SetTabIcon(TabLayout.Tab tab, Drawable icon)
 		{
-			tab.SetIcon(GetIconDrawable(icon));
-			this.SetIconColorFilter(tab);
+			tab.SetIcon(icon);
+			SetIconColorFilter(tab);
 		}
 
 		void UpdateBarBackgroundColor()

@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == Page.BackgroundImageProperty.PropertyName)
+			if (e.PropertyName == Page.BackgroundImageSourceProperty.PropertyName)
 				UpdateBackground();
 			else if (e.PropertyName == Page.TitleProperty.PropertyName)
 				UpdateTitle();
@@ -73,21 +73,17 @@ namespace Xamarin.Forms.Platform.WPF
 			this.Control.HasNavigationBar = NavigationPage.GetHasNavigationBar(Element);
 		}
 
-		protected override void UpdateBackground()
+		protected override async void UpdateBackground()
 		{
-			string bgImage = Element.BackgroundImage;
-			if (!string.IsNullOrEmpty(bgImage))
-			{
-				ImageBrush imgBrush = new ImageBrush()
-				{
-					ImageSource = new BitmapImage(new Uri(bgImage, UriKind.RelativeOrAbsolute))
-				};
-				Control.Background = imgBrush;
-			}
-			else
+			var bgImage = Element.BackgroundImageSource;
+			if (bgImage == null || bgImage.IsEmpty)
 			{
 				base.UpdateBackground();
+				return;
 			}
+
+			var img = await bgImage.ToWindowsImageSourceAsync();
+			Control.Background = new ImageBrush { ImageSource = img };
 		}
 		
 		void UpdateToolbar()
@@ -99,7 +95,7 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				var appBar = new FormsAppBarButton() { DataContext = item };
 
-				var iconBinding = new System.Windows.Data.Binding(nameof(item.Icon))
+				var iconBinding = new System.Windows.Data.Binding(nameof(item.IconImageSource))
 				{
 					Converter = new IconConveter()
 				};

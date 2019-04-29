@@ -161,7 +161,7 @@
     </PrepareForBuildDependsOn>
   </PropertyGroup>
   
-  <Target Name="IncludeProguardForAndroid">
+  <Target Name="IncludeProguardForAndroid" Condition="'$(XFDisableDefaultProguardConfiguration)' != 'True'">
     <ItemGroup>
       <ProguardConfiguration Include="$(MSBuildThisFileDirectory)MonoAndroid10\proguard.cfg" />
     </ItemGroup>

@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public Issue2628 ()
 		{
 			var button1 = new Button { Text = "Click !!!!!!!!!!"};
-			BackgroundImage="bank.png";
+			BackgroundImageSource="bank.png";
 			button1.Clicked += ButtonAction;
 
 			Content = new StackLayout {
@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		public  void ButtonAction(object sender, EventArgs args)
 		{
-			BackgroundImage="calculator.png";
+			BackgroundImageSource="calculator.png";
 		}
 	}
 }

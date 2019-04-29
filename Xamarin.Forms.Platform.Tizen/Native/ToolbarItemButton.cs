@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			{
 				UpdateIsEnabled();
 			}
-			else if (e.PropertyName == ToolbarItem.IconProperty.PropertyName)
+			else if (e.PropertyName == ToolbarItem.IconImageSourceProperty.PropertyName)
 			{
 				UpdateIcon();
 			}
@@ -68,7 +68,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 		void UpdateIcon()
 		{
-			if (string.IsNullOrEmpty(_item.Icon))
+			if (_item.IconImageSource.IsNullOrEmpty())
 			{
 				//On 5.0, the part content should be removed before the style is changed, otherwise, EFL does not remove the part content.
 				Image = null;
@@ -79,14 +79,14 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				// In reverse, the style should be set before setting the part content.
 				UpdateStyle();
 				Native.Image iconImage = new Native.Image(Forms.NativeParent);
-				var task = iconImage.LoadFromImageSourceAsync(_item.Icon);
+				_ = iconImage.LoadFromImageSourceAsync(_item.IconImageSource);
 				Image = iconImage;
 			}
 		}
 
 		void UpdateStyle()
 		{
-			if (string.IsNullOrEmpty(_item.Icon))
+			if (_item.IconImageSource.IsNullOrEmpty())
 			{
 				if (string.IsNullOrEmpty(_item.Text))
 				{

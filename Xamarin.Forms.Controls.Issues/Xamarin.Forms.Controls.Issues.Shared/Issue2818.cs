@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				Title = "Master",
 				BackgroundColor = Color.SkyBlue,
-				Icon = "menuIcon"
+				IconImageSource = "menuIcon"
 			};
 
 			Detail = new NavigationPage(new ContentPage

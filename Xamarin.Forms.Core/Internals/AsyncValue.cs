@@ -30,27 +30,31 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace Xamarin.Forms.Internals
 {
-	internal sealed class AsyncValue<T> : INotifyPropertyChanged
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public sealed class AsyncValue<T> : INotifyPropertyChanged
 	{
 		readonly T _defaultValue;
 		readonly Task<T> _valueTask;
 		bool _isRunning = true;
 
-		public AsyncValue(Task<T> valueTask, T defaultValue)
+		public AsyncValue(Task<T> valueTask, T defaultValue = default(T))
 		{
-			if (valueTask == null)
-				throw new ArgumentNullException("valueTask");
-
-			_valueTask = valueTask;
+			_valueTask = valueTask ?? throw new ArgumentNullException(nameof(valueTask));
 			_defaultValue = defaultValue;
 
 			TaskScheduler scheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
-			_valueTask.ContinueWith(t => { IsRunning = false; }, scheduler);
+			if (_valueTask.IsCompleted)
+				IsRunning = false;
+			else
+				_valueTask.ContinueWith(t => IsRunning = false, scheduler);
 
-			_valueTask.ContinueWith(t => { OnPropertyChanged("Value"); }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+			if (_valueTask.Status == TaskStatus.RanToCompletion)
+				OnPropertyChanged(nameof(Value));
+			else
+				_valueTask.ContinueWith(t => OnPropertyChanged(nameof(Value)), CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
 		}
 
 		public bool IsRunning
@@ -77,13 +81,18 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
+		public static AsyncValue<T> Null => new AsyncValue<T>(Task.FromResult<T>(default(T)));
+
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		void OnPropertyChanged([CallerMemberName] string propertyName = null)
-		{
-			PropertyChangedEventHandler handler = PropertyChanged;
-			if (handler != null)
-				handler(this, new PropertyChangedEventArgs(propertyName));
-		}
+		void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+	}
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public static class AsyncValueExtensions
+	{
+		public static AsyncValue<T> AsAsyncValue<T>(this Task<T> valueTask, T defaultValue = default(T)) =>
+			new AsyncValue<T>(valueTask, defaultValue);
 	}
 }

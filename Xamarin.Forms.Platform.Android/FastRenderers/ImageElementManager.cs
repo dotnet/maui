@@ -61,7 +61,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			var imageController = (IImageController)renderer.Element;
 
 			if (e.PropertyName == Image.SourceProperty.PropertyName ||
-				e.PropertyName == Button.ImageProperty.PropertyName)
+				e.PropertyName == Button.ImageSourceProperty.PropertyName)
 			{
 				try
 				{

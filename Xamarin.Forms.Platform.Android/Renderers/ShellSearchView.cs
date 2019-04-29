@@ -155,9 +155,6 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual void LoadView(SearchHandler searchHandler)
 		{
-			var searchImage = searchHandler.QueryIcon;
-			var clearImage = searchHandler.ClearIcon;
-			var clearPlaceholderImage = searchHandler.ClearPlaceholderIcon;
 			var query = searchHandler.Query;
 			var placeholder = searchHandler.Placeholder;
 
@@ -177,7 +174,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			int padding = (int)context.ToPixels(8);
 
-			_searchButton = CreateImageButton(context, searchImage, Resource.Drawable.abc_ic_search_api_material, padding, 0);
+			_searchButton = CreateImageButton(context, searchHandler, SearchHandler.QueryIconProperty, Resource.Drawable.abc_ic_search_api_material, padding, 0);
 
 			lp = new LinearLayout.LayoutParams(0, LP.MatchParent)
 			{
@@ -204,8 +201,8 @@ namespace Xamarin.Forms.Platform.Android
 			// A note on accessibility. The _textBlocks hint is what android defaults to reading in the screen
 			// reader. Therefor we do not need to set something else.
 
-			_clearButton = CreateImageButton(context, clearImage, Resource.Drawable.abc_ic_clear_material, 0, padding);
-			_clearPlaceholderButton = CreateImageButton(context, clearPlaceholderImage, -1, 0, padding);
+			_clearButton = CreateImageButton(context, searchHandler, SearchHandler.ClearIconProperty, Resource.Drawable.abc_ic_clear_material, 0, padding);
+			_clearPlaceholderButton = CreateImageButton(context, searchHandler, SearchHandler.ClearPlaceholderIconProperty, -1, 0, padding);
 
 			linearLayout.AddView(_searchButton);
 			linearLayout.AddView(_textBlock);
@@ -296,17 +293,27 @@ namespace Xamarin.Forms.Platform.Android
 		{
 		}
 
-		AImageButton CreateImageButton(Context context, ImageSource image, int defaultImage, int leftMargin, int rightMargin)
+		AImageButton CreateImageButton(Context context, BindableObject bindable, BindableProperty property, int defaultImage, int leftMargin, int rightMargin)
 		{
 			var result = new AImageButton(context);
 			result.SetPadding(0, 0, 0, 0);
 			result.Focusable = false;
+			result.SetScaleType(ImageView.ScaleType.FitCenter);
 
 			string defaultHint = null;
 			string defaultDescription = null;
-			AutomationPropertiesProvider.SetContentDescription(result, image, ref defaultDescription, ref defaultHint);
+			if (bindable.GetValue(property) is ImageSource image)
+				AutomationPropertiesProvider.SetContentDescription(result, image, ref defaultDescription, ref defaultHint);
 
-			SetImage(result, image, defaultImage);
+			_shellContext.ApplyDrawableAsync(bindable, property, drawable =>
+			{
+				if (drawable != null)
+					result.SetImageDrawable(drawable);
+				else if (defaultImage > 0)
+					result.SetImageResource(defaultImage);
+				else
+					result.SetImageDrawable(null);
+			});
 			var lp = new LinearLayout.LayoutParams((int)Context.ToPixels(22), LP.MatchParent)
 			{
 				LeftMargin = leftMargin,
@@ -328,24 +335,6 @@ namespace Xamarin.Forms.Platform.Android
 			_textBlock.HideKeyboard();
 			SearchConfirmed?.Invoke(this, EventArgs.Empty);
 			Controller.ItemSelected(item);
-		}
-
-		async void SetImage(AImageButton button, ImageSource image, int defaultValue)
-		{
-			button.SetScaleType(ImageView.ScaleType.FitCenter);
-			if (image != null)
-			{
-				using (var drawable = await Context.GetFormsDrawable(image))
-					button.SetImageDrawable(drawable);
-			}
-			else if (defaultValue > 0)
-			{
-				await Task.Run(() => button.SetImageResource(defaultValue)).ConfigureAwait(false);
-			}
-			else
-			{
-				button.SetImageDrawable(null);
-			}
 		}
 
 		void UpdateClearButtonState()

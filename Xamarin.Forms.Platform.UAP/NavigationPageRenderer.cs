@@ -541,7 +541,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			ImageSource source = NavigationPage.GetTitleIcon(_currentPage);
 
-			_titleIcon = await source.ToWindowsImageSource();
+			_titleIcon = await source.ToWindowsImageSourceAsync();
 
 			_container.TitleIcon = _titleIcon;
 

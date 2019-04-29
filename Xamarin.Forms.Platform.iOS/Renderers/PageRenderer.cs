@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Platform.iOS
 				return null;
 
 			var children = Element.Descendants();
-			SortedDictionary<int, List<VisualElement>> tabIndexes = null;
+			SortedDictionary<int, List<ITabStopElement>> tabIndexes = null;
 			List<NSObject> views = new List<NSObject>();
 			foreach (var child in children)
 			{
@@ -283,7 +283,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackground();
-			else if (e.PropertyName == Page.BackgroundImageProperty.PropertyName)
+			else if (e.PropertyName == Page.BackgroundImageSourceProperty.PropertyName)
 				UpdateBackground();
 			else if (e.PropertyName == Page.TitleProperty.PropertyName)
 				UpdateTitle();
@@ -301,7 +301,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			get
 			{
-				var animation = ((Page)Element).OnThisPlatform().PreferredStatusBarUpdateAnimation();
+				var animation = Page.OnThisPlatform().PreferredStatusBarUpdateAnimation();
 				switch (animation)
 				{
 					case (PageUIStatusBarAnimation.Fade):
@@ -339,32 +339,24 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateShellInsetPadding()
 		{
-			if (Element == null)
+			if (!(Element?.Parent is ShellContent))
 				return;
 
-			var setInsets = Shell.GetSetPaddingInsets(Element);
+			nfloat topPadding = 0;
+			nfloat bottomPadding = 0;
 
-			if (!setInsets && Element.Parent != null)
-				setInsets = Shell.GetSetPaddingInsets(Element.Parent);
-
-			if (setInsets)
+			if (Forms.IsiOS11OrNewer)
 			{
-				nfloat topPadding = 0;
-				nfloat bottomPadding = 0;
-
-				if (Forms.IsiOS11OrNewer)
-				{
-					topPadding = View.SafeAreaInsets.Top;
-					bottomPadding = View.SafeAreaInsets.Bottom;
-				}
-				else
-				{
-					topPadding = TopLayoutGuide.Length;
-					bottomPadding = BottomLayoutGuide.Length;
-				}
-
-				(Element as Page).Padding = new Thickness(0, topPadding, 0, bottomPadding);
+				topPadding = View.SafeAreaInsets.Top;
+				bottomPadding = View.SafeAreaInsets.Bottom;
 			}
+			else
+			{
+				topPadding = TopLayoutGuide.Length;
+				bottomPadding = BottomLayoutGuide.Length;
+			}
+
+			Page.Padding = new Thickness(0, topPadding, 0, bottomPadding);
 		}
 
 		void UpdateStatusBarPrefersHidden()
@@ -372,7 +364,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (Element == null)
 				return;
 
-			var animation = ((Page)Element).OnThisPlatform().PreferredStatusBarUpdateAnimation();
+			var animation = Page.OnThisPlatform().PreferredStatusBarUpdateAnimation();
 			if (animation == PageUIStatusBarAnimation.Fade || animation == PageUIStatusBarAnimation.Slide)
 				UIView.Animate(0.25, () => SetNeedsStatusBarAppearanceUpdate());
 			else
@@ -392,7 +384,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override bool PrefersStatusBarHidden()
 		{
-			var mode = ((Page)Element).OnThisPlatform().PrefersStatusBarHidden();
+			var mode = Page.OnThisPlatform().PrefersStatusBarHidden();
 			switch (mode)
 			{
 				case (StatusBarHiddenMode.True):
@@ -410,23 +402,24 @@ namespace Xamarin.Forms.Platform.iOS
 			if (NativeView == null)
 				return;
 
-			string bgImage = ((Page)Element).BackgroundImage;
-			if (!string.IsNullOrEmpty(bgImage))
+			_ = this.ApplyNativeImageAsync(Page.BackgroundImageSourceProperty, bgImage =>
 			{
-				NativeView.BackgroundColor = ColorExtensions.FromPatternImageFromBundle(bgImage);
-				return;
-			}
-			Color bgColor = Element.BackgroundColor;
-			if (bgColor.IsDefault)
-				NativeView.BackgroundColor = UIColor.White;
-			else
-				NativeView.BackgroundColor = bgColor.ToUIColor();
+				if (NativeView == null)
+					return;
+
+				if (bgImage != null)
+					NativeView.BackgroundColor = UIColor.FromPatternImage(bgImage);
+				else if (Element.BackgroundColor.IsDefault)
+					NativeView.BackgroundColor = UIColor.White;
+				else
+					NativeView.BackgroundColor = Element.BackgroundColor.ToUIColor();
+			});
 		}
 
 		void UpdateTitle()
 		{
-			if (!string.IsNullOrWhiteSpace(((Page)Element).Title))
-				NavigationItem.Title = ((Page)Element).Title;
+			if (!string.IsNullOrWhiteSpace(Page.Title))
+				NavigationItem.Title = Page.Title;
 		}
 
 		IEnumerable<UIView> ViewAndSuperviewsOfView(UIView view)
@@ -446,6 +439,6 @@ namespace Xamarin.Forms.Platform.iOS
 			SetNeedsUpdateOfHomeIndicatorAutoHidden();
 		}
 
-		public override bool PrefersHomeIndicatorAutoHidden => ((Page)Element).OnThisPlatform().PrefersHomeIndicatorAutoHidden();
+		public override bool PrefersHomeIndicatorAutoHidden => Page.OnThisPlatform().PrefersHomeIndicatorAutoHidden();
 	}
 }

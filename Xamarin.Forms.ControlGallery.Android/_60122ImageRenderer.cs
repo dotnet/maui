@@ -10,7 +10,13 @@ using Xamarin.Forms.Platform.Android;
 
 namespace Xamarin.Forms.ControlGallery.Android
 {
-	public class _60122ImageRenderer : ImageRenderer 
+	public class _60122ImageRenderer :
+#if TEST_EXPERIMENTAL_RENDERERS
+		Platform.Android.FastRenderers.ImageRenderer
+#else
+		ImageRenderer
+#endif
+
 	{
 		public _60122ImageRenderer(Context context) : base(context)
 		{
@@ -30,7 +36,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 			if (e.NewElement != null)
 			{
 				_customControl = e.NewElement as Bugzilla60122._60122Image;
-			
+
 				LongClick += LongPressGestureRecognizerImageRenderer_LongClick;
 			}
 			else

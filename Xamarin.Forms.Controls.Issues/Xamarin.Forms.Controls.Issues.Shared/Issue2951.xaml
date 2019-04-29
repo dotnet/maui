@@ -43,6 +43,9 @@
 		</ResourceDictionary>
 	</controls:TestContentPage.Resources>
 	<controls:TestContentPage.Content>
-		<ListView ItemTemplate="{StaticResource TheItemTemplate}" ItemsSource="{Binding Items}" RowHeight="74" />
-	</controls:TestContentPage.Content>
+        <StackLayout>
+            <Label x:Name="lblReady"></Label>
+		    <ListView x:Name="listView" ItemAppearing="ListView_ItemAppearing" ItemTemplate="{StaticResource TheItemTemplate}" ItemsSource="{Binding Items}" RowHeight="74" />
+	    </StackLayout>
+    </controls:TestContentPage.Content>
 </controls:TestContentPage>
