@@ -493,6 +493,16 @@ namespace Xamarin.Forms
 							return 14;
 						case NamedSize.Large:
 							return 18;
+						case NamedSize.Body:
+							return 16;
+						case NamedSize.Caption:
+							return 12;
+						case NamedSize.Header:
+							return 96;
+						case NamedSize.Subtitle:
+							return 16;
+						case NamedSize.Title:
+							return 24;
 						default:
 							throw new ArgumentOutOfRangeException("size");
 					}

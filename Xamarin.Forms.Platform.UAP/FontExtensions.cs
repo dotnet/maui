@@ -49,13 +49,23 @@ namespace Xamarin.Forms.Platform.UWP
 				case NamedSize.Default:
 					return (double)WApplication.Current.Resources["ControlContentThemeFontSize"];
 				case NamedSize.Micro:
-					return 18.667 - 3;
+					return 15.667;
 				case NamedSize.Small:
 					return 18.667;
 				case NamedSize.Medium:
 					return 22.667;
 				case NamedSize.Large:
 					return 32;
+				case NamedSize.Body:
+					return 14;
+				case NamedSize.Caption:
+					return 12;
+				case NamedSize.Header:
+					return 46;
+				case NamedSize.Subtitle:
+					return 20;
+				case NamedSize.Title:
+					return 24;
 				default:
 					throw new ArgumentOutOfRangeException("size");
 			}
