@@ -9,7 +9,7 @@ namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
 		#region SelectionMode
 
 		public static readonly BindableProperty SelectionModeProperty =
-			BindableProperty.CreateAttached("SelectionMode", typeof(ListViewSelectionMode),
+			BindableProperty.CreateAttached("WindowsSelectionMode", typeof(ListViewSelectionMode),
 				typeof(ListView), ListViewSelectionMode.Accessible);
 
 		public static ListViewSelectionMode GetSelectionMode(BindableObject element)

@@ -231,7 +231,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				ClearSizeEstimate();
 			}
-			else if (e.PropertyName == Specifics.SelectionModeProperty.PropertyName)
+			else if (e.PropertyName == ListView.SelectionModeProperty.PropertyName)
 			{
 				UpdateSelectionMode();
 			}
