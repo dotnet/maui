@@ -12,22 +12,16 @@ namespace Xamarin.Forms
 {
 	public class Application : Element, IResourcesProvider, IApplicationController, IElementConfiguration<Application>
 	{
-		static Application s_current;
 		Task<IDictionary<string, object>> _propertiesTask;
 		readonly Lazy<PlatformConfigurationRegistry<Application>> _platformConfigurationRegistry;
-
 		IAppIndexingProvider _appIndexProvider;
-
 		ReadOnlyCollection<Element> _logicalChildren;
-
 		Page _mainPage;
 
-		static SemaphoreSlim SaveSemaphore = new SemaphoreSlim(1, 1);
+		static readonly SemaphoreSlim SaveSemaphore = new SemaphoreSlim(1, 1);
 
 		[Obsolete("Assign the LogWarningsListener")]
 		public static bool LogWarningsToApplicationOutput { get; set; }
-
-		bool MainPageSet { get; set; }
 
 		public Application()
 		{
@@ -62,18 +56,7 @@ namespace Xamarin.Forms
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetCurrentApplication(Application value) => Current = value;
 
-		public static Application Current
-		{
-			get { return s_current; }
-			set
-			{
-				if (s_current == value)
-					return;
-				if (value == null)
-					s_current = null; //Allow to reset current for unittesting
-				s_current = value;
-			}
-		}
+		public static Application Current { get; set; }
 
 		public Page MainPage
 		{
@@ -94,7 +77,6 @@ namespace Xamarin.Forms
 				}
 
 				_mainPage = value;
-				MainPageSet = true;
 
 				if (_mainPage != null)
 				{
@@ -245,10 +227,7 @@ namespace Xamarin.Forms
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void ClearCurrent()
-		{
-			s_current = null;
-		}
+		public static void ClearCurrent() => Current = null;
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static bool IsApplicationOrNull(Element element)
@@ -287,7 +266,7 @@ namespace Xamarin.Forms
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendResume()
 		{
-			s_current = this;
+			Current = this;
 			OnResume();
 		}
 
