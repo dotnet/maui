@@ -11,7 +11,6 @@ using Xamarin.Forms.Core.UITests;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.Navigation)]
 	[NUnit.Framework.Category(UITestCategories.ManualReview)]
@@ -21,6 +20,10 @@ namespace Xamarin.Forms.Controls.Issues
 	public class Bugzilla40005 : TestContentPage // or TestMasterDetailPage, etc ...
 	{
 		public const string GoToPage2 = "Go to Page 2";
+		public const string PageOneLabel = "Page 1";
+		public const string PageTwoLabel = "Page 2";
+		public const string InsertedPageLabel = "Inserted page";
+		public const string TestInstructions = "Click " + GoToPage2 + " and you should still see a back bar button";
 
 		public Bugzilla40005()
 		{
@@ -37,7 +40,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			public Page1()
 			{
-				Button btn = new Button()
+				var btn = new Button()
 				{
 					Text = GoToPage2
 				};
@@ -51,15 +54,17 @@ namespace Xamarin.Forms.Controls.Issues
 					VerticalOptions = LayoutOptions.Center,
 					Children =
 					{
-						new Label {
+						new Label
+						{
 							HorizontalTextAlignment = TextAlignment.Center,
-							Text = "Page 1"
+							Text = PageOneLabel
 						},
 						btn,
-						new Label {
+						new Label
+						{
 							HorizontalTextAlignment = TextAlignment.Center,
-							Text = $"Click {GoToPage2} and you should still see a back bar button"
-						},
+							Text = TestInstructions
+						}
 					}
 				};
 			}
@@ -76,11 +81,10 @@ namespace Xamarin.Forms.Controls.Issues
 
 			protected override bool OnBackButtonPressed()
 			{
-				Debug.WriteLine("Hardware BackButton Pressed on Page1");
+				Debug.WriteLine($"Hardware BackButton Pressed on {PageOneLabel}");
 				return base.OnBackButtonPressed();
 			}
 		}
-
 
 		public class InsertedPage : ContentPage
 		{
@@ -89,18 +93,20 @@ namespace Xamarin.Forms.Controls.Issues
 				Content = new StackLayout
 				{
 					VerticalOptions = LayoutOptions.Center,
-					Children = {
-					new Label {
-						HorizontalTextAlignment = TextAlignment.Center,
-						Text = "Inserted page"
+					Children =
+					{
+						new Label
+						{
+							HorizontalTextAlignment = TextAlignment.Center,
+							Text = InsertedPageLabel
+						}
 					}
-				}
 				};
 			}
 
 			protected override bool OnBackButtonPressed()
 			{
-				Debug.WriteLine("Hardware BackButton Pressed on InsertedPage");
+				Debug.WriteLine($"Hardware BackButton Pressed on {InsertedPageLabel}");
 				return base.OnBackButtonPressed();
 			}
 		}
@@ -112,20 +118,34 @@ namespace Xamarin.Forms.Controls.Issues
 				Content = new StackLayout
 				{
 					VerticalOptions = LayoutOptions.Center,
-					Children = {
-					new Label {
-						HorizontalTextAlignment = TextAlignment.Center,
-						Text = "Page 2"
+					Children =
+					{
+						new Label
+						{
+							HorizontalTextAlignment = TextAlignment.Center,
+							Text = PageTwoLabel
+						}
 					}
-				}
 				};
 			}
 
 			protected override bool OnBackButtonPressed()
 			{
-				Debug.WriteLine("Hardware BackButton Pressed on Page2");
+				Debug.WriteLine($"Hardware BackButton Pressed on {PageTwoLabel}");
 				return base.OnBackButtonPressed();
 			}
 		}
+
+#if UITEST
+		[Test]
+		public void Bugzilla40005Test()
+		{
+			RunningApp.WaitForElement(q => q.Marked(PageOneLabel));
+			RunningApp.Tap(q => q.Marked(GoToPage2));
+			RunningApp.WaitForElement(q => q.Marked(PageTwoLabel));
+			RunningApp.Back();
+			RunningApp.WaitForElement(q => q.Marked(PageOneLabel));
+		}
+#endif
 	}
 }
