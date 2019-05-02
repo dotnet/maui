@@ -63,10 +63,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			{
 				var layout = new ResourceLoader(useCompiledXaml);
 				Assert.That(layout.label.TextColor, Is.EqualTo(Color.FromHex("#368F95")));
-
+				object instance = null;
 				Xamarin.Forms.Internals.ResourceLoader.ResourceProvider2 = (rlq) => {
-					if (rlq.ResourcePath == "ResourceLoader.xaml")
-						return new Forms.Internals.ResourceLoader.ResourceLoadingResponse {
+					if (rlq.ResourcePath == "ResourceLoader.xaml") {
+						instance = rlq.Instance;
+						return new Forms.Internals.ResourceLoader.ResourceLoadingResponse
+						{
 							ResourceContent = @"
 <ContentPage 
 	xmlns=""http://xamarin.com/schemas/2014/forms""
@@ -77,12 +79,15 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	mc:Ignorable=""d"" >
   
 	<Label x:Name = ""label"" TextColor = ""Pink"" d:TextColor = ""HotPink"" />
-</ContentPage >"};
+</ContentPage >"
+						};
+					}
 					return null;
 				}; 
 
 
 				layout = new ResourceLoader(useCompiledXaml);
+				Assert.That(instance, Is.EqualTo(layout));
 				Assert.That(layout.label.TextColor, Is.EqualTo(Color.Pink));
 			}
 

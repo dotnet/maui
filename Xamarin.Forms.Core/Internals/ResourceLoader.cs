@@ -45,6 +45,7 @@ namespace Xamarin.Forms.Internals
 		{
 			public AssemblyName AssemblyName { get; set; }
 			public string ResourcePath { get; set; }
+			public object Instance { get; set; }
 		}
 
 		public class ResourceLoadingResponse

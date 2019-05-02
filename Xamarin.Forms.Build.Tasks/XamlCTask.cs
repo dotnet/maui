@@ -268,21 +268,26 @@ namespace Xamarin.Forms.Build.Tasks
 					var nop = Instruction.Create(Nop);
 
 					il.Emit(Newobj, module.ImportCtorReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "ResourceLoader/ResourceLoadingQuery"), 0));
-					il.Emit(Dup); //dup the RLQ
 
 					//AssemblyName
+					il.Emit(Dup); //dup the RLQ
 					il.Emit(Ldtoken, module.ImportReference(initComp.DeclaringType));
 					il.Emit(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
 					il.Emit(Call, module.ImportMethodReference(("mscorlib", "System.Reflection", "IntrospectionExtensions"), methodName: "GetTypeInfo", parameterTypes: new[] { ("mscorlib", "System", "Type") }, isStatic: true));
 					il.Emit(Callvirt, module.ImportPropertyGetterReference(("mscorlib", "System.Reflection", "TypeInfo"), propertyName: "Assembly", flatten: true));
-					il.Emit(Callvirt, module.ImportMethodReference(("mscorlib", "System.Reflection", "Assembly"), methodName: "GetName", parameterTypes: null)); //assemblyName
-
+					il.Emit(Callvirt, module.ImportMethodReference(("mscorlib", "System.Reflection", "Assembly"), methodName: "GetName", parameterTypes: null));
 					il.Emit(Callvirt, module.ImportPropertySetterReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "ResourceLoader/ResourceLoadingQuery"), "AssemblyName"));
-					il.Emit(Dup); //dup the RLQ
 
-					il.Emit(Ldstr, resourcePath);   //resourcePath
+					//ResourcePath
+					il.Emit(Dup); //dup the RLQ
+					il.Emit(Ldstr, resourcePath);
 					il.Emit(Callvirt, module.ImportPropertySetterReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "ResourceLoader/ResourceLoadingQuery"), "ResourcePath"));
-					
+
+					//Instance
+					il.Emit(Dup); //dup the RLQ
+					il.Emit(Ldarg_0); //Instance = this
+					il.Emit(Callvirt, module.ImportPropertySetterReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "ResourceLoader/ResourceLoadingQuery"), "Instance"));
+
 					il.Emit(Call, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "ResourceLoader"), "CanProvideContentFor", 1, isStatic: true));
 					il.Emit(Brfalse, nop);
 					il.Emit(Ldarg_0);
