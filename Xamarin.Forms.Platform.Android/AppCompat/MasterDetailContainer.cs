@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		public bool MarkedForDispose { get; internal set; } = false;
 
-		FragmentManager FragmentManager => _fragmentManager ?? (_fragmentManager = ((FormsAppCompatActivity)Context).SupportFragmentManager);
+		FragmentManager FragmentManager => _fragmentManager ?? (_fragmentManager = Context.GetFragmentManager());
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{

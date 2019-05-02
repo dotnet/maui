@@ -73,7 +73,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			}
 		}
 
-		FragmentManager FragmentManager => _fragmentManager ?? (_fragmentManager = ((FormsAppCompatActivity)Context).SupportFragmentManager);
+		FragmentManager FragmentManager => _fragmentManager ?? (_fragmentManager = Context.GetFragmentManager());
 		bool IsBottomTabPlacement => (Element != null) ? Element.OnThisPlatform().GetToolbarPlacement() == ToolbarPlacement.Bottom : false;
 
 		public Color BarItemColor
@@ -231,7 +231,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			base.OnElementChanged(e);
 
-			var activity = (FormsAppCompatActivity)Context;
+			var activity = Context.GetActivity();
 
 			if (e.OldElement != null)
 				((IPageController)e.OldElement).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;

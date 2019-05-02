@@ -5,6 +5,7 @@ using Android.Util;
 using Android.Views.InputMethods;
 using AApplicationInfoFlags = Android.Content.PM.ApplicationInfoFlags;
 using AActivity = Android.App.Activity;
+using AFragmentManager = Android.Support.V4.App.FragmentManager;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -93,6 +94,50 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (context is ContextWrapper contextWrapper)
 				return contextWrapper.BaseContext.GetActivity();
+
+			return null;
+		}
+
+		internal static Context GetThemedContext(this Context context)
+		{
+			if (context == null)
+				return null;
+
+			if (context.IsDesignerContext())
+				return context;
+
+			if (context is global::Android.Support.V7.App.AppCompatActivity activity)
+				return activity.SupportActionBar.ThemedContext;
+
+			if (context is ContextWrapper contextWrapper)
+				return contextWrapper.BaseContext.GetThemedContext();
+
+			return null;
+		}
+
+		internal static bool IsDesignerContext(this Context context)
+		{
+			if (context == null)
+				return false;
+			
+			if ($"{context.ToString()}".Contains("com.android.layoutlib.bridge.android.BridgeContext"))
+				return true;
+
+			if (context is ContextWrapper contextWrapper)
+				return contextWrapper.BaseContext.IsDesignerContext();
+
+			return false;
+		}
+
+		public static AFragmentManager GetFragmentManager(this Context context)
+		{
+			if (context == null)
+				return null;
+
+			var activity = context.GetActivity();
+
+			if (activity is global::Android.Support.V4.App.FragmentActivity fa)
+				return fa.SupportFragmentManager;
 
 			return null;
 		}

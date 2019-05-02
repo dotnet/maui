@@ -369,8 +369,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		void LayoutRootPage(Page page, int width, int height)
 		{
-			var activity = (FormsAppCompatActivity)_context;
-			page.Layout(new Rectangle(0, 0, activity.FromPixels(width), activity.FromPixels(height)));
+			page.Layout(new Rectangle(0, 0, _context.FromPixels(width), _context.FromPixels(height)));
 		}
 
 		Task PresentModal(Page modal, bool animated)
@@ -457,9 +456,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			{
 				if (changed)
 				{
-					var activity = (FormsAppCompatActivity)Context;
-
-					_modal.Layout(new Rectangle(0, 0, activity.FromPixels(r - l), activity.FromPixels(b - t)));
+					_modal.Layout(new Rectangle(0, 0, Context.FromPixels(r - l), Context.FromPixels(b - t)));
 					_backgroundView.Layout(0, 0, r - l, b - t);
 				}
 

@@ -13,6 +13,12 @@
     <DebugType>pdbonly</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="ShellPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+  </ItemGroup>
   
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->

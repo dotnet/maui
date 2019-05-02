@@ -101,7 +101,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			base.OnElementChanged(e);
 
-			var activity = (FormsAppCompatActivity)Context;
+			var activity = (FormsAppCompatActivity)Context.GetActivity();
 
 			if (e.OldElement != null)
 				((IPageController)e.OldElement).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
