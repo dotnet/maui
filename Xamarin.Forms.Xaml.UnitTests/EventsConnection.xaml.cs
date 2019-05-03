@@ -77,6 +77,16 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			baseForVirtualClicked++;
 		}
 
+		protected static int staticClicked;
+
+		// This is necessary because the interpreter searches the class
+		// specified by x:Class for a static method.
+		// See: https://github.com/xamarin/Xamarin.Forms/issues/5100
+		static void HandleStaticClicked(object sender, EventArgs e)
+		{
+			staticClicked++;
+		}
+
 		[TestFixture]
 		public class Tests
 		{
@@ -131,6 +141,23 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.AreEqual(0, layout.baseForVirtualClicked);
 				Assert.AreEqual(1, layout.overrideClicked);
 			}
+
+			[TestCase(false)]
+			[TestCase(true)]
+			public void TestStaticHandler(bool useCompiledXaml)
+			{
+				try
+				{
+					var layout = new SubForEvents(useCompiledXaml);
+					Assert.AreEqual(0, staticClicked);
+					layout.elementWithStaticHandler.SendClicked();
+					Assert.AreEqual(1, staticClicked);
+				}
+				finally
+				{
+					staticClicked = 0;
+				}
+			}
 		}
 	}
 
@@ -150,6 +177,14 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		async void HandleClickedPrivateAsync(object sender, EventArgs e)
 #pragma warning restore 1998
 		{
+		}
+
+		// This is necessary because the interpreter searches the subclass
+		// for a static method.
+		// See: https://github.com/xamarin/Xamarin.Forms/issues/5100
+		static void HandleStaticClicked(object sender, EventArgs e)
+		{
+			staticClicked++;
 		}
 	}
 }

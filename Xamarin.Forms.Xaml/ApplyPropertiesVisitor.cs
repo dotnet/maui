@@ -413,7 +413,7 @@ namespace Xamarin.Forms.Xaml
 			}
 
 			try {
-				eventInfo.AddEventHandler(element, methodInfo.CreateDelegate(eventInfo.EventHandlerType, rootElement));
+				eventInfo.AddEventHandler(element, methodInfo.CreateDelegate(eventInfo.EventHandlerType, methodInfo.IsStatic ? null : rootElement));
 				return true;
 			} catch (ArgumentException ae) {
 				exception = new XamlParseException($"Method {stringValue} does not have the correct signature", lineInfo, ae);

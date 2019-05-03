@@ -937,14 +937,6 @@ namespace Xamarin.Forms.Build.Tasks
 			var value = ((ValueNode)valueNode).Value;
 
 			yield return Create(Ldloc, parent);
-			if (context.Root is VariableDefinition)
-				foreach (var instruction in (context.Root as VariableDefinition).LoadAs(adder.Parameters[0].ParameterType.ResolveGenericParameters(adder), module))
-					yield return instruction;
-			else if (context.Root is FieldDefinition) {
-				yield return Create(Ldarg_0);
-				yield return Create(Ldfld, context.Root as FieldDefinition);
-			} else 
-				throw new InvalidProgramException();
 			var declaringType = context.Body.Method.DeclaringType;
 			while (declaringType.IsNested)
 				declaringType = declaringType.DeclaringType;
@@ -965,15 +957,29 @@ namespace Xamarin.Forms.Build.Tasks
 						throw new XamlParseException($"Signature (parameter {i}) of EventHandler \"{context.Body.Method.DeclaringType.FullName}.{value}\" doesn't match the event type", iXmlLineInfo);
 			//TODO check generic parameters if any
 
+			//FIXME: eventually get the right ctor instead fo the First() one, just in case another one could exists (not even sure it's possible).
+			var ctor = module.ImportReference(eventinfo.EventType.ResolveCached().GetConstructors().First());
+			ctor = ctor.ResolveGenericParameters(eventinfo.EventType, module);
+
+			if (handler.IsStatic) {
+				yield return Create(Ldnull);
+			} else {
+				if (context.Root is VariableDefinition)
+					foreach (var instruction in (context.Root as VariableDefinition).LoadAs(ctor.Parameters[0].ParameterType.ResolveGenericParameters(ctor), module))
+						yield return instruction;
+				else if (context.Root is FieldDefinition) {
+					yield return Create(Ldarg_0);
+					yield return Create(Ldfld, context.Root as FieldDefinition);
+				} else 
+					throw new InvalidProgramException();
+			}
+
 			if (handler.IsVirtual) {
 				yield return Create(Ldarg_0);
 				yield return Create(Ldvirtftn, handler);
 			} else
 				yield return Create(Ldftn, handler);
 
-			//FIXME: eventually get the right ctor instead fo the First() one, just in case another one could exists (not even sure it's possible).
-			var ctor = module.ImportReference(eventinfo.EventType.ResolveCached().GetConstructors().First());
-			ctor = ctor.ResolveGenericParameters(eventinfo.EventType, module);
 			yield return Create(Newobj, module.ImportReference(ctor));
 			//Check if the handler has the same signature as the ctor (it should)
 			yield return Create(Callvirt, module.ImportReference(adder));
