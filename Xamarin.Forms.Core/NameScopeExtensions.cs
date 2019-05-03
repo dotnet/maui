@@ -10,8 +10,8 @@ namespace Xamarin.Forms
 			try {
 				return (T)element.FindByName(name);
 			}
-			catch (InvalidCastException ice) when (ResourceLoader.ExceptionHandler != null) {
-				ResourceLoader.ExceptionHandler(ice);
+			catch (InvalidCastException ice) when (ResourceLoader.ExceptionHandler2 != null) {
+				ResourceLoader.ExceptionHandler2((ice, null));
 				return default(T);
 			}
 		}

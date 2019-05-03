@@ -88,11 +88,14 @@ namespace Xamarin.Forms.Xaml
 
 					var rootnode = new RuntimeRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), view, (IXmlNamespaceResolver)reader);
 					XamlParser.ParseXaml(rootnode, reader);
+#pragma warning disable 0618
+					var doNotThrow = ResourceLoader.ExceptionHandler2 != null || Internals.XamlLoader.DoNotThrowOnExceptions;
+#pragma warning restore 0618
+					void ehandler(Exception e) => ResourceLoader.ExceptionHandler2?.Invoke((e, XamlFilePathAttribute.GetFilePathForObject(view)));
 					Visit(rootnode, new HydrationContext {
 						RootElement = view,
-#pragma warning disable 0618
-						ExceptionHandler = ResourceLoader.ExceptionHandler ?? (Internals.XamlLoader.DoNotThrowOnExceptions ? e => { } : (Action<Exception>)null)
-#pragma warning restore 0618
+
+						ExceptionHandler = doNotThrow ? ehandler : (Action<Exception>)null
 					}, useDesignProperties);
 					break;
 				}
@@ -103,8 +106,9 @@ namespace Xamarin.Forms.Xaml
 
 		public static object Create(string xaml, bool doNotThrow, bool useDesignProperties)
 		{
-			doNotThrow = doNotThrow || ResourceLoader.ExceptionHandler != null;
-			var exceptionHandler = doNotThrow ? (ResourceLoader.ExceptionHandler ?? (e => { })) : null;
+			doNotThrow = doNotThrow || ResourceLoader.ExceptionHandler2 != null;
+			void ehandler(Exception e) => ResourceLoader.ExceptionHandler2?.Invoke((e, null));
+
 			object inflatedView = null;
 			using (var textreader = new StringReader(xaml))
 			using (var reader = XmlReader.Create(textreader)) {
@@ -123,7 +127,7 @@ namespace Xamarin.Forms.Xaml
 					var rootnode = new RuntimeRootNode(new XmlType(reader.NamespaceURI, reader.Name, typeArguments), null, (IXmlNamespaceResolver)reader);
 					XamlParser.ParseXaml(rootnode, reader);
 					var visitorContext = new HydrationContext {
-						ExceptionHandler = exceptionHandler,
+						ExceptionHandler = doNotThrow ? ehandler : (Action<Exception>)null,
 					};
 					var cvv = new CreateValuesVisitor(visitorContext);
 					cvv.Visit((ElementNode)rootnode, null);

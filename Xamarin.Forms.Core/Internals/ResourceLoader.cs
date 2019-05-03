@@ -54,6 +54,17 @@ namespace Xamarin.Forms.Internals
 			public bool UseDesignProperties { get; set; }
 		}
 
-		internal static Action<Exception> ExceptionHandler { get; set; }
+		static Action<Exception> exceptionHandler1;
+
+		[Obsolete("2 is better than 1")]
+		internal static Action<Exception> ExceptionHandler {
+			get => exceptionHandler1;
+			set {
+				exceptionHandler1 = value;
+				ExceptionHandler2 = value != null ? ((Exception exception, string filepath) err) => exceptionHandler1(err.exception) : (Action<(Exception, string)>)null;
+			}
+		}
+
+		internal static Action<(Exception exception, string filepath)> ExceptionHandler2 { get; set; }
 	}
 }

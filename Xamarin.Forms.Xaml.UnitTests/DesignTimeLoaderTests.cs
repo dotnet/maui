@@ -23,8 +23,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			XamlLoader.FallbackTypeResolver = null;
 			XamlLoader.ValueCreatedCallback = null;
 			XamlLoader.InstantiationFailedCallback = null;
-			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = null;
 #pragma warning disable 0618
+			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = null;
 			Xamarin.Forms.Xaml.Internals.XamlLoader.DoNotThrowOnExceptions = false;
 #pragma warning restore 0618
 		}
@@ -365,7 +365,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				</ContentPage>";
 
 			var exceptions = new List<Exception>();
+#pragma warning disable CS0618 // Type or member is obsolete
 			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var page = (ContentPage)XamlLoader.Create(xaml, true);
 			Assert.That(page.Content, Is.TypeOf<Button>());
@@ -533,7 +535,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					</ContentPage>";
 
 			var exceptions = new List<Exception>();
+#pragma warning disable CS0618 // Type or member is obsolete
 			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+#pragma warning restore CS0618 // Type or member is obsolete
 			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 			Assert.That(exceptions.Count, Is.EqualTo(2));
 		}
@@ -549,7 +553,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					</ContentPage>";
 
 			var exceptions = new List<Exception>();
+#pragma warning disable CS0618 // Type or member is obsolete
 			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+#pragma warning restore CS0618 // Type or member is obsolete
 			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 			Assert.That(exceptions.Count, Is.EqualTo(1));
 		}
@@ -568,7 +574,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 								</StackLayout>
 						</ContentPage>";
 			var exceptions = new List<Exception>();
+#pragma warning disable CS0618 // Type or member is obsolete
 			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+#pragma warning restore CS0618 // Type or member is obsolete
 			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 			Assert.That(exceptions.Count, Is.GreaterThan(1));
 		}
@@ -641,7 +649,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 						</StackLayout>
 					</ContentPage>";
 			var exceptions = new List<Exception>();
+#pragma warning disable CS0618 // Type or member is obsolete
 			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+#pragma warning restore CS0618 // Type or member is obsolete
 			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 			Assert.That(exceptions.Count, Is.GreaterThan(1));
 		}
@@ -656,7 +666,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 						</ContentPage>";
 
 			var exceptions = new List<Exception>();
+#pragma warning disable CS0618 // Type or member is obsolete
 			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+#pragma warning restore CS0618 // Type or member is obsolete
 			var content = (ContentPage)XamlLoader.Create(xaml, true);
 			Assert.DoesNotThrow(() => content.FindByName<Button>("MyName"));
 			Assert.That(exceptions.Count, Is.GreaterThanOrEqualTo(1));
@@ -677,7 +689,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 						</ContentPage>";
 			XamlLoader.Create(xaml, true);
 			var exceptions = new List<Exception>();
+#pragma warning disable CS0618 // Type or member is obsolete
 			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+#pragma warning restore CS0618 // Type or member is obsolete
 			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 			Assert.That(exceptions.Count, Is.GreaterThanOrEqualTo(1));
 		}
