@@ -161,7 +161,9 @@ namespace Xamarin.Forms.Maps
 		{
 			if (newItemTemplate is DataTemplateSelector)
 			{
-				throw new NotSupportedException($"You are using an instance of {nameof(DataTemplateSelector)} to set the {nameof(Map)}.{ItemTemplateProperty.PropertyName} property. Use an instance of a {nameof(DataTemplate)} property instead to set an item template.");
+				throw new NotSupportedException(
+					$"The {nameof(Map)}.{ItemTemplateProperty.PropertyName} property only supports {nameof(DataTemplate)}." +
+					$" Set the {nameof(Map)}.{ItemTemplateSelectorProperty.PropertyName} property instead to use a {nameof(DataTemplateSelector)}");
 			}
 
 			_pins.Clear();
