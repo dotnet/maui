@@ -246,7 +246,7 @@ namespace Xamarin.Forms.Platform.Android
 			FragmentTransaction transaction = manager.BeginTransaction();
 
 			if (animate)
-				transaction.SetTransition((int)global::Android.App.FragmentTransit.FragmentFade);
+				transaction.SetTransition((int)global::Android.App.FragmentTransit.EnterMask);
 
 			transaction.Replace(_frameLayout.Id, fragment);
 			transaction.CommitAllowingStateLoss();
