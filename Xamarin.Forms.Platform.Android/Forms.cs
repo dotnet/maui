@@ -304,21 +304,15 @@ namespace Xamarin.Forms
 		{
 			bool _disposed;
 			readonly Context _formsActivity;
-			readonly Size _pixelScreenSize;
-			readonly double _scalingFactor;
+			Size _scaledScreenSize;
+			Size _pixelScreenSize;
+			double _scalingFactor;
 
 			Orientation _previousOrientation = Orientation.Undefined;
 
 			public AndroidDeviceInfo(Context formsActivity)
 			{
-				using (DisplayMetrics display = formsActivity.Resources.DisplayMetrics)
-				{
-					_scalingFactor = display.Density;
-					_pixelScreenSize = new Size(display.WidthPixels, display.HeightPixels);
-					ScaledScreenSize = new Size(_pixelScreenSize.Width / _scalingFactor, _pixelScreenSize.Height / _scalingFactor);
-				}
-
-				CheckOrientationChanged(formsActivity.Resources.Configuration.Orientation);
+				CheckOrientationChanged(formsActivity);
 
 				// This will not be an implementation of IDeviceInfoProvider when running inside the context
 				// of layoutlib, which is what the Android Designer does.
@@ -335,7 +329,7 @@ namespace Xamarin.Forms
 				get { return _pixelScreenSize; }
 			}
 
-			public override Size ScaledScreenSize { get; }
+			public override Size ScaledScreenSize => _scaledScreenSize;
 
 			public override double ScalingFactor
 			{
@@ -365,17 +359,31 @@ namespace Xamarin.Forms
 				base.Dispose(disposing);
 			}
 
-			void CheckOrientationChanged(Orientation orientation)
+			void UpdateScreenMetrics(Context formsActivity)
 			{
+				using (DisplayMetrics display = formsActivity.Resources.DisplayMetrics)
+				{
+					_scalingFactor = display.Density;
+					_pixelScreenSize = new Size(display.WidthPixels, display.HeightPixels);
+					_scaledScreenSize = new Size(_pixelScreenSize.Width / _scalingFactor, _pixelScreenSize.Height / _scalingFactor);
+				}
+			}
+
+			void CheckOrientationChanged(Context formsActivity)
+			{
+				var orientation = formsActivity.Resources.Configuration.Orientation;
+
 				if (!_previousOrientation.Equals(orientation))
 					CurrentOrientation = orientation.ToDeviceOrientation();
 
 				_previousOrientation = orientation;
+
+				UpdateScreenMetrics(formsActivity);
 			}
 
 			void ConfigurationChanged(object sender, EventArgs e)
 			{
-				CheckOrientationChanged(_formsActivity.Resources.Configuration.Orientation);
+				CheckOrientationChanged(_formsActivity);
 			}
 		}
 

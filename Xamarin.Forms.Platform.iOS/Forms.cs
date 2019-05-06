@@ -100,7 +100,11 @@ namespace Xamarin.Forms
 #endif
 			Device.SetFlags(s_flags);
 			Device.PlatformServices = new IOSPlatformServices();
+#if __MOBILE__
 			Device.Info = new IOSDeviceInfo();
+#else
+			Device.Info = new Platform.macOS.MacDeviceInfo();
+#endif
 
 			Internals.Registrar.RegisterAll(new[]
 				{ typeof(ExportRendererAttribute), typeof(ExportCellAttribute), typeof(ExportImageSourceHandlerAttribute) });
@@ -138,42 +142,6 @@ namespace Xamarin.Forms
 						_results.Add(value);
 				}
 				return base.VisitMember(node);
-			}
-		}
-
-		internal class IOSDeviceInfo : DeviceInfo
-		{
-#if __MOBILE__
-			readonly NSObject _notification;
-#endif
-			readonly Size _scaledScreenSize;
-			readonly double _scalingFactor;
-
-			public IOSDeviceInfo()
-			{
-#if __MOBILE__
-				_notification = UIDevice.Notifications.ObserveOrientationDidChange((sender, args) => CurrentOrientation = UIDevice.CurrentDevice.Orientation.ToDeviceOrientation());
-				_scalingFactor = UIScreen.MainScreen.Scale;
-				_scaledScreenSize = new Size(UIScreen.MainScreen.Bounds.Width, UIScreen.MainScreen.Bounds.Height);
-#else
-				_scalingFactor = NSScreen.MainScreen.BackingScaleFactor;
-				_scaledScreenSize = new Size(NSScreen.MainScreen.Frame.Width, NSScreen.MainScreen.Frame.Height);
-#endif
-				PixelScreenSize = new Size(_scaledScreenSize.Width * _scalingFactor, _scaledScreenSize.Height * _scalingFactor);
-			}
-
-			public override Size PixelScreenSize { get; }
-
-			public override Size ScaledScreenSize => _scaledScreenSize;
-
-			public override double ScalingFactor => _scalingFactor;
-
-			protected override void Dispose(bool disposing)
-			{
-#if __MOBILE__
-				_notification.Dispose();
-#endif
-				base.Dispose(disposing);
 			}
 		}
 

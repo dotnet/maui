@@ -140,6 +140,7 @@
     <Compile Include="Extensions\LabelExtensions.cs" />
     <Compile Include="Extensions\VisualElementExtensions.cs" />
     <Compile Include="Flags.cs" />
+    <Compile Include="IOSDeviceInfo.cs" />
     <Compile Include="Renderers\ImageElementManager.cs" />
     <Compile Include="IVisualNativeElementRenderer.cs" />
     <Compile Include="NativeViewWrapper.cs" />
