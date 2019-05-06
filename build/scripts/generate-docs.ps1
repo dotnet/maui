@@ -44,6 +44,9 @@ git clone -b $branch --single-branch $docsUri
 
 pushd .\Xamarin.Forms-api-docs
 
+# Temporary hack to handle a typo (https://github.com/xamarin/Xamarin.Forms/pull/6103)
+copy .\docs\Xamarin.Forms\SearchBoxVisibility.xml .\docs\Xamarin.Forms\SearchBoxVisiblity.xml
+
 # Run mdoc
 & $mdoc export-msxdoc .\docs
 
