@@ -38,13 +38,48 @@ namespace Xamarin.Forms.Platform.Android
         protected virtual void LoadView(IShellContext shellContext)
         {
             var context = shellContext.AndroidContext;
-            var coordinator = LayoutInflater.FromContext(context).Inflate(Resource.Layout.FlyoutContent, null);
-            var recycler = coordinator.FindViewById<RecyclerView>(Resource.Id.flyoutcontent_recycler);
-            var appBar = coordinator.FindViewById<AppBarLayout>(Resource.Id.flyoutcontent_appbar);
+            var coordinator = (ViewGroup)LayoutInflater.FromContext(context).Inflate(Resource.Layout.FlyoutContent, null);
+			var recycler = coordinator.FindViewById<RecyclerView>(Resource.Id.flyoutcontent_recycler);
+			var appBar = coordinator.FindViewById<ViewGroup>(Resource.Id.flyoutcontent_appbar);
 
-            _rootView = coordinator;
+			_rootView = coordinator;
 
-            appBar.AddOnOffsetChangedListener(this);
+			if((recycler == null || appBar == null) && !context.IsDesignerContext())
+			{
+				if (recycler == null)
+					throw new ArgumentNullException("flyoutcontent_recycler", "Unable to find layout for flyoutcontent_recycler");
+
+				// PREVIEWER HACK for some reason previewer pulls this out as a FrameLayout and ignores the internal resources
+				if (appBar == null)
+					throw new ArgumentNullException("flyoutcontent_appbar", "Unable to find layout for flyoutcontent_recycler");
+
+			}
+
+
+			try
+			{
+				// PREVIEWER HACK for some reason previewer can't find the resources for the recycler or the appBar
+				if (recycler == null)
+					recycler = (RecyclerView)coordinator.GetChildAt(1);
+				if (appBar == null)
+					appBar = (AppBarLayout)coordinator.GetChildAt(0);
+			}
+			catch
+			{
+				// PReviewer hack.
+				// appcompat and non appcompat initialize this whole thing differently so the above are for appcompat the below are for non
+			}
+
+			// PREVIEWER HACK for some reason previewer can't find the resources for the recycler or the appBar
+			if (recycler == null)
+				recycler = coordinator.FindViewById<RecyclerView>(context.Resources.GetIdentifier("flyoutcontent_recycler", "id", context.PackageName));
+
+			// PREVIEWER HACK for some reason previewer pulls this out as a FrameLayout and ignores the internal resources
+			if (appBar == null)
+				appBar = coordinator.FindViewById<ViewGroup>(context.Resources.GetIdentifier("flyoutcontent_appbar", "id", context.PackageName));
+
+
+			(appBar as AppBarLayout)?.AddOnOffsetChangedListener(this);
 
             int actionBarHeight = (int)context.ToPixels(56);
 
@@ -68,11 +103,14 @@ namespace Xamarin.Forms.Platform.Android
             var metrics = context.Resources.DisplayMetrics;
             var width = Math.Min(metrics.WidthPixels, metrics.HeightPixels);
 
-            TypedValue tv = new TypedValue();
-            if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ActionBarSize, tv, true))
-            {
-                actionBarHeight = TypedValue.ComplexToDimensionPixelSize(tv.Data, metrics);
-            }
+			using (TypedValue tv = new TypedValue())
+			{
+				if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ActionBarSize, tv, true))
+				{
+					actionBarHeight = TypedValue.ComplexToDimensionPixelSize(tv.Data, metrics);
+				}
+			}
+
             width -= actionBarHeight;
 
             coordinator.LayoutParameters = new LP(width, LP.MatchParent);

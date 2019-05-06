@@ -50,7 +50,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (disposing)
 			{
-				_renderer.Dispose();
+				_renderer?.Dispose();
 				_renderer = null;
 				_view = null;
 				_context = null;

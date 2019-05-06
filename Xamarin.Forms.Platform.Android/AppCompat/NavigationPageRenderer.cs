@@ -87,7 +87,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			{
 				if (_platform == null)
 				{
-					if (Context is FormsAppCompatActivity activity)
+					if (Context.GetActivity() is FormsAppCompatActivity activity)
 					{
 						_platform = activity.Platform;
 					}
@@ -121,7 +121,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			}
 		}
 
-		FragmentManager FragmentManager => _fragmentManager ?? (_fragmentManager = ((FormsAppCompatActivity)Context).SupportFragmentManager);
+		FragmentManager FragmentManager => _fragmentManager ?? (_fragmentManager = Context.GetFragmentManager());
 
 		IPageController PageController => Element;
 
@@ -747,7 +747,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		void SetupToolbar()
 		{
 			Context context = Context;
-			var activity = (FormsAppCompatActivity)context;
+			var activity = context.GetActivity();
 
 			AToolbar bar;
 			if (FormsAppCompatActivity.ToolbarResource != 0)
@@ -937,7 +937,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				return;
 
 			Context context = Context;
-			var activity = (FormsAppCompatActivity)context;
 			AToolbar bar = _toolbar;
 			ActionBarDrawerToggle toggle = _drawerToggle;
 
@@ -956,8 +955,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					toggle.SyncState();
 				}
 
-				if (NavigationPage.GetHasBackButton(currentPage))
+				if (NavigationPage.GetHasBackButton(currentPage) && !Context.IsDesignerContext())
 				{
+					var activity = (global::Android.Support.V7.App.AppCompatActivity)context.GetActivity();
 					var icon = new DrawerArrowDrawable(activity.SupportActionBar.ThemedContext);
 					icon.Progress = 1;
 					bar.NavigationIcon = icon;

@@ -16,6 +16,8 @@ namespace Xamarin.Forms.Platform.iOS
 		VisualElementPackager _packager;
 		VisualElementTracker _tracker;
 
+		// storing this into a local variable causes it to not get collected. Do not delete this please		
+		PageContainer _pageContainer;
 		internal PageContainer Container => NativeView as PageContainer;
 
 		Page Page => Element as Page;
@@ -121,9 +123,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void LoadView()
 		{
-			View = new PageContainer(this);
-		}
+			if (_pageContainer == null)
+				_pageContainer = new PageContainer(this);
 
+			View = _pageContainer;
+		}
 		public override void ViewWillLayoutSubviews()
 		{
 			base.ViewWillLayoutSubviews();
@@ -262,6 +266,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 				Element = null;
 				Container?.Dispose();
+				_pageContainer = null;
 				_disposed = true;
 			}
 

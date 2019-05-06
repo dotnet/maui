@@ -36,7 +36,10 @@ namespace Xamarin.Forms.Platform.Android
 		VisualElementTracker IVisualElementRenderer.Tracker => null;
 
 		AView IVisualElementRenderer.View => _flyoutRenderer.AndroidView;
-		ViewGroup IVisualElementRenderer.ViewGroup => _flyoutRenderer.AndroidView as ViewGroup;
+
+		// Used by Previewer
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public ViewGroup ViewGroup => _flyoutRenderer.AndroidView as ViewGroup;
 
 		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
 		{
@@ -59,7 +62,9 @@ namespace Xamarin.Forms.Platform.Android
 		{
 		}
 
-		void IVisualElementRenderer.UpdateLayout()
+		// Used by Previewer
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void UpdateLayout()
 		{
 			var width = (int)AndroidContext.ToPixels(Element.Width);
 			var height = (int)AndroidContext.ToPixels(Element.Height);
@@ -151,7 +156,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected Context AndroidContext { get; }
 		protected Shell Element { get; private set; }
-		private FragmentManager FragmentManager => ((FormsAppCompatActivity)AndroidContext).SupportFragmentManager;
+		FragmentManager FragmentManager => AndroidContext.GetFragmentManager();
 
 		protected virtual IShellObservableFragment CreateFragmentForPage(Page page)
 		{
@@ -202,9 +207,7 @@ namespace Xamarin.Forms.Platform.Android
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Shell.CurrentItemProperty.PropertyName)
-			{
 				SwitchFragment(FragmentManager, _frameLayout, Element.CurrentItem);
-			}
 
 			_elementPropertyChanged?.Invoke(sender, e);
 		}
@@ -223,13 +226,18 @@ namespace Xamarin.Forms.Platform.Android
 
 			((IShellController)shell).AddAppearanceObserver(this, shell);
 
-			SwitchFragment(FragmentManager, _frameLayout, shell.CurrentItem, false);
+			// Previewer Hack
+			if(AndroidContext.GetActivity() != null)
+				SwitchFragment(FragmentManager, _frameLayout, shell.CurrentItem, false);
 		}
 
 		IShellItemRenderer _currentRenderer;
 
 		protected virtual void SwitchFragment(FragmentManager manager, AView targetView, ShellItem newItem, bool animate = true)
 		{
+			if (AndroidContext.IsDesignerContext())
+				return; 
+
 			var previousRenderer = _currentRenderer;
 			_currentRenderer = CreateShellItemRenderer(newItem);
 			_currentRenderer.ShellItem = newItem;
@@ -238,7 +246,7 @@ namespace Xamarin.Forms.Platform.Android
 			FragmentTransaction transaction = manager.BeginTransaction();
 
 			if (animate)
-				transaction.SetTransition((int)global::Android.App.FragmentTransit.FragmentFade);
+				transaction.SetTransition((int)global::Android.App.FragmentTransit.EnterMask);
 
 			transaction.Replace(_frameLayout.Id, fragment);
 			transaction.CommitAllowingStateLoss();
@@ -266,10 +274,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateStatusBarColor(ShellAppearance appearance)
 		{
-			var activity = ((FormsAppCompatActivity)AndroidContext);
-			var window = activity.Window;
-			var decorView = window.DecorView;
-			var resources = activity.Resources;
+			var activity = AndroidContext.GetActivity();
+			var window = activity?.Window;
+			var decorView = window?.DecorView;
+			var resources = AndroidContext.Resources;
 
 			int statusBarHeight = 0;
 			int resourceId = resources.GetIdentifier("status_bar_height", "dimen", "android");
@@ -285,19 +293,23 @@ namespace Xamarin.Forms.Platform.Android
 				navigationBarHeight = resources.GetDimensionPixelSize(resourceId);
 			}
 
-			// we are using the split drawable here to avoid GPU overdraw.
-			// All it really is is a drawable that only draws under the statusbar/bottom bar to make sure
-			// we dont draw over areas we dont need to. This has very limited benefits considering its
-			// only saving us a flat color fill BUT it helps people not freak out about overdraw.
-			if (appearance != null)
+			// TODO Previewer Hack
+			if (decorView != null)
 			{
-				var color = appearance.BackgroundColor.ToAndroid(Color.FromHex("#03A9F4"));
-				decorView.SetBackground(new SplitDrawable(color, statusBarHeight, navigationBarHeight));
-			}
-			else
-			{
-				var color = Color.FromHex("#03A9F4").ToAndroid();
-				decorView.SetBackground(new SplitDrawable(color, statusBarHeight, navigationBarHeight));
+				// we are using the split drawable here to avoid GPU overdraw.
+				// All it really is is a drawable that only draws under the statusbar/bottom bar to make sure
+				// we dont draw over areas we dont need to. This has very limited benefits considering its
+				// only saving us a flat color fill BUT it helps people not freak out about overdraw.
+				if (appearance != null)
+				{
+					var color = appearance.BackgroundColor.ToAndroid(Color.FromHex("#03A9F4"));
+					decorView.SetBackground(new SplitDrawable(color, statusBarHeight, navigationBarHeight));
+				}
+				else
+				{
+					var color = Color.FromHex("#03A9F4").ToAndroid();
+					decorView.SetBackground(new SplitDrawable(color, statusBarHeight, navigationBarHeight));
+				}
 			}
 		}
 
