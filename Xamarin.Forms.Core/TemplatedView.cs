@@ -17,6 +17,8 @@ namespace Xamarin.Forms
 
 		IList<Element> IControlTemplated.InternalChildren => InternalChildren;
 
+		Element IControlTemplated.TemplateRoot { get; set; }
+
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
 			for (var i = 0; i < LogicalChildrenInternal.Count; i++)
@@ -74,6 +76,21 @@ namespace Xamarin.Forms
 
 		internal virtual void OnControlTemplateChanged(ControlTemplate oldValue, ControlTemplate newValue)
 		{
+		}
+
+		void IControlTemplated.OnApplyTemplate()
+		{
+			OnApplyTemplate();
+		}
+
+		protected virtual void OnApplyTemplate()
+		{
+		}
+
+		protected override void OnChildRemoved(Element child)
+		{
+			base.OnChildRemoved(child);
+			TemplateUtilities.OnChildRemoved(this, child);
 		}
 	}
 }

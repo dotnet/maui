@@ -219,6 +219,10 @@
       <Project>{67f9d3a8-f71e-4428-913f-c37ae82cdb24}</Project>
       <Name>Xamarin.Forms.Platform</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj">
+      <Project>{9db2f292-8034-4e06-89ad-98bbda4306b9}</Project>
+      <Name>Xamarin.Forms.Xaml</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

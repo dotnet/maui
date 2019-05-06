@@ -8,6 +8,10 @@ namespace Xamarin.Forms
 
 		IList<Element> InternalChildren { get; }
 
+		Element TemplateRoot { get; set; }
+
 		void OnControlTemplateChanged(ControlTemplate oldValue, ControlTemplate newValue);
+
+		void OnApplyTemplate();
 	}
 }

@@ -123,8 +123,22 @@ namespace Xamarin.Forms
 				}
 
 				self.InternalChildren.Add(content);
-				((IControlTemplated)bindable).OnControlTemplateChanged((ControlTemplate)oldValue, (ControlTemplate)newValue);
+				var controlTemplated = (IControlTemplated)bindable;
+				controlTemplated.OnControlTemplateChanged((ControlTemplate)oldValue, (ControlTemplate)newValue);
+				controlTemplated.TemplateRoot = content;
+				controlTemplated.OnApplyTemplate();
 			}
+		}
+
+		public static object GetTemplateChild(this IControlTemplated controlTemplated, string name)
+		{
+			return controlTemplated.TemplateRoot?.FindByName(name);
+		}
+
+		internal static void OnChildRemoved(IControlTemplated controlTemplated, Element removedChild)
+		{
+			if (removedChild == controlTemplated.TemplateRoot)
+				controlTemplated.TemplateRoot = null;
 		}
 	}
 }
