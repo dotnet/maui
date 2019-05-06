@@ -11,7 +11,7 @@ using Android.Support.V4.View;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public abstract class VisualElementRenderer<TElement> : FormsViewGroup, IVisualElementRenderer, 
+	public abstract class VisualElementRenderer<TElement> : FormsViewGroup, IVisualElementRenderer, IDisposedState,
 		IEffectControlProvider where TElement : VisualElement
 	{
 		readonly List<EventHandler<VisualElementChangedEventArgs>> _elementChangedHandlers = new List<EventHandler<VisualElementChangedEventArgs>>();
@@ -265,10 +265,14 @@ namespace Xamarin.Forms.Platform.Android
 		/// </summary>
 		protected virtual bool ManageNativeControlLifetime => true;
 
+		bool CheckFlagsForDisposed() => (_flags & VisualElementRendererFlags.Disposed) != 0;
+		bool IDisposedState.IsDisposed => CheckFlagsForDisposed();
+
 		protected override void Dispose(bool disposing)
 		{
-			if ((_flags & VisualElementRendererFlags.Disposed) != 0)
+			if (CheckFlagsForDisposed())
 				return;
+
 			_flags |= VisualElementRendererFlags.Disposed;
 
 			if (disposing)

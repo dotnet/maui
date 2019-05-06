@@ -27,8 +27,17 @@ namespace Xamarin.Forms.Controls.Issues
 #pragma warning restore CS0618 // Type or member is obsolete
 			navPage.BindingContext = new Issue4915ContentPage.ViewModel();
 
+
+			var urlNavPage = new NavigationPage(new Issue4915ContentPage()) { Title = "nav page 1" };
+			urlNavPage.SetBinding(Page.IconImageSourceProperty, "ImageUrl");
+			urlNavPage.BindingContext = new Issue4915ContentPage.ViewModel();
+
+
 			Children.Add(navPage);
+			Children.Add(urlNavPage);
 			Children.Add(new Issue4915ContentPage() { Title = "page 2" });
+
+
 		}
 
 #if UITEST
@@ -53,10 +62,33 @@ namespace Xamarin.Forms.Controls.Issues
 
 		}
 
+		private void ButtonClicked(object sender, EventArgs e)
+		{
+			ViewModel vm = null;
+			if ((BindingContext as ViewModel).Image != "oasis.png")
+			{
+				vm = new ViewModel()
+				{
+					Image = "oasis.png",
+					ImageUrl = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/78385f9fc1fc56dc88bd98e73bf9c8f2f2d0a90a/Xamarin.Forms.ControlGallery.iOS/Resources/jet.png"
+				};
+
+			}
+			else
+			{
+				vm = new ViewModel();
+			}
+
+			BindingContext = vm;
+			Parent.BindingContext = vm;
+			Parent.Parent.BindingContext = vm;
+		}
+
 		[Preserve(AllMembers = true)]
 		public class ViewModel
 		{
 			public string Image { get; set; } = "coffee.png";
+			public string ImageUrl { get; set; } = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/f27f5a3650f37894d4a1ac925d6fab4dc7350087/Xamarin.Forms.ControlGallery.iOS/oasis.jpg";
 		}
 	}
 }

@@ -53,6 +53,10 @@ namespace Xamarin.Forms.Platform.Android
 						}
 					}
 				}
+				else
+				{
+					imageView.SetImageBitmap(null);
+				}
 			}
 			finally
 			{
