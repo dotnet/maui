@@ -36,6 +36,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 			base.SetUpNewElement(newElement);
 
+			if (newElement == null)
+			{
+				return;
+			}
+
 			SelectableItemsViewController.UpdateSelectionMode();
 			SelectableItemsViewController.UpdateNativeSelection();
 		}
