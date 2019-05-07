@@ -40,6 +40,7 @@ namespace Xamarin.Forms.Material.Tizen
 
 		public const float SliderTrackAlpha = kSliderBaselineEnabledBackgroundAlpha;
 
+		public const double kFrameCornerRadiusDefault = 4;
 		// values based on
 		// copying to match iOS
 		// TODO generalize into xplat classes

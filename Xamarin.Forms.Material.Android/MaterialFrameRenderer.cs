@@ -191,11 +191,9 @@ namespace Xamarin.Forms.Material.Android
 				return;
 
 			var cornerRadius = Element.CornerRadius;
-			if (cornerRadius < 0f && _defaultCornerRadius < 0f)
-				return;
 
 			if (_defaultCornerRadius < 0f)
-				_defaultCornerRadius = Radius;
+				_defaultCornerRadius = Context.ToPixels(MaterialColors.kFrameCornerRadiusDefault);
 
 			if (cornerRadius < 0f)
 				Radius = _defaultCornerRadius;
