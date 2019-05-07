@@ -147,8 +147,8 @@
                 </StackLayout>
             </Frame>
 
-            <Label Text="Default With Border (No Shadow)" Margin="0,0,0,-10" />
-            <Frame Padding="16" BorderColor="{StaticResource DarkRedColor}" HasShadow="false">
+            <Label Text="Default With Border (No Shadow, CornerRadius 0)" Margin="0,0,0,-10" />
+            <Frame CornerRadius="0" Padding="16" BorderColor="{StaticResource DarkRedColor}" HasShadow="false">
                 <StackLayout Spacing="16">
                     <Image Source="photo.jpg" Margin="-16,-16,-16,0" Aspect="AspectFit" />
                     <Label Text="Walk below the arches" FontSize="24" />
@@ -158,8 +158,8 @@
                 </StackLayout>
             </Frame>
 
-            <Label Text="No Card Padding &amp; Thin Content Padding" Margin="0,0,0,-10" />
-            <Frame Padding="0" BorderColor="{StaticResource DarkRedColor}" CornerRadius="10">
+            <Label Text="No Card Padding &amp; Thin Content Padding &amp; CornerRadius 15" Margin="0,0,0,-10" />
+            <Frame CornerRadius="15" Padding="0" BorderColor="{StaticResource DarkRedColor}">
                 <StackLayout Spacing="16" BackgroundColor="{StaticResource LightRedColor}" Padding="8">
                     <Image Source="photo.jpg" Margin="-8,-8,-8,0" Aspect="AspectFit" />
                     <Label Text="Walk below the arches" FontSize="24" />

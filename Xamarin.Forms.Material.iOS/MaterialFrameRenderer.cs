@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Material.iOS
 	{
 		CardScheme _defaultCardScheme;
 		CardScheme _cardScheme;
-		nfloat _defaultCornerRadius = -1f;
+		float _defaultCornerRadius = -1;
 		VisualElementPackager _packager;
 		VisualElementTracker _tracker;
 		bool _disposed = false;
@@ -86,9 +86,6 @@ namespace Xamarin.Forms.Material.iOS
 
 				Element.PropertyChanged += OnElementPropertyChanged;
 
-				UpdateCornerRadius();
-				UpdateBorderColor();
-				UpdateBackgroundColor();
 				ApplyTheme();
 			}
 
@@ -115,17 +112,21 @@ namespace Xamarin.Forms.Material.iOS
 			base.Dispose(disposing);
 		}
 
+
 		protected virtual CardScheme CreateCardScheme()
 		{
 			return new CardScheme
 			{
-				ColorScheme = MaterialColors.Light.CreateColorScheme(),
-				ShapeScheme = new ShapeScheme(),
+				ColorScheme = MaterialColors.Light.CreateColorScheme()
 			};
 		}
 
 		protected virtual void ApplyTheme()
 		{
+			UpdateCornerRadius();
+			UpdateBorderColor();
+			UpdateBackgroundColor();
+
 			if (Element.BorderColor.IsDefault)
 				CardThemer.ApplyScheme(_cardScheme, this);
 			else
@@ -150,16 +151,14 @@ namespace Xamarin.Forms.Material.iOS
 			}
 			else if (e.PropertyName == Xamarin.Forms.Frame.CornerRadiusProperty.PropertyName)
 			{
-				UpdateCornerRadius();
+				updatedTheme = true;
 			}
 			else if (e.PropertyName == Xamarin.Forms.Frame.BorderColorProperty.PropertyName)
 			{
-				UpdateBorderColor();
 				updatedTheme = true;
 			}
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 			{
-				UpdateBackgroundColor();
 				updatedTheme = true;
 			}
 
@@ -173,13 +172,25 @@ namespace Xamarin.Forms.Material.iOS
 		{
 			// set the default radius on the first time
 			if (_defaultCornerRadius < 0)
-				_defaultCornerRadius = CornerRadius;
+				_defaultCornerRadius = (float)MaterialColors.kFrameCornerRadiusDefault;
 
 			var cornerRadius = Element.CornerRadius;
 			if (cornerRadius < 0)
-				CornerRadius = _defaultCornerRadius;
-			else
-				CornerRadius = cornerRadius;
+				cornerRadius = _defaultCornerRadius;
+
+			if (_cardScheme != null)
+			{
+				var shapeScheme = new ShapeScheme();
+				var shapeCategory = new ShapeCategory(ShapeCornerFamily.Rounded, cornerRadius);
+
+				shapeScheme.SmallComponentShape = shapeCategory;
+				shapeScheme.MediumComponentShape = shapeCategory;
+				shapeScheme.LargeComponentShape = shapeCategory;
+
+				_cardScheme.ShapeScheme = shapeScheme;
+			}
+
+			CornerRadius = cornerRadius;
 		}
 
 		void UpdateBorderColor()
@@ -191,6 +202,8 @@ namespace Xamarin.Forms.Material.iOS
 					colorScheme.OnSurfaceColor = _defaultCardScheme.ColorScheme.OnSurfaceColor;
 				else
 					colorScheme.OnSurfaceColor = borderColor.ToUIColor();
+
+				SetBorderWidth(borderColor.IsDefault ? 0f : 1f, UIControlState.Normal);
 			}
 		}
 

@@ -80,6 +80,7 @@
     <Compile Include="Controls\FormsNSDatePicker.cs" />
     <Compile Include="Extensions\FlowDirectionExtensions.cs" />
     <Compile Include="FormsApplicationDelegate.cs" />
+    <Compile Include="MacDeviceInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PlatformRenderer.cs" />
     <Compile Include="Platform.cs" />

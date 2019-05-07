@@ -34,6 +34,7 @@ namespace Xamarin.Forms.Platform.Android
 		bool _preserveInitialPadding;
 		bool _borderAdjustsPadding;
 		bool _maintainLegacyMeasurements;
+		bool _hasLayoutOccurred;
 
 		public ButtonLayoutManager(IButtonLayoutRenderer renderer)
 			: this(renderer, false, false, false, true)
@@ -85,7 +86,7 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 
 			AppCompatButton view = View;
-			if (view == null || view.Layout == null)
+			if (view == null)
 				return;
 
 			Drawable drawable = null;
@@ -141,6 +142,8 @@ namespace Xamarin.Forms.Platform.Android
 					}
 				}
 			}
+
+			_hasLayoutOccurred = true;
 		}
 
 		public void OnViewAttachedToWindow(AView attachedView)
@@ -276,8 +279,20 @@ namespace Xamarin.Forms.Platform.Android
 			else
 				view.CompoundDrawablePadding = (int)Context.ToPixels(layout.Spacing);
 
+			Drawable existingImage = null;
+			var images = TextViewCompat.GetCompoundDrawablesRelative(view);
+			for (int i = 0; i < images.Length; i++)
+				if(images[i] != null)
+				{
+					existingImage = images[i];
+					break;
+				}
+
 			_renderer.ApplyDrawableAsync(Button.ImageSourceProperty, Context, image =>
 			{
+				if (image == existingImage)
+					return;
+
 				switch (layout.Position)
 				{
 					case Button.ButtonContentLayout.ImagePosition.Top:
@@ -295,10 +310,8 @@ namespace Xamarin.Forms.Platform.Android
 						break;
 				}
 
-				// Invalidating here causes a crazy amount of increased measure invalidations
-				// when I tested with Issue4484 it caused about 800 calls to invalidate measure vs the 8 without this
-				// I'm pretty sure it gets into a layout / invalidation loop where these are invalidating mid layout				
-				//_element?.InvalidateMeasureNonVirtual(InvalidationTrigger.MeasureChanged);
+				if (_hasLayoutOccurred)
+					_element?.InvalidateMeasureNonVirtual(InvalidationTrigger.MeasureChanged);
 			});
 		}
 	}
