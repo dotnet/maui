@@ -3,9 +3,17 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
+	[Flags]
+	public enum ActivationFlags
+	{
+		NoCss = 1 << 0,
+	}
+
+
 	// Previewer uses reflection to bind to this method; Removal or modification of visibility will break previewer.
 	internal static class Registrar
 	{
@@ -241,9 +249,60 @@ namespace Xamarin.Forms.Internals
 
 		public static Registrar<IRegisterable> Registered { get; internal set; }
 
+		//typeof(ExportRendererAttribute);
+		//typeof(ExportCellAttribute);
+		//typeof(ExportImageSourceHandlerAttribute);
+		public static void RegisterRenderers(HandlerAttribute[] attributes)
+		{
+			var length = attributes.Length;
+			for (var i = 0; i < length; i++)
+			{
+				var attribute = attributes[i];
+				if (attribute.ShouldRegister())
+					Registered.Register(attribute.HandlerType, attribute.TargetType, attribute.SupportedVisuals);
+			}
+		}
+
+		public static void RegisterStylesheets()
+		{
+			var assembly = typeof(StyleSheets.StylePropertyAttribute).GetTypeInfo().Assembly;
+
+#if NETSTANDARD2_0
+			object[] styleAttributes = assembly.GetCustomAttributes(typeof(StyleSheets.StylePropertyAttribute), true);
+#else
+			object[] styleAttributes = assembly.GetCustomAttributes(typeof(StyleSheets.StylePropertyAttribute)).ToArray();
+#endif
+			var stylePropertiesLength = styleAttributes.Length;
+			for (var i = 0; i < stylePropertiesLength; i++)
+			{
+				var attribute = (StyleSheets.StylePropertyAttribute)styleAttributes[i];
+				if (StyleProperties.TryGetValue(attribute.CssPropertyName, out var attrList))
+					attrList.Add(attribute);
+				else
+					StyleProperties[attribute.CssPropertyName] = new List<StyleSheets.StylePropertyAttribute> { attribute };
+			}
+		}
+
+		public static void RegisterEffects(string resolutionName, ExportEffectAttribute[] effectAttributes)
+		{
+			var exportEffectsLength = effectAttributes.Length;
+			for (var i = 0; i < exportEffectsLength; i++)
+			{
+				var effect = effectAttributes[i];
+				Effects[resolutionName + "." + effect.Id] = effect.Type;
+			}
+		}
+
 		public static void RegisterAll(Type[] attrTypes)
 		{
+			RegisterAll(attrTypes, default(ActivationFlags));
+		}
+		public static void RegisterAll(Type[] attrTypes, ActivationFlags flags)
+		{
+			Profile.FrameBegin();
+
 			Assembly[] assemblies = Device.GetAssemblies();
+
 			if (ExtraAssemblies != null)
 				assemblies = assemblies.Union(ExtraAssemblies).ToArray();
 
@@ -258,8 +317,11 @@ namespace Xamarin.Forms.Internals
 
 			// Don't use LINQ for performance reasons
 			// Naive implementation can easily take over a second to run
+			Profile.FramePartition("Reflect");
 			foreach (Assembly assembly in assemblies)
 			{
+				Profile.FrameBegin(assembly.GetName().Name);
+
 				foreach (Type attrType in attrTypes)
 				{
 					object[] attributes;
@@ -277,6 +339,7 @@ namespace Xamarin.Forms.Internals
 						Log.Warning(nameof(Registrar), "Could not load assembly: {0} for Attibute {1} | Some renderers may not be loaded", assembly.FullName, attrType.FullName);
 						continue;
 					}
+
 					var length = attributes.Length;
 					for (var i = 0; i < length; i++)
 					{
@@ -302,7 +365,7 @@ namespace Xamarin.Forms.Internals
 					var effect = (ExportEffectAttribute)effectAttributes[i];
 					Effects[resolutionName + "." + effect.Id] = effect.Type;
 				}
-
+				Profile.FrameEnd();
 #if NETSTANDARD2_0
 				object[] styleAttributes = assembly.GetCustomAttributes(typeof(StyleSheets.StylePropertyAttribute), true);
 #else
@@ -319,7 +382,10 @@ namespace Xamarin.Forms.Internals
 				}
 			}
 
+			Profile.FramePartition("DependencyService.Initialize");
 			DependencyService.Initialize(assemblies);
+
+			Profile.FrameEnd();
 		}
 	}
 }

@@ -25,8 +25,32 @@ using System.ComponentModel;
 
 namespace Xamarin.Forms
 {
+	public struct ActivationOptions
+	{
+		public struct EffectScope
+		{
+			public string Name;
+			public ExportEffectAttribute[] Effects;
+		}
+
+		public ActivationOptions(Context activity, Bundle bundle, Assembly resourceAssembly)
+		{
+			this = default(ActivationOptions);
+			this.Activity = activity;
+			this.Bundle = bundle;
+			this.ResourceAssembly = resourceAssembly;
+		}
+		public Context Activity;
+		public Bundle Bundle;
+		public Assembly ResourceAssembly;
+		public HandlerAttribute[] Handlers;
+		public EffectScope[] EffectScopes;
+		public ActivationFlags Flags;
+	}
+
 	public static class Forms
 	{
+
 		const int TabletCrossover = 600;
 
 		static bool? s_isLollipopOrNewer;
@@ -100,13 +124,33 @@ namespace Xamarin.Forms
 		// Why is bundle a param if never used?
 		public static void Init(Context activity, Bundle bundle)
 		{
-			Assembly resourceAssembly = Assembly.GetCallingAssembly();
-			SetupInit(activity, resourceAssembly);
+			Assembly resourceAssembly;
+
+			Profile.FrameBegin("Assembly.GetCallingAssembly");
+			resourceAssembly = Assembly.GetCallingAssembly();
+			Profile.FrameEnd();
+
+			Profile.FrameBegin();
+			SetupInit(activity, resourceAssembly, null);
+			Profile.FrameEnd();
 		}
 
 		public static void Init(Context activity, Bundle bundle, Assembly resourceAssembly)
 		{
-			SetupInit(activity, resourceAssembly);
+			Profile.FrameBegin();
+			SetupInit(activity, resourceAssembly, null);
+			Profile.FrameEnd();
+		}
+
+		public static void Initialize(ActivationOptions activation)
+		{
+			Profile.FrameBegin();
+			SetupInit(
+				activation.Activity,
+				activation.ResourceAssembly,
+				activation
+			);
+			Profile.FrameEnd();
 		}
 
 		/// <summary>
@@ -156,8 +200,13 @@ namespace Xamarin.Forms
 				viewInitialized(self, new ViewInitializedEventArgs { View = self, NativeView = nativeView });
 		}
 
-		static void SetupInit(Context activity, Assembly resourceAssembly)
+		static void SetupInit(
+			Context activity,
+			Assembly resourceAssembly,
+			ActivationOptions? maybeOptions = null
+		)
 		{
+			Profile.FrameBegin();
 			if (!IsInitialized)
 			{
 				// Only need to get this once; it won't change
@@ -171,9 +220,11 @@ namespace Xamarin.Forms
 			if (!IsInitialized)
 			{
 				// Only need to do this once
+				Profile.FramePartition("ResourceManager.Init");
 				ResourceManager.Init(resourceAssembly);
 			}
 
+			Profile.FramePartition("Color.SetAccent()");
 			// We want this to be updated when we have a new activity (e.g. on a configuration change)
 			// This could change if the UI mode changes (e.g., if night mode is enabled)
 			Color.SetAccent(GetAccentColor(activity));
@@ -182,11 +233,13 @@ namespace Xamarin.Forms
 			if (!IsInitialized)
 			{
 				// Only need to do this once
+				Profile.FramePartition("Log.Listeners");
 				Internals.Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
 			}
 
 			// We want this to be updated when we have a new activity (e.g. on a configuration change)
 			// because AndroidPlatformServices needs a current activity to launch URIs from
+			Profile.FramePartition("Device.PlatformServices");
 			Device.PlatformServices = new AndroidPlatformServices(activity);
 
 			// use field and not property to avoid exception in getter
@@ -198,20 +251,58 @@ namespace Xamarin.Forms
 
 			// We want this to be updated when we have a new activity (e.g. on a configuration change)
 			// because Device.Info watches for orientation changes and we need a current activity for that
+			Profile.FramePartition("new AndroidDeviceInfo(activity)");
 			Device.Info = new AndroidDeviceInfo(activity);
 			Device.SetFlags(s_flags);
+
+			Profile.FramePartition("AndroidTicker");
 
 			var ticker = Ticker.Default as AndroidTicker;
 			if (ticker != null)
 				ticker.Dispose();
 			Ticker.SetDefault(new AndroidTicker());
 
+			Profile.FramePartition("RegisterAll");
+
 			if (!IsInitialized)
 			{
-				// Only need to do this once
-				Registrar.RegisterAll(new[] { typeof(ExportRendererAttribute), typeof(ExportCellAttribute), typeof(ExportImageSourceHandlerAttribute) });
+				if (maybeOptions.HasValue)
+				{
+					var options = maybeOptions.Value;
+					var handlers = options.Handlers;
+					var flags = options.Flags;
+					var effectScopes = options.EffectScopes;
+
+					// renderers
+					Registrar.RegisterRenderers(handlers);
+
+					// effects
+					if (effectScopes != null)
+					{
+						for (var i = 0; i < effectScopes.Length; i++)
+						{
+							var effectScope = effectScopes[0];
+							Registrar.RegisterEffects(effectScope.Name, effectScope.Effects);
+						}
+					}
+
+					// css
+					var noCss = (flags & ActivationFlags.NoCss) != 0;
+					if (!noCss)
+						Registrar.RegisterStylesheets();
+				}
+				else
+				{
+					// Only need to do this once
+					Registrar.RegisterAll(new[] {
+						typeof(ExportRendererAttribute),
+						typeof(ExportCellAttribute),
+						typeof(ExportImageSourceHandlerAttribute)
+					});
+				}
 			}
 
+			Profile.FramePartition("Epilog");
 			// This could change as a result of a config change, so we need to check it every time
 			int minWidthDp = activity.Resources.Configuration.SmallestScreenWidthDp;
 			Device.SetIdiom(minWidthDp >= TabletCrossover ? TargetIdiom.Tablet : TargetIdiom.Phone);
@@ -223,6 +314,7 @@ namespace Xamarin.Forms
 				ExpressionSearch.Default = new AndroidExpressionSearch();
 
 			IsInitialized = true;
+			Profile.FrameEnd();
 		}
 
 		static IReadOnlyList<string> s_flags;
