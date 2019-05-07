@@ -132,7 +132,7 @@ namespace Xamarin.Forms.Xaml
 				}
 				catch (Exception e)
 				{
-					exception = e as XamlParseException ?? new XamlParseException("Type converter failed", serviceProvider, e);
+					exception = e as XamlParseException ?? new XamlParseException($"Type converter failed: {e.Message}", serviceProvider, e);
 					return null;
 				}
 				var converterType = converter?.GetType();
