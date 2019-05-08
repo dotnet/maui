@@ -478,5 +478,46 @@ namespace Xamarin.Forms.Core.UnitTests
 			shell.SetValue(Shell.FlyoutHeaderProperty, new ContentView());
 			Assert.AreEqual(null, flyoutView.BindingContext);
 		}
+
+
+		[Test]
+		public async Task TabBarAutoCreation()
+		{
+			Shell shell = new Shell();
+			shell.Items.Add(ShellItem.CreateFromShellSection(new Tab()));
+			shell.Items.Add(ShellItem.CreateFromShellSection(new Tab()));
+			shell.Items.Add(ShellItem.CreateFromShellSection(new Tab()));
+
+			Assert.AreEqual(1, shell.Items.Count);
+			Assert.AreEqual(3, shell.Items[0].Items.Count);
+
+			Assert.AreEqual(FlyoutBehavior.Disabled, Shell.GetFlyoutBehavior(shell.Items[0]));
+
+
+			shell = new Shell();
+			shell.Items.Add(new TabBar());
+			shell.Items.Add(ShellItem.CreateFromShellSection(new Tab()));
+			shell.Items.Add(ShellItem.CreateFromShellSection(new Tab()));
+			shell.Items.Add(ShellItem.CreateFromShellSection(new Tab()));
+
+			Assert.AreEqual(2, shell.Items.Count);
+			Assert.AreEqual(0, shell.Items[0].Items.Count);
+			Assert.AreEqual(3, shell.Items[1].Items.Count);
+
+
+			shell = new Shell();
+			shell.Items.Add(ShellItem.CreateFromShellSection(new Tab()));
+			shell.Items.Add(ShellItem.CreateFromShellSection(new Tab()));
+			shell.Items.Add(ShellItem.CreateFromShellSection(new Tab()));
+			shell.Items.Add(new TabBar());
+			shell.Items.Add(ShellItem.CreateFromShellSection(new Tab()));
+			shell.Items.Add(ShellItem.CreateFromShellSection(new Tab()));
+			shell.Items.Add(ShellItem.CreateFromShellSection(new Tab()));
+
+			Assert.AreEqual(3, shell.Items.Count);
+			Assert.AreEqual(3, shell.Items[0].Items.Count);
+			Assert.AreEqual(0, shell.Items[1].Items.Count);
+			Assert.AreEqual(3, shell.Items[0].Items.Count);
+		}
 	}
 }

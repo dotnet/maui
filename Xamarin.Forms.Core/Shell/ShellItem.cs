@@ -11,8 +11,25 @@ namespace Xamarin.Forms
 	[EditorBrowsable(EditorBrowsableState.Always)]
 	public class FlyoutItem : ShellItem
 	{
+		public FlyoutItem()
+		{
+			Shell.SetFlyoutBehavior(this, FlyoutBehavior.Flyout);
+		}
+
 		public ShellSectionCollection Tabs => Items;
 	}
+
+	[EditorBrowsable(EditorBrowsableState.Always)]
+	public class TabBar : ShellItem
+	{
+		public TabBar()
+		{
+			Shell.SetFlyoutBehavior(this, FlyoutBehavior.Disabled);
+		}
+
+		public ShellSectionCollection Tabs => Items;
+	}
+
 
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
@@ -109,7 +126,12 @@ namespace Xamarin.Forms
 
 		internal static ShellItem CreateFromShellSection(ShellSection shellSection)
 		{
-			var result = new ShellItem();
+			ShellItem result = null;
+
+			if (shellSection is Tab)
+				result = new TabBar();
+			else
+				result = new ShellItem();
 
 			result.Route = Routing.GenerateImplicitRoute(shellSection.Route);
 

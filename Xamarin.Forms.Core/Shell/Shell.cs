@@ -747,7 +747,8 @@ namespace Xamarin.Forms
 						}
 						else
 						{
-							currentGroup.Add(shellSection);
+							if(!(shellSection.Parent is TabBar))
+								currentGroup.Add(shellSection);
 
 							// If we have only a single child we will also show the items menu items
 							if (shellSection.Items.Count == 1 && shellSection == shellItem.CurrentItem)
@@ -760,7 +761,8 @@ namespace Xamarin.Forms
 				}
 				else
 				{
-					currentGroup.Add(shellItem);
+					if (!(shellItem is TabBar))
+						currentGroup.Add(shellItem);
 				}
 			}
 
