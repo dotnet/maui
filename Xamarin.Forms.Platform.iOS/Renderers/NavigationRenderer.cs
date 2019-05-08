@@ -587,6 +587,7 @@ namespace Xamarin.Forms.Platform.iOS
 				_removeControllers = _removeControllers.Remove(target);
 				ViewControllers = _removeControllers;
 			}
+			target.Dispose();
 			var parentingViewController = ViewControllers.Last() as ParentingViewController;
 			parentingViewController?.UpdateLeftBarButtonItem(page);
 		}
