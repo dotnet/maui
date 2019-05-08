@@ -77,12 +77,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 
 		public void TestReset()
 		{
-			var random = new Random();
-			var randomized = GetRange(0, Count).Select(item => new { Item = item, Index = random.Next(100000) })
-				.OrderBy(x => x.Index).Select(x => x.Item).ToList();
-
 			RemoveRange(0, Count);
-			InsertRange(0, randomized);
 
 			var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
 			OnNotifyCollectionChanged(this, args);
