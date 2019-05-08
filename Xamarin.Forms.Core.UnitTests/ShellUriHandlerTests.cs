@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		public async Task RouteWithGlobalPageRoute()
 		{
 
-			var shell = new Shell() { RouteScheme = "app", Route= "xaminals", RouteHost = "thehost" };
+			var shell = new Shell();
 			var item1 = CreateShellItem(asImplicit: true, shellItemRoute: "animals", shellSectionRoute: "domestic", shellContentRoute: "dogs");
 			var item2 = CreateShellItem(asImplicit: true, shellItemRoute: "animals", shellSectionRoute: "domestic", shellContentRoute: "cats");
 
@@ -30,14 +30,14 @@ namespace Xamarin.Forms.Core.UnitTests
 			Routing.RegisterRoute("catdetails", typeof(ContentPage));
 			await shell.GoToAsync("//cats/catdetails?name=3");
 
-			Assert.AreEqual("app://thehost/xaminals/animals/domestic/cats/catdetails", shell.CurrentState.Location.ToString());
+			Assert.AreEqual("//animals/domestic/cats/catdetails", shell.CurrentState.Location.ToString());
 		}
 
 		[Test]
 		public async Task AbsoluteRoutingToPage()
 		{
 
-			var shell = new Shell() { RouteScheme = "app", Route = "xaminals", RouteHost = "thehost" };
+			var shell = new Shell();
 			var item1 = CreateShellItem(asImplicit: true, shellItemRoute: "animals", shellSectionRoute: "domestic", shellContentRoute: "dogs");
 			shell.Items.Add(item1);
 
@@ -51,12 +51,12 @@ namespace Xamarin.Forms.Core.UnitTests
 		public async Task LocationRemovesImplicit()
 		{
 
-			var shell = new Shell() { RouteScheme = "app" };
+			var shell = new Shell();
 			var item1 = CreateShellItem(asImplicit: true, shellContentRoute: "rootlevelcontent1");
 
 			shell.Items.Add(item1);
 
-			Assert.AreEqual("app:///rootlevelcontent1", shell.CurrentState.Location.ToString());
+			Assert.AreEqual("//rootlevelcontent1", shell.CurrentState.Location.ToString());
 		}
 
 
@@ -74,20 +74,20 @@ namespace Xamarin.Forms.Core.UnitTests
 			await shell.GoToAsync("cat");
 			await shell.GoToAsync("details");
 
-			Assert.AreEqual("app:///rootlevelcontent1/cat/details", shell.CurrentState.Location.ToString());
+			Assert.AreEqual("//rootlevelcontent1/cat/details", shell.CurrentState.Location.ToString());
 			await shell.GoToAsync("//rootlevelcontent1/details");
-			Assert.AreEqual("app:///rootlevelcontent1/details", shell.CurrentState.Location.ToString());
+			Assert.AreEqual("//rootlevelcontent1/details", shell.CurrentState.Location.ToString());
 		}
 
 
 		[Test]
 		public async Task GlobalRegisterAbsoluteMatching()	
 		{
-			var shell = new Shell() { RouteScheme = "app", Route = "shellroute" };
-			Routing.RegisterRoute("/seg1/seg2/seg3", typeof(object));
+			var shell = new Shell();
+			Routing.RegisterRoute("/seg1/seg2/seg3", typeof(object));			
 			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri("/seg1/seg2/seg3"));
 
-			Assert.AreEqual("app:///shellroute/seg1/seg2/seg3", request.Request.FullUri.ToString());
+			Assert.AreEqual("app://shell/IMPL_shell/seg1/seg2/seg3", request.Request.FullUri.ToString());
 		}
 
 		[Test]
@@ -279,7 +279,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public async Task AbsoluteNavigationToRelativeWithGlobal()
 		{
-			var shell = new Shell() { RouteScheme = "app", RouteHost = "xamarin.com", Route = "xaminals" };
+			var shell = new Shell();
 
 			var item1 = CreateShellItem(asImplicit: true, shellContentRoute: "dogs");
 			var item2 = CreateShellItem(asImplicit: true, shellSectionRoute: "domestic", shellContentRoute: "cats", shellItemRoute: "animals");
@@ -288,10 +288,10 @@ namespace Xamarin.Forms.Core.UnitTests
 			shell.Items.Add(item2);
 
 			Routing.RegisterRoute("catdetails", typeof(ContentPage));
-			await shell.GoToAsync($"app://xamarin.com/xaminals/animals/domestic/cats/catdetails?name=domestic");
+			await shell.GoToAsync($"//animals/domestic/cats/catdetails?name=domestic");
 
 			Assert.AreEqual(
-				"app://xamarin.com/xaminals/animals/domestic/cats/catdetails",
+				"//animals/domestic/cats/catdetails",
 				shell.CurrentState.FullLocation.ToString()
 				);
 		}
@@ -299,7 +299,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public async Task RelativeNavigationWithRoute()
 		{
-			var shell = new Shell() { RouteScheme = "app", RouteHost = "xamarin.com", Route = "xaminals" };
+			var shell = new Shell();
 
 			var item1 = CreateShellItem(asImplicit: true, shellContentRoute: "dogs");
 			var item2 = CreateShellItem(asImplicit: true, shellSectionRoute: "domestic", shellContentRoute: "cats", shellItemRoute: "animals");
@@ -313,7 +313,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			// once relative routing with a stack is fixed then we can remove the above exception check and add below back in
 			// await shell.GoToAsync($"cats/catdetails?name=domestic")
 			//Assert.AreEqual(
-			//	"app://xamarin.com/xaminals/animals/domestic/cats/catdetails",
+			//	"//animals/domestic/cats/catdetails",
 			//	shell.CurrentState.Location.ToString()
 			//	);
 
@@ -323,41 +323,39 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public async Task ConvertToStandardFormat()
 		{
-			var shell = new Shell() { RouteScheme = "app", Route = "shellroute", RouteHost = "host" };
+			var shell = new Shell();
 
 			Uri[] TestUris = new Uri[] {
 				CreateUri("path"),
 				CreateUri("//path"),
 				CreateUri("/path"),
-				CreateUri("host/path"),
-				CreateUri("//host/path"),
-				CreateUri("/host/path"),
-				CreateUri("shellroute/path"),
-				CreateUri("//shellroute/path"),
-				CreateUri("/shellroute/path"),
-				CreateUri("host/shellroute/path"),
-				CreateUri("//host/shellroute/path"),
-				CreateUri("/host/shellroute/path"),
+				CreateUri("shell/path"),
+				CreateUri("//shell/path"),
+				CreateUri("/shell/path"),
+				CreateUri("IMPL_shell/path"),
+				CreateUri("//IMPL_shell/path"),
+				CreateUri("/IMPL_shell/path"),
+				CreateUri("shell/IMPL_shell/path"),
+				CreateUri("//shell/IMPL_shell/path"),
+				CreateUri("/shell/IMPL_shell/path"),
 				CreateUri("app://path"),
 				CreateUri("app:/path"),
-				CreateUri("app://host/path"),
-				CreateUri("app:/host/path"),
-				CreateUri("app://shellroute/path"),
-				CreateUri("app:/shellroute/path"),
-				CreateUri("app://host/shellroute/path"),
-				CreateUri("app:/host/shellroute/path"),
-				CreateUri("app:/host/shellroute\\path")
+				CreateUri("app://shell/path"),
+				CreateUri("app:/shell/path"),
+				CreateUri("app://shell/IMPL_shell/path"),
+				CreateUri("app:/shell/IMPL_shell/path"),
+				CreateUri("app:/shell/IMPL_shell\\path")
 			};
 
 
 			foreach(var uri in TestUris)
 			{
-				Assert.AreEqual(new Uri("app://host/shellroute/path"), ShellUriHandler.ConvertToStandardFormat(shell, uri));
+				Assert.AreEqual(new Uri("app://shell/IMPL_shell/path"), ShellUriHandler.ConvertToStandardFormat(shell, uri), $"{uri}");
 
 				if(!uri.IsAbsoluteUri)
 				{
 					var reverse = new Uri(uri.OriginalString.Replace("/", "\\"), UriKind.Relative);
-					Assert.AreEqual(new Uri("app://host/shellroute/path"), ShellUriHandler.ConvertToStandardFormat(shell, reverse));
+					Assert.AreEqual(new Uri("app://shell/IMPL_shell/path"), ShellUriHandler.ConvertToStandardFormat(shell, reverse));
 				}
 				
 			}

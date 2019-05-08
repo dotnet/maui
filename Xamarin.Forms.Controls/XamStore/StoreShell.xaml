@@ -3,9 +3,6 @@
 			xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			xmlns:local="clr-namespace:Xamarin.Forms.Controls.XamStore"
 			xmlns:localTest="clr-namespace:Xamarin.Forms.Controls"
-			Route="xamstore"
-			RouteHost="www.xamarin.com"
-			RouteScheme="http"
 			x:Class="Xamarin.Forms.Controls.XamStore.StoreShell">
 	<Shell.Resources>
 		<Style x:Key="BaseStyle" TargetType="Element">

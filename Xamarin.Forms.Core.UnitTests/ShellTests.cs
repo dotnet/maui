@@ -75,7 +75,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void SimpleGoTo()
 		{
 			var shell = new Shell();
-			shell.Route = "s";
 
 			var one = new ShellItem { Route = "one" };
 			var two = new ShellItem { Route = "two" };
@@ -94,11 +93,11 @@ namespace Xamarin.Forms.Core.UnitTests
 			shell.Items.Add(one);
 			shell.Items.Add(two);
 
-			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("app:///s/one/tabone/content"));
+			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("//one/tabone/content"));
 
-			shell.GoToAsync(new ShellNavigationState("app:///s/two/tabfour/"));
+			shell.GoToAsync(new ShellNavigationState("//two/tabfour/"));
 
-			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("app:///s/two/tabfour/content"));
+			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("//two/tabfour/content"));
 		}
 
 		[Test]
@@ -137,7 +136,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var shell = new Shell
 			{
-				Route = "s"
 			};
 
 			var one = new ShellItem { Route = "one" };
@@ -159,16 +157,16 @@ namespace Xamarin.Forms.Core.UnitTests
 			shell.Items.Add(one);
 			shell.Items.Add(two);
 
-			await shell.GoToAsync("app:///s/two/tab21/");
+			await shell.GoToAsync("//two/tab21/");
 
 			await shell.GoToAsync("/tab22", false, true);
-			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("app:///s/two/tab22/content"));
+			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("//two/tab22/content"));
 
 			await shell.GoToAsync("tab21", false, true);
-			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("app:///s/two/tab21/content"));
+			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("//two/tab21/content"));
 
 			await shell.GoToAsync("/tab23", false, true);
-			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("app:///s/two/tab23/content"));
+			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("//two/tab23/content"));
 
 			/*
 			 * removing support for .. notation for now
@@ -194,7 +192,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public async Task NavigationWithQueryStringWhenPageMatchesBindingContext()
 		{
 			var shell = new Shell();
-			shell.Route = "s";
 
 			var one = new ShellItem { Route = "one" };
 			var two = new ShellItem { Route = "two" };
@@ -209,7 +206,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			shell.Items.Add(two);
 
 			ShellTestPage pagetoTest = new ShellTestPage();
-			await shell.GoToAsync(new ShellNavigationState($"app:///s/two/tabfour/content?{nameof(ShellTestPage.SomeQueryParameter)}=1234"));
+			await shell.GoToAsync(new ShellNavigationState($"//two/tabfour/content?{nameof(ShellTestPage.SomeQueryParameter)}=1234"));
 			two.CurrentItem.CurrentItem.ContentTemplate = new DataTemplate(() =>
 			{
 				pagetoTest = new ShellTestPage();
@@ -228,7 +225,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public async Task NavigationWithQueryStringAndNoDataTemplate()
 		{
 			var shell = new Shell();
-			shell.Route = "s";
 
 			var one = new ShellItem { Route = "one" };
 			var two = new ShellItem { Route = "two" };
@@ -242,7 +238,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			shell.Items.Add(one);
 			shell.Items.Add(two);
 
-			await shell.GoToAsync(new ShellNavigationState($"app:///s/two/tabfour/content?{nameof(ShellTestPage.SomeQueryParameter)}=1234"));
+			await shell.GoToAsync(new ShellNavigationState($"//two/tabfour/content?{nameof(ShellTestPage.SomeQueryParameter)}=1234"));
 			Assert.AreEqual("1234", (two.CurrentItem.CurrentItem.Content as ShellTestPage).SomeQueryParameter);
 
 		}
@@ -251,7 +247,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void CancelNavigation()
 		{
 			var shell = new Shell();
-			shell.Route = "s";
 
 			var one = new ShellItem { Route = "one" };
 			var two = new ShellItem { Route = "two" };
@@ -270,16 +265,16 @@ namespace Xamarin.Forms.Core.UnitTests
 			shell.Items.Add(one);
 			shell.Items.Add(two);
 
-			Assume.That(shell.CurrentState.Location.ToString(), Is.EqualTo("app:///s/one/tabone/content/"));
+			Assume.That(shell.CurrentState.Location.ToString(), Is.EqualTo("//one/tabone/content"));
 
 			shell.Navigating += (s, e) =>
 			{
 				e.Cancel();
 			};
 
-			shell.GoToAsync(new ShellNavigationState("app:///s/two/tabfour/"));
+			shell.GoToAsync(new ShellNavigationState("//two/tabfour/"));
 
-			Assume.That(shell.CurrentState.Location.ToString(), Is.EqualTo("app:///s/one/tabone/content/"));
+			Assume.That(shell.CurrentState.Location.ToString(), Is.EqualTo("//one/tabone/content"));
 		}
 
 		[Test]

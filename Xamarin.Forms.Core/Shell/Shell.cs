@@ -491,7 +491,7 @@ namespace Xamarin.Forms
 
 		ShellNavigationState GetNavigationState(ShellItem shellItem, ShellSection shellSection, ShellContent shellContent, IReadOnlyList<Page> sectionStack)
 		{
-			StringBuilder stateBuilder = new StringBuilder($"{RouteScheme}://{RouteHost}/{Route}/");
+			StringBuilder stateBuilder = new StringBuilder($"//");
 			Dictionary<string, string> queryData = new Dictionary<string, string>();
 
 			bool stackAtRoot = sectionStack == null || sectionStack.Count <= 1;
@@ -666,15 +666,15 @@ namespace Xamarin.Forms
 			set => SetValue(MenuItemTemplateProperty, value);
 		}
 
-		public string Route
+		internal string Route
 		{
 			get => Routing.GetRoute(this);
 			set => Routing.SetRoute(this, value);
 		}
 
-		public string RouteHost { get; set; }
+		internal string RouteHost { get; set; } = "shell";
 
-		public string RouteScheme { get; set; } = "app";
+		internal string RouteScheme { get; set; } = "app";
 
 		View FlyoutHeaderView
 		{
