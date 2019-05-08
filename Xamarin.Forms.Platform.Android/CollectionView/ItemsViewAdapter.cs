@@ -8,10 +8,11 @@ using ViewGroup = Android.Views.ViewGroup;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	// TODO hartez 2018/07/25 14:43:04 Experiment with an ItemSource property change as _adapter.notifyDataSetChanged	
-
 	public class ItemsViewAdapter : RecyclerView.Adapter
 	{
+		const int TextView = 41;
+		const int TemplatedView = 42;
+
 		protected readonly ItemsView ItemsView;
 		readonly Func<View, Context, ItemContentView> _createItemContentView;
 		internal readonly IItemsViewSource ItemsSource;
@@ -58,29 +59,29 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			var context = parent.Context;
 
-			// Does the ItemsView have a DataTemplate?
-			var template = ItemsView.ItemTemplate;
-			if (template == null)
+			if(viewType == TextView)
 			{
-				// No template, just use the ToString view
 				var view = new TextView(context);
 				return new TextViewHolder(view);
 			}
 
 			var itemContentView = new ItemContentView(parent.Context);
-			return new TemplatedItemViewHolder(itemContentView, template);
+			return new TemplatedItemViewHolder(itemContentView, ItemsView.ItemTemplate);
 		}
 
 		public override int ItemCount => ItemsSource.Count;
 
 		public override int GetItemViewType(int position)
 		{
-			// TODO hartez We might be able to turn this to our own purposes
-			// We might be able to have the CollectionView signal the adapter if the ItemTemplate property changes
-			// And as long as it's null, we return a value to that effect here
-			// Then we don't have to check _itemsView.ItemTemplate == null in OnCreateViewHolder, we can just use
-			// the viewType parameter.
-			return 42;
+			// Does the ItemsView have a DataTemplate?
+			// TODO ezhart We could probably cache this instead of having to GetValue every time
+			if (ItemsView.ItemTemplate == null)
+			{
+				// No template, just use the Text view
+				return TextView;
+			}
+
+			return TemplatedView;
 		}
 
 		protected override void Dispose(bool disposing)

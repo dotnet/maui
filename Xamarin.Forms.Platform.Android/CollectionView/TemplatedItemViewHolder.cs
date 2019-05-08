@@ -7,6 +7,7 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		readonly ItemContentView _itemContentView;
 		readonly DataTemplate _template;
+		DataTemplate _selectedTemplate;
 
 		public View View { get; private set; }
 
@@ -34,15 +35,19 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			View.BindingContext = null;
 			itemsView.RemoveLogicalChild(View);
-			_itemContentView.Recycle();
 		}
 
 		public void Bind(object itemBindingContext, ItemsView itemsView)
 		{
 			var template = _template.SelectDataTemplate(itemBindingContext, itemsView);
 
-			View = (View)template.CreateContent();
-			_itemContentView.RealizeContent(View);
+			if(template != _selectedTemplate)
+			{
+				_itemContentView.Recycle();
+				View = (View)template.CreateContent();
+				_itemContentView.RealizeContent(View);
+				_selectedTemplate = template;
+			}
 
 			// Set the binding context before we add it as a child of the ItemsView; otherwise, it will
 			// inherit the ItemsView's binding context
