@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Controls.Issues
 			Title = "Test";
 			BackgroundColor = Color.Pink;
 			Content = new Label { Text = "Hello", AutomationId ="lblHello" };
-			NavigationPage.SetTitleIcon(this, "bank.png");
+			NavigationPage.SetTitleIconImageSource(this, "bank.png");
 		}
 
 #if UITEST

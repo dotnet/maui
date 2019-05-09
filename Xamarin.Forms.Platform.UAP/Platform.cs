@@ -410,7 +410,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 				var button = new AppBarButton();
 				button.SetBinding(AppBarButton.LabelProperty, "Text");
-				button.SetBinding(AppBarButton.IconProperty, "Icon", _imageSourceIconElementConverter);
+				button.SetBinding(AppBarButton.IconProperty, "IconImageSource", _imageSourceIconElementConverter);
 				button.Command = new MenuItemCommand(item);
 				button.DataContext = item;
 				button.SetValue(NativeAutomationProperties.AutomationIdProperty, item.AutomationId);

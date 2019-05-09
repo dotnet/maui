@@ -64,7 +64,7 @@ namespace Xamarin.Forms
 
 		[Obsolete("BackgroundImage is obsolete as of 4.0.0. Please use BackgroundImageSource instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public FileImageSource BackgroundImage
+		public string BackgroundImage
 		{
 			get { return GetValue(BackgroundImageProperty) as FileImageSource; }
 			set { SetValue(BackgroundImageProperty, value); }

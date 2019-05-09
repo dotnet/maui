@@ -1037,7 +1037,7 @@ namespace Xamarin.Forms.Platform.iOS
 					UpdatePrefersStatusBarHidden();
 				else if (e.PropertyName == LargeTitleDisplayProperty.PropertyName)
 					UpdateLargeTitles();
-				else if (e.PropertyName == NavigationPage.TitleIconProperty.PropertyName ||
+				else if (e.PropertyName == NavigationPage.TitleIconImageSourceProperty.PropertyName ||
 					 e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
 					UpdateTitleArea(Child);
 			}
@@ -1066,7 +1066,7 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 
-			public bool NeedsTitleViewContainer(Page page) => NavigationPage.GetTitleIcon(page) != null || NavigationPage.GetTitleView(page) != null;
+			public bool NeedsTitleViewContainer(Page page) => NavigationPage.GetTitleIconImageSource(page) != null || NavigationPage.GetTitleView(page) != null;
 
 			internal void UpdateBackButtonTitle(Page page) => UpdateBackButtonTitle(page.Title, NavigationPage.GetBackButtonTitle(page));
 
@@ -1087,7 +1087,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (page == null)
 					return;
 
-				ImageSource titleIcon = NavigationPage.GetTitleIcon(page);
+				ImageSource titleIcon = NavigationPage.GetTitleIconImageSource(page);
 				View titleView = NavigationPage.GetTitleView(page);
 				bool needContainer = titleView != null || titleIcon != null;
 

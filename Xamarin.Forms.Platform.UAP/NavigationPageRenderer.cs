@@ -344,7 +344,7 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateTitleVisible();
 			else if (e.PropertyName == Page.TitleProperty.PropertyName)
 				UpdateTitleOnParents();
-			else if (e.PropertyName == NavigationPage.TitleIconProperty.PropertyName)
+			else if (e.PropertyName == NavigationPage.TitleIconImageSourceProperty.PropertyName)
 				UpdateTitleIcon();
 			else if (e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
 				UpdateTitleView();
@@ -368,7 +368,7 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateToolbarPlacement();
 			else if (e.PropertyName == ToolbarDynamicOverflowEnabledProperty.PropertyName)
 				UpdateToolbarDynamicOverflowEnabled();
-			else if (e.PropertyName == NavigationPage.TitleIconProperty.PropertyName)
+			else if (e.PropertyName == NavigationPage.TitleIconImageSourceProperty.PropertyName)
 				UpdateTitleIcon();
 			else if (e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
 				UpdateTitleView();
@@ -539,7 +539,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (_currentPage == null)
 				return;
 
-			ImageSource source = NavigationPage.GetTitleIcon(_currentPage);
+			ImageSource source = NavigationPage.GetTitleIconImageSource(_currentPage);
 
 			_titleIcon = await source.ToWindowsImageSourceAsync();
 

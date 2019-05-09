@@ -26,7 +26,11 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty BarTextColorProperty = BarElement.BarTextColorProperty;
 
-		public static readonly BindableProperty TitleIconProperty = BindableProperty.CreateAttached("TitleIcon", typeof(ImageSource), typeof(NavigationPage), default(ImageSource));
+		public static readonly BindableProperty TitleIconImageSourceProperty = BindableProperty.CreateAttached("TitleIconImageSource", typeof(ImageSource), typeof(NavigationPage), default(ImageSource));
+
+		[Obsolete("TitleIconProperty is obsolete as of 4.0.0. Please use TitleIconImageSourceProperty instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static readonly BindableProperty TitleIconProperty = TitleIconImageSourceProperty;
 
 		public static readonly BindableProperty TitleViewProperty = BindableProperty.CreateAttached("TitleView", typeof(View), typeof(NavigationPage), null, propertyChanging: TitleViewPropertyChanging);
 
@@ -138,9 +142,16 @@ namespace Xamarin.Forms
 			return (bool)page.GetValue(HasNavigationBarProperty);
 		}
 
-		public static ImageSource GetTitleIcon(BindableObject bindable)
+		[Obsolete("GetTitleIcon is obsolete as of 4.0.0. Please use GetTitleIconImageSource instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static FileImageSource GetTitleIcon(BindableObject bindable)
 		{
-			return (ImageSource)bindable.GetValue(TitleIconProperty);
+			return bindable.GetValue(TitleIconImageSourceProperty) as FileImageSource;
+		}
+
+		public static ImageSource GetTitleIconImageSource(BindableObject bindable)
+		{
+			return (ImageSource)bindable.GetValue(TitleIconImageSourceProperty);
 		}
 
 		public static View GetTitleView(BindableObject bindable)
@@ -250,9 +261,16 @@ namespace Xamarin.Forms
 			page.SetValue(HasNavigationBarProperty, value);
 		}
 
-		public static void SetTitleIcon(BindableObject bindable, ImageSource value)
+		[Obsolete("SetTitleIcon is obsolete as of 4.0.0. Please use SetTitleIconImageSource instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void SetTitleIcon(BindableObject bindable, FileImageSource value)
 		{
-			bindable.SetValue(TitleIconProperty, value);
+			bindable.SetValue(TitleIconImageSourceProperty, value);
+		}
+
+		public static void SetTitleIconImageSource(BindableObject bindable, ImageSource value)
+		{
+			bindable.SetValue(TitleIconImageSourceProperty, value);
 		}
 
 		public static void SetTitleView(BindableObject bindable, View value)

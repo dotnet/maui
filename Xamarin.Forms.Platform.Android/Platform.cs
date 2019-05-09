@@ -1077,12 +1077,12 @@ namespace Xamarin.Forms.Platform.Android
 			if (ShouldShowActionBarTitleArea())
 			{
 				actionBar.Title = view.Title;
-				_ = _context.ApplyDrawableAsync(view, NavigationPage.TitleIconProperty, icon =>
+				_ = _context.ApplyDrawableAsync(view, NavigationPage.TitleIconImageSourceProperty, icon =>
 				{
 					if (icon != null)
 						actionBar.SetLogo(icon);
 				});
-				var titleIcon = NavigationPage.GetTitleIcon(view);
+				var titleIcon = NavigationPage.GetTitleIconImageSource(view);
 				useLogo = titleIcon != null && titleIcon.IsEmpty;
 				showHome = true;
 				showTitle = true;

@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Controls.Issues
         {
             ContentPage contentPage = new ContentPage();
 
-            NavigationPage.SetTitleIcon(contentPage, "coffee.png");
+            NavigationPage.SetTitleIconImageSource(contentPage, "coffee.png");
 
             PushAsync(contentPage);
         }
