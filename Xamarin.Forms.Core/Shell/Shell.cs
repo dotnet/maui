@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
 
@@ -83,77 +78,77 @@ namespace Xamarin.Forms
 			}
 		}
 
-		public static readonly BindableProperty ShellBackgroundColorProperty =
-			BindableProperty.CreateAttached("ShellBackgroundColor", typeof(Color), typeof(Shell), Color.Default,
-				propertyChanged: OnShellColorValueChanged);
+		public static readonly new BindableProperty BackgroundColorProperty =
+			BindableProperty.CreateAttached("BackgroundColor", typeof(Color), typeof(Shell), Color.Default,
+				propertyChanged: OnColorValueChanged);
 
-		public static readonly BindableProperty ShellDisabledColorProperty =
-			BindableProperty.CreateAttached("ShellDisabledColor", typeof(Color), typeof(Shell), Color.Default,
-				propertyChanged: OnShellColorValueChanged);
+		public static readonly BindableProperty DisabledColorProperty =
+			BindableProperty.CreateAttached("DisabledColor", typeof(Color), typeof(Shell), Color.Default,
+				propertyChanged: OnColorValueChanged);
 
-		public static readonly BindableProperty ShellForegroundColorProperty =
-			BindableProperty.CreateAttached("ShellForegroundColor", typeof(Color), typeof(Shell), Color.Default,
-				propertyChanged: OnShellColorValueChanged);
+		public static readonly BindableProperty ForegroundColorProperty =
+			BindableProperty.CreateAttached("ForegroundColor", typeof(Color), typeof(Shell), Color.Default,
+				propertyChanged: OnColorValueChanged);
 
-		public static readonly BindableProperty ShellTabBarBackgroundColorProperty =
-			BindableProperty.CreateAttached("ShellTabBarBackgroundColor", typeof(Color), typeof(Shell), Color.Default,
-				propertyChanged: OnShellColorValueChanged);
+		public static readonly BindableProperty TabBarBackgroundColorProperty =
+			BindableProperty.CreateAttached("TabBarBackgroundColor", typeof(Color), typeof(Shell), Color.Default,
+				propertyChanged: OnColorValueChanged);
 
-		public static readonly BindableProperty ShellTabBarDisabledColorProperty =
-			BindableProperty.CreateAttached("ShellTabBarDisabledColor", typeof(Color), typeof(Shell), Color.Default,
-				propertyChanged: OnShellColorValueChanged);
+		public static readonly BindableProperty TabBarDisabledColorProperty =
+			BindableProperty.CreateAttached("TabBarDisabledColor", typeof(Color), typeof(Shell), Color.Default,
+				propertyChanged: OnColorValueChanged);
 
-		public static readonly BindableProperty ShellTabBarForegroundColorProperty =
-			BindableProperty.CreateAttached("ShellTabBarForegroundColor", typeof(Color), typeof(Shell), Color.Default,
-				propertyChanged: OnShellColorValueChanged);
+		public static readonly BindableProperty TabBarForegroundColorProperty =
+			BindableProperty.CreateAttached("TabBarForegroundColor", typeof(Color), typeof(Shell), Color.Default,
+				propertyChanged: OnColorValueChanged);
 
-		public static readonly BindableProperty ShellTabBarTitleColorProperty =
-			BindableProperty.CreateAttached("ShellTabBarTitleColor", typeof(Color), typeof(Shell), Color.Default,
-				propertyChanged: OnShellColorValueChanged);
+		public static readonly BindableProperty TabBarTitleColorProperty =
+			BindableProperty.CreateAttached("TabBarTitleColor", typeof(Color), typeof(Shell), Color.Default,
+				propertyChanged: OnColorValueChanged);
 
-		public static readonly BindableProperty ShellTabBarUnselectedColorProperty =
-			BindableProperty.CreateAttached("ShellTabBarUnselectedColor", typeof(Color), typeof(Shell), Color.Default,
-				propertyChanged: OnShellColorValueChanged);
+		public static readonly BindableProperty TabBarUnselectedColorProperty =
+			BindableProperty.CreateAttached("TabBarUnselectedColor", typeof(Color), typeof(Shell), Color.Default,
+				propertyChanged: OnColorValueChanged);
 
-		public static readonly BindableProperty ShellTitleColorProperty =
-			BindableProperty.CreateAttached("ShellTitleColor", typeof(Color), typeof(Shell), Color.Default,
-				propertyChanged: OnShellColorValueChanged);
+		public static readonly BindableProperty TitleColorProperty =
+			BindableProperty.CreateAttached("TitleColor", typeof(Color), typeof(Shell), Color.Default,
+				propertyChanged: OnColorValueChanged);
 
-		public static readonly BindableProperty ShellUnselectedColorProperty =
-			BindableProperty.CreateAttached("ShellUnselectedColor", typeof(Color), typeof(Shell), Color.Default,
-				propertyChanged: OnShellColorValueChanged);
+		public static readonly BindableProperty UnselectedColorProperty =
+			BindableProperty.CreateAttached("UnselectedColor", typeof(Color), typeof(Shell), Color.Default,
+				propertyChanged: OnColorValueChanged);
 
-		public static Color GetShellBackgroundColor(BindableObject obj) => (Color)obj.GetValue(ShellBackgroundColorProperty);
-		public static void SetShellBackgroundColor(BindableObject obj, Color value) => obj.SetValue(ShellBackgroundColorProperty, value);
+		public static Color GetBackgroundColor(BindableObject obj) => (Color)obj.GetValue(BackgroundColorProperty);
+		public static void SetBackgroundColor(BindableObject obj, Color value) => obj.SetValue(BackgroundColorProperty, value);
 
-		public static Color GetShellDisabledColor(BindableObject obj) => (Color)obj.GetValue(ShellDisabledColorProperty);
-		public static void SetShellDisabledColor(BindableObject obj, Color value) => obj.SetValue(ShellDisabledColorProperty, value);
+		public static Color GetDisabledColor(BindableObject obj) => (Color)obj.GetValue(DisabledColorProperty);
+		public static void SetDisabledColor(BindableObject obj, Color value) => obj.SetValue(DisabledColorProperty, value);
 
-		public static Color GetShellForegroundColor(BindableObject obj) => (Color)obj.GetValue(ShellForegroundColorProperty);
-		public static void SetShellForegroundColor(BindableObject obj, Color value) => obj.SetValue(ShellForegroundColorProperty, value);
+		public static Color GetForegroundColor(BindableObject obj) => (Color)obj.GetValue(ForegroundColorProperty);
+		public static void SetForegroundColor(BindableObject obj, Color value) => obj.SetValue(ForegroundColorProperty, value);
 
-		public static Color GetShellTabBarBackgroundColor(BindableObject obj) => (Color)obj.GetValue(ShellTabBarBackgroundColorProperty);
-		public static void SetShellTabBarBackgroundColor(BindableObject obj, Color value) => obj.SetValue(ShellTabBarBackgroundColorProperty, value);
+		public static Color GetTabBarBackgroundColor(BindableObject obj) => (Color)obj.GetValue(TabBarBackgroundColorProperty);
+		public static void SetTabBarBackgroundColor(BindableObject obj, Color value) => obj.SetValue(TabBarBackgroundColorProperty, value);
 
-		public static Color GetShellTabBarDisabledColor(BindableObject obj) => (Color)obj.GetValue(ShellTabBarDisabledColorProperty);
-		public static void SetShellTabBarDisabledColor(BindableObject obj, Color value) => obj.SetValue(ShellTabBarDisabledColorProperty, value);
+		public static Color GetTabBarDisabledColor(BindableObject obj) => (Color)obj.GetValue(TabBarDisabledColorProperty);
+		public static void SetTabBarDisabledColor(BindableObject obj, Color value) => obj.SetValue(TabBarDisabledColorProperty, value);
 
-		public static Color GetShellTabBarForegroundColor(BindableObject obj) => (Color)obj.GetValue(ShellTabBarForegroundColorProperty);
-		public static void SetShellTabBarForegroundColor(BindableObject obj, Color value) => obj.SetValue(ShellTabBarForegroundColorProperty, value);
+		public static Color GetTabBarForegroundColor(BindableObject obj) => (Color)obj.GetValue(TabBarForegroundColorProperty);
+		public static void SetTabBarForegroundColor(BindableObject obj, Color value) => obj.SetValue(TabBarForegroundColorProperty, value);
 
-		public static Color GetShellTabBarTitleColor(BindableObject obj) => (Color)obj.GetValue(ShellTabBarTitleColorProperty);
-		public static void SetShellTabBarTitleColor(BindableObject obj, Color value) => obj.SetValue(ShellTabBarTitleColorProperty, value);
+		public static Color GetTabBarTitleColor(BindableObject obj) => (Color)obj.GetValue(TabBarTitleColorProperty);
+		public static void SetTabBarTitleColor(BindableObject obj, Color value) => obj.SetValue(TabBarTitleColorProperty, value);
 
-		public static Color GetShellTabBarUnselectedColor(BindableObject obj) => (Color)obj.GetValue(ShellTabBarUnselectedColorProperty);
-		public static void SetShellTabBarUnselectedColor(BindableObject obj, Color value) => obj.SetValue(ShellTabBarUnselectedColorProperty, value);
+		public static Color GetTabBarUnselectedColor(BindableObject obj) => (Color)obj.GetValue(TabBarUnselectedColorProperty);
+		public static void SetTabBarUnselectedColor(BindableObject obj, Color value) => obj.SetValue(TabBarUnselectedColorProperty, value);
 
-		public static Color GetShellTitleColor(BindableObject obj) => (Color)obj.GetValue(ShellTitleColorProperty);
-		public static void SetShellTitleColor(BindableObject obj, Color value) => obj.SetValue(ShellTitleColorProperty, value);
+		public static Color GetTitleColor(BindableObject obj) => (Color)obj.GetValue(TitleColorProperty);
+		public static void SetTitleColor(BindableObject obj, Color value) => obj.SetValue(TitleColorProperty, value);
 
-		public static Color GetShellUnselectedColor(BindableObject obj) => (Color)obj.GetValue(ShellUnselectedColorProperty);
-		public static void SetShellUnselectedColor(BindableObject obj, Color value) => obj.SetValue(ShellUnselectedColorProperty, value);
+		public static Color GetUnselectedColor(BindableObject obj) => (Color)obj.GetValue(UnselectedColorProperty);
+		public static void SetUnselectedColor(BindableObject obj, Color value) => obj.SetValue(UnselectedColorProperty, value);
 
-		static void OnShellColorValueChanged(BindableObject bindable, object oldValue, object newValue)
+		static void OnColorValueChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var item = (Element)bindable;
 			var source = item;
@@ -194,7 +189,7 @@ namespace Xamarin.Forms
 		void IShellController.AddAppearanceObserver(IAppearanceObserver observer, Element pivot)
 		{
 			_appearanceObservers.Add((observer, pivot));
-			observer.OnAppearanceChanged(GetShellAppearanceForPivot(pivot));
+			observer.OnAppearanceChanged(GetAppearanceForPivot(pivot));
 		}
 
 		void IShellController.AddFlyoutBehaviorObserver(IFlyoutBehaviorObserver observer)
@@ -242,7 +237,7 @@ namespace Xamarin.Forms
 				{
 					if (leaf == target)
 					{
-						observer.OnAppearanceChanged(GetShellAppearanceForPivot(pivot));
+						observer.OnAppearanceChanged(GetAppearanceForPivot(pivot));
 						break;
 					}
 					leaf = leaf.Parent;
@@ -571,28 +566,12 @@ namespace Xamarin.Forms
 		ShellNavigatedEventArgs _accumulatedEvent;
 		bool _accumulateNavigatedEvents;
 		View _flyoutHeaderView;
-		bool _checkExperimentalFlag = true;
 
-		public Shell() : this(true)
-		{
-		}
-
-		internal Shell(bool checkFlag)
+		public Shell()
 		{
 			Navigation = new NavigationImpl(this);
-			_checkExperimentalFlag = checkFlag;
-			VerifyShellFlagEnabled(constructorHint: nameof(Shell));
 			((INotifyCollectionChanged)Items).CollectionChanged += (s, e) => SendStructureChanged();
 			Route = Routing.GenerateImplicitRoute("shell");
-		}
-
-		internal const string ShellExperimental = ExperimentalFlags.ShellExperimental;
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		internal void VerifyShellFlagEnabled(string constructorHint = null, [CallerMemberName] string memberName = "")
-		{
-			if (_checkExperimentalFlag)
-				ExperimentalFlags.VerifyFlagEnabled("Shell", ShellExperimental, constructorHint, memberName);
 		}
 
 		public event EventHandler<ShellNavigatedEventArgs> Navigated;
@@ -649,8 +628,7 @@ namespace Xamarin.Forms
 			set => SetValue(FlyoutIsPresentedProperty, value);
 		}
 
-		public ShellItemCollection Items => (ShellItemCollection)GetValue(ItemsProperty);
-		public ShellItemCollection Flyout => Items;
+		public IList<ShellItem> Items => (IList<ShellItem>)GetValue(ItemsProperty);
 
 		public DataTemplate ItemTemplate
 		{
@@ -969,7 +947,7 @@ namespace Xamarin.Forms
 			return FlyoutBehavior;
 		}
 
-		ShellAppearance GetShellAppearanceForPivot(Element pivot)
+		ShellAppearance GetAppearanceForPivot(Element pivot)
 		{
 			// this algorithm is pretty simple
 			// 1) Get the "CurrentPage" by walking down from the pivot
@@ -1090,7 +1068,7 @@ namespace Xamarin.Forms
 				PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { FlyoutHeaderView });
 		}
 
-		public class NavigationImpl : NavigationProxy
+		class NavigationImpl : NavigationProxy
 		{
 			readonly Shell _shell;
 

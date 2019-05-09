@@ -28,21 +28,16 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 		[TestFixture] class Tests
 		{
-			IReadOnlyList<string> _flags;
-
 			[SetUp]
 			public void Setup()
 			{
 				Device.PlatformServices = new MockPlatformServices();
-				_flags = Device.Flags;
-				Device.SetFlags(new List<string>() { ExperimentalFlags.ShellExperimental });
 			}
 
 			[TearDown]
 			public void TearDown()
 			{
 				Device.PlatformServices = null;
-				Device.SetFlags(_flags);
 			}
 
 			[Test]

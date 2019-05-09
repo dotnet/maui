@@ -5,7 +5,7 @@ using System.Collections.Specialized;
 
 namespace Xamarin.Forms
 {
-	public sealed class ShellContentCollection : IList<ShellContent>, INotifyCollectionChanged
+	internal sealed class ShellContentCollection : IList<ShellContent>, INotifyCollectionChanged
 	{
 		ObservableCollection<ShellContent> _inner = new ObservableCollection<ShellContent>();
 

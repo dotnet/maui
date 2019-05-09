@@ -574,7 +574,7 @@ namespace Xamarin.Forms.Controls
 		protected virtual bool Isolate => true;
 #endif
 
-		protected TestShell() : base(false)
+		protected TestShell() : base()
 		{
 #if APP
 			Init();

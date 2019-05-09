@@ -532,8 +532,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		[SetUp]
 		public override void Setup()
 		{
-			Device.SetFlags(new List<string> { ExperimentalFlags.ShellExperimental });
-
 			base.Setup();
 			Device.PlatformServices = new MockPlatformServices();
 		}

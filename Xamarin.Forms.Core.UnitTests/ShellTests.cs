@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			NavigationProxy proxy = page.NavigationProxy.Inner as NavigationProxy;
 			Assert.IsNotNull(proxy);
 
-			NavigationProxy shellProxy = proxy.Inner as ShellSection.NavigationImpl;
+			var shellProxy = proxy.Inner;
 			Assert.IsNotNull(shellProxy);
 		}
 

@@ -15,8 +15,6 @@ namespace Xamarin.Forms
 		{
 			Shell.SetFlyoutBehavior(this, FlyoutBehavior.Flyout);
 		}
-
-		public ShellSectionCollection Tabs => Items;
 	}
 
 	[EditorBrowsable(EditorBrowsableState.Always)]
@@ -26,8 +24,6 @@ namespace Xamarin.Forms
 		{
 			Shell.SetFlyoutBehavior(this, FlyoutBehavior.Disabled);
 		}
-
-		public ShellSectionCollection Tabs => Items;
 	}
 
 
@@ -112,7 +108,7 @@ namespace Xamarin.Forms
 			set { SetValue(CurrentItemProperty, value); }
 		}
 
-		public ShellSectionCollection Items => (ShellSectionCollection)GetValue(ItemsProperty);
+		public IList<ShellSection> Items => (IList<ShellSection>)GetValue(ItemsProperty);
 
 		internal override ReadOnlyCollection<Element> LogicalChildrenInternal => _logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(_children));
 

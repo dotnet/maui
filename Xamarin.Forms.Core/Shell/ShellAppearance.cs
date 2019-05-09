@@ -8,16 +8,16 @@ namespace Xamarin.Forms
 	{
 		static readonly BindableProperty[] s_ingestArray = new[]
 		{
-			Shell.ShellBackgroundColorProperty,
-			Shell.ShellDisabledColorProperty,
-			Shell.ShellForegroundColorProperty,
-			Shell.ShellTabBarBackgroundColorProperty,
-			Shell.ShellTabBarDisabledColorProperty,
-			Shell.ShellTabBarForegroundColorProperty,
-			Shell.ShellTabBarTitleColorProperty,
-			Shell.ShellTabBarUnselectedColorProperty,
-			Shell.ShellTitleColorProperty,
-			Shell.ShellUnselectedColorProperty
+			Shell.BackgroundColorProperty,
+			Shell.DisabledColorProperty,
+			Shell.ForegroundColorProperty,
+			Shell.TabBarBackgroundColorProperty,
+			Shell.TabBarDisabledColorProperty,
+			Shell.TabBarForegroundColorProperty,
+			Shell.TabBarTitleColorProperty,
+			Shell.TabBarUnselectedColorProperty,
+			Shell.TitleColorProperty,
+			Shell.UnselectedColorProperty
 		};
 
 		Color?[] _colorArray = new Color?[s_ingestArray.Length];
