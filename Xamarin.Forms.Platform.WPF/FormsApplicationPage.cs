@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Platform.WPF
 			application.PropertyChanged += ApplicationOnPropertyChanged;
 			Application = application;
 
-			// Hack around the fact that OnLaunching will haev already happened by this point, sad but needed.
+			// Hack around the fact that OnLaunching will have already happened by this point, sad but needed.
 			application.SendStart();
 		}
 
