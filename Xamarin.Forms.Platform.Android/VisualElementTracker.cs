@@ -132,12 +132,6 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			}
 
-			if (e.Is(Platform.RendererProperty))
-			{
-				_renderer.View.Invalidate();
-				return;
-			}
-
 			if (_renderer.Element.Batched)
 			{
 				if (e.PropertyName == VisualElement.XProperty.PropertyName || e.PropertyName == VisualElement.YProperty.PropertyName || e.PropertyName == VisualElement.WidthProperty.PropertyName ||
