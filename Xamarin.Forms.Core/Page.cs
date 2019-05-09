@@ -144,6 +144,22 @@ namespace Xamarin.Forms
         [EditorBrowsable(EditorBrowsableState.Never)]
         public ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
+		internal override IEnumerable<Element> ChildrenNotDrawnByThisElement
+		{
+			get
+			{
+				var titleviewPart1TheShell = Shell.GetTitleView(this);
+				var titleViewPart2TheNavBar = NavigationPage.GetTitleView(this);
+
+				if (titleviewPart1TheShell != null)
+					yield return titleviewPart1TheShell;
+
+				if (titleViewPart2TheNavBar != null)
+					yield return titleViewPart2TheNavBar;
+
+			}
+		}
+
 		internal override ReadOnlyCollection<Element> LogicalChildrenInternal => 
 			_logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren));
 

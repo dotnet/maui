@@ -121,6 +121,20 @@ namespace Xamarin.Forms
 		}
 
 		internal virtual ReadOnlyCollection<Element> LogicalChildrenInternal => EmptyChildren;
+		internal IEnumerable<Element> AllChildren
+		{
+			get
+			{
+				foreach (var child in LogicalChildrenInternal)
+					yield return child;
+
+				foreach (var child in ChildrenNotDrawnByThisElement)
+					yield return child;
+			}
+		}
+
+		internal virtual IEnumerable<Element> ChildrenNotDrawnByThisElement => EmptyChildren;
+
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public ReadOnlyCollection<Element> LogicalChildren => LogicalChildrenInternal;
@@ -337,10 +351,11 @@ namespace Xamarin.Forms
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			base.OnPropertyChanged(propertyName);
-
-			IPropertyPropagationController titleView = Shell.GetTitleView(this) ?? NavigationPage.GetTitleView(this);
-			if(titleView != null)
-				PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { titleView });
+			foreach(var logicalChildren in ChildrenNotDrawnByThisElement)
+			{
+				if(logicalChildren is IPropertyPropagationController controller)
+					PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { logicalChildren });
+			}
 
 			if (_effects == null || _effects.Count == 0)
 				return;

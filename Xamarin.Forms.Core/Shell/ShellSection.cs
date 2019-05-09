@@ -324,6 +324,8 @@ namespace Xamarin.Forms
 			UpdateDisplayedPage();
 		}
 
+		internal override IEnumerable<Element> ChildrenNotDrawnByThisElement => Items;
+
 		protected virtual void OnInsertPageBefore(Page page, Page before)
 		{
 			var index = _navStack.IndexOf(before);

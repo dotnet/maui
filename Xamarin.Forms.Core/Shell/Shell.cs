@@ -422,7 +422,7 @@ namespace Xamarin.Forms
 			{
 				await CurrentItem.CurrentItem.GoToAsync(navigationRequest, queryData, animate);
 			}
-			
+
 			//if (Routing.CompareWithRegisteredRoutes(shellItemRoute))
 			//{
 			//	var shellItem = ShellItem.GetShellItemFromRouteName(shellItemRoute);
@@ -810,6 +810,16 @@ namespace Xamarin.Forms
 			}
 		}
 
+		internal override IEnumerable<Element> ChildrenNotDrawnByThisElement
+		{
+			get
+			{
+				if (FlyoutHeaderView != null)
+					yield return FlyoutHeaderView;
+			}
+		}
+
+
 		protected virtual void OnNavigated(ShellNavigatedEventArgs args)
 		{
 			if (_accumulateNavigatedEvents)
@@ -1084,7 +1094,7 @@ namespace Xamarin.Forms
 		{
 			readonly Shell _shell;
 
-			NavigationProxy SectionProxy => _shell.CurrentItem.CurrentItem.NavigationProxy;			
+			NavigationProxy SectionProxy => _shell.CurrentItem.CurrentItem.NavigationProxy;
 
 			public NavigationImpl(Shell shell) => _shell = shell;
 
