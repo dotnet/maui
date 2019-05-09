@@ -631,16 +631,16 @@ namespace Xamarin.Forms.Controls
 			}
 		}
 
-		public void ShowFlyout()
+		public void ShowFlyout(string flyoutIcon = "OK")
 		{
-			RunningApp.WaitForElement("OK");
-			RunningApp.Tap("OK");
+			RunningApp.WaitForElement(flyoutIcon);
+			RunningApp.Tap(flyoutIcon);
 		}
 
 
-		public void TapInFlyout(string text)
+		public void TapInFlyout(string text, string flyoutIcon = "OK")
 		{
-			ShowFlyout();
+			ShowFlyout(flyoutIcon);
 			RunningApp.WaitForElement(text);
 			RunningApp.Tap(text);
 		}

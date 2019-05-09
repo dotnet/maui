@@ -30,6 +30,8 @@ namespace Xamarin.Forms.Controls.XamStore
 			ViewModel = new HomeViewModel();
 			NavigationPage.SetBackButtonTitle(this, "");
 			//AddSearchHandler("Search", SearchBoxVisibility.Expanded);
+			AutomationProperties.SetName(this, ViewModel.Title);
+			AutomationProperties.SetHelpText(this, "this is just a demo");
 		}
 
 		protected override void OnAppearing()
@@ -157,6 +159,8 @@ namespace Xamarin.Forms.Controls.XamStore
 				OnPropertyChanged(nameof(Id));
 			}
 		}
+
+		public string Title => "Demo Page";
 
 		public HomeViewModel()
 		{

@@ -257,12 +257,16 @@ namespace Xamarin.Forms.Platform.iOS
 				icon = await image.GetNativeImageAsync();
 			else
 				icon = DrawHamburger();
-			
 
 			var barButtonItem = new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, OnMenuButtonPressed);
 
 			barButtonItem.AccessibilityIdentifier = "OK";
 			NavigationItem.LeftBarButtonItem = barButtonItem;
+			if(image == null)
+				return;
+			NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = image.AutomationId;
+			NavigationItem.LeftBarButtonItem.SetAccessibilityHint(image);
+			NavigationItem.LeftBarButtonItem.SetAccessibilityLabel(image);
 		}
 
 		UIImage DrawHamburger()
