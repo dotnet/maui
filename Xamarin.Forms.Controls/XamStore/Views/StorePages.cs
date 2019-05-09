@@ -243,6 +243,24 @@ namespace Xamarin.Forms.Controls.XamStore
 				async () => await Shell.Current.GoToAsync(navEntry.Text, true)),
 			2, 16);
 
+			var headerWidth = new Slider
+			{
+				Minimum = 0,
+				Maximum = 400,
+				Value = (Shell.Current.FlyoutHeader as VisualElement)?.HeightRequest ?? 0
+			};
+			headerWidth.ValueChanged += (_, e) =>
+			{
+				if (Shell.Current.FlyoutHeader is VisualElement ve)
+					ve.HeightRequest = e.NewValue;
+			};
+			grid.Children.Add(new Label
+			{
+				Text = "fly Header",
+				VerticalOptions = LayoutOptions.CenterAndExpand
+			}, 0, 17);
+			grid.Children.Add(headerWidth, 1, 17);
+
 			Content = new ScrollView { Content = grid };
 
 			//var listView = new ListView();

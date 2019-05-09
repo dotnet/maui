@@ -9,7 +9,7 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		UIVisualEffectView _blurView;
 		readonly IShellContext _shellContext;
-		UIView _headerView;
+		UIContainerView _headerView;
 		ShellTableViewController _tableViewController;
 
 		public event EventHandler WillAppear;

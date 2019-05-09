@@ -327,6 +327,7 @@
     <BundleResource Include="Resources\button_add%402x.png" />
     <BundleResource Include="Resources\icon_search%402x.png" />
     <BundleResource Include="Resources\icon_bookmark%402x.png" />
+    <BundleResource Include="Resources\xamarinstore.jpg" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
