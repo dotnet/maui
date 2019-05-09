@@ -343,7 +343,17 @@ namespace Xamarin.Forms.Controls.XamStore
 		{
 			var searchHandler = new CustomSearchHandler();
 
+			searchHandler.BackgroundColor = Color.Orange;
+			searchHandler.CancelButtonColor = Color.Pink;
+			searchHandler.TextColor = Color.White;
+			searchHandler.PlaceholderColor = Color.Yellow;
+			searchHandler.HorizontalTextAlignment = TextAlignment.Center;
 			searchHandler.ShowsResults = true;
+
+			searchHandler.Keyboard = Keyboard.Numeric;
+
+			searchHandler.FontFamily = "ChalkboardSE-Regular";
+			searchHandler.FontAttributes = FontAttributes.Bold;
 
 			searchHandler.ClearIconName = "Clear";
 			searchHandler.ClearIconHelpText = "Clears the search field text";

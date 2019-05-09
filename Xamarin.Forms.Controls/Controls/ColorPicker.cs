@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Controls
 
 		Label _titleLabel;
 		Slider[] _sliders;
-		BoxView _box;
+		Frame _box;
 		Label _hexLabel;
 		Switch _useDefault;
 
@@ -69,11 +69,13 @@ namespace Xamarin.Forms.Controls
 				grid.AddChild(_sliders[i], 1, i + 1);
 			}
 
-			_box = new BoxView
+			_box = new Frame
 			{
-				Color = Color,
+				BackgroundColor = Color,
 				HorizontalOptions = LayoutOptions.Fill,
 				VerticalOptions = LayoutOptions.Fill,
+				BorderColor = Color.Black,
+
 			};
 			grid.AddChild(_box, 2, 1, 1, 3);
 
@@ -87,6 +89,14 @@ namespace Xamarin.Forms.Controls
 			grid.AddChild(_hexLabel, 2, 4);
 
 			Content = grid;
+		}
+
+		public void InitWithColor(Color color)
+		{
+			_sliders[0].Value = color.R * 255;
+			_sliders[1].Value = color.G * 255;
+			_sliders[2].Value = color.B * 255;
+			_sliders[3].Value = color.A * 255;
 		}
 
 		public string Title
@@ -133,7 +143,7 @@ namespace Xamarin.Forms.Controls
 			{
 				var color = picker.UseDefault ? Color.Default : picker.Color;
 				picker._hexLabel.Text = color.IsDefault ? "<default>" : ColorToHex(color);
-				picker._box.Color = color;
+				picker._box.BackgroundColor = color;
 				picker.ColorPicked?.Invoke(picker, new ColorPickedEventArgs(color));
 			}
 		}
