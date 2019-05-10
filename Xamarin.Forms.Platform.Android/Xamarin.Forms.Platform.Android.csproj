@@ -219,6 +219,7 @@
     <Compile Include="Renderers\MotionEventHelper.cs" />
     <Compile Include="Renderers\PageContainer.cs" />
     <Compile Include="Renderers\ScrollViewContainer.cs" />
+    <Compile Include="Renderers\SearchHandlerAppearanceTracker.cs" />
     <Compile Include="Renderers\ShellBottomNavViewAppearanceTracker.cs" />
     <Compile Include="Renderers\ShellItemRenderer.cs" />
     <Compile Include="Renderers\ShellContentFragment.cs" />

@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Controls
 
 			ToolbarItems.Add(new ToolbarItem { Text = "Save" });
 
-			NavigationPage.SetTitleIcon(this, "coffee.png");
+			NavigationPage.SetTitleIconImageSource(this, "coffee.png");
 
 			SearchBar searchBar = new SearchBar { HeightRequest = 44, WidthRequest = 100 };
 
@@ -111,14 +111,14 @@ namespace Xamarin.Forms.Controls
 							Text = "Toggle TitleIcon",
 							Command = new Command (() => {
 
-								var titleIcon = NavigationPage.GetTitleIcon(this);
+								var titleIcon = NavigationPage.GetTitleIconImageSource(this);
 
 								if (titleIcon == null)
 									titleIcon = "coffee.png";
 								else
 									titleIcon = null;
 
-								NavigationPage.SetTitleIcon(this, titleIcon);
+								NavigationPage.SetTitleIconImageSource(this, titleIcon);
 							})
 						},
 						new Button {

@@ -52,9 +52,9 @@ namespace Xamarin.Forms.Platform.iOS
 			var context = Groups[section][row];
 
 			DataTemplate template = null;
-			if (context is MenuItem)
+			if (context is IMenuItemController)
 			{
-				template = _context.Shell.MenuItemTemplate ?? DefaultMenuItemTemplate;
+				template = Shell.GetMenuItemTemplate(context) ?? _context.Shell.MenuItemTemplate ?? DefaultMenuItemTemplate;
 			}
 			else
 			{

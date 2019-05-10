@@ -10,7 +10,6 @@ using Java.Lang;
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android.FastRenderers;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
@@ -42,6 +41,13 @@ namespace Xamarin.Forms.Platform.Android
 		void IShellSearchView.LoadView()
 		{
 			LoadView(SearchHandler);
+			if (_searchHandlerAppearanceTracker == null)
+				_searchHandlerAppearanceTracker = CreateSearchHandlerAppearanceTracker();
+		}
+
+		protected virtual SearchHandlerAppearanceTracker CreateSearchHandlerAppearanceTracker()
+		{
+			return new SearchHandlerAppearanceTracker(this);
 		}
 
 		#endregion IShellSearchView
@@ -91,6 +97,7 @@ namespace Xamarin.Forms.Platform.Android
 		AImageButton _searchButton;
 		AppCompatAutoCompleteTextView _textBlock;
 		bool _disposed;
+		SearchHandlerAppearanceTracker _searchHandlerAppearanceTracker;
 
 		public ShellSearchView(Context context, IShellContext shellContext) : base(context)
 		{
@@ -122,6 +129,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				_disposed = true;
 
+				_searchHandlerAppearanceTracker?.Dispose();
 				SearchHandler.PropertyChanged -= OnSearchHandlerPropertyChanged;
 
 				_textBlock.ItemClick -= OnTextBlockItemClicked;
@@ -149,6 +157,7 @@ namespace Xamarin.Forms.Platform.Android
 			_cardView = null;
 			_clearPlaceholderButton = null;
 			_shellContext = null;
+			_searchHandlerAppearanceTracker = null;
 
 			SearchHandler = null;
 		}
@@ -164,7 +173,6 @@ namespace Xamarin.Forms.Platform.Android
 			using (lp = new LayoutParams(LP.MatchParent, LP.MatchParent))
 				_cardView.LayoutParameters = lp;
 
-
 			var linearLayout = new LinearLayout(context);
 			using (lp = new LP(LP.MatchParent, LP.MatchParent))
 				linearLayout.LayoutParameters = lp;
@@ -174,7 +182,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			int padding = (int)context.ToPixels(8);
 
-			_searchButton = CreateImageButton(context, searchHandler, SearchHandler.QueryIconProperty, Resource.Drawable.abc_ic_search_api_material, padding, 0);
+			_searchButton = CreateImageButton(context, searchHandler, SearchHandler.QueryIconProperty, Resource.Drawable.abc_ic_search_api_material, padding, 0, "SearchIcon");
 
 			lp = new LinearLayout.LayoutParams(0, LP.MatchParent)
 			{
@@ -199,16 +207,16 @@ namespace Xamarin.Forms.Platform.Android
 			_textBlock.SetDropDownBackgroundDrawable(new ClipDrawableWrapper(_textBlock.DropDownBackground));
 
 			// A note on accessibility. The _textBlocks hint is what android defaults to reading in the screen
-			// reader. Therefor we do not need to set something else.
+			// reader. Therefore, we do not need to set something else.
 
-			_clearButton = CreateImageButton(context, searchHandler, SearchHandler.ClearIconProperty, Resource.Drawable.abc_ic_clear_material, 0, padding);
-			_clearPlaceholderButton = CreateImageButton(context, searchHandler, SearchHandler.ClearPlaceholderIconProperty, -1, 0, padding);
+			_clearButton = CreateImageButton(context, searchHandler, SearchHandler.ClearIconProperty, Resource.Drawable.abc_ic_clear_material, 0, padding, nameof(SearchHandler.ClearIcon));
+			_clearPlaceholderButton = CreateImageButton(context, searchHandler, SearchHandler.ClearPlaceholderIconProperty, -1, 0, padding, nameof(SearchHandler.ClearPlaceholderIcon));
 
 			linearLayout.AddView(_searchButton);
 			linearLayout.AddView(_textBlock);
 			linearLayout.AddView(_clearButton);
 			linearLayout.AddView(_clearPlaceholderButton);
-
+		
 			UpdateClearButtonState();
 
 			// hook all events down here to avoid getting events while doing setup
@@ -218,7 +226,7 @@ namespace Xamarin.Forms.Platform.Android
 			_clearButton.Click += OnClearButtonClicked;
 			_clearPlaceholderButton.Click += OnClearPlaceholderButtonClicked;
 			_searchButton.Click += OnSearchButtonClicked;
-
+			
 			AddView(_cardView);
 
 			linearLayout.Dispose();
@@ -293,9 +301,10 @@ namespace Xamarin.Forms.Platform.Android
 		{
 		}
 
-		AImageButton CreateImageButton(Context context, BindableObject bindable, BindableProperty property, int defaultImage, int leftMargin, int rightMargin)
+		AImageButton CreateImageButton(Context context, BindableObject bindable, BindableProperty property, int defaultImage, int leftMargin, int rightMargin, string tag)
 		{
 			var result = new AImageButton(context);
+			result.Tag = tag;
 			result.SetPadding(0, 0, 0, 0);
 			result.Focusable = false;
 			result.SetScaleType(ImageView.ScaleType.FitCenter);
@@ -364,7 +373,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				base.Draw(canvas);
 
-				// Step 1: Clip out the top shadow that was drawn as it wont look right when ligned up
+				// Step 1: Clip out the top shadow that was drawn as it wont look right when lined up
 				var paint = new Paint
 				{
 					Color = AColor.Black

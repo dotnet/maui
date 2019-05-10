@@ -112,7 +112,7 @@ namespace Xamarin.Forms.Controls
 						Spacing = 10,
 						Children =
 						{
-							CreateImageSourcePicker("Change Title Icon", getter => NavigationPage.SetTitleIcon(this, getter())),
+							CreateImageSourcePicker("Change Title Icon", getter => NavigationPage.SetTitleIconImageSource(this, getter())),
 							new Button
 							{
 								Text = "Page & Toolbar",

@@ -3,40 +3,43 @@
 			xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			xmlns:local="clr-namespace:Xamarin.Forms.Controls.XamStore"
 			xmlns:localTest="clr-namespace:Xamarin.Forms.Controls"
-			Route="xamstore"
-			RouteHost="www.xamarin.com"
-			RouteScheme="http"
 			x:Class="Xamarin.Forms.Controls.XamStore.StoreShell">
 	<Shell.Resources>
 		<Style x:Key="BaseStyle" TargetType="Element">
-			<Setter Property="Shell.ShellBackgroundColor" Value="#455A64" />
-			<Setter Property="Shell.ShellForegroundColor" Value="White" />
-			<Setter Property="Shell.ShellTitleColor" Value="White" />
-			<Setter Property="Shell.ShellDisabledColor" Value="#B4FFFFFF" />
-			<Setter Property="Shell.ShellUnselectedColor" Value="#95FFFFFF" />
+			<Setter Property="Shell.BackgroundColor" Value="#455A64" />
+			<Setter Property="Shell.ForegroundColor" Value="White" />
+			<Setter Property="Shell.TitleColor" Value="White" />
+			<Setter Property="Shell.DisabledColor" Value="#B4FFFFFF" />
+			<Setter Property="Shell.UnselectedColor" Value="#95FFFFFF" />
 		</Style>
 		<Style TargetType="ShellItem" BasedOn="{StaticResource BaseStyle}" />
 		<Style x:Key="GreenShell" TargetType="Element" BasedOn="{StaticResource BaseStyle}">
-			<Setter Property="Shell.ShellBackgroundColor" Value="#689F39" />
+			<Setter Property="Shell.BackgroundColor" Value="#689F39" />
 		</Style>
 		<Style x:Key="MusicShell" TargetType="Element" BasedOn="{StaticResource BaseStyle}">
-			<Setter Property="Shell.ShellBackgroundColor" Value="#EF6C00" />
+			<Setter Property="Shell.BackgroundColor" Value="#EF6C00" />
 		</Style>
 		<Style x:Key="MoviesShell" TargetType="Element" BasedOn="{StaticResource BaseStyle}">
-			<Setter Property="Shell.ShellBackgroundColor" Value="#ED3B3B" />
+			<Setter Property="Shell.BackgroundColor" Value="#ED3B3B" />
 		</Style>
 		<Style x:Key="BooksShell" TargetType="Element" BasedOn="{StaticResource BaseStyle}">
-			<Setter Property="Shell.ShellBackgroundColor" Value="#039BE6" />
+			<Setter Property="Shell.BackgroundColor" Value="#039BE6" />
 		</Style>
 		<Style x:Key="NewsShell" TargetType="Element" BasedOn="{StaticResource BaseStyle}">
-			<Setter Property="Shell.ShellBackgroundColor" Value="#546DFE" />
+			<Setter Property="Shell.BackgroundColor" Value="#546DFE" />
 		</Style>
+        <DataTemplate x:Key="MenuItemTemplate">
+            <ContentView>
+                <Button Visual="Material" ImageSource="{Binding Icon}" Text="{Binding Text}"  />
+            </ContentView>
+        </DataTemplate>
 	</Shell.Resources>
 
 	<Shell.FlyoutHeader>
 		<local:FlyoutHeader />
 	</Shell.FlyoutHeader>
-
+    
+    <ShellContent Title="Search" Route="search" ContentTemplate="{DataTemplate local:SearchHandlerPage}" />
 	<ShellSection FlyoutDisplayOptions="AsMultipleItems" Route="apps" Title="My apps &amp; games" Icon="grid.png" Style="{StaticResource GreenShell}">
 		<ShellContent Route="updates" Title="Updates" ContentTemplate="{DataTemplate local:UpdatesPage}" />
 		<ShellContent Route="installed" Title="Installed" ContentTemplate="{DataTemplate local:InstalledPage}" />
@@ -92,13 +95,8 @@
 
 	<ShellContent Route="wishlist" Title="Wishlist" Icon="star.png" ContentTemplate="{DataTemplate local:WishlistPage}" />
 	
-	<MenuItem Text="Xam Protect" Icon="jet.png" />
+	<MenuItem Shell.MenuItemTemplate="{StaticResource MenuItemTemplate}" Text="Xam Protect" Icon="jet.png" />
 
 	<ShellContent Route="settings" Title="Settings" Icon="gear.png" ContentTemplate="{DataTemplate local:SettingsPage}" />
 
-	<Shell.MenuItems>
-		<MenuItem Text="Help &amp; feedback" />
-		<MenuItem Text="Parent Guide" />
-		<MenuItem Text="About Xam Store" />
-	</Shell.MenuItems>
 </localTest:TestShell>

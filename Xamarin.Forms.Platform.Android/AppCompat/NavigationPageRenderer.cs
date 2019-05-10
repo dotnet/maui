@@ -531,7 +531,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				UpdateToolbar();
 			else if (e.PropertyName == NavigationPage.HasBackButtonProperty.PropertyName)
 				UpdateToolbar();
-			else if (e.PropertyName == NavigationPage.TitleIconProperty.PropertyName ||
+			else if (e.PropertyName == NavigationPage.TitleIconImageSourceProperty.PropertyName ||
 					 e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
 				UpdateToolbar();
 		}
@@ -1013,7 +1013,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		void UpdateTitleIcon()
 		{
 			Page currentPage = Element.CurrentPage;
-			ImageSource source = NavigationPage.GetTitleIcon(currentPage);
+			ImageSource source = NavigationPage.GetTitleIconImageSource(currentPage);
 
 			if (source == null || source.IsEmpty)
 			{
@@ -1034,7 +1034,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			{
 				_imageSource = source;
 				_titleIconView.SetImageResource(global::Android.Resource.Color.Transparent);
-				_ = this.ApplyDrawableAsync(currentPage, NavigationPage.TitleIconProperty, Context, drawable =>
+				_ = this.ApplyDrawableAsync(currentPage, NavigationPage.TitleIconImageSourceProperty, Context, drawable =>
 				{
 					_titleIconView.SetImageDrawable(drawable);
 				});

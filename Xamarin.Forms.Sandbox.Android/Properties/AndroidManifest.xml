@@ -2,6 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="1" android:versionName="1.0" package="com.companyname.Xamarin.Forms.Sandbox" android:installLocation="auto">
 	<uses-sdk android:minSdkVersion="19" android:targetSdkVersion="28" />
 	<application android:label="Forms Sandbox">
-    <uses-library android:name="org.apache.http.legacy" android:required="false" />
-  </application>
+		<uses-library android:name="org.apache.http.legacy" android:required="false" />
+	</application>
 </manifest>

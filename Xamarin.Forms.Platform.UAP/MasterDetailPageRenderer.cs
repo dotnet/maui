@@ -269,7 +269,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			if (e.PropertyName == Page.TitleProperty.PropertyName)
 				UpdateDetailTitle();
-			else if (e.PropertyName == NavigationPage.TitleIconProperty.PropertyName)
+			else if (e.PropertyName == NavigationPage.TitleIconImageSourceProperty.PropertyName)
 				UpdateDetailTitleIcon();
 			else if (e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
 				UpdateDetailTitleView();
@@ -343,7 +343,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (_detail == null)
 				return;
 
-			Control.DetailTitleIcon = await NavigationPage.GetTitleIcon(GetCurrentPage()).ToWindowsImageSourceAsync();
+			Control.DetailTitleIcon = await NavigationPage.GetTitleIconImageSource(GetCurrentPage()).ToWindowsImageSourceAsync();
 			Control.InvalidateMeasure();
 		}
 

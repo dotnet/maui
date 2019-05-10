@@ -47,6 +47,7 @@ namespace Xamarin.Forms.Platform.Android
 		//assume the default
 		Color _tintColor = Color.Default;
 		Toolbar _toolbar;
+		string _defaultNavigationContentDescription;
 
 		public ShellToolbarTracker(IShellContext shellContext, Toolbar toolbar, DrawerLayout drawerLayout)
 		{
@@ -250,8 +251,8 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (_drawerToggle == null && !context.IsDesignerContext())
 			{
-				_drawerToggle = new ActionBarDrawerToggle(context.GetActivity(), drawerLayout, toolbar,
-					R.String.Ok, R.String.Ok)
+				_drawerToggle = new ActionBarDrawerToggle(context.GetActivity(), drawerLayout, toolbar, R.String.Ok, R.String.Ok)
+
 				{
 					ToolbarNavigationClickListener = this,
 				};
@@ -284,6 +285,26 @@ namespace Xamarin.Forms.Platform.Android
 				_drawerToggle.DrawerIndicatorEnabled = false;
 			}
 			_drawerToggle.SyncState();
+
+			//this needs to be set after SyncState
+			UpdateToolbarIconAccessibilityText(toolbar, _shellContext.Shell);
+		}
+
+		protected virtual void UpdateToolbarIconAccessibilityText(Toolbar toolbar, Shell shell)
+		{
+			var shellIconTextDescription = shell.FlyoutIcon?.AutomationId ?? AutomationProperties.GetHelpText(_shellContext.Shell.FlyoutIcon) ?? shell.AutomationId;
+
+			//if AutomationId was specified the user wants to use UITests and interact with FlyoutIcon
+			if (!string.IsNullOrEmpty(shell.FlyoutIcon?.AutomationId))
+			{
+				if (_defaultNavigationContentDescription == null)
+					_defaultNavigationContentDescription = toolbar.NavigationContentDescription;
+				toolbar.NavigationContentDescription = shell.FlyoutIcon.AutomationId;
+			}
+			else
+			{
+				toolbar.SetNavigationContentDescription(_shellContext.Shell.FlyoutIcon, _defaultNavigationContentDescription);
+			}
 		}
 
 		protected virtual async Task UpdateDrawerArrowFromBackButtonBehavior(Context context, Toolbar toolbar, DrawerLayout drawerLayout, BackButtonBehavior backButtonHandler)
@@ -410,6 +431,7 @@ namespace Xamarin.Forms.Platform.Android
 				{
 					var menuitem = menu.Add(title);
 					UpdateMenuItemIcon(_shellContext.AndroidContext, menuitem, item);
+					menuitem.SetTitleOrContentDescription(item);
 					menuitem.SetEnabled(item.IsEnabled);
 					menuitem.SetShowAsAction(ShowAsAction.Always);
 					menuitem.SetOnMenuItemClickListener(new GenericMenuClickListener(((IMenuItemController)item).Activate));

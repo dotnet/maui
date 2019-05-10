@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Controls.XamStore
 		public BasePage(string title, Color tint)
 		{
 			Title = title;
-			Shell.SetShellForegroundColor(this, tint);
+			Shell.SetForegroundColor(this, tint);
 			var grid = new Grid()
 			{
 				Padding = 20,
@@ -223,7 +223,7 @@ namespace Xamarin.Forms.Controls.XamStore
 			grid.Children.Add(MakeButton("Go Back with Text",
 			async () => {
 					var page = (Page)Activator.CreateInstance(GetType());
-					Shell.SetShellForegroundColor(page, Color.Pink);
+					Shell.SetForegroundColor(page, Color.Pink);
 					Shell.SetBackButtonBehavior(page, new BackButtonBehavior()
 					{
 						//IconOverride = "calculator.png",
@@ -242,6 +242,24 @@ namespace Xamarin.Forms.Controls.XamStore
 			grid.Children.Add(MakeButton("GO!",
 				async () => await Shell.Current.GoToAsync(navEntry.Text, true)),
 			2, 16);
+
+			var headerWidth = new Slider
+			{
+				Minimum = 0,
+				Maximum = 400,
+				Value = (Shell.Current.FlyoutHeader as VisualElement)?.HeightRequest ?? 0
+			};
+			headerWidth.ValueChanged += (_, e) =>
+			{
+				if (Shell.Current.FlyoutHeader is VisualElement ve)
+					ve.HeightRequest = e.NewValue;
+			};
+			grid.Children.Add(new Label
+			{
+				Text = "fly Header",
+				VerticalOptions = LayoutOptions.CenterAndExpand
+			}, 0, 17);
+			grid.Children.Add(headerWidth, 1, 17);
 
 			Content = new ScrollView { Content = grid };
 
@@ -343,7 +361,17 @@ namespace Xamarin.Forms.Controls.XamStore
 		{
 			var searchHandler = new CustomSearchHandler();
 
+			searchHandler.BackgroundColor = Color.Orange;
+			searchHandler.CancelButtonColor = Color.Pink;
+			searchHandler.TextColor = Color.White;
+			searchHandler.PlaceholderColor = Color.Yellow;
+			searchHandler.HorizontalTextAlignment = TextAlignment.Center;
 			searchHandler.ShowsResults = true;
+
+			searchHandler.Keyboard = Keyboard.Numeric;
+
+			searchHandler.FontFamily = "ChalkboardSE-Regular";
+			searchHandler.FontAttributes = FontAttributes.Bold;
 
 			searchHandler.ClearIconName = "Clear";
 			searchHandler.ClearIconHelpText = "Clears the search field text";

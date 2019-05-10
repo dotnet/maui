@@ -204,7 +204,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			{
 				if (icon != null)
 				{
-					var image = GetTabViewItemIcon(icon);
+					var image = GetTabViewItemIconImageSource(icon);
 					if (image != null)
 						tvi.Image = image;
 				}
@@ -212,7 +212,9 @@ namespace Xamarin.Forms.Platform.MacOS
 			return tvi;
 		}
 
-		protected virtual NSImage GetTabViewItemIcon(NSImage image)
+		protected virtual NSImage GetTabViewItemIcon(string imageName) => GetTabViewItemIconImageSource(NSImage.ImageNamed(imageName));
+
+		protected virtual NSImage GetTabViewItemIconImageSource(NSImage image)
 		{
 			if (image == null)
 				return null;

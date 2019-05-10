@@ -97,7 +97,7 @@ namespace Xamarin.Forms.StyleSheets
 		void Apply(Element styleable)
 		{
 			ApplyCore(styleable);
-			foreach (var child in styleable.LogicalChildrenInternal)
+			foreach (var child in styleable.AllChildren)
 				((IStyle)this).Apply(child);
 		}
 

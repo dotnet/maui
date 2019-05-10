@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
@@ -13,7 +12,6 @@ namespace Xamarin.Forms
 	[EditorBrowsable(EditorBrowsableState.Always)]
 	public class Tab : ShellSection
 	{
-		public ShellContentCollection Content => Items;
 	}
 
 	[ContentProperty(nameof(Items))]
@@ -166,7 +164,7 @@ namespace Xamarin.Forms
 			set { SetValue(CurrentItemProperty, value); }
 		}
 
-		public ShellContentCollection Items => (ShellContentCollection)GetValue(ItemsProperty);
+		public IList<ShellContent> Items => (IList<ShellContent>)GetValue(ItemsProperty);
 
 		public IReadOnlyList<Page> Stack => _navStack;
 
@@ -323,6 +321,8 @@ namespace Xamarin.Forms
 
 			UpdateDisplayedPage();
 		}
+
+		internal override IEnumerable<Element> ChildrenNotDrawnByThisElement => Items;
 
 		protected virtual void OnInsertPageBefore(Page page, Page before)
 		{
@@ -554,7 +554,7 @@ namespace Xamarin.Forms
 			}
 		}
 
-		public class NavigationImpl : NavigationProxy
+		class NavigationImpl : NavigationProxy
 		{
 			readonly ShellSection _owner;
 

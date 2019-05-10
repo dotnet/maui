@@ -4,7 +4,7 @@ using System.Collections.Specialized;
 
 namespace Xamarin.Forms
 {
-	public sealed class ShellSectionCollection :  IList<ShellSection>, INotifyCollectionChanged
+	internal sealed class ShellSectionCollection :  IList<ShellSection>, INotifyCollectionChanged
 	{
 		event NotifyCollectionChangedEventHandler INotifyCollectionChanged.CollectionChanged
 		{

@@ -5,7 +5,6 @@ using Android.Content;
 using Xamarin.Forms.Internals;
 using Android.Views;
 using AView = Android.Views.View;
-using System.Linq;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -144,6 +143,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 		void EnsureChildOrder()
 		{
+			float elevationToSet = 0;
 			for (var i = 0; i < ElementController.LogicalChildren.Count; i++)
 			{
 				Element child = ElementController.LogicalChildren[i];
@@ -152,7 +152,23 @@ namespace Xamarin.Forms.Platform.Android
 				{
 					IVisualElementRenderer r = Platform.GetRenderer(element);
 					if (r != null)
+					{
+						if (Forms.IsLollipopOrNewer)
+						{
+							var elevation = ElevationHelper.GetElevation(r.View) ?? 0;
+							var elementElevation = ElevationHelper.GetElevation(element);
+
+							if (elementElevation == null)
+							{
+								if (elevation > elevationToSet)
+									elevationToSet = elevation;
+
+								r.View.Elevation = elevationToSet;
+							}
+						}
+
 						(_renderer.View as ViewGroup)?.BringChildToFront(r.View);
+					}
 				}
 			}
 		}
@@ -163,7 +179,34 @@ namespace Xamarin.Forms.Platform.Android
 			if (view != null)
 				AddChild(view);
 
-			if (ElementController.LogicalChildren.LastOrDefault() != view)
+			int itemCount = ElementController.LogicalChildren.Count;
+			if (itemCount <= 1)
+				return;
+
+
+			Element lastChild = ElementController.LogicalChildren[itemCount - 1];
+
+			if(lastChild != view)
+			{
+				EnsureChildOrder();
+				return;
+			}
+
+			if (!Forms.IsLollipopOrNewer)
+				return;
+
+			Element previousChild = ElementController.LogicalChildren[itemCount - 2];
+
+			IVisualElementRenderer lastRenderer = null;
+			IVisualElementRenderer previousRenderer = null;
+
+			if (lastChild is VisualElement last)
+				lastRenderer = Platform.GetRenderer(last);
+
+			if (previousChild is VisualElement previous)
+				previousRenderer = Platform.GetRenderer(previous);
+
+			if (ElevationHelper.GetElevation(lastRenderer?.View) < ElevationHelper.GetElevation(previousRenderer?.View))
 				EnsureChildOrder();
 		}
 

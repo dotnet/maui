@@ -89,9 +89,6 @@ namespace Xamarin.Forms
 		{
 			uri = ShellUriHandler.FormatUri(uri);
 
-			if (!uri.IsAbsoluteUri)
-				return uri;
-
 			string[] parts = uri.OriginalString.TrimEnd(_pathSeparator[0]).Split(_pathSeparator[0]);
 
 			List<string> toKeep = new List<string>();
@@ -99,7 +96,7 @@ namespace Xamarin.Forms
 				if (!IsImplicit(parts[i]))
 					toKeep.Add(parts[i]);
 
-			return new Uri(string.Join(_pathSeparator, toKeep));
+			return new Uri(string.Join(_pathSeparator, toKeep), UriKind.Relative);
 		}
 
 		public static string FormatRoute(List<string> segments)

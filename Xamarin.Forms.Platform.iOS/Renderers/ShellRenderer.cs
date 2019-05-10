@@ -77,7 +77,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public UIView NativeView => FlyoutRenderer.View;
 		public Shell Shell => (Shell)Element;
 		public UIViewController ViewController => FlyoutRenderer.ViewController;
-		
+
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint) => new SizeRequest(new Size(100, 100));
 
 		public void RegisterEffect(Effect effect)
@@ -119,10 +119,17 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected virtual IShellFlyoutRenderer CreateFlyoutRenderer()
 		{
+			// HACK
+			if(UIApplication.SharedApplication?.Delegate?.GetType()?.FullName == "XamarinFormsPreviewer.iOS.AppDelegate")
+			{
+				return new DesignerFlyoutRenderer(this);
+			}
+
 			if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
 			{
 				return new TabletShellFlyoutRenderer();
 			}
+
 			return new ShellFlyoutRenderer()
 			{
 				FlyoutTransition = new SlideFlyoutTransition()
@@ -253,6 +260,28 @@ namespace Xamarin.Forms.Platform.iOS
 			else if (_currentShellItemRenderer == null)
 			{
 				OnCurrentItemChanged();
+			}
+		}
+
+		// this won't work on the previewer if it's private
+		internal class DesignerFlyoutRenderer : IShellFlyoutRenderer
+		{
+			readonly UIViewController _parent;
+
+			public DesignerFlyoutRenderer(UIViewController parent)
+			{
+				_parent = parent;
+			}
+			public UIViewController ViewController => _parent;
+
+			public UIView View => _parent.View;
+
+			public void AttachFlyout(IShellContext context, UIViewController content)
+			{
+			}
+
+			public void Dispose()
+			{
 			}
 		}
 	}

@@ -2,31 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls
 {
+	[Preserve(AllMembers = true)]
 	public class DynamicViewGallery : ContentPage
 	{
-		Dictionary<string, (Func<View> ctor, NamedAction[] methods)> _testedTypes;
-
-		HashSet<string> _exceptProperties = new HashSet<string>
-		{
-			AutomationIdProperty.PropertyName,
-			ClassIdProperty.PropertyName,
-			"StyleId",
-		};
-
-		View _element;
-
-		StackLayout _propertyLayout;
-
-		StackLayout _pageContent;
-
-		Picker _selector;
-
-		public DynamicViewGallery()
-		{
-			_testedTypes = new Dictionary<string, (Func<View> ctor, NamedAction[] methods)>
+		internal static Dictionary<string, (Func<object> ctor, NamedAction[] methods)> TestedTypes = new Dictionary<string, (Func<object> ctor, NamedAction[] methods)>
 			{
 				{ nameof(ActivityIndicator), (() => new ActivityIndicator() { IsRunning = false }, null) },
 				{ nameof(ProgressBar), (() => new ProgressBar(), null) },
@@ -45,10 +28,28 @@ namespace Xamarin.Forms.Controls
 				{ nameof(TimePicker), (() => new TimePicker(), null) },
 				{ nameof(ListView), (() => new ListView(), null) },
 				{ nameof(BoxView), (() => new BoxView(), null) },
+
 			};
 
+		internal static HashSet<string> ExceptProperties = new HashSet<string>
+		{
+			AutomationIdProperty.PropertyName,
+			ClassIdProperty.PropertyName,
+			"StyleId",
+		};
+
+		View _element;
+
+		StackLayout _propertyLayout;
+
+		StackLayout _pageContent;
+
+		Picker _selector;
+
+		public DynamicViewGallery()
+		{
 			_selector = new Picker();
-			foreach (var item in _testedTypes)
+			foreach (var item in TestedTypes)
 				_selector.Items.Add(item.Key.ToString());
 			_selector.SelectedIndexChanged += TypeSelected;
 
@@ -106,15 +107,22 @@ namespace Xamarin.Forms.Controls
 
 			var elementType = _element.GetType();
 
+			GetProperties(_element, elementType, _propertyLayout);
+
+			_pageContent.Children.Add(_element);
+		}
+
+		internal static void GetProperties(BindableObject element, Type elementType, StackLayout propertyLayout)
+		{
 			var publicProperties = elementType
-				.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-				.Where(p => p.CanRead && p.CanWrite && !_exceptProperties.Contains(p.Name));
+							.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+							.Where(p => p.CanRead && p.CanWrite && !ExceptProperties.Contains(p.Name));
 
 			// BindableProperty used to clean property values
 			var bindableProperties = elementType
 				.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
 				.Where(p => p.FieldType.IsAssignableFrom(typeof(BindableProperty)))
-				.Select(p => (BindableProperty)p.GetValue(_element));
+				.Select(p => (BindableProperty)p.GetValue(element));
 
 			foreach (var property in publicProperties)
 			{
@@ -123,29 +131,33 @@ namespace Xamarin.Forms.Controls
 					var colorPicker = new ColorPicker
 					{
 						Title = property.Name,
-						Color = (Color)property.GetValue(_element)
+						Color = (Color)property.GetValue(element)
 					};
-					colorPicker.ColorPicked += (_, e) => property.SetValue(_element, e.Color);
-					_propertyLayout.Children.Add(colorPicker);
+					colorPicker.ColorPicked += (_, e) => property.SetValue(element, e.Color);
+					propertyLayout.Children.Add(colorPicker);
 				}
 				else if (property.PropertyType == typeof(string))
 				{
-					_propertyLayout.Children.Add(CreateStringPicker(property));
+					propertyLayout.Children.Add(CreateStringPicker(property, element));
 				}
 				else if (property.PropertyType == typeof(double) ||
 					property.PropertyType == typeof(float) ||
 					property.PropertyType == typeof(int))
 				{
-					_propertyLayout.Children.Add(
-						CreateValuePicker(property, bindableProperties.FirstOrDefault(p => p.PropertyName == property.Name)));
+					propertyLayout.Children.Add(
+						CreateValuePicker(property, bindableProperties.FirstOrDefault(p => p.PropertyName == property.Name), element));
 				}
 				else if (property.PropertyType == typeof(bool))
 				{
-					_propertyLayout.Children.Add(CreateBooleanPicker(property));
+					propertyLayout.Children.Add(CreateBooleanPicker(property, element));
 				}
 				else if (property.PropertyType == typeof(Thickness))
 				{
-					_propertyLayout.Children.Add(CreateThicknessPicker(property));
+					propertyLayout.Children.Add(CreateThicknessPicker(property, element));
+				}
+				else if (property.PropertyType == typeof(TextAlignment))
+				{
+					propertyLayout.Children.Add(CreateEnumPicker(property, element, typeof(TextAlignment)));
 				}
 				else
 				{
@@ -153,10 +165,11 @@ namespace Xamarin.Forms.Controls
 				}
 			}
 
-			var customMethods = _testedTypes[elementType.Name].methods;
+			var customMethods = TestedTypes[elementType.Name].methods;
 			if (customMethods != null)
 			{
-				_propertyLayout.Children.Add(new Label {
+				propertyLayout.Children.Add(new Label
+				{
 					Text = "Custom methods",
 					FontSize = 20,
 					Margin = 6
@@ -164,17 +177,15 @@ namespace Xamarin.Forms.Controls
 
 				foreach (var method in customMethods)
 				{
-					_propertyLayout.Children.Add(new Button
+					propertyLayout.Children.Add(new Button
 					{
 						Text = method.Name,
 						FontAttributes = FontAttributes.Bold,
 						Padding = 6,
-						Command = new Command(() => method.Action(_element))
+						Command = new Command(() => method.Action(element))
 					});
 				}
 			}
-
-			_pageContent.Children.Add(_element);
 		}
 
 		void TypeSelected(object sender, EventArgs e)
@@ -182,7 +193,7 @@ namespace Xamarin.Forms.Controls
 			var oldElement = _element;
 			try
 			{
-				_element = _testedTypes[(string)_selector.SelectedItem].ctor();
+				_element = TestedTypes[(string)_selector.SelectedItem].ctor() as View;
 			}
 			catch
 			{
@@ -191,7 +202,7 @@ namespace Xamarin.Forms.Controls
 			OnElementUpdated(oldElement);
 		}
 
-		Dictionary<string, (double min, double max)> _minMaxProperties = new Dictionary<string, (double min, double max)>
+		static Dictionary<string, (double min, double max)> _minMaxProperties = new Dictionary<string, (double min, double max)>
 		{
 			{ ScaleProperty.PropertyName, (0d, 1d) },
 			{ ScaleXProperty.PropertyName, (0d, 1d) },
@@ -204,7 +215,7 @@ namespace Xamarin.Forms.Controls
 			{ PaddingElement.PaddingProperty.PropertyName, (-100, 100) },
 		};
 
-		Grid CreateValuePicker(PropertyInfo property, BindableProperty bindableProperty)
+		static Grid CreateValuePicker(PropertyInfo property, BindableProperty bindableProperty, BindableObject element)
 		{
 			var min = 0d;
 			var max = 100d;
@@ -215,7 +226,7 @@ namespace Xamarin.Forms.Controls
 			}
 
 			var isInt = property.PropertyType == typeof(int);
-			var value = isInt ? (int)property.GetValue(_element) : (double)property.GetValue(_element);
+			var value = isInt ? (int)property.GetValue(element) : (double)property.GetValue(element);
 			var slider = new Slider(min, max, value);
 
 			var actions = new Grid
@@ -243,7 +254,7 @@ namespace Xamarin.Forms.Controls
 					HeightRequest = 28,
 					Margin = 0,
 					Padding = 0,
-					Command = new Command(() => _element.ClearValue(bindableProperty))
+					Command = new Command(() => element.ClearValue(bindableProperty))
 				}, 1, 0);
 			}
 
@@ -256,9 +267,9 @@ namespace Xamarin.Forms.Controls
 			slider.ValueChanged += (_, e) =>
 			{
 				if (isInt)
-					property.SetValue(_element, (int)e.NewValue);
+					property.SetValue(element, (int)e.NewValue);
 				else
-					property.SetValue(_element, e.NewValue);
+					property.SetValue(element, e.NewValue);
 				valueLabel.Text = e.NewValue.ToString(isInt ? "0" : "0.#");
 			};
 
@@ -268,7 +279,44 @@ namespace Xamarin.Forms.Controls
 			return actions;
 		}
 
-		Grid CreateThicknessPicker(PropertyInfo property)
+		static Grid CreateEnumPicker(PropertyInfo property, BindableObject element, Type elementType)
+		{
+			var grid = new Grid
+			{
+				Padding = 0,
+				RowSpacing = 3,
+				ColumnSpacing = 3,
+				ColumnDefinitions =
+						{
+							new ColumnDefinition { Width = 100 },
+							new ColumnDefinition { Width = GridLength.Star }
+						},
+			};
+			grid.AddChild(new Label { Text = property.Name, FontAttributes = FontAttributes.Bold }, 0, 0);
+			var picker = new Picker { Title = property.Name };
+			foreach (var item in Enum.GetNames(elementType))
+				picker.Items.Add(item);
+			
+			picker.SelectedItem = property.GetValue(element).ToString();
+			grid.AddChild(picker, 1, 0);
+			picker.SelectedIndexChanged += (_, e) =>
+			{
+				var newEnumValue = Enum.Parse(elementType, picker.SelectedItem.ToString());
+				property.SetValue(element, newEnumValue);
+			};
+			element.PropertyChanged += (_, e) =>
+			{
+				if (e.PropertyName == property.Name)
+				{
+					var newVal = property.GetValue(element);
+					if (newVal.ToString() != picker.SelectedItem.ToString())
+						picker.SelectedItem = newVal;
+				}
+			};
+			return grid;
+		}
+
+		static Grid CreateThicknessPicker(PropertyInfo property, BindableObject element)
 		{
 			var grid = new Grid
 			{
@@ -284,7 +332,7 @@ namespace Xamarin.Forms.Controls
 			};
 			grid.AddChild(new Label { Text = property.Name, FontAttributes = FontAttributes.Bold }, 0, 0, 2);
 
-			var val = (Thickness)property.GetValue(_element);
+			var val = (Thickness)property.GetValue(element);
 			var sliders = new Slider[4];
 			var valueLabels = new Label[4];
 			for (int i = 0; i < 4; i++)
@@ -324,7 +372,7 @@ namespace Xamarin.Forms.Controls
 
 			void ThicknessChanged(object sender, ValueChangedEventArgs e)
 			{
-				property.SetValue(_element, new Thickness(sliders[0].Value, sliders[1].Value, sliders[2].Value, sliders[3].Value));
+				property.SetValue(element, new Thickness(sliders[0].Value, sliders[1].Value, sliders[2].Value, sliders[3].Value));
 				for (int i = 0; i < valueLabels.Length; i++)
 					valueLabels[i].Text = sliders[i].Value.ToString("0");
 			}
@@ -332,7 +380,7 @@ namespace Xamarin.Forms.Controls
 			return grid;
 		}
 
-		Grid CreateBooleanPicker(PropertyInfo property)
+		static Grid CreateBooleanPicker(PropertyInfo property, BindableObject element)
 		{
 			var grid = new Grid
 			{
@@ -348,17 +396,17 @@ namespace Xamarin.Forms.Controls
 			grid.AddChild(new Label { Text = property.Name, FontAttributes = FontAttributes.Bold }, 0, 0);
 			var boolSwitch = new Switch
 			{
-				IsToggled = (bool)property.GetValue(_element),
+				IsToggled = (bool)property.GetValue(element),
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center
 			};
-			boolSwitch.Toggled += (_, e) => property.SetValue(_element, e.Value);
+			boolSwitch.Toggled += (_, e) => property.SetValue(element, e.Value);
 			grid.AddChild(boolSwitch, 1, 0);
-			_element.PropertyChanged += (_, e) =>
+			element.PropertyChanged += (_, e) =>
 			{
 				if (e.PropertyName == property.Name)
 				{
-					var newVal = (bool)property.GetValue(_element);
+					var newVal = (bool)property.GetValue(element);
 					if (newVal != boolSwitch.IsToggled)
 						boolSwitch.IsToggled = newVal;
 				}
@@ -367,7 +415,7 @@ namespace Xamarin.Forms.Controls
 			return grid;
 		}
 
-		Grid CreateStringPicker(PropertyInfo property)
+		static Grid CreateStringPicker(PropertyInfo property, BindableObject element)
 		{
 			var grid = new Grid
 			{
@@ -378,17 +426,17 @@ namespace Xamarin.Forms.Controls
 			grid.AddChild(new Label { Text = property.Name, FontAttributes = FontAttributes.Bold }, 0, 0);
 			var entry = new Entry
 			{
-				Text = (string)property.GetValue(_element),
+				Text = (string)property.GetValue(element),
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				VerticalOptions = LayoutOptions.FillAndExpand
 			};
-			entry.TextChanged += (_, e) => property.SetValue(_element, e.NewTextValue);
+			entry.TextChanged += (_, e) => property.SetValue(element, e.NewTextValue);
 			grid.AddChild(entry, 0, 1);
-			_element.PropertyChanged += (_, e) =>
+			element.PropertyChanged += (_, e) =>
 			{
 				if (e.PropertyName == property.Name)
 				{
-					var newVal = (string)property.GetValue(_element);
+					var newVal = (string)property.GetValue(element);
 					if (newVal != entry.Text)
 						entry.Text = newVal;
 				}
@@ -397,14 +445,14 @@ namespace Xamarin.Forms.Controls
 			return grid;
 		}
 
-		class NamedAction
+		internal class NamedAction
 		{
 			public string Name { get; set; }
 
-			public Action<View> Action { get; set; }
+			public Action<object> Action { get; set; }
 		}
 
-		(Func<View> ctor, NamedAction[] methods) GetPicker()
+		static (Func<View> ctor, NamedAction[] methods) GetPicker()
 		{
 			return (ctor: () =>
 			{

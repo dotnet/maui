@@ -11,8 +11,21 @@ namespace Xamarin.Forms
 	[EditorBrowsable(EditorBrowsableState.Always)]
 	public class FlyoutItem : ShellItem
 	{
-		public ShellSectionCollection Tabs => Items;
+		public FlyoutItem()
+		{
+			Shell.SetFlyoutBehavior(this, FlyoutBehavior.Flyout);
+		}
 	}
+
+	[EditorBrowsable(EditorBrowsableState.Always)]
+	public class TabBar : ShellItem
+	{
+		public TabBar()
+		{
+			Shell.SetFlyoutBehavior(this, FlyoutBehavior.Disabled);
+		}
+	}
+
 
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
@@ -95,7 +108,7 @@ namespace Xamarin.Forms
 			set { SetValue(CurrentItemProperty, value); }
 		}
 
-		public ShellSectionCollection Items => (ShellSectionCollection)GetValue(ItemsProperty);
+		public IList<ShellSection> Items => (IList<ShellSection>)GetValue(ItemsProperty);
 
 		internal override ReadOnlyCollection<Element> LogicalChildrenInternal => _logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(_children));
 
@@ -109,7 +122,12 @@ namespace Xamarin.Forms
 
 		internal static ShellItem CreateFromShellSection(ShellSection shellSection)
 		{
-			var result = new ShellItem();
+			ShellItem result = null;
+
+			if (shellSection is Tab)
+				result = new TabBar();
+			else
+				result = new ShellItem();
 
 			result.Route = Routing.GenerateImplicitRoute(shellSection.Route);
 

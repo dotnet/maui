@@ -64,7 +64,7 @@ namespace Xamarin.Forms
 
 		[Obsolete("BackgroundImage is obsolete as of 4.0.0. Please use BackgroundImageSource instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public FileImageSource BackgroundImage
+		public string BackgroundImage
 		{
 			get { return GetValue(BackgroundImageProperty) as FileImageSource; }
 			set { SetValue(BackgroundImageProperty, value); }
@@ -143,6 +143,22 @@ namespace Xamarin.Forms
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
+
+		internal override IEnumerable<Element> ChildrenNotDrawnByThisElement
+		{
+			get
+			{
+				var titleviewPart1TheShell = Shell.GetTitleView(this);
+				var titleViewPart2TheNavBar = NavigationPage.GetTitleView(this);
+
+				if (titleviewPart1TheShell != null)
+					yield return titleviewPart1TheShell;
+
+				if (titleViewPart2TheNavBar != null)
+					yield return titleViewPart2TheNavBar;
+
+			}
+		}
 
 		internal override ReadOnlyCollection<Element> LogicalChildrenInternal => 
 			_logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren));

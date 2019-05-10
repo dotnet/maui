@@ -4,7 +4,7 @@ using System.Collections.Specialized;
 
 namespace Xamarin.Forms
 {
-	public sealed class ShellItemCollection : IEnumerable<ShellItem>, IList<ShellItem>, INotifyCollectionChanged
+	internal sealed class ShellItemCollection : IList<ShellItem>, INotifyCollectionChanged
 	{
 		event NotifyCollectionChangedEventHandler INotifyCollectionChanged.CollectionChanged
 		{
@@ -22,7 +22,29 @@ namespace Xamarin.Forms
 			set => Inner[index] = value;
 		}
 
-		public void Add(ShellItem item) => Inner.Add(item);
+		public void Add(ShellItem item)
+		{
+			/*
+			 * This is purely for the case where a user is only specifying Tabs at the highest level
+			 * <shell>
+			 * <tab></tab>
+			 * <tab></tab>
+			 * </shell>
+			 * */
+			if (Routing.IsImplicit(item) &&
+				item is TabBar
+				)
+			{
+				int i = Count - 1;
+				if (i >= 0 &&  this[i] is TabBar && Routing.IsImplicit(this[i]))
+				{
+					this[i].Items.Add(item.Items[0]);
+					return;
+				}
+			}
+
+			Inner.Add(item);
+		}
 
 		public void Clear() => Inner.Clear();
 

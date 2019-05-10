@@ -197,7 +197,7 @@
 										Background="{ThemeResource SystemControlForegroundAccentBrush}"
 										Style="{StaticResource SliderThumbImageStyle}"
 										DataContext="{TemplateBinding Value}"
-										Tag="{Binding ThumbImage, RelativeSource={RelativeSource TemplatedParent}}"
+										Tag="{Binding ThumbImageSource, RelativeSource={RelativeSource TemplatedParent}}"
 										Height="24"
 										Width="24"
 										Grid.Row="0"

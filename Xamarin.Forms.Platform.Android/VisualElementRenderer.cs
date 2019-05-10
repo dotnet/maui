@@ -241,6 +241,9 @@ namespace Xamarin.Forms.Platform.Android
 			if (AutoTrack && Tracker == null)
 				SetTracker(new VisualElementTracker(this));
 
+			if (oldElement != null && element != null)
+				Tracker?.UpdateLayout();
+
 			if (element != null)
 				SendVisualElementInitialized(element, this);
 
