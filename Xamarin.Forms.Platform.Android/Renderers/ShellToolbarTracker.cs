@@ -292,8 +292,6 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual void UpdateToolbarIconAccessibilityText(Toolbar toolbar, Shell shell)
 		{
-			var shellIconTextDescription = shell.FlyoutIcon?.AutomationId ?? AutomationProperties.GetHelpText(_shellContext.Shell.FlyoutIcon) ?? shell.AutomationId;
-
 			//if AutomationId was specified the user wants to use UITests and interact with FlyoutIcon
 			if (!string.IsNullOrEmpty(shell.FlyoutIcon?.AutomationId))
 			{
