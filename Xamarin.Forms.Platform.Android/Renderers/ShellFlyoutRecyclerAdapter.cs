@@ -48,9 +48,9 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			var item = _listItems[position];
 			var dataTemplate = Shell.ItemTemplate ?? DefaultItemTemplate;
-			if (item.Element is MenuItem)
+			if (item.Element is IMenuItemController)
 			{
-				dataTemplate = Shell.MenuItemTemplate ?? DefaultMenuItemTemplate;
+				dataTemplate = Shell.GetMenuItemTemplate(item.Element) ?? Shell.MenuItemTemplate ?? DefaultMenuItemTemplate;
 			}
 
 			var template = dataTemplate.SelectDataTemplate(item.Element, Shell);
@@ -140,6 +140,7 @@ namespace Xamarin.Forms.Platform.Android
 			var template = _templateMap[viewType];
 
 			var content = (View)template.CreateContent();
+			content.Parent = _shellContext.Shell;
 
 			var linearLayout = new LinearLayoutWithFocus(parent.Context)
 			{
@@ -158,7 +159,7 @@ namespace Xamarin.Forms.Platform.Android
 			container.LayoutParameters = new LP(LP.MatchParent, LP.WrapContent);
 			linearLayout.AddView(container);
 
-			return new ElementViewHolder(content, linearLayout, bar, _selectedCallback); ;
+			return new ElementViewHolder(content, linearLayout, bar, _selectedCallback);
 		}
 
 		protected virtual List<AdapterListItem> GenerateItemList()

@@ -28,6 +28,11 @@
 		<Style x:Key="NewsShell" TargetType="Element" BasedOn="{StaticResource BaseStyle}">
 			<Setter Property="Shell.BackgroundColor" Value="#546DFE" />
 		</Style>
+        <DataTemplate x:Key="MenuItemTemplate">
+            <ContentView>
+                <Button Visual="Material" ImageSource="{Binding Icon}" Text="{Binding Text}"  />
+            </ContentView>
+        </DataTemplate>
 	</Shell.Resources>
 
 	<Shell.FlyoutHeader>
@@ -90,13 +95,8 @@
 
 	<ShellContent Route="wishlist" Title="Wishlist" Icon="star.png" ContentTemplate="{DataTemplate local:WishlistPage}" />
 	
-	<MenuItem Text="Xam Protect" Icon="jet.png" />
+	<MenuItem Shell.MenuItemTemplate="{StaticResource MenuItemTemplate}" Text="Xam Protect" Icon="jet.png" />
 
 	<ShellContent Route="settings" Title="Settings" Icon="gear.png" ContentTemplate="{DataTemplate local:SettingsPage}" />
 
-	<Shell.MenuItems>
-		<MenuItem Text="Help &amp; feedback" />
-		<MenuItem Text="Parent Guide" />
-		<MenuItem Text="About Xam Store" />
-	</Shell.MenuItems>
 </localTest:TestShell>

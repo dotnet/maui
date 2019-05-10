@@ -48,6 +48,12 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty TitleViewProperty =
 			BindableProperty.CreateAttached("TitleView", typeof(View), typeof(Shell), null, propertyChanged: OnTitleViewChanged);
 
+		public static readonly BindableProperty MenuItemTemplateProperty =
+			BindableProperty.CreateAttached(nameof(MenuItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime);
+
+		public static DataTemplate GetMenuItemTemplate(BindableObject obj) => (DataTemplate)obj.GetValue(MenuItemTemplateProperty);
+		public static void SetMenuItemTemplate(BindableObject obj, DataTemplate menuItemTemplate) => obj.SetValue(MenuItemTemplateProperty, menuItemTemplate);
+
 		public static BackButtonBehavior GetBackButtonBehavior(BindableObject obj) => (BackButtonBehavior)obj.GetValue(BackButtonBehaviorProperty);
 		public static void SetBackButtonBehavior(BindableObject obj, BackButtonBehavior behavior) => obj.SetValue(BackButtonBehaviorProperty, behavior);
 
@@ -169,9 +175,6 @@ namespace Xamarin.Forms
 
 		static readonly BindablePropertyKey ItemsPropertyKey = BindableProperty.CreateReadOnly(nameof(Items), typeof(ShellItemCollection), typeof(Shell), null,
 				defaultValueCreator: bo => new ShellItemCollection { Inner = new ElementCollection<ShellItem>(((Shell)bo).InternalChildren) });
-
-		static readonly BindablePropertyKey MenuItemsPropertyKey =
-			BindableProperty.CreateReadOnly(nameof(MenuItems), typeof(MenuItemCollection), typeof(Shell), null, defaultValueCreator: bo => new MenuItemCollection());
 
 		List<(IAppearanceObserver Observer, Element Pivot)> _appearanceObservers = new List<(IAppearanceObserver Observer, Element Pivot)>();
 		List<IFlyoutBehaviorObserver> _flyoutBehaviorObservers = new List<IFlyoutBehaviorObserver>();
@@ -555,11 +558,6 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty ItemTemplateProperty =
 			BindableProperty.Create(nameof(ItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime);
 
-		public static readonly BindableProperty MenuItemsProperty = MenuItemsPropertyKey.BindableProperty;
-
-		public static readonly BindableProperty MenuItemTemplateProperty =
-			BindableProperty.Create(nameof(MenuItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime);
-
 		public static readonly BindableProperty FlyoutIconProperty =
 			BindableProperty.Create(nameof(FlyoutIcon), typeof(ImageSource), typeof(Shell), null);
 
@@ -636,12 +634,10 @@ namespace Xamarin.Forms
 			set => SetValue(ItemTemplateProperty, value);
 		}
 
-		public MenuItemCollection MenuItems => (MenuItemCollection)GetValue(MenuItemsProperty);
-
 		public DataTemplate MenuItemTemplate
 		{
-			get => (DataTemplate)GetValue(MenuItemTemplateProperty);
-			set => SetValue(MenuItemTemplateProperty, value);
+			get => GetMenuItemTemplate(this);
+			set => SetMenuItemTemplate(this, value);
 		}
 
 		internal string Route
@@ -745,8 +741,6 @@ namespace Xamarin.Forms
 			}
 
 			IncrementGroup();
-
-			currentGroup.AddRange(MenuItems);
 
 			return result;
 		}

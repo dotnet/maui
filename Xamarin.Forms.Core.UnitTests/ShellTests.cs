@@ -16,7 +16,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			var shell = new Shell();
 
 			Assert.IsEmpty(shell.Items);
-			Assert.IsEmpty(shell.MenuItems);
 		}
 
 		[Test]
@@ -474,6 +473,29 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual(null, flyoutView.BindingContext);
 		}
 
+		[Test]
+		public void MenuItemBindingContext()
+		{
+			Shell shell = new Shell();
+			ContentPage page = new ContentPage();
+			shell.Items.Add(CreateShellItem(page));
+			shell.BindingContext = new { Text = "Binding" };
+
+
+			object bindingContext = new object();
+
+			var menuItem = new MenuItem();
+			shell.Items.Add(new MenuShellItem(menuItem));
+
+			shell.BindingContext = bindingContext;
+
+			var menuItem2 = new MenuItem();
+			shell.Items.Add(new MenuShellItem(menuItem2));
+
+
+			Assert.AreEqual(bindingContext, menuItem.BindingContext);
+			Assert.AreEqual(bindingContext, menuItem2.BindingContext);
+		}
 
     [Test]
 		public async Task TitleViewLogicalChild()
