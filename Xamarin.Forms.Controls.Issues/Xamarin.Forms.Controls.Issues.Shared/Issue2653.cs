@@ -149,7 +149,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 // https://github.com/xamarin/Xamarin.Forms/issues/2989
-#if UITEST && !__ANDROID__
+#if UITEST
 		[Test]
 		public void ZIndexWhenInsertingChildren()
 		{

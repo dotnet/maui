@@ -21,5 +21,28 @@ namespace Xamarin.Forms.Platform.Android
 
 			view.Elevation = elevation.Value;
 		}
+
+		internal static float? GetElevation(global::Android.Views.View view)
+		{
+			if (view == null || !Forms.IsLollipopOrNewer)
+			{
+				return null;
+			}
+
+			return view.Elevation;
+		}
+
+		internal static float? GetElevation(VisualElement element)
+		{
+			if (element == null || !Forms.IsLollipopOrNewer)
+			{
+				return null;
+			}
+
+			var iec = element as IElementConfiguration<VisualElement>;
+			var elevation = iec?.On<PlatformConfiguration.Android>().GetElevation();
+
+			return elevation;
+		}
 	}
 }
