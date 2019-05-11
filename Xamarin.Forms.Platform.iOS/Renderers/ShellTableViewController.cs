@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Platform.iOS
 		void OnHeaderSizeChanged(object sender, EventArgs e)
 		{
 			_headerSize = HeaderMax;
-			TableView.ContentInset = new UIEdgeInsets((nfloat)HeaderMax + SafeAreaOffset, 0, 0, 0);
+			TableView.ContentInset = new UIEdgeInsets((nfloat)HeaderMax, 0, 0, 0);
 			LayoutParallax();
 		}
 
@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Platform.iOS
 			TableView.SeparatorStyle = UITableViewCellSeparatorStyle.None;
 			if (Forms.IsiOS11OrNewer)
 				TableView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
-			TableView.ContentInset = new UIEdgeInsets((nfloat)HeaderMax + SafeAreaOffset, 0, 0, 0);
+			TableView.ContentInset = new UIEdgeInsets((nfloat)HeaderMax, 0, 0, 0);
 			TableView.Source = _source;
 		}
 
