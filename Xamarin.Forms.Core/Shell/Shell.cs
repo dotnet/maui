@@ -54,6 +54,12 @@ namespace Xamarin.Forms
 		public static DataTemplate GetMenuItemTemplate(BindableObject obj) => (DataTemplate)obj.GetValue(MenuItemTemplateProperty);
 		public static void SetMenuItemTemplate(BindableObject obj, DataTemplate menuItemTemplate) => obj.SetValue(MenuItemTemplateProperty, menuItemTemplate);
 
+		public static readonly BindableProperty ItemTemplateProperty =
+			BindableProperty.CreateAttached(nameof(ItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime);
+
+		public static DataTemplate GetItemTemplate(BindableObject obj) => (DataTemplate)obj.GetValue(ItemTemplateProperty);
+		public static void SetItemTemplate(BindableObject obj, DataTemplate itemTemplate) => obj.SetValue(ItemTemplateProperty, itemTemplate);
+
 		public static BackButtonBehavior GetBackButtonBehavior(BindableObject obj) => (BackButtonBehavior)obj.GetValue(BackButtonBehaviorProperty);
 		public static void SetBackButtonBehavior(BindableObject obj, BackButtonBehavior behavior) => obj.SetValue(BackButtonBehaviorProperty, behavior);
 
@@ -555,9 +561,6 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty ItemsProperty = ItemsPropertyKey.BindableProperty;
 
-		public static readonly BindableProperty ItemTemplateProperty =
-			BindableProperty.Create(nameof(ItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime);
-
 		public static readonly BindableProperty FlyoutIconProperty =
 			BindableProperty.Create(nameof(FlyoutIcon), typeof(ImageSource), typeof(Shell), null);
 
@@ -630,8 +633,8 @@ namespace Xamarin.Forms
 
 		public DataTemplate ItemTemplate
 		{
-			get => (DataTemplate)GetValue(ItemTemplateProperty);
-			set => SetValue(ItemTemplateProperty, value);
+			get => GetItemTemplate(this);
+			set => SetItemTemplate(this, value);
 		}
 
 		public DataTemplate MenuItemTemplate

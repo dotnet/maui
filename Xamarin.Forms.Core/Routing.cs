@@ -22,7 +22,7 @@ namespace Xamarin.Forms
 		{
 			return source.StartsWith(ImplicitPrefix, StringComparison.Ordinal);
 		}
-		internal static bool IsImplicit(Element source)
+		internal static bool IsImplicit(BindableObject source)
 		{
 			return IsImplicit(GetRoute(source));
 		}
@@ -71,7 +71,7 @@ namespace Xamarin.Forms
 			return result;
 		}
 
-		public static string GetRoute(Element obj)
+		public static string GetRoute(BindableObject obj)
 		{
 			return (string)obj.GetValue(RouteProperty);
 		}
