@@ -945,6 +945,7 @@
       <DependentUpon>Issue4356.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue5951.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Github6021.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5132.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5888.cs" />
   </ItemGroup>
