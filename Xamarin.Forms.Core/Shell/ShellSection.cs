@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace Xamarin.Forms
 {
@@ -197,8 +198,11 @@ namespace Xamarin.Forms
 			shellSection.Route = Routing.GenerateImplicitRoute(contentRoute);
 
 			shellSection.Items.Add(shellContent);
-			shellSection.SetBinding(TitleProperty, new Binding("Title", BindingMode.OneWay, source: shellContent));
-			shellSection.SetBinding(IconProperty, new Binding("Icon", BindingMode.OneWay, source: shellContent));
+
+			shellSection.SetBinding(TitleProperty, new Binding(nameof(Title), BindingMode.OneWay, source: shellContent));
+			shellSection.SetBinding(IconProperty, new Binding(nameof(Icon), BindingMode.OneWay, source: shellContent));
+			shellSection.SetBinding(FlyoutIconProperty, new Binding(nameof(FlyoutIcon), BindingMode.OneWay, source: shellContent));
+
 			return shellSection;
 		}
 

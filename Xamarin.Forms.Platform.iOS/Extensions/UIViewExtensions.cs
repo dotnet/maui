@@ -126,7 +126,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				if (result != null)
 					return result;
 
-				for (var i = 0; i < descendantView.Subviews.Length; i++)
+				for (var i = 0; i < descendantView.Subviews?.Length; i++)
 					queue.Enqueue(descendantView.Subviews[i]);
 			}
 

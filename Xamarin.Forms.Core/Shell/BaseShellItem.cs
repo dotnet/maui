@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
@@ -131,6 +132,39 @@ namespace Xamarin.Forms
 
 			var shellItem = (BaseShellItem)bindable;
 			shellItem.FlyoutIcon = (ImageSource)newValue;
+		}
+
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+			if (Parent != null)
+			{
+				if (propertyName == Shell.ItemTemplateProperty.PropertyName || propertyName == nameof(Parent))
+					Propagate(Shell.ItemTemplateProperty, this, Parent, true);
+			}
+		}
+
+		internal static void PropagateFromParent(BindableProperty property, Element me)
+		{
+			if (me == null || me.Parent == null)
+				return;
+
+			Propagate(property, me.Parent, me, false);
+		}
+
+		internal static void Propagate(BindableProperty property, BindableObject from, BindableObject to, bool onlyToImplicit)
+		{
+			if (from == null || to == null)
+				return;
+
+			if (onlyToImplicit && Routing.IsImplicit(from))
+				return;
+
+			if (to is Shell)
+				return;
+
+			if (from.IsSet(property) && !to.IsSet(property))
+				to.SetValue(property, from.GetValue(property));
 		}
 
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)

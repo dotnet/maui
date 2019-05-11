@@ -28,25 +28,33 @@
 		<Style x:Key="NewsShell" TargetType="Element" BasedOn="{StaticResource BaseStyle}">
 			<Setter Property="Shell.BackgroundColor" Value="#546DFE" />
 		</Style>
-        <DataTemplate x:Key="MenuItemTemplate">
-            <ContentView>
-                <Button Visual="Material" ImageSource="{Binding Icon}" Text="{Binding Text}"  />
-            </ContentView>
-        </DataTemplate>
+		<DataTemplate x:Key="MenuItemTemplate">
+			<ContentView>
+				<Button Visual="Material" ImageSource="{Binding FlyoutIcon}" Text="{Binding Text}"  />
+			</ContentView>
+		</DataTemplate>
+		<DataTemplate x:Key="ShellItemTemplate">
+			<ContentView BackgroundColor="LightBlue">
+				<StackLayout Orientation="Horizontal">
+					<Image Source="{Binding FlyoutIcon}"/>
+					<Label Text="{Binding Title}" />
+				</StackLayout>
+			</ContentView>
+		</DataTemplate>
 	</Shell.Resources>
 
 	<Shell.FlyoutHeader>
 		<local:FlyoutHeader />
 	</Shell.FlyoutHeader>
-    
-    <ShellContent Title="Search" Route="search" ContentTemplate="{DataTemplate local:SearchHandlerPage}" />
+	
+	<ShellContent Title="Search" Route="search" ContentTemplate="{DataTemplate local:SearchHandlerPage}" />
 	<ShellSection FlyoutDisplayOptions="AsMultipleItems" Route="apps" Title="My apps &amp; games" Icon="grid.png" Style="{StaticResource GreenShell}">
 		<ShellContent Route="updates" Title="Updates" ContentTemplate="{DataTemplate local:UpdatesPage}" />
 		<ShellContent Route="installed" Title="Installed" ContentTemplate="{DataTemplate local:InstalledPage}" />
 		<ShellContent Route="library" Title="Library" ContentTemplate="{DataTemplate local:LibraryPage}" />
 	</ShellSection>
 
-	<ShellContent Route="notifications" Style="{StaticResource BaseStyle}" Title="My notifications" Icon="bell.png" ContentTemplate="{DataTemplate local:NotificationsPage}" />
+	<ShellContent Route="notifications" Style="{StaticResource BaseStyle}" Title="My notifications" FlyoutIcon="homeflyout.png" Icon="bell.png" ContentTemplate="{DataTemplate local:NotificationsPage}" />
 
 	<ShellContent Route="subs" Title="Subscriptions" Icon="loop.png" ContentTemplate="{DataTemplate local:SubscriptionsPage}" />
 
@@ -60,8 +68,8 @@
 	</ShellItem>
 
 	<ShellItem Route="store" x:Name="_storeItem" FlyoutDisplayOptions="AsMultipleItems">
-		<ShellContent Route="home" Style="{StaticResource GreenShell}" Title="Home" Icon="home.png" FlyoutIcon="homeflyout.png" ContentTemplate="{DataTemplate local:HomePage}" />
-        <ShellContent Route="list" Title="List"  Icon="games.png" FlyoutIcon="gamesflyout.png" ContentTemplate="{DataTemplate local:DemoShellPage}" />
+		<ShellContent Shell.ItemTemplate="{StaticResource ShellItemTemplate}" Route="home" Style="{StaticResource GreenShell}" Title="Home" Icon="home.png" FlyoutIcon="homeflyout.png" ContentTemplate="{DataTemplate local:HomePage}" />
+		<ShellContent Route="list" Title="List"  Icon="games.png" FlyoutIcon="gamesflyout.png" ContentTemplate="{DataTemplate local:DemoShellPage}" />
 		<ShellContent Route="games" Style="{StaticResource GreenShell}" Title="Games" Icon="games.png" FlyoutIcon="gamesflyout.png" ContentTemplate="{DataTemplate local:GamesPage}" />
 		<ShellContent Route="movies" Style="{StaticResource MoviesShell}" Title="Movies &amp; TV" 
 					  Icon="film.png" FlyoutIcon="filmflyout.png" ContentTemplate="{DataTemplate local:MoviesPage}">
@@ -99,4 +107,11 @@
 
 	<ShellContent Route="settings" Title="Settings" Icon="gear.png" ContentTemplate="{DataTemplate local:SettingsPage}" />
 
+	<ShellItem Route="propagation" Title="Propagation">
+		<ShellContent Shell.NavBarIsVisible="false" Route="home" Style="{StaticResource GreenShell}" Title="No Nav" Icon="home.png" FlyoutIcon="homeflyout.png" ContentTemplate="{DataTemplate local:HomePage}" />
+		<ShellSection Shell.TabBarIsVisible="false" Route="activity" Title="No Tab" Icon="grid.png" Style="{StaticResource GreenShell}">
+			<ShellContent Route="sharednotab" Title="No Tabs" ContentTemplate="{DataTemplate local:UpdatesPage}" />
+			<ShellContent Route="Notificationstabs" Shell.TabBarIsVisible="true" Title="Yes Tabs" ContentTemplate="{DataTemplate local:LibraryPage}" />
+		</ShellSection>
+	</ShellItem>
 </localTest:TestShell>

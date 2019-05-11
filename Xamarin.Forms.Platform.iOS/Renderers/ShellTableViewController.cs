@@ -20,14 +20,15 @@ namespace Xamarin.Forms.Platform.iOS
 			_headerView = headerView;
 			_source = new ShellTableViewSource(context, onElementSelected);
 			_source.ScrolledEvent += OnScrolled;
-			_headerView.HeaderSizeChanged += OnHeaderSizeChanged;
+			if (_headerView != null)
+				_headerView.HeaderSizeChanged += OnHeaderSizeChanged;
 			((IShellController)_context.Shell).StructureChanged += OnStructureChanged;
 		}
-		
+
 		void OnHeaderSizeChanged(object sender, EventArgs e)
 		{
 			_headerSize = HeaderMax;
-			TableView.ContentInset = new UIEdgeInsets((nfloat)HeaderMax + SafeAreaOffset, 0, 0, 0);
+			TableView.ContentInset = new UIEdgeInsets((nfloat)HeaderMax, 0, 0, 0);
 			LayoutParallax();
 		}
 
@@ -63,12 +64,12 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void ViewDidLoad()
 		{
 			base.ViewDidLoad();
-			_headerView.MeasureIfNeeded();
+			_headerView?.MeasureIfNeeded();
 
 			TableView.SeparatorStyle = UITableViewCellSeparatorStyle.None;
 			if (Forms.IsiOS11OrNewer)
 				TableView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
-			TableView.ContentInset = new UIEdgeInsets((nfloat)HeaderMax + SafeAreaOffset, 0, 0, 0);
+			TableView.ContentInset = new UIEdgeInsets((nfloat)HeaderMax, 0, 0, 0);
 			TableView.Source = _source;
 		}
 
@@ -79,10 +80,10 @@ namespace Xamarin.Forms.Platform.iOS
 				if ((_context?.Shell as IShellController) != null)
 					((IShellController)_context.Shell).StructureChanged -= OnStructureChanged;
 
-				if(_source != null)
+				if (_source != null)
 					_source.ScrolledEvent -= OnScrolled;
 
-				if(_headerView != null)
+				if (_headerView != null)
 					_headerView.HeaderSizeChanged -= OnHeaderSizeChanged;
 			}
 
@@ -115,6 +116,6 @@ namespace Xamarin.Forms.Platform.iOS
 		}
 
 		float SafeAreaOffset => (float)Platform.SafeAreaInsetsForWindow.Top;
-		double HeaderMax => _headerView.MeasuredHeight;
+		double HeaderMax => _headerView?.MeasuredHeight ?? 0;
 	}
 }

@@ -58,7 +58,7 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 			else
 			{
-				template = _context.Shell.ItemTemplate ?? DefaultItemTemplate;
+				template = Shell.GetItemTemplate(context) ?? _context.Shell.ItemTemplate ?? DefaultItemTemplate;
 			}
 
 			var cellId = ((IDataTemplateController)template.SelectDataTemplate(context, _context.Shell)).IdString;

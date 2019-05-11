@@ -17,6 +17,7 @@ namespace Xamarin.Forms.Controls.XamStore
 		public StoreShell() 
 		{
 			InitializeComponent();
+			CurrentItem = _storeItem;
 		}
 
 		protected override void Init()
@@ -45,7 +46,6 @@ namespace Xamarin.Forms.Controls.XamStore
 
 			FlyoutIcon.SetAutomationPropertiesHelpText("This as Shell FlyoutIcon");
 			FlyoutIcon.SetAutomationPropertiesName("SHELLMAINFLYOUTICON");
-			CurrentItem = _storeItem;
 			Routing.RegisterRoute("demo", typeof(DemoShellPage));
 			Routing.RegisterRoute("demo/demo", typeof(DemoShellPage));
 		}

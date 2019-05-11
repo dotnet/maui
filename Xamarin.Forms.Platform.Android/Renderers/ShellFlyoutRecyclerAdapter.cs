@@ -47,11 +47,15 @@ namespace Xamarin.Forms.Platform.Android
 		public override int GetItemViewType(int position)
 		{
 			var item = _listItems[position];
-			var dataTemplate = Shell.ItemTemplate ?? DefaultItemTemplate;
+			DataTemplate dataTemplate = null;
 			if (item.Element is IMenuItemController)
 			{
 				dataTemplate = Shell.GetMenuItemTemplate(item.Element) ?? Shell.MenuItemTemplate ?? DefaultMenuItemTemplate;
 			}
+			else
+			{
+				dataTemplate = Shell.GetItemTemplate(item.Element) ?? Shell.ItemTemplate ?? DefaultItemTemplate;
+			}	
 
 			var template = dataTemplate.SelectDataTemplate(item.Element, Shell);
 			var id = ((IDataTemplateController)template).Id;
