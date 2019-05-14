@@ -60,6 +60,7 @@ namespace Xamarin.Forms.Platform.iOS
 					break;
 				case NotifyCollectionChangedAction.Reset:
 					_collectionView.ReloadData();
+					_collectionView.CollectionViewLayout.InvalidateLayout();
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
