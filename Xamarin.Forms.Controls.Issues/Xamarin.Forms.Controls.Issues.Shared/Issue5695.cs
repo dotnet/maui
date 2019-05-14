@@ -11,6 +11,7 @@ using Xamarin.Forms.Core.UITests;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+	//TODO: Write a new test for this issue
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 5695, "Memory leak when Navigation.RemovePage", PlatformAffected.iOS)]
 	public class Issue5695 : TestMasterDetailPage
@@ -78,19 +79,5 @@ namespace Xamarin.Forms.Controls.Issues
                 }
 			};
 		}
-
-#if UITEST
-		[Test]
-		public void Issue5695Test()
-		{
-			RunningApp.Tap(q => q.Marked("Push page"));
-			RunningApp.WaitForElement(q => q.Marked("Push page"));
-
-			RunningApp.WaitForElement(q => q.Marked("You can check result"));
-			RunningApp.Tap(q => q.Marked("Check Result"));
-
-			RunningApp.WaitForElement(q => q.Marked("Success"));
-		}
-#endif
 	}
 }
