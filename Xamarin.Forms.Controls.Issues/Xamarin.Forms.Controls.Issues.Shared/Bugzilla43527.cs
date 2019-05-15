@@ -39,5 +39,16 @@ namespace Xamarin.Forms.Controls.Issues
 				};
 			}
 		}
+
+#if UITEST
+		[Test]
+		public void TestB43527UpdateTitle()
+		{
+				RunningApp.WaitForElement(q => q.Marked("Change Title"));
+				RunningApp.WaitForElement(q => q.Marked("Test Page"));
+				RunningApp.Tap(q => q.Marked("Change Title"));
+				RunningApp.WaitForNoElement(q => q.Marked("Test Page"));
+		}
+#endif
 	}
 }
