@@ -174,6 +174,9 @@ namespace Xamarin.Essentials
                 case PermissionType.WriteExternalStorage:
                     permissions.Add((Manifest.Permission.WriteExternalStorage, false));
                     break;
+                case PermissionType.ReadExternalStorage:
+                    permissions.Add((Manifest.Permission.ReadExternalStorage, true));
+                    break;
             }
 
             if (onlyRuntimePermissions)

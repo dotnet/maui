@@ -30,5 +30,6 @@
         NetworkState,
         Vibrate,
         WriteExternalStorage,
+        ReadExternalStorage,
     }
 }
