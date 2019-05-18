@@ -14,10 +14,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 	[Category("LongRunning")]
 	public class MSBuildTests
 	{
-		const string XamarinFormsTargets = "Xamarin.Forms.targets";
-
-		static readonly string [] references = new []
-		{
+		static readonly string [] references = {
 			"mscorlib",
 			"System",
 			"Xamarin.Forms.Core.dll",
@@ -67,26 +64,34 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			intermediateDirectory = Path.Combine (tempDirectory, "obj", "Debug");
 			Directory.CreateDirectory (tempDirectory);
 
-			//We need to copy Xamarin.Forms.targets to the test directory, to reliably import them
-			var xamarinFormsTargets = Path.Combine (testDirectory, "..", "..", "..", "..", ".nuspec", XamarinFormsTargets);
-			if (!File.Exists (xamarinFormsTargets)) {
+			//copy _Directory.Build.[props|targets] in test/
+			var props = Path.Combine(testDirectory, "..", "..", "..", "MSBuild", "_Directory.Build.props");
+			var targets = Path.Combine(testDirectory, "..", "..", "..", "MSBuild", "_Directory.Build.targets");
+			if (!File.Exists(props))
+			{
 				//NOTE: VSTS may be running tests in a staging directory, so we can use an environment variable to find the source
-				//	https://docs.microsoft.com/en-us/vsts/build-release/concepts/definitions/build/variables?view=vsts&tabs=batch#buildsourcesdirectory
-				var sourcesDirectory = Environment.GetEnvironmentVariable ("BUILD_SOURCESDIRECTORY");
-				if (!string.IsNullOrEmpty (sourcesDirectory)) {
-					xamarinFormsTargets = Path.Combine (sourcesDirectory, ".nuspec", XamarinFormsTargets);
-					if (!File.Exists (xamarinFormsTargets)) {
-						Assert.Fail ("Unable to find Xamarin.Forms.targets at path: " + xamarinFormsTargets);
-					}
-				} else {
-					Assert.Fail ("Unable to find Xamarin.Forms.targets at path: " + xamarinFormsTargets);
+				//https://docs.microsoft.com/en-us/vsts/build-release/concepts/definitions/build/variables?view=vsts&tabs=batch#buildsourcesdirectory
+				var sourcesDirectory = Environment.GetEnvironmentVariable("BUILD_SOURCESDIRECTORY");
+				if (!string.IsNullOrEmpty(sourcesDirectory)) {
+					props = Path.Combine(sourcesDirectory, "Xamarin.Forms.Xaml.UnitTests", "MSBuild", "_Directory.Build.props");
+					targets = Path.Combine(sourcesDirectory, "Xamarin.Forms.Xaml.UnitTests", "MSBuild", "_Directory.Build.targets");
+
+					if (!File.Exists(props))
+						Assert.Fail("Unable to find _Directory.Build.props at path: " + props);
 				}
+				else
+					Assert.Fail("Unable to find _Directory.Build.props at path: " + props);
+
+				Directory.CreateDirectory(Path.Combine(testDirectory, "..", "..", "..", "..",  ".nuspec"));
+				foreach (var file in Directory.GetFiles(Path.Combine(sourcesDirectory, ".nuspec"), "*.targets"))
+					File.Copy(file, Path.Combine(testDirectory, "..", "..", "..", "..", ".nuspec", Path.GetFileName(file)), true);
+				foreach (var file in Directory.GetFiles(Path.Combine(sourcesDirectory, ".nuspec"), "*.props"))
+					File.Copy(file, Path.Combine(testDirectory, "..", "..", "..", "..", ".nuspec", Path.GetFileName(file)), true);
+				File.Copy(Path.Combine(sourcesDirectory, "Directory.Build.props"), Path.Combine(testDirectory, "..", "..", "..", "..", "Directory.Build.props"), true);
 			}
 
-			//Copy all *.targets files to the test directory
-			foreach (var file in Directory.GetFiles (Path.GetDirectoryName (xamarinFormsTargets), "*.targets")) {
-				File.Copy (file, Path.Combine (testDirectory, Path.GetFileName (file)), true);
-			}
+			File.Copy(props, Path.Combine(tempDirectory, "Directory.Build.props"), true);
+			File.Copy(targets, Path.Combine(tempDirectory, "Directory.Build.targets"), true);
 		}
 
 		[TearDown]
@@ -120,7 +125,8 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 				project.WithAttribute ("Sdk", "Microsoft.NET.Sdk");
 				propertyGroup.Add (NewElement ("TargetFramework").WithValue ("netstandard2"));
 				//NOTE: we don't want SDK-style projects to auto-add files, tests should be able to control this
-				propertyGroup.Add (NewElement ("EnableDefaultCompileItems").WithValue ("False"));
+				propertyGroup.Add(NewElement("EnableDefaultCompileItems").WithValue("False"));
+				propertyGroup.Add(NewElement("EnableDefaultEmbeddedResourceItems").WithValue("False"));
 				//NOTE: SDK-style output paths are different
 				if (!intermediateDirectory.EndsWith ("netstandard2"))
 					intermediateDirectory = Path.Combine (intermediateDirectory, "netstandard2");
@@ -156,10 +162,6 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 
 			if (!sdkStyle)
 				project.Add (NewElement ("Import").WithAttribute ("Project", @"$(MSBuildBinPath)\Microsoft.CSharp.targets"));
-
-			//Import Xamarin.Forms.targets that was copied to the test directory in [SetUp]
-			project.Add (NewElement ("Import").WithAttribute ("Project", Path.Combine (testDirectory, XamarinFormsTargets)));
-
 			return project;
 		}
 
@@ -197,7 +199,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 		{
 			var psi = new ProcessStartInfo {
 				FileName = FindMSBuild (),
-				Arguments = $"/v:minimal /nologo {projectFile} /t:{target} /bl {additionalArgs}",
+				Arguments = $"/v:normal /nologo {projectFile} /t:{target} /bl {additionalArgs}",
 				CreateNoWindow = true,
 				WindowStyle = ProcessWindowStyle.Hidden,
 				UseShellExecute = false,
@@ -338,7 +340,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 		//https://github.com/dotnet/project-system/blob/master/docs/design-time-builds.md
 		//https://daveaglick.com/posts/running-a-design-time-build-with-msbuild-apis
 		[Test]
-		public void DesignTimeBuild ([Values (false, true)] bool sdkStyle)
+		public void DesignTimeBuild ([Values (false/*, true */)] bool sdkStyle)
 		{
 			var project = NewProject (sdkStyle);
 			project.Add (AddFile (@"Pages\MainPage.xaml", "EmbeddedResource", Xaml.MainPage));
