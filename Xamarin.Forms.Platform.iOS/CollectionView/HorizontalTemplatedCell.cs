@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Platform.iOS
 			var measure = VisualElementRenderer.Element.Measure(double.PositiveInfinity, 
 				ConstrainedDimension, MeasureFlags.IncludeMargins);
 
-			return new CGSize(measure.Request.Height, ConstrainedDimension);
+			return new CGSize(measure.Request.Width, ConstrainedDimension);
 		}
 
 		public override void ConstrainTo(CGSize constraint)
