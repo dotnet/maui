@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -139,6 +140,54 @@ namespace Xamarin.Forms.Xaml
 				}
 			}
 			return inflatedView;
+		}
+
+		public static IResourceDictionary LoadResources(string xaml, IResourcesProvider rootView)
+		{
+			void ehandler(Exception e) => ResourceLoader.ExceptionHandler2?.Invoke((e, XamlFilePathAttribute.GetFilePathForObject(rootView)));
+
+			using (var textReader = new StringReader(xaml))
+			using (var reader = XmlReader.Create(textReader)) {
+				while (reader.Read()) {
+					//Skip until element
+					if (reader.NodeType == XmlNodeType.Whitespace)
+						continue;
+					if (reader.NodeType == XmlNodeType.XmlDeclaration)
+						continue;
+					if (reader.NodeType != XmlNodeType.Element)
+					{
+						Debug.WriteLine("Unhandled node {0} {1} {2}", reader.NodeType, reader.Name, reader.Value);
+						continue;
+					}
+
+					//the root is set to null, and not to rootView, on purpose as we don't want to erase the current Resources of the view
+					RootNode rootNode = new RuntimeRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), null, (IXmlNamespaceResolver)reader);
+					XamlParser.ParseXaml(rootNode, reader);
+					var rNode = (IElementNode)rootNode;
+					if (!rNode.Properties.TryGetValue(new XmlName("http://xamarin.com/schemas/2014/forms", "Resources"), out var resources))
+						return null;
+
+					var visitorContext = new HydrationContext
+					{
+						ExceptionHandler = ResourceLoader.ExceptionHandler2 != null ? ehandler : (Action<Exception>)null,
+					};
+					var cvv = new CreateValuesVisitor(visitorContext);
+					cvv.Visit((ElementNode)resources, null);
+					visitorContext.RootElement = visitorContext.Values[resources];
+
+					resources.Accept(new XamlNodeVisitor((node, parent) => node.Parent = parent), null); //set parents for {StaticResource}
+					resources.Accept(new ExpandMarkupsVisitor(visitorContext), null);
+					resources.Accept(new PruneIgnoredNodesVisitor(false), null);
+					resources.Accept(new NamescopingVisitor(visitorContext), null); //set namescopes for {x:Reference}
+					resources.Accept(new CreateValuesVisitor(visitorContext), null);
+					resources.Accept(new RegisterXNamesVisitor(visitorContext), null);
+					resources.Accept(new FillResourceDictionariesVisitor(visitorContext), null);
+					resources.Accept(new ApplyPropertiesVisitor(visitorContext, true), null);
+
+					return visitorContext.Values[resources] as IResourceDictionary;
+				}
+			}
+			return null;
 		}
 
 		static void Visit(RootNode rootnode, HydrationContext visitorContext, bool useDesignProperties)
