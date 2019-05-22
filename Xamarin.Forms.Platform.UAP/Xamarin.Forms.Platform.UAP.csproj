@@ -105,9 +105,6 @@
     <Compile Include="TabbedPageRenderer.cs" />
     <Compile Include="ToolbarPlacementHelper.cs" />
     <EmbeddedResource Include="Properties\Xamarin.Forms.Platform.UAP.rd.xml" />
-    <Compile Include="..\Xamarin.Forms.Core\Properties\GlobalAssemblyInfo.cs">
-      <Link>Properties\GlobalAssemblyInfo.cs</Link>
-    </Compile>
     <Compile Include="Forms.cs" />
     <Compile Include="WindowsPage.cs" />
     <Compile Include="WindowsPlatform.cs" />

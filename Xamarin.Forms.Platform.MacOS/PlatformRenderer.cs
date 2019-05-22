@@ -10,7 +10,9 @@ namespace Xamarin.Forms.Platform.MacOS
 		internal PlatformRenderer(Platform platform)
 		{
 			Platform = platform;
+#pragma warning disable CS0618 // Type or member is obsolete
 			View = new NSView(NSApplication.SharedApplication.Windows[0].Frame);
+#pragma warning restore CS0618 // Type or member is obsolete
 			_platformNavigation = new PlatformNavigation(this);
 		}
 

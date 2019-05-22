@@ -1,6 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+   <PropertyGroup>
+    <Description>Provides the design-time metadata for the XAML language service.</Description>
+    <AssemblyName>Xamarin.Forms.Xaml.Design</AssemblyName>
+  </PropertyGroup>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -8,7 +12,6 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Xamarin.Forms.Xaml.Design</RootNamespace>
-    <AssemblyName>Xamarin.Forms.Xaml.Design</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
@@ -42,11 +45,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Xamarin.Forms.Design" Version="1.0.26-pre" Condition=" '$(OS)' != 'Unix' " />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\Xamarin.Forms.Core\Properties\GlobalAssemblyInfo.cs">
-      <Link>Properties\GlobalAssemblyInfo.cs</Link>
-    </Compile>
   </ItemGroup>
   <ItemGroup Condition=" '$(OS)' != 'Unix' ">
     <Compile Include="AttributeTableBuilder.cs" />

@@ -13,7 +13,7 @@ parameters:
   androidProjectPath : 'Xamarin.Forms.ControlGallery.Android/Xamarin.Forms.ControlGallery.Android.csproj'
   androidProjectArguments : ''
   buildConfiguration : 'Debug'
-  nugetVersion: 4.8.1
+  nugetVersion: $(NUGET_VERSION)
   apkTargetFolder: '$(build.artifactstagingdirectory)/androidApp'
 
 jobs:

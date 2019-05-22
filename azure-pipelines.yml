@@ -17,6 +17,14 @@ variables:
   value: 0
 - name: buildversion
   value: $[counter('$(Build.SourceBranchName)_counter', 1)]
+- name: MONO_VERSION
+  value: 5_18_1
+- name: XCODE_VERSION
+  value: 10.2
+- name: provisioning
+  value: false
+- name: NUGET_VERSION
+  value: 5.0.2
 
 resources:
   repositories:
@@ -31,14 +39,19 @@ trigger:
     - master
     - 3.*
     - 4.*
+  tags:
+    include:
+    - release*
+    - beta*
   paths:
     exclude:
     - README.md
 
 pr:
-- master
-- 3.*
-- 4.*
+  autoCancel: false
+  branches:
+    include:
+    - '*'
 
 jobs:
 - job: Phase_1
@@ -63,24 +76,10 @@ jobs:
       release:
         BuildConfiguration: 'Release'
         BuildPlatform: $(DefaultBuildPlatform)
+  variables:
+    nugetVersion: $(NUGET_VERSION)
   steps:
      - template: build/steps/build-windows.yml
-
-- job: Phase_3
-  displayName: Test Windows Phase
-  dependsOn: Phase_2
-  condition: succeeded()
-  pool:
-    name: $(winVmImage)
-    demands: vstest
-  strategy:
-    matrix:
-      debug:
-        BuildConfiguration: $(DefaultBuildConfiguration)
-      release:
-        BuildConfiguration: 'Release'
-  steps:
-     - template: build/steps/build-windows-test.yml
 
 - template: build/steps/build-android.yml
   parameters:
@@ -88,7 +87,7 @@ jobs:
     displayName: Build Android [Legacy Renderers]
     vmImage: $(macOSVmImage)
     targetFolder: Xamarin.Forms.ControlGallery.Android/legacyRenderers/
-    androidProjectArguments: '/t:"Rebuild;SignAndroidPackage"'
+    androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /bl:$(Build.ArtifactStagingDirectory)\android-legacy.binlog'
     dependsOn: Phase_1
     buildConfiguration: $(DefaultBuildConfiguration)
 
@@ -98,7 +97,7 @@ jobs:
     displayName: Build Android [Pre-AppCompat]
     vmImage: $(macOSVmImage)
     targetFolder: Xamarin.Forms.ControlGallery.Android/preAppCompat
-    androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /p:DefineConstants="TRACE DEBUG FORMS_APPLICATION_ACTIVITY APP"'
+    androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /p:DefineConstants="TRACE DEBUG FORMS_APPLICATION_ACTIVITY APP" /bl:$(Build.ArtifactStagingDirectory)\android-preappcompact.binlog'
     dependsOn: Phase_1
     buildConfiguration: $(DefaultBuildConfiguration)
 
@@ -108,7 +107,7 @@ jobs:
     displayName: Build Android [Fast Renderers]
     vmImage: $(macOSVmImage)
     targetFolder: Xamarin.Forms.ControlGallery.Android/newRenderers/
-    androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /p:DefineConstants="TRACE DEBUG TEST_EXPERIMENTAL_RENDERERS APP"'
+    androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /p:DefineConstants="TRACE DEBUG TEST_EXPERIMENTAL_RENDERERS APP" /bl:$(Build.ArtifactStagingDirectory)\android-newrenderers.binlog'
     dependsOn: Phase_1
     buildConfiguration: $(DefaultBuildConfiguration)
 
@@ -129,7 +128,7 @@ jobs:
     provisionator.signPath : 'build/provisioning/provisioning_sign.csx'
     buildConfiguration: $(DefaultBuildConfiguration)
     slnPath: $(SolutionFile)
-    nugetVersion: 4.8.1
+    nugetVersion: $(NUGET_VERSION)
     iOSCertSecureFileName: 'Xamarin Forms iOS Certificate.p12'
     iOSProvisioningSecureFileName: 'Xamarin Forms iOS Provisioning.mobileprovision'
   steps:
@@ -138,7 +137,7 @@ jobs:
 - job: Phase_5
   displayName: Nuget Phase
   dependsOn:
-   - Phase_3
+   - Phase_2
    - android_legacy
    - android_preappcompact
    - android_fast
@@ -148,6 +147,8 @@ jobs:
   variables:
     FormsIdAppend: ''
     buildConfiguration: $(DefaultBuildConfiguration)
+    nugetVersion: $(NUGET_VERSION)
+    pacakageVersion : $[ dependencies.Phase_2.outputs['debug.winbuild.packageversion'] ]
   steps:
      - template: build/steps/build-nuget.yml
 

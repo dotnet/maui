@@ -1,25 +1,7 @@
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using Xamarin.Forms;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android;
-
-// Information about this assembly is defined by the following attributes. 
-// Change them to the values specific to your project.
-
-[assembly: AssemblyTitle("Xamarin.Forms.Platform.Android")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCulture("")]
-[assembly: InternalsVisibleTo("Xamarin.Forms.Platform")]
-[assembly: InternalsVisibleTo("Xamarin.Forms.Material")]
-
-// The following attributes are used to specify the signing key for the assembly, 
-// if desired. See the Mono documentation for more information about signing.
-
-//[assembly: AssemblyDelaySign(false)]
-//[assembly: AssemblyKeyFile("")]
-
 
 // These renderers are now registered via the RenderWithAttribute in the Android Forwarders project.
 // Note that AppCompat and FastRenderers are also registered conditionally in FormsAppCompatActivity.LoadApplication
@@ -72,5 +54,5 @@ using Xamarin.Forms.Platform.Android;
 [assembly: Xamarin.Forms.Dependency(typeof(Deserializer))]
 [assembly: Xamarin.Forms.Dependency(typeof(ResourcesProvider))]
 [assembly: Preserve]
-[assembly: AssemblyVersion("2.0.0.0")]
-[assembly: AssemblyFileVersion("2.0.0.0")]
+[assembly: InternalsVisibleTo("Xamarin.Forms.Platform")]
+[assembly: InternalsVisibleTo("Xamarin.Forms.Material")]
