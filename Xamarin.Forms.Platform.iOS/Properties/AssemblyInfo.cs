@@ -1,22 +1,8 @@
-using System.Reflection;
 using System.Runtime.CompilerServices;
-// Information about this assembly is defined by the following attributes. 
-// Change them to the values specific to your project.
 using Xamarin.Forms;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.iOS;
 using UIKit;
-
-[assembly: AssemblyTitle("Xamarin.Forms.Platform.iOS")]
-[assembly: AssemblyDescription("iOS Backend for Xamarin.Forms")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCulture("")]
-
-// The following attributes are used to specify the signing key for the assembly, 
-// if desired. See the Mono documentation for more information about signing.
-
-//[assembly: AssemblyDelaySign(false)]
-//[assembly: AssemblyKeyFile("")]
 
 // These renderers are now registered via the RenderWithAttribute in the iOS Forwarders project.
 #if ROOT_RENDERERS
@@ -70,5 +56,3 @@ using UIKit;
 [assembly: Xamarin.Forms.Dependency(typeof(ResourcesProvider))]
 [assembly: ResolutionGroupName("Xamarin")]
 [assembly: Preserve]
-[assembly: AssemblyVersion("2.0.0.0")]
-[assembly: AssemblyFileVersion("2.0.0.0")]

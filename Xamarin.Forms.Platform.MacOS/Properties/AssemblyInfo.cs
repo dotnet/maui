@@ -1,19 +1,8 @@
-﻿using System.Reflection;
-using System.Runtime.CompilerServices;
+﻿using Xamarin.Forms;
 using Xamarin.Forms.Platform.MacOS;
-using Xamarin.Forms;
-using Xamarin.Forms.Internals;
 
-[assembly: AssemblyTitle("Xamarin.Forms.Platform.macOS")]
-[assembly: AssemblyDescription("macOS Backend for Xamarin.Forms")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCulture("")]
-
-//[assembly: AssemblyDelaySign(false)]
-//[assembly: AssemblyKeyFile("")]
-
-[assembly: Xamarin.Forms.Dependency(typeof(Deserializer))]
-[assembly: Xamarin.Forms.Dependency(typeof(ResourcesProvider))]
+[assembly: Dependency(typeof(Deserializer))]
+[assembly: Dependency(typeof(ResourcesProvider))]
 [assembly: ExportImageSourceHandler(typeof(FileImageSource), typeof(FileImageSourceHandler))]
 [assembly: ExportImageSourceHandler(typeof(StreamImageSource), typeof(StreamImagesourceHandler))]
 [assembly: ExportImageSourceHandler(typeof(UriImageSource), typeof(ImageLoaderSourceHandler))]
@@ -51,6 +40,3 @@ using Xamarin.Forms.Internals;
 [assembly: ExportCell(typeof(EntryCell), typeof(EntryCellRenderer))]
 [assembly: ExportCell(typeof(ViewCell), typeof(ViewCellRenderer))]
 [assembly: ExportCell(typeof(SwitchCell), typeof(SwitchCellRenderer))]
-
-[assembly: AssemblyVersion("2.0.0.0")]
-[assembly: AssemblyFileVersion("2.0.0.0")]
