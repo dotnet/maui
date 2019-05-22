@@ -5,4 +5,15 @@
     <__XFBuildTasksLocation Condition="'$(__XFBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory).nuspec\net46\</__XFBuildTasksLocation>
 	<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
- </Project> 
+  <PropertyGroup>
+    <Company>Microsoft</Company>
+    <Product>Xamarin.Forms</Product>
+  </PropertyGroup>
+  <!-- This target is replaced by GitInfo when restored. Allows Version.targets to rely on it before restore. -->
+  <Target Name="GitVersion" />
+  <PropertyGroup Condition="'$(CI)' == ''">
+    <CI>false</CI>
+    <CI Condition="'$(TF_BUILD)' == 'true'">true</CI>
+  </PropertyGroup>
+
+ </Project>

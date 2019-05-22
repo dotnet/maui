@@ -72,9 +72,6 @@
     <Compile Include="..\Xamarin.Forms.Maps.iOS\MapRenderer.cs">
       <Link>MapRenderer.cs</Link>
     </Compile>
-    <Compile Include="..\Xamarin.Forms.Core\Properties\GlobalAssemblyInfo.cs">
-      <Link>Properties\GlobalAssemblyInfo.cs</Link>
-    </Compile>
     <Compile Include="..\Xamarin.Forms.Maps.iOS\MapPool.cs">
       <Link>MapPool.cs</Link>
     </Compile>

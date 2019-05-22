@@ -1,9 +1,7 @@
-using System.Reflection;
 using System.Runtime.CompilerServices;
 
 using Xamarin.Forms;
 using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
 
 [assembly: InternalsVisibleTo("Xamarin.Forms.Xaml.UnitTests")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.Build.Tasks")]
@@ -24,6 +22,3 @@ using Xamarin.Forms.Xaml;
 #pragma warning disable CS0612 // Type or member is obsolete
 [assembly: TypeForwardedTo(typeof(Xamarin.Forms.Xaml.Internals.INameScopeProvider))]
 #pragma warning restore CS0612 // Type or member is obsolete
-
-[assembly: AssemblyVersion("2.0.0.0")]
-[assembly: AssemblyFileVersion("2.0.0.0")]
