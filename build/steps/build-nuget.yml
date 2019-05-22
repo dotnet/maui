@@ -47,6 +47,11 @@ steps:
     failOnStderr: true
     displayName: 'Set Nuget version'
 
+  - task: NuGetToolInstaller@0
+    displayName: 'Use NuGet'
+    inputs:
+      versionSpec: $(nugetVersion)
+
   - task: NuGetCommand@2
     displayName: 'Make NuGet Package'
     inputs:
@@ -67,6 +72,7 @@ steps:
       packagesToPush: '$(Build.ArtifactStagingDirectory)/nuget/debug/*.nupkg'
       publishVstsFeed: '$(VstsFeed)'
       allowPackageConflicts: true
+    continueOnError: true
 
 
   - powershell: |
@@ -95,7 +101,7 @@ steps:
       versioningScheme: byEnvVar
       versionEnvVar: XamarinFormsPackageVersion
       buildProperties: 'IdAppend=$(FormsIdAppend)'
-    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'],'refs/tags/'))
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'],'refs/tags/')))
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: nuget'

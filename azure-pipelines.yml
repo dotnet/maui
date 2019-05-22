@@ -147,6 +147,7 @@ jobs:
   variables:
     FormsIdAppend: ''
     buildConfiguration: $(DefaultBuildConfiguration)
+    nugetVersion: $(NUGET_VERSION)
     pacakageVersion : $[ dependencies.Phase_2.outputs['debug.winbuild.packageversion'] ]
   steps:
      - template: build/steps/build-nuget.yml
