@@ -27,8 +27,8 @@
       <VersionMetadataPlusLabel Condition="'$(VersionMetadataLabel)' != ''">+$(VersionMetadataLabel)</VersionMetadataPlusLabel>
 
       <GitSemVerDashLabel Condition="'$(GitSemVerDashLabel)' != '' and '$(GitCommits)' != '0'">$(GitSemVerDashLabel).$(GitCommits)</GitSemVerDashLabel>
-      <PackageVersion>$(GitBaseVersion)$(GitSemVerDashLabel)$(VersionMetadataPlusLabel)</PackageVersion>
-      <Version>$(GitBaseVersion)</Version>
+      <Version>$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)</Version>
+      <PackageVersion>$(Version)$(GitSemVerDashLabel)$(VersionMetadataPlusLabel)</PackageVersion>
     </PropertyGroup>
 
     <PropertyGroup>
