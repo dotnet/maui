@@ -8,11 +8,16 @@ steps:
       provisioning_script: $(provisionator.osxPath)
       provisioning_extra_args: $(provisionator.extraArguments)
 
+  - bash: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh $(MONO_VERSION)
+    displayName: Switch to the latest Xamarin SDK
+
+  - bash: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XCODE_VERSION).app;sudo xcode-select --switch /Applications/Xcode_$(XCODE_VERSION).app/Contents/Developer
+    displayName: Switch to the latest Xcode
+
   - task: NuGetToolInstaller@0
-    displayName: 'Use NuGet $(nugetVersion)'
+    displayName: 'Use NuGet'
     inputs:
       versionSpec: $(nugetVersion)
-      checkLatest: true
 
   - task: NuGetCommand@2
     displayName: 'NuGet restore'

@@ -2,30 +2,6 @@ steps:
   - powershell: |
        $sourceBranchName = "" + $env:BUILD_SOURCEBRANCHNAME
        $sourceBranch = "" + $env:BUILD_SOURCEBRANCH
-       $sourceVersion = "" + $env:BUILD_SOURCEVERSION
-       $tags = New-Object System.Collections.ArrayList
-       $realBuildName = ""
-       $buildId = "" + $env:BUILD_BUILDID
-
-       if($sourceBranch) {
-           $branchParts = $sourceBranch.Split('/')
-
-           if(($sourceBranchName -eq "merge" -or $sourceBranchName -eq "head")  -and $branchParts.Count -eq 4 -and $branchParts[1] -contains "pull") {
-               $realBuildName = "PR-{0} - ({1})" -f  $branchParts[2],$buildId
-           } else {
-               $shortVersion = If ($sourceVersion.Length -gt 7) { $sourceVersion.Substring(0,7) } Else { $sourceVersion }
-               $realBuildName = "{0}-{1} ({2})" -f $sourceBranchName,$shortVersion,$buildId
-           }
-       }
-
-       #Update VSTS build number
-       if($realBuildName) {
-           Write-Host "##vso[build.updatebuildnumber]$realBuildName"
-       }
-    displayName: 'Set Build Number'
-  - powershell: |
-       $sourceBranchName = "" + $env:BUILD_SOURCEBRANCHNAME
-       $sourceBranch = "" + $env:BUILD_SOURCEBRANCH
        $publicTags = "" + $env:PUBLICTAGS
        $tags = New-Object System.Collections.ArrayList
        $buildId = "" + $env:BUILD_BUILDID

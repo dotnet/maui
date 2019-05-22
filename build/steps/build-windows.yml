@@ -1,8 +1,8 @@
 steps:
     - task: NuGetToolInstaller@0
-      displayName: 'Use NuGet 4.8.1'
+      displayName: 'Use NuGet'
       inputs:
-        versionSpec: 4.8.1
+        versionSpec: $(nugetVersion)
 
     - task: NuGetCommand@2
       displayName: 'NuGet restore'
@@ -11,12 +11,26 @@ steps:
 
     - task: MSBuild@1
       displayName: 'Build solution'
+      name: winbuild
       inputs:
         solution: $(SolutionFile)
         platform: '$(BuildPlatform)'
         configuration: '$(BuildConfiguration)'
-        msbuildArguments: '/nowarn:VSX1000 /p:CreateAllAndroidTargets=true'
+        msbuildArguments: '/nowarn:VSX1000 /p:CreateAllAndroidTargets=true /bl:$(Build.ArtifactStagingDirectory)\win.binlog'
         clean: true
+
+    - task: VSTest@2
+      displayName: 'Unit Tests'
+      inputs:
+        testAssemblyVer2: |
+          **/bin/$(BuildConfiguration)/Xamarin.Forms.Core.UnitTests.dll
+          **/bin/$(BuildConfiguration)/Xamarin.Forms.Pages.UnitTests.dll
+          **/bin/$(BuildConfiguration)/**/Xamarin.Forms.Xaml.UnitTests.dll
+        searchFolder: '$(Build.SourcesDirectory)'
+        pathtoCustomTestAdapters: 'packages/NUnitTestAdapter.AnyVersion/tools/'
+        codeCoverageEnabled: true
+        testRunTitle: '$(BuildConfiguration)_UnitTests'
+        configuration: '$(BuildConfiguration)'
 
     - task: CopyFiles@2
       displayName: 'Copy Files dlls'
@@ -107,18 +121,9 @@ steps:
           Microsoft.XamlStandard/bin/$(BuildConfiguration)/**/*.dll
           Microsoft.XamlStandard/bin/$(BuildConfiguration)/**/*.mdb
           Microsoft.XamlStandard/bin/$(BuildConfiguration)/**/*.pdb
+          **/*.binlog
 
         TargetFolder: '$(Build.ArtifactStagingDirectory)'
-
-    - task: CopyFiles@2
-      displayName: 'Copy files test adapter'
-      inputs:
-        Contents: '**/NUnitTestAdapter.*/tools/*.dll'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)/testadapter'
-        CleanTargetFolder: true
-        OverWrite: true
-        flattenFolders: true
-
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: win_build'

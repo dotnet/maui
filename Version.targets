@@ -49,6 +49,7 @@
     </ItemGroup>
 
     <Message Condition="$(CI)" Importance="high" Text="##vso[build.updatebuildnumber]$(PackageVersion)"/>
+    <Message Condition="$(CI)" Importance="high" Text="##vso[task.setvariable variable=packageversion;isOutput=true;]$(PackageVersion)"/>
   </Target>
 
   <Target Name="VersionInfoReport" DependsOnTargets="SetVersions" AfterTargets="GitInfoReport">
