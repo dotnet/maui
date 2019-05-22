@@ -39,6 +39,10 @@ trigger:
     - master
     - 3.*
     - 4.*
+  tags:
+    include:
+    - release*
+    - beta*
   paths:
     exclude:
     - README.md
