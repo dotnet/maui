@@ -116,7 +116,11 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			var source = imageElement.Source;
 
-			if (oldElement != null)
+			if (Control.Image?.Images != null && Control.Image.Images.Length > 1)
+			{
+				renderer.SetImage(null);
+			}
+			else if (oldElement != null)
 			{
 				var oldSource = oldElement.Source;
 				if (Equals(oldSource, source))
