@@ -1,11 +1,12 @@
 using System;
+using System.Linq;
 using System.Collections.Specialized;
+using System.Collections.Generic;
 using ElmSharp;
 using EBox = ElmSharp.Box;
 using EScroller = ElmSharp.Scroller;
 using ESize = ElmSharp.Size;
 using EPoint = ElmSharp.Point;
-using System.Collections.Generic;
 
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
@@ -15,6 +16,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		ICollectionViewLayoutManager _layoutManager;
 		ItemAdaptor _adaptor;
 		EBox _innerLayout;
+		EvasObject _emptyView;
 
 		Dictionary<ViewHolder, int> _viewHolderIndexTable = new Dictionary<ViewHolder, int>();
 		ViewHolder _lastSelectedViewHolder;
@@ -92,12 +94,19 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			{
 				OnAdaptorChanging();
 				_adaptor = value;
-				_adaptor.CollectionView = this;
 				OnAdaptorChanged();
 			}
 		}
 
-		int ICollectionViewController.Count => Adaptor?.Count ?? 0;
+		int ICollectionViewController.Count
+		{
+			get
+			{
+				if (Adaptor == null || Adaptor is IEmptyAdaptor)
+					return 0;
+				return Adaptor.Count;
+			}
+		}
 
 		EPoint ICollectionViewController.ParentPosition => new EPoint
 		{
@@ -189,21 +198,31 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			ScrollTo(Adaptor.GetItemIndex(item), position, animate);
 		}
 
+		public void ItemMeasureInvalidated(int index)
+		{
+			LayoutManager?.ItemMeasureInvalidated(index);
+		}
+
 		void ICollectionViewController.RequestLayoutItems() => RequestLayoutItems();
 
-
 		ESize ICollectionViewController.GetItemSize()
+		{
+			return (this as ICollectionViewController).GetItemSize(LayoutManager.IsHorizontal ? AllocatedSize.Width * 100 : AllocatedSize.Width, LayoutManager.IsHorizontal ? AllocatedSize.Height : AllocatedSize.Height * 100);
+		}
+
+		ESize ICollectionViewController.GetItemSize(int widthConstraint, int heightConstraint)
 		{
 			if (Adaptor == null)
 			{
 				return new ESize(0, 0);
 			}
+
 			if (_itemSize.Width > 0 && _itemSize.Height > 0)
 			{
 				return _itemSize;
 			}
 
-			_itemSize = Adaptor.MeasureItem(AllocatedSize.Width, AllocatedSize.Height);
+			_itemSize = Adaptor.MeasureItem(widthConstraint, heightConstraint);
 			_itemSize.Width = Math.Max(_itemSize.Width, 10);
 			_itemSize.Height = Math.Max(_itemSize.Height, 10);
 
@@ -214,22 +233,32 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			return _itemSize;
 		}
 
+		ESize ICollectionViewController.GetItemSize(int index, int widthConstraint, int heightConstraint)
+		{
+			if (Adaptor == null)
+			{
+				return new ESize(0, 0);
+			}
+			return Adaptor.MeasureItem(index, widthConstraint, heightConstraint);
+		}
+
 		ViewHolder ICollectionViewController.RealizeView(int index)
 		{
 			if (Adaptor == null)
 				return null;
 
-			var holder = _pool.GetRecyclerView();
+			var holder = _pool.GetRecyclerView(Adaptor.GetViewCategory(index));
 			if (holder != null)
 			{
 				holder.Show();
 			}
 			else
 			{
-				var content = Adaptor.CreateNativeView(this);
+				var content = Adaptor.CreateNativeView(index, this);
 				holder = new ViewHolder(this);
 				holder.RequestSelected += OnRequestItemSelection;
 				holder.Content = content;
+				holder.ViewCategory = Adaptor.GetViewCategory(index);
 				_innerLayout.PackEnd(holder);
 			}
 
@@ -268,9 +297,19 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		void ICollectionViewController.UnrealizeView(ViewHolder view)
 		{
 			_viewHolderIndexTable.Remove(view);
+			Adaptor.UnBinding(view.Content);
 			view.ResetState();
 			view.Hide();
 			_pool.AddRecyclerView(view);
+			if (_lastSelectedViewHolder == view)
+			{
+				_lastSelectedViewHolder = null;
+			}
+		}
+
+		void ICollectionViewController.ContentSizeUpdated()
+		{
+			OnInnerLayout();
 		}
 
 		protected virtual EScroller CreateScroller(EvasObject parent)
@@ -308,7 +347,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			}
 		}
 
-
 		void OnLayoutManagerChanging()
 		{
 			_layoutManager?.Reset();
@@ -319,6 +357,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			if (_layoutManager == null)
 				return;
 
+			_itemSize = new ESize(-1, -1);
 			_layoutManager.CollectionView = this;
 			_layoutManager.SizeAllocated(AllocatedSize);
 			RequestLayoutItems();
@@ -326,6 +365,11 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 		void OnAdaptorChanging()
 		{
+			if (Adaptor is IEmptyAdaptor)
+			{
+				RemoveEmptyView();
+			}
+
 			_layoutManager?.Reset();
 			if (Adaptor != null)
 			{
@@ -340,32 +384,67 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				return;
 
 			_itemSize = new ESize(-1, -1);
+			Adaptor.CollectionView = this;
 			(Adaptor as INotifyCollectionChanged).CollectionChanged += OnCollectionChanged;
-
+			
+			LayoutManager?.ItemSourceUpdated();
 			RequestLayoutItems();
 
-			if (LayoutManager != null)
+			if (Adaptor is IEmptyAdaptor)
 			{
-				var itemSize = (this as ICollectionViewController).GetItemSize();
+				CreateEmptyView();
 			}
 		}
 
 		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
+			// CollectionChanged could be called when Apaptor was changed on CollectionChanged event
+			if (Adaptor is IEmptyAdaptor)
+			{
+				return;
+			}
+
 			if (e.Action == NotifyCollectionChangedAction.Add)
 			{
 				int idx = e.NewStartingIndex;
+				if (idx == -1)
+				{
+					idx = Adaptor.Count - e.NewItems.Count;
+				}
 				foreach (var item in e.NewItems)
 				{
+					foreach (var viewHolder in _viewHolderIndexTable.Keys.ToList())
+					{
+						if (_viewHolderIndexTable[viewHolder] >= idx)
+						{
+							_viewHolderIndexTable[viewHolder]++;
+						}
+					}
 					LayoutManager.ItemInserted(idx++);
 				}
 			}
 			else if (e.Action == NotifyCollectionChangedAction.Remove)
 			{
 				int idx = e.OldStartingIndex;
-				foreach (var item in e.OldItems)
+
+				// Can't tracking remove if there is no data of old index
+				if (idx == -1)
 				{
-					LayoutManager.ItemRemoved(idx);
+					LayoutManager.ItemSourceUpdated();
+				}
+				else
+				{
+					foreach (var item in e.OldItems)
+					{
+						LayoutManager.ItemRemoved(idx);
+						foreach (var viewHolder in _viewHolderIndexTable.Keys.ToList())
+						{
+							if (_viewHolderIndexTable[viewHolder] > idx)
+							{
+								_viewHolderIndexTable[viewHolder]--;
+							}
+						}
+					}
 				}
 			}
 			else if (e.Action == NotifyCollectionChangedAction.Move)
@@ -375,11 +454,20 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			}
 			else if (e.Action == NotifyCollectionChangedAction.Replace)
 			{
-				LayoutManager.ItemUpdated(e.NewStartingIndex);
+				// Can't tracking if there is no information old data
+				if (e.OldItems.Count > 1 || e.NewStartingIndex == -1)
+				{
+					LayoutManager.ItemSourceUpdated();
+				}
+				else
+				{
+					LayoutManager.ItemUpdated(e.NewStartingIndex);
+				}
 			}
 			else if (e.Action == NotifyCollectionChangedAction.Reset)
 			{
 				LayoutManager.Reset();
+				LayoutManager.ItemSourceUpdated();
 			}
 			RequestLayoutItems();
 		}
@@ -424,6 +512,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 		void OnInnerLayout()
 		{
+			// OnInnerLayout was called when child item was added
+			// so, need to check scroll canvas size
 			var size = _layoutManager.GetScrollCanvasSize();
 			_innerLayout.MinimumWidth = size.Width;
 			_innerLayout.MinimumHeight = size.Height;
@@ -456,6 +546,26 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			}
 			Scroller.SetPageSize(itemSize.Width, itemSize.Height);
 		}
+
+		void CreateEmptyView()
+		{
+			_emptyView = Adaptor.CreateNativeView(this);
+			_emptyView.Show();
+			Adaptor.SetBinding(_emptyView, 0);
+			_emptyView.Geometry = Geometry;
+			_emptyView.MinimumHeight = Geometry.Height;
+			_emptyView.MinimumWidth = Geometry.Width;
+			Scroller.SetContent(_emptyView, true);
+			_innerLayout.Hide();
+		}
+
+		void RemoveEmptyView()
+		{
+			_innerLayout.Show();
+			Scroller.SetContent(_innerLayout, true);
+			Adaptor.RemoveNativeView(_emptyView);
+			_emptyView = null;
+		}
 	}
 
 	public interface ICollectionViewController
@@ -471,6 +581,12 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		int Count { get; }
 
 		ESize GetItemSize();
+
+		ESize GetItemSize(int widthConstraint, int heightConstraint);
+
+		ESize GetItemSize(int index, int widthConstraint, int heightConstraint);
+
+		void ContentSizeUpdated();
 	}
 
 	public enum CollectionViewSelectionMode
@@ -478,5 +594,4 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		None,
 		Single,
 	}
-
 }

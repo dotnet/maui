@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using ElmSharp;
+using System.Linq;
 
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
@@ -19,6 +19,14 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		public void AddRecyclerView(ViewHolder view)
 		{
 			_pool.AddLast(view);
+		}
+
+		public ViewHolder GetRecyclerView(object category)
+		{
+			var holder = _pool.Where(d => d.ViewCategory == category).FirstOrDefault();
+			if (holder != null)
+				_pool.Remove(holder);
+			return holder;
 		}
 
 		public ViewHolder GetRecyclerView()

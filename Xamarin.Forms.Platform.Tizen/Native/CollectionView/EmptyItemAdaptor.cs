@@ -6,7 +6,7 @@ using XLabel = Xamarin.Forms.Label;
 
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
-	public class EmptyItemAdaptor : ItemTemplateAdaptor
+	public class EmptyItemAdaptor : ItemTemplateAdaptor, IEmptyAdaptor
 	{
 		static DataTemplate s_defaultEmptyTemplate = new DataTemplate(typeof(EmptyView));
 		public EmptyItemAdaptor(ItemsView itemsView, IEnumerable items, DataTemplate template) : base(itemsView, items, template)

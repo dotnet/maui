@@ -28,6 +28,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			Initialize(parent);
 		}
 
+		public object ViewCategory { get; set; }
 		public EColor FocusedColor { get; set; }
 		public EColor SelectedColor { get; set; }
 

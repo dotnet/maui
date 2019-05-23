@@ -14,6 +14,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(ItemsView.ItemsSourceProperty, UpdateItemsSource);
 			RegisterPropertyHandler(ItemsView.ItemTemplateProperty, UpdateAdaptor);
 			RegisterPropertyHandler(ItemsView.ItemsLayoutProperty, UpdateItemsLayout);
+			RegisterPropertyHandler(ItemsView.ItemSizingStrategyProperty, UpdateSizingStrategy);
 			RegisterPropertyHandler(SelectableItemsView.SelectedItemProperty, UpdateSelectedItem);
 			RegisterPropertyHandler(SelectableItemsView.SelectionModeProperty, UpdateSelectionMode);
 		}
@@ -143,10 +144,19 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Element.ItemsLayout != null)
 			{
-				Control.LayoutManager = Element.ItemsLayout.ToLayoutManager();
+				Control.LayoutManager = Element.ItemsLayout.ToLayoutManager(Element.ItemSizingStrategy);
 				Control.SnapPointsType = (Element.ItemsLayout as ItemsLayout)?.SnapPointsType ?? SnapPointsType.None;
 				Element.ItemsLayout.PropertyChanged += OnLayoutPropertyChanged;
 			}
+		}
+
+		void UpdateSizingStrategy(bool initialize)
+		{
+			if (initialize)
+			{
+				return;
+			}
+			Control.LayoutManager = Element.ItemsLayout.ToLayoutManager(Element.ItemSizingStrategy);
 		}
 
 		void OnLayoutPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -164,14 +174,14 @@ namespace Xamarin.Forms.Platform.Tizen
 
 	static class ItemsLayoutExtension
 	{
-		public static ICollectionViewLayoutManager ToLayoutManager(this IItemsLayout layout)
+		public static ICollectionViewLayoutManager ToLayoutManager(this IItemsLayout layout, ItemSizingStrategy sizing = ItemSizingStrategy.MeasureFirstItem)
 		{
 			switch (layout)
 			{
 				case ListItemsLayout listItemsLayout:
-					return new LinearLayoutManager(listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal);
+					return new LinearLayoutManager(listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal, sizing);
 				case GridItemsLayout gridItemsLayout:
-					return new GridLayoutManager(gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal, gridItemsLayout.Span);
+					return new GridLayoutManager(gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal, gridItemsLayout.Span, sizing);
 				default:
 					break;
 			}
