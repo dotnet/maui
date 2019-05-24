@@ -127,12 +127,9 @@ jobs:
     dependsOn: nuget_pack
     pool:
       name: $(signVmImage)
-    variables:
-      signBuild: $(Sign)
-      displayName: Sign Phase
     steps:
       - template: build/steps/build-sign.yml
-    condition: and(succeeded(), or(eq(variables['Sign'], 'true'), eq(variables['Build.SourceBranch'], 'refs/heads/master')))
+    condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
 
 
 

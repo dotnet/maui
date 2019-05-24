@@ -50,14 +50,13 @@ steps:
 
   - powershell: |
        $buildConfiguration = "Release"
-       $formsNugetVersion = "" + $env:XAMARINFORMSPACKAGEVERSION
+       $formsNugetVersion = "" + $env:nugetPackageVersion
 
        Write-Host("Update nuspecs")
        Get-ChildItem './.nuspec/*.nuspec' -Recurse | Foreach-Object {
             (Get-Content $_) | Foreach-Object  {
                 $_ -replace '\$version\$', $formsNugetVersion `
                    -replace '\$Configuration\$', $buildConfiguration `
-                   -replace '\$IdAppend\$', ''
            } | Set-Content $_
        }
     failOnStderr: true
