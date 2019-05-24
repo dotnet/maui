@@ -2,7 +2,7 @@ parameters:
   name: ''            # in the form type_platform_host
   displayName: ''     # the human name
   vmImage: ''         # the VM image
-  vmPool: 'Hosted Mac Internal'         # the VM pool
+  vmPool: ''         # the VM pool
   targetFolder: ''    # the bootstrapper target
   dependsOn: []       # the dependiencies
   preBuildSteps: []   # any steps to run before the build
@@ -30,7 +30,6 @@ jobs:
         displayName: 'Use NuGet ${{ parameters.nugetVersion }}'
         inputs:
           versionSpec: ${{ parameters.nugetVersion }}
-          checkLatest: true
 
       - task: NuGetCommand@2
         displayName: 'NuGet restore ${{ parameters.slnPath }}'

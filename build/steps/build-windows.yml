@@ -1,23 +1,58 @@
-steps:
+parameters:
+  name: ''            # in the form type_platform_host
+  displayName: ''     # the human name
+  vmImage: ''         # the VM image
+  vmPool: ''         # the VM pool
+  targetFolder: ''    # the bootstrapper target
+  dependsOn: []       # the dependiencies
+  preBuildSteps: []   # any steps to run before the build
+  postBuildSteps: []  # any additional steps to run after the build
+  slnPath : 'Xamarin.Forms.sln'
+  buildConfiguration : 'Debug'
+  releaseBuildConfiguration : 'Release'
+  buildPlatform : 'any cpu'
+  msbuildExtraArguments : ''
+  nugetVersion: $(NUGET_VERSION)
+  artifactsTargetFolder: '$(build.artifactstagingdirectory)'
+  artifactsName: 'win_build'
+  nunitTestAdapterFolder: 'packages/NUnitTestAdapter.AnyVersion/tools/'
+  nunitTestFolder: '$(build.sourcesdirectory)'
+
+jobs:
+  - job: ${{ parameters.name }}
+    displayName: ${{ parameters.displayName }}
+    timeoutInMinutes: 120
+    pool:
+      name: ${{ parameters.vmImage }}
+    dependsOn: ${{ parameters.dependsOn }}
+    strategy:
+      matrix:
+        debug:
+          BuildConfiguration:  ${{ parameters.buildConfiguration }}
+          BuildPlatform: ${{ parameters.buildPlatform }}
+        release:
+          BuildConfiguration:  ${{ parameters.releaseBuildConfiguration }}
+          BuildPlatform: ${{ parameters.buildPlatform }}
+    steps:
+
     - task: NuGetToolInstaller@0
-      displayName: 'Use NuGet'
+      displayName: 'Use NuGet ${{ parameters.nugetVersion }}'
       inputs:
-        versionSpec: $(nugetVersion)
+        versionSpec: ${{ parameters.nugetVersion }}
 
     - task: NuGetCommand@2
-      displayName: 'NuGet restore'
+      displayName: 'NuGet restore ${{ parameters.slnPath }}'
       inputs:
-        restoreSolution: $(SolutionFile)
+        restoreSolution: ${{ parameters.slnPath }}
 
     - task: MSBuild@1
-      displayName: 'Build solution'
+      displayName: 'Build solution ${{ parameters.slnPath }}'
       name: winbuild
       inputs:
-        solution: $(SolutionFile)
+        solution: ${{ parameters.slnPath }}
         platform: '$(BuildPlatform)'
         configuration: '$(BuildConfiguration)'
-        msbuildArguments: '/nowarn:VSX1000 /p:CreateAllAndroidTargets=true /bl:$(Build.ArtifactStagingDirectory)\win.binlog'
-        clean: true
+        msbuildArguments: ${{ parameters.msbuildExtraArguments }}
 
     - task: VSTest@2
       displayName: 'Unit Tests'
@@ -26,8 +61,8 @@ steps:
           **/bin/$(BuildConfiguration)/Xamarin.Forms.Core.UnitTests.dll
           **/bin/$(BuildConfiguration)/Xamarin.Forms.Pages.UnitTests.dll
           **/bin/$(BuildConfiguration)/**/Xamarin.Forms.Xaml.UnitTests.dll
-        searchFolder: '$(Build.SourcesDirectory)'
-        pathtoCustomTestAdapters: 'packages/NUnitTestAdapter.AnyVersion/tools/'
+        searchFolder: ${{ parameters.nunitTestFolder }}
+        pathtoCustomTestAdapters: ${{ parameters.nunitTestAdapterFolder }}
         codeCoverageEnabled: true
         testRunTitle: '$(BuildConfiguration)_UnitTests'
         configuration: '$(BuildConfiguration)'
@@ -126,9 +161,9 @@ steps:
           Microsoft.XamlStandard/bin/$(BuildConfiguration)/**/*.pdb
           **/*.binlog
 
-        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+        TargetFolder: ${{ parameters.artifactsTargetFolder }}
 
     - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact: win_build'
+      displayName: 'Publish Artifact: ${{ parameters.artifactsName }}'
       inputs:
-        ArtifactName: 'win_build'
+        ArtifactName: ${{ parameters.artifactsName }}

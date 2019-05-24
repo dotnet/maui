@@ -9,20 +9,12 @@ variables:
   value: XamarinFormsControlGalleryiOS.ipa
 - name: SolutionFile
   value: Xamarin.Forms.sln
-- name: major
-  value: 4
-- name: minor
-  value: 0
-- name: patch
-  value: 0
-- name: buildversion
+- name: BuildVersion
   value: $[counter('$(Build.SourceBranchName)_counter', 1)]
 - name: MONO_VERSION
   value: 5_18_1
 - name: XCODE_VERSION
   value: 10.2
-- name: provisioning
-  value: false
 - name: NUGET_VERSION
   value: 5.0.2
 
@@ -41,8 +33,7 @@ trigger:
     - 4.*
   tags:
     include:
-    - release*
-    - beta*
+    - '*'
   paths:
     exclude:
     - README.md
@@ -51,35 +42,20 @@ pr:
   autoCancel: false
   branches:
     include:
-    - '*'
+    - master
+    - 4.*
+    - 3.*
 
 jobs:
-- job: Phase_1
-  displayName: Prepare Build Phase
-  condition: succeeded()
-  pool:
-    name: $(winVmImage)
-  steps:
-     - template: build/steps/build-prepare.yml
-
-- job: Phase_2
-  displayName: Build Windows Phase
-  dependsOn: Phase_1
-  condition: succeeded()
-  pool:
-    name: $(winVmImage)
-  strategy:
-    matrix:
-      debug:
-        BuildConfiguration: $(DefaultBuildConfiguration)
-        BuildPlatform: $(DefaultBuildPlatform)
-      release:
-        BuildConfiguration: 'Release'
-        BuildPlatform: $(DefaultBuildPlatform)
-  variables:
-    nugetVersion: $(NUGET_VERSION)
-  steps:
-     - template: build/steps/build-windows.yml
+- template: build/steps/build-windows.yml
+  parameters:
+    name: win
+    displayName: Build Windows Phase
+    vmImage: $(winVmImage)
+    targetFolder: Xamarin.Forms.ControlGallery.Android/legacyRenderers/
+    msbuildExtraArguments: '/nowarn:VSX1000 /p:CreateAllAndroidTargets=true /bl:$(Build.ArtifactStagingDirectory)\win.binlog'
+    buildConfiguration: $(DefaultBuildConfiguration)
+    buildPlatform: $(DefaultBuildPlatform)
 
 - template: build/steps/build-android.yml
   parameters:
@@ -88,7 +64,6 @@ jobs:
     vmImage: $(macOSVmImage)
     targetFolder: Xamarin.Forms.ControlGallery.Android/legacyRenderers/
     androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /bl:$(Build.ArtifactStagingDirectory)\android-legacy.binlog'
-    dependsOn: Phase_1
     buildConfiguration: $(DefaultBuildConfiguration)
 
 - template: build/steps/build-android.yml
@@ -98,7 +73,6 @@ jobs:
     vmImage: $(macOSVmImage)
     targetFolder: Xamarin.Forms.ControlGallery.Android/preAppCompat
     androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /p:DefineConstants="TRACE DEBUG FORMS_APPLICATION_ACTIVITY APP" /bl:$(Build.ArtifactStagingDirectory)\android-preappcompact.binlog'
-    dependsOn: Phase_1
     buildConfiguration: $(DefaultBuildConfiguration)
 
 - template: build/steps/build-android.yml
@@ -108,13 +82,10 @@ jobs:
     vmImage: $(macOSVmImage)
     targetFolder: Xamarin.Forms.ControlGallery.Android/newRenderers/
     androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /p:DefineConstants="TRACE DEBUG TEST_EXPERIMENTAL_RENDERERS APP" /bl:$(Build.ArtifactStagingDirectory)\android-newrenderers.binlog'
-    dependsOn: Phase_1
     buildConfiguration: $(DefaultBuildConfiguration)
 
-- job: Phase_4
+- job: osx
   displayName: OSX Phase
-  dependsOn: Phase_1
-  condition: succeeded()
   pool:
     name: $(macOSVmImage)
     demands:
@@ -134,13 +105,10 @@ jobs:
   steps:
      - template: build/steps/build-osx.yml
 
-- job: Phase_5
+- job: nuget_pack
   displayName: Nuget Phase
   dependsOn:
-   - Phase_2
-   - android_legacy
-   - android_preappcompact
-   - android_fast
+   - win
   condition: succeeded()
   pool:
     name: $(winVmImage)
@@ -148,22 +116,23 @@ jobs:
     FormsIdAppend: ''
     buildConfiguration: $(DefaultBuildConfiguration)
     nugetVersion: $(NUGET_VERSION)
-    pacakageVersion : $[ dependencies.Phase_2.outputs['debug.winbuild.packageversion'] ]
+    nugetPackageVersion : $[ dependencies.win.outputs['debug.winbuild.xamarinformspackageversion'] ]
   steps:
      - template: build/steps/build-nuget.yml
 
-  # only sign the packages when running on Windows, and using the private server which has the certificates
+  # only sign using the private server
 - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-  - job: Phase_6
+  - job: nuget_sign
     displayName: Sign Phase
-    dependsOn: Phase_5
+    dependsOn: nuget_pack
     pool:
       name: $(signVmImage)
     variables:
-      signBuild: $[dependencies.Phase_1.outputs['prepare.signnuget']]
+      signBuild: $(Sign)
       displayName: Sign Phase
     steps:
       - template: build/steps/build-sign.yml
+    condition: and(succeeded(), or(eq(variables['Sign'], 'true'), eq(variables['Build.SourceBranch'], 'refs/heads/master')))
 
 
 
