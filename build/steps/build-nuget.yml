@@ -71,8 +71,7 @@ steps:
       packagesToPack: '.nuspec/*.nuspec'
       packDestination: '$(Build.ArtifactStagingDirectory)/nuget/release'
       versioningScheme: byEnvVar
-      versionEnvVar: XamarinFormsPackageVersion
-      buildProperties: 'IdAppend=$(FormsIdAppend)'
+      versionEnvVar: nugetPackageVersion
     condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'],'refs/tags/')))
 
   - task: PublishBuildArtifacts@1
