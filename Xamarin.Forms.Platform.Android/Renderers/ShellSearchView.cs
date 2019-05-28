@@ -204,7 +204,8 @@ namespace Xamarin.Forms.Platform.Android
 			_textBlock.Threshold = 1;
 			_textBlock.Adapter = new ShellSearchViewAdapter(SearchHandler, _shellContext);
 			_textBlock.ItemClick += OnTextBlockItemClicked;
-			_textBlock.SetDropDownBackgroundDrawable(new ClipDrawableWrapper(_textBlock.DropDownBackground));
+			if (Forms.IsMarshmallowOrNewer)
+				_textBlock.SetDropDownBackgroundDrawable(new ClipDrawableWrapper(_textBlock.DropDownBackground));
 
 			// A note on accessibility. The _textBlocks hint is what android defaults to reading in the screen
 			// reader. Therefore, we do not need to set something else.
