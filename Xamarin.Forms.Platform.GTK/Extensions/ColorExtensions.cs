@@ -11,6 +11,11 @@
 			return gtkColor;
 		}
 
+		internal static Xamarin.Forms.Color ToXFColor(this Gdk.Color color, double opacity = 255)
+		{
+			return new Color(color.Red, color.Green, color.Blue, opacity);
+		}
+
 		internal static string ToRgbaColor(this Color color)
 		{
 			int red = (int)(color.R * 255);

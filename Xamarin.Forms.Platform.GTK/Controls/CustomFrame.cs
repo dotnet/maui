@@ -6,10 +6,10 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 {
 	public class CustomFrame : Gtk.Frame
 	{
-		private Gdk.Color _defaultBorderColor;
-		private Gdk.Color _defaultBackgroundColor;
-		private Gdk.Color? _borderColor;
-		private Gdk.Color? _backgroundColor;
+		private Color _defaultBorderColor;
+		private Color _defaultBackgroundColor;
+		private Color? _borderColor;
+		private Color? _backgroundColor;
 
 		private uint _borderWidth;
 		private bool _hasShadow;
@@ -23,11 +23,11 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			_borderWidth = 0;
 			_hasShadow = false;
 			_shadowWidth = 2;
-			_defaultBackgroundColor = Style.Backgrounds[(int)StateType.Normal];
-			_defaultBorderColor = Style.BaseColors[(int)StateType.Active];
+			_defaultBackgroundColor = Style.Backgrounds[(int)StateType.Normal].ToXFColor();
+			_defaultBorderColor = Style.BaseColors[(int)StateType.Active].ToXFColor();
 		}
 
-		public void SetBackgroundColor(Gdk.Color? color)
+		public void SetBackgroundColor(Color? color)
 		{
 			_backgroundColor = color;
 			QueueDraw();
@@ -45,7 +45,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			QueueDraw();
 		}
 
-		public void SetBorderColor(Gdk.Color? color)
+		public void SetBorderColor(Color? color)
 		{
 			_borderColor = color;
 			QueueDraw();
@@ -77,15 +77,13 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 		protected override bool OnExposeEvent(EventExpose evnt)
 		{
-			double colorMaxValue = 65535;
-
 			using (var cr = CairoHelper.Create(GdkWindow))
 			{
-				//Draw Shadow
+				// Draw Shadow
 				if (_hasShadow)
 				{
-					var color = Color.Black.ToGtkColor();
-					cr.SetSourceRGBA(color.Red / colorMaxValue, color.Green / colorMaxValue, color.Blue / colorMaxValue, 1.0);
+					var color = Color.Black;
+					cr.SetSourceRGBA(color.R, color.G, color.B, color.A);
 					cr.Rectangle(Allocation.Left + _shadowWidth, Allocation.Top + _shadowWidth, Allocation.Width + _shadowWidth, Allocation.Height + _shadowWidth);
 					cr.Fill();
 				}
@@ -94,7 +92,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 				if (_backgroundColor.HasValue)
 				{
 					var color = _backgroundColor.Value;
-					cr.SetSourceRGBA(color.Red / colorMaxValue, color.Green / colorMaxValue, color.Blue / colorMaxValue, 1.0);
+					cr.SetSourceRGBA(color.R, color.G, color.B, color.A);
 					cr.Rectangle(Allocation.Left, Allocation.Top, Allocation.Width, Allocation.Height);
 					cr.FillPreserve();
 				}
@@ -104,7 +102,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 				{
 					cr.LineWidth = _borderWidth;
 					var color = _borderColor.Value;
-					cr.SetSourceRGB(color.Red / colorMaxValue, color.Green / colorMaxValue, color.Blue / colorMaxValue);
+					cr.SetSourceRGBA(color.R, color.G, color.B, color.A);
 					cr.Rectangle(Allocation.Left, Allocation.Top, Allocation.Width, Allocation.Height);
 					cr.StrokePreserve();
 				}

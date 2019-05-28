@@ -7,8 +7,6 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<Frame> e)
 		{
-			base.OnElementChanged(e);
-
 			if (e.NewElement != null)
 			{
 				if (Control == null)
@@ -24,6 +22,8 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				PackChild();
 				SetupLayer();
 			}
+
+			base.OnElementChanged(e);
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -45,17 +45,12 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			if (Element.BackgroundColor == Color.Default)
 				Control.ResetBackgroundColor();
 			else
-				Control.SetBackgroundColor(Element.BackgroundColor.ToGtkColor());
+				Control.SetBackgroundColor(Element.BackgroundColor);
 
 			if (Element.BorderColor == Color.Default)
 				Control.ResetBorderColor();
 			else
-				Control.SetBorderColor(Element.BorderColor.ToGtkColor());
-
-			if (Element.HasShadow)
-				Control.SetShadow();
-			else
-				Control.ResetShadow();
+				Control.SetBorderColor(Element.BorderColor);
 		}
 
 		private void PackChild()
