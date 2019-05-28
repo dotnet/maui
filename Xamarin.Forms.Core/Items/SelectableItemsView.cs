@@ -12,12 +12,15 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty SelectedItemProperty =
 			BindableProperty.Create(nameof(SelectedItem), typeof(object), typeof(SelectableItemsView), default(object),
+				defaultBindingMode: BindingMode.TwoWay,
 				propertyChanged: SelectedItemPropertyChanged);
 
-		static readonly BindablePropertyKey SelectedItemsPropertyKey =
-			BindableProperty.CreateReadOnly(nameof(SelectedItems), typeof(IList<object>), typeof(SelectableItemsView), null);
-
-		public static readonly BindableProperty SelectedItemsProperty = SelectedItemsPropertyKey.BindableProperty;
+		public static readonly BindableProperty SelectedItemsProperty =
+			BindableProperty.Create(nameof(SelectedItems), typeof(IList<object>), typeof(SelectableItemsView), null,
+				defaultBindingMode: BindingMode.OneWay,
+				propertyChanged: SelectedItemsPropertyChanged,
+				coerceValue: CoerceSelectedItems,
+				defaultValueCreator: DefaultValueCreator);
 
 		public static readonly BindableProperty SelectionChangedCommandProperty =
 			BindableProperty.Create(nameof(SelectionChangedCommand), typeof(ICommand), typeof(SelectableItemsView));
@@ -26,10 +29,10 @@ namespace Xamarin.Forms
 			BindableProperty.Create(nameof(SelectionChangedCommandParameter), typeof(object),
 				typeof(SelectableItemsView));
 
+		static readonly IList<object> s_empty = new List<object>(0);
+
 		public SelectableItemsView()
 		{
-			var selectionList = new SelectionList(this);
-			SetValue(SelectedItemsPropertyKey, selectionList);
 		}
 
 		public object SelectedItem
@@ -41,6 +44,7 @@ namespace Xamarin.Forms
 		public IList<object> SelectedItems
 		{
 			get => (IList<object>)GetValue(SelectedItemsProperty);
+			set => SetValue(SelectedItemsProperty, new SelectionList(this, value));
 		}
 
 		public ICommand SelectionChangedCommand
@@ -67,9 +71,39 @@ namespace Xamarin.Forms
 		{
 		}
 
+		static object CoerceSelectedItems(BindableObject bindable, object value)
+		{
+			if (value == null)
+			{
+				return new SelectionList((SelectableItemsView)bindable);
+			}
+
+			if(value is SelectionList)
+			{
+				return value;
+			}
+
+			return new SelectionList((SelectableItemsView)bindable, value as IList<object>);
+		}
+
+		static object DefaultValueCreator(BindableObject bindable)
+		{
+			return new SelectionList((SelectableItemsView)bindable);
+		}
+
+		static void SelectedItemsPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var selectableItemsView = (SelectableItemsView)bindable;
+			var oldSelection = (IList<object>)oldValue ?? s_empty;
+			var newSelection = (IList<object>)newValue ?? s_empty;
+
+			selectableItemsView.SelectedItemsPropertyChanged(oldSelection, newSelection);
+		}
+
 		internal void SelectedItemsPropertyChanged(IList<object> oldSelection, IList<object> newSelection)
 		{
 			SelectionPropertyChanged(this, new SelectionChangedEventArgs(oldSelection, newSelection));
+			
 			OnPropertyChanged(SelectedItemsProperty.PropertyName);
 		}
 

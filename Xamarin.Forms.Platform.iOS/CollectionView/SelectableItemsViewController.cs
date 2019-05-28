@@ -34,6 +34,17 @@ namespace Xamarin.Forms.Platform.iOS
 			CollectionView.SelectItem(index, true, UICollectionViewScrollPosition.None);
 		}
 
+		// Called by Forms to clear the native selection
+		internal void ClearSelection()
+		{
+			var selectedItemIndexes = CollectionView.GetIndexPathsForSelectedItems();
+
+			foreach (var index in selectedItemIndexes)
+			{
+				CollectionView.DeselectItem(index, true);
+			}
+		}
+
 		void FormsSelectItem(NSIndexPath indexPath)
 		{
 			var mode = SelectableItemsView.SelectionMode;
@@ -86,6 +97,11 @@ namespace Xamarin.Forms.Platform.iOS
 					if (selectedItem != null)
 					{
 						SelectItem(selectedItem);
+					}
+					else
+					{
+						// SelectedItem has been set to null; if an item is selected, we need to de-select it
+						ClearSelection();
 					}
 				
 					return;

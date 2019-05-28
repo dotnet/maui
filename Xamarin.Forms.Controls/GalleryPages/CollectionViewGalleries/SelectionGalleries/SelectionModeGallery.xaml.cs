@@ -35,8 +35,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionG
 
 		void UpdateSelectionInfo(IEnumerable<object> currentSelectedItems, IEnumerable<object> previousSelectedItems)
 		{
-			var previous = ToList(previousSelectedItems);
-			var current = ToList(currentSelectedItems);
+			var previous = previousSelectedItems.ToCommaSeparatedList();
+			var current = currentSelectedItems.ToCommaSeparatedList();
 
 			if (string.IsNullOrEmpty(previous))
 			{
@@ -58,7 +58,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionG
 
 			if(CollectionView.SelectionMode == SelectionMode.Multiple)
 			{
-				current = ToList(CollectionView?.SelectedItems);
+				current = CollectionView?.SelectedItems.ToCommaSeparatedList();
 			}
 			else if (CollectionView.SelectionMode == SelectionMode.Single)
 			{
@@ -66,17 +66,6 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionG
 			}
 
 			SelectedItemsCommand.Text = $"Selection (command): {current}";
-		}
-
-		static string ToList(IEnumerable<object> items)
-		{
-			if (items == null)
-			{
-				return string.Empty;
-			}
-
-			return items.Aggregate(string.Empty, 
-				(s, o) => s + (s.Length == 0 ? "" : ", ") + ((CollectionViewGalleryTestItem)o).Caption);
 		}
 	}
 }
