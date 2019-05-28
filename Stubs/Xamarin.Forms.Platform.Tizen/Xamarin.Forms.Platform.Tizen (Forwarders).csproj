@@ -2,6 +2,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>tizen40</TargetFramework>
+    <TargetFrameworkIdentifier>Tizen</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <AssemblyName>Xamarin.Forms.Platform</AssemblyName>
     <DefineConstants>TIZEN4_0</DefineConstants>
     <OutputType>Library</OutputType>
