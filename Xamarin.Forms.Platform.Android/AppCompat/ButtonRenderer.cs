@@ -52,11 +52,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		void AView.IOnAttachStateChangeListener.OnViewDetachedFromWindow(AView detachedView) =>
 			_buttonLayoutManager?.OnViewDetachedFromWindow(detachedView);
 
-		public override SizeRequest GetDesiredSize(int widthConstraint, int heightConstraint)
-		{
-			return base.GetDesiredSize(widthConstraint, heightConstraint);
-		}
-
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			_buttonLayoutManager?.OnLayout(changed, l, t, r, b);
@@ -196,6 +191,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		VisualElement IBorderVisualElementRenderer.Element => Element;
 		AView IBorderVisualElementRenderer.View => Control;
 		event EventHandler<VisualElementChangedEventArgs> IBorderVisualElementRenderer.ElementChanged
+		{
+			add => ((IVisualElementRenderer)this).ElementChanged += value;
+			remove => ((IVisualElementRenderer)this).ElementChanged -= value;
+		}
+
+		event EventHandler<VisualElementChangedEventArgs> IButtonLayoutRenderer.ElementChanged
 		{
 			add => ((IVisualElementRenderer)this).ElementChanged += value;
 			remove => ((IVisualElementRenderer)this).ElementChanged -= value;

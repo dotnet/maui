@@ -1191,7 +1191,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		#endregion
 
-		internal class DefaultRenderer : VisualElementRenderer<View>
+		internal class DefaultRenderer : VisualElementRenderer<View>, ILayoutChanges
 		{
 			public bool NotReallyHandled { get; private set; }
 			IOnTouchListener _touchListener;

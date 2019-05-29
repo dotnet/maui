@@ -14,6 +14,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue5555.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59172.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FlagTestHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue6262.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59172.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue6260.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5766.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewBoundMultiSelection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewBoundSingleSelection.cs" />
