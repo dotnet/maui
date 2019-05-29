@@ -88,7 +88,7 @@ namespace Xamarin.Essentials
                 sharedFile = tmpFile;
             }
 
-            // create the uri
+            // create the uri, if N use file provider
             if (HasApiLevelN)
             {
                 var providerAuthority = AppContext.PackageName + ".fileProvider";
@@ -98,7 +98,8 @@ namespace Xamarin.Essentials
                     sharedFile);
             }
 
-            return AndroidUri.FromFile(new Java.IO.File(filename));
+            // use the shared file path created
+            return AndroidUri.FromFile(sharedFile);
         }
 
         internal static bool HasApiLevelN =>
