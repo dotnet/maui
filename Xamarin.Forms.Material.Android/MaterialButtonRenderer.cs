@@ -180,12 +180,6 @@ namespace Xamarin.Forms.Material.Android
 			base.OnLayout(changed, left, top, right, bottom);
 		}
 
-		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
-		{
-			_buttonLayoutManager?.Update();
-			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
-		}
-
 		void UpdateFont()
 		{
 			if (_disposed || Element == null)
@@ -334,7 +328,6 @@ namespace Xamarin.Forms.Material.Android
 
 		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
 		{
-			_buttonLayoutManager?.Update();
 			Measure(widthConstraint, heightConstraint);
 			return new SizeRequest(new Size(MeasuredWidth, MeasuredHeight), new Size());
 		}

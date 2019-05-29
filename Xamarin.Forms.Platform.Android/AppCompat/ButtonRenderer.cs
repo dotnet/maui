@@ -52,11 +52,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		void AView.IOnAttachStateChangeListener.OnViewDetachedFromWindow(AView detachedView) =>
 			_buttonLayoutManager?.OnViewDetachedFromWindow(detachedView);
 
-		public override SizeRequest GetDesiredSize(int widthConstraint, int heightConstraint)
-		{
-			return base.GetDesiredSize(widthConstraint, heightConstraint);
-		}
-
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			_buttonLayoutManager?.OnLayout(changed, l, t, r, b);
