@@ -288,31 +288,34 @@ namespace Xamarin.Forms.Platform.Android
 					break;
 				}
 
-			_renderer.ApplyDrawableAsync(Button.ImageSourceProperty, Context, image =>
+			if (_renderer is IVisualElementRenderer visualElementRenderer)
 			{
-				if (image == existingImage)
-					return;
-
-				switch (layout.Position)
+				visualElementRenderer.ApplyDrawableAsync(Button.ImageSourceProperty, Context, image =>
 				{
-					case Button.ButtonContentLayout.ImagePosition.Top:
-						TextViewCompat.SetCompoundDrawablesRelativeWithIntrinsicBounds(view, null, image, null, null);
-						break;
-					case Button.ButtonContentLayout.ImagePosition.Right:
-						TextViewCompat.SetCompoundDrawablesRelativeWithIntrinsicBounds(view, null, null, image, null);
-						break;
-					case Button.ButtonContentLayout.ImagePosition.Bottom:
-						TextViewCompat.SetCompoundDrawablesRelativeWithIntrinsicBounds(view, null, null, null, image);
-						break;
-					default:
+					if (image == existingImage)
+						return;
+
+					switch (layout.Position)
+					{
+						case Button.ButtonContentLayout.ImagePosition.Top:
+							TextViewCompat.SetCompoundDrawablesRelativeWithIntrinsicBounds(view, null, image, null, null);
+							break;
+						case Button.ButtonContentLayout.ImagePosition.Right:
+							TextViewCompat.SetCompoundDrawablesRelativeWithIntrinsicBounds(view, null, null, image, null);
+							break;
+						case Button.ButtonContentLayout.ImagePosition.Bottom:
+							TextViewCompat.SetCompoundDrawablesRelativeWithIntrinsicBounds(view, null, null, null, image);
+							break;
+						default:
 						// Defaults to image on the left
 						TextViewCompat.SetCompoundDrawablesRelativeWithIntrinsicBounds(view, image, null, null, null);
-						break;
-				}
+							break;
+					}
 
-				if (_hasLayoutOccurred)
-					_element?.InvalidateMeasureNonVirtual(InvalidationTrigger.MeasureChanged);
-			});
+					if (_hasLayoutOccurred)
+						_element?.InvalidateMeasureNonVirtual(InvalidationTrigger.MeasureChanged);
+				});
+			}
 		}
 	}
 }

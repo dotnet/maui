@@ -361,6 +361,14 @@ namespace Xamarin.Forms.Material.Android
 
 		// IButtonLayoutRenderer
 		AppCompatButton IButtonLayoutRenderer.View => this;
+
+		Button IButtonLayoutRenderer.Element => this.Element;
+
+		event EventHandler<VisualElementChangedEventArgs> IButtonLayoutRenderer.ElementChanged
+		{
+			add => ((IVisualElementRenderer)this).ElementChanged += value;
+			remove => ((IVisualElementRenderer)this).ElementChanged -= value;
+		}
 	}
 }
 #endif

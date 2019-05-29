@@ -1,9 +1,12 @@
-﻿using Android.Support.V7.Widget;
+﻿using System;
+using Android.Support.V7.Widget;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public interface IButtonLayoutRenderer : IVisualElementRenderer
+	public interface IButtonLayoutRenderer
 	{
-		new AppCompatButton View { get; }
+		AppCompatButton View { get; }		
+		Button Element { get; }
+		event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 	}
 }

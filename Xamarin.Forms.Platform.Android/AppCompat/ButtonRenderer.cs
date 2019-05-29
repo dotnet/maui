@@ -201,6 +201,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			remove => ((IVisualElementRenderer)this).ElementChanged -= value;
 		}
 
+		event EventHandler<VisualElementChangedEventArgs> IButtonLayoutRenderer.ElementChanged
+		{
+			add => ((IVisualElementRenderer)this).ElementChanged += value;
+			remove => ((IVisualElementRenderer)this).ElementChanged -= value;
+		}
+
 		AppCompatButton IButtonLayoutRenderer.View => Control;
 		bool IDisposedState.IsDisposed => _isDisposed;
 	}
