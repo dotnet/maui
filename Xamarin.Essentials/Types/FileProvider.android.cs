@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Android.App;
 using Android.Content;
 using Android.OS;
@@ -75,12 +76,15 @@ namespace Xamarin.Essentials
             filename = file.CanonicalPath;
 
             // the shared paths from the "xamarin_essentials_fileprovider_file_paths.xml" resource
-            var publicLocations = new[]
+            var publicLocations = new List<string>
             {
                 AndroidEnvironment.ExternalStorageDirectory.CanonicalPath,
-                Platform.AppContext.ExternalCacheDir.CanonicalPath,
-                Platform.AppContext.CacheDir.CanonicalPath,
+                Platform.AppContext.ExternalCacheDir.CanonicalPath
             };
+
+            // the internal cache path is available only by file provider in N+
+            if (Platform.HasApiLevelN)
+                publicLocations.Add(Platform.AppContext.CacheDir.CanonicalPath);
 
             foreach (var location in publicLocations)
             {
