@@ -4,6 +4,7 @@
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/Xamarin.Forms.Platform.WPF;component/Assets/Button.xaml" />
+        <ResourceDictionary Source="/Xamarin.Forms.Platform.WPF;component/Assets/Checkbox.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
     <Style TargetType="controls:FormsAppBarButton" >

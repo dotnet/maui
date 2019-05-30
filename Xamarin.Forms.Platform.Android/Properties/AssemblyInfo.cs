@@ -30,6 +30,7 @@ using Xamarin.Forms.Platform.Android;
 [assembly: ExportRenderer (typeof (ActivityIndicator), typeof (ActivityIndicatorRenderer))]
 [assembly: ExportRenderer (typeof (Frame), typeof (FrameRenderer))]
 [assembly: ExportRenderer (typeof (OpenGLView), typeof (OpenGLViewRenderer))]
+[assembly: ExportRenderer (typeof (CheckBox), typeof (CheckBoxRenderer))]
 
 [assembly: ExportRenderer (typeof (TabbedPage), typeof (TabbedRenderer))]
 [assembly: ExportRenderer (typeof (NavigationPage), typeof (NavigationRenderer))]

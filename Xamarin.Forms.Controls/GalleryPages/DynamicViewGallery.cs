@@ -28,6 +28,7 @@ namespace Xamarin.Forms.Controls
 				{ nameof(TimePicker), (() => new TimePicker(), null) },
 				{ nameof(ListView), (() => new ListView(), null) },
 				{ nameof(BoxView), (() => new BoxView(), null) },
+				{ nameof(CheckBox), (() => new CheckBox(), null) },
 
 			};
 
@@ -49,7 +50,7 @@ namespace Xamarin.Forms.Controls
 		public DynamicViewGallery()
 		{
 			_selector = new Picker();
-			foreach (var item in TestedTypes)
+			foreach (var item in TestedTypes.OrderBy(x=> x.Key.ToString()))
 				_selector.Items.Add(item.Key.ToString());
 			_selector.SelectedIndexChanged += TypeSelected;
 

@@ -28,6 +28,8 @@ using UIKit;
 [assembly: ExportRenderer(typeof(ListView), typeof(ListViewRenderer))]
 [assembly: ExportRenderer (typeof (CollectionView), typeof (CollectionViewRenderer))]
 [assembly: ExportRenderer(typeof(OpenGLView), typeof(OpenGLViewRenderer))]
+[assembly: ExportRenderer (typeof (CheckBox), typeof (CheckBoxRenderer))]
+
 [assembly: ExportRenderer(typeof(TabbedPage), typeof(TabbedRenderer))]
 [assembly: ExportRenderer(typeof(NavigationPage), typeof(NavigationRenderer))]
 [assembly: ExportRenderer(typeof(CarouselPage), typeof(CarouselPageRenderer))]

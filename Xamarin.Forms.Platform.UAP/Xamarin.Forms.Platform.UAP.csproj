@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="AccessibilityExtensions.cs" />
     <Compile Include="Extensions\ImageExtensions.cs" />
+    <Compile Include="FormsCheckBox.cs" />
     <Compile Include="IImageVisualElementRenderer.cs" />
     <Compile Include="ImageButtonRenderer.cs" />
     <Compile Include="CollectionViewRenderer.cs" />
@@ -84,6 +85,7 @@
     <Compile Include="StepperControl.xaml.cs">
       <DependentUpon>StepperControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CheckBoxRenderer.cs" />
     <Compile Include="TextBlockExtensions.cs" />
     <Compile Include="TitleViewManager.cs" />
     <Compile Include="UriImageSourceHandler.cs" />
@@ -191,6 +193,10 @@
     <Page Include="AutoSuggestStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FormsCheckBoxStyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="FormsCommandBarStyle.xaml">
       <SubType>Designer</SubType>

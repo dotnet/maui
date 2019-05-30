@@ -99,6 +99,10 @@
 	{
 	}
 
+	internal class _CheckBoxRenderer
+	{
+	}
+
 	internal class _OpenGLViewRenderer
 	{
 	}

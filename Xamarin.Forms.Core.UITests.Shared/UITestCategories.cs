@@ -9,6 +9,7 @@
 		public const string BoxView = "BoxView";
 		public const string Button = "Button";
 		public const string Cells = "Cells";
+		public const string CheckBox = "CheckBox";
 		public const string CollectionView = "CollectionView";
 		public const string ContextActions = "ContextActions";
 		public const string DatePicker = "DatePicker";
