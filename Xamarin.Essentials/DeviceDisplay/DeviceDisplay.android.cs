@@ -3,6 +3,7 @@ using Android.Content;
 using Android.Content.Res;
 using Android.Provider;
 using Android.Runtime;
+using Android.Util;
 using Android.Views;
 
 namespace Xamarin.Essentials
@@ -32,14 +33,20 @@ namespace Xamarin.Essentials
 
         static DisplayInfo GetMainDisplayInfo()
         {
-            var displayMetrics = Platform.AppContext.Resources?.DisplayMetrics;
+            using (var displayMetrics = new DisplayMetrics())
+            {
+                using (var display = GetDefaultDisplay())
+                {
+                    display?.GetRealMetrics(displayMetrics);
 
-            return new DisplayInfo(
-                width: displayMetrics?.WidthPixels ?? 0,
-                height: displayMetrics?.HeightPixels ?? 0,
-                density: displayMetrics?.Density ?? 0,
-                orientation: CalculateOrientation(),
-                rotation: CalculateRotation());
+                    return new DisplayInfo(
+                        width: displayMetrics?.WidthPixels ?? 0,
+                        height: displayMetrics?.HeightPixels ?? 0,
+                        density: displayMetrics?.Density ?? 0,
+                        orientation: CalculateOrientation(),
+                        rotation: CalculateRotation());
+                }
+            }
         }
 
         static void StartScreenMetricsListeners()
@@ -63,11 +70,11 @@ namespace Xamarin.Essentials
 
         static DisplayRotation CalculateRotation()
         {
-            var service = Platform.AppContext.GetSystemService(Context.WindowService);
-            var display = service?.JavaCast<IWindowManager>()?.DefaultDisplay;
-
-            if (display != null)
+            using (var display = GetDefaultDisplay())
             {
+                if (display == null)
+                    return DisplayRotation.Unknown;
+
                 switch (display.Rotation)
                 {
                     case SurfaceOrientation.Rotation270:
@@ -105,6 +112,12 @@ namespace Xamarin.Essentials
 
         static string GetSystemSetting(string name)
            => Settings.System.GetString(Platform.AppContext.ContentResolver, name);
+
+        static Display GetDefaultDisplay()
+        {
+            var service = Platform.AppContext.GetSystemService(Context.WindowService);
+            return service?.JavaCast<IWindowManager>()?.DefaultDisplay;
+        }
     }
 
     class Listener : OrientationEventListener
