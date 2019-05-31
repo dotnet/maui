@@ -24,7 +24,7 @@ namespace Xamarin.Essentials
             }
 
             StorageApplicationPermissions.FutureAccessList.Add(file);
-            return new PickResult(file.Path, file.Name, () => file.OpenStreamForReadAsync().Result);
+            return new PickResult(file.Path, file.Name, file);
         }
 
         static void SetFileTypes(PickOptions options, Windows.Storage.Pickers.FileOpenPicker picker)
@@ -63,17 +63,17 @@ namespace Xamarin.Essentials
 
     public partial class PickResult
     {
-        Func<Stream> streamFunc;
+        StorageFile storageFile;
 
-        public PickResult(string path, string filename, Func<Stream> streamFunc)
+        internal PickResult(string path, string filename, StorageFile storageFile)
             : base(path, filename)
         {
-            this.streamFunc = streamFunc;
+            this.storageFile = storageFile;
         }
 
         Stream PlatformGetStream()
         {
-            return streamFunc?.Invoke();
+            return storageFile.OpenStreamForReadAsync().Result;
         }
     }
 }
