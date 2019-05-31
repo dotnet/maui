@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -71,8 +70,7 @@ namespace Xamarin.Essentials
 
             var allowedTypes = Intent.GetStringArrayExtra(ExtraAllowedTypes);
 
-            if (allowedTypes != null &&
-                allowedTypes.Any())
+            if (allowedTypes?.Length > 0)
             {
                 intent.PutExtra(Intent.ExtraMimeTypes, allowedTypes);
             }
