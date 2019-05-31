@@ -76,7 +76,10 @@ namespace Xamarin.Essentials
                     filename = Path.GetFileName(pathname);
                 }
 
-                var result = new PickResult(filename, pathname);
+                // immediately open a file stream, in case iOS cleans up the picked file
+                var stream = new FileStream(pathname, FileMode.Open, FileAccess.Read);
+
+                var result = new PickResult(pathname, filename, stream);
                 var tcs = Interlocked.Exchange(ref completionSource, null);
                 tcs?.SetResult(result);
             }
@@ -116,11 +119,10 @@ namespace Xamarin.Essentials
             return stream;
         }
 
-        internal PickResult(string filename, string pathname)
-            : base(filename, pathname)
+        internal PickResult(string pathname, string filename, Stream stream)
+            : this(pathname, filename)
         {
-            // immediately open a file stream, in case iOS cleans up the picked file
-            stream = new FileStream(pathname, FileMode.Open, FileAccess.Read);
+            this.stream = stream;
         }
     }
 }
