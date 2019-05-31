@@ -24,15 +24,10 @@ namespace Xamarin.Essentials
             // to ask the user first, then show the picker.
             await Permissions.RequireAsync(PermissionType.ReadExternalStorage);
 
-            var previousCompletionSource = Interlocked.Exchange(ref CompletionSource, null);
-            if (previousCompletionSource != null)
-            {
-                previousCompletionSource.SetCanceled();
-            }
-
             var tcs = new TaskCompletionSource<PickResult>();
 
-            Interlocked.Exchange(ref CompletionSource, tcs);
+            var previousCompletionSource = Interlocked.Exchange(ref CompletionSource, tcs);
+            previousCompletionSource?.SetCanceled();
 
             var parentActivity = Platform.GetCurrentActivity(true);
 
