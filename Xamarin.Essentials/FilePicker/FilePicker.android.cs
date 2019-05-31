@@ -14,7 +14,7 @@ namespace Xamarin.Essentials
     public static partial class FilePicker
     {
 #pragma warning disable SA1401 // Fields should be private
-        public static TaskCompletionSource<PickResult> CompletionSource;
+        internal static TaskCompletionSource<PickResult> CompletionSource;
 #pragma warning restore SA1401 // Fields should be private
 
         static async Task<PickResult> PlatformPickFileAsync(PickOptions options)
