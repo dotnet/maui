@@ -6,7 +6,7 @@ namespace Xamarin.Essentials
     public static partial class FilePicker
     {
         public static Task<PickResult> PickFileAsync(PickOptions options = null)
-            => PlatformPickFileAsync(options);
+            => PlatformPickFileAsync(options ?? PickOptions.Default);
     }
 
     public partial class PickOptions
