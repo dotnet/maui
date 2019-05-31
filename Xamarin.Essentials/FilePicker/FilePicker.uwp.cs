@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Windows.Storage;
 using Windows.Storage.AccessCache;
 
 namespace Xamarin.Essentials
@@ -66,7 +67,7 @@ namespace Xamarin.Essentials
         StorageFile storageFile;
 
         internal PickResult(string path, string filename, StorageFile storageFile)
-            : base(path, filename)
+            : this(path, filename)
         {
             this.storageFile = storageFile;
         }
