@@ -17,12 +17,6 @@ namespace Xamarin.Essentials
 
     public partial class PickResult
     {
-        string PlatformFileUri
-            => throw new NotImplementedInReferenceAssemblyException();
-
-        string PlatformFileName
-            => throw new NotImplementedInReferenceAssemblyException();
-
         Stream PlatformGetStream() =>
             throw new NotImplementedInReferenceAssemblyException();
     }

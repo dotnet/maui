@@ -65,14 +65,9 @@ namespace Xamarin.Essentials
     {
         Func<Stream> streamFunc;
 
-        string PlatformFileUri { get; set; }
-
-        string PlatformFileName { get; set; }
-
         public PickResult(string path, string filename, Func<Stream> streamFunc)
+            : base(path, filename)
         {
-            PlatformFileUri = path;
-            PlatformFileName = filename;
             this.streamFunc = streamFunc;
         }
 

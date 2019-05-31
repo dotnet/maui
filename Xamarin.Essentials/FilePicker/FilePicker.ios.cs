@@ -110,21 +110,15 @@ namespace Xamarin.Essentials
     {
         Stream stream;
 
-        string PlatformFileUri { get; set; }
-
-        string PlatformFileName { get; set; }
-
         Stream PlatformGetStream()
         {
             stream.Seek(0, SeekOrigin.Begin);
             return stream;
         }
 
-        public PickResult(string filename, string pathname)
+        internal PickResult(string filename, string pathname)
+            : base(filename, pathname)
         {
-            PlatformFileUri = pathname;
-            PlatformFileName = filename;
-
             // immediately open a file stream, in case iOS cleans up the picked file
             stream = new FileStream(pathname, FileMode.Open, FileAccess.Read);
         }

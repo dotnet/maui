@@ -32,11 +32,17 @@ namespace Xamarin.Essentials
 
     public partial class PickResult
     {
-        public string FileUri { get => PlatformFileUri; }
+        public string FileUri { get; internal set; }
 
-        public string FileName { get => PlatformFileName; }
+        public string FileName { get; internal set; }
 
         public Stream GetStream()
             => PlatformGetStream();
+
+        internal PickResult(string fileUri, string fileName)
+        {
+            FileUri = fileUri;
+            FileName = fileName;
+        }
     }
 }

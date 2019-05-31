@@ -182,23 +182,13 @@ namespace Xamarin.Essentials
 
     public partial class PickResult
     {
-        string PlatformFileUri { get; set; }
-
-        string PlatformFileName { get; set; }
-
         Stream PlatformGetStream()
         {
-            var contentUri = global::Android.Net.Uri.Parse(PlatformFileUri);
+            var contentUri = global::Android.Net.Uri.Parse(FileUri);
             if (contentUri.Scheme == "content")
                 return Application.Context.ContentResolver.OpenInputStream(contentUri);
             else
                 return File.OpenRead(contentUri.Path);
-        }
-
-        public PickResult(string filePath, string fileName)
-        {
-            PlatformFileUri = filePath;
-            PlatformFileName = fileName;
         }
     }
 }
