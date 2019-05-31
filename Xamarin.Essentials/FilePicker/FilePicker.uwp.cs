@@ -32,9 +32,7 @@ namespace Xamarin.Essentials
         {
             var hasAtLeastOneType = false;
 
-            if (options != null &&
-                options.FileTypes != null &&
-                options.FileTypes.Any())
+            if (options?.FileTypes?.Length > 0)
             {
                 foreach (var type in options.FileTypes)
                 {
