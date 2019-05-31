@@ -77,7 +77,7 @@ namespace Samples.ViewModel
 
         void OnCancel()
         {
-            if (!IsBusy && (cts == null || !cts.IsCancellationRequested))
+            if (!IsBusy && (cts?.IsCancellationRequested ?? true))
                 return;
 
             cts.Cancel();
