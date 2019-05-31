@@ -95,12 +95,14 @@ namespace Xamarin.Essentials
 
             void LocationAuthCallback(object sender, CLAuthorizationChangedEventArgs e)
             {
-                if (e.Status == CLAuthorizationStatus.NotDetermined)
+                if (e?.Status == null || e.Status == CLAuthorizationStatus.NotDetermined)
                     return;
 
-                locationManager.AuthorizationChanged -= LocationAuthCallback;
-                tcs.TrySetResult(GetLocationStatus());
-                locationManager.Dispose();
+                if (locationManager != null)
+                    locationManager.AuthorizationChanged -= LocationAuthCallback;
+
+                tcs?.TrySetResult(GetLocationStatus());
+                locationManager?.Dispose();
                 locationManager = null;
             }
         }
