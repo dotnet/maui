@@ -68,6 +68,17 @@ namespace DeviceTests
             Assert.True(await Launcher.CanOpenAsync(new Uri(uri)));
         }
 
+#if __IOS__
+        [Theory]
+        [InlineData("https://maps.apple.com/maps?q=Ole Vigs Gate 8B", "https://maps.apple.com/maps?q=Ole%20Vigs%20Gate%208B")]
+        [InlineData("https://maps.apple.com", "https://maps.apple.com")]
+        public void GetNativeUrl(string uri, string expected)
+        {
+            var url = Launcher.GetNativeUrl(new Uri(uri));
+            Assert.Equal(expected, url.AbsoluteString);
+        }
+#endif
+
         [Theory]
         [InlineData("Not Valid Uri")]
         public async Task InvalidUri(string uri)
