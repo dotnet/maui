@@ -146,6 +146,7 @@
       <Type Name="FeatureNotEnabledException" Kind="Class" />
       <Type Name="FeatureNotSupportedException" Kind="Class" />
       <Type Name="FileBase" Kind="Class" />
+      <Type Name="FilePicker" Kind="Class" />
       <Type Name="FileProvider" Kind="Class" />
       <Type Name="FileProviderLocation" Kind="Enumeration" />
       <Type Name="FileSystem" Kind="Class" />
@@ -176,6 +177,8 @@
       <Type Name="OrientationSensorData" Kind="Structure" />
       <Type Name="PermissionException" Kind="Class" />
       <Type Name="PhoneDialer" Kind="Class" />
+      <Type Name="PickOptions" Kind="Class" />
+      <Type Name="PickResult" Kind="Class" />
       <Type Name="Placemark" Kind="Class" />
       <Type Name="PlacemarkExtensions" Kind="Class" />
       <Type Name="Platform" Kind="Class" />

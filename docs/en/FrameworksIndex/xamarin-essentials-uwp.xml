@@ -307,6 +307,9 @@
       <Member Id="P:Xamarin.Essentials.FileBase.ContentType" />
       <Member Id="P:Xamarin.Essentials.FileBase.FullPath" />
     </Type>
+    <Type Name="Xamarin.Essentials.FilePicker" Id="T:Xamarin.Essentials.FilePicker">
+      <Member Id="M:Xamarin.Essentials.FilePicker.PickFileAsync(Xamarin.Essentials.PickOptions)" />
+    </Type>
     <Type Name="Xamarin.Essentials.FileSystem" Id="T:Xamarin.Essentials.FileSystem">
       <Member Id="M:Xamarin.Essentials.FileSystem.OpenAppPackageFileAsync(System.String)" />
       <Member Id="P:Xamarin.Essentials.FileSystem.AppDataDirectory" />
@@ -498,6 +501,18 @@
     </Type>
     <Type Name="Xamarin.Essentials.PhoneDialer" Id="T:Xamarin.Essentials.PhoneDialer">
       <Member Id="M:Xamarin.Essentials.PhoneDialer.Open(System.String)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.PickOptions" Id="T:Xamarin.Essentials.PickOptions">
+      <Member Id="M:Xamarin.Essentials.PickOptions.#ctor" />
+      <Member Id="P:Xamarin.Essentials.PickOptions.Default" />
+      <Member Id="P:Xamarin.Essentials.PickOptions.FileTypes" />
+      <Member Id="P:Xamarin.Essentials.PickOptions.Images" />
+      <Member Id="P:Xamarin.Essentials.PickOptions.PickerTitle" />
+    </Type>
+    <Type Name="Xamarin.Essentials.PickResult" Id="T:Xamarin.Essentials.PickResult">
+      <Member Id="M:Xamarin.Essentials.PickResult.GetStream" />
+      <Member Id="P:Xamarin.Essentials.PickResult.FileName" />
+      <Member Id="P:Xamarin.Essentials.PickResult.FileUri" />
     </Type>
     <Type Name="Xamarin.Essentials.Placemark" Id="T:Xamarin.Essentials.Placemark">
       <Member Id="M:Xamarin.Essentials.Placemark.#ctor" />

@@ -1,0 +1,118 @@
+<Type Name="PickOptions" FullName="Xamarin.Essentials.PickOptions">
+  <TypeSignature Language="C#" Value="public class PickOptions" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit PickOptions extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.PickOptions" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>File picking options.</summary>
+    <remarks>This file picking options object can be passed to a call to PickFileAsync().</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public PickOptions ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PickOptions.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Creates a default PickOptions object.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Default">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.PickOptions Default { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property class Xamarin.Essentials.PickOptions Default" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.PickOptions.Default" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.PickOptions</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Default file picking options</summary>
+        <value>A PickOptions object with default values.</value>
+        <remarks>This object can be used when no special pick options are necessary.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FileTypes">
+      <MemberSignature Language="C#" Value="public string[] FileTypes { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string[] FileTypes" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.PickOptions.FileTypes" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String[]</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>List of file types that file file picker should return.</summary>
+        <value></value>
+        <remarks>
+          On Android and iOS the files not matching this list is only displayed grayed out.
+          When the array is null or empty, all file types can be selected while picking.
+          The contents of this array is platform specific; every platform has its own way to
+          specify the file types.
+          On Android you can specify one or more MIME types, e.g.
+          "image/png"; also wild card characters can be used, e.g. "image/*".
+          On iOS you can specify UTType constants, e.g. UTType.Image.
+          On UWP, specify a list of extensions, like this: ".jpg", ".png".
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Images">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.PickOptions Images { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property class Xamarin.Essentials.PickOptions Images" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.PickOptions.Images" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.PickOptions</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Predefined PickOptions object for picking image files only.</summary>
+        <value></value>
+        <remarks>
+          Due to specifying the file types to pick being very platform specific, this predefined
+          PickOptions object can be used for picking images.
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="PickerTitle">
+      <MemberSignature Language="C#" Value="public string PickerTitle { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string PickerTitle" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.PickOptions.PickerTitle" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Title for the file picker.</summary>
+        <value></value>
+        <remarks>Note that the file picker title is only used on the Android platform.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

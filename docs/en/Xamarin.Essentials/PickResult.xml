@@ -1,0 +1,88 @@
+<Type Name="PickResult" FullName="Xamarin.Essentials.PickResult">
+  <TypeSignature Language="C#" Value="public class PickResult" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit PickResult extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.PickResult" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>File picking result object.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="FileName">
+      <MemberSignature Language="C#" Value="public string FileName { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string FileName" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.PickResult.FileName" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>File name of the picked file.</summary>
+        <value></value>
+        <remarks>
+          This contains the file name only part of the picked file. It can be used to determine
+          the file type.
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FileUri">
+      <MemberSignature Language="C#" Value="public string FileUri { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string FileUri" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.PickResult.FileUri" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>File URI of the picked file.</summary>
+        <value></value>
+        <remarks>
+          Depending on the platform, this property may contain an URI or a path to the file that
+          was selected by the user. On Android, most often it contains a content:// URI, since the
+          origin of the picked file is a content provider and may not exist as a physical file on
+          storage at all. On iOS the file may be removed from the app's "Inbox" folder and may not
+          be available anymore. The best way to access the picked file's data is always to use
+          GetStream().
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetStream">
+      <MemberSignature Language="C#" Value="public System.IO.Stream GetStream ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance class System.IO.Stream GetStream() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PickResult.GetStream" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.IO.Stream</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Gets stream to access the picked file.</summary>
+        <returns>A stream object to access the picked file.</returns>
+        <remarks>
+          Note that on some platforms (e.g. Android, iOS) the stream object returned from this
+          method often is the only way to access the actual data of the picked file. Be sure to
+          dispose of the stream object when finished, e.g. by using a "using" statement.
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>
