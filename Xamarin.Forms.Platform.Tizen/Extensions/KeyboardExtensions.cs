@@ -1,5 +1,6 @@
 using Xamarin.Forms.Internals;
 using ElmSharp;
+using EEntry = ElmSharp.Entry;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -63,18 +64,18 @@ namespace Xamarin.Forms.Platform.Tizen
 			return isSpellCheckEnabled && isTextPredictionEnabled ? InputHints.AutoComplete : InputHints.None;
 		}
 
-		public static void UpdateKeyboard(this Native.Entry control, Keyboard keyboard, bool isSpellCheckEnabled, bool isTextPredictionEnabled)
+		public static void UpdateKeyboard(this Native.IEntry control, Keyboard keyboard, bool isSpellCheckEnabled, bool isTextPredictionEnabled)
 		{
 			control.Keyboard = keyboard.ToNative();
 			if (keyboard is CustomKeyboard customKeyboard)
 			{
-				control.AutoCapital = customKeyboard.Flags.ToAutoCapital();
+				(control as EEntry).AutoCapital = customKeyboard.Flags.ToAutoCapital();
 			}
 			else
 			{
-				control.AutoCapital = AutoCapital.None;
+				(control as EEntry).AutoCapital = AutoCapital.None;
 			}
-			control.InputHint = keyboard.ToInputHints(isSpellCheckEnabled, isTextPredictionEnabled);
+			(control as EEntry).InputHint = keyboard.ToInputHints(isSpellCheckEnabled, isTextPredictionEnabled);
 		}
 	}
 }

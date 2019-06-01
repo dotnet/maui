@@ -9,6 +9,7 @@
     <Import_RootNamespace>Xamarin.Forms.Controls.Issues</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Issue5412.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\GarbageCollectionHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue4879.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5555.cs" />
@@ -19,6 +20,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue5766.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewBoundMultiSelection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewBoundSingleSelection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue5765.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue4684.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue4992.xaml.cs">
       <DependentUpon>Issue4992.xaml</DependentUpon>
@@ -483,7 +485,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue5949_2.xaml.cs">
-      <DependentUpon>Issue5949_2.xaml</DependentUpon>      
+      <DependentUpon>Issue5949_2.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue5793.cs" />
@@ -1220,13 +1222,13 @@
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue5949_1.xaml">
       <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue5949_2.xaml">
       <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
@@ -1238,7 +1240,7 @@
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue6130.xaml">
       <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

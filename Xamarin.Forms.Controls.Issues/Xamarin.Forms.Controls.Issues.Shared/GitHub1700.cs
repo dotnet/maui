@@ -130,6 +130,14 @@ namespace Xamarin.Forms.Controls.Issues
 						Text = "Button - Non stop",
 						IsTabStop = false
 					},
+					new CheckBox
+					{
+						IsTabStop = true
+					},
+					new CheckBox
+					{
+						IsTabStop = false
+					},
 					new DatePicker
 					{
 						IsTabStop = true

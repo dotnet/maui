@@ -144,6 +144,7 @@
     <Compile Include="Extensions\VisualElementExtensions.cs" />
     <Compile Include="Flags.cs" />
     <Compile Include="IOSDeviceInfo.cs" />
+    <Compile Include="Renderers\FormsCheckBox.cs" />
     <Compile Include="Renderers\ImageElementManager.cs" />
     <Compile Include="IVisualNativeElementRenderer.cs" />
     <Compile Include="NativeViewWrapper.cs" />
@@ -154,6 +155,7 @@
     <Compile Include="PageExtensions.cs" />
     <Compile Include="Renderers\IAccessibilityElementsController.cs" />
     <Compile Include="Renderers\PageContainer.cs" />
+    <Compile Include="Renderers\CheckBoxRendererBase.cs" />
     <Compile Include="Renderers\WkWebViewRenderer.cs" />
     <Compile Include="Renderers\ElementSelectedEventArgs.cs" />
     <Compile Include="Renderers\IShellContext.cs" />
@@ -213,6 +215,7 @@
     <Compile Include="Renderers\ButtonLayoutManager.cs" />
     <Compile Include="Renderers\IButtonLayoutRenderer.cs" />
     <Compile Include="Renderers\SearchHandlerAppearanceTracker.cs" />
+    <Compile Include="Renderers\CheckBoxRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\StringResources.ar.resx" />

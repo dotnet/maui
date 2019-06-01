@@ -76,6 +76,7 @@
     <Compile Include="EffectiveFlowDirectionExtensions.cs" />
     <Compile Include="ShellTestBase.cs" />
     <Compile Include="ShellUriHandlerTests.cs" />
+    <Compile Include="CheckBoxUnitTests.cs" />
     <Compile Include="VisualTests.cs" />
     <Compile Include="FlowDirectionTests.cs" />
     <Compile Include="ImageButtonUnitTest.cs" />

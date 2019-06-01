@@ -62,6 +62,7 @@
     <Compile Include="AndroidApplicationLifecycleState.cs" />
     <Compile Include="AndroidTitleBarVisibility.cs" />
     <Compile Include="AppCompat\FrameRenderer.cs" />
+    <Compile Include="AppCompat\CheckBoxRendererBase.cs" />
     <Compile Include="BackgroundManager.cs" />
     <Compile Include="AppCompat\ILifeCycleState.cs" />
     <Compile Include="AppCompat\ShellFragmentContainer.cs" />
@@ -316,6 +317,8 @@
     <Compile Include="ButtonLayoutManager.cs" />
     <Compile Include="IStepperRenderer.cs" />
     <Compile Include="StepperRendererManager.cs" />
+    <Compile Include="AppCompat\CheckBoxRenderer.cs" />
+    <Compile Include="AppCompat\CheckBoxDesignerRenderer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

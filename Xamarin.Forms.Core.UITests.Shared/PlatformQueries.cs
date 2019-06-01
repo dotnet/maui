@@ -63,6 +63,7 @@ namespace Xamarin.Forms.Core.UITests
 		public static readonly string ActivityIndicator = "UIActivityIndicatorView";
 		public static readonly string BoxView = "Xamarin_Forms_Platform_iOS_BoxRenderer";
 		public static readonly string Button = "UIButton";
+		public static readonly string CheckBox = "Xamarin_Forms_Platform_iOS_CheckBoxRenderer";
 		public static readonly string DatePicker = "UITextField";
 		public static readonly string Editor = "UITextView";
 		public static readonly string Entry = "UITextField";
@@ -87,6 +88,7 @@ namespace Xamarin.Forms.Core.UITests
 		public static readonly string ActivityIndicator = "android.widget.ProgressBar";
 		public static readonly string BoxView = "xamarin.forms.platform.android.BoxRenderer";
 		public static readonly string Button = "android.widget.Button";
+		public static readonly string CheckBox = "android.widget.CheckBox";
 		public static readonly string DatePicker = "android.widget.EditText";
 		public static readonly string Editor = "xamarin.forms.platform.android.EditorEditText";
 		public static readonly string Entry = "xamarin.forms.platform.android.EntryEditText";

@@ -233,7 +233,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 			if (LineHeight != -1.0d)
 			{
-				_formattingString.Append($"linerelsize={(int)(LineHeight*100)}%");
+				_formattingString.Append($"linerelsize={(int)(LineHeight * 100)}%");
 			}
 
 			switch (LineBreakMode)

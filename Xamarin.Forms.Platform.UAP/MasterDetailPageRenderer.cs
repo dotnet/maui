@@ -335,7 +335,7 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 
 			Control.DetailTitle = GetCurrentPage().Title ?? Element?.Title;
-			(this as ITitleProvider).ShowTitle = !string.IsNullOrEmpty(Control.DetailTitle);
+			(this as ITitleProvider).ShowTitle = !string.IsNullOrEmpty(Control.DetailTitle) || Element.MasterBehavior == MasterBehavior.Popover;
 		}
 
 		async void UpdateDetailTitleIcon()

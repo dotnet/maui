@@ -5,10 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using WPFCheckBox = System.Windows.Controls.CheckBox;
 
 namespace Xamarin.Forms.Platform.WPF
 {
-	public class SwitchRenderer : ViewRenderer<Switch, CheckBox>
+	public class SwitchRenderer : ViewRenderer<Switch, WPFCheckBox>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<Switch> e)
 		{
@@ -16,7 +17,7 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				if (Control == null) // construct and SetNativeControl and suscribe control event
 				{
-					SetNativeControl(new CheckBox());
+					SetNativeControl(new WPFCheckBox());
 					Control.Checked += OnNativeToggled;
 					Control.Unchecked += OnNativeToggled;
 				}

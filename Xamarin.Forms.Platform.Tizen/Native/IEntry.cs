@@ -1,0 +1,29 @@
+using System;
+using EColor = ElmSharp.Color;
+
+
+namespace Xamarin.Forms.Platform.Tizen.Native
+{
+	public interface IEntry
+	{
+		double FontSize { get; set; }
+
+		FontAttributes FontAttributes { get; set; }
+
+		string FontFamily { get; set; }
+
+		EColor TextColor { get; set; }
+
+		TextAlignment HorizontalTextAlignment { get; set; }
+
+		string Placeholder { get; set; }
+
+		EColor PlaceholderColor { get; set; }
+
+		string FontWeight { get; set; }
+
+		Keyboard Keyboard { get; set; }
+
+		event EventHandler<TextChangedEventArgs> TextChanged;
+	}
+}

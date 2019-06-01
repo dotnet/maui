@@ -162,6 +162,7 @@
     <Compile Include="Renderers\DatePickerRenderer.cs" />
     <Compile Include="Renderers\EditorRenderer.cs" />
     <Compile Include="Renderers\EntryRenderer.cs" />
+    <Compile Include="Renderers\FormsCheckBox.cs" />
     <Compile Include="Renderers\FrameRenderer.cs" />
     <Compile Include="Renderers\ImageButtonRenderer.cs" />
     <Compile Include="Renderers\ImageRenderer.cs" />
@@ -178,6 +179,7 @@
     <Compile Include="Renderers\SearchBarRenderer.cs" />
     <Compile Include="Renderers\SliderRenderer.cs" />
     <Compile Include="Renderers\StepperRenderer.cs" />
+    <Compile Include="Renderers\CheckBoxRenderer.cs" />
     <Compile Include="Renderers\SwitchRenderer.cs" />
     <Compile Include="Renderers\TabbedPageRenderer.cs" />
     <Compile Include="Renderers\CellRenderer.cs" />
@@ -211,6 +213,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Assets\CheckBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Assets\Button.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

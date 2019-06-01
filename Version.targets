@@ -38,13 +38,13 @@
     <PropertyGroup>
       <InformationalVersion>$(PackageVersion)</InformationalVersion>
       <FileVersion>$(Version).$(GitCommits)</FileVersion>
-      <AssemblyVersion>$(Version).0</AssemblyVersion>
+      <AssemblyVersion>2.0.0.0</AssemblyVersion> <!-- THIS SHALL REMAIN 2.0.0.0 -->
     </PropertyGroup>
 
     <ItemGroup>
       <AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
         <_Parameter1>Version</_Parameter1>
-        <_Parameter2>$(Version)</_Parameter2>
+        <_Parameter2>2.0.0.0</_Parameter2> <!-- THIS SHALL REMAIN 2.0.0.0 -->
       </AssemblyAttribute>
       <AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
         <_Parameter1>PackageVersion</_Parameter1>

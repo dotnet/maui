@@ -17,6 +17,7 @@ namespace Xamarin.Forms.Core.UITests
 		public const string ActivityIndicatorGallery = "* marked:'ActivityIndicator Gallery'";
 		public const string BoxViewGallery = "* marked:'BoxView Gallery'";
 		public const string ButtonGallery = "* marked:'Button Gallery'";
+		public const string CheckBoxGallery = "* marked:'CheckBox Gallery'";
 		public const string CollectionViewGallery = "* marked:'CollectionView Gallery'";
 		public const string ContextActionsListGallery = "* marked:'ContextActions List Gallery'";
 		public const string ContextActionsTableGallery = "* marked:'ContextActions Table Gallery'";
@@ -81,6 +82,7 @@ namespace Xamarin.Forms.Core.UITests
 		public static readonly string ActivityIndicator = PlatformViews.ActivityIndicator;
 		public static readonly string BoxView = PlatformViews.BoxView;
 		public static readonly string Button = PlatformViews.Button;
+		public static readonly string CheckBox = PlatformViews.CheckBox;
 		public static readonly string DatePicker = PlatformViews.DatePicker;
 		public static readonly string Editor = PlatformViews.Editor;
 		public static readonly string Entry = PlatformViews.Entry;

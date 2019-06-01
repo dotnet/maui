@@ -322,6 +322,7 @@ namespace Xamarin.Forms.Controls
 				new GalleryPageFactory(() => new ButtonLayoutGalleryPage(VisualMarker.Material), "Button Layout Gallery (Material)"),
 				new GalleryPageFactory(() => new ButtonBorderBackgroundGalleryPage(), "Button Border & Background Gallery"),
 				new GalleryPageFactory(() => new ButtonBorderBackgroundGalleryPage(VisualMarker.Material), "Button Border & Background Gallery (Material)"),
+				new GalleryPageFactory(() => new CheckBoxCoreGalleryPage(), "CheckBox Gallery"),
 				new GalleryPageFactory(() => new DatePickerCoreGalleryPage(), "DatePicker Gallery"),
 				new GalleryPageFactory(() => new EditorCoreGalleryPage(), "Editor Gallery"),
 				new GalleryPageFactory(() => new FrameCoreGalleryPage(), "Frame Gallery"),

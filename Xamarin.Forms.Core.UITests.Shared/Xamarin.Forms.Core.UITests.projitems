@@ -43,6 +43,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Tests\SearchBarUITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tests\SliderUITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tests\StepperUITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tests\CheckBoxUITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tests\SwitchUITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tests\TimePickerUITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tests\ToolbarItemTests.cs" />

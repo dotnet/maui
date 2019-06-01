@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Material.Android
 {
 	public class MaterialPickerEditText : MaterialFormsEditTextBase
 	{
-		bool _isDisposed = false;
+		bool _disposed = false;
 
 		public MaterialPickerEditText(Context context) : base(context) => PickerManager.Init(this);
 
@@ -35,9 +35,9 @@ namespace Xamarin.Forms.Material.Android
 
 		protected override void Dispose(bool disposing)
 		{
-			if (disposing && !_isDisposed)
+			if (disposing && !_disposed)
 			{
-				_isDisposed = true;
+				_disposed = true;
 				PickerManager.Dispose(this);
 			}
 

@@ -4,14 +4,39 @@ using EEntry = ElmSharp.Entry;
 using EColor = ElmSharp.Color;
 using ESize = ElmSharp.Size;
 
+#if __MATERIAL__
+using Tizen.NET.MaterialComponents;
+#endif
+
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
+#if __MATERIAL__
+	public class MaterialEntry : MTextField, IMeasurable, IBatchable, IEntry
+	{
+		const int TextFieldMinimumHeight = 115;
+
+		public MaterialEntry(EvasObject parent) : base(parent)
+		{
+			Initialize();
+		}
+
+#else
 	/// <summary>
 	/// Extends the Entry control, providing basic formatting features,
 	/// i.e. font color, size, placeholder.
 	/// </summary>
-	public class Entry : EEntry, IMeasurable, IBatchable
+	public class Entry : EEntry, IMeasurable, IBatchable, IEntry
 	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Xamarin.Forms.Platform.Tizen.Native.MaterialEntry"/> class.
+		/// </summary>
+		/// <param name="parent">Parent evas object.</param>
+		public Entry(EvasObject parent) : base(parent)
+		{
+			Initialize();
+		}
+#endif
+
 		const int VariationNormal = 0;
 		const int VariationSignedAndDecimal = 3;
 
@@ -35,26 +60,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// The type of the keyboard used by the entry.
 		/// </summary>
 		Keyboard _keyboard;
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="Xamarin.Forms.Platform.Tizen.Native.Entry"/> class.
-		/// </summary>
-		/// <param name="parent">Parent evas object.</param>
-		public Entry(EvasObject parent) : base(parent)
-		{
-			Scrollable = true;
-
-			ChangedByUser += (s, e) =>
-			{
-				_changedByUserCallbackDepth++;
-
-				Text = GetInternalText();
-
-				_changedByUserCallbackDepth--;
-			};
-
-			ApplyKeyboard(Keyboard.Normal);
-		}
 
 		/// <summary>
 		/// Occurs when the text has changed.
@@ -92,7 +97,11 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// Gets or sets the color of the text.
 		/// </summary>
 		/// <value>The color of the text.</value>
+#if __MATERIAL__
+		public new EColor TextColor
+#else
 		public EColor TextColor
+#endif
 		{
 			get
 			{
@@ -314,8 +323,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			else
 			{
 				// there's text in the entry, use it instead
-				rawSize = Native.TextHelper.GetRawTextBlockSize(this);
-				formattedSize = Native.TextHelper.GetFormattedTextBlockSize(this);
+				rawSize = TextHelper.GetRawTextBlockSize(this);
+				formattedSize = TextHelper.GetFormattedTextBlockSize(this);
 			}
 
 			// restore the original size
@@ -328,26 +337,52 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			formattedSize.Height += verticalPadding;
 			formattedSize.Width += horizontalPadding;
 
+			ESize size;
+
 			// if the raw text width is larger than available width, we use the available width,
 			// while height is set to the smallest height value
 			if (rawSize.Width > availableWidth)
 			{
-				return new ESize
-				{
-					Width = availableWidth,
-					Height = Math.Min(formattedSize.Height, Math.Max(rawSize.Height, availableHeight)),
-				};
+				size.Width = availableWidth;
+				size.Height = Math.Min(formattedSize.Height, Math.Max(rawSize.Height, availableHeight));
 			}
 			else
 			{
 				// width is fine, return the formatted text size
-				return formattedSize;
+				size = formattedSize;
 			}
+
+#if __MATERIAL__
+			// for adapting material style, 
+			// the height of the entry should be bigger than minimun size defined by Tizen.NET.Material.Components
+			if (size.Height < TextFieldMinimumHeight)
+			{
+				size.Height = TextFieldMinimumHeight;
+			}
+#endif
+			return size;
+
 		}
 
 		protected virtual void OnTextChanged(string oldValue, string newValue)
 		{
 			TextChanged?.Invoke(this, new TextChangedEventArgs(oldValue, newValue));
+		}
+
+		void Initialize()
+		{
+			Scrollable = true;
+
+			ChangedByUser += (s, e) =>
+			{
+				_changedByUserCallbackDepth++;
+
+				Text = GetInternalText();
+
+				_changedByUserCallbackDepth--;
+			};
+
+			ApplyKeyboard(Keyboard.Normal);
 		}
 
 		void IBatchable.OnBatchCommitted()
@@ -386,7 +421,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// <returns>The internal text representation.</returns>
 		string GetInternalText()
 		{
-			return Entry.ConvertMarkupToUtf8(base.Text);
+			return EEntry.ConvertMarkupToUtf8(base.Text);
 		}
 
 		/// <summary>
@@ -439,7 +474,11 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// <param name="markupText">Markup text to be used as a placeholder.</param>
 		protected virtual void SetInternalPlaceholderAndStyle(string markupText)
 		{
+#if __MATERIAL__
+			base.Label = markupText;
+#else
 			SetPartText("elm.guide", markupText ?? "");
+#endif
 		}
 	}
 }

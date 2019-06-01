@@ -80,6 +80,8 @@
     <Compile Include="MaterialStepperRenderer.cs" />
     <Compile Include="FormsMaterial.cs" />
     <Compile Include="ReadOnlyMaterialTextField.cs" />
+    <Compile Include="MaterialCheckboxRenderer.cs" />
+    <Compile Include="MaterialFormsCheckBox.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj">

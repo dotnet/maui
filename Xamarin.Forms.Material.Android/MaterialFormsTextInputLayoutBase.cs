@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Material.Android
 		private ColorStateList _unfocusedUnderlineColorsList;
 		private ColorStateList _focusedUnderlineColorsList;
 		static readonly int[][] s_colorStates = { new[] { global::Android.Resource.Attribute.StateEnabled }, new[] { -global::Android.Resource.Attribute.StateEnabled } };
-		bool _isDisposed = false;
+		bool _disposed = false;
 
 		public MaterialFormsTextInputLayoutBase(Context context) : base(context)
 		{
@@ -64,7 +64,7 @@ namespace Xamarin.Forms.Material.Android
 
 		internal void ApplyTheme(Color formsTextColor, Color formsPlaceHolderColor)
 		{
-			if (_isDisposed)
+			if (_disposed)
 				return;
 
 			if(!_isSetup)
@@ -137,9 +137,9 @@ namespace Xamarin.Forms.Material.Android
 
 		protected override void Dispose(bool disposing)
 		{
-			if (!_isDisposed)
+			if (!_disposed)
 			{
-				_isDisposed = true;
+				_disposed = true;
 				if (EditText != null)
 					EditText.FocusChange -= OnFocusChange;
 			}

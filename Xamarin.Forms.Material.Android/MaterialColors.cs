@@ -8,6 +8,7 @@ using AProgressBar = Android.Widget.ProgressBar;
 using ASeekBar = Android.Widget.AbsSeekBar;
 using PlatformColor = Android.Graphics.Color;
 using Xamarin.Forms.Platform.Android;
+using System;
 #elif __IOS__
 using MaterialComponents;
 using Xamarin.Forms.Platform.iOS;
@@ -102,6 +103,26 @@ namespace Xamarin.Forms.Material.Tizen
 		public static PlatformColor GetEntryTextColor(Color textColor)
 		{
 			return textColor != Color.Default ? ToPlatformColor(textColor) : MaterialColors.Light.PrimaryColor;
+		}
+
+		public static PlatformColor GetCheckBoxColor(bool isChecked, bool isEnabled)
+		{
+			if (isChecked && isEnabled)
+			{
+				return ToPlatformColor(new Color(0.129411771893501, 0.129411771893501, 0.129411771893501));
+			}
+			else if (!isChecked && isEnabled)
+			{
+				return ToPlatformColor(new Color(0, 0, 0, 0.54));
+			}
+			else if (isChecked && !isEnabled)
+			{
+				return ToPlatformColor(new Color(0, 0, 0, 0.38));
+			}
+			else
+			{
+				return ToPlatformColor(new Color(0, 0, 0, 0.38));
+			}
 		}
 
 #if __ANDROID__
@@ -394,6 +415,19 @@ namespace Xamarin.Forms.Material.Tizen
 #endif
 		}
 
+		static int GetAlpha(PlatformColor color)
+		{
+#if __ANDROID__
+			return color.A;
+#elif __IOS__
+			System.nfloat alpha;
+			color.GetRGBA(out _, out _, out _, out alpha);
+			return (int)alpha;
+
+#elif __TIZEN__
+			return color.A;
+#endif
+		}
 
 		static PlatformColor FromRgb(int red, int green, int blue)
 		{

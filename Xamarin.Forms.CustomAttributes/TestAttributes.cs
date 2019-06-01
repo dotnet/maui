@@ -199,7 +199,8 @@ namespace Xamarin.Forms.CustomAttributes
 			ImageCell,
 			EntryCell,
 			Editor,
-			DatePicker
+			DatePicker,
+			CheckBox
 		}
 
 		public enum Layouts
@@ -715,6 +716,13 @@ namespace Xamarin.Forms.CustomAttributes
 		{
 			IsToggled,
 			OnColor
+		}
+
+		public enum CheckBox
+		{
+			IsChecked,
+			CheckedColor,
+			UncheckedColor
 		}
 
 		public enum TimePicker
