@@ -29,12 +29,12 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				Content.Element.MeasureInvalidated -= ElementMeasureInvalidated;
 			}
-			
-			if(Content?.View != null)
+
+			if (Content?.View != null)
 			{
 				RemoveView(Content.View);
 			}
-			
+
 			Content = null;
 		}
 
@@ -63,8 +63,13 @@ namespace Xamarin.Forms.Platform.Android
 			int pixelWidth = MeasureSpec.GetSize(widthMeasureSpec);
 			int pixelHeight = MeasureSpec.GetSize(heightMeasureSpec);
 
-			var width = Context.FromPixels(pixelWidth);
-			var height = Context.FromPixels(pixelHeight);
+			var width = MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.Unspecified
+				? double.PositiveInfinity
+				: Context.FromPixels(pixelWidth);
+
+			var height = MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.Unspecified
+				? double.PositiveInfinity
+				: Context.FromPixels(pixelHeight);
 
 			SizeRequest measure = Content.Element.Measure(width, height, MeasureFlags.IncludeMargins);
 
