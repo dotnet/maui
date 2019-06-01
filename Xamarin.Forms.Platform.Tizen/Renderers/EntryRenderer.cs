@@ -1,9 +1,11 @@
 using System;
+using IEntry = Xamarin.Forms.Platform.Tizen.Native.IEntry;
+using EEntry = ElmSharp.Entry;
 using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Entry;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
-	public class EntryRenderer : ViewRenderer<Entry, Native.Entry>
+	public class EntryRenderer : ViewRenderer<Entry, EEntry>
 	{
 		public EntryRenderer()
 		{
@@ -30,19 +32,30 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				var entry = new Native.EditfieldEntry(Forms.NativeParent)
-				{
-					IsSingleLine = true,
-				};
+				var entry = CreateNativeControl();
 				entry.SetVerticalTextAlignment("elm.text", 0.5);
 				entry.SetVerticalTextAlignment("elm.guide", 0.5);
-				entry.TextChanged += OnTextChanged;
 				entry.Activated += OnCompleted;
 				entry.CursorChanged += OnCursorChanged;
+
+				if (entry is IEntry ie)
+				{
+					ie.TextChanged += OnTextChanged;
+				}
 				entry.PrependMarkUpFilter(MaxLengthFilter);
 				SetNativeControl(entry);
+
+				
 			}
 			base.OnElementChanged(e);
+		}
+
+		protected virtual EEntry CreateNativeControl()
+		{
+			return new Native.EditfieldEntry(Forms.NativeParent)
+			{
+				IsSingleLine = true,
+			};
 		}
 
 		protected override void Dispose(bool disposing)
@@ -51,9 +64,13 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				if (null != Control)
 				{
-					Control.TextChanged -= OnTextChanged;
 					Control.Activated -= OnCompleted;
 					Control.CursorChanged -= OnCursorChanged;
+
+					if (Control is IEntry ie)
+					{
+						ie.TextChanged -= OnTextChanged;
+					}
 				}
 			}
 
@@ -62,7 +79,17 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		protected override Size MinimumSize()
 		{
-			return (Control as Native.IMeasurable).Measure(Control.MinimumWidth, Control.MinimumHeight).ToDP();
+			Size measured;
+			if (Control is Native.IMeasurable im)
+			{
+				measured = im.Measure(Control.MinimumWidth, Control.MinimumHeight).ToDP();
+			}
+			else
+			{
+				measured = base.MinimumSize();
+			}
+
+			return measured;
 		}
 
 		void OnTextChanged(object sender, EventArgs e)
@@ -92,36 +119,52 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 		}
 
-		void UpdateTextColor()
+		protected virtual void UpdateTextColor()
 		{
-			Control.TextColor = Element.TextColor.ToNative();
+			if (Control is IEntry ie)
+			{
+				ie.TextColor = Element.TextColor.ToNative();
+			}
 		}
 
 		void UpdateFontSize()
 		{
-			Control.FontSize = Element.FontSize;
+			if (Control is IEntry ie)
+			{
+				ie.FontSize = Element.FontSize;
+			}
 		}
 
 		void UpdateFontFamily()
 		{
-			Control.FontFamily = Element.FontFamily;
+			if (Control is IEntry ie)
+			{
+				ie.FontFamily = Element.FontFamily;
+			}
 		}
 
 		void UpdateFontAttributes()
 		{
-			Control.FontAttributes = Element.FontAttributes;
+			if (Control is IEntry ie)
+			{
+				ie.FontAttributes = Element.FontAttributes;
+			}			
 		}
 
 		void UpdateHorizontalTextAlignment()
 		{
-			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToNative();
+			if (Control is IEntry ie)
+			{
+				ie.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToNative();
+			}			
 		}
 
 		void UpdateKeyboard(bool initialize)
 		{
 			if (initialize && Element.Keyboard == Keyboard.Default)
 				return;
-			Control.UpdateKeyboard(Element.Keyboard, Element.IsSpellCheckEnabled, Element.IsTextPredictionEnabled);
+
+			(Control as IEntry)?.UpdateKeyboard(Element.Keyboard, Element.IsSpellCheckEnabled, Element.IsTextPredictionEnabled);
 		}
 
 		void UpdateIsSpellCheckEnabled()
@@ -131,17 +174,26 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdatePlaceholder()
 		{
-			Control.Placeholder = Element.Placeholder;
+			if (Control is IEntry ie)
+			{
+				ie.Placeholder = Element.Placeholder;
+			}
 		}
 
 		void UpdatePlaceholderColor()
 		{
-			Control.PlaceholderColor = Element.PlaceholderColor.ToNative();
+			if (Control is IEntry ie)
+			{
+				ie.PlaceholderColor = Element.PlaceholderColor.ToNative();
+			}
 		}
 
 		void UpdateFontWeight()
 		{
-			Control.FontWeight = Specific.GetFontWeight(Element);
+			if (Control is IEntry ie)
+			{
+				ie.FontWeight = Specific.GetFontWeight(Element);
+			}
 		}
 
 		void UpdateMaxLength()

@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 	/// <summary>
 	/// The Text Helper contains functions that assist in working with text-able objects.
 	/// </summary>
-	internal static class TextHelper
+	public static class TextHelper
 	{
 		/// <summary>
 		/// Gets the size of raw text block.

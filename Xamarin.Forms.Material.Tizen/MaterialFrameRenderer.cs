@@ -1,7 +1,7 @@
 ﻿using Xamarin.Forms;
 using Xamarin.Forms.Platform.Tizen;
+using Xamarin.Forms.Platform.Tizen.Native;
 using Xamarin.Forms.Material.Tizen;
-using Xamarin.Forms.Material.Tizen.Native;
 using Tizen.NET.MaterialComponents;
 using TForms = Xamarin.Forms.Platform.Tizen.Forms;
 
@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Material.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new MCanvas(TForms.NativeParent));
+				SetNativeControl(new MaterialCanvas(TForms.NativeParent));
 			}
 			base.OnElementChanged(e);
 		}

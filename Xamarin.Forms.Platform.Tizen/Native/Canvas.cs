@@ -2,8 +2,21 @@
 using System.Collections.Specialized;
 using ElmSharp;
 
+#if __MATERIAL__
+using Tizen.NET.MaterialComponents;
+#endif
+
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
+#if __MATERIAL__
+	public class MaterialCanvas : MaterialBox, IContainable<EvasObject>
+	{
+		public MaterialCanvas(EvasObject parent) : base(parent)
+		{
+			Initilize();
+		}
+
+#else
 	/// <summary>
 	/// A Canvas provides a class which can be a container for other controls.
 	/// </summary>
@@ -14,16 +27,49 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 	public class Canvas : Box, IContainable<EvasObject>
 	{
 		/// <summary>
-		/// The list of Views.
-		/// </summary>
-		readonly ObservableCollection<EvasObject> _children = new ObservableCollection<EvasObject>();
-
-		/// <summary>
 		/// Initializes a new instance of the <see cref="Xamarin.Forms.Platform.Tizen.Native.Canvas"/> class.
 		/// </summary>
 		/// <remarks>Canvas doesn't support replacing its children, this will be ignored.</remarks>
 		/// <param name="parent">Parent of this instance.</param>
 		public Canvas(EvasObject parent) : base(parent)
+		{
+			Initilize();
+		}
+#endif
+
+		/// <summary>
+		/// The list of Views.
+		/// </summary>
+		readonly ObservableCollection<EvasObject> _children = new ObservableCollection<EvasObject>();
+
+		/// <summary>
+		/// Gets list of native elements that are placed in the canvas.
+		/// </summary>
+		public new IList<EvasObject> Children
+		{
+			get
+			{
+				return _children;
+			}
+		}
+
+		/// <summary>
+		/// Provides destruction for native element and contained elements.
+		/// </summary>
+		protected override void OnUnrealize()
+		{
+			foreach (var child in _children)
+			{
+				child.Unrealize();
+			}
+
+			base.OnUnrealize();
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the the class
+		/// </summary>
+		void Initilize()
 		{
 			_children.CollectionChanged += (o, e) =>
 			{
@@ -54,30 +100,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 					OnRemoveAll();
 				}
 			};
-		}
-
-		/// <summary>
-		/// Gets list of native elements that are placed in the canvas.
-		/// </summary>
-		public new IList<EvasObject> Children
-		{
-			get
-			{
-				return _children;
-			}
-		}
-
-		/// <summary>
-		/// Provides destruction for native element and contained elements.
-		/// </summary>
-		protected override void OnUnrealize()
-		{
-			foreach (var child in _children)
-			{
-				child.Unrealize();
-			}
-
-			base.OnUnrealize();
 		}
 
 		/// <summary>

@@ -1,18 +1,37 @@
 using System;
 using ElmSharp;
-using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
-using EButton = ElmSharp.Button;
 using EColor = ElmSharp.Color;
 using ESize = ElmSharp.Size;
+using TSButtonStyle = Xamarin.Forms.PlatformConfiguration.TizenSpecific.ButtonStyle;
+using EButton = ElmSharp.Button;
+
+#if __MATERIAL__
+using Tizen.NET.MaterialComponents;
+#endif
 
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
+#if __MATERIAL__
+	public class MaterialButton : MButton, IMeasurable, IBatchable, IButton
+	{
+		public MaterialButton(EvasObject parent) : base(parent)
+		{
+		}
+#else
 	/// <summary>
 	/// Extends the EButton control, providing basic formatting features,
 	/// i.e. font color, size, additional image.
 	/// </summary>
-	public class Button : EButton, IMeasurable, IBatchable
+	public class Button : EButton, IMeasurable, IBatchable, IButton
 	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Xamarin.Forms.Platform.Tizen.Native.Button"/> class.
+		/// </summary>
+		/// <param name="parent">Parent evas object.</param>
+		public Button(EvasObject parent) : base(parent)
+		{
+		}
+#endif
 		/// <summary>
 		/// Holds the formatted text of the button.
 		/// </summary>
@@ -22,14 +41,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// Optional image, if set will be drawn on the button.
 		/// </summary>
 		Image _image;
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="Xamarin.Forms.Platform.Tizen.Native.Button"/> class.
-		/// </summary>
-		/// <param name="parent">Parent evas object.</param>
-		public Button(EvasObject parent) : base(parent)
-		{
-		}
 
 		/// <summary>
 		/// Gets or sets the button's text.
@@ -182,7 +193,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// </summary>
 		public virtual ESize Measure(int availableWidth, int availableHeight)
 		{
-			if (Style == ButtonStyle.Circle)
+			if (Style == TSButtonStyle.Circle)
 			{
 				return new ESize(MinimumWidth, MinimumHeight);
 			}
@@ -276,7 +287,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			if (Style != style)
 			{
 				Style = style;
-				if (Style == ButtonStyle.Default)
+				if (Style == TSButtonStyle.Default)
 					_span.HorizontalTextAlignment = TextAlignment.Auto;
 				else
 					_span.HorizontalTextAlignment = TextAlignment.Center;

@@ -28,7 +28,7 @@
       </group>
       <group targetFramework="tizen40">
         <dependency id="Tizen.NET" version="4.0.0"/>
-        <dependency id="Tizen.NET.MaterialComponents" version="0.9.5-preview"/>
+        <dependency id="Tizen.NET.MaterialComponents" version="0.9.7-preview"/>
       </group>
     </dependencies>
   </metadata>
