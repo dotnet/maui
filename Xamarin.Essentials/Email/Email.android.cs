@@ -29,7 +29,8 @@ namespace Xamarin.Essentials
 
         static Intent CreateIntent(EmailMessage message)
         {
-            var intent = new Intent(Intent.ActionSend);
+            var action = message?.Attachments?.Count > 1 ? Intent.ActionSendMultiple : Intent.ActionSend;
+            var intent = new Intent(action);
             intent.SetType("message/rfc822");
 
             if (!string.IsNullOrEmpty(message?.Body))
