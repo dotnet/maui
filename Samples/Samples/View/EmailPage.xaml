@@ -42,11 +42,17 @@
                         VerticalOptions="FillAndExpand" HeightRequest="100" />
 
                 <Label Text="Attachment" FontAttributes="Bold" Margin="0,6,0,0" />
+
                 <Label Text="File Name:" />
                 <Entry Text="{Binding AttachmentName}" />
                 <Label Text="File Contents:" />
                 <Editor Text="{Binding AttachmentContents}" Keyboard="Chat"
                         VerticalOptions="FillAndExpand" HeightRequest="200" />
+
+                <StackLayout Orientation="Horizontal">
+                    <Label Text="Attach Multiple" HorizontalTextAlignment="End"  HorizontalOptions="FillAndExpand" VerticalOptions="Center"/>
+                    <Switch IsToggled="{Binding HasMultipleAttachements}" VerticalOptions="Center"/>
+                </StackLayout>
 
                 <Button Text="Send Email" Command="{Binding SendEmailCommand}" IsEnabled="{Binding IsNotBusy}" />
 
