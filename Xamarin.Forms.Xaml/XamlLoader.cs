@@ -154,8 +154,7 @@ namespace Xamarin.Forms.Xaml
 						continue;
 					if (reader.NodeType == XmlNodeType.XmlDeclaration)
 						continue;
-					if (reader.NodeType != XmlNodeType.Element)
-					{
+					if (reader.NodeType != XmlNodeType.Element) {
 						Debug.WriteLine("Unhandled node {0} {1} {2}", reader.NodeType, reader.Name, reader.Value);
 						continue;
 					}
@@ -164,7 +163,7 @@ namespace Xamarin.Forms.Xaml
 					RootNode rootNode = new RuntimeRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), null, (IXmlNamespaceResolver)reader);
 					XamlParser.ParseXaml(rootNode, reader);
 					var rNode = (IElementNode)rootNode;
-					if (!rNode.Properties.TryGetValue(new XmlName("http://xamarin.com/schemas/2014/forms", "Resources"), out var resources))
+					if (!rNode.Properties.TryGetValue(new XmlName(XamlParser.XFUri, "Resources"), out var resources))
 						return null;
 
 					var visitorContext = new HydrationContext
@@ -172,7 +171,17 @@ namespace Xamarin.Forms.Xaml
 						ExceptionHandler = ResourceLoader.ExceptionHandler2 != null ? ehandler : (Action<Exception>)null,
 					};
 					var cvv = new CreateValuesVisitor(visitorContext);
+					if (resources is ElementNode resourcesEN && (resourcesEN.XmlType.NamespaceUri != XamlParser.XFUri || resourcesEN.XmlType.Name != nameof(ResourceDictionary))) { //single implicit resource
+						resources = new ElementNode(new XmlType(XamlParser.XFUri, nameof(ResourceDictionary), null), XamlParser.XFUri, rootNode.NamespaceResolver);
+						((ElementNode)resources).CollectionItems.Add(resourcesEN);
+					}
+					else if (resources is ListNode resourcesLN) { //multiple implicit resources
+						resources = new ElementNode(new XmlType(XamlParser.XFUri, nameof(ResourceDictionary), null), XamlParser.XFUri, rootNode.NamespaceResolver);
+						foreach (var n in resourcesLN.CollectionItems)
+							((ElementNode)resources).CollectionItems.Add(n);
+					}
 					cvv.Visit((ElementNode)resources, null);
+
 					visitorContext.RootElement = visitorContext.Values[resources];
 
 					resources.Accept(new XamlNodeVisitor((node, parent) => node.Parent = parent), null); //set parents for {StaticResource}

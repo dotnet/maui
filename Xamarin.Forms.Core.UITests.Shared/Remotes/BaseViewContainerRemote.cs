@@ -73,25 +73,11 @@ namespace Xamarin.Forms.Core.UITests
 					Height = scrollBounds.Height,
 				};
 			}
-
-			while (true)
-			{
-#if __MACOS__
-				var result = App.Query(o => o.Raw(ViewQuery));
-#else
-				var result = App.Query (o => o.Raw(ContainerQuery));
-#endif
-
-				if (result.Any())
-					break;
-				App.Tap(o => o.Raw("* marked:'MoveNextButton'"));
-			}
-
-			//Assert.True (App.ScrollForElement (
-			//	ContainerQuery, new Drag (scrollBounds, Drag.Direction.BottomToTop, Drag.DragLength.Medium)
-			//), "Failed to find element in: " + callerMemberName);
-
-			App.Screenshot("Go to element");
+			
+			App.WaitForElement("TargetViewContainer");
+			App.Tap("TargetViewContainer");
+			App.EnterText(callerMemberName.Replace("_", "") + "VisualElement");
+			App.Tap("GoButton");
 		}
 
 		public void TapView()
@@ -160,7 +146,9 @@ namespace Xamarin.Forms.Core.UITests
 				return result;
 			}
 #endif
-			
+
+			App.WaitForElement(q => q.Raw(query));
+
 			bool found = MaybeGetProperty<string>(App, query, propertyPath, out prop) ||
 						MaybeGetProperty<float>(App, query, propertyPath, out prop) ||
 						MaybeGetProperty<bool>(App, query, propertyPath, out prop) ||
