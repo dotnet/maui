@@ -52,5 +52,52 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			Assert.That(Application.Current, Is.EqualTo(mockApplication));
 			Assert.That(Application.Current.Resources.Count, Is.EqualTo(0));
 		}
+
+		[Test]
+		public void LoadMultipleResources()
+		{
+			var app = @"
+				<Application xmlns=""http://xamarin.com/schemas/2014/forms""
+					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"">
+					<Application.Resources>
+						<Color x:Key=""almostPink"">HotPink</Color>
+						<Color x:Key=""yellowOrGreen"">Chartreuse</Color>
+					</Application.Resources>
+				</Application>
+			";
+
+			Assert.That(Application.Current, Is.Null);
+			var mockApplication = new MockApplication();
+			var rd = XamlLoader.LoadResources(app, mockApplication);
+			Assert.That(rd, Is.TypeOf<ResourceDictionary>());
+			Assert.That(((ResourceDictionary)rd).Count, Is.EqualTo(2));
+
+			//check that the live app hasn't ben modified
+			Assert.That(Application.Current, Is.EqualTo(mockApplication));
+			Assert.That(Application.Current.Resources.Count, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void LoadSingleImplicitResources()
+		{
+			var app = @"
+				<Application xmlns=""http://xamarin.com/schemas/2014/forms""
+					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"">
+					<Application.Resources>
+						<Color x:Key=""almostPink"">HotPink</Color>
+					</Application.Resources>
+				</Application>
+			";
+
+			Assert.That(Application.Current, Is.Null);
+			var mockApplication = new MockApplication();
+			var rd = XamlLoader.LoadResources(app, mockApplication);
+			Assert.That(rd, Is.TypeOf<ResourceDictionary>());
+			Assert.That(((ResourceDictionary)rd).Count, Is.EqualTo(1));
+
+			//check that the live app hasn't ben modified
+			Assert.That(Application.Current, Is.EqualTo(mockApplication));
+			Assert.That(Application.Current.Resources.Count, Is.EqualTo(0));
+		}
 	}
 }
