@@ -15,7 +15,7 @@ using Xamarin.Forms.Platform.iOS;
 [assembly: Dependency(typeof(CacheService))]
 [assembly: ExportRenderer(typeof(DisposePage), typeof(DisposePageRenderer))]
 [assembly: ExportRenderer(typeof(DisposeLabel), typeof(DisposeLabelRenderer))]
-[assembly: ExportEffect(typeof(BorderEffect), "BorderEffect")]
+[assembly: ExportEffect(typeof(BorderEffect), nameof(BorderEffect))]
 namespace Xamarin.Forms.ControlGallery.iOS
 {
 	public class BorderEffect : PlatformEffect
