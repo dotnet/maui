@@ -54,7 +54,7 @@
       </AssemblyAttribute>
     </ItemGroup>
 
-    <Message Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'" Importance="high" Text="Building $(BUILD_REASON) nightly $(PackageVersion)"/>
+    <Message Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'" Importance="high" Text="##vso[build.addbuildtag]$(NightlyTag)"/>
     <Message Condition="$(CI)" Importance="high" Text="##vso[build.updatebuildnumber]$(PackageVersion)"/>
     <Message Condition="$(CI)" Importance="high" Text="##vso[task.setvariable variable=XamarinFormsPackageVersion;isOutput=true;]$(PackageVersion)"/>
   </Target>
