@@ -14,6 +14,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public PageContainer(IAccessibilityElementsController parent)
 		{
+			AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
 			_parent = parent;
 		}
 

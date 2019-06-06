@@ -123,8 +123,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void LoadView()
 		{
+			//by default use the MainScreen Bounds so Effects can access the Container size
 			if (_pageContainer == null)
-				_pageContainer = new PageContainer(this);
+				_pageContainer = new PageContainer(this) { Frame = UIScreen.MainScreen.Bounds};
 
 			View = _pageContainer;
 		}
