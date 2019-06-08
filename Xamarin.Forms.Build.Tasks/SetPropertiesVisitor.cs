@@ -488,6 +488,49 @@ namespace Xamarin.Forms.Build.Tasks
 			return properties;
 		}
 
+		static IEnumerable<Instruction> DigProperties(IEnumerable<(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg)> properties, Dictionary<TypeReference, VariableDefinition> locs, Func<Instruction> fallback, IXmlLineInfo lineInfo, ModuleDefinition module)
+		{
+			var first = true;
+
+			foreach (var (property, propDeclTypeRef, indexArg) in properties) {
+				if (!first && propDeclTypeRef.IsValueType) {
+					var importedPropDeclTypeRef = module.ImportReference(propDeclTypeRef);
+
+					if (!locs.TryGetValue(importedPropDeclTypeRef, out var loc)) {
+						loc = new VariableDefinition(importedPropDeclTypeRef);
+						locs[importedPropDeclTypeRef] = loc;
+					}
+
+					yield return Create(Stloc, loc);
+					yield return Create(Ldloca, loc);
+				}
+
+				if (fallback != null && !propDeclTypeRef.IsValueType) {
+					yield return Create(Dup);
+					yield return Create(Brfalse, fallback());
+				}
+
+				if (indexArg != null) {
+					var indexType = property.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(propDeclTypeRef);
+					if (TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String))
+						yield return Create(Ldstr, indexArg);
+					else if (TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32) && int.TryParse(indexArg, out int index))
+						yield return Create(Ldc_I4, index);
+					else
+						throw new XamlParseException($"Binding: {indexArg} could not be parsed as an index for a {property.Name}", lineInfo);
+				}
+
+				var getMethod = module.ImportReference((module.ImportReference(property.GetMethod)).ResolveGenericParameters(propDeclTypeRef, module));
+
+				if (property.GetMethod.IsVirtual)
+					yield return Create(Callvirt, getMethod);
+				else
+					yield return Create(Call, getMethod);
+
+				first = false;
+			}
+		}
+
 		static IEnumerable<Instruction> CompiledBindingGetGetter(TypeReference tSourceRef, TypeReference tPropertyRef, IList<(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg)> properties, ElementNode node, ILContext context)
 		{
 //				.method private static hidebysig default valuetype[mscorlib] System.ValueTuple`2<string, bool> '<Main>m__0' (class ViewModel A_0)  cil managed
@@ -538,70 +581,33 @@ namespace Xamarin.Forms.Build.Tasks
 				else
 					il.Emit(Ldarg_0);
 
-				for (int i = 0; i < properties.Count; i++) {
-					(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg) = properties[i];
-					if (i > 0 && propDeclTypeRef.IsValueType) {
-						var importedPropDeclTypeRef = module.ImportReference(propDeclTypeRef);
+				Instruction pop = null;
+				il.Append(DigProperties(properties, locs, () => {
+					if (pop == null)
+						pop = Create(Pop);
 
-						if (!locs.TryGetValue(importedPropDeclTypeRef, out var loc)) {
-							loc = new VariableDefinition(importedPropDeclTypeRef);
-							getter.Body.Variables.Add(loc);
-							locs[importedPropDeclTypeRef] = loc;
-						}
+					return pop;
+				}, node as IXmlLineInfo, module));
 
-						il.Emit(Stloc, loc);
-						il.Emit(Ldloca, loc);
-					}
+				foreach (var loc in locs.Values)
+					getter.Body.Variables.Add(loc);
 
-					if (!propDeclTypeRef.IsValueType) { //if part of the path is null, return (default(T), false)
-						var nop = Create(Nop);
-						il.Emit(Dup);
-						il.Emit(Ldnull);
-						il.Emit(Ceq);
-						il.Emit(Brfalse, nop);
-						il.Emit(Pop);
-						if (tPropertyRef.IsValueType) {
-							var importedTPropertyRef = module.ImportReference(tPropertyRef);
-
-							if (!locs.TryGetValue(importedTPropertyRef, out var defaultValueVarDef)) {
-								defaultValueVarDef = new VariableDefinition(tPropertyRef);
-								getter.Body.Variables.Add(defaultValueVarDef);
-								locs[importedTPropertyRef] = defaultValueVarDef;
-							}
-
-							il.Emit(Ldloca_S, defaultValueVarDef);
-							il.Emit(Initobj, tPropertyRef);
-							il.Emit(Ldloc, defaultValueVarDef);
-						}
-						else
-							il.Emit(Ldnull);
-						il.Emit(Ldc_I4_0); //false
-
-						il.Emit(Newobj, tupleCtorRef);
-						il.Emit(Ret);
-						il.Append(nop);
-					}
-
-					if (indexArg != null) {
-						var indexType = property.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(propDeclTypeRef);
-						if (TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String))
-							il.Emit(Ldstr, indexArg);
-						else if (TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32) && int.TryParse(indexArg, out int index))
-							il.Emit(Ldc_I4, index);
-						else
-							throw new XamlParseException($"Binding: {indexArg} could not be parsed as an index for a {property.Name}", node as IXmlLineInfo);
-					}
-
-					var getMethod = module.ImportReference((module.ImportReference(property.GetMethod)).ResolveGenericParameters(propDeclTypeRef, module));
-
-					if (property.GetMethod.IsVirtual)
-						il.Emit(Callvirt, getMethod);
-					else
-						il.Emit(Call, getMethod);
-				}
 				il.Emit(Ldc_I4_1); //true
 				il.Emit(Newobj, tupleCtorRef);
 				il.Emit(Ret);
+
+				if (pop != null) {
+					if (!locs.TryGetValue(tupleRef, out var defaultValueVarDef)) {
+						defaultValueVarDef = new VariableDefinition(tupleRef);
+						getter.Body.Variables.Add(defaultValueVarDef);
+					}
+
+					il.Append(pop);
+					il.Emit(Ldloca_S, defaultValueVarDef);
+					il.Emit(Initobj, tupleRef);
+					il.Emit(Ldloc, defaultValueVarDef);
+					il.Emit(Ret);
+				}
 			}
 			context.Body.Method.DeclaringType.Methods.Add(getter);
 
@@ -658,29 +664,25 @@ namespace Xamarin.Forms.Build.Tasks
 				il.Emit(Ldarga_S, (byte)0);
 			else
 				il.Emit(Ldarg_0);
-			for (int i = 0; i < properties.Count - 1; i++) {
-				(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg) = properties[i];
-				if (indexArg != null) {
-					var indexType = property.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(propDeclTypeRef);
-					if (TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String))
-						il.Emit(Ldstr, indexArg);
-					else if (TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32)) {
-						if (!int.TryParse(indexArg, out var index))
-							throw new XamlParseException($"Binding: {indexArg} could not be parsed as an index for a {property.Name}", node as IXmlLineInfo);
-						il.Emit(Ldc_I4, index);
-					}
-				}
+			var locs = new Dictionary<TypeReference, VariableDefinition>();
+			il.Append(DigProperties(properties.Take(properties.Count - 1), locs, null, node as IXmlLineInfo, module));
 
-				var getMethod = module.ImportReference(property.GetMethod);
-				getMethod = module.ImportReference(getMethod.ResolveGenericParameters(propDeclTypeRef, module));
-
-				if (property.GetMethod.IsVirtual)
-					il.Emit(Callvirt, getMethod);
-				else
-					il.Emit(Call, getMethod);
-			}
+			foreach (var loc in locs.Values)
+				setter.Body.Variables.Add(loc);
 
 			(PropertyDefinition lastProperty, TypeReference lastPropDeclTypeRef, string lastIndexArg) = properties.Last();
+			if (lastPropDeclTypeRef.IsValueType) {
+				var importedPropDeclTypeRef = module.ImportReference(lastPropDeclTypeRef);
+
+				if (!locs.TryGetValue(importedPropDeclTypeRef, out var loc)) {
+					loc = new VariableDefinition(importedPropDeclTypeRef);
+					setter.Body.Variables.Add(loc);
+				}
+
+				il.Emit(Stloc, loc);
+				il.Emit(Ldloca, loc);
+			}
+
 			if (lastIndexArg != null) {
 				var indexType = lastProperty.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(lastPropDeclTypeRef);
 				if (TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String))
@@ -765,30 +767,11 @@ namespace Xamarin.Forms.Build.Tasks
 					il.Emit(Ldarga_S, (byte)0);
 				else
 					il.Emit(Ldarg_0);
-				var lastGetterTypeRef = tSourceRef;
-				for (int j = 0; j < i; j++) {
-					(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg) = properties[j];
-					if (indexArg != null) {
-						var indexType = property.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(propDeclTypeRef);
-						if (TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String))
-							il.Emit(Ldstr, indexArg);
-						else if (TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32)) {
-							if (!int.TryParse(indexArg, out var index))
-								throw new XamlParseException($"Binding: {indexArg} could not be parsed as an index for a {property.Name}", node as IXmlLineInfo);
-							il.Emit(Ldc_I4, index);
-						}
-					}
-
-					var getMethod = module.ImportReference(property.GetMethod);
-					getMethod = module.ImportReference(getMethod.ResolveGenericParameters(propDeclTypeRef, module));
-
-					if (property.GetMethod.IsVirtual)
-						il.Emit(Callvirt, getMethod);
-					else
-						il.Emit(Call, getMethod);
-
-					lastGetterTypeRef = property.PropertyType;
-				}
+				var lastGetterTypeRef = properties[i - 1].property.PropertyType;
+				var locs = new Dictionary<TypeReference, VariableDefinition>();
+				il.Append(DigProperties(properties.Take(i), locs, null, node as IXmlLineInfo, module));
+				foreach (var loc in locs.Values)
+					partGetter.Body.Variables.Add(loc);
 				if (lastGetterTypeRef.IsValueType)
 					il.Emit(Box, module.ImportReference(lastGetterTypeRef));
 

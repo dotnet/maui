@@ -50,7 +50,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 						Text = "Text1"
 					},
 					StructModel = new MockStructViewModel {
-						Text = "Text9"
+						Model = new MockViewModel {
+							Text = "Text9"
+						}
 					}
 				};
 				vm.Model [3] = "TextIndex";
@@ -74,6 +76,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.That(layout.label5.Text, Is.EqualTo("42"));
 				Assert.That(layout.label6.Text, Is.EqualTo("text6"));
 				Assert.AreEqual("Text9", layout.label9.Text);
+				Assert.AreEqual("Text9", layout.label10.Text);
+				layout.label9.Text = "Text from label9";
+				Assert.AreEqual("Text from label9", vm.StructModel.Text);
+				layout.label10.Text = "Text from label10";
+				Assert.AreEqual("Text from label10", vm.StructModel.Model.Text);
 
 				//testing selfPath
 				layout.label4.BindingContext = "Self";
@@ -100,7 +107,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 	struct MockStructViewModel
 	{
-		public string Text { get; set; }
+		public string Text {
+			get { return Model.Text; }
+			set { Model.Text = value; }
+		}
 		public int I { get; set; }
 		public MockViewModel Model { get; set; }
 	}
