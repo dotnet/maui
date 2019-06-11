@@ -40,6 +40,16 @@ namespace Xamarin.Forms.Platform.UWP
 
 		protected WListView List { get; private set; }
 
+		protected class ListViewTransparent : WListView
+		{
+			public ListViewTransparent() : base() { }
+
+			// Container is not created when the item is null. 
+			// To prevent this, base container preparationan receives an empty object.
+			protected override void PrepareContainerForItemOverride(DependencyObject element, object item)
+				=> base.PrepareContainerForItemOverride(element, item ?? new object());
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<ListView> e)
 		{
 			base.OnElementChanged(e);
@@ -59,7 +69,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 				if (List == null)
 				{
-					List = new WListView
+					List = new ListViewTransparent
 					{
 						IsSynchronizedWithCurrentItem = false,
 						ItemTemplate = (Windows.UI.Xaml.DataTemplate)WApp.Current.Resources["CellTemplate"],
