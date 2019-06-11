@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var listview = new ListView ();
 			listview.ItemTemplate = new DataTemplate (typeof (ItemTemplate));
-			listview.ItemsSource = new string[] { "item1", "item2", "item3", "item4", "item5" };
+			listview.ItemsSource = new string[] { "item1", "item2", "item3", "item4", "item5", null, null };
 			var btnBack = new Button { Text = "back", Command = new Command (() => Navigation.PopAsync ()) };
 			listview.ItemSelected += (s, e) => Navigation.PushAsync (new ContentPage { Content = btnBack });
 			var btnPush = new Button {
