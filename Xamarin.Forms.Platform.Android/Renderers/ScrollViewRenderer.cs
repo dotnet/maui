@@ -373,6 +373,10 @@ namespace Xamarin.Forms.Platform.Android
 			while (IsLayoutRequested)
 			{
 				await Task.Delay(TimeSpan.FromMilliseconds(1));
+				
+				if (_disposed)
+                	return;
+				
 				cycle++;
 
 				if (cycle >= 10)
