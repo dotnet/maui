@@ -287,6 +287,7 @@ namespace Xamarin.Forms.Platform.UWP
 					// Need to make sure any new items have the correct fore/background colors
 					ApplyBarBackgroundColor(true);
 					ApplyBarTextColor(true);
+					UpdateSelectedTabColors();
 					break;
 			}
 		}
@@ -555,6 +556,8 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			// Retrieve all tab header textblocks
 			var allTabHeaderTextBlocks = Control.GetDescendantsByName<WTextBlock>(TabBarHeaderTextBlockName).ToArray();
+			if (allTabHeaderTextBlocks.Length != Control.Items.Count)
+				return;
 
 			// Loop through all pages in the Pivot control
 			foreach (Page page in Control.Items)
