@@ -28,6 +28,8 @@ namespace Xamarin.Forms.Platform.Android
 	{
 
 		internal static string PackageName { get; private set; }
+		internal static string GetPackageName() => PackageName ?? AppCompat.Platform.PackageName;
+
 		internal const string CloseContextActionsSignalName = "Xamarin.CloseContextActions";
 
 		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer", typeof(IVisualElementRenderer), typeof(Platform), default(IVisualElementRenderer),

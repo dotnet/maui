@@ -254,9 +254,19 @@ namespace Xamarin.Forms.Platform.Android
 			return BitmapFactory.DecodeResource(resource, IdFromTitle(name, DrawableClass, _drawableDefType, resource));
 		}
 
+		public static Bitmap GetBitmap(this Resources resource, string name, Context context)
+		{
+			return BitmapFactory.DecodeResource(resource, IdFromTitle(name, DrawableClass, _drawableDefType, resource, context.PackageName));
+		}
+
 		public static Task<Bitmap> GetBitmapAsync(this Resources resource, string name)
 		{
 			return BitmapFactory.DecodeResourceAsync(resource, IdFromTitle(name, DrawableClass, _drawableDefType, resource));
+		}
+
+		public static Task<Bitmap> GetBitmapAsync(this Resources resource, string name, Context context)
+		{
+			return BitmapFactory.DecodeResourceAsync(resource, IdFromTitle(name, DrawableClass, _drawableDefType, resource, context.PackageName));
 		}
 
 		[Obsolete("GetDrawable(this Resources, string) is obsolete as of version 2.5. "
@@ -310,9 +320,19 @@ namespace Xamarin.Forms.Platform.Android
 			return IdFromTitle(name, LayoutClass);
 		}
 
+		public static int GetLayout(this Context context, string name)
+		{
+			return IdFromTitle(name, LayoutClass, "layout", context);
+		}
+
 		public static int GetStyleByName(string name)
 		{
 			return IdFromTitle(name, StyleClass);
+		}
+
+		public static int GetStyle(this Context context, string name)
+		{
+			return IdFromTitle(name, StyleClass, "style", context);
 		}
 
 		public static void Init(Assembly masterAssembly)
@@ -335,7 +355,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		static int IdFromTitle(string title, Type resourceType, string defType, Resources resource)
 		{
-			return IdFromTitle(title, resourceType, defType, resource, Platform.PackageName);
+			return IdFromTitle(title, resourceType, defType, resource, AppCompat.Platform.GetPackageName());
 		}
 
 		static int IdFromTitle(string title, Type resourceType, string defType, Context context)
