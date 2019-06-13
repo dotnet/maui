@@ -8,6 +8,7 @@ namespace Xamarin.Forms.Platform.iOS
 	public class ShellFlyoutContentRenderer : UIViewController, IShellFlyoutContentRenderer
 	{
 		UIVisualEffectView _blurView;
+		UIImageView _bgImage;
 		readonly IShellContext _shellContext;
 		UIContainerView _headerView;
 		ShellTableViewController _tableViewController;
@@ -31,11 +32,14 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected virtual void HandleShellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == Shell.FlyoutBackgroundColorProperty.PropertyName)
-				UpdateBackgroundColor();
+			if (e.IsOneOf(
+				Shell.FlyoutBackgroundColorProperty, 
+				Shell.FlyoutBackgroundImageProperty,
+				Shell.FlyoutBackgroundImageAspectProperty))
+				UpdateBackground();
 		}
 
-		protected virtual void UpdateBackgroundColor()
+		protected virtual void UpdateBackground()
 		{
 			var color = _shellContext.Shell.FlyoutBackgroundColor;
 			View.BackgroundColor = color.ToUIColor(Color.White);
@@ -49,6 +53,51 @@ namespace Xamarin.Forms.Platform.iOS
 				if (_blurView.Superview != null)
 					_blurView.RemoveFromSuperview();
 			}
+
+			UpdateFlyoutBgImageAsync();
+		}
+
+		async void UpdateFlyoutBgImageAsync()
+		{
+			// image
+			var imageSource = _shellContext.Shell.FlyoutBackgroundImage;
+			if (imageSource == null || !_shellContext.Shell.IsSet(Shell.FlyoutBackgroundImageProperty))
+			{
+				_bgImage.RemoveFromSuperview();
+				_bgImage.Image?.Dispose();
+				_bgImage.Image = null;
+				return;
+			}
+
+			using (var nativeImage = await imageSource.GetNativeImageAsync())
+			{
+				if (View == null)
+					return;
+
+				if (nativeImage == null)
+				{
+					_bgImage?.RemoveFromSuperview();
+					return;
+				}
+
+				_bgImage.Image = nativeImage;
+				switch (_shellContext.Shell.FlyoutBackgroundImageAspect)
+				{
+					default:
+					case Aspect.AspectFit:
+						_bgImage.ContentMode = UIViewContentMode.ScaleAspectFit;
+						break;
+					case Aspect.AspectFill:
+						_bgImage.ContentMode = UIViewContentMode.ScaleAspectFill;
+						break;
+					case Aspect.Fill:
+						_bgImage.ContentMode = UIViewContentMode.ScaleToFill;
+						break;
+				}
+
+				if (_bgImage.Superview != View)
+					View.InsertSubview(_bgImage, 0);
+			}
 		}
 
 		public UIViewController ViewController => this;
@@ -59,6 +108,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			_tableViewController.LayoutParallax();
 			_blurView.Frame = View.Bounds;
+			_bgImage.Frame = View.Bounds;
 		}
 
 		public override void ViewDidLoad()
@@ -75,8 +125,14 @@ namespace Xamarin.Forms.Platform.iOS
 			var effect = UIBlurEffect.FromStyle(UIBlurEffectStyle.Regular);
 			_blurView = new UIVisualEffectView(effect);
 			_blurView.Frame = View.Bounds;
+			_bgImage = new UIImageView
+			{
+				Frame = View.Bounds,
+				ContentMode = UIViewContentMode.ScaleAspectFit,
+				ClipsToBounds = true
+			};
 
-			UpdateBackgroundColor();
+			UpdateBackground();
 		}
 
 		public override void ViewWillAppear(bool animated)

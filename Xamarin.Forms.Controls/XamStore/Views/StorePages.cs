@@ -261,6 +261,28 @@ namespace Xamarin.Forms.Controls.XamStore
 			}, 0, 17);
 			grid.Children.Add(headerWidth, 1, 17);
 
+			grid.Children.Add(MakeButton("bg image",
+				() => Shell.Current.FlyoutBackgroundImage = ImageSource.FromFile("photo.jpg")),
+			0, 18);
+			grid.Children.Add(MakeButton("bg color",
+				() => Shell.Current.FlyoutBackgroundColor = Color.DarkGreen),
+			1, 18);
+			grid.Children.Add(MakeButton("bg aFit",
+				() => Shell.Current.FlyoutBackgroundImageAspect = Aspect.AspectFit),
+			2, 18);
+			grid.Children.Add(MakeButton("bg aFill",
+				() => Shell.Current.FlyoutBackgroundImageAspect = Aspect.AspectFill),
+			0, 19);
+			grid.Children.Add(MakeButton("bg Fill",
+				() => Shell.Current.FlyoutBackgroundImageAspect = Aspect.Fill),
+			1, 19);
+			grid.Children.Add(MakeButton("clear bg",
+				() => {
+					Shell.Current.ClearValue(Shell.FlyoutBackgroundColorProperty);
+					Shell.Current.ClearValue(Shell.FlyoutBackgroundImageProperty);
+				}),
+			2, 19);
+
 			Content = new ScrollView { Content = grid };
 
 			//var listView = new ListView();
