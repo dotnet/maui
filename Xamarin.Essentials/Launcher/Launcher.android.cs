@@ -29,5 +29,21 @@ namespace Xamarin.Essentials
             Platform.AppContext.StartActivity(intent);
             return Task.CompletedTask;
         }
+
+        static Task PlatformOpenAsync(OpenFileRequest request)
+        {
+            var contentUri = Platform.GetShareableFileUri(request.File.FullPath);
+
+            var intent = new Intent(Intent.ActionView);
+            intent.SetDataAndType(contentUri, request.File.ContentType);
+            intent.SetFlags(ActivityFlags.GrantReadUriPermission);
+
+            var chooserIntent = Intent.CreateChooser(intent, request.Title ?? string.Empty);
+            chooserIntent.SetFlags(ActivityFlags.ClearTop);
+            chooserIntent.SetFlags(ActivityFlags.NewTask);
+            Platform.AppContext.StartActivity(chooserIntent);
+
+            return Task.CompletedTask;
+        }
     }
 }

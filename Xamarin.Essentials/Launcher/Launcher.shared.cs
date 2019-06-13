@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Xamarin.Essentials
@@ -36,5 +37,38 @@ namespace Xamarin.Essentials
 
             return PlatformOpenAsync(uri);
         }
+
+        public static Task OpenAsync(OpenFileRequest request)
+        {
+            ExperimentalFeatures.VerifyEnabled(ExperimentalFeatures.ShareFileRequest);
+
+            return PlatformOpenAsync(request);
+        }
+    }
+
+    public class OpenFileRequest
+    {
+        public OpenFileRequest()
+        {
+            ExperimentalFeatures.VerifyEnabled(ExperimentalFeatures.OpenFileRequest);
+        }
+
+        public OpenFileRequest(string title, ReadOnlyFile file)
+        {
+            ExperimentalFeatures.VerifyEnabled(ExperimentalFeatures.OpenFileRequest);
+            Title = title;
+            File = file;
+        }
+
+        public OpenFileRequest(string title, FileBase file)
+        {
+            ExperimentalFeatures.VerifyEnabled(ExperimentalFeatures.OpenFileRequest);
+            Title = title;
+            File = new ReadOnlyFile(file);
+        }
+
+        public string Title { get; set; }
+
+        public ReadOnlyFile File { get; set; }
     }
 }

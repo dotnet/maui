@@ -26,5 +26,18 @@ namespace Xamarin.Essentials
                 return new NSUrl(uri.AbsoluteUri);
             }
         }
+
+        static Task PlatformOpenAsync(OpenFileRequest request)
+        {
+            var fileUrl = NSUrl.FromFilename(request.File.FullPath);
+
+            var documentController = UIDocumentInteractionController.FromUrl(fileUrl);
+            documentController.Uti = request.File.ContentType;
+
+            var vc = Platform.GetCurrentViewController();
+
+            documentController.PresentOpenInMenu(vc.View.Frame, vc.View, true);
+            return Task.CompletedTask;
+        }
     }
 }

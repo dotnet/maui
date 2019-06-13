@@ -77,7 +77,9 @@
       <Docs>
         <param name="uri">string uri scheme</param>
         <summary>Launches the app specified by the uri scheme</summary>
-        <returns></returns>
+        <returns>
+          <para></para>
+        </returns>
         <remarks>May throw System.UriFormatException if uri is malformed. Verify if the uri scheme is supported before calling this method</remarks>
       </Docs>
     </Member>
@@ -99,8 +101,36 @@
       <Docs>
         <param name="uri">uri scheme</param>
         <summary>Launches the app specified by the uri scheme</summary>
-        <returns></returns>
+        <returns>
+          <para></para>
+        </returns>
         <remarks>May throw System.UriFormatException if uri is malformed. Verify if the uri scheme is supported before calling this method</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="OpenAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenAsync (Xamarin.Essentials.OpenFileRequest request);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenAsync(class Xamarin.Essentials.OpenFileRequest request) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Launcher.OpenAsync(Xamarin.Essentials.OpenFileRequest)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="request" Type="Xamarin.Essentials.OpenFileRequest" />
+      </Parameters>
+      <Docs>
+        <param name="request">Request that contains information on the file to open.</param>
+        <summary>Requests to open a file in an application based on content type.</summary>
+        <returns>
+          <para></para>
+        </returns>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
   </Members>
