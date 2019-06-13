@@ -222,6 +222,7 @@
     <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\FormsEmbeddedPageWrapper.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
     <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\StepperControl.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
     <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\Items\ItemsViewStyles.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP\Items" />
+    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\FormsCheckBoxStyle.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
 
     <!--Mac-->
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="lib\Xamarin.Mac" />
