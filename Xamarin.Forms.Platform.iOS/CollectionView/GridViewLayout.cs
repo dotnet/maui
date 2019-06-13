@@ -17,7 +17,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected override void HandlePropertyChanged(PropertyChangedEventArgs propertyChanged)
 		{
-			if(propertyChanged.Is(GridItemsLayout.SpanProperty))
+			if(propertyChanged.IsOneOf(GridItemsLayout.SpanProperty, GridItemsLayout.HorizontalItemSpacingProperty, 
+				GridItemsLayout.VerticalItemSpacingProperty))
 			{
 				// Update the constraints; ConstrainTo will pick up the new span
 				ConstrainTo(CollectionView.Frame.Size);
@@ -31,10 +32,16 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void ConstrainTo(CGSize size)
 		{
-			ConstrainedDimension =
-				ScrollDirection == UICollectionViewScrollDirection.Vertical 
-					? size.Width / _itemsLayout.Span 
-					: size.Height / _itemsLayout.Span;
+			var availableSpace = ScrollDirection == UICollectionViewScrollDirection.Vertical
+					? size.Width : size.Height;
+
+			var spacing = (nfloat)(ScrollDirection == UICollectionViewScrollDirection.Vertical
+					? _itemsLayout.HorizontalItemSpacing
+					: _itemsLayout.VerticalItemSpacing);
+
+			spacing = spacing * (_itemsLayout.Span - 1);
+
+			ConstrainedDimension = (availableSpace - spacing) / _itemsLayout.Span;
 
 			// TODO hartez 2018/09/12 14:52:24 We need to truncate the decimal part of ConstrainedDimension
 			// or we occasionally run into situations where the rows/columns don't fit	

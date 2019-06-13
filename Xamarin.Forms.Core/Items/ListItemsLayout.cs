@@ -12,5 +12,15 @@
 		public static readonly IItemsLayout HorizontalList = new ListItemsLayout(ItemsLayoutOrientation.Horizontal);
 
 		// TODO hartez 2018/08/29 20:31:54 Need something like these previous two, but as a carousel default	
+
+		public static readonly BindableProperty ItemSpacingProperty =
+			BindableProperty.Create(nameof(ItemSpacing), typeof(double), typeof(ListItemsLayout), default(double),
+				validateValue: (bindable, value) => (double)value >= 0);
+
+		public double ItemSpacing
+		{
+			get => (double)GetValue(ItemSpacingProperty);
+			set => SetValue(ItemSpacingProperty, value);
+		}
 	}
 }

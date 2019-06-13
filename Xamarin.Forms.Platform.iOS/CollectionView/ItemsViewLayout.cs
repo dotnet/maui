@@ -51,10 +51,16 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void LayoutOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChanged)
 		{
+			HandlePropertyChanged(propertyChanged);
 		}
 
 		protected virtual void HandlePropertyChanged(PropertyChangedEventArgs propertyChanged)
 		{
+			if (propertyChanged.IsOneOf(ListItemsLayout.ItemSpacingProperty,
+				GridItemsLayout.HorizontalItemSpacingProperty, GridItemsLayout.VerticalItemSpacingProperty))
+			{
+				UpdateItemSpacing();
+			}
 		}
 
 		public nfloat ConstrainedDimension { get; set; }
@@ -84,12 +90,37 @@ namespace Xamarin.Forms.Platform.iOS
 		public virtual nfloat GetMinimumInteritemSpacingForSection(UICollectionView collectionView,
 			UICollectionViewLayout layout, nint section)
 		{
+			if (_itemsLayout is GridItemsLayout gridItemsLayout)
+			{
+				if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
+				{
+					return (nfloat)gridItemsLayout.VerticalItemSpacing;
+				}
+
+				return (nfloat)gridItemsLayout.HorizontalItemSpacing;
+			}
+
 			return (nfloat)0.0;
 		}
 
 		public virtual nfloat GetMinimumLineSpacingForSection(UICollectionView collectionView,
 			UICollectionViewLayout layout, nint section)
 		{
+			if (_itemsLayout is ListItemsLayout listViewLayout)
+			{
+				return (nfloat)listViewLayout.ItemSpacing;
+			}
+
+			if (_itemsLayout is GridItemsLayout gridItemsLayout)
+			{
+				if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
+				{
+					return (nfloat)gridItemsLayout.HorizontalItemSpacing;
+				}
+
+				return (nfloat)gridItemsLayout.VerticalItemSpacing;
+			}
+
 			return (nfloat)0.0;
 		}
 
@@ -319,6 +350,16 @@ namespace Xamarin.Forms.Platform.iOS
 
 			return SnapHelpers.AdjustContentOffset(CollectionView.ContentOffset, currentItem.Frame, viewport, alignment,
 				ScrollDirection);
+		}
+
+		protected virtual void UpdateItemSpacing()
+		{
+			if (_itemsLayout == null)
+			{
+				return;
+			}
+
+			InvalidateLayout();
 		}
 	}
 }

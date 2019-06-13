@@ -55,7 +55,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 				{
 					RowDefinitions = new RowDefinitionCollection { new RowDefinition(), new RowDefinition { Height = GridLength.Auto } },
 					WidthRequest = 280,
-					HeightRequest = 310,
+					HeightRequest = 310
 				};
 
 				var image = new Image
@@ -381,6 +381,50 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 				};
 
 				return rootLayout;
+			});
+		}
+
+		public static DataTemplate SpacingTemplate()
+		{
+			return new DataTemplate(() =>
+			{
+				var templateLayout = new Grid
+				{
+					RowDefinitions = new RowDefinitionCollection { new RowDefinition(), new RowDefinition() },
+					WidthRequest = 120,
+					HeightRequest = 100,
+					BackgroundColor = Color.BlanchedAlmond
+				};
+
+				var image = new Image
+				{
+					HeightRequest = 100,
+					WidthRequest = 100,
+					HorizontalOptions = LayoutOptions.Center,
+					VerticalOptions = LayoutOptions.Center,
+					Margin = new Thickness(2, 5, 2, 2),
+					AutomationId = "photo"
+				};
+
+				image.SetBinding(Image.SourceProperty, new Binding("Image"));
+
+				var caption = new Label
+				{
+					FontSize = 12,
+					HorizontalOptions = LayoutOptions.Fill,
+					HorizontalTextAlignment = TextAlignment.Center,
+					VerticalTextAlignment = TextAlignment.Center,
+					Margin = new Thickness(2, 0, 2, 2)
+				};
+
+				caption.SetBinding(Label.TextProperty, new Binding("Caption"));
+
+				templateLayout.Children.Add(image);
+				templateLayout.Children.Add(caption);
+
+				Grid.SetRow(caption, 1);
+
+				return templateLayout;
 			});
 		}
 
