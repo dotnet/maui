@@ -22,7 +22,8 @@ namespace Samples
             // Enable currently experimental features
             ExperimentalFeatures.Enable(
                 ExperimentalFeatures.EmailAttachments,
-                ExperimentalFeatures.ShareFileRequest);
+                ExperimentalFeatures.ShareFileRequest,
+                ExperimentalFeatures.OpenFileRequest);
 
             VersionTracking.Track();
 

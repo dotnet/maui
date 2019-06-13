@@ -72,23 +72,5 @@
         <remarks></remarks>
       </Docs>
     </Member>
-    <Member MemberName="AttachmentName">
-      <MemberSignature Language="C#" Value="public string AttachmentName { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance string AttachmentName" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.EmailAttachment.AttachmentName" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets or sets the intended name of the file to be shared.</summary>
-        <value></value>
-        <remarks></remarks>
-      </Docs>
-    </Member>
   </Members>
 </Type>

@@ -8,6 +8,7 @@ namespace Xamarin.Essentials
     public static class ExperimentalFeatures
     {
         public const string ShareFileRequest = "ShareFileRequest_Experimental";
+        public const string OpenFileRequest = "OpenFileRequest_Experimental";
         public const string EmailAttachments = "EmailAttachments_Experimental";
 
         static List<string> enabledFeatures;

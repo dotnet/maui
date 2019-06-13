@@ -130,6 +130,7 @@
       <Type Name="EmailMessage" Kind="Class" />
       <Type Name="EnergySaverStatus" Kind="Enumeration" />
       <Type Name="EnergySaverStatusChangedEventArgs" Kind="Class" />
+      <Type Name="ExperimentalFeatures" Kind="Class" />
       <Type Name="FeatureNotEnabledException" Kind="Class" />
       <Type Name="FeatureNotSupportedException" Kind="Class" />
       <Type Name="FileBase" Kind="Class" />
@@ -157,6 +158,7 @@
       <Type Name="NavigationMode" Kind="Enumeration" />
       <Type Name="NetworkAccess" Kind="Enumeration" />
       <Type Name="NotImplementedInReferenceAssemblyException" Kind="Class" />
+      <Type Name="OpenFileRequest" Kind="Class" />
       <Type Name="OrientationSensor" Kind="Class" />
       <Type Name="OrientationSensorChangedEventArgs" Kind="Class" />
       <Type Name="OrientationSensorData" Kind="Structure" />
@@ -167,6 +169,7 @@
       <Type Name="Platform" Kind="Class" />
       <Type Name="PointExtensions" Kind="Class" />
       <Type Name="Preferences" Kind="Class" />
+      <Type Name="ReadOnlyFile" Kind="Class" />
       <Type Name="RectangleExtensions" Kind="Class" />
       <Type Name="SecureStorage" Kind="Class" />
       <Type Name="SensorSpeed" Kind="Enumeration" />
