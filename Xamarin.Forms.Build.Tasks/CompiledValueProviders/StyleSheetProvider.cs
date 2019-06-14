@@ -58,23 +58,22 @@ namespace Xamarin.Forms.Core.XamlC
 
 				var resourcePath = ResourceDictionary.RDSourceTypeConverter.GetResourcePath(uri, rootTargetPath);
 				//fail early
-				var resourceId = XamlCTask.GetResourceIdForPath(module, resourcePath);
-				if (resourceId == null)
+				if (XamlCTask.GetResourceIdForPath(module, resourcePath) == null)
 					throw new XamlParseException($"Resource '{source}' not found.", node);
+
+				yield return Create(Ldstr, resourcePath); //resourcePath
 
 				yield return Create(Ldtoken, module.ImportReference(((ILRootNode)rootNode).TypeReference));
 				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
 				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System.Reflection", "IntrospectionExtensions"), methodName: "GetTypeInfo", parameterTypes: new[] { ("mscorlib", "System", "Type") }, isStatic: true));
-				yield return Create(Callvirt, module.ImportPropertyGetterReference(("mscorlib", "System.Reflection", "TypeInfo"), propertyName: "Assembly", flatten: true));
-
-				yield return Create(Ldstr, resourceId); //resourceId
+				yield return Create(Callvirt, module.ImportPropertyGetterReference(("mscorlib", "System.Reflection", "TypeInfo"), propertyName: "Assembly", flatten: true)); //assembly
 
 				foreach (var instruction in node.PushXmlLineInfo(context))
 					yield return instruction; //lineinfo
 
 				yield return Create(Call, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms.StyleSheets", "StyleSheet"),
-																	   methodName: "FromAssemblyResource",
-																	   parameterTypes: new[] { ("mscorlib", "System.Reflection", "Assembly"), ("mscorlib", "System", "String"), ("System.Xml.ReaderWriter", "System.Xml", "IXmlLineInfo") },
+																	   methodName: "FromResource",
+																	   parameterTypes: new[] { ("mscorlib", "System", "String"), ("mscorlib", "System.Reflection", "Assembly"),  ("System.Xml.ReaderWriter", "System.Xml", "IXmlLineInfo") },
 																	   isStatic: true));
 			}
 

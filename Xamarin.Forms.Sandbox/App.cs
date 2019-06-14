@@ -5,6 +5,8 @@ using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using Xamarin.Forms.PlatformConfiguration;
+using Xamarin.Forms.StyleSheets;
+using System.Reflection;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 namespace Xamarin.Forms.Sandbox
@@ -17,10 +19,17 @@ namespace Xamarin.Forms.Sandbox
 			InitializeMainPage();
 		}
 
-		void InitializeFastRenderers()
+		void AddStyleSheet()
+		{
+			this.Resources.Add(StyleSheet.FromResource(
+				"Styles.css",
+				IntrospectionExtensions.GetTypeInfo(typeof(App)).Assembly));
+		}
+
+		void InitializeLegacyRenderers()
 		{
 			var flags = new List<String>(Device.Flags);
-			flags.Add("FastRenderers_Experimental");
+			flags.Add("UseLegacyRenderers");
 			Device.SetFlags(flags.Select(x => x).Distinct().ToArray());
 		}
 				
