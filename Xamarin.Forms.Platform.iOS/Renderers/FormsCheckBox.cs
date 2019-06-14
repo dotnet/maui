@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
-		public FormsCheckBox() : base(UIButtonType.System)
+		public FormsCheckBox()
 		{
 			TouchUpInside += OnTouchUpInside;
 			ContentMode = UIViewContentMode.Center;
@@ -140,10 +140,10 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			if (_checked == null)
-				_checked = CreateCheckBox(CreateCheckMark());
+				_checked = CreateCheckBox(CreateCheckMark()).ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
 
 			if (_unchecked == null)
-				_unchecked = CreateCheckBox(null);
+				_unchecked = CreateCheckBox(null).ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
 
 			return IsChecked ? _checked : _unchecked;
 		}
