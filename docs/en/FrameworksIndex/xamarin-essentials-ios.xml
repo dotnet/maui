@@ -122,7 +122,7 @@
       <Member Id="M:Xamarin.Essentials.ColorExtensions.AddLuminosity(System.Drawing.Color,System.Single)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.MultiplyAlpha(System.Drawing.Color,System.Single)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.ToInt(System.Drawing.Color)" />
-      <Member Id="M:Xamarin.Essentials.ColorExtensions.ToPlatformColor(System.Drawing.Color)" />
+      <Member Id="M:Xamarin.Essentials.ColorExtensions.iOS.ToPlatformColor(System.Drawing.Color)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.ToSystemColor(UIKit.UIColor)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.ToUInt(System.Drawing.Color)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.WithAlpha(System.Drawing.Color,System.Int32)" />
@@ -515,8 +515,8 @@
     </Type>
     <Type Name="Xamarin.Essentials.Platform" Id="T:Xamarin.Essentials.Platform" />
     <Type Name="Xamarin.Essentials.PointExtensions" Id="T:Xamarin.Essentials.PointExtensions">
-      <Member Id="M:Xamarin.Essentials.PointExtensions.ToPlatformPoint(System.Drawing.Point)" />
-      <Member Id="M:Xamarin.Essentials.PointExtensions.ToPlatformPoint(System.Drawing.PointF)" />
+      <Member Id="M:Xamarin.Essentials.PointExtensions.iOS.ToPlatformPoint(System.Drawing.Point)" />
+      <Member Id="M:Xamarin.Essentials.PointExtensions.iOS.ToPlatformPoint(System.Drawing.PointF)" />
       <Member Id="M:Xamarin.Essentials.PointExtensions.ToSystemPoint(CoreGraphics.CGPoint)" />
       <Member Id="M:Xamarin.Essentials.PointExtensions.ToSystemPointF(CoreGraphics.CGPoint)" />
     </Type>
@@ -562,8 +562,8 @@
       <Member Id="M:Xamarin.Essentials.ReadOnlyFile.#ctor(Xamarin.Essentials.FileBase)" />
     </Type>
     <Type Name="Xamarin.Essentials.RectangleExtensions" Id="T:Xamarin.Essentials.RectangleExtensions">
-      <Member Id="M:Xamarin.Essentials.RectangleExtensions.ToPlatformRectangle(System.Drawing.Rectangle)" />
-      <Member Id="M:Xamarin.Essentials.RectangleExtensions.ToPlatformRectangle(System.Drawing.RectangleF)" />
+      <Member Id="M:Xamarin.Essentials.RectangleExtensions.iOS.ToPlatformRectangle(System.Drawing.Rectangle)" />
+      <Member Id="M:Xamarin.Essentials.RectangleExtensions.iOS.ToPlatformRectangle(System.Drawing.RectangleF)" />
       <Member Id="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangle(CoreGraphics.CGRect)" />
       <Member Id="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangleF(CoreGraphics.CGRect)" />
     </Type>
@@ -611,8 +611,8 @@
       <Member Id="P:Xamarin.Essentials.ShareTextRequest.Uri" />
     </Type>
     <Type Name="Xamarin.Essentials.SizeExtensions" Id="T:Xamarin.Essentials.SizeExtensions">
-      <Member Id="M:Xamarin.Essentials.SizeExtensions.ToPlatformSize(System.Drawing.Size)" />
-      <Member Id="M:Xamarin.Essentials.SizeExtensions.ToPlatformSize(System.Drawing.SizeF)" />
+      <Member Id="M:Xamarin.Essentials.SizeExtensions.iOS.ToPlatformSize(System.Drawing.Size)" />
+      <Member Id="M:Xamarin.Essentials.SizeExtensions.iOS.ToPlatformSize(System.Drawing.SizeF)" />
       <Member Id="M:Xamarin.Essentials.SizeExtensions.ToSystemSize(CoreGraphics.CGSize)" />
       <Member Id="M:Xamarin.Essentials.SizeExtensions.ToSystemSizeF(CoreGraphics.CGSize)" />
     </Type>
