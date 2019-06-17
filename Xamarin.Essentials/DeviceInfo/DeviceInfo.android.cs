@@ -33,8 +33,15 @@ namespace Xamarin.Essentials
             // first try UIModeManager
             using (var uiModeManager = UiModeManager.FromContext(Essentials.Platform.AppContext))
             {
-                var uiMode = uiModeManager?.CurrentModeType ?? UiMode.TypeUndefined;
-                currentIdiom = DetectIdiom(uiMode);
+                try
+                {
+                    var uiMode = uiModeManager?.CurrentModeType ?? UiMode.TypeUndefined;
+                    currentIdiom = DetectIdiom(uiMode);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Unable to detect using UiModeManager: {ex.Message}");
+                }
             }
 
             // then try Configuration
