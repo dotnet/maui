@@ -3,7 +3,7 @@
 	public class ListItemsLayout : ItemsLayout
 	{
 		// TODO hartez 2018/08/29 17:28:42 Consider changing this name to LinearItemsLayout; not everything using it is a list (e.g., Carousel)	
-		public ListItemsLayout(ItemsLayoutOrientation orientation) : base(orientation)
+		public ListItemsLayout([Parameter("Orientation")] ItemsLayoutOrientation orientation) : base(orientation)
 		{
 		}
 
