@@ -27,6 +27,15 @@ namespace Xamarin.Forms.Platform.iOS
 				: UICollectionViewScrollDirection.Vertical;
 
 			Initialize(scrollDirection);
+
+			if (Forms.IsiOS11OrNewer)
+			{
+				// `ContentInset` is actually the default value, but I'm leaving this here as a note to
+				// future maintainers; it's likely that someone will want a Platform Specific to change this behavior
+				// (Setting it to `SafeArea` lets you do the thing where the header/footer of your UICollectionView
+				// fills the screen width in landscape while your items are automatically shifted to avoid the notch)
+				SectionInsetReference = UICollectionViewFlowLayoutSectionInsetReference.ContentInset;
+			}
 		}
 
 		protected override void Dispose(bool disposing)
