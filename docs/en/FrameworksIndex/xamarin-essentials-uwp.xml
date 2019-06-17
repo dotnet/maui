@@ -122,7 +122,7 @@
       <Member Id="M:Xamarin.Essentials.ColorExtensions.AddLuminosity(System.Drawing.Color,System.Single)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.MultiplyAlpha(System.Drawing.Color,System.Single)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.ToInt(System.Drawing.Color)" />
-      <Member Id="M:Xamarin.Essentials.ColorExtensions.ToPlatformColor(System.Drawing.Color)" />
+      <Member Id="M:Xamarin.Essentials.ColorExtensions.UWP.ToPlatformColor(System.Drawing.Color)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.ToSystemColor(Windows.UI.Color)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.ToUInt(System.Drawing.Color)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.WithAlpha(System.Drawing.Color,System.Int32)" />
@@ -516,8 +516,8 @@
       <Member Id="P:Xamarin.Essentials.Platform.MapServiceToken" />
     </Type>
     <Type Name="Xamarin.Essentials.PointExtensions" Id="T:Xamarin.Essentials.PointExtensions">
-      <Member Id="M:Xamarin.Essentials.PointExtensions.ToPlatformPoint(System.Drawing.Point)" />
-      <Member Id="M:Xamarin.Essentials.PointExtensions.ToPlatformPoint(System.Drawing.PointF)" />
+      <Member Id="M:Xamarin.Essentials.PointExtensions.UWP.ToPlatformPoint(System.Drawing.Point)" />
+      <Member Id="M:Xamarin.Essentials.PointExtensions.UWP.ToPlatformPoint(System.Drawing.PointF)" />
       <Member Id="M:Xamarin.Essentials.PointExtensions.ToSystemPoint(Windows.Foundation.Point)" />
       <Member Id="M:Xamarin.Essentials.PointExtensions.ToSystemPointF(Windows.Foundation.Point)" />
     </Type>
@@ -563,8 +563,8 @@
       <Member Id="M:Xamarin.Essentials.ReadOnlyFile.#ctor(Xamarin.Essentials.FileBase)" />
     </Type>
     <Type Name="Xamarin.Essentials.RectangleExtensions" Id="T:Xamarin.Essentials.RectangleExtensions">
-      <Member Id="M:Xamarin.Essentials.RectangleExtensions.ToPlatformRectangle(System.Drawing.Rectangle)" />
-      <Member Id="M:Xamarin.Essentials.RectangleExtensions.ToPlatformRectangle(System.Drawing.RectangleF)" />
+      <Member Id="M:Xamarin.Essentials.RectangleExtensions.UWP.ToPlatformRectangle(System.Drawing.Rectangle)" />
+      <Member Id="M:Xamarin.Essentials.RectangleExtensions.UWP.ToPlatformRectangle(System.Drawing.RectangleF)" />
       <Member Id="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangle(Windows.Foundation.Rect)" />
       <Member Id="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangleF(Windows.Foundation.Rect)" />
     </Type>
@@ -610,8 +610,8 @@
       <Member Id="P:Xamarin.Essentials.ShareTextRequest.Uri" />
     </Type>
     <Type Name="Xamarin.Essentials.SizeExtensions" Id="T:Xamarin.Essentials.SizeExtensions">
-      <Member Id="M:Xamarin.Essentials.SizeExtensions.ToPlatformSize(System.Drawing.Size)" />
-      <Member Id="M:Xamarin.Essentials.SizeExtensions.ToPlatformSize(System.Drawing.SizeF)" />
+      <Member Id="M:Xamarin.Essentials.SizeExtensions.UWP.ToPlatformSize(System.Drawing.Size)" />
+      <Member Id="M:Xamarin.Essentials.SizeExtensions.UWP.ToPlatformSize(System.Drawing.SizeF)" />
       <Member Id="M:Xamarin.Essentials.SizeExtensions.ToSystemSize(Windows.Foundation.Size)" />
       <Member Id="M:Xamarin.Essentials.SizeExtensions.ToSystemSizFe(Windows.Foundation.Size)" />
     </Type>

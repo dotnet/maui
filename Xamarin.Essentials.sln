@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2036
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29009.5
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{579F334C-FB7F-448A-A638-8FCB1CE53D93}"
 	ProjectSection(SolutionItems) = preProject
@@ -12,6 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		DeviceTests\build.ps1 = DeviceTests\build.ps1
 		DeviceTests\build.sh = DeviceTests\build.sh
 		LICENSE = LICENSE
+		nuget.config = nuget.config
 		nugetreadme.txt = nugetreadme.txt
 		README.md = README.md
 		stylecop.json = stylecop.json

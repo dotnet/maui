@@ -20,7 +20,7 @@
     <Member MemberName="ToPlatformPoint">
       <MemberSignature Language="C#" Value="public static Android.Graphics.Point ToPlatformPoint (this System.Drawing.Point point);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Android.Graphics.Point ToPlatformPoint(valuetype System.Drawing.Point point) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.ToPlatformPoint(System.Drawing.Point)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.Android.ToPlatformPoint(System.Drawing.Point)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -44,7 +44,7 @@
     <Member MemberName="ToPlatformPoint">
       <MemberSignature Language="C#" Value="public static CoreGraphics.CGPoint ToPlatformPoint (this System.Drawing.Point point);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype CoreGraphics.CGPoint ToPlatformPoint(valuetype System.Drawing.Point point) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.ToPlatformPoint(System.Drawing.Point)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.iOS.ToPlatformPoint(System.Drawing.Point)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -66,7 +66,7 @@
     <Member MemberName="ToPlatformPoint">
       <MemberSignature Language="C#" Value="public static Windows.Foundation.Point ToPlatformPoint (this System.Drawing.Point point);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Windows.Foundation.Point ToPlatformPoint(valuetype System.Drawing.Point point) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.ToPlatformPoint(System.Drawing.Point)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.UWP.ToPlatformPoint(System.Drawing.Point)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -88,7 +88,7 @@
     <Member MemberName="ToPlatformPoint">
       <MemberSignature Language="C#" Value="public static CoreGraphics.CGPoint ToPlatformPoint (this System.Drawing.PointF point);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype CoreGraphics.CGPoint ToPlatformPoint(valuetype System.Drawing.PointF point) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.ToPlatformPoint(System.Drawing.PointF)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.iOS.ToPlatformPoint(System.Drawing.PointF)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -110,7 +110,7 @@
     <Member MemberName="ToPlatformPoint">
       <MemberSignature Language="C#" Value="public static Windows.Foundation.Point ToPlatformPoint (this System.Drawing.PointF point);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Windows.Foundation.Point ToPlatformPoint(valuetype System.Drawing.PointF point) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.ToPlatformPoint(System.Drawing.PointF)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.UWP.ToPlatformPoint(System.Drawing.PointF)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -132,7 +132,7 @@
     <Member MemberName="ToPlatformPointF">
       <MemberSignature Language="C#" Value="public static Android.Graphics.PointF ToPlatformPointF (this System.Drawing.PointF point);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Android.Graphics.PointF ToPlatformPointF(valuetype System.Drawing.PointF point) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.ToPlatformPointF(System.Drawing.PointF)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PointExtensions.Android.ToPlatformPointF(System.Drawing.PointF)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
