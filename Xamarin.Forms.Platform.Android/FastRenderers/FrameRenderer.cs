@@ -191,6 +191,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				UpdateBackgroundColor();
 				UpdateCornerRadius();
 				UpdateBorderColor();
+				UpdateClippedToBounds();
 
 				ElevationHelper.SetElevation(this, e.NewElement);
 			}
@@ -234,7 +235,11 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				UpdateCornerRadius();
 			else if (e.PropertyName == Frame.BorderColorProperty.PropertyName)
 				UpdateBorderColor();
+			else if (e.Is(Xamarin.Forms.Layout.IsClippedToBoundsProperty))
+				UpdateClippedToBounds();
 		}
+
+		void UpdateClippedToBounds() => this.SetClipToOutline(Element.IsClippedToBounds);
 
 		void UpdateBackgroundColor()
 		{

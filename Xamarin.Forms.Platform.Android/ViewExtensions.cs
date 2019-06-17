@@ -77,5 +77,21 @@ namespace Xamarin.Forms.Platform.Android
 				view.Id = Platform.GenerateViewId();
 			}
 		}
+
+		public static bool GetClipToOutline(this AView view)
+		{
+			if (view.IsDisposed() || !Forms.IsLollipopOrNewer)
+				return false;
+
+			return view.ClipToOutline;
+		}
+
+		public static void SetClipToOutline(this AView view, bool value)
+		{
+			if (view.IsDisposed() || !Forms.IsLollipopOrNewer)
+				return;
+
+			view.ClipToOutline = value;
+		}
 	}
 }

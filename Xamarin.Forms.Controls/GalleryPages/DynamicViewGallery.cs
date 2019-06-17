@@ -12,6 +12,14 @@ namespace Xamarin.Forms.Controls
 		internal static Dictionary<string, (Func<object> ctor, NamedAction[] methods)> TestedTypes = new Dictionary<string, (Func<object> ctor, NamedAction[] methods)>
 			{
 				{ nameof(ActivityIndicator), (() => new ActivityIndicator() { IsRunning = false }, null) },
+				{ nameof(Frame), (() => new Frame {
+						BackgroundColor = Color.Blue,
+						Content = new BoxView
+						{
+							BackgroundColor = Color.Yellow,
+							TranslationX = 50
+						}
+					}, null) },
 				{ nameof(ProgressBar), (() => new ProgressBar(), null) },
 				{ nameof(Button), (() => new Button { Text = "Button" }, null) },
 				{ nameof(Label), (() => new Label { Text = "label" }, null) },
@@ -142,7 +150,9 @@ namespace Xamarin.Forms.Controls
 				}
 				else if (property.PropertyType == typeof(double) ||
 					property.PropertyType == typeof(float) ||
-					property.PropertyType == typeof(int))
+					property.PropertyType == typeof(int) ||
+					property.PropertyType == typeof(uint) ||
+					property.PropertyType == typeof(long))
 				{
 					propertyLayout.Children.Add(
 						CreateValuePicker(property, bindableProperties.FirstOrDefault(p => p.PropertyName == property.Name), element));
@@ -225,8 +235,30 @@ namespace Xamarin.Forms.Controls
 				max = _minMaxProperties[property.Name].max;
 			}
 
-			var isInt = property.PropertyType == typeof(int);
-			var value = isInt ? (int)property.GetValue(element) : (double)property.GetValue(element);
+			var stringFormat = "0";
+			var objectValue = property.GetValue(element);
+			double value = 0;
+			switch (objectValue)
+			{
+				case int i:
+					value = i;
+					break;
+				case uint ui:
+					value = ui;
+					break;
+				case long l:
+					value = l;
+					break;
+				case float f:
+					value = f;
+					stringFormat += ".#";
+					break;
+				case double d:
+					value = d;
+					stringFormat += ".#";
+					break;
+			}
+			
 			var slider = new Slider(min, max, value);
 
 			var actions = new Grid
@@ -260,17 +292,31 @@ namespace Xamarin.Forms.Controls
 
 			var valueLabel = new Label
 			{
-				Text = slider.Value.ToString(isInt ? "0" : "0.#"),
+				Text = slider.Value.ToString(stringFormat),
 				HorizontalOptions = LayoutOptions.End
 			};
 
 			slider.ValueChanged += (_, e) =>
 			{
-				if (isInt)
-					property.SetValue(element, (int)e.NewValue);
-				else
-					property.SetValue(element, e.NewValue);
-				valueLabel.Text = e.NewValue.ToString(isInt ? "0" : "0.#");
+				switch (objectValue)
+				{
+					case int i:
+						property.SetValue(element, (int)e.NewValue);
+						break;
+					case uint ui:
+						property.SetValue(element, (uint)e.NewValue);
+						break;
+					case long l:
+						property.SetValue(element, (long)e.NewValue);
+						break;
+					case float f:
+						property.SetValue(element, (float)e.NewValue);
+						break;
+					case double d:
+						property.SetValue(element, e.NewValue);
+						break;
+				}
+				valueLabel.Text = e.NewValue.ToString(stringFormat);
 			};
 
 			actions.AddChild(slider, 0, 1);
