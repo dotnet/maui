@@ -27,20 +27,13 @@
 	</DataTemplate>
 	
 	<Style TargetType="local:ItemContentControl" >
-		<Setter Property="HorizontalContentAlignment" Value="Left"/>
-		<Setter Property="VerticalContentAlignment" Value="Top"/>
-		<!--<Setter Property="Template">
+		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="local:ItemContentControl">
-					<ContentPresenter x:Name="ContentPresenter" Content="{TemplateBinding Content}"
-									ContentTemplate="{TemplateBinding ContentTemplate}"
-									Margin="{TemplateBinding Padding}"
-									ContentTransitions="{TemplateBinding ContentTransitions}"
-									HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-									VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-				</ControlTemplate>
+				    <ContentPresenter />
+                </ControlTemplate>
 			</Setter.Value>
-		</Setter>-->
+		</Setter>
 	</Style>
 
 </ResourceDictionary>

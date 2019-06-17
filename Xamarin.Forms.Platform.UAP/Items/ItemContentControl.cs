@@ -8,8 +8,10 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class ItemContentControl : UserControl
+	public class ItemContentControl : ContentControl
 	{
+		IVisualElementRenderer _renderer;
+
 		public ItemContentControl()
 		{
 			CollectionView.VerifyCollectionViewFlagEnabled(nameof(ItemContentControl));
@@ -27,8 +29,8 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 			}
 
-			var formsContentControl = (ItemContentControl)d;
-			formsContentControl.RealizeFormsDataTemplate((DataTemplate)e.NewValue);
+			var itemContentControl = (ItemContentControl)d;
+			itemContentControl.Realize();
 		}
 
 		public DataTemplate FormsDataTemplate
@@ -44,7 +46,7 @@ namespace Xamarin.Forms.Platform.UWP
 		static void FormsDataContextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
 			var formsContentControl = (ItemContentControl)d;
-			formsContentControl.SetFormsDataContext(e.NewValue);
+			formsContentControl.Realize();
 		}
 
 		public object FormsDataContext
@@ -53,70 +55,69 @@ namespace Xamarin.Forms.Platform.UWP
 			set => SetValue(FormsDataContextProperty, value);
 		}
 
-		VisualElement _rootElement;
-
-		internal void RealizeFormsDataTemplate(DataTemplate template)
+		protected override void OnContentChanged(object oldContent, object newContent)
 		{
-			var content = FormsDataTemplate.CreateContent();
+			base.OnContentChanged(oldContent, newContent);
 
-			if (content is VisualElement visualElement)
+			if (oldContent is FrameworkElement oldElement)
 			{
-				if (_rootElement != null)
-				{
-					_rootElement.MeasureInvalidated -= RootElementOnMeasureInvalidated;
-				}
-
-				_rootElement = visualElement;
-				_rootElement.MeasureInvalidated += RootElementOnMeasureInvalidated;
-
-				Content = Platform.CreateRenderer(visualElement).ContainerElement;
+				oldElement.Loaded -= ContentLoaded;
 			}
 
-			if (FormsDataContext != null)
+			if (newContent is FrameworkElement newElement)
 			{
-				SetFormsDataContext(FormsDataContext);
+				newElement.Loaded += ContentLoaded;
 			}
 		}
 
-		void RootElementOnMeasureInvalidated(object sender, EventArgs e)
+		internal void Realize()
 		{
-			InvalidateMeasure();
-		}
+			var dataContext = FormsDataContext;
+			var formsTemplate = FormsDataTemplate;
 
-		internal void SetFormsDataContext(object context)
-		{
-			if (_rootElement == null)
+			if (dataContext == null || formsTemplate == null)
 			{
 				return;
 			}
 
-			BindableObject.SetInheritedBindingContext(_rootElement, context);
+			// TODO ezhart Handle SelectDataTemplate
+
+			var view = FormsDataTemplate.CreateContent() as View;
+
+			_renderer = Platform.CreateRenderer(view);
+			Platform.SetRenderer(view, _renderer);
+
+			Content = _renderer.ContainerElement;
+
+			// TODO ezhart Add View as a logical child of the ItemsView
+			
+			BindableObject.SetInheritedBindingContext(_renderer.Element, dataContext);
+		}
+
+		void ContentLoaded(object sender, RoutedEventArgs e)
+		{
+			InvalidateMeasure();
 		}
 
 		protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
 		{
-			if (_rootElement == null)
+			if (_renderer == null)
 			{
 				return base.MeasureOverride(availableSize);
 			}
 
-			Size request = _rootElement.Measure(availableSize.Width, availableSize.Height, 
+			var formsElement = _renderer.Element;
+
+			Size request = formsElement.Measure(availableSize.Width, availableSize.Height,
 				MeasureFlags.IncludeMargins).Request;
 
-			_rootElement.Layout(new Rectangle(Point.Zero, request));
+			formsElement.Layout(new Rectangle(0, 0, request.Width, request.Height));
 
-			return new Windows.Foundation.Size(request.Width, request.Height); 
-		}
+			var wsize = new Windows.Foundation.Size(request.Width, request.Height);
 
-		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
-		{
-			if (!(Content is FrameworkElement frameworkElement))
-			{
-				return finalSize;
-			}
-		
-			frameworkElement.Arrange(new Rect(_rootElement.X, _rootElement.Y, _rootElement.Width, _rootElement.Height));
-			return base.ArrangeOverride(finalSize);
+			(Content as FrameworkElement).Measure(wsize);
+
+			return base.MeasureOverride(wsize);
 		}
 	}
 }
