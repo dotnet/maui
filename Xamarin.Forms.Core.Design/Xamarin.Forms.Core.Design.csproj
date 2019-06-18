@@ -11,8 +11,9 @@
     <ProjectGuid>{98637471-8E5C-4DDE-89CA-2EAA664FB0EF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace></RootNamespace>
-     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <RootNamespace>
+    </RootNamespace>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -71,6 +72,9 @@
     <EmbeddedResource Include="toolbox\Xamarin.Forms.toolbox.xml">
       <LogicalName>Xamarin.Forms.toolbox.xml</LogicalName>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ItemsLayoutDesignTypeConverter.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- Ensure that all images in the 'mac' and 'win' subdirectories are included as embedded resources -->

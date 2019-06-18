@@ -22,9 +22,9 @@
 						// so we can demonstrate switching between them
 						descriptionLabel,
 						GalleryBuilder.NavButton("Vertical List (Code)", () => 
-							new TextCodeCollectionViewGallery(ListItemsLayout.VerticalList), Navigation),
+							new TextCodeCollectionViewGallery(ListItemsLayout.Vertical), Navigation),
 						GalleryBuilder.NavButton("Horizontal List (Code)", () => 
-							new TextCodeCollectionViewGallery(ListItemsLayout.HorizontalList), Navigation),
+							new TextCodeCollectionViewGallery(ListItemsLayout.Horizontal), Navigation),
 						GalleryBuilder.NavButton("Vertical Grid (Code)", () => 
 							new TextCodeCollectionViewGridGallery(), Navigation),
 						GalleryBuilder.NavButton("Horizontal Grid (Code)", () => 

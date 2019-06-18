@@ -17,9 +17,9 @@
 					{
 						descriptionLabel,
 						GalleryBuilder.NavButton("Vertical List Spacing", () =>
-							new SpacingGallery (ListItemsLayout.VerticalList), Navigation),
+							new SpacingGallery (ListItemsLayout.Vertical), Navigation),
 						GalleryBuilder.NavButton("Horizontal List Spacing", () =>
-							new SpacingGallery (ListItemsLayout.HorizontalList), Navigation),
+							new SpacingGallery (ListItemsLayout.Horizontal), Navigation),
 						GalleryBuilder.NavButton("Vertical Grid Spacing", () =>
 							new SpacingGallery (new GridItemsLayout(3, ItemsLayoutOrientation.Vertical)), Navigation),
 						GalleryBuilder.NavButton("Horizontal Grid Spacing", () =>

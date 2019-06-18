@@ -17,9 +17,9 @@
 					{
 						descriptionLabel,
 						GalleryBuilder.NavButton("Expanding Text (Vertical List)", () =>
-							new DynamicItemSizeGallery(ListItemsLayout.VerticalList), Navigation),
+							new DynamicItemSizeGallery(ListItemsLayout.Vertical), Navigation),
 						GalleryBuilder.NavButton("Expanding Text (Horizontal List)", () =>
-							new DynamicItemSizeGallery(ListItemsLayout.HorizontalList), Navigation),
+							new DynamicItemSizeGallery(ListItemsLayout.Horizontal), Navigation),
 						GalleryBuilder.NavButton("ItemSizing Strategy", () =>
 							new VariableSizeTemplateGridGallery (ItemsLayoutOrientation.Horizontal), Navigation)
 					}
