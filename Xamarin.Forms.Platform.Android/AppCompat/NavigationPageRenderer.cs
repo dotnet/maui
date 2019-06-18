@@ -900,7 +900,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				{
 					IMenuItem menuItem = menu.Add(item.Text);
 					menuItem.SetEnabled(controller.IsEnabled);
-					menuItem.SetOnMenuItemClickListener(new GenericMenuClickListener(controller.Activate));
+					menuItem.SetOnMenuItemClickListener(new GenericMenuClickListener(controller.Activate));					
 					menuItem.SetTitleOrContentDescription(item);
 				}
 				else
@@ -1037,6 +1037,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				_ = this.ApplyDrawableAsync(currentPage, NavigationPage.TitleIconImageSourceProperty, Context, drawable =>
 				{
 					_titleIconView.SetImageDrawable(drawable);
+					FastRenderers.AutomationPropertiesProvider.AccessibilitySettingsChanged(_titleIconView, source);
 				});
 			}
 		}

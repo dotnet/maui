@@ -75,6 +75,7 @@ namespace Xamarin.Forms.Controls.Issues
 			lst.RefreshCommand = new Command(async () =>
 			{
 				var newitems = new List<string>();
+				newitems.Add("data refreshed");
 				await Task.Delay(5000);
 				for (int i = 0; i < 1000; i++)
 				{
@@ -98,7 +99,13 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void TestIssue1905RefreshShows()
 		{
+			// wait for test to load
+			RunningApp.WaitForElement("btnRefresh");
 			RunningApp.Screenshot("Should show refresh control");
+
+			// wait for test to finish so it doesn't keep working
+			// in the background and break the next test
+			RunningApp.WaitForElement("data refreshed");
 		}
 #endif
 	}

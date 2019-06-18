@@ -22,11 +22,13 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		bool _navAnimationInProgress;
 		NavigationModel _navModel = new NavigationModel();
 		Page _pendingRootChange = null;
+		internal static string PackageName { get; private set; }
+		internal static string GetPackageName() => PackageName ?? Android.Platform.PackageName;
 
 		public Platform(Context context)
 		{
 			_context = context;
-
+			PackageName = context?.PackageName;
 			_renderer = new PlatformRenderer(context, this);
 
 			FormsAppCompatActivity.BackPressed += HandleBackPressed;

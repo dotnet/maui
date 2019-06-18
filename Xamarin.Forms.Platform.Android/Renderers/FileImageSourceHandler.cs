@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (File.Exists (file))
 				bitmap = !DecodeSynchronously ? (await BitmapFactory.DecodeFileAsync (file).ConfigureAwait (false)) : BitmapFactory.DecodeFile (file);
 			else
-				bitmap = !DecodeSynchronously ? (await context.Resources.GetBitmapAsync (file).ConfigureAwait (false)) : context.Resources.GetBitmap (file);
+				bitmap = !DecodeSynchronously ? (await context.Resources.GetBitmapAsync (file, context).ConfigureAwait (false)) : context.Resources.GetBitmap (file, context);
 
 			if (bitmap == null)
 			{

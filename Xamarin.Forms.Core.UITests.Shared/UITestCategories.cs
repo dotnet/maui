@@ -49,5 +49,7 @@
 		public const string Visual = "Visual";
 		public const string AppLinks = "AppLinks";
 		public const string Shell = "Shell";
+		public const string TabbedPage = "TabbedPage";
+		public const string CustomRenderers = "CustomRenderers";
 	}
 }

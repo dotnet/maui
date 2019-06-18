@@ -80,7 +80,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public static bool GetClipToOutline(this AView view)
 		{
-			if (!Forms.IsLollipopOrNewer)
+			if (view.IsDisposed() || !Forms.IsLollipopOrNewer)
 				return false;
 
 			return view.ClipToOutline;
@@ -88,11 +88,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		public static void SetClipToOutline(this AView view, bool value)
 		{
-			if (!Forms.IsLollipopOrNewer)
+			if (view.IsDisposed() || !Forms.IsLollipopOrNewer)
 				return;
 
 			view.ClipToOutline = value;
-
 		}
 	}
 }
