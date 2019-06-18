@@ -124,6 +124,8 @@
       <Link>GalleryPages\AdvancedOpenGLGallery.cs</Link>
     </Compile>
     <Compile Include="CustomEffects\GradientEffect.cs" />
+    <Compile Include="CustomRenderers\CustomRenderer.cs" />
+    <Compile Include="CustomRenderers\RoundedLabelRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Controls\Xamarin.Forms.Controls.csproj">
@@ -399,6 +401,7 @@
   <ItemGroup>
     <Folder Include="Resources\Fonts\" />
     <Folder Include="CustomEffects\" />
+    <Folder Include="CustomRenderers\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
 </Project>

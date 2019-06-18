@@ -2,5 +2,6 @@
 
 namespace Xamarin.Forms
 {
+	[TypeConverter(typeof(ItemsLayoutTypeConverter))]
 	public interface IItemsLayout : INotifyPropertyChanged {}
 }

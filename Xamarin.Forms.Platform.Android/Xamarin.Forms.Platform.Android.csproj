@@ -92,6 +92,7 @@
     <Compile Include="CollectionView\SelectableViewHolder.cs" />
     <Compile Include="CollectionView\SizedItemContentView.cs" />
     <Compile Include="CollectionView\SnapManager.cs" />
+    <Compile Include="CollectionView\SpacingItemDecoration.cs" />
     <Compile Include="CollectionView\StartSingleSnapHelper.cs" />
     <Compile Include="CollectionView\StartSnapHelper.cs" />
     <Compile Include="CollectionView\TemplatedItemViewHolder.cs" />

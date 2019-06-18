@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using CoreGraphics;
+using Foundation;
 using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
@@ -17,7 +17,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected override void HandlePropertyChanged(PropertyChangedEventArgs propertyChanged)
 		{
-			if(propertyChanged.Is(GridItemsLayout.SpanProperty))
+			if(propertyChanged.IsOneOf(GridItemsLayout.SpanProperty, GridItemsLayout.HorizontalItemSpacingProperty, 
+				GridItemsLayout.VerticalItemSpacingProperty))
 			{
 				// Update the constraints; ConstrainTo will pick up the new span
 				ConstrainTo(CollectionView.Frame.Size);
@@ -31,12 +32,18 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void ConstrainTo(CGSize size)
 		{
-			ConstrainedDimension =
-				ScrollDirection == UICollectionViewScrollDirection.Vertical 
-					? size.Width / _itemsLayout.Span 
-					: size.Height / _itemsLayout.Span;
+			var availableSpace = ScrollDirection == UICollectionViewScrollDirection.Vertical
+					? size.Width : size.Height;
 
-			// TODO hartez 2018/09/12 14:52:24 We need to truncate the decimal part of ConstrainedDimension
+			var spacing = (nfloat)(ScrollDirection == UICollectionViewScrollDirection.Vertical
+					? _itemsLayout.HorizontalItemSpacing
+					: _itemsLayout.VerticalItemSpacing);
+
+			spacing = spacing * (_itemsLayout.Span - 1);
+
+			ConstrainedDimension = (availableSpace - spacing) / _itemsLayout.Span;
+
+			// We need to truncate the decimal part of ConstrainedDimension
 			// or we occasionally run into situations where the rows/columns don't fit	
 			// But this can run into situations where we have an extra gap because we're cutting off too much
 			// and we have a small gap; need to determine where the cut-off is that leads to layout dropping a whole row/column
@@ -50,6 +57,108 @@ namespace Xamarin.Forms.Platform.iOS
 
 			ConstrainedDimension = (int)ConstrainedDimension;
 			DetermineCellSize();
+		}
+
+		/* `CollectionViewContentSize` and `LayoutAttributesForElementsInRect` are overridden here to work around what 
+		 * appears to be a bug in the UICollectionViewFlowLayout implementation: for horizontally scrolling grid
+		 * layouts with auto-sized cells, trailing items which don't fill out a column are never displayed. 
+		 * For example, with a span of 3 and either 4 or 5 items, the resulting layout looks like
+		 *
+		 * 		Item1 
+		 * 		Item2
+		 * 		Item3
+		 * 
+		 * But with 6 items, it looks like
+		 * 
+		 * 		Item1 Item4
+		 * 		Item2 Item5
+		 * 		Item3 Item6
+		 * 
+		 * IOW, if there are not enough items to fill out the last column, the last column is ignored.
+		 * 
+		 * These overrides detect and correct that situation.	 
+		 */
+
+		public override CGSize CollectionViewContentSize
+		{
+			get
+			{
+				if (!NeedsPartialColumnAdjustment())
+				{
+					return base.CollectionViewContentSize;
+				}
+
+				var contentSize = base.CollectionViewContentSize;
+
+				// Add space for the missing column at the end
+				var correctedSize = new CGSize(contentSize.Width + EstimatedItemSize.Width, contentSize.Height);
+
+				return correctedSize;
+			}
+		}
+
+		public override UICollectionViewLayoutAttributes[] LayoutAttributesForElementsInRect(CGRect rect)
+		{
+			if (!NeedsPartialColumnAdjustment())
+			{ 
+				return base.LayoutAttributesForElementsInRect(rect);
+			}
+
+			// When we implement Groups, we'll have to iterate over all of them to adjust and this will
+			// be a lot more complicated. But until then, we only have to worry about section 0
+			int section = 0;
+
+			var fullColumns = base.LayoutAttributesForElementsInRect(rect);
+
+			var itemCount = CollectionView.NumberOfItemsInSection(section);
+
+			if (fullColumns.Length == itemCount)
+			{
+				return fullColumns;
+			}
+
+			var missingCellCount = itemCount % _itemsLayout.Span;
+
+			UICollectionViewLayoutAttributes[] allCells = new UICollectionViewLayoutAttributes[fullColumns.Length + missingCellCount];
+			fullColumns.CopyTo(allCells, 0);
+
+			for (int n = fullColumns.Length; n < allCells.Length; n++)
+			{
+				allCells[n] = LayoutAttributesForItem(NSIndexPath.FromItemSection(n, section));
+			}
+
+			return allCells;
+		}
+
+		bool NeedsPartialColumnAdjustment(int section = 0)
+		{
+			if (ScrollDirection == UICollectionViewScrollDirection.Vertical)
+			{
+				// The bug only occurs with Horizontal scrolling
+				return false; 
+			}
+
+			if (EstimatedItemSize.IsEmpty)
+			{
+				// The bug only occurs when using Autolayout; with a set ItemSize, we don't have to worry about it
+				return false;
+			}
+
+			var itemCount = CollectionView.NumberOfItemsInSection(section);
+
+			if (itemCount < _itemsLayout.Span)
+			{
+				// If there is just one partial column, no problem; UICollectionViewFlowLayout gets it right
+				return false;
+			}
+
+			if (itemCount % _itemsLayout.Span == 0)
+			{
+				// All of the columns are full; the bug only occurs when we have a partial column
+				return false;
+			}
+
+			return true;
 		}
 	}
 }

@@ -71,18 +71,39 @@ namespace Xamarin.Forms.Platform.WPF
 			if (newCell != null)
 			{
 				((ICellController)newCell).SendAppearing();
-				
+
 				if (oldCell == null || oldCell.GetType() != newCell.GetType())
 					ContentTemplate = GetTemplate(newCell);
 
 				Content = newCell;
-				
+
 				SetupContextMenu();
 
 				newCell.PropertyChanged += _propertyChangedHandler;
 			}
 			else
 				Content = null;
+		}
+
+		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+		{
+			if (Content is ViewCell vc)
+			{
+				if (vc.LogicalChildren != null && vc.LogicalChildren.Any())
+				{
+					foreach (var child in vc.LogicalChildren)
+					{
+						if (child is Layout layout)
+						{
+							if (layout.HorizontalOptions.Expands)
+							{
+								layout.Layout(new Rectangle(layout.X, layout.Y, sizeInfo.NewSize.Width, sizeInfo.NewSize.Height));
+							}
+						}
+					}
+				}
+			}
+			base.OnRenderSizeChanged(sizeInfo);
 		}
 
 		void SetupContextMenu()

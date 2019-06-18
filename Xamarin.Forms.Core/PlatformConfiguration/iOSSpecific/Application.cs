@@ -53,5 +53,30 @@
 			return config;
 		}
 		#endregion
+
+		#region EnableAccessibilityScalingForNamedFontSizes
+		public static readonly BindableProperty EnableAccessibilityScalingForNamedFontSizesProperty = BindableProperty.Create("EnableAccessibilityScalingForNamedFontSizes", typeof(bool), typeof(Application), true);
+
+		public static bool GetEnableAccessibilityScalingForNamedFontSizes(BindableObject element)
+		{
+			return (bool)element.GetValue(EnableAccessibilityScalingForNamedFontSizesProperty);
+		}
+
+		public static void SetEnableAccessibilityScalingForNamedFontSizes(BindableObject element, bool value)
+		{
+			element.SetValue(EnableAccessibilityScalingForNamedFontSizesProperty, value);
+		}
+
+		public static bool GetEnableAccessibilityScalingForNamedFontSizes(this IPlatformElementConfiguration<iOS, FormsElement> config)
+		{
+			return GetEnableAccessibilityScalingForNamedFontSizes(config.Element);
+		}
+
+		public static IPlatformElementConfiguration<iOS, FormsElement> SetEnableAccessibilityScalingForNamedFontSizes(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
+		{
+			SetEnableAccessibilityScalingForNamedFontSizes(config.Element, value);
+			return config;
+		}
+		#endregion
 	}
 }

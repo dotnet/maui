@@ -76,7 +76,7 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty ItemsLayoutProperty =
 			BindableProperty.Create(nameof(ItemsLayout), typeof(IItemsLayout), typeof(ItemsView), 
-				ListItemsLayout.VerticalList);
+				ListItemsLayout.Vertical);
 
 		public IItemsLayout ItemsLayout
 		{

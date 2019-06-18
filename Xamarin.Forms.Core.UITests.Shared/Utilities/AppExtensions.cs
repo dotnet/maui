@@ -34,10 +34,10 @@ namespace Xamarin.Forms.Core.UITests
 
 			app.WaitForElement("SearchBar");
 			app.EnterText(q => q.Raw("* marked:'SearchBar'"), text);
+			app.DismissKeyboard();
 
-			if(!String.IsNullOrWhiteSpace(visual))
+			if (!String.IsNullOrWhiteSpace(visual))
 			{
-				app.DismissKeyboard();
 				app.ActivateContextMenu($"{text}AutomationId");
 				app.Tap("Select Visual");
 				app.Tap("Material");

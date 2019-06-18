@@ -27,6 +27,15 @@ namespace Xamarin.Forms.Platform.iOS
 				: UICollectionViewScrollDirection.Vertical;
 
 			Initialize(scrollDirection);
+
+			if (Forms.IsiOS11OrNewer)
+			{
+				// `ContentInset` is actually the default value, but I'm leaving this here as a note to
+				// future maintainers; it's likely that someone will want a Platform Specific to change this behavior
+				// (Setting it to `SafeArea` lets you do the thing where the header/footer of your UICollectionView
+				// fills the screen width in landscape while your items are automatically shifted to avoid the notch)
+				SectionInsetReference = UICollectionViewFlowLayoutSectionInsetReference.ContentInset;
+			}
 		}
 
 		protected override void Dispose(bool disposing)
@@ -51,10 +60,16 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void LayoutOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChanged)
 		{
+			HandlePropertyChanged(propertyChanged);
 		}
 
 		protected virtual void HandlePropertyChanged(PropertyChangedEventArgs propertyChanged)
 		{
+			if (propertyChanged.IsOneOf(ListItemsLayout.ItemSpacingProperty,
+				GridItemsLayout.HorizontalItemSpacingProperty, GridItemsLayout.VerticalItemSpacingProperty))
+			{
+				UpdateItemSpacing();
+			}
 		}
 
 		public nfloat ConstrainedDimension { get; set; }
@@ -84,12 +99,37 @@ namespace Xamarin.Forms.Platform.iOS
 		public virtual nfloat GetMinimumInteritemSpacingForSection(UICollectionView collectionView,
 			UICollectionViewLayout layout, nint section)
 		{
+			if (_itemsLayout is GridItemsLayout gridItemsLayout)
+			{
+				if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
+				{
+					return (nfloat)gridItemsLayout.VerticalItemSpacing;
+				}
+
+				return (nfloat)gridItemsLayout.HorizontalItemSpacing;
+			}
+
 			return (nfloat)0.0;
 		}
 
 		public virtual nfloat GetMinimumLineSpacingForSection(UICollectionView collectionView,
 			UICollectionViewLayout layout, nint section)
 		{
+			if (_itemsLayout is ListItemsLayout listViewLayout)
+			{
+				return (nfloat)listViewLayout.ItemSpacing;
+			}
+
+			if (_itemsLayout is GridItemsLayout gridItemsLayout)
+			{
+				if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
+				{
+					return (nfloat)gridItemsLayout.HorizontalItemSpacing;
+				}
+
+				return (nfloat)gridItemsLayout.VerticalItemSpacing;
+			}
+
 			return (nfloat)0.0;
 		}
 
@@ -319,6 +359,16 @@ namespace Xamarin.Forms.Platform.iOS
 
 			return SnapHelpers.AdjustContentOffset(CollectionView.ContentOffset, currentItem.Frame, viewport, alignment,
 				ScrollDirection);
+		}
+
+		protected virtual void UpdateItemSpacing()
+		{
+			if (_itemsLayout == null)
+			{
+				return;
+			}
+
+			InvalidateLayout();
 		}
 	}
 }

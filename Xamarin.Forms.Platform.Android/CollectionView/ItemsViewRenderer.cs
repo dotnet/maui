@@ -9,7 +9,6 @@ using Android.Views;
 using Android.Widget;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android.FastRenderers;
-using AView = Android.Views.View;
 using AViewCompat = Android.Support.V4.View.ViewCompat;
 
 namespace Xamarin.Forms.Platform.Android
@@ -33,6 +32,8 @@ namespace Xamarin.Forms.Platform.Android
 		EmptyViewAdapter _emptyViewAdapter;
 		DataChangeObserver _dataChangeViewObserver;
 		bool _watchingForEmpty;
+
+		RecyclerView.ItemDecoration _itemDecoration;
 
 		public ItemsViewRenderer(Context context) : base(context)
 		{
@@ -284,6 +285,7 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateSnapBehavior();
 			UpdateBackgroundColor();
 			UpdateFlowDirection();
+			UpdateItemSpacing();
 
 			// Keep track of the ItemsLayout's property changes
 			if (_layout != null)
@@ -327,20 +329,30 @@ namespace Xamarin.Forms.Platform.Android
 				_snapManager.Dispose();
 				_snapManager = null;
 			}
+
+			if (_itemDecoration != null)
+			{
+				RemoveItemDecoration(_itemDecoration);
+			}
 		}
 
-		void LayoutOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChanged)
+		protected virtual void LayoutOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChanged)
 		{
-			if(propertyChanged.Is(GridItemsLayout.SpanProperty))
+			if (propertyChanged.Is(GridItemsLayout.SpanProperty))
 			{
 				if (GetLayoutManager() is GridLayoutManager gridLayoutManager)
 				{
 					gridLayoutManager.SpanCount = ((GridItemsLayout)_layout).Span;
 				}
-			} 
+			}
 			else if (propertyChanged.IsOneOf(ItemsLayout.SnapPointsTypeProperty, ItemsLayout.SnapPointsAlignmentProperty))
 			{
 				UpdateSnapBehavior();
+			}
+			else if (propertyChanged.IsOneOf(ListItemsLayout.ItemSpacingProperty, 
+				GridItemsLayout.HorizontalItemSpacingProperty, GridItemsLayout.VerticalItemSpacingProperty))
+			{
+				UpdateItemSpacing();
 			}
 		}
 
@@ -441,6 +453,22 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			return ItemsViewAdapter.GetPositionForItem(args.Item);
+		}
+
+		protected virtual void UpdateItemSpacing()
+		{
+			if (_layout == null)
+			{
+				return;
+			}
+
+			if (_itemDecoration != null)
+			{
+				RemoveItemDecoration(_itemDecoration);
+			}
+
+			_itemDecoration = new SpacingItemDecoration(_layout);
+			AddItemDecoration(_itemDecoration);
 		}
 
 		void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
