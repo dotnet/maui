@@ -1085,7 +1085,7 @@ namespace Xamarin.Forms.Platform.Android
 						actionBar.SetLogo(icon);
 				});
 				var titleIcon = NavigationPage.GetTitleIconImageSource(view);
-				useLogo = titleIcon != null && titleIcon.IsEmpty;
+				useLogo = titleIcon != null && !titleIcon.IsEmpty;
 				showHome = true;
 				showTitle = true;
 			}

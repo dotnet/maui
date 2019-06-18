@@ -1,5 +1,6 @@
 ﻿using System;
 using Android.Views;
+using AMenuItemCompat = global::Android.Support.V4.View.MenuItemCompat;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -102,22 +103,24 @@ namespace Xamarin.Forms.Platform.Android
 
 		public static void SetTitleOrContentDescription(this IMenuItem Control, ToolbarItem Element)
 		{
+			SetTitleOrContentDescription(Control, (MenuItem)Element);
+		}
+
+		public static void SetTitleOrContentDescription(this IMenuItem Control, MenuItem Element)
+		{
 			if (Element == null)
 				return;
-
-			// TODO: Android API 26+ will let us set the ContentDescription
-			// Until then, we will set the Title, but only if there is no Text.
-			// Thus, a ToolbarItem on Android can have one or the other, and Text
-			// will take precedence (since it will be visible on the screen).
-			if (!string.IsNullOrWhiteSpace(Element.Text))
-				return;
-
+			
 			var elemValue = ConcatenateNameAndHint(Element);
 
-			if (!string.IsNullOrWhiteSpace(elemValue))
-				Control.SetTitle(elemValue);
+			if (string.IsNullOrWhiteSpace(elemValue))
+				elemValue = Element.AutomationId;
+			else if (!String.IsNullOrEmpty(Element.Text))
+				elemValue = String.Join(". ", Element.Text, elemValue);
 
-			return;
+			if (!string.IsNullOrWhiteSpace(elemValue))
+				AMenuItemCompat.SetContentDescription(Control, elemValue);
+
 		}
 
 		static string ConcatenateNameAndHint(Element Element)

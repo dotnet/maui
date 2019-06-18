@@ -10,6 +10,7 @@ using AView = Android.Views.View;
 using AListView = Android.Widget.ListView;
 using Android.Graphics.Drawables;
 using Android.Support.V7.App;
+using AActionMode = global::Android.Support.V7.View.ActionMode;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -22,7 +23,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		bool _actionModeNeedsUpdates;
 		AView _contextView;
-		global::Android.Support.V7.View.ActionMode _supportActionMode;
+		AActionMode _supportActionMode;
 
 		protected CellAdapter(Context context)
 		{
@@ -196,8 +197,11 @@ namespace Xamarin.Forms.Platform.Android
 
 				_ = _context.ApplyDrawableAsync(action, MenuItem.IconImageSourceProperty, iconDrawable =>
 				{
-					if (iconDrawable != null)
+					if (iconDrawable != null && !this.IsDisposed() && !_actionModeNeedsUpdates)
+					{
 						item.SetIcon(iconDrawable);
+						item.SetTitleOrContentDescription(action);
+					}
 				});
 
 				action.PropertyChanged += changed;
