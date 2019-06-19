@@ -11,7 +11,7 @@ using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
-	public class FrameRenderer : CardView, IVisualElementRenderer, IEffectControlProvider, IViewRenderer, ITabStop
+	public class FrameRenderer : CardView, IVisualElementRenderer, IViewRenderer, ITabStop
 	{
 		float _defaultElevation = -1f;
 		float _defaultCornerRadius = -1f;
@@ -23,9 +23,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		VisualElementPackager _visualElementPackager;
 		VisualElementTracker _visualElementTracker;
+		VisualElementRenderer _visualElementRenderer;
 
-		readonly GestureManager _gestureManager;
-		readonly EffectControlProvider _effectControlProvider;
 		readonly MotionEventHelper _motionEventHelper = new MotionEventHelper();
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
@@ -33,16 +32,14 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		public FrameRenderer(Context context) : base(context)
 		{
-			_gestureManager = new GestureManager(this);
-			_effectControlProvider = new EffectControlProvider(this);
+			_visualElementRenderer = new VisualElementRenderer(this);
 		}
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use FrameRenderer(Context) instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public FrameRenderer() : base(Forms.Context)
 		{
-			_gestureManager = new GestureManager(this);
-			_effectControlProvider = new EffectControlProvider(this);
+			_visualElementRenderer = new VisualElementRenderer(this);
 		}
 
 		protected CardView Control => this;
@@ -104,11 +101,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			tracker?.UpdateLayout();
 		}
 
-		void IEffectControlProvider.RegisterEffect(Effect effect)
-		{
-			_effectControlProvider.RegisterEffect(effect);
-		}
-
 		void IViewRenderer.MeasureExactly()
 		{
 			ViewRenderer.MeasureExactly(this, Element, Context);
@@ -123,8 +115,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 			if (disposing)
 			{
-				_gestureManager?.Dispose();
-
 				if (_visualElementTracker != null)
 				{
 					_visualElementTracker.Dispose();
@@ -142,7 +132,10 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 					_backgroundDrawable.Dispose();
 					_backgroundDrawable = null;
 				}
-				
+
+				_visualElementRenderer?.Dispose();
+				_visualElementRenderer = null;
+
 				int count = ChildCount;
 				for (var i = 0; i < count; i++)
 				{
@@ -215,7 +208,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		public override bool OnTouchEvent(MotionEvent e)
 		{
-			if (_gestureManager.OnTouchEvent(e) || base.OnTouchEvent(e))
+			if (_visualElementRenderer.OnTouchEvent(e) || base.OnTouchEvent(e))
 			{
 				return true;
 			}

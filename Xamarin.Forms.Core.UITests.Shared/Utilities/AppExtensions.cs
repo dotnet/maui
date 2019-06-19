@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Core.UITests
 		{
 			const string goToTestButtonQuery = "* marked:'GoToTestButton'";
 
-			app.WaitForElement(q => q.Raw(goToTestButtonQuery), "Timed out waiting for Go To Test button to disappear", TimeSpan.FromSeconds(10));
+			app.WaitForElement(q => q.Raw(goToTestButtonQuery), "Timed out waiting for Go To Test button to appear", TimeSpan.FromMinutes(2));
 
 			var text = Regex.Match(page, "'(?<text>[^']*)'").Groups["text"].Value;
 
