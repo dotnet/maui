@@ -85,8 +85,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
 		{
-			Measure(widthConstraint, heightConstraint);
-			return new SizeRequest(new Size(MeasuredWidth, MeasuredHeight), MinimumSize());
+			return _buttonLayoutManager.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
 		void IVisualElementRenderer.SetElement(VisualElement element)
@@ -189,11 +188,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				return false;
 
 			return base.OnTouchEvent(e);
-		}
-
-		Size MinimumSize()
-		{
-			return new Size();
 		}
 
 		protected virtual void OnElementChanged(ElementChangedEventArgs<Button> e)
