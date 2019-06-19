@@ -17,14 +17,14 @@ namespace Xamarin.Forms.Platform.Android
 
 		WebViewClient _webViewClient;
 		FormsWebChromeClient _webChromeClient;
-
+		bool _isDisposed = false;
 		protected internal IWebViewController ElementController => Element;
 		protected internal bool IgnoreSourceChanges { get; set; }
 		protected internal string UrlCanceled { get; set; }
 
 		public WebViewRenderer(Context context) : base(context)
 		{
-			AutoPackage = false;
+			AutoPackage = false;			
 		}
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use WebViewRenderer(Context) instead.")]
@@ -62,6 +62,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void Dispose(bool disposing)
 		{
+			if (_isDisposed)
+				return;
+
+			_isDisposed = true;
 			if (disposing)
 			{
 				if (Element != null)
@@ -118,6 +122,12 @@ namespace Xamarin.Forms.Platform.Android
 				_webChromeClient = GetFormsWebChromeClient();
 				_webChromeClient.SetContext(Context);
 				webView.SetWebChromeClient(_webChromeClient);
+
+				if(Context.IsDesignerContext())
+				{
+					SetNativeControl(webView);
+					return;
+				}
 
 				webView.Settings.JavaScriptEnabled = true;
 				webView.Settings.DomStorageEnabled = true;
