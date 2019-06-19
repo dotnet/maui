@@ -166,9 +166,9 @@ namespace Xamarin.Forms.Controls
 				{
 					propertyLayout.Children.Add(CreateThicknessPicker(property, element));
 				}
-				else if (property.PropertyType == typeof(TextAlignment))
+				else if (property.PropertyType.IsEnum)
 				{
-					propertyLayout.Children.Add(CreateEnumPicker(property, element, typeof(TextAlignment)));
+					propertyLayout.Children.Add(CreateEnumPicker(property, element));
 				}
 				else
 				{
@@ -326,7 +326,7 @@ namespace Xamarin.Forms.Controls
 			return actions;
 		}
 
-		static Grid CreateEnumPicker(PropertyInfo property, BindableObject element, Type elementType)
+		static Grid CreateEnumPicker(PropertyInfo property, BindableObject element)
 		{
 			var grid = new Grid
 			{
@@ -340,10 +340,11 @@ namespace Xamarin.Forms.Controls
 						},
 			};
 			grid.AddChild(new Label { Text = property.Name, FontAttributes = FontAttributes.Bold }, 0, 0);
-			var picker = new Picker { Title = property.Name };
+			var elementType = property.PropertyType;
+			var picker = new Picker();
 			foreach (var item in Enum.GetNames(elementType))
 				picker.Items.Add(item);
-			
+
 			picker.SelectedItem = property.GetValue(element).ToString();
 			grid.AddChild(picker, 1, 0);
 			picker.SelectedIndexChanged += (_, e) =>
@@ -356,7 +357,7 @@ namespace Xamarin.Forms.Controls
 				if (e.PropertyName == property.Name)
 				{
 					var newVal = property.GetValue(element);
-					if (newVal.ToString() != picker.SelectedItem.ToString())
+					if (newVal.ToString() != picker.SelectedItem?.ToString())
 						picker.SelectedItem = newVal;
 				}
 			};

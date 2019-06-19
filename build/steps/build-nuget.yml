@@ -38,16 +38,6 @@ steps:
       configuration: $(buildConfiguration)
 
 
-  - task: NuGetCommand@2
-    displayName: 'NuGet push'
-    inputs:
-      command: push
-      packagesToPush: '$(Build.ArtifactStagingDirectory)/nuget/debug/*.nupkg'
-      publishVstsFeed: '$(VstsFeed)'
-      allowPackageConflicts: true
-    continueOnError: true
-
-
   - powershell: |
        $buildConfiguration = "Release"
        $formsNugetVersion = "" + $env:nugetPackageVersion
