@@ -161,10 +161,13 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		protected override void Dispose(bool disposing)
 		{
-			if (disposing && !_disposed)
-			{
-				_disposed = true;
+			if (_disposed)
+				return;
 
+			_disposed = true;
+
+			if (disposing)
+			{
 				if (_titleViewRenderer != null)
 				{
 					Android.Platform.ClearRenderer(_titleViewRenderer.View);
@@ -196,7 +199,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					_toolbar = null;
 				}
 
-				if (_drawerLayout != null && _drawerListener != null)
+				if (_drawerLayout.IsAlive() && _drawerListener.IsAlive())
 				{
 					_drawerLayout.RemoveDrawerListener(_drawerListener);
 				}
