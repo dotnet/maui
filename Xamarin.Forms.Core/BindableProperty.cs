@@ -60,21 +60,21 @@ namespace Xamarin.Forms
 								 CoerceValueDelegate coerceValue = null, BindablePropertyBindingChanging bindingChanging = null, bool isReadOnly = false, CreateDefaultValueDelegate defaultValueCreator = null)
 		{
 			if (propertyName == null)
-				throw new ArgumentNullException("propertyName");
+				throw new ArgumentNullException(nameof(propertyName));
 			if (ReferenceEquals(returnType, null))
-				throw new ArgumentNullException("returnType");
+				throw new ArgumentNullException(nameof(returnType));
 			if (ReferenceEquals(declaringType, null))
-				throw new ArgumentNullException("declaringType");
+				throw new ArgumentNullException(nameof(declaringType));
 
 			// don't use Enum.IsDefined as its redonkulously expensive for what it does
 			if (defaultBindingMode != BindingMode.Default && defaultBindingMode != BindingMode.OneWay && defaultBindingMode != BindingMode.OneWayToSource && defaultBindingMode != BindingMode.TwoWay && defaultBindingMode != BindingMode.OneTime)
-				throw new ArgumentException($"Not a valid type of BindingMode. Property: {returnType} {declaringType.Name}.{propertyName}. Default binding mode: {defaultBindingMode}", "defaultBindingMode");
+				throw new ArgumentException($"Not a valid type of BindingMode. Property: {returnType} {declaringType.Name}.{propertyName}. Default binding mode: {defaultBindingMode}", nameof(defaultBindingMode));
 
 			if (defaultValue == null && Nullable.GetUnderlyingType(returnType) == null && returnType.GetTypeInfo().IsValueType)
 				defaultValue = Activator.CreateInstance(returnType);
 
 			if (defaultValue != null && !returnType.IsInstanceOfType(defaultValue))
-				throw new ArgumentException($"Default value did not match return type. Property: {returnType} {declaringType.Name}.{propertyName} Default value type: {defaultValue.GetType().Name}, ", "defaultValue");
+				throw new ArgumentException($"Default value did not match return type. Property: {returnType} {declaringType.Name}.{propertyName} Default value type: {defaultValue.GetType().Name}, ", nameof(defaultValue));
 
 			if (defaultBindingMode == BindingMode.Default)
 				defaultBindingMode = BindingMode.OneWay;

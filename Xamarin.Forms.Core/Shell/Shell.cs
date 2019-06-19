@@ -490,7 +490,7 @@ namespace Xamarin.Forms
 			if (baseShellItem != null)
 				baseShellItem.ApplyQueryAttributes(filteredQuery);
 			else if (isLastItem)
-				ShellContent.ApplyQueryAttributes(element, query);
+				element.SetValue(ShellContent.QueryAttributesProperty, query);
 		}
 
 		ShellNavigationState GetNavigationState(ShellItem shellItem, ShellSection shellSection, ShellContent shellContent, IReadOnlyList<Page> sectionStack)

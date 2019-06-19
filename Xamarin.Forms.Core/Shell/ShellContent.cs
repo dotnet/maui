@@ -28,6 +28,9 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty ContentTemplateProperty =
 			BindableProperty.Create(nameof(ContentTemplate), typeof(DataTemplate), typeof(ShellContent), null, BindingMode.OneTime);
 
+		internal static readonly BindableProperty QueryAttributesProperty =
+			BindableProperty.CreateAttached("QueryAttributes", typeof(IDictionary<string, string>), typeof(ShellContent), defaultValue: null, propertyChanged: OnQueryAttributesPropertyChanged);
+
 		public MenuItemCollection MenuItems => (MenuItemCollection)GetValue(MenuItemsProperty);
 
 		public object Content {
@@ -65,10 +68,8 @@ namespace Xamarin.Forms
 			if (result == null)
 				throw new InvalidOperationException($"No Content found for {nameof(ShellContent)}, Title:{Title}, Route {Route}");
 
-			if (_delayedQueryParams != null && result  != null) {
-				ApplyQueryAttributes(result, _delayedQueryParams);
-				_delayedQueryParams = null;
-			}
+			if (GetValue(QueryAttributesProperty) is IDictionary<string, string> delayedQueryParams)
+				result.SetValue(QueryAttributesProperty, delayedQueryParams);
 
 			return result;
 		}
@@ -81,17 +82,14 @@ namespace Xamarin.Forms
 		IList<Element> _logicalChildren = new List<Element>();
 		ReadOnlyCollection<Element> _logicalChildrenReadOnly;
 
-		public ShellContent()
-		{
-			((INotifyCollectionChanged)MenuItems).CollectionChanged += MenuItemsCollectionChanged;
-		}
+		public ShellContent() => ((INotifyCollectionChanged)MenuItems).CollectionChanged += MenuItemsCollectionChanged;
 
 
 		internal override ReadOnlyCollection<Element> LogicalChildrenInternal => _logicalChildrenReadOnly ?? (_logicalChildrenReadOnly = new ReadOnlyCollection<Element>(_logicalChildren));
 
 		Page ContentCache
 		{
-			get { return _contentCache; }
+			get => _contentCache;
 			set
 			{
 				_contentCache = value;
@@ -159,20 +157,22 @@ namespace Xamarin.Forms
 					OnChildRemoved(el);
 		}
 
-		IDictionary<string, string> _delayedQueryParams;
 		internal override void ApplyQueryAttributes(IDictionary<string, string> query)
 		{
 			base.ApplyQueryAttributes(query);
-			ApplyQueryAttributes(this, query);
+			SetValue(QueryAttributesProperty, query);
 
-			if (Content == null) {
-				_delayedQueryParams = query;
-				return;
-			}
-			ApplyQueryAttributes(Content as Page, query);
+			if (Content is BindableObject bindable)
+				bindable.SetValue(QueryAttributesProperty, query);
 		}
 
-		internal static void ApplyQueryAttributes(object content, IDictionary<string, string> query)
+		static void OnQueryAttributesPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (newValue is IDictionary<string, string> query)
+				ApplyQueryAttributes(bindable, query);
+		}
+
+		static void ApplyQueryAttributes(object content, IDictionary<string, string> query)
 		{
 			if (content is IQueryAttributable attributable)
 				attributable.ApplyQueryAttributes(query);
