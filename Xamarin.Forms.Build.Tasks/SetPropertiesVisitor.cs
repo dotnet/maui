@@ -665,7 +665,13 @@ namespace Xamarin.Forms.Build.Tasks
 			else
 				il.Emit(Ldarg_0);
 			var locs = new Dictionary<TypeReference, VariableDefinition>();
-			il.Append(DigProperties(properties.Take(properties.Count - 1), locs, null, node as IXmlLineInfo, module));
+			Instruction pop = null;
+			il.Append(DigProperties(properties.Take(properties.Count - 1), locs, () => {
+				if (pop == null)
+					pop = Instruction.Create(Pop);
+
+				return pop;
+			}, node as IXmlLineInfo, module));
 
 			foreach (var loc in locs.Values)
 				setter.Body.Variables.Add(loc);
@@ -681,6 +687,12 @@ namespace Xamarin.Forms.Build.Tasks
 
 				il.Emit(Stloc, loc);
 				il.Emit(Ldloca, loc);
+			} else {
+				if (pop == null)
+					pop = Instruction.Create(Pop);
+
+				il.Emit(Dup);
+				il.Emit(Brfalse, pop);
 			}
 
 			if (lastIndexArg != null) {
@@ -702,6 +714,11 @@ namespace Xamarin.Forms.Build.Tasks
 				il.Emit(Call, setterRef);
 
 			il.Emit(Ret);
+
+			if (pop != null) {
+				il.Append(pop);
+				il.Emit(Ret);
+			}
 
 			context.Body.Method.DeclaringType.Methods.Add(setter);
 

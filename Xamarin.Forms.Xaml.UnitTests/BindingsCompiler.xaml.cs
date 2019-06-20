@@ -97,6 +97,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.AreEqual("Text2", layout.entry0.Text);
 				((IElementController)layout.entry0).SetValueFromRenderer(Entry.TextProperty, "Text3");
 				Assert.AreEqual("Text3", layout.entry0.Text);
+				Assert.AreEqual("Text3", vm.Text);
+				((IElementController)layout.entry1).SetValueFromRenderer(Entry.TextProperty, "Text4");
+				Assert.AreEqual("Text4", layout.entry1.Text);
+				Assert.AreEqual("Text4", vm.Model.Text);
+				vm.Model = null;
+				layout.entry1.BindingContext = null;
 
 				//testing invalid bindingcontext type
 				layout.BindingContext = new object();
