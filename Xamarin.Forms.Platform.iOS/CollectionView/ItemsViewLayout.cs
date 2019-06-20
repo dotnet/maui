@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (_itemsLayout != null)
 				{
-					_itemsLayout.PropertyChanged += LayoutOnPropertyChanged;
+					_itemsLayout.PropertyChanged -= LayoutOnPropertyChanged;
 				}
 			}
 
