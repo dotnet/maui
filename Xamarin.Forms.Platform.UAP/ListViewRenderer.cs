@@ -778,9 +778,13 @@ namespace Xamarin.Forms.Platform.UWP
 
 		protected override AutomationPeer OnCreateAutomationPeer()
 		{
-			return List == null
-				? new FrameworkElementAutomationPeer(this)
-				: new ListViewAutomationPeer(List);
+			if (List == null)
+				return new FrameworkElementAutomationPeer(this);
+
+			var automationPeer = new ListViewAutomationPeer(List);
+			// skip this renderer from automationPeer tree to avoid infinity loop
+			automationPeer.SetParent(new FrameworkElementAutomationPeer(Parent as FrameworkElement));
+			return automationPeer;
 		}
 
 	}
