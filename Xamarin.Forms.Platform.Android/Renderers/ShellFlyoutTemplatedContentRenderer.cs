@@ -92,8 +92,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			_bgImage = new ImageView(context)
 			{
-				LayoutParameters = new LP(coordinator.LayoutParameters),
-				Elevation = float.NegativeInfinity
+				LayoutParameters = new LP(coordinator.LayoutParameters)
 			};
 
 			UpdateFlyoutHeaderBehavior();
@@ -167,7 +166,12 @@ namespace Xamarin.Forms.Platform.Android
 				}
 
 				if (_rootView.IndexOfChild(_bgImage) == -1)
-					_rootView.AddView(_bgImage);
+				{
+					if(_bgImage.SetElevation(float.MinValue))
+						_rootView.AddView(_bgImage);
+					else
+						_rootView.AddView(_bgImage, 0);
+				}
 			}
 		}
 
