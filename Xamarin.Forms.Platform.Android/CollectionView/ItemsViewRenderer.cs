@@ -209,6 +209,10 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				UpdateEmptyView();
 			}
+			else if (changedProperty.Is(ItemsView.ItemSizingStrategyProperty))
+			{
+				UpdateAdapter();
+			}
 		}
 
 		protected virtual void UpdateItemsSource()
