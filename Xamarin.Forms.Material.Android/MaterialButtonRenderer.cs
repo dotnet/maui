@@ -328,8 +328,7 @@ namespace Xamarin.Forms.Material.Android
 
 		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
 		{
-			Measure(widthConstraint, heightConstraint);
-			return new SizeRequest(new Size(MeasuredWidth, MeasuredHeight), new Size());
+			return _buttonLayoutManager.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
 		void IVisualElementRenderer.SetElement(VisualElement element) =>

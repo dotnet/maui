@@ -46,6 +46,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		protected override void SetContentDescription()
 			=> AutomationPropertiesProvider.SetBasicContentDescription(this, Element, ref _defaultContentDescription);
 
+		public override SizeRequest GetDesiredSize(int widthConstraint, int heightConstraint)
+		{
+			return _buttonLayoutManager.GetDesiredSize(widthConstraint, heightConstraint);
+		}
+
 		void AView.IOnAttachStateChangeListener.OnViewAttachedToWindow(AView attachedView) =>
 			_buttonLayoutManager?.OnViewAttachedToWindow(attachedView);
 

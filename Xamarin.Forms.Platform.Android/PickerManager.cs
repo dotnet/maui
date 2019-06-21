@@ -75,6 +75,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				if (v is AView picker)
 				{
+					picker.HideKeyboard();
 					if (picker?.Parent is IPickerRenderer renderer1)
 						renderer1.OnClick();
 					else if (picker?.Parent?.Parent?.Parent is IPickerRenderer renderer2)

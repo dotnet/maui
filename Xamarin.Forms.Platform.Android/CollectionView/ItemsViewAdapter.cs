@@ -2,9 +2,9 @@ using System;
 using Android.Content;
 using Android.Support.V7.Widget;
 using Android.Widget;
-using AView = Android.Views.View;
 using Object = Java.Lang.Object;
 using ViewGroup = Android.Views.ViewGroup;
+using ASize = Android.Util.Size;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -17,6 +17,7 @@ namespace Xamarin.Forms.Platform.Android
 		readonly Func<View, Context, ItemContentView> _createItemContentView;
 		internal readonly IItemsViewSource ItemsSource;
 		bool _disposed;
+		ASize _size;
 
 		internal ItemsViewAdapter(ItemsView itemsView, Func<View, Context, ItemContentView> createItemContentView = null)
 		{
@@ -50,9 +51,22 @@ namespace Xamarin.Forms.Platform.Android
 					textViewHolder.TextView.Text = ItemsSource[position].ToString();
 					break;
 				case TemplatedItemViewHolder templatedItemViewHolder:
-					templatedItemViewHolder.Bind(ItemsSource[position], ItemsView);
+					if (ItemsView.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
+					{
+						templatedItemViewHolder.Bind(ItemsSource[position], ItemsView, SetStaticSize, _size);
+					}
+					else
+					{
+						templatedItemViewHolder.Bind(ItemsSource[position], ItemsView);
+					}
+
 					break;
 			}
+		}
+
+		void SetStaticSize(ASize size)
+		{
+			_size = size;
 		}
 
 		public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
@@ -65,7 +79,7 @@ namespace Xamarin.Forms.Platform.Android
 				return new TextViewHolder(view);
 			}
 
-			var itemContentView = new ItemContentView(parent.Context);
+			var itemContentView = new ItemContentView(context);
 			return new TemplatedItemViewHolder(itemContentView, ItemsView.ItemTemplate);
 		}
 

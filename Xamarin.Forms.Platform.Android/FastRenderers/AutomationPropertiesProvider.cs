@@ -118,14 +118,20 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				return false;
 			}
 
+			if (Element is Picker)
+			{
+				return false;
+			}
+
 			var textView = Control as TextView;
 			if (textView == null)
 			{
 				return false;
 			}
 
-			// Let the specified Title/Placeholder take precedence, but don't set the ContentDescription (won't work anyway)
-			if (((Element as Picker)?.Title ?? (Element as Entry)?.Placeholder) != null)
+			// TODO: add EntryAccessibilityDelegate to Entry
+			// Let the specified Placeholder take precedence, but don't set the ContentDescription (won't work anyway)
+			if ((Element as Entry)?.Placeholder != null)
 			{
 				return true;
 			}

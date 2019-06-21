@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Platform.Android
 		readonly EffectControlProvider _effectControlProvider;
 
 		protected ItemsViewAdapter ItemsViewAdapter;
-		
+
 		int? _defaultLabelFor;
 		bool _disposed;
 
@@ -139,7 +139,10 @@ namespace Xamarin.Forms.Platform.Android
 				if (Element != null)
 				{
 					TearDownOldElement(Element as ItemsView);
+				}
 
+				if (Element != null)
+				{
 					if (Platform.GetRenderer(Element) == this)
 					{
 						Element.ClearValue(Platform.RendererProperty);
@@ -206,6 +209,10 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				UpdateEmptyView();
 			}
+			else if (changedProperty.Is(ItemsView.ItemSizingStrategyProperty))
+			{
+				UpdateAdapter();
+			}
 		}
 
 		protected virtual void UpdateItemsSource()
@@ -215,9 +222,6 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			}
 
-			// Stop watching the old adapter to see if it's empty (if we _are_ watching)
-			Unwatch(ItemsViewAdapter ?? GetAdapter());
-
 			UpdateAdapter();
 
 			UpdateEmptyView();
@@ -225,8 +229,16 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual void UpdateAdapter()
 		{
+			var oldItemViewAdapter = ItemsViewAdapter;
+
+			// Stop watching the old adapter to see if it's empty (if we are watching)
+			Unwatch(oldItemViewAdapter);
+
 			ItemsViewAdapter = new ItemsViewAdapter(ItemsView);
+
 			SwapAdapter(ItemsViewAdapter, true);
+
+			oldItemViewAdapter?.Dispose();
 		}
 
 		void Unwatch(Adapter adapter)
@@ -281,7 +293,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			_layout = ItemsView.ItemsLayout;
 			SetLayoutManager(SelectLayoutManager(_layout));
-			
+
 			UpdateSnapBehavior();
 			UpdateBackgroundColor();
 			UpdateFlowDirection();
@@ -296,7 +308,7 @@ namespace Xamarin.Forms.Platform.Android
 			// Listen for ScrollTo requests
 			ItemsView.ScrollToRequested += ScrollToRequested;
 		}
-		
+
 		protected virtual void TearDownOldElement(ItemsView oldElement)
 		{
 			if (oldElement == null)
@@ -316,12 +328,13 @@ namespace Xamarin.Forms.Platform.Android
 			// Stop listening for ScrollTo requests
 			oldElement.ScrollToRequested -= ScrollToRequested;
 
-			var adapter = GetAdapter();
-
-			if (adapter != null)
+			if (ItemsViewAdapter != null)
 			{
+				Unwatch(ItemsViewAdapter);
+				
 				SetAdapter(null);
-				adapter.Dispose();
+
+				ItemsViewAdapter.Dispose();
 			}
 
 			if (_snapManager != null)
@@ -349,7 +362,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				UpdateSnapBehavior();
 			}
-			else if (propertyChanged.IsOneOf(ListItemsLayout.ItemSpacingProperty, 
+			else if (propertyChanged.IsOneOf(ListItemsLayout.ItemSpacingProperty,
 				GridItemsLayout.HorizontalItemSpacingProperty, GridItemsLayout.VerticalItemSpacingProperty))
 			{
 				UpdateItemSpacing();
@@ -408,6 +421,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				_emptyViewAdapter.EmptyView = emptyView;
 				_emptyViewAdapter.EmptyViewTemplate = emptyViewTemplate;
+
 				Watch(ItemsViewAdapter);
 			}
 			else
@@ -479,7 +493,7 @@ namespace Xamarin.Forms.Platform.Android
 		protected virtual void ScrollTo(ScrollToRequestEventArgs args)
 		{
 			var position = DeterminePosition(args);
-			
+
 			if (args.IsAnimated)
 			{
 				ScrollHelper.AnimateScrollToPosition(position, args.ScrollToPosition);

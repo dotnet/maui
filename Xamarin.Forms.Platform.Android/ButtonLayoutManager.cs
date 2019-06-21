@@ -80,6 +80,13 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
+		internal SizeRequest GetDesiredSize(int widthConstraint, int heightConstraint)
+		{
+			View.Measure(widthConstraint, heightConstraint);
+			View.ForceLayout();
+			return new SizeRequest(new Size(View.MeasuredWidth, View.MeasuredHeight), Size.Zero);
+		}
+
 		public void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
 			if (_disposed || _renderer == null || _element == null)
