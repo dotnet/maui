@@ -33,6 +33,8 @@ namespace Xamarin.Forms.Controls.Issues
 		string _appearText = "Clicking this should cause the images to all appear";
 		string _theListView = "theListViewAutomationId";
 		string _fileName = "coffee.png";
+		string _uriImage = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Xamarin.Forms.Controls/coffee.png";
+		bool _isUri = false;
 
 		protected override void Init()
 		{
@@ -70,20 +72,31 @@ namespace Xamarin.Forms.Controls.Issues
 					}
 					else
 					{
-						_image.Source = _fileName;
-						_button.ImageSource = _fileName;
-						_imageButton.Source = _fileName;
-						_listView.ItemsSource = new string[] { _fileName };
+						_image.Source = _isUri ? _uriImage : _fileName;
+						_button.ImageSource = _isUri ? _uriImage : _fileName;
+						_imageButton.Source = _isUri ? _uriImage : _fileName;
+						_listView.ItemsSource = new string[] { _isUri ? _uriImage : _fileName };
 						Device.BeginInvokeOnMainThread(() => button.Text = _disappearText);
 					}
 				})
 			};
+
+			var switchToUri = new Switch
+			{
+				AutomationId = "SwitchUri",
+				IsToggled = false
+			};
+			switchToUri.Toggled += (_, e) => _isUri =	e.Value;
+			var switchWithCaption = new Grid() { HeightRequest = 60 };
+			switchWithCaption.AddChild(new Label { Text = "Image From Url" }, 0, 0);
+			switchWithCaption.AddChild(switchToUri, 1, 0);
 
 			var layout = new StackLayout()
 			{
 				Children =
 				{
 					button,
+					switchWithCaption,
 					_image,
 					_button,
 					_imageButton,
@@ -139,7 +152,49 @@ namespace Xamarin.Forms.Controls.Issues
 					}
 				}
 			}
-#else			
+#endif
+			RunningApp.Tap("SwitchUri");
+			RunningApp.Tap("ClickMe");
+			RunningApp.WaitForElement(_disappearText);
+#if !__WINDOWS__
+			imageCell = RunningApp.Query(app => app.Marked(_theListView).Descendant()).Where(x => x.Class.Contains("Image")).FirstOrDefault();
+#endif
+
+#if __IOS__
+			Assert.AreEqual(4, elementsBefore.Where(x => x.Class.Contains("Image")).Count());
+#elif __ANDROID__
+			Assert.AreEqual(3, elementsBefore.Length);
+#else
+			Assert.AreEqual(4, elementsBefore.Count());
+#endif
+
+
+#if !__WINDOWS__
+			Assert.IsNotNull(imageCell);
+#endif
+			RunningApp.Tap("ClickMe");
+			RunningApp.WaitForElement(_appearText);
+			elementsAfter = RunningApp.WaitForElement(_fileName);
+#if !__WINDOWS__
+			imageCellAfter = RunningApp.Query(app => app.Marked(_theListView).Descendant()).Where(x => x.Class.Contains("Image")).FirstOrDefault();
+			Assert.IsNull(imageCellAfter);
+#endif
+
+#if __IOS__
+			Assert.AreEqual(0, elementsAfter.Where(x => x.Class.Contains("Image")).Count());
+#elif __ANDROID__
+			foreach (var newElement in elementsAfter)
+			{
+				foreach (var oldElement in elementsBefore)
+				{
+					if (newElement.Class == oldElement.Class)
+					{
+						Assert.IsTrue(newElement.Rect.Height < oldElement.Rect.Height);
+						continue;
+					}
+				}
+			}
+#else
 			//can't validate if images have vanished until this is resolved
 			Assert.Inconclusive(@"https://github.com/xamarin/Xamarin.Forms/issues/4731");
 #endif

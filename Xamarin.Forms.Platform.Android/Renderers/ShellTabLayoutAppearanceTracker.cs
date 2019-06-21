@@ -3,7 +3,7 @@ using Android.Support.Design.Widget;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	internal class ShellTabLayoutAppearanceTracker : IShellTabLayoutAppearanceTracker
+	public class ShellTabLayoutAppearanceTracker : IShellTabLayoutAppearanceTracker
 	{
 		bool _disposed;
 		IShellContext _shellContext;

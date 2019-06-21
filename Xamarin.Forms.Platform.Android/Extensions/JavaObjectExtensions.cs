@@ -8,5 +8,12 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			return obj.Handle == IntPtr.Zero;
 		}
+		public static bool IsAlive(this Java.Lang.Object obj)
+		{
+			if (obj == null)
+				return false;
+
+			return !obj.IsDisposed();
+		}
 	}
 }
