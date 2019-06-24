@@ -15,22 +15,22 @@ namespace Xamarin.Forms.Platform.WPF
 	{
 		const string PropertyStoreFile = "PropertyStore.forms";
 
-		public async Task<IDictionary<string, object>> DeserializePropertiesAsync()
+		public Task<IDictionary<string, object>> DeserializePropertiesAsync()
 		{
 			IsolatedStorageFile isoStore = IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Assembly, null, null);
 
 			if (!isoStore.FileExists(PropertyStoreFile))
-				return new Dictionary<string, object>(4);
+				return Task.FromResult<IDictionary<string, object>>(new Dictionary<string, object>(4));
 			
 			using (IsolatedStorageFileStream stream = new IsolatedStorageFileStream(PropertyStoreFile, FileMode.Open, isoStore))
 			{
 				if (stream.Length == 0)
-					return new Dictionary<string, object>(4);
+					return Task.FromResult<IDictionary<string, object>>(new Dictionary<string, object>(4));
 
 				try
 				{
 					var serializer = new DataContractSerializer(typeof(IDictionary<string, object>));
-					return (IDictionary<string, object>)serializer.ReadObject(stream);
+					return Task.FromResult((IDictionary<string, object>)serializer.ReadObject(stream));
 				}
 				catch (Exception e)
 				{
@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Platform.WPF
 					Log.Warning("Xamarin.Forms PropertyStore", $"Exception while reading Application properties: {e}");
 				}
 
-				return null;
+				return Task.FromResult<IDictionary<string, object>>(null);
 			}
 		}
 

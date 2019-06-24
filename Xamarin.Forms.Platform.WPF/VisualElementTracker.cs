@@ -30,7 +30,9 @@ namespace Xamarin.Forms.Platform.WPF
 
 		bool _invalidateArrangeNeeded;
 		bool _isPanning;
+#pragma warning disable 0414 // The private field 'field' is assigned but its value is never used
 		bool _isPinching;
+#pragma warning restore 0414
 
 		bool _touchFrameReportedEventSet;
 		int _touchPoints = 1;

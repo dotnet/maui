@@ -11,7 +11,9 @@ namespace Xamarin.Forms.Platform.WPF
 	internal class WPFDeviceInfo : DeviceInfo
 	{
 		internal const string BWPorientationChangedName = "Xamarin.WPF.OrientationChanged";
+#pragma warning disable 0649 // Field 'field' is never assigned to, and will always have its default value 'value'
 		readonly double _scalingFactor;
+#pragma warning restore 0649
 
 		public WPFDeviceInfo()
 		{

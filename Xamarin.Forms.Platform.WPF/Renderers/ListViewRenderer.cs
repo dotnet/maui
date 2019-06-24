@@ -63,7 +63,7 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateVerticalScrollBarVisibility();
 
 				if (Element.SelectedItem != null)
-					OnElementItemSelected(null, new SelectedItemChangedEventArgs(Element.SelectedItem));
+					OnElementItemSelected(null, new SelectedItemChangedEventArgs(Element.SelectedItem, -1));
 			}
 
 			base.OnElementChanged(e);

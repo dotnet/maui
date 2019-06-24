@@ -145,7 +145,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 	public sealed class UriImageSourceHandler : IImageSourceHandler
 	{
-		public async Task<System.Windows.Media.ImageSource> LoadImageAsync(ImageSource imagesoure, CancellationToken cancelationToken = new CancellationToken())
+		public Task<System.Windows.Media.ImageSource> LoadImageAsync(ImageSource imagesoure, CancellationToken cancelationToken = new CancellationToken())
 		{
 			BitmapImage bitmapimage = null;
 			var imageLoader = imagesoure as UriImageSource;
@@ -156,7 +156,7 @@ namespace Xamarin.Forms.Platform.WPF
 				bitmapimage.UriSource = imageLoader.Uri;
 				bitmapimage.EndInit();
 			}
-			return bitmapimage;
+			return Task.FromResult<System.Windows.Media.ImageSource>(bitmapimage);
 		}
 	}
 }
