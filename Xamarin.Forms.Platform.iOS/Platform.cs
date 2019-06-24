@@ -37,29 +37,7 @@ namespace Xamarin.Forms.Platform.iOS
 			_renderer = new PlatformRenderer(this);
 			_modals = new List<Page>();
 
-			var busyCount = 0;
-			MessagingCenter.Subscribe(this, Page.BusySetSignalName, (Page sender, bool enabled) =>
-			{
-				if (!PageIsChildOfPlatform(sender))
-					return;
-				busyCount = Math.Max(0, enabled ? busyCount + 1 : busyCount - 1);
-				UIApplication.SharedApplication.NetworkActivityIndicatorVisible = busyCount > 0;
-			});
-
-			MessagingCenter.Subscribe(this, Page.AlertSignalName, (Page sender, AlertArguments arguments) =>
-			{
-				if (!PageIsChildOfPlatform(sender))
-					return;
-				PresentAlert(arguments);
-			});
-
-			MessagingCenter.Subscribe(this, Page.ActionSheetSignalName, (Page sender, ActionSheetArguments arguments) =>
-			{
-				if (!PageIsChildOfPlatform(sender))
-					return;
-
-				PresentActionSheet(arguments);
-			});
+			SubscribeToAlertsAndActionSheets();
 		}
 
 		internal UIViewController ViewController
@@ -71,20 +49,22 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void IDisposable.Dispose()
 		{
+			Dispose(true);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
 			if (_disposed)
+			{
 				return;
+			}
+
 			_disposed = true;
 
-			Page.DescendantRemoved -= HandleChildRemoved;
-			MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(this, Page.ActionSheetSignalName);
-			MessagingCenter.Unsubscribe<Page, AlertArguments>(this, Page.AlertSignalName);
-			MessagingCenter.Unsubscribe<Page, bool>(this, Page.BusySetSignalName);
-
-			Page.DisposeModalAndChildRenderers();
-			foreach (var modal in _modals)
-				modal.DisposeModalAndChildRenderers();
-
-			_renderer.Dispose();
+			if (disposing)
+			{
+				_renderer.Dispose();
+			}
 		}
 
 		void INavigation.InsertPageBefore(Page page, Page before)
@@ -536,5 +516,49 @@ namespace Xamarin.Forms.Platform.iOS
 		}
 
 		#endregion
+
+		internal void SubscribeToAlertsAndActionSheets()
+		{
+			var busyCount = 0;
+			MessagingCenter.Subscribe(this, Page.BusySetSignalName, (Page sender, bool enabled) =>
+			{
+				if (!PageIsChildOfPlatform(sender))
+					return;
+				busyCount = Math.Max(0, enabled ? busyCount + 1 : busyCount - 1);
+				UIApplication.SharedApplication.NetworkActivityIndicatorVisible = busyCount > 0;
+			});
+
+			MessagingCenter.Subscribe(this, Page.AlertSignalName, (Page sender, AlertArguments arguments) =>
+			{
+				if (!PageIsChildOfPlatform(sender))
+					return;
+				PresentAlert(arguments);
+			});
+
+			MessagingCenter.Subscribe(this, Page.ActionSheetSignalName, (Page sender, ActionSheetArguments arguments) =>
+			{
+				if (!PageIsChildOfPlatform(sender))
+					return;
+
+				PresentActionSheet(arguments);
+			});
+		}
+
+		internal void UnsubscribeFromAlertsAndActionsSheets()
+		{
+			MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(this, Page.ActionSheetSignalName);
+			MessagingCenter.Unsubscribe<Page, AlertArguments>(this, Page.AlertSignalName);
+			MessagingCenter.Unsubscribe<Page, bool>(this, Page.BusySetSignalName);
+		}
+
+		internal void CleanUpPages()
+		{
+			Page.DescendantRemoved -= HandleChildRemoved;
+
+			Page.DisposeModalAndChildRenderers();
+
+			foreach (var modal in _modals)
+				modal.DisposeModalAndChildRenderers();
+		}
 	}
 }

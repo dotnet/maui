@@ -144,6 +144,7 @@
     <Compile Include="Extensions\VisualElementExtensions.cs" />
     <Compile Include="Flags.cs" />
     <Compile Include="IOSDeviceInfo.cs" />
+    <Compile Include="ModalWrapper.cs" />
     <Compile Include="Renderers\FormsCheckBox.cs" />
     <Compile Include="Renderers\ImageElementManager.cs" />
     <Compile Include="IVisualNativeElementRenderer.cs" />
