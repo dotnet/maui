@@ -105,7 +105,7 @@ namespace Xamarin.Forms
 		void OnImplicitStyleChanged()
 		{
 			var first = true;
-			ImplicitStyle = null;
+			
 			foreach (BindableProperty implicitStyleProperty in _implicitStyles)
 			{
 				var implicitStyle = (Style)Target.GetValue(implicitStyleProperty);
@@ -119,6 +119,8 @@ namespace Xamarin.Forms
 				}
 				first = false;
 			}
+
+			ImplicitStyle = null;
 		}
 
 		void RegisterImplicitStyles()
