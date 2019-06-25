@@ -153,6 +153,9 @@ namespace Xamarin.Forms
 				if (IsImplicit(part))
 					throw new ArgumentException($"Route contains invalid characters in \"{part}\"");
 			}
+
+			if (CompareWithRegisteredRoutes(route))
+				throw new ArgumentException($"Duplicated Route: \"{route}\"");
 		}
 
 		class TypeRouteFactory : RouteFactory

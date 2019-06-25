@@ -129,6 +129,14 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.Catch(typeof(ArgumentException), () => Routing.RegisterRoute("app://tab2/IMPL_tab21", typeof(ShellItem)));
 		}
 
+		[Test]
+		public async Task FailWhenAddingDuplicatedRouting()
+		{
+			var route = "dogs";
+			Routing.RegisterRoute(route, typeof(ShellItem));
+
+			Assert.Catch(typeof(ArgumentException), () => Routing.RegisterRoute("dogs", typeof(ShellItem)));
+		}
 
 		[Test]
 		public async Task RelativeGoTo()
