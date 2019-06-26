@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 
@@ -144,6 +145,26 @@ namespace Xamarin.Forms.Core.UITests
 		}
 
 		public T GetProperty<T>(BindableProperty formProperty)
+		{
+			T returnValue = GetPropertyFromBindableProperty<T>(formProperty);
+			int loopCount = 0;
+			while(loopCount < 5)
+			{
+				Thread.Sleep(100);
+				T newValue = GetPropertyFromBindableProperty<T>(formProperty);
+
+				if(newValue.Equals(returnValue))
+					break;
+				else
+					returnValue = newValue;
+
+				loopCount++;
+			}
+
+			return returnValue;
+		}
+
+		T GetPropertyFromBindableProperty<T>(BindableProperty formProperty)
 		{
 			Tuple<string[], bool> property = formProperty.GetPlatformPropertyQuery();
 			string[] propertyPath = property.Item1;
