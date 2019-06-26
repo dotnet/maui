@@ -22,6 +22,16 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 		}
 
+		public static Color WithAlpha(this Color color, double alpha)
+		{
+			return new Color(color.R, color.G, color.B, (int)(255 * alpha));
+		}
+
+		public static Color WithPremultiplied(this Color color, double alpha)
+		{
+			return new Color((int)(color.R * alpha), (int)(color.G * alpha), (int)(color.B * alpha), color.A);
+		}
+
 		/// <summary>
 		/// Returns a string representing the provided ElmSharp.Color instance in a hexagonal notation
 		/// </summary>
