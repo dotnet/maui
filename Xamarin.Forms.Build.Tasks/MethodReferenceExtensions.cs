@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 			var reference = new MethodReference(self.Name, ImportUnresolvedType(self.ReturnType, module))
 			{
-				DeclaringType = module.ImportReference(declaringTypeRef),
+				DeclaringType = declaringTypeRef,
 				HasThis = self.HasThis,
 				ExplicitThis = self.ExplicitThis,
 				CallingConvention = self.CallingConvention

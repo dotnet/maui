@@ -169,7 +169,7 @@ namespace Xamarin.Forms.Build.Tasks
 						.Methods.FirstOrDefault(md => md.Name == "ConvertFromInvariantString" && md.Parameters.Count == 2)
 					: typeConverter.ResolveCached()
 						.AllMethods()
-						.FirstOrDefault(md => md.Name == "ConvertFromInvariantString" && md.Parameters.Count == 1);
+						.FirstOrDefault(md => md.methodDef.Name == "ConvertFromInvariantString" && md.methodDef.Parameters.Count == 1).methodDef;
 				var convertFromInvariantStringReference = module.ImportReference(convertFromInvariantStringDefinition);
 
 				yield return Instruction.Create(OpCodes.Newobj, typeConverterCtorRef);

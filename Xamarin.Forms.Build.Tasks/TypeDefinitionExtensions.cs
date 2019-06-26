@@ -46,13 +46,14 @@ namespace Xamarin.Forms.Build.Tasks
 			return ctor;
 		}
 
-		public static IEnumerable<MethodDefinition> AllMethods(this TypeDefinition self)
+		public static IEnumerable<(MethodDefinition methodDef, TypeReference declTypeRef)> AllMethods(this TypeDefinition self)
 		{
-			while (self != null)
-			{
+			TypeReference selfTypeRef = self;
+			while (self != null) {
 				foreach (var md in self.Methods)
-					yield return md;
-				self = self.BaseType == null ? null : self.BaseType.ResolveCached();
+					yield return (md, selfTypeRef);
+				selfTypeRef = self.BaseType;
+				self = self.BaseType?.ResolveCached();
 			}
 		}
 	}
