@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using ElmSharp;
+using ElmSharp.Accessible;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Tizen.Native;
 using EFocusDirection = ElmSharp.FocusDirection;
@@ -29,6 +30,9 @@ namespace Xamarin.Forms.Platform.Tizen
 		VisualElementRendererFlags _flags = VisualElementRendererFlags.None;
 
 		bool _movedCallbackEnabled = false;
+		string _defaultAccessibilityName;
+		string _defaultAccessibilityDescription;
+		bool? _defaultIsAccessibilityElement;
 
 		Lazy<CustomFocusManager> _customFocusManager;
 
@@ -67,6 +71,10 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(VisualElement.TabIndexProperty, UpdateTabIndex);
 			RegisterPropertyHandler(VisualElement.IsTabStopProperty, UpdateIsTabStop);
 
+			RegisterPropertyHandler(AutomationProperties.NameProperty, SetAccessibilityName);
+			RegisterPropertyHandler(AutomationProperties.HelpTextProperty, SetAccessibilityDescription);
+			RegisterPropertyHandler(AutomationProperties.IsInAccessibleTreeProperty, SetIsAccessibilityElement);
+			RegisterPropertyHandler(AutomationProperties.LabeledByProperty, SetLabeledBy);
 
 			_customFocusManager = new Lazy<CustomFocusManager>(() =>
 			{
@@ -435,6 +443,54 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				widget.Focused += OnFocused;
 				widget.Unfocused += OnUnfocused;
+			}
+		}
+
+		protected virtual void SetAccessibilityName(bool initialize)
+		{
+			if (initialize && (string)Element.GetValue(AutomationProperties.NameProperty) == (default(string)))
+				return;
+
+			var accessibleObject = NativeView as IAccessibleObject;
+			if (accessibleObject != null)
+			{
+				_defaultAccessibilityName = accessibleObject.SetAccessibilityName(Element, _defaultAccessibilityName);
+			}
+		}
+
+		protected virtual void SetAccessibilityDescription(bool initialize)
+		{
+			if (initialize && (string)Element.GetValue(AutomationProperties.HelpTextProperty) == (default(string)))
+				return;
+
+			var accessibleObject = NativeView as IAccessibleObject;
+			if (accessibleObject != null)
+			{
+				_defaultAccessibilityDescription = accessibleObject.SetAccessibilityDescription(Element, _defaultAccessibilityDescription);
+			}
+		}
+
+		protected virtual void SetIsAccessibilityElement(bool initialize)
+		{
+			if (initialize && (bool?)Element.GetValue(AutomationProperties.IsInAccessibleTreeProperty) == default(bool?))
+				return;
+
+			var accessibleObject = NativeView as IAccessibleObject;
+			if (accessibleObject != null)
+			{
+				_defaultIsAccessibilityElement = accessibleObject.SetIsAccessibilityElement(Element, _defaultIsAccessibilityElement);
+			}
+		}
+
+		protected virtual void SetLabeledBy(bool initialize)
+		{
+			if (initialize && (VisualElement)Element.GetValue(AutomationProperties.LabeledByProperty) == default(VisualElement))
+				return;
+
+			var accessibleObject = NativeView as IAccessibleObject;
+			if (accessibleObject != null)
+			{
+				accessibleObject.SetLabeledBy(Element);
 			}
 		}
 

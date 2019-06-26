@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using ElmSharp.Accessible;
 using EColor = ElmSharp.Color;
 
 namespace Xamarin.Forms.Platform.Tizen.Native
@@ -12,6 +13,9 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		const string StyleRightToolbarButton = "naviframe/title_right";
 
 		ToolbarItem _item;
+		string _defaultAccessibilityName;
+		string _defaultAccessibilityDescription;
+		bool? _defaultIsAccessibilityElement;
 
 		public ToolbarItemButton(ToolbarItem item) : base(Forms.NativeParent)
 		{
@@ -25,6 +29,10 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			UpdateText();
 			UpdateIsEnabled();
 			UpdateIcon();
+			SetAccessibilityName(true);
+			SetAccessibilityDescription(true);
+			SetIsAccessibilityElement(true);
+			SetLabeledBy(true);
 		}
 
 		void OnDeleted(object sender, EventArgs e)
@@ -52,6 +60,22 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			else if (e.PropertyName == ToolbarItem.IconImageSourceProperty.PropertyName)
 			{
 				UpdateIcon();
+			}
+			else if (e.PropertyName == AutomationProperties.NameProperty.PropertyName)
+			{
+				SetAccessibilityName(false);
+			}
+			else if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
+			{
+				SetAccessibilityDescription(false);
+			}
+			else if (e.PropertyName == AutomationProperties.IsInAccessibleTreeProperty.PropertyName)
+			{
+				SetIsAccessibilityElement(false);
+			}
+			else if (e.PropertyName == AutomationProperties.LabeledByProperty.PropertyName)
+			{
+				SetLabeledBy(false);
 			}
 		}
 
@@ -104,6 +128,54 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			else
 			{
 				Style = StyleDefault;
+			}
+		}
+
+		void SetAccessibilityName(bool initialize)
+		{
+			if (initialize && (string)_item.GetValue(AutomationProperties.NameProperty) == (default(string)))
+				return;
+
+			var accessibleObject = this as IAccessibleObject;
+			if (accessibleObject != null)
+			{
+				_defaultAccessibilityName = accessibleObject.SetAccessibilityName(_item, _defaultAccessibilityName);
+			}
+		}
+
+		void SetAccessibilityDescription(bool initialize)
+		{
+			if (initialize && (string)_item.GetValue(AutomationProperties.HelpTextProperty) == (default(string)))
+				return;
+
+			var accessibleObject = this as IAccessibleObject;
+			if (accessibleObject != null)
+			{
+				_defaultAccessibilityDescription = accessibleObject.SetAccessibilityDescription(_item, _defaultAccessibilityDescription);
+			}
+		}
+
+		void SetIsAccessibilityElement(bool initialize)
+		{
+			if (initialize && (bool?)_item.GetValue(AutomationProperties.IsInAccessibleTreeProperty) == default(bool?))
+				return;
+
+			var accessibleObject = this as IAccessibleObject;
+			if (accessibleObject != null)
+			{
+				_defaultIsAccessibilityElement = accessibleObject.SetIsAccessibilityElement(_item, _defaultIsAccessibilityElement);
+			}
+		}
+
+		void SetLabeledBy(bool initialize)
+		{
+			if (initialize && (VisualElement)_item.GetValue(AutomationProperties.LabeledByProperty) == default(VisualElement))
+				return;
+
+			var accessibleObject = this as IAccessibleObject;
+			if (accessibleObject != null)
+			{
+				accessibleObject.SetLabeledBy(_item);
 			}
 		}
 	}

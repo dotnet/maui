@@ -56,6 +56,15 @@ namespace Xamarin.Forms.Controls
 					boxInstructions = $"The following Box should read aloud \"{BoxName}. {BoxHelpText}\". Windows does not currently support TapGestures while the Narrator is active.";
 					toolbarInstructions = $"The Toolbar should have a coffee cup icon. Activating the coffee cup should read aloud \"{toolbarItemName}\". The Toolbar should also show the text \"{toolbarItem2Text}\". Activating this item should read aloud \"{toolbarItem2Text}. {toolbarItemHint2}\".";
 					break;
+				case Device.Tizen:
+					screenReader = "Screen reader(TTS)";
+					scrollFingers = "two fingers";
+					explore = "Use two fingers to swipe up the screen to read all of the elements on this page.";
+					labeledByInstructions = $"The following Entry should read aloud \"{EntryHelpText}\", plus native instructions on how to use an Entry element. This text comes from the text of the label.";
+					imageInstructions = $"The following Image should read aloud \"{ImageName}. {ImageHelpText}\". Tizen does not currently support TapGestures while the\"{screenReader}\" is active.";
+					boxInstructions = $"Tizen does not currently support accessibility for the BoxView due to platform limitation.";
+					toolbarInstructions = $"The Toolbar should have a coffee cup icon. Activating the coffee cup should read aloud \"{toolbarItemName}\".";
+					break;
 				default:
 					screenReader = "the native screen reader";
 					break;
@@ -148,14 +157,17 @@ namespace Xamarin.Forms.Controls
 
 			var instructions4 = new Label { Text = imageInstructions };
 			var image = new Image { Source = "photo.jpg" };
-			// The tap gesture will NOT work on Win
+			// The tap gesture will NOT work on Win and Tizen
 			image.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => DisplayAlert("Success", "You tapped the image", "OK")) });
 			image.SetAutomationPropertiesName(ImageName);
 			image.SetAutomationPropertiesHelpText(ImageHelpText);
+			// Images are ignored by default on Tizen;
+			// make accessible in order to enable the gesture and narration
+			image.SetAutomationPropertiesIsInAccessibleTree(true);
 
-			var instructions6 = new Label { Text = boxInstructions };
+			var instructions5 = new Label { Text = boxInstructions };
 			var boxView = new BoxView { Color = Color.Purple };
-			// The tap gesture will NOT work on Win
+			// The tap gesture will NOT work on Win and Tizen
 			boxView.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => DisplayAlert("Success", "You tapped the box", "OK")) });
 			boxView.SetAutomationPropertiesName(BoxName);
 			boxView.SetAutomationPropertiesHelpText(BoxHelpText);
@@ -178,7 +190,8 @@ namespace Xamarin.Forms.Controls
 					activityIndicator,
 					instructions4,
 					image,
-					boxView
+					instructions5,
+					boxView,
 				}
 			};
 
