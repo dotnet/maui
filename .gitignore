@@ -67,3 +67,4 @@ tools/
 !tools/mdoc/**/*
 caketools/
 *.binlog
+.ionide/**

@@ -14,12 +14,12 @@ using Xamarin.Forms.Platform.UAP;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class CollectionViewRenderer : ViewRenderer<CollectionView, ItemsControl>
+	public class ItemsViewRenderer : ViewRenderer<CollectionView, ListViewBase>
 	{
 		IItemsLayout _layout;
 		CollectionViewSource _collectionViewSource;
 
-		protected ItemsControl ItemsControl { get; private set; }
+		protected ListViewBase ListViewBase { get; private set; }
 
 		protected override void OnElementChanged(ElementChangedEventArgs<CollectionView> args)
 		{
@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		protected virtual ItemsControl SelectLayout(IItemsLayout layoutSpecification)
+		protected virtual ListViewBase SelectLayout(IItemsLayout layoutSpecification)
 		{
 			switch (layoutSpecification)
 			{
@@ -59,7 +59,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		protected virtual void UpdateItemsSource()
 		{
-			if (ItemsControl == null)
+			if (ListViewBase == null)
 			{
 				return;
 			}
@@ -74,7 +74,7 @@ namespace Xamarin.Forms.Platform.UWP
 				// The ItemContentControls need the actual data item and the template so they can inflate the template
 				// and bind the result to the data item.
 				// ItemTemplateEnumerator handles pairing them up for the ItemContentControls to consume
-				
+
 				_collectionViewSource = new CollectionViewSource
 				{
 					Source = TemplatedItemSourceFactory.Create(itemsSource, itemTemplate),
@@ -87,25 +87,25 @@ namespace Xamarin.Forms.Platform.UWP
 				{
 					Source = itemsSource,
 					IsSourceGrouped = false
-				};	
+				};
 			}
 
-			ItemsControl.ItemsSource = _collectionViewSource.View;
+			ListViewBase.ItemsSource = _collectionViewSource.View;
 		}
 
 		protected virtual void UpdateItemTemplate()
 		{
-			if (Element == null || ItemsControl == null)
+			if (Element == null || ListViewBase == null)
 			{
 				return;
 			}
 
 			var formsTemplate = Element.ItemTemplate;
-			var itemsControlItemTemplate = ItemsControl.ItemTemplate;
+			var itemsControlItemTemplate = ListViewBase.ItemTemplate;
 
 			if (formsTemplate == null)
 			{
-				ItemsControl.ItemTemplate = null;
+				ListViewBase.ItemTemplate = null;
 
 				if (itemsControlItemTemplate != null)
 				{
@@ -120,7 +120,7 @@ namespace Xamarin.Forms.Platform.UWP
 			// TODO hartez 2018/06/23 13:47:27 Handle DataTemplateSelector case
 			// Actually, DataTemplateExtensions CreateContent might handle the selector for us
 
-			ItemsControl.ItemTemplate =
+			ListViewBase.ItemTemplate =
 				(Windows.UI.Xaml.DataTemplate)Windows.UI.Xaml.Application.Current.Resources["ItemsViewDefaultTemplate"];
 
 			if (itemsControlItemTemplate == null)
@@ -130,7 +130,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		static ItemsControl CreateGridView(GridItemsLayout gridItemsLayout)
+		static ListViewBase CreateGridView(GridItemsLayout gridItemsLayout)
 		{
 			var gridView = new FormsGridView();
 
@@ -153,7 +153,7 @@ namespace Xamarin.Forms.Platform.UWP
 			return gridView;
 		}
 
-		static ItemsControl CreateHorizontalListView()
+		static ListViewBase CreateHorizontalListView()
 		{
 			// TODO hartez 2018/06/05 16:18:57 Is there any performance benefit to caching the ItemsPanelTemplate lookup?	
 			// TODO hartez 2018/05/29 15:38:04 Make sure the ItemsViewStyles.xaml xbf gets into the nuspec	
@@ -174,7 +174,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			if (e.PropertyName == GridItemsLayout.SpanProperty.PropertyName)
 			{
-				if (ItemsControl is FormsGridView formsGridView)
+				if (ListViewBase is FormsGridView formsGridView)
 				{
 					formsGridView.MaximumRowsOrColumns = ((GridItemsLayout)_layout).Span;
 				}
@@ -188,14 +188,14 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 			}
 
-			if (ItemsControl == null)
+			if (ListViewBase == null)
 			{
-				ItemsControl = SelectLayout(newElement.ItemsLayout);
+				ListViewBase = SelectLayout(newElement.ItemsLayout);
 
 				_layout = newElement.ItemsLayout;
 				_layout.PropertyChanged += LayoutOnPropertyChanged;
 
-				SetNativeControl(ItemsControl);
+				SetNativeControl(ListViewBase);
 			}
 
 			UpdateItemTemplate();
@@ -337,7 +337,7 @@ namespace Xamarin.Forms.Platform.UWP
 			// TODO hartez 2018/10/05 17:23:23 The animated scroll works fine vertically if we are scrolling to a greater Y offset.	
 			// If we're scrolling back up to a lower Y offset, it just gives up and sends us to 0 (first item)
 			// Works fine if we disable animation, but that's not very helpful
-			
+
 			scrollViewer.ChangeView(position.Value.X, position.Value.Y, null, false);
 
 			//if (scrollToPosition == ScrollToPosition.End)
@@ -350,7 +350,7 @@ namespace Xamarin.Forms.Platform.UWP
 			//}
 			//else
 			//{
-				
+
 			//}
 		}
 

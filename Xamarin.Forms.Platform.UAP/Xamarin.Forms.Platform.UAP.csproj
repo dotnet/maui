@@ -42,11 +42,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AccessibilityExtensions.cs" />
+    <Compile Include="CollectionView\ItemsViewRenderer.cs" />
+    <Compile Include="CollectionView\SelectableItemsViewRenderer.cs" />
     <Compile Include="Extensions\ImageExtensions.cs" />
     <Compile Include="FormsCheckBox.cs" />
     <Compile Include="IImageVisualElementRenderer.cs" />
     <Compile Include="ImageButtonRenderer.cs" />
-    <Compile Include="CollectionViewRenderer.cs" />
+    <Compile Include="CollectionView\CollectionViewRenderer.cs" />
     <Compile Include="FormsCancelButton.cs" />
     <Compile Include="AlertDialog.cs" />
     <Compile Include="IDontGetFocus.cs" />
