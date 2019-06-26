@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Globalization;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-using System.Threading.Tasks;
 #if UITEST
 using Xamarin.Forms.Core.UITests;
 using NUnit.Framework;
@@ -300,7 +299,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				throw new ArgumentException($"{editorName}_width not found");
 			}
-			return new Size(Convert.ToDouble(width), Convert.ToDouble(height));
+			return new Size(Convert.ToDouble(width, CultureInfo.InvariantCulture), Convert.ToDouble(height, CultureInfo.InvariantCulture));
 		}
 
 #endif
