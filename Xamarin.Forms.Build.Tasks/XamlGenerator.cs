@@ -39,7 +39,6 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 		}
 
-		static int generatedTypesCount;
 		List<XmlnsDefinitionAttribute> _xmlnsDefinitions;
 		Dictionary<string, ModuleDefinition> _xmlnsModules;
 		internal static CodeDomProvider Provider = new CSharpCodeProvider();
@@ -147,7 +146,7 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 			else if (hasXamlCompilationProcessingInstruction) {
 				RootClrNamespace = "__XamlGeneratedCode__";
-				RootType = $"__Type{generatedTypesCount++}";
+				RootType = $"__Type{Guid.NewGuid().ToString("N")}";
 				GenerateDefaultCtor = true;
 				AddXamlCompilationAttribute = true;
 				HideFromIntellisense = true;
