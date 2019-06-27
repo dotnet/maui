@@ -113,8 +113,9 @@ namespace Xamarin.Forms.Build.Tasks
 						var br2 = Instruction.Create(OpCodes.Ldarg_0);
 						var ret = Instruction.Create(OpCodes.Ret);
 						il.Emit(OpCodes.Ldarg_0);
-						il.Emit(OpCodes.Callvirt,
-						        module.ImportReference(typeDef.BaseType.Resolve().GetConstructors().First(c => c.HasParameters == false)));
+						var baseCtor = module.ImportReference(typeDef.BaseType.Resolve().GetConstructors().First(c => c.HasParameters == false));
+						baseCtor = module.ImportReference(baseCtor.ResolveGenericParameters(typeDef.BaseType, module));
+						il.Emit(OpCodes.Callvirt, baseCtor);
 
 						il.Emit(OpCodes.Nop);
 						il.Emit(OpCodes.Ldarg_1);

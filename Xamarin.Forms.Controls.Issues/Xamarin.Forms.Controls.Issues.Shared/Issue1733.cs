@@ -207,7 +207,7 @@ namespace Xamarin.Forms.Controls.Issues
 		Dictionary<string, Size> results = null;
 
 		[Test]
-		public void Issue1733Test()
+		public void EditorAutoResize()
 		{
 			string[] editors = new string[] { editorHeightShrinkWithPressureId, editorHeightGrowId, editorWidthGrow1Id, editorWidthGrow2Id };
 			RunningApp.WaitForElement(q => q.Marked(editorHeightShrinkWithPressureId));
@@ -253,8 +253,6 @@ namespace Xamarin.Forms.Controls.Issues
 				Assert.AreEqual(allTheSame.Width, results[editor].Width, editor);
 				Assert.AreEqual(allTheSame.Height, results[editor].Height, editor);
 			}
-
-
 		}
 
 		void TestGrowth(bool heightPressureShrink)
@@ -288,8 +286,8 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement($"{editorName}_height");
 			RunningApp.WaitForElement($"{editorName}_width");
 
-			var height = RunningApp.Query(x => x.Marked($"{editorName}_height")).FirstOrDefault()?.Text;
-			var width = RunningApp.Query(x => x.Marked($"{editorName}_width")).FirstOrDefault()?.Text;
+			var height = RunningApp.WaitForElement(x => x.Marked($"{editorName}_height")).FirstOrDefault()?.Text;
+			var width = RunningApp.WaitForElement(x => x.Marked($"{editorName}_width")).FirstOrDefault()?.Text;
 
 			if (height == null)
 			{
@@ -303,5 +301,5 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 #endif
-	}
+    }
 }
