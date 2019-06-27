@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Controls
 		string _buttonText = "Text";
 		string _buttonImage = "bank.png";
 
-		Thickness _buttonPadding = default(Thickness);
+		Thickness? _buttonPadding;
 
 		double _buttonFontSize = -1.0;
 
@@ -98,13 +98,24 @@ namespace Xamarin.Forms.Controls
 			}
 		}
 
-		public Thickness ButtonPadding
+		public Thickness? ButtonPadding
 		{
 			get => _buttonPadding;
 			set
 			{
+				if (Equals(_buttonPadding, value))
+					return;
+
 				_buttonPadding = value;
 				OnPropertyChanged();
+
+				foreach (var button in _buttons)
+				{
+					if (_buttonPadding != null)
+						button.Padding = _buttonPadding.Value;
+					else
+						button.ClearValue(Button.PaddingProperty);
+				}
 			}
 		}
 

@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace Xamarin.Forms.Controls
 {
-	public class ThicknessConverter : IValueConverter
+	public class NullableThicknessConverter : IValueConverter
 	{
 		ThicknessTypeConverter _converter = new ThicknessTypeConverter();
 
@@ -12,11 +12,14 @@ namespace Xamarin.Forms.Controls
 			if (value is Thickness thickness)
 				return $"{thickness.Left}, {thickness.Top}, {thickness.Right}, {thickness.Bottom}";
 
-			return "0, 0, 0, 0";
+			return string.Empty;
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		{
+			if (value is null)
+				return null;
+
 			if (value is Thickness thickness)
 				return thickness;
 
@@ -30,7 +33,7 @@ namespace Xamarin.Forms.Controls
 				// no-op
 			}
 
-			return default(Thickness);
+			return null;
 		}
 	}
 }
