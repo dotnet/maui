@@ -99,7 +99,13 @@
 
 	<ShellContent Route="account" Title="Account" Icon="person.png" ContentTemplate="{DataTemplate local:AccountsPage}" />
 
-	<MenuItem Text="Redeem" Icon="card.png" />
+    <MenuItem Text="Redeem">
+        <MenuItem.IconImageSource>
+            <FontImageSource
+                Glyph="{x:Static local:Icons.Card}"
+                Color="Black"/>
+        </MenuItem.IconImageSource>
+    </MenuItem>
 
 	<ShellContent Route="wishlist" Title="Wishlist" Icon="star.png" ContentTemplate="{DataTemplate local:WishlistPage}" />
 	
