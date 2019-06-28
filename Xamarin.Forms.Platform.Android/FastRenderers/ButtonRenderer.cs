@@ -161,6 +161,12 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				SetOnClickListener(null);
 				SetOnTouchListener(null);
 				RemoveOnAttachStateChangeListener(this);
+				OnFocusChangeListener = null;
+
+				if (Element != null)
+				{
+					Element.PropertyChanged -= OnElementPropertyChanged;
+				}
 
 				_automationPropertiesProvider?.Dispose();
 				_tracker?.Dispose();
@@ -172,8 +178,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 				if (Element != null)
 				{
-					Element.PropertyChanged -= OnElementPropertyChanged;
-
 					if (Platform.GetRenderer(Element) == this)
 						Element.ClearValue(Platform.RendererProperty);
 				}

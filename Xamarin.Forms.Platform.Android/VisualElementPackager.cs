@@ -72,6 +72,18 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (_renderer != null)
 			{
+				_renderer.ElementChanged -= OnElementChanged;
+				
+				if (_renderer.Element != null)
+				{
+					_renderer.Element.ChildAdded -= _childAddedHandler;
+					_renderer.Element.ChildRemoved -= _childRemovedHandler;
+					_renderer.Element.ChildrenReordered -= _childReorderedHandler;
+				}
+
+				if (_renderer.View is ILayoutChanges layout)
+					layout.LayoutChange -= OnInitialLayoutChange;
+
 				if (_childViews != null)
 				{
 					_childViews.Clear();
@@ -86,18 +98,6 @@ namespace Xamarin.Forms.Platform.Android
 					_childPackagers.Clear();
 					_childPackagers = null;
 				}
-
-				_renderer.ElementChanged -= OnElementChanged;
-				if (_renderer.Element != null)
-				{
-					_renderer.Element.ChildAdded -= _childAddedHandler;
-					_renderer.Element.ChildRemoved -= _childRemovedHandler;
-
-					_renderer.Element.ChildrenReordered -= _childReorderedHandler;
-				}
-
-				if (_renderer.View is ILayoutChanges layout)
-					layout.LayoutChange -= OnInitialLayoutChange;
 
 				_renderer = null;
 			}

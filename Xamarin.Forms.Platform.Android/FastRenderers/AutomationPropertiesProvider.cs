@@ -181,6 +181,11 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 			_disposed = true;
 
+			if (Element != null)
+			{
+				Element.PropertyChanged -= OnElementPropertyChanged;
+			}
+
 			if (_renderer != null)
 			{
 				_renderer.ElementChanged -= OnElementChanged;

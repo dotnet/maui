@@ -139,10 +139,7 @@ namespace Xamarin.Forms.Platform.Android
 				if (Element != null)
 				{
 					TearDownOldElement(Element as ItemsView);
-				}
 
-				if (Element != null)
-				{
 					if (Platform.GetRenderer(Element) == this)
 					{
 						Element.ClearValue(Platform.RendererProperty);

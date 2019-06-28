@@ -211,6 +211,8 @@ namespace Xamarin.Forms.Platform.Android
 
 			PopupManager.Unsubscribe(this);
 
+			_layout.RemoveView(Platform);
+
 			Platform?.Dispose();
 
 			// call at the end to avoid race conditions with Platform dispose
@@ -227,6 +229,12 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			_layout.HideKeyboard(true);
 
+			if (Forms.IsLollipopOrNewer)
+			{
+				// Don't listen for power save mode changes while we're paused
+				UnregisterReceiver(_powerSaveModeBroadcastReceiver);
+			}
+
 			// Stop animations or other ongoing actions that could consume CPU
 			// Commit unsaved changes, build only if users expect such changes to be permanently saved when thy leave such as a draft email
 			// Release system resources, such as broadcast receivers, handles to sensors (like GPS), or any resources that may affect battery life when your activity is paused.
@@ -235,12 +243,6 @@ namespace Xamarin.Forms.Platform.Android
 
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnPause;
-
-			if (Forms.IsLollipopOrNewer)
-			{
-				// Don't listen for power save mode changes while we're paused
-				UnregisterReceiver(_powerSaveModeBroadcastReceiver);
-			}
 
 			OnStateChanged();
 		}
@@ -318,7 +320,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			if (args.PropertyName == nameof(_application.MainPage))
-				InternalSetPage(_application.MainPage);
+				SetMainPage();
 			if (args.PropertyName == PlatformConfiguration.AndroidSpecific.Application.WindowSoftInputModeAdjustProperty.PropertyName)
 				SetSoftInputMode();
 		}

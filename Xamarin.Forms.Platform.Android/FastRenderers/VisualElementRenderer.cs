@@ -65,8 +65,10 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 			if (disposing)
 			{
-				_gestureManager?.Dispose();
-				_automationPropertiesProvider?.Dispose();
+				if (Element != null)
+				{
+					Element.PropertyChanged -= OnElementPropertyChanged;
+				}
 
 				if (_renderer != null)
 				{
@@ -74,6 +76,9 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 					_renderer.ElementPropertyChanged -= OnElementPropertyChanged;
 					_renderer = null;
 				}
+
+				_gestureManager?.Dispose();
+				_automationPropertiesProvider?.Dispose();
 			}
 		}
 

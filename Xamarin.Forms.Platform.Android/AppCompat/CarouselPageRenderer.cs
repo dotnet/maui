@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Android.Content;
@@ -51,29 +51,38 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			if (disposing && !_disposed)
 			{
 				_disposed = true;
-				RemoveAllViews();
-				foreach (ContentPage pageToRemove in Element.Children)
-				{
-					IVisualElementRenderer pageRenderer = Android.Platform.GetRenderer(pageToRemove);
-					if (pageRenderer != null)
-					{
-						pageRenderer.View.RemoveFromParent();
-						pageRenderer.Dispose();
-					}
-					pageToRemove.ClearValue(Android.Platform.RendererProperty);
-				}
+
+				if (Element != null)
+					PageController.InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
 
 				if (_viewPager != null)
 				{
+					RemoveView(_viewPager);
+
+					_viewPager.ClearOnPageChangeListeners();
 					_viewPager.Adapter.Dispose();
 					_viewPager.Dispose();
 					_viewPager = null;
 				}
 
-				_previousPage = null;
+				RemoveAllViews();
 
-				if (Element != null)
-					PageController.InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
+				_previousPage = null;
+			
+				if (Element?.Children != null)
+				{
+					foreach (ContentPage pageToRemove in Element.Children)
+					{
+						IVisualElementRenderer pageRenderer = Android.Platform.GetRenderer(pageToRemove);
+						if (pageRenderer != null)
+						{
+							pageRenderer.View.RemoveFromParent();
+							pageRenderer.Dispose();
+						}
+
+						pageToRemove.ClearValue(Android.Platform.RendererProperty);
+					}
+				}
 			}
 
 			base.Dispose(disposing);

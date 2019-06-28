@@ -1,4 +1,4 @@
-﻿using Android.Content;
+using Android.Content;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
@@ -47,9 +47,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		public override void OnDestroy()
 		{
-			base.OnDestroy();
-
 			Device.BeginInvokeOnMainThread(Dispose);
+
+			base.OnDestroy();
 		}
 	}
 }
