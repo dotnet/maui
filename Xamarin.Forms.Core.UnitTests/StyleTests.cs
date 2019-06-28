@@ -759,5 +759,29 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That(label0.TextColor, Is.EqualTo(Color.Pink));
 			Assert.That(label1.TextColor, Is.EqualTo(Color.Lavender));
 		}
+
+		[Test]
+		public void MismatchTargetTypeThrowsError1()
+		{
+			var s = new Style(typeof(Button));
+			var t = new View();
+			Assert.Throws<ArgumentException>(() => t.Style = s);
+		}
+
+		[Test]
+		public void MismatchTargetTypeThrowsError2()
+		{
+			var s = new Style(typeof(Button));
+			var t = new Label();
+			Assert.Throws<ArgumentException>(() => t.Style = s);
+		}
+
+		[Test]
+		public void MatchTargetTypeDoesntThrowError()
+		{
+			var s = new Style(typeof(View));
+			var t = new Button();
+			Assert.DoesNotThrow(() => t.Style = s);
+		}
 	}
 }
