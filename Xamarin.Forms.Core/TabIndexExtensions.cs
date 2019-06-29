@@ -16,7 +16,7 @@ namespace Xamarin.Forms
 		{
 			countChildrensWithTabStopWithoutThis = 0;
 
-			Element parentPage = (element as NavigableElement).Parent;
+			Element parentPage = (element as Element)?.Parent;
 			while (parentPage != null && !(parentPage is Page))
 				parentPage = parentPage.Parent;
 
@@ -26,7 +26,7 @@ namespace Xamarin.Forms
 				descendantsOnPage = shell.Items;
 
 			if (descendantsOnPage == null)
-				return null;
+				return new Dictionary<int, List<ITabStopElement>>();
 
 			var childrensWithTabStop = new List<ITabStopElement>();
 			foreach (var descendant in descendantsOnPage)
@@ -34,8 +34,9 @@ namespace Xamarin.Forms
 				if (descendant is ITabStopElement visualElement && visualElement.IsTabStop)
 					childrensWithTabStop.Add(visualElement);
 			}
+
 			if (checkContainsElement && !childrensWithTabStop.Contains(element))
-				return null;
+				return new Dictionary<int, List<ITabStopElement>>();
 
 			countChildrensWithTabStopWithoutThis = childrensWithTabStop.Count - 1;
 			return childrensWithTabStop.GroupToDictionary(c => c.TabIndex);
