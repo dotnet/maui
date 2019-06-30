@@ -151,7 +151,7 @@ namespace Xamarin.Forms
 
 		public static Task InvokeOnMainThreadAsync(Func<Task> funcTask)
 		{
-			Func<Task<object>> dummyFunc = () => { funcTask(); return null; };
+			Func<Task<object>> dummyFunc = async () => { await funcTask().ConfigureAwait(false); return null; };
 			return InvokeOnMainThreadAsync(dummyFunc);
 		}
 
