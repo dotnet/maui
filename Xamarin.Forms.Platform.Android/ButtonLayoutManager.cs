@@ -82,8 +82,21 @@ namespace Xamarin.Forms.Platform.Android
 
 		internal SizeRequest GetDesiredSize(int widthConstraint, int heightConstraint)
 		{
+			var previousHeight = View.MeasuredHeight;
+			var previousWidth = View.MeasuredWidth;
+
 			View.Measure(widthConstraint, heightConstraint);
-			View.ForceLayout();
+
+			// if the measure of the view has changed then trigger a request for layout
+			// if the measure hasn't changed then force a layout of the button
+			if (previousHeight != View.MeasuredHeight || previousWidth != View.MeasuredWidth)
+			{
+				if (!View.IsLayoutRequested)
+					View.RequestLayout();
+			}
+			else
+				View.ForceLayout();
+
 			return new SizeRequest(new Size(View.MeasuredWidth, View.MeasuredHeight), Size.Zero);
 		}
 
@@ -289,7 +302,7 @@ namespace Xamarin.Forms.Platform.Android
 			Drawable existingImage = null;
 			var images = TextViewCompat.GetCompoundDrawablesRelative(view);
 			for (int i = 0; i < images.Length; i++)
-				if(images[i] != null)
+				if (images[i] != null)
 				{
 					existingImage = images[i];
 					break;
@@ -314,8 +327,8 @@ namespace Xamarin.Forms.Platform.Android
 							TextViewCompat.SetCompoundDrawablesRelativeWithIntrinsicBounds(view, null, null, null, image);
 							break;
 						default:
-						// Defaults to image on the left
-						TextViewCompat.SetCompoundDrawablesRelativeWithIntrinsicBounds(view, image, null, null, null);
+							// Defaults to image on the left
+							TextViewCompat.SetCompoundDrawablesRelativeWithIntrinsicBounds(view, image, null, null, null);
 							break;
 					}
 
