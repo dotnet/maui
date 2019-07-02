@@ -7,12 +7,11 @@ namespace Xamarin.Forms.Platform.iOS
 {
 	public class SelectableItemsViewController : ItemsViewController
 	{
-		protected readonly SelectableItemsView SelectableItemsView;
+		SelectableItemsView SelectableItemsView => (SelectableItemsView)ItemsView;
 
 		public SelectableItemsViewController(SelectableItemsView selectableItemsView, ItemsViewLayout layout) 
 			: base(selectableItemsView, layout)
 		{
-			SelectableItemsView = selectableItemsView;
 		}
 
 		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection

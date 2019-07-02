@@ -24,5 +24,15 @@ namespace Xamarin.Forms.Platform.iOS
 
 			return new ListSource(itemsSource);
 		}
+
+		public static IItemsViewSource CreateGrouped(IEnumerable itemsSource, UICollectionView collectionView)
+		{
+			if (itemsSource == null)
+			{
+				return new EmptySource();
+			}
+
+			return new ObservableGroupedSource(itemsSource, collectionView);
+		}
 	}
 }

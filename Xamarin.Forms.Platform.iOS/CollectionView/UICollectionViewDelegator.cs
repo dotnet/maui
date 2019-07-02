@@ -1,4 +1,5 @@
 ﻿using System;
+using CoreGraphics;
 using Foundation;
 using UIKit;
 
@@ -13,15 +14,15 @@ namespace Xamarin.Forms.Platform.iOS
 			get => ItemsViewController as SelectableItemsViewController;
 		}
 
+		public GroupableItemsViewController GroupableItemsViewController
+		{
+			get => ItemsViewController as GroupableItemsViewController;
+		}
+
 		public UICollectionViewDelegator(ItemsViewLayout itemsViewLayout, ItemsViewController itemsViewController)
 		{
 			ItemsViewLayout = itemsViewLayout;
 			ItemsViewController = itemsViewController;
-		}
-
-		public override void WillDisplayCell(UICollectionView collectionView, UICollectionViewCell cell, NSIndexPath path)
-		{
-			ItemsViewLayout?.WillDisplayCell(collectionView, cell, path);
 		}
 
 		public override UIEdgeInsets GetInsetForSection(UICollectionView collectionView, UICollectionViewLayout layout,
@@ -70,6 +71,26 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void CellDisplayingEnded(UICollectionView collectionView, UICollectionViewCell cell, NSIndexPath indexPath)
 		{
 			ItemsViewController.PrepareCellForRemoval(cell);
+		}
+
+		public override CGSize GetReferenceSizeForHeader(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
+		{
+			if (GroupableItemsViewController == null)
+			{
+				return CGSize.Empty;
+			}
+
+			return GroupableItemsViewController.GetReferenceSizeForHeader(collectionView, layout, section);
+		}
+
+		public override CGSize GetReferenceSizeForFooter(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
+		{
+			if (GroupableItemsViewController == null)
+			{
+				return CGSize.Empty;
+			}
+
+			return GroupableItemsViewController.GetReferenceSizeForFooter(collectionView, layout, section);
 		}
 	}
 }

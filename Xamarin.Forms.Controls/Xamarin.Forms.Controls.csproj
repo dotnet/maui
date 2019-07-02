@@ -126,6 +126,27 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="GalleryPages\CollectionViewGalleries\GroupingGalleries\BasicGrouping.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="GalleryPages\CollectionViewGalleries\GroupingGalleries\GroupingNoTemplates.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="GalleryPages\CollectionViewGalleries\GroupingGalleries\GroupingPlusSelection.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="GalleryPages\CollectionViewGalleries\GroupingGalleries\MeasureFirstStrategy.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="GalleryPages\CollectionViewGalleries\GroupingGalleries\SomeEmptyGroups.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="GalleryPages\CollectionViewGalleries\GroupingGalleries\SwitchGrouping.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+  </ItemGroup>
   <Target Name="CreateControllGalleryConfig" BeforeTargets="Build">
     <CreateItem Include="blank.config">
       <Output TaskParameter="Include" ItemName="ConfigFile" />

@@ -2,11 +2,16 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGalleries;
 
 namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 {
 	internal class MultiTestObservableCollection<T> : List<T>, INotifyCollectionChanged
 	{
+		public MultiTestObservableCollection(List<T> members) : base(members) { }
+
+		public MultiTestObservableCollection() { }
+
 		// This is a testing class which implements INotifyCollectionChanged and, unlike the regular
 		// ObservableCollection, will actually fire Add and Remove with multiple items at once
 
@@ -77,7 +82,12 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 
 		public void TestReset()
 		{
+			var random = new Random();
+			var randomized = GetRange(1, Count - 1).Select(item => new { Item = item, Index = random.Next(100000) })
+				.OrderBy(x => x.Index).Select(x => x.Item).ToList();
+
 			RemoveRange(0, Count);
+			InsertRange(0, randomized);
 
 			var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
 			OnNotifyCollectionChanged(this, args);

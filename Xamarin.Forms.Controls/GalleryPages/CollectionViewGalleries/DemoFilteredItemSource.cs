@@ -39,7 +39,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 
 		private bool ItemMatches(string filter, CollectionViewGalleryTestItem item)
 		{
-			return item.Caption.ToLower().Contains(filter.ToLower());
+			filter = filter ?? "";
+			return item.Caption.ToLower().Contains(filter?.ToLower());
 		}
 
 		public void FilterItems(string filter)

@@ -9,12 +9,11 @@ namespace Xamarin.Forms.Platform.iOS
 	// TODO hartez 2018/06/01 14:21:24 Add a method for updating the layout	
 	public class ItemsViewController : UICollectionViewController
 	{
-		IItemsViewSource _itemsSource;
-		readonly ItemsView _itemsView;
-		ItemsViewLayout _layout;
+		protected IItemsViewSource ItemsSource { get; set; }
+		public ItemsView ItemsView { get; }
+		protected ItemsViewLayout ItemsViewLayout { get; set; }
 		bool _initialConstraintsSet;
-		bool _safeForReload;
-		bool _wasEmpty;
+		bool _isEmpty;
 		bool _currentBackgroundIsEmptyView;
 		bool _disposed;
 
@@ -26,35 +25,31 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public ItemsViewController(ItemsView itemsView, ItemsViewLayout layout) : base(layout)
 		{
-			_itemsView = itemsView;
-			_itemsSource = ItemsSourceFactory.Create(_itemsView.ItemsSource, CollectionView);
-			
-			// If we already have data, the UICollectionView will have items and we'll be safe to call
-			// ReloadData if the ItemsSource changes in the future (see UpdateItemsSource for more).
-			_safeForReload = _itemsSource?.Count > 0;
+			ItemsView = itemsView;
+			ItemsSource = CreateItemsViewSource();
 
 			UpdateLayout(layout);
 		}
 
 		public void UpdateLayout(ItemsViewLayout layout)
 		{
-			_layout = layout;
-			_layout.GetPrototype = GetPrototype;
+			ItemsViewLayout = layout;
+			ItemsViewLayout.GetPrototype = GetPrototype;
 
 			// If we're updating from a previous layout, we should keep any settings for the SelectableItemsViewController around
 			var selectableItemsViewController = Delegator?.SelectableItemsViewController;
-			Delegator = new UICollectionViewDelegator(_layout, this);
+			Delegator = new UICollectionViewDelegator(ItemsViewLayout, this);
 
 			CollectionView.Delegate = Delegator;
 
-			if (CollectionView.CollectionViewLayout != _layout)
+			if (CollectionView.CollectionViewLayout != ItemsViewLayout)
 			{
 				// We're updating from a previous layout
 
 				// Make sure the new layout is sized properly
-				_layout.ConstrainTo(CollectionView.Bounds.Size);
+				ItemsViewLayout.ConstrainTo(CollectionView.Bounds.Size);
 				
-				CollectionView.SetCollectionViewLayout(_layout, false);
+				CollectionView.SetCollectionViewLayout(ItemsViewLayout, false);
 				
 				// Reload the data so the currently visible cells get laid out according to the new layout
 				CollectionView.ReloadData();
@@ -67,7 +62,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (disposing)
 				{
-					_itemsSource?.Dispose();
+					ItemsSource?.Dispose();
 				}
 
 				_disposed = true;
@@ -78,7 +73,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
 		{
-			var cell = collectionView.DequeueReusableCell(DetermineCellReusedId(), indexPath) as UICollectionViewCell;
+			var cell = collectionView.DequeueReusableCell(DetermineCellReuseId(), indexPath) as UICollectionViewCell;
 
 			switch (cell)
 			{
@@ -95,27 +90,30 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override nint GetItemsCount(UICollectionView collectionView, nint section)
 		{
-			var count = _itemsSource.Count;
+			var count = ItemsSource.ItemCountInGroup(section);
 
-			if (_wasEmpty && count > 0)
-			{
-				// We've moved from no items to having at least one item; it's likely that the layout needs to update
-				// its cell size/estimate
-				_layout?.SetNeedCellSizeUpdate();
-			}
-
-			_wasEmpty = count == 0;
-
-			UpdateEmptyViewVisibility(_wasEmpty);
+			CheckForEmptySource();
 
 			return count;
+		}
+
+		void CheckForEmptySource()
+		{
+			var wasEmpty = _isEmpty;
+
+			_isEmpty = ItemsSource.ItemCount == 0;
+
+			if (wasEmpty != _isEmpty)
+			{
+				UpdateEmptyViewVisibility(_isEmpty);
+			}
 		}
 
 		public override void ViewDidLoad()
 		{
 			base.ViewDidLoad();
 			AutomaticallyAdjustsScrollViewInsets = false;
-			RegisterCells();
+			RegisterViewTypes();
 		}
 
 		public override void ViewWillLayoutSubviews()
@@ -128,73 +126,36 @@ namespace Xamarin.Forms.Platform.iOS
 			// are set up the first time this method is called.
 			if (!_initialConstraintsSet)
 			{
-				_layout.ConstrainTo(CollectionView.Bounds.Size);
+				ItemsViewLayout.ConstrainTo(CollectionView.Bounds.Size);
 				_initialConstraintsSet = true;
 			}
 		}
 
-		public virtual void UpdateItemsSource()
+		protected virtual IItemsViewSource CreateItemsViewSource()
 		{
-			if (_safeForReload)
-			{
-				UpdateItemsSourceAndReload();
-			}
-			else
-			{
-				// Okay, thus far this UICollectionView has never had any items in it. At this point, if
-				// we set the ItemsSource and try to call ReloadData(), it'll crash. AFAICT this is a bug, but
-				// until it's fixed (or we can figure out another way to go from empty -> having items), we'll
-				// have to use this crazy workaround
-				EmptyCollectionViewReloadWorkaround();
-			}
+			return ItemsSourceFactory.Create(ItemsView.ItemsSource, CollectionView);
 		}
 
-		void UpdateItemsSourceAndReload()
+		public virtual void UpdateItemsSource()
 		{
-			_itemsSource = ItemsSourceFactory.Create(_itemsView.ItemsSource, CollectionView);
+			ItemsSource = CreateItemsViewSource();
 			CollectionView.ReloadData();
 			CollectionView.CollectionViewLayout.InvalidateLayout();
 		}
 
-		void EmptyCollectionViewReloadWorkaround()
+		public override nint NumberOfSections(UICollectionView collectionView)
 		{
-			var enumerator = _itemsView.ItemsSource.GetEnumerator();
-
-			if (!enumerator.MoveNext())
-			{
-				// The source we're updating to is empty, so we can just update as normal; it won't crash
-				UpdateItemsSourceAndReload();
-			}
-			else
-			{
-				// Grab the first item from the new ItemsSource and create a usable source for the UICollectionView
-				// from that
-				var firstItem = new List<object> { enumerator.Current };
-				_itemsSource = ItemsSourceFactory.Create(firstItem, CollectionView);
-
-				// Insert that item into the UICollectionView
-				// TODO ezhart When we implement grouping, this will need to be the index of the first actual item
-				// Which might not be zero,zero if we have empty groups
-				var indexesToInsert = new NSIndexPath[1] { NSIndexPath.Create(0, 0) };
-
-				UIView.PerformWithoutAnimation(() =>
-				{
-					CollectionView.InsertItems(indexesToInsert);
-				});
-
-				// Okay, from now on we can just call ReloadData and things will work fine
-				_safeForReload = true;
-				UpdateItemsSource();
-			}
+			CheckForEmptySource(); 
+			return ItemsSource.GroupCount;
 		}
 
 		protected virtual void UpdateDefaultCell(DefaultCell cell, NSIndexPath indexPath)
 		{
-			cell.Label.Text = _itemsSource[indexPath.Row].ToString();
+			cell.Label.Text = ItemsSource[indexPath].ToString();
 
 			if (cell is ItemsViewCell constrainedCell)
 			{
-				_layout.PrepareCellForLayout(constrainedCell);
+				ItemsViewLayout.PrepareCellForLayout(constrainedCell);
 			}
 		}
 
@@ -204,35 +165,27 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (cell is ItemsViewCell constrainedCell)
 			{
-				_layout.PrepareCellForLayout(constrainedCell);
+				ItemsViewLayout.PrepareCellForLayout(constrainedCell);
 			}
 		}
 
 		public virtual NSIndexPath GetIndexForItem(object item)
 		{
-			for (int n = 0; n < _itemsSource.Count; n++)
-			{
-				if (_itemsSource[n] == item)
-				{
-					return NSIndexPath.Create(0, n);
-				}
-			}
-
-			return NSIndexPath.Create(-1, -1);
+			return ItemsSource.GetIndexForItem(item);
 		}
 
 		protected object GetItemAtIndex(NSIndexPath index)
 		{
-			return _itemsSource[index.Row];
+			return ItemsSource[index];
 		}
 
 		void ApplyTemplateAndDataContext(TemplatedCell cell, NSIndexPath indexPath)
 		{
-			var template = _itemsView.ItemTemplate;
-			var item = _itemsSource[indexPath.Row];
+			var template = ItemsView.ItemTemplate;
+			var item = ItemsSource[indexPath];
 
 			// Run this through the extension method in case it's really a DataTemplateSelector
-			template = template.SelectDataTemplate(item, _itemsView);
+			template = template.SelectDataTemplate(item, ItemsView);
 
 			// Create the content and renderer for the view and 
 			var view = template.CreateContent() as View;
@@ -240,10 +193,10 @@ namespace Xamarin.Forms.Platform.iOS
 			cell.SetRenderer(renderer);
 
 			// Bind the view to the data item
-			view.BindingContext = _itemsSource[indexPath.Row];
+			view.BindingContext = ItemsSource[indexPath];
 
 			// And make sure it's a "child" of the ItemsView
-			_itemsView.AddLogicalChild(view);
+			ItemsView.AddLogicalChild(view);
 
 			cell.ContentSizeChanged += CellContentSizeChanged;
 		}
@@ -263,14 +216,14 @@ namespace Xamarin.Forms.Platform.iOS
 				if (oldView != null)
 				{
 					oldView.BindingContext = null;
-					_itemsView.RemoveLogicalChild(oldView);
+					ItemsView.RemoveLogicalChild(oldView);
 				}
 
 				templatedCell.PrepareForRemoval();
 			}
 		}
 
-		IVisualElementRenderer CreateRenderer(View view)
+		protected IVisualElementRenderer CreateRenderer(View view)
 		{
 			if (view == null)
 			{
@@ -283,33 +236,49 @@ namespace Xamarin.Forms.Platform.iOS
 			return renderer;
 		}
 
-		string DetermineCellReusedId()
+		string DetermineCellReuseId()
 		{
-			if (_itemsView.ItemTemplate != null)
+			if (ItemsView.ItemTemplate != null)
 			{
-				return _layout.ScrollDirection == UICollectionViewScrollDirection.Horizontal
+				return ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Horizontal
 					? HorizontalTemplatedCell.ReuseId
 					: VerticalTemplatedCell.ReuseId;
 			}
 
-			return _layout.ScrollDirection == UICollectionViewScrollDirection.Horizontal
+			return ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Horizontal
 				? HorizontalDefaultCell.ReuseId
 				: VerticalDefaultCell.ReuseId;
 		}
 
 		UICollectionViewCell GetPrototype()
 		{
-			if (_itemsSource.Count == 0)
+			if (ItemsSource.ItemCount == 0)
 			{
 				return null;
 			}
 
-			// TODO hartez assuming this works, we'll need to evaluate using this nsindexpath (what about groups?)
-			var indexPath = NSIndexPath.Create(0, 0);
+			var group = 0;
+
+			if (ItemsSource.GroupCount > 1)
+			{
+				// If we're in a grouping situation, then we need to make sure we find an actual data item
+				// to use for our prototype cell. It's possible that we have empty groups.
+				for (int n = 0; n < ItemsSource.GroupCount; n++)
+				{
+					if (ItemsSource.ItemCountInGroup(n) > 0)
+					{
+						group = n;
+						break;
+					}
+				}
+			}
+
+			var indexPath = NSIndexPath.Create(group, 0);
+
 			return GetCell(CollectionView, indexPath);
 		}
 
-		void RegisterCells()
+		protected virtual void RegisterViewTypes()
 		{
 			CollectionView.RegisterClassForCell(typeof(HorizontalDefaultCell), HorizontalDefaultCell.ReuseId);
 			CollectionView.RegisterClassForCell(typeof(VerticalDefaultCell), VerticalDefaultCell.ReuseId);
@@ -321,7 +290,7 @@ namespace Xamarin.Forms.Platform.iOS
 		internal void UpdateEmptyView()
 		{
 			// Is EmptyView set on the ItemsView?
-			var emptyView = _itemsView?.EmptyView;
+			var emptyView = ItemsView?.EmptyView;
 
 			if (emptyView == null)
 			{
@@ -333,13 +302,13 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				// Create the native renderer for the EmptyView, and keep the actual Forms element (if any)
 				// around for updating the layout later
-				var (NativeView, FormsElement) = RealizeEmptyView(emptyView, _itemsView.EmptyViewTemplate);
+				var (NativeView, FormsElement) = RealizeEmptyView(emptyView, ItemsView.EmptyViewTemplate);
 				_emptyUIView = NativeView;
 				_emptyViewFormsElement = FormsElement;
 			}
 
 			// If the empty view is being displayed, we might need to update it
-			UpdateEmptyViewVisibility(_itemsSource?.Count == 0);
+			UpdateEmptyViewVisibility(ItemsSource?.ItemCount == 0);
 		}
 
 		void UpdateEmptyViewVisibility(bool isEmpty)
@@ -381,7 +350,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (emptyViewTemplate != null)
 			{
 				// Run this through the extension method in case it's really a DataTemplateSelector
-				emptyViewTemplate = emptyViewTemplate.SelectDataTemplate(emptyView, _itemsView);
+				emptyViewTemplate = emptyViewTemplate.SelectDataTemplate(emptyView, ItemsView);
 
 				// We have a template; turn it into a Forms view 
 				var templateElement = emptyViewTemplate.CreateContent() as View;
