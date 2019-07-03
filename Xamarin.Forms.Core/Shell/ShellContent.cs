@@ -63,7 +63,9 @@ namespace Xamarin.Forms
 			}
 
 			if (result != null && result.Parent != this)
+			{
 				OnChildAdded(result);
+			}
 
 			if (result == null)
 				throw new InvalidOperationException($"No Content found for {nameof(ShellContent)}, Title:{Title}, Route {Route}");
@@ -84,8 +86,35 @@ namespace Xamarin.Forms
 
 		public ShellContent() => ((INotifyCollectionChanged)MenuItems).CollectionChanged += MenuItemsCollectionChanged;
 
-
+		internal bool IsVisibleContent => Parent is ShellSection shellSection && shellSection.IsVisibleSection;
 		internal override ReadOnlyCollection<Element> LogicalChildrenInternal => _logicalChildrenReadOnly ?? (_logicalChildrenReadOnly = new ReadOnlyCollection<Element>(_logicalChildren));
+
+		internal override void SendDisappearing()
+		{
+			base.SendDisappearing();
+			((ContentCache ?? Content) as Page)?.SendDisappearing();
+		}
+
+		internal override void SendAppearing()
+		{
+			// only fire Appearing when the Content Page exists on the ShellContent
+			var content = ContentCache ?? Content;
+			if (content == null)
+				return;
+
+			base.SendAppearing();
+			((ContentCache ?? Content) as Page)?.SendAppearing();
+		}
+
+		protected override void OnChildAdded(Element child)
+		{
+			base.OnChildAdded(child);
+			if (child is Page page && IsVisibleContent)
+			{
+				SendAppearing();
+				page.SendAppearing();
+			}
+		}
 
 		Page ContentCache
 		{

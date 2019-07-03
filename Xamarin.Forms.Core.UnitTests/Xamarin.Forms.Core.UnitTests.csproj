@@ -75,6 +75,7 @@
     <Compile Include="DependencyResolutionTests.cs" />
     <Compile Include="EffectiveFlowDirectionExtensions.cs" />
     <Compile Include="ShellTestBase.cs" />
+    <Compile Include="ShellLifeCycleTests.cs" />
     <Compile Include="ShellUriHandlerTests.cs" />
     <Compile Include="CheckBoxUnitTests.cs" />
     <Compile Include="VisualTests.cs" />

@@ -46,18 +46,11 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (result)
 			{
-				var page = ((IShellContentController)shellContent).Page;
-				if (page == null)
-					throw new ArgumentNullException(nameof(page), "Shell Content Page is Null");
-
-				ShellSection.SetValueFromRenderer(ShellSection.CurrentItemProperty, shellContent);
-
-				_toolbarTracker.Page = page;
+				UpdateCurrentItem(shellContent);
 			}
 			else
 			{
 				_selecting = true;
-				var index = ShellSection.Items.IndexOf(ShellSection.CurrentItem);
 
 				// Android doesn't really appreciate you calling SetCurrentItem inside a OnPageSelected callback.
 				// It wont crash but the way its programmed doesn't really anticipate re-entrancy around that method
@@ -65,10 +58,28 @@ namespace Xamarin.Forms.Platform.Android
 
 				Device.BeginInvokeOnMainThread(() =>
 				{
-					_viewPager.SetCurrentItem(index, false);
+					if (position < _viewPager.ChildCount && _toolbarTracker != null)
+					{
+						_viewPager.SetCurrentItem(position, false);
+						UpdateCurrentItem(shellContent);
+					}
+
 					_selecting = false;
 				});
 			}
+		}
+
+		void UpdateCurrentItem(ShellContent content)
+		{
+			if (_toolbarTracker == null)
+				return;
+
+			var page = ((IShellContentController)content).Page;
+			if (page == null)
+				throw new ArgumentNullException(nameof(page), "Shell Content Page is Null");
+
+			ShellSection.SetValueFromRenderer(ShellSection.CurrentItemProperty, content);
+			_toolbarTracker.Page = page;
 		}
 
 		#endregion IOnPageChangeListener

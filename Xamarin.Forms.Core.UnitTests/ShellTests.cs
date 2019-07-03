@@ -596,5 +596,26 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual(0, shell.Items[1].Items.Count);
 			Assert.AreEqual(3, shell.Items[0].Items.Count);
 		}
+
+
+		[Test]
+		public async Task NavigatedFiresAfterContentIsCreatedWhenUsingTemplate()
+		{
+
+			var shell = new Shell();
+			var item1 = CreateShellItem(asImplicit: true, shellContentRoute: "rootlevelcontent1");
+
+			shell.Items.Add(item1);
+			Routing.RegisterRoute("cat", typeof(ContentPage));
+			Routing.RegisterRoute("details", typeof(ContentPage));
+
+			await shell.GoToAsync("cat");
+			await shell.GoToAsync("details");
+
+			Assert.AreEqual("//rootlevelcontent1/cat/details", shell.CurrentState.Location.ToString());
+			await shell.GoToAsync("//rootlevelcontent1/details");
+			Assert.AreEqual("//rootlevelcontent1/details", shell.CurrentState.Location.ToString());
+		}
+
 	}
 }

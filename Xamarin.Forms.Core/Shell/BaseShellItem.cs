@@ -3,12 +3,18 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Xamarin.Forms.Internals;
+using System.ComponentModel;
 
 namespace Xamarin.Forms
 {
 	[DebuggerDisplay("Title = {Title}, Route = {Route}")]
 	public class BaseShellItem : NavigableElement, IPropertyPropagationController, IVisualController, IFlowDirectionController, ITabStopElement
 	{
+		public event EventHandler Appearing;
+		public event EventHandler Disappearing;
+
+		bool _hasAppearing;
+
 		#region PropertyKeys
 
 		internal static readonly BindablePropertyKey IsCheckedPropertyKey = BindableProperty.CreateReadOnly(nameof(IsChecked), typeof(bool), typeof(BaseShellItem), false);
@@ -104,6 +110,51 @@ namespace Xamarin.Forms
 		{
 			get => (bool)GetValue(IsTabStopProperty);
 			set => SetValue(IsTabStopProperty, value);
+		}
+
+		internal virtual void SendAppearing()
+		{
+			if (_hasAppearing)
+				return;
+
+			_hasAppearing = true;
+			OnAppearing();
+			Appearing?.Invoke(this, EventArgs.Empty);
+		}
+
+		internal virtual void SendDisappearing()
+		{
+			if (!_hasAppearing)
+				return;
+
+			_hasAppearing = false;
+			OnDisappearing();
+			Disappearing?.Invoke(this, EventArgs.Empty);
+		}
+
+		protected virtual void OnAppearing()
+		{
+		}
+
+		protected virtual void OnDisappearing()
+		{
+		}
+
+		internal void OnAppearing(Action action)
+		{
+			if (_hasAppearing)
+				action();
+			else
+			{
+				EventHandler eventHandler = null;
+				eventHandler = (_, __) =>
+				{
+					this.Appearing -= eventHandler;
+					action();
+				};
+
+				this.Appearing += eventHandler;
+			}
 		}
 
 		protected virtual void OnTabStopPropertyChanged(bool oldValue, bool newValue) { }
