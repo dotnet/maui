@@ -12,7 +12,7 @@ namespace Xamarin.Forms
 
 			if (!(page.RealParent is Application))
 			{
-				Application app = new DefaultApplication();
+				Application app = new EmbeddedApplication();
 				app.MainPage = page;
 			}
 
@@ -21,8 +21,12 @@ namespace Xamarin.Forms
 			return result.ViewController;
 		}
 
-		class DefaultApplication : Application
+		sealed internal class EmbeddedApplication : Application, IDisposable
 		{
+			public void Dispose()
+			{
+				CleanUp();
+			}
 		}
 	}
 }

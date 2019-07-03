@@ -559,6 +559,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 			foreach (var modal in _modals)
 				modal.DisposeModalAndChildRenderers();
+
+			(Page.Parent as IDisposable)?.Dispose();
 		}
 	}
 }
