@@ -46,7 +46,7 @@ namespace Xamarin.Forms
 			var shellSection = request.Request.Section;
 
 			if (shellSection == null)
-				return Task.FromResult(true);
+				shellSection = Items[0];
 
 			Shell.ApplyQueryAttributes(shellSection, queryData, request.Request.Content == null);
 

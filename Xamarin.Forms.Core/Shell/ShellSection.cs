@@ -72,7 +72,7 @@ namespace Xamarin.Forms
 			ShellContent shellContent = request.Request.Content;
 
 			if (shellContent == null)
-				return Task.FromResult(true);
+				shellContent = Items[0];
 
 			if (request.Request.GlobalRoutes.Count > 0)
 			{
