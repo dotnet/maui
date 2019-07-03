@@ -26,9 +26,7 @@ namespace Xamarin.Forms
 		{
 			return IsImplicit(GetRoute(source));
 		}
-
-		internal static bool CompareWithRegisteredRoutes(string compare) => s_routes.ContainsKey(compare);
-
+		
 		internal static void Clear()
 		{
 			s_routes.Clear();
@@ -114,7 +112,7 @@ namespace Xamarin.Forms
 		{
 			if (!String.IsNullOrWhiteSpace(route))
 				route = FormatRoute(route);
-			ValidateRoute(route);
+			ValidateRoute(route, factory);
 
 			s_routes[route] = factory;
 		}
@@ -127,12 +125,7 @@ namespace Xamarin.Forms
 
 		public static void RegisterRoute(string route, Type type)
 		{
-			if(!String.IsNullOrWhiteSpace(route))
-				route = FormatRoute(route);
-
-			ValidateRoute(route);
-
-			s_routes[route] = new TypeRouteFactory(type);
+			RegisterRoute(route, new TypeRouteFactory(type));
 		}
 
 		public static void SetRoute(Element obj, string value)
@@ -140,10 +133,12 @@ namespace Xamarin.Forms
 			obj.SetValue(RouteProperty, value);
 		}
 
-		static void ValidateRoute(string route)
+		static void ValidateRoute(string route, RouteFactory routeFactory)
 		{
 			if (string.IsNullOrWhiteSpace(route))
 				throw new ArgumentNullException(nameof(route), "Route cannot be an empty string");
+
+			routeFactory = routeFactory ?? throw new ArgumentNullException(nameof(routeFactory), "Route Factory cannot be null");
 
 			var uri = new Uri(route, UriKind.RelativeOrAbsolute);
 
@@ -154,7 +149,8 @@ namespace Xamarin.Forms
 					throw new ArgumentException($"Route contains invalid characters in \"{part}\"");
 			}
 
-			if (CompareWithRegisteredRoutes(route))
+			RouteFactory existingRegistration = null;
+			if(s_routes.TryGetValue(route, out existingRegistration) && !existingRegistration.Equals(routeFactory))
 				throw new ArgumentException($"Duplicated Route: \"{route}\"");
 		}
 
@@ -170,6 +166,18 @@ namespace Xamarin.Forms
 			public override Element GetOrCreate()
 			{
 				return (Element)Activator.CreateInstance(_type);
+			}
+			public override bool Equals(object obj)
+			{
+				if ((obj is TypeRouteFactory typeRouteFactory))
+					return typeRouteFactory._type == _type;
+
+				return false;
+			}
+
+			public override int GetHashCode()
+			{
+				return _type.GetHashCode();
 			}
 		}
 	}

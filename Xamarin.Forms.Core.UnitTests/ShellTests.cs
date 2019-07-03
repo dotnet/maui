@@ -135,7 +135,15 @@ namespace Xamarin.Forms.Core.UnitTests
 			var route = "dogs";
 			Routing.RegisterRoute(route, typeof(ShellItem));
 
-			Assert.Catch(typeof(ArgumentException), () => Routing.RegisterRoute("dogs", typeof(ShellItem)));
+			Assert.Catch(typeof(ArgumentException), () => Routing.RegisterRoute("dogs", typeof(ContentPage)));
+		}
+
+		[Test]
+		public async Task SucceedWhenAddingDuplicateRouteOfSameType()
+		{
+			var route = "dogs";
+			Routing.RegisterRoute(route, typeof(ShellItem));
+			Routing.RegisterRoute(route, typeof(ShellItem));
 		}
 
 		[Test]
