@@ -11,6 +11,7 @@ using Xamarin.Forms.Xaml;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
@@ -51,6 +52,19 @@ namespace Xamarin.Forms.Controls.Issues
 		public void LegacyImageSourceProperties()
 		{
 			RunningApp.WaitForElement("Nothing Crashed");
+			RunningApp.RetryUntilPresent(
+				() =>
+				{
+					var result = RunningApp.WaitForElement("Image1");
+
+					if (result[0].Rect.Height > 50)
+						return result;
+
+					return null;
+				}, 10, 2000);
+
+			// ensure url images have loaded
+			System.Threading.Thread.Sleep(2000);
 		}
 #endif
 

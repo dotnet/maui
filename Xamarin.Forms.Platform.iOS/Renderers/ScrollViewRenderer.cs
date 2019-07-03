@@ -23,8 +23,6 @@ namespace Xamarin.Forms.Platform.iOS
 		bool _checkedForRtlScroll = false;
 		bool _previousLTR = true;
 
-		ShellScrollViewTracker _shellScrollTracker;
-
 		public ScrollViewRenderer() : base(RectangleF.Empty)
 		{
 			ScrollAnimationEnded += HandleScrollAnimationEnded;
@@ -76,12 +74,17 @@ namespace Xamarin.Forms.Platform.iOS
 					_events = new EventTracker(this);
 					_events.LoadEvents(this);
 
-					_insetTracker = new KeyboardInsetTracker(this, () => Window, insets => ContentInset = ScrollIndicatorInsets = insets, point =>
+
+					_insetTracker = new KeyboardInsetTracker(this, () => Window, insets =>
+					{
+						ContentInset = ScrollIndicatorInsets = insets;
+					}, 
+					point =>
 					{
 						var offset = ContentOffset;
 						offset.Y += point.Y;
 						SetContentOffset(offset, true);
-					});
+					}, this);
 				}
 
 				UpdateDelaysContentTouches();
@@ -90,8 +93,6 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateIsEnabled();
 				UpdateVerticalScrollBarVisibility();
 				UpdateHorizontalScrollBarVisibility();
-
-				_shellScrollTracker = new ShellScrollViewTracker(this);
 
 				OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 
@@ -119,8 +120,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void LayoutSubviews()
 		{
-			_shellScrollTracker?.OnLayoutSubviews();
-
+			_insetTracker?.OnLayoutSubviews();
 			base.LayoutSubviews();
 
 			if(Superview != null)
@@ -172,9 +172,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 				Element?.ClearValue(Platform.RendererProperty);
 				SetElement(null);
-
-				_shellScrollTracker.Dispose();
-				_shellScrollTracker = null;
 
 				_packager.Dispose();
 				_packager = null;

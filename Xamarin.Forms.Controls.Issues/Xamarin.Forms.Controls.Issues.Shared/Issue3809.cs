@@ -101,10 +101,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement($"{_safeAreaText}{false}");
 			element = RunningApp.WaitForElement(_paddingLabel).First();
 
-			if (usesSafeAreaInsets)
-				Assert.AreEqual(element.ReadText(), "0, 0, 0, 0");
-			else
-				Assert.AreEqual(element.ReadText(), "25, 25, 25, 25");
+			Assert.AreEqual(element.ReadText(), "25, 25, 25, 25");
 
 			// enable Safe Area insets
 			RunningApp.Tap(_safeAreaAutomationId);

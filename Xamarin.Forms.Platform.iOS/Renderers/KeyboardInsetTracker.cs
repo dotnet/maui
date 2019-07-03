@@ -10,16 +10,24 @@ namespace Xamarin.Forms.Platform.iOS
 		readonly Func<UIWindow> _fetchWindow;
 		readonly Action<PointF> _setContentOffset;
 		readonly Action<UIEdgeInsets> _setInsetAction;
-		readonly UIView _targetView;
+		readonly UIScrollView _targetView;
 		bool _disposed;
-
+		UIEdgeInsets _currentInset;
 		RectangleF _lastKeyboardRect;
+		ShellScrollViewTracker _shellScrollViewTracker;
 
-		public KeyboardInsetTracker(UIView targetView, Func<UIWindow> fetchWindow, Action<UIEdgeInsets> setInsetAction) : this(targetView, fetchWindow, setInsetAction, null)
+
+		public KeyboardInsetTracker(UIScrollView targetView, Func<UIWindow> fetchWindow, Action<UIEdgeInsets> setInsetAction) 
+			: this(targetView, fetchWindow, setInsetAction, null)
 		{
 		}
 
-		public KeyboardInsetTracker(UIView targetView, Func<UIWindow> fetchWindow, Action<UIEdgeInsets> setInsetAction, Action<PointF> setContentOffset)
+		public KeyboardInsetTracker(UIScrollView targetView, Func<UIWindow> fetchWindow, Action<UIEdgeInsets> setInsetAction, Action<PointF> setContentOffset)
+			 : this(targetView, fetchWindow, setInsetAction, setContentOffset, null)
+		{
+		}
+
+		public KeyboardInsetTracker(UIScrollView targetView, Func<UIWindow> fetchWindow, Action<UIEdgeInsets> setInsetAction, Action<PointF> setContentOffset, IVisualElementRenderer renderer)
 		{
 			_setContentOffset = setContentOffset;
 			_targetView = targetView;
@@ -27,16 +35,22 @@ namespace Xamarin.Forms.Platform.iOS
 			_setInsetAction = setInsetAction;
 			KeyboardObserver.KeyboardWillShow += OnKeyboardShown;
 			KeyboardObserver.KeyboardWillHide += OnKeyboardHidden;
+			if (renderer != null)
+				_shellScrollViewTracker = new ShellScrollViewTracker(renderer);
 		}
 
 		public void Dispose()
 		{
 			if (_disposed)
 				return;
+
 			_disposed = true;
 
 			KeyboardObserver.KeyboardWillShow -= OnKeyboardShown;
 			KeyboardObserver.KeyboardWillHide -= OnKeyboardHidden;
+
+			_shellScrollViewTracker?.Dispose();
+			_shellScrollViewTracker = null;
 		}
 
 		//This method allows us to update the insets if the Frame changes
@@ -68,6 +82,7 @@ namespace Xamarin.Forms.Platform.iOS
 			//let's see how much does it cover our target view
 			var overlay = RectangleF.Intersect(rect, _targetView.Frame);
 
+			_currentInset = _targetView.ContentInset;
 			_setInsetAction(new UIEdgeInsets(0, 0, overlay.Height, 0));
 
 			if (field is UITextView && _setContentOffset != null)
@@ -81,9 +96,13 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
+		public void OnLayoutSubviews() => _shellScrollViewTracker?.OnLayoutSubviews();
+
 		void OnKeyboardHidden(object sender, UIKeyboardEventArgs args)
 		{
-			_setInsetAction(new UIEdgeInsets(0, 0, 0, 0));
+			if(_shellScrollViewTracker == null || !_shellScrollViewTracker.Reset())
+				_setInsetAction(new UIEdgeInsets(0,0,0,0));
+
 			_lastKeyboardRect = RectangleF.Empty;
 		}
 

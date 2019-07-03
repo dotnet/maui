@@ -30,7 +30,6 @@
     <WarningLevel>4</WarningLevel>
     <AndroidLinkMode>None</AndroidLinkMode>
     <AndroidDexTool Condition=" '$(MSBuildAssemblyVersion)' != '15.0'">d8</AndroidDexTool>
-    <AndroidEnableMultiDex Condition=" '$(MSBuildAssemblyVersion)' == '15.0'">true</AndroidEnableMultiDex>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

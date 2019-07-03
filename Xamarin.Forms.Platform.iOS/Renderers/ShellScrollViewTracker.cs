@@ -25,13 +25,20 @@ namespace Xamarin.Forms.Platform.iOS
 		public ShellScrollViewTracker(IVisualElementRenderer renderer)
 		{
 			_renderer = renderer;
-			_scrollView = (UIScrollView)_renderer.NativeView;
+
+			if (_renderer.NativeView is UIScrollView scrollView)
+				_scrollView = scrollView;
+			else if (_renderer.NativeView.Subviews.Length > 0 && _renderer.NativeView.Subviews[0] is UIScrollView nestedScrollView)
+				_scrollView = nestedScrollView;
+
+			if (_scrollView == null)
+				return;
 
 			var parent = _renderer.Element.Parent;
 
 			while (!Application.IsApplicationOrNull(parent))
 			{
-				if (parent is ScrollView || parent is ListView || parent is TableView)
+				if (parent is ScrollView || parent is ListView || parent is TableView || parent is CollectionView)
 					break;
 				parent = parent.Parent;
 
@@ -64,12 +71,41 @@ namespace Xamarin.Forms.Platform.iOS
 				var newBounds = _scrollView.AdjustedContentInset.InsetRect(_scrollView.Bounds).ToRectangle();
 				newBounds.X = 0;
 				newBounds.Y = 0;
-				((ScrollView)_renderer.Element).LayoutAreaOverride = newBounds;
+				if(_renderer.Element is ScrollView scrollView)
+					scrollView.LayoutAreaOverride = newBounds;
 			}
+		}
+
+		Thickness _lastInset;
+		double _tabThickness;
+
+		public bool Reset()
+		{
+			if (!_isInShell)
+				return false;
+
+			if (_lastInset == 0 && _tabThickness == 0)
+				return false;
+
+			if (!Forms.IsiOS11OrNewer)
+			{
+				UpdateContentInset(_lastInset, _tabThickness);
+				return true;
+			}
+
+			if (_shellSection.Items.Count > 1 && _isInItems)
+			{
+				UpdateContentInset(_lastInset, _tabThickness);
+				return true;
+			}
+
+			return false;
 		}
 
 		void UpdateContentInset(Thickness inset, double tabThickness)
 		{
+			_lastInset = inset;
+			_tabThickness = tabThickness;
 			if (Forms.IsiOS11OrNewer)
 			{
 				if (_shellSection.Items.Count > 1 && _isInItems)
@@ -77,10 +113,15 @@ namespace Xamarin.Forms.Platform.iOS
 					var top = (float)tabThickness;
 
 					var delta = _scrollView.ContentInset.Top - top;
-					_scrollView.ContentInset = new UIEdgeInsets(top, 0, 0, 0);
+					var newInset = new UIEdgeInsets(top, 0, 0, 0);
 
-					var currentOffset = _scrollView.ContentOffset;
-					_scrollView.ContentOffset = new PointF(currentOffset.X, currentOffset.Y + delta);
+					if (newInset != _scrollView.ContentInset)
+					{
+						_scrollView.ContentInset = newInset;
+
+						var currentOffset = _scrollView.ContentOffset;
+						_scrollView.ContentOffset = new PointF(currentOffset.X, currentOffset.Y + delta);
+					}
 				}
 
 				_scrollView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Always;
@@ -89,14 +130,19 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				var top = (float)(inset.Top);
 
-				if (_shellSection.Items.Count > 1 && _isInItems)
+				if (_isInItems)
 					top += (float)tabThickness;
 
 				var delta = _scrollView.ContentInset.Top - top;
-				_scrollView.ContentInset = new UIEdgeInsets(top, (float)inset.Left, (float)inset.Bottom, (float)inset.Right);
+				var newInset = new UIEdgeInsets(top, (float)inset.Left, (float)inset.Bottom, (float)inset.Right);
 
-				var currentOffset = _scrollView.ContentOffset;
-				_scrollView.ContentOffset = new PointF(currentOffset.X, currentOffset.Y + delta);
+				if (newInset != _scrollView.ContentInset)
+				{
+					_scrollView.ContentInset = newInset;
+
+					var currentOffset = _scrollView.ContentOffset;
+					_scrollView.ContentOffset = new PointF(currentOffset.X, currentOffset.Y + delta - inset.Bottom);
+				}
 			}
 		}
 
@@ -107,7 +153,8 @@ namespace Xamarin.Forms.Platform.iOS
 			// If we can't bounce in that case you may not be able to expose the handler.
 			// Also the hiding behavior only depends on scroll on iOS 11. In 10 and below
 			// the search goes in the TitleView so there is nothing to collapse/expand.
-			if (!Forms.IsiOS11OrNewer || ((ScrollView)_renderer.Element).Orientation == ScrollOrientation.Horizontal)
+			if (!Forms.IsiOS11OrNewer || 
+				(_renderer.Element is ScrollView scrollView && scrollView.Orientation == ScrollOrientation.Horizontal))
 				return;
 
 			var parent = _renderer.Element.Parent;

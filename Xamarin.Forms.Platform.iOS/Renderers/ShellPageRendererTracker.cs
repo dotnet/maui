@@ -144,6 +144,7 @@ namespace Xamarin.Forms.Platform.iOS
 		protected virtual void OnRendererSet()
 		{
 			NavigationItem = ViewController.NavigationItem;
+
 			if (!Forms.IsiOS11OrNewer)
 			{
 				ViewController.AutomaticallyAdjustsScrollViewInsets = false;

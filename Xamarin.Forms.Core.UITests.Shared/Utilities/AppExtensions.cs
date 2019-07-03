@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Core.UITests
 			var results = func();
 
 			int counter = 0;
-			while (results.Length == 0 && counter < retryCount)
+			while ((results == null || results.Length == 0) && counter < retryCount)
 			{
 				Thread.Sleep(delayInMs);
 				results = func();

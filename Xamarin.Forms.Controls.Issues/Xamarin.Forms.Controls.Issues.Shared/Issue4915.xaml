@@ -16,7 +16,7 @@
                 <Label Text="Verify that Button.Image, MenuItem.Icon, Page.BackgroundImage, Page.Icon, Slider.ThumbImage all have coffee cups"></Label>
                 <Button Image="{Binding Image}" Clicked="ButtonClicked"></Button>
                 <Slider ThumbImage="{Binding Image}"></Slider>
-                <Button ImageSource="{Binding ImageUrl}" Clicked="ButtonClicked"></Button>
+                <Button AutomationId="Image1" ImageSource="{Binding ImageUrl}" Clicked="ButtonClicked"></Button>
                 <Slider ThumbImageSource="{Binding ImageUrl}"></Slider>          
             </StackLayout>
         </ScrollView>

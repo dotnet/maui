@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Ignore("Shell test is only supported on Android and iOS")]
 #endif 
 		[Test]
-		public void Issue5132Test()
+		public void ShellFlyoutAndHamburgerAutomationProperties()
 		{
 			RunningApp.WaitForElement(q => q.Marked(_idIconElement));
 			TapInFlyout(_titleElement, _idIconElement);
