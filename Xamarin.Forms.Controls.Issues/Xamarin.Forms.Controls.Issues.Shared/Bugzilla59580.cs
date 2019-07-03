@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void Issue59580Test()
+		public void RaisingCommandCanExecuteChangedCausesCrashOnAndroid()
 		{
 			RunningApp.WaitForElement(c => c.Marked("Cell"));
 
