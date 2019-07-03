@@ -13,8 +13,8 @@ namespace Xamarin.Forms.Core.UITests
 		public static AppResult[] RetryUntilPresent(
 			this IApp app,
 			Func<AppResult[]> func,
-			int retryCount,
-			int delayInMs)
+			int retryCount = 10,
+			int delayInMs = 2000)
 		{
 			var results = func();
 

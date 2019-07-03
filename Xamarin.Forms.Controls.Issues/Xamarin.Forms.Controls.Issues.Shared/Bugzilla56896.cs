@@ -9,18 +9,21 @@ using System.Diagnostics;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.ListView)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 56896, "ListViews for lists with many elements regressed in performance on iOS", PlatformAffected.iOS)]
 	public class Bugzilla56896 : TestContentPage
 	{
-		const string Instructions = "The number in blue is the number of constructor calls. The number in red is the initial load time in milliseconds.";
+		const string Instructions = "The number in blue is the number of constructor calls. The number in purple is the initial load time in milliseconds.";
+		const string InstructionsId = "InstructionsId";
 		const string ConstructorCountId = "constructorCount";
 		const string TimeId = "time";
 
@@ -196,11 +199,11 @@ namespace Xamarin.Forms.Controls.Issues
 				// Also note that performance will degrade if the first cell does not have a specified height or
 				// if most of the cells do not have a specified height. It is recommended to specify a height on all
 				// or none of the cells when possible.
-				RowHeight = 50, 
+				RowHeight = 50,
 				ItemsSource = Enumerable.Range(1, 5001),
 				ItemTemplate = new MyDataTemplateSelector(vm)
 			};
-			Content = new StackLayout { Children = { new Label { Text = Instructions }, label, _timeLabel, _listView } };
+			Content = new StackLayout { Children = { new Label { Text = Instructions, AutomationId = InstructionsId }, label, _timeLabel, _listView } };
 		}
 
 		protected override void OnAppearing()
@@ -214,14 +217,14 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void Bugzilla56896Test()
+		public void ListViewsWithManyElementsPerformanceCheck()
 		{
 			RunningApp.WaitForElement(q => q.Marked(Instructions));
 			RunningApp.WaitForElement(q => q.Marked(ConstructorCountId));
 			RunningApp.WaitForElement(q => q.Marked(TimeId));
-			var count = int.Parse(RunningApp.Query(q => q.Marked(ConstructorCountId))[0].Text);
+			var count = int.Parse(RunningApp.WaitForElement(q => q.Marked(ConstructorCountId))[0].Text);
 			Assert.IsTrue(count < 100); // Failing test makes ~15000 constructor calls
-			var time = int.Parse(RunningApp.Query(q => q.Marked(TimeId))[0].Text);
+			var time = int.Parse(RunningApp.WaitForElement(q => q.Marked(TimeId))[0].Text);
 			Assert.IsTrue(count < 2000); // Failing test takes ~4000ms
 		}
 #endif
