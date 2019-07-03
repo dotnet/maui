@@ -395,6 +395,11 @@ namespace Xamarin.Forms.Platform.GTK
 			}
 		}
 
+		internal void ResetToolBar()
+		{
+			_toolbar = null;
+		}
+
 		private void OnToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == MenuItem.IsEnabledProperty.PropertyName)

@@ -248,6 +248,10 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			if (_currentPage != null)
 			{
 				_currentPage.PropertyChanged += OnCurrentPagePropertyChanged;
+				if (_toolbarTracker != null)
+				{
+					_toolbarTracker.ResetToolBar();
+				}
 			}
 
 			UpdateTitle();
