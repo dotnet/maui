@@ -8,6 +8,8 @@ namespace Xamarin.Forms.Platform.iOS
 	public class SwitchRenderer : ViewRenderer<Switch, UISwitch>
 	{
 		UIColor _defaultOnColor;
+		UIColor _defaultThumbColor;
+
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
@@ -30,9 +32,11 @@ namespace Xamarin.Forms.Platform.iOS
 				}
 
 				_defaultOnColor = UISwitch.Appearance.OnTintColor;
+				_defaultThumbColor = UISwitch.Appearance.ThumbTintColor;
 				Control.On = Element.IsToggled;
 				e.NewElement.Toggled += OnElementToggled;
 				UpdateOnColor();
+				UpdateThumbColor();
 			}
 
 			base.OnElementChanged(e);
@@ -47,6 +51,15 @@ namespace Xamarin.Forms.Platform.iOS
 				else
 					Control.OnTintColor = Element.OnColor.ToUIColor();
 			}
+		}
+
+		void UpdateThumbColor()
+		{
+			if (Element == null)
+				return;
+
+			Color thumbColor = Element.ThumbColor;
+			Control.ThumbTintColor = thumbColor.IsDefault ? _defaultThumbColor : thumbColor.ToUIColor();
 		}
 
 		void OnControlValueChanged(object sender, EventArgs e)
@@ -65,6 +78,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (e.PropertyName == Switch.OnColorProperty.PropertyName)
 				UpdateOnColor();
+			if (e.PropertyName == Switch.ThumbColorProperty.PropertyName)
+				UpdateThumbColor();
 		}
 	}
 }

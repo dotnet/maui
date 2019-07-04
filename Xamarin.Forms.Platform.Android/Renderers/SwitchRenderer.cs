@@ -12,6 +12,7 @@ namespace Xamarin.Forms.Platform.Android
 	public class SwitchRenderer : ViewRenderer<Switch, ASwitch>, CompoundButton.IOnCheckedChangeListener
 	{
 		Drawable _defaultTrackDrawable;
+		ColorFilter _defaultThumbColorFilter;
 
 		public SwitchRenderer(Context context) : base(context)
 		{
@@ -83,6 +84,7 @@ namespace Xamarin.Forms.Platform.Android
 					aswitch.SetOnCheckedChangeListener(this);
 					SetNativeControl(aswitch);
 					_defaultTrackDrawable = Control.TrackDrawable;
+					_defaultThumbColorFilter = Control.ThumbDrawable.ColorFilter;
 				}
 				else
 				{
@@ -92,6 +94,7 @@ namespace Xamarin.Forms.Platform.Android
 				e.NewElement.Toggled += HandleToggled;
 				Control.Checked = e.NewElement.IsToggled;
 				UpdateOnColor();
+				UpdateThumbColor();
 			}
 		}
 
@@ -101,6 +104,8 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (e.PropertyName == Switch.OnColorProperty.PropertyName)
 				UpdateOnColor();
+			else if (e.PropertyName == Slider.ThumbColorProperty.PropertyName)
+				UpdateThumbColor();
 		}
 
 		void UpdateOnColor()
@@ -126,6 +131,18 @@ namespace Xamarin.Forms.Platform.Android
 					Control.TrackDrawable?.ClearColorFilter();
 				}
 			}
+		}
+
+		void UpdateThumbColor()
+		{
+			if (Element == null)
+				return;
+
+			Color thumbColor = Element.ThumbColor;
+			if (thumbColor.IsDefault)
+				Control.ThumbDrawable.SetColorFilter(_defaultThumbColorFilter);
+			else
+				Control.ThumbDrawable.SetColorFilter(thumbColor.ToAndroid(), PorterDuff.Mode.SrcIn);
 		}
 
 		void HandleToggled(object sender, EventArgs e)

@@ -12,6 +12,7 @@ namespace Xamarin.Forms.Platform.UWP
 	{
 		Brush _originalOnHoverColor;
 		Brush _originalOnColorBrush;
+		Brush _originalThumbOnBrush;
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Switch> e)
 		{
@@ -49,6 +50,8 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 			else if (e.PropertyName == Switch.OnColorProperty.PropertyName)
 				UpdateOnColor();
+			else if (e.PropertyName == Switch.ThumbColorProperty.PropertyName)
+				UpdateThumbColor();
 		}
 
 		protected override bool PreventGestureBubbling { get; set; } = true;
@@ -56,6 +59,7 @@ namespace Xamarin.Forms.Platform.UWP
 		void OnControlLoaded(object sender, RoutedEventArgs e)
 		{
 			UpdateOnColor();
+			UpdateThumbColor();
 			Control.Loaded -= OnControlLoaded;
 		}
 
@@ -119,6 +123,44 @@ namespace Xamarin.Forms.Platform.UWP
 				rect.Fill = new SolidColorBrush(Element.OnColor.ToWindowsColor());
 			else
 				rect.Fill = _originalOnColorBrush;
+		}
+
+		void UpdateThumbColor()
+		{
+			if (Control == null)
+				return;
+
+			var grid = Control.GetFirstDescendant<Windows.UI.Xaml.Controls.Grid>();
+			if (grid == null)
+				return;
+
+			ObjectKeyFrame frame = Windows.UI.Xaml.VisualStateManager.GetVisualStateGroups(grid)
+				.First(g => g.Name == "CommonStates")
+				.States.First(s => s.Name == "PointerOver")
+				.Storyboard.Children.OfType<ObjectAnimationUsingKeyFrames>().First(
+					t => Storyboard.GetTargetName(t) == "SwitchKnobOn" &&
+						 Storyboard.GetTargetProperty(t) == "Fill")
+				.KeyFrames.First();
+
+			if (_originalThumbOnBrush == null)
+				_originalThumbOnBrush = (Brush)frame.Value;
+
+			if (!Element.ThumbColor.IsDefault)
+				frame.Value = new SolidColorBrush(Element.ThumbColor.ToWindowsColor())
+				{
+					Opacity = _originalThumbOnBrush.Opacity
+				};
+			else
+				frame.Value = _originalThumbOnBrush;
+
+			var thumb = (Ellipse)grid.FindName("SwitchKnobOn");
+			if (_originalThumbOnBrush == null)
+				_originalThumbOnBrush = thumb.Fill;
+
+			if (!Element.ThumbColor.IsDefault)
+				thumb.Fill = new SolidColorBrush(Element.ThumbColor.ToWindowsColor());
+			else
+				thumb.Fill = _originalThumbOnBrush;
 		}
 	}
 }

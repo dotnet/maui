@@ -715,7 +715,8 @@ namespace Xamarin.Forms.CustomAttributes
 		public enum Switch
 		{
 			IsToggled,
-			OnColor
+			OnColor,
+			ThumbColor
 		}
 
 		public enum CheckBox

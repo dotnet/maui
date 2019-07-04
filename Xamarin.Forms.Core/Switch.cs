@@ -15,12 +15,19 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty OnColorProperty = BindableProperty.Create(nameof(OnColor), typeof(Color), typeof(Switch), Color.Default);
 
+		public static readonly BindableProperty ThumbColorProperty = BindableProperty.Create(nameof(ThumbColor), typeof(Color), typeof(Switch), Color.Default);
+
 		public Color OnColor
 		{
 			get { return (Color)GetValue(OnColorProperty); }
 			set { SetValue(OnColorProperty, value); }
 		}
 
+		public Color ThumbColor
+		{
+			get { return (Color)GetValue(ThumbColorProperty); }
+			set { SetValue(ThumbColorProperty, value); }
+		}
 
 		readonly Lazy<PlatformConfigurationRegistry<Switch>> _platformConfigurationRegistry;
 

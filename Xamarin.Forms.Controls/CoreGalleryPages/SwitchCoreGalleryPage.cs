@@ -14,11 +14,11 @@ namespace Xamarin.Forms.Controls
 			get { return false; }
 		}
 
-		protected override void Build (StackLayout stackLayout)
+		protected override void Build(StackLayout stackLayout)
 		{
-			base.Build (stackLayout);
+			base.Build(stackLayout);
 
-			var isToggledContainer = new ValueViewContainer<Switch> (Test.Switch.IsToggled, new Switch (), "IsToggled", value => value.ToString ());
+			var isToggledContainer = new ValueViewContainer<Switch>(Test.Switch.IsToggled, new Switch(), "IsToggled", value => value.ToString());
 
 			var onColoredSwitch = new Switch() { OnColor = Color.HotPink };
 
@@ -36,8 +36,16 @@ namespace Xamarin.Forms.Controls
 			onColorContainer.ContainerLayout.Children.Add(changeOnColorButton);
 			onColorContainer.ContainerLayout.Children.Add(clearOnColorButton);
 
+			var thumbColorSwitch = new Switch() { ThumbColor = Color.Yellow };
+			var thumbColorContainer = new ValueViewContainer<Switch>(Test.Switch.ThumbColor, thumbColorSwitch, nameof(Switch.ThumbColor), value => value.ToString());
+			var changeThumbColorButton = new Button { Text = "Change ThumbColor", Command = new Command(() => thumbColorSwitch.ThumbColor = Color.Azure) };
+			var clearThumbColorButton = new Button { Text = "Clear ThumbColor", Command = new Command(() => thumbColorSwitch.ThumbColor = Color.Default) };
+			thumbColorContainer.ContainerLayout.Children.Add(changeThumbColorButton);
+			thumbColorContainer.ContainerLayout.Children.Add(clearThumbColorButton);
+
 			Add(isToggledContainer);
 			Add(onColorContainer);
+			Add(thumbColorContainer);
 		}
 	}
 }
