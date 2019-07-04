@@ -296,7 +296,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		[Test]
-		public void Issue42620Test()
+		public void GridChildrenAddHorizontalDoesNotSpanAllRows()
 		{
 			Issue42620Test("RCRHVHVHVHVHV");
 

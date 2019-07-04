@@ -271,7 +271,7 @@
 	</DataTemplate>
 
 	<DataTemplate x:Key="ImageCell">
-        <Grid AutomationProperties.AutomationId="CoffeeAutomationId">
+		<Grid AutomationProperties.AutomationId="{Binding AutomationId}">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="Auto" />
 				<ColumnDefinition />
@@ -303,7 +303,7 @@
 	</DataTemplate>
 	
 	<DataTemplate x:Key="SwitchCell">
-        <Grid HorizontalAlignment="Stretch" x:Name="ParentGrid"  AutomationProperties.AutomationId="{Binding AutomationId}">
+		<Grid HorizontalAlignment="Stretch" x:Name="ParentGrid"  AutomationProperties.AutomationId="{Binding AutomationId}">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*" />
 				<ColumnDefinition Width="Auto" />

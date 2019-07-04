@@ -64,15 +64,8 @@ namespace Xamarin.Forms.Platform.UWP
 			Color backgroundColor = Element.BackgroundColor;
 			if (Control != null)
 			{
-				if (!backgroundColor.IsDefault)
-				{
-					Control.Background = backgroundColor.ToBrush();
-				}
-				else
-				{
-					Control.ClearValue(BackgroundProperty);
-				}
-			}			
+				Control.Background = backgroundColor.IsDefault ? null : backgroundColor.ToBrush();
+			}
 		}
 
 		void PackChild()

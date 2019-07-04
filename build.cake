@@ -6,10 +6,13 @@
 // examples
 /*
 
+Windows CMD:
+build.cmd -Target NugetPack
+build.cmd -Target NugetPack -ScriptArgs '-packageVersion="9.9.9-custom"'
+
+PowerShell:
 ./build.ps1 -Target NugetPack
 ./build.ps1 -Target NugetPack -ScriptArgs '-packageVersion="9.9.9-custom"'
-
-
 
  */
 //////////////////////////////////////////////////////////////////////
