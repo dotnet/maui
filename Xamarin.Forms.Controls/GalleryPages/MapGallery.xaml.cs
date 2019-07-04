@@ -27,6 +27,8 @@ namespace Xamarin.Forms.Controls
 			Map.MapClicked += MapClicked;
 
 			((Grid)Content).Children.Add(Map, 0, 1);
+
+			_btnToggleMoveToLastRegionOnLayoutChange.Text = Map.MoveToLastRegionOnLayoutChangeProperty.DefaultValue.ToString();
 		}
 
 		public static Map MakeMap()
@@ -154,6 +156,12 @@ namespace Xamarin.Forms.Controls
 		void RemovePinClicked(object sender, EventArgs e)
 		{
 			Map.Pins.RemoveAt(0);
+		}
+
+		void ToggleMoveToLastRegionOnLayoutChange(object sender, EventArgs e)
+		{
+			Map.MoveToLastRegionOnLayoutChange = !Map.MoveToLastRegionOnLayoutChange;
+			((Button)sender).Text = Map.MoveToLastRegionOnLayoutChange.ToString();
 		}
 	}
 }

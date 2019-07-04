@@ -179,7 +179,7 @@ namespace Xamarin.Forms.Maps.MacOS
 			else if (e.PropertyName == Map.HasZoomEnabledProperty.PropertyName)
 				UpdateHasZoomEnabled();
 			else if (e.PropertyName == VisualElement.HeightProperty.PropertyName && ((Map)Element).LastMoveToRegion != null)
-				_shouldUpdateRegion = true;
+				_shouldUpdateRegion = ((Map)Element).MoveToLastRegionOnLayoutChange;
 		}
 
 #if __MOBILE__

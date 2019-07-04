@@ -28,6 +28,8 @@ namespace Xamarin.Forms.Maps
 		public static readonly BindableProperty ItemTemplateSelectorProperty = BindableProperty.Create(nameof(ItemTemplateSelector), typeof(DataTemplateSelector), typeof(Map), default(DataTemplateSelector),
 			propertyChanged: (b, o, n) => ((Map)b).OnItemTemplateSelectorPropertyChanged());
 
+		public static readonly BindableProperty MoveToLastRegionOnLayoutChangeProperty = BindableProperty.Create(nameof(MoveToLastRegionOnLayoutChange), typeof(bool), typeof(Map), defaultValue: true);
+
 		readonly ObservableCollection<Pin> _pins = new ObservableCollection<Pin>();
 		MapSpan _visibleRegion;
 
@@ -91,7 +93,13 @@ namespace Xamarin.Forms.Maps
 			get { return (DataTemplateSelector)GetValue(ItemTemplateSelectorProperty); }
 			set { SetValue(ItemTemplateSelectorProperty, value); }
 		}
-		
+
+		public bool MoveToLastRegionOnLayoutChange
+		{
+			get { return (bool)GetValue(MoveToLastRegionOnLayoutChangeProperty); }
+			set { SetValue(MoveToLastRegionOnLayoutChangeProperty, value); }
+		}
+
 		public event EventHandler<MapClickedEventArgs> MapClicked;
 		
 		[EditorBrowsable(EditorBrowsableState.Never)]
