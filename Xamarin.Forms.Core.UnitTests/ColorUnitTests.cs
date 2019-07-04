@@ -225,6 +225,23 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		public void TestToHex()
+		{
+			var colorRgb = Color.FromRgb(138, 43, 226);
+			Assert.AreEqual(Color.FromHex(colorRgb.ToHex()), colorRgb);
+			var colorRgba = Color.FromRgba(138, 43, 226,.2);
+			Assert.AreEqual(Color.FromHex(colorRgba.ToHex()), colorRgba);
+			var colorHsl = Color.FromHsla(240, 1, 1);	
+			Assert.AreEqual(Color.FromHex(colorHsl.ToHex()),colorHsl);
+			var colorHsla = Color.FromHsla(240, 1, 1,.1);
+			var hexFromHsla = Color.FromHex(colorHsla.ToHex());
+			Assert.That(hexFromHsla.A, Is.EqualTo(colorHsla.A).Within(0.002));
+			Assert.That(hexFromHsla.R, Is.EqualTo(colorHsla.R).Within(0.001));
+			Assert.That(hexFromHsla.G, Is.EqualTo(colorHsla.G).Within(0.001));
+			Assert.That(hexFromHsla.B, Is.EqualTo(colorHsla.B).Within(0.001));
+		}
+
+		[Test]
 		public void FromRGBDouble ()
 		{
 			var color = Color.FromRgb (0.2, 0.3, 0.4);
