@@ -24,6 +24,10 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 		}
 
+		public WkWebViewRenderer(WKWebViewConfiguration config) : base(RectangleF.Empty, config)
+		{
+		}
+
 		WebView WebView => Element as WebView;
 
 		public VisualElement Element { get; private set; }
