@@ -448,9 +448,6 @@ namespace Xamarin.Forms
 
 		internal static void ApplyQueryAttributes(Element element, IDictionary<string, string> query, bool isLastItem)
 		{
-			if (query.Count == 0)
-				return;
-
 			string prefix = "";
 			if (!isLastItem)
 			{
@@ -486,7 +483,7 @@ namespace Xamarin.Forms
 				filteredQuery.Add(key, q.Value);
 			}
 
-			if (baseShellItem != null)
+			if (baseShellItem is ShellContent)
 				baseShellItem.ApplyQueryAttributes(filteredQuery);
 			else if (isLastItem)
 				element.SetValue(ShellContent.QueryAttributesProperty, query);
