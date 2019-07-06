@@ -8,6 +8,7 @@ using System.Linq;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using System.Threading;
+using System.ComponentModel;
 
 
 #if UITEST
@@ -120,7 +121,7 @@ namespace Xamarin.Forms.Controls.Issues
 		void EmptyPageSafeArea()
 		{
 			var page = CreateContentPage();
-			var topLabel = new Label() { Text = "Top Label", HeightRequest = 200, AutomationId = SafeAreaTopLabel, VerticalOptions = LayoutOptions.Start };
+			var topLabel = new Label() { Text = "Top Label", HeightRequest = 0, AutomationId = SafeAreaTopLabel, VerticalOptions = LayoutOptions.Start };
 			page.Content =
 				new StackLayout()
 				{
@@ -143,10 +144,20 @@ namespace Xamarin.Forms.Controls.Issues
 
 			page.BackgroundColor = Color.Yellow;
 
-			page.Appearing += (_, __) =>
+			PropertyChangedEventHandler propertyChangedEventHandler = null;
+			propertyChangedEventHandler = (sender, args) =>
 			{
-				topLabel.HeightRequest = page.On<iOS>().SafeAreaInsets().Top;
+				if(args.PropertyName == PlatformConfiguration.iOSSpecific.Page.SafeAreaInsetsProperty.PropertyName)
+				{
+					if (page.On<iOS>().SafeAreaInsets().Top > 0)
+					{
+						page.PropertyChanged -= propertyChangedEventHandler;
+						topLabel.HeightRequest = page.On<iOS>().SafeAreaInsets().Top;
+					}
+				}
 			};
+
+			page.PropertyChanged += propertyChangedEventHandler;
 
 			Shell.SetTabBarIsVisible(page, false);
 			Shell.SetNavBarIsVisible(page, false);

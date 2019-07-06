@@ -91,7 +91,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					aswitch.SetOnCheckedChangeListener(this);
 					SetNativeControl(aswitch);
 					_defaultTrackDrawable = aswitch.TrackDrawable;
-					_defaultThumbColorFilter = Control.ThumbDrawable.ColorFilter;
+					_defaultThumbColorFilter = Control.ThumbDrawable.GetColorFilter();
 				}
 				else
 					UpdateEnabled(); // Normally set by SetNativeControl, but not when the Control is reused.
@@ -140,11 +140,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			if (Element == null)
 				return;
 
-			Color thumbColor = Element.ThumbColor;
-			if (thumbColor.IsDefault)
-				Control.ThumbDrawable.SetColorFilter(_defaultThumbColorFilter);
-			else
-				Control.ThumbDrawable.SetColorFilter(thumbColor.ToAndroid(), PorterDuff.Mode.SrcIn);
+			Control.ThumbDrawable.SetColorFilter(Element.ThumbColor, _defaultThumbColorFilter);
 		}
 
 		void HandleToggled(object sender, EventArgs e)

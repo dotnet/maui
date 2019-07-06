@@ -83,8 +83,8 @@ namespace Xamarin.Forms.Platform.Android
 					var aswitch = CreateNativeControl();
 					aswitch.SetOnCheckedChangeListener(this);
 					SetNativeControl(aswitch);
-					_defaultTrackDrawable = Control.TrackDrawable;
-					_defaultThumbColorFilter = Control.ThumbDrawable.ColorFilter;
+					_defaultTrackDrawable = Control.TrackDrawable;					
+					_defaultThumbColorFilter = Control.ThumbDrawable.GetColorFilter();
 				}
 				else
 				{
@@ -138,11 +138,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (Element == null)
 				return;
 
-			Color thumbColor = Element.ThumbColor;
-			if (thumbColor.IsDefault)
-				Control.ThumbDrawable.SetColorFilter(_defaultThumbColorFilter);
-			else
-				Control.ThumbDrawable.SetColorFilter(thumbColor.ToAndroid(), PorterDuff.Mode.SrcIn);
+			Control.ThumbDrawable.SetColorFilter(Element.ThumbColor, _defaultThumbColorFilter);
 		}
 
 		void HandleToggled(object sender, EventArgs e)

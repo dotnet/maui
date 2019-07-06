@@ -421,17 +421,16 @@ namespace Xamarin.Forms
 						{
 							shellSection.SetValueFromRenderer(ShellSection.CurrentItemProperty, shellContent);							
 						}
-
-						if (navigationRequest.Request.GlobalRoutes.Count > 0)
-						{
-							// TODO get rid of this hack and fix so if there's a stack the current page doesn't display
-							Device.BeginInvokeOnMainThread(async () =>
-							{
-								await shellSection.GoToAsync(navigationRequest, queryData, false);
-							});
-						}
-
 					}
+				}
+
+				if (navigationRequest.Request.GlobalRoutes.Count > 0)
+				{
+					// TODO get rid of this hack and fix so if there's a stack the current page doesn't display
+					Device.BeginInvokeOnMainThread(async () =>
+					{
+						await CurrentItem.CurrentItem.GoToAsync(navigationRequest, queryData, false);
+					});
 				}
 			}
 			else
