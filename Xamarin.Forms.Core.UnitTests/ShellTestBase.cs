@@ -20,6 +20,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		public override void TearDown()
 		{
 			base.TearDown();
+			Routing.Clear();
 
 		}
 

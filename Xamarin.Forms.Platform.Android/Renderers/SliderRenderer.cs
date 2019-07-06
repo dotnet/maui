@@ -73,7 +73,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (Build.VERSION.SdkInt > BuildVersionCodes.Kitkat)
 				{
-					defaultthumbcolorfilter = seekBar.Thumb.ColorFilter;
+					defaultthumbcolorfilter = seekBar.Thumb.GetColorFilter();
 					defaultprogresstintmode = seekBar.ProgressTintMode;
 					defaultprogressbackgroundtintmode = seekBar.ProgressBackgroundTintMode;
 					defaultprogresstintlist = seekBar.ProgressTintList;
@@ -178,23 +178,12 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
-		private void UpdateThumbColor()
+		void UpdateThumbColor()
 		{
-			if (Element != null)
-			{
-				if (Element.ThumbColor == Color.Default)
-				{
-					Control.Thumb.SetColorFilter(defaultthumbcolorfilter);
-				}
-				else
-				{
-					Control.Thumb.SetColorFilter(Element.ThumbColor.ToAndroid(), PorterDuff.Mode.SrcIn);
-				}
-
-			}
+			Control.Thumb.SetColorFilter(Element.ThumbColor, defaultthumbcolorfilter);
 		}
 
-		private void UpdateThumbImage()
+		void UpdateThumbImage()
 		{
 			this.ApplyDrawableAsync(Slider.ThumbImageSourceProperty, Context, drawable =>
 			{

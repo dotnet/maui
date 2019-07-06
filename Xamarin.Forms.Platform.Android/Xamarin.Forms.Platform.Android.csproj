@@ -98,6 +98,7 @@
     <Compile Include="CollectionView\TemplatedItemViewHolder.cs" />
     <Compile Include="CollectionView\TextViewHolder.cs" />
     <Compile Include="Elevation.cs" />
+    <Compile Include="Extensions\DrawableExtensions.cs" />
     <Compile Include="Extensions\EntryRendererExtensions.cs" />
     <Compile Include="Extensions\FragmentManagerExtensions.cs" />
     <Compile Include="Extensions\ScrollViewExtensions.cs" />

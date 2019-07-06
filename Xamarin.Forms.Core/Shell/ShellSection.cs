@@ -598,11 +598,20 @@ namespace Xamarin.Forms
 			}
 		}
 
+		protected override void OnBindingContextChanged()
+		{
+			base.OnBindingContextChanged();
+
+			foreach (ShellContent shellContent in Items)
+			{
+				SetInheritedBindingContext(shellContent, BindingContext);
+			}
+		}
+    
 		internal override void SendDisappearing()
 		{
 			base.SendDisappearing();
 			PresentedPageDisappearing();
-
 		}
 
 		internal override void SendAppearing()
