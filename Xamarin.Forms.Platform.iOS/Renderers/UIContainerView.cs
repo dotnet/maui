@@ -36,9 +36,22 @@ namespace Xamarin.Forms.Platform.iOS
 			return false;
 		}
 
+		public Thickness Margin
+		{
+			get
+			{
+				if(!_view.IsSet(View.MarginProperty))
+				{
+					_view.Margin = new Thickness(0, (float)Platform.SafeAreaInsetsForWindow.Top, 0, 0);
+				}
+
+				return _view.Margin;
+			}
+		}
+
 		void ReMeasure()
 		{
-			var request = _view.Measure(Frame.Width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
+			var request = _view.Measure(Frame.Width, double.PositiveInfinity, MeasureFlags.None);
 			Layout.LayoutChildIntoBoundingRegion(_view, new Rectangle(0, 0, Frame.Width, request.Request.Height));
 			MeasuredHeight = request.Request.Height;
 			HeaderSizeChanged?.Invoke(this, EventArgs.Empty);

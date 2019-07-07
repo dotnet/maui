@@ -227,7 +227,6 @@
     <Compile Include="Renderers\ShellBottomNavViewAppearanceTracker.cs" />
     <Compile Include="Renderers\ShellItemRenderer.cs" />
     <Compile Include="Renderers\ShellContentFragment.cs" />
-    <Compile Include="Renderers\ShellFlyoutContentRenderer.cs" />
     <Compile Include="Renderers\ShellFlyoutRecyclerAdapter.cs" />
     <Compile Include="Renderers\ShellFlyoutRenderer.cs" />
     <Compile Include="Renderers\ShellFlyoutTemplatedContentRenderer.cs" />

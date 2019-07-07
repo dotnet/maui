@@ -10,9 +10,9 @@ namespace Xamarin.Forms.Core.UITests
 {
 	internal static class AppExtensions
 	{
-		public static AppResult[] RetryUntilPresent(
+		public static T[] RetryUntilPresent<T>(
 			this IApp app,
-			Func<AppResult[]> func,
+			Func<T[]> func,
 			int retryCount = 10,
 			int delayInMs = 2000)
 		{
@@ -27,7 +27,6 @@ namespace Xamarin.Forms.Core.UITests
 			}
 
 			return results;
-
 		}
 
 		public static AppRect ScreenBounds(this IApp app)
