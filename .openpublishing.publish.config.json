@@ -74,7 +74,7 @@
       "nuget_feed": "https://www.myget.org/F/op/api/v2",
       "path_to_root": "_dependentPackages/ECMA2Yaml",
       "target_framework": "net45",
-      "version": "latest"
+      "version": "1.0.417"
     },
     {
       "id": "memberpage.plugins",
