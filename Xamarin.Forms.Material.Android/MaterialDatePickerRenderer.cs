@@ -10,7 +10,7 @@ using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Material.Android
 {
-	public class MaterialDatePickerRenderer : DatePickerRendererBase<MaterialPickerTextInputLayout>
+	public class MaterialDatePickerRenderer : DatePickerRendererBase<MaterialPickerTextInputLayout>, ITabStop
 	{
 		MaterialPickerTextInputLayout _textInputLayout;
 		MaterialPickerEditText _textInputEditText;
@@ -50,6 +50,7 @@ namespace Xamarin.Forms.Material.Android
 		protected override void UpdateTextColor() => ApplyTheme();
 		void ApplyTheme() => _textInputLayout?.ApplyTheme(Element.TextColor, Color.Default);
 
+		AView ITabStop.TabStop => EditText;
 	}
 }
 #endif

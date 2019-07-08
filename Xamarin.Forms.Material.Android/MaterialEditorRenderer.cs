@@ -11,7 +11,7 @@ using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Material.Android
 {
-	public class MaterialEditorRenderer : EditorRendererBase<MaterialFormsTextInputLayout>
+	public class MaterialEditorRenderer : EditorRendererBase<MaterialFormsTextInputLayout>, ITabStop
 	{
 		bool _disposed;
 		MaterialFormsEditText _textInputEditText;
@@ -75,6 +75,8 @@ namespace Xamarin.Forms.Material.Android
 			_disposed = true;
 			base.Dispose(disposing);
 		}
+
+		AView ITabStop.TabStop => EditText;
 	}
 }
 #endif
