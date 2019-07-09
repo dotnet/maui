@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.Android
 			drawable.SetColorFilter(colorFilter);
 		}
 
-		public static void SetColorFilter(this ADrawable drawable, Color color, AColorFilter defaultColorFilter)
+		public static void SetColorFilter(this ADrawable drawable, Color color, AColorFilter defaultColorFilter, PorterDuff.Mode mode)
 		{
 			if (drawable == null)
 				return;
@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			}
 
-			drawable.SetColorFilter(color.ToAndroid(), PorterDuff.Mode.SrcIn);
+			drawable.SetColorFilter(color.ToAndroid(), mode);
 		}
 	}
 }

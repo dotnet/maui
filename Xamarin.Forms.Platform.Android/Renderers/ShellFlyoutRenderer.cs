@@ -100,12 +100,15 @@ namespace Xamarin.Forms.Platform.Android
 			var metrics = Context.Resources.DisplayMetrics;
 			var width = Math.Min(metrics.WidthPixels, metrics.HeightPixels);
 
-			var tv = new TypedValue();
 			var actionBarHeight = (int)Context.ToPixels(56);
-			if (Context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ActionBarSize, tv, true))
+			using (var tv = new TypedValue())
 			{
-				actionBarHeight = TypedValue.ComplexToDimensionPixelSize(tv.Data, metrics);
+				if (Context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ActionBarSize, tv, true))
+				{
+					actionBarHeight = TypedValue.ComplexToDimensionPixelSize(tv.Data, metrics);
+				}
 			}
+
 			width -= actionBarHeight;
 
 			var maxWidth = actionBarHeight * 6;

@@ -6,6 +6,7 @@ using Xamarin.Forms.Internals;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
@@ -103,7 +104,9 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.Screenshot ("Load local HTML");
 
 			RunningApp.WaitForNoElement (q=>q.WebView(0).Css("#LinkID0"));
-			var newElem = RunningApp.Query (q => q.WebView (0).Css ("h1"));
+			UITest.Queries.AppWebResult[] newElem = 
+			  RunningApp.RetryUntilPresent(()=>	RunningApp.Query (q => q.WebView (0).Css ("h1")));
+
 			Assert.AreEqual ("#LocalHtmlPage", newElem[0].Id);
 
 			RunningApp.Screenshot ("I see the Label");

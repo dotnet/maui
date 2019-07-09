@@ -10,7 +10,7 @@ using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Material.Android
 {
-	public class MaterialPickerRenderer : Platform.Android.AppCompat.PickerRendererBase<MaterialPickerTextInputLayout>
+	public class MaterialPickerRenderer : Platform.Android.AppCompat.PickerRendererBase<MaterialPickerTextInputLayout>, ITabStop
 	{
 		MaterialPickerTextInputLayout _textInputLayout;
 		MaterialPickerEditText _textInputEditText;
@@ -50,6 +50,8 @@ namespace Xamarin.Forms.Material.Android
 		protected override void UpdateTitleColor() => ApplyTheme();
 		protected override void UpdateTextColor() => ApplyTheme();
 		protected virtual void ApplyTheme() => _textInputLayout?.ApplyTheme(Element.TextColor, Color.Default);
+
+		AView ITabStop.TabStop => EditText;
 	}
 }
 #endif

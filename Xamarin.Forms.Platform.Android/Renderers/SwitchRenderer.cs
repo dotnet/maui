@@ -138,7 +138,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (Element == null)
 				return;
 
-			Control.ThumbDrawable.SetColorFilter(Element.ThumbColor, _defaultThumbColorFilter);
+			Control.ThumbDrawable.SetColorFilter(Element.ThumbColor, _defaultThumbColorFilter, PorterDuff.Mode.Multiply);
 		}
 
 		void HandleToggled(object sender, EventArgs e)

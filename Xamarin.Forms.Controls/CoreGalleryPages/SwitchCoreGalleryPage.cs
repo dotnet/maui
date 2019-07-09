@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Controls
 
 			var thumbColorSwitch = new Switch() { ThumbColor = Color.Yellow };
 			var thumbColorContainer = new ValueViewContainer<Switch>(Test.Switch.ThumbColor, thumbColorSwitch, nameof(Switch.ThumbColor), value => value.ToString());
-			var changeThumbColorButton = new Button { Text = "Change ThumbColor", Command = new Command(() => thumbColorSwitch.ThumbColor = Color.Azure) };
+			var changeThumbColorButton = new Button { Text = "Change ThumbColor", Command = new Command(() => thumbColorSwitch.ThumbColor = Color.Lime) };
 			var clearThumbColorButton = new Button { Text = "Clear ThumbColor", Command = new Command(() => thumbColorSwitch.ThumbColor = Color.Default) };
 			thumbColorContainer.ContainerLayout.Children.Add(changeThumbColorButton);
 			thumbColorContainer.ContainerLayout.Children.Add(clearThumbColorButton);

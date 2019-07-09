@@ -14,14 +14,14 @@ using Android.Graphics;
 
 namespace Xamarin.Forms.Platform.Android
 {
-    public class ShellFlyoutTemplatedContentRenderer : Java.Lang.Object, IShellFlyoutContentRenderer
+	public class ShellFlyoutTemplatedContentRenderer : Java.Lang.Object, IShellFlyoutContentRenderer
 		, AppBarLayout.IOnOffsetChangedListener
-    {
-        #region IShellFlyoutContentRenderer
+	{
+		#region IShellFlyoutContentRenderer
 
-        public AView AndroidView => _rootView;
+		public AView AndroidView => _rootView;
 
-        #endregion IShellFlyoutContentRenderer
+		#endregion IShellFlyoutContentRenderer
 
         IShellContext _shellContext;
         bool _disposed;
@@ -29,17 +29,19 @@ namespace Xamarin.Forms.Platform.Android
         ViewGroup _rootView;
         Drawable _defaultBackgroundColor;
 		ImageView _bgImage;
+        View _flyoutHeader;
+        int _actionBarHeight;
 
-		public ShellFlyoutTemplatedContentRenderer(IShellContext shellContext)
+        public ShellFlyoutTemplatedContentRenderer(IShellContext shellContext)
         {
             _shellContext = shellContext;
 
-            LoadView(shellContext);
-        }
+			LoadView(shellContext);
+		}
 
-        protected virtual void LoadView(IShellContext shellContext)
-        {
-            var context = shellContext.AndroidContext;
+		protected virtual void LoadView(IShellContext shellContext)
+		{
+			var context = shellContext.AndroidContext;
 
 			// Android designer can't load fragments or resources from layouts
 			if (context.IsDesignerContext())
@@ -56,39 +58,43 @@ namespace Xamarin.Forms.Platform.Android
 
 			appBar.AddOnOffsetChangedListener(this);
 
-            int actionBarHeight = (int)context.ToPixels(56);
+			_actionBarHeight = (int)context.ToPixels(56);
 
-            _headerView = new HeaderContainer(context, ((IShellController)shellContext.Shell).FlyoutHeader)
-            {
-                MatchWidth = true
-            };
-            _headerView.SetMinimumHeight(actionBarHeight);
-            _headerView.LayoutParameters = new AppBarLayout.LayoutParams(LP.MatchParent, LP.WrapContent)
-            {
-                ScrollFlags = AppBarLayout.LayoutParams.ScrollFlagScroll
-            };
-            appBar.AddView(_headerView);
+			_flyoutHeader = ((IShellController)shellContext.Shell).FlyoutHeader;
+			if(_flyoutHeader != null)
+				_flyoutHeader.MeasureInvalidated += OnFlyoutHeaderMeasureInvalidated;
 
-            var adapter = new ShellFlyoutRecyclerAdapter(shellContext, OnElementSelected);
-            recycler.SetPadding(0, (int)context.ToPixels(20), 0, 0);
-            recycler.SetClipToPadding(false);
-            recycler.SetLayoutManager(new LinearLayoutManager(context, (int)Orientation.Vertical, false));
-            recycler.SetAdapter(adapter);
+			_headerView = new HeaderContainer(context, _flyoutHeader)
+			{
+				MatchWidth = true
+			};
+			_headerView.SetMinimumHeight(_actionBarHeight);
+			_headerView.LayoutParameters = new AppBarLayout.LayoutParams(LP.MatchParent, LP.WrapContent)
+			{
+				ScrollFlags = AppBarLayout.LayoutParams.ScrollFlagScroll
+			};
+			appBar.AddView(_headerView);
 
-            var metrics = context.Resources.DisplayMetrics;
-            var width = Math.Min(metrics.WidthPixels, metrics.HeightPixels);
+			var adapter = new ShellFlyoutRecyclerAdapter(shellContext, OnElementSelected);
+			recycler.SetPadding(0, (int)context.ToPixels(20), 0, 0);
+			recycler.SetClipToPadding(false);
+			recycler.SetLayoutManager(new LinearLayoutManager(context, (int)Orientation.Vertical, false));
+			recycler.SetAdapter(adapter);
+
+			var metrics = context.Resources.DisplayMetrics;
+			var width = Math.Min(metrics.WidthPixels, metrics.HeightPixels);
 
 			using (TypedValue tv = new TypedValue())
 			{
 				if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ActionBarSize, tv, true))
 				{
-					actionBarHeight = TypedValue.ComplexToDimensionPixelSize(tv.Data, metrics);
+					_actionBarHeight = TypedValue.ComplexToDimensionPixelSize(tv.Data, metrics);
 				}
 			}
 
-            width -= actionBarHeight;
+			width -= _actionBarHeight;
 
-            coordinator.LayoutParameters = new LP(width, LP.MatchParent);
+			coordinator.LayoutParameters = new LP(width, LP.MatchParent);
 
 			_bgImage = new ImageView(context)
 			{
@@ -101,10 +107,16 @@ namespace Xamarin.Forms.Platform.Android
             UpdateFlyoutBackground();
         }
 
-        protected void OnElementSelected(Element element)
-        {
-            ((IShellController)_shellContext.Shell).OnFlyoutItemSelected(element);
-        }
+		void OnFlyoutHeaderMeasureInvalidated(object sender, EventArgs e)
+		{
+			if(_headerView != null)
+				UpdateFlyoutHeaderBehavior();
+		}
+
+		protected void OnElementSelected(Element element)
+		{
+			((IShellController)_shellContext.Shell).OnFlyoutItemSelected(element);
+		}
 
         protected virtual void OnShellPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
@@ -176,40 +188,62 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		protected virtual void UpdateFlyoutHeaderBehavior()
-        {
-            switch (_shellContext.Shell.FlyoutHeaderBehavior)
-            {
-                case FlyoutHeaderBehavior.Default:
-                case FlyoutHeaderBehavior.Fixed:
-                    _headerView.LayoutParameters = new AppBarLayout.LayoutParams(LP.MatchParent, LP.WrapContent)
-                    {
-                        ScrollFlags = 0
-                    };
-                    break;
-                case FlyoutHeaderBehavior.Scroll:
-                    _headerView.LayoutParameters = new AppBarLayout.LayoutParams(LP.MatchParent, LP.WrapContent)
-                    {
-                        ScrollFlags = AppBarLayout.LayoutParams.ScrollFlagScroll
-                    };
-                    break;
-                case FlyoutHeaderBehavior.CollapseOnScroll:
-                    _headerView.LayoutParameters = new AppBarLayout.LayoutParams(LP.MatchParent, LP.WrapContent)
-                    {
-                        ScrollFlags = AppBarLayout.LayoutParams.ScrollFlagExitUntilCollapsed |
-                            AppBarLayout.LayoutParams.ScrollFlagScroll
-                    };
-                    break;
-            }
-        }
+		{
+			var context = _shellContext.AndroidContext;
 
-        public void OnOffsetChanged(AppBarLayout appBarLayout, int verticalOffset)
-        {
-            var headerBehavior = _shellContext.Shell.FlyoutHeaderBehavior;
-            if (headerBehavior != FlyoutHeaderBehavior.CollapseOnScroll)
-                return;
+			Thickness margin = default(Thickness);
 
-            _headerView.SetPadding(0, -verticalOffset, 0, 0);
-        }
+			if (_flyoutHeader != null)
+				margin = _flyoutHeader.Margin;
+
+			var minimumHeight = Convert.ToInt32(_actionBarHeight + context.ToPixels(margin.Top) - context.ToPixels(margin.Bottom));
+			_headerView.SetMinimumHeight(minimumHeight);
+
+			switch (_shellContext.Shell.FlyoutHeaderBehavior)
+			{
+				case FlyoutHeaderBehavior.Default:
+				case FlyoutHeaderBehavior.Fixed:
+					_headerView.LayoutParameters = new AppBarLayout.LayoutParams(LP.MatchParent, LP.WrapContent)
+					{
+						ScrollFlags = 0,
+						LeftMargin = (int)context.ToPixels(margin.Left),
+						TopMargin = (int)context.ToPixels(margin.Top),
+						RightMargin = (int)context.ToPixels(margin.Right),
+						BottomMargin = (int)context.ToPixels(margin.Bottom)
+					};
+					break;
+				case FlyoutHeaderBehavior.Scroll:
+					_headerView.LayoutParameters = new AppBarLayout.LayoutParams(LP.MatchParent, LP.WrapContent)
+					{
+						ScrollFlags = AppBarLayout.LayoutParams.ScrollFlagScroll,
+						LeftMargin = (int)context.ToPixels(margin.Left),
+						TopMargin = (int)context.ToPixels(margin.Top),
+						RightMargin = (int)context.ToPixels(margin.Right),
+						BottomMargin = (int)context.ToPixels(margin.Bottom)
+					};
+					break;
+				case FlyoutHeaderBehavior.CollapseOnScroll:
+					_headerView.LayoutParameters = new AppBarLayout.LayoutParams(LP.MatchParent, LP.WrapContent)
+					{
+						ScrollFlags = AppBarLayout.LayoutParams.ScrollFlagExitUntilCollapsed |
+							AppBarLayout.LayoutParams.ScrollFlagScroll,
+						LeftMargin = (int)context.ToPixels(margin.Left),
+						TopMargin = (int)context.ToPixels(margin.Top),
+						RightMargin = (int)context.ToPixels(margin.Right),
+						BottomMargin = (int)context.ToPixels(margin.Bottom)
+					};
+					break;
+			}
+		}
+
+		public void OnOffsetChanged(AppBarLayout appBarLayout, int verticalOffset)
+		{
+			var headerBehavior = _shellContext.Shell.FlyoutHeaderBehavior;
+			if (headerBehavior != FlyoutHeaderBehavior.CollapseOnScroll)
+				return;
+
+			_headerView.SetPadding(0, -verticalOffset, 0, 0);
+		}
 
         protected override void Dispose(bool disposing)
         {
@@ -218,12 +252,17 @@ namespace Xamarin.Forms.Platform.Android
                 if (disposing)
                 {
                     _shellContext.Shell.PropertyChanged -= OnShellPropertyChanged;
+
+                    if (_flyoutHeader != null)
+                        _flyoutHeader.MeasureInvalidated += OnFlyoutHeaderMeasureInvalidated;
+
                     _headerView.Dispose();
                     _rootView.Dispose();
                     _defaultBackgroundColor?.Dispose();
 					_bgImage?.Dispose();
 				}
 
+                _flyoutHeader = null;
                 _defaultBackgroundColor = null;
 				_bgImage = null;
 				_rootView = null;
@@ -232,41 +271,41 @@ namespace Xamarin.Forms.Platform.Android
                 _disposed = true;
             }
 
-            base.Dispose(disposing);
-        }
+			base.Dispose(disposing);
+		}
 
-        // This view lets us use the top padding to "squish" the content down
-        public class HeaderContainer : ContainerView
-        {
-            public HeaderContainer(Context context, View view) : base(context, view)
-            {
-            }
+		// This view lets us use the top padding to "squish" the content down
+		public class HeaderContainer : ContainerView
+		{
+			public HeaderContainer(Context context, View view) : base(context, view)
+			{
+			}
 
-            public HeaderContainer(Context context, IAttributeSet attribs) : base(context, attribs)
-            {
-            }
+			public HeaderContainer(Context context, IAttributeSet attribs) : base(context, attribs)
+			{
+			}
 
-            public HeaderContainer(Context context, IAttributeSet attribs, int defStyleAttr) : base(context, attribs, defStyleAttr)
-            {
-            }
+			public HeaderContainer(Context context, IAttributeSet attribs, int defStyleAttr) : base(context, attribs, defStyleAttr)
+			{
+			}
 
-            protected HeaderContainer(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
-            {
-            }
+			protected HeaderContainer(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+			{
+			}
 
-            protected override void LayoutView(double x, double y, double width, double height)
-            {
-                var context = Context;
-                var paddingLeft = context.FromPixels(PaddingLeft);
-                var paddingTop = context.FromPixels(PaddingTop);
-                var paddingRight = context.FromPixels(PaddingRight);
-                var paddingBottom = context.FromPixels(PaddingBottom);
+			protected override void LayoutView(double x, double y, double width, double height)
+			{
+				var context = Context;
+				var paddingLeft = context.FromPixels(PaddingLeft);
+				var paddingTop = context.FromPixels(PaddingTop);
+				var paddingRight = context.FromPixels(PaddingRight);
+				var paddingBottom = context.FromPixels(PaddingBottom);
 
-                width -= paddingLeft + paddingRight;
-                height -= paddingTop + paddingBottom;
+				width -= paddingLeft + paddingRight;
+				height -= paddingTop + paddingBottom;
 
-                View.Layout(new Rectangle(paddingLeft, paddingTop, width, height));
-            }
-        }
-    }
+				View.Layout(new Rectangle(paddingLeft, paddingTop, width, height));
+			}
+		}
+	}
 }
