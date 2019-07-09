@@ -55,6 +55,9 @@ namespace Xamarin.Forms.Platform.WPF
 
 				await TryUpdateSource().ConfigureAwait(false);
 				UpdateAspect();
+
+				if (Element.IsSet(Button.PaddingProperty))
+					UpdatePadding();
 			}
 		}
 
@@ -67,9 +70,14 @@ namespace Xamarin.Forms.Platform.WPF
 			else if (e.PropertyName == ImageButton.BorderColorProperty.PropertyName)
 				UpdateBorderColor();
 			else if (e.PropertyName == ImageButton.BorderWidthProperty.PropertyName)
+			{
 				UpdateBorderWidth();
+				UpdatePadding();
+			}
 			else if (e.PropertyName == ImageButton.AspectProperty.PropertyName)
 				UpdateAspect();
+			else if (e.PropertyName == Button.PaddingProperty.PropertyName)
+				UpdatePadding();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -189,6 +197,16 @@ namespace Xamarin.Forms.Platform.WPF
 				Control.HorizontalAlignment = System.Windows.HorizontalAlignment.Left;
 				Control.VerticalAlignment = System.Windows.VerticalAlignment.Top;
 			}
+		}
+
+		void UpdatePadding()
+		{
+			Control.Padding = new WThickness(
+				Element.Padding.Left,
+				Element.Padding.Top,
+				Element.Padding.Right,
+				Element.Padding.Bottom
+			);
 		}
 	}
 }

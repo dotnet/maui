@@ -94,6 +94,15 @@ namespace Xamarin.Forms.Controls
 				}
 			);
 
+			var paddingContainer = new ViewContainer<ImageButton>(Test.ImageButton.Padding,
+				new ImageButton
+				{
+					Source = "oasissmall.jpg",
+					BackgroundColor = Color.Red,
+					Padding = new Thickness(20, 30, 60, 15)
+				}
+			);
+
 
 			InitializeElement(aspectFillContainer.View);
 			InitializeElement(aspectFitContainer.View);
@@ -117,6 +126,7 @@ namespace Xamarin.Forms.Controls
 			Add(corderRadiusContainer);
 			Add(imageContainer);
 			Add(pressedContainer);
+			Add(paddingContainer);
 		}
 	}
 }

@@ -570,7 +570,8 @@ namespace Xamarin.Forms.CustomAttributes
 			Clicked,
 			Command,
 			Image,
-			Pressed
+			Pressed,
+			Padding
 		}
 
 		public enum ImageSource
