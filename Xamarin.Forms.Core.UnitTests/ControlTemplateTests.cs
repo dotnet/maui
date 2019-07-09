@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			public ContentControl ()
 			{
 				var label = new Label ();
-				label.SetBinding (Label.TextProperty, new TemplateBinding ("Name"));
+				label.SetBinding (Label.TextProperty, new Binding("Name", source: RelativeBindingSource.TemplatedParent));
 
 				Children.Add (label);
 				Children.Add (new ContentPresenter ());
@@ -139,7 +139,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			public TestContent ()
 			{
 				Content = new Entry ();
-				Content.SetBinding (Entry.TextProperty, new TemplateBinding ("Name", BindingMode.TwoWay));
+				Content.SetBinding (Entry.TextProperty, new Binding("Name", BindingMode.TwoWay, source: RelativeBindingSource.TemplatedParent));
 			}
 		}
 

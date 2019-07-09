@@ -82,6 +82,9 @@ namespace Xamarin.Forms
 			object item = LoadTemplate();
 			SetupContent(item);
 
+			if (item is Element elem)
+				elem.IsTemplateRoot = true;
+
 			return item;
 		}
 

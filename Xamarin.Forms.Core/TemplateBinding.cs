@@ -3,7 +3,8 @@ using System.Globalization;
 
 namespace Xamarin.Forms
 {
-	public class TemplateBinding : BindingBase
+	[Obsolete("Use Binding.Source=RelativeBindingSource.TemplatedParent")]
+	public sealed class TemplateBinding : BindingBase
 	{
 		internal const string SelfPath = ".";
 		IValueConverter _converter;

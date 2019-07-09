@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Controls
 				HeightRequest = 25,
 				AutomationId = ScenarioId
 			};
-			scenarioLabel.SetBinding(Label.TextProperty, new TemplateBinding(nameof(PerformanceTracker.Scenario)));
+			scenarioLabel.SetBinding(Label.TextProperty, new Binding(nameof(PerformanceTracker.Scenario), source: RelativeBindingSource.TemplatedParent));
 			Children.Add(scenarioLabel);
 
 			var renderTimeLabel = new Label
@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Controls
 				HeightRequest = 25,
 				AutomationId = ActualId
 			};
-			renderTimeLabel.SetBinding(Label.TextProperty, new TemplateBinding(nameof(PerformanceTracker.RenderTime)));
+			renderTimeLabel.SetBinding(Label.TextProperty, new Binding(nameof(PerformanceTracker.RenderTime), source: RelativeBindingSource.TemplatedParent));
 
 			var expectedLabel = new Label
 			{
@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Controls
 				HeightRequest = 25,
 				AutomationId = ExpectedId
 			};
-			expectedLabel.SetBinding(Label.TextProperty, new TemplateBinding(nameof(PerformanceTracker.ExpectedRenderTime)));
+			expectedLabel.SetBinding(Label.TextProperty, new Binding(nameof(PerformanceTracker.ExpectedRenderTime), source: RelativeBindingSource.TemplatedParent));
 
 			var outcomeLabel = new Label
 			{
@@ -54,7 +54,7 @@ namespace Xamarin.Forms.Controls
 				HeightRequest = 25,
 				AutomationId = OutcomeId
 			};
-			outcomeLabel.SetBinding(Label.TextProperty, new TemplateBinding(nameof(PerformanceTracker.Outcome)));
+			outcomeLabel.SetBinding(Label.TextProperty, new Binding(nameof(PerformanceTracker.Outcome), source: RelativeBindingSource.TemplatedParent));
 
 			var horStack = new StackLayout { Orientation = StackOrientation.Horizontal };
 			horStack.Children.Add(renderTimeLabel);

@@ -6,9 +6,9 @@ namespace Xamarin.Forms.Pages
 	{
 		public ListDataPageControl()
 		{
-			SetBinding(ItemTemplateProperty, new TemplateBinding(DataPage.DefaultItemTemplateProperty.PropertyName));
-			SetBinding(SelectedItemProperty, new TemplateBinding(ListDataPage.SelectedItemProperty.PropertyName, BindingMode.TwoWay));
-			SetBinding(ItemsSourceProperty, new TemplateBinding(DataPage.DataProperty.PropertyName));
+			SetBinding(ItemTemplateProperty, new Binding(DataPage.DefaultItemTemplateProperty.PropertyName, source: RelativeBindingSource.TemplatedParent));
+			SetBinding(SelectedItemProperty, new Binding(ListDataPage.SelectedItemProperty.PropertyName, BindingMode.TwoWay, source: RelativeBindingSource.TemplatedParent));
+			SetBinding(ItemsSourceProperty, new Binding(DataPage.DataProperty.PropertyName, source: RelativeBindingSource.TemplatedParent));
 		}
 	}
 
