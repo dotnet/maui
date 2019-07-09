@@ -382,6 +382,11 @@ namespace Xamarin.Forms.Build.Tasks
 			if (dataTypeNode is null)
 				yield break;
 
+			if (   dataTypeNode is ElementNode enode
+				&& enode.XmlType.NamespaceUri == XamlParser.X2009Uri
+				&& enode.XmlType.Name == "NullExtension")
+				yield break;
+
 			if (!((dataTypeNode as ValueNode)?.Value is string dataType))
 				throw new XamlParseException("x:DataType expects a string literal", dataTypeNode as IXmlLineInfo);
 
