@@ -266,7 +266,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			barButtonItem.AccessibilityIdentifier = "OK";
 			NavigationItem.LeftBarButtonItem = barButtonItem;
-			if(image == null)
+			if (image == null)
 				return;
 			NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = image.AutomationId;
 			NavigationItem.LeftBarButtonItem.SetAccessibilityHint(image);
@@ -292,7 +292,7 @@ namespace Xamarin.Forms.Platform.iOS
 			float start = 4f;
 			ctx.SetLineWidth(size);
 
-			for(int i = 0; i< 3; i++)
+			for (int i = 0; i < 3; i++)
 			{
 				ctx.MoveTo(1f, start + i * (size * 2));
 				ctx.AddLineToPoint(22f, start + i * (size * 2));
@@ -578,27 +578,26 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!_disposed)
+			if (_disposed)
+				return;
+
+			if (disposing)
 			{
-				if (disposing)
-				{
-					_searchHandlerAppearanceTracker?.Dispose();
-					Page.Appearing -= PageAppearing;
-					Page.PropertyChanged -= OnPagePropertyChanged;
-					((INotifyCollectionChanged)Page.ToolbarItems).CollectionChanged -= OnToolbarItemsChanged;
-					((IShellController)_context.Shell).RemoveFlyoutBehaviorObserver(this);
-				}
-
-				SearchHandler = null;
-				Page = null;
-				SetBackButtonBehavior(null);
-				_rendererRef = null;
-				NavigationItem = null;
-				_searchHandlerAppearanceTracker = null;
-				_disposed = true;
+				_searchHandlerAppearanceTracker?.Dispose();
+				Page.Appearing -= PageAppearing;
+				Page.PropertyChanged -= OnPagePropertyChanged;
+				((INotifyCollectionChanged)Page.ToolbarItems).CollectionChanged -= OnToolbarItemsChanged;
+				((IShellController)_context.Shell).RemoveFlyoutBehaviorObserver(this);
 			}
-		}
 
+			SearchHandler = null;
+			Page = null;
+			SetBackButtonBehavior(null);
+			_rendererRef = null;
+			NavigationItem = null;
+			_searchHandlerAppearanceTracker = null;
+			_disposed = true;
+		}
 		#endregion IDisposable Support
 	}
 }

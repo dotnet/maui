@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Platform.iOS
 			UIVisualEffect blurEffect = UIBlurEffect.FromStyle(UIBlurEffectStyle.ExtraLight);
 			_blurView = new UIVisualEffectView(blurEffect);
 
-			View.AddSubview(_blurView);		
+			View.AddSubview(_blurView);
 
 			UpdateHeaderVisibility();
 
@@ -106,7 +106,10 @@ namespace Xamarin.Forms.Platform.iOS
 						_renderers.Remove(shellContent);
 						oldRenderer.NativeView.RemoveFromSuperview();
 						oldRenderer.ViewController.RemoveFromParentViewController();
+						var element = oldRenderer.Element;
 						oldRenderer.Dispose();
+						element?.ClearValue(Platform.RendererProperty);
+
 					}
 				}
 			}
