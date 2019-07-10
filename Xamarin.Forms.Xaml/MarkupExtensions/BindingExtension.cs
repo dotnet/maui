@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Xaml
@@ -16,7 +17,7 @@ namespace Xamarin.Forms.Xaml
 		public string UpdateSourceEventName { get; set; }
 		public object TargetNullValue { get; set; }
 		public object FallbackValue { get; set; }
-		public TypedBindingBase TypedBinding { get; set; }
+		[EditorBrowsable(EditorBrowsableState.Never)] public TypedBindingBase TypedBinding { get; set; }
 
 		BindingBase IMarkupExtension<BindingBase>.ProvideValue(IServiceProvider serviceProvider)
 		{
