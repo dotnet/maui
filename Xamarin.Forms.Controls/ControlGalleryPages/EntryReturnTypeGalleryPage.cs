@@ -3,11 +3,13 @@ using System.Threading.Tasks;
 
 namespace Xamarin.Forms.Controls
 {
-	public class EntryReturnTypeGalleryPage: ContentPage
+	public class EntryReturnTypeGalleryPage : ContentPage
 	{
 		Picker picker;
 		Entry returnTypeEntry;
 		Label lblCompleted;
+		Entry nextEntry;
+
 		public EntryReturnTypeGalleryPage()
 		{
 			BackgroundColor = Color.LightBlue;
@@ -35,7 +37,7 @@ namespace Xamarin.Forms.Controls
 			{
 				HorizontalOptions = LayoutOptions.Fill,
 				Placeholder = $"Entry with {ReturnType.Go}",
-				ReturnCommand = new Command<string>(obj => 
+				ReturnCommand = new Command<string>(obj =>
 				{
 					lblCompleted.Text = "Completed Fired";
 				}),
@@ -48,6 +50,7 @@ namespace Xamarin.Forms.Controls
 				if (e.PropertyName == Entry.ReturnTypeProperty.PropertyName)
 				{
 					returnTypeEntry.Placeholder = $"Entry with {returnTypeEntry.ReturnType}";
+					lblCompleted.Text = null;
 				}
 			};
 
@@ -79,9 +82,17 @@ namespace Xamarin.Forms.Controls
 				}
 			};
 
-			layout.Children.Add(returnTypeEntry);
+			nextEntry = new Entry
+			{
+				Placeholder = "Next Entry to Focus",
+				ReturnType = ReturnType.Next,
+				HorizontalOptions = LayoutOptions.FillAndExpand
+			};
+
 			layout.Children.Add(picker);
+			layout.Children.Add(returnTypeEntry);
 			layout.Children.Add(lblCompleted);
+			layout.Children.Add(nextEntry);
 			picker.SelectedIndex = 0;
 
 			Content = layout;
