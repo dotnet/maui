@@ -108,8 +108,6 @@ namespace Xamarin.Forms.Platform.Android
 		protected virtual Task<bool> HandleFragmentUpdate(ShellNavigationSource navSource, ShellSection shellSection, Page page, bool animated)
 		{
 			TaskCompletionSource<bool> result = new TaskCompletionSource<bool>();
-
-			var stack = ShellSection.Stack;
 			bool isForCurrentTab = shellSection == ShellSection;
 
 			if (!_fragmentMap.ContainsKey(ShellSection))
@@ -120,12 +118,14 @@ namespace Xamarin.Forms.Platform.Android
 			switch (navSource)
 			{
 				case ShellNavigationSource.Push:
-				case ShellNavigationSource.Insert:
-					_fragmentMap[page] = CreateFragmentForPage(page);
+					if (!_fragmentMap.ContainsKey(page))
+						_fragmentMap[page] = CreateFragmentForPage(page);
 					if (!isForCurrentTab)
-					{
 						return Task.FromResult(true);
-					}
+					break;
+				case ShellNavigationSource.Insert:
+					if (!isForCurrentTab)
+						return Task.FromResult(true);
 					break;
 
 				case ShellNavigationSource.Pop:
@@ -165,6 +165,7 @@ namespace Xamarin.Forms.Platform.Android
 					throw new InvalidOperationException("Unexpected navigation type");
 			}
 
+			IReadOnlyList<Page> stack = ShellSection.Stack;
 			Element targetElement = null;
 			IShellObservableFragment target = null;
 			if (stack.Count == 1 || navSource == ShellNavigationSource.PopToRoot)
@@ -175,6 +176,8 @@ namespace Xamarin.Forms.Platform.Android
 			else
 			{
 				targetElement = stack[stack.Count - 1];
+				if (!_fragmentMap.ContainsKey(targetElement))
+					_fragmentMap[targetElement] = CreateFragmentForPage(targetElement as Page);
 				target = _fragmentMap[targetElement];
 			}
 
