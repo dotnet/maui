@@ -759,6 +759,73 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That(label0.TextColor, Is.EqualTo(Color.Pink));
 			Assert.That(label1.TextColor, Is.EqualTo(Color.Lavender));
 		}
+		
+		[Test]
+		public void ImplicitInheritedStyleForTemplatedElementIsAppliedCorrectlyForContentPage()
+		{
+			var controlTemplate = new ControlTemplate(typeof(ContentPresenter));
+
+			var rd0 = new ResourceDictionary {
+				new Style (typeof(ContentPage)) {
+					Setters = {
+						new Setter {Property = TemplatedPage.ControlTemplateProperty, Value = controlTemplate}
+					},
+					ApplyToDerivedTypes = true
+				}
+			};
+
+			var mockApp = new MockApplication();
+			mockApp.Resources = rd0;
+			mockApp.MainPage = new MyPage()
+			{
+				Content = new Button()
+			};
+
+			Application.Current = mockApp;
+
+			var parentPage = (ContentPage)mockApp.MainPage;
+			var pageContent = parentPage.Content;
+			Assert.That(Equals(pageContent?.Parent, parentPage));
+		}
+
+		[Test]
+		public void ImplicitInheritedStyleForTemplatedElementIsAppliedCorrectlyForContentView()
+		{
+			var controlTemplate = new ControlTemplate(typeof(ContentPresenter));
+
+			var rd0 = new ResourceDictionary {
+				new Style (typeof(ContentView)) {
+					Setters = {
+						new Setter {Property = TemplatedView.ControlTemplateProperty, Value = controlTemplate}
+					},
+					ApplyToDerivedTypes = true
+				}
+			};
+
+			var mockApp = new MockApplication();
+			mockApp.Resources = rd0;
+			mockApp.MainPage = new ContentPage()
+			{
+				Content = new MyContentView()
+				{
+					Content = new Button()
+				}
+			};
+
+			Application.Current = mockApp;
+
+			var parentView = (ContentView)((ContentPage)mockApp.MainPage).Content;
+			var content = parentView.Content;
+			Assert.That(Equals(content?.Parent, parentView));
+		}
+	
+		class MyPage : ContentPage
+		{
+		}
+
+		class MyContentView : ContentView
+		{
+		}
 
 		[Test]
 		public void MismatchTargetTypeThrowsError1()
@@ -782,6 +849,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			var s = new Style(typeof(View));
 			var t = new Button();
 			Assert.DoesNotThrow(() => t.Style = s);
-		}
+    	}
 	}
 }
