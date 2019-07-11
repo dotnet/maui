@@ -9,6 +9,10 @@
     <Import_RootNamespace>Xamarin.Forms.Controls.Issues</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Issue5046.xaml.cs">
+      <DependentUpon>Issue5046.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ShellInsets.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewGrouping.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5412.cs" />
@@ -1287,6 +1291,12 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue5268.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue5046.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </EmbeddedResource>
   </ItemGroup>
 </Project>
