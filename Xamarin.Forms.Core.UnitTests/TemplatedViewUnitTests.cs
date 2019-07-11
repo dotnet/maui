@@ -36,7 +36,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void GetTemplateChildShouldWork()
+		public void GetContentViewTemplateChildShouldWork()
 		{
 			var xaml = @"<ContentView
 					xmlns=""http://xamarin.com/schemas/2014/forms""
@@ -53,12 +53,32 @@ namespace Xamarin.Forms.Core.UnitTests
 			contentView.LoadFromXaml(xaml);
 
 			IList<Element> internalChildren = contentView.InternalChildren;
-			var tc = (BindableObject)contentView.GetTemplateChild("label0");
-			Assert.AreEqual(tc, internalChildren[0]);
+			Assert.AreEqual(internalChildren[0], contentView.TemplateChildObtained);
 		}
 
 		[Test]
-		public void OnApplyTemplateShouldBeCalled()
+		public void GetContentPageTemplateChildShouldWork()
+		{
+			var xaml = @"<ContentPage
+					xmlns=""http://xamarin.com/schemas/2014/forms""
+					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
+					x:Class=""Xamarin.Forms.Core.UnitTests.MyTestContentPage"">
+                       <ContentPage.ControlTemplate>
+                         <ControlTemplate>
+                           <Label x:Name=""label0""/>
+                         </ControlTemplate>
+						</ContentPage.ControlTemplate>
+					</ContentPage>";
+
+			var contentPage = new MyTestContentPage();
+			contentPage.LoadFromXaml(xaml);
+
+			IList<Element> internalChildren = contentPage.InternalChildren;
+			Assert.AreEqual(internalChildren[0], contentPage.TemplateChildObtained);
+		}
+
+		[Test]
+		public void OnContentViewApplyTemplateShouldBeCalled()
 		{
 			var xaml = @"<ContentView
 					xmlns=""http://xamarin.com/schemas/2014/forms""
@@ -74,6 +94,25 @@ namespace Xamarin.Forms.Core.UnitTests
 			var contentView = new MyTestContentView();
 			contentView.LoadFromXaml(xaml);
 			Assert.IsTrue(contentView.WasOnApplyTemplateCalled);
+		}
+
+		[Test]
+		public void OnContentPageApplyTemplateShouldBeCalled()
+		{
+			var xaml = @"<ContentPage
+					xmlns=""http://xamarin.com/schemas/2014/forms""
+					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
+					x:Class=""Xamarin.Forms.Core.UnitTests.MyTestContentPage"">
+                       <ContentPage.ControlTemplate>
+                         <ControlTemplate>
+                           <Label x:Name=""label0""/>
+                         </ControlTemplate>
+						</ContentPage.ControlTemplate>
+					</ContentPage>";
+
+			var contentPage = new MyTestContentPage();
+			contentPage.LoadFromXaml(xaml);
+			Assert.IsTrue(contentPage.WasOnApplyTemplateCalled);
 		}
 
 		private class ExpectedView : View
@@ -115,9 +154,25 @@ namespace Xamarin.Forms.Core.UnitTests
 	{
 		public bool WasOnApplyTemplateCalled { get; private set; }
 
+		public Element TemplateChildObtained { get; private set; }
+
 		protected override void OnApplyTemplate()
 		{
 			WasOnApplyTemplateCalled = true;
+			TemplateChildObtained = (Element)GetTemplateChild("label0");
+		}
+	}
+
+	class MyTestContentPage : ContentPage
+	{
+		public bool WasOnApplyTemplateCalled { get; private set; }
+
+		public Element TemplateChildObtained { get; private set; }
+
+		protected override void OnApplyTemplate()
+		{
+			WasOnApplyTemplateCalled = true;
+			TemplateChildObtained = (Element)GetTemplateChild("label0");
 		}
 	}
 }

@@ -92,5 +92,7 @@ namespace Xamarin.Forms
 			base.OnChildRemoved(child);
 			TemplateUtilities.OnChildRemoved(this, child);
 		}
+
+		protected object GetTemplateChild(string name) => TemplateUtilities.GetTemplateChild(this, name);
 	}
 }
