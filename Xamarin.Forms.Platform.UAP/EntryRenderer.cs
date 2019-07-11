@@ -165,9 +165,15 @@ namespace Xamarin.Forms.Platform.UWP
 			if (args?.Key != VirtualKey.Enter)
 				return;
 
-
-			// Hide the soft keyboard; this matches the behavior of Forms on Android/iOS
-			Windows.UI.ViewManagement.InputPane.GetForCurrentView().TryHide();
+			if (Element.ReturnType == ReturnType.Next)
+			{
+				FocusManager.TryMoveFocus(FocusNavigationDirection.Next);
+			}
+			else
+			{
+				// Hide the soft keyboard; this matches the behavior of Forms on Android/iOS
+				Windows.UI.ViewManagement.InputPane.GetForCurrentView().TryHide();
+			}
 
 			((IEntryController)Element).SendCompleted();
 		}

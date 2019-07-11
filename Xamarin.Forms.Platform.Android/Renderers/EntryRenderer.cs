@@ -91,8 +91,26 @@ namespace Xamarin.Forms.Platform.Android
 			// Fire Completed and dismiss keyboard for hardware / physical keyboards
 			if (actionId == ImeAction.Done || actionId == _currentInputImeFlag || (actionId == ImeAction.ImeNull && e.KeyCode == Keycode.Enter && e.Action == KeyEventActions.Up))
 			{
-				EditText.ClearFocus();
-				v.HideKeyboard();
+				global::Android.Views.View nextFocus = null;
+				if (_currentInputImeFlag == ImeAction.Next)
+				{
+					nextFocus = FocusSearch(v, FocusSearchDirection.Forward);
+				}
+
+				if (nextFocus != null)
+				{
+					nextFocus.RequestFocus();
+					if (!nextFocus.OnCheckIsTextEditor())
+					{
+						v.HideKeyboard();
+					}
+				}
+				else
+				{
+					EditText.ClearFocus();
+					v.HideKeyboard();
+				}
+
 				((IEntryController)Element).SendCompleted();
 			}
 

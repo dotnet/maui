@@ -285,6 +285,9 @@ namespace Xamarin.Forms
 			if (oldVal == val)
 				return;
 
+			if (button.cornerOrBorderRadiusSetting) // retain until BorderRadiusProperty removed
+				return;
+
 			button.cornerOrBorderRadiusSetting = true;
 			bindable.SetValue(Button.CornerRadiusProperty, val);
 			button.cornerOrBorderRadiusSetting = false;
