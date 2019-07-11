@@ -299,7 +299,7 @@ namespace Xamarin.Forms.Platform.Android
 			// Keep track of the ItemsLayout's property changes
 			if (_layout != null)
 			{
-				_layout.PropertyChanged += LayoutOnPropertyChanged;
+				_layout.PropertyChanged += LayoutPropertyChanged;
 			}
 
 			// Listen for ScrollTo requests
@@ -316,7 +316,7 @@ namespace Xamarin.Forms.Platform.Android
 			// Stop listening for layout property changes
 			if (_layout != null)
 			{
-				_layout.PropertyChanged -= LayoutOnPropertyChanged;
+				_layout.PropertyChanged -= LayoutPropertyChanged;
 			}
 
 			// Stop listening for property changes
@@ -346,7 +346,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
-		protected virtual void LayoutOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChanged)
+		protected virtual void LayoutPropertyChanged(object sender, PropertyChangedEventArgs propertyChanged)
 		{
 			if (propertyChanged.Is(GridItemsLayout.SpanProperty))
 			{

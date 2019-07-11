@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			// Watch for clicks so the user can select the item held by this ViewHolder
-			selectable.Clicked += SelectableOnClicked;
+			selectable.Clicked += SelectableClicked;
 
 			// Keep track of the view holders here so we can clear the native selection
 			_currentViewHolders.Add(selectable);
@@ -41,7 +41,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (holder is SelectableViewHolder selectable)
 			{
 				_currentViewHolders.Remove(selectable);
-				selectable.Clicked -= SelectableOnClicked;
+				selectable.Clicked -= SelectableClicked;
 				selectable.IsSelected = false;
 			}
 
@@ -120,7 +120,7 @@ namespace Xamarin.Forms.Platform.Android
 			return false;
 		}
 
-		void SelectableOnClicked(object sender, int adapterPosition)
+		void SelectableClicked(object sender, int adapterPosition)
 		{
 			UpdateFormsSelection(adapterPosition);
 		}
