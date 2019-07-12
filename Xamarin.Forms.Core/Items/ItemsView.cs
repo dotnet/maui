@@ -44,6 +44,31 @@ namespace Xamarin.Forms
 			set => SetValue(ItemsSourceProperty, value);
 		}
 
+		public static readonly BindableProperty HorizontalScrollBarVisibilityProperty = BindableProperty.Create(
+			nameof(HorizontalScrollBarVisibility),
+			typeof(ScrollBarVisibility),
+			typeof(ItemsView),
+			ScrollBarVisibility.Default);
+
+		public ScrollBarVisibility HorizontalScrollBarVisibility
+		{
+			get => (ScrollBarVisibility)GetValue(HorizontalScrollBarVisibilityProperty);
+			set => SetValue(HorizontalScrollBarVisibilityProperty, value);
+		}
+
+
+		public static readonly BindableProperty VerticalScrollBarVisibilityProperty = BindableProperty.Create(
+			nameof(VerticalScrollBarVisibility),
+			typeof(ScrollBarVisibility),
+			typeof(ItemsView),
+			ScrollBarVisibility.Default);
+
+		public ScrollBarVisibility VerticalScrollBarVisibility
+		{
+			get => (ScrollBarVisibility)GetValue(VerticalScrollBarVisibilityProperty);
+			set => SetValue(VerticalScrollBarVisibilityProperty, value);
+		}
+
 		public void AddLogicalChild(Element element)
 		{
 			_logicalChildren.Add(element);
