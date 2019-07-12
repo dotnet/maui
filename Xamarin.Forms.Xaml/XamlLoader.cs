@@ -182,7 +182,7 @@ namespace Xamarin.Forms.Xaml
 					}
 					cvv.Visit((ElementNode)resources, null);
 
-					visitorContext.RootElement = visitorContext.Values[resources];
+					visitorContext.RootElement = rootView;
 
 					resources.Accept(new XamlNodeVisitor((node, parent) => node.Parent = parent), null); //set parents for {StaticResource}
 					resources.Accept(new ExpandMarkupsVisitor(visitorContext), null);
