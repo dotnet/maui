@@ -614,7 +614,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			bindable.SetBinding(MockBindable.TextProperty, binding);
 
 			bool invokeOnMainThreadWasCalled = false;
-			Device.PlatformServices = new MockPlatformServices(a => invokeOnMainThreadWasCalled = true);
+			Device.PlatformServices = new MockPlatformServices(a => invokeOnMainThreadWasCalled = true, isInvokeRequired: true);
 
 			vm.Text = "updated";
 

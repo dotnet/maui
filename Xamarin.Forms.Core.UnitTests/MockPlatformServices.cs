@@ -25,17 +25,19 @@ namespace Xamarin.Forms.Core.UnitTests
 		Func<Uri, CancellationToken, Task<Stream>> getStreamAsync;
 		Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc;
 		readonly bool useRealisticLabelMeasure;
+		readonly bool _isInvokeRequired;
 
 		public MockPlatformServices (Action<Action> invokeOnMainThread = null, Action<Uri> openUriAction = null, 
 			Func<Uri, CancellationToken, Task<Stream>> getStreamAsync = null, 
 			Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc = null, 
-			bool useRealisticLabelMeasure = false)
+			bool useRealisticLabelMeasure = false, bool isInvokeRequired = false)
 		{
 			this.invokeOnMainThread = invokeOnMainThread;
 			this.openUriAction = openUriAction;
 			this.getStreamAsync = getStreamAsync;
 			this.getNativeSizeFunc = getNativeSizeFunc;
 			this.useRealisticLabelMeasure = useRealisticLabelMeasure;
+			_isInvokeRequired = isInvokeRequired;
 		}
 
 		static MD5CryptoServiceProvider checksum = new MD5CryptoServiceProvider ();
@@ -85,7 +87,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 		public bool IsInvokeRequired
 		{
-			get { return false; }
+			get { return _isInvokeRequired; }
 		}
 
 		public string RuntimePlatform { get; set; }
