@@ -449,6 +449,8 @@ namespace Xamarin.Forms
 					return false;
 				}
 
+				convertTo = Nullable.GetUnderlyingType(convertTo) ?? convertTo;
+
 				value = Convert.ChangeType(value, convertTo, CultureInfo.InvariantCulture);
 				return true;
 			}
