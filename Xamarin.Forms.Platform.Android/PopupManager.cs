@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Android.App;
 using Android.Content;
+using Android.Text;
+using Android.Views;
+using Android.Widget;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
@@ -46,6 +49,7 @@ namespace Xamarin.Forms.Platform.Android
 				Activity = context;
 				MessagingCenter.Subscribe<Page, bool>(Activity, Page.BusySetSignalName, OnPageBusy);
 				MessagingCenter.Subscribe<Page, AlertArguments>(Activity, Page.AlertSignalName, OnAlertRequested);
+				MessagingCenter.Subscribe<Page, PromptArguments>(Activity, Page.PromptSignalName, OnPromptRequested);
 				MessagingCenter.Subscribe<Page, ActionSheetArguments>(Activity, Page.ActionSheetSignalName, OnActionSheetRequested);
 			}
 
@@ -53,8 +57,9 @@ namespace Xamarin.Forms.Platform.Android
 
 			public void Dispose()
 			{
-				MessagingCenter.Unsubscribe<Page, AlertArguments>(Activity, Page.AlertSignalName);
 				MessagingCenter.Unsubscribe<Page, bool>(Activity, Page.BusySetSignalName);
+				MessagingCenter.Unsubscribe<Page, AlertArguments>(Activity, Page.AlertSignalName);
+				MessagingCenter.Unsubscribe<Page, PromptArguments>(Activity, Page.PromptSignalName);
 				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(Activity, Page.ActionSheetSignalName);
 			}
 
@@ -120,6 +125,46 @@ namespace Xamarin.Forms.Platform.Android
 				alert.SetButton((int)DialogButtonType.Negative, arguments.Cancel, (o, args) => arguments.SetResult(false));
 				alert.CancelEvent += (o, args) => { arguments.SetResult(false); };
 				alert.Show();
+			}
+
+			void OnPromptRequested(Page sender, PromptArguments arguments)
+			{
+				// Verify that the page making the request is part of this activity 
+				if (!PageIsInThisContext(sender))
+				{
+					return;
+				}
+
+				AlertDialog alertDialog = new AlertDialog.Builder(Activity).Create();
+				alertDialog.SetTitle(arguments.Title);
+				alertDialog.SetMessage(arguments.Message);
+
+				var frameLayout = new FrameLayout(Activity);
+				var editText = new EditText(Activity) { Hint = arguments.Placeholder };
+				var layoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent)
+				{
+					LeftMargin = (int)(22 * Activity.Resources.DisplayMetrics.Density),
+					RightMargin = (int)(22 * Activity.Resources.DisplayMetrics.Density)
+				};
+
+				editText.LayoutParameters = layoutParams;
+				editText.InputType = arguments.Keyboard.ToInputType();
+				if (arguments.Keyboard == Keyboard.Numeric)
+					editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
+
+				if (arguments.MaxLength > -1)
+					editText.SetFilters(new IInputFilter[]{ new InputFilterLengthFilter(arguments.MaxLength)});
+
+				frameLayout.AddView(editText);
+				alertDialog.SetView(frameLayout);
+
+				alertDialog.SetButton((int)DialogButtonType.Positive, arguments.Accept, (o, args) => arguments.SetResult(editText.Text));
+				alertDialog.SetButton((int)DialogButtonType.Negative, arguments.Cancel, (o, args) => arguments.SetResult(null));
+				alertDialog.CancelEvent += (o, args) => { arguments.SetResult(null); };
+
+				alertDialog.Window.SetSoftInputMode(SoftInput.StateVisible);
+				alertDialog.Show();
+				editText.RequestFocus();
 			}
 
 			void UpdateProgressBarVisibility(bool isBusy)
