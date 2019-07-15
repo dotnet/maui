@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using NUnit.Framework;
-using Xamarin.Forms;
+﻿using NUnit.Framework;
 using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
-	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class Gh5330 : ContentPage
 	{
 		public Gh5330() => InitializeComponent();
@@ -22,10 +18,17 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TearDown] public void TearDown() => Device.PlatformServices = null;
 
 			[Test]
-			public void FailOnUnresolvedDataType([Values(true)]bool useCompiledXaml)
+			public void DoesntFailOnxType([Values(true)]bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
-					Assert.Throws<XamlParseException>(() => MockCompiler.Compile(typeof(Gh5330)));
+					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh5330)));
+			}
+
+			[Test]
+			public void CompiledBindingWithxType([Values(true)]bool useCompiledXaml)
+			{
+				var layout = new Gh5330(useCompiledXaml) { BindingContext = new Button { Text = "Foo" } };
+				Assert.That(layout.label.Text, Is.EqualTo("Foo"));
 			}
 		}
 	}
