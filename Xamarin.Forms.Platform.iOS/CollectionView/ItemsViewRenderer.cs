@@ -59,23 +59,23 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
-		protected virtual ItemsViewLayout SelectLayout(IItemsLayout layoutSpecification)
+		protected virtual ItemsViewLayout SelectLayout(IItemsLayout layoutSpecification, ItemSizingStrategy itemSizingStrategy)
 		{
 			if (layoutSpecification is GridItemsLayout gridItemsLayout)
 			{
-				return new GridViewLayout(gridItemsLayout);
+				return new GridViewLayout(gridItemsLayout, itemSizingStrategy);
 			}
 
 			if (layoutSpecification is ListItemsLayout listItemsLayout)
 			{
-				return new ListViewLayout(listItemsLayout);
+				return new ListViewLayout(listItemsLayout, itemSizingStrategy);
 			}
 
 			// Fall back to vertical list
-			return new ListViewLayout(new ListItemsLayout(ItemsLayoutOrientation.Vertical));
+			return new ListViewLayout(new ListItemsLayout(ItemsLayoutOrientation.Vertical), itemSizingStrategy);
 		}
 
-		void TearDownOldElement(ItemsView oldElement)
+		protected virtual void TearDownOldElement(ItemsView oldElement)
 		{
 			if (oldElement == null)
 			{
@@ -118,8 +118,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected virtual void UpdateLayout()
 		{
-			_layout = SelectLayout(Element.ItemsLayout);
-			_layout.ItemSizingStrategy = Element.ItemSizingStrategy;
+			_layout = SelectLayout(Element.ItemsLayout, Element.ItemSizingStrategy);	
 
 			if (ItemsViewController != null)
 			{
@@ -129,17 +128,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected virtual void UpdateItemSizingStrategy()
 		{
-			if (ItemsViewController?.CollectionView?.VisibleCells.Length == 0)
-			{
-				// The CollectionView isn't really up and running yet, so we can just set the strategy and move on
-				_layout.ItemSizingStrategy = Element.ItemSizingStrategy;
-			}
-			else
-			{
-				// We're changing the strategy for a CollectionView mid-stream; 
-				// we'll just have to swap out the whole UICollectionViewLayout
-				UpdateLayout();
-			}
+			UpdateLayout();
 		}
 
 		protected virtual ItemsViewController CreateController(ItemsView newElement, ItemsViewLayout layout)

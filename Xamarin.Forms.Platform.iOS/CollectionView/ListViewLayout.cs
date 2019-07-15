@@ -5,7 +5,7 @@ namespace Xamarin.Forms.Platform.iOS
 {
 	internal class ListViewLayout : ItemsViewLayout
 	{
-		public ListViewLayout(ListItemsLayout itemsLayout): base(itemsLayout)
+		public ListViewLayout(ListItemsLayout itemsLayout, ItemSizingStrategy itemSizingStrategy) : base(itemsLayout, itemSizingStrategy)
 		{
 		}
 
