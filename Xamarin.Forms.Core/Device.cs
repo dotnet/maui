@@ -124,8 +124,8 @@ namespace Xamarin.Forms
 
 		public static Task InvokeOnMainThreadAsync(Action action)
 		{
-			string wrapAction() { action(); return null; }
-			return InvokeOnMainThreadAsync(wrapAction);
+			object wrapAction() { action(); return null; }
+			return InvokeOnMainThreadAsync((Func<object>)wrapAction);
 		}
 
 		public static Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> funcTask)
