@@ -17,5 +17,12 @@ namespace Xamarin.Forms.Material.Tizen
 			}
 			base.OnElementChanged(e);
 		}
+
+		protected override void UpdateThumbColor()
+		{
+			var color = Element.ThumbColor.IsDefault ? MColors.Current.PrimaryColor : Element.ThumbColor.ToNative();
+			Control.SetPartColor(Parts.Slider.Handler, color);
+			Control.SetPartColor(Parts.Slider.HandlerPressed, color);
+		}
 	}
 }

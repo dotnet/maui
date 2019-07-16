@@ -121,7 +121,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			Control.SetPartColor("bg", Element.MaximumTrackColor.IsDefault ? _defaultMaxColor : Element.MaximumTrackColor.ToNative());
 		}
 
-		protected void UpdateThumbColor()
+		protected virtual void UpdateThumbColor()
 		{
 			var color = Element.ThumbColor.IsDefault ? _defaultThumbColor : Element.ThumbColor.ToNative();
 			Control.SetPartColor("handler", color);
