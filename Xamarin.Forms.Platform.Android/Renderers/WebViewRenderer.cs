@@ -76,6 +76,7 @@ namespace Xamarin.Forms.Platform.Android
 					ElementController.GoBackRequested -= OnGoBackRequested;
 					ElementController.GoForwardRequested -= OnGoForwardRequested;
 					ElementController.ReloadRequested -= OnReloadRequested;
+					ElementController.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
 
 					_webViewClient?.Dispose();
 					_webChromeClient?.Dispose();

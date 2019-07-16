@@ -653,6 +653,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue5724.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6132.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2577.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue6286.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_Template.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla56298.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42620.cs" />
