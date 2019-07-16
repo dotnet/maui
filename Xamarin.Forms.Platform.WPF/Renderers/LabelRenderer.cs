@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using WThickness = System.Windows.Thickness;
 
 namespace Xamarin.Forms.Platform.WPF
 {
@@ -30,6 +31,7 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateAlign();
 				UpdateFont();
 				UpdateLineBreakMode();
+				UpdatePadding();
 			}
 
 			base.OnElementChanged(e);
@@ -58,6 +60,8 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateFont();
 			else if (e.PropertyName == Label.LineBreakModeProperty.PropertyName)
 				UpdateLineBreakMode();
+			else if (e.PropertyName == Label.PaddingProperty.PropertyName)
+				UpdatePadding();
 		}
 
 		protected override void UpdateBackground()
@@ -195,5 +199,18 @@ namespace Xamarin.Forms.Platform.WPF
 			}
 		}
 
+		void UpdatePadding()
+		{
+			if(Control == null || Element == null)
+			{
+				return;
+			}
+
+			Control.Padding = new WThickness(
+					Element.Padding.Left,
+					Element.Padding.Top,
+					Element.Padding.Right,
+					Element.Padding.Bottom);
+		}
 	}
 }
