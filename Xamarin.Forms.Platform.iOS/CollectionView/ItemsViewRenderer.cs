@@ -57,6 +57,10 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				UpdateVerticalScrollBarVisibility();
 			}
+			else if (changedProperty.Is(ItemsView.ItemsUpdatingScrollModeProperty))
+			{
+				UpdateItemsUpdatingScrollMode();
+			}
 		}
 
 		protected virtual ItemsViewLayout SelectLayout(IItemsLayout layoutSpecification, ItemSizingStrategy itemSizingStrategy)
@@ -129,6 +133,11 @@ namespace Xamarin.Forms.Platform.iOS
 		protected virtual void UpdateItemSizingStrategy()
 		{
 			UpdateLayout();
+		}
+
+		protected virtual void UpdateItemsUpdatingScrollMode()
+		{
+			_layout.ItemsUpdatingScrollMode = Element.ItemsUpdatingScrollMode;
 		}
 
 		protected virtual ItemsViewController CreateController(ItemsView newElement, ItemsViewLayout layout)

@@ -92,13 +92,6 @@ namespace Xamarin.Forms
 		internal override ReadOnlyCollection<Element> LogicalChildrenInternal => _logicalChildren.AsReadOnly();
 #endif
 
-		// TODO hartez 2018/08/29 17:35:10 Should ItemsView be abstract? With ItemsLayout as an interface?
-		// Trying to come up with a reasonable way to restrict CarouselView to ListItemsLayout(LinearLayout) 
-		// ((because setting Carousel to grid is ... weird? And by default it just won't do anything.))
-		// And allow CollectionView to use a broader set of Layout options
-		// So the Bindable property only exists at the CarouselView/CollectionView (i.e., concrete class) level
-		// but some version of IItemsLayout is still here?
-
 		public static readonly BindableProperty ItemsLayoutProperty =
 			BindableProperty.Create(nameof(ItemsLayout), typeof(IItemsLayout), typeof(ItemsView), 
 				ListItemsLayout.Vertical);
@@ -125,6 +118,16 @@ namespace Xamarin.Forms
 		{
 			get => (ItemSizingStrategy)GetValue(ItemSizingStrategyProperty);
 			set => SetValue(ItemSizingStrategyProperty, value);
+		}
+
+		public static readonly BindableProperty ItemsUpdatingScrollModeProperty =
+			BindableProperty.Create(nameof(ItemsUpdatingScrollMode), typeof(ItemsUpdatingScrollMode), typeof(ItemsView),
+				default(ItemsUpdatingScrollMode));
+
+		public ItemsUpdatingScrollMode ItemsUpdatingScrollMode
+		{
+			get => (ItemsUpdatingScrollMode)GetValue(ItemsUpdatingScrollModeProperty);
+			set => SetValue(ItemsUpdatingScrollModeProperty, value);
 		}
 
 		public void ScrollTo(int index, int groupIndex = -1,

@@ -4,14 +4,39 @@ using Android.Support.V7.Widget;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	internal class ScrollHelper
+	internal class ScrollHelper : RecyclerView.OnScrollListener
 	{
 		readonly RecyclerView _recyclerView;
 		Action _pendingScrollAdjustment;
 
+		bool _undoNextScrollAdjustment;
+		bool _maintainingScrollOffsets;
+
+		int _lastScrollX;
+		int _lastScrollY;
+		int _lastDeltaX;
+		int _lastDeltaY;
+
 		public ScrollHelper(RecyclerView recyclerView)
 		{
 			_recyclerView = recyclerView;
+		}
+
+		// Used by the renderer to maintain scroll offset when using ItemsUpdatingScrollMode KeepScrollOffset
+		public void UndoNextScrollAdjustment()
+		{
+			// Don't start tracking the scroll offsets until we really need to
+			if (!_maintainingScrollOffsets)
+			{
+				_maintainingScrollOffsets = true;
+				//_recyclerView.ScrollChange += ScrollChange;
+				_recyclerView.AddOnScrollListener(this);
+			}
+
+			_undoNextScrollAdjustment = true;
+
+			_lastScrollX = _recyclerView.ComputeHorizontalScrollOffset();
+			_lastScrollY = _recyclerView.ComputeVerticalScrollOffset();
 		}
 
 		public void AdjustScroll()
@@ -168,6 +193,37 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			_recyclerView.ScrollBy(offset, 0);
+		}
+
+		void TrackOffsets()
+		{
+			var newXOffset = _recyclerView.ComputeHorizontalScrollOffset();
+			var newYOffset = _recyclerView.ComputeVerticalScrollOffset();
+
+			_lastDeltaX = Math.Max(newXOffset - _lastScrollX, 0);
+			_lastDeltaY = Math.Max(newYOffset - _lastScrollY, 0);
+
+			_lastScrollX = newXOffset;
+			_lastScrollY = newYOffset;
+
+			if (_undoNextScrollAdjustment)
+			{
+				// This last scroll adjustment happened because a new item was added and it caused the scroll
+				// offset to shift; since the ItemsUpdatingScrollMode is set to KeepScrollOffset; we need to undo 
+				// that shift and stay where we were before the item was added
+
+				_undoNextScrollAdjustment = false;
+				_recyclerView.ScrollBy(-_lastDeltaX, -_lastDeltaY);
+
+				_lastDeltaX = 0;
+				_lastDeltaY = 0;
+			}
+		}
+
+		public override void OnScrolled(RecyclerView recyclerView, int dx, int dy)
+		{
+			base.OnScrolled(recyclerView, dx, dy);
+			TrackOffsets();
 		}
 	}
 }

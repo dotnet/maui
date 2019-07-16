@@ -1,5 +1,6 @@
 using System;
 using Android.Support.V7.Widget;
+using static Android.Support.V7.Widget.RecyclerView;
 using Object = Java.Lang.Object;
 
 namespace Xamarin.Forms.Platform.Android
@@ -7,10 +8,32 @@ namespace Xamarin.Forms.Platform.Android
 	internal class DataChangeObserver : RecyclerView.AdapterDataObserver
 	{
 		readonly Action _onDataChange;
+		public bool Observing { get; private set; }
 
 		public DataChangeObserver(Action onDataChange) : base()
 		{
 			_onDataChange = onDataChange;
+		}
+
+		public void Start(Adapter adapter)
+		{
+			if (Observing)
+			{
+				return;
+			}
+
+			adapter.RegisterAdapterDataObserver(this);
+			Observing = true;
+		}
+
+		public void Stop(Adapter adapter)
+		{
+			if (Observing && adapter != null)
+			{
+				adapter.UnregisterAdapterDataObserver(this);
+			}
+
+			Observing = false;
 		}
 
 		public override void OnChanged()
