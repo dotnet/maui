@@ -564,24 +564,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void TestBeginInvokeOnMainThread ()
-		{
-			Device.PlatformServices = new MockPlatformServices (invokeOnMainThread: action => action ());
-
-			bool invoked = false;
-			Device.BeginInvokeOnMainThread (() => invoked = true);
-
-			Assert.True (invoked);
-		}
-
-		[Test]
-		public void InvokeOnMainThreadThrowsWhenNull ()
-		{
-			Device.PlatformServices = null;
-			Assert.Throws<InvalidOperationException>(() => Device.BeginInvokeOnMainThread (() => { }));
-		}
-
-		[Test]
 		public void TestOpenUriAction ()
 		{
 			var uri = new Uri ("http://www.xamarin.com/");
