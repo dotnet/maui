@@ -75,7 +75,8 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateFont();
 				UpdateIsEnabled();
 				UpdateCancelButton();
-				UpdateAlignment();
+				UpdateHorizontalTextAlignment();
+				UpdateVerticalTextAlignment();
 				UpdateTextColor();
 				UpdateCharacterSpacing();
 				UpdateMaxLength();
@@ -117,9 +118,11 @@ namespace Xamarin.Forms.Platform.iOS
 			else if (e.PropertyName == SearchBar.FontSizeProperty.PropertyName)
 				UpdateFont();
 			else if (e.PropertyName == SearchBar.HorizontalTextAlignmentProperty.PropertyName)
-				UpdateAlignment();
+				UpdateHorizontalTextAlignment();
+			else if (e.PropertyName == SearchBar.VerticalTextAlignmentProperty.PropertyName)
+				UpdateVerticalTextAlignment();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
-				UpdateAlignment();
+				UpdateHorizontalTextAlignment();
 			else if(e.PropertyName == Xamarin.Forms.InputView.MaxLengthProperty.PropertyName)
 				UpdateMaxLength();
 			else if(e.PropertyName == Xamarin.Forms.InputView.KeyboardProperty.PropertyName)
@@ -204,7 +207,7 @@ namespace Xamarin.Forms.Platform.iOS
 			_textField.AttributedPlaceholder = _textField.AttributedPlaceholder.AddCharacterSpacing(Element.Placeholder, Element.CharacterSpacing);
 		}
 
-		void UpdateAlignment()
+		void UpdateHorizontalTextAlignment()
 		{
 			_textField = _textField ?? Control.FindDescendantView<UITextField>();
 
@@ -212,6 +215,16 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			_textField.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+		}
+
+		void UpdateVerticalTextAlignment()
+		{
+			_textField = _textField ?? Control.FindDescendantView<UITextField>();
+
+			if (_textField == null)
+				return;
+
+			_textField.VerticalAlignment = Element.VerticalTextAlignment.ToNativeTextAlignment();
 		}
 
 		void UpdateCancelButton()

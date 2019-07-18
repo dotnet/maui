@@ -135,7 +135,8 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateCharacterSpacing();
 			UpdateColor();
 			UpdateKeyboard();
-			UpdateAlignment();
+			UpdateHorizontalTextAlignment();
+			UpdateVerticalTextAlignment();
 			UpdateAdjustsFontSizeToFitWidth();
 			UpdateMaxLength();
 			UpdateReturnType();
@@ -169,7 +170,9 @@ namespace Xamarin.Forms.Platform.iOS
 			else if (e.PropertyName == Entry.IsTextPredictionEnabledProperty.PropertyName)
 				UpdateKeyboard();
 			else if (e.PropertyName == Entry.HorizontalTextAlignmentProperty.PropertyName)
-				UpdateAlignment();
+				UpdateHorizontalTextAlignment();
+			else if (e.PropertyName == Entry.VerticalTextAlignmentProperty.PropertyName)
+				UpdateVerticalTextAlignment();
 			else if (e.PropertyName == Entry.FontAttributesProperty.PropertyName)
 				UpdateFont();
 			else if (e.PropertyName == Entry.FontFamilyProperty.PropertyName)
@@ -184,7 +187,7 @@ namespace Xamarin.Forms.Platform.iOS
 			else if (e.PropertyName == Specifics.AdjustsFontSizeToFitWidthProperty.PropertyName)
 				UpdateAdjustsFontSizeToFitWidth();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
-				UpdateAlignment();
+				UpdateHorizontalTextAlignment();
 			else if (e.PropertyName == Xamarin.Forms.InputView.MaxLengthProperty.PropertyName)
 				UpdateMaxLength();
 			else if (e.PropertyName == Entry.ReturnTypeProperty.PropertyName)
@@ -246,9 +249,14 @@ namespace Xamarin.Forms.Platform.iOS
 			return false;
 		}
 
-		void UpdateAlignment()
+		void UpdateHorizontalTextAlignment()
 		{
 			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+		}
+
+		void UpdateVerticalTextAlignment()
+		{
+			Control.VerticalAlignment = Element.VerticalTextAlignment.ToNativeTextAlignment();
 		}
 
 		protected virtual void UpdateColor()

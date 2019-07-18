@@ -29,6 +29,8 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
 
+		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
+
 		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
 
 		public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
@@ -52,6 +54,12 @@ namespace Xamarin.Forms
 		{
 			get { return (TextAlignment)GetValue(TextAlignmentElement.HorizontalTextAlignmentProperty); }
 			set { SetValue(TextAlignmentElement.HorizontalTextAlignmentProperty, value); }
+		}
+
+		public TextAlignment VerticalTextAlignment
+		{
+			get { return (TextAlignment)GetValue(TextAlignmentElement.VerticalTextAlignmentProperty); }
+			set { SetValue(TextAlignmentElement.VerticalTextAlignmentProperty, value); }
 		}
 
 		public bool IsPassword

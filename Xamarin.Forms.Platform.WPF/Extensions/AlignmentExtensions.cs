@@ -18,6 +18,21 @@ namespace Xamarin.Forms.Platform.WPF
 			}
 		}
 
+		internal static VerticalAlignment ToNativeVerticalAlignment(this TextAlignment alignment)
+		{
+			switch (alignment)
+			{
+				case TextAlignment.Start:
+					return VerticalAlignment.Top;
+				case TextAlignment.Center:
+					return VerticalAlignment.Center;
+				case TextAlignment.End:
+					return VerticalAlignment.Bottom;
+				default:
+					return VerticalAlignment.Top;
+			}
+		}
+
 		internal static VerticalAlignment ToNativeVerticalAlignment(this LayoutOptions alignment)
 		{
 			switch (alignment.Alignment)

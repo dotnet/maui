@@ -52,12 +52,26 @@ namespace Xamarin.Forms.Controls
 			var textAlignmentEndContainer = new ViewContainer<SearchBar> (Test.SearchBar.TextAlignmentEnd,
 				new SearchBar { Text = "I should be at the end", HorizontalTextAlignment = TextAlignment.End });
 
+			var textVerticalAlignmentStartContainer = new ViewContainer<SearchBar>(Test.SearchBar.TextVerticalAlignmentStart,
+				new SearchBar { Text = "I should be at the start", VerticalTextAlignment = TextAlignment.Start });
+			var textVerticalAlignmentCenterContainer = new ViewContainer<SearchBar>(Test.SearchBar.TextVerticalAlignmentCenter,
+				new SearchBar { Text = "I should be centered", VerticalTextAlignment = TextAlignment.Center });
+			var textVerticalAlignmentEndContainer = new ViewContainer<SearchBar>(Test.SearchBar.TextVerticalAlignmentEnd,
+				new SearchBar { Text = "I should be at the end", VerticalTextAlignment = TextAlignment.End });
+
 			var placeholderAlignmentStartContainer = new ViewContainer<SearchBar> (Test.SearchBar.PlaceholderAlignmentStart,
 				new SearchBar { Placeholder = "I should be at the start", HorizontalTextAlignment = TextAlignment.Start });
 			var placeholderAlignmentCenterContainer = new ViewContainer<SearchBar> (Test.SearchBar.PlaceholderAlignmentCenter,
 				new SearchBar { Placeholder = "I should be centered", HorizontalTextAlignment = TextAlignment.Center });
 			var placeholderAlignmentEndContainer = new ViewContainer<SearchBar> (Test.SearchBar.PlaceholderAlignmentEnd,
 				new SearchBar { Placeholder = "I should be at the end", HorizontalTextAlignment = TextAlignment.End });
+
+			var placeholderVerticalAlignmentStartContainer = new ViewContainer<SearchBar>(Test.SearchBar.PlaceholderVerticalAlignmentStart,
+				new SearchBar { Placeholder = "I should be at the start", VerticalTextAlignment = TextAlignment.Start });
+			var placeholderVerticalAlignmentCenterContainer = new ViewContainer<SearchBar>(Test.SearchBar.PlaceholderVerticalAlignmentCenter,
+				new SearchBar { Placeholder = "I should be centered", VerticalTextAlignment = TextAlignment.Center });
+			var placeholderVerticalAlignmentEndContainer = new ViewContainer<SearchBar>(Test.SearchBar.PlaceholderVerticalAlignmentEnd,
+				new SearchBar { Placeholder = "I should be at the end", VerticalTextAlignment = TextAlignment.End });
 
 			var textColorContainer = new ViewContainer<SearchBar> (Test.SearchBar.TextColor,
 				new SearchBar { Text = "I should be red", TextColor = Color.Red });
@@ -89,6 +103,12 @@ namespace Xamarin.Forms.Controls
 			Add (placeholderAlignmentStartContainer);
 			Add (placeholderAlignmentCenterContainer);
 			Add (placeholderAlignmentEndContainer);
+			Add (textVerticalAlignmentStartContainer);
+			Add (textVerticalAlignmentCenterContainer);
+			Add (textVerticalAlignmentEndContainer);
+			Add (placeholderVerticalAlignmentStartContainer);
+			Add (placeholderVerticalAlignmentCenterContainer);
+			Add (placeholderVerticalAlignmentEndContainer);
 			Add (textColorContainer);
 			Add (placeholderColorContainer);
 			Add (keyboardContainer);

@@ -34,7 +34,8 @@ namespace Xamarin.Forms.Platform.iOS
 			GetDefaultSearchBarColors(_uiSearchBar);
 			var uiTextField = searchBar.FindDescendantView<UITextField>();
 			UpdateSearchBarColors();
-			UpdateSearchBarTextAlignment(uiTextField);
+			UpdateSearchBarHorizontalTextAlignment(uiTextField);
+			UpdateSearchBarVerticalTextAlignment(uiTextField);
 			UpdateFont(uiTextField);
 			UpdateKeyboard();
 		}
@@ -84,7 +85,11 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 			else if (e.Is(SearchHandler.HorizontalTextAlignmentProperty))
 			{
-				UpdateSearchBarTextAlignment(_uiSearchBar.FindDescendantView<UITextField>());
+				UpdateSearchBarHorizontalTextAlignment(_uiSearchBar.FindDescendantView<UITextField>());
+			}
+			else if (e.Is(SearchHandler.VerticalTextAlignmentProperty))
+			{
+				UpdateSearchBarVerticalTextAlignment(_uiSearchBar.FindDescendantView<UITextField>());
 			}
 		}
 
@@ -242,12 +247,20 @@ namespace Xamarin.Forms.Platform.iOS
 
 		}
 
-		void UpdateSearchBarTextAlignment(UITextField textField)
+		void UpdateSearchBarHorizontalTextAlignment(UITextField textField)
 		{
 			if (textField == null)
 				return;
 
 			textField.TextAlignment = _searchHandler.HorizontalTextAlignment.ToNativeTextAlignment(EffectiveFlowDirection.Explicit);
+		}
+
+		void UpdateSearchBarVerticalTextAlignment(UITextField textField)
+		{
+			if (textField == null)
+				return;
+
+			textField.VerticalAlignment = _searchHandler.VerticalTextAlignment.ToNativeTextAlignment();
 		}
 
 		void UpdateKeyboard()

@@ -32,7 +32,8 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdatePlaceholder();
 				UpdateColor();
 				UpdateFont();
-				UpdateAlignment();
+				UpdateHorizontalTextAlignment();
+				UpdateVerticalTextAlignment();
 				UpdatePlaceholderColor();
 				UpdateMaxLength();
 				UpdateIsReadOnly();
@@ -62,7 +63,9 @@ namespace Xamarin.Forms.Platform.WPF
 			else if (e.PropertyName == Entry.FontSizeProperty.PropertyName)
 				UpdateFont();
 			else if (e.PropertyName == Entry.HorizontalTextAlignmentProperty.PropertyName)
-				UpdateAlignment();
+				UpdateHorizontalTextAlignment();
+			else if (e.PropertyName == Entry.VerticalTextAlignmentProperty.PropertyName)
+				UpdateVerticalTextAlignment();
 			else if (e.PropertyName == Entry.PlaceholderColorProperty.PropertyName)
 				UpdatePlaceholderColor();
 			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
@@ -117,12 +120,20 @@ namespace Xamarin.Forms.Platform.WPF
 			_ignoreTextChange = false;
 		}
 
-		void UpdateAlignment()
+		void UpdateHorizontalTextAlignment()
 		{
 			if (Control == null)
 				return;
 
 			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment();
+		}
+
+		void UpdateVerticalTextAlignment()
+		{
+			if (Control == null)
+				return;
+
+			Control.VerticalContentAlignment = Element.VerticalTextAlignment.ToNativeVerticalAlignment();
 		}
 
 		void UpdateColor()

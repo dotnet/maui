@@ -220,7 +220,8 @@
 						              IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
 						              Margin="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" Grid.Row="1"
 						              VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
-						              VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}" ZoomMode="Disabled" />
+						              VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}" ZoomMode="Disabled"
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
 						<ContentControl x:Name="PlaceholderTextContentPresenter" Grid.ColumnSpan="2"
 						                Content="{TemplateBinding PlaceholderText}"
 						                Foreground="{TemplateBinding PlaceholderForegroundBrush}" IsHitTestVisible="False"
@@ -228,7 +229,8 @@
 						                Grid.Row="1"
 						                HorizontalAlignment="{Binding TextAlignment, 
                                             RelativeSource={RelativeSource Mode=TemplatedParent}, 
-                                            Converter={StaticResource AlignmentConverter}}" />
+                                            Converter={StaticResource AlignmentConverter}}" 
+                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
 						<Button x:Name="DeleteButton" BorderThickness="{TemplateBinding BorderThickness}" Grid.Column="1"
 						        FontSize="{TemplateBinding FontSize}" IsTabStop="False" Margin="{ThemeResource HelperButtonThemePadding}"
 						        MinWidth="34" Grid.Row="1" Style="{StaticResource DeleteButtonStyle}" Visibility="Collapsed"

@@ -39,7 +39,8 @@ namespace Xamarin.Forms.Platform.Android
 			_hintColorSwitcher = new TextColorSwitcher(_editText.HintTextColors, false);
 			UpdateSearchBarColors();
 			UpdateFont();
-			UpdateTextAlignment();
+			UpdateHorizontalTextAlignment();
+			UpdateVerticalTextAlignment();
 			UpdateInputType();
 		}
 
@@ -87,7 +88,11 @@ namespace Xamarin.Forms.Platform.Android
 			}
 			else if (e.Is(SearchHandler.HorizontalTextAlignmentProperty))
 			{
-				UpdateTextAlignment();
+				UpdateHorizontalTextAlignment();
+			}
+			else if (e.Is(SearchHandler.VerticalTextAlignmentProperty))
+			{
+				UpdateVerticalTextAlignment();
 			}
 		}
 
@@ -110,9 +115,14 @@ namespace Xamarin.Forms.Platform.Android
 			_hintColorSwitcher?.UpdateTextColor(_editText, _searchHandler.PlaceholderColor, _editText.SetHintTextColor);
 		}
 
-		void UpdateTextAlignment()
+		void UpdateHorizontalTextAlignment()
 		{
 			_editText.UpdateHorizontalAlignment(_searchHandler.HorizontalTextAlignment, _control.Context.HasRtlSupport(), Xamarin.Forms.TextAlignment.Center.ToVerticalGravityFlags());
+		}
+
+		void UpdateVerticalTextAlignment()
+		{
+			_editText.UpdateVerticalAlignment(_searchHandler.VerticalTextAlignment, Xamarin.Forms.TextAlignment.Center.ToVerticalGravityFlags());
 		}
 
 		void UpdateBackgroundColor()

@@ -166,7 +166,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				}
 
 				UpdateLineBreakMode();
-				UpdateAlignment();
+				UpdateHorizontalTextAlignment();
 				UpdateText();
 				UpdateTextDecorations();
 				UpdateTextColor();
@@ -184,7 +184,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == Label.HorizontalTextAlignmentProperty.PropertyName)
-				UpdateAlignment();
+				UpdateHorizontalTextAlignment();
 			else if (e.PropertyName == Label.VerticalTextAlignmentProperty.PropertyName)
 				UpdateLayout();
 			else if (e.PropertyName == Label.TextColorProperty.PropertyName)
@@ -209,7 +209,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			else if (e.PropertyName == Label.LineBreakModeProperty.PropertyName)
 				UpdateLineBreakMode();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
-				UpdateAlignment();
+				UpdateHorizontalTextAlignment();
 			else if (e.PropertyName == Label.LineHeightProperty.PropertyName)
 				UpdateText();
 			else if (e.PropertyName == Label.MaxLinesProperty.PropertyName)
@@ -311,7 +311,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		}
 
-		void UpdateAlignment()
+		void UpdateHorizontalTextAlignment()
 		{
 #if __MOBILE__
 			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);

@@ -31,7 +31,8 @@ namespace Xamarin.Forms.Platform.WPF
 				// Update control property 
 				UpdateText();
 				UpdatePlaceholder();
-				UpdateAlignment();
+				UpdateHorizontalTextAlignment();
+				UpdateVerticalTextAlignment();
 				UpdateFont();
 				UpdatePlaceholderColor();
 				UpdateTextColor();
@@ -55,7 +56,9 @@ namespace Xamarin.Forms.Platform.WPF
 			else if (e.PropertyName == SearchBar.FontSizeProperty.PropertyName)
 				UpdateFont();
 			else if (e.PropertyName == SearchBar.HorizontalTextAlignmentProperty.PropertyName)
-				UpdateAlignment();
+				UpdateHorizontalTextAlignment();
+			else if (e.PropertyName == SearchBar.VerticalTextAlignmentProperty.PropertyName)
+				UpdateVerticalTextAlignment();
 			else if (e.PropertyName == SearchBar.PlaceholderColorProperty.PropertyName)
 				UpdatePlaceholderColor();
 			else if (e.PropertyName == SearchBar.TextColorProperty.PropertyName)
@@ -73,9 +76,14 @@ namespace Xamarin.Forms.Platform.WPF
 			((IElementController)Element).SetValueFromRenderer(SearchBar.TextProperty, Control.Text);
 		}
 
-		void UpdateAlignment()
+		void UpdateHorizontalTextAlignment()
 		{
 			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment();
+		}
+
+		void UpdateVerticalTextAlignment()
+		{
+			Control.VerticalContentAlignment = Element.VerticalTextAlignment.ToNativeVerticalAlignment();
 		}
 
 		void UpdateFont()

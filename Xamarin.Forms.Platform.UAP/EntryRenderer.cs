@@ -58,7 +58,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateTextColor();
 				UpdateFont();
 				UpdateCharacterSpacing();
-				UpdateAlignment();
+				UpdateHorizontalTextAlignment();
+				UpdateVerticalTextAlignment();
 				UpdatePlaceholderColor();
 				UpdateMaxLength();
 				UpdateDetectReadingOrderFromContent();
@@ -128,11 +129,13 @@ namespace Xamarin.Forms.Platform.UWP
 			else if (e.PropertyName == Entry.FontSizeProperty.PropertyName)
 				UpdateFont();
 			else if (e.PropertyName == Entry.HorizontalTextAlignmentProperty.PropertyName)
-				UpdateAlignment();
+				UpdateHorizontalTextAlignment();
+			else if (e.PropertyName == Entry.VerticalTextAlignmentProperty.PropertyName)
+				UpdateVerticalTextAlignment();
 			else if (e.PropertyName == Entry.PlaceholderColorProperty.PropertyName)
 				UpdatePlaceholderColor();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
-				UpdateAlignment();
+				UpdateHorizontalTextAlignment();
 			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
 				UpdateMaxLength();
 			else if (e.PropertyName == Specifics.DetectReadingOrderFromContentProperty.PropertyName)
@@ -184,9 +187,14 @@ namespace Xamarin.Forms.Platform.UWP
 			((IEntryController)Element).SendCompleted();
 		}
 
-		void UpdateAlignment()
+		void UpdateHorizontalTextAlignment()
 		{
 			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+		}
+
+		void UpdateVerticalTextAlignment()
+		{
+			Control.VerticalContentAlignment = Element.VerticalTextAlignment.ToNativeVerticalAlignment();
 		}
 
 		void UpdateFont()

@@ -107,7 +107,8 @@ namespace Xamarin.Forms.Controls
 					Text = "VerticalTextAlignment Start",
  					VerticalTextAlignment = TextAlignment.Center,
 					HeightRequest = alignmentTestsHeightRequest, 
-					WidthRequest = alignmentTestsWidthRequest
+					WidthRequest = alignmentTestsWidthRequest,
+					BackgroundColor = Color.Pink
 				}
 			);
 
@@ -116,7 +117,8 @@ namespace Xamarin.Forms.Controls
 					Text = "VerticalTextAlignment End",
  					VerticalTextAlignment = TextAlignment.End,
 					HeightRequest = alignmentTestsHeightRequest, 
-					WidthRequest = alignmentTestsWidthRequest
+					WidthRequest = alignmentTestsWidthRequest,
+					BackgroundColor = Color.Pink
 				}
 			);
 
@@ -125,7 +127,8 @@ namespace Xamarin.Forms.Controls
 					Text = "VerticalTextAlignment Start",
  					VerticalTextAlignment = TextAlignment.Start,
 					HeightRequest = alignmentTestsHeightRequest, 
-					WidthRequest = alignmentTestsWidthRequest
+					WidthRequest = alignmentTestsWidthRequest,
+					BackgroundColor = Color.Pink
 				}
 			);
 
