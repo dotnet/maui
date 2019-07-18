@@ -115,8 +115,6 @@ namespace Xamarin.Forms.Platform.Android
 			//On Width or Height changes, the anchors needs to be updated
 			UpdateAnchorX();
 			UpdateAnchorY();
-
-			MaybeRequestLayout();
 		}
 
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -150,7 +148,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (e.PropertyName == VisualElement.XProperty.PropertyName || e.PropertyName == VisualElement.YProperty.PropertyName || e.PropertyName == VisualElement.WidthProperty.PropertyName ||
 				e.PropertyName == VisualElement.HeightProperty.PropertyName)
-				MaybeRequestLayout();
+				_renderer.View.MaybeRequestLayout();
 			else if (e.PropertyName == VisualElement.AnchorXProperty.PropertyName)
 				UpdateAnchorX();
 			else if (e.PropertyName == VisualElement.AnchorYProperty.PropertyName)
@@ -184,7 +182,7 @@ namespace Xamarin.Forms.Platform.Android
 			_batchedProperties.Clear();
 
 			if (_layoutNeeded)
-				MaybeRequestLayout();
+				_renderer.View.MaybeRequestLayout();
 			_layoutNeeded = false;
 		}
 
@@ -197,16 +195,6 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			UpdateClipToBounds();
-		}
-
-		void MaybeRequestLayout()
-		{
-			var isInLayout = false;
-			if ((int)Build.VERSION.SdkInt >= 18)
-				isInLayout = _renderer.View.IsInLayout;
-
-			if (!isInLayout && !_renderer.View.IsLayoutRequested)
-				_renderer.View.RequestLayout();
 		}
 
 		void RendererOnElementChanged(object sender, VisualElementChangedEventArgs args)
