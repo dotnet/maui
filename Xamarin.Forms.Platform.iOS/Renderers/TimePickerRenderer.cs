@@ -97,6 +97,7 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateFont();
 				UpdateTime();
 				UpdateTextColor();
+				UpdateCharacterSpacing();
 				UpdateFlowDirection();
 			}
 
@@ -108,10 +109,16 @@ namespace Xamarin.Forms.Platform.iOS
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == TimePicker.TimeProperty.PropertyName || e.PropertyName == TimePicker.FormatProperty.PropertyName)
+			{
 				UpdateTime();
+				UpdateCharacterSpacing();
+			}
 			else if (e.PropertyName == TimePicker.TextColorProperty.PropertyName || e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
 				UpdateTextColor();
-			else if (e.PropertyName == TimePicker.FontAttributesProperty.PropertyName || e.PropertyName == TimePicker.FontFamilyProperty.PropertyName || e.PropertyName == TimePicker.FontSizeProperty.PropertyName)
+			else if (e.PropertyName == TimePicker.CharacterSpacingProperty.PropertyName)
+				UpdateCharacterSpacing();
+			else if (e.PropertyName == TimePicker.FontAttributesProperty.PropertyName ||
+			         e.PropertyName == TimePicker.FontFamilyProperty.PropertyName || e.PropertyName == TimePicker.FontSizeProperty.PropertyName)
 				UpdateFont();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateFlowDirection();
@@ -153,6 +160,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 			// HACK This forces the color to update; there's probably a more elegant way to make this happen
 			Control.Text = Control.Text;
+		}
+
+		void UpdateCharacterSpacing()
+		{
+			Control.AttributedText = Control.AttributedText.AddCharacterSpacing(Control.Text, Element.CharacterSpacing);
 		}
 
 		void UpdateTime()

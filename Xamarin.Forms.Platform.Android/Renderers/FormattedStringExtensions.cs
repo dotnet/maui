@@ -60,27 +60,34 @@ namespace Xamarin.Forms.Platform.Android
 				}
 				if (!span.IsDefault())
 #pragma warning disable 618 // We will need to update this when .Font goes away
-					spannable.SetSpan(new FontSpan(span.Font, view), start, end, SpanTypes.InclusiveInclusive);
+					spannable.SetSpan(new FontSpan(span.Font, view, span.CharacterSpacing.ToEm()), start, end, SpanTypes.InclusiveInclusive);
 #pragma warning restore 618
 				else
-					spannable.SetSpan(new FontSpan(defaultFont, view), start, end, SpanTypes.InclusiveInclusive);
+					spannable.SetSpan(new FontSpan(defaultFont, view, span.CharacterSpacing.ToEm()), start, end, SpanTypes.InclusiveInclusive);
 				if (span.IsSet(Span.TextDecorationsProperty))
 					spannable.SetSpan(new TextDecorationSpan(span), start, end, SpanTypes.InclusiveInclusive);
+
 			}
 			return spannable;
 		}
 
 		class FontSpan : MetricAffectingSpan
 		{
-			public FontSpan(Font font, TextView view)
+			public FontSpan(Font font, TextView view, float characterSpacing)
 			{
 				Font = font;
 				TextView = view;
+				if (Forms.IsLollipopOrNewer)
+				{
+					CharacterSpacing = characterSpacing;
+				}
 			}
 
 			public Font Font { get; }
 
 			public TextView TextView { get; }
+
+			public float CharacterSpacing { get; }
 
 			public override void UpdateDrawState(TextPaint tp)
 			{
@@ -97,6 +104,10 @@ namespace Xamarin.Forms.Platform.Android
 				paint.SetTypeface(Font.ToTypeface());
 				float value = Font.ToScaledPixel();
 				paint.TextSize = TypedValue.ApplyDimension(ComplexUnitType.Sp, value, TextView.Resources.DisplayMetrics);
+				if (Forms.IsLollipopOrNewer)
+				{
+					paint.LetterSpacing = CharacterSpacing;
+				}
 			}
 		}
 

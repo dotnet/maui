@@ -44,6 +44,9 @@
     <Compile Update="GalleryPages\CollectionViewGalleries\SelectionGalleries\PreselectedItemsGallery.xaml.cs">
       <DependentUpon>PreselectedItemsGallery.xaml</DependentUpon>
     </Compile>
+    <Compile Update="GalleryPages\CharacterSpacingGallery.xaml.cs">
+      <DependentUpon>CharacterSpacingGallery.xaml</DependentUpon>
+    </Compile>
     <Compile Update="GalleryPages\VisualStateManagerGalleries\OnPlatformExample.xaml.cs">
       <DependentUpon>OnPlatformExample.xaml</DependentUpon>
     </Compile>
@@ -51,6 +54,9 @@
       <DependentUpon>ShellContentTest.xaml</DependentUpon>
     </Compile>
     <EmbeddedResource Update="GalleryPages\BindableLayoutGalleryPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="GalleryPages\CharacterSpacingGallery.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="GalleryPages\CollectionViewGalleries\EmptyViewGalleries\EmptyViewSwapGallery.xaml">

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using Windows.Foundation;
+using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
@@ -28,6 +29,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (span.IsSet(Span.TextDecorationsProperty))
 				run.TextDecorations = (Windows.UI.Text.TextDecorations)span.TextDecorations;
+
+			run.CharacterSpacing = span.CharacterSpacing.ToEm();
 
 			return run;
 		}
@@ -140,6 +143,7 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateTextDecorations(Control);
 				UpdateColor(Control);
 				UpdateAlign(Control);
+				UpdateCharacterSpacing(Control);
 				UpdateFont(Control);
 				UpdateLineBreakMode(Control);
 				UpdateMaxLines(Control);
@@ -164,6 +168,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateFont(Control);
 			else if (e.PropertyName == Label.TextDecorationsProperty.PropertyName)
 				UpdateTextDecorations(Control);
+			else if (e.PropertyName == Label.CharacterSpacingProperty.PropertyName)
+				UpdateCharacterSpacing(Control);
 			else if (e.PropertyName == Label.LineBreakModeProperty.PropertyName)
 				UpdateLineBreakMode(Control);
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
@@ -301,6 +307,12 @@ namespace Xamarin.Forms.Platform.UWP
 					throw new ArgumentOutOfRangeException();
 			}
 		}
+
+		void UpdateCharacterSpacing(TextBlock textBlock)
+		{
+			textBlock.CharacterSpacing = Element.CharacterSpacing.ToEm();
+		}
+
 
 		void DetermineTruncatedTextWrapping(TextBlock textBlock)
 		{

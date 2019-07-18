@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using Windows.System;
+using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -56,6 +57,7 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdatePlaceholder();
 				UpdateTextColor();
 				UpdateFont();
+				UpdateCharacterSpacing();
 				UpdateAlignment();
 				UpdatePlaceholderColor();
 				UpdateMaxLength();
@@ -109,6 +111,10 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdatePlaceholder();
 			else if (e.PropertyName == Entry.TextColorProperty.PropertyName)
 				UpdateTextColor();
+			else if (e.PropertyName == Entry.CharacterSpacingProperty.PropertyName)
+			{
+				UpdateCharacterSpacing();
+			}
 			else if (e.PropertyName == InputView.KeyboardProperty.PropertyName)
 				UpdateInputScope();
 			else if (e.PropertyName == InputView.IsSpellCheckEnabledProperty.PropertyName)
@@ -215,6 +221,11 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 
 			_fontApplied = true;
+		}
+
+		void UpdateCharacterSpacing()
+		{
+			Control.CharacterSpacing = Element.CharacterSpacing.ToEm();
 		}
 
 		void UpdateInputScope()

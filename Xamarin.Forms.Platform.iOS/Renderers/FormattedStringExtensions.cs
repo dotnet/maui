@@ -15,10 +15,10 @@ namespace Xamarin.Forms.Platform.MacOS
 	public static class FormattedStringExtensions
 	{
 		public static NSAttributedString ToAttributed(this Span span, Font defaultFont, Color defaultForegroundColor)
-		{
+		{ 
 			if (span == null)
 				return null;
-
+	
 #pragma warning disable 0618 //retaining legacy call to obsolete code
 			var font = span.Font != Font.Default ? span.Font : defaultFont;
 #pragma warning restore 0618
@@ -29,10 +29,11 @@ namespace Xamarin.Forms.Platform.MacOS
 				fgcolor = Color.Black; // as defined by apple docs		
 
 #if __MOBILE__
-			return new NSAttributedString(span.Text, font == Font.Default ? null : font.ToUIFont(), fgcolor.ToUIColor(), span.BackgroundColor.ToUIColor());
+			return new NSAttributedString(span.Text, font == Font.Default ? null : font.ToUIFont(), fgcolor.ToUIColor(), 
+				span.BackgroundColor.ToUIColor(), kerning: (float)span.CharacterSpacing);
 #else
 			return new NSAttributedString(span.Text, font == Font.Default ? null : font.ToNSFont(), fgcolor.ToNSColor(),
-				span.BackgroundColor.ToNSColor());
+				span.BackgroundColor.ToNSColor(), kerningAdjustment: (float)span.CharacterSpacing);
 #endif
 		}
 
@@ -127,10 +128,15 @@ namespace Xamarin.Forms.Platform.MacOS
 				hasUnderline = (textDecorations & TextDecorations.Underline) != 0;
 				hasStrikethrough = (textDecorations & TextDecorations.Strikethrough) != 0;
 			}
-
+#if __MOBILE__
 			var attrString = new NSAttributedString(text, targetFont, spanFgColor, spanBgColor,
 				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
-				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None, paragraphStyle: style);
+				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None, paragraphStyle: style, kerning: (float)span.CharacterSpacing);
+#else
+			var attrString = new NSAttributedString(text, targetFont, spanFgColor, spanBgColor,
+				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
+				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None, paragraphStyle: style, kerningAdjustment: (float)span.CharacterSpacing);
+#endif
 
 			return attrString;
 		}

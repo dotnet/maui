@@ -63,7 +63,13 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			_placeholderLabel.Text = Element.Placeholder;
 		}
-		
+
+		protected internal override void UpdateCharacterSpacing()
+		{
+			TextView.AttributedText = TextView.AttributedText.AddCharacterSpacing(Element.Text, Element.CharacterSpacing);
+			_placeholderLabel.AttributedText = _placeholderLabel.AttributedText.AddCharacterSpacing(Element.Placeholder, Element.CharacterSpacing);
+		}
+
 		protected internal override void UpdatePlaceholderColor()
 		{
 			Color placeholderColor = Element.PlaceholderColor;
@@ -99,6 +105,7 @@ namespace Xamarin.Forms.Platform.iOS
 			);
 
 			_placeholderLabel.TranslatesAutoresizingMaskIntoConstraints = false;
+			_placeholderLabel.AttributedText = _placeholderLabel.AttributedText.AddCharacterSpacing(Element.Placeholder, Element.CharacterSpacing);
 
 			Control.AddConstraints(hConstraints);
 			Control.AddConstraints(vConstraints);
@@ -174,6 +181,7 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdatePlaceholderColor();
 			UpdateTextColor();
 			UpdateText();
+			UpdateCharacterSpacing();
 			UpdateKeyboard();
 			UpdateEditable();
 			UpdateTextAlignment();
@@ -198,7 +206,10 @@ namespace Xamarin.Forms.Platform.iOS
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == Editor.TextProperty.PropertyName)
+			{
 				UpdateText();
+				UpdateCharacterSpacing();
+			}
 			else if (e.PropertyName == Xamarin.Forms.InputView.KeyboardProperty.PropertyName)
 				UpdateKeyboard();
 			else if (e.PropertyName == Xamarin.Forms.InputView.IsSpellCheckEnabledProperty.PropertyName)
@@ -215,12 +226,17 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateFont();
 			else if (e.PropertyName == Editor.FontSizeProperty.PropertyName)
 				UpdateFont();
+			else if (e.PropertyName == Editor.CharacterSpacingProperty.PropertyName)
+				UpdateCharacterSpacing();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateTextAlignment();
 			else if (e.PropertyName == Xamarin.Forms.InputView.MaxLengthProperty.PropertyName)
 				UpdateMaxLength();
 			else if (e.PropertyName == Editor.PlaceholderProperty.PropertyName)
+			{
 				UpdatePlaceholderText();
+				UpdateCharacterSpacing();
+			}
 			else if (e.PropertyName == Editor.PlaceholderColorProperty.PropertyName)
 				UpdatePlaceholderColor();
 			else if (e.PropertyName == Editor.AutoSizeProperty.PropertyName)
@@ -306,7 +322,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected internal abstract void UpdatePlaceholderText();
 		protected internal abstract void UpdatePlaceholderColor();
-
+		protected internal abstract void UpdateCharacterSpacing();
 
 		void UpdateTextAlignment()
 		{

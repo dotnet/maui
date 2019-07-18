@@ -134,6 +134,8 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateText();
 			else if (e.PropertyName == Button.TextColorProperty.PropertyName)
 				UpdateTextColor();
+			else if (e.PropertyName == Button.CharacterSpacingProperty.PropertyName)
+				UpdateCharacterSpacing();
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
 				UpdateEnabled();
 			else if (e.PropertyName == Button.FontProperty.PropertyName)
@@ -162,6 +164,7 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateText();
 			UpdateBitmap();
 			UpdateTextColor();
+			UpdateCharacterSpacing();
 			UpdateEnabled();
 			UpdateBackgroundColor();
 			UpdatePadding();
@@ -270,6 +273,14 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdateTextColor()
 		{
 			_textColorSwitcher?.UpdateTextColor(Control, Element.TextColor);
+		}
+
+		void UpdateCharacterSpacing()
+		{
+			if (Forms.IsLollipopOrNewer)
+			{
+				Control.LetterSpacing = Element.CharacterSpacing.ToEm();
+			}
 		}
 
 		float IBorderVisualElementRenderer.ShadowRadius => Control.ShadowRadius;

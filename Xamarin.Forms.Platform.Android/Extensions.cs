@@ -41,5 +41,11 @@ namespace Xamarin.Forms.Platform.Android
 		internal static bool IsHorizontal(this Button.ButtonContentLayout layout) =>
 			layout.Position == Button.ButtonContentLayout.ImagePosition.Left ||
 			layout.Position == Button.ButtonContentLayout.ImagePosition.Right;
+
+
+		internal static float ToEm(this double pt)
+		{
+			return (float)pt * 0.0624f; //Coefficient for converting Pt to Em
+		}
 	}
 }
