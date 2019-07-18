@@ -7,8 +7,6 @@ namespace Xamarin.Forms.Material.iOS
 {
 	public class MaterialFormsCheckBox : FormsCheckBox
 	{
-		const float _defaultSize = 18.0f;
-		const float _lineWidth = 2.0f;
 		static UIImage _checked;
 		static UIImage _unchecked;
 
@@ -40,10 +38,10 @@ namespace Xamarin.Forms.Material.iOS
 			}
 
 			if (_checked == null)
-				_checked = CreateCheckBox(CreateCheckMark());
+				_checked = CreateCheckBox(CreateCheckMark()).ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
 
 			if (_unchecked == null)
-				_unchecked = CreateCheckBox(null);
+				_unchecked = CreateCheckBox(null).ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
 
 			if (IsChecked)
 				return _checked;

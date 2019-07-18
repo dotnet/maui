@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 		
 		readonly Picker _picker;
 
-		public EnumSelector(Func<T> getValue, Action<T> setValue)
+		public EnumSelector(Func<T> getValue, Action<T> setValue, string automationId = "")
 		{
 			_setValue = setValue;
 
@@ -26,7 +26,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 			{
 				WidthRequest = 200,
 				ItemsSource = source,
-				SelectedItem = getValue().ToString()
+				SelectedItem = getValue().ToString(),
+				AutomationId = automationId
 			};
 
 			_picker.SelectedIndexChanged += PickerOnSelectedIndexChanged;

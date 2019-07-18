@@ -149,6 +149,12 @@
     <None Update="GalleryPages\CollectionViewGalleries\GroupingGalleries\SwitchGrouping.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <None Update="GalleryPages\CollectionViewGalleries\ScrollModeGalleries\ScrollModeTestGallery.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="GalleryPages\CollectionViewGalleries\SelectionGalleries\SelectionChangedCommandParameter.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
   </ItemGroup>
   <Target Name="CreateControllGalleryConfig" BeforeTargets="Build">
     <CreateItem Include="blank.config">

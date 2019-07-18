@@ -117,6 +117,15 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			SizeRequest result = new SizeRequest(new Size(MeasuredWidth, MeasuredHeight), new Size());
 			result.Minimum = new Size(Math.Min(Context.ToPixels(10), result.Request.Width), result.Request.Height);
 
+			// if the measure of the view has changed then trigger a request for layout
+			// if the measure hasn't changed then force a layout of the label
+			var measureIsChanged = !_lastSizeRequest.HasValue ||
+				_lastSizeRequest.HasValue && (_lastSizeRequest.Value.Request.Height != MeasuredHeight || _lastSizeRequest.Value.Request.Width != MeasuredWidth);
+			if (measureIsChanged)
+				this.MaybeRequestLayout();
+			else
+				ForceLayout();
+
 			_lastConstraintWidth = widthConstraint;
 			_lastConstraintHeight = heightConstraint;
 			_lastSizeRequest = result;
@@ -216,6 +225,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			if (e.OldElement != null)
 			{
 				e.OldElement.PropertyChanged -= OnElementPropertyChanged;
+				this.MaybeRequestLayout();
 			}
 
 			if (e.NewElement != null)

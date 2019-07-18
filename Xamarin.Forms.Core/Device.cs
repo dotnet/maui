@@ -124,8 +124,8 @@ namespace Xamarin.Forms
 
 		public static Task InvokeOnMainThreadAsync(Action action)
 		{
-			Func<object> dummyFunc = () => { action(); return null; };
-			return InvokeOnMainThreadAsync(dummyFunc);
+			object wrapAction() { action(); return null; }
+			return InvokeOnMainThreadAsync((Func<object>)wrapAction);
 		}
 
 		public static Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> funcTask)
@@ -151,8 +151,8 @@ namespace Xamarin.Forms
 
 		public static Task InvokeOnMainThreadAsync(Func<Task> funcTask)
 		{
-			Func<Task<object>> dummyFunc = async () => { await funcTask().ConfigureAwait(false); return null; };
-			return InvokeOnMainThreadAsync(dummyFunc);
+			async Task<object> wrapFunction() { await funcTask().ConfigureAwait(false); return null; }
+			return InvokeOnMainThreadAsync(wrapFunction);
 		}
 
 		public static async Task<SynchronizationContext> GetMainThreadSynchronizationContextAsync()

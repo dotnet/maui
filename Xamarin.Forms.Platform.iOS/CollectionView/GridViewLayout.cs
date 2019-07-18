@@ -10,7 +10,7 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		readonly GridItemsLayout _itemsLayout;
 
-		public GridViewLayout(GridItemsLayout itemsLayout) : base(itemsLayout)
+		public GridViewLayout(GridItemsLayout itemsLayout, ItemSizingStrategy itemSizingStrategy) : base(itemsLayout, itemSizingStrategy)
 		{
 			_itemsLayout = itemsLayout;
 		}
