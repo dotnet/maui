@@ -238,7 +238,8 @@ namespace Xamarin.Forms.Platform.Android
 			if (oldElement != null)
 				Tracker?.UpdateLayout();
 
-			SendVisualElementInitialized(element, this);
+			if (element != null)
+				SendVisualElementInitialized(element, this);
 
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 

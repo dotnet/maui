@@ -90,10 +90,7 @@ namespace Xamarin.Forms.Platform.Android
 			// if the measure of the view has changed then trigger a request for layout
 			// if the measure hasn't changed then force a layout of the button
 			if (previousHeight != View.MeasuredHeight || previousWidth != View.MeasuredWidth)
-			{
-				if (!View.IsLayoutRequested)
-					View.RequestLayout();
-			}
+				View.MaybeRequestLayout();
 			else
 				View.ForceLayout();
 
