@@ -993,6 +993,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue5132.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5888.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6334.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue5728.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6368.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6077.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3548.cs" />

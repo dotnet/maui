@@ -243,11 +243,11 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateHeader();
 				UpdateFooter();
 				UpdatePullToRefreshEnabled();
+				UpdateSpinnerColor();
 				UpdateIsRefreshing();
 				UpdateSeparatorColor();
 				UpdateSeparatorVisibility();
 				UpdateSelectionMode();
-				UpdateSpinnerColor();
 				UpdateVerticalScrollBarVisibility();
 				UpdateHorizontalScrollBarVisibility();
 
@@ -1467,16 +1467,16 @@ namespace Xamarin.Forms.Platform.iOS
 
 				if (!_refresh.Refreshing)
 				{
-					_refresh.BeginRefreshing();
-
 					//hack: On iOS11 with large titles we need to adjust the scroll offset manually
 					//since our UITableView is not the first child of the UINavigationController
-					UpdateContentOffset(TableView.ContentOffset.Y - _refresh.Frame.Height);
-
-					//hack: when we don't have cells in our UITableView the spinner fails to appear
-					CheckContentSize();
-
-					TableView.ScrollRectToVisible(new RectangleF(0, 0, _refresh.Bounds.Width, _refresh.Bounds.Height), true);
+					//This also forces the spinner color to be correct if we started refreshing immediately after changing it.
+					UpdateContentOffset(TableView.ContentOffset.Y - _refresh.Frame.Height, () =>
+					{
+						_refresh.BeginRefreshing();
+						//hack: when we don't have cells in our UITableView the spinner fails to appear
+						CheckContentSize();
+						TableView.ScrollRectToVisible(new RectangleF(0, 0, _refresh.Bounds.Width, _refresh.Bounds.Height), true);
+					});
 				}
 			}
 			else
@@ -1615,9 +1615,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateContentOffset(nfloat offset, Action completed = null)
 		{
-			if (!_usingLargeTitles)
-				return;
-
 			UIView.Animate(0.2, () => TableView.ContentOffset = new CoreGraphics.CGPoint(TableView.ContentOffset.X, offset), completed);
 		}
 	}

@@ -83,7 +83,11 @@ namespace Xamarin.Forms.Platform.MacOS
 			await ImageElementManager.SetImage(this, Element, oldElement).ConfigureAwait(false);
 		}
 
-		void IImageVisualElementRenderer.SetImage(NSImage image) => Control.Image = image;
+		void IImageVisualElementRenderer.SetImage(NSImage image)
+		{
+			Control.Image = image;
+			Control.Animates = image != null && image.Representations().Length > 1;
+		}
 
 		bool IImageVisualElementRenderer.IsDisposed => _isDisposed;
 

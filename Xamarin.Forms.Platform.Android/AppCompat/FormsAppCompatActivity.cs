@@ -3,6 +3,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading;
 using Android.App;
 using Android.Content;
 using Android.Content.Res;
@@ -10,7 +11,6 @@ using Android.OS;
 using Android.Runtime;
 using Android.Support.V7.App;
 using Android.Views;
-using Android.Widget;
 using Xamarin.Forms.Platform.Android.AppCompat;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat;
@@ -39,6 +39,8 @@ namespace Xamarin.Forms.Platform.Android
 		bool _renderersAdded;
 		bool _activityCreated;
 		PowerSaveModeBroadcastReceiver _powerSaveModeBroadcastReceiver;
+
+		static readonly ManualResetEventSlim PreviousActivityDestroying = new ManualResetEventSlim(true);
 
 		// Override this if you want to handle the default Android behavior of restoring fragments on an application restart
 		protected virtual bool AllowFragmentRestore => false;
@@ -143,6 +145,9 @@ namespace Xamarin.Forms.Platform.Android
 
 			application.PropertyChanged += AppOnPropertyChanged;
 
+			// Wait if old activity destroying is not finished
+			PreviousActivityDestroying.Wait();
+
 			Profile.FramePartition(nameof(SetMainPage));
 
 			SetMainPage();
@@ -206,6 +211,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void OnDestroy()
 		{
+			PreviousActivityDestroying.Reset();
+
 			if (_application != null)
 				_application.PropertyChanged -= AppOnPropertyChanged;
 
@@ -214,6 +221,8 @@ namespace Xamarin.Forms.Platform.Android
 			_layout.RemoveView(Platform);
 
 			Platform?.Dispose();
+
+			PreviousActivityDestroying.Set();
 
 			// call at the end to avoid race conditions with Platform dispose
 			base.OnDestroy();
