@@ -21,7 +21,9 @@ namespace Embedding.XF
 
 		void OpenUriButtonOnClicked(object sender, EventArgs eventArgs)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			Device.OpenUri(new Uri("http://www.bing.com"));
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 	}
 }

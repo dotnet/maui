@@ -165,7 +165,9 @@ namespace Xamarin.Forms.Controls.Issues
 					//if external link is clicked
 					Debug.WriteLine ("WebView_OnNavigating, DIfferent Uri, so open in Native Browser");
 					e.Cancel = true;
-					Device.OpenUri (new Uri (e.Url));    
+#pragma warning disable CS0618 // Type or member is obsolete
+					Device.OpenUri (new Uri (e.Url));
+#pragma warning restore CS0618 // Type or member is obsolete
 				}
 			}
 		}

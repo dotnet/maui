@@ -34,7 +34,9 @@ namespace Xamarin.Forms.Controls.Issues
 					new Button {
 						Text = "Without Params (Works)",
 						AutomationId = "btnOpenUri1",
+#pragma warning disable CS0618 // Type or member is obsolete
 						Command = new Command (() => Device.OpenUri (new Uri ("http://www.bing.com")))
+#pragma warning restore CS0618 // Type or member is obsolete
 					}
 				}
 			};
@@ -76,7 +78,9 @@ namespace Xamarin.Forms.Controls.Issues
 					new Button {
 						Text = "With encoded Params (Breaks)",
 						AutomationId = "btnOpenUri2",
+#pragma warning disable CS0618 // Type or member is obsolete
 						Command = new Command (() => Device.OpenUri (new Uri ("http://www.bing.com/search?q=xamarin%20bombs%20on%20this")))
+#pragma warning restore CS0618 // Type or member is obsolete
 					}
 				}
 			};
@@ -119,7 +123,9 @@ namespace Xamarin.Forms.Controls.Issues
 					new Button {
 						Text = "With decoded Params (Breaks)",
 						AutomationId = "btnOpenUri3",
+#pragma warning disable CS0618 // Type or member is obsolete
 						Command = new Command (() => Device.OpenUri (new Uri ("http://www.bing.com/search?q=xamarin bombs on this")))
+#pragma warning restore CS0618 // Type or member is obsolete
 					}
 				}
 			};

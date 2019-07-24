@@ -23,8 +23,10 @@ namespace Xamarin.Forms.Controls.Issues
 			Content = new StackLayout
 			{
 				Children = {
+#pragma warning disable CS0618 // Type or member is obsolete
 					new Button { Text = "Call 123 4567", AutomationId = "tel", Command = new Command(() => Device.OpenUri(new System.Uri("tel:123 4567"))) },
 					new Button { Text = "Mail support@xamarin.com", AutomationId = "mailto", Command = new Command(() => Device.OpenUri(new System.Uri("mailto:support@xamarin.com"))) }
+#pragma warning restore CS0618 // Type or member is obsolete
 				}
 			};
 		}
