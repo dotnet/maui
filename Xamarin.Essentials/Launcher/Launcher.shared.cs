@@ -40,7 +40,7 @@ namespace Xamarin.Essentials
 
         public static Task OpenAsync(OpenFileRequest request)
         {
-            ExperimentalFeatures.VerifyEnabled(ExperimentalFeatures.ShareFileRequest);
+            ExperimentalFeatures.VerifyEnabled(ExperimentalFeatures.OpenFileRequest);
 
             return PlatformOpenAsync(request);
         }
