@@ -795,8 +795,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var bindingType = XamlParser.GetElementType(new XmlType("http://xamarin.com/schemas/2014/forms", "Binding", null), null, null, out var ex);
 			Assert.That(ex, Is.Null);
 			Assert.That(bindingType, Is.EqualTo(typeof(BindingExtension)));
-
-			var bindingTypeRef = new XmlType("http://xamarin.com/schemas/2014/forms", "Binding", null).GetTypeReference(ModuleDefinition.CreateModule("foo", ModuleKind.Dll), null);
+			var module = ModuleDefinition.CreateModule("foo", new ModuleParameters()
+			{
+				AssemblyResolver = new MockAssemblyResolver(),
+				Kind = ModuleKind.Dll,
+			});
+			var bindingTypeRef = new XmlType("http://xamarin.com/schemas/2014/forms", "Binding", null).GetTypeReference(module, null);
 			Assert.That(bindingType.FullName, Is.EqualTo("Xamarin.Forms.Xaml.BindingExtension"));
 		}
 	}

@@ -1588,7 +1588,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That (() => bindable.SetBinding (MockBindable.TextProperty, new Binding ("Text2")), Throws.Nothing);
 			Assert.That (bindable.Text, Is.EqualTo (MockBindable.TextProperty.DefaultValue));
 			Assert.That (log.Messages.Count, Is.EqualTo (1), "An error was not logged");
-			Assert.That (log.Messages[0], Is.StringContaining (String.Format (BindingExpression.PropertyNotFoundErrorMessage,
+			Assert.That (log.Messages[0], Does.Contain(String.Format (BindingExpression.PropertyNotFoundErrorMessage,
 				"Text2",
 				"Xamarin.Forms.Core.UnitTests.BindingUnitTests+DifferentViewModel",
 				"Xamarin.Forms.Core.UnitTests.MockBindable",
@@ -1607,7 +1607,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That (bindable.Text, Is.EqualTo ("Foo"));
 
 			Assert.That (log.Messages.Count, Is.Not.GreaterThan (1), "Too many errors were logged");
-			Assert.That (log.Messages[0], Is.StringContaining (String.Format (BindingExpression.PropertyNotFoundErrorMessage,
+			Assert.That (log.Messages[0], Does.Contain(String.Format (BindingExpression.PropertyNotFoundErrorMessage,
 				"Text",
 				"Xamarin.Forms.Core.UnitTests.BindingUnitTests+EmptyViewModel",
 				"Xamarin.Forms.Core.UnitTests.MockBindable",
@@ -1621,7 +1621,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That (() => bindable.SetBinding (MockBindable.TextProperty, new Binding ("Text")), Throws.Nothing);
 
 			Assert.That (log.Messages.Count, Is.EqualTo (1), "An error was not logged");
-			Assert.That (log.Messages[0], Is.StringContaining (String.Format (BindingExpression.PropertyNotFoundErrorMessage,
+			Assert.That (log.Messages[0], Does.Contain(String.Format (BindingExpression.PropertyNotFoundErrorMessage,
 				"Text",
 				"Xamarin.Forms.Core.UnitTests.BindingUnitTests+DifferentViewModel",
 				"Xamarin.Forms.Core.UnitTests.MockBindable",
@@ -1637,7 +1637,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That (() => bindable.SetBinding (MockBindable.TextProperty, new Binding ("PrivateSetter")), Throws.Nothing);
 
 			Assert.That (log.Messages.Count, Is.EqualTo (1), "An error was not logged");
-			Assert.That (log.Messages[0], Is.StringContaining (String.Format (BindingExpression.PropertyNotFoundErrorMessage,
+			Assert.That (log.Messages[0], Does.Contain(String.Format (BindingExpression.PropertyNotFoundErrorMessage,
 				"PrivateSetter",
 				"Xamarin.Forms.Core.UnitTests.BindingUnitTests+DifferentViewModel",
 				"Xamarin.Forms.Core.UnitTests.MockBindable",
@@ -1646,7 +1646,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That (() => bindable.SetValueCore (MockBindable.TextProperty, "foo"), Throws.Nothing);
 
 			Assert.That (log.Messages.Count, Is.EqualTo (2), "An error was not logged");
-			Assert.That (log.Messages[1], Is.StringContaining (String.Format (BindingExpression.PropertyNotFoundErrorMessage,
+			Assert.That (log.Messages[1], Does.Contain(String.Format (BindingExpression.PropertyNotFoundErrorMessage,
 				"PrivateSetter",
 				"Xamarin.Forms.Core.UnitTests.BindingUnitTests+DifferentViewModel",
 				"Xamarin.Forms.Core.UnitTests.MockBindable",
@@ -1660,7 +1660,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That (() => bindable.SetBinding (MockBindable.TextProperty, new Binding ("MissingProperty")), Throws.Nothing);
 
 			Assert.That (log.Messages.Count, Is.EqualTo (1), "An error was not logged");
-			Assert.That (log.Messages[0], Is.StringContaining (String.Format (BindingExpression.PropertyNotFoundErrorMessage,
+			Assert.That (log.Messages[0], Does.Contain(String.Format (BindingExpression.PropertyNotFoundErrorMessage,
 				"MissingProperty",
 				"Xamarin.Forms.Core.UnitTests.MockViewModel",
 				"Xamarin.Forms.Core.UnitTests.MockBindable",
@@ -1688,7 +1688,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That (() => bindable.SetBinding (MockBindable.TextProperty, new Binding ("Model.MissingProperty")), Throws.Nothing);
 
 			Assert.That (log.Messages.Count, Is.EqualTo (1), "An error was not logged");
-			Assert.That (log.Messages[0], Is.StringContaining (String.Format (BindingExpression.PropertyNotFoundErrorMessage,
+			Assert.That (log.Messages[0], Does.Contain(String.Format (BindingExpression.PropertyNotFoundErrorMessage,
 				"MissingProperty",
 				"Xamarin.Forms.Core.UnitTests.BindingBaseUnitTests+ComplexMockViewModel",
 				"Xamarin.Forms.Core.UnitTests.MockBindable",

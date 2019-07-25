@@ -349,7 +349,7 @@
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="3.0.2" />
     <PackageReference Include="Xamarin.Insights" Version="1.12.3" />
     <PackageReference Include="Xamarin.iOS.MaterialComponents" Version="72.2.0.1" />
-    <PackageReference Include="Xamarin.TestCloud.Agent" Version="0.21.7" />
+    <PackageReference Include="Xamarin.TestCloud.Agent" Version="0.21.8" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />

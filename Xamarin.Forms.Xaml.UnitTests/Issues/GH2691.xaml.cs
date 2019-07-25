@@ -113,16 +113,17 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					"Release";
 #endif
 
+				var dir = Path.GetFullPath(
+						Path.Combine(
+							TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Controls.dll"));
 				var xamlg = new XamlGTask()
 				{
 					BuildEngine = new DummyBuildEngine(),
 					AssemblyName = "test",
 					Language = "C#",
 					XamlFiles = new[] { item },
-					OutputFiles = new [] { new TaskItem(xamlOutputFile) },
-					References = Path.GetFullPath(
-						Path.Combine(
-							Directory.GetCurrentDirectory(), "Xamarin.Forms.Controls.dll"))
+					OutputFiles = new[] { new TaskItem(xamlOutputFile) },
+					References = dir
 				};
 
 				var generator = new XamlGenerator(item, xamlg.Language, xamlg.AssemblyName, xamlOutputFile, xamlg.References, null);

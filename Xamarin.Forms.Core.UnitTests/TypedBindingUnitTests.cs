@@ -1490,7 +1490,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		[Ignore]
+		[Ignore("SpeedTestApply")]
 		public void SpeedTestApply()
 		{
 			
@@ -1560,7 +1560,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		[Ignore]
+		[Ignore("SpeedTestSetBC")]
 		public void SpeedTestSetBC()
 		{
 			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable));

@@ -45,8 +45,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NUnit" Version="2.6.4" />
-    <PackageReference Include="NUnitTestAdapter" Version="2.1.1" />
+    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnit3TestAdapter">
+      <Version>3.13.0</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
@@ -243,8 +245,8 @@
   </ItemGroup>
   <Target Name="_CopyNUnitTestAdapterFiles" AfterTargets="Build">
     <ItemGroup>
-      <_NUnitTestAdapterFiles Include="$(NuGetPackageRoot)NUnitTestAdapter\%(Version)\**" Condition="@(PackageReference -> '%(Identity)') == 'NUnitTestAdapter'" InProject="False" />
+      <_NUnitTestAdapterFiles Include="$(NuGetPackageRoot)NUnit3TestAdapter\%(Version)\build\net35\**" Condition="@(PackageReference -> '%(Identity)') == 'NUnit3TestAdapter'" InProject="False" />
     </ItemGroup>
-    <Copy SourceFiles="@(_NUnitTestAdapterFiles)" DestinationFolder="$(SolutionDir)packages\NUnitTestAdapter.AnyVersion\%(RecursiveDir)" ContinueOnError="true" Retries="0" />
+    <Copy SourceFiles="@(_NUnitTestAdapterFiles)" DestinationFolder="$(SolutionDir)packages\NUnitTestAdapter.AnyVersion\tools\%(RecursiveDir)" ContinueOnError="true" Retries="0" />
   </Target>
 </Project>

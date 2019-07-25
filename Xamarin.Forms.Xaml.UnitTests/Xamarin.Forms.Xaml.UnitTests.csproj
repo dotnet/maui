@@ -4,7 +4,7 @@
     <RootNamespace>Xamarin.Forms.Xaml.UnitTests</RootNamespace>
     <AssemblyName>Xamarin.Forms.Xaml.UnitTests</AssemblyName>
     <WarningLevel>4</WarningLevel>
-    <NoWarn>0672;0219;0414</NoWarn>
+    <NoWarn>0672;0219;0414;CS0436</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -19,8 +19,9 @@
     <ProjectReference Include="..\Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NUnit" Version="2.6.4" />
-    <PackageReference Include="Microsoft.Build.Locator" Version="1.0.31" />
+    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.2.2" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Xamarin.Forms.Core.UnitTests\MockPlatformServices.cs">
