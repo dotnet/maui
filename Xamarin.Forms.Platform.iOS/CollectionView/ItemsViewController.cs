@@ -9,7 +9,7 @@ namespace Xamarin.Forms.Platform.iOS
 	// TODO hartez 2018/06/01 14:21:24 Add a method for updating the layout	
 	public class ItemsViewController : UICollectionViewController
 	{
-		protected IItemsViewSource ItemsSource { get; set; }
+		public IItemsViewSource ItemsSource { get; protected set; }
 		public ItemsView ItemsView { get; }
 		protected ItemsViewLayout ItemsViewLayout { get; set; }
 		bool _initialConstraintsSet;

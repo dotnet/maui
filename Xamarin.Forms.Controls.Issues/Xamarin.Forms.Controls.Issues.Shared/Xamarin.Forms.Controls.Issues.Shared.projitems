@@ -25,6 +25,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue6258.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3150.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6262.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Github5623.xaml.cs">
+      <DependentUpon>Github5623.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59172.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FlagTestHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6260.cs" />
@@ -480,7 +484,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue4600.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Issue5252.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5057.xaml.cs">
       <DependentUpon>Issue5057.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -1300,6 +1303,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue5046.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Github5623.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </EmbeddedResource>

@@ -1,13 +1,11 @@
 using System;
 using System.ComponentModel;
-using System.Linq;
 using Android.Content;
 using Android.Graphics;
 using Android.Support.V7.Widget;
-using Android.Util;
 using Android.Views;
-using Android.Widget;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.Platform.Android.CollectionView;
 using Xamarin.Forms.Platform.Android.FastRenderers;
 using AViewCompat = Android.Support.V4.View.ViewCompat;
 
@@ -28,6 +26,7 @@ namespace Xamarin.Forms.Platform.Android
 		IItemsLayout _layout;
 		SnapManager _snapManager;
 		ScrollHelper _scrollHelper;
+		RecyclerViewScrollListener _recyclerViewScrollListener;
 
 		EmptyViewAdapter _emptyViewAdapter;
 		readonly DataChangeObserver _emptyCollectionObserver;
@@ -40,7 +39,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public ItemsViewRenderer(Context context) : base(new ContextThemeWrapper(context, Resource.Style.collectionViewStyle))
 		{
-			CollectionView.VerifyCollectionViewFlagEnabled(nameof(ItemsViewRenderer));
+			Xamarin.Forms.CollectionView.VerifyCollectionViewFlagEnabled(nameof(ItemsViewRenderer));
 
 			_automationPropertiesProvider = new AutomationPropertiesProvider(this);
 			_effectControlProvider = new EffectControlProvider(this);
@@ -305,6 +304,9 @@ namespace Xamarin.Forms.Platform.Android
 
 			// Listen for ScrollTo requests
 			ItemsView.ScrollToRequested += ScrollToRequested;
+
+			_recyclerViewScrollListener = new RecyclerViewScrollListener(ItemsView, ItemsViewAdapter);
+			AddOnScrollListener(_recyclerViewScrollListener);
 		}
 
 		void UpdateVerticalScrollBarVisibility()
@@ -352,6 +354,13 @@ namespace Xamarin.Forms.Platform.Android
 
 			// Stop listening for ScrollTo requests
 			oldElement.ScrollToRequested -= ScrollToRequested;
+
+			if (_recyclerViewScrollListener != null)
+			{
+				_recyclerViewScrollListener.Dispose();
+				ClearOnScrollListeners();
+				_recyclerViewScrollListener = null;
+			}
 
 			if (ItemsViewAdapter != null)
 			{

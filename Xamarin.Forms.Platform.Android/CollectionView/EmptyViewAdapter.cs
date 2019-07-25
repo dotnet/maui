@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public EmptyViewAdapter(ItemsView itemsView)
 		{
-			CollectionView.VerifyCollectionViewFlagEnabled(nameof(EmptyViewAdapter));
+			Xamarin.Forms.CollectionView.VerifyCollectionViewFlagEnabled(nameof(EmptyViewAdapter));
 			ItemsView = itemsView;
 		}
 
