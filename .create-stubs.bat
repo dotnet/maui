@@ -45,6 +45,19 @@ mkdir Xamarin.Forms.Platform.iOS\bin\%CONFIG%\zh-Hans
 mkdir Xamarin.Forms.Platform.iOS\bin\%CONFIG%\zh-Hant
 mkdir Xamarin.Forms.Platform.iOS\bin\%CONFIG%\zh-HK
 
+
+
+mkdir Xamarin.Forms.Platform.Android\bin\%CONFIG%
+echo foo > Xamarin.Forms.Platform.Android\bin\%CONFIG%\Xamarin.Forms.Platform.Android.dll
+
+mkdir Xamarin.Forms.Platform.Android.FormsViewGroup\bin\%CONFIG%
+echo foo > Xamarin.Forms.Platform.Android.FormsViewGroup\bin\%CONFIG%\FormsViewGroup.dll
+
+mkdir Stubs\Xamarin.Forms.Platform.Android\bin\%CONFIG%
+echo foo > Stubs\Xamarin.Forms.Platform.Android\bin\%CONFIG%\Xamarin.Forms.Platform.dll
+
+
+
 mkdir Xamarin.Forms.Platform.Android\bin\%CONFIG%\MonoAndroid90
 echo foo > Xamarin.Forms.Platform.Android\bin\%CONFIG%\MonoAndroid90\Xamarin.Forms.Platform.Android.dll
 
