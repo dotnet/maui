@@ -1,0 +1,35 @@
+{
+  "solution": {
+    "path": "Xamarin.Forms.sln",
+    "projects": [
+      "EmbeddingTestBeds\\Embedding.UWP\\Embedding.UWP.csproj",
+      "EmbeddingTestBeds\\Embedding.XF\\Embedding.XF.csproj",
+      "PagesGallery\\PagesGallery.UWP\\PagesGallery.UWP.csproj",
+      "PagesGallery\\PagesGallery\\PagesGallery.csproj",
+      "XFCorePostProcessor.Tasks\\XFCorePostProcessor.Tasks.csproj",
+      "Xamarin.Flex\\Xamarin.Flex.shproj",
+      "Xamarin.Forms.Build.Tasks\\Xamarin.Forms.Build.Tasks.csproj",
+      "Xamarin.Forms.ControlGallery.WindowsUniversal\\Xamarin.Forms.ControlGallery.WindowsUniversal.csproj",
+      "Xamarin.Forms.Controls.Issues\\Xamarin.Forms.Controls.Issues.Shared\\Xamarin.Forms.Controls.Issues.Shared.shproj",
+      "Xamarin.Forms.Controls\\Xamarin.Forms.Controls.csproj",
+      "Xamarin.Forms.Core.Design\\Xamarin.Forms.Core.Design.csproj",
+      "Xamarin.Forms.Core.UITests.Shared\\Xamarin.Forms.Core.UITests.Shared.shproj",
+      "Xamarin.Forms.Core.UnitTests\\Xamarin.Forms.Core.UnitTests.csproj",
+      "Xamarin.Forms.Core.Windows.UITests\\Xamarin.Forms.Core.Windows.UITests.csproj",
+      "Xamarin.Forms.Core\\Xamarin.Forms.Core.csproj",
+      "Xamarin.Forms.CustomAttributes\\Xamarin.Forms.CustomAttributes.csproj",
+      "Xamarin.Forms.Maps.UWP\\Xamarin.Forms.Maps.UWP.csproj",
+      "Xamarin.Forms.Maps\\Xamarin.Forms.Maps.csproj",
+      "Xamarin.Forms.Pages.Azure\\Xamarin.Forms.Pages.Azure.csproj",
+      "Xamarin.Forms.Pages.UnitTests\\Xamarin.Forms.Pages.UnitTests.csproj",
+      "Xamarin.Forms.Pages\\Xamarin.Forms.Pages.csproj",
+      "Xamarin.Forms.Platform.UAP\\Xamarin.Forms.Platform.UAP.csproj",
+      "Xamarin.Forms.Platform\\Xamarin.Forms.Platform.csproj",
+      "Xamarin.Forms.Sandbox.UWP\\Xamarin.Forms.Sandbox.UWP.csproj",
+      "Xamarin.Forms.Sandbox\\Xamarin.Forms.Sandbox.csproj",
+      "Xamarin.Forms.Xaml.Design\\Xamarin.Forms.Xaml.Design.csproj",
+      "Xamarin.Forms.Xaml.UnitTests\\Xamarin.Forms.Xaml.UnitTests.csproj",
+      "Xamarin.Forms.Xaml\\Xamarin.Forms.Xaml.csproj"
+    ]
+  }
+}

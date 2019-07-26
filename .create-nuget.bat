@@ -17,11 +17,15 @@ if "%1" == "rdroid" (
    set CONFIG=release
    call .create-stubs.bat
    %NUGET_EXE% restore .xamarin.forms.android.nuget.sln
-   msbuild /v:m /p:configuration=release /p:platform="any cpu" /p:WarningLevel=0 /p:CreateAllAndroidTargets=true .xamarin.forms.android.nuget.sln
+   msbuild /v:m /p:configuration=release /p:platform="any cpu" /p:WarningLevel=0 .xamarin.forms.android.nuget.sln
 )
 if "%1" == "pdroid" (
    set CONFIG=release
-   msbuild /v:m /p:configuration=release /p:platform="anyCpu" /p:WarningLevel=0 /p:CreateAllAndroidTargets=true Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj
+   msbuild /v:m /p:configuration=release /p:platform="anyCpu" /p:WarningLevel=0 Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj
+)
+if "%1" == "pddroid" (
+   set CONFIG=debug
+   msbuild /v:m /p:configuration=debug /p:platform="anyCpu" /p:WarningLevel=0 Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj
 )
 if "%1" == "ios" (
    set CONFIG=debug
@@ -46,6 +50,13 @@ if "%1" == "uap" (
 )
 if "%1" == "all" (
    set CONFIG=debug
+   call .create-stubs.bat
+   %NUGET_EXE% restore .xamarin.forms.sln
+   msbuild /v:m /p:platform="any cpu" .xamarin.forms.uap.nuget.sln /t:restore
+   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 /p:CreateAllAndroidTargets=true .xamarin.forms.nuget.sln
+)
+if "%1" == "rall" (
+   set CONFIG=release
    call .create-stubs.bat
    %NUGET_EXE% restore .xamarin.forms.sln
    msbuild /v:m /p:platform="any cpu" .xamarin.forms.uap.nuget.sln /t:restore
