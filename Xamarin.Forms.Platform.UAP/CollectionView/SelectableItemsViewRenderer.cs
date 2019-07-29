@@ -10,7 +10,7 @@ namespace Xamarin.Forms.Platform.UWP
 	{
 		SelectableItemsView _selectableItemsView;
 
-		protected override void OnElementChanged(ElementChangedEventArgs<CollectionView> args)
+		protected override void TearDownOldElement(ItemsView oldElement)
 		{
 			var oldListViewBase = ListViewBase;
 			if (oldListViewBase != null)
@@ -19,13 +19,19 @@ namespace Xamarin.Forms.Platform.UWP
 				oldListViewBase.SelectionChanged -= OnNativeSelectionChanged;
 			}
 
-			if (args.OldElement != null)
+			if (_selectableItemsView != null)
 			{
-				args.OldElement.SelectionChanged -= OnSelectionChanged;
+				_selectableItemsView.SelectionChanged -= OnSelectionChanged;
 			}
 
-			base.OnElementChanged(args);
-			_selectableItemsView = args.NewElement;
+			base.TearDownOldElement(oldElement);
+		}
+
+		protected override void SetUpNewElement(ItemsView newElement)
+		{
+			base.SetUpNewElement(newElement);
+
+			_selectableItemsView = newElement as SelectableItemsView;
 
 			if (_selectableItemsView != null)
 			{
@@ -47,6 +53,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 				newListViewBase.SelectionChanged += OnNativeSelectionChanged;
 			}
+
 			UpdateNativeSelection();
 		}
 
