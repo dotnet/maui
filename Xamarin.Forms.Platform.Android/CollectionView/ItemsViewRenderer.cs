@@ -252,13 +252,19 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateEmptyView();
 		}
 
-		protected virtual void UpdateAdapter()
+		protected virtual ItemsViewAdapter CreateAdapter()
+		{
+			return new ItemsViewAdapter(ItemsView);
+		}
+
+		void UpdateAdapter()
 		{
 			var oldItemViewAdapter = ItemsViewAdapter;
 
-			ItemsViewAdapter = new ItemsViewAdapter(ItemsView);
+			ItemsViewAdapter = CreateAdapter();
 
-			SwapAdapter(ItemsViewAdapter, true);
+			if(GetAdapter() != _emptyViewAdapter)
+				SwapAdapter(ItemsViewAdapter, true);
 
 			oldItemViewAdapter?.Dispose();
 		}
@@ -569,14 +575,15 @@ namespace Xamarin.Forms.Platform.Android
 
 			var showEmptyView = ItemsView?.EmptyView != null && ItemsViewAdapter.ItemCount == 0;
 
-			if (showEmptyView)
+			Adapter currAdapter = GetAdapter();
+			if (showEmptyView && currAdapter != _emptyViewAdapter)
 			{
 				SwapAdapter(_emptyViewAdapter, true);
 
 				// TODO hartez 2018/10/24 17:34:36 If this works, cache this layout manager as _emptyLayoutManager	
 				SetLayoutManager(new LinearLayoutManager(Context));
 			}
-			else
+			else if(!showEmptyView && currAdapter != ItemsViewAdapter)
 			{
 				SwapAdapter(ItemsViewAdapter, true);
 				SetLayoutManager(SelectLayoutManager(_layout));
