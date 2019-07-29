@@ -90,7 +90,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 				_collectionViewSource = new CollectionViewSource
 				{
-					Source = TemplatedItemSourceFactory.Create(itemsSource, itemTemplate),
+					Source = TemplatedItemSourceFactory.Create(itemsSource, itemTemplate, Element),
 					IsSourceGrouped = false
 				};
 			}
@@ -257,7 +257,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			for (int n = 0; n < _collectionViewSource.View.Count; n++)
 			{
-				if (_collectionViewSource.View[n] is ItemTemplatePair pair)
+				if (_collectionViewSource.View[n] is ItemTemplateContext pair)
 				{
 					if (pair.Item == args.Item)
 					{

@@ -72,7 +72,7 @@
     <Compile Include="ITitleViewProvider.cs" />
     <Compile Include="Items\FormsGridView.cs" />
     <Compile Include="Items\ItemTemplateEnumerator.cs" />
-    <Compile Include="Items\ItemTemplatePair.cs" />
+    <Compile Include="Items\ItemTemplateContext.cs" />
     <Compile Include="ITitleProvider.cs" />
     <Compile Include="ITitleViewRendererController.cs" />
     <Compile Include="IToolbarProvider.cs" />

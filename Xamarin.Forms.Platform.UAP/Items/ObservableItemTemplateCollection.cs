@@ -5,12 +5,13 @@ using System.Collections.Specialized;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	internal class ObservableItemTemplateCollection : ObservableCollection<ItemTemplatePair>
+	internal class ObservableItemTemplateCollection : ObservableCollection<ItemTemplateContext>
 	{
 		readonly IList _innerSource;
 		readonly DataTemplate _itemTemplate;
+		readonly BindableObject _container;
 
-		public ObservableItemTemplateCollection(IList itemsSource, DataTemplate itemTemplate)
+		public ObservableItemTemplateCollection(IList itemsSource, DataTemplate itemTemplate, BindableObject container)
 		{
 			if (!(itemsSource is INotifyCollectionChanged notifyCollectionChanged))
 			{
@@ -19,10 +20,10 @@ namespace Xamarin.Forms.Platform.UWP
 
 			_innerSource = itemsSource;
 			_itemTemplate = itemTemplate;
-
+			_container = container;
 			for (int n = 0; n < itemsSource.Count; n++)
 			{
-				Add(new ItemTemplatePair (itemTemplate, itemsSource[n]));
+				Add(new ItemTemplateContext (itemTemplate, itemsSource[n], container));
 			}
 
 			notifyCollectionChanged.CollectionChanged += InnerCollectionChanged;
@@ -58,7 +59,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			for (int n = args.NewItems.Count - 1; n >= 0; n--)
 			{
-				Insert(startIndex, new ItemTemplatePair(_itemTemplate, args.NewItems[n]));
+				Insert(startIndex, new ItemTemplateContext(_itemTemplate, args.NewItems[n], _container));
 			}
 		}
 

@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -7,10 +6,12 @@ namespace Xamarin.Forms.Platform.UWP
 	{
 		readonly DataTemplate _formsDataTemplate;
 		readonly IEnumerator _innerEnumerator;
+		readonly BindableObject _container;
 
-		public ItemTemplateEnumerator(IEnumerable itemsSource, DataTemplate formsDataTemplate)
+		public ItemTemplateEnumerator(IEnumerable itemsSource, DataTemplate formsDataTemplate, BindableObject container)
 		{
 			_formsDataTemplate = formsDataTemplate;
+			_container = container;
 			_innerEnumerator = itemsSource.GetEnumerator();
 		}
 		public IEnumerator GetEnumerator()
@@ -24,7 +25,7 @@ namespace Xamarin.Forms.Platform.UWP
 			
 			if (moveNext)
 			{
-				Current = new ItemTemplatePair(_formsDataTemplate, _innerEnumerator.Current);
+				Current = new ItemTemplateContext(_formsDataTemplate, _innerEnumerator.Current, _container);
 			}
 
 			return moveNext;
