@@ -55,7 +55,8 @@ namespace Xamarin.Forms.Platform.UWP
 				if (Element.IsSet(Button.CornerRadiusProperty) && Element.CornerRadius != (int)Button.CornerRadiusProperty.DefaultValue)
 					UpdateBorderRadius();
 
-				if (Element.IsSet(Button.PaddingProperty) && Element.Padding != (Thickness)Button.PaddingProperty.DefaultValue)
+				// By default Button loads width padding 8, 4, 8 ,4
+				if (Element.IsSet(Button.PaddingProperty))
 					UpdatePadding();
 
 				UpdateFont();
