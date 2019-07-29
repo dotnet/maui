@@ -37,10 +37,19 @@ namespace Xamarin.Forms.Platform.Android
 		IOrderedTraversalController OrderedTraversalController => this;
 
 		double _previousHeight;
+		bool _isDisposed = false;
 
 		protected override void Dispose(bool disposing)
 		{
-			PageController?.SendDisappearing();
+			if (_isDisposed)
+				return;
+
+			if (disposing)
+			{
+				PageController?.SendDisappearing();
+			}
+
+			_isDisposed = true;
 			base.Dispose(disposing);
 		}
 
