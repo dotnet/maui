@@ -442,9 +442,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			protected override void Dispose(bool disposing)
 			{
-				if (disposing && !_disposed)
+				if (_disposed)
+					return;
+
+				if (disposing)
 				{
-					_disposed = true;
 					RemoveAllViews();
 					if (_renderer != null)
 					{
@@ -461,6 +463,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					}
 				}
 
+				_disposed = true;
 				base.Dispose(disposing);
 			}
 

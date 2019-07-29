@@ -17,6 +17,8 @@ namespace Xamarin.Forms.Platform.iOS
 		public IOSDeviceInfo()
 		{
 			_notification = UIDevice.Notifications.ObserveOrientationDidChange(OrientationChanged);
+
+			UpdateScreenSize();
 		}
 
 		public override Size PixelScreenSize => _pixelScreenSize;
