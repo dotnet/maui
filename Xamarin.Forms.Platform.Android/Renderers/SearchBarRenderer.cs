@@ -86,12 +86,17 @@ namespace Xamarin.Forms.Platform.Android
 			base.OnElementChanged(e);
 
 			SearchView searchView = Control;
+			var isDesigner = Context.IsDesignerContext();
 
 			if (searchView == null)
 			{
 				searchView = CreateNativeControl();
 				searchView.SetIconifiedByDefault(false);
-				searchView.Iconified = false;
+				// set Iconified calls onSearchClicked 
+				// https://github.com/aosp-mirror/platform_frameworks_base/blob/6d891937a38220b0c712a1927f969e74bea3a0f3/core/java/android/widget/SearchView.java#L674-L680
+				// which causes requestFocus. The designer does not support focuses.
+				if (!isDesigner)
+					searchView.Iconified = false;
 				SetNativeControl(searchView);
 				_editText = _editText ?? Control.GetChildrenOfType<EditText>().FirstOrDefault();
 
@@ -104,7 +109,8 @@ namespace Xamarin.Forms.Platform.Android
 
 			}
 
-			ClearFocus(searchView);
+			if (!isDesigner)
+				ClearFocus(searchView);
 			UpdateInputType();
 			UpdatePlaceholder();
 			UpdateText();
@@ -210,14 +216,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void ClearFocus(SearchView view)
 		{
-			try
-			{
-				view.ClearFocus();
-			}
-			catch (Java.Lang.UnsupportedOperationException)
-			{
-				// silently catch these as they happen in the previewer due to some bugs in Android
-			}
+			view.ClearFocus();
 		}
 
 		void UpdateFont()
