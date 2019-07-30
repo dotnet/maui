@@ -31,12 +31,11 @@ namespace Xamarin.Forms
 			lock (s_dependencyLock)
 			{
 				Type targetType = typeof(T);
-				if (!DependencyImplementations.ContainsKey(targetType))
+				if (!DependencyImplementations.TryGetValue(targetType, out dependencyImplementation))
 				{
 					Type implementor = FindImplementor(targetType);
-					DependencyImplementations[targetType] = implementor != null ? new DependencyData { ImplementorType = implementor } : null;
+					DependencyImplementations[targetType] = (dependencyImplementation = implementor != null ? new DependencyData { ImplementorType = implementor } : null);
 				}
-				dependencyImplementation = DependencyImplementations[targetType];
 			}
 
 			if (dependencyImplementation == null)
@@ -77,11 +76,9 @@ namespace Xamarin.Forms
 				DependencyImplementations[targetType] = new DependencyData { ImplementorType = implementorType };
 		}
 
-		static Type FindImplementor(Type target)
-		{
-			return DependencyTypes.FirstOrDefault(t => target.IsAssignableFrom(t));
-		}
-
+		static Type FindImplementor(Type target) =>
+			DependencyTypes.FirstOrDefault(t => target.IsAssignableFrom(t));
+	
 		static void Initialize()
 		{
 			if (s_initialized)

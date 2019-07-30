@@ -6,7 +6,7 @@
     <authors>Microsoft</authors>
     <owners>microsoft xamarin</owners>
     <tags>xamarin forms xamarinforms xamarin.forms</tags>
-    <licenseUrl>http://aka.ms/xamarin-forms-license</licenseUrl>
+    <license type="expression">MIT</license>
     <iconUrl>http://xamarin.com/content/images/nuget/xamarin.png</iconUrl>
     <projectUrl>http://xamarin.com/forms</projectUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
