@@ -66,8 +66,15 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected internal override void UpdateCharacterSpacing()
 		{
-			TextView.AttributedText = TextView.AttributedText.AddCharacterSpacing(Element.Text, Element.CharacterSpacing);
-			_placeholderLabel.AttributedText = _placeholderLabel.AttributedText.AddCharacterSpacing(Element.Placeholder, Element.CharacterSpacing);
+			var textAttr = TextView.AttributedText.AddCharacterSpacing(Element.Text, Element.CharacterSpacing);
+
+			if(textAttr != null)
+				TextView.AttributedText = textAttr;
+
+			var placeHolder = TextView.AttributedText.AddCharacterSpacing(Element.Placeholder, Element.CharacterSpacing);
+
+			if(placeHolder != null)
+				_placeholderLabel.AttributedText = placeHolder;
 		}
 
 		protected internal override void UpdatePlaceholderColor()

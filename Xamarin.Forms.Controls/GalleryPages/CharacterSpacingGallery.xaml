@@ -2,7 +2,7 @@
 
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Xamarin.Forms.Controls.GalleryPages.CharacterSpacingGallery" Visual="Material">
+             x:Class="Xamarin.Forms.Controls.GalleryPages.CharacterSpacingGallery">
 
     <StackLayout>
         <Label>
@@ -14,7 +14,7 @@
                 </FormattedString>
             </Label.FormattedText>
         </Label>
-        <Slider Minimum="-10" Maximum="10" Value="0" ValueChanged="Slider_OnValueChanged" MaximumTrackColor="Gray"
+        <Slider x:Name="slider" Minimum="-10" Maximum="10" Value="0" ValueChanged="Slider_OnValueChanged" MaximumTrackColor="Gray"
                 MinimumTrackColor="Gray"  Margin="20,0"/>
 
         <ScrollView>
@@ -41,7 +41,8 @@
                 </Picker>
                 <SearchBar Text="Welcome to Xamarin.Forms! - SearchBar" CharacterSpacing="0" x:Name="SearchBar" TextColor="Red" PlaceholderColor="BlueViolet"/>
                 <SearchBar Placeholder="Welcome to Xamarin.Forms! - SearchBar" CharacterSpacing="0" x:Name="PlaceholderSearchBar" TextColor="Red" PlaceholderColor="BlueViolet"/>
-                <Button Text="Welcome to Xamarin.Forms! - Button" CharacterSpacing="0" x:Name="Button" TextColor="Red"/>
+                <Button Text="Welcome to Xamarin.Forms! - Button" TextColor="Red" CharacterSpacing="0" x:Name="Button" />
+                <Button Text="Reset" Clicked="ResetButtonClicked"></Button>
             </StackLayout>
         </ScrollView>
     </StackLayout>

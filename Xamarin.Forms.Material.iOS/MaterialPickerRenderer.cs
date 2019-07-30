@@ -22,8 +22,12 @@ namespace Xamarin.Forms.Material.iOS
 		protected override void OnElementChanged(ElementChangedEventArgs<Picker> e)
 		{
 			base.OnElementChanged(e);
-			UpdatePlaceholder();
-			UpdateCharacterSpacing();
+
+			if (e.NewElement != null)
+			{
+				UpdatePlaceholder();
+				UpdateCharacterSpacing();
+			}
 		}
 
 		string IMaterialEntryRenderer.Placeholder => string.Empty;

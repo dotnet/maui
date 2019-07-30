@@ -20,7 +20,9 @@ namespace Xamarin.Forms.Material.iOS
 		protected override void OnElementChanged(ElementChangedEventArgs<DatePicker> e)
 		{
 			base.OnElementChanged(e);
-			UpdatePlaceholder();
+
+			if(e.NewElement != null)
+				UpdatePlaceholder();
 		}
 
 		void UpdatePlaceholder() => Control?.UpdatePlaceholder(this);

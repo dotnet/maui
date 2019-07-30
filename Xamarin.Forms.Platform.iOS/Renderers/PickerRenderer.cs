@@ -165,9 +165,16 @@ namespace Xamarin.Forms.Platform.iOS
 
         protected void UpdateCharacterSpacing()
         {
-	        Control.AttributedText = Control.AttributedText.AddCharacterSpacing(Control.Text, Element.CharacterSpacing);
-			Control.AttributedPlaceholder = Control.AttributedPlaceholder.AddCharacterSpacing(Element.Title, Element.CharacterSpacing);
-        }
+			var textAttr = Control.AttributedText.AddCharacterSpacing(Control.Text, Element.CharacterSpacing);
+
+			if (textAttr != null)
+				Control.AttributedText = textAttr;
+
+			var placeHolder = Control.AttributedPlaceholder.AddCharacterSpacing(Element.Title, Element.CharacterSpacing);
+
+			if (placeHolder != null)
+				Control.AttributedPlaceholder = placeHolder;
+		}
 
         protected internal virtual void UpdateFont()
 		{

@@ -203,6 +203,7 @@ namespace Xamarin.Forms.Platform.iOS
 			_textField = _textField ?? Control.FindDescendantView<UITextField>();
 			if (_textField == null)
 				return;
+
 			_textField.AttributedText = _textField.AttributedText.AddCharacterSpacing(Element.Text, Element.CharacterSpacing);
 			_textField.AttributedPlaceholder = _textField.AttributedPlaceholder.AddCharacterSpacing(Element.Placeholder, Element.CharacterSpacing);
 		}

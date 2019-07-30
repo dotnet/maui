@@ -56,7 +56,9 @@ namespace Xamarin.Forms.Material.iOS
 		protected override void OnElementChanged(ElementChangedEventArgs<Editor> e)
 		{
 			base.OnElementChanged(e);
-			InitialPlaceholderSetupHack();
+
+			if(e.NewElement != null)
+				InitialPlaceholderSetupHack();
 		}
 
 		protected internal override void UpdateAutoSizeOption()

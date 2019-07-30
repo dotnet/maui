@@ -77,7 +77,6 @@ namespace Xamarin.Forms.Material.iOS
 				UpdateTextColor();
 				_buttonLayoutManager?.Update();
 				ApplyTheme();
-				UpdateCharacterSpacing();
 			}
 		}
 
@@ -91,7 +90,14 @@ namespace Xamarin.Forms.Material.iOS
 			};
 		}
 
-		protected virtual void ApplyTheme() => ContainedButtonThemer.ApplyScheme(_buttonScheme, Control);
+		protected virtual void ApplyTheme()
+		{
+			ContainedButtonThemer.ApplyScheme(_buttonScheme, Control);
+
+			// Colors have to be re-applied to Character spacing
+			_buttonLayoutManager?.UpdateText();
+		}
+
 		protected override MButton CreateNativeControl() => new MButton();
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -112,10 +118,6 @@ namespace Xamarin.Forms.Material.iOS
 			else if (e.PropertyName == Button.BorderWidthProperty.PropertyName || e.PropertyName == Button.BorderColorProperty.PropertyName)
 			{
 				UpdateBorder();
-			}
-			else if (e.PropertyName == Button.CharacterSpacingProperty.PropertyName)
-			{
-				UpdateCharacterSpacing();
 			}
 			else if (e.PropertyName == Button.CornerRadiusProperty.PropertyName)
 			{
@@ -230,13 +232,6 @@ namespace Xamarin.Forms.Material.iOS
 			}
 		}
 
-		void UpdateCharacterSpacing()
-		{
-			var attributedString = new NSMutableAttributedString(Element.Text ?? string.Empty).AddCharacterSpacing(Element.Text, Element.CharacterSpacing);
-			Control.SetAttributedTitle(attributedString, UIControlState.Normal);
-			Control.SetAttributedTitle(attributedString, UIControlState.Highlighted);
-			Control.SetAttributedTitle(attributedString, UIControlState.Disabled);
-		}
 		void UpdateTextColor()
 		{
 			if (_buttonScheme.ColorScheme is SemanticColorScheme colorScheme)
@@ -248,6 +243,7 @@ namespace Xamarin.Forms.Material.iOS
 				else
 					colorScheme.OnPrimaryColor = textColor.ToUIColor();
 			}
+			
 		}
 
 		// IImageVisualElementRenderer

@@ -33,5 +33,10 @@ namespace Xamarin.Forms.Controls.GalleryPages
 			TimePicker.CharacterSpacing = e.NewValue;
 			Span.CharacterSpacing = e.NewValue;
 		}
+
+		void ResetButtonClicked(object sender, EventArgs e)
+		{
+			slider.Value = 0;
+		}
 	}
 }

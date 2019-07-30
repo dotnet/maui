@@ -359,8 +359,15 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateCharacterSpacing()
 		{
-			Control.AttributedText = Control.AttributedText.AddCharacterSpacing(Element.Text, Element.CharacterSpacing);
-			Control.AttributedPlaceholder = Control.AttributedPlaceholder.AddCharacterSpacing(Element.Placeholder, Element.CharacterSpacing);
+			var textAttr = Control.AttributedText.AddCharacterSpacing(Element.Text, Element.CharacterSpacing);
+
+			if (textAttr != null)
+				Control.AttributedText = textAttr;
+
+			var placeHolder = Control.AttributedPlaceholder.AddCharacterSpacing(Element.Placeholder, Element.CharacterSpacing);
+
+			if (placeHolder != null)
+				Control.AttributedPlaceholder = placeHolder;
 		}
 
 		void UpdateMaxLength()

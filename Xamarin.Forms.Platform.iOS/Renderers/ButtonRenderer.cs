@@ -92,7 +92,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 				UpdateFont();
 				UpdateTextColor();
-				UpdateCharacterSpacing();
 				_buttonLayoutManager?.Update();
 			}
 		}
@@ -109,14 +108,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (e.PropertyName == Button.TextColorProperty.PropertyName)
 				UpdateTextColor();
 			else if (e.PropertyName == Button.FontProperty.PropertyName)
-			{
 				UpdateFont();
-			}
-			else if (e.PropertyName == Button.CharacterSpacingProperty.PropertyName)
-			{
-				UpdateCharacterSpacing();
-			}
-
 		}
 
 		protected override void SetAccessibilityLabel()
@@ -157,14 +149,6 @@ namespace Xamarin.Forms.Platform.iOS
 		void UpdateFont()
 		{
 			Control.TitleLabel.Font = Element.ToUIFont();
-		}
-
-		void UpdateCharacterSpacing()
-		{
-			var attributedString = new NSMutableAttributedString(Element.Text ?? string.Empty).AddCharacterSpacing(Element.Text, Element.CharacterSpacing);
-			Control.SetAttributedTitle(attributedString, UIControlState.Normal);
-			Control.SetAttributedTitle(attributedString, UIControlState.Highlighted);
-			Control.SetAttributedTitle(attributedString, UIControlState.Disabled);
 		}
 
 		public void SetImage(UIImage image) => _buttonLayoutManager.SetImage(image);

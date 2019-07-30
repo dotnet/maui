@@ -154,7 +154,10 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateCharacterSpacing()
 		{
-			Control.AttributedText = Control.AttributedText.AddCharacterSpacing(Control.Text, Element.CharacterSpacing);
+			var textAttr = Control.AttributedText.AddCharacterSpacing(Control.Text, Element.CharacterSpacing);
+
+			if (textAttr != null)
+				Control.AttributedText = textAttr;
 		}
 		void UpdateMaximumDate()
 		{

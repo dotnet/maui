@@ -22,7 +22,9 @@ namespace Xamarin.Forms.Material.iOS
 		protected override void OnElementChanged(ElementChangedEventArgs<TimePicker> e)
 		{
 			base.OnElementChanged(e);
-			UpdatePlaceholder();
+
+			if(e.NewElement != null)
+				UpdatePlaceholder();
 		}
 
 		string IMaterialEntryRenderer.Placeholder => string.Empty;
