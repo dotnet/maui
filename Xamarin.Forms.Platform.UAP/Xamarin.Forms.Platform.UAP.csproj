@@ -248,6 +248,10 @@
       <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
       <Name>Xamarin.Forms.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj">
+      <Project>{9DB2F292-8034-4E06-89AD-98BBDA4306B9}</Project>
+      <Name>Xamarin.Forms.Xaml</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
