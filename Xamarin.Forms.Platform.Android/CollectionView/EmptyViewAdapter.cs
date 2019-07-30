@@ -8,7 +8,7 @@ using Object = Java.Lang.Object;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public class EmptyViewAdapter : RecyclerView.Adapter
+	public partial class EmptyViewAdapter : RecyclerView.Adapter
 	{
 		int _itemViewType;
 		object _emptyView;
@@ -70,7 +70,7 @@ namespace Xamarin.Forms.Platform.Android
 				templatedItemViewHolder.Bind(EmptyView, ItemsView);
 			}
 
-			if (!(holder is EmptyViewHolder emptyViewHolder))
+			if (!(holder is SimpleViewHolder))
 			{
 				return;
 			}
@@ -87,13 +87,11 @@ namespace Xamarin.Forms.Platform.Android
 				if (!(EmptyView is View formsView))
 				{
 					// No template, EmptyView is not a Forms View, so just display EmptyView.ToString
-					return new EmptyViewHolder(CreateTextView(EmptyView?.ToString(), context), null);
+					return SimpleViewHolder.FromText(EmptyView?.ToString(), context);
 				}
 
 				// EmptyView is a Forms View; display that
-				var itemContentControl = new SizedItemContentView(context, () => parent.Width, () => parent.Height);
-				itemContentControl.RealizeContent(formsView);
-				return new EmptyViewHolder(itemContentControl, formsView);
+				return SimpleViewHolder.FromFormsView(formsView, context, () => parent.Width, () => parent.Height);
 			}
 
 			var itemContentView = new SizedItemContentView(parent.Context, () => parent.Width, () => parent.Height);
@@ -103,26 +101,6 @@ namespace Xamarin.Forms.Platform.Android
 		public override int GetItemViewType(int position)
 		{
 			return _itemViewType;
-		}
-
-		static TextView CreateTextView(string text, Context context)
-		{
-			var textView = new TextView(context) { Text = text };
-			var layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent,
-				ViewGroup.LayoutParams.MatchParent);
-			textView.LayoutParameters = layoutParams;
-			textView.Gravity = GravityFlags.Center;
-			return textView;
-		}
-
-		internal class EmptyViewHolder : RecyclerView.ViewHolder
-		{
-			public EmptyViewHolder(global::Android.Views.View itemView, View rootElement) : base(itemView)
-			{
-				View = rootElement;
-			}
-
-			public View View { get; }
 		}
 	}
 }

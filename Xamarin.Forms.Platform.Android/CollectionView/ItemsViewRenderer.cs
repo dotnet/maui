@@ -179,11 +179,16 @@ namespace Xamarin.Forms.Platform.Android
 
 		GridLayoutManager CreateGridLayout(GridItemsLayout gridItemsLayout)
 		{
-			return new GridLayoutManager(Context, gridItemsLayout.Span,
+			var gridLayoutManager = new GridLayoutManager(Context, gridItemsLayout.Span,
 				gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
 					? LinearLayoutManager.Horizontal
 					: LinearLayoutManager.Vertical,
 				false);
+
+			// Give the layout a way to determine that headers/footers span multiple rows/columns
+			gridLayoutManager.SetSpanSizeLookup(new GridLayoutSpanSizeLookup(gridItemsLayout, this));
+
+			return gridLayoutManager;
 		}
 
 		void OnElementChanged(ItemsView oldElement, ItemsView newElement)

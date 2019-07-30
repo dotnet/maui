@@ -12,7 +12,6 @@ namespace Xamarin.Forms.Platform.Android
 		double _adjustedVerticalSpacing = -1;
 		double _horizontalSpacing;
 		double _adjustedHorizontalSpacing = -1;
-		int _span = 1;
 
 		public SpacingItemDecoration(IItemsLayout itemsLayout)
 		{
@@ -27,7 +26,6 @@ namespace Xamarin.Forms.Platform.Android
 					_orientation = gridItemsLayout.Orientation;
 					_horizontalSpacing = gridItemsLayout.HorizontalItemSpacing;
 					_verticalSpacing = gridItemsLayout.VerticalItemSpacing;
-					_span = gridItemsLayout.Span;
 					break;
 				case ListItemsLayout listItemsLayout:
 					_orientation = listItemsLayout.Orientation;
@@ -47,8 +45,6 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			base.GetItemOffsets(outRect, view, parent, state);
 
-			var position = parent.GetChildAdapterPosition(view);
-
 			if (_adjustedVerticalSpacing == -1)
 			{
 				_adjustedVerticalSpacing = parent.Context.ToPixels(_verticalSpacing);
@@ -59,23 +55,37 @@ namespace Xamarin.Forms.Platform.Android
 				_adjustedHorizontalSpacing = parent.Context.ToPixels(_horizontalSpacing);
 			}
 
-			var firstInRow = false;
-			var firstInCol = false;
+			var itemViewType = parent.GetChildViewHolder(view).ItemViewType;
+
+			if (itemViewType == ItemViewType.Header)
+			{
+				outRect.Bottom = (int)_adjustedVerticalSpacing;
+				return;
+			}
+
+			if (itemViewType == ItemViewType.Footer)
+			{
+				return;
+			}
+
+			var spanIndex = 0;
+
+			if(view.LayoutParameters is GridLayoutManager.LayoutParams gridLayoutParameters)
+			{
+				spanIndex = gridLayoutParameters.SpanIndex;
+			}
 
 			if (_orientation == ItemsLayoutOrientation.Vertical)
 			{
-				firstInRow = position >= _span && position % _span == 0;
-				firstInCol = position < _span;
+				outRect.Left = spanIndex == 0 ? 0 : (int)_adjustedHorizontalSpacing;
+				outRect.Bottom = (int)_adjustedVerticalSpacing;
 			}
 
 			if (_orientation == ItemsLayoutOrientation.Horizontal)
 			{
-				firstInCol = position >= _span && position % _span == 0;
-				firstInRow = position < _span;
+				outRect.Top = spanIndex == 0 ? 0 : (int)_adjustedVerticalSpacing;
+				outRect.Right = (int)_adjustedHorizontalSpacing;
 			}
-
-			outRect.Top = firstInCol ? 0 : (int)_adjustedVerticalSpacing;
-			outRect.Left = firstInRow ? 0 : (int)_adjustedHorizontalSpacing;
 		}
 	}
 }
