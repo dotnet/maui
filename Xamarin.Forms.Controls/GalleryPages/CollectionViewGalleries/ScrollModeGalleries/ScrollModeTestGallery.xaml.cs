@@ -13,23 +13,31 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ScrollMode
 	public partial class ScrollModeTestGallery : ContentPage
 	{
 		readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource(20);
+		CollectionView _collectionView;
 
-		public ScrollModeTestGallery()
+		public ScrollModeTestGallery(IItemsLayout itemsLayout = null, Func<DataTemplate> dataTemplate = null, Func<CollectionView> createCollectionView = null)
 		{
 			InitializeComponent();
 
-			var scrollModeSelector = new EnumSelector<ItemsUpdatingScrollMode>(() => CollectionView.ItemsUpdatingScrollMode,
-			mode => CollectionView.ItemsUpdatingScrollMode = mode, "SelectScrollMode");
+			_collectionView = createCollectionView == null ? new CollectionView() : createCollectionView();
+			_collectionView.ItemsLayout = itemsLayout ?? ListItemsLayout.Vertical;
+
+			var scrollModeSelector = new EnumSelector<ItemsUpdatingScrollMode>(() => _collectionView.ItemsUpdatingScrollMode,
+			mode => _collectionView.ItemsUpdatingScrollMode = mode, "SelectScrollMode");
 
 			Grid.Children.Add(scrollModeSelector);
 
-			CollectionView.ItemTemplate = ExampleTemplates.PhotoTemplate();
-			CollectionView.ItemsSource = _demoFilteredItemSource.Items;
+
+			Grid.Children.Add(_collectionView);
+			Grid.SetRow(_collectionView, 5);
+
+			_collectionView.ItemTemplate = dataTemplate == null ? ExampleTemplates.PhotoTemplate() : dataTemplate();
+			_collectionView.ItemsSource = _demoFilteredItemSource.Items;
 		}
 
 		void ScrollToMiddle_Clicked(object sender, EventArgs e)
 		{
-			CollectionView.ScrollTo(_demoFilteredItemSource.Items.Count / 2, position: ScrollToPosition.Start, animate: false);
+			_collectionView.ScrollTo(_demoFilteredItemSource.Items.Count / 2, position: ScrollToPosition.Start, animate: false);
 		}
 
 		void AddItemAbove_Clicked(object sender, EventArgs e)

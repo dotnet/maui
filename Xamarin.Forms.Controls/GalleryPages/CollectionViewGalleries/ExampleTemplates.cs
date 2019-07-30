@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 
 namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
@@ -302,6 +303,29 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 			});
 		}
 
+		public static DataTemplate RandomSizeTemplate()
+		{
+			var indexHeightConverter = new IndexRequestRandomConverter(50, 150);
+			var indexWidthConverter = new IndexRequestRandomConverter(50, 150);
+			var colorConverter = new IndexColorConverter();
+
+			return new DataTemplate(() =>
+			{
+				var layout = new Frame();
+
+				layout.SetBinding(VisualElement.HeightRequestProperty, new Binding("Index", converter: indexHeightConverter));
+				layout.SetBinding(VisualElement.WidthRequestProperty, new Binding("Index", converter: indexWidthConverter));
+				layout.SetBinding(VisualElement.BackgroundColorProperty, new Binding("Index", converter: colorConverter));
+
+				var label = new Label { FontSize = 30 };
+				label.SetBinding(Label.TextProperty, new Binding("Index"));
+
+				layout.Content = label;
+
+				return layout;
+			});
+		}
+
 		public static DataTemplate DynamicTextTemplate()
 		{
 			return new DataTemplate(() =>
@@ -451,6 +475,34 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 				var index = (int)value;
 
 				return index < _cutoff ? _lowValue : (object)_highValue;
+			}
+
+			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
+		}
+
+		class IndexRequestRandomConverter : IValueConverter
+		{
+			readonly int _lowValue;
+			readonly int _highValue;
+			readonly Random _random;
+			readonly Dictionary<int, int> _dictionary = new Dictionary<int, int>();
+
+			public IndexRequestRandomConverter(int lowValue, int highValue)
+			{
+				_lowValue = lowValue;
+				_highValue = highValue;
+				_random = new Random(DateTime.UtcNow.Millisecond);
+			}
+
+			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+			{
+				var index = (int)value;
+				if (!_dictionary.ContainsKey(index))
+				{
+					_dictionary[index] = _random.Next(_lowValue, _highValue);
+				}
+
+				return _dictionary[index];
 			}
 
 			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();

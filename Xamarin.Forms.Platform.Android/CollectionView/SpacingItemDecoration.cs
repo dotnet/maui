@@ -49,11 +49,6 @@ namespace Xamarin.Forms.Platform.Android
 
 			var position = parent.GetChildAdapterPosition(view);
 
-			if (position == 0)
-			{
-				return;
-			}
-
 			if (_adjustedVerticalSpacing == -1)
 			{
 				_adjustedVerticalSpacing = parent.Context.ToPixels(_verticalSpacing);
@@ -61,7 +56,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (_adjustedHorizontalSpacing == -1)
 			{
-				_adjustedHorizontalSpacing  = parent.Context.ToPixels(_horizontalSpacing);
+				_adjustedHorizontalSpacing = parent.Context.ToPixels(_horizontalSpacing);
 			}
 
 			var firstInRow = false;

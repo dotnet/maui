@@ -2,6 +2,7 @@
 using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGalleries;
 using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionGalleries;
 using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ScrollModeGalleries;
+using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.AlternateLayoutGalleries;
 
 namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 {
@@ -25,6 +26,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 					GalleryBuilder.NavButton("Propagation Galleries", () => new PropagationGallery(), Navigation),
 					GalleryBuilder.NavButton("Grouping Galleries", () => new GroupingGallery(), Navigation),
 					GalleryBuilder.NavButton("Scroll Mode Galleries", () => new ScrollModeGallery(), Navigation),
+					GalleryBuilder.NavButton("Alternate Layout Galleries", () => new AlternateLayoutGallery(), Navigation),
 				}
 			};
 		}
