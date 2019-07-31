@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 
 using Mono.Cecil;
@@ -6,7 +7,6 @@ using Xamarin.Forms.Build.Tasks;
 
 using NUnit.Framework;
 using System.Collections.Generic;
-using Xamarin.Forms.Xaml.UnitTests;
 
 namespace Xamarin.Forms.XamlcUnitTests
 {
@@ -23,13 +23,9 @@ namespace Xamarin.Forms.XamlcUnitTests
 		}
 
 		[SetUp]
-		public void SetUp()
+		public void SetUp ()
 		{
-			module = ModuleDefinition.CreateModule("foo", new ModuleParameters()
-			{
-				AssemblyResolver = new MockAssemblyResolver(),
-				Kind = ModuleKind.Dll,
-			});
+			module = ModuleDefinition.CreateModule ("foo", ModuleKind.Dll);
 		}
 
 		[Test]

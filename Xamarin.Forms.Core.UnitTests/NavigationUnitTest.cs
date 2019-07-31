@@ -441,7 +441,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public async Task HandlesPopToRoot ()
+		public async void HandlesPopToRoot ()
 		{
 			var root = new ContentPage { Title = "Root" };
 			var navPage = new NavigationPage (root);
@@ -489,7 +489,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public async Task NavigatesBackWhenBackButtonPressed ()
+		public async void NavigatesBackWhenBackButtonPressed ()
 		{
 			var root = new ContentPage { Title = "Root" };
 			var navPage = new NavigationPage (root);
@@ -503,7 +503,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public async Task DoesNotNavigatesBackWhenBackButtonPressedIfHandled ()
+		public async void DoesNotNavigatesBackWhenBackButtonPressedIfHandled ()
 		{
 			var root = new BackButtonPage { Title = "Root" };
 			var second = new BackButtonPage () {Handle = true};
@@ -562,7 +562,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public async Task TestRemovePage()
+		public async void TestRemovePage()
 		{
 			var root = new ContentPage { Title = "Root" };
 			var newPage = new ContentPage();

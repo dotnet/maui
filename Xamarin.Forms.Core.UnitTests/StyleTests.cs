@@ -411,7 +411,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 		[Test]
 		//https://bugzilla.xamarin.com/show_bug.cgi?id=31207
-		public async Task StyleDontHoldStrongReferences ()
+		public async void StyleDontHoldStrongReferences ()
 		{
 			var style = new Style (typeof(Label));
 			var label = new Label ();

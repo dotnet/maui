@@ -61,14 +61,14 @@ namespace Xamarin.Forms.Core.UnitTests
 	[TestFixture]
 	public class MotionTests : BaseTestFixture
 	{
-		[OneTimeSetUp]
+		[TestFixtureSetUp]
 		public void Init ()
 		{
 			Device.PlatformServices = new MockPlatformServices ();
 			Ticker.Default = new BlockingTicker ();
 		}
 
-		[OneTimeTearDown]
+		[TestFixtureTearDown]
 		public void End ()
 		{
 			Device.PlatformServices = null;
@@ -154,14 +154,14 @@ namespace Xamarin.Forms.Core.UnitTests
 	[TestFixture]
 	public class TickerSystemEnabledTests
 	{
-		[OneTimeSetUp]
+		[TestFixtureSetUp]
 		public void Init ()
 		{
 			Device.PlatformServices = new MockPlatformServices ();
 			Ticker.Default = new AsyncTicker(); 
 		}
 
-		[OneTimeTearDown]
+		[TestFixtureTearDown]
 		public void End ()
 		{
 			Device.PlatformServices = null;

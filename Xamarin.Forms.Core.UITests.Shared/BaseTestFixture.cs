@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		public static AppRect ScreenBounds { get; set; }
 
-		[OneTimeTearDown]
+		[TestFixtureTearDown]
 		protected virtual void FixtureTeardown()
 		{
 		}
@@ -45,7 +45,7 @@ namespace Xamarin.Forms.Core.UITests
 		[SetUp]
 		protected virtual void TestSetup()
 		{
-			//EnsureMemory();
+			EnsureMemory();
 		}
 
 		[TearDown]
@@ -55,7 +55,9 @@ namespace Xamarin.Forms.Core.UITests
 
 		protected abstract void NavigateToGallery();
 
-		[OneTimeSetUp]
+#pragma warning disable 618
+		[TestFixtureSetUp]
+#pragma warning restore 618
 		protected virtual void FixtureSetup()
 		{
 			ResetApp();
@@ -109,6 +111,7 @@ namespace Xamarin.Forms.Core.UITests
 		}
 	}
 }
+
 #if UITEST
 
 namespace Xamarin.Forms.Core.UITests
@@ -118,7 +121,7 @@ namespace Xamarin.Forms.Core.UITests
 	[SetUpFixture]
 	public class CoreUITestsSetup
 	{
-		[OneTimeSetUp]
+		[SetUp]
 		public void RunBeforeAnyTests()
 		{
 			LaunchApp();
