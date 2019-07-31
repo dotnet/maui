@@ -9,6 +9,9 @@
     <Import_RootNamespace>Xamarin.Forms.Controls.Issues</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CollectionViewHeaderFooterString.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CollectionViewHeaderFooterTemplate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CollectionViewHeaderFooterView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewItemsUpdatingScrollMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6945.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5046.xaml.cs">
@@ -16,6 +19,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue6609.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue6644.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ShellInsets.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewGrouping.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5412.cs" />
@@ -1006,6 +1012,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue5239.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6738.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub6926.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue5503.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">
@@ -1307,6 +1314,9 @@
     <Compile Update="$(MSBuildThisFileDirectory)Issue6130.xaml.cs">
       <DependentUpon>Issue6130.xaml</DependentUpon>
     </Compile>
+    <Compile Update="$(MSBuildThisFileDirectory)Issue6644.xaml.cs">
+      <DependentUpon>Issue6644.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue5268.xaml">
@@ -1321,6 +1331,8 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue6644.xaml">
+    </EmbeddedResource>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Github5623.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

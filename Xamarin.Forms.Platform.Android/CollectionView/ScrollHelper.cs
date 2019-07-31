@@ -29,7 +29,6 @@ namespace Xamarin.Forms.Platform.Android
 			if (!_maintainingScrollOffsets)
 			{
 				_maintainingScrollOffsets = true;
-				//_recyclerView.ScrollChange += ScrollChange;
 				_recyclerView.AddOnScrollListener(this);
 			}
 

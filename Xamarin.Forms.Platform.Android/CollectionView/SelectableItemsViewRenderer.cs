@@ -37,10 +37,9 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateNativeSelection();
 		}
 
-		protected override void UpdateAdapter()
+		protected override ItemsViewAdapter CreateAdapter()
 		{
-			ItemsViewAdapter = new SelectableItemsViewAdapter(SelectableItemsView);
-			SwapAdapter(ItemsViewAdapter, true);
+			return new SelectableItemsViewAdapter(SelectableItemsView);
 		}
 
 		void UpdateNativeSelection()

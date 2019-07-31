@@ -1,9 +1,5 @@
-﻿using System;
-using System.Diagnostics;
-using Windows.Foundation;
-using Windows.UI.Xaml;
+﻿using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.UWP
@@ -55,6 +51,22 @@ namespace Xamarin.Forms.Platform.UWP
 			set => SetValue(FormsDataContextProperty, value);
 		}
 
+		public static readonly DependencyProperty FormsContainerProperty = DependencyProperty.Register(
+			nameof(FormsContainer), typeof(BindableObject), typeof(ItemContentControl),
+			new PropertyMetadata(default(BindableObject), FormsContainerChanged));
+
+		static void FormsContainerChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		{
+			var formsContentControl = (ItemContentControl)d;
+			formsContentControl.Realize();
+		}
+
+		public BindableObject FormsContainer
+		{
+			get => (BindableObject)GetValue(FormsContainerProperty);
+			set => SetValue(FormsContainerProperty, value);
+		}
+
 		protected override void OnContentChanged(object oldContent, object newContent)
 		{
 			base.OnContentChanged(oldContent, newContent);
@@ -74,15 +86,14 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			var dataContext = FormsDataContext;
 			var formsTemplate = FormsDataTemplate;
+			var container = FormsContainer;
 
-			if (dataContext == null || formsTemplate == null)
+			if (dataContext == null || formsTemplate == null || container == null)
 			{
 				return;
 			}
 
-			// TODO ezhart Handle SelectDataTemplate
-
-			var view = FormsDataTemplate.CreateContent() as View;
+			var view = FormsDataTemplate.CreateContent(dataContext, container) as View;
 
 			_renderer = Platform.CreateRenderer(view);
 			Platform.SetRenderer(view, _renderer);

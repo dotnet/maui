@@ -22,8 +22,6 @@
             <Button x:Name="AddItemToEnd" FontSize="10" AutomationId="AddItemToEnd" Text="Add Item To End" Grid.Row="4"
                     HeightRequest="40" Clicked="AddItemToEnd_Clicked" />
 
-            <CollectionView x:Name="CollectionView" Grid.Row="5" />
-
         </Grid>
     </ContentPage.Content>
 </ContentPage>

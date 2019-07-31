@@ -21,7 +21,8 @@
 
 	<DataTemplate x:Key="ItemsViewDefaultTemplate">
 		<local:ItemContentControl x:Name="ItemContentControl" 
-									FormsDataTemplate="{Binding FormsDataTemplate}" FormsDataContext="{Binding Item}">
+									FormsDataTemplate="{Binding FormsDataTemplate}" FormsDataContext="{Binding Item}"
+                                    FormsContainer="{Binding Container}">
 			
 		</local:ItemContentControl>
 	</DataTemplate>

@@ -80,7 +80,11 @@ namespace Xamarin.Forms.Platform.UWP
 			if (!assemblies.Contains(thisAssembly))
 				assemblies.Add(thisAssembly);
 
-			Assembly xamlAssembly = typeof(Xamarin.Forms.Xaml.IMarkupExtension).GetTypeInfo().Assembly;
+			Assembly coreAssembly = typeof(Xamarin.Forms.Label).GetTypeInfo().Assembly;
+			if (!assemblies.Contains(coreAssembly))
+				assemblies.Add(coreAssembly);
+
+			Assembly xamlAssembly = typeof(Xamarin.Forms.Xaml.Extensions).GetTypeInfo().Assembly;
 			if (!assemblies.Contains(xamlAssembly))
 				assemblies.Add(xamlAssembly);
 

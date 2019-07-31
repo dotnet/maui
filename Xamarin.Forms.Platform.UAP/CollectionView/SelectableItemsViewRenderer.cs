@@ -10,7 +10,7 @@ namespace Xamarin.Forms.Platform.UWP
 	{
 		SelectableItemsView _selectableItemsView;
 
-		protected override void OnElementChanged(ElementChangedEventArgs<CollectionView> args)
+		protected override void TearDownOldElement(ItemsView oldElement)
 		{
 			var oldListViewBase = ListViewBase;
 			if (oldListViewBase != null)
@@ -19,13 +19,19 @@ namespace Xamarin.Forms.Platform.UWP
 				oldListViewBase.SelectionChanged -= OnNativeSelectionChanged;
 			}
 
-			if (args.OldElement != null)
+			if (_selectableItemsView != null)
 			{
-				args.OldElement.SelectionChanged -= OnSelectionChanged;
+				_selectableItemsView.SelectionChanged -= OnSelectionChanged;
 			}
 
-			base.OnElementChanged(args);
-			_selectableItemsView = args.NewElement;
+			base.TearDownOldElement(oldElement);
+		}
+
+		protected override void SetUpNewElement(ItemsView newElement)
+		{
+			base.SetUpNewElement(newElement);
+
+			_selectableItemsView = newElement as SelectableItemsView;
 
 			if (_selectableItemsView != null)
 			{
@@ -47,6 +53,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 				newListViewBase.SelectionChanged += OnNativeSelectionChanged;
 			}
+
 			UpdateNativeSelection();
 		}
 
@@ -69,7 +76,7 @@ namespace Xamarin.Forms.Platform.UWP
 							ListViewBase.SelectedItem =
 								ListViewBase.Items.First(item =>
 								{
-									if (item is ItemTemplatePair itemPair)
+									if (item is ItemTemplateContext itemPair)
 									{
 										return itemPair.Item == _selectableItemsView.SelectedItem;
 									}
@@ -88,7 +95,7 @@ namespace Xamarin.Forms.Platform.UWP
 					ListViewBase.SelectedItems.Clear();
 					foreach (var nativeItem in ListViewBase.Items)
 					{
-						if (nativeItem is ItemTemplatePair itemPair && _selectableItemsView.SelectedItems.Contains(itemPair.Item))
+						if (nativeItem is ItemTemplateContext itemPair && _selectableItemsView.SelectedItems.Contains(itemPair.Item))
 						{
 							ListViewBase.SelectedItems.Add(nativeItem);
 						}
@@ -122,7 +129,7 @@ namespace Xamarin.Forms.Platform.UWP
 						break;
 					case UWPListViewSelectionMode.Single:
 						var selectedItem = 
-							ListViewBase.SelectedItem is ItemTemplatePair itemPair ? itemPair.Item : ListViewBase.SelectedItem;
+							ListViewBase.SelectedItem is ItemTemplateContext itemPair ? itemPair.Item : ListViewBase.SelectedItem;
 						Element.SelectionChanged -= OnSelectionChanged;
 						Element.SetValueFromRenderer(SelectableItemsView.SelectedItemProperty, selectedItem);
 						Element.SelectionChanged += OnSelectionChanged;
@@ -135,7 +142,7 @@ namespace Xamarin.Forms.Platform.UWP
 							ListViewBase.SelectedItems
 								.Select(a =>
 								{
-									var item = a is ItemTemplatePair itemPair1 ? itemPair1.Item : a;
+									var item = a is ItemTemplateContext itemPair1 ? itemPair1.Item : a;
 									return item;
 								})
 								.ToList();

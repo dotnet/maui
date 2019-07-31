@@ -148,4 +148,3 @@ echo foo > Xamarin.Forms.Platform.UAP\bin\%CONFIG%\FormsCheckBoxStyle.xbf
 
 mkdir Xamarin.Forms.Platform.UAP\bin\%CONFIG%\Items
 echo foo > Xamarin.Forms.Platform.UAP\bin\%CONFIG%\Items\ItemsViewStyles.xbf
-            

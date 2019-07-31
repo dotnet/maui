@@ -53,7 +53,7 @@
     <Compile Include="AlertDialog.cs" />
     <Compile Include="IDontGetFocus.cs" />
     <Compile Include="FontImageSourceHandler.cs" />
-    <Compile Include="Items\ItemContentControl.cs" />
+    <Compile Include="CollectionView\ItemContentControl.cs" />
     <Compile Include="FormsPivot.cs" />
     <Compile Include="AlignmentExtensions.cs" />
     <Compile Include="BrushHelpers.cs" />
@@ -66,13 +66,13 @@
     <Compile Include="ImageElementManager.cs" />
     <Compile Include="InterceptVisualStateManager.cs" />
     <Compile Include="HorizontalTextAlignmentConverter.cs" />
-    <Compile Include="Items\ObservableItemTemplateCollection.cs" />
-    <Compile Include="Items\TemplatedItemSourceFactory.cs" />
+    <Compile Include="CollectionView\ObservableItemTemplateCollection.cs" />
+    <Compile Include="CollectionView\TemplatedItemSourceFactory.cs" />
     <Compile Include="ITitleIconProvider.cs" />
     <Compile Include="ITitleViewProvider.cs" />
-    <Compile Include="Items\FormsGridView.cs" />
-    <Compile Include="Items\ItemTemplateEnumerator.cs" />
-    <Compile Include="Items\ItemTemplatePair.cs" />
+    <Compile Include="CollectionView\FormsGridView.cs" />
+    <Compile Include="CollectionView\ItemTemplateEnumerator.cs" />
+    <Compile Include="CollectionView\ItemTemplateContext.cs" />
     <Compile Include="ITitleProvider.cs" />
     <Compile Include="ITitleViewRendererController.cs" />
     <Compile Include="IToolbarProvider.cs" />
@@ -219,7 +219,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Items\ItemsViewStyles.xaml">
+    <Page Include="CollectionView\ItemsViewStyles.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -257,6 +257,10 @@
     <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
       <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
       <Name>Xamarin.Forms.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj">
+      <Project>{9DB2F292-8034-4E06-89AD-98BBDA4306B9}</Project>
+      <Name>Xamarin.Forms.Xaml</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

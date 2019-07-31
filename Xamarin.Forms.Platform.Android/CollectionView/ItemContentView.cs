@@ -17,7 +17,6 @@ namespace Xamarin.Forms.Platform.Android
 
 		internal void RealizeContent(View view)
 		{
-			
 			Content = CreateRenderer(view, Context);
 			AddView(Content.View);
 			Content.Element.MeasureInvalidated += ElementMeasureInvalidated;

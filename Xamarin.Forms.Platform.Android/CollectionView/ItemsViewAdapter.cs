@@ -10,26 +10,55 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public class ItemsViewAdapter : RecyclerView.Adapter
 	{
-		const int TextView = 41;
-		const int TemplatedView = 42;
-
 		protected readonly ItemsView ItemsView;
 		readonly Func<View, Context, ItemContentView> _createItemContentView;
 		internal readonly IItemsViewSource ItemsSource;
+
 		bool _disposed;
 		ASize _size;
+
+		bool _usingItemTemplate = false;
+		int _headerOffset = 0;
+		bool _hasFooter;
 
 		internal ItemsViewAdapter(ItemsView itemsView, Func<View, Context, ItemContentView> createItemContentView = null)
 		{
 			Xamarin.Forms.CollectionView.VerifyCollectionViewFlagEnabled(nameof(ItemsViewAdapter));
 
-			ItemsView = itemsView;
+			ItemsView = itemsView ?? throw new ArgumentNullException(nameof(itemsView));
+
+			UpdateUsingItemTemplate();
+			UpdateHeaderOffset();
+			UpdateHasFooter();
+
+			ItemsView.PropertyChanged += ItemsViewPropertyChanged;
+
 			_createItemContentView = createItemContentView;
 			ItemsSource = ItemsSourceFactory.Create(itemsView.ItemsSource, this);
 
 			if (_createItemContentView == null)
 			{
 				_createItemContentView = (view, context) => new ItemContentView(context);
+			}
+		}
+
+		private void ItemsViewPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs property)
+		{
+			if (property.Is(ItemsView.HeaderProperty))
+			{
+				UpdateHeaderOffset();
+			}
+			else if (property.Is(ItemsView.ItemTemplateProperty))
+			{
+				UpdateUsingItemTemplate();
+			}
+			else if (property.Is(ItemsView.ItemTemplateProperty))
+			{
+				UpdateUsingItemTemplate();
+			}
+			else if (property.Is(ItemsView.FooterProperty))
+			{
+				UpdateHasFooter();
 			}
 		}
 
@@ -45,22 +74,48 @@ namespace Xamarin.Forms.Platform.Android
 
 		public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
 		{
+			if (IsHeader(position))
+			{
+				if (holder is TemplatedItemViewHolder templatedItemViewHolder)
+				{
+					BindTemplatedItemViewHolder(templatedItemViewHolder, ItemsView.Header);
+				}
+
+				return;
+			}
+
+			if (IsFooter(position))
+			{
+				if (holder is TemplatedItemViewHolder templatedItemViewHolder)
+				{
+					BindTemplatedItemViewHolder(templatedItemViewHolder, ItemsView.Footer);
+				}
+
+				return;
+			}
+
+			var itemsSourcePosition = position - _headerOffset;
+
 			switch (holder)
 			{
 				case TextViewHolder textViewHolder:
-					textViewHolder.TextView.Text = ItemsSource[position].ToString();
+					textViewHolder.TextView.Text = ItemsSource[itemsSourcePosition].ToString();
 					break;
 				case TemplatedItemViewHolder templatedItemViewHolder:
-					if (ItemsView.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
-					{
-						templatedItemViewHolder.Bind(ItemsSource[position], ItemsView, SetStaticSize, _size);
-					}
-					else
-					{
-						templatedItemViewHolder.Bind(ItemsSource[position], ItemsView);
-					}
-
+					BindTemplatedItemViewHolder(templatedItemViewHolder, ItemsSource[itemsSourcePosition]);
 					break;
+			}
+		}
+
+		void BindTemplatedItemViewHolder(TemplatedItemViewHolder templatedItemViewHolder, object context)
+		{
+			if (ItemsView.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
+			{
+				templatedItemViewHolder.Bind(context, ItemsView, SetStaticSize, _size);
+			}
+			else
+			{
+				templatedItemViewHolder.Bind(context, ItemsView);
 			}
 		}
 
@@ -73,7 +128,17 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			var context = parent.Context;
 
-			if(viewType == TextView)
+			if (viewType == ItemViewType.Header)
+			{
+				return CreateHeaderFooterViewHolder(ItemsView.Header, ItemsView.HeaderTemplate, context);
+			}
+
+			if (viewType == ItemViewType.Footer)
+			{
+				return CreateHeaderFooterViewHolder(ItemsView.Footer, ItemsView.FooterTemplate, context);
+			}
+
+			if (viewType == ItemViewType.TextItem)
 			{
 				var view = new TextView(context);
 				return new TextViewHolder(view);
@@ -83,19 +148,27 @@ namespace Xamarin.Forms.Platform.Android
 			return new TemplatedItemViewHolder(itemContentView, ItemsView.ItemTemplate);
 		}
 
-		public override int ItemCount => ItemsSource.Count;
+		public override int ItemCount => ItemsSource.Count + _headerOffset + (_hasFooter ? 1 : 0);
 
 		public override int GetItemViewType(int position)
 		{
-			// Does the ItemsView have a DataTemplate?
-			// TODO ezhart We could probably cache this instead of having to GetValue every time
-			if (ItemsView.ItemTemplate == null)
+			if (IsHeader(position))
 			{
-				// No template, just use the Text view
-				return TextView;
+				return ItemViewType.Header;
 			}
 
-			return TemplatedView;
+			if (IsFooter(position))
+			{
+				return ItemViewType.Footer;
+			}
+
+			if (_usingItemTemplate)
+			{
+				return ItemViewType.TemplatedItem;
+			}
+		
+			// No template, just use the Text view
+			return ItemViewType.TextItem;
 		}
 
 		protected override void Dispose(bool disposing)
@@ -105,6 +178,7 @@ namespace Xamarin.Forms.Platform.Android
 				if (disposing)
 				{
 					ItemsSource?.Dispose();
+					ItemsView.PropertyChanged -= ItemsViewPropertyChanged;
 				}
 
 				_disposed = true;
@@ -119,11 +193,53 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				if (ItemsSource[n] == item)
 				{
-					return n;
+					return n + _headerOffset;
 				}
 			}
 
 			return -1;
+		}
+
+		void UpdateUsingItemTemplate()
+		{
+			_usingItemTemplate = ItemsView.ItemTemplate != null;
+		}
+
+		void UpdateHeaderOffset()
+		{
+			_headerOffset = ItemsView.Header == null ? 0 : 1;
+		}
+
+		void UpdateHasFooter()
+		{
+			_hasFooter = ItemsView.Footer != null;
+		}
+
+		bool IsHeader(int position)
+		{
+			return _headerOffset > 0 && position == 0;
+		}
+
+		bool IsFooter(int position)
+		{
+			return _hasFooter && position > ItemsSource.Count;
+		}
+
+		RecyclerView.ViewHolder CreateHeaderFooterViewHolder(object content, DataTemplate template, Context context)
+		{
+			if (template != null)
+			{
+				var footerContentView = new ItemContentView(context);
+				return new TemplatedItemViewHolder(footerContentView, template);
+			}
+
+			if (content is View formsView)
+			{
+				return SimpleViewHolder.FromFormsView(formsView, context);
+			}
+
+			// No template, Footer is not a Forms View, so just display Footer.ToString
+			return SimpleViewHolder.FromText(content?.ToString(), context, fill: false);
 		}
 	}
 }

@@ -109,6 +109,7 @@
     <Compile Include="CustomRenderers.cs" />
     <Compile Include="ColorPicker.cs" />
     <Compile Include="SampleNativeControl.cs" />
+    <Compile Include="StaggeredCollectionViewRenderer.cs" />
     <Compile Include="TestCloudService.cs" />
     <Compile Include="_1909CustomRenderer.cs" />
     <Compile Include="_2489CustomRenderer.cs" />
