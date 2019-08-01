@@ -1,15 +1,14 @@
 using System;
 using Android.Content;
 using Android.Views;
-using ASize = Android.Util.Size;
 
 namespace Xamarin.Forms.Platform.Android
 {
 	internal class ItemContentView : ViewGroup
 	{
 		protected IVisualElementRenderer Content;
-		ASize _size;
-		Action<ASize> _reportMeasure;
+		Size? _size;
+		Action<Size> _reportMeasure;
 
 		public ItemContentView(Context context) : base(context)
 		{
@@ -43,7 +42,7 @@ namespace Xamarin.Forms.Platform.Android
 			_size = null;
 		}
 
-		internal void HandleItemSizingStrategy(Action<ASize> reportMeasure, ASize size)
+		internal void HandleItemSizingStrategy(Action<Size> reportMeasure, Size? size)
 		{
 			_reportMeasure = reportMeasure;
 			_size = size;
@@ -74,7 +73,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (_size != null)
 			{
 				// If we're using ItemSizingStrategy.MeasureFirstItem and now we have a set size, use that
-				SetMeasuredDimension(_size.Width, _size.Height);
+				SetMeasuredDimension((int)_size.Value.Width, (int)_size.Value.Height);
 				return;
 			}
 
@@ -101,7 +100,7 @@ namespace Xamarin.Forms.Platform.Android
 				pixelHeight = (int)Context.ToPixels(measure.Request.Height);
 			}
 
-			_reportMeasure?.Invoke(new ASize(pixelWidth, pixelHeight));
+			_reportMeasure?.Invoke(new Size(pixelWidth, pixelHeight));
 			_reportMeasure = null; // Make sure we only report back the measure once
 
 			SetMeasuredDimension(pixelWidth, pixelHeight);
