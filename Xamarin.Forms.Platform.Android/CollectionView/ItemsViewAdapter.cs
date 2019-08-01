@@ -4,7 +4,6 @@ using Android.Support.V7.Widget;
 using Android.Widget;
 using Object = Java.Lang.Object;
 using ViewGroup = Android.Views.ViewGroup;
-using ASize = Android.Util.Size;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -15,7 +14,7 @@ namespace Xamarin.Forms.Platform.Android
 		internal readonly IItemsViewSource ItemsSource;
 
 		bool _disposed;
-		ASize _size;
+		Size? _size;
 
 		bool _usingItemTemplate = false;
 		int _headerOffset = 0;
@@ -119,7 +118,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
-		void SetStaticSize(ASize size)
+		void SetStaticSize(Size size)
 		{
 			_size = size;
 		}

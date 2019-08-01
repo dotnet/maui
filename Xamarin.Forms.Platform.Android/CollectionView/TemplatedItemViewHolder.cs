@@ -1,6 +1,5 @@
 using System;
 using Xamarin.Forms.Internals;
-using ASize = Android.Util.Size;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -39,7 +38,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		public void Bind(object itemBindingContext, ItemsView itemsView, 
-			Action<ASize> reportMeasure = null, ASize size = null)
+			Action<Size> reportMeasure = null, Size? size = null)
 		{
 			var template = _template.SelectDataTemplate(itemBindingContext, itemsView);
 
