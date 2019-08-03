@@ -127,7 +127,7 @@ namespace Xamarin.Forms.Platform.Android
 					shadowColor = _backgroundDrawable.PressedBackgroundColor.ToAndroid();
 				}
 				// Otherwise get values from the control (but only for supported APIs)
-				else if ((int)Build.VERSION.SdkInt >= 16)
+				else if ((int)Forms.SdkInt >= 16)
 				{
 					shadowRadius = _renderer.ShadowRadius;
 					shadowDy = _renderer.ShadowDy;

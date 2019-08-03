@@ -53,6 +53,7 @@ namespace Xamarin.Forms
 
 		const int TabletCrossover = 600;
 
+		static BuildVersionCodes? s_sdkInt;
 		static bool? s_isLollipopOrNewer;
 		static bool? s_isMarshmallowOrNewer;
 
@@ -70,12 +71,19 @@ namespace Xamarin.Forms
 		static Color _ColorButtonNormal = Color.Default;
 		public static Color ColorButtonNormalOverride { get; set; }
 
+		internal static BuildVersionCodes SdkInt {
+			get {
+				if (!s_sdkInt.HasValue)
+					s_sdkInt = Build.VERSION.SdkInt;
+				return (BuildVersionCodes)s_sdkInt;
+			}
+		}
 		internal static bool IsLollipopOrNewer
 		{
 			get
 			{
 				if (!s_isLollipopOrNewer.HasValue)
-					s_isLollipopOrNewer = (int)Build.VERSION.SdkInt >= 21;
+					s_isLollipopOrNewer = (int)SdkInt >= 21;
 				return s_isLollipopOrNewer.Value;
 			}
 		}
@@ -85,7 +93,7 @@ namespace Xamarin.Forms
 			get
 			{
 				if (!s_isMarshmallowOrNewer.HasValue)
-					s_isMarshmallowOrNewer = (int)Build.VERSION.SdkInt >= 23;
+					s_isMarshmallowOrNewer = (int)SdkInt >= 23;
 				return s_isMarshmallowOrNewer.Value;
 			}
 		}
@@ -307,7 +315,7 @@ namespace Xamarin.Forms
 			int minWidthDp = activity.Resources.Configuration.SmallestScreenWidthDp;
 			Device.SetIdiom(minWidthDp >= TabletCrossover ? TargetIdiom.Tablet : TargetIdiom.Phone);
 
-			if (Build.VERSION.SdkInt >= BuildVersionCodes.JellyBeanMr1)
+			if (SdkInt >= BuildVersionCodes.JellyBeanMr1)
 				Device.SetFlowDirection(activity.Resources.Configuration.LayoutDirection.ToFlowDirection());
 
 			if (ExpressionSearch.Default == null)
@@ -355,7 +363,7 @@ namespace Xamarin.Forms
 				{
 					// Detect if legacy device and use appropriate accent color
 					// Hardcoded because could not get color from the theme drawable
-					var sdkVersion = (int)Build.VERSION.SdkInt;
+					var sdkVersion = (int)SdkInt;
 					if (sdkVersion <= 10)
 					{
 						// legacy theme button pressed color

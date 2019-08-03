@@ -120,7 +120,7 @@ namespace Xamarin.Forms.Platform.Android
 					}
 					else
 					{
-						if (Build.VERSION.SdkInt >= BuildVersionCodes.JellyBean)
+						if (Forms.SdkInt >= BuildVersionCodes.JellyBean)
 						{
 							Control.TrackDrawable?.SetColorFilter(Element.OnColor.ToAndroid(), PorterDuff.Mode.Multiply);
 						}

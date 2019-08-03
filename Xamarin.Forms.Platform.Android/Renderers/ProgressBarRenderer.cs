@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 			else
 			{
-				if (Build.VERSION.SdkInt < BuildVersionCodes.Lollipop)
+				if (Forms.SdkInt < BuildVersionCodes.Lollipop)
 				{
 					(Control.Indeterminate ? Control.IndeterminateDrawable :
 						Control.ProgressDrawable).SetColorFilter(color.ToAndroid(), PorterDuff.Mode.SrcIn);

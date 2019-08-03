@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		internal static void HandleScrollBarVisibilityChange(this IScrollView scrollView)
 		{
-			if (Build.VERSION.SdkInt <= BuildVersionCodes.Kitkat)
+			if (Forms.SdkInt <= BuildVersionCodes.Kitkat)
 				return;
 
 			// According to the Android Documentation

@@ -238,7 +238,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateMixedContentMode()
 		{
-			if (Control != null && ((int)Build.VERSION.SdkInt >= 21))
+			if (Control != null && ((int)Forms.SdkInt >= 21))
 			{
 				Control.Settings.MixedContentMode = (MixedContentHandling)Element.OnThisPlatform().MixedContentMode();
 			}

@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Platform.Android
 				seekBar.Max = 1000;
 				seekBar.SetOnSeekBarChangeListener(this);
 
-				if (Build.VERSION.SdkInt > BuildVersionCodes.Kitkat)
+				if (Forms.SdkInt > BuildVersionCodes.Kitkat)
 				{
 					defaultthumbcolorfilter = seekBar.Thumb.GetColorFilter();
 					defaultprogresstintmode = seekBar.ProgressTintMode;
@@ -86,7 +86,7 @@ namespace Xamarin.Forms.Platform.Android
 			_min = slider.Minimum;
 			_max = slider.Maximum;
 			Value = slider.Value;
-			if (Build.VERSION.SdkInt > BuildVersionCodes.Kitkat)
+			if (Forms.SdkInt > BuildVersionCodes.Kitkat)
 			{
 				UpdateSliderColors();
 			}
@@ -116,7 +116,7 @@ namespace Xamarin.Forms.Platform.Android
 					break;
 			}
 
-			if (Build.VERSION.SdkInt > BuildVersionCodes.Kitkat)
+			if (Forms.SdkInt > BuildVersionCodes.Kitkat)
 			{
 				if (e.PropertyName == Slider.MinimumTrackColorProperty.PropertyName)
 					UpdateMinimumTrackColor();
@@ -195,7 +195,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			base.OnLayout(changed, l, t, r, b);
 
-			BuildVersionCodes androidVersion = Build.VERSION.SdkInt;
+			BuildVersionCodes androidVersion = Forms.SdkInt;
 			if (androidVersion < BuildVersionCodes.JellyBean)
 				return;
 

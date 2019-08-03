@@ -83,7 +83,7 @@ namespace Xamarin.Forms.Platform.Android
 			SetMinimumHeight((int)context.ToPixels(DefaultMinHeight));
 			_androidDefaultTextColor = Color.FromUint((uint)_mainText.CurrentTextColor);
 
-			if ((int)Build.VERSION.SdkInt > 16)
+			if ((int)Forms.SdkInt > 16)
 			{
 				_mainText.TextAlignment = global::Android.Views.TextAlignment.ViewStart;
 				_detailText.TextAlignment = global::Android.Views.TextAlignment.ViewStart;

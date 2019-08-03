@@ -1138,7 +1138,7 @@ namespace Xamarin.Forms.Platform.Android
 		internal static int GenerateViewId()
 		{
 			// getting unique Id's is an art, and I consider myself the Jackson Pollock of the field
-			if ((int)Build.VERSION.SdkInt >= 17)
+			if ((int)Forms.SdkInt >= 17)
 				return global::Android.Views.View.GenerateViewId();
 
 			// Numbers higher than this range reserved for xml

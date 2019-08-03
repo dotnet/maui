@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		static ViewExtensions()
 		{
-			s_apiLevel = (int)Build.VERSION.SdkInt;
+			s_apiLevel = (int)Forms.SdkInt;
 		}
 
 		public static void RemoveFromParent(this AView view)

@@ -125,7 +125,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			EditText.SetSingleLine(false);
 			EditText.Gravity = GravityFlags.Top;
-			if ((int)Build.VERSION.SdkInt > 16)
+			if ((int)Forms.SdkInt > 16)
 				EditText.TextAlignment = global::Android.Views.TextAlignment.ViewStart;
 			EditText.SetHorizontallyScrolling(false);
 

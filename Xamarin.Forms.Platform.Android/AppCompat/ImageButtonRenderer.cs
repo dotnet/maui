@@ -202,7 +202,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if(Drawable != null)
 			{
-				if ((int)Build.VERSION.SdkInt >= 18 && backgroundDrawable != null)
+				if ((int)Forms.SdkInt >= 18 && backgroundDrawable != null)
 				{
 					var outlineBounds = backgroundDrawable.GetPaddingBounds(canvas.Width, canvas.Height);
 					var width = (float)MeasuredWidth;

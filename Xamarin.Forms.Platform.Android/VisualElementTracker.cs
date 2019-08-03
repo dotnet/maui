@@ -105,7 +105,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			// If we're running sufficiently new Android, we have to make sure to update the ClipBounds to
 			// match the new size of the ViewGroup
-			if ((int)Build.VERSION.SdkInt >= 18)
+			if ((int)Forms.SdkInt >= 18)
 			{
 				UpdateClipToBounds();
 			}
@@ -280,7 +280,7 @@ namespace Xamarin.Forms.Platform.Android
 			bool shouldClip = layout.IsClippedToBounds;
 
 			// setClipBounds is only available in API 18 +
-			if ((int)Build.VERSION.SdkInt >= 18)
+			if ((int)Forms.SdkInt >= 18)
 			{
 				if (!(_renderer.View is ViewGroup viewGroup))
 				{
@@ -299,7 +299,7 @@ namespace Xamarin.Forms.Platform.Android
 				if (!(_renderer.View.Parent is ViewGroup parent))
 					return;
 
-				if ((int)Build.VERSION.SdkInt >= 18 && parent.ClipChildren == shouldClip)
+				if ((int)Forms.SdkInt >= 18 && parent.ClipChildren == shouldClip)
 					return;
 
 				parent.SetClipChildren(shouldClip);
