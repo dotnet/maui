@@ -41,7 +41,7 @@ namespace Xamarin.Forms.Controls.Issues
 		PerformanceTracker _PerformanceTracker = new PerformanceTracker();
 		List<PerformanceScenario> _TestCases = new List<PerformanceScenario>();
 		int _TestNumber = 0;
-
+		Button nextButton;
 		PerformanceViewModel ViewModel => BindingContext as PerformanceViewModel;
 
 		protected override void Init()
@@ -65,7 +65,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			_TestCases.AddRange(InflatePerformanceScenarios());
 
-			var nextButton = new Button { Text = Pending, IsEnabled = false, AutomationId = NextButtonId };
+			nextButton = new Button { Text = Pending, IsEnabled = false, AutomationId = NextButtonId };
 			nextButton.Clicked += NextButton_Clicked;
 
 			ViewModel.TestRunReferenceId = Guid.NewGuid();
@@ -82,11 +82,30 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 			Content = new StackLayout { Children = { testRunRef, nextButton, _PerformanceTracker } };
+			GetBenchmarkResults();
+		}
 
-			ViewModel.BenchmarkResults = Task.Run(() => PerformanceDataManager.GetScenarioResults(_DeviceIdentifier)).GetAwaiter().GetResult();
+		async void GetBenchmarkResults(int tryCount = 0)
+		{
+			bool success = false;
+			try
+			{
+				ViewModel.BenchmarkResults = await PerformanceDataManager.GetScenarioResults(_DeviceIdentifier);
+				success = true;
+			}
+			catch(Exception exc)
+			{
+				if (tryCount < 3)
+					GetBenchmarkResults(++tryCount);
+				else
+					nextButton.Text = exc.ToString();
+			}
 
-			nextButton.IsEnabled = true;
-			nextButton.Text = Next;
+			if (success)
+			{
+				nextButton.IsEnabled = true;
+				nextButton.Text = Next;
+			}
 		}
 
 		private static string GetBuildNumber()
