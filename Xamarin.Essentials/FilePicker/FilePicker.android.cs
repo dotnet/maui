@@ -88,7 +88,8 @@ namespace Xamarin.Essentials
 
             var tcs = Interlocked.Exchange(ref FilePicker.CompletionSource, null);
 
-            if (resultCode == Result.Canceled)
+            if (resultCode == Result.Canceled ||
+                data?.Data == null)
             {
                 tcs.SetResult(null);
             }
