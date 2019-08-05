@@ -2,7 +2,7 @@
 {
 	internal class PropagateCodeGallery : ContentPage
 	{
-		public PropagateCodeGallery(IItemsLayout itemsLayout)
+		public PropagateCodeGallery(IItemsLayout itemsLayout, int itemsCount = 2)
 		{
 			Title = $"Propagate FlowDirection=RTL";
 
@@ -21,16 +21,20 @@
 
 			var itemTemplate = ExampleTemplates.PropagationTemplate();
 
+			var emptyView = ExampleTemplates.PropagationTemplate().CreateContent() as View;
+
+
 			var collectionView = new CollectionView
 			{
 				ItemsLayout = itemsLayout,
 				ItemTemplate = itemTemplate,
+				EmptyView = emptyView
 			};
 
-			var generator = new ItemsSourceGenerator(collectionView, initialItems: 2);
+			var generator = new ItemsSourceGenerator(collectionView, initialItems: itemsCount);
 			layout.Children.Add(generator);
 			var instructions = new Label();
-			UpdateInstructions(layout, instructions);
+			UpdateInstructions(layout, instructions, itemsCount == 0);
 			Grid.SetRow(instructions, 2);
 			layout.Children.Add(instructions);
 
@@ -44,7 +48,7 @@
 					? FlowDirection.LeftToRight 
 					: FlowDirection.RightToLeft;
 
-				UpdateInstructions(layout, instructions);
+				UpdateInstructions(layout, instructions, itemsCount == 0);
 			};
 
 			switchLayout.Children.Add(switchLabel);
@@ -62,9 +66,16 @@
 			generator.GenerateItems();
 		}
 
-		static void UpdateInstructions(Layout layout, Label instructions)
+		static void UpdateInstructions(Layout layout, Label instructions, bool isEmpty)
 		{
-			instructions.Text = $"The buttons in each item should be in order from {layout.FlowDirection}.";
+			if (isEmpty)
+			{
+				instructions.Text = $"The buttons in the empty view should be in order from {layout.FlowDirection}.";
+			}
+			else
+			{
+				instructions.Text = $"The buttons in each item should be in order from {layout.FlowDirection}.";
+			}
 		}
 	}
 }

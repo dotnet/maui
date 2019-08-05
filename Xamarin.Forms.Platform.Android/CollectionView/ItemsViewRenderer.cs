@@ -472,6 +472,8 @@ namespace Xamarin.Forms.Platform.Android
 				_emptyViewAdapter.EmptyViewTemplate = emptyViewTemplate;
 
 				_emptyCollectionObserver.Start(ItemsViewAdapter);
+
+				_emptyViewAdapter.NotifyDataSetChanged();
 			}
 			else
 			{

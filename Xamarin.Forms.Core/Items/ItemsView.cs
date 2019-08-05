@@ -131,6 +131,11 @@ namespace Xamarin.Forms
 
 		public void AddLogicalChild(Element element)
 		{
+			if(element == null)
+			{
+				return;	
+			}
+
 			_logicalChildren.Add(element);
 
 			PropertyPropagationExtensions.PropagatePropertyChanged(null, element);
@@ -140,6 +145,11 @@ namespace Xamarin.Forms
 
 		public void RemoveLogicalChild(Element element)
 		{
+			if (element == null)
+			{
+				return;
+			}
+
 			element.Parent = null;
 			_logicalChildren.Remove(element);
 		}

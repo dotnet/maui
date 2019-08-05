@@ -15,6 +15,11 @@ namespace Xamarin.Forms.Platform.Android
 
 		public View View { get; }
 
+		public void Recycle(ItemsView itemsView)
+		{
+			itemsView.RemoveLogicalChild(View);
+		}
+
 		public static SimpleViewHolder FromText(string text, Context context, bool fill = true)
 		{
 			var textView = new TextView(context) { Text = text };
