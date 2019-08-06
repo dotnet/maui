@@ -170,16 +170,16 @@ namespace Xamarin.Forms.Xaml.Internals
 
 		public object FindByName(string name)
 		{
-			if (scope != null)
-				return scope.FindByName(name);
+			object value;
+			if ((value = scope?.FindByName(name)) != null)
+				return value;
 
 			for (var i = 0; i < objectAndParents.Length; i++) {
-				var bo = objectAndParents[i] as BindableObject;
-				if (bo == null) continue;
-				var ns = NameScope.GetNameScope(bo) as INameScope;
-				if (ns == null) continue;
-				var value = ns.FindByName(name);
-				if (value != null)
+				if (!(objectAndParents[i] is BindableObject bo))
+					continue;
+				if (!(NameScope.GetNameScope(bo) is INameScope ns))
+					continue;
+				if ((value = ns.FindByName(name)) != null)
 					return value;
 			}
 			return null;
