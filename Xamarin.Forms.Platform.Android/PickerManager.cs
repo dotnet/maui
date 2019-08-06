@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		static void OnKeyPress(object sender, AView.KeyEventArgs e)
 		{
-			if (availableKeys.Contains(e.KeyCode))
+			if (!availableKeys.Contains(e.KeyCode))
 			{
 				e.Handled = false;
 				return;
