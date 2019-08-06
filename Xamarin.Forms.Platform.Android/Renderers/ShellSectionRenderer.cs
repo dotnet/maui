@@ -144,6 +144,7 @@ namespace Xamarin.Forms.Platform.Android
 			_viewPager = new FormsViewPager(Context)
 			{
 				LayoutParameters = new LP(LP.MatchParent, LP.MatchParent),
+				EnableGesture = false
 			};
 
 			_viewPager.AddOnPageChangeListener(this);

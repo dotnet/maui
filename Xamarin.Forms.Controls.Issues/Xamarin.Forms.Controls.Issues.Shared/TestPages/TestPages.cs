@@ -613,11 +613,13 @@ namespace Xamarin.Forms.Controls
 			return page;
 		}
 
-		public ContentPage CreateContentPage()
+		public ContentPage CreateContentPage(string shellItemTitle = null)
 		{
+			shellItemTitle = shellItemTitle ?? $"Item: {Items.Count}";
 			ContentPage page = new ContentPage();
 			ShellItem item = new ShellItem()
 			{
+				Title = shellItemTitle,
 				Items =
 				{
 					new ShellSection()

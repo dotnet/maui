@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		public static async Task<Dictionary<string, double>> GetScenarioResults(string deviceId)
 		{
-			var response = await _client.GetAsync(GetScenarioResultsRoute + deviceId);
+			var response = await _client.GetAsync(GetScenarioResultsRoute + deviceId).ConfigureAwait(false);
 
 			if (!response.IsSuccessStatusCode)
 				return new Dictionary<string, double>();
@@ -63,12 +63,12 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 			var json = JsonConvert.SerializeObject(data);
 			var content = new StringContent(json, Encoding.UTF8, "application/json");
-			var response = await _client.PostAsync(PostScenarioResultRoute + scenarioName, content);
-			var responseContent = await response.Content.ReadAsStringAsync();
+			var response = await _client.PostAsync(PostScenarioResultRoute + scenarioName, content).ConfigureAwait(false);
+			var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
 			var scenarioResult = JsonConvert.DeserializeObject<ScenarioResult>(responseContent);
 
-			await PostScenarioResultDetails(scenarioResult.Id, details);
+			await PostScenarioResultDetails(scenarioResult.Id, details).ConfigureAwait(false);
 		}
 
 		static async Task PostScenarioResultDetails(Guid scenarioResultId, Dictionary<string, PerformanceProvider.Statistic> details)
@@ -84,7 +84,7 @@ namespace Xamarin.Forms.Controls.Issues
 					Name = detail.Key
 				};
 				var content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
-				await _client.PostAsync(PostScenarioResultDetailsRoute + scenarioResultId, content);
+				await _client.PostAsync(PostScenarioResultDetailsRoute + scenarioResultId, content).ConfigureAwait(false);
 			}
 		}
 

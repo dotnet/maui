@@ -30,7 +30,8 @@ namespace Xamarin.Forms.Internals
 
 		public static void SetNameScope(BindableObject bindable, INameScope value)
 		{
-			bindable.SetValue(NameScopeProperty, value);
+			if (bindable.GetValue(NameScopeProperty) == null)
+				bindable.SetValue(NameScopeProperty, value);
 		}
 	}
 }
