@@ -146,5 +146,8 @@ echo foo > Xamarin.Forms.Platform.UAP\bin\%CONFIG%\FormsEmbeddedPageWrapper.xbf
 echo foo > Xamarin.Forms.Platform.UAP\bin\%CONFIG%\StepperControl.xbf
 echo foo > Xamarin.Forms.Platform.UAP\bin\%CONFIG%\FormsCheckBoxStyle.xbf
 
+mkdir Xamarin.Forms.Platform.UAP\bin\%CONFIG%\CollectionView\
+echo foo > Xamarin.Forms.Platform.UAP\bin\%CONFIG%\CollectionView\ItemsViewStyles.xbf
+
 mkdir Xamarin.Forms.Platform.UAP\bin\%CONFIG%\Items
 echo foo > Xamarin.Forms.Platform.UAP\bin\%CONFIG%\Items\ItemsViewStyles.xbf
