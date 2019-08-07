@@ -50,6 +50,12 @@ namespace Samples.ViewModel
 
         async void DoPickImage()
         {
+            var options = new PickOptions
+            {
+                FileTypes = new string[] { FilePickerFileTypes.Png, FilePickerFileTypes.Jpg },
+                PickerTitle = "Please select an image"
+            };
+
             await PickAndShow(PickOptions.Images);
         }
 

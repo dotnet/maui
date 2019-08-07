@@ -51,6 +51,14 @@ namespace Xamarin.Essentials
         }
     }
 
+    public static class FilePickerFileTypes
+    {
+        public static string Png = ".png";
+        public static string Jpg = ".jpg";
+        public static string Mp4 = ".mp4";
+        public static string Pdf = ".pdf";
+    }
+
     public partial class PickOptions
     {
         static PickOptions PlatformGetImagesPickOptions()
