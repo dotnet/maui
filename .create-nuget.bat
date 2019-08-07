@@ -58,14 +58,14 @@ if "%1" == "all" (
    call .create-stubs.bat
    %NUGET_EXE% restore .xamarin.forms.nuget.sln
    msbuild /v:m /p:platform="any cpu" .xamarin.forms.uap.nuget.sln /t:restore
-   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 /p:CreateAllAndroidTargets=true .xamarin.forms.nuget.sln
+   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 .xamarin.forms.nuget.sln
 )
 if "%1" == "rall" (
    set CONFIG=release
    call .create-stubs.bat
    %NUGET_EXE% restore .xamarin.forms.nuget.sln
    msbuild /v:m /p:platform="any cpu" .xamarin.forms.uap.nuget.sln /t:restore /p:configuration=release
-   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 /p:CreateAllAndroidTargets=true .xamarin.forms.nuget.sln /p:configuration=release
+   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 .xamarin.forms.nuget.sln /p:configuration=release
 )
 
 if "%DEBUG_VERSION%"=="" set DEBUG_VERSION=0
