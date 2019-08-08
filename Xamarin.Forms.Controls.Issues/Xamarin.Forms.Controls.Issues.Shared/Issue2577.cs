@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement(NavButton);
 			RunningApp.Tap(NavButton);
 
-			RunningApp.WaitForElement(ToggleBackButton);
+			RunningApp.WaitForElement(ToggleBackButton, retryFrequency: System.TimeSpan.FromSeconds(3));
 
 			RunningApp.Screenshot("Hamburger menu icon is visible");
 
