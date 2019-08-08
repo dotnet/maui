@@ -1334,9 +1334,9 @@ namespace Xamarin.Forms.Build.Tasks
 			//is there a RD.Add() overrides that accepts this ?
 			var nodeTypeRef = context.Variables[node].VariableType;
 			var module = context.Body.Method.Module;
-			if (module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms", "ResourceDictionary"),
+			if (module.ImportMethodReference(module.GetTypeDefinition(("Xamarin.Forms.Core", "Xamarin.Forms", "ResourceDictionary")),
 											 methodName: "Add",
-											 parameterTypes: new[] { (nodeTypeRef.Scope.Name, nodeTypeRef.Namespace, nodeTypeRef.Name) }) != null)
+											 parameterTypes: new[] { (nodeTypeRef) }) != null)
 				return true;
 
 			throw new XamlParseException("resources in ResourceDictionary require a x:Key attribute", lineInfo);
