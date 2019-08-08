@@ -4,6 +4,7 @@ namespace Xamarin.Forms
 	{
 		Vertical,
 		Horizontal,
-		Both
+		Both,
+		Neither
 	}
 }

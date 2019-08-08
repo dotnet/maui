@@ -174,6 +174,39 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		public void TestContentSizeDidNotChangeNeither()
+		{
+			View view = new View { IsPlatformEnabled = true, WidthRequest = 100, HeightRequest = 100 };
+
+			var scroll = new ScrollView
+			{
+				Orientation = ScrollOrientation.Neither,
+				Content = view
+			};
+
+			var originalBounds = new Rectangle(0, 0, 50, 50);
+
+			scroll.Layout(originalBounds);
+
+			Assert.That(originalBounds.Size, Is.EqualTo(scroll.ContentSize));
+
+			bool changed = false;
+			scroll.PropertyChanged += (sender, e) => {
+				switch (e.PropertyName)
+				{
+					case "ContentSize":
+						changed = true;
+						break;
+				}
+			};
+
+			view.WidthRequest = 200;
+
+			Assert.That(changed, Is.False);
+			Assert.That(originalBounds.Size, Is.EqualTo(scroll.ContentSize));
+		}
+
+		[Test]
 		public void TestContentSizeClamping ()
 		{
 			View view = new View {IsPlatformEnabled = true, WidthRequest = 100, HeightRequest = 100};
@@ -267,7 +300,11 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			scrollView.Orientation = ScrollOrientation.Both;
 			Assert.AreEqual (ScrollOrientation.Both, scrollView.Orientation);
-			Assert.True (signaled); 
+			Assert.True (signaled);
+
+			scrollView.Orientation = ScrollOrientation.Neither;
+			Assert.AreEqual(ScrollOrientation.Neither, scrollView.Orientation);
+			Assert.True(signaled);
 		}
 
 		[Test]
@@ -306,6 +343,26 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			scrollView.ScrollToAsync (0,100, true);
 			Assert.That (requested, Is.True);
+		}
+
+		[Test]
+		public void TestScrollWasNotFiredOnNeither()
+		{
+			var scrollView = new ScrollView
+			{
+				Orientation = ScrollOrientation.Neither
+			};
+
+			var item = new View { };
+			scrollView.Content = new StackLayout { Children = { item } };
+
+			bool requested = false;
+			((IScrollViewController)scrollView).ScrollToRequested += (sender, args) => {
+				requested = true;
+			};
+
+			scrollView.ScrollToAsync(0, 100, true);
+			Assert.That(requested, Is.False);
 		}
 
 		[Test]
