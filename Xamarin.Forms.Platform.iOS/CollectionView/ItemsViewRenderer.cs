@@ -45,6 +45,14 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				ItemsViewController.UpdateEmptyView();
 			}
+			else if (changedProperty.IsOneOf(ItemsView.HeaderProperty, ItemsView.HeaderTemplateProperty))
+			{
+				ItemsViewController.UpdateHeaderView();
+			}
+			else if (changedProperty.IsOneOf(ItemsView.FooterProperty, ItemsView.FooterTemplateProperty))
+			{
+				ItemsViewController.UpdateFooterView();
+			}
 			else if (changedProperty.Is(ItemsView.ItemSizingStrategyProperty))
 			{
 				UpdateItemSizingStrategy();
@@ -112,6 +120,8 @@ namespace Xamarin.Forms.Platform.iOS
 			SetNativeControl(ItemsViewController.View);
 			ItemsViewController.CollectionView.BackgroundColor = UIColor.Clear;
 			ItemsViewController.UpdateEmptyView();
+			ItemsViewController.UpdateFooterView();
+			ItemsViewController.UpdateHeaderView();
 
 			UpdateHorizontalScrollBarVisibility();
 			UpdateVerticalScrollBarVisibility();
