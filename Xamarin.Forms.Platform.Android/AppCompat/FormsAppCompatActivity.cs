@@ -23,6 +23,23 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {
+	[Flags]
+	public enum ActivationFlags : long
+	{
+		DisableSetStatusBarColor = 1 << 0,
+	}
+
+	public struct ActivationOptions
+	{
+		public ActivationOptions(Bundle bundle)
+		{
+			this = default(ActivationOptions);
+			this.Bundle = bundle;
+		}
+		public Bundle Bundle;
+		public ActivationFlags Flags;
+	}
+
 	public class FormsAppCompatActivity : AppCompatActivity, IDeviceInfoProvider
 	{
 		public delegate bool BackButtonPressedEventHandler(object sender, EventArgs e);
@@ -161,7 +178,19 @@ namespace Xamarin.Forms.Platform.Android
 			ActivityResultCallbackRegistry.InvokeCallback(requestCode, resultCode, data);
 		}
 
+		protected void OnCreate(ActivationOptions options)
+		{
+			OnCreate(options.Bundle, options.Flags);
+		}
+
 		protected override void OnCreate(Bundle savedInstanceState)
+		{
+			OnCreate(savedInstanceState, default(ActivationFlags));
+		}
+
+		void OnCreate(
+			Bundle savedInstanceState, 
+			ActivationFlags flags)
 		{
 			_activityCreated = true;
 			if (!AllowFragmentRestore)
@@ -181,8 +210,10 @@ namespace Xamarin.Forms.Platform.Android
 				if (bar == null)
 					throw new InvalidOperationException("ToolbarResource must be set to a Android.Support.V7.Widget.Toolbar");
 			}
-			else
+			else 
+			{
 				bar = new AToolbar(this);
+			}
 
 			SetSupportActionBar(bar);
 
@@ -199,9 +230,11 @@ namespace Xamarin.Forms.Platform.Android
 			if (Forms.IsLollipopOrNewer)
 			{
 				// Allow for the status bar color to be changed
-				Window.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
+				if ((flags & ActivationFlags.DisableSetStatusBarColor) == 0)
+				{
+					Window.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
+				}
 			}
-
 			if (Forms.IsLollipopOrNewer)
 			{
 				// Listen for the device going into power save mode so we can handle animations being disabled

@@ -25,7 +25,7 @@ using System.ComponentModel;
 
 namespace Xamarin.Forms
 {
-	public struct ActivationOptions
+	public struct InitializationOptions
 	{
 		public struct EffectScope
 		{
@@ -33,9 +33,9 @@ namespace Xamarin.Forms
 			public ExportEffectAttribute[] Effects;
 		}
 
-		public ActivationOptions(Context activity, Bundle bundle, Assembly resourceAssembly)
+		public InitializationOptions(Context activity, Bundle bundle, Assembly resourceAssembly)
 		{
-			this = default(ActivationOptions);
+			this = default(InitializationOptions);
 			this.Activity = activity;
 			this.Bundle = bundle;
 			this.ResourceAssembly = resourceAssembly;
@@ -45,7 +45,7 @@ namespace Xamarin.Forms
 		public Assembly ResourceAssembly;
 		public HandlerAttribute[] Handlers;
 		public EffectScope[] EffectScopes;
-		public ActivationFlags Flags;
+		public InitializationFlags Flags;
 	}
 
 	public static class Forms
@@ -150,13 +150,13 @@ namespace Xamarin.Forms
 			Profile.FrameEnd();
 		}
 
-		public static void Initialize(ActivationOptions activation)
+		public static void Init(InitializationOptions options)
 		{
 			Profile.FrameBegin();
 			SetupInit(
-				activation.Activity,
-				activation.ResourceAssembly,
-				activation
+				options.Activity,
+				options.ResourceAssembly,
+				options
 			);
 			Profile.FrameEnd();
 		}
@@ -211,10 +211,11 @@ namespace Xamarin.Forms
 		static void SetupInit(
 			Context activity,
 			Assembly resourceAssembly,
-			ActivationOptions? maybeOptions = null
+			InitializationOptions? maybeOptions = null
 		)
 		{
 			Profile.FrameBegin();
+
 			if (!IsInitialized)
 			{
 				// Only need to get this once; it won't change
@@ -295,7 +296,7 @@ namespace Xamarin.Forms
 					}
 
 					// css
-					var noCss = (flags & ActivationFlags.NoCss) != 0;
+					var noCss = (flags & InitializationFlags.DisableCss) != 0;
 					if (!noCss)
 						Registrar.RegisterStylesheets();
 				}
