@@ -117,20 +117,20 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void CollectionViewInfiniteScroll()
 		{
-			RunningApp.WaitForElement ("CollectionView5623");
+			RunningApp.WaitForElement("CollectionView5623");
 
 			var colView = RunningApp.Query("CollectionView5623").Single();
 
 			AppResult[] lastCellResults = null;
 
-			RunningApp.RetryUntilPresent(() =>
-			{
-				RunningApp.DragCoordinates(colView.Rect.CenterX, colView.Rect.Y + colView.Rect.Height - 50, colView.Rect.CenterX, colView.Rect.Y + 5);
+			RunningApp.QueryUntilPresent(() =>
+			 {
+				 RunningApp.DragCoordinates(colView.Rect.CenterX, colView.Rect.Y + colView.Rect.Height - 50, colView.Rect.CenterX, colView.Rect.Y + 5);
 
-				lastCellResults = RunningApp.Query("99");
+				 lastCellResults = RunningApp.Query("99");
 
-				return lastCellResults;
-			}, 100, 1);
+				 return lastCellResults;
+			 }, 100, 1);
 
 			Assert.IsTrue(lastCellResults?.Any() ?? false);
 		}
