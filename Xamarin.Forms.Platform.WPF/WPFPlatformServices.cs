@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Platform.WPF
 		
 		public void BeginInvokeOnMainThread(Action action)
 		{
-			System.Windows.Application.Current.Dispatcher.BeginInvoke(action);
+			System.Windows.Application.Current?.Dispatcher.BeginInvoke(action);
 		}
 
 		public Ticker CreateTicker()
