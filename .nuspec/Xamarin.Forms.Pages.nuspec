@@ -6,7 +6,7 @@
     <authors>Microsoft</authors>
     <owners>microsoft xamarin</owners>
     <license type="expression">MIT</license>
-    <iconUrl>http://xamarin.com/content/images/nuget/xamarin.png</iconUrl>
+    <iconUrl>https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Assets/xamarin_128x128.png</iconUrl>
     <projectUrl>http://xamarin.com/forms</projectUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>Pre-built themeable pages for Xamarin.Forms</description>
