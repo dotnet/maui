@@ -187,7 +187,7 @@ namespace Xamarin.Forms.Platform.Android
 						!(
 							child is VisualElement ve && ve.IsTabStop
 							&& AutomationProperties.GetIsInAccessibleTree(ve) != false // accessible == true
-							&& ve.GetRenderer().View is ITabStop tabStop)
+							&& ve.GetRenderer()?.View is ITabStop tabStop)
 						 )
 						continue;
 
