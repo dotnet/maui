@@ -41,7 +41,13 @@ namespace Xamarin.Forms.Internals
 		public static void SetDefault(Ticker ticker) => Default = ticker;
 		public static Ticker Default
 		{
-			internal set { s_ticker = value; }
+			internal set {
+				if (value == null && s_ticker != null)
+				{
+					(s_ticker as IDisposable)?.Dispose();
+				}
+				s_ticker = value;
+			}
 			get
 			{
 				if (s_ticker == null)

@@ -265,11 +265,7 @@ namespace Xamarin.Forms
 			Device.SetFlags(s_flags);
 
 			Profile.FramePartition("AndroidTicker");
-
-			var ticker = Ticker.Default as AndroidTicker;
-			if (ticker != null)
-				ticker.Dispose();
-			Ticker.SetDefault(new AndroidTicker());
+			Ticker.SetDefault(null);
 
 			Profile.FramePartition("RegisterAll");
 
