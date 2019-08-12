@@ -65,6 +65,7 @@ jobs:
     targetFolder: Xamarin.Forms.ControlGallery.Android/legacyRenderers/
     androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /bl:$(Build.ArtifactStagingDirectory)\android-legacy.binlog'
     buildConfiguration: $(DefaultBuildConfiguration)
+    monoVersion : $(MONO_VERSION)
 
 - template: build/steps/build-android.yml
   parameters:
@@ -74,6 +75,7 @@ jobs:
     targetFolder: Xamarin.Forms.ControlGallery.Android/preAppCompat
     androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /p:DefineConstants="TRACE DEBUG FORMS_APPLICATION_ACTIVITY APP" /bl:$(Build.ArtifactStagingDirectory)\android-preappcompact.binlog'
     buildConfiguration: $(DefaultBuildConfiguration)
+    monoVersion : $(MONO_VERSION)
 
 - template: build/steps/build-android.yml
   parameters:
@@ -83,6 +85,7 @@ jobs:
     targetFolder: Xamarin.Forms.ControlGallery.Android/newRenderers/
     androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /p:DefineConstants="TRACE DEBUG TEST_EXPERIMENTAL_RENDERERS APP" /bl:$(Build.ArtifactStagingDirectory)\android-newrenderers.binlog'
     buildConfiguration: $(DefaultBuildConfiguration)
+    monoVersion : $(MONO_VERSION)
 
 - job: osx
   displayName: OSX Phase
@@ -102,6 +105,7 @@ jobs:
     nugetVersion: $(NUGET_VERSION)
     iOSCertSecureFileName: 'Xamarin Forms iOS Certificate.p12'
     iOSProvisioningSecureFileName: 'Xamarin Forms iOS Provisioning.mobileprovision'
+    monoVersion : $(MONO_VERSION)
   steps:
      - template: build/steps/build-osx.yml
 

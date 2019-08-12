@@ -14,6 +14,7 @@ parameters:
   androidProjectArguments : ''
   buildConfiguration : 'Debug'
   nugetVersion: $(NUGET_VERSION)
+  monoVersion: $(MONO_VERSION)
   apkTargetFolder: '$(build.artifactstagingdirectory)/androidApp'
 
 jobs:
@@ -25,6 +26,9 @@ jobs:
     dependsOn: ${{ parameters.dependsOn }}
     steps:
       - checkout: self
+
+      - script: '/bin/bash -c "sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh ${{ parameters.monoVersion }}"'
+        displayName: 'Select MONO ${{ parameters.monoVersion }}'
 
       - task: NuGetToolInstaller@0
         displayName: 'Use NuGet ${{ parameters.nugetVersion }}'
