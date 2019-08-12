@@ -52,7 +52,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public void LegacyImageSourceProperties()
 		{
 			RunningApp.WaitForElement("Nothing Crashed");
-			RunningApp.RetryUntilPresent(
+			RunningApp.QueryUntilPresent(
 				() =>
 				{
 					var result = RunningApp.WaitForElement("Image1");

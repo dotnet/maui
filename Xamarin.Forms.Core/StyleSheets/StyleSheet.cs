@@ -36,7 +36,9 @@ namespace Xamarin.Forms.StyleSheets
 		{
 			var styleSheet = new StyleSheet();
 			var resString = DependencyService.Get<IResourcesLoader>().GetResource(resourcePath, assembly, styleSheet, lineInfo);
-			Parse(styleSheet, new CssReader(new StringReader(resString)));
+			using (var textReader = new StringReader(resString))
+			using (var cssReader = new CssReader(textReader))
+				Parse(styleSheet, cssReader);
 			return styleSheet;
 		}
 
@@ -56,7 +58,8 @@ namespace Xamarin.Forms.StyleSheets
 				throw new ArgumentNullException(nameof(reader));
 
 			var sheet = new StyleSheet();
-			Parse(sheet, new CssReader(reader));
+			using (var cssReader = new CssReader(reader))
+				Parse(sheet, cssReader);
 			return sheet;
 		}
 
@@ -94,13 +97,11 @@ namespace Xamarin.Forms.StyleSheets
 			}
 		}
 
-		Type IStyle.TargetType
-			=> typeof(VisualElement);
+		Type IStyle.TargetType => typeof(VisualElement);
 
 		void IStyle.Apply(BindableObject bindable)
 		{
-			var styleable = bindable as Element;
-			if (styleable == null)
+			if (!(bindable is Element styleable))
 				return;
 			Apply(styleable);
 		}
@@ -114,8 +115,7 @@ namespace Xamarin.Forms.StyleSheets
 
 		void ApplyCore(Element styleable)
 		{
-			var visualStylable = styleable as VisualElement;
-			if (visualStylable == null)
+			if (!(styleable is VisualElement visualStylable))
 				return;
 			foreach (var kvp in Styles) {
 				var selector = kvp.Key;
@@ -126,9 +126,6 @@ namespace Xamarin.Forms.StyleSheets
 			}
 		}
 
-		void IStyle.UnApply(BindableObject bindable)
-		{
-			throw new NotImplementedException();
-		}
+		void IStyle.UnApply(BindableObject bindable) => throw new NotImplementedException();
 	}
 }

@@ -6,11 +6,11 @@ using Xamarin.UITest.Queries;
 using System.Text.RegularExpressions;
 using System.Threading;
 
-namespace Xamarin.Forms.Core.UITests
+namespace Xamarin.UITest
 {
 	internal static class AppExtensions
 	{
-		public static T[] RetryUntilPresent<T>(
+		public static T[] QueryUntilPresent<T>(
 			this IApp app,
 			Func<T[]> func,
 			int retryCount = 10,
@@ -28,7 +28,13 @@ namespace Xamarin.Forms.Core.UITests
 
 			return results;
 		}
+	}
+}
 
+namespace Xamarin.Forms.Core.UITests
+{
+	internal static class AppExtensions
+	{
 		public static AppRect ScreenBounds(this IApp app)
 		{
 			return app.Query(Queries.Root()).First().Rect;

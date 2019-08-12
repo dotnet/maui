@@ -189,7 +189,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		bool DialogIsOpened()
 		{
-			Thread.Sleep(1500);
+			RunningApp.WaitForElement(q => q.Class("FrameLayout"));
 			var frameLayouts = RunningApp.Query(q => q.Class("FrameLayout"));
 			foreach (var layout in frameLayouts)
 			{

@@ -119,7 +119,7 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 
-			foreach(var view in imageControls)
+			foreach (var view in imageControls)
 			{
 				view.BackgroundColor = Color.Red;
 			}
@@ -129,7 +129,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				AutomationId = "layoutContainer",
 				Children =
-				{					
+				{
 					new StackLayout()
 					{
 						Orientation = StackOrientation.Horizontal,
@@ -137,7 +137,7 @@ namespace Xamarin.Forms.Controls.Issues
 						{
 							labelActiveTest,
 							switchToUri,
-							sourceLabel						
+							sourceLabel
 						}
 					},
 					button,
@@ -228,7 +228,7 @@ namespace Xamarin.Forms.Controls.Issues
 			SetupTest(nameof(ListView), fileSource);
 
 			var imageVisible =
-				RunningApp.RetryUntilPresent(GetImage, 10, 2000);
+				RunningApp.QueryUntilPresent(GetImage, 10, 2000);
 
 			Assert.AreEqual(1, imageVisible.Length);
 			SetImageSourceToNull();
@@ -261,7 +261,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		UITest.Queries.AppResult TestForImageVisible()
 		{
-			var images = RunningApp.RetryUntilPresent(() =>
+			var images = RunningApp.QueryUntilPresent(() =>
 			{
 				var result = RunningApp.WaitForElement(_fileNameAutomationId);
 
@@ -273,7 +273,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			Assert.AreEqual(1, images.Length);
 			var imageVisible = images[0];
-						
+
 			Assert.Greater(imageVisible.Rect.Height, 1);
 			Assert.Greater(imageVisible.Rect.Width, 1);
 			return imageVisible;

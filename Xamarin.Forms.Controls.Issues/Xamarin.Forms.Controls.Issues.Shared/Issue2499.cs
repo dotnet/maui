@@ -38,6 +38,8 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			RunningApp.WaitForElement("picker");
 			RunningApp.Tap("picker");
+			RunningApp.WaitForElement("cat");
+
 			AppResult[] items = RunningApp.Query("cat");
 			Assert.AreNotEqual(items.Length, 0);
 			RunningApp.WaitForElement(q => q.Marked("mouse"));

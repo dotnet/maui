@@ -193,6 +193,28 @@ namespace Xamarin.Forms.Build.Tasks
 		}
 
 		public static MethodReference ImportMethodReference(this ModuleDefinition module,
+													 TypeReference type,
+													 string methodName,
+													 TypeReference[] parameterTypes = null,
+													 TypeReference[] classArguments = null,
+													 bool isStatic = false)
+		{
+			return module.ImportMethodReference(type,
+												methodName: methodName,
+												predicate: md => {
+													if (md.IsStatic != isStatic)
+														return false;
+													if (md.Parameters.Count != (parameterTypes?.Length ?? 0))
+														return false;
+													for (var i = 0; i < md.Parameters.Count; i++)
+														if (!TypeRefComparer.Default.Equals(md.Parameters[i].ParameterType, parameterTypes[i]))
+															return false;
+													return true;
+												},
+												classArguments: classArguments);
+		}
+
+		public static MethodReference ImportMethodReference(this ModuleDefinition module,
 															(string assemblyName, string clrNamespace, string typeName) type,
 															string methodName,
 															(string assemblyName, string clrNamespace, string typeName)[] parameterTypes,

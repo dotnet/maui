@@ -46,19 +46,23 @@ namespace Xamarin.Forms.Controls.Issues
 
 			// Find the control we're testing
 			var result = RunningApp.WaitForElement(q => q.Marked(TargetAutomationId));
+
+			// In theory we want to tap the center of the control. But Stepper lays out differently than the other controls,
+			// (it doesn't center vertically within its layout), so we need to adjust for it until someone fixes it
+
+#if __ANDROID__
+			if (menuItem == "Stepper")
+			{
+				result = RunningApp.WaitForElement(q => q.Marked("−"));
+			}
+#endif
+
 			var target = result.First().Rect;
 
 			// Tap the control
 			var y = target.CenterY;
 			var x = target.CenterX;
 
-			// In theory we want to tap the center of the control. But Stepper lays out differently than the other controls,
-			// (it doesn't center vertically within its layout), so we need to adjust for it until someone fixes it
-			if (menuItem == "Stepper")
-			{
-				y = target.Y;
-				x = target.X;
-			}
 
 			RunningApp.TapCoordinates(x, y);
 

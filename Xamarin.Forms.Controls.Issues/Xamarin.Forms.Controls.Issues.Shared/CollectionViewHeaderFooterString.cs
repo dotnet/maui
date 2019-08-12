@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 		}
 
-#if UITEST && __ANDROID__ // TODO ezhart When this feature is implemented on iOS, update this check
+#if UITEST
 		[Test]
 		public void CollectionViewHeaderAndFooterUsingStrings()
 		{
