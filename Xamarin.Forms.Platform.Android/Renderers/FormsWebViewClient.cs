@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (navigate)
 			{
-				var args = new WebNavigatedEventArgs(WebNavigationEvent.NewPage, source, url, _navigationResult);
+				var args = new WebNavigatedEventArgs(_renderer.GetCurrentWebNavigationEvent(), source, url, _navigationResult);
 				_renderer.ElementController.SendNavigated(args);
 			}
 
