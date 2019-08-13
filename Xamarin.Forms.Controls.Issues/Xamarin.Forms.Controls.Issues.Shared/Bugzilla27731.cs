@@ -43,6 +43,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void Bugzilla27731Test()
 		{
+			RunningApp.WaitForElement("Click");
 			RunningApp.WaitForNoElement(_pageTitle);
 		}
 #endif

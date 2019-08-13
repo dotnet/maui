@@ -29,9 +29,14 @@
 	<system:Double x:Key="FontSizeLarge">32</system:Double>
 	<system:Double x:Key="FontSizeExtraLarge">42</system:Double>
 	<system:Double x:Key="FontSizeExtraExtraLarge">72</system:Double>
-	<system:Double x:Key="FontSizeHuge">186</system:Double>
+    <system:Double x:Key="FontSizeHuge">186</system:Double>
+    <system:Double x:Key="FontSizeBody">14</system:Double>
+    <system:Double x:Key="FontSizeCaption">12</system:Double>
+    <system:Double x:Key="FontSizeHeader">46</system:Double>
+    <system:Double x:Key="FontSizeSubtitle">20</system:Double>
+    <system:Double x:Key="FontSizeTitle">24</system:Double>
 
-	<FontFamily x:Key="FontFamilyNormal">Segoe UI</FontFamily>
+    <FontFamily x:Key="FontFamilyNormal">Segoe UI</FontFamily>
 	<FontFamily x:Key="FontFamilySemiBold">Segoe UI</FontFamily>
 
 	<wpf:HeightConverter x:Key="HeightConverter" />

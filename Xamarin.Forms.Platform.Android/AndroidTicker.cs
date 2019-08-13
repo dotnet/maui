@@ -9,7 +9,8 @@ namespace Xamarin.Forms.Platform.Android
 	internal class AndroidTicker : Ticker, IDisposable
 	{
 		ValueAnimator _val;
-		bool _systemEnabled;
+		bool _energySaveModeDisabled;
+		readonly bool _animatorEnabled;
 
 		public AndroidTicker()
 		{
@@ -17,10 +18,11 @@ namespace Xamarin.Forms.Platform.Android
 			_val.SetIntValues(0, 100); // avoid crash
 			_val.RepeatCount = ValueAnimator.Infinite;
 			_val.Update += OnValOnUpdate;
+			_animatorEnabled = IsAnimatorEnabled();
 			CheckPowerSaveModeStatus();
 		}
 
-		public override bool SystemEnabled => _systemEnabled;
+		public override bool SystemEnabled => _energySaveModeDisabled && _animatorEnabled;
 
 		internal void CheckPowerSaveModeStatus()
 		{
@@ -31,7 +33,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (!Forms.IsLollipopOrNewer)
 			{
-				_systemEnabled = true;
+				_energySaveModeDisabled = true;
 				return;
 			}
 
@@ -40,10 +42,22 @@ namespace Xamarin.Forms.Platform.Android
 			var powerSaveOn = powerManager.IsPowerSaveMode;
 
 			// If power saver is active, then animations will not run
-			_systemEnabled = !powerSaveOn;
+			_energySaveModeDisabled = !powerSaveOn;
 			
 			// Notify the ticker that this value has changed, so it can manage animations in progress
 			OnSystemEnabledChanged();
+		}
+
+		static bool IsAnimatorEnabled()
+		{
+			var resolver = global::Android.App.Application.Context?.ContentResolver;
+			if (resolver == null)
+			{
+				return false;
+			}
+
+			var scale = global::Android.Provider.Settings.Global.GetFloat(resolver, global::Android.Provider.Settings.Global.AnimatorDurationScale, 0);
+			return scale > 0;
 		}
 
 		public void Dispose()
