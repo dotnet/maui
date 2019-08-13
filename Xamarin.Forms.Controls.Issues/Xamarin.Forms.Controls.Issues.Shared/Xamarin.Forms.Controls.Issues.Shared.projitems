@@ -22,6 +22,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue7061.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7111.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellGestures.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellInsets.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewGrouping.cs" />

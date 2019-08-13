@@ -85,6 +85,16 @@ namespace Xamarin.Forms.Platform.WPF
 					return (double)System.Windows.Application.Current.Resources["FontSizeMedium"];
 				case NamedSize.Large:
 					return (double)System.Windows.Application.Current.Resources["FontSizeLarge"];
+				case NamedSize.Body:
+					return (double)System.Windows.Application.Current.Resources["FontSizeBody"];
+				case NamedSize.Caption:
+					return (double)System.Windows.Application.Current.Resources["FontSizeCaption"];
+				case NamedSize.Header:
+					return (double)System.Windows.Application.Current.Resources["FontSizeHeader"];
+				case NamedSize.Subtitle:
+					return (double)System.Windows.Application.Current.Resources["FontSizeSubtitle"];
+				case NamedSize.Title:
+					return (double)System.Windows.Application.Current.Resources["FontSizeTitle"];
 				default:
 					throw new ArgumentOutOfRangeException("size");
 			}
