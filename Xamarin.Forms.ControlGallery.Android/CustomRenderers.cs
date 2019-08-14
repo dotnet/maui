@@ -44,6 +44,7 @@ using Xamarin.Forms.Controls.Issues;
 [assembly: ExportRenderer(typeof(Issue4561.CustomView), typeof(Issue4561CustomViewRenderer))]
 
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.Issues.NoFlashTestNavigationPage), typeof(Xamarin.Forms.ControlGallery.Android.NoFlashTestNavigationPage))]
+[assembly: ExportRenderer(typeof(ShellGestures.TouchTestView), typeof(ShellGesturesTouchTestViewRenderer))]
 
 #if PRE_APPLICATION_CLASS
 #elif FORMS_APPLICATION_ACTIVITY
@@ -918,5 +919,48 @@ namespace Xamarin.Forms.ControlGallery.Android
 		}
 	}
 #pragma warning restore CS0618 // Type or member is obsolete
+
+
+	public class ShellGesturesTouchTestViewRenderer : ViewRenderer<ShellGestures.TouchTestView, global::Android.Views.View>, AView.IOnTouchListener
+	{
+		global::Android.Graphics.Paint paint;
+
+		public List<Point> pointList = new List<Point>();
+		public ShellGesturesTouchTestViewRenderer(Context context) : base(context)
+		{
+		}
+
+		public bool OnTouch(global::Android.Views.View v, MotionEvent e)
+		{
+			switch (e.Action)
+			{
+				case MotionEventActions.Up:
+					Element.Results.Text = Xamarin.Forms.Controls.Issues.ShellGestures.TouchListenerSuccess;
+					break;
+				case MotionEventActions.Cancel:
+					Element.Results.Text = "Fail";
+					break;
+			}
+			return true;
+		}
+
+		protected override void OnElementChanged(ElementChangedEventArgs<ShellGestures.TouchTestView> e)
+		{
+			base.OnElementChanged(e);
+			paint = new global::Android.Graphics.Paint();
+			if (e.NewElement != null)
+				SetOnTouchListener(this);
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			base.Dispose(disposing);
+
+			if(disposing)
+				SetOnTouchListener(null);
+
+			paint = null;
+		}
+	}
 }
 

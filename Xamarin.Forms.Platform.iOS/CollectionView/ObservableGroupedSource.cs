@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Platform.iOS
 					return null;
 				}
 
-				return group[indexPath.Row];
+				return group[(int)indexPath.Item];
 			}
 		}
 

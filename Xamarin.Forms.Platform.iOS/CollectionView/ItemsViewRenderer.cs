@@ -209,7 +209,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			var indexPath = DetermineIndex(args);
 
-			if (indexPath.Row < 0 || indexPath.Section < 0)
+			if (indexPath.Item < 0 || indexPath.Section < 0)
 			{
 				// Nothing found, nowhere to scroll to
 				return;

@@ -110,6 +110,9 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			base.OnAttachedToWindow();
 
+			if (Forms.IsLollipopOrNewer && Control != null)
+				Control.NestedScrollingEnabled = (Parent.GetParentOfType<NestedScrollView>() != null);
+
 			_isAttached = true;
 			_adapter.IsAttachedToWindow = _isAttached;
 			UpdateIsRefreshing(isInitialValue: true);
@@ -156,8 +159,6 @@ namespace Xamarin.Forms.Platform.Android
 				{
 					var ctx = Context;
 					nativeListView = CreateNativeControl();
-					if (Forms.IsLollipopOrNewer)
-						nativeListView.NestedScrollingEnabled = true;
 					_refresh = CreateNativePullToRefresh(ctx);
 					_refresh.SetOnRefreshListener(this);
 					_refresh.AddView(nativeListView, new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent));

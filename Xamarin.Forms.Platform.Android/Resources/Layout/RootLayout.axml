@@ -18,9 +18,7 @@
 				android:id="@+id/main.toolbar"
 				android:layout_width="match_parent"
 				android:layout_height="?attr/actionBarSize"
-				app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-				
-							/>
+				app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
 			
 		<android.support.design.widget.TabLayout 
 				android:id="@+id/main.tablayout"
@@ -31,9 +29,8 @@
 		
 	</android.support.design.widget.AppBarLayout>
 
-	<android.support.v4.widget.NestedScrollView
-		android:id="@+id/main.scrollview"
-		android:fillViewport="true"
+    <xamarin.forms.platform.android.appcompat.FormsViewPager
+		android:id="@+id/main.viewpager"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		app:layout_behavior="@string/appbar_scrolling_view_behavior" />
