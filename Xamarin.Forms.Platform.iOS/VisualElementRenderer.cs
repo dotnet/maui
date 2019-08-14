@@ -205,7 +205,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		}
 
 #if __MACOS__
-		public override void KeyUp(NSEvent theEvent)
+		public override void KeyDown(NSEvent theEvent)
 		{
 			if (theEvent.KeyCode == (ushort)NSKey.Tab)
 			{
