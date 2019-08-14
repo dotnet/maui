@@ -3,7 +3,7 @@ using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	internal static class VisualElementExtensions
+	public static class VisualElementExtensions
 	{
 		public static IVisualElementRenderer GetRenderer(this VisualElement self)
 		{
