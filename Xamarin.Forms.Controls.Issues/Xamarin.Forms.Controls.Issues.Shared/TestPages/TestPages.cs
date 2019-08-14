@@ -665,16 +665,25 @@ namespace Xamarin.Forms.Controls
 			}
 		}
 
-		public void ShowFlyout(string flyoutIcon = "OK")
+		public void ShowFlyout(string flyoutIcon = "OK", bool usingSwipe = false)
 		{
 			RunningApp.WaitForElement(flyoutIcon);
-			RunningApp.Tap(flyoutIcon);
+
+			if(usingSwipe)
+			{
+				var rect = RunningApp.ScreenBounds();
+				RunningApp.DragCoordinates(10, rect.CenterY, rect.CenterX, rect.CenterY);
+			}
+			else
+			{
+				RunningApp.Tap(flyoutIcon);
+			}
 		}
 
 
-		public void TapInFlyout(string text, string flyoutIcon = "OK")
+		public void TapInFlyout(string text, string flyoutIcon = "OK", bool usingSwipe = false)
 		{
-			ShowFlyout(flyoutIcon);
+			ShowFlyout(flyoutIcon, usingSwipe);
 			RunningApp.WaitForElement(text);
 			RunningApp.Tap(text);
 		}

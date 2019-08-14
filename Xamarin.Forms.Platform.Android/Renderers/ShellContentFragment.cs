@@ -112,7 +112,6 @@ namespace Xamarin.Forms.Platform.Android
 
 			_root = inflater.Inflate(Resource.Layout.ShellContent, null).JavaCast<CoordinatorLayout>();
 
-			var scrollview = _root.FindViewById<NestedScrollView>(Resource.Id.shellcontent_scrollview);
 			_toolbar = _root.FindViewById<Toolbar>(Resource.Id.shellcontent_toolbar);
 
 			_renderer = Platform.CreateRenderer(_page, Context);
@@ -120,7 +119,8 @@ namespace Xamarin.Forms.Platform.Android
 
 			_shellPageContainer = new ShellPageContainer(Context, _renderer);
 
-			scrollview.AddView(_shellPageContainer);
+			if(_root is ViewGroup vg)
+				vg.AddView(_shellPageContainer);
 
 			_toolbarTracker = _shellContext.CreateTrackerForToolbar(_toolbar);
 			_toolbarTracker.Page = _page;

@@ -112,8 +112,7 @@ namespace Xamarin.Forms.Platform.Android
 		Toolbar _toolbar;
 		IShellToolbarAppearanceTracker _toolbarAppearanceTracker;
 		IShellToolbarTracker _toolbarTracker;
-		ViewPager _viewPager;
-		NestedScrollView _scrollview;
+		FormsViewPager _viewPager;
 
 		public ShellSectionRenderer(IShellContext shellContext)
 		{
@@ -138,14 +137,10 @@ namespace Xamarin.Forms.Platform.Android
 			var root = inflater.Inflate(Resource.Layout.RootLayout, null).JavaCast<CoordinatorLayout>();
 
 			_toolbar = root.FindViewById<Toolbar>(Resource.Id.main_toolbar);
-			_scrollview = root.FindViewById<NestedScrollView>(Resource.Id.main_scrollview);
+			_viewPager = root.FindViewById<FormsViewPager>(Resource.Id.main_viewpager);
 			_tablayout = root.FindViewById<TabLayout>(Resource.Id.main_tablayout);
 
-			_viewPager = new FormsViewPager(Context)
-			{
-				LayoutParameters = new LP(LP.MatchParent, LP.MatchParent),
-				EnableGesture = false
-			};
+			_viewPager.EnableGesture = false;
 
 			_viewPager.AddOnPageChangeListener(this);
 			_viewPager.Id = Platform.GenerateViewId();
@@ -162,7 +157,6 @@ namespace Xamarin.Forms.Platform.Android
 			_toolbarTracker.Page = currentPage;
 
 			_viewPager.CurrentItem = currentIndex;
-			_scrollview.AddView(_viewPager);
 
 			if (shellSection.Items.Count == 1)
 			{
@@ -190,7 +184,6 @@ namespace Xamarin.Forms.Platform.Android
 				adapter.Dispose();
 
 				_viewPager.RemoveOnPageChangeListener(this);
-				_scrollview.RemoveView(_viewPager);
 
 				_toolbarAppearanceTracker.Dispose();
 				_tabLayoutAppearanceTracker.Dispose();
@@ -198,7 +191,6 @@ namespace Xamarin.Forms.Platform.Android
 				_tablayout.Dispose();
 				_toolbar.Dispose();
 				_viewPager.Dispose();
-				_scrollview.Dispose();
 				_rootView.Dispose();
 			}
 
@@ -208,7 +200,6 @@ namespace Xamarin.Forms.Platform.Android
 			_tablayout = null;
 			_toolbar = null;
 			_viewPager = null;
-			_scrollview = null;
 			_rootView = null;
 
 			base.OnDestroy();
