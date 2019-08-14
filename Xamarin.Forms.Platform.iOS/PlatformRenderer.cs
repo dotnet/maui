@@ -104,7 +104,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.ViewDidLoad();
 			SetNeedsStatusBarAppearanceUpdate();
-			if (Forms.IsiOS11OrNewer)
+			if (Forms.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 		}
 
@@ -199,7 +199,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.ViewDidLoad();
 			SetNeedsStatusBarAppearanceUpdate();
-			if (Forms.IsiOS11OrNewer)
+			if (Forms.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 		}
 	}

@@ -231,7 +231,7 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateBarTextColor();
 			UpdateUseLargeTitles();
 			UpdateHideNavigationBarSeparator();
-			if (Forms.IsiOS11OrNewer)
+			if (Forms.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
 			// If there is already stuff on the stack we need to push it
