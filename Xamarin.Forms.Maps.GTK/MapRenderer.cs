@@ -418,8 +418,10 @@ namespace Xamarin.Forms.Maps.GTK
                 if(pin.Position.Latitude == marker.Position.Lat &&
                     pin.Position.Longitude == marker.Position.Lng)
                 {
-                    pin.SendTap();
-                    break;
+#pragma warning disable CS0618
+	                pin.SendTap();
+#pragma warning restore CS0618
+					break;
                 }
             }
         }

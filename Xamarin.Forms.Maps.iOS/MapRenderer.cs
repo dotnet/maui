@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -8,7 +6,6 @@ using CoreLocation;
 using MapKit;
 using ObjCRuntime;
 using RectangleF = CoreGraphics.CGRect;
-using Foundation;
 
 #if __MOBILE__
 using UIKit;
@@ -71,6 +68,7 @@ namespace Xamarin.Forms.Maps.MacOS
 				}
 
 				var mkMapView = (MKMapView)Control;
+				mkMapView.DidSelectAnnotationView -= MkMapViewOnAnnotationViewSelected;
 				mkMapView.RegionChanged -= MkMapViewOnRegionChanged;
 				mkMapView.GetViewForAnnotation = null;
 				if (mkMapView.Delegate != null)
@@ -145,6 +143,7 @@ namespace Xamarin.Forms.Maps.MacOS
 					SetNativeControl(mapView);
 
 					mapView.GetViewForAnnotation = GetViewForAnnotation;
+					mapView.DidSelectAnnotationView += MkMapViewOnAnnotationViewSelected;
 					mapView.RegionChanged += MkMapViewOnRegionChanged;
 #if __MOBILE__
 					mapView.AddGestureRecognizer(_mapClickedGestureRecognizer = new UITapGestureRecognizer(OnMapClicked));
@@ -242,7 +241,7 @@ namespace Xamarin.Forms.Maps.MacOS
 			}
 
 #if __MOBILE__
-			var recognizer = new UITapGestureRecognizer(g => OnClick(annotation, g))
+			var recognizer = new UITapGestureRecognizer(g => OnCalloutClicked(annotation))
 			{
 				ShouldReceiveTouch = (gestureRecognizer, touch) =>
 				{
@@ -251,33 +250,50 @@ namespace Xamarin.Forms.Maps.MacOS
 				}
 			};
 #else
-			var recognizer = new NSClickGestureRecognizer(g => OnClick(annotation, g));
+			var recognizer = new NSClickGestureRecognizer(g => OnCalloutClicked(annotation));
 #endif
 			mapPin.AddGestureRecognizer(recognizer);
 		}
 
-#if __MOBILE__
-		void OnClick(object annotationObject, UITapGestureRecognizer recognizer)
-#else
-		void OnClick(object annotationObject, NSClickGestureRecognizer recognizer)
-#endif
+		protected Pin GetPinForAnnotation(IMKAnnotation annotation)
 		{
-			// https://bugzilla.xamarin.com/show_bug.cgi?id=26416
-			NSObject annotation = Runtime.GetNSObject(((IMKAnnotation)annotationObject).Handle);
-			if (annotation == null)
-				return;
-
-			// lookup pin
 			Pin targetPin = null;
-			foreach (Pin pin in ((Map)Element).Pins)
-			{
-				object target = pin.MarkerId;
-				if (target != annotation)
-					continue;
+			var map = (Map)Element;
 
-				targetPin = pin;
-				break;
+			for (int i = 0; i < map.Pins.Count; i++)
+			{
+				var pin = map.Pins[i];
+				if ((IMKAnnotation)pin.MarkerId == annotation)
+				{
+					targetPin = pin;
+					break;
+				}
 			}
+
+			return targetPin;
+		}
+
+		void MkMapViewOnAnnotationViewSelected(object sender, MKAnnotationViewEventArgs e)
+		{
+			var annotation = e.View.Annotation;
+			var pin = GetPinForAnnotation(annotation);
+
+			if (pin != null)
+			{
+				// SendMarkerClick() returns the value of PinClickedEventArgs.HideInfoWindow
+				// Hide the info window by deselecting the annotation
+				bool deselect = pin.SendMarkerClick();
+				if (deselect)
+				{
+					((MKMapView)Control).DeselectAnnotation(annotation, false);
+				}
+			}
+		}
+		
+		void OnCalloutClicked(IMKAnnotation annotation)
+		{
+			// lookup pin
+			Pin targetPin = GetPinForAnnotation(annotation);
 
 			// pin not found. Must have been activated outside of forms
 			if (targetPin == null)
@@ -288,7 +304,17 @@ namespace Xamarin.Forms.Maps.MacOS
 			if (_lastTouchedView is MKAnnotationView)
 				return;
 
+#pragma warning disable CS0618
 			targetPin.SendTap();
+#pragma warning restore CS0618
+
+			// SendInfoWindowClick() returns the value of PinClickedEventArgs.HideInfoWindow
+			// Hide the info window by deselecting the annotation
+			bool deselect = targetPin.SendInfoWindowClick();
+			if (deselect)
+			{
+				((MKMapView)Control).DeselectAnnotation(annotation, true);
+			}
 		}
 
 #if __MOBILE__

@@ -36,7 +36,9 @@ namespace Xamarin.Forms.Maps.WPF
 
 		void FormsPushPin_MouseDown(object sender, MouseButtonEventArgs e)
 		{
+#pragma warning disable CS0618
 			Pin.SendTap();
+#pragma warning restore CS0618
 		}
 
 		void PinPropertyChanged(object sender, PropertyChangedEventArgs e)

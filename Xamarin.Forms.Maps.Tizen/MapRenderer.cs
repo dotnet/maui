@@ -207,7 +207,9 @@ namespace Xamarin.Forms.Maps.Tizen
 				pin.MarkerId = nativePin;
 				nativePin.Clicked += (s, e) =>
 				{
+#pragma warning disable CS0618
 					pin.SendTap();
+#pragma warning restore CS0618
 				};
 				Control.Add(nativePin);
 				_pins.Add(pin);

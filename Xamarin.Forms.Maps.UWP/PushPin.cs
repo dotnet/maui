@@ -46,7 +46,10 @@ namespace Xamarin.Forms.Maps.UWP
 
 		void PushPinTapped(object sender, TappedRoutedEventArgs e)
 		{
+#pragma warning disable CS0618
 			_pin.SendTap();
+#pragma warning restore CS0618
+			_pin.SendMarkerClick();
 		}
 
 		void UpdateLocation()

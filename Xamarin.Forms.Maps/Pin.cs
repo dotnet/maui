@@ -65,7 +65,12 @@ namespace Xamarin.Forms.Maps
 			}
 		}
 
+		[Obsolete("This event is obsolete as of 4.3.0. Please use MarkerClicked and/or InfoWindowClicked instead.")]
 		public event EventHandler Clicked;
+
+		public event EventHandler<PinClickedEventArgs> MarkerClicked;
+
+		public event EventHandler<PinClickedEventArgs> InfoWindowClicked;
 
 		public override bool Equals(object obj)
 		{
@@ -101,6 +106,7 @@ namespace Xamarin.Forms.Maps
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Obsolete("This method is obsolete as of 4.3.0.")]
 		public bool SendTap()
 		{
 			EventHandler handler = Clicked;
@@ -109,6 +115,22 @@ namespace Xamarin.Forms.Maps
 
 			handler(this, EventArgs.Empty);
 			return true;
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool SendMarkerClick()
+		{
+			var args = new PinClickedEventArgs();
+			MarkerClicked?.Invoke(this, args);
+			return args.HideInfoWindow;
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool SendInfoWindowClick()
+		{
+			var args = new PinClickedEventArgs();
+			InfoWindowClicked?.Invoke(this, args);
+			return args.HideInfoWindow;
 		}
 
 		bool Equals(Pin other)

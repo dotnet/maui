@@ -10,6 +10,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -17,11 +18,16 @@
                    Placeholder="Search Address"
                    SearchButtonPressed="SearchForAddress" />
 
-        <Label x:Name="LastPinClickLabel"
-               Grid.Row="2" />
-        <Label x:Name="LastMapClickLabel"
-               Grid.Row="3" />
-        <ScrollView Grid.Row="4">
+        <Label
+            x:Name="LastMarkerClickLabel"
+            Grid.Row="2" />
+        <Label
+            x:Name="LastInfoWindowClickLabel"
+            Grid.Row="3" />
+        <Label
+            x:Name="LastMapClickLabel"
+            Grid.Row="4" />
+        <ScrollView Grid.Row="5">
             <StackLayout>
                 <Button Clicked="MapTypeClicked"
                         Text="Map Type" />
