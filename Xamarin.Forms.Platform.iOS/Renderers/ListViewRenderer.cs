@@ -944,6 +944,7 @@ namespace Xamarin.Forms.Platform.iOS
 			protected ListView List;
 			protected ITemplatedItemsView<Cell> TemplatedItemsView => List;
 			bool _isDragging;
+			bool _setupSelection;
 			bool _selectionFromNative;
 			bool _disposed;
 			bool _wasEmpty;
@@ -999,6 +1000,19 @@ namespace Xamarin.Forms.Platform.iOS
 				_isDragging = true;
 			}
 
+			void SetupSelection(UITableViewCell nativeCell, UITableView tableView)
+			{
+				if (!(nativeCell is ContextActionsCell))
+					return;
+
+				if (_setupSelection)
+					return;
+
+				ContextActionsCell.SetupSelection(tableView);
+
+				_setupSelection = true;
+			}
+
 			public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
 			{
 				Cell cell;
@@ -1035,6 +1049,8 @@ namespace Xamarin.Forms.Platform.iOS
 				}
 				else
 					throw new NotSupportedException();
+
+				SetupSelection(nativeCell, tableView);
 
 				if (List.IsSet(Specifics.SeparatorStyleProperty))
 				{
