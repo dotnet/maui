@@ -4,6 +4,7 @@ using Android.Util;
 using Android.Views;
 using System;
 using System.ComponentModel;
+using Xamarin.Forms.Internals;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
 
@@ -81,8 +82,11 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual void AttachFlyout(IShellContext context, AView content)
 		{
+			Profile.FrameBegin();
+
 			_content = content;
 
+			Profile.FramePartition("Create ContentRenderer");
 			_flyoutContent = context.CreateShellFlyoutContentRenderer();
 
 			// Depending on what you read the right edge of the drawer should be Max(56dp, actionBarSize)
@@ -97,6 +101,7 @@ namespace Xamarin.Forms.Platform.Android
 			// this is about landscape devices and google does not perfectly follow these
 			// rules... so we'll kind of just... do our best.
 
+			Profile.FramePartition("Fudge Width");
 			var metrics = Context.Resources.DisplayMetrics;
 			var width = Math.Min(metrics.WidthPixels, metrics.HeightPixels);
 
@@ -119,12 +124,19 @@ namespace Xamarin.Forms.Platform.Android
 			_flyoutContent.AndroidView.LayoutParameters =
 				new LayoutParams(width, LP.MatchParent) { Gravity = (int)GravityFlags.Start };
 
+			Profile.FramePartition("AddView Content");
 			AddView(content);
+
+			Profile.FramePartition("AddView Flyout");
 			AddView(_flyoutContent.AndroidView);
 
+			Profile.FramePartition("Add DrawerListener");
 			AddDrawerListener(this);
 
+			Profile.FramePartition("Add BehaviorObserver");
 			((IShellController)context.Shell).AddFlyoutBehaviorObserver(this);
+
+			Profile.FrameEnd();
 		}
 
 		protected virtual void OnShellPropertyChanged(object sender, PropertyChangedEventArgs e)
