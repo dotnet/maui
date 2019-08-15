@@ -38,7 +38,7 @@ namespace Xamarin.Forms
 				{
 					_logicalChildren = null;
 				}
-
+				ForceUpdateSize();
 				OnPropertyChanged();
 			}
 		}
