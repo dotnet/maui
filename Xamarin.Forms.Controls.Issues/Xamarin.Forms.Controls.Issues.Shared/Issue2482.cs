@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Threading;
+using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
@@ -60,6 +61,26 @@ namespace Xamarin.Forms.Controls.Issues
 				{
 					_result.IsVisible = true;
 				}
+			};
+
+			var labelRunsBackground = new Label() { Text = "This should start updating with the time in a few seconds" };
+			layout.Children.Add(labelRunsBackground);
+
+			Device.StartTimer(TimeSpan.FromSeconds(1), () =>
+			{
+				labelRunsBackground.Dispatcher.BeginInvokeOnMainThread(() => labelRunsBackground.Text = DateTime.Now.ToString("HH:mm:ss"));
+				return true;
+			});
+
+			var threadpoolButton = new Button { Text = "Update Instructions from Thread Pool" };
+			layout.Children.Add(threadpoolButton);
+
+			this.Dispatcher.BeginInvokeOnMainThread(() => { instructions.Text = "updated from thread pool 1"; });
+
+			threadpoolButton.Clicked += (o, a) => {
+				Task.Run(() => {
+					this.Dispatcher.BeginInvokeOnMainThread(() => { instructions.Text = "updated from thread pool 2"; });
+				});
 			};
 
 			layout.Children.Add(instructions);

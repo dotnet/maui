@@ -10,6 +10,7 @@ namespace Xamarin.Forms
 {
 	internal sealed class ListProxy : IReadOnlyList<object>, IListProxy, INotifyCollectionChanged
 	{
+		IDispatcher _dispatcher;
 		readonly ICollection _collection;
 		readonly IList _list;
 		readonly int _windowSize;
@@ -26,8 +27,9 @@ namespace Xamarin.Forms
 
 		int _windowIndex;
 
-		internal ListProxy(IEnumerable enumerable, int windowSize = int.MaxValue)
+		internal ListProxy(IEnumerable enumerable, int windowSize = int.MaxValue, IDispatcher dispatcher = null)
 		{
+			_dispatcher = dispatcher;
 			_windowSize = windowSize;
 
 			ProxiedEnumerable = enumerable;
@@ -213,16 +215,13 @@ namespace Xamarin.Forms
 				sync.Callback(ProxiedEnumerable, sync.Context, () =>
 				{
 					e = e.WithCount(Count);
-					Device.BeginInvokeOnMainThread(action);
+					_dispatcher.Dispatch(action);
 				}, false);
 			}
 			else
 			{
 				e = e.WithCount(Count);
-				if (Device.IsInvokeRequired)
-					Device.BeginInvokeOnMainThread(action);
-				else
-					action();
+				_dispatcher.Dispatch(action);
 			}
 		}
 

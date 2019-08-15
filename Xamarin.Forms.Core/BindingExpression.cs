@@ -727,14 +727,20 @@ namespace Xamarin.Forms
 					}
 				}
 
-				if (Device.IsInvokeRequired)
+				Action action = () => _expression.Apply();
+				if (_expression._weakTarget.TryGetTarget(out BindableObject obj) && obj.Dispatcher != null && obj.Dispatcher.IsInvokeRequired)
 				{
-					Device.BeginInvokeOnMainThread(() => _expression.Apply());
+					obj.Dispatcher.BeginInvokeOnMainThread(action);
+				}
+				else if(Device.IsInvokeRequired)
+				{
+					Device.BeginInvokeOnMainThread(action);
 				}
 				else
 				{
-					_expression.Apply();
+					action();
 				}
+
 			}
 
 			public bool TryGetValue(object source, out object value)

@@ -6,6 +6,9 @@ namespace Xamarin.Forms.Platform.UWP
 {
 	public abstract class WindowsBasePage : Windows.UI.Xaml.Controls.Page
 	{
+
+		Application _application;
+
 		public WindowsBasePage()
 		{
 			if (!Windows.ApplicationModel.DesignMode.DesignModeEnabled)
@@ -24,19 +27,28 @@ namespace Xamarin.Forms.Platform.UWP
 			if (application == null)
 				throw new ArgumentNullException("application");
 
+			_application = application;
 			Application.SetCurrentApplication(application);
-			Platform = CreatePlatform();
-			if (Application.Current.MainPage != null)
-				Platform.SetPage(Application.Current.MainPage);
+			if (_application.MainPage != null)
+				RegisterWindow(_application.MainPage);
 			application.PropertyChanged += OnApplicationPropertyChanged;
 
-			Application.Current.SendStart();
+			_application.SendStart();
+		}
+
+		protected void RegisterWindow(Page page)
+		{
+			if (page == null)
+				throw new ArgumentNullException("page");
+
+			Platform = CreatePlatform();
+			Platform.SetPage(page);
 		}
 
 		void OnApplicationPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == "MainPage")
-				Platform.SetPage(Application.Current.MainPage);
+				Platform.SetPage(_application.MainPage);
 		}
 
 		void OnApplicationResuming(object sender, object e)

@@ -9,6 +9,24 @@ namespace Xamarin.Forms
 {
 	public abstract class BindableObject : INotifyPropertyChanged, IDynamicResourceHandler
 	{
+		IDispatcher _dispatcher;
+		public virtual IDispatcher Dispatcher
+		{
+			get
+			{
+				if (_dispatcher == null)
+				{
+					_dispatcher = this.GetDispatcher();
+				}
+
+				return _dispatcher;
+			}
+			internal set
+			{
+				_dispatcher = value;
+			}
+		}
+
 		readonly Dictionary<BindableProperty, BindablePropertyContext> _properties = new Dictionary<BindableProperty, BindablePropertyContext>(4);
 		bool _applying;
 		object _inheritedContext;

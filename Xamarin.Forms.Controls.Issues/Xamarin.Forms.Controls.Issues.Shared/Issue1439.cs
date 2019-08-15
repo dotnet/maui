@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Controls.Issues
 		const string lblGroup = "lblGroup";
 
 		StackLayout _layout = new StackLayout { Spacing = 30, VerticalOptions = LayoutOptions.FillAndExpand };
-		ListView _listView = new ListView { VerticalOptions = LayoutOptions.Start, IsGroupingEnabled = true, RowHeight = 50, HeightRequest = 300 };
+		ListView _listView;
 		Label _label1 = new Label { VerticalOptions = LayoutOptions.Start };
 		Label _label2 = new Label { VerticalOptions = LayoutOptions.Start, AutomationId = lblItem };
 		Label _label3 = new Label { VerticalOptions = LayoutOptions.Start, AutomationId = lblGroup };
@@ -42,6 +42,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			BindingContext = new ViewModel();
 
+			_listView = new ListView { VerticalOptions = LayoutOptions.Start, IsGroupingEnabled = true, RowHeight = 50, HeightRequest = 300 };
 			_listView.ItemTapped += _listView_ItemTapped;
 			_listView.SetBinding(ListView.ItemsSourceProperty, new Binding(nameof(ViewModel.Items)));
 			_listView.SetBinding(ListView.SelectedItemProperty, new Binding(nameof(ViewModel.SelectedItem)));

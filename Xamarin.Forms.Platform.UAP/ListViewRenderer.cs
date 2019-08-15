@@ -207,7 +207,10 @@ namespace Xamarin.Forms.Platform.UWP
 				ReloadData();
 			}
 
-			Device.BeginInvokeOnMainThread(() => List?.UpdateLayout());
+			if (Element.Dispatcher == null)
+				Device.BeginInvokeOnMainThread(() => List?.UpdateLayout());
+			else
+				Element.Dispatcher.BeginInvokeOnMainThread(() => List?.UpdateLayout());
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

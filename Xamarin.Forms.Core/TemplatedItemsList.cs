@@ -62,9 +62,9 @@ namespace Xamarin.Forms.Internals
 
 			IEnumerable source = GetItemsViewSource();
 			if (source != null)
-				ListProxy = new ListProxy(source);
+				ListProxy = new ListProxy(source, dispatcher: _itemsView.Dispatcher);
 			else
-				ListProxy = new ListProxy(new object[0]);
+				ListProxy = new ListProxy(new object[0], dispatcher: _itemsView.Dispatcher);
 		}
 
 		internal TemplatedItemsList(TemplatedItemsList<TView, TItem> parent, IEnumerable itemSource, TView itemsView, BindableProperty itemTemplateProperty, int windowSize = int.MaxValue)
@@ -82,11 +82,11 @@ namespace Xamarin.Forms.Internals
 
 			if (itemSource != null)
 			{
-				ListProxy = new ListProxy(itemSource, windowSize);
+				ListProxy = new ListProxy(itemSource, windowSize, _itemsView.Dispatcher);
 				ListProxy.CollectionChanged += OnProxyCollectionChanged;
 			}
 			else
-				ListProxy = new ListProxy(new object[0]);
+				ListProxy = new ListProxy(new object[0], dispatcher: _itemsView.Dispatcher);
 		}
 
 		event PropertyChangedEventHandler ITemplatedItemsList<TItem>.PropertyChanged
@@ -937,9 +937,9 @@ namespace Xamarin.Forms.Internals
 
 			IEnumerable itemSource = GetItemsViewSource();
 			if (itemSource == null)
-				ListProxy = new ListProxy(new object[0]);
+				ListProxy = new ListProxy(new object[0], dispatcher: _itemsView.Dispatcher);
 			else
-				ListProxy = new ListProxy(itemSource);
+				ListProxy = new ListProxy(itemSource, dispatcher: _itemsView.Dispatcher);
 
 			ListProxy.CollectionChanged += OnProxyCollectionChanged;
 			OnProxyCollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));

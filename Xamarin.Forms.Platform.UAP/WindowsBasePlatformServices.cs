@@ -124,23 +124,7 @@ namespace Xamarin.Forms.Platform.UWP
 			return new WindowsIsolatedStorage(ApplicationData.Current.LocalFolder);
 		}
 
-		public bool IsInvokeRequired
-		{
-			get
-			{
-				if (CoreApplication.Views.Count == 1)
-				{
-					return !_dispatcher.HasThreadAccess;
-				}
-
-				if (Window.Current?.Dispatcher != null)
-				{
-					return !Window.Current.Dispatcher.HasThreadAccess;
-				}
-
-				return true;
-			}
-		}
+		public bool IsInvokeRequired => !_dispatcher?.HasThreadAccess ?? true;
 
 		public string RuntimePlatform => Device.UWP;
 

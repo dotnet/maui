@@ -289,8 +289,10 @@ namespace Xamarin.Forms.Platform.UWP
 
 		async void SetCurrent(Page newPage, bool popping = false, Action completedCallback = null)
 		{
-			if (newPage == _currentPage)
-				return;
+			try
+			{
+				if (newPage == _currentPage)
+					return;
 
 #pragma warning disable CS0618 // Type or member is obsolete
 			// The Platform property is no longer necessary, but we have to set it because some third-party
@@ -304,30 +306,41 @@ namespace Xamarin.Forms.Platform.UWP
 				IVisualElementRenderer previousRenderer = GetRenderer(previousPage);
 				_container.Children.Remove(previousRenderer.ContainerElement);
 
-				if (popping)
-				{
-					previousPage.Cleanup();
-					// Un-parent the page; otherwise the Resources Changed Listeners won't be unhooked and the 
-					// page will leak 
-					previousPage.Parent = null;
+					if (popping)
+					{
+						previousPage.Cleanup();
+						// Un-parent the page; otherwise the Resources Changed Listeners won't be unhooked and the 
+						// page will leak 
+						previousPage.Parent = null;
+					}
 				}
+
+				newPage.Layout(ContainerBounds);
+
+				IVisualElementRenderer pageRenderer = newPage.GetOrCreateRenderer();
+				_container.Children.Add(pageRenderer.ContainerElement);
+
+				pageRenderer.ContainerElement.Width = _container.ActualWidth;
+				pageRenderer.ContainerElement.Height = _container.ActualHeight;
+
+				completedCallback?.Invoke();
+
+				_currentPage = newPage;
+
+				UpdateToolbarTracker();
+
+				await UpdateToolbarItems();
 			}
-
-			newPage.Layout(ContainerBounds);
-
-			IVisualElementRenderer pageRenderer = newPage.GetOrCreateRenderer();
-			_container.Children.Add(pageRenderer.ContainerElement);
-
-			pageRenderer.ContainerElement.Width = _container.ActualWidth;
-			pageRenderer.ContainerElement.Height = _container.ActualHeight;
-
-			completedCallback?.Invoke();
-
-			_currentPage = newPage;
-
-			UpdateToolbarTracker();
-
-			await UpdateToolbarItems();
+			catch(Exception error)
+			{
+				//This exception prevents the Main Page from being changed in a child 
+				//window or a different thread, except on the Main thread. 
+				//HEX 0x8001010E 
+				if (error.HResult == -2147417842)
+					throw new InvalidOperationException("Changing the current page is only allowed if it's being called from the same UI thread." +
+						"Please ensure that the new page is in the same UI thread as the current page.");
+				throw error;
+			}
 		}
 
 		async void OnToolbarItemsChanged(object sender, EventArgs e)

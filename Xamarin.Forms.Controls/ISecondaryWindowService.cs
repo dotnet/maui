@@ -8,6 +8,5 @@ namespace Xamarin.Forms.Controls
 	public interface ISecondaryWindowService
 	{
 		Task OpenSecondaryWindow(Type pageType);
-		Task OpenSecondaryWindow(ContentPage page);
 	}
 }

@@ -386,6 +386,9 @@ namespace Xamarin.Forms.Controls
 		public IApp RunningApp => AppSetup.RunningApp;
 
 		protected virtual bool Isolate => false;
+
+		IDispatcher _dispatcher = new FallbackDispatcher();
+		public override IDispatcher Dispatcher { get => _dispatcher; }
 #endif
 
 		protected TestCarouselPage()
@@ -527,6 +530,9 @@ namespace Xamarin.Forms.Controls
 		public IApp RunningApp => AppSetup.RunningApp;
 
 		protected virtual bool Isolate => false;
+
+		IDispatcher _dispatcher = new FallbackDispatcher();
+		public override IDispatcher Dispatcher { get => _dispatcher; }
 #endif
 
 		protected TestTabbedPage()

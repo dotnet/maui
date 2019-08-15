@@ -21,23 +21,10 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			await newView.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
 			{
 				var frame = new Windows.UI.Xaml.Controls.Frame();
-				frame.Navigate(pageType);
-				Window.Current.Content = frame;
-				Window.Current.Activate();
 
-				newViewId = ApplicationView.GetForCurrentView().Id;
-			});
-			bool viewShown = await ApplicationViewSwitcher.TryShowAsStandaloneAsync(newViewId);
-		}
-
-		public async Task OpenSecondaryWindow(ContentPage page)
-		{
-			CoreApplicationView newView = CoreApplication.CreateNewView();
-			int newViewId = 0;
-			await newView.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-			{
-				var frame = new Windows.UI.Xaml.Controls.Frame();
-				frame.Navigate(page);
+				//The page instance must be created inside the new UI Thread.
+				ContentPage instance = (ContentPage)Activator.CreateInstance(pageType);
+				frame.Navigate(instance);
 				Window.Current.Content = frame;
 				Window.Current.Activate();
 

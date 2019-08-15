@@ -14,6 +14,9 @@ namespace Xamarin.Forms
 	{
 		Task<IDictionary<string, object>> _propertiesTask;
 		readonly Lazy<PlatformConfigurationRegistry<Application>> _platformConfigurationRegistry;
+
+		public override IDispatcher Dispatcher => this.GetDispatcher();
+
 		IAppIndexingProvider _appIndexProvider;
 		ReadOnlyCollection<Element> _logicalChildren;
 		Page _mainPage;
@@ -28,9 +31,9 @@ namespace Xamarin.Forms
 			var f = false;
 			if (f)
 				Loader.Load();
-			NavigationProxy = new NavigationImpl(this);
-			SetCurrentApplication(this);
 
+			SetCurrentApplication(this);
+			NavigationProxy = new NavigationImpl(this);
 			SystemResources = DependencyService.Get<ISystemResourcesProvider>().GetSystemResources();
 			SystemResources.ValuesChanged += OnParentResourcesChanged;
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Application>>(() => new PlatformConfigurationRegistry<Application>(this));
@@ -177,9 +180,9 @@ namespace Xamarin.Forms
 
 		public async Task SavePropertiesAsync()
 		{
-			if (Device.IsInvokeRequired)
+			if (Dispatcher.IsInvokeRequired)
 			{
-				Device.BeginInvokeOnMainThread(SaveProperties);
+				Dispatcher.BeginInvokeOnMainThread(SaveProperties);
 			}
 			else
 			{
@@ -190,9 +193,9 @@ namespace Xamarin.Forms
 		// Don't use this unless there really is no better option
 		internal void SavePropertiesAsFireAndForget()
 		{
-			if (Device.IsInvokeRequired)
+			if (Dispatcher.IsInvokeRequired)
 			{
-				Device.BeginInvokeOnMainThread(SaveProperties);
+				Dispatcher.BeginInvokeOnMainThread(SaveProperties);
 			}
 			else
 			{

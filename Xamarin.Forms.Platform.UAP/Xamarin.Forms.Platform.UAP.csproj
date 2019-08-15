@@ -42,11 +42,14 @@
     <Compile Include="AccessibilityExtensions.cs" />
     <Compile Include="CollectionView\ItemsViewRenderer.cs" />
     <Compile Include="CollectionView\SelectableItemsViewRenderer.cs" />
+    <Compile Include="ColorExtensions.cs" />
+    <Compile Include="DispatcherProvider.cs" />
     <Compile Include="Extensions\ImageExtensions.cs" />
     <Compile Include="FormsCheckBox.cs" />
     <Compile Include="IImageVisualElementRenderer.cs" />
     <Compile Include="ImageButtonRenderer.cs" />
     <Compile Include="CollectionView\CollectionViewRenderer.cs" />
+    <Compile Include="Dispatcher.cs" />
     <Compile Include="FormsCancelButton.cs" />
     <Compile Include="AlertDialog.cs" />
     <Compile Include="IDontGetFocus.cs" />
@@ -124,7 +127,6 @@
     <Compile Include="CellControl.cs" />
     <Compile Include="CollapseWhenEmptyConverter.cs" />
     <Compile Include="ColorConverter.cs" />
-    <Compile Include="ColorExtensions.cs" />
     <Compile Include="DatePickerRenderer.cs" />
     <Compile Include="DefaultRenderer.cs" />
     <Compile Include="EditorRenderer.cs" />

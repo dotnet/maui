@@ -563,7 +563,6 @@ namespace Xamarin.Forms.Controls
 							GC.Collect ();
 						})
 					}
-
 				}
 			};
 
@@ -571,7 +570,7 @@ namespace Xamarin.Forms.Controls
 			if (secondaryWindowService != null)
 			{
 				var openSecondWindowButton = new Button() { Text = "Open Secondary Window" };
-				openSecondWindowButton.Clicked += (obj, args) => { secondaryWindowService.OpenSecondaryWindow(new Issue2482()); };
+				openSecondWindowButton.Clicked += (obj, args) => { secondaryWindowService.OpenSecondaryWindow(typeof(Issue2482)); };
 				stackLayout.Children.Add(openSecondWindowButton);
 			}
 

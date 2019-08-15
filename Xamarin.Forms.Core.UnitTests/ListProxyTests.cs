@@ -257,7 +257,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void SynchronizedCollectionAdd()
 		{
 			bool invoked = false;
-			Device.PlatformServices  = new MockPlatformServices (invokeOnMainThread: action => {
+			Device.PlatformServices  = new MockPlatformServices (isInvokeRequired:true, invokeOnMainThread: action => {
 				invoked = true;
 				action();
 			});
