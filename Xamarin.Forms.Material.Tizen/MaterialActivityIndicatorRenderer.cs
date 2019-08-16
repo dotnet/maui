@@ -2,7 +2,6 @@
 using Xamarin.Forms.Platform.Tizen;
 using Xamarin.Forms.Material.Tizen;
 using Tizen.NET.MaterialComponents;
-using TForms = Xamarin.Forms.Platform.Tizen.Forms;
 
 [assembly: ExportRenderer(typeof(ActivityIndicator), typeof(MaterialActivityIndicatorRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
 namespace Xamarin.Forms.Material.Tizen
@@ -13,7 +12,7 @@ namespace Xamarin.Forms.Material.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new MActivityIndicator(TForms.NativeParent));
+				SetNativeControl(new MActivityIndicator(Forms.NativeParent));
 			}
 
 			base.OnElementChanged(e);

@@ -1,3 +1,4 @@
+using Xamarin.Forms;
 using Xamarin.Forms.Controls;
 using Xamarin.Forms.ControlGallery.Tizen;
 using Xamarin.Forms.Platform.Tizen;

@@ -1,4 +1,4 @@
-namespace Xamarin.Forms.Platform.Tizen
+namespace Xamarin.Forms
 {
 	public enum TizenTitleBarVisibility
 	{
