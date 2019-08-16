@@ -37,6 +37,7 @@ namespace Xamarin.Forms
 		static bool? s_isiOS10OrNewer;
 		static bool? s_isiOS11OrNewer;
 		static bool? s_respondsTosetNeedsUpdateOfHomeIndicatorAutoHidden;
+		static bool? s_isiOS13OrNewer;
 #endif
 
 #if __MOBILE__
@@ -78,6 +79,16 @@ namespace Xamarin.Forms
 				if (!s_respondsTosetNeedsUpdateOfHomeIndicatorAutoHidden.HasValue)
 					s_respondsTosetNeedsUpdateOfHomeIndicatorAutoHidden = new UIViewController().RespondsToSelector(new ObjCRuntime.Selector("setNeedsUpdateOfHomeIndicatorAutoHidden"));
 				return s_respondsTosetNeedsUpdateOfHomeIndicatorAutoHidden.Value;
+			}
+		}
+
+		internal static bool IsiOS13OrNewer
+		{
+			get
+			{
+				if (!s_isiOS13OrNewer.HasValue)
+					s_isiOS13OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(13, 0);
+				return s_isiOS13OrNewer.Value;
 			}
 		}
 #endif
