@@ -273,6 +273,8 @@ namespace Xamarin.Forms
 				y = () => 0;
 
 			Func<double> width;
+			Func<double> height = null;
+
 			if (widthConstraint != null)
 			{
 				width = () => widthConstraint.Compute(this);
@@ -280,9 +282,8 @@ namespace Xamarin.Forms
 					parents.AddRange(widthConstraint.RelativeTo);
 			}
 			else
-				width = () => view.Measure(Width, Height, MeasureFlags.IncludeMargins).Request.Width;
+				width = () => view.Measure(Width, heightConstraint != null ? height() : Height, MeasureFlags.IncludeMargins).Request.Width;
 
-			Func<double> height;
 			if (heightConstraint != null)
 			{
 				height = () => heightConstraint.Compute(this);
@@ -290,7 +291,7 @@ namespace Xamarin.Forms
 					parents.AddRange(heightConstraint.RelativeTo);
 			}
 			else
-				height = () => view.Measure(Width, Height, MeasureFlags.IncludeMargins).Request.Height;
+				height = () => view.Measure(widthConstraint != null ? width() : Width, Height, MeasureFlags.IncludeMargins).Request.Height;
 
 			BoundsConstraint bounds = BoundsConstraint.FromExpression(() => new Rectangle(x(), y(), width(), height()), parents.Distinct().ToArray());
 			SetBoundsConstraint(view, bounds);
