@@ -72,6 +72,9 @@ namespace Xamarin.Forms.Platform.UWP
 					element.LayoutUpdated -= SetInitialRtlPosition;
 				}
 			}
+
+			if (_currentView != null)
+				_currentView.Cleanup();
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<ScrollView> e)
