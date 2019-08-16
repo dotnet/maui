@@ -16,6 +16,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		int? _defaultLabelFor;
 		bool _disposed;
 		Label _element;
+		// Do not dispose _labelTextColorDefault
 		readonly ColorStateList _labelTextColorDefault;
 		int _lastConstraintHeight;
 		int _lastConstraintWidth;
@@ -196,7 +197,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				}
 
 				_spannableString?.Dispose();
-				_labelTextColorDefault?.Dispose();
 
 				if (Element != null)
 				{
