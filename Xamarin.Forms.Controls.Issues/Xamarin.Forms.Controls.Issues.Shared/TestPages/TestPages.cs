@@ -637,8 +637,33 @@ namespace Xamarin.Forms.Controls
 
 			Items.Add(item);
 			return page;
-
 		}
+
+
+		public ShellItem AddContentPage(ContentPage contentPage)
+		{
+			ContentPage page = new ContentPage();
+			ShellItem item = new ShellItem()
+			{
+				Items =
+				{
+					new ShellSection()
+					{
+						Items =
+						{
+							new ShellContent()
+							{
+								Content = contentPage
+							}
+						}
+					}
+				}
+			};
+
+			Items.Add(item);
+			return item;
+		}
+
 #if UITEST
 		[SetUp]
 		public void Setup()
