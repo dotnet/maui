@@ -174,19 +174,39 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.ViewDidLayoutSubviews();
 
-			if (View.Subviews.Length < 2)
+			bool layoutMaster = false;
+			bool layoutDetails = false;
+
+			if (Forms.IsiOS13OrNewer)
+			{
+				layoutMaster = _masterController?.View?.Superview != null;
+				layoutDetails = _detailController?.View?.Superview != null;
+			}
+			else if (View.Subviews.Length < 2)
+			{
 				return;
+			}
+			else
+			{
+				layoutMaster = true;
+				layoutDetails = true;
+			}
 
-			var detailsBounds = _detailController.View.Frame;
-			var masterBounds = _masterController.View.Frame;
+			if (layoutMaster)
+			{
+				var masterBounds = _masterController.View.Frame;
+				_masterWidth = (nfloat)Math.Max(_masterWidth, masterBounds.Width);
 
-			_masterWidth = (nfloat)Math.Max(_masterWidth, masterBounds.Width);
+				if (!masterBounds.IsEmpty)
+					MasterDetailPage.MasterBounds = new Rectangle(0, 0, _masterWidth, masterBounds.Height);
+			}
 
-			if (!masterBounds.IsEmpty)
-				MasterDetailPage.MasterBounds = new Rectangle(0, 0, _masterWidth, masterBounds.Height);
-
-			if (!detailsBounds.IsEmpty)
-				MasterDetailPage.DetailBounds = new Rectangle(0, 0, detailsBounds.Width, detailsBounds.Height);
+			if (layoutDetails)
+			{
+				var detailsBounds = _detailController.View.Frame;
+				if (!detailsBounds.IsEmpty)
+					MasterDetailPage.DetailBounds = new Rectangle(0, 0, detailsBounds.Width, detailsBounds.Height);
+			}
 		}
 
 		public override void ViewDidLoad()
