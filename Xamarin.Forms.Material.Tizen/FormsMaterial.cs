@@ -1,5 +1,4 @@
-﻿using System;
-using Tizen.NET.MaterialComponents;
+﻿using Tizen.NET.MaterialComponents;
 using Xamarin.Forms.Material.Tizen;
 
 namespace Xamarin.Forms

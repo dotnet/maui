@@ -26,6 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue7061.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7111.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellGestures.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ShellBackButtonBehavior.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellInsets.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewGrouping.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5412.cs" />
@@ -42,6 +43,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59172.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FlagTestHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue5886.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6260.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5766.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewBoundMultiSelection.cs" />
@@ -549,6 +551,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla39458.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla39853.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MultipleClipToBounds.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue6994.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_TemplateMarkup.xaml.cs">
       <DependentUpon>_TemplateMarkup.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -1322,6 +1325,9 @@
     </Compile>
     <Compile Update="$(MSBuildThisFileDirectory)Issue6644.xaml.cs">
       <DependentUpon>Issue6644.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="$(MSBuildThisFileDirectory)Issue6254.xaml.cs">
+      <DependentUpon>Issue6254.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>

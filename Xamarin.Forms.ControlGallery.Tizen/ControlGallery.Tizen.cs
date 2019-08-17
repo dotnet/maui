@@ -1,3 +1,4 @@
+using Xamarin.Forms;
 using Xamarin.Forms.Platform.Tizen;
 using Xamarin.Forms.Controls;
 using ElmSharp;
@@ -21,8 +22,8 @@ namespace Xamarin.Forms.ControlGallery.Tizen
 		{
 			var app = new MainApplication();
 			FormsMaps.Init("HERE", "write-your-API-key-here");
-			global::Xamarin.Forms.Platform.Tizen.Forms.SetFlags("CollectionView_Experimental", "Shell_Experimental");
-			global::Xamarin.Forms.Platform.Tizen.Forms.Init(app);
+			Forms.SetFlags("CollectionView_Experimental", "Shell_Experimental");
+			Forms.Init(app);
 			FormsMaterial.Init();
 			app.Run(args);
 		}

@@ -4,13 +4,14 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.Platform.Tizen;
 using ElmSharp;
 using Tizen.Applications;
 using TSystemInfo = Tizen.System.Information;
 using ELayout = ElmSharp.Layout;
 using DeviceOrientation = Xamarin.Forms.Internals.DeviceOrientation;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace Xamarin.Forms
 {
 	public static class Forms
 	{

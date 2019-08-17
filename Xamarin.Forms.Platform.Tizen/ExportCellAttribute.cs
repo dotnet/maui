@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace Xamarin.Forms
 {
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 	public sealed class ExportCellAttribute : HandlerAttribute

@@ -2,7 +2,6 @@
 using Xamarin.Forms.Platform.Tizen;
 using Xamarin.Forms.Platform.Tizen.Native;
 using Xamarin.Forms.Material.Tizen;
-using TForms = Xamarin.Forms.Platform.Tizen.Forms;
 using XFButton = Xamarin.Forms.Button;
 using EButton = ElmSharp.Button;
 
@@ -13,7 +12,7 @@ namespace Xamarin.Forms.Material.Tizen
 	{
 		protected override EButton CreateNativeControl()
 		{
-			return new MaterialButton(TForms.NativeParent);
+			return new MaterialButton(Forms.NativeParent);
 		}
 	}
 }

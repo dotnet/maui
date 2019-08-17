@@ -1,10 +1,9 @@
-using System.IO;
+using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics;
 using Android.Util;
-using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -26,8 +25,8 @@ namespace Xamarin.Forms.Platform.Android
 					TextAlign = Paint.Align.Left,
 					AntiAlias = true,
 				};
-				using (var typeface = fontsource.FontFamily.ToTypeFace())
-					paint.SetTypeface(typeface);
+
+				paint.SetTypeface(fontsource.FontFamily.ToTypeFace());
 
 				var width = (int)(paint.MeasureText(fontsource.Glyph) + .5f);
 				var baseline = (int)(-paint.Ascent() + .5f);

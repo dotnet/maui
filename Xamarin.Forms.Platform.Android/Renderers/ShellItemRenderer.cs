@@ -169,7 +169,7 @@ namespace Xamarin.Forms.Platform.Android
 
 					using (var text = new TextView(Context))
 					{
-						text.SetTypeface(Typeface.Create("sans-serif-medium", TypefaceStyle.Normal), TypefaceStyle.Normal);
+						text.Typeface = "sans-serif-medium".ToTypeFace();
 						text.SetTextColor(AColor.Black);
 						text.Text = shellContent.Title;
 						lp = new LinearLayout.LayoutParams(0, LP.WrapContent)

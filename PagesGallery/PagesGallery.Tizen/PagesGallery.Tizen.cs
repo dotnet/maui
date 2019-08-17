@@ -1,4 +1,5 @@
-﻿using Xamarin.Forms.Platform.Tizen;
+﻿using Xamarin.Forms;
+using Xamarin.Forms.Platform.Tizen;
 
 namespace PagesGallery.Tizen
 {
@@ -13,7 +14,7 @@ namespace PagesGallery.Tizen
 		static void Main(string[] args)
 		{
 			var app = new Program();
-			global::Xamarin.Forms.Platform.Tizen.Forms.Init(app);
+			Forms.Init(app);
 			app.Run(args);
 		}
 	}

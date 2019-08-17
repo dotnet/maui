@@ -580,7 +580,7 @@ namespace Xamarin.Forms.Platform.Android
 				ClearMasterDetailToggle();
 				return;
 			}
-			if (!CurrentMasterDetailPage.ShouldShowToolbarButton() || CurrentMasterDetailPage.Master.IconImageSource.IsEmpty ||
+			if (!CurrentMasterDetailPage.ShouldShowToolbarButton() || (CurrentMasterDetailPage.Master.IconImageSource?.IsEmpty ?? true) ||
 				(MasterDetailPageController.ShouldShowSplitMode && CurrentMasterDetailPage.IsPresented))
 			{
 				//clear out existing icon;

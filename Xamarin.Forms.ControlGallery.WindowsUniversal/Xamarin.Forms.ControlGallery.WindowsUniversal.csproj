@@ -128,6 +128,7 @@
     <Compile Include="_2489CustomRenderer.cs" />
     <Compile Include="_57114Renderer.cs" />
     <Compile Include="_58406EffectRenderer.cs" />
+    <Compile Include="_5886DependencyService.cs" />
     <Compile Include="_60122ImageRenderer.cs" />
     <Content Include="Assets\Fonts\OFL.txt" />
     <Content Include="bank.png" />

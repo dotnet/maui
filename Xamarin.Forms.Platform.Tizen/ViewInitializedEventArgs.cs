@@ -1,7 +1,7 @@
 using System;
 using ElmSharp;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace Xamarin.Forms
 {
 	public class ViewInitializedEventArgs : EventArgs
 	{

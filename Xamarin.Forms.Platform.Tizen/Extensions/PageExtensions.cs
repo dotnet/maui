@@ -7,7 +7,7 @@ namespace Xamarin.Forms
 	{
 		public static EvasObject CreateEvasObject(this Page page, EvasObject parent, bool hasAlpha = false)
 		{
-			if (!Platform.Tizen.Forms.IsInitialized)
+			if (!Forms.IsInitialized)
 				throw new InvalidOperationException("call Forms.Init() before this");
 
 			if (parent == null)

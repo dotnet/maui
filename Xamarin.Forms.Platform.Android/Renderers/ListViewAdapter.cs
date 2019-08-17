@@ -411,7 +411,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			Cell item = GetPrototypicalCell(position);
-			return item.IsEnabled;
+			return item?.IsEnabled ?? false;
 		}
 
 		protected override void Dispose(bool disposing)
