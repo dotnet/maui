@@ -41,6 +41,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59172.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FlagTestHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue5886.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6260.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5766.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewBoundMultiSelection.cs" />
@@ -1309,6 +1310,9 @@
     </Compile>
     <Compile Update="$(MSBuildThisFileDirectory)Issue6644.xaml.cs">
       <DependentUpon>Issue6644.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="$(MSBuildThisFileDirectory)Issue6254.xaml.cs">
+      <DependentUpon>Issue6254.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
