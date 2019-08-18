@@ -26,7 +26,7 @@ Platform.GTK  | `Xamarin.Forms.Platform.GTK`  | [![NuGet](https://img.shields.io
 Platform.WPF  | `Xamarin.Forms.Platform.WPF`  | [![NuGet](https://img.shields.io/nuget/v/Xamarin.Forms.Platform.WPF.svg?style=flat-square&label=nuget)](https://www.nuget.org/packages/Xamarin.Forms.Platform.WPF/) |[![NuGet](https://img.shields.io/nuget/vpre/Xamarin.Forms.Platform.WPF.svg?style=flat-square&label=nuget)](https://www.nuget.org/packages/Xamarin.Forms.Platform.WPF/) |
 Visual.Material  | `Xamarin.Forms.Visual.Material`  | [![NuGet](https://img.shields.io/nuget/v/Xamarin.Forms.Visual.Material.svg?style=flat-square&label=nuget)](https://www.nuget.org/packages/Xamarin.Forms.Visual.Material/) | [![NuGet](https://img.shields.io/nuget/vpre/Xamarin.Forms.Visual.Material.svg?style=flat-square&label=nuget)](https://www.nuget.org/packages/Xamarin.Forms.Visual.Material/) |
 
-If you want to use the latest dev build then you should read [this blog post](https://blog.xamarin.com/try-the-latest-in-xamarin-forms-with-nightly-builds):
+If you want to use the latest dev build then you should read [this blog post](https://devblogs.microsoft.com/xamarin/try-the-latest-in-xamarin-forms-with-nightly-builds):
 
 - Add the nightly feed to your NuGet sources or add a NuGet.Config to your app (placing it in the same directory where your solution file is) with the following content:
 
