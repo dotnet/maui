@@ -64,33 +64,33 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected override void Dispose(bool disposing)
 		{
-			if (!_disposed)
+			if (_disposed)
+				return;
+
+			if (disposing)
 			{
-				if (disposing)
-				{
-					if (_headerViewFormsElement != null)
-						_headerViewFormsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
+				if (_headerViewFormsElement != null)
+					_headerViewFormsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
 
-					if (_footerViewFormsElement != null)
-						_footerViewFormsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
+				if (_footerViewFormsElement != null)
+					_footerViewFormsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
 
-					ItemsSource?.Dispose();
-					_emptyUIView?.Dispose();
-					_headerUIView?.Dispose();
-					_footerUIView?.Dispose();
+				ItemsSource?.Dispose();
+				_emptyUIView?.Dispose();
+				_headerUIView?.Dispose();
+				_footerUIView?.Dispose();
 
-					_headerUIView = null;
-					_headerViewFormsElement = null;
-					_footerUIView = null;
-					_footerViewFormsElement = null;
-					_emptyUIView = null;
-					_emptyViewFormsElement = null;
-				}
-
-				_disposed = true;
-
-				base.Dispose(disposing);
+				_headerUIView = null;
+				_headerViewFormsElement = null;
+				_footerUIView = null;
+				_footerViewFormsElement = null;
+				_emptyUIView = null;
+				_emptyViewFormsElement = null;
 			}
+
+			_disposed = true;
+
+			base.Dispose(disposing);
 		}
 
 		public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
