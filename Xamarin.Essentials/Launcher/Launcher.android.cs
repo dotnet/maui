@@ -45,5 +45,15 @@ namespace Xamarin.Essentials
 
             return Task.CompletedTask;
         }
+
+        static async Task<bool> PlatformTryOpenAsync(Uri uri)
+        {
+            var canOpen = await PlatformCanOpenAsync(uri).ConfigureAwait(false);
+
+            if (canOpen)
+                await PlatformOpenAsync(uri).ConfigureAwait(false);
+
+            return canOpen;
+        }
     }
 }

@@ -9,10 +9,6 @@ namespace Tests
     {
         public static void EnableExperimentalFeatures()
         {
-            ExperimentalFeatures.Enable(
-                ExperimentalFeatures.EmailAttachments,
-                ExperimentalFeatures.ShareFileRequest,
-                ExperimentalFeatures.OpenFileRequest);
         }
     }
 }

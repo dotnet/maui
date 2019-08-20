@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Xamarin.Essentials
@@ -20,7 +21,7 @@ namespace Xamarin.Essentials
             }
         }
 
-        internal static Task InvokeOnMainThread(Action action)
+        public static Task InvokeOnMainThreadAsync(Action action)
         {
             if (IsMainThread)
             {
@@ -50,11 +51,11 @@ namespace Xamarin.Essentials
             return tcs.Task;
         }
 
-        internal static Task<T> InvokeOnMainThread<T>(Func<T> action)
+        public static Task<T> InvokeOnMainThreadAsync<T>(Func<T> func)
         {
             if (IsMainThread)
             {
-                return Task.FromResult(action());
+                return Task.FromResult(func());
             }
 
             var tcs = new TaskCompletionSource<T>();
@@ -63,7 +64,7 @@ namespace Xamarin.Essentials
             {
                 try
                 {
-                    var result = action();
+                    var result = func();
                     tcs.TrySetResult(result);
                 }
                 catch (Exception ex)
@@ -73,6 +74,66 @@ namespace Xamarin.Essentials
             });
 
             return tcs.Task;
+        }
+
+        public static Task InvokeOnMainThreadAsync(Func<Task> funcTask)
+        {
+            if (IsMainThread)
+            {
+                return funcTask();
+            }
+
+            var tcs = new TaskCompletionSource<object>();
+
+            BeginInvokeOnMainThread(
+                async () =>
+                {
+                    try
+                    {
+                        await funcTask().ConfigureAwait(false);
+                        tcs.SetResult(null);
+                    }
+                    catch (Exception e)
+                    {
+                        tcs.SetException(e);
+                    }
+                });
+
+            return tcs.Task;
+        }
+
+        public static Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> funcTask)
+        {
+            if (IsMainThread)
+            {
+                return funcTask();
+            }
+
+            var tcs = new TaskCompletionSource<T>();
+
+            BeginInvokeOnMainThread(
+                async () =>
+                {
+                    try
+                    {
+                        var ret = await funcTask().ConfigureAwait(false);
+                        tcs.SetResult(ret);
+                    }
+                    catch (Exception e)
+                    {
+                        tcs.SetException(e);
+                    }
+                });
+
+            return tcs.Task;
+        }
+
+        public static async Task<SynchronizationContext> GetMainThreadSynchronizationContextAsync()
+        {
+            SynchronizationContext ret = null;
+            await InvokeOnMainThreadAsync(() =>
+                ret = SynchronizationContext.Current).ConfigureAwait(false);
+            return ret;
         }
     }
 }

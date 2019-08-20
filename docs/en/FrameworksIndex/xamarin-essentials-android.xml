@@ -379,6 +379,8 @@
       <Member Id="M:Xamarin.Essentials.Launcher.OpenAsync(System.String)" />
       <Member Id="M:Xamarin.Essentials.Launcher.OpenAsync(System.Uri)" />
       <Member Id="M:Xamarin.Essentials.Launcher.OpenAsync(Xamarin.Essentials.OpenFileRequest)" />
+      <Member Id="M:Xamarin.Essentials.Launcher.TryOpenAsync(System.String)" />
+      <Member Id="M:Xamarin.Essentials.Launcher.TryOpenAsync(System.Uri)" />
     </Type>
     <Type Name="Xamarin.Essentials.Locale" Id="T:Xamarin.Essentials.Locale">
       <Member Id="P:Xamarin.Essentials.Locale.Country" />
@@ -434,6 +436,11 @@
     </Type>
     <Type Name="Xamarin.Essentials.MainThread" Id="T:Xamarin.Essentials.MainThread">
       <Member Id="M:Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(System.Action)" />
+      <Member Id="M:Xamarin.Essentials.MainThread.GetMainThreadSynchronizationContextAsync" />
+      <Member Id="M:Xamarin.Essentials.MainThread.InvokeOnMainThreadAsync(System.Action)" />
+      <Member Id="M:Xamarin.Essentials.MainThread.InvokeOnMainThreadAsync(System.Func{System.Threading.Tasks.Task})" />
+      <Member Id="M:Xamarin.Essentials.MainThread.InvokeOnMainThreadAsync``1(System.Func{``0})" />
+      <Member Id="M:Xamarin.Essentials.MainThread.InvokeOnMainThreadAsync``1(System.Func{System.Threading.Tasks.Task{``0}})" />
       <Member Id="P:Xamarin.Essentials.MainThread.IsMainThread" />
     </Type>
     <Type Name="Xamarin.Essentials.Map" Id="T:Xamarin.Essentials.Map">

@@ -24,5 +24,15 @@ namespace Xamarin.Essentials
 
             await WinLauncher.LaunchFileAsync(storageFile).AsTask();
         }
+
+        static async Task<bool> PlatformTryOpenAsync(Uri uri)
+        {
+            var canOpen = await PlatformCanOpenAsync(uri).ConfigureAwait(false);
+
+            if (canOpen)
+                return await WinLauncher.LaunchUriAsync(uri).AsTask().ConfigureAwait(false);
+
+            return canOpen;
+        }
     }
 }

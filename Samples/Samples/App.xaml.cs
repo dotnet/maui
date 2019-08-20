@@ -20,10 +20,6 @@ namespace Samples
             InitializeComponent();
 
             // Enable currently experimental features
-            ExperimentalFeatures.Enable(
-                ExperimentalFeatures.EmailAttachments,
-                ExperimentalFeatures.ShareFileRequest,
-                ExperimentalFeatures.OpenFileRequest);
 
             VersionTracking.Track();
 
