@@ -24,10 +24,7 @@ namespace Tests
             await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => Launcher.OpenAsync(new Uri("http://www.xamarin.com")));
 
         [Fact]
-        public async Task Open_File_NetStandard()
-        {
-            TestUtils.EnableExperimentalFeatures();
+        public async Task Open_File_NetStandard() =>
             await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => Launcher.OpenAsync(new OpenFileRequest()));
-        }
     }
 }

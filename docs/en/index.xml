@@ -59,7 +59,7 @@
         <Attribute FrameworkAlternate="xamarin-essentials-android">
           <AttributeName>System.Runtime.Versioning.TargetFramework("MonoAndroid,Version=v8.1", FrameworkDisplayName="Xamarin.Android v8.1 Support")</AttributeName>
         </Attribute>
-        <Attribute FrameworkAlternate="xamarin-essentials-ios">
+        <Attribute FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos">
           <AttributeName>Foundation.LinkerSafe</AttributeName>
         </Attribute>
         <Attribute FrameworkAlternate="xamarin-essentials-ios">
@@ -82,6 +82,18 @@
         </Attribute>
         <Attribute>
           <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+7ceee2ec3cc4caab1bb281521d7e9ecf471edc7a")</AttributeName>
+        </Attribute>
+        <Attribute FrameworkAlternate="xamarin-essentials-tvos">
+          <AttributeName>System.Reflection.AssemblyProduct("Xamarin.Essentials (Xamarin.TVOS10)")</AttributeName>
+        </Attribute>
+        <Attribute FrameworkAlternate="xamarin-essentials-tvos">
+          <AttributeName>System.Runtime.Versioning.TargetFramework("Xamarin.TVOS,Version=v1.0", FrameworkDisplayName="Xamarin.TVOS")</AttributeName>
+        </Attribute>
+        <Attribute FrameworkAlternate="xamarin-essentials-watchos">
+          <AttributeName>System.Reflection.AssemblyProduct("Xamarin.Essentials (Xamarin.WatchOS10)")</AttributeName>
+        </Attribute>
+        <Attribute FrameworkAlternate="xamarin-essentials-watchos">
+          <AttributeName>System.Runtime.Versioning.TargetFramework("Xamarin.WatchOS,Version=v1.0", FrameworkDisplayName="Xamarin.WatchOS")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>

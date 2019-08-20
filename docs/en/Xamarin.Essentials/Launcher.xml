@@ -133,5 +133,53 @@
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="TryOpenAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;bool&gt; TryOpenAsync (string uri);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;bool&gt; TryOpenAsync(string uri) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Launcher.TryOpenAsync(System.String)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;System.Boolean&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="uri" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="uri">string uri scheme</param>
+        <summary>
+          <para>Launches the app specified by the uri scheme and returns if it was supported or not</para>
+        </summary>
+        <returns>True if opening is supported, otherwise false</returns>
+        <remarks>May throw System.UriFormatException if uri is malformed</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="TryOpenAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;bool&gt; TryOpenAsync (Uri uri);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;bool&gt; TryOpenAsync(class System.Uri uri) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Launcher.TryOpenAsync(System.Uri)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;System.Boolean&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="uri" Type="System.Uri" />
+      </Parameters>
+      <Docs>
+        <param name="uri">uri scheme</param>
+        <summary>
+          <para>Launches the app specified by the uri scheme and returns if it was supported or not</para>
+        </summary>
+        <returns>True if opening is supported, otherwise false</returns>
+        <remarks>May throw System.UriFormatException if uri is malformed</remarks>
+      </Docs>
+    </Member>
   </Members>
 </Type>

@@ -40,9 +40,23 @@ namespace Xamarin.Essentials
 
         public static Task OpenAsync(OpenFileRequest request)
         {
-            ExperimentalFeatures.VerifyEnabled(ExperimentalFeatures.OpenFileRequest);
-
             return PlatformOpenAsync(request);
+        }
+
+        public static Task<bool> TryOpenAsync(string uri)
+        {
+            if (string.IsNullOrWhiteSpace(uri))
+                throw new ArgumentNullException(nameof(uri));
+
+            return PlatformTryOpenAsync(new Uri(uri));
+        }
+
+        public static Task<bool> TryOpenAsync(Uri uri)
+        {
+            if (uri == null)
+                throw new ArgumentNullException(nameof(uri));
+
+            return PlatformCanOpenAsync(uri);
         }
     }
 
@@ -50,19 +64,16 @@ namespace Xamarin.Essentials
     {
         public OpenFileRequest()
         {
-            ExperimentalFeatures.VerifyEnabled(ExperimentalFeatures.OpenFileRequest);
         }
 
         public OpenFileRequest(string title, ReadOnlyFile file)
         {
-            ExperimentalFeatures.VerifyEnabled(ExperimentalFeatures.OpenFileRequest);
             Title = title;
             File = file;
         }
 
         public OpenFileRequest(string title, FileBase file)
         {
-            ExperimentalFeatures.VerifyEnabled(ExperimentalFeatures.OpenFileRequest);
             Title = title;
             File = new ReadOnlyFile(file);
         }
