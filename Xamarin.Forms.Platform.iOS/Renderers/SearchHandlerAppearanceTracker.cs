@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Platform.iOS
 			_uiSearchBar.OnEditingStarted += OnEditingStarted;
 			_uiSearchBar.OnEditingStopped += OnEditingEnded;
 			_uiSearchBar.TextChanged += OnTextChanged;
-			_uiSearchBar.ShowsCancelButton = true;
+			_uiSearchBar.ShowsCancelButton = false;
 			GetDefaultSearchBarColors(_uiSearchBar);
 			var uiTextField = searchBar.FindDescendantView<UITextField>();
 			UpdateSearchBarColors();
