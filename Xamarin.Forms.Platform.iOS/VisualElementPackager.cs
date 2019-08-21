@@ -20,13 +20,15 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 		}
 
-		VisualElementPackager(IVisualElementRenderer renderer, VisualElement element)
+		VisualElementPackager(IVisualElementRenderer renderer, VisualElement element, bool isHeadless = false)
 		{
 			if (renderer == null)
 				throw new ArgumentNullException(nameof(renderer));
 
 			Renderer = renderer;
-			renderer.ElementChanged += OnRendererElementChanged;
+			if (!isHeadless)
+				renderer.ElementChanged += OnRendererElementChanged;
+
 			SetElement(null, element ?? renderer.Element);
 		}
 
@@ -88,7 +90,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			Performance.Start(out string reference);
 			if (CompressedLayout.GetIsHeadless(view))
 			{
-				var packager = new VisualElementPackager(Renderer, view);
+				var packager = new VisualElementPackager(Renderer, view, isHeadless:true);
 				view.IsPlatformEnabled = true;
 				packager.Load();
 			}
