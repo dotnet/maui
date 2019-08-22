@@ -5,6 +5,7 @@ using Xamarin.Forms.Internals;
 using System;
 using System.Linq;
 using Android.Runtime;
+using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -31,6 +32,8 @@ namespace Xamarin.Forms.Platform.Android
 			}
 			else if (ParentView is ListView)
 			{
+				cell.IsContextActionsLegacyModeEnabled = item.On<PlatformConfiguration.Android>().GetIsContextActionsLegacyModeEnabled();
+
 				unevenRows = ListView.HasUnevenRowsProperty;
 				rowHeight = ListView.RowHeightProperty;
 			}

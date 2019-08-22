@@ -68,3 +68,4 @@ tools/
 caketools/
 *.binlog
 .ionide/**
+/.nuspec

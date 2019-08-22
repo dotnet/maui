@@ -82,6 +82,8 @@ namespace Xamarin.Forms
 			get { return _contextActions != null && _contextActions.Count > 0 && IsEnabled; }
 		}
 
+		public bool IsContextActionsLegacyModeEnabled { get; set; } = false;
+
 		public double Height
 		{
 			get { return _height; }
