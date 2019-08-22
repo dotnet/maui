@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Android.Content;
+using Android.Graphics.Drawables;
+using Android.Support.V4.Content;
 using Android.Text;
 using Android.Text.Method;
 using Android.Util;
@@ -61,7 +63,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 	}
 
-	public abstract class EntryRendererBase<TControl> : ViewRenderer<Entry, TControl>, ITextWatcher, TextView.IOnEditorActionListener
+	public abstract partial class EntryRendererBase<TControl> : ViewRenderer<Entry, TControl>, ITextWatcher, TextView.IOnEditorActionListener
 		where TControl : global::Android.Views.View
 	{
 		bool _disposed;
@@ -119,6 +121,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void ITextWatcher.AfterTextChanged(IEditable s)
 		{
+			OnAfterTextChanged(s);
 		}
 
 		void ITextWatcher.BeforeTextChanged(ICharSequence s, int start, int count, int after)
@@ -190,6 +193,8 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (_cursorPositionChangePending || _selectionLengthChangePending)
 				UpdateCursorSelection();
+
+			UpdateClearBtnOnElementChanged();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -207,6 +212,7 @@ namespace Xamarin.Forms.Platform.Android
 				{
 					formsEditContext.OnKeyboardBackPressed -= OnKeyboardBackPressed;
 					formsEditContext.SelectionChanged -= SelectionChanged;
+					ListenForCloseBtnTouch(false);
 				}
 			}
 
@@ -270,6 +276,8 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateCursorSelection();
 			else if (e.PropertyName == InputView.IsReadOnlyProperty.PropertyName)
 				UpdateIsReadOnly();
+			if (e.PropertyName == Entry.ClearButtonVisibilityProperty.PropertyName)
+				UpdateClearBtnOnPropertyChanged();
 
 			base.OnElementPropertyChanged(sender, e);
 		}
@@ -516,6 +524,84 @@ namespace Xamarin.Forms.Platform.Android
 
 			EditText.FocusableInTouchMode = isReadOnly;
 			EditText.Focusable = isReadOnly;
+		}
+	}
+
+	// Entry clear button management
+	public abstract partial class EntryRendererBase<TControl>
+	{
+		internal override void OnNativeFocusChanged(bool hasFocus)
+		{
+			base.OnNativeFocusChanged(hasFocus);
+			UpdateClearBtnOnFocusChanged(hasFocus);
+		}
+
+		void OnAfterTextChanged(IEditable s)
+		{
+			if (Control.IsFocused)
+				UpdateClearBtnOnTyping();
+		}
+
+		void EditTextTouched(object sender, TouchEventArgs e)
+		{
+			MotionEvent me = e.Event;
+			if (me.Action == MotionEventActions.Up && me.RawX >= EditText.Right - EditText.CompoundPaddingRight)
+				EditText.Text = null;
+		}
+
+		void UpdateClearBtnOnElementChanged()
+		{
+			bool showClearBtn = Element.ClearButtonVisibility == ClearButtonVisibility.WhileEditing;
+			if (showClearBtn && Element.IsFocused)
+			{
+				UpdateClearBtn(true);
+				ListenForCloseBtnTouch(true);
+			}
+		}
+
+		void UpdateClearBtnOnPropertyChanged()
+		{
+			bool isFocused = Element.IsFocused;
+			if (isFocused)
+			{
+				bool showClearBtn = Element.ClearButtonVisibility == ClearButtonVisibility.WhileEditing;
+				UpdateClearBtn(showClearBtn);
+
+				if (!showClearBtn && isFocused)
+					ListenForCloseBtnTouch(false);
+			}
+		}
+
+		void UpdateClearBtnOnFocusChanged(bool isFocused)
+		{
+			if (Element.ClearButtonVisibility == ClearButtonVisibility.WhileEditing)
+			{
+				UpdateClearBtn(isFocused);
+				ListenForCloseBtnTouch(isFocused);
+			}
+		}
+
+		void UpdateClearBtnOnTyping()
+		{
+			if (Element.ClearButtonVisibility == ClearButtonVisibility.WhileEditing)
+				UpdateClearBtn(true);
+		}
+
+		void UpdateClearBtn(bool showClearButton)
+		{
+			Drawable d = showClearButton && (Element.Text?.Length > 0) ? GetCloseButtonDrawable() : null;
+			EditText.SetCompoundDrawablesWithIntrinsicBounds(null, null, d, null);
+		}
+
+		protected virtual Drawable GetCloseButtonDrawable()
+			=> ContextCompat.GetDrawable(Context, Resource.Drawable.abc_ic_clear_material);
+
+		void ListenForCloseBtnTouch(bool listen)
+		{
+			if (listen)
+				EditText.Touch += EditTextTouched;
+			else
+				EditText.Touch -= EditTextTouched;
 		}
 	}
 }

@@ -74,6 +74,18 @@ namespace Xamarin.Forms.Core.UITests
 			Assert.AreEqual(eventLabelText, "Event: Completed (fired 1)");
 		}
 
+		[Test]
+		[UiTest(typeof(Entry), "ClearButtonVisibility")]
+		[Category(UITestCategories.ManualReview)]
+		public void ClearButtonVisibility()
+		{
+			var remote = new StateViewContainerRemote(App, Test.Entry.ClearButtonVisibility, PlatformViewType);
+			remote.GoTo();
+
+			App.WaitForElement(q => q.Marked("Toggle ClearButtonVisibility"));
+			App.Tap(q => q.Marked("Toggle ClearButtonVisibility"));
+		}
+
 		protected override void FixtureTeardown()
 		{
 			App.NavigateBack();

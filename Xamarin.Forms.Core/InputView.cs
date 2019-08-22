@@ -38,4 +38,10 @@ namespace Xamarin.Forms
 			set { SetValue(IsReadOnlyProperty, value); }
 		}
 	}
+
+	public enum ClearButtonVisibility
+	{
+		Never,
+		WhileEditing
+	}
 }
