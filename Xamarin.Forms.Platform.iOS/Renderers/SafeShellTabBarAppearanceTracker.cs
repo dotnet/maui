@@ -1,14 +1,16 @@
-﻿using UIKit;
+﻿using System.ComponentModel;
+using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class SafeShellTabBarAppearanceTracker : IShellTabBarAppearanceTracker
 	{
 		UIColor _defaultBarTint;
 		UIColor _defaultTint;
 		UIColor _defaultUnselectedTint;
 
-		public void ResetAppearance(UITabBarController controller)
+		public virtual void ResetAppearance(UITabBarController controller)
 		{
 			if (_defaultTint == null)
 				return;
@@ -19,7 +21,7 @@ namespace Xamarin.Forms.Platform.iOS
 			tabBar.UnselectedItemTintColor = _defaultUnselectedTint;
 		}
 
-		public void SetAppearance(UITabBarController controller, ShellAppearance appearance)
+		public virtual void SetAppearance(UITabBarController controller, ShellAppearance appearance)
 		{
 			IShellAppearanceElement appearanceElement = appearance;
 			var backgroundColor = appearanceElement.EffectiveTabBarBackgroundColor;
@@ -45,7 +47,7 @@ namespace Xamarin.Forms.Platform.iOS
 				tabBar.UnselectedItemTintColor = unselectedColor.ToUIColor();
 		}
 
-		public void UpdateLayout(UITabBarController controller)
+		public virtual void UpdateLayout(UITabBarController controller)
 		{
 		}
 

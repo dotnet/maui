@@ -176,7 +176,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected virtual IShellTabBarAppearanceTracker CreateTabBarAppearanceTracker()
 		{
-			return new SafeShellTabBarAppearanceTracker();
+			return new ShellTabBarAppearanceTracker();
 		}
 
 		protected override void Dispose(bool disposing)
