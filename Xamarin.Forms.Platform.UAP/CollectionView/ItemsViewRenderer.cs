@@ -12,10 +12,12 @@ using Windows.UI.Xaml.Data;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.UAP;
 using UwpScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility;
+using UWPApp = Windows.UI.Xaml.Application;
+using UWPDataTemplate = Windows.UI.Xaml.DataTemplate;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class ItemsViewRenderer : ViewRenderer<CollectionView, ListViewBase>
+	public class ItemsViewRenderer : ViewRenderer<ItemsView, ListViewBase>
 	{
 		IItemsLayout _layout;
 		CollectionViewSource _collectionViewSource;
@@ -24,9 +26,15 @@ namespace Xamarin.Forms.Platform.UWP
 		UwpScrollBarVisibility? _defaultHorizontalScrollVisibility;
 		UwpScrollBarVisibility? _defaultVerticalScrollVisibility;
 
+		UWPDataTemplate ViewTemplate => (UWPDataTemplate)UWPApp.Current.Resources["View"];
+		UWPDataTemplate ItemsViewTemplate => (UWPDataTemplate)UWPApp.Current.Resources["ItemsViewDefaultTemplate"];
+
+		View _currentHeader;
+		View _currentFooter;
+
 		protected ItemsControl ItemsControl { get; private set; }
 
-		protected override void OnElementChanged(ElementChangedEventArgs<CollectionView> args)
+		protected override void OnElementChanged(ElementChangedEventArgs<ItemsView> args)
 		{
 			base.OnElementChanged(args);
 			TearDownOldElement(args.OldElement);
@@ -52,6 +60,14 @@ namespace Xamarin.Forms.Platform.UWP
 			else if (changedProperty.Is(ItemsView.VerticalScrollBarVisibilityProperty))
 			{
 				UpdateVerticalScrollBarVisibility();
+			}
+			else if (changedProperty.IsOneOf(ItemsView.HeaderProperty, ItemsView.HeaderTemplateProperty))
+			{
+				UpdateHeader();
+			}
+			else if (changedProperty.IsOneOf(ItemsView.FooterProperty, ItemsView.FooterTemplateProperty))
+			{
+				UpdateFooter();
 			}
 		}
 
@@ -133,13 +149,110 @@ namespace Xamarin.Forms.Platform.UWP
 			// TODO hartez 2018/06/23 13:47:27 Handle DataTemplateSelector case
 			// Actually, DataTemplateExtensions CreateContent might handle the selector for us
 
-			ListViewBase.ItemTemplate =
-				(Windows.UI.Xaml.DataTemplate)Windows.UI.Xaml.Application.Current.Resources["ItemsViewDefaultTemplate"];
+			ListViewBase.ItemTemplate = ItemsViewTemplate;
 
 			if (itemsControlItemTemplate == null)
 			{
 				// We're using a data template now, so we'll need to update the itemsource
 				UpdateItemsSource();
+			}
+		}
+
+		protected virtual void UpdateHeader()
+		{
+			if (ListViewBase == null)
+			{
+				return;
+			}
+
+			if (_currentHeader != null)
+			{
+				Element.RemoveLogicalChild(_currentHeader);
+				_currentHeader = null;
+			}
+
+			var header = Element.Header;
+
+			switch (header)
+			{
+				case null:
+					ListViewBase.Header = null;
+					break;
+
+				case string text:
+					ListViewBase.HeaderTemplate = null;
+					ListViewBase.Header = new TextBlock { Text = text };
+					break;
+
+				case View view:
+					ListViewBase.HeaderTemplate = ViewTemplate;
+					_currentHeader = view;
+					Element.AddLogicalChild(_currentHeader);
+					ListViewBase.Header = view;
+					break;
+
+				default:
+					var headerTemplate = Element.HeaderTemplate;
+					if (headerTemplate != null)
+					{
+						ListViewBase.HeaderTemplate = ItemsViewTemplate;
+						ListViewBase.Header = new ItemTemplateContext(headerTemplate, header, Element);
+					}
+					else
+					{
+						ListViewBase.HeaderTemplate = null;
+						ListViewBase.Header = null;
+					}
+					break;
+			}
+		}
+
+		protected virtual void UpdateFooter()
+		{
+			if (ListViewBase == null)
+			{
+				return;
+			}
+
+			if (_currentFooter != null)
+			{
+				Element.RemoveLogicalChild(_currentFooter);
+				_currentFooter = null;
+			}
+
+			var footer = Element.Footer;
+
+			switch (footer)
+			{
+				case null:
+					ListViewBase.Footer = null;
+					break;
+
+				case string text:
+					ListViewBase.FooterTemplate = null;
+					ListViewBase.Footer = new TextBlock { Text = text };
+					break;
+
+				case View view:
+					ListViewBase.FooterTemplate = ViewTemplate;
+					_currentFooter = view;
+					Element.AddLogicalChild(_currentFooter);
+					ListViewBase.Footer = view;
+					break;
+
+				default:
+					var footerTemplate = Element.FooterTemplate;
+					if (footerTemplate != null)
+					{
+						ListViewBase.FooterTemplate = ItemsViewTemplate;
+						ListViewBase.Footer = new ItemTemplateContext(footerTemplate, footer, Element);
+					}
+					else
+					{
+						ListViewBase.FooterTemplate = null;
+						ListViewBase.Footer = null;
+					}
+					break;
 			}
 		}
 
@@ -213,6 +326,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 			UpdateItemTemplate();
 			UpdateItemsSource();
+			UpdateHeader();
+			UpdateFooter();
 			UpdateVerticalScrollBarVisibility();
 			UpdateHorizontalScrollBarVisibility();
 
@@ -425,5 +540,9 @@ namespace Xamarin.Forms.Platform.UWP
 				await JumpTo(list, targetItem, args.ScrollToPosition);
 			}
 		}
+
+		
+
+		
 	}
 }

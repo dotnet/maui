@@ -121,7 +121,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void OnNativeSelectionChanged(object sender, Windows.UI.Xaml.Controls.SelectionChangedEventArgs e)
 		{
-			if (Element != null)
+			if (Element is SelectableItemsView selectableItemsView)
 			{
 				switch (ListViewBase.SelectionMode)
 				{
@@ -130,12 +130,12 @@ namespace Xamarin.Forms.Platform.UWP
 					case UWPListViewSelectionMode.Single:
 						var selectedItem = 
 							ListViewBase.SelectedItem is ItemTemplateContext itemPair ? itemPair.Item : ListViewBase.SelectedItem;
-						Element.SelectionChanged -= OnSelectionChanged;
-						Element.SetValueFromRenderer(SelectableItemsView.SelectedItemProperty, selectedItem);
-						Element.SelectionChanged += OnSelectionChanged;
+						selectableItemsView.SelectionChanged -= OnSelectionChanged;
+						selectableItemsView.SetValueFromRenderer(SelectableItemsView.SelectedItemProperty, selectedItem);
+						selectableItemsView.SelectionChanged += OnSelectionChanged;
 						break;
 					case UWPListViewSelectionMode.Multiple:
-						Element.SelectionChanged -= OnSelectionChanged;
+						selectableItemsView.SelectionChanged -= OnSelectionChanged;
 
 						_selectableItemsView.SelectedItems.Clear();
 						var selectedItems =
@@ -152,7 +152,7 @@ namespace Xamarin.Forms.Platform.UWP
 							_selectableItemsView.SelectedItems.Add(item);
 						}
 
-						Element.SelectionChanged += OnSelectionChanged;
+						selectableItemsView.SelectionChanged += OnSelectionChanged;
 						break;
 
 					case UWPListViewSelectionMode.Extended:
