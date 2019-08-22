@@ -217,6 +217,13 @@ namespace Xamarin.Forms.Controls
 			IApp runningApp = null;
 			try
 			{
+				// Issue 7207 - if current culture of the current thread is not set to the invariant culture
+				// then initializing the app causes a "NUnit.Framework.InconclusiveException" with the exception-
+				// message "App did not start for some reason. System.Argument.Exception: 1 is not supported code page.
+				// Parameter name: codepage."
+				if(System.Threading.Thread.CurrentThread.CurrentCulture != System.Globalization.CultureInfo.InvariantCulture)
+					System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
+
 				runningApp = InitializeApp();
 			}
 			catch (Exception e)
