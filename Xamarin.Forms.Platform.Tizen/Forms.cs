@@ -13,6 +13,29 @@ using DeviceOrientation = Xamarin.Forms.Internals.DeviceOrientation;
 
 namespace Xamarin.Forms
 {
+	public struct InitializationOptions
+	{
+		public struct EffectScope
+		{
+			public string Name;
+			public ExportEffectAttribute[] Effects;
+		}
+
+		public InitializationOptions(CoreApplication application, bool useDeviceIndependentPixel, HandlerAttribute[] handlers)
+		{
+			this = default(InitializationOptions);
+			Context = application;
+			UseDeviceIndependentPixel = useDeviceIndependentPixel;
+			Handlers = handlers;
+		}
+
+		public CoreApplication Context;
+		public bool UseDeviceIndependentPixel;
+		public HandlerAttribute[] Handlers;
+		public EffectScope[] EffectScopes;
+		public InitializationFlags Flags;
+	}
+
 	public static class Forms
 	{
 		static Lazy<string> s_profile = new Lazy<string>(() =>
@@ -185,14 +208,18 @@ namespace Xamarin.Forms
 			Init(application, false);
 		}
 
-
 		public static void Init(CoreApplication application, bool useDeviceIndependentPixel)
 		{
 			_useDeviceIndependentPixel = useDeviceIndependentPixel;
-			SetupInit(application);
+			SetupInit(application, null);
 		}
 
-		static void SetupInit(CoreApplication application)
+		public static void Init(InitializationOptions options)
+		{
+			SetupInit(options.Context, options);
+		}
+
+		static void SetupInit(CoreApplication application, InitializationOptions? maybeOptions = null)
 		{
 			Context = application;
 
@@ -207,11 +234,6 @@ namespace Xamarin.Forms
 				Elementary.ThemeOverlay();
 			}
 
-			// In .NETCore, AppDomain feature is not supported.
-			// The list of assemblies returned by AppDomain.GetAssemblies() method should be registered manually.
-			// The assembly of the executing application and referenced assemblies of it are added into the list here.
-			TizenPlatformServices.AppDomain.CurrentDomain.RegisterAssemblyRecursively(application.GetType().GetTypeInfo().Assembly);
-
 			Device.PlatformServices = new TizenPlatformServices();
 			if (Device.info != null)
 			{
@@ -224,13 +246,49 @@ namespace Xamarin.Forms
 
 			if (!Forms.IsInitialized)
 			{
-				Registrar.RegisterAll(new Type[]
+				if (maybeOptions.HasValue)
 				{
-					typeof(ExportRendererAttribute),
-					typeof(ExportImageSourceHandlerAttribute),
-					typeof(ExportCellAttribute),
-					typeof(ExportHandlerAttribute)
-				});
+					var options = maybeOptions.Value;
+					var handlers = options.Handlers;
+					var flags = options.Flags;
+					var effectScopes = options.EffectScopes;
+					_useDeviceIndependentPixel = options.UseDeviceIndependentPixel;
+
+					// renderers
+					if (handlers != null)
+					{
+						Registrar.RegisterRenderers(handlers);
+					}
+
+					// effects
+					if (effectScopes != null)
+					{
+						for (var i = 0; i < effectScopes.Length; i++)
+						{
+							var effectScope = effectScopes[0];
+							Registrar.RegisterEffects(effectScope.Name, effectScope.Effects);
+						}
+					}
+
+					// css
+					var noCss = (flags & InitializationFlags.DisableCss) != 0;
+					if (!noCss)
+						Registrar.RegisterStylesheets();
+				}
+				else
+				{
+					// In .NETCore, AppDomain feature is not supported.
+					// The list of assemblies returned by AppDomain.GetAssemblies() method should be registered manually.
+					// The assembly of the executing application and referenced assemblies of it are added into the list here.
+					TizenPlatformServices.AppDomain.CurrentDomain.RegisterAssemblyRecursively(application.GetType().GetTypeInfo().Assembly);
+					Registrar.RegisterAll(new Type[]
+					{
+						typeof(ExportRendererAttribute),
+						typeof(ExportImageSourceHandlerAttribute),
+						typeof(ExportCellAttribute),
+						typeof(ExportHandlerAttribute)
+					});
+				}
 			}
 
 			string profile = ((TizenDeviceInfo)Device.Info).Profile;
