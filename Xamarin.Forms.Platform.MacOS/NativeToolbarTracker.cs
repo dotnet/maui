@@ -419,6 +419,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 					subItems[i] = item;
 
+					SetAccessibility(button, element);
 					group.Items.Add(new NativeToolbarGroup.Item { ToolbarItem = item, Button = button, Element = element });
 				}
 				view.Frame = new CGRect(0, 0, totalWidth + (itemSpacing * (count - 1)), ToolbarItemHeight);
@@ -431,6 +432,19 @@ namespace Xamarin.Forms.Platform.MacOS
 				group.Group.Subitems = new NSToolbarItem[] { };
 				group.Group.View = new NSView();
 			}
+		}
+
+		void SetAccessibility(NSButton button, ToolbarItem element)
+		{
+			button.AccessibilityValue = element.IsSet(AutomationProperties.NameProperty)
+				? (Foundation.NSString)element.GetValue(AutomationProperties.NameProperty).ToString()
+				: null;
+
+			var titles = new List<string> { button.Title };
+			if (element.IsSet(AutomationProperties.HelpTextProperty))
+				titles.Add(element.GetValue(AutomationProperties.HelpTextProperty).ToString());
+
+			button.AccessibilityTitle = string.Join(", ", titles);
 		}
 
 		void ToolBarItemPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -446,6 +460,12 @@ namespace Xamarin.Forms.Platform.MacOS
 				if (e.PropertyName.Equals(ToolbarItem.TextProperty.PropertyName))
 				{
 					nativeToolbarItem.Button.Title = nativeToolbarItem.ToolbarItem.Label = nativeToolbarItem.Element.Text;
+				}
+
+				if (e.PropertyName == AutomationProperties.NameProperty.PropertyName ||
+					e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
+				{
+					SetAccessibility(nativeToolbarItem.Button, nativeToolbarItem.Element);
 				}
 			}
 		}

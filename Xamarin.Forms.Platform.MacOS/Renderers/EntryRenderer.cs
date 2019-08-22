@@ -283,6 +283,11 @@ namespace Xamarin.Forms.Platform.MacOS
 			Control.PlaceholderAttributedString = formatted.ToAttributed(Element, color);
 		}
 
+		protected override void SetAccessibilityLabel()
+		{
+			Control.AccessibilityLabel = (string)Element?.GetValue(AutomationProperties.NameProperty) ?? Control.PlaceholderAttributedString?.Value;
+		}
+
 		void UpdateText()
 		{
 			// ReSharper disable once RedundantCheckBeforeAssignment

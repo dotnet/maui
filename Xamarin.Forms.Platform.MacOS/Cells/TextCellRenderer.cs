@@ -32,6 +32,8 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			UpdateBackground(tvc, item);
 
+			SetAccessibility(tvc, item);
+
 			return tvc;
 		}
 

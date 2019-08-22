@@ -29,11 +29,10 @@ namespace Xamarin.Forms.Platform.MacOS
 
 	public abstract class ViewRenderer<TView, TNativeView> : VisualElementRenderer<TView>, IVisualNativeElementRenderer, ITabStop where TView : View where TNativeView : NativeView
 	{
-#if __MOBILE__
 		string _defaultAccessibilityLabel;
 		string _defaultAccessibilityHint;
 		bool? _defaultIsAccessibilityElement;
-#endif
+
 		NativeColor _defaultColor;
 
 		event EventHandler<PropertyChangedEventArgs> _elementPropertyChanged;
@@ -165,7 +164,6 @@ namespace Xamarin.Forms.Platform.MacOS
 			effect.SetControl(Control);
 		}
 
-#if __MOBILE__
 		protected override void SetAccessibilityHint()
 		{
 			_defaultAccessibilityHint = Control.SetAccessibilityHint(Element, _defaultAccessibilityHint);
@@ -180,8 +178,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			_defaultIsAccessibilityElement = Control.SetIsAccessibilityElement(Element, _defaultIsAccessibilityElement);
 		}
-	
-#endif
+
 		protected override void SetAutomationId(string id)
 		{
 			if (Control == null)

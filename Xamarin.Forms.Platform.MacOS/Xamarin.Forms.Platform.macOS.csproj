@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
    <PropertyGroup>
     <Description>macOS Backend for Xamarin.Forms</Description>
@@ -72,6 +72,9 @@
   <ItemGroup>
     <Compile Include="..\Xamarin.Forms.Platform.iOS\Extensions\LabelExtensions.cs">
       <Link>Extensions\LabelExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.iOS\Extensions\AccessibilityExtensions.cs">
+      <Link>Extensions\AccessibilityExtensions.cs</Link>
     </Compile>
     <Compile Include="..\Xamarin.Forms.Platform.iOS\Flags.cs">
       <Link>Flags.cs</Link>
