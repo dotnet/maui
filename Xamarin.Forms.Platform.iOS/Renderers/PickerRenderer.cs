@@ -85,8 +85,10 @@ namespace Xamarin.Forms.Platform.iOS
 					entry.InputAssistantItem.TrailingBarButtonGroups = null;
 
 					_defaultTextColor = entry.TextColor;
-					
+
 					_useLegacyColorManagement = e.NewElement.UseLegacyColorManagement();
+
+					entry.AccessibilityTraits = UIAccessibilityTrait.Button;
 
 					SetNativeControl(entry);
 				}
