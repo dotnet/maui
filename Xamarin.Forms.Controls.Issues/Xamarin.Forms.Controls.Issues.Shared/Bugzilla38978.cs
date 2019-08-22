@@ -78,7 +78,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		[Category("ManualReview")]
+		[Category(Xamarin.Forms.Core.UITests.UITestCategories.ManualReview)]
 		public void Bugzilla38978Test ()
 		{
 			RunningApp.WaitForElement (q => q.Marked ("2"));

@@ -6,7 +6,7 @@ namespace Xamarin.Forms.Core.UITests
 {
 	[TestFixture]
     [Ignore("check if the last one fails")]
-	[Category("Cells")]
+	[Category(UITestCategories.Cells)]
 	internal class UnevenListTests : BaseTestFixture
 	{
 		public UnevenListTests()

@@ -2,6 +2,7 @@
 {
 	internal static class UITestCategories
 	{
+		public const string ViewBaseTests = "ViewBaseTests";
 		public const string ActionSheet = "ActionSheet";
 		public const string ActivityIndicator = "ActivityIndicator";
 		public const string Animation = "Animation";

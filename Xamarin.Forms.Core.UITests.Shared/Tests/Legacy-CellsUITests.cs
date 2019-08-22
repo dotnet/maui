@@ -308,7 +308,7 @@ namespace Xamarin.Forms.Core.UITests
 		}
 
 		[Test]
-		[Category("EntryCell")]
+		[Category(UITestCategories.Cells)]
 		[Description("EntryCell fires .Completed event")]
 		[UiTest(typeof(EntryCell), "Completed")]
 		public void CellsGalleryEntryCellCompleted()

@@ -1,17 +1,11 @@
-﻿using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Net.Configuration;
-
+﻿
 using NUnit.Framework;
 using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.CustomAttributes;
-using Xamarin.UITest.Android;
-using Xamarin.UITest.iOS;
 
 namespace Xamarin.Forms.Core.UITests
 {
-	[Category("ViewBaseTests")]
+	[Category(UITestCategories.ViewBaseTests)]
 	internal abstract class _ViewUITests : BaseTestFixture
 	{
 		protected const string PleaseInspect = "Test framework cannout currently check this value; please inspect visually";
@@ -21,45 +15,45 @@ namespace Xamarin.Forms.Core.UITests
 		//[Category ("View")]
 		//[UiTestBroken (BrokenReason.UITestBug, "Issue #115 - when trying to get anchorPoint, iOS")]
 		//[UiTest (Test.VisualElement.AnchorX)]
-		public virtual void _AnchorX ()
+		public virtual void _AnchorX()
 		{
-			
+
 		}
 
 		// [Test]
 		// [UiTest (Test.VisualElement.AnchorY)]
 		// TODO: working on some views, others not
-		public virtual void _AnchorY ()
+		public virtual void _AnchorY()
 		{
-			
+
 		}
 
 		// [Test]
 		// [UiTest (Test.VisualElement.BackgroundColor)]
 		// [UiTestBroken (BrokenReason.UITestBug, "UITest Issue #107")]
-		public virtual void _BackgroundColor ()
+		public virtual void _BackgroundColor()
 		{
 			//TODO: this was failing and is changing in next version of calabash (UI-Test-pre nuget) to a json rgb
-//			var remote = RemoteFactory.CreateRemote<ViewContainerRemote> (App, "BackgroundColor", PlatformViewType);
-//			remote.GoTo ();
-//			if (App is iOSApp) {
-//				var backgroundColor = remote.GetProperty<Color> (View.BackgroundColorProperty);
-//				Assert.AreEqual (Color.Blue, backgroundColor);
-//			}
+			//			var remote = RemoteFactory.CreateRemote<ViewContainerRemote> (App, "BackgroundColor", PlatformViewType);
+			//			remote.GoTo ();
+			//			if (App is iOSApp) {
+			//				var backgroundColor = remote.GetProperty<Color> (View.BackgroundColorProperty);
+			//				Assert.AreEqual (Color.Blue, backgroundColor);
+			//			}
 
 		}
 
 		[Test]
-		[UiTest (typeof(VisualElement), "Focus")]
-		public abstract void _Focus ();
+		[UiTest(typeof(VisualElement), "Focus")]
+		public abstract void _Focus();
 
 		[Test]
-		[UiTest (typeof (VisualElement), "GestureRecognizers")]
-		public abstract void _GestureRecognizers ();
+		[UiTest(typeof(VisualElement), "GestureRecognizers")]
+		public abstract void _GestureRecognizers();
 
 		//[Test]
-		[UiTest (typeof (VisualElement), "InputTransparent")]
-		public virtual void _InputTransparent ()
+		[UiTest(typeof(VisualElement), "InputTransparent")]
+		public virtual void _InputTransparent()
 		{
 			//var remote = new LayeredViewContainerRemote (App, Test.VisualElement.InputTransparent, PlatformViewType);
 			//remote.GoTo ();
@@ -81,67 +75,67 @@ namespace Xamarin.Forms.Core.UITests
 		}
 
 		[Test]
-		[UiTest (typeof (VisualElement), "IsEnabled")]
-		public virtual void _IsEnabled ()
+		[UiTest(typeof(VisualElement), "IsEnabled")]
+		public virtual void _IsEnabled()
 		{
 			//var propName = Test.VisualElement.IsEnabled.ToString ();
-			var remote = new StateViewContainerRemote (App, Test.VisualElement.IsEnabled, PlatformViewType);
-			remote.GoTo ();
+			var remote = new StateViewContainerRemote(App, Test.VisualElement.IsEnabled, PlatformViewType);
+			remote.GoTo();
 
-			var enabled = remote.GetProperty<bool> (View.IsEnabledProperty);
-			Assert.IsTrue (enabled);
+			var enabled = remote.GetProperty<bool>(View.IsEnabledProperty);
+			Assert.IsTrue(enabled);
 
-			remote.TapStateButton ();
+			remote.TapStateButton();
 
-			enabled = remote.GetProperty<bool> (View.IsEnabledProperty);
-			Assert.IsFalse (enabled);
+			enabled = remote.GetProperty<bool>(View.IsEnabledProperty);
+			Assert.IsFalse(enabled);
 
-			remote.TapStateButton ();
+			remote.TapStateButton();
 
-			var isEnabled = remote.GetStateLabel ().ReadText();
-			Assert.AreEqual ("True", isEnabled);
+			var isEnabled = remote.GetStateLabel().ReadText();
+			Assert.AreEqual("True", isEnabled);
 
-			remote.TapStateButton ();
+			remote.TapStateButton();
 
-			var isDisabled = remote.GetStateLabel ().ReadText();
-			Assert.AreEqual ("False", isDisabled);
+			var isDisabled = remote.GetStateLabel().ReadText();
+			Assert.AreEqual("False", isDisabled);
 		}
 
 		[Test]
-		[UiTest (typeof (VisualElement), "IsFocused")]
-		public abstract void _IsFocused ();
+		[UiTest(typeof(VisualElement), "IsFocused")]
+		public abstract void _IsFocused();
 
 		[Test]
-		[UiTest (typeof (VisualElement), "IsVisible")]
-		public virtual void _IsVisible ()
+		[UiTest(typeof(VisualElement), "IsVisible")]
+		public virtual void _IsVisible()
 		{
-			var remote = new StateViewContainerRemote (App, Test.VisualElement.IsVisible, PlatformViewType);
-			remote.GoTo ();
+			var remote = new StateViewContainerRemote(App, Test.VisualElement.IsVisible, PlatformViewType);
+			remote.GoTo();
 
-			var viewPre = remote.GetViews ();
+			var viewPre = remote.GetViews();
 
 #if __MACOS__
 			Assert.GreaterOrEqual(viewPre.Length, 1);
 #else
-			Assert.AreEqual (1, viewPre.Length);
+			Assert.AreEqual(1, viewPre.Length);
 #endif
 
-			remote.TapStateButton ();
+			remote.TapStateButton();
 
-			var viewPost = remote.GetViews ();
-	
-			Assert.AreEqual (0, viewPost.Length);
+			var viewPost = remote.GetViews();
+
+			Assert.AreEqual(0, viewPost.Length);
 		}
-			
-		[UiTestExemptAttribute (ExemptReason.None, "Not sure how to test at the moment")]
-		public virtual void _Layout (){}
 
-		[UiTestExemptAttribute (ExemptReason.None, "Not sure how to test at the moment")]
-		public virtual void _Navigation () {}
+		[UiTestExemptAttribute(ExemptReason.None, "Not sure how to test at the moment")]
+		public virtual void _Layout() { }
+
+		[UiTestExemptAttribute(ExemptReason.None, "Not sure how to test at the moment")]
+		public virtual void _Navigation() { }
 
 		[Test]
-		[UiTest (typeof (VisualElement), "Opacity")]
-		public virtual void _Opacity ()
+		[UiTest(typeof(VisualElement), "Opacity")]
+		public virtual void _Opacity()
 		{
 			var remote = new ViewContainerRemote(App, Test.VisualElement.Opacity, PlatformViewType);
 			remote.GoTo();
@@ -151,22 +145,22 @@ namespace Xamarin.Forms.Core.UITests
 			Assert.Inconclusive(PleaseInspect);
 #else
 			float opacity = -1f;
-			opacity = remote.GetProperty<float> (View.OpacityProperty);
-			Assert.AreEqual (0.5f, opacity);
+			opacity = remote.GetProperty<float>(View.OpacityProperty);
+			Assert.AreEqual(0.5f, opacity);
 #endif
 		}
 
 		[Test]
-		[UiTest (typeof(VisualElement), "Rotation")]
-		[UiTestBroken (BrokenReason.CalabashBug, "Calabash bug")]
-		public virtual void _Rotation ()
+		[UiTest(typeof(VisualElement), "Rotation")]
+		[UiTestBroken(BrokenReason.CalabashBug, "Calabash bug")]
+		public virtual void _Rotation()
 		{
-			var remote = new ViewContainerRemote (App, Test.VisualElement.Rotation, PlatformViewType);
-			remote.GoTo ();
+			var remote = new ViewContainerRemote(App, Test.VisualElement.Rotation, PlatformViewType);
+			remote.GoTo();
 
 #if __ANDROID__
-			var rotation = remote.GetProperty<float> (View.RotationProperty);
-			Assert.AreEqual (10.0f, rotation);
+			var rotation = remote.GetProperty<float>(View.RotationProperty);
+			Assert.AreEqual(10.0f, rotation);
 #endif
 #if __IOS__
 			var rotationMatrix = remote.GetProperty<Matrix> (View.RotationProperty);
@@ -179,15 +173,15 @@ namespace Xamarin.Forms.Core.UITests
 		}
 
 		[Test]
-		[UiTest (typeof (VisualElement), "RotationX")]
-		public virtual void _RotationX ()
+		[UiTest(typeof(VisualElement), "RotationX")]
+		public virtual void _RotationX()
 		{
-			var remote = new ViewContainerRemote (App, Test.VisualElement.RotationX, PlatformViewType);
-			remote.GoTo ();
+			var remote = new ViewContainerRemote(App, Test.VisualElement.RotationX, PlatformViewType);
+			remote.GoTo();
 
 #if __ANDROID__
-			var rotationX = remote.GetProperty<float> (View.RotationXProperty);
-			Assert.AreEqual (33.0f, rotationX);
+			var rotationX = remote.GetProperty<float>(View.RotationXProperty);
+			Assert.AreEqual(33.0f, rotationX);
 #endif
 #if __IOS__
 			var rotationXMatrix = remote.GetProperty<Matrix> (View.RotationXProperty);
@@ -200,15 +194,15 @@ namespace Xamarin.Forms.Core.UITests
 		}
 
 		[Test]
-		[UiTest (typeof (VisualElement), "RotationY")]
-		public virtual void _RotationY ()
+		[UiTest(typeof(VisualElement), "RotationY")]
+		public virtual void _RotationY()
 		{
-			var remote = new ViewContainerRemote (App, Test.VisualElement.RotationY, PlatformViewType);
-			remote.GoTo ();
+			var remote = new ViewContainerRemote(App, Test.VisualElement.RotationY, PlatformViewType);
+			remote.GoTo();
 
 #if __ANDROID__
-			var rotationY = remote.GetProperty<float> (View.RotationYProperty);
-			Assert.AreEqual (10.0f, rotationY);
+			var rotationY = remote.GetProperty<float>(View.RotationYProperty);
+			Assert.AreEqual(10.0f, rotationY);
 #endif
 #if __IOS__
 			var rotationYMatrix = remote.GetProperty<Matrix> (View.RotationYProperty);
@@ -221,8 +215,8 @@ namespace Xamarin.Forms.Core.UITests
 		}
 
 		[Test]
-		[UiTest (typeof (VisualElement), "Scale")]
-		public virtual void _Scale ()
+		[UiTest(typeof(VisualElement), "Scale")]
+		public virtual void _Scale()
 		{
 			var remote = new ViewContainerRemote(App, Test.VisualElement.Scale, PlatformViewType);
 			remote.GoTo();
@@ -240,31 +234,31 @@ namespace Xamarin.Forms.Core.UITests
 		}
 
 		[Test]
-		[UiTest (typeof (VisualElement), "TranslationX")]
+		[UiTest(typeof(VisualElement), "TranslationX")]
 		[Category(UITestCategories.ManualReview)]
-		public virtual void _TranslationX ()
+		public virtual void _TranslationX()
 		{
-			var remote = new ViewContainerRemote (App, Test.VisualElement.TranslationX, PlatformViewType);
-			remote.GoTo ();
+			var remote = new ViewContainerRemote(App, Test.VisualElement.TranslationX, PlatformViewType);
+			remote.GoTo();
 #if __WINDOWS__
 			Assert.Inconclusive(PleaseInspect);
 #endif
 		}
 
 		[Test]
-		[UiTest (typeof (VisualElement), "TranslationY")]
+		[UiTest(typeof(VisualElement), "TranslationY")]
 		[Category(UITestCategories.ManualReview)]
-		public virtual void _TranslationY ()
+		public virtual void _TranslationY()
 		{
-			var remote = new ViewContainerRemote (App, Test.VisualElement.TranslationY, PlatformViewType);
-			remote.GoTo ();
+			var remote = new ViewContainerRemote(App, Test.VisualElement.TranslationY, PlatformViewType);
+			remote.GoTo();
 #if __WINDOWS__
 			Assert.Inconclusive(PleaseInspect);
 #endif
 		}
 
 		[Test]
-		[UiTest (typeof (VisualElement), "Unfocus")]
-		public abstract void _UnFocus ();
+		[UiTest(typeof(VisualElement), "Unfocus")]
+		public abstract void _UnFocus();
 	}
 }
