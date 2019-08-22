@@ -1,4 +1,4 @@
-﻿using FragmentTransaction = Android.Support.V4.App.FragmentTransaction;
+using FragmentTransaction = Android.Support.V4.App.FragmentTransaction;
 using Fragment = Android.Support.V4.App.Fragment;
 using FragmentManager = Android.Support.V4.App.FragmentManager;
 
@@ -37,14 +37,14 @@ namespace Xamarin.Forms.Platform.Android
 			return fragmentTransaction.CommitAllowingStateLoss();
 		}
 
-		public static bool ExecutePendingTransactionsEx(this FragmentManager fragmentTransaction)
+		public static bool ExecutePendingTransactionsEx(this FragmentManager fragmentManager)
 		{
-			return fragmentTransaction.ExecutePendingTransactions();
+			return fragmentManager.ExecutePendingTransactions();
 		}
 
-		public static FragmentTransaction BeginTransactionEx(this FragmentManager fragmentTransaction)
+		public static FragmentTransaction BeginTransactionEx(this FragmentManager fragmentManager)
 		{
-			return fragmentTransaction.BeginTransaction();
+			return fragmentManager.BeginTransaction();
 		}
 	}
 }
