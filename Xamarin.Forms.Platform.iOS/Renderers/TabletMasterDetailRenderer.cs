@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using UIKit;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -46,7 +45,7 @@ namespace Xamarin.Forms.Platform.iOS
 		bool _disposed;
 		EventTracker _events;
 		InnerDelegate _innerDelegate;
-
+		nfloat _masterWidth = 0;
 		EventedViewController _masterController;
 
 		MasterDetailPage _masterDetailPage;
@@ -271,6 +270,8 @@ namespace Xamarin.Forms.Platform.iOS
 			var changed = ElementChanged;
 			if (changed != null)
 				changed(this, e);
+
+			_masterWidth = 0;
 		}
 
 		void ClearControllers()
