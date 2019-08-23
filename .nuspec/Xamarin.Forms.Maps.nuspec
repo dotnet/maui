@@ -73,10 +73,6 @@
     <file src="..\Xamarin.Forms.Maps.iOS\bin\iPhoneSimulator\$Configuration$\Xamarin.Forms.Maps.iOS.dll" target="lib\Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\Xamarin.Forms.Maps.dll" target="lib\Xamarin.iOS10" />
     <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\Xamarin.iOS10" />
-
-    <file src="..\Xamarin.Forms.Maps.WP8\bin\$Configuration$\Xamarin.Forms.Maps.WP8.dll" target="lib\WP80" />
-    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\Xamarin.Forms.Maps.dll" target="lib\WP80" />
-    <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\WP80" />
     
     <!--UWP-->
     <file src="..\Xamarin.Forms.Maps.UWP\bin\$Configuration$\Xamarin.Forms.Maps.UWP.dll" target="lib\uap10.0" />
