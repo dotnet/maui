@@ -108,6 +108,7 @@
     <Compile Include="GalleryPages\PlatformSpecificsGalleries\EntryPageiOS.cs" />
     <Compile Include="GalleryPages\PlatformSpecificsGalleries\MasterDetailPageiOS.cs" />
     <Compile Include="GalleryPages\PlatformSpecificsGalleries\MasterDetailPageWindows.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGalleries\ModalFormSheetPageiOS.cs" />
     <Compile Include="GalleryPages\PlatformSpecificsGalleries\NavigationPageiOS.cs" />
     <Compile Include="GalleryPages\PlatformSpecificsGalleries\NavigationPageWindows.cs" />
     <Compile Include="GalleryPages\PlatformSpecificsGalleries\TabbedPageAndroid.cs" />
