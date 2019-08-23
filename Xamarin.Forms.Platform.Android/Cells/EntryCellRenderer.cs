@@ -120,7 +120,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateLabelColor()
 		{
+#pragma warning disable 618
 			_view.SetLabelTextColor(((EntryCell)Cell).LabelColor, global::Android.Resource.Color.PrimaryTextDark);
+#pragma warning restore 618
 		}
 
 		void UpdateFlowDirection()

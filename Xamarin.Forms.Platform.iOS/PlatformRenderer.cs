@@ -14,6 +14,10 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			_modal = modal;
 
+			var elementConfiguration = modal.Element as IElementConfiguration<Page>;
+			var modalPresentationStyle = elementConfiguration?.On<PlatformConfiguration.iOS>()?.ModalPresentationStyle() ?? PlatformConfiguration.iOSSpecific.UIModalPresentationStyle.FullScreen;
+			ModalPresentationStyle = modalPresentationStyle.ToNativeModalPresentationStyle();
+
 			View.BackgroundColor = UIColor.White;
 			View.AddSubview(modal.ViewController.View);
 			TransitioningDelegate = modal.ViewController.TransitioningDelegate;

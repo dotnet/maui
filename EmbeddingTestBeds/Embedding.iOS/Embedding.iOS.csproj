@@ -105,6 +105,8 @@
     <ProjectReference Include="..\..\Stubs\Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS %28Forwarders%29.csproj">
       <Project>{39B3457F-01D8-43D0-8E84-D8C4F73CF48D}</Project>
       <Name>Xamarin.Forms.Platform.iOS (Forwarders)</Name>
+      <IsAppExtension>false</IsAppExtension>
+      <IsWatchApp>false</IsWatchApp>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />

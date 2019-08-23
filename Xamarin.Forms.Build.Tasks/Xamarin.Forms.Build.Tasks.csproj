@@ -31,6 +31,12 @@
       <_CopyItems Include="$(TargetDir)*.dll" />
     </ItemGroup>
     <Copy SourceFiles="@(_CopyItems)" DestinationFolder="..\.nuspec\" ContinueOnError="true" Retries="0" />
-  </Target>
+     <ItemGroup>
+      <_NetStandard Include="$(NugetPackageRoot)/netstandard.library/2.0.3/build/netstandard2.0/ref/*.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_NetStandard)" DestinationFolder="..\.nuspec\" ContinueOnError="true" Retries="0" />
+ 
+ 
+ </Target>
 
 </Project>
