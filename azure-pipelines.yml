@@ -46,6 +46,13 @@ pr:
     - 4.*
     - 3.*
 
+schedules:
+- cron: "0 0 * * *"
+  displayName: Daily midnight build
+  branches:
+    include:
+    - master 
+   
 jobs:
 - template: build/steps/build-windows.yml
   parameters:
