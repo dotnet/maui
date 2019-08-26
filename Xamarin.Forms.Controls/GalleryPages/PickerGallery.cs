@@ -22,6 +22,7 @@ namespace Xamarin.Forms.Controls
 			p1.SelectedIndexChanged += (sender, e) => {
 				testLabel.Text = "Selected Index Changed";
 			};
+			p1.SetAutomationPropertiesName("Title picker");
 
 			Content = new ScrollView { 
 				Content = new StackLayout {

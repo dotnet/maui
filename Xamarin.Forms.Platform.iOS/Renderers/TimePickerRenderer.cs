@@ -91,6 +91,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 					_picker.ValueChanged += OnValueChanged;
 
+					entry.AccessibilityTraits = UIAccessibilityTrait.Button;
+
 					SetNativeControl(entry);
 				}
 

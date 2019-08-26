@@ -31,20 +31,29 @@ namespace Xamarin.Forms.Platform.iOS
 			var titleColor = appearanceElement.EffectiveTabBarTitleColor;
 
 			var tabBar = controller.TabBar;
+			bool operatingSystemSupportsUnselectedTint = Forms.IsiOS10OrNewer;
 
 			if (_defaultTint == null)
 			{
 				_defaultBarTint = tabBar.BarTintColor;
 				_defaultTint = tabBar.TintColor;
-				_defaultUnselectedTint = tabBar.UnselectedItemTintColor;
+
+				if (operatingSystemSupportsUnselectedTint)
+				{
+					_defaultUnselectedTint = tabBar.UnselectedItemTintColor;
+				}
 			}
 
 			if (!backgroundColor.IsDefault)
 				tabBar.BarTintColor = backgroundColor.ToUIColor();
 			if (!titleColor.IsDefault)
 				tabBar.TintColor = titleColor.ToUIColor();
-			if (!unselectedColor.IsDefault)
-				tabBar.UnselectedItemTintColor = unselectedColor.ToUIColor();
+
+			if (operatingSystemSupportsUnselectedTint)
+			{
+				if (!unselectedColor.IsDefault)
+					tabBar.UnselectedItemTintColor = unselectedColor.ToUIColor();
+			}
 		}
 
 		public virtual void UpdateLayout(UITabBarController controller)

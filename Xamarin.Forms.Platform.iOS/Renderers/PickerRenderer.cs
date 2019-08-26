@@ -89,8 +89,10 @@ namespace Xamarin.Forms.Platform.iOS
 					}
 
 					_defaultTextColor = entry.TextColor;
-					
+
 					_useLegacyColorManagement = e.NewElement.UseLegacyColorManagement();
+
+					entry.AccessibilityTraits = UIAccessibilityTrait.Button;
 
 					SetNativeControl(entry);
 				}
