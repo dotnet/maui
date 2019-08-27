@@ -4,16 +4,32 @@ using System.Diagnostics;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
+#if UITEST
+using Xamarin.Forms.Core.UITests;
+using Xamarin.UITest;
+using NUnit.Framework;
+#endif
+
+
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 40955, "Memory leak with FormsAppCompatActivity and NavigationPage", PlatformAffected.Android)]
+#if UITEST
+	[Category(UITestCategories.Performance)]
+#endif
 	public class Bugzilla40955 : TestMasterDetailPage
 	{
 		const string DestructorMessage = "NavigationPageEx Destructor called";
 		const string Page1Title = "Page1";
 		const string Page2Title = "Page2";
 		const string Page3Title = "Page3";
+		const string LabelPage1 = "Open the drawer menu and select Page2";
+		const string LabelPage2 = "Open the drawer menu and select Page3";
+		static string LabelPage3 = $"The console should have displayed the text '{DestructorMessage}' at least once. If not, this test has failed.";
+		static string Success = string.Empty;
+
+		static MasterDetailPage Reference;
 
 		protected override void Init()
 		{
@@ -31,6 +47,7 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 			Detail = new NavigationPageEx(new _409555_Page1());
+			Reference = this;
 		}
 
 		[Preserve(AllMembers = true)]
@@ -96,6 +113,7 @@ namespace Xamarin.Forms.Controls.Issues
 			~NavigationPageEx()
 			{
 				Debug.WriteLine(DestructorMessage);
+				Success = DestructorMessage;
 			}
 		}
 
@@ -105,8 +123,27 @@ namespace Xamarin.Forms.Controls.Issues
 			public _409555_Page1()
 			{
 				Title = Page1Title;
-				Content = new StackLayout { Children = { new Label { Text = "Open the drawer menu and select Page2" } } };
+
+				var lbl = new Label
+				{
+					Text = LabelPage1
+				};
+
+				lbl.GestureRecognizers.Add(new TapGestureRecognizer
+				{
+					Command = new Command(OpenMaster)
+				});
+
+				Content = new StackLayout
+				{
+					Children = { lbl }
+				};
 			}
+		}
+
+		static void OpenMaster()
+		{
+			Reference.IsPresented = true;
 		}
 
 		[Preserve(AllMembers = true)]
@@ -115,7 +152,16 @@ namespace Xamarin.Forms.Controls.Issues
 			public _409555_Page2()
 			{
 				Title = Page2Title;
-				Content = new StackLayout { Children = { new Label { Text = "Open the drawer menu and select Page3" } } };
+				var lbl = new Label
+				{
+					Text = LabelPage2
+				};
+
+				lbl.GestureRecognizers.Add(new TapGestureRecognizer
+				{
+					Command = new Command(OpenMaster)
+				});
+				Content = new StackLayout { Children = { lbl } };
 			}
 		}
 
@@ -125,7 +171,25 @@ namespace Xamarin.Forms.Controls.Issues
 			public _409555_Page3()
 			{
 				Title = Page3Title;
-				Content = new StackLayout { Children = { new Label { Text = $"The console should have displayed the text '{DestructorMessage}' at least once. If not, this test has failed." } } };
+
+				var lbl = new Label
+				{
+					Text = LabelPage3
+				};
+
+				lbl.GestureRecognizers.Add(new TapGestureRecognizer
+				{
+					Command = new Command(async () => await DisplayAlert("Alert", Success, "Ok"))
+				});
+
+				var successLabel = new Label();
+				Content = new StackLayout
+				{
+					Children =
+					{
+						lbl
+					}
+				};
 			}
 
 			protected override void OnAppearing()
@@ -134,5 +198,25 @@ namespace Xamarin.Forms.Controls.Issues
 				GarbageCollectionHelper.Collect();
 			}
 		}
+
+
+#if UITEST && __ANDROID__
+		[Test]
+		public void MemoryLeakInFormsAppCompatActivity()
+		{
+			RunningApp.WaitForElement(Page1Title);
+			RunningApp.Tap(LabelPage1);
+			RunningApp.WaitForElement(Page1Title);
+			RunningApp.Tap(Page2Title);
+			RunningApp.WaitForElement(LabelPage2);
+			RunningApp.Tap(LabelPage2);
+			RunningApp.WaitForElement(Page2Title);
+			RunningApp.Tap(Page3Title);
+			RunningApp.WaitForElement(LabelPage3);
+			RunningApp.Tap(LabelPage3);
+			RunningApp.WaitForElement(Success);
+
+		}
+#endif
 	}
 }
