@@ -586,13 +586,26 @@ namespace Xamarin.Forms.Controls
 
 		public ContentPage AddTopTab(string title)
 		{
-			ContentPage page = new ContentPage();
+			var page = new ContentPage();
+			AddTopTab(page, title);
+			return page;
+		}
+
+
+		public void AddTopTab(ContentPage page, string title = null)
+		{
+			if(Items.Count == 0)
+			{
+				var item = AddContentPage(page);
+				item.Items[0].Items[0].Title = title ?? page.Title;
+				return;
+			}
+
 			Items[0].Items[0].Items.Add(new ShellContent()
 			{
-				Title = title,
+				Title = title ?? page.Title,
 				Content = page
 			});
-			return page;
 		}
 
 		public ContentPage AddBottomTab(string title)
@@ -642,7 +655,7 @@ namespace Xamarin.Forms.Controls
 
 		public ShellItem AddContentPage(ContentPage contentPage)
 		{
-			ContentPage page = new ContentPage();
+			ContentPage page = contentPage ?? new ContentPage();
 			ShellItem item = new ShellItem()
 			{
 				Items =

@@ -52,5 +52,6 @@
 		public const string TabbedPage = "TabbedPage";
 		public const string CustomRenderers = "CustomRenderers";
 		public const string Page = "Page";
+		public const string TitleView = "TitleView";
 	}
 }

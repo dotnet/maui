@@ -443,7 +443,7 @@ namespace Xamarin.Forms.Platform.Android
 					_titleViewContainer = null;
 				}
 			}
-			else
+			else if(_titleViewContainer == null)
 			{
 				_titleViewContainer = new ContainerView(context, titleView);
 				_titleViewContainer.MatchHeight = _titleViewContainer.MatchWidth = true;
@@ -456,6 +456,10 @@ namespace Xamarin.Forms.Platform.Android
 				};
 
 				_toolbar.AddView(_titleViewContainer);
+			}
+			else
+			{
+				_titleViewContainer.View = titleView;
 			}
 		}
 
