@@ -28,6 +28,8 @@
 							new MultipleBoundSelection(), Navigation),
 						GalleryBuilder.NavButton("SelectionChangedCommandParameter", () =>
 							new SelectionChangedCommandParameter(), Navigation),
+						GalleryBuilder.NavButton("Filterable Single Selection", () =>
+							new FilterSelection(), Navigation),
 					}
 				}
 			};
