@@ -20,7 +20,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue3475.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6945.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5046.xaml.cs">
-      <DependentUpon>Issue5046.xaml</DependentUpon>	
+      <DependentUpon>Issue5046.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue6609.cs" />
@@ -31,6 +31,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue7049.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7061.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7111.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NestedCollectionViews.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellGestures.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellBackButtonBehavior.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellInsets.cs" />
@@ -1213,7 +1214,6 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
-
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Controls\" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue2858.xaml">

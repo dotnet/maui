@@ -97,6 +97,12 @@ namespace Xamarin.Forms.Platform.UWP
 
 			var itemsSource = Element.ItemsSource;
 
+			if (itemsSource == null)
+			{
+				_collectionViewSource = null;
+				return;
+			}
+
 			var itemTemplate = Element.ItemTemplate;
 			if (itemTemplate != null)
 			{
