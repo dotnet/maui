@@ -56,6 +56,7 @@ namespace Xamarin.Forms
 		static BuildVersionCodes? s_sdkInt;
 		static bool? s_isLollipopOrNewer;
 		static bool? s_isMarshmallowOrNewer;
+		static bool? s_isNougatOrNewer;
 
 		[Obsolete("Context is obsolete as of version 2.5. Please use a local context instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -95,6 +96,16 @@ namespace Xamarin.Forms
 				if (!s_isMarshmallowOrNewer.HasValue)
 					s_isMarshmallowOrNewer = (int)SdkInt >= 23;
 				return s_isMarshmallowOrNewer.Value;
+			}
+		}
+
+		internal static bool IsNougatOrNewer
+		{
+			get
+			{
+				if (!s_isNougatOrNewer.HasValue)
+					s_isNougatOrNewer = (int)Build.VERSION.SdkInt >= 24;
+				return s_isNougatOrNewer.Value;
 			}
 		}
 

@@ -236,6 +236,40 @@ namespace Xamarin.Forms.Controls
 					Padding = new Thickness(40, 20)
 				}
 			);
+			
+			var htmlLabelContainer = new ViewContainer<Label>(Test.Label.TextType,
+				new Label
+				{
+					Text = "<h1>Hello world!</h1>",
+					TextType = TextType.Html
+				});
+
+			var htmlLabelMultipleLinesContainer = new ViewContainer<Label>(Test.Label.TextType,
+				new Label
+				{
+					Text = "<h1>Hello world!</h1><p>Lorem <strong>ipsum</strong> bla di bla <i>blabla</i> blablabl&nbsp;ablabla & blablablablabl ablabl ablablabl ablablabla blablablablablablab lablablabla blablab lablablabla blablabl ablablablab lablabla blab lablablabla blablab lablabla blablablablab lablabla blablab lablablabl ablablabla blablablablablabla blablabla</p>",
+					TextType = TextType.Html,
+					MaxLines = 3
+				});
+
+			var toggleLabel = new Label
+			{
+				TextType = TextType.Html,
+				Text = "<h1 style=\"color: red;\">Hello world!</h1><p>Lorem <strong>ipsum</strong></p>"
+				
+			};
+
+			var gestureRecognizer = new TapGestureRecognizer();
+
+			gestureRecognizer.Tapped += (s, a) =>
+			{
+				toggleLabel.TextType = toggleLabel.TextType == TextType.Html ? TextType.Text : TextType.Html;
+			};
+
+			toggleLabel.GestureRecognizers.Add(gestureRecognizer);
+
+			var toggleHtmlPlainTextLabelContainer = new ViewContainer<Label>(Test.Label.TextType,
+				toggleLabel);
 
 			Add (namedSizeMediumBoldContainer);
 			Add (namedSizeMediumItalicContainer);
@@ -272,6 +306,9 @@ namespace Xamarin.Forms.Controls
 			Add (maxlinesTailTruncContainer);
 			Add (maxlinesWordWrapContainer);
 			Add(paddingContainer);
+			Add (htmlLabelContainer);
+			Add (htmlLabelMultipleLinesContainer);
+			Add (toggleHtmlPlainTextLabelContainer);
 		}
 	}
 }

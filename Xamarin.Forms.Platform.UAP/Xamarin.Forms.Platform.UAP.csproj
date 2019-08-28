@@ -78,6 +78,7 @@
     <Compile Include="ITitleViewRendererController.cs" />
     <Compile Include="IToolbarProvider.cs" />
     <Compile Include="IVisualNativeElementRenderer.cs" />
+    <Compile Include="LabelHtmlHelper.cs" />
     <Compile Include="NativeBindingExtensions.cs" />
     <Compile Include="NativeEventWrapper.cs" />
     <Compile Include="NativePropertyListener.cs" />

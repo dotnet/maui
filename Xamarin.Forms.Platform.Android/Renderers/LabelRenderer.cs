@@ -135,7 +135,6 @@ namespace Xamarin.Forms.Platform.Android
 					UpdateMaxLines();
 				if (e.OldElement.CharacterSpacing != e.NewElement.CharacterSpacing)
 					UpdateCharacterSpacing();
-
 			}
 			UpdateTextDecorations();
 			UpdatePadding();
@@ -158,13 +157,13 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateLineBreakMode();
 			else if (e.PropertyName == Label.TextDecorationsProperty.PropertyName)
 				UpdateTextDecorations();
-			else if (e.PropertyName == Label.TextProperty.PropertyName || e.PropertyName == Label.FormattedTextProperty.PropertyName)
+			else if (e.IsOneOf(Label.TextProperty, Label.FormattedTextProperty, Label.TextTypeProperty))
 				UpdateText();
 			else if (e.PropertyName == Label.LineHeightProperty.PropertyName)
 				UpdateLineHeight();
 			else if (e.PropertyName == Label.MaxLinesProperty.PropertyName)
 				UpdateMaxLines();
-			else if (e.PropertyName == ImageButton.PaddingProperty.PropertyName)
+			else if (e.PropertyName == Label.PaddingProperty.PropertyName)
 				UpdatePadding();
 		}
 
@@ -242,7 +241,6 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
-
 		void UpdateLineHeight()
 		{
 			_lastSizeRequest = null;
@@ -274,7 +272,25 @@ namespace Xamarin.Forms.Platform.Android
 					_view.SetTextColor(_labelTextColorDefault);
 					_lastUpdateColor = Color.Default;
 				}
-				_view.Text = Element.Text;
+
+				switch (Element.TextType)
+				{
+
+					case TextType.Html:
+						if (Forms.IsNougatOrNewer)
+							Control.SetText(Html.FromHtml(Element.Text ?? string.Empty, FromHtmlOptions.ModeCompact), TextView.BufferType.Spannable);
+						else
+#pragma warning disable CS0618 // Type or member is obsolete
+							Control.SetText(Html.FromHtml(Element.Text ?? string.Empty), TextView.BufferType.Spannable);
+#pragma warning restore CS0618 // Type or member is obsolete
+						break;
+
+					default:
+						_view.Text = Element.Text;
+
+						break;
+				}
+
 				UpdateColor();
 				UpdateFont();
 

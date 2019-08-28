@@ -251,6 +251,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 					UpdateGravity();
 				if (e.OldElement?.MaxLines != e.NewElement.MaxLines)
 					UpdateMaxLines();
+
 				UpdatePadding();
 
 				ElevationHelper.SetElevation(this, e.NewElement);
@@ -263,7 +264,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 			if (e.PropertyName == Label.HorizontalTextAlignmentProperty.PropertyName || e.PropertyName == Label.VerticalTextAlignmentProperty.PropertyName)
 				UpdateGravity();
-			else if (e.PropertyName == Label.TextColorProperty.PropertyName)
+			else if (e.PropertyName == Label.TextColorProperty.PropertyName ||
+				e.PropertyName == Label.TextTypeProperty.PropertyName)
 				UpdateText();
 			else if (e.PropertyName == Label.FontProperty.PropertyName)
 				UpdateText();
@@ -380,7 +382,23 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 					SetTextColor(_labelTextColorDefault);
 					_lastUpdateColor = Color.Default;
 				}
-				Text = Element.Text;
+
+				switch (Element.TextType)
+				{
+					case TextType.Html:
+						if (Forms.IsNougatOrNewer)
+							Control.SetText(Html.FromHtml(Element.Text ?? string.Empty, FromHtmlOptions.ModeCompact), BufferType.Spannable);
+						else
+#pragma warning disable CS0618 // Type or member is obsolete
+							Control.SetText(Html.FromHtml(Element.Text ?? string.Empty), BufferType.Spannable);
+#pragma warning restore CS0618 // Type or member is obsolete
+						break;
+
+					default:
+						Text = Element.Text;
+						break;
+				}
+				
 				UpdateColor();
 				UpdateFont();
 

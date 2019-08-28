@@ -89,6 +89,9 @@ namespace Xamarin.Forms
 			});
 
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
+		
+		public static readonly BindableProperty TextTypeProperty = BindableProperty.Create(nameof(TextType), typeof(TextType), typeof(Label), TextType.Text,
+			propertyChanged: (bindable, oldvalue, newvalue) => ((Label)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
 
 		readonly Lazy<PlatformConfigurationRegistry<Label>> _platformConfigurationRegistry;
 
@@ -211,6 +214,12 @@ namespace Xamarin.Forms
 		{
 			get { return (Thickness)GetValue(PaddingProperty); }
 			set { SetValue(PaddingProperty, value); }
+		}
+		
+		public TextType TextType
+		{
+			get => (TextType)GetValue(TextTypeProperty);
+			set => SetValue(TextTypeProperty, value);
 		}
 
 		double IFontElement.FontSizeDefaultValueCreator() =>
