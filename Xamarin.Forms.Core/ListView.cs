@@ -47,7 +47,7 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty SeparatorColorProperty = BindableProperty.Create("SeparatorColor", typeof(Color), typeof(ListView), Color.Default);
 
 		public static readonly BindableProperty RefreshControlColorProperty = BindableProperty.Create(nameof(RefreshControlColor), typeof(Color), typeof(ListView), Color.Default);
-    
+	
 		public static readonly BindableProperty HorizontalScrollBarVisibilityProperty = BindableProperty.Create(nameof(HorizontalScrollBarVisibility), typeof(ScrollBarVisibility), typeof(ListView), ScrollBarVisibility.Default);
 
 		public static readonly BindableProperty VerticalScrollBarVisibilityProperty = BindableProperty.Create(nameof(VerticalScrollBarVisibility), typeof(ScrollBarVisibility), typeof(ListView), ScrollBarVisibility.Default);
@@ -285,6 +285,10 @@ namespace Xamarin.Forms
 			=> ItemDisappearing?.Invoke(this, new ItemVisibilityEventArgs(cell.BindingContext, TemplatedItems.GetGlobalIndexOfItem(cell?.BindingContext)));
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendScrolled(ScrolledEventArgs args)
+			=> Scrolled?.Invoke(this, args);
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendRefreshing()
 		{
 			BeginRefresh();
@@ -315,6 +319,8 @@ namespace Xamarin.Forms
 		public event EventHandler<SelectedItemChangedEventArgs> ItemSelected;
 
 		public event EventHandler<ItemTappedEventArgs> ItemTapped;
+
+		public event EventHandler<ScrolledEventArgs> Scrolled;
 
 		public event EventHandler Refreshing;
 

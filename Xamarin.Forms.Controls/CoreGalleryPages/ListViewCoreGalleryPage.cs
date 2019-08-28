@@ -155,7 +155,7 @@ namespace Xamarin.Forms.Controls
 							new Employee ("Eric", TimeSpan.FromDays (1000), 160),
 						}
 					),
- 					new Grouping<string, Employee> (
+					new Grouping<string, Employee> (
 						"Sales",
 						new [] {
 							new Employee ("Andrew 1", TimeSpan.FromDays (10), 160),
@@ -267,6 +267,15 @@ namespace Xamarin.Forms.Controls
 			fastScrollItemContainer.View.On<Android>().SetIsFastScrollEnabled(true);
 			fastScrollItemContainer.View.ItemsSource = viewModel.CategorizedEmployees;
 
+			var scrolledItemContainer = new ViewContainer<ListView>(Test.ListView.Scrolled, new ListView());
+			InitializeElement(scrolledItemContainer.View);
+			scrolledItemContainer.View.ItemsSource = viewModel.Employees;
+			var scrollTitle = scrolledItemContainer.TitleLabel.Text;
+			scrolledItemContainer.View.Scrolled += (sender, args) =>
+			{
+				scrolledItemContainer.TitleLabel.Text = $"{scrollTitle}; X={args.ScrollX};Y={args.ScrollY}";
+			};
+
 			var refreshControlColorContainer = new ViewContainer<ListView>(Test.ListView.RefreshControlColor, new ListView());
 			InitializeElement(refreshControlColorContainer.View);
 			refreshControlColorContainer.View.RefreshControlColor = Color.Red;
@@ -297,6 +306,7 @@ namespace Xamarin.Forms.Controls
 			Add(rowHeightContainer);
 			Add(selectedItemContainer);
 			Add(fastScrollItemContainer);
+			Add(scrolledItemContainer);
 			Add(refreshControlColorContainer);
 			Add(scrollbarVisibilityContainer);
 		}
