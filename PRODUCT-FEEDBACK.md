@@ -12,6 +12,3 @@ We'd love to hear your thoughts on Xamarin.Essentials. Here are a few links to h
 ### Report an Issue
 * Browse through [current open and closed issues first](https://github.com/xamarin/Essentials/issues?utf8=%E2%9C%93&q=is%3Aissue)
 * [File an issue](https://github.com/xamarin/Essentials/issues/new) if it hasn't been reported
-
-### Provide Feedback
-If you are using Xamarin.Essentials in your mobile application we would love your feedback. If you have a few minutes please [fill out our short survey here](https://aka.ms/essentials-feedback).

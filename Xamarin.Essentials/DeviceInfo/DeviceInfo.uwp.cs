@@ -61,7 +61,7 @@ namespace Xamarin.Essentials
 
         static DeviceType GetDeviceType()
         {
-            var isVirtual = deviceInfo.SystemProductName == "Virtual";
+            var isVirtual = deviceInfo.SystemProductName.Contains("Virtual") || deviceInfo.SystemProductName == "HMV domU";
 
             if (isVirtual)
                 return DeviceType.Virtual;

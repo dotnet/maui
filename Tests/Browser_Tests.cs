@@ -33,6 +33,8 @@ namespace Tests
         [InlineData("https://xamariñ.com/?test=xamariñ", "https://xn--xamari-1wa.com/?test=xamari%C3%B1")]
         [InlineData("http://xamariñ.com/?test=xamariñ", "http://xn--xamari-1wa.com/?test=xamari%C3%B1")]
         [InlineData("http://xamariñ.com/?test=xamariñ xamariñ", "http://xn--xamari-1wa.com/?test=xamari%C3%B1%20xamari%C3%B1")]
+        [InlineData("https://xamariñ.com:56/test.html#fragment", "https://xn--xamari-1wa.com:56/test.html#fragment")]
+        [InlineData("https://xamarin.com/#", "https://xamarin.com/#")]
         public void Escape_Uri(string uri, string escaped)
         {
             var escapedUri = Browser.EscapeUri(new Uri(uri));

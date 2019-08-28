@@ -75,5 +75,45 @@ namespace Xamarin.Essentials
             // leave it up to the sender
             return null;
         }
+
+        string attachmentName;
+
+        internal string AttachmentName
+        {
+            get => GetAttachmentName();
+            set => attachmentName = value;
+        }
+
+        internal string GetAttachmentName()
+        {
+            // try the provided file name
+            if (!string.IsNullOrWhiteSpace(attachmentName))
+                return attachmentName;
+
+            // try get from the path
+            if (!string.IsNullOrWhiteSpace(FullPath))
+                return Path.GetFileName(FullPath);
+
+            // this should never happen as the path is validated in the constructor
+            throw new InvalidOperationException($"Unable to determine the attachment file name from '{FullPath}'.");
+        }
+    }
+
+    public class ReadOnlyFile : FileBase
+    {
+        public ReadOnlyFile(string fullPath)
+            : base(fullPath)
+        {
+        }
+
+        public ReadOnlyFile(string fullPath, string contentType)
+            : base(fullPath, contentType)
+        {
+        }
+
+        public ReadOnlyFile(FileBase file)
+            : base(file)
+        {
+        }
     }
 }

@@ -27,7 +27,7 @@
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <Parameters>
-        <Parameter Name="displayInfo" Type="Xamarin.Essentials.DisplayInfo" Index="0" FrameworkAlternate="xamarin-essentials;xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp" />
+        <Parameter Name="displayInfo" Type="Xamarin.Essentials.DisplayInfo" Index="0" FrameworkAlternate="xamarin-essentials;xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp;xamarin-essentials-tvos;xamarin-essentials-watchos" />
       </Parameters>
       <Docs>
         <param name="displayInfo">To be added.</param>

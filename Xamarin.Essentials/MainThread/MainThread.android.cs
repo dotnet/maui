@@ -5,7 +5,7 @@ namespace Xamarin.Essentials
 {
     public static partial class MainThread
     {
-        static Handler handler;
+        static volatile Handler handler;
 
         static bool PlatformIsMainThread
         {
