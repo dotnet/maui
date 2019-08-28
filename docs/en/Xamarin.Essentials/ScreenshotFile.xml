@@ -38,7 +38,7 @@
         <summary>Opens the file to read from it.</summary>
         <returns>A FileStream</returns>
         <remarks>
-		  </para>
+		  <para />
 		</remarks>
       </Docs>
     </Member>
