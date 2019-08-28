@@ -1,21 +1,22 @@
 ﻿using System;
 using System.Globalization;
 using System.Reflection;
-using System.Xml;
 
 namespace Xamarin.Forms.Xaml
 {
 	[ContentProperty(nameof(Default))]
 	public class OnPlatformExtension : IMarkupExtension
 	{
-		public object Default { get; set; }
-		public object Android { get; set; }
-		public object GTK { get; set; }
-		public object iOS { get; set; }
-		public object macOS { get; set; }
-		public object Tizen { get; set; }
-		public object UWP { get; set; }
-		public object WPF { get; set; }
+		static object s_notset = new object();
+
+		public object Default { get; set; } = s_notset;
+		public object Android { get; set; } = s_notset;
+		public object GTK { get; set; } = s_notset;
+		public object iOS { get; set; } = s_notset;
+		public object macOS { get; set; } = s_notset;
+		public object Tizen { get; set; } = s_notset;
+		public object UWP { get; set; } = s_notset;
+		public object WPF { get; set; } = s_notset;
 
 		public IValueConverter Converter { get; set; }
 
@@ -23,15 +24,15 @@ namespace Xamarin.Forms.Xaml
 
 		public object ProvideValue(IServiceProvider serviceProvider)
 		{
-			if (   Android == null
-				&& GTK == null
-				&& iOS == null
-				&& macOS == null
-				&& Tizen == null
-				&& UWP == null
-				&& WPF == null
-				&& Default == null) {
-				throw new XamlParseException("OnPlatformExtension requires a non-null value to be specified for at least one platform or Default.", serviceProvider);
+			if (   Android == s_notset
+				&& GTK     == s_notset
+				&& iOS     == s_notset
+				&& macOS   == s_notset
+				&& Tizen   == s_notset
+				&& UWP     == s_notset
+				&& WPF     == s_notset
+				&& Default == s_notset) {
+				throw new XamlParseException("OnPlatformExtension requires a value to be specified for at least one platform or Default.", serviceProvider);
 			}
 
 			var valueProvider = serviceProvider?.GetService<IProvideValueTarget>() ?? throw new ArgumentException();
@@ -40,21 +41,23 @@ namespace Xamarin.Forms.Xaml
 			PropertyInfo pi = null;
 			Type propertyType = null;
 
-			if (valueProvider.TargetObject is Setter setter) {
+			if (valueProvider.TargetObject is Setter setter)
 				bp = setter.Property;
-			}
 			else {
 				bp = valueProvider.TargetProperty as BindableProperty;
 				pi = valueProvider.TargetProperty as PropertyInfo;
 			}
 			propertyType = bp?.ReturnType
-							  ?? pi?.PropertyType
-							  ?? throw new InvalidOperationException("Cannot determine property to provide the value for.");
+						?? pi?.PropertyType
+						?? throw new InvalidOperationException("Cannot determine property to provide the value for.");
 
-			var value = GetValue();
-			var info = propertyType.GetTypeInfo();
-			if (value == null && info.IsValueType)
-				return Activator.CreateInstance(propertyType);
+			if (!TryGetValueForPlatform(out var value)) {
+				if (bp != null)
+					return bp.GetDefaultValue(valueProvider.TargetObject as BindableObject);
+				if (propertyType.GetTypeInfo().IsValueType)
+					return Activator.CreateInstance(propertyType);
+				return null;
+			}
 
 			if (Converter != null)
 				return Converter.Convert(value, propertyType, ConverterParameter, CultureInfo.CurrentUICulture);
@@ -91,26 +94,38 @@ namespace Xamarin.Forms.Xaml
 			return ret;
 		}
 
-		object GetValue()
+		bool TryGetValueForPlatform(out object value)
 		{
-			switch (Device.RuntimePlatform) {
-			case Device.Android:
-				return Android ?? Default;
-			case Device.GTK:
-				return GTK ?? Default;
-			case Device.iOS:
-				return iOS ?? Default;
-			case Device.macOS:
-				return macOS ?? Default;
-			case Device.Tizen:
-				return Tizen ?? Default;
-			case Device.UWP:
-				return UWP ?? Default;
-			case Device.WPF:
-				return WPF ?? Default;
-			default:
-				return Default;
+			if (Device.RuntimePlatform == Device.Android && Android != s_notset) {
+				value = Android;
+				return true;
 			}
+			if (Device.RuntimePlatform == Device.GTK && GTK != s_notset) {
+				value = GTK;
+				return true;
+			}
+			if (Device.RuntimePlatform == Device.iOS && iOS != s_notset) {
+				value = iOS;
+				return true;
+			}
+			if (Device.RuntimePlatform == Device.macOS && macOS != s_notset) {
+				value = macOS;
+				return true;
+			}
+			if (Device.RuntimePlatform == Device.Tizen && Tizen != s_notset) {
+				value = Tizen;
+				return true;
+			}
+			if (Device.RuntimePlatform == Device.UWP && UWP != s_notset) {
+				value = UWP;
+				return true;
+			}
+			if (Device.RuntimePlatform == Device.WPF && WPF != s_notset) {
+				value = WPF;
+				return true;
+			}
+			value = Default;
+			return value != s_notset;
 		}
 	}
 }
