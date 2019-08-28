@@ -15,8 +15,10 @@
     </Interface>
   </Interfaces>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>Disposing this type will attempt to delete the underlying file.</summary>
+    <remarks>
+	  <para />
+	</remarks>
   </Docs>
   <Members>
     <Member MemberName="AsStream">
@@ -33,9 +35,11 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <summary>Opens the file to read from it.</summary>
+        <returns>A FileStream</returns>
+        <remarks>
+		  </para>
+		</remarks>
       </Docs>
     </Member>
     <Member MemberName="Dispose">
@@ -55,8 +59,10 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Deletes the file.</summary>
+        <remarks>
+		  </para>
+		</remarks>
       </Docs>
     </Member>
     <Member MemberName="Dispose">
@@ -76,8 +82,8 @@
       </Parameters>
       <Docs>
         <param name="isDisposing">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Standard base type disposing pattern parameter.</summary>
+        <remarks>Override in base class and pass false to prevent disposing behaviour from happening.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Disposed">
@@ -93,9 +99,11 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Indicates whether the file has been deleted.</summary>
+        <value>True if disposed, otherwise false.</value>
+        <remarks>
+		  <para />
+		</remarks>
       </Docs>
     </Member>
     <Member MemberName="Finalize">
@@ -112,8 +120,10 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Calls Dispose if it was not called already. Only reachable if files were not disposed.</summary>
+        <remarks>
+		  <para />
+		</remarks>
       </Docs>
     </Member>
   </Members>
