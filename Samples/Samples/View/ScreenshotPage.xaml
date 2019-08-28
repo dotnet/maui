@@ -3,14 +3,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:view="clr-namespace:Samples.View;assembly=Samples"
              xmlns:viewModel="clr-namespace:Samples.ViewModel;assembly=Samples"
-             x:Class="Samples.View.ScreenshotPage">
+             x:Class="Samples.View.ScreenshotPage"
+               Title="Screenshot">
 
     <view:BasePage.BindingContext>
         <viewModel:ScreenshotViewModel />
     </view:BasePage.BindingContext>
     <ContentPage.Content>
         <StackLayout>
-            <Button Text="Welcome to Xamarin.Forms!"
+            <Button Text="Click here to perform a screenshot!"
                     Command="{Binding ScreenshotCommand}"
                 VerticalOptions="Start" 
                 HorizontalOptions="CenterAndExpand" />

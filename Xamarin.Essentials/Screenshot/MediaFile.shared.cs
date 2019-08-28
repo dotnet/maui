@@ -1,24 +1,23 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace Xamarin.Essentials
 {
-    public class MediaFile : IDisposable
+    public class ScreenshotFile : ReadOnlyFile, IDisposable
     {
-        public string Filepath { get; }
-
         public bool Disposed { get; private set; }
 
-        internal MediaFile(string filePath)
+        internal ScreenshotFile(string filePath)
+            : base(filePath, "image/png")
         {
-            Filepath = filePath;
         }
 
 #if !NETSTANDARD1_0
-        public Stream AsStream() => File.Open(Filepath, FileMode.Open, FileAccess.Read);
+        public Stream AsStream() => System.IO.File.Open(FullPath, FileMode.Open, FileAccess.Read);
 #endif
 
-        ~MediaFile()
+        ~ScreenshotFile()
         {
             Dispose(true);
         }
@@ -35,7 +34,16 @@ namespace Xamarin.Essentials
                 return;
 #if !NETSTANDARD1_0
             if (isDisposing)
-                File.Delete(Filepath);
+            {
+                try
+                {
+                    System.IO.File.Delete(FullPath);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Failed to delete temporary Screenshot file: {ex.Message}");
+                }
+            }
 #endif
             Disposed = true;
         }

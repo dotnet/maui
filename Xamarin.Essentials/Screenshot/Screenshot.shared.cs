@@ -6,7 +6,7 @@ namespace Xamarin.Essentials
     {
         public static bool CanCapture => PlatformCanCapture;
 
-        public static Task<MediaFile> CaptureAsync()
+        public static Task<ScreenshotFile> CaptureAsync()
             => PlatformCaptureAsync();
     }
 }

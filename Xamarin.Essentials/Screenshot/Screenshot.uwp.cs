@@ -14,7 +14,7 @@ namespace Xamarin.Essentials
     {
         internal static bool PlatformCanCapture => true;
 
-        static async Task<MediaFile> PlatformCaptureAsync()
+        static async Task<ScreenshotFile> PlatformCaptureAsync()
         {
             var element = Window.Current.Content as FrameworkElement;
             var fileOnDisk = await ApplicationData.Current.LocalFolder.CreateFileAsync(Path.ChangeExtension(Path.GetRandomFileName(), ".png"));
@@ -22,7 +22,7 @@ namespace Xamarin.Essentials
             await renderTargetBitmap.RenderAsync(element, (int)element.ActualWidth, (int)element.ActualHeight);
             var pixels = await renderTargetBitmap.GetPixelsAsync();
 
-            var mediaFile = new MediaFile(fileOnDisk.Path);
+            var mediaFile = new ScreenshotFile(fileOnDisk.Path);
 
             using (var stream = await fileOnDisk.OpenAsync(FileAccessMode.ReadWrite))
             {
