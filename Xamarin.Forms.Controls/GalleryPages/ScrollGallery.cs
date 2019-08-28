@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Controls
 			var btn3 = new Button { Text = "End" };
 			var btn7 = new Button { Text = "Toggle Scroll Bar Visibility" };
 			var btn6 = new Button { Text = "MakeVisible", HorizontalOptions= LayoutOptions.CenterAndExpand, BackgroundColor = Color.Accent };
-			var btn8 = new Button { Text = "Toogle Orientation" };
+			var btn8 = new Button { Text = "Toggle Orientation" };
 			var btn9 = new Button { Text = "Default Scroll Bar Visibility" };
 
 			var label = new Label { Text = string.Format ("X: {0}, Y: {1}", 0, 0) };

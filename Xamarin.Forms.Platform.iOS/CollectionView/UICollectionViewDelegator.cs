@@ -158,5 +158,10 @@ namespace Xamarin.Forms.Platform.iOS
 
 			return GroupableItemsViewController.GetReferenceSizeForFooter(collectionView, layout, section);
 		}
+
+		public override void ScrollAnimationEnded(UIScrollView scrollView)
+		{
+			GroupableItemsViewController?.HandleScrollAnimationEnded();
+		}
 	}
 }

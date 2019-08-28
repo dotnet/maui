@@ -1,4 +1,6 @@
-﻿namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
+﻿using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ScrollToGalleries;
+
+namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 {
 	internal class ScrollToGallery : ContentPage
 	{
@@ -38,7 +40,13 @@
 								ScrollToMode.Element, ExampleTemplates.ScrollToItemTemplate), Navigation),
 						GalleryBuilder.NavButton("ScrollTo Item (Code, Vertical Grid)", () =>
 							new ScrollToCodeGallery(new GridItemsLayout(3, ItemsLayoutOrientation.Vertical),
-								ScrollToMode.Element, ExampleTemplates.ScrollToItemTemplate), Navigation)
+								ScrollToMode.Element, ExampleTemplates.ScrollToItemTemplate), Navigation),
+
+
+						GalleryBuilder.NavButton("ScrollTo Index (Grouped)", () =>
+							new ScrollToGroup(), Navigation)
+						
+						
 					}
 				}
 			};

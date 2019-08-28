@@ -13,6 +13,8 @@ namespace Xamarin.Forms.Platform.iOS
 		// BindableProperty all the time 
 		bool _isGrouped;
 
+		Action _scrollAnimationEndedCallback;
+
 		public GroupableItemsViewController(GroupableItemsView groupableItemsView, ItemsViewLayout layout) 
 			: base(groupableItemsView, layout)
 		{
@@ -44,7 +46,7 @@ namespace Xamarin.Forms.Platform.iOS
 			RegisterSupplementaryViews(UICollectionElementKindSection.Footer);
 		}
 
-		private void RegisterSupplementaryViews(UICollectionElementKindSection kind)
+		void RegisterSupplementaryViews(UICollectionElementKindSection kind)
 		{
 			CollectionView.RegisterClassForSupplementaryView(typeof(HorizontalTemplatedSupplementalView),
 				kind, HorizontalTemplatedSupplementalView.ReuseId);
@@ -169,6 +171,17 @@ namespace Xamarin.Forms.Platform.iOS
 				NSIndexPath.FromItemSection(0, section)) as ItemsViewCell;
 
 			return cell.Measure();
+		}
+
+		internal void SetScrollAnimationEndedCallback(Action callback)
+		{
+			_scrollAnimationEndedCallback = callback;
+		}
+
+		internal void HandleScrollAnimationEnded()
+		{
+			_scrollAnimationEndedCallback?.Invoke();
+			_scrollAnimationEndedCallback = null;
 		}
 	}
 }
