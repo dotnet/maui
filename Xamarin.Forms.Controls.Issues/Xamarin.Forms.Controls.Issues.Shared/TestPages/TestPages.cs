@@ -568,7 +568,9 @@ namespace Xamarin.Forms.Controls
 
 
 
-
+#if UITEST
+	[NUnit.Framework.Category(UITestCategories.Shell)]
+#endif
 	public abstract class TestShell : Shell
 	{
 #if UITEST

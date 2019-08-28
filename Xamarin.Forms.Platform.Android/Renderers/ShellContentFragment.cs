@@ -131,6 +131,9 @@ namespace Xamarin.Forms.Platform.Android
 
 			((IShellController)_shellContext.Shell).AddAppearanceObserver(this, _page);
 
+			if (_shellPageContainer.LayoutParameters is CoordinatorLayout.LayoutParams layoutParams)
+				layoutParams.Behavior = new AppBarLayout.ScrollingViewBehavior();			
+
 			return _root;
 		}
 
