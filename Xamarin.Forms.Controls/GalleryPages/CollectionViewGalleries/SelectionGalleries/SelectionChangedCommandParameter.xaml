@@ -9,8 +9,8 @@
         <StackLayout>
 
             <Label x:Name="Result" Text="Pending..."></Label>
-            
-            <CollectionView ItemsSource="{Binding Items}"
+
+            <CollectionView ItemsSource="{Binding Items}" Header="This is the header"
                     SelectionMode="Single"
                     SelectionChangedCommandParameter="{Binding SelectedItem,Source={x:Reference MyCollectionView}}"
                     SelectedItem="{Binding SelectedItem, Mode=TwoWay}"

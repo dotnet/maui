@@ -3,7 +3,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	internal class TemplatedItemViewHolder : SelectableViewHolder
+	public class TemplatedItemViewHolder : SelectableViewHolder
 	{
 		readonly ItemContentView _itemContentView;
 		readonly DataTemplate _template;
@@ -11,7 +11,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		public View View { get; private set; }
 
-		public TemplatedItemViewHolder(ItemContentView itemContentView, DataTemplate template) : base(itemContentView)
+		public TemplatedItemViewHolder(ItemContentView itemContentView, DataTemplate template, 
+			bool isSelectionEnabled = true) : base(itemContentView, isSelectionEnabled)
 		{
 			_itemContentView = itemContentView;
 			_template = template;

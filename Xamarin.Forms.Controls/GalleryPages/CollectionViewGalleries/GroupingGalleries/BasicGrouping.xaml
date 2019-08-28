@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGalleries.BasicGrouping">
 	<ContentPage.Content>
-		<CollectionView x:Name="CollectionView" IsGrouped="True">
+		<CollectionView x:Name="CollectionView" IsGrouped="True" Header="This is a header" Footer="Hey, a footer."> 
 
 			<CollectionView.ItemTemplate>
 				<DataTemplate>

@@ -25,7 +25,8 @@
 
 			var itemTemplate = ExampleTemplates.PhotoTemplate();
 
-			var collectionView = new CollectionView {ItemsLayout = itemsLayout, ItemTemplate = itemTemplate, AutomationId = "collectionview" };
+			var collectionView = new CollectionView {ItemsLayout = itemsLayout, ItemTemplate = itemTemplate,
+				AutomationId = "collectionview", Header = "This is the header" };
 
 			var generator = new ItemsSourceGenerator(collectionView, initialItems, ItemsSourceType.ObservableCollection);
 

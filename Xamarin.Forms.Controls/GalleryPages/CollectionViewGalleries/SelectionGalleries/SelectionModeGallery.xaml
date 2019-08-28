@@ -41,7 +41,7 @@
 
 			<Label x:Name="SelectedItemsCommand" Grid.Row="3" HeightRequest="50" Margin="2" />
 
-			<CollectionView x:Name="CollectionView" Grid.Row="4">
+            <CollectionView x:Name="CollectionView" Grid.Row="4" Header="This is the header">
 				<CollectionView.ItemsLayout>
 					<GridItemsLayout Span="3" Orientation="Vertical"></GridItemsLayout>
 				</CollectionView.ItemsLayout>

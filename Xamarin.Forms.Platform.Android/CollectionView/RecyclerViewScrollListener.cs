@@ -5,14 +5,16 @@ using Android.Support.V7.Widget;
 
 namespace Xamarin.Forms.Platform.Android.CollectionView
 {
-	public class RecyclerViewScrollListener : RecyclerView.OnScrollListener
+	public class RecyclerViewScrollListener<TItemsView, TItemsViewSource> : RecyclerView.OnScrollListener 
+		where TItemsView : ItemsView
+		where TItemsViewSource : IItemsViewSource
 	{
 		bool _disposed;
 		int _horizontalOffset, _verticalOffset;
-		ItemsView _itemsView;
-		ItemsViewAdapter _itemsViewAdapter;
+		TItemsView _itemsView;
+		ItemsViewAdapter<TItemsView, TItemsViewSource> _itemsViewAdapter;
 
-		public RecyclerViewScrollListener(ItemsView itemsView, ItemsViewAdapter itemsViewAdapter)
+		public RecyclerViewScrollListener(TItemsView itemsView, ItemsViewAdapter<TItemsView, TItemsViewSource> itemsViewAdapter)
 		{
 			_itemsView = itemsView;
 			_itemsViewAdapter = itemsViewAdapter;

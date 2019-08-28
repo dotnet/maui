@@ -34,6 +34,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)NestedCollectionViews.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellGestures.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellBackButtonBehavior.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7102.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellInsets.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewGrouping.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5412.cs" />

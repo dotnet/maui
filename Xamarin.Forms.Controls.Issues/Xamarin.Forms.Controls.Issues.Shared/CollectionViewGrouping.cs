@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 		}
 
-#if UITEST && __IOS__ // Grouping is not implemented on Android yet
+#if UITEST 
 		[Test]
 		public void RemoveSelectedItem()
 		{
@@ -88,8 +88,6 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement("MoveGroup");
 			RunningApp.Tap("MoveGroup");
 		}
-
-
 #endif
 	}
 }

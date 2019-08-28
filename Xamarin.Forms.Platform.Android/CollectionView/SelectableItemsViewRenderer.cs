@@ -4,11 +4,11 @@ using Android.Content;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public class SelectableItemsViewRenderer : ItemsViewRenderer
+	public class SelectableItemsViewRenderer<TItemsView, TAdapter, TItemsViewSource> : ItemsViewRenderer<TItemsView, TAdapter, TItemsViewSource> 
+		where TItemsView : SelectableItemsView
+		where TAdapter : SelectableItemsViewAdapter<TItemsView, TItemsViewSource>
+		where TItemsViewSource : IItemsViewSource
 	{
-		SelectableItemsView SelectableItemsView => (SelectableItemsView)ItemsView;
-		SelectableItemsViewAdapter SelectableItemsViewAdapter => (SelectableItemsViewAdapter)ItemsViewAdapter;
-
 		public SelectableItemsViewRenderer(Context context) : base(context)
 		{
 		}
@@ -25,28 +25,23 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
-		protected override void SetUpNewElement(ItemsView newElement)
+		protected override void SetUpNewElement(TItemsView newElement)
 		{
-			if (newElement != null && !(newElement is SelectableItemsView))
-			{
-				throw new ArgumentException($"{nameof(newElement)} must be of type {typeof(SelectableItemsView).Name}");
-			}
-
 			base.SetUpNewElement(newElement);
 
 			UpdateNativeSelection();
 		}
 
-		protected override ItemsViewAdapter CreateAdapter()
+		protected override TAdapter CreateAdapter()
 		{
-			return new SelectableItemsViewAdapter(SelectableItemsView);
+			return (TAdapter)new SelectableItemsViewAdapter<TItemsView, TItemsViewSource>(ItemsView);
 		}
 
 		void UpdateNativeSelection()
 		{
-			var mode = SelectableItemsView.SelectionMode;
+			var mode = ItemsView.SelectionMode;
 
-			SelectableItemsViewAdapter.ClearNativeSelection();
+			ItemsViewAdapter.ClearNativeSelection();
 
 			switch (mode)
 			{
@@ -54,16 +49,16 @@ namespace Xamarin.Forms.Platform.Android
 					return;
 
 				case SelectionMode.Single:
-					var selectedItem = SelectableItemsView.SelectedItem;
-					SelectableItemsViewAdapter.MarkNativeSelection(selectedItem);
+					var selectedItem = ItemsView.SelectedItem;
+					ItemsViewAdapter.MarkNativeSelection(selectedItem);
 					return;
 
 				case SelectionMode.Multiple:
-					var selectedItems = SelectableItemsView.SelectedItems;
+					var selectedItems = ItemsView.SelectedItems;
 					
 					foreach(var item in selectedItems)
 					{
-						SelectableItemsViewAdapter.MarkNativeSelection(item);
+						ItemsViewAdapter.MarkNativeSelection(item);
 					}
 					return;
 			}

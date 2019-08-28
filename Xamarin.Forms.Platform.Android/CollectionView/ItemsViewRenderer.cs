@@ -11,22 +11,25 @@ using AViewCompat = Android.Support.V4.View.ViewCompat;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public class ItemsViewRenderer : RecyclerView, IVisualElementRenderer, IEffectControlProvider
+	public class ItemsViewRenderer<TItemsView, TAdapter, TItemsViewSource> : RecyclerView, IVisualElementRenderer, IEffectControlProvider 
+		where TItemsView : ItemsView
+		where TAdapter : ItemsViewAdapter<TItemsView, TItemsViewSource>
+		where TItemsViewSource : IItemsViewSource
 	{
 		readonly AutomationPropertiesProvider _automationPropertiesProvider;
 		readonly EffectControlProvider _effectControlProvider;
 
-		protected ItemsViewAdapter ItemsViewAdapter;
+		protected TAdapter ItemsViewAdapter;
 
 		int? _defaultLabelFor;
 		bool _disposed;
 
-		protected ItemsView ItemsView;
+		protected TItemsView ItemsView;
 
 		IItemsLayout _layout;
 		SnapManager _snapManager;
 		ScrollHelper _scrollHelper;
-		RecyclerViewScrollListener _recyclerViewScrollListener;
+		RecyclerViewScrollListener<TItemsView, TItemsViewSource> _recyclerViewScrollListener;
 
 		EmptyViewAdapter _emptyViewAdapter;
 		readonly DataChangeObserver _emptyCollectionObserver;
@@ -39,7 +42,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public ItemsViewRenderer(Context context) : base(new ContextThemeWrapper(context, Resource.Style.collectionViewStyle))
 		{
-			Xamarin.Forms.CollectionView.VerifyCollectionViewFlagEnabled(nameof(ItemsViewRenderer));
+			Xamarin.Forms.CollectionView.VerifyCollectionViewFlagEnabled(nameof(ItemsViewRenderer<TItemsView, TAdapter, TItemsViewSource>));
 
 			_automationPropertiesProvider = new AutomationPropertiesProvider(this);
 			_effectControlProvider = new EffectControlProvider(this);
@@ -97,7 +100,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			var oldElement = ItemsView;
-			var newElement = (ItemsView)element;
+			var newElement = (TItemsView)element;
 
 			TearDownOldElement(oldElement);
 			SetUpNewElement(newElement);
@@ -203,7 +206,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			// TODO hartez 2018/10/24 10:41:55 If the ItemTemplate changes from set to null, we need to make sure to clear the recyclerview pool	
 
-			if (changedProperty.Is(ItemsView.ItemsSourceProperty))
+			if (changedProperty.Is(Xamarin.Forms.ItemsView.ItemsSourceProperty))
 			{
 				UpdateItemsSource();
 			}
@@ -215,23 +218,24 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				UpdateFlowDirection();
 			}
-			else if (changedProperty.IsOneOf(ItemsView.EmptyViewProperty, ItemsView.EmptyViewTemplateProperty))
+			else if (changedProperty.IsOneOf(Xamarin.Forms.ItemsView.EmptyViewProperty, 
+				Xamarin.Forms.ItemsView.EmptyViewTemplateProperty))
 			{
 				UpdateEmptyView();
 			}
-			else if (changedProperty.Is(ItemsView.ItemSizingStrategyProperty))
+			else if (changedProperty.Is(Xamarin.Forms.ItemsView.ItemSizingStrategyProperty))
 			{
 				UpdateAdapter();
 			}
-			else if (changedProperty.Is(ItemsView.HorizontalScrollBarVisibilityProperty))
+			else if (changedProperty.Is(Xamarin.Forms.ItemsView.HorizontalScrollBarVisibilityProperty))
 			{
 				UpdateHorizontalScrollBarVisibility();
 			}
-			else if (changedProperty.Is(ItemsView.VerticalScrollBarVisibilityProperty))
+			else if (changedProperty.Is(Xamarin.Forms.ItemsView.VerticalScrollBarVisibilityProperty))
 			{
 				UpdateVerticalScrollBarVisibility();
 			}
-			else if (changedProperty.Is(ItemsView.ItemsUpdatingScrollModeProperty))
+			else if (changedProperty.Is(Xamarin.Forms.ItemsView.ItemsUpdatingScrollModeProperty))
 			{
 				UpdateItemsUpdatingScrollMode();
 			}
@@ -257,9 +261,9 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateEmptyView();
 		}
 
-		protected virtual ItemsViewAdapter CreateAdapter()
+		protected virtual TAdapter CreateAdapter()
 		{
-			return new ItemsViewAdapter(ItemsView);
+			return (TAdapter)new ItemsViewAdapter<TItemsView, TItemsViewSource>(ItemsView);
 		}
 
 		void UpdateAdapter()
@@ -274,7 +278,7 @@ namespace Xamarin.Forms.Platform.Android
 			oldItemViewAdapter?.Dispose();
 		}
 
-		protected virtual void SetUpNewElement(ItemsView newElement)
+		protected virtual void SetUpNewElement(TItemsView newElement)
 		{
 			if (newElement == null)
 			{
@@ -316,7 +320,7 @@ namespace Xamarin.Forms.Platform.Android
 			// Listen for ScrollTo requests
 			ItemsView.ScrollToRequested += ScrollToRequested;
 
-			_recyclerViewScrollListener = new RecyclerViewScrollListener(ItemsView, ItemsViewAdapter);
+			_recyclerViewScrollListener = new RecyclerViewScrollListener<TItemsView, TItemsViewSource>(ItemsView, ItemsViewAdapter);
 			AddOnScrollListener(_recyclerViewScrollListener);
 		}
 

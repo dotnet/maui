@@ -6,7 +6,7 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		public TextView TextView { get; }
 
-		public TextViewHolder(TextView itemView) : base(itemView)
+		public TextViewHolder(TextView itemView, bool isSelectionEnabled = true) : base(itemView, isSelectionEnabled)
 		{
 			TextView = itemView;
 			TextView.Clickable = true;

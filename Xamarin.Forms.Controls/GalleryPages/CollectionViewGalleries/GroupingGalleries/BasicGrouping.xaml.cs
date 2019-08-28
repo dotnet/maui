@@ -11,12 +11,12 @@ using Xamarin.Forms.Xaml;
 namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
-	[Preserve (AllMembers = true)]
+	[Preserve(AllMembers = true)]
 	public partial class BasicGrouping : ContentPage
 	{
-		public BasicGrouping ()
+		public BasicGrouping()
 		{
-			InitializeComponent ();
+			InitializeComponent();
 
 			CollectionView.ItemsSource = new SuperTeams();
 		}

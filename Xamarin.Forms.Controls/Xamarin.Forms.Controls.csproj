@@ -50,11 +50,17 @@
     <EmbeddedResource Update="GalleryPages\BindableLayoutGalleryPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
+    <EmbeddedResource Update="GalleryPages\CollectionViewGalleries\GroupingGalleries\GridGrouping.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="GalleryPages\CollectionViewGalleries\HeaderFooterGalleries\FooterOnlyString.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
     <EmbeddedResource Update="GalleryPages\CharacterSpacingGallery.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="GalleryPages\CollectionViewGalleries\EmptyViewGalleries\EmptyViewSwapGallery.xaml">
-	<Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+	    <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="GalleryPages\CollectionViewGalleries\NestedGalleries\NestedCollectionViewGallery.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>

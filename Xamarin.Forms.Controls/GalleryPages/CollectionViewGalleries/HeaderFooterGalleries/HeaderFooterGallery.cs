@@ -20,6 +20,7 @@
 						GalleryBuilder.NavButton("Header/Footer (Forms View)", () => new HeaderFooterView(), Navigation),
 						GalleryBuilder.NavButton("Header/Footer (Template)", () => new HeaderFooterTemplate(), Navigation),
 						GalleryBuilder.NavButton("Header/Footer (Grid)", () => new HeaderFooterGrid(), Navigation),
+						GalleryBuilder.NavButton("Footer Only (String)", () => new FooterOnlyString(), Navigation),
 					}
 				}
 			};

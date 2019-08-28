@@ -7,7 +7,7 @@
 
             <Label Text="The CollectionView below should have several items already selected."/>
 
-            <CollectionView x:Name="CollectionView" Grid.Row="3">
+            <CollectionView x:Name="CollectionView" Grid.Row="3" Header="This is the header">
                 <CollectionView.ItemsLayout>
                     <GridItemsLayout Span="4" Orientation="Vertical"></GridItemsLayout>
                 </CollectionView.ItemsLayout>

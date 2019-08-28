@@ -65,10 +65,15 @@
     <Compile Include="AppCompat\ILifeCycleState.cs" />
     <Compile Include="AppCompat\ShellFragmentContainer.cs" />
     <Compile Include="BorderBackgroundManager.cs" />
+    <Compile Include="CollectionView\AdapterNotifier.cs" />
     <Compile Include="CollectionView\CarouselViewRenderer.cs" />
     <Compile Include="CollectionView\CenterSnapHelper.cs" />
     <Compile Include="CollectionView\DataChangeObserver.cs" />
     <Compile Include="CollectionView\EmptySource.cs" />
+    <Compile Include="CollectionView\GroupableItemsViewAdapter.cs" />
+    <Compile Include="CollectionView\GroupableItemsViewRenderer.cs" />
+    <Compile Include="CollectionView\ICollectionChangedNotifier.cs" />
+    <Compile Include="CollectionView\ObservableGroupedSource.cs" />
     <Compile Include="CollectionView\RecyclerViewScrollListener.cs" />
     <Compile Include="CollectionView\GridLayoutSpanSizeLookup.cs" />
     <Compile Include="CollectionView\NongreedySnapHelper.cs" />
@@ -99,6 +104,7 @@
     <Compile Include="CollectionView\TemplatedItemViewHolder.cs" />
     <Compile Include="CollectionView\TextViewHolder.cs" />
     <Compile Include="CollectionView\ItemViewType.cs" />
+    <Compile Include="CollectionView\UngroupedItemsSource.cs" />
     <Compile Include="Elevation.cs" />
     <Compile Include="Extensions\DrawableExtensions.cs" />
     <Compile Include="Extensions\EntryRendererExtensions.cs" />

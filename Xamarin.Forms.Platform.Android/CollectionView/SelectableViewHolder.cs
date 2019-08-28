@@ -7,15 +7,17 @@ using Android.Util;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	internal abstract class SelectableViewHolder : RecyclerView.ViewHolder, global::Android.Views.View.IOnClickListener
+	public abstract class SelectableViewHolder : RecyclerView.ViewHolder, global::Android.Views.View.IOnClickListener
 	{
 		bool _isSelected;
 		Drawable _selectedDrawable;
 		Drawable _selectableItemDrawable;
+		readonly bool _isSelectionEnabled;
 
-		protected SelectableViewHolder(global::Android.Views.View itemView) : base(itemView)
+		protected SelectableViewHolder(global::Android.Views.View itemView, bool isSelectionEnabled = true) : base(itemView)
 		{
 			itemView.SetOnClickListener(this);
+			_isSelectionEnabled = isSelectionEnabled;
 		}
 
 		public bool IsSelected
@@ -37,7 +39,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		public void OnClick(global::Android.Views.View view)
 		{
-			OnViewHolderClicked(AdapterPosition);
+			if (_isSelectionEnabled)
+			{
+				OnViewHolderClicked(AdapterPosition);
+			}
 		}
 
 		public event EventHandler<int> Clicked;

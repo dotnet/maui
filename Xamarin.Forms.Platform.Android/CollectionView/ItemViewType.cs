@@ -6,5 +6,7 @@
 		public const int TemplatedItem = 42;
 		public const int Header = 43;
 		public const int Footer = 44;
+		public const int GroupHeader = 45;
+		public const int GroupFooter = 46;
 	}
 }

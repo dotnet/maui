@@ -4,7 +4,7 @@ using Android.Content;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public class CarouselViewRenderer : ItemsViewRenderer
+	public class CarouselViewRenderer : ItemsViewRenderer<ItemsView, ItemsViewAdapter<ItemsView, IItemsViewSource>, IItemsViewSource>
 	{
 		// TODO hartez 2018/08/29 17:13:17 Does this need to override SelectLayout so it ignores grids?	(Yes, and so it can warn on unknown layouts)
 
@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Platform.Android
 			// But for the Carousel, we want it to create the items to fit the width/height of the viewport
 			// So we give it an alternate delegate for creating the views
 
-			ItemsViewAdapter = new ItemsViewAdapter(ItemsView, 
+			ItemsViewAdapter = new ItemsViewAdapter<ItemsView, IItemsViewSource>(ItemsView, 
 				(view, context) => new SizedItemContentView(context, () => Width, () => Height));
 
 			SwapAdapter(ItemsViewAdapter, false);

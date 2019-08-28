@@ -1,44 +1,84 @@
 using System;
 using System.Collections;
 using System.Collections.Specialized;
-using Android.Support.V7.Widget;
 
 namespace Xamarin.Forms.Platform.Android
 {
 	internal class ObservableItemsSource : IItemsViewSource
 	{
-		readonly RecyclerView.Adapter _adapter;
 		readonly IList _itemsSource;
+		readonly ICollectionChangedNotifier _notifier;
 		bool _disposed;
 
-		public ObservableItemsSource(IList itemSource, RecyclerView.Adapter adapter)
+		public ObservableItemsSource(IList itemSource, ICollectionChangedNotifier notifier)
 		{
 			_itemsSource = itemSource;
-			_adapter = adapter;
-
+			_notifier = notifier;
+			_notifier = notifier;
 			((INotifyCollectionChanged)itemSource).CollectionChanged += CollectionChanged;
 		}
 
-		public int Count => _itemsSource.Count;
+		public int Count => _itemsSource.Count + (HasHeader ? 1 : 0) + (HasFooter ? 1 : 0);
 
-		public object this[int index] => _itemsSource[index];
+		public bool HasHeader { get; set; }
+		public bool HasFooter { get; set; }
 
 		public void Dispose()
 		{
 			Dispose(true);
 		}
 
+		public bool IsFooter(int index)
+		{
+			return HasFooter && index == Count - 1;
+		}
+
+		public bool IsHeader(int index)
+		{
+			return HasHeader && index == 0;
+		}
+
+		public int GetPosition(object item)
+		{
+			for (int n = 0; n < _itemsSource.Count; n++)
+			{
+				if (_itemsSource[n] == item)
+				{
+					return AdjustPositionForHeader(n);
+				}
+			}
+
+			return -1;
+		}
+
+		public object GetItem(int position)
+		{
+			return _itemsSource[AdjustIndexForHeader(position)];
+		}
+
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!_disposed)
+			if (_disposed)
 			{
-				if (disposing)
-				{
-					((INotifyCollectionChanged)_itemsSource).CollectionChanged -= CollectionChanged;
-				}
-
-				_disposed = true;
+				return;
 			}
+
+			_disposed = true;
+
+			if (disposing)
+			{
+				((INotifyCollectionChanged)_itemsSource).CollectionChanged -= CollectionChanged;
+			}
+		}
+
+		int AdjustIndexForHeader(int index)
+		{
+			return index - (HasHeader ? 1 : 0);
+		}
+
+		int AdjustPositionForHeader(int position)
+		{
+			return position + (HasHeader ? 1 : 0);
 		}
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
@@ -58,7 +98,7 @@ namespace Xamarin.Forms.Platform.Android
 					Move(args);
 					break;
 				case NotifyCollectionChangedAction.Reset:
-					_adapter.NotifyDataSetChanged();
+					_notifier.NotifyDataSetChanged();
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
@@ -72,27 +112,28 @@ namespace Xamarin.Forms.Platform.Android
 			if (count == 1)
 			{
 				// For a single item, we can use NotifyItemMoved and get the animation
-				_adapter.NotifyItemMoved(args.OldStartingIndex, args.NewStartingIndex);
+				_notifier.NotifyItemMoved(this, AdjustPositionForHeader(args.OldStartingIndex), AdjustPositionForHeader(args.NewStartingIndex));
 				return;
 			}
 
-			var start = Math.Min(args.OldStartingIndex, args.NewStartingIndex);
-			var end = Math.Max(args.OldStartingIndex, args.NewStartingIndex) + count;
-			_adapter.NotifyItemRangeChanged(start, end);
+			var start = AdjustPositionForHeader(Math.Min(args.OldStartingIndex, args.NewStartingIndex));
+			var end = AdjustPositionForHeader(Math.Max(args.OldStartingIndex, args.NewStartingIndex) + count);
+			_notifier.NotifyItemRangeChanged(this, start, end);
 		}
 
 		void Add(NotifyCollectionChangedEventArgs args)
 		{
 			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _itemsSource.IndexOf(args.NewItems[0]);
+			startIndex = AdjustPositionForHeader(startIndex);
 			var count = args.NewItems.Count;
 
 			if (count == 1)
 			{
-				_adapter.NotifyItemInserted(startIndex);
+				_notifier.NotifyItemInserted(this, startIndex);
 				return;
 			}
 
-			_adapter.NotifyItemRangeInserted(startIndex, count);
+			_notifier.NotifyItemRangeInserted(this, startIndex, count);
 		}
 
 		void Remove(NotifyCollectionChangedEventArgs args)
@@ -103,25 +144,28 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				// INCC implementation isn't giving us enough information to know where the removed items were in the
 				// collection. So the best we can do is a NotifyDataSetChanged()
-				_adapter.NotifyDataSetChanged();
+				_notifier.NotifyDataSetChanged();
 				return;
 			}
+
+			startIndex = AdjustPositionForHeader(startIndex);
 
 			// If we have a start index, we can be more clever about removing the item(s) (and get the nifty animations)
 			var count = args.OldItems.Count;
 
 			if (count == 1)
 			{
-				_adapter.NotifyItemRemoved(startIndex);
+				_notifier.NotifyItemRemoved(this, startIndex);
 				return;
 			}
 
-			_adapter.NotifyItemRangeRemoved(startIndex, count);
+			_notifier.NotifyItemRangeRemoved(this, startIndex, count);
 		}
 
 		void Replace(NotifyCollectionChangedEventArgs args)
 		{
 			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _itemsSource.IndexOf(args.NewItems[0]);
+			startIndex = AdjustPositionForHeader(startIndex);
 			var newCount = args.NewItems.Count;
 
 			if (newCount == args.OldItems.Count)
@@ -130,19 +174,19 @@ namespace Xamarin.Forms.Platform.Android
 				// notification to the adapter
 				if (newCount == 1)
 				{
-					_adapter.NotifyItemChanged(startIndex);
+					_notifier.NotifyItemChanged(this, startIndex);
 				}
 				else
 				{
-					_adapter.NotifyItemRangeChanged(startIndex, newCount);
+					_notifier.NotifyItemRangeChanged(this, startIndex, newCount);
 				}
 
 				return;
 			}
-			
+
 			// The original and replacement sets are of unequal size; this means that everything currently in view will 
 			// have to be updated. So we just have to use NotifyDataSetChanged and let the RecyclerView update everything
-			_adapter.NotifyDataSetChanged();
+			_notifier.NotifyDataSetChanged();
 		}
 	}
 }

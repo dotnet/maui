@@ -10,7 +10,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 			Title = "Observable Grouped List";
 
 			var buttonStyle = new Style(typeof(Button)) { };
-			buttonStyle.Setters.Add(new Setter() { Property = Button.HeightRequestProperty, Value = 20 });
+			buttonStyle.Setters.Add(new Setter() { Property = Button.HeightRequestProperty, Value = 30 });
 			buttonStyle.Setters.Add(new Setter() { Property = Button.FontSizeProperty, Value = 10 });
 
 			var layout = new Grid
@@ -34,6 +34,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 
 			var collectionView = new CollectionView
 			{
+				Header = "This is a header",
+				Footer = "Hey, I'm a footer. Look at me!",
 				ItemTemplate = ItemTemplate(),
 				GroupFooterTemplate = GroupFooterTemplate(),
 				GroupHeaderTemplate = GroupHeaderTemplate(),
@@ -102,7 +104,15 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 				Style = buttonStyle };
 			groupRemover.Clicked += (obj, args) => {
 				itemsSource?.Remove(itemsSource[0]);
-				groupRemover.Text = $"Remove {itemsSource[0].Name}";
+				if (itemsSource.Count > 0)
+				{
+					groupRemover.Text = $"Remove {itemsSource[0].Name}";
+				}
+				else
+				{
+					groupRemover.Text = "";
+					groupRemover.IsEnabled = false;
+				}
 				mover.Text = $"Move Selected To {itemsSource[0].Name}";
 			};
 

@@ -15,7 +15,7 @@
 
 			<Label x:Name="SelectedItemsCommand" Grid.Row="2"/>
 
-            <CollectionView x:Name="CollectionView" Grid.Row="3" />
+            <CollectionView x:Name="CollectionView" Grid.Row="3" Header="This is the header" />
 
         </Grid>
     </ContentPage.Content>
