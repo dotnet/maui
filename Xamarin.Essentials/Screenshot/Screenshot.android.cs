@@ -27,14 +27,29 @@ namespace Xamarin.Essentials
         {
             var path = GetTempFileName();
             var view = Platform.GetCurrentActivity(false).Window.DecorView.RootView;
-            view.DrawingCacheEnabled = true;
-            var bitmap = Bitmap.CreateBitmap(view.GetDrawingCache(true));
-            using (var stream = File.Create(path))
+            using (var bitmap = Bitmap.CreateBitmap(view.Width, view.Height, Bitmap.Config.Argb8888))
             {
-                var success = await bitmap.CompressAsync(Bitmap.CompressFormat.Png, 100, stream);
-                if (!success)
-                    throw new AndroidException("Failure to compress bitmap to file!");
+                var canvas = new Canvas(bitmap);
+                var drawable = view.Background;
+                if (drawable != null)
+                {
+                    drawable.Draw(canvas);
+                }
+                else
+                {
+                    canvas.DrawColor(Color.White);
+                }
+
+                view.Draw(canvas);
+
+                using (var stream = File.Create(path))
+                {
+                    var success = await bitmap.CompressAsync(Bitmap.CompressFormat.Png, 100, stream);
+                    if (!success)
+                        throw new AndroidException("Failure to compress bitmap to file!");
+                }
             }
+
             return new MediaFile(path);
         }
     }
