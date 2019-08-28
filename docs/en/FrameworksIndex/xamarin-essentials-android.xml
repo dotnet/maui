@@ -122,7 +122,7 @@
       <Member Id="M:Xamarin.Essentials.ColorExtensions.AddLuminosity(System.Drawing.Color,System.Single)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.MultiplyAlpha(System.Drawing.Color,System.Single)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.ToInt(System.Drawing.Color)" />
-      <Member Id="M:Xamarin.Essentials.ColorExtensions.Android.ToPlatformColor(System.Drawing.Color)" />
+      <Member Id="M:Xamarin.Essentials.ColorExtensions.ToPlatformColor(System.Drawing.Color)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.ToSystemColor(Android.Graphics.Color)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.ToUInt(System.Drawing.Color)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.WithAlpha(System.Drawing.Color,System.Int32)" />
@@ -585,6 +585,17 @@
       <Member Id="M:Xamarin.Essentials.RectangleExtensions.Android.ToPlatformRectangleF(System.Drawing.RectangleF)" />
       <Member Id="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangle(Android.Graphics.Rect)" />
       <Member Id="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangleF(Android.Graphics.RectF)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Screenshot" Id="T:Xamarin.Essentials.Screenshot">
+      <Member Id="M:Xamarin.Essentials.Screenshot.CaptureAsync" />
+      <Member Id="P:Xamarin.Essentials.Screenshot.CanCapture" />
+    </Type>
+    <Type Name="Xamarin.Essentials.ScreenshotFile" Id="T:Xamarin.Essentials.ScreenshotFile">
+      <Member Id="M:Xamarin.Essentials.ScreenshotFile.AsStream" />
+      <Member Id="M:Xamarin.Essentials.ScreenshotFile.Dispose" />
+      <Member Id="M:Xamarin.Essentials.ScreenshotFile.Dispose(System.Boolean)" />
+      <Member Id="M:Xamarin.Essentials.ScreenshotFile.Finalize" />
+      <Member Id="P:Xamarin.Essentials.ScreenshotFile.Disposed" />
     </Type>
     <Type Name="Xamarin.Essentials.SecureStorage" Id="T:Xamarin.Essentials.SecureStorage">
       <Member Id="M:Xamarin.Essentials.SecureStorage.GetAsync(System.String)" />

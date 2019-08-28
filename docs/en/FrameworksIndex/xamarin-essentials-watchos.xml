@@ -575,6 +575,17 @@
       <Member Id="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangle(CoreGraphics.CGRect)" />
       <Member Id="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangleF(CoreGraphics.CGRect)" />
     </Type>
+    <Type Name="Xamarin.Essentials.Screenshot" Id="T:Xamarin.Essentials.Screenshot">
+      <Member Id="M:Xamarin.Essentials.Screenshot.CaptureAsync" />
+      <Member Id="P:Xamarin.Essentials.Screenshot.CanCapture" />
+    </Type>
+    <Type Name="Xamarin.Essentials.ScreenshotFile" Id="T:Xamarin.Essentials.ScreenshotFile">
+      <Member Id="M:Xamarin.Essentials.ScreenshotFile.AsStream" />
+      <Member Id="M:Xamarin.Essentials.ScreenshotFile.Dispose" />
+      <Member Id="M:Xamarin.Essentials.ScreenshotFile.Dispose(System.Boolean)" />
+      <Member Id="M:Xamarin.Essentials.ScreenshotFile.Finalize" />
+      <Member Id="P:Xamarin.Essentials.ScreenshotFile.Disposed" />
+    </Type>
     <Type Name="Xamarin.Essentials.SecureStorage" Id="T:Xamarin.Essentials.SecureStorage">
       <Member Id="M:Xamarin.Essentials.SecureStorage.GetAsync(System.String)" />
       <Member Id="M:Xamarin.Essentials.SecureStorage.Remove(System.String)" />
