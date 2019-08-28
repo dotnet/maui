@@ -23,7 +23,7 @@ namespace Xamarin.Essentials
 
         static string GetTempFileName() => Path.Combine(Environment.ExternalStorageDirectory.Path, Path.GetTempFileName());
 
-        static async Task<MediaFile> PlatformCaptureAsync()
+        static async Task<ScreenshotFile> PlatformCaptureAsync()
         {
             var path = GetTempFileName();
             var view = Platform.GetCurrentActivity(false).Window.DecorView.RootView;
@@ -50,7 +50,7 @@ namespace Xamarin.Essentials
                 }
             }
 
-            return new MediaFile(path);
+            return new ScreenshotFile(path);
         }
     }
 }

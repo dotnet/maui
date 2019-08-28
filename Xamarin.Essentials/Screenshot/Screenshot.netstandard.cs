@@ -7,7 +7,7 @@ namespace Xamarin.Essentials
         static bool PlatformCanCapture =>
             throw new NotImplementedInReferenceAssemblyException();
 
-        static Task<MediaFile> PlatformCaptureAsync() =>
+        static Task<ScreenshotFile> PlatformCaptureAsync() =>
             throw new NotImplementedInReferenceAssemblyException();
     }
 }

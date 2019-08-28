@@ -29,7 +29,7 @@ namespace Samples.ViewModel
             var mediaFile = await Xamarin.Essentials.Screenshot.CaptureAsync();
             Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(() =>
             {
-                Screenshot = ImageSource.FromFile(mediaFile.Filepath);
+                Screenshot = ImageSource.FromFile(mediaFile.FullPath);
             });
         }
     }

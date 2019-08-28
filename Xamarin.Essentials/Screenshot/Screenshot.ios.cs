@@ -19,12 +19,12 @@ namespace Xamarin.Essentials
             return tempFileName;
         }
 
-        static Task<MediaFile> PlatformCaptureAsync()
+        static Task<ScreenshotFile> PlatformCaptureAsync()
         {
             var img = UIScreen.MainScreen.Capture();
             var bytes = img.AsPNG().ToArray();
-            var file = new MediaFile(GetTempFileName());
-            File.WriteAllBytes(file.Filepath, bytes);
+            var file = new ScreenshotFile(GetTempFileName());
+            File.WriteAllBytes(file.FullPath, bytes);
             return Task.FromResult(file);
         }
     }
