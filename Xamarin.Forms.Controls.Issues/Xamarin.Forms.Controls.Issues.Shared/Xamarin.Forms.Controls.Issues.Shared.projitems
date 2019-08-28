@@ -24,6 +24,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue7061.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7111.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ShellFlyoutBehavior.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellGestures.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellBackButtonBehavior.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellInsets.cs" />

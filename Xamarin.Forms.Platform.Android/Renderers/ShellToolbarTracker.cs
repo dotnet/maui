@@ -234,33 +234,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		void OnBackButtonBehaviorChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if(e.PropertyName == BackButtonBehavior.IsEnabledProperty.PropertyName)
-			{
-				UpdateBackButtonBehaviorIsEnabled();
-				_drawerToggle.SyncState();
-			}
-
 			UpdateLeftBarButtonItem();
 		}
 
-		void UpdateBackButtonBehaviorIsEnabled()
-		{
-			if (_drawerLayout == null || _drawerToggle == null)
-				return;
-
-			bool isEnabled = _backButtonBehavior?.IsEnabled ?? true;
-
-			if (isEnabled)
-			{
-				_drawerLayout.SetDrawerLockMode(DrawerLayout.LockModeUnlocked);
-				_drawerToggle.OnDrawerStateChanged(DrawerLayout.LockModeUnlocked);
-			}
-			else
-			{
-				_drawerLayout.SetDrawerLockMode(DrawerLayout.LockModeLockedClosed);
-				_drawerToggle.OnDrawerStateChanged(DrawerLayout.LockModeLockedClosed);
-			}
-		}
 
 		protected virtual void OnPageToolbarItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
@@ -314,6 +290,7 @@ namespace Xamarin.Forms.Platform.Android
 			var image = backButtonHandler.GetPropertyIfSet<ImageSource>(BackButtonBehavior.IconOverrideProperty, null);
 			var text = backButtonHandler.GetPropertyIfSet(BackButtonBehavior.TextOverrideProperty, String.Empty);
 			var command = backButtonHandler.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
+			bool isEnabled = _backButtonBehavior.GetPropertyIfSet(BackButtonBehavior.IsEnabledProperty, true);
 
 			if (image == null)
 			{
@@ -361,14 +338,23 @@ namespace Xamarin.Forms.Platform.Android
 				_drawerToggle.DrawerIndicatorEnabled = false;
 				toolbar.NavigationIcon = icon;
 			}
-			else 
+			else if(_flyoutBehavior == FlyoutBehavior.Flyout)
 			{
-				toolbar.NavigationIcon = null;
-				_drawerToggle.DrawerIndicatorEnabled = true;
-				_drawerToggle.DrawerArrowDrawable = icon;
+				_drawerToggle.DrawerIndicatorEnabled = isEnabled;
+				if(isEnabled)
+				{
+					_drawerToggle.DrawerArrowDrawable = icon;
+					toolbar.NavigationIcon = null;
+				}
+				else
+					toolbar.NavigationIcon = icon;
+			}
+			else
+			{
+				_drawerToggle.DrawerIndicatorEnabled = false;
 			}
 
-			UpdateBackButtonBehaviorIsEnabled();
+
 			_drawerToggle.SyncState();
 
 			//this needs to be set after SyncState

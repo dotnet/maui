@@ -131,7 +131,8 @@ namespace Xamarin.Forms.Controls
 			{
 				cellName = typeIssueAttribute.DisplayName;
 			}
-			else {
+			else
+			{
 				cellName = typeIssueAttribute.Description;
 			}
 
@@ -241,7 +242,7 @@ namespace Xamarin.Forms.Controls
 					RunningApp.TestServer.Get("version");
 					return;
 				}
-				catch 
+				catch
 				{
 				}
 
@@ -573,9 +574,9 @@ namespace Xamarin.Forms.Controls
 #endif
 	public abstract class TestShell : Shell
 	{
+		protected const string FlyoutIconAutomationId = "OK";
 #if UITEST
 		public IApp RunningApp => AppSetup.RunningApp;
-
 		protected virtual bool Isolate => true;
 #endif
 
@@ -628,11 +629,11 @@ namespace Xamarin.Forms.Controls
 			return page;
 		}
 
-		public ContentPage CreateContentPage(string shellItemTitle = null)
+		public TabBar CreateTabBar(string shellItemTitle)
 		{
 			shellItemTitle = shellItemTitle ?? $"Item: {Items.Count}";
 			ContentPage page = new ContentPage();
-			ShellItem item = new ShellItem()
+			TabBar item = new TabBar()
 			{
 				Title = shellItemTitle,
 				Items =
@@ -651,31 +652,52 @@ namespace Xamarin.Forms.Controls
 			};
 
 			Items.Add(item);
+			return item;
+		}
+
+		public ContentPage CreateContentPage(string shellItemTitle = null) 
+			=> CreateContentPage<ShellItem, ShellSection>(shellItemTitle);
+
+		public ContentPage CreateContentPage<TShellItem, TShellSection>(string shellItemTitle = null)
+			where TShellItem : ShellItem
+			where TShellSection : ShellSection
+		{
+			shellItemTitle = shellItemTitle ?? $"Item: {Items.Count}";
+			ContentPage page = new ContentPage();
+
+			TShellItem item = Activator.CreateInstance<TShellItem>();
+			item.Title = shellItemTitle;
+
+			TShellSection shellSection = Activator.CreateInstance<TShellSection>();
+
+			shellSection.Items.Add(new ShellContent()
+			{
+				Content = page
+			});
+
+			item.Items.Add(shellSection);
+
+			Items.Add(item);
 			return page;
 		}
 
+		public ShellItem AddContentPage(ContentPage contentPage = null)
+			=> AddContentPage<ShellItem, ShellSection>(contentPage);
 
-		public ShellItem AddContentPage(ContentPage contentPage)
+		public TShellItem AddContentPage<TShellItem, TShellSection>(ContentPage contentPage = null)
+			where TShellItem : ShellItem
+			where TShellSection : ShellSection
 		{
-			ContentPage page = contentPage ?? new ContentPage();
-			ShellItem item = new ShellItem()
-			{
-				Items =
-				{
-					new ShellSection()
-					{
-						Items =
-						{
-							new ShellContent()
-							{
-								Content = contentPage
-							}
-						}
-					}
-				}
-			};
-
+			TShellItem item = Activator.CreateInstance<TShellItem>();
+			TShellSection shellSection = Activator.CreateInstance<TShellSection>();
 			Items.Add(item);
+			item.Items.Add(shellSection);
+
+			shellSection.Items.Add(new ShellContent()
+			{
+				Content = contentPage ?? new ContentPage()
+			});
+
 			return item;
 		}
 
@@ -704,12 +726,12 @@ namespace Xamarin.Forms.Controls
 				AppSetup.EndIsolate();
 			}
 		}
+		public void ShowFlyout(string flyoutIcon = FlyoutIconAutomationId, bool usingSwipe = false, bool testForFlyoutIcon = true)
+		{			
+			if(testForFlyoutIcon)
+				RunningApp.WaitForElement(flyoutIcon);
 
-		public void ShowFlyout(string flyoutIcon = "OK", bool usingSwipe = false)
-		{
-			RunningApp.WaitForElement(flyoutIcon);
-
-			if(usingSwipe)
+			if (usingSwipe)
 			{
 				var rect = RunningApp.ScreenBounds();
 				RunningApp.DragCoordinates(10, rect.CenterY, rect.CenterX, rect.CenterY);
@@ -721,13 +743,12 @@ namespace Xamarin.Forms.Controls
 		}
 
 
-		public void TapInFlyout(string text, string flyoutIcon = "OK", bool usingSwipe = false)
+		public void TapInFlyout(string text, string flyoutIcon = FlyoutIconAutomationId, bool usingSwipe = false)
 		{
 			ShowFlyout(flyoutIcon, usingSwipe);
 			RunningApp.WaitForElement(text);
 			RunningApp.Tap(text);
 		}
-
 
 #endif
 
