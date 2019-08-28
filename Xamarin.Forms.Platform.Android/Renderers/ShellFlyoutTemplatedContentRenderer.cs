@@ -85,7 +85,6 @@ namespace Xamarin.Forms.Platform.Android
 
 			Profile.FramePartition("Recycler.SetAdapter");
 			var adapter = new ShellFlyoutRecyclerAdapter(shellContext, OnElementSelected);
-			recycler.SetPadding(0, (int)context.ToPixels(20), 0, 0);
 			recycler.SetClipToPadding(false);
 			recycler.SetLayoutManager(new LinearLayoutManager(context, (int)Orientation.Vertical, false));
 			recycler.SetAdapter(adapter);
@@ -284,27 +283,45 @@ namespace Xamarin.Forms.Platform.Android
 				_shellContext = null;
 				_disposed = true;
 			}
-
 			base.Dispose(disposing);
 		}
 
 		// This view lets us use the top padding to "squish" the content down
 		public class HeaderContainer : ContainerView
 		{
+			bool _isdisposed = false;
 			public HeaderContainer(Context context, View view) : base(context, view)
 			{
+				view.PropertyChanged += OnViewPropertyChanged;
 			}
 
 			public HeaderContainer(Context context, IAttributeSet attribs) : base(context, attribs)
 			{
+				View.PropertyChanged += OnViewPropertyChanged;
 			}
 
 			public HeaderContainer(Context context, IAttributeSet attribs, int defStyleAttr) : base(context, attribs, defStyleAttr)
 			{
+				View.PropertyChanged += OnViewPropertyChanged;
 			}
 
 			protected HeaderContainer(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 			{
+				View.PropertyChanged += OnViewPropertyChanged;
+			}
+
+			void OnViewPropertyChanged(object sender, PropertyChangedEventArgs e)
+			{
+				if (e.PropertyName == PlatformConfiguration.AndroidSpecific.VisualElement.ElevationProperty.PropertyName)
+				{
+					UpdateElevation();
+				}
+			}
+
+			void UpdateElevation()
+			{
+				if (Parent is AView view)
+					ElevationHelper.SetElevation(view, View);
 			}
 
 			protected override void LayoutView(double x, double y, double width, double height)
@@ -318,7 +335,24 @@ namespace Xamarin.Forms.Platform.Android
 				width -= paddingLeft + paddingRight;
 				height -= paddingTop + paddingBottom;
 
+				UpdateElevation();
 				View.Layout(new Rectangle(paddingLeft, paddingTop, width, height));
+			}
+
+			protected override void Dispose(bool disposing)
+			{
+				if (_isdisposed)
+					return;
+
+				_isdisposed = true;
+				if (disposing)
+				{
+					View.PropertyChanged -= OnViewPropertyChanged;
+				}
+
+				View = null;
+
+				base.Dispose(disposing);
 			}
 		}
 	}
