@@ -12,7 +12,9 @@
   <Interfaces />
   <Docs>
     <summary>A representation of a file and its content type.</summary>
-    <remarks></remarks>
+    <remarks>
+      <para />
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">

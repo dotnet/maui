@@ -103,7 +103,7 @@ namespace Samples.ViewModel
                 $"Heading: {(location.Course.HasValue ? location.Course.Value.ToString() : notAvailable)}\n" +
                 $"Speed: {(location.Speed.HasValue ? location.Speed.Value.ToString() : notAvailable)}\n" +
                 $"Date (UTC): {location.Timestamp:d}\n" +
-                $"Time (UTC): {location.Timestamp:T}" +
+                $"Time (UTC): {location.Timestamp:T}\n" +
                 $"Moking Provider: {location.IsFromMockProvider}";
         }
 

@@ -207,8 +207,10 @@
       <Member Id="M:Xamarin.Essentials.DevicePlatform.ToString" />
       <Member Id="P:Xamarin.Essentials.DevicePlatform.Android" />
       <Member Id="P:Xamarin.Essentials.DevicePlatform.iOS" />
+      <Member Id="P:Xamarin.Essentials.DevicePlatform.tvOS" />
       <Member Id="P:Xamarin.Essentials.DevicePlatform.Unknown" />
       <Member Id="P:Xamarin.Essentials.DevicePlatform.UWP" />
+      <Member Id="P:Xamarin.Essentials.DevicePlatform.watchOS" />
     </Type>
     <Type Name="Xamarin.Essentials.DeviceType" Id="T:Xamarin.Essentials.DeviceType">
       <Member Id="F:Xamarin.Essentials.DeviceType.Physical" />
@@ -258,7 +260,6 @@
       <Member Id="M:Xamarin.Essentials.EmailAttachment.#ctor(System.String)" />
       <Member Id="M:Xamarin.Essentials.EmailAttachment.#ctor(System.String,System.String)" />
       <Member Id="M:Xamarin.Essentials.EmailAttachment.#ctor(Xamarin.Essentials.FileBase)" />
-      <Member Id="P:Xamarin.Essentials.EmailAttachment.AttachmentName" />
     </Type>
     <Type Name="Xamarin.Essentials.EmailBodyFormat" Id="T:Xamarin.Essentials.EmailBodyFormat">
       <Member Id="F:Xamarin.Essentials.EmailBodyFormat.Html" />
@@ -284,6 +285,12 @@
       <Member Id="M:Xamarin.Essentials.EnergySaverStatusChangedEventArgs.#ctor(Xamarin.Essentials.EnergySaverStatus)" />
       <Member Id="M:Xamarin.Essentials.EnergySaverStatusChangedEventArgs.ToString" />
       <Member Id="P:Xamarin.Essentials.EnergySaverStatusChangedEventArgs.EnergySaverStatus" />
+    </Type>
+    <Type Name="Xamarin.Essentials.ExperimentalFeatures" Id="T:Xamarin.Essentials.ExperimentalFeatures">
+      <Member Id="F:Xamarin.Essentials.ExperimentalFeatures.EmailAttachments" />
+      <Member Id="F:Xamarin.Essentials.ExperimentalFeatures.OpenFileRequest" />
+      <Member Id="F:Xamarin.Essentials.ExperimentalFeatures.ShareFileRequest" />
+      <Member Id="M:Xamarin.Essentials.ExperimentalFeatures.Enable(System.String[])" />
     </Type>
     <Type Name="Xamarin.Essentials.FeatureNotEnabledException" Id="T:Xamarin.Essentials.FeatureNotEnabledException">
       <Member Id="M:Xamarin.Essentials.FeatureNotEnabledException.#ctor" />
@@ -362,6 +369,9 @@
       <Member Id="M:Xamarin.Essentials.Launcher.CanOpenAsync(System.Uri)" />
       <Member Id="M:Xamarin.Essentials.Launcher.OpenAsync(System.String)" />
       <Member Id="M:Xamarin.Essentials.Launcher.OpenAsync(System.Uri)" />
+      <Member Id="M:Xamarin.Essentials.Launcher.OpenAsync(Xamarin.Essentials.OpenFileRequest)" />
+      <Member Id="M:Xamarin.Essentials.Launcher.TryOpenAsync(System.String)" />
+      <Member Id="M:Xamarin.Essentials.Launcher.TryOpenAsync(System.Uri)" />
     </Type>
     <Type Name="Xamarin.Essentials.Locale" Id="T:Xamarin.Essentials.Locale">
       <Member Id="P:Xamarin.Essentials.Locale.Country" />
@@ -417,6 +427,11 @@
     </Type>
     <Type Name="Xamarin.Essentials.MainThread" Id="T:Xamarin.Essentials.MainThread">
       <Member Id="M:Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(System.Action)" />
+      <Member Id="M:Xamarin.Essentials.MainThread.GetMainThreadSynchronizationContextAsync" />
+      <Member Id="M:Xamarin.Essentials.MainThread.InvokeOnMainThreadAsync(System.Action)" />
+      <Member Id="M:Xamarin.Essentials.MainThread.InvokeOnMainThreadAsync(System.Func{System.Threading.Tasks.Task})" />
+      <Member Id="M:Xamarin.Essentials.MainThread.InvokeOnMainThreadAsync``1(System.Func{``0})" />
+      <Member Id="M:Xamarin.Essentials.MainThread.InvokeOnMainThreadAsync``1(System.Func{System.Threading.Tasks.Task{``0}})" />
       <Member Id="P:Xamarin.Essentials.MainThread.IsMainThread" />
     </Type>
     <Type Name="Xamarin.Essentials.Map" Id="T:Xamarin.Essentials.Map">
@@ -449,6 +464,13 @@
     </Type>
     <Type Name="Xamarin.Essentials.NotImplementedInReferenceAssemblyException" Id="T:Xamarin.Essentials.NotImplementedInReferenceAssemblyException">
       <Member Id="M:Xamarin.Essentials.NotImplementedInReferenceAssemblyException.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.OpenFileRequest" Id="T:Xamarin.Essentials.OpenFileRequest">
+      <Member Id="M:Xamarin.Essentials.OpenFileRequest.#ctor" />
+      <Member Id="M:Xamarin.Essentials.OpenFileRequest.#ctor(System.String,Xamarin.Essentials.FileBase)" />
+      <Member Id="M:Xamarin.Essentials.OpenFileRequest.#ctor(System.String,Xamarin.Essentials.ReadOnlyFile)" />
+      <Member Id="P:Xamarin.Essentials.OpenFileRequest.File" />
+      <Member Id="P:Xamarin.Essentials.OpenFileRequest.Title" />
     </Type>
     <Type Name="Xamarin.Essentials.OrientationSensor" Id="T:Xamarin.Essentials.OrientationSensor">
       <Member Id="E:Xamarin.Essentials.OrientationSensor.ReadingChanged" />
@@ -533,6 +555,11 @@
       <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.String)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.String,System.String)" />
     </Type>
+    <Type Name="Xamarin.Essentials.ReadOnlyFile" Id="T:Xamarin.Essentials.ReadOnlyFile">
+      <Member Id="M:Xamarin.Essentials.ReadOnlyFile.#ctor(System.String)" />
+      <Member Id="M:Xamarin.Essentials.ReadOnlyFile.#ctor(System.String,System.String)" />
+      <Member Id="M:Xamarin.Essentials.ReadOnlyFile.#ctor(Xamarin.Essentials.FileBase)" />
+    </Type>
     <Type Name="Xamarin.Essentials.SecureStorage" Id="T:Xamarin.Essentials.SecureStorage">
       <Member Id="M:Xamarin.Essentials.SecureStorage.GetAsync(System.String)" />
       <Member Id="M:Xamarin.Essentials.SecureStorage.Remove(System.String)" />
@@ -555,7 +582,6 @@
       <Member Id="M:Xamarin.Essentials.ShareFile.#ctor(System.String)" />
       <Member Id="M:Xamarin.Essentials.ShareFile.#ctor(System.String,System.String)" />
       <Member Id="M:Xamarin.Essentials.ShareFile.#ctor(Xamarin.Essentials.FileBase)" />
-      <Member Id="P:Xamarin.Essentials.ShareFile.AttachmentName" />
     </Type>
     <Type Name="Xamarin.Essentials.ShareFileRequest" Id="T:Xamarin.Essentials.ShareFileRequest">
       <Member Id="M:Xamarin.Essentials.ShareFileRequest.#ctor" />

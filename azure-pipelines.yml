@@ -3,10 +3,10 @@ variables:
   CurrentSemanticVersionBase: '1.0.0'
   CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(Build.BuildNumber)'
   NugetPackageVersion: '$(CurrentSemanticVersion)'
-  MONO_VERSION: 5_16_0
-  XCODE_VERSION: 10.1
+  MONO_VERSION: 5_18_1
+  XCODE_VERSION: 10.2.1
   IOS_SIM_NAME: 'iPhone X'
-  IOS_SIM_RUNTIME: 'iOS 12.1'
+  IOS_SIM_RUNTIME: 'com.apple.CoreSimulator.SimRuntime.iOS-12-2'
   ANDROID_EMU_TARGET: 'system-images;android-26;google_apis;x86'
   ANDROID_EMU_DEVICE: 'Nexus 5X'
   RunPoliCheck: 'false'
@@ -76,7 +76,7 @@ jobs:
   - job: build_macos
     displayName: Build macOS Library
     pool:
-      vmImage: macos-10.13
+      vmImage: macos-10.14
     steps:
       # if this is a tagged build, then update the version number
       - powershell: |
@@ -152,7 +152,7 @@ jobs:
       - build_windows
       - build_macos
     pool:
-      vmImage: macos-10.13
+      vmImage: macos-10.14
     steps:
       - bash: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh $(MONO_VERSION)
         displayName: Switch to the latest Xamarin SDK
@@ -183,7 +183,7 @@ jobs:
       - build_windows
       - build_macos
     pool:
-      vmImage: macos-10.13
+      vmImage: macos-10.14
     steps:
       - bash: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh $(MONO_VERSION)
         displayName: Switch to the latest Xamarin SDK
