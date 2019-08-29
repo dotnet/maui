@@ -198,6 +198,11 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(oldElement, newElement));
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, newElement);
+			OnElementChanged(new ElementChangedEventArgs<ItemsView>(oldElement, newElement));
+		}
+
+		protected virtual void OnElementChanged(ElementChangedEventArgs<ItemsView> elementChangedEvent)
+		{
 		}
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs changedProperty)
@@ -272,7 +277,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			ItemsViewAdapter = CreateAdapter();
 
-			if(GetAdapter() != _emptyViewAdapter)
+			if (GetAdapter() != _emptyViewAdapter)
 				SwapAdapter(ItemsViewAdapter, true);
 
 			oldItemViewAdapter?.Dispose();
@@ -424,12 +429,18 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual void UpdateSnapBehavior()
 		{
+			_snapManager = GetSnapManager();
+
+			_snapManager.UpdateSnapBehavior();
+		}
+
+		protected virtual SnapManager GetSnapManager()
+		{
 			if (_snapManager == null)
 			{
 				_snapManager = new SnapManager(ItemsView, this);
 			}
-
-			_snapManager.UpdateSnapBehavior();
+			return _snapManager;
 		}
 
 		// TODO hartez 2018/08/09 09:30:17 Package up background color and flow direction providers so we don't have to re-implement them here	
@@ -599,7 +610,7 @@ namespace Xamarin.Forms.Platform.Android
 				// TODO hartez 2018/10/24 17:34:36 If this works, cache this layout manager as _emptyLayoutManager	
 				SetLayoutManager(new LinearLayoutManager(Context));
 			}
-			else if(!showEmptyView && currAdapter != ItemsViewAdapter)
+			else if (!showEmptyView && currAdapter != ItemsViewAdapter)
 			{
 				SwapAdapter(ItemsViewAdapter, true);
 				SetLayoutManager(SelectLayoutManager(_layout));

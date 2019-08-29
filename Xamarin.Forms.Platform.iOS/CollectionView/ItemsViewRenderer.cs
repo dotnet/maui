@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			TearDownOldElement(e.OldElement);
 			SetUpNewElement(e.NewElement);
-			
+
 			base.OnElementChanged(e);
 		}
 
@@ -132,7 +132,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected virtual void UpdateLayout()
 		{
-			_layout = SelectLayout(Element.ItemsLayout, Element.ItemSizingStrategy);	
+			_layout = SelectLayout(Element.ItemsLayout, Element.ItemSizingStrategy);
 
 			if (ItemsViewController != null)
 			{

@@ -9,6 +9,7 @@
 		public const string AutomationId = "AutomationID";
 		public const string BoxView = "BoxView";
 		public const string Button = "Button";
+		public const string CarouselView = "CarouselView";
 		public const string Cells = "Cells";
 		public const string CheckBox = "CheckBox";
 		public const string CollectionView = "CollectionView";

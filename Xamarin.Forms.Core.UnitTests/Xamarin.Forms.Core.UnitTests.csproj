@@ -68,6 +68,7 @@
     <Compile Include="BindingUnitTests.cs" />
     <Compile Include="ButtonUnitTest.cs" />
     <Compile Include="CarouselPageTests.cs" />
+    <Compile Include="CarouselViewTests.cs" />
     <Compile Include="CellTests.cs" />
     <Compile Include="ColorUnitTests.cs" />
     <Compile Include="CommandSourceTests.cs" />

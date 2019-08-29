@@ -3,6 +3,7 @@
 	public enum ItemSizingStrategy
 	{
 		MeasureAllItems,
-		MeasureFirstItem
+		MeasureFirstItem,
+		None
 	}
 }

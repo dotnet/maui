@@ -4,10 +4,10 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SpacingGal
 {
 	internal class SpacingModifier : ContentView
 	{
-		protected readonly CollectionView _cv;
+		protected readonly ItemsView _cv;
 		protected readonly Entry Entry;
 
-		public SpacingModifier(CollectionView cv, string buttonText)
+		public SpacingModifier(ItemsView cv, string buttonText)
 		{
 			_cv = cv;
 

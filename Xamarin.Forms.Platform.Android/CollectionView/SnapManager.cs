@@ -78,6 +78,11 @@ namespace Xamarin.Forms.Platform.Android
 			return new CenterSnapHelper();
 		}
 
+		internal SnapHelper GetCurrentSnapHelper()
+		{
+			return _snapHelper;
+		}
+
 		void DetachSnapHelper()
 		{
 			_snapHelper?.AttachToRecyclerView(null);

@@ -125,11 +125,10 @@ namespace Xamarin.Forms.Controls
 			mdp.Master.IconImageSource.SetAutomationPropertiesHelpText("This as MDP icon");
 			mdp.Master.IconImageSource.SetAutomationPropertiesName("MDPICON");
 			return mdp;
+			//return new XamStore.StoreShell();
+		}
 
-            //return new XamStore.StoreShell();
-        }
-
-        protected override void OnAppLinkRequestReceived(Uri uri)
+		protected override void OnAppLinkRequestReceived(Uri uri)
 		{
 			var appDomain = "http://" + AppName.ToLowerInvariant() + "/";
 

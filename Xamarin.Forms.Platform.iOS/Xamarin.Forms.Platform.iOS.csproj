@@ -223,6 +223,9 @@
     <Compile Include="Renderers\IButtonLayoutRenderer.cs" />
     <Compile Include="Renderers\SearchHandlerAppearanceTracker.cs" />
     <Compile Include="Renderers\CheckBoxRenderer.cs" />
+    <Compile Include="CollectionView\CarouselViewLayout.cs" />
+    <Compile Include="CollectionView\CarouselViewController.cs" />
+    <Compile Include="CollectionView\CarouselTemplatedCell.cs" />
     <Compile Include="Renderers\RefreshViewRenderer.cs" />
   </ItemGroup>
   <ItemGroup>

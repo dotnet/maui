@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
+﻿namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
 {
 	internal class CarouselViewGallery : ContentPage
 	{
@@ -16,10 +16,15 @@
 					Children =
 					{
 						descriptionLabel,
+						new Button { Text ="Enable CollectionView", AutomationId = "EnableCollectionView", Command = new Command(() => Device.SetFlags(new[] { ExperimentalFlags.CollectionViewExperimental })) },
 						GalleryBuilder.NavButton("CarouselView (Code, Horizontal)", () =>
 							new CarouselCodeGallery(ItemsLayoutOrientation.Horizontal), Navigation),
 						GalleryBuilder.NavButton("CarouselView (Code, Vertical)", () =>
-							new CarouselCodeGallery(ItemsLayoutOrientation.Vertical), Navigation)
+							new CarouselCodeGallery(ItemsLayoutOrientation.Vertical), Navigation),
+						GalleryBuilder.NavButton("CarouselView (XAML, Horizontal)", () =>
+							new CarouselXamlGallery(), Navigation),
+						GalleryBuilder.NavButton("CarouselView (Items)", () =>
+							new CarouselItemsGallery(), Navigation),
 					}
 				}
 			};

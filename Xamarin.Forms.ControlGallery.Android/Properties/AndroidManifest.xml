@@ -18,6 +18,6 @@
 	<uses-feature android:glEsVersion="0x00020000" android:required="true" />
 	<application android:label="AndroidControlGallery" android:supportsRtl="true">
 		<meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
-    <uses-library android:name="org.apache.http.legacy" android:required="false" />
+		<uses-library android:name="org.apache.http.legacy" android:required="false" />
 	</application>
 </manifest>

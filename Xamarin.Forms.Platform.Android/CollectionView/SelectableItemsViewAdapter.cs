@@ -33,9 +33,9 @@ namespace Xamarin.Forms.Platform.Android
 			_currentViewHolders.Add(selectable);
 
 			// Make sure that if this item is one of the selected items, it's marked as selected
-			selectable.IsSelected = PostionIsSelected(position);
+			selectable.IsSelected = PositionIsSelected(position);
 		}
-	
+
 		public override void OnViewRecycled(Object holder)
 		{
 			if (holder is SelectableViewHolder selectable)
@@ -106,7 +106,7 @@ namespace Xamarin.Forms.Platform.Android
 			return new int[0];
 		}
 
-		bool PostionIsSelected(int position)
+		bool PositionIsSelected(int position)
 		{
 			var selectedPositions = GetSelectedPositions();
 			foreach (var selectedPosition in selectedPositions)
