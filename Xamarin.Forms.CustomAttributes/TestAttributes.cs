@@ -662,6 +662,11 @@ namespace Xamarin.Forms.CustomAttributes
 			ProgressColor
 		}
 
+		public enum RefreshView
+		{
+			RefreshColor
+		}
+
 		public enum RelativeLayout
 		{
 			Children,

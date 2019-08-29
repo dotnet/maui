@@ -223,6 +223,7 @@
     <Compile Include="Renderers\IButtonLayoutRenderer.cs" />
     <Compile Include="Renderers\SearchHandlerAppearanceTracker.cs" />
     <Compile Include="Renderers\CheckBoxRenderer.cs" />
+    <Compile Include="Renderers\RefreshViewRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\StringResources.ar.resx" />

@@ -37,6 +37,7 @@ using Xamarin.Forms.Platform.Android;
 [assembly: ExportRenderer (typeof (CarouselPage), typeof (CarouselPageRenderer))]
 [assembly: ExportRenderer (typeof (Page), typeof (PageRenderer))]
 [assembly: ExportRenderer (typeof (MasterDetailPage), typeof (MasterDetailRenderer))]
+[assembly: ExportRenderer (typeof (RefreshView), typeof (RefreshViewRenderer))]
 #endif
 
 [assembly: ExportRenderer(typeof(Shell), typeof(ShellRenderer))]

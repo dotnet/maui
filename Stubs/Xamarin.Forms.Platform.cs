@@ -154,6 +154,10 @@ namespace Xamarin.Forms.Platform
 	[RenderWith (typeof (PhoneMasterDetailRenderer))]
 #endif
 	internal class _MasterDetailPageRenderer { }
+#if !TIZEN4_0
+	[RenderWith(typeof(RefreshViewRenderer))]
+#endif
+	internal class _RefreshViewRenderer { }
 }
 
 

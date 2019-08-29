@@ -11,6 +11,7 @@ using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries;
 using Xamarin.Forms.Controls.Issues;
+using Xamarin.Forms.Controls.GalleryPages.RefreshViewGalleries;
 
 namespace Xamarin.Forms.Controls
 {
@@ -337,6 +338,8 @@ namespace Xamarin.Forms.Controls
 				new GalleryPageFactory(() => new ProgressBarCoreGalleryPage(), "ProgressBar Gallery"),
 				new GalleryPageFactory(() => new MaterialProgressBarGallery(), "ProgressBar & Slider Gallery (Material)"),
 				new GalleryPageFactory(() => new MaterialActivityIndicatorGallery(), "ActivityIndicator Gallery (Material)"),
+				new GalleryPageFactory(() => new RefreshViewGallery(), "RefreshView Gallery"),
+				new GalleryPageFactory(() => new RefreshViewCoreGalleryPage(), "RefreshView Core Gallery"),
 				new GalleryPageFactory(() => new ScrollGallery(), "ScrollView Gallery"),
 				new GalleryPageFactory(() => new ScrollGallery(ScrollOrientation.Horizontal), "ScrollView Gallery Horizontal"),
 				new GalleryPageFactory(() => new ScrollGallery(ScrollOrientation.Both), "ScrollView Gallery 2D"),

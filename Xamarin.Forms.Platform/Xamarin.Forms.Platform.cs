@@ -87,6 +87,10 @@
 	{
 	}
 
+	internal class _RefreshViewRenderer
+	{
+	}
+
 	internal class _ScrollViewRenderer
 	{
 	}
