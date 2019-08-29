@@ -13,25 +13,25 @@ namespace Xamarin.Forms.Platform.Tizen
 {
 	public class ShellItemRenderer : IAppearanceObserver, IDisposable
 	{
+		IShellTabs _tabs = null;
+		IFlyoutController _flyoutController = null;
+		ShellItem _shellItem = null;
+
 		Native.Box _box = null;
-		Toolbar _toolbar = null;
 		Panel _drawer = null;
 		ShellMoreToolbar _more = null;
 		EToolbarItem _moreToolbarItem = null;
-
-		IFlyoutController _flyoutController = null;
+		ShellSectionNavigation _currentSection = null;
 
 		Dictionary<EToolbarItem, ShellSection> _itemToSection = new Dictionary<EToolbarItem, ShellSection>();
 		Dictionary<ShellSection, EToolbarItem> _sectionToitem = new Dictionary<ShellSection, EToolbarItem>();
 		Dictionary<ShellSection, ShellSectionNavigation> _sectionToPage = new Dictionary<ShellSection, ShellSectionNavigation>();
 		LinkedList<EToolbarItem> _toolbarItemList = new LinkedList<EToolbarItem>();
 
-		EColor _backgroudColor = ShellRenderer.DefaultBackgroundColor.ToNative();
-
-		ShellItem _shellItem = null;
-		ShellSectionNavigation _currentSection = null;
-
 		bool _disposed = false;
+		EColor _backgroudColor = ShellRenderer.DefaultBackgroundColor.ToNative();
+		// The source of icon resources is https://materialdesignicons.com/
+		const string _dotsIcon = "Xamarin.Forms.Platform.Tizen.Resource.dots_horizontal.png";
 
 		public ShellItemRenderer(IFlyoutController flyoutController, ShellItem item)
 		{
@@ -44,8 +44,21 @@ namespace Xamarin.Forms.Platform.Tizen
 			_box.LayoutUpdated += OnLayoutUpdated;
 			_box.Show();
 
-			CreateToolbar();
-			CreateMoreToolbar();
+			// Create Tabs
+			_tabs = CreateTabs();
+			_tabs.TargetView.Show();
+			Control.PackEnd(_tabs as EvasObject);
+			InitializeTabs();
+
+			// Create More Tabs
+			_more = CreateMoreToolbar();
+			_more.Show();
+
+			_drawer = CreateDrawer();
+			_drawer.Show();
+			Control.PackEnd(_drawer);
+			InitialzeDrawer(_more);
+
 			ResetToolbarItems();
 
 			UpdateCurrentShellSection(_shellItem.CurrentItem);
@@ -136,9 +149,9 @@ namespace Xamarin.Forms.Platform.Tizen
 						navi.Dispose();
 					}
 
-					if (_toolbar != null)
+					if (_tabs != null)
 					{
-						_toolbar.Selected -= OnTabsSelected;
+						_tabs.Selected -= OnTabsSelected;
 					}
 					_itemToSection.Clear();
 					_sectionToitem.Clear();
@@ -148,6 +161,16 @@ namespace Xamarin.Forms.Platform.Tizen
 				Control.Unrealize();
 			}
 			_disposed = true;
+		}
+
+		protected virtual IShellTabs CreateTabs()
+		{ 
+			return new ShellTabs(Forms.NativeParent);
+		}
+
+		protected virtual ShellSectionNavigation CreateShellSectionNavigation(IFlyoutController flyoutController, ShellSection section)
+		{
+			return new ShellSectionNavigation(flyoutController, section);
 		}
 
 		void OnShellItemPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -175,39 +198,30 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 		}
 
-		void CreateMoreToolbar()
+		Panel CreateDrawer()
 		{
-			if (_more != null)
-				return;
+			return new Panel(Forms.NativeParent);
+		}
 
-			_more = new ShellMoreToolbar(this);
-			_more.Show();
-			_drawer = new Panel(Forms.NativeParent);
+		void InitialzeDrawer(EvasObject content)
+		{
 			_drawer.SetScrollable(true);
 			_drawer.SetScrollableArea(1.0);
 			_drawer.Direction = PanelDirection.Bottom;
 			_drawer.IsOpen = false;
-			_drawer.SetContent(_more, true);
-			_drawer.Show();
-			Control.PackEnd(_drawer);
+			_drawer.SetContent(content, true);
 		}
 
-		void CreateToolbar()
+		ShellMoreToolbar CreateMoreToolbar()
 		{
-			if (_toolbar != null)
-				return;
+			return new ShellMoreToolbar(this);
+		}
 
-			_toolbar = new Toolbar(Forms.NativeParent)
-			{
-				AlignmentX = -1,
-				WeightX = 1,
-				BackgroundColor = _backgroudColor,
-				ShrinkMode = ToolbarShrinkMode.Expand,
-				Style = "material"
-			};
-			_toolbar.Show();
-			_toolbar.Selected += OnTabsSelected;
-			Control.PackEnd(_toolbar);
+		void InitializeTabs()
+		{
+			_tabs.BackgroundColor = _backgroudColor;
+			_tabs.Type = ShellTabsType.Fixed;
+			_tabs.Selected += OnTabsSelected;
 		}
 
 		void ResetToolbarItems()
@@ -303,9 +317,9 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				EToolbarItem item = null;
 				if (_moreToolbarItem == null)
-					item = _toolbar.Append(section.Title, GetIconPath(section.Icon));
+					item = _tabs.Append(section.Title, GetIconPath(section.Icon));
 				else
-					item = _toolbar.InsertBefore(_moreToolbarItem, section.Title, GetIconPath(section.Icon));
+					item = _tabs.InsertBefore(_moreToolbarItem, section.Title, GetIconPath(section.Icon));
 
 				if (item != null)
 				{
@@ -327,7 +341,9 @@ namespace Xamarin.Forms.Platform.Tizen
 				_sectionToitem.Remove(lastSection);
 				last.Delete();
 
-				CreateMoreToolbarItem();
+				_moreToolbarItem = CreateTabsItem("More");
+				_toolbarItemList.AddLast(_moreToolbarItem);
+				InitializeTabsItem(_moreToolbarItem, _dotsIcon);
 
 				_more.AddItem(lastSection);
 				_more.AddItem(section);
@@ -338,21 +354,21 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 		}
 
-		void CreateMoreToolbarItem()
+		void InitializeTabsItem(EToolbarItem item, string resource)
 		{
-			if (_moreToolbarItem != null)
-				return;
-
 			//The source of icon resources is https://materialdesignicons.com/
-			ImageSource src = ImageSource.FromResource("Xamarin.Forms.Platform.Tizen.Resource.dots_horizontal.png", typeof(ShellItemRenderer).GetTypeInfo().Assembly);
+			ImageSource src = ImageSource.FromResource(resource, typeof(ShellItemRenderer).GetTypeInfo().Assembly);
 			Native.Image icon = new Native.Image(Forms.NativeParent);
 			var task = icon.LoadFromImageSourceAsync(src);
 
-			_moreToolbarItem = _toolbar.Append("More", null);
-			_moreToolbarItem.SetPartContent("elm.swallow.icon", icon);
-			_moreToolbarItem.SetPartColor("bg", _backgroudColor);
-			_moreToolbarItem.SetPartColor("underline", EColor.Transparent);
-			_toolbarItemList.AddLast(_moreToolbarItem);
+			item.SetPartContent("elm.swallow.icon", icon);
+			item.SetPartColor("bg", _backgroudColor);
+			item.SetPartColor("underline", EColor.Transparent);
+		}
+
+		EToolbarItem CreateTabsItem(string text)
+		{
+			return _tabs.Append(text, null);
 		}
 
 		void UpdateCurrentShellSection(ShellSection section)
@@ -372,7 +388,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 			else
 			{
-				native = new ShellSectionNavigation(_flyoutController, section);
+				native = CreateShellSectionNavigation(_flyoutController, section);
 				_sectionToPage[section] = native;
 				Control.PackEnd(native);
 			}
@@ -383,7 +399,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void OnTabsSelected(object sender, ToolbarItemEventArgs e)
 		{
-			if (_toolbar.SelectedItem == null)
+			if (_tabs.SelectedItem == null)
 				return;
 
 			if (e.Item == _moreToolbarItem)
@@ -392,7 +408,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 			else
 			{
-				ShellSection section = _itemToSection[_toolbar.SelectedItem];
+				ShellSection section = _itemToSection[_tabs.SelectedItem];
 				SetCurrentItem(section);
 			}
 		}
@@ -404,11 +420,11 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void OnLayoutUpdated(object sender, LayoutEventArgs e)
 		{
-			int toolbarHeight = _toolbar.MinimumHeight;
+			int toolbarHeight = _tabs.TargetView.MinimumHeight;
 			if (_shellItem.Items.Count <= 1)
 			{
 				toolbarHeight = 0;
-				_toolbar?.Hide();
+				_tabs?.TargetView.Hide();
 				_drawer?.Hide();
 			}
 
@@ -416,9 +432,9 @@ namespace Xamarin.Forms.Platform.Tizen
 			_currentSection?.Resize(e.Geometry.Width, e.Geometry.Height - toolbarHeight);
 			if (_shellItem.Items.Count > 1)
 			{
-				_toolbar.Show();
-				_toolbar.Move(e.Geometry.X, e.Geometry.Y + e.Geometry.Height - toolbarHeight);
-				_toolbar.Resize(e.Geometry.Width, toolbarHeight);
+				_tabs.TargetView.Show();
+				_tabs.TargetView.Move(e.Geometry.X, e.Geometry.Y + e.Geometry.Height - toolbarHeight);
+				_tabs.TargetView.Resize(e.Geometry.Width, toolbarHeight);
 				if (_drawer != null)
 				{
 					_drawer.Show();

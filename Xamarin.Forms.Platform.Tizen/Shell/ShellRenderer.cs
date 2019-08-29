@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using ElmSharp;
 
@@ -6,10 +6,9 @@ namespace Xamarin.Forms.Platform.Tizen
 {
 	public class ShellRenderer : VisualElementRenderer<Shell>, IFlyoutController
 	{
-		NavigationDrawer _native;
+		INavigationDrawer _native;
+		INavigationView _navigationView;
 		ShellItemRenderer _shellItem;
-
-		IDictionary<int, Element> _flyoutMenu = new Dictionary<int, Element>();
 
 		public static readonly Color DefaultBackgroundColor = Color.FromRgb(33, 150, 243);
 		public static readonly Color DefaultForegroundColor = Color.White;
@@ -34,17 +33,14 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (_native == null)
 			{
-				_native = new NavigationDrawer(Forms.NativeParent)
-				{
-					NavigationView = new NavigationView(Forms.NativeParent)
-				};
-				SetNativeView(_native);
-
+				_native = CreateNavigationDrawer();
+				_navigationView = CreateNavigationView();
+				_native.NavigationView = _navigationView as ElmSharp.EvasObject;
 				_native.Toggled += OnFlyoutIsPresentedChanged;
+				SetNativeView(_native as ElmSharp.EvasObject);
 
 				InitializeFlyout();
 			}
-
 			base.OnElementChanged(e);
 		}
 
@@ -56,13 +52,13 @@ namespace Xamarin.Forms.Platform.Tizen
 				if (_native != null)
 				{
 					_native.Toggled -= OnFlyoutIsPresentedChanged;
-					_native.NavigationView.MenuItemSelected -= OnItemSelected;
+					_navigationView.SelectedItemChanged -= OnItemSelected;
 				}
 			}
 			base.Dispose(disposing);
 		}
 
-		void InitializeFlyout()
+		protected void InitializeFlyout()
 		{
 			((IShellController)Element).StructureChanged += OnShellStructureChanged;
 
@@ -72,14 +68,34 @@ namespace Xamarin.Forms.Platform.Tizen
 				var headerView = Platform.GetOrCreateRenderer(flyoutHeader);
 				(headerView as LayoutRenderer)?.RegisterOnLayoutUpdated();
 
-				Size request = flyoutHeader.Measure(Forms.ConvertToScaledDP(_native.NavigationView.MinimumWidth), Forms.ConvertToScaledDP(_native.NavigationView.MinimumHeight)).Request;
+				Size request = flyoutHeader.Measure(Forms.ConvertToScaledDP(_native.NavigationView.MinimumWidth),
+													Forms.ConvertToScaledDP(_native.NavigationView.MinimumHeight)).Request;
 				headerView.NativeView.MinimumHeight = Forms.ConvertToScaledPixel(request.Height);
 
-				_native.NavigationView.Header = headerView.NativeView;
+				_navigationView.Header = headerView.NativeView;
 			}
+			_navigationView.BuildMenu(((IShellController)Element).GenerateFlyoutGrouping());
+			_navigationView.SelectedItemChanged += OnItemSelected;
+		}
 
-			BuildMenu();
-			_native.NavigationView.MenuItemSelected += OnItemSelected;
+		protected void OnFlyoutIsPresentedChanged(object sender, EventArgs e)
+		{
+			Element.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, _native.IsOpen);
+		}
+
+		protected virtual ShellItemRenderer CreateShellItem(ShellItem item)
+		{
+			return new ShellItemRenderer(this, item);
+		}
+
+		protected virtual INavigationDrawer CreateNavigationDrawer()
+		{
+			return new NavigationDrawer(Forms.NativeParent);
+		}
+
+		protected virtual INavigationView CreateNavigationView()
+		{
+			return new NavigationView(Forms.NativeParent);
 		}
 
 		void UpdateCurrentItem()
@@ -87,7 +103,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			_shellItem?.Dispose();
 			if (Element.CurrentItem != null)
 			{
-				_shellItem = new ShellItemRenderer(this, Element.CurrentItem);
+				_shellItem = CreateShellItem(Element.CurrentItem);
 				_shellItem.Control.SetAlignment(-1, -1);
 				_shellItem.Control.SetWeight(1, 1);
 				_native.Main = _shellItem.Control;
@@ -100,7 +116,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateFlyoutBackgroundColor()
 		{
-			_native.NavigationView.BackgroundColor = Element.FlyoutBackgroundColor.ToNative();
+			_navigationView.BackgroundColor = Element.FlyoutBackgroundColor.ToNative();
 		}
 
 		void UpdateFlyoutIsPresented()
@@ -108,71 +124,14 @@ namespace Xamarin.Forms.Platform.Tizen
 			_native.IsOpen = Element.FlyoutIsPresented;
 		}
 
-		void OnFlyoutIsPresentedChanged(object sender, EventArgs e)
-		{
-			Element.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, _native.IsOpen);
-		}
-
-		void OnItemSelected(object sender, GenListItemEventArgs e)
-		{
-			_flyoutMenu.TryGetValue(e.Item.Index - 1, out Element element);
-
-			if (element != null)
-			{
-				((IShellController)Element).OnFlyoutItemSelected(element);
-			}
-		}
-
 		void OnShellStructureChanged(object sender, EventArgs e)
 		{
-			BuildMenu();
+			_navigationView.BuildMenu(((IShellController)Element).GenerateFlyoutGrouping());
 		}
 
-		void BuildMenu()
+		void OnItemSelected(object sender, SelectedItemChangedEventArgs e)
 		{
-			var groups = new List<Group>();
-			var flyoutGroups = ((IShellController)Element).GenerateFlyoutGrouping();
-
-			_flyoutMenu.Clear();
-
-			int index = 0;
-			for (int i = 0; i < flyoutGroups.Count; i++)
-			{
-				var flyoutGroup = flyoutGroups[i];
-				var items = new List<Item>();
-				for (int j = 0; j < flyoutGroup.Count; j++)
-				{
-					string title = null;
-					string icon = null;
-					if (flyoutGroup[j] is BaseShellItem shellItem)
-					{
-						title = shellItem.Title;
-
-						if (shellItem.FlyoutIcon is FileImageSource flyoutIcon)
-						{
-							icon = flyoutIcon.File;
-						}
-					}
-					else if (flyoutGroup[j] is MenuItem menuItem)
-					{
-						title = menuItem.Text;
-						if (menuItem.IconImageSource is FileImageSource source)
-						{
-							icon = source.File;
-						}
-					}
-
-					items.Add(new Item(title, icon));
-
-					_flyoutMenu.Add(index, flyoutGroup[j]);
-					index++;
-				}
-
-				var group = new Group(items);
-				groups.Add(group);
-			}
-
-			_native.NavigationView.Menu = groups;
+			((IShellController)Element).OnFlyoutItemSelected(e.SelectedItem as Element);
 		}
 
 		void IFlyoutController.Open()

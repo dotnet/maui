@@ -1,11 +1,12 @@
 using System;
 using ElmSharp;
+using EBox = ElmSharp.Box;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
-	public class NavigationDrawer : Native.Box
+	public class NavigationDrawer : Native.Box, INavigationDrawer
 	{
-		NavigationView _navigationView;
+		EvasObject _navigationView;
 		Box _mainContainer;
 		Box _dimArea;
 		EvasObject _main;
@@ -25,16 +26,10 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		public event EventHandler Toggled;
 
-		public NavigationView NavigationView
+		public EvasObject NavigationView
 		{
-			get
-			{
-				return _navigationView;
-			}
-			set
-			{
-				UpdateNavigationView(value);
-			}
+			get => _navigationView;
+			set => UpdateNavigationView(value);
 		}
 
 		public EvasObject Main
@@ -113,7 +108,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			PackEnd(_drawer);
 		}
 
-		void UpdateNavigationView(NavigationView navigationView)
+		void UpdateNavigationView(EvasObject navigationView)
 		{
 			if (_navigationView != null)
 			{

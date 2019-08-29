@@ -1,18 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using ElmSharp;
 using EToolbarItem = ElmSharp.ToolbarItem;
 using EColor = ElmSharp.Color;
 using Xamarin.Forms.Platform.Tizen.Native;
-using System.Collections.Specialized;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
 	public class ShellSectionRenderer : IAppearanceObserver
 	{
 		Native.Box _box = null;
-		Toolbar _toolbar = null;
+		IShellTabs _tabs = null;
 		Native.Page _currentContent = null;
 		ShellSection _section = null;
 
@@ -35,7 +35,12 @@ namespace Xamarin.Forms.Platform.Tizen
 			_box = new Native.Box(Forms.NativeParent);
 			_box.LayoutUpdated += OnLayoutUpdated;
 
-			CreateToolbar();
+			_tabs = CreateToolbar();
+			_tabs.TargetView.Show();
+			Control.PackEnd(_tabs as EvasObject);
+			InitializeTabs();
+
+			ResetToolbarItem();
 			UpdateCurrentShellContent(_section.CurrentItem);
 
 			((IShellController)_section.Parent.Parent).AddAppearanceObserver(this, _section);
@@ -60,6 +65,32 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 		}
 
+		public EColor BackgroundColor
+		{
+			get
+			{
+				return _backgroundColor;
+			}
+			set
+			{
+				_backgroundColor = value;
+				UpdateToolbarBackgroudColor(_backgroundColor);
+			}
+		}
+
+		public EColor ForegroundColor
+		{
+			get
+			{
+				return _foregroundCollor;
+			}
+			set
+			{
+				_foregroundCollor = value;
+				UpdateToolbarForegroundColor(_foregroundCollor);
+			}
+		}
+
 		protected virtual void Dispose(bool disposing)
 		{
 			if (_disposed)
@@ -80,9 +111,9 @@ namespace Xamarin.Forms.Platform.Tizen
 						content.Unrealize();
 					}
 
-					if (_toolbar != null)
+					if (_tabs != null)
 					{
-						_toolbar.Selected -= OnTabsSelected;
+						_tabs.Selected -= OnTabsSelected;
 					}
 					_contentToPage.Clear();
 					_contentToItem.Clear();
@@ -92,6 +123,18 @@ namespace Xamarin.Forms.Platform.Tizen
 				Control.Unrealize();
 			}
 			_disposed = true;
+		}
+
+		protected virtual IShellTabs CreateToolbar()
+		{
+			return new ShellTabs(Forms.NativeParent);
+		}
+
+		void InitializeTabs()
+		{
+			_tabs.BackgroundColor = _backgroundColor;
+			_tabs.Type = ShellTabsType.Fixed;
+			_tabs.Selected += OnTabsSelected;
 		}
 
 		void OnSectionPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -136,32 +179,6 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 		}
 
-		public EColor BackgroundColor
-		{
-			get
-			{
-				return _backgroundColor;
-			}
-			set
-			{
-				_backgroundColor = value;
-				UpdateToolbarBackgroudColor(_backgroundColor);
-			}
-		}
-
-		public EColor ForegroundColor
-		{
-			get
-			{
-				return _foregroundCollor;
-			}
-			set
-			{
-				_foregroundCollor = value;
-				UpdateToolbarForegroundColor(_foregroundCollor);
-			}
-		}
-
 		void UpdateToolbarBackgroudColor(EColor color)
 		{
 			foreach (EToolbarItem item in _toolbarItemList)
@@ -174,7 +191,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			foreach (EToolbarItem item in _toolbarItemList)
 			{
-				if (item != _toolbar.SelectedItem)
+				if (item != _tabs.SelectedItem)
 				{
 					item.SetPartColor("underline", EColor.Transparent);
 				}
@@ -185,24 +202,6 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 		}
 
-		void CreateToolbar()
-		{
-			if (_toolbar != null)
-				return;
-
-			_toolbar = new Toolbar(Forms.NativeParent)
-			{
-				BackgroundColor = _backgroundColor,
-				ShrinkMode = ToolbarShrinkMode.Expand,
-				Style = "material"
-			};
-			_toolbar.Show();
-			_toolbar.Selected += OnTabsSelected;
-			Control.PackEnd(_toolbar);
-
-			ResetToolbarItem();
-		}
-
 		void ResetToolbarItem()
 		{
 			foreach (ShellContent content in _section.Items)
@@ -211,13 +210,13 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 			if (_section.Items.Count > 3)
 			{
-				_toolbar.ShrinkMode = ToolbarShrinkMode.Scroll;
+				_tabs.Type = ShellTabsType.Scrollable;
 			}
 		}
 
 		EToolbarItem InsertToolbarItem(ShellContent content)
 		{
-			EToolbarItem item = _toolbar.Append(content.Title, null);
+			EToolbarItem item = _tabs.Append(content.Title, null);
 			item.SetPartColor("bg", _backgroundColor);
 
 			_toolbarItemList.AddLast(item);
@@ -276,12 +275,12 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void OnTabsSelected(object sender, ToolbarItemEventArgs e)
 		{
-			if (_toolbar.SelectedItem == null)
+			if (_tabs.SelectedItem == null)
 			{
 				return;
 			}
 
-			ShellContent content = _itemToContent[_toolbar.SelectedItem];
+			ShellContent content = _itemToContent[_tabs.SelectedItem];
 			if (_section.CurrentItem != content)
 			{
 				_section.SetValueFromRenderer(ShellSection.CurrentItemProperty, content);
@@ -336,10 +335,10 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 			else
 			{
-				toolbarHeight = _toolbar.MinimumHeight;
+				toolbarHeight = _tabs.TargetView.MinimumHeight;
 			}
-			_toolbar.Move(e.Geometry.X, e.Geometry.Y);
-			_toolbar.Resize(e.Geometry.Width, toolbarHeight);
+			_tabs.TargetView.Move(e.Geometry.X, e.Geometry.Y);
+			_tabs.TargetView.Resize(e.Geometry.Width, toolbarHeight);
 			_currentContent?.Move(e.Geometry.X, e.Geometry.Y + toolbarHeight);
 			_currentContent?.Resize(e.Geometry.Width, e.Geometry.Height - toolbarHeight);
 		}
