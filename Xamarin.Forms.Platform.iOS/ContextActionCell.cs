@@ -81,6 +81,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public void Close()
 		{
+			if (_scroller == null)
+				return;
+
 			_scroller.ContentOffset = new PointF(0, 0);
 		}
 
