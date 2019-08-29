@@ -13,6 +13,8 @@ using Java.Lang;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android;
 using Math = System.Math;
+using APolyline = Android.Gms.Maps.Model.Polyline;
+using APolygon = Android.Gms.Maps.Model.Polygon;
 
 namespace Xamarin.Forms.Maps.Android
 {
@@ -27,6 +29,8 @@ namespace Xamarin.Forms.Maps.Android
 		bool _init = true;
 
 		List<Marker> _markers;
+		List<APolyline> _polylines;
+		List<APolygon> _polygons;
 
 		public MapRenderer(Context context) : base(context)
 		{
@@ -73,11 +77,17 @@ namespace Xamarin.Forms.Maps.Android
 				if (Element != null)
 				{
 					MessagingCenter.Unsubscribe<Map, MapSpan>(this, MoveMessageName);
-					((ObservableCollection<Pin>)Element.Pins).CollectionChanged -= OnCollectionChanged;
 
+					((ObservableCollection<Pin>)Element.Pins).CollectionChanged -= OnPinCollectionChanged;
 					foreach (Pin pin in Element.Pins)
 					{
 						pin.PropertyChanged -= PinOnPropertyChanged;
+					}
+
+					((ObservableCollection<MapElement>)Element.MapElements).CollectionChanged -= OnMapElementCollectionChanged;
+					foreach (MapElement child in Element.MapElements)
+					{
+						child.PropertyChanged -= MapElementPropertyChanged;
 					}
 				}
 
@@ -112,11 +122,17 @@ namespace Xamarin.Forms.Maps.Android
 			if (e.OldElement != null)
 			{
 				Map oldMapModel = e.OldElement;
-				((ObservableCollection<Pin>)oldMapModel.Pins).CollectionChanged -= OnCollectionChanged;
 
+				((ObservableCollection<Pin>)oldMapModel.Pins).CollectionChanged -= OnPinCollectionChanged;
 				foreach (Pin pin in oldMapModel.Pins)
 				{
 					pin.PropertyChanged -= PinOnPropertyChanged;
+				}
+
+				((ObservableCollection<MapElement>)oldMapModel.MapElements).CollectionChanged -= OnMapElementCollectionChanged;
+				foreach (MapElement child in oldMapModel.MapElements)
+				{
+					child.PropertyChanged -= MapElementPropertyChanged;
 				}
 
 				MessagingCenter.Unsubscribe<Map, MapSpan>(this, MoveMessageName);
@@ -137,11 +153,8 @@ namespace Xamarin.Forms.Maps.Android
 
 			MessagingCenter.Subscribe<Map, MapSpan>(this, MoveMessageName, OnMoveToRegionMessage, Map);
 
-			var incc = Map.Pins as INotifyCollectionChanged;
-			if (incc != null)
-			{
-				incc.CollectionChanged += OnCollectionChanged;
-			}
+			((INotifyCollectionChanged)Map.Pins).CollectionChanged += OnPinCollectionChanged;
+			((INotifyCollectionChanged)Map.MapElements).CollectionChanged += OnMapElementCollectionChanged;
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -184,7 +197,8 @@ namespace Xamarin.Forms.Maps.Android
 				if (NativeMap != null)
 				{
 					MoveToRegion(Element.LastMoveToRegion, false);
-					OnCollectionChanged(Element.Pins, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+					OnPinCollectionChanged(Element.Pins, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+					OnMapElementCollectionChanged(Element.MapElements, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 					_init = false;
 				}
 			}
@@ -195,7 +209,7 @@ namespace Xamarin.Forms.Maps.Android
 					UpdateVisibleRegion(NativeMap.CameraPosition.Target);
 				}
 
-				if(Element.MoveToLastRegionOnLayoutChange)
+				if (Element.MoveToLastRegionOnLayoutChange)
 					MoveToRegion(Element.LastMoveToRegion, false);
 			}
 		}
@@ -377,7 +391,7 @@ namespace Xamarin.Forms.Maps.Android
 			}
 		}
 
-		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
+		void OnPinCollectionChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
 		{
 			switch (notifyCollectionChangedEventArgs.Action)
 			{
@@ -476,6 +490,295 @@ namespace Xamarin.Forms.Maps.Android
 			Element.SetVisibleRegion(new MapSpan(new Position(pos.Latitude, pos.Longitude), dlat, dlong));
 		}
 
+		void MapElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			switch (sender)
+			{
+				case Polyline polyline:
+				{
+					PolylineOnPropertyChanged(polyline, e);
+					break;
+				}
+				case Polygon polygon:
+				{
+					PolygonOnPropertyChanged(polygon, e);
+					break;
+				}
+			}
+		}
+
+		void OnMapElementCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			switch (e.Action)
+			{
+				case NotifyCollectionChangedAction.Add:
+					AddMapElements(e.NewItems.Cast<MapElement>());
+					break;
+				case NotifyCollectionChangedAction.Remove:
+					RemoveMapElements(e.OldItems.Cast<MapElement>());
+					break;
+				case NotifyCollectionChangedAction.Replace:
+					RemoveMapElements(e.OldItems.Cast<MapElement>());
+					AddMapElements(e.NewItems.Cast<MapElement>());
+					break;
+				case NotifyCollectionChangedAction.Reset:
+					if (_polylines != null)
+					{
+						foreach (var nativePolyline in _polylines)
+						{
+							nativePolyline.Remove();
+
+							var formsPolyline = GetFormsPolyline(nativePolyline);
+							if (formsPolyline != null)
+								formsPolyline.PropertyChanged -= MapElementPropertyChanged;
+						}
+					}
+
+					AddMapElements(Element.MapElements);
+					break;
+			}
+		}
+
+		void AddMapElements(IEnumerable<MapElement> mapElements)
+		{
+			foreach (var element in mapElements)
+			{
+				element.PropertyChanged += MapElementPropertyChanged;
+
+				switch (element)
+				{
+					case Polyline polyline:
+						AddPolyline(polyline);
+						break;
+					case Polygon polygon:
+						AddPolygon(polygon);
+						break;
+				}
+			}
+		}
+
+		void RemoveMapElements(IEnumerable<MapElement> mapElements)
+		{
+			foreach (var element in mapElements)
+			{
+				element.PropertyChanged -= MapElementPropertyChanged;
+
+				switch (element)
+				{
+					case Polyline polyline:
+						RemovePolyline(polyline);
+						break;
+					case Polygon polygon:
+						RemovePolygon(polygon);
+						break;
+				}
+			}
+		}
+
+		#region Polylines
+
+		protected virtual PolylineOptions CreatePolylineOptions(Polyline polyline)
+		{
+			var opts = new PolylineOptions();
+
+			opts.InvokeColor(polyline.StrokeColor.ToAndroid(Color.Black));
+			opts.InvokeWidth(polyline.StrokeWidth);
+
+			foreach (var position in polyline.Geopath)
+			{
+				opts.Points.Add(new LatLng(position.Latitude, position.Longitude));
+			}
+
+			return opts;
+		}
+
+		protected APolyline GetNativePolyline(Polyline polyline)
+		{
+			return _polylines?.Find(p => p.Id == (string)polyline.MapElementId);
+		}
+
+		protected Polyline GetFormsPolyline(APolyline polyline)
+		{
+			Polyline targetPolyline = null;
+
+			for (int i = 0; i < Map.MapElements.Count; i++)
+			{
+				var element = Map.MapElements[i];
+				if ((string)element.MapElementId == polyline.Id)
+				{
+					targetPolyline = element as Polyline;
+					break;
+				}
+			}
+
+			return targetPolyline;
+		}
+
+		void PolylineOnPropertyChanged(Polyline formsPolyline, PropertyChangedEventArgs e)
+		{
+			var nativePolyline = GetNativePolyline(formsPolyline);
+
+			if (nativePolyline == null)
+			{
+				return;
+			}
+
+			if (e.PropertyName == MapElement.StrokeColorProperty.PropertyName)
+			{
+				nativePolyline.Color = formsPolyline.StrokeColor.ToAndroid(Color.Black);
+			}
+			else if (e.PropertyName == MapElement.StrokeWidthProperty.PropertyName)
+			{
+				nativePolyline.Width = formsPolyline.StrokeWidth;
+			}
+			else if (e.PropertyName == nameof(Polyline.Geopath))
+			{
+				nativePolyline.Points = formsPolyline.Geopath.Select(position => new LatLng(position.Latitude, position.Longitude)).ToList();
+			}
+		}
+
+		void AddPolyline(Polyline polyline)
+		{
+			var map = NativeMap;
+			if (map == null)
+			{
+				return;
+			}
+
+			if (_polylines == null)
+			{
+				_polylines = new List<APolyline>();
+			}
+
+			var options = CreatePolylineOptions(polyline);
+			var nativePolyline = map.AddPolyline(options);
+
+			polyline.MapElementId = nativePolyline.Id;
+
+			_polylines.Add(nativePolyline);
+		}
+
+		void RemovePolyline(Polyline polyline)
+		{
+			var native = GetNativePolyline(polyline);
+
+			if (native != null)
+			{
+				native.Remove();
+				_polylines.Remove(native);
+			}
+		}
+
+		#endregion
+
+		#region Polygons
+
+		protected virtual PolygonOptions CreatePolygonOptions(Polygon polygon)
+		{
+			var opts = new PolygonOptions();
+
+			opts.InvokeStrokeColor(polygon.StrokeColor.ToAndroid(Color.Black));
+			opts.InvokeStrokeWidth(polygon.StrokeWidth);
+
+			if (!polygon.StrokeColor.IsDefault)
+				opts.InvokeFillColor(polygon.FillColor.ToAndroid());
+
+			// Will throw an exception when added to the map if Points is empty
+			if (polygon.Geopath.Count == 0)
+			{
+				opts.Points.Add(new LatLng(0, 0));
+			}
+			else
+			{
+				foreach (var position in polygon.Geopath)
+				{
+					opts.Points.Add(new LatLng(position.Latitude, position.Longitude));
+				}
+			}
+
+			return opts;
+		}
+
+		protected APolygon GetNativePolygon(Polygon polygon)
+		{
+			return _polygons?.Find(p => p.Id == (string)polygon.MapElementId);
+		}
+
+		protected Polygon GetFormsPolygon(APolygon polygon)
+		{
+			Polygon targetPolygon = null;
+
+			for (int i = 0; i < Element.MapElements.Count; i++)
+			{
+				var element = Element.MapElements[i];
+				if ((string)element.MapElementId == polygon.Id)
+				{
+					targetPolygon = (Polygon)element;
+					break;
+				}
+			}
+
+			return targetPolygon;
+		}
+
+		void PolygonOnPropertyChanged(Polygon polygon, PropertyChangedEventArgs e)
+		{
+			var nativePolygon = GetNativePolygon(polygon);
+
+			if (nativePolygon == null)
+				return;
+
+			if (e.PropertyName == MapElement.StrokeColorProperty.PropertyName)
+			{
+				nativePolygon.StrokeColor = polygon.StrokeColor.ToAndroid(Color.Black);
+			}
+			else if (e.PropertyName == MapElement.StrokeWidthProperty.PropertyName)
+			{
+				nativePolygon.StrokeWidth = polygon.StrokeWidth;
+			}
+			else if (e.PropertyName == Polygon.FillColorProperty.PropertyName)
+			{
+				nativePolygon.FillColor = polygon.FillColor.ToAndroid();
+			}
+			else if (e.PropertyName == nameof(polygon.Geopath))
+			{
+				nativePolygon.Points = polygon.Geopath.Select(p => new LatLng(p.Latitude, p.Longitude)).ToList();
+			}
+		}
+
+		void AddPolygon(Polygon polygon)
+		{
+			var map = NativeMap;
+			if (map == null)
+			{
+				return;
+			}
+
+			if (_polygons == null)
+			{
+				_polygons = new List<APolygon>();
+			}
+
+			var options = CreatePolygonOptions(polygon);
+			var nativePolygon = map.AddPolygon(options);
+
+			polygon.MapElementId = nativePolygon.Id;
+
+			_polygons.Add(nativePolygon);
+		}
+
+		void RemovePolygon(Polygon polygon)
+		{
+			var native = GetNativePolygon(polygon);
+
+			if (native != null)
+			{
+				native.Remove();
+				_polygons.Remove(native);
+			}
+		}
+
+		#endregion
 		void IOnMapReadyCallback.OnMapReady(GoogleMap map)
 		{
 			NativeMap = map;

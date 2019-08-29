@@ -1,7 +1,9 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using CoreLocation;
 using MapKit;
 using ObjCRuntime;
@@ -59,8 +61,8 @@ namespace Xamarin.Forms.Maps.MacOS
 				{
 					var mapModel = (Map)Element;
 					MessagingCenter.Unsubscribe<Map, MapSpan>(this, MoveMessageName);
-					((ObservableCollection<Pin>)mapModel.Pins).CollectionChanged -= OnCollectionChanged;
-
+					((ObservableCollection<Pin>)mapModel.Pins).CollectionChanged -= OnPinCollectionChanged;
+					((ObservableCollection<MapElement>)mapModel.MapElements).CollectionChanged -= OnMapElementCollectionChanged;
 					foreach (Pin pin in mapModel.Pins)
 					{
 						pin.PropertyChanged -= PinOnPropertyChanged;
@@ -71,6 +73,7 @@ namespace Xamarin.Forms.Maps.MacOS
 				mkMapView.DidSelectAnnotationView -= MkMapViewOnAnnotationViewSelected;
 				mkMapView.RegionChanged -= MkMapViewOnRegionChanged;
 				mkMapView.GetViewForAnnotation = null;
+				mkMapView.OverlayRenderer = null;
 				if (mkMapView.Delegate != null)
 				{
 					mkMapView.Delegate.Dispose();
@@ -110,12 +113,19 @@ namespace Xamarin.Forms.Maps.MacOS
 			if (e.OldElement != null)
 			{
 				var mapModel = (Map)e.OldElement;
-				MessagingCenter.Unsubscribe<Map, MapSpan>(this, MoveMessageName);
-				((ObservableCollection<Pin>)mapModel.Pins).CollectionChanged -= OnCollectionChanged;
 
+				MessagingCenter.Unsubscribe<Map, MapSpan>(this, MoveMessageName);
+
+				((ObservableCollection<Pin>)mapModel.Pins).CollectionChanged -= OnPinCollectionChanged;
 				foreach (Pin pin in mapModel.Pins)
 				{
 					pin.PropertyChanged -= PinOnPropertyChanged;
+				}
+
+				((ObservableCollection<MapElement>)mapModel.MapElements).CollectionChanged -= OnMapElementCollectionChanged;
+				foreach (MapElement mapElement in mapModel.MapElements)
+				{
+					mapElement.PropertyChanged -= MapElementPropertyChanged;
 				}
 			}
 
@@ -143,6 +153,7 @@ namespace Xamarin.Forms.Maps.MacOS
 					SetNativeControl(mapView);
 
 					mapView.GetViewForAnnotation = GetViewForAnnotation;
+					mapView.OverlayRenderer = GetViewForOverlay;
 					mapView.DidSelectAnnotationView += MkMapViewOnAnnotationViewSelected;
 					mapView.RegionChanged += MkMapViewOnRegionChanged;
 #if __MOBILE__
@@ -159,9 +170,11 @@ namespace Xamarin.Forms.Maps.MacOS
 				UpdateHasScrollEnabled();
 				UpdateHasZoomEnabled();
 
-				((ObservableCollection<Pin>)mapModel.Pins).CollectionChanged += OnCollectionChanged;
+				((ObservableCollection<Pin>)mapModel.Pins).CollectionChanged += OnPinCollectionChanged;
+				OnPinCollectionChanged(mapModel.Pins, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 
-				OnCollectionChanged(((Map)Element).Pins, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+				((ObservableCollection<MapElement>)mapModel.MapElements).CollectionChanged += OnMapElementCollectionChanged;
+				OnMapElementCollectionChanged(mapModel.MapElements, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 			}
 		}
 
@@ -395,7 +408,7 @@ namespace Xamarin.Forms.Maps.MacOS
 			((MKMapView)Control).SetRegion(mapRegion, animated);
 		}
 
-		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
+		void OnPinCollectionChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
 		{
 			switch (notifyCollectionChangedEventArgs.Action)
 			{
@@ -466,6 +479,160 @@ namespace Xamarin.Forms.Maps.MacOS
 					((MKMapView)Control).MapType = MKMapType.Hybrid;
 					break;
 			}
+		}
+
+		void OnMapElementCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			switch (e.Action)
+			{
+				case NotifyCollectionChangedAction.Add:
+					AddMapElements(e.NewItems.Cast<MapElement>());
+					break;
+				case NotifyCollectionChangedAction.Remove:
+					RemoveMapElements(e.OldItems.Cast<MapElement>());
+					break;
+				case NotifyCollectionChangedAction.Replace:
+					RemoveMapElements(e.OldItems.Cast<MapElement>());
+					AddMapElements(e.NewItems.Cast<MapElement>());
+					break;
+				case NotifyCollectionChangedAction.Reset:
+					var mkMapView = (MKMapView)Control;
+
+					if (mkMapView.Overlays != null)
+					{
+						var overlays = mkMapView.Overlays;
+						foreach (var overlay in overlays)
+						{
+							mkMapView.RemoveOverlay(overlay);
+						}
+					}
+
+					AddMapElements(((Map)Element).MapElements);
+					break;
+			}
+		}
+
+		void AddMapElements(IEnumerable<MapElement> mapElements)
+		{
+			foreach (var element in mapElements)
+			{
+				element.PropertyChanged += MapElementPropertyChanged;
+
+				IMKOverlay overlay = null;
+				switch (element)
+				{
+					case Polyline polyline:
+						overlay = MKPolyline.FromCoordinates(polyline.Geopath
+							.Select(position => new CLLocationCoordinate2D(position.Latitude, position.Longitude))
+							.ToArray());
+						break;
+					case Polygon polygon:
+						overlay = MKPolygon.FromCoordinates(polygon.Geopath
+							.Select(position => new CLLocationCoordinate2D(position.Latitude, position.Longitude))
+							.ToArray());
+						break;
+				}
+
+				element.MapElementId = overlay;
+
+				((MKMapView)Control).AddOverlay(overlay);
+			}
+		}
+
+		void RemoveMapElements(IEnumerable<MapElement> mapElements)
+		{
+			foreach (var element in mapElements)
+			{
+				element.PropertyChanged -= MapElementPropertyChanged;
+
+				var overlay = (IMKOverlay)element.MapElementId;
+				((MKMapView)Control).RemoveOverlay(overlay);
+			}
+		}
+
+		void MapElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			var element = (MapElement)sender;
+
+			RemoveMapElements(new[] { element });
+			AddMapElements(new[] { element });
+		}
+
+		protected virtual MKOverlayRenderer GetViewForOverlay(MKMapView mapview, IMKOverlay overlay)
+		{
+			switch (overlay)
+			{
+				case MKPolyline polyline:
+					return GetViewForPolyline(polyline);
+				case MKPolygon polygon:
+					return GetViewForPolygon(polygon);
+			}
+
+			return null;
+		}
+
+		protected virtual MKPolylineRenderer GetViewForPolyline(MKPolyline mkPolyline)
+		{
+			var map = (Map)Element;
+			Polyline targetPolyline = null;
+
+			for (int i = 0; i < map.MapElements.Count; i++)
+			{
+				var element = map.MapElements[i];
+				if (ReferenceEquals(element.MapElementId, mkPolyline))
+				{
+					targetPolyline = (Polyline)element;
+					break;
+				}
+			}
+
+			if (targetPolyline == null)
+			{
+				return null;
+			}
+
+			return new MKPolylineRenderer(mkPolyline)
+			{
+#if __MOBILE__
+				StrokeColor = targetPolyline.StrokeColor.ToUIColor(Color.Black),
+#else
+				StrokeColor = targetPolyline.StrokeColor.ToNSColor(Color.Black),
+#endif
+				LineWidth = targetPolyline.StrokeWidth
+			};
+		}
+
+		protected virtual MKPolygonRenderer GetViewForPolygon(MKPolygon mkPolygon)
+		{
+			var map = (Map)Element;
+			Polygon targetPolygon = null;
+
+			for (int i = 0; i < map.MapElements.Count; i++)
+			{
+				var element = map.MapElements[i];
+				if (ReferenceEquals(element.MapElementId, mkPolygon))
+				{
+					targetPolygon = (Polygon)element;
+					break;
+				}
+			}
+
+			if (targetPolygon == null)
+			{
+				return null;
+			}
+
+			return new MKPolygonRenderer(mkPolygon)
+			{
+#if __MOBILE__
+				StrokeColor = targetPolygon.StrokeColor.ToUIColor(Color.Black),
+				FillColor = targetPolygon.FillColor.ToUIColor(),
+#else
+				StrokeColor = targetPolygon.StrokeColor.ToNSColor(Color.Black),
+				FillColor = targetPolygon.FillColor.ToNSColor(),
+#endif
+				LineWidth = targetPolygon.StrokeWidth
+			};
 		}
 	}
 }
