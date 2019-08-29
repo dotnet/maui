@@ -2,7 +2,7 @@
 name: Bug report
 about: Create a report to help us improve
 title: "[Bug] "
-labels: t/bug :bug:, s/unverified
+labels: 's/unverified, t/bug :bug:'
 assignees: ''
 
 ---
