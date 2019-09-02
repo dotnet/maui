@@ -357,11 +357,6 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
-		void IAccessibilityElementsController.ResetAccessibilityElements()
-		{
-			Container?.ClearAccessibilityElements();
-		}
-
 		bool ShouldUseSafeArea()
 		{
 			bool usingSafeArea = Page.On<PlatformConfiguration.iOS>().UsingSafeArea();
