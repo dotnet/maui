@@ -390,7 +390,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				SetAccessibilityLabel();
 			else if (e.PropertyName == AutomationProperties.IsInAccessibleTreeProperty.PropertyName)
 				SetIsAccessibilityElement();
-			else if (e.Is(VisualElement.IsVisibleProperty))
+			else if (e.PropertyName == VisualElement.IsVisibleProperty.PropertyName)
 				UpdateParentPageAccessibilityElements();
 		}
 
