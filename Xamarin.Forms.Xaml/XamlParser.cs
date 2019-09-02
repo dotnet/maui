@@ -178,6 +178,7 @@ namespace Xamarin.Forms.Xaml
 							return node;
 						break;
 					case XmlNodeType.Text:
+					case XmlNodeType.CDATA:
 						node = new ValueNode(reader.Value.Trim(), (IXmlNamespaceResolver)reader, ((IXmlLineInfo)reader).LineNumber,
 							((IXmlLineInfo)reader).LinePosition);
 						nodes.Add(node);
