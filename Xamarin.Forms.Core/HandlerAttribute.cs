@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 
 namespace Xamarin.Forms
 {
@@ -14,8 +15,11 @@ namespace Xamarin.Forms
 			SupportedVisuals = supportedVisuals ?? new[] { typeof(VisualMarker.DefaultVisual) };
 			TargetType = target;
 			HandlerType = handler;
+			Priority = 0;
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public short Priority { get; set; }
 		internal Type[] SupportedVisuals { get; private set; }
 		internal Type HandlerType { get; private set; }
 

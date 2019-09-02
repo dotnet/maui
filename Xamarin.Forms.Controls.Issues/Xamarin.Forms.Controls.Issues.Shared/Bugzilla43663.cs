@@ -3,17 +3,35 @@ using Xamarin.Forms.Internals;
 using System;
 using System.Runtime.CompilerServices;
 
+
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 43663, "ModalPushed and ModalPopped not working on WinRT", PlatformAffected.WinRT)]
+
+
+#if UITEST
+	[NUnit.Framework.Category(UITestCategories.Navigation)]
+#endif
 	public class Bugzilla43663 : TestNavigationPage
 	{
+		const string Message = "Message";
+
+		const string GoBack = "Go back";
+
+		const string Cancel = "Cancel";
+
+		const string PushModal = "Push Modal";
+
+		const string PopModal = "Pop Modal";
+
+		const string Modal = "Modal";
 		protected override void Init()
 		{
 			Application.Current.ModalPushed += ModalPushed;
@@ -26,10 +44,14 @@ namespace Xamarin.Forms.Controls.Issues
 				{
 					Children =
 					{
-						new Label { Text = "This page's appearing unsubscribes from the ModalPushed/ModalPopped events" },
+						new Label
+						{
+							Text = "This page's appearing unsubscribes from the ModalPushed/ModalPopped events",
+							HorizontalTextAlignment = TextAlignment.Center
+						},
 						new Button
 						{
-							Text = "Go back",
+							Text = GoBack,
 							Command = new Command(async () => await Navigation.PopModalAsync())
 						}
 					}
@@ -46,14 +68,20 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				Children =
 				{
-					new Label { Text = "Modal" },
+					new Label { Text = Modal },
+					new Label
+					{
+						Text = "Now press the button bellow, and verify if you go back to previous page. If back's you've success!",
+						HorizontalTextAlignment= TextAlignment.Center
+					},
 					new Button
 					{
 						Text = "Click to dismiss modal",
 						Command = new Command(async() =>
 						{
 							await Navigation.PopModalAsync();
-						})
+						}),
+						AutomationId = PopModal
 					}
 				},
 			};
@@ -63,14 +91,20 @@ namespace Xamarin.Forms.Controls.Issues
 				VerticalOptions = LayoutOptions.Center,
 				Children =
 				{
-					new Button
+					new Label
 					{
-						Text = "Click to push Modal",
-						Command = new Command(async () => await Navigation.PushModalAsync(modalPage))
+						Text = "Verify if after you press the \"Click to push Modal\" button, you navigate to Modal Page.",
+						HorizontalTextAlignment = TextAlignment.Center
 					},
 					new Button
 					{
-						Text = "Go back",
+						Text = "Click to push Modal",
+						Command = new Command(async () => await Navigation.PushModalAsync(modalPage)),
+						AutomationId = PushModal
+					},
+					new Button
+					{
+						Text = GoBack,
 						Command = new Command(async () => await Navigation.PopAsync())
 					}
 				}
@@ -82,12 +116,33 @@ namespace Xamarin.Forms.Controls.Issues
 
 		void ModalPushed(object sender, ModalPushedEventArgs e)
 		{
-			DisplayAlert("Pushed", "Message", "Cancel");
+			DisplayAlert("Pushed", Message, Cancel);
 		}
 
 		void ModalPopped(object sender, ModalPoppedEventArgs e)
 		{
-			DisplayAlert("Popped", "Message", "Cancel");
+			DisplayAlert("Popped", Message, Cancel);
 		}
+
+#if UITEST && __WINDOWS__
+		[Test]
+		public void ModalNavigation()
+		{
+			DismissAlert();
+			RunningApp.WaitForElement(q => q.Marked(PushModal));
+			RunningApp.Tap(q => q.Marked(PushModal));
+			DismissAlert();
+			RunningApp.WaitForElement(q => q.Marked(Modal));
+			RunningApp.Tap(q => q.Marked(PopModal));
+			DismissAlert();
+			RunningApp.WaitForElement(q => q.Marked(PushModal));
+		}
+
+		void DismissAlert()
+		{
+			RunningApp.WaitForElement(Message);
+			RunningApp.Tap(Cancel);
+		}
+#endif
 	}
 }

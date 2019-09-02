@@ -11,7 +11,7 @@ using Uri = System.Uri;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	public class WkWebViewRenderer : WKWebView, IVisualElementRenderer, IWebViewDelegate, IEffectControlProvider
+	public class WkWebViewRenderer : WKWebView, IVisualElementRenderer, IWebViewDelegate, IEffectControlProvider, ITabStop
 	{
 		EventTracker _events;
 		bool _ignoreSourceChanges;
@@ -394,6 +394,8 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			get { return null; }
 		}
+
+		UIView ITabStop.TabStop => this;
 
 		#endregion
 

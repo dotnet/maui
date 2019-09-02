@@ -6,12 +6,17 @@ using System.Threading.Tasks;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 43469, "Calling DisplayAlert twice in WinRT causes a crash", PlatformAffected.WinRT)]
+
+#if UITEST
+	[NUnit.Framework.Category(UITestCategories.DisplayAlert)]
+#endif
 	public class Bugzilla43469 : TestContentPage
 	{
 		const string kButtonText = "Click to call DisplayAlert six times. Click as fast as you can to close them as they popup to ensure it doesn't crash.";

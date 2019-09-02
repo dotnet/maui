@@ -68,15 +68,18 @@ namespace Xamarin.Forms.Platform.iOS
 				var tabGroup = tabIndexes[idx];
 				foreach (var child in tabGroup)
 				{
-					if (child is Layout ||
+					if (
 						!(
 							child is VisualElement ve && ve.IsTabStop
 							&& AutomationProperties.GetIsInAccessibleTree(ve) != false // accessible == true
-							&& ve.GetRenderer().NativeView is ITabStop tabStop)
+							&& ve.GetRenderer().NativeView is UIView view)
 						 )
 						continue;
 
-					var thisControl = tabStop.TabStop;
+					var thisControl = view;
+
+					if (view is ITabStop tabstop)
+						thisControl = tabstop.TabStop;
 
 					if (thisControl == null)
 						continue;
@@ -155,7 +158,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.ViewWillLayoutSubviews();
 
-			AccessibilityElementsController.ResetAccessibilityElements();
+			Container?.ClearAccessibilityElements();
 		}
 
 		public override void ViewDidLayoutSubviews()

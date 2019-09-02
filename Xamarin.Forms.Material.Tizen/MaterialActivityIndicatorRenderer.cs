@@ -3,7 +3,7 @@ using Xamarin.Forms.Platform.Tizen;
 using Xamarin.Forms.Material.Tizen;
 using Tizen.NET.MaterialComponents;
 
-[assembly: ExportRenderer(typeof(ActivityIndicator), typeof(MaterialActivityIndicatorRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
+[assembly: ExportRenderer(typeof(ActivityIndicator), typeof(MaterialActivityIndicatorRenderer), new[] { typeof(VisualMarker.MaterialVisual) }, Priority = short.MinValue)]
 namespace Xamarin.Forms.Material.Tizen
 {
 	public class MaterialActivityIndicatorRenderer : ActivityIndicatorRenderer
