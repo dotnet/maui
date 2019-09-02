@@ -292,22 +292,28 @@ namespace Xamarin.Forms.Platform.Android
 			bool _isdisposed = false;
 			public HeaderContainer(Context context, View view) : base(context, view)
 			{
-				view.PropertyChanged += OnViewPropertyChanged;
+				Initialize(view);
 			}
 
 			public HeaderContainer(Context context, IAttributeSet attribs) : base(context, attribs)
 			{
-				View.PropertyChanged += OnViewPropertyChanged;
+				Initialize(View);
 			}
 
 			public HeaderContainer(Context context, IAttributeSet attribs, int defStyleAttr) : base(context, attribs, defStyleAttr)
 			{
-				View.PropertyChanged += OnViewPropertyChanged;
+				Initialize(View);
 			}
 
 			protected HeaderContainer(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 			{
-				View.PropertyChanged += OnViewPropertyChanged;
+				Initialize(View);
+			}
+
+			void Initialize(View view)
+			{
+				if (view != null)
+					view.PropertyChanged += OnViewPropertyChanged;
 			}
 
 			void OnViewPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -336,7 +342,9 @@ namespace Xamarin.Forms.Platform.Android
 				height -= paddingTop + paddingBottom;
 
 				UpdateElevation();
-				View.Layout(new Rectangle(paddingLeft, paddingTop, width, height));
+
+				if(View != null)
+					View.Layout(new Rectangle(paddingLeft, paddingTop, width, height));
 			}
 
 			protected override void Dispose(bool disposing)
@@ -347,7 +355,8 @@ namespace Xamarin.Forms.Platform.Android
 				_isdisposed = true;
 				if (disposing)
 				{
-					View.PropertyChanged -= OnViewPropertyChanged;
+					if(View != null)
+						View.PropertyChanged -= OnViewPropertyChanged;
 				}
 
 				View = null;
