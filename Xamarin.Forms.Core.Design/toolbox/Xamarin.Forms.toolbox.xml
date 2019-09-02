@@ -30,10 +30,10 @@
 		<Item Class="Xamarin.Forms.CollectionView" Name="CollectionView" Image="view-ListView.png">
 			<Snippet>
 				<CollectionView ItemsSource="">
+					<CollectionView.ItemsLayout>
+						<GridItemsLayout Span="2" Orientation="Vertical"/>
+					</CollectionView.ItemsLayout>
 					<CollectionView.ItemTemplate>
-						<CollectionView.ItemsLayout>
-							<GridItemsLayout Span="2" Orientation="Vertical"/>
-						</CollectionView.ItemsLayout>
 						<DataTemplate>
 						</DataTemplate>
 					</CollectionView.ItemTemplate>

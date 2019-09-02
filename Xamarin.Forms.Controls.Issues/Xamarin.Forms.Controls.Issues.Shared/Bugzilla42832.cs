@@ -36,8 +36,18 @@ namespace Xamarin.Forms.Controls.Issues
                 ItemsSource = items,
                 ItemTemplate = template
             };
-
-            Content = listview;
+			var label = new Label
+			{
+				Text = "Touch and hold the item #0, until \"Test Item\" appear. So scroll the list until the end. If the app don't crash the test has passed"
+			};
+			Content = new StackLayout
+			{
+				Children =
+				{
+					label,
+					listview
+				}
+			};
         }
 
         [Preserve(AllMembers = true)]

@@ -17,7 +17,7 @@ using RectangleF = CoreGraphics.CGRect;
 [assembly: ExportRenderer(typeof(NativeCell), typeof(NativeiOSCellRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView2), typeof(NativeiOSListViewRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView), typeof(NativeListViewRenderer))]
-[assembly: ExportRenderer(typeof(CustomMapView), typeof(CustomIOSMapRenderer))]
+[assembly: ExportRenderer(typeof(Bugzilla39987.CustomMapView), typeof(CustomIOSMapRenderer))]
 [assembly: ExportRenderer(typeof(TabbedPage), typeof(TabbedPageWithCustomBarColorRenderer))]
 [assembly: ExportRenderer(typeof(Bugzilla43161.AccessoryViewCell), typeof(AccessoryViewCellRenderer))]
 [assembly: ExportRenderer(typeof(Bugzilla36802.AccessoryViewCell), typeof(AccessoryViewCellRenderer))]
@@ -27,11 +27,11 @@ using RectangleF = CoreGraphics.CGRect;
 namespace Xamarin.Forms.ControlGallery.iOS
 {
 
-	public class CustomIOSMapRenderer : ViewRenderer<CustomMapView, MKMapView>
+	public class CustomIOSMapRenderer : ViewRenderer<Bugzilla39987.CustomMapView, MKMapView>
 	{
 		private MKMapView _mapView;
 
-		protected override void OnElementChanged(ElementChangedEventArgs<CustomMapView> e)
+		protected override void OnElementChanged(ElementChangedEventArgs<Bugzilla39987.CustomMapView> e)
 		{
 			base.OnElementChanged(e);
 

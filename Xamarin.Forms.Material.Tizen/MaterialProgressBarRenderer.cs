@@ -3,7 +3,7 @@ using Xamarin.Forms.Platform.Tizen;
 using Xamarin.Forms.Material.Tizen;
 using Tizen.NET.MaterialComponents;
 
-[assembly: ExportRenderer(typeof(ProgressBar), typeof(MaterialProgressBarRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
+[assembly: ExportRenderer(typeof(ProgressBar), typeof(MaterialProgressBarRenderer), new[] { typeof(VisualMarker.MaterialVisual) }, Priority = short.MinValue)]
 namespace Xamarin.Forms.Material.Tizen
 {
 	public class MaterialProgressBarRenderer : ProgressBarRenderer

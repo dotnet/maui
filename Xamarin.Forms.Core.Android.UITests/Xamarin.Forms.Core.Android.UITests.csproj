@@ -20,7 +20,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;__ANDROID__;UITEST</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;__ANDROID__;UITEST;__SHELL__</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoWarn>0114;0108;4014;0649;0168;0169;0219</NoWarn>

@@ -137,11 +137,9 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			var module = context.Body.Method.Module;
 			var str = (string)node.Value;
-
 			//If the TypeConverter has a ProvideCompiledAttribute that can be resolved, shortcut this
-			var compiledConverterName = typeConverter?.GetCustomAttribute(module, ("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "ProvideCompiledAttribute"))?.ConstructorArguments?.First().Value as string;
 			Type compiledConverterType;
-			if (compiledConverterName != null && (compiledConverterType = Type.GetType (compiledConverterName)) != null) {
+			if (typeConverter?.GetCustomAttribute(module, ("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "ProvideCompiledAttribute"))?.ConstructorArguments?.First().Value is string compiledConverterName && (compiledConverterType = Type.GetType (compiledConverterName)) != null) {
 				var compiledConverter = Activator.CreateInstance (compiledConverterType);
 				var converter = typeof(ICompiledTypeConverter).GetMethods ().FirstOrDefault (md => md.Name == "ConvertFromString");
 				IEnumerable<Instruction> instructions;
@@ -159,8 +157,7 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 
 			//If there's a [TypeConverter], use it
-			if (typeConverter != null)
-			{
+			if (typeConverter != null) {
 				var isExtendedConverter = typeConverter.ImplementsInterface(module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms", "IExtendedTypeConverter")));
 				var typeConverterCtorRef = module.ImportCtorReference(typeConverter, paramCount: 0);
 				var convertFromInvariantStringDefinition = isExtendedConverter
@@ -172,8 +169,8 @@ namespace Xamarin.Forms.Build.Tasks
 						.FirstOrDefault(md => md.methodDef.Name == "ConvertFromInvariantString" && md.methodDef.Parameters.Count == 1).methodDef;
 				var convertFromInvariantStringReference = module.ImportReference(convertFromInvariantStringDefinition);
 
-				yield return Instruction.Create(OpCodes.Newobj, typeConverterCtorRef);
-				yield return Instruction.Create(OpCodes.Ldstr, node.Value as string);
+				yield return Create(Newobj, typeConverterCtorRef);
+				yield return Create(Ldstr, node.Value as string);
 
 				if (isExtendedConverter)
 				{
