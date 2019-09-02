@@ -6,7 +6,6 @@ namespace Xamarin.Forms.Platform.iOS
 {
 	internal interface IAccessibilityElementsController
 	{
-		void ResetAccessibilityElements();
 		List<NSObject> GetAccessibilityElements();
 	}
 }

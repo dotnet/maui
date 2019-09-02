@@ -220,19 +220,19 @@ namespace Xamarin.Forms.Platform.MacOS
 			base.KeyUp(theEvent);
 		}
 #else
-		UIKeyCommand [] tabCommands = {
+		UIKeyCommand[] tabCommands = {
 			UIKeyCommand.Create ((Foundation.NSString)"\t", 0, new ObjCRuntime.Selector ("tabForward:")),
 			UIKeyCommand.Create ((Foundation.NSString)"\t", UIKeyModifierFlags.Shift, new ObjCRuntime.Selector ("tabBackward:"))
 		};
 
-		public override UIKeyCommand [] KeyCommands => tabCommands;
+		public override UIKeyCommand[] KeyCommands => tabCommands;
 
 
-		[Foundation.Export ("tabForward:")]
-		void TabForward (UIKeyCommand cmd) => FocusSearch (forwardDirection: true);
+		[Foundation.Export("tabForward:")]
+		void TabForward(UIKeyCommand cmd) => FocusSearch(forwardDirection: true);
 
-		[Foundation.Export ("tabBackward:")]
-		void TabBackward (UIKeyCommand cmd) => FocusSearch (forwardDirection: false);
+		[Foundation.Export("tabBackward:")]
+		void TabBackward(UIKeyCommand cmd) => FocusSearch(forwardDirection: false);
 #endif
 
 		public void SetElement(TElement element)
@@ -393,6 +393,10 @@ namespace Xamarin.Forms.Platform.MacOS
 				SetAccessibilityLabel();
 			else if (e.PropertyName == AutomationProperties.IsInAccessibleTreeProperty.PropertyName)
 				SetIsAccessibilityElement();
+			else if (e.Is(VisualElement.IsVisibleProperty))
+			{
+				UpdateParentPageAccessibilityElements();
+			}
 #endif
 
 		}
@@ -502,11 +506,16 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 #if __MOBILE__
 			UIView parentRenderer = Superview;
-			while (parentRenderer != null && !(parentRenderer is IAccessibilityElementsController))
-				parentRenderer = parentRenderer.Superview;
+			while (parentRenderer != null)
+			{
+				if (parentRenderer is PageContainer container)
+				{
+					container.ClearAccessibilityElements();
+					break;
+				}
 
-			if (parentRenderer is IAccessibilityElementsController controller)
-				controller.ResetAccessibilityElements();
+				parentRenderer = parentRenderer.Superview;
+			}
 #endif
 		}
 
