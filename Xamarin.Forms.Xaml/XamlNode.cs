@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Xaml
 	{
 		Dictionary<XmlName, INode> Properties { get; }
 		List<XmlName> SkipProperties { get; }
-		INameScope Namescope { get; }
+		NameScopeRef NameScopeRef { get; }
 		XmlType XmlType { get; }
 		string NamespaceURI { get; }
 	}
@@ -32,6 +32,11 @@ namespace Xamarin.Forms.Xaml
 	interface IListNode : INode
 	{
 		List<INode> CollectionItems { get; }
+	}
+
+	class NameScopeRef
+	{
+		public INameScope NameScope { get; set; }
 	}
 
 	[DebuggerDisplay("{NamespaceUri}:{Name}")]
@@ -112,6 +117,7 @@ namespace Xamarin.Forms.Xaml
 		};
 	}
 
+
 	[DebuggerDisplay("{XmlType.Name}")]
 	class ElementNode : BaseNode, IValueNode, IElementNode
 	{
@@ -131,7 +137,7 @@ namespace Xamarin.Forms.Xaml
 		public List<INode> CollectionItems { get; }
 		public XmlType XmlType { get; }
 		public string NamespaceURI { get; }
-		public INameScope Namescope { get; set; }
+		public NameScopeRef NameScopeRef { get; set; }
 
 		public override void Accept(IXamlNodeVisitor visitor, INode parentNode)
 		{
@@ -152,10 +158,8 @@ namespace Xamarin.Forms.Xaml
 
 		bool IsDataTemplate(INode parentNode)
 		{
-			var parentElement = parentNode as IElementNode;
-			INode createContent;
-			if (parentElement != null &&
-				parentElement.Properties.TryGetValue(XmlName._CreateContent, out createContent) &&
+			if (parentNode is IElementNode parentElement &&
+				parentElement.Properties.TryGetValue(XmlName._CreateContent, out INode createContent) &&
 				createContent == this)
 				return true;
 			return false;
