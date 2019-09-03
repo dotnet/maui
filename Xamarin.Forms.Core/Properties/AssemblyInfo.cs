@@ -79,6 +79,7 @@ using Xamarin.Forms.StyleSheets;
 [assembly: StyleProperty("vertical-align", typeof(ITextAlignmentElement), nameof(TextAlignmentElement.VerticalTextAlignmentProperty))]
 [assembly: StyleProperty("visibility", typeof(VisualElement), nameof(VisualElement.IsVisibleProperty), Inherited = true)]
 [assembly: StyleProperty("width", typeof(VisualElement), nameof(VisualElement.WidthRequestProperty))]
+[assembly: StyleProperty("letter-spacing", typeof(ITextElement), nameof(TextElement.CharacterSpacingProperty), Inherited = true)]
 [assembly: StyleProperty("line-height", typeof(ILineHeightElement), nameof(LineHeightElement.LineHeightProperty), Inherited = true)]
 
 //flex
