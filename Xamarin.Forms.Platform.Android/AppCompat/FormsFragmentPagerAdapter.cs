@@ -1,17 +1,24 @@
-﻿using Android.OS;
+using System.Collections.Generic;
+using Android.OS;
 using Android.Support.V4.App;
 using Java.Lang;
 using Xamarin.Forms.Internals;
+using FragmentTransit = Android.App.FragmentTransit;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {
 	internal class FormsFragmentPagerAdapter<T> : FragmentPagerAdapter where T : Page
 	{
 		MultiPage<T> _page;
+		FragmentManager _fragmentManager;
+		List<Fragment> _fragments;
+		bool _disposed;
 
 		public FormsFragmentPagerAdapter(MultiPage<T> page, FragmentManager fragmentManager) : base(fragmentManager)
 		{
 			_page = page;
+			_fragmentManager = fragmentManager;
+			_fragments = new List<Fragment>();
 		}
 
 		public override int Count => CountOverride;
@@ -20,7 +27,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		public override Fragment GetItem(int position)
 		{
-			return FragmentContainer.CreateInstance(_page.Children[position]);
+			var fragment = FragmentContainer.CreateInstance(_page.Children[position]);
+
+			_fragments.Add(fragment);
+
+			return fragment;
 		}
 
 		public override long GetItemId(int position)
@@ -31,12 +42,17 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		public override int GetItemPosition(Object objectValue)
 		{
 			var fragContainer = objectValue as FragmentContainer;
-			if (fragContainer != null && fragContainer.Page != null)
+			
+			if (fragContainer?.Page != null)
 			{
 				int index = _page.Children.IndexOf(fragContainer.Page);
+				
 				if (index >= 0)
 					return index;
 			}
+
+			_fragments.Remove(fragContainer);
+
 			return PositionNone;
 		}
 
@@ -52,8 +68,36 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		protected override void Dispose(bool disposing)
 		{
+			if (_disposed)
+			{
+				return;
+			}
+
 			if (disposing)
+			{
+				_disposed = true;
+
 				_page = null;
+
+				if (!_fragmentManager.IsDestroyed)
+				{
+					FragmentTransaction transaction = _fragmentManager.BeginTransactionEx();
+			
+					foreach (Fragment fragment in _fragments)
+					{
+						transaction.RemoveEx(fragment);
+						transaction.SetTransitionEx((int)FragmentTransit.None);
+					}
+
+					transaction.CommitAllowingStateLossEx();
+
+					_fragmentManager.ExecutePendingTransactionsEx();
+
+					_fragments = null;
+					_fragmentManager = null;
+				}
+			}
+
 			base.Dispose(disposing);
 		}
 	}

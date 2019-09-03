@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
@@ -157,7 +157,6 @@ namespace Xamarin.Forms.Controls.Issues
 				protected override void OnAppearing() => Debug.WriteLine($"OnAppearing: {_permutations}");
 				protected override void OnDisappearing() => Debug.WriteLine($"OnDisappearing: {_permutations}");
 			}
-
 		}
 
 		[Preserve(AllMembers = true)]
@@ -170,7 +169,6 @@ namespace Xamarin.Forms.Controls.Issues
 				PushAsync(new InternalPage(30));
 
 				var otherPage = new InternalPage(40);
-				PushAsync(otherPage);
 
 				otherPage.Appearing += async (object sender, EventArgs e) =>
 				{
@@ -182,7 +180,9 @@ namespace Xamarin.Forms.Controls.Issues
 					Application.Current.MainPage.BindingContext = new object();
 				};
 
+				PushAsync(otherPage);
 			}
+
 			protected override void OnAppearing() => Debug.WriteLine($"OnAppearing: Issue2338");
 			protected override void OnDisappearing() => Debug.WriteLine($"OnDisappearing: Issue2338");
 
@@ -336,10 +336,6 @@ namespace Xamarin.Forms.Controls.Issues
 					await Task.Delay(500);
 					var contentPage = new ContentPage();
 
-#pragma warning disable 4014
-					Detail.Navigation.PushAsync(contentPage);
-#pragma warning restore 4014
-
 					contentPage.Appearing += (_, __) =>
 					{
 						var navPage = new NavigationPage(new ContentPage() { Title = "Details" });
@@ -350,6 +346,10 @@ namespace Xamarin.Forms.Controls.Issues
 
 						navPage.PushAsync(new ContentPage() { Title = "Details 2" });
 					};
+
+#pragma warning disable 4014
+					Detail.Navigation.PushAsync(contentPage);
+#pragma warning restore 4014
 				}
 			}
 		}

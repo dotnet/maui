@@ -2,16 +2,18 @@ using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Android.Content;
+using Android.Support.V4.App;
 using Android.Support.V4.View;
 using Android.Views;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {
-	public class CarouselPageRenderer : VisualElementRenderer<CarouselPage>, ViewPager.IOnPageChangeListener
+	public class CarouselPageRenderer : VisualElementRenderer<CarouselPage>, ViewPager.IOnPageChangeListener, IManageFragments
 	{
 		bool _disposed;
 		FormsViewPager _viewPager;
 		Page _previousPage;
+		FragmentManager _fragmentManager;
 
 		public CarouselPageRenderer(Context context) : base(context)
 		{
@@ -34,6 +36,14 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		}
 
 		IPageController PageController => Element as IPageController;
+
+		FragmentManager FragmentManager => _fragmentManager ?? (_fragmentManager = Context.GetFragmentManager());
+
+		void IManageFragments.SetFragmentManager(FragmentManager childFragmentManager)
+		{
+			if (_fragmentManager == null)
+				_fragmentManager = childFragmentManager;
+		}
 
 		void ViewPager.IOnPageChangeListener.OnPageSelected(int position)
 		{
@@ -68,7 +78,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				RemoveAllViews();
 
 				_previousPage = null;
-			
+				_fragmentManager = null;
+
 				if (Element?.Children != null)
 				{
 					foreach (ContentPage pageToRemove in Element.Children)
@@ -117,15 +128,22 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			if (e.NewElement != null)
 			{
-				FormsViewPager pager =
-					_viewPager =
-					new FormsViewPager(activity)
-					{
-						OverScrollMode = OverScrollMode.Never,
-						EnableGesture = true,
-						LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent),
-						Adapter = new FormsFragmentPagerAdapter<ContentPage>(e.NewElement, activity.SupportFragmentManager) { CountOverride = e.NewElement.Children.Count }
-					};
+				if (_viewPager != null)
+				{
+					_viewPager.RemoveOnPageChangeListener(this);
+
+					ViewGroup.RemoveView(_viewPager);
+
+					_viewPager.Dispose();
+				}
+
+				FormsViewPager pager = _viewPager = new FormsViewPager(activity)
+				{
+					OverScrollMode = OverScrollMode.Never,
+					EnableGesture = true,
+					LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent),
+					Adapter = new FormsFragmentPagerAdapter<ContentPage>(e.NewElement, FragmentManager) { CountOverride = e.NewElement.Children.Count }
+				};
 				pager.Id = Platform.GenerateViewId();
 				pager.AddOnPageChangeListener(this);
 
@@ -145,7 +163,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == "CurrentPage")
+			if (e.PropertyName == nameof(Element.CurrentPage))
 				ScrollToCurrentPage();
 		}
 
