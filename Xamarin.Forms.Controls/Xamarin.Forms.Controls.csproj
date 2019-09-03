@@ -47,6 +47,9 @@
     <EmbeddedResource Update="GalleryPages\BindableLayoutGalleryPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
+    <EmbeddedResource Update="GalleryPages\CollectionViewGalleries\HeaderFooterGalleries\HeaderFooterGridHorizontal.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
     <EmbeddedResource Update="GalleryPages\MapGallery.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
