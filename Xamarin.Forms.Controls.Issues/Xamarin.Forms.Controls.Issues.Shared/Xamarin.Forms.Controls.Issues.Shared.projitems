@@ -32,6 +32,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue7049.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7061.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7111.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7338.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ScrollToGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NestedCollectionViews.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellFlyoutBehavior.cs" />
