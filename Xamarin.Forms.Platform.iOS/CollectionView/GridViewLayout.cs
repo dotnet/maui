@@ -138,6 +138,12 @@ namespace Xamarin.Forms.Platform.iOS
 				return false; 
 			}
 
+			if (CollectionView.NumberOfSections() == 0)
+			{
+				// And it only happens if there are items
+				return false;
+			}
+
 			if (EstimatedItemSize.IsEmpty)
 			{
 				// The bug only occurs when using Autolayout; with a set ItemSize, we don't have to worry about it

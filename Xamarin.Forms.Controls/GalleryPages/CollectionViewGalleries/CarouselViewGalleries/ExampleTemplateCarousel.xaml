@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid Padding="10,0,10,0" xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries.ExampleTemplateCarousel">
+<Grid Padding="10,0,10,0" xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries.ExampleTemplateCarousel">
     <VisualStateManager.VisualStateGroups>
         <VisualStateGroup x:Name="CarouselViewStates">
             <VisualState x:Name="CurrentItem">
@@ -29,7 +30,7 @@
             </VisualState>
         </VisualStateGroup>
     </VisualStateManager.VisualStateGroups>
-    <Frame x:Name="frame" HasShadow="True" Padding="0" HorizontalOptions="Center" VerticalOptions="Center">
+    <Frame x:Name="frame" HasShadow="True" Padding="0" HorizontalOptions="Center" VerticalOptions="Center" BackgroundColor="Yellow">
         <Image Source="{Binding FeaturedImage}" InputTransparent="true" Aspect="AspectFit" />
     </Frame>
 </Grid>

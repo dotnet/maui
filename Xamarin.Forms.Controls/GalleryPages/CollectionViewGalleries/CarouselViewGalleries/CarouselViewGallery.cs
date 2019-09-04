@@ -1,5 +1,8 @@
-﻿namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
+﻿using Xamarin.Forms.Internals;
+
+namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
 {
+	[Preserve(AllMembers = true)]
 	internal class CarouselViewGallery : ContentPage
 	{
 		public CarouselViewGallery()

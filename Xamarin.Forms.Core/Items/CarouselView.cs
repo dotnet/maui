@@ -72,7 +72,7 @@ namespace Xamarin.Forms
 		}
 
 		public static readonly BindableProperty CurrentItemProperty =
-		BindableProperty.Create(nameof(CurrentItem), typeof(object), typeof(CarouselView), default(object),
+		BindableProperty.Create(nameof(CurrentItem), typeof(object), typeof(CarouselView), default, BindingMode.TwoWay, 
 			propertyChanged: CurrentItemPropertyChanged);
 
 		public static readonly BindableProperty CurrentItemChangedCommandProperty =
@@ -123,7 +123,6 @@ namespace Xamarin.Forms
 
 			carouselView.OnCurrentItemChanged(args);
 		}
-
 
 		public static readonly BindableProperty PositionProperty =
 		BindableProperty.Create(nameof(Position), typeof(int), typeof(CarouselView), default(int), BindingMode.TwoWay,
@@ -205,9 +204,9 @@ namespace Xamarin.Forms
 
 		static int GetPositionForItem(CarouselView carouselView, object item)
 		{
-			var itemSource = carouselView.ItemsSource as IList;
+			var itemSource = carouselView?.ItemsSource as IList;
 
-			for (int n = 0; n < itemSource.Count; n++)
+			for (int n = 0; n < itemSource?.Count; n++)
 			{
 				if (itemSource[n] == item)
 				{

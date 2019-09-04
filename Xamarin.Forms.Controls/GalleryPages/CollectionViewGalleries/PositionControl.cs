@@ -73,7 +73,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 
 		public void UpdatePositionCount(int itemsCount)
 		{
-			_slider.Maximum = itemsCount - 1;
+			if (itemsCount > 0)
+				_slider.Maximum = itemsCount - 1;
 
 		}
 	}

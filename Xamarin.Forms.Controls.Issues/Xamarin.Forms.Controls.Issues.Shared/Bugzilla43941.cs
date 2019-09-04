@@ -35,10 +35,14 @@ namespace Xamarin.Forms.Controls.Issues
 
 			// At this point, the counter can be any value, but it's most likely not zero.
 			// Invoking GC once is enough to clean up all garbage data and set counter to zero
-			RunningApp.WaitForElement(q => q.Marked("GC"));
-			RunningApp.Tap(q => q.Marked("GC"));
+			RunningApp.WaitForElement("GC");
+			RunningApp.QueryUntilPresent(() =>
+			{
+				RunningApp.Tap("GC");
+				return RunningApp.Query("Counter: 0");
+			});
 
-			RunningApp.WaitForElement(q => q.Marked("Counter: 0"));
+			
 		}
 #endif
 	}
