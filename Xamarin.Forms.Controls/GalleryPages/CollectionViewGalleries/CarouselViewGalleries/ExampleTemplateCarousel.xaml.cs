@@ -1,16 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
 {
-	public partial class ExampleTemplateCarousel
+	[Preserve(AllMembers = true)]
+	public partial class ExampleTemplateCarousel : Grid
 	{
-		double initialY = -1;
-		bool delete;
-		double maxYScroll = 300;
-		double diffYScroll = -150;
-		double minYScroll = -30;
+		double _initialY = -1;
+		bool _delete;
+		readonly double _maxYScroll = 300;
+		readonly double _diffYScroll = -150;
+		readonly double _minYScroll = -30;
 
 		public ExampleTemplateCarousel()
 		{
@@ -22,37 +22,37 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			{
 				if (e.StatusType == GestureStatus.Started)
 				{
-					initialY = Y;
+					_initialY = Y;
 				}
 
 				if (e.StatusType == GestureStatus.Running)
 				{
-					if (e.TotalY < minYScroll)
+					if (e.TotalY < _minYScroll)
 					{
-						var scaledValue = 1 - (Math.Abs(e.TotalY) / maxYScroll);
+						var scaledValue = 1 - (Math.Abs(e.TotalY) / _maxYScroll);
 						this.ScaleTo(0.9);
 						this.FadeTo(scaledValue);
 						this.TranslateTo(X, Y + e.TotalY);
 					}
-					if (e.TotalY < diffYScroll)
+					if (e.TotalY < _diffYScroll)
 					{
-						delete = true;
+						_delete = true;
 					}
 				}
 
 				if (e.StatusType == GestureStatus.Completed || e.StatusType == GestureStatus.Canceled)
 				{
-					if (delete)
+					if (_delete)
 					{
 						this.FadeTo(0.1);
 						this.TranslateTo(X, Y - 1000);
-						MessagingCenter.Send<ExampleTemplateCarousel>(this, "remove");
+						MessagingCenter.Send(this, "remove");
 					}
 					else
 					{
 						this.ScaleTo(1);
 						this.FadeTo(1);
-						this.TranslateTo(X, initialY);
+						this.TranslateTo(X, _initialY);
 					}
 				}
 			};

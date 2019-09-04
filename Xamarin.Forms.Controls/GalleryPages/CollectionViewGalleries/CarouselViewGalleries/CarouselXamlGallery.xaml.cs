@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
 {
+	[Preserve(AllMembers = true)]
 	public partial class CarouselXamlGallery : ContentPage
 	{
 		public CarouselXamlGallery()
@@ -15,12 +15,14 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 		}
 	}
 
+	[Preserve(AllMembers = true)]
 	public enum CarouselXamlSampleType
 	{
 		Normal,
 		Peek
 	}
 
+	[Preserve(AllMembers = true)]
 	internal class CarouselViewModel : ViewModelBase2
 	{
 		int _count;
@@ -76,6 +78,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 		}
 	}
 
+	[Preserve(AllMembers = true)]
 	internal class CarouselItem
 	{
 		public CarouselItem(int index, string image = null)

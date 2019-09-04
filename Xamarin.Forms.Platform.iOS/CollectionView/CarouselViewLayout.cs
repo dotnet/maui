@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Platform.iOS
 			var aspectRatio = size.Width / size.Height;
 			var numberOfVisibleItems = _carouselView.NumberOfSideItems * 2 + 1;
 			var width = (size.Width - _carouselView.PeekAreaInsets.Left - _carouselView.PeekAreaInsets.Right) / numberOfVisibleItems;
-			var height = size.Height / numberOfVisibleItems;
+			var height = (size.Height - _carouselView.PeekAreaInsets.Top - _carouselView.PeekAreaInsets.Bottom) / numberOfVisibleItems;
 
 			if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
 			{

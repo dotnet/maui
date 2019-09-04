@@ -163,6 +163,7 @@
     <AndroidResource Include="Resources\drawable\booksflyout.png" />
     <AndroidResource Include="Resources\drawable\homeflyout.png" />
     <AndroidResource Include="Resources\drawable\xamarinlogo.png" />
+    <AndroidResource Include="Resources\drawable\cardBackground.png" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\Icon.png" />

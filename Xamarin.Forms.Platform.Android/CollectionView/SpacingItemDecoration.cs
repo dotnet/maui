@@ -7,10 +7,10 @@ namespace Xamarin.Forms.Platform.Android
 {
 	internal class SpacingItemDecoration : RecyclerView.ItemDecoration
 	{
-		ItemsLayoutOrientation _orientation;
-		double _verticalSpacing;
+		readonly ItemsLayoutOrientation _orientation;
+		readonly double _verticalSpacing;
 		double _adjustedVerticalSpacing = -1;
-		double _horizontalSpacing;
+		readonly double _horizontalSpacing;
 		double _adjustedHorizontalSpacing = -1;
 
 		public SpacingItemDecoration(IItemsLayout itemsLayout)
@@ -30,13 +30,9 @@ namespace Xamarin.Forms.Platform.Android
 				case ListItemsLayout listItemsLayout:
 					_orientation = listItemsLayout.Orientation;
 					if (_orientation == ItemsLayoutOrientation.Horizontal)
-					{
 						_horizontalSpacing = listItemsLayout.ItemSpacing;
-					}
 					else
-					{
 						_verticalSpacing = listItemsLayout.ItemSpacing;
-					}
 					break;
 			}
 		}
