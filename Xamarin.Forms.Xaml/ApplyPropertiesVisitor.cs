@@ -157,8 +157,7 @@ namespace Xamarin.Forms.Xaml
 				Exception xpe = null;
 				var xKey = node.Properties.ContainsKey(XmlName.xKey) ? ((ValueNode)node.Properties[XmlName.xKey]).Value as string : null;
 
-				object _;
-				var collection = GetPropertyValue(source, parentList.XmlName, Context, parentList, out _) as IEnumerable;
+				var collection = GetPropertyValue(source, parentList.XmlName, Context, parentList, out _, out _) as IEnumerable;
 				if (collection == null)
 					xpe = new XamlParseException($"Property {parentList.XmlName.LocalName} is null or is not IEnumerable", node);
 
@@ -363,11 +362,10 @@ namespace Xamarin.Forms.Xaml
 				throw xpe;
 		}
 
-		public static object GetPropertyValue(object xamlElement, XmlName propertyName, HydrationContext context, IXmlLineInfo lineInfo, out object targetProperty)
+		public static object GetPropertyValue(object xamlElement, XmlName propertyName, HydrationContext context, IXmlLineInfo lineInfo, out Exception xpe, out object targetProperty)
 		{
 			var localName = propertyName.LocalName;
-			Exception xpe = null;
-			object value;
+			xpe = null;
 			targetProperty = null;
 
 			//If it's an attached BP, update elementType and propertyName
@@ -376,7 +374,7 @@ namespace Xamarin.Forms.Xaml
 			var property = GetBindableProperty(bpOwnerType, localName, lineInfo, false);
 
 			//If it's a BindableProberty, GetValue
-			if (xpe == null && TryGetValue(xamlElement, property, attached, out value, lineInfo, out xpe, out targetProperty))
+			if (xpe == null && TryGetValue(xamlElement, property, attached, out var value, lineInfo, out xpe, out targetProperty))
 				return value;
 
 			//If it's a normal property, get it
@@ -384,10 +382,6 @@ namespace Xamarin.Forms.Xaml
 				return value;
 
 			xpe = xpe ?? new XamlParseException($"Property {localName} is not found or does not have an accessible getter", lineInfo);
-			if (context.ExceptionHandler != null)
-				context.ExceptionHandler(xpe);
-			else
-				throw xpe;
 
 			return null;
 		}
@@ -638,11 +632,7 @@ namespace Xamarin.Forms.Xaml
 		static bool TryAddToProperty(object element, XmlName propertyName, object value, string xKey, IXmlLineInfo lineInfo, XamlServiceProvider serviceProvider, HydrationContext context, out Exception exception)
 		{
 			exception = null;
-
-			object targetProperty;
-			var collection = GetPropertyValue(element, propertyName, context, lineInfo, out targetProperty) as IEnumerable;
-
-			if (collection == null)
+			if (!(GetPropertyValue(element, propertyName, context, lineInfo, out _, out var targetProperty) is IEnumerable collection))
 				return false;
 
 			if (exception == null && TryAddToResourceDictionary(collection as ResourceDictionary, value, xKey, lineInfo, out exception))
