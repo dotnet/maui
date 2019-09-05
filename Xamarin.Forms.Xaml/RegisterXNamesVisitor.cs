@@ -1,11 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Reflection;
-using System.Xml;
 using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml.Internals;
 
 namespace Xamarin.Forms.Xaml
 {
@@ -32,7 +27,7 @@ namespace Xamarin.Forms.Xaml
 				return;
 
 			try {
-				((IElementNode)parentNode).Namescope.RegisterName((string)node.Value, Values[parentNode]);
+				((IElementNode)parentNode).NameScopeRef.NameScope.RegisterName((string)node.Value, Values[parentNode]);
 			}
 			catch (ArgumentException ae) {
 				if (ae.ParamName != "name")
@@ -73,12 +68,6 @@ namespace Xamarin.Forms.Xaml
 		}
 
 		static bool IsXNameProperty(ValueNode node, INode parentNode)
-		{
-			var parentElement = parentNode as IElementNode;
-			INode xNameNode;
-			if (parentElement != null && parentElement.Properties.TryGetValue(XmlName.xName, out xNameNode) && xNameNode == node)
-				return true;
-			return false;
-		}
+			=> parentNode is IElementNode parentElement && parentElement.Properties.TryGetValue(XmlName.xName, out INode xNameNode) && xNameNode == node;
 	}
 }

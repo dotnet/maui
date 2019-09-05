@@ -57,19 +57,13 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void UpdateItemsSource()
 		{
-			// By default the CollectionViewAdapter creates the items at whatever size the template calls for
-			// But for the Carousel, we want it to create the items to fit the width/height of the viewport
-			// So we give it an alternate delegate for creating the views
-			ItemsViewAdapter = new ItemsViewAdapter<ItemsView, IItemsViewSource>(ItemsView,
-				(view, context) => new SizedItemContentView(Context, GetItemWidth, GetItemHeight));
-
-			SwapAdapter(ItemsViewAdapter, false);
+			UpdateAdapter();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs changedProperty)
 		{
 			if (changedProperty.Is(CarouselView.PeekAreaInsetsProperty))
-				Tracker?.UpdateLayout();
+				UpdatePeekAreaInsets();
 			else if (changedProperty.Is(CarouselView.IsSwipeEnabledProperty))
 				UpdateIsSwipeEnabled();
 			else if (changedProperty.Is(CarouselView.IsBounceEnabledProperty))
@@ -184,6 +178,27 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdateIsBounceEnabled()
 		{
 			OverScrollMode = Carousel.IsBounceEnabled ? OverScrollMode.Always : OverScrollMode.Never;
+		}
+
+		void UpdatePeekAreaInsets()
+		{
+			UpdateAdapter();
+		}
+
+		void UpdateAdapter()
+		{
+			// By default the CollectionViewAdapter creates the items at whatever size the template calls for
+			// But for the Carousel, we want it to create the items to fit the width/height of the viewport
+			// So we give it an alternate delegate for creating the views
+
+			var oldItemViewAdapter = ItemsViewAdapter;
+
+			ItemsViewAdapter = new ItemsViewAdapter<ItemsView, IItemsViewSource>(ItemsView,
+				(view, context) => new SizedItemContentView(Context, GetItemWidth, GetItemHeight));
+
+			SwapAdapter(ItemsViewAdapter, false);
+
+			oldItemViewAdapter?.Dispose();
 		}
 
 		void UpdatePositionFromScroll()

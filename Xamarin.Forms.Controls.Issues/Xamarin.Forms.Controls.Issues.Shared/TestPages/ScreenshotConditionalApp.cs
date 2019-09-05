@@ -4,6 +4,10 @@ using System.IO;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 
+#if __IOS__
+using Xamarin.UITest.iOS;
+#endif
+
 namespace Xamarin.Forms.Controls
 {
 	/// <summary>
@@ -445,6 +449,16 @@ namespace Xamarin.Forms.Controls
 		{
 			get { return _app.TestServer; }
 		}
+
+#if __IOS__
+		public void SendAppToBackground(TimeSpan timeSpan)
+		{
+			if (_app is iOSApp app)
+			{
+				app.SendAppToBackground(timeSpan);
+			}
+		}
+#endif
 	}
 }
 #endif
