@@ -56,6 +56,7 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Anticipator.cs" />
     <Compile Include="ActivityResultCallbackRegistry.cs" />
     <Compile Include="AndroidApplicationLifecycleState.cs" />
     <Compile Include="AndroidTitleBarVisibility.cs" />

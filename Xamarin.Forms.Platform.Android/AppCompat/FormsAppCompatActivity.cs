@@ -67,6 +67,10 @@ namespace Xamarin.Forms.Platform.Android
 			_previousState = AndroidApplicationLifecycleState.Uninitialized;
 			_currentState = AndroidApplicationLifecycleState.Uninitialized;
 			PopupManager.Subscribe(this);
+
+			var anticipator = new Anticipator();
+			anticipator.AnticipateClassConstruction(typeof(Resource.Layout));
+			anticipator.AnticipateClassConstruction(typeof(Resource.Attribute));
 		}
 
 		public event EventHandler ConfigurationChanged;
