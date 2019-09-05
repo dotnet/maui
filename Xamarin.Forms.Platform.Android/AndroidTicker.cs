@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			// If power saver is active, then animations will not run
 			_energySaveModeDisabled = !powerSaveOn;
-			
+
 			// Notify the ticker that this value has changed, so it can manage animations in progress
 			OnSystemEnabledChanged();
 		}
@@ -56,8 +56,20 @@ namespace Xamarin.Forms.Platform.Android
 				return false;
 			}
 
-			var scale = global::Android.Provider.Settings.Global.GetFloat(resolver, global::Android.Provider.Settings.Global.AnimatorDurationScale, 0);
-			return scale > 0;
+			float animationScale;
+
+			if (Build.VERSION.SdkInt >= BuildVersionCodes.JellyBeanMr1)
+			{
+				animationScale = global::Android.Provider.Settings.Global.GetFloat(resolver, global::Android.Provider.Settings.Global.AnimatorDurationScale, 1);
+			}
+			else
+			{
+#pragma warning disable 0618
+				animationScale = global::Android.Provider.Settings.System.GetFloat(resolver, global::Android.Provider.Settings.System.AnimatorDurationScale, 1);
+#pragma warning restore 0618
+			}
+
+			return animationScale > 0;
 		}
 
 		public void Dispose()

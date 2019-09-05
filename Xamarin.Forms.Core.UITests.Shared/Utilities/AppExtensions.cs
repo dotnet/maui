@@ -5,6 +5,9 @@ using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 using System.Text.RegularExpressions;
 using System.Threading;
+#if __IOS__
+using Xamarin.UITest.iOS;
+#endif
 
 namespace Xamarin.UITest
 {
@@ -28,6 +31,17 @@ namespace Xamarin.UITest
 
 			return results;
 		}
+
+#if __IOS__
+		public static void SendAppToBackground(this IApp app, TimeSpan timeSpan)
+		{
+			if(app is Xamarin.Forms.Controls.ScreenshotConditionalApp sca)
+			{
+				sca.SendAppToBackground(timeSpan);
+				Thread.Sleep(timeSpan.Add(TimeSpan.FromSeconds(2)));
+			}
+		}
+#endif
 	}
 }
 

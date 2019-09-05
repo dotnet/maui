@@ -74,16 +74,9 @@ namespace Xamarin.Forms.Xaml.Internals
 			set { services[typeof (IValueConverterProvider)] = value; }
 		}
 
-		public object GetService(Type serviceType)
-		{
-			object service;
-			return services.TryGetValue(serviceType, out service) ? service : null;
-		}
+		public object GetService(Type serviceType) => services.TryGetValue(serviceType, out var service) ? service : null;
 
-		public void Add(Type type, object service)
-		{
-			services.Add(type, service);
-		}
+		public void Add(Type type, object service) => services.Add(type, service);
 	}
 
 	class XamlValueTargetProvider : IProvideParentValues, IProvideValueTarget
@@ -104,21 +97,16 @@ namespace Xamarin.Forms.Xaml.Internals
 
 		IEnumerable<object> IProvideParentValues.ParentObjects
 		{
-			get
-			{
+			get {
 				if (Node == null || Context == null)
 					yield break;
 				var n = Node;
-				object obj = null;
 				var context = Context;
-				while (n.Parent != null && context != null)
-				{
-					if (n.Parent is IElementNode)
-					{
-						if (context.Values.TryGetValue(n.Parent, out obj))
+				while (n.Parent != null && context != null) {
+					if (n.Parent is IElementNode) {
+						if (context.Values.TryGetValue(n.Parent, out var obj))
 							yield return obj;
-						else
-						{
+						else {
 							context = context.ParentContext;
 							continue;
 						}
@@ -159,14 +147,9 @@ namespace Xamarin.Forms.Xaml.Internals
 			this.scope = scope;
 		}
 
-		IEnumerable<object> IProvideParentValues.ParentObjects
-			=> objectAndParents;
-
-		object IProvideValueTarget.TargetObject
-			=> objectAndParents[0];
-
-		object IProvideValueTarget.TargetProperty
-			=> targetProperty;
+		IEnumerable<object> IProvideParentValues.ParentObjects => objectAndParents;
+		object IProvideValueTarget.TargetObject => objectAndParents[0];
+		object IProvideValueTarget.TargetProperty => targetProperty;
 
 		public object FindByName(string name)
 		{
@@ -277,15 +260,14 @@ namespace Xamarin.Forms.Xaml.Internals
 	class ReferenceProvider : IReferenceProvider
 	{
 		readonly INode _node;
-		internal ReferenceProvider(INode node)
-			=> _node = node;
+		internal ReferenceProvider(INode node) => _node = node;
 
 		public object FindByName(string name)
 		{
 			var n = _node;
-			object value = null;
 			while (n != null) {
-				if ((value = (n as IElementNode)?.Namescope?.FindByName(name)) != null)
+				object value;
+				if ((value = (n as IElementNode)?.NameScopeRef.NameScope?.FindByName(name)) != null)
 					return value;
 				n = n.Parent;
 			}
@@ -304,27 +286,16 @@ namespace Xamarin.Forms.Xaml.Internals
 	{
 		readonly Dictionary<string, string> namespaces = new Dictionary<string, string>();
 
-		public IDictionary<string, string> GetNamespacesInScope(XmlNamespaceScope scope)
-		{
-			throw new NotImplementedException();
-		}
+		public IDictionary<string, string> GetNamespacesInScope(XmlNamespaceScope scope) => throw new NotImplementedException();
 
 		public string LookupNamespace(string prefix)
 		{
-			string result;
-			if (namespaces.TryGetValue(prefix, out result))
+			if (namespaces.TryGetValue(prefix, out var result))
 				return result;
 			return null;
 		}
 
-		public string LookupPrefix(string namespaceName)
-		{
-			throw new NotImplementedException();
-		}
-
-		public void Add(string prefix, string ns)
-		{
-			namespaces.Add(prefix, ns);
-		}
+		public string LookupPrefix(string namespaceName) => throw new NotImplementedException();
+		public void Add(string prefix, string ns) => namespaces.Add(prefix, ns);
 	}
 }
