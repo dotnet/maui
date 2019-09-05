@@ -15,7 +15,7 @@ parameters:
   nugetVersion: $(NUGET_VERSION)
   artifactsTargetFolder: '$(build.artifactstagingdirectory)'
   artifactsName: 'win_build'
-  nunitTestAdapterFolder: 'packages/NUnitTestAdapter.AnyVersion/tools/'
+  nunitTestAdapterFolder: 'packages/NUnitTestAdapter.AnyVersion/build/'
   nunitTestFolder: '$(build.sourcesdirectory)'
 
 jobs:
@@ -52,7 +52,7 @@ jobs:
         solution: ${{ parameters.slnPath }}
         platform: '$(BuildPlatform)'
         configuration: '$(BuildConfiguration)'
-        msbuildArguments: ${{ parameters.msbuildExtraArguments }}
+        msbuildArguments: ${{ parameters.msbuildExtraArguments }} /p:JavaSdkDirectory="$(JAVA_HOME_8_X64)"
 
     - task: VSTest@2
       displayName: 'Unit Tests'

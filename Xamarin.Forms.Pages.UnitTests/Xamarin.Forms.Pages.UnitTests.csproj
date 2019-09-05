@@ -43,13 +43,13 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="NUnit" Version="2.6.4" />
-    <PackageReference Include="NUnitTestAdapter" Version="2.1.1" />
+    <PackageReference Include="NUnitTestAdapter" Version="2.2.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Xamarin.Forms.Core.UnitTests\MockDispatcherProvider.cs">
       <Link>MockDispatcherProvider.cs</Link>
     </Compile>
-	<Compile Include="..\Xamarin.Forms.Core.UnitTests\MockDispatcher.cs">
+    <Compile Include="..\Xamarin.Forms.Core.UnitTests\MockDispatcher.cs">
       <Link>MockDispatcher.cs</Link>
     </Compile>
     <Compile Include="..\Xamarin.Forms.Core.UnitTests\MockPlatformServices.cs">
