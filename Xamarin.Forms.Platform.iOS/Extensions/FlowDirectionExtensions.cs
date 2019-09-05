@@ -18,16 +18,25 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
-		internal static void UpdateFlowDirection(this UIView view, IVisualElementController controller)
+		internal static bool UpdateFlowDirection(this UIView view, IVisualElementController controller)
 		{
 			if (controller == null || view == null || !Forms.IsiOS9OrNewer)
-				return;
+				return false;
 
+			UISemanticContentAttribute updateValue = view.SemanticContentAttribute;
 
 			if (controller.EffectiveFlowDirection.IsRightToLeft())
-				view.SemanticContentAttribute = UISemanticContentAttribute.ForceRightToLeft;
+				updateValue = UISemanticContentAttribute.ForceRightToLeft;
 			else if (controller.EffectiveFlowDirection.IsLeftToRight())
-				view.SemanticContentAttribute = UISemanticContentAttribute.ForceLeftToRight;
+				updateValue = UISemanticContentAttribute.ForceLeftToRight;
+
+			if(updateValue != view.SemanticContentAttribute)
+			{
+				view.SemanticContentAttribute = updateValue;
+				return true;
+			}
+
+			return false;
 		}
 
 		internal static void UpdateTextAlignment(this UITextField control, IVisualElementController controller)

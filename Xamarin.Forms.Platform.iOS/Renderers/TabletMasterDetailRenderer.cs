@@ -195,7 +195,11 @@ namespace Xamarin.Forms.Platform.iOS
 			if (layoutMaster)
 			{
 				var masterBounds = _masterController.View.Frame;
-				_masterWidth = (nfloat)Math.Max(_masterWidth, masterBounds.Width);
+
+				if (Forms.IsiOS13OrNewer)
+					_masterWidth = masterBounds.Width;
+				else
+					_masterWidth = (nfloat)Math.Max(_masterWidth, masterBounds.Width);
 
 				if (!masterBounds.IsEmpty)
 					MasterDetailPage.MasterBounds = new Rectangle(0, 0, _masterWidth, masterBounds.Height);
@@ -385,7 +389,12 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateFlowDirection()
 		{
-			NativeView.UpdateFlowDirection(Element);
+			if(NativeView.UpdateFlowDirection(Element) && Forms.IsiOS13OrNewer && NativeView.Superview != null)
+			{
+				var view = NativeView.Superview;
+				NativeView.RemoveFromSuperview();
+				view.AddSubview(NativeView);
+			}
 		}
 
 		class InnerDelegate : UISplitViewControllerDelegate
