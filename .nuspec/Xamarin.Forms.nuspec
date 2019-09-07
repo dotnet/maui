@@ -24,6 +24,7 @@
         <dependency id="NETStandard.Library" version="2.0.1"/>
         <dependency id="Microsoft.NETCore.UniversalWindowsPlatform" version="6.0.12" />
         <dependency id="Win2D.uwp" version="1.20.0" />
+        <dependency id="Microsoft.UI.Xaml" version="2.1.190606001" />
       </group>
       <group targetFramework="tizen40">
         <dependency id="Tizen.NET" version="4.0.0"/>
@@ -223,6 +224,7 @@
     <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\StepperControl.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
     <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\CollectionView\ItemsViewStyles.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP\CollectionView" />
     <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\FormsCheckBoxStyle.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\Microsoft.UI.Xaml\DensityStyles\Compact.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP\Microsoft.UI.Xaml\DensityStyles\" />
 
     <!--Mac-->
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="lib\Xamarin.Mac" />
