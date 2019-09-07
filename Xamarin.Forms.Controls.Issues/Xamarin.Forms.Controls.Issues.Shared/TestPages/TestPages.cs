@@ -688,14 +688,16 @@ namespace Xamarin.Forms.Controls
 			where TShellItem : ShellItem
 			where TShellSection : ShellSection
 		{
+			contentPage = contentPage ?? new ContentPage();
 			TShellItem item = Activator.CreateInstance<TShellItem>();
+			item.Title = contentPage.Title;
 			TShellSection shellSection = Activator.CreateInstance<TShellSection>();
 			Items.Add(item);
 			item.Items.Add(shellSection);
 
 			shellSection.Items.Add(new ShellContent()
 			{
-				Content = contentPage ?? new ContentPage()
+				Content = contentPage
 			});
 
 			return item;
