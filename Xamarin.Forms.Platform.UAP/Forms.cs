@@ -34,6 +34,15 @@ namespace Xamarin.Forms
 
 			Windows.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(GetTabletResources());
 
+			try
+			{
+				Windows.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(new Microsoft.UI.Xaml.Controls.XamlControlsResources());
+			}
+			catch
+			{
+				Log.Warning("Resources", "Unable to load WinUI resources. Try adding Xamarin.Forms nuget to UWP project");
+			}
+
 			Device.SetIdiom(TargetIdiom.Tablet);
 			Device.SetFlowDirection(GetFlowDirection());
 			Device.PlatformServices = new WindowsPlatformServices(Window.Current.Dispatcher);

@@ -23,8 +23,6 @@ namespace Xamarin.Forms.Platform.UWP
 	{
 		static Task<bool> s_currentAlert;
 
-		internal static StatusBar MobileStatusBar => ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar") ? StatusBar.GetForCurrentView() : null;
-
 		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer",
 			typeof(IVisualElementRenderer), typeof(Windows.Foundation.Metadata.Platform), default(IVisualElementRenderer));
 
@@ -361,7 +359,7 @@ namespace Xamarin.Forms.Platform.UWP
 
             if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
             {
-				StatusBar statusBar = MobileStatusBar;
+				StatusBar statusBar = StatusBar.GetForCurrentView();
 				if (statusBar != null)
 				{
 					bool landscape = Device.Info.CurrentOrientation.IsLandscape();
@@ -386,7 +384,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
             if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
             {
-				StatusBar statusBar = MobileStatusBar;
+				StatusBar statusBar = StatusBar.GetForCurrentView();
 				if (statusBar != null)
 				{
 					statusBar.Showing += (sender, args) => UpdateBounds();

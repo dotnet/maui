@@ -15,6 +15,9 @@
 		<_DefaultXamlItemsEnabled>False</_DefaultXamlItemsEnabled>
 		<EnableDefaultCssItems Condition="'$(EnableDefaultCssItems)'==''">True</EnableDefaultCssItems>
 		<_DefaultCssItemsEnabled>False</_DefaultCssItemsEnabled>
+		<!-- The WINUI check for this only runs when there is an empty string so I just convert false to an empty string to fall in line with our other properties -->
+		<SkipMicrosoftUIXamlCheckTargetPlatformVersion Condition="'$(SkipMicrosoftUIXamlCheckTargetPlatformVersion)'==''">true</SkipMicrosoftUIXamlCheckTargetPlatformVersion>
+		<SkipMicrosoftUIXamlCheckTargetPlatformVersion Condition="'$(SkipMicrosoftUIXamlCheckTargetPlatformVersion)'=='false'"></SkipMicrosoftUIXamlCheckTargetPlatformVersion>
 	</PropertyGroup>
 
 	<Import Project="$(MSBuildThisFileDirectory)Xamarin.Forms.DefaultItems.targets" Condition="'$(MSBuildSDKsPath)'!=''" />
@@ -174,5 +177,22 @@
     </PropertyGroup>
     <Error Code="XF005"  Condition="$(TargetFrameworkVersionWithoutV) &lt; $(MinTargetFrameworkVersionForForms)"
            Text="The %24(TargetFrameworkVersion) for $(ProjectName) ($(TargetFrameworkVersion)) is less than the minimum required %24(TargetFrameworkVersion) for Xamarin.Forms ($(MinTargetFrameworkVersionForForms)). You need to increase the %24(TargetFrameworkVersion) for $(ProjectName)."   />
+  </Target>
+  
+  <!-- UWP Targets-->
+  <Target Name="WinUICheckTargetPlatformVersion" BeforeTargets="PrepareForBuild"
+      Condition="'$(TargetPlatformVersion)' != '' and '$(TargetPlatformMinVersion)' != ''">
+    <PropertyGroup>
+      <MicrosoftUIXamlTargetPlatformMinCheckValue>$([System.Version]::Parse('$(TargetPlatformMinVersion)').Build)</MicrosoftUIXamlTargetPlatformMinCheckValue>
+    </PropertyGroup>
+    <Warning
+        Text="Xamarin.Forms recommends TargetPlatformMinVersion &gt;= 10.0.14393.0 (current project is $(MicrosoftUIXamlTargetPlatformMinCheckValue))"
+        Condition="$(MicrosoftUIXamlTargetPlatformMinCheckValue) &lt; 14393" />
+    <PropertyGroup>
+      <MicrosoftUIXamlTargetPlatformCheckValue>$([System.Version]::Parse('$(TargetPlatformVersion)').Build)</MicrosoftUIXamlTargetPlatformCheckValue>
+    </PropertyGroup>
+    <Warning
+        Text="Xamarin.Forms recommends TargetPlatformVersion &gt;= 10.0.17763.0 (current project is $(MicrosoftUIXamlTargetPlatformCheckValue))"
+        Condition="$(MicrosoftUIXamlTargetPlatformCheckValue) &lt; 17763" />
   </Target>
 </Project>
