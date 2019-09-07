@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 
 			var indexLabel = new Label { Text = "Go To Position: ", VerticalTextAlignment = TextAlignment.Center };
 			var label = new Label { WidthRequest = 20, BackgroundColor = Color.LightCyan, AutomationId = "CurrentPositionLabel" };
-			label.SetBinding(Label.TextProperty, nameof(carousel.Position));
+			label.SetBinding(Label.TextProperty, nameof(carousel.Position), stringFormat: "pos:{0}");
 			label.BindingContext = carousel;
 			var indexButton = new Button { Text = "Go" };
 
