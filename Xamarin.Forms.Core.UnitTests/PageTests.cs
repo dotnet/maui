@@ -303,7 +303,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				sent = true;
 			});
 
-			var page = new ContentPage { IsBusy = true };
+			var page = new ContentPage { IsBusy = true, IsPlatformEnabled = true };
 
 			Assert.That (sent, Is.False, "Busy message sent while not visible");
 
@@ -348,7 +348,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void DisplayAlert ()
 		{
-			var page = new ContentPage ();
+			var page = new ContentPage() { IsPlatformEnabled = true };
 
 			AlertArguments args = null;
 			MessagingCenter.Subscribe (this, Page.AlertSignalName, (Page sender, AlertArguments e) => args = e);
@@ -371,7 +371,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void DisplayActionSheet ()
 		{
-			var page = new ContentPage ();
+			var page = new ContentPage() { IsPlatformEnabled = true };
 
 			ActionSheetArguments args = null;
 			MessagingCenter.Subscribe (this, Page.ActionSheetSignalName, (Page sender, ActionSheetArguments e) => args = e);
