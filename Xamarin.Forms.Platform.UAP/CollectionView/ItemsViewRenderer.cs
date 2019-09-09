@@ -104,12 +104,17 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 
 			var itemTemplate = Element.ItemTemplate;
+
+			if (_collectionViewSource != null)
+			{
+				if (_collectionViewSource.Source is ObservableItemTemplateCollection observableItemTemplateCollection)
+				{
+					observableItemTemplateCollection.CleanUp();
+				}
+			}
+
 			if (itemTemplate != null)
 			{
-				// The ItemContentControls need the actual data item and the template so they can inflate the template
-				// and bind the result to the data item.
-				// ItemTemplateEnumerator handles pairing them up for the ItemContentControls to consume
-
 				_collectionViewSource = new CollectionViewSource
 				{
 					Source = TemplatedItemSourceFactory.Create(itemsSource, itemTemplate, Element),
@@ -135,33 +140,9 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 			}
 
-			var formsTemplate = Element.ItemTemplate;
-			var itemsControlItemTemplate = ListViewBase.ItemTemplate;
+			ListViewBase.ItemTemplate = Element.ItemTemplate == null ? null : ItemsViewTemplate;
 
-			if (formsTemplate == null)
-			{
-				ListViewBase.ItemTemplate = null;
-
-				if (itemsControlItemTemplate != null)
-				{
-					// We've removed the template; the itemssource should be updated
-					// TODO hartez 2018/06/25 21:25:24 I don't love that changing the template might reset the whole itemssource. We should think about a way to make that unnecessary	
-					UpdateItemsSource();
-				}
-
-				return;
-			}
-
-			// TODO hartez 2018/06/23 13:47:27 Handle DataTemplateSelector case
-			// Actually, DataTemplateExtensions CreateContent might handle the selector for us
-
-			ListViewBase.ItemTemplate = ItemsViewTemplate;
-
-			if (itemsControlItemTemplate == null)
-			{
-				// We're using a data template now, so we'll need to update the itemsource
-				UpdateItemsSource();
-			}
+			UpdateItemsSource();
 		}
 
 		protected virtual void UpdateHeader()
