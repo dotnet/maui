@@ -27,5 +27,10 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			return new CGSize(_constrain.Width,_constrain.Height);
 		}
+
+		protected override (bool, Size) NeedsContentSizeUpdate(Size currentSize)
+		{
+			return (false, Size.Zero);
+		}
 	}
 }

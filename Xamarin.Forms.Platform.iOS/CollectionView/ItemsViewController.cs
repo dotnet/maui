@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Foundation;
 using UIKit;
 using Xamarin.Forms.Internals;
@@ -199,12 +198,13 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected virtual void UpdateTemplatedCell(TemplatedCell cell, NSIndexPath indexPath)
 		{
-			ApplyTemplateAndDataContext(cell, indexPath);
+			cell.ContentSizeChanged -= CellContentSizeChanged;
 
-			if (cell is ItemsViewCell constrainedCell)
-			{
-				ItemsViewLayout.PrepareCellForLayout(constrainedCell);
-			}
+			cell.Bind(ItemsView, ItemsSource[indexPath]);
+
+			cell.ContentSizeChanged += CellContentSizeChanged;
+
+			ItemsViewLayout.PrepareCellForLayout(cell);
 		}
 
 		public virtual NSIndexPath GetIndexForItem(object item)
@@ -217,28 +217,6 @@ namespace Xamarin.Forms.Platform.iOS
 			return ItemsSource[index];
 		}
 
-		void ApplyTemplateAndDataContext(TemplatedCell cell, NSIndexPath indexPath)
-		{
-			var template = ItemsView.ItemTemplate;
-			var item = ItemsSource[indexPath];
-
-			// Run this through the extension method in case it's really a DataTemplateSelector
-			template = template.SelectDataTemplate(item, ItemsView);
-
-			// Create the content and renderer for the view and 
-			var view = template.CreateContent() as View;
-			var renderer = CreateRenderer(view);
-			cell.SetRenderer(renderer);
-
-			// Bind the view to the data item
-			view.BindingContext = ItemsSource[indexPath];
-
-			// And make sure it's a "child" of the ItemsView
-			ItemsView.AddLogicalChild(view);
-
-			cell.ContentSizeChanged += CellContentSizeChanged;
-		}
-
 		void CellContentSizeChanged(object sender, EventArgs e)
 		{
 			if (_disposed)
@@ -247,43 +225,13 @@ namespace Xamarin.Forms.Platform.iOS
 			Layout?.InvalidateLayout();
 		}
 
-		internal void PrepareCellForRemoval(UICollectionViewCell cell)
-		{
-			if (cell is TemplatedCell templatedCell)
-			{
-				templatedCell.ContentSizeChanged -= CellContentSizeChanged;
-
-				var oldView = templatedCell.VisualElementRenderer?.Element;
-				if (oldView != null)
-				{
-					oldView.BindingContext = null;
-					ItemsView.RemoveLogicalChild(oldView);
-				}
-
-				templatedCell.PrepareForRemoval();
-			}
-		}
-
-		protected IVisualElementRenderer CreateRenderer(View view)
-		{
-			if (view == null)
-			{
-				throw new ArgumentNullException(nameof(view));
-			}
-
-			var renderer = Platform.CreateRenderer(view);
-			Platform.SetRenderer(view, renderer);
-
-			return renderer;
-		}
-
 		protected virtual string DetermineCellReuseId()
 		{
 			if (ItemsView.ItemTemplate != null)
 			{
 				return ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Horizontal
-					? HorizontalTemplatedCell.ReuseId
-					: VerticalTemplatedCell.ReuseId;
+					? HorizontalCell.ReuseId
+					: VerticalCell.ReuseId;
 			}
 
 			return ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Horizontal
@@ -323,9 +271,9 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			CollectionView.RegisterClassForCell(typeof(HorizontalDefaultCell), HorizontalDefaultCell.ReuseId);
 			CollectionView.RegisterClassForCell(typeof(VerticalDefaultCell), VerticalDefaultCell.ReuseId);
-			CollectionView.RegisterClassForCell(typeof(HorizontalTemplatedCell),
-				HorizontalTemplatedCell.ReuseId);
-			CollectionView.RegisterClassForCell(typeof(VerticalTemplatedCell), VerticalTemplatedCell.ReuseId);
+			CollectionView.RegisterClassForCell(typeof(HorizontalCell),
+				HorizontalCell.ReuseId);
+			CollectionView.RegisterClassForCell(typeof(VerticalCell), VerticalCell.ReuseId);
 		}
 
 		bool IsHorizontal => (ItemsView?.ItemsLayout as ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal;
@@ -462,7 +410,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				// Create the native renderer for the view, and keep the actual Forms element (if any)
 				// around for updating the layout later
-				var (NativeView, FormsElement) = RealizeView(view, viewTemplate);
+				var (NativeView, FormsElement) = TemplateHelpers.RealizeView(view, viewTemplate, ItemsView);
 				uiView = NativeView;
 				formsElement = FormsElement;
 			}
@@ -506,34 +454,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 				_currentBackgroundIsEmptyView = false;
 			}
-		}
-
-		internal (UIView NativeView, VisualElement FormsElement) RealizeView(object view, DataTemplate viewTemplate)
-		{
-			if (viewTemplate != null)
-			{
-				// Run this through the extension method in case it's really a DataTemplateSelector
-				viewTemplate = viewTemplate.SelectDataTemplate(view, ItemsView);
-
-				// We have a template; turn it into a Forms view 
-				var templateElement = viewTemplate.CreateContent() as View;
-				var renderer = CreateRenderer(templateElement);
-
-				// and set the EmptyView as its BindingContext
-				BindableObject.SetInheritedBindingContext(renderer.Element, view);
-
-				return (renderer.NativeView, renderer.Element);
-			}
-
-			if (view is View formsView)
-			{
-				// No template, and the EmptyView is a Forms view; use that
-				var renderer = CreateRenderer(formsView);
-
-				return (renderer.NativeView, renderer.Element);
-			}
-
-			return (new UILabel { Text = $"{view}" }, null);
 		}
 	}
 }

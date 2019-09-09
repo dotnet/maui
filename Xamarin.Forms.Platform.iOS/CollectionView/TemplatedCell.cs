@@ -2,20 +2,28 @@
 using CoreGraphics;
 using Foundation;
 using UIKit;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.iOS
 {
 	public abstract class TemplatedCell : ItemsViewCell
 	{
 		public event EventHandler<EventArgs> ContentSizeChanged;
+
 		protected nfloat ConstrainedDimension;
+
+		DataTemplate _currentTemplate;
+
+		// Keep track of the cell size so we can verify whether a measure invalidation 
+		// actually changed the size of the cell
+		Size _size;
 
 		[Export("initWithFrame:")]
 		protected TemplatedCell(CGRect frame) : base(frame)
 		{
 		}
 
-		public IVisualElementRenderer VisualElementRenderer { get; private set; }
+		internal IVisualElementRenderer VisualElementRenderer { get; private set; }
 
 		public override void ConstrainTo(nfloat constant)
 		{
@@ -35,7 +43,9 @@ namespace Xamarin.Forms.Platform.iOS
 			nativeView.Frame = new CGRect(CGPoint.Empty, size);
 
 			// Layout the Forms element 
-			VisualElementRenderer.Element.Layout(nativeView.Frame.ToRectangle());
+			var nativeBounds = nativeView.Frame.ToRectangle();
+			VisualElementRenderer.Element.Layout(nativeBounds);
+			_size = nativeBounds.Size;
 
 			// Adjust the preferred attributes to include space for the Forms element
 			preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, size);
@@ -43,13 +53,55 @@ namespace Xamarin.Forms.Platform.iOS
 			return preferredAttributes;
 		}
 
-		public override void PrepareForReuse()
+		public void Bind(ItemsView itemsView, object bindingContext)
 		{
-			base.PrepareForReuse();
-			ClearSubviews();
+			var template = itemsView.ItemTemplate;
+
+			// Run this through the extension method in case it's really a DataTemplateSelector
+			template = template.SelectDataTemplate(bindingContext, itemsView);
+
+			Bind(template, bindingContext, itemsView);
 		}
 
-		public void SetRenderer(IVisualElementRenderer renderer)
+		public void Bind(DataTemplate template, object bindingContext, ItemsView itemsView)
+		{
+			var oldElement = VisualElementRenderer?.Element;
+
+			if (template != _currentTemplate)
+			{
+				// Remove the old view, if it exists
+				if (oldElement != null)
+				{
+					oldElement.MeasureInvalidated -= MeasureInvalidated;
+					itemsView.RemoveLogicalChild(oldElement);
+					ClearSubviews();
+					_size = Size.Zero;
+				}
+
+				// Create the content and renderer for the view 
+				var view = template.CreateContent() as View;
+				var renderer = TemplateHelpers.CreateRenderer(view);
+				SetRenderer(renderer);
+			}
+
+			var currentElement = VisualElementRenderer?.Element;
+
+			// Bind the view to the data item
+			currentElement.BindingContext = bindingContext;
+
+			if (template != _currentTemplate)
+			{
+				// And make the Element a "child" of the ItemsView
+				// We deliberately do this _after_ setting the binding context for the new element;
+				// if we do it before, the element briefly inherits the ItemsView's bindingcontext and we 
+				// emit a bunch of needless binding errors
+				itemsView.AddLogicalChild(currentElement);
+			}
+
+			_currentTemplate = template;
+		}
+
+		void SetRenderer(IVisualElementRenderer renderer)
 		{
 			VisualElementRenderer = renderer;
 			var nativeView = VisualElementRenderer.NativeView;
@@ -99,29 +151,22 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
+		protected abstract (bool, Size) NeedsContentSizeUpdate(Size currentSize);
+
 		void MeasureInvalidated(object sender, EventArgs args)
 		{
-			if (VisualElementRenderer?.Element == null)
+			var (needsUpdate, toSize) = NeedsContentSizeUpdate(_size);
+
+			if (!needsUpdate)
 			{
 				return;
 			}
 
-			var bounds = VisualElementRenderer.Element.Bounds;
+			// Cache the size for next time
+			_size = toSize;
 
-			if (bounds.Width <= 0 || bounds.Height <= 0)
-			{
-				return;
-			}
-
+			// Let the controller know that things need to be laid out again
 			OnContentSizeChanged();
-		}
-
-		public void PrepareForRemoval()
-		{
-			if (VisualElementRenderer?.Element != null)
-			{
-				VisualElementRenderer.Element.MeasureInvalidated -= MeasureInvalidated;
-			}
 		}
 
 		protected void OnContentSizeChanged()

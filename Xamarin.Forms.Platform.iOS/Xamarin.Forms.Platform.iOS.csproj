@@ -111,6 +111,7 @@
     <Compile Include="CollectionView\EmptySource.cs" />
     <Compile Include="CollectionView\GroupableItemsViewController.cs" />
     <Compile Include="CollectionView\GroupableItemsViewRenderer.cs" />
+    <Compile Include="CollectionView\HorizontalCell.cs" />
     <Compile Include="CollectionView\HorizontalDefaultSupplementalView.cs" />
     <Compile Include="CollectionView\HorizontalTemplatedHeaderView.cs" />
     <Compile Include="CollectionView\IItemsViewSource.cs" />
@@ -124,7 +125,9 @@
     <Compile Include="CollectionView\ScrollToPositionExtensions.cs" />
     <Compile Include="CollectionView\SelectableItemsViewController.cs" />
     <Compile Include="CollectionView\SelectableItemsViewRenderer.cs" />
+    <Compile Include="CollectionView\TemplateHelpers.cs" />
     <Compile Include="CollectionView\UICollectionViewDelegator.cs" />
+    <Compile Include="CollectionView\VerticalCell.cs" />
     <Compile Include="CollectionView\VerticalDefaultCell.cs" />
     <Compile Include="CollectionView\GridViewLayout.cs" />
     <Compile Include="CollectionView\ItemsViewLayout.cs" />
@@ -134,10 +137,10 @@
     <Compile Include="CollectionView\PropertyChangedEventArgsExtensions.cs" />
     <Compile Include="CollectionView\SnapHelpers.cs" />
     <Compile Include="CollectionView\TemplatedCell.cs" />
-    <Compile Include="CollectionView\HorizontalTemplatedCell.cs" />
+    <Compile Include="CollectionView\HeightConstrainedTemplatedCell.cs" />
     <Compile Include="CollectionView\VerticalDefaultSupplementalView.cs" />
-    <Compile Include="CollectionView\VerticalTemplatedCell.cs" />
-    <Compile Include="CollectionView\VerticalTemplatedHeaderView.cs" />
+    <Compile Include="CollectionView\WidthConstrainedTemplatedCell.cs" />
+    <Compile Include="CollectionView\VerticalSupplementaryView.cs" />
     <Compile Include="DisposeHelpers.cs" />
     <Compile Include="EffectUtilities.cs" />
     <Compile Include="ExportCellAttribute.cs" />

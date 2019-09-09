@@ -48,10 +48,10 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void RegisterSupplementaryViews(UICollectionElementKindSection kind)
 		{
-			CollectionView.RegisterClassForSupplementaryView(typeof(HorizontalTemplatedSupplementalView),
-				kind, HorizontalTemplatedSupplementalView.ReuseId);
-			CollectionView.RegisterClassForSupplementaryView(typeof(VerticalTemplatedSupplementalView),
-				kind, VerticalTemplatedSupplementalView.ReuseId);
+			CollectionView.RegisterClassForSupplementaryView(typeof(HorizontalSupplementaryView),
+				kind, HorizontalSupplementaryView.ReuseId);
+			CollectionView.RegisterClassForSupplementaryView(typeof(VerticalSupplementaryView),
+				kind, VerticalSupplementaryView.ReuseId);
 			CollectionView.RegisterClassForSupplementaryView(typeof(HorizontalDefaultSupplementalView),
 				kind, HorizontalDefaultSupplementalView.ReuseId);
 			CollectionView.RegisterClassForSupplementaryView(typeof(VerticalDefaultSupplementalView),
@@ -82,7 +82,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			cell.Label.Text = ItemsSource.Group(indexPath).ToString();
 
-			if (cell is ItemsViewCell constrainedCell)
+			if (cell is ItemsViewCell)
 			{
 				cell.ConstrainTo(ItemsViewLayout.ConstrainedDimension);
 			}
@@ -90,32 +90,18 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateTemplatedSupplementaryView(TemplatedCell cell, NSString elementKind, NSIndexPath indexPath)
 		{
-			ApplyTemplateAndDataContext(cell, elementKind, indexPath);
+			DataTemplate template = elementKind == UICollectionElementKindSectionKey.Header
+				? GroupableItemsView.GroupHeaderTemplate
+				: GroupableItemsView.GroupFooterTemplate;
 
-			if (cell is ItemsViewCell constrainedCell)
+			var bindingContext = ItemsSource.Group(indexPath);
+
+			cell.Bind(template, bindingContext, ItemsView);
+
+			if (cell is ItemsViewCell)
 			{
 				cell.ConstrainTo(ItemsViewLayout.ConstrainedDimension);
 			}
-		}
-
-		void ApplyTemplateAndDataContext(TemplatedCell cell, NSString elementKind, NSIndexPath indexPath)
-		{
-			DataTemplate template;
-
-			if (elementKind == UICollectionElementKindSectionKey.Header)
-			{
-				template = GroupableItemsView.GroupHeaderTemplate;
-			}
-			else
-			{
-				template = GroupableItemsView.GroupFooterTemplate;
-			}
-
-			var templateElement = template.CreateContent() as View;
-			var renderer = CreateRenderer(templateElement);
-
-			BindableObject.SetInheritedBindingContext(renderer.Element, ItemsSource.Group(indexPath));
-			cell.SetRenderer(renderer);
 		}
 
 		string DetermineViewReuseId(NSString elementKind)
@@ -139,8 +125,8 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			return ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Horizontal
-				? HorizontalTemplatedSupplementalView.ReuseId
-				: VerticalTemplatedSupplementalView.ReuseId;
+				? HorizontalSupplementaryView.ReuseId
+				: VerticalSupplementaryView.ReuseId;
 		}
 
 		internal CGSize GetReferenceSizeForHeader(UICollectionView collectionView, UICollectionViewLayout layout, nint section)

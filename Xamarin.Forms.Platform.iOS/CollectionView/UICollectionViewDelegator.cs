@@ -140,8 +140,6 @@ namespace Xamarin.Forms.Platform.iOS
 				if (collectionView.ContentOffset.Y >= actualHeight || collectionView.ContentOffset.Y < 0)
 					return;
 			}
-
-			ItemsViewController.PrepareCellForRemoval(cell);
 		}
 
 		public override CGSize GetReferenceSizeForHeader(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
