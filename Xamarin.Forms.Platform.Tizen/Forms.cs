@@ -10,6 +10,7 @@ using Tizen.Applications;
 using TSystemInfo = Tizen.System.Information;
 using ELayout = ElmSharp.Layout;
 using DeviceOrientation = Xamarin.Forms.Internals.DeviceOrientation;
+using System.ComponentModel;
 
 namespace Xamarin.Forms
 {
@@ -419,6 +420,19 @@ namespace Xamarin.Forms
 		public static string GetProfile()
 		{
 			return s_profile.Value;
+		}
+
+
+		// for internal use only
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void Preload()
+		{
+			Elementary.Initialize();
+			Elementary.ThemeOverlay();
+			var window = new PreloadedWindow();
+			var platform = new PreloadedPlatform(window.BaseLayout);
+			TSystemInfo.TryGetValue("http://tizen.org/feature/screen.width", out int width);
+			TSystemInfo.TryGetValue("http://tizen.org/feature/screen.height", out int height);
 		}
 	}
 

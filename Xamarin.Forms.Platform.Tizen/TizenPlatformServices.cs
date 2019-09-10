@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Platform.Tizen
 {
 	internal class TizenPlatformServices : IPlatformServices
 	{
-		static MD5 checksum = MD5.Create();
+		static Lazy<MD5> checksum = new Lazy<MD5>(CreateChecksum);
 
 		static SynchronizationContext s_context;
 
@@ -161,7 +161,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		static readonly char[] HexDigits = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 		public string GetMD5Hash(string input)
 		{
-			byte[] bin = checksum.ComputeHash(System.Text.Encoding.UTF8.GetBytes(input));
+			byte[] bin = checksum.Value.ComputeHash(System.Text.Encoding.UTF8.GetBytes(input));
 			char[] hex = new char[32];
 			for (var i = 0; i < 16; ++i)
 			{
@@ -241,6 +241,11 @@ namespace Xamarin.Forms.Platform.Tizen
 		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
 			return Platform.GetNativeSize(view, widthConstraint, heightConstraint);
+		}
+
+		static MD5 CreateChecksum()
+		{
+			return MD5.Create();
 		}
 	}
 }

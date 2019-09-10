@@ -54,15 +54,17 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		internal static ITizenPlatform CreatePlatform(EvasObject parent)
 		{
-			ITizenPlatform platform;
+			ITizenPlatform platform = PreloadedPlatform.GetInstalce(parent);
 			if (Forms.Flags.Contains(Flags.LightweightPlatformExperimental))
 			{
+				platform?.Dispose();
 				platform = new LightweightPlatform(parent);
 			}
 			else
 			{
-				platform = new DefaultPlatform(parent);
+				platform = platform ?? new DefaultPlatform(parent);
 			}
+
 			return platform;
 		}
 

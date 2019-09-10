@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			base.OnPreCreate();
 			Application.ClearCurrent();
-			MainWindow = new Window("FormsWindow");
+			MainWindow = PreloadedWindow.GetInstance() ?? new Window("FormsWindow");
 		}
 
 		protected override void OnTerminate()
@@ -151,15 +151,22 @@ namespace Xamarin.Forms.Platform.Tizen
 			MainWindow.Active();
 			MainWindow.Show();
 
-			var conformant = new Conformant(MainWindow);
-			conformant.Show();
+			if (MainWindow is PreloadedWindow precreated)
+			{
+				BaseLayout = precreated.BaseLayout;
+			}
+			else
+			{
+				var conformant = new Conformant(MainWindow);
+				conformant.Show();
 
-			var layout = new ELayout(conformant);
-			layout.SetTheme("layout", "application", "default");
-			layout.Show();
+				var layout = new ELayout(conformant);
+				layout.SetTheme("layout", "application", "default");
+				layout.Show();
 
-			BaseLayout = layout;
-			conformant.SetContent(BaseLayout);
+				BaseLayout = layout;
+				conformant.SetContent(BaseLayout);
+			}
 
 			MainWindow.AvailableRotations = DisplayRotation.Degree_0 | DisplayRotation.Degree_90 | DisplayRotation.Degree_180 | DisplayRotation.Degree_270;
 
