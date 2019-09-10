@@ -193,7 +193,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			public static AppDomain CurrentDomain { get; private set; }
 
-			readonly List<Assembly> _assemblies;
+			readonly HashSet<Assembly> _assemblies;
 
 			static AppDomain()
 			{
@@ -202,10 +202,21 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			AppDomain()
 			{
-				_assemblies = new List<Assembly>();
+				_assemblies = new HashSet<Assembly>();
 
 				// Add this renderer assembly to the list
 				_assemblies.Add(GetType().GetTypeInfo().Assembly);
+			}
+
+			public void AddAssemblies(Assembly[] assemblies)
+			{
+				foreach (var asm in assemblies)
+				{
+					if (!_assemblies.Contains(asm))
+					{
+						_assemblies.Add(asm);
+					}
+				}
 			}
 
 			internal void RegisterAssemblyRecursively(Assembly asm)
