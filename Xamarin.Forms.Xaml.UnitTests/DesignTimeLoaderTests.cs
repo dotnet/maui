@@ -167,7 +167,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			Assert.That(page.Content.BackgroundColor, Is.EqualTo(Color.Red));
 		}
 
-		[Test][Ignore]
+		[Test][Ignore(nameof(ImplicitStyleAppliedToMissingType))]
 		public void ImplicitStyleAppliedToMissingType()
 		{
 			XamlLoader.FallbackTypeResolver = (p, type) => type ?? typeof(Button);
@@ -224,7 +224,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			Assert.That(myButton.BackgroundColor, Is.Not.EqualTo(Color.Red));
 		}
 
-		[Test][Ignore]
+		[Test][Ignore(nameof(StyleTargetingMissingTypeNotAppliedToFallbackType))]
 		public void StyleTargetingMissingTypeNotAppliedToFallbackType()
 		{
 			XamlLoader.FallbackTypeResolver = (p, type) => type ?? typeof(Button);

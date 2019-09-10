@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Core.UnitTests
 	public class GeocoderUnitTests : BaseTestFixture
 	{
 		[Test]
-		public async void AddressesForPosition ()
+		public async Task AddressesForPosition ()
 		{
 			Geocoder.GetAddressesForPositionFuncAsync = GetAddressesForPositionFuncAsync;
 			var geocoder = new Geocoder ();
@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public async void PositionsForAddress () {
+		public async Task PositionsForAddress () {
 			Geocoder.GetPositionsForAddressAsyncFunc = GetPositionsForAddressAsyncFunc	;
 			var geocoder = new Geocoder ();
 			var result = await geocoder.GetPositionsForAddressAsync ("quux");

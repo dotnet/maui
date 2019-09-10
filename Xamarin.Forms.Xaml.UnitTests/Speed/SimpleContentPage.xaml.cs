@@ -46,7 +46,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			}
 
 			[Test]
-			[Ignore]
+			[Ignore(nameof(XamlCIs20TimesFasterThanXaml))]
 			public void XamlCIs20TimesFasterThanXaml ()
 			{
 				var swXamlC = new Stopwatch ();
@@ -66,7 +66,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			}
 
 			[Test]
-			[Ignore]
+			[Ignore(nameof(XamlCIsNotMuchSlowerThanCode))]
 			public void XamlCIsNotMuchSlowerThanCode ()
 			{
 				var swXamlC = new Stopwatch ();

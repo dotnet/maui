@@ -488,15 +488,15 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			AssertExists (Path.Combine (intermediateDirectory, "XamlC.stamp"));
 		}
 
-		[Test, ExpectedException (typeof(AssertionException))]
-		public void InvalidXml ([Values (false, true)] bool sdkStyle)
+		[Test]
+		public void InvalidXml([Values(false, true)] bool sdkStyle)
 		{
-			var project = NewProject (sdkStyle);
-			project.Add (AddFile ("MainPage.xaml", "EmbeddedResource", "notxmlatall"));
-			var projectFile = Path.Combine (tempDirectory, "test.csproj");
-			project.Save (projectFile);
-			RestoreIfNeeded (projectFile, sdkStyle);
-			Build (projectFile);
+			var project = NewProject(sdkStyle);
+			project.Add(AddFile("MainPage.xaml", "EmbeddedResource", "notxmlatall"));
+			var projectFile = Path.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+			RestoreIfNeeded(projectFile, sdkStyle);
+			Assert.Throws<AssertionException>(() => Build(projectFile));
 		}
 
 		[Test]
