@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Windows.Input;
 using Xamarin.Forms.Platform;
 
@@ -216,11 +217,13 @@ namespace Xamarin.Forms
 			return 0;
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetCurrentItem(object item)
 		{
 			SetValueFromRenderer(CurrentItemProperty, item);
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetIsDragging(bool value)
 		{
 			SetValue(IsDraggingPropertyKey, value);
