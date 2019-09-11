@@ -126,7 +126,7 @@
       <Docs>
         <param name="placemark">Placemark to open maps to.</param>
         <param name="options">Launch options to use.</param>
-        <summary>Open the installed application to a specific placemark with launch options..</summary>
+        <summary>Open the installed application to a specific placemark with launch options.</summary>
         <returns>Task to be completed.</returns>
         <remarks></remarks>
       </Docs>
