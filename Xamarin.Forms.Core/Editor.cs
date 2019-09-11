@@ -6,10 +6,9 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_EditorRenderer))]
-	public class Editor : InputView, IEditorController, IFontElement, IPlaceholderElement, ITextElement, IElementConfiguration<Editor>
+	public class Editor : InputView, IEditorController, IFontElement, IElementConfiguration<Editor>
 	{
-		public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(Editor), null, BindingMode.TwoWay, propertyChanged: (bindable, oldValue, newValue)
-			=> OnTextChanged((Editor)bindable, (string)oldValue, (string)newValue));
+		public new static readonly BindableProperty TextProperty = InputView.TextProperty;
 
 		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
 
@@ -17,13 +16,13 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
-		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
+		public new static readonly BindableProperty TextColorProperty = InputView.TextColorProperty;
 
-		public static readonly BindableProperty CharacterSpacingProperty = TextElement.CharacterSpacingProperty;
+		public new static readonly BindableProperty CharacterSpacingProperty = InputView.CharacterSpacingProperty;
 
-		public static readonly BindableProperty PlaceholderProperty = PlaceholderElement.PlaceholderProperty;
+		public new static readonly BindableProperty PlaceholderProperty = InputView.PlaceholderProperty;
 
-		public static readonly BindableProperty PlaceholderColorProperty = PlaceholderElement.PlaceholderColorProperty;
+		public new static readonly BindableProperty PlaceholderColorProperty = InputView.PlaceholderColorProperty;
 
 		public static readonly BindableProperty IsTextPredictionEnabledProperty = BindableProperty.Create(nameof(IsTextPredictionEnabled), typeof(bool), typeof(Editor), true, BindingMode.Default);
 
@@ -36,34 +35,6 @@ namespace Xamarin.Forms
 		{
 			get { return (EditorAutoSizeOption)GetValue(AutoSizeProperty); }
 			set { SetValue(AutoSizeProperty, value); }
-		}
-
-		public string Text
-		{
-			get { return (string)GetValue(TextProperty); }
-			set { SetValue(TextProperty, value); }
-		}
-
-		public Color TextColor
-		{
-			get { return (Color)GetValue(TextElement.TextColorProperty); }
-			set { SetValue(TextElement.TextColorProperty, value); }
-		}
-
-		public double CharacterSpacing
-		{
-			get { return (double)GetValue(TextElement.CharacterSpacingProperty); }
-			set { SetValue(TextElement.CharacterSpacingProperty, value); }
-		}
-
-		public string Placeholder {
-			get => (string)GetValue(PlaceholderElement.PlaceholderProperty);
-			set => SetValue(PlaceholderElement.PlaceholderProperty, value);
-		}
-
-		public Color PlaceholderColor {
-			get => (Color)GetValue(PlaceholderElement.PlaceholderColorProperty);
-			set => SetValue(PlaceholderElement.PlaceholderColorProperty, value);
 		}
 
 		public FontAttributes FontAttributes
@@ -124,8 +95,6 @@ namespace Xamarin.Forms
 
 		public event EventHandler Completed;
 
-		public event EventHandler<TextChangedEventArgs> TextChanged;
-
 		public Editor()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Editor>>(() => new PlatformConfigurationRegistry<Editor>(this));
@@ -140,22 +109,13 @@ namespace Xamarin.Forms
 		public void SendCompleted()
 			=> Completed?.Invoke(this, EventArgs.Empty);
 
-		void ITextElement.OnTextColorPropertyChanged(Color oldValue, Color newValue)
+		protected override void OnTextChanged(string oldValue, string newValue)
 		{
-		}
+			base.OnTextChanged(oldValue, newValue);
 
-		void ITextElement.OnCharacterSpacingPropertyChanged(double oldValue, double newValue)
-		{
-			InvalidateMeasure();
-		}
-
-
-		private static void OnTextChanged(Editor bindable, string oldValue, string newValue)
-		{
-			bindable.TextChanged?.Invoke(bindable, new TextChangedEventArgs(oldValue, newValue));
-			if (bindable.AutoSize == EditorAutoSizeOption.TextChanges)
+			if (AutoSize == EditorAutoSizeOption.TextChanges)
 			{
-				bindable.InvalidateMeasure();
+				InvalidateMeasure();
 			}
 		}
 	}
