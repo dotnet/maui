@@ -147,6 +147,7 @@
     <Compile Include="ExportRendererAttribute.cs" />
     <Compile Include="Extensions\ArrayExtensions.cs" />
     <Compile Include="Extensions\FlowDirectionExtensions.cs" />
+    <Compile Include="Extensions\NSObjectExtensions.cs" />
     <Compile Include="Extensions\PlatformConfigurationExtensions.cs" />
     <Compile Include="Extensions\LabelExtensions.cs" />
     <Compile Include="Extensions\VisualElementExtensions.cs" />
