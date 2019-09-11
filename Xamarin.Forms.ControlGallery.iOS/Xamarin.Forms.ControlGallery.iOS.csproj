@@ -126,6 +126,7 @@
     <Compile Include="CustomEffects\GradientEffect.cs" />
     <Compile Include="CustomRenderers\CustomRenderer.cs" />
     <Compile Include="CustomRenderers\RoundedLabelRenderer.cs" />
+    <Compile Include="ApiLabelRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Controls\Xamarin.Forms.Controls.csproj">
