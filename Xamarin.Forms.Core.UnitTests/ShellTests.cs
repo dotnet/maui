@@ -668,7 +668,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual(bindingContext, menuItem2.BindingContext);
 		}
 
-    [Test]
+		[Test]
 		public async Task TitleViewLogicalChild()
 		{
 			Shell shell = new Shell();
@@ -709,9 +709,37 @@ namespace Xamarin.Forms.Core.UnitTests
 			shell.FlyoutHeader = null;
 
 			Assert.False(shell.ChildrenNotDrawnByThisElement.Contains(layout));
-    }
-    
-    
+		}
+
+
+		[Test]
+		public async Task ShellFlyoutBehaviorCalculation()
+		{
+			Shell shell = new Shell();
+			ContentPage page = new ContentPage();
+			shell.Items.Add(CreateShellItem(page: page));
+			Assert.AreEqual(FlyoutBehavior.Flyout, shell.GetEffectiveFlyoutBehavior());
+
+			Shell.SetFlyoutBehavior(page, FlyoutBehavior.Disabled);
+			Shell.SetFlyoutBehavior(shell.Items[0].Items[0].Items[0], FlyoutBehavior.Flyout);
+			Shell.SetFlyoutBehavior(shell.Items[0].Items[0], FlyoutBehavior.Disabled);
+			Shell.SetFlyoutBehavior(shell.Items[0], FlyoutBehavior.Locked);
+
+			Assert.AreEqual(FlyoutBehavior.Disabled, shell.GetEffectiveFlyoutBehavior());
+
+			page.ClearValue(Shell.FlyoutBehaviorProperty);
+			Assert.AreEqual(FlyoutBehavior.Flyout, shell.GetEffectiveFlyoutBehavior());
+
+			shell.Items[0].Items[0].Items[0].ClearValue(Shell.FlyoutBehaviorProperty);
+			Assert.AreEqual(FlyoutBehavior.Disabled, shell.GetEffectiveFlyoutBehavior());
+
+			shell.Items[0].Items[0].ClearValue(Shell.FlyoutBehaviorProperty);
+			Assert.AreEqual(FlyoutBehavior.Locked, shell.GetEffectiveFlyoutBehavior());
+
+			shell.Items[0].ClearValue(Shell.FlyoutBehaviorProperty);
+			Assert.AreEqual(FlyoutBehavior.Flyout, shell.GetEffectiveFlyoutBehavior());
+		}
+
 		[Test]
 		public async Task TabBarAutoCreation()
 		{

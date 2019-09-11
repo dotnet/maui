@@ -954,17 +954,21 @@ namespace Xamarin.Forms
 			return lookupDict;
 		}
 
-		FlyoutBehavior GetEffectiveFlyoutBehavior()
-		{
-			var page = WalkToPage(this);
+		internal FlyoutBehavior GetEffectiveFlyoutBehavior() => GetEffectiveValue(Shell.FlyoutBehaviorProperty, FlyoutBehavior);
 
-			while (page != this && page != null)
+		T GetEffectiveValue<T>(BindableProperty property, T defaultValue)
+		{
+			Element element = GetVisiblePage();
+
+			while (element != this && element != null)
 			{
-				if (page.IsSet(FlyoutBehaviorProperty))
-					return GetFlyoutBehavior(page);
-				page = page.Parent;
+				if (element.IsSet(property))
+					return (T)element.GetValue(property);
+
+				element = element.Parent;
 			}
-			return FlyoutBehavior;
+
+			return defaultValue;
 		}
 
 		ShellAppearance GetAppearanceForPivot(Element pivot)
@@ -988,7 +992,7 @@ namespace Xamarin.Forms
 
 				// One minor deviation here. Even though a pushed page is technically the child of
 				// a ShellSection and not the ShellContent, we want the root ShellContent to 
-				// be taken into account. Yes this could behavior oddly if the developer switches
+				// be taken into account. Yes this could behave oddly if the developer switches
 				// tabs while a page is pushed, however that is in the developers wheelhouse
 				// and this will be the generally expected behavior.
 				if (!foundShellContent && pivot is ShellSection shellSection && shellSection.CurrentItem != null)
@@ -1058,6 +1062,14 @@ namespace Xamarin.Forms
 			OnNavigating(navArgs);
 			//System.Diagnostics.Debug.WriteLine("Proposed: " + proposedState.Location);
 			return !navArgs.Cancelled;
+		}
+
+		internal Element GetVisiblePage()
+		{
+			if (CurrentItem?.CurrentItem is IShellSectionController scc)
+				return scc.PresentedPage;
+
+			return null;
 		}
 
 		Element WalkToPage(Element element)
