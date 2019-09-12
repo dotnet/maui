@@ -342,6 +342,37 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 
+		[Test]
+		public void AppearingOnlyForVisiblePage()
+		{
+			Shell shell = new Shell();
+			var pageAppearing = new ContentPage();
+			var pageNotAppearing = new ContentPage();
+
+			FlyoutItem flyoutItem = new FlyoutItem();
+			Tab tab = new Tab();
+			ShellContent content = new ShellContent() { Content = pageAppearing };
+
+			bool pageAppearingFired = false;
+			bool pageNotAppearingFired = false;
+
+			pageAppearing.Appearing += (_, __) => pageAppearingFired = true;
+			pageNotAppearing.Appearing += (_, __) =>
+			{
+				pageNotAppearingFired = true;
+			};
+
+			shell.Items.Add(flyoutItem);
+			flyoutItem.Items.Add(tab);
+			tab.Items.Add(content);
+
+			var notAppearingContent = new ShellContent();
+			tab.Items.Add(notAppearingContent);
+			notAppearingContent.Content = pageNotAppearing;
+
+			Assert.True(pageAppearingFired, "Correct Page Appearing Fired");
+			Assert.False(pageNotAppearingFired, "Incorrect Page Appearing Fired");
+		}
 
 
 		class ShellLifeCycleState
