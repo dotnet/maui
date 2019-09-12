@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				KeepXamlResources = true,
 				OptimizeIL = true,
 				DebugSymbols = false,
-				ReadOnly = true,
+				ValidateOnly = true,
 				Type = type.FullName,
 				BuildEngine = new MSBuild.UnitTests.DummyBuildEngine()
 			};
