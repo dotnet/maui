@@ -1490,6 +1490,9 @@ namespace Xamarin.Forms.Platform.iOS
 					//This also forces the spinner color to be correct if we started refreshing immediately after changing it.
 					UpdateContentOffset(TableView.ContentOffset.Y - _refresh.Frame.Height, () =>
 					{
+						if (_refresh == null)
+							return;
+
 						_refresh.BeginRefreshing();
 						//hack: when we don't have cells in our UITableView the spinner fails to appear
 						CheckContentSize();
