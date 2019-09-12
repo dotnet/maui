@@ -33,7 +33,12 @@ namespace Xamarin.Forms.Build.Tasks
 
 		internal string Type { get; set; }
 		internal MethodDefinition InitCompForType { get; private set; }
-		internal bool ReadOnly { get; set; }
+
+		/// <summary>
+		/// Enable to optimize for shorter build time
+		/// e.g. OptimizeIL unused, Debug symbols not loaded, no assemblies written
+		/// </summary>
+		public bool ValidateOnly { get; set; }
 
 		public override bool Execute(out IList<Exception> thrownExceptions)
 		{
@@ -72,8 +77,8 @@ namespace Xamarin.Forms.Build.Tasks
 
 			var readerParameters = new ReaderParameters {
 				AssemblyResolver = resolver,
-				ReadWrite = !ReadOnly,
-				ReadSymbols = debug,
+				ReadWrite = !ValidateOnly,
+				ReadSymbols = debug && !ValidateOnly, // We don't need symbols for ValidateOnly, since we won't be writing
 			};
 
 			using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(Path.GetFullPath(Assembly),readerParameters)) {
@@ -147,24 +152,29 @@ namespace Xamarin.Forms.Build.Tasks
 												  (string)xamlFilePathAttr.ConstructorArguments[0].Value :
 												  resource.Name;
 
-						var initCompRuntime = typeDef.Methods.FirstOrDefault(md => md.Name == "__InitComponentRuntime");
-						if (initCompRuntime != null)
-							LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}__InitComponentRuntime already exists... not creating");
-						else {
-							LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Creating empty {typeDef.Name}.__InitComponentRuntime");
-							initCompRuntime = new MethodDefinition("__InitComponentRuntime", initComp.Attributes, initComp.ReturnType);
-							initCompRuntime.Body.InitLocals = true;
-							LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}done.");
-							LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Copying body of InitializeComponent to __InitComponentRuntime");
-							initCompRuntime.Body = new MethodBody(initCompRuntime);
-							var iCRIl = initCompRuntime.Body.GetILProcessor();
-							foreach (var instr in initComp.Body.Instructions)
-								iCRIl.Append(instr);
-							initComp.Body.Instructions.Clear();
-							initComp.Body.GetILProcessor().Emit(OpCodes.Ret);
-							initComp.Body.InitLocals = true;
-							typeDef.Methods.Add(initCompRuntime);
-							LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}done.");
+						MethodDefinition initCompRuntime = null;
+						if (!ValidateOnly)
+						{
+							initCompRuntime = typeDef.Methods.FirstOrDefault(md => md.Name == "__InitComponentRuntime");
+							if (initCompRuntime != null)
+								LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}__InitComponentRuntime already exists... not creating");
+							else
+							{
+								LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Creating empty {typeDef.Name}.__InitComponentRuntime");
+								initCompRuntime = new MethodDefinition("__InitComponentRuntime", initComp.Attributes, initComp.ReturnType);
+								initCompRuntime.Body.InitLocals = true;
+								LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}done.");
+								LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Copying body of InitializeComponent to __InitComponentRuntime");
+								initCompRuntime.Body = new MethodBody(initCompRuntime);
+								var iCRIl = initCompRuntime.Body.GetILProcessor();
+								foreach (var instr in initComp.Body.Instructions)
+									iCRIl.Append(instr);
+								initComp.Body.Instructions.Clear();
+								initComp.Body.GetILProcessor().Emit(OpCodes.Ret);
+								initComp.Body.InitLocals = true;
+								typeDef.Methods.Add(initCompRuntime);
+								LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}done.");
+							}
 						}
 
 						LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Parsing Xaml");
@@ -197,6 +207,9 @@ namespace Xamarin.Forms.Build.Tasks
 
 						LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}done.");
 
+						if (ValidateOnly)
+							continue;
+
 						if (OptimizeIL) {
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Optimizing IL");
 							initComp.Body.Optimize();
@@ -224,14 +237,14 @@ namespace Xamarin.Forms.Build.Tasks
 						}
 					}
 				}
-
+				if (ValidateOnly) {
+					LoggingHelper.LogMessage(Low, $"{new string(' ', 0)}ValidateOnly=True. Skipping writing assembly.");
+					return success;
+				}
 				if (!hasCompiledXamlResources) {
 					LoggingHelper.LogMessage(Low, $"{new string(' ', 0)}No compiled resources. Skipping writing assembly.");
 					return success;
 				}
-
-				if (ReadOnly)
-					return success;
 				
 				LoggingHelper.LogMessage(Low, $"{new string(' ', 0)}Writing the assembly");
 				try {

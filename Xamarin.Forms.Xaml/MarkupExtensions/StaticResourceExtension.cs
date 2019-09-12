@@ -10,8 +10,6 @@ namespace Xamarin.Forms.Xaml
 	[ContentProperty(nameof(Key))]
 	public sealed class StaticResourceExtension : IMarkupExtension
 	{
-		internal static bool _mockDebuggerIsAttached; //for unit testing
-
 		public string Key { get; set; }
 		public object ProvideValue(IServiceProvider serviceProvider)
 		{
@@ -28,8 +26,7 @@ namespace Xamarin.Forms.Xaml
 				&& !TryGetApplicationLevelResource(Key, out resource, out resourceDictionary))
 				throw new XamlParseException($"StaticResource not found for key {Key}", xmlLineInfo);
 
-			if (System.Diagnostics.Debugger.IsAttached || _mockDebuggerIsAttached)
-				Diagnostics.ResourceDictionaryDiagnostics.OnStaticResourceResolved(resourceDictionary, Key, valueProvider.TargetObject, valueProvider.TargetProperty);
+			Diagnostics.ResourceDictionaryDiagnostics.OnStaticResourceResolved(resourceDictionary, Key, valueProvider.TargetObject, valueProvider.TargetProperty);
 
 			return CastTo(resource, valueProvider.TargetProperty);
 		}

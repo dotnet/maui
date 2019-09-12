@@ -3,12 +3,12 @@ using Foundation;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	public class VerticalTemplatedSupplementalView : TemplatedCell
+	internal sealed class VerticalSupplementaryView : WidthConstrainedTemplatedCell
 	{
-		public static NSString ReuseId = new NSString("Xamarin.Forms.Platform.iOS.VerticalTemplatedSupplementalView");
+		public static NSString ReuseId = new NSString("Xamarin.Forms.Platform.iOS.VerticalSupplementaryView");
 
 		[Export("initWithFrame:")]
-		public VerticalTemplatedSupplementalView(CGRect frame) : base(frame)
+		public VerticalSupplementaryView(CGRect frame) : base(frame)
 		{
 		}
 
@@ -21,12 +21,6 @@ namespace Xamarin.Forms.Platform.iOS
 				? VisualElementRenderer.Element.Height : measure.Request.Height;
 
 			return new CGSize(ConstrainedDimension, height);
-		}
-
-		public override void ConstrainTo(CGSize constraint)
-		{
-			ConstrainedDimension = constraint.Width;
-			Layout(constraint);
 		}
 	}
 }

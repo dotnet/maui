@@ -42,8 +42,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="NUnit" Version="2.6.4" />
-    <PackageReference Include="NUnitTestAdapter" Version="2.2.0" />
+    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnit3TestAdapter">
+      <Version>3.15.1</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Xamarin.Forms.Core.UnitTests\MockDispatcherProvider.cs">
@@ -83,8 +85,9 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="_CopyNUnitTestAdapterFiles" AfterTargets="Build">
     <ItemGroup>
-      <_NUnitTestAdapterFiles Include="$(NuGetPackageRoot)NUnitTestAdapter\%(Version)\**" Condition="@(PackageReference -> '%(Identity)') == 'NUnitTestAdapter'" InProject="False" />
+      <_NUnitTestAdapterFiles Include="$(NuGetPackageRoot)NUnit3TestAdapter\%(Version)\build\net35\**" Condition="@(PackageReference -> '%(Identity)') == 'NUnit3TestAdapter'" InProject="False" />
     </ItemGroup>
-    <Copy SourceFiles="@(_NUnitTestAdapterFiles)" DestinationFolder="$(SolutionDir)packages\NUnitTestAdapter.AnyVersion\%(RecursiveDir)" ContinueOnError="true" Retries="0" />
+    <Copy SourceFiles="@(_NUnitTestAdapterFiles)" DestinationFolder="$(SolutionDir)packages\NUnitTestAdapter.AnyVersion\tools\%(RecursiveDir)" ContinueOnError="true" Retries="0" />
+    <Copy SourceFiles="@(_NUnitTestAdapterFiles)" DestinationFolder="$(SolutionDir)packages\NUnitTestAdapter.AnyVersion\build\%(RecursiveDir)" ContinueOnError="true" Retries="0" />
   </Target>
 </Project>

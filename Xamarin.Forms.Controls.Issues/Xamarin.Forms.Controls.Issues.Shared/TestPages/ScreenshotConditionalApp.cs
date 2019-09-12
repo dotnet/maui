@@ -240,9 +240,7 @@ namespace Xamarin.Forms.Controls
 
 		public void SwipeRight()
 		{
-#pragma warning disable 618
-			_app.SwipeRight();
-#pragma warning restore 618
+			SwipeLeftToRight();
 		}
 
 		public void SwipeLeftToRight(double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
@@ -257,9 +255,7 @@ namespace Xamarin.Forms.Controls
 
 		public void SwipeLeft()
 		{
-#pragma warning disable 618
-			_app.SwipeLeft();
-#pragma warning restore 618
+			SwipeRightToLeft();
 		}
 
 		public void SwipeRightToLeft(double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)

@@ -255,6 +255,7 @@
     <Compile Include="Renderers\ViewCellExtensions.cs" />
     <Compile Include="Renderers\ViewGroupExtensions.cs" />
     <AndroidResource Include="Resources\Layout\RootLayout.axml" />
+    <Compile Include="StreamWrapper.cs" />
     <Compile Include="TapGestureHandler.cs" />
     <Compile Include="TextColorSwitcher.cs" />
     <Compile Include="ViewInitializedEventArgs.cs" />
@@ -353,9 +354,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xamarin.Android.Support.Design" Version="28.0.0.1" />
-    <PackageReference Include="Xamarin.Android.Support.v4" Version="28.0.0.1" />
-    <PackageReference Include="Xamarin.Android.Support.v7.CardView" Version="28.0.0.1" />
+    <PackageReference Include="Xamarin.Android.Support.Design" Version="28.0.0.3" />
+    <PackageReference Include="Xamarin.Android.Support.v4" Version="28.0.0.3" />
+    <PackageReference Include="Xamarin.Android.Support.v7.CardView" Version="28.0.0.3" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\Layout\ShellContent.axml" />

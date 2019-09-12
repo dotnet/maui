@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		[Ignore]
+		[Ignore("LoadImageFromStream")]
 		public void LoadImageFromStream ()
 		{
 			var loader = new UriImageSource { 
@@ -60,7 +60,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		[Ignore]
+		[Ignore("SecondCallLoadFromCache")]
 		public void SecondCallLoadFromCache ()
 		{
 			var loader = new UriImageSource { 
@@ -80,7 +80,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		[Ignore]
+		[Ignore("DoNotKeepFailedRetrieveInCache")]
 		public void DoNotKeepFailedRetrieveInCache ()
 		{
 			var loader = new UriImageSource { 
@@ -98,7 +98,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		[Ignore]
+		[Ignore("ConcurrentCallsOnSameUriAreQueued")]
 		public void ConcurrentCallsOnSameUriAreQueued ()
 		{
 			var loader = new UriImageSource { 

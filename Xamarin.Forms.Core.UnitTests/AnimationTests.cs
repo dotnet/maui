@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Core.UnitTests
 	{
 		[Test]
 		//https://bugzilla.xamarin.com/show_bug.cgi?id=51424
-		public async void AnimationRepeats()
+		public async Task AnimationRepeats()
 		{
 			var box = new BoxView();
 			Assume.That(box.Rotation, Is.EqualTo(0d));

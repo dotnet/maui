@@ -1,9 +1,11 @@
 ﻿using Microsoft.Build.Locator;
+using Mono.Cecil;
 using NUnit.Framework;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Xml.Linq;
 using static Xamarin.Forms.MSBuild.UnitTests.MSBuildXmlExtensions;
 
@@ -117,7 +119,6 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 		/// <param name="sdkStyle">If true, uses a new SDK-style project</param>
 		XElement NewProject (bool sdkStyle)
 		{
-			var path = Path.GetTempFileName ();
 			var project = NewElement ("Project");
 
 			var propertyGroup = NewElement ("PropertyGroup");
@@ -136,6 +137,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 				propertyGroup.Add (NewElement ("OutputType").WithValue ("Library"));
 				propertyGroup.Add (NewElement ("OutputPath").WithValue ("bin\\Debug"));
 				propertyGroup.Add (NewElement ("TargetFrameworkVersion").WithValue ("v4.7"));
+				propertyGroup.Add(NewElement("RootNamespace").WithValue("test"));
 			}
 			propertyGroup.Add(NewElement("_XFBuildTasksLocation").WithValue($"{testDirectory}\\"));
 
@@ -195,8 +197,19 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			}
 		}
 
-		void Build (string projectFile, string target = "Build", string additionalArgs = "")
+		string Build (string projectFile, string target = "Build", string additionalArgs = "", bool shouldSucceed = true)
 		{
+			var builder = new StringBuilder();
+			void onData(object s, DataReceivedEventArgs e)
+			{
+				lock (builder)
+				if (e.Data != null)
+				{
+					builder.AppendLine(e.Data);
+					Console.WriteLine(e.Data);
+				}
+			};
+
 			var psi = new ProcessStartInfo {
 				FileName = FindMSBuild (),
 				Arguments = $"/v:normal /nologo {projectFile} /t:{target} /bl {additionalArgs}",
@@ -208,14 +221,19 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 				WorkingDirectory = tempDirectory,
 			};
 			using (var p = new Process { StartInfo = psi }) {
-				p.ErrorDataReceived += (s, e) => Console.Error.WriteLine (e.Data);
-				p.OutputDataReceived += (s, e) => Console.WriteLine (e.Data);
+				p.ErrorDataReceived += onData;
+				p.OutputDataReceived += onData;
 
 				p.Start ();
 				p.BeginErrorReadLine ();
 				p.BeginOutputReadLine ();
 				p.WaitForExit ();
-				Assert.AreEqual (0, p.ExitCode, "MSBuild exited with {0}", p.ExitCode);
+				if (shouldSucceed)
+					Assert.AreEqual(0, p.ExitCode, "MSBuild exited with {0}", p.ExitCode);
+				else
+					Assert.AreNotEqual(0, p.ExitCode, "MSBuild exited with {0}", p.ExitCode);
+
+				return builder.ToString();
 			}
 		}
 
@@ -248,6 +266,40 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			AssertExists (Path.Combine (intermediateDirectory, "MainPage.xaml.g.cs"), nonEmpty: true);
 			AssertExists (Path.Combine (intermediateDirectory, "Foo.css.g.cs"), nonEmpty: true);
 			AssertExists (Path.Combine (intermediateDirectory, "XamlC.stamp"));
+		}
+
+		// Tests the XFXamlCValidateOnly=True MSBuild property
+		[Test]
+		public void ValidateOnly([Values(false, true)] bool sdkStyle)
+		{
+			var project = NewProject(sdkStyle);
+			project.Add(AddFile("MainPage.xaml", "EmbeddedResource", Xaml.MainPage));
+			var projectFile = Path.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+			RestoreIfNeeded(projectFile, sdkStyle);
+			Build(projectFile, additionalArgs: "/p:XFXamlCValidateOnly=True");
+
+			var testDll = Path.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			using (var assembly = AssemblyDefinition.ReadAssembly(testDll))
+			{
+				// XAML files should remain as EmbeddedResource
+				var resources = assembly.MainModule.Resources.OfType<EmbeddedResource>().Select(e => e.Name).ToArray();
+				CollectionAssert.Contains(resources, "test.MainPage.xaml");
+			}
+		}
+
+		[Test]
+		public void ValidateOnly_WithErrors([Values(false, true)] bool sdkStyle)
+		{
+			var project = NewProject(sdkStyle);
+			project.Add(AddFile("MainPage.xaml", "EmbeddedResource", Xaml.MainPage.Replace ("</ContentPage>", "<NotARealThing/></ContentPage>")));
+			var projectFile = Path.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+			RestoreIfNeeded(projectFile, sdkStyle);
+
+			string log = Build(projectFile, additionalArgs: "/p:XFXamlCValidateOnly=True", shouldSucceed: false);
+			StringAssert.Contains("MainPage.xaml(7,6): error : Position 7:6. Type NotARealThing not found", log);
 		}
 
 		/// <summary>
@@ -488,15 +540,15 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			AssertExists (Path.Combine (intermediateDirectory, "XamlC.stamp"));
 		}
 
-		[Test, ExpectedException (typeof(AssertionException))]
-		public void InvalidXml ([Values (false, true)] bool sdkStyle)
+		[Test]
+		public void InvalidXml([Values(false, true)] bool sdkStyle)
 		{
-			var project = NewProject (sdkStyle);
-			project.Add (AddFile ("MainPage.xaml", "EmbeddedResource", "notxmlatall"));
-			var projectFile = Path.Combine (tempDirectory, "test.csproj");
-			project.Save (projectFile);
-			RestoreIfNeeded (projectFile, sdkStyle);
-			Build (projectFile);
+			var project = NewProject(sdkStyle);
+			project.Add(AddFile("MainPage.xaml", "EmbeddedResource", "notxmlatall"));
+			var projectFile = Path.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+			RestoreIfNeeded(projectFile, sdkStyle);
+			Assert.Throws<AssertionException>(() => Build(projectFile));
 		}
 
 		[Test]

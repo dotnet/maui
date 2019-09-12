@@ -9,6 +9,7 @@
     <Import_RootNamespace>Xamarin.Forms.Controls.Issues</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CollectionViewItemsSourceTypes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1455.xaml.cs">
       <DependentUpon>Issue1455.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -18,7 +19,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewHeaderFooterView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewItemsUpdatingScrollMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3475.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue6889.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6945.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7329.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7290.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7240.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5046.xaml.cs">
@@ -38,6 +41,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ScrollToGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NestedCollectionViews.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellFlyoutBehavior.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7128.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellGestures.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellBackButtonBehavior.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7102.cs" />
@@ -568,6 +572,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla39853.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MultipleClipToBounds.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6994.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7371.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_TemplateMarkup.xaml.cs">
       <DependentUpon>_TemplateMarkup.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -1042,6 +1047,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue7053.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6894.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6929.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\ApiLabel.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">

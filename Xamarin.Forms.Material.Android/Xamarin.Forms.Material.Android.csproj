@@ -69,8 +69,8 @@
     <Compile Include="MaterialCheckBoxRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xamarin.Android.Support.v7.AppCompat" Version="28.0.0.1" />
-    <PackageReference Include="Xamarin.Android.Support.Design" Version="28.0.0.1" />
+    <PackageReference Include="Xamarin.Android.Support.v7.AppCompat" Version="28.0.0.3" />
+    <PackageReference Include="Xamarin.Android.Support.Design" Version="28.0.0.3" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\values-v21\styles.xml">

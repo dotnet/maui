@@ -34,7 +34,6 @@ namespace Xamarin.Forms.Platform.Android
 
 		public void Recycle(ItemsView itemsView)
 		{
-			View.BindingContext = null;
 			itemsView.RemoveLogicalChild(View);
 		}
 
@@ -51,7 +50,7 @@ namespace Xamarin.Forms.Platform.Android
 				_selectedTemplate = template;
 			}
 
-			_itemContentView.HandleItemSizingStrategy(reportMeasure, size); 
+			_itemContentView.HandleItemSizingStrategy(reportMeasure, size);
 
 			// Set the binding context before we add it as a child of the ItemsView; otherwise, it will
 			// inherit the ItemsView's binding context

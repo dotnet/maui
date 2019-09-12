@@ -14,11 +14,11 @@
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <dependencies>
       <group targetFramework="MonoAndroid81">
-        <dependency id="Xamarin.Android.Support.v4" version="28.0.0.1"/>
-        <dependency id="Xamarin.Android.Support.Design" version="28.0.0.1"/>
-        <dependency id="Xamarin.Android.Support.v7.AppCompat" version="28.0.0.1"/>
-        <dependency id="Xamarin.Android.Support.v7.CardView" version="28.0.0.1"/>
-        <dependency id="Xamarin.Android.Support.CustomTabs" version="28.0.0.1"/>
+        <dependency id="Xamarin.Android.Support.v4" version="28.0.0.3"/>
+        <dependency id="Xamarin.Android.Support.Design" version="28.0.0.3"/>
+        <dependency id="Xamarin.Android.Support.v7.AppCompat" version="28.0.0.3"/>
+        <dependency id="Xamarin.Android.Support.v7.CardView" version="28.0.0.3"/>
+        <dependency id="Xamarin.Android.Support.CustomTabs" version="28.0.0.3"/>
       </group>
       <group targetFramework="uap10.0">
         <dependency id="NETStandard.Library" version="2.0.1"/>
