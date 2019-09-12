@@ -21,6 +21,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue3475.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6889.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6945.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7329.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7290.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7240.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5046.xaml.cs">
@@ -571,6 +572,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla39853.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MultipleClipToBounds.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6994.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7371.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_TemplateMarkup.xaml.cs">
       <DependentUpon>_TemplateMarkup.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -1045,6 +1047,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue7053.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6894.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6929.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\ApiLabel.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">
