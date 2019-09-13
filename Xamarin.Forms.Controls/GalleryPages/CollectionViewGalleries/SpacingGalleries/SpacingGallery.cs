@@ -36,7 +36,7 @@
 			};
 
 			var generator = new ItemsSourceGenerator(collectionView, initialItems: 20);
-			var spacingModifier = new SpacingModifier(collectionView, "Update Spacing");
+			var spacingModifier = new SpacingModifier(collectionView.ItemsLayout, "Update Spacing");
 
 			layout.Children.Add(generator);
 			layout.Children.Add(instructions);

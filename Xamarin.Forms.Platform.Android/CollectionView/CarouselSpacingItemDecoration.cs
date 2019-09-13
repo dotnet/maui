@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Platform.Android
 					_horizontalSpacing = gridItemsLayout.HorizontalItemSpacing;
 					_verticalSpacing = gridItemsLayout.VerticalItemSpacing;
 					break;
-				case ListItemsLayout listItemsLayout:
+				case LinearItemsLayout listItemsLayout:
 					_orientation = listItemsLayout.Orientation;
 					if (_orientation == ItemsLayoutOrientation.Horizontal)
 						_horizontalSpacing = listItemsLayout.ItemSpacing;

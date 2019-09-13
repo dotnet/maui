@@ -4,7 +4,7 @@ using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	public class ItemsViewRenderer : ViewRenderer<ItemsView, UIView>
+	public abstract class ItemsViewRenderer : ViewRenderer<ItemsView, UIView>
 	{
 		ItemsViewLayout _layout;
 		bool _disposed;
@@ -45,14 +45,6 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				ItemsViewController.UpdateEmptyView();
 			}
-			else if (changedProperty.IsOneOf(ItemsView.HeaderProperty, ItemsView.HeaderTemplateProperty))
-			{
-				ItemsViewController.UpdateHeaderView();
-			}
-			else if (changedProperty.IsOneOf(ItemsView.FooterProperty, ItemsView.FooterTemplateProperty))
-			{
-				ItemsViewController.UpdateFooterView();
-			}
 			else if (changedProperty.Is(ItemsView.ItemSizingStrategyProperty))
 			{
 				UpdateItemSizingStrategy();
@@ -71,21 +63,7 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
-		protected virtual ItemsViewLayout SelectLayout(IItemsLayout layoutSpecification, ItemSizingStrategy itemSizingStrategy)
-		{
-			if (layoutSpecification is GridItemsLayout gridItemsLayout)
-			{
-				return new GridViewLayout(gridItemsLayout, itemSizingStrategy);
-			}
-
-			if (layoutSpecification is ListItemsLayout listItemsLayout)
-			{
-				return new ListViewLayout(listItemsLayout, itemSizingStrategy);
-			}
-
-			// Fall back to vertical list
-			return new ListViewLayout(new ListItemsLayout(ItemsLayoutOrientation.Vertical), itemSizingStrategy);
-		}
+		protected abstract ItemsViewLayout SelectLayout();
 
 		protected virtual void TearDownOldElement(ItemsView oldElement)
 		{
@@ -120,9 +98,6 @@ namespace Xamarin.Forms.Platform.iOS
 			SetNativeControl(ItemsViewController.View);
 			ItemsViewController.CollectionView.BackgroundColor = UIColor.Clear;
 			ItemsViewController.UpdateEmptyView();
-			ItemsViewController.UpdateFooterView();
-			ItemsViewController.UpdateHeaderView();
-
 			UpdateHorizontalScrollBarVisibility();
 			UpdateVerticalScrollBarVisibility();
 
@@ -132,7 +107,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected virtual void UpdateLayout()
 		{
-			_layout = SelectLayout(Element.ItemsLayout, Element.ItemSizingStrategy);
+			_layout = SelectLayout();
 
 			if (ItemsViewController != null)
 			{
@@ -150,10 +125,7 @@ namespace Xamarin.Forms.Platform.iOS
 			_layout.ItemsUpdatingScrollMode = Element.ItemsUpdatingScrollMode;
 		}
 
-		protected virtual ItemsViewController CreateController(ItemsView newElement, ItemsViewLayout layout)
-		{
-			return new ItemsViewController(newElement, layout);
-		}
+		protected abstract ItemsViewController CreateController(ItemsView newElement, ItemsViewLayout layout);
 
 		NSIndexPath DetermineIndex(ScrollToRequestEventArgs args)
 		{

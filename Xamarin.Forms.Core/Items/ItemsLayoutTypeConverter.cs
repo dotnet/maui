@@ -9,12 +9,12 @@ namespace Xamarin.Forms
 		{
 			if (value == "HorizontalList")
 			{
-				return ListItemsLayout.Horizontal;
+				return LinearItemsLayout.Horizontal;
 			}
 
 			if (value == "VerticalList")
 			{
-				return ListItemsLayout.Vertical;
+				return LinearItemsLayout.Vertical;
 			}
 
 			throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(IItemsLayout)}");

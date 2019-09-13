@@ -52,8 +52,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override nfloat GetMinimumInteritemSpacingForSection(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
 		{
-			if (_itemsLayout is ListItemsLayout listItemsLayout)
-				return (nfloat)listItemsLayout.ItemSpacing;
+			if (_itemsLayout is LinearItemsLayout linearItemsLayout)
+				return (nfloat)linearItemsLayout.ItemSpacing;
 
 			return base.GetMinimumInteritemSpacingForSection(collectionView, layout, section);
 		}

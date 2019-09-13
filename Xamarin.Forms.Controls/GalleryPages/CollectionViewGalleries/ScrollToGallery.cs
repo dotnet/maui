@@ -19,9 +19,9 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 					{
 						descriptionLabel,
 						GalleryBuilder.NavButton("ScrollTo Index (Code, Horizontal List)", () =>
-							new ScrollToCodeGallery(ListItemsLayout.Horizontal), Navigation),
+							new ScrollToCodeGallery(LinearItemsLayout.Horizontal), Navigation),
 						GalleryBuilder.NavButton("ScrollTo Index (Code, Vertical List)", () =>
-							new ScrollToCodeGallery(ListItemsLayout.Vertical), Navigation),
+							new ScrollToCodeGallery(LinearItemsLayout.Vertical), Navigation),
 						GalleryBuilder.NavButton("ScrollTo Index (Code, Horizontal Grid)", () =>
 								new ScrollToCodeGallery(new GridItemsLayout(3, ItemsLayoutOrientation.Horizontal)),
 							Navigation),
@@ -30,10 +30,10 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 							Navigation),
 
 						GalleryBuilder.NavButton("ScrollTo Item (Code, Horizontal List)", () =>
-							new ScrollToCodeGallery(ListItemsLayout.Horizontal, ScrollToMode.Element,
+							new ScrollToCodeGallery(LinearItemsLayout.Horizontal, ScrollToMode.Element,
 								ExampleTemplates.ScrollToItemTemplate), Navigation),
 						GalleryBuilder.NavButton("ScrollTo Item (Code, Vertical List)", () =>
-							new ScrollToCodeGallery(ListItemsLayout.Vertical, ScrollToMode.Element,
+							new ScrollToCodeGallery(LinearItemsLayout.Vertical, ScrollToMode.Element,
 								ExampleTemplates.ScrollToItemTemplate), Navigation),
 						GalleryBuilder.NavButton("ScrollTo Item (Code, Horizontal Grid)", () =>
 							new ScrollToCodeGallery(new GridItemsLayout(3, ItemsLayoutOrientation.Horizontal),

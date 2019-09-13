@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 			CV.BindingContext = this;
-			CV.ItemsLayout = new ListItemsLayout(ItemsLayoutOrientation.Vertical); // Vertical is default
+			CV.ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical); // Vertical is default
 #endif
 		}
 

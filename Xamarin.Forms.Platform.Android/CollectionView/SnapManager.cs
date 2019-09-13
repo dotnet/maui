@@ -5,20 +5,20 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public class SnapManager : IDisposable
 	{
+		readonly IItemsLayout _itemsLayout;
 		readonly RecyclerView _recyclerView;
-		readonly ItemsView _itemsView;
 		SnapHelper _snapHelper;
 
-		public SnapManager(ItemsView itemsView, RecyclerView recyclerView)
+		public SnapManager(IItemsLayout itemsLayout, RecyclerView recyclerView)
 		{
 			Xamarin.Forms.CollectionView.VerifyCollectionViewFlagEnabled(nameof(SnapManager));
+			_itemsLayout = itemsLayout;
 			_recyclerView = recyclerView;
-			_itemsView = itemsView;
 		}
 
 		internal void UpdateSnapBehavior()
 		{
-			if (!(_itemsView.ItemsLayout is ItemsLayout itemsLayout))
+			if (!(_itemsLayout is ItemsLayout itemsLayout))
 			{
 				return;
 			}

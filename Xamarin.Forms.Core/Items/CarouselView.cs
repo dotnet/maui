@@ -154,13 +154,23 @@ namespace Xamarin.Forms
 			set => SetValue(PositionChangedCommandParameterProperty, value);
 		}
 
+		public static readonly BindableProperty ItemsLayoutProperty =
+			BindableProperty.Create(nameof(ItemsLayout), typeof(LinearItemsLayout), typeof(ItemsView),
+				LinearItemsLayout.Horizontal);
+
+		public LinearItemsLayout ItemsLayout
+		{
+			get => (LinearItemsLayout)InternalItemsLayout;
+			set => InternalItemsLayout = value;
+		}
+
 		public event EventHandler<CurrentItemChangedEventArgs> CurrentItemChanged;
 		public event EventHandler<PositionChangedEventArgs> PositionChanged;
 
 		public CarouselView()
 		{
 			CollectionView.VerifyCollectionViewFlagEnabled(constructorHint: nameof(CarouselView));
-			ItemsLayout = new ListItemsLayout(ItemsLayoutOrientation.Horizontal)
+			ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal)
 			{
 				SnapPointsType = SnapPointsType.MandatorySingle,
 				SnapPointsAlignment = SnapPointsAlignment.Center

@@ -17,9 +17,9 @@
 					{
 						descriptionLabel,
 						GalleryBuilder.NavButton("Vertical List (Code)", () => 
-							new TemplateCodeCollectionViewGallery(ListItemsLayout.Vertical), Navigation),
+							new TemplateCodeCollectionViewGallery(LinearItemsLayout.Vertical), Navigation),
 						GalleryBuilder.NavButton("Horizontal List (Code)", () => 
-							new TemplateCodeCollectionViewGallery(ListItemsLayout.Horizontal), Navigation),
+							new TemplateCodeCollectionViewGallery(LinearItemsLayout.Horizontal), Navigation),
 						GalleryBuilder.NavButton("Vertical Grid (Code)", () => 
 							new TemplateCodeCollectionViewGridGallery (), Navigation),
 						GalleryBuilder.NavButton("Horizontal Grid (Code)", () => 

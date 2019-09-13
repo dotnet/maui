@@ -5,7 +5,7 @@ using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	public class SelectableItemsViewController : ItemsViewController
+	public class SelectableItemsViewController : StructuredItemsViewController
 	{
 		SelectableItemsView SelectableItemsView => (SelectableItemsView)ItemsView;
 

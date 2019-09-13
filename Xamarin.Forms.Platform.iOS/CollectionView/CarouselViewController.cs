@@ -51,6 +51,8 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
+		protected override bool IsHorizontal => (_carouselView?.ItemsLayout as ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal;
+
 		protected override string DetermineCellReuseId()
 		{
 			if (_carouselView.ItemTemplate != null)

@@ -8,11 +8,11 @@
         x:Name="self">
     <CollectionView ItemsSource="{Binding Items}" x:Name="collectionview">
             <CollectionView.ItemsLayout>
-                <ListItemsLayout ItemSpacing="4">
+                <LinearItemsLayout ItemSpacing="4">
                     <x:Arguments>
                         <ItemsLayoutOrientation>Vertical</ItemsLayoutOrientation>
                     </x:Arguments>
-                </ListItemsLayout>
+                </LinearItemsLayout>
             </CollectionView.ItemsLayout>
             <CollectionView.ItemTemplate>
                 <DataTemplate>

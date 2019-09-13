@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ScrollMode
 			InitializeComponent();
 
 			_collectionView = createCollectionView == null ? new CollectionView() : createCollectionView();
-			_collectionView.ItemsLayout = itemsLayout ?? ListItemsLayout.Vertical;
+			_collectionView.ItemsLayout = itemsLayout ?? LinearItemsLayout.Vertical;
 
 			var scrollModeSelector = new EnumSelector<ItemsUpdatingScrollMode>(() => _collectionView.ItemsUpdatingScrollMode,
 			mode => _collectionView.ItemsUpdatingScrollMode = mode, "SelectScrollMode");

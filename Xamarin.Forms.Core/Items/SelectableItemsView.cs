@@ -4,7 +4,7 @@ using System.Windows.Input;
 
 namespace Xamarin.Forms
 {
-	public class SelectableItemsView : ItemsView
+	public class SelectableItemsView : StructuredItemsView
 	{
 		public static readonly BindableProperty SelectionModeProperty =
 			BindableProperty.Create(nameof(SelectionMode), typeof(SelectionMode), typeof(SelectableItemsView),
