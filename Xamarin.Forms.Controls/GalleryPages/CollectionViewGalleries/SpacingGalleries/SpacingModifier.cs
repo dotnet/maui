@@ -4,12 +4,12 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SpacingGal
 {
 	internal class SpacingModifier : ContentView
 	{
-		protected readonly ItemsView _cv;
 		protected readonly Entry Entry;
+		protected readonly IItemsLayout ItemsLayout;
 
-		public SpacingModifier(ItemsView cv, string buttonText)
+		public SpacingModifier(IItemsLayout itemsLayout, string buttonText)
 		{
-			_cv = cv;
+			ItemsLayout = itemsLayout;
 
 			var layout = new StackLayout
 			{
@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SpacingGal
 
 		protected virtual string LabelText => "Spacing:";
 
-		protected virtual string InitialEntryText => _cv.ItemsLayout is GridItemsLayout ? "0, 0" : "0";
+		protected virtual string InitialEntryText => ItemsLayout is GridItemsLayout ? "0, 0" : "0";
 
 		protected virtual void OnButtonClicked()
 		{
@@ -47,11 +47,11 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SpacingGal
 				return;
 			}
 
-			if (_cv.ItemsLayout is ListItemsLayout listItemsLayout)
+			if (ItemsLayout is LinearItemsLayout listItemsLayout)
 			{
 				listItemsLayout.ItemSpacing = indexes[0];
 			}
-			else if (_cv.ItemsLayout is GridItemsLayout gridItemsLayout)
+			else if (ItemsLayout is GridItemsLayout gridItemsLayout)
 			{
 				gridItemsLayout.VerticalItemSpacing = indexes[0];
 				gridItemsLayout.HorizontalItemSpacing = indexes[1];
@@ -60,7 +60,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SpacingGal
 
 		protected virtual bool ParseIndexes(out int[] indexes)
 		{
-			if (_cv.ItemsLayout is ListItemsLayout listItemsLayout)
+			if (ItemsLayout is LinearItemsLayout listItemsLayout)
 			{
 				return IndexParser.ParseIndexes(Entry.Text, 1, out indexes);
 			}

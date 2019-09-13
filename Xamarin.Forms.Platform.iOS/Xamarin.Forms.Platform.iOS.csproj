@@ -128,6 +128,8 @@
     <Compile Include="CollectionView\TemplateHelpers.cs" />
     <Compile Include="CollectionView\UICollectionViewDelegator.cs" />
     <Compile Include="CollectionView\VerticalCell.cs" />
+    <Compile Include="CollectionView\StructuredItemsViewController.cs" />
+    <Compile Include="CollectionView\StructuredItemsViewRenderer.cs" />
     <Compile Include="CollectionView\VerticalDefaultCell.cs" />
     <Compile Include="CollectionView\GridViewLayout.cs" />
     <Compile Include="CollectionView\ItemsViewLayout.cs" />

@@ -21,7 +21,7 @@
 
 			IItemsLayout itemsLayout = grid
 				? new GridItemsLayout(3, orientation)
-				: new ListItemsLayout(orientation) as IItemsLayout;
+				: new LinearItemsLayout(orientation) as IItemsLayout;
 
 			var itemTemplate = ExampleTemplates.PhotoTemplate();
 

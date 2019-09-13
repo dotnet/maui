@@ -39,16 +39,16 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void SetUpNewElement(ItemsView newElement)
 		{
+			Carousel = newElement as CarouselView;
+
 			base.SetUpNewElement(newElement);
 
 			if (newElement == null)
 			{
-				Carousel = null;
 				return;
 			}
 
-			Carousel = newElement as CarouselView;
-			_layout = ItemsView.ItemsLayout;
+			_layout = Carousel.ItemsLayout;
 
 			UpdateIsSwipeEnabled();
 			UpdateInitialPosition();
@@ -68,7 +68,7 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateIsSwipeEnabled();
 			else if (changedProperty.Is(CarouselView.IsBounceEnabledProperty))
 				UpdateIsBounceEnabled();
-			else if (changedProperty.Is(ListItemsLayout.ItemSpacingProperty))
+			else if (changedProperty.Is(LinearItemsLayout.ItemSpacingProperty))
 				UpdateItemSpacing();
 		}
 
@@ -131,11 +131,17 @@ namespace Xamarin.Forms.Platform.Android
 			base.UpdateItemSpacing();
 		}
 
+
+		protected override IItemsLayout GetItemsLayout()
+		{
+			return Carousel.ItemsLayout;
+		}
+
 		int GetItemWidth()
 		{
 			var itemWidth = Width;
 
-			if (_layout is ListItemsLayout listItemsLayout && listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+			if (_layout is LinearItemsLayout listItemsLayout && listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
 			{
 				var numberOfVisibleItems = Carousel.NumberOfSideItems * 2 + 1;
 				itemWidth = (int)(Width - Carousel.PeekAreaInsets.Left - Carousel.PeekAreaInsets.Right - Context?.ToPixels(listItemsLayout.ItemSpacing)) / numberOfVisibleItems;
@@ -148,7 +154,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			var itemHeight = Height;
 
-			if (_layout is ListItemsLayout listItemsLayout && listItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+			if (_layout is LinearItemsLayout listItemsLayout && listItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
 			{
 				var numberOfVisibleItems = Carousel.NumberOfSideItems * 2 + 1;
 				itemHeight = (int)(Height - Carousel.PeekAreaInsets.Top - Carousel.PeekAreaInsets.Bottom - Context?.ToPixels(listItemsLayout.ItemSpacing)) / numberOfVisibleItems;

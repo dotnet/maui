@@ -5,7 +5,7 @@ using Xamarin.Forms.Platform.Tizen.Native;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
-	public class ItemsViewRenderer : ViewRenderer<ItemsView, Native.CollectionView>
+	public class ItemsViewRenderer : ViewRenderer<StructuredItemsView, Native.CollectionView>
 	{
 		INotifyCollectionChanged _observableSource;
 
@@ -13,13 +13,13 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			RegisterPropertyHandler(ItemsView.ItemsSourceProperty, UpdateItemsSource);
 			RegisterPropertyHandler(ItemsView.ItemTemplateProperty, UpdateAdaptor);
-			RegisterPropertyHandler(ItemsView.ItemsLayoutProperty, UpdateItemsLayout);
+			RegisterPropertyHandler(StructuredItemsView.ItemsLayoutProperty, UpdateItemsLayout);
 			RegisterPropertyHandler(ItemsView.ItemSizingStrategyProperty, UpdateSizingStrategy);
 			RegisterPropertyHandler(SelectableItemsView.SelectedItemProperty, UpdateSelectedItem);
 			RegisterPropertyHandler(SelectableItemsView.SelectionModeProperty, UpdateSelectionMode);
 		}
 
-		protected override void OnElementChanged(ElementChangedEventArgs<ItemsView> e)
+		protected override void OnElementChanged(ElementChangedEventArgs<StructuredItemsView> e)
 		{
 			if (Control == null)
 			{
@@ -178,7 +178,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			switch (layout)
 			{
-				case ListItemsLayout listItemsLayout:
+				case LinearItemsLayout listItemsLayout:
 					return new LinearLayoutManager(listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal, sizing);
 				case GridItemsLayout gridItemsLayout:
 					return new GridLayoutManager(gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal, gridItemsLayout.Span, sizing);

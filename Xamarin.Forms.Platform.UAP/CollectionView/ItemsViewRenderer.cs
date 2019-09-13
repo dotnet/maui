@@ -17,20 +17,16 @@ using UWPDataTemplate = Windows.UI.Xaml.DataTemplate;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class ItemsViewRenderer : ViewRenderer<ItemsView, ListViewBase>
+	public abstract class ItemsViewRenderer : ViewRenderer<ItemsView, ListViewBase>
 	{
-		IItemsLayout _layout;
 		CollectionViewSource _collectionViewSource;
 
 		protected ListViewBase ListViewBase { get; private set; }
 		UwpScrollBarVisibility? _defaultHorizontalScrollVisibility;
 		UwpScrollBarVisibility? _defaultVerticalScrollVisibility;
 
-		UWPDataTemplate ViewTemplate => (UWPDataTemplate)UWPApp.Current.Resources["View"];
-		UWPDataTemplate ItemsViewTemplate => (UWPDataTemplate)UWPApp.Current.Resources["ItemsViewDefaultTemplate"];
-
-		View _currentHeader;
-		View _currentFooter;
+		protected UWPDataTemplate ViewTemplate => (UWPDataTemplate)UWPApp.Current.Resources["View"];
+		protected UWPDataTemplate ItemsViewTemplate => (UWPDataTemplate)UWPApp.Current.Resources["ItemsViewDefaultTemplate"];
 
 		protected ItemsControl ItemsControl { get; private set; }
 
@@ -53,7 +49,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				UpdateItemTemplate();
 			}
-			else if(changedProperty.Is(ItemsView.HorizontalScrollBarVisibilityProperty))
+			else if (changedProperty.Is(ItemsView.HorizontalScrollBarVisibilityProperty))
 			{
 				UpdateHorizontalScrollBarVisibility();
 			}
@@ -61,30 +57,11 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				UpdateVerticalScrollBarVisibility();
 			}
-			else if (changedProperty.IsOneOf(ItemsView.HeaderProperty, ItemsView.HeaderTemplateProperty))
-			{
-				UpdateHeader();
-			}
-			else if (changedProperty.IsOneOf(ItemsView.FooterProperty, ItemsView.FooterTemplateProperty))
-			{
-				UpdateFooter();
-			}
 		}
 
-		protected virtual ListViewBase SelectLayout(IItemsLayout layoutSpecification)
-		{
-			switch (layoutSpecification)
-			{
-				case GridItemsLayout gridItemsLayout:
-					return CreateGridView(gridItemsLayout);
-				case ListItemsLayout listItemsLayout
-					when listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal:
-					return CreateHorizontalListView();
-			}
-
-			// Default to a plain old vertical ListView
-			return new Windows.UI.Xaml.Controls.ListView();
-		}
+		protected abstract ListViewBase SelectListViewBase();
+		protected abstract void HandleLayoutPropertyChange(PropertyChangedEventArgs property);
+		protected abstract IItemsLayout Layout { get; }
 
 		protected virtual void UpdateItemsSource()
 		{
@@ -145,153 +122,9 @@ namespace Xamarin.Forms.Platform.UWP
 			UpdateItemsSource();
 		}
 
-		protected virtual void UpdateHeader()
-		{
-			if (ListViewBase == null)
-			{
-				return;
-			}
-
-			if (_currentHeader != null)
-			{
-				Element.RemoveLogicalChild(_currentHeader);
-				_currentHeader = null;
-			}
-
-			var header = Element.Header;
-
-			switch (header)
-			{
-				case null:
-					ListViewBase.Header = null;
-					break;
-
-				case string text:
-					ListViewBase.HeaderTemplate = null;
-					ListViewBase.Header = new TextBlock { Text = text };
-					break;
-
-				case View view:
-					ListViewBase.HeaderTemplate = ViewTemplate;
-					_currentHeader = view;
-					Element.AddLogicalChild(_currentHeader);
-					ListViewBase.Header = view;
-					break;
-
-				default:
-					var headerTemplate = Element.HeaderTemplate;
-					if (headerTemplate != null)
-					{
-						ListViewBase.HeaderTemplate = ItemsViewTemplate;
-						ListViewBase.Header = new ItemTemplateContext(headerTemplate, header, Element);
-					}
-					else
-					{
-						ListViewBase.HeaderTemplate = null;
-						ListViewBase.Header = null;
-					}
-					break;
-			}
-		}
-
-		protected virtual void UpdateFooter()
-		{
-			if (ListViewBase == null)
-			{
-				return;
-			}
-
-			if (_currentFooter != null)
-			{
-				Element.RemoveLogicalChild(_currentFooter);
-				_currentFooter = null;
-			}
-
-			var footer = Element.Footer;
-
-			switch (footer)
-			{
-				case null:
-					ListViewBase.Footer = null;
-					break;
-
-				case string text:
-					ListViewBase.FooterTemplate = null;
-					ListViewBase.Footer = new TextBlock { Text = text };
-					break;
-
-				case View view:
-					ListViewBase.FooterTemplate = ViewTemplate;
-					_currentFooter = view;
-					Element.AddLogicalChild(_currentFooter);
-					ListViewBase.Footer = view;
-					break;
-
-				default:
-					var footerTemplate = Element.FooterTemplate;
-					if (footerTemplate != null)
-					{
-						ListViewBase.FooterTemplate = ItemsViewTemplate;
-						ListViewBase.Footer = new ItemTemplateContext(footerTemplate, footer, Element);
-					}
-					else
-					{
-						ListViewBase.FooterTemplate = null;
-						ListViewBase.Footer = null;
-					}
-					break;
-			}
-		}
-
-		static ListViewBase CreateGridView(GridItemsLayout gridItemsLayout)
-		{
-			var gridView = new FormsGridView();
-
-			if (gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
-			{
-				gridView.UseHorizontalItemsPanel();
-
-				// TODO hartez 2018/06/06 12:13:38 Should this logic just be built into FormsGridView?	
-				ScrollViewer.SetHorizontalScrollMode(gridView, ScrollMode.Auto);
-				ScrollViewer.SetHorizontalScrollBarVisibility(gridView,
-					Windows.UI.Xaml.Controls.ScrollBarVisibility.Auto);
-			}
-			else
-			{
-				gridView.UseVerticalalItemsPanel();
-			}
-
-			gridView.MaximumRowsOrColumns = gridItemsLayout.Span;
-
-			return gridView;
-		}
-
-		static ListViewBase CreateHorizontalListView()
-		{
-			// TODO hartez 2018/06/05 16:18:57 Is there any performance benefit to caching the ItemsPanelTemplate lookup?	
-			// TODO hartez 2018/05/29 15:38:04 Make sure the ItemsViewStyles.xaml xbf gets into the nuspec	
-			var horizontalListView = new Windows.UI.Xaml.Controls.ListView()
-			{
-				ItemsPanel =
-					(ItemsPanelTemplate)Windows.UI.Xaml.Application.Current.Resources["HorizontalListItemsPanel"]
-			};
-
-			ScrollViewer.SetHorizontalScrollMode(horizontalListView, ScrollMode.Auto);
-			ScrollViewer.SetHorizontalScrollBarVisibility(horizontalListView,
-				Windows.UI.Xaml.Controls.ScrollBarVisibility.Auto);
-
-			return horizontalListView;
-		}
-
 		void LayoutPropertyChanged(object sender, PropertyChangedEventArgs property)
 		{
-			if (property.Is(GridItemsLayout.SpanProperty))
-			{
-				if (ListViewBase is FormsGridView formsGridView)
-				{
-					formsGridView.MaximumRowsOrColumns = ((GridItemsLayout)_layout).Span;
-				}
-			}
+			HandleLayoutPropertyChange(property);
 		}
 
 		protected virtual void SetUpNewElement(ItemsView newElement)
@@ -303,19 +136,16 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (ListViewBase == null)
 			{
-				ListViewBase = SelectLayout(newElement.ItemsLayout);
+				ListViewBase = SelectListViewBase();
 				ListViewBase.IsSynchronizedWithCurrentItem = false;
 
-				_layout = newElement.ItemsLayout;
-				_layout.PropertyChanged += LayoutPropertyChanged;
+				Layout.PropertyChanged += LayoutPropertyChanged;
 
 				SetNativeControl(ListViewBase);
 			}
 
 			UpdateItemTemplate();
 			UpdateItemsSource();
-			UpdateHeader();
-			UpdateFooter();
 			UpdateVerticalScrollBarVisibility();
 			UpdateHorizontalScrollBarVisibility();
 
@@ -330,11 +160,10 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 			}
 
-			if (_layout != null)
+			if (Layout != null)
 			{
 				// Stop tracking the old layout
-				_layout.PropertyChanged -= LayoutPropertyChanged;
-				_layout = null;
+				Layout.PropertyChanged -= LayoutPropertyChanged;
 			}
 
 			// Stop listening for ScrollTo requests

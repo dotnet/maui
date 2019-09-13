@@ -62,9 +62,9 @@ namespace Xamarin.Forms.Controls
 			return items;
 		}
 
-		internal ListItemsLayout GetCarouselLayout(ItemsLayoutOrientation orientation)
+		internal LinearItemsLayout GetCarouselLayout(ItemsLayoutOrientation orientation)
 		{
-			return new ListItemsLayout(orientation)
+			return new LinearItemsLayout(orientation)
 			{
 				SnapPointsType = SnapPointsType.MandatorySingle,
 				SnapPointsAlignment = SnapPointsAlignment.Center

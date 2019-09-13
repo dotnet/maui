@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected virtual void HandlePropertyChanged(PropertyChangedEventArgs propertyChanged)
 		{
-			if (propertyChanged.IsOneOf(ListItemsLayout.ItemSpacingProperty,
+			if (propertyChanged.IsOneOf(LinearItemsLayout.ItemSpacingProperty,
 				GridItemsLayout.HorizontalItemSpacingProperty, GridItemsLayout.VerticalItemSpacingProperty))
 			{
 				UpdateItemSpacing();
@@ -111,7 +111,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public virtual nfloat GetMinimumLineSpacingForSection(UICollectionView collectionView,
 			UICollectionViewLayout layout, nint section)
 		{
-			if (_itemsLayout is ListItemsLayout listViewLayout)
+			if (_itemsLayout is LinearItemsLayout listViewLayout)
 			{
 				return (nfloat)listViewLayout.ItemSpacing;
 			}

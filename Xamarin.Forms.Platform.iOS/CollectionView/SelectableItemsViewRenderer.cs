@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	public class SelectableItemsViewRenderer : ItemsViewRenderer
+	public class SelectableItemsViewRenderer : StructuredItemsViewRenderer
 	{
 		SelectableItemsView SelectableItemsView => (SelectableItemsView)Element;
 		SelectableItemsViewController SelectableItemsViewController => (SelectableItemsViewController)ItemsViewController;

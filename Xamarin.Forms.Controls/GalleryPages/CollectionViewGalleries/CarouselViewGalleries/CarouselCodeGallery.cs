@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 				}
 			};
 			var itemsLayout =
-			new ListItemsLayout(orientation)
+			new LinearItemsLayout(orientation)
 			{
 				SnapPointsType = SnapPointsType.MandatorySingle,
 				SnapPointsAlignment = SnapPointsAlignment.Center
@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			var positionControl = new PositionControl(carouselView, nItems);
 			layout.Children.Add(positionControl);
 
-			var spacingModifier = new SpacingModifier(carouselView, "Update Spacing");
+			var spacingModifier = new SpacingModifier(carouselView.ItemsLayout, "Update Spacing");
 
 			layout.Children.Add(spacingModifier);
 

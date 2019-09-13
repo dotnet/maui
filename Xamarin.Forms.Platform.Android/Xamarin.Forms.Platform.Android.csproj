@@ -102,6 +102,8 @@
     <Compile Include="CollectionView\SpacingItemDecoration.cs" />
     <Compile Include="CollectionView\StartSingleSnapHelper.cs" />
     <Compile Include="CollectionView\StartSnapHelper.cs" />
+    <Compile Include="CollectionView\StructuredItemsViewAdapter.cs" />
+    <Compile Include="CollectionView\StructuredItemsViewRenderer.cs" />
     <Compile Include="CollectionView\TemplatedItemViewHolder.cs" />
     <Compile Include="CollectionView\TextViewHolder.cs" />
     <Compile Include="CollectionView\ItemViewType.cs" />

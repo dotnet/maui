@@ -33,15 +33,9 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateIsBounceEnabled();
 		}
 
-		protected override ItemsViewLayout SelectLayout(IItemsLayout layoutSpecification, ItemSizingStrategy itemSizingStrategy)
+		protected override ItemsViewLayout SelectLayout()
 		{
-			if (layoutSpecification is ListItemsLayout listItemsLayout)
-			{
-				return new CarouselViewLayout(listItemsLayout, itemSizingStrategy, CarouselView);
-			}
-
-			// Fall back to horizontal carousel
-			return new CarouselViewLayout(new ListItemsLayout(ItemsLayoutOrientation.Horizontal), itemSizingStrategy, CarouselView);
+			return new CarouselViewLayout(CarouselView.ItemsLayout, CarouselView.ItemSizingStrategy, CarouselView);
 		}
 
 		protected override void SetUpNewElement(ItemsView newElement)
