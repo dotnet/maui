@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		event EventHandler _controlChanging;
 		event EventHandler _controlChanged;
 
-		bool IsElementOrControlEmpty => Element == null || Control == null;
+		private protected bool IsElementOrControlEmpty => Element == null || Control == null;
 
 		protected virtual TNativeView CreateNativeControl()
 		{

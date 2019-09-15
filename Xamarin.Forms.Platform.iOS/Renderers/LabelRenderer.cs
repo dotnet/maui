@@ -238,6 +238,9 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void UpdateTextDecorations()
 		{
+			if (IsElementOrControlEmpty)
+				return;
+
 			if (Element?.TextType != TextType.Text)
 				return;
 
@@ -377,6 +380,8 @@ namespace Xamarin.Forms.Platform.MacOS
 		void UpdateCharacterSpacing()
 		{
 #if __MOBILE__
+			if (IsElementOrControlEmpty)
+				return;
 
 			if (Element?.TextType != TextType.Text)
 				return;
@@ -392,7 +397,10 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void UpdateText()
 		{
-			switch (Element.TextType)
+            if (IsElementOrControlEmpty)
+                return;
+
+            switch (Element.TextType)
 			{
 				case TextType.Html:
 					UpdateTextHtml();
