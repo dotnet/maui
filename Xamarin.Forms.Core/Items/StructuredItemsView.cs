@@ -38,9 +38,7 @@
 			set => SetValue(FooterTemplateProperty, value);
 		}
 
-		public static readonly BindableProperty ItemsLayoutProperty =
-			BindableProperty.Create(nameof(ItemsLayout), typeof(IItemsLayout), typeof(ItemsView),
-				LinearItemsLayout.Vertical);
+		public static readonly BindableProperty ItemsLayoutProperty = InternalItemsLayoutProperty;
 
 		public IItemsLayout ItemsLayout
 		{

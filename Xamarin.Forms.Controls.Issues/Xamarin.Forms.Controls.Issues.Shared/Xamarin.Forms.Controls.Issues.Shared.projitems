@@ -36,6 +36,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue7049.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7061.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7111.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7519.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7519Xaml.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)RefreshViewTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7338.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ScrollToGroup.cs" />
@@ -1355,6 +1359,9 @@
     <Compile Update="$(MSBuildThisFileDirectory)Issue6254.xaml.cs">
       <DependentUpon>Issue6254.xaml</DependentUpon>
     </Compile>
+    <Compile Update="C:\Users\hartez\Documents\Xamarin\Xamarin.Forms\Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Issue7519Xaml.xaml.cs">
+      <DependentUpon>Issue7519Xaml.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue1455.xaml">
@@ -1378,6 +1385,12 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Github5623.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7519Xaml.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </EmbeddedResource>
   </ItemGroup>
 </Project>

@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="Xamarin.Forms.Controls.Issues.Issue7519Xaml">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <DataTemplate x:Key="_7519Template">
+                <Frame HeightRequest="200" WidthRequest="200" BackgroundColor="ForestGreen">
+                    <Label Text="{Binding Name}" VerticalOptions="Center" HorizontalOptions="Center" TextColor="White" />
+                </Frame>
+            </DataTemplate>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+        <ContentPage.Content>
+        <StackLayout>
+
+            <Label Text="The CollectionView and CarouselView below should scroll horizontally and have 20 points of space between their items. If not, this test has failed."/>
+
+            <CollectionView ItemsSource="{Binding Items}" ItemTemplate="{StaticResource _7519Template}" Margin="20">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout ItemSpacing="20" Orientation="Horizontal"/>
+                </CollectionView.ItemsLayout>
+            </CollectionView>
+
+            <CarouselView ItemsSource="{Binding Items}" ItemTemplate="{StaticResource _7519Template}" Margin="20">
+                <CarouselView.ItemsLayout>
+                    <LinearItemsLayout ItemSpacing="20" Orientation="Horizontal" />
+                </CarouselView.ItemsLayout>
+            </CarouselView>
+            
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>
