@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 
 			// Default to a plain old vertical ListView
-			return new Windows.UI.Xaml.Controls.ListView();
+			return new FormsListView();
 		}
 
 		protected virtual void UpdateHeader()
@@ -180,7 +180,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 			else
 			{
-				gridView.UseVerticalalItemsPanel();
+				gridView.UseVerticalItemsPanel();
 			}
 
 			gridView.MaximumRowsOrColumns = gridItemsLayout.Span;
