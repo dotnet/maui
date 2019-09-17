@@ -244,35 +244,35 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void TestFadeTo ()
+		public async Task TestFadeTo ()
 		{
 			var view = new View {IsPlatformEnabled = true};
 			Ticker.Default = new BlockingTicker ();
 
-			view.FadeTo (0.1);
+			await view.FadeTo (0.1);
 
 			Assert.True (Math.Abs (0.1 - view.Opacity) < 0.001);
 		}
 
 		[Test]
-		public void TestTranslateTo ()
+		public async Task TestTranslateTo ()
 		{
 			var view = new View {IsPlatformEnabled = true};
 			Ticker.Default = new BlockingTicker ();
 
-			view.TranslateTo (100, 50);
+			await view.TranslateTo (100, 50);
 
 			Assert.AreEqual (100, view.TranslationX);
 			Assert.AreEqual (50, view.TranslationY);
 		}
 
 		[Test]
-		public void ScaleTo ()
+		public async Task ScaleTo ()
 		{
 			var view = new View {IsPlatformEnabled = true};
 			Ticker.Default = new BlockingTicker ();
 
-			view.ScaleTo (2);
+			await view.ScaleTo (2);
 
 			Assert.AreEqual (2, view.Scale);
 		}
@@ -291,56 +291,56 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void TestRotateTo ()
+		public async Task TestRotateTo ()
 		{
 			var view = new View {IsPlatformEnabled = true};
 			Ticker.Default = new BlockingTicker ();
 
-			view.RotateTo (25);
+			await view.RotateTo (25);
 
 			Assert.That (view.Rotation, Is.EqualTo (25).Within (0.001));
 		}
 
 		[Test]
-		public void TestRotateYTo ()
+		public async Task TestRotateYTo ()
 		{
 			var view = new View {IsPlatformEnabled = true};
 			Ticker.Default = new BlockingTicker ();
 
-			view.RotateYTo (25);
+			await view.RotateYTo (25);
 
 			Assert.That (view.RotationY, Is.EqualTo (25).Within (0.001));
 		}
 
 		[Test]
-		public void TestRotateXTo ()
+		public async Task TestRotateXTo ()
 		{
 			var view = new View {IsPlatformEnabled = true};
 			Ticker.Default = new BlockingTicker ();
 
-			view.RotateXTo (25);
+			await view.RotateXTo (25);
 
 			Assert.That (view.RotationX, Is.EqualTo (25).Within (0.001));
 		}
 
 		[Test]
-		public void TestRelRotateTo ()
+		public async Task TestRelRotateTo ()
 		{
 			var view = new View {Rotation = 30, IsPlatformEnabled = true};
 			Ticker.Default = new BlockingTicker ();
 
-			view.RelRotateTo (20);
+			await view.RelRotateTo (20);
 
 			Assert.That (view.Rotation, Is.EqualTo (50).Within (0.001));
 		}
 
 		[Test]
-		public void TestRelScaleTo ()
+		public async Task TestRelScaleTo ()
 		{
 			var view = new View {Scale = 1, IsPlatformEnabled = true};
 			Ticker.Default = new BlockingTicker ();
 
-			view.RelScaleTo (1);
+			await view.RelScaleTo (1);
 
 			Assert.That (view.Scale, Is.EqualTo (2).Within (0.001));
 		}
