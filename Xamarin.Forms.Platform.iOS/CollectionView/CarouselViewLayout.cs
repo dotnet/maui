@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 using CoreGraphics;
 using UIKit;
 
@@ -8,8 +7,8 @@ namespace Xamarin.Forms.Platform.iOS
 	internal class CarouselViewLayout : ItemsViewLayout
 	{
 		readonly CarouselView _carouselView;
-		readonly bool _addInsets = true;
 		readonly ItemsLayout _itemsLayout;
+
 		public CarouselViewLayout(ItemsLayout itemsLayout, ItemSizingStrategy itemSizingStrategy, CarouselView carouselView) : base(itemsLayout, itemSizingStrategy)
 		{
 			_carouselView = carouselView;
@@ -61,29 +60,26 @@ namespace Xamarin.Forms.Platform.iOS
 		public override UIEdgeInsets GetInsetForSection(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
 		{
 			var insets = base.GetInsetForSection(collectionView, layout, section);
-			if (!_addInsets)
-			{
-				return insets;
-			}
 			var left = insets.Left + (float)_carouselView.PeekAreaInsets.Left;
 			var right = insets.Right + (float)_carouselView.PeekAreaInsets.Right;
 			var top = insets.Top + (float)_carouselView.PeekAreaInsets.Top;
 			var bottom = insets.Bottom + (float)_carouselView.PeekAreaInsets.Bottom;
 
-			//We give some insets so the user can be able to scroll to the first and last item
+			// We give some insets so the user can scroll to the first and last item
 			if (_carouselView.NumberOfSideItems > 0)
 			{
 				if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
 				{
 					left += ItemSize.Width;
 					right += ItemSize.Width;
+
 					return new UIEdgeInsets(insets.Top, left, insets.Bottom, right);
 				}
+
 				return new UIEdgeInsets(ItemSize.Height, insets.Left, ItemSize.Height, insets.Right);
 			}
 
 			return new UIEdgeInsets(top, left, bottom, right);
-
 		}
 	}
 }
