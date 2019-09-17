@@ -15,7 +15,8 @@
 		<ResourceDictionary Source="TabbedPageStyle.xaml" />
 		<ResourceDictionary Source="SliderStyle.xaml" />
 		<ResourceDictionary Source="CollectionView/ItemsViewStyles.xaml" />
-	</ResourceDictionary.MergedDictionaries>
+	    <ResourceDictionary Source="Shell/ShellStyles.xaml" />
+    </ResourceDictionary.MergedDictionaries>
 	
 	<uwp:CaseConverter x:Key="LowerConverter" ConvertToUpper="False" />
 	<uwp:CaseConverter x:Key="UpperConverter" ConvertToUpper="True" />

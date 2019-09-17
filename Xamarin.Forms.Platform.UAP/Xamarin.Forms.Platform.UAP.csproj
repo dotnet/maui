@@ -93,6 +93,12 @@
     <Compile Include="PlatformEffect.cs" />
     <Compile Include="PropertyChangedEventArgsExtensions.cs" />
     <Compile Include="RefreshViewRenderer.cs" />
+    <Compile Include="Shell\ShellHeaderRenderer.cs" />
+    <Compile Include="Shell\ShellItemRenderer.cs" />
+    <Compile Include="Shell\ShellFlyoutTemplateSelector.cs" />
+    <Compile Include="Shell\ShellRenderer.cs" />
+    <Compile Include="Shell\ShellSectionRenderer.cs" />
+    <Compile Include="Shell\ShellToolbarItemRenderer.cs" />
     <Compile Include="StepperControl.xaml.cs">
       <DependentUpon>StepperControl.xaml</DependentUpon>
     </Compile>
@@ -238,6 +244,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Resources.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Shell\ShellStyles.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
