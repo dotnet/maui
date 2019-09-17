@@ -12,11 +12,11 @@ namespace Xamarin.Forms.Platform.UWP
 
 		protected override IItemsLayout Layout { get => _structuredItemsView.ItemsLayout; }
 
-		protected override void SetUpNewElement(ItemsView newElement)
+		protected override void SetUpNewElement(ItemsView newElement, bool setUpProperties)
 		{
 			_structuredItemsView = newElement as StructuredItemsView;
 
-			base.SetUpNewElement(newElement);
+			base.SetUpNewElement(newElement, setUpProperties);
 
 			if (newElement == null)
 			{

@@ -40,6 +40,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AccessibilityExtensions.cs" />
+    <Compile Include="CollectionView\CarouselViewRenderer.cs" />
     <Compile Include="CollectionView\FormsListView.cs" />
     <Compile Include="CollectionView\IEmptyView.cs" />
     <Compile Include="CollectionView\ItemsViewRenderer.cs" />

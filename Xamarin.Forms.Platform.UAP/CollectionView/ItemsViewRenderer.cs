@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			base.OnElementChanged(args);
 			TearDownOldElement(args.OldElement);
-			SetUpNewElement(args.NewElement);
+			SetUpNewElement(args.NewElement, true);
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs changedProperty)
@@ -152,7 +152,7 @@ namespace Xamarin.Forms.Platform.UWP
 			HandleLayoutPropertyChange(property);
 		}
 
-		protected virtual void SetUpNewElement(ItemsView newElement)
+		protected virtual void SetUpNewElement(ItemsView newElement, bool setUpProperties)
 		{
 			if (newElement == null)
 			{
@@ -169,11 +169,14 @@ namespace Xamarin.Forms.Platform.UWP
 				SetNativeControl(ListViewBase);
 			}
 
-			UpdateItemTemplate();
-			UpdateItemsSource();
-			UpdateVerticalScrollBarVisibility();
-			UpdateHorizontalScrollBarVisibility();
-			UpdateEmptyView();
+			if (setUpProperties)
+			{
+				UpdateItemTemplate();
+				UpdateItemsSource();
+				UpdateVerticalScrollBarVisibility();
+				UpdateHorizontalScrollBarVisibility();
+				UpdateEmptyView();
+			}
 
 			// Listen for ScrollTo requests
 			newElement.ScrollToRequested += ScrollToRequested;
