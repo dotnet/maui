@@ -1,10 +1,13 @@
-﻿namespace Xamarin.Forms
+﻿using System.ComponentModel;
+
+namespace Xamarin.Forms
 {
 	public static class VisualMarker
 	{
 		static bool _isMaterialRegistered = false;
 		static bool _warnedAboutMaterial = false;
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IVisual MatchParent { get; } = new MatchParentVisual();
 		public static IVisual Default { get; } = new DefaultVisual();
 		public static IVisual Material { get; } = new MaterialVisual();
