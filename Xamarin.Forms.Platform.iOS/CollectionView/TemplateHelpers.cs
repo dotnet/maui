@@ -13,8 +13,11 @@ namespace Xamarin.Forms.Platform.iOS
 				throw new ArgumentNullException(nameof(view));
 			}
 
+			Platform.GetRenderer(view)?.DisposeRendererAndChildren();
 			var renderer = Platform.CreateRenderer(view);
 			Platform.SetRenderer(view, renderer);
+
+			renderer.NativeView.Bounds = view.Bounds.ToRectangleF();
 
 			return renderer;
 		}

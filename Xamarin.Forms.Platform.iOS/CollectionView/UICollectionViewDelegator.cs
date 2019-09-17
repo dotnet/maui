@@ -46,6 +46,10 @@ namespace Xamarin.Forms.Platform.iOS
 			if (indexPathsForVisibleItems.Count == 0)
 				return;
 
+			var contentInset = scrollView.ContentInset;
+			var contentOffsetX = scrollView.ContentOffset.X + contentInset.Left;
+			var contentOffsetY = scrollView.ContentOffset.Y + contentInset.Top;
+
 			var firstVisibleItemIndex = (int)indexPathsForVisibleItems.First().Item;
 			var centerPoint = new CGPoint(ItemsViewController.CollectionView.Center.X + ItemsViewController.CollectionView.ContentOffset.X, ItemsViewController.CollectionView.Center.Y + ItemsViewController.CollectionView.ContentOffset.Y);
 			var centerIndexPath = ItemsViewController.CollectionView.IndexPathForItemAtPoint(centerPoint);
@@ -53,10 +57,10 @@ namespace Xamarin.Forms.Platform.iOS
 			var lastVisibleItemIndex = (int)indexPathsForVisibleItems.Last().Item;
 			var itemsViewScrolledEventArgs = new ItemsViewScrolledEventArgs
 			{
-				HorizontalDelta = scrollView.ContentOffset.X - _previousHorizontalOffset,
-				VerticalDelta = scrollView.ContentOffset.Y - _previousVerticalOffset,
-				HorizontalOffset = scrollView.ContentOffset.X,
-				VerticalOffset = scrollView.ContentOffset.Y,
+				HorizontalDelta = contentOffsetX - _previousHorizontalOffset,
+				VerticalDelta = contentOffsetY - _previousVerticalOffset,
+				HorizontalOffset = contentOffsetX,
+				VerticalOffset = contentOffsetY,
 				FirstVisibleItemIndex = firstVisibleItemIndex,
 				CenterItemIndex = centerItemIndex,
 				LastVisibleItemIndex = lastVisibleItemIndex
@@ -64,8 +68,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 			ItemsViewController.ItemsView.SendScrolled(itemsViewScrolledEventArgs);
 
-			_previousHorizontalOffset = (float)scrollView.ContentOffset.X;
-			_previousVerticalOffset = (float)scrollView.ContentOffset.Y;
+			_previousHorizontalOffset = (float)contentOffsetX;
+			_previousVerticalOffset = (float)contentOffsetY;
 
 			switch (ItemsViewController.ItemsView.RemainingItemsThreshold)
 			{

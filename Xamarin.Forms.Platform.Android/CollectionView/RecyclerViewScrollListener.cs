@@ -42,12 +42,13 @@ namespace Xamarin.Forms.Platform.Android.CollectionView
 				centerItemIndex = CalculateCenterItemIndex(firstVisibleItemIndex, lastVisibleItemIndex, linearLayoutManager);
 			}
 
+			var context = recyclerView.Context;
 			var itemsViewScrolledEventArgs = new ItemsViewScrolledEventArgs
 			{
-				HorizontalDelta = dx,
-				VerticalDelta = dy,
-				HorizontalOffset = _horizontalOffset,
-				VerticalOffset = _verticalOffset,
+				HorizontalDelta = context.FromPixels(dx),
+				VerticalDelta = context.FromPixels(dy),
+				HorizontalOffset = context.FromPixels(_horizontalOffset),
+				VerticalOffset = context.FromPixels(_verticalOffset),
 				FirstVisibleItemIndex = firstVisibleItemIndex,
 				CenterItemIndex = centerItemIndex,
 				LastVisibleItemIndex = lastVisibleItemIndex
