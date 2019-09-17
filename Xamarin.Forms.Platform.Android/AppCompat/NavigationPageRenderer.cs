@@ -982,7 +982,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					var prevPage = Element.Peek(1);
 					_defaultNavigationContentDescription = bar.SetNavigationContentDescription(prevPage, _defaultNavigationContentDescription);
 				}
-				else if (_masterDetailPage != null)
+				else if (toggle != null && _masterDetailPage != null)
 				{
 					toggle.DrawerIndicatorEnabled = _masterDetailPage.ShouldShowToolbarButton();
 					toggle.SyncState();
