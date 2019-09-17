@@ -113,7 +113,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.False(invoked, "Action invoked early.");
 
 			async Task MethodThatThrows() => await task;
-			Assert.Throws<ApplicationException>(async () => await MethodThatThrows());
+			Assert.ThrowsAsync<ApplicationException>(MethodThatThrows);
 			Assert.True(invoked, "Action not invoked.");
 		}
 
