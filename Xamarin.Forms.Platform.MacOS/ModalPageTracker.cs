@@ -122,9 +122,14 @@ namespace Xamarin.Forms.Platform.MacOS
 			NSViewControllerTransitionOptions option = animated
 							? NSViewControllerTransitionOptions.SlideDown
 							: NSViewControllerTransitionOptions.None;
-
 			var task = _renderer.HandleAsyncAnimation(controller, toViewController, option,
-				() => modal.DisposeModalAndChildRenderers() , modal);
+				() =>
+				{
+					modal.DisposeModalAndChildRenderers();
+					var removingIndex = Array.IndexOf(_renderer.ChildViewControllers, controller);
+					if(removingIndex >= 0)
+						_renderer.RemoveChildViewController(removingIndex);
+				}, modal);
 			return task;
 		}
 	}
