@@ -73,6 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ItemsLayoutDesignTypeConverter.cs" />
+    <Compile Include="KeyboardDesignTypeConverter.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- Ensure that all images in the 'mac' and 'win' subdirectories are included as embedded resources -->
