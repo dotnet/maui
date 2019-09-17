@@ -24,10 +24,12 @@ namespace Xamarin.Forms.Platform.Android
 			if (property.Is(Xamarin.Forms.StructuredItemsView.HeaderProperty))
 			{
 				UpdateHasHeader();
+				NotifyDataSetChanged();
 			}
 			else if (property.Is(Xamarin.Forms.StructuredItemsView.FooterProperty))
 			{
 				UpdateHasFooter();
+				NotifyDataSetChanged();
 			}
 		}
 

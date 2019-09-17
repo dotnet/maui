@@ -156,12 +156,12 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty ItemsLayoutProperty =
 			BindableProperty.Create(nameof(ItemsLayout), typeof(LinearItemsLayout), typeof(ItemsView),
-				LinearItemsLayout.Horizontal);
+				LinearItemsLayout.CarouselDefault);
 
 		public LinearItemsLayout ItemsLayout
 		{
-			get => (LinearItemsLayout)InternalItemsLayout;
-			set => InternalItemsLayout = value;
+			get => (LinearItemsLayout)GetValue(ItemsLayoutProperty);
+			set => SetValue(ItemsLayoutProperty, value);
 		}
 
 		public event EventHandler<CurrentItemChangedEventArgs> CurrentItemChanged;

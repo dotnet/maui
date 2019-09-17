@@ -43,6 +43,14 @@ namespace Xamarin.Forms.Core.Design
 				"ItemsLayout",
 			   new System.ComponentModel.TypeConverterAttribute(typeof(ItemsLayoutDesignTypeConverter))));
 
+			AddCallback(typeof(InputView), builder => builder.AddCustomAttributes(
+			   nameof(Keyboard),
+			   new System.ComponentModel.TypeConverterAttribute(typeof(KeyboardDesignTypeConverter))));
+
+			AddCallback(typeof(EntryCell), builder => builder.AddCustomAttributes(
+			   nameof(Keyboard),
+			   new System.ComponentModel.TypeConverterAttribute(typeof(KeyboardDesignTypeConverter))));
+
 			// TODO: OnPlatform/OnIdiom
 			// These two should be proper markup extensions, to follow WPF syntax for those.
 			// That would allow us to turn on XAML validation, which otherwise fails.

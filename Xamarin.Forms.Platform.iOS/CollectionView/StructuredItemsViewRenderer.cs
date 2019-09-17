@@ -57,5 +57,11 @@ namespace Xamarin.Forms.Platform.iOS
 			// Fall back to vertical list
 			return new ListViewLayout(new LinearItemsLayout(ItemsLayoutOrientation.Vertical), itemSizingStrategy);
 		}
+
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+			StructuredItemsViewController.UpdateLayoutMeasurements();
+		}
 	}
 }

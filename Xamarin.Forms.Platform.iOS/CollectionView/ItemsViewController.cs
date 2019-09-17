@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Drawing;
+using System.Threading.Tasks;
+using CoreGraphics;
 using Foundation;
 using UIKit;
 using Xamarin.Forms.Internals;
@@ -253,8 +256,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected void UpdateSubview(object view, DataTemplate viewTemplate, ref UIView uiView, ref VisualElement formsElement)
 		{
-			if (uiView != null)
-				CollectionView.Subviews.Remove(uiView);
+			uiView?.RemoveFromSuperview();
 
 			if (formsElement != null)
 			{
@@ -265,7 +267,9 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateView(view, viewTemplate, ref uiView, ref formsElement);
 
 			if (uiView != null)
+			{
 				CollectionView.AddSubview(uiView);
+			}
 
 			if (formsElement != null)
 				ItemsView.AddLogicalChild(formsElement);
@@ -286,16 +290,16 @@ namespace Xamarin.Forms.Platform.iOS
 			if (IsHorizontal)
 			{
 				var request = formsElement.Measure(double.PositiveInfinity, CollectionView.Frame.Height, MeasureFlags.IncludeMargins);
-				Xamarin.Forms.Layout.LayoutChildIntoBoundingRegion(formsElement, new Rectangle(-request.Request.Width, 0, request.Request.Width, CollectionView.Frame.Height));
+				Xamarin.Forms.Layout.LayoutChildIntoBoundingRegion(formsElement, new Rectangle(0, 0, request.Request.Width, CollectionView.Frame.Height));
 			}
 			else
 			{
 				var request = formsElement.Measure(CollectionView.Frame.Width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-				Xamarin.Forms.Layout.LayoutChildIntoBoundingRegion(formsElement, new Rectangle(0, -request.Request.Height, CollectionView.Frame.Width, request.Request.Height));
+				Xamarin.Forms.Layout.LayoutChildIntoBoundingRegion(formsElement, new Rectangle(0, 0, CollectionView.Frame.Width, request.Request.Height));
 			}
 		}
 
-		protected void OnFormsElementMeasureInvalidated(object sender, EventArgs e)
+		void OnFormsElementMeasureInvalidated(object sender, EventArgs e)
 		{
 			if (sender is VisualElement formsElement)
 			{
@@ -306,14 +310,16 @@ namespace Xamarin.Forms.Platform.iOS
 		protected virtual void HandleFormsElementMeasureInvalidated(VisualElement formsElement)
 		{
 			RemeasureLayout(formsElement);
-		}
+        }
 
 		internal void UpdateView(object view, DataTemplate viewTemplate, ref UIView uiView, ref VisualElement formsElement)
 		{
 			// Is view set on the ItemsView?
 			if (view == null)
 			{
-				// Clear the cached Forms and native views
+				if (formsElement != null)
+					Platform.GetRenderer(formsElement)?.DisposeRendererAndChildren();
+
 				uiView = null;
 				formsElement = null;
 			}

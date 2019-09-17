@@ -20,7 +20,14 @@ namespace Xamarin.Forms.Controls.Issues
 				RefreshControlColor = Color.Cyan
 			};
 			_listView.Refreshing += HandleListViewRefreshing;
-			Content = _listView;
+			Content = new StackLayout()
+			{
+				Children =
+				{
+					new Label() {Text = "If the refresh circle is Cyan this test has passed"},
+					_listView
+				}
+			};
 		}
 
 		protected override void OnAppearing()

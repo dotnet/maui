@@ -9,7 +9,6 @@ namespace Xamarin.Forms.Platform.Android
 	public class CarouselViewRenderer : ItemsViewRenderer<ItemsView, ItemsViewAdapter<ItemsView, IItemsViewSource>, IItemsViewSource>
 	{
 		protected CarouselView Carousel;
-		IItemsLayout _layout;
 		ItemDecoration _itemDecoration;
 		bool _isSwipeEnabled;
 		bool _isUpdatingPositionFromForms;
@@ -30,8 +29,6 @@ namespace Xamarin.Forms.Platform.Android
 					_itemDecoration.Dispose();
 					_itemDecoration = null;
 				}
-
-				_layout = null;
 			}
 
 			base.Dispose(disposing);
@@ -47,8 +44,6 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				return;
 			}
-
-			_layout = Carousel.ItemsLayout;
 
 			UpdateIsSwipeEnabled();
 			UpdateInitialPosition();
@@ -107,7 +102,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void UpdateItemSpacing()
 		{
-			if (_layout == null)
+			if (ItemsLayout == null)
 			{
 				return;
 			}
@@ -117,7 +112,7 @@ namespace Xamarin.Forms.Platform.Android
 				RemoveItemDecoration(_itemDecoration);
 			}
 
-			_itemDecoration = CreateSpacingDecoration(_layout);
+			_itemDecoration = CreateSpacingDecoration(ItemsLayout);
 			AddItemDecoration(_itemDecoration);
 
 			var adapter = GetAdapter();
@@ -131,7 +126,6 @@ namespace Xamarin.Forms.Platform.Android
 			base.UpdateItemSpacing();
 		}
 
-
 		protected override IItemsLayout GetItemsLayout()
 		{
 			return Carousel.ItemsLayout;
@@ -141,7 +135,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			var itemWidth = Width;
 
-			if (_layout is LinearItemsLayout listItemsLayout && listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+			if (ItemsLayout is LinearItemsLayout listItemsLayout && listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
 			{
 				var numberOfVisibleItems = Carousel.NumberOfSideItems * 2 + 1;
 				itemWidth = (int)(Width - Carousel.PeekAreaInsets.Left - Carousel.PeekAreaInsets.Right - Context?.ToPixels(listItemsLayout.ItemSpacing)) / numberOfVisibleItems;
@@ -154,7 +148,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			var itemHeight = Height;
 
-			if (_layout is LinearItemsLayout listItemsLayout && listItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+			if (ItemsLayout is LinearItemsLayout listItemsLayout && listItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
 			{
 				var numberOfVisibleItems = Carousel.NumberOfSideItems * 2 + 1;
 				itemHeight = (int)(Height - Carousel.PeekAreaInsets.Top - Carousel.PeekAreaInsets.Bottom - Context?.ToPixels(listItemsLayout.ItemSpacing)) / numberOfVisibleItems;

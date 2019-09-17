@@ -14,6 +14,7 @@ using Xamarin.Forms.Platform.UAP;
 using UwpScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility;
 using UWPApp = Windows.UI.Xaml.Application;
 using UWPDataTemplate = Windows.UI.Xaml.DataTemplate;
+using System.Collections.Specialized;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -28,13 +29,16 @@ namespace Xamarin.Forms.Platform.UWP
 		protected UWPDataTemplate ViewTemplate => (UWPDataTemplate)UWPApp.Current.Resources["View"];
 		protected UWPDataTemplate ItemsViewTemplate => (UWPDataTemplate)UWPApp.Current.Resources["ItemsViewDefaultTemplate"];
 
+		FrameworkElement _emptyView;
+		View _formsEmptyView;
+
 		protected ItemsControl ItemsControl { get; private set; }
 
 		protected override void OnElementChanged(ElementChangedEventArgs<ItemsView> args)
 		{
 			base.OnElementChanged(args);
 			TearDownOldElement(args.OldElement);
-			SetUpNewElement(args.NewElement);
+			SetUpNewElement(args.NewElement, true);
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs changedProperty)
@@ -57,6 +61,10 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				UpdateVerticalScrollBarVisibility();
 			}
+			else if (changedProperty.IsOneOf(ItemsView.EmptyViewProperty, ItemsView.EmptyViewTemplateProperty))
+			{
+				UpdateEmptyView();
+			}
 		}
 
 		protected abstract ListViewBase SelectListViewBase();
@@ -76,6 +84,11 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (itemsSource == null)
 			{
+				if (_collectionViewSource?.Source is INotifyCollectionChanged incc)
+				{
+					incc.CollectionChanged -= ItemsChanged;
+				}
+
 				_collectionViewSource = null;
 				return;
 			}
@@ -97,6 +110,11 @@ namespace Xamarin.Forms.Platform.UWP
 					Source = TemplatedItemSourceFactory.Create(itemsSource, itemTemplate, Element),
 					IsSourceGrouped = false
 				};
+
+				if (_collectionViewSource?.Source is INotifyCollectionChanged incc)
+				{
+					incc.CollectionChanged += ItemsChanged;
+				}
 			}
 			else
 			{
@@ -108,6 +126,13 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 			
 			ListViewBase.ItemsSource = _collectionViewSource.View;
+
+			UpdateEmptyViewVisibility();
+		}
+
+		void ItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			UpdateEmptyViewVisibility();
 		}
 
 		protected virtual void UpdateItemTemplate()
@@ -127,7 +152,7 @@ namespace Xamarin.Forms.Platform.UWP
 			HandleLayoutPropertyChange(property);
 		}
 
-		protected virtual void SetUpNewElement(ItemsView newElement)
+		protected virtual void SetUpNewElement(ItemsView newElement, bool setUpProperties)
 		{
 			if (newElement == null)
 			{
@@ -144,10 +169,14 @@ namespace Xamarin.Forms.Platform.UWP
 				SetNativeControl(ListViewBase);
 			}
 
-			UpdateItemTemplate();
-			UpdateItemsSource();
-			UpdateVerticalScrollBarVisibility();
-			UpdateHorizontalScrollBarVisibility();
+			if (setUpProperties)
+			{
+				UpdateItemTemplate();
+				UpdateItemsSource();
+				UpdateVerticalScrollBarVisibility();
+				UpdateHorizontalScrollBarVisibility();
+				UpdateEmptyView();
+			}
 
 			// Listen for ScrollTo requests
 			newElement.ScrollToRequested += ScrollToRequested;
@@ -355,6 +384,76 @@ namespace Xamarin.Forms.Platform.UWP
 			else
 			{
 				await JumpTo(list, targetItem, args.ScrollToPosition);
+			}
+		}
+
+		protected virtual void UpdateEmptyView()
+		{
+			if (Element == null || ListViewBase == null)
+			{
+				return;
+			}
+
+			var emptyView = Element.EmptyView;
+
+			if (emptyView == null)
+			{
+				return;
+			}
+
+			switch (emptyView)
+			{
+				case string text:
+					_emptyView = new TextBlock { Text = text };
+					break;
+				case View view:
+					_emptyView = RealizeEmptyView(view);
+					break;
+				default:
+					_emptyView = RealizeEmptyViewTemplate(emptyView, Element.EmptyViewTemplate);
+					break;
+			}
+
+			(ListViewBase as IEmptyView)?.SetEmptyView(_emptyView);
+
+			UpdateEmptyViewVisibility();
+		}
+
+		FrameworkElement RealizeEmptyViewTemplate(object bindingContext, DataTemplate emptyViewTemplate)
+		{
+			if (emptyViewTemplate == null)
+			{
+				return new TextBlock { Text = bindingContext.ToString() };
+			}
+
+			var template = emptyViewTemplate.SelectDataTemplate(bindingContext, null);
+			var view = template.CreateContent() as View;
+
+			view.BindingContext = bindingContext;
+			return RealizeEmptyView(view);
+		}
+
+		FrameworkElement RealizeEmptyView(View view)
+		{
+			_formsEmptyView = view;
+			return view.GetOrCreateRenderer().ContainerElement;
+		}
+
+		protected virtual void UpdateEmptyViewVisibility()
+		{
+			if (_emptyView != null && ListViewBase is IEmptyView emptyView)
+			{
+				emptyView.EmptyViewVisibility = (_collectionViewSource?.View?.Count ?? 0) == 0
+					? Visibility.Visible
+					: Visibility.Collapsed;
+
+				if (emptyView.EmptyViewVisibility == Visibility.Visible)
+				{
+					if (ActualWidth >= 0 && ActualHeight >= 0)
+					{
+						_formsEmptyView?.Layout(new Rectangle(0, 0, ActualWidth, ActualHeight));
+					}
+				}
 			}
 		}
 	}

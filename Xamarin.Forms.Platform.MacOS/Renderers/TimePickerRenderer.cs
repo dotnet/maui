@@ -98,7 +98,15 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (Control == null || Element == null)
 				return;
 
-			Control.Font = Element.ToNSFont();
+			var newFont = Element.ToNSFont();
+
+			// The font needs to have the default font size to avoid clipping
+			var originalFontSize = (NSNumber)Control.Font.FontDescriptor.FontAttributes[NSFont.SizeAttribute];
+			// Recreate the font with the default size
+			newFont = NSFont.FromDescription(newFont.FontDescriptor, originalFontSize.FloatValue);
+
+			// Apply the font
+			Control.Font = newFont;
 		}
 
 		void UpdateTime()

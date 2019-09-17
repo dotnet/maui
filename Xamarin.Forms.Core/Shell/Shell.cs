@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
@@ -551,11 +553,11 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty FlyoutHeaderProperty =
 			BindableProperty.Create(nameof(FlyoutHeader), typeof(object), typeof(Shell), null, BindingMode.OneTime,
-				propertyChanged: OnFlyoutHeaderChanged);
+				propertyChanging: OnFlyoutHeaderChanging);
 
 		public static readonly BindableProperty FlyoutHeaderTemplateProperty =
 			BindableProperty.Create(nameof(FlyoutHeaderTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime,
-				propertyChanged: OnFlyoutHeaderTemplateChanged);
+				propertyChanging: OnFlyoutHeaderTemplateChanging);
 
 		public static readonly BindableProperty FlyoutIsPresentedProperty =
 			BindableProperty.Create(nameof(FlyoutIsPresented), typeof(bool), typeof(Shell), false, BindingMode.TwoWay);
@@ -909,13 +911,13 @@ namespace Xamarin.Forms
 			}
 		}
 
-		static void OnFlyoutHeaderChanged(BindableObject bindable, object oldValue, object newValue)
+		static void OnFlyoutHeaderChanging(BindableObject bindable, object oldValue, object newValue)
 		{
 			var shell = (Shell)bindable;
 			shell.OnFlyoutHeaderChanged(oldValue, newValue);
 		}
 
-		static void OnFlyoutHeaderTemplateChanged(BindableObject bindable, object oldValue, object newValue)
+		static void OnFlyoutHeaderTemplateChanging(BindableObject bindable, object oldValue, object newValue)
 		{
 			var shell = (Shell)bindable;
 			shell.OnFlyoutHeaderTemplateChanged((DataTemplate)oldValue, (DataTemplate)newValue);
@@ -1098,6 +1100,16 @@ namespace Xamarin.Forms
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, LogicalChildren);
 			if (FlyoutHeaderView != null)
 				PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { FlyoutHeaderView });
+		}
+
+
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void VerifyShellUWPFlagEnabled(
+			string constructorHint = null,
+			[CallerMemberName] string memberName = "")
+		{
+			ExperimentalFlags.VerifyFlagEnabled(nameof(Shell), ExperimentalFlags.ShellUWPExperimental);
 		}
 
 		class NavigationImpl : NavigationProxy

@@ -12,6 +12,7 @@ using Xamarin.Forms.Platform.UWP;
 [assembly: ExportRenderer(typeof(Label), typeof(LabelRenderer))]
 [assembly: ExportRenderer(typeof(Button), typeof(ButtonRenderer))]
 [assembly: ExportRenderer(typeof(ListView), typeof(ListViewRenderer))]
+[assembly: ExportRenderer(typeof(CarouselView), typeof(CarouselViewRenderer))]
 [assembly: ExportRenderer(typeof(CollectionView), typeof(CollectionViewRenderer))]
 [assembly: ExportRenderer(typeof(ScrollView), typeof(ScrollViewRenderer))]
 [assembly: ExportRenderer(typeof(ProgressBar), typeof(ProgressBarRenderer))]
@@ -30,6 +31,7 @@ using Xamarin.Forms.Platform.UWP;
 [assembly: ExportRenderer(typeof(TableView), typeof(TableViewRenderer))]
 [assembly: ExportRenderer(typeof(NativeViewWrapper), typeof(NativeViewWrapperRenderer))]
 [assembly: ExportRenderer(typeof(RefreshView), typeof(RefreshViewRenderer))]
+[assembly: ExportRenderer(typeof(Shell), typeof(ShellRenderer))]
 
 //ImageSources
 
