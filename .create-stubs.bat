@@ -150,6 +150,9 @@ mkdir Xamarin.Forms.Platform.UAP\bin\%CONFIG%\Microsoft.UI.Xaml
 mkdir Xamarin.Forms.Platform.UAP\bin\%CONFIG%\Microsoft.UI.Xaml\DensityStyles
 echo foo > Xamarin.Forms.Platform.UAP\bin\%CONFIG%\Microsoft.UI.Xaml\DensityStyles\Compact.xbf
 
+mkdir Xamarin.Forms.Platform.UAP\bin\%CONFIG%\Shell
+echo foo > Xamarin.Forms.Platform.UAP\bin\%CONFIG%\Shell\ShellStyles.xbf
+
 mkdir Xamarin.Forms.Platform.UAP\bin\%CONFIG%\CollectionView\
 echo foo > Xamarin.Forms.Platform.UAP\bin\%CONFIG%\CollectionView\ItemsViewStyles.xbf
 
