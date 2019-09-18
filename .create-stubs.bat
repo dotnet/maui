@@ -146,6 +146,10 @@ echo foo > Xamarin.Forms.Platform.UAP\bin\%CONFIG%\FormsEmbeddedPageWrapper.xbf
 echo foo > Xamarin.Forms.Platform.UAP\bin\%CONFIG%\StepperControl.xbf
 echo foo > Xamarin.Forms.Platform.UAP\bin\%CONFIG%\FormsCheckBoxStyle.xbf
 
+mkdir Xamarin.Forms.Platform.UAP\bin\%CONFIG%\Microsoft.UI.Xaml
+mkdir Xamarin.Forms.Platform.UAP\bin\%CONFIG%\Microsoft.UI.Xaml\DensityStyles
+echo foo > Xamarin.Forms.Platform.UAP\bin\%CONFIG%\Microsoft.UI.Xaml\DensityStyles\Compact.xbf
+
 mkdir Xamarin.Forms.Platform.UAP\bin\%CONFIG%\CollectionView\
 echo foo > Xamarin.Forms.Platform.UAP\bin\%CONFIG%\CollectionView\ItemsViewStyles.xbf
 
