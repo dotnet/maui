@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Xaml.Diagnostics
 		static ConditionalWeakTable<object, XamlSourceInfo> sourceInfos = new ConditionalWeakTable<object, XamlSourceInfo>();
 		internal static void RegisterSourceInfo(object target, Uri uri, int lineNumber, int linePosition)
 		{
-			if (DebuggerHelper.DebuggerIsAttached)
+			if (DebuggerHelper.DebuggerIsAttached && !sourceInfos.TryGetValue(target, out _))
 				sourceInfos.Add(target, new XamlSourceInfo(uri, lineNumber, linePosition));
 		}
 
