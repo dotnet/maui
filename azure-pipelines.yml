@@ -5,8 +5,8 @@ variables:
   NugetPackageVersion: '$(CurrentSemanticVersion)'
   MONO_VERSION: 5_18_1
   XCODE_VERSION: 10.2.1
-  IOS_SIM_NAME: 'iPhone X'
-  IOS_SIM_RUNTIME: 'com.apple.CoreSimulator.SimRuntime.iOS-12-2'
+  IOS_SIM_NAME: 'iPhone Xs'
+  IOS_SIM_RUNTIME: 'com.apple.CoreSimulator.SimRuntime.iOS-12-4'
   ANDROID_EMU_TARGET: 'system-images;android-26;google_apis;x86'
   ANDROID_EMU_DEVICE: 'Nexus 5X'
   RunPoliCheck: 'false'
