@@ -13,10 +13,7 @@ namespace Xamarin.Forms
 		readonly SpanCollection _spans = new SpanCollection();
 		internal event NotifyCollectionChangedEventHandler SpansCollectionChanged;
 
-		public FormattedString()
-		{
-			_spans.CollectionChanged += OnCollectionChanged;
-		}
+		public FormattedString() => _spans.CollectionChanged += OnCollectionChanged;
 
 		protected override void OnBindingContextChanged()
 		{
@@ -25,25 +22,13 @@ namespace Xamarin.Forms
 				SetInheritedBindingContext(Spans[i], BindingContext);			
 		}
 
-		public IList<Span> Spans
-		{
-			get { return _spans; }
-		}
-				
-		public static explicit operator string(FormattedString formatted)
-		{
-			return formatted.ToString();
-		}
+		public IList<Span> Spans => _spans;
 
-		public static implicit operator FormattedString(string text)
-		{
-			return new FormattedString { Spans = { new Span { Text = text } } };
-		}
+		public static explicit operator string(FormattedString formatted) => formatted.ToString();
 
-		public override string ToString()
-		{
-			return string.Concat(Spans.Select(span => span.Text));
-		}
+		public static implicit operator FormattedString(string text) => new FormattedString { Spans = { new Span { Text = text } } };
+
+		public override string ToString() => string.Concat(Spans.Select(span => span.Text));
 
 		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
@@ -81,37 +66,18 @@ namespace Xamarin.Forms
 			SpansCollectionChanged?.Invoke(sender, e);
 		}
 
-		void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			OnPropertyChanged(nameof(Spans));
-		}
+		void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e) => OnPropertyChanged(nameof(Spans));
 
-		void OnItemPropertyChanging(object sender, PropertyChangingEventArgs e)
-		{
-			OnPropertyChanging(nameof(Spans));
-		}
+		void OnItemPropertyChanging(object sender, PropertyChangingEventArgs e) => OnPropertyChanging(nameof(Spans));
 
 		class SpanCollection : ObservableCollection<Span>
 		{
-			protected override void InsertItem(int index, Span item)
-			{
-				if (item == null)
-					throw new ArgumentNullException("item");
-
-				base.InsertItem(index, item);
-			}
-
-			protected override void SetItem(int index, Span item)
-			{
-				if (item == null)
-					throw new ArgumentNullException("item");
-
-				base.SetItem(index, item);
-			}
+			protected override void InsertItem(int index, Span item) => base.InsertItem(index, item ?? throw new ArgumentNullException(nameof(item)));
+			protected override void SetItem(int index, Span item) => base.SetItem(index, item ?? throw new ArgumentNullException(nameof(item)));
 
 			protected override void ClearItems()
 			{
-				List<Span> removed = new List<Span>(this);
+				var removed = new List<Span>(this);
 				base.ClearItems();
 				base.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removed));
 			}
