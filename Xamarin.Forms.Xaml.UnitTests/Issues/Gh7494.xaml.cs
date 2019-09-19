@@ -10,10 +10,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public partial class Gh7494 : ContentPage
 	{
-		public Gh7494()
-		{
-			InitializeComponent();
-		}
+		public Gh7494() => InitializeComponent();
 		public Gh7494(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
