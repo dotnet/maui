@@ -119,6 +119,13 @@ namespace Xamarin.Forms.Platform.UWP
 			var formsTemplate = FormsDataTemplate;
 			var container = FormsContainer;
 
+			var itemsView = container as ItemsView;
+
+			if (itemsView != null && _renderer?.Element != null)
+			{
+				itemsView.RemoveLogicalChild(_renderer.Element);
+			}
+
 			if (dataContext == null || formsTemplate == null || container == null)
 			{
 				return;
@@ -131,7 +138,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			Content = _renderer.ContainerElement;
 
-			// TODO ezhart Add View as a logical child of the ItemsView
+			itemsView?.AddLogicalChild(view);
 			
 			BindableObject.SetInheritedBindingContext(_renderer.Element, dataContext);
 		}
