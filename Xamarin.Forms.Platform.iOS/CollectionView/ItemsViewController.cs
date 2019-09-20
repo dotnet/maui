@@ -112,6 +112,14 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				UpdateEmptyViewVisibility(_isEmpty);
 			}
+
+			if (wasEmpty && !_isEmpty)
+			{
+				// If we're going from empty to having stuff, it's possible that we've never actually measured
+				// a prototype cell and our itemSize or estimatedItemSize are wrong/unset
+				// So trigger a constraint update; if we need a measurement, that will make it happen
+				ItemsViewLayout.ConstrainTo(CollectionView.Bounds.Size);
+			}
 		}
 
 		public override void ViewDidLoad()
