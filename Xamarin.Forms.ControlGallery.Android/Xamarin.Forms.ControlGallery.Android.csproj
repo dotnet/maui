@@ -23,6 +23,7 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <AndroidEnableMultiDex>true</AndroidEnableMultiDex>
+    <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DefineConstants>HAVE_OPENTK</DefineConstants>
