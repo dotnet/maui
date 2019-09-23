@@ -11,7 +11,6 @@ namespace Xamarin.Forms.Platform.Android
 		protected CarouselView Carousel;
 		ItemDecoration _itemDecoration;
 		bool _isSwipeEnabled;
-		bool _isUpdatingPositionFromForms;
 		int _oldPosition;
 		int _initialPosition;
 
@@ -41,10 +40,8 @@ namespace Xamarin.Forms.Platform.Android
 			base.SetUpNewElement(newElement);
 
 			if (newElement == null)
-			{
 				return;
-			}
-
+			
 			UpdateIsSwipeEnabled();
 			UpdateInitialPosition();
 			UpdateItemSpacing();
@@ -71,7 +68,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (!_isSwipeEnabled)
 				return false;
-			
+
 			return base.OnInterceptTouchEvent(ev);
 		}
 
@@ -86,13 +83,6 @@ namespace Xamarin.Forms.Platform.Android
 				else
 					Carousel.SetIsDragging(false);
 			}
-		}
-
-		public override void OnScrolled(int dx, int dy)
-		{
-			base.OnScrolled(dx, dy);
-
-			UpdatePositionFromScroll();
 		}
 
 		protected override ItemDecoration CreateSpacingDecoration(IItemsLayout itemsLayout)
@@ -162,19 +152,6 @@ namespace Xamarin.Forms.Platform.Android
 			_isSwipeEnabled = Carousel.IsSwipeEnabled;
 		}
 
-		void UpdatePosition(int position)
-		{
-			if (position == -1 || _isUpdatingPositionFromForms)
-				return;
-
-			var item = ItemsViewAdapter?.ItemsSource.GetItem(position);
-
-			if (item == null)
-				throw new InvalidOperationException("Visible item not found");
-
-			Carousel.SetCurrentItem(item);
-		}
-
 		void UpdateIsBounceEnabled()
 		{
 			OverScrollMode = Carousel.IsBounceEnabled ? OverScrollMode.Always : OverScrollMode.Never;
@@ -201,37 +178,11 @@ namespace Xamarin.Forms.Platform.Android
 			oldItemViewAdapter?.Dispose();
 		}
 
-		void UpdatePositionFromScroll()
-		{
-			var snapHelper = GetSnapManager()?.GetCurrentSnapHelper();
-
-			if (snapHelper == null)
-				return;
-
-			var layoutManager = GetLayoutManager() as LayoutManager;
-
-			var snapView = snapHelper.FindSnapView(layoutManager);
-
-			if (snapView != null)
-			{
-				int middleCenterPosition = layoutManager.GetPosition(snapView);
-	
-				if (_oldPosition != middleCenterPosition)
-				{
-					_oldPosition = middleCenterPosition;
-					UpdatePosition(middleCenterPosition);
-				}
-			}
-		}
-
 		void UpdateInitialPosition()
 		{
-			_isUpdatingPositionFromForms = true;
-			// Goto to the Correct Position
 			_initialPosition = Carousel.Position;
 			_oldPosition = _initialPosition;
 			Carousel.ScrollTo(_initialPosition, position: Xamarin.Forms.ScrollToPosition.Center, animate: false);
-			_isUpdatingPositionFromForms = false;
 		}
 	}
 }

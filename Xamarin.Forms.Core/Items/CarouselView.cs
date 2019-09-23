@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Input;
 using Xamarin.Forms.Platform;
+using System.Linq;
 
 namespace Xamarin.Forms
 {
@@ -186,6 +187,13 @@ namespace Xamarin.Forms
 		{
 		}
 
+		protected override void OnScrolled(ItemsViewScrolledEventArgs e)
+		{
+			CurrentItem = GetItemForPosition(this, e.CenterItemIndex);
+
+			base.OnScrolled(e);
+		}
+
 		static void PositionPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var carousel = (CarouselView)bindable;
@@ -211,6 +219,14 @@ namespace Xamarin.Forms
 				carousel.ScrollTo(args.CurrentPosition, position: ScrollToPosition.Center, animate: carousel.IsScrollAnimated);
 
 			carousel.OnPositionChanged(args);
+		}
+
+		static object GetItemForPosition(CarouselView carouselView, int index)
+		{
+			if (!(carouselView?.ItemsSource is IList itemSource))
+				return null;
+
+			return itemSource[index];
 		}
 
 		static int GetPositionForItem(CarouselView carouselView, object item)
