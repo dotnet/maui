@@ -22,14 +22,47 @@ namespace Xamarin.Forms.Platform.Android
 		readonly static Lazy<ImageCache> _lruCache = new Lazy<ImageCache>(() => new ImageCache());
 		static ImageCache GetCache() => _lruCache.Value;
 
+		static Assembly _assembly;
+		static Type FindType(string name, string altName)
+		{
+			return _assembly.GetTypes().FirstOrDefault(x => x.Name == name || x.Name == altName);
+		}
+		static Type _drawableClass;
+		static Type _resourceClass;
+		static Type _styleClass;
+		static Type _layoutClass;
 
-		public static Type DrawableClass { get; set; }
+		public static Type DrawableClass { 
+			get { 
+				if (_drawableClass == null)
+					_drawableClass = FindType("Drawable", "Resource_Drawable");
+				return _drawableClass;
+			}
+		}
 
-		public static Type ResourceClass { get; set; }
+		public static Type ResourceClass { 
+			get { 
+				if (_resourceClass == null)
+					_resourceClass = FindType("Id", "Resource_Id");
+				return _resourceClass;
+			}
+		}
 
-		public static Type StyleClass { get; set; }
+		public static Type StyleClass { 
+			get { 
+				if (_styleClass == null)
+					_styleClass = FindType("Style", "Resource_Style");
+				return _styleClass;
+			}
+		}
 
-		public static Type LayoutClass { get; set; }
+		public static Type LayoutClass { 
+			get { 
+				if (_layoutClass == null)
+					_layoutClass = FindType("Layout", "Resource_Layout");
+				return _layoutClass;
+			}
+		}
 
 		internal static async Task<Drawable> GetFormsDrawableAsync(this Context context, ImageSource imageSource, CancellationToken cancellationToken = default(CancellationToken))
 		{
@@ -332,10 +365,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public static void Init(Assembly masterAssembly)
 		{
-			DrawableClass = masterAssembly.GetTypes().FirstOrDefault(x => x.Name == "Drawable" || x.Name == "Resource_Drawable");
-			ResourceClass = masterAssembly.GetTypes().FirstOrDefault(x => x.Name == "Id" || x.Name == "Resource_Id");
-			StyleClass = masterAssembly.GetTypes().FirstOrDefault(x => x.Name == "Style" || x.Name == "Resource_Style");
-			LayoutClass = masterAssembly.GetTypes().FirstOrDefault(x => x.Name == "Layout" || x.Name == "Resource_Layout");
+			_assembly = masterAssembly;
 		}
 
 		static int IdFromTitle(string title, Type type)
