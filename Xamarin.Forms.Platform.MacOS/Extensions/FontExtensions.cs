@@ -38,7 +38,10 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			//if we didn't found a Font or Descriptor for the FontFamily use the default one 
 			if (font == null)
+			{
 				font = defaultFont;
+				descriptor = defaultFont.FontDescriptor;
+			}
 		
 			if (descriptor == null)
 				descriptor = defaultFont.FontDescriptor;
@@ -47,13 +50,13 @@ namespace Xamarin.Forms.Platform.MacOS
 			{
 				var traits = (NSFontSymbolicTraits)0;
 				if (bold)
-					traits = traits | NSFontSymbolicTraits.BoldTrait;
+					traits |= NSFontSymbolicTraits.BoldTrait;
 				if (italic)
-					traits = traits | NSFontSymbolicTraits.ItalicTrait;
+					traits |= NSFontSymbolicTraits.ItalicTrait;
 
-				var fontDescriptoWithTraits = descriptor.FontDescriptorWithSymbolicTraits(traits);
+				var fontDescriptorWithTraits = descriptor.FontDescriptorWithSymbolicTraits(traits);
 
-				font = NSFont.FromDescription(fontDescriptoWithTraits, size);
+				font = NSFont.FromDescription(fontDescriptorWithTraits, size);
 			}
 
 			return font.ScreenFontWithRenderingMode(NSFontRenderingMode.AntialiasedIntegerAdvancements);
