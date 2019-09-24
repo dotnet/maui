@@ -130,40 +130,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual(label1.Text, stack2.StyleId);
 			Assert.AreEqual(label1.BindingContext, "foobar");
 		}
-
-		[Test]
-		public void RelativeSourceTemplatedParentBinding()
-		{
-			var cc1 = new CustomControl
-			{
-				CustomText = "RelativeSource Binding 1!",
-				ControlTemplate = new ControlTemplate(typeof(MyCustomControlTemplate))				
-			};
-			var cc2 = new CustomControl
-			{
-				CustomText = "RelativeSource Binding 2!",
-				ControlTemplate = new ControlTemplate(typeof(MyCustomControlTemplate))
-			};
-
-			var realLabel = cc1.LogicalChildren[0].LogicalChildren[0] as Label;			
-			Assert.AreEqual(cc1.CustomText, realLabel.Text);
-			Assert.AreEqual(realLabel.TemplatedParent, cc1);
-
-			// Test reparenting
-			int templatedParentChangeCount = 0;
-			realLabel.PropertyChanged += (sender, e) =>
-			{
-				if (e.PropertyName == nameof(Element.TemplatedParent))
-					templatedParentChangeCount++;
-			};
-			((StackLayout)realLabel.Parent).Children.Remove(realLabel);
-			Assert.IsNull(realLabel.TemplatedParent);
-			Assert.IsNull(realLabel.Text);
-			((StackLayout)cc2.LogicalChildren[0]).Children.Add(realLabel);
-			Assert.AreEqual(realLabel.TemplatedParent, cc2);
-			Assert.AreEqual(cc2.CustomText, realLabel.Text);
-			Assert.AreEqual(2, templatedParentChangeCount);
-		}
 	}
 
 	public class CustomControl : ContentView

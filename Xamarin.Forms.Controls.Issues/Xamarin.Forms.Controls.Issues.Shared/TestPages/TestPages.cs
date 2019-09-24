@@ -60,7 +60,7 @@ namespace Xamarin.Forms.Controls
 #if __ANDROID__
 		static IApp InitializeAndroidApp()
 		{
-			var app = ConfigureApp.Android.ApkFile(AppPaths.ApkPath).Debug().StartApp();
+			var app = ConfigureApp.Android.ApkFile(AppPaths.ApkPath).Debug().StartApp(UITest.Configuration.AppDataMode.DoNotClear);
 
 			if (bool.Parse((string)app.Invoke("IsPreAppCompat")))
 			{

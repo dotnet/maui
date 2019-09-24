@@ -44,6 +44,7 @@
     <Compile Include="CollectionView\FormsListView.cs" />
     <Compile Include="CollectionView\IEmptyView.cs" />
     <Compile Include="CollectionView\ItemsViewRenderer.cs" />
+    <Compile Include="CollectionView\ScrollHelpers.cs" />
     <Compile Include="CollectionView\SelectableItemsViewRenderer.cs" />
     <Compile Include="CollectionView\StructuredItemsViewRenderer.cs" />
     <Compile Include="ColorExtensions.cs" />

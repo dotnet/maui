@@ -135,17 +135,21 @@ namespace Xamarin.Forms.Platform.iOS
 			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _itemsSource.IndexOf(args.NewItems[0]);
 			var count = args.NewItems.Count;
 
-			_collectionView.PerformBatchUpdates(() =>
+			if (!_grouped && _collectionView.NumberOfSections() != GroupCount && count > 0)
 			{
-				if (!_grouped && _collectionView.NumberOfSections() != GroupCount)
+				// Okay, we're going from completely empty to more than 0 items; this means we don't even
+				// have a section 0 yet. Inserting a section 0 manually results in an unexplained crash, so instead
+				// we'll just reload the data so the UICollectionView can get its internal state sorted out.
+				_collectionView.ReloadData();
+			}
+			else
+			{
+				_collectionView.PerformBatchUpdates(() =>
 				{
-					// We had an empty non-grouped list, and now we're trying to add an item;
-					// we need to give it a section as well
-					_collectionView.InsertSections(new NSIndexSet(0));
-				}
-
-				_collectionView.InsertItems(CreateIndexesFrom(startIndex, count));
-			}, null);
+					var indexes = CreateIndexesFrom(startIndex, count);
+					_collectionView.InsertItems(indexes);
+				}, null);
+			}
 		}
 
 		void Remove(NotifyCollectionChangedEventArgs args)
