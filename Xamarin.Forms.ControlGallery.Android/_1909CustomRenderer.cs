@@ -29,7 +29,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 					var nativeButton = (global::Android.Widget.Button)Control;
 					nativeButton.SetShadowLayer(0, 0, 0, global::Android.Graphics.Color.Transparent);
 
-					nativeButton.Elevation = 0;
+					Platform.Android.ViewExtensions.SetElevation(nativeButton, 0);
 				}
 			}
 		}
