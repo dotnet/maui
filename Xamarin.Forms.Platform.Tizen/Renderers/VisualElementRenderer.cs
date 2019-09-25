@@ -58,16 +58,16 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(Specific.NextFocusForwardViewProperty, UpdateFocusForwardView);
 			RegisterPropertyHandler(Specific.ToolTipProperty, UpdateToolTip);
 
-			RegisterPropertyHandler(VisualElement.AnchorXProperty, ApplyTransformation);
-			RegisterPropertyHandler(VisualElement.AnchorYProperty, ApplyTransformation);
-			RegisterPropertyHandler(VisualElement.ScaleProperty, ApplyTransformation);
-			RegisterPropertyHandler(VisualElement.ScaleXProperty, ApplyTransformation);
-			RegisterPropertyHandler(VisualElement.ScaleYProperty, ApplyTransformation);
-			RegisterPropertyHandler(VisualElement.RotationProperty, ApplyTransformation);
-			RegisterPropertyHandler(VisualElement.RotationXProperty, ApplyTransformation);
-			RegisterPropertyHandler(VisualElement.RotationYProperty, ApplyTransformation);
-			RegisterPropertyHandler(VisualElement.TranslationXProperty, ApplyTransformation);
-			RegisterPropertyHandler(VisualElement.TranslationYProperty, ApplyTransformation);
+			RegisterPropertyHandler(VisualElement.AnchorXProperty, UpdateTransformation);
+			RegisterPropertyHandler(VisualElement.AnchorYProperty, UpdateTransformation);
+			RegisterPropertyHandler(VisualElement.ScaleProperty, UpdateTransformation);
+			RegisterPropertyHandler(VisualElement.ScaleXProperty, UpdateTransformation);
+			RegisterPropertyHandler(VisualElement.ScaleYProperty, UpdateTransformation);
+			RegisterPropertyHandler(VisualElement.RotationProperty, UpdateTransformation);
+			RegisterPropertyHandler(VisualElement.RotationXProperty, UpdateTransformation);
+			RegisterPropertyHandler(VisualElement.RotationYProperty, UpdateTransformation);
+			RegisterPropertyHandler(VisualElement.TranslationXProperty, UpdateTransformation);
+			RegisterPropertyHandler(VisualElement.TranslationYProperty, UpdateTransformation);
 			RegisterPropertyHandler(VisualElement.TabIndexProperty, UpdateTabIndex);
 			RegisterPropertyHandler(VisualElement.IsTabStopProperty, UpdateIsTabStop);
 
@@ -845,10 +845,20 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 		}
 
-		void UpdateFocusAllowed()
+		void UpdateTransformation(bool initialize)
 		{
+			if (!initialize)
+				ApplyTransformation();
+		}
+
+		void UpdateFocusAllowed(bool initialize)
+		{
+			bool? isFocusAllowed = Specific.IsFocusAllowed(Element);
+			if (initialize && isFocusAllowed == null)
+				return;
+
 			var widget = NativeView as Widget;
-			if (widget != null && Specific.IsFocusAllowed(Element).HasValue)
+			if (widget != null && isFocusAllowed != null)
 			{
 				widget.AllowFocus((bool)Specific.IsFocusAllowed(Element));
 			}
