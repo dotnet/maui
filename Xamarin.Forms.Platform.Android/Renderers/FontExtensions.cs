@@ -84,7 +84,7 @@ namespace Xamarin.Forms.Platform.Android
 			var fontFamily = key.Item1;
 			var fontAttribute = key.Item2;
 
-			if (fontFamily == null)
+			if (String.IsNullOrWhiteSpace(fontFamily))
 			{
 				var style = ToTypefaceStyle(fontAttribute);
 				result = Typeface.Create(Typeface.Default, style);
