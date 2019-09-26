@@ -16,13 +16,13 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			renderer.ElementPropertyChanged += OnElementPropertyChanged;
 			renderer.ElementChanged += OnElementChanged;
 
-			if(renderer is ILayoutChanges layoutChanges)
+			if (renderer is ILayoutChanges layoutChanges)
 				layoutChanges.LayoutChange += OnLayoutChange;
 		}
 
 		static void OnLayoutChange(object sender, global::Android.Views.View.LayoutChangeEventArgs e)
 		{
-			if(sender is IVisualElementRenderer renderer && renderer.View is ImageView imageView)
+			if (sender is IVisualElementRenderer renderer && renderer.View is ImageView imageView)
 				AViewCompat.SetClipBounds(imageView, imageView.GetScaleType() == AScaleType.CenterCrop ? new ARect(0, 0, e.Right - e.Left, e.Bottom - e.Top) : null);
 		}
 
@@ -57,25 +57,12 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		async static void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			var renderer = (sender as IVisualElementRenderer);
-			var ImageElementManager = (IImageElement)renderer.Element;
-			var imageController = (IImageController)renderer.Element;
 
 			if (e.PropertyName == Image.SourceProperty.PropertyName ||
 				e.PropertyName == Button.ImageSourceProperty.PropertyName)
 			{
-				try
-				{
-					await TryUpdateBitmap(renderer as IImageRendererController, (ImageView)renderer.View, (IImageElement)renderer.Element).ConfigureAwait(false);
-				}
-				catch (Exception ex)
-				{
-					Log.Warning(renderer.GetType().Name, "Error loading image: {0}", ex);
-				}
-				finally
-				{
-					if(imageController != null)
-						imageController?.SetIsLoading(false);
-				}
+				await TryUpdateBitmap(renderer as IImageRendererController, (ImageView)renderer.View, (IImageElement)renderer.Element).ConfigureAwait(false);
+
 			}
 			else if (e.PropertyName == Image.AspectProperty.PropertyName)
 			{
@@ -91,7 +78,19 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				return;
 			}
 
-			await Control.UpdateBitmap(newImage, previous).ConfigureAwait(false);
+			try
+			{
+				await Control.UpdateBitmap(newImage, previous).ConfigureAwait(false);
+			}
+			catch (Exception ex)
+			{
+				Log.Warning(nameof(ImageElementManager), "Error loading image: {0}", ex);
+			}
+			finally
+			{
+				if (newImage is IImageController imageController)
+					imageController.SetIsLoading(false);
+			}
 		}
 
 		static void UpdateAspect(IImageRendererController rendererController, ImageView Control, IImageElement newImage, IImageElement previous = null)
