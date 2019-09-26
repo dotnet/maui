@@ -17,6 +17,7 @@ using LP = Android.Views.ViewGroup.LayoutParams;
 using R = Android.Resource;
 using Toolbar = Android.Support.V7.Widget.Toolbar;
 using ADrawableCompat = Android.Support.V4.Graphics.Drawable.DrawableCompat;
+using ATextView = global::Android.Widget.TextView;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -326,9 +327,7 @@ namespace Xamarin.Forms.Platform.Android
 			if(icon == null)
 			{
 				icon = new DrawerArrowDrawable(context.GetThemedContext());
-
-				ADrawableCompat.SetTint(icon, tintColor.ToAndroid());
-				ADrawableCompat.SetTintMode(icon, PorterDuff.Mode.SrcAtop);
+				icon.SetColorFilter(tintColor.ToAndroid(), PorterDuff.Mode.SrcAtop);
 			}
 
 			icon.Progress = (CanNavigateBack) ? 1 : 0;
@@ -460,11 +459,21 @@ namespace Xamarin.Forms.Platform.Android
 				{
 					var menuitem = menu.Add(title);
 					UpdateMenuItemIcon(_shellContext.AndroidContext, menuitem, item);
+
 					menuitem.SetTitleOrContentDescription(item);
 					menuitem.SetEnabled(item.IsEnabled);
 					menuitem.SetShowAsAction(ShowAsAction.Always);
 					menuitem.SetOnMenuItemClickListener(new GenericMenuClickListener(((IMenuItemController)item).Activate));
+					
+					if(TintColor != Color.Default)
+					{
+						var view = toolbar.FindViewById(menuitem.ItemId);
+						if (view is ATextView  textView)
+							textView.SetTextColor(TintColor.ToAndroid());
+					}
+
 					menuitem.Dispose();
+
 				}
 			}
 
