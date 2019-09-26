@@ -110,6 +110,16 @@ Make sure you have nuget.exe 4.0 or above and the latest dotnet core sdk (2.0.3)
 
 ### UI Tests ###
 
+##### Run Android UI Tests #####
+
+Depending on your environment setup, you might need to configure a few things before being able to debug / run UI tests, especially on Windows.
+
+- If you receive an error about ANDROID_HOME, please make sure to set your environment variable to the Android SDK directory (e.g. C:\Program Files (x86)\Android\android-sdk).
+- If you receive an error about JAVA_HOME, please install the latest Java JDK and set your environment variable to the JDK directory (e.g. C:\Program Files\Java\jdk-13).
+- If you receive an error about a missing ApkFile, please generate an APK file for Xamarin.Forms.ControlGallery.Android. The easiest way to do this is to right click the project and select "Deploy". Note that if you rebuild the solution, you might lose the APK and will need to generate it again.
+
+After these steps are taken care of, you should be good to go. You can see all UI tests in Test Explorer, search them for your own convenience, and quickly run individual tests.
+
 ##### Run UWP UI Tests #####
 
 To run the UWP UI Tests:
