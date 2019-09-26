@@ -412,7 +412,7 @@ namespace Xamarin.Forms.Platform.iOS
 			var shellContent = shellSection?.CurrentItem;
 			var stack = shellSection?.Stack.ToList();
 
-			stack.RemoveAt(stack.Count - 1);
+			stack?.RemoveAt(stack.Count - 1);
 
 			return ((IShellController)_context.Shell).ProposeNavigation(ShellNavigationSource.Pop, shellItem, shellSection, shellContent, stack, true);
 		}

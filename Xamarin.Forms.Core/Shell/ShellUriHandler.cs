@@ -165,7 +165,7 @@ namespace Xamarin.Forms
 
 			var depthStart = 0;
 
-			if (segments[0] == shell.Route)
+			if (segments[0] == shell?.Route)
 			{
 				segments = segments.Skip(1).ToArray();
 				depthStart = 1;

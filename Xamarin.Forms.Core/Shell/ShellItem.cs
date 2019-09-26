@@ -67,7 +67,7 @@ namespace Xamarin.Forms
 				this,
 				shellSection,
 				shellSection?.CurrentItem,
-				shellSection.Stack,
+				shellSection?.Stack,
 				true
 			);
 

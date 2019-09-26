@@ -172,7 +172,7 @@ namespace Xamarin.Forms
 			}
 
 			if (shellContent.Parent?.Parent is ShellItem shellItem)
-				shellItem?.SendStructureChanged();
+				shellItem.SendStructureChanged();
 		}
 
 		void MenuItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

@@ -594,7 +594,7 @@ namespace Xamarin.Forms
 		{
 			if (Parent?.Parent is IShellController shell)
 			{
-				shell?.UpdateCurrentState(source);
+				shell.UpdateCurrentState(source);
 			}
 		}
 
