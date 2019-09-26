@@ -150,6 +150,9 @@ namespace Xamarin.Forms.Platform.iOS
 				return false;
 			}
 
+			if (CollectionView.NumberOfSections() == 0)
+				return false;
+
 			var itemCount = CollectionView.NumberOfItemsInSection(section);
 
 			if (itemCount < _itemsLayout.Span)
