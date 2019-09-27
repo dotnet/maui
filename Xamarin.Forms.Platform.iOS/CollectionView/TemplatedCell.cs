@@ -10,6 +10,8 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		public event EventHandler<EventArgs> ContentSizeChanged;
 
+		protected CGSize ConstrainedSize;
+
 		protected nfloat ConstrainedDimension;
 
 		DataTemplate _currentTemplate;
@@ -25,9 +27,18 @@ namespace Xamarin.Forms.Platform.iOS
 
 		internal IVisualElementRenderer VisualElementRenderer { get; private set; }
 
+		public override void ConstrainTo(CGSize constraint)
+		{
+			ConstrainedSize = constraint;
+		}
+
 		public override void ConstrainTo(nfloat constant)
 		{
 			ConstrainedDimension = constant;
+
+			// Reset constrained size in case ItemSizingStrategy changes
+			// and we want to measure each item
+			ConstrainedSize = default(CGSize);
 		}
 
 		public override UICollectionViewLayoutAttributes PreferredLayoutAttributesFittingAttributes(
@@ -35,8 +46,8 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			var preferredAttributes = base.PreferredLayoutAttributesFittingAttributes(layoutAttributes);
 
-			// Measure this cell (including the Forms element)
-			var size = Measure();
+			// Measure this cell (including the Forms element) if there is no constrained size
+			var	size = ConstrainedSize == default(CGSize) ? Measure() : ConstrainedSize;
 
 			// Update the size of the root view to accommodate the Forms element
 			var nativeView = VisualElementRenderer.NativeView;
