@@ -1,4 +1,6 @@
 ﻿using System.Threading.Tasks;
+using Android.Content;
+using Android.Graphics;
 using AImageView = Android.Widget.ImageView;
 
 namespace Xamarin.Forms.Platform.Android
@@ -73,6 +75,11 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				return (imageElement != null) ? imageElement.Source == imageSource : true;
 			}
+		}
+
+		internal static async void SetImage(this AImageView image, ImageSource source, Context context)
+		{
+			image.SetImageDrawable(await context.GetFormsDrawableAsync(source));
 		}
 	}
 }

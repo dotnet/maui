@@ -48,6 +48,7 @@ namespace Xamarin.Forms.Platform.Android
 		FrameLayout _navigationArea;
 		AView _outerLayout;
 		IShellBottomNavViewAppearanceTracker _appearanceTracker;
+		BottomNavigationViewTracker _bottomNavigationTracker;
 
 		public ShellItemRenderer(IShellContext shellContext) : base(shellContext)
 		{
@@ -64,13 +65,14 @@ namespace Xamarin.Forms.Platform.Android
 			_bottomView.SetBackgroundColor(Color.White.ToAndroid());
 			_bottomView.SetOnNavigationItemSelectedListener(this);
 
-			if(ShellItem == null)
+			if (ShellItem == null)
 				throw new ArgumentException("Active Shell Item not set. Have you added any Shell Items to your Shell?", nameof(ShellItem));
 
 			HookEvents(ShellItem);
 			SetupMenu();
 
 			_appearanceTracker = ShellContext.CreateBottomNavViewAppearanceTracker(ShellItem);
+			_bottomNavigationTracker = new BottomNavigationViewTracker();
 			((IShellController)ShellContext.Shell).AddAppearanceObserver(this, ShellItem);
 
 			return _outerLayout;
@@ -111,20 +113,30 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual Drawable CreateItemBackgroundDrawable()
 		{
-			var stateList = ColorStateList.ValueOf(Color.Black.MultiplyAlpha(0.2).ToAndroid());
-			return new RippleDrawable(stateList, new ColorDrawable(AColor.White), null);
+			return BottomNavigationViewUtils.CreateItemBackgroundDrawable();
 		}
 
+		[Obsolete("Use CreateMoreBottomSheet(Action<int, BottomSheetDialog> selectCallback)")]
 		protected virtual BottomSheetDialog CreateMoreBottomSheet(Action<ShellSection, BottomSheetDialog> selectCallback)
+		{
+			return CreateMoreBottomSheet((int index, BottomSheetDialog dialog) =>
+			{
+				selectCallback(ShellItem.Items[index], dialog);
+			});
+		}
+
+		protected virtual BottomSheetDialog CreateMoreBottomSheet(Action<int, BottomSheetDialog> selectCallback)
 		{
 			var bottomSheetDialog = new BottomSheetDialog(Context);
 			var bottomSheetLayout = new LinearLayout(Context);
 			using (var bottomShellLP = new LP(LP.MatchParent, LP.WrapContent))
 				bottomSheetLayout.LayoutParameters = bottomShellLP;
 			bottomSheetLayout.Orientation = Orientation.Vertical;
+
 			// handle the more tab
-			for (int i = 4; i < ShellItem.Items.Count; i++)
+			for (int i = _bottomView.MaxItemCount - 1; i < ShellItem.Items.Count; i++)
 			{
+				var closure_i = i;
 				var shellContent = ShellItem.Items[i];
 
 				using (var innerLayout = new LinearLayout(Context))
@@ -140,10 +152,11 @@ namespace Xamarin.Forms.Platform.Android
 					// we dont even unhook the events that dont fire
 					void clickCallback(object s, EventArgs e)
 					{
-						selectCallback(shellContent, bottomSheetDialog);
+						selectCallback(closure_i, bottomSheetDialog);
 						if (!innerLayout.IsDisposed())
 							innerLayout.Click -= clickCallback;
 					}
+
 					innerLayout.Click += clickCallback;
 
 					var image = new ImageView(Context);
@@ -228,7 +241,8 @@ namespace Xamarin.Forms.Platform.Android
 			var id = item.ItemId;
 			if (id == MoreTabId)
 			{
-				var bottomSheetDialog = CreateMoreBottomSheet(OnMoreItemSelected);
+				var items = CreateTabList(ShellItem);
+				var bottomSheetDialog = BottomNavigationViewUtils.CreateMoreBottomSheet(OnMoreItemSelected, Context, items, _bottomView.MaxItemCount);
 				bottomSheetDialog.Show();
 				bottomSheetDialog.DismissEvent += OnMoreSheetDismissed;
 			}
@@ -248,12 +262,29 @@ namespace Xamarin.Forms.Platform.Android
 			return true;
 		}
 
+		void OnMoreItemSelected(int shellSectionIndex, BottomSheetDialog dialog)
+		{
+			OnMoreItemSelected(ShellItem.Items[shellSectionIndex], dialog);
+		}
+
 		protected virtual void OnMoreItemSelected(ShellSection shellSection, BottomSheetDialog dialog)
 		{
 			ChangeSection(shellSection);
 
 			dialog.Dismiss();
 			dialog.Dispose();
+		}
+
+		List<(string title, ImageSource icon, bool tabEnabled)> CreateTabList(ShellItem shellItem)
+		{
+			var items = new List<(string title, ImageSource icon, bool tabEnabled)>();
+
+			for (int i = 0; i < shellItem.Items.Count; i++)
+			{
+				var item = shellItem.Items[i];
+				items.Add((item.Title, item.Icon, item.IsEnabled));
+			}
+			return items;
 		}
 
 		protected virtual void OnMoreSheetDismissed(object sender, EventArgs e) => OnShellSectionChanged();
@@ -296,57 +327,20 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual void ResetAppearance() => _appearanceTracker.ResetAppearance(_bottomView);
 
-		protected virtual async void SetupMenu(IMenu menu, int maxBottomItems, ShellItem shellItem)
+		protected virtual void SetupMenu(IMenu menu, int maxBottomItems, ShellItem shellItem)
 		{
-			menu.Clear();
-			bool showMore = ShellItem.Items.Count > maxBottomItems;
-
-			int end = showMore ? maxBottomItems - 1 : ShellItem.Items.Count;
-
 			var currentIndex = shellItem.Items.IndexOf(ShellSection);
+			var items = CreateTabList(shellItem);
 
-			List<IMenuItem> menuItems = new List<IMenuItem>();
-			List<Task> loadTasks = new List<Task>();
-			for (int i = 0; i < end; i++)
-			{
-				var item = shellItem.Items[i];
-				using (var title = new Java.Lang.String(item.Title))
-				{
-					var menuItem = menu.Add(0, i, 0, title);
-					menuItems.Add(menuItem);
-					loadTasks.Add(ShellContext.ApplyDrawableAsync(item, ShellSection.IconProperty, icon =>
-					{
-						if (icon != null)
-							menuItem.SetIcon(icon);
-					}));
-					UpdateShellSectionEnabled(item, menuItem);
-					if (item == ShellSection)
-					{
-						menuItem.SetChecked(true);
-					}
-				}
-			}
-
-			if (showMore)
-			{
-				var moreString = new Java.Lang.String("More");
-				var menuItem = menu.Add(0, MoreTabId, 0, moreString);
-				moreString.Dispose();
-
-				menuItem.SetIcon(Resource.Drawable.abc_ic_menu_overflow_material);
-				if (currentIndex >= maxBottomItems - 1)
-					menuItem.SetChecked(true);
-			}
+			BottomNavigationViewUtils.SetupMenu(
+				menu,
+				maxBottomItems,
+				items,
+				currentIndex,
+				_bottomView,
+				Context);
 
 			UpdateTabBarVisibility();
-
-			_bottomView.SetShiftMode(false, false);
-
-			if (loadTasks.Count > 0)
-				await Task.WhenAll(loadTasks);
-
-			foreach (var menuItem in menuItems)
-				menuItem.Dispose();
 		}
 
 		protected virtual void UpdateShellSectionEnabled(ShellSection shellSection, IMenuItem menuItem)
