@@ -167,9 +167,9 @@ namespace Xamarin.Forms.Platform.WPF
 		string Obfuscate(string text, bool leaveLastVisible = false)
 		{
 			if (!leaveLastVisible)
-				return new string(ObfuscationCharacter, text.Length);
+				return new string(ObfuscationCharacter, text?.Length ?? 0);
 
-			return text.Length == 1
+			return text == null || text.Length == 1
 				? text
 				: new string(ObfuscationCharacter, text.Length - 1) + text.Substring(text.Length - 1, 1);
 		}
