@@ -22,8 +22,16 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				_isRefreshing = value;
 
+				if (Element != null && Element.IsRefreshing != _isRefreshing)
+					Element.IsRefreshing = _isRefreshing;
+
 				if (_isRefreshing)
+				{
 					_refreshControl.BeginRefreshing();
+
+					if (Element is RefreshView refreshView && refreshView.Command != null && refreshView.Command.CanExecute(refreshView?.CommandParameter))
+						refreshView.Command.Execute(refreshView?.CommandParameter);
+				}
 				else
 					_refreshControl.EndRefreshing();
 
@@ -201,10 +209,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void OnRefresh(object sender, EventArgs e)
 		{
-			if (Element?.Command?.CanExecute(Element?.CommandParameter) ?? false)
-			{
-				Element.Command.Execute(Element?.CommandParameter);
-			}
+			IsRefreshing = true;
 		}
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)
