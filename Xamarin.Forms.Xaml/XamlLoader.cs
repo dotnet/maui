@@ -71,8 +71,10 @@ namespace Xamarin.Forms.Xaml
 		}
 
 		public static void Load(object view, string xaml) => Load(view, xaml, false);
+		public static void Load(object view, string xaml, bool useDesignProperties) => Load(view, xaml, null, useDesignProperties);
+		public static void Load(object view, string xaml, Assembly rootAssembly) => Load(view, xaml, rootAssembly, false);
 
-		public static void Load(object view, string xaml, bool useDesignProperties)
+		public static void Load(object view, string xaml, Assembly rootAssembly, bool useDesignProperties)
 		{
 			using (var textReader = new StringReader(xaml))
 			using (var reader = XmlReader.Create(textReader)) {
@@ -95,7 +97,7 @@ namespace Xamarin.Forms.Xaml
 					void ehandler(Exception e) => ResourceLoader.ExceptionHandler2?.Invoke((e, XamlFilePathAttribute.GetFilePathForObject(view)));
 					Visit(rootnode, new HydrationContext {
 						RootElement = view,
-
+						RootAssembly = rootAssembly ?? view.GetType().GetTypeInfo().Assembly,
 						ExceptionHandler = doNotThrow ? ehandler : (Action<Exception>)null
 					}, useDesignProperties);
 					break;

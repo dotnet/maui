@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Xamarin.Forms.Xaml
 {
@@ -16,5 +17,6 @@ namespace Xamarin.Forms.Xaml
 		public HydrationContext ParentContext { get; set; }
 		public Action<Exception> ExceptionHandler { get; set; }
 		public object RootElement { get; set; }
+		public Assembly RootAssembly { get; internal set; }
 	}
 }
