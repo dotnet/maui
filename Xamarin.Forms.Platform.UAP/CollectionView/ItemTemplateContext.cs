@@ -2,7 +2,8 @@
 {
 	internal class ItemTemplateContext
 	{
-		public ItemTemplateContext(DataTemplate formsDataTemplate, object item, BindableObject container, double? height = null, double? width = null, Thickness? itemSpacing = null)
+		public ItemTemplateContext(DataTemplate formsDataTemplate, object item, BindableObject container, 
+			double? height = null, double? width = null, Thickness? itemSpacing = null)
 		{
 			FormsDataTemplate = formsDataTemplate;
 			Item = item;

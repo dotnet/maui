@@ -44,6 +44,7 @@
     <Compile Include="CollectionView\FormsListView.cs" />
     <Compile Include="CollectionView\IEmptyView.cs" />
     <Compile Include="CollectionView\ItemsViewRenderer.cs" />
+    <Compile Include="CollectionView\ItemTemplateContextList.cs" />
     <Compile Include="CollectionView\ScrollHelpers.cs" />
     <Compile Include="CollectionView\SelectableItemsViewRenderer.cs" />
     <Compile Include="CollectionView\StructuredItemsViewRenderer.cs" />
@@ -77,7 +78,7 @@
     <Compile Include="ITitleIconProvider.cs" />
     <Compile Include="ITitleViewProvider.cs" />
     <Compile Include="CollectionView\FormsGridView.cs" />
-    <Compile Include="CollectionView\ItemTemplateEnumerator.cs" />
+    <Compile Include="CollectionView\ItemTemplateContextEnumerable.cs" />
     <Compile Include="CollectionView\ItemTemplateContext.cs" />
     <Compile Include="ITitleProvider.cs" />
     <Compile Include="ITitleViewRendererController.cs" />

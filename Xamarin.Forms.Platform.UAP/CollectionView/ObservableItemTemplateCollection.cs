@@ -15,7 +15,8 @@ namespace Xamarin.Forms.Platform.UWP
 		readonly Thickness _itemSpacing;
 		readonly INotifyCollectionChanged _notifyCollectionChanged;
 
-		public ObservableItemTemplateCollection(IList itemsSource, DataTemplate itemTemplate, BindableObject container, double? itemHeight = null, double? itemWidth = null, Thickness? itemSpacing = null)
+		public ObservableItemTemplateCollection(IList itemsSource, DataTemplate itemTemplate, BindableObject container, 
+			double? itemHeight = null, double? itemWidth = null, Thickness? itemSpacing = null)
 		{
 			if (!(itemsSource is INotifyCollectionChanged notifyCollectionChanged))
 			{
@@ -39,6 +40,9 @@ namespace Xamarin.Forms.Platform.UWP
 
 			for (int n = 0; n < itemsSource.Count; n++)
 			{
+				// We're using this as a source for a ListViewBase, and we need INCC to work. So ListViewBase is going
+				// to iterate over the entire source list right off the bat, no matter what we do. Creating one
+				// ItemTemplateContext per item in the collection is unavoidable. Luckily, ITC is pretty cheap.
 				Add(new ItemTemplateContext(itemTemplate, itemsSource[n], container, _itemHeight, _itemWidth, _itemSpacing));
 			}
 
