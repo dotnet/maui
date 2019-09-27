@@ -1562,5 +1562,34 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.That(() => binding.Path = "Foo", Throws.Nothing);
 		}
+
+
+		class InfoToString
+		{
+			public override string ToString() => "converted";
+		}
+
+		[Test]
+		//https://github.com/xamarin/Xamarin.Forms/issues/6281
+		public void SetValueToTextInvokesToString()
+		{
+			var prop = BindableProperty.Create("foo", typeof(string), typeof(MockBindable), null);
+			var bindable = new MockBindable();
+			bindable.SetValue(prop, new InfoToString());
+
+			Assert.That(bindable.GetValue(prop), Is.EqualTo("converted"));
+		}
+
+		[Test]
+		//https://github.com/xamarin/Xamarin.Forms/issues/6281
+		public void SetBindingToTextInvokesToString()
+		{
+			var prop = BindableProperty.Create("foo", typeof(string), typeof(MockBindable), null);
+			var bindable = new MockBindable() { BindingContext = new { info = new InfoToString() } };
+			bindable.SetBinding(prop, "info");
+
+			Assert.That(bindable.GetValue(prop), Is.EqualTo("converted"));
+		}
+
 	}
 }

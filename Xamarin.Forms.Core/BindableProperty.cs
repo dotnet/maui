@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
 using Xamarin.Forms.Internals;
@@ -33,10 +34,15 @@ namespace Xamarin.Forms
 
 		public delegate bool ValidateValueDelegate<in TPropertyType>(BindableObject bindable, TPropertyType value);
 
-		static readonly Dictionary<Type, TypeConverter> WellKnownConvertTypes = new  Dictionary<Type,TypeConverter>
+		static readonly Dictionary<Type, TypeConverter> KnownTypeConverters = new Dictionary<Type,TypeConverter>
 		{
 			{ typeof(Uri), new UriTypeConverter() },
 			{ typeof(Color), new ColorTypeConverter() },
+		};
+
+		static readonly Dictionary<Type, IValueConverter> KnownIValueConverters = new Dictionary<Type, IValueConverter>
+		{
+			{ typeof(string), new ToStringValueConverter() },
 		};
 
 		// more or less the encoding of this, without the need to reflect
@@ -52,7 +58,7 @@ namespace Xamarin.Forms
 			{ typeof(long), new[] { typeof(string), typeof(float), typeof(double), typeof(decimal) } },
 			{ typeof(char), new[] { typeof(string), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float), typeof(double), typeof(decimal) } },
 			{ typeof(float), new[] { typeof(string), typeof(double) } },
-			{ typeof(ulong), new[] { typeof(string), typeof(float), typeof(double), typeof(decimal) } }
+			{ typeof(ulong), new[] { typeof(string), typeof(float), typeof(double), typeof(decimal) } },
 		};
 
 		BindableProperty(string propertyName, Type returnType, Type declaringType, object defaultValue, BindingMode defaultBindingMode = BindingMode.OneWay,
@@ -312,36 +318,34 @@ namespace Xamarin.Forms
 		internal bool TryConvert(ref object value)
 		{
 			if (value == null)
-			{
 				return !ReturnTypeInfo.IsValueType || ReturnTypeInfo.IsGenericType && ReturnTypeInfo.GetGenericTypeDefinition() == typeof(Nullable<>);
-			}
 
 			Type valueType = value.GetType();
 			Type type = ReturnType;
 
 			// Dont support arbitrary IConvertible by limiting which types can use this
-			Type[] convertableTo;
-			TypeConverter typeConverterTo;
-			if (SimpleConvertTypes.TryGetValue(valueType, out convertableTo) && Array.IndexOf(convertableTo, type) != -1)
-			{
+			if (SimpleConvertTypes.TryGetValue(valueType, out Type[]  convertibleTo) && Array.IndexOf( convertibleTo, type) != -1) {
 				value = Convert.ChangeType(value, type);
+				return true;
 			}
-			else if (WellKnownConvertTypes.TryGetValue(type, out typeConverterTo) && typeConverterTo.CanConvertFrom(valueType))
-			{
+			if (KnownTypeConverters.TryGetValue(type, out TypeConverter typeConverterTo) && typeConverterTo.CanConvertFrom(valueType)) {
 				value = typeConverterTo.ConvertFromInvariantString(value.ToString());
+				return true;
 			}
-			else if (!ReturnTypeInfo.IsAssignableFrom(valueType.GetTypeInfo()))
-			{
-				var cast = type.GetImplicitConversionOperator(fromType: valueType, toType: type)
-						?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: type);
+			if (ReturnTypeInfo.IsAssignableFrom(valueType.GetTypeInfo()))
+				return true;
 
-				if (cast == null)
-					return false;
-
+			var cast = type.GetImplicitConversionOperator(fromType: valueType, toType: type) ?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: type);
+			if (cast != null) {
 				value = cast.Invoke(null, new[] { value });
+				return true;
+			}
+			if (KnownIValueConverters.TryGetValue(type, out IValueConverter valueConverter)) {
+				value = valueConverter.Convert(value, type, null, CultureInfo.CurrentUICulture);
+				return true;
 			}
 
-			return true;
+			return false;
 		}
 
 		internal delegate void BindablePropertyBindingChanging(BindableObject bindable, BindingBase oldValue, BindingBase newValue);
