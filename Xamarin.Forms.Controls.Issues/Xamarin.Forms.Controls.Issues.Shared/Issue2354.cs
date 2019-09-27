@@ -45,6 +45,7 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 		}
 
+		[Preserve(AllMembers = true)]
 		public class President
 		{
 			public President (string name, int position, string image)
@@ -70,7 +71,8 @@ namespace Xamarin.Forms.Controls.Issues
 				var image = new Image
 				{
 					HorizontalOptions = LayoutOptions.Start,
-					Aspect = Aspect.AspectFill
+					Aspect = Aspect.AspectFill,
+					AutomationId = "ImageLoaded",
 				};
 
 				var source = new UriImageSource {
@@ -86,6 +88,7 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 		}
 
+		[Preserve(AllMembers = true)]
 		public class UriConverter : IValueConverter
 		{
 
@@ -105,6 +108,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void TestDoesntCrashWithCachingDisable ()
 		{
+			RunningApp.WaitForElement("ImageLoaded");
 			RunningApp.ScrollDown ();
 			RunningApp.ScrollDown ();
 		}
