@@ -104,6 +104,7 @@
     </EmbeddedResource>
     <Resource Include="Assets\fontawesome-webfont.ttf" />
     <Resource Include="Assets\pickax.ttf" />
+    <Resource Include="Assets\ionicons.ttf" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

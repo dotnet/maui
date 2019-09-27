@@ -144,7 +144,7 @@ namespace Xamarin.Forms.Platform.WPF
 	}
 
 	public sealed class UriImageSourceHandler : IImageSourceHandler
-	{
+	{		
 		public Task<System.Windows.Media.ImageSource> LoadImageAsync(ImageSource imagesoure, CancellationToken cancelationToken = new CancellationToken())
 		{
 			BitmapImage bitmapimage = null;
@@ -159,4 +159,62 @@ namespace Xamarin.Forms.Platform.WPF
 			return Task.FromResult<System.Windows.Media.ImageSource>(bitmapimage);
 		}
 	}
+
+	public sealed class FontImageSourceHandler : IImageSourceHandler
+	{
+		public Task<System.Windows.Media.ImageSource> LoadImageAsync(ImageSource imagesource, CancellationToken cancelationToken = default)
+		{			
+			var fontsource = imagesource as FontImageSource;
+			var image = CreateGlyph(
+					fontsource.Glyph,
+					new FontFamily(new Uri("pack://application:,,,"), fontsource.FontFamily),
+					FontStyles.Normal,
+					FontWeights.Normal,
+					FontStretches.Normal,
+					fontsource.Size,
+					(fontsource.Color != Color.Default ? fontsource.Color : Color.White).ToBrush());
+			return Task.FromResult(image);
+		}		
+
+		static System.Windows.Media.ImageSource CreateGlyph(
+			string text,
+			FontFamily fontFamily,
+			FontStyle fontStyle,
+			FontWeight fontWeight,
+			FontStretch fontStretch,
+			double fontSize,
+			Brush foreBrush)
+        {
+            if (fontFamily == null || string.IsNullOrEmpty(text))
+            {
+                return null;
+            }
+            var typeface = new Typeface(fontFamily, fontStyle, fontWeight, fontStretch);
+            if (!typeface.TryGetGlyphTypeface(out GlyphTypeface glyphTypeface))
+            {
+                //if it does not work 
+                return null;
+            }
+
+            var glyphIndexes = new ushort[text.Length];
+            var advanceWidths = new double[text.Length];
+            for (int n = 0; n < text.Length; n++)
+            {
+                var glyphIndex = glyphTypeface.CharacterToGlyphMap[text[n]];
+                glyphIndexes[n] = glyphIndex;
+                var width = glyphTypeface.AdvanceWidths[glyphIndex] * 1.0;
+                advanceWidths[n] = width;
+            }
+
+            var gr = new GlyphRun(glyphTypeface,
+                0, false,
+                fontSize,
+                glyphIndexes,
+                new System.Windows.Point(0, 0),
+                advanceWidths,
+                null, null, null, null, null, null);
+            var glyphRunDrawing = new GlyphRunDrawing(foreBrush, gr);
+            return new DrawingImage(glyphRunDrawing);
+        }
+    }
 }
