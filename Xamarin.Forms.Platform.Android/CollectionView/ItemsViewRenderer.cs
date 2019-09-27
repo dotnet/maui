@@ -213,6 +213,10 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				UpdateItemsSource();
 			}
+			else if (changedProperty.Is(Xamarin.Forms.ItemsView.ItemTemplateProperty))
+			{
+				UpdateAdapter();
+			}
 			else if (changedProperty.Is(VisualElement.BackgroundColorProperty))
 			{
 				UpdateBackgroundColor();
@@ -221,7 +225,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				UpdateFlowDirection();
 			}
-			else if (changedProperty.IsOneOf(Xamarin.Forms.ItemsView.EmptyViewProperty, 
+			else if (changedProperty.IsOneOf(Xamarin.Forms.ItemsView.EmptyViewProperty,
 				Xamarin.Forms.ItemsView.EmptyViewTemplateProperty))
 			{
 				UpdateEmptyView();
@@ -276,7 +280,10 @@ namespace Xamarin.Forms.Platform.Android
 			ItemsViewAdapter = CreateAdapter();
 
 			if (GetAdapter() != _emptyViewAdapter)
+			{
+				SetAdapter(null);
 				SwapAdapter(ItemsViewAdapter, true);
+			}
 
 			oldItemViewAdapter?.Dispose();
 		}
