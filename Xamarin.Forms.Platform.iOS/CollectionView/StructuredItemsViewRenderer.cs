@@ -24,6 +24,10 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				StructuredItemsViewController.UpdateFooterView();
 			}
+			else if (changedProperty.Is(StructuredItemsView.ItemsLayoutProperty))
+			{
+				StructuredItemsViewController.UpdateLayout(SelectLayout());
+			}
 		}
 
 		protected override void SetUpNewElement(ItemsView newElement)
@@ -42,14 +46,14 @@ namespace Xamarin.Forms.Platform.iOS
 		protected override ItemsViewLayout SelectLayout()
 		{
 			var itemSizingStrategy = StructuredItemsView.ItemSizingStrategy;
-			var layoutSpecification = StructuredItemsView.ItemsLayout;
+			var itemsLayout = StructuredItemsView.ItemsLayout;
 
-			if (layoutSpecification is GridItemsLayout gridItemsLayout)
+			if (itemsLayout is GridItemsLayout gridItemsLayout)
 			{
 				return new GridViewLayout(gridItemsLayout, itemSizingStrategy);
 			}
 
-			if (layoutSpecification is LinearItemsLayout listItemsLayout)
+			if (itemsLayout is LinearItemsLayout listItemsLayout)
 			{
 				return new ListViewLayout(listItemsLayout, itemSizingStrategy);
 			}
