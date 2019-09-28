@@ -17,6 +17,8 @@ variables:
   value: true
 - name: winVmImage
   value: Hosted VS2017
+- name: DOTNET_VERSION
+  value: 3.0.100
 
 resources:
   repositories:
