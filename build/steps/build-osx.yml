@@ -2,22 +2,38 @@ steps:
   - checkout: self
 
   - task: xamops.azdevex.provisionator-task.provisionator@1
-    displayName: Provisionate Xamarin
-    condition: eq(variables['provisioningOSX'], 'true')
+    displayName: 'Provisionator'
+    condition: eq(variables['provisioning'], 'true')
     inputs:
       provisioning_script: $(provisionator.osxPath)
       provisioning_extra_args: $(provisionator.extraArguments)
+      
+  - task: Bash@3
+    displayName: 'Cake Provision'
+    condition: eq(variables['provisioning'], 'false')
+    inputs:
+      targetType: 'filePath'
+      filePath: 'build.sh'
+      arguments: --target provision
+  
+  - task: DotNetCoreInstaller@0
+    displayName: 'Install .net core $(DOTNET_VERSION)'
+    condition: ne(variables['DOTNET_VERSION'], '')
+    inputs:
+      version: $(DOTNET_VERSION)
 
-  - bash: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh $(MONO_VERSION)
-    displayName: Switch to the latest Xamarin SDK
-
-  - bash: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XCODE_VERSION).app;sudo xcode-select --switch /Applications/Xcode_$(XCODE_VERSION).app/Contents/Developer
-    displayName: Switch to the latest Xcode
-
+  - script: |
+      export PATH="$PATH:/Users/vsts/.dotnet/tools"
+      export DOTNET_ROOT="$(dirname "$(readlink "$(command -v dotnet)")")"
+      dotnet new globaljson --sdk-version $(DOTNET_VERSION)
+    displayName: 'Add globaljson file'
+    condition: ne(variables['DOTNET_VERSION'], '')
+      
   - task: NuGetToolInstaller@0
     displayName: 'Use NuGet'
+    condition: ne(variables['NUGET_VERSION'], '')
     inputs:
-      versionSpec: $(nugetVersion)
+      versionSpec: $(NUGET_VERSION)
 
   - task: NuGetCommand@2
     displayName: 'NuGet restore'
