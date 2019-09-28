@@ -274,9 +274,11 @@ namespace Xamarin.Forms.Platform.Android
 
 			PopupManager.Unsubscribe(this);
 
-			_layout.RemoveView(Platform);
-
-			Platform?.Dispose();
+			if (Platform != null)
+			{
+				_layout.RemoveView(Platform);
+				Platform.Dispose();
+			}
 
 			PreviousActivityDestroying.Set();
 

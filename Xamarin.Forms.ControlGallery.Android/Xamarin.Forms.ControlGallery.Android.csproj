@@ -382,6 +382,8 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidEnvironment Include="Environment.txt" />
+  </ItemGroup>
+  <ItemGroup>
     <ProguardConfiguration Include="..\.nuspec\proguard.cfg">
       <Link>proguard.cfg</Link>
     </ProguardConfiguration>

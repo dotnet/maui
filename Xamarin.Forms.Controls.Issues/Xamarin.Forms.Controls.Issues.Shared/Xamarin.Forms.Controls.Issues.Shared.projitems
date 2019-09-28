@@ -1054,6 +1054,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue5503.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LabelTextType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellTitleView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue5159.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7311.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7053.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6894.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6929.cs" />
