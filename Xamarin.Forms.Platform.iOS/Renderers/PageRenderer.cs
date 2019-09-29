@@ -72,7 +72,7 @@ namespace Xamarin.Forms.Platform.iOS
 						!(
 							child is VisualElement ve && ve.IsTabStop
 							&& AutomationProperties.GetIsInAccessibleTree(ve) != false // accessible == true
-							&& ve.GetRenderer().NativeView is UIView view)
+							&& ve.GetRenderer()?.NativeView is UIView view)
 						 )
 						continue;
 

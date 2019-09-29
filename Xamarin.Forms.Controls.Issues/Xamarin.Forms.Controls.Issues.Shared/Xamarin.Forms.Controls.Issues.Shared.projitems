@@ -1026,6 +1026,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue6929.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\ApiLabel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7582.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7563.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">
