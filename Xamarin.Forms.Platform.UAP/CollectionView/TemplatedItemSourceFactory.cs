@@ -9,11 +9,13 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			switch (itemsSource)
 			{
-				case IList list when itemsSource is INotifyCollectionChanged:
-					return new ObservableItemTemplateCollection(list, itemTemplate, container, itemHeight, itemWidth, itemSpacing);
+				case IList observable when itemsSource is INotifyCollectionChanged:
+					return new ObservableItemTemplateCollection(observable, itemTemplate, container, itemHeight, itemWidth, itemSpacing);
+				case IList list:
+					return new ItemTemplateContextList(list, itemTemplate, container, itemHeight, itemWidth, itemSpacing);
 			}
 
-			return new ItemTemplateEnumerator(itemsSource, itemTemplate, container, itemHeight, itemWidth, itemSpacing);
+			return new ItemTemplateContextEnumerable(itemsSource, itemTemplate, container, itemHeight, itemWidth, itemSpacing);
 		}
 	}
 }

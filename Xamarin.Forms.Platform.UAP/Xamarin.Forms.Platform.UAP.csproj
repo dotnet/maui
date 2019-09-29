@@ -11,8 +11,9 @@
     <AssemblyName>Xamarin.Forms.Platform.UAP</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion>10.0.18362.0</TargetPlatformVersion>
+    <TargetPlatformVersion>10.0.16299.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.16299.0</TargetPlatformMinVersion>
+    <SkipMicrosoftUIXamlCheckTargetPlatformVersion>true</SkipMicrosoftUIXamlCheckTargetPlatformVersion>		
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -44,6 +45,7 @@
     <Compile Include="CollectionView\FormsListView.cs" />
     <Compile Include="CollectionView\IEmptyView.cs" />
     <Compile Include="CollectionView\ItemsViewRenderer.cs" />
+    <Compile Include="CollectionView\ItemTemplateContextList.cs" />
     <Compile Include="CollectionView\ScrollHelpers.cs" />
     <Compile Include="CollectionView\SelectableItemsViewRenderer.cs" />
     <Compile Include="CollectionView\StructuredItemsViewRenderer.cs" />
@@ -77,7 +79,7 @@
     <Compile Include="ITitleIconProvider.cs" />
     <Compile Include="ITitleViewProvider.cs" />
     <Compile Include="CollectionView\FormsGridView.cs" />
-    <Compile Include="CollectionView\ItemTemplateEnumerator.cs" />
+    <Compile Include="CollectionView\ItemTemplateContextEnumerable.cs" />
     <Compile Include="CollectionView\ItemTemplateContext.cs" />
     <Compile Include="ITitleProvider.cs" />
     <Compile Include="ITitleViewRendererController.cs" />
@@ -295,7 +297,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <SDKReference Include="WindowsMobile, Version=10.0.18362.0">
+    <SDKReference Include="WindowsMobile, Version=10.0.16299.0">
       <Name>Windows Mobile Extensions for the UWP</Name>
     </SDKReference>
   </ItemGroup>

@@ -16,6 +16,8 @@ parameters:
   nugetVersion: $(NUGET_VERSION)
   monoVersion: $(MONO_VERSION)
   apkTargetFolder: '$(build.artifactstagingdirectory)/androidApp'
+  provisionatorPath: 'build/provisioning/provisioning.csx'
+  provisionatorExtraArguments: ''
 
 jobs:
   - job: ${{ parameters.name }}
@@ -27,18 +29,47 @@ jobs:
     steps:
       - checkout: self
 
+      - task: xamops.azdevex.provisionator-task.provisionator@1
+        displayName: 'Provisionator'
+        condition: eq(variables['provisioning'], 'true')
+        inputs:
+          provisioning_script: ${{ parameters.provisionatorPath }}
+          provisioning_extra_args: ${{ parameters.provisionator.extraArguments }}
+
+      - task: Bash@3
+        displayName: 'Cake Provision'
+        condition: eq(variables['provisioning'], 'false')
+        inputs:
+          targetType: 'filePath'
+          filePath: 'build.sh'
+          arguments: --target provision
+
+      - task: DotNetCoreInstaller@0
+        displayName: 'Install .net core $(DOTNET_VERSION)'
+        condition: ne(variables['DOTNET_VERSION'], '')
+        inputs:
+          version: $(DOTNET_VERSION)
+
+      - script: |
+          export PATH="$PATH:/Users/vsts/.dotnet/tools"
+          export DOTNET_ROOT="$(dirname "$(readlink "$(command -v dotnet)")")"
+          dotnet new globaljson --sdk-version $(DOTNET_VERSION)
+        displayName: 'Add globaljson file'
+        condition: ne(variables['DOTNET_VERSION'], '')
+
       - script: '/bin/bash -c "sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh ${{ parameters.monoVersion }}"'
         displayName: 'Select MONO ${{ parameters.monoVersion }}'
 
       - task: NuGetToolInstaller@0
-        displayName: 'Use NuGet ${{ parameters.nugetVersion }}'
+        displayName: 'Use NuGet'
+        condition: ne(variables['NUGET_VERSION'], '')
         inputs:
-          versionSpec: ${{ parameters.nugetVersion }}
+          versionSpec: $(NUGET_VERSION)
 
       - task: NuGetCommand@2
         displayName: 'NuGet restore ${{ parameters.slnPath }}'
         inputs:
-          restoreSolution: ${{ parameters.slnPath }}
+          restoreSolution:  ${{ parameters.slnPath }}
 
       - task: MSBuild@1
         displayName: 'Build ${{ parameters.buildTaskPath  }}'

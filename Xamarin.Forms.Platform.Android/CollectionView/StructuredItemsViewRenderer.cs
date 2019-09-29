@@ -1,4 +1,5 @@
-﻿using Android.Content;
+﻿using System.ComponentModel;
+using Android.Content;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -11,6 +12,16 @@ namespace Xamarin.Forms.Platform.Android
 
 		public StructuredItemsViewRenderer(Context context) : base(context)
 		{
+		}
+
+		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs changedProperty)
+		{
+			base.OnElementPropertyChanged(sender, changedProperty);
+
+			if (changedProperty.Is(StructuredItemsView.ItemsLayoutProperty))
+			{
+				UpdateLayoutManager();
+			}
 		}
 
 		protected override TAdapter CreateAdapter()

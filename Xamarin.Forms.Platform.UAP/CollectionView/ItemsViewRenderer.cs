@@ -89,7 +89,13 @@ namespace Xamarin.Forms.Platform.UWP
 					incc.CollectionChanged -= ItemsChanged;
 				}
 
+				if (_collectionViewSource != null)
+				{
+					_collectionViewSource.Source = null;
+				}
+
 				_collectionViewSource = null;
+				ListViewBase.ItemsSource = null;
 				return;
 			}
 
@@ -124,7 +130,7 @@ namespace Xamarin.Forms.Platform.UWP
 					IsSourceGrouped = false
 				};
 			}
-			
+
 			ListViewBase.ItemsSource = _collectionViewSource.View;
 
 			UpdateEmptyViewVisibility();
@@ -197,6 +203,17 @@ namespace Xamarin.Forms.Platform.UWP
 
 			// Stop listening for ScrollTo requests
 			oldElement.ScrollToRequested -= ScrollToRequested;
+
+			if (ListViewBase != null)
+			{
+				ListViewBase.ItemsSource = null;
+			}
+
+			if (_collectionViewSource != null)
+			{
+				_collectionViewSource.Source = null;
+			}
+
 		}
 
 		void UpdateVerticalScrollBarVisibility()

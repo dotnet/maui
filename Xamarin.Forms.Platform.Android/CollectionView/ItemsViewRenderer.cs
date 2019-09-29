@@ -213,6 +213,10 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				UpdateItemsSource();
 			}
+			else if (changedProperty.Is(Xamarin.Forms.ItemsView.ItemTemplateProperty))
+			{
+				UpdateAdapter();
+			}
 			else if (changedProperty.Is(VisualElement.BackgroundColorProperty))
 			{
 				UpdateBackgroundColor();
@@ -221,7 +225,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				UpdateFlowDirection();
 			}
-			else if (changedProperty.IsOneOf(Xamarin.Forms.ItemsView.EmptyViewProperty, 
+			else if (changedProperty.IsOneOf(Xamarin.Forms.ItemsView.EmptyViewProperty,
 				Xamarin.Forms.ItemsView.EmptyViewTemplateProperty))
 			{
 				UpdateEmptyView();
@@ -276,7 +280,10 @@ namespace Xamarin.Forms.Platform.Android
 			ItemsViewAdapter = CreateAdapter();
 
 			if (GetAdapter() != _emptyViewAdapter)
+			{
+				SetAdapter(null);
 				SwapAdapter(ItemsViewAdapter, true);
+			}
 
 			oldItemViewAdapter?.Dispose();
 		}
@@ -591,6 +598,15 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
+		protected virtual void UpdateLayoutManager()
+		{
+			ItemsLayout = GetItemsLayout();
+			SetLayoutManager(SelectLayoutManager(ItemsLayout));
+
+			UpdateFlowDirection();
+			UpdateItemSpacing();
+		}
+
 		internal void UpdateEmptyViewVisibility()
 		{
 			if (ItemsViewAdapter == null)
@@ -600,18 +616,18 @@ namespace Xamarin.Forms.Platform.Android
 
 			var showEmptyView = ItemsView?.EmptyView != null && ItemsViewAdapter.ItemCount == 0;
 
-			Adapter currAdapter = GetAdapter();
-			if (showEmptyView && currAdapter != _emptyViewAdapter)
+			var currentAdapter = GetAdapter();
+			if (showEmptyView && currentAdapter != _emptyViewAdapter)
 			{
 				SwapAdapter(_emptyViewAdapter, true);
 
 				// TODO hartez 2018/10/24 17:34:36 If this works, cache this layout manager as _emptyLayoutManager	
 				SetLayoutManager(new LinearLayoutManager(Context));
 			}
-			else if (!showEmptyView && currAdapter != ItemsViewAdapter)
+			else if (!showEmptyView && currentAdapter != ItemsViewAdapter)
 			{
 				SwapAdapter(ItemsViewAdapter, true);
-				SetLayoutManager(SelectLayoutManager(ItemsLayout));
+				UpdateLayoutManager();
 			}
 		}
 

@@ -27,9 +27,11 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			Title = "Refresh View Tests";
 			var scrollViewContent =
-				new StackLayout();
+				new StackLayout()
+				{
+				};
 
-			Enumerable.Range(0, 1000).Select(_ => new Label() { Text = "Pull me down to refresh me" })
+			Enumerable.Range(0, 10).Select(_ => new Label() { HeightRequest = 200, Text = "Pull me down to refresh me" })
 				.ForEach(x => scrollViewContent.Children.Add(x));
 
 			_refreshView = new RefreshView()
@@ -38,7 +40,8 @@ namespace Xamarin.Forms.Controls.Issues
 				{
 					HeightRequest = 2000,
 					BackgroundColor = Color.Green,
-					Content = scrollViewContent
+					Content = scrollViewContent,
+					AutomationId = "LayoutContainer"
 				},
 				Command = new Command(async () =>
 				{
@@ -69,5 +72,31 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 		}
+#if UITEST
+		[Test]
+		public void IsRefreshingAndCommandTest()
+		{
+			RunningApp.Tap(q => q.Button("Toggle Refresh"));
+			RunningApp.WaitForElement(q => q.Marked("IsRefreshing: True"));
+			RunningApp.Screenshot("Refreshing");
+			RunningApp.WaitForElement(q => q.Marked("IsRefreshing: False"));
+			RunningApp.Screenshot("Refreshed");
+		}
+
+		[Test]
+		public void IsRefreshingAndCommandTest_SwipeDown()
+		{
+			RunningApp.WaitForElement(q => q.Marked("IsRefreshing: False"));
+
+			var container = RunningApp.WaitForElement("LayoutContainer")[0];
+
+			RunningApp.Pan(new Drag(container.Rect, Drag.Direction.TopToBottom, Drag.DragLength.Medium));
+
+			RunningApp.WaitForElement(q => q.Marked("IsRefreshing: True"));
+			RunningApp.Screenshot("Refreshing");
+			RunningApp.WaitForElement(q => q.Marked("IsRefreshing: False"));
+			RunningApp.Screenshot("Refreshed");
+		}
+#endif
 	}
 }

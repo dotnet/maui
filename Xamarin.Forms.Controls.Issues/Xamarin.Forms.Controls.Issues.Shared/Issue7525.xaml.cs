@@ -57,10 +57,13 @@ namespace Xamarin.Forms.Controls.Issues
         }
     }
 
+#endif
+
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 7525, "Carousel Position property doesn't change the position on page constructor", PlatformAffected.Android)]
 	public partial class Issue7525 : TestContentPage
 	{
+#if APP
 		private int _position;
 
 		public Issue7525()
@@ -81,6 +84,10 @@ namespace Xamarin.Forms.Controls.Issues
 
 			BindingContext = this;
 		}
-	}
+#else
+		protected override void Init()
+		{
+		}
 #endif
+	}
 }

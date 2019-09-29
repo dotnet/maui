@@ -17,11 +17,8 @@ namespace Xamarin.Forms.Xaml.Internals
 				IProvideValueTarget = new XamlValueTargetProvider(targetObject, node, context, null);
 			if (context != null)
 				IRootObjectProvider = new XamlRootObjectProvider(context.RootElement);
-			if (context != null && node != null)
-			{
-				IXamlTypeResolver = new XamlTypeResolver(node.NamespaceResolver, XamlParser.GetElementType,
-					context.RootElement.GetType().GetTypeInfo().Assembly);
-
+			if (context != null && node != null) {
+				IXamlTypeResolver = new XamlTypeResolver(node.NamespaceResolver, XamlParser.GetElementType, context.RootAssembly);
 				Add(typeof(IReferenceProvider), new ReferenceProvider(node));
 			}
 
@@ -31,52 +28,49 @@ namespace Xamarin.Forms.Xaml.Internals
 			IValueConverterProvider = new ValueConverterProvider();
 		}
 
-		public XamlServiceProvider()
-		{
-			IValueConverterProvider = new ValueConverterProvider();
-		}
+		public XamlServiceProvider() => IValueConverterProvider = new ValueConverterProvider();
 
 		internal IProvideValueTarget IProvideValueTarget
 		{
-			get { return (IProvideValueTarget)GetService(typeof (IProvideValueTarget)); }
-			set { services[typeof (IProvideValueTarget)] = value; }
+			get => (IProvideValueTarget)GetService(typeof(IProvideValueTarget));
+			set => services[typeof(IProvideValueTarget)] = value;
 		}
 
 		internal IXamlTypeResolver IXamlTypeResolver
 		{
-			get { return (IXamlTypeResolver)GetService(typeof (IXamlTypeResolver)); }
-			set { services[typeof (IXamlTypeResolver)] = value; }
+			get => (IXamlTypeResolver)GetService(typeof(IXamlTypeResolver));
+			set => services[typeof(IXamlTypeResolver)] = value;
 		}
 
 		internal IRootObjectProvider IRootObjectProvider
 		{
-			get { return (IRootObjectProvider)GetService(typeof (IRootObjectProvider)); }
-			set { services[typeof (IRootObjectProvider)] = value; }
+			get => (IRootObjectProvider)GetService(typeof(IRootObjectProvider));
+			set => services[typeof(IRootObjectProvider)] = value;
 		}
 
 		internal IXmlLineInfoProvider IXmlLineInfoProvider
 		{
-			get { return (IXmlLineInfoProvider)GetService(typeof (IXmlLineInfoProvider)); }
-			set { services[typeof (IXmlLineInfoProvider)] = value; }
-		}
-
-		[Obsolete]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		internal INameScopeProvider INameScopeProvider
-		{
-			get { return (INameScopeProvider)GetService(typeof (INameScopeProvider)); }
-			set { services[typeof (INameScopeProvider)] = value; }
+			get => (IXmlLineInfoProvider)GetService(typeof(IXmlLineInfoProvider));
+			set => services[typeof(IXmlLineInfoProvider)] = value;
 		}
 
 		internal IValueConverterProvider IValueConverterProvider
 		{
-			get { return (IValueConverterProvider)GetService(typeof (IValueConverterProvider)); }
-			set { services[typeof (IValueConverterProvider)] = value; }
+			get => (IValueConverterProvider)GetService(typeof(IValueConverterProvider));
+			set => services[typeof(IValueConverterProvider)] = value;
 		}
 
 		public object GetService(Type serviceType) => services.TryGetValue(serviceType, out var service) ? service : null;
 
 		public void Add(Type type, object service) => services.Add(type, service);
+
+		[Obsolete]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		internal INameScopeProvider INameScopeProvider
+		{
+			get { return (INameScopeProvider)GetService(typeof(INameScopeProvider)); }
+			set { services[typeof(INameScopeProvider)] = value; }
+		}
 	}
 
 	class XamlValueTargetProvider : IProvideParentValues, IProvideValueTarget
@@ -227,7 +221,7 @@ namespace Xamarin.Forms.Xaml.Internals
 
 			var namespaceuri = namespaceResolver.LookupNamespace(prefix);
 			if (namespaceuri == null) {
-				exception = new XamlParseException(string.Format("No xmlns declaration for prefix \"{0}\"", prefix), xmlLineInfo);
+				exception = new XamlParseException($"No xmlns declaration for prefix \"{prefix}\"", xmlLineInfo);
 				return null;
 			}
 
@@ -239,20 +233,14 @@ namespace Xamarin.Forms.Xaml.Internals
 
 	class XamlRootObjectProvider : IRootObjectProvider
 	{
-		public XamlRootObjectProvider(object rootObject)
-		{
-			RootObject = rootObject;
-		}
+		public XamlRootObjectProvider(object rootObject) => RootObject = rootObject;
 
 		public object RootObject { get; }
 	}
 
 	public class XmlLineInfoProvider : IXmlLineInfoProvider
 	{
-		public XmlLineInfoProvider(IXmlLineInfo xmlLineInfo)
-		{
-			XmlLineInfo = xmlLineInfo;
-		}
+		public XmlLineInfoProvider(IXmlLineInfo xmlLineInfo) => XmlLineInfo = xmlLineInfo;
 
 		public IXmlLineInfo XmlLineInfo { get; }
 	}

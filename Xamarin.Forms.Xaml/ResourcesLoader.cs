@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Xaml
 				if (stream == null)
 					throw new XamlParseException($"No resource found for '{resourceId}'.", lineInfo);
 				using (var reader = new StreamReader(stream)) {
-					rd.LoadFromXaml(reader.ReadToEnd());
+					rd.LoadFromXaml(reader.ReadToEnd(), assembly);
 					return rd;
 				}
 			}

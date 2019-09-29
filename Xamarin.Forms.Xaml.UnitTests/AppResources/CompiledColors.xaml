@@ -2,7 +2,9 @@
 <?xaml-comp compile="true" ?>
 <ResourceDictionary
     xmlns="http://xamarin.com/schemas/2014/forms"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"> 
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="using:Xamarin.Forms.Xaml.UnitTests"> 
+
   <Color x:Key="AccentColor">#FF4B14</Color>
   <Color x:Key="BlackOpacityColor">#99253748</Color>
   <Color x:Key="BlackTextColor">#253748</Color>
@@ -20,4 +22,8 @@
   <Color x:Key="DarkBackgroundColor">#C0C0C0</Color>
   <Color x:Key="MediumGrayTextColor">#4d4d4d</Color>
   <Color x:Key="LightTextColor">#999999</Color>
+    
+  <Style TargetType="local:Gh7531" x:Key="style">
+    <Setter Property="BackgroundColor" Value="HotPink"/>
+  </Style>
 </ResourceDictionary>

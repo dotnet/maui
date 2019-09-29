@@ -19,6 +19,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewHeaderFooterView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewItemsUpdatingScrollMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3475.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue5354.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue7621.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -1054,6 +1057,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue5503.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LabelTextType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellTitleView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue5159.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7311.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7053.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6894.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6929.cs" />
@@ -1063,6 +1068,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue7525.xaml.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7395.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7582.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -1384,6 +1390,9 @@
     <Compile Update="C:\Users\hartez\Documents\Xamarin\Xamarin.Forms\Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Issue7519Xaml.xaml.cs">
       <DependentUpon>Issue7519Xaml.xaml</DependentUpon>
     </Compile>
+    <Compile Update="$(MSBuildThisFileDirectory)Issue5354.xaml.cs">
+      <DependentUpon>Issue5354.xaml</DependentUpon>
+    </Compile>
     <Compile Update="$(MSBuildThisFileDirectory)Issue7621.xaml.cs">
       <DependentUpon>Issue7621.xaml</DependentUpon>
     </Compile>
@@ -1426,6 +1435,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7621.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+    <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue5354.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </EmbeddedResource>

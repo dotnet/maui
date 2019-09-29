@@ -145,7 +145,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			var labelDragging = new Label { Text = nameof(carouselView.IsDragging) };
 			var switchDragging = new Switch();
 
-			switchDragging.SetBinding(Switch.IsToggledProperty, nameof(carouselView.IsDragging));
+			switchDragging.SetBinding(Switch.IsToggledProperty, nameof(carouselView.IsDragging), BindingMode.OneWay);
 			stacklayoutInfo.Children.Add(labelDragging);
 			stacklayoutInfo.Children.Add(switchDragging);
 

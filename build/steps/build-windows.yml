@@ -12,7 +12,6 @@ parameters:
   releaseBuildConfiguration : 'Release'
   buildPlatform : 'any cpu'
   msbuildExtraArguments : ''
-  nugetVersion: $(NUGET_VERSION)
   artifactsTargetFolder: '$(build.artifactstagingdirectory)'
   artifactsName: 'win_build'
   nunitTestAdapterFolder: 'packages/NUnitTestAdapter.AnyVersion/build/'
@@ -34,12 +33,34 @@ jobs:
           BuildConfiguration:  ${{ parameters.releaseBuildConfiguration }}
           BuildPlatform: ${{ parameters.buildPlatform }}
     steps:
+    - script: build.cmd -Target provision
+      displayName: 'Cake Provision'
+      condition: eq(variables['provisioning'], 'false')
+  
+    - task: xamops.azdevex.provisionator-task.provisionator@1
+      displayName: 'Provisionator'
+      condition: eq(variables['provisioning'], 'true')
+      inputs:
+        provisioning_script: ${{ parameters.provisionatorPath }}
+        provisioning_extra_args: ${{ parameters.provisionator.extraArguments }}
+
+    #- task: DotNetCoreInstaller@0
+    #  displayName: "Install .net core $(DOTNET_VERSION)"
+    #  condition: ne(variables['DOTNET_VERSION'], '')
+    #  inputs:
+    #    version: $(DOTNET_VERSION)
+
+    #- script: |
+    #    dotnet new globaljson --sdk-version $(DOTNET_VERSION)
+    #  displayName: 'Add globaljson file'
+    #  condition: ne(variables['DOTNET_VERSION'], '')
 
     - task: NuGetToolInstaller@0
-      displayName: 'Use NuGet ${{ parameters.nugetVersion }}'
+      displayName: 'Use NuGet $(NUGET_VERSION)'
+      condition: ne(variables['NUGET_VERSION'], '')
       inputs:
-        versionSpec: ${{ parameters.nugetVersion }}
-
+        versionSpec: $(NUGET_VERSION)
+          
     - task: NuGetCommand@2
       displayName: 'NuGet restore ${{ parameters.slnPath }}'
       inputs:
