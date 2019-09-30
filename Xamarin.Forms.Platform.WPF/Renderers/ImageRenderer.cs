@@ -162,7 +162,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 	public sealed class FontImageSourceHandler : IImageSourceHandler
 	{
-		public Task<System.Windows.Media.ImageSource> LoadImageAsync(ImageSource imagesource, CancellationToken cancelationToken = default)
+		public Task<System.Windows.Media.ImageSource> LoadImageAsync(ImageSource imagesource, CancellationToken cancelationToken = new CancellationToken())
 		{			
 			var fontsource = imagesource as FontImageSource;
 			var image = CreateGlyph(
