@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Android.Views;
 using Android.Widget;
 using AView = Android.Views.View;
 
@@ -77,7 +78,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			SetBasicContentDescription(control, element, ref defaultContentDescription);
 		}
 
-		internal static void SetFocusable(AView control, Element element, ref bool? defaultFocusable)
+		internal static void SetFocusable(AView control, Element element, ref bool? defaultFocusable, ref ImportantForAccessibility? defaultImportantForAccessibility)
 		{
 			if (element == null || control == null)
 			{
@@ -88,10 +89,15 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			{
 				defaultFocusable = control.Focusable;
 			}
+			if (!defaultImportantForAccessibility.HasValue)
+			{
+				defaultImportantForAccessibility = control.ImportantForAccessibility;
+			}
 
-			control.Focusable =
-				(bool)((bool?)element.GetValue(AutomationProperties.IsInAccessibleTreeProperty) ?? defaultFocusable);
-		}
+			bool? isInAccessibleTree = (bool?)element.GetValue(AutomationProperties.IsInAccessibleTreeProperty);
+			control.Focusable = (bool)(isInAccessibleTree ?? defaultFocusable);
+			control.ImportantForAccessibility = !isInAccessibleTree.HasValue ? (ImportantForAccessibility)defaultImportantForAccessibility : (bool)isInAccessibleTree ? ImportantForAccessibility.Yes : ImportantForAccessibility.No;
+	}
 
 		internal static void SetLabeledBy(AView control, Element element)
 		{
@@ -150,6 +156,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		string _defaultContentDescription;
 		bool? _defaultFocusable;
+		ImportantForAccessibility? _defaultImportantForAccessibility;
 		string _defaultHint;
 		bool _disposed;
 
@@ -202,7 +209,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			=> SetContentDescription(Control, Element, ref _defaultContentDescription, ref _defaultHint);
 
 		void SetFocusable()
-			=> SetFocusable(Control, Element, ref _defaultFocusable);
+			=> SetFocusable(Control, Element, ref _defaultFocusable, ref _defaultImportantForAccessibility);
 
 		bool SetHint()
 			=> SetHint(Control, Element, ref _defaultHint);
@@ -210,12 +217,12 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		void SetLabeledBy()
 			=> SetLabeledBy(Control, Element);
 
-		internal static void AccessibilitySettingsChanged(AView control, Element element, ref string _defaultHint, ref string _defaultContentDescription, ref bool? _defaultFocusable)
+		internal static void AccessibilitySettingsChanged(AView control, Element element, ref string _defaultHint, ref string _defaultContentDescription, ref bool? _defaultFocusable, ref ImportantForAccessibility? _defaultImportantForAccessibility)
 		{
 			SetHint(control, element, ref _defaultHint);
 			SetAutomationId(control, element);
 			SetContentDescription(control, element, ref _defaultContentDescription, ref _defaultHint);
-			SetFocusable(control, element, ref _defaultFocusable);
+			SetFocusable(control, element, ref _defaultFocusable, ref _defaultImportantForAccessibility);
 			SetLabeledBy(control, element);
 		}
 
@@ -224,7 +231,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			string _defaultHint = String.Empty;
 			string _defaultContentDescription = String.Empty;
 			bool? _defaultFocusable = null;
-			AccessibilitySettingsChanged(control, element, ref _defaultHint, ref _defaultContentDescription, ref _defaultFocusable);
+			ImportantForAccessibility? _defaultImportantForAccessibility = null;
+			AccessibilitySettingsChanged(control, element, ref _defaultHint, ref _defaultContentDescription, ref _defaultFocusable, ref _defaultImportantForAccessibility);
 		}
 
 
@@ -253,7 +261,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				e.NewElement.PropertyChanged += OnElementPropertyChanged;
 			}
 
-			AccessibilitySettingsChanged(Control, Element, ref _defaultHint, ref _defaultContentDescription, ref _defaultFocusable);
+			AccessibilitySettingsChanged(Control, Element, ref _defaultHint, ref _defaultContentDescription, ref _defaultFocusable, ref _defaultImportantForAccessibility);
 		}
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

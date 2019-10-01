@@ -49,6 +49,7 @@ namespace Xamarin.Forms.Platform.Android
 		ViewGroup _container;
 		string _defaultContentDescription;
 		bool? _defaultFocusable;
+		ImportantForAccessibility? _defaultImportantForAccessibility;
 		string _defaultHint;
 
 		bool _disposed;
@@ -245,7 +246,7 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			}
 
-			AutomationPropertiesProvider.SetFocusable(ControlUsedForAutomation, Element, ref _defaultFocusable);
+			AutomationPropertiesProvider.SetFocusable(ControlUsedForAutomation, Element, ref _defaultFocusable, ref _defaultImportantForAccessibility);
 		}
 
 		protected void SetNativeControl(TNativeView control)
