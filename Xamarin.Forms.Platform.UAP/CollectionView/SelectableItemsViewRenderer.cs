@@ -27,9 +27,9 @@ namespace Xamarin.Forms.Platform.UWP
 			base.TearDownOldElement(oldElement);
 		}
 
-		protected override void SetUpNewElement(ItemsView newElement, bool setUpProperties)
+		protected override void SetUpNewElement(ItemsView newElement)
 		{
-			base.SetUpNewElement(newElement, setUpProperties);
+			base.SetUpNewElement(newElement);
 
 			if (newElement == null)
 			{
