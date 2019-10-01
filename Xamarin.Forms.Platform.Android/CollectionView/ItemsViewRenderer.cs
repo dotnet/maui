@@ -330,8 +330,13 @@ namespace Xamarin.Forms.Platform.Android
 			// Listen for ScrollTo requests
 			ItemsView.ScrollToRequested += ScrollToRequested;
 
-			_recyclerViewScrollListener = new RecyclerViewScrollListener<TItemsView, TItemsViewSource>(ItemsView, ItemsViewAdapter);
+			_recyclerViewScrollListener = CreateScrollListener();
 			AddOnScrollListener(_recyclerViewScrollListener);
+		}
+
+		protected virtual RecyclerViewScrollListener<TItemsView, TItemsViewSource> CreateScrollListener()
+		{
+			return new RecyclerViewScrollListener<TItemsView, TItemsViewSource>(ItemsView, ItemsViewAdapter);
 		}
 
 		protected abstract IItemsLayout GetItemsLayout();
