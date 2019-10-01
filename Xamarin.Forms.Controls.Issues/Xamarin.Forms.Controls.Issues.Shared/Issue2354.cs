@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var cell = new DataTemplate (typeof(CustomCell));
 
-			var listView = new ListView {
+			var listView = new ListView(ListViewCachingStrategy.RecycleElement) {
 				ItemsSource = presidents,
 				ItemTemplate = cell,
 				RowHeight = 200

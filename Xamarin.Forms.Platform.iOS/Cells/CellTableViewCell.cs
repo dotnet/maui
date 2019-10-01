@@ -108,6 +108,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (_cell != null)
 				{
 					_cell.PropertyChanged -= HandlePropertyChanged;
+					CellRenderer.SetRealCell(_cell, null);
 				}
 				_cell = null;
 			}
