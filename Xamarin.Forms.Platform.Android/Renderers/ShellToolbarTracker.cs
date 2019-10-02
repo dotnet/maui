@@ -462,7 +462,10 @@ namespace Xamarin.Forms.Platform.Android
 
 					menuitem.SetTitleOrContentDescription(item);
 					menuitem.SetEnabled(item.IsEnabled);
-					menuitem.SetShowAsAction(ShowAsAction.Always);
+
+					if (item.Order != ToolbarItemOrder.Secondary)
+						menuitem.SetShowAsAction(ShowAsAction.Always);
+
 					menuitem.SetOnMenuItemClickListener(new GenericMenuClickListener(((IMenuItemController)item).Activate));
 					
 					if(TintColor != Color.Default)
