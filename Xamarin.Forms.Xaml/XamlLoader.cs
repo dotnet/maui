@@ -35,6 +35,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.Xaml.Diagnostics;
 
 namespace Xamarin.Forms.Xaml.Internals
 {
@@ -89,7 +90,11 @@ namespace Xamarin.Forms.Xaml
 						continue;
 					}
 
-					var rootnode = new RuntimeRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), view, (IXmlNamespaceResolver)reader);
+					var rootnode = new RuntimeRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), view, (IXmlNamespaceResolver)reader) { LineNumber = ((IXmlLineInfo)reader).LineNumber, LinePosition = ((IXmlLineInfo)reader).LinePosition };
+					if (XamlFilePathAttribute.GetFilePathForObject(view) is string path) {
+						VisualDiagnostics.RegisterSourceInfo(view, new Uri(path, UriKind.Relative), ((IXmlLineInfo)rootnode).LineNumber, ((IXmlLineInfo)rootnode).LinePosition);
+						VisualDiagnostics.SendVisualTreeChanged(null, view);
+					}
 					XamlParser.ParseXaml(rootnode, reader);
 #pragma warning disable 0618
 					var doNotThrow = ResourceLoader.ExceptionHandler2 != null || Internals.XamlLoader.DoNotThrowOnExceptions;
@@ -127,7 +132,8 @@ namespace Xamarin.Forms.Xaml
 					}
 
 					var typeArguments = XamlParser.GetTypeArguments(reader);
-					var rootnode = new RuntimeRootNode(new XmlType(reader.NamespaceURI, reader.Name, typeArguments), null, (IXmlNamespaceResolver)reader);
+					var rootnode = new RuntimeRootNode(new XmlType(reader.NamespaceURI, reader.Name, typeArguments), null, (IXmlNamespaceResolver)reader) { LineNumber = ((IXmlLineInfo)reader).LineNumber, LinePosition = ((IXmlLineInfo)reader).LinePosition };
+
 					XamlParser.ParseXaml(rootnode, reader);
 					var visitorContext = new HydrationContext {
 						ExceptionHandler = doNotThrow ? ehandler : (Action<Exception>)null,
@@ -135,6 +141,11 @@ namespace Xamarin.Forms.Xaml
 					var cvv = new CreateValuesVisitor(visitorContext);
 					cvv.Visit((ElementNode)rootnode, null);
 					inflatedView = rootnode.Root = visitorContext.Values[rootnode];
+					if (XamlFilePathAttribute.GetFilePathForObject(inflatedView) is string path)
+					{
+						VisualDiagnostics.RegisterSourceInfo(inflatedView, new Uri(path, UriKind.Relative), ((IXmlLineInfo)rootnode).LineNumber, ((IXmlLineInfo)rootnode).LinePosition);
+						VisualDiagnostics.SendVisualTreeChanged(null, inflatedView);
+					}
 					visitorContext.RootElement = inflatedView as BindableObject;
 
 					Visit(rootnode, visitorContext, useDesignProperties);
@@ -162,7 +173,7 @@ namespace Xamarin.Forms.Xaml
 					}
 
 					//the root is set to null, and not to rootView, on purpose as we don't want to erase the current Resources of the view
-					RootNode rootNode = new RuntimeRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), null, (IXmlNamespaceResolver)reader);
+					RootNode rootNode = new RuntimeRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), null, (IXmlNamespaceResolver)reader) { LineNumber = ((IXmlLineInfo)reader).LineNumber, LinePosition = ((IXmlLineInfo)reader).LinePosition };
 					XamlParser.ParseXaml(rootNode, reader);
 					var rNode = (IElementNode)rootNode;
 					if (!rNode.Properties.TryGetValue(new XmlName(XamlParser.XFUri, "Resources"), out var resources))

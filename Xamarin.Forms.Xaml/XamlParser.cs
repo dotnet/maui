@@ -46,8 +46,7 @@ namespace Xamarin.Forms.Xaml
 
 		public static void ParseXaml(RootNode rootNode, XmlReader reader)
 		{
-			IList<KeyValuePair<string, string>> xmlns;
-			var attributes = ParseXamlAttributes(reader, out xmlns);
+			var attributes = ParseXamlAttributes(reader, out IList<KeyValuePair<string, string>> xmlns);
 			var prefixes = PrefixesToIgnore(xmlns);
 			(rootNode.IgnorablePrefixes ?? (rootNode.IgnorablePrefixes=new List<string>())).AddRange(prefixes);
 			rootNode.Properties.AddRange(attributes);
@@ -139,13 +138,13 @@ namespace Xamarin.Forms.Xaml
 			var skipFirstRead = nested;
 			Debug.Assert(reader.NodeType == XmlNodeType.Element);
 			var name = reader.Name;
-			List<INode> nodes = new List<INode>();
-			INode node = null;
+			var nodes = new List<INode>();
 
 			while (skipFirstRead || reader.Read())
 			{
 				skipFirstRead = false;
 
+				INode node;
 				switch (reader.NodeType)
 				{
 					case XmlNodeType.EndElement:
