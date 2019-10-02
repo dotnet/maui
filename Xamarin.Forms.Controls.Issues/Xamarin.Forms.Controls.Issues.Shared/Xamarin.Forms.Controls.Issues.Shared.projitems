@@ -1069,7 +1069,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue6894.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6929.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\ApiLabel.cs" />
-<<<<<<< HEAD
     <Compile Include="$(MSBuildThisFileDirectory)Issue7035.xaml.cs">
       <DependentUpon>Issue7035.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -1079,12 +1078,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue7582.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7563.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7678.cs" />
-=======
     <Compile Include="$(MSBuildThisFileDirectory)Issue6491.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7582.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7563.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6127.cs" />
->>>>>>> 4.2.0
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">
