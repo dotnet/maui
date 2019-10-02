@@ -21,27 +21,34 @@ namespace Xamarin.Forms.Platform.UWP
 
 			var device = CanvasDevice.GetSharedDevice();
 			var dpi = Math.Max(_minimumDpi, Windows.Graphics.Display.DisplayInformation.GetForCurrentView().LogicalDpi);
-			var canvasSize = (float)fontsource.Size + 2;
 
-			var imageSource = new CanvasImageSource(device, canvasSize, canvasSize, dpi);
-			using (var ds = imageSource.CreateDrawingSession(Windows.UI.Colors.Transparent))
+			var textFormat = new CanvasTextFormat
 			{
-				var textFormat = new CanvasTextFormat
+				FontFamily = fontsource.FontFamily,
+				FontSize = (float)fontsource.Size,
+				HorizontalAlignment = CanvasHorizontalAlignment.Center,
+				VerticalAlignment = CanvasVerticalAlignment.Center,
+				Options = CanvasDrawTextOptions.Default
+			};
+
+			using (var layout = new CanvasTextLayout(device, fontsource.Glyph, textFormat, (float)fontsource.Size, (float)fontsource.Size))
+			{
+				var canvasWidth = (float)layout.LayoutBounds.Width + 2;
+				var canvasHeight = (float)layout.LayoutBounds.Height + 2;
+
+				var imageSource = new CanvasImageSource(device, canvasWidth, canvasHeight, dpi);
+				using (var ds = imageSource.CreateDrawingSession(Windows.UI.Colors.Transparent))
 				{
-					FontFamily = fontsource.FontFamily,
-					FontSize = (float)fontsource.Size,
-					HorizontalAlignment = CanvasHorizontalAlignment.Center,
-					Options = CanvasDrawTextOptions.Default,
-				};
-				var iconcolor = (fontsource.Color != Color.Default ? fontsource.Color : Color.White).ToWindowsColor();
+					var iconcolor = (fontsource.Color != Color.Default ? fontsource.Color : Color.White).ToWindowsColor();
 
-				// offset by 1 as we added a 1 inset
-				var x = textFormat.FontSize / 2f + 1f;
-				var y = -1f;
-				ds.DrawText(fontsource.Glyph, x, y, iconcolor, textFormat);
+					// offset by 1 as we added a 1 inset
+					var x = (float)layout.DrawBounds.X * -1;
+
+					ds.DrawTextLayout(layout, x, 1f, iconcolor);
+				}
+
+				return Task.FromResult((Windows.UI.Xaml.Media.ImageSource)imageSource);
 			}
-
-			return Task.FromResult((Windows.UI.Xaml.Media.ImageSource)imageSource);
 		}
 
 		public Task<IconElement> LoadIconElementAsync(ImageSource imagesource, CancellationToken cancellationToken = default(CancellationToken))
