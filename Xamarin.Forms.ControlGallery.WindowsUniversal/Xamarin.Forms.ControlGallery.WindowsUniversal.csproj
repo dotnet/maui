@@ -121,6 +121,7 @@
   <ItemGroup>
     <Compile Include="AttachedStateEffectRenderer.cs" />
     <Compile Include="BorderEffect.cs" />
+    <Compile Include="CustomSwitchRenderer.cs" />
     <Compile Include="DisposePageRenderer.cs" />
     <Compile Include="PlatformSpecificCoreGalleryFactory.cs" />
     <Compile Include="RegistrarValidationService.cs" />
