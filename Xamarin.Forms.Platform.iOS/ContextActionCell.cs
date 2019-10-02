@@ -662,7 +662,28 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			NSIndexPath _lastPath;
 
-			public SelectGestureRecognizer() : base(Tapped)
+			public override void TouchesEnded(NSSet touches, UIEvent evt)
+			{
+				if (_lastPath == null)
+					return;
+
+				var table = (UITableView)View;
+				if (!_lastPath.Equals(table.IndexPathForSelectedRow))
+					table.SelectRow(_lastPath, false, UITableViewScrollPosition.None);
+				table.Source.RowSelected(table, _lastPath);
+			}
+
+			public override void TouchesBegan(NSSet touches, UIEvent evt)
+			{
+				if (_lastPath == null)
+					return;
+
+				var table = (UITableView)View;
+				if (!_lastPath.Equals(table.IndexPathForSelectedRow))
+					table.Source.RowHighlighted(table, _lastPath); 
+			}
+
+			public SelectGestureRecognizer()
 			{
 				ShouldReceiveTouch = (recognizer, touch) =>
 				{
@@ -677,19 +698,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 					return cell != null;
 				};
-			}
-
-			static void Tapped(UIGestureRecognizer recognizer)
-			{
-				var selector = (SelectGestureRecognizer)recognizer;
-
-				if (selector._lastPath == null)
-					return;
-
-				var table = (UITableView)recognizer.View;
-				if (!selector._lastPath.Equals(table.IndexPathForSelectedRow))
-					table.SelectRow(selector._lastPath, false, UITableViewScrollPosition.None);
-				table.Source.RowSelected(table, selector._lastPath);
 			}
 		}
 

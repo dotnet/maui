@@ -121,6 +121,7 @@
   <ItemGroup>
     <Compile Include="AttachedStateEffectRenderer.cs" />
     <Compile Include="BorderEffect.cs" />
+    <Compile Include="CustomSwitchRenderer.cs" />
     <Compile Include="DisposePageRenderer.cs" />
     <Compile Include="PlatformSpecificCoreGalleryFactory.cs" />
     <Compile Include="RegistrarValidationService.cs" />
@@ -251,6 +252,11 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\Fonts\ionicons.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Assets\Fonts\fa-solid-900.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

@@ -1,8 +1,7 @@
-﻿using System;
-using System.Globalization;
-using Windows.UI.Xaml;
+﻿using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Xamarin.Forms.Platform.UWP;
+using UWPApp = Windows.UI.Xaml.Application;
+using UWPControlTemplate = Windows.UI.Xaml.Controls.ControlTemplate;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -15,6 +14,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public FormsGridView()
 		{
+			Template = (UWPControlTemplate)UWPApp.Current.Resources["FormsListViewTemplate"];
+
 			// TODO hartez 2018/06/06 09:52:16 Do we need to clean this up? If so, where?	
 			RegisterPropertyChangedCallback(ItemsPanelProperty, ItemsPanelChanged);
 			Loaded += OnLoaded;
@@ -47,13 +48,13 @@ namespace Xamarin.Forms.Platform.UWP
 		public void UseHorizontalItemsPanel()
 		{
 			ItemsPanel =
-				(ItemsPanelTemplate)Windows.UI.Xaml.Application.Current.Resources["HorizontalGridItemsPanel"];
+				(ItemsPanelTemplate)UWPApp.Current.Resources["HorizontalGridItemsPanel"];
 		}
 
 		public void UseVerticalItemsPanel()
 		{
 			ItemsPanel =
-				(ItemsPanelTemplate)Windows.UI.Xaml.Application.Current.Resources["VerticalGridItemsPanel"];
+				(ItemsPanelTemplate)UWPApp.Current.Resources["VerticalGridItemsPanel"];
 		}
 
 		void FindItemsWrapGrid()

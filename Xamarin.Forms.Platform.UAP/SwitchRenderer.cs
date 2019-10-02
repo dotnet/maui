@@ -131,6 +131,7 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 
 			var grid = Control.GetFirstDescendant<Windows.UI.Xaml.Controls.Grid>();
+
 			if (grid == null)
 				return;
 
@@ -143,22 +144,30 @@ namespace Xamarin.Forms.Platform.UWP
 				.KeyFrames.First();
 
 			if (_originalThumbOnBrush == null)
-				_originalThumbOnBrush = (Brush)frame.Value;
+			{
+				if (frame.Value is Windows.UI.Color color)
+					_originalOnColorBrush = new SolidColorBrush(color);
+
+				if (frame.Value is Brush brush)
+					_originalThumbOnBrush = brush;
+			}
 
 			if (!Element.ThumbColor.IsDefault)
-				frame.Value = new SolidColorBrush(Element.ThumbColor.ToWindowsColor())
-				{
-					Opacity = _originalThumbOnBrush.Opacity
-				};
+			{
+				var brush = Element.ThumbColor.ToBrush();
+				brush.Opacity = _originalThumbOnBrush.Opacity;
+				frame.Value = brush;
+			}
 			else
 				frame.Value = _originalThumbOnBrush;
 
 			var thumb = (Ellipse)grid.FindName("SwitchKnobOn");
+
 			if (_originalThumbOnBrush == null)
 				_originalThumbOnBrush = thumb.Fill;
 
 			if (!Element.ThumbColor.IsDefault)
-				thumb.Fill = new SolidColorBrush(Element.ThumbColor.ToWindowsColor());
+				thumb.Fill = Element.ThumbColor.ToBrush();
 			else
 				thumb.Fill = _originalThumbOnBrush;
 		}

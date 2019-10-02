@@ -1,5 +1,7 @@
 ﻿using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using UWPApp = Windows.UI.Xaml.Application;
+using UWPControlTemplate = Windows.UI.Xaml.Controls.ControlTemplate;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -7,6 +9,11 @@ namespace Xamarin.Forms.Platform.UWP
 	{
 		ContentControl _emptyViewContentControl;
 		FrameworkElement _emptyView;
+
+		public FormsListView()
+		{
+			Template = (UWPControlTemplate)UWPApp.Current.Resources["FormsListViewTemplate"];
+		}
 
 		public Visibility EmptyViewVisibility
 		{

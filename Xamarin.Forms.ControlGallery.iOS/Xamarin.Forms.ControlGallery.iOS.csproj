@@ -333,6 +333,7 @@
     <BundleResource Include="Resources\icon_bookmark%402x.png" />
     <BundleResource Include="Resources\xamarinstore.jpg" />
     <BundleResource Include="Resources\cardBackground%402x.png" />
+    <BundleResource Include="Resources\Fonts\fa-solid-900.ttf" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />

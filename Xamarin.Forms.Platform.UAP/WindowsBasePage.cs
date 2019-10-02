@@ -48,7 +48,11 @@ namespace Xamarin.Forms.Platform.UWP
 		void OnApplicationPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == "MainPage")
+			{
+				if (Platform == null)
+					RegisterWindow(_application.MainPage);
 				Platform.SetPage(_application.MainPage);
+			}
 		}
 
 		void OnApplicationResuming(object sender, object e)

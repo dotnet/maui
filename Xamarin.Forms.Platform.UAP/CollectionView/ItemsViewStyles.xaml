@@ -49,44 +49,11 @@
         </Setter>
     </Style>
 
-    <Style TargetType="local:FormsListView">
-        <Setter Property="IsTabStop" Value="False" />
-        <Setter Property="TabNavigation" Value="Once" />
-        <Setter Property="IsSwipeEnabled" Value="True" />
-        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
-        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
-        <Setter Property="ScrollViewer.IsHorizontalRailEnabled" Value="False" />
-        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Enabled" />
-        <Setter Property="ScrollViewer.IsVerticalRailEnabled" Value="True" />
-        <Setter Property="ScrollViewer.ZoomMode" Value="Disabled" />
-        <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
-        <Setter Property="ScrollViewer.BringIntoViewOnFocusChange" Value="True" />
-        <Setter Property="UseSystemFocusVisuals" Value="True" />
-        <Setter Property="ItemContainerTransitions">
-            <Setter.Value>
-                <TransitionCollection>
-                    <AddDeleteThemeTransition />
-                    <ContentThemeTransition />
-                    <ReorderThemeTransition />
-                    <EntranceThemeTransition IsStaggeringEnabled="False" />
-                </TransitionCollection>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="ItemsPanel">
-            <Setter.Value>
-                <ItemsPanelTemplate>
-                    <ItemsStackPanel Orientation="Vertical" />
-                </ItemsPanelTemplate>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="local:FormsListView">
-                    <Border BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}">
-                        <Grid>
-                            <ContentControl x:Name="EmptyViewContentControl" Visibility="{TemplateBinding EmptyViewVisibility}"></ContentControl>
-                            <ScrollViewer x:Name="ScrollViewer" 
+    <ControlTemplate x:Key="FormsListViewTemplate" TargetType="local:FormsListView">
+        <Border BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}">
+            <Grid>
+                <ContentControl x:Name="EmptyViewContentControl" Visibility="{TemplateBinding EmptyViewVisibility}"></ContentControl>
+                <ScrollViewer x:Name="ScrollViewer" 
                                 TabNavigation="{TemplateBinding TabNavigation}"
                                 HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
                                 HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
@@ -100,61 +67,23 @@
                                 IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
                                 BringIntoViewOnFocusChange="{TemplateBinding ScrollViewer.BringIntoViewOnFocusChange}"
                                 AutomationProperties.AccessibilityView="Raw">
-                                <ItemsPresenter Header="{TemplateBinding Header}"
+                    <ItemsPresenter Header="{TemplateBinding Header}"
                                     HeaderTemplate="{TemplateBinding HeaderTemplate}"
                                     HeaderTransitions="{TemplateBinding HeaderTransitions}"
                                     Footer="{TemplateBinding Footer}"
                                     FooterTemplate="{TemplateBinding FooterTemplate}"
                                     FooterTransitions="{TemplateBinding FooterTransitions}"
                                     Padding="{TemplateBinding Padding}" />
-                            </ScrollViewer>
-                        </Grid>
-                    </Border>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </ControlTemplate>
 
-    <Style TargetType="local:FormsGridView">
-        <Setter Property="Padding" Value="0,0,0,10" />
-        <Setter Property="IsTabStop" Value="False" />
-        <Setter Property="TabNavigation" Value="Once" />
-        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
-        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
-        <Setter Property="ScrollViewer.IsHorizontalRailEnabled" Value="False" />
-        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Enabled" />
-        <Setter Property="ScrollViewer.IsVerticalRailEnabled" Value="True" />
-        <Setter Property="ScrollViewer.ZoomMode" Value="Disabled" />
-        <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
-        <Setter Property="ScrollViewer.BringIntoViewOnFocusChange" Value="True" />
-        <Setter Property="IsSwipeEnabled" Value="True" />
-        <Setter Property="UseSystemFocusVisuals" Value="True" />
-        <Setter Property="FocusVisualMargin" Value="-2" />
-        <Setter Property="ItemContainerTransitions">
-            <Setter.Value>
-                <TransitionCollection>
-                    <AddDeleteThemeTransition />
-                    <ContentThemeTransition />
-                    <ReorderThemeTransition />
-                    <EntranceThemeTransition IsStaggeringEnabled="False" />
-                </TransitionCollection>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="ItemsPanel">
-            <Setter.Value>
-                <ItemsPanelTemplate>
-                    <ItemsWrapGrid Orientation="Horizontal" />
-                </ItemsPanelTemplate>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="local:FormsGridView">
-                    <Border BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}">
-                        <Grid>
-                            <ContentControl x:Name="EmptyViewContentControl" Visibility="{TemplateBinding EmptyViewVisibility}"></ContentControl>
-                            <ScrollViewer x:Name="ScrollViewer"
+    <ControlTemplate x:Key="FormsGridViewTemplate" TargetType="local:FormsGridView">
+        <Border BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}">
+            <Grid>
+                <ContentControl x:Name="EmptyViewContentControl" Visibility="{TemplateBinding EmptyViewVisibility}"></ContentControl>
+                <ScrollViewer x:Name="ScrollViewer"
                                 TabNavigation="{TemplateBinding TabNavigation}"
                                 HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
                                 HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
@@ -168,33 +97,24 @@
                                 IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
                                 BringIntoViewOnFocusChange="{TemplateBinding ScrollViewer.BringIntoViewOnFocusChange}"
                                 AutomationProperties.AccessibilityView="Raw">
-                                <ItemsPresenter Header="{TemplateBinding Header}"
+                    <ItemsPresenter Header="{TemplateBinding Header}"
                                     HeaderTemplate="{TemplateBinding HeaderTemplate}"
                                     HeaderTransitions="{TemplateBinding HeaderTransitions}"
                                     Footer="{TemplateBinding Footer}"
                                     FooterTemplate="{TemplateBinding FooterTemplate}"
                                     FooterTransitions="{TemplateBinding FooterTransitions}"
                                     Padding="{TemplateBinding Padding}" />
-                            </ScrollViewer>
-                        </Grid>
-                    </Border>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </ControlTemplate>
 
-    <Style x:Key="HorizontalCarouselListStyle" TargetType="ListView">
-        <Setter Property="IsTabStop" Value="False" />
-        <Setter Property="TabNavigation" Value="Once" />
+    <Style x:Key="HorizontalCarouselListStyle" TargetType="local:FormsListView">
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
         <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Auto" />
-        <Setter Property="ScrollViewer.IsHorizontalRailEnabled" Value="False" />
         <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />
         <Setter Property="ScrollViewer.IsVerticalRailEnabled" Value="False" />
-        <Setter Property="ScrollViewer.ZoomMode" Value="Disabled" />
-        <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
-        <Setter Property="ScrollViewer.BringIntoViewOnFocusChange" Value="True" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="SelectionMode" Value="None" />
         <Setter Property="ItemContainerStyle">
@@ -205,70 +125,12 @@
                 </Style>
             </Setter.Value>
         </Setter>
-        <Setter Property="ItemContainerTransitions">
-            <Setter.Value>
-                <TransitionCollection>
-                    <AddDeleteThemeTransition />
-                    <ContentThemeTransition />
-                    <ReorderThemeTransition />
-                    <EntranceThemeTransition IsStaggeringEnabled="False" />
-                </TransitionCollection>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate 
-                    TargetType="ListView">
-                    <Border
-                        BorderBrush="{TemplateBinding BorderBrush}"
-					    Background="{TemplateBinding Background}"
-					    BorderThickness="{TemplateBinding BorderThickness}">
-                        <ScrollViewer 
-                            x:Name="ScrollViewer"
-						    TabNavigation="{TemplateBinding TabNavigation}"
-						    HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
-						    HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
-						    IsHorizontalScrollChainingEnabled="{TemplateBinding ScrollViewer.IsHorizontalScrollChainingEnabled}"
-						    VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
-						    VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
-						    IsVerticalScrollChainingEnabled="{TemplateBinding ScrollViewer.IsVerticalScrollChainingEnabled}"
-						    IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
-						    IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
-						    ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
-						    IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
-						    BringIntoViewOnFocusChange="{TemplateBinding ScrollViewer.BringIntoViewOnFocusChange}"
-						    AutomationProperties.AccessibilityView="Raw"
-						    HorizontalSnapPointsType="Mandatory"
-						    HorizontalSnapPointsAlignment="Center"
-                            VerticalSnapPointsType="None"
-                            VerticalSnapPointsAlignment="Center">
-                            <ItemsPresenter HorizontalAlignment="Stretch"
-                                Header="{TemplateBinding Header}"
-							    HeaderTemplate="{TemplateBinding HeaderTemplate}"
-							    HeaderTransitions="{TemplateBinding HeaderTransitions}"
-							    Footer="{TemplateBinding Footer}"
-							    FooterTemplate="{TemplateBinding FooterTemplate}"
-							    FooterTransitions="{TemplateBinding FooterTransitions}"
-							    Padding="{TemplateBinding Padding}" />
-                        </ScrollViewer>
-                    </Border>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
     </Style>
 
-    <Style x:Key="VerticalCarouselListStyle" TargetType="ListView">
-        <Setter Property="IsTabStop" Value="False" />
-        <Setter Property="TabNavigation" Value="Once" />
-        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+    <Style x:Key="VerticalCarouselListStyle" TargetType="local:FormsListView">
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
-        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
-        <Setter Property="ScrollViewer.IsHorizontalRailEnabled" Value="False" />
         <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
         <Setter Property="ScrollViewer.IsVerticalRailEnabled" Value="False" />
-        <Setter Property="ScrollViewer.ZoomMode" Value="Disabled" />
-        <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
-        <Setter Property="ScrollViewer.BringIntoViewOnFocusChange" Value="True" />
         <Setter Property="SelectionMode" Value="None" />
         <Setter Property="ItemContainerStyle">
             <Setter.Value>
@@ -276,56 +138,6 @@
                     <Setter Property="VerticalContentAlignment" Value="Stretch" />
                     <Setter Property="VerticalAlignment" Value="Stretch" />
                 </Style>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="ItemContainerTransitions">
-            <Setter.Value>
-                <TransitionCollection>
-                    <AddDeleteThemeTransition />
-                    <ContentThemeTransition />
-                    <ReorderThemeTransition />
-                    <EntranceThemeTransition IsStaggeringEnabled="False" />
-                </TransitionCollection>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate 
-                    TargetType="ListView">
-                    <Border
-                        BorderBrush="{TemplateBinding BorderBrush}"
-					    Background="{TemplateBinding Background}"
-					    BorderThickness="{TemplateBinding BorderThickness}">
-                        <ScrollViewer 
-                            x:Name="ScrollViewer"
-						    TabNavigation="{TemplateBinding TabNavigation}"
-						    HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
-						    HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
-						    IsHorizontalScrollChainingEnabled="{TemplateBinding ScrollViewer.IsHorizontalScrollChainingEnabled}"
-						    VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
-						    VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
-						    IsVerticalScrollChainingEnabled="{TemplateBinding ScrollViewer.IsVerticalScrollChainingEnabled}"
-						    IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
-						    IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
-						    ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
-						    IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
-						    BringIntoViewOnFocusChange="{TemplateBinding ScrollViewer.BringIntoViewOnFocusChange}"
-						    AutomationProperties.AccessibilityView="Raw"
-						    HorizontalSnapPointsType="None"
-						    HorizontalSnapPointsAlignment="Center"
-                            VerticalSnapPointsType="Mandatory"
-                            VerticalSnapPointsAlignment="Center">
-                            <ItemsPresenter
-                                Header="{TemplateBinding Header}"
-							    HeaderTemplate="{TemplateBinding HeaderTemplate}"
-							    HeaderTransitions="{TemplateBinding HeaderTransitions}"
-							    Footer="{TemplateBinding Footer}"
-							    FooterTemplate="{TemplateBinding FooterTemplate}"
-							    FooterTransitions="{TemplateBinding FooterTransitions}"
-							    Padding="{TemplateBinding Padding}" />
-                        </ScrollViewer>
-                    </Border>
-                </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>

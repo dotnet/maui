@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			// If we're updating from a previous layout, we should keep any settings for the SelectableItemsViewController around
 			var selectableItemsViewController = Delegator?.SelectableItemsViewController;
-			Delegator = new UICollectionViewDelegator(ItemsViewLayout, this);
+			Delegator = CreateDelegator();
 
 			CollectionView.Delegate = Delegator;
 
@@ -142,6 +142,11 @@ namespace Xamarin.Forms.Platform.iOS
 				ItemsViewLayout.ConstrainTo(CollectionView.Bounds.Size);
 				_initialConstraintsSet = true;
 			}
+		}
+
+		protected virtual UICollectionViewDelegator CreateDelegator()
+		{
+			return new UICollectionViewDelegator(ItemsViewLayout, this);
 		}
 
 		protected virtual IItemsViewSource CreateItemsViewSource()

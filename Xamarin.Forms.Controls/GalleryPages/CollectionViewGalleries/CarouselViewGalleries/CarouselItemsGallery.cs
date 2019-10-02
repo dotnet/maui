@@ -38,7 +38,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 				ItemTemplate = itemTemplate,
 				ItemsSource = viewModel.Items,
 				IsScrollAnimated = true,
-				IsBounceEnabled = true
+				IsBounceEnabled = true,
+				EmptyView = "This is the empty view"
 			};
 
 			layout.Children.Add(carouselView, 0, 0);

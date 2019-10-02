@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -7,17 +8,12 @@ using UWPDataTemplate = Windows.UI.Xaml.DataTemplate;
 using WScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility;
 using WSnapPointsType = Windows.UI.Xaml.Controls.SnapPointsType;
 using WSnapPointsAlignment = Windows.UI.Xaml.Controls.Primitives.SnapPointsAlignment;
-using System;
 
 namespace Xamarin.Forms.Platform.UWP
 {
 	public class CarouselViewRenderer : ItemsViewRenderer
 	{
-		CollectionViewSource _collectionViewSource;
 		ScrollViewer _scrollViewer;
-		double _carouselHeight;
-		double _carouselWidth;
-
 		public CarouselViewRenderer()
 		{
 			CollectionView.VerifyCollectionViewFlagEnabled(nameof(CarouselView));
@@ -26,6 +22,9 @@ namespace Xamarin.Forms.Platform.UWP
 		CarouselView CarouselView => (CarouselView)Element;
 		protected override IItemsLayout Layout => CarouselView?.ItemsLayout;
 		UWPDataTemplate CarouselItemsViewTemplate => (UWPDataTemplate)UWPApp.Current.Resources["CarouselItemsViewDefaultTemplate"];
+
+		double _itemWidth;
+		double _itemHeight;
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs changedProperty)
 		{
@@ -53,9 +52,9 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateSnapPointsAlignment();
 		}
 
-		protected override void SetUpNewElement(ItemsView newElement, bool setUpProperties)
+		protected override void SetUpNewElement(ItemsView newElement)
 		{
-			base.SetUpNewElement(newElement, false);
+			base.SetUpNewElement(newElement);
 
 			if (newElement != null)
 			{
@@ -94,24 +93,38 @@ namespace Xamarin.Forms.Platform.UWP
 			if (itemTemplate == null)
 				return;
 
-			_collectionViewSource = new CollectionViewSource
+			base.UpdateItemsSource();
+		}
+
+		protected override CollectionViewSource CreateCollectionViewSource()
+		{
+			return new CollectionViewSource
 			{
-				Source = TemplatedItemSourceFactory.Create(itemsSource, itemTemplate, Element, GetItemHeight(), GetItemWidth(), GetItemSpacing()),
+				Source = TemplatedItemSourceFactory.Create(Element.ItemsSource, Element.ItemTemplate, Element, 
+					_itemHeight, _itemWidth, GetItemSpacing()),
 				IsSourceGrouped = false
 			};
-
-			ListViewBase.ItemsSource = _collectionViewSource.View;
 		}
 
 		protected override ListViewBase SelectListViewBase()
 		{
+			ListViewBase listView = null;
+
 			switch (Layout)
 			{
 				case LinearItemsLayout listItemsLayout:
-					return CreateCarouselListLayout(listItemsLayout.Orientation);
+					listView = CreateCarouselListLayout(listItemsLayout.Orientation);
+					break;
 			}
 
-			return new Windows.UI.Xaml.Controls.ListView();
+			if (listView == null)
+			{
+				listView = new FormsListView();
+			}
+
+			FindScrollViewer(listView);
+
+			return listView;
 		}
 
 		protected override void UpdateItemTemplate()
@@ -134,24 +147,9 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void OnListSizeChanged(object sender, Windows.UI.Xaml.SizeChangedEventArgs e)
 		{
-			var newSize = e.NewSize;
-
-			_carouselHeight = newSize.Height;
-			_carouselWidth = newSize.Width;
-
-			_scrollViewer = ListViewBase.GetFirstDescendant<ScrollViewer>();
-
-			if (_scrollViewer != null)
-			{
-				// TODO: jsuarezruiz This breaks the ScrollTo override. Review it.
-				_scrollViewer.ViewChanging += OnScrollViewChanging;
-				_scrollViewer.ViewChanged += OnScrollViewChanged;
-			}
-
+			_itemHeight = GetItemHeight();
+			_itemWidth = GetItemWidth();
 			UpdateItemsSource();
-			UpdateItemTemplate();
-			UpdateIsSwipeEnabled();
-			UpdateIsBounceEnabled();
 		}
 
 		void OnScrollViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
@@ -246,7 +244,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (layoutOrientation == ItemsLayoutOrientation.Horizontal)
 			{
-				listView = new Windows.UI.Xaml.Controls.ListView()
+				listView = new FormsListView()
 				{
 					Style = (Windows.UI.Xaml.Style)UWPApp.Current.Resources["HorizontalCarouselListStyle"],
 					ItemsPanel = (ItemsPanelTemplate)UWPApp.Current.Resources["HorizontalListItemsPanel"]
@@ -254,7 +252,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 			else
 			{
-				listView = new Windows.UI.Xaml.Controls.ListView()
+				listView = new FormsListView()
 				{
 					Style = (Windows.UI.Xaml.Style)UWPApp.Current.Resources["VerticalCarouselListStyle"]
 				};
@@ -265,28 +263,28 @@ namespace Xamarin.Forms.Platform.UWP
 
 		double GetItemWidth()
 		{
-			var itemWidth = _carouselWidth;
+			var itemWidth = ActualWidth;
 
 			if (Layout is LinearItemsLayout listItemsLayout && listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
 			{
 				var numberOfVisibleItems = CarouselView.NumberOfSideItems * 2 + 1;
-				itemWidth = (_carouselWidth - CarouselView.PeekAreaInsets.Left - CarouselView.PeekAreaInsets.Right - listItemsLayout.ItemSpacing) / numberOfVisibleItems;
+				itemWidth = (ActualWidth - CarouselView.PeekAreaInsets.Left - CarouselView.PeekAreaInsets.Right - listItemsLayout.ItemSpacing) / numberOfVisibleItems;
 			}
 
-			return itemWidth;
+			return Math.Max(itemWidth, 0);
 		}
 
 		double GetItemHeight()
 		{
-			var itemHeight = _carouselHeight;
+			var itemHeight = ActualHeight;
 
 			if (Layout is LinearItemsLayout listItemsLayout && listItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
 			{
 				var numberOfVisibleItems = CarouselView.NumberOfSideItems * 2 + 1;
-				itemHeight = (_carouselHeight - CarouselView.PeekAreaInsets.Top - CarouselView.PeekAreaInsets.Bottom - listItemsLayout.ItemSpacing) / numberOfVisibleItems;
+				itemHeight = (ActualHeight - CarouselView.PeekAreaInsets.Top - CarouselView.PeekAreaInsets.Bottom - listItemsLayout.ItemSpacing) / numberOfVisibleItems;
 			}
 
-			return itemHeight;
+			return Math.Max(itemHeight, 0);
 		}
 
 		Thickness GetItemSpacing()
@@ -308,18 +306,18 @@ namespace Xamarin.Forms.Platform.UWP
 		object FindCarouselItem(ScrollToRequestEventArgs args)
 		{
 			if (args.Mode == ScrollToMode.Position)
-				return _collectionViewSource.View[args.Index];
+				return CollectionViewSource.View[args.Index];
 
 			if (Element.ItemTemplate == null)
 				return args.Item;
 
-			for (int n = 0; n < _collectionViewSource?.View.Count; n++)
+			for (int n = 0; n < CollectionViewSource?.View.Count; n++)
 			{
-				if (_collectionViewSource.View[n] is ItemTemplateContext pair)
+				if (CollectionViewSource.View[n] is ItemTemplateContext pair)
 				{
 					if (pair.Item == args.Item)
 					{
-						return _collectionViewSource.View[n];
+						return CollectionViewSource.View[n];
 					}
 				}
 			}
@@ -355,6 +353,30 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 
 			return WSnapPointsAlignment.Center;
+		}
+
+		void FindScrollViewer(ListViewBase listView)
+		{
+			var scrollViewer = listView.GetFirstDescendant<ScrollViewer>();
+
+			if (scrollViewer != null)
+			{
+				_scrollViewer = scrollViewer;
+				// TODO: jsuarezruiz This breaks the ScrollTo override. Review it.
+				_scrollViewer.ViewChanging += OnScrollViewChanging;
+				_scrollViewer.ViewChanged += OnScrollViewChanged;
+
+				return;
+			}
+
+			void ListViewLoaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+			{
+				var lv = (ListViewBase)sender;
+				lv.Loaded -= ListViewLoaded;
+				FindScrollViewer(listView);
+			}
+
+			listView.Loaded += ListViewLoaded;
 		}
 	}
 }

@@ -329,6 +329,9 @@ namespace Xamarin.Forms
 
 		event EventHandler<ResourcesChangedEventArgs> ValuesChanged;
 
+		//only used for unit testing
+		internal static void ClearCache() => s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
+
 		[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.RDSourceTypeConverter")]
 		public class RDSourceTypeConverter : TypeConverter, IExtendedTypeConverter
 		{
