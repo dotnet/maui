@@ -643,7 +643,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			if (_masterDetailPage == null)
 			{
-				_masterDetailPage = PageController.InternalChildren[0] as MasterDetailPage;
+				if (PageController.InternalChildren.Count > 0)
+					_masterDetailPage = PageController.InternalChildren[0] as MasterDetailPage;
+
 				if (_masterDetailPage == null)
 					return;
 			}
@@ -1025,7 +1027,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			if (!textColor.IsDefault)
 				bar.SetTitleTextColor(textColor.ToAndroid().ToArgb());
 
-			bar.Title = currentPage.Title ?? "";
+			bar.Title = currentPage?.Title ?? string.Empty;
 
 			UpdateTitleIcon();
 
@@ -1035,6 +1037,10 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		void UpdateTitleIcon()
 		{
 			Page currentPage = Element.CurrentPage;
+
+			if (currentPage == null)
+				return;
+
 			ImageSource source = NavigationPage.GetTitleIconImageSource(currentPage);
 
 			if (source == null || source.IsEmpty)
@@ -1072,6 +1078,10 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				return;
 
 			Page currentPage = Element.CurrentPage;
+
+			if (currentPage == null)
+				return;
+
 			VisualElement titleView = NavigationPage.GetTitleView(currentPage);
 			if (_titleViewRenderer != null)
 			{
