@@ -24,6 +24,7 @@ PowerShell:
 #addin "nuget:?package=Cake.Android.SdkManager&version=3.0.2"
 #addin "nuget:?package=Cake.Boots&version=1.0.0.291"
 
+#addin "nuget:?package=Cake.FileHelpers&version=3.2.0"
 //////////////////////////////////////////////////////////////////////
 // TOOLS
 //////////////////////////////////////////////////////////////////////
@@ -167,6 +168,10 @@ Task("NuGetPack")
 Task("_NuGetPack")
     .Does(() =>
     {
+        var nugetVersionFile = 
+            GetFiles("XamarinFormsVersionFile.txt");
+        var nugetversion = FileReadText(nugetVersionFile.First());
+
         Information("Nuget Version: {0}", nugetversion);
         
         var nugetPackageDir = Directory("./artifacts");
