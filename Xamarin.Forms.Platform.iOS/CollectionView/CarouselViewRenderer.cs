@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.OnElementPropertyChanged(sender, changedProperty);
 
-			if (changedProperty.Is(CarouselView.PeekAreaInsetsProperty))
+			if (changedProperty.IsOneOf(CarouselView.PeekAreaInsetsProperty, CarouselView.NumberOfSideItemsProperty))
 			{
 				(CarouselViewController.Layout as CarouselViewLayout).UpdateConstraints(Frame.Size);
 				CarouselViewController.Layout.InvalidateLayout();

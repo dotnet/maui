@@ -100,13 +100,17 @@ namespace Xamarin.Forms.Material.iOS
 				if (_packager == null)
 					return;
 
-				SetElement(null);
-
 				_packager.Dispose();
 				_packager = null;
 
 				_tracker.Dispose();
 				_tracker = null;
+
+				if (Element != null)
+				{
+					Element.ClearValue(Platform.iOS.Platform.RendererProperty);
+					SetElement(null);
+				}
 			}
 
 			base.Dispose(disposing);
