@@ -41,6 +41,10 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				ItemsViewController.UpdateItemsSource();
 			}
+			else if (changedProperty.Is(ItemsView.ItemTemplateProperty))
+			{
+				UpdateLayout();
+			}
 			else if (changedProperty.IsOneOf(ItemsView.EmptyViewProperty, ItemsView.EmptyViewTemplateProperty))
 			{
 				ItemsViewController.UpdateEmptyView();
