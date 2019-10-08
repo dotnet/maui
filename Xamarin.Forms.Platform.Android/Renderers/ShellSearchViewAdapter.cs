@@ -19,6 +19,7 @@ namespace Xamarin.Forms.Platform.Android
 		Filter _filter;
 		IReadOnlyList<object> _emptyList = new List<object>();
 		IReadOnlyList<object> ListProxy => SearchController.ListProxy ?? _emptyList;
+		bool _disposed;
 
 		public ShellSearchViewAdapter(SearchHandler searchHandler, IShellContext shellContext)
 		{
@@ -30,19 +31,24 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void Dispose(bool disposing)
 		{
-			base.Dispose(disposing);
+			if (_disposed)
+				return;
+
+			_disposed = true;
 
 			if (disposing)
 			{
 				SearchController.ListProxyChanged -= OnListPropxyChanged;
 				_searchHandler.PropertyChanged -= OnSearchHandlerPropertyChanged;
-				_filter.Dispose();
+				_filter?.Dispose();
 			}
 
 			_filter = null;
 			_shellContext = null;
 			_searchHandler = null;
 			_defaultTemplate = null;
+
+			base.Dispose(disposing);
 		}
 		
 		public Filter Filter => _filter ?? (_filter = new CustomFilter(this));

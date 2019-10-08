@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Platform.Android
 		ShellItem _shellItem;
 		ColorStateList _defaultList;
 		bool _disposed;
-		Color _lastColor = Color.Default;
+		ColorStateList _colorStateList;
 
 		public ShellBottomNavViewAppearanceTracker(IShellContext shellContext, ShellItem shellItem)
 		{
@@ -42,7 +42,6 @@ namespace Xamarin.Forms.Platform.Android
 			var unselectedColor = controller.EffectiveTabBarUnselectedColor;
 			var titleColor = controller.EffectiveTabBarTitleColor;
 
-
 			if (_defaultList == null)
 			{
 #if __ANDROID_28__
@@ -52,41 +51,45 @@ namespace Xamarin.Forms.Platform.Android
 #endif
 			}
 
-			var colorStateList = MakeColorStateList(titleColor, disabledColor, unselectedColor);
-			bottomView.ItemTextColor = colorStateList;
-			bottomView.ItemIconTintList = colorStateList;
-
-			colorStateList.Dispose();
+			_colorStateList = MakeColorStateList(titleColor, disabledColor, unselectedColor);
+			bottomView.ItemTextColor = _colorStateList;
+			bottomView.ItemIconTintList = _colorStateList;
 
 			SetBackgroundColor(bottomView, backgroundColor);
 		}
 
 		protected virtual void SetBackgroundColor(BottomNavigationView bottomView, Color color)
 		{
-			if (_lastColor.IsDefault)
-				_lastColor = color;
+			var menuView = bottomView.GetChildAt(0) as BottomNavigationMenuView;
+			var oldBackground = bottomView.Background;
+			var colorDrawable = oldBackground as ColorDrawable;
+			var colorChangeRevealDrawable = oldBackground as ColorChangeRevealDrawable;
+			AColor lastColor = colorChangeRevealDrawable?.EndColor ?? colorDrawable?.Color ?? Color.Default.ToAndroid();
+			var newColor = color.ToAndroid();
 
-			using (var menuView = bottomView.GetChildAt(0) as BottomNavigationMenuView)
+			if (menuView == null)
 			{
-				if (menuView == null)
+				if (colorDrawable != null && lastColor == newColor)
+					return;
+
+				if (lastColor != color.ToAndroid() || colorDrawable == null)
 				{
 					bottomView.SetBackground(new ColorDrawable(color.ToAndroid()));
 				}
-				else
-				{
-					var index = _shellItem.Items.IndexOf(_shellItem.CurrentItem);
-					using (var menu = bottomView.Menu)
-						index = Math.Min(index, menu.Size() - 1);
+			}
+			else
+			{
+				if (colorChangeRevealDrawable != null && lastColor == newColor)
+					return;
 
-					using (var child = menuView.GetChildAt(index))
-					{
-						var touchPoint = new Point(child.Left + (child.Right - child.Left) / 2, child.Top + (child.Bottom - child.Top) / 2);
+				var index = _shellItem.Items.IndexOf(_shellItem.CurrentItem);
+				var menu = bottomView.Menu;
+				index = Math.Min(index, menu.Size() - 1);
 
-						bottomView.Background?.Dispose();
-						bottomView.SetBackground(new ColorChangeRevealDrawable(_lastColor.ToAndroid(), color.ToAndroid(), touchPoint));
-						_lastColor = color;
-					}
-				}
+				var child = menuView.GetChildAt(index);
+				var touchPoint = new Point(child.Left + (child.Right - child.Left) / 2, child.Top + (child.Bottom - child.Top) / 2);
+
+				bottomView.SetBackground(new ColorChangeRevealDrawable(lastColor, newColor, touchPoint));
 			}
 		}
 
@@ -135,20 +138,23 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!_disposed)
+			if (_disposed)
+				return;
+
+			_disposed = true;
+
+			if (disposing)
 			{
-				if (disposing)
-				{
-					_defaultList?.Dispose();
-				}
+				_defaultList?.Dispose();
+				_colorStateList?.Dispose();
 
 				_shellItem = null;
 				_shellContext = null;
 				_defaultList = null;
-				_disposed = true;
+				_colorStateList = null;
 			}
 		}
 
-#endregion IDisposable
+		#endregion IDisposable
 	}
 }

@@ -59,6 +59,7 @@ namespace Xamarin.Forms.Platform.Android
 		IShellFlyoutContentRenderer _flyoutContent;
 		int _flyoutWidth;
 		int _currentLockMode;
+		bool _disposed;
 
 		public ShellFlyoutRenderer(IShellContext shellContext, Context context) : base(context)
 		{
@@ -169,6 +170,29 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				SetScrimColor(behavior == FlyoutBehavior.Locked ? Color.Transparent.ToAndroid() : (int)DefaultScrimColor);
 			}
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (_disposed)
+				return;
+
+			_disposed = true;
+
+			if (disposing)
+			{
+				Shell.PropertyChanged -= OnShellPropertyChanged;
+
+				RemoveDrawerListener(this);
+				((IShellController)_shellContext.Shell).RemoveFlyoutBehaviorObserver(this);
+
+				RemoveView(_content);
+				RemoveView(_flyoutContent.AndroidView);
+
+				_flyoutContent.Dispose();
+			}
+
+			base.Dispose(disposing);
 		}
 	}
 }

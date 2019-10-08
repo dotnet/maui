@@ -4,6 +4,7 @@ using Android.Runtime;
 using Android.Views;
 using System;
 using LP = Android.Views.ViewGroup.LayoutParams;
+using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {
@@ -18,10 +19,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			ShellContentTab = shellContent;
 		}
 
-		protected ShellFragmentContainer(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
-		{
-		}
-
 		public override Page Page => _page;
 
 		protected override PageContainer CreatePageContainer(Context context, IVisualElementRenderer child, bool inFragment)
@@ -32,7 +29,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			};
 		}
 
-		public override global::Android.Views.View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 		{
 			_page = ((IShellContentController)ShellContentTab).GetOrCreateContent();
 			return base.OnCreateView(inflater, container, savedInstanceState);
