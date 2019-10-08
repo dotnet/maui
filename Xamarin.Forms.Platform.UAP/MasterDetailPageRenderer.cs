@@ -320,7 +320,7 @@ namespace Xamarin.Forms.Platform.UWP
 				IVisualElementRenderer renderer = _detail.GetOrCreateRenderer();
 				element = renderer.ContainerElement;
 
-				UpdateToolbarVisibilty();
+				UpdateToolbarVisibility();
 			}
 
 			Control.Detail = element;
@@ -388,7 +388,7 @@ namespace Xamarin.Forms.Platform.UWP
 			Control.Master = element;
 			Control.MasterTitle = _master?.Title;
 
-			UpdateToolbarVisibilty();
+			UpdateToolbarVisibility();
 		}
 
 		void UpdateMode()
@@ -411,7 +411,7 @@ namespace Xamarin.Forms.Platform.UWP
 			Control.ToolbarDynamicOverflowEnabled = Element.OnThisPlatform().GetToolbarDynamicOverflowEnabled();
 		}
 
-		void UpdateToolbarVisibilty()
+		void UpdateToolbarVisibility()
 		{
 			// Enforce consistency rules on toolbar
 			Control.ShouldShowToolbar = _detail is NavigationPage || _master is NavigationPage;
