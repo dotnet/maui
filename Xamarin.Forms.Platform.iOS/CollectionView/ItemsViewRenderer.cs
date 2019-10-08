@@ -97,7 +97,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 			SetNativeControl(ItemsViewController.View);
 			ItemsViewController.CollectionView.BackgroundColor = UIColor.Clear;
-			ItemsViewController.UpdateEmptyView();
 			UpdateHorizontalScrollBarVisibility();
 			UpdateVerticalScrollBarVisibility();
 

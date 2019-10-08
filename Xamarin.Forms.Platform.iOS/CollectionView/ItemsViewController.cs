@@ -140,7 +140,12 @@ namespace Xamarin.Forms.Platform.iOS
 			if (!_initialConstraintsSet)
 			{
 				ItemsViewLayout.ConstrainTo(CollectionView.Bounds.Size);
+				UpdateEmptyView();
 				_initialConstraintsSet = true;
+			}
+			else
+			{
+				ResizeEmptyView();
 			}
 		}
 
@@ -265,6 +270,15 @@ namespace Xamarin.Forms.Platform.iOS
 
 			// If the empty view is being displayed, we might need to update it
 			UpdateEmptyViewVisibility(ItemsSource?.ItemCount == 0);
+		}
+
+		void ResizeEmptyView()
+		{
+			if (_emptyUIView != null)
+				_emptyUIView.Frame = CollectionView.Frame;
+
+			if (_emptyViewFormsElement != null)
+				_emptyViewFormsElement.Layout(CollectionView.Frame.ToRectangle());
 		}
 
 		protected void UpdateSubview(object view, DataTemplate viewTemplate, ref UIView uiView, ref VisualElement formsElement)
