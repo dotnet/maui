@@ -302,11 +302,9 @@ RunTarget(target);
 
 MSBuildSettings GetMSBuildSettings()
 {
-    var msbuildSettings =  new MSBuildSettings();
-
-    msbuildSettings.PlatformTarget = PlatformTarget.MSIL;
-    msbuildSettings.MSBuildPlatform = (Cake.Common.Tools.MSBuild.MSBuildPlatform)1;
-    msbuildSettings.Configuration = configuration;
-    return msbuildSettings;
-
+    return new MSBuildSettings {
+        PlatformTarget = PlatformTarget.MSIL,
+        MSBuildPlatform = Cake.Common.Tools.MSBuild.MSBuildPlatform.x86,
+        Configuration = configuration,
+    };
 }
