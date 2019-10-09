@@ -1,16 +1,9 @@
-﻿using System;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.ComponentModel;
 using System.Threading.Tasks;
-using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.UAP;
 using UwpScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility;
 using UWPApp = Windows.UI.Xaml.Application;
 using UWPDataTemplate = Windows.UI.Xaml.DataTemplate;
@@ -78,7 +71,6 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 			}
 
-			// TODO hartez 2018-05-22 12:59 PM Handle grouping
 
 			CleanUpCollectionViewSource();
 
@@ -109,7 +101,7 @@ namespace Xamarin.Forms.Platform.UWP
 				}
 			}
 
-			if (Element.ItemsSource == null)
+			if (Element?.ItemsSource == null)
 			{
 				if (CollectionViewSource?.Source is INotifyCollectionChanged incc)
 				{
@@ -213,16 +205,15 @@ namespace Xamarin.Forms.Platform.UWP
 			// Stop listening for ScrollTo requests
 			oldElement.ScrollToRequested -= ScrollToRequested;
 
+			if (CollectionViewSource != null)
+			{
+				CleanUpCollectionViewSource();
+			}
+
 			if (ListViewBase != null)
 			{
 				ListViewBase.ItemsSource = null;
 			}
-
-			if (CollectionViewSource != null)
-			{
-				CollectionViewSource.Source = null;
-			}
-
 		}
 
 		void UpdateVerticalScrollBarVisibility()

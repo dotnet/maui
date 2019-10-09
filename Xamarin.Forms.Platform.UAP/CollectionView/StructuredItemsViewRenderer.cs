@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 using Windows.UI.Xaml.Controls;
-using Xamarin.Forms.Platform.UAP;
+using UWPApp = Windows.UI.Xaml.Application;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -160,42 +160,29 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (ListViewBase is FormsGridView formsGridView)
 				{
-					formsGridView.MaximumRowsOrColumns = ((GridItemsLayout)Layout).Span;
+					formsGridView.Span = ((GridItemsLayout)Layout).Span;
 				}
 			}
 		}
 
 		static ListViewBase CreateGridView(GridItemsLayout gridItemsLayout)
 		{
-			var gridView = new FormsGridView();
-
-			if (gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+			return new FormsGridView
 			{
-				gridView.UseHorizontalItemsPanel();
+				Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
+				? Orientation.Horizontal
+				: Orientation.Vertical,
 
-				// TODO hartez 2018/06/06 12:13:38 Should this logic just be built into FormsGridView?	
-				ScrollViewer.SetHorizontalScrollMode(gridView, ScrollMode.Auto);
-				ScrollViewer.SetHorizontalScrollBarVisibility(gridView,
-					Windows.UI.Xaml.Controls.ScrollBarVisibility.Auto);
-			}
-			else
-			{
-				gridView.UseVerticalItemsPanel();
-			}
-
-			gridView.MaximumRowsOrColumns = gridItemsLayout.Span;
-
-			return gridView;
+				Span = gridItemsLayout.Span
+			};
 		}
 
 		static ListViewBase CreateHorizontalListView()
 		{
-			// TODO hartez 2018/06/05 16:18:57 Is there any performance benefit to caching the ItemsPanelTemplate lookup?	
-			// TODO hartez 2018/05/29 15:38:04 Make sure the ItemsViewStyles.xaml xbf gets into the nuspec	
 			var horizontalListView = new Windows.UI.Xaml.Controls.ListView()
 			{
 				ItemsPanel =
-					(ItemsPanelTemplate)Windows.UI.Xaml.Application.Current.Resources["HorizontalListItemsPanel"]
+					(ItemsPanelTemplate)UWPApp.Current.Resources["HorizontalListItemsPanel"]
 			};
 
 			ScrollViewer.SetHorizontalScrollMode(horizontalListView, ScrollMode.Auto);

@@ -56,7 +56,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 				}
 			));
 
-			Add(new Team("Fantastic Four", 
+			Add(new Team("Fantastic Four",
 				new List<Member>
 				{
 					new Member("The Thing"),
@@ -66,7 +66,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 				}
 			));
 
-			Add(new Team("Defenders", 
+			Add(new Team("Defenders",
 				new List<Member>
 				{
 					new Member("Doctor Strange"),
@@ -78,8 +78,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 					new Member("Yellowjacket"),
 				}
 			));
-			
-			Add(new Team("Heroes for Hire", 
+
+			Add(new Team("Heroes for Hire",
 				new List<Member>
 				{
 					new Member("Luke Cage"),
@@ -90,7 +90,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 				}
 			));
 
-			Add(new Team("West Coast Avengers", 
+			Add(new Team("West Coast Avengers",
 				new List<Member>
 				{
 					new Member("Hawkeye"),
@@ -101,7 +101,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGa
 				}
 			));
 
-			Add(new Team("Great Lakes Avengers", 
+			Add(new Team("Great Lakes Avengers",
 				new List<Member>
 				{
 					new Member("Squirrel Girl"),
