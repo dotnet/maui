@@ -60,6 +60,7 @@ namespace Xamarin.Forms.Platform.iOS
 		protected override void RegisterViewTypes()
 		{
 			CollectionView.RegisterClassForCell(typeof(CarouselTemplatedCell), CarouselTemplatedCell.ReuseId);
+			base.RegisterViewTypes();
 		}
 
 		internal void TearDown()
