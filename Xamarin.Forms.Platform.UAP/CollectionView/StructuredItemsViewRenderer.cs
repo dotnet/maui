@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using Windows.UI.Xaml.Controls;
 using Xamarin.Forms.Platform.UAP;
+using WScrollMode = Windows.UI.Xaml.Controls.ScrollMode;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -174,7 +175,7 @@ namespace Xamarin.Forms.Platform.UWP
 				gridView.UseHorizontalItemsPanel();
 
 				// TODO hartez 2018/06/06 12:13:38 Should this logic just be built into FormsGridView?	
-				ScrollViewer.SetHorizontalScrollMode(gridView, ScrollMode.Auto);
+				ScrollViewer.SetHorizontalScrollMode(gridView, WScrollMode.Auto);
 				ScrollViewer.SetHorizontalScrollBarVisibility(gridView,
 					Windows.UI.Xaml.Controls.ScrollBarVisibility.Auto);
 			}
@@ -198,7 +199,7 @@ namespace Xamarin.Forms.Platform.UWP
 					(ItemsPanelTemplate)Windows.UI.Xaml.Application.Current.Resources["HorizontalListItemsPanel"]
 			};
 
-			ScrollViewer.SetHorizontalScrollMode(horizontalListView, ScrollMode.Auto);
+			ScrollViewer.SetHorizontalScrollMode(horizontalListView, WScrollMode.Auto);
 			ScrollViewer.SetHorizontalScrollBarVisibility(horizontalListView,
 				Windows.UI.Xaml.Controls.ScrollBarVisibility.Auto);
 

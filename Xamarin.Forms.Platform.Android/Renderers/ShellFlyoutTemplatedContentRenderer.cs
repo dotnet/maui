@@ -31,6 +31,7 @@ namespace Xamarin.Forms.Platform.Android
 		ImageView _bgImage;
 		View _flyoutHeader;
 		int _actionBarHeight;
+		ScrollLayoutManager _layoutManager;
 
 		public ShellFlyoutTemplatedContentRenderer(IShellContext shellContext)
 		{
@@ -86,7 +87,7 @@ namespace Xamarin.Forms.Platform.Android
 			Profile.FramePartition("Recycler.SetAdapter");
 			var adapter = new ShellFlyoutRecyclerAdapter(shellContext, OnElementSelected);
 			recycler.SetClipToPadding(false);
-			recycler.SetLayoutManager(new LinearLayoutManager(context, (int)Orientation.Vertical, false));
+			recycler.SetLayoutManager(_layoutManager = new ScrollLayoutManager(context, (int)Orientation.Vertical, false));
 			recycler.SetAdapter(adapter);
 
 			Profile.FramePartition("Initialize BgImage");
@@ -118,6 +119,10 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateFlyoutBackground();
 
 			Profile.FrameEnd();
+
+			Profile.FramePartition(nameof(UpdateVerticalScrollMode));
+			UpdateVerticalScrollMode();
+			Profile.FrameEnd();
 		}
 
 		void OnFlyoutHeaderMeasureInvalidated(object sender, EventArgs e)
@@ -140,6 +145,14 @@ namespace Xamarin.Forms.Platform.Android
 				Shell.FlyoutBackgroundImageProperty,
 				Shell.FlyoutBackgroundImageAspectProperty))
 				UpdateFlyoutBackground();
+			else if (e.Is(Shell.FlyoutVerticalScrollModeProperty))
+				UpdateVerticalScrollMode();
+		}
+
+		void UpdateVerticalScrollMode()
+		{
+			if (_layoutManager != null)
+				_layoutManager.ScrollVertically = _shellContext.Shell.FlyoutVerticalScrollMode;
 		}
 
 		protected virtual void UpdateFlyoutBackground()
@@ -271,6 +284,7 @@ namespace Xamarin.Forms.Platform.Android
 
 					_headerView.Dispose();
 					_rootView.Dispose();
+					_layoutManager?.Dispose();
 					_defaultBackgroundColor?.Dispose();
 					_bgImage?.Dispose();
 				}
@@ -281,6 +295,7 @@ namespace Xamarin.Forms.Platform.Android
 				_rootView = null;
 				_headerView = null;
 				_shellContext = null;
+				_layoutManager = null;
 				_disposed = true;
 			}
 			base.Dispose(disposing);
@@ -362,6 +377,36 @@ namespace Xamarin.Forms.Platform.Android
 				View = null;
 
 				base.Dispose(disposing);
+			}
+		}
+	}
+
+	internal class ScrollLayoutManager : LinearLayoutManager
+	{
+		public ScrollMode ScrollVertically { get; set; } = ScrollMode.Auto;
+
+		public ScrollLayoutManager(Context context, int orientation, bool reverseLayout) : base(context, orientation, reverseLayout)
+		{
+		}
+
+		int GetVisibleChildCount()
+		{
+			var firstVisibleIndex = FindFirstCompletelyVisibleItemPosition();
+			var lastVisibleIndex = FindLastCompletelyVisibleItemPosition();
+			return lastVisibleIndex - firstVisibleIndex + 1;
+		}
+
+		public override bool CanScrollVertically()
+		{
+			switch (ScrollVertically)
+			{
+				case ScrollMode.Disabled:
+					return false;
+				case ScrollMode.Enabled:
+					return true;
+				default:
+				case ScrollMode.Auto:
+					return ChildCount > GetVisibleChildCount();
 			}
 		}
 	}

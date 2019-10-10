@@ -8,6 +8,7 @@ using UWPDataTemplate = Windows.UI.Xaml.DataTemplate;
 using WScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility;
 using WSnapPointsType = Windows.UI.Xaml.Controls.SnapPointsType;
 using WSnapPointsAlignment = Windows.UI.Xaml.Controls.Primitives.SnapPointsAlignment;
+using WScrollMode = Windows.UI.Xaml.Controls.ScrollMode;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -177,11 +178,11 @@ namespace Xamarin.Forms.Platform.UWP
 			switch (Layout)
 			{
 				case LinearItemsLayout listItemsLayout when listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal:
-					ScrollViewer.SetHorizontalScrollMode(ListViewBase, CarouselView.IsSwipeEnabled ? ScrollMode.Auto : ScrollMode.Disabled);
+					ScrollViewer.SetHorizontalScrollMode(ListViewBase, CarouselView.IsSwipeEnabled ? WScrollMode.Auto : WScrollMode.Disabled);
 					ScrollViewer.SetHorizontalScrollBarVisibility(ListViewBase, CarouselView.IsSwipeEnabled ? WScrollBarVisibility.Auto : WScrollBarVisibility.Disabled);
 					break;
 				case LinearItemsLayout listItemsLayout when listItemsLayout.Orientation == ItemsLayoutOrientation.Vertical:
-					ScrollViewer.SetVerticalScrollMode(ListViewBase, CarouselView.IsSwipeEnabled ? ScrollMode.Auto : ScrollMode.Disabled);
+					ScrollViewer.SetVerticalScrollMode(ListViewBase, CarouselView.IsSwipeEnabled ? WScrollMode.Auto : WScrollMode.Disabled);
 					ScrollViewer.SetVerticalScrollBarVisibility(ListViewBase, CarouselView.IsSwipeEnabled ? WScrollBarVisibility.Auto : WScrollBarVisibility.Disabled);
 					break;
 			}

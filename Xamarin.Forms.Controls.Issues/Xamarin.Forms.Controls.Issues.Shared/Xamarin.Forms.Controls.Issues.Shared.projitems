@@ -105,6 +105,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue4919.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue4756.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5461.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewBindingErrors.xaml.cs">
       <DependentUpon>CollectionViewBindingErrors.xaml</DependentUpon>

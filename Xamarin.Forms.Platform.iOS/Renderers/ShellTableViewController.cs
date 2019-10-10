@@ -36,6 +36,8 @@ namespace Xamarin.Forms.Platform.iOS
 				SetHeaderContentInset();
 				LayoutParallax();
 			}
+			else if (e.Is(Shell.FlyoutVerticalScrollModeProperty))
+				UpdateVerticalScrollMode();
 		}
 
 		void OnHeaderSizeChanged(object sender, EventArgs e)
@@ -49,6 +51,32 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			_source.ClearCache();
 			TableView.ReloadData();
+			UpdateVerticalScrollMode();
+		}
+
+		void UpdateVerticalScrollMode()
+		{
+			switch (_context.Shell.FlyoutVerticalScrollMode)
+			{
+				case ScrollMode.Auto:
+					var pathToFirstRow = Foundation.NSIndexPath.FromRowSection(0, 0);
+					var firstCellRect = TableView.RectForRowAtIndexPath(pathToFirstRow);
+					var firstCellIsVisible = TableView.Bounds.Contains(firstCellRect);
+
+					var lastRowIndex = NMath.Max(0, TableView.NumberOfRowsInSection(0) - 1);
+					var pathToLastRow = Foundation.NSIndexPath.FromRowSection(lastRowIndex, 0);
+					var cellRect = TableView.RectForRowAtIndexPath(pathToLastRow);
+					var lastCellIsVisible = TableView.Bounds.Contains(cellRect);
+
+					TableView.ScrollEnabled = !firstCellIsVisible || !lastCellIsVisible;
+					break;
+				case ScrollMode.Enabled:
+					TableView.ScrollEnabled = true;
+					break;
+				case ScrollMode.Disabled:
+					TableView.ScrollEnabled = false;
+					break;
+			}
 		}
 
 		public void LayoutParallax()
@@ -91,6 +119,7 @@ namespace Xamarin.Forms.Platform.iOS
 				TableView.ContentInset = new UIEdgeInsets((nfloat)HeaderMax, 0, 0, 0);
 			else
 				TableView.ContentInset = new UIEdgeInsets(Platform.SafeAreaInsetsForWindow.Top, 0, 0, 0);
+			UpdateVerticalScrollMode();
 		}
 
 		public override void ViewDidLoad()
