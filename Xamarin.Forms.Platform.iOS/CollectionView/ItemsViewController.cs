@@ -9,10 +9,11 @@ using Xamarin.Forms.Internals;
 namespace Xamarin.Forms.Platform.iOS
 {
 	// TODO hartez 2018/06/01 14:21:24 Add a method for updating the layout	
-	public abstract class ItemsViewController : UICollectionViewController
+	public abstract class ItemsViewController<TItemsView> : UICollectionViewController
+		where TItemsView : ItemsView
 	{
 		public IItemsViewSource ItemsSource { get; protected set; }
-		public ItemsView ItemsView { get; }
+		public TItemsView ItemsView { get; }
 		protected ItemsViewLayout ItemsViewLayout { get; set; }
 		bool _initialConstraintsSet;
 		bool _isEmpty;
@@ -23,9 +24,9 @@ namespace Xamarin.Forms.Platform.iOS
 		UIView _emptyUIView;
 		VisualElement _emptyViewFormsElement;
 
-		protected UICollectionViewDelegator Delegator { get; set; }
+		protected UICollectionViewDelegateFlowLayout Delegator { get; set; }
 
-		public ItemsViewController(ItemsView itemsView, ItemsViewLayout layout) : base(layout)
+		public ItemsViewController(TItemsView itemsView, ItemsViewLayout layout) : base(layout)
 		{
 			ItemsView = itemsView;
 			ItemsSource = CreateItemsViewSource();
@@ -38,8 +39,6 @@ namespace Xamarin.Forms.Platform.iOS
 			ItemsViewLayout = layout;
 			ItemsViewLayout.GetPrototype = GetPrototype;
 
-			// If we're updating from a previous layout, we should keep any settings for the SelectableItemsViewController around
-			var selectableItemsViewController = Delegator?.SelectableItemsViewController;
 			Delegator = CreateDelegator();
 
 			CollectionView.Delegate = Delegator;
@@ -149,9 +148,9 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
-		protected virtual UICollectionViewDelegator CreateDelegator()
+		protected virtual UICollectionViewDelegateFlowLayout CreateDelegator()
 		{
-			return new UICollectionViewDelegator(ItemsViewLayout, this);
+			return new ItemsViewDelegator<TItemsView, ItemsViewController<TItemsView>>(ItemsViewLayout, this);
 		}
 
 		protected virtual IItemsViewSource CreateItemsViewSource()

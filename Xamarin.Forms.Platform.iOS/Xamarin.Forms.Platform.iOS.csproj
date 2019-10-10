@@ -106,10 +106,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CellExtensions.cs" />
     <Compile Include="CADisplayLinkTicker.cs" />
+    <Compile Include="CollectionView\CarouselViewDelegator.cs" />
     <Compile Include="CollectionView\CarouselViewRenderer.cs" />
     <Compile Include="CollectionView\CollectionViewRenderer.cs" />
     <Compile Include="CollectionView\EmptySource.cs" />
     <Compile Include="CollectionView\GroupableItemsViewController.cs" />
+    <Compile Include="CollectionView\GroupableItemsViewDelegator.cs" />
     <Compile Include="CollectionView\GroupableItemsViewRenderer.cs" />
     <Compile Include="CollectionView\HorizontalCell.cs" />
     <Compile Include="CollectionView\HorizontalDefaultSupplementalView.cs" />
@@ -124,9 +126,10 @@
     <Compile Include="CollectionView\ObservableGroupedSource.cs" />
     <Compile Include="CollectionView\ScrollToPositionExtensions.cs" />
     <Compile Include="CollectionView\SelectableItemsViewController.cs" />
+    <Compile Include="CollectionView\SelectableItemsViewDelegator.cs" />
     <Compile Include="CollectionView\SelectableItemsViewRenderer.cs" />
     <Compile Include="CollectionView\TemplateHelpers.cs" />
-    <Compile Include="CollectionView\UICollectionViewDelegator.cs" />
+    <Compile Include="CollectionView\ItemsViewDelegator.cs" />
     <Compile Include="CollectionView\VerticalCell.cs" />
     <Compile Include="CollectionView\StructuredItemsViewController.cs" />
     <Compile Include="CollectionView\StructuredItemsViewRenderer.cs" />

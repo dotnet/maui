@@ -3,14 +3,13 @@ using System.ComponentModel;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	public class SelectableItemsViewRenderer : StructuredItemsViewRenderer
+	public class SelectableItemsViewRenderer<TItemsView, TViewController> : StructuredItemsViewRenderer<TItemsView, TViewController>
+		where TItemsView : SelectableItemsView
+		where TViewController : SelectableItemsViewController<TItemsView>
 	{
-		SelectableItemsView SelectableItemsView => (SelectableItemsView)Element;
-		SelectableItemsViewController SelectableItemsViewController => (SelectableItemsViewController)ItemsViewController;
-
-		protected override ItemsViewController CreateController(ItemsView itemsView, ItemsViewLayout layout)
+		protected override TViewController CreateController(TItemsView itemsView, ItemsViewLayout layout)
 		{
-			return new SelectableItemsViewController(itemsView as SelectableItemsView, layout);
+			return new SelectableItemsViewController<TItemsView>(itemsView, layout) as TViewController;
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs changedProperty)
@@ -27,13 +26,8 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
-		protected override void SetUpNewElement(ItemsView newElement)
+		protected override void SetUpNewElement(TItemsView newElement)
 		{
-			if (newElement != null && !(newElement is SelectableItemsView))
-			{
-				throw new ArgumentException($"{nameof(newElement)} must be of type {typeof(SelectableItemsView).Name}");
-			}
-
 			base.SetUpNewElement(newElement);
 
 			if (newElement == null)
@@ -47,12 +41,12 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected virtual void UpdateNativeSelection()
 		{
-			SelectableItemsViewController.UpdateNativeSelection();
+			Controller.UpdateNativeSelection();
 		}
 
 		protected virtual void UpdateSelectionMode()
 		{
-			SelectableItemsViewController.UpdateSelectionMode();
+			Controller.UpdateSelectionMode();
 		}
 
 		protected override void UpdateItemsSource()

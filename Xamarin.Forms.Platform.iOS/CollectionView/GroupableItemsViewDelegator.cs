@@ -1,0 +1,31 @@
+﻿using System;
+using CoreGraphics;
+using UIKit;
+
+namespace Xamarin.Forms.Platform.iOS
+{
+	public class GroupableItemsViewDelegator<TItemsView, TViewController> : SelectableItemsViewDelegator<TItemsView, TViewController>
+		where TItemsView : GroupableItemsView
+		where TViewController : GroupableItemsViewController<TItemsView>
+	{
+		public GroupableItemsViewDelegator(ItemsViewLayout itemsViewLayout, TViewController itemsViewController) 
+			: base(itemsViewLayout, itemsViewController)
+		{
+		}
+
+		public override CGSize GetReferenceSizeForHeader(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
+		{
+			return ViewController.GetReferenceSizeForHeader(collectionView, layout, section);
+		}
+
+		public override CGSize GetReferenceSizeForFooter(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
+		{
+			return ViewController.GetReferenceSizeForFooter(collectionView, layout, section);
+		}
+
+		public override void ScrollAnimationEnded(UIScrollView scrollView)
+		{
+			ViewController?.HandleScrollAnimationEnded();
+		}
+	}
+}
