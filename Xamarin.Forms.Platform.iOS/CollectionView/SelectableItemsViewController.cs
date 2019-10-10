@@ -30,7 +30,11 @@ namespace Xamarin.Forms.Platform.iOS
 		internal void SelectItem(object selectedItem)
 		{
 			var index = GetIndexForItem(selectedItem);
-			CollectionView.SelectItem(index, true, UICollectionViewScrollPosition.None);
+
+			if (index.Section > -1 && index.Item > -1)
+			{
+				CollectionView.SelectItem(index, true, UICollectionViewScrollPosition.None);
+			}
 		}
 
 		// Called by Forms to clear the native selection

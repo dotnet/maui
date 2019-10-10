@@ -19,11 +19,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (changedProperty.IsOneOf(SelectableItemsView.SelectedItemProperty, SelectableItemsView.SelectedItemsProperty))
 			{
-				SelectableItemsViewController.UpdateNativeSelection();
+				UpdateNativeSelection();
 			}
 			else if (changedProperty.Is(SelectableItemsView.SelectionModeProperty))
 			{
-				SelectableItemsViewController.UpdateSelectionMode();
+				UpdateSelectionMode();
 			}
 		}
 
@@ -41,8 +41,24 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 			}
 
-			SelectableItemsViewController.UpdateSelectionMode();
+			UpdateSelectionMode();
+			UpdateNativeSelection();
+		}
+
+		protected virtual void UpdateNativeSelection()
+		{
 			SelectableItemsViewController.UpdateNativeSelection();
+		}
+
+		protected virtual void UpdateSelectionMode()
+		{
+			SelectableItemsViewController.UpdateSelectionMode();
+		}
+
+		protected override void UpdateItemsSource()
+		{
+			base.UpdateItemsSource();
+			UpdateNativeSelection();
 		}
 	}
 }

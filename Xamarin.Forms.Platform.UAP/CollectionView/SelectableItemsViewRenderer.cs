@@ -67,6 +67,7 @@ namespace Xamarin.Forms.Platform.UWP
 			_ignoreNativeSelectionChange = true;
 
 			base.UpdateItemsSource();
+			UpdateNativeSelection();
 
 			_ignoreNativeSelectionChange = false;
 		}
@@ -89,7 +90,7 @@ namespace Xamarin.Forms.Platform.UWP
 						else
 						{
 							ListViewBase.SelectedItem =
-								ListViewBase.Items.First(item =>
+								ListViewBase.Items.FirstOrDefault(item =>
 								{
 									if (item is ItemTemplateContext itemPair)
 									{

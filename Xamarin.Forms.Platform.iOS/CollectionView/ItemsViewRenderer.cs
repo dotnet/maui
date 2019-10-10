@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (changedProperty.Is(ItemsView.ItemsSourceProperty))
 			{
-				ItemsViewController.UpdateItemsSource();
+				UpdateItemsSource();
 			}
 			else if (changedProperty.Is(ItemsView.ItemTemplateProperty))
 			{
@@ -126,6 +126,11 @@ namespace Xamarin.Forms.Platform.iOS
 		protected virtual void UpdateItemsUpdatingScrollMode()
 		{
 			_layout.ItemsUpdatingScrollMode = Element.ItemsUpdatingScrollMode;
+		}
+
+		protected virtual void UpdateItemsSource()
+		{
+			ItemsViewController.UpdateItemsSource();
 		}
 
 		protected abstract ItemsViewController CreateController(ItemsView newElement, ItemsViewLayout layout);
