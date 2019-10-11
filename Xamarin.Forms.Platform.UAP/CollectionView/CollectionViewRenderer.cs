@@ -14,7 +14,7 @@ using Xamarin.Forms.Platform.UAP;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class CollectionViewRenderer : GroupableItemsViewRenderer
+	public class CollectionViewRenderer : GroupableItemsViewRenderer<GroupableItemsView>
 	{
 	}
 }

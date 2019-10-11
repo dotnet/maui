@@ -4,22 +4,9 @@ using Windows.UI.Xaml.Data;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class GroupableItemsViewRenderer : SelectableItemsViewRenderer
+	public class GroupableItemsViewRenderer<TItemsView> : SelectableItemsViewRenderer<TItemsView>
+		where TItemsView : GroupableItemsView
 	{
-		GroupableItemsView _groupableItemsView;
-
-		protected override void SetUpNewElement(ItemsView newElement)
-		{
-			_groupableItemsView = Element as GroupableItemsView;
-			base.SetUpNewElement(newElement);
-		}
-
-		protected override void TearDownOldElement(ItemsView oldElement)
-		{
-			base.TearDownOldElement(oldElement);
-			_groupableItemsView = null;
-		}
-
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs changedProperty)
 		{
 			base.OnElementPropertyChanged(sender, changedProperty);
@@ -33,7 +20,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		protected override CollectionViewSource CreateCollectionViewSource()
 		{
-			if (_groupableItemsView != null && _groupableItemsView.IsGrouped)
+			if (ItemsView != null && ItemsView.IsGrouped)
 			{
 				var itemTemplate = Element.ItemTemplate;
 				var itemsSource = Element.ItemsSource;
@@ -41,7 +28,7 @@ namespace Xamarin.Forms.Platform.UWP
 				return new CollectionViewSource
 				{
 					Source = TemplatedItemSourceFactory.CreateGrouped(itemsSource, itemTemplate,
-					_groupableItemsView.GroupHeaderTemplate, _groupableItemsView.GroupFooterTemplate, Element),
+					ItemsView.GroupHeaderTemplate, ItemsView.GroupFooterTemplate, Element),
 					IsSourceGrouped = true,
 					ItemsPath = new Windows.UI.Xaml.PropertyPath(nameof(GroupTemplateContext.Items))
 				};

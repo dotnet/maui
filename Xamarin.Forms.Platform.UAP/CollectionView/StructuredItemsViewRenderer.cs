@@ -4,18 +4,16 @@ using UWPApp = Windows.UI.Xaml.Application;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class StructuredItemsViewRenderer : ItemsViewRenderer
+	public class StructuredItemsViewRenderer<TItemsView> : ItemsViewRenderer<TItemsView>
+		where TItemsView : StructuredItemsView
 	{
-		StructuredItemsView _structuredItemsView;
 		View _currentHeader;
 		View _currentFooter;
 
-		protected override IItemsLayout Layout { get => _structuredItemsView.ItemsLayout; }
+		protected override IItemsLayout Layout { get => ItemsView?.ItemsLayout; }
 
 		protected override void SetUpNewElement(ItemsView newElement)
 		{
-			_structuredItemsView = newElement as StructuredItemsView;
-
 			base.SetUpNewElement(newElement);
 
 			if (newElement == null)
@@ -69,7 +67,7 @@ namespace Xamarin.Forms.Platform.UWP
 				_currentHeader = null;
 			}
 
-			var header = _structuredItemsView.Header;
+			var header = ItemsView.Header;
 
 			switch (header)
 			{
@@ -90,7 +88,7 @@ namespace Xamarin.Forms.Platform.UWP
 					break;
 
 				default:
-					var headerTemplate = _structuredItemsView.HeaderTemplate;
+					var headerTemplate = ItemsView.HeaderTemplate;
 					if (headerTemplate != null)
 					{
 						ListViewBase.HeaderTemplate = ItemsViewTemplate;
@@ -118,7 +116,7 @@ namespace Xamarin.Forms.Platform.UWP
 				_currentFooter = null;
 			}
 
-			var footer = _structuredItemsView.Footer;
+			var footer = ItemsView.Footer;
 
 			switch (footer)
 			{
@@ -139,7 +137,7 @@ namespace Xamarin.Forms.Platform.UWP
 					break;
 
 				default:
-					var footerTemplate = _structuredItemsView.FooterTemplate;
+					var footerTemplate = ItemsView.FooterTemplate;
 					if (footerTemplate != null)
 					{
 						ListViewBase.FooterTemplate = ItemsViewTemplate;
@@ -154,7 +152,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		protected override void HandleLayoutPropertyChange(PropertyChangedEventArgs property)
+		protected override void HandleLayoutPropertyChanged(PropertyChangedEventArgs property)
 		{
 			if (property.Is(GridItemsLayout.SpanProperty))
 			{
