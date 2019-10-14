@@ -59,7 +59,9 @@
        <XamarinFormsVersionFile Include="../XamarinFormsVersionFile.txt"/>
        <XamarinFormsVersionLine Include="$(PackageVersion)"/>
     </ItemGroup>
-    <WriteLinesToFile File="@(XamarinFormsVersionFile)" Lines="@(XamarinFormsVersionLine)" Overwrite="true" />
+    
+    <!-- Occasionally this throws an error from parallel builds writing to this file. It's fine if only one of them wins. -->
+    <WriteLinesToFile ContinueOnError="WarnAndContinue" File="@(XamarinFormsVersionFile)" Lines="@(XamarinFormsVersionLine)" Overwrite="true" />
     <Message Condition="$(CI)" Importance="high" Text="##vso[build.updatebuildnumber]$(PackageVersion)"/>
     <Message Condition="$(CI)" Importance="high" Text="##vso[task.setvariable variable=XamarinFormsPackageVersion;isOutput=true;]$(PackageVersion)"/>
   </Target>
