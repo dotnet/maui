@@ -72,8 +72,13 @@ namespace Xamarin.Forms.Platform
 	[RenderWith (typeof (SliderRenderer))]
 	internal class _SliderRenderer { }
 
-	[RenderWith (typeof (WebViewRenderer))]
+#if __IOS__
+	[RenderWith (typeof (WkWebViewRenderer))]
 	internal class _WebViewRenderer { }
+#else
+	[RenderWith(typeof(WebViewRenderer))]
+	internal class _WebViewRenderer { }
+#endif
 
 	[RenderWith (typeof (SearchBarRenderer))]
 	internal class _SearchBarRenderer { }
