@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public void Stop(Adapter adapter)
 		{
-			if (Observing && adapter != null)
+			if (Observing && adapter != null && adapter.HasObservers)
 			{
 				adapter.UnregisterAdapterDataObserver(this);
 			}
