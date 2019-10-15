@@ -165,6 +165,9 @@ namespace Xamarin.Forms
 			set => SetValue(ItemsLayoutProperty, value);
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool IsScrolling { get; set; }
+
 		public event EventHandler<CurrentItemChangedEventArgs> CurrentItemChanged;
 		public event EventHandler<PositionChangedEventArgs> PositionChanged;
 
@@ -214,8 +217,8 @@ namespace Xamarin.Forms
 
 			carousel.PositionChanged?.Invoke(carousel, args);
 
-			//user is interacting with the carousel we don't need to scroll to item 
-			if (!carousel.IsDragging)
+			// If the user is interacting with the Carousel or the Carousel is doing ScrollTo, we don't need to scroll to item.
+			if (!carousel.IsDragging && !carousel.IsScrolling)
 				carousel.ScrollTo(args.CurrentPosition, position: ScrollToPosition.Center, animate: carousel.IsScrollAnimated);
 
 			carousel.OnPositionChanged(args);
