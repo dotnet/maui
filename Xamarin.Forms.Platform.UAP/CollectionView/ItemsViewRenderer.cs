@@ -1,16 +1,9 @@
-﻿using System;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.ComponentModel;
 using System.Threading.Tasks;
-using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.UAP;
 using UwpScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility;
 using UWPApp = Windows.UI.Xaml.Application;
 using UWPDataTemplate = Windows.UI.Xaml.DataTemplate;
@@ -18,7 +11,8 @@ using System.Collections.Specialized;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public abstract class ItemsViewRenderer : ViewRenderer<ItemsView, ListViewBase>
+	public abstract class ItemsViewRenderer<TItemsView> : ViewRenderer<TItemsView, ListViewBase>
+		where TItemsView : ItemsView
 	{
 		protected CollectionViewSource CollectionViewSource;
 
@@ -32,9 +26,10 @@ namespace Xamarin.Forms.Platform.UWP
 		FrameworkElement _emptyView;
 		View _formsEmptyView;
 
+		protected TItemsView ItemsView => Element;
 		protected ItemsControl ItemsControl { get; private set; }
 
-		protected override void OnElementChanged(ElementChangedEventArgs<ItemsView> args)
+		protected override void OnElementChanged(ElementChangedEventArgs<TItemsView> args)
 		{
 			base.OnElementChanged(args);
 			TearDownOldElement(args.OldElement);
@@ -45,30 +40,31 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			base.OnElementPropertyChanged(sender, changedProperty);
 
-			if (changedProperty.Is(ItemsView.ItemsSourceProperty))
+			if (changedProperty.Is(Xamarin.Forms.ItemsView.ItemsSourceProperty))
 			{
 				UpdateItemsSource();
 			}
-			else if (changedProperty.Is(ItemsView.ItemTemplateProperty))
+			else if (changedProperty.Is(Xamarin.Forms.ItemsView.ItemTemplateProperty))
 			{
 				UpdateItemTemplate();
 			}
-			else if (changedProperty.Is(ItemsView.HorizontalScrollBarVisibilityProperty))
+			else if (changedProperty.Is(Xamarin.Forms.ItemsView.HorizontalScrollBarVisibilityProperty))
 			{
 				UpdateHorizontalScrollBarVisibility();
 			}
-			else if (changedProperty.Is(ItemsView.VerticalScrollBarVisibilityProperty))
+			else if (changedProperty.Is(Xamarin.Forms.ItemsView.VerticalScrollBarVisibilityProperty))
 			{
 				UpdateVerticalScrollBarVisibility();
 			}
-			else if (changedProperty.IsOneOf(ItemsView.EmptyViewProperty, ItemsView.EmptyViewTemplateProperty))
+			else if (changedProperty.IsOneOf(Xamarin.Forms.ItemsView.EmptyViewProperty, 
+				Xamarin.Forms.ItemsView.EmptyViewTemplateProperty))
 			{
 				UpdateEmptyView();
 			}
 		}
 
 		protected abstract ListViewBase SelectListViewBase();
-		protected abstract void HandleLayoutPropertyChange(PropertyChangedEventArgs property);
+		protected abstract void HandleLayoutPropertyChanged(PropertyChangedEventArgs property);
 		protected abstract IItemsLayout Layout { get; }
 
 		protected virtual void UpdateItemsSource()
@@ -78,7 +74,6 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 			}
 
-			// TODO hartez 2018-05-22 12:59 PM Handle grouping
 
 			CleanUpCollectionViewSource();
 
@@ -109,7 +104,7 @@ namespace Xamarin.Forms.Platform.UWP
 				}
 			}
 
-			if (Element.ItemsSource == null)
+			if (Element?.ItemsSource == null)
 			{
 				if (CollectionViewSource?.Source is INotifyCollectionChanged incc)
 				{
@@ -167,7 +162,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void LayoutPropertyChanged(object sender, PropertyChangedEventArgs property)
 		{
-			HandleLayoutPropertyChange(property);
+			HandleLayoutPropertyChanged(property);
 		}
 
 		protected virtual void SetUpNewElement(ItemsView newElement)
@@ -213,16 +208,15 @@ namespace Xamarin.Forms.Platform.UWP
 			// Stop listening for ScrollTo requests
 			oldElement.ScrollToRequested -= ScrollToRequested;
 
+			if (CollectionViewSource != null)
+			{
+				CleanUpCollectionViewSource();
+			}
+
 			if (ListViewBase != null)
 			{
 				ListViewBase.ItemsSource = null;
 			}
-
-			if (CollectionViewSource != null)
-			{
-				CollectionViewSource.Source = null;
-			}
-
 		}
 
 		void UpdateVerticalScrollBarVisibility()

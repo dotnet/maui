@@ -50,13 +50,14 @@ namespace Xamarin.Forms.Platform.Android
 		protected override void UpdateItemsSource()
 		{
 			UpdateAdapter();
+			UpdateEmptyView();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs changedProperty)
 		{
-			if (changedProperty.Is(ItemsView.ItemsSourceProperty))
-				UpdateItemsSource();
-			else if (changedProperty.Is(CarouselView.PeekAreaInsetsProperty))
+			base.OnElementPropertyChanged(sender, changedProperty);
+   
+			if (changedProperty.Is(CarouselView.PeekAreaInsetsProperty))
 				UpdatePeekAreaInsets();
 			else if (changedProperty.Is(CarouselView.IsSwipeEnabledProperty))
 				UpdateIsSwipeEnabled();

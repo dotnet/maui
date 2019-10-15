@@ -11,11 +11,9 @@ namespace Xamarin.Forms.Build.Tasks
 	{
 		static string GetAssembly(TypeReference typeRef)
 		{
-			var md = typeRef.Scope as ModuleDefinition;
-			if (md != null)
+			if (typeRef.Scope is ModuleDefinition md)
 				return md.Assembly.FullName;
-			var anr = typeRef.Scope as AssemblyNameReference;
-			if (anr != null)
+			if (typeRef.Scope is AssemblyNameReference anr)
 				return anr.FullName;
 			throw new ArgumentOutOfRangeException(nameof(typeRef));
 		}

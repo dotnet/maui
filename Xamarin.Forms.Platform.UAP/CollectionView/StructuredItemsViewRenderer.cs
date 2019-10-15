@@ -1,22 +1,21 @@
 ﻿using System.ComponentModel;
 using Windows.UI.Xaml.Controls;
+using UWPApp = Windows.UI.Xaml.Application;
 using Xamarin.Forms.Platform.UAP;
 using WScrollMode = Windows.UI.Xaml.Controls.ScrollMode;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class StructuredItemsViewRenderer : ItemsViewRenderer
+	public class StructuredItemsViewRenderer<TItemsView> : ItemsViewRenderer<TItemsView>
+		where TItemsView : StructuredItemsView
 	{
-		StructuredItemsView _structuredItemsView;
 		View _currentHeader;
 		View _currentFooter;
 
-		protected override IItemsLayout Layout { get => _structuredItemsView.ItemsLayout; }
+		protected override IItemsLayout Layout { get => ItemsView?.ItemsLayout; }
 
 		protected override void SetUpNewElement(ItemsView newElement)
 		{
-			_structuredItemsView = newElement as StructuredItemsView;
-
 			base.SetUpNewElement(newElement);
 
 			if (newElement == null)
@@ -70,7 +69,7 @@ namespace Xamarin.Forms.Platform.UWP
 				_currentHeader = null;
 			}
 
-			var header = _structuredItemsView.Header;
+			var header = ItemsView.Header;
 
 			switch (header)
 			{
@@ -91,7 +90,7 @@ namespace Xamarin.Forms.Platform.UWP
 					break;
 
 				default:
-					var headerTemplate = _structuredItemsView.HeaderTemplate;
+					var headerTemplate = ItemsView.HeaderTemplate;
 					if (headerTemplate != null)
 					{
 						ListViewBase.HeaderTemplate = ItemsViewTemplate;
@@ -119,7 +118,7 @@ namespace Xamarin.Forms.Platform.UWP
 				_currentFooter = null;
 			}
 
-			var footer = _structuredItemsView.Footer;
+			var footer = ItemsView.Footer;
 
 			switch (footer)
 			{
@@ -140,7 +139,7 @@ namespace Xamarin.Forms.Platform.UWP
 					break;
 
 				default:
-					var footerTemplate = _structuredItemsView.FooterTemplate;
+					var footerTemplate = ItemsView.FooterTemplate;
 					if (footerTemplate != null)
 					{
 						ListViewBase.FooterTemplate = ItemsViewTemplate;
@@ -155,48 +154,35 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		protected override void HandleLayoutPropertyChange(PropertyChangedEventArgs property)
+		protected override void HandleLayoutPropertyChanged(PropertyChangedEventArgs property)
 		{
 			if (property.Is(GridItemsLayout.SpanProperty))
 			{
 				if (ListViewBase is FormsGridView formsGridView)
 				{
-					formsGridView.MaximumRowsOrColumns = ((GridItemsLayout)Layout).Span;
+					formsGridView.Span = ((GridItemsLayout)Layout).Span;
 				}
 			}
 		}
 
 		static ListViewBase CreateGridView(GridItemsLayout gridItemsLayout)
 		{
-			var gridView = new FormsGridView();
-
-			if (gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+			return new FormsGridView
 			{
-				gridView.UseHorizontalItemsPanel();
+				Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
+				? Orientation.Horizontal
+				: Orientation.Vertical,
 
-				// TODO hartez 2018/06/06 12:13:38 Should this logic just be built into FormsGridView?	
-				ScrollViewer.SetHorizontalScrollMode(gridView, WScrollMode.Auto);
-				ScrollViewer.SetHorizontalScrollBarVisibility(gridView,
-					Windows.UI.Xaml.Controls.ScrollBarVisibility.Auto);
-			}
-			else
-			{
-				gridView.UseVerticalItemsPanel();
-			}
-
-			gridView.MaximumRowsOrColumns = gridItemsLayout.Span;
-
-			return gridView;
+				Span = gridItemsLayout.Span
+			};
 		}
 
 		static ListViewBase CreateHorizontalListView()
 		{
-			// TODO hartez 2018/06/05 16:18:57 Is there any performance benefit to caching the ItemsPanelTemplate lookup?	
-			// TODO hartez 2018/05/29 15:38:04 Make sure the ItemsViewStyles.xaml xbf gets into the nuspec	
 			var horizontalListView = new Windows.UI.Xaml.Controls.ListView()
 			{
 				ItemsPanel =
-					(ItemsPanelTemplate)Windows.UI.Xaml.Application.Current.Resources["HorizontalListItemsPanel"]
+					(ItemsPanelTemplate)UWPApp.Current.Resources["HorizontalListItemsPanel"]
 			};
 
 			ScrollViewer.SetHorizontalScrollMode(horizontalListView, WScrollMode.Auto);

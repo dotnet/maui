@@ -281,7 +281,11 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (GetAdapter() != _emptyViewAdapter)
 			{
+				_emptyCollectionObserver.Stop(oldItemViewAdapter);
+				_itemsUpdateScrollObserver.Stop(oldItemViewAdapter);
+	
 				SetAdapter(null);
+	
 				SwapAdapter(ItemsViewAdapter, true);
 			}
 

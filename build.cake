@@ -51,9 +51,9 @@ string monoMajorVersion = "5.18.1";
 string monoPatchVersion = "28";
 string monoVersion = $"{monoMajorVersion}.{monoPatchVersion}";
 
-string monoSDK_windows = $"https://download.mono-project.com/archive/{monoMajorVersion}/windows-installer/mono-{monoVersion}-x64-0.msi";
-string androidSDK_windows = "https://aka.ms/xamarin-android-commercial-d15-9-windows";
-string iOSSDK_windows = "https://download.visualstudio.microsoft.com/download/pr/71f33151-5db4-49cc-ac70-ba835a9f81e2/d256c6c50cd80ec0207783c5c7a4bc2f/xamarin.visualstudio.apple.sdk.4.12.3.83.vsix";
+string monoSDK_windows = "";//$"https://download.mono-project.com/archive/{monoMajorVersion}/windows-installer/mono-{monoVersion}-x64-0.msi";
+string androidSDK_windows = "";//"https://aka.ms/xamarin-android-commercial-d15-9-windows";
+string iOSSDK_windows = "";//"https://download.visualstudio.microsoft.com/download/pr/71f33151-5db4-49cc-ac70-ba835a9f81e2/d256c6c50cd80ec0207783c5c7a4bc2f/xamarin.visualstudio.apple.sdk.4.12.3.83.vsix";
 string macSDK_windows = "";
 
 monoMajorVersion = "6.4.0";
@@ -67,7 +67,7 @@ string macSDK_macos = $"https://bosstoragemirror.blob.core.windows.net/wrench/je
 
 string androidSDK = IsRunningOnWindows() ? androidSDK_windows : androidSDK_macos;
 string monoSDK = IsRunningOnWindows() ? monoSDK_windows : monoSDK_macos;
-string iosSDK = IsRunningOnWindows() ? "" : iOSSDK_macos;
+string iosSDK = IsRunningOnWindows() ? iOSSDK_windows : iOSSDK_macos;
 string macSDK  = IsRunningOnWindows() ? "" : macSDK_macos;
 
 string[] androidSdkManagerInstalls = new string[0]; //new [] { "platforms;android-29"};
@@ -77,6 +77,7 @@ string[] androidSdkManagerInstalls = new string[0]; //new [] { "platforms;androi
 //////////////////////////////////////////////////////////////////////
 
 Task("Clean")
+    .Description("Deletes all the obj/bin directories")
     .Does(() =>
 {
     CleanDirectories("./**/obj", (fsi)=> !fsi.Path.FullPath.Contains("XFCorePostProcessor") && !fsi.Path.FullPath.StartsWith("tools"));
@@ -84,6 +85,7 @@ Task("Clean")
 });
 
 Task("provision-macsdk")
+    .Description("Install Xamarin.Mac SDK")
     .Does(async () =>
     {
         if(!IsRunningOnWindows() && !String.IsNullOrWhiteSpace(macSDK))
@@ -93,16 +95,15 @@ Task("provision-macsdk")
     });
 
 Task("provision-iossdk")
+    .Description("Install Xamarin.iOS SDK")
     .Does(async () =>
     {
-        if(!IsRunningOnWindows())
-        {   
-            if(!String.IsNullOrWhiteSpace(iosSDK))
-                await Boots(iosSDK);
-        }
+        if(!String.IsNullOrWhiteSpace(iosSDK))
+            await Boots(iosSDK);
     });
 
 Task("provision-androidsdk")
+    .Description("Install Xamarin.Android SDK")
     .Does(async () =>
     {
         Information ("ANDROID_HOME: {0}", ANDROID_HOME);
@@ -123,6 +124,7 @@ Task("provision-androidsdk")
     });
 
 Task("provision-monosdk")
+    .Description("Install Mono SDK")
     .Does(async () =>
     {
         if(IsRunningOnWindows())
@@ -155,17 +157,20 @@ Task("provision-monosdk")
     });
 
 Task("provision")
+    .Description("Install SDKs required to build project")
     .IsDependentOn("provision-macsdk")
     .IsDependentOn("provision-iossdk")
     .IsDependentOn("provision-monosdk")
     .IsDependentOn("provision-androidsdk");
 
 Task("NuGetPack")
+    .Description("Build and Create Nugets")
     .IsDependentOn("Build")
     .IsDependentOn("_NuGetPack");
 
 
 Task("_NuGetPack")
+    .Description("Create Nugets without building anything")
     .Does(() =>
     {
         var nugetVersionFile = 
@@ -192,6 +197,7 @@ Task("_NuGetPack")
 
 
 Task("Restore")
+    .Description("Restore target on Xamarin.Forms.sln")
     .Does(() =>
     {
         try{
@@ -204,20 +210,9 @@ Task("Restore")
         }
     });
 
-
-Task("BuildHack")
-    .IsDependentOn("Restore")
-    .Does(() =>
-    {
-        if(!IsRunningOnWindows())
-        {
-            MSBuild("./Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj", GetMSBuildSettings().WithRestore());
-        }  
-    });
-
 Task("Build")
+    .Description("Builds all necessary projects to create Nuget Packages")
     .IsDependentOn("Restore")
-    .IsDependentOn("BuildHack")
     .IsDependentOn("Android81")
     .Does(() =>
 { 
@@ -232,7 +227,7 @@ Task("Build")
 });
 
 Task("Android81")
-    .IsDependentOn("BuildHack")
+    .Description("Builds Monodroid81 targets")
     .Does(() =>
     {
         string[] androidProjects = 
@@ -252,7 +247,7 @@ Task("Android81")
     });
 
 Task("VSMAC")
-    .IsDependentOn("BuildHack")
+    .Description("Builds projects necessary so solution compiles on VSMAC")
     .Does(() =>
     {
         StartProcess("open", new ProcessSettings{ Arguments = "Xamarin.Forms.sln" });        
@@ -274,7 +269,7 @@ Task("DeployiOS")
     });
 */
 Task("DeployAndroid")
-    .IsDependentOn("BuildHack")
+    .Description("Builds and deploy Android Control Gallery")
     .Does(() =>
     { 
         MSBuild("./Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj", GetMSBuildSettings().WithRestore());

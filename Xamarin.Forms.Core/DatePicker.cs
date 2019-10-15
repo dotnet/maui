@@ -154,12 +154,12 @@ namespace Xamarin.Forms
 
 		static bool ValidateMaximumDate(BindableObject bindable, object value)
 		{
-			return (DateTime)value >= ((DatePicker)bindable).MinimumDate;
+			return ((DateTime)value).Date >= ((DatePicker)bindable).MinimumDate.Date;
 		}
 
 		static bool ValidateMinimumDate(BindableObject bindable, object value)
 		{
-			return (DateTime)value <= ((DatePicker)bindable).MaximumDate;
+			return ((DateTime)value).Date <= ((DatePicker)bindable).MaximumDate.Date;
 		}
 
 		public IPlatformElementConfiguration<T, DatePicker> On<T>() where T : IConfigPlatform

@@ -1,38 +1,44 @@
 ﻿using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using UWPApp = Windows.UI.Xaml.Application;
-using UWPControlTemplate = Windows.UI.Xaml.Controls.ControlTemplate;
+using UWPControls = Windows.UI.Xaml.Controls;
 
 namespace Xamarin.Forms.Platform.UWP
 {
 	internal class FormsGridView : GridView, IEmptyView
 	{
-		int _maximumRowsOrColumns;
+		int _span;
 		ItemsWrapGrid _wrapGrid;
 		ContentControl _emptyViewContentControl;
 		FrameworkElement _emptyView;
+		Orientation _orientation;
 
 		public FormsGridView()
 		{
-			Template = (UWPControlTemplate)UWPApp.Current.Resources["FormsListViewTemplate"];
+			// Using the full style for this control, because for some reason on 16299 we can't set the ControlTemplate
+			// (it just fails silently saying it can't find the resource key)
+			DefaultStyleKey = typeof(FormsGridView);
 
-			// TODO hartez 2018/06/06 09:52:16 Do we need to clean this up? If so, where?	
 			RegisterPropertyChangedCallback(ItemsPanelProperty, ItemsPanelChanged);
 			Loaded += OnLoaded;
 		}
 
-		public int MaximumRowsOrColumns
+		public int Span
 		{
-			get => _maximumRowsOrColumns;
+			get => _span;
 			set
 			{
-				_maximumRowsOrColumns = value;
+				_span = value;
 				if (_wrapGrid != null)
 				{
-					_wrapGrid.MaximumRowsOrColumns = MaximumRowsOrColumns;
+					UpdateItemSize();
 				}
 			}
 		}
+
+		public static readonly DependencyProperty EmptyViewVisibilityProperty =
+			DependencyProperty.Register(nameof(EmptyViewVisibility), typeof(Visibility),
+				typeof(FormsGridView), new PropertyMetadata(Visibility.Collapsed));
 
 		public Visibility EmptyViewVisibility
 		{
@@ -40,21 +46,23 @@ namespace Xamarin.Forms.Platform.UWP
 			set { SetValue(EmptyViewVisibilityProperty, value); }
 		}
 
-		public static readonly DependencyProperty EmptyViewVisibilityProperty =
-			DependencyProperty.Register(nameof(EmptyViewVisibility), typeof(Visibility), 
-				typeof(FormsGridView), new PropertyMetadata(Visibility.Collapsed));
-
-		// TODO hartez 2018/06/06 10:01:32 Probably should just create a local enum for this?	
-		public void UseHorizontalItemsPanel()
+		public Orientation Orientation
 		{
-			ItemsPanel =
-				(ItemsPanelTemplate)UWPApp.Current.Resources["HorizontalGridItemsPanel"];
-		}
-
-		public void UseVerticalItemsPanel()
-		{
-			ItemsPanel =
-				(ItemsPanelTemplate)UWPApp.Current.Resources["VerticalGridItemsPanel"];
+			get => _orientation;
+			set
+			{
+				_orientation = value;
+				if (_orientation == Orientation.Horizontal)
+				{
+					ItemsPanel = (ItemsPanelTemplate)UWPApp.Current.Resources["HorizontalGridItemsPanel"];
+					ScrollViewer.SetHorizontalScrollMode(this, ScrollMode.Auto);
+					ScrollViewer.SetHorizontalScrollBarVisibility(this, UWPControls.ScrollBarVisibility.Auto);
+				}
+				else
+				{
+					ItemsPanel = (ItemsPanelTemplate)UWPApp.Current.Resources["VerticalGridItemsPanel"];
+				}
+			}
 		}
 
 		void FindItemsWrapGrid()
@@ -66,7 +74,25 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 			}
 
-			_wrapGrid.MaximumRowsOrColumns = MaximumRowsOrColumns;
+			_wrapGrid.SizeChanged -= WrapGridSizeChanged;
+			_wrapGrid.SizeChanged += WrapGridSizeChanged;
+		}
+
+		void WrapGridSizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			UpdateItemSize();
+		}
+
+		void UpdateItemSize()
+		{
+			if (_orientation == Orientation.Horizontal)
+			{
+				_wrapGrid.ItemHeight = _wrapGrid.ActualHeight / Span;
+			}
+			else
+			{
+				_wrapGrid.ItemWidth = _wrapGrid.ActualWidth / Span;
+			}
 		}
 
 		void ItemsPanelChanged(DependencyObject sender, DependencyProperty dp)
@@ -99,6 +125,12 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				_emptyViewContentControl.Content = _emptyView;
 			}
+		}
+
+		protected override void PrepareContainerForItemOverride(DependencyObject element, object item)
+		{
+			GroupFooterItemTemplateContext.EnsureSelectionDisabled(element, item);
+			base.PrepareContainerForItemOverride(element, item);
 		}
 	}
 }

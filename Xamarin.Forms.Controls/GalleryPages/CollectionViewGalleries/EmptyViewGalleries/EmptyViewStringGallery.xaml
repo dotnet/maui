@@ -13,7 +13,8 @@
 			
 			<CollectionView x:Name="CollectionView" Grid.Row="1">
 				<CollectionView.ItemsLayout>
-					<GridItemsLayout Span="3" Orientation="Vertical"></GridItemsLayout>
+					<!--GridItemsLayout Span="3" Orientation="Vertical"></GridItemsLayout>-->
+                        <LinearItemsLayout Orientation="Vertical"></LinearItemsLayout>
 				</CollectionView.ItemsLayout>
 				<CollectionView.EmptyView>
 					No items match your filter.

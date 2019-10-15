@@ -1,7 +1,9 @@
-﻿using Windows.UI.Xaml;
+﻿using System;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Xamarin.Forms.Internals;
 using WThickness = Windows.UI.Xaml.Thickness;
+using WSize = Windows.Foundation.Size;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -148,39 +150,54 @@ namespace Xamarin.Forms.Platform.UWP
 			InvalidateMeasure();
 		}
 
-		protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
+		protected override WSize MeasureOverride(WSize availableSize)
 		{
 			if (_renderer == null)
 			{
 				return base.MeasureOverride(availableSize);
 			}
 
+			var frameworkElement = Content as FrameworkElement;
+
 			var formsElement = _renderer.Element;
 			if (ItemHeight != default || ItemWidth != default)
 			{
 				formsElement.Layout(new Rectangle(0, 0, ItemWidth, ItemHeight));
 
-				var wsize = new Windows.Foundation.Size(ItemWidth, ItemHeight);
+				var wsize = new WSize(ItemWidth, ItemHeight);
 
-				(Content as FrameworkElement).Margin = new WThickness(ItemSpacing.Left, ItemSpacing.Top, ItemSpacing.Right, ItemSpacing.Bottom);
+				frameworkElement.Margin = new WThickness(ItemSpacing.Left, ItemSpacing.Top, ItemSpacing.Right, ItemSpacing.Bottom);
 
-				(Content as FrameworkElement).Measure(wsize);
+				frameworkElement.Measure(wsize);
 
 				return base.MeasureOverride(wsize);
 			}
 			else
 			{
-				Size request = formsElement.Measure(availableSize.Width, availableSize.Height,
-				MeasureFlags.IncludeMargins).Request;
+				var (width, height) = formsElement.Measure(availableSize.Width, availableSize.Height,
+					MeasureFlags.IncludeMargins).Request;
 
-				formsElement.Layout(new Rectangle(0, 0, request.Width, request.Height));
+				width = Max(width, availableSize.Width);
+				height = Max(height, availableSize.Height);
 
-				var wsize = new Windows.Foundation.Size(request.Width, request.Height);
+				formsElement.Layout(new Rectangle(0, 0, width, height));
 
-				(Content as FrameworkElement).Measure(wsize);
+				var wsize = new WSize(width, height);
+
+				frameworkElement.Measure(wsize);
 
 				return base.MeasureOverride(wsize);
 			}
+		}
+
+		double Max(double requested, double available)
+		{
+			return Math.Max(requested, ClampInfinity(available));
+		}
+
+		double ClampInfinity(double value)
+		{
+			return double.IsInfinity(value) ? 0 : value;
 		}
 	}
 }

@@ -484,7 +484,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
-				ForceScrollToLastItem(CollectionView);
+				ForceScrollToLastItem(CollectionView, _itemsLayout);
 			}
 		}
 
@@ -551,7 +551,7 @@ namespace Xamarin.Forms.Platform.iOS
 			return false;
 		}
 
-		static void ForceScrollToLastItem(UICollectionView collectionView)
+		static void ForceScrollToLastItem(UICollectionView collectionView, ItemsLayout itemsLayout)
 		{
 			var sections = (int)collectionView.NumberOfSections();
 
@@ -566,7 +566,12 @@ namespace Xamarin.Forms.Platform.iOS
 				if (itemCount > 0)
 				{
 					var lastIndexPath = NSIndexPath.FromItemSection(itemCount - 1, section);
-					collectionView.ScrollToItem(lastIndexPath, UICollectionViewScrollPosition.Bottom, true);
+
+					if (itemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+						collectionView.ScrollToItem(lastIndexPath, UICollectionViewScrollPosition.Bottom, true);
+					else
+						collectionView.ScrollToItem(lastIndexPath, UICollectionViewScrollPosition.Right, true);
+
 					return;
 				}
 			}

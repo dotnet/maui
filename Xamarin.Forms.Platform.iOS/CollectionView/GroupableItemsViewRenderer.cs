@@ -2,14 +2,13 @@
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	public class GroupableItemsViewRenderer : SelectableItemsViewRenderer
+	public class GroupableItemsViewRenderer<TItemsView, TViewController> : SelectableItemsViewRenderer<TItemsView, TViewController>
+		where TItemsView : GroupableItemsView
+		where TViewController : GroupableItemsViewController<TItemsView>
 	{
-		GroupableItemsView GroupableItemsView => (GroupableItemsView)Element;
-		GroupableItemsViewController GroupableItemsViewController => (GroupableItemsViewController)ItemsViewController;
-
-		protected override ItemsViewController CreateController(ItemsView itemsView, ItemsViewLayout layout)
+		protected override TViewController CreateController(TItemsView itemsView, ItemsViewLayout layout)
 		{
-			return new GroupableItemsViewController(itemsView as GroupableItemsView, layout);
+			return new GroupableItemsViewController<TItemsView>(itemsView, layout) as TViewController;
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs changedProperty)
@@ -18,7 +17,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (changedProperty.Is(GroupableItemsView.IsGroupedProperty))
 			{
-				GroupableItemsViewController?.UpdateItemsSource();
+				Controller?.UpdateItemsSource();
 			}
 		}
 
@@ -45,7 +44,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (args.IsAnimated)
 				{
-					GroupableItemsViewController.SetScrollAnimationEndedCallback(() => base.ScrollToRequested(sender, args));
+					Controller.SetScrollAnimationEndedCallback(() => base.ScrollToRequested(sender, args));
 				}
 				else
 				{
@@ -58,8 +57,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 		bool WillNeedScrollAdjustment(ScrollToRequestEventArgs args)
 		{
-			return GroupableItemsView.ItemSizingStrategy == ItemSizingStrategy.MeasureAllItems
-				&& GroupableItemsView.IsGrouped
+			return ItemsView.ItemSizingStrategy == ItemSizingStrategy.MeasureAllItems
+				&& ItemsView.IsGrouped
 				&& (args.ScrollToPosition == ScrollToPosition.End || args.ScrollToPosition == ScrollToPosition.MakeVisible);
 		}
 	}

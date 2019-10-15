@@ -174,5 +174,14 @@ namespace Xamarin.Forms.Core.UnitTests
 			datePicker.SetValue (DatePicker.DateProperty, nullableDateTime);
 			Assert.AreEqual (dateTime, datePicker.Date);
 		}
+
+		[Test]
+		//https://github.com/xamarin/Xamarin.Forms/issues/5784
+		public void SetMaxAndMinDateTimeToNow()
+		{
+			var datePicker = new DatePicker();
+			datePicker.SetValue(DatePicker.MaximumDateProperty, DateTime.Now);
+			Assert.DoesNotThrow(() => datePicker.SetValue(DatePicker.MinimumDateProperty, DateTime.Now));
+		}
 	}
 }

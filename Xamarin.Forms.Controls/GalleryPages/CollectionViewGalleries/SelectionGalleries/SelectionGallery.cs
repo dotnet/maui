@@ -30,6 +30,8 @@
 							new SelectionChangedCommandParameter(), Navigation),
 						GalleryBuilder.NavButton("Filterable Single Selection", () =>
 							new FilterSelection(), Navigation),
+						GalleryBuilder.NavButton("Selection Synchronization", () =>
+							new SelectionSynchronization(), Navigation),
 					}
 				}
 			};

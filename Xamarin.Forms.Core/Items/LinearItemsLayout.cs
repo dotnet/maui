@@ -13,7 +13,8 @@ namespace Xamarin.Forms
 
 		internal static readonly LinearItemsLayout CarouselDefault = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal)
 		{
-			SnapPointsAlignment = SnapPointsAlignment.Center, SnapPointsType = SnapPointsType.Mandatory
+			SnapPointsType = SnapPointsType.MandatorySingle,
+			SnapPointsAlignment = SnapPointsAlignment.Center
 		};
 
 		public static readonly BindableProperty ItemSpacingProperty =

@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Platform.UWP
 		internal class ItemTemplateContextListEnumerator : IEnumerator<ItemTemplateContext>
 		{
 			public ItemTemplateContext Current { get; private set; }
-			object IEnumerator.Current { get; }
+			object IEnumerator.Current => Current;
 			int _currentIndex = -1;
 			private ItemTemplateContextList _itemTemplateContextList;
 

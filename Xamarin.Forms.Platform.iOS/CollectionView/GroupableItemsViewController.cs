@@ -5,28 +5,32 @@ using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	public class GroupableItemsViewController : SelectableItemsViewController
+	public class GroupableItemsViewController<TItemsView> : SelectableItemsViewController<TItemsView>
+		where TItemsView : GroupableItemsView
 	{
-		GroupableItemsView GroupableItemsView => (GroupableItemsView)ItemsView;
-
 		// Keep a cached value for the current state of grouping around so we can avoid hitting the 
 		// BindableProperty all the time 
 		bool _isGrouped;
 
 		Action _scrollAnimationEndedCallback;
 
-		public GroupableItemsViewController(GroupableItemsView groupableItemsView, ItemsViewLayout layout) 
+		public GroupableItemsViewController(TItemsView groupableItemsView, ItemsViewLayout layout) 
 			: base(groupableItemsView, layout)
 		{
-			_isGrouped = GroupableItemsView.IsGrouped;
+			_isGrouped = ItemsView.IsGrouped;
+		}
+
+		protected override UICollectionViewDelegateFlowLayout CreateDelegator()
+		{
+			return new GroupableItemsViewDelegator<TItemsView, GroupableItemsViewController<TItemsView>>(ItemsViewLayout, this);
 		}
 
 		protected override IItemsViewSource CreateItemsViewSource()
 		{
 			// Use the BindableProperty here (instead of _isGroupingEnabled) because the cached value might not be set yet
-			if (GroupableItemsView.IsGrouped) 
+			if (ItemsView.IsGrouped) 
 			{
-				return ItemsSourceFactory.CreateGrouped(GroupableItemsView.ItemsSource, CollectionView);
+				return ItemsSourceFactory.CreateGrouped(ItemsView.ItemsSource, CollectionView);
 			}
 
 			return base.CreateItemsViewSource();
@@ -34,7 +38,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void UpdateItemsSource()
 		{
-			_isGrouped = GroupableItemsView.IsGrouped;
+			_isGrouped = ItemsView.IsGrouped;
 			base.UpdateItemsSource();
 		}
 
@@ -91,8 +95,8 @@ namespace Xamarin.Forms.Platform.iOS
 		void UpdateTemplatedSupplementaryView(TemplatedCell cell, NSString elementKind, NSIndexPath indexPath)
 		{
 			DataTemplate template = elementKind == UICollectionElementKindSectionKey.Header
-				? GroupableItemsView.GroupHeaderTemplate
-				: GroupableItemsView.GroupFooterTemplate;
+				? ItemsView.GroupHeaderTemplate
+				: ItemsView.GroupFooterTemplate;
 
 			var bindingContext = ItemsSource.Group(indexPath);
 
@@ -108,10 +112,10 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (elementKind == UICollectionElementKindSectionKey.Header)
 			{
-				return DetermineViewReuseId(GroupableItemsView.GroupHeaderTemplate);
+				return DetermineViewReuseId(ItemsView.GroupHeaderTemplate);
 			}
 
-			return DetermineViewReuseId(GroupableItemsView.GroupFooterTemplate);
+			return DetermineViewReuseId(ItemsView.GroupFooterTemplate);
 		}
 
 		string DetermineViewReuseId(DataTemplate template)

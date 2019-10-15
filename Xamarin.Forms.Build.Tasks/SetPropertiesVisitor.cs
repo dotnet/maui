@@ -495,7 +495,22 @@ namespace Xamarin.Forms.Build.Tasks
 				if (indexArg != null) {
 					var defaultMemberAttribute = previousPartTypeRef.GetCustomAttribute(module, ("mscorlib", "System.Reflection", "DefaultMemberAttribute"));
 					var indexerName = defaultMemberAttribute?.ConstructorArguments?.FirstOrDefault().Value as string ?? "Item";
-					var indexer = previousPartTypeRef.GetProperty(pd => pd.Name == indexerName && pd.GetMethod != null && pd.GetMethod.IsPublic, out var indexerDeclTypeRef);
+					PropertyDefinition indexer = null;
+					TypeReference indexerDeclTypeRef = null;
+					if (int.TryParse(indexArg, out _))
+						indexer = previousPartTypeRef.GetProperty(pd => pd.Name == indexerName
+																	 && pd.GetMethod != null
+																	 && TypeRefComparer.Default.Equals(pd.GetMethod.Parameters[0].ParameterType, module.ImportReference(("mscorlib", "System", "Int32")))
+																	 && pd.GetMethod.IsPublic, out indexerDeclTypeRef);
+					indexer = indexer ?? previousPartTypeRef.GetProperty(pd => pd.Name == indexerName
+																			&& pd.GetMethod != null
+																			&& TypeRefComparer.Default.Equals(pd.GetMethod.Parameters[0].ParameterType, module.ImportReference(("mscorlib", "System", "String")))
+																			&& pd.GetMethod.IsPublic, out indexerDeclTypeRef);
+					indexer = indexer ?? previousPartTypeRef.GetProperty(pd => pd.Name == indexerName
+																			&& pd.GetMethod != null
+																			&& TypeRefComparer.Default.Equals(pd.GetMethod.Parameters[0].ParameterType, module.ImportReference(("mscorlib", "System", "String")))
+																			&& pd.GetMethod.IsPublic, out indexerDeclTypeRef);
+
 					properties.Add((indexer, indexerDeclTypeRef, indexArg));
 					var indexType = indexer.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(indexerDeclTypeRef);
 					if (!TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String) && !TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32))
