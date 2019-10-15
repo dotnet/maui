@@ -113,14 +113,11 @@ namespace Xamarin.Forms.Platform.Android
 		IShellToolbarAppearanceTracker _toolbarAppearanceTracker;
 		IShellToolbarTracker _toolbarTracker;
 		FormsViewPager _viewPager;
+		bool _disposed;
 
 		public ShellSectionRenderer(IShellContext shellContext)
 		{
 			_shellContext = shellContext;
-		}
-
-		protected ShellSectionRenderer(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
-		{
 		}
 
 		public event EventHandler AnimationFinished;
@@ -171,19 +168,17 @@ namespace Xamarin.Forms.Platform.Android
 			return _rootView = root;
 		}
 
-		// Use OnDestroy instead of OnDestroyView because OnDestroyView will be
-		// called before the animation completes. This causes tons of tiny issues.
-		public override void OnDestroy()
+		void Destroy()
 		{
 			if (_rootView != null)
 			{
 				UnhookEvents();
 
+				_viewPager.RemoveOnPageChangeListener(this);
 				var adapter = _viewPager.Adapter;
 				_viewPager.Adapter = null;
 				adapter.Dispose();
 
-				_viewPager.RemoveOnPageChangeListener(this);
 
 				_toolbarAppearanceTracker.Dispose();
 				_tabLayoutAppearanceTracker.Dispose();
@@ -202,7 +197,26 @@ namespace Xamarin.Forms.Platform.Android
 			_viewPager = null;
 			_rootView = null;
 
+		}
+
+		// Use OnDestroy instead of OnDestroyView because OnDestroyView will be
+		// called before the animation completes. This causes tons of tiny issues.
+		public override void OnDestroy()
+		{
+			Destroy();
 			base.OnDestroy();
+		}
+		protected override void Dispose(bool disposing)
+		{
+			if (_disposed)
+				return;
+
+			_disposed = true;
+
+			if (disposing)
+			{
+				Destroy();
+			}
 		}
 
 		protected virtual void OnAnimationFinished(EventArgs e)

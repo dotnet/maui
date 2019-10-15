@@ -22,7 +22,12 @@ namespace Xamarin.Forms.Platform.Android
 		List<AdapterListItem> _listItems;
 
 		Dictionary<int, DataTemplate> _templateMap = new Dictionary<int, DataTemplate>();
-		readonly Action<Element> _selectedCallback;
+
+		Action<Element> _selectedCallback;
+
+		bool _disposed;
+
+		ElementViewHolder _elementViewHolder;
 
 		public ShellFlyoutRecyclerAdapter(IShellContext shellContext, Action<Element> selectedCallback)
 		{
@@ -55,7 +60,7 @@ namespace Xamarin.Forms.Platform.Android
 			else
 			{
 				dataTemplate = Shell.GetItemTemplate(item.Element) ?? Shell.ItemTemplate ?? DefaultItemTemplate;
-			}	
+			}
 
 			var template = dataTemplate.SelectDataTemplate(item.Element, Shell);
 			var id = ((IDataTemplateController)template).Id;
@@ -82,7 +87,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			AView ITabStop.TabStop => this;
 
-#region IVisualElementRenderer
+			#region IVisualElementRenderer
 
 			VisualElement IVisualElementRenderer.Element => Content?.BindingContext as VisualElement;
 
@@ -105,7 +110,7 @@ namespace Xamarin.Forms.Platform.Android
 			public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
 #pragma warning restore 67
 
-#endregion IVisualElementRenderer
+			#endregion IVisualElementRenderer
 
 			internal View Content { get; set; }
 
@@ -163,7 +168,9 @@ namespace Xamarin.Forms.Platform.Android
 			container.LayoutParameters = new LP(LP.MatchParent, LP.WrapContent);
 			linearLayout.AddView(container);
 
-			return new ElementViewHolder(content, linearLayout, bar, _selectedCallback);
+			_elementViewHolder = new ElementViewHolder(content, linearLayout, bar, _selectedCallback);
+
+			return _elementViewHolder;
 		}
 
 		protected virtual List<AdapterListItem> GenerateItemList()
@@ -198,7 +205,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			var grid = new Grid();
 			var groups = new VisualStateGroupList();
-			
+
 			var commonGroup = new VisualStateGroup();
 			commonGroup.Name = "CommonStates";
 			groups.Add(commonGroup);
@@ -242,6 +249,27 @@ namespace Xamarin.Forms.Platform.Android
 			return grid;
 		}
 
+		protected override void Dispose(bool disposing)
+		{
+			if (_disposed)
+				return;
+
+			_disposed = true;
+
+			if (disposing)
+			{
+				((IShellController)Shell).StructureChanged -= OnShellStructureChanged;
+
+				_elementViewHolder?.Dispose();
+
+				_listItems = null;
+				_selectedCallback = null;
+				_elementViewHolder = null;
+			}
+
+			base.Dispose(disposing);
+		}
+
 		public class AdapterListItem
 		{
 			public AdapterListItem(Element element, bool drawTopLine = false)
@@ -256,9 +284,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		public class ElementViewHolder : RecyclerView.ViewHolder
 		{
-			readonly Action<Element> _selectedCallback;
+			Action<Element> _selectedCallback;
 			Element _element;
 			AView _itemView;
+			bool _disposed;
 
 			public ElementViewHolder(View view, AView itemView, AView bar, Action<Element> selectedCallback) : base(itemView)
 			{
@@ -320,6 +349,25 @@ namespace Xamarin.Forms.Platform.Android
 					return;
 
 				_selectedCallback(Element);
+			}
+
+			protected override void Dispose(bool disposing)
+			{
+				if (_disposed)
+					return;
+
+				_disposed = true;
+
+				if (disposing)
+				{
+					_itemView.Click -= OnClicked;
+
+					Element = null;
+					_itemView = null;
+					_selectedCallback = null;
+				}
+
+				base.Dispose(disposing);
 			}
 		}
 	}

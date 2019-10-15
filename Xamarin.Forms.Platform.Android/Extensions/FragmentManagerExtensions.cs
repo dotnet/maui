@@ -17,6 +17,11 @@ namespace Xamarin.Forms.Platform.Android
 			return fragmentTransaction.Add(containerViewId, fragment);
 		}
 
+		public static FragmentTransaction ReplaceEx(this FragmentTransaction fragmentTransaction, int containerViewId, Fragment fragment)
+		{
+			return fragmentTransaction.Replace(containerViewId, fragment);
+		}
+
 		public static FragmentTransaction HideEx(this FragmentTransaction fragmentTransaction, Fragment fragment)
 		{
 			return fragmentTransaction.Hide(fragment);

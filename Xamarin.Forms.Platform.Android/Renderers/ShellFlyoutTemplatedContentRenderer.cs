@@ -1,6 +1,5 @@
 ﻿using Android.Content;
 using Android.Graphics.Drawables;
-using Android.Runtime;
 using Android.Support.Design.Widget;
 using Android.Support.V7.Widget;
 using Android.Util;
@@ -29,6 +28,9 @@ namespace Xamarin.Forms.Platform.Android
 		ViewGroup _rootView;
 		Drawable _defaultBackgroundColor;
 		ImageView _bgImage;
+		AppBarLayout _appBar;
+		RecyclerView _recycler;
+		ShellFlyoutRecyclerAdapter _adapter;
 		View _flyoutHeader;
 		int _actionBarHeight;
 
@@ -55,21 +57,21 @@ namespace Xamarin.Forms.Platform.Android
 			var coordinator = LayoutInflater.FromContext(context).Inflate(Resource.Layout.FlyoutContent, null);
 
 			Profile.FramePartition("Find Recycler");
-			var recycler = coordinator.FindViewById<RecyclerView>(Resource.Id.flyoutcontent_recycler);
+			_recycler = coordinator.FindViewById<RecyclerView>(Resource.Id.flyoutcontent_recycler);
 
 			Profile.FramePartition("Find AppBar");
-			var appBar = coordinator.FindViewById<AppBarLayout>(Resource.Id.flyoutcontent_appbar);
+			_appBar = coordinator.FindViewById<AppBarLayout>(Resource.Id.flyoutcontent_appbar);
 
 			_rootView = coordinator as ViewGroup;
 
 			Profile.FramePartition("Add Listener");
-			appBar.AddOnOffsetChangedListener(this);
+			_appBar.AddOnOffsetChangedListener(this);
 
 			Profile.FramePartition("Add HeaderView");
 			_actionBarHeight = (int)context.ToPixels(56);
 
 			_flyoutHeader = ((IShellController)shellContext.Shell).FlyoutHeader;
-			if(_flyoutHeader != null)
+			if (_flyoutHeader != null)
 				_flyoutHeader.MeasureInvalidated += OnFlyoutHeaderMeasureInvalidated;
 
 			_headerView = new HeaderContainer(context, _flyoutHeader)
@@ -81,13 +83,13 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				ScrollFlags = AppBarLayout.LayoutParams.ScrollFlagScroll
 			};
-			appBar.AddView(_headerView);
+			_appBar.AddView(_headerView);
 
 			Profile.FramePartition("Recycler.SetAdapter");
-			var adapter = new ShellFlyoutRecyclerAdapter(shellContext, OnElementSelected);
-			recycler.SetClipToPadding(false);
-			recycler.SetLayoutManager(new LinearLayoutManager(context, (int)Orientation.Vertical, false));
-			recycler.SetAdapter(adapter);
+			_adapter = new ShellFlyoutRecyclerAdapter(shellContext, OnElementSelected);
+			_recycler.SetClipToPadding(false);
+			_recycler.SetLayoutManager(new LinearLayoutManager(context, (int)Orientation.Vertical, false));
+			_recycler.SetAdapter(_adapter);
 
 			Profile.FramePartition("Initialize BgImage");
 			var metrics = context.Resources.DisplayMetrics;
@@ -122,7 +124,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void OnFlyoutHeaderMeasureInvalidated(object sender, EventArgs e)
 		{
-			if(_headerView != null)
+			if (_headerView != null)
 				UpdateFlyoutHeaderBehavior();
 		}
 
@@ -192,7 +194,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (_rootView.IndexOfChild(_bgImage) == -1)
 				{
-					if(_bgImage.SetElevation(float.MinValue))
+					if (_bgImage.SetElevation(float.MinValue))
 						_rootView.AddView(_bgImage);
 					else
 						_rootView.AddView(_bgImage, 0);
@@ -204,10 +206,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			var context = _shellContext.AndroidContext;
 
-			Thickness margin = default(Thickness);
-
-			if (_flyoutHeader != null)
-				margin = _flyoutHeader.Margin;
+			var margin = _flyoutHeader?.Margin ?? default(Thickness);
 
 			var minimumHeight = Convert.ToInt32(_actionBarHeight + context.ToPixels(margin.Top) - context.ToPixels(margin.Bottom));
 			_headerView.SetMinimumHeight(minimumHeight);
@@ -260,29 +259,48 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void Dispose(bool disposing)
 		{
-			if (!_disposed)
+			if (_disposed)
+				return;
+
+			_disposed = true;
+
+			if (disposing)
 			{
-				if (disposing)
+				_shellContext.Shell.PropertyChanged -= OnShellPropertyChanged;
+
+				if (_flyoutHeader != null)
+					_flyoutHeader.MeasureInvalidated -= OnFlyoutHeaderMeasureInvalidated;
+
+				if (_appBar != null)
 				{
-					_shellContext.Shell.PropertyChanged -= OnShellPropertyChanged;
-
-					if (_flyoutHeader != null)
-						_flyoutHeader.MeasureInvalidated += OnFlyoutHeaderMeasureInvalidated;
-
-					_headerView.Dispose();
-					_rootView.Dispose();
-					_defaultBackgroundColor?.Dispose();
-					_bgImage?.Dispose();
+					_appBar.RemoveOnOffsetChangedListener(this);
+					_appBar.RemoveView(_headerView);
 				}
 
+				if (_recycler != null)
+				{
+					_recycler.SetLayoutManager(null);
+					_recycler.SetAdapter(null);
+					_recycler.Dispose();
+				}
+
+				_adapter?.Dispose();
+				_headerView.Dispose();
+				_rootView.Dispose();
+				_defaultBackgroundColor?.Dispose();
+				_bgImage?.Dispose();
+
 				_flyoutHeader = null;
-				_defaultBackgroundColor = null;
-				_bgImage = null;
 				_rootView = null;
 				_headerView = null;
 				_shellContext = null;
-				_disposed = true;
+				_appBar = null;
+				_recycler = null;
+				_adapter = null;
+				_defaultBackgroundColor = null;
+				_bgImage = null;
 			}
+
 			base.Dispose(disposing);
 		}
 

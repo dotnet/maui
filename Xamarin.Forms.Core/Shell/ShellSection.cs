@@ -352,7 +352,6 @@ namespace Xamarin.Forms
 
 			_navStack.Insert(index, page);
 			AddPage(page);
-			SendAppearanceChanged();
 
 			var args = new NavigationRequestedEventArgs(page, before, false)
 			{

@@ -124,8 +124,12 @@ namespace Xamarin.Forms
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 
-			Stream stream;
-			if (!CachingEnabled)
+			Stream stream = null;
+
+			if(CachingEnabled)
+				stream = await GetStreamFromCacheAsync(uri, cancellationToken).ConfigureAwait(false);
+
+			if (stream == null)
 			{
 				try
 				{
@@ -137,8 +141,7 @@ namespace Xamarin.Forms
 					stream = null;
 				}
 			}
-			else
-				stream = await GetStreamFromCacheAsync(uri, cancellationToken).ConfigureAwait(false);
+
 			return stream;
 		}
 
@@ -183,14 +186,28 @@ namespace Xamarin.Forms
 				return null;
 			}
 
-			Stream writeStream = await Store.OpenFileAsync(Path.Combine(CacheName, key), FileMode.Create, FileAccess.Write).ConfigureAwait(false);
-			await stream.CopyToAsync(writeStream, 16384, cancellationToken).ConfigureAwait(false);
-			if (writeStream != null)
-				writeStream.Dispose();
+			if (stream == null || !stream.CanRead)
+			{
+				stream?.Dispose();
+				return null;
+			}
 
-			stream.Dispose();
+			try
+			{
+				Stream writeStream = await Store.OpenFileAsync(Path.Combine(CacheName, key), FileMode.Create, FileAccess.Write).ConfigureAwait(false);
+				await stream.CopyToAsync(writeStream, 16384, cancellationToken).ConfigureAwait(false);
+				if (writeStream != null)
+					writeStream.Dispose();
 
-			return await Store.OpenFileAsync(Path.Combine(CacheName, key), FileMode.Open, FileAccess.Read).ConfigureAwait(false);
+				stream.Dispose();
+
+				return await Store.OpenFileAsync(Path.Combine(CacheName, key), FileMode.Open, FileAccess.Read).ConfigureAwait(false);
+			}
+			catch (Exception ex)
+			{
+				Log.Warning("Image Loading", $"Error getting stream for {Uri}: {ex}");
+				return null;
+			}
 		}
 
 		async Task<Stream> GetStreamFromCacheAsync(Uri uri, CancellationToken cancellationToken)
@@ -209,7 +226,7 @@ namespace Xamarin.Forms
 			{
 				await sem.WaitAsync(cancellationToken);
 				Stream stream = await GetStreamAsyncUnchecked(key, uri, cancellationToken);
-				if (stream == null)
+				if (stream == null || stream.Length == 0 || !stream.CanRead)
 				{
 					sem.Release();
 					return null;

@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Controls.Issues
 			returnButton.Clicked += OnReturnTapped;
 			stackLayout.Children.Add(returnButton);
 
-			var tabTwoPage = new ContentPage { Content =  stackLayout };
+			var tabTwoPage = new ContentPage { Content = stackLayout };
 			tabOne.Items.Add(tabOnePage);
 			tabTwo.Items.Add(tabTwoPage);
 
@@ -86,7 +86,8 @@ namespace Xamarin.Forms.Controls.Issues
 						Items = { tabOne, tabTwo }
 					}
 			);
-			Items.Add(new FlyoutItem {
+			Items.Add(new FlyoutItem
+			{
 				Title = flyoutOtherTitle,
 				Items = { flyoutContent }
 			});
@@ -104,8 +105,8 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement(insertAutomationId);
 			RunningApp.Tap(insertAutomationId);
 
-			TapInFlyout(flyoutOtherTitle);
-			TapInFlyout(flyoutMainTitle);
+			TapInFlyout(flyoutOtherTitle, timeoutMessage: flyoutOtherTitle);
+			TapInFlyout(flyoutMainTitle, timeoutMessage: flyoutMainTitle);
 
 			RunningApp.WaitForElement(returnAutomationId);
 			RunningApp.Tap(returnAutomationId);
