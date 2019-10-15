@@ -31,14 +31,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			get
 			{
-				var group = (IList)_groupSource[indexPath.Section];
-
-				if (group.Count == 0)
-				{
-					return null;
-				}
-
-				return group[(int)indexPath.Item];
+				return GetGroupItemAt(indexPath.Section, (int)indexPath.Item);
 			}
 		}
 
@@ -48,13 +41,11 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			get
 			{
-				// TODO hartez We should probably cache this value
 				var total = 0;
 
 				for (int n = 0; n < _groupSource.Count; n++)
 				{
-					var group = (IList)_groupSource[n];
-					total += group.Count;
+					total += GetGroupCount(n);
 				}
 
 				return total;
@@ -65,15 +56,14 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			for (int i = 0; i < _groupSource.Count; i++)
 			{
-				var group = (IList)_groupSource[i];
+				var j = IndexInGroup(item, _groupSource[i]);
 
-				for (int j = 0; j < group.Count; j++)
+				if (j == -1)
 				{
-					if (group[j] == item)
-					{
-						return NSIndexPath.Create(i, j);
-					}
+					continue;
 				}
+
+				return NSIndexPath.Create(i, j);
 			}
 
 			return NSIndexPath.Create(-1, -1);
@@ -86,7 +76,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public int ItemCountInGroup(nint group)
 		{
-			return ((IList)_groupSource[(int)group]).Count;
+			return GetGroupCount((int)group);
 		}
 
 		public void Dispose()
@@ -128,7 +118,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			for (int n = 0; n < _groupSource.Count; n++)
 			{
-				if (_groupSource[n] is INotifyCollectionChanged incc && _groupSource[n] is IList list)
+				if (_groupSource[n] is INotifyCollectionChanged && _groupSource[n] is IList list)
 				{
 					_groups.Add(new ObservableItemsSource(list, _collectionView, n));
 				}
@@ -242,6 +232,70 @@ namespace Xamarin.Forms.Platform.iOS
 			var end = Math.Max(args.OldStartingIndex, args.NewStartingIndex) + count;
 
 			_collectionView.ReloadSections(CreateIndexSetFrom(start, end));
+		}
+
+		int GetGroupCount(int groupIndex)
+		{
+			switch (_groupSource[groupIndex])
+			{
+				case IList list:
+					return list.Count;
+				case IEnumerable enumerable:
+					var count = 0;
+					var enumerator = enumerable.GetEnumerator();
+					while (enumerator.MoveNext())
+					{
+						count += 1; 
+					}
+					return count;
+			}
+
+			return 0;
+		}
+
+		object GetGroupItemAt(int groupIndex, int index)
+		{
+			switch (_groupSource[groupIndex])
+			{
+				case IList list:
+					return list[index];
+				case IEnumerable enumerable:
+					var count = -1;
+					var enumerator = enumerable.GetEnumerator();
+
+					do
+					{
+						enumerator.MoveNext();
+						count += 1;
+					}
+					while (count < index);
+
+					return enumerator.Current;
+			}
+
+			return null;
+		}
+
+		int IndexInGroup(object item, object group)
+		{
+			switch (group)
+			{
+				case IList list:
+					return list.IndexOf(item);
+				case IEnumerable enumerable:
+					var enumerator = enumerable.GetEnumerator();
+					var index = 0;
+					while (enumerator.MoveNext())
+					{
+						if (enumerator.Current == item)
+						{
+							return index;
+						}
+					}
+					return -1;
+			}
+
+			return -1;
 		}
 	}
 
