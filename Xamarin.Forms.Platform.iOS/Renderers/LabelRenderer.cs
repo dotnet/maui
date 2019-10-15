@@ -155,9 +155,9 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			if (e.NewElement != null)
 			{
+				e.NewElement.PropertyChanging += ElementPropertyChanging;
 				if (Control == null)
 				{
-					e.NewElement.PropertyChanging += ElementPropertyChanging;
 					SetNativeControl(CreateNativeControl());
 #if !__MOBILE__
 					Control.Editable = false;
