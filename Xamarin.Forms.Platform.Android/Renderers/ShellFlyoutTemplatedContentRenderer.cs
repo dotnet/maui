@@ -10,6 +10,7 @@ using System.ComponentModel;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
 using Xamarin.Forms.Internals;
+using Android.Runtime;
 
 namespace Xamarin.Forms.Platform.Android
 {
