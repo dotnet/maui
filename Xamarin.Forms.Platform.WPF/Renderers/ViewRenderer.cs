@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using WControl = System.Windows.Controls.Control;
 
 namespace Xamarin.Forms.Platform.WPF
@@ -255,8 +256,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			if (control == null || !control.IsEnabled)
 				return;
-			control.IsEnabled = false;
-			control.IsEnabled = true;
+			control.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next)); 
 		}
 
 		void HandleTrackerUpdated(object sender, EventArgs e)
