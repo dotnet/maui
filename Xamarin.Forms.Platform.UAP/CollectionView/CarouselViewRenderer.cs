@@ -25,9 +25,6 @@ namespace Xamarin.Forms.Platform.UWP
 
 		UWPDataTemplate CarouselItemsViewTemplate => (UWPDataTemplate)UWPApp.Current.Resources["CarouselItemsViewDefaultTemplate"];
 
-		double _itemWidth;
-		double _itemHeight;
-
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs changedProperty)
 		{
 			base.OnElementPropertyChanged(sender, changedProperty);
@@ -103,7 +100,7 @@ namespace Xamarin.Forms.Platform.UWP
 			return new CollectionViewSource
 			{
 				Source = TemplatedItemSourceFactory.Create(Element.ItemsSource, Element.ItemTemplate, Element, 
-					_itemHeight, _itemWidth, GetItemSpacing()),
+					GetItemHeight(), GetItemWidth(), GetItemSpacing()),
 				IsSourceGrouped = false
 			};
 		}
@@ -137,9 +134,9 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void OnListSizeChanged(object sender, Windows.UI.Xaml.SizeChangedEventArgs e)
 		{
-			_itemHeight = GetItemHeight();
-			_itemWidth = GetItemWidth();
 			UpdateItemsSource();
+			UpdateSnapPointsType();
+			UpdateSnapPointsAlignment();
 		}
 
 		void OnScrollViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
