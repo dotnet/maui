@@ -266,6 +266,7 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateItemsUpdatingScrollMode();
 
 			UpdateEmptyView();
+			AddOrUpdateScrollListener();
 		}
 
 		protected virtual TAdapter CreateAdapter()
@@ -334,8 +335,7 @@ namespace Xamarin.Forms.Platform.Android
 			// Listen for ScrollTo requests
 			ItemsView.ScrollToRequested += ScrollToRequested;
 
-			_recyclerViewScrollListener = CreateScrollListener();
-			AddOnScrollListener(_recyclerViewScrollListener);
+			AddOrUpdateScrollListener();
 		}
 
 		protected virtual RecyclerViewScrollListener<TItemsView, TItemsViewSource> CreateScrollListener()
@@ -391,12 +391,7 @@ namespace Xamarin.Forms.Platform.Android
 			// Stop listening for ScrollTo requests
 			oldElement.ScrollToRequested -= ScrollToRequested;
 
-			if (_recyclerViewScrollListener != null)
-			{
-				_recyclerViewScrollListener.Dispose();
-				ClearOnScrollListeners();
-				_recyclerViewScrollListener = null;
-			}
+			RemoveScrollListener();
 
 			if (ItemsViewAdapter != null)
 			{
@@ -651,6 +646,24 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				ScrollHelper.UndoNextScrollAdjustment();
 			}
+		}
+
+		void AddOrUpdateScrollListener()
+		{
+			RemoveScrollListener();
+
+			_recyclerViewScrollListener = CreateScrollListener();
+			AddOnScrollListener(_recyclerViewScrollListener);
+		}
+
+		void RemoveScrollListener()
+		{
+			if (_recyclerViewScrollListener == null)
+				return;
+
+			_recyclerViewScrollListener.Dispose();
+			ClearOnScrollListeners();
+			_recyclerViewScrollListener = null;
 		}
 	}
 }
