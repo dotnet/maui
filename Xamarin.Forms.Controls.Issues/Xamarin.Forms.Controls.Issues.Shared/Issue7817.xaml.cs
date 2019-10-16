@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public Issue7817()
 		{
 #if APP
-			Device.SetFlags(new List<string> { CollectionView.CollectionViewExperimental });
+			Device.SetFlags(new List<string> { ExperimentalFlags.CarouselViewExperimental });
 			Title = "Issue 7817";
 			InitializeComponent();
 #endif

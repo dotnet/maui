@@ -24,7 +24,6 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-			FlagTestHelpers.SetCollectionViewTestFlag();
 			PushAsync(CreateRoot());
 		}
 

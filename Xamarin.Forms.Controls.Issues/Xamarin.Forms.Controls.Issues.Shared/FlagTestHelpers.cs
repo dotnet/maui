@@ -9,7 +9,7 @@ namespace Xamarin.Forms.Controls.Issues
 			Device.SetFlags(new List<string>(Device.Flags ?? new List<string>()) { flag });
 		}
 
-		public static void SetCollectionViewTestFlag()
+		public static void SetCarouselViewTestFlag()
 		{
 			SetTestFlag("CollectionView_Experimental");
 		}

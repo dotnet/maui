@@ -22,8 +22,6 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override void Init()
 		{
 #if APP
-			FlagTestHelpers.SetCollectionViewTestFlag();
-
 			PushAsync(new GalleryPages.CollectionViewGalleries.HeaderFooterGalleries.HeaderFooterTemplate());
 #endif
 		}

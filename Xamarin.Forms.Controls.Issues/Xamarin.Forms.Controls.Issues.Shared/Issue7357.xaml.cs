@@ -34,8 +34,6 @@ namespace Xamarin.Forms.Controls.Issues
 
 		public Issue7357()
 		{
-			Device.SetFlags(new List<string> { CollectionView.CollectionViewExperimental });
-
 			InitializeComponent();
 
 			(CollectionView7357.ItemsLayout as LinearItemsLayout).ItemSpacing = 5;

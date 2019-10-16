@@ -14,7 +14,6 @@ namespace Xamarin.Forms.Controls.Issues
 #if APP
 		public Issue6644()
 		{
-			Device.SetFlags(new List<string> { CollectionView.CollectionViewExperimental });
 			InitializeComponent();
 			cv.ItemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10).ToList());
 		}

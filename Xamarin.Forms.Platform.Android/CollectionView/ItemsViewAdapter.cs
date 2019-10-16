@@ -22,8 +22,6 @@ namespace Xamarin.Forms.Platform.Android
 
 		internal ItemsViewAdapter(TItemsView itemsView, Func<View, Context, ItemContentView> createItemContentView = null)
 		{
-			Xamarin.Forms.CollectionView.VerifyCollectionViewFlagEnabled(nameof(ItemsViewAdapter<TItemsView, TItemsViewSource>));
-
 			ItemsView = itemsView ?? throw new ArgumentNullException(nameof(itemsView));
 
 			UpdateUsingItemTemplate();

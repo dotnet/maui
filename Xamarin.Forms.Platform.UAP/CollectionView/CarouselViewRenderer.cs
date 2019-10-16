@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Platform.UWP
 		ScrollViewer _scrollViewer;
 		public CarouselViewRenderer()
 		{
-			CollectionView.VerifyCollectionViewFlagEnabled(nameof(CarouselView));
+			CarouselView.VerifyCarouselViewFlagEnabled(nameof(CarouselView));
 		}
 
 		CarouselView CarouselView => Element;

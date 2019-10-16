@@ -11,11 +11,6 @@ namespace Xamarin.Forms
 	{
 		List<Element> _logicalChildren = new List<Element>();
 
-		protected internal ItemsView()
-		{
-			CollectionView.VerifyCollectionViewFlagEnabled(constructorHint: nameof(ItemsView));
-		}
-
 		public static readonly BindableProperty EmptyViewProperty =
 			BindableProperty.Create(nameof(EmptyView), typeof(object), typeof(ItemsView), null);
 

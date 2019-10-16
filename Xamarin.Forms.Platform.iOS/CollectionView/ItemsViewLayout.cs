@@ -20,8 +20,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected ItemsViewLayout(ItemsLayout itemsLayout, ItemSizingStrategy itemSizingStrategy)
 		{
-			Xamarin.Forms.CollectionView.VerifyCollectionViewFlagEnabled(nameof(ItemsViewLayout));
-
 			ItemSizingStrategy = itemSizingStrategy;
 
 			_itemsLayout = itemsLayout;
