@@ -14,7 +14,6 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			_itemsSource = itemSource;
 			_notifier = notifier;
-			_notifier = notifier;
 			((INotifyCollectionChanged)itemSource).CollectionChanged += CollectionChanged;
 		}
 
