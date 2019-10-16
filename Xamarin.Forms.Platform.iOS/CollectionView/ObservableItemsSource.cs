@@ -8,21 +8,23 @@ namespace Xamarin.Forms.Platform.iOS
 {
 	internal class ObservableItemsSource : IItemsViewSource
 	{
+		readonly UICollectionViewController _collectionViewController;
 		readonly UICollectionView _collectionView;
 		readonly bool _grouped;
 		readonly int _section;
 		readonly IList _itemsSource;
 		bool _disposed;
 
-		public ObservableItemsSource(IList itemSource, UICollectionView collectionView, int group = -1)
+		public ObservableItemsSource(IList itemSource, UICollectionViewController collectionViewController, int group = -1)
 		{
-			_collectionView = collectionView;
+			_collectionViewController = collectionViewController;
+			_collectionView = _collectionViewController.CollectionView;
 		
 			_section = group < 0 ? 0 : group;
 			_grouped = group >= 0;
 
 			_itemsSource = itemSource;
-
+			
 			((INotifyCollectionChanged)itemSource).CollectionChanged += CollectionChanged;
 		}
 
@@ -71,7 +73,7 @@ namespace Xamarin.Forms.Platform.iOS
 			return NSIndexPath.Create(-1, -1);
 		}
 
-		public int GroupCount => _itemsSource.Count == 0 ? 0 : 1;
+		public int GroupCount => 1;
 
 		public int ItemCount => _itemsSource.Count;
 
@@ -130,31 +132,48 @@ namespace Xamarin.Forms.Platform.iOS
 			return result;
 		}
 
+		bool NotLoadedYet()
+		{
+			// If the UICollectionView hasn't actually been loaded, then calling InsertItems or DeleteItems is 
+			// going to crash or get in an unusable state; instead, ReloadData should be used
+			return !_collectionViewController.IsViewLoaded || _collectionViewController.View.Window == null;
+		}
+
 		void Add(NotifyCollectionChangedEventArgs args)
 		{
 			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _itemsSource.IndexOf(args.NewItems[0]);
 			var count = args.NewItems.Count;
 
-			if (!_grouped && _collectionView.NumberOfSections() != GroupCount && count > 0)
+			if (NotLoadedYet())
 			{
-				// Okay, we're going from completely empty to more than 0 items; this means we don't even
-				// have a section 0 yet. Inserting a section 0 manually results in an unexplained crash, so instead
-				// we'll just reload the data so the UICollectionView can get its internal state sorted out.
 				_collectionView.ReloadData();
+				return;
 			}
-			else
+
+			if (!_grouped && _collectionView.NumberOfItemsInSection(_section) == 0)
 			{
-				_collectionView.PerformBatchUpdates(() =>
+				// Okay, we're going from completely empty to more than 0 items; there's an iOS bug which apparently
+				// will just crash if we call InsertItems here, so we have to do ReloadData.
+				_collectionView.ReloadData();
+				return;
+			}
+
+			_collectionView.PerformBatchUpdates(() =>
 				{
 					var indexes = CreateIndexesFrom(startIndex, count);
 					_collectionView.InsertItems(indexes);
 				}, null);
-			}
 		}
 
 		void Remove(NotifyCollectionChangedEventArgs args)
 		{
 			var startIndex = args.OldStartingIndex;
+
+			if (NotLoadedYet())
+			{
+				_collectionView.ReloadData();
+				return;
+			}
 
 			if (startIndex < 0)
 			{
@@ -163,20 +182,13 @@ namespace Xamarin.Forms.Platform.iOS
 				Reload();
 				return;
 			}
-	
+
 			// If we have a start index, we can be more clever about removing the item(s) (and get the nifty animations)
 			var count = args.OldItems.Count;
 
 			_collectionView.PerformBatchUpdates(() =>
 			{
 				_collectionView.DeleteItems(CreateIndexesFrom(startIndex, count));
-
-				if (!_grouped && _collectionView.NumberOfSections() != GroupCount)
-				{
-					// We had a non-grouped list with items, and we're removing the last one;
-					// we also need to remove the group it was in
-					_collectionView.DeleteSections(new NSIndexSet(0));
-				}
 			}, null);
 		}
 

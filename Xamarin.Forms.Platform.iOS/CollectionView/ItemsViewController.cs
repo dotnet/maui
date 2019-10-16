@@ -166,7 +166,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected virtual IItemsViewSource CreateItemsViewSource()
 		{
-			return ItemsSourceFactory.Create(ItemsView.ItemsSource, CollectionView);
+			return ItemsSourceFactory.Create(ItemsView.ItemsSource, this);
 		}
 
 		public virtual void UpdateItemsSource()

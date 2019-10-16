@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Platform.iOS
 			// Use the BindableProperty here (instead of _isGroupingEnabled) because the cached value might not be set yet
 			if (ItemsView.IsGrouped) 
 			{
-				return ItemsSourceFactory.CreateGrouped(ItemsView.ItemsSource, CollectionView);
+				return ItemsSourceFactory.CreateGrouped(ItemsView.ItemsSource, this);
 			}
 
 			return base.CreateItemsViewSource();
