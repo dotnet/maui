@@ -79,6 +79,11 @@ namespace Xamarin.Forms.Platform.iOS
 			_carouselView.SetIsDragging(false);
 		}
 
+		internal void UpdateIsScrolling(bool isScrolling)
+		{
+			_carouselView.IsScrolling = isScrolling;
+		}
+
 		void UpdateInitialPosition()
 		{
 			if (_carouselView.Position != 0)

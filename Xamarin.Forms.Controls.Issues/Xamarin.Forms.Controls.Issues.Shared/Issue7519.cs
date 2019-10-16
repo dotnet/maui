@@ -23,7 +23,6 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override void Init()
 		{
 #if APP
-			FlagTestHelpers.SetCollectionViewTestFlag();
 			PushAsync(new Issue7519Xaml());
 #endif
 		}

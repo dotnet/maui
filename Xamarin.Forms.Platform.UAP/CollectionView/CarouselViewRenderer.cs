@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Platform.UWP
 		ScrollViewer _scrollViewer;
 		public CarouselViewRenderer()
 		{
-			CollectionView.VerifyCollectionViewFlagEnabled(nameof(CarouselView));
+			CarouselView.VerifyCarouselViewFlagEnabled(nameof(CarouselView));
 		}
 
 		CarouselView CarouselView => Element;
@@ -143,11 +143,13 @@ namespace Xamarin.Forms.Platform.UWP
 		void OnScrollViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
 		{
 			CarouselView.SetIsDragging(true);
+			CarouselView.IsScrolling = true;
 		}
 
 		void OnScrollViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
 		{
 			CarouselView.SetIsDragging(e.IsIntermediate);
+			CarouselView.IsScrolling = e.IsIntermediate;
 		}
 
 		void UpdatePeekAreaInsets()

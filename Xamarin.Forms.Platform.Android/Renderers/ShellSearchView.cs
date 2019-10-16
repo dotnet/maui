@@ -123,20 +123,18 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void Dispose(bool disposing)
 		{
-			base.Dispose(disposing);
+			if (_disposed)
+				return;
 
 			if (disposing)
 			{
 				_disposed = true;
 
-				_searchHandlerAppearanceTracker?.Dispose();
 				SearchHandler.PropertyChanged -= OnSearchHandlerPropertyChanged;
 
 				_textBlock.ItemClick -= OnTextBlockItemClicked;
 				_textBlock.RemoveTextChangedListener(this);
 				_textBlock.SetOnEditorActionListener(null);
-				_textBlock.Adapter.Dispose();
-				_textBlock.Adapter = null;
 				_textBlock.DropDownBackground.Dispose();
 				_textBlock.SetDropDownBackgroundDrawable(null);
 
@@ -144,6 +142,9 @@ namespace Xamarin.Forms.Platform.Android
 				_clearPlaceholderButton.Click -= OnClearPlaceholderButtonClicked;
 				_searchButton.Click -= OnSearchButtonClicked;
 
+				_textBlock.Adapter.Dispose();
+				_textBlock.Adapter = null;
+				_searchHandlerAppearanceTracker?.Dispose();
 				_textBlock.Dispose();
 				_clearButton.Dispose();
 				_searchButton.Dispose();
@@ -160,6 +161,8 @@ namespace Xamarin.Forms.Platform.Android
 			_searchHandlerAppearanceTracker = null;
 
 			SearchHandler = null;
+
+			base.Dispose(disposing);
 		}
 
 		protected virtual void LoadView(SearchHandler searchHandler)

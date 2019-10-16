@@ -268,10 +268,10 @@ namespace Xamarin.Forms.Platform.Android
 			FragmentTransaction transaction = manager.BeginTransaction();
 
 			if (animate)
-				transaction.SetTransition((int)global::Android.App.FragmentTransit.EnterMask);
+				transaction.SetTransitionEx((int)global::Android.App.FragmentTransit.EnterMask);
 
-			transaction.Replace(_frameLayout.Id, fragment);
-			transaction.CommitAllowingStateLoss();
+			transaction.ReplaceEx(_frameLayout.Id, fragment);
+			transaction.CommitAllowingStateLossEx();
 
 			Profile.FramePartition("OnDestroyed");
 			void OnDestroyed (object sender, EventArgs args)
@@ -375,15 +375,17 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				var bounds = Bounds;
 
-				var paint = new Paint();
+				using (var paint = new Paint())
+				{
 
-				paint.Color = _color;
+					paint.Color = _color;
 
-				canvas.DrawRect(new Rect(0, 0, bounds.Right, _topSize), paint);
+					canvas.DrawRect(new Rect(0, 0, bounds.Right, _topSize), paint);
 
-				canvas.DrawRect(new Rect(0, bounds.Bottom - _bottomSize, bounds.Right, bounds.Bottom), paint);
+					canvas.DrawRect(new Rect(0, bounds.Bottom - _bottomSize, bounds.Right, bounds.Bottom), paint);
 
-				paint.Dispose();
+					paint.Dispose();
+				}
 			}
 
 			public override void SetAlpha(int alpha)
@@ -404,20 +406,37 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!_disposed)
+			if (_disposed)
+				return;
+
+			_disposed = true;
+
+			if (disposing)
 			{
-				if (disposing)
+				if (_currentRenderer != null && _currentRenderer.Fragment.IsAlive())
 				{
-					Element.PropertyChanged -= OnElementPropertyChanged;
-					Element.SizeChanged -= OnElementSizeChanged;
+					FragmentTransaction transaction = FragmentManager.BeginTransaction();
+					transaction.RemoveEx(_currentRenderer.Fragment);
+					transaction.CommitAllowingStateLossEx();
+					FragmentManager.ExecutePendingTransactionsEx();
 				}
 
-				Element = null;
-				// TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-				// TODO: set large fields to null.
+				Element.PropertyChanged -= OnElementPropertyChanged;
+				Element.SizeChanged -= OnElementSizeChanged;
+				((IShellController)Element).RemoveAppearanceObserver(this);
 
-				_disposed = true;
+				// This cast is necessary because IShellFlyoutRenderer doesn't implement IDisposable
+				(_flyoutRenderer as IDisposable)?.Dispose();
+
+				_currentRenderer.Dispose();
+				_currentRenderer = null;
 			}
+
+			Element = null;
+			// TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+			// TODO: set large fields to null.
+
+			_disposed = true;
 		}
 
 		#endregion IDisposable

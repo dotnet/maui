@@ -6,7 +6,6 @@
 
 		protected ItemsLayout([Parameter("Orientation")] ItemsLayoutOrientation orientation)
 		{
-			CollectionView.VerifyCollectionViewFlagEnabled(constructorHint: nameof(ItemsLayout));
 			Orientation = orientation;
 		}
 

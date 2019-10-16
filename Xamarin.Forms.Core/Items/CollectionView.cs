@@ -12,19 +12,5 @@ namespace Xamarin.Forms
 	[RenderWith(typeof(_CollectionViewRenderer))]
 	public class CollectionView : GroupableItemsView
 	{
-		internal const string CollectionViewExperimental = "CollectionView_Experimental";
-
-		public CollectionView()
-		{
-			VerifyCollectionViewFlagEnabled(constructorHint: nameof(CollectionView));
-		}
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void VerifyCollectionViewFlagEnabled(
-			string constructorHint = null,
-			[CallerMemberName] string memberName = "")
-		{
-			ExperimentalFlags.VerifyFlagEnabled(nameof(CollectionView), ExperimentalFlags.CollectionViewExperimental);
-		}
 	}
 }

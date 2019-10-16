@@ -25,7 +25,6 @@ namespace Xamarin.Forms.Controls.Issues
 		public Issue7789()
 		{
 #if APP
-			Device.SetFlags(new List<string> { CollectionView.CollectionViewExperimental });
 			InitializeComponent();
 #endif
 		}

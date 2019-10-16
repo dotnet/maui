@@ -7,8 +7,6 @@ namespace Xamarin.Forms.Platform.iOS
 		public static UICollectionViewScrollPosition ToCollectionViewScrollPosition(this ScrollToPosition scrollToPosition, 
 			UICollectionViewScrollDirection scrollDirection = UICollectionViewScrollDirection.Vertical, bool isLtr = false)
 		{
-			CollectionView.VerifyCollectionViewFlagEnabled();
-
 			if (scrollDirection == UICollectionViewScrollDirection.Horizontal)
 			{
 				return scrollToPosition.ToHorizontalCollectionViewScrollPosition(isLtr);
@@ -19,8 +17,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public static UICollectionViewScrollPosition ToHorizontalCollectionViewScrollPosition(this ScrollToPosition scrollToPosition, bool isLtr)
 		{
-			CollectionView.VerifyCollectionViewFlagEnabled();
-
 			switch (scrollToPosition)
 			{
 				case ScrollToPosition.MakeVisible:
@@ -37,8 +33,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public static UICollectionViewScrollPosition ToVerticalCollectionViewScrollPosition(this ScrollToPosition scrollToPosition)
 		{
-			CollectionView.VerifyCollectionViewFlagEnabled();
-
 			switch (scrollToPosition)
 			{
 				case ScrollToPosition.MakeVisible:

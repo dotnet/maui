@@ -35,11 +35,11 @@ namespace Xamarin.Forms.Platform.Android
 		public bool HasHeader { get; set; }
 		public bool HasFooter { get; set; }
 
-		public ObservableGroupedSource(GroupableItemsView groupableItemsView, ICollectionChangedNotifier adapter)
+		public ObservableGroupedSource(GroupableItemsView groupableItemsView, ICollectionChangedNotifier notifier)
 		{
 			var groupSource = groupableItemsView.ItemsSource;
 
-			_notifier = adapter;
+			_notifier = notifier;
 			_groupSource = groupSource as IList ?? new ListSource(groupSource);
 
 			if (_groupSource is INotifyCollectionChanged incc)

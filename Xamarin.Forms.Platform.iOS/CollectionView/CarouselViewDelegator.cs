@@ -9,6 +9,23 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 		}
 
+		public override void Scrolled(UIScrollView scrollView)
+		{
+			base.Scrolled(scrollView);
+
+			(ViewController as CarouselViewController)?.UpdateIsScrolling(true);
+		}
+
+		public override void ScrollAnimationEnded(UIScrollView scrollView)
+		{
+			(ViewController as CarouselViewController)?.UpdateIsScrolling(false);
+		}
+
+		public override void DecelerationEnded(UIScrollView scrollView)
+		{
+			(ViewController as CarouselViewController)?.UpdateIsScrolling(false);
+		}
+
 		public override void DraggingStarted(UIScrollView scrollView)
 		{
 			ViewController?.DraggingStarted(scrollView);

@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Windows.Input;
 using Xamarin.Forms.Platform;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Xamarin.Forms
 {
@@ -165,18 +166,39 @@ namespace Xamarin.Forms
 			set => SetValue(ItemsLayoutProperty, value);
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool IsScrolling { get; set; }
+
 		public event EventHandler<CurrentItemChangedEventArgs> CurrentItemChanged;
 		public event EventHandler<PositionChangedEventArgs> PositionChanged;
 
 		public CarouselView()
 		{
-			CollectionView.VerifyCollectionViewFlagEnabled(constructorHint: nameof(CarouselView));
+			VerifyCarouselViewFlagEnabled(constructorHint: nameof(CarouselView));
 			ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal)
 			{
 				SnapPointsType = SnapPointsType.MandatorySingle,
 				SnapPointsAlignment = SnapPointsAlignment.Center
 			};
 			ItemSizingStrategy = ItemSizingStrategy.None;
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void VerifyCarouselViewFlagEnabled(
+			string constructorHint = null,
+			[CallerMemberName] string memberName = "")
+		{
+			try
+			{
+				ExperimentalFlags.VerifyFlagEnabled(nameof(CollectionView), ExperimentalFlags.CarouselViewExperimental,
+					constructorHint, memberName);
+			}
+			catch (InvalidOperationException)
+			{
+				// We'll still honor the CollectionView_Experimental flag for CarouselView stuff
+				ExperimentalFlags.VerifyFlagEnabled(nameof(CollectionView), ExperimentalFlags.CollectionViewExperimental,
+					constructorHint, memberName);
+			}
 		}
 
 		protected virtual void OnPositionChanged(PositionChangedEventArgs args)
@@ -214,8 +236,8 @@ namespace Xamarin.Forms
 
 			carousel.PositionChanged?.Invoke(carousel, args);
 
-			//user is interacting with the carousel we don't need to scroll to item 
-			if (!carousel.IsDragging)
+			// If the user is interacting with the Carousel or the Carousel is doing ScrollTo, we don't need to scroll to item.
+			if (!carousel.IsDragging && !carousel.IsScrolling)
 				carousel.ScrollTo(args.CurrentPosition, position: ScrollToPosition.Center, animate: carousel.IsScrollAnimated);
 
 			carousel.OnPositionChanged(args);

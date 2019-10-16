@@ -743,10 +743,10 @@ namespace Xamarin.Forms.Controls
 				AppSetup.EndIsolate();
 			}
 		}
-		public void ShowFlyout(string flyoutIcon = FlyoutIconAutomationId, bool usingSwipe = false, bool testForFlyoutIcon = true)
+		public void ShowFlyout(string flyoutIcon = FlyoutIconAutomationId, bool usingSwipe = false, bool testForFlyoutIcon = true, string timeoutMessage = null)
 		{			
 			if(testForFlyoutIcon)
-				RunningApp.WaitForElement(flyoutIcon);
+				RunningApp.WaitForElement(flyoutIcon, timeoutMessage);
 
 			if (usingSwipe)
 			{
@@ -760,10 +760,11 @@ namespace Xamarin.Forms.Controls
 		}
 
 
-		public void TapInFlyout(string text, string flyoutIcon = FlyoutIconAutomationId, bool usingSwipe = false)
+		public void TapInFlyout(string text, string flyoutIcon = FlyoutIconAutomationId, bool usingSwipe = false, string timeoutMessage = null)
 		{
-			ShowFlyout(flyoutIcon, usingSwipe);
-			RunningApp.WaitForElement(text);
+			timeoutMessage = timeoutMessage ?? text;
+			ShowFlyout(flyoutIcon, usingSwipe, timeoutMessage: timeoutMessage);
+			RunningApp.WaitForElement(text, timeoutMessage);
 			RunningApp.Tap(text);
 		}
 

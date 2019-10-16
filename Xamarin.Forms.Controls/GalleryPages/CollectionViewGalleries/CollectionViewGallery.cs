@@ -14,20 +14,12 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 	{
 		public CollectionViewGallery()
 		{
-			var button = new Button
-			{
-				Text = "Enable CollectionView",
-				AutomationId = "EnableCollectionView"
-			};
-			button.Clicked += ButtonClicked;
-
 			Content = new ScrollView
 			{
 				Content = new StackLayout
 				{
 					Children =
 					{
-						button,
 						GalleryBuilder.NavButton("Default Text Galleries", () => new DefaultTextGallery(), Navigation),
 						GalleryBuilder.NavButton("DataTemplate Galleries", () => new DataTemplateGallery(), Navigation),
 						GalleryBuilder.NavButton("Observable Collection Galleries", () => new ObservableCollectionGallery(), Navigation),
@@ -46,17 +38,6 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 					}
 				}
 			};
-		}
-
-		void ButtonClicked(object sender, System.EventArgs e)
-		{
-			var button = sender as Button;
-
-			button.Text = "CollectionView Enabled!";
-			button.TextColor = Color.Black;
-			button.IsEnabled = false;
-
-			Device.SetFlags(new[] { ExperimentalFlags.CollectionViewExperimental });
 		}
 	}
 }

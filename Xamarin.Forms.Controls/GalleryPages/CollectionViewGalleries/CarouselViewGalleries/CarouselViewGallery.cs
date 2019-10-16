@@ -14,8 +14,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 
 			var button = new Button
 			{
-				Text = "Enable CollectionView",
-				AutomationId = "EnableCollectionView"
+				Text = "Enable CarouselView",
+				AutomationId = "EnableCarouselView"
 			};
 			button.Clicked += ButtonClicked;
 
@@ -38,7 +38,9 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 	  					GalleryBuilder.NavButton("CarouselView Snap", () =>
  							new CarouselSnapGallery(), Navigation),
 						GalleryBuilder.NavButton("ObservableCollection and CarouselView", () =>
- 							new CollectionCarouselViewGallery(), Navigation)
+ 							new CollectionCarouselViewGallery(), Navigation),
+						GalleryBuilder.NavButton("CarouselView EmptyView", () =>
+  							new EmptyCarouselGallery(), Navigation)
 					}
 				}
 			};
@@ -48,11 +50,11 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 		{
 			var button = sender as Button;
 
-			button.Text = "CollectionView Enabled!";
+			button.Text = "CarouselView Enabled!";
 			button.TextColor = Color.Black;
 			button.IsEnabled = false;
 
-			Device.SetFlags(new[] { ExperimentalFlags.CollectionViewExperimental });
+			Device.SetFlags(new[] { ExperimentalFlags.CarouselViewExperimental });
 		}
 	}
 }

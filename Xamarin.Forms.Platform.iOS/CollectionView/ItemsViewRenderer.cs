@@ -15,10 +15,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected TItemsView ItemsView => Element;
 
-		public ItemsViewRenderer()
-		{
-			CollectionView.VerifyCollectionViewFlagEnabled(nameof(ItemsViewRenderer<TItemsView, TViewController>));
-		}
+
 
 		public override UIViewController ViewController => Controller;
 
@@ -95,14 +92,6 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateLayout();
 			Controller = CreateController(newElement, _layout);
 			 
-			if (Forms.IsiOS11OrNewer)
-			{
-				// We set this property to keep iOS from trying to be helpful about insetting all the 
-				// CollectionView content when we're in landscape mode (to avoid the notch)
-				// The SetUseSafeArea Platform Specific is already taking care of this for us 
-				// That said, at some point it's possible folks will want a PS for controlling this behavior
-				Controller.CollectionView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
-			}
 
 			SetNativeControl(Controller.View);
 			Controller.CollectionView.BackgroundColor = UIColor.Clear;
