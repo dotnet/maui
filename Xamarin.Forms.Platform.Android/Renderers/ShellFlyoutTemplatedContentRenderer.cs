@@ -90,8 +90,8 @@ namespace Xamarin.Forms.Platform.Android
 			Profile.FramePartition("Recycler.SetAdapter");
 			_adapter = new ShellFlyoutRecyclerAdapter(shellContext, OnElementSelected);
 			_recycler.SetClipToPadding(false);
-            _recycler.SetLayoutManager(_layoutManager = new ScrollLayoutManager(context, (int)Orientation.Vertical, false));
-            _recycler.SetLayoutManager(new LinearLayoutManager(context, (int)Orientation.Vertical, false));
+			_recycler.SetLayoutManager(_layoutManager = new ScrollLayoutManager(context, (int)Orientation.Vertical, false));
+			_recycler.SetLayoutManager(new LinearLayoutManager(context, (int)Orientation.Vertical, false));
 			_recycler.SetAdapter(_adapter);
 
 			Profile.FramePartition("Initialize BgImage");
@@ -302,8 +302,8 @@ namespace Xamarin.Forms.Platform.Android
 				_adapter?.Dispose();
 				_headerView.Dispose();
 				_rootView.Dispose();
-                _layoutManager?.Dispose();
-                _defaultBackgroundColor?.Dispose();
+				_layoutManager?.Dispose();
+				_defaultBackgroundColor?.Dispose();
 				_bgImage?.Dispose();
 
 				_flyoutHeader = null;
@@ -314,8 +314,8 @@ namespace Xamarin.Forms.Platform.Android
 				_recycler = null;
 				_adapter = null;
 				_defaultBackgroundColor = null;
-                _layoutManager = null;
-                _bgImage = null;
+				_layoutManager = null;
+				_bgImage = null;
 			}
 
 			base.Dispose(disposing);
@@ -378,7 +378,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				UpdateElevation();
 
-				if(View != null)
+				if (View != null)
 					View.Layout(new Rectangle(paddingLeft, paddingTop, width, height));
 			}
 
@@ -390,7 +390,7 @@ namespace Xamarin.Forms.Platform.Android
 				_isdisposed = true;
 				if (disposing)
 				{
-					if(View != null)
+					if (View != null)
 						View.PropertyChanged -= OnViewPropertyChanged;
 				}
 

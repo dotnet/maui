@@ -83,7 +83,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void Destroy()
 		{
-			if(ShellItem != null)
+			if (ShellItem != null)
 				UnhookEvents(ShellItem);
 
 			((IShellController)ShellContext.Shell).RemoveAppearanceObserver(this);
@@ -270,9 +270,9 @@ namespace Xamarin.Forms.Platform.Android
 			if (id == MoreTabId)
 			{
 				var items = CreateTabList(ShellItem);
-                _bottomSheetDialog = BottomNavigationViewUtils.CreateMoreBottomSheet(OnMoreItemSelected, Context, items, _bottomView.MaxItemCount);
-                _bottomSheetDialog.Show();
-                _bottomSheetDialog.DismissEvent += OnMoreSheetDismissed;
+				_bottomSheetDialog = BottomNavigationViewUtils.CreateMoreBottomSheet(OnMoreItemSelected, Context, items, _bottomView.MaxItemCount);
+				_bottomSheetDialog.Show();
+				_bottomSheetDialog.DismissEvent += OnMoreSheetDismissed;
 			}
 			else
 			{
