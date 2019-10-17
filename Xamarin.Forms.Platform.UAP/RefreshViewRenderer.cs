@@ -186,10 +186,6 @@ namespace Xamarin.Forms.Platform.UWP
 			CompleteRefresh();
 			_refreshCompletionDeferral = args.GetDeferral();
 			Element.SetValueFromRenderer(RefreshView.IsRefreshingProperty, true);
-			if (Element?.Command?.CanExecute(Element?.CommandParameter) ?? false)
-			{
-				Element.Command.Execute(Element?.CommandParameter);
-			}
 		}
 	}
 }

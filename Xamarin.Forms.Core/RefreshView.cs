@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Xamarin.Forms.Platform;
 
@@ -9,6 +10,7 @@ namespace Xamarin.Forms
 	public class RefreshView : ContentView, IElementConfiguration<RefreshView>
 	{
 		readonly Lazy<PlatformConfigurationRegistry<RefreshView>> _platformConfigurationRegistry;
+		public event EventHandler Refreshing;
 
 		public RefreshView()
 		{
@@ -20,7 +22,41 @@ namespace Xamarin.Forms
 		}
 
 		public static readonly BindableProperty IsRefreshingProperty =
-			BindableProperty.Create(nameof(IsRefreshing), typeof(bool), typeof(RefreshView), false, BindingMode.TwoWay);
+			BindableProperty.Create(nameof(IsRefreshing), typeof(bool), typeof(RefreshView), false, BindingMode.TwoWay, coerceValue: OnIsRefreshingPropertyCoerced, propertyChanged: OnIsRefreshingPropertyChanged);
+
+		static void OnIsRefreshingPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			bool value = (bool)newValue;
+
+			if (!value)
+				return;
+
+			var refreshView = ((RefreshView)bindable);
+			refreshView.Refreshing?.Invoke(bindable, EventArgs.Empty);
+			if (refreshView.Command != null)
+				refreshView.Command.Execute(refreshView.CommandParameter);
+		}
+
+		static object OnIsRefreshingPropertyCoerced(BindableObject bindable, object value)
+		{
+			RefreshView view = (RefreshView)bindable;
+			bool newValue = (bool)value;
+
+			// IsRefreshing can always be toggled to false
+			if (!newValue)
+				return value;
+
+			if (!view.IsEnabled)
+				return false;
+
+			if (view.Command == null)
+				return value;
+
+			if (!view.Command.CanExecute(view.CommandParameter))
+				return false;
+
+			return value;
+		}
 
 		public bool IsRefreshing
 		{
@@ -29,7 +65,19 @@ namespace Xamarin.Forms
 		}
 
 		public static readonly BindableProperty CommandProperty =
-			BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(RefreshView));
+			BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(RefreshView), propertyChanged: OnCommandChanged);
+
+		static void OnCommandChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			RefreshView refreshView = (RefreshView)bindable;
+			if (oldValue is ICommand oldCommand)
+				oldCommand.CanExecuteChanged -= refreshView.RefreshCommandCanExecuteChanged;
+
+			if (newValue is ICommand newCommand)
+				newCommand.CanExecuteChanged += refreshView.RefreshCommandCanExecuteChanged;
+
+			refreshView.RefreshCommandCanExecuteChanged(bindable, EventArgs.Empty);
+		}
 
 		public ICommand Command
 		{
@@ -42,7 +90,7 @@ namespace Xamarin.Forms
 				typeof(object),
 				typeof(RefreshView),
 				null,
-				propertyChanged: (bindable, oldvalue, newvalue) => ((RefreshView)bindable).RefreshCommandCanExecuteChanged(bindable, EventArgs.Empty));
+				propertyChanged: (bindable, oldvalue, newvalue) => ((RefreshView)(bindable)).RefreshCommandCanExecuteChanged(((RefreshView)(bindable)).Command, EventArgs.Empty));
 
 		public object CommandParameter
 		{
@@ -53,7 +101,9 @@ namespace Xamarin.Forms
 		void RefreshCommandCanExecuteChanged(object sender, EventArgs eventArgs)
 		{
 			if (Command != null)
-				IsEnabled = Command.CanExecute(CommandParameter);
+				SetValueCore(IsEnabledProperty, Command.CanExecute(CommandParameter));
+			else
+				SetValueCore(IsEnabledProperty, true);
 		}
 
 		public static readonly BindableProperty RefreshColorProperty =
@@ -76,6 +126,14 @@ namespace Xamarin.Forms
 		public IPlatformElementConfiguration<T, RefreshView> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
+		}
+
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+			if (IsEnabledProperty.PropertyName == propertyName)
+				if (!IsEnabled && IsRefreshing)
+					IsRefreshing = false;
 		}
 	}
 }

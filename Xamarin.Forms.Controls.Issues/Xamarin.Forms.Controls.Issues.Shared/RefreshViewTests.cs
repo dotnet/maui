@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
+using System;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -19,6 +20,8 @@ namespace Xamarin.Forms.Controls.Issues
 	public class RefreshViewTests : TestContentPage
 	{
 		RefreshView _refreshView;
+		Command _refreshCommand;
+
 		public RefreshViewTests()
 		{
 		}
@@ -26,13 +29,33 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override void Init()
 		{
 			Title = "Refresh View Tests";
-			var scrollViewContent =
-				new StackLayout()
-				{
-				};
+			var scrollViewContent = new StackLayout();
 
-			Enumerable.Range(0, 10).Select(_ => new Label() { HeightRequest = 200, Text = "Pull me down to refresh me" })
+			Enumerable
+				.Range(0, 10)
+				.Select(_ => new Label() { HeightRequest = 200, Text = "Pull me down to refresh me" })
 				.ForEach(x => scrollViewContent.Children.Add(x));
+
+
+			bool canExecute = true;
+			_refreshCommand = new Command(async (parameter) =>
+			{
+				if(!_refreshView.IsRefreshing)
+				{
+					throw new Exception("IsRefreshing should be true when command executes");
+				}
+
+				if (parameter != null && !(bool)parameter)
+				{
+					throw new Exception("Refresh command incorrectly firing with disabled parameter");
+				}
+
+				await Task.Delay(2000);
+				_refreshView.IsRefreshing = false;
+			}, (object parameter) =>
+			{
+				return parameter != null && canExecute && (bool)parameter;
+			});
 
 			_refreshView = new RefreshView()
 			{
@@ -43,11 +66,8 @@ namespace Xamarin.Forms.Controls.Issues
 					Content = scrollViewContent,
 					AutomationId = "LayoutContainer"
 				},
-				Command = new Command(async () =>
-				{
-					await Task.Delay(2000);
-					_refreshView.IsRefreshing = false;
-				})
+				Command = _refreshCommand,
+				CommandParameter = true
 			};
 
 			var isRefreshingLabel = new Label();
@@ -55,11 +75,15 @@ namespace Xamarin.Forms.Controls.Issues
 			var label = new Label { BindingContext = _refreshView };
 			isRefreshingLabel.SetBinding(Label.TextProperty, new Binding("IsRefreshing", stringFormat: "IsRefreshing: {0}", source: _refreshView));
 
+			var commandEnabledLabel = new Label { BindingContext = _refreshView };
+			commandEnabledLabel.SetBinding(Label.TextProperty, new Binding("IsEnabled", stringFormat: "IsEnabled: {0}", source: _refreshView));
+
 			Content = new StackLayout()
 			{
 				Children =
 				{
 					isRefreshingLabel,
+					commandEnabledLabel,
 					new Button()
 					{
 						Text = "Toggle Refresh",
@@ -67,6 +91,38 @@ namespace Xamarin.Forms.Controls.Issues
 						{
 							_refreshView.IsRefreshing = !_refreshView.IsRefreshing;
 						})
+					},
+					new Button()
+					{
+						Text = "Toggle Can Execute",
+						Command = new Command(() =>
+						{
+							canExecute = !canExecute;
+							_refreshCommand.ChangeCanExecute();
+						}),
+						AutomationId = "ToggleCanExecute"
+					},
+					new Button()
+					{
+						Text = "Toggle Can Execute Parameter",
+						Command = new Command(() =>
+						{
+							_refreshView.CommandParameter = !((bool)_refreshView.CommandParameter);
+							_refreshCommand.ChangeCanExecute();
+						}),
+						AutomationId = "ToggleCanExecuteParameter"
+					},
+					new Button()
+					{
+						Text = "Toggle Command Being Set",
+						Command = new Command(() =>
+						{
+							if(_refreshView.Command != null)
+								_refreshView.Command = null;
+							else
+								_refreshView.Command = _refreshCommand;
+						}),
+						AutomationId = "ToggleCommandBeingSet"
 					},
 					_refreshView
 				}
@@ -88,14 +144,32 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			RunningApp.WaitForElement(q => q.Marked("IsRefreshing: False"));
 
-			var container = RunningApp.WaitForElement("LayoutContainer")[0];
-
-			RunningApp.Pan(new Drag(container.Rect, Drag.Direction.TopToBottom, Drag.DragLength.Medium));
-
+			TriggerRefresh();
 			RunningApp.WaitForElement(q => q.Marked("IsRefreshing: True"));
 			RunningApp.Screenshot("Refreshing");
 			RunningApp.WaitForElement(q => q.Marked("IsRefreshing: False"));
 			RunningApp.Screenshot("Refreshed");
+		}
+
+		[Test]
+		public void RefreshDisablesWithCommand()
+		{
+			RunningApp.WaitForElement("IsRefreshing: False");
+			RunningApp.Tap("ToggleCanExecute");
+			RunningApp.WaitForElement("IsEnabled: False");
+			TriggerRefresh();
+
+			var results = RunningApp.Query("IsRefreshing: True");
+			Assert.AreEqual(0, results.Length);
+			results = RunningApp.Query("IsRefreshing: True");
+			Assert.AreEqual(0, results.Length);
+		}
+
+		void TriggerRefresh()
+		{
+			var container = RunningApp.WaitForElement("LayoutContainer")[0];
+			RunningApp.Pan(new Drag(container.Rect, Drag.Direction.TopToBottom, Drag.DragLength.Medium));
+
 		}
 #endif
 	}
