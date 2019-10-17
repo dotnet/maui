@@ -59,6 +59,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue7519Xaml.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7700.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7758.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -82,6 +83,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue7865.xaml.cs">
       <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7803.xaml.cs">
+      <DependentUpon>Issue7803.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)RefreshViewTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7338.cs" />
@@ -1566,6 +1570,12 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7993.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7803.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
 </Project>

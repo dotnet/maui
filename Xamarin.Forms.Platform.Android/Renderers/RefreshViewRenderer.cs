@@ -52,12 +52,9 @@ namespace Xamarin.Forms.Platform.Android
 				_refreshing = value;
 
 				if (RefreshView != null && RefreshView.IsRefreshing != _refreshing)
-					RefreshView.IsRefreshing = _refreshing;
+					RefreshView.SetValueFromRenderer(RefreshView.IsRefreshingProperty, _refreshing);
 
 				base.Refreshing = _refreshing;
-
-				if (base.Refreshing && Element is RefreshView refreshView && refreshView.Command != null && refreshView.Command.CanExecute(refreshView?.CommandParameter))
-					refreshView.Command.Execute(refreshView?.CommandParameter);
 			}
 		}
 

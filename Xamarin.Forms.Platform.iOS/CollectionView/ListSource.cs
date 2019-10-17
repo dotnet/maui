@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
-		public int GroupCount => Count == 0 ? 0 : 1;
+		public int GroupCount => 1;
 
 		public int ItemCount => Count;
 
