@@ -170,6 +170,10 @@ namespace Xamarin.Forms.Platform.UWP
 			NavigationPage oldElement = Element;
 			Element = (NavigationPage)element;
 
+			if (Element != null && Element.CurrentPage is null)
+				throw new InvalidOperationException(
+					"NavigationPage must have a root Page before being used. Either call PushAsync with a valid Page, or pass a Page to the constructor before usage.");
+
 			if (oldElement != null)
 			{
 				oldElement.PushRequested -= OnPushRequested;
