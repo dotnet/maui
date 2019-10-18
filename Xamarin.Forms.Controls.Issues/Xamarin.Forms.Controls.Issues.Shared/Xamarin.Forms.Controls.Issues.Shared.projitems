@@ -598,6 +598,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue5793.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue6957.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6130.xaml.cs">
       <SubType>Code</SubType>
     </Compile>

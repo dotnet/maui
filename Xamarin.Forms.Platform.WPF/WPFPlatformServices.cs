@@ -141,7 +141,7 @@ namespace Xamarin.Forms.Platform.WPF
 		
 		public void StartTimer(TimeSpan interval, Func<bool> callback)
 		{
-			var timer = new DispatcherTimer { Interval = interval };
+			var timer = new DispatcherTimer(DispatcherPriority.Background, System.Windows.Application.Current.Dispatcher) { Interval = interval };
 			timer.Start();
 			timer.Tick += (sender, args) =>
 			{
