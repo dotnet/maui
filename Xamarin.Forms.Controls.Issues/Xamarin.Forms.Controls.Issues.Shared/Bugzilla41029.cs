@@ -12,19 +12,44 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		protected override void Init()
 		{
-			var layout = new StackLayout { VerticalOptions = LayoutOptions.Center };
-			var lbl = new Label();
-			var slider = new Slider();
-			slider.HeightRequest = 50;
-			slider.ValueChanged += (object sender, ValueChangedEventArgs e) =>
-			{
-
-				lbl.Text = e.NewValue.ToString();
+			var stackLayout = new StackLayout 
+			{ 
+				VerticalOptions = LayoutOptions.Center,
+				BackgroundColor = Color.Beige
 			};
-			layout.Children.Add(lbl);
-			layout.Children.Add(slider);
 
-			Content = layout;
+			var label = new Label
+			{
+				Margin = new Thickness(10, 0),
+				LineBreakMode = LineBreakMode.WordWrap,
+				Text = "Tap several times somewhere on the screen below Button 3 and verify that the slider's circle does not change size or animate. If so, the test has passed."
+			};
+			var button = new Button
+			{
+				Text = "Button 1"
+			};
+			var slider = new Slider
+			{
+				Minimum = 0,
+				Maximum = 100,
+				VerticalOptions = LayoutOptions.CenterAndExpand
+			};
+			var button2 = new Button
+			{
+				Text = "Button 2"
+			};
+			var button3 = new Button
+			{
+				Text = "Button 3"
+			};
+
+			stackLayout.Children.Add(label);
+			stackLayout.Children.Add(button);
+			stackLayout.Children.Add(slider);
+			stackLayout.Children.Add(button2);
+			stackLayout.Children.Add(button3);
+
+			Content = stackLayout;
 		}
 	}
 }
