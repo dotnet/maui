@@ -15,6 +15,8 @@ namespace Xamarin.Forms
 			view.AbortAnimation(nameof(RotateYTo));
 			view.AbortAnimation(nameof(RotateXTo));
 			view.AbortAnimation(nameof(ScaleTo));
+			view.AbortAnimation(nameof(ScaleXTo));
+			view.AbortAnimation(nameof(ScaleYTo));
 			view.AbortAnimation(nameof(FadeTo));
 		}
 
@@ -114,6 +116,22 @@ namespace Xamarin.Forms
 				throw new ArgumentNullException(nameof(view));
 
 			return AnimateTo(view, view.Scale, scale, nameof(ScaleTo), (v, value) => v.Scale = value, length, easing);
+		}
+
+		public static Task<bool> ScaleXTo(this VisualElement view, double scale, uint length = 250, Easing easing = null)
+		{
+			if (view == null)
+				throw new ArgumentNullException(nameof(view));
+
+			return AnimateTo(view, view.ScaleX, scale, nameof(ScaleXTo), (v, value) => v.ScaleX = value, length, easing);
+		}
+
+		public static Task<bool> ScaleYTo(this VisualElement view, double scale, uint length = 250, Easing easing = null)
+		{
+			if (view == null)
+				throw new ArgumentNullException(nameof(view));
+
+			return AnimateTo(view, view.ScaleY, scale, nameof(ScaleYTo), (v, value) => v.ScaleY = value, length, easing);
 		}
 
 		public static Task<bool> TranslateTo(this VisualElement view, double x, double y, uint length = 250, Easing easing = null)

@@ -89,7 +89,7 @@ namespace Xamarin.Forms.Controls
 			}
 
 			// Running on the simulator
-			//var app = ConfigureApp.iOS
+			// var app = ConfigureApp.iOS
 			//				  .PreferIdeSettings()
 			//		  		  .AppBundle("../../../Xamarin.Forms.ControlGallery.iOS/bin/iPhoneSimulator/Debug/XamarinFormsControlGalleryiOS.app")
 			//				  .Debug()
