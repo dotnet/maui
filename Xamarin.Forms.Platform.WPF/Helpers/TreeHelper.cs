@@ -227,5 +227,21 @@ namespace Xamarin.Forms.Platform.WPF.Helpers
 				}
 			}
 		}
+		public static T FindVisualChild<T>(this DependencyObject parent) where T : Visual
+		{
+			var child = default(T);
+
+			int numVisuals = VisualTreeHelper.GetChildrenCount(parent);
+			for (var i = 0; i < numVisuals; i++)
+			{
+				var v = (Visual)VisualTreeHelper.GetChild(parent, i);
+				child = v as T ?? FindVisualChild<T>(v);
+				if (child != null)
+				{
+					break;
+				}
+			}
+			return child;
+		}
 	}
 }
