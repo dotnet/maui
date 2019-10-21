@@ -170,7 +170,7 @@ namespace Xamarin.Forms
 						if (actualWidth >= 0)
 							col.ActualWidth = actualWidth;
 						if (minimumWidth >= 0)
-							col.MinimumWidth = actualWidth;
+							col.MinimumWidth = minimumWidth;
 					}
 				}
 			}
