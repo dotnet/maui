@@ -6,12 +6,36 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Media;
 
 namespace Xamarin.Forms.Platform.WPF
 {
 	public class FrameRenderer : ViewRenderer<Frame, Border>
 	{
 		VisualElement _currentView;
+		readonly Border _rounding;
+		readonly VisualBrush _mask;
+
+		public FrameRenderer()
+		{
+			_rounding = new Border();
+			_rounding.Background = Color.White.ToBrush();
+			_rounding.SnapsToDevicePixels = true;
+			var wb = new System.Windows.Data.Binding(nameof(Border.ActualWidth));
+			wb.RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor)
+			{
+				AncestorType = typeof(Border)
+			};
+			_rounding.SetBinding(Border.WidthProperty, wb);
+			var hb = new System.Windows.Data.Binding(nameof(Border.ActualHeight));
+			hb.RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor)
+			{
+				AncestorType = typeof(Border)
+			};
+			_rounding.SetBinding(Border.HeightProperty, hb);
+			_mask = new VisualBrush(_rounding);
+		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Frame> e)
 		{
@@ -56,6 +80,7 @@ namespace Xamarin.Forms.Platform.WPF
 			}
 
 			_currentView = Element.Content;
+			Control.OpacityMask = _mask;
 			Control.Child = _currentView != null ? Platform.GetOrCreateRenderer(_currentView).GetNativeElement() : null;
 		}
 
@@ -76,6 +101,7 @@ namespace Xamarin.Forms.Platform.WPF
 		void UpdateCornerRadius()
 		{
 			Control.CornerRadius = new System.Windows.CornerRadius(Element.CornerRadius >= 0 ? Element.CornerRadius : 0);
+			_rounding.CornerRadius = Control.CornerRadius;
 		}
 	}
 }
