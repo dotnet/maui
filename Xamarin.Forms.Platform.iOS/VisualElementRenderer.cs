@@ -283,7 +283,10 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			if (Element != null && !string.IsNullOrEmpty(Element.AutomationId))
 				SetAutomationId(Element.AutomationId);
-			SetAccessibilityLabel();
+
+			if (element != null)
+				SetAccessibilityLabel();
+
 			SetAccessibilityHint();
 			SetIsAccessibilityElement();
 			Performance.Stop(reference);
