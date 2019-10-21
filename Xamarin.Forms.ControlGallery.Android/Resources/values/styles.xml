@@ -9,7 +9,7 @@
   <style name="MyTheme" parent="MyTheme.Base">
   </style>
   <!-- Base theme applied no matter what API -->
-  <style name="MyTheme.Base" parent="Theme.AppCompat.Light.DarkActionBar">
+  <style name="MyTheme.Base" parent="Theme.AppCompat.DayNight.DarkActionBar">
     <!--If you are using revision 22.1 please use just windowNoTitle. Without android:-->
     <item name="windowNoTitle">true</item>
     <!--We will be using the toolbar so no need to show ActionBar-->
@@ -27,13 +27,22 @@
     <item name="windowActionModeOverlay">true</item>
 
     <item name="android:datePickerDialogTheme">@style/AppCompatDialogStyle</item>
-		
+
+    <!-- Styles Android.App.AlertDialog -->
+    <item name="android:alertDialogTheme">@style/DayNightDialogStyle</item>
+    <!-- Styles Android.Support.V7.App.AlertDialog -->
+    <item name="alertDialogTheme">@style/DayNightDialogStyle</item>
+
 		<!--Uncomment to test exceptionally red button-->
 		<!--<item name="android:buttonStyle">@style/red_button_style</item>-->
   </style>
 
   <style name="AppCompatDialogStyle" parent="Theme.AppCompat.Light.Dialog">
     <item name="colorAccent">#FF4081</item>
+  </style>
+
+  <style name="DayNightDialogStyle" parent="Theme.AppCompat.DayNight.Dialog.Alert">
+    <item name="colorAccent">#00FF21</item>
   </style>
 
   <style name="TestStyle" parent="@android:style/Theme.Holo.Light.DarkActionBar">    

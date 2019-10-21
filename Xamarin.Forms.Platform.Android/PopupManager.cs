@@ -7,6 +7,7 @@ using Android.Text;
 using Android.Views;
 using Android.Widget;
 using Xamarin.Forms.Internals;
+using AlertDialog = Android.Support.V7.App.AlertDialog;
 
 namespace Xamarin.Forms.Platform.Android
 {
