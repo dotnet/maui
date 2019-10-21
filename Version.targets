@@ -56,7 +56,7 @@
 
     <Message Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'" Importance="high" Text="##vso[build.addbuildtag]$(NightlyTag)"/>
     <ItemGroup>
-       <XamarinFormsVersionFile Include="../XamarinFormsVersionFile.txt"/>
+       <XamarinFormsVersionFile Include="../.XamarinFormsVersionFile.txt"/>
        <XamarinFormsVersionLine Include="$(PackageVersion)"/>
     </ItemGroup>
     

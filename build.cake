@@ -174,7 +174,7 @@ Task("_NuGetPack")
     .Does(() =>
     {
         var nugetVersionFile = 
-            GetFiles("XamarinFormsVersionFile.txt");
+            GetFiles(".XamarinFormsVersionFile.txt");
         var nugetversion = FileReadText(nugetVersionFile.First());
 
         Information("Nuget Version: {0}", nugetversion);
