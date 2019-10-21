@@ -124,6 +124,8 @@ namespace Xamarin.Forms.Platform.iOS
 		where TControl : UIView
 	{
 		bool _disposed;
+		IUITextViewDelegate _pleaseDontCollectMeGarbageCollector;
+
 		IEditorController ElementController => Element;
 		protected abstract UITextView TextView { get; }
 
@@ -147,6 +149,7 @@ namespace Xamarin.Forms.Platform.iOS
 				}
 			}
 
+			_pleaseDontCollectMeGarbageCollector = null;
 			base.Dispose(disposing);
 		}
 
@@ -181,6 +184,7 @@ namespace Xamarin.Forms.Platform.iOS
 				TextView.Started += OnStarted;
 				TextView.Ended += OnEnded;
 				TextView.ShouldChangeText += ShouldChangeText;
+				_pleaseDontCollectMeGarbageCollector = TextView.Delegate;
 			}
 
 			UpdateFont();
