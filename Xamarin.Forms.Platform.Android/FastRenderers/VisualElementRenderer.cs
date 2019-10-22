@@ -65,6 +65,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 			if (disposing)
 			{
+				EffectUtilities.UnregisterEffectControlProvider(this, Element);
+
 				if (Element != null)
 				{
 					Element.PropertyChanged -= OnElementPropertyChanged;
