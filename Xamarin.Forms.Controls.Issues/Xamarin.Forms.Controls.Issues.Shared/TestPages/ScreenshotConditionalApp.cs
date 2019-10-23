@@ -447,6 +447,33 @@ namespace Xamarin.Forms.Controls
 		}
 
 #if __IOS__
+
+		public bool IsTablet
+		{
+			get
+			{
+				if (_app is iOSApp app)
+				{
+					return app.Device.IsTablet;
+				}
+
+				throw new Exception($"Invaliid app type: {_app}");
+			}
+		}
+
+		public bool IsPhone
+		{
+			get
+			{
+				if (_app is iOSApp app)
+				{
+					return app.Device.IsPhone;
+				}
+
+				throw new Exception($"Invaliid app type: {_app}");
+			}
+		}
+
 		public void SendAppToBackground(TimeSpan timeSpan)
 		{
 			if (_app is iOSApp app)
