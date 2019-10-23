@@ -276,6 +276,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual(Color.Blue, converter.ConvertFromInvariantString("hsl(240,100%, 50%)"));
 			Assert.AreEqual(Color.Blue, converter.ConvertFromInvariantString("hsl(240,110%, 50%)"));
 			Assert.AreEqual(Color.Blue.MultiplyAlpha(.8), converter.ConvertFromInvariantString("hsla(240,100%, 50%, .8)"));
+			Assert.AreEqual(Color.FromHsla(0.66916666666666669, 1, 0.5), converter.ConvertFromInvariantString("hsl(240.9,100%, 50%)"));
 			Assert.AreEqual(Color.Default, converter.ConvertFromInvariantString("Color.Default"));
 			Assert.AreEqual(Color.Accent, converter.ConvertFromInvariantString("Accent"));
 			var hotpink = Color.FromHex("#FF69B4");
