@@ -345,7 +345,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			if (oldPage != null && Platform.GetRenderer(oldPage) != null)
 			{
 				var oldPageRenderer = Platform.GetRenderer(oldPage);
-				oldPageRenderer.Container.Visible = false;
+				oldPageRenderer.Container.Sensitive = false;
 			}
 
 			return true;
@@ -358,7 +358,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			if (oldPage != null && Platform.GetRenderer(oldPage) != null)
 			{
 				var oldPageRenderer = Platform.GetRenderer(oldPage);
-				oldPageRenderer.Container.Visible = true;
+				oldPageRenderer.Container.Sensitive = true;
 			}
 
 			(page as IPageController)?.SendDisappearing();
