@@ -4,4 +4,7 @@
   <style name="collectionViewStyle" android:id="@+id/collectionViewStyle">
     <item name="android:scrollbars">vertical|horizontal</item>
   </style>
+  <style name="NestedScrollBarStyle" android:id="@+id/nestedScrollViewStyle">
+    <item name="android:scrollbars">vertical|horizontal</item>
+  </style>
 </resources>
