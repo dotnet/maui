@@ -56,6 +56,16 @@ namespace Xamarin.Forms.Core.UITests
 		}
 
 		[Test]
+		[Description("ScrollTo Y = 100")]
+		public void ScrollToYTwice()
+		{
+			App.Tap(c => c.Marked("Scroll to 100"));
+			App.WaitForElement("completed");
+			App.Tap(c => c.Marked("Scroll to 100"));
+			App.WaitForElement("completed");
+		}
+
+		[Test]
 		[Description ("ScrollTo Y = 100 no animation")]
 		public void ScrollToYNoAnim ()
 		{
