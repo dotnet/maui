@@ -23,14 +23,19 @@ namespace Xamarin.Forms.Controls
 
 			var hasShadowContainer = new StateViewContainer<Frame> (Test.Frame.HasShadow, new Frame { HasShadow = true });
 			var outlineColorContainer = new StateViewContainer<Frame> (Test.Frame.OutlineColor, new Frame { BorderColor = Color.Teal, });
-			var viewContainer = new StateViewContainer<Frame> (Test.Frame.OutlineColor, new Frame {
+			var viewContainer = new StateViewContainer<Frame> (Test.Frame.Content, new Frame {
 				BorderColor = Color.Teal,
 				Content = new Label { Text = "I am a frame" }
+			});
+			var cornerRadiusContainer = new StateViewContainer<Frame>(Test.Frame.CornerRadius, new Frame {
+				BorderColor = Color.Teal,
+				CornerRadius = 25
 			});
 
 			Add (hasShadowContainer);
 			Add (outlineColorContainer);
 			Add (viewContainer);
+			Add (cornerRadiusContainer);
 		}
 	}
 }
