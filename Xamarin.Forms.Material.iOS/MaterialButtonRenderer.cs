@@ -168,6 +168,9 @@ namespace Xamarin.Forms.Material.iOS
 					colorScheme.PrimaryColor = uiColor;
 					colorScheme.OnSurfaceColor = uiColor;
 				}
+
+				if (Control != null)
+					ApplyTheme();
 			}
 		}
 
