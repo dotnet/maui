@@ -29,7 +29,6 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateText();
 			UpdateIsEnabled();
 			UpdateHeight();
-			UpdateFlowDirection();
 
 			_view.TextChanged = OnTextChanged;
 			_view.EditingCompleted = OnEditingCompleted;
@@ -57,11 +56,6 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateIsEnabled();
 			else if (e.PropertyName == "RenderHeight")
 				UpdateHeight();
-			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
-			{
-				UpdateFlowDirection();
-				UpdateHorizontalTextAlignment();
-			}
 		}
 
 		protected virtual NumberKeyListener GetDigitsKeyListener(InputTypes inputTypes)
@@ -92,7 +86,7 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdateHorizontalTextAlignment()
 		{
 			var entryCell = (EntryCell)Cell;
-			_view.EditText.UpdateHorizontalAlignment(entryCell.HorizontalTextAlignment);
+			_view.EditText.Gravity = entryCell.HorizontalTextAlignment.ToHorizontalGravityFlags();
 		}
 
 		void UpdateIsEnabled()
@@ -123,11 +117,6 @@ namespace Xamarin.Forms.Platform.Android
 #pragma warning disable 618
 			_view.SetLabelTextColor(((EntryCell)Cell).LabelColor, global::Android.Resource.Color.PrimaryTextDark);
 #pragma warning restore 618
-		}
-
-		void UpdateFlowDirection()
-		{
-			_view.UpdateFlowDirection(ParentView);
 		}
 
 		void UpdatePlaceholder()

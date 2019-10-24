@@ -1,74 +1,96 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>Xamarin.Forms.Maps</id>
+    <id>Xamarin.Forms.Maps$IdAppend$</id>
     <version>$version$</version>
-    <authors>Xamarin, Inc.</authors>
-    <owners>Xamarin, Inc.</owners>
+    <authors>Microsoft</authors>
+    <owners>microsoft xamarin</owners>
     <tags>xamarin forms maps xamarinforms xamarinformsmaps xamarin.forms.maps</tags>
     <licenseUrl>http://aka.ms/xamarin-forms-license</licenseUrl>
     <iconUrl>http://xamarin.com/content/images/nuget/xamarin.png</iconUrl>
     <projectUrl>http://xamarin.com/forms</projectUrl>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>Maps models and renderers for Xamarin.Forms</description>
-    <copyright>Copyright 2013-2017</copyright>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <dependencies>
       <group>
-        <dependency id="Xamarin.Forms" version="$version$"/>
+        <dependency id="Xamarin.Forms$IdAppend$" version="$version$"/>
       </group>
       <group targetFramework="MonoAndroid10">
         <dependency id="Xamarin.GooglePlayServices.Maps" version="[29.0.0.1]"/>
         <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="[23.3.0]"/>
         <dependency id="Xamarin.Android.Support.v7.AppCompat" version="[23.3.0]"/>
-        <dependency id="Xamarin.Forms" version="$version$"/>
+        <dependency id="Xamarin.Forms$IdAppend$" version="$version$"/>
       </group>
       <group targetFramework="MonoAndroid70">
         <dependency id="Xamarin.GooglePlayServices.Maps" version="29.0.0.1"/>
         <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="23.3.0"/>
         <dependency id="Xamarin.Android.Support.v7.AppCompat" version="23.3.0"/>
-        <dependency id="Xamarin.Forms" version="$version$"/>
+        <dependency id="Xamarin.Forms$IdAppend$" version="$version$"/>
       </group>
       <group targetFramework="MonoAndroid71">
         <dependency id="Xamarin.GooglePlayServices.Maps" version="42.1021.1"/>
         <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="25.4.0.2"/>
         <dependency id="Xamarin.Android.Support.v7.AppCompat" version="25.4.0.2"/>
-        <dependency id="Xamarin.Forms" version="$version$"/>
-      </group>
-      <group targetFramework="tizen40">
-        <dependency id="Tizen.NET" version="4.0.0"/>
+        <dependency id="Xamarin.Forms$IdAppend$" version="$version$"/>
       </group>
     </dependencies>
+    <references>
+      <group targetFramework="portable-win+net45+wp80+win81+wpa81">
+        <reference file="Xamarin.Forms.Maps.dll" />
+      </group>
+      <group targetFramework="netstandard1.0">
+        <reference file="Xamarin.Forms.Maps.dll" />
+      </group>
+      <group targetFramework="Xamarin.iOS10">
+        <reference file="Xamarin.Forms.Maps.dll" />
+        <reference file="Xamarin.Forms.Maps.iOS.dll" />
+      </group>
+      <group targetFramework="MonoAndroid10">
+        <reference file="Xamarin.Forms.Maps.dll" />
+        <reference file="Xamarin.Forms.Maps.Android.dll" />
+      </group>
+      <group targetFramework="uap10.0">
+        <reference file="Xamarin.Forms.Maps.dll" />
+        <reference file="Xamarin.Forms.Maps.UWP.dll" />
+      </group>
+      <group targetFramework="Xamarin.Mac">
+		<reference file="Xamarin.Forms.Maps.dll" />
+        <reference file="Xamarin.Forms.Maps.macOS.dll" />
+      </group>
+    </references>
   </metadata>
   <files>
-    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Maps.dll" target="lib\netstandard1.0" />
+    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\Xamarin.Forms.Maps.dll" target="lib\portable-win+net45+wp80+win81+wpa81" />
+    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\Xamarin.Forms.Maps.dll" target="lib\netstandard1.0" />
+    <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\portable-win+net45+wp80+win81+wpa81" />
     <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\netstandard1.0" />
 
-    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\netstandard2.0" />
-    <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\netstandard2.0" />
-
     <file src="..\Xamarin.Forms.Maps.Android\bin\$Configuration$\Xamarin.Forms.Maps.Android.dll" target="lib\MonoAndroid10" />
-    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\MonoAndroid10" />
+    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\Xamarin.Forms.Maps.dll" target="lib\MonoAndroid10" />
     <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\MonoAndroid10" />
 
     <file src="..\Xamarin.Forms.Maps.iOS\bin\iPhoneSimulator\$Configuration$\Xamarin.Forms.Maps.iOS.dll" target="lib\Xamarin.iOS10" />
-    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\Xamarin.iOS10" />
+    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\Xamarin.Forms.Maps.dll" target="lib\Xamarin.iOS10" />
     <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\Xamarin.iOS10" />
-
+    
+    <!--UWP-->
     <file src="..\Xamarin.Forms.Maps.UWP\bin\$Configuration$\Xamarin.Forms.Maps.UWP.dll" target="lib\uap10.0" />
     <file src="..\Xamarin.Forms.Maps.UWP\bin\$Configuration$\Xamarin.Forms.Maps.UWP.pri" target="lib\uap10.0" />
-    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\uap10.0" />
-
-    <file src="..\Xamarin.Forms.Maps.MacOS\bin\$Configuration$\Xamarin.Forms.Maps.macOS.dll" target="lib\Xamarin.Mac" />
-    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\Xamarin.Mac" />
-    <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\Xamarin.Mac" />
-
-    <file src="..\Xamarin.Forms.Maps.Tizen\bin\$Configuration$\tizen40\Xamarin.Forms.Maps.Tizen.dll" target="lib\tizen40" />
-    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\tizen40" />
-    <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\tizen40" />
-
+    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\Xamarin.Forms.Maps.dll" target="lib\uap10.0" />
+       
     <!-- Xaml Design-time Stuff -->
-    <file src="..\Xamarin.Forms.Maps.Design\bin\$Configuration$\Xamarin.Forms.Maps.Design.dll" target="lib\netstandard2.0" />
+    <file src="..\Xamarin.Forms.Maps.Design\bin\$Configuration$\Xamarin.Forms.Maps.Design.dll" target="lib\portable-win+net45+wp80+win81+wpa81\Design" />
     <file src="..\Xamarin.Forms.Maps.Design\bin\$Configuration$\Xamarin.Forms.Maps.Design.dll" target="lib\netstandard1.0" />
+    <file src="..\Xamarin.Forms.Maps.Design\bin\$Configuration$\Xamarin.Forms.Maps.Design.dll" target="lib\MonoAndroid10\Design" />
+    <file src="..\Xamarin.Forms.Maps.Design\bin\$Configuration$\Xamarin.Forms.Maps.Design.dll" target="lib\Xamarin.iOS10\Design" />
+    <file src="..\Xamarin.Forms.Maps.Design\bin\$Configuration$\Xamarin.Forms.Maps.Design.dll" target="lib\WP80\Design" />
+    <file src="..\Xamarin.Forms.Maps.Design\bin\$Configuration$\Xamarin.Forms.Maps.Design.dll" target="lib\wpa81\Design" />
+    <file src="..\Xamarin.Forms.Maps.Design\bin\$Configuration$\Xamarin.Forms.Maps.Design.dll" target="lib\win81\Design" />
+    <file src="..\Xamarin.Forms.Maps.Design\bin\$Configuration$\Xamarin.Forms.Maps.Design.dll" target="lib\uap10.0\Design" />
 
-</files>
+	<file src="..\Xamarin.Forms.Maps.MacOS\bin\$Configuration$\Xamarin.Forms.Maps.macOS.dll" target="lib\Xamarin.Mac" />
+	<file src="..\Xamarin.Forms.Maps\bin\$Configuration$\Xamarin.Forms.Maps.dll" target="lib\Xamarin.Mac" />
+    <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\Xamarin.Mac" />
+  </files>
 </package>
