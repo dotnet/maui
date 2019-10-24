@@ -8,6 +8,9 @@ namespace Xamarin.Forms
 	{
 		readonly List<WeakReference> _associatedObjects = new List<WeakReference>();
 
+		const int CleanupTrigger = 128;
+		int _cleanupThreshold = CleanupTrigger;
+
 		public AttachedCollection()
 		{
 		}
@@ -64,6 +67,7 @@ namespace Xamarin.Forms
 			lock (_associatedObjects)
 			{
 				_associatedObjects.Add(new WeakReference(bindable));
+				CleanUpWeakReferences();
 			}
 			foreach (T item in this)
 				item.AttachTo(bindable);
@@ -122,6 +126,17 @@ namespace Xamarin.Forms
 					continue;
 				item.AttachTo(bindable);
 			}
+		}
+
+		void CleanUpWeakReferences()
+		{
+			if (_associatedObjects.Count < _cleanupThreshold)
+			{
+				return;
+			}
+
+			_associatedObjects.RemoveAll(t => !t.IsAlive);
+			_cleanupThreshold = _associatedObjects.Count + CleanupTrigger;
 		}
 	}
 }
