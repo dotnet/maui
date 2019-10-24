@@ -144,17 +144,14 @@ namespace Xamarin.Forms.Platform.WPF
 			Entry entry = Element;
 			if (entry != null)
 			{
-				if (!IsNullOrEmpty(entry.Text))
-				{
-					if (!entry.TextColor.IsDefault)
-						Control.Foreground = entry.TextColor.ToBrush();
-					else
-						Control.Foreground = (Brush)WControl.ForegroundProperty.GetMetadata(typeof(FormsTextBox)).DefaultValue;
+				if (!entry.TextColor.IsDefault)
+					Control.Foreground = entry.TextColor.ToBrush();
+				else
+					Control.Foreground = (Brush)WControl.ForegroundProperty.GetMetadata(typeof(FormsTextBox)).DefaultValue;
 
-					// Force the PhoneTextBox control to do some internal bookkeeping
-					// so the colors change immediately and remain changed when the control gets focus
-					Control.OnApplyTemplate();
-				}
+				// Force the PhoneTextBox control to do some internal bookkeeping
+				// so the colors change immediately and remain changed when the control gets focus
+				Control.OnApplyTemplate();
 			}
 			else
 				Control.Foreground = (Brush)WControl.ForegroundProperty.GetMetadata(typeof(FormsTextBox)).DefaultValue;
