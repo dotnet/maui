@@ -4,10 +4,7 @@ using Android.App;
 using Android.Content;
 using Android.Webkit;
 using Android.Widget;
-using Android.OS;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using Xamarin.Forms.Internals;
-using MixedContentHandling = Android.Webkit.MixedContentHandling;
 using AWebView = Android.Webkit.WebView;
 
 namespace Xamarin.Forms.Platform.Android
@@ -109,8 +106,6 @@ namespace Xamarin.Forms.Platform.Android
 				newElementController.EvalRequested += OnEvalRequested;
 				newElementController.GoBackRequested += OnGoBackRequested;
 				newElementController.GoForwardRequested += OnGoForwardRequested;
-
-				UpdateMixedContentMode();
 			}
 
 			Load();
@@ -124,9 +119,6 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				case "Source":
 					Load();
-					break;
-				case "MixedContentMode":
-					UpdateMixedContentMode();
 					break;
 			}
 		}
@@ -169,14 +161,6 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			ElementController.CanGoBack = Control.CanGoBack();
 			ElementController.CanGoForward = Control.CanGoForward();
-		}
-
-		void UpdateMixedContentMode()
-		{
-			if (Control != null && ((int)Build.VERSION.SdkInt >= 21))
-			{
-				Control.Settings.MixedContentMode = (MixedContentHandling)Element.OnThisPlatform().MixedContentMode();
-			}
 		}
 
 		class WebClient : WebViewClient

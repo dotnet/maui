@@ -14,9 +14,6 @@ namespace Xamarin.Forms.Platform.iOS
 		UIColor _defaultTextColor;
 		UIColor _defaultTintColor;
 		UITextField _textField;
-		bool _textWasTyped;
-		string _typedText;
-		bool _useLegacyColorManagement;
 
 		IElementController ElementController => Element as IElementController;
 
@@ -52,9 +49,6 @@ namespace Xamarin.Forms.Platform.iOS
 					_cancelButtonTextColorDefaultDisabled = cancelButton.TitleColor(UIControlState.Disabled);
 
 					SetNativeControl(searchBar);
-
-					_textField = _textField ?? Control.FindDescendantView<UITextField>();
-					_useLegacyColorManagement = e.NewElement.UseLegacyColorManagement();
 
 					Control.CancelButtonClicked += OnCancelClicked;
 					Control.SearchButtonClicked += OnSearchButtonClicked;
@@ -101,8 +95,6 @@ namespace Xamarin.Forms.Platform.iOS
 			else if (e.PropertyName == SearchBar.FontSizeProperty.PropertyName)
 				UpdateFont();
 			else if (e.PropertyName == SearchBar.HorizontalTextAlignmentProperty.PropertyName)
-				UpdateAlignment();
-			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateAlignment();
 		}
 
@@ -159,11 +151,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void OnTextChanged(object sender, UISearchBarTextChangedEventArgs a)
 		{
-			// This only fires when text has been typed into the SearchBar; see UpdateText()
-			// for why this is handled in this manner.
-			_textWasTyped = true;
-			_typedText = a.SearchText;
-			UpdateOnTextChanged();
+			ElementController.SetValueFromRenderer(SearchBar.TextProperty, Control.Text);
 		}
 
 		void UpdateAlignment()
@@ -173,7 +161,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_textField == null)
 				return;
 
-			_textField.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+			_textField.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment();
 		}
 
 		void UpdateCancelButton()
@@ -197,15 +185,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				cancelButton.SetTitleColor(Element.CancelButtonColor.ToUIColor(), UIControlState.Normal);
 				cancelButton.SetTitleColor(Element.CancelButtonColor.ToUIColor(), UIControlState.Highlighted);
-
-				if (_useLegacyColorManagement)
-				{
-					cancelButton.SetTitleColor(_cancelButtonTextColorDefaultDisabled, UIControlState.Disabled);
-				}
-				else
-				{
-					cancelButton.SetTitleColor(Element.CancelButtonColor.ToUIColor(), UIControlState.Disabled);
-				}
+				cancelButton.SetTitleColor(_cancelButtonTextColorDefaultDisabled, UIControlState.Disabled);
 			}
 		}
 
@@ -226,66 +206,41 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdatePlaceholder()
 		{
+			_textField = _textField ?? Control.FindDescendantView<UITextField>();
+
 			if (_textField == null)
 				return;
 
 			var formatted = (FormattedString)Element.Placeholder ?? string.Empty;
 			var targetColor = Element.PlaceholderColor;
 
-			if (_useLegacyColorManagement)
-			{
-				// Placeholder default color is 70% gray
-				// https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UITextField_Class/index.html#//apple_ref/occ/instp/UITextField/placeholder
+			// Placeholder default color is 70% gray
+			// https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UITextField_Class/index.html#//apple_ref/occ/instp/UITextField/placeholder
 
-				var color = Element.IsEnabled && !targetColor.IsDefault 
-					? targetColor : ColorExtensions.SeventyPercentGrey.ToColor();
+			var color = Element.IsEnabled && !targetColor.IsDefault ? targetColor : ColorExtensions.SeventyPercentGrey.ToColor();
 
-				_textField.AttributedPlaceholder = formatted.ToAttributed(Element, color);
-			}
-			else
-			{
-				_textField.AttributedPlaceholder = formatted.ToAttributed(Element, targetColor.IsDefault 
-					? ColorExtensions.SeventyPercentGrey.ToColor() : targetColor);
-			}
+			_textField.AttributedPlaceholder = formatted.ToAttributed(Element, color);
 		}
 
 		void UpdateText()
 		{
-			// There is at least one scenario where modifying the Element's Text value from TextChanged
-			// can cause issues with a Korean keyboard. The characters normally combine into larger
-			// characters as they are typed, but if SetValueFromRenderer is used in that manner,
-			// it ignores the combination and outputs them individually. This hook only fires 
-			// when typing, so by keeping track of whether or not text was typed, we can respect
-			// other changes to Element.Text.
-			if (!_textWasTyped)
-				Control.Text = Element.Text;
-			
+			Control.Text = Element.Text;
 			UpdateCancelButton();
-		}
-
-		void UpdateOnTextChanged()
-		{
-			ElementController?.SetValueFromRenderer(SearchBar.TextProperty, _typedText);
-			_textWasTyped = false;
 		}
 
 		void UpdateTextColor()
 		{
+			_textField = _textField ?? Control.FindDescendantView<UITextField>();
+
 			if (_textField == null)
 				return;
 
 			_defaultTextColor = _defaultTextColor ?? _textField.TextColor;
 			var targetColor = Element.TextColor;
 
-			if (_useLegacyColorManagement)
-			{
-				var color = Element.IsEnabled && !targetColor.IsDefault ? targetColor : _defaultTextColor.ToColor();
-				_textField.TextColor = color.ToUIColor();
-			}
-			else
-			{
-				_textField.TextColor = targetColor.IsDefault ? _defaultTextColor : targetColor.ToUIColor();
-			}
+			var color = Element.IsEnabled && !targetColor.IsDefault ? targetColor : _defaultTextColor.ToColor();
+
+			_textField.TextColor = color.ToUIColor();
 		}
 	}
 }

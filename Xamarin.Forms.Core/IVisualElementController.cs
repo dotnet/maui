@@ -10,7 +10,6 @@ namespace Xamarin.Forms
 		void InvalidateMeasure(InvalidationTrigger trigger);
 		bool Batched { get; }
 		bool DisableLayout { get; set; }
-		EffectiveFlowDirection EffectiveFlowDirection { get; }
 		bool IsInNativeLayout { get; set; }
 		bool IsNativeStateConsistent { get; set; }
 		bool IsPlatformEnabled { get; set; }

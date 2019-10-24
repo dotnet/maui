@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
+
 using Xamarin.Forms.CustomAttributes;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
@@ -18,73 +18,59 @@ namespace Xamarin.Forms.Controls.Issues
 		WeakReference _page2Tracker;
 		WeakReference _tabTracker;
 
-		Label _result;
-		const string Success = "Success";
-		const string Fail = "Fail";
-		const int Timeout = 10000; 
-
-		protected override void Init()
+		protected override void Init ()
 		{
-			var stack = new StackLayout { VerticalOptions = LayoutOptions.Center };
+			var stack = new StackLayout () { VerticalOptions = LayoutOptions.Center };
 
-			_result = new Label
-			{
+			stack.Children.Add (new Label () {
 				VerticalOptions = LayoutOptions.Center,
-				HorizontalTextAlignment = TextAlignment.Center,
+#pragma warning disable 618
+				XAlign = TextAlignment.Center,
+#pragma warning restore 618
 				Text = "Page 1"
-			};
-
-			stack.Children.Add(_result);
+			});
 
 			Content = stack;
 		}
 
-		protected override async void OnAppearing()
+		protected override async void OnAppearing ()
 		{
-			base.OnAppearing();
+			base.OnAppearing ();
 
-			if (_page2Tracker == null)
-			{
-				var page2 = new TabbedPage { Children = { new ContentPage { Title = "tab" } } };
-				page2.Appearing += async delegate
-				{
-					await Task.Delay(1000);
-					await page2.Navigation.PopModalAsync();
+			if (_page2Tracker == null) {
+				var page2 = new TabbedPage () { Children = { new ContentPage () { Title = "tab" } } };
+				page2.Appearing += async delegate {
+					await Task.Delay (1000);
+					await page2.Navigation.PopModalAsync ();
 				};
 
-				_page2Tracker = new WeakReference(page2, false);
-				_tabTracker = new WeakReference(page2.Children[0], false);
+				_page2Tracker = new WeakReference (page2, false);
+				_tabTracker = new WeakReference (page2.Children [0], false);
 
-				await Task.Delay(1000);
-				await Navigation.PushModalAsync(page2);
+				await Task.Delay (1000);
+				await Navigation.PushModalAsync (page2);
 
-				StartTrackPage2();
+				StartTrackPage2 ();
 			}
 		}
 
-		async void StartTrackPage2()
+		async void StartTrackPage2 ()
 		{
-			var watch = new Stopwatch();
-			watch.Start();
+			while (true) {
+				((Label)((StackLayout)Content).Children [0]).Text =
+						$"Page1. But Page2 IsAlive = {_page2Tracker.IsAlive}, tab IsAlive = {_tabTracker.IsAlive}";
 
-			// We'll let this run until the references are dead or timeout has passed
-			while (_page2Tracker.IsAlive && _tabTracker.IsAlive && watch.ElapsedMilliseconds < Timeout) 
-			{
 				await Task.Delay (1000);
 				GC.Collect ();
 			}
-
-			watch.Stop();
-
-			_result.Text = _page2Tracker.IsAlive || _tabTracker.IsAlive ? Fail : Success;
 		}
 
 #if UITEST
 		[Test]
-		public void Issu32898Test()
+		public async Task Issu32898Test()
 		{
-			var timeout = Timeout + 500; // Give this a little slop to set the result text
-			RunningApp.WaitForElement(Success, timeout: TimeSpan.FromMilliseconds(timeout));
+			await Task.Delay(5000);
+			RunningApp.WaitForElement(q => q.Marked("Page1. But Page2 IsAlive = False, tab IsAlive = False"));
 		}
 #endif
 	}

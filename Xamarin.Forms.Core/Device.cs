@@ -27,29 +27,28 @@ namespace Xamarin.Forms
 		public static void SetIdiom(TargetIdiom value) => Idiom = value;
 		public static TargetIdiom Idiom { get; internal set; }
 
-		//TODO: Why are there two of these? This is never used...?
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetTargetIdiom(TargetIdiom value) => Idiom = value;
 
 		[Obsolete("TargetPlatform is obsolete as of version 2.3.4. Please use RuntimePlatform instead.")]
 #pragma warning disable 0618
-        public static TargetPlatform OS
-        {
-            get
-            {
-                TargetPlatform platform;
-                if (Enum.TryParse(RuntimePlatform, out platform))
-                    return platform;
+		public static TargetPlatform OS
+		{
+			get
+			{
+				TargetPlatform platform;
+				if (Enum.TryParse(RuntimePlatform, out platform))
+					return platform;
 
-                // In the old TargetPlatform, there was no distinction between WinRT/UWP
-                if (RuntimePlatform == UWP || RuntimePlatform == WinRT)
-                {
-                    return TargetPlatform.Windows;
-                }
+				// In the old TargetPlatform, there was no distinction between WinRT/UWP
+				if (RuntimePlatform == UWP || RuntimePlatform == WinRT)
+				{
+					return TargetPlatform.Windows;
+				}
 
-                return TargetPlatform.Other;
-            }
-        }
+				return TargetPlatform.Other;
+			}
+		}
 #pragma warning restore 0618
 
 		public static string RuntimePlatform => PlatformServices.RuntimePlatform;
@@ -65,10 +64,6 @@ namespace Xamarin.Forms
 			}
 			set { info = value; }
 		}
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetFlowDirection(FlowDirection value) => FlowDirection = value;
-		public static FlowDirection FlowDirection { get; internal set; }
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static bool IsInvokeRequired

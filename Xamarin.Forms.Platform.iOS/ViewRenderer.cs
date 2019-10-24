@@ -5,9 +5,10 @@ using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 
 #if __MOBILE__
+using UIKit;
+using NativeView = UIKit.UIView;
 using NativeColor = UIKit.UIColor;
 using NativeControl = UIKit.UIControl;
-using NativeView = UIKit.UIView;
 
 namespace Xamarin.Forms.Platform.iOS
 #else
@@ -30,11 +31,6 @@ namespace Xamarin.Forms.Platform.MacOS
 		bool? _defaultIsAccessibilityElement;
 #endif
 		NativeColor _defaultColor;
-
-		protected virtual TNativeView CreateNativeControl()
-		{
-			return default(TNativeView);
-		}
 
 		public TNativeView Control { get; private set; }
 #if __MOBILE__
@@ -100,7 +96,6 @@ namespace Xamarin.Forms.Platform.MacOS
 			}
 
 			UpdateIsEnabled();
-			UpdateFlowDirection();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -111,8 +106,6 @@ namespace Xamarin.Forms.Platform.MacOS
 					UpdateIsEnabled();
 				else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 					SetBackgroundColor(Element.BackgroundColor);
-				else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
-					UpdateFlowDirection();
 			}
 
 			base.OnElementPropertyChanged(sender, e);
@@ -216,8 +209,6 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			UpdateIsEnabled();
 
-			UpdateFlowDirection();
-
 			AddSubview(uiview);
 		}
 
@@ -237,11 +228,6 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (uiControl == null)
 				return;
 			uiControl.Enabled = Element.IsEnabled;
-		}
-
-		void UpdateFlowDirection()
-		{
-			Control.UpdateFlowDirection(Element);
 		}
 
 		void ViewOnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs focusRequestArgs)

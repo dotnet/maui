@@ -37,7 +37,6 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 		}
 
-		[Preserve(AllMembers = true)]
 		class Bugzilla41619ViewModel : INotifyPropertyChanged
 		{
 			private double _sliderValue;

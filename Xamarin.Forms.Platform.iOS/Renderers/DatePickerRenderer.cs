@@ -2,7 +2,6 @@ using System;
 using System.ComponentModel;
 using Foundation;
 using UIKit;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using RectangleF = CoreGraphics.CGRect;
 
 namespace Xamarin.Forms.Platform.iOS
@@ -24,7 +23,6 @@ namespace Xamarin.Forms.Platform.iOS
 		UIDatePicker _picker;
 		UIColor _defaultTextColor;
 		bool _disposed;
-		bool _useLegacyColorManagement;
 
 		IElementController ElementController => Element as IElementController;
 
@@ -56,22 +54,15 @@ namespace Xamarin.Forms.Platform.iOS
 				entry.InputView = _picker;
 				entry.InputAccessoryView = toolbar;
 
-				entry.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
-				entry.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
-
 				_defaultTextColor = entry.TextColor;
-
-				_useLegacyColorManagement = e.NewElement.UseLegacyColorManagement();
 
 				SetNativeControl(entry);
 			}
 
 			UpdateDateFromModel(false);
-			UpdateFont();
 			UpdateMaximumDate();
 			UpdateMinimumDate();
 			UpdateTextColor();
-			UpdateFlowDirection();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -86,8 +77,6 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateMaximumDate();
 			else if (e.PropertyName == DatePicker.TextColorProperty.PropertyName || e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
 				UpdateTextColor();
-			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
-				UpdateFlowDirection();
 		}
 
 		void HandleValueChanged(object sender, EventArgs e)
@@ -113,11 +102,6 @@ namespace Xamarin.Forms.Platform.iOS
 			Control.Text = Element.Date.ToString(Element.Format);
 		}
 
-		void UpdateFlowDirection()
-		{
-			(Control as UITextField).UpdateTextAlignment(Element);
-		}
-
 		void UpdateMaximumDate()
 		{
 			_picker.MaximumDate = Element.MaximumDate.ToNSDate();
@@ -132,13 +116,10 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			var textColor = Element.TextColor;
 
-			if (textColor.IsDefault || (!Element.IsEnabled && _useLegacyColorManagement))
+			if (textColor.IsDefault || !Element.IsEnabled)
 				Control.TextColor = _defaultTextColor;
 			else
 				Control.TextColor = textColor.ToUIColor();
-
-			// HACK This forces the color to update; there's probably a more elegant way to make this happen
-			Control.Text = Control.Text;
 		}
 
 		protected override void Dispose(bool disposing)

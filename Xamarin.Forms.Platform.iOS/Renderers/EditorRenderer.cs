@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel;
-using Foundation;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
@@ -9,9 +8,9 @@ namespace Xamarin.Forms.Platform.iOS
 	public class EditorRenderer : ViewRenderer<Editor, UITextView>
 	{
 		bool _disposed;
-		IEditorController ElementController => Element;
+        IEditorController ElementController => Element;
 
-		protected override void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
 				return;
@@ -25,7 +24,6 @@ namespace Xamarin.Forms.Platform.iOS
 					Control.Changed -= HandleChanged;
 					Control.Started -= OnStarted;
 					Control.Ended -= OnEnded;
-					Control.ShouldChangeText -= ShouldChangeText;
 				}
 			}
 
@@ -53,7 +51,7 @@ namespace Xamarin.Forms.Platform.iOS
 					var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, (o, a) =>
 					{
 						Control.ResignFirstResponder();
-						ElementController.SendCompleted();
+                        ElementController.SendCompleted();
 					});
 					accessoryView.SetItems(new[] { spacer, doneButton }, false);
 					Control.InputAccessoryView = accessoryView;
@@ -62,7 +60,6 @@ namespace Xamarin.Forms.Platform.iOS
 				Control.Changed += HandleChanged;
 				Control.Started += OnStarted;
 				Control.Ended += OnEnded;
-				Control.ShouldChangeText += ShouldChangeText;
 			}
 
 			UpdateText();
@@ -70,7 +67,6 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateTextColor();
 			UpdateKeyboard();
 			UpdateEditable();
-			UpdateTextAlignment();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -80,8 +76,6 @@ namespace Xamarin.Forms.Platform.iOS
 			if (e.PropertyName == Editor.TextProperty.PropertyName)
 				UpdateText();
 			else if (e.PropertyName == Xamarin.Forms.InputView.KeyboardProperty.PropertyName)
-				UpdateKeyboard();
-			else if (e.PropertyName == Xamarin.Forms.InputView.IsSpellCheckEnabledProperty.PropertyName)
 				UpdateKeyboard();
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
 				UpdateEditable();
@@ -93,8 +87,6 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateFont();
 			else if (e.PropertyName == Editor.FontSizeProperty.PropertyName)
 				UpdateFont();
-			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
-				UpdateTextAlignment();
 		}
 
 		void HandleChanged(object sender, EventArgs e)
@@ -133,13 +125,6 @@ namespace Xamarin.Forms.Platform.iOS
 		void UpdateKeyboard()
 		{
 			Control.ApplyKeyboard(Element.Keyboard);
-			if (!(Element.Keyboard is Internals.CustomKeyboard) && Element.IsSet(Xamarin.Forms.InputView.IsSpellCheckEnabledProperty))
-			{
-				if (!Element.IsSpellCheckEnabled)
-				{
-					Control.SpellCheckingType = UITextSpellCheckingType.No;
-				}
-			}
 			Control.ReloadInputViews();
 		}
 
@@ -150,11 +135,6 @@ namespace Xamarin.Forms.Platform.iOS
 				Control.Text = Element.Text;
 		}
 
-		void UpdateTextAlignment()
-		{
-			Control.UpdateTextAlignment(Element);
-		}
-
 		void UpdateTextColor()
 		{
 			var textColor = Element.TextColor;
@@ -163,20 +143,6 @@ namespace Xamarin.Forms.Platform.iOS
 				Control.TextColor = UIColor.Black;
 			else
 				Control.TextColor = textColor.ToUIColor();
-		}
-
-		void UpdateMaxLength()
-		{
-			var currentControlText = Control.Text;
-
-			if (currentControlText.Length > Element.MaxLength)
-				Control.Text = currentControlText.Substring(0, Element.MaxLength);
-		}
-
-		bool ShouldChangeText(UITextView textView, NSRange range, string text)
-		{
-			var newLength = textView.Text.Length + text.Length - range.Length;
-			return newLength <= Element.MaxLength;
 		}
 	}
 }

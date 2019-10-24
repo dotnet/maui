@@ -59,8 +59,9 @@ namespace Xamarin.Forms.Core.UITests
 			//App.WaitForElement (c => c.Marked ("webviewHello"));
 			App.Tap (c => c.Marked ("popModal"));
 		}
-#if __IOS__
+
 		[Test]
+		[Ignore("only works on ios")] 
 		public void TestToolbarItem ()
 		{
 			App.Tap (c => c.Marked ("tbItemHello"));
@@ -70,7 +71,6 @@ namespace Xamarin.Forms.Core.UITests
 			App.WaitForElement (x => x.Marked ("Hello2"));
 			App.Tap (c => c.Marked ("ok"));
 		}
-#endif
 	}
 }
 

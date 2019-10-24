@@ -15,7 +15,6 @@ namespace Xamarin.Forms.Platform.Android
 {
 	internal class ListViewAdapter : CellAdapter
 	{
-		static readonly object DefaultItemTypeOrDataTemplate = new object();
 		const int DefaultGroupHeaderTemplateId = 0;
 		const int DefaultItemTemplateId = 1;
 
@@ -180,13 +179,6 @@ namespace Xamarin.Forms.Platform.Android
 				key = _dataTemplateIncrementer;
 				_templateToId[itemTemplate] = key;
 			}
-
-			if (key >= ViewTypeCount) 
-			{
-				throw new Exception($"ItemTemplate count has exceeded the limit of {ViewTypeCount}" + Environment.NewLine +
-									 "Please make sure to reuse DataTemplate objects");
-			}
-
 			return key;
 		}
 
@@ -194,8 +186,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			Cell cell = null;
 
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference);
+			Performance.Start();
 
 			ListViewCachingStrategy cachingStrategy = Controller.CachingStrategy;
 			var nextCellIsHeader = false;
@@ -279,13 +270,13 @@ namespace Xamarin.Forms.Platform.Android
 				else
 					UnsetSelectedBackground(layout);
 
-				Performance.Stop(reference);
+				Performance.Stop();
 				return layout;
 			}
 
 			AView view = CellFactory.GetCell(cell, convertView, parent, _context, _listView);
 
-			Performance.Start(reference, "AddView");
+			Performance.Start("AddView");
 
 			if (cellIsBeingReused)
 			{
@@ -298,7 +289,7 @@ namespace Xamarin.Forms.Platform.Android
 			else
 				layout.AddView(view, 0);
 
-			Performance.Stop(reference, "AddView");
+			Performance.Stop("AddView");
 
 			bool isHeader = cell.GetIsGroupHeader<ItemsView<Cell>, Cell>();
 
@@ -315,7 +306,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			layout.ApplyTouchListenersToSpecialCells(cell);
 
-			Performance.Stop(reference);
+			Performance.Stop();
 
 			return layout;
 		}
@@ -368,9 +359,6 @@ namespace Xamarin.Forms.Platform.Android
 
 			else // ListViewCachingStrategy.RetainElement
 				return GetCellForPosition(indexPath);
-
-			if (itemTypeOrDataTemplate == null)
-				itemTypeOrDataTemplate = DefaultItemTypeOrDataTemplate;
 
 			Cell protoCell;
 			if (!_prototypicalCellByTypeOrDataTemplate.TryGetValue(itemTypeOrDataTemplate, out protoCell))
@@ -448,7 +436,7 @@ namespace Xamarin.Forms.Platform.Android
 				var layout = cellOwner as ConditionalFocusLayout;
 				if (layout != null)
 					cellOwner = layout.GetChildAt(0);
-				cell = (Cell)(cellOwner as INativeElementView)?.Element;
+				cell = (Cell)((INativeElementView)cellOwner).Element;
 			}
 
 			// All our ListView's have called AddHeaderView. This effectively becomes index 0, so our index 0 is index 1 to the listView.

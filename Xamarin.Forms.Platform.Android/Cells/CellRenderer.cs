@@ -23,8 +23,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public AView GetCell(Cell item, AView convertView, ViewGroup parent, Context context)
 		{
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference);
+			Performance.Start();
 			
 			Cell = item;
 			Cell.PropertyChanged -= PropertyChangedHandler;
@@ -62,15 +61,14 @@ namespace Xamarin.Forms.Platform.Android
 			Cell.PropertyChanged += PropertyChangedHandler;
 			((ICellController)Cell).SendAppearing();
 
-			Performance.Stop(reference);
+			Performance.Stop();
 
 			return view;
 		}
 
 		protected virtual AView GetCellCore(Cell item, AView convertView, ViewGroup parent, Context context)
 		{
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference, "GetCellCore");
+			Performance.Start();
 
 			LayoutInflater inflater = LayoutInflater.FromContext(context);
 			const int type = global::Android.Resource.Layout.SimpleListItem1;
@@ -81,7 +79,7 @@ namespace Xamarin.Forms.Platform.Android
 			textView.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
 			view.SetBackgroundColor(global::Android.Graphics.Color.Black);
 
-			Performance.Stop(reference, "GetCellCore");
+			Performance.Stop();
 
 			return view;
 		}

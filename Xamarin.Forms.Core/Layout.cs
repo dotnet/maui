@@ -50,13 +50,12 @@ namespace Xamarin.Forms
 		}
 	}
 
-	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement
+	public abstract class Layout : View, ILayout, ILayoutController
 	{
 		public static readonly BindableProperty IsClippedToBoundsProperty = BindableProperty.Create("IsClippedToBounds", typeof(bool), typeof(Layout), false);
 
 		public static readonly BindableProperty PaddingProperty = BindableProperty.Create("Padding", typeof(Thickness), typeof(Layout), default(Thickness),
-									propertyChanged: (bindable, old, newValue) =>
-									{
+									propertyChanged: (bindable, old, newValue) => {
 										var layout = (Layout)bindable;
 										layout.UpdateChildrenLayout();
 									}, defaultValueCreator: (bindable) => ((Layout)bindable).CreateDefaultPadding());
@@ -87,24 +86,13 @@ namespace Xamarin.Forms
 
 		public Thickness Padding
 		{
-			get { return (Thickness)GetValue(PaddingElement.PaddingProperty); }
-			set { SetValue(PaddingElement.PaddingProperty, value); }
+			get { return (Thickness)GetValue(PaddingProperty); }
+			set { SetValue(PaddingProperty, value); }
 		}
 
-		public bool CascadeInputTransparent
-		{
-			get { return (bool)GetValue(CascadeInputTransparentProperty); }
-			set { SetValue(CascadeInputTransparentProperty, value); }
-		}
-
-		Thickness IPaddingElement.PaddingDefaultValueCreator()
+		internal virtual Thickness CreateDefaultPadding()
 		{
 			return default(Thickness);
-		}
-
-		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)
-		{
-			UpdateChildrenLayout();
 		}
 
 		internal ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
@@ -137,11 +125,6 @@ namespace Xamarin.Forms
 
 		public static void LayoutChildIntoBoundingRegion(VisualElement child, Rectangle region)
 		{
-			var parent = child.Parent as IFlowDirectionController;
-			bool isRightToLeft = false;
-			if (parent != null && (isRightToLeft = parent.EffectiveFlowDirection.IsRightToLeft()))
-				region = new Rectangle(parent.Width - region.Right, region.Y, region.Width, region.Height);
-
 			var view = child as View;
 			if (view == null)
 			{
@@ -154,10 +137,7 @@ namespace Xamarin.Forms
 			{
 				SizeRequest request = child.Measure(region.Width, region.Height, MeasureFlags.IncludeMargins);
 				double diff = Math.Max(0, region.Width - request.Request.Width);
-				double horizontalAlign = horizontalOptions.Alignment.ToDouble();
-				if (isRightToLeft)
-					horizontalAlign = 1 - horizontalAlign;
-				region.X += (int)(diff * horizontalAlign);
+				region.X += (int)(diff * horizontalOptions.Alignment.ToDouble());
 				region.Width -= diff;
 			}
 
@@ -280,33 +260,23 @@ namespace Xamarin.Forms
 
 		internal static void LayoutChildIntoBoundingRegion(View child, Rectangle region, SizeRequest childSizeRequest)
 		{
-			var parent = child.Parent as IFlowDirectionController;
-			bool isRightToLeft = false;
-			if (parent != null && (isRightToLeft = parent.EffectiveFlowDirection.IsRightToLeft()))
-				region = new Rectangle(parent.Width - region.Right, region.Y, region.Width, region.Height);
-
 			if (region.Size != childSizeRequest.Request)
 			{
 				bool canUseAlreadyDoneRequest = region.Width >= childSizeRequest.Request.Width && region.Height >= childSizeRequest.Request.Height;
 
-				LayoutOptions horizontalOptions = child.HorizontalOptions;
-				if (horizontalOptions.Alignment != LayoutAlignment.Fill)
+				if (child.HorizontalOptions.Alignment != LayoutAlignment.Fill)
 				{
 					SizeRequest request = canUseAlreadyDoneRequest ? childSizeRequest : child.Measure(region.Width, region.Height, MeasureFlags.IncludeMargins);
 					double diff = Math.Max(0, region.Width - request.Request.Width);
-					double horizontalAlign = horizontalOptions.Alignment.ToDouble();
-					if (isRightToLeft)
-						horizontalAlign = 1 - horizontalAlign;
-					region.X += (int)(diff * horizontalAlign);
+					region.X += (int)(diff * child.HorizontalOptions.Alignment.ToDouble());
 					region.Width -= diff;
 				}
 
-				LayoutOptions verticalOptions = child.VerticalOptions;
-				if (verticalOptions.Alignment != LayoutAlignment.Fill)
+				if (child.VerticalOptions.Alignment != LayoutAlignment.Fill)
 				{
 					SizeRequest request = canUseAlreadyDoneRequest ? childSizeRequest : child.Measure(region.Width, region.Height, MeasureFlags.IncludeMargins);
 					double diff = Math.Max(0, region.Height - request.Request.Height);
-					region.Y += (int)(diff * verticalOptions.Alignment.ToDouble());
+					region.Y += (int)(diff * child.VerticalOptions.Alignment.ToDouble());
 					region.Height -= diff;
 				}
 			}

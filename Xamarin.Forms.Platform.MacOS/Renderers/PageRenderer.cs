@@ -45,7 +45,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			Element = element;
 			UpdateTitle();
 
-			RaiseElementChanged(new VisualElementChangedEventArgs(oldElement, element));
+			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 
 			if (Element != null && !string.IsNullOrEmpty(Element.AutomationId))
 				SetAutomationId(Element.AutomationId);
@@ -93,7 +93,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			if (disposing && !_disposed)
 			{
-				Element.PropertyChanged -= OnElementPropertyChanged;
+				Element.PropertyChanged -= OnHandlePropertyChanged;
 				Platform.SetRenderer(Element, null);
 				if (_appeared)
 					Page.SendDisappearing();
@@ -125,14 +125,9 @@ namespace Xamarin.Forms.Platform.MacOS
 			base.Dispose(disposing);
 		}
 
-		void RaiseElementChanged(VisualElementChangedEventArgs e)
+		void OnElementChanged(VisualElementChangedEventArgs e)
 		{
-			OnElementChanged(e);
 			ElementChanged?.Invoke(this, e);
-		}
-
-		protected virtual void OnElementChanged(VisualElementChangedEventArgs e)
-		{
 		}
 
 		void SetAutomationId(string id)
@@ -150,7 +145,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			_packager = new VisualElementPackager(this);
 			_packager.Load();
 
-			Element.PropertyChanged += OnElementPropertyChanged;
+			Element.PropertyChanged += OnHandlePropertyChanged;
 			_tracker = new VisualElementTracker(this);
 
 			_events = new EventTracker(this);
@@ -158,7 +153,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			_init = true;
 		}
 
-		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void OnHandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackground();

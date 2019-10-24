@@ -28,13 +28,22 @@ namespace Xamarin.Forms
 {
 	public static class Forms
 	{
+		//Preserve GetCallingAssembly
+		static readonly bool nevertrue = false;
+
 		public static bool IsInitialized { get; private set; }
 
 #if __MOBILE__
 		static bool? s_isiOS9OrNewer;
 		static bool? s_isiOS10OrNewer;
 		static bool? s_isiOS11OrNewer;
+		static bool? s_isiOS13OrNewer;
 #endif
+		static Forms()
+		{
+			if (nevertrue)
+				Assembly.GetCallingAssembly();
+		}
 
 #if __MOBILE__
 		internal static bool IsiOS9OrNewer
@@ -67,6 +76,16 @@ namespace Xamarin.Forms
 				return s_isiOS11OrNewer.Value;
 			}
 		}
+
+		internal static bool IsiOS13OrNewer
+		{
+			get
+			{
+				if (!s_isiOS13OrNewer.HasValue)
+					s_isiOS13OrNewer = UIDevice.CurrentDevice.CheckSystemVersion(13, 0);
+				return s_isiOS13OrNewer.Value;
+			}
+		}
 #endif
 
 		static IReadOnlyList<string> s_flags;
@@ -93,10 +112,8 @@ namespace Xamarin.Forms
 
 #if __MOBILE__
 			Device.SetIdiom(UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad ? TargetIdiom.Tablet : TargetIdiom.Phone);
-			Device.SetFlowDirection(UIApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
 #else
 			Device.SetIdiom(TargetIdiom.Desktop);
-			Device.SetFlowDirection(NSApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
 #endif
 			Device.SetFlags(s_flags);
 			Device.PlatformServices = new IOSPlatformServices();
@@ -325,15 +342,16 @@ namespace Xamarin.Forms
 					return Task.FromResult(_isolatedStorageFile.GetLastWriteTime(path));
 				}
 
-				public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access)
+				public Task<Stream> OpenFileAsync(string path, Internals.FileMode mode, Internals.FileAccess access)
 				{
-					Stream stream = _isolatedStorageFile.OpenFile(path, mode, access);
+					Stream stream = _isolatedStorageFile.OpenFile(path, (System.IO.FileMode)mode, (System.IO.FileAccess)access);
 					return Task.FromResult(stream);
 				}
 
-				public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access, FileShare share)
+				public Task<Stream> OpenFileAsync(string path, Internals.FileMode mode, Internals.FileAccess access, Internals.FileShare share)
 				{
-					Stream stream = _isolatedStorageFile.OpenFile(path, mode, access, share);
+					Stream stream = _isolatedStorageFile.OpenFile(path, (System.IO.FileMode)mode, (System.IO.FileAccess)access,
+						(System.IO.FileShare)share);
 					return Task.FromResult(stream);
 				}
 			}

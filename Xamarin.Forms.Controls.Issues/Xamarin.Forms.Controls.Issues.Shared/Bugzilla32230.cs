@@ -50,10 +50,10 @@ namespace Xamarin.Forms.Controls.Issues
 		public void Bugzilla32230Test ()
 		{
 			RunningApp.Tap (q => q.Marked ("btnOpen"));
-			RunningApp.WaitForElement("1");
+			Assert.AreEqual ("1", RunningApp.Query (q => q.Marked ("lblCount"))[0].Text);
 			RunningApp.Tap (q => q.Marked ("btnClose"));
 			RunningApp.Tap (q => q.Marked ("btnOpen"));
-			RunningApp.WaitForElement("3");
+			Assert.AreEqual ("3", RunningApp.Query (q => q.Marked ("lblCount"))[0].Text);
 		}
 #endif
 	}

@@ -35,57 +35,42 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		[TestCase(true)]
-		[TestCase(false)]
-		public void TestClickedvent (bool isEnabled)
+		public void TestClickedvent ()
 		{
-			var view = new Button()
-			{
-				IsEnabled= isEnabled,
-			};
+			var view = new Button ();
 
 			bool activated = false;
 			view.Clicked += (sender, e) => activated = true;
 
 			((IButtonController) view).SendClicked ();
 
-			Assert.True (activated == isEnabled ? true : false);
+			Assert.True (activated);
 		}
 
 		[Test]
-		[TestCase(true)]
-		[TestCase(false)]
-		public void TestPressedEvent (bool isEnabled)
+		public void TestPressedEvent ()
 		{
-			var view = new Button()
-			{
-				IsEnabled = isEnabled,
-			};
+			var view = new Button();
 
 			bool pressed = false;
 			view.Pressed += (sender, e) => pressed = true;
 
 			((IButtonController)view).SendPressed();
 
-			Assert.True(pressed == isEnabled ? true : false);
+			Assert.True(pressed);
 		}
 
 		[Test]
-		[TestCase(true)]
-		[TestCase(false)]
-		public void TestReleasedEvent (bool isEnabled)
+		public void TestReleasedEvent ()
 		{
-			var view = new Button()
-			{
-				IsEnabled = isEnabled,
-			};
+			var view = new Button();
 
 			bool released = false;
 			view.Released += (sender, e) => released = true;
 
 			((IButtonController)view).SendReleased();
 
-			Assert.True(released == isEnabled ? true : false);
+			Assert.True(released);
 		}
 
 		protected override Button CreateSource()
@@ -236,21 +221,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void ButtonClickWhenCommandCanExecuteFalse()
-		{
-			bool invoked = false;
-			var button = new Button()
-			{
-				Command = new Command(() => invoked = true
-				, () => false),
-			};
-
-			(button as IButtonController)
-				?.SendClicked();
-			
-			Assert.False(invoked);
-		}
-		
 		public void ButtonBorderRadiusForwardsToButtonCornerRadius()
 		{
 			var button = new Button { Platform = new UnitPlatform() };

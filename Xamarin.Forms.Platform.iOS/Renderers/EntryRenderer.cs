@@ -12,13 +12,6 @@ namespace Xamarin.Forms.Platform.iOS
 	public class EntryRenderer : ViewRenderer<Entry, UITextField>
 	{
 		UIColor _defaultTextColor;
-
-		// Placeholder default color is 70% gray
-		// https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UITextField_Class/index.html#//apple_ref/occ/instp/UITextField/placeholder
-		readonly Color _defaultPlaceholderColor = ColorExtensions.SeventyPercentGrey.ToColor();
-
-		bool _useLegacyColorManagement;
-
 		bool _disposed;
 
 		static readonly int baseHeight = 30;
@@ -62,7 +55,6 @@ namespace Xamarin.Forms.Platform.iOS
 					Control.EditingDidBegin -= OnEditingBegan;
 					Control.EditingChanged -= OnEditingChanged;
 					Control.EditingDidEnd -= OnEditingEnded;
-                    Control.ShouldChangeCharacters -= ShouldChangeCharacters;
 				}
 			}
 
@@ -81,11 +73,7 @@ namespace Xamarin.Forms.Platform.iOS
 				var textField = new UITextField(RectangleF.Empty);
 				SetNativeControl(textField);
 
-				// Cache the default text color
 				_defaultTextColor = textField.TextColor;
-
-				_useLegacyColorManagement = e.NewElement.UseLegacyColorManagement();
-
 				textField.BorderStyle = UITextBorderStyle.RoundedRect;
 				textField.ClipsToBounds = true;
 
@@ -95,8 +83,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 				textField.EditingDidBegin += OnEditingBegan;
 				textField.EditingDidEnd += OnEditingEnded;
-
-                textField.ShouldChangeCharacters += ShouldChangeCharacters;
 			}
 
 			UpdatePlaceholder();
@@ -107,7 +93,6 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateKeyboard();
 			UpdateAlignment();
 			UpdateAdjustsFontSizeToFitWidth();
-			UpdateMaxLength();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -121,8 +106,6 @@ namespace Xamarin.Forms.Platform.iOS
 			else if (e.PropertyName == Entry.TextColorProperty.PropertyName)
 				UpdateColor();
 			else if (e.PropertyName == Xamarin.Forms.InputView.KeyboardProperty.PropertyName)
-				UpdateKeyboard();
-			else if (e.PropertyName == Xamarin.Forms.InputView.IsSpellCheckEnabledProperty.PropertyName)
 				UpdateKeyboard();
 			else if (e.PropertyName == Entry.HorizontalTextAlignmentProperty.PropertyName)
 				UpdateAlignment();
@@ -139,8 +122,6 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.Entry.AdjustsFontSizeToFitWidthProperty.PropertyName)
 				UpdateAdjustsFontSizeToFitWidth();
-			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
-				UpdateAlignment();
 
 			base.OnElementPropertyChanged(sender, e);
 		}
@@ -175,21 +156,17 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateAlignment()
 		{
-			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment();
 		}
 
 		void UpdateColor()
 		{
 			var textColor = Element.TextColor;
 
-			if (_useLegacyColorManagement)
-			{
-				Control.TextColor = textColor.IsDefault || !Element.IsEnabled ? _defaultTextColor : textColor.ToUIColor();
-			}
+			if (textColor.IsDefault || !Element.IsEnabled)
+				Control.TextColor = _defaultTextColor;
 			else
-			{
-				Control.TextColor = textColor.IsDefault ? _defaultTextColor : textColor.ToUIColor();
-			}
+				Control.TextColor = textColor.ToUIColor();
 		}
 
 		void UpdateAdjustsFontSizeToFitWidth()
@@ -211,13 +188,6 @@ namespace Xamarin.Forms.Platform.iOS
 		void UpdateKeyboard()
 		{
 			Control.ApplyKeyboard(Element.Keyboard);
-			if (!(Element.Keyboard is Internals.CustomKeyboard) && Element.IsSet(Xamarin.Forms.InputView.IsSpellCheckEnabledProperty))
-			{
-				if (!Element.IsSpellCheckEnabled)
-				{
-					Control.SpellCheckingType = UITextSpellCheckingType.No;
-				}
-			}
 			Control.ReloadInputViews();
 		}
 
@@ -243,17 +213,12 @@ namespace Xamarin.Forms.Platform.iOS
 
 			var targetColor = Element.PlaceholderColor;
 
-			if (_useLegacyColorManagement)
-			{
-				var color = targetColor.IsDefault || !Element.IsEnabled ? _defaultPlaceholderColor : targetColor;
-				Control.AttributedPlaceholder = formatted.ToAttributed(Element, color);
-			}
-			else
-			{
-				// Using VSM color management; take whatever is in Element.PlaceholderColor
-				var color = targetColor.IsDefault ? _defaultPlaceholderColor : targetColor;
-				Control.AttributedPlaceholder = formatted.ToAttributed(Element, color);
-			}
+			// Placeholder default color is 70% gray
+			// https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UITextField_Class/index.html#//apple_ref/occ/instp/UITextField/placeholder
+
+			var color = Element.IsEnabled && !targetColor.IsDefault ? targetColor : ColorExtensions.SeventyPercentGrey.ToColor();
+
+			Control.AttributedPlaceholder = formatted.ToAttributed(Element, color);
 		}
 
 		void UpdateText()
@@ -261,20 +226,6 @@ namespace Xamarin.Forms.Platform.iOS
 			// ReSharper disable once RedundantCheckBeforeAssignment
 			if (Control.Text != Element.Text)
 				Control.Text = Element.Text;
-		}
-
-		void UpdateMaxLength()
-		{
-			var currentControlText = Control.Text;
-
-			if (currentControlText.Length > Element.MaxLength)
-				Control.Text = currentControlText.Substring(0, Element.MaxLength);
-		}
-
-		bool ShouldChangeCharacters(UITextField textField, NSRange range, string replacementString)
-		{
-			var newLength = textField?.Text?.Length + replacementString.Length - range.Length;
-			return newLength <= Element?.MaxLength;
 		}
 	}
 }

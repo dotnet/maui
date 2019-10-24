@@ -251,16 +251,6 @@ namespace Xamarin.Forms
 
 			var page = (Page)InternalChildren.Last();
 
-			return await (this as INavigationPageController).RemoveAsyncInner(page, animated, fast);
-		}
-
-		async Task<Page> INavigationPageController.RemoveAsyncInner(Page page, bool animated, bool fast)
-		{
-			if (StackDepth == 1)
-			{
-				return null;
-			}
-
 			var args = new NavigationRequestedEventArgs(page, animated);
 
 			var removed = true;

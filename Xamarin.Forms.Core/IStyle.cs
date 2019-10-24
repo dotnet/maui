@@ -2,7 +2,7 @@ using System;
 
 namespace Xamarin.Forms
 {
-	interface IStyle
+	internal interface IStyle
 	{
 		Type TargetType { get; }
 

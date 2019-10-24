@@ -1,6 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Dynamic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Forms.Controls.GalleryPages;
 using Xamarin.Forms.CustomAttributes;
@@ -244,7 +250,6 @@ namespace Xamarin.Forms.Controls
 		}
 
 		List<GalleryPageFactory> _pages = new List<GalleryPageFactory> {
-				new GalleryPageFactory(() => new FlowDirectionGalleryLandingPage(), "FlowDirection"),
 				new GalleryPageFactory(() => new AutomationPropertiesGallery(), "Accessibility"),
 				new GalleryPageFactory(() => new PlatformSpecificsGallery(), "Platform Specifics"),
 				new GalleryPageFactory(() => new NativeBindingGalleryPage(), "Native Binding Controls Gallery"),
@@ -384,6 +389,12 @@ namespace Xamarin.Forms.Controls
 
 		async Task PushPage (Page contentPage)
 		{
+			if (Insights.IsInitialized) {
+				Insights.Track ("Navigation", new Dictionary<string, string> {
+					{ "Pushing", contentPage.GetType().Name }
+				});
+			}
+
 			if (navigationBehavior == NavigationBehavior.PushModalAsync) {
 				await Navigation.PushModalAsync (contentPage);
 			} else {
@@ -400,6 +411,12 @@ namespace Xamarin.Forms.Controls
 				return;
 
 			var page = pageFactory.Realize();
+
+			if (Insights.IsInitialized) {
+				Insights.Track ("Navigation", new Dictionary<string, string> {
+					{ "Pushing", page.GetType().Name }
+				});
+			}
 
 			await PushPage (page);
 		}

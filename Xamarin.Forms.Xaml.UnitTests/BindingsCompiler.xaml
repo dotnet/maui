@@ -12,13 +12,10 @@
 			<Label Text="{Binding Path=Text}" x:Name="label1" />
 			<Label Text="{Binding Model.Text}" x:Name="label2" />
 			<Label Text="{Binding Model[3]}" x:Name="label3" />
-            <Label Text="{Binding}" x:Name="label4" x:DataType="sys:String"/>
-            <Label Text="{Binding I}" x:Name="label5" />
-            <Label Text="{Binding Model.Text}" x:Name="label6" x:DataType="local:MockStructViewModel" />
+			<Label Text="{Binding}" x:Name="label4" x:DataType="sys:String"/>
 			<Entry Text="{Binding Text, Mode=TwoWay}" x:Name="entry0"/>
-            <Label Text="{Binding .}" x:Name="label7" x:DataType="sys:Int32"/>
-            <Label Text="{Binding Text, Mode=OneTime}" x:Name="label8" />
 		</StackLayout>
+	
 		<Label Text="{Binding Text}" x:Name="labelWithUncompiledBinding" />
 	</StackLayout>
 </ContentPage>

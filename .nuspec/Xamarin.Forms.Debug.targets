@@ -3,6 +3,7 @@
 
 	<PropertyGroup>
 		<XFKeepXamlResources>True</XFKeepXamlResources>
+		<XFVerbosity>4</XFVerbosity>
 	</PropertyGroup>
 
 	<Import Project="$(MSBuildThisFileDirectory)Xamarin.Forms.targets" />
@@ -19,6 +20,7 @@
 		<DebugXamlCTask 
 			Assembly = "$(IntermediateOutputPath)$(TargetFileName)"
 			ReferencePath = "@(ReferencePath)"
+			Verbosity = "$(XFVerbosity)"
 			DebugSymbols = "$(DebugSymbols)"
 			DebugType = "$(DebugType)"/>
 	</Target>

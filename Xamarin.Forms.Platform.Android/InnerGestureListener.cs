@@ -77,6 +77,8 @@ namespace Xamarin.Forms.Platform.Android
 			return false;
 		}
 
+		bool GestureDetector.IOnDoubleTapListener.OnDoubleTapEvent(MotionEvent e)
+		{
 			return false;
 		}
 

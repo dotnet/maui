@@ -36,6 +36,18 @@
     <NoWarn>
     </NoWarn>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Turkey|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Turkey\</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>
+    </NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="AbsoluteLayoutFlags.cs" />
     <Compile Include="Accelerator.cs" />
@@ -77,9 +89,7 @@
     <Compile Include="DataTemplateSelector.cs" />
     <Compile Include="DateChangedEventArgs.cs" />
     <Compile Include="DelegateLogListener.cs" />
-    <Compile Include="EffectiveFlowDirectionExtensions.cs" />
     <Compile Include="IEditorController.cs" />
-    <Compile Include="IFlowDirectionController.cs" />
     <Compile Include="IGridController.cs" />
     <Compile Include="IWebViewController.cs" />
     <Compile Include="INavigationMenuController.cs" />
@@ -112,8 +122,6 @@
     <Compile Include="IElementConfiguration.cs" />
     <Compile Include="IPlatformElementConfiguration.cs" />
     <Compile Include="PlatformConfigurationRegistry.cs" />
-    <Compile Include="EffectiveFlowDirection.cs" />
-    <Compile Include="FlowDirection.cs" />
     <Compile Include="IFontElement.cs" />
     <Compile Include="DependencyAttribute.cs" />
     <Compile Include="DependencyFetchTarget.cs" />
@@ -465,9 +473,8 @@
     <Compile Include="CompressedLayout.cs" />
     <Compile Include="PlatformConfiguration\macOSSpecific\NavigationPage.cs" />
     <Compile Include="PlatformConfiguration\macOSSpecific\NavigationTransitionStyle.cs" />
-    <Compile Include="Xaml\IResourcesLoader.cs" />
-    <Compile Include="Xaml\XamlResourceIdAttribute.cs" />
     <Compile Include="PlatformConfiguration\iOSSpecific\LargeTitleDisplayMode.cs" />
+    <Compile Include="PlatformConfiguration\iOSSpecific\UIModalPresentationStyle.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>

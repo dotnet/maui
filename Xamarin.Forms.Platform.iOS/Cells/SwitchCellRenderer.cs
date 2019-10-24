@@ -43,7 +43,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 			UpdateBackground(tvc, item);
 			UpdateIsEnabled(tvc, boolCell);
-			UpdateFlowDirection(tvc, boolCell);
 
 			return tvc;
 		}
@@ -59,8 +58,6 @@ namespace Xamarin.Forms.Platform.iOS
 				realCell.TextLabel.Text = boolCell.Text;
 			else if (e.PropertyName == Cell.IsEnabledProperty.PropertyName)
 				UpdateIsEnabled(realCell, boolCell);
-			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
-				UpdateFlowDirection(realCell, boolCell);
 		}
 
 		void OnSwitchValueChanged(object sender, EventArgs eventArgs)
@@ -77,15 +74,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (realCell != null)
 				((SwitchCell)realCell.Cell).On = sw.On;
-		}
-
-		void UpdateFlowDirection(CellTableViewCell cell, SwitchCell switchCell)
-		{
-			IVisualElementController controller = switchCell.Parent as View;
-
-			var uiSwitch = cell.AccessoryView as UISwitch;
-
-			uiSwitch.UpdateFlowDirection(controller);
 		}
 
 		void UpdateIsEnabled(CellTableViewCell cell, SwitchCell switchCell)

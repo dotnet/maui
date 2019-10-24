@@ -1,10 +1,19 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Windows.UI.Xaml;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml.Internals;
 
-
+#if WINDOWS_UWP
 [assembly: Xamarin.Forms.Dependency(typeof(Xamarin.Forms.Platform.UWP.NativeBindingService))]
 namespace Xamarin.Forms.Platform.UWP
+#else
+[assembly: Xamarin.Forms.Dependency(typeof(Xamarin.Forms.Platform.WinRT.NativeBindingService))]
+namespace Xamarin.Forms.Platform.WinRT
+#endif
 {
     public class NativeBindingService : INativeBindingService
     {

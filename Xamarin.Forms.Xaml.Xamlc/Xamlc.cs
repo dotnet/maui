@@ -58,6 +58,7 @@ namespace Xamarin.Forms.Xaml
 			var assembly = extra[0];
 			var xamlc = new XamlCTask {
 				Assembly = assembly,
+				Verbosity = verbosity,
 				KeepXamlResources = keep,
 				OptimizeIL = optimize,
 				DependencyPaths = paths,

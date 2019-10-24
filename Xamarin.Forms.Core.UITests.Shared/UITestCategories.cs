@@ -38,6 +38,5 @@
 		public const string Effects = "Effects";
 
 		public const string ManualReview = "ManualReview";
-		public const string Performance = "Performance";
 	}
 }

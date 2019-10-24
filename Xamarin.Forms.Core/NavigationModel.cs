@@ -45,7 +45,6 @@ namespace Xamarin.Forms.Internals
 		public void Clear()
 		{
 			_navTree.Clear();
-			_modalStack.Clear();
 		}
 
 		public void InsertPageBefore(Page page, Page before)

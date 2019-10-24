@@ -76,13 +76,12 @@
 		<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
 		<Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
 		<Setter Property="Padding" Value="{ThemeResource TextControlThemePadding}"/>
-		<Setter Property="IsSpellCheckEnabled" Value="False" />
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="uwp:FormsTextBox">
 					<Grid>
 						<Grid.Resources>
-							<Style x:Name="DeleteButtonStyle" TargetType="uwp:FormsCancelButton">
+							<Style x:Name="DeleteButtonStyle" TargetType="Button">
 								<Setter Property="Template">
 									<Setter.Value>
 										<ControlTemplate TargetType="Button">
@@ -98,7 +97,7 @@
 																</ObjectAnimationUsingKeyFrames>
 																<ObjectAnimationUsingKeyFrames Storyboard.TargetName="GlyphElement"
                                                              Storyboard.TargetProperty="Foreground">
-																	<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltAccentBrush}" />
+																	<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource FormsCancelBackgroundBrush}" />
 																</ObjectAnimationUsingKeyFrames>
 															</Storyboard>
 														</VisualState>
@@ -127,9 +126,9 @@
 												<Border x:Name="BorderElement"
                               BorderBrush="{ThemeResource TextBoxButtonBorderThemeBrush}"
                               BorderThickness="{TemplateBinding BorderThickness}"
-                              Background="{ThemeResource TextBoxButtonBackgroundThemeBrush}">
+                              Background="{ThemeResource FormsCancelBackgroundBrush}">
 													<TextBlock x:Name="GlyphElement"
-                                   Foreground="{ThemeResource SystemControlBackgroundChromeBlackMediumBrush}"
+                                   Foreground="{ThemeResource FormsCancelForegroundBrush}"
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Center"
                                    FontStyle="Normal"
@@ -205,38 +204,6 @@
 							</Style>
 						</Grid.Resources>
 						<VisualStateManager.VisualStateGroups>
-							<VisualStateGroup x:Name="FormsManaged">
-								<!-- These "Forms" prefixed states exist to support the Forms VSM; once custom 
-								visual state managers are working correctly for TextBox, we'll be able to remove them
-								(see notes in FormsVisualStateManager.cs) -->
-								<VisualState x:Name="FormsNormal" />
-								<VisualState x:Name="FormsDisabled">
-									<Storyboard>
-										<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Foreground"
-																		Storyboard.TargetName="HeaderContentPresenter">
-											<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlDisabledBaseLowBrush}" />
-										</ObjectAnimationUsingKeyFrames>
-										<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Background"
-																		Storyboard.TargetName="BackgroundElement">
-											<DiscreteObjectKeyFrame KeyTime="0" Value="{Binding Background, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
-										</ObjectAnimationUsingKeyFrames>
-										<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Background" Storyboard.TargetName="BorderElement">
-											<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}" />
-										</ObjectAnimationUsingKeyFrames>
-										<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="BorderBrush" Storyboard.TargetName="BorderElement">
-											<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlDisabledBaseLowBrush}" />
-										</ObjectAnimationUsingKeyFrames>
-										<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Foreground" Storyboard.TargetName="ContentElement">
-											<DiscreteObjectKeyFrame KeyTime="0" Value="{Binding Foreground, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
-										</ObjectAnimationUsingKeyFrames>
-										<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Foreground"
-										                               Storyboard.TargetName="PlaceholderTextContentPresenter">
-											<DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForegroundBrush, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
-										</ObjectAnimationUsingKeyFrames>
-									</Storyboard>
-								</VisualState>
-							</VisualStateGroup>
-
 							<VisualStateGroup x:Name="CommonStates">
 								<VisualState x:Name="Disabled">
 									<Storyboard>
@@ -392,8 +359,7 @@
                         HorizontalAlignment="{Binding TextAlignment, 
                                             RelativeSource={RelativeSource Mode=TemplatedParent}, 
                                             Converter={StaticResource AlignmentConverter}}" />
-						<!-- We use a custom version of the cancel button so we can control the colors from Forms -->
-						<uwp:FormsCancelButton x:Name="DeleteButton"
+						<Button x:Name="DeleteButton"
                   Grid.Row="1"
                   Style="{StaticResource DeleteButtonStyle}"
                   BorderThickness="{TemplateBinding BorderThickness}"

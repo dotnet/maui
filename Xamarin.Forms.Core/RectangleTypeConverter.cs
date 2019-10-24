@@ -4,7 +4,6 @@ using System.Globalization;
 namespace Xamarin.Forms
 {
 	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.RectangleTypeConverter")]
-	[Xaml.TypeConversion(typeof(Rectangle))]
 	public class RectangleTypeConverter : TypeConverter
 	{
 		public override object ConvertFromInvariantString(string value)

@@ -73,8 +73,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public void UpdateLayout()
 		{
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference);
+			Performance.Start();
 
 			VisualElement view = _renderer.Element;
 			AView aview = _renderer.View;
@@ -88,22 +87,22 @@ namespace Xamarin.Forms.Platform.Android
 			var formsViewGroup = aview as FormsViewGroup;
 			if (formsViewGroup == null)
 			{
-				Performance.Start(reference, "Measure");
+				Performance.Start("Measure");
 				aview.Measure(MeasureSpecFactory.MakeMeasureSpec(width, MeasureSpecMode.Exactly), MeasureSpecFactory.MakeMeasureSpec(height, MeasureSpecMode.Exactly));
-				Performance.Stop(reference, "Measure");
+				Performance.Stop("Measure");
 
-				Performance.Start(reference, "Layout");
+				Performance.Start("Layout");
 				aview.Layout(x, y, x + width, y + height);
-				Performance.Stop(reference, "Layout");
+				Performance.Stop("Layout");
 			}
 			else
 			{
-				Performance.Start(reference, "MeasureAndLayout");
+				Performance.Start("MeasureAndLayout");
 				formsViewGroup.MeasureAndLayout(MeasureSpecFactory.MakeMeasureSpec(width, MeasureSpecMode.Exactly), MeasureSpecFactory.MakeMeasureSpec(height, MeasureSpecMode.Exactly), x, y, x + width, y + height);
-				Performance.Stop(reference, "MeasureAndLayout");
+				Performance.Stop("MeasureAndLayout");
 			}
 
-			Performance.Stop(reference);
+			Performance.Stop();
 
 			//On Width or Height changes, the anchors needs to be updated
 			UpdateAnchorX();
@@ -301,8 +300,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateNativeView(object sender, EventArgs e)
 		{
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference);
+			Performance.Start();
 
 			VisualElement view = _renderer.Element;
 			AView aview = _renderer.View;
@@ -323,20 +321,19 @@ namespace Xamarin.Forms.Platform.Android
 					_context.ToPixels(view.TranslationX), _context.ToPixels(view.TranslationY));
 			}
 
-			Performance.Stop(reference);
+			Performance.Stop();
 		}
 
 		void UpdateOpacity()
 		{
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference);
+			Performance.Start();
 
 			VisualElement view = _renderer.Element;
 			AView aview = _renderer.View;
 
 			aview.Alpha = (float)view.Opacity;
 
-			Performance.Stop(reference);
+			Performance.Stop();
 		}
 
 		void UpdateRotation()

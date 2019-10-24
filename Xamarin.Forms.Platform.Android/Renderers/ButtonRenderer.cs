@@ -1,11 +1,8 @@
 using System;
 using System.ComponentModel;
-using Android.Content.Res;
 using Android.Content;
 using Android.Graphics;
-using Android.Graphics.Drawables;
 using Android.Util;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using static System.String;
 using AButton = Android.Widget.Button;
 using AView = Android.Views.View;
@@ -17,12 +14,10 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public class ButtonRenderer : ViewRenderer<Button, AButton>, AView.IOnAttachStateChangeListener
 	{
-		ButtonDrawable _backgroundDrawable;
+		ButtonBackgroundTracker _backgroundTracker;
 		TextColorSwitcher _textColorSwitcher;
-		Drawable _defaultDrawable;
 		float _defaultFontSize;
 		Typeface _defaultTypeface;
-		bool _drawableEnabled;
 		bool _isDisposed;
 		int _imageHeight = -1;
 
@@ -80,11 +75,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (disposing)
 			{
-				if (_backgroundDrawable != null)
-				{
-					_backgroundDrawable.Dispose();
-					_backgroundDrawable = null;
-				}
+				_backgroundTracker?.Dispose();
 			}
 
 			base.Dispose(disposing);
@@ -109,22 +100,15 @@ namespace Xamarin.Forms.Platform.Android
 					button.SetOnTouchListener(ButtonTouchListener.Instance.Value);
 					button.Tag = this;
 					SetNativeControl(button);
-
-					var useLegacyColorManagement = e.NewElement.UseLegacyColorManagement();
-					_textColorSwitcher = new TextColorSwitcher(button.TextColors, useLegacyColorManagement);
-
+					_textColorSwitcher = new TextColorSwitcher(button.TextColors);
 					button.AddOnAttachStateChangeListener(this);
 				}
 			}
+
+			if (_backgroundTracker == null)
+				_backgroundTracker = new ButtonBackgroundTracker(Element, Control);
 			else
-			{
-				if (_drawableEnabled)
-				{
-					_drawableEnabled = false;
-					_backgroundDrawable.Reset();
-					_backgroundDrawable = null;
-				}
-			}
+				_backgroundTracker.Button = e.NewElement;
 
 			UpdateAll();
 		}
@@ -139,27 +123,20 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateEnabled();
 			else if (e.PropertyName == Button.FontProperty.PropertyName)
 				UpdateFont();
-			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
-				UpdateDrawable();
 			else if (e.PropertyName == Button.ImageProperty.PropertyName)
 				UpdateBitmap();
 			else if (e.PropertyName == VisualElement.IsVisibleProperty.PropertyName)
 				UpdateText();
-
-			if (_drawableEnabled &&
-				(e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == Button.BorderColorProperty.PropertyName || e.PropertyName == Button.BorderRadiusProperty.PropertyName ||
-				 e.PropertyName == Button.BorderWidthProperty.PropertyName))
-			{
-				_backgroundDrawable.Reset();
-				Control.Invalidate();
-			}
-
+			
 			base.OnElementPropertyChanged(sender, e);
 		}
 
 		protected override void UpdateBackgroundColor()
 		{
-			// Do nothing, the drawable handles this now
+			if (Element == null || Control == null)
+				return;
+
+			_backgroundTracker?.UpdateBackgroundColor();
 		}
 
 		void UpdateAll()
@@ -230,34 +207,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateDrawable()
 		{
-			if (Element.BackgroundColor == Color.Default)
-			{
-				if (!_drawableEnabled)
-					return;
-
-				if (_defaultDrawable != null)
-					Control.SetBackground(_defaultDrawable);
-
-				_drawableEnabled = false;
-			}
-			else
-			{
-				if (_backgroundDrawable == null)
-					_backgroundDrawable = new ButtonDrawable(Context.ToPixels);
-
-				_backgroundDrawable.Button = Element;
-
-				if (_drawableEnabled)
-					return;
-
-				if (_defaultDrawable == null)
-					_defaultDrawable = Control.Background;
-
-				Control.SetBackground(_backgroundDrawable);
-				_drawableEnabled = true;
-			}
-
-			Control.Invalidate();
+			_backgroundTracker.UpdateDrawable();
 		}
 
 		void UpdateEnabled()

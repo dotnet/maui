@@ -4,7 +4,6 @@ using System.Globalization;
 namespace Xamarin.Forms
 {
 	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.ConstraintTypeConverter")]
-	[Xaml.TypeConversion(typeof(Constraint))]
 	public class ConstraintTypeConverter : TypeConverter
 	{
 		public override object ConvertFromInvariantString(string value)

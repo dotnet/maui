@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Controls
 				if (btnSetOrClear.Text == KSetImageSource) {
 					ClearImageCache ();
 					image.Source =
-						"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/banner.png";
+						"http://www.public-domain-image.com/free-images/miscellaneous/big-high-border-fence.jpg";
 					btnSetOrClear.Text = KClearImageSource;
 				} else {
 					image.Source = null;

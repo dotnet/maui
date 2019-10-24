@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -12,17 +12,13 @@
     <AssemblyName>Xamarin.Forms.ControlGallery.WindowsUniversal</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion>10.0.16299.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.16299.0</TargetPlatformMinVersion>
+    <TargetPlatformVersion>10.0.10586.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.10240.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <EnableDotNetNativeCompatibleProfile>true</EnableDotNetNativeCompatibleProfile>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <PackageCertificateKeyFile>Xamarin.Forms.ControlGallery.WindowsUniversal_TemporaryKey.pfx</PackageCertificateKeyFile>
-    <PackageCertificateThumbprint>D160433BDC22781DEAE0558325140B91C02A6A20</PackageCertificateThumbprint>
-    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
-    <AppxBundle>Always</AppxBundle>
-    <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
+	<GenerateAppxPackageOnBuild>False</GenerateAppxPackageOnBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
     <DebugSymbols>true</DebugSymbols>
@@ -123,30 +119,54 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DisposePageRenderer.cs" />
     <Compile Include="_57114Renderer.cs" />
     <Compile Include="_58406EffectRenderer.cs" />
-    <Compile Include="_60122ImageRenderer.cs" />
     <Content Include="Assets\Fonts\OFL.txt" />
-    <Content Include="bank.png" />
     <Content Include="coffee.png" />
-    <Content Include="cover1.jpg" />
-    <Content Include="cover1small.jpg" />
-    <Content Include="crimsonsmall.jpg" />
     <Content Include="default.css" />
     <Content Include="invalidimage.jpg" />
     <Content Include="local.html" />
-    <Content Include="test.jpg" />
-    <Content Include="oasis.jpg" />
-    <Content Include="oasissmall.jpg" />
-    <Content Include="photo.jpg" />
-    <Content Include="seth.png" />
     <Content Include="toolbar_close.png" />
     <Content Include="WebImages\XamarinLogo.png" />
     <Content Include="Assets\Fonts\Lobster-Regular.ttf" />
+    <None Include="project.json" />
+    <Content Include="..\Xamarin.Forms.ControlGallery.WP8\bank.png">
+      <Link>bank.png</Link>
+    </Content>
+    <Content Include="..\Xamarin.Forms.ControlGallery.WP8\cover1.jpg">
+      <Link>cover1.jpg</Link>
+    </Content>
+    <Content Include="..\Xamarin.Forms.ControlGallery.WP8\cover1small.jpg">
+      <Link>cover1small.jpg</Link>
+    </Content>
+    <Content Include="..\Xamarin.Forms.ControlGallery.WP8\crimson.jpg">
+      <Link>crimson.jpg</Link>
+    </Content>
+    <Content Include="..\Xamarin.Forms.ControlGallery.WP8\crimsonsmall.jpg">
+      <Link>crimsonsmall.jpg</Link>
+    </Content>
+    <Content Include="..\Xamarin.Forms.ControlGallery.WP8\menuIcon.png">
+      <Link>menuIcon.png</Link>
+    </Content>
+    <Content Include="..\Xamarin.Forms.ControlGallery.WP8\oasis.jpg">
+      <Link>oasis.jpg</Link>
+    </Content>
+    <Content Include="..\Xamarin.Forms.ControlGallery.WP8\oasissmall.jpg">
+      <Link>oasissmall.jpg</Link>
+    </Content>
+    <Content Include="..\Xamarin.Forms.ControlGallery.WP8\photo.jpg">
+      <Link>photo.jpg</Link>
+    </Content>
+    <Content Include="..\Xamarin.Forms.ControlGallery.WP8\seth.png">
+      <Link>seth.png</Link>
+    </Content>
     <Content Include="Properties\default.rd.xml" />
-    <Compile Include="BrokenImageSourceHandler.cs" />
-    <Compile Include="StringProvider.cs" />
+    <Compile Include="..\Xamarin.Forms.ControlGallery.Windows\BrokenImageSourceHandler.cs">
+      <Link>BrokenImageSourceHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.ControlGallery.Windows\StringProvider.cs">
+      <Link>StringProvider.cs</Link>
+    </Compile>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
@@ -164,10 +184,10 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\Logo.png" />
-    <Content Include="Assets\SmallLogo.png" />
-    <Content Include="Assets\SplashScreen.png" />
-    <Content Include="Assets\StoreLogo.png" />
+    <Content Include="Assets\Logo.scale-100.png" />
+    <Content Include="Assets\SmallLogo.scale-100.png" />
+    <Content Include="Assets\SplashScreen.scale-100.png" />
+    <Content Include="Assets\StoreLogo.scale-100.png" />
     <Content Include="Assets\WideLogo.scale-100.png" />
   </ItemGroup>
   <ItemGroup>
@@ -181,18 +201,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.0.6</Version>
-    </PackageReference>
-    <PackageReference Include="NETStandard.Library">
-      <Version>2.0.1</Version>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json">
-      <Version>10.0.3</Version>
-    </PackageReference>
-    <PackageReference Include="Xam.Plugin.DeviceInfo">
-      <Version>3.0.2</Version>
-    </PackageReference>
+    <SDKReference Include="WindowsMobile, Version=10.0.10586.0">
+      <Name>Windows Mobile Extensions for the UWP</Name>
+    </SDKReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

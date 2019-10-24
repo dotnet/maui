@@ -21,9 +21,8 @@ namespace Xamarin.Forms.ControlGallery.Android
 		{
 			base.OnCreate(bundle);
 
-			Forms.SetFlags("Fake_Flag"); // So we can test for flag initialization issues
-
-			Forms.SetFlags("Fake_Flag"); // So we can test for flag initialization issues
+			if (!Debugger.IsAttached)
+				Insights.Initialize(App.InsightsApiKey, ApplicationContext);
 
 			Forms.SetFlags("Fake_Flag"); // So we can test for flag initialization issues
 

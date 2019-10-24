@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using Foundation;
 using UIKit;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using SizeF = CoreGraphics.CGSize;
 
 namespace Xamarin.Forms.Platform.iOS
@@ -14,7 +13,6 @@ namespace Xamarin.Forms.Platform.iOS
 		UIColor _buttonTextColorDefaultDisabled;
 		UIColor _buttonTextColorDefaultHighlighted;
 		UIColor _buttonTextColorDefaultNormal;
-		bool _useLegacyColorManagement;
 		bool _titleChanged;
 		SizeF _titleSize;
 
@@ -59,13 +57,11 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (Control == null)
 				{
-					SetNativeControl(CreateNativeControl());
+					SetNativeControl(new UIButton(UIButtonType.System));
 
 					Debug.Assert(Control != null, "Control != null");
 
 					SetControlPropertiesFromProxy();
-
-					_useLegacyColorManagement = e.NewElement.UseLegacyColorManagement();
 
 					_buttonTextColorDefaultNormal = Control.TitleColor(UIControlState.Normal);
 					_buttonTextColorDefaultHighlighted = Control.TitleColor(UIControlState.Highlighted);
@@ -81,11 +77,6 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateImage();
 				UpdateTextColor();
 			}
-		}
-
-		protected override UIButton CreateNativeControl()
-		{
-			return new UIButton(UIButtonType.System);
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -217,13 +208,11 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 			else
 			{
-				var color = Element.TextColor.ToUIColor();
-
-				Control.SetTitleColor(color, UIControlState.Normal);
-				Control.SetTitleColor(color, UIControlState.Highlighted);
-				Control.SetTitleColor(_useLegacyColorManagement ? _buttonTextColorDefaultDisabled : color, UIControlState.Disabled);
-
-				Control.TintColor = color;
+				Control.SetTitleColor(Element.TextColor.ToUIColor(), UIControlState.Normal);
+				Control.SetTitleColor(Element.TextColor.ToUIColor(), UIControlState.Highlighted);
+				Control.SetTitleColor(_buttonTextColorDefaultDisabled, UIControlState.Disabled);
+				
+				Control.TintColor = Element.TextColor.ToUIColor();
 			}
 		}
 

@@ -15,8 +15,6 @@ namespace Xamarin.Forms.Controls
 
 		public AppearingGalleryPage ()
 		{
-			App.AppearingMessages.Clear();
-
 			var initalPage = new AppearingPage (1);
 			var initalPage2 = new AppearingPage (2);
 

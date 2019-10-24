@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Controls
 		{
 			Frame frPatientInfo = new Frame
 			{
-				BorderColor = Color.Black,
+				OutlineColor = Color.Black,
 				BackgroundColor = Color.White,
 				HasShadow = true,
 				HorizontalOptions = LayoutOptions.Center,

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -9,11 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Xamarin.Forms.Core.UnitTests</RootNamespace>
     <AssemblyName>Xamarin.Forms.Core.UnitTests</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -36,6 +35,17 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>0114;0672;0108;0067;0168;0169;0219;0612;0618;1998;4014</NoWarn>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Turkey|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Turkey\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;TURKEY</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>0114;0672;0108;0067;0168;0169;0219;0612;0618;1998;4014</NoWarn>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
@@ -43,7 +53,6 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -73,9 +82,6 @@
     <Compile Include="ColorUnitTests.cs" />
     <Compile Include="CommandSourceTests.cs" />
     <Compile Include="CommandTests.cs" />
-    <Compile Include="EffectiveFlowDirectionExtensions.cs" />
-    <Compile Include="FlowDirectionTests.cs" />
-    <Compile Include="LayoutChildIntoBoundingRegionTests.cs" />
     <Compile Include="MenuUnitTests.cs" />
     <Compile Include="TemplatedViewUnitTests.cs" />
     <Compile Include="TemplatedPageUnitTests.cs" />
@@ -153,7 +159,6 @@
     <Compile Include="TypeUnitTests.cs" />
     <Compile Include="ViewCellTests.cs" />
     <Compile Include="ViewUnitTests.cs" />
-    <Compile Include="VisualStateManagerTests.cs" />
     <Compile Include="WeakEventManagerTests.cs" />
     <Compile Include="WebViewUnitTests.cs" />
     <Compile Include="ImageSourceTests.cs" />
@@ -182,17 +187,6 @@
     <Compile Include="NativeBindingTests.cs" />
     <Compile Include="TypedBindingUnitTests.cs" />
     <Compile Include="AnimationTests.cs" />
-    <Compile Include="StyleSheets\MockStylable.cs" />
-    <Compile Include="StyleSheets\SelectorTests.cs" />
-    <Compile Include="StyleSheets\IStylableTest.cs" />
-    <Compile Include="StyleSheets\StyleTests.cs" />
-    <Compile Include="FlexLayoutTests.cs" />
-    <Compile Include="FlexLayoutAlignItemsTests.cs" />
-    <Compile Include="FlexLayoutFlexDirectionTests.cs" />
-    <Compile Include="FlexLayoutMarginTests.cs" />
-    <Compile Include="FlexLayoutAlignContentTests.cs" />
-    <Compile Include="FlexLayoutAlignSelfTests.cs" />
-    <Compile Include="FlexOrderTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">

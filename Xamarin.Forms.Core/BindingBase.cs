@@ -20,11 +20,7 @@ namespace Xamarin.Forms
 			get { return _mode; }
 			set
 			{
-				if (   value != BindingMode.Default
-				    && value != BindingMode.OneWay
-				    && value != BindingMode.OneWayToSource
-				    && value != BindingMode.TwoWay
-				    && value != BindingMode.OneTime)
+				if (value != BindingMode.Default && value != BindingMode.OneWay && value != BindingMode.OneWayToSource && value != BindingMode.TwoWay)
 					throw new ArgumentException("mode is not a valid BindingMode", "mode");
 
 				ThrowIfApplied();
@@ -79,7 +75,7 @@ namespace Xamarin.Forms
 			IsApplied = true;
 		}
 
-		internal virtual void Apply(object context, BindableObject bindObj, BindableProperty targetProperty, bool fromBindingContextChanged = false)
+		internal virtual void Apply(object context, BindableObject bindObj, BindableProperty targetProperty)
 		{
 			IsApplied = true;
 		}
@@ -107,7 +103,7 @@ namespace Xamarin.Forms
 			return SynchronizedCollections.TryGetValue(collection, out synchronizationContext);
 		}
 
-		internal virtual void Unapply(bool fromBindingContextChanged = false)
+		internal virtual void Unapply()
 		{
 			IsApplied = false;
 		}

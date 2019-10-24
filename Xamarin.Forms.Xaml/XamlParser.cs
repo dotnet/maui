@@ -278,7 +278,8 @@ namespace Xamarin.Forms.Xaml
 					if (targetPlatform != Device.RuntimePlatform)
 					{
 						// Special case for Windows backward compatibility
-						if (targetPlatform == "Windows" && Device.RuntimePlatform == Device.UWP)
+						if (targetPlatform == "Windows" &&
+						    (Device.RuntimePlatform == Device.UWP || Device.RuntimePlatform == Device.WinRT))
 							continue;
 						
 						prefixes.Add(prefix);

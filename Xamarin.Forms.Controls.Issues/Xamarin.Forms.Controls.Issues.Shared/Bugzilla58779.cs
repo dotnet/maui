@@ -15,7 +15,6 @@ namespace Xamarin.Forms.Controls.Issues
 	public class Bugzilla58779 : TestContentPage
 	{
 		const string ButtonId = "button";
-		const string CancelId = "cancel";
 
 		protected override void Init()
 		{
@@ -48,7 +47,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			button.Clicked += (sender, e) => {
 				String[] string_array = {"1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"};
-				this.DisplayActionSheet("title",CancelId,"destruction",string_array);
+				this.DisplayActionSheet("title","cancel","destruction",string_array);
 			};
 
 			Content = content;
@@ -62,8 +61,6 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement(q => q.Marked(ButtonId));
 			RunningApp.Tap(q => q.Marked(ButtonId));
 			RunningApp.Screenshot ("Check list fits on screen");
-			RunningApp.WaitForElement(q => q.Marked(CancelId));
-			RunningApp.Tap(q => q.Marked(CancelId));
 		}
 #endif
 	}

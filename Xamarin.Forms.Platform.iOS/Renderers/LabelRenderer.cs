@@ -152,8 +152,6 @@ namespace Xamarin.Forms.Platform.MacOS
 				UpdateText();
 			else if (e.PropertyName == Label.LineBreakModeProperty.PropertyName)
 				UpdateLineBreakMode();
-			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
-				UpdateAlignment();
 		}
 
 #if __MOBILE__
@@ -192,9 +190,9 @@ namespace Xamarin.Forms.Platform.MacOS
 		void UpdateAlignment()
 		{
 #if __MOBILE__
-			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment();
 #else
-			Control.Alignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+			Control.Alignment = Element.HorizontalTextAlignment.ToNativeTextAlignment();
 #endif
 		}
 

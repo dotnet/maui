@@ -24,6 +24,12 @@ namespace Xamarin.Forms.Controls
 						"oasis.jpg",
 						"crimson.jpg"
 					}
+					/*ItemsSource = new[] {
+					"http://www.zemwallpaper.com/wp-content/uploads/2014/05/Desktop-background-download-21.jpg",
+					"http://www.zemwallpaper.com/wp-content/uploads/2014/05/Desktop-background-download-31.jpg",
+					"http://www.zemwallpaper.com/wp-content/uploads/2014/05/Desktop-background-download-61.jpg",
+					"http://www.zemwallpaper.com/wp-content/uploads/2014/05/Desktop-background-download-71.jpg"
+				};*/
 				});
 			};
 
@@ -40,6 +46,12 @@ namespace Xamarin.Forms.Controls
 						"oasis.jpg",
 						"crimson.jpg"
 					}
+					/*ItemsSource = new[] {
+					"http://www.zemwallpaper.com/wp-content/uploads/2014/05/Desktop-background-download-21.jpg",
+					"http://www.zemwallpaper.com/wp-content/uploads/2014/05/Desktop-background-download-31.jpg",
+					"http://www.zemwallpaper.com/wp-content/uploads/2014/05/Desktop-background-download-61.jpg",
+					"http://www.zemwallpaper.com/wp-content/uploads/2014/05/Desktop-background-download-71.jpg"
+				};*/
 				});
 			};
 

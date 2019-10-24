@@ -5,7 +5,6 @@ using Mono.Cecil.Cil;
 using NUnit.Framework;
 using Xamarin.Forms.Core.UnitTests;
 using Xamarin.Forms.Xaml;
-using Xamarin.Forms.Build.Tasks;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -54,7 +53,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			return false;
 		}
 
-		public IEnumerable<Instruction> ConvertFromString(string value, ILContext context, BaseNode node)
+		public IEnumerable<Instruction> ConvertFromString(string value, ModuleDefinition module, BaseNode node)
 		{
 			if (value != "IsCompiled?")
 				throw new Exception();

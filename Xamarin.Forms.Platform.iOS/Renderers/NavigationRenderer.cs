@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.iOS
 		UIToolbar _secondaryToolbar;
 		VisualElementTracker _tracker;
 		nfloat _navigationBottom = 0;
-		bool _hasNavigationBar;
+
 
 		public NavigationRenderer()
 		{
@@ -135,13 +135,6 @@ namespace Xamarin.Forms.Platform.iOS
 			View.SetNeedsLayout();
 		}
 
-		public override void ViewWillAppear(bool animated)
-		{
-			base.ViewWillAppear(animated);
-
-			SetStatusBarStyle();
-		}
-
 		public override void ViewDidDisappear(bool animated)
 		{
 			base.ViewDidDisappear(animated);
@@ -160,16 +153,11 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 			UpdateToolBarVisible();
 
-			//var navBarFrameBotton = Forms.IsiOS11OrNewer ? View.SafeAreaInsets.Top : NavigationBar.Frame.Bottom;
-			var navBarFrameBotton = NavigationBar.Frame.Bottom;
-
+			var navBarFrameBottom = Math.Min(NavigationBar.Frame.Bottom, 140);
+			_navigationBottom = (nfloat)navBarFrameBottom;
 			var toolbar = _secondaryToolbar;
-
-			//save the state of the Current page we are calculating, this will fire before Current is updated
-			_hasNavigationBar = NavigationPage.GetHasNavigationBar(Current);
-
 			// Use 0 if the NavBar is hidden or will be hidden
-			var toolbarY = NavigationBarHidden || NavigationBar.Translucent || !NavigationPage.GetHasNavigationBar(Current) ? 0 : navBarFrameBotton;
+			var toolbarY = NavigationBarHidden || NavigationBar.Translucent || !NavigationPage.GetHasNavigationBar(Current) ? 0 : navBarFrameBottom;
 			toolbar.Frame = new RectangleF(0, toolbarY, View.Frame.Width, toolbar.Frame.Height);
 
 			double trueBottom = toolbar.Hidden ? toolbarY : toolbar.Frame.Bottom;
@@ -337,7 +325,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected virtual async Task<bool> OnPushAsync(Page page, bool animated)
 		{
-			if (page is MasterDetailPage)
+			if(page is MasterDetailPage)
 				System.Diagnostics.Trace.WriteLine($"Pushing a {nameof(MasterDetailPage)} onto a {nameof(NavigationPage)} is not a supported UI pattern on iOS. " +
 					"Please see https://developer.apple.com/documentation/uikit/uisplitviewcontroller for more details.");
 
@@ -372,7 +360,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				try
 				{
-					SetTitleImage(pack, titleIcon);
+					setTitleImage(pack,titleIcon);
 				}
 				catch
 				{
@@ -394,7 +382,7 @@ namespace Xamarin.Forms.Platform.iOS
 			return pack;
 		}
 
-		async void SetTitleImage(ParentingViewController pack, FileImageSource titleIcon)
+		async void setTitleImage(ParentingViewController pack, FileImageSource titleIcon)
 		{
 			var source = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(titleIcon);
 			var image = await source.LoadImageAsync(titleIcon);
@@ -451,18 +439,11 @@ namespace Xamarin.Forms.Platform.iOS
 			if (e.PropertyName == NavigationPage.BarBackgroundColorProperty.PropertyName)
 				UpdateBarBackgroundColor();
 			else if (e.PropertyName == NavigationPage.BarTextColorProperty.PropertyName || e.PropertyName == PlatformConfiguration.iOSSpecific.NavigationPage.StatusBarTextColorModeProperty.PropertyName)
-			{
 				UpdateBarTextColor();
-				SetStatusBarStyle();
-			}
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackgroundColor();
 			else if (e.PropertyName == NavigationPage.CurrentPageProperty.PropertyName)
-			{
 				Current = ((NavigationPage)Element).CurrentPage;
-				ValidateNavbarExists(Current);
-			}
-				
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.NavigationPage.IsNavigationBarTranslucentProperty.PropertyName)
 				UpdateTranslucent();
 			else if (e.PropertyName == PreferredStatusBarUpdateAnimationProperty.PropertyName)
@@ -569,17 +550,26 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			// Gesture in progress, lets not be proactive and just wait for it to finish
+			var count = ViewControllers.Length;
 			var task = GetAppearedOrDisappearedTask(controller.Child);
-
-			task.ContinueWith(t =>
+			task.ContinueWith(async t =>
 			{
 				// task returns true if the user lets go of the page and is not popped
 				// however at this point the renderer is already off the visual stack so we just need to update the NavigationPage
 				// Also worth noting this task returns on the main thread
 				if (t.Result)
 					return;
+				_ignorePopCall = true;
+				// because iOS will just chain multiple animations together...
+				var removed = count - ViewControllers.Length;
+				for (var i = 0; i < removed; i++)
+				{
+					// lets just pop these suckers off, do not await, the true is there to make this fast
+					await ((NavigationPage)Element).PopAsyncInner(animated, true);
+				}
 				// because we skip the normal pop process we need to dispose ourselves
-				controller?.Dispose();
+				controller.Dispose();
+				_ignorePopCall = false;
 			}, TaskScheduler.FromCurrentSynchronizationContext());
 		}
 
@@ -638,12 +628,6 @@ namespace Xamarin.Forms.Platform.iOS
 			NavigationBar.TintColor = barTextColor == Color.Default || statusBarColorMode == StatusBarTextColorMode.DoNotAdjust
 				? UINavigationBar.Appearance.TintColor
 				: barTextColor.ToUIColor();
-		}
-
-		void SetStatusBarStyle()
-		{
-			var barTextColor = ((NavigationPage)Element).BarTextColor;
-			var statusBarColorMode = (Element as NavigationPage).OnThisPlatform().GetStatusBarTextColorMode();
 
 			if (statusBarColorMode == StatusBarTextColorMode.DoNotAdjust || barTextColor.Luminosity <= 0.5)
 			{
@@ -662,7 +646,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (containerController == null)
 				return;
 			var currentChild = containerController.Child;
-			var firstPage = ((NavigationPage)Element).Pages.FirstOrDefault();
+			var firstPage = ((NavigationPage)Element).Pages.FirstOrDefault(); 
 			if ((firstPage != pageBeingRemoved && currentChild != firstPage && NavigationPage.GetHasBackButton(currentChild)) || _parentMasterDetailPage == null)
 				return;
 
@@ -697,18 +681,6 @@ namespace Xamarin.Forms.Platform.iOS
 				_secondaryToolbar.Hidden = true;
 				//secondaryToolbar.Items = null;
 			}
-		}
-
-		internal async Task UpdateFormsInnerNavigation(Page pageBeingRemoved)
-		{
-			var navPage = Element as NavigationPage;
-			if (navPage == null)
-				return;
-			_ignorePopCall = true;
-			if (Element.Navigation.NavigationStack.Contains(pageBeingRemoved))
-				await (navPage as INavigationPageController)?.RemoveAsyncInner(pageBeingRemoved, false, true);
-			_ignorePopCall = false;
-
 		}
 
 		internal static async void SetMasterLeftBarButton(UIViewController containerController, MasterDetailPage masterDetailPage)
@@ -867,14 +839,18 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				base.ViewDidAppear(animated);
 
-				Appearing?.Invoke(this, EventArgs.Empty);
+				var handler = Appearing;
+				if (handler != null)
+					handler(this, EventArgs.Empty);
 			}
 
 			public override void ViewDidDisappear(bool animated)
 			{
 				base.ViewDidDisappear(animated);
 
-				Disappearing?.Invoke(this, EventArgs.Empty);
+				var handler = Disappearing;
+				if (handler != null)
+					handler(this, EventArgs.Empty);
 			}
 
 			public override void ViewWillLayoutSubviews()
@@ -1073,7 +1049,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				IVisualElementRenderer childRenderer;
 				if (Child != null && (childRenderer = Platform.GetRenderer(Child)) != null)
-					return childRenderer.ViewController.ShouldAutorotate();
+					return childRenderer.ViewController.ShouldAutorotate();				
 				return base.ShouldAutorotate();
 			}
 
@@ -1086,25 +1062,13 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			public override bool ShouldAutomaticallyForwardRotationMethods => true;
-
-			public override async void DidMoveToParentViewController(UIViewController parent)
-			{
-				//we are being removed from the UINavigationPage
-				if (parent == null)
-				{
-					NavigationRenderer navRenderer;
-					if (_navigation.TryGetTarget(out navRenderer))
-						await navRenderer.UpdateFormsInnerNavigation(Child);
-				}
-				base.DidMoveToParentViewController(parent);
-			}
 		}
 
 		public override UIViewController ChildViewControllerForStatusBarHidden()
 		{
 			return (UIViewController)Platform.GetRenderer(Current);
 		}
-
+		
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
 			VisualElementRenderer<VisualElement>.RegisterEffect(effect, View);

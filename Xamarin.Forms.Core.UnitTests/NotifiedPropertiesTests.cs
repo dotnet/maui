@@ -56,6 +56,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 #pragma warning disable 0414
 		static PropertyTestCase[] Properties = {
+			new PropertyTestCase<View, ResourceDictionary> ("Resources", v => v.Resources, (v, o) => v.Resources = o, () => null, new ResourceDictionary ()),
 			new PropertyTestCase<View, bool> ("InputTransparent", v => v.InputTransparent, (v, o) => v.InputTransparent = o, () => false, true),
 			new PropertyTestCase<View, double> ("Scale", v => v.Scale, (v, o) => v.Scale = o, () => 1d, 2d),
 			new PropertyTestCase<View, double> ("Rotation", v => v.Rotation, (v, o) => v.Rotation = o, () => 0d, 90d),
@@ -124,7 +125,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			new PropertyTestCase<Picker, string> ("Title", v=>v.Title, (v, o) =>v.Title = o, () => null, "FooBar"),
 			new PropertyTestCase<Picker, int> ("SelectedIndex", v=>v.SelectedIndex, (v, o) =>v.SelectedIndex = o, () => -1, 2, ()=>new Picker{Items= {"Foo", "Bar", "Baz", "Qux"}}),
 			new PropertyTestCase<ProgressBar, double> ("Progress", v => v.Progress, (v, o) => v.Progress = o, () => 0, .5),
-			new PropertyTestCase<ProgressBar, Color> ("ProgressColor", v => v.ProgressColor, (v, o) => v.ProgressColor = o, () => Color.Default, new Color (0, 1, 0)),
 			new PropertyTestCase<SearchBar, string> ("Placeholder", v => v.Placeholder, (v, o) => v.Placeholder = o, () => null, "Foo"),
 			new PropertyTestCase<SearchBar, string> ("Text", v => v.Text, (v, o) => v.Text = o, () => null, "Foo"),
 			new PropertyTestCase<Slider, double> ("Minimum", v => v.Minimum, (v, o) => v.Minimum = o, () => 0, .5),

@@ -57,7 +57,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			Init();
 
-			RaiseElementChanged(new VisualElementChangedEventArgs(oldElement, element));
+			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 		}
@@ -90,7 +90,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				{
 					NavigationPage?.SendDisappearing();
 					((Element as IPageContainer<Page>)?.CurrentPage as Page)?.SendDisappearing();
-					Element.PropertyChanged -= OnElementPropertyChanged;
+					Element.PropertyChanged -= HandlePropertyChanged;
 					Element = null;
 				}
 
@@ -126,20 +126,15 @@ namespace Xamarin.Forms.Platform.MacOS
 			NavigationPage?.SendAppearing();
 		}
 
-		void RaiseElementChanged(VisualElementChangedEventArgs e)
-		{
-			if (e.OldElement != null)
-				e.OldElement.PropertyChanged -= OnElementPropertyChanged;
-
-			if (e.NewElement != null)
-				e.NewElement.PropertyChanged += OnElementPropertyChanged;
-
-			OnElementChanged(e);
-			ElementChanged?.Invoke(this, e);
-		}
-
 		protected virtual void OnElementChanged(VisualElementChangedEventArgs e)
 		{
+			if (e.OldElement != null)
+				e.OldElement.PropertyChanged -= HandlePropertyChanged;
+
+			if (e.NewElement != null)
+				e.NewElement.PropertyChanged += HandlePropertyChanged;
+
+			ElementChanged?.Invoke(this, e);
 		}
 
 		protected virtual void ConfigurePageRenderer()
@@ -369,7 +364,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			Platform.NativeToolbarTracker.UpdateToolBar();
 		}
 
-		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (_tracker == null)
 				return;

@@ -76,6 +76,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST && __IOS__
 		[Test]
+		[Ignore("Needs Xamarin.UITest 0.18")]
 		public void Bugzilla33578Test ()
 		{
 			RunningApp.ScrollDown ();

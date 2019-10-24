@@ -270,6 +270,11 @@ namespace Xamarin.Forms.Xaml.Internals
 		public IXmlLineInfo XmlLineInfo { get; }
 	}
 
+	interface INameScopeProvider
+	{
+		INameScope NameScope { get; }
+	}
+
 	public class NameScopeProvider : INameScopeProvider
 	{
 		public INameScope NameScope { get; set; }

@@ -1,35 +1,16 @@
 ﻿using System;
-using System.Globalization;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	[TestFixture]
 	public class Issue1493
 	{
-		CultureInfo _defaultCulture;
-		[SetUp]
-		public virtual void Setup()
-		{
-			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
-
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public virtual void TearDown()
-		{
-			Device.PlatformServices = null;
-			System.Threading.Thread.CurrentThread.CurrentCulture = _defaultCulture;
-		}
-
-		[TestCase("en-US"), TestCase("tr-TR"), TestCase("fr-FR")]
+		[Test]
 		//mostly happens in european cultures
-		public void CultureInvariantNumberParsing (string culture)
+		[SetCulture ("fr-FR")]
+		public void CultureInvariantNumberParsing ()
 		{
-			System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(culture);
-
 			var xaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
 						<View 
 							xmlns=""http://xamarin.com/schemas/2014/forms"" 
@@ -42,3 +23,4 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 	}
 }
+

@@ -56,7 +56,6 @@ namespace Xamarin.Forms.Controls
 			};
 
 			var table = new TableView {
-				AutomationId = CellTypeList.CellTestContainerId,
 				Root = root,
 			};
 

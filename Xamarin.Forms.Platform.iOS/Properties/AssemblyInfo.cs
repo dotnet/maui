@@ -53,7 +53,6 @@ using UIKit;
 [assembly: ExportCell(typeof(TextCell), typeof(TextCellRenderer))]
 [assembly: ExportCell(typeof(ViewCell), typeof(ViewCellRenderer))]
 [assembly: ExportCell(typeof(SwitchCell), typeof(SwitchCellRenderer))]
-[assembly: ExportEffect(typeof(ShadowEffect), "ShadowEffect")]
 [assembly: ExportImageSourceHandler(typeof(FileImageSource), typeof(FileImageSourceHandler))]
 [assembly: ExportImageSourceHandler(typeof(StreamImageSource), typeof(StreamImagesourceHandler))]
 [assembly: ExportImageSourceHandler(typeof(UriImageSource), typeof(ImageLoaderSourceHandler))]
@@ -61,5 +60,4 @@ using UIKit;
 [assembly: InternalsVisibleTo("Xamarin.Forms.Platform")]
 [assembly: Xamarin.Forms.Dependency(typeof(Deserializer))]
 [assembly: Xamarin.Forms.Dependency(typeof(ResourcesProvider))]
-[assembly: ResolutionGroupName("Xamarin")]
 [assembly: Preserve]

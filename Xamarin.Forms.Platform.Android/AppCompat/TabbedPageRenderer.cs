@@ -25,7 +25,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		TabLayout _tabLayout;
 		bool _useAnimations = true;
 		FormsViewPager _viewPager;
-		Page _previousPage;
 
 		public TabbedPageRenderer(Context context) : base(context)
 		{
@@ -72,13 +71,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		void ViewPager.IOnPageChangeListener.OnPageSelected(int position)
 		{
-			if(_previousPage != Element.CurrentPage)
-			{
-				_previousPage.SendDisappearing();
-				_previousPage = Element.CurrentPage;
-			}
 			Element.CurrentPage = Element.Children[position];
-			Element.CurrentPage.SendAppearing();
 		}
 
 		void TabLayout.IOnTabSelectedListener.OnTabReselected(TabLayout.Tab tab)
@@ -133,8 +126,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 				if (Element != null)
 					PageController.InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
-
-				_previousPage = null;
 			}
 
 			base.Dispose(disposing);
@@ -193,8 +184,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				TabbedPage tabbedPage = e.NewElement;
 				if (tabbedPage.CurrentPage != null)
 					ScrollToCurrentPage();
-
-				_previousPage = tabbedPage.CurrentPage;
 
 				((IPageController)tabbedPage).InternalChildren.CollectionChanged += OnChildrenCollectionChanged;
 				UpdateBarBackgroundColor();

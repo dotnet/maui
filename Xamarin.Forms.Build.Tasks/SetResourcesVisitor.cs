@@ -69,23 +69,7 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			var parentVar = Context.Variables[(IElementNode)node];
 			return parentVar.VariableType.FullName == "Xamarin.Forms.ResourceDictionary"
-				|| parentVar.VariableType.ResolveCached().BaseType?.FullName == "Xamarin.Forms.ResourceDictionary";
-		}
-
-		public bool SkipChildren(INode node, INode parentNode)
-		{
-			var enode = node as ElementNode;
-			if (enode == null)
-				return false;
-			if (   parentNode is IElementNode
-			    && IsResourceDictionary((IElementNode)parentNode)
-			    && !((IElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
-				return true;
-			if (   parentNode is ListNode
-			    && IsResourceDictionary((IElementNode)parentNode.Parent)
-			    && !((IElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
-				return true;
-			return false;
+				|| parentVar.VariableType.Resolve().BaseType?.FullName == "Xamarin.Forms.ResourceDictionary";
 		}
 	}
 }

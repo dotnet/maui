@@ -3,26 +3,20 @@ using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
 using NUnit.Framework;
 using Xamarin.UITest.Queries;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
 {
-#if UITEST
-	[Category(UITestCategories.Editor)]
-	[Category(UITestCategories.Entry)]
-#endif
-
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 36171, "WinRT Entry UI not updating on TextChanged",
 		PlatformAffected.WinPhone | PlatformAffected.WinRT)]
-	public class Bugzilla36171 : TestContentPage 
+	public class Bugzilla36171 : TestContentPage // or TestMasterDetailPage, etc ...
 	{
 		protected override void Init ()
 		{
-			var entry = new Entry { AutomationId = "36171Entry" };
+			var entry = new Entry ();
 			var editor = new Editor();
 			var focuseEntryButton = new Button { Text = "Start Entry" };
 			var focuseEditorButton = new Button { Text = "Start Editor" };
@@ -84,39 +78,33 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.EnterText ("123A");
 
 			var entry = RunningApp.Query (q => q.Text("123"));
-			Assert.That(entry.Length, Is.GreaterThanOrEqualTo(1), "The entry text should be '123'.");
+			Assert.That(entry.Length >= 1);
 
 			var failedEntry = RunningApp.Query (q => q.Text("123A"));
-			Assert.That(failedEntry.Length, Is.EqualTo(0), "The entry text should only be '123'.");
+			Assert.That(failedEntry.Length == 0);
 				
 			RunningApp.EnterText ("4");
 
 			var entry2 = RunningApp.Query (q => q.Text("1234"));
 			Assert.That(entry2.Length >= 1);
 
-			RunningApp.ClearText("36171Entry");
+			RunningApp.ClearText();
 
-		[Test]
-#if __MACOS__
-		[Ignore("Missing UITest for focus")]
-#endif
-		public void EditorTextDoesNotDisplayNonnumericInput ()
-		{
 			RunningApp.WaitForElement ("Start Editor");
 			RunningApp.Tap ("Start Editor");
 
 			RunningApp.EnterText ("123A");
 
 			var editor = RunningApp.Query (q => q.Text("123"));
-			Assert.That(editor.Length, Is.GreaterThanOrEqualTo(1), "The editor text should be '123'.");
+			Assert.That(editor.Length >= 1);
 
 			var failedEditor = RunningApp.Query (q => q.Text("123A"));
-			Assert.That(failedEditor.Length, Is.EqualTo(0), "The editor text should only be '123'.");
+			Assert.That(failedEditor.Length == 0);
 
 			RunningApp.EnterText ("4");
 
 			var editor2 = RunningApp.Query (q => q.Text("1234"));
-			Assert.That(editor2.Length, Is.GreaterThanOrEqualTo(1), "The editor text should now be '1234'.");
+			Assert.That(editor2.Length >= 1);
 		}
 #endif
 	}

@@ -6,7 +6,6 @@ using Xamarin.Forms.Internals;
 namespace Xamarin.Forms
 {
 	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.ColorTypeConverter")]
-	[Xaml.TypeConversion(typeof(Color))]
 	public class ColorTypeConverter : TypeConverter
 	{
 		// Supported inputs

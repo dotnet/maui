@@ -164,11 +164,6 @@ namespace Xamarin.Forms.Platform.Android
 
 
 			}
-
-			var position = Control.GetPositionForView(viewCell);
-			var id = Control.GetItemIdAtPosition(position);
-
-			_adapter.OnItemLongClick(Control, viewCell, position, id);
 		}
 
 		internal void LongClickOn(AView viewCell)
@@ -308,7 +303,7 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdateFooter()
 		{
 			var footer = (VisualElement)Controller.FooterElement;
-			if (_footerRenderer != null && (footer == null || Registrar.Registered.GetHandlerType(footer.GetType()) != _footerRenderer.GetType()))
+			if (_footerRenderer != null)
 			{
 				var reflectableType = _footerRenderer as System.Reflection.IReflectableType;
 				var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : _footerRenderer.GetType();
@@ -329,7 +324,7 @@ namespace Xamarin.Forms.Platform.Android
 				_footerRenderer.SetElement(footer);
 			else
 			{
-				_footerRenderer = Platform.CreateRenderer(footer);
+				_footerRenderer = Platform.CreateRenderer(footer, Context);
 				if (_footerView != null)
 					_footerView.Child = _footerRenderer;
 			}
@@ -340,7 +335,7 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdateHeader()
 		{
 			var header = (VisualElement)Controller.HeaderElement;
-			if (_headerRenderer != null && (header == null || Registrar.Registered.GetHandlerType(header.GetType()) != _headerRenderer.GetType()))
+			if (_headerRenderer != null)
 			{
 				var reflectableType = _headerRenderer as System.Reflection.IReflectableType;
 				var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : _headerRenderer.GetType();
@@ -361,7 +356,7 @@ namespace Xamarin.Forms.Platform.Android
 				_headerRenderer.SetElement(header);
 			else
 			{
-				_headerRenderer = Platform.CreateRenderer(header);
+				_headerRenderer = Platform.CreateRenderer(header, Context);
 				if (_headerView != null)
 					_headerView.Child = _headerRenderer;
 			}

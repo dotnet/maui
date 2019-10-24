@@ -7,8 +7,6 @@ namespace Xamarin.Forms
 {
 	public interface INavigationPageController
 	{
-		Task<Page> RemoveAsyncInner(Page page, bool animated, bool fast);
-
 		Page Peek(int depth = 0);
 
 		IEnumerable<Page> Pages { get; }

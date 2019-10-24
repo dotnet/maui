@@ -5,8 +5,7 @@
 	public enum WindowSoftInputModeAdjust
 	{
 		Pan,
-		Resize,
-		Unspecified
+		Resize
 	}
 
 	public static class Application

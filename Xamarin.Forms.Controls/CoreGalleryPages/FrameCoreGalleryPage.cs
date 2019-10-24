@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Controls
 		{
 			element.HeightRequest = 50;
 			element.WidthRequest = 100;
-			element.BorderColor = Color.Olive;
+			element.OutlineColor = Color.Olive;
 		}
 
 		protected override void Build (StackLayout stackLayout)
@@ -22,9 +22,9 @@ namespace Xamarin.Forms.Controls
 			base.Build (stackLayout);
 
 			var hasShadowContainer = new StateViewContainer<Frame> (Test.Frame.HasShadow, new Frame { HasShadow = true });
-			var outlineColorContainer = new StateViewContainer<Frame> (Test.Frame.OutlineColor, new Frame { BorderColor = Color.Teal, });
+			var outlineColorContainer = new StateViewContainer<Frame> (Test.Frame.OutlineColor, new Frame { OutlineColor = Color.Teal, });
 			var viewContainer = new StateViewContainer<Frame> (Test.Frame.OutlineColor, new Frame {
-				BorderColor = Color.Teal,
+				OutlineColor = Color.Teal,
 				Content = new Label { Text = "I am a frame" }
 			});
 

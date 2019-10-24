@@ -1,6 +1,5 @@
 using System;
 using System.Xml;
-using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Xamarin.Forms.Xaml;
 
@@ -8,12 +7,15 @@ namespace Xamarin.Forms.Build.Tasks
 {
 	public class Logger {
 		public TaskLoggingHelper Helper { get; }
+		public int Verbosity { get; }
 
-		public Logger(TaskLoggingHelper helper)
+		public Logger(TaskLoggingHelper helper, int verbosity)
 		{
+			Verbosity = verbosity;
 			Helper = helper;
 		}
 
+		string buffer = "";
 
 		public void LogException(string subcategory, string errorCode, string helpKeyword, string file, Exception e)
 		{
@@ -30,8 +32,8 @@ namespace Xamarin.Forms.Build.Tasks
 		public void LogError(string subcategory, string errorCode, string helpKeyword, string file, int lineNumber,
 			int columnNumber, int endLineNumber, int endColumnNumber, string message, params object [] messageArgs)
 		{
-			FlushBuffer();
-
+			if (!string.IsNullOrEmpty(buffer))
+				LogLine(-1, null, null);
 			if (Helper != null) {
 				Helper.LogError(subcategory, errorCode, helpKeyword, file, lineNumber, columnNumber, endLineNumber,
 					endColumnNumber, message, messageArgs);
@@ -39,41 +41,36 @@ namespace Xamarin.Forms.Build.Tasks
 				Console.Error.WriteLine($"{file} ({lineNumber}:{columnNumber}) : {message}");
 		}
 
-		public void LogLine(MessageImportance messageImportance, string format, params object [] arg)
+		public void LogLine(int level, string format, params object [] arg)
 		{
 			if (!string.IsNullOrEmpty(buffer)) {
 				format = buffer + format;
 				buffer = "";
-				bufferImportance = MessageImportance.Low;
 			}
 
-			if (Helper != null)
-				Helper.LogMessage(messageImportance, format, arg);
-			else
-				Console.WriteLine(format, arg);
-		}
-
-		public void LogString(MessageImportance messageImportance, string format, params object [] arg)
-		{
-			if (Helper != null) {
-				buffer += String.Format(format, arg);
-				bufferImportance = messageImportance;
-			} else
-				Console.Write(format, arg);
-		}
-
-		string buffer = "";
-		MessageImportance bufferImportance = MessageImportance.Low;
-		void FlushBuffer()
-		{
-			if (!string.IsNullOrEmpty(buffer)) {
+			if (level < 0) {
 				if (Helper != null)
-					Helper.LogMessage(bufferImportance, buffer);
+					Helper.LogError(format, arg);
 				else
-					Console.WriteLine(buffer);
+					Console.Error.WriteLine(format, arg);
+			} else if (level <= Verbosity) {
+				if (Helper != null)
+					Helper.LogMessage(format, arg);
+				else
+					Console.WriteLine(format, arg);
 			}
-			buffer = "";
-			bufferImportance = MessageImportance.Low;
+		}
+
+		public void LogString(int level, string format, params object [] arg)
+		{
+			if (level <= 0)
+				Console.Error.Write(format, arg);
+			else if (level <= Verbosity) {
+				if (Helper != null)
+					buffer += String.Format(format, arg);
+				else
+					Console.Write(format, arg);
+			}
 		}
 	}
 }

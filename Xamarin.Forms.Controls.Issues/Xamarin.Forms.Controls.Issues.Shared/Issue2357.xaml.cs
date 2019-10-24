@@ -65,6 +65,7 @@ namespace Xamarin.Forms.Controls
 					await MasterViewModel.InitializeAsync ();
 					break;
 				} catch (Exception ex) {
+					Insights.Report (ex, Insights.Severity.Error);
 					errorMessage = ex.Message;
 				}
 

@@ -1,62 +1,95 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
-using System;
+using System.Text;
 
 namespace Xamarin.Forms.Internals
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public interface IPerformanceProvider
+	public static class Performance
 	{
-		void Stop(string reference, string tag, string path, string member);
+		static readonly Dictionary<string, Stats> Statistics = new Dictionary<string, Stats>();
 
-		void Start(string reference, string tag, string path, string member);
-	}
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public class Performance
-	{
-		public static IPerformanceProvider Provider { get; private set; }
-
-		public static void SetProvider(IPerformanceProvider instance)
+		[Conditional("PERF")]
+		public static void Clear()
 		{
-			Provider = instance;
+			Statistics.Clear();
 		}
 
-		public static void Start(string reference, string tag = null, [CallerFilePath] string path = null, [CallerMemberName] string member = null)
+		public static void Count(string tag = null, [CallerFilePath] string path = null, [CallerMemberName] string member = null)
 		{
-			Provider?.Start(reference, tag, path, member);
+			string id = path + ":" + member + (tag != null ? "-" + tag : string.Empty);
+
+			Stats stats;
+			if (!Statistics.TryGetValue(id, out stats))
+				Statistics[id] = stats = new Stats();
+
+			stats.CallCount++;
 		}
 
-		public static void Stop(string reference, string tag = null, [CallerFilePath] string path = null, [CallerMemberName] string member = null)
+		[Conditional("PERF")]
+		public static void DumpStats()
 		{
-			Provider?.Stop(reference, tag, path, member);
+			Debug.WriteLine(GetStats());
 		}
 
-		internal static IDisposable StartNew(string tag = null, [CallerFilePath] string path = null, [CallerMemberName] string member = null)
+		public static string GetStats()
 		{
-			return new DisposablePerformanceReference(tag, path, member);
-		}
-
-		class DisposablePerformanceReference : IDisposable
-		{
-			string _reference;
-			string _tag;
-			string _path;
-			string _member;
-
-			public DisposablePerformanceReference(string tag, string path, string member)
+			var b = new StringBuilder();
+			b.AppendLine("ID                                                                                 | Call Count | Total Time | Avg Time");
+			foreach (KeyValuePair<string, Stats> kvp in Statistics.OrderBy(kvp => kvp.Key))
 			{
-				_reference = Guid.NewGuid().ToString();
-				_tag = tag;
-				_path = path;
-				_member = member;
-				Start(_reference, _tag, _path, _member);
+				string key = ShortenPath(kvp.Key);
+				double total = TimeSpan.FromTicks(kvp.Value.TotalTime).TotalMilliseconds;
+				double avg = total / kvp.Value.CallCount;
+				b.AppendFormat("{0,-80} | {1,-10} | {2,-10}ms | {3,-8}ms", key, kvp.Value.CallCount, total, avg);
+				b.AppendLine();
 			}
+			return b.ToString();
+		}
 
-			public void Dispose()
-			{
-				Stop(_reference, _tag, _path, _member);
-			}
+		[Conditional("PERF")]
+		public static void Start(string tag = null, [CallerFilePath] string path = null, [CallerMemberName] string member = null)
+		{
+			string id = path + ":" + member + (tag != null ? "-" + tag : string.Empty);
+
+			Stats stats;
+			if (!Statistics.TryGetValue(id, out stats))
+				Statistics[id] = stats = new Stats();
+
+			stats.CallCount++;
+			stats.StartTimes.Push(Stopwatch.GetTimestamp());
+		}
+
+		[Conditional("PERF")]
+		public static void Stop(string tag = null, [CallerFilePath] string path = null, [CallerMemberName] string member = null)
+		{
+			string id = path + ":" + member + (tag != null ? "-" + tag : string.Empty);
+			long stop = Stopwatch.GetTimestamp();
+
+			Stats stats = Statistics[id];
+			long start = stats.StartTimes.Pop();
+			if (!stats.StartTimes.Any())
+				stats.TotalTime += stop - start;
+		}
+
+		static string ShortenPath(string path)
+		{
+			int index = path.IndexOf("Xamarin.Forms.");
+			if (index > -1)
+				path = path.Substring(index + 14);
+
+			return path;
+		}
+
+		class Stats
+		{
+			public readonly Stack<long> StartTimes = new Stack<long>();
+			public int CallCount;
+			public long TotalTime;
 		}
 	}
 }

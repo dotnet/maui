@@ -9,7 +9,6 @@ using Xamarin.Forms.Internals;
 using Xamarin.UITest;
 using NUnit.Framework;
 using Xamarin.UITest.iOS;
-using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
@@ -75,7 +74,13 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			RunningApp.WaitForElement (q => q.Marked ("ListViewItem"));
 
-			RunningApp.ActivateContextMenu("ListViewItem");
+#if __IOS__
+			var listItem = RunningApp.Query (q => q.Marked ("ListViewItem"))[0].Rect;
+			RunningApp.DragCoordinates(listItem.CenterX, listItem.CenterY, 0, listItem.CenterY);
+#else 
+			RunningApp.TouchAndHold (q => q.Marked ("ListViewItem"));
+#endif
+
 			RunningApp.WaitForElement (q => q.Marked ("Click"));
 			RunningApp.Tap (q => q.Marked ("Click"));
 			RunningApp.WaitForElement (q => q.Marked ("NextPageLabel"));

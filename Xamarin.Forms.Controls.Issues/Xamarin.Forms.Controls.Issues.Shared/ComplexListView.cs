@@ -14,17 +14,14 @@ namespace Xamarin.Forms.Controls
 	public class ComplexListView
 		: ContentPage
 	{
-		PerformanceProvider _PerformanceProvider = new PerformanceProvider();
-
 		public ComplexListView()
 		{
-			Performance.SetProvider(_PerformanceProvider);
-			_PerformanceProvider.Clear();
+			Performance.Clear();
 
 			var showPerf = new Button { Text = "Performance" };
 			showPerf.Clicked += (sender, args) => {
-				_PerformanceProvider.DumpStats();
-				_PerformanceProvider.Clear();
+				Performance.DumpStats();
+				Performance.Clear();
 			};
 
 			Content = new StackLayout {
@@ -42,14 +39,8 @@ namespace Xamarin.Forms.Controls
 				}
 			};
 		}
-
-		~ComplexListView()
-		{
-			Performance.SetProvider(null);
-		}
 	}
 
-	[Preserve(AllMembers = true)]
 	internal class ComplexViewCell
 		: ViewCell
 	{

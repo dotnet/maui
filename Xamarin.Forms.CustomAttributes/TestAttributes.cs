@@ -478,10 +478,7 @@ namespace Xamarin.Forms.CustomAttributes
 			MaximumDate,
 			Focus,
 			IsVisible,
-			TextColor,
-			FontAttributes,
-			FontFamily,
-			FontSize
+			TextColor
 		}
 
 		public enum InputView
@@ -497,8 +494,7 @@ namespace Xamarin.Forms.CustomAttributes
 			TextColor,
 			FontAttributes,
 			FontFamily,
-			FontSize,
-			MaxLength
+			FontSize
 		}
 
 		public enum Entry
@@ -522,8 +518,7 @@ namespace Xamarin.Forms.CustomAttributes
 			PlaceholderColor,
 			TextDisabledColor,
 			PlaceholderDisabledColor,
-			PasswordColor,
-			MaxLength
+			PasswordColor
 		}
 
 		public enum Frame
@@ -611,8 +606,7 @@ namespace Xamarin.Forms.CustomAttributes
 		}
 
 		public enum ProgressBar {
-			Progress,
-			ProgressColor
+			Progress
 		}
 
 		public enum RelativeLayout {
@@ -673,19 +667,13 @@ namespace Xamarin.Forms.CustomAttributes
 			Format,
 			Time,
 			Focus,
-			TextColor,
-			FontAttributes,
-			FontFamily,
-			FontSize
+			TextColor
 		}
 
 		public enum WebView {
 			UrlWebViewSource,
 			HtmlWebViewSource,
-			LoadHtml,
-			MixedContentDisallowed,
-			MixedContentAllowed,
-			JavaScriptAlert
+			LoadHtml
 		}
 
 		public enum UrlWebViewSource {
@@ -718,10 +706,7 @@ namespace Xamarin.Forms.CustomAttributes
 			Items,
 			SelectedIndex,
 			Focus,
-			TextColor,
-			FontAttributes,
-			FontFamily,
-			FontSize
+			TextColor
 		}
 
 		public enum FileImageSource {

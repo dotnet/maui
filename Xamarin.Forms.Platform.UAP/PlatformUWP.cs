@@ -62,40 +62,53 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			List<string> buttons = options.Buttons.ToList();
 
-			var actionSheet = new Flyout
+			var list = new Windows.UI.Xaml.Controls.ListView
 			{
-				FlyoutPresenterStyle = (Windows.UI.Xaml.Style)Windows.UI.Xaml.Application.Current.Resources["FormsFlyoutPresenterStyle"],
-				Placement = Windows.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.Full,
-				Content = flyoutContent
+				Style = (Windows.UI.Xaml.Style)Windows.UI.Xaml.Application.Current.Resources["ActionSheetList"],
+				ItemsSource = buttons,
+				IsItemClickEnabled = true
 			};
 
-			flyoutContent.OptionSelected += (s, e) =>
+			var dialog = new ContentDialog
 			{
-				userDidSelect = true;
-				actionSheet.Hide();
+				Template = (Windows.UI.Xaml.Controls.ControlTemplate)Windows.UI.Xaml.Application.Current.Resources["MyContentDialogControlTemplate"],
+				Content = list,
+				Style = (Windows.UI.Xaml.Style)Windows.UI.Xaml.Application.Current.Resources["ActionSheetStyle"]
 			};
 
-			actionSheet.Closed += (s, e) =>
+			if (options.Title != null)
+				dialog.Title = options.Title;
+
+			list.ItemClick += (s, e) =>
 			{
-				if (!userDidSelect)
-					options.SetResult(null);
+				dialog.Hide();
+				options.SetResult((string)e.ClickedItem);
 			};
 
-			actionSheet.ShowAt(((Page)sender).GetOrCreateRenderer().ContainerElement);
-		}
+			TypedEventHandler<CoreWindow, CharacterReceivedEventArgs> onEscapeButtonPressed = delegate (CoreWindow window, CharacterReceivedEventArgs args)
+			{
+				if (args.KeyCode == 27)
+				{
+					dialog.Hide();
+					options.SetResult(ContentDialogResult.None.ToString());
+				}
+			};
+
+			Window.Current.CoreWindow.CharacterReceived += onEscapeButtonPressed;
 
 			if (options.Cancel != null)
-				alertDialog.SecondaryButtonText = options.Cancel;
+				dialog.SecondaryButtonText = options.Cancel;
 
-			if (options.Accept != null)
-				alertDialog.PrimaryButtonText = options.Accept;
+			if (options.Destruction != null)
+				dialog.PrimaryButtonText = options.Destruction;
 
-			ContentDialogResult result = await alertDialog.ShowAsync();
-
+			ContentDialogResult result = await dialog.ShowAsync();
 			if (result == ContentDialogResult.Secondary)
-				options.SetResult(false);
+				options.SetResult(options.Cancel);
 			else if (result == ContentDialogResult.Primary)
-				options.SetResult(true);
+				options.SetResult(options.Destruction);
+
+			Window.Current.CoreWindow.CharacterReceived -= onEscapeButtonPressed;
 		}
 
 		void ClearCommandBar()

@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 				if (Element != null)
 				{
-					Element.PropertyChanged -= OnElementPropertyChanged;
+					Element.PropertyChanged -= HandlePropertyChanged;
 					Element = null;
 				}
 
@@ -68,7 +68,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			UpdateControllers();
 
-			HandleElementChanged(new VisualElementChangedEventArgs(oldElement, element));
+			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 		}
@@ -79,20 +79,15 @@ namespace Xamarin.Forms.Platform.MacOS
 			UpdateChildrenLayout();
 		}
 
-		void HandleElementChanged(VisualElementChangedEventArgs e)
-		{
-			if (e.OldElement != null)
-				e.OldElement.PropertyChanged -= OnElementPropertyChanged;
-
-			if (e.NewElement != null)
-				e.NewElement.PropertyChanged += OnElementPropertyChanged;
-
-			OnElementChanged(e);
-			ElementChanged?.Invoke(this, e);
-		}
-
 		protected virtual void OnElementChanged(VisualElementChangedEventArgs e)
 		{
+			if (e.OldElement != null)
+				e.OldElement.PropertyChanged -= HandlePropertyChanged;
+
+			if (e.NewElement != null)
+				e.NewElement.PropertyChanged += HandlePropertyChanged;
+
+			ElementChanged?.Invoke(this, e);
 		}
 
 		protected virtual double MasterWidthPercentage => 0.3;
@@ -124,7 +119,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				SplitViewItems[0].MaximumThickness = SplitViewItems[0].MinimumThickness = (nfloat)masterWidth;
 		}
 
-		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (_tracker == null)
 				return;

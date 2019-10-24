@@ -134,19 +134,9 @@ namespace Xamarin.Forms
 			_appIndexProvider = provider;
 		}
 
-		ResourceDictionary _resources;
-		bool IResourcesProvider.IsResourcesCreated => _resources != null;
-
 		public ResourceDictionary Resources
 		{
-			get {
-				if (_resources != null)
-					return _resources;
-
-				_resources = new ResourceDictionary();
-				((IResourceDictionary)_resources).ValuesChanged += OnResourcesChanged;
-				return _resources;
-			}
+			get { return _resources; }
 			set
 			{
 				if (_resources == value)
@@ -218,7 +208,7 @@ namespace Xamarin.Forms
 
 		internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
 		{
-			if (!((IResourcesProvider)this).IsResourcesCreated || Resources.Count == 0)
+			if (Resources == null || Resources.Count == 0)
 			{
 				base.OnParentResourcesChanged(values);
 				return;

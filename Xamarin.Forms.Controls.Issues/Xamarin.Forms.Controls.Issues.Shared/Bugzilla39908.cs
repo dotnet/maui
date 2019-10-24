@@ -66,14 +66,7 @@ namespace Xamarin.Forms.Controls
 
 		private async void OnNewPage(object sender, EventArgs e)
 		{
-			var page = NewPage();
-			page.Disappearing += Page_Disappearing;
-			await Navigation.PushAsync(page);
-		}
-
-		private void Page_Disappearing(object sender, EventArgs e)
-		{
-			System.Diagnostics.Debug.WriteLine((sender as Page).Title + " disappeared");
+			await Navigation.PushAsync(NewPage());
 		}
 	}
 }

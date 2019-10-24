@@ -67,12 +67,6 @@
       </group>
       <group targetFramework="Xamarin.Mac">
         <reference file="Xamarin.Forms.Core.dll" />
-        <reference file="Xamarin.Forms.Platform.dll" />
-        <reference file="Xamarin.Forms.Xaml.dll" />
-        <reference file="Xamarin.Forms.Platform.WP8.dll" />
-      </group>
-      <group targetFramework="Xamarin.Mac">
-        <reference file="Xamarin.Forms.Core.dll" />
         <reference file="Xamarin.Forms.Platform.macOS.dll" />
         <reference file="Xamarin.Forms.Platform.dll" />
         <reference file="Xamarin.Forms.Xaml.dll" />

@@ -20,7 +20,6 @@ using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android;
 using Resource = Android.Resource;
 using Trace = System.Diagnostics.Trace;
-using ALayoutDirection = Android.Views.LayoutDirection;
 
 namespace Xamarin.Forms
 {
@@ -39,6 +38,10 @@ namespace Xamarin.Forms
 		public static bool IsInitialized { get; private set; }
 		static bool FlagsSet { get; set; }
 
+		static bool _ColorButtonNormalSet;
+		static Color _ColorButtonNormal = Color.Default;
+		public static Color ColorButtonNormalOverride { get; set; }
+
 		internal static bool IsLollipopOrNewer
 		{
 			get
@@ -47,6 +50,17 @@ namespace Xamarin.Forms
 					s_isLollipopOrNewer = (int)Build.VERSION.SdkInt >= 21;
 				return s_isLollipopOrNewer.Value;
 			}
+		}
+
+		public static Color GetColorButtonNormal(Context context)
+		{
+			if (!_ColorButtonNormalSet)
+			{
+				_ColorButtonNormal = GetButtonColor(context);
+				_ColorButtonNormalSet = true;
+			}
+
+			return _ColorButtonNormal;
 		}
 
 		// Provide backwards compat for Forms.Init and AndroidActivity
@@ -66,7 +80,7 @@ namespace Xamarin.Forms
 		/// Sets title bar visibility programmatically. Must be called after Xamarin.Forms.Forms.Init() method
 		/// </summary>
 		/// <param name="visibility">Title bar visibility enum</param>
-		[Obsolete("SetTitleBarVisibility(AndroidTitleBarVisibility) is obsolete as of version 2.5. " 
+		[Obsolete("SetTitleBarVisibility(AndroidTitleBarVisibility) is obsolete as of version 2.5. "
 			+ "Please use SetTitleBarVisibility(Activity, AndroidTitleBarVisibility) instead.")]
 		public static void SetTitleBarVisibility(AndroidTitleBarVisibility visibility)
 		{
@@ -129,6 +143,7 @@ namespace Xamarin.Forms
 			// We want this to be updated when we have a new activity (e.g. on a configuration change)
 			// This could change if the UI mode changes (e.g., if night mode is enabled)
 			Color.SetAccent(GetAccentColor(activity));
+			_ColorButtonNormalSet = false;
 
 			if (!IsInitialized)
 			{
@@ -166,10 +181,6 @@ namespace Xamarin.Forms
 			// This could change as a result of a config change, so we need to check it every time
 			int minWidthDp = activity.Resources.Configuration.SmallestScreenWidthDp;
 			Device.SetIdiom(minWidthDp >= TabletCrossover ? TargetIdiom.Tablet : TargetIdiom.Phone);
-			Device.SetFlowDirection(activity.Resources.Configuration.LayoutDirection.ToFlowDirection());
-
-			if (Build.VERSION.SdkInt >= BuildVersionCodes.JellyBeanMr1)
-				Device.SetFlowDirection(activity.Resources.Configuration.LayoutDirection.ToFlowDirection());
 
 			if (ExpressionSearch.Default == null)
 				ExpressionSearch.Default = new AndroidExpressionSearch();
@@ -293,10 +304,6 @@ namespace Xamarin.Forms
 			{
 				get { return _scalingFactor; }
 			}
-
-
-			public override double DisplayRound(double value) =>
-				Math.Round(ScalingFactor * value) / ScalingFactor;
 
 			protected override void Dispose(bool disposing)
 			{
@@ -604,15 +611,15 @@ namespace Xamarin.Forms
 					return Task.FromResult(_isolatedStorageFile.GetLastWriteTime(path));
 				}
 
-				public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access)
+				public Task<Stream> OpenFileAsync(string path, Internals.FileMode mode, Internals.FileAccess access)
 				{
-					Stream stream = _isolatedStorageFile.OpenFile(path, mode, access);
+					Stream stream = _isolatedStorageFile.OpenFile(path, (System.IO.FileMode)mode, (System.IO.FileAccess)access);
 					return Task.FromResult(stream);
 				}
 
-				public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access, FileShare share)
+				public Task<Stream> OpenFileAsync(string path, Internals.FileMode mode, Internals.FileAccess access, Internals.FileShare share)
 				{
-					Stream stream = _isolatedStorageFile.OpenFile(path, mode, access, share);
+					Stream stream = _isolatedStorageFile.OpenFile(path, (System.IO.FileMode)mode, (System.IO.FileAccess)access, (System.IO.FileShare)share);
 					return Task.FromResult(stream);
 				}
 			}

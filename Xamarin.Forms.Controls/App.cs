@@ -29,11 +29,12 @@ namespace Xamarin.Forms.Controls
 		public App()
 		{
 			_testCloudService = DependencyService.Get<ITestCloudService>();
-			
+			InitInsights();
+
 			SetMainPage(CreateDefaultMainPage());
 
 			//// Uncomment to verify that there is no gray screen displayed between the blue splash and red MasterDetailPage.
-			//SetMainPage(new Bugzilla44596SplashPage(() =>
+			//MainPage = new Bugzilla44596SplashPage(() =>
 			//{
 			//	var newTabbedPage = new TabbedPage();
 			//	newTabbedPage.Children.Add(new ContentPage { BackgroundColor = Color.Red, Content = new Label { Text = "yay" } });
@@ -42,10 +43,7 @@ namespace Xamarin.Forms.Controls
 			//		Master = new ContentPage { Title = "Master", BackgroundColor = Color.Red },
 			//		Detail = newTabbedPage
 			//	};
-			//}));
-
-			//// Uncomment to verify that there is no crash when switching MainPage from MDP inside NavPage
-			//SetMainPage(new Bugzilla45702());
+			//});
 		}
 
 		public Page CreateDefaultMainPage()
@@ -103,6 +101,20 @@ namespace Xamarin.Forms.Controls
 			}
 		}
 
+		public static string InsightsApiKey
+		{
+			get
+			{
+				if (s_insightsKey == null)
+				{
+					string key = Config["InsightsApiKey"];
+					s_insightsKey = string.IsNullOrEmpty(key) ? Insights.DebugModeKey : key;
+				}
+
+				return s_insightsKey;
+			}
+		}
+
 		public static ContentPage MenuPage { get; set; }
 
 		public void SetMainPage(Page rootPage)
@@ -115,6 +127,18 @@ namespace Xamarin.Forms.Controls
 			assemblystring = typeof(App).AssemblyQualifiedName.Split(',')[1].Trim();
 			var assemblyname = new AssemblyName(assemblystring);
 			return Assembly.Load(assemblyname);
+		}
+
+		void InitInsights()
+		{
+			if (Insights.IsInitialized)
+			{
+				Insights.ForceDataTransmission = true;
+				if (_testCloudService != null && _testCloudService.IsOnTestCloud())
+					Insights.Identify(_testCloudService.GetTestCloudDevice(), "Name", _testCloudService.GetTestCloudDeviceName());
+				else
+					Insights.Identify("DemoUser", "Name", "Demo User");
+			}
 		}
 
 		static void LoadConfig()

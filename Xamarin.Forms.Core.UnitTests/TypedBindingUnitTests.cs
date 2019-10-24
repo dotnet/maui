@@ -797,11 +797,10 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 #if !WINDOWS_PHONE
-		[TestCase("en-US"), TestCase("pt-PT")]
-		public void ValueConverterCulture(string culture)
+		[Test]
+		[SetUICulture("pt-PT")]
+		public void ValueConverterCulture()
 		{
-			System.Threading.Thread.CurrentThread.CurrentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture =new System.Globalization.CultureInfo(culture);
-
 			var converter = new TestConverterCulture();
 			var vm = new MockViewModel();
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "Bar", BindingMode.OneWayToSource);
@@ -815,7 +814,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			bindable.SetBinding(property, binding);
 			bindable.BindingContext = vm;
 
-			Assert.AreEqual(culture, vm.Text);
+			Assert.AreEqual("pt-PT", vm.Text);
 		}
 #endif
 
@@ -1138,11 +1137,11 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 #if !WINDOWS_PHONE
-		[TestCase("en-US"), TestCase("pt-PT")]
-		public void ConvertIsCultureInvariant(string culture)
+		[Test]
+		[SetCulture("pt-PT")]
+		[SetUICulture("pt-PT")]
+		public void ConvertIsCultureInvariant()
 		{
-			System.Threading.Thread.CurrentThread.CurrentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-
 			var slider = new Slider();
 			var vm = new MockViewModel { Text = "0.5" };
 			slider.BindingContext = vm;
@@ -1384,65 +1383,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			viewModel ["Foo"] = "Baz";
 
 			Assert.AreEqual("Baz", label.Text);
-		}
-
-		[Test]
-		public void OneTimeBindingDoesntUpdateOnPropertyChanged()
-		{
-			var view = new VisualElement();
-			var bp1t = BindableProperty.Create("Foo", typeof(string), typeof(VisualElement));
-			var bp1w = BindableProperty.Create("Foo", typeof(string), typeof(VisualElement));
-			var vm = new MockViewModel("foobar");
-			view.BindingContext = vm;
-			var b1t = CreateBinding(mode: BindingMode.OneTime);
-			var b1w = CreateBinding(mode: BindingMode.OneWay);
-
-			view.SetBinding(bp1t, b1t);
-			view.SetBinding(bp1w, b1w);
-			Assert.That(view.GetValue(bp1w), Is.EqualTo("foobar"));
-			Assert.That(view.GetValue(bp1t), Is.EqualTo("foobar"));
-
-			vm.Text = "qux";
-			Assert.That(view.GetValue(bp1w), Is.EqualTo("qux"));
-			Assert.That(view.GetValue(bp1t), Is.EqualTo("foobar"));
-		}
-
-		[Test]
-		public void OneTimeBindingUpdatesOnBindingContextChanged()
-		{
-			var view = new VisualElement();
-			var bp1t = BindableProperty.Create("Foo", typeof(string), typeof(VisualElement));
-			var bp1w = BindableProperty.Create("Foo", typeof(string), typeof(VisualElement));
-			view.BindingContext = new MockViewModel("foobar");
-			var b1t = CreateBinding(mode: BindingMode.OneTime);
-			var b1w = CreateBinding(mode: BindingMode.OneWay);
-
-			view.SetBinding(bp1t, b1t);
-			view.SetBinding(bp1w, b1w);
-			Assert.That(view.GetValue(bp1w), Is.EqualTo("foobar"));
-			Assert.That(view.GetValue(bp1t), Is.EqualTo("foobar"));
-
-			view.BindingContext = new MockViewModel("qux");
-			Assert.That(view.GetValue(bp1w), Is.EqualTo("qux"));
-			Assert.That(view.GetValue(bp1t), Is.EqualTo("qux"));
-		}
-
-		[Test]
-		public void OneTimeBindingDoesntUpdateNeedSettersOrHandlers()
-		{
-			var view = new VisualElement();
-			var bp1t = BindableProperty.Create("Foo", typeof(string), typeof(VisualElement));
-			var vm = new MockViewModel("foobar");
-			view.BindingContext = vm;
-
-			var b1t = new TypedBinding<MockViewModel, string>(v => v.Text, null, null);
-
-			view.SetBinding(bp1t, b1t);
-			Assert.That(view.GetValue(bp1t), Is.EqualTo("foobar"));
-
-			vm.Text = "qux";
-			Assert.That(view.GetValue(bp1t), Is.EqualTo("foobar"));
-			Assert.Pass(); //doesn't throw
 		}
 
 		[Test]

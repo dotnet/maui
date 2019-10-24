@@ -379,10 +379,6 @@ namespace Xamarin.Forms
 		public string GetDisplayTextFromGroup(object cell)
 		{
 			int groupIndex = TemplatedItems.GetGlobalIndexOfGroup(cell);
-
-			if (groupIndex == -1)
-				return cell.ToString();
-
 			var group = TemplatedItems.GetGroup(groupIndex);
 
 			string displayBinding = null;

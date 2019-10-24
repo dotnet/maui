@@ -11,8 +11,6 @@ using UIKit;
 using Xamarin.Forms.Internals;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using Specifics = Xamarin.Forms.PlatformConfiguration.iOSSpecific.ListView;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -33,7 +31,6 @@ namespace Xamarin.Forms.Platform.iOS
 		ITemplatedItemsView<Cell> TemplatedItemsView => Element;
 		public override UIViewController ViewController => _tableViewController;
 		bool _disposed;
-
 		protected UITableViewRowAnimation InsertRowsAnimation { get; set; } = UITableViewRowAnimation.Automatic;
 		protected UITableViewRowAnimation DeleteRowsAnimation { get; set; } = UITableViewRowAnimation.Automatic;
 		protected UITableViewRowAnimation ReloadRowsAnimation { get; set; } = UITableViewRowAnimation.Automatic;
@@ -678,13 +675,16 @@ namespace Xamarin.Forms.Platform.iOS
 				}
 
 				// We're going to base our estimate off of the first cell
-				Cell firstCell;
 				var isGroupingEnabled = List.IsGroupingEnabled;
 
 				if (isGroupingEnabled)
-					firstCell = templatedItems.ActivateContent(0, templatedItems.GetGroup(0)?.ListProxy[0]);
-				else
-					firstCell = templatedItems.ActivateContent(0, templatedItems.ListProxy[0]);
+					templatedItems = templatedItems.GetGroup(0);
+
+				object item = null;
+				if (templatedItems == null || templatedItems.ListProxy.TryGetValue(0, out item) == false)
+					return DefaultRowHeight;
+
+				var firstCell = templatedItems.ActivateContent(0, item);
 
 				// Let's skip this optimization for grouped lists. It will likely cause more trouble than it's worth.
 				if (firstCell?.Height > 0 && !isGroupingEnabled)
@@ -868,9 +868,6 @@ namespace Xamarin.Forms.Platform.iOS
 				Cell cell;
 				UITableViewCell nativeCell;
 
-				var reference = Guid.NewGuid().ToString();
-				Performance.Start(reference);
-
 				var cachingStrategy = List.CachingStrategy;
 				if (cachingStrategy == ListViewCachingStrategy.RetainElement)
 				{
@@ -901,19 +898,10 @@ namespace Xamarin.Forms.Platform.iOS
 				else
 					throw new NotSupportedException();
 
-				if (List.IsSet(Specifics.SeparatorStyleProperty))
-				{
-					if (List.OnThisPlatform().GetSeparatorStyle() == SeparatorStyle.FullWidth)
-					{
-						nativeCell.SeparatorInset = UIEdgeInsets.Zero;
-						nativeCell.LayoutMargins = UIEdgeInsets.Zero;
-						nativeCell.PreservesSuperviewLayoutMargins = false;
-					}
-				}
 				var bgColor = tableView.IndexPathForSelectedRow != null && tableView.IndexPathForSelectedRow.Equals(indexPath) ? UIColor.Clear : DefaultBackgroundColor;
+
 				SetCellBackgroundColor(nativeCell, bgColor);
 				PreserveActivityIndicatorState(cell);
-				Performance.Stop(reference);
 				return nativeCell;
 			}
 
@@ -934,28 +922,21 @@ namespace Xamarin.Forms.Platform.iOS
 
 			public override UIView GetViewForHeader(UITableView tableView, nint section)
 			{
-				UIView view = null;
-
-				if (!List.IsGroupingEnabled)
-					return view;
+				if (List.IsGroupingEnabled && List.GroupHeaderTemplate != null)
+				{
+					var cell = TemplatedItemsView.TemplatedItems[(int)section];
+					if (cell.HasContextActions)
+						throw new NotSupportedException("Header cells do not support context actions");
 
 					var renderer = (CellRenderer)Internals.Registrar.Registered.GetHandlerForObject<IRegisterable>(cell);
 
-					var renderer = (CellRenderer)Internals.Registrar.Registered.GetHandlerForObject<IRegisterable>(cell);
-
-					view = new HeaderWrapperView();
+					var view = new HeaderWrapperView();
 					view.AddSubview(renderer.GetCell(cell, null, tableView));
 
-				return view;
-			}
+					return view;
+				}
 
-			public override void HeaderViewDisplayingEnded(UITableView tableView, UIView headerView, nint section)
-			{
-				if (!List.IsGroupingEnabled)
-					return;
-
-				var cell = TemplatedItemsView.TemplatedItems[(int)section];
-				cell.SendDisappearing();
+				return null;
 			}
 
 			public override nint NumberOfSections(UITableView tableView)
@@ -1065,6 +1046,18 @@ namespace Xamarin.Forms.Platform.iOS
 				return templatedItems.ShortNames.ToArray();
 			}
 
+			public override string TitleForHeader(UITableView tableView, nint section)
+			{
+				if (!List.IsGroupingEnabled)
+					return null;
+
+				var sl = GetSectionList((int)section);
+				sl.PropertyChanged -= OnSectionPropertyChanged;
+				sl.PropertyChanged += OnSectionPropertyChanged;
+
+				return sl.Name;
+			}
+
 			public void Cleanup()
 			{
 				_selectionFromNative = false;
@@ -1107,34 +1100,25 @@ namespace Xamarin.Forms.Platform.iOS
 				return cell;
 			}
 
-			protected ITemplatedItemsList<Cell> GetTemplatedItemsListForPath(NSIndexPath indexPath)
+			ITemplatedItemsList<Cell> GetSectionList(int section)
 			{
-				var templatedItems = TemplatedItemsView.TemplatedItems;
-				if (List.IsGroupingEnabled)
-					templatedItems = (ITemplatedItemsList<Cell>)((IList)templatedItems)[indexPath.Section];
-
-				return templatedItems;
+				return (ITemplatedItemsList<Cell>)((IList)TemplatedItemsView.TemplatedItems)[section];
 			}
 
-			protected DataTemplate GetDataTemplateForPath(NSIndexPath indexPath)
+			void OnSectionPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
-				var templatedList = GetTemplatedItemsListForPath(indexPath);
-				var item = templatedList.ListProxy[indexPath.Row];
-				return templatedList.SelectDataTemplate(item);
-			}
+				var currentSelected = _uiTableView.IndexPathForSelectedRow;
 
-			protected Type GetItemTypeForPath(NSIndexPath indexPath)
-			{
-				var templatedList = GetTemplatedItemsListForPath(indexPath);
-				var item = templatedList.ListProxy[indexPath.Row];
-				return item.GetType();
-			}
+				var til = (TemplatedItemsList<ItemsView<Cell>, Cell>)sender;
+				var groupIndex = ((IList)TemplatedItemsView.TemplatedItems).IndexOf(til);
+				if (groupIndex == -1)
+				{
+					til.PropertyChanged -= OnSectionPropertyChanged;
+					return;
+				}
 
-			protected Cell GetCellForPath(NSIndexPath indexPath)
-			{
-				var templatedItems = GetTemplatedItemsListForPath(indexPath);
-				var cell = templatedItems[indexPath.Row];
-				return cell;
+				_uiTableView.ReloadSections(NSIndexSet.FromIndex(groupIndex), ReloadSectionsAnimation);
+				_uiTableView.SelectRow(currentSelected, false, UITableViewScrollPosition.None);
 			}
 
 			void OnShortNamesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

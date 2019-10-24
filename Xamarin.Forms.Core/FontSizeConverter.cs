@@ -4,7 +4,6 @@ using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms
 {
-	[Xaml.TypeConversion(typeof(double))]
 	public class FontSizeConverter : TypeConverter, IExtendedTypeConverter
 	{
 		[Obsolete("IExtendedTypeConverter.ConvertFrom is obsolete as of version 2.2.0. Please use ConvertFromInvariantString (string, IServiceProvider) instead.")]
@@ -20,9 +19,8 @@ namespace Xamarin.Forms
 				double size;
 				if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out size))
 					return size;
-				var ignoreCase = (serviceProvider?.GetService(typeof(IConverterOptions)) as IConverterOptions)?.IgnoreCase ?? false;
 				NamedSize namedSize;
-				if (Enum.TryParse(value, ignoreCase, out namedSize))
+				if (Enum.TryParse(value, out namedSize))
 				{
 					Type type;
 					var valueTargetProvider = serviceProvider.GetService(typeof(IProvideValueTarget)) as IProvideValueTarget;

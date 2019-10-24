@@ -237,10 +237,7 @@ namespace Xamarin.Forms.Platform.Android
 				{
 					// animate out
 					if (containerToAdd.Parent != this)
-					{
-						var indexRenderToAdd = Math.Min(ChildCount,((IElementController)Element).LogicalChildren.IndexOf(rendererToAdd.Element));
-						AddView(containerToAdd, indexRenderToAdd);
-					}						
+						AddView(containerToAdd, ((IElementController)Element).LogicalChildren.IndexOf(rendererToAdd.Element));
 					else
 						((IPageController)rendererToAdd.Element).SendAppearing();
 					containerToAdd.Visibility = ViewStates.Visible;

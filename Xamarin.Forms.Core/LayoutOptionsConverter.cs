@@ -6,7 +6,6 @@ using Xamarin.Forms.Internals;
 namespace Xamarin.Forms
 {
 	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.LayoutOptionsConverter")]
-	[Xaml.TypeConversion(typeof(LayoutOptions))]
 	public sealed class LayoutOptionsConverter : TypeConverter
 	{
 		public override object ConvertFromInvariantString(string value)

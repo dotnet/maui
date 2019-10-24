@@ -153,8 +153,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				UpdateMaster();
 				UpdateDetail();
 
-				UpdateFlowDirection();
-
 				((IMasterDetailPageController)newElement).BackButtonPressed += OnBackButtonPressed;
 				newElement.PropertyChanged += HandlePropertyChanged;
 				newElement.Appearing += MasterDetailPageAppearing;
@@ -312,8 +310,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				UpdateBackgroundImage(Element);
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackgroundColor(Element);
-			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
-				UpdateFlowDirection();
 		}
 
 		void MasterDetailPageAppearing(object sender, EventArgs e)
@@ -369,11 +365,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			Context.HideKeyboard(this);
 			_detailLayout.ChildView = Element.Detail;
-		}
-
-		void UpdateFlowDirection()
-		{
-			this.UpdateFlowDirection(Element);
 		}
 
 		void UpdateIsPresented()

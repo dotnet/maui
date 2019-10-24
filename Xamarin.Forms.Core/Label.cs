@@ -7,9 +7,10 @@ namespace Xamarin.Forms
 {
 	[ContentProperty("Text")]
 	[RenderWith(typeof(_LabelRenderer))]
-	public class Label : View, IFontElement, ITextElement, ITextAlignmentElement, IElementConfiguration<Label>
+	public class Label : View, IFontElement, ITextElement, IElementConfiguration<Label>
 	{
-		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
+		public static readonly BindableProperty HorizontalTextAlignmentProperty = BindableProperty.Create("HorizontalTextAlignment", typeof(TextAlignment), typeof(Label), TextAlignment.Start,
+			propertyChanged: OnHorizontalTextAlignmentPropertyChanged);
 
 		[Obsolete("XAlignProperty is obsolete as of version 2.0.0. Please use HorizontalTextAlignmentProperty instead.")]
 		public static readonly BindableProperty XAlignProperty = HorizontalTextAlignmentProperty;
@@ -71,8 +72,8 @@ namespace Xamarin.Forms
 
 		public TextAlignment HorizontalTextAlignment
 		{
-			get { return (TextAlignment)GetValue(TextAlignmentElement.HorizontalTextAlignmentProperty); }
-			set { SetValue(TextAlignmentElement.HorizontalTextAlignmentProperty, value); }
+			get { return (TextAlignment)GetValue(HorizontalTextAlignmentProperty); }
+			set { SetValue(HorizontalTextAlignmentProperty, value); }
 		}
 
 		public LineBreakMode LineBreakMode
@@ -153,11 +154,12 @@ namespace Xamarin.Forms
 			OnPropertyChanged("FormattedText");
 		}
 
-		void ITextAlignmentElement.OnHorizontalTextAlignmentPropertyChanged(TextAlignment oldValue, TextAlignment newValue)
+		static void OnHorizontalTextAlignmentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
+			var label = (Label)bindable;
 #pragma warning disable 0618 // retain until XAlign removed
-			OnPropertyChanged(nameof(XAlign));
-#pragma warning restore
+			label.OnPropertyChanged(nameof(XAlign));
+#pragma warning restore 0618
 		}
 
 		static void OnTextPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)

@@ -23,7 +23,6 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init ()
 		{
-			s_disposeCount = 0;
 			s_lbl = new Label { AutomationId = "lblDisposedCound" };
 			var tab1 = new DisposePage { Title = "Tab1" }; 
 			var tab2 = new DisposePage { Title = "Tab2" };
@@ -53,6 +52,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.Tap (q => q.Marked ("Tab1"));
 			RunningApp.Tap (q => q.Marked ("Pop"));
 			RunningApp.WaitForElement (q => q.Marked (string.Format ("Dispose {0} pages", 2)));
+		
 		}
 #endif
 	}

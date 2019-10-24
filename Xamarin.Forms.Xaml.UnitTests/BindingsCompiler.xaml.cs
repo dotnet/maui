@@ -41,11 +41,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TestCase(true)]
 			public void Test(bool useCompiledXaml)
 			{
-				if (useCompiledXaml)
-					MockCompiler.Compile(typeof(BindingsCompiler));
 				var vm = new MockViewModel {
 					Text = "Text0",
-					I = 42,
 					Model = new MockViewModel {
 						Text = "Text1"
 					},
@@ -54,28 +51,15 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 				var layout = new BindingsCompiler(useCompiledXaml);
 				layout.BindingContext = vm;
-				layout.label6.BindingContext = new MockStructViewModel {
-					Model = new MockViewModel { 
-						Text = "text6"
-					}
-				};
-
 				//testing paths
 				Assert.AreEqual("Text0", layout.label0.Text);
 				Assert.AreEqual("Text0", layout.label1.Text);
 				Assert.AreEqual("Text1", layout.label2.Text);
 				Assert.AreEqual("TextIndex", layout.label3.Text);
-				Assert.AreEqual("Text0", layout.label8.Text);
-
-				//value types
-				Assert.That(layout.label5.Text, Is.EqualTo("42"));
-				Assert.That(layout.label6.Text, Is.EqualTo("text6"));
 
 				//testing selfPath
 				layout.label4.BindingContext = "Self";
 				Assert.AreEqual("Self", layout.label4.Text);
-				layout.label7.BindingContext = 42;
-				Assert.That(layout.label7.Text, Is.EqualTo("42"));
 
 				//testing INPC
 				vm.Text = "Text2";
@@ -93,21 +77,13 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 	}
 
-	struct MockStructViewModel
-	{
-		public string Text { get; set; }
-		public int I { get; set; }
-		public MockViewModel Model { get; set; }
-	}
-
 	class MockViewModel : INotifyPropertyChanged
 	{
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		public MockViewModel(string text = null, int i = -1)
+		public MockViewModel(string text = null)
 		{
 			_text = text;
-			_i = i;
 		}
 
 		string _text;
@@ -118,17 +94,6 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					return;
 
 				_text = value;
-				OnPropertyChanged();
-			}
-		}
-
-		int _i;
-		public int I {
-			get { return _i; }
-			set {
-				if (_i == value)
-					return;
-				_i = value;
 				OnPropertyChanged();
 			}
 		}

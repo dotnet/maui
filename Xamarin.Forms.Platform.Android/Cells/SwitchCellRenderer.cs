@@ -8,6 +8,7 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public class SwitchCellRenderer : CellRenderer
 	{
+		const double DefaultHeight = 30;
 		SwitchCellView _view;
 
 		protected override AView GetCellCore(Cell item, AView convertView, ViewGroup parent, Context context)
@@ -23,7 +24,6 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateChecked();
 			UpdateHeight();
 			UpdateIsEnabled(_view, cell);
-			UpdateFlowDirection();
 
 			return _view;
 		}
@@ -38,8 +38,6 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateHeight();
 			else if (args.PropertyName == Cell.IsEnabledProperty.PropertyName)
 				UpdateIsEnabled(_view, (SwitchCell)sender);
-			else if (args.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
-				UpdateFlowDirection();
 		}
 
 		void UpdateChecked()
@@ -53,11 +51,6 @@ namespace Xamarin.Forms.Platform.Android
 			var aSwitch = cell.AccessoryView as ASwitch;
 			if (aSwitch != null)
 				aSwitch.Enabled = switchCell.IsEnabled;
-		}
-
-		void UpdateFlowDirection()
-		{
-			_view.UpdateFlowDirection(ParentView);
 		}
 
 		void UpdateHeight()

@@ -2,7 +2,6 @@ using System;
 
 namespace Xamarin.Forms.Pages
 {
-	[Xaml.TypeConversion(typeof(JsonSource))]
 	public class JsonSourceConverter : TypeConverter
 	{
 		public override object ConvertFromInvariantString(string value)
@@ -13,7 +12,7 @@ namespace Xamarin.Forms.Pages
 				Uri uri;
 				if (Uri.TryCreate(value, UriKind.Absolute, out uri) && uri.Scheme != "file")
 					return new UriJsonSource { Uri = uri };
-				if (value.StartsWith("[", StringComparison.OrdinalIgnoreCase) || value.StartsWith("{", StringComparison.OrdinalIgnoreCase))
+				if (value.StartsWith("[") || value.StartsWith("{"))
 					return new StringJsonSource { Json = value };
 			}
 

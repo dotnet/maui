@@ -72,7 +72,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			layout = new ContentPage ().LoadFromXaml (xaml);
 			Assert.AreEqual (new Thickness (0, 0, 10, 0), layout.Padding);
 
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.UWP;
+			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.WinPhone;
 			layout = new ContentPage ().LoadFromXaml (xaml);
 			Assert.AreEqual (new Thickness (0, 20, 0, 20), layout.Padding);
 		}

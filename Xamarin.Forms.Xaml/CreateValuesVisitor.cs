@@ -9,7 +9,7 @@ using Xamarin.Forms.Xaml.Internals;
 
 namespace Xamarin.Forms.Xaml
 {
-	class CreateValuesVisitor : IXamlNodeVisitor
+	internal class CreateValuesVisitor : IXamlNodeVisitor
 	{
 		public CreateValuesVisitor(HydrationContext context)
 		{
@@ -27,7 +27,6 @@ namespace Xamarin.Forms.Xaml
 		public bool StopOnDataTemplate => true;
 		public bool StopOnResourceDictionary => false;
 		public bool VisitNodeOnDataTemplate => false;
-		public bool SkipChildren(INode node, INode parentNode) => false;
 
 		public void Visit(ValueNode node, INode parentNode)
 		{

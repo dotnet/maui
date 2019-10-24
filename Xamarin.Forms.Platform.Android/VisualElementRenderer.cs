@@ -6,9 +6,7 @@ using Android.Content;
 using Android.Support.V4.View;
 using Android.Views;
 using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.Android.FastRenderers;
 using AView = Android.Views.View;
-using Xamarin.Forms.Platform.Android.FastRenderers;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -36,7 +34,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public override bool OnTouchEvent(MotionEvent e)
 		{
-			return _gestureManager.OnTouchEvent(e) || base.OnTouchEvent(e);
+			return _gestureManager.OnTouchEvent(e);
 		}
 
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
@@ -131,10 +129,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		public void UpdateLayout()
 		{
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference);
+			Performance.Start();
 			Tracker?.UpdateLayout();
-			Performance.Stop(reference);
+			Performance.Stop();
 		}
 
 		public ViewGroup ViewGroup => this;
@@ -151,8 +148,7 @@ namespace Xamarin.Forms.Platform.Android
 			TElement oldElement = Element;
 			Element = element;
 
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference);
+			Performance.Start();
 
 			if (oldElement != null)
 			{
@@ -196,9 +192,8 @@ namespace Xamarin.Forms.Platform.Android
 			SetContentDescription();
 			SetFocusable();
 			UpdateInputTransparent();
-			UpdateInputTransparentInherited();
 
-			Performance.Stop(reference);
+			Performance.Stop();
 		}
 
 		/// <summary>
@@ -294,6 +289,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (Element == null)
 				return;
 
+			ReadOnlyCollection<Element> children = ((IElementController)Element).LogicalChildren;
 			UpdateLayout(((IElementController)Element).LogicalChildren);
 		}
 
@@ -318,29 +314,69 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		protected virtual void SetAutomationId(string id)
-			=> AutomationPropertiesProvider.SetAutomationId(this, Element, id);
+		{
+			ContentDescription = id;
+		}
 
 		protected virtual void SetContentDescription()
-			=> AutomationPropertiesProvider.SetContentDescription(this, Element, ref _defaultContentDescription, ref _defaultHint);
+		{
+			if (Element == null)
+				return;
+
+			if (SetHint())
+				return;
+
+			if (_defaultContentDescription == null)
+				_defaultContentDescription = ContentDescription;
+
+			var elemValue = FastRenderers.AutomationPropertiesProvider.ConcatenateNameAndHelpText(Element);
+
+			if (!string.IsNullOrWhiteSpace(elemValue))
+				ContentDescription = elemValue;
+			else
+				ContentDescription = _defaultContentDescription;
+		}
 
 		protected virtual void SetFocusable()
-			=> AutomationPropertiesProvider.SetFocusable(this, Element, ref _defaultFocusable);
+		{
+			if (Element == null)
+				return;
+
+			if (!_defaultFocusable.HasValue)
+				_defaultFocusable = Focusable;
+
+			Focusable = (bool)((bool?)Element.GetValue(AutomationProperties.IsInAccessibleTreeProperty) ?? _defaultFocusable);
+		}
+
+		protected virtual bool SetHint()
+		{
+			if (Element == null)
+				return false;
+
+			var textView = this as global::Android.Widget.TextView;
+			if (textView == null)
+				return false;
+
+			// Let the specified Title/Placeholder take precedence, but don't set the ContentDescription (won't work anyway)
+			if (((Element as Picker)?.Title ?? (Element as Entry)?.Placeholder ?? (Element as EntryCell)?.Placeholder) != null)
+				return true;
+
+			if (_defaultHint == null)
+				_defaultHint = textView.Hint;
+
+			var elemValue = FastRenderers.AutomationPropertiesProvider.ConcatenateNameAndHelpText(Element);
+
+			if (!string.IsNullOrWhiteSpace(elemValue))
+				textView.Hint = elemValue;
+			else
+				textView.Hint = _defaultHint;
+
+			return true;
+		}
 
 		void UpdateInputTransparent()
 		{
 			InputTransparent = Element.InputTransparent;
-		}
-
-		void UpdateInputTransparentInherited()
-		{
-			var layout = Element as Layout;
-
-			if (layout == null)
-			{
-				return;
-			}
-
-			_inputTransparentInherited = layout.CascadeInputTransparent;
 		}
 
 		protected void SetPackager(VisualElementPackager packager)

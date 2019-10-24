@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Xamarin.Forms.Internals;
-using System.Runtime.CompilerServices;
 
 namespace Xamarin.Forms
 {
@@ -23,9 +22,9 @@ namespace Xamarin.Forms
 		internal BindingExpression(BindingBase binding, string path)
 		{
 			if (binding == null)
-				throw new ArgumentNullException(nameof(binding));
+				throw new ArgumentNullException("binding");
 			if (path == null)
-				throw new ArgumentNullException(nameof(path));
+				throw new ArgumentNullException("path");
 
 			Binding = binding;
 			Path = path;
@@ -106,10 +105,10 @@ namespace Xamarin.Forms
 		void ApplyCore(object sourceObject, BindableObject target, BindableProperty property, bool fromTarget = false)
 		{
 			BindingMode mode = Binding.GetRealizedMode(_targetProperty);
-			if ((mode == BindingMode.OneWay || mode == BindingMode.OneTime) && fromTarget)
+			if (mode == BindingMode.OneWay && fromTarget)
 				return;
 
-			bool needsGetter = (mode == BindingMode.TwoWay && !fromTarget) || mode == BindingMode.OneWay || mode == BindingMode.OneTime;
+			bool needsGetter = (mode == BindingMode.TwoWay && !fromTarget) || mode == BindingMode.OneWay;
 			bool needsSetter = !needsGetter && ((mode == BindingMode.TwoWay && fromTarget) || mode == BindingMode.OneWayToSource);
 
 			object current = sourceObject;
@@ -291,17 +290,8 @@ namespace Xamarin.Forms
 				part.IndexerName = indexerName;
 
 				property = sourceType.GetDeclaredProperty(indexerName);
-				if (property == null) //is the indexer defined on the base class?
+				if (property == null)
 					property = sourceType.BaseType.GetProperty(indexerName);
-				if (property == null) //is the indexer defined on implemented interface ?
-				{
-					foreach (var implementedInterface in sourceType.ImplementedInterfaces)
-					{
-						property = implementedInterface.GetProperty(indexerName);
-						if (property != null)
-							break;
-					}
-				}
 
 				if (property != null)
 				{
@@ -343,7 +333,6 @@ namespace Xamarin.Forms
 						if (bindablePropertyField != null && bindablePropertyField.FieldType == typeof(BindableProperty) && sourceType.ImplementedInterfaces.Contains(typeof(IElementController)))
 						{
 							MethodInfo setValueMethod = null;
-#if NETSTANDARD1_0
 							foreach (MethodInfo m in sourceType.AsType().GetRuntimeMethods())
 							{
 								if (m.Name.EndsWith("IElementController.SetValueFromRenderer"))
@@ -356,9 +345,6 @@ namespace Xamarin.Forms
 									}
 								}
 							}
-#else
-							setValueMethod = typeof(IElementController).GetMethod("SetValueFromRenderer", new[] { typeof(BindableProperty), typeof(object) });
-#endif
 							if (setValueMethod != null)
 							{
 								part.LastSetter = setValueMethod;
@@ -368,37 +354,10 @@ namespace Xamarin.Forms
 						}
 					}
 				}
-#if !NETSTANDARD1_0
-				TupleElementNamesAttribute tupleEltNames;
-				if (   property != null
-					&& part.NextPart != null
-					&& property.PropertyType.IsGenericType
-					&& (   property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<>)
-						|| property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<,>)
-						|| property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<,,>)
-						|| property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<,,,>)
-						|| property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<,,,,>)
-						|| property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<,,,,,>)
-						|| property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<,,,,,,>)
-						|| property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<,,,,,,,>))
-					&& (tupleEltNames = property.GetCustomAttribute(typeof(TupleElementNamesAttribute)) as TupleElementNamesAttribute) != null)
-				{
-					//modify the nextPart to access the tuple item via the ITuple indexer
-					var nextPart = part.NextPart;
-					var name = nextPart.Content;
-					var index = tupleEltNames.TransformNames.IndexOf(name);
-					if (index >= 0)
-					{
-						nextPart.IsIndexer = true;
-						nextPart.Content = index.ToString();
-					}
-				}
-#endif
 			}
-
 		}
-		static Type[] DecimalTypes = new[] { typeof(float), typeof(decimal), typeof(double) };
 
+		static Type[] DecimalTypes = new[] { typeof(float), typeof(decimal), typeof(double) };
 		bool TryConvert(BindingExpressionPart part, ref object value, Type convertTo, bool toTarget)
 		{
 			if (value == null)
@@ -473,7 +432,7 @@ namespace Xamarin.Forms
 			}
 
 			public void SubscribeTo(INotifyPropertyChanged source, PropertyChangedEventHandler listener)
-			{
+			{ 
 				source.PropertyChanged += _handler;
 				_source.SetTarget(source);
 				_listener.SetTarget(listener);
@@ -482,7 +441,7 @@ namespace Xamarin.Forms
 			public void Unsubscribe()
 			{
 				INotifyPropertyChanged source;
-				if (_source.TryGetTarget(out source) && source != null)
+				if (_source.TryGetTarget(out source) && source!=null)
 					source.PropertyChanged -= _handler;
 				_source.SetTarget(null);
 				_listener.SetTarget(null);
@@ -543,13 +502,13 @@ namespace Xamarin.Forms
 
 			public object BindablePropertyField { get; set; }
 
-			public string Content { get; internal set; }
+			public string Content { get; }
 
 			public string IndexerName { get; set; }
 
 			public bool IsBindablePropertySetter { get; set; }
 
-			public bool IsIndexer { get; internal set; }
+			public bool IsIndexer { get; }
 
 			public bool IsSelf { get; }
 

@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using Xamarin.Forms;
 using Xamarin.Forms.CustomAttributes;
 using System.Windows.Input;
 using System.Diagnostics;
-
 using Xamarin.Forms.Internals;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
 using NUnit.Framework;
 using Xamarin.UITest;
 using Xamarin.UITest.iOS;
@@ -62,7 +61,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var disable1 = RunningApp.Query (c => c.Marked ("txtCellDisableContextActions1")) [0];
 			Assert.IsFalse (disable1.Enabled);
 
-			var screenBounds = RunningApp.RootViewRect();
+			var screenBounds = RunningApp.Query (q => q.Raw ("* index:0")) [0].Rect;
 
 			RunningApp.DragCoordinates (screenBounds.Width - 10, disable1.Rect.CenterY, 10, disable1.Rect.CenterY);
 
@@ -88,7 +87,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var disable1 = RunningApp.Query (c => c.Marked ("txtCellEnabledContextActions1")) [0];
 			Assert.IsTrue (disable1.Enabled);
 
-			var screenBounds = RunningApp.RootViewRect();
+			var screenBounds = RunningApp.Query (q => q.Raw ("* index:0")) [0].Rect;
 
 			RunningApp.DragCoordinates (screenBounds.Width - 10, disable1.Rect.CenterY, 10, disable1.Rect.CenterY);
 

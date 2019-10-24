@@ -1,5 +1,4 @@
-﻿using System;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using Xamarin.UITest.Queries;
 
 namespace Xamarin.Forms.Core.UITests
@@ -157,16 +156,10 @@ namespace Xamarin.Forms.Core.UITests
 
 		void ScrollAndTap(string actionSheet)
 		{
-			var queryString = $"* text:'{actionSheet}'";
-			Func<AppQuery, AppQuery> actionSheetQuery = q => q.Raw (queryString);
-#if __WINDOWS__
-			App.ScrollDownTo(actionSheetQuery);
-#elif __MACOS__
-			App.Tap(actionSheetQuery);
-#else
-			App.ScrollForElement(queryString, new Drag(App.Query(q => q.Marked("ActionSheetPage"))[0].Rect, Drag.Direction.BottomToTop, Drag.DragLength.Long));
+#if !__MACOS__
+			App.ScrollForElement(string.Format("* text:'{0}'", actionSheet), new Drag(App.Query(q => q.Marked("ActionSheetPage"))[0].Rect, Drag.Direction.BottomToTop, Drag.DragLength.Long));
 #endif
-			App.Tap(actionSheetQuery);
+			App.Tap(q => q.Raw(string.Format("* text:'{0}'", actionSheet)));
 		}
 
 	}

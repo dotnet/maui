@@ -12,15 +12,14 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		protected override AView GetCellCore(Cell item, AView convertView, ViewGroup parent, Context context)
 		{
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference, "GetCellCore");
+			Performance.Start();
 			var cell = (ViewCell)item;
 
 			var container = convertView as ViewCellContainer;
 			if (container != null)
 			{
 				container.Update(cell);
-				Performance.Stop(reference);
+				Performance.Stop();
 				return container;
 			}
 
@@ -44,7 +43,7 @@ namespace Xamarin.Forms.Platform.Android
 			cell.View.IsPlatformEnabled = true;
 			var c = new ViewCellContainer(context, view, cell, ParentView, unevenRows, rowHeight);
 
-			Performance.Stop(reference, "GetCellCore");
+			Performance.Stop();
 
 			return c;
 		}
@@ -91,7 +90,7 @@ namespace Xamarin.Forms.Platform.Android
 						return _longPressGestureDetector;
 					}
 
-					_longPressGestureDetector = new GestureDetector(new LongPressGestureListener(TriggerLongClick));
+					_longPressGestureDetector = new GestureDetector(Context, new LongPressGestureListener(TriggerLongClick));
 					return _longPressGestureDetector;
 				}
 			}
@@ -137,26 +136,9 @@ namespace Xamarin.Forms.Platform.Android
 				return base.OnInterceptTouchEvent(ev);
 			}
 
-			public override bool DispatchTouchEvent(MotionEvent e)
-			{
-				// Give the child controls a shot at the event (in case they've get Tap gestures and such
-				var handled = base.DispatchTouchEvent(e);
-
-				if (_watchForLongPress)
-				{
-					// Feed the gestue through the LongPress detector; for this to wor we *must* return true 
-					// afterward (or the LPGD goes nuts and immediately fires onLongPress)
-					LongPressGestureDetector.OnTouchEvent(e);
-					return true;
-				}
-
-				return handled;
-			}
-
 			public void Update(ViewCell cell)
 			{
-				var reference = Guid.NewGuid().ToString();
-				Performance.Start(reference);
+				Performance.Start();
 
 				var renderer = GetChildAt(0) as IVisualElementRenderer;
 				var viewHandlerType = Registrar.Registered.GetHandlerTypeForObject(cell.View) ?? typeof(Platform.DefaultRenderer);
@@ -164,16 +146,16 @@ namespace Xamarin.Forms.Platform.Android
 				var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : (renderer != null ? renderer.GetType() : typeof(System.Object));
 				if (renderer != null && rendererType == viewHandlerType)
 				{
-					Performance.Start(reference, "Reuse");
+					Performance.Start("Reuse");
 					_viewCell = cell;
 
 					cell.View.DisableLayout = true;
 					foreach (VisualElement c in cell.View.Descendants())
 						c.DisableLayout = true;
 
-					Performance.Start(reference, "Reuse.SetElement");
+					Performance.Start("Reuse.SetElement");
 					renderer.SetElement(cell.View);
-					Performance.Stop(reference, "Reuse.SetElement");
+					Performance.Stop("Reuse.SetElement");
 
 					Platform.SetRenderer(cell.View, _view);
 
@@ -187,8 +169,8 @@ namespace Xamarin.Forms.Platform.Android
 
 					Invalidate();
 
-					Performance.Stop(reference, "Reuse");
-					Performance.Stop(reference);
+					Performance.Stop("Reuse");
+					Performance.Stop();
 					return;
 				}
 
@@ -206,7 +188,7 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateIsEnabled();
 				UpdateWatchForLongPress();
 
-				Performance.Stop(reference);
+				Performance.Stop();
 			}
 
 			public void UpdateIsEnabled()
@@ -216,24 +198,22 @@ namespace Xamarin.Forms.Platform.Android
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
 			{
-				var reference = Guid.NewGuid().ToString();
-				Performance.Start(reference);
+				Performance.Start();
 
 				double width = Context.FromPixels(r - l);
 				double height = Context.FromPixels(b - t);
 
-				Performance.Start(reference, "Element.Layout");
+				Performance.Start("Element.Layout");
 				Xamarin.Forms.Layout.LayoutChildIntoBoundingRegion(_view.Element, new Rectangle(0, 0, width, height));
-				Performance.Stop(reference, "Element.Layout");
+				Performance.Stop("Element.Layout");
 
 				_view.UpdateLayout();
-				Performance.Stop(reference);
+				Performance.Stop();
 			}
 
 			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 			{
-				var reference = Guid.NewGuid().ToString();
-				Performance.Start(reference);
+				Performance.Start();
 
 				int width = MeasureSpec.GetSize(widthMeasureSpec);
 				int height;
@@ -248,7 +228,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				SetMeasuredDimension(width, height);
 
-				Performance.Stop(reference);
+				Performance.Stop();
 			}
 
 			void UpdateWatchForLongPress()
@@ -267,41 +247,10 @@ namespace Xamarin.Forms.Platform.Android
 					&& HasTapGestureRecognizers(vw);
 			}
 
-			void UpdateWatchForLongPress()
+			static bool HasTapGestureRecognizers(View view)
 			{
-				var vw = _view.Element as Xamarin.Forms.View;
-				if (vw == null)
-				{
-					return;
-				}
-
-				// If the view cell has any context actions and the View itself has any Tap Gestures, they're going
-				// to conflict with one another - the Tap Gesture handling will prevent the ListViewAdapter's
-				// LongClick handling from happening. So we need to watch locally for LongPress and if we see it,
-				// trigger the LongClick manually.
-				_watchForLongPress = _viewCell.ContextActions.Count > 0 
-					&& vw.GestureRecognizers.Any(t => t is TapGestureRecognizer);
-			}
-
-			void TriggerLongClick()
-			{
-				ListViewRenderer?.LongClickOn(this);
-			}
-
-			void UpdateWatchForLongPress()
-			{
-				var vw = _view.Element as Xamarin.Forms.View;
-				if (vw == null)
-				{
-					return;
-				}
-
-				// If the view cell has any context actions and the View itself has any Tap Gestures, they're going
-				// to conflict with one another - the Tap Gesture handling will prevent the ListViewAdapter's
-				// LongClick handling from happening. So we need to watch locally for LongPress and if we see it,
-				// trigger the LongClick manually.
-				_watchForLongPress = _viewCell.ContextActions.Count > 0 
-					&& vw.GestureRecognizers.Any(t => t is TapGestureRecognizer);
+				return view.GestureRecognizers.Any(t => t is TapGestureRecognizer) 
+					|| view.LogicalChildren.OfType<View>().Any(HasTapGestureRecognizers);
 			}
 
 			void TriggerLongClick()

@@ -6,16 +6,13 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 using Xamarin.Forms.Xaml;
-using Xamarin.Forms.Build.Tasks;
 
 namespace Xamarin.Forms.Core.XamlC
 {
 	class RectangleTypeConverter : ICompiledTypeConverter
 	{
-		public IEnumerable<Instruction> ConvertFromString(string value, ILContext context, BaseNode node)
+		public IEnumerable<Instruction> ConvertFromString(string value, ModuleDefinition module, BaseNode node)
 		{
-			var module = context.Body.Method.Module;
-
 			if (string.IsNullOrEmpty(value))
 				throw new XamlParseException($"Cannot convert \"{value}\" into {typeof(Rectangle)}", node);
 			double x, y, w, h;
@@ -43,7 +40,7 @@ namespace Xamarin.Forms.Core.XamlC
 			yield return Instruction.Create(OpCodes.Ldc_R8, w);
 			yield return Instruction.Create(OpCodes.Ldc_R8, h);
 
-			var rectangleCtor = module.ImportReferenceCached(typeof(Rectangle)).ResolveCached().Methods.FirstOrDefault(md => md.IsConstructor && md.Parameters.Count == 4);
+			var rectangleCtor = module.ImportReference(typeof(Rectangle)).Resolve().Methods.FirstOrDefault(md => md.IsConstructor && md.Parameters.Count == 4);
 			var rectangleCtorRef = module.ImportReference(rectangleCtor);
 			yield return Instruction.Create(OpCodes.Newobj, rectangleCtorRef);
 		}

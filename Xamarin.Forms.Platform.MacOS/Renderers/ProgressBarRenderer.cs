@@ -21,7 +21,6 @@ namespace Xamarin.Forms.Platform.MacOS
 					MinValue = 0,
 					MaxValue = 1
 				});
-			UpdateProgressColor();
 			UpdateProgress();
 		}
 
@@ -29,15 +28,8 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == ProgressBar.ProgressColorProperty.PropertyName)
-				UpdateProgressColor();
-			else if (e.PropertyName == ProgressBar.ProgressProperty.PropertyName)
+			if (e.PropertyName == ProgressBar.ProgressProperty.PropertyName)
 				UpdateProgress();
-		}
-
-		void UpdateProgressColor()
-		{
-			SetBackgroundColor(Element.ProgressColor);
 		}
 
 		protected override void SetBackgroundColor(Color color)
@@ -45,18 +37,13 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (Control == null)
 				return;
 
-			if (color.IsDefault)
-			{
-				if (s_currentColorFilter != null && Element.BackgroundColor.IsDefault && Element.ProgressColor.IsDefault)
-				{
-					Control.ContentFilters = new CIFilter[0];
-					s_currentColor = null;
-				}
-
+			if (s_currentColorFilter == null && color.IsDefault)
 				return;
-			}
 
-			var newColor = color.ToNSColor();
+			if (color.IsDefault)
+				Control.ContentFilters = new CIFilter[0];
+
+			var newColor = Element.BackgroundColor.ToNSColor();
 			if (Equals(s_currentColor, newColor))
 				return;
 

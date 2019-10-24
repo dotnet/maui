@@ -3,7 +3,6 @@ using System.Globalization;
 
 namespace Xamarin.Forms
 {
-	[Xaml.TypeConversion(typeof(Point))]
 	public class PointTypeConverter : TypeConverter
 	{
 		public override object ConvertFromInvariantString(string value)

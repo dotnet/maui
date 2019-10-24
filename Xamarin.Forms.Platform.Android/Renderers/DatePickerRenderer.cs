@@ -3,9 +3,7 @@ using System.ComponentModel;
 using Android.App;
 using Android.Content;
 using Android.Content.Res;
-using Android.Util;
 using Android.Widget;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using AView = Android.Views.View;
 using Object = Java.Lang.Object;
 
@@ -68,14 +66,11 @@ namespace Xamarin.Forms.Platform.Android
 
 				textField.SetOnClickListener(TextFieldClickHandler.Instance);
 				SetNativeControl(textField);
-
-				var useLegacyColorManagement = e.NewElement.UseLegacyColorManagement();
-				_textColorSwitcher = new TextColorSwitcher(textField.TextColors, useLegacyColorManagement); 
+				_textColorSwitcher = new TextColorSwitcher(textField.TextColors); 
 			}
 
 			SetDate(Element.Date);
 
-			UpdateFont();
 			UpdateMinimumDate();
 			UpdateMaximumDate();
 			UpdateTextColor();
@@ -91,10 +86,8 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateMinimumDate();
 			else if (e.PropertyName == DatePicker.MaximumDateProperty.PropertyName)
 				UpdateMaximumDate();
-			else if (e.PropertyName == DatePicker.TextColorProperty.PropertyName)
+			if (e.PropertyName == DatePicker.TextColorProperty.PropertyName)
 				UpdateTextColor();
-			else if (e.PropertyName == DatePicker.FontAttributesProperty.PropertyName || e.PropertyName == DatePicker.FontFamilyProperty.PropertyName || e.PropertyName == DatePicker.FontSizeProperty.PropertyName)
-				UpdateFont();
 		}
 
 		internal override void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
@@ -170,12 +163,6 @@ namespace Xamarin.Forms.Platform.Android
 		void SetDate(DateTime date)
 		{
 			Control.Text = date.ToString(Element.Format);
-		}
-
-		void UpdateFont()
-		{
-			Control.Typeface = Element.ToTypeface();
-			Control.SetTextSize(ComplexUnitType.Sp, (float)Element.FontSize);
 		}
 
 		void UpdateMaximumDate()

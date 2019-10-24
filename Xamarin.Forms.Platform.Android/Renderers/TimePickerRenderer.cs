@@ -5,9 +5,9 @@ using Android.Content;
 using Android.Content.Res;
 using Android.Widget;
 using Android.Text.Format;
+using ADatePicker = Android.Widget.DatePicker;
 using ATimePicker = Android.Widget.TimePicker;
 using Object = Java.Lang.Object;
-using Android.OS;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -15,6 +15,8 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		AlertDialog _dialog;
 		TextColorSwitcher _textColorSwitcher;
+		bool _is24HourFormat;
+		string _timeFormat;
 
 		public TimePickerRenderer(Context context) : base(context)
 		{
@@ -58,15 +60,12 @@ namespace Xamarin.Forms.Platform.Android
 				textField.SetOnClickListener(TimePickerListener.Instance);
 				SetNativeControl(textField);
 				_textColorSwitcher = new TextColorSwitcher(textField.TextColors);
-				_is24HourFormat = DateFormat.Is24HourFormat(Context);
+				_is24HourFormat	= DateFormat.Is24HourFormat(Context);
 				_timeFormat = _is24HourFormat ? "HH:mm" : Element.Format;
 			}
 
 			SetTime(e.NewElement.Time);
 			UpdateTextColor();
-
-			if ((int)Build.VERSION.SdkInt > 16)
-				Control.TextAlignment = global::Android.Views.TextAlignment.ViewStart;
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -74,12 +73,11 @@ namespace Xamarin.Forms.Platform.Android
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == TimePicker.TimeProperty.PropertyName ||
-				e.PropertyName == TimePicker.FormatProperty.PropertyName)
+			    e.PropertyName == TimePicker.FormatProperty.PropertyName)
 				SetTime(Element.Time);
-			else if (e.PropertyName == TimePicker.TextColorProperty.PropertyName)
+
+			if (e.PropertyName == TimePicker.TextColorProperty.PropertyName)
 				UpdateTextColor();
-			else if (e.PropertyName == TimePicker.FontAttributesProperty.PropertyName || e.PropertyName == TimePicker.FontFamilyProperty.PropertyName || e.PropertyName == TimePicker.FontSizeProperty.PropertyName)
-				UpdateFont();
 		}
 
 		internal override void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
@@ -105,7 +103,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			TimePicker view = Element;
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
-
+			
 			_dialog = new TimePickerDialog(Context, this, view.Time.Hours, view.Time.Minutes, _is24HourFormat);
 
 			if (Forms.IsLollipopOrNewer)
@@ -121,14 +119,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void SetTime(TimeSpan time)
 		{
-			var timeFormat = Is24HourView ? "HH:mm" : Element.Format;
-			Control.Text = DateTime.Today.Add(time).ToString(timeFormat);
-		}
-
-		void UpdateFont()
-		{
-			Control.Typeface = Element.ToTypeface();
-			Control.SetTextSize(ComplexUnitType.Sp, (float)Element.FontSize);
+			Control.Text = DateTime.Today.Add(time).ToString(_timeFormat);
 		}
 
 		void UpdateTextColor()

@@ -106,11 +106,5 @@ namespace Xamarin.Forms
 		{
 			return string.Format("{{Width={0} Height={1}}}", _width.ToString(CultureInfo.InvariantCulture), _height.ToString(CultureInfo.InvariantCulture));
 		}
-
-		public void Deconstruct(out double width, out double height)
-		{
-			width = Width;
-			height = Height;
-		}
 	}
 }

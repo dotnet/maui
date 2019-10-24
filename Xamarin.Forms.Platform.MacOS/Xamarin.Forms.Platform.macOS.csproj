@@ -62,7 +62,6 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Xamarin.Mac" />
-    <Reference Include="netstandard" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Net.Http" />
@@ -71,7 +70,6 @@
     <Compile Include="..\Xamarin.Forms.Platform.iOS\Flags.cs">
       <Link>Flags.cs</Link>
     </Compile>
-    <Compile Include="Extensions\FlowDirectionExtensions.cs" />
     <Compile Include="FormsApplicationDelegate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PlatformRenderer.cs" />
@@ -240,5 +238,6 @@
       <Name>Xamarin.Forms.Core</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
 </Project>

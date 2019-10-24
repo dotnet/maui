@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Controls.TestCasesPages
 		async void Build ()
 		{
 			var image = new Image {
-				Source = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/banner.png",
+				Source = "http://www.califliving.com/title24-energy/images/sanfrancisco.jpg",
 				Aspect = Aspect.AspectFill,
 				Opacity = 0.5,
 			};

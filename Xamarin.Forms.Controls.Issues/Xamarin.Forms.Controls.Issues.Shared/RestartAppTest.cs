@@ -18,22 +18,14 @@ namespace Xamarin.Forms.Controls.Issues
 		PlatformAffected.Android)]
 	public class RestartAppTest : TestContentPage 
 	{
-		public static object App;
-		public static bool Reinit;
-
 		public const string ForceRestart = "ForceRestart";
 		public const string Success = "Android CoreGallery";
-		public const string ReinitOk = "Tap Reinit, back out of app, relaunch, and expect 'true': {0}";
 		public const string RestartButton = "Restart";
-		public const string ReinitButton = "Reinit";
 
 		protected override void Init()
 		{
-			var restartButton = new Button { Text = RestartButton, AutomationId = RestartButton };
+			var restartButton = new Button { Text = "Restart", AutomationId = RestartButton };
 			restartButton.Clicked += (sender, e) => MessagingCenter.Send(this, ForceRestart);
-
-			var reinitButton = new Button { Text = ReinitButton, AutomationId = RestartButton };
-			reinitButton.Clicked += (sender, e) => App = Application.Current;
 
 			Content = new StackLayout
 			{
@@ -41,19 +33,18 @@ namespace Xamarin.Forms.Controls.Issues
 				Children =
 				{
 					new Label { Text = Success },
-					new Label { Text = string.Format(ReinitOk, Reinit) },
-					restartButton,
-					reinitButton
+					restartButton
 				}
 			};
-
-			MessagingCenter.Send(this, ForceRestart);
 		}
 
 #if UITEST
 		[Test]
 		public void ForcingRestartDoesNotCauseCrash()
 		{
+			RunningApp.WaitForElement(RestartButton);
+			RunningApp.Tap(RestartButton);
+
 			// If the app hasn't crashed, this test has passed
 			RunningApp.WaitForElement(Success);
 		}

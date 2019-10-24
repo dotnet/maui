@@ -88,5 +88,3 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	}
 }
-
-// Note: this fails on UWP because we can't currently inspect listview headers	

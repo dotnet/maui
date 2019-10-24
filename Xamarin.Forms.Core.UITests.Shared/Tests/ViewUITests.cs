@@ -14,8 +14,6 @@ namespace Xamarin.Forms.Core.UITests
 	[Category("ViewBaseTests")]
 	internal abstract class _ViewUITests : BaseTestFixture
 	{
-		protected const string PleaseInspect = "Test framework cannout currently check this value; please inspect visually";
-
 		/* Under score prefixes ensure inherited properties run first in test suite */
 		//[Test]
 		//[Category ("View")]
@@ -147,8 +145,6 @@ namespace Xamarin.Forms.Core.UITests
 			remote.GoTo();
 #if __MACOS__
 			Assert.Inconclusive("needs testing");
-#elif __WINDOWS__
-			Assert.Inconclusive(PleaseInspect);
 #else
 			float opacity = -1f;
 			opacity = remote.GetProperty<float> (View.OpacityProperty);
@@ -173,10 +169,7 @@ namespace Xamarin.Forms.Core.UITests
 			Matrix generatedMatrix = NumericExtensions.CalculateRotationMatrixForDegrees (10, Axis.Z);
 			Assert.AreEqual (generatedMatrix, rotationMatrix);
 #endif
-#if __WINDOWS__
-			Assert.Inconclusive(PleaseInspect);
-#endif
-		}
+}
 
 		[Test]
 		[UiTest (typeof (VisualElement), "RotationX")]
@@ -193,9 +186,6 @@ namespace Xamarin.Forms.Core.UITests
 			var rotationXMatrix = remote.GetProperty<Matrix> (View.RotationXProperty);
 			Matrix matrix = NumericExtensions.CalculateRotationMatrixForDegrees (33.0f, Axis.X);
 			Assert.AreEqual (matrix, rotationXMatrix);
-#endif
-#if __WINDOWS__
-			Assert.Inconclusive(PleaseInspect);
 #endif
 		}
 
@@ -215,9 +205,6 @@ namespace Xamarin.Forms.Core.UITests
 			Matrix matrix = NumericExtensions.CalculateRotationMatrixForDegrees (10.0f, Axis.Y);
 			Assert.AreEqual (matrix, rotationYMatrix);
 #endif
-#if __WINDOWS__
-			Assert.Inconclusive(PleaseInspect);
-#endif
 		}
 
 		[Test]
@@ -229,14 +216,10 @@ namespace Xamarin.Forms.Core.UITests
 #if __MACOS__
 			Assert.Inconclusive("needs testing");
 #else
-#if __WINDOWS__
-			Assert.Inconclusive(PleaseInspect);
-#endif
 			var scaleMatrix = remote.GetProperty<Matrix>(View.ScaleProperty);
 			Matrix generatedMatrix = NumericExtensions.BuildScaleMatrix(0.5f);
 			Assert.AreEqual(generatedMatrix, scaleMatrix);
 #endif
-
 		}
 
 		[Test]
@@ -246,9 +229,6 @@ namespace Xamarin.Forms.Core.UITests
 		{
 			var remote = new ViewContainerRemote (App, Test.VisualElement.TranslationX, PlatformViewType);
 			remote.GoTo ();
-#if __WINDOWS__
-			Assert.Inconclusive(PleaseInspect);
-#endif
 		}
 
 		[Test]
@@ -258,9 +238,6 @@ namespace Xamarin.Forms.Core.UITests
 		{
 			var remote = new ViewContainerRemote (App, Test.VisualElement.TranslationY, PlatformViewType);
 			remote.GoTo ();
-#if __WINDOWS__
-			Assert.Inconclusive(PleaseInspect);
-#endif
 		}
 
 		[Test]

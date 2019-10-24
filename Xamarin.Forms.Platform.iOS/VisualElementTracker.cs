@@ -82,8 +82,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				e.PropertyName == VisualElement.TranslationXProperty.PropertyName || e.PropertyName == VisualElement.TranslationYProperty.PropertyName || e.PropertyName == VisualElement.ScaleProperty.PropertyName ||
 				e.PropertyName == VisualElement.RotationProperty.PropertyName || e.PropertyName == VisualElement.RotationXProperty.PropertyName || e.PropertyName == VisualElement.RotationYProperty.PropertyName ||
 				e.PropertyName == VisualElement.IsVisibleProperty.PropertyName || e.PropertyName == VisualElement.IsEnabledProperty.PropertyName ||
-				e.PropertyName == VisualElement.InputTransparentProperty.PropertyName || e.PropertyName == VisualElement.OpacityProperty.PropertyName || 
-				e.PropertyName == Layout.CascadeInputTransparentProperty.PropertyName)
+				e.PropertyName == VisualElement.InputTransparentProperty.PropertyName || e.PropertyName == VisualElement.OpacityProperty.PropertyName)
 				UpdateNativeControl(); // poorly optimized
 		}
 
@@ -113,24 +112,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (view == null || view.Batched)
 				return;
 
-			bool shouldInteract;
-
-			if (view is Layout layout)
-			{
-				if (layout.InputTransparent)
-				{
-					shouldInteract = !layout.CascadeInputTransparent;
-				}
-				else
-				{
-					shouldInteract = layout.IsEnabled;
-				}
-			}
-			else
-			{
-				shouldInteract = !view.InputTransparent && view.IsEnabled;
-			}
-
+			var shouldInteract = !view.InputTransparent && view.IsEnabled;
 			if (_isInteractive != shouldInteract)
 			{
 #if __MOBILE__
@@ -300,9 +282,6 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void UpdateNativeControl()
 		{
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference);
-
 			if (_disposed)
 				return;
 
@@ -320,7 +299,6 @@ namespace Xamarin.Forms.Platform.MacOS
 			OnUpdateNativeControl(_layer);
 
 			NativeControlUpdated?.Invoke(this, EventArgs.Empty);
-			Performance.Stop(reference);
 		}
 	}
 }
