@@ -1,3 +1,3 @@
 [submodule "Xamarin.Forms.Build"]
 	path = Xamarin.Forms.Build
-	url = git@github.com:xamarin/Xamarin.Forms.Build.git
+	url = https://github.com/xamarin/Xamarin.Forms.Build 
