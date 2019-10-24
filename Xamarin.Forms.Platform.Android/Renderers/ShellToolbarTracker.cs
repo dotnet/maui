@@ -141,7 +141,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				if (_backButtonBehavior != null)
 					_backButtonBehavior.PropertyChanged -= OnBackButtonBehaviorChanged;
-				((IShellController)_shellContext.Shell).RemoveFlyoutBehaviorObserver(this);
+				((IShellController)_shellContext?.Shell)?.RemoveFlyoutBehaviorObserver(this);
 
 				UpdateTitleView(_shellContext.AndroidContext, _toolbar, null);
 
@@ -152,7 +152,7 @@ namespace Xamarin.Forms.Platform.Android
 					_searchView.SearchConfirmed -= OnSearchConfirmed;
 					_searchView.Dispose();
 				}
-
+        
 				_drawerToggle?.Dispose();
 			}
 
