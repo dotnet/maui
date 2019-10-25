@@ -21,6 +21,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected TViewController Controller { get; private set; }
 
+		protected ItemsViewRenderer()
+		{
+			AutoPackage = false;
+		}
+
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			return Control.GetSizeRequest(widthConstraint, heightConstraint, 0, 0);
