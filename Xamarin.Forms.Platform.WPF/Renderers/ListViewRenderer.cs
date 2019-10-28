@@ -32,6 +32,7 @@ namespace Xamarin.Forms.Platform.WPF
 		ITemplatedItemsView<Cell> TemplatedItemsView => Element;
 		WpfScrollBarVisibility? _defaultHorizontalScrollVisibility;
 		WpfScrollBarVisibility? _defaultVerticalScrollVisibility;
+		ScrollViewer _scrollViewer;
 
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
@@ -50,6 +51,18 @@ namespace Xamarin.Forms.Platform.WPF
 				var templatedItems = ((ITemplatedItemsView<Cell>)e.OldElement).TemplatedItems;
 				templatedItems.CollectionChanged -= OnCollectionChanged;
 				templatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
+				if (Control != null)
+				{
+					Control.MouseUp -= OnNativeMouseUp;
+					Control.KeyUp -= OnNativeKeyUp;
+					Control.TouchUp -= OnNativeTouchUp;
+					Control.StylusUp -= OnNativeStylusUp;
+					Control.Loaded -= ControlOnLoaded;
+				}
+				if (_scrollViewer != null)
+				{
+					_scrollViewer.ScrollChanged -= SendScrolled;
+				}
 			}
 
 			if (e.NewElement != null)
@@ -74,6 +87,7 @@ namespace Xamarin.Forms.Platform.WPF
 					Control.KeyUp += OnNativeKeyUp;
 					Control.TouchUp += OnNativeTouchUp;
 					Control.StylusUp += OnNativeStylusUp;
+					Control.Loaded += ControlOnLoaded;
 				}
 
 				// Suscribe element events
@@ -92,6 +106,22 @@ namespace Xamarin.Forms.Platform.WPF
 
 			base.OnElementChanged(e);
 		}
+
+		void ControlOnLoaded(object sender, RoutedEventArgs e)
+		{
+			_scrollViewer = Control.FindVisualChild<ScrollViewer>();
+			if (_scrollViewer != null)
+			{
+				_scrollViewer.ScrollChanged += SendScrolled;
+			}
+		}
+
+		void SendScrolled(object sender, ScrollChangedEventArgs e)
+		{
+			var args = new ScrolledEventArgs(0, _scrollViewer.VerticalOffset);
+			Element?.SendScrolled(args);
+		}
+
 		void OnElementScrollToRequested(object sender, ScrollToRequestedEventArgs e)
 		{
 			var scrollArgs = (ITemplatedItemsListScrollToRequestedEventArgs)e;
@@ -211,6 +241,11 @@ namespace Xamarin.Forms.Platform.WPF
 					Control.KeyUp -= OnNativeKeyUp;
 					Control.TouchUp -= OnNativeTouchUp;
 					Control.StylusUp -= OnNativeStylusUp;
+					Control.Loaded -= ControlOnLoaded;
+				}
+				if (_scrollViewer != null)
+				{
+					_scrollViewer.ScrollChanged -= SendScrolled;
 				}
 
 				if (Element != null)
