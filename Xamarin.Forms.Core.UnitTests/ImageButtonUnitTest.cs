@@ -194,7 +194,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			var source = new StreamImageSource();
 			var image = new ImageButton { Source = source };
 			bool fired = false;
-			image.MeasureInvalidated += (sender, e) => fired = true;
+			EventHandler eventHandler = (sender, e) => fired = true;
+			image.MeasureInvalidated += eventHandler;
 			Assert.Null(source.Stream);
 			source.Stream = token => Task.FromResult<Stream>(null);
 			Assert.NotNull(source.Stream);

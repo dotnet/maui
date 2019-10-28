@@ -86,7 +86,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (ShellItem != null)
 				UnhookEvents(ShellItem);
 
-			((IShellController)ShellContext.Shell).RemoveAppearanceObserver(this);
+			((IShellController)ShellContext?.Shell)?.RemoveAppearanceObserver(this);
 
 			if (_bottomSheetDialog != null)
 			{

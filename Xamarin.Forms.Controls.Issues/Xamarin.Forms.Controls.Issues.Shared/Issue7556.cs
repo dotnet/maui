@@ -8,6 +8,7 @@ using System.Linq;
 using Xamarin.UITest;
 using NUnit.Framework;
 using Xamarin.Forms.Core.UITests;
+using Xamarin.UITest.iOS;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
@@ -23,7 +24,19 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		protected override void Init()
 		{
-			Master = new ContentPage() { Title = "Master", BackgroundColor = Color.Blue };
+			Master = new ContentPage()
+			{
+				Content = new StackLayout()
+				{
+					Children = 
+					{
+						new Label() { Margin = 20, Text = "Master Visible", TextColor = Color.White }
+					}
+				},
+				Title = "Master",
+				BackgroundColor = Color.Blue
+			};
+
 			Detail = new NavigationPage(new DetailsPage(this) { Title = "Details" });
 		}
 
@@ -46,15 +59,29 @@ namespace Xamarin.Forms.Controls.Issues
 						{
 							Text = "Click to rotate through MasterBehavior settings and test each one",
 							Command = new Command(OnChangeMasterBehavior)
+						},
+						new Button()
+						{
+							Text = "Push Modal Page When on Split MasterBehavior",
+							AutomationId = "PushModalPage",
+							Command = new Command(() =>
+							{
+								Navigation.PushModalAsync(new ContentPage(){
+									Content = new Button()
+									{
+										Text = "After popping this Page MasterBehavior should still be split",
+										AutomationId = "PopModalPage",
+										Command = new Command(() => Navigation.PopModalAsync())
+									}
+								});
+							})
 						}
 					}
 				};
-			}
 
-			protected override void OnAppearing()
-			{
-				base.OnAppearing();
-				OnChangeMasterBehavior();
+
+				MDP.MasterBehavior = MasterBehavior.Split;
+				lblThings.Text = MDP.MasterBehavior.ToString();
 			}
 
 			void OnChangeMasterBehavior()
@@ -70,5 +97,28 @@ namespace Xamarin.Forms.Controls.Issues
 				lblThings.Text = MDP.MasterBehavior.ToString();
 			}
 		}
+
+#if UITEST && __IOS__
+		[Test]
+		public void MasterStillVisibleAfterPushingAndPoppingModalPage()
+		{
+			if (!RunningApp.IsTablet())
+				return;
+
+			RunningApp.SetOrientationLandscape();
+			RunningApp.WaitForElement("Split");
+			RunningApp.WaitForElement("Master Visible");
+			RunningApp.Tap("PushModalPage");
+			RunningApp.Tap("PopModalPage");
+			RunningApp.WaitForElement("Master Visible");
+		}
+
+		[TearDown]
+		public override void TearDown() 
+		{
+			RunningApp.SetOrientationPortrait ();
+			base.TearDown();
+		}
+#endif
 	}
 }

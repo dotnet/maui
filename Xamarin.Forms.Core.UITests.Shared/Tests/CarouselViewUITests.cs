@@ -53,7 +53,9 @@ namespace Xamarin.Forms.Core.UITests
 			App.Back();
 		}
 
+#if __IOS__
 		[TestCase("CarouselView (Code, Vertical)")]
+#endif
 		public void CarouselViewVertical(string subgallery)
 		{
 			VisitSubGallery(subgallery);

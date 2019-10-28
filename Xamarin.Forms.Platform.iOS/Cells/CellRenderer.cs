@@ -12,6 +12,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		EventHandler _onForceUpdateSizeRequested;
 		PropertyChangedEventHandler _onPropertyChangedEventHandler;
+		readonly UIColor _defaultCellBgColor = Forms.IsiOS13OrNewer ? UIColor.Clear : UIColor.White;
 
 		public virtual UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
@@ -60,7 +61,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected void UpdateBackground(UITableViewCell tableViewCell, Cell cell)
 		{
-			var uiBgColor = UITableView.Appearance.BackgroundColor ?? UIColor.White; // Must be set to a solid color or blending issues will occur
+			var uiBgColor = UITableView.Appearance.BackgroundColor ?? _defaultCellBgColor;
+
 #if __MOBILE__
 			var defaultBgColor = cell.On<PlatformConfiguration.iOS>().DefaultBackgroundColor();
 #else

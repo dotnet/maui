@@ -15,6 +15,7 @@ using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
 using AImageButton = Android.Widget.ImageButton;
+using ASupportDrawable = Android.Support.V7.Graphics.Drawable;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -207,8 +208,7 @@ namespace Xamarin.Forms.Platform.Android
 			_textBlock.Threshold = 1;
 			_textBlock.Adapter = new ShellSearchViewAdapter(SearchHandler, _shellContext);
 			_textBlock.ItemClick += OnTextBlockItemClicked;
-			if (Forms.IsMarshmallowOrNewer)
-				_textBlock.SetDropDownBackgroundDrawable(new ClipDrawableWrapper(_textBlock.DropDownBackground));
+			_textBlock.SetDropDownBackgroundDrawable(new ClipDrawableWrapper(_textBlock.DropDownBackground));
 
 			// A note on accessibility. The _textBlocks hint is what android defaults to reading in the screen
 			// reader. Therefore, we do not need to set something else.
@@ -367,7 +367,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
-		class ClipDrawableWrapper : DrawableWrapper
+		class ClipDrawableWrapper : ASupportDrawable.DrawableWrapper
 		{
 			public ClipDrawableWrapper(Drawable dr) : base(dr)
 			{
