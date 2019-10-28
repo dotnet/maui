@@ -65,7 +65,11 @@ namespace Xamarin.Forms.Core.UnitTests
 			var dict = new Dictionary<AnimatableKey, object> { { key1, new object () } };
 
 			Assert.Throws<ArgumentException> (() => {
-				dict.Add (key2, new object ());
+				var closureKey1 = key1;
+				var closureKey2 = key1;
+				var closureAnimatable = animatable;
+
+				dict.Add(key2, new object());
 			});
 		}
 	}

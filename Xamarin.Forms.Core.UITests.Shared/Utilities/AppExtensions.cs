@@ -43,6 +43,36 @@ namespace Xamarin.UITest
 			return true;
 		}
 
+		public static bool IsTablet(this IApp app)
+		{
+#if __IOS__
+			if (app is Xamarin.Forms.Controls.ScreenshotConditionalApp sca)
+			{
+				return sca.IsTablet;
+			}
+			else if (app is iOSApp iOSApp)
+			{
+				return iOSApp.Device.IsTablet;
+			}
+#endif
+			return false;
+		}
+
+		public static bool IsPhone(this IApp app)
+		{
+#if __IOS__
+			if (app is Xamarin.Forms.Controls.ScreenshotConditionalApp sca)
+			{
+				return sca.IsPhone;
+			}
+			else if (app is iOSApp iOSApp)
+			{
+				return iOSApp.Device.IsPhone;
+			}
+#endif
+			return true;
+		}
+
 #if __IOS__
 		public static void SendAppToBackground(this IApp app, TimeSpan timeSpan)
 		{

@@ -536,17 +536,6 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				return;
 			}
-
-			var effectiveFlowDirection = ((IVisualElementController)Element).EffectiveFlowDirection;
-
-			if (effectiveFlowDirection.IsRightToLeft())
-			{
-				linearLayoutManager.ReverseLayout = true;
-			}
-			else if (effectiveFlowDirection.IsLeftToRight())
-			{
-				linearLayoutManager.ReverseLayout = false;
-			}
 		}
 
 		protected virtual int DetermineTargetPosition(ScrollToRequestEventArgs args)

@@ -80,7 +80,7 @@ namespace Xamarin.Forms.Controls.Issues
 		#if UITEST
 		[Test]
 		[Ignore("Fails intermittently on TestCloud")]
-		public async void Bugzilla31255Test ()
+		public async Task Bugzilla31255Test ()
 		{
 			RunningApp.Screenshot ("I am at Bugzilla 31255");
 			await Task.Delay (5000);

@@ -1,5 +1,6 @@
 using Android.Support.V7.Widget;
 using AView = Android.Views.View;
+using ALayoutDirection = Android.Views.LayoutDirection;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -14,6 +15,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected static bool IsLayoutReversed(RecyclerView.LayoutManager layoutManager)
 		{
+			if (layoutManager.LayoutDirection == (int)(ALayoutDirection.Rtl))
+				return true;
+
 			if (layoutManager is LinearLayoutManager linearLayoutManager)
 			{
 				return linearLayoutManager.ReverseLayout;
@@ -22,13 +26,13 @@ namespace Xamarin.Forms.Platform.Android
 			return false;
 		}
 
-		protected int[] CalculateDistanceToFinalSnap(RecyclerView.LayoutManager layoutManager, AView targetView, 
+		protected int[] CalculateDistanceToFinalSnap(RecyclerView.LayoutManager layoutManager, AView targetView,
 			int direction = 1)
 		{
 			var orientationHelper = CreateOrientationHelper(layoutManager);
 			var isHorizontal = layoutManager.CanScrollHorizontally();
 			var rtl = isHorizontal && IsLayoutReversed(layoutManager);
-			
+
 			var size = orientationHelper.GetDecoratedMeasurement(targetView);
 
 			var hiddenPortion = size - VisiblePortion(targetView, orientationHelper, rtl);
@@ -50,7 +54,7 @@ namespace Xamarin.Forms.Platform.Android
 			var size = orientationHelper.GetDecoratedMeasurement(view);
 
 			var portionInViewPort = VisiblePortion(view, orientationHelper, reversed && isHorizontal);
-			
+
 			// Is the first visible view at least halfway on screen?
 			return portionInViewPort >= size / 2;
 		}
