@@ -52,21 +52,21 @@ namespace Xamarin.Forms.Internals
 
 		public static void FrameBegin(
 			[CallerMemberName] string name = "",
-			string id = null,
 			[CallerLineNumber] int line = 0)
 		{
 			if (!Running)
 				return;
 
-			FrameBeginBody(name, id, line);
+			FrameBeginBody(name, null, line);
 		}
 
-		public static void FrameEnd()
+		public static void FrameEnd(
+			[CallerMemberName] string name = "")
 		{
 			if (!Running)
 				return;
 
-			FrameEndBody();
+			FrameEndBody(name);
 		}
 
 		public static void FramePartition(
@@ -90,9 +90,12 @@ namespace Xamarin.Forms.Internals
 			Stack.Push(new Profile(name, id, line));
 		}
 
-		static void FrameEndBody()
+		static void FrameEndBody(string name)
 		{
 			var profile = Stack.Pop();
+			if (profile._name != name)
+				throw new InvalidOperationException(
+					$"Expected to end frame '{profile._name}', not '{name}'.");
 			profile.Dispose();
 		}
 
@@ -104,7 +107,7 @@ namespace Xamarin.Forms.Internals
 			var name = profile._name;
 			profile.Dispose();
 
-			FrameBegin(name, id, line);
+			FrameBeginBody(name, id, line);
 		}
 
 		Profile(

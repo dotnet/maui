@@ -122,8 +122,6 @@ namespace Xamarin.Forms.Platform.Android
 			Profile.FramePartition("UpdateFlyoutBackground");
 			UpdateFlyoutBackground();
 
-			Profile.FrameEnd();
-
 			Profile.FramePartition(nameof(UpdateVerticalScrollMode));
 			UpdateVerticalScrollMode();
 			Profile.FrameEnd();

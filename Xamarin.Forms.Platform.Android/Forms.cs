@@ -147,7 +147,7 @@ namespace Xamarin.Forms
 
 			Profile.FrameBegin("Assembly.GetCallingAssembly");
 			resourceAssembly = Assembly.GetCallingAssembly();
-			Profile.FrameEnd();
+			Profile.FrameEnd("Assembly.GetCallingAssembly");
 
 			Profile.FrameBegin();
 			SetupInit(activity, resourceAssembly, null);
