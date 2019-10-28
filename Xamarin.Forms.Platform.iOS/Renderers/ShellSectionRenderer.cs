@@ -398,10 +398,14 @@ namespace Xamarin.Forms.Platform.iOS
 				throw new ArgumentNullException(nameof(popTask));
 			}
 
+			var poppedPage = _shellSection.Stack[_shellSection.Stack.Count - 1];
+
+			// this is used to setup appearance changes based on the incoming page
+			((IShellSectionController)_shellSection).SendPopping(poppedPage);
+
 			await popTask;
 
-			var poppedPage = _shellSection.Stack[_shellSection.Stack.Count - 1];
-			((IShellSectionController)_shellSection).SendPopped();
+			((IShellSectionController)_shellSection).SendPopped(poppedPage);
 			DisposePage(poppedPage);
 		}
 

@@ -98,6 +98,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ScrollToGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NestedCollectionViews.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7339.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ShellAppearanceChange.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellFlyoutBehavior.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7128.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellGestures.cs" />
@@ -1588,7 +1589,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-  </ItemGroup>
+  </ItemGroup>  
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7048.xaml">
       <SubType>Designer</SubType>

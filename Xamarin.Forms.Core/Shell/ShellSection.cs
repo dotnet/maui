@@ -131,6 +131,24 @@ namespace Xamarin.Forms
 			SendUpdateCurrentState(ShellNavigationSource.Pop);
 		}
 
+		void IShellSectionController.SendPopping(Page page)
+		{
+			if (_navStack.Count <= 1)
+				throw new Exception("Nav Stack consistency error");
+
+			_navStack.Remove(page);
+			SendAppearanceChanged();
+		}
+
+		void IShellSectionController.SendPopped(Page page)
+		{
+			if(_navStack.Contains(page))
+				_navStack.Remove(page);
+
+			RemovePage(page);
+			SendUpdateCurrentState(ShellNavigationSource.Pop);
+		}
+
 		#endregion IShellSectionController
 
 		#region IPropertyPropagationController
@@ -266,8 +284,6 @@ namespace Xamarin.Forms
 				Shell.ApplyQueryAttributes(content, queryData, isLast);
 				await OnPushAsync(content, i == routes.Count - 1 && animate);
 			}
-
-			SendAppearanceChanged();
 		}
 
 		internal void SendStructureChanged()
@@ -283,6 +299,7 @@ namespace Xamarin.Forms
 		internal void UpdateDisplayedPage()
 		{
 			var stack = Stack;
+			var previousPage = DisplayedPage;
 			if (stack.Count > 1)
 			{
 				DisplayedPage = stack[stack.Count - 1];
@@ -294,7 +311,11 @@ namespace Xamarin.Forms
 					DisplayedPage = currentItem.Page;
 			}
 
-			PresentedPageAppearing();
+			if (previousPage != DisplayedPage)
+			{
+				PresentedPageAppearing();
+				SendAppearanceChanged();
+			}
 		}
 
 		protected override void OnChildAdded(Element child)
@@ -392,7 +413,6 @@ namespace Xamarin.Forms
 			_navStack.Remove(page);
 			PresentedPageAppearing();
 
-			SendAppearanceChanged();
 			_navigationRequested?.Invoke(this, args);
 			if (args.Task != null)
 				await args.Task;
@@ -429,7 +449,6 @@ namespace Xamarin.Forms
 			_navigationRequested?.Invoke(this, args);
 			var oldStack = _navStack;
 			_navStack = new List<Page> { null };
-			SendAppearanceChanged();
 
 			if (args.Task != null)
 				await args.Task;
@@ -469,7 +488,6 @@ namespace Xamarin.Forms
 			_navStack.Add(page);
 			PresentedPageAppearing();
 			AddPage(page);
-			SendAppearanceChanged();
 			_navigationRequested?.Invoke(this, args);
 
 			SendUpdateCurrentState(ShellNavigationSource.Push);
@@ -506,7 +524,6 @@ namespace Xamarin.Forms
 			if(currentPage)
 				PresentedPageAppearing();
 
-			SendAppearanceChanged();
 			RemovePage(page);
 			var args = new NavigationRequestedEventArgs(page, false)
 			{
