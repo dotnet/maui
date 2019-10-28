@@ -28,7 +28,6 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue5868.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6963.cs" />
-    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue5868.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6963.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7048.xaml.cs">
