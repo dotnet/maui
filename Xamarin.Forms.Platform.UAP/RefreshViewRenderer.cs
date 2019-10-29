@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
@@ -41,6 +42,7 @@ namespace Xamarin.Forms.Platform.UWP
 			base.Dispose(disposing);
 		}
 
+		bool _isLoaded = false;
 		protected override void OnElementChanged(ElementChangedEventArgs<RefreshView> e)
 		{
 			if (e.NewElement != null)
@@ -53,13 +55,26 @@ namespace Xamarin.Forms.Platform.UWP
 					};
 
 					refreshControl.RefreshRequested += OnRefresh;
+					refreshControl.Loaded += OnLoaded;
+
+					// Telling the refresh to start before the control has been sized
+					// causes no refresh circle to show up
+					void OnLoaded(object sender, object args)
+					{
+						refreshControl.Loaded -= OnLoaded;
+						_ = Dispatcher.RunAsync(CoreDispatcherPriority.Low, () =>
+						{
+							_isLoaded = true;
+							UpdateIsRefreshing();
+						});
+					}
 
 					// There's a bug with RefreshContainer where if you assign the Visualizer
 					// yourself on creation it will cause RefreshRequested to fire twice
 					// https://github.com/microsoft/microsoft-ui-xaml/issues/1282
 					long callbackToken = 0;
 					callbackToken = refreshControl.RegisterPropertyChangedCallback(RefreshContainer.VisualizerProperty,
-						(_,__) =>
+						(_, __) =>
 						{
 							if (refreshControl?.Visualizer == null)
 								return;
@@ -73,12 +88,13 @@ namespace Xamarin.Forms.Platform.UWP
 
 				UpdateContent();
 				UpdateIsEnabled();
-				UpdateIsRefreshing();
 				UpdateRefreshPullDirection();
 			}
 
 			base.OnElementChanged(e);
 		}
+
+
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
@@ -123,6 +139,9 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateIsRefreshing()
 		{
+			if (!_isLoaded)
+				return;
+
 			if (!Element.IsRefreshing)
 			{
 				CompleteRefresh();
