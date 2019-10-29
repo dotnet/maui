@@ -67,8 +67,8 @@
       </Parameters>
       <Docs>
         <param name="fullPath">Full path and filename to file.</param>
-        <param name="contentType"></param>
-        <summary>Explicit content type of file.</summary>
+        <param name="contentType">Content type (MIME type) of the file (eg: `image/png`).</param>
+        <summary>Explicit content type (MIME type) of file.</summary>
         <remarks></remarks>
       </Docs>
     </Member>
