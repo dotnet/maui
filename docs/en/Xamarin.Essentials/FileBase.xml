@@ -48,7 +48,7 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets or sets the file's content type.</summary>
+        <summary>Gets or sets the file's content type as a MIME type (eg: `image/png`).</summary>
         <value></value>
         <remarks></remarks>
       </Docs>
