@@ -62,11 +62,6 @@ namespace Xamarin.Forms
 				ContentCache = result;
 			}
 
-			if (result != null && result.Parent != this)
-			{
-				OnChildAdded(result);
-			}
-
 			if (result == null)
 				throw new InvalidOperationException($"No Content found for {nameof(ShellContent)}, Title:{Title}, Route {Route}");
 
@@ -122,6 +117,11 @@ namespace Xamarin.Forms
 			set
 			{
 				_contentCache = value;
+				if (value != null && value.Parent != this)
+				{
+					OnChildAdded(value);
+				}
+
 				if (Parent != null)
 					((ShellSection)Parent).UpdateDisplayedPage();
 			}
@@ -162,8 +162,6 @@ namespace Xamarin.Forms
 				{
 					shellContent._logicalChildren.Add((Element)newValue);
 					shellContent.ContentCache = newElement;
-					// parent new item
-					shellContent.OnChildAdded(newElement);
 				}
 				else if(newValue != null)
 				{

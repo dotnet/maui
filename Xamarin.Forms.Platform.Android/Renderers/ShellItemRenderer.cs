@@ -299,8 +299,9 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			ChangeSection(shellSection);
 
-			dialog.Dismiss();
-			dialog.Dispose();
+			dialog.Dismiss(); //should trigger OnMoreSheetDismissed, which will clean up the dialog
+			if (dialog != _bottomSheetDialog) //should never be true, but just in case, prevent a leak
+				dialog.Dispose();
 		}
 
 		List<(string title, ImageSource icon, bool tabEnabled)> CreateTabList(ShellItem shellItem)
