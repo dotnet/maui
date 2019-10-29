@@ -21,7 +21,7 @@
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <RepositoryUrl>https://github.com/xamarin/Essentials</RepositoryUrl>
     <PackageReleaseNotes>See: https://aka.ms/xamarinessentials-releasenotes</PackageReleaseNotes>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <DefineConstants>$(DefineConstants);</DefineConstants>
     <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>

@@ -33,20 +33,16 @@ namespace Xamarin.Essentials
 
         static DisplayInfo GetMainDisplayInfo()
         {
-            using (var displayMetrics = new DisplayMetrics())
-            {
-                using (var display = GetDefaultDisplay())
-                {
-                    display?.GetRealMetrics(displayMetrics);
+            using var displayMetrics = new DisplayMetrics();
+            using var display = GetDefaultDisplay();
+            display?.GetRealMetrics(displayMetrics);
 
-                    return new DisplayInfo(
-                        width: displayMetrics?.WidthPixels ?? 0,
-                        height: displayMetrics?.HeightPixels ?? 0,
-                        density: displayMetrics?.Density ?? 0,
-                        orientation: CalculateOrientation(),
-                        rotation: CalculateRotation());
-                }
-            }
+            return new DisplayInfo(
+                width: displayMetrics?.WidthPixels ?? 0,
+                height: displayMetrics?.HeightPixels ?? 0,
+                density: displayMetrics?.Density ?? 0,
+                orientation: CalculateOrientation(),
+                rotation: CalculateRotation());
         }
 
         static void StartScreenMetricsListeners()
@@ -70,53 +66,34 @@ namespace Xamarin.Essentials
 
         static DisplayRotation CalculateRotation()
         {
-            using (var display = GetDefaultDisplay())
+            using var display = GetDefaultDisplay();
+
+            return display?.Rotation switch
             {
-                if (display == null)
-                    return DisplayRotation.Unknown;
-
-                switch (display.Rotation)
-                {
-                    case SurfaceOrientation.Rotation270:
-                        return DisplayRotation.Rotation270;
-                    case SurfaceOrientation.Rotation180:
-                        return DisplayRotation.Rotation180;
-                    case SurfaceOrientation.Rotation90:
-                        return DisplayRotation.Rotation90;
-                    case SurfaceOrientation.Rotation0:
-                        return DisplayRotation.Rotation0;
-                }
-            }
-
-            return DisplayRotation.Unknown;
+                SurfaceOrientation.Rotation270 => DisplayRotation.Rotation270,
+                SurfaceOrientation.Rotation180 => DisplayRotation.Rotation180,
+                SurfaceOrientation.Rotation90 => DisplayRotation.Rotation90,
+                SurfaceOrientation.Rotation0 => DisplayRotation.Rotation0,
+                _ => DisplayRotation.Unknown,
+            };
         }
 
         static DisplayOrientation CalculateOrientation()
         {
-            var config = Platform.AppContext.Resources?.Configuration;
-
-            if (config != null)
+            return Platform.AppContext.Resources?.Configuration?.Orientation switch
             {
-                switch (config.Orientation)
-                {
-                    case Orientation.Landscape:
-                        return DisplayOrientation.Landscape;
-                    case Orientation.Portrait:
-                    case Orientation.Square:
-                        return DisplayOrientation.Portrait;
-                }
-            }
-
-            return DisplayOrientation.Unknown;
+                Orientation.Landscape => DisplayOrientation.Landscape,
+                Orientation.Portrait => DisplayOrientation.Portrait,
+                Orientation.Square => DisplayOrientation.Portrait,
+                _ => DisplayOrientation.Unknown
+            };
         }
-
-        static string GetSystemSetting(string name)
-           => Settings.System.GetString(Platform.AppContext.ContentResolver, name);
 
         static Display GetDefaultDisplay()
         {
-            var service = Platform.AppContext.GetSystemService(Context.WindowService);
-            return service?.JavaCast<IWindowManager>()?.DefaultDisplay;
+            using var service = Platform.AppContext.GetSystemService(Context.WindowService);
+            using var windowManager = service?.JavaCast<IWindowManager>();
+            return windowManager?.DefaultDisplay;
         }
     }
 
