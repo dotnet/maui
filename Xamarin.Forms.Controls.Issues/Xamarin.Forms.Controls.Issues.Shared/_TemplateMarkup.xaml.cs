@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		public ViewModelIssue2()
 		{
-			
+
 		}
 	}
 
@@ -58,7 +58,7 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		public ModelIssue2()
 		{
-			
+
 		}
 	}
 }

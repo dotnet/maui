@@ -46,6 +46,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue8008.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6640.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7556.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue5108.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue7329.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7290.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7240.cs" />
@@ -1457,6 +1460,9 @@
     <Compile Update="$(MSBuildThisFileDirectory)Issue6254.xaml.cs">
       <DependentUpon>Issue6254.xaml</DependentUpon>
     </Compile>
+	<Compile Update="$(MSBuildThisFileDirectory)Issue5108.xaml.cs">
+      <DependentUpon>Issue5108.xaml</DependentUpon>
+	</Compile>
     <Compile Update="$(MSBuildThisFileDirectory)Issue7357.xaml.cs">
       <DependentUpon>Issue7357.xaml</DependentUpon>
     </Compile>
@@ -1498,7 +1504,7 @@
     </Compile>
     <Compile Update="$(MSBuildThisFileDirectory)Issue7865.xaml.cs">
       <DependentUpon>Issue7865.xaml</DependentUpon>
-    </Compile>
+	</Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue1455.xaml">
@@ -1523,6 +1529,12 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue5108.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+	</EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7357.xaml">
@@ -1600,7 +1612,7 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7803.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+	  </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7048.xaml">
