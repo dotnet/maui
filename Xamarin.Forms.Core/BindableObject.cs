@@ -530,6 +530,36 @@ namespace Xamarin.Forms
 			context.Binding = null;
 		}
 
+		public void CoerceValue(BindableProperty property) => CoerceValue(property, checkAccess: true);
+
+		public void CoerceValue(BindablePropertyKey propertyKey)
+		{
+			if (propertyKey == null)
+				throw new ArgumentNullException(nameof(propertyKey));
+
+			CoerceValue(propertyKey.BindableProperty, checkAccess: false);
+		}
+
+		void CoerceValue(BindableProperty property, bool checkAccess)
+		{
+			if (property == null)
+				throw new ArgumentNullException(nameof(property));
+
+			if (checkAccess && property.IsReadOnly)
+				throw new InvalidOperationException($"The BindableProperty \"{property.PropertyName}\" is readonly.");
+
+			BindablePropertyContext bpcontext = GetContext(property);
+			if (bpcontext == null)
+				return;
+
+			object currentValue = bpcontext.Value;
+
+			if (property.ValidateValue != null && !property.ValidateValue(this, currentValue))
+				throw new ArgumentException($"Value is an invalid value for {property.PropertyName}", nameof(currentValue));
+
+			property.CoerceValue?.Invoke(this, currentValue);
+		}
+
 		[Flags]
 		enum BindableContextAttributes
 		{
