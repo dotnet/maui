@@ -52,11 +52,9 @@ namespace Xamarin.Forms
 		{
 			while (element != null)
 			{
-				var ve = element as IResourcesProvider;
-				if (ve != null && ve.IsResourcesCreated && ve.Resources.TryGetValue(key, out value))
+				if (element is IResourcesProvider ve && ve.IsResourcesCreated && ve.Resources.TryGetValue(key, out value))
 					return true;
-				var app = element as Application;
-				if (app != null && app.SystemResources != null && app.SystemResources.TryGetValue(key, out value))
+				if (element is Application app && app.SystemResources != null && app.SystemResources.TryGetValue(key, out value))
 					return true;
 				element = element.Parent;
 			}

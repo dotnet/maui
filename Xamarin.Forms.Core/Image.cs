@@ -76,8 +76,8 @@ namespace Xamarin.Forms
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
-		void IImageElement.OnImageSourcesSourceChanged(object sender, EventArgs e) =>
-			ImageElement.ImageSourcesSourceChanged(this, e);
+		void IImageElement.OnImageSourceSourceChanged(object sender, EventArgs e) =>
+			ImageElement.ImageSourceSourceChanged(this, e);
 
 		void IImageElement.RaiseImageSourcePropertyChanged() => OnPropertyChanged(nameof(Source));
 	}

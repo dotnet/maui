@@ -244,7 +244,7 @@ namespace Xamarin.Forms
 		internal bool GetIsBound(BindableProperty targetProperty)
 		{
 			if (targetProperty == null)
-				throw new ArgumentNullException("targetProperty");
+				throw new ArgumentNullException(nameof(targetProperty));
 
 			BindablePropertyContext bpcontext = GetContext(targetProperty);
 			return bpcontext != null && bpcontext.Binding != null;

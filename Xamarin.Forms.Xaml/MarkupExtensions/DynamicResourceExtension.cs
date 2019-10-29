@@ -8,10 +8,7 @@ namespace Xamarin.Forms.Xaml
 	{
 		public string Key { get; set; }
 
-		public object ProvideValue(IServiceProvider serviceProvider)
-		{
-			return ((IMarkupExtension<DynamicResource>)this).ProvideValue(serviceProvider);
-		}
+		public object ProvideValue(IServiceProvider serviceProvider) => ((IMarkupExtension<DynamicResource>)this).ProvideValue(serviceProvider);
 
 		DynamicResource IMarkupExtension<DynamicResource>.ProvideValue(IServiceProvider serviceProvider)
 		{
