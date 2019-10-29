@@ -97,10 +97,10 @@ namespace Xamarin.Forms.Controls
 		{
 			public HeaderCell()
 			{
-				Height = 60;
+				Height = 30;
 				var title = new Label
 				{
-					HeightRequest = 60,
+					HeightRequest = 30,
 					BackgroundColor = Color.Navy,
 					TextColor = Color.White
 				};
@@ -185,8 +185,13 @@ namespace Xamarin.Forms.Controls
 
 		protected override void InitializeElement(ListView element)
 		{
+			InitializeElementListView(element, 60);
+		}
+
+		private void InitializeElementListView(ListView element, int rowHeight)
+		{
 			element.HeightRequest = 350;
-			element.RowHeight = 60;
+			element.RowHeight = rowHeight;
 
 			var viewModel = new ListViewViewModel();
 			element.BindingContext = viewModel;
@@ -207,20 +212,20 @@ namespace Xamarin.Forms.Controls
 			var viewModel = new ListViewViewModel();
 
 			var groupDisplayBindingContainer = new ViewContainer<ListView>(Test.ListView.GroupDisplayBinding, new ListView());
-			InitializeElement(groupDisplayBindingContainer.View);
+			InitializeElementListView(groupDisplayBindingContainer.View, 0);
 			groupDisplayBindingContainer.View.ItemsSource = viewModel.CategorizedEmployees;
 			groupDisplayBindingContainer.View.IsGroupingEnabled = true;
 			groupDisplayBindingContainer.View.GroupDisplayBinding = new Binding("Key");
 
 
 			var groupHeaderTemplateContainer = new ViewContainer<ListView>(Test.ListView.GroupHeaderTemplate, new ListView());
-			InitializeElement(groupHeaderTemplateContainer.View);
+			InitializeElementListView(groupHeaderTemplateContainer.View, 0);
 			groupHeaderTemplateContainer.View.ItemsSource = viewModel.CategorizedEmployees;
 			groupHeaderTemplateContainer.View.IsGroupingEnabled = true;
 			groupHeaderTemplateContainer.View.GroupHeaderTemplate = new DataTemplate(typeof(HeaderCell));
 
 			var groupShortNameContainer = new ViewContainer<ListView>(Test.ListView.GroupShortNameBinding, new ListView());
-			InitializeElement(groupShortNameContainer.View);
+			InitializeElementListView(groupShortNameContainer.View, 0);
 			groupShortNameContainer.View.ItemsSource = viewModel.CategorizedEmployees;
 			groupShortNameContainer.View.IsGroupingEnabled = true;
 			groupShortNameContainer.View.GroupShortNameBinding = new Binding("Key");
