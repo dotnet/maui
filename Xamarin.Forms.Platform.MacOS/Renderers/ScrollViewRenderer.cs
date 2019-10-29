@@ -255,7 +255,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (ContentView == null || ScrollView == null || ScrollView.Content == null)
 				return false;
 
-			if (Math.Abs(ScrollView.ScrollY) < 0.001 && Math.Abs(ScrollView.ScrollX) < 0.001 && ScrollView.Content.Height > ScrollView.Height)
+			if (Math.Abs(ScrollView.ScrollY) < 0.001 && Math.Abs(ScrollView.ScrollX) < 0.001 && ScrollView.Content.Height >= ScrollView.Height)
 			{
 				ContentView.ScrollToPoint(new CoreGraphics.CGPoint(0, 0));
 				return true;
@@ -270,12 +270,16 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (ScrollView == null)
 				return;
 
-			if (ScrollView.ContentSize.Height >= ScrollView.Height)
+			var height = ScrollView.Height;
+			var contentHeightOverflow = ScrollView.ContentSize.Height - height;
+			if (contentHeightOverflow >= 0)
 			{
-				CoreGraphics.CGPoint location = ContentView.DocumentVisibleRect().Location;
-
-				if (location.Y > -1 && ScrollView.Height >= 0)
-					ScrollView.SetScrolledPosition(Math.Max(0, location.X), Math.Max(0, ScrollView.ContentSize.Height - ScrollView.Height - location.Y));
+				if (height >= 0)
+				{
+					var location = ContentView.DocumentVisibleRect().Location;
+					if (location.Y > -1)
+						ScrollView.SetScrolledPosition(Math.Max(0, location.X), Math.Max(0, contentHeightOverflow - location.Y));
+				}
 			}
 			else
 				ResetNativeNonScroll();
