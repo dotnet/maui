@@ -500,15 +500,15 @@ namespace Xamarin.Forms.Build.Tasks
 					if (int.TryParse(indexArg, out _))
 						indexer = previousPartTypeRef.GetProperty(pd => pd.Name == indexerName
 																	 && pd.GetMethod != null
-																	 && TypeRefComparer.Default.Equals(pd.GetMethod.Parameters[0].ParameterType, module.ImportReference(("mscorlib", "System", "Int32")))
+																	 && TypeRefComparer.Default.Equals(pd.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(previousPartTypeRef), module.ImportReference(("mscorlib", "System", "Int32")))
 																	 && pd.GetMethod.IsPublic, out indexerDeclTypeRef);
 					indexer = indexer ?? previousPartTypeRef.GetProperty(pd => pd.Name == indexerName
 																			&& pd.GetMethod != null
-																			&& TypeRefComparer.Default.Equals(pd.GetMethod.Parameters[0].ParameterType, module.ImportReference(("mscorlib", "System", "String")))
+																			&& TypeRefComparer.Default.Equals(pd.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(previousPartTypeRef), module.ImportReference(("mscorlib", "System", "String")))
 																			&& pd.GetMethod.IsPublic, out indexerDeclTypeRef);
 					indexer = indexer ?? previousPartTypeRef.GetProperty(pd => pd.Name == indexerName
 																			&& pd.GetMethod != null
-																			&& TypeRefComparer.Default.Equals(pd.GetMethod.Parameters[0].ParameterType, module.ImportReference(("mscorlib", "System", "String")))
+																			&& TypeRefComparer.Default.Equals(pd.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(previousPartTypeRef), module.ImportReference(("mscorlib", "System", "Object")))
 																			&& pd.GetMethod.IsPublic, out indexerDeclTypeRef);
 
 					properties.Add((indexer, indexerDeclTypeRef, indexArg));

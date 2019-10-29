@@ -49,7 +49,8 @@ namespace Xamarin.Forms.Controls.Issues
 			public DetailsPage(MasterDetailPage masterDetailPage)
 			{
 				MDP = masterDetailPage;
-				lblThings = new Label();
+				lblThings = new Label() { HorizontalTextAlignment = TextAlignment.Center, AutomationId = "CurrentMasterBehavior" };
+
 				Content = new StackLayout()
 				{
 					Children =
@@ -58,7 +59,8 @@ namespace Xamarin.Forms.Controls.Issues
 						new Button()
 						{
 							Text = "Click to rotate through MasterBehavior settings and test each one",
-							Command = new Command(OnChangeMasterBehavior)
+							Command = new Command(OnChangeMasterBehavior),
+							AutomationId = "ChangeMasterBehavior"
 						},
 						new Button()
 						{
@@ -75,7 +77,8 @@ namespace Xamarin.Forms.Controls.Issues
 									}
 								});
 							})
-						}
+						},
+						new Label(){ HorizontalTextAlignment = TextAlignment.Center, Text = "Close Master" }
 					}
 				};
 
@@ -110,6 +113,39 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement("Master Visible");
 			RunningApp.Tap("PushModalPage");
 			RunningApp.Tap("PopModalPage");
+			RunningApp.WaitForElement("Master Visible");
+		}
+
+		[Test]
+		public void SplitOnLandscapeFailsToDetectClose()
+		{
+			if (!RunningApp.IsTablet())
+				return;
+
+			while(RunningApp.WaitForElement("CurrentMasterBehavior")[0].ReadText() != MasterBehavior.SplitOnLandscape.ToString())
+			{
+				RunningApp.Tap("ChangeMasterBehavior");
+
+				if(RunningApp.Query("Master Visible").Length > 0)
+					RunningApp.Tap("Close Master");
+			}
+
+			RunningApp.Tap("Master");
+			RunningApp.WaitForElement("Master Visible");
+			RunningApp.Tap("Close Master");
+
+			RunningApp.SetOrientationLandscape();
+			RunningApp.SetOrientationPortrait();
+			RunningApp.SetOrientationLandscape();
+			RunningApp.SetOrientationPortrait();
+
+			if (RunningApp.Query("Master Visible").Length > 0)
+				RunningApp.Tap("Close Master");
+
+			RunningApp.Tap("Master");
+			RunningApp.WaitForElement("Master Visible");
+			RunningApp.Tap("Close Master");
+			RunningApp.Tap("Master");
 			RunningApp.WaitForElement("Master Visible");
 		}
 

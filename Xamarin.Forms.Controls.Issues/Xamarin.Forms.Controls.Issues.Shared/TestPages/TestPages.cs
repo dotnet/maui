@@ -640,7 +640,7 @@ namespace Xamarin.Forms.Controls
 				{
 					new ShellContent()
 					{
-						Content = page,
+						ContentTemplate = new DataTemplate(() => page),
 						Title = title
 					}
 				}
@@ -663,7 +663,7 @@ namespace Xamarin.Forms.Controls
 						{
 							new ShellContent()
 							{
-								Content = page
+								ContentTemplate = new DataTemplate(() => page),
 							}
 						}
 					}
@@ -691,7 +691,7 @@ namespace Xamarin.Forms.Controls
 
 			shellSection.Items.Add(new ShellContent()
 			{
-				Content = page
+				ContentTemplate = new DataTemplate(() => page)
 			});
 
 			item.Items.Add(shellSection);
@@ -716,7 +716,7 @@ namespace Xamarin.Forms.Controls
 
 			shellSection.Items.Add(new ShellContent()
 			{
-				Content = contentPage
+				ContentTemplate = new DataTemplate(() => contentPage)
 			});
 
 			return item;
