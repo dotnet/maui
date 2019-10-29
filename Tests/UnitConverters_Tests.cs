@@ -166,5 +166,33 @@ namespace Tests
             Assert.Equal(distance, LocationExtensions.CalculateDistance(location1, location2, DistanceUnits.Miles), 3);
             Assert.Equal(distance, LocationExtensions.CalculateDistance(location2, location1, DistanceUnits.Miles), 3);
         }
+
+        [Theory]
+        [InlineData(3048, 10000)]
+        public void MetersToInternationalFeet(double meters, double internationalFeet)
+        {
+            Assert.Equal(internationalFeet, UnitConverters.MetersToInternationalFeet(meters));
+        }
+
+        [Theory]
+        [InlineData(20000, 6096)]
+        public void InternationalFeetToMeters(double internationalFeet, double meters)
+        {
+            Assert.Equal(meters, UnitConverters.InternationalFeetToMeters(internationalFeet));
+        }
+
+        [Theory]
+        [InlineData(1200, 3937)]
+        public void MetersToUSSurveyFeet(double meters, double usFeet)
+        {
+            Assert.Equal(usFeet, UnitConverters.MetersToUSSurveyFeet(meters));
+        }
+
+        [Theory]
+        [InlineData(7874, 2400)]
+        public void USSurveyFeetToMeters(double usFeet, double meters)
+        {
+            Assert.Equal(meters, UnitConverters.USSurveyFeetToMeters(usFeet));
+        }
     }
 }
