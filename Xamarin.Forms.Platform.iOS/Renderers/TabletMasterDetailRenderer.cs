@@ -16,27 +16,98 @@ namespace Xamarin.Forms.Platform.iOS
 
 	internal class EventedViewController : ChildViewController
 	{
-		public override void ViewWillAppear(bool animated)
-		{
-			base.ViewWillAppear(animated);
+		MasterView _masterView;
 
-			var eh = WillAppear;
-			if (eh != null)
-				eh(this, EventArgs.Empty);
+		event EventHandler _didAppear;
+		event EventHandler _willDisappear;
+
+		public EventedViewController()
+		{
+			_masterView = new MasterView();
+		}
+
+
+		public event EventHandler DidAppear
+		{
+			add
+			{
+				_masterView.DidAppear += value;
+				_didAppear += value;
+			}
+			remove
+			{
+				_masterView.DidAppear -= value;
+				_didAppear -= value;
+			}
+		}
+
+		public event EventHandler WillDisappear
+		{
+			add
+			{
+				_masterView.WillDisappear += value;
+				_willDisappear += value;
+			}
+			remove
+			{
+				_masterView.WillDisappear -= value;
+				_willDisappear -= value;
+			}
+		}
+
+		public override void ViewDidAppear(bool animated)
+		{
+			base.ViewDidAppear(animated);
+			_didAppear?.Invoke(this, EventArgs.Empty);
 		}
 
 		public override void ViewWillDisappear(bool animated)
 		{
 			base.ViewWillDisappear(animated);
-
-			var eh = WillDisappear;
-			if (eh != null)
-				eh(this, EventArgs.Empty);
+			_willDisappear?.Invoke(this, EventArgs.Empty);
 		}
 
-		public event EventHandler WillAppear;
+		public override void ViewDidDisappear(bool animated)
+		{
+			base.ViewDidDisappear(animated);
+			_willDisappear?.Invoke(this, EventArgs.Empty);
+		}
 
-		public event EventHandler WillDisappear;
+		public override void LoadView()
+		{
+			View = _masterView;
+		}
+
+		public class MasterView : UIView
+		{
+			public bool IsCollapsed => Center.X <= 0;
+			bool _previousIsCollapsed = true;
+
+			public event EventHandler DidAppear;
+			public event EventHandler WillDisappear;
+
+			// this only gets called on iOS12 everytime it's collapsed or expanded
+			// I haven't found an override on iOS13 that gets called but it doesn't seem
+			// to matter because the DidAppear and WillDisappear seem more consistent on iOS 13
+			public override void LayoutSubviews()
+			{
+				base.LayoutSubviews();
+				UpdateCollapsedSetting();
+			}
+
+			void UpdateCollapsedSetting()
+			{
+				if (_previousIsCollapsed != IsCollapsed)
+				{
+					_previousIsCollapsed = IsCollapsed;
+
+					if (IsCollapsed)
+						WillDisappear?.Invoke(this, EventArgs.Empty);
+					else
+						DidAppear?.Invoke(this, EventArgs.Empty);
+				}
+			}
+		}
 	}
 
 	public class TabletMasterDetailRenderer : UISplitViewController, IVisualElementRenderer, IEffectControlProvider
@@ -50,13 +121,14 @@ namespace Xamarin.Forms.Platform.iOS
 		EventedViewController _masterController;
 
 		MasterDetailPage _masterDetailPage;
-
-		bool _masterVisible;
-
 		VisualElementTracker _tracker;
+		CGSize _previousSize = CGSize.Empty;
+		CGSize _previousViewDidLayoutSize = CGSize.Empty;
+		UISplitViewControllerDisplayMode _previousDisplayMode  = UISplitViewControllerDisplayMode.Automatic;
 
 		Page PageController => Element as Page;
 		Element ElementController => Element as Element;
+		bool IsMasterVisible => !(_masterController?.View as EventedViewController.MasterView).IsCollapsed;
 
 		protected MasterDetailPage MasterDetailPage => _masterDetailPage ?? (_masterDetailPage = (MasterDetailPage)Element);
 
@@ -98,7 +170,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 				if (_masterController != null)
 				{
-					_masterController.WillAppear -= MasterControllerWillAppear;
+					_masterController.DidAppear -= MasterControllerDidAppear;
 					_masterController.WillDisappear -= MasterControllerWillDisappear;
 				}
 
@@ -134,7 +206,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			UpdateControllers();
 
-			_masterController.WillAppear += MasterControllerWillAppear;
+			_masterController.DidAppear += MasterControllerDidAppear;
 			_masterController.WillDisappear += MasterControllerWillDisappear;
 
 			PresentsWithGesture = MasterDetailPage.IsGestureEnabled;
@@ -168,6 +240,7 @@ namespace Xamarin.Forms.Platform.iOS
 			base.ViewDidDisappear(animated);
 			PageController?.SendDisappearing();
 		}
+
 
 		public override void ViewDidLayoutSubviews()
 		{
@@ -206,6 +279,28 @@ namespace Xamarin.Forms.Platform.iOS
 				if (!detailsBounds.IsEmpty)
 					MasterDetailPage.DetailBounds = new Rectangle(0, 0, detailsBounds.Width, detailsBounds.Height);
 			}
+
+			if (_previousViewDidLayoutSize == CGSize.Empty)
+				_previousViewDidLayoutSize = View.Bounds.Size;
+
+			// Is this being called from a rotation
+			if (_previousViewDidLayoutSize != View.Bounds.Size)
+			{
+				_previousViewDidLayoutSize = View.Bounds.Size;
+
+				// make sure IsPresented matches state of Master View
+				if (MasterDetailPage.CanChangeIsPresented && MasterDetailPage.IsPresented != IsMasterVisible)
+					ElementController.SetValueFromRenderer(MasterDetailPage.IsPresentedProperty, IsMasterVisible);
+			}
+
+			if(_previousDisplayMode != PreferredDisplayMode)
+			{
+				_previousDisplayMode = PreferredDisplayMode;
+
+				// make sure IsPresented matches state of Master View
+				if (MasterDetailPage.CanChangeIsPresented && MasterDetailPage.IsPresented != IsMasterVisible)
+					ElementController.SetValueFromRenderer(MasterDetailPage.IsPresentedProperty, IsMasterVisible);
+			}
 		}
 
 		public override void ViewDidLoad()
@@ -226,6 +321,8 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			bool isPortrait = newBounds.Height > newBounds.Width;
+			var previous = PreferredDisplayMode;
+
 			switch (masterDetailPage.MasterBehavior)
 			{
 				case MasterBehavior.Split:
@@ -245,6 +342,9 @@ namespace Xamarin.Forms.Platform.iOS
 					break;
 			}
 
+			if (previous == PreferredDisplayMode)
+				return;
+
 			if (!MasterDetailPage.ShouldShowSplitMode)
 				MasterDetailPage.CanChangeIsPresented = true;
 
@@ -253,7 +353,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void ViewWillDisappear(bool animated)
 		{
-			if (_masterVisible)
+			if (IsMasterVisible && !MasterDetailPage.ShouldShowSplitMode)
 				PerformButtonSelector();
 
 			base.ViewWillDisappear(animated);
@@ -270,7 +370,7 @@ namespace Xamarin.Forms.Platform.iOS
 			// I tested this code on iOS9+ and it's never called
 			if (!Forms.IsiOS9OrNewer)
 			{
-				if (!MasterDetailPage.ShouldShowSplitMode && _masterVisible)
+				if (!MasterDetailPage.ShouldShowSplitMode && IsMasterVisible)
 				{
 					MasterDetailPage.CanChangeIsPresented = true;
 					PreferredDisplayMode = UISplitViewControllerDisplayMode.PrimaryHidden;
@@ -348,20 +448,23 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void ViewWillTransitionToSize(CGSize toSize, IUIViewControllerTransitionCoordinator coordinator)
 		{
 			base.ViewWillTransitionToSize(toSize, coordinator);
-			UpdateMasterBehavior(toSize);
+
+			if (_previousSize != toSize)
+			{
+				_previousSize = toSize;
+				UpdateMasterBehavior(toSize);
+			}
 		}
 
-		void MasterControllerWillAppear(object sender, EventArgs e)
+		void MasterControllerDidAppear(object sender, EventArgs e)
 		{
-			_masterVisible = true;
-			if (MasterDetailPage.CanChangeIsPresented)
+			if (MasterDetailPage.CanChangeIsPresented && IsMasterVisible)
 				ElementController.SetValueFromRenderer(MasterDetailPage.IsPresentedProperty, true);
 		}
 
 		void MasterControllerWillDisappear(object sender, EventArgs e)
 		{
-			_masterVisible = false;
-			if (MasterDetailPage.CanChangeIsPresented)
+			if (MasterDetailPage.CanChangeIsPresented && !IsMasterVisible)
 				ElementController.SetValueFromRenderer(MasterDetailPage.IsPresentedProperty, false);
 		}
 
@@ -372,7 +475,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void ToggleMaster()
 		{
-			if (_masterVisible == MasterDetailPage.IsPresented || MasterDetailPage.ShouldShowSplitMode)
+			if (IsMasterVisible == MasterDetailPage.IsPresented || MasterDetailPage.ShouldShowSplitMode)
 				return;
 
 			PerformButtonSelector();

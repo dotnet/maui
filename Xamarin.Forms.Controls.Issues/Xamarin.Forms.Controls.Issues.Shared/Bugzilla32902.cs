@@ -111,19 +111,16 @@ namespace Xamarin.Forms.Controls.Issues
 
 		}
 
-#if UITEST
+#if UITEST && __IOS__
 		[Test]
 		public void Bugzilla32902Test ()
 		{
-			var appIos = RunningApp as iOSApp;
-			if (appIos != null) {
-				if(appIos.Device.IsTablet)
-				{
-					RunningApp.Tap (q => q.Marked ("btnNext"));
-					RunningApp.Tap (q => q.Marked ("btnPushModal"));
-					RunningApp.Tap (q => q.Marked ("Master"));
-					RunningApp.Tap (q => q.Marked ("btnPop"));
-				}
+			if (RunningApp.IsTablet())
+			{
+				RunningApp.Tap (q => q.Marked ("btnNext"));
+				RunningApp.Tap (q => q.Marked ("btnPushModal"));
+				RunningApp.Tap (q => q.Marked ("Master"));
+				RunningApp.Tap (q => q.Marked ("btnPop"));
 			}
 		}
 #endif

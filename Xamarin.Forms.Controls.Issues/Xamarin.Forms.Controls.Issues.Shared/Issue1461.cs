@@ -20,8 +20,7 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		public static bool ShouldRunTest (IApp app)
 		{
-			var appAs = app as iOSApp;
-			return (appAs != null && appAs.Device.IsTablet);
+			return app.IsTablet();
 		}
 	}
 #endif

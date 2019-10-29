@@ -4,6 +4,87 @@ using System.Linq;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 using System.Text.RegularExpressions;
+using System.Threading;
+using Xamarin.Forms.Controls.Issues;
+#if __IOS__
+using Xamarin.UITest.iOS;
+#endif
+
+namespace Xamarin.UITest
+{
+	internal static class AppExtensions
+	{
+		public static T[] QueryUntilPresent<T>(
+			this IApp app,
+			Func<T[]> func,
+			int retryCount = 10,
+			int delayInMs = 2000)
+		{
+			var results = func();
+
+			int counter = 0;
+			while ((results == null || results.Length == 0) && counter < retryCount)
+			{
+				Thread.Sleep(delayInMs);
+				results = func();
+				counter++;
+			}
+
+			return results;
+		}
+
+		public static bool IsApiHigherThan(this IApp app, int apiLevel, string apiLabelId = "ApiLevel")
+		{
+			var api = Convert.ToInt32(app.WaitForElement("ApiLabel")[0].ReadText());
+
+			if (api < apiLevel)
+				return false;
+
+			return true;
+		}
+
+		public static bool IsTablet(this IApp app)
+		{
+#if __IOS__
+			if (app is Xamarin.Forms.Controls.ScreenshotConditionalApp sca)
+			{
+				return sca.IsTablet;
+			}
+			else if (app is iOSApp iOSApp)
+			{
+				return iOSApp.Device.IsTablet;
+			}
+#endif
+			return false;
+		}
+
+		public static bool IsPhone(this IApp app)
+		{
+#if __IOS__
+			if (app is Xamarin.Forms.Controls.ScreenshotConditionalApp sca)
+			{
+				return sca.IsPhone;
+			}
+			else if (app is iOSApp iOSApp)
+			{
+				return iOSApp.Device.IsPhone;
+			}
+#endif
+			return true;
+		}
+
+#if __IOS__
+		public static void SendAppToBackground(this IApp app, TimeSpan timeSpan)
+		{
+			if(app is Xamarin.Forms.Controls.ScreenshotConditionalApp sca)
+			{
+				sca.SendAppToBackground(timeSpan);
+				Thread.Sleep(timeSpan.Add(TimeSpan.FromSeconds(2)));
+			}
+		}
+#endif
+	}
+}
 
 namespace Xamarin.Forms.Core.UITests
 {

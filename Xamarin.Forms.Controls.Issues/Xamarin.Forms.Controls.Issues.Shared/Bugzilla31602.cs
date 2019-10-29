@@ -7,7 +7,7 @@ using Xamarin.Forms.Internals;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
-using Xamarin.UITest.iOS;
+using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
@@ -113,12 +113,11 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 		}
 
-		#if UITEST
+#if UITEST && __IOS__
 		[Test]
 		public void Bugzilla31602Test ()
 		{
-			var appAs = RunningApp as iOSApp;
-			if (appAs != null && appAs.Device.IsTablet) {
+			if (RunningApp.IsTablet()) {
 				RunningApp.Tap (q => q.Marked ("Sidemenu Opener"));
 				RunningApp.WaitForElement (q => q.Marked ("SideMenu"));
 				RunningApp.SetOrientationLandscape ();

@@ -461,7 +461,7 @@ namespace Xamarin.Forms.Controls
 		}
 
 		[TearDown]
-		public void TearDown()
+		public virtual void TearDown()
 		{
 			if (Isolate)
 			{
