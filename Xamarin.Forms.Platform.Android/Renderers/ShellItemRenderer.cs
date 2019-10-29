@@ -66,7 +66,7 @@ namespace Xamarin.Forms.Platform.Android
 			_bottomView.SetBackgroundColor(Color.White.ToAndroid());
 			_bottomView.SetOnNavigationItemSelectedListener(this);
 
-			if(ShellItem == null)
+			if (ShellItem == null)
 				throw new ArgumentException("Active Shell Item not set. Have you added any Shell Items to your Shell?", nameof(ShellItem));
 
 			HookEvents(ShellItem);
@@ -81,7 +81,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void Destroy()
 		{
-			if(ShellItem != null)
+			if (ShellItem != null)
 				UnhookEvents(ShellItem);
 
 			((IShellController)ShellContext?.Shell)?.RemoveAppearanceObserver(this);
@@ -280,8 +280,9 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			ChangeSection(shellSection);
 
-			dialog.Dismiss();
-			dialog.Dispose();
+			dialog.Dismiss(); //should trigger OnMoreSheetDismissed, which will clean up the dialog
+			if (dialog != _bottomSheetDialog) //should never be true, but just in case, prevent a leak
+				dialog.Dispose();
 		}
 
 		protected virtual void OnMoreSheetDismissed(object sender, EventArgs e)
