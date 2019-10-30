@@ -24,6 +24,7 @@ using RectangleF = CoreGraphics.CGRect;
 [assembly: ExportRenderer(typeof(Bugzilla52700.NoSelectionViewCell), typeof(NoSelectionViewCellRenderer))]
 [assembly: ExportRenderer(typeof(Issue1683.EntryKeyboardFlags), typeof(EntryRendererKeyboardFlags))]
 [assembly: ExportRenderer(typeof(Issue1683.EditorKeyboardFlags), typeof(EditorRendererKeyboardFlags))]
+[assembly: ExportRenderer(typeof(Issue5830.ExtendedEntryCell), typeof(ExtendedEntryCellRenderer))]
 namespace Xamarin.Forms.ControlGallery.iOS
 {
 
@@ -688,6 +689,26 @@ namespace Xamarin.Forms.ControlGallery.iOS
 					throw new Exception("CapitalizeWord not correctly set");
 				}
 			}
+		}
+	}
+
+	public class ExtendedEntryCellRenderer : EntryCellRenderer
+	{
+		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
+		{
+			var entryCell = (EntryCell)item;
+			var cell = base.GetCell(item, reusableCell, tv);
+			if (cell != null && entryCell != null)
+			{
+				var tvc = cell as EntryCellTableViewCell;
+				if (tvc != null)
+				{
+					// cell.TextField.thingstocallhere, for example:
+					tvc.TextField.Text = entryCell.Text;
+					tvc.TextField.TextColor = UIColor.Red;
+				}
+			}
+			return cell;
 		}
 	}
 
