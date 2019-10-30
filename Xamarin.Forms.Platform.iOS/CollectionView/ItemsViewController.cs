@@ -21,7 +21,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected UICollectionViewDelegateFlowLayout Delegator { get; set; }
 
-		public ItemsViewController(TItemsView itemsView, ItemsViewLayout layout) : base(layout)
+		protected ItemsViewController(TItemsView itemsView, ItemsViewLayout layout) : base(layout)
 		{
 			ItemsView = itemsView;
 			ItemsViewLayout = layout;

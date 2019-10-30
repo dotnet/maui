@@ -6,7 +6,7 @@ using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	internal class GridViewLayout : ItemsViewLayout
+	public class GridViewLayout : ItemsViewLayout
 	{
 		readonly GridItemsLayout _itemsLayout;
 
