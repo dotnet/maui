@@ -30,7 +30,8 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				AcceptsReturn = true,
 				TextWrapping = TextWrapping.Wrap,
-				Style = Windows.UI.Xaml.Application.Current.Resources["FormsTextBoxStyle"] as Windows.UI.Xaml.Style
+				Style = Windows.UI.Xaml.Application.Current.Resources["FormsTextBoxStyle"] as Windows.UI.Xaml.Style,
+				VerticalContentAlignment = VerticalAlignment.Top
 			};
 		}
 
