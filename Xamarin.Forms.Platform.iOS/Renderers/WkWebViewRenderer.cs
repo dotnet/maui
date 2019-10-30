@@ -249,6 +249,10 @@ namespace Xamarin.Forms.Platform.iOS
 				{
 					case WKNavigationType.LinkActivated:
 						navEvent = WebNavigationEvent.NewPage;
+
+						if (navigationAction.TargetFrame == null)
+							webView?.LoadRequest(navigationAction.Request);
+
 						break;
 					case WKNavigationType.FormSubmitted:
 						navEvent = WebNavigationEvent.NewPage;

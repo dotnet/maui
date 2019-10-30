@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var buttonD = new Button() { Text = "AEVAL", BackgroundColor = Color.LightBlue, AutomationId = "buttonD" };
 
 			var url = "https://www.microsoft.com/";
-			var html = $"<html><body><a href=\"{url}\">Link</a></body></html>";
+			var html = $"<html><body><a href=\"{url}\">Link</a><br /><a href=\"{url}\" target=\"_blank\">Link with target=_blank</a></body></html>";
 
 			var webView = new WkWebView()
 			{
