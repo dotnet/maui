@@ -15,9 +15,7 @@ variables:
   value: 5.0.2
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
   value: true
-- name: winVmImage
-  value: Hosted VS2017
-  
+
 resources:
   repositories:
     - repository: xamarin-templates
@@ -57,7 +55,7 @@ jobs:
     buildConfiguration: $(DefaultBuildConfiguration)
     buildPlatform: $(DefaultBuildPlatform)
     provisionatorPath : 'build/provisioning/provisioning.csx'
-    
+
 - template: build/steps/build-android.yml
   parameters:
     name: android_legacy
