@@ -1,0 +1,93 @@
+<Type Name="LauncherFile" FullName="Xamarin.Essentials.LauncherFile">
+  <TypeSignature Language="C#" Value="public class LauncherFile : Xamarin.Essentials.FileBase" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit LauncherFile extends Xamarin.Essentials.FileBase" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.LauncherFile" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>Xamarin.Essentials.FileBase</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public LauncherFile (string fullPath);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string fullPath) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.LauncherFile.#ctor(System.String)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="fullPath" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="fullPath">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public LauncherFile (Xamarin.Essentials.FileBase file);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class Xamarin.Essentials.FileBase file) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.LauncherFile.#ctor(Xamarin.Essentials.FileBase)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="file" Type="Xamarin.Essentials.FileBase" />
+      </Parameters>
+      <Docs>
+        <param name="file">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public LauncherFile (string fullPath, string contentType);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string fullPath, string contentType) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.LauncherFile.#ctor(System.String,System.String)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="fullPath" Type="System.String" />
+        <Parameter Name="contentType" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="fullPath">To be added.</param>
+        <param name="contentType">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AttachmentName">
+      <MemberSignature Language="C#" Value="public string AttachmentName { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string AttachmentName" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.LauncherFile.AttachmentName" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

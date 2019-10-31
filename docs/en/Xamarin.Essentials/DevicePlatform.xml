@@ -15,7 +15,7 @@
     </Interface>
   </Interfaces>
   <Attributes>
-    <Attribute FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp">
+    <Attribute FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp;xamarin-essentials-tvos;xamarin-essentials-watchos">
       <AttributeName>System.Runtime.CompilerServices.IsReadOnly</AttributeName>
     </Attribute>
   </Attributes>
@@ -217,6 +217,24 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="tvOS">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DevicePlatform tvOS { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.DevicePlatform tvOS" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DevicePlatform.tvOS" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DevicePlatform</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Unknown">
       <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DevicePlatform Unknown { get; }" />
       <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.DevicePlatform Unknown" />
@@ -249,6 +267,24 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the UWP platform.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="watchOS">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DevicePlatform watchOS { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.DevicePlatform watchOS" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DevicePlatform.watchOS" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DevicePlatform</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>

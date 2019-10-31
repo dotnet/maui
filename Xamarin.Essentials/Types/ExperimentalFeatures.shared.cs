@@ -7,7 +7,16 @@ namespace Xamarin.Essentials
 {
     public static class ExperimentalFeatures
     {
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [Obsolete("ExperimentalFeatures.ShareFileRequest is obsolete as of version 1.3.0 and no longer required to use the feature.")]
         public const string ShareFileRequest = "ShareFileRequest_Experimental";
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [Obsolete("ExperimentalFeatures.OpenFileRequest is obsolete as of version 1.3.0 and no longer required to use the feature.")]
+        public const string OpenFileRequest = "OpenFileRequest_Experimental";
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [Obsolete("ExperimentalFeatures.EmailAttachments is obsolete as of version 1.3.0 and no longer required to use the feature.")]
         public const string EmailAttachments = "EmailAttachments_Experimental";
 
         static List<string> enabledFeatures;

@@ -18,7 +18,7 @@ namespace Samples.ViewModel
         public string Recipient
         {
             get => recipient;
-            set => base.SetProperty(ref recipient, value);
+            set => SetProperty(ref recipient, value);
         }
 
         public string MessageText

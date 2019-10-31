@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -18,5 +18,4 @@
   </ItemGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)..\CodeStyles.targets" />
-
 </Project>

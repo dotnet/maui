@@ -12,7 +12,9 @@
   <Interfaces />
   <Docs>
     <summary>A representation of a file and its content type.</summary>
-    <remarks></remarks>
+    <remarks>
+      <para />
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -46,7 +48,7 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets or sets the file's content type.</summary>
+        <summary>Gets or sets the file's content type as a MIME type (eg: `image/png`).</summary>
         <value></value>
         <remarks></remarks>
       </Docs>

@@ -1,10 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+﻿<Project Sdk="MSBuild.Sdk.Extras/2.0.54">
   <PropertyGroup>
     <!--Work around so the conditions work below-->
-    <TargetFrameworks>
-    </TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">Xamarin.iOS10;MonoAndroid81;uap10.0.16299</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">Xamarin.iOS10;MonoAndroid81;</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">Xamarin.iOS10;MonoAndroid90;uap10.0.16299</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">Xamarin.iOS10;MonoAndroid90;</TargetFrameworks>
     <AssemblyName>XamarinEssentialsDeviceTestsShared</AssemblyName>
     <RootNamespace>DeviceTests.Shared</RootNamespace>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
@@ -32,9 +30,8 @@
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="MSBuild.Sdk.Extras" Version="1.6.61" PrivateAssets="All" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-    <PackageReference Include="Xamarin.Forms" Version="3.5.0.129452" />
+    <PackageReference Include="Xamarin.Forms" Version="4.2.0.848062" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.devices" Version="2.3.3" />
     <PackageReference Include="UnitTests.HeadlessRunner" Version="2.0.0" />
@@ -48,14 +45,14 @@
     </SDKReference>
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) ">
-    <PackageReference Include="Xamarin.Android.Support.Design" Version="28.0.0.1" />
-    <PackageReference Include="Xamarin.Android.Support.v7.AppCompat" Version="28.0.0.1" />
-    <PackageReference Include="Xamarin.Android.Support.v4" Version="28.0.0.1" />
-    <PackageReference Include="Xamarin.Android.Support.v7.CardView" Version="28.0.0.1" />
-    <PackageReference Include="Xamarin.Android.Support.v7.MediaRouter" Version="28.0.0.1" />
-    <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="28.0.0.1" />
-    <PackageReference Include="Xamarin.Android.Support.Compat" Version="28.0.0.1" />
-    <PackageReference Include="Xamarin.Android.Support.Core.Utils" Version="28.0.0.1" />
+    <PackageReference Include="Xamarin.Android.Support.Design" Version="28.0.0.3" />
+    <PackageReference Include="Xamarin.Android.Support.v7.AppCompat" Version="28.0.0.3" />
+    <PackageReference Include="Xamarin.Android.Support.v4" Version="28.0.0.3" />
+    <PackageReference Include="Xamarin.Android.Support.v7.CardView" Version="28.0.0.3" />
+    <PackageReference Include="Xamarin.Android.Support.v7.MediaRouter" Version="28.0.0.3" />
+    <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="28.0.0.3" />
+    <PackageReference Include="Xamarin.Android.Support.Compat" Version="28.0.0.3" />
+    <PackageReference Include="Xamarin.Android.Support.Core.Utils" Version="28.0.0.3" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
@@ -64,6 +61,5 @@
     <Reference Include="System.Numerics.Vectors" />
     <Reference Include="OpenTK-1.0" />
   </ItemGroup>
-  <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
   <Import Project="$(MSBuildThisFileDirectory)..\..\CodeStyles.targets" />
 </Project>

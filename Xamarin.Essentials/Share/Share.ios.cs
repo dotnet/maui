@@ -57,8 +57,8 @@ namespace Xamarin.Essentials
 
     class ShareActivityItemSource : UIActivityItemSource
     {
-        NSObject item;
-        string subject;
+        readonly NSObject item;
+        readonly string subject;
 
         internal ShareActivityItemSource(NSObject item, string subject)
         {

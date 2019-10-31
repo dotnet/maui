@@ -20,7 +20,7 @@
     <Member MemberName="ToPlatformSize">
       <MemberSignature Language="C#" Value="public static Android.Util.Size ToPlatformSize (this System.Drawing.Size size);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Android.Util.Size ToPlatformSize(valuetype System.Drawing.Size size) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.ToPlatformSize(System.Drawing.Size)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.Android.ToPlatformSize(System.Drawing.Size)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -42,7 +42,7 @@
     <Member MemberName="ToPlatformSize">
       <MemberSignature Language="C#" Value="public static CoreGraphics.CGSize ToPlatformSize (this System.Drawing.Size size);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype CoreGraphics.CGSize ToPlatformSize(valuetype System.Drawing.Size size) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.ToPlatformSize(System.Drawing.Size)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.iOS.ToPlatformSize(System.Drawing.Size)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -64,7 +64,7 @@
     <Member MemberName="ToPlatformSize">
       <MemberSignature Language="C#" Value="public static Windows.Foundation.Size ToPlatformSize (this System.Drawing.Size size);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Windows.Foundation.Size ToPlatformSize(valuetype System.Drawing.Size size) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.ToPlatformSize(System.Drawing.Size)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.UWP.ToPlatformSize(System.Drawing.Size)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -86,7 +86,7 @@
     <Member MemberName="ToPlatformSize">
       <MemberSignature Language="C#" Value="public static CoreGraphics.CGSize ToPlatformSize (this System.Drawing.SizeF size);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype CoreGraphics.CGSize ToPlatformSize(valuetype System.Drawing.SizeF size) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.ToPlatformSize(System.Drawing.SizeF)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.iOS.ToPlatformSize(System.Drawing.SizeF)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -108,7 +108,7 @@
     <Member MemberName="ToPlatformSize">
       <MemberSignature Language="C#" Value="public static Windows.Foundation.Size ToPlatformSize (this System.Drawing.SizeF size);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Windows.Foundation.Size ToPlatformSize(valuetype System.Drawing.SizeF size) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.ToPlatformSize(System.Drawing.SizeF)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.UWP.ToPlatformSize(System.Drawing.SizeF)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -130,7 +130,7 @@
     <Member MemberName="ToPlatformSizeF">
       <MemberSignature Language="C#" Value="public static Android.Util.SizeF ToPlatformSizeF (this System.Drawing.SizeF size);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Android.Util.SizeF ToPlatformSizeF(valuetype System.Drawing.SizeF size) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.ToPlatformSizeF(System.Drawing.SizeF)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.Android.ToPlatformSizeF(System.Drawing.SizeF)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>

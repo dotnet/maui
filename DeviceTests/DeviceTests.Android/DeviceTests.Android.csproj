@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>DeviceTests.Droid</RootNamespace>
     <AssemblyName>XamarinEssentialsDeviceTestsAndroid</AssemblyName>
-    <TargetFrameworkVersion>v8.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v9.0</TargetFrameworkVersion>
     <AndroidApplication>True</AndroidApplication>
     <AndroidResgenFile>Resources\Resource.designer.cs</AndroidResgenFile>
     <AndroidResgenClass>Resource</AndroidResgenClass>
@@ -75,14 +75,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xamarin.Forms" Version="3.5.0.129452" />
-    <PackageReference Include="Xamarin.Android.Support.Design" Version="28.0.0.1" />
-    <PackageReference Include="Xamarin.Android.Support.v7.AppCompat" Version="28.0.0.1" />
-    <PackageReference Include="Xamarin.Android.Support.v4" Version="28.0.0.1" />
-    <PackageReference Include="Xamarin.Android.Support.v7.CardView" Version="28.0.0.1" />
-    <PackageReference Include="Xamarin.Android.Support.v7.MediaRouter" Version="28.0.0.1" />
-    <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="28.0.0.1" />
-    <PackageReference Include="Xamarin.Android.Support.Core.Utils" Version="28.0.0.1" />
+    <PackageReference Include="Xamarin.Forms" Version="4.2.0.848062" />
+    <PackageReference Include="Xamarin.Android.Support.Design" Version="28.0.0.3" />
+    <PackageReference Include="Xamarin.Android.Support.v7.AppCompat" Version="28.0.0.3" />
+    <PackageReference Include="Xamarin.Android.Support.v4" Version="28.0.0.3" />
+    <PackageReference Include="Xamarin.Android.Support.v7.CardView" Version="28.0.0.3" />
+    <PackageReference Include="Xamarin.Android.Support.v7.MediaRouter" Version="28.0.0.3" />
+    <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="28.0.0.3" />
+    <PackageReference Include="Xamarin.Android.Support.Core.Utils" Version="28.0.0.3" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.devices" Version="2.5.20" />

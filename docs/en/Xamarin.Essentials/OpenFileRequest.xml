@@ -1,0 +1,126 @@
+<Type Name="OpenFileRequest" FullName="Xamarin.Essentials.OpenFileRequest">
+  <TypeSignature Language="C#" Value="public class OpenFileRequest" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit OpenFileRequest extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.OpenFileRequest" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Standard request for opening a file to another application.</summary>
+    <remarks>
+      <para></para>
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public OpenFileRequest ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.OpenFileRequest.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Open request with an existing file.</summary>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public OpenFileRequest (string title, Xamarin.Essentials.FileBase file);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string title, class Xamarin.Essentials.FileBase file) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.OpenFileRequest.#ctor(System.String,Xamarin.Essentials.FileBase)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="title" Type="System.String" />
+        <Parameter Name="file" Type="Xamarin.Essentials.FileBase" />
+      </Parameters>
+      <Docs>
+        <param name="title">Title to display on open dialog if available.</param>
+        <param name="file">File to open.</param>
+        <summary>Open request with an existing file.</summary>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public OpenFileRequest (string title, Xamarin.Essentials.ReadOnlyFile file);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string title, class Xamarin.Essentials.ReadOnlyFile file) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.OpenFileRequest.#ctor(System.String,Xamarin.Essentials.ReadOnlyFile)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="title" Type="System.String" />
+        <Parameter Name="file" Type="Xamarin.Essentials.ReadOnlyFile" />
+      </Parameters>
+      <Docs>
+        <param name="title">Title to display on open dialog if available.</param>
+        <param name="file">File to open.</param>
+        <summary>Open request with an existing file.</summary>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="File">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.ReadOnlyFile File { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Essentials.ReadOnlyFile File" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.OpenFileRequest.File" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.ReadOnlyFile</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>File to open.</summary>
+        <value>
+          <para />
+        </value>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Title">
+      <MemberSignature Language="C#" Value="public string Title { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string Title" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.OpenFileRequest.Title" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Title to display on open dialog if available.</summary>
+        <value>
+          <para />
+        </value>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

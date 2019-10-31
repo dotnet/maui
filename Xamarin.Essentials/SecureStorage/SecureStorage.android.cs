@@ -69,7 +69,7 @@ namespace Xamarin.Essentials
             key = Utils.Md5Hash(key);
             Preferences.Remove(key, Alias);
 
-            return false;
+            return true;
         }
 
         static void PlatformRemoveAll() =>

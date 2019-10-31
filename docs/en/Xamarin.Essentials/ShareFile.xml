@@ -12,7 +12,9 @@
   <Interfaces />
   <Docs>
     <summary>A file to be shared.</summary>
-    <remarks></remarks>
+    <remarks>
+      <para />
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -66,27 +68,9 @@
       </Parameters>
       <Docs>
         <param name="fullPath">Full path and filename.</param>
-        <param name="contentType">Explicit content type of the file.</param>
+        <param name="contentType">Explicit content type (MIME type) of the file (eg: `image/png`).</param>
         <summary></summary>
         <remarks></remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="AttachmentName">
-      <MemberSignature Language="C#" Value="public string AttachmentName { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance string AttachmentName" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.ShareFile.AttachmentName" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets or sets the intended name of the file to be shared.</summary>
-        <value></value>
-        <remarks>File name and extension of original file will be used by default.</remarks>
       </Docs>
     </Member>
   </Members>

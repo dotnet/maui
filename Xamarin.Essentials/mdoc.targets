@@ -97,6 +97,8 @@
     <Copy SourceFiles="$(BinConfigDir)netstandard2.0\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials" />
     <Copy SourceFiles="$(BinConfigDir)monoandroid81\81\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-android" />
     <Copy SourceFiles="$(BinConfigDir)xamarin.ios10\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-ios" />
+    <Copy SourceFiles="$(BinConfigDir)xamarin.tvos10\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-tvos" />
+    <Copy SourceFiles="$(BinConfigDir)xamarin.watchos10\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-watchos" />
     <Copy SourceFiles="$(BinConfigDir)uap10.0.16299\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-uwp" />
     <Exec Command="$(_ManagedExeLauncher) &quot;$(MDocToolPath)&quot; update --debug --lang=DocId --delete --frameworks=&quot;$(TmpDir)frameworks.xml&quot; --out=&quot;$(MDocDocumentationDirectory)&quot; $(MDocReferenceAssemblies)" />
     <_FormatDocs DocsRoot="$(MDocDocumentationDirectory)" />

@@ -2,14 +2,14 @@
 {
     public static partial class AppInfo
     {
-        static string PlatformGetPackageName() => throw new NotImplementedInReferenceAssemblyException();
+        static string PlatformGetPackageName() => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-        static string PlatformGetName() => throw new NotImplementedInReferenceAssemblyException();
+        static string PlatformGetName() => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-        static string PlatformGetVersionString() => throw new NotImplementedInReferenceAssemblyException();
+        static string PlatformGetVersionString() => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-        static string PlatformGetBuild() => throw new NotImplementedInReferenceAssemblyException();
+        static string PlatformGetBuild() => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-        static void PlatformShowSettingsUI() => throw new NotImplementedInReferenceAssemblyException();
+        static void PlatformShowSettingsUI() => throw ExceptionUtils.NotSupportedOrImplementedException;
     }
 }

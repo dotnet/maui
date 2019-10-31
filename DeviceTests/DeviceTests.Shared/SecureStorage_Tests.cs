@@ -94,7 +94,9 @@ namespace DeviceTests
 #endif
             await SecureStorage.SetAsync(key, "Irrelevant Data");
 
-            SecureStorage.Remove(key);
+            var result = SecureStorage.Remove(key);
+
+            Assert.True(result);
 
             var v = await SecureStorage.GetAsync(key);
 

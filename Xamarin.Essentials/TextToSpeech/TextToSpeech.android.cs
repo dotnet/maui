@@ -145,6 +145,8 @@ namespace Xamarin.Essentials
             else
                 tts.SetPitch(TextToSpeech.PitchDefault);
 
+            tts.SetSpeechRate(1.0f);
+
             var parts = text.SplitSpeak(max);
 
             numExpectedUtterances = parts.Count;

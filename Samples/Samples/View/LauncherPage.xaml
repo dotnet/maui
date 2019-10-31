@@ -16,15 +16,29 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Entry Grid.Row="0" Grid.ColumnSpan="2" Text="{Binding LaunchUri}" />
-                <Button Grid.Row="1" Grid.ColumnSpan="2"  Text="Check Launch" Command="{Binding CanLaunchCommand}"/>
+                <Button Grid.Row="1" Text="Check Launch" Command="{Binding CanLaunchCommand}"/>
+                <Button Grid.Row="1" Grid.Column="1"  Text=" Launch" Command="{Binding LaunchCommand}"/>
                 <Button Grid.Row="2" Grid.Column="0" Text="Launch Browser" Command="{Binding LaunchBrowserCommand}"/>
                 <Button Grid.Row="2" Grid.Column="1" Text="Launch Mail" Command="{Binding LaunchMailCommand}"/>
+                
+                <StackLayout Grid.Row="3" Grid.ColumnSpan="2">
+                    <Label Text="Open File" FontAttributes="Bold" Margin="0,6,0,0" />
+                    <Label Text="File Name:" />
+                    <Entry Text="{Binding FileAttachmentName}" />
+                    <Label Text="File Contents:" />
+                    <Editor Text="{Binding FileAttachmentContents}" Keyboard="Chat"
+                        VerticalOptions="FillAndExpand" HeightRequest="200" />
+
+                    <Button Text="Open File" Command="{Binding LaunchFileCommand}" />
+
+                </StackLayout>
             </Grid>
         </ScrollView>
     </StackLayout>

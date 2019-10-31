@@ -15,7 +15,7 @@
     </Interface>
   </Interfaces>
   <Attributes>
-    <Attribute FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp">
+    <Attribute FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp;xamarin-essentials-tvos;xamarin-essentials-watchos">
       <AttributeName>System.Runtime.CompilerServices.IsReadOnly</AttributeName>
     </Attribute>
   </Attributes>

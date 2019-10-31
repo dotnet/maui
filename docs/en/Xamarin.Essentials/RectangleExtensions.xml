@@ -20,7 +20,7 @@
     <Member MemberName="ToPlatformRectangle">
       <MemberSignature Language="C#" Value="public static Android.Graphics.Rect ToPlatformRectangle (this System.Drawing.Rectangle rect);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Android.Graphics.Rect ToPlatformRectangle(valuetype System.Drawing.Rectangle rect) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.ToPlatformRectangle(System.Drawing.Rectangle)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.Android.ToPlatformRectangle(System.Drawing.Rectangle)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -42,7 +42,7 @@
     <Member MemberName="ToPlatformRectangle">
       <MemberSignature Language="C#" Value="public static CoreGraphics.CGRect ToPlatformRectangle (this System.Drawing.Rectangle rect);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype CoreGraphics.CGRect ToPlatformRectangle(valuetype System.Drawing.Rectangle rect) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.ToPlatformRectangle(System.Drawing.Rectangle)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.iOS.ToPlatformRectangle(System.Drawing.Rectangle)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -64,7 +64,7 @@
     <Member MemberName="ToPlatformRectangle">
       <MemberSignature Language="C#" Value="public static Windows.Foundation.Rect ToPlatformRectangle (this System.Drawing.Rectangle rect);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Windows.Foundation.Rect ToPlatformRectangle(valuetype System.Drawing.Rectangle rect) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.ToPlatformRectangle(System.Drawing.Rectangle)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.UWP.ToPlatformRectangle(System.Drawing.Rectangle)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -86,7 +86,7 @@
     <Member MemberName="ToPlatformRectangle">
       <MemberSignature Language="C#" Value="public static CoreGraphics.CGRect ToPlatformRectangle (this System.Drawing.RectangleF rect);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype CoreGraphics.CGRect ToPlatformRectangle(valuetype System.Drawing.RectangleF rect) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.ToPlatformRectangle(System.Drawing.RectangleF)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.iOS.ToPlatformRectangle(System.Drawing.RectangleF)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -108,7 +108,7 @@
     <Member MemberName="ToPlatformRectangle">
       <MemberSignature Language="C#" Value="public static Windows.Foundation.Rect ToPlatformRectangle (this System.Drawing.RectangleF rect);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Windows.Foundation.Rect ToPlatformRectangle(valuetype System.Drawing.RectangleF rect) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.ToPlatformRectangle(System.Drawing.RectangleF)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.UWP.ToPlatformRectangle(System.Drawing.RectangleF)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -130,7 +130,7 @@
     <Member MemberName="ToPlatformRectangleF">
       <MemberSignature Language="C#" Value="public static Android.Graphics.RectF ToPlatformRectangleF (this System.Drawing.RectangleF rect);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Android.Graphics.RectF ToPlatformRectangleF(valuetype System.Drawing.RectangleF rect) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.ToPlatformRectangleF(System.Drawing.RectangleF)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.Android.ToPlatformRectangleF(System.Drawing.RectangleF)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>

@@ -42,7 +42,7 @@ namespace Xamarin.Essentials
             return uri;
 #else
             var idn = new System.Globalization.IdnMapping();
-            return new Uri(uri.Scheme + "://" + idn.GetAscii(uri.Authority) + uri.PathAndQuery);
+            return new Uri(uri.Scheme + "://" + idn.GetAscii(uri.Authority) + uri.PathAndQuery + uri.Fragment);
 #endif
         }
     }

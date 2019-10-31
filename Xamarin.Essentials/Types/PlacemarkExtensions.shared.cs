@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Xamarin.Essentials
@@ -22,16 +23,16 @@ namespace Xamarin.Essentials
             else
                 escaped.Location = new Location(placemark.Location);
 
-            escaped.CountryCode = string.IsNullOrWhiteSpace(placemark.CountryCode) ? string.Empty : Uri.EscapeUriString(placemark.CountryCode);
-            escaped.CountryName = string.IsNullOrWhiteSpace(placemark.CountryName) ? string.Empty : Uri.EscapeUriString(placemark.CountryName);
-            escaped.FeatureName = string.IsNullOrWhiteSpace(placemark.FeatureName) ? string.Empty : Uri.EscapeUriString(placemark.FeatureName);
-            escaped.PostalCode = string.IsNullOrWhiteSpace(placemark.PostalCode) ? string.Empty : Uri.EscapeUriString(placemark.PostalCode);
-            escaped.Locality = string.IsNullOrWhiteSpace(placemark.Locality) ? string.Empty : Uri.EscapeUriString(placemark.Locality);
-            escaped.SubLocality = string.IsNullOrWhiteSpace(placemark.SubLocality) ? string.Empty : Uri.EscapeUriString(placemark.SubLocality);
-            escaped.Thoroughfare = string.IsNullOrWhiteSpace(placemark.Thoroughfare) ? string.Empty : Uri.EscapeUriString(placemark.Thoroughfare);
-            escaped.SubThoroughfare = string.IsNullOrWhiteSpace(placemark.SubThoroughfare) ? string.Empty : Uri.EscapeUriString(placemark.SubThoroughfare);
-            escaped.SubAdminArea = string.IsNullOrWhiteSpace(placemark.SubAdminArea) ? string.Empty : Uri.EscapeUriString(placemark.SubAdminArea);
-            escaped.AdminArea = string.IsNullOrWhiteSpace(placemark.AdminArea) ? string.Empty : Uri.EscapeUriString(placemark.AdminArea);
+            escaped.CountryCode = string.IsNullOrWhiteSpace(placemark.CountryCode) ? string.Empty : WebUtility.UrlEncode(placemark.CountryCode);
+            escaped.CountryName = string.IsNullOrWhiteSpace(placemark.CountryName) ? string.Empty : WebUtility.UrlEncode(placemark.CountryName);
+            escaped.FeatureName = string.IsNullOrWhiteSpace(placemark.FeatureName) ? string.Empty : WebUtility.UrlEncode(placemark.FeatureName);
+            escaped.PostalCode = string.IsNullOrWhiteSpace(placemark.PostalCode) ? string.Empty : WebUtility.UrlEncode(placemark.PostalCode);
+            escaped.Locality = string.IsNullOrWhiteSpace(placemark.Locality) ? string.Empty : WebUtility.UrlEncode(placemark.Locality);
+            escaped.SubLocality = string.IsNullOrWhiteSpace(placemark.SubLocality) ? string.Empty : WebUtility.UrlEncode(placemark.SubLocality);
+            escaped.Thoroughfare = string.IsNullOrWhiteSpace(placemark.Thoroughfare) ? string.Empty : WebUtility.UrlEncode(placemark.Thoroughfare);
+            escaped.SubThoroughfare = string.IsNullOrWhiteSpace(placemark.SubThoroughfare) ? string.Empty : WebUtility.UrlEncode(placemark.SubThoroughfare);
+            escaped.SubAdminArea = string.IsNullOrWhiteSpace(placemark.SubAdminArea) ? string.Empty : WebUtility.UrlEncode(placemark.SubAdminArea);
+            escaped.AdminArea = string.IsNullOrWhiteSpace(placemark.AdminArea) ? string.Empty : WebUtility.UrlEncode(placemark.AdminArea);
             return escaped;
         }
     }

@@ -59,7 +59,7 @@
         <Attribute FrameworkAlternate="xamarin-essentials-android">
           <AttributeName>System.Runtime.Versioning.TargetFramework("MonoAndroid,Version=v8.1", FrameworkDisplayName="Xamarin.Android v8.1 Support")</AttributeName>
         </Attribute>
-        <Attribute FrameworkAlternate="xamarin-essentials-ios">
+        <Attribute FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos">
           <AttributeName>Foundation.LinkerSafe</AttributeName>
         </Attribute>
         <Attribute FrameworkAlternate="xamarin-essentials-ios">
@@ -82,6 +82,18 @@
         </Attribute>
         <Attribute>
           <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+7ceee2ec3cc4caab1bb281521d7e9ecf471edc7a")</AttributeName>
+        </Attribute>
+        <Attribute FrameworkAlternate="xamarin-essentials-tvos">
+          <AttributeName>System.Reflection.AssemblyProduct("Xamarin.Essentials (Xamarin.TVOS10)")</AttributeName>
+        </Attribute>
+        <Attribute FrameworkAlternate="xamarin-essentials-tvos">
+          <AttributeName>System.Runtime.Versioning.TargetFramework("Xamarin.TVOS,Version=v1.0", FrameworkDisplayName="Xamarin.TVOS")</AttributeName>
+        </Attribute>
+        <Attribute FrameworkAlternate="xamarin-essentials-watchos">
+          <AttributeName>System.Reflection.AssemblyProduct("Xamarin.Essentials (Xamarin.WatchOS10)")</AttributeName>
+        </Attribute>
+        <Attribute FrameworkAlternate="xamarin-essentials-watchos">
+          <AttributeName>System.Runtime.Versioning.TargetFramework("Xamarin.WatchOS,Version=v1.0", FrameworkDisplayName="Xamarin.WatchOS")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>
@@ -130,6 +142,7 @@
       <Type Name="EmailMessage" Kind="Class" />
       <Type Name="EnergySaverStatus" Kind="Enumeration" />
       <Type Name="EnergySaverStatusChangedEventArgs" Kind="Class" />
+      <Type Name="ExperimentalFeatures" Kind="Class" />
       <Type Name="FeatureNotEnabledException" Kind="Class" />
       <Type Name="FeatureNotSupportedException" Kind="Class" />
       <Type Name="FileBase" Kind="Class" />
@@ -157,6 +170,7 @@
       <Type Name="NavigationMode" Kind="Enumeration" />
       <Type Name="NetworkAccess" Kind="Enumeration" />
       <Type Name="NotImplementedInReferenceAssemblyException" Kind="Class" />
+      <Type Name="OpenFileRequest" Kind="Class" />
       <Type Name="OrientationSensor" Kind="Class" />
       <Type Name="OrientationSensorChangedEventArgs" Kind="Class" />
       <Type Name="OrientationSensorData" Kind="Structure" />
@@ -167,6 +181,7 @@
       <Type Name="Platform" Kind="Class" />
       <Type Name="PointExtensions" Kind="Class" />
       <Type Name="Preferences" Kind="Class" />
+      <Type Name="ReadOnlyFile" Kind="Class" />
       <Type Name="RectangleExtensions" Kind="Class" />
       <Type Name="SecureStorage" Kind="Class" />
       <Type Name="SensorSpeed" Kind="Enumeration" />

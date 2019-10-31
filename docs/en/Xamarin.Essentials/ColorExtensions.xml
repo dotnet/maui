@@ -90,7 +90,7 @@
     <Member MemberName="ToPlatformColor">
       <MemberSignature Language="C#" Value="public static Android.Graphics.Color ToPlatformColor (this System.Drawing.Color color);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Android.Graphics.Color ToPlatformColor(valuetype System.Drawing.Color color) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.ToPlatformColor(System.Drawing.Color)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.Android.ToPlatformColor(System.Drawing.Color)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -112,7 +112,7 @@
     <Member MemberName="ToPlatformColor">
       <MemberSignature Language="C#" Value="public static UIKit.UIColor ToPlatformColor (this System.Drawing.Color color);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class UIKit.UIColor ToPlatformColor(valuetype System.Drawing.Color color) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.ToPlatformColor(System.Drawing.Color)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.iOS.ToPlatformColor(System.Drawing.Color)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -134,7 +134,7 @@
     <Member MemberName="ToPlatformColor">
       <MemberSignature Language="C#" Value="public static Windows.UI.Color ToPlatformColor (this System.Drawing.Color color);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Windows.UI.Color ToPlatformColor(valuetype System.Drawing.Color color) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.ToPlatformColor(System.Drawing.Color)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.UWP.ToPlatformColor(System.Drawing.Color)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
