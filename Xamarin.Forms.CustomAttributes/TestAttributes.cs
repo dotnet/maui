@@ -149,6 +149,7 @@ namespace Xamarin.Forms.CustomAttributes
 		UWP = 1 << 4,
 		WPF = 1 << 5,
 		macOS = 1 << 6,
+		Gtk = 1 << 7,
 		All = ~0,
 		Default = 0
 	}

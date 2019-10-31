@@ -188,7 +188,28 @@ namespace Xamarin.Forms.Platform.GTK
 
 			Device.BeginInvokeOnMainThread(() =>
 			{
-				pageControl?.Control?.PopModal(modalPage);
+				if (pageControl != null)
+				{
+					var page = pageControl.Control;
+
+					if (page != null)
+					{
+						if (page.Children.Length > 0)
+						{
+							page.Remove(modalPage);
+						}
+
+						if (page.Children != null)
+						{
+							foreach (var child in page.Children)
+							{
+								child.ShowAll();
+							}
+
+							page.ShowAll();
+						}
+					}
+				}
 
 				DisposeModelAndChildrenRenderers(modal);
 			});
@@ -250,7 +271,17 @@ namespace Xamarin.Forms.Platform.GTK
 
 					if (page != null)
 					{
-						page.PushModal(modalRenderer.Container);
+						page.Attach(modalRenderer.Container, 0, 1, 0, 1);
+
+						if (page.Children != null)
+						{
+							foreach (var child in page.Children)
+							{
+								child.ShowAll();
+							}
+
+							page.ShowAll();
+						}
 					}
 				}
 			});
