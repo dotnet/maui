@@ -2,10 +2,59 @@
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using ABuildVersionCodes = Android.OS.BuildVersionCodes;
+using ABuild = Android.OS.Build;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	internal class Anticipator
+	/// <summary>
+	/// 
+	/// Anticipator is a hand-rolled threadpool that exists to speedup startup by activating
+	/// threads that can be used to race ahead of the UIThread in order to compute and cache results 
+	/// that the UIThread would otherwise have to compute as part of startup. This requires
+	/// making some startup code re-entrant. 
+	/// 
+	/// So developers don't need to wonder if the startup code they're writing is re-entrant we 
+	/// isolate all re-entrant code here in the static members of Anticipator.
+	/// 
+	/// Computing the results that need to be cached often require calling into the Android OS. 
+	/// Calling into the Android OS off the UIThread is a "gray" operation. E.g. we know not to 
+	/// update UI elements off the UIThread, but what about getting the SdkInt version? Likely
+	/// ok but just the same we want to track ALL Android OS APIs we call off the UIThread.
+	/// Isolating all re-entrant code in static Anticipator members simplifies accounting of
+	/// all Android OS calls potentially made off the UIThread.
+	/// 
+	/// </summary>
+	internal partial class Anticipator
+	{
+		static Anticipator s_singleton;
+		static ABuildVersionCodes? s_sdkInt;
+
+		static Anticipator()
+		{
+			s_singleton = new Anticipator();
+
+			s_singleton.AnticipateClassConstruction(typeof(Resource.Layout));
+			s_singleton.AnticipateClassConstruction(typeof(Resource.Attribute));
+			s_singleton.AnticipateGetter(() => Forms.SdkInt);
+		}
+
+		internal static ABuildVersionCodes SdkInt
+		{
+			get
+			{
+				if (!s_sdkInt.HasValue)
+					s_sdkInt = ABuild.VERSION.SdkInt;
+				return (ABuildVersionCodes)s_sdkInt;
+			}
+		}
+	}
+
+	/// <summary>
+	/// A carve out of the the private instance members of Anticipator used to access the thread
+	/// pool. The thread pool should only ever be accessed by static members of Anticipator. 
+	/// </summary>
+	internal partial class Anticipator
 	{
 		const int ThreadLifeTimeSeconds = 5;
 		readonly static TimeSpan LoopTimeOut = TimeSpan.FromSeconds(ThreadLifeTimeSeconds);
@@ -62,7 +111,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
-		internal void Anticipate(Action action)
+		void Anticipate(Action action)
 		{
 			if (action == null)
 				throw new ArgumentNullException(nameof(action));
@@ -72,9 +121,15 @@ namespace Xamarin.Forms.Platform.Android
 			Signal();
 		}
 
-		internal void AnticipateClassConstruction(Type type)
+		void AnticipateClassConstruction(Type type)
 		{
 			Anticipate(() => RuntimeHelpers.RunClassConstructor(type.TypeHandle));
 		}
+
+		void AnticipateGetter<T>(Func<T> getter)
+		{
+			Anticipate(() => getter());
+		}
+
 	}
 }
