@@ -140,7 +140,12 @@ namespace Xamarin.Forms.Platform.Android
 		protected virtual Drawable CreateItemBackgroundDrawable()
 		{
 			var stateList = ColorStateList.ValueOf(Color.Black.MultiplyAlpha(0.2).ToAndroid());
-			return new RippleDrawable(stateList, new ColorDrawable(AColor.White), null);
+			var colorDrawable = new ColorDrawable(AColor.White);
+
+			if (Forms.IsLollipopOrNewer)
+				return new RippleDrawable(stateList, colorDrawable, null);
+
+			return colorDrawable;
 		}
 
 		protected virtual BottomSheetDialog CreateMoreBottomSheet(Action<ShellSection, BottomSheetDialog> selectCallback)
@@ -186,11 +191,14 @@ namespace Xamarin.Forms.Platform.Android
 					image.LayoutParameters = lp;
 					lp.Dispose();
 
-					image.ImageTintList = ColorStateList.ValueOf(Color.Black.MultiplyAlpha(0.6).ToAndroid());
 					ShellContext.ApplyDrawableAsync(shellContent, ShellSection.IconProperty, icon =>
 					{
 						if (!image.IsDisposed())
+						{
+							var color = Color.Black.MultiplyAlpha(0.6).ToAndroid();
+							icon.SetTint(color);
 							image.SetImageDrawable(icon);
+						}
 					});
 
 					innerLayout.AddView(image);
