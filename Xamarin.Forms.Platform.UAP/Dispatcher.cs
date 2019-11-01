@@ -20,6 +20,11 @@ namespace Xamarin.Forms.Platform.UWP
 			_coreDispatcher = CoreApplication.GetCurrentView().Dispatcher;
 		}
 
+		public Dispatcher(CoreDispatcher coreDispatcher) 
+		{
+			_coreDispatcher = coreDispatcher;
+		}
+
 		bool IDispatcher.IsInvokeRequired => Device.IsInvokeRequired;
 	}
 }
