@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Windows.Storage;
@@ -32,9 +33,9 @@ namespace Xamarin.Essentials
         {
             var hasAtLeastOneType = false;
 
-            if (options?.FileTypes?.Length > 0)
+            if (options?.FileTypes?.Value != null)
             {
-                foreach (var type in options.FileTypes)
+                foreach (var type in options.FileTypes.Value)
                 {
                     if (type.StartsWith("."))
                     {
@@ -51,23 +52,19 @@ namespace Xamarin.Essentials
         }
     }
 
-    public static class FilePickerFileTypes
+    public partial class FilePickerFileType
     {
-        public static string Png = ".png";
-        public static string Jpg = ".jpg";
-        public static string Mp4 = ".mp4";
-        public static string Pdf = ".pdf";
-    }
-
-    public partial class PickOptions
-    {
-        static PickOptions PlatformGetImagesPickOptions()
-        {
-            return new PickOptions
+        public static FilePickerFileType PlatformImageFileType() =>
+            new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
             {
-                FileTypes = new string[] { ".jpg", ".png" }
-            };
-        }
+                { DevicePlatform.UWP, new[] { "*.png;*.jpg;*.jpeg" } }
+            });
+
+        public static FilePickerFileType PlatformPngFileType() =>
+            new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+            {
+                { DevicePlatform.UWP, new[] { "*.png" } }
+            });
     }
 
     public partial class PickResult

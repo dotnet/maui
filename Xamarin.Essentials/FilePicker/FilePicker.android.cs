@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,8 +34,10 @@ namespace Xamarin.Essentials
 
             var intent = new Intent(parentActivity, typeof(FilePickerActivity));
 
-            var allowedTypes = options?.FileTypes ?? new string[0];
-            intent.PutExtra(FilePickerActivity.ExtraAllowedTypes, allowedTypes);
+            var allowedTypes = options?.FileTypes?.Value;
+            if (allowedTypes != null)
+                intent.PutExtra(FilePickerActivity.ExtraAllowedTypes, allowedTypes.ToArray());
+
             intent.PutExtra(FilePickerActivity.ExtraPickerTitle, options.PickerTitle ?? "Select file");
 
             parentActivity.StartActivity(intent);
@@ -42,23 +46,19 @@ namespace Xamarin.Essentials
         }
     }
 
-    public static class FilePickerFileTypes
+    public partial class FilePickerFileType
     {
-        public static string Png = "image/png";
-        public static string Jpg = "image/jpeg";
-        public static string Mp4 = "video/mp4";
-        public static string Pdf = "application/pdf";
-    }
-
-    public partial class PickOptions
-    {
-        static PickOptions PlatformGetImagesPickOptions()
-        {
-            return new PickOptions
+        public static FilePickerFileType PlatformImageFileType() =>
+            new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
             {
-                FileTypes = new string[] { "image/png", "image/jpeg" }
-            };
-        }
+                { DevicePlatform.Android, new[] { "image/png", "image/jpeg" } }
+            });
+
+        public static FilePickerFileType PlatformPngFileType() =>
+            new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+            {
+                { DevicePlatform.Android, new[] { "image/png" } }
+            });
     }
 
     [Activity(ConfigurationChanges = global::Android.Content.PM.ConfigChanges.Orientation | global::Android.Content.PM.ConfigChanges.ScreenSize)]

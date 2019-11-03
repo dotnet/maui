@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MobileCoreServices;
@@ -19,7 +21,7 @@ namespace Xamarin.Essentials
                 previousCompletionSource.SetCanceled();
             }
 
-            var allowedUtis = options?.FileTypes ?? new string[]
+            var allowedUtis = options?.FileTypes?.Value?.ToArray() ?? new string[]
             {
                 UTType.Content,
                 UTType.Item,
@@ -65,8 +67,8 @@ namespace Xamarin.Essentials
                 var securityEnabled = args.Url.StartAccessingSecurityScopedResource();
                 var doc = new UIDocument(args.Url);
 
-                string filename = doc.LocalizedName;
-                string pathname = doc.FileUrl?.Path;
+                var filename = doc.LocalizedName;
+                var pathname = doc.FileUrl?.Path;
 
                 args.Url.StopAccessingSecurityScopedResource();
 
@@ -98,23 +100,19 @@ namespace Xamarin.Essentials
         }
     }
 
-    public static class FilePickerFileTypes
+    public partial class FilePickerFileType
     {
-        public static string Png = UTType.PNG;
-        public static string Jpg = UTType.JPEG;
-        public static string Mp4 = UTType.MPEG4;
-        public static string Pdf = UTType.PDF;
-    }
-
-    public partial class PickOptions
-    {
-        static PickOptions PlatformGetImagesPickOptions()
-        {
-            return new PickOptions
+        public static FilePickerFileType PlatformImageFileType() =>
+            new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
             {
-                FileTypes = new string[] { UTType.Image }
-            };
-        }
+                { DevicePlatform.iOS, new[] { (string)UTType.Image } }
+            });
+
+        public static FilePickerFileType PlatformPngFileType() =>
+            new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+            {
+                { DevicePlatform.iOS, new[] { (string)UTType.PNG } }
+            });
     }
 
     public partial class PickResult

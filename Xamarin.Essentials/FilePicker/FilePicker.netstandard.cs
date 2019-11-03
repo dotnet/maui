@@ -9,9 +9,12 @@ namespace Xamarin.Essentials
             => throw new NotImplementedInReferenceAssemblyException();
     }
 
-    public partial class PickOptions
+    public partial class FilePickerFileType
     {
-        static PickOptions PlatformGetImagesPickOptions()
+        public static FilePickerFileType PlatformImageFileType()
+            => throw new NotImplementedInReferenceAssemblyException();
+
+        public static FilePickerFileType PlatformPngFileType()
             => throw new NotImplementedInReferenceAssemblyException();
     }
 

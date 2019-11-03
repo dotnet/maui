@@ -1,5 +1,5 @@
 ﻿using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Essentials;
@@ -19,11 +19,14 @@ namespace Samples.ViewModel
         {
             PickFileCommand = new Command(() => DoPickFile());
             PickImageCommand = new Command(() => DoPickImage());
+            PickCustomTypeCommand = new Command(() => DoPickCustomType());
         }
 
         public ICommand PickFileCommand { get; }
 
         public ICommand PickImageCommand { get; }
+
+        public ICommand PickCustomTypeCommand { get; }
 
         public string Text
         {
@@ -52,11 +55,30 @@ namespace Samples.ViewModel
         {
             var options = new PickOptions
             {
-                FileTypes = new string[] { FilePickerFileTypes.Png, FilePickerFileTypes.Jpg },
-                PickerTitle = "Please select an image"
+                PickerTitle = "Please select an image",
+                FileTypes = FilePickerFileType.Images,
             };
 
-            await PickAndShow(PickOptions.Images);
+            await PickAndShow(options);
+        }
+
+        async void DoPickCustomType()
+        {
+            var customFileType =
+                new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+                {
+                    { DevicePlatform.iOS, new[] { "public.my.comic.extension" } }, // or general UTType values
+                    { DevicePlatform.Android, new[] { "application/comics" } },
+                    { DevicePlatform.UWP, new[] { ".cbr" } }
+                });
+
+            var options = new PickOptions
+            {
+                PickerTitle = "Please select a comic file",
+                FileTypes = customFileType,
+            };
+
+            await PickAndShow(options);
         }
 
         async Task PickAndShow(PickOptions options)
