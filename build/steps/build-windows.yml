@@ -33,10 +33,12 @@ jobs:
           BuildConfiguration:  ${{ parameters.releaseBuildConfiguration }}
           BuildPlatform: ${{ parameters.buildPlatform }}
     steps:
-    - script: build.cmd -Target provision
+    - checkout: self
+      clean: true
+    - script: build.cmd -Target provision --verbosity=diagnostic
       displayName: 'Cake Provision'
       condition: eq(variables['provisioning'], 'false')
-  
+
     - task: xamops.azdevex.provisionator-task.provisionator@1
       displayName: 'Provisionator'
       condition: eq(variables['provisioning'], 'true')
@@ -60,7 +62,7 @@ jobs:
       condition: ne(variables['NUGET_VERSION'], '')
       inputs:
         versionSpec: $(NUGET_VERSION)
-          
+
     - task: NuGetCommand@2
       displayName: 'NuGet restore ${{ parameters.slnPath }}'
       inputs:
