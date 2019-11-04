@@ -450,28 +450,28 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			string text = Element.Text ?? string.Empty;
 
+			var attr = GetNSAttributedStringDocumentAttributes();
 #if __MOBILE__
-			var attr = new NSAttributedStringDocumentAttributes
-			{
-				DocumentType = NSDocumentType.HTML
-			};
 
 			NSError nsError = null;
 
 			Control.AttributedText = new NSAttributedString(text, attr, ref nsError);
-
 #else
-			var attr = new NSAttributedStringDocumentAttributes
-			{
-				DocumentType = NSDocumentType.HTML
-			};
-
 			var htmlData = new NSMutableData();
 			htmlData.SetData(text);
 
 			Control.AttributedStringValue = new NSAttributedString(htmlData, attr, out _);
 #endif
 			_perfectSizeValid = false;
+		}
+
+		protected virtual NSAttributedStringDocumentAttributes GetNSAttributedStringDocumentAttributes()
+		{
+			return new NSAttributedStringDocumentAttributes
+			{
+				DocumentType = NSDocumentType.HTML,
+				StringEncoding = NSStringEncoding.UTF8
+			};
 		}
 
 		void UpdateFont()
