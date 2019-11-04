@@ -44,7 +44,7 @@ var informationalVersion = gitVersion.InformationalVersion;
 var buildVersion = gitVersion.FullBuildMetaData;
 var nugetversion = Argument<string>("packageVersion", gitVersion.NuGetVersion);
 
-var ANDROID_HOME = EnvironmentVariable ("ANDROID_HOME") ?? 
+var ANDROID_HOME = EnvironmentVariable ("ANDROID_HOME") ??
     (IsRunningOnWindows () ? "C:\\Program Files (x86)\\Android\\android-sdk\\" : "");
 
 string monoMajorVersion = "5.18.1";
@@ -70,8 +70,8 @@ string monoSDK = IsRunningOnWindows() ? monoSDK_windows : monoSDK_macos;
 string iosSDK = IsRunningOnWindows() ? iOSSDK_windows : iOSSDK_macos;
 string macSDK  = IsRunningOnWindows() ? "" : macSDK_macos;
 
-string[] androidSdkManagerInstalls = new string[0]; //new [] { "platforms;android-29"};
-            
+string[] androidSdkManagerInstalls = new string[0];//new [] { "platforms;android-24", "platforms;android-28"};
+
 //////////////////////////////////////////////////////////////////////
 // TASKS
 //////////////////////////////////////////////////////////////////////
@@ -110,12 +110,17 @@ Task("provision-androidsdk")
 
         if(androidSdkManagerInstalls.Length > 0)
         {
-            var androidSdkSettings = new AndroidSdkManagerToolSettings { 
+            var androidSdkSettings = new AndroidSdkManagerToolSettings {
                 SdkRoot = ANDROID_HOME,
                 SkipVersionCheck = true
             };
 
-            try { AcceptLicenses (androidSdkSettings); } catch { }
+
+            AcceptLicenses (androidSdkSettings);
+
+            AndroidSdkManagerUpdateAll (androidSdkSettings);
+
+            AcceptLicenses (androidSdkSettings);
 
             AndroidSdkManagerInstall (androidSdkManagerInstalls, androidSdkSettings);
         }
@@ -152,7 +157,7 @@ Task("provision-monosdk")
         else
         {
             if(!String.IsNullOrWhiteSpace(monoSDK))
-                await Boots(monoSDK); 
+                await Boots(monoSDK);
         }
     });
 
@@ -178,15 +183,15 @@ Task("_NuGetPack")
         var nugetversion = FileReadText(nugetVersionFile.First());
 
         Information("Nuget Version: {0}", nugetversion);
-        
+
         var nugetPackageDir = Directory("./artifacts");
         var nuGetPackSettings = new NuGetPackSettings
-        {   
+        {
             OutputDirectory = nugetPackageDir,
             Version = nugetversion
         };
 
-        var nugetFilePaths = 
+        var nugetFilePaths =
             GetFiles("./.nuspec/*.nuspec");
 
         nuGetPackSettings.Properties.Add("configuration", configuration);
@@ -215,7 +220,7 @@ Task("Build")
     .IsDependentOn("Restore")
     .IsDependentOn("Android81")
     .Does(() =>
-{ 
+{
     try{
         MSBuild("./Xamarin.Forms.sln", GetMSBuildSettings().WithRestore());
     }
@@ -230,7 +235,7 @@ Task("Android81")
     .Description("Builds Monodroid81 targets")
     .Does(() =>
     {
-        string[] androidProjects = 
+        string[] androidProjects =
             new []
             {
                 "./Xamarin.Forms.Platform.Android/Xamarin.Forms.Platform.Android.csproj",
@@ -240,7 +245,7 @@ Task("Android81")
             };
 
         foreach(var project in androidProjects)
-            MSBuild(project, 
+            MSBuild(project,
                     GetMSBuildSettings()
                         .WithRestore()
                         .WithProperty("AndroidTargetFrameworkVersion", "v8.1"));
@@ -250,10 +255,10 @@ Task("VSMAC")
     .Description("Builds projects necessary so solution compiles on VSMAC")
     .Does(() =>
     {
-        StartProcess("open", new ProcessSettings{ Arguments = "Xamarin.Forms.sln" });        
+        StartProcess("open", new ProcessSettings{ Arguments = "Xamarin.Forms.sln" });
     });
 
-/* 
+/*
 Task("Deploy")
     .IsDependentOn("DeployiOS")
     .IsDependentOn("DeployAndroid");
@@ -262,7 +267,7 @@ Task("Deploy")
 // TODO? Not sure how to make this work
 Task("DeployiOS")
     .Does(() =>
-    { 
+    {
         // not sure how to get this to deploy to iOS
         BuildiOSIpa("./Xamarin.Forms.sln", platform:"iPhoneSimulator", configuration:"Debug");
 
@@ -271,7 +276,7 @@ Task("DeployiOS")
 Task("DeployAndroid")
     .Description("Builds and deploy Android Control Gallery")
     .Does(() =>
-    { 
+    {
         MSBuild("./Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj", GetMSBuildSettings().WithRestore());
         MSBuild("./Xamarin.Forms.ControlGallery.Android/Xamarin.Forms.ControlGallery.Android.csproj", GetMSBuildSettings().WithRestore());
         BuildAndroidApk("./Xamarin.Forms.ControlGallery.Android/Xamarin.Forms.ControlGallery.Android.csproj", sign:true, configuration:configuration);

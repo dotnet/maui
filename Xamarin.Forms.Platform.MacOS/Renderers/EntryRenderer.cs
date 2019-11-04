@@ -292,7 +292,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			var color = Element.IsEnabled && !targetColor.IsDefault ? targetColor : ColorExtensions.SeventyPercentGrey.ToColor();
 
-			Control.PlaceholderAttributedString = formatted.ToAttributed(Element, color);
+			Control.PlaceholderAttributedString = formatted.ToAttributed(Element, color, Element.HorizontalTextAlignment);
 		}
 
 		protected override void SetAccessibilityLabel()

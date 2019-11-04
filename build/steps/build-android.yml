@@ -28,6 +28,7 @@ jobs:
     dependsOn: ${{ parameters.dependsOn }}
     steps:
       - checkout: self
+        clean: true
 
       - task: xamops.azdevex.provisionator-task.provisionator@1
         displayName: 'Provisionator'

@@ -199,11 +199,14 @@ namespace Xamarin.Forms.Platform.Android
 					image.LayoutParameters = lp;
 					lp.Dispose();
 
-					image.ImageTintList = ColorStateList.ValueOf(Color.Black.MultiplyAlpha(0.6).ToAndroid());
 					ShellContext.ApplyDrawableAsync(shellContent, ShellSection.IconProperty, icon =>
 					{
 						if (!image.IsDisposed())
+						{
+							var color = Color.Black.MultiplyAlpha(0.6).ToAndroid();
+							icon.SetTint(color);
 							image.SetImageDrawable(icon);
+						}
 					});
 
 					innerLayout.AddView(image);

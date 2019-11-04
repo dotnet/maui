@@ -35,7 +35,12 @@ namespace Xamarin.Forms.Platform.Android
 		public static Drawable CreateItemBackgroundDrawable()
 		{
 			var stateList = ColorStateList.ValueOf(Color.Black.MultiplyAlpha(0.2).ToAndroid());
-			return new RippleDrawable(stateList, new ColorDrawable(AColor.White), null);
+			var colorDrawable = new ColorDrawable(AColor.White);
+
+			if (Forms.IsLollipopOrNewer)
+				return new RippleDrawable(stateList, colorDrawable, null);
+
+			return colorDrawable;
 		}
 
 		internal static void UpdateEnabled(bool tabEnabled, IMenuItem menuItem)
@@ -45,11 +50,11 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		internal static async void SetupMenu(
-			IMenu menu, 
-			int maxBottomItems, 
-			List<(string title, ImageSource icon, bool tabEnabled)> items, 
-			int currentIndex, 
-			BottomNavigationView bottomView, 
+			IMenu menu,
+			int maxBottomItems,
+			List<(string title, ImageSource icon, bool tabEnabled)> items,
+			int currentIndex,
+			BottomNavigationView bottomView,
 			Context context)
 		{
 			menu.Clear();
@@ -103,7 +108,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (source == null)
 				return;
 			var drawable = await context.GetFormsDrawableAsync(source);
-			menuItem.SetIcon(drawable);			
+			menuItem.SetIcon(drawable);
 			drawable?.Dispose();
 		}
 
@@ -117,7 +122,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		internal static BottomSheetDialog CreateMoreBottomSheet(
-			Action<int, BottomSheetDialog> selectCallback, 
+			Action<int, BottomSheetDialog> selectCallback,
 			Context context,
 			List<(string title, ImageSource icon, bool tabEnabled)> items,
 			int maxItemCount)

@@ -4,7 +4,7 @@ using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	internal class CarouselViewLayout : ItemsViewLayout
+	public class CarouselViewLayout : ItemsViewLayout
 	{
 		readonly CarouselView _carouselView;
 		readonly ItemsLayout _itemsLayout;
@@ -13,11 +13,6 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			_carouselView = carouselView;
 			_itemsLayout = itemsLayout;
-		}
-
-		public override bool ShouldInvalidateLayout(UICollectionViewLayoutAttributes preferredAttributes, UICollectionViewLayoutAttributes originalAttributes)
-		{
-			return base.ShouldInvalidateLayout(preferredAttributes, originalAttributes);
 		}
 
 		public override bool ShouldInvalidateLayoutForBoundsChange(CGRect newBounds)

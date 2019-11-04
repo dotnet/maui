@@ -25,6 +25,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue6476.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7396.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7825.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue2271.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5354.xaml.cs">
       <DependentUpon>Issue5354.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -104,6 +105,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue7803.xaml.cs">
       <DependentUpon>Issue7803.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Issue8222.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue8167.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RefreshViewTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7338.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ScrollToGroup.cs" />
