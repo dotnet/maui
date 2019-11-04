@@ -11,8 +11,10 @@ using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 using Xamarin.Forms.Internals;
 using NativeAutomationProperties = Windows.UI.Xaml.Automation.AutomationProperties;
+using WImage = Windows.UI.Xaml.Controls.Image;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -238,6 +240,7 @@ namespace Xamarin.Forms.Platform.UWP
 		Page _currentPage;
 		readonly NavigationModel _navModel = new NavigationModel();
 		readonly ToolbarTracker _toolbarTracker = new ToolbarTracker();
+		readonly ImageConverter _imageConverter = new ImageConverter();
 		readonly ImageSourceIconElementConverter _imageSourceIconElementConverter = new ImageSourceIconElementConverter();
 		Windows.UI.Xaml.Controls.ProgressBar GetBusyIndicator()
 		{
@@ -434,7 +437,19 @@ namespace Xamarin.Forms.Platform.UWP
 
 				var button = new AppBarButton();
 				button.SetBinding(AppBarButton.LabelProperty, "Text");
-				button.SetBinding(AppBarButton.IconProperty, "IconImageSource", _imageSourceIconElementConverter);
+
+				if (commandBar.IsDynamicOverflowEnabled && item.Order == ToolbarItemOrder.Secondary)
+				{
+					button.SetBinding(AppBarButton.IconProperty, "IconImageSource", _imageSourceIconElementConverter);
+				}
+				else
+				{
+					var img = new WImage();
+					img.SetBinding(WImage.SourceProperty, "Value");
+					img.SetBinding(WImage.DataContextProperty, "IconImageSource", _imageConverter);
+					button.Content = img;
+				}
+
 				button.Command = new MenuItemCommand(item);
 				button.DataContext = item;
 				button.SetValue(NativeAutomationProperties.AutomationIdProperty, item.AutomationId);
