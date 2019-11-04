@@ -128,8 +128,31 @@ namespace Xamarin.Forms.Platform.UWP
 						MinWidth = 68,
 						MaxWidth = 200
 					};
-					if (section.Icon is FileImageSource fis)
-						btn.Icon = new BitmapIcon() { UriSource = new Uri("ms-appx:///" + fis.File) };
+
+					switch (section.Icon)
+					{
+						case FileImageSource fileImageSource:
+							btn.Icon = new BitmapIcon() { UriSource = new Uri("ms-appx:///" + fileImageSource.File) };
+							break;
+
+						case FontImageSource fontImageSource:
+
+							var icon = new FontIcon()
+							{
+								Glyph = fontImageSource.Glyph,
+								FontFamily = new FontFamily(fontImageSource.FontFamily),
+								FontSize = fontImageSource.Size,
+							};
+
+							if (!fontImageSource.Color.IsDefault)
+							{
+								icon.Foreground = fontImageSource.Color.ToBrush();
+							}
+
+							btn.Icon = icon;
+							break;
+					}
+
 					btn.Click += (s, e) => OnShellSectionClicked(section);
 					_BottomBar.ColumnDefinitions.Add(new UwpColumnDefinition() { Width = new UwpGridLength(1, UwpGridUnitType.Star) });
 					SetColumn(btn, i);
