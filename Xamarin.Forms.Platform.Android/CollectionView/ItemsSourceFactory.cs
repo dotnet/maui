@@ -37,7 +37,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		public static IGroupableItemsViewSource Create(GroupableItemsView itemsView, RecyclerView.Adapter adapter)
 		{
-			if (itemsView.IsGrouped)
+			var source = itemsView.ItemsSource;
+
+			if (itemsView.IsGrouped && source != null)
 			{
 				return new ObservableGroupedSource(itemsView, new AdapterNotifier(adapter));
 			}
