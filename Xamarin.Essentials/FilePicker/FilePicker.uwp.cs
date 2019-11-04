@@ -37,9 +37,10 @@ namespace Xamarin.Essentials
             {
                 foreach (var type in options.FileTypes.Value)
                 {
-                    if (type.StartsWith("."))
+                    if (type.StartsWith(".") ||
+                        type.StartsWith("*."))
                     {
-                        picker.FileTypeFilter.Add(type);
+                        picker.FileTypeFilter.Add(type.TrimStart('*'));
                         hasAtLeastOneType = true;
                     }
                 }
@@ -57,7 +58,7 @@ namespace Xamarin.Essentials
         public static FilePickerFileType PlatformImageFileType() =>
             new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
             {
-                { DevicePlatform.UWP, new[] { "*.png;*.jpg;*.jpeg" } }
+                { DevicePlatform.UWP, new[] { "*.png", "*.jpg", "*.jpeg" } }
             });
 
         public static FilePickerFileType PlatformPngFileType() =>
