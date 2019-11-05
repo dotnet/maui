@@ -36,7 +36,8 @@
       <DependentUpon>Issue7048.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-	<Compile Include="$(MSBuildThisFileDirectory)Issue5367.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7181.cs" />
+	  <Compile Include="$(MSBuildThisFileDirectory)Issue5367.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7253.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7581.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7621.xaml.cs">
