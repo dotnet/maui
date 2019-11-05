@@ -120,6 +120,7 @@
       <Link>GalleryPages\AdvancedOpenGLGallery.cs</Link>
     </Compile>
     <Compile Include="ApiLabelRenderer.cs" />
+    <Compile Include="Issue7249SwitchRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <AndroidAsset Include="Assets\default.css" />

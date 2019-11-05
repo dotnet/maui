@@ -1143,6 +1143,7 @@
       <DependentUpon>Issue7886.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue7898.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7249.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8200.cs" />
   </ItemGroup>
   <ItemGroup>
