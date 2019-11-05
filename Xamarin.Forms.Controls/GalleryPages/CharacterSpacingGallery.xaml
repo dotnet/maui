@@ -2,7 +2,8 @@
 
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Xamarin.Forms.Controls.GalleryPages.CharacterSpacingGallery">
+             x:Class="Xamarin.Forms.Controls.GalleryPages.CharacterSpacingGallery"
+             xmlns:controls="clr-namespace:Xamarin.Forms.Controls">
 
     <StackLayout>
         <Label>
@@ -16,6 +17,8 @@
         </Label>
         <Slider x:Name="slider" Minimum="-10" Maximum="10" Value="0" ValueChanged="Slider_OnValueChanged" MaximumTrackColor="Gray"
                 MinimumTrackColor="Gray"  Margin="20,0"/>
+        <controls:ColorPicker x:Name="textColorPicker" ColorPicked="ColorPicker_OnColorPicked" Title="Text color" />
+        <controls:ColorPicker x:Name="placeholderColorPicker" ColorPicked="ColorPicker_OnColorPicked" Title="Placeholder color" />
 
         <ScrollView>
             <StackLayout>

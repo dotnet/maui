@@ -253,6 +253,7 @@
     <Compile Include="..\Xamarin.Forms.Platform.iOS\Extensions\FontExtensions.Shared.cs">
       <Link>Extensions\FontExtensions.Shared.cs</Link>
     </Compile>
+    <Compile Include="Extensions\NSAttributedStringExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj">

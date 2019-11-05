@@ -15,6 +15,8 @@ namespace Xamarin.Forms.Controls.GalleryPages
 		public CharacterSpacingGallery()
 		{
 			InitializeComponent();
+			textColorPicker.InitWithColor(Color.Red);
+			placeholderColorPicker.InitWithColor(Color.BlueViolet);
 		}
 
 		void Slider_OnValueChanged(object sender, ValueChangedEventArgs e)
@@ -34,9 +36,37 @@ namespace Xamarin.Forms.Controls.GalleryPages
 			Span.CharacterSpacing = e.NewValue;
 		}
 
+		void ColorPicker_OnColorPicked(object sender, ColorPickedEventArgs e)
+		{
+			if (sender == textColorPicker)
+			{
+				Button.TextColor = e.Color;
+				DatePicker.TextColor = e.Color;
+				Editor.TextColor = e.Color;
+				Entry.TextColor = e.Color;
+				PlaceholderEntry.TextColor = e.Color;
+				PlaceholderEditor.TextColor = e.Color;
+				Label.TextColor = e.Color;
+				Picker.TextColor = e.Color;
+				SearchBar.TextColor = e.Color;
+				PlaceholderSearchBar.TextColor = e.Color;
+				TimePicker.TextColor = e.Color;
+				Span.TextColor = e.Color;
+			}
+			else
+			{
+				PlaceholderEntry.PlaceholderColor = e.Color;
+				PlaceholderEditor.PlaceholderColor = e.Color;
+				PlaceholderSearchBar.PlaceholderColor = e.Color;
+
+			}
+		}
+
 		void ResetButtonClicked(object sender, EventArgs e)
 		{
 			slider.Value = 0;
+			textColorPicker.InitWithColor(Color.Red);
+			placeholderColorPicker.InitWithColor(Color.BlueViolet);
 		}
 	}
 }

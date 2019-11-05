@@ -278,11 +278,10 @@ namespace Xamarin.Forms.Platform.MacOS
 			else
 				newAttributedText.AddAttribute(underlineStyleKey, NSNumber.FromInt32((int)NSUnderlineStyle.Single), range);
 
-#if __MOBILE__
-			UpdateCharacterSpacing();
-#else
+#if !__MOBILE__
 			Control.AttributedStringValue = newAttributedText;
 #endif
+			UpdateCharacterSpacing();
 			_perfectSizeValid = false;
 		}
 
@@ -379,20 +378,24 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void UpdateCharacterSpacing()
 		{
-#if __MOBILE__
 			if (IsElementOrControlEmpty)
 				return;
 
 			if (Element?.TextType != TextType.Text)
 				return;
-
+#if __MOBILE__
 			var textAttr = Control.AttributedText.AddCharacterSpacing(Element.Text, Element.CharacterSpacing);
 
 			if (textAttr != null)
 				Control.AttributedText = textAttr;
-				
-			_perfectSizeValid = false;
+#else
+   			var textAttr = Control.AttributedStringValue.AddCharacterSpacing(Element.Text, Element.CharacterSpacing);
+
+			if (textAttr != null)
+				Control.AttributedStringValue = textAttr;
 #endif
+
+			_perfectSizeValid = false;
 		}
 
 		void UpdateText()
@@ -510,7 +513,10 @@ namespace Xamarin.Forms.Platform.MacOS
 #if __MOBILE__
 			Control.TextColor = textColor.ToUIColor(ColorExtensions.Black);
 #else
-			Control.TextColor = textColor.ToNSColor(ColorExtensions.Black);
+			var alignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+			var textWithColor = new NSAttributedString(Element.Text ?? "", font: Element.ToNSFont(), foregroundColor: textColor.ToNSColor(), paragraphStyle: new NSMutableParagraphStyle() { Alignment = alignment });
+			textWithColor = textWithColor.AddCharacterSpacing(Element.Text ?? string.Empty, Element.CharacterSpacing);
+			Control.AttributedStringValue = textWithColor;
 #endif
 			UpdateLayout();
 		}
