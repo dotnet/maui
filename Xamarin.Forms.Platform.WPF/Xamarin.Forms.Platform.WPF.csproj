@@ -65,6 +65,7 @@
     <Compile Include="Controls\FormsAppBar.cs" />
     <Compile Include="Controls\FormsAppBarButton.cs" />
     <Compile Include="Controls\FormsBitmapIcon.cs" />
+    <Compile Include="Controls\FormsButton.cs" />
     <Compile Include="Controls\FormsCarouselPage.cs" />
     <Compile Include="Controls\FormsContentControl.cs" />
     <Compile Include="Controls\FormsContentDialog.cs" />
