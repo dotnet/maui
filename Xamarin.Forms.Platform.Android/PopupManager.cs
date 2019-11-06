@@ -141,7 +141,7 @@ namespace Xamarin.Forms.Platform.Android
 				alertDialog.SetMessage(arguments.Message);
 
 				var frameLayout = new FrameLayout(Activity);
-				var editText = new EditText(Activity) { Hint = arguments.Placeholder };
+				var editText = new EditText(Activity) { Hint = arguments.Placeholder, Text = arguments.InitialValue };
 				var layoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent)
 				{
 					LeftMargin = (int)(22 * Activity.Resources.DisplayMetrics.Density),

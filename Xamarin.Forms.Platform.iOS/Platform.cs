@@ -366,6 +366,7 @@ namespace Xamarin.Forms.Platform.iOS
 			alert.AddTextField(uiTextField =>
 			{
 				uiTextField.Placeholder = arguments.Placeholder;
+				uiTextField.Text = arguments.InitialValue;
 				uiTextField.ShouldChangeCharacters = (field, range, replacementString) => arguments.MaxLength <= -1 || field.Text.Length + replacementString.Length - range.Length <= arguments.MaxLength;
 				uiTextField.ApplyKeyboard(arguments.Keyboard);
 			});

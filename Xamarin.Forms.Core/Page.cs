@@ -209,9 +209,16 @@ namespace Xamarin.Forms
 			return args.Result.Task;
 		}
 
+		[Obsolete("DisplayPromptAsync overload is obsolete as of version 4.5.0 and is no longer supported.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Task<string> DisplayPromptAsync(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard))
 		{
-			var args = new PromptArguments(title, message, accept, cancel, placeholder, maxLength, keyboard);
+			return DisplayPromptAsync(title, message, accept, cancel, placeholder, maxLength, keyboard, "");
+		}
+
+		public Task<string> DisplayPromptAsync(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "")
+		{
+			var args = new PromptArguments(title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue);
 			MessagingCenter.Send(this, PromptSignalName, args);
 			return args.Result.Task;
 		}
