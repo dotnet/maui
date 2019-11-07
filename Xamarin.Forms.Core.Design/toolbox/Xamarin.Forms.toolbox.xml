@@ -19,7 +19,7 @@
 		</Item>
 		<Item Class="Xamarin.Forms.CarouselView" Name="CarouselView" Image="view-ListView.png">
 			<Snippet>
-				<CarouselView ItemsSource="">
+				<CarouselView>
 					<CarouselView.ItemTemplate>
 						<DataTemplate>
 						</DataTemplate>
@@ -29,7 +29,7 @@
 		</Item>
 		<Item Class="Xamarin.Forms.CollectionView" Name="CollectionView" Image="view-ListView.png">
 			<Snippet>
-				<CollectionView ItemsSource="">
+				<CollectionView>
 					<CollectionView.ItemsLayout>
 						<GridItemsLayout Span="2" Orientation="Vertical"/>
 					</CollectionView.ItemsLayout>
@@ -67,7 +67,7 @@
 		</Item>
 		<Item Class="Xamarin.Forms.ListView" Name="ListView" Image="view-ListView.png">
 			<Snippet>
-				<ListView ItemsSource="">
+				<ListView>
 					<ListView.ItemTemplate>
 						<DataTemplate>
 						</DataTemplate>
