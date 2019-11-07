@@ -448,7 +448,14 @@ namespace Xamarin.Forms
 
 			cell?.OnTapped();
 
-			ItemTapped?.Invoke(this, new ItemTappedEventArgs(ItemsSource.Cast<object>().ElementAt(groupIndex), cell?.BindingContext, TemplatedItems.GetGlobalIndexOfItem(cell?.BindingContext)));
+			var itemSource = ItemsSource?.Cast<object>().ToList();
+			object tappedGroup = null;
+			if (itemSource?.Count > groupIndex)
+			{
+				tappedGroup = itemSource.ElementAt(groupIndex);
+			}
+
+			ItemTapped?.Invoke(this, new ItemTappedEventArgs(tappedGroup, cell?.BindingContext, TemplatedItems.GetGlobalIndexOfItem(cell?.BindingContext)));
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
