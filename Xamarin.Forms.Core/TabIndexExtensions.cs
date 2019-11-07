@@ -17,6 +17,7 @@ namespace Xamarin.Forms
 			countChildrensWithTabStopWithoutThis = 0;
 
 			Element parentPage = (element as Element)?.Parent;
+
 			while (parentPage != null && !(parentPage is Page))
 				parentPage = parentPage.Parent;
 
@@ -32,7 +33,18 @@ namespace Xamarin.Forms
 			foreach (var descendant in descendantsOnPage)
 			{
 				if (descendant is ITabStopElement visualElement && visualElement.IsTabStop)
+				{
+					if (descendant is TableView tableView)
+					{
+						foreach (var child in tableView.AllChildren)
+						{
+							if (child is ITabStopElement childElement && childElement.IsTabStop)
+								childrensWithTabStop.Add(childElement);
+						}
+					}
+
 					childrensWithTabStop.Add(visualElement);
+				}
 			}
 
 			if (checkContainsElement && !childrensWithTabStop.Contains(element))

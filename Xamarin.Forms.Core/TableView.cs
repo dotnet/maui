@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.Linq;
 using Xamarin.Forms.Platform;
 using Xamarin.Forms.Internals;
+using System.Collections.ObjectModel;
+using System.Collections.Generic;
 
 namespace Xamarin.Forms
 {
@@ -22,6 +24,9 @@ namespace Xamarin.Forms
 		TableIntent _intent = TableIntent.Data;
 
 		TableModel _model;
+
+		ReadOnlyCollection<Element> _logicalChildrenReadOnly;
+		internal override ReadOnlyCollection<Element> LogicalChildrenInternal => _logicalChildrenReadOnly ?? (_logicalChildrenReadOnly = new ReadOnlyCollection<Element>(GetInternalChildren()));
 
 		public TableView() : this(null)
 		{
@@ -108,6 +113,9 @@ namespace Xamarin.Forms
 
 		protected virtual void OnModelChanged()
 		{
+			if(_logicalChildrenReadOnly != null)
+				_logicalChildrenReadOnly = null;
+
 			foreach (Cell cell in Root.SelectMany(r => r))
 				cell.Parent = this;
 
@@ -149,6 +157,17 @@ namespace Xamarin.Forms
 		{
 			if (e.PropertyName == TableSectionBase.TitleProperty.PropertyName)
 				OnModelChanged();
+		}
+
+		IList<Element> GetInternalChildren()
+		{
+			List<Element> elements = new List<Element>();
+			foreach(var item in Root.SelectMany(r => r).Cast<Element>().ToList())
+			{
+				elements.AddRange(item.VisibleDescendants());
+			}
+
+			return elements;
 		}
 
 		internal class TableSectionModel : TableModel
