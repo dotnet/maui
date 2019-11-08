@@ -1,14 +1,11 @@
 ﻿<Project>
  <PropertyGroup>
     <NightlyTag>nightly</NightlyTag>
+    <RegexPre>pre\d</RegexPre>
  </PropertyGroup>
  <PropertyGroup>
     <GitBranch Condition="'$(SYSTEM_PULLREQUEST_TARGETBRANCH)' != ''">$(SYSTEM_PULLREQUEST_TARGETBRANCH)</GitBranch>
     <GitBranch Condition="'$(SYSTEM_PULLREQUEST_TARGETBRANCH)' == '' and '$(BUILD_SOURCEBRANCHNAME)' != ''">$(BUILD_SOURCEBRANCHNAME)</GitBranch>
-  </PropertyGroup>
-  <PropertyGroup>
-    <GitSemVerLabel  Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'">$(NightlyTag)</GitSemVerLabel>
-    <GitSemVerDashLabel  Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'">-$(GitSemVerLabel)</GitSemVerDashLabel>
   </PropertyGroup>
 
   <Target Name="SetVersions"
@@ -16,7 +13,12 @@
           DependsOnTargets="GitVersion"
           Returns="$(Version)"
          >
-
+    <PropertyGroup>
+      <PreOut>$([System.Text.RegularExpressions.Regex]::Match($(GitTag), $(RegexPre)))</PreOut>
+      <GitSemVerLabel Condition=" '$(GitTag)' != '' and $([System.Text.RegularExpressions.Regex]::IsMatch('$(GitTag)', $(RegexPre))) ">$(PreOut)</GitSemVerLabel>
+      <GitSemVerLabel  Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'">$(NightlyTag)</GitSemVerLabel>
+      <GitSemVerDashLabel Condition="'$(GitSemVerLabel)' != ''" >-$(GitSemVerLabel)</GitSemVerDashLabel>
+    </PropertyGroup>
     <ItemGroup>
       <VersionMetadata Include="$(GitCommits)" Condition="'$(GitSemVerDashLabel)' == ''" />
 
@@ -34,7 +36,11 @@
       <VersionMetadataPlusLabel Condition="'$(VersionMetadataLabel)' != ''">+$(VersionMetadataLabel)</VersionMetadataPlusLabel>
       <Version>$(GitBaseVersionMajor).$(GitBaseVersionMinor).$(GitBaseVersionPatch)</Version>
       <PackageVersion>$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)$(GitSemVerDashLabel)$(VersionMetadataPlusLabel)</PackageVersion>
+
       <PackageVersion Condition="$(CI)">$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch).$(BUILDVERSION)$(GitSemVerDashLabel)$(VersionMetadataPlusLabel)</PackageVersion>
+      <PackageVersion Condition="$(CI) and '$(GitBaseVersion)' == '4.2.0'">$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch).$(BUILDVERSION42)$(GitSemVerDashLabel)$(VersionMetadataPlusLabel)</PackageVersion>
+      <PackageVersion Condition="$(CI) and '$(GitBaseVersion)' == '4.3.0'">$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch).$(BUILDVERSION43)$(GitSemVerDashLabel)$(VersionMetadataPlusLabel)</PackageVersion>
+      <PackageVersion Condition="$(CI) and '$(GitBaseVersion)' == '4.4.0'">$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch).$(BUILDVERSION44)$(GitSemVerDashLabel)$(VersionMetadataPlusLabel)</PackageVersion>
     </PropertyGroup>
 
     <PropertyGroup>
