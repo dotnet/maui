@@ -98,7 +98,28 @@ namespace Xamarin.Forms
 				return;
 
 			base.SendAppearing();
-			((ContentCache ?? Content) as Page)?.SendAppearing();
+
+			SendPageAppearing((ContentCache ?? Content) as Page);
+		}
+
+		void SendPageAppearing(Page page)
+		{
+			if (page == null)
+				return;
+
+			if (page.Parent == null)
+			{
+				page.ParentSet += OnPresentedPageParentSet;
+				void OnPresentedPageParentSet(object sender, EventArgs e)
+				{
+					page.SendAppearing();
+					(sender as Page).ParentSet -= OnPresentedPageParentSet;
+				}
+			}
+			else
+			{
+				page.SendAppearing();
+			}
 		}
 
 		protected override void OnChildAdded(Element child)
@@ -107,7 +128,7 @@ namespace Xamarin.Forms
 			if (child is Page page && IsVisibleContent)
 			{
 				SendAppearing();
-				page.SendAppearing();
+				SendPageAppearing(page);
 			}
 		}
 

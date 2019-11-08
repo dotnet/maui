@@ -55,6 +55,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		bool _renderersAdded;
 		bool _activityCreated;
+		bool _powerSaveReceiverRegistered;
 		PowerSaveModeBroadcastReceiver _powerSaveModeBroadcastReceiver;
 
 		static readonly ManualResetEventSlim PreviousActivityDestroying = new ManualResetEventSlim(true);
@@ -300,10 +301,11 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			_layout.HideKeyboard(true);
 
-			if (Forms.IsLollipopOrNewer)
+			if (_powerSaveReceiverRegistered && Forms.IsLollipopOrNewer)
 			{
-				// Don't listen for power save mode changes while we're paused
-				UnregisterReceiver(_powerSaveModeBroadcastReceiver);
+					// Don't listen for power save mode changes while we're paused
+					UnregisterReceiver(_powerSaveModeBroadcastReceiver);
+					_powerSaveReceiverRegistered = false;
 			}
 
 			// Stop animations or other ongoing actions that could consume CPU
@@ -343,12 +345,14 @@ namespace Xamarin.Forms.Platform.Android
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnResume;
 
-			if (Forms.IsLollipopOrNewer)
+			if (!_powerSaveReceiverRegistered && Forms.IsLollipopOrNewer)
 			{
 				// Start listening for power save mode changes
 				RegisterReceiver(_powerSaveModeBroadcastReceiver, new IntentFilter(
 					PowerManager.ActionPowerSaveModeChanged
 				));
+
+				_powerSaveReceiverRegistered = true;
 			}
 
 			OnStateChanged();

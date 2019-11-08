@@ -18,6 +18,7 @@ namespace Xamarin.Forms.Platform.Android
 		AndroidApplicationLifecycleState _currentState;
 		LinearLayout _layout;
 
+		bool _powerSaveReceiverRegistered;
 		PowerSaveModeBroadcastReceiver _powerSaveModeBroadcastReceiver;
 
 		AndroidApplicationLifecycleState _previousState;
@@ -149,10 +150,11 @@ namespace Xamarin.Forms.Platform.Android
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnPause;
 
-			if (Forms.IsLollipopOrNewer)
+			if (_powerSaveReceiverRegistered && Forms.IsLollipopOrNewer)
 			{
 				// Don't listen for power save mode changes while we're paused
 				UnregisterReceiver(_powerSaveModeBroadcastReceiver);
+				_powerSaveReceiverRegistered = false;
 			}
 
 			OnStateChanged();
@@ -176,11 +178,13 @@ namespace Xamarin.Forms.Platform.Android
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnResume;
 
-			if (Forms.IsLollipopOrNewer)
+			if (!_powerSaveReceiverRegistered && Forms.IsLollipopOrNewer)
 			{
 				// Start listening for power save mode changes
 				RegisterReceiver(_powerSaveModeBroadcastReceiver, new IntentFilter(
 					PowerManager.ActionPowerSaveModeChanged));
+
+				_powerSaveReceiverRegistered = true;
 			}
 
 			OnStateChanged();
