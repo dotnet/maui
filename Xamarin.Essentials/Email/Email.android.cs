@@ -71,7 +71,7 @@ namespace Xamarin.Essentials
                 var uris = new List<IParcelable>();
                 foreach (var attachment in message.Attachments)
                 {
-                    uris.Add(Platform.GetShareableFileUri(attachment.FullPath));
+                    uris.Add(Platform.GetShareableFileUri(attachment));
                 }
 
                 if (uris.Count > 1)

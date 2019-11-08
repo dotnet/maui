@@ -17,6 +17,8 @@
             <Button Text="Pick custom type" Command="{Binding PickCustomTypeCommand}" HorizontalOptions="FillAndExpand" />
         </StackLayout>
 
+        <Button Text="Pick image and send email" Command="{Binding PickAndSendCommand}" />
+
         <Label Text="{Binding Text}" HorizontalOptions="FillAndExpand" />
 
         <Image Source="{Binding Image}" IsVisible="{Binding IsImageVisible}"

@@ -7,8 +7,8 @@ namespace Xamarin.Essentials
 {
     public static partial class FilePicker
     {
-        public static Task<PickResult> PickFileAsync(PickOptions options = null)
-            => PlatformPickFileAsync(options ?? PickOptions.Default);
+        public static Task<PickResult> PickFileAsync(PickOptions options = null) =>
+            PlatformPickFileAsync(options ?? PickOptions.Default);
     }
 
     public partial class FilePickerFileType
@@ -22,7 +22,8 @@ namespace Xamarin.Essentials
         {
         }
 
-        public FilePickerFileType(IDictionary<DevicePlatform, IEnumerable<string>> fileTypes) => this.fileTypes = fileTypes;
+        public FilePickerFileType(IDictionary<DevicePlatform, IEnumerable<string>> fileTypes) =>
+            this.fileTypes = fileTypes;
 
         public IEnumerable<string> Value => GetPlatformFileType(DeviceInfo.Platform);
 
@@ -37,14 +38,14 @@ namespace Xamarin.Essentials
 
     public class PickOptions
     {
-        public static PickOptions Default
-            => new PickOptions
+        public static PickOptions Default =>
+            new PickOptions
             {
                 FileTypes = null,
             };
 
-        public static PickOptions Images
-            => new PickOptions
+        public static PickOptions Images =>
+            new PickOptions
             {
                 FileTypes = FilePickerFileType.Images
             };
@@ -54,19 +55,9 @@ namespace Xamarin.Essentials
         public FilePickerFileType FileTypes { get; set; }
     }
 
-    public partial class PickResult
+    public partial class PickResult : FileBase
     {
-        public string FileUri { get; internal set; }
-
-        public string FileName { get; internal set; }
-
-        public Stream GetStream()
-            => PlatformGetStream();
-
-        internal PickResult(string fileUri, string fileName)
-        {
-            FileUri = fileUri;
-            FileName = fileName;
-        }
+        public Task<Stream> OpenReadStreamAsync() =>
+            PlatformOpenReadStreamAsync();
     }
 }

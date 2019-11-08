@@ -10,9 +10,7 @@ namespace Samples.ViewModel
     public class FilePickerViewModel : BaseViewModel
     {
         string text;
-
         ImageSource image;
-
         bool isImageVisible;
 
         public FilePickerViewModel()
@@ -20,6 +18,7 @@ namespace Samples.ViewModel
             PickFileCommand = new Command(() => DoPickFile());
             PickImageCommand = new Command(() => DoPickImage());
             PickCustomTypeCommand = new Command(() => DoPickCustomType());
+            PickAndSendCommand = new Command(() => DoPickAndSend());
         }
 
         public ICommand PickFileCommand { get; }
@@ -27,6 +26,8 @@ namespace Samples.ViewModel
         public ICommand PickImageCommand { get; }
 
         public ICommand PickCustomTypeCommand { get; }
+
+        public ICommand PickAndSendCommand { get; }
 
         public string Text
         {
@@ -44,6 +45,25 @@ namespace Samples.ViewModel
         {
             get => isImageVisible;
             set => SetProperty(ref isImageVisible, value);
+        }
+
+        async void DoPickAndSend()
+        {
+            var result = await FilePicker.PickFileAsync(PickOptions.Images);
+            if (result != null)
+            {
+                Text = $"Name: {result.FileName}, Full Path: {result.FullPath}";
+
+                await Email.ComposeAsync(new EmailMessage
+                {
+                    Subject = "Test Subject",
+                    Body = "This is the body. There should be an image attached.",
+                    Attachments =
+                    {
+                        new EmailAttachment(result)
+                    }
+                });
+            }
         }
 
         async void DoPickFile()
@@ -69,7 +89,7 @@ namespace Samples.ViewModel
                 {
                     { DevicePlatform.iOS, new[] { "public.my.comic.extension" } }, // or general UTType values
                     { DevicePlatform.Android, new[] { "application/comics" } },
-                    { DevicePlatform.UWP, new[] { ".cbr" } }
+                    { DevicePlatform.UWP, new[] { ".cbr", ".cbz" } }
                 });
 
             var options = new PickOptions
@@ -81,7 +101,7 @@ namespace Samples.ViewModel
             await PickAndShow(options);
         }
 
-        async Task PickAndShow(PickOptions options)
+        async Task<PickResult> PickAndShow(PickOptions options)
         {
             try
             {
@@ -89,12 +109,13 @@ namespace Samples.ViewModel
 
                 if (result != null)
                 {
-                    Text = $"Name: {result.FileName}, URI: {result.FileUri}";
+                    Text = $"Name: {result.FileName}, Full Path: {result.FullPath}";
 
                     if (result.FileName.EndsWith("jpg", StringComparison.OrdinalIgnoreCase) ||
                         result.FileName.EndsWith("png", StringComparison.OrdinalIgnoreCase))
                     {
-                        Image = ImageSource.FromStream(() => result.GetStream());
+                        var stream = await result.OpenReadStreamAsync();
+                        Image = ImageSource.FromStream(() => stream);
                         IsImageVisible = true;
                     }
                     else
@@ -102,11 +123,18 @@ namespace Samples.ViewModel
                         IsImageVisible = false;
                     }
                 }
+                else
+                {
+                    Text = $"Pick cancelled.";
+                }
+
+                return result;
             }
             catch (Exception ex)
             {
                 Text = ex.ToString();
                 IsImageVisible = false;
+                return null;
             }
         }
     }

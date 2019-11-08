@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
+using Windows.Storage.Pickers;
 
 namespace Xamarin.Essentials
 {
@@ -11,25 +12,24 @@ namespace Xamarin.Essentials
     {
         static async Task<PickResult> PlatformPickFileAsync(PickOptions options)
         {
-            var picker = new Windows.Storage.Pickers.FileOpenPicker
+            var picker = new FileOpenPicker
             {
-                ViewMode = Windows.Storage.Pickers.PickerViewMode.List,
-                SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary
+                ViewMode = PickerViewMode.List,
+                SuggestedStartLocation = PickerLocationId.DocumentsLibrary
             };
 
             SetFileTypes(options, picker);
 
             var file = await picker.PickSingleFileAsync();
             if (file == null)
-            {
                 return null;
-            }
 
             StorageApplicationPermissions.FutureAccessList.Add(file);
-            return new PickResult(file.Path, file.Name, file);
+
+            return new PickResult(file);
         }
 
-        static void SetFileTypes(PickOptions options, Windows.Storage.Pickers.FileOpenPicker picker)
+        static void SetFileTypes(PickOptions options, FileOpenPicker picker)
         {
             var hasAtLeastOneType = false;
 
@@ -37,8 +37,7 @@ namespace Xamarin.Essentials
             {
                 foreach (var type in options.FileTypes.Value)
                 {
-                    if (type.StartsWith(".") ||
-                        type.StartsWith("*."))
+                    if (type.StartsWith(".") || type.StartsWith("*."))
                     {
                         picker.FileTypeFilter.Add(type.TrimStart('*'));
                         hasAtLeastOneType = true;
@@ -47,9 +46,7 @@ namespace Xamarin.Essentials
             }
 
             if (!hasAtLeastOneType)
-            {
                 picker.FileTypeFilter.Add("*");
-            }
         }
     }
 
@@ -70,17 +67,18 @@ namespace Xamarin.Essentials
 
     public partial class PickResult
     {
-        StorageFile storageFile;
-
-        internal PickResult(string path, string filename, StorageFile storageFile)
-            : this(path, filename)
+        internal PickResult(IStorageFile storageFile)
+            : base(storageFile)
         {
-            this.storageFile = storageFile;
+            FileName = storageFile.Name;
         }
 
-        Stream PlatformGetStream()
+        Task<Stream> PlatformOpenReadStreamAsync()
         {
-            return storageFile.OpenStreamForReadAsync().Result;
+            // we can make this assumption because
+            // the only way to construct this object
+            // is with an IStorageFile
+            return File.OpenStreamForReadAsync();
         }
     }
 }

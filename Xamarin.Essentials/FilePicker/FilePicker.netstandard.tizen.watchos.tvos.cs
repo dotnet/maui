@@ -20,7 +20,12 @@ namespace Xamarin.Essentials
 
     public partial class PickResult
     {
-        Stream PlatformGetStream() =>
+        PickResult()
+            : base((string)null)
+        {
+        }
+
+        Task<Stream> PlatformOpenReadStreamAsync() =>
             throw new NotImplementedInReferenceAssemblyException();
     }
 }

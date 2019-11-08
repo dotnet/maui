@@ -39,7 +39,7 @@ namespace Xamarin.Essentials
 
         static Task PlatformRequestAsync(ShareFileRequest request)
         {
-            var contentUri = Platform.GetShareableFileUri(request.File.FullPath);
+            var contentUri = Platform.GetShareableFileUri(request.File);
 
             var intent = new Intent(Intent.ActionSend);
             intent.SetType(request.File.ContentType);
