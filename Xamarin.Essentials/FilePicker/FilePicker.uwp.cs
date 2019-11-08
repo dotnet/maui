@@ -10,7 +10,7 @@ namespace Xamarin.Essentials
 {
     public static partial class FilePicker
     {
-        static async Task<PickResult> PlatformPickFileAsync(PickOptions options)
+        static async Task<FilePickerResult> PlatformPickFileAsync(PickOptions options)
         {
             var picker = new FileOpenPicker
             {
@@ -26,7 +26,7 @@ namespace Xamarin.Essentials
 
             StorageApplicationPermissions.FutureAccessList.Add(file);
 
-            return new PickResult(file);
+            return new FilePickerResult(file);
         }
 
         static void SetFileTypes(PickOptions options, FileOpenPicker picker)
@@ -65,11 +65,13 @@ namespace Xamarin.Essentials
             });
     }
 
-    public partial class PickResult
+    public partial class PickerResultBase
     {
-        internal PickResult(IStorageFile storageFile)
-            : base(storageFile)
+        readonly IStorageFile storageFile;
+
+        internal PickerResultBase(IStorageFile storageFile)
         {
+            this.storageFile = storageFile;
             FileName = storageFile.Name;
         }
 
@@ -78,7 +80,15 @@ namespace Xamarin.Essentials
             // we can make this assumption because
             // the only way to construct this object
             // is with an IStorageFile
-            return File.OpenStreamForReadAsync();
+            return storageFile.OpenStreamForReadAsync();
+        }
+    }
+
+    public partial class FilePickerResult
+    {
+        internal FilePickerResult(IStorageFile storageFile)
+            : base(storageFile)
+        {
         }
     }
 }

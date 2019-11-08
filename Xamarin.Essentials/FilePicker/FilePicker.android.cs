@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -11,7 +12,7 @@ namespace Xamarin.Essentials
 {
     public static partial class FilePicker
     {
-        static async Task<PickResult> PlatformPickFileAsync(PickOptions options)
+        static async Task<FilePickerResult> PlatformPickFileAsync(PickOptions options)
         {
             // we only need the permission when accessing the file, but it's more natural
             // to ask the user first, then show the picker.
@@ -31,15 +32,43 @@ namespace Xamarin.Essentials
             {
                 var result = await IntermediateActivity.StartAsync(pickerIntent, 12345);
                 var contentUri = result.Data;
-                return new PickResult(contentUri, GetFilePath(contentUri), GetFileName(contentUri));
+                return new FilePickerResult(contentUri);
             }
-            catch (System.OperationCanceledException)
+            catch (OperationCanceledException)
             {
                 return null;
             }
         }
+    }
 
-        static string GetFilePath(global::Android.Net.Uri contentUri)
+    public partial class FilePickerFileType
+    {
+        public static FilePickerFileType PlatformImageFileType() =>
+            new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+            {
+                { DevicePlatform.Android, new[] { "image/png", "image/jpeg" } }
+            });
+
+        public static FilePickerFileType PlatformPngFileType() =>
+            new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+            {
+                { DevicePlatform.Android, new[] { "image/png" } }
+            });
+    }
+
+    public partial class PickerResultBase
+    {
+        readonly global::Android.Net.Uri contentUri;
+        readonly string fullPath;
+
+        internal PickerResultBase(global::Android.Net.Uri contentUri)
+        {
+            this.contentUri = contentUri;
+            fullPath = GetFullPath(contentUri);
+            FileName = GetFileName(contentUri);
+        }
+
+        static string GetFullPath(global::Android.Net.Uri contentUri)
         {
             // if this is a file, use that
             if (contentUri.Scheme == "file")
@@ -80,33 +109,6 @@ namespace Xamarin.Essentials
 
             return text;
         }
-    }
-
-    public partial class FilePickerFileType
-    {
-        public static FilePickerFileType PlatformImageFileType() =>
-            new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
-            {
-                { DevicePlatform.Android, new[] { "image/png", "image/jpeg" } }
-            });
-
-        public static FilePickerFileType PlatformPngFileType() =>
-            new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
-            {
-                { DevicePlatform.Android, new[] { "image/png" } }
-            });
-    }
-
-    public partial class PickResult
-    {
-        readonly global::Android.Net.Uri contentUri;
-
-        public PickResult(global::Android.Net.Uri uri, string fullPath, string filename)
-            : base(fullPath)
-        {
-            contentUri = uri;
-            FileName = filename;
-        }
 
         Task<Stream> PlatformOpenReadStreamAsync()
         {
@@ -116,8 +118,16 @@ namespace Xamarin.Essentials
                 return Task.FromResult(content);
             }
 
-            var stream = File.OpenRead(FullPath);
+            var stream = File.OpenRead(fullPath);
             return Task.FromResult<Stream>(stream);
+        }
+    }
+
+    public partial class FilePickerResult
+    {
+        internal FilePickerResult(global::Android.Net.Uri contentUri)
+            : base(contentUri)
+        {
         }
     }
 }

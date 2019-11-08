@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Essentials;
@@ -47,25 +48,6 @@ namespace Samples.ViewModel
             set => SetProperty(ref isImageVisible, value);
         }
 
-        async void DoPickAndSend()
-        {
-            var result = await FilePicker.PickFileAsync(PickOptions.Images);
-            if (result != null)
-            {
-                Text = $"Name: {result.FileName}, Full Path: {result.FullPath}";
-
-                await Email.ComposeAsync(new EmailMessage
-                {
-                    Subject = "Test Subject",
-                    Body = "This is the body. There should be an image attached.",
-                    Attachments =
-                    {
-                        new EmailAttachment(result)
-                    }
-                });
-            }
-        }
-
         async void DoPickFile()
         {
             await PickAndShow(PickOptions.Default);
@@ -101,7 +83,32 @@ namespace Samples.ViewModel
             await PickAndShow(options);
         }
 
-        async Task<PickResult> PickAndShow(PickOptions options)
+        async void DoPickAndSend()
+        {
+            // pick a file
+            var result = await PickAndShow(PickOptions.Images);
+            if (result == null)
+                return;
+
+            // copy it locally
+            var copyPath = Path.Combine(FileSystem.CacheDirectory, result.FileName);
+            using (var destination = File.Create(copyPath))
+            using (var source = await result.OpenReadStreamAsync())
+                await source.CopyToAsync(destination);
+
+            // send it via an email
+            await Email.ComposeAsync(new EmailMessage
+            {
+                Subject = "Test Subject",
+                Body = "This is the body. There should be an image attached.",
+                Attachments =
+                {
+                    new EmailAttachment(copyPath)
+                }
+            });
+        }
+
+        async Task<FilePickerResult> PickAndShow(PickOptions options)
         {
             try
             {
@@ -109,7 +116,7 @@ namespace Samples.ViewModel
 
                 if (result != null)
                 {
-                    Text = $"Name: {result.FileName}, Full Path: {result.FullPath}";
+                    Text = $"File Name: {result.FileName}";
 
                     if (result.FileName.EndsWith("jpg", StringComparison.OrdinalIgnoreCase) ||
                         result.FileName.EndsWith("png", StringComparison.OrdinalIgnoreCase))
