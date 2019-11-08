@@ -16,6 +16,7 @@
 		<ResourceDictionary Source="SliderStyle.xaml" />
 		<ResourceDictionary Source="CollectionView/ItemsViewStyles.xaml" />
 	    <ResourceDictionary Source="Shell/ShellStyles.xaml" />
+        <ResourceDictionary Source="PickerStyle.xaml" />
     </ResourceDictionary.MergedDictionaries>
 	
 	<uwp:CaseConverter x:Key="LowerConverter" ConvertToUpper="False" />
@@ -351,8 +352,4 @@
 	<Style TargetType="ToggleSwitch">
 		<Setter Property="MinWidth" Value="0"/>
 	</Style>
-
-    <DataTemplate x:Key="ComboBoxHeader">
-        <TextBlock Text="{Binding Title}" Foreground="{Binding TitleColor,Converter={StaticResource ColorConverter},ConverterParameter=DefaultTextForegroundThemeBrush}" />
-    </DataTemplate>
 </ResourceDictionary>
