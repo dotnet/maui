@@ -45,6 +45,7 @@ using Xamarin.Forms.Controls.Issues;
 
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.Issues.NoFlashTestNavigationPage), typeof(Xamarin.Forms.ControlGallery.Android.NoFlashTestNavigationPage))]
 [assembly: ExportRenderer(typeof(ShellGestures.TouchTestView), typeof(ShellGesturesTouchTestViewRenderer))]
+[assembly: ExportRenderer(typeof(Issue7249Switch), typeof(Issue7249SwitchRenderer))]
 
 #if PRE_APPLICATION_CLASS
 #elif FORMS_APPLICATION_ACTIVITY

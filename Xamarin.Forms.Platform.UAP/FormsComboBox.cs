@@ -1,5 +1,4 @@
 ﻿using System;
-using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Animation;
 using WVisualState = Windows.UI.Xaml.VisualState;
@@ -14,10 +13,15 @@ namespace Xamarin.Forms.Platform.UWP
 
 		internal bool IsOpeningAnimated { get; private set; }
 
+		public FormsComboBox() 
+		{
+			DefaultStyleKey = typeof(FormsComboBox);
+		}
+
 		protected override void OnApplyTemplate()
 		{
 			base.OnApplyTemplate();
-
+			
 			if (Device.Idiom == TargetIdiom.Phone)
 			{
 				// If we're running on the phone, we have to give the PickerRenderer hooks

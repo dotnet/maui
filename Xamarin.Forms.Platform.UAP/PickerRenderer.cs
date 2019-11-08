@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Threading.Tasks;
 using Windows.UI.Core;
-using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
@@ -20,7 +15,6 @@ namespace Xamarin.Forms.Platform.UWP
 		bool _fontApplied;
 		bool _isAnimating;
 		Brush _defaultBrush;
-		FontFamily _defaultFontFamily;
 
 		protected override void Dispose(bool disposing)
 		{
@@ -59,7 +53,7 @@ namespace Xamarin.Forms.Platform.UWP
 					WireUpFormsVsm();
 				}
 
-				Control.ItemsSource = GetItems(Element.Items);
+				Control.ItemsSource = ((LockableObservableListWrapper)Element.Items)._list;
 				UpdateTitle();
 				UpdateSelectedIndex();
 				UpdateCharacterSpacing();
@@ -91,7 +85,6 @@ namespace Xamarin.Forms.Platform.UWP
 			// The defaults from the control template won't be available
 			// right away; we have to wait until after the template has been applied
 			_defaultBrush = Control.Foreground;
-			_defaultFontFamily = Control.FontFamily;
 			UpdateFont();
 			UpdateTextColor();
 		}
@@ -175,35 +168,6 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateCharacterSpacing()
 		{
 			Control.CharacterSpacing = Element.CharacterSpacing.ToEm();
-
-			if (Control.Header is TextBlock header)
-			{
-				header.CharacterSpacing = Element.CharacterSpacing.ToEm();
-			}
-
-			if (Control.SelectedValue is TextBlock item)
-			{
-				item.CharacterSpacing = Element.CharacterSpacing.ToEm();
-			}
-
-			if(Control.ItemsSource is ObservableCollection<TextBlock> collection)
-			{
-				collection.ForEach(f=>f.CharacterSpacing = Control.CharacterSpacing);
-			}
-		}
-
-
-		TextBlock ConvertStrongToTextBlock(string text)
-		{
-			return new TextBlock{
-				Text = text,
-				CharacterSpacing = Control.CharacterSpacing
-			};
-		}
-
-		ObservableCollection<TextBlock> GetItems(IList<string> items)
-		{
-			return new ObservableCollection<TextBlock>(items.Select(ConvertStrongToTextBlock));
 		}
 
 		void UpdateFont()
@@ -252,21 +216,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateTitle()
 		{
-			if (!Element.IsSet(Picker.TitleColorProperty))
-			{
-				Control.HeaderTemplate = null;
-				Control.Header = new TextBlock
-				{
-					Text = Element.Title ?? string.Empty,
-					CharacterSpacing = Element.CharacterSpacing.ToEm(),
-				};
-			}
-			else
-			{
-				Control.Header = null;
-				Control.HeaderTemplate = (Windows.UI.Xaml.DataTemplate)Windows.UI.Xaml.Application.Current.Resources["ComboBoxHeader"];
-				Control.DataContext = Element;
-			}
+			Control.DataContext = Element;
 		}
 	}
 }

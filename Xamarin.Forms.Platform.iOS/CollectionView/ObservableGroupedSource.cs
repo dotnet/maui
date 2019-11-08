@@ -121,7 +121,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			for (int n = 0; n < _groupSource.Count; n++)
 			{
-				if (_groupSource[n] is INotifyCollectionChanged && _groupSource[n] is IList list)
+				if (_groupSource[n] is INotifyCollectionChanged && _groupSource[n] is IEnumerable list)
 				{
 					_groups.Add(new ObservableItemsSource(list, _collectionViewController, n));
 				}

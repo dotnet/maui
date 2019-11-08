@@ -226,6 +226,7 @@
     <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\FormsCheckBoxStyle.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
     <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\Microsoft.UI.Xaml\DensityStyles\Compact.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP\Microsoft.UI.Xaml\DensityStyles\" />
     <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\Shell\ShellStyles.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP\Shell" />
+    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\PickerStyle.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
 
     <!--Mac-->
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="lib\Xamarin.Mac" />

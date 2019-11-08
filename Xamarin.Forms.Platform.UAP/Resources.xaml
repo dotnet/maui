@@ -4,18 +4,19 @@
 	xmlns:uwp="using:Xamarin.Forms.Platform.UWP"
 	x:Class="Xamarin.Forms.Platform.UWP.Resources">
 
-    <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="FormsCommandBarStyle.xaml" />
-        <ResourceDictionary Source="PageControlStyle.xaml" />
-        <ResourceDictionary Source="FormsProgressBarStyle.xaml" />
-        <ResourceDictionary Source="FormsTextBoxStyle.xaml" />
-        <ResourceDictionary Source="FormsCheckBoxStyle.xaml" />
-        <ResourceDictionary Source="AutoSuggestStyle.xaml" />
-        <ResourceDictionary Source="MasterDetailControlStyle.xaml" />
-        <ResourceDictionary Source="TabbedPageStyle.xaml" />
-        <ResourceDictionary Source="SliderStyle.xaml" />
-        <ResourceDictionary Source="CollectionView/ItemsViewStyles.xaml" />
-        <ResourceDictionary Source="Shell/ShellStyles.xaml" />
+	<ResourceDictionary.MergedDictionaries>
+		<ResourceDictionary Source="FormsCommandBarStyle.xaml" />
+		<ResourceDictionary Source="PageControlStyle.xaml" />
+		<ResourceDictionary Source="FormsProgressBarStyle.xaml" />
+		<ResourceDictionary Source="FormsTextBoxStyle.xaml" />
+		<ResourceDictionary Source="FormsCheckBoxStyle.xaml" />
+		<ResourceDictionary Source="AutoSuggestStyle.xaml" />
+		<ResourceDictionary Source="MasterDetailControlStyle.xaml" />
+		<ResourceDictionary Source="TabbedPageStyle.xaml" />
+		<ResourceDictionary Source="SliderStyle.xaml" />
+		<ResourceDictionary Source="CollectionView/ItemsViewStyles.xaml" />
+	    <ResourceDictionary Source="Shell/ShellStyles.xaml" />
+        <ResourceDictionary Source="PickerStyle.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
     <uwp:CaseConverter x:Key="LowerConverter" ConvertToUpper="False" />
@@ -352,8 +353,4 @@
 	<Style TargetType="ToggleSwitch">
 		<Setter Property="MinWidth" Value="0"/>
 	</Style>
-
-    <DataTemplate x:Key="ComboBoxHeader">
-        <TextBlock Text="{Binding Title}" Foreground="{Binding TitleColor,Converter={StaticResource ColorConverter},ConverterParameter=DefaultTextForegroundThemeBrush}" />
-    </DataTemplate>
 </ResourceDictionary>

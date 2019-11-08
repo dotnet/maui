@@ -551,7 +551,24 @@ namespace Xamarin.Forms
 				if(_navStack.Count == 1)
 					CurrentItem?.SendAppearing();
 
-				sectionController.PresentedPage?.SendAppearing();
+				var presentedPage = sectionController.PresentedPage;
+				if (presentedPage != null)
+				{
+					if(presentedPage.Parent == null)
+					{
+						presentedPage.ParentSet += OnPresentedPageParentSet;
+
+						void OnPresentedPageParentSet(object sender, EventArgs e)
+						{
+							PresentedPageAppearing();
+							(sender as Page).ParentSet -= OnPresentedPageParentSet;
+						}
+					}
+					else
+					{
+						presentedPage.SendAppearing();
+					}
+				}
 			}
 		}
 
