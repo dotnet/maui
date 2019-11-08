@@ -12,11 +12,11 @@ variables:
 - name: BuildVersion
   value: $[counter(variables['Build.SourceBranch'], 1)]
 - name: BuildVersion42
-  value: $[counter(variables['4.2.0'], 910311)]
+  value: $[counter('4.2.0', 910311)]
 - name: BuildVersion43
-  value: $[counter(variables['4.3.0'], 947037)]
+  value: $[counter('4.3.0', 947037)]
 - name: BuildVersion44
-  value: $[counter(variables['4.4.0'], 936622)]
+  value: $[counter('4.4.0', 936622)]
 - name: MONO_VERSION
   value: 5_18_1
 - name: XCODE_VERSION
