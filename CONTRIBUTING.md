@@ -78,7 +78,7 @@ We do "nothing":
 
 This project uses [mdoc](http://www.mono-project.com/docs/tools+libraries/tools/monodoc/generating-documentation/) to document types, members, and to add small code snippets and examples.  mdoc files are simple xml files and there is an msbuild target you can invoke to help generate the xml placeholders.
 
-Read the [Documenting your code with mdoc wiki page](wiki/Documenting-your-code-with-mdoc) for more information on this process.
+Read the [Documenting your code with mdoc wiki page](https://github.com/xamarin/Essentials/wiki/Documenting-your-code-with-mdoc) for more information on this process.
 
 Every pull request which affects public types or members should include corresponding mdoc xml file changes.
 
