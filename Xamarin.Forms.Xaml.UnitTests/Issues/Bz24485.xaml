@@ -8,7 +8,7 @@
 			<local:Bz24485Converter x:Key="ToBasicItem" />
 		</ResourceDictionary>
 	</ContentPage.Resources>
-	<Grid BindingContext="{Binding Data1, Converter={StaticResource ToBasicItem}">
+	<Grid BindingContext="{Binding Data1, Converter={StaticResource ToBasicItem}}">
 		<Label Text="{Binding FormattedDate}" />
 		<Label Text="{Binding Date}" />
 	</Grid>
