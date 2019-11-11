@@ -533,6 +533,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (rotationX % 360 == 0 && rotationY % 360 == 0 && rotation % 360 == 0 && translationX == 0 && translationY == 0 && scaleX == 1 && scaleY == 1)
 			{
 				frameworkElement.Projection = null;
+				frameworkElement.RenderTransform = null;
 			}
 			else
 			{
