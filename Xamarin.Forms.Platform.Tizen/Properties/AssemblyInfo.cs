@@ -52,3 +52,4 @@ using Xamarin.Forms.Platform.Tizen;
 [assembly: ExportHandler(typeof(TapGestureRecognizer), typeof(TapGestureHandler))]
 [assembly: ExportHandler(typeof(PinchGestureRecognizer), typeof(PinchGestureHandler))]
 [assembly: ExportHandler(typeof(PanGestureRecognizer), typeof(PanGestureHandler))]
+[assembly: ExportHandler(typeof(SwipeGestureRecognizer), typeof(SwipeGestureHandler))]
