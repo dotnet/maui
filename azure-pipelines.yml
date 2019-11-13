@@ -10,7 +10,13 @@ variables:
 - name: SolutionFile
   value: Xamarin.Forms.sln
 - name: BuildVersion
-  value: $[counter('$(Build.SourceBranchName)_counter', 1)]
+  value: $[counter(variables['Build.SourceBranch'], 1)]
+- name: BuildVersion42
+  value: $[counter('4.2.0', 910311)]
+- name: BuildVersion43
+  value: $[counter('4.3.0', 991211)]
+- name: BuildVersion44
+  value: $[counter('4.4.0', 991210)]
 - name: NUGET_VERSION
   value: 5.0.2
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
@@ -44,6 +50,13 @@ pr:
     - 4.*
     - 3.*
 
+schedules:
+- cron: "0 0 * * *"
+  displayName: Daily midnight build
+  branches:
+    include:
+    - master 
+   
 jobs:
 - template: build/steps/build-windows.yml
   parameters:
