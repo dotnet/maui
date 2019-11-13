@@ -9,6 +9,8 @@ namespace Xamarin.Forms.Xaml
 		public string FontFamily { get; set; }
 		public string Glyph { get; set; }
 		public Color Color { get; set; }
+
+		[TypeConverter(typeof(FontSizeConverter))]
 		public double Size { get; set; } = (double)FontImageSource.SizeProperty.DefaultValue;
 
 		public ImageSource ProvideValue(IServiceProvider serviceProvider)
