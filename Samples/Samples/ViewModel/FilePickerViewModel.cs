@@ -71,7 +71,8 @@ namespace Samples.ViewModel
                 {
                     { DevicePlatform.iOS, new[] { "public.my.comic.extension" } }, // or general UTType values
                     { DevicePlatform.Android, new[] { "application/comics" } },
-                    { DevicePlatform.UWP, new[] { ".cbr", ".cbz" } }
+                    { DevicePlatform.UWP, new[] { ".cbr", ".cbz" } },
+                    { DevicePlatform.Tizen, new[] { "*/*" } },
                 });
 
             var options = new PickOptions
