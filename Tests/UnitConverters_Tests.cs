@@ -123,6 +123,54 @@ namespace Tests
         }
 
         [Theory]
+        [InlineData(115, 52.1631)]
+        [InlineData(65.9, 29.8917)]
+        [InlineData(180, 81.6466)]
+        [InlineData(8, 3.6287)]
+        [InlineData(331.1, 150.1844)]
+        [InlineData(0, 0)]
+        public void PoundsToKilograms(double pounds, double kg)
+        {
+            Assert.Equal(kg, UnitConverters.PoundsToKilograms(pounds), 4);
+        }
+
+        [Theory]
+        [InlineData(115, 8.2143)]
+        [InlineData(65.9, 4.7071)]
+        [InlineData(180, 12.8571)]
+        [InlineData(8, 0.5714)]
+        [InlineData(184.8, 13.2)]
+        [InlineData(0, 0)]
+        public void PoundsToStones(double pounds, double stones)
+        {
+            Assert.Equal(stones, UnitConverters.PoundsToStones(pounds), 4);
+        }
+
+        [Theory]
+        [InlineData(14, 196)]
+        [InlineData(10.8, 151.2)]
+        [InlineData(22.8, 319.2)]
+        [InlineData(5, 70)]
+        [InlineData(16.85, 235.9)]
+        [InlineData(0, 0)]
+        public void StonesToPounds(double stones, double pounds)
+        {
+            Assert.Equal(pounds, UnitConverters.StonesToPounds(stones), 4);
+        }
+
+        [Theory]
+        [InlineData(79.2, 174.6061)]
+        [InlineData(94.6, 208.5573)]
+        [InlineData(67.0, 147.7097)]
+        [InlineData(57, 125.6635)]
+        [InlineData(82.85, 182.6530)]
+        [InlineData(0, 0)]
+        public void KilogramsToPounds(double kg, double pounds)
+        {
+            Assert.Equal(pounds, UnitConverters.KilogramsToPounds(kg), 4);
+        }
+
+        [Theory]
         [InlineData(55.85781, -4.24253, 51.509865, -0.118092, 554.3128)] // glasgow -> london
         [InlineData(36.12, -86.67, 33.94, -118.40, 2886.4444)] // nashville, tn -> los angeles, ca
         [InlineData(51.509865, -0.118092, -33.92528, 18.42389, 9671.1251)] // london -> cape town

@@ -656,6 +656,7 @@
       <Member Id="M:Xamarin.Essentials.UnitConverters.HertzToRadiansPerSecond(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.InternationalFeetToMeters(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.KelvinToCelsius(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.KilogramsToPounds(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.KilometersToMiles(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.KilopascalsToHectopascals(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.KilopascalsToPascals(System.Double)" />
@@ -664,9 +665,12 @@
       <Member Id="M:Xamarin.Essentials.UnitConverters.MilesToKilometers(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.MilesToMeters(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.PascalsToAtmospheres(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.PoundsToKilograms(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.PoundsToStones(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.RadiansPerSecondToDegreesPerSecond(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.RadiansPerSecondToHertz(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.RadiansToDegrees(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.StonesToPounds(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.USSurveyFeetToMeters(System.Double)" />
     </Type>
     <Type Name="Xamarin.Essentials.VersionTracking" Id="T:Xamarin.Essentials.VersionTracking">
