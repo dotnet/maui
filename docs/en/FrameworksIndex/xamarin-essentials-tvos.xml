@@ -311,6 +311,7 @@
       <Member Id="P:Xamarin.Essentials.FileBase.FullPath" />
     </Type>
     <Type Name="Xamarin.Essentials.FilePicker" Id="T:Xamarin.Essentials.FilePicker">
+      <Member Id="M:Xamarin.Essentials.FilePicker.PickFileAsync" />
       <Member Id="M:Xamarin.Essentials.FilePicker.PickFileAsync(Xamarin.Essentials.PickOptions)" />
     </Type>
     <Type Name="Xamarin.Essentials.FilePickerFileType" Id="T:Xamarin.Essentials.FilePickerFileType">
