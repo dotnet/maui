@@ -168,6 +168,22 @@ namespace Tests
         }
 
         [Theory]
+        [InlineData(1.0, 101325)]
+        [InlineData(1.5, 151987.5)]
+        [InlineData(2.0, 202650)]
+        [InlineData(2.5, 253312.5)]
+        public void AtmospheresToPascals(double atm, double pascal) =>
+            Assert.Equal(UnitConverters.AtmospheresToPascals(atm), pascal);
+
+        [Theory]
+        [InlineData(101325, 1.0)]
+        [InlineData(151987.5, 1.5)]
+        [InlineData(202650, 2.0)]
+        [InlineData(253312.5, 2.5)]
+        public void PascalsToAtmospheres(double pascal, double atm) =>
+            Assert.Equal(UnitConverters.PascalsToAtmospheres(pascal), atm);
+
+        [Theory]
         [InlineData(3048, 10000)]
         public void MetersToInternationalFeet(double meters, double internationalFeet)
         {
