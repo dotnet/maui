@@ -26,7 +26,7 @@
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <Parameters>
-        <Parameter Name="fullPath" Type="System.String" Index="0" FrameworkAlternate="xamarin-essentials;xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp;xamarin-essentials-tvos;xamarin-essentials-watchos" />
+        <Parameter Name="fullPath" Type="System.String" />
       </Parameters>
       <Docs>
         <param name="fullPath">Full path and filename to file.</param>

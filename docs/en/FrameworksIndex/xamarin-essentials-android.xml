@@ -122,7 +122,6 @@
       <Member Id="M:Xamarin.Essentials.ColorExtensions.AddLuminosity(System.Drawing.Color,System.Single)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.MultiplyAlpha(System.Drawing.Color,System.Single)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.ToInt(System.Drawing.Color)" />
-      <Member Id="M:Xamarin.Essentials.ColorExtensions.Android.ToPlatformColor(System.Drawing.Color)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.ToSystemColor(Android.Graphics.Color)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.ToUInt(System.Drawing.Color)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.WithAlpha(System.Drawing.Color,System.Int32)" />
@@ -209,8 +208,11 @@
       <Member Id="M:Xamarin.Essentials.DevicePlatform.ToString" />
       <Member Id="P:Xamarin.Essentials.DevicePlatform.Android" />
       <Member Id="P:Xamarin.Essentials.DevicePlatform.iOS" />
+      <Member Id="P:Xamarin.Essentials.DevicePlatform.Tizen" />
+      <Member Id="P:Xamarin.Essentials.DevicePlatform.tvOS" />
       <Member Id="P:Xamarin.Essentials.DevicePlatform.Unknown" />
       <Member Id="P:Xamarin.Essentials.DevicePlatform.UWP" />
+      <Member Id="P:Xamarin.Essentials.DevicePlatform.watchOS" />
     </Type>
     <Type Name="Xamarin.Essentials.DeviceType" Id="T:Xamarin.Essentials.DeviceType">
       <Member Id="F:Xamarin.Essentials.DeviceType.Physical" />
@@ -534,8 +536,6 @@
       <Member Id="M:Xamarin.Essentials.Platform.OnRequestPermissionsResult(System.Int32,System.String[],Android.Content.PM.Permission[])" />
     </Type>
     <Type Name="Xamarin.Essentials.PointExtensions" Id="T:Xamarin.Essentials.PointExtensions">
-      <Member Id="M:Xamarin.Essentials.PointExtensions.Android.ToPlatformPoint(System.Drawing.Point)" />
-      <Member Id="M:Xamarin.Essentials.PointExtensions.Android.ToPlatformPointF(System.Drawing.PointF)" />
       <Member Id="M:Xamarin.Essentials.PointExtensions.ToSystemPoint(Android.Graphics.Point)" />
       <Member Id="M:Xamarin.Essentials.PointExtensions.ToSystemPointF(Android.Graphics.PointF)" />
     </Type>
@@ -581,8 +581,6 @@
       <Member Id="M:Xamarin.Essentials.ReadOnlyFile.#ctor(Xamarin.Essentials.FileBase)" />
     </Type>
     <Type Name="Xamarin.Essentials.RectangleExtensions" Id="T:Xamarin.Essentials.RectangleExtensions">
-      <Member Id="M:Xamarin.Essentials.RectangleExtensions.Android.ToPlatformRectangle(System.Drawing.Rectangle)" />
-      <Member Id="M:Xamarin.Essentials.RectangleExtensions.Android.ToPlatformRectangleF(System.Drawing.RectangleF)" />
       <Member Id="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangle(Android.Graphics.Rect)" />
       <Member Id="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangleF(Android.Graphics.RectF)" />
     </Type>
@@ -628,8 +626,6 @@
       <Member Id="P:Xamarin.Essentials.ShareTextRequest.Uri" />
     </Type>
     <Type Name="Xamarin.Essentials.SizeExtensions" Id="T:Xamarin.Essentials.SizeExtensions">
-      <Member Id="M:Xamarin.Essentials.SizeExtensions.Android.ToPlatformSize(System.Drawing.Size)" />
-      <Member Id="M:Xamarin.Essentials.SizeExtensions.Android.ToPlatformSizeF(System.Drawing.SizeF)" />
       <Member Id="M:Xamarin.Essentials.SizeExtensions.ToSystemSize(Android.Util.Size)" />
       <Member Id="M:Xamarin.Essentials.SizeExtensions.ToSystemSizeF(Android.Util.SizeF)" />
     </Type>
@@ -669,16 +665,20 @@
       <Member Id="M:Xamarin.Essentials.UnitConverters.HectopascalsToPascals(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.HertzToDegreesPerSecond(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.HertzToRadiansPerSecond(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.InternationalFeetToMeters(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.KelvinToCelsius(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.KilometersToMiles(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.KilopascalsToHectopascals(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.KilopascalsToPascals(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.MetersToInternationalFeet(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.MetersToUSSurveyFeet(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.MilesToKilometers(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.MilesToMeters(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.PascalsToAtmospheres(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.RadiansPerSecondToDegreesPerSecond(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.RadiansPerSecondToHertz(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.RadiansToDegrees(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.USSurveyFeetToMeters(System.Double)" />
     </Type>
     <Type Name="Xamarin.Essentials.VersionTracking" Id="T:Xamarin.Essentials.VersionTracking">
       <Member Id="M:Xamarin.Essentials.VersionTracking.IsFirstLaunchForBuild(System.String)" />

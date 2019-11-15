@@ -25,7 +25,7 @@
 
                 <Label Text="Reverse Geocoding:" FontAttributes="Bold" Margin="0,6,0,0" />
                 <Label Text="Address:" />
-                <Entry Text="{Binding Address}" />
+                <Editor Text="{Binding Address}" AutoSize="TextChanges" />
                 <Button Text="Detect Location" Command="{Binding GetPositionCommand}" IsEnabled="{Binding IsNotBusy}" />
                 <Label Text="{Binding GeocodePosition}" />
             </StackLayout>

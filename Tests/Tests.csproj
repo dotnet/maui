@@ -3,8 +3,13 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <IsPackable>false</IsPackable>
-    <Configurations>Debug;Release;Samples;Docs</Configurations>
     <AssemblyName>XamarinEssentialsTests</AssemblyName>
+    <DebugType>portable</DebugType>
+    <Configurations>Debug;Release</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,5 +22,4 @@
     <ProjectReference Include="..\Xamarin.Essentials\Xamarin.Essentials.csproj" />
   </ItemGroup>
 
-  <Import Project="$(MSBuildThisFileDirectory)..\CodeStyles.targets" />
 </Project>

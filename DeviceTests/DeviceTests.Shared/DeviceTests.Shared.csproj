@@ -1,6 +1,5 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras/2.0.54">
   <PropertyGroup>
-    <!--Work around so the conditions work below-->
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">Xamarin.iOS10;MonoAndroid90;uap10.0.16299</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">Xamarin.iOS10;MonoAndroid90;</TargetFrameworks>
     <AssemblyName>XamarinEssentialsDeviceTestsShared</AssemblyName>
@@ -11,22 +10,15 @@
     <Version>1.0.0</Version>
     <NeutralLanguage>en</NeutralLanguage>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <LangVersion>7.2</LangVersion>
     <DefineConstants>$(DefineConstants);</DefineConstants>
     <MDocDocumentationDirectory>$(MSBuildThisFileDirectory)..\docs\en</MDocDocumentationDirectory>
-    <Configurations>Debug;Release;Samples;Docs</Configurations>
+    <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)'=='Release' ">
-    <DebugType>pdbonly</DebugType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Docs'">
-    <DebugType>pdbonly</DebugType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Samples'">
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
@@ -61,5 +53,4 @@
     <Reference Include="System.Numerics.Vectors" />
     <Reference Include="OpenTK-1.0" />
   </ItemGroup>
-  <Import Project="$(MSBuildThisFileDirectory)..\..\CodeStyles.targets" />
 </Project>

@@ -33,8 +33,7 @@
                     <Label Text="File Name:" />
                     <Entry Text="{Binding FileAttachmentName}" />
                     <Label Text="File Contents:" />
-                    <Editor Text="{Binding FileAttachmentContents}" Keyboard="Chat"
-                        VerticalOptions="FillAndExpand" HeightRequest="200" />
+                    <Editor Text="{Binding FileAttachmentContents}" AutoSize="TextChanges" />
 
                     <Button Text="Open File" Command="{Binding LaunchFileCommand}" />
 

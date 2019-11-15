@@ -11,10 +11,10 @@
   </Base>
   <Interfaces />
   <Attributes>
-    <Attribute FrameworkAlternate="xamarin-essentials-android">
+    <Attribute>
       <AttributeName>Android.App.MetaData("android.support.FILE_PROVIDER_PATHS", Resource="@xml/xamarin_essentials_fileprovider_file_paths")</AttributeName>
     </Attribute>
-    <Attribute FrameworkAlternate="xamarin-essentials-android">
+    <Attribute>
       <AttributeName>Android.Content.ContentProvider(new System.String[] { "${applicationId}.fileProvider" }, Exported=false, GrantUriPermissions=true, Name="xamarin.essentials.fileProvider")</AttributeName>
     </Attribute>
   </Attributes>

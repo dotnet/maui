@@ -1,14 +1,15 @@
 
 variables:
-  CurrentSemanticVersionBase: '1.0.0'
-  CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(Build.BuildNumber)'
+  CurrentSemanticVersionBase: '1.4.0'
+  PreviewNumber: $[counter(variables['CurrentSemanticVersionBase'], 1001)]
+  CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(PreviewNumber)'
   NugetPackageVersion: '$(CurrentSemanticVersion)'
   MONO_VERSION: 6_4_0
   XCODE_VERSION: 11.1
   NETCORE_VERSION: '3.0.x'
   NETCORE_TEST_VERSION: '2.2.x'
-  IOS_SIM_NAME: 'iPhone Xs'
-  IOS_SIM_RUNTIME: 'com.apple.CoreSimulator.SimRuntime.iOS-12-4'
+  IOS_SIM_NAME: 'iPhone 11'
+  IOS_SIM_RUNTIME: 'com.apple.CoreSimulator.SimRuntime.iOS-13-1'
   ANDROID_EMU_TARGET: 'system-images;android-26;google_apis;x86'
   ANDROID_EMU_DEVICE: 'Nexus 5X'
   RunPoliCheck: 'false'
