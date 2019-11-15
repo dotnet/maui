@@ -76,10 +76,10 @@ namespace Xamarin.Essentials
             hpa * 100.0;
 
         public static double AtmospheresToPascals(double atm) =>
-            atm / atmospherePascals;
+            atm * atmospherePascals;
 
         public static double PascalsToAtmospheres(double pascals) =>
-            pascals * atmospherePascals;
+            pascals / atmospherePascals;
 
         public static double CoordinatesToMiles(double lat1, double lon1, double lat2, double lon2) =>
             KilometersToMiles(CoordinatesToKilometers(lat1, lon1, lat2, lon2));
