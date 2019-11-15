@@ -100,6 +100,12 @@ namespace Xamarin.Essentials
                     privileges.Add(("http://tizen.org/privilege/internet", false));
                     privileges.Add(("http://tizen.org/privilege/network.get", false));
                     break;
+                case PermissionType.ReadExternalStorage:
+                    privileges.Add(("http://tizen.org/privilege/appdir.shareddata", false));
+                    privileges.Add(("http://tizen.org/privilege/externalstorage", true));
+                    privileges.Add(("http://tizen.org/privilege/externalstorage.appdata", false));
+                    privileges.Add(("http://tizen.org/privilege/mediastorage", true));
+                    break;
                 case PermissionType.Vibrate:
                     privileges.Add(("http://tizen.org/privilege/haptic", false));
                     break;
