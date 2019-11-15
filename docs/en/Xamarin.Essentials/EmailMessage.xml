@@ -44,7 +44,7 @@
         <Parameter Name="body" Type="System.String" />
         <Parameter Name="to" Type="System.String[]">
           <Attributes>
-            <Attribute>
+            <Attribute FrameworkAlternate="xamarin-essentials">
               <AttributeName>System.ParamArray</AttributeName>
             </Attribute>
           </Attributes>

@@ -56,7 +56,7 @@ namespace DeviceTests.Shared
                 var shareableUri = GetShareableUri(file, location);
 
                 // Determine where the file should be found
-                var isInternal = (failAccess || location == FileProviderLocation.Internal);
+                var isInternal = failAccess || location == FileProviderLocation.Internal;
                 var expectedCache = isInternal ? "internal_cache" : "external_cache";
                 var expectedCacheDir = isInternal
                     ? Platform.AppContext.CacheDir.AbsolutePath

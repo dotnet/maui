@@ -207,6 +207,7 @@
       <Member Id="M:Xamarin.Essentials.DevicePlatform.ToString" />
       <Member Id="P:Xamarin.Essentials.DevicePlatform.Android" />
       <Member Id="P:Xamarin.Essentials.DevicePlatform.iOS" />
+      <Member Id="P:Xamarin.Essentials.DevicePlatform.Tizen" />
       <Member Id="P:Xamarin.Essentials.DevicePlatform.tvOS" />
       <Member Id="P:Xamarin.Essentials.DevicePlatform.Unknown" />
       <Member Id="P:Xamarin.Essentials.DevicePlatform.UWP" />
@@ -652,16 +653,20 @@
       <Member Id="M:Xamarin.Essentials.UnitConverters.HectopascalsToPascals(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.HertzToDegreesPerSecond(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.HertzToRadiansPerSecond(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.InternationalFeetToMeters(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.KelvinToCelsius(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.KilometersToMiles(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.KilopascalsToHectopascals(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.KilopascalsToPascals(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.MetersToInternationalFeet(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.MetersToUSSurveyFeet(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.MilesToKilometers(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.MilesToMeters(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.PascalsToAtmospheres(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.RadiansPerSecondToDegreesPerSecond(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.RadiansPerSecondToHertz(System.Double)" />
       <Member Id="M:Xamarin.Essentials.UnitConverters.RadiansToDegrees(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.USSurveyFeetToMeters(System.Double)" />
     </Type>
     <Type Name="Xamarin.Essentials.VersionTracking" Id="T:Xamarin.Essentials.VersionTracking">
       <Member Id="M:Xamarin.Essentials.VersionTracking.IsFirstLaunchForBuild(System.String)" />

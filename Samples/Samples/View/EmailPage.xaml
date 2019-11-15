@@ -37,17 +37,14 @@
                     <Switch IsToggled="{Binding IsHtml}" VerticalOptions="Center"/>
                 </StackLayout>
                 <Label Text="Body:" />
-                <Editor Text="{Binding Body}" Keyboard="Chat"
-                        AutoSize="TextChanges"
-                        VerticalOptions="FillAndExpand" HeightRequest="100" />
+                <Editor Text="{Binding Body}" Keyboard="Chat" AutoSize="TextChanges" />
 
                 <Label Text="Attachment" FontAttributes="Bold" Margin="0,6,0,0" />
 
                 <Label Text="File Name:" />
                 <Entry Text="{Binding AttachmentName}" />
                 <Label Text="File Contents:" />
-                <Editor Text="{Binding AttachmentContents}" Keyboard="Chat"
-                        VerticalOptions="FillAndExpand" HeightRequest="200" />
+                <Editor Text="{Binding AttachmentContents}" Keyboard="Chat" AutoSize="TextChanges" />
 
                 <StackLayout Orientation="Horizontal">
                     <Label Text="Attach Multiple" HorizontalTextAlignment="End"  HorizontalOptions="FillAndExpand" VerticalOptions="Center"/>
