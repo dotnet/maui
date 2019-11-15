@@ -49,8 +49,8 @@
       </Docs>
     </Member>
     <Member MemberName="FileTypes">
-      <MemberSignature Language="C#" Value="public string[] FileTypes { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance string[] FileTypes" />
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.FilePickerFileType FileTypes { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Essentials.FilePickerFileType FileTypes" />
       <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.PickOptions.FileTypes" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
@@ -58,7 +58,7 @@
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.String[]</ReturnType>
+        <ReturnType>Xamarin.Essentials.FilePickerFileType</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>List of file types that file file picker should return.</summary>

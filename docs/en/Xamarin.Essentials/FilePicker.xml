@@ -16,6 +16,28 @@
   </Docs>
   <Members>
     <Member MemberName="PickFileAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;Xamarin.Essentials.FilePickerResult&gt; PickFileAsync (Xamarin.Essentials.PickOptions options = null);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class Xamarin.Essentials.FilePickerResult&gt; PickFileAsync(class Xamarin.Essentials.PickOptions options) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.FilePicker.PickFileAsync(Xamarin.Essentials.PickOptions)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;Xamarin.Essentials.FilePickerResult&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="options" Type="Xamarin.Essentials.PickOptions" />
+      </Parameters>
+      <Docs>
+        <param name="options">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="PickFileAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;Xamarin.Essentials.PickResult&gt; PickFileAsync (Xamarin.Essentials.PickOptions options = null);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class Xamarin.Essentials.PickResult&gt; PickFileAsync(class Xamarin.Essentials.PickOptions options) cil managed" />
       <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.FilePicker.PickFileAsync(Xamarin.Essentials.PickOptions)" />

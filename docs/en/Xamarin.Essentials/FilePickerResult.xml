@@ -1,0 +1,18 @@
+<Type Name="FilePickerResult" FullName="Xamarin.Essentials.FilePickerResult">
+  <TypeSignature Language="C#" Value="public class FilePickerResult : Xamarin.Essentials.PickerResultBase" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit FilePickerResult extends Xamarin.Essentials.PickerResultBase" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.FilePickerResult" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>Xamarin.Essentials.PickerResultBase</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members />
+</Type>
