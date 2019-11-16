@@ -123,5 +123,29 @@
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="GetCompliment">
+      <MemberSignature Language="C#" Value="public static System.Drawing.Color GetCompliment (System.Drawing.Color original);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color GetCompliment(valuetype System.Drawing.Color original) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorConverters.GetCompliment(System.Drawing.Color)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="original" Type="System.Drawing.Color" />
+      </Parameters>
+      <Docs>
+        <param name="original">A color to obtain the compliment for.</param>
+        <summary>Returns a new color that is on the opposite side of the color wheel from the original.</summary>
+        <returns>A color that is the compliment of the value passed in.</returns>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
   </Members>
 </Type>
