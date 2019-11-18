@@ -44,6 +44,7 @@
 	  <Compile Include="$(MSBuildThisFileDirectory)Issue5367.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7253.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7581.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7361.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7621.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -72,6 +73,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue7049.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7061.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7385.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7111.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7357.xaml.cs">
       <SubType>Code</SubType>
@@ -114,6 +116,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue8087.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8222.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8167.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue8366.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8269.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RefreshViewTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7338.cs" />
