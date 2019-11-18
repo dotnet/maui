@@ -367,9 +367,9 @@ namespace Xamarin.Forms
 
 			if ((context.Attributes & BindableContextAttributes.IsBeingSet) != 0)
 			{
-				Queue<SetValueArgs> delayQueue = context.DelayedSetters;
+				FormsQueue<SetValueArgs> delayQueue = context.DelayedSetters;
 				if (delayQueue == null)
-					context.DelayedSetters = delayQueue = new Queue<SetValueArgs>();
+					context.DelayedSetters = delayQueue = new FormsQueue<SetValueArgs>();
 
 				delayQueue.Enqueue(new SetValueArgs(property, context, value, currentlyApplying, attributes));
 			}
@@ -378,7 +378,7 @@ namespace Xamarin.Forms
 				context.Attributes |= BindableContextAttributes.IsBeingSet;
 				SetValueActual(property, context, value, currentlyApplying, attributes, silent);
 
-				Queue<SetValueArgs> delayQueue = context.DelayedSetters;
+				FormsQueue<SetValueArgs> delayQueue = context.DelayedSetters;
 				if (delayQueue != null)
 				{
 					while (delayQueue.Count > 0)
@@ -527,7 +527,7 @@ namespace Xamarin.Forms
 		{
 			public BindableContextAttributes Attributes;
 			public BindingBase Binding;
-			public Queue<SetValueArgs> DelayedSetters;
+			public FormsQueue<SetValueArgs> DelayedSetters;
 			public BindableProperty Property;
 			public object Value;
 		}

@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Internals
 		}
 		public static List<Datum> Data = new List<Datum>(Capacity);
 
-		static Stack<Profile> Stack = new Stack<Profile>(Capacity);
+		static FormsStack<Profile> Stack = new FormsStack<Profile>(Capacity);
 		static int Depth = 0;
 		static bool Running = false;
 		static Stopwatch Stopwatch = new Stopwatch();

@@ -21,6 +21,10 @@ variables:
   value: 5.0.2
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
   value: true
+- name: DOTNET_VERSION
+  value: 3.0.100
+- name: winVmImage
+  value: XamarinForms
 
 resources:
   repositories:

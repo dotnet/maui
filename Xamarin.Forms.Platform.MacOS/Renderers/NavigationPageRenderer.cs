@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		bool _appeared;
 		EventTracker _events;
 		VisualElementTracker _tracker;
-		Stack<NavigationChildPageWrapper> _currentStack = new Stack<NavigationChildPageWrapper>();
+		FormsStack<NavigationChildPageWrapper> _currentStack = new FormsStack<NavigationChildPageWrapper>();
 
 		NavigationPage NavigationPage => Element as NavigationPage;
 
@@ -255,7 +255,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			var beforePageIndex = currentList.IndexOf(p => p.Page == before);
 			var pageWrapper = new NavigationChildPageWrapper(page);
 			currentList.Insert(beforePageIndex, pageWrapper);
-			_currentStack = new Stack<NavigationChildPageWrapper>(currentList);
+			_currentStack = new FormsStack<NavigationChildPageWrapper>(currentList);
 
 			var vc = CreateViewControllerForPage(page);
 			vc.SetElementSize(new Size(View.Bounds.Width, View.Bounds.Height));
@@ -306,7 +306,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (removeFromStack)
 			{
 				var newSource = _currentStack.Reverse().Where(w => w.Page != page);
-				_currentStack = new Stack<NavigationChildPageWrapper>(newSource);
+				_currentStack = new FormsStack<NavigationChildPageWrapper>(newSource);
 			}
 		}
 

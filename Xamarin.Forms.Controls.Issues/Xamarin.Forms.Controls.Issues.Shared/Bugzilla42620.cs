@@ -209,8 +209,8 @@ namespace Xamarin.Forms.Controls.Issues
 		int _totalWidth = 0;
 		int _totalHeight = 0;
 
-		Queue<string> _buttons = new Queue<string>();
-		Queue<string> _result = new Queue<string>();
+		FormsQueue<string> _buttons = new FormsQueue<string>();
+		FormsQueue<string> _result = new FormsQueue<string>();
 
 		public void Tap(string button)
 		{
