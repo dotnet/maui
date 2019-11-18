@@ -223,17 +223,17 @@ namespace Xamarin.Forms.Platform.UWP
 			double increment = Increment;
 			if (_plus != null)
 			{
-				if (value + increment > Maximum)
+				if (value + increment > Maximum && _plusStateCache is null)
 					_plusStateCache = PseudoDisable(_plus);
-				else
+				else if (value + increment <= Maximum)
 					PsuedoEnable(_plus, ref _plusStateCache);
 			}
 
 			if (_minus != null)
 			{
-				if (value - increment < Minimum)
+				if (value - increment < Minimum && _minusStateCache is null)
 					_minusStateCache = PseudoDisable(_minus);
-				else
+				else if (value - increment >= Minimum)
 					PsuedoEnable(_minus, ref _minusStateCache);
 			}
 		}
