@@ -125,10 +125,6 @@ namespace Xamarin.Forms
 			BindableProperty.Create(nameof(ItemsLayout), typeof(IItemsLayout), typeof(ItemsView),
 				LinearItemsLayout.Vertical);
 
-
-		//	public abstract IItemsLayout ItemsLayout { get; }
-
-
 		protected IItemsLayout InternalItemsLayout
 		{
 			get => (IItemsLayout)GetValue(InternalItemsLayoutProperty);
@@ -143,7 +139,6 @@ namespace Xamarin.Forms
 			get => (ItemSizingStrategy)GetValue(ItemSizingStrategyProperty);
 			set => SetValue(ItemSizingStrategyProperty, value);
 		}
-
 
 		public static readonly BindableProperty ItemTemplateProperty =
 			BindableProperty.Create(nameof(ItemTemplate), typeof(DataTemplate), typeof(ItemsView));

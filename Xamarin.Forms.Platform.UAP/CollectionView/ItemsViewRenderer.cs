@@ -26,6 +26,11 @@ namespace Xamarin.Forms.Platform.UWP
 		FrameworkElement _emptyView;
 		View _formsEmptyView;
 
+		protected ItemsViewRenderer()
+		{
+			AutoPackage = false;
+		}
+
 		protected TItemsView ItemsView => Element;
 		protected ItemsControl ItemsControl { get; private set; }
 
