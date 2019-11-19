@@ -7,7 +7,7 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public class ViewPool : IDisposable
 	{
-		readonly Dictionary<Type, Stack<AView>> _freeViews = new Dictionary<Type, Stack<AView>>();
+		readonly Dictionary<Type, FormsStack<AView>> _freeViews = new Dictionary<Type, FormsStack<AView>>();
 		readonly ViewGroup _viewGroup;
 
 		bool _disposed;
@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (_disposed)
 				return;
 
-			foreach (Stack<AView> views in _freeViews.Values)
+			foreach (FormsStack<AView> views in _freeViews.Values)
 			{
 				foreach (AView view in views)
 					view.Dispose();
@@ -44,7 +44,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (_disposed)
 				throw new ObjectDisposedException(null);
 
-			Stack<AView> views;
+			FormsStack<AView> views;
 			if (_freeViews.TryGetValue(typeof(TView), out views) && views.Count > 0)
 				return (TView)views.Pop();
 
@@ -66,9 +66,9 @@ namespace Xamarin.Forms.Platform.Android
 					ClearChildren(g);
 
 				Type childType = child.GetType();
-				Stack<AView> stack;
+				FormsStack<AView> stack;
 				if (!_freeViews.TryGetValue(childType, out stack))
-					_freeViews[childType] = stack = new Stack<AView>();
+					_freeViews[childType] = stack = new FormsStack<AView>();
 
 				stack.Push(child);
 			}

@@ -76,7 +76,7 @@ namespace Xamarin.Forms.XamlcUnitTests
 			resolver.AddAssembly(Uri.UnescapeDataString((new UriBuilder(typeof(BindableObject).Assembly.CodeBase)).Path));
 			resolver.AddAssembly(Uri.UnescapeDataString((new UriBuilder(typeof(object).Assembly.CodeBase)).Path));
 			resolver.AddAssembly(Uri.UnescapeDataString((new UriBuilder(typeof(IList<>).Assembly.CodeBase)).Path));
-			resolver.AddAssembly(Uri.UnescapeDataString((new UriBuilder(typeof(Queue<>).Assembly.CodeBase)).Path));
+			resolver.AddAssembly(Uri.UnescapeDataString((new UriBuilder(typeof(FormsQueue<>).Assembly.CodeBase)).Path));
 
 			module = ModuleDefinition.CreateModule("foo", new ModuleParameters {
 				AssemblyResolver = resolver,
@@ -89,7 +89,7 @@ namespace Xamarin.Forms.XamlcUnitTests
 		[TestCase(typeof(List<string>), typeof(BindableObject), ExpectedResult = false)]
 		[TestCase(typeof(List<string>), typeof(IEnumerable<string>), ExpectedResult = true)]
 		[TestCase(typeof(List<Button>), typeof(BindableObject), ExpectedResult = false)]
-		[TestCase(typeof(Queue<KeyValuePair<string, string>>), typeof(BindableObject), ExpectedResult = false)]
+		[TestCase(typeof(FormsQueue<KeyValuePair<string, string>>), typeof(BindableObject), ExpectedResult = false)]
 		[TestCase(typeof(double), typeof(double), ExpectedResult = true)]
 		[TestCase(typeof(object), typeof(IList<TriggerBase>), ExpectedResult = false)]
 		[TestCase(typeof(object), typeof(double), ExpectedResult = false)]

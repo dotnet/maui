@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			if (disposing)
 			{
-				var viewsToLookAt = new Stack<NSView>(Subviews);
+				var viewsToLookAt = new FormsStack<NSView>(Subviews);
 				while (viewsToLookAt.Count > 0)
 				{
 					var view = viewsToLookAt.Pop();

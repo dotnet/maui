@@ -36,19 +36,14 @@ namespace Xamarin.Forms.Core.UITests
 		public static Matrix ParseCATransform3D (string CATransform3D)
 		{
 			// Logger.Log (CATransform3D);
-			char[] delimiters = { '<', ' ', '>' };
+			char[] delimiters = { '[', ' ', ']', ';' };
 			string[] words = CATransform3D.Split (delimiters, StringSplitOptions.RemoveEmptyEntries);
 
 			List<double> numbers = new List<double> ();
 
 			// Each number is represented by 2 blocks returned by server
-			for (int i = 0; i < (words.Length - 1); i += 2) {
-				string word = words[i] + words[i + 1];
-				var number = Int64.Parse (word, NumberStyles.HexNumber);
-				byte[] bytes = BitConverter.GetBytes (number);
-				byte[] reversedBytes = bytes.Reverse ().ToArray ();
-				double value = BitConverter.ToDouble (reversedBytes, 0);
-				numbers.Add (value);
+			for (int i = 0; i < words.Length; i++) {
+				numbers.Add (Convert.ToDouble(words[i]));
 			}
 
 			var transformationMatrix = new Matrix ();
