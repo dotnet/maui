@@ -23,6 +23,8 @@ variables:
   value: true
 - name: DOTNET_VERSION
   value: 3.0.100
+- name: winVmImage
+  value: XamarinForms
 
 resources:
   repositories:
