@@ -1,5 +1,6 @@
 ﻿using CoreGraphics;
 using Foundation;
+using ObjCRuntime;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,6 +16,8 @@ using Xamarin.Forms.Platform.iOS;
 [assembly: ExportRenderer(typeof(ActivityIndicator), typeof(PerformanceTrackingActivityIndicator))]
 [assembly: ExportRenderer(typeof(BoxView), typeof(PerformanceTrackingBoxView))]
 [assembly: ExportRenderer(typeof(Button), typeof(PerformanceTrackingButton))]
+[assembly: ExportRenderer(typeof(ImageButton), typeof(PerformanceTrackingImageButton))]
+[assembly: ExportRenderer(typeof(CheckBox), typeof(PerformanceTrackingCheckBox))]
 [assembly: ExportRenderer(typeof(DatePicker), typeof(PerformanceTrackingDatePicker))]
 [assembly: ExportRenderer(typeof(Editor), typeof(PerformanceTrackingEditor))]
 [assembly: ExportRenderer(typeof(Entry), typeof(PerformanceTrackingEntry))]
@@ -31,6 +34,8 @@ using Xamarin.Forms.Platform.iOS;
 [assembly: ExportRenderer(typeof(TableView), typeof(PerformanceTrackingTableView))]
 [assembly: ExportRenderer(typeof(TimePicker), typeof(PerformanceTrackingTimePicker))]
 [assembly: ExportRenderer(typeof(WebView), typeof(PerformanceTrackingWebView))]
+[assembly: ExportRenderer(typeof(Entry), typeof(PerformanceTrackingMaterialEntry), new[] { typeof(VisualMarker.MaterialVisual) })]
+[assembly: ExportRenderer(typeof(Frame), typeof(PerformanceTrackingFrame))]
 
 namespace Xamarin.Forms.ControlGallery.iOS
 {
@@ -153,6 +158,12 @@ namespace Xamarin.Forms.ControlGallery.iOS
 			}
 		}
 
+		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
+		public NSString GetLayerTransformString
+		{
+			get => new NSString(Layer.Transform.ToString());
+		}
+
 		public override void Draw(CGRect rect)
 		{
 			base.Draw(rect);
@@ -194,6 +205,61 @@ namespace Xamarin.Forms.ControlGallery.iOS
 				_Drawn = value;
 				DidChangeValue(nameof(IDrawnObservable.Drawn));
 			}
+		}
+
+		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
+		public NSString GetLayerTransformString
+		{
+			get => new NSString(Layer.Transform.ToString());
+		}
+
+		public override void Draw(CGRect rect)
+		{
+			base.Draw(rect);
+			Drawn++;
+		}
+
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			MessagingCenter.Instance.Send((IDrawnObservable)this, PerformanceTrackerRenderer.SubviewAddedMessage);
+			_watcher.SubscribeToDrawn(this);
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			_watcher.Dispose();
+			base.Dispose(disposing);
+		}
+	}
+
+	public class PerformanceTrackingFrame : FrameRenderer, IDrawnObservable
+	{
+		readonly SubviewWatcher<PerformanceTrackingFrame> _watcher;
+		int _Drawn;
+
+		public PerformanceTrackingFrame()
+		{
+			_watcher = new SubviewWatcher<PerformanceTrackingFrame>(this);
+		}
+
+		[Export(nameof(IDrawnObservable.Drawn))]
+		public int Drawn
+		{
+			get { return _Drawn; }
+			set
+			{
+				WillChangeValue(nameof(IDrawnObservable.Drawn));
+				_Drawn = value;
+				DidChangeValue(nameof(IDrawnObservable.Drawn));
+			}
+		}
+
+		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
+		public NSString GetLayerTransformString
+		{
+			get => new NSString(Layer.Transform.ToString());
 		}
 
 		public override void Draw(CGRect rect)
@@ -239,6 +305,110 @@ namespace Xamarin.Forms.ControlGallery.iOS
 			}
 		}
 
+		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
+		public NSString GetLayerTransformString
+		{
+			get => new NSString(Layer.Transform.ToString());
+		}
+
+		public override void Draw(CGRect rect)
+		{
+			base.Draw(rect);
+			Drawn++;
+		}
+
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			MessagingCenter.Instance.Send((IDrawnObservable)this, PerformanceTrackerRenderer.SubviewAddedMessage);
+			_watcher.SubscribeToDrawn(this);
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			_watcher.Dispose();
+			base.Dispose(disposing);
+		}
+	}
+
+	public class PerformanceTrackingImageButton : ImageButtonRenderer, IDrawnObservable
+	{
+		readonly SubviewWatcher<PerformanceTrackingImageButton> _watcher;
+		int _Drawn;
+
+		public PerformanceTrackingImageButton()
+		{
+			_watcher = new SubviewWatcher<PerformanceTrackingImageButton>(this);
+		}
+
+		[Export(nameof(IDrawnObservable.Drawn))]
+		public int Drawn
+		{
+			get { return _Drawn; }
+			set
+			{
+				WillChangeValue(nameof(IDrawnObservable.Drawn));
+				_Drawn = value;
+				DidChangeValue(nameof(IDrawnObservable.Drawn));
+			}
+		}
+
+		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
+		public NSString GetLayerTransformString
+		{
+			get => new NSString(Layer.Transform.ToString());
+		}
+
+		public override void Draw(CGRect rect)
+		{
+			base.Draw(rect);
+			Drawn++;
+		}
+
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			MessagingCenter.Instance.Send((IDrawnObservable)this, PerformanceTrackerRenderer.SubviewAddedMessage);
+			_watcher.SubscribeToDrawn(this);
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			_watcher.Dispose();
+			base.Dispose(disposing);
+		}
+	}
+
+	public class PerformanceTrackingCheckBox : CheckBoxRenderer, IDrawnObservable
+	{
+		readonly SubviewWatcher<PerformanceTrackingCheckBox> _watcher;
+		int _Drawn;
+
+		public PerformanceTrackingCheckBox()
+		{
+			_watcher = new SubviewWatcher<PerformanceTrackingCheckBox>(this);
+		}
+
+		[Export(nameof(IDrawnObservable.Drawn))]
+		public int Drawn
+		{
+			get { return _Drawn; }
+			set
+			{
+				WillChangeValue(nameof(IDrawnObservable.Drawn));
+				_Drawn = value;
+				DidChangeValue(nameof(IDrawnObservable.Drawn));
+			}
+		}
+
+		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
+		public NSString GetLayerTransformString
+		{
+			get => new NSString(Layer.Transform.ToString());
+		}
+
 		public override void Draw(CGRect rect)
 		{
 			base.Draw(rect);
@@ -280,6 +450,12 @@ namespace Xamarin.Forms.ControlGallery.iOS
 				_Drawn = value;
 				DidChangeValue(nameof(IDrawnObservable.Drawn));
 			}
+		}
+
+		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
+		public NSString GetLayerTransformString
+		{
+			get => new NSString(Layer.Transform.ToString());
 		}
 
 		public override void Draw(CGRect rect)
@@ -325,6 +501,12 @@ namespace Xamarin.Forms.ControlGallery.iOS
 			}
 		}
 
+		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
+		public NSString GetLayerTransformString
+		{
+			get => new NSString(Layer.Transform.ToString());
+		}
+
 		public override void Draw(CGRect rect)
 		{
 			base.Draw(rect);
@@ -368,6 +550,61 @@ namespace Xamarin.Forms.ControlGallery.iOS
 			}
 		}
 
+		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
+		public NSString GetLayerTransformString
+		{
+			get => new NSString(Layer.Transform.ToString());
+		}
+
+		public override void Draw(CGRect rect)
+		{
+			base.Draw(rect);
+			Drawn++;
+		}
+
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			MessagingCenter.Instance.Send((IDrawnObservable)this, PerformanceTrackerRenderer.SubviewAddedMessage);
+			_watcher.SubscribeToDrawn(this);
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			_watcher.Dispose();
+			base.Dispose(disposing);
+		}
+	}
+
+	public class PerformanceTrackingMaterialEntry : Material.iOS.MaterialEntryRenderer, IDrawnObservable
+	{
+		readonly SubviewWatcher<PerformanceTrackingMaterialEntry> _watcher;
+		int _Drawn;
+
+		public PerformanceTrackingMaterialEntry()
+		{
+			_watcher = new SubviewWatcher<PerformanceTrackingMaterialEntry>(this);
+		}
+
+		[Export(nameof(IDrawnObservable.Drawn))]
+		public int Drawn
+		{
+			get { return _Drawn; }
+			set
+			{
+				WillChangeValue(nameof(IDrawnObservable.Drawn));
+				_Drawn = value;
+				DidChangeValue(nameof(IDrawnObservable.Drawn));
+			}
+		}
+
+		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
+		public NSString GetLayerTransformString
+		{
+			get => new NSString(Layer.Transform.ToString());
+		}
+
 		public override void Draw(CGRect rect)
 		{
 			base.Draw(rect);
@@ -409,6 +646,12 @@ namespace Xamarin.Forms.ControlGallery.iOS
 				_Drawn = value;
 				DidChangeValue(nameof(IDrawnObservable.Drawn));
 			}
+		}
+
+		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
+		public NSString GetLayerTransformString
+		{
+			get => new NSString(Layer.Transform.ToString());
 		}
 
 		public override void Draw(CGRect rect)
@@ -455,6 +698,12 @@ namespace Xamarin.Forms.ControlGallery.iOS
 			}
 		}
 
+		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
+		public NSString GetLayerTransformString
+		{
+			get => new NSString(Layer.Transform.ToString());
+		}
+
 		public override void Draw(CGRect rect)
 		{
 			base.Draw(rect);
@@ -497,6 +746,12 @@ namespace Xamarin.Forms.ControlGallery.iOS
 				_Drawn = value;
 				DidChangeValue(nameof(IDrawnObservable.Drawn));
 			}
+		}
+
+		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
+		public NSString GetLayerTransformString
+		{
+			get => new NSString(Layer.Transform.ToString());
 		}
 
 		public override void Draw(CGRect rect)
@@ -543,6 +798,12 @@ namespace Xamarin.Forms.ControlGallery.iOS
 			}
 		}
 
+		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
+		public NSString GetLayerTransformString
+		{
+			get => new NSString(Layer.Transform.ToString());
+		}
+
 		public override void Draw(CGRect rect)
 		{
 			base.Draw(rect);
@@ -584,6 +845,12 @@ namespace Xamarin.Forms.ControlGallery.iOS
 				_Drawn = value;
 				DidChangeValue(nameof(IDrawnObservable.Drawn));
 			}
+		}
+
+		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
+		public NSString GetLayerTransformString
+		{
+			get => new NSString(Layer.Transform.ToString());
 		}
 
 		public override void Draw(CGRect rect)
@@ -629,6 +896,12 @@ namespace Xamarin.Forms.ControlGallery.iOS
 			}
 		}
 
+		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
+		public NSString GetLayerTransformString
+		{
+			get => new NSString(Layer.Transform.ToString());
+		}
+
 		public override void Draw(CGRect rect)
 		{
 			base.Draw(rect);
@@ -670,6 +943,12 @@ namespace Xamarin.Forms.ControlGallery.iOS
 				_Drawn = value;
 				DidChangeValue(nameof(IDrawnObservable.Drawn));
 			}
+		}
+
+		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
+		public NSString GetLayerTransformString
+		{
+			get => new NSString(Layer.Transform.ToString());
 		}
 
 		public override void Draw(CGRect rect)
@@ -715,6 +994,12 @@ namespace Xamarin.Forms.ControlGallery.iOS
 			}
 		}
 
+		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
+		public NSString GetLayerTransformString
+		{
+			get => new NSString(Layer.Transform.ToString());
+		}
+
 		public override void Draw(CGRect rect)
 		{
 			base.Draw(rect);
@@ -756,6 +1041,12 @@ namespace Xamarin.Forms.ControlGallery.iOS
 				_Drawn = value;
 				DidChangeValue(nameof(IDrawnObservable.Drawn));
 			}
+		}
+
+		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
+		public NSString GetLayerTransformString
+		{
+			get => new NSString(Layer.Transform.ToString());
 		}
 
 		public override void Draw(CGRect rect)
@@ -801,6 +1092,12 @@ namespace Xamarin.Forms.ControlGallery.iOS
 			}
 		}
 
+		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
+		public NSString GetLayerTransformString
+		{
+			get => new NSString(Layer.Transform.ToString());
+		}
+
 		public override void Draw(CGRect rect)
 		{
 			base.Draw(rect);
@@ -842,6 +1139,12 @@ namespace Xamarin.Forms.ControlGallery.iOS
 				_Drawn = value;
 				DidChangeValue(nameof(IDrawnObservable.Drawn));
 			}
+		}
+
+		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
+		public NSString GetLayerTransformString
+		{
+			get => new NSString(Layer.Transform.ToString());
 		}
 
 		public override void Draw(CGRect rect)
@@ -887,6 +1190,12 @@ namespace Xamarin.Forms.ControlGallery.iOS
 			}
 		}
 
+		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
+		public NSString GetLayerTransformString
+		{
+			get => new NSString(Layer.Transform.ToString());
+		}
+
 		public override void Draw(CGRect rect)
 		{
 			base.Draw(rect);
@@ -928,6 +1237,12 @@ namespace Xamarin.Forms.ControlGallery.iOS
 				_Drawn = value;
 				DidChangeValue(nameof(IDrawnObservable.Drawn));
 			}
+		}
+
+		[Export("getLayerTransformString", ArgumentSemantic.Retain)]
+		public NSString GetLayerTransformString
+		{
+			get => new NSString(Layer.Transform.ToString());
 		}
 
 		public override void Draw(CGRect rect)
