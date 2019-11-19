@@ -7,7 +7,9 @@ namespace Xamarin.Forms.Platform.Android
 {
 	internal class DataChangeObserver : RecyclerView.AdapterDataObserver
 	{
+		IntPtr _adapter;
 		readonly Action _onDataChange;
+
 		public bool Observing { get; private set; }
 
 		public DataChangeObserver(Action onDataChange) : base()
@@ -23,16 +25,19 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			adapter.RegisterAdapterDataObserver(this);
+
+			_adapter = adapter.Handle;
 			Observing = true;
 		}
 
 		public void Stop(Adapter adapter)
 		{
-			if (Observing && adapter != null && adapter.HasObservers)
+			if (Observing && IsValidAdapter(adapter))
 			{
 				adapter.UnregisterAdapterDataObserver(this);
 			}
 
+			_adapter = IntPtr.Zero;
 			Observing = false;
 		}
 
@@ -70,6 +75,11 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			base.OnItemRangeMoved(fromPosition, toPosition, itemCount);
 			_onDataChange?.Invoke();
+		}
+
+		bool IsValidAdapter(Adapter adapter)
+		{
+			return adapter != null && adapter.Handle == _adapter && adapter.HasObservers;
 		}
 	}
 }
