@@ -220,7 +220,17 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 
-		protected virtual void UpdatePlaceHolderText() => EditText.Hint = Element.Placeholder;
+		protected virtual void UpdatePlaceHolderText()
+		{
+			if (EditText.Hint == Element.Placeholder)
+				return;
+
+			EditText.Hint = Element.Placeholder;
+			if (EditText.IsFocused)
+			{
+				EditText.ShowKeyboard();
+			}
+		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
