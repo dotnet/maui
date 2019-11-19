@@ -11,6 +11,7 @@ namespace Xamarin.Forms.Platform.macOS
 
 		public MacDeviceInfo()
 		{
+			UpdateScreenSize();
 		}
 
 		public override Size PixelScreenSize => _pixelScreenSize;
