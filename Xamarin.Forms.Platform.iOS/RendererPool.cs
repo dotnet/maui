@@ -10,8 +10,8 @@ namespace Xamarin.Forms.Platform.MacOS
 {
 	public sealed class RendererPool
 	{
-		readonly Dictionary<Type, Stack<IVisualElementRenderer>> _freeRenderers =
-			new Dictionary<Type, Stack<IVisualElementRenderer>>();
+		readonly Dictionary<Type, FormsStack<IVisualElementRenderer>> _freeRenderers =
+			new Dictionary<Type, FormsStack<IVisualElementRenderer>>();
 
 		readonly VisualElement _oldElement;
 
@@ -36,7 +36,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			var rendererType = Internals.Registrar.Registered.GetHandlerTypeForObject(view) ?? typeof(ViewRenderer);
 
-			Stack<IVisualElementRenderer> renderers;
+			FormsStack<IVisualElementRenderer> renderers;
 			if (!_freeRenderers.TryGetValue(rendererType, out renderers) || renderers.Count == 0)
 				return null;
 
@@ -127,9 +127,9 @@ namespace Xamarin.Forms.Platform.MacOS
 			var reflectableType = renderer as System.Reflection.IReflectableType;
 			var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : renderer.GetType();
 
-			Stack<IVisualElementRenderer> renderers;
+			FormsStack<IVisualElementRenderer> renderers;
 			if (!_freeRenderers.TryGetValue(rendererType, out renderers))
-				_freeRenderers[rendererType] = renderers = new Stack<IVisualElementRenderer>();
+				_freeRenderers[rendererType] = renderers = new FormsStack<IVisualElementRenderer>();
 
 			renderers.Push(renderer);
 		}

@@ -115,7 +115,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		internal static T FindDescendantView<T>(this UIView view) where T : UIView
 		{
-			var queue = new Queue<UIView>();
+			var queue = new FormsQueue<UIView>();
 			queue.Enqueue(view);
 
 			while (queue.Count > 0)
