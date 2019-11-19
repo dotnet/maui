@@ -176,6 +176,7 @@
     <Compile Include="Forms.cs" />
     <Compile Include="PageExtensions.cs" />
     <Compile Include="Renderers\IAccessibilityElementsController.cs" />
+    <Compile Include="Renderers\IShellSectionRootHeader.cs" />
     <Compile Include="Renderers\PageContainer.cs" />
     <Compile Include="Renderers\CheckBoxRendererBase.cs" />
     <Compile Include="Renderers\WkWebViewRenderer.cs" />

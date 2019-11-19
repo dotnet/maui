@@ -7,7 +7,7 @@ using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	public class ShellSectionRootHeader : UICollectionViewController, IAppearanceObserver
+	public class ShellSectionRootHeader : UICollectionViewController, IAppearanceObserver, IShellSectionRootHeader
 	{
 		#region IAppearanceObserver
 
@@ -66,6 +66,8 @@ namespace Xamarin.Forms.Platform.iOS
 		public double SelectedIndex { get; set; }
 		public ShellSection ShellSection { get; set; }
 
+		public UIViewController ViewController => this;
+
 		public override bool CanMoveItem(UICollectionView collectionView, NSIndexPath indexPath)
 		{
 			return false;
@@ -73,7 +75,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
 		{
-			var headerCell = (ShellSectionHeaderCell)collectionView.DequeueReusableCell(CellId, indexPath);
+			var reusedCell = (UICollectionViewCell)collectionView.DequeueReusableCell(CellId, indexPath);
+			var headerCell = reusedCell as ShellSectionHeaderCell;
+
+			if (headerCell == null)
+				return reusedCell;
 
 			var selectedItems = collectionView.GetIndexPathsForSelectedItems();
 
@@ -96,8 +102,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void ItemDeselected(UICollectionView collectionView, NSIndexPath indexPath)
 		{
-			var cell = (ShellSectionHeaderCell)CollectionView.CellForItem(indexPath);
-			cell.Label.TextColor = _unselectedColor.ToUIColor();
+			if(CollectionView.CellForItem(indexPath) is ShellSectionHeaderCell cell)
+				cell.Label.TextColor = _unselectedColor.ToUIColor();
 		}
 
 		public override void ItemSelected(UICollectionView collectionView, NSIndexPath indexPath)
@@ -109,8 +115,8 @@ namespace Xamarin.Forms.Platform.iOS
 			if (item != ShellSection.CurrentItem)
 				ShellSection.SetValueFromRenderer(ShellSection.CurrentItemProperty, item);
 
-			var cell = (ShellSectionHeaderCell)CollectionView.CellForItem(indexPath);
-			cell.Label.TextColor = _selectedColor.ToUIColor();
+			if (CollectionView.CellForItem(indexPath) is ShellSectionHeaderCell cell)
+				cell.Label.TextColor = _selectedColor.ToUIColor();
 		}
 
 		public override nint NumberOfSections(UICollectionView collectionView)
@@ -164,13 +170,18 @@ namespace Xamarin.Forms.Platform.iOS
 			flowLayout.MinimumLineSpacing = 0;
 			flowLayout.EstimatedItemSize = new CGSize(70, 35);
 
-			CollectionView.RegisterClassForCell(typeof(ShellSectionHeaderCell), CellId);
+			CollectionView.RegisterClassForCell(GetCellType(), CellId);
 
 			((IShellController)_shellContext.Shell).AddAppearanceObserver(this, ShellSection);
 			((INotifyCollectionChanged)ShellSection.Items).CollectionChanged += OnShellSectionItemsChanged;
 
 			UpdateSelectedIndex();
 			ShellSection.PropertyChanged += OnShellSectionPropertyChanged;
+		}
+
+		protected virtual Type GetCellType()
+		{
+			return typeof(ShellSectionHeaderCell);
 		}
 
 		protected override void Dispose(bool disposing)

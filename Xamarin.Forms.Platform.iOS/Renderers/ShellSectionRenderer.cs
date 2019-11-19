@@ -174,12 +174,17 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateTabBarItem();
 		}
 
+		protected virtual IShellSectionRootRenderer CreateShellSectionRootRenderer(ShellSection shellSection, IShellContext shellContext)
+		{
+			return new ShellSectionRootRenderer(shellSection, shellContext);
+		}
+
 		protected virtual void LoadPages()
 		{
-			_renderer = new ShellSectionRootRenderer(ShellSection, _context);
+			_renderer = CreateShellSectionRootRenderer(ShellSection, _context);
 
 			PushViewController(_renderer.ViewController, false);
-
+			
 			var stack = ShellSection.Stack;
 			for (int i = 1; i < stack.Count; i++)
 			{
