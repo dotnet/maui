@@ -207,8 +207,8 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_displayedPage != null)
 			{
 				_displayedPage.PropertyChanged += OnDisplayedPagePropertyChanged;
-				if (!ShellSection.Stack.Contains(_displayedPage))
-					UpdateNavigationBarHidden();
+				UpdateNavigationBarHidden();
+				UpdateNavigationBarHasShadow();
 			}
 		}
 
@@ -377,6 +377,8 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (e.PropertyName == Shell.NavBarIsVisibleProperty.PropertyName)
 				UpdateNavigationBarHidden();
+			else if (e.PropertyName == Shell.NavBarHasShadowProperty.PropertyName)
+				UpdateNavigationBarHasShadow();
 		}
 
 		void PushPage(Page page, bool animated, TaskCompletionSource<bool> completionSource = null)
@@ -429,6 +431,11 @@ namespace Xamarin.Forms.Platform.iOS
 		void UpdateNavigationBarHidden()
 		{
 			SetNavigationBarHidden(!Shell.GetNavBarIsVisible(_displayedPage), true);
+		}
+
+		void UpdateNavigationBarHasShadow()
+		{
+			_appearanceTracker.SetHasShadow(this, Shell.GetNavBarHasShadow(_displayedPage));
 		}
 
 		void UpdateShadowImages()

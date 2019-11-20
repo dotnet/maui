@@ -18,6 +18,9 @@ namespace Xamarin.Forms.Internals
 			if (propertyName == null || propertyName == Shell.NavBarIsVisibleProperty.PropertyName)
 				BaseShellItem.PropagateFromParent(Shell.NavBarIsVisibleProperty, element);
 
+			if (propertyName == null || propertyName == Shell.NavBarHasShadowProperty.PropertyName)
+				BaseShellItem.PropagateFromParent(Shell.NavBarHasShadowProperty, element);
+
 			if (propertyName == null || propertyName == Shell.TabBarIsVisibleProperty.PropertyName)
 				BaseShellItem.PropagateFromParent(Shell.TabBarIsVisibleProperty, element);
 
