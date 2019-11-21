@@ -21,6 +21,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewHeaderFooterView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewItemsUpdatingScrollMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8177.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7773.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8186.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3475.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5354.xaml.cs">
