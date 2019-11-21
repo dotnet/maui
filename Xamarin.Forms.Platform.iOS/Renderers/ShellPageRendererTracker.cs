@@ -269,7 +269,8 @@ namespace Xamarin.Forms.Platform.iOS
 		void LeftBarButtonItemHandler(UIViewController controller, bool isRootPage)
 		{
 			var behavior = BackButtonBehavior;
-			var command = behavior.GetPropertyIfSet(BackButtonBehavior.CommandProperty, new Command(() => OnMenuButtonPressed(this, EventArgs.Empty)));
+			ICommand defaultCommand = new Command(() => OnMenuButtonPressed(this, EventArgs.Empty));
+			var command = behavior.GetPropertyIfSet(BackButtonBehavior.CommandProperty, defaultCommand);
 			var commandParameter = behavior.GetPropertyIfSet<object>(BackButtonBehavior.CommandParameterProperty, null);
 
 			if (command == null && !isRootPage && controller?.ParentViewController is UINavigationController navigationController)
