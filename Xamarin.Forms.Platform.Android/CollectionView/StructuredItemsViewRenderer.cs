@@ -22,6 +22,10 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				UpdateLayoutManager();
 			}
+			else if (changedProperty.Is(StructuredItemsView.ItemSizingStrategyProperty))
+			{
+				UpdateAdapter();
+			}
 		}
 
 		protected override TAdapter CreateAdapter()

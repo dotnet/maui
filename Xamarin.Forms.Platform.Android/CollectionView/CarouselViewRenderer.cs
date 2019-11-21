@@ -167,7 +167,7 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateAdapter();
 		}
 
-		void UpdateAdapter()
+		protected override void UpdateAdapter()
 		{
 			// By default the CollectionViewAdapter creates the items at whatever size the template calls for
 			// But for the Carousel, we want it to create the items to fit the width/height of the viewport

@@ -27,6 +27,10 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				UpdateLayout();
 			}
+			else if (changedProperty.Is(StructuredItemsView.ItemSizingStrategyProperty))
+			{
+				UpdateItemSizingStrategy();
+			}
 		}
 
 		protected override void SetUpNewElement(TItemsView newElement)

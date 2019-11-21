@@ -9,7 +9,7 @@ namespace Xamarin.Forms.Platform.iOS
 		readonly CarouselView _carouselView;
 		readonly ItemsLayout _itemsLayout;
 
-		public CarouselViewLayout(ItemsLayout itemsLayout, ItemSizingStrategy itemSizingStrategy, CarouselView carouselView) : base(itemsLayout, itemSizingStrategy)
+		public CarouselViewLayout(ItemsLayout itemsLayout, CarouselView carouselView) : base(itemsLayout)
 		{
 			_carouselView = carouselView;
 			_itemsLayout = itemsLayout;
@@ -23,7 +23,6 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void ConstrainTo(CGSize size)
 		{
 			//TODO: Should we scale the items 
-			var aspectRatio = size.Width / size.Height;
 			var numberOfVisibleItems = _carouselView.NumberOfSideItems * 2 + 1;
 			var width = (size.Width - _carouselView.PeekAreaInsets.Left - _carouselView.PeekAreaInsets.Right) / numberOfVisibleItems;
 			var height = (size.Height - _carouselView.PeekAreaInsets.Top - _carouselView.PeekAreaInsets.Bottom) / numberOfVisibleItems;

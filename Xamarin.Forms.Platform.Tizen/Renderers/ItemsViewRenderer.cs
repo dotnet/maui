@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(ItemsView.ItemsSourceProperty, UpdateItemsSource);
 			RegisterPropertyHandler(ItemsView.ItemTemplateProperty, UpdateAdaptor);
 			RegisterPropertyHandler(StructuredItemsView.ItemsLayoutProperty, UpdateItemsLayout);
-			RegisterPropertyHandler(ItemsView.ItemSizingStrategyProperty, UpdateSizingStrategy);
+			RegisterPropertyHandler(StructuredItemsView.ItemSizingStrategyProperty, UpdateSizingStrategy);
 			RegisterPropertyHandler(SelectableItemsView.SelectedItemProperty, UpdateSelectedItem);
 			RegisterPropertyHandler(SelectableItemsView.SelectionModeProperty, UpdateSelectionMode);
 		}

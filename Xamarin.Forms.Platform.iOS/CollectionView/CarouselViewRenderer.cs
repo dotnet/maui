@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected override ItemsViewLayout SelectLayout()
 		{
-			return new CarouselViewLayout(CarouselView.ItemsLayout, CarouselView.ItemSizingStrategy, CarouselView);
+			return new CarouselViewLayout(CarouselView.ItemsLayout, CarouselView);
 		}
 
 		protected override void SetUpNewElement(CarouselView newElement)

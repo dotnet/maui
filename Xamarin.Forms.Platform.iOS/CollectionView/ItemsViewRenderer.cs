@@ -15,8 +15,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected TItemsView ItemsView => Element;
 
-
-
 		public override UIViewController ViewController => Controller;
 
 		protected TViewController Controller { get; private set; }
@@ -55,10 +53,6 @@ namespace Xamarin.Forms.Platform.iOS
 				Xamarin.Forms.ItemsView.EmptyViewTemplateProperty))
 			{
 				Controller.UpdateEmptyView();
-			}
-			else if (changedProperty.Is(Xamarin.Forms.ItemsView.ItemSizingStrategyProperty))
-			{
-				UpdateItemSizingStrategy();
 			}
 			else if (changedProperty.Is(Xamarin.Forms.ItemsView.HorizontalScrollBarVisibilityProperty))
 			{

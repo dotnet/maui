@@ -180,7 +180,6 @@ namespace Xamarin.Forms
 				SnapPointsType = SnapPointsType.MandatorySingle,
 				SnapPointsAlignment = SnapPointsAlignment.Center
 			};
-			ItemSizingStrategy = ItemSizingStrategy.None;
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]

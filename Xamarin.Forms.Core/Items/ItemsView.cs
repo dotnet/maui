@@ -131,15 +131,6 @@ namespace Xamarin.Forms
 			set => SetValue(InternalItemsLayoutProperty, value);
 		}
 
-		public static readonly BindableProperty ItemSizingStrategyProperty =
-			BindableProperty.Create(nameof(ItemSizingStrategy), typeof(ItemSizingStrategy), typeof(ItemsView));
-
-		public ItemSizingStrategy ItemSizingStrategy
-		{
-			get => (ItemSizingStrategy)GetValue(ItemSizingStrategyProperty);
-			set => SetValue(ItemSizingStrategyProperty, value);
-		}
-
 		public static readonly BindableProperty ItemTemplateProperty =
 			BindableProperty.Create(nameof(ItemTemplate), typeof(DataTemplate), typeof(ItemsView));
 
