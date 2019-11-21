@@ -378,12 +378,16 @@
     </TransformFile>
   </ItemGroup>
   <ItemGroup>
+    <AndroidResource Include="Resources\drawable\GifOne.gif" />
     <AndroidEnvironment Include="Environment.txt" />
   </ItemGroup>
   <ItemGroup>
     <ProguardConfiguration Include="..\.nuspec\proguard.cfg">
       <Link>proguard.cfg</Link>
     </ProguardConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\GifTwo.gif" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

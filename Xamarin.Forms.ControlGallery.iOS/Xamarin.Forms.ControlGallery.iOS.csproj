@@ -179,6 +179,8 @@
     <Content Include="Entitlements.plist">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="GifOne.gif" />
+    <Content Include="GifTwo.gif" />
     <Content Include="Goobuntu-icon.png" />
     <Content Include="Intranet-icon.png" />
     <BundleResource Include="local.html" />
@@ -402,10 +404,6 @@
       <Visible>false</Visible>
     </ImageAsset>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Resources\Fonts\" />
-    <Folder Include="CustomEffects\" />
-    <Folder Include="CustomRenderers\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
 </Project>

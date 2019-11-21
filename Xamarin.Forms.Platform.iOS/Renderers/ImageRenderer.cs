@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Platform.iOS
 		}
 	}
 
-	public class ImageRenderer : ViewRenderer<Image, UIImageView>, IImageVisualElementRenderer
+	public class ImageRenderer : ViewRenderer<Image, FormsUIImageView>, IImageVisualElementRenderer
 	{
 		bool _isDisposed;
 
@@ -63,7 +63,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (Control == null)
 				{
-					var imageView = new UIImageView(RectangleF.Empty);
+					var imageView = new FormsUIImageView();
 					imageView.ContentMode = UIViewContentMode.ScaleAspectFit;
 					imageView.ClipsToBounds = true;
 					SetNativeControl(imageView);
@@ -121,7 +121,12 @@ namespace Xamarin.Forms.Platform.iOS
 		Task<UIImage> LoadImageAsync(ImageSource imagesource, CancellationToken cancelationToken = default(CancellationToken), float scale = 1);
 	}
 
-	public sealed class FileImageSourceHandler : IImageSourceHandler
+	public interface IAnimationSourceHandler : IRegisterable
+	{
+		Task<FormsCAKeyFrameAnimation> LoadImageAnimationAsync(ImageSource imagesource, CancellationToken cancelationToken = default(CancellationToken), float scale = 1);
+	}
+
+	public sealed class FileImageSourceHandler : IImageSourceHandler, IAnimationSourceHandler
 	{
 		public Task<UIImage> LoadImageAsync(ImageSource imagesource, CancellationToken cancelationToken = default(CancellationToken), float scale = 1f)
 		{
@@ -138,9 +143,20 @@ namespace Xamarin.Forms.Platform.iOS
 
 			return Task.FromResult(image);
 		}
+
+		public Task<FormsCAKeyFrameAnimation> LoadImageAnimationAsync(ImageSource imagesource, CancellationToken cancelationToken = default(CancellationToken), float scale = 1)
+		{
+			FormsCAKeyFrameAnimation animation = ImageAnimationHelper.CreateAnimationFromFileImageSource(imagesource as FileImageSource);
+			if (animation == null)
+			{
+				Log.Warning(nameof(FileImageSourceHandler), "Could not find image: {0}", imagesource);
+			}
+
+			return Task.FromResult(animation);
+		}
 	}
 
-	public sealed class StreamImagesourceHandler : IImageSourceHandler
+	public sealed class StreamImagesourceHandler : IImageSourceHandler, IAnimationSourceHandler
 	{
 		public async Task<UIImage> LoadImageAsync(ImageSource imagesource, CancellationToken cancelationToken = default(CancellationToken), float scale = 1f)
 		{
@@ -162,9 +178,20 @@ namespace Xamarin.Forms.Platform.iOS
 
 			return image;
 		}
+
+		public async Task<FormsCAKeyFrameAnimation> LoadImageAnimationAsync(ImageSource imagesource, CancellationToken cancelationToken = default(CancellationToken), float scale = 1)
+		{
+			FormsCAKeyFrameAnimation animation = await ImageAnimationHelper.CreateAnimationFromStreamImageSourceAsync(imagesource as StreamImageSource, cancelationToken).ConfigureAwait(false);
+			if (animation == null)
+			{
+				Log.Warning(nameof(FileImageSourceHandler), "Could not find image: {0}", imagesource);
+			}
+
+			return animation;
+		}
 	}
 
-	public sealed class ImageLoaderSourceHandler : IImageSourceHandler
+	public sealed class ImageLoaderSourceHandler : IImageSourceHandler, IAnimationSourceHandler
 	{
 		public async Task<UIImage> LoadImageAsync(ImageSource imagesource, CancellationToken cancelationToken = default(CancellationToken), float scale = 1f)
 		{
@@ -186,6 +213,17 @@ namespace Xamarin.Forms.Platform.iOS
 
 			return image;
 		}
+
+		public async Task<FormsCAKeyFrameAnimation> LoadImageAnimationAsync(ImageSource imagesource, CancellationToken cancelationToken = default(CancellationToken), float scale = 1)
+		{
+			FormsCAKeyFrameAnimation animation = await ImageAnimationHelper.CreateAnimationFromUriImageSourceAsync(imagesource as UriImageSource, cancelationToken).ConfigureAwait(false);
+			if (animation == null)
+			{
+				Log.Warning(nameof(FileImageSourceHandler), "Could not find image: {0}", imagesource);
+			}
+
+			return animation;
+		}
 	}
 
 	public sealed class FontImageSourceHandler : IImageSourceHandler
@@ -194,8 +232,8 @@ namespace Xamarin.Forms.Platform.iOS
 		readonly Color _defaultColor = Color.White;
 
 		public Task<UIImage> LoadImageAsync(
-			ImageSource imagesource, 
-			CancellationToken cancelationToken = default(CancellationToken), 
+			ImageSource imagesource,
+			CancellationToken cancelationToken = default(CancellationToken),
 			float scale = 1f)
 		{
 			UIImage image = null;

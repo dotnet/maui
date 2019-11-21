@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Platform.Android
 		VisualElementRenderer _visualElementRenderer;
 		BorderBackgroundManager _backgroundTracker;
 		IPlatformElementConfiguration<PlatformConfiguration.Android, ImageButton> _platformElementConfiguration;
-		private ImageButton _imageButton;
+		ImageButton _imageButton;		
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Platform.Android
 		VisualElement IVisualElementRenderer.Element => Element;
 		AView IVisualElementRenderer.View => this;
 		ViewGroup IVisualElementRenderer.ViewGroup => null;
-		VisualElementTracker IVisualElementRenderer.Tracker => _tracker;		
+		VisualElementTracker IVisualElementRenderer.Tracker => _tracker;
 		bool IDisposedState.IsDisposed => _disposed;
 
 		public ImageButton Element
@@ -200,7 +200,7 @@ namespace Xamarin.Forms.Platform.Android
 			var backgroundDrawable = _backgroundTracker?.BackgroundDrawable;
 			RectF drawableBounds = null;
 
-			if(Drawable != null)
+			if (Drawable != null)
 			{
 				if ((int)Forms.SdkInt >= 18 && backgroundDrawable != null)
 				{
@@ -318,6 +318,10 @@ namespace Xamarin.Forms.Platform.Android
 				_platformElementConfiguration = Element.OnThisPlatform();
 
 			return _platformElementConfiguration;
+		}
+
+		void IImageRendererController.SetFormsAnimationDrawable(IFormsAnimationDrawable value)
+		{
 		}
 	}
 }

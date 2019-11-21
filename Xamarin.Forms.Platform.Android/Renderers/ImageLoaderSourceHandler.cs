@@ -7,7 +7,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public sealed class ImageLoaderSourceHandler : IImageSourceHandler
+	public sealed class ImageLoaderSourceHandler : IAnimationSourceHandler, IImageSourceHandler
 	{
 		public async Task<Bitmap> LoadImageAsync(ImageSource imagesource, Context context, CancellationToken cancelationToken = default(CancellationToken))
 		{
@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (imageLoader?.Uri != null)
 			{
 				using (Stream imageStream = await imageLoader.GetStreamAsync(cancelationToken).ConfigureAwait(false))
-					bitmap =  await BitmapFactory.DecodeStreamAsync(imageStream).ConfigureAwait(false);
+					bitmap = await BitmapFactory.DecodeStreamAsync(imageStream).ConfigureAwait(false);
 			}
 
 			if (bitmap == null)
@@ -25,6 +25,11 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			return bitmap;
+		}
+
+		public Task<IFormsAnimationDrawable> LoadImageAnimationAsync(ImageSource imagesource, Context context, CancellationToken cancelationToken = default, float scale = 1)
+		{
+			return FormsAnimationDrawable.LoadImageAnimationAsync(imagesource, context, cancelationToken);
 		}
 	}
 }

@@ -474,6 +474,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ViewHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1544.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1677.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1704.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1801.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1734.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1683.cs" />

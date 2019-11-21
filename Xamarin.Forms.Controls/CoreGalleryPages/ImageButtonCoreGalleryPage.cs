@@ -112,12 +112,15 @@ namespace Xamarin.Forms.Controls
 
 			var sourceContainer = new ViewContainer<ImageButton>(Test.ImageButton.Source, new ImageButton { Source = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Xamarin.Forms.Controls/coffee.png" });
 
+			var gifContainer = new ViewContainer<ImageButton>(Test.ImageButton.Source, new ImageButton { Source = "GifTwo.gif" });
+
 			Add(aspectFillContainer);
 			Add(aspectFitContainer);
 			Add(fillContainer);
 			Add(isLoadingContainer);
 			Add(isOpaqueContainer);
 			Add(sourceContainer);
+			Add(gifContainer);
 
 			Add(borderButtonContainer);
 			Add(borderWidthContainer);

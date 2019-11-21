@@ -17,5 +17,7 @@ namespace Xamarin.Forms
 		//note to implementor: but implement these methods explicitly
 		void RaiseImageSourcePropertyChanged();
 		void OnImageSourcesSourceChanged(object sender, EventArgs e);
+		bool IsLoading { get; }
+		bool IsAnimationPlaying { get; }
 	}
 }

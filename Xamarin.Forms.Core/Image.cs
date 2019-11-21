@@ -20,6 +20,8 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty IsLoadingProperty = IsLoadingPropertyKey.BindableProperty;
 
+		public static readonly BindableProperty IsAnimationPlayingProperty = ImageElement.IsAnimationPlayingProperty;
+
 		readonly Lazy<PlatformConfigurationRegistry<Image>> _platformConfigurationRegistry;
 
 		public Image()
@@ -44,12 +46,20 @@ namespace Xamarin.Forms
 			set { SetValue(IsOpaqueProperty, value); }
 		}
 
+		public bool IsAnimationPlaying
+		{
+			get { return (bool)GetValue(IsAnimationPlayingProperty); }
+			set { SetValue(IsAnimationPlayingProperty, value); }
+		}
+
 		[TypeConverter(typeof(ImageSourceConverter))]
 		public ImageSource Source
 		{
 			get { return (ImageSource)GetValue(SourceProperty); }
 			set { SetValue(SourceProperty, value); }
 		}
+
+		bool IImageController.GetLoadAsAnimation() => ImageElement.GetLoadAsAnimation(this);
 
 		protected override void OnBindingContextChanged()
 		{

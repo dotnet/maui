@@ -176,6 +176,7 @@
     <Compile Include="EntryAccessibilityDelegate.cs" />
     <Compile Include="Renderers\BottomNavigationViewTracker.cs" />
     <Compile Include="Renderers\CircularProgress.cs" />
+    <Compile Include="Renderers\IAnimationSourceHandler.cs" />
     <Compile Include="Renderers\PickerEditText.cs" />
     <Compile Include="Renderers\FontImageSourceHandler.cs" />
     <Compile Include="Renderers\FormsWebViewClient.cs" />
@@ -202,6 +203,7 @@
     <Compile Include="LayoutExtensions.cs" />
     <Compile Include="PowerSaveModeBroadcastReceiver.cs" />
     <Compile Include="Renderers\AHorizontalScrollView.cs" />
+    <Compile Include="Renderers\AndroidGIFImageParser.cs" />
     <Compile Include="Renderers\BottomNavigationViewUtils.cs" />
     <Compile Include="Renderers\AlignmentExtensions.cs" />
     <Compile Include="Renderers\ColorChangeRevealDrawable.cs" />
