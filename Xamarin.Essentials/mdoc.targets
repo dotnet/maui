@@ -75,27 +75,30 @@
     </PropertyGroup>
     <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
       <MDocReferenceAssembly Include="$(FrameworkReferenceAssemblyPath)\MonoAndroid\v1.0" />
-      <MDocReferenceAssembly Include="$(FrameworkReferenceAssemblyPath)\MonoAndroid\v4.4" />
+      <MDocReferenceAssembly Include="$(FrameworkReferenceAssemblyPath)\MonoAndroid\v9.0" />
       <MDocReferenceAssembly Include="$(FrameworkReferenceAssemblyPath)\Xamarin.iOS\v1.0" />
       <MDocReferenceAssembly Include="$(FrameworkReferenceAssemblyPath)\Xamarin.TVOS\v1.0" />
       <MDocReferenceAssembly Include="$(FrameworkReferenceAssemblyPath)\Xamarin.WatchOS\v1.0" />
       <MDocReferenceAssembly Include="$(FrameworkReferenceAssemblyPath)\Xamarin.Mac\v2.0" />
-      <MDocReferenceAssembly Include="$(WindowsKitsReferenceAssemblyPath)\Windows.Foundation.FoundationContract\3.0.0.0" />
+      <MDocReferenceAssembly Include="$(WindowsKitsReferenceAssemblyPath)\Windows.Foundation.FoundationContract\5.0.0.0" />
       <MDocReferenceAssembly Include="$(WindowsKitsReferenceAssemblyPath)\Windows.Foundation.UniversalApiContract\5.0.0.0" />
     </ItemGroup>
-    <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
-      <MDocReferenceAssemblies>@(MDocReferenceAssembly -> '--lib=&quot;%(Identity)&quot;', ' ')</MDocReferenceAssemblies>
-    </PropertyGroup>
     <!-- the actual task -->
     <PropertyGroup>
       <BinConfigDir>$(MSBuildProjectDirectory)\bin\$(Configuration)\</BinConfigDir>
       <TmpDir>$(MSBuildProjectDirectory)\tmp\</TmpDir>
     </PropertyGroup>
+    <ItemGroup>
+      <MDocReferenceAssembly Include="$(BinConfigDir)monoandroid90" />
+    </ItemGroup>
+    <PropertyGroup>
+      <MDocReferenceAssemblies>@(MDocReferenceAssembly -> '--lib=&quot;%(Identity)&quot;', ' ')</MDocReferenceAssemblies>
+    </PropertyGroup>
     <RemoveDir Directories="$(TmpDir)" />
     <MakeDir Directories="$(TmpDir)" />
     <Copy SourceFiles="$(MDocDocumentationDirectory)\..\frameworks.xml" DestinationFolder="$(TmpDir)" />
     <Copy SourceFiles="$(BinConfigDir)netstandard2.0\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials" />
-    <Copy SourceFiles="$(BinConfigDir)monoandroid81\81\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-android" />
+    <Copy SourceFiles="$(BinConfigDir)monoandroid90\90\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-android" />
     <Copy SourceFiles="$(BinConfigDir)xamarin.ios10\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-ios" />
     <Copy SourceFiles="$(BinConfigDir)xamarin.tvos10\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-tvos" />
     <Copy SourceFiles="$(BinConfigDir)xamarin.watchos10\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-watchos" />
@@ -160,6 +163,40 @@
               var nameAttr = type.Attribute("Name");
               if (nameAttr != null && (nameAttr.Value == "Xamarin.Essentials.Resource" || nameAttr.Value.StartsWith("Xamarin.Essentials.Resource/"))) {
                 type.Remove();
+              }
+            }
+          }
+
+          // the tooling can't handle the ToPlatform* that differs only on return types
+          if (xdoc.Root.Name == "Type") {
+            var typeNameAttr = xdoc.Root.Attribute("FullName");
+            if (typeNameAttr != null && typeNameAttr.Value.EndsWith("Extensions")) {
+              foreach (var member in xdoc.Root.Descendants("Member").ToArray()) {
+                var memberNameAttr = member.Attribute("MemberName");
+                if (memberNameAttr != null && memberNameAttr.Value.StartsWith("ToPlatform")) {
+                  member.Remove();
+                }
+              }
+            }
+          }
+          if (xdoc.Root.Name == "Overview") {
+            foreach (var member in xdoc.Root.Descendants("Member").ToArray()) {
+              var memberNameAttr = member.Attribute("MemberName");
+              if (memberNameAttr != null && memberNameAttr.Value.StartsWith("ToPlatform")) {
+                member.Remove();
+              }
+            }
+          }
+          if (xdoc.Root.Name == "Framework") {
+            foreach (var type in xdoc.Root.Descendants("Type").ToArray()) {
+              var typeNameAttr = type.Attribute("Name");
+              if (typeNameAttr != null && typeNameAttr.Value.EndsWith("Extensions")) {
+                foreach (var member in type.Descendants("Member").ToArray()) {
+                  var memberNameAttr = member.Attribute("Id");
+                  if (memberNameAttr != null && memberNameAttr.Value.Contains(".ToPlatform")) {
+                    member.Remove();
+                  }
+                }
               }
             }
           }

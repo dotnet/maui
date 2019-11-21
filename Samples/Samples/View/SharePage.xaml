@@ -27,7 +27,8 @@
                     <Switch HorizontalOptions="End" IsToggled="{Binding ShareText}" VerticalOptions="End" />
                 </StackLayout>
 
-                <Entry Text="{Binding Text}" Placeholder="Enter text to share here." />
+                <Editor Text="{Binding Text}" Placeholder="Enter text to share here."
+                        Keyboard="Chat" AutoSize="TextChanges" />
 
                 <StackLayout Orientation="Horizontal">
                     <Label Text="URI" HorizontalOptions="StartAndExpand" VerticalOptions="End" />
@@ -48,8 +49,8 @@
                 <Label Text="File Name:" />
                 <Entry Text="{Binding ShareFileAttachmentName}" />
                 <Label Text="File Contents:" />
-                <Editor Text="{Binding ShareFileAttachmentContents}" Keyboard="Chat"
-                        VerticalOptions="FillAndExpand" HeightRequest="200" />
+                <Editor Text="{Binding ShareFileAttachmentContents}"
+                        Keyboard="Chat" AutoSize="TextChanges" />
 
                 <Button Text="Share File" Command="{Binding RequestFileCommand}" />
 

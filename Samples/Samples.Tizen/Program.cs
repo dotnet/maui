@@ -16,8 +16,7 @@ namespace Samples.Tizen
         {
             var app = new Program();
             Forms.Init(app);
-            if (Device.Idiom == TargetIdiom.Watch)
-                global::Tizen.Wearable.CircularUI.Forms.Renderer.FormsCircularUI.Init();
+            FormsMaterial.Init();
             Xamarin.Essentials.Platform.MapServiceToken = "MAP_SERVICE_KEY";
             app.Run(args);
         }

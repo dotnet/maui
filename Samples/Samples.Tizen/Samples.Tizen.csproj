@@ -1,16 +1,14 @@
-﻿<Project Sdk="Tizen.NET.Sdk/1.0.3">
+﻿<Project Sdk="Tizen.NET.Sdk/1.0.8">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>tizen40</TargetFramework>
     <TizenNetPackageVersion>4.0.0</TizenNetPackageVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>portable</DebugType>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>None</DebugType>
+
+  <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,11 +22,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Tizen.Wearable.CircularUI" Version="1.3.0-pre1-00043" />
+    <PackageReference Include="Tizen.NET" Version="6.0.0.14995" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0">
       <ExcludeAssets>Runtime</ExcludeAssets>
     </PackageReference>
   </ItemGroup>
 
-  <Import Project="$(MSBuildThisFileDirectory)..\..\CodeStyles.targets" />
 </Project>

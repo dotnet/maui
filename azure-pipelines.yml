@@ -1,12 +1,15 @@
 
 variables:
-  CurrentSemanticVersionBase: '1.0.0'
-  CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(Build.BuildNumber)'
+  CurrentSemanticVersionBase: '1.4.0'
+  PreviewNumber: $[counter(variables['CurrentSemanticVersionBase'], 1001)]
+  CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(PreviewNumber)'
   NugetPackageVersion: '$(CurrentSemanticVersion)'
-  MONO_VERSION: 5_18_1
-  XCODE_VERSION: 10.2.1
-  IOS_SIM_NAME: 'iPhone X'
-  IOS_SIM_RUNTIME: 'com.apple.CoreSimulator.SimRuntime.iOS-12-2'
+  MONO_VERSION: 6_4_0
+  XCODE_VERSION: 11.1
+  NETCORE_VERSION: '3.0.x'
+  NETCORE_TEST_VERSION: '2.2.x'
+  IOS_SIM_NAME: 'iPhone 11'
+  IOS_SIM_RUNTIME: 'com.apple.CoreSimulator.SimRuntime.iOS-13-1'
   ANDROID_EMU_TARGET: 'system-images;android-26;google_apis;x86'
   ANDROID_EMU_DEVICE: 'Nexus 5X'
   RunPoliCheck: 'false'
@@ -23,7 +26,7 @@ jobs:
   - job: build_windows
     displayName: Build Windows Library
     pool:
-      vmImage: vs2017-win2016
+      vmImage: windows-2019
     steps:
       # if this is a tagged build, then update the version number
       - powershell: |
@@ -47,6 +50,7 @@ jobs:
           configuration: Release
           msbuildArguments: '/t:Pack /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
       - task: DotNetCoreCLI@2
+        displayName: Run Tests
         inputs:
           command: test
           projects: 'Tests/Tests.csproj'
@@ -92,6 +96,16 @@ jobs:
       - bash: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XCODE_VERSION).app;sudo xcode-select --switch /Applications/Xcode_$(XCODE_VERSION).app/Contents/Developer
         displayName: Switch to the latest Xcode
       # restore, build and pack the packages
+      - task: UseDotNet@2
+        displayName: 'Use .Net Core sdk'
+        inputs:
+          version: $(NETCORE_VERSION)
+          includePreviewVersions: false
+      - task: UseDotNet@2
+        displayName: 'Use .Net Core sdk'
+        inputs:
+          version: $(NETCORE_TEST_VERSION)
+          includePreviewVersions: false
       - task: MSBuild@1
         displayName: Build Solution
         inputs:
@@ -105,6 +119,7 @@ jobs:
           configuration: Release
           msbuildArguments: '/t:Pack /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
       - task: DotNetCoreCLI@2
+        displayName: Run Tests
         inputs:
           command: test
           projects: 'Tests/Tests.csproj'
@@ -113,7 +128,7 @@ jobs:
   - job: build_samples
     displayName: Build Samples
     pool:
-      vmImage: vs2017-win2016
+      vmImage: windows-2019
     steps:
       # restore, build and pack the packages
       - task: MSBuild@1
@@ -131,7 +146,7 @@ jobs:
     # skip for now
     condition: and(succeeded(), not(succeeded()))
     pool:
-      vmImage: vs2017-win2016
+      vmImage: windows-2019
     steps:
       - script: 'certutil -importpfx $(Build.SourcesDirectory)\DeviceTests\DeviceTests.UWP\DeviceTests.UWP_TemporaryKey.pfx'
         displayName: 'Run certutil'
@@ -158,6 +173,16 @@ jobs:
         displayName: Switch to the latest Xamarin SDK
       - bash: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XCODE_VERSION).app;sudo xcode-select --switch /Applications/Xcode_$(XCODE_VERSION).app/Contents/Developer
         displayName: Switch to the latest Xcode
+      - task: UseDotNet@2
+        displayName: 'Use .Net Core sdk'
+        inputs:
+          version: $(NETCORE_VERSION)
+          includePreviewVersions: false
+      - task: UseDotNet@2
+        displayName: 'Use .Net Core sdk'
+        inputs:
+          version: $(NETCORE_TEST_VERSION)
+          includePreviewVersions: false
       - task: InstallAppleCertificate@2
         displayName: 'Install an Apple certificate'
         inputs:
@@ -189,6 +214,16 @@ jobs:
         displayName: Switch to the latest Xamarin SDK
       - bash: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XCODE_VERSION).app;sudo xcode-select --switch /Applications/Xcode_$(XCODE_VERSION).app/Contents/Developer
         displayName: Switch to the latest Xcode
+      - task: UseDotNet@2
+        displayName: 'Use .Net Core sdk'
+        inputs:
+          version: $(NETCORE_VERSION)
+          includePreviewVersions: false
+      - task: UseDotNet@2
+        displayName: 'Use .Net Core sdk'
+        inputs:
+          version: $(NETCORE_TEST_VERSION)
+          includePreviewVersions: false
       - bash: sh -c "echo \"y\" | $ANDROID_HOME/tools/bin/sdkmanager \"$ANDROID_EMU_TARGET\""
         displayName: Install the Android emulators
       - bash: |

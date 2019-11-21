@@ -30,7 +30,7 @@
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="application" Type="Android.App.Application" />
+        <Parameter Name="application" Type="Android.App.Application" Index="0" FrameworkAlternate="xamarin-essentials-android" />
       </Parameters>
       <Docs>
         <param name="application">Application to initialize with.</param>
@@ -51,8 +51,8 @@
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="activity" Type="Android.App.Activity" />
-        <Parameter Name="bundle" Type="Android.OS.Bundle" />
+        <Parameter Name="activity" Type="Android.App.Activity" Index="0" FrameworkAlternate="xamarin-essentials-android" />
+        <Parameter Name="bundle" Type="Android.OS.Bundle" Index="1" FrameworkAlternate="xamarin-essentials-android" />
       </Parameters>
       <Docs>
         <param name="activity">Activity to use for initialization.</param>
@@ -92,9 +92,9 @@
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="requestCode" Type="System.Int32" />
-        <Parameter Name="permissions" Type="System.String[]" />
-        <Parameter Name="grantResults" Type="Android.Content.PM.Permission[]" />
+        <Parameter Name="requestCode" Type="System.Int32" Index="0" FrameworkAlternate="xamarin-essentials-android" />
+        <Parameter Name="permissions" Type="System.String[]" Index="1" FrameworkAlternate="xamarin-essentials-android" />
+        <Parameter Name="grantResults" Type="Android.Content.PM.Permission[]" Index="2" FrameworkAlternate="xamarin-essentials-android" />
       </Parameters>
       <Docs>
         <param name="requestCode">The requestCode from the corresponding overridden method in an activity.</param>

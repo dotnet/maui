@@ -15,7 +15,7 @@
         <ScrollView>
             <StackLayout Padding="12,0,12,12" Spacing="6">
                 <Label Text="Text :" />
-                <Editor Text="{Binding Text}"/>
+                <Editor Text="{Binding Text}" AutoSize="TextChanges" />
                 <Button Text="Speak" Command="{Binding SpeakCommand}" CommandParameter="{Binding Source={x:Reference SwitchMultiple}, Path=IsToggled}" IsEnabled="{Binding IsNotBusy}" />
                 <Button Text="Cancel" Command="{Binding CancelCommand}" IsEnabled="{Binding IsBusy}" />
 

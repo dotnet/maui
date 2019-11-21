@@ -87,72 +87,6 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="ToPlatformColor">
-      <MemberSignature Language="C#" Value="public static Android.Graphics.Color ToPlatformColor (this System.Drawing.Color color);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Android.Graphics.Color ToPlatformColor(valuetype System.Drawing.Color color) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.Android.ToPlatformColor(System.Drawing.Color)" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Android.Graphics.Color</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
-      </Parameters>
-      <Docs>
-        <param name="color">The color to use as a base.</param>
-        <summary>Converts the color to the platform specific color.</summary>
-        <returns>The platform color.</returns>
-        <remarks></remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="ToPlatformColor">
-      <MemberSignature Language="C#" Value="public static UIKit.UIColor ToPlatformColor (this System.Drawing.Color color);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class UIKit.UIColor ToPlatformColor(valuetype System.Drawing.Color color) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.iOS.ToPlatformColor(System.Drawing.Color)" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>UIKit.UIColor</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
-      </Parameters>
-      <Docs>
-        <param name="color">The color to use as a base.</param>
-        <summary>Converts the color to the platform specific color.</summary>
-        <returns>The platform color.</returns>
-        <remarks></remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="ToPlatformColor">
-      <MemberSignature Language="C#" Value="public static Windows.UI.Color ToPlatformColor (this System.Drawing.Color color);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Windows.UI.Color ToPlatformColor(valuetype System.Drawing.Color color) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.UWP.ToPlatformColor(System.Drawing.Color)" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Windows.UI.Color</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
-      </Parameters>
-      <Docs>
-        <param name="color">The color to use as a base.</param>
-        <summary>Converts the color to the platform specific color.</summary>
-        <returns>The platform color.</returns>
-        <remarks></remarks>
-      </Docs>
-    </Member>
     <Member MemberName="ToSystemColor">
       <MemberSignature Language="C#" Value="public static System.Drawing.Color ToSystemColor (this Android.Graphics.Color color);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color ToSystemColor(valuetype Android.Graphics.Color color) cil managed" />
@@ -166,7 +100,7 @@
         <ReturnType>System.Drawing.Color</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="color" Type="Android.Graphics.Color" RefType="this" />
+        <Parameter Name="color" Type="Android.Graphics.Color" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-android" />
       </Parameters>
       <Docs>
         <param name="color">The color to use as a base.</param>
@@ -188,7 +122,7 @@
         <ReturnType>System.Drawing.Color</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="color" Type="UIKit.UIColor" RefType="this" />
+        <Parameter Name="color" Type="UIKit.UIColor" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos" />
       </Parameters>
       <Docs>
         <param name="color">The color to use as a base.</param>
@@ -210,7 +144,7 @@
         <ReturnType>System.Drawing.Color</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="color" Type="Windows.UI.Color" RefType="this" />
+        <Parameter Name="color" Type="Windows.UI.Color" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-uwp" />
       </Parameters>
       <Docs>
         <param name="color">The color to use as a base.</param>

@@ -1,1 +1,1 @@
-msbuild /restore /t:rebuild;mdocupdatedocs /p:Configuration=Docs /p:ContinuousIntegrationBuild=false Xamarin.Essentials/Xamarin.Essentials.csproj
+msbuild /r /v:m /t:rebuild;mdocupdatedocs /p:Configuration=Release /p:ContinuousIntegrationBuild=false Xamarin.Essentials/Xamarin.Essentials.csproj

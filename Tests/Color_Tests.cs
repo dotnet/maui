@@ -60,6 +60,19 @@ namespace Tests
             Assert.Equal(b, color.B);
         }
 
+        [Theory]
+        [InlineData("#FF0000", "#00FFFF")] // Red & Cyan
+        [InlineData("#00FF00", "#FF00FF")] // Green & Fuschia
+        [InlineData("#0000FF", "#FFFF00")] // Blue & Yellow
+        [InlineData("#0AF56C", "#F50A93")] // Lime green & bright purple (but with no limit values)
+        public void GetCompliment(string original, string expected)
+        {
+            var orig = ColorConverters.FromHex(original);
+            var expectedCompliment = ColorConverters.FromHex(expected);
+
+            Assert.Equal(expectedCompliment, ColorConverters.GetCompliment(orig));
+        }
+
         [Fact]
         public void FromHsla()
         {

@@ -72,8 +72,8 @@
       </Parameters>
       <Docs>
         <param name="fullPath">Full file path.</param>
-        <param name="contentType">Content type of the file.</param>
-        <summary>Construct a file taking in file path and content type.</summary>
+        <param name="contentType">Content type (MIME type) of the file (eg: `image/png`).</param>
+        <summary>Construct a file taking in file path and content type (MIME type).</summary>
         <remarks>
           <para />
         </remarks>

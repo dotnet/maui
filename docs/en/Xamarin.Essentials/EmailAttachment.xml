@@ -26,7 +26,7 @@
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <Parameters>
-        <Parameter Name="fullPath" Type="System.String" Index="0" FrameworkAlternate="xamarin-essentials;xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp;xamarin-essentials-tvos;xamarin-essentials-watchos" />
+        <Parameter Name="fullPath" Type="System.String" />
       </Parameters>
       <Docs>
         <param name="fullPath">Full path and filename to file.</param>
@@ -67,8 +67,8 @@
       </Parameters>
       <Docs>
         <param name="fullPath">Full path and filename to file.</param>
-        <param name="contentType"></param>
-        <summary>Explicit content type of file.</summary>
+        <param name="contentType">Content type (MIME type) of the file (eg: `image/png`).</param>
+        <summary>Explicit content type (MIME type) of file.</summary>
         <remarks></remarks>
       </Docs>
     </Member>

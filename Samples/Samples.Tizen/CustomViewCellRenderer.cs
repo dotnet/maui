@@ -4,6 +4,7 @@ using Xamarin.Forms;
 using Xamarin.Forms.Platform.Tizen;
 
 [assembly: ExportCell(typeof(ViewCell), typeof(CustomViewCellRenderer))]
+
 namespace Samples.Tizen
 {
     public sealed class CustomViewCellRenderer : ViewCellRenderer

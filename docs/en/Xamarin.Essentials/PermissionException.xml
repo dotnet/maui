@@ -27,7 +27,7 @@
         <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <Parameters>
-        <Parameter Name="message" Type="System.String" Index="0" />
+        <Parameter Name="message" Type="System.String" />
       </Parameters>
       <Docs>
         <param name="message">Permission that is required.</param>

@@ -55,7 +55,16 @@ namespace Xamarin.Essentials
 
                     if (Platform.HasApiLevel(BuildVersionCodes.Lollipop))
                     {
-                        foreach (var network in manager.GetAllNetworks())
+                        var networks = manager.GetAllNetworks();
+
+                        // some devices running 21 and 22 only use the older api.
+                        if (networks.Length == 0 && (int)Build.VERSION.SdkInt < 23)
+                        {
+                            ProcessAllNetworkInfo();
+                            return currentAccess;
+                        }
+
+                        foreach (var network in networks)
                         {
                             try
                             {
@@ -88,6 +97,11 @@ namespace Xamarin.Essentials
                         }
                     }
                     else
+                    {
+                        ProcessAllNetworkInfo();
+                    }
+
+                    void ProcessAllNetworkInfo()
                     {
 #pragma warning disable CS0618 // Type or member is obsolete
                         foreach (var info in manager.GetAllNetworkInfo())

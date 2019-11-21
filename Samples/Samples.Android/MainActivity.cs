@@ -17,6 +17,7 @@ namespace Samples.Droid
 
             Xamarin.Essentials.Platform.Init(this, bundle);
             Xamarin.Forms.Forms.Init(this, bundle);
+            Xamarin.Forms.FormsMaterial.Init(this, bundle);
             LoadApplication(new App());
         }
 

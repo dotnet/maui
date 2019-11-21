@@ -22,7 +22,7 @@
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <ViewCell>
-                        <Grid Padding="12" ColumnSpacing="6" RowSpacing="3">
+                        <Grid Padding="12,6" ColumnSpacing="6" RowSpacing="3">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />

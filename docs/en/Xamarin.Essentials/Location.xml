@@ -222,15 +222,15 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="latitudeStart" Type="System.Double" />
-        <Parameter Name="latitudeEnd" Type="System.Double" />
         <Parameter Name="longitudeStart" Type="System.Double" />
+        <Parameter Name="latitudeEnd" Type="System.Double" />
         <Parameter Name="longitudeEnd" Type="System.Double" />
         <Parameter Name="units" Type="Xamarin.Essentials.DistanceUnits" />
       </Parameters>
       <Docs>
         <param name="latitudeStart">Start latitude to calculate from.</param>
-        <param name="latitudeEnd">End latitude to calculate from.</param>
         <param name="longitudeStart">Start longitude to calculate from.</param>
+        <param name="latitudeEnd">End latitude to calculate from.</param>
         <param name="longitudeEnd">End longitude to calculate from.</param>
         <param name="units">Units to return.</param>
         <summary>Calculate distance between two locations.</summary>

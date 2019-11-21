@@ -2,6 +2,7 @@
 using Android.Content;
 using Android.OS;
 using Android.Telephony;
+using Java.Net;
 using Java.Util;
 using Uri = Android.Net.Uri;
 
@@ -39,6 +40,8 @@ namespace Xamarin.Essentials
 #pragma warning disable CS0618
                 phoneNumber = PhoneNumberUtils.FormatNumber(number);
 #pragma warning restore CS0618
+
+            phoneNumber = URLEncoder.Encode(phoneNumber, "UTF-8");
 
             var dialIntent = ResolveDialIntent(phoneNumber)
                 .SetFlags(ActivityFlags.ClearTop)
