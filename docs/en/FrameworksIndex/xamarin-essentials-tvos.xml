@@ -522,7 +522,9 @@
       <Member Id="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark)" />
       <Member Id="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapLaunchOptions)" />
     </Type>
-    <Type Name="Xamarin.Essentials.Platform" Id="T:Xamarin.Essentials.Platform" />
+    <Type Name="Xamarin.Essentials.Platform" Id="T:Xamarin.Essentials.Platform">
+      <Member Id="M:Xamarin.Essentials.Platform.GetCurrentUIViewController" />
+    </Type>
     <Type Name="Xamarin.Essentials.PointExtensions" Id="T:Xamarin.Essentials.PointExtensions">
       <Member Id="M:Xamarin.Essentials.PointExtensions.ToSystemPoint(CoreGraphics.CGPoint)" />
       <Member Id="M:Xamarin.Essentials.PointExtensions.ToSystemPointF(CoreGraphics.CGPoint)" />

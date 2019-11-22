@@ -13,10 +13,90 @@
   <Docs>
     <summary>Platform specific helpers.</summary>
     <remarks>
-      <para />
+      <para></para>
     </remarks>
   </Docs>
   <Members>
+    <Member MemberName="ActivityStateChanged">
+      <MemberSignature Language="C#" Value="public static event EventHandler&lt;Xamarin.Essentials.ActivityStateChangedEventArgs&gt; ActivityStateChanged;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Essentials.ActivityStateChangedEventArgs&gt; ActivityStateChanged" />
+      <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.Platform.ActivityStateChanged" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.EventHandler&lt;Xamarin.Essentials.ActivityStateChangedEventArgs&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Event that is triggered when any Android Activity's state changes.</summary>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AppContext">
+      <MemberSignature Language="C#" Value="public static Android.Content.Context AppContext { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property class Android.Content.Context AppContext" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Platform.AppContext" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Android.Content.Context</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The current application's context.</summary>
+        <value>The applications context.</value>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CurrentActivity">
+      <MemberSignature Language="C#" Value="public static Android.App.Activity CurrentActivity { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property class Android.App.Activity CurrentActivity" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Platform.CurrentActivity" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Android.App.Activity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the current Activity. This value is set OnCreate, OnPause, and OnResume.</summary>
+        <value>The current Activity or null if none or Init was not called.</value>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetCurrentUIViewController">
+      <MemberSignature Language="C#" Value="public static UIKit.UIViewController GetCurrentUIViewController ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class UIKit.UIViewController GetCurrentUIViewController() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Platform.GetCurrentUIViewController" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>UIKit.UIViewController</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Get the currently visible UIViewController.</summary>
+        <returns>The visible UIViewController or null if not found.</returns>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Init">
       <MemberSignature Language="C#" Value="public static void Init (Android.App.Application application);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Init(class Android.App.Application application) cil managed" />
@@ -101,6 +181,30 @@
         <param name="permissions">The permissions from the corresponding overridden method in an activity.</param>
         <param name="grantResults">The grantResults from the corresponding overridden method in an activity.</param>
         <summary>Pass permission request results from an activity's overridden method to the library for handling internal permission requests.</summary>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="WaitForActivityAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;Android.App.Activity&gt; WaitForActivityAsync (System.Threading.CancellationToken cancelToken = null);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class Android.App.Activity&gt; WaitForActivityAsync(valuetype System.Threading.CancellationToken cancelToken) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Platform.WaitForActivityAsync(System.Threading.CancellationToken)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;Android.App.Activity&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="cancelToken" Type="System.Threading.CancellationToken" Index="0" FrameworkAlternate="xamarin-essentials-android" />
+      </Parameters>
+      <Docs>
+        <param name="cancelToken">Cancellation token to stop waiting for Activity to be created or active.</param>
+        <summary>Wait for an Activity to be create or active.</summary>
+        <returns>The current Android Activity.</returns>
         <remarks>
           <para />
         </remarks>

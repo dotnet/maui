@@ -105,6 +105,8 @@
       <Type Name="Accelerometer" Kind="Class" />
       <Type Name="AccelerometerChangedEventArgs" Kind="Class" />
       <Type Name="AccelerometerData" Kind="Structure" />
+      <Type Name="ActivityState" Kind="Enumeration" />
+      <Type Name="ActivityStateChangedEventArgs" Kind="Class" />
       <Type Name="AppInfo" Kind="Class" />
       <Type Name="Barometer" Kind="Class" />
       <Type Name="BarometerChangedEventArgs" Kind="Class" />
