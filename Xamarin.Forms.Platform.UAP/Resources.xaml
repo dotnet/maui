@@ -34,6 +34,7 @@
 	<uwp:KeyboardConverter x:Key="KeyboardConverter" />
 	<uwp:MasterBackgroundConverter x:Key="MasterBackgroundConverter" />
 	<uwp:ImageSourceIconElementConverter x:Key="ImageSourceIconElementConverter" />
+    <!-- We probably want to keep this in sync with AppBarThemeCompactHeight in MasterDetailControlStyle.xaml (in uwp:FormsCommandBar.Resources) -->
 	<x:Double x:Key="TitleBarHeight">48</x:Double>
 
 	<DataTemplate x:Key="PushPinTemplate">
