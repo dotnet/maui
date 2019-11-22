@@ -6,10 +6,12 @@ namespace Xamarin.Forms
 	[RenderWith(typeof(_CheckBoxRenderer))]
 	public class CheckBox : View, IElementConfiguration<CheckBox>, IBorderElement, IColorElement
 	{
+		readonly Lazy<PlatformConfigurationRegistry<CheckBox>> _platformConfigurationRegistry;
 		public const string IsCheckedVisualState = "IsChecked";
 
-		public static readonly BindableProperty IsCheckedProperty = BindableProperty.Create(nameof(IsChecked), typeof(bool), typeof(CheckBox), false, propertyChanged: (bindable, oldValue, newValue) =>
-		{
+		public static readonly BindableProperty IsCheckedProperty =
+			BindableProperty.Create(nameof(IsChecked), typeof(bool), typeof(CheckBox), false,
+				propertyChanged: (bindable, oldValue, newValue) => {
 			((CheckBox)bindable).CheckedChanged?.Invoke(bindable, new CheckedChangedEventArgs((bool)newValue));
 			((CheckBox)bindable).ChangeVisualState();
 		}, defaultBindingMode: BindingMode.TwoWay);
@@ -18,41 +20,28 @@ namespace Xamarin.Forms
 
 		public Color Color
 		{
-			get { return (Color)GetValue(ColorProperty); }
-			set { SetValue(ColorProperty, value); }
+			get => (Color)GetValue(ColorProperty);
+			set => SetValue(ColorProperty, value);
 		}
-	
-		readonly Lazy<PlatformConfigurationRegistry<CheckBox>> _platformConfigurationRegistry;
 
-		public CheckBox()
-		{
-			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<CheckBox>>(() => new PlatformConfigurationRegistry<CheckBox>(this));
-		}
+
+		public CheckBox() => _platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<CheckBox>>(() => new PlatformConfigurationRegistry<CheckBox>(this));
 
 		public bool IsChecked
 		{
-			get { return (bool)GetValue(IsCheckedProperty); }
-			set
-			{
-				SetValue(IsCheckedProperty, value);
-				ChangeVisualState();
-			}
+			get => (bool)GetValue(IsCheckedProperty);
+			set => SetValue(IsCheckedProperty, value);
 		}
+
 		protected internal override void ChangeVisualState()
 		{
 			if (IsEnabled && IsChecked)
-			{
 				VisualStateManager.GoToState(this, IsCheckedVisualState);
-			}
 			else
-			{
 				base.ChangeVisualState();
-			}
 		}
 
 		public event EventHandler<CheckedChangedEventArgs> CheckedChanged;
-
-
 
 		public IPlatformElementConfiguration<T, CheckBox> On<T>() where T : IConfigPlatform
 		{
@@ -63,19 +52,12 @@ namespace Xamarin.Forms
 		{
 		}
 
-
 		Color IBorderElement.BorderColor => Color.Transparent;
-
 		int IBorderElement.CornerRadius => 0;
-
 		double IBorderElement.BorderWidth => 0;
-
 		int IBorderElement.CornerRadiusDefaultValue => 0;
-
 		Color IBorderElement.BorderColorDefaultValue => Color.Transparent;
-
 		double IBorderElement.BorderWidthDefaultValue => 0;
-
 		bool IBorderElement.IsCornerRadiusSet() => false;
 		bool IBorderElement.IsBackgroundColorSet() => IsSet(BackgroundColorProperty);
 		bool IBorderElement.IsBorderColorSet() => false;
