@@ -41,94 +41,243 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void RelativeSourceAncestorTypeBinding()
 		{
-			string bindingContext0 = "bc0";
-			string bindingContext1 = "bc1";
-			string bindingContext2 = "bc2";
+			Grid grid = new Grid();
 
 			StackLayout stack0 = new StackLayout
 			{
-				StyleId = "stack0",
-				BindingContext = bindingContext0,
+				BackgroundColor = Color.Red
 			};
-
 			StackLayout stack1 = new StackLayout
 			{
-				StyleId = "stack1",				
+				BackgroundColor = Color.Green
 			};
-
 			StackLayout stack2 = new StackLayout
 			{
-				StyleId = "stack2",
-				BindingContext = bindingContext2
+				BackgroundColor = Color.Blue
 			};
 
-			Label label0 = new Label
+			Label label0 = new Label();
+			Label label1 = new Label();
+			Label label2 = new Label();
+			var person0 = new PersonViewModel
 			{
-				StyleId = "label0",
+				Name = "Person 0",
 			};
-			Label label1 = new Label
+			var person1 = new PersonViewModel
 			{
-				StyleId = "label1",
+				Name = "Person 1",
 			};
-			Label label2 = new Label
+			var person2 = new PersonViewModel
 			{
-				StyleId = "label2",
+				Name = "Person 2",
 			};
 
-			stack0.Children.Add(stack1);
-			stack0.Children.Add(label2);
-			stack1.Children.Add(label0);
-			stack1.Children.Add(label1);
+			stack2.Children.Add(stack1);
+			stack1.Children.Add(stack0);
+			stack0.Children.Add(grid);
 
 			label0.SetBinding(Label.TextProperty, new Binding
 			{
-				Path = nameof(StackLayout.StyleId),
-				Source = new RelativeBindingSource(
-					mode: RelativeBindingSourceMode.FindAncestor,
-					ancestorType: typeof(StackLayout))
+				Path = nameof(PersonViewModel.Name),
+				Source = new RelativeBindingSource(RelativeBindingSourceMode.FindAncestorBindingContext, typeof(PersonViewModel), 1)
 			});
+			label0.SetBinding(Label.TextColorProperty, new Binding
+			{
+				Path = nameof(StackLayout.BackgroundColor),
+				Source = new RelativeBindingSource(
+					RelativeBindingSourceMode.FindAncestor, typeof(StackLayout), 1)
+			});
+			Assert.IsNull(label0.Text);
+			Assert.AreEqual(Label.TextColorProperty.DefaultValue, label0.TextColor);
+
 			label1.SetBinding(Label.TextProperty, new Binding
 			{
-				Path = nameof(StackLayout.StyleId),
-				Source = new RelativeBindingSource(
-					mode: RelativeBindingSourceMode.FindAncestor,
-					ancestorType: typeof(StackLayout),
-					ancestorLevel: 2)
+				Path = nameof(PersonViewModel.Name),
+				Source = new RelativeBindingSource(RelativeBindingSourceMode.FindAncestorBindingContext, typeof(PersonViewModel), 2)
 			});
+			label1.SetBinding(Label.TextColorProperty, new Binding
+			{
+				Path = nameof(StackLayout.BackgroundColor),
+				Source = new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, typeof(StackLayout), 2)
+			});
+			Assert.IsNull(label1.Text);
+			Assert.AreEqual(Label.TextColorProperty.DefaultValue, label1.TextColor);
+
 			label2.SetBinding(Label.TextProperty, new Binding
 			{
-				Path = nameof(StackLayout.StyleId),
-				Source = new RelativeBindingSource(
-					mode: RelativeBindingSourceMode.FindAncestor,
-					ancestorType: typeof(StackLayout),
-					ancestorLevel: 10)
+				Path = nameof(PersonViewModel.Name),
+				Source = new RelativeBindingSource(RelativeBindingSourceMode.FindAncestorBindingContext, typeof(PersonViewModel), 3)
 			});
+			label2.SetBinding(Label.TextColorProperty, new Binding
+			{
+				Path = nameof(StackLayout.BackgroundColor),
+				Source = new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, typeof(StackLayout), 3)
+			});
+			Assert.IsNull(label2.Text);
+			Assert.AreEqual(Label.TextColorProperty.DefaultValue, label2.TextColor);
 
-			Assert.AreEqual(label0.Text, stack1.StyleId);
-			Assert.AreEqual(label1.Text, stack0.StyleId);
+			grid.Children.Add(label0);
+			grid.Children.Add(label1);
+			grid.Children.Add(label2);
+
+			//// BindingContext changes
+
+			// stack2
+			//		stack1
+			//			stack0
+			//				grid
+			//					label0 (min level 1)	= stack0/null
+			//					label1 (min level 2)	= stack1/null
+			//					label2 (min level 3)	= stack2/null
+			Assert.AreEqual(label0.TextColor, stack0.BackgroundColor);
+			Assert.AreEqual(label1.TextColor, stack1.BackgroundColor);
+			Assert.AreEqual(label2.TextColor, stack2.BackgroundColor);
+			Assert.IsNull(label0.Text);
+			Assert.IsNull(label1.Text);
+			Assert.IsNull(label2.Text);					
+
+			// stack2	(person2)
+			//		stack1 (person2*)
+			//			stack0 (person2*)
+			//				grid (person2*)
+			//					label0 (min level 1)	= stack0/person2
+			//					label1 (min level 2)	= stack1/null
+			//					label2 (min level 3)	= stack2/null
+			stack2.BindingContext = person2;
+			Assert.AreEqual(label0.TextColor, stack0.BackgroundColor);
+			Assert.AreEqual(label1.TextColor, stack1.BackgroundColor);
+			Assert.AreEqual(label2.TextColor, stack2.BackgroundColor);
+			Assert.AreEqual(label0.Text, person2.Name);
+			Assert.IsNull(label1.Text);
 			Assert.IsNull(label2.Text);
 
-			// Ensures RelativeBindingSource.AncestorType
-			// works correctly after immediate ancestor changed.
-			stack1.Children.Remove(label0);
+			// stack2	(person2)
+			//		stack1 (person1)
+			//			stack0 (person1*)
+			//				grid (person1*)
+			//					label0 (min level 1)	= stack0/person1
+			//					label1 (min level 2)	= stack1/person2
+			//					label2 (min level 3)	= stack2/null
+			stack1.BindingContext = person1;
+			Assert.AreEqual(label0.TextColor, stack0.BackgroundColor);
+			Assert.AreEqual(label1.TextColor, stack1.BackgroundColor);
+			Assert.AreEqual(label2.TextColor, stack2.BackgroundColor);
+			Assert.AreEqual(label0.Text, person1.Name);
+			Assert.AreEqual(label1.Text, person2.Name);
+			Assert.AreEqual(Label.TextProperty.DefaultValue, label2.Text);
+
+			// stack2	(person2)
+			//		stack1 (person1)
+			//			stack0 (person0)
+			//				grid (person0*)
+			//					label0 (min level 1)	= stack0/person0
+			//					label1 (min level 2)	= stack1/person1
+			//					label2 (min level 3)	= stack2/person2
+			stack0.BindingContext = person0;
+			Assert.AreEqual(label0.TextColor, stack0.BackgroundColor);
+			Assert.AreEqual(label1.TextColor, stack1.BackgroundColor);
+			Assert.AreEqual(label2.TextColor, stack2.BackgroundColor);
+			Assert.AreEqual(label0.Text, person0.Name);
+			Assert.AreEqual(label1.Text, person1.Name);
+			Assert.AreEqual(label2.Text, person2.Name);
+
+			// stack2	
+			//		stack1 (person1)
+			//			stack0 (person0)
+			//				grid (person0*)
+			//					label0 (min level 1)	= stack0/person0
+			//					label1 (min level 2)	= stack1/person1
+			//					label2 (min level 3)	= stack2/null
+			stack2.BindingContext = null;
+			Assert.AreEqual(label0.TextColor, stack0.BackgroundColor);
+			Assert.AreEqual(label1.TextColor, stack1.BackgroundColor);
+			Assert.AreEqual(label2.TextColor, stack2.BackgroundColor);
+			Assert.AreEqual(label0.Text, person0.Name);
+			Assert.AreEqual(label1.Text, person1.Name);
+			Assert.IsNull(label2.Text);
+
+			// stack2
+			//		stack1
+			//			stack0 (person0)
+			//				grid (person0*)
+			//					label0 (min level 1)	= stack0/person0
+			//					label1 (min level 2)	= stack1/null
+			//					label2 (min level 3)	= stack2/null
+			stack1.BindingContext = null;
+			Assert.AreEqual(label0.TextColor, stack0.BackgroundColor);
+			Assert.AreEqual(label1.TextColor, stack1.BackgroundColor);
+			Assert.AreEqual(label2.TextColor, stack2.BackgroundColor);
+			Assert.AreEqual(label0.Text, person0.Name);
+			Assert.IsNull(label1.Text);
+			Assert.IsNull(label2.Text);
+
+			// stack2
+			//		stack1
+			//			stack0
+			//					label0 (min level 1)	= stack0/null
+			//					label1 (min level 2)	= stack1/null
+			//					label2 (min level 3)	= stack2/null
+			stack0.BindingContext = null;
+			Assert.AreEqual(label0.TextColor, stack0.BackgroundColor);
+			Assert.AreEqual(label1.TextColor, stack1.BackgroundColor);
+			Assert.AreEqual(label2.TextColor, stack2.BackgroundColor);
 			Assert.IsNull(label0.Text);
-		
-			stack0.Children.Add(label0);
+			Assert.IsNull(label1.Text);
+			Assert.IsNull(label2.Text);
+			
+			stack0.BindingContext = person0;
+			stack1.BindingContext = person1;
+			stack2.BindingContext = person2;
 
-			Assert.AreEqual(label0.Text, stack0.StyleId);
-			Assert.AreEqual(label0.BindingContext, stack0.BindingContext);
+			//// Parent Changes
 
-			// And after distant ancestor changed
-			stack0.Children.Remove(stack1);
-			stack2.Children.Add(stack1);
+			// stack2 (person2) 
+			// stack1 (person1)
+			//		stack0 (person0)
+			//				label0 (min level 1)	= stack0/person0
+			//				label1 (min level 2)	= stack1/person1
+			//				label2 (min level 3)	= null/null
+			stack2.Children.Clear();
+			Assert.AreEqual(label0.TextColor, stack0.BackgroundColor);
+			Assert.AreEqual(label1.TextColor, stack1.BackgroundColor);
+			Assert.AreEqual(label2.TextColor, StackLayout.BackgroundColorProperty.DefaultValue);		
+			Assert.AreEqual(label0.Text, person0.Name);
+			Assert.AreEqual(label1.Text, person1.Name);
+			Assert.IsNull(label2.Text);
 
-			Assert.AreEqual(label1.Text, stack2.StyleId);
-			Assert.AreEqual(label1.BindingContext, stack2.BindingContext);
+			// stack2 (person2) 
+			// stack1 (person1) 
+			// stack0 (person0)
+			//			label0 (min level 1)	= stack0/person0
+			//			label1 (min level 2)	= null/null
+			//			label2 (min level 3)	= null/null
+			stack1.Children.Clear();
+			Assert.AreEqual(label0.TextColor, stack0.BackgroundColor);
+			Assert.AreEqual(label1.TextColor, StackLayout.BackgroundColorProperty.DefaultValue);
+			Assert.AreEqual(label2.TextColor, StackLayout.BackgroundColorProperty.DefaultValue);
+			Assert.AreEqual(label0.Text, person0.Name);
+			Assert.IsNull(label1.Text);
+			Assert.IsNull(label2.Text);
 
-			// And after parent binding context changed
-			stack2.BindingContext = "foobar";
-			Assert.AreEqual(label1.Text, stack2.StyleId);
-			Assert.AreEqual(label1.BindingContext, "foobar");
+			// stack2 (person2) 
+			// stack1 (person1) 
+			// stack0 (person0)
+			// grid
+			//		label0 (min level 1)	= null/null
+			//		label1 (min level 2)	= null/null
+			//		label2 (min level 3)	= null/null
+			stack0.Children.Clear();
+			Assert.AreEqual(label0.TextColor, StackLayout.BackgroundColorProperty.DefaultValue);
+			Assert.AreEqual(label1.TextColor, StackLayout.BackgroundColorProperty.DefaultValue);
+			Assert.AreEqual(label2.TextColor, StackLayout.BackgroundColorProperty.DefaultValue);
+			Assert.IsNull(label0.Text);
+			Assert.IsNull(label1.Text);
+			Assert.IsNull(label2.Text);
+		}
+
+		class PersonViewModel
+		{
+			public string Name { get; set; }
 		}
 	}
 
