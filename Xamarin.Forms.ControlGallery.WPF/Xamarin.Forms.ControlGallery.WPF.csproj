@@ -70,6 +70,7 @@
     </Compile>
     <Compile Include="PlatformSpecificCoreGalleryFactory.cs" />
     <Compile Include="RegistrarValidationService.cs" />
+    <Compile Include="Renderers\Issue6693ControlRenderer.cs" />
     <Compile Include="SampleNativeControl.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
