@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml;
@@ -117,8 +118,8 @@ namespace Xamarin.Forms.Platform.UWP
 		bool IsObservableCollection(object source)
 		{
 			var type = source.GetType();
-			return type.IsGenericType &&
-				   type.GetGenericTypeDefinition() == typeof(ObservableCollection<>);
+			return type.GetTypeInfo().IsGenericType &&
+				type.GetGenericTypeDefinition() == typeof(ObservableCollection<>);
 		}
 
 		void ReloadData()

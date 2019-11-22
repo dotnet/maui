@@ -8,6 +8,8 @@ using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 
+using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
@@ -59,14 +61,14 @@ namespace Xamarin.Forms.Controls.Issues
 			_toggleIconsButton = new Button();
 			_toggleIconsButton.Text = "Show Header Icons";
 			_toggleIconsButton.Clicked += (object sender, EventArgs e) => {
-				if (_target.On<Windows>().IsHeaderIconsEnabled())
+				if (_target.On<WindowsOS>().IsHeaderIconsEnabled())
 				{
-					_target.On<Windows>().DisableHeaderIcons();
+					_target.On<WindowsOS>().DisableHeaderIcons();
 					_toggleIconsButton.Text = "Show Header Icons";
 				}
 				else
 				{
-					_target.On<Windows>().EnableHeaderIcons();
+					_target.On<WindowsOS>().EnableHeaderIcons();
 					_toggleIconsButton.Text = "Hide Header Icons";
 				}
 			};
@@ -88,16 +90,16 @@ namespace Xamarin.Forms.Controls.Issues
 				if (!Int32.TryParse(_iconHeightEntry.Text, out height))
 					height = 16;
 
-				var currentSize = _target.On<Windows>().GetHeaderIconsSize();
+				var currentSize = _target.On<WindowsOS>().GetHeaderIconsSize();
 				if (currentSize.Width != width || currentSize.Height != height)
-					_target.On<Windows>().SetHeaderIconsSize(new Size(width, height));
+					_target.On<WindowsOS>().SetHeaderIconsSize(new Size(width, height));
 			};
 
 			_getCurrentIconsSizeButton = new Button();
 			_getCurrentIconsSizeButton.Text = "Load Current Header Icons Size";
 			_getCurrentIconsSizeButton.Clicked += (object sender, EventArgs e) => {
 
-				var currentSize = _target.On<Windows>().GetHeaderIconsSize();
+				var currentSize = _target.On<WindowsOS>().GetHeaderIconsSize();
 				_iconWidthEntry.Text = currentSize.Width.ToString();
 				_iconHeightEntry.Text = currentSize.Height.ToString();
 			};

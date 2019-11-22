@@ -1,6 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Msbuild.Sdk.Extras/2.0.54">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework Condition=" '$(OS)' != 'Windows_NT' ">netstandard2.0</TargetFramework>
+    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">netstandard2.0;uap10.0.14393</TargetFrameworks>
+    <TargetPlatformVersion Condition="$(TargetFramework) == 'uap10.0.14393'">10.0.16299.0</TargetPlatformVersion>
+  </PropertyGroup>
+  <PropertyGroup>
     <XFDisableTargetsValidation>True</XFDisableTargetsValidation>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -31,6 +35,7 @@
     <EmbeddedResource Include="GalleryPages\crimson.jpg" />
     <EmbeddedResource Include="coffee.png" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="3.0.2" />
     <Compile Update="GalleryPages\BindableLayoutGalleryPage.xaml.cs">
       <DependentUpon>BindableLayoutGalleryPage.xaml</DependentUpon>

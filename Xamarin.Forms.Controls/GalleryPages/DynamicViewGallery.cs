@@ -130,7 +130,7 @@ namespace Xamarin.Forms.Controls
 			// BindableProperty used to clean property values
 			var bindableProperties = elementType
 				.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
-				.Where(p => p.FieldType.IsAssignableFrom(typeof(BindableProperty)))
+				.Where(p => p.FieldType.GetTypeInfo().IsAssignableFrom(typeof(BindableProperty).GetTypeInfo()))
 				.Select(p => (BindableProperty)p.GetValue(element));
 
 			foreach (var property in publicProperties)
@@ -166,7 +166,7 @@ namespace Xamarin.Forms.Controls
 				{
 					propertyLayout.Children.Add(CreateThicknessPicker(property, element));
 				}
-				else if (property.PropertyType.IsEnum)
+				else if (property.PropertyType.GetTypeInfo().IsEnum)
 				{
 					propertyLayout.Children.Add(CreateEnumPicker(property, element));
 				}

@@ -6,13 +6,15 @@ using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 using static Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries.WindowsPlatformSpecificsGalleryHelpers;
 
+using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+
 namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 {
     public class MasterDetailPageWindows : MasterDetailPage
 	{
 		public MasterDetailPageWindows(ICommand restore)
 		{
-			On<Windows>()
+			On<WindowsOS>()
 				.SetCollapseStyle(CollapseStyle.Partial);
 			MasterBehavior = MasterBehavior.Popover;
 
@@ -65,10 +67,10 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 			Type enumType = typeof(CollapseStyle);
 
 			return CreateChanger(enumType,
-				Enum.GetName(enumType, page.On<Windows>().GetCollapseStyle()),
+				Enum.GetName(enumType, page.On<WindowsOS>().GetCollapseStyle()),
 				picker =>
 				{
-					page.On<Windows>().SetCollapseStyle((CollapseStyle)Enum.Parse(enumType, picker.Items[picker.SelectedIndex]));
+					page.On<WindowsOS>().SetCollapseStyle((CollapseStyle)Enum.Parse(enumType, picker.Items[picker.SelectedIndex]));
 				},
 				"Select Collapse Style");
 		}
@@ -81,14 +83,14 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 				VerticalTextAlignment = TextAlignment.Center,
 				VerticalOptions = LayoutOptions.Center
 			};
-			var adjustCollapseWidthEntry = new Entry { Text = page.On<Windows>().CollapsedPaneWidth().ToString() };
+			var adjustCollapseWidthEntry = new Entry { Text = page.On<WindowsOS>().CollapsedPaneWidth().ToString() };
 			var adjustCollapseWidthButton = new Button { Text = "Change", BackgroundColor = Color.Gray };
 			adjustCollapseWidthButton.Clicked += (sender, args) =>
 			{
 				double newWidth;
 				if (double.TryParse(adjustCollapseWidthEntry.Text, out newWidth))
 				{
-					page.On<Windows>().CollapsedPaneWidth(newWidth);
+					page.On<WindowsOS>().CollapsedPaneWidth(newWidth);
 				}
 			};
 

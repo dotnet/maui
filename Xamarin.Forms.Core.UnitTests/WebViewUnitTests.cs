@@ -7,6 +7,8 @@ using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 
+using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+
 namespace Xamarin.Forms.Core.UnitTests
 {
 	[TestFixture]
@@ -135,10 +137,10 @@ namespace Xamarin.Forms.Core.UnitTests
 			var defaultWebView = new WebView();
 
 			var jsAlertsAllowedWebView = new WebView();
-			jsAlertsAllowedWebView.On<Windows>().SetIsJavaScriptAlertEnabled(true);
+			jsAlertsAllowedWebView.On<WindowsOS>().SetIsJavaScriptAlertEnabled(true);
 
-			Assert.AreEqual(defaultWebView.On<Windows>().IsJavaScriptAlertEnabled(), false);
-			Assert.AreEqual(jsAlertsAllowedWebView.On<Windows>().IsJavaScriptAlertEnabled(), true);
+			Assert.AreEqual(defaultWebView.On<WindowsOS>().IsJavaScriptAlertEnabled(), false);
+			Assert.AreEqual(jsAlertsAllowedWebView.On<WindowsOS>().IsJavaScriptAlertEnabled(), true);
 		}
 	}
 }

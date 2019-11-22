@@ -3,6 +3,7 @@ using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 
+using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
 
 namespace Xamarin.Forms.Controls.Issues
 {
@@ -24,21 +25,21 @@ namespace Xamarin.Forms.Controls.Issues
 
 		private void DetectFromContent(bool detect) 
 		{
-			_entry1.On<Windows>().SetDetectReadingOrderFromContent(detect);
-			_entry2.On<Windows>().SetDetectReadingOrderFromContent(detect);
-			_editor1.On<Windows>().SetDetectReadingOrderFromContent(detect);
-			_editor2.On<Windows>().SetDetectReadingOrderFromContent(detect);
-			_label5.On<Windows>().SetDetectReadingOrderFromContent(detect);
+			_entry1.On<WindowsOS>().SetDetectReadingOrderFromContent(detect);
+			_entry2.On<WindowsOS>().SetDetectReadingOrderFromContent(detect);
+			_editor1.On<WindowsOS>().SetDetectReadingOrderFromContent(detect);
+			_editor2.On<WindowsOS>().SetDetectReadingOrderFromContent(detect);
+			_label5.On<WindowsOS>().SetDetectReadingOrderFromContent(detect);
 			UpdateLabels();
 		}
 
 		void UpdateLabels()
 		{
-			_label1.Text = $"FlowDirection: {_entry1.FlowDirection}, DetectReadingOrderFromContent: {_entry1.On<Windows>().GetDetectReadingOrderFromContent()}";
-			_label2.Text = $"FlowDirection: {_entry2.FlowDirection}, DetectReadingOrderFromContent: {_entry2.On<Windows>().GetDetectReadingOrderFromContent()}";
-			_label3.Text = $"FlowDirection: {_editor1.FlowDirection}, DetectReadingOrderFromContent: {_editor1.On<Windows>().GetDetectReadingOrderFromContent()}";
-			_label4.Text = $"FlowDirection: {_editor2.FlowDirection}, DetectReadingOrderFromContent: {_editor2.On<Windows>().GetDetectReadingOrderFromContent()}";
-			_label6.Text = $"FlowDirection: {_label5.FlowDirection}, DetectReadingOrderFromContent: {_label5.On<Windows>().GetDetectReadingOrderFromContent()}";
+			_label1.Text = $"FlowDirection: {_entry1.FlowDirection}, DetectReadingOrderFromContent: {_entry1.On<WindowsOS>().GetDetectReadingOrderFromContent()}";
+			_label2.Text = $"FlowDirection: {_entry2.FlowDirection}, DetectReadingOrderFromContent: {_entry2.On<WindowsOS>().GetDetectReadingOrderFromContent()}";
+			_label3.Text = $"FlowDirection: {_editor1.FlowDirection}, DetectReadingOrderFromContent: {_editor1.On<WindowsOS>().GetDetectReadingOrderFromContent()}";
+			_label4.Text = $"FlowDirection: {_editor2.FlowDirection}, DetectReadingOrderFromContent: {_editor2.On<WindowsOS>().GetDetectReadingOrderFromContent()}";
+			_label6.Text = $"FlowDirection: {_label5.FlowDirection}, DetectReadingOrderFromContent: {_label5.On<WindowsOS>().GetDetectReadingOrderFromContent()}";
 		}
 
 		protected override void Init()

@@ -19,6 +19,7 @@
     </dependencies>
   </metadata>
   <files>
+    <file src="..\Xamarin.Forms.Pages\bin\$Configuration$\netstandard1.4\Xamarin.Forms.Pages.dll" target="lib\netstandard1.4" />
     <file src="..\Xamarin.Forms.Pages\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Pages.dll" target="lib\netstandard2.0" />
   </files>
 </package>

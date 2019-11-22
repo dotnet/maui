@@ -125,7 +125,7 @@ namespace Xamarin.Forms.Controls.Issues
 		static IEnumerable<Type> FindPerformanceScenarios()
 		{
 			return typeof(PerformanceGallery).GetTypeInfo().Assembly.DefinedTypes.Select(o => o.AsType())
-													.Where(typeInfo => typeof(PerformanceScenario).IsAssignableFrom(typeInfo));
+													.Where(type => typeof(PerformanceScenario).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()));
 		}
 
 		static IEnumerable<PerformanceScenario> InflatePerformanceScenarios()

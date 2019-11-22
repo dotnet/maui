@@ -517,7 +517,7 @@ namespace Xamarin.Forms.Controls
 			if (string.IsNullOrWhiteSpace(filter))
 				ItemsSource = _pages;
 			else
-				ItemsSource = _pages.Where(p => p.Title.IndexOf(filter, StringComparison.InvariantCultureIgnoreCase) != -1);
+				ItemsSource = _pages.Where(p => p.Title.IndexOf(filter, StringComparison.OrdinalIgnoreCase) != -1);
 		}
 	}
 	[Preserve(AllMembers = true)]
