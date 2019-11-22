@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			}
 			set
 			{
-				_placeholder.Text = GLib.Markup.EscapeText(value ?? string.Empty);
+				_placeholder.Text = value ?? string.Empty;
 			}
 		}
 

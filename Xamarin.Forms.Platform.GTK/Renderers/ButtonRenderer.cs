@@ -123,7 +123,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				FontAttributes = Element.FontAttributes,
 				FontFamily = Element.FontFamily,
 				FontSize = Element.FontSize,
-				Text = GLib.Markup.EscapeText(Element.Text ?? string.Empty)
+				Text = Element.Text ?? string.Empty
 			};
 
 			Control.LabelWidget.SetTextFromSpan(span);
