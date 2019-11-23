@@ -68,7 +68,22 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 
 			RunningApp.WaitForElement("1");
-			RunningApp.ScrollDownTo("30", strategy: ScrollStrategy.Gesture);
+
+			RunningApp.QueryUntilPresent(() =>
+			{
+				try
+				{
+					RunningApp.ScrollDownTo("30", strategy: ScrollStrategy.Gesture, swipeSpeed: 100);
+				}
+				catch
+				{
+					// just ignore if it fails so it can keep trying to scroll
+				}
+
+				return RunningApp.Query("30");
+			});
+
+			RunningApp.Query("30");
 		}
 #endif
 	}

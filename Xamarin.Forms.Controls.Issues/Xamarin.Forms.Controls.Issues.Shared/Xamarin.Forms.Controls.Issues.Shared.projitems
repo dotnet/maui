@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewGroupTypeIssue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue6362.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7505.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewItemsSourceTypes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1455.xaml.cs">
@@ -21,6 +22,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewHeaderFooterView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewItemsUpdatingScrollMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8177.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7773.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8186.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3475.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6476.cs" />
@@ -109,6 +111,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue8167.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8366.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8269.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue8529.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue8529_1.xaml.cs">
+      <DependentUpon>Issue8529_1.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)RefreshViewTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7338.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ScrollToGroup.cs" />
@@ -1620,7 +1627,12 @@
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7048.xaml">
       <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8529_1.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
 </Project>

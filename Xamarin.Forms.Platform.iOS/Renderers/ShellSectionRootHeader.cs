@@ -87,10 +87,13 @@ namespace Xamarin.Forms.Platform.iOS
 			headerCell.Label.Text = shellContent.Title;
 			headerCell.Label.SetNeedsDisplay();
 
+			headerCell.SelectedColor = _selectedColor.ToUIColor();
+			headerCell.UnSelectedColor = _unselectedColor.ToUIColor();
+
 			if (selectedItems.Length > 0 && selectedItems[0].Row == indexPath.Row)
-				headerCell.Label.TextColor = _selectedColor.ToUIColor();
+				headerCell.Selected = true;
 			else
-				headerCell.Label.TextColor = _unselectedColor.ToUIColor();
+				headerCell.Selected = false;
 
 			return headerCell;
 		}
@@ -109,9 +112,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void ItemSelected(UICollectionView collectionView, NSIndexPath indexPath)
 		{
 			var row = indexPath.Row;
-
 			var item = ShellSection.Items[row];
-
 			if (item != ShellSection.CurrentItem)
 				ShellSection.SetValueFromRenderer(ShellSection.CurrentItemProperty, item);
 
@@ -240,6 +241,19 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public class ShellSectionHeaderCell : UICollectionViewCell
 		{
+			public UIColor SelectedColor { get; set; }
+			public UIColor UnSelectedColor { get; set; }
+
+			public override bool Selected
+			{
+				get => base.Selected;
+				set
+				{
+					base.Selected = value;
+					Label.TextColor = value ? SelectedColor : UnSelectedColor;
+				}
+			}
+
 			[Export("initWithFrame:")]
 			public ShellSectionHeaderCell(CGRect frame) : base(frame)
 			{
