@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 
 		public int Count => _count;
 		public ItemsSourceGenerator(ItemsView cv, int initialItems = 1000, 
-			ItemsSourceType itemsSourceType = ItemsSourceType.List)
+			ItemsSourceType itemsSourceType = ItemsSourceType.List, bool sideItems = true)
 		{
 			_count = initialItems;
 			_cv = cv;
@@ -40,14 +40,20 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 
 			var button = new Button { Text = "Update", AutomationId = "btnUpdate"  };
 			var label = new Label { Text = "Items:", VerticalTextAlignment = TextAlignment.Center };
-			var labelSideItems = new Label { Text = "Side items:", VerticalTextAlignment = TextAlignment.Center };
 			_entry = new Entry { Keyboard = Keyboard.Numeric, Text = initialItems.ToString(), WidthRequest = 100, AutomationId = "entryUpdate" };
-			_entrySideItems = new Entry { Keyboard = Keyboard.Numeric, Text = carousel?.NumberOfSideItems.ToString(), WidthRequest = 100, AutomationId = "entrySideItemsUpdate" };
 
 			layout.Children.Add(label);
 			layout.Children.Add(_entry);
-			layout.Children.Add(labelSideItems);
-			layout.Children.Add(_entrySideItems);
+
+			if (sideItems)
+			{
+				var labelSideItems = new Label { Text = "Side items:", VerticalTextAlignment = TextAlignment.Center };
+				_entrySideItems = new Entry { Keyboard = Keyboard.Numeric, Text = carousel?.NumberOfSideItems.ToString(), WidthRequest = 100, AutomationId = "entrySideItemsUpdate" };
+
+				layout.Children.Add(labelSideItems);
+				layout.Children.Add(_entrySideItems);
+			}
+
 			layout.Children.Add(button);
 
 			button.Clicked += GenerateItems;
@@ -169,7 +175,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 			if (carousel == null)
 				return;
 
-			if (int.TryParse(_entrySideItems.Text, out int count))
+			if (int.TryParse(_entrySideItems?.Text, out int count))
 				carousel.NumberOfSideItems = count;
 		}
 	}

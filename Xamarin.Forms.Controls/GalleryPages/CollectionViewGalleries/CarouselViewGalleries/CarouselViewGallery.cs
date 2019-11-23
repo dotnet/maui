@@ -33,14 +33,18 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 							new CarouselCodeGallery(ItemsLayoutOrientation.Vertical), Navigation),
 						GalleryBuilder.NavButton("CarouselView (XAML, Horizontal)", () =>
 							new CarouselXamlGallery(), Navigation),
-						GalleryBuilder.NavButton("CarouselView (Items)", () =>
+						GalleryBuilder.NavButton("CarouselView (Indicators Forms)", () =>
+							new CarouselItemsGallery(), Navigation),
+						GalleryBuilder.NavButton("CarouselView (Indicators Default (Native))", () =>
 							new CarouselItemsGallery(), Navigation),
 	  					GalleryBuilder.NavButton("CarouselView Snap", () =>
  							new CarouselSnapGallery(), Navigation),
 						GalleryBuilder.NavButton("ObservableCollection and CarouselView", () =>
  							new CollectionCarouselViewGallery(), Navigation),
 						GalleryBuilder.NavButton("CarouselView EmptyView", () =>
-  							new EmptyCarouselGallery(), Navigation)
+  							new EmptyCarouselGallery(), Navigation),    
+	  					GalleryBuilder.NavButton("IndicatorView", () =>
+  							new IndicatorCodeGallery(), Navigation)
 					}
 				}
 			};
@@ -54,7 +58,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			button.TextColor = Color.Black;
 			button.IsEnabled = false;
 
-			Device.SetFlags(new[] { ExperimentalFlags.CarouselViewExperimental });
+			Device.SetFlags(new[] { ExperimentalFlags.CarouselViewExperimental, ExperimentalFlags.IndicatorViewExperimental });
 		}
 	}
 }

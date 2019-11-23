@@ -107,6 +107,10 @@
 	{
 	}
 
+	internal class _IndicatorViewRenderer
+	{
+	}
+
 	internal class _OpenGLViewRenderer
 	{
 	}

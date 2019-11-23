@@ -147,6 +147,9 @@
     </EmbeddedResource>
     <EmbeddedResource Update="GalleryPages\ControlTemplateXamlPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="GalleryPages\IndicatorViewGalleries\IndicatorsSample.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>   
   </ItemGroup>
   <ItemGroup>

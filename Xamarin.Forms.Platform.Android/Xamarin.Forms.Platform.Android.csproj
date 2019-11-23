@@ -81,6 +81,7 @@
     <Compile Include="CollectionView\GroupableItemsViewAdapter.cs" />
     <Compile Include="CollectionView\GroupableItemsViewRenderer.cs" />
     <Compile Include="CollectionView\ICollectionChangedNotifier.cs" />
+    <Compile Include="CollectionView\IndicatorViewRenderer.cs" />
     <Compile Include="CollectionView\ObservableGroupedSource.cs" />
     <Compile Include="CollectionView\RecyclerViewScrollListener.cs" />
     <Compile Include="CollectionView\GridLayoutSpanSizeLookup.cs" />

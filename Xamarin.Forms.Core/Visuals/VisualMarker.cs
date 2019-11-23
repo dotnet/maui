@@ -25,7 +25,6 @@ namespace Xamarin.Forms
 				Internals.Log.Warning("Visual", $"Material is currently not support on {Device.RuntimePlatform}.");
 		}
 
-
 		public sealed class MaterialVisual : IVisual { public MaterialVisual() { } }
 		public sealed class DefaultVisual : IVisual { public DefaultVisual() { } }
 		internal sealed class MatchParentVisual : IVisual { public MatchParentVisual() { } }
