@@ -607,10 +607,10 @@
       <Member Id="P:Xamarin.Essentials.Screenshot.CanCapture" />
     </Type>
     <Type Name="Xamarin.Essentials.ScreenshotFile" Id="T:Xamarin.Essentials.ScreenshotFile">
-      <Member Id="M:Xamarin.Essentials.ScreenshotFile.AsStream" />
       <Member Id="M:Xamarin.Essentials.ScreenshotFile.Dispose" />
       <Member Id="M:Xamarin.Essentials.ScreenshotFile.Dispose(System.Boolean)" />
       <Member Id="M:Xamarin.Essentials.ScreenshotFile.Finalize" />
+      <Member Id="M:Xamarin.Essentials.ScreenshotFile.PlatformOpenReadStreamAsync" />
       <Member Id="P:Xamarin.Essentials.ScreenshotFile.Disposed" />
     </Type>
     <Type Name="Xamarin.Essentials.SecureStorage" Id="T:Xamarin.Essentials.SecureStorage">

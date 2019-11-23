@@ -21,27 +21,6 @@
 	</remarks>
   </Docs>
   <Members>
-    <Member MemberName="AsStream">
-      <MemberSignature Language="C#" Value="public System.IO.Stream AsStream ();" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance class System.IO.Stream AsStream() cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ScreenshotFile.AsStream" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.IO.Stream</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>Opens the file to read from it.</summary>
-        <returns>A FileStream</returns>
-        <remarks>
-		  <para />
-		</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="Dispose">
       <MemberSignature Language="C#" Value="public void Dispose ();" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void Dispose() cil managed" />
@@ -121,6 +100,27 @@
       <Parameters />
       <Docs>
         <summary>Calls Dispose if it was not called already. Only reachable if files were not disposed.</summary>
+        <remarks>
+		  <para />
+		</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="PlatformOpenReadStreamAsync">
+      <MemberSignature Language="C#" Value="public System.Threading.Tasks.Task&lt;System.IO.Stream&gt; PlatformOpenReadStreamAsync ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance class System.Threading.Tasks.Task`1&lt;class System.IO.Stream&gt; PlatformOpenReadStreamAsync() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ScreenshotFile.PlatformOpenReadStreamAsync" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;System.IO.Stream&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+         <summary>Opens the file to read from it. The FileStream will be asynchronous.</summary>
+        <returns>A FileStream</returns>
         <remarks>
 		  <para />
 		</remarks>
