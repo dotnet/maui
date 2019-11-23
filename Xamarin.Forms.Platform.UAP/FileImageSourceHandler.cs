@@ -21,6 +21,19 @@ namespace Xamarin.Forms.Platform.UWP
 			return Task.FromResult(image);
 		}
 
+		public Task<Microsoft.UI.Xaml.Controls.IconSource> LoadIconSourceAsync(ImageSource imagesource, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			Microsoft.UI.Xaml.Controls.IconSource image = null;
+
+			if (imagesource is FileImageSource filesource)
+			{
+				string file = filesource.File;
+				image = new Microsoft.UI.Xaml.Controls.BitmapIconSource { UriSource = new Uri("ms-appx:///" + file) };
+			}
+
+			return Task.FromResult(image);
+		}
+
 		public Task<IconElement> LoadIconElementAsync(ImageSource imagesource, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			IconElement image = null;

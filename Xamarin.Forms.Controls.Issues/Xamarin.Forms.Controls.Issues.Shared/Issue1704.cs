@@ -459,7 +459,7 @@ namespace Xamarin.Forms.Controls.Issues
 				_abortStressTest = false;
 
 				int.TryParse(_stressTestItertionEntry.Text, out _stressTestIterationCount);
-
+        
 #if __UWP__
 				Windows.System.Threading.ThreadPool.RunAsync(delegate { runStressTest(); });
 #else

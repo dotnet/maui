@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries.CustomSizeSwipeViewGallery"
+    Title="Custom Size SwipeView">
+    <ContentPage.Content>
+        <Grid>
+            <SwipeView>
+                <SwipeView.LeftItems>
+                    <SwipeItemView>
+                        <Grid
+                            BackgroundColor="LightPink"
+                            WidthRequest="200">
+                            <Label
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center"
+                                Text="This is the LefItems Content"
+                                Margin="12"/>
+                        </Grid>
+                    </SwipeItemView>
+                </SwipeView.LeftItems>
+                <SwipeView.RightItems>
+                    <SwipeItem
+                        IconImageSource="calculator.png"
+                        Text="Test"
+                        BackgroundColor="Red" />
+                    <SwipeItemView>
+                        <Grid
+                            BackgroundColor="LightSteelBlue"
+                            WidthRequest="200">
+                            <Label
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center"
+                                Text="This is the RightItems Content"
+                                Margin="12"/>
+                        </Grid>
+                    </SwipeItemView>
+                </SwipeView.RightItems>
+                <SwipeView.TopItems>
+                    <SwipeItemView>
+                        <Grid
+                            BackgroundColor="LightSkyBlue"
+                            HeightRequest="100">
+                            <Label
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center"
+                                Text="This is the TopItems Content"
+                                Margin="12"/>
+                        </Grid>
+                    </SwipeItemView>
+                </SwipeView.TopItems>
+                <Grid
+                    BackgroundColor="LightGreen">
+                    <Label
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                        Text="This is the Content"
+                        Margin="12"/>
+                </Grid>
+            </SwipeView>
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>

@@ -111,6 +111,7 @@
       <DependentUpon>StepperControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="CheckBoxRenderer.cs" />
+    <Compile Include="SwipeViewRenderer.cs" />
     <Compile Include="TextBlockExtensions.cs" />
     <Compile Include="TitleViewManager.cs" />
     <Compile Include="UriImageSourceHandler.cs" />
