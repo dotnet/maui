@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Foundation;
 using UIKit;
+using WatchKit;
 
 namespace Xamarin.Essentials
 {

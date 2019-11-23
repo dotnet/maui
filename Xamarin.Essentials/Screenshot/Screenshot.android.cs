@@ -21,7 +21,7 @@ namespace Xamarin.Essentials
     {
         static bool PlatformCanCapture => !Platform.WindowManager.DefaultDisplay.Flags.HasFlag(DisplayFlags.Secure);
 
-        static string GetTempFileName() => Path.Combine(Environment.ExternalStorageDirectory.Path, Path.GetTempFileName());
+        static string GetTempFileName() => Path.Combine(FileSystem.CacheDirectory, Path.GetTempFileName());
 
         static async Task<ScreenshotFile> PlatformCaptureAsync()
         {

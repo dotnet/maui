@@ -12,19 +12,19 @@ namespace Xamarin.Essentials
 
         static string GetTempFileName()
         {
-            var docFolder = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-            var libFolder = Path.Combine(docFolder, "..", "Library");
-            var tempFileName = Path.ChangeExtension(Path.Combine(libFolder, Path.GetTempFileName()), ".png");
+            var tempFileName = Path.ChangeExtension(Path.Combine(FileSystem.CacheDirectory, Path.GetTempFileName()), ".png");
             return tempFileName;
         }
 
-        static Task<ScreenshotFile> PlatformCaptureAsync()
+        static async Task<ScreenshotFile> PlatformCaptureAsync()
         {
             var img = UIScreen.MainScreen.Capture();
-            var bytes = img.AsPNG().ToArray();
-            var file = new ScreenshotFile(GetTempFileName());
-            File.WriteAllBytes(file.FullPath, bytes);
-            return Task.FromResult(file);
+            var filePath = GetTempFileName();
+            using var bytes = img.AsPNG().AsStream();
+            using var fileStream = File.Create(filePath);
+            await bytes.CopyToAsync(fileStream);
+            var file = new ScreenshotFile(filePath);
+            return file;
         }
     }
 }

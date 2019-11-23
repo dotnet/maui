@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Xamarin.Essentials
 {
@@ -14,7 +15,14 @@ namespace Xamarin.Essentials
         }
 
 #if !NETSTANDARD1_0
-        public Stream AsStream() => System.IO.File.Open(FullPath, FileMode.Open, FileAccess.Read);
+        public Task<Stream> PlatformOpenReadStreamAsync()
+        {
+            // This is a truely async file stream. The buffer size parameter is the same as the default.
+            return Task.FromResult<Stream>(
+                new FileStream(FullPath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true));
+        }
+#else
+        public Task<Stream> PlatformOpenReadStreamAsync() => throw ExceptionUtils.NotSupportedOrImplementedException;
 #endif
 
         ~ScreenshotFile()

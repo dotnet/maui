@@ -157,7 +157,7 @@ namespace Samples.ViewModel
                     "Quickly and easily add persistent preferences.",
                     new[] { "settings", "preferences", "prefs", "storage" }),
                 new SampleItem(
-                    "⚙️",
+                    "📷",
                     "Screenshot",
                     typeof(ScreenshotPage),
                     "Quickly and easily take screenshots.",

@@ -17,7 +17,7 @@ namespace Xamarin.Essentials
         static async Task<ScreenshotFile> PlatformCaptureAsync()
         {
             var element = Window.Current.Content as FrameworkElement;
-            var fileOnDisk = await ApplicationData.Current.LocalFolder.CreateFileAsync(Path.ChangeExtension(Path.GetRandomFileName(), ".png"));
+            var fileOnDisk = await ApplicationData.Current.LocalCacheFolder.CreateFileAsync(Path.ChangeExtension(Path.GetRandomFileName(), ".png"));
             var renderTargetBitmap = new RenderTargetBitmap();
             await renderTargetBitmap.RenderAsync(element, (int)element.ActualWidth, (int)element.ActualHeight);
             var pixels = await renderTargetBitmap.GetPixelsAsync();
