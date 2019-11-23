@@ -1,19 +1,9 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
-using Android;
-using Android.App;
-using Android.Content;
-using Android.Content.Res;
 using Android.Graphics;
-using Android.OS;
-using Android.Telephony;
 using Android.Util;
 using Android.Views;
-using Java.Util;
-using Environment = Android.OS.Environment;
 using Path = System.IO.Path;
-using Uri = Android.Net.Uri;
 
 namespace Xamarin.Essentials
 {

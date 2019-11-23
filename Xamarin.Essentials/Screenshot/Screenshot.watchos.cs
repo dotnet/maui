@@ -1,9 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
-using Foundation;
-using UIKit;
-using WatchKit;
+﻿using System.Threading.Tasks;
 
 namespace Xamarin.Essentials
 {

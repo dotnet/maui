@@ -1,7 +1,4 @@
-﻿using System.Text;
-using System.Threading.Tasks;
-using Tizen.NUI;
-using Tizen.Security.SecureRepository;
+﻿using System.Threading.Tasks;
 
 namespace Xamarin.Essentials
 {
