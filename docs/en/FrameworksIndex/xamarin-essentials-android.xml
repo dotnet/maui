@@ -25,6 +25,19 @@
       <Member Id="M:Xamarin.Essentials.AccelerometerData.ToString" />
       <Member Id="P:Xamarin.Essentials.AccelerometerData.Acceleration" />
     </Type>
+    <Type Name="Xamarin.Essentials.ActivityState" Id="T:Xamarin.Essentials.ActivityState">
+      <Member Id="F:Xamarin.Essentials.ActivityState.Created" />
+      <Member Id="F:Xamarin.Essentials.ActivityState.Destroyed" />
+      <Member Id="F:Xamarin.Essentials.ActivityState.Paused" />
+      <Member Id="F:Xamarin.Essentials.ActivityState.Resumed" />
+      <Member Id="F:Xamarin.Essentials.ActivityState.SaveInstanceState" />
+      <Member Id="F:Xamarin.Essentials.ActivityState.Started" />
+      <Member Id="F:Xamarin.Essentials.ActivityState.Stopped" />
+    </Type>
+    <Type Name="Xamarin.Essentials.ActivityStateChangedEventArgs" Id="T:Xamarin.Essentials.ActivityStateChangedEventArgs">
+      <Member Id="P:Xamarin.Essentials.ActivityStateChangedEventArgs.Activity" />
+      <Member Id="P:Xamarin.Essentials.ActivityStateChangedEventArgs.State" />
+    </Type>
     <Type Name="Xamarin.Essentials.AppInfo" Id="T:Xamarin.Essentials.AppInfo">
       <Member Id="M:Xamarin.Essentials.AppInfo.ShowSettingsUI" />
       <Member Id="P:Xamarin.Essentials.AppInfo.BuildString" />
@@ -532,9 +545,13 @@
       <Member Id="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapLaunchOptions)" />
     </Type>
     <Type Name="Xamarin.Essentials.Platform" Id="T:Xamarin.Essentials.Platform">
+      <Member Id="E:Xamarin.Essentials.Platform.ActivityStateChanged" />
       <Member Id="M:Xamarin.Essentials.Platform.Init(Android.App.Activity,Android.OS.Bundle)" />
       <Member Id="M:Xamarin.Essentials.Platform.Init(Android.App.Application)" />
       <Member Id="M:Xamarin.Essentials.Platform.OnRequestPermissionsResult(System.Int32,System.String[],Android.Content.PM.Permission[])" />
+      <Member Id="M:Xamarin.Essentials.Platform.WaitForActivityAsync(System.Threading.CancellationToken)" />
+      <Member Id="P:Xamarin.Essentials.Platform.AppContext" />
+      <Member Id="P:Xamarin.Essentials.Platform.CurrentActivity" />
     </Type>
     <Type Name="Xamarin.Essentials.PointExtensions" Id="T:Xamarin.Essentials.PointExtensions">
       <Member Id="M:Xamarin.Essentials.PointExtensions.ToSystemPoint(Android.Graphics.Point)" />

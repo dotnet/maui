@@ -1,0 +1,61 @@
+<Type Name="ActivityStateChangedEventArgs" FullName="Xamarin.Essentials.ActivityStateChangedEventArgs">
+  <TypeSignature Language="C#" Value="public class ActivityStateChangedEventArgs : EventArgs" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit ActivityStateChangedEventArgs extends System.EventArgs" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.ActivityStateChangedEventArgs" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.EventArgs</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Event argments when an Android Activity's state changes.</summary>
+    <remarks>
+      <para />
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Activity">
+      <MemberSignature Language="C#" Value="public Android.App.Activity Activity { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class Android.App.Activity Activity" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.ActivityStateChangedEventArgs.Activity" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Android.App.Activity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the Activity of which the state changed.</summary>
+        <value>The Activity for the event.</value>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="State">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.ActivityState State { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.ActivityState State" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.ActivityStateChangedEventArgs.State" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.ActivityState</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The state of the Activity.</summary>
+        <value>The state of the Activity for the event.</value>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>
