@@ -777,7 +777,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			bool areEqual = false;
 
-			if (Element.SelectedItem != null && Element.SelectedItem.GetType().IsValueType)
+			if (Element.SelectedItem != null && Element.SelectedItem.GetType().GetTypeInfo().IsValueType)
 				areEqual = Element.SelectedItem.Equals(List.SelectedItem);
 			else
 				areEqual = Element.SelectedItem == List.SelectedItem;
