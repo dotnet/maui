@@ -3,6 +3,8 @@ using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 
+using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+
 namespace Xamarin.Forms.Controls
 {
 	internal class WkWebViewCoreGalleryPage : CoreGalleryPage<WkWebView>
@@ -107,7 +109,7 @@ namespace Xamarin.Forms.Controls
 				HeightRequest = 200
 			};
 
-			jsAlertWebView.On<Windows>().SetIsJavaScriptAlertEnabled(true);
+			jsAlertWebView.On<WindowsOS>().SetIsJavaScriptAlertEnabled(true);
 			
 			var javascriptAlertWebSourceContainer = new ViewContainer<WkWebView>(Test.WebView.JavaScriptAlert,
 				jsAlertWebView

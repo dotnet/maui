@@ -73,6 +73,9 @@ namespace Xamarin.UITest
 			return true;
 		}
 
+		public static TResult[] InvokeFromElement<TResult>(this IApp app, string element, string methodName) =>
+			app.Query(c => c.Marked(element).Invoke(methodName).Value<TResult>());
+
 #if __IOS__
 		public static void SendAppToBackground(this IApp app, TimeSpan timeSpan)
 		{

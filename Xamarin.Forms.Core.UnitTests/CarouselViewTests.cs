@@ -33,7 +33,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.IsNull(carouselView.ItemTemplate);
 			Assert.IsNotNull(carouselView.ItemsLayout);
 			Assert.IsTrue(carouselView.Position == 0);
-			Assert.IsTrue(carouselView.ItemSizingStrategy == ItemSizingStrategy.None);
 		}
 
 		[Test]

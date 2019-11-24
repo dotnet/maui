@@ -130,7 +130,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 					_visualElementPackager.Dispose();
 					_visualElementPackager = null;
 				}
-				
+
 				if (_backgroundDrawable != null)
 				{
 					_backgroundDrawable.Dispose();
@@ -236,13 +236,16 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				UpdateClippedToBounds();
 		}
 
-		void UpdateClippedToBounds() => this.SetClipToOutline(Element.IsClippedToBounds);
+		void UpdateClippedToBounds()
+		{
+			this.SetClipToOutline(Element.IsClippedToBounds, Element);
+		}
 
 		void UpdateBackgroundColor()
 		{
 			if (_disposed)
 				return;
-				
+
 			Color bgColor = Element.BackgroundColor;
 			_backgroundDrawable.SetColor(bgColor.IsDefault ? AColor.White : bgColor.ToAndroid());
 		}
@@ -264,7 +267,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		{
 			if (_disposed)
 				return;
-				
+
 			float elevation = _defaultElevation;
 
 			if (elevation == -1f)
@@ -280,7 +283,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		{
 			if (_disposed)
 				return;
-				
+
 			if (_defaultCornerRadius == -1f)
 			{
 				_defaultCornerRadius = Radius;
@@ -294,6 +297,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				cornerRadius = Context.ToPixels(cornerRadius);
 
 			_backgroundDrawable.SetCornerRadius(cornerRadius);
+
+			UpdateClippedToBounds();
 		}
 	}
 }

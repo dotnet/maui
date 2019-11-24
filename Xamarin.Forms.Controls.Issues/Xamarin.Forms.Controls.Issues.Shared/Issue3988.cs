@@ -3,6 +3,8 @@ using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 
+using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+
 #if UITEST
 using Xamarin.Forms.Core.UITests;
 using Xamarin.UITest;
@@ -83,8 +85,8 @@ namespace Xamarin.Forms.Controls.Issues
 			var button = new Button() { Text = "Toggle IsDynamicOverflowEnabled" };
 			button.Clicked += (s, e) =>
 			{
-				var overflowEnabled = parent.On<Windows>().GetToolbarDynamicOverflowEnabled();
-				parent.On<Windows>().SetToolbarDynamicOverflowEnabled(!overflowEnabled);
+				var overflowEnabled = parent.On<WindowsOS>().GetToolbarDynamicOverflowEnabled();
+				parent.On<WindowsOS>().SetToolbarDynamicOverflowEnabled(!overflowEnabled);
 			};
 			var text = new Label()
 			{

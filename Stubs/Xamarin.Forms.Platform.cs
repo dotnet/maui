@@ -119,6 +119,11 @@ namespace Xamarin.Forms.Platform
 	internal class _CheckBoxRenderer { }
 #endif
 
+#if !TIZEN4_0
+	[RenderWith(typeof(IndicatorViewRenderer))]
+#endif
+	internal class _IndicatorViewRenderer { }
+
 #if __IOS__
 	// current previewer doesn't work with appcompat so this renderer is here for the previewer only
 	// once previewer switches to appcompat then we can remove this
@@ -165,6 +170,10 @@ namespace Xamarin.Forms.Platform
 	[RenderWith(typeof(RefreshViewRenderer))]
 #endif
 	internal class _RefreshViewRenderer { }
+#if !TIZEN4_0
+	[RenderWith(typeof(SwipeViewRenderer))]
+#endif
+	internal class _SwipeViewRenderer { }
 }
 
 

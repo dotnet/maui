@@ -302,11 +302,15 @@ namespace Xamarin.Forms.Controls.XamStore
 
 			Content = new ScrollView { Content = grid };
 
-			//var listView = new ListView();
-			//listView.ItemsSource = Enumerable.Range(0, 1000).ToList();
 
-			//Content = listView;
-		}
+            grid.Children.Add(MakeButton("Hide Nav Shadow",
+                    () => Shell.SetNavBarHasShadow(this, false)),
+                1, 21);
+
+            grid.Children.Add(MakeButton("Show Nav Shadow",
+                    () => Shell.SetNavBarHasShadow(this, true)),
+                2, 21);
+        }
 
 		Switch _navBarVisibleSwitch;
 		Switch _tabBarVisibleSwitch;

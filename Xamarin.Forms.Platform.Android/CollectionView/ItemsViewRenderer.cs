@@ -228,10 +228,6 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				UpdateEmptyView();
 			}
-			else if (changedProperty.Is(Xamarin.Forms.ItemsView.ItemSizingStrategyProperty))
-			{
-				UpdateAdapter();
-			}
 			else if (changedProperty.Is(Xamarin.Forms.ItemsView.HorizontalScrollBarVisibilityProperty))
 			{
 				UpdateHorizontalScrollBarVisibility();
@@ -272,7 +268,7 @@ namespace Xamarin.Forms.Platform.Android
 			return (TAdapter)new ItemsViewAdapter<TItemsView, TItemsViewSource>(ItemsView);
 		}
 
-		void UpdateAdapter()
+		protected virtual void UpdateAdapter()
 		{
 			var oldItemViewAdapter = ItemsViewAdapter;
 

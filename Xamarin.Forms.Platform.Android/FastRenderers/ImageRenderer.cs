@@ -21,6 +21,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		VisualElementTracker _visualElementTracker;
 		VisualElementRenderer _visualElementRenderer;
 		readonly MotionEventHelper _motionEventHelper = new MotionEventHelper();
+		IFormsAnimationDrawable _formsAnimationDrawable;
 
 		bool IImageRendererController.IsDisposed => _disposed;
 		protected override void Dispose(bool disposing)
@@ -169,6 +170,18 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		ViewGroup IVisualElementRenderer.ViewGroup => null;
 
 		void IImageRendererController.SkipInvalidate() => _skipInvalidate = true;
+		void IImageRendererController.SetFormsAnimationDrawable(IFormsAnimationDrawable value)
+		{
+			if(_formsAnimationDrawable != null)
+				_formsAnimationDrawable.AnimationStopped -= OnAnimationStopped;
+
+			_formsAnimationDrawable = value;
+			if (_formsAnimationDrawable != null)
+				_formsAnimationDrawable.AnimationStopped += OnAnimationStopped;
+		}
+
+		void OnAnimationStopped(object sender, FormsAnimationDrawableStateEventArgs e) =>
+			ImageElementManager.OnAnimationStopped(Element, e);
 
 		protected AImageView Control => this;
 		protected Image Element => _element;

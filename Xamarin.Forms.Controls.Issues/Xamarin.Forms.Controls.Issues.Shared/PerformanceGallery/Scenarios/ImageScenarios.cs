@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.GalleryPages.PerformanceGallery.Scenarios
@@ -53,7 +54,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.PerformanceGallery.Scenarios
 		{
 			//NOTE: copy image to disk in static ctor, so not to interfere with timing
 			tempFile = Path.Combine(Path.GetTempPath(), $"{nameof(ImageScenario4)}.png");
-			using (var embeddedStream = typeof(ImageScenario4).Assembly.GetManifestResourceStream("Xamarin.Forms.Controls.GalleryPages.crimson.jpg"))
+			using (var embeddedStream = typeof(ImageScenario4).GetTypeInfo().Assembly.GetManifestResourceStream("Xamarin.Forms.Controls.GalleryPages.crimson.jpg"))
 			using (var fileStream = File.Create(tempFile))
 				embeddedStream.CopyTo(fileStream);
 		}

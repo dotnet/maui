@@ -107,6 +107,10 @@
 	{
 	}
 
+	internal class _IndicatorViewRenderer
+	{
+	}
+
 	internal class _OpenGLViewRenderer
 	{
 	}
@@ -128,6 +132,10 @@
 	}
 
 	internal class _MasterDetailPageRenderer
+	{
+	}
+
+	internal class _SwipeViewRenderer
 	{
 	}
 }

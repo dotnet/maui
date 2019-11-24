@@ -166,7 +166,10 @@
     <Compile Include="Flags.cs" />
     <Compile Include="IOSDeviceInfo.cs" />
     <Compile Include="ModalWrapper.cs" />
+    <Compile Include="Renderers\FormsCAKeyFrameAnimation.cs" />
     <Compile Include="Renderers\FormsCheckBox.cs" />
+    <Compile Include="Renderers\FormsUIImageView.cs" />
+    <Compile Include="Renderers\ImageAnimationHelper.cs" />
     <Compile Include="Renderers\ImageElementManager.cs" />
     <Compile Include="IVisualNativeElementRenderer.cs" />
     <Compile Include="NativeViewWrapper.cs" />
@@ -176,6 +179,7 @@
     <Compile Include="Forms.cs" />
     <Compile Include="PageExtensions.cs" />
     <Compile Include="Renderers\IAccessibilityElementsController.cs" />
+    <Compile Include="Renderers\IShellSectionRootHeader.cs" />
     <Compile Include="Renderers\PageContainer.cs" />
     <Compile Include="Renderers\CheckBoxRendererBase.cs" />
     <Compile Include="Renderers\WkWebViewRenderer.cs" />
@@ -198,7 +202,6 @@
     <Compile Include="Renderers\ShellFlyoutRenderer.cs" />
     <Compile Include="Renderers\ShellItemRenderer.cs" />
     <Compile Include="Renderers\ShellItemTransition.cs" />
-    <Compile Include="Renderers\ShellNavBarAppearanceTracker.cs" />
     <Compile Include="Renderers\ShellPageRendererTracker.cs" />
     <Compile Include="Renderers\ShellRenderer.cs" />
     <Compile Include="Renderers\ShellScrollViewTracker.cs" />
@@ -242,6 +245,9 @@
     <Compile Include="CollectionView\CarouselViewController.cs" />
     <Compile Include="CollectionView\CarouselTemplatedCell.cs" />
     <Compile Include="Renderers\RefreshViewRenderer.cs" />
+    <Compile Include="Renderers\ShellNavBarAppearanceTracker.cs" />
+    <Compile Include="Renderers\IndicatorViewRenderer.cs" />
+    <Compile Include="Renderers\SwipeViewRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\StringResources.ar.resx" />

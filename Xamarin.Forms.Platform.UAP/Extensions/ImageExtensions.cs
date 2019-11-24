@@ -42,6 +42,32 @@ namespace Xamarin.Forms.Platform.UWP
 			throw new InvalidCastException($"\"{source.GetType().FullName}\" is not supported.");
 		}
 
+		public static Microsoft.UI.Xaml.Controls.IconSource ToWindowsIconSource(this ImageSource source)
+		{
+			return source.ToWindowsIconSourceAsync().GetAwaiter().GetResult();
+		}
+
+		public static async Task<Microsoft.UI.Xaml.Controls.IconSource> ToWindowsIconSourceAsync(this ImageSource source, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			if (source == null || source.IsEmpty)
+				return null;
+
+			var handler = Registrar.Registered.GetHandlerForObject<IIconElementHandler>(source);
+			if (handler == null)
+				return null;
+
+			try
+			{
+				return await handler.LoadIconSourceAsync(source, cancellationToken);
+			}
+			catch (OperationCanceledException)
+			{
+				// no-op
+			}
+
+			return null;
+		}
+
 		public static IconElement ToWindowsIconElement(this ImageSource source)
 		{
 			return source.ToWindowsIconElementAsync().GetAwaiter().GetResult();

@@ -41,7 +41,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			data.CollectionChanged += (_, e) =>
 			{
-				var log = $"<{DateTime.Now.ToLongTimeString()}> {e.Action} action fired.";
+				var log = $"<{DateTime.Now.ToString("T")}> {e.Action} action fired.";
 				System.Diagnostics.Debug.WriteLine(log);
 			};
 			var label = new Label { Text = "Click the Add 2 button." };

@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var button = new Button { Text = "Change Text" };
 			button.Clicked += (sender, args) =>
 			{
-				_label.Text = DateTime.Now.ToLongDateString() + " " + DateTime.Now.ToLongTimeString();
+				_label.Text = DateTime.Now.ToString("F");
 			};
 
 			_label = new Label

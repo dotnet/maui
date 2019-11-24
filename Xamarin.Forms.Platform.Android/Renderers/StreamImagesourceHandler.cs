@@ -7,7 +7,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public sealed class StreamImagesourceHandler : IImageSourceHandler
+	public sealed class StreamImagesourceHandler : IImageSourceHandler, IAnimationSourceHandler
 	{
 		public async Task<Bitmap> LoadImageAsync(ImageSource imagesource, Context context, CancellationToken cancelationToken = default(CancellationToken))
 		{
@@ -25,6 +25,11 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			return bitmap;
+		}
+
+		public Task<IFormsAnimationDrawable> LoadImageAnimationAsync(ImageSource imagesource, Context context, CancellationToken cancelationToken = default, float scale = 1)
+		{
+			return FormsAnimationDrawable.LoadImageAnimationAsync(imagesource, context, cancelationToken);
 		}
 	}
 }

@@ -3,6 +3,7 @@ using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 using static Xamarin.Forms.PlatformConfiguration.WindowsSpecific.RefreshView;
+using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
 
 namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 {
@@ -29,7 +30,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 			refreshView.SetBinding(RefreshView.CommandProperty, "RefreshCommand");
 			refreshView.SetBinding(RefreshView.IsRefreshingProperty, "IsRefreshing");
 
-			refreshView.On<Windows>().SetRefreshPullDirection(RefreshPullDirection.BottomToTop);
+			refreshView.On<WindowsOS>().SetRefreshPullDirection(RefreshPullDirection.BottomToTop);
 
 			var listView = new ListView
 			{

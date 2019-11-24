@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Controls.Issues
 			Items.CollectionChanged += (_, e) =>
 			{
 				statusLabel.Text = "Success";
-				var log = $"<{DateTime.Now.ToLongTimeString()}> {e.Action} action fired.";
+				var log = $"<{DateTime.Now.ToString("T")}> {e.Action} action fired.";
 				actionLabel.Text += $"{log}{Environment.NewLine}";
 				System.Diagnostics.Debug.WriteLine(log);
 			};

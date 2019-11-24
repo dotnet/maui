@@ -113,8 +113,51 @@ namespace Xamarin.Forms.Platform.iOS
 		}
 
 		protected override UIButton CreateNativeControl()
+		{			
+			return new FormsButton();
+		}
+
+		class FormsButton : UIButton
 		{
-			return new UIButton(UIButtonType.System);
+			UIImageView _imageView;
+			public FormsButton() : base()
+			{
+			}
+
+			public override void LayoutSubviews()
+			{
+				base.LayoutSubviews();
+			}
+
+			public override void AddSubview(UIView view)
+			{
+				base.AddSubview(view);
+			}
+
+
+			public override void InsertSubview(UIView view, nint atIndex)
+			{
+				base.InsertSubview(view, atIndex);
+			}
+			public override UIImageView ImageView
+			{
+				get
+				{
+					if (_imageView == null)
+					{
+						_imageView = new FormsUIImageView();
+					}
+
+					return _imageView;
+				}
+			}
+
+
+			//[Export("imageViewClass")]
+			//public static ObjCRuntime.Class imageViewClass()
+			//{
+			//	return new ObjCRuntime.Class(typeof(FormsUIImageView));
+			//}
 		}
 
 		protected override void SetAccessibilityLabel()

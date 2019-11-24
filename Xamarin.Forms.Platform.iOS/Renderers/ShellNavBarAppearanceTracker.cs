@@ -1,44 +1,29 @@
-﻿using UIKit;
+﻿using System;
+using System.ComponentModel;
+using CoreGraphics;
+using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {
 	public class ShellNavBarAppearanceTracker : IShellNavBarAppearanceTracker
 	{
-		UIView _blurView;
-		UIView _colorView;
-		UIImage _defaultBackgroundImage;
+		UIColor _defaultBarTint;
 		UIColor _defaultTint;
 		UIStringAttributes _defaultTitleAttributes;
-		bool _disposed = false;
+		float _shadowOpacity = float.MinValue;
+		CGColor _shadowColor;
 
-		public void UpdateLayout (UINavigationController controller)
+		public void UpdateLayout(UINavigationController controller)
 		{
-			if (_blurView?.Superview == null)
-				return;
-
-			var navBar = controller.NavigationBar;
-			navBar.SendSubviewToBack(_colorView);
-			navBar.SendSubviewToBack(_blurView);
-
-			var frame = navBar.Frame;
-			frame.Height += frame.Y;
-			frame.Y = -frame.Y;
-
-			_blurView.Frame = frame;
-			_colorView.Frame = frame;
 		}
 
 		public void ResetAppearance(UINavigationController controller)
 		{
-			if (_blurView != null)
+			if (_defaultTint != null)
 			{
 				var navBar = controller.NavigationBar;
-				navBar.SetBackgroundImage(_defaultBackgroundImage, UIBarMetrics.Default);
 				navBar.TintColor = _defaultTint;
 				navBar.TitleTextAttributes = _defaultTitleAttributes;
-
-				_blurView.RemoveFromSuperview();
-				_colorView.RemoveFromSuperview();
 			}
 		}
 
@@ -50,42 +35,15 @@ namespace Xamarin.Forms.Platform.iOS
 
 			var navBar = controller.NavigationBar;
 
-			if (_blurView == null)
+			if (_defaultTint == null)
 			{
-				_defaultBackgroundImage = navBar.GetBackgroundImage(UIBarMetrics.Default);
+				_defaultBarTint = navBar.BarTintColor;
 				_defaultTint = navBar.TintColor;
 				_defaultTitleAttributes = navBar.TitleTextAttributes;
-
-				var frame = navBar.Frame;
-				frame.Height += frame.Y;
-				frame.Y = -frame.Y;
-
-				var effect = UIBlurEffect.FromStyle(UIBlurEffectStyle.Regular);
-				_blurView = new UIVisualEffectView(effect);
-				_blurView.UserInteractionEnabled = false;
-				_blurView.Frame = frame;
-
-				_colorView = new UIView(frame);
-				_colorView.UserInteractionEnabled = false;
-
-				if (Forms.IsiOS11OrNewer)
-				{
-					_blurView.Layer.ShadowColor = UIColor.Black.CGColor;
-					_blurView.Layer.ShadowOpacity = 1f;
-					_blurView.Layer.ShadowRadius = 3;
-				}
 			}
-
-			navBar.SetBackgroundImage(new UIImage(), UIBarMetrics.Default);
-
-			navBar.InsertSubview(_colorView, 0);
-			navBar.InsertSubview(_blurView, 0);
 
 			if (!background.IsDefault)
-			{
-				_colorView.BackgroundColor = background.ToUIColor();
-			}
-
+				navBar.BarTintColor = background.ToUIColor();
 			if (!foreground.IsDefault)
 				navBar.TintColor = foreground.ToUIColor();
 			if (!titleColor.IsDefault)
@@ -98,36 +56,38 @@ namespace Xamarin.Forms.Platform.iOS
 		}
 
 		#region IDisposable Support
-		
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!_disposed)
-			{
-				if (disposing)
-				{
-					if (_blurView != null)
-					{
-						_blurView.RemoveFromSuperview();
-						_blurView.Dispose();
-					}
-
-					if (_colorView != null)
-					{
-						_colorView.RemoveFromSuperview();
-						_colorView.Dispose();
-					}
-				}
-
-				_colorView = null;
-				_blurView = null;
-
-				_disposed = true;
-			}
 		}
 
 		public void Dispose()
 		{
 			Dispose(true);
+		}
+
+		public virtual void SetHasShadow(UINavigationController controller, bool hasShadow)
+		{
+			var navigationBar = controller.NavigationBar;
+			if (_shadowOpacity == float.MinValue)
+			{
+				// Don't do anything if user hasn't changed the shadow to true
+				if (!hasShadow)
+					return;
+
+				_shadowOpacity = navigationBar.Layer.ShadowOpacity;
+				_shadowColor = navigationBar.Layer.ShadowColor;
+			}
+
+			if (hasShadow)
+			{
+				navigationBar.Layer.ShadowColor = UIColor.Black.CGColor;
+				navigationBar.Layer.ShadowOpacity = 1.0f;
+			}
+			else
+			{
+				navigationBar.Layer.ShadowColor = _shadowColor;
+				navigationBar.Layer.ShadowOpacity = _shadowOpacity;
+			}
 		}
 		#endregion
 	}

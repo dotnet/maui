@@ -13,6 +13,7 @@ using Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries;
 using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
 using Xamarin.Forms.Controls.GalleryPages.RefreshViewGalleries;
+using Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries;
 
 namespace Xamarin.Forms.Controls
 {
@@ -287,6 +288,7 @@ namespace Xamarin.Forms.Controls
 				new GalleryPageFactory(() => new MemoryLeakGallery(), "Memory Leak"),
 				new GalleryPageFactory(() => new Issues.A11yTabIndex(), "Accessibility TabIndex"),
 				new GalleryPageFactory(() => new FontImageSourceGallery(), "Font ImageSource"),
+				new GalleryPageFactory(() => new IndicatorsSample(), "Indicator Gallery"),
 				new GalleryPageFactory(() => new CarouselViewGallery(), "CarouselView Gallery"),           
 				new GalleryPageFactory(() => new CarouselViewCoreGalleryPage(), "CarouselView Core Gallery"),
 				new GalleryPageFactory(() => new CollectionViewGallery(), "CollectionView Gallery"),
@@ -350,6 +352,8 @@ namespace Xamarin.Forms.Controls
 				new GalleryPageFactory(() => new SliderCoreGalleryPage(), "Slider Gallery"),
 				new GalleryPageFactory(() => new StepperCoreGalleryPage(), "Stepper Gallery"),
 				new GalleryPageFactory(() => new SwitchCoreGalleryPage(), "Switch Gallery"),
+				new GalleryPageFactory(() => new SwipeViewCoreGalleryPage(), "SwipeView Core Gallery"),
+				new GalleryPageFactory(() => new SwipeViewGallery(), "SwipeView Gallery"),
 				new GalleryPageFactory(() => new TableViewCoreGalleryPage(), "TableView Gallery"),
 				new GalleryPageFactory(() => new TimePickerCoreGalleryPage(), "TimePicker Gallery"),
 				new GalleryPageFactory(() => new VisualGallery(), "Visual Gallery"),
@@ -372,7 +376,8 @@ namespace Xamarin.Forms.Controls
 				new GalleryPageFactory(() => new DisposeGallery(), "Dispose Gallery - Legacy"),
 				new GalleryPageFactory(() => new EditorGallery(), "Editor Gallery - Legacy"),
 				new GalleryPageFactory(() => new EntryGallery(), "Entry Gallery - Legacy"),
-				new GalleryPageFactory(() => new FrameGallery (), "Frame Gallery - Legacy"),
+				new GalleryPageFactory(() => new FrameGallery (), "Frame Gallery - Legacy"),    
+   	    		new GalleryPageFactory(() => new GifGallery(), "Gif Support Gallery"),
 				new GalleryPageFactory(() => new GridGallery(), "Grid Gallery - Legacy"),
 				new GalleryPageFactory(() => new GroupedListActionsGallery(), "GroupedListActions Gallery - Legacy"),
 				new GalleryPageFactory(() => new GroupedListContactsGallery(), "GroupedList Gallery - Legacy"),
@@ -516,7 +521,7 @@ namespace Xamarin.Forms.Controls
 			if (string.IsNullOrWhiteSpace(filter))
 				ItemsSource = _pages;
 			else
-				ItemsSource = _pages.Where(p => p.Title.IndexOf(filter, StringComparison.InvariantCultureIgnoreCase) != -1);
+				ItemsSource = _pages.Where(p => p.Title.IndexOf(filter, StringComparison.OrdinalIgnoreCase) != -1);
 		}
 	}
 	[Preserve(AllMembers = true)]

@@ -9,6 +9,8 @@ namespace Xamarin.Forms.Controls
 {
 	public class ImageGallery : ContentPage
 	{
+		Image _autoPlayGif;
+
 		public ImageGallery()
 		{
 
@@ -19,6 +21,8 @@ namespace Xamarin.Forms.Controls
 			var rotate = new Image { Source = ImageSource.FromFile("cover1.jpg") };
 			var transparent = new Image { Source = ImageSource.FromFile("cover1.jpg") };
 			var embedded = new Image { Source = ImageSource.FromResource("Xamarin.Forms.Controls.GalleryPages.crimson.jpg", typeof(ImageGallery).GetTypeInfo().Assembly) };
+			var gif = new Image { Source = "GifOne.gif" };
+			_autoPlayGif = new Image { Source = "GifOne.gif" };
 
 			// let the stack shrink the images
 			normal.MinimumHeightRequest = normal.MinimumHeightRequest = 10;
@@ -55,6 +59,10 @@ namespace Xamarin.Forms.Controls
 									rotate,
 									new Label(){ Text = "Embedded"},
 									embedded,
+									new Label(){ Text = "Gif"},
+									embedded,
+									new Label(){ Text = "Autoplay Gif"},
+									_autoPlayGif,
 									new Label(){ Text = "Horizontal"},
 									new StackLayout
 									{
@@ -85,6 +93,13 @@ namespace Xamarin.Forms.Controls
 						}
 					}
 				};
+		}
+
+
+		protected override void OnAppearing()
+		{
+			base.OnAppearing();
+			_autoPlayGif.IsAnimationPlaying = true;
 		}
 	}
 }

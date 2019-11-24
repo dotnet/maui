@@ -388,9 +388,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 		private void UpdateEntryText()
 		{
-			_comboBox.Entry.Text = string.IsNullOrEmpty(_dateFormat)
-				? _currentDate.ToLongDateString()
-				: _currentDate.ToString(_dateFormat);
+			_comboBox.Entry.Text = _currentDate.ToString(string.IsNullOrEmpty(_dateFormat)? "D" : _dateFormat);
 		}
 
 		private void OnBtnShowCalendarClicked(object sender, EventArgs e)

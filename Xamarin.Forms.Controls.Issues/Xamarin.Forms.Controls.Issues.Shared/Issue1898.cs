@@ -5,6 +5,8 @@ using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using AToolbarPlacement = Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ToolbarPlacement;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 
+using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
@@ -117,7 +119,7 @@ namespace Xamarin.Forms.Controls.Issues
 			tabbedPage.On<Android>().SetBarSelectedItemColor(Color.Green);
 #pragma warning restore CS0618 // Type or member is obsolete
 			tabbedPage.On<Android>().SetToolbarPlacement(placement);
-			tabbedPage.On<Windows>().SetHeaderIconsEnabled(true);
+			tabbedPage.On<WindowsOS>().SetHeaderIconsEnabled(true);
 		}
 	}
 }

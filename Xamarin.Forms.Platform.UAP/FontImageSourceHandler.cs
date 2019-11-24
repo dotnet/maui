@@ -51,6 +51,24 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
+		public Task<Microsoft.UI.Xaml.Controls.IconSource> LoadIconSourceAsync(ImageSource imagesource, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			Microsoft.UI.Xaml.Controls.IconSource image = null;
+
+			if (imagesource is FontImageSource fontImageSource)
+			{
+				image = new Microsoft.UI.Xaml.Controls.FontIconSource
+				{
+					Glyph = fontImageSource.Glyph,
+					FontFamily = new FontFamily(fontImageSource.FontFamily),
+					FontSize = fontImageSource.Size,
+					Foreground = fontImageSource.Color.ToBrush()
+				};
+			}
+
+			return Task.FromResult(image);
+		}
+
 		public Task<IconElement> LoadIconElementAsync(ImageSource imagesource, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			IconElement image = null;

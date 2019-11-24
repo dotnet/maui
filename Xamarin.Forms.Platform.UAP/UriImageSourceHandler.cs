@@ -3,20 +3,47 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage.Streams;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public sealed class UriImageSourceHandler : IImageSourceHandler
+	public sealed class UriImageSourceHandler : IImageSourceHandler, IIconElementHandler
 	{
+		public Task<IconElement> LoadIconElementAsync(ImageSource imagesource, CancellationToken cancellationToken = default)
+		{
+			var imageLoader = imagesource as UriImageSource;
+
+			if (imageLoader?.Uri == null)
+				return null;
+
+			IconElement image = new BitmapIcon { UriSource = imageLoader?.Uri };
+
+			return Task.FromResult(image);
+		}
+
+		public Task<Microsoft.UI.Xaml.Controls.IconSource> LoadIconSourceAsync(ImageSource imagesource, CancellationToken cancellationToken = default)
+		{
+			var imageLoader = imagesource as UriImageSource;
+
+			if (imageLoader?.Uri == null)
+				return null;
+
+			Microsoft.UI.Xaml.Controls.IconSource image = new Microsoft.UI.Xaml.Controls.BitmapIconSource { UriSource = imageLoader?.Uri };
+
+			return Task.FromResult(image);
+		}
+
 		public async Task<Windows.UI.Xaml.Media.ImageSource> LoadImageAsync(ImageSource imagesource, CancellationToken cancellationToken = new CancellationToken())
 		{
 			var imageLoader = imagesource as UriImageSource;
+
 			if (imageLoader?.Uri == null)
 				return null;
 
 			Stream streamImage = await imageLoader.GetStreamAsync(cancellationToken);
+
 			if (streamImage == null || !streamImage.CanRead)
 			{
 				return null;

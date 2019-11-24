@@ -4,6 +4,8 @@ using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 
+using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+
 namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 {
     internal static class WindowsPlatformSpecificsGalleryHelpers
@@ -86,10 +88,10 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
             Type enumType = typeof(ToolbarPlacement);
 
             return CreateChanger(enumType,
-                Enum.GetName(enumType, page.On<Windows>().GetToolbarPlacement()),
+                Enum.GetName(enumType, page.On<WindowsOS>().GetToolbarPlacement()),
                 picker =>
                 {
-                    page.On<Windows>().SetToolbarPlacement((ToolbarPlacement)Enum.Parse(enumType, picker.Items[picker.SelectedIndex]));
+                    page.On<WindowsOS>().SetToolbarPlacement((ToolbarPlacement)Enum.Parse(enumType, picker.Items[picker.SelectedIndex]));
                 }, "Select Toolbar Placement");
         }
 

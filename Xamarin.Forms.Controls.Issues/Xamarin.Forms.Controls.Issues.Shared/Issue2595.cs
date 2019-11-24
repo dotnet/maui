@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Timers;
+using System.Threading;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
@@ -48,7 +48,6 @@ namespace Xamarin.Forms.Controls.Issues
 		[Preserve(AllMembers = true)]
 		public class _2595ScrollPage : ContentPage
 		{
-			readonly Timer _timer = new Timer(1000);
 			protected Label Label;
 
 			public _2595ScrollPage() {
@@ -76,9 +75,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 			protected override void OnAppearing() {
 				base.OnAppearing();
-				_timer.Elapsed += (s, e) => Device.BeginInvokeOnMainThread(OnTimerElapsed);
 
-				_timer.Start();
+				Timer timer = new Timer((o) => Device.BeginInvokeOnMainThread(OnTimerElapsed), new AutoResetEvent(true), 0, 1000);
 			}
 
 			void OnTimerElapsed() {

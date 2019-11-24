@@ -6,6 +6,8 @@ using NUnit.Framework;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 
+using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public partial class PlatformSpecific : MasterDetailPage
@@ -28,8 +30,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void PlatformSpecificPropertyIsSet(bool useCompiledXaml)
 			{
 				var layout = new PlatformSpecific(useCompiledXaml);
-				Assert.AreEqual(layout.On<Windows>().GetCollapseStyle(), CollapseStyle.Partial);
-				Assert.AreEqual(layout.On<Windows>().CollapsedPaneWidth(), 96d);
+				Assert.AreEqual(layout.On<WindowsOS>().GetCollapseStyle(), CollapseStyle.Partial);
+				Assert.AreEqual(layout.On<WindowsOS>().CollapsedPaneWidth(), 96d);
 			}
 		}
 	}

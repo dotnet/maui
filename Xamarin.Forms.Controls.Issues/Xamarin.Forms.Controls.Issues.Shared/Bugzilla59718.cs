@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 
+using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+
 #if UITEST
 using NUnit.Framework;
 #endif
@@ -70,7 +72,7 @@ namespace Xamarin.Forms.Controls.Issues
 				})
 			};
 
-			_list.On<Windows>().SetSelectionMode(Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ListViewSelectionMode.Inaccessible);
+			_list.On<WindowsOS>().SetSelectionMode(Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ListViewSelectionMode.Inaccessible);
 
 			_list.ItemTapped += ListView_ItemTapped;
 

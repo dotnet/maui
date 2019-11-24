@@ -14,6 +14,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override CGSize Measure()
 		{
+			if (VisualElementRenderer?.Element == null)
+			{
+				return CGSize.Empty;
+			}
+
 			var measure = VisualElementRenderer.Element.Measure(ConstrainedDimension, 
 				double.PositiveInfinity, MeasureFlags.IncludeMargins);
 

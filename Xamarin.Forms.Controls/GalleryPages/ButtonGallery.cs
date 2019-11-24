@@ -70,6 +70,7 @@ namespace Xamarin.Forms.Controls
 			var alert = new Button { Text = "Alert" };
 			var alertSingle = new Button {Text = "Alert Single"};
 			var image = new Button { Text = "Image Button", ImageSource = new FileImageSource {File = "bank.png"}, BackgroundColor = Color.Blue.WithLuminosity (.8) };
+			var gif = new Button { ImageSource = "GifOne.gif" };
 
 			themedButton.Clicked += (sender, args) => themedButton.Font = Font.Default;
 
@@ -124,6 +125,7 @@ namespace Xamarin.Forms.Controls
 						alert,
 						alertSingle,
 						image,
+						gif
 					}
 				}
 			};

@@ -35,7 +35,26 @@
 
 								<Border x:Name="TopCommandBarArea" HorizontalAlignment="Stretch" Background="{TemplateBinding ToolbarBackground}">
 									<uwp:FormsCommandBar x:Name="CommandBar" Background="{TemplateBinding ToolbarBackground}" MinHeight="{ThemeResource TitleBarHeight}" HorizontalAlignment="Stretch">
-										<uwp:FormsCommandBar.Content>
+                                        <uwp:FormsCommandBar.Resources>
+                                            <Thickness x:Key="AppBarButtonContentViewboxMargin">12,14,0,14</Thickness>
+                                            <Thickness x:Key="AppBarButtonContentViewboxCompactMargin">0,14,0,14</Thickness>
+                                            <Thickness x:Key="AppBarButtonContentViewboxCollapsedMargin">0,14,0,4</Thickness>
+                                            <Thickness x:Key="AppBarButtonOverflowTextTouchMargin">0,11,0,13</Thickness>
+                                            <Thickness x:Key="AppBarButtonOverflowTextLabelPadding">0,5,0,7</Thickness>
+                                            <Thickness x:Key="AppBarButtonTextLabelMargin">2,0,2,8</Thickness>
+                                            <Thickness x:Key="AppBarButtonTextLabelOnRightMargin">8,15,12,17</Thickness>
+                                            <Thickness x:Key="AppBarToggleButtonOverflowTextTouchMargin">0,11,0,13</Thickness>
+                                            <Thickness x:Key="AppBarToggleButtonOverflowCheckTouchMargin">12,12,12,12</Thickness>
+                                            <Thickness x:Key="AppBarToggleButtonOverflowCheckMargin">12,6,12,6</Thickness>
+                                            <Thickness x:Key="AppBarToggleButtonTextLabelMargin">2,0,2,8</Thickness>
+                                            <Thickness x:Key="AppBarToggleButtonTextLabelOnRightMargin">8,15,12,17</Thickness>
+                                            <Thickness x:Key="AppBarToggleButtonOverflowTextLabelPadding">0,5,0,7</Thickness>
+                                            <x:Double x:Key="AppBarButtonContentHeight">20</x:Double>
+                                            <x:Double x:Key="AppBarThemeMinHeight">60</x:Double>
+                                            <!-- We probably want to keep this in sync with TitleBarHeight in Resources.xaml -->
+                                            <x:Double x:Key="AppBarThemeCompactHeight">48</x:Double>
+                                        </uwp:FormsCommandBar.Resources>
+                                        <uwp:FormsCommandBar.Content>
 											<Border x:Name="TitleArea" Height="{ThemeResource TitleBarHeight}" Visibility="{TemplateBinding DetailTitleVisibility}" HorizontalAlignment="Stretch">
 												<Grid x:Name="TitleViewPresenter" VerticalAlignment="Center" Background="{TemplateBinding ToolbarBackground}" HorizontalAlignment="Stretch">
 

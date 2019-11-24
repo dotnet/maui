@@ -38,6 +38,7 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty IsPressedProperty = IsPressedPropertyKey.BindableProperty;
 
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
+
 		public event EventHandler Clicked;
 		public event EventHandler Pressed;
 		public event EventHandler Released;
@@ -196,10 +197,16 @@ namespace Xamarin.Forms
 		void IButtonElement.OnCommandCanExecuteChanged(object sender, EventArgs e) =>
 			ButtonElement.CommandCanExecuteChanged(this, EventArgs.Empty);
 
+		bool IImageElement.IsAnimationPlaying
+		{
+			get => false;
+		}
 
 		bool IBorderElement.IsCornerRadiusSet() => IsSet(CornerRadiusProperty);
 		bool IBorderElement.IsBackgroundColorSet() => IsSet(BackgroundColorProperty);
 		bool IBorderElement.IsBorderColorSet() => IsSet(BorderColorProperty);
 		bool IBorderElement.IsBorderWidthSet() => IsSet(BorderWidthProperty);
+
+		bool IImageController.GetLoadAsAnimation() => false;
 	}
 }
