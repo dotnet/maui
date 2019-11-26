@@ -333,7 +333,7 @@ namespace Xamarin.Forms.Platform.UWP
 			return WSnapPointsAlignment.Center;
 		}
 
-		void FindScrollViewer(ListViewBase listView)
+		protected override void FindScrollViewer(ListViewBase listView)
 		{
 			var scrollViewer = listView.GetFirstDescendant<ScrollViewer>();
 
