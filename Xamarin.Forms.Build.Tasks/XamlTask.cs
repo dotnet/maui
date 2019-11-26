@@ -62,7 +62,7 @@ namespace Xamarin.Forms.Build.Tasks
 					}
 
 					XamlParser.ParseXaml(
-						rootnode = new ILRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), typeReference, reader as IXmlNamespaceResolver), reader);
+						rootnode = new ILRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), typeReference, reader as IXmlNamespaceResolver, ((IXmlLineInfo)reader).LineNumber, ((IXmlLineInfo)reader).LinePosition), reader);
 					break;
 				}
 			}

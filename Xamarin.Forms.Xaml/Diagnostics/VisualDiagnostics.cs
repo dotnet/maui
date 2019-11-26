@@ -1,21 +1,23 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace Xamarin.Forms.Xaml.Diagnostics
 {
-	class VisualDiagnostics
+	public class VisualDiagnostics
 	{
 		static ConditionalWeakTable<object, XamlSourceInfo> sourceInfos = new ConditionalWeakTable<object, XamlSourceInfo>();
-		internal static void RegisterSourceInfo(object target, Uri uri, int lineNumber, int linePosition)
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void RegisterSourceInfo(object target, Uri uri, int lineNumber, int linePosition)
 		{
-			if (DebuggerHelper.DebuggerIsAttached && !sourceInfos.TryGetValue(target, out _))
+			if (target != null && DebuggerHelper.DebuggerIsAttached && !sourceInfos.TryGetValue(target, out _))
 				sourceInfos.Add(target, new XamlSourceInfo(uri, lineNumber, linePosition));
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		internal static void SendVisualTreeChanged(object parent, object child)
 		{
 			if (DebuggerHelper.DebuggerIsAttached)
@@ -26,7 +28,7 @@ namespace Xamarin.Forms.Xaml.Diagnostics
 		public static XamlSourceInfo GetXamlSourceInfo(object obj) => sourceInfos.TryGetValue(obj, out var sourceinfo) ? sourceinfo : null;
 	}
 
-	class XamlSourceInfo
+	public class XamlSourceInfo
 	{
 		public XamlSourceInfo(Uri sourceUri, int lineNumber, int linePosition)
 		{
@@ -47,7 +49,7 @@ namespace Xamarin.Forms.Xaml.Diagnostics
 		}
 	}
 
-	class VisualTreeChangeEventArgs : EventArgs
+	public class VisualTreeChangeEventArgs : EventArgs
 	{
 		public VisualTreeChangeEventArgs(object parent, object child, int childIndex, VisualTreeChangeType changeType)
 		{
@@ -63,7 +65,7 @@ namespace Xamarin.Forms.Xaml.Diagnostics
 		public VisualTreeChangeType ChangeType { get; }
 	}
 
-	enum VisualTreeChangeType
+	public enum VisualTreeChangeType
 	{
 		Add = 0,
 		Remove = 1
