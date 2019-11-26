@@ -61,6 +61,13 @@
     </ItemGroup>
 
     <Message Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'" Importance="high" Text="##vso[build.addbuildtag]$(NightlyTag)"/>
+    <ItemGroup>
+       <XamarinFormsVersionFile Include="../.XamarinFormsVersionFile.txt"/>
+       <XamarinFormsVersionLine Include="$(PackageVersion)"/>
+    </ItemGroup>
+    
+    <!-- Occasionally this throws an error from parallel builds writing to this file. It's fine if only one of them wins. -->
+    <WriteLinesToFile ContinueOnError="WarnAndContinue" File="@(XamarinFormsVersionFile)" Lines="@(XamarinFormsVersionLine)" Overwrite="true" />
     <Message Condition="$(CI)" Importance="high" Text="##vso[build.updatebuildnumber]$(PackageVersion)"/>
     <Message Condition="$(CI)" Importance="high" Text="##vso[task.setvariable variable=XamarinFormsPackageVersion;isOutput=true;]$(PackageVersion)"/>
   </Target>
