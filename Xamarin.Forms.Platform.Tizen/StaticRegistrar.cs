@@ -98,7 +98,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			Registered.Register(typeof(NativeViewWrapper), typeof(NativeViewWrapperRenderer));
 			Registered.Register(typeof(WebView), typeof(WebViewRenderer));
 			Registered.Register(typeof(ImageButton), typeof(ImageButtonRenderer));
-			Registered.Register(typeof(ItemsView), typeof(ItemsViewRenderer));
+			Registered.Register(typeof(ItemsView), typeof(ItemsViewRenderer<StructuredItemsView, Native.CollectionView>));
 
 			//ImageSourceHandlers
 			Registered.Register(typeof(FileImageSource), typeof(FileImageSourceHandler));
