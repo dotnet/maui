@@ -114,7 +114,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			Y = Scroller.Geometry.Y - Scroller.CurrentRegion.Y
 		};
 
-		ESize AllocatedSize { get; set; }
+		protected ESize AllocatedSize { get; set; }
 
 		Rect ViewPort => Scroller.CurrentRegion;
 
