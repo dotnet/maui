@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using ElmSharp;
-using Xamarin.Forms.Internals;
 using EGestureType = ElmSharp.GestureLayer.GestureType;
 
 namespace Xamarin.Forms.Platform.Tizen
@@ -476,7 +475,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		GestureHandler CreateHandler(IGestureRecognizer recognizer)
 		{
-			return Registrar.Registered.GetHandlerForObject<GestureHandler>(recognizer, recognizer);
+			return Forms.GetHandlerForObject<GestureHandler>(recognizer, recognizer);
 		}
 
 		GestureHandler LookupHandler(IGestureRecognizer recognizer)

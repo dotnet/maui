@@ -446,7 +446,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				return cache[type];
 
 			CellRenderer renderer = null;
-			renderer = Registrar.Registered.GetHandler<CellRenderer>(type);
+			renderer = Forms.GetHandler<CellRenderer>(type);
 
 			if (renderer == null)
 			{

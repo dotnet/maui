@@ -208,14 +208,19 @@ namespace Xamarin.Forms.Platform.Tizen
 				_assemblies.Add(GetType().GetTypeInfo().Assembly);
 			}
 
+			public void AddAssembly(Assembly assembly)
+			{
+				if (!_assemblies.Contains(assembly))
+				{
+					_assemblies.Add(assembly);
+				}
+			}
+
 			public void AddAssemblies(Assembly[] assemblies)
 			{
 				foreach (var asm in assemblies)
 				{
-					if (!_assemblies.Contains(asm))
-					{
-						_assemblies.Add(asm);
-					}
+					AddAssembly(asm);
 				}
 			}
 

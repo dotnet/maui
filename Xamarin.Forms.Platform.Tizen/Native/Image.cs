@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using ElmSharp;
-using Xamarin.Forms.Internals;
 using EImage = ElmSharp.Image;
 using ESize = ElmSharp.Size;
 
@@ -55,7 +54,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		{
 			IImageSourceHandler handler;
 			bool isLoadComplate = false;
-			if (source != null && (handler = Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
+			if (source != null && (handler = Forms.GetHandlerForObject<IImageSourceHandler>(source)) != null)
 			{
 				isLoadComplate = await handler.LoadImageAsync(this, source);
 			}
