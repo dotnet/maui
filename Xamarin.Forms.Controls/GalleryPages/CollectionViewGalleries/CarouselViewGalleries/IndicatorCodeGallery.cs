@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 
 			layout.Children.Add(carouselView);
 
-			var generator = new ItemsSourceGenerator(carouselView, nItems, ItemsSourceType.ObservableCollection, false);
+			var generator = new ItemsSourceGenerator(carouselView, nItems, ItemsSourceType.ObservableCollection);
 
 			layout.Children.Add(generator);
 
