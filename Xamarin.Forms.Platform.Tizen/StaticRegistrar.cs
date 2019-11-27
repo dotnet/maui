@@ -98,7 +98,9 @@ namespace Xamarin.Forms.Platform.Tizen
 			Registered.Register(typeof(NativeViewWrapper), typeof(NativeViewWrapperRenderer));
 			Registered.Register(typeof(WebView), typeof(WebViewRenderer));
 			Registered.Register(typeof(ImageButton), typeof(ImageButtonRenderer));
-			Registered.Register(typeof(ItemsView), typeof(ItemsViewRenderer<StructuredItemsView, Native.CollectionView>));
+			Registered.Register(typeof(StructuredItemsView), typeof(StructuredItemsViewRenderer));
+			Registered.Register(typeof(CarouselView), typeof(CarouselViewRenderer));
+			Registered.Register(typeof(SwipeView), typeof(SwipeViewRenderer));
 
 			//ImageSourceHandlers
 			Registered.Register(typeof(FileImageSource), typeof(FileImageSourceHandler));
@@ -116,6 +118,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			Registered.Register(typeof(TapGestureRecognizer), typeof(TapGestureHandler));
 			Registered.Register(typeof(PinchGestureRecognizer), typeof(PinchGestureHandler));
 			Registered.Register(typeof(PanGestureRecognizer), typeof(PanGestureHandler));
+			Registered.Register(typeof(SwipeGestureRecognizer), typeof(SwipeGestureHandler));
 
 			//Dependencies
 			DependencyService.Register<ISystemResourcesProvider, ResourcesProvider>();
