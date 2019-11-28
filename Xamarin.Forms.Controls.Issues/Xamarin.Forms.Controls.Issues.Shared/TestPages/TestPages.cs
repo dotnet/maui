@@ -786,7 +786,7 @@ namespace Xamarin.Forms.Controls.Issues
 	using System;
 	using NUnit.Framework;
 
-	// Run setup once for all tests in the Xamarin.Forms.Controls.Issues namespace
+// Run setup once for all tests in the Xamarin.Forms.Controls.Issues namespace
 	// (instead of once for each test)
 	[SetUpFixture]
 	public class IssuesSetup
