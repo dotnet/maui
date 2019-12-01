@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Foundation;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -6,6 +7,7 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		CarouselView CarouselView => Element;
 
+		[Preserve(Conditional = true)]
 		public CarouselViewRenderer()
 		{
 			CarouselView.VerifyCarouselViewFlagEnabled(nameof(CarouselViewRenderer));

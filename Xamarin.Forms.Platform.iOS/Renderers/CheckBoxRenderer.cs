@@ -1,9 +1,11 @@
 ﻿using System;
+using Foundation;
 
 namespace Xamarin.Forms.Platform.iOS
 {
 	public class CheckBoxRenderer : CheckBoxRendererBase<FormsCheckBox>
 	{
+		[Preserve(Conditional = true)]
 		public CheckBoxRenderer()
 		{
 		}

@@ -21,6 +21,7 @@ namespace Xamarin.Forms.Platform.iOS
 		VisualElementTracker _tracker;
 		Page _previousPage;
 
+		[Preserve(Conditional = true)]
 		public CarouselPageRenderer()
 		{
 		}

@@ -8,6 +8,7 @@ using Foundation;
 using UIKit;
 using Xamarin.Forms.Internals;
 using RectangleF = CoreGraphics.CGRect;
+using PreserveAttribute = Foundation.PreserveAttribute;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -32,6 +33,7 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		bool _isDisposed;
 
+		[Preserve(Conditional = true)]
 		public ImageRenderer() : base()
 		{
 			ImageElementManager.Init(this);

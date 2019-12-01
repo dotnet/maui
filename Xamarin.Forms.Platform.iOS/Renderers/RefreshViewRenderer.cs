@@ -118,7 +118,7 @@ namespace Xamarin.Forms.Platform.iOS
 				return true;
 			}
 
-			if (view is UIWebView)
+			if (view is WkWebViewRenderer)
 			{
 				return true;
 			}
@@ -155,7 +155,7 @@ namespace Xamarin.Forms.Platform.iOS
 				return true;
 			}
 
-			if (view is UIWebView webView)
+			if (view is WkWebViewRenderer webView)
 			{
 				webView.ScrollView.InsertSubview(_refreshControl, index);
 				return true;

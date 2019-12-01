@@ -14,6 +14,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		UILabel _placeholderLabel;
 
+		[Preserve(Conditional = true)]
 		public EditorRenderer()
 		{
 			Frame = new RectangleF(0, 20, 320, 40);

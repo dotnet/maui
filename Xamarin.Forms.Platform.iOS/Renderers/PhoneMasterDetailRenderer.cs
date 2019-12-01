@@ -28,6 +28,7 @@ namespace Xamarin.Forms.Platform.iOS
 		Page Page => Element as Page;
 
 
+		[Preserve(Conditional = true)]
 		public PhoneMasterDetailRenderer()
 		{
 		}

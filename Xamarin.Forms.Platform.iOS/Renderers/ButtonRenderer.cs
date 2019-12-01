@@ -8,6 +8,7 @@ using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using Specifics = Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using SizeF = CoreGraphics.CGSize;
+using PreserveAttribute = Foundation.PreserveAttribute;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -35,6 +36,7 @@ namespace Xamarin.Forms.Platform.iOS
 		IImageVisualElementRenderer IButtonLayoutRenderer.ImageVisualElementRenderer => this;
 		nfloat IButtonLayoutRenderer.MinimumHeight => _minimumButtonHeight;
 
+		[Preserve(Conditional = true)]
 		public ButtonRenderer()
 		{
 			BorderElementManager.Init(this);

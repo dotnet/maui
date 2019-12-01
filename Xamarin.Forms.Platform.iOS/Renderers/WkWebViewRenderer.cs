@@ -7,6 +7,7 @@ using ObjCRuntime;
 using UIKit;
 using WebKit;
 using Xamarin.Forms.Internals;
+using PreserveAttribute = Foundation.PreserveAttribute;
 using Uri = System.Uri;
 
 namespace Xamarin.Forms.Platform.iOS
@@ -20,10 +21,15 @@ namespace Xamarin.Forms.Platform.iOS
 #pragma warning disable 0414
 		VisualElementTracker _tracker;
 #pragma warning restore 0414
+
+
+		[Preserve(Conditional = true)]
 		public WkWebViewRenderer() : base(RectangleF.Empty, new WKWebViewConfiguration())
 		{
 		}
 
+
+		[Preserve(Conditional = true)]
 		public WkWebViewRenderer(WKWebViewConfiguration config) : base(RectangleF.Empty, config)
 		{
 		}
