@@ -7,6 +7,11 @@ namespace Xamarin.Forms.Platform.iOS
 {
 	public class ImageCellRenderer : TextCellRenderer
 	{
+		[Preserve(Conditional = true)]
+		public ImageCellRenderer()
+		{
+		}
+
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
 			var result = (CellTableViewCell)base.GetCell(item, reusableCell, tv);

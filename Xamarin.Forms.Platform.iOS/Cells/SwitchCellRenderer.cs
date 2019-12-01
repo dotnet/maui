@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Drawing;
+using Foundation;
 using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
@@ -10,6 +11,11 @@ namespace Xamarin.Forms.Platform.iOS
 		const string CellName = "Xamarin.SwitchCell";
 
 		UIColor _defaultOnColor;
+
+		[Preserve(Conditional = true)]
+		public SwitchCellRenderer()
+		{
+		}
 
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{

@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Foundation;
 using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
@@ -7,6 +8,11 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		static readonly Color DefaultDetailColor = new Color(.32, .4, .57);
 		static readonly Color DefaultTextColor = Color.Black;
+
+		[Preserve(Conditional = true)]
+		public TextCellRenderer()
+		{
+		}
 
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{

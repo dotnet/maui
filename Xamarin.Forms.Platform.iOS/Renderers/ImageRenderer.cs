@@ -130,6 +130,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 	public sealed class FileImageSourceHandler : IImageSourceHandler, IAnimationSourceHandler
 	{
+		[Preserve(Conditional = true)]
+		public FileImageSourceHandler()
+		{
+		}
+
 		public Task<UIImage> LoadImageAsync(ImageSource imagesource, CancellationToken cancelationToken = default(CancellationToken), float scale = 1f)
 		{
 			UIImage image = null;
@@ -160,6 +165,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 	public sealed class StreamImagesourceHandler : IImageSourceHandler, IAnimationSourceHandler
 	{
+		[Preserve(Conditional = true)]
+		public StreamImagesourceHandler()
+		{
+		}
+
 		public async Task<UIImage> LoadImageAsync(ImageSource imagesource, CancellationToken cancelationToken = default(CancellationToken), float scale = 1f)
 		{
 			UIImage image = null;
@@ -195,6 +205,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 	public sealed class ImageLoaderSourceHandler : IImageSourceHandler, IAnimationSourceHandler
 	{
+		[Preserve(Conditional = true)]
+		public ImageLoaderSourceHandler()
+		{
+		}
+
 		public async Task<UIImage> LoadImageAsync(ImageSource imagesource, CancellationToken cancelationToken = default(CancellationToken), float scale = 1f)
 		{
 			UIImage image = null;
@@ -232,6 +247,11 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		//should this be the default color on the BP for iOS? 
 		readonly Color _defaultColor = Color.White;
+
+		[Preserve(Conditional = true)]
+		public FontImageSourceHandler()
+		{
+		}
 
 		public Task<UIImage> LoadImageAsync(
 			ImageSource imagesource,

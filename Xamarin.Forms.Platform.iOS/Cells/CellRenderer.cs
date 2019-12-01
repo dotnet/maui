@@ -14,6 +14,11 @@ namespace Xamarin.Forms.Platform.iOS
 		PropertyChangedEventHandler _onPropertyChangedEventHandler;
 		readonly UIColor _defaultCellBgColor = Forms.IsiOS13OrNewer ? UIColor.Clear : UIColor.White;
 
+		[Preserve(Conditional = true)]
+		public CellRenderer()
+		{
+		}
+
 		public virtual UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
 			Performance.Start(out string reference);
