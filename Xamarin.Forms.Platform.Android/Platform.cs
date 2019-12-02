@@ -812,8 +812,8 @@ namespace Xamarin.Forms.Platform.Android
 			if (NavAnimationInProgress)
 				return true;
 
-			Page root = _navModel.Roots.Last();
-			bool handled = root.SendBackButtonPressed();
+			Page root = _navModel.Roots.LastOrDefault();
+			bool handled = root?.SendBackButtonPressed() ?? false;
 
 			return handled;
 		}

@@ -189,7 +189,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 						LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Replacing {0}.InitializeComponent ()");
 						Exception e;
-						if (!TryCoreCompile(initComp, initCompRuntime, rootnode, out e)) {
+						if (!TryCoreCompile(initComp, initCompRuntime, rootnode, xamlFilePath, out e)) {
 							success = false;
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}failed.");
 							(thrownExceptions = thrownExceptions ?? new List<Exception>()).Add(e);
@@ -263,7 +263,7 @@ namespace Xamarin.Forms.Build.Tasks
 			return success;
 		}
 
-		bool TryCoreCompile(MethodDefinition initComp, MethodDefinition initCompRuntime, ILRootNode rootnode, out Exception exception)
+		bool TryCoreCompile(MethodDefinition initComp, MethodDefinition initCompRuntime, ILRootNode rootnode, string xamlFilePath, out Exception exception)
 		{
 			try {
 				var body = new MethodBody(initComp);
@@ -328,7 +328,11 @@ namespace Xamarin.Forms.Build.Tasks
 					il.Append(nop);
 				}
 
-				var visitorContext = new ILContext(il, body, module);
+				var visitorContext = new ILContext(il, body, module) {
+					DefineDebug = DebugSymbols || (!string.IsNullOrEmpty(DebugType) && DebugType.ToLowerInvariant() != "none"),
+					XamlFilePath = xamlFilePath
+				};
+
 
 				rootnode.Accept(new XamlNodeVisitor((node, parent) => node.Parent = parent), null);
 				rootnode.Accept(new ExpandMarkupsVisitor(visitorContext), null);
@@ -338,6 +342,8 @@ namespace Xamarin.Forms.Build.Tasks
 				rootnode.Accept(new SetFieldVisitor(visitorContext), null);
 				rootnode.Accept(new SetResourcesVisitor(visitorContext), null);
 				rootnode.Accept(new SetPropertiesVisitor(visitorContext, true), null);
+
+				il.Append(SetPropertiesVisitor.RegisterSourceInfo(visitorContext, rootnode));
 
 				il.Emit(Ret);
 				initComp.Body = body;

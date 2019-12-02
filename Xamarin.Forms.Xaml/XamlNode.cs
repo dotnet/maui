@@ -190,7 +190,7 @@ namespace Xamarin.Forms.Xaml
 
 	abstract class RootNode : ElementNode
 	{
-		protected RootNode(XmlType xmlType, IXmlNamespaceResolver nsResolver) : base(xmlType, xmlType.NamespaceUri, nsResolver)
+		protected RootNode(XmlType xmlType, IXmlNamespaceResolver nsResolver, int linenumber = -1, int lineposition = -1) : base(xmlType, xmlType.NamespaceUri, nsResolver, linenumber: linenumber, lineposition: lineposition)
 		{
 		}
 
