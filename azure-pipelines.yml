@@ -12,11 +12,11 @@ variables:
 - name: BuildVersion
   value: $[counter(variables['Build.SourceBranch'], 1)]
 - name: BuildVersion42
-  value: $[counter('4.2.0', 910311)]
+  value: $[counter('xf-nuget-counter', 992000)]
 - name: BuildVersion43
-  value: $[counter('4.3.0', 991211)]
+  value: $[counter('xf-nuget-counter', 992000)]
 - name: BuildVersion44
-  value: $[counter('4.4.0', 991210)]
+  value: $[counter('xf-nuget-counter', 992000)]
 - name: NUGET_VERSION
   value: 5.0.2
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
