@@ -209,9 +209,7 @@
     </AndroidResource>
   </ItemGroup>
   <ItemGroup>
-    <TransformFile Include="Properties\AndroidManifest.xml">
-      <SubType>Designer</SubType>
-    </TransformFile>
+    <None Include="Properties\AndroidManifest.xml" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\error.xml" />
