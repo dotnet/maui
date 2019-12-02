@@ -506,7 +506,7 @@ namespace Xamarin.Forms.Build.Tasks
 				}
 				break;
 			case "System.Uri":
-				if (hasValue && Uri.TryCreate(valueString, UriKind.RelativeOrAbsolute, out Uri outuri)) {
+				if (hasValue && Uri.TryCreate(valueString, UriKind.RelativeOrAbsolute, out _)) {
 					var vardef = new VariableDefinition(module.ImportReference(("System", "System", "Uri")));
 					Context.Body.Variables.Add(vardef);
 					//Use an extra temp var so we can push the value to the stack, just like other cases

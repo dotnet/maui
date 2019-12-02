@@ -858,18 +858,18 @@ namespace Xamarin.Forms.Build.Tasks
 //			IL_008e:  newobj instance void class [mscorlib]System.Tuple`2<class [mscorlib]System.Func`2<class ViewModel, object>, string>::'.ctor'(!0, !1)
 //			IL_0093:  stelem.ref 
 
-			yield return Instruction.Create(OpCodes.Ldc_I4, properties.Count);
-			yield return Instruction.Create(OpCodes.Newarr, tupleRef);
+			yield return Create(Ldc_I4, properties.Count);
+			yield return Create(Newarr, tupleRef);
 
 			for (var i = 0; i < properties.Count; i++) {
-				yield return Instruction.Create(OpCodes.Dup);
-				yield return Instruction.Create(OpCodes.Ldc_I4, i);
-				yield return Instruction.Create(OpCodes.Ldnull);
-				yield return Instruction.Create(OpCodes.Ldftn, partGetters [i]);
-				yield return Instruction.Create(OpCodes.Newobj, module.ImportReference(funcCtor));
-				yield return Instruction.Create(OpCodes.Ldstr, properties [i].Item1.Name);
-				yield return Instruction.Create(OpCodes.Newobj, module.ImportReference(tupleCtor));
-				yield return Instruction.Create(OpCodes.Stelem_Ref);
+				yield return Create(Dup);
+				yield return Create(Ldc_I4, i);
+				yield return Create(Ldnull);
+				yield return Create(Ldftn, partGetters [i]);
+				yield return Create(Newobj, module.ImportReference(funcCtor));
+				yield return Create(Ldstr, properties [i].Item1.Name);
+				yield return Create(Newobj, module.ImportReference(tupleCtor));
+				yield return Create(Stelem_Ref);
 			}
 		}
 
@@ -892,17 +892,53 @@ namespace Xamarin.Forms.Build.Tasks
 
 			//If it's a BP, SetValue ()
 			if (CanSetValue(bpRef, attached, valueNode, iXmlLineInfo, context))
-				return SetValue(parent, bpRef, valueNode, iXmlLineInfo, context);
+				return SetValue(parent, bpRef, valueNode, iXmlLineInfo, context).Concat(RegisterSourceInfo(context, valueNode));
 
 			//If it's a property, set it
 			if (CanSet(parent, localName, valueNode, context))
-				return Set(parent, localName, valueNode, iXmlLineInfo, context);
+				return Set(parent, localName, valueNode, iXmlLineInfo, context).Concat(RegisterSourceInfo(context, valueNode));
 
 			//If it's an already initialized property, add to it
 			if (CanAdd(parent, propertyName, valueNode, iXmlLineInfo, context))
-				return Add(parent, propertyName, valueNode, iXmlLineInfo, context);
+				return Add(parent, propertyName, valueNode, iXmlLineInfo, context).Concat(RegisterSourceInfo(context, valueNode));
 
 			throw new XamlParseException($"No property, bindable property, or event found for '{localName}', or mismatching type between value and property.", iXmlLineInfo);
+		}
+
+		internal static IEnumerable<Instruction> RegisterSourceInfo(ILContext context, INode valueNode)
+		{
+			if (!context.DefineDebug)
+				yield break;
+			if (!(valueNode is IXmlLineInfo lineInfo))
+				yield break;
+			if (!(valueNode is IElementNode elementNode))
+				yield break;
+			if (context.Variables[elementNode].VariableType.IsValueType)
+				yield break;
+
+			var module = context.Body.Method.Module;
+
+			yield return Create(Ldloc, context.Variables[elementNode]);		//target
+
+			yield return Create(Ldstr, context.XamlFilePath);
+			yield return Create(Ldc_I4, (int)UriKind.RelativeOrAbsolute);
+			yield return Create(Newobj, module.ImportCtorReference(("System", "System", "Uri"),
+																   parameterTypes: new[] {
+																	   ("mscorlib", "System", "String"),
+																	   ("System", "System", "UriKind"),
+																   }));		//uri
+
+			yield return Create(Ldc_I4, lineInfo.LineNumber);				//lineNumber
+			yield return Create(Ldc_I4, lineInfo.LinePosition);             //linePosition
+
+			yield return Create(Call, module.ImportMethodReference(("Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml.Diagnostics", "VisualDiagnostics"),
+																   methodName: "RegisterSourceInfo",
+																   parameterTypes: new[] {
+																	   ("mscorlib", "System", "Object"),
+																	   ("System", "System", "Uri"),
+																	   ("mscorlib", "System", "Int32"),
+																	   ("mscorlib", "System", "Int32")},
+																   isStatic: true));
 		}
 
 		public static IEnumerable<Instruction> GetPropertyValue(VariableDefinition parent, XmlName propertyName, ILContext context, IXmlLineInfo lineInfo, out TypeReference propertyType)
@@ -1492,7 +1528,9 @@ namespace Xamarin.Forms.Build.Tasks
 			templateIl.Emit(OpCodes.Nop);
 			var templateContext = new ILContext(templateIl, loadTemplate.Body, module, parentValues)
 			{
-				Root = root
+				Root = root,
+				DefineDebug = parentContext.DefineDebug,
+				XamlFilePath = parentContext.XamlFilePath,
 			};
 			node.Accept(new CreateObjectVisitor(templateContext), null);
 			node.Accept(new SetNamescopesAndRegisterNamesVisitor(templateContext), null);

@@ -39,7 +39,11 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		internal static string GetPath(ImageSource icon)
 		{
-			throw new NotImplementedException();
+			if (icon is FileImageSource filesource)
+			{
+				return GetPath(filesource.File);
+			}
+			return string.Empty;
 		}
 	}
 }

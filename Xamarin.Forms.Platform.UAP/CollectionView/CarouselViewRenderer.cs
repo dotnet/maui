@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			base.OnElementPropertyChanged(sender, changedProperty);
 
-			if (changedProperty.IsOneOf(CarouselView.ItemsSourceProperty, CarouselView.NumberOfSideItemsProperty, LinearItemsLayout.ItemSpacingProperty))
+			if (changedProperty.IsOneOf(CarouselView.ItemsSourceProperty, LinearItemsLayout.ItemSpacingProperty))
 				UpdateItemsSource();
 			else if (changedProperty.Is(CarouselView.ItemTemplateProperty))
 				UpdateItemTemplate();
@@ -281,8 +281,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
 			{
-				var numberOfVisibleItems = CarouselView.NumberOfSideItems * 2 + 1;
-				itemWidth = (ActualWidth - CarouselView.PeekAreaInsets.Left - CarouselView.PeekAreaInsets.Right - CarouselItemsLayout.ItemSpacing) / numberOfVisibleItems;
+				itemWidth = (ActualWidth - CarouselView.PeekAreaInsets.Left - CarouselView.PeekAreaInsets.Right - CarouselItemsLayout.ItemSpacing);
 			}
 
 			return Math.Max(itemWidth, 0);
@@ -294,8 +293,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
 			{
-				var numberOfVisibleItems = CarouselView.NumberOfSideItems * 2 + 1;
-				itemHeight = (ActualHeight - CarouselView.PeekAreaInsets.Top - CarouselView.PeekAreaInsets.Bottom - CarouselItemsLayout.ItemSpacing) / numberOfVisibleItems;
+				itemHeight = (ActualHeight - CarouselView.PeekAreaInsets.Top - CarouselView.PeekAreaInsets.Bottom - CarouselItemsLayout.ItemSpacing);
 			}
 
 			return Math.Max(itemHeight, 0);
@@ -366,7 +364,7 @@ namespace Xamarin.Forms.Platform.UWP
 			return WSnapPointsAlignment.Center;
 		}
 
-		void FindScrollViewer(ListViewBase listView)
+		protected override void FindScrollViewer(ListViewBase listView)
 		{
 			var scrollViewer = listView.GetFirstDescendant<ScrollViewer>();
 

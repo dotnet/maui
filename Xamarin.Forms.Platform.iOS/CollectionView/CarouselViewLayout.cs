@@ -23,9 +23,8 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void ConstrainTo(CGSize size)
 		{
 			//TODO: Should we scale the items 
-			var numberOfVisibleItems = _carouselView.NumberOfSideItems * 2 + 1;
-			var width = (size.Width - _carouselView.PeekAreaInsets.Left - _carouselView.PeekAreaInsets.Right) / numberOfVisibleItems;
-			var height = (size.Height - _carouselView.PeekAreaInsets.Top - _carouselView.PeekAreaInsets.Bottom) / numberOfVisibleItems;
+			var width = size.Width - _carouselView.PeekAreaInsets.Left - _carouselView.PeekAreaInsets.Right;
+			var height = size.Height - _carouselView.PeekAreaInsets.Top - _carouselView.PeekAreaInsets.Bottom;
 
 			if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
 			{
@@ -58,20 +57,6 @@ namespace Xamarin.Forms.Platform.iOS
 			var right = insets.Right + (float)_carouselView.PeekAreaInsets.Right;
 			var top = insets.Top + (float)_carouselView.PeekAreaInsets.Top;
 			var bottom = insets.Bottom + (float)_carouselView.PeekAreaInsets.Bottom;
-
-			// We give some insets so the user can scroll to the first and last item
-			if (_carouselView.NumberOfSideItems > 0)
-			{
-				if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
-				{
-					left += ItemSize.Width;
-					right += ItemSize.Width;
-
-					return new UIEdgeInsets(insets.Top, left, insets.Bottom, right);
-				}
-
-				return new UIEdgeInsets(ItemSize.Height, insets.Left, ItemSize.Height, insets.Right);
-			}
 
 			return new UIEdgeInsets(top, left, bottom, right);
 		}

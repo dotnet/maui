@@ -20,14 +20,13 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 		readonly ItemsView _cv;
 		private readonly ItemsSourceType _itemsSourceType;
 		readonly Entry _entry;
-		readonly Entry _entrySideItems;
 		int _count = 0;
 
 		CarouselView carousel => _cv as CarouselView;
 
 		public int Count => _count;
 		public ItemsSourceGenerator(ItemsView cv, int initialItems = 1000, 
-			ItemsSourceType itemsSourceType = ItemsSourceType.List, bool sideItems = true)
+			ItemsSourceType itemsSourceType = ItemsSourceType.List)
 		{
 			_count = initialItems;
 			_cv = cv;
@@ -42,17 +41,9 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 			var label = new Label { Text = "Items:", VerticalTextAlignment = TextAlignment.Center };
 			_entry = new Entry { Keyboard = Keyboard.Numeric, Text = initialItems.ToString(), WidthRequest = 100, AutomationId = "entryUpdate" };
 
+
 			layout.Children.Add(label);
 			layout.Children.Add(_entry);
-
-			if (sideItems)
-			{
-				var labelSideItems = new Label { Text = "Side items:", VerticalTextAlignment = TextAlignment.Center };
-				_entrySideItems = new Entry { Keyboard = Keyboard.Numeric, Text = carousel?.NumberOfSideItems.ToString(), WidthRequest = 100, AutomationId = "entrySideItemsUpdate" };
-
-				layout.Children.Add(labelSideItems);
-				layout.Children.Add(_entrySideItems);
-			}
 
 			layout.Children.Add(button);
 
@@ -174,9 +165,6 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 
 			if (carousel == null)
 				return;
-
-			if (int.TryParse(_entrySideItems?.Text, out int count))
-				carousel.NumberOfSideItems = count;
 		}
 	}
 }
