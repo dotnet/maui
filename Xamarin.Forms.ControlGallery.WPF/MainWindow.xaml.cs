@@ -10,6 +10,7 @@ namespace Xamarin.Forms.ControlGallery.WPF
 		public MainWindow()
 		{
 			InitializeComponent();
+			Forms.SetFlags("CarouselView_Experimental");
 			Xamarin.Forms.Forms.Init();
 			FormsMaps.Init("");
 			LoadApplication(new Controls.App());
