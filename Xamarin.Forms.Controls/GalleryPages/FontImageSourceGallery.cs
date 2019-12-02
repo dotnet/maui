@@ -19,6 +19,7 @@ namespace Xamarin.Forms.Controls
 			var fontFamily = "";
 			switch (Device.RuntimePlatform)
 			{
+				case Device.macOS:
 				case Device.iOS:
 					fontFamily = "Ionicons";
 					break;

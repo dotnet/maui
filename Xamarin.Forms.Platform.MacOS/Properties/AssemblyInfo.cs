@@ -6,6 +6,7 @@ using Xamarin.Forms.Platform.MacOS;
 [assembly: ExportImageSourceHandler(typeof(FileImageSource), typeof(FileImageSourceHandler))]
 [assembly: ExportImageSourceHandler(typeof(StreamImageSource), typeof(StreamImagesourceHandler))]
 [assembly: ExportImageSourceHandler(typeof(UriImageSource), typeof(ImageLoaderSourceHandler))]
+[assembly: ExportImageSourceHandler(typeof(FontImageSource), typeof(FontImageSourceHandler))]
 [assembly: ExportRenderer(typeof(Page), typeof(PageRenderer))]
 [assembly: ExportRenderer(typeof(CarouselPage), typeof(CarouselPageRenderer))]
 [assembly: ExportRenderer(typeof(MasterDetailPage), typeof(MasterDetailPageRenderer))]
