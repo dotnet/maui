@@ -48,6 +48,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue7181.cs" />
 	  <Compile Include="$(MSBuildThisFileDirectory)Issue5367.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue6878.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7253.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7581.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7361.cs" />
@@ -1184,6 +1185,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue7249.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8200.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8417.xaml.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7510.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">
