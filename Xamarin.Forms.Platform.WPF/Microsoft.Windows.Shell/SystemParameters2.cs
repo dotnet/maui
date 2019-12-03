@@ -16,27 +16,27 @@ namespace Microsoft.Windows.Shell
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable")]
     internal class SystemParameters2 : INotifyPropertyChanged
     {
-        private delegate void _SystemMetricUpdate(IntPtr wParam, IntPtr lParam);
+        delegate void _SystemMetricUpdate(IntPtr wParam, IntPtr lParam);
 
         [ThreadStatic]
-        private static SystemParameters2 _threadLocalSingleton;
+        static SystemParameters2 _threadLocalSingleton;
 
-        private MessageWindow _messageHwnd;
+        MessageWindow _messageHwnd;
 
-        private bool _isGlassEnabled;
-        private Color _glassColor;
-        private SolidColorBrush _glassColorBrush;
-        private Thickness _windowResizeBorderThickness;
-        private Thickness _windowNonClientFrameThickness;
-        private double _captionHeight;
-        private Size _smallIconSize;
-        private string _uxThemeName;
-        private string _uxThemeColor;
-        private bool _isHighContrast;
-        private CornerRadius _windowCornerRadius;
-        private Rect _captionButtonLocation;
+        bool _isGlassEnabled;
+        Color _glassColor;
+        SolidColorBrush _glassColorBrush;
+        Thickness _windowResizeBorderThickness;
+        Thickness _windowNonClientFrameThickness;
+        double _captionHeight;
+        Size _smallIconSize;
+        string _uxThemeName;
+        string _uxThemeColor;
+        bool _isHighContrast;
+        CornerRadius _windowCornerRadius;
+        Rect _captionButtonLocation;
 
-        private readonly Dictionary<WM, List<_SystemMetricUpdate>> _UpdateTable;
+        readonly Dictionary<WM, List<_SystemMetricUpdate>> _UpdateTable;
 
         #region Initialization and Update Methods
 
@@ -44,18 +44,18 @@ namespace Microsoft.Windows.Shell
         // and a way of being notified of updates via a window message.
         // This region is a grouping of both, for each of the exposed properties.
 
-        private void _InitializeIsGlassEnabled()
+        void _InitializeIsGlassEnabled()
         {
             IsGlassEnabled = NativeMethods.DwmIsCompositionEnabled();
         }
 
-        private void _UpdateIsGlassEnabled(IntPtr wParam, IntPtr lParam)
+        void _UpdateIsGlassEnabled(IntPtr wParam, IntPtr lParam)
         {
             // Neither the wParam or lParam are used in this case.
             _InitializeIsGlassEnabled();
         }
 
-        private void _InitializeGlassColor()
+        void _InitializeGlassColor()
         {
             bool isOpaque;
             uint color;
@@ -70,7 +70,7 @@ namespace Microsoft.Windows.Shell
             WindowGlassBrush = glassBrush;
         }
 
-        private void _UpdateGlassColor(IntPtr wParam, IntPtr lParam)
+        void _UpdateGlassColor(IntPtr wParam, IntPtr lParam)
         {
             bool isOpaque = lParam != IntPtr.Zero;
             uint color = unchecked((uint)(int)wParam.ToInt64());
@@ -81,18 +81,18 @@ namespace Microsoft.Windows.Shell
             WindowGlassBrush = glassBrush;
         }
 
-        private void _InitializeCaptionHeight()
+        void _InitializeCaptionHeight()
         {
             Point ptCaption = new Point(0, NativeMethods.GetSystemMetrics(SM.CYCAPTION));
             WindowCaptionHeight = DpiHelper.DevicePixelsToLogical(ptCaption).Y;
         }
 
-        private void _UpdateCaptionHeight(IntPtr wParam, IntPtr lParam)
+        void _UpdateCaptionHeight(IntPtr wParam, IntPtr lParam)
         {
             _InitializeCaptionHeight();
         }
 
-        private void _InitializeWindowResizeBorderThickness()
+        void _InitializeWindowResizeBorderThickness()
         {
             Size frameSize = new Size(
                 NativeMethods.GetSystemMetrics(SM.CXSIZEFRAME),
@@ -101,12 +101,12 @@ namespace Microsoft.Windows.Shell
             WindowResizeBorderThickness = new Thickness(frameSizeInDips.Width, frameSizeInDips.Height, frameSizeInDips.Width, frameSizeInDips.Height);
         }
 
-        private void _UpdateWindowResizeBorderThickness(IntPtr wParam, IntPtr lParam)
+        void _UpdateWindowResizeBorderThickness(IntPtr wParam, IntPtr lParam)
         {
             _InitializeWindowResizeBorderThickness();
         }
 
-        private void _InitializeWindowNonClientFrameThickness()
+        void _InitializeWindowNonClientFrameThickness()
         {
             Size frameSize = new Size(
                 NativeMethods.GetSystemMetrics(SM.CXSIZEFRAME),
@@ -117,24 +117,24 @@ namespace Microsoft.Windows.Shell
             WindowNonClientFrameThickness = new Thickness(frameSizeInDips.Width, frameSizeInDips.Height + captionHeightInDips, frameSizeInDips.Width, frameSizeInDips.Height);
         }
 
-        private void _UpdateWindowNonClientFrameThickness(IntPtr wParam, IntPtr lParam)
+        void _UpdateWindowNonClientFrameThickness(IntPtr wParam, IntPtr lParam)
         {
             _InitializeWindowNonClientFrameThickness();
         }
 
-        private void _InitializeSmallIconSize()
+        void _InitializeSmallIconSize()
         {
             SmallIconSize = new Size(
                 NativeMethods.GetSystemMetrics(SM.CXSMICON),
                 NativeMethods.GetSystemMetrics(SM.CYSMICON));
         }
 
-        private void _UpdateSmallIconSize(IntPtr wParam, IntPtr lParam)
+        void _UpdateSmallIconSize(IntPtr wParam, IntPtr lParam)
         {
             _InitializeSmallIconSize();
         }
 
-        private void _LegacyInitializeCaptionButtonLocation()
+        void _LegacyInitializeCaptionButtonLocation()
         {
             // This calculation isn't quite right, but it's pretty close.
             // I expect this is good enough for the scenarios where this is expected to be used.
@@ -151,7 +151,7 @@ namespace Microsoft.Windows.Shell
         }
 
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
-        private void _InitializeCaptionButtonLocation()
+        void _InitializeCaptionButtonLocation()
         {
             // There is a completely different way to do this on XP.
             if (!Utility.IsOSVistaOrNewer || !NativeMethods.IsThemeActive())
@@ -198,23 +198,23 @@ namespace Microsoft.Windows.Shell
             WindowCaptionButtonsLocation = logicalCaptionLocation;
         }
 
-        private void _UpdateCaptionButtonLocation(IntPtr wParam, IntPtr lParam)
+        void _UpdateCaptionButtonLocation(IntPtr wParam, IntPtr lParam)
         {
             _InitializeCaptionButtonLocation();
         }
 
-        private void _InitializeHighContrast()
+        void _InitializeHighContrast()
         {
             HIGHCONTRAST hc = NativeMethods.SystemParameterInfo_GetHIGHCONTRAST();
             HighContrast = (hc.dwFlags & HCF.HIGHCONTRASTON) != 0;
         }
 
-        private void _UpdateHighContrast(IntPtr wParam, IntPtr lParam)
+        void _UpdateHighContrast(IntPtr wParam, IntPtr lParam)
         {
             _InitializeHighContrast();
         }
 
-        private void _InitializeThemeInfo()
+        void _InitializeThemeInfo()
         {
             if (!NativeMethods.IsThemeActive())
             {
@@ -245,12 +245,12 @@ namespace Microsoft.Windows.Shell
             }
         }
 
-        private void _UpdateThemeInfo(IntPtr wParam, IntPtr lParam)
+        void _UpdateThemeInfo(IntPtr wParam, IntPtr lParam)
         {
             _InitializeThemeInfo();
         }
 
-        private void _InitializeWindowCornerRadius()
+        void _InitializeWindowCornerRadius()
         {
             // The radius of window corners isn't exposed as a true system parameter.
             // It instead is a logical size that we're approximating based on the current theme.
@@ -295,7 +295,7 @@ namespace Microsoft.Windows.Shell
             WindowCornerRadius = cornerRadius;
         }
 
-        private void _UpdateWindowCornerRadius(IntPtr wParam, IntPtr lParam)
+        void _UpdateWindowCornerRadius(IntPtr wParam, IntPtr lParam)
         {
             // Neither the wParam or lParam are used in this case.
             _InitializeWindowCornerRadius();
@@ -307,7 +307,7 @@ namespace Microsoft.Windows.Shell
         /// <summary>
         /// Private constructor.  The public way to access this class is through the static Current property.
         /// </summary>
-        private SystemParameters2()
+        SystemParameters2()
         {
             // This window gets used for calculations about standard caption button locations
             // so it has WS_OVERLAPPEDWINDOW as a style to give it normal caption buttons.
@@ -364,7 +364,7 @@ namespace Microsoft.Windows.Shell
             }
         }
 
-        private IntPtr _WndProc(IntPtr hwnd, WM msg, IntPtr wParam, IntPtr lParam)
+        IntPtr _WndProc(IntPtr hwnd, WM msg, IntPtr wParam, IntPtr lParam)
         {
             // Don't do this if called within the SystemParameters2 constructor
             if (_UpdateTable != null)
@@ -553,7 +553,7 @@ namespace Microsoft.Windows.Shell
 
         #region INotifyPropertyChanged Members
 
-        private void _NotifyPropertyChanged(string propertyName)
+        void _NotifyPropertyChanged(string propertyName)
         {
             Assert.IsNeitherNullNorEmpty(propertyName);
             var handler = PropertyChanged;

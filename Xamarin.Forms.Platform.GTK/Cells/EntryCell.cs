@@ -6,13 +6,13 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 {
 	internal class EntryCell : CellBase
 	{
-		private string _label;
-		private Gdk.Color _textColor;
-		private string _text;
-		private string _placeholder;
-		private VBox _root;
-		private Gtk.Label _textLabel;
-		private EntryWrapper _entryWrapper;
+		string _label;
+		Gdk.Color _textColor;
+		string _text;
+		string _placeholder;
+		VBox _root;
+		Gtk.Label _textLabel;
+		EntryWrapper _entryWrapper;
 
 		public EntryCell(
 			string label,
@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 		public event EventHandler<string> TextChanged;
 		public event EventHandler EditingDone;
 
-		private void UpdateLabel(string label)
+		void UpdateLabel(string label)
 		{
 			if (_textLabel != null)
 			{
@@ -75,7 +75,7 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 			}
 		}
 
-		private void UpdateLabelColor(Gdk.Color textColor)
+		void UpdateLabelColor(Gdk.Color textColor)
 		{
 			if (_textLabel != null)
 			{
@@ -83,7 +83,7 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 			}
 		}
 
-		private void UpdateText(string text)
+		void UpdateText(string text)
 		{
 			if (_entryWrapper != null)
 			{
@@ -91,7 +91,7 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 			}
 		}
 
-		private void UpdatePlaceholder(string placeholder)
+		void UpdatePlaceholder(string placeholder)
 		{
 			if (_entryWrapper != null)
 			{
@@ -99,12 +99,12 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 			}
 		}
 
-		private void OnEntryChanged(object sender, EventArgs e)
+		void OnEntryChanged(object sender, EventArgs e)
 		{
 			TextChanged?.Invoke(this, _entryWrapper.Entry.Text);
 		}
 
-		private void OnEditingDone(object sender, EventArgs e)
+		void OnEditingDone(object sender, EventArgs e)
 		{
 			EditingDone?.Invoke(this, EventArgs.Empty);
 		}

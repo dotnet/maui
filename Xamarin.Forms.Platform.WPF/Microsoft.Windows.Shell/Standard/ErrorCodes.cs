@@ -14,7 +14,7 @@ namespace Standard
     internal struct Win32Error
     {
         [FieldOffset(0)]
-        private readonly int _value;
+        readonly int _value;
 
         // NOTE: These public static field declarations are automatically
         // picked up by (HRESULT's) ToString through reflection.
@@ -190,7 +190,7 @@ namespace Standard
     internal struct HRESULT
     {
         [FieldOffset(0)]
-        private readonly uint _value;
+        readonly uint _value;
 
         // NOTE: These public static field declarations are automatically
         // picked up by ToString through reflection.

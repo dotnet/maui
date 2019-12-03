@@ -5,15 +5,15 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 {
 	internal class TextCell : CellBase
 	{
-		private VBox _root;
-		private Gtk.Label _textLabel;
-		private Gtk.Label _detailLabel;
-		private string _text;
-		private string _detail;
-		private Gdk.Color _textColor;
-		private Gdk.Color _detailColor;
-		private bool _isGroupHeader;
-		private bool _enabled;
+		VBox _root;
+		Gtk.Label _textLabel;
+		Gtk.Label _detailLabel;
+		string _text;
+		string _detail;
+		Gdk.Color _textColor;
+		Gdk.Color _detailColor;
+		bool _isGroupHeader;
+		bool _enabled;
 
 		public TextCell(
 			string text,

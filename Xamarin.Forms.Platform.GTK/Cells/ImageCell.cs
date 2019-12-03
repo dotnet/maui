@@ -5,16 +5,16 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 {
 	internal class ImageCell : CellBase
 	{
-		private HBox _root;
-		private VBox _vertical;
-		private Gtk.Image _imageControl;
-		private Gtk.Label _textLabel;
-		private Gtk.Label _detailLabel;
-		private Gdk.Pixbuf _image;
-		private string _text;
-		private string _detail;
-		private Gdk.Color _textColor;
-		private Gdk.Color _detailColor;
+		HBox _root;
+		VBox _vertical;
+		Gtk.Image _imageControl;
+		Gtk.Label _textLabel;
+		Gtk.Label _detailLabel;
+		Gdk.Pixbuf _image;
+		string _text;
+		string _detail;
+		Gdk.Color _textColor;
+		Gdk.Color _detailColor;
 
 		public ImageCell(   
 			Gdk.Pixbuf image,

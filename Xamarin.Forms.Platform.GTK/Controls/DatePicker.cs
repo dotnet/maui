@@ -6,7 +6,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 {
 	public class DateEventArgs : EventArgs
 	{
-		private DateTime _date;
+		DateTime _date;
 
 		public DateTime Date
 		{
@@ -24,8 +24,8 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 	public partial class DatePickerWindow : Window
 	{
-		private VBox _datebox;
-		private RangeCalendar _calendar;
+		VBox _datebox;
+		RangeCalendar _calendar;
 
 		public DatePickerWindow()
 			: base(WindowType.Popup)
@@ -150,21 +150,21 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			_calendar.DaySelectedDoubleClick += new EventHandler(OnCalendarDaySelectedDoubleClick);
 		}
 
-		private void Close()
+		void Close()
 		{
 			Helpers.GrabHelper.RemoveGrab(this);
 			Destroy();
 		}
 
-		private void NotifyDateChanged()
+		void NotifyDateChanged()
 		{
 			OnDateTimeChanged?.Invoke(this, new DateEventArgs(SelectedDate));
 		}
 
 		class RangeCalendar : Calendar
 		{
-			private DateTime _minimumDate;
-			private DateTime _maximumDate;
+			DateTime _minimumDate;
+			DateTime _maximumDate;
 
 			public RangeCalendar()
 			{
@@ -225,12 +225,12 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 	public partial class DatePicker : EventBox
 	{
-		private CustomComboBox _comboBox;
-		private Gdk.Color _color;
-		private DateTime _currentDate;
-		private DateTime _minDate;
-		private DateTime _maxDate;
-		private string _dateFormat;
+		CustomComboBox _comboBox;
+		Gdk.Color _color;
+		DateTime _currentDate;
+		DateTime _minDate;
+		DateTime _maxDate;
+		string _dateFormat;
 
 		public event EventHandler DateChanged;
 		public event EventHandler GotFocus;
@@ -336,7 +336,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			}
 		}
 
-		private void ShowPickerWindow()
+		void ShowPickerWindow()
 		{
 			int x = 0;
 			int y = 0;
@@ -353,7 +353,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			picker.Destroyed += OnPickerClosed;
 		}
 
-		private void OnPopupDateChanged(object sender, DateEventArgs args)
+		void OnPopupDateChanged(object sender, DateEventArgs args)
 		{
 			var date = args.Date;
 
@@ -373,7 +373,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			DateChanged?.Invoke(this, EventArgs.Empty);
 		}
 
-		private void BuildDatePicker()
+		void BuildDatePicker()
 		{
 			_comboBox = new CustomComboBox();
 			Add(_comboBox);
@@ -386,23 +386,23 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			Show();
 		}
 
-		private void UpdateEntryText()
+		void UpdateEntryText()
 		{
 			_comboBox.Entry.Text = _currentDate.ToString(string.IsNullOrEmpty(_dateFormat)? "D" : _dateFormat);
 		}
 
-		private void OnBtnShowCalendarClicked(object sender, EventArgs e)
+		void OnBtnShowCalendarClicked(object sender, EventArgs e)
 		{
 			ShowPickerWindow();
 		}
 
-		private void OnEntryFocused(object sender, EventArgs e)
+		void OnEntryFocused(object sender, EventArgs e)
 		{
 			ShowPickerWindow();
 			GotFocus?.Invoke(this, EventArgs.Empty);
 		}
 
-		private void OnPickerClosed(object sender, EventArgs e)
+		void OnPickerClosed(object sender, EventArgs e)
 		{
 			var window = sender as DatePickerWindow;
 
