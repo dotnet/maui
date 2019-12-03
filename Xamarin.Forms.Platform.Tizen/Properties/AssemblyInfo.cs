@@ -40,6 +40,7 @@ using Xamarin.Forms.Platform.Tizen;
 [assembly: ExportRenderer(typeof(StructuredItemsView), typeof(StructuredItemsViewRenderer))]
 [assembly: ExportRenderer(typeof(CarouselView), typeof(CarouselViewRenderer))]
 [assembly: ExportRenderer(typeof(SwipeView), typeof(SwipeViewRenderer))]
+[assembly: ExportRenderer(typeof(RefreshView), typeof(RefreshViewRenderer))]
 
 [assembly: ExportImageSourceHandler(typeof(FileImageSource), typeof(FileImageSourceHandler))]
 [assembly: ExportImageSourceHandler(typeof(StreamImageSource), typeof(StreamImageSourceHandler))]

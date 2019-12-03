@@ -57,7 +57,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (methodInfo != null)
 			{
 				window = (Window)methodInfo.Invoke(null, new object[] { "FormsWindow" });
-				BaseLayout = (ELayout)window.GetType().GetProperty("BaseLayout").GetValue(window);
+				BaseLayout = (ELayout)window.GetType().GetProperty("BaseLayout")?.GetValue(window);
 			}
 			else
 			{

@@ -16,6 +16,7 @@
     <EmbeddedResource Include="Resource\arrow_left.png" />
     <EmbeddedResource Include="Resource\dots_horizontal.png" />
     <EmbeddedResource Include="Resource\menu.png" />
+    <EmbeddedResource Include="Resource\refresh_48dp.png" />
   </ItemGroup>
 
   <ItemGroup>
