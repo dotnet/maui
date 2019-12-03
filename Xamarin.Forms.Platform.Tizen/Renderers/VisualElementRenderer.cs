@@ -494,6 +494,29 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 		}
 
+		protected Widget FocusSearch(bool forwardDirection)
+		{
+			VisualElement element = Element as VisualElement;
+			int maxAttempts = 0;
+			var tabIndexes = element?.GetTabIndexesOnParentPage(out maxAttempts);
+			if (tabIndexes == null)
+				return null;
+
+			int tabIndex = Element.TabIndex;
+			int attempt = 0;
+
+			do
+			{
+				element = element.FindNextElement(forwardDirection, tabIndexes, ref tabIndex) as VisualElement;
+				var renderer = Platform.GetRenderer(element);
+				if (renderer?.NativeView is Widget widget && widget.IsFocusAllowed)
+				{
+					return widget;
+				}
+			} while (!(element.IsFocused || ++attempt >= maxAttempts));
+			return null;
+		}
+
 		internal virtual void SendVisualElementInitialized(VisualElement element, EvasObject nativeView)
 		{
 			element.SendViewInitialized(nativeView);
