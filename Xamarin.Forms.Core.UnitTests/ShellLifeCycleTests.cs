@@ -39,6 +39,34 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.True(contentAppearing, "Content Appearing");
 		}
 
+		[Test]
+		public void MisfiringOfAppearingWithMultipleTabs()
+		{
+			Shell shell = new Shell();
+
+			var item0 = CreateShellItem(shellContentRoute: "Outbox", templated: true);
+			var item1 = CreateShellItem(shellSectionRoute: "RequestType1", shellContentRoute: "RequestType1Details", templated: true);
+			var section2 = CreateShellSection(shellSectionRoute: "RequestType2",  shellContentRoute: "RequestType2Dates", templated: true);
+
+			item1.Items.Add(section2);
+			shell.Items.Add(item0);
+			shell.Items.Add(item1);
+
+			int appearingCounter = 0;
+			shell.GoToAsync("//Outbox");
+			shell.GoToAsync("//RequestType1Details");
+			shell.GoToAsync("//Outbox");
+
+
+			item1.Items[0].Appearing += (_, __) =>
+			{
+				appearingCounter++;
+			};
+
+			shell.GoToAsync("//RequestType2Dates");
+			Assert.AreEqual(0, appearingCounter);
+		}
+
 
 		[Test]
 		public void AppearingOnCreateFromTemplate()
