@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using Android.App;
 using Android.Content;
 using Android.Support.V4.Widget;
 using Android.Views;
@@ -60,6 +59,8 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (disposing)
 			{
+				Controller.ScrollToRequested -= OnScrollToRequested;
+		
 				if (_headerRenderer != null)
 				{
 					Platform.ClearRenderer(_headerRenderer.View);
@@ -80,10 +81,12 @@ namespace Xamarin.Forms.Platform.Android
 				_footerView?.Dispose();
 				_footerView = null;
 
-				// Unhook the adapter from the ListView before disposing of it
 				if (Control != null)
 				{
+					// Unhook the adapter from the ListView before disposing of it
 					Control.Adapter = null;
+
+					Control.SetOnScrollListener(null);
 				}
 
 				if (_adapter != null)
@@ -91,8 +94,6 @@ namespace Xamarin.Forms.Platform.Android
 					_adapter.Dispose();
 					_adapter = null;
 				}
-
-				Controller.ScrollToRequested -= OnScrollToRequested;
 			}
 
 			base.Dispose(disposing);
@@ -139,14 +140,16 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				((IListViewController)e.OldElement).ScrollToRequested -= OnScrollToRequested;
 
-				if (_adapter != null)
+				if (Control != null)
 				{
 					// Unhook the adapter from the ListView before disposing of it
-					if (Control != null)
-					{
-						Control.Adapter = null;
-					}
+					Control.Adapter = null;
+					
+					Control.SetOnScrollListener(null);
+				}
 
+				if (_adapter != null)
+				{
 					_adapter.Dispose();
 					_adapter = null;
 				}
