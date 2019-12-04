@@ -26,7 +26,7 @@ namespace Xamarin.Forms
 			}
 
 			// Use the DispatcherProvider to retrieve an appropriate dispatcher for this BindableObject
-			return s_current.GetDispatcher(bindableObject);
+			return s_current.GetDispatcher(bindableObject) ?? new FallbackDispatcher();
 		}
 
 		public static void Dispatch(this IDispatcher dispatcher, Action action)
