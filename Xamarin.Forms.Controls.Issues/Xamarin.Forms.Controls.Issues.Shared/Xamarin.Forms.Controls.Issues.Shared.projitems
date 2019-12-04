@@ -136,6 +136,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue5412.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\GarbageCollectionHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue4879.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue5518.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5555.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6458.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6258.cs" />
