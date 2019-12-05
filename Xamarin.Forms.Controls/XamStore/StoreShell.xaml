@@ -32,8 +32,14 @@
 			<ContentView>
 				<Button Visual="Material" ImageSource="{Binding FlyoutIcon}" Text="{Binding Text}"  />
 			</ContentView>
-		</DataTemplate>
-		<DataTemplate x:Key="ShellItemTemplate">
+        </DataTemplate>
+        <DataTemplate x:Key="MenuItemTemplateWithHeight">
+            <StackLayout HeightRequest="200" BackgroundColor="Purple">
+                <Label Text="{Binding Text}"></Label>
+                <Label VerticalTextAlignment="End" VerticalOptions="EndAndExpand" Text="{Binding Text}"></Label>
+            </StackLayout>
+        </DataTemplate>
+        <DataTemplate x:Key="ShellItemTemplate">
 			<ContentView BackgroundColor="LightBlue">
 				<StackLayout Orientation="Horizontal">
 					<Image Source="{Binding FlyoutIcon}"/>
@@ -122,5 +128,6 @@
 			<ShellContent Route="sharednotab" Title="No Tabs" ContentTemplate="{DataTemplate local:UpdatesPage}" />
 			<ShellContent Route="Notificationstabs" Shell.TabBarIsVisible="true" Title="Yes Tabs" ContentTemplate="{DataTemplate local:LibraryPage}" />
 		</ShellSection>
-	</ShellItem>
+    </ShellItem>
+    <MenuItem Shell.MenuItemTemplate="{StaticResource MenuItemTemplateWithHeight}" Text="Height 200"/>
 </localTest:TestShell>

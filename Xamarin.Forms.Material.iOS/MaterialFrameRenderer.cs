@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Linq;
 using CoreAnimation;
 using CoreGraphics;
 using MaterialComponents;
@@ -18,11 +19,13 @@ namespace Xamarin.Forms.Material.iOS
 		float _defaultCornerRadius = -1;
 		VisualElementPackager _packager;
 		VisualElementTracker _tracker;
+		EventTracker _events;
+
 		bool _disposed = false;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public Frame Element { get; private set; }
-		
+
 		public override void WillRemoveSubview(UIView uiview)
 		{
 			var content = Element?.Content;
@@ -82,6 +85,9 @@ namespace Xamarin.Forms.Material.iOS
 					_packager.Load();
 
 					_tracker = new VisualElementTracker(this);
+
+					_events = new EventTracker(this);
+					_events.LoadEvents(this);
 				}
 
 				Element.PropertyChanged += OnElementPropertyChanged;
@@ -90,6 +96,12 @@ namespace Xamarin.Forms.Material.iOS
 			}
 
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
+
+			if (element != null)
+				element.SendViewInitialized(this);
+
+			if (!string.IsNullOrEmpty(element?.AutomationId))
+				AccessibilityIdentifier = element.AutomationId;
 		}
 
 		protected override void Dispose(bool disposing)
@@ -106,6 +118,9 @@ namespace Xamarin.Forms.Material.iOS
 				_tracker.Dispose();
 				_tracker = null;
 
+				_events.Dispose();
+				_events = null;
+				
 				if (Element != null)
 				{
 					Element.ClearValue(Platform.iOS.Platform.RendererProperty);
@@ -140,8 +155,21 @@ namespace Xamarin.Forms.Material.iOS
 			if (!Element.HasShadow)
 				SetShadowElevation(0, UIControlState.Normal);
 
-			// this is set in the theme, so we must always disable it
-			Interactable = false;
+			if (Element.GestureRecognizers != null && Element.GestureRecognizers.Any())
+			{
+				Interactable = true;
+
+				// disable ink (ripple) and elevation effect while tapped
+				InkView.Hidden = true;
+				if (Element.HasShadow)
+					SetShadowElevation(1f, UIControlState.Highlighted);
+			}
+			else
+			{
+				// this is set in the theme, so we must always disable it		
+				Interactable = false;
+			}
+
 		}
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

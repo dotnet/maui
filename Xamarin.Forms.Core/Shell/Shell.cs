@@ -414,9 +414,13 @@ namespace Xamarin.Forms
 			{
 				ApplyQueryAttributes(shellItem, queryData, navigationRequest.Request.Section == null);
 
-				if (CurrentItem != shellItem)
+				if (shellSection != null && shellContent != null)
 				{
-					SetValueFromRenderer(CurrentItemProperty, shellItem);
+					Shell.ApplyQueryAttributes(shellContent, queryData, navigationRequest.Request.GlobalRoutes.Count == 0);
+					if (shellSection.CurrentItem != shellContent)
+					{
+						shellSection.SetValueFromRenderer(ShellSection.CurrentItemProperty, shellContent);
+					}
 				}
 
 				if (shellSection != null)
@@ -426,15 +430,11 @@ namespace Xamarin.Forms
 					{
 						shellItem.SetValueFromRenderer(ShellItem.CurrentItemProperty, shellSection);
 					}
+				}
 
-					if (shellContent != null)
-					{
-						Shell.ApplyQueryAttributes(shellContent, queryData, navigationRequest.Request.GlobalRoutes.Count == 0);
-						if (shellSection.CurrentItem != shellContent)
-						{
-							shellSection.SetValueFromRenderer(ShellSection.CurrentItemProperty, shellContent);							
-						}
-					}
+				if (CurrentItem != shellItem)
+				{
+					SetValueFromRenderer(CurrentItemProperty, shellItem);
 				}
 
 				if (navigationRequest.Request.GlobalRoutes.Count > 0)

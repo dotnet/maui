@@ -62,11 +62,11 @@ namespace Xamarin.Forms.Controls.Issues
 				base.OnAppearing();
 
 				entry.Focus();
-				new Thread(() =>
+				Task.Run(async () =>
 				{
 					while (!IsTested)
 					{
-						Thread.Sleep(100);
+						await Task.Delay(100);
 						Device.BeginInvokeOnMainThread(() =>
 						{
 							if (entry.IsFocused)
@@ -80,7 +80,7 @@ namespace Xamarin.Forms.Controls.Issues
 							}
 						});
 					}
-				}).Start();
+				});
 			}
 		}
 

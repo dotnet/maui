@@ -101,6 +101,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			Registered.Register(typeof(StructuredItemsView), typeof(StructuredItemsViewRenderer));
 			Registered.Register(typeof(CarouselView), typeof(CarouselViewRenderer));
 			Registered.Register(typeof(SwipeView), typeof(SwipeViewRenderer));
+			Registered.Register(typeof(RefreshView), typeof(RefreshViewRenderer));
 
 			//ImageSourceHandlers
 			Registered.Register(typeof(FileImageSource), typeof(FileImageSourceHandler));

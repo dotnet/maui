@@ -196,7 +196,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			cell.ContentSizeChanged -= CellContentSizeChanged;
 
-			cell.Bind(ItemsView, ItemsSource[indexPath]);
+			cell.Bind(ItemsView.ItemTemplate, ItemsSource[indexPath], ItemsView);
 
 			cell.ContentSizeChanged += CellContentSizeChanged;
 

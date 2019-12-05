@@ -15,18 +15,25 @@ namespace Xamarin.Forms.Platform.iOS
 		double _headerOffset = 0;
 		double _headerSize;
 		bool _isDisposed;
+		Action<Element> _onElementSelected;
 
 		public ShellTableViewController(IShellContext context, UIContainerView headerView, Action<Element> onElementSelected)
 		{
 			_context = context;
+			_onElementSelected = onElementSelected;
 			_headerView = headerView;
-			_source = new ShellTableViewSource(context, onElementSelected);
+			_source = CreateShellTableViewSource();
 			_source.ScrolledEvent += OnScrolled;
 			if (_headerView != null)
 				_headerView.HeaderSizeChanged += OnHeaderSizeChanged;
 			((IShellController)_context.Shell).StructureChanged += OnStructureChanged;
 
 			_context.Shell.PropertyChanged += OnShellPropertyChanged;
+		}
+
+		protected ShellTableViewSource CreateShellTableViewSource()
+		{
+			return new ShellTableViewSource(_context, _onElementSelected);
 		}
 
 		void OnShellPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -59,22 +66,16 @@ namespace Xamarin.Forms.Platform.iOS
 			switch (_context.Shell.FlyoutVerticalScrollMode)
 			{
 				case ScrollMode.Auto:
-					var pathToFirstRow = Foundation.NSIndexPath.FromRowSection(0, 0);
-					var firstCellRect = TableView.RectForRowAtIndexPath(pathToFirstRow);
-					var firstCellIsVisible = TableView.Bounds.Contains(firstCellRect);
-
-					var lastRowIndex = NMath.Max(0, TableView.NumberOfRowsInSection(0) - 1);
-					var pathToLastRow = Foundation.NSIndexPath.FromRowSection(lastRowIndex, 0);
-					var cellRect = TableView.RectForRowAtIndexPath(pathToLastRow);
-					var lastCellIsVisible = TableView.Bounds.Contains(cellRect);
-
-					TableView.ScrollEnabled = !firstCellIsVisible || !lastCellIsVisible;
+					TableView.ScrollEnabled = true;
+					TableView.AlwaysBounceVertical = false;
 					break;
 				case ScrollMode.Enabled:
 					TableView.ScrollEnabled = true;
+					TableView.AlwaysBounceVertical = true;
 					break;
 				case ScrollMode.Disabled:
 					TableView.ScrollEnabled = false;
+					TableView.AlwaysBounceVertical = false;
 					break;
 			}
 		}
@@ -152,8 +153,11 @@ namespace Xamarin.Forms.Platform.iOS
 					_headerView.HeaderSizeChanged -= OnHeaderSizeChanged;
 
 				_context.Shell.PropertyChanged -= OnShellPropertyChanged;
+
+				_onElementSelected = null;
 			}
 
+			
 			_isDisposed = true;
 			base.Dispose(disposing);
 		}

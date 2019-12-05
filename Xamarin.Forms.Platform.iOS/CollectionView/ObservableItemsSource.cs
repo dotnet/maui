@@ -23,12 +23,14 @@ namespace Xamarin.Forms.Platform.iOS
 			_section = group < 0 ? 0 : group;
 			_grouped = group >= 0;
 
-			_itemsSource = itemSource as IList ?? itemSource as IEnumerable;
+			_itemsSource = itemSource;
+
+			Count = ItemsCount();
 
 			((INotifyCollectionChanged)itemSource).CollectionChanged += CollectionChanged;
 		}
 
-		public int Count => ItemsCount();
+		public int Count { get; private set; }
 
 		public object this[int index] => ElementAt(index);
 
@@ -52,7 +54,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public int ItemCountInGroup(nint group)
 		{
-			return ItemsCount();
+			return Count;
 		}
 
 		public object Group(NSIndexPath indexPath)
@@ -62,7 +64,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public NSIndexPath GetIndexForItem(object item)
 		{
-			for (int n = 0; n < ItemsCount(); n++)
+			for (int n = 0; n < Count; n++)
 			{
 				if (this[n] == item)
 				{
@@ -75,7 +77,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public int GroupCount => 1;
 
-		public int ItemCount => ItemsCount();
+		public int ItemCount => Count;
 
 		public object this[NSIndexPath indexPath]
 		{
@@ -118,6 +120,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			_collectionView.ReloadData();
 			_collectionView.CollectionViewLayout.InvalidateLayout();
+			Count = ItemsCount();
 		}
 
 		NSIndexPath[] CreateIndexesFrom(int startIndex, int count)
@@ -141,20 +144,21 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void Add(NotifyCollectionChangedEventArgs args)
 		{
-			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : IndexOf(args.NewItems[0]);
-			var count = args.NewItems.Count;
-
 			if (NotLoadedYet())
 			{
 				_collectionView.ReloadData();
 				return;
 			}
 
+			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : IndexOf(args.NewItems[0]);
+			var count = args.NewItems.Count;
+
 			if (!_grouped && _collectionView.NumberOfItemsInSection(_section) == 0)
 			{
 				// Okay, we're going from completely empty to more than 0 items; there's an iOS bug which apparently
 				// will just crash if we call InsertItems here, so we have to do ReloadData.
 				_collectionView.ReloadData();
+				Count += count;
 				return;
 			}
 
@@ -162,18 +166,19 @@ namespace Xamarin.Forms.Platform.iOS
 				{
 					var indexes = CreateIndexesFrom(startIndex, count);
 					_collectionView.InsertItems(indexes);
+					Count += count;
 				}, null);
 		}
 
 		void Remove(NotifyCollectionChangedEventArgs args)
 		{
-			var startIndex = args.OldStartingIndex;
-
 			if (NotLoadedYet())
 			{
 				_collectionView.ReloadData();
 				return;
 			}
+
+			var startIndex = args.OldStartingIndex;
 
 			if (startIndex < 0)
 			{
@@ -189,6 +194,7 @@ namespace Xamarin.Forms.Platform.iOS
 			_collectionView.PerformBatchUpdates(() =>
 			{
 				_collectionView.DeleteItems(CreateIndexesFrom(startIndex, count));
+				Count -= count;
 			}, null);
 		}
 

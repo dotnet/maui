@@ -1,4 +1,4 @@
-﻿<Project Sdk="Msbuild.Sdk.Extras/2.0.54">
+﻿<Project Sdk="MSBuild.Sdk.Extras">
   <PropertyGroup>
     <TargetFramework Condition=" '$(OS)' != 'Windows_NT' ">netstandard2.0</TargetFramework>
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">netstandard2.0;uap10.0.14393</TargetFrameworks>

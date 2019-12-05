@@ -26,6 +26,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(Specific.FontWeightProperty, UpdateFontWeight);
 			RegisterPropertyHandler(Entry.SelectionLengthProperty, UpdateSelectionLength);
 			RegisterPropertyHandler(InputView.IsReadOnlyProperty, UpdateIsReadOnly);
+			RegisterPropertyHandler(Entry.ClearButtonVisibilityProperty, UpdateClearButtonVisibility);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Entry> e)
@@ -99,9 +100,14 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void OnCompleted(object sender, EventArgs e)
 		{
-			//TODO Consider if any other object should overtake focus
-			Control.SetFocus(false);
-
+			if (Element.ReturnType == ReturnType.Next)
+			{
+				FocusSearch(true)?.SetFocus(true);
+			}
+			else
+			{
+				Control.SetFocus(false);
+			}
 			((IEntryController)Element).SendCompleted();
 		}
 
@@ -255,6 +261,24 @@ namespace Xamarin.Forms.Platform.Tizen
 		void UpdateIsReadOnly()
 		{
 			Control.IsEditable = !Element.IsReadOnly;
+		}
+
+		void UpdateClearButtonVisibility(bool init)
+		{
+			if (Element.ClearButtonVisibility == ClearButtonVisibility.WhileEditing)
+			{
+				if (Control is Native.EditfieldEntry editfieldEntry)
+				{
+					editfieldEntry.EnableClearButton = true;
+				}
+			}
+			else if (!init)
+			{
+				if (Control is Native.EditfieldEntry editfieldEntry)
+				{
+					editfieldEntry.EnableClearButton = false;
+				}
+			}
 		}
 	}
 }

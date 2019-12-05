@@ -110,12 +110,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		string DetermineViewReuseId(NSString elementKind)
 		{
-			if (elementKind == UICollectionElementKindSectionKey.Header)
-			{
-				return DetermineViewReuseId(ItemsView.GroupHeaderTemplate);
-			}
-
-			return DetermineViewReuseId(ItemsView.GroupFooterTemplate);
+			return DetermineViewReuseId(elementKind == UICollectionElementKindSectionKey.Header 
+				? ItemsView.GroupHeaderTemplate 
+				: ItemsView.GroupFooterTemplate);
 		}
 
 		string DetermineViewReuseId(DataTemplate template)
@@ -135,33 +132,30 @@ namespace Xamarin.Forms.Platform.iOS
 
 		internal CGSize GetReferenceSizeForHeader(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
 		{
-			if (!_isGrouped)
-			{
-				return CGSize.Empty;
-			}
-
 			// Currently we explicitly measure all of the headers/footers 
 			// Long-term, we might want to look at performance hints (similar to ItemSizingStrategy) for 
 			// headers/footers (if the dev knows for sure they'll all the be the same size)
-
-			var cell = GetViewForSupplementaryElement(collectionView, UICollectionElementKindSectionKey.Header, 
-				NSIndexPath.FromItemSection(0, section)) as ItemsViewCell;
-
-			return cell.Measure();
+			return GetReferenceSizeForheaderOrFooter(collectionView, ItemsView.GroupHeaderTemplate, UICollectionElementKindSectionKey.Header, section);
 		}
 
 		internal CGSize GetReferenceSizeForFooter(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
 		{
-			if (!_isGrouped)
+			return GetReferenceSizeForheaderOrFooter(collectionView, ItemsView.GroupFooterTemplate, UICollectionElementKindSectionKey.Footer, section);
+		}
+
+		internal CGSize GetReferenceSizeForheaderOrFooter(UICollectionView collectionView,DataTemplate template, NSString elementKind, nint section)
+		{
+			if (!_isGrouped || template == null)
 			{
 				return CGSize.Empty;
 			}
 
-			var cell = GetViewForSupplementaryElement(collectionView, UICollectionElementKindSectionKey.Footer, 
+			var cell = GetViewForSupplementaryElement(collectionView, elementKind,
 				NSIndexPath.FromItemSection(0, section)) as ItemsViewCell;
 
 			return cell.Measure();
 		}
+
 
 		internal void SetScrollAnimationEndedCallback(Action callback)
 		{

@@ -83,7 +83,7 @@ namespace Xamarin.Forms
 			// done before we attempt to make the new template.
 			if (oldValue != null)
 			{
-				var queue = new FormsQueue<Element>(16);
+				var queue = new Queue<Element>(16);
 				queue.Enqueue((Element)self);
 
 				while (queue.Count > 0)

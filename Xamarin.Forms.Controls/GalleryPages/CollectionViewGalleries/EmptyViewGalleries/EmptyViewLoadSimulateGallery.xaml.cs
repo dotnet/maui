@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.EmptyViewGalleries
@@ -15,13 +16,13 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.EmptyViewG
 
 			CollectionView.ItemTemplate = ExampleTemplates.PhotoTemplate();
 
-			new Thread(() =>
+			Task.Run(async () =>
 			{
-				Thread.Sleep(1000);
+				await Task.Delay(1000);
 				Device.BeginInvokeOnMainThread(() => CollectionView.ItemsSource = new List<object>());
-				Thread.Sleep(1000);
+				await Task.Delay(1000);
 				Device.BeginInvokeOnMainThread(() => CollectionView.ItemsSource = _demoFilteredItemSource.Items);
-			}).Start();
+			});
 		}
 	}
 }

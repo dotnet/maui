@@ -1,4 +1,5 @@
 ﻿using System.Threading;
+using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
@@ -12,15 +13,15 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 #if APP
 			InitializeComponent();
-			new Thread(() =>
+			Task.Run(async () =>
 			{
-				Thread.Sleep(1000);
+				await Task.Delay(1000);
 				SwitchIsEnabled();
-				Thread.Sleep(1500);
+				await Task.Delay(1500);
 				SwitchIsEnabled();
-				Thread.Sleep(1000);
+				await Task.Delay(1000);
 				SwitchIsEnabled();
-			}).Start();
+			});
 #endif
 		}
 

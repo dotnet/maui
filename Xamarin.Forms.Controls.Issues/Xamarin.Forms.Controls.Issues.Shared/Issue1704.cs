@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.CustomAttributes;
+using System.Threading.Tasks;
 
 #if UITEST
 using Xamarin.UITest;
@@ -459,9 +460,9 @@ namespace Xamarin.Forms.Controls.Issues
 				_abortStressTest = false;
 
 				int.TryParse(_stressTestItertionEntry.Text, out _stressTestIterationCount);
-        
+
 #if __UWP__
-				Windows.System.Threading.ThreadPool.RunAsync(delegate { runStressTest(); });
+				Task.Run(runStressTest);
 #else
 				ThreadPool.QueueUserWorkItem(delegate { runStressTest(); });
 #endif
@@ -499,7 +500,7 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 		}
 
-		void runStressTest()
+		async void runStressTest()
 		{
 			for (int i = 0; i < _stressTestIterationCount && !_abortStressTest; i++)
 			{
@@ -521,9 +522,9 @@ namespace Xamarin.Forms.Controls.Issues
 				_nextStressTest.WaitOne();
 
 				while (_stressTestImage.IsLoading)
-					Thread.Sleep(10);
+					await Task.Delay(10).ConfigureAwait(false);
 
-				Thread.Sleep(10);
+				await Task.Delay(10).ConfigureAwait(false);
 			}
 
 			Device.BeginInvokeOnMainThread(() => {
