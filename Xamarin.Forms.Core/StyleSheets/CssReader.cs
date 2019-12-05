@@ -16,7 +16,7 @@ namespace Xamarin.Forms.StyleSheets
 			_reader = reader;
 		}
 
-		readonly FormsQueue<char> _cache = new FormsQueue<char>();
+		readonly Queue<char> _cache = new Queue<char>();
 
 		//skip comments
 		//TODO unescape escaped sequences

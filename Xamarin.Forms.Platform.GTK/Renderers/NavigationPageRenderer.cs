@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 	{
 		private const int NavigationAnimationDuration = 250;	// Ms
 
-		private FormsStack<NavigationChildPage> _currentStack;
+		private Stack<NavigationChildPage> _currentStack;
 
 		INavigationPageController NavigationController => Element as INavigationPageController;
 
@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 		public NavigationPageRenderer()
 		{
-			_currentStack = new FormsStack<NavigationChildPage>();
+			_currentStack = new Stack<NavigationChildPage>();
 			_toolbarTracker = new GtkToolbarTracker();
 		}
 
@@ -486,7 +486,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			{
 				if (removeFromStack)
 				{
-					var newStack = new FormsStack<NavigationChildPage>();
+					var newStack = new Stack<NavigationChildPage>();
 					foreach (var stack in _currentStack)
 					{
 						if (stack.Page != page)

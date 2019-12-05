@@ -56,12 +56,6 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Xamarin.Forms.Core\corefx\FormsQueue.cs">
-      <Link>corefx\FormsQueue.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core\corefx\FormsStack.cs">
-      <Link>corefx\FormsStack.cs</Link>
-    </Compile>
     <Compile Include="ActivityResultCallbackRegistry.cs" />
     <Compile Include="AndroidApplicationLifecycleState.cs" />
     <Compile Include="AndroidTitleBarVisibility.cs" />

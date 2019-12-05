@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Description>macOS Backend for Xamarin.Forms</Description>
@@ -70,12 +70,6 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Xamarin.Forms.Core\corefx\FormsQueue.cs">
-      <Link>corefx\FormsQueue.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core\corefx\FormsStack.cs">
-      <Link>corefx\FormsStack.cs</Link>
-    </Compile>
     <Compile Include="..\Xamarin.Forms.Platform.iOS\Extensions\LabelExtensions.cs">
       <Link>Extensions\LabelExtensions.cs</Link>
     </Compile>
