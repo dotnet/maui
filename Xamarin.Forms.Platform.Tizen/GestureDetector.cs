@@ -475,6 +475,22 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		GestureHandler CreateHandler(IGestureRecognizer recognizer)
 		{
+			if (recognizer is TapGestureRecognizer)
+			{
+				return new TapGestureHandler(recognizer);
+			}
+			else if (recognizer is PinchGestureRecognizer)
+			{
+				return new PinchGestureHandler(recognizer);
+			}
+			else if (recognizer is PanGestureRecognizer)
+			{
+				return new PanGestureHandler(recognizer);
+			}
+			else if (recognizer is SwipeGestureRecognizer)
+			{
+				return new SwipeGestureHandler(recognizer);
+			}
 			return Forms.GetHandlerForObject<GestureHandler>(recognizer, recognizer);
 		}
 

@@ -47,7 +47,7 @@ namespace Xamarin.Forms
 			Assemblies = assemblies;
 		}
 
-		public void UseStaticRegistrar(StaticRegistrarStrategy strategy, Dictionary<Type, Type> customHandlers=null, bool disableCss=false)
+		public void UseStaticRegistrar(StaticRegistrarStrategy strategy, Dictionary<Type, Func<IRegisterable>> customHandlers=null, bool disableCss=false)
 		{
 			StaticRegistarStrategy = strategy;
 			CustomHandlers = customHandlers;
@@ -58,7 +58,7 @@ namespace Xamarin.Forms
 		public CoreApplication Context;
 		public bool UseDeviceIndependentPixel;
 		public HandlerAttribute[] Handlers;
-		public Dictionary<Type, Type> CustomHandlers; // for static registers
+		public Dictionary<Type, Func<IRegisterable>> CustomHandlers; // for static registers
 		public Assembly[] Assemblies;
 		public EffectScope[] EffectScopes;
 		public InitializationFlags Flags;
