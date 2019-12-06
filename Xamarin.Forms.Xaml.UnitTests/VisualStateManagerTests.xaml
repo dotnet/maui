@@ -9,24 +9,24 @@
 			<Style TargetType="Entry" x:Key="CustomDisabledState">
 				<Setter Property="VisualStateManager.VisualStateGroups">
 					<VisualStateGroupList>
-						<VisualStateGroup x:Name="CommonStates">
-							<VisualState x:Name="Normal" />
-							<VisualState x:Name="Disabled">
+						<VisualStateGroup Name="CommonStates">
+							<VisualState Name="Normal" />
+							<VisualState Name="Disabled">
 								<VisualState.Setters>
 									<Setter Property="TextColor" Value="Gray" />
 									<Setter Property="PlaceholderColor" Value="LightGray" />
 								</VisualState.Setters>
 							</VisualState>
 						</VisualStateGroup>
-						<VisualStateGroup x:Name="Other">
-							<VisualState x:Name="Fake">
+						<VisualStateGroup Name="Other">
+							<VisualState Name="Fake">
 								<VisualState.Setters>
 									<Setter Property="TextColor" Value="Gray" />
 									<Setter Property="PlaceholderColor" Value="LightGray" />
 								</VisualState.Setters>
 							</VisualState>
 						</VisualStateGroup>
-						<VisualStateGroup x:Name="Extra">
+						<VisualStateGroup Name="Extra">
 						</VisualStateGroup>
 					</VisualStateGroupList>
 				</Setter>
@@ -35,9 +35,9 @@
 			<Style TargetType="Entry" x:Key="OtherStyle">
 				<Setter Property="VisualStateManager.VisualStateGroups">
 					<VisualStateGroupList>
-						<VisualStateGroup x:Name="CommonStates">
-							<VisualState x:Name="Normal" />
-							<VisualState x:Name="Disabled">
+						<VisualStateGroup Name="CommonStates">
+							<VisualState Name="Normal" />
+							<VisualState Name="Disabled">
 								<VisualState.Setters>
 									<Setter Property="TextColor" Value="Default" />
 									<Setter Property="PlaceholderColor" Value="Default" />
@@ -72,30 +72,48 @@
 		</ResourceDictionary>
 	</ContentPage.Resources>
 
+	<VisualStateManager.VisualStateGroups>
+		<VisualStateGroup Name="ColorStates">
+			<VisualState Name="Red">
+				<VisualState.Setters>
+					<Setter TargetName="TargetLabel1" Property="Label.TextColor" Value="#920e0c" />
+					<Setter TargetName="TargetLabel1" Property="Label.Text" Value="Red" />
+				</VisualState.Setters>
+			</VisualState>
+
+			<VisualState Name="Blue">
+				<VisualState.Setters>
+					<Setter TargetName="TargetLabel1" Property="Label.TextColor" Value="#94b0b7" />
+					<Setter TargetName="TargetLabel1" Property="Label.Text" Value="Blue" />
+				</VisualState.Setters>
+			</VisualState>
+		</VisualStateGroup>
+	</VisualStateManager.VisualStateGroups>
+
 	<StackLayout>
 		<Entry x:Name="Entry0" />
 		<Entry x:Name="Entry1" Style="{StaticResource CustomDisabledState}" />
 
 		<Entry x:Name="Entry2">
 			<VisualStateManager.VisualStateGroups>
-				<VisualStateGroup x:Name="CommonStates">
-					<VisualState x:Name="Normal" />
-					<VisualState x:Name="Disabled">
+				<VisualStateGroup Name="CommonStates">
+					<VisualState Name="Normal" />
+					<VisualState Name="Disabled">
 						<VisualState.Setters>
 							<Setter Property="TextColor" Value="Gray" />
 							<Setter Property="PlaceholderColor" Value="LightGray" />
 						</VisualState.Setters>
 					</VisualState>
 				</VisualStateGroup>
-				<VisualStateGroup x:Name="Other">
-					<VisualState x:Name="Fake" />
+				<VisualStateGroup Name="Other">
+					<VisualState Name="Fake" />
 				</VisualStateGroup>
 			</VisualStateManager.VisualStateGroups>
 		</Entry>
 
 		<Entry x:Name="Entry3">
 			<VisualStateManager.VisualStateGroups>
-				<VisualStateGroup x:Name="Empty" />
+				<VisualStateGroup Name="Empty" />
 			</VisualStateManager.VisualStateGroups>
 		</Entry>
 		
@@ -108,16 +126,16 @@
 			and VisualState names on different VisualElements -->
 		<Entry x:Name="Entry5">
 			<VisualStateManager.VisualStateGroups>
-				<VisualStateGroup x:Name="CommonStates">
-					<VisualState x:Name="Normal" />
+				<VisualStateGroup Name="CommonStates">
+					<VisualState Name="Normal" />
 				</VisualStateGroup>
 			</VisualStateManager.VisualStateGroups>
 		</Entry>
 		
 		<Entry x:Name="Button1">
 			<VisualStateManager.VisualStateGroups>
-				<VisualStateGroup x:Name="CommonStates">
-					<VisualState x:Name="Normal">
+				<VisualStateGroup Name="CommonStates">
+					<VisualState Name="Normal">
 						<VisualState.Setters>
 							<Setter Property="BackgroundColor" Value="Lime" />
 						</VisualState.Setters>
@@ -125,6 +143,8 @@
 				</VisualStateGroup>
 			</VisualStateManager.VisualStateGroups>
 		</Entry>
+
+		<Label x:Name="TargetLabel1" Style="{StaticResource ErrorLabel}"></Label>
 
 	</StackLayout>
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using NUnit.Framework;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Core.UnitTests
 {
@@ -278,6 +279,49 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.That(label1.Margin.Bottom, Is.EqualTo(targetBottomMargin));
 			Assert.That(label2.Margin.Bottom, Is.EqualTo(targetBottomMargin));
+		}
+
+		[Test]
+		public void VisualElementGoesToCorrectStateWhenSetterHasTarget()
+		{
+			double defaultMargin = default(double);
+			double targetMargin = 1.5;
+
+			var label1 = new Label();
+			var label2 = new Label();
+			INameScope nameScope = new NameScope();
+			NameScope.SetNameScope(label1, nameScope);
+			nameScope.RegisterName("Label1", label1);
+			NameScope.SetNameScope(label2, nameScope);
+			nameScope.RegisterName("Label2", label2);
+
+			var list = new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					States =
+					{
+						new VisualState
+						{
+							Name = NormalStateName,
+							Setters =
+							{
+								new Setter { Property = View.MarginBottomProperty, Value = targetMargin },
+								new Setter { TargetName = "Label2", Property = View.MarginTopProperty, Value = targetMargin }
+							}
+						}
+					}
+				}
+			};
+
+			VisualStateManager.SetVisualStateGroups(label1, list);
+
+			Assert.That(label1.Margin.Top, Is.EqualTo(defaultMargin));
+			Assert.That(label1.Margin.Bottom, Is.EqualTo(targetMargin));
+			Assert.That(label1.Margin.Left, Is.EqualTo(defaultMargin));
+
+			Assert.That(label2.Margin.Top, Is.EqualTo(targetMargin));
+			Assert.That(label2.Margin.Bottom, Is.EqualTo(defaultMargin));
 		}
 
 		[Test]

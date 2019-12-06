@@ -181,6 +181,24 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 				Assert.That(button.BackgroundColor, Is.EqualTo(Color.Lime));
 			}
+
+			[TestCase(false)]
+			[TestCase(true)]
+			public void TargetedVisualElementGoesToCorrectState(bool useCompiledXaml)
+			{
+				var layout = new VisualStateManagerTests(useCompiledXaml);
+
+				var label1 = layout.TargetLabel1;
+
+				VisualStateManager.GoToState(layout, "Red");
+
+				Assert.That(label1.Text, Is.EqualTo("Red"));
+
+				VisualStateManager.GoToState(layout, "Blue");
+
+				Assert.That(label1.Text, Is.EqualTo("Blue"));
+
+			}
 		}
 	}
 }

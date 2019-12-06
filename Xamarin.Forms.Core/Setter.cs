@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Xml;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml;
 
@@ -13,6 +12,8 @@ namespace Xamarin.Forms
 	public sealed class Setter : IValueProvider
 	{
 		readonly ConditionalWeakTable<BindableObject, object> _originalValues = new ConditionalWeakTable<BindableObject, object>();
+
+		public string TargetName { get; set; }
 
 		public BindableProperty Property { get; set; }
 
@@ -49,57 +50,65 @@ namespace Xamarin.Forms
 
 		internal void Apply(BindableObject target, bool fromStyle = false)
 		{
-			if (target == null)
-				throw new ArgumentNullException(nameof(target));
+			if (target == null) throw new ArgumentNullException(nameof(target));
+
+			var targetObject = target;
+
+			if (!string.IsNullOrEmpty(TargetName) && target is Element element)
+				targetObject = element.FindByName(TargetName) as BindableObject ?? throw new ArgumentNullException(nameof(targetObject));
+
 			if (Property == null)
 				return;
 
-			object originalValue = target.GetValue(Property);
+			object originalValue = targetObject.GetValue(Property);
 			if (!Equals(originalValue, Property.DefaultValue))
 			{
-				_originalValues.Remove(target);
-				_originalValues.Add(target, originalValue);
+				_originalValues.Remove(targetObject);
+				_originalValues.Add(targetObject, originalValue);
 			}
 
 			var dynamicResource = Value as DynamicResource;
-			var binding = Value as BindingBase;
-			if (binding != null)
-				target.SetBinding(Property, binding.Clone(), fromStyle);
+			if (Value is BindingBase binding)
+				targetObject.SetBinding(Property, binding.Clone(), fromStyle);
 			else if (dynamicResource != null)
-				target.SetDynamicResource(Property, dynamicResource.Key, fromStyle);
+				targetObject.SetDynamicResource(Property, dynamicResource.Key, fromStyle);
 			else
 			{
 				if (Value is IList<VisualStateGroup> visualStateGroupCollection)
-					target.SetValue(Property, visualStateGroupCollection.Clone(), fromStyle);
+					targetObject.SetValue(Property, visualStateGroupCollection.Clone(), fromStyle);
 				else
-					target.SetValue(Property, Value, fromStyle);
+					targetObject.SetValue(Property, Value, fromStyle);
 			}
 		}
 
 		internal void UnApply(BindableObject target, bool fromStyle = false)
 		{
-			if (target == null)
-				throw new ArgumentNullException(nameof(target));
+			if (target == null) throw new ArgumentNullException(nameof(target));
+
+			var targetObject = target;
+
+			if (!string.IsNullOrEmpty(TargetName) && target is Element element)
+				targetObject = element.FindByName(TargetName) as BindableObject ?? throw new ArgumentNullException(nameof(targetObject));
+
 			if (Property == null)
 				return;
 
-			object actual = target.GetValue(Property);
+			object actual = targetObject.GetValue(Property);
 			if (!Equals(actual, Value) && !(Value is Binding) && !(Value is DynamicResource))
 			{
 				//Do not reset default value if the value has been changed
-				_originalValues.Remove(target);
+				_originalValues.Remove(targetObject);
 				return;
 			}
 
-			object defaultValue;
-			if (_originalValues.TryGetValue(target, out defaultValue))
+			if (_originalValues.TryGetValue(targetObject, out object defaultValue))
 			{
 				//reset default value, unapply bindings and dynamicResource
-				target.SetValue(Property, defaultValue, fromStyle);
-				_originalValues.Remove(target);
+				targetObject.SetValue(Property, defaultValue, fromStyle);
+				_originalValues.Remove(targetObject);
 			}
 			else
-				target.ClearValue(Property);
+				targetObject.ClearValue(Property);
 		}
 	}
 }
