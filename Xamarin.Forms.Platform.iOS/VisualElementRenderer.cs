@@ -109,6 +109,19 @@ namespace Xamarin.Forms.Platform.MacOS
 			platformEffect.SetControl(control);
 		}
 
+#if __MOBILE__
+		public override bool CanBecomeFirstResponder
+		{
+			get
+			{
+				if (Element.IsSet(PlatformConfiguration.iOSSpecific.VisualElement.CanBecomeFirstResponderProperty))
+					return PlatformConfiguration.iOSSpecific.VisualElement.GetCanBecomeFirstResponder(Element);
+
+				return base.CanBecomeFirstResponder;
+			}
+		}
+#endif
+
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
 			var platformEffect = effect as PlatformEffect;
