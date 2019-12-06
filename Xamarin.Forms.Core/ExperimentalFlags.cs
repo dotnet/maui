@@ -12,6 +12,7 @@ namespace Xamarin.Forms
 		internal const string IndicatorViewExperimental = "IndicatorView_Experimental";
 		internal const string ShellUWPExperimental = "Shell_UWP_Experimental";
 		internal const string CarouselViewExperimental = "CarouselView_Experimental";
+		internal const string SwipeViewExperimental = "SwipeView_Experimental";
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void VerifyFlagEnabled(
