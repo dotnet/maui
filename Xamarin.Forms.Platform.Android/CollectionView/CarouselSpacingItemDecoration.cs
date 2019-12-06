@@ -2,21 +2,23 @@
 using Android.Graphics;
 using Android.Support.V7.Widget;
 using AView = Android.Views.View;
+using FormsCarouselView = Xamarin.Forms.CarouselView;
 
 namespace Xamarin.Forms.Platform.Android
 {
 	internal class CarouselSpacingItemDecoration : RecyclerView.ItemDecoration
 	{
+		readonly FormsCarouselView _carouselView;
 		readonly ItemsLayoutOrientation _orientation;
 		readonly double _verticalSpacing;
 		double _adjustedVerticalSpacing = -1;
 		readonly double _horizontalSpacing;
 		double _adjustedHorizontalSpacing = -1;
 
-		public CarouselSpacingItemDecoration(IItemsLayout itemsLayout)
+		public CarouselSpacingItemDecoration(IItemsLayout itemsLayout, FormsCarouselView carouselView)
 		{
 			var layout = itemsLayout ?? throw new ArgumentNullException(nameof(itemsLayout));
-
+		
 			switch (layout)
 			{
 				case GridItemsLayout gridItemsLayout:
@@ -32,11 +34,8 @@ namespace Xamarin.Forms.Platform.Android
 						_verticalSpacing = listItemsLayout.ItemSpacing;
 					break;
 			}
-		}
 
-		public override void OnDraw(Canvas c, RecyclerView parent, RecyclerView.State state)
-		{
-			base.OnDraw(c, parent, state);
+			_carouselView = carouselView;
 		}
 
 		public override void GetItemOffsets(Rect outRect, AView view, RecyclerView parent, RecyclerView.State state)
@@ -54,23 +53,29 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			int position = parent.GetChildAdapterPosition(view);
-			int itemCount = state.ItemCount;
+			int itemCount = parent.GetAdapter().ItemCount;
 
 			if (position == RecyclerView.NoPosition || itemCount == 0)
 				return;
 
 			if (_orientation == ItemsLayoutOrientation.Vertical)
 			{
+				var verticalInsets = parent.Context.ToPixels(_carouselView.PeekAreaInsets.Bottom + _carouselView.PeekAreaInsets.Top) / 2;
+				var finalVerticalSpacing = (int)(_adjustedVerticalSpacing - (_verticalSpacing * 2));
+
 				outRect.Left = position == 0 ? 0 : (int)_adjustedHorizontalSpacing;
-				outRect.Bottom = (int)(_adjustedVerticalSpacing - (_verticalSpacing * 2));
-				outRect.Top = (int)(_adjustedVerticalSpacing - (_verticalSpacing * 2));
+				outRect.Bottom = (position == (itemCount - 1) && verticalInsets > 0) ? ((int)Math.Ceiling(verticalInsets / 2) + finalVerticalSpacing) : finalVerticalSpacing;
+				outRect.Top = (position == 0 && verticalInsets > 0) ? ((int)Math.Ceiling(verticalInsets / 2) + finalVerticalSpacing) : finalVerticalSpacing;
 			}
 
 			if (_orientation == ItemsLayoutOrientation.Horizontal)
 			{
+				var horizontalInsets = parent.Context.ToPixels(_carouselView.PeekAreaInsets.Left + _carouselView.PeekAreaInsets.Right) / 2;
+				var finalHorizontalSpacing = (int)(_adjustedHorizontalSpacing - (_horizontalSpacing * 2));
+
 				outRect.Top = position == 0 ? 0 : (int)_adjustedVerticalSpacing;
-				outRect.Right = (int)(_adjustedHorizontalSpacing - (_horizontalSpacing * 2));
-				outRect.Left = (int)(_adjustedHorizontalSpacing - (_horizontalSpacing * 2));
+				outRect.Right = (position == (itemCount - 1) && horizontalInsets > 0) ? ((int)Math.Ceiling(horizontalInsets / 2) + finalHorizontalSpacing) : finalHorizontalSpacing;
+				outRect.Left = (position == 0 && horizontalInsets > 0) ? ((int)Math.Ceiling(horizontalInsets / 2) + finalHorizontalSpacing) : finalHorizontalSpacing;
 			}
 		}
 	}

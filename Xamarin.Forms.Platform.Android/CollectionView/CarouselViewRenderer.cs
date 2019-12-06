@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Views;
@@ -8,7 +7,7 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public class CarouselViewRenderer : ItemsViewRenderer<ItemsView, ItemsViewAdapter<ItemsView, IItemsViewSource>, IItemsViewSource>
 	{
-		protected CarouselView Carousel;
+		protected FormsCarouselView Carousel;
 		ItemDecoration _itemDecoration;
 		bool _isSwipeEnabled;
 		int _oldPosition;
@@ -35,7 +34,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void SetUpNewElement(ItemsView newElement)
 		{
-			Carousel = newElement as CarouselView;
+			Carousel = newElement as FormsCarouselView;
 
 			base.SetUpNewElement(newElement);
 
@@ -57,11 +56,11 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			base.OnElementPropertyChanged(sender, changedProperty);
    
-			if (changedProperty.Is(CarouselView.PeekAreaInsetsProperty))
+			if (changedProperty.Is(FormsCarouselView.PeekAreaInsetsProperty))
 				UpdatePeekAreaInsets();
-			else if (changedProperty.Is(CarouselView.IsSwipeEnabledProperty))
+			else if (changedProperty.Is(FormsCarouselView.IsSwipeEnabledProperty))
 				UpdateIsSwipeEnabled();
-			else if (changedProperty.Is(CarouselView.IsBounceEnabledProperty))
+			else if (changedProperty.Is(FormsCarouselView.IsBounceEnabledProperty))
 				UpdateIsBounceEnabled();
 			else if (changedProperty.Is(LinearItemsLayout.ItemSpacingProperty))
 				UpdateItemSpacing();
@@ -92,7 +91,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override ItemDecoration CreateSpacingDecoration(IItemsLayout itemsLayout)
 		{
-			return new CarouselSpacingItemDecoration(itemsLayout);
+			return new CarouselSpacingItemDecoration(itemsLayout, Carousel);
 		}
 
 		protected override void UpdateItemSpacing()
@@ -132,7 +131,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (ItemsLayout is LinearItemsLayout listItemsLayout && listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
 			{
-				itemWidth = (int)(Width - Carousel.PeekAreaInsets.Left - Carousel.PeekAreaInsets.Right - Context?.ToPixels(listItemsLayout.ItemSpacing));
+				itemWidth = (int)(Width - Context?.ToPixels(Carousel.PeekAreaInsets.Left) - Context?.ToPixels(Carousel.PeekAreaInsets.Right) - Context?.ToPixels(listItemsLayout.ItemSpacing));
 			}
 
 			return itemWidth;
@@ -144,7 +143,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (ItemsLayout is LinearItemsLayout listItemsLayout && listItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
 			{
-				itemHeight = (int)(Height - Carousel.PeekAreaInsets.Top - Carousel.PeekAreaInsets.Bottom - Context?.ToPixels(listItemsLayout.ItemSpacing));
+				itemHeight = (int)(Height - Context?.ToPixels(Carousel.PeekAreaInsets.Top) - Context?.ToPixels(Carousel.PeekAreaInsets.Bottom) - Context?.ToPixels(listItemsLayout.ItemSpacing));
 			}
 
 			return itemHeight;

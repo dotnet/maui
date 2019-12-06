@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 				ItemTemplate = itemTemplate,
 				Position = 2,
 				//NumberOfSideItems = 1,
-				Margin = new Thickness(0,10,0,40),
+				Margin = new Thickness(0,10,0,10),
 				BackgroundColor = Color.LightGray,
 				AutomationId = "TheCarouselView"
 			};
@@ -59,8 +59,6 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 				carouselView.PeekAreaInsets = new Thickness(0, 30, 0, 30);
 
 			carouselView.Scrolled += CarouselView_Scrolled;
-
-			layout.Children.Add(carouselView);
 
 			StackLayout stacklayoutInfo = GetReadOnlyInfo(carouselView);
 
@@ -101,10 +99,20 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			stacklayoutInfo.Children.Add(stckPeek);
 			stacklayoutInfo.Children.Add(_scrollInfoLabel);
 
+			var content = new Grid();
+			content.Children.Add(carouselView);
+
+#if DEBUG
+			// Uncomment this line to add a helper to visualize the center of each element.
+			//content.Children.Add(CreateDebuggerLines());
+#endif
+
+			layout.Children.Add(content);
+
 			Grid.SetRow(positionControl, 1);
 			Grid.SetRow(stacklayoutInfo, 2);
 			Grid.SetRow(spacingModifier, 3);
-			Grid.SetRow(carouselView, 4);
+			Grid.SetRow(content, 4);
 
 			Content = layout;
 			generator.CollectionChanged += (sender, e) => {
@@ -151,5 +159,35 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 
 			return new StackLayout { Children = { stacklayoutInfo } };
 		}
+#if DEBUG
+		Grid CreateDebuggerLines()
+		{
+			var grid = new Grid
+			{
+				InputTransparent = true,
+				Margin = new Thickness(0, 10, 0, 10)
+			};
+
+			var horizontalLine = new Grid
+			{
+				HeightRequest = 1,
+				BackgroundColor = Color.Red,
+				VerticalOptions = LayoutOptions.Center
+			};
+
+			grid.Children.Add(horizontalLine);
+
+			var verticalLine = new Grid
+			{
+				WidthRequest = 1,
+				BackgroundColor = Color.Red,
+				HorizontalOptions = LayoutOptions.Center
+			};
+
+			grid.Children.Add(verticalLine);
+
+			return grid;
+		}
+#endif
 	}
 }
