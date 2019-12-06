@@ -931,7 +931,7 @@ namespace Xamarin.Forms.Build.Tasks
 			yield return Create(Ldc_I4, lineInfo.LineNumber);				//lineNumber
 			yield return Create(Ldc_I4, lineInfo.LinePosition);             //linePosition
 
-			yield return Create(Call, module.ImportMethodReference(("Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml.Diagnostics", "VisualDiagnostics"),
+			yield return Create(Call, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml.Diagnostics", "VisualDiagnostics"),
 																   methodName: "RegisterSourceInfo",
 																   parameterTypes: new[] {
 																	   ("mscorlib", "System", "Object"),

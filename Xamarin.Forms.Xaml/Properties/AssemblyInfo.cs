@@ -23,3 +23,8 @@ using Xamarin.Forms.Internals;
 #pragma warning disable CS0612 // Type or member is obsolete
 [assembly: TypeForwardedTo(typeof(Xamarin.Forms.Xaml.Internals.INameScopeProvider))]
 #pragma warning restore CS0612 // Type or member is obsolete
+
+[assembly: TypeForwardedTo(typeof(Xamarin.Forms.Xaml.Diagnostics.DebuggerHelper))]
+[assembly: TypeForwardedTo(typeof(Xamarin.Forms.Xaml.Diagnostics.VisualDiagnostics))]
+[assembly: TypeForwardedTo(typeof(Xamarin.Forms.Xaml.Diagnostics.VisualTreeChangeEventArgs))]
+[assembly: TypeForwardedTo(typeof(Xamarin.Forms.Xaml.Diagnostics.XamlSourceInfo))]
