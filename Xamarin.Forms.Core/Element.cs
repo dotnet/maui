@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.Xaml.Diagnostics;
 
 namespace Xamarin.Forms
 {
@@ -199,6 +200,8 @@ namespace Xamarin.Forms
 				{
 					SetInheritedBindingContext(this, null);
 				}
+
+				VisualDiagnostics.SendVisualTreeChanged(this, value);
 
 				OnParentSet();
 

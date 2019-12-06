@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Android.Graphics;
-using Android.Support.V7.Widget;
+﻿using Android.Support.V7.Widget;
+using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android.CollectionView
 {
@@ -39,7 +37,7 @@ namespace Xamarin.Forms.Platform.Android.CollectionView
 			{
 				firstVisibleItemIndex = linearLayoutManager.FindFirstVisibleItemPosition();
 				lastVisibleItemIndex = linearLayoutManager.FindLastVisibleItemPosition();
-				centerItemIndex = CalculateCenterItemIndex(firstVisibleItemIndex, lastVisibleItemIndex, linearLayoutManager);
+				centerItemIndex = CalculateCenterItemIndex(firstVisibleItemIndex, recyclerView, linearLayoutManager);
 			}
 
 			var context = recyclerView.Context;
@@ -76,30 +74,27 @@ namespace Xamarin.Forms.Platform.Android.CollectionView
 			}
 		}
 
-		static int CalculateCenterItemIndex(int firstVisibleItemIndex, int lastVisibleItemIndex, LinearLayoutManager linearLayoutManager)
+		static int CalculateCenterItemIndex(int firstVisibleItemIndex, RecyclerView recyclerView, LinearLayoutManager linearLayoutManager)
 		{
 			// This can happen if a layout pass has not happened yet
 			if (firstVisibleItemIndex == -1)
 				return firstVisibleItemIndex;
 
-			var keyValuePairs = new Dictionary<int, int>();
-			for (var i = firstVisibleItemIndex; i <= lastVisibleItemIndex; i++)
-			{
-				var view = linearLayoutManager.FindViewByPosition(i);
-				var rect = new Rect();
+			AView centerView;
 
-				view.GetLocalVisibleRect(rect);
-				keyValuePairs[i] = rect.Height();
+			if (linearLayoutManager.Orientation == LinearLayoutManager.Horizontal)
+			{
+				float centerX = recyclerView.Width / 2;
+				centerView = recyclerView.FindChildViewUnder(centerX, recyclerView.Top);
+			}
+			else
+			{
+				float centerY = recyclerView.Height / 2;
+				centerView = recyclerView.FindChildViewUnder(recyclerView.Left, centerY);
 			}
 
-			var center = keyValuePairs.Values.Sum() / 2.0;
-			foreach (var keyValuePair in keyValuePairs)
-			{
-				center -= keyValuePair.Value;
-
-				if (center <= 0)
-					return keyValuePair.Key;
-			}
+			if (centerView != null)
+				return recyclerView.GetChildAdapterPosition(centerView);
 
 			return firstVisibleItemIndex;
 		}
