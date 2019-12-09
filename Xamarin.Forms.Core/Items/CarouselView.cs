@@ -151,6 +151,7 @@ namespace Xamarin.Forms
 			BindableProperty.Create(nameof(ItemsLayout), typeof(LinearItemsLayout), typeof(ItemsView),
 				LinearItemsLayout.CarouselDefault);
 
+		[TypeConverter(typeof(CarouselLayoutTypeConverter))]
 		public LinearItemsLayout ItemsLayout
 		{
 			get => (LinearItemsLayout)GetValue(ItemsLayoutProperty);

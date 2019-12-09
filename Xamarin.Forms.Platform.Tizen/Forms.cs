@@ -91,23 +91,6 @@ namespace Xamarin.Forms
 			return s_dpi.Value / 72.0 / Elementary.GetScale();
 		});
 
-		static Lazy<DeviceOrientation> s_naturalOrientation = new Lazy<DeviceOrientation>(() =>
-		{
-			int width = 0;
-			int height = 0;
-			TSystemInfo.TryGetValue<int>("http://tizen.org/feature/screen.width", out width);
-			TSystemInfo.TryGetValue<int>("http://tizen.org/feature/screen.height", out height);
-
-			if (height >= width)
-			{
-				return DeviceOrientation.Portrait;
-			}
-			else
-			{
-				return DeviceOrientation.Landscape;
-			}
-		});
-
 		class TizenDeviceInfo : DeviceInfo
 		{
 			readonly Size pixelScreenSize;
@@ -195,7 +178,7 @@ namespace Xamarin.Forms
 			private set;
 		}
 
-		public static DeviceOrientation NaturalOrientation => s_naturalOrientation.Value;
+		public static DeviceOrientation NaturalOrientation { get; } = GetDeviceOrientation();
 
 		public static StaticRegistrarStrategy StaticRegistrarStrategy => s_staticRegistrarStrategy;
 
@@ -203,6 +186,23 @@ namespace Xamarin.Forms
 		{
 			get;
 			private set;
+		}
+
+		static DeviceOrientation GetDeviceOrientation()
+		{
+			int width = 0;
+			int height = 0;
+			TSystemInfo.TryGetValue<int>("http://tizen.org/feature/screen.width", out width);
+			TSystemInfo.TryGetValue<int>("http://tizen.org/feature/screen.height", out height);
+
+			if (height >= width)
+			{
+				return DeviceOrientation.Portrait;
+			}
+			else
+			{
+				return DeviceOrientation.Landscape;
+			}
 		}
 
 		internal static void SendViewInitialized(this VisualElement self, EvasObject nativeView)
