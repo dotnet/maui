@@ -604,7 +604,11 @@
       <Member Id="M:Xamarin.Essentials.ShareFileRequest.#ctor(Xamarin.Essentials.FileBase)" />
       <Member Id="M:Xamarin.Essentials.ShareFileRequest.#ctor(Xamarin.Essentials.ShareFile)" />
       <Member Id="P:Xamarin.Essentials.ShareFileRequest.File" />
-      <Member Id="P:Xamarin.Essentials.ShareFileRequest.Title" />
+    </Type>
+    <Type Name="Xamarin.Essentials.ShareRequestBase" Id="T:Xamarin.Essentials.ShareRequestBase">
+      <Member Id="M:Xamarin.Essentials.ShareRequestBase.#ctor" />
+      <Member Id="P:Xamarin.Essentials.ShareRequestBase.PresentationSourceBounds" />
+      <Member Id="P:Xamarin.Essentials.ShareRequestBase.Title" />
     </Type>
     <Type Name="Xamarin.Essentials.ShareTextRequest" Id="T:Xamarin.Essentials.ShareTextRequest">
       <Member Id="M:Xamarin.Essentials.ShareTextRequest.#ctor" />
@@ -612,7 +616,6 @@
       <Member Id="M:Xamarin.Essentials.ShareTextRequest.#ctor(System.String,System.String)" />
       <Member Id="P:Xamarin.Essentials.ShareTextRequest.Subject" />
       <Member Id="P:Xamarin.Essentials.ShareTextRequest.Text" />
-      <Member Id="P:Xamarin.Essentials.ShareTextRequest.Title" />
       <Member Id="P:Xamarin.Essentials.ShareTextRequest.Uri" />
     </Type>
     <Type Name="Xamarin.Essentials.SizeExtensions" Id="T:Xamarin.Essentials.SizeExtensions">

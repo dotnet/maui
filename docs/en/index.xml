@@ -93,7 +93,7 @@
           <AttributeName>System.Runtime.Versioning.TargetFramework("MonoAndroid,Version=v9.0", FrameworkDisplayName="Xamarin.Android v9.0 Support")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+93121294be53f4171d1182fb463e3232d6d760c6")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+ff9fe28695639322b3f845ff4ad7be931189987b")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>
@@ -190,6 +190,7 @@
       <Type Name="Share" Kind="Class" />
       <Type Name="ShareFile" Kind="Class" />
       <Type Name="ShareFileRequest" Kind="Class" />
+      <Type Name="ShareRequestBase" Kind="Class" />
       <Type Name="ShareTextRequest" Kind="Class" />
       <Type Name="SizeExtensions" Kind="Class" />
       <Type Name="Sms" Kind="Class" />

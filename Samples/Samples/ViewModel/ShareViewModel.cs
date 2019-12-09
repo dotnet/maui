@@ -104,7 +104,10 @@ namespace Samples.ViewModel
                 await Share.RequestAsync(new ShareFileRequest
                 {
                     Title = Title,
-                    File = new ShareFile(file)
+                    File = new ShareFile(file),
+                    PresentationSourceBounds = Device.RuntimePlatform == Device.iOS && Device.Idiom == TargetIdiom.Tablet
+                                            ? new System.Drawing.Rectangle(0, 20, 0, 0)
+                                            : System.Drawing.Rectangle.Empty
                 });
             }
         }

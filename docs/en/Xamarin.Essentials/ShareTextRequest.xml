@@ -1,13 +1,13 @@
 <Type Name="ShareTextRequest" FullName="Xamarin.Essentials.ShareTextRequest">
-  <TypeSignature Language="C#" Value="public class ShareTextRequest" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit ShareTextRequest extends System.Object" />
+  <TypeSignature Language="C#" Value="public class ShareTextRequest : Xamarin.Essentials.ShareRequestBase" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit ShareTextRequest extends Xamarin.Essentials.ShareRequestBase" />
   <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.ShareTextRequest" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>System.Object</BaseTypeName>
+    <BaseTypeName>Xamarin.Essentials.ShareRequestBase</BaseTypeName>
   </Base>
   <Interfaces />
   <Docs>
@@ -109,26 +109,6 @@
       <Docs>
         <summary>Gets or sets the main text or message to share.</summary>
         <value>The main text.</value>
-        <remarks>
-          <para />
-        </remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Title">
-      <MemberSignature Language="C#" Value="public string Title { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance string Title" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.ShareTextRequest.Title" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets or sets the title to use on the share user interface.</summary>
-        <value>The title to display.</value>
         <remarks>
           <para />
         </remarks>
