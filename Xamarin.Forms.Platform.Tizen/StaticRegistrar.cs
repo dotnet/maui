@@ -8,38 +8,37 @@ namespace Xamarin.Forms.Platform.Tizen
 {
 	public class StaticRegistrar<TRegistrable> where TRegistrable : class
 	{
-		readonly Dictionary<Type, Type> _handlers = new Dictionary<Type, Type>();
+		readonly Dictionary<Type, Func<TRegistrable>> _handlers = new Dictionary<Type, Func<TRegistrable>>();
 
-		public void Register(Type tview, Type trender)
+		public void Register(Type tview, Func<TRegistrable> renderer)
 		{
-			if (trender == null)
+			if (renderer == null)
 				return;
 
-			_handlers[tview] = trender;
+			_handlers[tview] = renderer;
 		}
 
 		public TOut GetHandler<TOut>(Type type, params object[] args) where TOut : class, TRegistrable
 		{
-			if (LookupHandlerType(type, out Type handlerType))
+			if (LookupHandler(type, out Func<TRegistrable> renderer))
 			{
-				object handler = Activator.CreateInstance(handlerType, args);
-				return (TRegistrable)handler as TOut;
+				return (TRegistrable)renderer() as TOut;
 			}
 			Log.Error("No handler could be found for that type :" + type);
 			return null;
 
 		}
 
-		public bool LookupHandlerType(Type viewType, out Type handlerType)
+		public bool LookupHandler(Type viewType, out Func<TRegistrable> handler)
 		{
 			while (viewType != null && viewType != typeof(Element))
 			{
-				if (_handlers.TryGetValue(viewType, out handlerType))
+				if (_handlers.TryGetValue(viewType, out handler))
 					return true;
 
 				viewType = viewType.GetTypeInfo().BaseType;
 			}
-			handlerType = null;
+			handler = null;
 			return false;
 		}
 
@@ -65,61 +64,55 @@ namespace Xamarin.Forms.Platform.Tizen
 			Registered = new StaticRegistrar<IRegisterable>();
 		}
 
-		public static void RegisterHandlers(Dictionary<Type, Type> customHandlers)
+		public static void RegisterHandlers(Dictionary<Type, Func<IRegisterable>> customHandlers)
 		{
-			//Renderers
-			Registered.Register(typeof(Layout), typeof(LayoutRenderer));
-			Registered.Register(typeof(ScrollView), typeof(ScrollViewRenderer));
-			Registered.Register(typeof(CarouselPage), typeof(CarouselPageRenderer));
-			Registered.Register(typeof(Page), typeof(PageRenderer));
-			Registered.Register(typeof(NavigationPage), typeof(NavigationPageRenderer));
-			Registered.Register(typeof(MasterDetailPage), typeof(MasterDetailPageRenderer));
-			Registered.Register(typeof(TabbedPage), typeof(TabbedPageRenderer));
-			Registered.Register(typeof(Shell), typeof(ShellRenderer));
-			Registered.Register(typeof(Label), typeof(LabelRenderer));
-			Registered.Register(typeof(Button), typeof(ButtonRenderer));
-			Registered.Register(typeof(Image), typeof(ImageRenderer));
-			Registered.Register(typeof(Slider), typeof(SliderRenderer));
-			Registered.Register(typeof(Picker), typeof(PickerRenderer));
-			Registered.Register(typeof(Frame), typeof(FrameRenderer));
-			Registered.Register(typeof(Stepper), typeof(StepperRenderer));
-			Registered.Register(typeof(DatePicker), typeof(DatePickerRenderer));
-			Registered.Register(typeof(TimePicker), typeof(TimePickerRenderer));
-			Registered.Register(typeof(ProgressBar), typeof(ProgressBarRenderer));
-			Registered.Register(typeof(Switch), typeof(SwitchRenderer));
-			Registered.Register(typeof(CheckBox), typeof(CheckBoxRenderer));
-			Registered.Register(typeof(ListView), typeof(ListViewRenderer));
-			Registered.Register(typeof(BoxView), typeof(BoxViewRenderer));
-			Registered.Register(typeof(ActivityIndicator), typeof(ActivityIndicatorRenderer));
-			Registered.Register(typeof(SearchBar), typeof(SearchBarRenderer));
-			Registered.Register(typeof(Entry), typeof(EntryRenderer));
-			Registered.Register(typeof(Editor), typeof(EditorRenderer));
-			Registered.Register(typeof(TableView), typeof(TableViewRenderer));
-			Registered.Register(typeof(NativeViewWrapper), typeof(NativeViewWrapperRenderer));
-			Registered.Register(typeof(WebView), typeof(WebViewRenderer));
-			Registered.Register(typeof(ImageButton), typeof(ImageButtonRenderer));
-			Registered.Register(typeof(StructuredItemsView), typeof(StructuredItemsViewRenderer));
-			Registered.Register(typeof(CarouselView), typeof(CarouselViewRenderer));
-			Registered.Register(typeof(SwipeView), typeof(SwipeViewRenderer));
-			Registered.Register(typeof(RefreshView), typeof(RefreshViewRenderer));
+			////Renderers
+			Registered.Register(typeof(Layout), () => new LayoutRenderer());
+			Registered.Register(typeof(ScrollView), () => new ScrollViewRenderer());
+			Registered.Register(typeof(CarouselPage), () => new CarouselPageRenderer());
+			Registered.Register(typeof(Page), () => new PageRenderer());
+			Registered.Register(typeof(NavigationPage), () => new NavigationPageRenderer());
+			Registered.Register(typeof(MasterDetailPage), () => new MasterDetailPageRenderer());
+			Registered.Register(typeof(TabbedPage), () => new TabbedPageRenderer());
+			Registered.Register(typeof(Shell), () => new ShellRenderer());
+			Registered.Register(typeof(Label), () => new LabelRenderer());
+			Registered.Register(typeof(Button), () => new ButtonRenderer());
+			Registered.Register(typeof(Image), () => new ImageRenderer());
+			Registered.Register(typeof(Slider), () => new SliderRenderer());
+			Registered.Register(typeof(Picker), () => new PickerRenderer());
+			Registered.Register(typeof(Frame), () => new FrameRenderer());
+			Registered.Register(typeof(Stepper), () => new StepperRenderer());
+			Registered.Register(typeof(DatePicker), () => new DatePickerRenderer());
+			Registered.Register(typeof(TimePicker), () => new TimePickerRenderer());
+			Registered.Register(typeof(ProgressBar), () => new ProgressBarRenderer());
+			Registered.Register(typeof(Switch), () => new SwitchRenderer());
+			Registered.Register(typeof(CheckBox), () => new CheckBoxRenderer());
+			Registered.Register(typeof(ListView), () => new ListViewRenderer());
+			Registered.Register(typeof(BoxView), () => new BoxViewRenderer());
+			Registered.Register(typeof(ActivityIndicator), () => new ActivityIndicatorRenderer());
+			Registered.Register(typeof(SearchBar), () => new SearchBarRenderer());
+			Registered.Register(typeof(Entry), () => new EntryRenderer());
+			Registered.Register(typeof(Editor), () => new EditorRenderer());
+			Registered.Register(typeof(TableView), () => new TableViewRenderer());
+			Registered.Register(typeof(NativeViewWrapper), () => new NativeViewWrapperRenderer());
+			Registered.Register(typeof(WebView), () => new WebViewRenderer());
+			Registered.Register(typeof(ImageButton), () => new ImageButtonRenderer());
+			Registered.Register(typeof(StructuredItemsView), () => new StructuredItemsViewRenderer());
+			Registered.Register(typeof(CarouselView), () => new CarouselViewRenderer());
+			Registered.Register(typeof(SwipeView), () => new SwipeViewRenderer());
+			Registered.Register(typeof(RefreshView), () => new RefreshViewRenderer());
 
-			//ImageSourceHandlers
-			Registered.Register(typeof(FileImageSource), typeof(FileImageSourceHandler));
-			Registered.Register(typeof(StreamImageSource), typeof(StreamImageSourceHandler));
-			Registered.Register(typeof(UriImageSource), typeof(UriImageSourceHandler));
+			////ImageSourceHandlers
+			Registered.Register(typeof(FileImageSource), () => new FileImageSourceHandler());
+			Registered.Register(typeof(StreamImageSource), () => new StreamImageSourceHandler());
+			Registered.Register(typeof(UriImageSource), () => new UriImageSourceHandler());
 
-			//Cell Renderers
-			Registered.Register(typeof(TextCell), typeof(TextCellRenderer));
-			Registered.Register(typeof(ImageCell), typeof(ImageCellRenderer));
-			Registered.Register(typeof(SwitchCell), typeof(SwitchCellRenderer));
-			Registered.Register(typeof(EntryCell), typeof(EntryCellRenderer));
-			Registered.Register(typeof(ViewCell), typeof(ViewCellRenderer));
-
-			//Gesture Handlers
-			Registered.Register(typeof(TapGestureRecognizer), typeof(TapGestureHandler));
-			Registered.Register(typeof(PinchGestureRecognizer), typeof(PinchGestureHandler));
-			Registered.Register(typeof(PanGestureRecognizer), typeof(PanGestureHandler));
-			Registered.Register(typeof(SwipeGestureRecognizer), typeof(SwipeGestureHandler));
+			////Cell Renderers
+			Registered.Register(typeof(TextCell), () => new TextCellRenderer());
+			Registered.Register(typeof(ImageCell), () => new ImageCellRenderer());
+			Registered.Register(typeof(SwitchCell), () => new SwitchCellRenderer());
+			Registered.Register(typeof(EntryCell), () => new EntryCellRenderer());
+			Registered.Register(typeof(ViewCell), () => new ViewCellRenderer());
 
 			//Dependencies
 			DependencyService.Register<ISystemResourcesProvider, ResourcesProvider>();
@@ -130,7 +123,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			//Custom Handlers
 			if (customHandlers != null)
 			{
-				foreach (KeyValuePair<Type, Type> handler in customHandlers)
+				foreach (KeyValuePair<Type, Func<IRegisterable>> handler in customHandlers)
 				{
 					Registered.Register(handler.Key, handler.Value);
 				}
