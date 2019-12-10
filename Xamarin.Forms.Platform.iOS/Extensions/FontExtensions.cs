@@ -42,6 +42,20 @@ namespace Xamarin.Forms.Platform.iOS
 						}
 					}
 
+					if (family.StartsWith(".SFUI", System.StringComparison.InvariantCultureIgnoreCase))
+					{
+						var fontWeight = family.Split('-').LastOrDefault();
+
+						if (!string.IsNullOrWhiteSpace(fontWeight) && System.Enum.TryParse<UIFontWeight>(fontWeight, true, out var uIFontWeight))
+						{
+							result = UIFont.SystemFontOfSize(size, uIFontWeight);
+							return result;
+						}
+
+						result = UIFont.SystemFontOfSize(size, UIFontWeight.Regular);
+						return result;
+					}
+					
 					result = UIFont.FromName(family, size);
 					if (result != null)
 						return result;
