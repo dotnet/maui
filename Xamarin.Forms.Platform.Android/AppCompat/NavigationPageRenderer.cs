@@ -253,6 +253,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 				if (_drawerToggle != null)
 				{
+					_drawerToggle.ToolbarNavigationClickListener = null;
 					_drawerToggle.Dispose();
 					_drawerToggle = null;
 				}
@@ -661,9 +662,15 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			FastRenderers.AutomationPropertiesProvider.GetDrawerAccessibilityResources(context, _masterDetailPage, out int resourceIdOpen, out int resourceIdClose);
 
+			if (_drawerToggle != null)
+			{
+				_drawerToggle.ToolbarNavigationClickListener = null;
+				_drawerToggle.Dispose();
+			}
+
 			_drawerToggle = new ActionBarDrawerToggle(context.GetActivity(), _drawerLayout, bar,
-													  resourceIdOpen == 0 ? global::Android.Resource.String.Ok : resourceIdOpen,
-													  resourceIdClose == 0 ? global::Android.Resource.String.Ok : resourceIdClose)
+				resourceIdOpen == 0 ? global::Android.Resource.String.Ok : resourceIdOpen,
+				resourceIdClose == 0 ? global::Android.Resource.String.Ok : resourceIdClose)
 			{
 				ToolbarNavigationClickListener = new ClickListener(Element)
 			};
@@ -671,13 +678,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			if (_drawerListener != null)
 			{
 				_drawerLayout.RemoveDrawerListener(_drawerListener);
+				_drawerListener.Dispose();
 			}
 
 			_drawerListener = new DrawerMultiplexedListener { Listeners = { _drawerToggle, renderer } };
 			_drawerLayout.AddDrawerListener(_drawerListener);
 		}
-
-
 
 		Fragment GetPageFragment(Page page)
 		{

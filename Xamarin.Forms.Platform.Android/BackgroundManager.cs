@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using Xamarin.Forms.Internals;
 using AView = Android.Views.View;
@@ -21,6 +21,11 @@ namespace Xamarin.Forms.Platform.Android
 
 			renderer.ElementPropertyChanged -= OnElementPropertyChanged;
 			renderer.ElementChanged -= OnElementChanged;
+
+			if (renderer.Element != null)
+			{
+				renderer.Element.PropertyChanged -= OnElementPropertyChanged;
+			}
 		}
 
 		static void UpdateBackgroundColor(AView Control, VisualElement Element, Color? color = null)

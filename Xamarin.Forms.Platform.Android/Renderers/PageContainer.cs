@@ -7,12 +7,14 @@ namespace Xamarin.Forms.Platform.Android
 {
 	internal class PageContainer : ViewGroup
 	{
+		bool _disposed;
+
 		public PageContainer(Context context, IVisualElementRenderer child, bool inFragment = false) : base(context)
 		{
-			AddView(child.View);
+			Id = Platform.GenerateViewId();
 			Child = child;
 			IsInFragment = inFragment;
-			Id = Platform.GenerateViewId();
+			AddView(child.View);
 		}
 
 		public IVisualElementRenderer Child { get; set; }
@@ -32,6 +34,28 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			Child.View.Measure(widthMeasureSpec, heightMeasureSpec);
 			SetMeasuredDimension(Child.View.MeasuredWidth, Child.View.MeasuredHeight);
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (_disposed)
+			{
+				return;
+			}
+
+			_disposed = true;
+
+			if (disposing)
+			{
+				if (Child != null)
+				{
+					RemoveView(Child.View);
+
+					Child = null;
+				}
+			}
+
+			base.Dispose(disposing);
 		}
 	}
 }

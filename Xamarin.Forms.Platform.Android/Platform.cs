@@ -1194,7 +1194,9 @@ namespace Xamarin.Forms.Platform.Android
 		internal class DefaultRenderer : VisualElementRenderer<View>, ILayoutChanges
 		{
 			public bool NotReallyHandled { get; private set; }
+			
 			IOnTouchListener _touchListener;
+			bool _disposed;
 
 			[Obsolete("This constructor is obsolete as of version 2.5. Please use DefaultRenderer(Context) instead.")]
 			[EditorBrowsable(EditorBrowsableState.Never)]
@@ -1282,8 +1284,15 @@ namespace Xamarin.Forms.Platform.Android
 
 			protected override void Dispose(bool disposing)
 			{
+				if (_disposed)
+				{
+					return;
+				}
+
+				_disposed = true;
+
 				if (disposing)
-					_touchListener = null;
+					SetOnTouchListener(null); 
 
 				base.Dispose(disposing);
 			}

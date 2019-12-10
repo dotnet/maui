@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Android.Content;
-using Android.Graphics;
-using Android.OS;
 using Android.Views;
 using AView = Android.Views.View;
 using Object = Java.Lang.Object;
@@ -27,13 +25,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		public VisualElementTracker(IVisualElementRenderer renderer)
 		{
-			if (renderer == null)
-				throw new ArgumentNullException("renderer");
-
 			_batchCommittedHandler = HandleRedrawNeeded;
 			_propertyChangedHandler = HandlePropertyChanged;
 
-			_renderer = renderer;
+			_renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
 			_context = renderer.View.Context;
 			_renderer.ElementChanged += RendererOnElementChanged;
 
