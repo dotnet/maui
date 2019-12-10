@@ -106,7 +106,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				return null;
 
 #if __MOBILE__
-			var originPoint = sender.LocationInView(null);
+			var originPoint = sender.LocationInView(UIApplication.SharedApplication.KeyWindow.RootViewController.View);
 			originPoint = UIApplication.SharedApplication.KeyWindow.ConvertPointToView(originPoint, eventTracker._renderer.NativeView);
 #else
 			var originPoint = sender.LocationInView(null);
