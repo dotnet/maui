@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)BaseTestFixture.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PlatformAutomatedTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PlatformQueries.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Queries.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Remotes\BaseViewContainerRemote.cs" />

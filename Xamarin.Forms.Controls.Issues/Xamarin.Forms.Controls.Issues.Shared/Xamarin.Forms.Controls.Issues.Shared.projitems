@@ -967,7 +967,6 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla29453.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla28001.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla28575.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla30935.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla26032.xaml.cs">
       <DependentUpon>Bugzilla26032.xaml</DependentUpon>
@@ -990,7 +989,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue3276.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla26993.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3292.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla32230.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla32898.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla31330.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla31114.cs" />
@@ -1569,7 +1567,7 @@
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7792.xaml">
       <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7758.xaml">
       <SubType>Designer</SubType>
@@ -1585,21 +1583,21 @@
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7817.xaml">
       <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7865.xaml">
       <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7943.xaml">
       <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7993.xaml">
       <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

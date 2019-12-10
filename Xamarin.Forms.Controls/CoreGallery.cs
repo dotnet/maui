@@ -13,6 +13,7 @@ using Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries;
 using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
 using Xamarin.Forms.Controls.GalleryPages.RefreshViewGalleries;
+using Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery;
 
 namespace Xamarin.Forms.Controls
 {
@@ -284,6 +285,7 @@ namespace Xamarin.Forms.Controls
 		}
 
 		List<GalleryPageFactory> _pages = new List<GalleryPageFactory> {
+				new GalleryPageFactory(() => new PlatformTestsConsole(), "Platform Automated Tests"),
 				new GalleryPageFactory(() => new MemoryLeakGallery(), "Memory Leak"),
 				new GalleryPageFactory(() => new Issues.A11yTabIndex(), "Accessibility TabIndex"),
 				new GalleryPageFactory(() => new FontImageSourceGallery(), "Font ImageSource"),

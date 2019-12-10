@@ -45,8 +45,9 @@ namespace Xamarin.Forms.Core.UITests
 		public const string DisplayAlertGallery = "* marked:'DisplayAlert Gallery'";
 		public const string ActionSheetGallery = "* marked:'ActionSheet Gallery'";
 		public const string RootPagesGallery = "* marked:'RootPages Gallery'";
-
 		public const string AppearingGallery = "* marked:'Appearing Gallery'";
+		public const string PlatformAutomatedTestsGallery = "* marked:'Platform Automated Tests'";
+		
 
 		// Legacy galleries
 		public const string CellsGalleryLegacy = "* marked:'Cells Gallery - Legacy'";

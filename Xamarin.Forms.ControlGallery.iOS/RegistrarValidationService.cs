@@ -1,11 +1,13 @@
 ﻿using Xamarin.Forms;
 using Xamarin.Forms.ControlGallery.iOS;
 using Xamarin.Forms.Controls;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.iOS;
 
 [assembly: Dependency(typeof(RegistrarValidationService))]
 namespace Xamarin.Forms.ControlGallery.iOS
 {
+	[Preserve(AllMembers = true)]
 	public class RegistrarValidationService : IRegistrarValidationService
 	{
 		public bool Validate(VisualElement element, out string message)

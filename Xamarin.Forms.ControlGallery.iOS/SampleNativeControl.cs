@@ -2,11 +2,13 @@
 using Xamarin.Forms;
 using Xamarin.Forms.ControlGallery.iOS;
 using Xamarin.Forms.Controls.Issues.Helpers;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.iOS;
 
 [assembly: Dependency(typeof(SampleNativeControl))]
 namespace Xamarin.Forms.ControlGallery.iOS
 {
+	[Preserve(AllMembers = true)]
 	public class SampleNativeControl : ISampleNativeControl
 	{
 		public View View
