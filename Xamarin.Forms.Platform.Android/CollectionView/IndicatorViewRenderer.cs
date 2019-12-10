@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Platform.Android
 	public class IndicatorViewRenderer : LinearLayout, IVisualElementRenderer, IViewRenderer, ITabStop
 	{
 		VisualElementTracker _visualElementTracker;
-		VisualElementRenderer _visualElementRenderer;
+		readonly VisualElementRenderer _visualElementRenderer;
 		const int DefaultPadding = 4;
 
 		void IViewRenderer.MeasureExactly()
@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Platform.Android
 		bool _disposed;
 		int _selectedIndex = 0;
 		AColor _currentPageIndicatorTintColor;
-		ShapeType _shapeType = ShapeType.Oval;
+		AShapeType _shapeType = AShapeType.Oval;
 		Drawable _currentPageShape = null;
 		Drawable _pageShape = null;
 		AColor _pageIndicatorTintColor;
@@ -46,15 +46,11 @@ namespace Xamarin.Forms.Platform.Android
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
-
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
-
 
 		public IndicatorViewRenderer(Context context) : base(context)
 		{
-			//ExperimentalFlags.VerifyFlagEnabled(nameof(IndicatorViewRenderer), ExperimentalFlags.IndicatorViewExperimental);
 			_visualElementRenderer = new VisualElementRenderer(this);
-
 		}
 
 		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
@@ -133,27 +129,19 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual void OnElementChanged(ElementChangedEventArgs<IndicatorView> elementChangedEvent)
 		{
-			
-		}
 
-		void UpdateControl()
-		{
-			if (IndicatorsView.IndicatorTemplate != null)
-			{
-				var control = IndicatorsView.IndicatorLayout.GetRenderer() ?? Platform.CreateRendererWithContext(IndicatorsView.IndicatorLayout, Context);
-				AddView(control as AView);
-			}
 		}
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs changedProperty)
 		{
 			ElementPropertyChanged?.Invoke(this, changedProperty);
 
-			if (changedProperty.Is(IndicatorView.IndicatorsShapeProperty))
+			if (changedProperty.Is(IndicatorView.IndicatorTemplateProperty))
 			{
-				UpdateShapes();
+				UpdateIndicatorTemplate();
 			}
-			else if (changedProperty.Is(IndicatorView.IndicatorColorProperty) ||
+			else if (changedProperty.Is(IndicatorView.IndicatorsShapeProperty) ||
+					 changedProperty.Is(IndicatorView.IndicatorColorProperty) ||
 					 changedProperty.Is(IndicatorView.SelectedIndicatorColorProperty))
 			{
 				ResetIndicators();
@@ -197,8 +185,6 @@ namespace Xamarin.Forms.Platform.Android
 			if (Tracker == null)
 			{
 				_visualElementTracker = new VisualElementTracker(this);
-				//_visualElementPackager = new VisualElementPackager(this);
-				//_visualElementPackager.Load();
 			}
 
 			this.EnsureId();
@@ -206,15 +192,9 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateBackgroundColor();
 
 			if (IndicatorsView.IndicatorTemplate != null)
-			{
-				var control = IndicatorsView.IndicatorLayout.GetRenderer() ?? Platform.CreateRendererWithContext(IndicatorsView.IndicatorLayout, Context);
-				Platform.SetRenderer(IndicatorsView.IndicatorLayout, control);
-				AddView(control as AView);
-			}
+				UpdateIndicatorTemplate();
 			else
-			{
 				UpdateItemsSource();
-			}
 
 			ElevationHelper.SetElevation(this, newElement);
 		}
@@ -292,8 +272,28 @@ namespace Xamarin.Forms.Platform.Android
 			_shapeType = IndicatorsView.IndicatorsShape == IndicatorShape.Circle ? AShapeType.Oval : AShapeType.Rectangle;
 			_pageShape = null;
 			_currentPageShape = null;
-			UpdateShapes();
+
+			if (IndicatorsView.IndicatorTemplate == null)
+				UpdateShapes();
+			else
+				UpdateIndicatorTemplate();
+
 			UpdateIndicators();
+		}
+
+		void UpdateIndicatorTemplate()
+		{
+			if (IndicatorsView.IndicatorLayout == null)
+				return;
+
+			var renderer = IndicatorsView.IndicatorLayout.GetRenderer() ?? Platform.CreateRendererWithContext(IndicatorsView.IndicatorLayout, Context);
+			Platform.SetRenderer(IndicatorsView.IndicatorLayout, renderer);
+
+			RemoveAllViews();
+			AddView(renderer.View);
+
+			var indicatorLayoutSizeRequest = IndicatorsView.IndicatorLayout.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
+			IndicatorsView.IndicatorLayout.Layout(new Rectangle(0, 0, indicatorLayoutSizeRequest.Request.Width, indicatorLayoutSizeRequest.Request.Height));
 		}
 
 		void UpdateIndicators()
@@ -318,16 +318,16 @@ namespace Xamarin.Forms.Platform.Android
 			if (_currentPageShape != null)
 				return;
 
-			_currentPageShape = GetCircle(_currentPageIndicatorTintColor);
-			_pageShape = GetCircle(_pageIndicatorTintColor);
+			_currentPageShape = GetShape(_currentPageIndicatorTintColor);
+			_pageShape = GetShape(_pageIndicatorTintColor);
 		}
 
-		Drawable GetCircle(AColor color)
+		Drawable GetShape(AColor color)
 		{
 			var indicatorSize = IndicatorsView.IndicatorSize;
-			ShapeDrawable shape = null;
+			ShapeDrawable shape;
 
-			if (_shapeType == ShapeType.Oval)
+			if (_shapeType == AShapeType.Oval)
 				shape = new ShapeDrawable(new AShapes.OvalShape());
 			else
 				shape = new ShapeDrawable(new AShapes.RectShape());

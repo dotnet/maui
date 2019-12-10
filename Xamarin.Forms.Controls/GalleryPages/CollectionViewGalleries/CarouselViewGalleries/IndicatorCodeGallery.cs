@@ -23,7 +23,6 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 					new RowDefinition { Height = GridLength.Auto },
 					new RowDefinition { Height = GridLength.Auto },
 					new RowDefinition { Height = GridLength.Auto },
-					new RowDefinition { Height = GridLength.Auto },
 					new RowDefinition { Height = GridLength.Star },
 					new RowDefinition { Height = GridLength.Auto }
 				}
@@ -56,7 +55,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			var indicatorView = new IndicatorView
 			{
 				HorizontalOptions = LayoutOptions.Center,
-				Margin = new Thickness(12, 6, 12, 24),
+				Margin = new Thickness(12, 6, 12, 12),
 				IndicatorColor = Color.Gray,
 				SelectedIndicatorColor = Color.Black,
 				IndicatorsShape = IndicatorShape.Square,
@@ -66,26 +65,6 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			IndicatorView.SetItemsSourceBy(indicatorView, carouselView);
 
 			layout.Children.Add(indicatorView);
-
-			var stckMaxVisible = new StackLayout { Orientation = StackOrientation.Horizontal };
-			stckMaxVisible.Children.Add(new Label { VerticalOptions = LayoutOptions.Center, Text = "MaximumVisible" });
-			var maxVisibleSlider = new Slider
-			{
-				Maximum = nItems,
-				Minimum = 0,
-				Value = nItems,
-				WidthRequest = 150,
-				BackgroundColor = Color.Pink
-			};
-			stckMaxVisible.Children.Add(maxVisibleSlider);
-
-			maxVisibleSlider.ValueChanged += (s, e) =>
-			{
-				var maximumVisible = (int)maxVisibleSlider.Value;
-				indicatorView.MaximumVisible = maximumVisible;
-			};
-
-			layout.Children.Add(stckMaxVisible);
 
 			var stckColors = new StackLayout { Orientation = StackOrientation.Horizontal };
 			stckColors.Children.Add(new Label { VerticalOptions = LayoutOptions.Center, Text = "IndicatorColor" });
@@ -170,18 +149,12 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			layout.Children.Add(stckTemplate);
 
 			Grid.SetRow(generator, 0);
-			Grid.SetRow(stckMaxVisible, 1);
-			Grid.SetRow(stckColors, 2);
-			Grid.SetRow(stckTemplate, 3);
-			Grid.SetRow(carouselView, 4);
-			Grid.SetRow(indicatorView, 5);
+			Grid.SetRow(stckColors, 1);
+			Grid.SetRow(stckTemplate, 2);
+			Grid.SetRow(carouselView, 3);
+			Grid.SetRow(indicatorView, 4);
 
 			Content = layout;
-
-			generator.CollectionChanged += (sender, e) =>
-			{
-				maxVisibleSlider.Maximum = generator.Count;
-			};
 		}
 	}
 }

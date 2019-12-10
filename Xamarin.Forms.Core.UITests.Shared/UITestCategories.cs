@@ -56,5 +56,6 @@
 		public const string Page = "Page";
 		public const string RefreshView = "RefreshView";
 		public const string TitleView = "TitleView";
+		public const string IndicatorView = "IndicatorView";
 	}
 }
