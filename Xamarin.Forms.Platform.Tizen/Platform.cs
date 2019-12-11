@@ -54,18 +54,12 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		internal static ITizenPlatform CreatePlatform(EvasObject parent)
 		{
-			ITizenPlatform platform = PreloadedPlatform.GetInstalce(parent);
-			if (Forms.Flags.Contains(Flags.LightweightPlatformExperimental))
+			if (Forms.PlatformType == PlatformType.Lightweight || Forms.Flags.Contains(Flags.LightweightPlatformExperimental))
 			{
-				platform?.Dispose();
-				platform = new LightweightPlatform(parent);
-			}
-			else
-			{
-				platform = platform ?? new DefaultPlatform(parent);
+				return new LightweightPlatform(parent);
 			}
 
-			return platform;
+			return new DefaultPlatform(parent);
 		}
 
 		public static SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
@@ -117,9 +111,12 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			Forms.NativeParent = parent;
 			_pageBusyCount = 0;
-			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, BusySetSignalNameHandler);
-			MessagingCenter.Subscribe<Page, AlertArguments>(this, Page.AlertSignalName, AlertSignalNameHandler);
-			MessagingCenter.Subscribe<Page, ActionSheetArguments>(this, Page.ActionSheetSignalName, ActionSheetSignalNameHandler);
+			if (Forms.UseMessagingCenter)
+			{
+				MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, BusySetSignalNameHandler);
+				MessagingCenter.Subscribe<Page, AlertArguments>(this, Page.AlertSignalName, AlertSignalNameHandler);
+				MessagingCenter.Subscribe<Page, ActionSheetArguments>(this, Page.ActionSheetSignalName, ActionSheetSignalNameHandler);
+			}
 
 			_internalNaviframe = new Naviframe(Forms.NativeParent)
 			{
@@ -231,9 +228,12 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (_disposed) return;
 			if (disposing)
 			{
-				MessagingCenter.Unsubscribe<Page, AlertArguments>(this, "Xamarin.SendAlert");
-				MessagingCenter.Unsubscribe<Page, bool>(this, "Xamarin.BusySet");
-				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(this, "Xamarin.ShowActionSheet");
+				if (Forms.UseMessagingCenter)
+				{
+					MessagingCenter.Unsubscribe<Page, AlertArguments>(this, Page.AlertSignalName);
+					MessagingCenter.Unsubscribe<Page, bool>(this, Page.BusySetSignalName);
+					MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(this, Page.ActionSheetSignalName);
+				}
 				SetPage(null);
 				_internalNaviframe.Unrealize();
 			}
