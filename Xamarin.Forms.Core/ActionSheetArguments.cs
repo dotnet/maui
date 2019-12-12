@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Xamarin.Forms.Internals
@@ -12,7 +13,7 @@ namespace Xamarin.Forms.Internals
 			Title = title;
 			Cancel = cancel;
 			Destruction = destruction;
-			Buttons = buttons;
+			Buttons = buttons?.Where(c => c != null);
 			Result = new TaskCompletionSource<string>();
 		}
 
