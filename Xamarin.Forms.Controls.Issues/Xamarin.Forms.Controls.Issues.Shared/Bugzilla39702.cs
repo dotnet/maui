@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
@@ -59,7 +59,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public async void ControlCanBeFocusedByUnfocusedEvent()
+		public async Task ControlCanBeFocusedByUnfocusedEvent()
 		{
 			RunningApp.WaitForElement(TheEntry);
 			await Task.Delay(4000);

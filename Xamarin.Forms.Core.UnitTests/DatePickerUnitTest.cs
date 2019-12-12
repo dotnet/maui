@@ -133,7 +133,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			new object[] { new DateTime (2006, 12, 20), new DateTime (2100, 12, 31) } // Maximum Date
 		};
 
-		[Test, TestCaseSource("DateTimes")]
+		[Test, TestCaseSource(nameof(DateTimes))]
 		public void DatePickerSelectedEventArgs (DateTime initialDate, DateTime finalDate)
 		{
 			var datePicker = new DatePicker ();

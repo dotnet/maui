@@ -1,4 +1,4 @@
-﻿using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 using System;
 using System.Threading.Tasks;
@@ -52,7 +52,7 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 
 		[Test]
-		public async void Bugzilla43469Test()
+		public async Task Bugzilla43469Test()
 		{
 			RunningApp.WaitForElement(q => q.Marked(kButtonText));
 			RunningApp.Tap(kButtonText);

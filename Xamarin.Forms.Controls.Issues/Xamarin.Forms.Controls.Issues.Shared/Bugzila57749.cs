@@ -1,4 +1,4 @@
-﻿using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 using System;
 using System.Threading.Tasks;
@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Controls.Issues
 			this.DisplayAlert("Button test", "Button was clicked", "Ok");
 		}
 
-		protected async override void OnAppearing()
+		protected override async void OnAppearing()
 		{
 			base.OnAppearing();
 			await Task.Delay(100);
@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public async void Bugzilla57749Test()
+		public async Task Bugzilla57749Test()
 		{
 			await Task.Delay(500);
 			RunningApp.Tap(c => c.Marked("btnClick"));

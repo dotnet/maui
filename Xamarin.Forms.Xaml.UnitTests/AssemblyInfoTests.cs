@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using System.Collections.Generic;
 using System;
 using System.IO;
@@ -25,14 +25,14 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 
 		const string s_gitInfoFile = "GitInfo.txt";
 
-		[Test, TestCaseSource("references")]
+		[Test, TestCaseSource(nameof(references))]
 		public void AssemblyTitle(string assemblyName)
 		{
 			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
 			Assert.AreEqual(assemblyName, testAssembly.GetName().Name);
 		}
 
-		[Test, TestCaseSource("references")]
+		[Test, TestCaseSource(nameof(references))]
 		public void AssemblyVersion(string assemblyName)
 		{
 			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);			
@@ -42,7 +42,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			Assert.AreEqual(0, actual.Build, actual.ToString());
 		}
 
-		[Test, TestCaseSource("references")]
+		[Test, TestCaseSource(nameof(references))]
 		public void FileVersion(string assemblyName)
 		{
 			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
@@ -58,7 +58,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			Assert.AreEqual(s_company, actual.CompanyName);
 		}
 
-		[Test, TestCaseSource("references")]
+		[Test, TestCaseSource(nameof(references))]
 		public void ProductAndCompany(string assemblyName)
 		{
 			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);

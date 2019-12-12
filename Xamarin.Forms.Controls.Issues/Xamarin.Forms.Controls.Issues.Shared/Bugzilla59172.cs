@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
@@ -83,7 +83,7 @@ namespace Xamarin.Forms.Controls.Issues
 		//   Right before PopAsync is triggered, manually navigate back pressing the back arrow in the navigation bar
 
 		[Test]
-		public async void Issue59172Test()
+		public async Task Issue59172Test()
 		{
 			RunningApp.Tap(q => q.Marked("GoForward"));
 			RunningApp.Tap(q => q.Marked("GoBackDelayed"));
@@ -96,7 +96,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		[Test]
-		public async void Issue59172RecoveryTest()
+		public async Task Issue59172RecoveryTest()
 		{
 			RunningApp.Tap(q => q.Marked("GoForward"));
 			RunningApp.Tap(q => q.Marked("GoBackDelayedSafe"));

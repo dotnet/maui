@@ -1,4 +1,4 @@
-﻿using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 using System.Linq;
 using System.Collections.Generic;
@@ -135,7 +135,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public async void BindingToValuesTypesAndScrollingNoCrash()
+		public async Task BindingToValuesTypesAndScrollingNoCrash()
 		{
 			await Task.Delay(4000);
 			RunningApp.WaitForElement("Success");
