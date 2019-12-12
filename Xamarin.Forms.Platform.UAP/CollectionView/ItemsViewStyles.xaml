@@ -60,7 +60,8 @@
     <ControlTemplate x:Key="FormsListViewTemplate" TargetType="local:FormsListView">
         <Border BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}">
             <Grid>
-                <ContentControl x:Name="EmptyViewContentControl" Visibility="{TemplateBinding EmptyViewVisibility}"></ContentControl>
+                <ContentControl x:Name="EmptyViewContentControl" Visibility="{TemplateBinding EmptyViewVisibility}"
+                                HorizontalContentAlignment="Stretch" VerticalAlignment="Stretch"/>
                 <ScrollViewer x:Name="ScrollViewer" 
                                 TabNavigation="{TemplateBinding TabNavigation}"
                                 HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
@@ -129,7 +130,8 @@
                 <ControlTemplate TargetType="local:FormsGridView">
                     <Border BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}">
                         <Grid>
-                            <ContentControl x:Name="EmptyViewContentControl" Visibility="{TemplateBinding EmptyViewVisibility}"></ContentControl>
+                            <ContentControl x:Name="EmptyViewContentControl" Visibility="{TemplateBinding EmptyViewVisibility}"
+                                            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
                             <ScrollViewer x:Name="ScrollViewer"
                             TabNavigation="{TemplateBinding TabNavigation}"
                             HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"

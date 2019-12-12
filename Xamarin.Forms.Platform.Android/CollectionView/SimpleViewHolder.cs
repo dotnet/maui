@@ -23,6 +23,7 @@ namespace Xamarin.Forms.Platform.Android
 		public static SimpleViewHolder FromText(string text, Context context, bool fill = true)
 		{
 			var textView = new TextView(context) { Text = text };
+
 			if (fill)
 			{
 				var layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent,

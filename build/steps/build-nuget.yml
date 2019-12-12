@@ -21,7 +21,7 @@ steps:
       workingFolder: '$(System.DefaultWorkingDirectory)/build/scripts'
       failOnStandardError: false
 
-  - task: NuGetToolInstaller@0
+  - task: NuGetToolInstaller@1
     displayName: 'Use NuGet: $(NUGET_VERSION)'
     inputs:
       versionSpec: $(NUGET_VERSION)

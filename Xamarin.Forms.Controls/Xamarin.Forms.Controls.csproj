@@ -32,13 +32,14 @@
     <ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj" />
     <ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <EmbeddedResource Include="BuildNumber.txt" />
     <EmbeddedResource Include="GalleryPages\crimson.jpg" />
     <EmbeddedResource Include="coffee.png" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
+    <PackageReference Include="NUnit" Version="3.12.0" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="3.0.2" />
     <Compile Update="GalleryPages\BindableLayoutGalleryPage.xaml.cs">
       <DependentUpon>BindableLayoutGalleryPage.xaml</DependentUpon>
@@ -46,6 +47,9 @@
     <Compile Update="GalleryPages\CollectionViewGalleries\EmptyViewGalleries\EmptyViewLoadSimulateGallery.xaml.cs">
       <DependentUpon>EmptyViewLoadSimulateGallery.xaml</DependentUpon>
       </Compile>
+    <Compile Update="GalleryPages\PlatformTestsGallery\PlatformTestsConsole.xaml.cs">
+      <DependentUpon>PlatformTestsConsole.xaml</DependentUpon>
+    </Compile>
     <Compile Update="GalleryPages\VisualStateManagerGalleries\OnPlatformExample.xaml.cs">
       <DependentUpon>OnPlatformExample.xaml</DependentUpon>
     </Compile>
@@ -92,6 +96,9 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="GalleryPages\MapWithItemsSourceGallery.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="GalleryPages\PlatformTestsGallery\PlatformTestsConsole.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="GalleryPages\TitleView.xaml">
@@ -150,7 +157,7 @@
     </EmbeddedResource>
     <EmbeddedResource Update="GalleryPages\IndicatorViewGalleries\IndicatorsSample.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>   
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <None Update="GalleryPages\CollectionViewGalleries\GroupingGalleries\BasicGrouping.xaml">
@@ -182,7 +189,7 @@
     <Folder Include="GalleryPages\CollectionViewGalleries\CarouselViewGalleries\" />
     <Folder Include="GalleryPages\SwipeViewGalleries\" />
   </ItemGroup>
-  
+
   <Target Name="CreateControllGalleryConfig" BeforeTargets="Build">
     <CreateItem Include="blank.config">
       <Output TaskParameter="Include" ItemName="ConfigFile" />
