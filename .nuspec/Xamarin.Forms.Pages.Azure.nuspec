@@ -8,6 +8,7 @@
     <license type="expression">MIT</license>
     <iconUrl>https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Assets/xamarin_128x128.png</iconUrl>
     <projectUrl>http://xamarin.com/forms</projectUrl>
+    <repository type="git" url="https://github.com/xamarin/xamarin.forms"/>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>Pre-built themeable pages for Xamarin.Forms</description>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>

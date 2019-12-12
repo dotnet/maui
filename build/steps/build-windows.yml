@@ -37,7 +37,7 @@ jobs:
       clean: true
     - script: build.cmd -Target provision --verbosity=diagnostic
       displayName: 'Cake Provision'
-      condition: eq(variables['provisioning'], 'false')
+      condition: eq(variables['provisioningCake'], 'true')
 
     - task: xamops.azdevex.provisionator-task.provisionator@1
       displayName: 'Provisionator'
@@ -46,18 +46,14 @@ jobs:
         provisioning_script: ${{ parameters.provisionatorPath }}
         provisioning_extra_args: ${{ parameters.provisionator.extraArguments }}
 
-    #- task: DotNetCoreInstaller@0
-    #  displayName: "Install .net core $(DOTNET_VERSION)"
-    #  condition: ne(variables['DOTNET_VERSION'], '')
-    #  inputs:
-    #    version: $(DOTNET_VERSION)
+    # - task: UseDotNet@2
+    #   displayName: "Install .net core $(DOTNET_VERSION)"
+    #   condition: ne(variables['DOTNET_VERSION'], '')
+    #   inputs:
+    #     version: $(DOTNET_VERSION)
+    #     packageType: 'sdk'
 
-    #- script: |
-    #    dotnet new globaljson --sdk-version $(DOTNET_VERSION)
-    #  displayName: 'Add globaljson file'
-    #  condition: ne(variables['DOTNET_VERSION'], '')
-
-    - task: NuGetToolInstaller@0
+    - task: NuGetToolInstaller@1
       displayName: 'Use NuGet $(NUGET_VERSION)'
       condition: ne(variables['NUGET_VERSION'], '')
       inputs:
@@ -75,7 +71,7 @@ jobs:
         solution: ${{ parameters.slnPath }}
         platform: '$(BuildPlatform)'
         configuration: '$(BuildConfiguration)'
-        msbuildArguments: ${{ parameters.msbuildExtraArguments }} /p:JavaSdkDirectory="$(JAVA_HOME_8_X64)"  /bl:$(Build.ArtifactStagingDirectory)\win-$(BuildConfiguration).binlog
+        msbuildArguments: ${{ parameters.msbuildExtraArguments }} /bl:$(Build.ArtifactStagingDirectory)\win-$(BuildConfiguration).binlog
 
     - task: VSTest@2
       displayName: 'Unit Tests'
@@ -85,10 +81,11 @@ jobs:
           **/bin/$(BuildConfiguration)/Xamarin.Forms.Pages.UnitTests.dll
           **/bin/$(BuildConfiguration)/**/Xamarin.Forms.Xaml.UnitTests.dll
         searchFolder: ${{ parameters.nunitTestFolder }}
-        pathtoCustomTestAdapters: ${{ parameters.nunitTestAdapterFolder }}
         codeCoverageEnabled: true
         testRunTitle: '$(BuildConfiguration)_UnitTests'
         configuration: '$(BuildConfiguration)'
+        vsTestVersion: '15.0'
+        diagnosticsEnabled: true
 
     - task: CopyFiles@2
       displayName: 'Copy Files dlls'
