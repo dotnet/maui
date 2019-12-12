@@ -305,10 +305,10 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (ManageNativeControlLifetime)
 				{
-					int count = ChildCount;
-					for (var i = 0; i < count; i++)
+					while (ChildCount > 0)
 					{
-						AView child = GetChildAt(i);
+						AView child = GetChildAt(0);
+						child.RemoveFromParent();
 						child.Dispose();
 					}
 				}
