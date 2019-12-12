@@ -130,7 +130,7 @@
       <Member Id="M:Xamarin.Essentials.ColorConverters.FromHsl(System.Single,System.Single,System.Single)" />
       <Member Id="M:Xamarin.Essentials.ColorConverters.FromHsla(System.Single,System.Single,System.Single,System.Int32)" />
       <Member Id="M:Xamarin.Essentials.ColorConverters.FromUInt(System.UInt32)" />
-      <Member Id="M:Xamarin.Essentials.ColorConverters.GetCompliment(System.Drawing.Color)" />
+      <Member Id="M:Xamarin.Essentials.ColorConverters.GetComplementary(System.Drawing.Color)" />
     </Type>
     <Type Name="Xamarin.Essentials.ColorExtensions" Id="T:Xamarin.Essentials.ColorExtensions">
       <Member Id="M:Xamarin.Essentials.ColorExtensions.AddLuminosity(System.Drawing.Color,System.Single)" />

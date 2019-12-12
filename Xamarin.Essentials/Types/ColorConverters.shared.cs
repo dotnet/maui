@@ -71,7 +71,7 @@ namespace Xamarin.Essentials
             return Color.FromArgb(a, r, g, b);
         }
 
-        public static Color GetCompliment(Color original)
+        public static Color GetComplementary(Color original)
         {
             // Divide RGB by 255 as ConvertToHsl expects a value between 0 & 1.
             ConvertToHsl(original.R / 255f, original.G / 255f, original.B / 255f, out var h, out var s, out var l);
