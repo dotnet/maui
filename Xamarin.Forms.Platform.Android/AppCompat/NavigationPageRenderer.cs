@@ -1035,6 +1035,13 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			bar.Title = currentPage?.Title ?? string.Empty;
 
+			if (_toolbar.NavigationIcon != null && !textColor.IsDefault)
+			{
+				var icon = _toolbar.NavigationIcon as DrawerArrowDrawable;
+				if (icon != null)
+					icon.Color = textColor.ToAndroid().ToArgb();
+			}
+
 			UpdateTitleIcon();
 
 			UpdateTitleView();
