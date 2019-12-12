@@ -6,7 +6,11 @@ namespace Xamarin.Forms.Platform.iOS
 {
 	public abstract class ItemsViewController<TItemsView> : UICollectionViewController
 	where TItemsView : ItemsView
-	{ 
+	{
+		public const int HeaderTag = 111;
+		public const int FooterTag = 222;
+		public const int EmptyTag = 333;
+
 		public IItemsViewSource ItemsSource { get; protected set; }
 		public TItemsView ItemsView { get; }
 		protected ItemsViewLayout ItemsViewLayout { get; set; }
@@ -14,8 +18,7 @@ namespace Xamarin.Forms.Platform.iOS
 		bool _isEmpty;
 		bool _currentBackgroundIsEmptyView;
 		bool _disposed;
-
-		UIView _backgroundUIView;
+  
 		UIView _emptyUIView;
 		VisualElement _emptyViewFormsElement;
 
@@ -59,10 +62,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 				_emptyUIView?.Dispose();
 				_emptyUIView = null;
-
-				_backgroundUIView?.Dispose();
-				_backgroundUIView = null;
-
+	
 				_emptyViewFormsElement = null;
 			}
 
@@ -158,7 +158,7 @@ namespace Xamarin.Forms.Platform.iOS
 				ResizeEmptyView();
 			}
 		}
-
+  
 		protected virtual UICollectionViewDelegateFlowLayout CreateDelegator()
 		{
 			return new ItemsViewDelegator<TItemsView, ItemsViewController<TItemsView>>(ItemsViewLayout, this);
@@ -283,11 +283,25 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void ResizeEmptyView()
 		{
+			nfloat headerHeight = 0;
+			var headerView = CollectionView.ViewWithTag(HeaderTag);
+
+			if (headerView != null)
+				headerHeight = headerView.Frame.Height;
+
+			nfloat footerHeight = 0;
+			var footerView = CollectionView.ViewWithTag(FooterTag);
+
+			if (footerView != null)
+				footerHeight = footerView.Frame.Height;
+
+			var emptyViewFrame = new CoreGraphics.CGRect(CollectionView.Frame.X, CollectionView.Frame.Y, CollectionView.Frame.Width, Math.Abs(CollectionView.Frame.Height - (headerHeight + footerHeight)));
+
 			if (_emptyUIView != null)
-				_emptyUIView.Frame = CollectionView.Frame;
+				_emptyUIView.Frame = emptyViewFrame;
 
 			if (_emptyViewFormsElement != null)
-				_emptyViewFormsElement.Layout(CollectionView.Frame.ToRectangle());
+				_emptyViewFormsElement.Layout(emptyViewFrame.ToRectangle());
 		}
 
 		protected void RemeasureLayout(VisualElement formsElement)
@@ -342,15 +356,16 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (isEmpty && _emptyUIView != null)
 			{
-				if (!_currentBackgroundIsEmptyView)
+				var emptyView = CollectionView.ViewWithTag(EmptyTag);
+
+				if(emptyView != null)
 				{
-					// Cache any existing background view so we can restore it later
-					_backgroundUIView = CollectionView.BackgroundView;
+					emptyView.RemoveFromSuperview();
+					ItemsView.RemoveLogicalChild(_emptyViewFormsElement);
 				}
 
-				// Replace any current background with the EmptyView. This will also set the native empty view's frame
-				// to match the UICollectionView's frame
-				CollectionView.BackgroundView = _emptyUIView;
+				_emptyUIView.Tag = EmptyTag;
+				CollectionView.AddSubview(_emptyUIView);
 
 				if (_emptyViewFormsElement != null)
 				{
@@ -371,7 +386,7 @@ namespace Xamarin.Forms.Platform.iOS
 				// Is the empty view currently in the background? Swap back to the default.
 				if (_currentBackgroundIsEmptyView)
 				{
-					CollectionView.BackgroundView = _backgroundUIView;
+					_emptyUIView.RemoveFromSuperview();
 					ItemsView.RemoveLogicalChild(_emptyViewFormsElement);
 				}
 

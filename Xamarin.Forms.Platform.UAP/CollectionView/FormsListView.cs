@@ -9,6 +9,7 @@ namespace Xamarin.Forms.Platform.UWP
 	{
 		ContentControl _emptyViewContentControl;
 		FrameworkElement _emptyView;
+		View _formsEmptyView;
 
 		public FormsListView()
 		{
@@ -25,9 +26,10 @@ namespace Xamarin.Forms.Platform.UWP
 			set { SetValue(EmptyViewVisibilityProperty, value); }
 		}
 
-		public void SetEmptyView(FrameworkElement emptyView)
+		public void SetEmptyView(FrameworkElement emptyView, View formsEmptyView)
 		{
 			_emptyView = emptyView;
+			_formsEmptyView = formsEmptyView;
 
 			if (_emptyViewContentControl != null)
 			{
@@ -45,6 +47,16 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				_emptyViewContentControl.Content = _emptyView;
 			}
+		}
+
+		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
+		{
+			if (_formsEmptyView != null)
+			{
+				_formsEmptyView.Layout(new Rectangle(0, 0, finalSize.Width, finalSize.Height));
+			}
+
+			return base.ArrangeOverride(finalSize);
 		}
 
 		protected override void PrepareContainerForItemOverride(DependencyObject element, object item)
