@@ -43,9 +43,9 @@
     <file src="Xamarin.Forms.Visual.Material.targets" target="build\MonoAndroid10\Xamarin.Forms.Visual.Material.targets" />
 
     <!--Android 90-->
-    <file src="..\Xamarin.Forms.Material.Android\bin\$Configuration$\Xamarin.Forms.Material.dll" target="lib\MonoAndroid90" />
-    <file src="..\Xamarin.Forms.Material.Android\bin\$Configuration$\Xamarin.Forms.Material.*pdb" target="lib\MonoAndroid90" />
-    <file src="..\Xamarin.Forms.Material.Android\bin\$Configuration$\Xamarin.Forms.Material.*mdb" target="lib\MonoAndroid90" />
+    <file src="..\Xamarin.Forms.Material.Android\bin\$Configuration$\monoandroid90\90\Xamarin.Forms.Material.dll" target="lib\MonoAndroid90" />
+    <file src="..\Xamarin.Forms.Material.Android\bin\$Configuration$\monoandroid90\90\Xamarin.Forms.Material.*pdb" target="lib\MonoAndroid90" />
+    <file src="..\Xamarin.Forms.Material.Android\bin\$Configuration$\monoandroid90\90\Xamarin.Forms.Material.*mdb" target="lib\MonoAndroid90" />
 
     <!--iOS-->
     <file src="..\Xamarin.Forms.Material.iOS\bin\$Configuration$\Xamarin.Forms.Material.dll" target="lib\Xamarin.iOS10" />

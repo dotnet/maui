@@ -1,86 +1,28 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-   <PropertyGroup>
+﻿<Project Sdk="MSBuild.Sdk.Extras">
+  <PropertyGroup>
     <Description>Android AppLinks support for Xamarin.Forms</Description>
     <AssemblyName>Xamarin.Forms.Platform.Android.AppLinks</AssemblyName>
   </PropertyGroup>
   <PropertyGroup>
+    <TargetFrameworks>$(AndroidTargetFrameworks)</TargetFrameworks>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <ProjectGuid>{42DB052E-0909-45D2-8240-187F99F393FB}</ProjectGuid>
-    <OutputType>Library</OutputType>
     <RootNamespace>Xamarin.Forms.Platform.Android.AppLinks</RootNamespace>
-    <MonoAndroidAssetsPrefix>Assets</MonoAndroidAssetsPrefix>
-    <MonoAndroidResourcePrefix>Resources</MonoAndroidResourcePrefix>
-    <AndroidResgenClass>Resource</AndroidResgenClass>
-    <AndroidResgenFile>Resources\Resource.designer.cs</AndroidResgenFile>
-    <AndroidTargetFrameworkVersion Condition="$(AndroidTargetFrameworkVersion) == ''">v9.0</AndroidTargetFrameworkVersion>
-    <TargetFrameworkVersion>$(AndroidTargetFrameworkVersion)</TargetFrameworkVersion>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
     <DebugSymbols>true</DebugSymbols>
-    <Optimize>false</Optimize>
-    <OutputPath Condition=" '$(TargetFrameworkVersion)' == 'v8.1' ">bin\Debug\monoandroid81\</OutputPath>
-    <OutputPath Condition=" '$(TargetFrameworkVersion)' == 'v9.0' ">bin\Debug\monoandroid90\</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AndroidLinkMode>None</AndroidLinkMode>
-    <ConsolePause>false</ConsolePause>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <Optimize>true</Optimize>
-    <OutputPath Condition=" '$(TargetFrameworkVersion)' == 'v8.1' ">bin\Release\monoandroid81\</OutputPath>
-    <OutputPath Condition=" '$(TargetFrameworkVersion)' == 'v9.0' ">bin\Release\monoandroid90\</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
-    <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Core" />
-    <Reference Include="Mono.Android" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="ContextExtensions.cs" />
-    <Compile Include="Resources\Resource.designer.cs" />
-    <Compile Include="AndroidAppLinks.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\AboutResources.txt" />
+    <None Remove="Resources\values\Strings.xml" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\values\Strings.xml" />
   </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <ItemGroup>
+    <PackageReference Include="Xamarin.Firebase.AppIndexing" Version="71.1602.0" />
+    <PackageReference Include="Xamarin.Android.Support.v4" Version="28.0.0.3" />
     <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
-      <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
       <Name>Xamarin.Forms.Core</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Xamarin.GooglePlayServices.AppIndexing" Version="60.1142.1" />
-    <PackageReference Include="Xamarin.Android.Support.v4" Version="28.0.0.3" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectToBuild Include="Xamarin.Forms.Platform.Android.AppLinks.csproj">
-      <Properties>CreateAllAndroidTargets=false;Configuration=$(Configuration);Platform=$(Platform);AndroidTargetFrameworkVersion=v8.1</Properties>
-    </ProjectToBuild>
-  </ItemGroup>
-  <Target Name="BeforeBuild" Condition=" '$(CreateAllAndroidTargets)' == 'true' ">
-    <!--  create 8.1 binaries-->
-    <MSBuild Targets="Restore" Projects="@(ProjectToBuild)">
-    </MSBuild>
-    <MSBuild Projects="@(ProjectToBuild)">
-    </MSBuild>
-    <!-- restore 9.0 binaries-->
-    <MSBuild Targets="Restore" Projects="Xamarin.Forms.Platform.Android.AppLinks.csproj" Properties="CreateAllAndroidTargets=false;Configuration=$(Configuration);Platform=$(Platform);">
-    </MSBuild>
-  </Target>
 </Project>

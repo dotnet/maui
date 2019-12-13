@@ -14,24 +14,17 @@
     <description>Add support for deep linking and indexing app content using Xamarin.Forms on the Android Platform</description>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <dependencies>
-      <group targetFramework="MonoAndroid81">
-        <dependency id="Xamarin.GooglePlayServices.AppIndexing" version="60.1142.1"/>
-      </group>
       <group targetFramework="MonoAndroid90">
-        <dependency id="Xamarin.GooglePlayServices.AppIndexing" version="60.1142.1"/>
+        <dependency id="Xamarin.Firebase.AppIndexing" version="71.1602.0"/>
       </group>
     </dependencies>
     <references>
-      <group targetFramework="MonoAndroid81">
-        <reference file="Xamarin.Forms.Platform.Android.AppLinks.dll" />
-      </group>
       <group targetFramework="MonoAndroid90">
         <reference file="Xamarin.Forms.Platform.Android.AppLinks.dll" />
       </group>
     </references>
   </metadata>
   <files>
-    <file src="..\Xamarin.Forms.Platform.Android.AppLinks\bin\$Configuration$\MonoAndroid81\Xamarin.Forms.Platform.Android.AppLinks.dll" target="lib\MonoAndroid81" />
-    <file src="..\Xamarin.Forms.Platform.Android.AppLinks\bin\$Configuration$\MonoAndroid90\Xamarin.Forms.Platform.Android.AppLinks.dll" target="lib\MonoAndroid90" />
+    <file src="..\Xamarin.Forms.Platform.Android.AppLinks\bin\$Configuration$\MonoAndroid90\90\Xamarin.Forms.Platform.Android.AppLinks.dll" target="lib\MonoAndroid90" />
   </files>
 </package>

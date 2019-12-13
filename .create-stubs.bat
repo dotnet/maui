@@ -68,16 +68,6 @@ mkdir Stubs\Xamarin.Forms.Platform.Android\bin\%CONFIG%\MonoAndroid90
 echo foo > Stubs\Xamarin.Forms.Platform.Android\bin\%CONFIG%\MonoAndroid90\Xamarin.Forms.Platform.dll
 
 
-mkdir Xamarin.Forms.Platform.Android\bin\%CONFIG%\MonoAndroid81
-echo foo > Xamarin.Forms.Platform.Android\bin\%CONFIG%\MonoAndroid81\Xamarin.Forms.Platform.Android.dll
-
-mkdir Xamarin.Forms.Platform.Android.FormsViewGroup\bin\%CONFIG%\MonoAndroid81
-echo foo > Xamarin.Forms.Platform.Android.FormsViewGroup\bin\%CONFIG%\MonoAndroid81\FormsViewGroup.dll
-
-mkdir Stubs\Xamarin.Forms.Platform.Android\bin\%CONFIG%\MonoAndroid81
-echo foo > Stubs\Xamarin.Forms.Platform.Android\bin\%CONFIG%\MonoAndroid81\Xamarin.Forms.Platform.dll
-
-
 echo foo > Xamarin.Forms.Platform.iOS\bin\%CONFIG%\ar\Xamarin.Forms.Platform.iOS.resources.dll
 echo foo > Xamarin.Forms.Platform.iOS\bin\%CONFIG%\ca\Xamarin.Forms.Platform.iOS.resources.dll
 echo foo > Xamarin.Forms.Platform.iOS\bin\%CONFIG%\cs\Xamarin.Forms.Platform.iOS.resources.dll

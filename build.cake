@@ -218,7 +218,6 @@ Task("Restore")
 Task("Build")
     .Description("Builds all necessary projects to create Nuget Packages")
     .IsDependentOn("Restore")
-    .IsDependentOn("Android81")
     .Does(() =>
 {
     try{
@@ -231,24 +230,14 @@ Task("Build")
     }
 });
 
-Task("Android81")
-    .Description("Builds Monodroid81 targets")
+Task("Android100")
+    .Description("Builds Monodroid10.0 targets")
     .Does(() =>
     {
-        string[] androidProjects =
-            new []
-            {
-                "./Xamarin.Forms.Platform.Android/Xamarin.Forms.Platform.Android.csproj",
-                "./Xamarin.Forms.Platform.Android.AppLinks/Xamarin.Forms.Platform.Android.AppLinks.csproj",
-                "./Xamarin.Forms.Maps.Android/Xamarin.Forms.Maps.Android.csproj",
-                "./Stubs/Xamarin.Forms.Platform.Android/Xamarin.Forms.Platform.Android (Forwarders).csproj"
-            };
-
-        foreach(var project in androidProjects)
-            MSBuild(project,
+            MSBuild("Xamarin.Forms.sln",
                     GetMSBuildSettings()
                         .WithRestore()
-                        .WithProperty("AndroidTargetFrameworkVersion", "v8.1"));
+                        .WithProperty("AndroidTargetFrameworks", "MonoAndroid90;MonoAndroid10.0"));
     });
 
 Task("VSMAC")

@@ -7,7 +7,6 @@ using Xamarin.Forms.Internals;
 using Xamarin.Forms.Maps;
 using Xamarin.Forms.Maps.Android;
 
-[assembly: AssemblyTitle("Xamarin.Forms.Maps.Android")]
 [assembly: ComVisible(false)]
 
 [assembly: UsesPermission(Manifest.Permission.Internet)]
