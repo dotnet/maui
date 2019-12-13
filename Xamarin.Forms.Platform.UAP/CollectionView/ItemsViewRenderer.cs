@@ -372,7 +372,12 @@ namespace Xamarin.Forms.Platform.UWP
 			switch (emptyView)
 			{
 				case string text:
-					_emptyView = new TextBlock { Text = text };
+					_emptyView = new TextBlock
+					{
+						HorizontalAlignment = HorizontalAlignment.Center,
+						VerticalAlignment = VerticalAlignment.Center,
+						Text = text
+					};
 					break;
 				case View view:
 					_emptyView = RealizeEmptyView(view);
@@ -382,7 +387,7 @@ namespace Xamarin.Forms.Platform.UWP
 					break;
 			}
 
-			(ListViewBase as IEmptyView)?.SetEmptyView(_emptyView);
+			(ListViewBase as IEmptyView)?.SetEmptyView(_emptyView, _formsEmptyView);
 
 			UpdateEmptyViewVisibility();
 		}
@@ -391,13 +396,18 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			if (emptyViewTemplate == null)
 			{
-				return new TextBlock { Text = bindingContext.ToString() };
+				return new TextBlock
+				{
+					HorizontalAlignment = HorizontalAlignment.Center,
+					VerticalAlignment = VerticalAlignment.Center,
+					Text = bindingContext.ToString()
+				};
 			}
 
 			var template = emptyViewTemplate.SelectDataTemplate(bindingContext, null);
 			var view = template.CreateContent() as View;
-
 			view.BindingContext = bindingContext;
+
 			return RealizeEmptyView(view);
 		}
 

@@ -54,18 +54,12 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		internal static ITizenPlatform CreatePlatform(EvasObject parent)
 		{
-			ITizenPlatform platform = PreloadedPlatform.GetInstalce(parent);
-			if (Forms.Flags.Contains(Flags.LightweightPlatformExperimental))
+			if (Forms.PlatformType == PlatformType.Lightweight || Forms.Flags.Contains(Flags.LightweightPlatformExperimental))
 			{
-				platform?.Dispose();
-				platform = new LightweightPlatform(parent);
-			}
-			else
-			{
-				platform = platform ?? new DefaultPlatform(parent);
+				return new LightweightPlatform(parent);
 			}
 
-			return platform;
+			return new DefaultPlatform(parent);
 		}
 
 		public static SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
@@ -117,9 +111,13 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			Forms.NativeParent = parent;
 			_pageBusyCount = 0;
-			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, BusySetSignalNameHandler);
-			MessagingCenter.Subscribe<Page, AlertArguments>(this, Page.AlertSignalName, AlertSignalNameHandler);
-			MessagingCenter.Subscribe<Page, ActionSheetArguments>(this, Page.ActionSheetSignalName, ActionSheetSignalNameHandler);
+			if (Forms.UseMessagingCenter)
+			{
+				MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, BusySetSignalNameHandler);
+				MessagingCenter.Subscribe<Page, AlertArguments>(this, Page.AlertSignalName, AlertSignalNameHandler);
+				MessagingCenter.Subscribe<Page, ActionSheetArguments>(this, Page.ActionSheetSignalName, ActionSheetSignalNameHandler);
+        MessagingCenter.Subscribe<Page, PromptArguments>(this, Page.PromptSignalName, OnPromptRequested);
+			}
 
 			_internalNaviframe = new Naviframe(Forms.NativeParent)
 			{
@@ -231,9 +229,13 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (_disposed) return;
 			if (disposing)
 			{
-				MessagingCenter.Unsubscribe<Page, AlertArguments>(this, "Xamarin.SendAlert");
-				MessagingCenter.Unsubscribe<Page, bool>(this, "Xamarin.BusySet");
-				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(this, "Xamarin.ShowActionSheet");
+				if (Forms.UseMessagingCenter)
+				{
+					MessagingCenter.Unsubscribe<Page, AlertArguments>(this, Page.AlertSignalName);
+					MessagingCenter.Unsubscribe<Page, bool>(this, Page.BusySetSignalName);
+					MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(this, Page.ActionSheetSignalName);
+          MessagingCenter.Unsubscribe<Page, PromptArguments>(this, Page.PromptSignalName);
+				}
 				SetPage(null);
 				_internalNaviframe.Unrealize();
 			}
@@ -560,6 +562,98 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			_alerts.Add(alert);
 			alert.Dismissed += (s, e) => _alerts.Remove(alert);
+		}
+
+		void OnPromptRequested(Page sender, PromptArguments args)
+		{
+			// Verify that the page making the request is child of this platform
+			if (!PageIsChildOfPlatform(sender))
+				return;
+
+			var prompt = Native.Dialog.CreateDialog(Forms.NativeParent, (args.Accept != null));
+			prompt.Title = args.Title;
+
+			var entry = new Entry
+			{
+				MinimumWidthRequest = 200,
+				HorizontalOptions = LayoutOptions.FillAndExpand,
+				BackgroundColor = Color.FromRgb(250, 250, 250),
+				TextColor = Color.Black,
+				Keyboard = args.Keyboard,
+			};
+
+			if (!string.IsNullOrEmpty(args.Placeholder))
+			{
+				entry.Placeholder = args.Placeholder;
+			}
+			if (args.MaxLength > 0)
+			{
+				entry.MaxLength = args.MaxLength;
+			}
+
+			var layout = new StackLayout
+			{
+				Spacing = 10,
+				Children =
+				{
+					new Label
+					{
+						LineBreakMode = LineBreakMode.CharacterWrap,
+						TextColor = Device.Idiom == TargetIdiom.Watch ? Color.White : Color.Accent,
+						Text = args.Message,
+						HorizontalOptions = LayoutOptions.FillAndExpand,
+						HorizontalTextAlignment = TextAlignment.Center,
+						FontSize = Device.GetNamedSize(NamedSize.Subtitle, typeof(Label)),
+					},
+					entry,
+				}
+			};
+
+			layout.Parent = sender;
+			var layoutrenderer = Platform.GetOrCreateRenderer(layout);
+
+			var request = layout.Measure(Device.Idiom == TargetIdiom.Watch ? Page.Width * 0.7 : Page.Width, Page.Height);
+			(layoutrenderer as LayoutRenderer).RegisterOnLayoutUpdated();
+			layoutrenderer.NativeView.MinimumHeight = Forms.ConvertToScaledPixel(request.Request.Height);
+			layoutrenderer.NativeView.MinimumWidth = Forms.ConvertToScaledPixel(request.Request.Width);
+
+			prompt.Content = layoutrenderer.NativeView;
+
+			var cancel = new EButton(prompt) { Text = args.Cancel };
+			prompt.NegativeButton = cancel;
+			cancel.Clicked += (s, evt) =>
+			{
+				args.SetResult(null);
+				prompt.Dismiss();
+			};
+
+			if (args.Accept != null)
+			{
+				var ok = new EButton(prompt) { Text = args.Accept };
+				prompt.NeutralButton = ok;
+				ok.Clicked += (s, evt) =>
+				{
+					args.SetResult(entry.Text);
+					prompt.Dismiss();
+				};
+			}
+
+			entry.Completed += (s, e) =>
+			{
+				args.SetResult(entry.Text);
+				prompt.Dismiss();
+			};
+
+			prompt.BackButtonPressed += (s, evt) =>
+			{
+				args.SetResult(null);
+				prompt.Dismiss();
+			};
+
+			prompt.Show();
+
+			_alerts.Add(prompt);
+			prompt.Dismissed += (s, e) => _alerts.Remove(prompt);
 		}
 
 		bool PageIsChildOfPlatform(Page page)

@@ -18,5 +18,18 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			view.Gravity = alignment.ToVerticalGravityFlags() | orMask;
 		}
+
+		internal static void UpdateTextAlignment(this EditText view, TextAlignment horizontal, TextAlignment vertical)
+		{
+			if ((int)Build.VERSION.SdkInt < 17 || !view.Context.HasRtlSupport())
+			{
+				view.Gravity = vertical.ToVerticalGravityFlags() | horizontal.ToHorizontalGravityFlags();
+			}
+			else
+			{
+				view.TextAlignment = horizontal.ToTextAlignment();
+				view.Gravity = vertical.ToVerticalGravityFlags();
+			}
+		}
 	}
 }

@@ -84,6 +84,16 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 			SetUpForceRestartTest();
 
+			// Make the activity accessible to platform unit tests
+			DependencyResolver.ResolveUsing((t) => {
+				if (t == typeof(Context))
+				{
+					return this;
+				}
+
+				return null;
+			});
+
 			LoadApplication(_app);
 			if (Forms.Flags.Contains("FastRenderers_Experimental"))
 			{

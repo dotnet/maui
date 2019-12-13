@@ -23,7 +23,7 @@ namespace Xamarin.Forms
 		public const string ActionSheetSignalName = "Xamarin.ShowActionSheet";
 
 		internal static readonly BindableProperty IgnoresContainerAreaProperty = BindableProperty.Create("IgnoresContainerArea", typeof(bool), typeof(Page), false);
-		
+
 		public static readonly BindableProperty BackgroundImageSourceProperty = BindableProperty.Create(nameof(BackgroundImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
 
 		[Obsolete("BackgroundImageProperty is obsolete as of 4.0.0. Please use BackgroundImageSourceProperty instead.")]
@@ -169,7 +169,7 @@ namespace Xamarin.Forms
 			}
 		}
 
-		internal override ReadOnlyCollection<Element> LogicalChildrenInternal => 
+		internal override ReadOnlyCollection<Element> LogicalChildrenInternal =>
 			_logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren));
 
 		public event EventHandler LayoutChanged;
@@ -186,7 +186,7 @@ namespace Xamarin.Forms
 				MessagingCenter.Send(this, ActionSheetSignalName, args);
 			else
 				_pendingActions.Add(() => MessagingCenter.Send(this, ActionSheetSignalName, args));
-			
+
 			return args.Result.Task;
 		}
 
@@ -219,7 +219,12 @@ namespace Xamarin.Forms
 		public Task<string> DisplayPromptAsync(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "")
 		{
 			var args = new PromptArguments(title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue);
-			MessagingCenter.Send(this, PromptSignalName, args);
+
+			if (IsPlatformEnabled)
+				MessagingCenter.Send(this, PromptSignalName, args);
+			else
+				_pendingActions.Add(() => MessagingCenter.Send(this, PromptSignalName, args));
+
 			return args.Result.Task;
 		}
 

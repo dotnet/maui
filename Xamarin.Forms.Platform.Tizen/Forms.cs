@@ -21,29 +21,47 @@ namespace Xamarin.Forms
 		All,
 	}
 
-	public struct InitializationOptions
+	public enum PlatformType
 	{
+		Defalut,
+		Lightweight,
+	}
+
+	public class InitializationOptions
+	{
+		public CoreApplication Context { get; set; }
+		public bool UseDeviceIndependentPixel { get; set; }
+		public HandlerAttribute[] Handlers { get; set; }
+		public Dictionary<Type, Func<IRegisterable>> CustomHandlers { get; set; } // for static registers
+		public Assembly[] Assemblies { get; set; }
+		public EffectScope[] EffectScopes { get; set; }
+		public InitializationFlags Flags { get; set; }
+		public StaticRegistrarStrategy StaticRegistarStrategy { get; set; }
+		public PlatformType PlatformType { get; set; }
+		public bool UseMessagingCenter { get; set; } = true;
+
 		public struct EffectScope
 		{
 			public string Name;
 			public ExportEffectAttribute[] Effects;
 		}
 
+		public InitializationOptions(CoreApplication application)
+		{
+			Context = application;
+		}
+
 		public InitializationOptions(CoreApplication application, bool useDeviceIndependentPixel, HandlerAttribute[] handlers)
 		{
-			this = default(InitializationOptions);
 			Context = application;
 			UseDeviceIndependentPixel = useDeviceIndependentPixel;
 			Handlers = handlers;
-			Assemblies = null;
 		}
 
 		public InitializationOptions(CoreApplication application, bool useDeviceIndependentPixel, params Assembly[] assemblies)
 		{
-			this = default(InitializationOptions);
 			Context = application;
 			UseDeviceIndependentPixel = useDeviceIndependentPixel;
-			Handlers = null;
 			Assemblies = assemblies;
 		}
 
@@ -54,15 +72,6 @@ namespace Xamarin.Forms
 			if (disableCss) // about 10ms
 				Flags = InitializationFlags.DisableCss;
 		}
-
-		public CoreApplication Context;
-		public bool UseDeviceIndependentPixel;
-		public HandlerAttribute[] Handlers;
-		public Dictionary<Type, Func<IRegisterable>> CustomHandlers; // for static registers
-		public Assembly[] Assemblies;
-		public EffectScope[] EffectScopes;
-		public InitializationFlags Flags;
-		public StaticRegistrarStrategy StaticRegistarStrategy;
 	}
 
 	public static class Forms
@@ -142,7 +151,7 @@ namespace Xamarin.Forms
 				TSystemInfo.TryGetValue("http://tizen.org/feature/screen.height", out height);
 
 				scalingFactor = 1.0;  // scaling is disabled, we're using pixels as Xamarin's geometry units
-				if (_useDeviceIndependentPixel)
+				if (s_useDeviceIndependentPixel)
 				{
 					scalingFactor = s_dpi.Value / 160.0;
 				}
@@ -153,9 +162,13 @@ namespace Xamarin.Forms
 			}
 		}
 
-		static bool _useDeviceIndependentPixel = false;
+		static bool s_useDeviceIndependentPixel = false;
 
 		static StaticRegistrarStrategy s_staticRegistrarStrategy = StaticRegistrarStrategy.None;
+
+		static PlatformType s_platformType = PlatformType.Defalut;
+
+		static bool s_useMessagingCenter = true;
 
 		public static event EventHandler<ViewInitializedEventArgs> ViewInitialized;
 
@@ -181,6 +194,10 @@ namespace Xamarin.Forms
 		public static DeviceOrientation NaturalOrientation { get; } = GetDeviceOrientation();
 
 		public static StaticRegistrarStrategy StaticRegistrarStrategy => s_staticRegistrarStrategy;
+
+		public static PlatformType PlatformType => s_platformType;
+
+		public static bool UseMessagingCenter => s_useMessagingCenter;
 
 		internal static TizenTitleBarVisibility TitleBarVisibility
 		{
@@ -306,8 +323,8 @@ namespace Xamarin.Forms
 
 		public static void Init(CoreApplication application, bool useDeviceIndependentPixel)
 		{
-			_useDeviceIndependentPixel = useDeviceIndependentPixel;
-			SetupInit(application, null);
+			s_useDeviceIndependentPixel = useDeviceIndependentPixel;
+			SetupInit(application);
 		}
 
 		public static void Init(InitializationOptions options)
@@ -315,7 +332,7 @@ namespace Xamarin.Forms
 			SetupInit(options.Context, options);
 		}
 
-		static void SetupInit(CoreApplication application, InitializationOptions? maybeOptions = null)
+		static void SetupInit(CoreApplication application, InitializationOptions options = null)
 		{
 			Context = application;
 
@@ -343,10 +360,11 @@ namespace Xamarin.Forms
 
 			if (!Forms.IsInitialized)
 			{
-				if (maybeOptions.HasValue)
+				if (options != null)
 				{
-					var options = maybeOptions.Value;
-					_useDeviceIndependentPixel = options.UseDeviceIndependentPixel;
+					s_useDeviceIndependentPixel = options.UseDeviceIndependentPixel;
+					s_platformType = options.PlatformType;
+					s_useMessagingCenter = options.UseMessagingCenter;
 
 					if (options.Assemblies != null && options.Assemblies.Length > 0)
 					{
@@ -378,7 +396,6 @@ namespace Xamarin.Forms
 										typeof(ExportCellAttribute),
 										typeof(ExportHandlerAttribute)
 									});
-									return;
 								}
 						}
 						else
@@ -390,7 +407,6 @@ namespace Xamarin.Forms
 								typeof(ExportCellAttribute),
 								typeof(ExportHandlerAttribute)
 							});
-							return;
 						}
 					}
 
@@ -565,7 +581,6 @@ namespace Xamarin.Forms
 			Elementary.Initialize();
 			Elementary.ThemeOverlay();
 			var window = new PreloadedWindow();
-			var platform = new PreloadedPlatform(window.BaseLayout);
 			TSystemInfo.TryGetValue("http://tizen.org/feature/screen.width", out int width);
 			TSystemInfo.TryGetValue("http://tizen.org/feature/screen.height", out int height);
 		}

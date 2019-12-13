@@ -12,6 +12,8 @@ namespace Xamarin.Forms.Platform.iOS
 		bool _disposed;
 		bool _updatingPosition;
 
+		public UIView View => this;
+
 		protected override void OnElementChanged(ElementChangedEventArgs<IndicatorView> e)
 		{
 			base.OnElementChanged(e);
@@ -38,6 +40,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (_disposed)
 				return;
+
 			_disposed = true;
 
 			if (disposing)
@@ -47,14 +50,19 @@ namespace Xamarin.Forms.Platform.iOS
 					UIPager.ValueChanged -= UIPagerValueChanged;
 				}
 			}
+
 			base.Dispose(disposing);
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			base.OnElementPropertyChanged(sender, e);
-			if (UIPager == null)
-				return;
+
+			if (e.PropertyName == IndicatorsShapeProperty.PropertyName ||
+				e.PropertyName == ItemsSourceProperty.PropertyName)
+				UpdateIndicator();
+			else if (e.PropertyName == IndicatorTemplateProperty.PropertyName)
+				UpdateIndicatorTemplate();
 			if (e.PropertyName == IndicatorColorProperty.PropertyName)
 				UpdatePagesIndicatorTintColor();
 			else if (e.PropertyName == SelectedIndicatorColorProperty.PropertyName)
@@ -73,15 +81,19 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				UIPager.ValueChanged -= UIPagerValueChanged;
 			}
+
 			var uiPager = new UIPageControl();
 			_defaultPagesIndicatorTintColor = uiPager.PageIndicatorTintColor;
 			_defaultCurrentPagesIndicatorTintColor = uiPager.CurrentPageIndicatorTintColor;
 			uiPager.ValueChanged += UIPagerValueChanged;
+
 			return uiPager;
 		}
-
+	
 		void UpdateControl()
 		{
+			ClearIndicators();
+
 			var control = (Element.IndicatorTemplate != null)
 				? (UIView)Element.IndicatorLayout.GetRenderer()
 				: CreateNativeControl();
@@ -89,32 +101,87 @@ namespace Xamarin.Forms.Platform.iOS
 			SetNativeControl(control);
 		}
 
+		void ClearIndicators()
+		{
+			foreach (var child in View.Subviews)
+				child.RemoveFromSuperview();
+		}
+
+		void UpdateIndicator()
+		{
+			if (Element.IndicatorsShape == IndicatorShape.Circle && Element.IndicatorTemplate == null)
+				UpdateIndicatorShape();
+			else
+				UpdateIndicatorTemplate();
+		}
+
+		void UpdateIndicatorShape()
+		{
+			ClearIndicators();
+			AddSubview(UIPager);
+		}
+
+		void UpdateIndicatorTemplate()
+		{
+			if (Element.IndicatorLayout == null)
+				return;
+
+			ClearIndicators();
+			var control = (UIView)Element.IndicatorLayout.GetRenderer();
+			AddSubview(control);
+
+			var indicatorLayoutSizeRequest = Element.IndicatorLayout.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
+			Element.IndicatorLayout.Layout(new Rectangle(0, 0, indicatorLayoutSizeRequest.Request.Width, indicatorLayoutSizeRequest.Request.Height));
+		}
+
 		void UIPagerValueChanged(object sender, System.EventArgs e)
 		{
-			if (_updatingPosition)
+			if (_updatingPosition || UIPager == null)
 				return;
+
 			Element.Position = (int)UIPager.CurrentPage;
 		}
 
 		void UpdateCurrentPage()
 		{
+			if (UIPager == null)
+				return;
+
 			_updatingPosition = true;
 			UIPager.CurrentPage = Element.Position;
 			_updatingPosition = false;
 		}
 
-		void UpdatePages() => UIPager.Pages = Element.Count;
+		void UpdatePages()
+		{
+			if (UIPager == null)
+				return;
 
-		void UpdateHidesForSinglePage() => UIPager.HidesForSinglePage = Element.HideSingle;
+			UIPager.Pages = Element.Count;
+		}
+
+		void UpdateHidesForSinglePage()
+		{
+			if (UIPager == null)
+				return;
+
+			UIPager.HidesForSinglePage = Element.HideSingle;
+		}
 
 		void UpdatePagesIndicatorTintColor()
 		{
+			if (UIPager == null)
+				return;
+
 			var color = Element.IndicatorColor;
 			UIPager.PageIndicatorTintColor = color.IsDefault ? _defaultPagesIndicatorTintColor : color.ToUIColor();
 		}
 
 		void UpdateCurrentPagesIndicatorTintColor()
 		{
+			if (UIPager == null)
+				return;
+
 			var color = Element.SelectedIndicatorColor;
 			UIPager.CurrentPageIndicatorTintColor = color.IsDefault ? _defaultCurrentPagesIndicatorTintColor : color.ToUIColor();
 		}
