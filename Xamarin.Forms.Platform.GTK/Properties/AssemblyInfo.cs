@@ -6,6 +6,7 @@ using Xamarin.Forms.Platform.GTK.Renderers;
 [assembly: ExportImageSourceHandler(typeof(FileImageSource), typeof(FileImageSourceHandler))]
 [assembly: ExportImageSourceHandler(typeof(StreamImageSource), typeof(StreamImagesourceHandler))]
 [assembly: ExportImageSourceHandler(typeof(UriImageSource), typeof(UriImageSourceHandler))]
+[assembly: ExportImageSourceHandler(typeof(FontImageSource), typeof(FontImageSourceHandler))]
 
 [assembly: Dependency(typeof(ResourcesProvider))]
 [assembly: Dependency(typeof(GtkSerializer))]

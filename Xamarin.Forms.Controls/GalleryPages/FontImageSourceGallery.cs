@@ -1,5 +1,4 @@
-﻿using System;
-using Xamarin.Forms.Controls.Issues;
+﻿using Xamarin.Forms.Controls.Issues;
 
 namespace Xamarin.Forms.Controls
 {
@@ -27,6 +26,7 @@ namespace Xamarin.Forms.Controls
 					fontFamily = "Assets/Fonts/ionicons.ttf#ionicons";
 					break;
 				case Device.WPF:
+				case Device.GTK:
 					fontFamily = "Assets/ionicons.ttf#ionicons";
 					break;
 				case Device.Android:
