@@ -84,7 +84,7 @@ namespace Xamarin.Essentials
             var packageManager = AppContext.PackageManager;
             foreach (var feature in packageManager.GetSystemAvailableFeatures())
             {
-                if (feature.Name.Equals(systemFeature, StringComparison.OrdinalIgnoreCase))
+                if (feature?.Name?.Equals(systemFeature, StringComparison.OrdinalIgnoreCase) ?? false)
                     return true;
             }
             return false;

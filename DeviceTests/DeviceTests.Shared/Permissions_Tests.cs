@@ -37,7 +37,10 @@ namespace DeviceTests
 
             Assert.Equal(expectedStatus, status);
         }
+    }
 
+    public class A_Permissions_Tests
+    {
         [Fact]
         public async Task Request_NotMainThread()
         {
