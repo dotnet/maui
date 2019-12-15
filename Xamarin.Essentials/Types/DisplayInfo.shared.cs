@@ -25,10 +25,10 @@ namespace Xamarin.Essentials
         public DisplayRotation Rotation { get; }
 
         public static bool operator ==(DisplayInfo left, DisplayInfo right) =>
-            Equals(left, right);
+            left.Equals(right);
 
         public static bool operator !=(DisplayInfo left, DisplayInfo right) =>
-            !Equals(left, right);
+            !left.Equals(right);
 
         public override bool Equals(object obj) =>
             (obj is DisplayInfo metrics) && Equals(metrics);

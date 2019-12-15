@@ -93,10 +93,10 @@ namespace Xamarin.Essentials
             MagneticField.Equals(other.MagneticField);
 
         public static bool operator ==(MagnetometerData left, MagnetometerData right) =>
-            Equals(left, right);
+            left.Equals(right);
 
         public static bool operator !=(MagnetometerData left, MagnetometerData right) =>
-           !Equals(left, right);
+           !left.Equals(right);
 
         public override int GetHashCode() =>
             MagneticField.GetHashCode();
