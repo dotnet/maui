@@ -169,7 +169,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (group.Count > 0 && group != groups[0])
 				{
-					yield return null; // Creates a separator
+					yield return new MenuFlyoutSeparator(); // Creates a separator
 				}
 				foreach (var item in group)
 				{
