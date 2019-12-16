@@ -139,7 +139,7 @@ namespace Xamarin.Forms
 #endif
 
 			Internals.Registrar.RegisterAll(new[]
-				{ typeof(ExportRendererAttribute), typeof(ExportCellAttribute), typeof(ExportImageSourceHandlerAttribute) });
+				{ typeof(ExportRendererAttribute), typeof(ExportCellAttribute), typeof(ExportImageSourceHandlerAttribute), typeof(ExportFontAttribute) });
 			ExpressionSearch.Default = new iOSExpressionSearch();
 		}
 

@@ -351,10 +351,22 @@ namespace Xamarin.Forms.Internals
 						Log.Warning(nameof(Registrar), "Could not load assembly: {0} for Attibute {1} | Some renderers may not be loaded", assembly.FullName, attrType.FullName);
 						continue;
 					}
-
-					var handlerAttributes = new HandlerAttribute[attributes.Length];
-					Array.Copy(attributes, handlerAttributes, attributes.Length);
-					RegisterRenderers(handlerAttributes);
+					
+					var length = attributes.Length;
+					for (var i = 0; i < length; i++)
+					{
+						var a = attributes[i];
+						var attribute = a as HandlerAttribute;
+						if(attribute == null && (a is ExportFontAttribute fa))
+						{
+							FontRegistrar.Register(fa, assembly);
+						}
+						else
+						{
+							if (attribute.ShouldRegister())
+								Registered.Register(attribute.HandlerType, attribute.TargetType, attribute.SupportedVisuals, attribute.Priority);
+						}
+					}
 				}
 
 				string resolutionName = assembly.FullName;

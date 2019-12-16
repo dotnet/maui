@@ -284,6 +284,9 @@ namespace Xamarin.Forms
 					var flags = options.Flags;
 					var effectScopes = options.EffectScopes;
 
+					//TODO: ExportCell?
+					//TODO: ExportFont
+
 					// renderers
 					Registrar.RegisterRenderers(handlers);
 
@@ -308,7 +311,8 @@ namespace Xamarin.Forms
 					Registrar.RegisterAll(new[] {
 						typeof(ExportRendererAttribute),
 						typeof(ExportCellAttribute),
-						typeof(ExportImageSourceHandlerAttribute)
+						typeof(ExportImageSourceHandlerAttribute),
+						typeof(ExportFontAttribute)
 					});
 				}
 			}

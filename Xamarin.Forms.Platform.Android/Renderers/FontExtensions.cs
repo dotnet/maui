@@ -1,8 +1,10 @@
-using System;
 using Android.Graphics;
-using AApplication = Android.App.Application;
-using Xamarin.Forms.Internals;
+using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
+using Xamarin.Forms.Core;
+using Xamarin.Forms.Internals;
+using AApplication = Android.App.Application;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -42,7 +44,84 @@ namespace Xamarin.Forms.Platform.Android
 		internal static Typeface ToTypeFace(this string fontfamily, FontAttributes attr = FontAttributes.None)
 		{
 			fontfamily = fontfamily ?? String.Empty;
-			return ToTypeface(fontfamily, attr);
+			var result = fontfamily.TryGetFromAssets();
+			if (result.success)
+			{
+				return result.typeface;
+			}
+			else
+			{
+				var style = ToTypefaceStyle(attr);
+				return Typeface.Create(fontfamily, style);
+			}
+
+		}
+
+		static (bool success, Typeface typeface) TryGetFromAssets(this string fontName)
+		{
+			var isAssetFont = IsAssetFontFamily(fontName);
+			if (isAssetFont)
+			{
+				return LoadTypefaceFromAsset(fontName);
+			}
+
+			var folders = new[]
+			{
+				"",
+				"Fonts/",
+				"fonts/",
+			};
+
+
+			//copied text
+
+			var fontFile = FontFile.FromString(fontName);
+
+			if (!string.IsNullOrWhiteSpace(fontFile.Extension))
+			{
+				var (hasFont, fontPath) = FontRegistrar.HasFont(fontFile.FileNameWithExtension());
+				if (hasFont)
+				{
+					return (true, Typeface.CreateFromFile(fontPath));
+				}
+			}
+			else
+			{
+				foreach (var ext in FontFile.Extensions)
+				{
+					var formated = fontFile.FileNameWithExtension(ext);
+					var (hasFont, fontPath) = FontRegistrar.HasFont(formated);
+					if (hasFont)
+					{
+						return (true, Typeface.CreateFromFile(fontPath));
+					}
+
+					foreach (var folder in folders)
+					{
+						formated = $"{folder}{fontFile.FileNameWithExtension()}#{fontFile.PostScriptName}";
+						var result = LoadTypefaceFromAsset(formated);
+						if (result.success)
+							return result;
+					}
+
+				}
+			}
+
+			return (false, null);
+		}
+
+		static (bool success, Typeface typeface) LoadTypefaceFromAsset(string fontfamily)
+		{
+			try
+			{
+				var result = Typeface.CreateFromAsset(AApplication.Context.Assets, FontNameToFontFile(fontfamily));
+				return (true, result);
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine(ex);
+				return (false, null);
+			}
 		}
 
 		public static Typeface ToTypeface(this Font self)
