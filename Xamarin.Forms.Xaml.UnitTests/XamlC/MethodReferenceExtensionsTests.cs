@@ -32,6 +32,12 @@ namespace Xamarin.Forms.XamlcUnitTests
 			});
 		}
 
+		[TearDown]
+		public void TearDown()
+		{
+			module?.Dispose();
+		}
+
 		[Test]
 		public void ResolveRowDefAdder ()
 		{
