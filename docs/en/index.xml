@@ -93,7 +93,7 @@
           <AttributeName>System.Runtime.Versioning.TargetFramework("MonoAndroid,Version=v9.0", FrameworkDisplayName="Xamarin.Android v9.0 Support")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+ff9fe28695639322b3f845ff4ad7be931189987b")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+f53016cb69904b13d54a592cd58cda29cc02230a")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>
@@ -108,6 +108,7 @@
       <Type Name="ActivityState" Kind="Enumeration" />
       <Type Name="ActivityStateChangedEventArgs" Kind="Class" />
       <Type Name="AppInfo" Kind="Class" />
+      <Type Name="AppTheme" Kind="Enumeration" />
       <Type Name="Barometer" Kind="Class" />
       <Type Name="BarometerChangedEventArgs" Kind="Class" />
       <Type Name="BarometerData" Kind="Structure" />

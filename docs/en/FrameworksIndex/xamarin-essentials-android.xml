@@ -43,8 +43,14 @@
       <Member Id="P:Xamarin.Essentials.AppInfo.BuildString" />
       <Member Id="P:Xamarin.Essentials.AppInfo.Name" />
       <Member Id="P:Xamarin.Essentials.AppInfo.PackageName" />
+      <Member Id="P:Xamarin.Essentials.AppInfo.RequestedTheme" />
       <Member Id="P:Xamarin.Essentials.AppInfo.Version" />
       <Member Id="P:Xamarin.Essentials.AppInfo.VersionString" />
+    </Type>
+    <Type Name="Xamarin.Essentials.AppTheme" Id="T:Xamarin.Essentials.AppTheme">
+      <Member Id="F:Xamarin.Essentials.AppTheme.Dark" />
+      <Member Id="F:Xamarin.Essentials.AppTheme.Light" />
+      <Member Id="F:Xamarin.Essentials.AppTheme.Unspecified" />
     </Type>
     <Type Name="Xamarin.Essentials.Barometer" Id="T:Xamarin.Essentials.Barometer">
       <Member Id="E:Xamarin.Essentials.Barometer.ReadingChanged" />

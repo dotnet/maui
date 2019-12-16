@@ -79,6 +79,16 @@ namespace DeviceTests
         }
 
         [Fact]
+        public void App_Theme_Is_Correct()
+        {
+#if WINDOWS_UWP || __IOS__ || __ANDROID__
+            Assert.NotEqual(AppTheme.Unspecified, AppInfo.RequestedTheme);
+#else
+            Assert.Equal(AppTheme.Unspecified, AppInfo.RequestedTheme);
+#endif
+        }
+
+        [Fact]
         public void App_Build_Is_Correct()
         {
             Assert.Equal("1", AppInfo.BuildString);
