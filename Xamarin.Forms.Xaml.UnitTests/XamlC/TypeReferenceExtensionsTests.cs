@@ -66,12 +66,13 @@ namespace Xamarin.Forms.XamlcUnitTests
 		{
 		}
 
+		XamlCAssemblyResolver resolver;
 		ModuleDefinition module;
 
-		[SetUp]
-		public void SetUp()
+		[OneTimeSetUp]
+		public void OneTimeSetUp()
 		{
-			var resolver = new XamlCAssemblyResolver();
+			resolver = new XamlCAssemblyResolver();
 			resolver.AddAssembly(Uri.UnescapeDataString((new UriBuilder(typeof(TypeReferenceExtensionsTests).Assembly.CodeBase)).Path));
 			resolver.AddAssembly(Uri.UnescapeDataString((new UriBuilder(typeof(BindableObject).Assembly.CodeBase)).Path));
 			resolver.AddAssembly(Uri.UnescapeDataString((new UriBuilder(typeof(object).Assembly.CodeBase)).Path));
@@ -82,6 +83,13 @@ namespace Xamarin.Forms.XamlcUnitTests
 				AssemblyResolver = resolver,
 				Kind = ModuleKind.NetModule
 			});
+		}
+
+		[OneTimeTearDown]
+		public void OneTimeTearDown()
+		{
+			resolver?.Dispose();
+			module?.Dispose();
 		}
 
 		[TestCase(typeof(bool), typeof(BindableObject), ExpectedResult = false)]
