@@ -147,6 +147,15 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			ViewRenderer.MeasureExactly(this, Element, Context);
 		}
 
+
+		public override void Draw(Canvas canvas)
+		{
+			if (_backgroundTracker?.BackgroundDrawable != null)
+				_backgroundTracker.BackgroundDrawable.DrawCircle(canvas, canvas.Width, canvas.Height, base.Draw);
+			else
+				base.Draw(canvas);
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)

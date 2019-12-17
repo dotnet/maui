@@ -192,6 +192,7 @@ namespace Xamarin.Forms.Platform.Android
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(e.OldElement, e.NewElement));
 		}
 
+
 		public override void Draw(Canvas canvas)
 		{
 			if (Element == null)
@@ -232,9 +233,15 @@ namespace Xamarin.Forms.Platform.Android
 					Drawable.SetBounds((int)drawableBounds.Left, (int)drawableBounds.Top, (int)drawableBounds.Right, (int)drawableBounds.Bottom);
 			}
 
-			base.Draw(canvas);
 			if (_backgroundTracker?.BackgroundDrawable != null)
+			{
+				_backgroundTracker.BackgroundDrawable.DrawCircle(canvas, canvas.Width, canvas.Height, base.Draw);
 				_backgroundTracker.BackgroundDrawable.DrawOutline(canvas, canvas.Width, canvas.Height);
+			}
+			else
+			{
+				base.Draw(canvas);
+			}
 		}
 
 		void IVisualElementRenderer.SetLabelFor(int? id)
