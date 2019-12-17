@@ -10,10 +10,9 @@ namespace Xamarin.Forms.Platform.Android
 		readonly ICollectionChangedNotifier _notifier;
 		readonly IList _groupSource;
 		List<IItemsViewSource> _groups = new List<IItemsViewSource>();
+		readonly bool _hasGroupHeaders;
+		readonly bool _hasGroupFooters;
 		bool _disposed;
-
-		bool _hasGroupHeaders;
-		bool _hasGroupFooters;
 
 		public int Count
 		{
@@ -42,13 +41,13 @@ namespace Xamarin.Forms.Platform.Android
 			_notifier = notifier;
 			_groupSource = groupSource as IList ?? new ListSource(groupSource);
 
+			_hasGroupFooters = groupableItemsView.GroupFooterTemplate != null;
+			_hasGroupHeaders = groupableItemsView.GroupHeaderTemplate != null;
+
 			if (_groupSource is INotifyCollectionChanged incc)
 			{
 				incc.CollectionChanged += CollectionChanged;
 			}
-
-			_hasGroupFooters = groupableItemsView.GroupFooterTemplate != null;
-			_hasGroupHeaders = groupableItemsView.GroupHeaderTemplate != null;
 
 			UpdateGroupTracking();
 		}
@@ -231,6 +230,18 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
+		{
+			if (Device.IsInvokeRequired)
+			{
+				Device.BeginInvokeOnMainThread(() => CollectionChanged(args));
+			}
+			else
+			{
+				CollectionChanged(args);
+			}
+		}
+
+		void CollectionChanged(NotifyCollectionChangedEventArgs args)
 		{
 			switch (args.Action)
 			{

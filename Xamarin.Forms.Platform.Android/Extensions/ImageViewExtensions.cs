@@ -46,7 +46,7 @@ namespace Xamarin.Forms.Platform.Android
 					// all this animation code will go away if/once we pull in GlideX
 					IFormsAnimationDrawable animation = null;
 
-					if (imageController.GetLoadAsAnimation())
+					if (imageController != null && imageController.GetLoadAsAnimation())
 					{
 						var animationHandler = Registrar.Registered.GetHandlerForObject<IAnimationSourceHandler>(newImageSource);
 						if (animationHandler != null)

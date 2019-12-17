@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Threading;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -55,6 +56,18 @@ namespace Xamarin.Forms.Platform.UWP
 		}
 
 		void InnerCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
+		{
+			if (Device.IsInvokeRequired)
+			{
+				Device.BeginInvokeOnMainThread(() => InnerCollectionChanged(args));
+			}
+			else
+			{
+				InnerCollectionChanged(args);
+			}
+		}
+
+		void InnerCollectionChanged(NotifyCollectionChangedEventArgs args)
 		{
 			switch (args.Action)
 			{

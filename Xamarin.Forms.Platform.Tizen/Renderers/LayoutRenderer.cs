@@ -80,7 +80,11 @@ namespace Xamarin.Forms.Platform.Tizen
 				NativeView.PassEvents = false;
 				NativeView.RepeatEvents = false;
 			}
-			GestureDetector.InputTransparent = Element.InputTransparent;
+
+			if (GestureDetector != null)
+			{
+				GestureDetector.InputTransparent = Element.InputTransparent;
+			}
 		}
 
 		void OnLayoutUpdated(object sender, Native.LayoutEventArgs e)

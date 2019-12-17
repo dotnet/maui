@@ -1,29 +1,20 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="MSBuild.Sdk.Extras">
   <PropertyGroup>
+    <TargetFrameworks>uap10.0.14393;uap10.0.16299</TargetFrameworks>
+    <TargetPlatformVersion Condition="$(TargetFramework) == 'uap10.0.14393'">10.0.16299.0</TargetPlatformVersion>
+    <TargetPlatformVersion Condition="$(TargetFramework) == 'uap10.0.16299'">10.0.16299.0</TargetPlatformVersion>
+    <AssemblyName>Xamarin.Forms.Platform.UAP</AssemblyName>
+    <RootNamespace>Xamarin.Forms.Platform.UAP</RootNamespace>
+    <SkipMicrosoftUIXamlCheckTargetPlatformVersion>true</SkipMicrosoftUIXamlCheckTargetPlatformVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{00D8D049-FFAA-4759-8FC9-1ECA30777F72}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Xamarin.Forms.Platform.UAP</RootNamespace>
-    <AssemblyName>Xamarin.Forms.Platform.UAP</AssemblyName>
-    <DefaultLanguage>en-US</DefaultLanguage>
-    <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion>10.0.16299.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.14393.0</TargetPlatformMinVersion>
-    <SkipMicrosoftUIXamlCheckTargetPlatformVersion>true</SkipMicrosoftUIXamlCheckTargetPlatformVersion>
-    <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <GenerateLibraryLayout>true</GenerateLibraryLayout>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <DefineConstants>$(DefineConstants);DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoWarn>
@@ -32,188 +23,25 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <DefineConstants>$(DefineConstants);TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoWarn>
     </NoWarn>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="AccessibilityExtensions.cs" />
-    <Compile Include="EmbeddedFontLoader.cs" />
-    <Compile Include="CollectionView\CarouselViewRenderer.cs" />
-    <Compile Include="CollectionView\FormsListView.cs" />
-    <Compile Include="CollectionView\IEmptyView.cs" />
-    <Compile Include="CollectionView\ItemsViewRenderer.cs" />
-    <Compile Include="CollectionView\ItemTemplateContextList.cs" />
-    <Compile Include="CollectionView\ScrollHelpers.cs" />
-    <Compile Include="CollectionView\GroupedItemTemplateCollection.cs" />
-    <Compile Include="CollectionView\GroupFooterItemTemplateContext.cs" />
-    <Compile Include="CollectionView\GroupHeaderStyleSelector.cs" />
-    <Compile Include="CollectionView\GroupTemplateContext.cs" />
-    <Compile Include="CollectionView\GroupableItemsViewRenderer.cs" />
-    <Compile Include="CollectionView\SelectableItemsViewRenderer.cs" />
-    <Compile Include="CollectionView\StructuredItemsViewRenderer.cs" />
-    <Compile Include="ColorExtensions.cs" />
-    <Compile Include="DispatcherProvider.cs" />
-    <Compile Include="Extensions\ImageExtensions.cs" />
-    <Compile Include="FormsCheckBox.cs" />
-    <Compile Include="IImageVisualElementRenderer.cs" />
-    <Compile Include="ImageButtonRenderer.cs" />
-    <Compile Include="CollectionView\CollectionViewRenderer.cs" />
-    <Compile Include="Dispatcher.cs" />
-    <Compile Include="FormsCancelButton.cs" />
-    <Compile Include="AlertDialog.cs" />
-    <Compile Include="IDontGetFocus.cs" />
-    <Compile Include="FontImageSourceHandler.cs" />
-    <Compile Include="CollectionView\ItemContentControl.cs" />
-    <Compile Include="FormsPivot.cs" />
-    <Compile Include="AlignmentExtensions.cs" />
-    <Compile Include="BrushHelpers.cs" />
-    <Compile Include="FlowDirectionExtensions.cs" />
-    <Compile Include="FormsProgressBar.cs" />
-    <Compile Include="FormsSlider.cs" />
-    <Compile Include="FormsTextBox.cs" />
-    <Compile Include="FormsComboBox.cs" />
-    <Compile Include="ITabStopOnDescendants.cs" />
-    <Compile Include="ImageElementManager.cs" />
-    <Compile Include="InterceptVisualStateManager.cs" />
-    <Compile Include="HorizontalTextAlignmentConverter.cs" />
-    <Compile Include="CollectionView\ObservableItemTemplateCollection.cs" />
-    <Compile Include="CollectionView\TemplatedItemSourceFactory.cs" />
-    <Compile Include="ITitleIconProvider.cs" />
-    <Compile Include="ITitleViewProvider.cs" />
-    <Compile Include="CollectionView\FormsGridView.cs" />
-    <Compile Include="CollectionView\ItemTemplateContextEnumerable.cs" />
-    <Compile Include="CollectionView\ItemTemplateContext.cs" />
-    <Compile Include="ITitleProvider.cs" />
-    <Compile Include="ITitleViewRendererController.cs" />
-    <Compile Include="IToolbarProvider.cs" />
-    <Compile Include="IVisualNativeElementRenderer.cs" />
-    <Compile Include="LabelHtmlHelper.cs" />
-    <Compile Include="NativeBindingExtensions.cs" />
-    <Compile Include="NativeEventWrapper.cs" />
-    <Compile Include="NativePropertyListener.cs" />
-    <Compile Include="NativeViewWrapper.cs" />
-    <Compile Include="NativeViewWrapperRenderer.cs" />
-    <Compile Include="AccessKeyHelper.cs" />
-    <Compile Include="PlatformConfigurationExtensions.cs" />
-    <Compile Include="PlatformEffect.cs" />
-    <Compile Include="PropertyChangedEventArgsExtensions.cs" />
-    <Compile Include="RefreshViewRenderer.cs" />
-    <Compile Include="Shell\ShellHeaderRenderer.cs" />
-    <Compile Include="Shell\ShellItemRenderer.cs" />
-    <Compile Include="Shell\ShellFlyoutTemplateSelector.cs" />
-    <Compile Include="Shell\ShellRenderer.cs" />
-    <Compile Include="Shell\ShellSectionRenderer.cs" />
-    <Compile Include="Shell\ShellToolbarItemRenderer.cs" />
-    <Compile Include="StepperControl.xaml.cs">
-      <DependentUpon>StepperControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="CheckBoxRenderer.cs" />
-    <Compile Include="SwipeViewRenderer.cs" />
-    <Compile Include="TextBlockExtensions.cs" />
-    <Compile Include="TitleViewManager.cs" />
-    <Compile Include="UriImageSourceHandler.cs" />
-    <Compile Include="ViewExtensions.cs" />
-    <Compile Include="LayoutExtensions.cs" />
-    <Compile Include="Flags.cs" />
-    <Compile Include="FormsFlyout.xaml.cs">
-      <DependentUpon>FormsFlyout.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FormsPresenter.cs" />
-    <Compile Include="FormsUWP.cs" />
-    <Compile Include="IToolBarForegroundBinder.cs" />
-    <Compile Include="NativeBindingService.cs" />
-    <Compile Include="NativeValueConverterService.cs" />
-    <Compile Include="PageExtensions.cs" />
-    <Compile Include="SearchBarRenderer.cs" />
-    <Compile Include="TextAlignmentToHorizontalAlignmentConverter.cs" />
-    <Compile Include="StepperControl.cs" />
-    <Compile Include="TabbedPageRenderer.cs" />
-    <Compile Include="ToolbarPlacementHelper.cs" />
-    <EmbeddedResource Include="Properties\Xamarin.Forms.Platform.UAP.rd.xml" />
-    <Compile Include="Forms.cs" />
-    <Compile Include="WindowsPage.cs" />
-    <Compile Include="WindowsPlatform.cs" />
-    <Compile Include="WindowsPlatformServices.cs" />
-    <Compile Include="WindowsResourcesProvider.cs" />
-    <Compile Include="ActivityIndicatorRenderer.cs" />
-    <Compile Include="BackgroundTracker.cs" />
-    <Compile Include="BoolToVisibilityConverter.cs" />
-    <Compile Include="BoxViewRenderer.cs" />
-    <Compile Include="ButtonRenderer.cs" />
-    <Compile Include="CarouselPageRenderer.cs" />
-    <Compile Include="CaseConverter.cs" />
-    <Compile Include="CellControl.cs" />
-    <Compile Include="CollapseWhenEmptyConverter.cs" />
-    <Compile Include="ColorConverter.cs" />
-    <Compile Include="DatePickerRenderer.cs" />
-    <Compile Include="DefaultRenderer.cs" />
-    <Compile Include="EditorRenderer.cs" />
-    <Compile Include="EntryCellTextBox.cs" />
-    <Compile Include="EntryRenderer.cs" />
-    <Compile Include="ExportRendererAttribute.cs" />
-    <Compile Include="Extensions.cs" />
-    <Compile Include="FileImageSourceHandler.cs" />
-    <Compile Include="ImageSourceIconElementConverter.cs" />
-    <Compile Include="FontExtensions.cs" />
-    <Compile Include="FormsButton.cs" />
-    <Compile Include="FrameRenderer.cs" />
-    <Compile Include="FrameworkElementExtensions.cs" />
-    <Compile Include="HeightConverter.cs" />
-    <Compile Include="ICellRenderer.cs" />
-    <Compile Include="IImageSourceHandler.cs" />
-    <Compile Include="IIconElementHandler.cs" />
-    <Compile Include="ImageConverter.cs" />
-    <Compile Include="ImageRenderer.cs" />
-    <Compile Include="IVisualElementRenderer.cs" />
-    <Compile Include="KeyboardConverter.cs" />
-    <Compile Include="KeyboardExtensions.cs" />
-    <Compile Include="LabelRenderer.cs" />
-    <Compile Include="LayoutRenderer.cs" />
-    <Compile Include="ListGroupHeaderPresenter.cs" />
-    <Compile Include="ListViewGroupStyleSelector.cs" />
-    <Compile Include="ListViewRenderer.cs" />
-    <Compile Include="MasterBackgroundConverter.cs" />
-    <Compile Include="MenuItemCommand.cs" />
-    <Compile Include="NavigationPageRenderer.cs" />
-    <Compile Include="PageControl.cs" />
-    <Compile Include="PageRenderer.cs" />
-    <Compile Include="PageToRenderedElementConverter.cs" />
-    <Compile Include="PickerRenderer.cs" />
-    <Compile Include="Platform.cs" />
-    <Compile Include="ProgressBarRenderer.cs" />
-    <Compile Include="RendererFactory.cs" />
-    <Compile Include="ScrollViewRenderer.cs" />
-    <Compile Include="SliderRenderer.cs" />
-    <Compile Include="StepperRenderer.cs" />
-    <Compile Include="StreamImagesourceHandler.cs" />
-    <Compile Include="SwitchRenderer.cs" />
-    <Compile Include="TableViewRenderer.cs" />
-    <Compile Include="TaskExtensions.cs" />
-    <Compile Include="TextCellRenderer.cs" />
-    <Compile Include="TimePickerRenderer.cs" />
-    <Compile Include="ViewRenderer.cs" />
-    <Compile Include="ViewToRendererConverter.cs" />
-    <Compile Include="VisualElementChangedEventArgs.cs" />
-    <Compile Include="VisualElementExtensions.cs" />
-    <Compile Include="VisualElementPackager.cs" />
-    <Compile Include="VisualElementRenderer.cs" />
-    <Compile Include="VisualElementTracker.cs" />
-    <Compile Include="WebViewRenderer.cs" />
-    <Compile Include="WindowsBasePage.cs" />
-    <Compile Include="WindowsBasePlatformServices.cs" />
-    <Compile Include="WindowsDeviceInfo.cs" />
-    <Compile Include="WindowsExpressionSearch.cs" />
-    <Compile Include="WindowsIsolatedStorage.cs" />
-    <Compile Include="WindowsSerializer.cs" />
-    <Compile Include="WindowsTicker.cs" />
-    <Compile Include="FormsCommandBar.cs" />
-    <Compile Include="MasterDetailControl.cs" />
-    <Compile Include="MasterDetailPageRenderer.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+  <PropertyGroup Condition="$(TargetFramework) == 'uap10.0.14393'">
+    <DefineConstants>$(DefineConstants);UWP_14393</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="$(TargetFramework) == 'uap10.0.14393'">
+    <PackageReference Include="NETStandard.Library" Version="2.0.1" />
+    <SDKReference Include="WindowsMobile, Version=10.0.16299.0">
+      <Name>Windows Mobile Extensions for the UWP</Name>
+    </SDKReference>
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework) == 'uap10.0.16299'">
+    <SDKReference Include="WindowsMobile, Version=10.0.16299.0">
+      <Name>Windows Mobile Extensions for the UWP</Name>
+    </SDKReference>
   </ItemGroup>
   <ItemGroup>
     <Page Include="AutoSuggestStyle.xaml">
@@ -285,45 +113,17 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
-      <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
-      <Name>Xamarin.Forms.Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj">
-      <Project>{9DB2F292-8034-4E06-89AD-98BBDA4306B9}</Project>
-      <Name>Xamarin.Forms.Xaml</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.0.6</Version>
-    </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
       <Version>2.1.190606001</Version>
-    </PackageReference>
-    <PackageReference Include="NETStandard.Library">
-      <Version>2.0.1</Version>
     </PackageReference>
     <PackageReference Include="Win2D.uwp">
       <Version>1.20.0</Version>
     </PackageReference>
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.0.15" />
   </ItemGroup>
-  <ItemGroup>
-    <SDKReference Include="WindowsMobile, Version=10.0.16299.0">
-      <Name>Windows Mobile Extensions for the UWP</Name>
-    </SDKReference>
-  </ItemGroup>
-  <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
-    <VisualStudioVersion>14.0</VisualStudioVersion>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
-  </PropertyGroup>
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

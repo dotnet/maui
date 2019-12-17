@@ -1,4 +1,7 @@
-﻿namespace Xamarin.Forms.Platform.UWP
+﻿using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+
+namespace Xamarin.Forms.Platform.UWP
 {
 	public class ShellFlyoutTemplateSelector : Windows.UI.Xaml.Controls.DataTemplateSelector
 	{
@@ -13,15 +16,20 @@
 			SeperatorTemplate = (Windows.UI.Xaml.DataTemplate)Windows.UI.Xaml.Application.Current.Resources["ShellFlyoutSeperatorTemplate"];
 		}
 
+		protected override Windows.UI.Xaml.DataTemplate SelectTemplateCore(object item, DependencyObject container)
+		{
+			return SelectTemplateCore(item);
+		}
+
 		protected override Windows.UI.Xaml.DataTemplate SelectTemplateCore(object item)
 		{
-			if (item is BaseShellItem)
-				return BaseShellItemTemplate;
+			if (item is MenuFlyoutSeparator)
+				return SeperatorTemplate;
+				
 			if (item is MenuItem)
 				return MenuItemTemplate;
-			if (item == null)
-				return SeperatorTemplate;
-			return base.SelectTemplateCore(item);
+			
+			return BaseShellItemTemplate;
 		}
 	}
 }
