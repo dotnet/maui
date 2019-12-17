@@ -1,6 +1,7 @@
-using System;
-using System.ComponentModel;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Linq;
 using ElmSharp;
 
 namespace Xamarin.Forms.Platform.Tizen
@@ -12,26 +13,9 @@ namespace Xamarin.Forms.Platform.Tizen
 		where TView : View
 		where TNativeView : EvasObject
 	{
-		readonly Lazy<GestureDetector> _gestureDetector;
+		ObservableCollection<IGestureRecognizer> GestureRecognizers => Element.GestureRecognizers as ObservableCollection<IGestureRecognizer>;
 
-		internal GestureDetector GestureDetector => _gestureDetector.Value;
-
-		/// <summary>
-		/// Default constructor.
-		/// </summary>
-		protected ViewRenderer()
-		{
-			_gestureDetector = new Lazy<GestureDetector>(() => new GestureDetector(this));
-		}
-
-		protected override void OnElementChanged(ElementChangedEventArgs<TView> e)
-		{
-			base.OnElementChanged(e);
-			if (e.OldElement != null && _gestureDetector.IsValueCreated)
-			{
-				_gestureDetector.Value.Clear();
-			}
-		}
+		internal GestureDetector GestureDetector { get; private set; }
 
 		/// <summary>
 		/// Native control associated with this renderer.
@@ -44,6 +28,24 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 		}
 
+		protected override void OnElementChanged(ElementChangedEventArgs<TView> e)
+		{
+			base.OnElementChanged(e);
+			if (GestureDetector != null)
+			{
+				GestureRecognizers.CollectionChanged -= OnGestureRecognizerCollectionChanged;
+				GestureDetector.Clear();
+				GestureDetector = null;
+			}
+
+			GestureRecognizers.CollectionChanged += OnGestureRecognizerCollectionChanged;
+			if (Element.GestureRecognizers.Count > 0)
+			{
+				GestureDetector = new GestureDetector(this);
+				GestureDetector.AddGestures(Element.GestureRecognizers);
+			}
+		}
+
 		protected void SetNativeControl(TNativeView control)
 		{
 			Debug.Assert(control != null);
@@ -53,7 +55,42 @@ namespace Xamarin.Forms.Platform.Tizen
 		protected override void UpdateIsEnabled(bool initialize)
 		{
 			base.UpdateIsEnabled(initialize);
-			_gestureDetector.Value.IsEnabled = Element.IsEnabled;
+			if (initialize && Element.IsEnabled)
+				return;
+
+			if (GestureDetector != null)
+			{
+				GestureDetector.IsEnabled = Element.IsEnabled;
+			}
+		}
+
+		void OnGestureRecognizerCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			if (GestureDetector == null)
+			{
+				GestureDetector = new GestureDetector(this);
+			}
+
+			// Gestures will be registered/unregistered according to changes in the GestureRecognizers list
+			switch (e.Action)
+			{
+				case NotifyCollectionChangedAction.Add:
+					GestureDetector.AddGestures(e.NewItems.OfType<IGestureRecognizer>());
+					break;
+
+				case NotifyCollectionChangedAction.Replace:
+					GestureDetector.RemoveGestures(e.OldItems.OfType<IGestureRecognizer>());
+					GestureDetector.AddGestures(e.NewItems.OfType<IGestureRecognizer>());
+					break;
+
+				case NotifyCollectionChangedAction.Remove:
+					GestureDetector.RemoveGestures(e.OldItems.OfType<IGestureRecognizer>());
+					break;
+
+				case NotifyCollectionChangedAction.Reset:
+					GestureDetector.Clear();
+					break;
+			}
 		}
 	}
 }
