@@ -94,6 +94,18 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
 		{
+			if (Device.IsInvokeRequired)
+			{
+				Device.BeginInvokeOnMainThread(() => CollectionChanged(args));
+			}
+			else
+			{
+				CollectionChanged(args);
+			}
+		}
+
+		void CollectionChanged(NotifyCollectionChangedEventArgs args)
+		{
 			switch (args.Action)
 			{
 				case NotifyCollectionChangedAction.Add:

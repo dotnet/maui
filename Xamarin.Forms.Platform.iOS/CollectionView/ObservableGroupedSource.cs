@@ -4,14 +4,13 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using Foundation;
 using UIKit;
-using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.iOS
 {
 	internal class ObservableGroupedSource : IItemsViewSource
 	{
 		readonly UICollectionView _collectionView;
-		UICollectionViewController _collectionViewController;
+		readonly UICollectionViewController _collectionViewController;
 		readonly IList _groupSource;
 		bool _disposed;
 		List<ObservableItemsSource> _groups = new List<ObservableItemsSource>();
@@ -129,6 +128,18 @@ namespace Xamarin.Forms.Platform.iOS
 		}
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
+		{
+			if (Device.IsInvokeRequired)
+			{
+				Device.BeginInvokeOnMainThread(() => CollectionChanged(args));
+			}
+			else
+			{
+				CollectionChanged(args);
+			}
+		}
+
+		void CollectionChanged(NotifyCollectionChangedEventArgs args)
 		{
 			switch (args.Action)
 			{

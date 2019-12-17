@@ -34,9 +34,9 @@
     <EmbeddedResource Include="BuildNumber.txt" />
     <EmbeddedResource Include="GalleryPages\crimson.jpg" />
     <EmbeddedResource Include="coffee.png" />
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
     <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="3.0.2" />
   </ItemGroup>
 

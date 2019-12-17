@@ -356,7 +356,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AdvancedColorPicker" Version="2.0.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="NUnit">
       <Version>3.12.0</Version>
     </PackageReference>
