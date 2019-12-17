@@ -14,6 +14,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			_itemsSource = itemSource;
 			_notifier = notifier;
+
 			((INotifyCollectionChanged)itemSource).CollectionChanged += CollectionChanged;
 		}
 
@@ -81,6 +82,18 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
+		{
+			if (Device.IsInvokeRequired)
+			{
+				Device.BeginInvokeOnMainThread(() => CollectionChanged(args));
+			}
+			else
+			{
+				CollectionChanged(args);
+			}
+		}
+
+		void CollectionChanged(NotifyCollectionChangedEventArgs args)
 		{
 			switch (args.Action)
 			{
