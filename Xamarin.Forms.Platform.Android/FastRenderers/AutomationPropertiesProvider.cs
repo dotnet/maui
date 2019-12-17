@@ -124,7 +124,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				return false;
 			}
 
-			if (Element is Picker)
+			if (Element is Picker || Element is Button)
 			{
 				return false;
 			}
