@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
+using System.ComponentModel; 
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -136,9 +135,9 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
 				UpdateEnabled();
-			else if (e.PropertyName == Frame.HeightProperty.PropertyName)
+			else if (e.PropertyName == VisualElement.HeightProperty.PropertyName)
 				UpdateHeight();
-			else if (e.PropertyName == Frame.WidthProperty.PropertyName)
+			else if (e.PropertyName == VisualElement.WidthProperty.PropertyName)
 				UpdateWidth();
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackground();
