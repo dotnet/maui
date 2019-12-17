@@ -34,7 +34,7 @@
     <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\netstandard2.0" />
     <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\netstandard2.0" />
 
-    <file src="..\Xamarin.Forms.Maps.Android\bin\$Configuration$\MonoAndroid90\90\Xamarin.Forms.Maps.Android.dll" target="lib\MonoAndroid90" />
+    <file src="..\Xamarin.Forms.Maps.Android\bin\$Configuration$\MonoAndroid90\Xamarin.Forms.Maps.Android.dll" target="lib\MonoAndroid90" />
     <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\MonoAndroid90" />
     <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\MonoAndroid90" />
 

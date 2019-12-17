@@ -149,8 +149,8 @@
     <file src="proguard.cfg" target="build\MonoAndroid10\proguard.cfg" />
     
     <!--Android 90-->
-    <file src="..\Xamarin.Forms.Platform.Android\bin\$Configuration$\MonoAndroid90\90\Xamarin.Forms.Platform.Android.dll" target="lib\MonoAndroid90" />
-    <file src="..\Xamarin.Forms.Platform.Android\bin\$Configuration$\MonoAndroid90\90\Xamarin.Forms.Platform.Android.*pdb" target="lib\MonoAndroid90" />
+    <file src="..\Xamarin.Forms.Platform.Android\bin\$Configuration$\MonoAndroid90\Xamarin.Forms.Platform.Android.dll" target="lib\MonoAndroid90" />
+    <file src="..\Xamarin.Forms.Platform.Android\bin\$Configuration$\MonoAndroid90\Xamarin.Forms.Platform.Android.*pdb" target="lib\MonoAndroid90" />
     <file src="..\Xamarin.Forms.Platform.Android.FormsViewGroup\bin\$Configuration$\FormsViewGroup.dll" target="lib\MonoAndroid90" />
     <file src="..\Xamarin.Forms.Platform.Android.FormsViewGroup\bin\$Configuration$\FormsViewGroup.*pdb" target="lib\MonoAndroid90" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="lib\MonoAndroid90" />
@@ -161,7 +161,7 @@
     <file src="..\docs\**\Xamarin.Forms.Xaml.xml" target="lib\MonoAndroid90" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.dll" target="lib\MonoAndroid90" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.*pdb" target="lib\MonoAndroid90" />
-    <file src="..\Stubs\Xamarin.Forms.Platform.Android\bin\$Configuration$\MonoAndroid90\90\Xamarin.Forms.Platform.dll" target="lib\MonoAndroid90" />
+    <file src="..\Stubs\Xamarin.Forms.Platform.Android\bin\$Configuration$\MonoAndroid90\Xamarin.Forms.Platform.dll" target="lib\MonoAndroid90" />
 
     <!--iPhone Unified-->
     <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\Xamarin.Forms.Platform.iOS.dll" target="lib\Xamarin.iOS10" />

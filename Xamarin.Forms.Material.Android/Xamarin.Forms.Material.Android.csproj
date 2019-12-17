@@ -11,6 +11,10 @@
   <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
+  <PropertyGroup  Condition="'$(MSBuildAssemblyVersion)' != '16.0'">
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>bin\$(Configuration)\$(TargetFramework)</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\**\*" />
   </ItemGroup>
