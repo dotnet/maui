@@ -1,8 +1,6 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
   <PropertyGroup>
-    <TargetFramework Condition=" '$(OS)' != 'Windows_NT' ">netstandard2.0</TargetFramework>
-    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">netstandard2.0;uap10.0.14393</TargetFrameworks>
-    <TargetPlatformVersion Condition="$(TargetFramework) == 'uap10.0.14393'">10.0.16299.0</TargetPlatformVersion>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <PropertyGroup>
     <XFDisableTargetsValidation>True</XFDisableTargetsValidation>
@@ -32,7 +30,6 @@
     <ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj" />
     <ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="BuildNumber.txt" />
     <EmbeddedResource Include="GalleryPages\crimson.jpg" />
@@ -41,153 +38,6 @@
     <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
     <PackageReference Include="NUnit" Version="3.12.0" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="3.0.2" />
-    <Compile Update="GalleryPages\BindableLayoutGalleryPage.xaml.cs">
-      <DependentUpon>BindableLayoutGalleryPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="GalleryPages\CollectionViewGalleries\EmptyViewGalleries\EmptyViewLoadSimulateGallery.xaml.cs">
-      <DependentUpon>EmptyViewLoadSimulateGallery.xaml</DependentUpon>
-      </Compile>
-    <Compile Update="GalleryPages\PlatformTestsGallery\PlatformTestsConsole.xaml.cs">
-      <DependentUpon>PlatformTestsConsole.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="GalleryPages\VisualStateManagerGalleries\OnPlatformExample.xaml.cs">
-      <DependentUpon>OnPlatformExample.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="ShellContentTest.xaml.cs">
-      <DependentUpon>ShellContentTest.xaml</DependentUpon>
-    </Compile>
-    <EmbeddedResource Update="GalleryPages\BindableLayoutGalleryPage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\CollectionViewGalleries\GroupingGalleries\GridGrouping.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\CollectionViewGalleries\HeaderFooterGalleries\FooterOnlyString.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\CharacterSpacingGallery.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\CollectionViewGalleries\EmptyViewGalleries\EmptyViewSwapGallery.xaml">
-	    <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\CollectionViewGalleries\NestedGalleries\NestedCollectionViewGallery.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\CollectionViewGalleries\SelectionGalleries\MultipleBoundSelection.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\CollectionViewGalleries\SelectionGalleries\PreselectedItemsGallery.xaml">
-       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\CollectionViewGalleries\DataTemplateSelectorGallery.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\CollectionViewGalleries\SelectionGalleries\SelectionChangedCommandParameter.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\MapElementsGallery.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\CollectionViewGalleries\HeaderFooterGalleries\HeaderFooterGridHorizontal.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\MapGallery.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\MapWithItemsSourceGallery.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\PlatformTestsGallery\PlatformTestsConsole.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\TitleView.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\VisualStateManagerGalleries\ButtonDisabledStatesGallery.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\VisualStateManagerGalleries\DatePickerDisabledStatesGallery.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\VisualStateManagerGalleries\PickerDisabledStatesGallery.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\VisualStateManagerGalleries\SearchBarDisabledStatesGallery.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\VisualStateManagerGalleries\TimePickerDisabledStatesGallery.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\VisualStateManagerGalleries\ValidationExample.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\XamlPage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="ControlGalleryPages\BehaviorsAndTriggers.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\StyleXamlGallery.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\XamlNativeViews.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\MacTwitterDemo.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="HanselForms\MyAbout.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="HanselForms\BlogPage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="HanselForms\TwitterPage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="CompressedLayout.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="ControlGalleryPages\LayoutAddPerformance.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\ControlTemplateXamlPage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\IndicatorViewGalleries\IndicatorsSample.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="GalleryPages\CollectionViewGalleries\GroupingGalleries\BasicGrouping.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-    <None Update="GalleryPages\CollectionViewGalleries\GroupingGalleries\GroupingNoTemplates.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-    <None Update="GalleryPages\CollectionViewGalleries\GroupingGalleries\GroupingPlusSelection.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-    <None Update="GalleryPages\CollectionViewGalleries\GroupingGalleries\MeasureFirstStrategy.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-    <None Update="GalleryPages\CollectionViewGalleries\GroupingGalleries\SomeEmptyGroups.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-    <None Update="GalleryPages\CollectionViewGalleries\GroupingGalleries\SwitchGrouping.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-    <None Update="GalleryPages\CollectionViewGalleries\ScrollModeGalleries\ScrollModeTestGallery.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-    <None Update="GalleryPages\CollectionViewGalleries\SelectionGalleries\SelectionChangedCommandParameter.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="GalleryPages\CollectionViewGalleries\CarouselViewGalleries\" />
-    <Folder Include="GalleryPages\SwipeViewGalleries\" />
   </ItemGroup>
 
   <Target Name="CreateControllGalleryConfig" BeforeTargets="Build">

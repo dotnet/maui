@@ -46,8 +46,8 @@
     <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\Xamarin.iOS10" />
     <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\Xamarin.iOS10" />
 
-    <file src="..\Xamarin.Forms.Maps.UWP\bin\$Configuration$\Xamarin.Forms.Maps.UWP.dll" target="lib\uap10.0" />
-    <file src="..\Xamarin.Forms.Maps.UWP\bin\$Configuration$\Xamarin.Forms.Maps.UWP.pri" target="lib\uap10.0" />
+    <file src="..\Xamarin.Forms.Maps.UWP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Maps.UWP.dll" target="lib\uap10.0" />
+    <file src="..\Xamarin.Forms.Maps.UWP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Maps.UWP.pri" target="lib\uap10.0" />
     <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\uap10.0" />
 
     <file src="..\Xamarin.Forms.Maps.MacOS\bin\$Configuration$\Xamarin.Forms.Maps.macOS.dll" target="lib\Xamarin.Mac" />
