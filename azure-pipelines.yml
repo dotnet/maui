@@ -9,7 +9,7 @@ variables:
   NETCORE_VERSION: '3.0.x'
   NETCORE_TEST_VERSION: '2.2.x'
   IOS_SIM_NAME: 'iPhone 11'
-  IOS_SIM_RUNTIME: 'com.apple.CoreSimulator.SimRuntime.iOS-13-1'
+  IOS_SIM_RUNTIME: 'com.apple.CoreSimulator.SimRuntime.iOS-13-2'
   ANDROID_EMU_TARGET: 'system-images;android-26;google_apis;x86'
   ANDROID_EMU_DEVICE: 'Nexus 5X'
   RunPoliCheck: 'false'
@@ -232,6 +232,7 @@ jobs:
           cd DeviceTests
           sh ./build.sh --target=test-android-emu --settings_skipverification=true --verbosity=diagnostic
         displayName: 'Run Device Tests - Android'
+        timeoutInMinutes: 10
       - task: PublishTestResults@2
         displayName: 'Publish Test Results'
         inputs:
