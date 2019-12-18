@@ -430,6 +430,10 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			Platform.NativeToolbarTracker.UpdateToolBar();
 		}
+		void UpdateBackButtonTitle()
+		{
+			Platform.NativeToolbarTracker.UpdateToolBar();
+		}
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
@@ -442,6 +446,10 @@ namespace Xamarin.Forms.Platform.MacOS
 				UpdateBarTextColor();
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackgroundColor();
+			else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName)
+			{
+				UpdateBackButtonTitle();
+			}
 		}
 	}
 }

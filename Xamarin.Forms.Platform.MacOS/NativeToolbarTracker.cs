@@ -18,14 +18,17 @@ namespace Xamarin.Forms.Platform.MacOS
 			public ToolbarItem Element;
 		}
 
-		public NativeToolbarGroup(NSToolbarItemGroup itemGroup)
+		public NativeToolbarGroup(NSToolbarItemGroup itemGroup, double minItemWidth = 0, double itemSpacing = 0)
 		{
 			Group = itemGroup;
 			Items = new List<Item>();
+			MinItemWidth = minItemWidth;
+			ItemSpacing = itemSpacing;
 		}
 
 		public NSToolbarItemGroup Group { get; }
-
+		public double MinItemWidth { get; }
+		public double ItemSpacing { get; }
 		public List<Item> Items { get; }
 	}
 
@@ -119,13 +122,13 @@ namespace Xamarin.Forms.Platform.MacOS
 			group.View = view;
 
 			if (itemIdentifier == NavigationGroupIdentifier)
-				_navigationGroup = new NativeToolbarGroup(group);
+				_navigationGroup = new NativeToolbarGroup(group,BackButtonItemWidth);
 			else if (itemIdentifier == TitleGroupIdentifier)
 				_titleGroup = new NativeToolbarGroup(group);
 			else if (itemIdentifier == TabbedGroupIdentifier)
 				_tabbedGroup = new NativeToolbarGroup(group);
 			else if (itemIdentifier == ToolbarItemsGroupIdentifier)
-				_toolbarGroup = new NativeToolbarGroup(group);
+				_toolbarGroup = new NativeToolbarGroup(group, ToolbarItemWidth, ToolbarItemSpacing);
 
 			return group;
 		}
@@ -201,21 +204,24 @@ namespace Xamarin.Forms.Platform.MacOS
 			var items = new List<ToolbarItem>();
 			if (ShowBackButton(forceShowBackButton))
 			{
+				bool isBackButtonTextSet = _navigation.IsSet(NavigationPage.BackButtonTitleProperty);
+				var backButtonTitle = isBackButtonTextSet ? NavigationPage.GetBackButtonTitle(_navigation) : GetPreviousPageTitle();
 				var backButtonItem = new ToolbarItem
 				{
-					Text = GetPreviousPageTitle(),
+					Text = backButtonTitle,
 					Command = new Command(async () => await NavigateBackFrombackButton())
 				};
 				items.Add(backButtonItem);
 			}
 
-			UpdateGroup(_navigationGroup, items, BackButtonItemWidth, -1);
+			UpdateGroup(_navigationGroup, items);
 
 			var navItemBack = _navigationGroup.Items.FirstOrDefault();
 			if (navItemBack != null)
 			{
 				navItemBack.Button.Image = NSImage.ImageNamed(NSImageName.GoLeftTemplate);
 				navItemBack.Button.SizeToFit();
+				UpdateGroupWidth(_navigationGroup);
 				navItemBack.Button.AccessibilityTitle = "NSBackButton";
 			}
 		}
@@ -343,7 +349,8 @@ namespace Xamarin.Forms.Platform.MacOS
 				return;
 
 			var currentPage = _navigation.Peek(0);
-			UpdateGroup(_toolbarGroup, currentPage.ToolbarItems, ToolbarItemWidth, ToolbarItemSpacing);
+			_toolbarTracker.Target = currentPage;
+			UpdateGroup(_toolbarGroup, GetToolbarItems());
 		}
 
 		void UpdateTabbedItems()
@@ -368,10 +375,10 @@ namespace Xamarin.Forms.Platform.MacOS
 				}
 			}
 
-			UpdateGroup(_tabbedGroup, items, ToolbarItemWidth, ToolbarItemSpacing);
+			UpdateGroup(_tabbedGroup, items);
 		}
 
-		void UpdateGroup(NativeToolbarGroup group, IList<ToolbarItem> toolbarItems, double itemWidth, double itemSpacing)
+		void UpdateGroup(NativeToolbarGroup group, IList<ToolbarItem> toolbarItems)
 		{
 			int count = toolbarItems.Count;
 			group.Items.Clear();
@@ -379,36 +386,19 @@ namespace Xamarin.Forms.Platform.MacOS
 			{
 				var subItems = new NSToolbarItem[count];
 				var view = new NSView();
-				nfloat totalWidth = 0;
-				var currentX = 0.0;
 				for (int i = 0; i < toolbarItems.Count; i++)
 				{
 					var element = toolbarItems[i];
 
 					var item = new NSToolbarItem(element.Text ?? "");
 					item.Activated += (sender, e) => ((IMenuItemController)element).Activate();
-
 					var button = new NSButton();
-					button.Title = element.Text ?? "";
-
-					button.SizeToFit();
-					var buttonWidth = itemWidth;
-					if (button.FittingSize.Width > itemWidth)
-					{
-						buttonWidth = button.FittingSize.Width + 10;
-					}
-					button.Frame = new CGRect(currentX + i * itemSpacing, 0, buttonWidth, ToolbarItemHeight);
-					currentX += buttonWidth;
-					totalWidth += button.Frame.Width;
+					// Padding for toolbar items with icon only is 9=44-25 (ToolbarItemWidth-ToolbarItemHeight)
+					// 10 added here to match this padding for long items
 					button.Activated += (sender, e) => ((IMenuItemController)element).Activate();
-
 					button.BezelStyle = NSBezelStyle.TexturedRounded;
-					_ = element.ApplyNativeImageAsync(ToolbarItem.IconImageSourceProperty, image =>
-					{
-						if (image != null)
-							button.Image = image;
-						button.SizeToFit();
-					});
+
+					UpdateButtonContent(button, element, group);
 
 					button.Enabled = item.Enabled = element.IsEnabled;
 					element.PropertyChanged -= ToolBarItemPropertyChanged;
@@ -422,16 +412,76 @@ namespace Xamarin.Forms.Platform.MacOS
 					SetAccessibility(button, element);
 					group.Items.Add(new NativeToolbarGroup.Item { ToolbarItem = item, Button = button, Element = element });
 				}
-				view.Frame = new CGRect(0, 0, totalWidth + (itemSpacing * (count - 1)), ToolbarItemHeight);
 
 				group.Group.Subitems = subItems;
 				group.Group.View = view;
+				UpdateGroupWidth(group);
 			}
 			else
 			{
 				group.Group.Subitems = new NSToolbarItem[] { };
 				group.Group.View = new NSView();
 			}
+		}
+
+		void UpdateButtonContent(NSButton button, ToolbarItem element, NativeToolbarGroup group)
+		{
+			var text = element.Text ?? "";
+			SetButtonTitle(button, text);
+			button.SizeToFit();
+			UpdateGroupWidth(group);
+			if (element.IconImageSource != null)
+			{
+				_ = element.ApplyNativeImageAsync(ToolbarItem.IconImageSourceProperty, image =>
+				{
+					if (image != null)
+					{
+						button.Image = image;
+						SetButtonTitle(button, "");
+					}
+					else
+					{
+						button.Image = null;
+					}
+					button.SizeToFit();
+					UpdateGroupWidth(group);
+				});
+			}
+			else
+			{
+				button.Image = null;
+			}
+		}
+
+		void UpdateGroupWidth(NativeToolbarGroup group)
+		{
+			nfloat totalWidth = 0;
+			var currentX = 0.0;
+			var view = group.Group.View;
+			for (var i = 0; i < view.Subviews.Length; i++)
+			{
+				var child = view.Subviews[i];
+				var buttonWidth = group.MinItemWidth;
+				if (child.FittingSize.Width > group.MinItemWidth)
+				{
+					buttonWidth = child.FittingSize.Width + 10;
+				}
+				child.Frame = new CGRect(currentX + i * group.ItemSpacing, 0, buttonWidth, ToolbarItemHeight);
+				totalWidth += child.Frame.Width;
+				currentX += buttonWidth;
+			}
+			view.Frame = new CGRect(0, 0, totalWidth + (group.ItemSpacing * (view.Subviews.Length - 1)), ToolbarItemHeight);
+		}
+
+		void SetButtonTitle(NSButton button, string text)
+		{
+			button.Title = text;
+			button.ImagePosition = GetImagePosition(text);
+		}
+
+		NSCellImagePosition GetImagePosition(string text)
+		{
+			return string.IsNullOrEmpty(text) ? NSCellImagePosition.ImageOnly : NSCellImagePosition.ImageLeading;
 		}
 
 		void SetAccessibility(NSButton button, ToolbarItem element)
@@ -456,13 +506,21 @@ namespace Xamarin.Forms.Platform.MacOS
 				{
 					nativeToolbarItem.Button.Enabled = nativeToolbarItem.ToolbarItem.Enabled = nativeToolbarItem.Element.IsEnabled;
 				}
-
-				if (e.PropertyName.Equals(ToolbarItem.TextProperty.PropertyName))
+				else if (e.PropertyName.Equals(ToolbarItem.TextProperty.PropertyName))
 				{
-					nativeToolbarItem.Button.Title = nativeToolbarItem.ToolbarItem.Label = nativeToolbarItem.Element.Text;
+					var element = nativeToolbarItem.Element;
+					var button = nativeToolbarItem.Button;
+					var text = element.Text;
+					nativeToolbarItem.ToolbarItem.Label = text;
+					UpdateButtonContent(button, element, _toolbarGroup);
 				}
-
-				if (e.PropertyName == AutomationProperties.NameProperty.PropertyName ||
+				else if (e.PropertyName.Equals(ToolbarItem.IconImageSourceProperty.PropertyName))
+				{
+					var element = nativeToolbarItem.Element;
+					var button = nativeToolbarItem.Button;
+					UpdateButtonContent(button, element, _toolbarGroup);
+				}
+				else if (e.PropertyName == AutomationProperties.NameProperty.PropertyName ||
 					e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
 				{
 					SetAccessibility(nativeToolbarItem.Button, nativeToolbarItem.Element);

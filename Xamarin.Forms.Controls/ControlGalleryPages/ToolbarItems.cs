@@ -28,6 +28,11 @@ namespace Xamarin.Forms.Controls
 				label.Text = "tb2";
 			}, ToolbarItemOrder.Primary);
 			tb2.AutomationId = "toolbaritem_primary2";
+			var tb6 = new ToolbarItem("tb6 long long text", null, () =>
+			{
+				label.Text = "tb6";
+			}, ToolbarItemOrder.Primary);
+			tb6.AutomationId = "toolbaritem_primary6";
 
 			var tb3 = new ToolbarItem("tb3", "bank.png", () =>
 			{
@@ -58,6 +63,7 @@ namespace Xamarin.Forms.Controls
 			ToolbarItems.Add(tb3);
 			ToolbarItems.Add(tb4);
 			ToolbarItems.Add(tb5);
+			ToolbarItems.Add(tb6);
 
 			Content = new StackLayout
 			{
