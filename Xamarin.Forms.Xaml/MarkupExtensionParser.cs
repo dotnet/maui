@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Xaml
 				return markupExtension.ProvideValue(serviceProvider);
 
 			string piece;
-			while ((piece = GetNextPiece(ref remaining, out char next)) != null)
+			while ((piece = GetNextPiece(serviceProvider, ref remaining, out char next)) != null)
 				HandleProperty(piece, serviceProvider, ref remaining, next != '=');
 
 			return markupExtension.ProvideValue(serviceProvider);

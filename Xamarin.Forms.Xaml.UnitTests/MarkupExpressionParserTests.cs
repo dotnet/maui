@@ -374,5 +374,15 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 			Assert.AreEqual(expected, actual);
 		}
+
+		[TestCase("{Binding")]
+		[TestCase("{Binding 'Foo}")]
+		public void InvalidExpressions (string expression)
+		{
+			var serviceProvider = new Internals.XamlServiceProvider (null, null);
+			serviceProvider.IXamlTypeResolver = typeResolver;
+			serviceProvider.IProvideValueTarget = new MockValueProvider ("Bar", new ReverseConverter());
+			Assert.Throws<XamlParseException> (() => (new MarkupExtensionParser ()).ParseExpression (ref expression, serviceProvider));
+		}
 	}
 }

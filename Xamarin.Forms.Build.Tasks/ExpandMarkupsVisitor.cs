@@ -163,7 +163,7 @@ namespace Xamarin.Forms.Build.Tasks
 				}
 
 				string piece;
-				while ((piece = GetNextPiece(ref remaining, out var next)) != null)
+				while ((piece = GetNextPiece(serviceProvider, ref remaining, out var next)) != null)
 					HandleProperty(piece, serviceProvider, ref remaining, next != '=');
 
 				return _node;
