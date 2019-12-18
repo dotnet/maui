@@ -216,6 +216,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateTitle()
 		{
+			Control.Header = null;
+			Control.HeaderTemplate = string.IsNullOrEmpty(Element.Title) ? null : (Windows.UI.Xaml.DataTemplate)Windows.UI.Xaml.Application.Current.Resources["ComboBoxHeader"];
 			Control.DataContext = Element;
 		}
 	}
