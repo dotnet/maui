@@ -232,7 +232,6 @@ jobs:
           cd DeviceTests
           sh ./build.sh --target=test-android-emu --settings_skipverification=true --verbosity=diagnostic
         displayName: 'Run Device Tests - Android'
-        timeoutInMinutes: 10
       - task: PublishTestResults@2
         displayName: 'Publish Test Results'
         inputs:
