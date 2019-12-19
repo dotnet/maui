@@ -15,7 +15,7 @@ namespace DeviceTests
         {
             await MainThread.InvokeOnMainThreadAsync(async () =>
             {
-                await Permissions.RequestAsync(PermissionType.LocationWhenInUse);
+                await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
             });
 
             var location = await Geolocation.GetLastKnownLocationAsync();
@@ -40,7 +40,7 @@ namespace DeviceTests
         {
             await MainThread.InvokeOnMainThreadAsync(async () =>
             {
-                await Permissions.RequestAsync(PermissionType.LocationWhenInUse);
+                await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
             });
 
             var location = await Geolocation.GetLocationAsync();
@@ -65,7 +65,7 @@ namespace DeviceTests
         {
             await MainThread.InvokeOnMainThreadAsync(async () =>
             {
-                await Permissions.RequestAsync(PermissionType.LocationWhenInUse);
+                await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
             });
 
             var request = new GeolocationRequest(GeolocationAccuracy.Best);

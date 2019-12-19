@@ -8,7 +8,7 @@ namespace Xamarin.Essentials
     {
         internal static Task PlatformOpenMapsAsync(double latitude, double longitude, MapLaunchOptions options)
         {
-            Permissions.EnsureDeclared(PermissionType.LaunchApp);
+            Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
             var appControl = new AppControl
             {
@@ -25,7 +25,7 @@ namespace Xamarin.Essentials
 
         internal static Task PlatformOpenMapsAsync(Placemark placemark, MapLaunchOptions options)
         {
-            Permissions.EnsureDeclared(PermissionType.LaunchApp);
+            Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
             var appControl = new AppControl
             {

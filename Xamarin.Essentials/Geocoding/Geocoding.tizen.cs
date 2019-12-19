@@ -8,7 +8,7 @@ namespace Xamarin.Essentials
     {
         static async Task<IEnumerable<Placemark>> PlatformGetPlacemarksAsync(double latitude, double longitude)
         {
-            Permissions.EnsureDeclared(PermissionType.Maps);
+            Permissions.EnsureDeclared<Permissions.Maps>();
             if (string.IsNullOrWhiteSpace(Platform.MapServiceToken))
                 throw new ArgumentNullException(nameof(Platform.MapServiceToken));
             var map = await Platform.GetMapServiceAsync(Platform.MapServiceToken);
@@ -37,7 +37,7 @@ namespace Xamarin.Essentials
 
         static async Task<IEnumerable<Location>> PlatformGetLocationsAsync(string address)
         {
-            Permissions.EnsureDeclared(PermissionType.Maps);
+            Permissions.EnsureDeclared<Permissions.Maps>();
             if (string.IsNullOrWhiteSpace(Platform.MapServiceToken))
                 throw new ArgumentNullException(nameof(Platform.MapServiceToken));
             var map = await Platform.GetMapServiceAsync(Platform.MapServiceToken);

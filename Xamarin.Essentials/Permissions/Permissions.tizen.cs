@@ -5,114 +5,199 @@ using Tizen.Security;
 
 namespace Xamarin.Essentials
 {
-    internal static partial class Permissions
+    public static partial class Permissions
     {
-        static bool PlatformEnsureDeclared(PermissionType permission, bool throwIfMissing)
+        public static bool IsPrivilegeDeclared(string tizenPrivilege)
         {
-            var tizenPrivileges = permission.ToTizenPrivileges(onlyRuntimePermissions: false);
+            var tizenPrivileges = tizenPrivilege;
 
             if (tizenPrivileges == null || !tizenPrivileges.Any())
                 return false;
 
             var package = Platform.CurrentPackage;
-            foreach (var priv in tizenPrivileges)
-            {
-                if (!package.Privileges.Contains(priv))
-                {
-                    if (throwIfMissing)
-                        throw new PermissionException($"You need to declare the privilege: `{priv}` in your tizen-manifest.xml");
-                    else
-                        return false;
-                }
-            }
+
+            if (!package.Privileges.Contains(tizenPrivilege))
+                return false;
 
             return true;
         }
 
-        static Task<PermissionStatus> PlatformCheckStatusAsync(PermissionType permission)
+        public abstract partial class BasePlatformPermission : BasePermission
         {
-            return CheckPrivacyPermission(permission, false);
-        }
+            public virtual (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges { get; }
 
-        static Task<PermissionStatus> PlatformRequestAsync(PermissionType permission)
-        {
-            return CheckPrivacyPermission(permission, true);
-        }
+            public override Task<PermissionStatus> CheckStatusAsync()
+                => CheckPrivilegeAsync(false);
 
-        internal static async Task<PermissionStatus> CheckPrivacyPermission(PermissionType permission, bool askUser)
-        {
-            EnsureDeclared(permission);
-            var tizenPrivileges = permission.ToTizenPrivileges(onlyRuntimePermissions: true);
-            foreach (var priv in tizenPrivileges)
+            public override Task<PermissionStatus> RequestAsync()
+                => CheckPrivilegeAsync(true);
+
+            async Task<PermissionStatus> CheckPrivilegeAsync(bool ask)
             {
-                if (PrivacyPrivilegeManager.CheckPermission(priv) == CheckResult.Ask)
+                if (!RequiredPrivileges.Any())
+                    return PermissionStatus.Granted;
+
+                EnsureDeclared();
+
+                var tizenPrivileges = RequiredPrivileges.Where(p => p.isRuntime);
+
+                foreach (var (tizenPrivilege, isRuntime) in tizenPrivileges)
                 {
-                    if (askUser)
+                    if (PrivacyPrivilegeManager.CheckPermission(tizenPrivilege) == CheckResult.Ask)
                     {
-                        var tcs = new TaskCompletionSource<bool>();
-                        PrivacyPrivilegeManager.ResponseContext context = null;
-                        PrivacyPrivilegeManager.GetResponseContext(priv).TryGetTarget(out context);
-                        void OnResponseFetched(object sender, RequestResponseEventArgs e)
+                        if (ask)
                         {
-                            tcs.TrySetResult(e.result == RequestResult.AllowForever);
+                            var tcs = new TaskCompletionSource<bool>();
+                            PrivacyPrivilegeManager.GetResponseContext(tizenPrivilege)
+                                .TryGetTarget(out var context);
+                            void OnResponseFetched(object sender, RequestResponseEventArgs e)
+                            {
+                                tcs.TrySetResult(e.result == RequestResult.AllowForever);
+                            }
+                            context.ResponseFetched += OnResponseFetched;
+                            PrivacyPrivilegeManager.RequestPermission(tizenPrivilege);
+                            var result = await tcs.Task;
+                            context.ResponseFetched -= OnResponseFetched;
+                            if (result)
+                                continue;
                         }
-                        context.ResponseFetched += OnResponseFetched;
-                        PrivacyPrivilegeManager.RequestPermission(priv);
-                        var result = await tcs.Task;
-                        context.ResponseFetched -= OnResponseFetched;
-                        if (result)
-                            continue;
+                        return PermissionStatus.Denied;
                     }
-                    return PermissionStatus.Denied;
+                    else if (PrivacyPrivilegeManager.CheckPermission(tizenPrivilege) == CheckResult.Deny)
+                    {
+                        return PermissionStatus.Denied;
+                    }
                 }
-                else if (PrivacyPrivilegeManager.CheckPermission(priv) == CheckResult.Deny)
+                return PermissionStatus.Granted;
+            }
+
+            public override void EnsureDeclared()
+            {
+                foreach (var (tizenPrivilege, isRuntime) in RequiredPrivileges)
                 {
-                    return PermissionStatus.Denied;
+                    if (!IsPrivilegeDeclared(tizenPrivilege))
+                        throw new PermissionException($"You need to declare the privilege: `{tizenPrivilege}` in your tizen-manifest.xml");
                 }
             }
-            return PermissionStatus.Granted;
         }
-    }
 
-    static class PermissionTypeExtensions
-    {
-        internal static IEnumerable<string> ToTizenPrivileges(this PermissionType permissionType, bool onlyRuntimePermissions)
+        public partial class Battery : BasePlatformPermission
         {
-            var privileges = new List<(string privilege, bool runtimePermission)>();
+        }
 
-            switch (permissionType)
-            {
-                case PermissionType.Flashlight:
-                    privileges.Add(("http://tizen.org/privilege/led", false));
-                    break;
-                case PermissionType.LaunchApp:
-                    privileges.Add(("http://tizen.org/privilege/appmanager.launch", false));
-                    break;
-                case PermissionType.LocationWhenInUse:
-                    privileges.Add(("http://tizen.org/privilege/location", true));
-                    break;
-                case PermissionType.Maps:
-                    privileges.Add(("http://tizen.org/privilege/internet", false));
-                    privileges.Add(("http://tizen.org/privilege/mapservice", false));
-                    privileges.Add(("http://tizen.org/privilege/network.get", false));
-                    break;
-                case PermissionType.NetworkState:
-                    privileges.Add(("http://tizen.org/privilege/internet", false));
-                    privileges.Add(("http://tizen.org/privilege/network.get", false));
-                    break;
-                case PermissionType.Vibrate:
-                    privileges.Add(("http://tizen.org/privilege/haptic", false));
-                    break;
-            }
+        public partial class CalendarRead : BasePlatformPermission
+        {
+        }
 
-            if (onlyRuntimePermissions)
-            {
-                return privileges
-                    .Where(p => p.runtimePermission)
-                    .Select(p => p.privilege);
-            }
+        public partial class CalendarWrite : BasePlatformPermission
+        {
+        }
 
-            return privileges.Select(p => p.privilege);
+        public partial class Camera : BasePlatformPermission
+        {
+            public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
+                new[] { ("http://tizen.org/privilege/camera", false) };
+        }
+
+        public partial class ContactsRead : BasePlatformPermission
+        {
+        }
+
+        public partial class ContactsWrite : BasePlatformPermission
+        {
+        }
+
+        public partial class Flashlight : BasePlatformPermission
+        {
+            public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
+                new[] { ("http://tizen.org/privilege/led", false) };
+        }
+
+        public partial class LaunchApp : BasePlatformPermission
+        {
+            public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
+                new[] { ("http://tizen.org/privilege/appmanager.launch", false) };
+        }
+
+        public partial class LocationWhenInUse : BasePlatformPermission
+        {
+            public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
+                new[] { ("http://tizen.org/privilege/location", true) };
+        }
+
+        public partial class LocationAlways : LocationWhenInUse
+        {
+            public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
+                new[] { ("http://tizen.org/privilege/location", true) };
+        }
+
+        public partial class Maps : BasePlatformPermission
+        {
+            public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
+                new[]
+                {
+                    ("http://tizen.org/privilege/internet", false),
+                    ("http://tizen.org/privilege/mapservice", false),
+                    ("http://tizen.org/privilege/network.get", false)
+                };
+        }
+
+        public partial class Media : BasePlatformPermission
+        {
+        }
+
+        public partial class Microphone : BasePlatformPermission
+        {
+            public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
+                new[] { ("http://tizen.org/privilege/recorder", false) };
+        }
+
+        public partial class NetworkState : BasePlatformPermission
+        {
+            public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
+                new[]
+                {
+                    ("http://tizen.org/privilege/internet", false),
+                    ("http://tizen.org/privilege/network.get", false)
+                };
+        }
+
+        public partial class Phone : BasePlatformPermission
+        {
+        }
+
+        public partial class Photos : BasePlatformPermission
+        {
+        }
+
+        public partial class Reminders : BasePlatformPermission
+        {
+        }
+
+        public partial class Sensors : BasePlatformPermission
+        {
+        }
+
+        public partial class Sms : BasePlatformPermission
+        {
+        }
+
+        public partial class Speech : BasePlatformPermission
+        {
+        }
+
+        public partial class StorageRead : BasePlatformPermission
+        {
+        }
+
+        public partial class StorageWrite : BasePlatformPermission
+        {
+        }
+
+        public partial class Vibrate : BasePlatformPermission
+        {
+            public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
+                new[] { ("http://tizen.org/privilege/haptic", false) };
         }
     }
 }

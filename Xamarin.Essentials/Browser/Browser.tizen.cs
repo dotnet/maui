@@ -12,7 +12,7 @@ namespace Xamarin.Essentials
             if (uri == null)
                 throw new ArgumentNullException(nameof(uri));
 
-            Permissions.EnsureDeclared(PermissionType.LaunchApp);
+            Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
             var appControl = new AppControl
             {

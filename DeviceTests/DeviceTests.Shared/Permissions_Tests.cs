@@ -10,30 +10,59 @@ namespace DeviceTests
     public class Permissions_Tests
     {
         [Theory]
-        [InlineData(PermissionType.Battery)]
-        [InlineData(PermissionType.NetworkState)]
-        [InlineData(PermissionType.LocationWhenInUse)]
-        internal void Ensure_Declared(PermissionType permission)
+        [InlineData("Battery")]
+        [InlineData("NetworkState")]
+        [InlineData("LocationWhenInUse")]
+        internal void Ensure_Declared(string permission)
         {
-            Permissions.EnsureDeclared(permission);
+            switch (permission)
+            {
+                case "Battery":
+                    Permissions.EnsureDeclared<Permissions.Battery>();
+                    break;
+                case "NetworkState":
+                    Permissions.EnsureDeclared<Permissions.NetworkState>();
+                    break;
+                case "LocationWhenInUse":
+                    Permissions.EnsureDeclared<Permissions.LocationWhenInUse>();
+                    break;
+            }
         }
 
         [Theory]
-        [InlineData(PermissionType.Battery, PermissionStatus.Granted)]
-        [InlineData(PermissionType.NetworkState, PermissionStatus.Granted)]
-        internal async Task Check_Status(PermissionType permission, PermissionStatus expectedStatus)
+        [InlineData("Battery", PermissionStatus.Granted)]
+        [InlineData("NetworkState", PermissionStatus.Granted)]
+        internal async Task Check_Status(string permission, PermissionStatus expectedStatus)
         {
-            var status = await Permissions.CheckStatusAsync(permission);
+            var status = PermissionStatus.Unknown;
+            switch (permission)
+            {
+                case "Battery":
+                    status = await Permissions.CheckStatusAsync<Permissions.Battery>();
+                    break;
+                case "NetworkState":
+                    status = await Permissions.CheckStatusAsync<Permissions.NetworkState>();
+                    break;
+            }
 
             Assert.Equal(expectedStatus, status);
         }
 
         [Theory]
-        [InlineData(PermissionType.Battery, PermissionStatus.Granted)]
-        [InlineData(PermissionType.NetworkState, PermissionStatus.Granted)]
-        internal async Task Request(PermissionType permission, PermissionStatus expectedStatus)
+        [InlineData("Battery", PermissionStatus.Granted)]
+        [InlineData("NetworkState", PermissionStatus.Granted)]
+        internal async Task Request(string permission, PermissionStatus expectedStatus)
         {
-            var status = await Permissions.CheckStatusAsync(permission);
+            var status = PermissionStatus.Unknown;
+            switch (permission)
+            {
+                case "Battery":
+                    status = await Permissions.RequestAsync<Permissions.Battery>();
+                    break;
+                case "NetworkState":
+                    status = await Permissions.RequestAsync<Permissions.NetworkState>();
+                    break;
+            }
 
             Assert.Equal(expectedStatus, status);
         }
@@ -46,7 +75,7 @@ namespace DeviceTests
         {
             await Task.Run(async () =>
             {
-                await Assert.ThrowsAsync<PermissionException>(() => Permissions.RequestAsync(PermissionType.LocationWhenInUse));
+                await Assert.ThrowsAsync<PermissionException>(async () => await Permissions.RequestAsync<Permissions.LocationWhenInUse>());
             });
         }
     }

@@ -1,109 +1,309 @@
-﻿using System.Threading.Tasks;
-using CoreLocation;
-using Foundation;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using AddressBook;
+using AVFoundation;
+using MediaPlayer;
+using Speech;
 
 namespace Xamarin.Essentials
 {
-    internal static partial class Permissions
+    public static partial class Permissions
     {
-        static bool PlatformEnsureDeclared(PermissionType permission, bool throwIfMissing)
+        internal static partial class AVPermissions
         {
-            var info = NSBundle.MainBundle.InfoDictionary;
-
-            if (permission == PermissionType.LocationWhenInUse)
+            internal static PermissionStatus CheckPermissionsStatus(AVAuthorizationMediaType mediaType)
             {
-                if (!info.ContainsKey(new NSString("NSLocationWhenInUseUsageDescription")))
+                var status = AVCaptureDevice.GetAuthorizationStatus(mediaType);
+                return status switch
                 {
-                    if (throwIfMissing)
-                        throw new PermissionException("You must set `NSLocationWhenInUseUsageDescription` in your Info.plist file to enable Authorization Requests for Location updates.");
-                    else
-                        return false;
+                    AVAuthorizationStatus.Authorized => PermissionStatus.Granted,
+                    AVAuthorizationStatus.Denied => PermissionStatus.Denied,
+                    AVAuthorizationStatus.Restricted => PermissionStatus.Restricted,
+                    _ => PermissionStatus.Unknown,
+                };
+            }
+
+            internal static async Task<PermissionStatus> RequestPermissionAsync(AVAuthorizationMediaType mediaType)
+            {
+                try
+                {
+                    var auth = await AVCaptureDevice.RequestAccessForMediaTypeAsync(mediaType);
+                    return auth ? PermissionStatus.Granted : PermissionStatus.Denied;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Unable to get {mediaType} permission: " + ex);
+                    return PermissionStatus.Unknown;
                 }
             }
-
-            return true;
         }
 
-        static Task<PermissionStatus> PlatformCheckStatusAsync(PermissionType permission)
+        public partial class Camera : BasePlatformPermission
         {
-            EnsureDeclared(permission);
+            protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
+                () => new string[] { "NSCameraUsageDescription" };
 
-            switch (permission)
+            public override Task<PermissionStatus> CheckStatusAsync()
             {
-                case PermissionType.LocationWhenInUse:
-                    return Task.FromResult(GetLocationStatus());
+                EnsureDeclared();
+
+                return Task.FromResult(AVPermissions.CheckPermissionsStatus(AVAuthorizationMediaType.Video));
             }
 
-            return Task.FromResult(PermissionStatus.Granted);
-        }
-
-        static async Task<PermissionStatus> PlatformRequestAsync(PermissionType permission)
-        {
-            // Check status before requesting first and only request if Unknown
-            var status = await PlatformCheckStatusAsync(permission);
-            if (status != PermissionStatus.Unknown)
-                return status;
-
-            EnsureDeclared(permission);
-
-            switch (permission)
+            public override async Task<PermissionStatus> RequestAsync()
             {
-                case PermissionType.LocationWhenInUse:
+                EnsureDeclared();
 
-                    if (!MainThread.IsMainThread)
-                        throw new PermissionException("Permission request must be invoked on main thread.");
+                var status = AVPermissions.CheckPermissionsStatus(AVAuthorizationMediaType.Video);
+                if (status == PermissionStatus.Granted)
+                    return status;
 
-                    return await RequestLocationAsync();
-                default:
-                    return PermissionStatus.Granted;
+                EnsureMainThread();
+
+                return await AVPermissions.RequestPermissionAsync(AVAuthorizationMediaType.Video);
             }
         }
 
-        static PermissionStatus GetLocationStatus()
+        public partial class ContactsRead : BasePlatformPermission
         {
-            if (!CLLocationManager.LocationServicesEnabled)
-                return PermissionStatus.Disabled;
+            protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
+                () => new string[] { "NSContactsUsageDescription" };
 
-            var status = CLLocationManager.Status;
-
-            switch (status)
+            public override Task<PermissionStatus> CheckStatusAsync()
             {
-                case CLAuthorizationStatus.AuthorizedAlways:
-                case CLAuthorizationStatus.AuthorizedWhenInUse:
-                    return PermissionStatus.Granted;
-                case CLAuthorizationStatus.Denied:
-                    return PermissionStatus.Denied;
-                case CLAuthorizationStatus.Restricted:
-                    return PermissionStatus.Restricted;
-                default:
+                EnsureDeclared();
+
+                return Task.FromResult(GetAddressBookPermissionStatus());
+            }
+
+            public override Task<PermissionStatus> RequestAsync()
+            {
+                EnsureDeclared();
+
+                var status = GetAddressBookPermissionStatus();
+                if (status == PermissionStatus.Granted)
+                    return Task.FromResult(status);
+
+                EnsureMainThread();
+
+                return RequestAddressBookPermission();
+            }
+
+            internal static PermissionStatus GetAddressBookPermissionStatus()
+            {
+                var status = ABAddressBook.GetAuthorizationStatus();
+                return status switch
+                {
+                    ABAuthorizationStatus.Authorized => PermissionStatus.Granted,
+                    ABAuthorizationStatus.Denied => PermissionStatus.Denied,
+                    ABAuthorizationStatus.Restricted => PermissionStatus.Restricted,
+                    _ => PermissionStatus.Unknown,
+                };
+            }
+
+            internal static Task<PermissionStatus> RequestAddressBookPermission()
+            {
+                var addressBook = new ABAddressBook();
+
+                var tcs = new TaskCompletionSource<PermissionStatus>();
+
+                addressBook.RequestAccess((success, error) =>
+                    tcs.TrySetResult(success ? PermissionStatus.Granted : PermissionStatus.Denied));
+
+                return tcs.Task;
+            }
+        }
+
+        public partial class ContactsWrite : BasePlatformPermission
+        {
+            protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
+                () => new string[] { "NSContactsUsageDescription" };
+
+            public override Task<PermissionStatus> CheckStatusAsync()
+            {
+                EnsureDeclared();
+
+                return Task.FromResult(ContactsRead.GetAddressBookPermissionStatus());
+            }
+
+            public override Task<PermissionStatus> RequestAsync()
+            {
+                EnsureDeclared();
+
+                var status = ContactsRead.GetAddressBookPermissionStatus();
+                if (status == PermissionStatus.Granted)
+                    return Task.FromResult(status);
+
+                EnsureMainThread();
+
+                return ContactsRead.RequestAddressBookPermission();
+            }
+        }
+
+        public partial class Media : BasePlatformPermission
+        {
+            protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
+                () => new string[] { "NSAppleMusicUsageDescription" };
+
+            public override Task<PermissionStatus> CheckStatusAsync()
+            {
+                EnsureDeclared();
+
+                return Task.FromResult(GetMediaPermissionStatus());
+            }
+
+            public override Task<PermissionStatus> RequestAsync()
+            {
+                EnsureDeclared();
+
+                var status = GetMediaPermissionStatus();
+                if (status == PermissionStatus.Granted)
+                    return Task.FromResult(status);
+
+                EnsureMainThread();
+
+                return RequestMediaPermission();
+            }
+
+            internal static PermissionStatus GetMediaPermissionStatus()
+            {
+                // Only available in 9.3+
+                if (!Platform.HasOSVersion(9, 3))
                     return PermissionStatus.Unknown;
+
+                var status = MPMediaLibrary.AuthorizationStatus;
+                return status switch
+                {
+                    MPMediaLibraryAuthorizationStatus.Authorized => PermissionStatus.Granted,
+                    MPMediaLibraryAuthorizationStatus.Denied => PermissionStatus.Denied,
+                    MPMediaLibraryAuthorizationStatus.Restricted => PermissionStatus.Restricted,
+                    _ => PermissionStatus.Unknown,
+                };
+            }
+
+            internal static Task<PermissionStatus> RequestMediaPermission()
+            {
+                // Only available in 9.3+
+                if (!Platform.HasOSVersion(9, 3))
+                    return Task.FromResult(PermissionStatus.Unknown);
+
+                var tcs = new TaskCompletionSource<PermissionStatus>();
+
+                MPMediaLibrary.RequestAuthorization(s =>
+                {
+                    switch (s)
+                    {
+                        case MPMediaLibraryAuthorizationStatus.Authorized:
+                            tcs.TrySetResult(PermissionStatus.Granted);
+                            break;
+                        case MPMediaLibraryAuthorizationStatus.Denied:
+                            tcs.TrySetResult(PermissionStatus.Denied);
+                            break;
+                        case MPMediaLibraryAuthorizationStatus.Restricted:
+                            tcs.TrySetResult(PermissionStatus.Restricted);
+                            break;
+                        default:
+                            tcs.TrySetResult(PermissionStatus.Unknown);
+                            break;
+                    }
+                });
+
+                return tcs.Task;
             }
         }
 
-        static CLLocationManager locationManager;
-
-        static Task<PermissionStatus> RequestLocationAsync()
+        public partial class Microphone : BasePlatformPermission
         {
-            locationManager = new CLLocationManager();
+            protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
+                () => new string[] { "NSMicrophoneUsageDescription" };
 
-            var tcs = new TaskCompletionSource<PermissionStatus>(locationManager);
-
-            locationManager.AuthorizationChanged += LocationAuthCallback;
-            locationManager.RequestWhenInUseAuthorization();
-
-            return tcs.Task;
-
-            void LocationAuthCallback(object sender, CLAuthorizationChangedEventArgs e)
+            public override Task<PermissionStatus> CheckStatusAsync()
             {
-                if (e?.Status == null || e.Status == CLAuthorizationStatus.NotDetermined)
-                    return;
+                EnsureDeclared();
 
-                if (locationManager != null)
-                    locationManager.AuthorizationChanged -= LocationAuthCallback;
+                return Task.FromResult(AVPermissions.CheckPermissionsStatus(AVAuthorizationMediaType.Audio));
+            }
 
-                tcs?.TrySetResult(GetLocationStatus());
-                locationManager?.Dispose();
-                locationManager = null;
+            public override Task<PermissionStatus> RequestAsync()
+            {
+                EnsureDeclared();
+
+                var status = AVPermissions.CheckPermissionsStatus(AVAuthorizationMediaType.Audio);
+                if (status == PermissionStatus.Granted)
+                    return Task.FromResult(status);
+
+                EnsureMainThread();
+
+                return AVPermissions.RequestPermissionAsync(AVAuthorizationMediaType.Audio);
+            }
+        }
+
+        public partial class Speech : BasePlatformPermission
+        {
+            protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
+                () => new string[] { "NSSpeechRecognitionUsageDescription" };
+
+            public override Task<PermissionStatus> CheckStatusAsync()
+            {
+                EnsureDeclared();
+
+                return Task.FromResult(GetSpeechPermissionStatus());
+            }
+
+            public override Task<PermissionStatus> RequestAsync()
+            {
+                EnsureDeclared();
+
+                var status = GetSpeechPermissionStatus();
+                if (status == PermissionStatus.Granted)
+                    return Task.FromResult(status);
+
+                EnsureMainThread();
+
+                return RequestSpeechPermission();
+            }
+
+            internal static PermissionStatus GetSpeechPermissionStatus()
+            {
+                var status = SFSpeechRecognizer.AuthorizationStatus;
+                return status switch
+                {
+                    SFSpeechRecognizerAuthorizationStatus.Authorized => PermissionStatus.Granted,
+                    SFSpeechRecognizerAuthorizationStatus.Denied => PermissionStatus.Denied,
+                    SFSpeechRecognizerAuthorizationStatus.Restricted => PermissionStatus.Restricted,
+                    _ => PermissionStatus.Unknown,
+                };
+            }
+
+            internal static Task<PermissionStatus> RequestSpeechPermission()
+            {
+                if (!Platform.HasOSVersion(10, 0))
+                    return Task.FromResult(PermissionStatus.Unknown);
+
+                var tcs = new TaskCompletionSource<PermissionStatus>();
+
+                SFSpeechRecognizer.RequestAuthorization(s =>
+                {
+                    switch (s)
+                    {
+                        case SFSpeechRecognizerAuthorizationStatus.Authorized:
+                            tcs.TrySetResult(PermissionStatus.Granted);
+                            break;
+                        case SFSpeechRecognizerAuthorizationStatus.Denied:
+                            tcs.TrySetResult(PermissionStatus.Denied);
+                            break;
+                        case SFSpeechRecognizerAuthorizationStatus.Restricted:
+                            tcs.TrySetResult(PermissionStatus.Restricted);
+                            break;
+                        default:
+                            tcs.TrySetResult(PermissionStatus.Unknown);
+                            break;
+                    }
+                });
+
+                return tcs.Task;
             }
         }
     }
