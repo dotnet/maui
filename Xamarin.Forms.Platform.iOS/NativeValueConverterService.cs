@@ -14,6 +14,7 @@ using UIView = AppKit.NSView;
 namespace Xamarin.Forms.Platform.MacOS
 #endif
 {
+	[Preserve(AllMembers = true)]
 	class NativeValueConverterService : INativeValueConverterService
 	{
 		public bool ConvertTo(object value, Type toType, out object nativeValue)

@@ -1,11 +1,13 @@
 using System;
 using UIKit;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml.Internals;
 
 [assembly: Xamarin.Forms.Dependency(typeof(Xamarin.Forms.Platform.iOS.NativeBindingService))]
 
 namespace Xamarin.Forms.Platform.iOS
 {
+	[Preserve(AllMembers = true)]
 	class NativeBindingService : INativeBindingService
 	{
 		public bool TrySetBinding(object target, string propertyName, BindingBase binding)
