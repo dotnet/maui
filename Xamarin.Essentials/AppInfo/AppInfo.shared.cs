@@ -15,5 +15,7 @@ namespace Xamarin.Essentials
         public static string BuildString => PlatformGetBuild();
 
         public static void ShowSettingsUI() => PlatformShowSettingsUI();
+
+        public static AppTheme RequestedTheme => PlatformRequestedTheme();
     }
 }

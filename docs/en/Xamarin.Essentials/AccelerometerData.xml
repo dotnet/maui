@@ -21,7 +21,9 @@
   </Attributes>
   <Docs>
     <summary>Data representing the devies' three accelerometers.</summary>
-    <remarks></remarks>
+    <remarks>
+      <para />
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">

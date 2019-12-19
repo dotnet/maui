@@ -357,6 +357,28 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="KilogramsToPounds">
+      <MemberSignature Language="C#" Value="public static double KilogramsToPounds (double kilograms);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 KilogramsToPounds(float64 kilograms) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.KilogramsToPounds(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="kilograms" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="kilograms">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="KilometersToMiles">
       <MemberSignature Language="C#" Value="public static double KilometersToMiles (double kilometers);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 KilometersToMiles(float64 kilometers) cil managed" />
@@ -533,6 +555,50 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="PoundsToKilograms">
+      <MemberSignature Language="C#" Value="public static double PoundsToKilograms (double pounds);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 PoundsToKilograms(float64 pounds) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.PoundsToKilograms(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="pounds" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="pounds">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="PoundsToStones">
+      <MemberSignature Language="C#" Value="public static double PoundsToStones (double pounds);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 PoundsToStones(float64 pounds) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.PoundsToStones(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="pounds" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="pounds">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="RadiansPerSecondToDegreesPerSecond">
       <MemberSignature Language="C#" Value="public static double RadiansPerSecondToDegreesPerSecond (double radians);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 RadiansPerSecondToDegreesPerSecond(float64 radians) cil managed" />
@@ -594,6 +660,28 @@
       </Parameters>
       <Docs>
         <param name="radians">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="StonesToPounds">
+      <MemberSignature Language="C#" Value="public static double StonesToPounds (double stones);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 StonesToPounds(float64 stones) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.UnitConverters.StonesToPounds(System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="stones" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="stones">To be added.</param>
         <summary>To be added.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

@@ -9,7 +9,7 @@ variables:
   NETCORE_VERSION: '3.0.x'
   NETCORE_TEST_VERSION: '2.2.x'
   IOS_SIM_NAME: 'iPhone 11'
-  IOS_SIM_RUNTIME: 'com.apple.CoreSimulator.SimRuntime.iOS-13-1'
+  IOS_SIM_RUNTIME: 'com.apple.CoreSimulator.SimRuntime.iOS-13-2'
   ANDROID_EMU_TARGET: 'system-images;android-26;google_apis;x86'
   ANDROID_EMU_DEVICE: 'Nexus 5X'
   RunPoliCheck: 'false'
@@ -49,6 +49,13 @@ jobs:
           solution: Xamarin.Essentials/Xamarin.Essentials.csproj
           configuration: Release
           msbuildArguments: '/t:Pack /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
+#      - task: DotNetCoreCLI@2
+#        displayName: Publish to GitHub NuGet Packages
+#        condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))
+#        inputs:
+#          command: 'custom'
+#          custom: 'nuget'
+#          arguments: 'push --source https://nuget.pkg.github.com/xamarin/index.json --api-key $(GitHub.NuGet.Token) "$(Build.ArtifactStagingDirectory)\nuget\*.nupkg"'
       - task: DotNetCoreCLI@2
         displayName: Run Tests
         inputs:
@@ -261,4 +268,3 @@ jobs:
           inputs:
             artifactName: nuget-signed
             pathToPublish: '$(Build.ArtifactStagingDirectory)/signed'
-

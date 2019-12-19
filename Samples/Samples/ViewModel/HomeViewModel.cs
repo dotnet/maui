@@ -151,6 +151,12 @@ namespace Samples.ViewModel
                     "Retrieve orientation of the device in 3D space.",
                     new[] { "orientation", "sensors", "hardware", "device" }),
                 new SampleItem(
+                    "🔒",
+                    "Permissions",
+                    typeof(PermissionsPage),
+                    "Request various permissions.",
+                    new[] { "permissions" }),
+                new SampleItem(
                     "📞",
                     "Phone Dialer",
                     typeof(PhoneDialerPage),

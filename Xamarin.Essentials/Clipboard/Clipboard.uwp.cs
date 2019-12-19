@@ -26,5 +26,13 @@ namespace Xamarin.Essentials
                 ? clipboardContent.GetTextAsync().AsTask()
                 : Task.FromResult<string>(null);
         }
+
+        static void StartClipboardListeners()
+            => WindowsClipboard.ContentChanged += ClipboardChangedEventListener;
+
+        static void StopClipboardListeners()
+            => WindowsClipboard.ContentChanged -= ClipboardChangedEventListener;
+
+        static void ClipboardChangedEventListener(object sender, object val) => ClipboardChangedInternal();
     }
 }

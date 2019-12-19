@@ -70,7 +70,7 @@
           DependsOnTargets="_MDocSetup">
     <!-- bits for resolving references on Windows -->
     <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
-      <FrameworkReferenceAssemblyPath>$(DevEnvDir)\ReferenceAssemblies\Microsoft\Framework</FrameworkReferenceAssemblyPath>
+      <FrameworkReferenceAssemblyPath>$(VsInstallRoot)\Common7\IDE\ReferenceAssemblies\Microsoft\Framework</FrameworkReferenceAssemblyPath>
       <WindowsKitsReferenceAssemblyPath>$(MSBuildProgramFiles32)\Windows Kits\10\References\10.0.16299.0</WindowsKitsReferenceAssemblyPath>
     </PropertyGroup>
     <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
@@ -98,7 +98,7 @@
     <MakeDir Directories="$(TmpDir)" />
     <Copy SourceFiles="$(MDocDocumentationDirectory)\..\frameworks.xml" DestinationFolder="$(TmpDir)" />
     <Copy SourceFiles="$(BinConfigDir)netstandard2.0\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials" />
-    <Copy SourceFiles="$(BinConfigDir)monoandroid90\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-android" />
+    <Copy SourceFiles="$(BinConfigDir)monoandroid90\90\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-android" />
     <Copy SourceFiles="$(BinConfigDir)xamarin.ios10\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-ios" />
     <Copy SourceFiles="$(BinConfigDir)xamarin.tvos10\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-tvos" />
     <Copy SourceFiles="$(BinConfigDir)xamarin.watchos10\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-watchos" />

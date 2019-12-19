@@ -4,6 +4,7 @@ using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
+using Xamarin.Essentials;
 
 namespace Samples.UWP
 {
@@ -13,6 +14,13 @@ namespace Samples.UWP
         {
             InitializeComponent();
             Suspending += OnSuspending;
+
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                Console.WriteLine("Success!");
+            });
+
+            var test = DeviceInfo.DeviceType;
         }
 
         protected override void OnLaunched(LaunchActivatedEventArgs e)

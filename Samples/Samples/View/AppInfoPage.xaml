@@ -16,6 +16,7 @@
                 <Label Text="App Info:" FontAttributes="Bold" Margin="0,6,0,0" />
                 <Label Text="{Binding AppName, StringFormat='Name: {0}'}" />
                 <Label Text="{Binding AppPackageName, StringFormat='Package Name: {0}'}" />
+                <Label Text="{Binding AppTheme, StringFormat='Theme: {0}'}" />
 
                 <Label Text="Version Info:" FontAttributes="Bold" Margin="0,6,0,0" />
                 <Label Text="{Binding AppVersion, StringFormat='Version: {0}'}" />
