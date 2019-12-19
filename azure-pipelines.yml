@@ -268,4 +268,3 @@ jobs:
           inputs:
             artifactName: nuget-signed
             pathToPublish: '$(Build.ArtifactStagingDirectory)/signed'
-
