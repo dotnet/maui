@@ -1,3 +1,4 @@
+using Android.Content;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 
 namespace Xamarin.Forms.Platform.Android
@@ -11,9 +12,7 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			}
 
-			var iec = element as IElementConfiguration<VisualElement>;
-			var elevation = iec?.On<PlatformConfiguration.Android>().GetElevation();
-
+			var elevation = GetElevation(element, view.Context);
 			if (!elevation.HasValue)
 			{
 				return;
@@ -32,7 +31,7 @@ namespace Xamarin.Forms.Platform.Android
 			return view.Elevation;
 		}
 
-		internal static float? GetElevation(VisualElement element)
+		internal static float? GetElevation(VisualElement element, Context context)
 		{
 			if (element == null || !Forms.IsLollipopOrNewer)
 			{
@@ -42,7 +41,10 @@ namespace Xamarin.Forms.Platform.Android
 			var iec = element as IElementConfiguration<VisualElement>;
 			var elevation = iec?.On<PlatformConfiguration.Android>().GetElevation();
 
-			return elevation;
+			if (elevation == null)
+				return elevation;
+
+			return context.ToPixels(elevation.Value);
 		}
 	}
 }

@@ -82,10 +82,26 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		{
 			((IElementController)Button).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, hasFocus);
 		}
-
+	
 		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
 		{
-			return _buttonLayoutManager.GetDesiredSize(widthConstraint, heightConstraint);
+			if (_isDisposed)
+			{
+				return new SizeRequest();
+			}
+
+			var hint = Control.Hint;
+
+			if (!string.IsNullOrWhiteSpace(hint))
+			{
+				Control.Hint = string.Empty;
+			}
+
+			var result  = _buttonLayoutManager.GetDesiredSize(widthConstraint, heightConstraint);
+
+			Control.Hint = hint;
+
+			return result;
 		}
 
 		void IVisualElementRenderer.SetElement(VisualElement element)

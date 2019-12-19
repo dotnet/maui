@@ -8,6 +8,7 @@ parameters:
   preBuildSteps: []   # any steps to run before the build
   postBuildSteps: []  # any additional steps to run after the build
   slnPath : 'Xamarin.Forms.sln'
+  csprojPath : 'Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj'
   buildConfiguration : 'Debug'
   releaseBuildConfiguration : 'Release'
   buildPlatform : 'any cpu'
@@ -16,6 +17,8 @@ parameters:
   artifactsName: 'win_build'
   nunitTestAdapterFolder: 'packages/NUnitTestAdapter.AnyVersion/build/'
   nunitTestFolder: '$(build.sourcesdirectory)'
+  includeUwp: 'true'
+  includeNonUwp: 'true'
 
 jobs:
   - job: ${{ parameters.name }}
@@ -73,6 +76,15 @@ jobs:
         configuration: '$(BuildConfiguration)'
         msbuildArguments: ${{ parameters.msbuildExtraArguments }} /bl:$(Build.ArtifactStagingDirectory)\win-$(BuildConfiguration).binlog
 
+    - task: MSBuild@1
+      displayName: 'Embed XBF into PRI'
+      condition: eq(${{ parameters.includeUwp }}, 'true')
+      name: winbuild_pri_embed
+      inputs:
+        solution: ${{ parameters.csprojPath }}
+        configuration: '$(BuildConfiguration)'
+        msbuildArguments: ${{ parameters.msbuildExtraArguments }} /t:rebuild /p:DisableEmbeddedXbf=false /bl:$(Build.ArtifactStagingDirectory)\win-$(BuildConfiguration)-csproj.binlog
+  
     - task: VSTest@2
       displayName: 'Unit Tests'
       inputs:
@@ -84,11 +96,11 @@ jobs:
         codeCoverageEnabled: true
         testRunTitle: '$(BuildConfiguration)_UnitTests'
         configuration: '$(BuildConfiguration)'
-        vsTestVersion: '15.0'
         diagnosticsEnabled: true
 
     - task: CopyFiles@2
       displayName: 'Copy Files dlls'
+      condition: eq(${{ parameters.includeNonUwp }}, 'true')
       inputs:
         Contents: |
           Stubs/**/bin/**/*.dll
@@ -123,13 +135,6 @@ jobs:
           Xamarin.Forms.Material.Tizen/bin/$(BuildConfiguration)/**/*.dll
           Xamarin.Forms.Material.Tizen/bin/$(BuildConfiguration)/**/*.pdb
           Xamarin.Forms.Material.Tizen/bin/$(BuildConfiguration)/**/*.mdb
-          Xamarin.Forms.Platform.WP8/bin/$(BuildConfiguration)/**/*.dll
-          Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.pdb
-          Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.dll
-          Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.pri
-          Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.xr.xml
-          Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.xbf
-          Xamarin.Forms.Platform.UAP/Properties/Xamarin.Forms.Platform.UAP.rd.xml
           Xamarin.Forms.Platform.MacOS/bin/$(BuildConfiguration)/**/*.dll
           Xamarin.Forms.Platform.MacOS/bin/$(BuildConfiguration)/**/*.mdb
           Xamarin.Forms.Maps/bin/$(BuildConfiguration)/**/*.dll
@@ -138,11 +143,6 @@ jobs:
           Xamarin.Forms.Maps.Android/bin/$(BuildConfiguration)/**/*.dll
           Xamarin.Forms.Maps.iOS/bin/iPhoneSimulator/$(BuildConfiguration)/**/*.dll
           Xamarin.Forms.Maps.MacOS/bin/$(BuildConfiguration)/**/*.dll
-          Xamarin.Forms.Maps.WP8/bin/$(BuildConfiguration)/**/*.dll
-          Xamarin.Forms.Maps.UWP/bin/$(BuildConfiguration)/**/*.dll
-          Xamarin.Forms.Maps.UWP/bin/$(BuildConfiguration)/**/*.pdb
-          Xamarin.Forms.Maps.UWP/bin/$(BuildConfiguration)/**/*.pri
-          Xamarin.Forms.Maps.UWP/bin/$(BuildConfiguration)/**/*.xbf
           Xamarin.Forms.Pages/bin/$(BuildConfiguration)/**/*.dll
           Xamarin.Forms.Pages/bin/$(BuildConfiguration)/**/*.pdb
           Xamarin.Forms.Pages/bin/$(BuildConfiguration)/**/*.mdb
@@ -180,6 +180,23 @@ jobs:
           Microsoft.XamlStandard/bin/$(BuildConfiguration)/**/*.mdb
           Microsoft.XamlStandard/bin/$(BuildConfiguration)/**/*.pdb
           **/*.binlog
+
+        TargetFolder: ${{ parameters.artifactsTargetFolder }}
+
+    - task: CopyFiles@2
+      displayName: 'Copy UWP'
+      condition: eq(${{ parameters.includeUwp }}, 'true')
+      inputs:
+        Contents: |
+          Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.pdb
+          Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.pri
+          Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.xr.xml
+          Xamarin.Forms.Platform.UAP/Properties/Xamarin.Forms.Platform.UAP.rd.xml
+          Xamarin.Forms.Maps.UWP/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Maps.UWP/bin/$(BuildConfiguration)/**/*.pdb
+          Xamarin.Forms.Maps.UWP/bin/$(BuildConfiguration)/**/*.pri
+          Xamarin.Forms.Maps.UWP/bin/$(BuildConfiguration)/**/*.xbf
 
         TargetFolder: ${{ parameters.artifactsTargetFolder }}
 

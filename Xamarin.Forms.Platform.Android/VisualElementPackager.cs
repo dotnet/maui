@@ -177,7 +177,7 @@ namespace Xamarin.Forms.Platform.Android
 						if (Forms.IsLollipopOrNewer)
 						{
 							var elevation = ElevationHelper.GetElevation(r.View) ?? 0;
-							var elementElevation = ElevationHelper.GetElevation(element);
+							var elementElevation = ElevationHelper.GetElevation(element, r.View.Context);
 
 							if (elementElevation == null)
 							{
