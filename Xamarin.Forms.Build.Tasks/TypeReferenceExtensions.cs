@@ -182,29 +182,52 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public static bool InheritsFromOrImplements(this TypeReference typeRef, TypeReference baseClass)
 		{
-			if (TypeRefComparer.Default.Equals(typeRef, baseClass))
-				return true;
+			if (typeRef is GenericInstanceType genericInstance) {
+				if (baseClass is GenericInstanceType genericInstanceBaseClass &&
+						TypeRefComparer.Default.Equals(genericInstance.ElementType, genericInstanceBaseClass.ElementType)) {
+					foreach (var parameter in genericInstanceBaseClass.ElementType.ResolveCached().GenericParameters) {
+						var argument = genericInstance.GenericArguments[parameter.Position];
+						var baseClassArgument = genericInstanceBaseClass.GenericArguments[parameter.Position];
+
+						if (parameter.IsCovariant) {
+							if (!argument.InheritsFromOrImplements(baseClassArgument))
+								return false;
+						} else if (parameter.IsContravariant) {
+							if (!baseClassArgument.InheritsFromOrImplements(argument))
+								return false;
+						} else if (!TypeRefComparer.Default.Equals(argument, baseClassArgument)) {
+							return false;
+						}
+					}
+
+					return true;
+				}
+			}
+			else {
+				if (TypeRefComparer.Default.Equals(typeRef, baseClass))
+					return true;
+
+				if (typeRef.IsArray) {
+					var array = (ArrayType)typeRef;
+					var arrayType = typeRef.ResolveCached();
+					if (arrayInterfaces.Contains(baseClass.FullName))
+						return true;
+					if (array.IsVector &&  //generic interfaces are not implemented on multidimensional arrays
+						arrayGenericInterfaces.Contains(baseClass.ResolveCached().FullName) &&
+						baseClass.IsGenericInstance &&
+						TypeRefComparer.Default.Equals((baseClass as GenericInstanceType).GenericArguments[0], arrayType))
+						return true;
+					return baseClass.FullName == "System.Object";
+				}
+			}
 
 			if (typeRef.IsValueType)
 				return false;
 
-			if (typeRef.IsArray) {
-				var array = (ArrayType)typeRef;
-				var arrayType = typeRef.ResolveCached();
-				if (arrayInterfaces.Contains(baseClass.FullName))
-					return true;
-				if (array.IsVector &&  //generic interfaces are not implemented on multidimensional arrays
-				    arrayGenericInterfaces.Contains(baseClass.ResolveCached().FullName) &&
-					baseClass.IsGenericInstance &&
-					TypeRefComparer.Default.Equals((baseClass as GenericInstanceType).GenericArguments[0], arrayType))
-					return true;
-				return baseClass.FullName == "System.Object";
-			}
-
 			if (typeRef.FullName == "System.Object")
 				return false;
 			var typeDef = typeRef.ResolveCached();
-			if (typeDef.Interfaces.Any(ir => TypeRefComparer.Default.Equals(ir.InterfaceType.ResolveGenericParameters(typeRef), baseClass)))
+			if (typeDef.Interfaces.Any(ir => ir.InterfaceType.ResolveGenericParameters(typeRef).InheritsFromOrImplements(baseClass)))
 				return true;
 			if (typeDef.BaseType == null)
 				return false;
