@@ -12,5 +12,11 @@ namespace Xamarin.Essentials
 
         static Task<string> PlatformGetTextAsync()
             => throw ExceptionUtils.NotSupportedOrImplementedException;
+
+        static void StartClipboardListeners()
+            => throw ExceptionUtils.NotSupportedOrImplementedException;
+
+        static void StopClipboardListeners()
+            => throw ExceptionUtils.NotSupportedOrImplementedException;
     }
 }

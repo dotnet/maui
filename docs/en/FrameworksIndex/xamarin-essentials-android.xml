@@ -127,6 +127,7 @@
       <Member Id="F:Xamarin.Essentials.BrowserTitleMode.Show" />
     </Type>
     <Type Name="Xamarin.Essentials.Clipboard" Id="T:Xamarin.Essentials.Clipboard">
+      <Member Id="E:Xamarin.Essentials.Clipboard.ClipboardContentChanged" />
       <Member Id="M:Xamarin.Essentials.Clipboard.GetTextAsync" />
       <Member Id="M:Xamarin.Essentials.Clipboard.SetTextAsync(System.String)" />
       <Member Id="P:Xamarin.Essentials.Clipboard.HasText" />
