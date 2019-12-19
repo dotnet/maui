@@ -127,27 +127,68 @@ namespace Xamarin.Forms.Build.Tasks
 				if (split.Length > 2)
 					throw new ArgumentException();
 
-				string prefix, name;
-				if (split.Length == 2) {
-					prefix = split[0];
-					name = split[1];
-				}
-				else {
-					prefix = "";
-					name = split[0];
-				}
+				var (prefix, name) = ParseName(match);
 
 				var namespaceuri = nsResolver.LookupNamespace(prefix) ?? "";
 				if (!string.IsNullOrEmpty(prefix) && string.IsNullOrEmpty(namespaceuri))
 					throw new XamlParseException($"Undeclared xmlns prefix '{prefix}'", xmlLineInfo);
+
+				IList<XmlType> typeArguments = null;
+				var childnodes = new List<(XmlName, INode)>();
+				var contentname = new XmlName(null, null);
+
+				if (remaining.StartsWith("}", StringComparison.Ordinal))
+				{
+					remaining = remaining.Substring(1);
+				}
+				else
+				{
+					char next;
+					string piece;
+					while ((piece = GetNextPiece(serviceProvider, ref remaining, out next)) != null)
+					{
+						var parsed = ParseProperty(piece, serviceProvider, ref remaining, next != '=');
+						XmlName childname;
+
+						if (parsed.name == null)
+						{
+							childname = contentname;
+						}
+						else
+						{
+							var (propertyPrefix, propertyName) = ParseName(parsed.name);
+
+							childname = XamlParser.ParsePropertyName(new XmlName(
+								propertyPrefix == "" ? "" : nsResolver.LookupNamespace(propertyPrefix),
+								propertyName));
+
+							if (childname.NamespaceURI == null && childname.LocalName == null)
+								continue;
+						}
+
+						if (childname == XmlName.xTypeArguments)
+						{
+							typeArguments = TypeArgumentsParser.ParseExpression(parsed.strValue, nsResolver, xmlLineInfo);
+							childnodes.Add((childname, new ValueNode(typeArguments, nsResolver)));
+						}
+						else
+						{
+							var childnode = parsed.value as INode ?? new ValueNode(parsed.strValue, nsResolver);
+							childnodes.Add((childname, childnode));
+						}
+					}
+				}
+
 				//The order of lookup is to look for the Extension-suffixed class name first and then look for the class name without the Extension suffix.
 				XmlType type;
-				try {
-					type = new XmlType(namespaceuri, name + "Extension", null);
+				try
+				{
+					type = new XmlType(namespaceuri, name + "Extension", typeArguments);
 					type.GetTypeReference(contextProvider.Context.Module, null);
 				}
-				catch (XamlParseException) {
-					type = new XmlType(namespaceuri, name, null);
+				catch (XamlParseException)
+				{
+					type = new XmlType(namespaceuri, name, typeArguments);
 				}
 
 				if (type == null)
@@ -157,29 +198,17 @@ namespace Xamarin.Forms.Build.Tasks
 					? new ElementNode(type, "", nsResolver)
 					: new ElementNode(type, "", nsResolver, xmlLineInfo.LineNumber, xmlLineInfo.LinePosition);
 
-				if (remaining.StartsWith("}", StringComparison.Ordinal)) {
-					remaining = remaining.Substring(1);
-					return _node;
+				foreach (var (childname, childnode) in childnodes) {
+					if (childname == contentname) {
+						//ContentProperty
+						_node.CollectionItems.Add(childnode);
+					}
+					else {
+						_node.Properties[childname] = childnode;
+					}
 				}
-
-				string piece;
-				while ((piece = GetNextPiece(serviceProvider, ref remaining, out var next)) != null)
-					HandleProperty(piece, serviceProvider, ref remaining, next != '=');
 
 				return _node;
-			}
-
-			protected override void SetPropertyValue(string prop, string strValue, object value, IServiceProvider serviceProvider)
-			{
-				if (value == null && strValue == null)
-					throw new XamlParseException($"No value found for property '{prop}' in markup expression", serviceProvider);
-				var nsResolver = serviceProvider.GetService(typeof(IXmlNamespaceResolver)) as IXmlNamespaceResolver;
-				if (prop != null) {
-					var name = new XmlName(_node.NamespaceURI, prop);
-					_node.Properties[name] = value as INode ?? new ValueNode(strValue, nsResolver);
-				}
-				else //ContentProperty
-					_node.CollectionItems.Add(value as INode ?? new ValueNode(strValue, nsResolver));
 			}
 		}
 	}

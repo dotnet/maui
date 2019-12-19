@@ -196,6 +196,13 @@ namespace Xamarin.Forms.Xaml.Internals
 			return exception == null;
 		}
 
+		internal bool TryResolve(XmlType xmlType, out Type type)
+		{
+			XamlParseException exception;
+			type = getTypeFromXmlName(xmlType, null, currentAssembly, out exception);
+			return exception == null;
+		}
+
 		Type Resolve(string qualifiedTypeName, IServiceProvider serviceProvider, out XamlParseException exception)
 		{
 			exception = null;

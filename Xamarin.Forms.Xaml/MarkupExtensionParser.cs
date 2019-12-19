@@ -43,13 +43,15 @@ namespace Xamarin.Forms.Xaml
 				return markupExtension.ProvideValue(serviceProvider);
 
 			string piece;
-			while ((piece = GetNextPiece(serviceProvider, ref remaining, out char next)) != null)
-				HandleProperty(piece, serviceProvider, ref remaining, next != '=');
+			while ((piece = GetNextPiece(serviceProvider, ref remaining, out char next)) != null) {
+				var value = ParseProperty(piece, serviceProvider, ref remaining, next != '=');
+				SetPropertyValue(value.name, value.strValue, value.value, serviceProvider);
+			}
 
 			return markupExtension.ProvideValue(serviceProvider);
 		}
 
-		protected override void SetPropertyValue(string prop, string strValue, object value, IServiceProvider serviceProvider)
+		private void SetPropertyValue(string prop, string strValue, object value, IServiceProvider serviceProvider)
 		{
 			MethodInfo setter;
 			if (prop == null) {

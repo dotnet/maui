@@ -219,64 +219,66 @@ namespace Xamarin.Forms.Xaml
 				var namespaceUri = reader.NamespaceURI;
 				if (reader.LocalName.Contains(".") && namespaceUri == "")
 					namespaceUri = ((IXmlNamespaceResolver)reader).LookupNamespace("");
-				var propertyName = new XmlName(namespaceUri, reader.LocalName);
+				var propertyName = ParsePropertyName(new XmlName(namespaceUri, reader.LocalName));
+
+				if (propertyName.NamespaceURI == null && propertyName.LocalName == null)
+					continue;
 
 				object value = reader.Value;
 
-				if (reader.NamespaceURI == X2006Uri)
-				{
-					switch (reader.LocalName) {
-					case "Key":
-						propertyName = XmlName.xKey;
-						break;
-					case "Name":
-						propertyName = XmlName.xName;
-						break;
-					case "Class":
-					case "FieldModifier":
-						continue;
-					default:
-						Debug.WriteLine("Unhandled attribute {0}", reader.Name);
-						continue;
-					}
-                }
-
-				if (reader.NamespaceURI == X2009Uri)
-				{
-					switch (reader.LocalName) {
-					case "Key":
-						propertyName = XmlName.xKey;
-						break;
-					case "Name":
-						propertyName = XmlName.xName;
-						break;
-					case "TypeArguments":
-						propertyName = XmlName.xTypeArguments;
-						value = TypeArgumentsParser.ParseExpression((string)value, (IXmlNamespaceResolver)reader, (IXmlLineInfo)reader);
-						break;
-					case "DataType":
-						propertyName = XmlName.xDataType;
-						break;
-					case "Class":
-					case "FieldModifier":
-						continue;
-					case "FactoryMethod":
-						propertyName = XmlName.xFactoryMethod;
-						break;
-					case "Arguments":
-						propertyName = XmlName.xArguments;
-						break;
-					default:
-						Debug.WriteLine("Unhandled attribute {0}", reader.Name);
-						continue;
-					}
-				}
+				if (propertyName == XmlName.xTypeArguments)
+					value = TypeArgumentsParser.ParseExpression((string)value, (IXmlNamespaceResolver)reader, (IXmlLineInfo)reader);
 
 				var propertyNode = GetValueNode(value, reader);
 				attributes.Add(new KeyValuePair<XmlName, INode>(propertyName, propertyNode));
 			}
 			reader.MoveToElement();
 			return attributes;
+		}
+
+		public static XmlName ParsePropertyName(XmlName name)
+		{
+			if (name.NamespaceURI == X2006Uri)
+			{
+				switch (name.LocalName) {
+				case "Key":
+					return XmlName.xKey;
+				case "Name":
+					return XmlName.xName;
+				case "Class":
+				case "FieldModifier":
+					return new XmlName(null, null);
+				default:
+					Debug.WriteLine("Unhandled attribute {0}", name);
+					return new XmlName(null, null);
+				}
+            }
+
+			if (name.NamespaceURI == X2009Uri)
+			{
+				switch (name.LocalName) {
+				case "Key":
+					return XmlName.xKey;
+				case "Name":
+					return XmlName.xName;
+				case "TypeArguments":
+					return XmlName.xTypeArguments;
+				case "DataType":
+					return XmlName.xDataType;
+				case "Class":
+				case "FieldModifier":
+					return new XmlName(null, null);
+				case "FactoryMethod":
+					return XmlName.xFactoryMethod;
+				case "Arguments":
+					return XmlName.xArguments;
+				default:
+					Debug.WriteLine("Unhandled attribute {0}", name);
+					return new XmlName(null, null);
+				}
+			}
+
+			return name;
 		}
 
 		static IList<string> PrefixesToIgnore(IList<KeyValuePair<string, string>> xmlns)

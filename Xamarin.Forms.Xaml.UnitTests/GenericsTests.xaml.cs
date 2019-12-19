@@ -9,6 +9,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public partial class GenericsTests : ContentPage
 	{
+		public List<string> P { get; set; }
+
 		public GenericsTests ()
 		{
 			InitializeComponent ();
@@ -71,6 +73,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void TestGenericParsing (bool useCompiledXaml)
 			{
 				var layout = new GenericsTests (useCompiledXaml);
+
+				Assert.NotNull (layout.P);
+
 				var list = layout.Resources ["list"];
 				Assert.NotNull (list);
 				Assert.That (list, Is.TypeOf<List<String>> ());
