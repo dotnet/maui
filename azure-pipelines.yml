@@ -55,7 +55,7 @@ jobs:
         inputs:
           command: 'custom'
           custom: 'nuget'
-          arguments: 'push --source https://nuget.pkg.github.com/xamarin/index.json --api-key $(GitHub.Token) "$(Build.ArtifactStagingDirectory)/nuget/*.nupkg"'
+          arguments: 'push --source https://nuget.pkg.github.com/xamarin/index.json --api-key $(GitHub.Token) "$(Build.ArtifactStagingDirectory)\nuget\*.nupkg"'
       - task: DotNetCoreCLI@2
         displayName: Run Tests
         inputs:
