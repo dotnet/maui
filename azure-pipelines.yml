@@ -49,14 +49,13 @@ jobs:
           solution: Xamarin.Essentials/Xamarin.Essentials.csproj
           configuration: Release
           msbuildArguments: '/t:Pack /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
-      - task: NuGetCommand@2
+      - task: DotNetCoreCLI@2
         displayName: Publish to GitHub NuGet Packages
         condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))
         inputs:
-          command: 'push'
-          packagesToPush: '$(Build.ArtifactStagingDirectory)/nuget/*.nupkg;!$(Build.ArtifactStagingDirectory)/nuget/*.symbols.nupkg'
-          nuGetFeedType: 'external'
-          publishFeedCredentials: 'Xamarin - GitHub NuGet'
+          command: 'custom'
+          custom: 'nuget push'
+          arguments: '--source https://nuget.pkg.github.com/xamarin/index.json --api-key $(GitHub.Token)'
       - task: DotNetCoreCLI@2
         displayName: Run Tests
         inputs:
