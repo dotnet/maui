@@ -1,10 +1,19 @@
-﻿using System;
+﻿#if __IOS__
+using CoreTelephony;
+#endif
+using System;
 using System.Collections.Generic;
 
 namespace Xamarin.Essentials
 {
     public static partial class Connectivity
     {
+#if __IOS__
+        static readonly Lazy<CTCellularData> cellularData = new Lazy<CTCellularData>(() => new CTCellularData());
+
+        internal static CTCellularData CellularData => cellularData.Value;
+#endif
+
         static ReachabilityListener listener;
 
         static void StartListeners()
@@ -27,12 +36,16 @@ namespace Xamarin.Essentials
         {
             get
             {
+                var restricted = false;
+#if __IOS__
+                restricted = CellularData.RestrictedState == CTCellularDataRestrictedState.Restricted;
+#endif
                 var internetStatus = Reachability.InternetConnectionStatus();
-                if (internetStatus == NetworkStatus.ReachableViaCarrierDataNetwork || internetStatus == NetworkStatus.ReachableViaWiFiNetwork)
+                if ((internetStatus == NetworkStatus.ReachableViaCarrierDataNetwork && !restricted) || internetStatus == NetworkStatus.ReachableViaWiFiNetwork)
                     return NetworkAccess.Internet;
 
                 var remoteHostStatus = Reachability.RemoteHostStatus();
-                if (remoteHostStatus == NetworkStatus.ReachableViaCarrierDataNetwork || remoteHostStatus == NetworkStatus.ReachableViaWiFiNetwork)
+                if ((remoteHostStatus == NetworkStatus.ReachableViaCarrierDataNetwork && !restricted) || remoteHostStatus == NetworkStatus.ReachableViaWiFiNetwork)
                     return NetworkAccess.Internet;
 
                 return NetworkAccess.None;

@@ -66,7 +66,7 @@
         public static bool HasFlash =>
 #if __ANDROID__
             // TODO: android emulates the lamp, I think...
-            true;
+            Xamarin.Essentials.Platform.HasSystemFeature(Android.Content.PM.PackageManager.FeatureCameraFlash);
 #elif __IOS__
             // all iOS devices (and only devices) have a camera
             Xamarin.Essentials.DeviceInfo.DeviceType == Xamarin.Essentials.DeviceType.Physical;

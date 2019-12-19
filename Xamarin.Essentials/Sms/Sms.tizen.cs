@@ -10,7 +10,7 @@ namespace Xamarin.Essentials
 
         static Task PlatformComposeAsync(SmsMessage message)
         {
-            Permissions.EnsureDeclared(PermissionType.LaunchApp);
+            Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
             var appControl = new AppControl
             {

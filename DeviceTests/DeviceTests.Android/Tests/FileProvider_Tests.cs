@@ -31,7 +31,7 @@ namespace DeviceTests.Shared
 
             var intentChooser = Android.Content.Intent.CreateChooser(intent, "Pick something");
 
-            Platform.AppContext.StartActivity(intentChooser);
+            Platform.CurrentActivity.StartActivity(intentChooser);
         }
 
         [Theory]

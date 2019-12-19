@@ -81,10 +81,10 @@ namespace Xamarin.Essentials
         public double PressureInHectopascals { get; }
 
         public static bool operator ==(BarometerData left, BarometerData right) =>
-            Equals(left, right);
+            left.Equals(right);
 
         public static bool operator !=(BarometerData left, BarometerData right) =>
-            !Equals(left, right);
+            !left.Equals(right);
 
         public override bool Equals(object obj) =>
             (obj is BarometerData data) && Equals(data);

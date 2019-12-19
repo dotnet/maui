@@ -44,7 +44,15 @@ namespace Xamarin.Essentials
             // Check to see if we are >= API Level 19 (KitKat) since we don't need to declare the permission on these API levels to save to the external cache/storage
             // If we're not on 19 or higher we do need to check for permissions, but if we aren't limiting to external only, don't throw an exception if the
             // permission wasn't declared because we can always fall back to internal cache
-            var hasPermission = Platform.HasApiLevel(BuildVersionCodes.Kitkat) || Permissions.EnsureDeclared(PermissionType.WriteExternalStorage, externalOnly);
+            var hasPermission = Platform.HasApiLevel(BuildVersionCodes.Kitkat);
+
+            if (!hasPermission)
+            {
+                hasPermission = Permissions.IsDeclaredInManifest(global::Android.Manifest.Permission.WriteExternalStorage);
+
+                if (!hasPermission && externalOnly)
+                    throw new PermissionException("Cannot access external storage, the explicitly chosen FileProviderLocation.");
+            }
 
             // make sure the external storage is available
             var hasExternalMedia = Platform.HasApiLevel(BuildVersionCodes.Lollipop)
@@ -78,7 +86,13 @@ namespace Xamarin.Essentials
             // the shared paths from the "xamarin_essentials_fileprovider_file_paths.xml" resource
             var publicLocations = new List<string>
             {
+#if __ANDROID_29__
+                Platform.AppContext.GetExternalFilesDir(null).CanonicalPath,
+#else
+                #pragma warning disable CS0618 // Type or member is obsolete
                 AndroidEnvironment.ExternalStorageDirectory.CanonicalPath,
+                #pragma warning restore CS0618 // Type or member is obsolete
+#endif
                 Platform.AppContext.ExternalCacheDir.CanonicalPath
             };
 

@@ -93,10 +93,10 @@ namespace Xamarin.Essentials
             AngularVelocity.Equals(other.AngularVelocity);
 
         public static bool operator ==(GyroscopeData left, GyroscopeData right) =>
-          Equals(left, right);
+          left.Equals(right);
 
         public static bool operator !=(GyroscopeData left, GyroscopeData right) =>
-           !Equals(left, right);
+           !left.Equals(right);
 
         public override int GetHashCode() =>
             AngularVelocity.GetHashCode();

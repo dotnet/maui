@@ -68,7 +68,7 @@
       </Parameters>
       <Docs>
         <param name="filename">the name of the file to load from the app package.</param>
-        <summary>Opens a stream to a file contained withing the app package.</summary>
+        <summary>Opens a stream to a file contained within the app package.</summary>
         <returns>Returns a stream to the file.</returns>
         <remarks></remarks>
       </Docs>

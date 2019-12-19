@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 #endif
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Xamarin.Essentials
 {
@@ -47,6 +48,14 @@ namespace Xamarin.Essentials
 
             // our Cancel method will handle the actual cancellation logic
             return cancelTokenSrc.Token;
+        }
+
+        internal static async Task<T> WithTimeout<T>(Task<T> task, TimeSpan timeSpan)
+        {
+            var retTask = await Task.WhenAny(task, Task.Delay(timeSpan))
+                .ConfigureAwait(false);
+
+            return retTask is Task<T> ? task.Result : default(T);
         }
     }
 }

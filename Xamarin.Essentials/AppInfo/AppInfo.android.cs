@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using Android.Content;
 using Android.Content.PM;
+using Android.Content.Res;
 
 namespace Xamarin.Essentials
 {
@@ -47,6 +48,16 @@ namespace Xamarin.Essentials
             settingsIntent.AddFlags(ActivityFlags.NoHistory);
             settingsIntent.AddFlags(ActivityFlags.ExcludeFromRecents);
             context.StartActivity(settingsIntent);
+        }
+
+        static AppTheme PlatformRequestedTheme()
+        {
+            return (Platform.AppContext.Resources.Configuration.UiMode & UiMode.NightMask) switch
+            {
+                UiMode.NightYes => AppTheme.Dark,
+                UiMode.NightNo => AppTheme.Light,
+                _ => AppTheme.Unspecified
+            };
         }
     }
 }

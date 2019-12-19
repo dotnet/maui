@@ -89,10 +89,10 @@ namespace Xamarin.Essentials
             HeadingMagneticNorth.Equals(other.HeadingMagneticNorth);
 
         public static bool operator ==(CompassData left, CompassData right) =>
-            Equals(left, right);
+            left.Equals(right);
 
         public static bool operator !=(CompassData left, CompassData right) =>
-           !Equals(left, right);
+           !left.Equals(right);
 
         public override int GetHashCode() =>
             HeadingMagneticNorth.GetHashCode();

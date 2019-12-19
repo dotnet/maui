@@ -12,6 +12,10 @@ namespace Xamarin.Essentials
         const double milesToMeters = 1609.344;
         const double kilometersToMiles = 1.0 / milesToKilometers;
         const double celsiusToKelvin = 273.15;
+        const double poundsToKg = 0.45359237;
+        const double poundsToStones = 0.07142857;
+        const double stonesToPounds = 14;
+        const double kgToPounds = 2.204623;
 
         const double meanEarthRadiusInKilometers = 6371.0;
 
@@ -44,6 +48,18 @@ namespace Xamarin.Essentials
 
         public static double RadiansToDegrees(double radians) =>
             radians / degreesToRadians;
+
+        public static double PoundsToKilograms(double pounds) =>
+            pounds * poundsToKg;
+
+        public static double PoundsToStones(double pounds) =>
+            pounds * poundsToStones;
+
+        public static double StonesToPounds(double stones) =>
+           stones * stonesToPounds;
+
+        public static double KilogramsToPounds(double kilograms) =>
+            kilograms * kgToPounds;
 
         public static double DegreesPerSecondToRadiansPerSecond(double degrees) =>
             HertzToRadiansPerSecond(DegreesPerSecondToHertz(degrees));
