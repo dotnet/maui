@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -61,12 +62,16 @@ namespace Xamarin.Essentials
             });
     }
 
-    public partial class PickerResultBase
+    public partial class FilePickerResult
     {
         readonly string fullPath;
 
-        internal PickerResultBase(IList<string> list)
+        internal FilePickerResult(IList<string> list)
+            : base()
         {
+            if (list == null || list.Count <= 0)
+                throw new ArgumentNullException(nameof(list));
+
             if (list != null)
             {
                 foreach (var path in list)
@@ -87,14 +92,6 @@ namespace Xamarin.Essentials
 
             var stream = File.Open(fullPath, FileMode.Open, FileAccess.Read);
             return Task.FromResult<Stream>(stream).Result;
-        }
-    }
-
-    public partial class FilePickerResult
-    {
-        internal FilePickerResult(IList<string> list)
-            : base(list)
-        {
         }
     }
 }

@@ -94,23 +94,23 @@ namespace Xamarin.Essentials
             });
     }
 
-    public partial class PickerResultBase
+    public partial class FilePickerResult
     {
-        readonly Stream fileStream;
-        readonly string fullPath;
+        Stream fileStream;
 
-        internal PickerResultBase(NSUrl url)
+        internal FilePickerResult(NSUrl url)
+            : base()
         {
             url.StartAccessingSecurityScopedResource();
 
             var doc = new UIDocument(url);
-            fullPath = doc.FileUrl?.Path;
-            FileName = doc.LocalizedName ?? Path.GetFileName(fullPath);
+            FullPath = doc.FileUrl?.Path;
+            FileName = doc.LocalizedName ?? Path.GetFileName(FullPath);
 
             url.StopAccessingSecurityScopedResource();
 
             // immediately open a file stream, in case iOS cleans up the picked file
-            fileStream = File.OpenRead(fullPath);
+            fileStream = File.OpenRead(FullPath);
         }
 
         Task<Stream> PlatformOpenReadStreamAsync()
@@ -119,14 +119,6 @@ namespace Xamarin.Essentials
             fileStream.Seek(0, SeekOrigin.Begin);
 
             return Task.FromResult(fileStream);
-        }
-    }
-
-    public partial class FilePickerResult
-    {
-        internal FilePickerResult(NSUrl url)
-            : base(url)
-        {
         }
     }
 }

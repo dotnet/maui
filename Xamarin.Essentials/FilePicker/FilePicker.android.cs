@@ -56,17 +56,16 @@ namespace Xamarin.Essentials
             });
     }
 
-    public partial class PickerResultBase
+    public partial class FilePickerResult
     {
-        readonly global::Android.Net.Uri contentUri;
-        readonly string fullPath;
-
-        internal PickerResultBase(global::Android.Net.Uri contentUri)
+        internal FilePickerResult(global::Android.Net.Uri contentUri)
+            : base(GetFullPath(contentUri))
         {
             this.contentUri = contentUri;
-            fullPath = GetFullPath(contentUri);
             FileName = GetFileName(contentUri);
         }
+
+        readonly global::Android.Net.Uri contentUri;
 
         static string GetFullPath(global::Android.Net.Uri contentUri)
         {
@@ -118,16 +117,8 @@ namespace Xamarin.Essentials
                 return Task.FromResult(content);
             }
 
-            var stream = File.OpenRead(fullPath);
+            var stream = File.OpenRead(FullPath);
             return Task.FromResult<Stream>(stream);
-        }
-    }
-
-    public partial class FilePickerResult
-    {
-        internal FilePickerResult(global::Android.Net.Uri contentUri)
-            : base(contentUri)
-        {
         }
     }
 }

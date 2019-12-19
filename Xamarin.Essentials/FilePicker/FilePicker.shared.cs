@@ -58,15 +58,9 @@ namespace Xamarin.Essentials
         public FilePickerFileType FileTypes { get; set; }
     }
 
-    public abstract partial class PickerResultBase
+    public partial class FilePickerResult : FileBase
     {
-        public string FileName { get; set; }
-
         public Task<Stream> OpenReadStreamAsync()
             => PlatformOpenReadStreamAsync();
-    }
-
-    public partial class FilePickerResult : PickerResultBase
-    {
     }
 }

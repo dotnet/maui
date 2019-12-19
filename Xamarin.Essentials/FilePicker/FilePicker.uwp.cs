@@ -65,30 +65,21 @@ namespace Xamarin.Essentials
             });
     }
 
-    public partial class PickerResultBase
-    {
-        readonly IStorageFile storageFile;
-
-        internal PickerResultBase(IStorageFile storageFile)
-        {
-            this.storageFile = storageFile;
-            FileName = storageFile.Name;
-        }
-
-        Task<Stream> PlatformOpenReadStreamAsync()
-        {
-            // we can make this assumption because
-            // the only way to construct this object
-            // is with an IStorageFile
-            return storageFile.OpenStreamForReadAsync();
-        }
-    }
-
     public partial class FilePickerResult
     {
         internal FilePickerResult(IStorageFile storageFile)
             : base(storageFile)
         {
+            this.storageFile = storageFile;
+            FileName = storageFile.Name;
         }
+
+        readonly IStorageFile storageFile;
+
+        // we can make this assumption because
+        // the only way to construct this object
+        // is with an IStorageFile
+        Task<Stream> PlatformOpenReadStreamAsync()
+            => storageFile.OpenStreamForReadAsync();
     }
 }

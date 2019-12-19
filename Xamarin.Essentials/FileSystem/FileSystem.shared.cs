@@ -22,6 +22,11 @@ namespace Xamarin.Essentials
 
         string contentType;
 
+        // The caller must setup FullPath at least!!!
+        internal FileBase()
+        {
+        }
+
         internal FileBase(string fullPath)
         {
             if (fullPath == null)
@@ -49,7 +54,7 @@ namespace Xamarin.Essentials
             ContentType = contentType;
         }
 
-        public string FullPath { get; }
+        public string FullPath { get; internal set; }
 
         public string ContentType
         {

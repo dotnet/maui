@@ -18,20 +18,9 @@ namespace Xamarin.Essentials
             => throw new NotImplementedInReferenceAssemblyException();
     }
 
-    public partial class PickerResultBase
-    {
-        internal PickerResultBase()
-        {
-        }
-
-        Task<Stream> PlatformOpenReadStreamAsync()
-            => throw new NotImplementedInReferenceAssemblyException();
-    }
-
     public partial class FilePickerResult
     {
-        internal FilePickerResult()
-        {
-        }
+        Task<Stream> PlatformOpenReadStreamAsync()
+            => throw new NotImplementedInReferenceAssemblyException();
     }
 }
