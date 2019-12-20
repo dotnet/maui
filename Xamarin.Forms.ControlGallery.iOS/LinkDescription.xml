@@ -2,6 +2,9 @@
 <linker>
   <assembly fullname="XamarinFormsControlGalleryiOS">
     <namespace fullname="Xamarin.Forms.ControlGallery.iOS.Tests" />
+    <type fullname="*Renderer" />
+    <type fullname="*Effect" />
+    <type fullname="*Service" />
   </assembly>
   <assembly fullname="Xamarin.Forms.Controls">
     <namespace fullname="Xamarin.Forms.Controls.Tests" />
