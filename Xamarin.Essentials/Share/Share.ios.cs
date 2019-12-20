@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Threading.Tasks;
 using Foundation;
 using UIKit;
@@ -27,6 +28,9 @@ namespace Xamarin.Essentials
             if (activityController.PopoverPresentationController != null)
             {
                 activityController.PopoverPresentationController.SourceView = vc.View;
+
+                if (request.PresentationSourceBounds != Rectangle.Empty)
+                    activityController.PopoverPresentationController.SourceRect = request.PresentationSourceBounds.ToPlatformRectangle();
             }
 
             return vc.PresentViewControllerAsync(activityController, true);
@@ -49,6 +53,9 @@ namespace Xamarin.Essentials
             if (activityController.PopoverPresentationController != null)
             {
                 activityController.PopoverPresentationController.SourceView = vc.View;
+
+                if (request.PresentationSourceBounds != Rectangle.Empty)
+                    activityController.PopoverPresentationController.SourceRect = request.PresentationSourceBounds.ToPlatformRectangle();
             }
 
             return vc.PresentViewControllerAsync(activityController, true);

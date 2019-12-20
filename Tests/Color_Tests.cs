@@ -65,12 +65,12 @@ namespace Tests
         [InlineData("#00FF00", "#FF00FF")] // Green & Fuschia
         [InlineData("#0000FF", "#FFFF00")] // Blue & Yellow
         [InlineData("#0AF56C", "#F50A93")] // Lime green & bright purple (but with no limit values)
-        public void GetCompliment(string original, string expected)
+        public void GetComplementary(string original, string expected)
         {
             var orig = ColorConverters.FromHex(original);
-            var expectedCompliment = ColorConverters.FromHex(expected);
+            var expectedComplement = ColorConverters.FromHex(expected);
 
-            Assert.Equal(expectedCompliment, ColorConverters.GetCompliment(orig));
+            Assert.Equal(expectedComplement, ColorConverters.GetComplementary(orig));
         }
 
         [Fact]

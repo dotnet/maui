@@ -11,7 +11,7 @@ namespace Xamarin.Essentials
 
         static Task PlatformOpenAsync(Uri uri)
         {
-            Permissions.EnsureDeclared(PermissionType.LaunchApp);
+            Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
             var appControl = new AppControl
             {
@@ -40,7 +40,7 @@ namespace Xamarin.Essentials
             if (string.IsNullOrEmpty(request.File.FullPath))
                 throw new ArgumentNullException(nameof(request.File.FullPath));
 
-            Permissions.EnsureDeclared(PermissionType.LaunchApp);
+            Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
             var appControl = new AppControl
             {

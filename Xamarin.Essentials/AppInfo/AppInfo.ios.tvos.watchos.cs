@@ -23,5 +23,23 @@ namespace Xamarin.Essentials
         static void PlatformShowSettingsUI() =>
             throw new FeatureNotSupportedException();
 #endif
+
+#if __IOS__ || __TVOS__
+        static AppTheme PlatformRequestedTheme()
+        {
+            if (!Platform.HasOSVersion(13, 0))
+                return AppTheme.Unspecified;
+
+            return Platform.GetCurrentViewController().TraitCollection.UserInterfaceStyle switch
+            {
+                UIUserInterfaceStyle.Light => AppTheme.Light,
+                UIUserInterfaceStyle.Dark => AppTheme.Dark,
+                _ => AppTheme.Unspecified
+            };
+        }
+#else
+        static AppTheme PlatformRequestedTheme() =>
+            AppTheme.Unspecified;
+#endif
     }
 }

@@ -1,6 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+#if !NETSTANDARD1_0
+using System.Drawing;
+#endif
 
 namespace Xamarin.Essentials
 {
@@ -21,7 +24,16 @@ namespace Xamarin.Essentials
         }
     }
 
-    public class ShareTextRequest
+    public abstract class ShareRequestBase
+    {
+        public string Title { get; set; }
+
+#if !NETSTANDARD1_0
+        public Rectangle PresentationSourceBounds { get; set; } = Rectangle.Empty;
+#endif
+    }
+
+    public class ShareTextRequest : ShareRequestBase
     {
         public ShareTextRequest()
         {
@@ -32,8 +44,6 @@ namespace Xamarin.Essentials
         public ShareTextRequest(string text, string title)
             : this(text) => Title = title;
 
-        public string Title { get; set; }
-
         public string Subject { get; set; }
 
         public string Text { get; set; }
@@ -41,7 +51,7 @@ namespace Xamarin.Essentials
         public string Uri { get; set; }
     }
 
-    public class ShareFileRequest
+    public class ShareFileRequest : ShareRequestBase
     {
         public ShareFileRequest()
         {
@@ -68,8 +78,6 @@ namespace Xamarin.Essentials
         {
             File = new ShareFile(file);
         }
-
-        public string Title { get; set; }
 
         public ShareFile File { get; set; }
     }

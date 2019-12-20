@@ -71,6 +71,24 @@
         <remarks>On android and iOS, this is the application package name. On UWP, this is the application GUID.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="RequestedTheme">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.AppTheme RequestedTheme { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.AppTheme RequestedTheme" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.AppInfo.RequestedTheme" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.AppTheme</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the detected Theme of the system or application.</summary>
+        <value>The Theme.</value>
+        <remarks>For platforms or platform versions which aren't supported, Unspecified is returned.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="ShowSettingsUI">
       <MemberSignature Language="C#" Value="public static void ShowSettingsUI ();" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void ShowSettingsUI() cil managed" />

@@ -108,6 +108,7 @@
       <Type Name="ActivityState" Kind="Enumeration" />
       <Type Name="ActivityStateChangedEventArgs" Kind="Class" />
       <Type Name="AppInfo" Kind="Class" />
+      <Type Name="AppTheme" Kind="Enumeration" />
       <Type Name="Barometer" Kind="Class" />
       <Type Name="BarometerChangedEventArgs" Kind="Class" />
       <Type Name="BarometerData" Kind="Structure" />
@@ -192,6 +193,7 @@
       <Type Name="Share" Kind="Class" />
       <Type Name="ShareFile" Kind="Class" />
       <Type Name="ShareFileRequest" Kind="Class" />
+      <Type Name="ShareRequestBase" Kind="Class" />
       <Type Name="ShareTextRequest" Kind="Class" />
       <Type Name="SizeExtensions" Kind="Class" />
       <Type Name="Sms" Kind="Class" />

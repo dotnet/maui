@@ -70,7 +70,7 @@
           DependsOnTargets="_MDocSetup">
     <!-- bits for resolving references on Windows -->
     <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
-      <FrameworkReferenceAssemblyPath>$(DevEnvDir)\ReferenceAssemblies\Microsoft\Framework</FrameworkReferenceAssemblyPath>
+      <FrameworkReferenceAssemblyPath>$(VsInstallRoot)\Common7\IDE\ReferenceAssemblies\Microsoft\Framework</FrameworkReferenceAssemblyPath>
       <WindowsKitsReferenceAssemblyPath>$(MSBuildProgramFiles32)\Windows Kits\10\References\10.0.16299.0</WindowsKitsReferenceAssemblyPath>
     </PropertyGroup>
     <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">

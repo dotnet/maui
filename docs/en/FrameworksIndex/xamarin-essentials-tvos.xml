@@ -30,8 +30,14 @@
       <Member Id="P:Xamarin.Essentials.AppInfo.BuildString" />
       <Member Id="P:Xamarin.Essentials.AppInfo.Name" />
       <Member Id="P:Xamarin.Essentials.AppInfo.PackageName" />
+      <Member Id="P:Xamarin.Essentials.AppInfo.RequestedTheme" />
       <Member Id="P:Xamarin.Essentials.AppInfo.Version" />
       <Member Id="P:Xamarin.Essentials.AppInfo.VersionString" />
+    </Type>
+    <Type Name="Xamarin.Essentials.AppTheme" Id="T:Xamarin.Essentials.AppTheme">
+      <Member Id="F:Xamarin.Essentials.AppTheme.Dark" />
+      <Member Id="F:Xamarin.Essentials.AppTheme.Light" />
+      <Member Id="F:Xamarin.Essentials.AppTheme.Unspecified" />
     </Type>
     <Type Name="Xamarin.Essentials.Barometer" Id="T:Xamarin.Essentials.Barometer">
       <Member Id="E:Xamarin.Essentials.Barometer.ReadingChanged" />
@@ -117,7 +123,7 @@
       <Member Id="M:Xamarin.Essentials.ColorConverters.FromHsl(System.Single,System.Single,System.Single)" />
       <Member Id="M:Xamarin.Essentials.ColorConverters.FromHsla(System.Single,System.Single,System.Single,System.Int32)" />
       <Member Id="M:Xamarin.Essentials.ColorConverters.FromUInt(System.UInt32)" />
-      <Member Id="M:Xamarin.Essentials.ColorConverters.GetCompliment(System.Drawing.Color)" />
+      <Member Id="M:Xamarin.Essentials.ColorConverters.GetComplementary(System.Drawing.Color)" />
     </Type>
     <Type Name="Xamarin.Essentials.ColorExtensions" Id="T:Xamarin.Essentials.ColorExtensions">
       <Member Id="M:Xamarin.Essentials.ColorExtensions.AddLuminosity(System.Drawing.Color,System.Single)" />
@@ -617,7 +623,11 @@
       <Member Id="M:Xamarin.Essentials.ShareFileRequest.#ctor(Xamarin.Essentials.FileBase)" />
       <Member Id="M:Xamarin.Essentials.ShareFileRequest.#ctor(Xamarin.Essentials.ShareFile)" />
       <Member Id="P:Xamarin.Essentials.ShareFileRequest.File" />
-      <Member Id="P:Xamarin.Essentials.ShareFileRequest.Title" />
+    </Type>
+    <Type Name="Xamarin.Essentials.ShareRequestBase" Id="T:Xamarin.Essentials.ShareRequestBase">
+      <Member Id="M:Xamarin.Essentials.ShareRequestBase.#ctor" />
+      <Member Id="P:Xamarin.Essentials.ShareRequestBase.PresentationSourceBounds" />
+      <Member Id="P:Xamarin.Essentials.ShareRequestBase.Title" />
     </Type>
     <Type Name="Xamarin.Essentials.ShareTextRequest" Id="T:Xamarin.Essentials.ShareTextRequest">
       <Member Id="M:Xamarin.Essentials.ShareTextRequest.#ctor" />
@@ -625,7 +635,6 @@
       <Member Id="M:Xamarin.Essentials.ShareTextRequest.#ctor(System.String,System.String)" />
       <Member Id="P:Xamarin.Essentials.ShareTextRequest.Subject" />
       <Member Id="P:Xamarin.Essentials.ShareTextRequest.Text" />
-      <Member Id="P:Xamarin.Essentials.ShareTextRequest.Title" />
       <Member Id="P:Xamarin.Essentials.ShareTextRequest.Uri" />
     </Type>
     <Type Name="Xamarin.Essentials.Sms" Id="T:Xamarin.Essentials.Sms">

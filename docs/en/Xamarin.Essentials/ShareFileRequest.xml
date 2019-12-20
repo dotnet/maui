@@ -1,13 +1,13 @@
 <Type Name="ShareFileRequest" FullName="Xamarin.Essentials.ShareFileRequest">
-  <TypeSignature Language="C#" Value="public class ShareFileRequest" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit ShareFileRequest extends System.Object" />
+  <TypeSignature Language="C#" Value="public class ShareFileRequest : Xamarin.Essentials.ShareRequestBase" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit ShareFileRequest extends Xamarin.Essentials.ShareRequestBase" />
   <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.ShareFileRequest" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>System.Object</BaseTypeName>
+    <BaseTypeName>Xamarin.Essentials.ShareRequestBase</BaseTypeName>
   </Base>
   <Interfaces />
   <Docs>
@@ -124,28 +124,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the file to share.</summary>
-        <value>
-          <para />
-        </value>
-        <remarks>
-          <para />
-        </remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Title">
-      <MemberSignature Language="C#" Value="public string Title { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance string Title" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.ShareFileRequest.Title" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets or sets the title to use on the share user interface</summary>
         <value>
           <para />
         </value>
