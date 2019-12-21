@@ -105,6 +105,7 @@ namespace Xamarin.Forms.Platform.iOS
 				Layer.ShadowOpacity = 0.8f;
 				Layer.ShadowOffset = new SizeF();
 				Layer.BorderWidth = 1;
+				UserInteractionEnabled = false;
 			}
 
 			public void UpdateBackgroundColor()
