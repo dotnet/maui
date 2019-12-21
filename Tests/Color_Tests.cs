@@ -70,7 +70,7 @@ namespace Tests
             var orig = ColorConverters.FromHex(original);
             var expectedComplement = ColorConverters.FromHex(expected);
 
-            Assert.Equal(expectedComplement, ColorConverters.GetComplementary(orig));
+            Assert.Equal(expectedComplement, orig.GetComplementary());
         }
 
         [Fact]

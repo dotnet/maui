@@ -123,7 +123,6 @@
       <Member Id="M:Xamarin.Essentials.ColorConverters.FromHsl(System.Single,System.Single,System.Single)" />
       <Member Id="M:Xamarin.Essentials.ColorConverters.FromHsla(System.Single,System.Single,System.Single,System.Int32)" />
       <Member Id="M:Xamarin.Essentials.ColorConverters.FromUInt(System.UInt32)" />
-      <Member Id="M:Xamarin.Essentials.ColorConverters.GetComplementary(System.Drawing.Color)" />
     </Type>
     <Type Name="Xamarin.Essentials.ColorExtensions" Id="T:Xamarin.Essentials.ColorExtensions">
       <Member Id="M:Xamarin.Essentials.ColorExtensions.AddLuminosity(System.Drawing.Color,System.Single)" />
@@ -135,6 +134,7 @@
       <Member Id="M:Xamarin.Essentials.ColorExtensions.WithHue(System.Drawing.Color,System.Single)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.WithLuminosity(System.Drawing.Color,System.Single)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.WithSaturation(System.Drawing.Color,System.Single)" />
+      <Member Id="M:Xamarin.Essentials.ColorExtensions.GetComplementary(System.Drawing.Color)" />
     </Type>
     <Type Name="Xamarin.Essentials.Compass" Id="T:Xamarin.Essentials.Compass">
       <Member Id="E:Xamarin.Essentials.Compass.ReadingChanged" />

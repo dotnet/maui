@@ -48,6 +48,24 @@ namespace Xamarin.Essentials
 
         public static int ToInt(this Color color) =>
             (color.A << 24) | (color.R << 16) | (color.G << 8) | (color.B << 0);
+
+        public static Color GetComplementary(this Color color)
+        {
+            // Divide RGB by 255 as ConvertToHsl expects a value between 0 & 1.
+            ColorConverters.ConvertToHsl(color.R / 255f, color.G / 255f, color.B / 255f, out var h, out var s, out var l);
+
+            // Multiply by 360 as `ConvertToHsl` specifies it as a value between 0 and 1.
+            h *= 360;
+
+            // Add 180 (degrees) to get to the other side of the circle.
+            h += 180;
+
+            // Ensure still within the bounds of a circle.
+            h %= 360;
+
+            // multiply by 100 as `ConvertToHsl` specifies them as values between 0 and 1.
+            return ColorConverters.FromHsl(h, s * 100, l * 100);
+        }
     }
 }
 #endif

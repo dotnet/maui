@@ -89,7 +89,7 @@ namespace Samples.ViewModel
                 SaturationColor = color.WithSaturation(Saturation);
                 HueColor = color.WithHue(Hue);
                 LuminosityColor = color.WithLuminosity(Luminosity);
-                ComplementColor = ColorConverters.GetComplementary(color);
+                ComplementColor = color.GetComplementary();
                 OnPropertyChanged(nameof(RegularColor));
                 OnPropertyChanged(nameof(AlphaColor));
                 OnPropertyChanged(nameof(SaturationColor));
