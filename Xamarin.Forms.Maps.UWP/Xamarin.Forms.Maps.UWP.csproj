@@ -1,8 +1,8 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
+  <PropertyGroup Condition="$(TargetFramework) == 'uap10.0.14393'">
+    <DefineConstants>$(DefineConstants);UWP_14393</DefineConstants>
+  </PropertyGroup>
   <PropertyGroup>
-    <TargetFrameworks>uap10.0.14393;uap10.0.16299</TargetFrameworks>
-    <TargetPlatformVersion Condition="$(TargetFramework) == 'uap10.0.14393'">10.0.16299.0</TargetPlatformVersion>
-    <TargetPlatformVersion Condition="$(TargetFramework) == 'uap10.0.16299'">10.0.16299.0</TargetPlatformVersion>
     <RootNamespace>Xamarin.Forms.Maps.UWP</RootNamespace>
     <AssemblyName>Xamarin.Forms.Maps.UWP</AssemblyName>
     <SkipMicrosoftUIXamlCheckTargetPlatformVersion>true</SkipMicrosoftUIXamlCheckTargetPlatformVersion>
@@ -17,34 +17,15 @@
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
   </PropertyGroup>
-  <ItemGroup Condition="$(TargetFramework) == 'uap10.0.14393'">
-    <SDKReference Include="WindowsMobile, Version=10.0.16299.0">
-      <Name>Windows Mobile Extensions for the UWP</Name>
-    </SDKReference>
-  </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework) == 'uap10.0.16299'">
-    <SDKReference Include="WindowsMobile, Version=10.0.16299.0">
-      <Name>Windows Mobile Extensions for the UWP</Name>
-    </SDKReference>
-  </ItemGroup>
-  <ItemGroup>
+  <ItemGroup  Condition=" '$(OS)' == 'Windows_NT' ">
     <EmbeddedResource Include="Properties\Xamarin.Forms.Maps.UWP.rd.xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.0.15</Version>
-    </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
-    
+    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">    
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
-   
+    <ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">   
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj">
-    
+    <ProjectReference Include="..\Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj">    
     </ProjectReference>
   </ItemGroup>
- 
 </Project>
