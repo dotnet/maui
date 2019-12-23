@@ -114,6 +114,7 @@
       <Member Id="F:Xamarin.Essentials.BrowserTitleMode.Show" />
     </Type>
     <Type Name="Xamarin.Essentials.Clipboard" Id="T:Xamarin.Essentials.Clipboard">
+      <Member Id="E:Xamarin.Essentials.Clipboard.ClipboardContentChanged" />
       <Member Id="M:Xamarin.Essentials.Clipboard.GetTextAsync" />
       <Member Id="M:Xamarin.Essentials.Clipboard.SetTextAsync(System.String)" />
       <Member Id="P:Xamarin.Essentials.Clipboard.HasText" />
@@ -126,6 +127,7 @@
     </Type>
     <Type Name="Xamarin.Essentials.ColorExtensions" Id="T:Xamarin.Essentials.ColorExtensions">
       <Member Id="M:Xamarin.Essentials.ColorExtensions.AddLuminosity(System.Drawing.Color,System.Single)" />
+      <Member Id="M:Xamarin.Essentials.ColorExtensions.GetComplementary(System.Drawing.Color)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.MultiplyAlpha(System.Drawing.Color,System.Single)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.ToInt(System.Drawing.Color)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.ToSystemColor(UIKit.UIColor)" />
@@ -134,7 +136,6 @@
       <Member Id="M:Xamarin.Essentials.ColorExtensions.WithHue(System.Drawing.Color,System.Single)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.WithLuminosity(System.Drawing.Color,System.Single)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.WithSaturation(System.Drawing.Color,System.Single)" />
-      <Member Id="M:Xamarin.Essentials.ColorExtensions.GetComplementary(System.Drawing.Color)" />
     </Type>
     <Type Name="Xamarin.Essentials.Compass" Id="T:Xamarin.Essentials.Compass">
       <Member Id="E:Xamarin.Essentials.Compass.ReadingChanged" />
@@ -504,6 +505,122 @@
     </Type>
     <Type Name="Xamarin.Essentials.PermissionException" Id="T:Xamarin.Essentials.PermissionException">
       <Member Id="M:Xamarin.Essentials.PermissionException.#ctor(System.String)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions" Id="T:Xamarin.Essentials.Permissions">
+      <Member Id="M:Xamarin.Essentials.Permissions.CheckStatusAsync``1" />
+      <Member Id="M:Xamarin.Essentials.Permissions.IsKeyDeclaredInInfoPlist(System.String)" />
+      <Member Id="M:Xamarin.Essentials.Permissions.RequestAsync``1" />
+      <Member Id="P:Xamarin.Essentials.Permissions.LocationTimeout" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/BasePermission" Id="T:Xamarin.Essentials.Permissions.BasePermission">
+      <Member Id="M:Xamarin.Essentials.Permissions.BasePermission.#ctor" />
+      <Member Id="M:Xamarin.Essentials.Permissions.BasePermission.CheckStatusAsync" />
+      <Member Id="M:Xamarin.Essentials.Permissions.BasePermission.EnsureDeclared" />
+      <Member Id="M:Xamarin.Essentials.Permissions.BasePermission.RequestAsync" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/BasePlatformPermission" Id="T:Xamarin.Essentials.Permissions.BasePlatformPermission">
+      <Member Id="M:Xamarin.Essentials.Permissions.BasePlatformPermission.#ctor" />
+      <Member Id="M:Xamarin.Essentials.Permissions.BasePlatformPermission.CheckStatusAsync" />
+      <Member Id="M:Xamarin.Essentials.Permissions.BasePlatformPermission.EnsureDeclared" />
+      <Member Id="M:Xamarin.Essentials.Permissions.BasePlatformPermission.RequestAsync" />
+      <Member Id="P:Xamarin.Essentials.Permissions.BasePlatformPermission.RequiredInfoPlistKeys" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Battery" Id="T:Xamarin.Essentials.Permissions.Battery">
+      <Member Id="M:Xamarin.Essentials.Permissions.Battery.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/CalendarRead" Id="T:Xamarin.Essentials.Permissions.CalendarRead">
+      <Member Id="M:Xamarin.Essentials.Permissions.CalendarRead.#ctor" />
+      <Member Id="M:Xamarin.Essentials.Permissions.CalendarRead.CheckStatusAsync" />
+      <Member Id="M:Xamarin.Essentials.Permissions.CalendarRead.RequestAsync" />
+      <Member Id="P:Xamarin.Essentials.Permissions.CalendarRead.RequiredInfoPlistKeys" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/CalendarWrite" Id="T:Xamarin.Essentials.Permissions.CalendarWrite">
+      <Member Id="M:Xamarin.Essentials.Permissions.CalendarWrite.#ctor" />
+      <Member Id="M:Xamarin.Essentials.Permissions.CalendarWrite.CheckStatusAsync" />
+      <Member Id="M:Xamarin.Essentials.Permissions.CalendarWrite.RequestAsync" />
+      <Member Id="P:Xamarin.Essentials.Permissions.CalendarWrite.RequiredInfoPlistKeys" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Camera" Id="T:Xamarin.Essentials.Permissions.Camera">
+      <Member Id="M:Xamarin.Essentials.Permissions.Camera.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/ContactsRead" Id="T:Xamarin.Essentials.Permissions.ContactsRead">
+      <Member Id="M:Xamarin.Essentials.Permissions.ContactsRead.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/ContactsWrite" Id="T:Xamarin.Essentials.Permissions.ContactsWrite">
+      <Member Id="M:Xamarin.Essentials.Permissions.ContactsWrite.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/EventPermissions" Id="T:Xamarin.Essentials.Permissions.EventPermissions">
+      <Member Id="M:Xamarin.Essentials.Permissions.EventPermissions.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Flashlight" Id="T:Xamarin.Essentials.Permissions.Flashlight">
+      <Member Id="M:Xamarin.Essentials.Permissions.Flashlight.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/LaunchApp" Id="T:Xamarin.Essentials.Permissions.LaunchApp">
+      <Member Id="M:Xamarin.Essentials.Permissions.LaunchApp.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/LocationAlways" Id="T:Xamarin.Essentials.Permissions.LocationAlways">
+      <Member Id="M:Xamarin.Essentials.Permissions.LocationAlways.#ctor" />
+      <Member Id="M:Xamarin.Essentials.Permissions.LocationAlways.CheckStatusAsync" />
+      <Member Id="M:Xamarin.Essentials.Permissions.LocationAlways.RequestAsync" />
+      <Member Id="P:Xamarin.Essentials.Permissions.LocationAlways.RequiredInfoPlistKeys" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/LocationWhenInUse" Id="T:Xamarin.Essentials.Permissions.LocationWhenInUse">
+      <Member Id="M:Xamarin.Essentials.Permissions.LocationWhenInUse.#ctor" />
+      <Member Id="M:Xamarin.Essentials.Permissions.LocationWhenInUse.CheckStatusAsync" />
+      <Member Id="M:Xamarin.Essentials.Permissions.LocationWhenInUse.RequestAsync" />
+      <Member Id="P:Xamarin.Essentials.Permissions.LocationWhenInUse.RequiredInfoPlistKeys" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Maps" Id="T:Xamarin.Essentials.Permissions.Maps">
+      <Member Id="M:Xamarin.Essentials.Permissions.Maps.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Media" Id="T:Xamarin.Essentials.Permissions.Media">
+      <Member Id="M:Xamarin.Essentials.Permissions.Media.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Microphone" Id="T:Xamarin.Essentials.Permissions.Microphone">
+      <Member Id="M:Xamarin.Essentials.Permissions.Microphone.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/NetworkState" Id="T:Xamarin.Essentials.Permissions.NetworkState">
+      <Member Id="M:Xamarin.Essentials.Permissions.NetworkState.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Phone" Id="T:Xamarin.Essentials.Permissions.Phone">
+      <Member Id="M:Xamarin.Essentials.Permissions.Phone.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Photos" Id="T:Xamarin.Essentials.Permissions.Photos">
+      <Member Id="M:Xamarin.Essentials.Permissions.Photos.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Reminders" Id="T:Xamarin.Essentials.Permissions.Reminders">
+      <Member Id="M:Xamarin.Essentials.Permissions.Reminders.#ctor" />
+      <Member Id="M:Xamarin.Essentials.Permissions.Reminders.CheckStatusAsync" />
+      <Member Id="M:Xamarin.Essentials.Permissions.Reminders.RequestAsync" />
+      <Member Id="P:Xamarin.Essentials.Permissions.Reminders.RequiredInfoPlistKeys" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Sensors" Id="T:Xamarin.Essentials.Permissions.Sensors">
+      <Member Id="M:Xamarin.Essentials.Permissions.Sensors.#ctor" />
+      <Member Id="M:Xamarin.Essentials.Permissions.Sensors.CheckStatusAsync" />
+      <Member Id="M:Xamarin.Essentials.Permissions.Sensors.RequestAsync" />
+      <Member Id="P:Xamarin.Essentials.Permissions.Sensors.RequiredInfoPlistKeys" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Sms" Id="T:Xamarin.Essentials.Permissions.Sms">
+      <Member Id="M:Xamarin.Essentials.Permissions.Sms.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Speech" Id="T:Xamarin.Essentials.Permissions.Speech">
+      <Member Id="M:Xamarin.Essentials.Permissions.Speech.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/StorageRead" Id="T:Xamarin.Essentials.Permissions.StorageRead">
+      <Member Id="M:Xamarin.Essentials.Permissions.StorageRead.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/StorageWrite" Id="T:Xamarin.Essentials.Permissions.StorageWrite">
+      <Member Id="M:Xamarin.Essentials.Permissions.StorageWrite.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Vibrate" Id="T:Xamarin.Essentials.Permissions.Vibrate">
+      <Member Id="M:Xamarin.Essentials.Permissions.Vibrate.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.PermissionStatus" Id="T:Xamarin.Essentials.PermissionStatus">
+      <Member Id="F:Xamarin.Essentials.PermissionStatus.Denied" />
+      <Member Id="F:Xamarin.Essentials.PermissionStatus.Disabled" />
+      <Member Id="F:Xamarin.Essentials.PermissionStatus.Granted" />
+      <Member Id="F:Xamarin.Essentials.PermissionStatus.Restricted" />
+      <Member Id="F:Xamarin.Essentials.PermissionStatus.Unknown" />
     </Type>
     <Type Name="Xamarin.Essentials.PhoneDialer" Id="T:Xamarin.Essentials.PhoneDialer">
       <Member Id="M:Xamarin.Essentials.PhoneDialer.Open(System.String)" />

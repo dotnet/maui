@@ -1,0 +1,114 @@
+<Type Name="Permissions+Speech" FullName="Xamarin.Essentials.Permissions+Speech">
+  <TypeSignature Language="C#" Value="public class Permissions.Speech : Xamarin.Essentials.Permissions.BasePlatformPermission" />
+  <TypeSignature Language="ILAsm" Value=".class nested public auto ansi beforefieldinit Permissions/Speech extends Xamarin.Essentials.Permissions/BasePlatformPermission" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Permissions.Speech" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>Xamarin.Essentials.Permissions+BasePlatformPermission</BaseTypeName>
+    <BaseTypeName FrameworkAlternate="xamarin-essentials-tvos">System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Permission to access speech capabilities on device.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Speech ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Permissions.Speech.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Public constructor for permission.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CheckStatusAsync">
+      <MemberSignature Language="C#" Value="public override System.Threading.Tasks.Task&lt;Xamarin.Essentials.PermissionStatus&gt; CheckStatusAsync ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance class System.Threading.Tasks.Task`1&lt;valuetype Xamarin.Essentials.PermissionStatus&gt; CheckStatusAsync() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Permissions.Speech.CheckStatusAsync" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;Xamarin.Essentials.PermissionStatus&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Checks the status of a specific permission.</summary>
+        <returns>The current status of the permission.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RequestAsync">
+      <MemberSignature Language="C#" Value="public override System.Threading.Tasks.Task&lt;Xamarin.Essentials.PermissionStatus&gt; RequestAsync ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance class System.Threading.Tasks.Task`1&lt;valuetype Xamarin.Essentials.PermissionStatus&gt; RequestAsync() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Permissions.Speech.RequestAsync" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;Xamarin.Essentials.PermissionStatus&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Request a specific permission from the user.</summary>
+        <returns>The status of the permission that was requested.</returns>
+        <remarks>The request will be prompted to the user if it hasn't been granted. iOS only allows the permission to be requested once, any additional requests will return immediatelly.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RequiredInfoPlistKeys">
+      <MemberSignature Language="C#" Value="protected override Func&lt;System.Collections.Generic.IEnumerable&lt;string&gt;&gt; RequiredInfoPlistKeys { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Func`1&lt;class System.Collections.Generic.IEnumerable`1&lt;string&gt;&gt; RequiredInfoPlistKeys" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Permissions.Speech.RequiredInfoPlistKeys" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Func&lt;System.Collections.Generic.IEnumerable&lt;System.String&gt;&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Get a list of required keys in the info.plist.</summary>
+        <value>List of required keys in the info.plist.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RequiredPermissions">
+      <MemberSignature Language="C#" Value="public override ValueTuple&lt;string,bool&gt;[] RequiredPermissions { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.ValueTuple`2&lt;string, bool&gt;[] RequiredPermissions" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Permissions.Speech.RequiredPermissions" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute FrameworkAlternate="xamarin-essentials-android">
+          <AttributeName>System.Runtime.CompilerServices.TupleElementNames(new System.String[] { "androidPermission", "isRuntime" })</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.ValueTuple&lt;System.String,System.Boolean&gt;[]</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Get a list of required permissions.</summary>
+        <value>List of required permissions.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

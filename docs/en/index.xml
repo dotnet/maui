@@ -86,14 +86,14 @@
         <Attribute FrameworkAlternate="xamarin-essentials-watchos">
           <AttributeName>System.Runtime.Versioning.TargetFramework("Xamarin.WatchOS,Version=v1.0", FrameworkDisplayName="Xamarin.WatchOS")</AttributeName>
         </Attribute>
-        <Attribute FrameworkAlternate="xamarin-essentials-android">
-          <AttributeName>System.Reflection.AssemblyProduct("Xamarin.Essentials (MonoAndroid90)")</AttributeName>
+        <Attribute FrameworkAlternate="xamarin-essentials;xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-uwp;xamarin-essentials-android">
+          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+b1f8dcb39d12d16ede41061ae9899c2ba5f26cfe")</AttributeName>
         </Attribute>
         <Attribute FrameworkAlternate="xamarin-essentials-android">
-          <AttributeName>System.Runtime.Versioning.TargetFramework("MonoAndroid,Version=v9.0", FrameworkDisplayName="Xamarin.Android v9.0 Support")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyProduct("Xamarin.Essentials (MonoAndroid10.0)")</AttributeName>
         </Attribute>
-        <Attribute>
-          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+f53016cb69904b13d54a592cd58cda29cc02230a")</AttributeName>
+        <Attribute FrameworkAlternate="xamarin-essentials-android">
+          <AttributeName>System.Runtime.Versioning.TargetFramework("MonoAndroid,Version=v10.0", FrameworkDisplayName="Xamarin.Android v10.0 Support")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>
@@ -178,6 +178,34 @@
       <Type Name="OrientationSensorChangedEventArgs" Kind="Class" />
       <Type Name="OrientationSensorData" Kind="Structure" />
       <Type Name="PermissionException" Kind="Class" />
+      <Type Name="Permissions" Kind="Class" />
+      <Type Name="Permissions+BasePermission" Kind="Class" />
+      <Type Name="Permissions+BasePlatformPermission" Kind="Class" />
+      <Type Name="Permissions+Battery" Kind="Class" />
+      <Type Name="Permissions+CalendarRead" Kind="Class" />
+      <Type Name="Permissions+CalendarWrite" Kind="Class" />
+      <Type Name="Permissions+Camera" Kind="Class" />
+      <Type Name="Permissions+ContactsRead" Kind="Class" />
+      <Type Name="Permissions+ContactsWrite" Kind="Class" />
+      <Type Name="Permissions+EventPermissions" Kind="Class" />
+      <Type Name="Permissions+Flashlight" Kind="Class" />
+      <Type Name="Permissions+LaunchApp" Kind="Class" />
+      <Type Name="Permissions+LocationAlways" Kind="Class" />
+      <Type Name="Permissions+LocationWhenInUse" Kind="Class" />
+      <Type Name="Permissions+Maps" Kind="Class" />
+      <Type Name="Permissions+Media" Kind="Class" />
+      <Type Name="Permissions+Microphone" Kind="Class" />
+      <Type Name="Permissions+NetworkState" Kind="Class" />
+      <Type Name="Permissions+Phone" Kind="Class" />
+      <Type Name="Permissions+Photos" Kind="Class" />
+      <Type Name="Permissions+Reminders" Kind="Class" />
+      <Type Name="Permissions+Sensors" Kind="Class" />
+      <Type Name="Permissions+Sms" Kind="Class" />
+      <Type Name="Permissions+Speech" Kind="Class" />
+      <Type Name="Permissions+StorageRead" Kind="Class" />
+      <Type Name="Permissions+StorageWrite" Kind="Class" />
+      <Type Name="Permissions+Vibrate" Kind="Class" />
+      <Type Name="PermissionStatus" Kind="Enumeration" />
       <Type Name="PhoneDialer" Kind="Class" />
       <Type Name="Placemark" Kind="Class" />
       <Type Name="PlacemarkExtensions" Kind="Class" />
@@ -227,6 +255,28 @@
           <summary>Adds luminosity to the existing color</summary>
         </Docs>
         <Link Type="Xamarin.Essentials.ColorExtensions" Member="M:Xamarin.Essentials.ColorExtensions.AddLuminosity(System.Drawing.Color,System.Single)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="System.Drawing.Color" />
+      </Targets>
+      <Member MemberName="GetComplementary">
+        <MemberSignature Language="C#" Value="public static System.Drawing.Color GetComplementary (this System.Drawing.Color color);" FrameworkAlternate="xamarin-essentials" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color GetComplementary(valuetype System.Drawing.Color color) cil managed" FrameworkAlternate="xamarin-essentials" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.GetComplementary(System.Drawing.Color)" FrameworkAlternate="xamarin-essentials" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.Color</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="color" Type="System.Drawing.Color" Index="0" FrameworkAlternate="xamarin-essentials" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="color">A color to obtain the complement for.</param>
+          <summary>Returns a new color that is on the opposite side of the color wheel from the original.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.ColorExtensions" Member="M:Xamarin.Essentials.ColorExtensions.GetComplementary(System.Drawing.Color)" />
       </Member>
     </ExtensionMethod>
     <ExtensionMethod>

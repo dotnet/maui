@@ -65,7 +65,7 @@
         <summary>Creates a new Color from hue, saturation, and lightness.</summary>
         <returns>A new color from the Hsla.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -95,7 +95,7 @@
         <summary>Creates a new Color from hue, saturation, luminosity, and alpha.</summary>
         <returns>A new color from the Hsla.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -119,7 +119,7 @@
         <summary>Creates a new Color from an UInt.</summary>
         <returns>A new color from the Uint</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

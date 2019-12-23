@@ -13,7 +13,7 @@
   <Docs>
     <summary>Extension methods for Rectangle.</summary>
     <remarks>
-      <para />
+      <para></para>
     </remarks>
   </Docs>
   <Members>
@@ -36,7 +36,9 @@
         <param name="rect">The base rectangle to convert.</param>
         <summary>Convert to system rectangle.</summary>
         <returns>The converted rectangle.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemRectangle">
@@ -58,7 +60,9 @@
         <param name="rect">The base rectangle to convert.</param>
         <summary>Convert to system rectangle.</summary>
         <returns>The converted rectangle.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemRectangle">
@@ -80,7 +84,9 @@
         <param name="rect">The base rectangle to convert.</param>
         <summary>Convert to system rectangle.</summary>
         <returns>The converted rectangle.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemRectangleF">
@@ -102,7 +108,9 @@
         <param name="rect">The base rectangle to convert.</param>
         <summary>Convert to system rectangle.</summary>
         <returns>The converted rectangle.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemRectangleF">
@@ -124,7 +132,9 @@
         <param name="rect">The base rectangle to convert.</param>
         <summary>Convert to system rectangle.</summary>
         <returns>The converted rectangle.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemRectangleF">
@@ -146,7 +156,9 @@
         <param name="rect">The base rectangle to convert.</param>
         <summary>Convert to system rectangle.</summary>
         <returns>The converted rectangle.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
   </Members>

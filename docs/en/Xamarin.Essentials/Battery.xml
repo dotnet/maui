@@ -34,7 +34,9 @@
       </ReturnValue>
       <Docs>
         <summary>Event trigger when battery properties have changed.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ChargeLevel">
@@ -54,7 +56,9 @@
         <value>
           <para>Level of charge.</para>
         </value>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="EnergySaverStatus">
@@ -72,7 +76,9 @@
       <Docs>
         <summary>Gets the current energy saver status of the device.</summary>
         <value>The current status of energy saver mode.</value>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="EnergySaverStatusChanged">
@@ -89,7 +95,9 @@
       </ReturnValue>
       <Docs>
         <summary>Event that is triggered when energy saver status changes.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="PowerSource">
@@ -109,7 +117,9 @@
         <value>
           <para>Power source, or uknown.</para>
         </value>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="State">
@@ -127,7 +137,9 @@
       <Docs>
         <summary>Gets the charging state of the device if it can be determined.</summary>
         <value>Battery state, or unknown.</value>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
   </Members>

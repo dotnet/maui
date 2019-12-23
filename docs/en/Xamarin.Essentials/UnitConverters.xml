@@ -11,7 +11,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Built in unit converters</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -31,9 +31,9 @@
         <Parameter Name="atm" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="atm">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="atm">Atmospheres to convert</param>
+        <summary>Atmospheres to Pascals</summary>
+        <returns>The pascals value</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -53,9 +53,9 @@
         <Parameter Name="celsius" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="celsius">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="celsius">The temperature in celsius to convert</param>
+        <summary>Celsius to Fahrenheit </summary>
+        <returns>The temperature in fahrenheit</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -75,9 +75,9 @@
         <Parameter Name="celsius" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="celsius">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="celsius">The temperature in Celsius to convert</param>
+        <summary>Celsius to Kelvin</summary>
+        <returns>The temperature in Kelvin</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -100,12 +100,12 @@
         <Parameter Name="lon2" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="lat1">To be added.</param>
-        <param name="lon1">To be added.</param>
-        <param name="lat2">To be added.</param>
-        <param name="lon2">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="lat1">First latitude</param>
+        <param name="lon1">First longitude</param>
+        <param name="lat2">Second latitude</param>
+        <param name="lon2">Second longitude</param>
+        <summary>Calulate the distance between two coordinate in kilometers</summary>
+        <returns>Distance in kilometers</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -128,12 +128,12 @@
         <Parameter Name="lon2" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="lat1">To be added.</param>
-        <param name="lon1">To be added.</param>
-        <param name="lat2">To be added.</param>
-        <param name="lon2">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="lat1">First latitude</param>
+        <param name="lon1">First longitude</param>
+        <param name="lat2">Second latitude</param>
+        <param name="lon2">Second longitude</param>
+        <summary>Calulate the distance between two coordinate in miles</summary>
+        <returns>Distance in miles</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -153,9 +153,9 @@
         <Parameter Name="degrees" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="degrees">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="degrees">The degrees to convert</param>
+        <summary>Converte degrees per second to hertz</summary>
+        <returns>Value in hertz</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -175,9 +175,9 @@
         <Parameter Name="degrees" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="degrees">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="degrees">Degrees to convert</param>
+        <summary>Convert degrees per second to radians per second</summary>
+        <returns>Value in radians</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -197,9 +197,9 @@
         <Parameter Name="degrees" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="degrees">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="degrees">Degrees to convert</param>
+        <summary>Convert degrees to radian</summary>
+        <returns>The value in radians</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -219,9 +219,9 @@
         <Parameter Name="fahrenheit" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="fahrenheit">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="fahrenheit">The value in fahrenheit to convert</param>
+        <summary>Converter fahrenheit to celsius</summary>
+        <returns>The value in celsius</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -241,9 +241,9 @@
         <Parameter Name="hpa" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="hpa">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="hpa">Hectopascals to convert</param>
+        <summary>Convert hectopascals to kilopascals</summary>
+        <returns>The value in kilopascals</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -263,9 +263,9 @@
         <Parameter Name="hpa" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="hpa">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="hpa">The value to convert in Hectopascals</param>
+        <summary>Convert hectopascals to pascals</summary>
+        <returns>The value in pascals</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -285,9 +285,9 @@
         <Parameter Name="hertz" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="hertz">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="hertz">The value in hertz to convert</param>
+        <summary>Convert hertz to degrees per second</summary>
+        <returns>The value in degrees per second</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -307,9 +307,9 @@
         <Parameter Name="hertz" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="hertz">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="hertz">The value in hertz to convert</param>
+        <summary>Convert hertz to radians per second</summary>
+        <returns>The value in radians per second</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -329,9 +329,9 @@
         <Parameter Name="internationalFeet" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="internationalFeet">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="internationalFeet">The feet to convert</param>
+        <summary>Convert international feet to meters</summary>
+        <returns>The value in meters</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -351,9 +351,9 @@
         <Parameter Name="kelvin" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="kelvin">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="kelvin">The kelvin value to convert</param>
+        <summary>Convert kelvin to celsius</summary>
+        <returns>The value in celsius</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -373,9 +373,9 @@
         <Parameter Name="kilograms" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="kilograms">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="kilograms">The value in kilograms to convert</param>
+        <summary>Convert kilograms to pounds</summary>
+        <returns>The value in pounds.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -395,9 +395,9 @@
         <Parameter Name="kilometers" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="kilometers">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="kilometers">The kilometers to convert</param>
+        <summary>Convert kilometers to miles</summary>
+        <returns>The value in miles.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -417,9 +417,9 @@
         <Parameter Name="kpa" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="kpa">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="kpa">The value in kilopascals to convert</param>
+        <summary>Convert kilopascals to hectopascals</summary>
+        <returns>The value in hectopascals</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -439,9 +439,9 @@
         <Parameter Name="kpa" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="kpa">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="kpa">The value in kilopascals to convert</param>
+        <summary>Convert kilopascals to pascals</summary>
+        <returns>The value in pascals</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -461,9 +461,9 @@
         <Parameter Name="meters" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="meters">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="meters">The value in meters to convert</param>
+        <summary>Convert meters to international feet</summary>
+        <returns>The value in feet</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -483,9 +483,9 @@
         <Parameter Name="meters" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="meters">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="meters">The value in meters to convert</param>
+        <summary>Convert meters to US survey feet</summary>
+        <returns>The value in US survey feet</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -505,9 +505,9 @@
         <Parameter Name="miles" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="miles">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="miles">The value in miles to convert</param>
+        <summary>Convert miles to kilometers</summary>
+        <returns>The value in kilometers</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -527,9 +527,9 @@
         <Parameter Name="miles" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="miles">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="miles">The value in miles to convert</param>
+        <summary>Convert miles to meters</summary>
+        <returns>The value in meters</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -549,9 +549,9 @@
         <Parameter Name="pascals" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="pascals">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="pascals">The value in pascals to convert</param>
+        <summary>Convert pascals to atmospheres</summary>
+        <returns>The value in atmospheres</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -571,9 +571,9 @@
         <Parameter Name="pounds" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="pounds">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="pounds">The value in pounds to convert</param>
+        <summary>Convert pounds to kilograms</summary>
+        <returns>The value in kilograms</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -593,9 +593,9 @@
         <Parameter Name="pounds" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="pounds">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="pounds">The value in pounds to convert</param>
+        <summary>Convert pounds to stones</summary>
+        <returns>The value in stones</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -615,9 +615,9 @@
         <Parameter Name="radians" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="radians">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="radians">The value of radians per second to convert</param>
+        <summary>Convert radians per second to degrees per second</summary>
+        <returns>The value in degrees per second</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -637,9 +637,9 @@
         <Parameter Name="radians" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="radians">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="radians">The value of radians per second to convert</param>
+        <summary>Convert radians per second to hertz</summary>
+        <returns>The value in hertz</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -659,9 +659,9 @@
         <Parameter Name="radians" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="radians">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="radians">The value in radians to convert</param>
+        <summary>Convert radians to degrees</summary>
+        <returns>The value in degrees</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -681,9 +681,9 @@
         <Parameter Name="stones" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="stones">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="stones">The value in stones to convert</param>
+        <summary>Convert stones to pounds</summary>
+        <returns>The value in pounds</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -703,9 +703,9 @@
         <Parameter Name="usFeet" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="usFeet">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="usFeet">The value in US Survey Feet to convert</param>
+        <summary>Convert US survey feet to meteres</summary>
+        <returns>The value in meters.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

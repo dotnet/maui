@@ -12,7 +12,9 @@
   <Interfaces />
   <Docs>
     <summary>Provides an easy way to track an app's version on a device.</summary>
-    <remarks></remarks>
+    <remarks>
+      <para></para>
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName="BuildHistory">
@@ -29,8 +31,12 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the collection of build numbers of the app that ran on this device.</summary>
-        <value></value>
-        <remarks></remarks>
+        <value>
+          <para />
+        </value>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="CurrentBuild">
@@ -47,8 +53,12 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the current build of the app.</summary>
-        <value></value>
-        <remarks></remarks>
+        <value>
+          <para />
+        </value>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="CurrentVersion">
@@ -65,8 +75,12 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the current version number of the app.</summary>
-        <value></value>
-        <remarks></remarks>
+        <value>
+          <para />
+        </value>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="FirstInstalledBuild">
@@ -83,8 +97,12 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the build number of first version of the app that was installed on this device.</summary>
-        <value></value>
-        <remarks></remarks>
+        <value>
+          <para />
+        </value>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="FirstInstalledVersion">
@@ -101,8 +119,12 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the version number of the first version of the app that was installed on this device.</summary>
-        <value></value>
-        <remarks></remarks>
+        <value>
+          <para />
+        </value>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="IsFirstLaunchEver">
@@ -119,8 +141,12 @@
       </ReturnValue>
       <Docs>
         <summary>Gets a value indicating whether this is the first time this app has ever been launched on this device.</summary>
-        <value></value>
-        <remarks></remarks>
+        <value>
+          <para />
+        </value>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="IsFirstLaunchForBuild">
@@ -142,7 +168,9 @@
         <param name="build">The build number.</param>
         <summary>Determines if this is the first launch of the app for a specified build number.</summary>
         <returns>Returns true if this is the first launch of the app for the specified build number; otherwise false.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="IsFirstLaunchForCurrentBuild">
@@ -159,8 +187,12 @@
       </ReturnValue>
       <Docs>
         <summary>Gets a value indicating if this is the first launch of the app for the current build number.</summary>
-        <value></value>
-        <remarks></remarks>
+        <value>
+          <para />
+        </value>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="IsFirstLaunchForCurrentVersion">
@@ -177,8 +209,12 @@
       </ReturnValue>
       <Docs>
         <summary>Gets a value indicating if this is the first launch of the app for the current version number.</summary>
-        <value></value>
-        <remarks></remarks>
+        <value>
+          <para />
+        </value>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="IsFirstLaunchForVersion">
@@ -200,7 +236,9 @@
         <param name="version">The version number.</param>
         <summary>Determines if this is the first launch of the app for a specified version number.</summary>
         <returns>Returns true if this is the first launch of the app for the specified version number; otherwise false.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="PreviousBuild">
@@ -217,8 +255,12 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the build number for the previously run version.</summary>
-        <value></value>
-        <remarks></remarks>
+        <value>
+          <para />
+        </value>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="PreviousVersion">
@@ -235,8 +277,12 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the version number for the previously run version.</summary>
-        <value></value>
-        <remarks></remarks>
+        <value>
+          <para />
+        </value>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Track">
@@ -254,7 +300,9 @@
       <Parameters />
       <Docs>
         <summary>Starts tracking version information.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="VersionHistory">
@@ -271,8 +319,12 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the collection of version numbers of the app that ran on this device.</summary>
-        <value></value>
-        <remarks></remarks>
+        <value>
+          <para />
+        </value>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
   </Members>

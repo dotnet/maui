@@ -12,7 +12,9 @@
   <Interfaces />
   <Docs>
     <summary>Provides a way to work with text on the device clipboard.</summary>
-    <remarks></remarks>
+    <remarks>
+      <para></para>
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName="ClipboardContentChanged">
@@ -30,8 +32,8 @@
       <Docs>
         <summary>Fires when the clipboard content changes.</summary>
         <remarks>
-		  <para />
-		</remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="GetTextAsync">
@@ -51,7 +53,7 @@
         <summary>Returns any text that is on the clipboard.</summary>
         <returns>Returns text that is on the clipboard, or null if there is none.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -70,10 +72,10 @@
       <Docs>
         <summary>Gets a value indicating whether there is any text on the clipboard.</summary>
         <value>
-          <para />
+          <para></para>
         </value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

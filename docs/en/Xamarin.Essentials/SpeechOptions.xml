@@ -12,7 +12,9 @@
   <Interfaces />
   <Docs>
     <summary>Text-to-speech options.</summary>
-    <remarks></remarks>
+    <remarks>
+      <para></para>
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -26,8 +28,12 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary></summary>
-        <remarks></remarks>
+        <summary>
+          <para />
+        </summary>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Locale">
@@ -44,7 +50,9 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or Sets a specific Locale to use with text to speech.</summary>
-        <value></value>
+        <value>
+          <para />
+        </value>
         <remarks>The Language property should match a Locale value returned by GetLocalesAsync().</remarks>
       </Docs>
     </Member>
@@ -62,7 +70,9 @@
       </ReturnValue>
       <Docs>
         <summary>The pitch to use when speaking.</summary>
-        <value></value>
+        <value>
+          <para />
+        </value>
         <remarks>This value should be between 0f and 2.0f.</remarks>
       </Docs>
     </Member>
@@ -80,7 +90,9 @@
       </ReturnValue>
       <Docs>
         <summary>The volume to use when speaking.</summary>
-        <value></value>
+        <value>
+          <para />
+        </value>
         <remarks>This value should be between 0f and 1.0f.</remarks>
       </Docs>
     </Member>

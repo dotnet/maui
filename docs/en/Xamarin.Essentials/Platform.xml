@@ -93,7 +93,7 @@
         <summary>Get the currently visible UIViewController.</summary>
         <returns>The visible UIViewController or null if not found.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -115,7 +115,9 @@
       <Docs>
         <param name="application">Application to initialize with.</param>
         <summary>Initialize Xamarin.Essentials with Android's application class.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Init">
@@ -138,7 +140,9 @@
         <param name="activity">Activity to use for initialization.</param>
         <param name="bundle">Bundle of the activity.</param>
         <summary>Initialize Xamarin.Essentials with Android's activity and bundle.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="MapServiceToken">
@@ -206,7 +210,7 @@
         <summary>Wait for an Activity to be create or active.</summary>
         <returns>The current Android Activity.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

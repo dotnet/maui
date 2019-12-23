@@ -1,6 +1,6 @@
 <Type Name="ShareRequestBase" FullName="Xamarin.Essentials.ShareRequestBase">
-  <TypeSignature Language="C#" Value="public class ShareRequestBase" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit ShareRequestBase extends System.Object" />
+  <TypeSignature Language="C#" Value="public abstract class ShareRequestBase" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract beforefieldinit ShareRequestBase extends System.Object" />
   <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.ShareRequestBase" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -11,13 +11,17 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary></summary>
-    <remarks></remarks>
+    <summary>
+      <para></para>
+    </summary>
+    <remarks>
+      <para></para>
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public ShareRequestBase ();" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="C#" Value="protected ShareRequestBase ();" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig specialname rtspecialname instance void .ctor() cil managed" />
       <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ShareRequestBase.#ctor" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
@@ -26,8 +30,12 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary></summary>
-        <remarks></remarks>
+        <summary>
+          <para />
+        </summary>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="PresentationSourceBounds">
@@ -44,7 +52,9 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the source rectangle to display the Share UI from.</summary>
-        <value></value>
+        <value>
+          <para />
+        </value>
         <remarks>This is only used on iOS currently.</remarks>
       </Docs>
     </Member>
@@ -63,7 +73,9 @@
       <Docs>
         <summary>Gets or sets the title to use on the share user interface</summary>
         <value>The title to be displayed.</value>
-        <remarks></remarks>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
   </Members>

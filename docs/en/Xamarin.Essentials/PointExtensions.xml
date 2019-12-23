@@ -13,7 +13,7 @@
   <Docs>
     <summary>Extension methods for Point.</summary>
     <remarks>
-      <para />
+      <para></para>
     </remarks>
   </Docs>
   <Members>
@@ -36,7 +36,9 @@
         <param name="point">The point to convert.</param>
         <summary>Converts the point ot the system representation.</summary>
         <returns>The converted point.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemPoint">
@@ -58,7 +60,9 @@
         <param name="point">The point to convert.</param>
         <summary>Converts the point ot the system representation.</summary>
         <returns>The converted point.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemPoint">
@@ -80,7 +84,9 @@
         <param name="point">The point to convert.</param>
         <summary>Converts the point ot the system representation.</summary>
         <returns>The converted point.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemPointF">
@@ -102,7 +108,9 @@
         <param name="point">The point to convert.</param>
         <summary>Converts the point ot the system representation.</summary>
         <returns>The converted point.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemPointF">
@@ -124,7 +132,9 @@
         <param name="point">The point to convert.</param>
         <summary>Converts the point ot the system representation.</summary>
         <returns>The converted point.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemPointF">
@@ -146,7 +156,9 @@
         <param name="point">The point to convert.</param>
         <summary>Converts the point ot the system representation.</summary>
         <returns>The converted point.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
   </Members>

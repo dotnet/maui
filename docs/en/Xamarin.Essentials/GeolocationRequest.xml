@@ -12,7 +12,9 @@
   <Interfaces />
   <Docs>
     <summary>Represents the criteria for a location request.</summary>
-    <remarks></remarks>
+    <remarks>
+      <para></para>
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -27,7 +29,9 @@
       <Parameters />
       <Docs>
         <summary>Creates a new instance of GeolocationRequest.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -45,7 +49,9 @@
       <Docs>
         <param name="accuracy">The desired accuracy.</param>
         <summary>Creates a new instance of GeolocationRequest with the specified accuracy.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -65,7 +71,9 @@
         <param name="accuracy">The desired accuracy.</param>
         <param name="timeout">The request timeout.</param>
         <summary>Creates a new instance of GeolocationRequest with the specified accuracy and timeout.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="DesiredAccuracy">
@@ -83,7 +91,9 @@
       <Docs>
         <summary>Gets or sets the desired accuracy of the resulting location.</summary>
         <value>The desired accuracy of the location.</value>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Timeout">
@@ -101,7 +111,9 @@
       <Docs>
         <summary>Gets or sets the location request timeout.</summary>
         <value>The location request timeout.</value>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToString">
@@ -118,8 +130,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <summary>A string representation of the request.</summary>
+        <returns>A string representation of the request.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

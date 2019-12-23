@@ -13,7 +13,7 @@
   <Docs>
     <summary>Extension methods for Size.</summary>
     <remarks>
-      <para />
+      <para></para>
     </remarks>
   </Docs>
   <Members>
@@ -36,7 +36,9 @@
         <param name="size">Base size to convert.</param>
         <summary>Convert to system Size.</summary>
         <returns>Converted size.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemSize">
@@ -58,7 +60,9 @@
         <param name="size">Base size to convert.</param>
         <summary>Convert to system Size.</summary>
         <returns>Converted size.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemSize">
@@ -80,7 +84,9 @@
         <param name="size">Base size to convert.</param>
         <summary>Convert to system Size.</summary>
         <returns>Converted size.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemSizeF">
@@ -102,7 +108,9 @@
         <param name="size">Base size to convert.</param>
         <summary>Convert to system SizeF.</summary>
         <returns>Converted size.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemSizeF">
@@ -124,7 +132,9 @@
         <param name="size">Base size to convert.</param>
         <summary>Convert to system SizeF.</summary>
         <returns>Converted size.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemSizFe">
@@ -146,7 +156,9 @@
         <param name="size">Base size to convert.</param>
         <summary>Convert to system SizeF.</summary>
         <returns>Converted size.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
   </Members>

@@ -13,7 +13,7 @@
   <Docs>
     <summary>Represents information about the application.</summary>
     <remarks>
-      <para />
+      <para></para>
     </remarks>
   </Docs>
   <Members>
@@ -32,7 +32,9 @@
       <Docs>
         <summary>Gets the application build number.</summary>
         <value>The application build number.</value>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Name">
@@ -50,7 +52,9 @@
       <Docs>
         <summary>Gets the application name.</summary>
         <value>The application name.</value>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="PackageName">
@@ -105,7 +109,7 @@
       <Docs>
         <summary>Open the settings menu or page for the application.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -124,7 +128,9 @@
       <Docs>
         <summary>Gets the application version.</summary>
         <value>The application version.</value>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="VersionString">
@@ -142,7 +148,9 @@
       <Docs>
         <summary>Gets the application version.</summary>
         <value>The application version.</value>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
   </Members>
