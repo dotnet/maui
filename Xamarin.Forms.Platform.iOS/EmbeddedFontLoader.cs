@@ -6,6 +6,7 @@ using Foundation;
 
 namespace Xamarin.Forms.Platform.iOS
 {
+	[Preserve(AllMembers = true)]
 	public class EmbeddedFontLoader : IEmbeddedFontLoader
 	{
 		public (bool success, string filePath) LoadFont(EmbeddedFont font)

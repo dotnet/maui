@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {
+
+	[Preserve(AllMembers = true)]
 	public class EmbeddedFontLoader : IEmbeddedFontLoader
 	{
 		public (bool success, string filePath) LoadFont(EmbeddedFont font)

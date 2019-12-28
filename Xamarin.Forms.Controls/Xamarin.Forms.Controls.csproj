@@ -22,6 +22,10 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="BuildNumber.txt" />
+    <None Remove="Fonts\CuteFont-Regular.ttf" />
+    <None Remove="Fonts\Dokdo-Regular.ttf" />
+    <None Remove="Fonts\fa-regular-400.ttf" />
+    <None Remove="Fonts\PTM55FT.ttf" />
   </ItemGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
@@ -38,8 +42,27 @@
     <PackageReference Include="NUnit" Version="3.12.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="3.0.2" />
+    <EmbeddedResource Include="Fonts\CuteFont-Regular.ttf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Fonts\Dokdo-Regular.ttf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Fonts\fa-regular-400.ttf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Fonts\PTM55FT.ttf">
+      <SubType></SubType>
+      <Generator></Generator>
+    </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Fonts\" />
+  </ItemGroup>
   <Target Name="CreateControllGalleryConfig" BeforeTargets="Build">
     <CreateItem Include="blank.config">
       <Output TaskParameter="Include" ItemName="ConfigFile" />
