@@ -27,5 +27,15 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			ViewController?.HandleScrollAnimationEnded();
 		}
+
+		public override UIEdgeInsets GetInsetForSection(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
+		{
+			if (ItemsViewLayout == null)
+			{
+				return default;
+			}
+
+			return ViewController.GetInsetForSection(ItemsViewLayout, collectionView, section);
+		}
 	}
 }

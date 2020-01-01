@@ -131,6 +131,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue8087.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8222.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8167.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue8345.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8366.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8269.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8526.cs" />
