@@ -177,7 +177,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateAspect()
 		{
-			_image.Aspect = Element.Aspect;
+			_image.ApplyAspect(Element.Aspect);
 		}
 	}
 }

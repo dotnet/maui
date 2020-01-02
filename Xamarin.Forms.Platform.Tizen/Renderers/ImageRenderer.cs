@@ -8,52 +8,40 @@ namespace Xamarin.Forms.Platform.Tizen
 {
 	public class ImageRenderer : ViewRenderer<Image, Native.Image>
 	{
+		public ImageRenderer()
+		{
+			RegisterPropertyHandler(Image.SourceProperty, UpdateSource);
+			RegisterPropertyHandler(Image.AspectProperty, UpdateAspect);
+			RegisterPropertyHandler(Image.IsOpaqueProperty, UpdateIsOpaque);
+			RegisterPropertyHandler(Specific.BlendColorProperty, UpdateBlendColor);
+			RegisterPropertyHandler(Specific.FileProperty, UpdateFile);
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Image> e)
 		{
 			if (Control == null)
 			{
-				var image = new Native.Image(Forms.NativeParent);
-				SetNativeControl(image);
+				SetNativeControl(new Native.Image(Forms.NativeParent));
 			}
-
-			UpdateAll();
 			base.OnElementChanged(e);
 		}
 
-		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		async void UpdateSource(bool initialize)
 		{
-			base.OnElementPropertyChanged(sender, e);
-			if (e.PropertyName == Image.SourceProperty.PropertyName)
-			{
-				UpdateSource();
-			}
-			else if (e.PropertyName == Image.AspectProperty.PropertyName)
-			{
-				UpdateAspect();
-			}
-			else if (e.PropertyName == Image.IsOpaqueProperty.PropertyName)
-			{
-				UpdateIsOpaque();
-			}
-			else if (e.PropertyName == Specific.BlendColorProperty.PropertyName)
-			{
-				UpdateBlendColor();
-			}
-		}
+			if (initialize && Element.Source == default(ImageSource))
+				return;
 
-		async void UpdateSource()
-		{
 			ImageSource source = Element.Source;
-
 			((IImageController)Element).SetIsLoading(true);
 
 			if (Control != null)
 			{
 				bool success = await Control.LoadFromImageSourceAsync(source);
+
 				if (!IsDisposed && success)
 				{
 					((IVisualElementController)Element).NativeSizeChanged();
-					UpdateAfterLoading();
+					UpdateAfterLoading(initialize);
 				}
 			}
 
@@ -61,31 +49,51 @@ namespace Xamarin.Forms.Platform.Tizen
 				((IImageController)Element).SetIsLoading(false);
 		}
 
-		protected virtual void UpdateAfterLoading()
+		void UpdateFile(bool initialize)
 		{
-			UpdateIsOpaque();
-			UpdateBlendColor();
+			if (initialize && Specific.GetFile(Element) == default || Element.Source != default(ImageSource))
+				return;
+
+			if (Control != null)
+			{
+				bool success = Control.LoadFromFile(Specific.GetFile(Element));
+
+				if (!IsDisposed && success)
+				{
+					((IVisualElementController)Element).NativeSizeChanged();
+					UpdateAfterLoading(initialize);
+				}
+			}
 		}
 
-		void UpdateAspect()
+		protected virtual void UpdateAfterLoading(bool initialize)
 		{
-			Control.Aspect = Element.Aspect;
+			UpdateIsOpaque(initialize);
+			UpdateBlendColor(initialize);
 		}
 
-		void UpdateIsOpaque()
+		void UpdateAspect(bool initialize)
 		{
+			if (initialize && Element.Aspect == Aspect.AspectFit)
+				return;
+
+			Control.ApplyAspect(Element.Aspect);
+		}
+
+		void UpdateIsOpaque(bool initialize)
+		{
+			if (initialize && !Element.IsOpaque)
+				return;
+
 			Control.IsOpaque = Element.IsOpaque;
 		}
 
-		void UpdateBlendColor()
+		void UpdateBlendColor(bool initialize)
 		{
-			Control.Color = Specific.GetBlendColor(Element).ToNative();
-		}
+			if (initialize && Specific.GetBlendColor(Element).IsDefault)
+				return;
 
-		void UpdateAll()
-		{
-			UpdateSource();
-			UpdateAspect();
+			Control.Color = Specific.GetBlendColor(Element).ToNative();
 		}
 	}
 
