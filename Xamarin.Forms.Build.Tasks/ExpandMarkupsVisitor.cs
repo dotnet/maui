@@ -143,11 +143,11 @@ namespace Xamarin.Forms.Build.Tasks
 				}
 				else
 				{
-					char next;
-					string piece;
-					while ((piece = GetNextPiece(serviceProvider, ref remaining, out next)) != null)
+					Property parsed;
+					do
 					{
-						var parsed = ParseProperty(piece, serviceProvider, ref remaining, next != '=');
+						parsed = ParseProperty(serviceProvider, ref remaining);
+
 						XmlName childname;
 
 						if (parsed.name == null)
@@ -177,6 +177,7 @@ namespace Xamarin.Forms.Build.Tasks
 							childnodes.Add((childname, childnode));
 						}
 					}
+					while (!parsed.last);
 				}
 
 				//The order of lookup is to look for the Extension-suffixed class name first and then look for the class name without the Extension suffix.

@@ -131,10 +131,9 @@ namespace Xamarin.Forms.Xaml
 					remaining = remaining.Substring(1);
 				}
 				else {
-					char next;
-					string piece;
-					while ((piece = GetNextPiece(serviceProvider, ref remaining, out next)) != null) {
-						var parsed = ParseProperty(piece, serviceProvider, ref remaining, next != '=');
+					Property parsed;
+					do {
+						parsed = ParseProperty(serviceProvider, ref remaining);
 						XmlName childname;
 
 						if (parsed.name == null) {
@@ -160,6 +159,7 @@ namespace Xamarin.Forms.Xaml
 							childnodes.Add((childname, childnode));
 						}
 					}
+					while (!parsed.last);
 				}
 
 

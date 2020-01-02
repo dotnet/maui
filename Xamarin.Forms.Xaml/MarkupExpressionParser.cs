@@ -40,6 +40,7 @@ namespace Xamarin.Forms.Xaml
 	{
 		protected struct Property
 		{
+			public bool last;
 			public string name;
 			public string strValue;
 			public object value;
@@ -119,50 +120,56 @@ namespace Xamarin.Forms.Xaml
 			return true;
 		}
 
-		protected Property ParseProperty(string prop, IServiceProvider serviceProvider, ref string remaining, bool isImplicit)
+		protected Property ParseProperty(IServiceProvider serviceProvider, ref string remaining)
 		{
 			char next;
 			object value = null;
 			string str_value;
+			string name;
 
-			if (isImplicit)
-			{
-				return new Property { name = null, strValue = prop, value = null };
-			}
 			remaining = remaining.TrimStart();
-			if (remaining.StartsWith("{", StringComparison.Ordinal))
-			{
-				value = ParseExpression(ref remaining, serviceProvider);
+			if (remaining[0] == '{')
+				return ParsePropertyExpression(null, serviceProvider, ref remaining);
+
+			str_value = GetNextPiece(serviceProvider, ref remaining, out next);
+			if (next == '=') {
 				remaining = remaining.TrimStart();
+				if (remaining[0] == '{')
+					return ParsePropertyExpression(str_value, serviceProvider, ref remaining);
 
-				if (remaining.Length > 0 && remaining[0] == ',')
-					remaining = remaining.Substring(1);
-				else if (remaining.Length > 0 && remaining[0] == '}')
-					remaining = remaining.Substring(1);
-
-				str_value = value as string;
+				name = str_value;
+				str_value = GetNextPiece(serviceProvider, ref remaining, out next);
 			}
 			else {
-				str_value = GetNextPiece(serviceProvider, ref remaining, out next);
-				if (str_value == null) {
-					throw new XamlParseException($"No value found for property '{prop}' in markup expression", serviceProvider);
-				}
+				name = null;
 			}
 
-			return new Property { name = prop, strValue = str_value, value = value };
+			return new Property { last = next == '}', name = name, strValue = str_value, value = value };
 		}
 
-		protected string GetNextPiece(IServiceProvider serviceProvider, ref string remaining, out char next)
+		private Property ParsePropertyExpression(string prop, IServiceProvider serviceProvider, ref string remaining)
+		{
+			bool last;
+			var value = ParseExpression(ref remaining, serviceProvider);
+			remaining = remaining.TrimStart();
+			if (remaining.Length <= 0)
+				throw new XamlParseException("Unexpected end of markup expression", serviceProvider);
+			if (remaining[0] == ',')
+				last = false;
+			else if (remaining[0] == '}')
+				last = true;
+			else
+				throw new XamlParseException("Unexpected character following value string", serviceProvider);
+
+			remaining = remaining.Substring(1);
+			return new Property { last = last, name = prop, strValue = value as string, value = value };
+		}
+
+		private string GetNextPiece(IServiceProvider serviceProvider, ref string remaining, out char next)
 		{
 			bool inString = false;
 			int end = 0;
 			char stringTerminator = '\0';
-			remaining = remaining.TrimStart();
-			if (remaining.Length == 0)
-			{
-				next = Char.MaxValue;
-				return null;
-			}
 
 			var piece = new StringBuilder();
 			// If we're inside a quoted string we append all chars to our piece until we hit the ending quote.
@@ -203,14 +210,8 @@ namespace Xamarin.Forms.Xaml
 			if (inString && end == remaining.Length)
 				throw new XamlParseException("Unterminated quoted string", serviceProvider);
 
-			if (end == remaining.Length && !remaining.EndsWith("}", StringComparison.Ordinal))
-				throw new XamlParseException("Expression did not end with '}'", serviceProvider);
-
 			if (end == 0)
-			{
-				next = Char.MaxValue;
-				return null;
-			}
+				throw new XamlParseException("Empty value string in markup expression", serviceProvider);
 
 			next = remaining[end];
 			remaining = remaining.Substring(end + 1);
