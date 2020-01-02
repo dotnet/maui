@@ -7,6 +7,8 @@ using UIKit;
 using Xamarin.Forms.Internals;
 using static Xamarin.Forms.PlatformConfiguration.iOSSpecific.Page;
 using PageUIStatusBarAnimation = Xamarin.Forms.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
+using TabbedPageConfiguration = Xamarin.Forms.PlatformConfiguration.iOSSpecific.TabbedPage;
+using TranslucencyMode = Xamarin.Forms.PlatformConfiguration.iOSSpecific.TranslucencyMode;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -18,6 +20,7 @@ namespace Xamarin.Forms.Platform.iOS
 		bool _defaultBarTextColorSet;
 		UIColor _defaultBarColor;
 		bool _defaultBarColorSet;
+		bool? _defaultBarTranslucent;
 		bool _loaded;
 		Size _queuedSize;
 
@@ -74,6 +77,7 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateBarBackgroundColor();
 			UpdateBarTextColor();
 			UpdateSelectedTabColors();
+			UpdateBarTranslucent();
 
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 		}
@@ -240,6 +244,8 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateSelectedTabColors();
 			else if (e.PropertyName == PrefersHomeIndicatorAutoHiddenProperty.PropertyName)
 				UpdatePrefersHomeIndicatorAutoHiddenOnPages();
+			else if (e.PropertyName == TabbedPageConfiguration.TranslucencyModeProperty.PropertyName)
+				UpdateBarTranslucent();
 
 		}
 
@@ -389,6 +395,26 @@ namespace Xamarin.Forms.Platform.iOS
 			// set TintColor for selected icon
 			// setting the unselected icon tint is not supported by iOS
 			TabBar.TintColor = isDefaultColor ? _defaultBarTextColor : barTextColor.ToUIColor();
+		}
+
+		void UpdateBarTranslucent()
+		{
+			if (Tabbed == null || TabBar == null || Element == null)
+				return;
+
+			_defaultBarTranslucent = _defaultBarTranslucent ?? TabBar.Translucent;
+			switch (TabbedPageConfiguration.GetTranslucencyMode(Element))
+			{
+				case TranslucencyMode.Translucent:
+					TabBar.Translucent = true;
+					return;
+				case TranslucencyMode.Opaque:
+					TabBar.Translucent = false;
+					return;
+				default:
+					TabBar.Translucent = _defaultBarTranslucent.GetValueOrDefault();
+					return;
+			}
 		}
 
 		void UpdateChildrenOrderIndex(UIViewController[] viewControllers)
