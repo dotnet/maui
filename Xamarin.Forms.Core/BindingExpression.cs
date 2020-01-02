@@ -279,15 +279,16 @@ namespace Xamarin.Forms
 					return pi;
 			}
 
+			//defined on a base class ?
+			if (sourceType.BaseType is Type baseT && GetIndexer(baseT.GetTypeInfo(), indexerName, content) is PropertyInfo p)
+				return p;
+
 			//defined on an interface ?
 			foreach (var face in sourceType.ImplementedInterfaces) {
 				if (GetIndexer(face.GetTypeInfo(), indexerName, content) is PropertyInfo pi)
 					return pi;
 			}
 
-			//defined on a base class ?
-			if (sourceType.BaseType is Type baseT && GetIndexer(baseT.GetTypeInfo(), indexerName, content) is PropertyInfo p)
-				return p;
 			return null;
 		}
 
