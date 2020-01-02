@@ -54,16 +54,20 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (_isDisposed)
 				return;
-			if (Control != null)
-			{
-				Control.TouchUpInside -= OnButtonTouchUpInside;
-				Control.TouchDown -= OnButtonTouchDown;
-				BorderElementManager.Dispose(this);
-				_buttonLayoutManager?.Dispose();
-				_buttonLayoutManager = null;
-			}
 
 			_isDisposed = true;
+
+			if (disposing)
+			{
+				if (Control != null)
+				{
+					Control.TouchUpInside -= OnButtonTouchUpInside;
+					Control.TouchDown -= OnButtonTouchDown;
+					BorderElementManager.Dispose(this);
+					_buttonLayoutManager?.Dispose();
+					_buttonLayoutManager = null;
+				}
+			}
 
 			base.Dispose(disposing);
 		}
