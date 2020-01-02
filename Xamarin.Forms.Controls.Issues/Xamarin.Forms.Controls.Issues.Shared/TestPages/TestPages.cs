@@ -637,6 +637,7 @@ namespace Xamarin.Forms.Controls
 			ContentPage page = new ContentPage();
 			Items[0].Items.Add(new ShellSection()
 			{
+				Title = title,
 				Items =
 				{
 					new ShellContent()
@@ -689,6 +690,7 @@ namespace Xamarin.Forms.Controls
 			item.Title = shellItemTitle;
 
 			TShellSection shellSection = Activator.CreateInstance<TShellSection>();
+			shellSection.Title = shellItemTitle;
 
 			shellSection.Items.Add(new ShellContent()
 			{

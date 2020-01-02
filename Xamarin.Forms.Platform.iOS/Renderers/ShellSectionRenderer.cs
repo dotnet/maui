@@ -60,7 +60,6 @@ namespace Xamarin.Forms.Platform.iOS
 		Page _displayedPage;
 		bool _disposed;
 		bool _firstLayoutCompleted;
-		bool _ignorePop;
 		TaskCompletionSource<bool> _popCompletionTask;
 		IShellSectionRootRenderer _renderer;
 		ShellSection _shellSection;
@@ -70,18 +69,7 @@ namespace Xamarin.Forms.Platform.iOS
 			Delegate = new NavDelegate(this);
 			_context = context;
 		}
-
-		public override UIViewController PopViewController(bool animated)
-		{
-			if (!_ignorePop)
-			{
-				_popCompletionTask = new TaskCompletionSource<bool>();
-				SendPoppedOnCompletion(_popCompletionTask.Task);
-			}
-
-			return base.PopViewController(animated);
-		}
-
+		
 		[Export("navigationBar:shouldPopItem:")]
 		public bool ShouldPopItem(UINavigationBar navigationBar, UINavigationItem item)
 		{
@@ -94,7 +82,12 @@ namespace Xamarin.Forms.Platform.iOS
 			if (allowPop)
 			{
 				// Do not remove, wonky behavior on some versions of iOS if you dont dispatch
-				CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() => PopViewController(true));
+				CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() =>
+				{
+					_popCompletionTask = new TaskCompletionSource<bool>();
+					SendPoppedOnCompletion(_popCompletionTask.Task);
+					PopViewController(true);
+				});
 			}
 			else
 			{
@@ -265,9 +258,7 @@ namespace Xamarin.Forms.Platform.iOS
 			_popCompletionTask = new TaskCompletionSource<bool>();
 			e.Task = _popCompletionTask.Task;
 
-			_ignorePop = true;
 			PopViewController(animated);
-			_ignorePop = false;
 
 			await _popCompletionTask.Task;
 
@@ -498,6 +489,20 @@ namespace Xamarin.Forms.Platform.iOS
 					navBarVisible = Shell.GetNavBarIsVisible(element);
 
 				navigationController.SetNavigationBarHidden(!navBarVisible, true);
+
+				var coordinator = viewController.GetTransitionCoordinator();
+				if (coordinator != null)
+				{
+					// handle swipe to dismiss gesture 
+					coordinator.NotifyWhenInteractionEndsUsingBlock((context) =>
+					{
+						if (!context.IsCancelled)
+						{
+							_self._popCompletionTask = new TaskCompletionSource<bool>();
+							_self.SendPoppedOnCompletion(_self._popCompletionTask.Task);
+						}
+					});
+				}
 			}
 		}
 	}
