@@ -26,6 +26,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			item1 = AddContentPage();
 
+			item1.Title = "Not Visible";
 			Items.Add(new MenuShellItem(new MenuItem()
 			{
 				Text = "Menu Item",
@@ -35,7 +36,7 @@ namespace Xamarin.Forms.Controls.Issues
 				})
 			}));
 
-			AddContentPage(new ContentPage()
+			var item2 = AddContentPage(new ContentPage()
 			{
 				Content = new StackLayout()
 				{
@@ -49,6 +50,8 @@ namespace Xamarin.Forms.Controls.Issues
 					}
 				}
 			});
+
+			item2.Title = "Visible After Remove";
 			Device.BeginInvokeOnMainThread(() =>
 			{
 				this.Items.Remove(item1);

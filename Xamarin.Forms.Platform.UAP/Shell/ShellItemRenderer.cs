@@ -33,6 +33,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 		internal ShellRenderer ShellContext { get; set; }
 
+		IShellItemController ShellItemController => ShellItem;
+
 		public ShellItemRenderer(ShellRenderer shellContext)
 		{
 			Xamarin.Forms.Shell.VerifyShellUWPFlagEnabled(nameof(ShellItemRenderer));
@@ -116,11 +118,13 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			_BottomBar.Children.Clear();
 			_BottomBar.ColumnDefinitions.Clear();
-			if (ShellItem?.Items.Count > 1)
+			var items = ShellItemController?.GetItems();
+
+			if (items?.Count > 1)
 			{
-				for (int i = 0; i < ShellItem.Items.Count; i++)
+				for (int i = 0; i < items.Count; i++)
 				{
-					var section = ShellItem.Items[i];
+					var section = items[i];
 					var btn = new AppBarButton()
 					{
 						Label = section.Title,
@@ -228,8 +232,8 @@ namespace Xamarin.Forms.Platform.UWP
 		void HookEvents(ShellItem shellItem)
 		{
 			shellItem.PropertyChanged += OnShellItemPropertyChanged;
-			((INotifyCollectionChanged)shellItem.Items).CollectionChanged += OnShellItemsChanged;
-			foreach (var shellSection in shellItem.Items)
+			ShellItemController.ItemsCollectionChanged += OnShellItemsChanged;
+			foreach (var shellSection in ShellItemController.GetItems())
 			{
 				HookChildEvents(shellSection);
 			}
@@ -239,11 +243,11 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			if (shellItem != null)
 			{
-				foreach (var shellSection in shellItem.Items)
+				foreach (var shellSection in ShellItemController.GetItems())
 				{
 					UnhookChildEvents(shellSection);
 				}
-				((INotifyCollectionChanged)shellItem.Items).CollectionChanged -= OnShellItemsChanged;
+				ShellItemController.ItemsCollectionChanged -= OnShellItemsChanged;
 				ShellItem.PropertyChanged -= OnShellItemPropertyChanged;
 				ShellSection = null;
 				ShellItem = null;

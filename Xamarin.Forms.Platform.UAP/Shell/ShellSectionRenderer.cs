@@ -14,6 +14,7 @@ namespace Xamarin.Forms.Platform.UWP
 		Page Page;
 		ShellContent CurrentContent;
 		ShellSection ShellSection;
+		IShellSectionController ShellSectionController => ShellSection;
 
 		public ShellSectionRenderer()
 		{
@@ -66,7 +67,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (ShellSection != null)
 			{
 				ShellSection.PropertyChanged -= OnShellSectionPropertyChanged;
-				((System.Collections.Specialized.INotifyCollectionChanged)section.Items).CollectionChanged -= OnShellSectionRendererCollectionChanged;
+				ShellSectionController.ItemsCollectionChanged -= OnShellSectionRendererCollectionChanged;
 				ShellSection = null;
 				MenuItemsSource = null;
 			}
@@ -74,9 +75,9 @@ namespace Xamarin.Forms.Platform.UWP
 			ShellSection = section;
 			ShellSection.PropertyChanged += OnShellSectionPropertyChanged;
 			SelectedItem = null;
-			IsPaneVisible = section.Items.Count > 1;
-			MenuItemsSource = section.Items;
-			((System.Collections.Specialized.INotifyCollectionChanged)section.Items).CollectionChanged += OnShellSectionRendererCollectionChanged;
+			IsPaneVisible = ShellSectionController.GetItems().Count > 1;
+			MenuItemsSource = ShellSectionController.GetItems();
+			ShellSectionController.ItemsCollectionChanged += OnShellSectionRendererCollectionChanged;
 			SelectedItem = section.CurrentItem;
 			NavigateToContent(source, section.CurrentItem, animate);
 		}
@@ -86,7 +87,7 @@ namespace Xamarin.Forms.Platform.UWP
 			// This shouldn't be necessary, but MenuItemsSource doesn't appear to be listening for INCC
 			// Revisit once using WinUI instead.
 			MenuItemsSource = null;
-			MenuItemsSource = ShellSection?.Items;
+			MenuItemsSource = ShellSectionController?.GetItems();
 		}
 
 		void OnShellSectionPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -165,7 +166,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 			else
 			{
-				IsPaneVisible = ShellSection.Items.Count > 1;
+				IsPaneVisible = ShellSectionController.GetItems().Count > 1;
 				AutoSuggestBox.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 			}
 		}

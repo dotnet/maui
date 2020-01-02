@@ -81,8 +81,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			shell.Items[0].Items.Add(shellSection);
 
 			Assert.AreSame(shellSection.BindingContext, viewModel);
-			Assert.AreSame(shellSection.Items[0].BindingContext, viewModel);
-			Assert.AreSame((shellSection.Items[0].Content as BindableObject).BindingContext, viewModel);
+			Assert.AreSame(GetItems(shellSection)[0].BindingContext, viewModel);
+			Assert.AreSame((GetItems(shellSection)[0].Content as BindableObject).BindingContext, viewModel);
 		}
 
 		[Test]
@@ -800,5 +800,18 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual("//rootlevelcontent1/details", shell.CurrentState.Location.ToString());
 		}
 
+		[Test]
+		public async Task ShellItemNotVisible()
+		{
+			var shell = new Shell();
+			var item1 = CreateShellItem(new ContentPage() { IsVisible = false });
+			var item2 = CreateShellItem();
+
+			shell.Items.Add(item1);
+			shell.Items.Add(item2);
+
+			Assert.IsFalse(GetItems(shell).Contains(item1));
+			Assert.IsTrue(GetItems(shell).Contains(item2));
+		}
 	}
 }

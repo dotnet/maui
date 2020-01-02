@@ -12,10 +12,11 @@ namespace Xamarin.Forms.Platform.Android
 		bool _disposed;
 		ShellSection _shellSection;
 
+		IShellSectionController SectionController => (IShellSectionController)_shellSection;
 		public ShellFragmentPagerAdapter(ShellSection shellSection, FragmentManager fragmentManager) : base(fragmentManager)
 		{
 			_shellSection = shellSection;
-			((INotifyCollectionChanged)shellSection.Items).CollectionChanged += OnItemsCollectionChanged;
+			SectionController.ItemsCollectionChanged += OnItemsCollectionChanged;
 		}
 
 		protected virtual void OnItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -24,17 +25,17 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		public int CountOverride { get; set; }
-		public override int Count => _shellSection.Items.Count;
+		public override int Count => SectionController.GetItems().Count;
 
 		public override Fragment GetItem(int position)
 		{
-			var shellContent = _shellSection.Items[position];
+			var shellContent = SectionController.GetItems()[position];
 			return new ShellFragmentContainer(shellContent) { Arguments = Bundle.Empty };
 		}
 
 		public override long GetItemId(int position)
 		{
-			return _shellSection.Items[position].GetHashCode();
+			return SectionController.GetItems()[position].GetHashCode();
 		}
 
 #pragma warning disable RCS1168 // Parameter name differs from base name.
@@ -45,7 +46,7 @@ namespace Xamarin.Forms.Platform.Android
 			var shellContent = fragContainer?.ShellContentTab;
 			if (shellContent != null)
 			{
-				int index = _shellSection.Items.IndexOf(shellContent);
+				int index = SectionController.GetItems().IndexOf(shellContent);
 				if (index >= 0)
 					return index;
 			}
@@ -54,7 +55,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public override ICharSequence GetPageTitleFormatted(int position)
 		{
-			return new String(_shellSection.Items[position].Title);
+			return new String(SectionController.GetItems()[position].Title);
 		}
 
 		// http://stackoverflow.com/questions/18642890/fragmentstatepageradapter-with-childfragmentmanager-fragmentmanagerimpl-getfra/19099987#19099987
@@ -71,8 +72,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (disposing)
 			{
-				((INotifyCollectionChanged)_shellSection.Items).CollectionChanged -= OnItemsCollectionChanged;
-
+				SectionController.ItemsCollectionChanged -= OnItemsCollectionChanged;
 				_shellSection = null;
 			}
 

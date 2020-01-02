@@ -9,6 +9,7 @@ using System.Linq;
 #endif
 
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
@@ -44,6 +45,9 @@ namespace Xamarin.Forms
 		}
 
 		Page IShellContentController.Page => ContentCache;
+
+		EventHandler _isPageVisibleChanged;
+		event EventHandler IShellContentController.IsPageVisibleChanged { add => _isPageVisibleChanged += value; remove => _isPageVisibleChanged -= value; }
 
 		Page IShellContentController.GetOrCreateContent()
 		{
@@ -125,11 +129,33 @@ namespace Xamarin.Forms
 		protected override void OnChildAdded(Element child)
 		{
 			base.OnChildAdded(child);
-			if (child is Page page && IsVisibleContent)
+			if (child is Page page)
 			{
-				SendAppearing();
-				SendPageAppearing(page);
+				if (IsVisibleContent && page.IsVisible)
+				{
+					SendAppearing();
+					SendPageAppearing(page);
+				}
+
+				page.PropertyChanged += OnPagePropertyChanged;
+				_isPageVisibleChanged?.Invoke(this, EventArgs.Empty);
 			}
+		}
+
+		protected override void OnChildRemoved(Element child)
+		{
+			base.OnChildRemoved(child);
+			if (child is Page page)
+			{
+				page.PropertyChanged -= OnPagePropertyChanged;
+			}
+		}
+		
+
+		void OnPagePropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == Page.IsVisibleProperty.PropertyName)
+				_isPageVisibleChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		Page ContentCache
@@ -147,7 +173,7 @@ namespace Xamarin.Forms
 					((ShellSection)Parent).UpdateDisplayedPage();
 			}
 		}
-
+		
 		public static implicit operator ShellContent(TemplatedPage page)
 		{
 			var shellContent = new ShellContent();

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Threading.Tasks;
 
 namespace Xamarin.Forms
@@ -43,5 +45,9 @@ namespace Xamarin.Forms
 		bool RemoveFlyoutBehaviorObserver(IFlyoutBehaviorObserver observer);
 
 		void UpdateCurrentState(ShellNavigationSource source);
+
+		ReadOnlyCollection<ShellItem> GetItems();
+
+		event NotifyCollectionChangedEventHandler ItemsCollectionChanged;
 	}
 }

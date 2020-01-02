@@ -149,11 +149,11 @@ namespace Xamarin.Forms.Platform.Android
 		event EventHandler<PropertyChangedEventArgs> _elementPropertyChanged;
 
 		public ShellRenderer(Context context)
-		{	
+		{
 			AndroidContext = context;
 		}
 
-		
+
 
 		protected Context AndroidContext { get; }
 		protected Shell Element { get; private set; }
@@ -242,7 +242,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			// Previewer Hack
 			Profile.FramePartition("Previewer Hack");
-			if (AndroidContext.GetActivity() != null)
+			if (AndroidContext.GetActivity() != null && shell.CurrentItem != null)
 				SwitchFragment(FragmentManager, _frameLayout, shell.CurrentItem, false);
 
 			Profile.FrameEnd();
@@ -256,7 +256,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			Profile.FramePartition("IsDesignerContext");
 			if (AndroidContext.IsDesignerContext())
-				return; 
+				return;
 
 			Profile.FramePartition("CreateShellItemRenderer");
 			var previousRenderer = _currentRenderer;
@@ -274,7 +274,7 @@ namespace Xamarin.Forms.Platform.Android
 			transaction.CommitAllowingStateLossEx();
 
 			Profile.FramePartition("OnDestroyed");
-			void OnDestroyed (object sender, EventArgs args)
+			void OnDestroyed(object sender, EventArgs args)
 			{
 				previousRenderer.Destroyed -= OnDestroyed;
 
@@ -297,7 +297,7 @@ namespace Xamarin.Forms.Platform.Android
 			int height = (int)AndroidContext.ToPixels(Element.Height);
 
 			Profile.FramePartition("Measure");
-			_flyoutRenderer.AndroidView.Measure(MeasureSpecFactory.MakeMeasureSpec(width, MeasureSpecMode.Exactly), 
+			_flyoutRenderer.AndroidView.Measure(MeasureSpecFactory.MakeMeasureSpec(width, MeasureSpecMode.Exactly),
 				MeasureSpecFactory.MakeMeasureSpec(height, MeasureSpecMode.Exactly));
 
 			Profile.FramePartition("Layout");

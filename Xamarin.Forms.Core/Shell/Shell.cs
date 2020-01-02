@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
@@ -204,6 +205,8 @@ namespace Xamarin.Forms
 
 		View IShellController.FlyoutHeader => FlyoutHeaderView;
 
+		IShellController ShellController => this;
+
 		void IShellController.AddAppearanceObserver(IAppearanceObserver observer, Element pivot)
 		{
 			_appearanceObservers.Add((observer, pivot));
@@ -314,7 +317,24 @@ namespace Xamarin.Forms
 			if (FlyoutIsPresented && FlyoutBehavior == FlyoutBehavior.Flyout)
 				SetValueFromRenderer(FlyoutIsPresentedProperty, false);
 
-			await GoToAsync(state).ConfigureAwait(false);
+			if (shellSection == null)
+				shellItem.PropertyChanged += OnShellItemPropertyChanged;
+			else if (shellContent == null)
+				shellSection.PropertyChanged += OnShellItemPropertyChanged;
+			else
+				await GoToAsync(state).ConfigureAwait(false);
+		}
+
+		void OnShellItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == CurrentItemProperty.PropertyName)
+			{
+				(sender as BindableObject).PropertyChanged -= OnShellItemPropertyChanged;
+				if (sender is ShellItem item)
+					((IShellController)this).OnFlyoutItemSelected(item);
+				else if (sender is ShellSection section)
+					((IShellController)this).OnFlyoutItemSelected(section.Parent);
+			}
 		}
 
 		bool IShellController.ProposeNavigation(ShellNavigationSource source, ShellItem shellItem, ShellSection shellSection, ShellContent shellContent, IReadOnlyList<Page> stack, bool canCancel)
@@ -351,6 +371,13 @@ namespace Xamarin.Forms
 			SetValueFromRenderer(CurrentStatePropertyKey, result);
 
 			OnNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
+		}
+		ReadOnlyCollection<ShellItem> IShellController.GetItems() => ((ShellItemCollection)Items).VisibleItems;
+
+		event NotifyCollectionChangedEventHandler IShellController.ItemsCollectionChanged
+		{
+			add { ((ShellItemCollection)Items).VisibleItemsChanged += value; }
+			remove { ((ShellItemCollection)Items).VisibleItemsChanged -= value; }
 		}
 
 		public static Shell Current => Application.Current?.MainPage as Shell;
@@ -472,9 +499,9 @@ namespace Xamarin.Forms
 			//if the lastItem is implicitly wrapped, get the actual ShellContent
 			if (isLastItem)
 			{
-				if (element is ShellItem shellitem && shellitem.Items.FirstOrDefault() is ShellSection section)
+				if (element is IShellItemController shellitem && shellitem.GetItems().FirstOrDefault() is ShellSection section)
 					element = section;
-				if (element is ShellSection shellsection && shellsection.Items.FirstOrDefault() is ShellContent content)
+				if (element is IShellSectionController shellsection && shellsection.GetItems().FirstOrDefault() is ShellContent content)
 					element = content;
 				if (element is ShellContent shellcontent && shellcontent.Content is Element e)
 					element = e;
@@ -588,8 +615,42 @@ namespace Xamarin.Forms
 		public Shell()
 		{
 			Navigation = new NavigationImpl(this);
-			((INotifyCollectionChanged)Items).CollectionChanged += (s, e) => SendStructureChanged();
 			Route = Routing.GenerateImplicitRoute("shell");
+			Initialize();
+		}
+
+		void Initialize()
+		{
+			if (CurrentItem != null)
+				SetCurrentItem();
+
+			ShellController.ItemsCollectionChanged += (s, e) =>
+			{
+				SetCurrentItem();
+				SendStructureChanged();
+			};
+
+			void SetCurrentItem()
+			{
+				var shellItems = ShellController.GetItems();
+
+				if (CurrentItem != null && shellItems.Contains(CurrentItem))
+					return;
+
+				ShellItem shellItem = null;
+
+				foreach (var item in shellItems)
+				{
+					if (item is ShellItem && ValidDefaultShellItem(item))
+					{
+						shellItem = item;
+						break;
+					}
+				}
+
+				if (shellItem != null)
+					ShellController.OnFlyoutItemSelected(shellItem);
+			}
 		}
 
 		public ScrollMode FlyoutVerticalScrollMode
@@ -736,13 +797,13 @@ namespace Xamarin.Forms
 				}
 			}
 
-			foreach (var shellItem in Items)
+			foreach (var shellItem in ShellController.GetItems())
 			{
 				if (shellItem.FlyoutDisplayOptions == FlyoutDisplayOptions.AsMultipleItems)
 				{
 					IncrementGroup();
 
-					foreach (var shellSection in shellItem.Items)
+					foreach (var shellSection in (shellItem as IShellItemController).GetItems())
 					{
 						if (shellSection.FlyoutDisplayOptions == FlyoutDisplayOptions.AsMultipleItems)
 						{
@@ -764,7 +825,7 @@ namespace Xamarin.Forms
 								currentGroup.Add(shellSection);
 
 							// If we have only a single child we will also show the items menu items
-							if (shellSection.Items.Count == 1 && shellSection == shellItem.CurrentItem)
+							if ((shellSection as IShellSectionController).GetItems().Count == 1 && shellSection == shellItem.CurrentItem)
 							{
 								currentGroup.AddRange(shellSection.CurrentItem.MenuItems);
 							}
@@ -799,34 +860,6 @@ namespace Xamarin.Forms
 				return true;
 			}
 			return false;
-		}
-
-		protected override void OnChildAdded(Element child)
-		{
-			base.OnChildAdded(child);
-
-			if (child is ShellItem shellItem && CurrentItem == null && ValidDefaultShellItem(child))
-			{
-				((IShellController)this).OnFlyoutItemSelected(shellItem);
-			}
-		}
-
-		protected override void OnChildRemoved(Element child)
-		{
-			base.OnChildRemoved(child);
-
-			if (child == CurrentItem)
-			{
-				for (var i = 0; i < Items.Count; i++)
-				{
-					var item = Items[i];
-					if (ValidDefaultShellItem(item))
-					{
-						((IShellController)this).OnFlyoutItemSelected(item);
-						break;
-					}
-				}
-			}
 		}
 
 		bool ValidDefaultShellItem(Element child) => !(child is MenuShellItem);
@@ -877,8 +910,8 @@ namespace Xamarin.Forms
 			var shell = (Shell)bindable;
 			UpdateChecked(shell);
 
-			((IShellController)shell).AppearanceChanged(shell, false);
-			((IShellController)shell).UpdateCurrentState(ShellNavigationSource.ShellItemChanged);
+			shell.ShellController.AppearanceChanged(shell, false);
+			shell.ShellController.UpdateCurrentState(ShellNavigationSource.ShellItemChanged);
 		}
 
 		static void OnCurrentItemChanging(BindableObject bindable, object oldValue, object newValue)
@@ -893,7 +926,7 @@ namespace Xamarin.Forms
 				var shellSection = shellItem.CurrentItem;
 				var shellContent = shellSection.CurrentItem;
 				var stack = shellSection.Stack;
-				((IShellController)shell).ProposeNavigation(ShellNavigationSource.ShellItemChanged, shellItem, shellSection, shellContent, stack, false);
+				shell.ShellController.ProposeNavigation(ShellNavigationSource.ShellItemChanged, shellItem, shellSection, shellContent, stack, false);
 			}
 		}
 
@@ -909,7 +942,7 @@ namespace Xamarin.Forms
 			if (root is Shell shell)
 			{
 				ShellItem currentItem = shell.CurrentItem;
-				var items = shell.Items;
+				var items = shell.ShellController.GetItems();
 				var count = items.Count;
 				for (int i = 0; i < count; i++)
 				{
@@ -920,7 +953,7 @@ namespace Xamarin.Forms
 			else if (root is ShellItem shellItem)
 			{
 				var currentItem = shellItem.CurrentItem;
-				var items = shellItem.Items;
+				var items = (shellItem as IShellItemController).GetItems();
 				var count = items.Count;
 				for (int i = 0; i < count; i++)
 				{
@@ -931,7 +964,7 @@ namespace Xamarin.Forms
 			else if (root is ShellSection shellSection)
 			{
 				var currentItem = shellSection.CurrentItem;
-				var items = shellSection.Items;
+				var items = (shellSection as IShellSectionController).GetItems();
 				var count = items.Count;
 				for (int i = 0; i < count; i++)
 				{

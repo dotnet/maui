@@ -22,8 +22,8 @@ namespace Xamarin.Forms
 
 			var descendantsOnPage = parentPage?.VisibleDescendants();
 
-			if (parentPage is Shell shell)
-				descendantsOnPage = shell.Items;
+			if (parentPage is IShellController shell)
+				descendantsOnPage = shell.GetItems();
 
 			if (descendantsOnPage == null)
 				return new Dictionary<int, List<ITabStopElement>>();

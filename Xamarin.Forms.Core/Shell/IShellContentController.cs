@@ -1,4 +1,6 @@
-﻿namespace Xamarin.Forms
+﻿using System;
+
+namespace Xamarin.Forms
 {
 	public interface IShellContentController : IElementController
 	{
@@ -7,5 +9,6 @@
 		void RecyclePage(Page page);
 
 		Page Page { get; }
+		event EventHandler IsPageVisibleChanged;
 	}
 }

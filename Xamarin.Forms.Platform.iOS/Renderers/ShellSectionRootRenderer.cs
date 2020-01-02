@@ -31,6 +31,7 @@ namespace Xamarin.Forms.Platform.iOS
 		Thickness _lastInset;
 
 		ShellSection ShellSection { get; set; }
+		IShellSectionController ShellSectionController => ShellSection;
 
 		public ShellSectionRootRenderer(ShellSection shellSection, IShellContext shellContext)
 		{
@@ -63,7 +64,7 @@ namespace Xamarin.Forms.Platform.iOS
 			LoadRenderers();
 
 			ShellSection.PropertyChanged += OnShellSectionPropertyChanged;
-			((INotifyCollectionChanged)ShellSection.Items).CollectionChanged += OnShellSectionItemsChanged;
+			ShellSectionController.ItemsCollectionChanged += OnShellSectionItemsChanged;
 
 			_blurView = new UIView();
 			UIVisualEffect blurEffect = UIBlurEffect.FromStyle(UIBlurEffectStyle.ExtraLight);
@@ -94,12 +95,12 @@ namespace Xamarin.Forms.Platform.iOS
 			if (disposing && ShellSection != null)
 			{
 				ShellSection.PropertyChanged -= OnShellSectionPropertyChanged;
-				((INotifyCollectionChanged)ShellSection.Items).CollectionChanged -= OnShellSectionItemsChanged;
+				ShellSectionController.ItemsCollectionChanged -= OnShellSectionItemsChanged;
 
 				_header?.Dispose();
 				_tracker?.Dispose();
 
-				foreach (var shellContent in ShellSection.Items)
+				foreach (var shellContent in ShellSectionController.GetItems())
 				{
 					if (_renderers.TryGetValue(shellContent, out var oldRenderer))
 					{
@@ -124,7 +125,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_isAnimating)
 				return;
 
-			var items = ShellSection.Items;
+			var items = ShellSectionController.GetItems();
 			for (int i = 0; i < items.Count; i++)
 			{
 				var shellContent = items[i];
@@ -139,9 +140,9 @@ namespace Xamarin.Forms.Platform.iOS
 		protected virtual void LoadRenderers()
 		{
 			var currentItem = ShellSection.CurrentItem;
-			for (int i = 0; i < ShellSection.Items.Count; i++)
+			for (int i = 0; i < ShellSectionController.GetItems().Count; i++)
 			{
-				ShellContent item = ShellSection.Items[i];
+				ShellContent item = ShellSectionController.GetItems()[i];
 				var page = ((IShellContentController)item).GetOrCreateContent();
 				var renderer = Platform.CreateRenderer(page);
 				Platform.SetRenderer(page, renderer);
@@ -161,13 +162,13 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (e.PropertyName == ShellSection.CurrentItemProperty.PropertyName)
 			{
-				var items = ShellSection.Items;
+				var items = ShellSectionController.GetItems();
 				var currentItem = ShellSection.CurrentItem;
 
 				var oldIndex = _currentIndex;
 				var oldItem = items[oldIndex];
 
-				_currentIndex = items.IndexOf(currentItem);
+				_currentIndex = ShellSectionController.GetItems().IndexOf(currentItem);
 
 				var oldRenderer = _renderers[oldItem];
 				var currentRenderer = _renderers[currentItem];
@@ -204,7 +205,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected virtual void UpdateHeaderVisibility()
 		{
-			bool visible = ShellSection.Items.Count > 1;
+			bool visible = ShellSectionController.GetItems().Count > 1;
 
 			if (visible)
 			{

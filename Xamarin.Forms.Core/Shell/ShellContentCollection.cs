@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -7,7 +8,74 @@ namespace Xamarin.Forms
 {
 	internal sealed class ShellContentCollection : IList<ShellContent>, INotifyCollectionChanged
 	{
+		public event NotifyCollectionChangedEventHandler VisibleItemsChanged;
 		ObservableCollection<ShellContent> _inner = new ObservableCollection<ShellContent>();
+		ObservableCollection<ShellContent> _visibleContents = new ObservableCollection<ShellContent>();
+
+		public ReadOnlyCollection<ShellContent> VisibleItems { get; }
+
+		public ShellContentCollection()
+		{
+			_inner.CollectionChanged += InnerCollectionChanged;
+			VisibleItems = new ReadOnlyCollection<ShellContent>(_visibleContents);
+			_visibleContents.CollectionChanged += (_, args) =>
+			{
+				VisibleItemsChanged?.Invoke(VisibleItems, args);
+			};
+		}
+
+		void InnerCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			if (e.NewItems != null)
+			{
+				foreach (ShellContent element in e.NewItems)
+				{
+					if (element is IShellContentController controller)
+						controller.IsPageVisibleChanged += OnIsPageVisibleChanged;
+					CheckVisibility(element);
+				}
+			}
+
+			if (e.OldItems != null)
+			{
+				foreach (ShellContent element in e.OldItems)
+				{
+					if (element is IShellContentController controller)
+						controller.IsPageVisibleChanged -= OnIsPageVisibleChanged;
+				}
+			}
+		}
+
+		void OnIsPageVisibleChanged(object sender, EventArgs e)
+		{
+			CheckVisibility((ShellContent)sender);
+		}
+
+		void CheckVisibility(ShellContent shellContent)
+		{
+			if (shellContent is IShellContentController controller)
+			{
+				// Assume incoming page will be visible
+				if (controller.Page == null)
+				{
+					if (!_visibleContents.Contains(shellContent))
+						_visibleContents.Add(shellContent);
+				}
+				else if(controller.Page.IsVisible)
+				{
+					if (!_visibleContents.Contains(shellContent))
+						_visibleContents.Add(shellContent);
+				}
+				else
+				{
+					_visibleContents.Remove(shellContent);
+				}
+			}
+			else if (_visibleContents.Contains(shellContent))
+			{
+				_visibleContents.Remove(shellContent);
+			}
+		}
 
 		event NotifyCollectionChangedEventHandler INotifyCollectionChanged.CollectionChanged
 		{

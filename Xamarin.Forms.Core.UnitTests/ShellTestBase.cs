@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -131,6 +132,21 @@ namespace Xamarin.Forms.Core.UnitTests
 
 
 			return content;
+		}
+
+		protected ReadOnlyCollection<ShellContent> GetItems(ShellSection section)
+		{
+			return (section as IShellSectionController).GetItems();
+		}
+
+		protected ReadOnlyCollection<ShellSection> GetItems(ShellItem item)
+		{
+			return (item as IShellItemController).GetItems();
+		}
+
+		protected ReadOnlyCollection<ShellItem> GetItems(Shell item)
+		{
+			return (item as IShellController).GetItems();
 		}
 
 	}

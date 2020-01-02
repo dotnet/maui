@@ -20,11 +20,12 @@ namespace Xamarin.Forms.Core
 			SearchForPart(shell, (p) => p.Route == route);
 
 
-		public static BaseShellItem SearchForPart(this Shell shell, Func<BaseShellItem, bool> searchBy)
+		public static BaseShellItem SearchForPart(this IShellController shell, Func<BaseShellItem, bool> searchBy)
 		{
-			for (var i = 0; i < shell.Items.Count; i++)
+			var items = shell.GetItems();
+			for (var i = 0; i < items.Count; i++)
 			{
-				var result = SearchForPart(shell.Items[i], searchBy);
+				var result = SearchForPart(items[i], searchBy);
 				if (result != null)
 					return result;
 			}
@@ -40,16 +41,16 @@ namespace Xamarin.Forms.Core
 			BaseShellItem baseShellItem = null;
 			switch (part)
 			{
-				case ShellItem item:
-					foreach (var section in item.Items)
+				case IShellItemController item:
+					foreach (var section in item.GetItems())
 					{
 						baseShellItem = SearchForPart(section, searchBy);
 						if (baseShellItem != null)
 							return baseShellItem;
 					}
 					break;
-				case ShellSection section:
-					foreach (var content in section.Items)
+				case IShellSectionController section:
+					foreach (var content in section.GetItems())
 					{
 						baseShellItem = SearchForPart(content, searchBy);
 						if (baseShellItem != null)

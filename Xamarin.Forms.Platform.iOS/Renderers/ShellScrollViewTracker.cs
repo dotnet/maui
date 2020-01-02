@@ -21,6 +21,7 @@ namespace Xamarin.Forms.Platform.iOS
 		IVisualElementRenderer _renderer;
 		UIScrollView _scrollView;
 		ShellSection _shellSection;
+		IShellSectionController ShellSectionController => _shellSection;
 
 		public ShellScrollViewTracker(IVisualElementRenderer renderer)
 		{
@@ -93,7 +94,7 @@ namespace Xamarin.Forms.Platform.iOS
 				return true;
 			}
 
-			if (_shellSection.Items.Count > 1 && _isInItems)
+			if (ShellSectionController.GetItems().Count > 1 && _isInItems)
 			{
 				UpdateContentInset(_lastInset, _tabThickness);
 				return true;
@@ -108,7 +109,7 @@ namespace Xamarin.Forms.Platform.iOS
 			_tabThickness = tabThickness;
 			if (Forms.IsiOS11OrNewer)
 			{
-				if (_shellSection.Items.Count > 1 && _isInItems)
+				if (ShellSectionController.GetItems().Count > 1 && _isInItems)
 				{
 					var top = (float)tabThickness;
 

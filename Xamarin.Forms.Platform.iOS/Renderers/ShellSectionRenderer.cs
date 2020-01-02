@@ -31,6 +31,8 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
+		IShellSectionController ShellSectionController => ShellSection;
+
 		public UIViewController ViewController => this;
 
 		#endregion IShellContentRenderer
