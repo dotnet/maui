@@ -121,6 +121,9 @@ namespace Xamarin.Forms.Platform.iOS
 			if (Element == null)
 				return;
 
+			if (Element.Parent is BaseShellItem)
+				Element.Layout(View.Bounds.ToRectangle());
+
 			if (!Element.Bounds.IsEmpty)
 			{
 				View.Frame = new System.Drawing.RectangleF((float)Element.X, (float)Element.Y, (float)Element.Width, (float)Element.Height);

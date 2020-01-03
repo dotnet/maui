@@ -137,7 +137,11 @@ namespace Xamarin.Forms.Platform.Android
 				{
 					Color bkgndColor = page.BackgroundColor;
 					bool isDefaultBkgndColor = bkgndColor.IsDefault;
-					if (page.Parent is BaseShellItem && isDefaultBkgndColor)
+
+					// A TabbedPage has no background. See Github6384.
+					bool isInShell = page.Parent is BaseShellItem
+					|| (page.Parent is TabbedPage && page.Parent?.Parent is BaseShellItem);
+					if (isInShell && isDefaultBkgndColor)
 					{
 						var color = Forms.IsMarshmallowOrNewer ?
 							Context.Resources.GetColor(AColorRes.BackgroundLight, Context.Theme) :

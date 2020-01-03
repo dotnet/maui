@@ -1173,6 +1173,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue6894.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6929.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\ApiLabel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Github6384.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7035.xaml.cs">
       <DependentUpon>Issue7035.xaml</DependentUpon>
       <SubType>Code</SubType>
