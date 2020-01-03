@@ -1172,6 +1172,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue7053.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6894.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6929.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue3798.xaml.cs">
+      <DependentUpon>Issue3798.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Controls\ApiLabel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Github6384.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7035.xaml.cs">
@@ -1612,6 +1616,10 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue6644.xaml">
     </EmbeddedResource>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Github5623.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue3798.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
