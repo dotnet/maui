@@ -64,7 +64,11 @@ namespace Xamarin.Forms.Platform.iOS
 				var width = UIScreen.MainScreen.Bounds.Width;
 				var toolbar = new UIToolbar(new RectangleF(0, 0, width, 44)) { BarStyle = UIBarStyle.Default, Translucent = true };
 				var spacer = new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace);
-				var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, (o, a) => entry.ResignFirstResponder());
+				var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, (o, a) =>
+				{
+					UpdateElementDate();
+					entry.ResignFirstResponder();
+				});
 
 				toolbar.SetItems(new[] { spacer, doneButton }, false);
 
@@ -73,7 +77,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 				entry.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 				entry.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
-				
+
 				entry.InputAssistantItem.LeadingBarButtonGroups = null;
 				entry.InputAssistantItem.TrailingBarButtonGroups = null;
 
@@ -115,7 +119,7 @@ namespace Xamarin.Forms.Platform.iOS
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateFlowDirection();
 			else if (e.PropertyName == DatePicker.FontAttributesProperty.PropertyName ||
-			         e.PropertyName == DatePicker.FontFamilyProperty.PropertyName || e.PropertyName == DatePicker.FontSizeProperty.PropertyName)
+					 e.PropertyName == DatePicker.FontFamilyProperty.PropertyName || e.PropertyName == DatePicker.FontSizeProperty.PropertyName)
 			{
 				UpdateFont();
 			}
@@ -123,7 +127,10 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void HandleValueChanged(object sender, EventArgs e)
 		{
-			ElementController?.SetValueFromRenderer(DatePicker.DateProperty, _picker.Date.ToDateTime().Date);
+			if (Element.OnThisPlatform().UpdateMode() == UpdateMode.Immediately)
+			{
+				UpdateElementDate();
+			}
 		}
 
 		void OnEnded(object sender, EventArgs eventArgs)
@@ -144,11 +151,16 @@ namespace Xamarin.Forms.Platform.iOS
 			Control.Text = Element.Date.ToString(Element.Format);
 		}
 
+		void UpdateElementDate()
+		{
+			ElementController.SetValueFromRenderer(DatePicker.DateProperty, _picker.Date.ToDateTime().Date);
+		}
+
 		void UpdateFlowDirection()
 		{
 			(Control as UITextField).UpdateTextAlignment(Element);
 		}
-		
+
 		protected internal virtual void UpdateFont()
 		{
 			Control.Font = Element.ToUIFont();

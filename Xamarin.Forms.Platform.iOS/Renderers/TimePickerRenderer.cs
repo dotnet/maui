@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using Foundation;
 using UIKit;
+using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using RectangleF = CoreGraphics.CGRect;
 
 namespace Xamarin.Forms.Platform.iOS
@@ -72,7 +73,11 @@ namespace Xamarin.Forms.Platform.iOS
 					var width = UIScreen.MainScreen.Bounds.Width;
 					var toolbar = new UIToolbar(new RectangleF(0, 0, width, 44)) { BarStyle = UIBarStyle.Default, Translucent = true };
 					var spacer = new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace);
-					var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, (o, a) => entry.ResignFirstResponder());
+					var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, (o, a) =>
+					{
+						UpdateElementTime();
+						entry.ResignFirstResponder();
+					});
 
 					toolbar.SetItems(new[] { spacer, doneButton }, false);
 
@@ -81,7 +86,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 					entry.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 					entry.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
-					
+
 					entry.InputAssistantItem.LeadingBarButtonGroups = null;
 					entry.InputAssistantItem.TrailingBarButtonGroups = null;
 
@@ -120,7 +125,7 @@ namespace Xamarin.Forms.Platform.iOS
 			else if (e.PropertyName == TimePicker.CharacterSpacingProperty.PropertyName)
 				UpdateCharacterSpacing();
 			else if (e.PropertyName == TimePicker.FontAttributesProperty.PropertyName ||
-			         e.PropertyName == TimePicker.FontFamilyProperty.PropertyName || e.PropertyName == TimePicker.FontSizeProperty.PropertyName)
+					 e.PropertyName == TimePicker.FontFamilyProperty.PropertyName || e.PropertyName == TimePicker.FontSizeProperty.PropertyName)
 				UpdateFont();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateFlowDirection();
@@ -138,7 +143,10 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void OnValueChanged(object sender, EventArgs e)
 		{
-			ElementController.SetValueFromRenderer(TimePicker.TimeProperty, _picker.Date.ToDateTime() - new DateTime(1, 1, 1));
+			if (Element.OnThisPlatform().UpdateMode() == UpdateMode.Immediately)
+			{
+				UpdateElementTime();
+			}
 		}
 
 		void UpdateFlowDirection()
@@ -177,6 +185,11 @@ namespace Xamarin.Forms.Platform.iOS
 			_picker.Date = new DateTime(1, 1, 1).Add(Element.Time).ToNSDate();
 			Control.Text = DateTime.Today.Add(Element.Time).ToString(Element.Format);
 			Element.InvalidateMeasureNonVirtual(Internals.InvalidationTrigger.MeasureChanged);
+		}
+
+		void UpdateElementTime()
+		{
+			ElementController.SetValueFromRenderer(TimePicker.TimeProperty, _picker.Date.ToDateTime() - new DateTime(1, 1, 1));
 		}
 	}
 }
