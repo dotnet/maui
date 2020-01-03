@@ -1210,7 +1210,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 				List<UIBarButtonItem> primaries = null;
 				List<UIBarButtonItem> secondaries = null;
-				foreach (var item in _tracker.ToolbarItems)
+				var toolbarItems = _tracker.ToolbarItems;
+				foreach (var item in toolbarItems)
 				{
 					if (item.Order == ToolbarItemOrder.Secondary)
 						(secondaries = secondaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem(true));

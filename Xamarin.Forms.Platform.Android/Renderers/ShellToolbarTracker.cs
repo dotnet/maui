@@ -19,6 +19,8 @@ using Toolbar = Android.Support.V7.Widget.Toolbar;
 using ADrawableCompat = Android.Support.V4.Graphics.Drawable.DrawableCompat;
 using ATextView = global::Android.Widget.TextView;
 using Android.Support.Design.Widget;
+using AColor = Android.Graphics.Color;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -153,6 +155,10 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (_backButtonBehavior != null)
 					_backButtonBehavior.PropertyChanged -= OnBackButtonBehaviorChanged;
+
+
+				_toolbar.DisposeMenuItems(Page?.ToolbarItems, OnToolbarItemPropertyChanged);
+
 				((IShellController)_shellContext?.Shell)?.RemoveFlyoutBehaviorObserver(this);
 
 				UpdateTitleView(_shellContext.AndroidContext, _toolbar, null);
@@ -164,7 +170,7 @@ namespace Xamarin.Forms.Platform.Android
 					_searchView.SearchConfirmed -= OnSearchConfirmed;
 					_searchView.Dispose();
 				}
-        
+
 				_drawerToggle?.Dispose();
 			}
 
@@ -485,34 +491,7 @@ namespace Xamarin.Forms.Platform.Android
 		protected virtual void UpdateToolbarItems(Toolbar toolbar, Page page)
 		{
 			var menu = toolbar.Menu;
-			menu.Clear();
-
-			foreach (var item in page.ToolbarItems)
-			{
-				using (var title = new Java.Lang.String(item.Text))
-				{
-					var menuitem = menu.Add(title);
-					UpdateMenuItemIcon(_shellContext.AndroidContext, menuitem, item);
-
-					menuitem.SetTitleOrContentDescription(item);
-					menuitem.SetEnabled(item.IsEnabled);
-
-					if (item.Order != ToolbarItemOrder.Secondary)
-						menuitem.SetShowAsAction(ShowAsAction.Always);
-
-					menuitem.SetOnMenuItemClickListener(new GenericMenuClickListener(((IMenuItemController)item).Activate));
-					
-					if(TintColor != Color.Default)
-					{
-						var view = toolbar.FindViewById(menuitem.ItemId);
-						if (view is ATextView  textView)
-							textView.SetTextColor(TintColor.ToAndroid());
-					}
-
-					menuitem.Dispose();
-
-				}
-			}
+			toolbar.UpdateMenuItems(page.ToolbarItems, _shellContext.AndroidContext, TintColor, OnToolbarItemPropertyChanged);
 
 			SearchHandler = Shell.GetSearchHandler(page);
 			if (SearchHandler != null && SearchHandler.SearchBoxVisibility != SearchBoxVisibility.Hidden)
@@ -571,6 +550,11 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			menu.Dispose();
+		}
+
+		void OnToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			_toolbar.OnToolbarItemPropertyChanged(e, Page.ToolbarItems, _shellContext.AndroidContext, TintColor, OnToolbarItemPropertyChanged);
 		}
 
 		void OnSearchViewAttachedToWindow(object sender, AView.ViewAttachedToWindowEventArgs e)

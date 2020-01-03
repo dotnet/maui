@@ -431,7 +431,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			var toolBarForegroundBinder = GetToolbarProvider() as IToolBarForegroundBinder;
 
-			foreach (ToolbarItem item in _toolbarTracker.ToolbarItems.OrderBy(ti => ti.Priority))
+			foreach (ToolbarItem item in _toolbarTracker.ToolbarItems)
 			{
 				toolBarForegroundBinder?.BindForegroundColor(commandBar);
 

@@ -116,6 +116,7 @@
     <Compile Include="Extensions\FragmentManagerExtensions.cs" />
     <Compile Include="Extensions\ScrollViewExtensions.cs" />
     <Compile Include="Extensions\TextAlignmentExtensions.cs" />
+    <Compile Include="Extensions\ToolbarExtensions.cs" />
     <Compile Include="FastRenderers\AutomationPropertiesProvider.cs" />
     <Compile Include="AppCompat\PageExtensions.cs" />
     <Compile Include="Extensions\JavaObjectExtensions.cs" />
