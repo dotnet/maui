@@ -13,6 +13,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(Image.SourceProperty, UpdateSource);
 			RegisterPropertyHandler(Image.AspectProperty, UpdateAspect);
 			RegisterPropertyHandler(Image.IsOpaqueProperty, UpdateIsOpaque);
+			RegisterPropertyHandler(Image.IsAnimationPlayingProperty, UpdateIsAnimationPlaying);
 			RegisterPropertyHandler(Specific.BlendColorProperty, UpdateBlendColor);
 			RegisterPropertyHandler(Specific.FileProperty, UpdateFile);
 		}
@@ -70,6 +71,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			UpdateIsOpaque(initialize);
 			UpdateBlendColor(initialize);
+			UpdateIsAnimationPlaying(initialize);
 		}
 
 		void UpdateAspect(bool initialize)
@@ -86,6 +88,15 @@ namespace Xamarin.Forms.Platform.Tizen
 				return;
 
 			Control.IsOpaque = Element.IsOpaque;
+		}
+
+		void UpdateIsAnimationPlaying(bool initialize)
+		{
+			if (initialize && !Element.IsAnimationPlaying)
+				return;
+
+			Control.IsAnimated = Element.IsAnimationPlaying;
+			Control.IsAnimationPlaying = Element.IsAnimationPlaying;
 		}
 
 		void UpdateBlendColor(bool initialize)
