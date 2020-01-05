@@ -27,7 +27,6 @@ namespace Xamarin.Forms.Platform.Android
 		CompoundButton.IOnCheckedChangeListener
 	{
 		bool _disposed;
-		bool _skipInvalidate;
 		int? _defaultLabelFor;
 		VisualElementTracker _tracker;
 		VisualElementRenderer _visualElementRenderer;
@@ -85,17 +84,6 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			base.Dispose(disposing);
-		}
-
-		public override void Invalidate()
-		{
-			if (_skipInvalidate)
-			{
-				_skipInvalidate = false;
-				return;
-			}
-
-			base.Invalidate();
 		}
 
 		Size MinimumSize()

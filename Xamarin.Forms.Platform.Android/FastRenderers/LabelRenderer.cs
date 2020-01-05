@@ -249,7 +249,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 				e.NewElement.PropertyChanged += OnElementPropertyChanged;
 
-				SkipNextInvalidate();
 				UpdateText();
 				UpdateLineHeight();
 				UpdateCharacterSpacing();

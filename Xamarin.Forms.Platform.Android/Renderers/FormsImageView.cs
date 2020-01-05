@@ -39,6 +39,6 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 
-		bool IImageRendererController.IsDisposed => false;
+		bool IImageRendererController.IsDisposed => false || !this.IsAlive();
 	}
 }

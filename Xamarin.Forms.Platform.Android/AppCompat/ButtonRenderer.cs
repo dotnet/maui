@@ -220,6 +220,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		}
 
 		AppCompatButton IButtonLayoutRenderer.View => Control;
-		bool IDisposedState.IsDisposed => _isDisposed;
+		bool IDisposedState.IsDisposed => _isDisposed || !Control.IsAlive();
 	}
 }

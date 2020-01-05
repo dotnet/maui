@@ -124,8 +124,7 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateMaxLines();
 			}
 			else
-			{
-				_view.SkipNextInvalidate();
+			{	
 				UpdateText();
 				if (e.OldElement.LineBreakMode != e.NewElement.LineBreakMode)
 					UpdateLineBreakMode();
