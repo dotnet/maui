@@ -339,7 +339,6 @@ namespace Xamarin.Forms.Internals
 					object[] attributes = assembly.GetCustomAttributesSafe(attrType);
 					if (attributes == null || attributes.Length == 0)
 						continue;
-					}
 					
 					var length = attributes.Length;
 					for (var i = 0; i < length; i++)
