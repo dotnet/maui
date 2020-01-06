@@ -73,7 +73,11 @@ steps:
     inputs:
       Contents: |
        **/$(IpaName)
-       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/**
+       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
+       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/nunit.*
+       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/NUnit3.*
+       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Plugin.*
+       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Xamarin.*
 
       TargetFolder: '$(build.artifactstagingdirectory)/ios'
       CleanTargetFolder: true
@@ -83,7 +87,13 @@ steps:
   - task: CopyFiles@2
     displayName: 'Copy Android Files for UITest'
     inputs:
-      Contents: 'Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/**'
+      Contents: |
+       Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
+       Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/nunit.*
+       Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/NUnit3.*
+       Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/Plugin.*
+       Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/Xamarin.*
+       
       TargetFolder: '$(build.artifactstagingdirectory)/android'
       CleanTargetFolder: true
       flattenFolders: true
