@@ -11,8 +11,8 @@ namespace Xamarin.Essentials
     {
         static Task<FilePickerResult> PlatformPickFileAsync(PickOptions options)
         {
-            Permissions.EnsureDeclared(PermissionType.LaunchApp);
-            Permissions.EnsureDeclared(PermissionType.ReadExternalStorage);
+            Permissions.EnsureDeclared<Permissions.LaunchApp>();
+            Permissions.EnsureDeclared<Permissions.StorageRead>();
 
             var tcs = new TaskCompletionSource<FilePickerResult>();
 
@@ -88,7 +88,7 @@ namespace Xamarin.Essentials
 
         async Task<Stream> PlatformOpenReadStreamAsync()
         {
-            await Permissions.RequestAsync(PermissionType.ReadExternalStorage);
+            await Permissions.RequestAsync<Permissions.StorageRead>();
 
             var stream = File.Open(fullPath, FileMode.Open, FileAccess.Read);
             return Task.FromResult<Stream>(stream).Result;
