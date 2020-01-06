@@ -86,14 +86,14 @@
         <Attribute FrameworkAlternate="xamarin-essentials-watchos">
           <AttributeName>System.Runtime.Versioning.TargetFramework("Xamarin.WatchOS,Version=v1.0", FrameworkDisplayName="Xamarin.WatchOS")</AttributeName>
         </Attribute>
-        <Attribute FrameworkAlternate="xamarin-essentials;xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-uwp;xamarin-essentials-android">
-          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+b1f8dcb39d12d16ede41061ae9899c2ba5f26cfe")</AttributeName>
-        </Attribute>
         <Attribute FrameworkAlternate="xamarin-essentials-android">
           <AttributeName>System.Reflection.AssemblyProduct("Xamarin.Essentials (MonoAndroid10.0)")</AttributeName>
         </Attribute>
         <Attribute FrameworkAlternate="xamarin-essentials-android">
           <AttributeName>System.Runtime.Versioning.TargetFramework("MonoAndroid,Version=v10.0", FrameworkDisplayName="Xamarin.Android v10.0 Support")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+a719d90eb3b235bbe16cd61ecbadc79db4d0dd7f")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>
@@ -319,8 +319,8 @@
           <Parameter Name="color" Type="System.Drawing.Color" Index="0" FrameworkAlternate="xamarin-essentials" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="color">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="color">The color to convert</param>
+          <summary>Converts the current color to an interger</summary>
         </Docs>
         <Link Type="Xamarin.Essentials.ColorExtensions" Member="M:Xamarin.Essentials.ColorExtensions.ToInt(System.Drawing.Color)" />
       </Member>
@@ -630,8 +630,8 @@
           <Parameter Name="placemark" Type="Xamarin.Essentials.Placemark" Index="0" FrameworkAlternate="xamarin-essentials" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="placemark">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="placemark">The placemark to open the map to.</param>
+          <summary>Open the map to the placemark.</summary>
         </Docs>
         <Link Type="Xamarin.Essentials.PlacemarkExtensions" Member="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark)" />
       </Member>
@@ -653,9 +653,9 @@
           <Parameter Name="options" Type="Xamarin.Essentials.MapLaunchOptions" Index="1" FrameworkAlternate="xamarin-essentials" />
         </Parameters>
         <Docs>
-          <param name="placemark">To be added.</param>
-          <param name="options">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="placemark">A placemark to open the map to.</param>
+          <param name="options">Options for opening the map.</param>
+          <summary>Open the map to the placemark with options.</summary>
         </Docs>
         <Link Type="Xamarin.Essentials.PlacemarkExtensions" Member="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapLaunchOptions)" />
       </Member>
