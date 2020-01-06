@@ -343,7 +343,11 @@ namespace Xamarin.Forms.Internals
 
 				object[] effectAttributes = assembly.GetCustomAttributesSafe(typeof (ExportEffectAttribute));
 				if (effectAttributes == null || effectAttributes.Length == 0)
+				{
+					Profile.FrameEnd();
 					continue;
+				}
+
 				string resolutionName = assembly.FullName;
 				var resolutionNameAttribute = (ResolutionGroupNameAttribute)assembly.GetCustomAttribute(typeof(ResolutionGroupNameAttribute));
 				if (resolutionNameAttribute != null)
