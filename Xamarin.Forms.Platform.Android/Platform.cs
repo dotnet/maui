@@ -405,14 +405,15 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			}
 
-			foreach (ToolbarItem item in _toolbarTracker.ToolbarItems)
+			var toolbarItems = _toolbarTracker.ToolbarItems;
+			foreach (ToolbarItem item in toolbarItems)
 				item.PropertyChanged -= HandleToolbarItemPropertyChanged;
 			menu.Clear();
 
 			if (!ShouldShowActionBarTitleArea())
 				return;
 
-			foreach (ToolbarItem item in _toolbarTracker.ToolbarItems)
+			foreach (ToolbarItem item in toolbarItems)
 			{
 				IMenuItemController controller = item;
 				item.PropertyChanged += HandleToolbarItemPropertyChanged;

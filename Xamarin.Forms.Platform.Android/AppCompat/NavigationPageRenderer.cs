@@ -32,8 +32,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 {
 	public class NavigationPageRenderer : VisualElementRenderer<NavigationPage>, IManageFragments, IOnClickListener, ILifeCycleState
 	{
-		const int DefaultDisabledToolbarAlpha = 127;
-
 		readonly List<Fragment> _fragmentStack = new List<Fragment>();
 
 		Drawable _backgroundDrawable;
@@ -220,8 +218,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				{
 					_toolbarTracker.CollectionChanged -= ToolbarTrackerOnCollectionChanged;
 
-					foreach (ToolbarItem item in _toolbarTracker.ToolbarItems)
-						item.PropertyChanged -= OnToolbarItemPropertyChanged;
+					_toolbar.DisposeMenuItems(_toolbarTracker?.ToolbarItems, OnToolbarItemPropertyChanged);
 
 					_toolbarTracker.Target = null;
 					_toolbarTracker = null;
@@ -562,8 +559,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		protected virtual void OnToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == MenuItem.IsEnabledProperty.PropertyName || e.PropertyName == MenuItem.TextProperty.PropertyName || e.PropertyName == MenuItem.IconImageSourceProperty.PropertyName)
-				UpdateMenu();
+			_toolbar.OnToolbarItemPropertyChanged(e, _toolbarTracker?.ToolbarItems, Context, null, OnToolbarItemPropertyChanged);
 		}
 
 		void InsertPageBefore(Page page, Page before)
@@ -909,51 +905,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			if (_disposed)
 				return;
 
-			AToolbar bar = _toolbar;
-			Context context = Context;
-			IMenu menu = bar.Menu;
-
-			foreach (ToolbarItem item in _toolbarTracker.ToolbarItems)
-				item.PropertyChanged -= OnToolbarItemPropertyChanged;
-			menu.Clear();
-
-			foreach (ToolbarItem item in _toolbarTracker.ToolbarItems)
-			{
-				IMenuItemController controller = item;
-				item.PropertyChanged += OnToolbarItemPropertyChanged;
-				if (item.Order == ToolbarItemOrder.Secondary)
-				{
-					IMenuItem menuItem = menu.Add(item.Text);
-					menuItem.SetEnabled(controller.IsEnabled);
-					menuItem.SetOnMenuItemClickListener(new GenericMenuClickListener(controller.Activate));					
-					menuItem.SetTitleOrContentDescription(item);
-				}
-				else
-				{
-					IMenuItem menuItem = menu.Add(item.Text);
-					menuItem.SetEnabled(controller.IsEnabled);
-					UpdateMenuItemIcon(context, menuItem, item);
-					menuItem.SetShowAsAction(ShowAsAction.Always);
-					menuItem.SetOnMenuItemClickListener(new GenericMenuClickListener(controller.Activate));
-					menuItem.SetTitleOrContentDescription(item);
-				}
-			}
-		}
-
-		protected virtual void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem)
-		{
-			_ = this.ApplyDrawableAsync(toolBarItem, ToolbarItem.IconImageSourceProperty, Context, iconDrawable =>
-			{
-				if (iconDrawable != null)
-				{
-					if (!menuItem.IsEnabled)
-					{
-						iconDrawable.Mutate().SetAlpha(DefaultDisabledToolbarAlpha);
-					}
-
-					menuItem.SetIcon(iconDrawable);
-				}
-			});
+			_toolbar.UpdateMenuItems(_toolbarTracker?.ToolbarItems, Context, null, OnToolbarItemPropertyChanged);
 		}
 
 		void UpdateToolbar()

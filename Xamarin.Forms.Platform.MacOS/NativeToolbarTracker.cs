@@ -143,9 +143,11 @@ namespace Xamarin.Forms.Platform.MacOS
 				AllowsUserCustomization = false,
 				ShowsBaselineSeparator = true,
 				SizeMode = NSToolbarSizeMode.Regular,
-				Delegate = this,
-				CenteredItemIdentifier = TitleGroupIdentifier
+				Delegate = this
 			};
+
+			if (Forms.IsMojaveOrNewer)
+				toolbar.CenteredItemIdentifier = TitleGroupIdentifier;
 
 			return toolbar;
 		}

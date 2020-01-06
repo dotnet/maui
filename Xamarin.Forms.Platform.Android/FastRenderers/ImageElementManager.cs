@@ -51,13 +51,20 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
             var oldImageElementManager = e.OldElement as IImageElement;
             var rendererController = renderer as IImageRendererController;
 
-            await TryUpdateBitmap(rendererController, view, newImageElementManager, oldImageElementManager);
-            UpdateAspect(rendererController, view, newImageElementManager, oldImageElementManager);
+			if (rendererController.IsDisposed)
+				return;
 
-            if (!rendererController.IsDisposed)
-            {
-                ElevationHelper.SetElevation(view, renderer.Element);
-            }
+			await TryUpdateBitmap(rendererController, view, newImageElementManager, oldImageElementManager);
+			
+			if (rendererController.IsDisposed)
+				return;
+
+			UpdateAspect(rendererController, view, newImageElementManager, oldImageElementManager);
+
+			if (rendererController.IsDisposed)
+				return;
+
+            ElevationHelper.SetElevation(view, renderer.Element);
         }
 
         async static void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -136,6 +143,9 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
                     imageController.SetIsLoading(false);
             }
 
+			if (rendererController.IsDisposed)
+				return;
+			
 			if (Control.Drawable is FormsAnimationDrawable updatedAnimation)
 			{
 				rendererController.SetFormsAnimationDrawable(updatedAnimation);

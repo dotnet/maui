@@ -38,9 +38,7 @@ namespace Xamarin.Forms
 		static bool? s_isiOS11OrNewer;
 		static bool? s_isiOS13OrNewer;
 		static bool? s_respondsTosetNeedsUpdateOfHomeIndicatorAutoHidden;
-#endif
 
-#if __MOBILE__
 		internal static bool IsiOS9OrNewer
 		{
 			get
@@ -91,6 +89,19 @@ namespace Xamarin.Forms
 				return s_respondsTosetNeedsUpdateOfHomeIndicatorAutoHidden.Value;
 			}
 		}
+#else
+		static bool? s_isMojaveOrNewer;
+
+		internal static bool IsMojaveOrNewer
+		{
+			get
+			{
+				if (!s_isMojaveOrNewer.HasValue)
+					s_isMojaveOrNewer = NSProcessInfo.ProcessInfo.IsOperatingSystemAtLeastVersion(new NSOperatingSystemVersion(10, 14, 0));
+				return s_isMojaveOrNewer.Value;
+			}
+		}
+
 #endif
 
 		static IReadOnlyList<string> s_flags;

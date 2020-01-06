@@ -329,5 +329,16 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			Assert.AreEqual(Color.Default, (Color)System.Drawing.Color.Empty);
 		}
+
+		[Test]
+		public void DefaultColorsMatch()
+		{
+			//This spot-checks a few of the fields in Color
+			Assert.AreEqual(Color.CornflowerBlue, Color.FromRgb(100, 149, 237));
+			Assert.AreEqual(Color.DarkSalmon, Color.FromRgb(233, 150, 122));
+			Assert.AreEqual(Color.Transparent, Color.FromRgba(255, 255, 255, 0));
+			Assert.AreEqual(Color.Wheat, Color.FromRgb(245, 222, 179));
+			Assert.AreEqual(Color.White, Color.FromRgb(255, 255, 255));
+		}
 	}
 }

@@ -12,6 +12,11 @@ namespace Xamarin.Forms.Internals
 	{
 		int _masterDetails;
 		Page _target;
+		ToolBarItemComparer _toolBarItemComparer;
+		public ToolbarTracker()
+		{
+			_toolBarItemComparer = new ToolBarItemComparer();
+		}
 
 		public IEnumerable<Page> AdditionalTargets { get; set; }
 
@@ -44,12 +49,20 @@ namespace Xamarin.Forms.Internals
 			get
 			{
 				if (Target == null)
-					return Enumerable.Empty<ToolbarItem>();
-				IEnumerable<ToolbarItem> items = GetCurrentToolbarItems(Target);
-				if (AdditionalTargets != null)
-					items = items.Concat(AdditionalTargets.SelectMany(t => t.ToolbarItems));
+					return new ToolbarItem[0];
 
-				return items.OrderBy(ti => ti.Priority);
+				// I realize this is sorting on every single get but we don't have 
+				// a mechanism in place currently to invalidate a stored version of this
+
+				List<ToolbarItem> returnValue = GetCurrentToolbarItems(Target);
+
+				if (AdditionalTargets != null)
+					foreach(var item in AdditionalTargets)
+						foreach(var toolbarItem in item.ToolbarItems)
+							returnValue.Add(toolbarItem);
+
+				returnValue.Sort(_toolBarItemComparer);
+				return returnValue;
 			}
 		}
 
@@ -58,7 +71,7 @@ namespace Xamarin.Forms.Internals
 		void EmitCollectionChanged()
 			=> CollectionChanged?.Invoke(this, EventArgs.Empty);
 
-		IEnumerable<ToolbarItem> GetCurrentToolbarItems(Page page)
+		List<ToolbarItem> GetCurrentToolbarItems(Page page)
 		{
 			var result = new List<ToolbarItem>();
 			result.AddRange(page.ToolbarItems);
@@ -177,6 +190,11 @@ namespace Xamarin.Forms.Internals
 			page.DescendantAdded -= OnChildAdded;
 			page.DescendantRemoved -= OnChildRemoved;
 			page.PropertyChanged -= OnPropertyChanged;
+		}
+
+		class ToolBarItemComparer : IComparer<ToolbarItem>
+		{
+			public int Compare(ToolbarItem x, ToolbarItem y) => x.Priority.CompareTo(y.Priority);
 		}
 	}
 }

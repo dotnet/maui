@@ -336,19 +336,8 @@ namespace Xamarin.Forms.Internals
 
 				foreach (Type attrType in attrTypes)
 				{
-					object[] attributes;
-					try
-					{
-#if NETSTANDARD2_0
-						attributes = assembly.GetCustomAttributes(attrType, true);
-#else
-						attributes = assembly.GetCustomAttributes(attrType).ToArray();
-#endif
-					}
-					catch (System.IO.FileNotFoundException)
-					{
-						// Sometimes the previewer doesn't actually have everything required for these loads to work
-						Log.Warning(nameof(Registrar), "Could not load assembly: {0} for Attibute {1} | Some renderers may not be loaded", assembly.FullName, attrType.FullName);
+					object[] attributes = assembly.GetCustomAttributesSafe(attrType);
+					if (attributes == null || attributes.Length == 0)
 						continue;
 					}
 					
@@ -369,19 +358,14 @@ namespace Xamarin.Forms.Internals
 					}
 				}
 
+				object[] effectAttributes = assembly.GetCustomAttributesSafe(typeof (ExportEffectAttribute));
+				if (effectAttributes == null || effectAttributes.Length == 0)
+					continue;
 				string resolutionName = assembly.FullName;
 				var resolutionNameAttribute = (ResolutionGroupNameAttribute)assembly.GetCustomAttribute(typeof(ResolutionGroupNameAttribute));
 				if (resolutionNameAttribute != null)
 					resolutionName = resolutionNameAttribute.ShortName;
-
-#if NETSTANDARD2_0
-				object[] effectAttributes = assembly.GetCustomAttributes(typeof(ExportEffectAttribute), true);
-#else
-				object[] effectAttributes = assembly.GetCustomAttributes(typeof(ExportEffectAttribute)).ToArray();
-#endif
-				var typedEffectAttributes = new ExportEffectAttribute[effectAttributes.Length];
-				Array.Copy(effectAttributes, typedEffectAttributes, effectAttributes.Length);
-				RegisterEffects(resolutionName, typedEffectAttributes);
+				RegisterEffects(resolutionName, (ExportEffectAttribute[])effectAttributes);
 
 				Profile.FrameEnd(assemblyName);
 			}

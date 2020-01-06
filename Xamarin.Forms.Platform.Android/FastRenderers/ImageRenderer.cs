@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		readonly MotionEventHelper _motionEventHelper = new MotionEventHelper();
 		IFormsAnimationDrawable _formsAnimationDrawable;
 
-		bool IImageRendererController.IsDisposed => _disposed;
+		bool IImageRendererController.IsDisposed => _disposed || !Control.IsAlive();
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)

@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Reflection;
 using ElmSharp;
-using EColor = ElmSharp.Color;
 using Xamarin.Forms.Platform.Tizen.Native;
+using EColor = ElmSharp.Color;
+using EButton = ElmSharp.Button;
+using EImage = ElmSharp.Image;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
 	public class ShellNavBar : Native.Box
 	{
-		Native.Image _menu = null;
+		EImage _menu = null;
+		EButton _menuButton = null;
 		Native.Label _title = null;
 		Native.SearchBar _nativeSearchHandler = null;
 		EvasObject _nativeTitleView = null;
-		ShellSectionNavigation _shellSectionNavigation = null;
 
 		SearchHandler _searchHandler = null;
 		View _titleView = null;
@@ -29,15 +31,18 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		bool _hasBackButton = false;
 
-		public ShellNavBar(IFlyoutController flyoutController, ShellSectionNavigation shellSectionNavigation) : base(Forms.NativeParent)
+		public ShellNavBar(IFlyoutController flyoutController) : base(Forms.NativeParent)
 		{
 			_flyoutController = flyoutController;
-			_shellSectionNavigation = shellSectionNavigation;
 
-			_menu = new Native.Image(Forms.NativeParent);
-			_menu.Clicked += OnMenuClicked;
+			_menuButton = new EButton(Forms.NativeParent);
+			_menuButton.Clicked += OnMenuClicked;
+			_menu = new EImage(Forms.NativeParent);
 			UpdateMenuIcon();
 			_menu.Show();
+			_menuButton.Show();
+
+			_menuButton.SetPartContent("icon", _menu);
 
 			_title = new Native.Label(Forms.NativeParent)
 			{
@@ -49,7 +54,8 @@ namespace Xamarin.Forms.Platform.Tizen
 			_title.Show();
 
 			BackgroundColor = _backgroudColor;
-			PackEnd(_menu);
+			_menuButton.BackgroundColor = _backgroudColor;
+			PackEnd(_menuButton);
 			PackEnd(_title);
 			LayoutUpdated += OnLayoutUpdated;
 		}
@@ -123,6 +129,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			set
 			{
 				_backgroudColor = value;
+				_menuButton.BackgroundColor = _backgroudColor;
 				base.BackgroundColor = _backgroudColor;
 			}
 		}
@@ -136,7 +143,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			set
 			{
 				_foregroudColor = value;
-				_menu.Color = value;
+				_menuButton.Color = value;
 			}
 		}
 
@@ -164,11 +171,11 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 		}
 
-		async void UpdateMenuIcon()
+		void UpdateMenuIcon()
 		{
 			string file = _hasBackButton ? _backIcon : _menuIcon;
-			ImageSource source = ImageSource.FromResource(file, typeof(ShellNavBar).GetTypeInfo().Assembly);
-			bool ret = await _menu.LoadFromImageSourceAsync(source);
+			var path = Assembly.GetExecutingAssembly().GetManifestResourceStream(file);
+			_menu.Load(path);
 		}
 
 		void OnMenuClicked(object sender, EventArgs e)
@@ -180,7 +187,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 			else if (_hasBackButton)
 			{
-				_shellSectionNavigation.PopRequest(this, new Internals.NavigationRequestedEventArgs(_page, false));
+				Shell.Current.CurrentItem.Navigation.PopAsync();
 			}
 			else
 			{
@@ -258,8 +265,8 @@ namespace Xamarin.Forms.Platform.Tizen
 			int titleLeftMargin = 40;
 			int titleViewTopMargin = 40;
 
-			_menu.Move(e.Geometry.X + menuMargin, e.Geometry.Y + (e.Geometry.Height - menuSize) / 2);
-			_menu.Resize(menuSize, menuSize);
+			_menuButton.Move(e.Geometry.X + menuMargin, e.Geometry.Y + (e.Geometry.Height - menuSize) / 2);
+			_menuButton.Resize(menuSize, menuSize);
 
 			if (_searchHandler != null)
 			{

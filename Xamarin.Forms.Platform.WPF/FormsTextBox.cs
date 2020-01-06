@@ -26,10 +26,10 @@ namespace Xamarin.Forms.Platform.WPF
 		public static readonly DependencyProperty IsPasswordProperty = DependencyProperty.Register("IsPassword", typeof(bool), typeof(FormsTextBox),
 			new PropertyMetadata(default(bool), OnIsPasswordChanged));
 
-		public new static readonly DependencyProperty TextProperty = DependencyProperty.Register("Text", typeof(string), typeof(FormsTextBox), 
+		public new static readonly DependencyProperty TextProperty = DependencyProperty.Register("Text", typeof(string), typeof(FormsTextBox),
 			new PropertyMetadata("", TextPropertyChanged));
 
-		protected internal static readonly DependencyProperty DisabledTextProperty = DependencyProperty.Register("DisabledText", typeof(string), typeof(FormsTextBox), 
+		protected internal static readonly DependencyProperty DisabledTextProperty = DependencyProperty.Register("DisabledText", typeof(string), typeof(FormsTextBox),
 			new PropertyMetadata(""));
 
 		static InputScope s_passwordInputScope;
@@ -52,8 +52,8 @@ namespace Xamarin.Forms.Platform.WPF
 
 		public string PlaceholderText
 		{
-			get { return (string)GetValue (PlaceholderTextProperty); }
-			set { SetValue (PlaceholderTextProperty, value); }
+			get { return (string)GetValue(PlaceholderTextProperty); }
+			set { SetValue(PlaceholderTextProperty, value); }
 		}
 
 		public Brush PlaceholderForegroundBrush
@@ -88,11 +88,12 @@ namespace Xamarin.Forms.Platform.WPF
 				return s_passwordInputScope;
 			}
 		}
-		
+
 		void DelayObfuscation()
 		{
 			int lengthDifference = base.Text.Length - Text.Length;
 
+			var savedSelectionStart = SelectionStart;
 			string updatedRealText = DetermineTextFromPassword(Text, SelectionStart, base.Text);
 
 			if (Text == updatedRealText)
@@ -101,7 +102,9 @@ namespace Xamarin.Forms.Platform.WPF
 				return;
 			}
 
+			_internalChangeFlag = true;
 			Text = updatedRealText;
+			_internalChangeFlag = false;
 
 			// Cancel any pending delayed obfuscation
 			_cts?.Cancel();
@@ -118,10 +121,10 @@ namespace Xamarin.Forms.Platform.WPF
 			else
 			{
 				// Only one character was added; we need to leave it visible for a brief time period
-				// Obfuscate all but the last character for now
-				newText = Obfuscate(Text, true);
+				// Obfuscate all but the character added for now
+				newText = Obfuscate(Text, savedSelectionStart - 1);
 
-				// Leave the last character visible until a new character is added
+				// Leave the added character visible until a new character is added
 				// or sufficient time has passed
 				if (_cts == null)
 				{
@@ -134,19 +137,20 @@ namespace Xamarin.Forms.Platform.WPF
 					_cts.Token.ThrowIfCancellationRequested();
 					await Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
 					{
+						var ss = SelectionStart;
+						var sl = SelectionLength;
 						base.Text = Obfuscate(Text);
-						SelectionStart = base.Text.Length;
+						SelectionStart = ss;
+						SelectionLength = sl;
 					}));
 				}, _cts.Token);
 			}
 
-			if (base.Text == newText)
+			if (base.Text != newText)
 			{
-				return;
+				base.Text = newText;
 			}
-
-			base.Text = newText;
-			SelectionStart = base.Text.Length;
+			SelectionStart = savedSelectionStart;
 		}
 
 		static string DetermineTextFromPassword(string realText, int start, string passwordText)
@@ -164,14 +168,19 @@ namespace Xamarin.Forms.Platform.WPF
 			return sb.ToString();
 		}
 
-		string Obfuscate(string text, bool leaveLastVisible = false)
+		string Obfuscate(string text, int visibleSymbolIndex = -1)
 		{
-			if (!leaveLastVisible)
+			if (visibleSymbolIndex == -1)
 				return new string(ObfuscationCharacter, text?.Length ?? 0);
 
-			return text == null || text.Length == 1
-				? text
-				: new string(ObfuscationCharacter, text.Length - 1) + text.Substring(text.Length - 1, 1);
+			if (text == null || text.Length == 1)
+				return text;
+			var prefix = visibleSymbolIndex > 0 ? new string(ObfuscationCharacter, visibleSymbolIndex) : string.Empty;
+			var suffix = visibleSymbolIndex == text.Length - 1
+				? string.Empty
+				: new string(ObfuscationCharacter, text.Length - visibleSymbolIndex - 1);
+
+			return prefix + text.Substring(visibleSymbolIndex, 1) + suffix;
 		}
 
 		static void OnIsPasswordChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
@@ -198,7 +207,7 @@ namespace Xamarin.Forms.Platform.WPF
 				// The ctrlDown flag is used to track if the Ctrl key is pressed; if it's actively being used and the most recent
 				// key to trigger OnKeyDown, then treat it as handled.
 				var ctrlDown = (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl) && e.IsDown;
-					
+
 				// The shift, tab, and directional (Home/End/PgUp/PgDown included) keys can be used to select text and should otherwise
 				// be ignored.
 				if (
@@ -234,28 +243,22 @@ namespace Xamarin.Forms.Platform.WPF
 
 					base.OnKeyDown(e);
 					if (_cachedSelectionLength > 0 && !ctrlDown)
+					{
+						var savedSelectionStart = SelectionStart;
 						Text = Text.Remove(SelectionStart, _cachedSelectionLength);
+						SelectionStart = savedSelectionStart;
+					}
 				}
 			}
 			else
 				base.OnKeyDown(e);
 		}
-		
+
 		void OnTextChanged(object sender, System.Windows.Controls.TextChangedEventArgs textChangedEventArgs)
 		{
 			if (IsPassword)
 			{
-				string updatedRealText = DetermineTextFromPassword(Text, SelectionStart, base.Text);
-				string updatedText = Obfuscate(updatedRealText);
-				var savedSelectionStart = SelectionStart;
-
-				if (Text != updatedRealText)
-					Text = updatedRealText;
-
-				if (base.Text != updatedText)
-					base.Text = updatedText;
-
-				SelectionStart = savedSelectionStart;
+				DelayObfuscation();
 			}
 			else if (base.Text != Text)
 			{
@@ -272,11 +275,11 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			if (_internalChangeFlag)
 				return;
-
+			var savedSelectionStart = SelectionStart;
 			base.Text = IsPassword ? Obfuscate(Text) : Text;
 			DisabledText = base.Text;
-
-			SelectionStart = base.Text.Length;
+			var len = base.Text.Length;
+			SelectionStart = savedSelectionStart > len ? len : savedSelectionStart;
 		}
 
 		static void TextPropertyChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)

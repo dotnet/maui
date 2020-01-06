@@ -109,33 +109,15 @@ namespace Xamarin.Forms
 				if (s_initialized)
 					return;
 
-				Type targetAttrType = typeof(DependencyAttribute);
-
 				// Don't use LINQ for performance reasons
 				// Naive implementation can easily take over a second to run
 				foreach (Assembly assembly in assemblies)
 				{
-					object[] attributes;
-					try
-					{
-#if NETSTANDARD2_0
-						attributes = assembly.GetCustomAttributes(targetAttrType, true);
-#else
-						attributes = assembly.GetCustomAttributes(targetAttrType).ToArray();
-#endif
-					}
-					catch (System.IO.FileNotFoundException)
-					{
-						// Sometimes the previewer doesn't actually have everything required for these loads to work
-						Log.Warning(nameof(Registrar), "Could not load assembly: {0} for Attibute {1} | Some renderers may not be loaded", assembly.FullName, targetAttrType.FullName);
-						continue;
-					}
-
-					var length = attributes.Length;
-					if (length == 0)
+					object[] attributes = assembly.GetCustomAttributesSafe(typeof(DependencyAttribute));
+					if (attributes == null)
 						continue;
 
-					for (int i = 0; i < length; i++)
+					for (int i = 0; i < attributes.Length; i++)
 					{
 						DependencyAttribute attribute = (DependencyAttribute)attributes[i];
 						if (!DependencyTypes.Contains(attribute.Implementor))

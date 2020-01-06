@@ -390,14 +390,22 @@ namespace Xamarin.Forms.Build.Tasks
 		public static TypeReference ResolveGenericParameters(this TypeReference self, TypeReference declaringTypeReference)
 		{
 			var genericdeclType = declaringTypeReference as GenericInstanceType;
-			if (genericdeclType == null)
+			var genericParameterSelf = self as GenericParameter;
+			var genericself = self as GenericInstanceType;
+
+			if (genericdeclType == null && genericParameterSelf == null && genericself == null)
 				return self;
 
-			var genericParameterSelf = self as GenericParameter;
+			if (genericdeclType == null && genericParameterSelf!=null)
+			{
+				var typeDef = declaringTypeReference.Resolve();
+				if (typeDef.BaseType == null || typeDef.BaseType.FullName == "System.Object")
+					return self;
+				return self.ResolveGenericParameters(typeDef.BaseType.ResolveGenericParameters(declaringTypeReference));
+			}
 			if (genericParameterSelf != null)
 				return genericdeclType.GenericArguments[genericParameterSelf.Position];
 
-			var genericself = self as GenericInstanceType;
 			if (genericself != null)
 				return genericself.ResolveGenericParameters(declaringTypeReference);
 
