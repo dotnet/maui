@@ -53,6 +53,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void ViewDidLoad()
 		{
+			if (ShellSection.CurrentItem == null)
+				throw new InvalidOperationException($"Content not found for active {ShellSection}. Title: {ShellSection.Title}. Route: {ShellSection.Route}.");
+
 			base.ViewDidLoad();
 
 			_containerArea = new UIView();

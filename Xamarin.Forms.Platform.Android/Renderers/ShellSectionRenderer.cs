@@ -132,6 +132,9 @@ namespace Xamarin.Forms.Platform.Android
 			if (shellSection == null)
 				return null;
 
+			if (shellSection.CurrentItem == null)
+				throw new InvalidOperationException($"Content not found for active {shellSection}. Title: {shellSection.Title}. Route: {shellSection.Route}.");
+
 			var root = inflater.Inflate(Resource.Layout.RootLayout, null).JavaCast<CoordinatorLayout>();
 
 			_toolbar = root.FindViewById<Toolbar>(Resource.Id.main_toolbar);

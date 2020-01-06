@@ -68,7 +68,10 @@ namespace Xamarin.Forms.Platform.Android
 			_bottomView.SetOnNavigationItemSelectedListener(this);
 
 			if (ShellItem == null)
-				throw new ArgumentException("Active Shell Item not set. Have you added any Shell Items to your Shell?", nameof(ShellItem));
+				throw new InvalidOperationException("Active Shell Item not set. Have you added any Shell Items to your Shell?");
+
+			if (ShellItem.CurrentItem == null)
+				throw new InvalidOperationException($"Content not found for active {ShellItem}. Title: {ShellItem.Title}. Route: {ShellItem.Route}.");
 
 			HookEvents(ShellItem);
 			SetupMenu();

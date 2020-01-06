@@ -97,7 +97,15 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			UnhookEvents(ShellItem);
 			ShellItem = newItem;
+
+			if (newItem.CurrentItem == null)
+				throw new InvalidOperationException($"Content not found for active {newItem}. Title: {newItem.Title}. Route: {newItem.Route}.");
+
 			ShellSection = newItem.CurrentItem;
+
+			if (ShellSection.CurrentItem == null)
+				throw new InvalidOperationException($"Content not found for active {ShellSection}. Title: {ShellSection.Title}. Route: {ShellSection.Route}.");
+
 			HookEvents(newItem);
 		}
 
@@ -293,6 +301,12 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void SwitchSection(ShellNavigationSource source, ShellSection section, Page page, bool animate = true)
 		{
+			if (section == null)
+				throw new InvalidOperationException($"Content not found for active {ShellItem} - {ShellItem.Title}.");
+
+			if (section.CurrentItem == null)
+				throw new InvalidOperationException($"Content not found for active {section} - {section.Title}.");
+
 			SectionRenderer.NavigateToShellSection(source, section, animate);
 		}
 
