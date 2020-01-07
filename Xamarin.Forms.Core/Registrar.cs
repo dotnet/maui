@@ -360,7 +360,7 @@ namespace Xamarin.Forms.Internals
 				object[] effectAttributes = assembly.GetCustomAttributesSafe(typeof (ExportEffectAttribute));
 				if (effectAttributes == null || effectAttributes.Length == 0)
 				{
-					Profile.FrameEnd();
+					Profile.FrameEnd(assemblyName);
 					continue;
 				}
 
