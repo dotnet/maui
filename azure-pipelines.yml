@@ -10,7 +10,7 @@ variables:
 - name: SolutionFile
   value: Xamarin.Forms.sln
 - name: BuildVersion
-  value: $[counter(variables['Build.SourceBranch'], 1)]
+  value: $[counter('nuget-counter', 126)]
 - name: BuildVersion42
   value: $[counter('xf-nuget-counter', 992000)]
 - name: BuildVersion43
