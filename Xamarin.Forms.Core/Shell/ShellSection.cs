@@ -119,6 +119,45 @@ namespace Xamarin.Forms
 			_lastTabThickness = tabThickness;
 		}
 
+		async void IShellSectionController.SendPopping(Task poppingCompleted)
+		{
+			if (_navStack.Count <= 1)
+				throw new Exception("Nav Stack consistency error");
+
+			var page = _navStack[_navStack.Count - 1];
+
+			_navStack.Remove(page);
+			UpdateDisplayedPage();
+
+			await poppingCompleted;
+
+			RemovePage(page);
+			SendUpdateCurrentState(ShellNavigationSource.Pop);
+		}
+
+		async void IShellSectionController.SendPoppingToRoot(Task finishedPopping)
+		{
+			if (_navStack.Count <= 1)
+				throw new Exception("Nav Stack consistency error");
+
+			var oldStack = _navStack;
+			_navStack = new List<Page> { null };
+
+			for (int i = 1; i < oldStack.Count; i++)
+				oldStack[i].SendDisappearing();
+
+			UpdateDisplayedPage();
+			await finishedPopping;
+
+			for (int i = 1; i < oldStack.Count; i++)
+				RemovePage(oldStack[i]);
+
+			SendUpdateCurrentState(ShellNavigationSource.PopToRoot);
+		}
+
+		[Obsolete]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+
 		void IShellSectionController.SendPopped()
 		{
 			if (_navStack.Count <= 1)
@@ -134,6 +173,8 @@ namespace Xamarin.Forms
 
 		ReadOnlyCollection<ShellContent> IShellSectionController.GetItems() => ((ShellContentCollection)Items).VisibleItems;
 
+		[Obsolete]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		void IShellSectionController.SendPopping(Page page)
 		{
 			if (_navStack.Count <= 1)
@@ -143,9 +184,11 @@ namespace Xamarin.Forms
 			SendAppearanceChanged();
 		}
 
+		[Obsolete]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		void IShellSectionController.SendPopped(Page page)
 		{
-			if(_navStack.Contains(page))
+			if (_navStack.Contains(page))
 				_navStack.Remove(page);
 
 			RemovePage(page);
@@ -322,6 +365,7 @@ namespace Xamarin.Forms
 
 			if (previousPage != DisplayedPage)
 			{
+				previousPage?.SendDisappearing();
 				PresentedPageAppearing();
 				SendAppearanceChanged();
 			}
