@@ -70,7 +70,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				UpdateTextColor();
 			}
-			else if (e.IsOneOf(SearchHandler.PlaceholderColorProperty))
+			else if (e.Is(SearchHandler.PlaceholderColorProperty))
 			{
 				UpdatePlaceholderColor();
 			}
