@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<controls:TestContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"  
+             xmlns:controls="clr-namespace:Xamarin.Forms.Controls"  
+             x:Class="Xamarin.Forms.Controls.Issues.Issue7924">
+    <ContentPage.Content>
+        <Grid
+            Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid
+                Grid.Row="0"
+                BackgroundColor="Black">
+                <Label
+                    TextColor="White"
+                    Text="The initial position of the Carousel (CurrentItem) must be 3 (Squirrel Monkey)."/>
+            </Grid>
+            <Label
+                Grid.Row="1"
+                Text="{Binding Source={x:Reference carouselView}, Path=CurrentItem.Name, StringFormat='Current item: {0}', FallbackValue='Current item:'}" />
+            <Label
+                Grid.Row="2"
+                Text="{Binding Source={x:Reference carouselView}, Path=Position, StringFormat='Position: {0}'}" />
+            <CarouselView
+                Grid.Row="3"
+                x:Name="carouselView"
+                ItemsSource="{Binding Monkeys}"
+                CurrentItem="{Binding CurrentItem}"
+                Position="{Binding Position}">
+                <CarouselView.ItemTemplate>
+                    <DataTemplate>
+                        <StackLayout>
+                            <Frame HasShadow="True"
+                               BorderColor="DarkGray"
+                               CornerRadius="5"
+                               Margin="20"
+                               HeightRequest="300"
+                               HorizontalOptions="Center"
+                               VerticalOptions="CenterAndExpand">
+                                <StackLayout>
+                                    <Label Text="{Binding Name}" 
+                                       FontAttributes="Bold"
+                                       FontSize="Large"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center" />
+                                    <Image Source="{Binding ImageUrl}" 
+                                       Aspect="AspectFill"
+                                       HeightRequest="150"
+                                       WidthRequest="150"
+                                       HorizontalOptions="Center" />
+                                    <Label Text="{Binding Location}"
+                                       HorizontalOptions="Center" />
+                                    <Label Text="{Binding Details}"
+                                       FontAttributes="Italic"
+                                       HorizontalOptions="Center"
+                                       MaxLines="5"
+                                       LineBreakMode="TailTruncation" />
+                                </StackLayout>
+                            </Frame>
+                        </StackLayout>
+                    </DataTemplate>
+                </CarouselView.ItemTemplate>
+            </CarouselView>
+        </Grid>
+    </ContentPage.Content>
+</controls:TestContentPage>

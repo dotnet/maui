@@ -1,3 +1,4 @@
+using System.Collections;
 using System.ComponentModel;
 using Android.Content;
 using Android.Views;
@@ -183,6 +184,28 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdateInitialPosition()
 		{
 			_initialPosition = Carousel.Position;
+
+			if (Carousel.CurrentItem != null)
+			{
+				int position = 0;
+
+				var items = Carousel.ItemsSource as IList;
+
+				for (int n = 0; n < items?.Count; n++)
+				{
+					if (items[n] == Carousel.CurrentItem)
+					{
+						position = n;
+						break;
+					}
+				}
+
+				_initialPosition = position;
+				Carousel.Position = _initialPosition;
+			}
+			else
+				_initialPosition = Carousel.Position;
+
 			_oldPosition = _initialPosition;
 			Carousel.ScrollTo(_initialPosition, position: Xamarin.Forms.ScrollToPosition.Center, animate: false);
 		}
