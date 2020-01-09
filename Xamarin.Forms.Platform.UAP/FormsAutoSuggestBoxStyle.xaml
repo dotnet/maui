@@ -3,8 +3,7 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:uwp="using:Xamarin.Forms.Platform.UWP">
 
-	<!-- Default Style for AutoSuggestBox -->
-	<Style TargetType="AutoSuggestBox">
+	<Style TargetType="AutoSuggestBox" x:Key="FormsAutoSuggestBoxStyle">
 		<Setter Property="VerticalAlignment" Value="Top" />
 		<Setter Property="IsTabStop" Value="False" />
 		<Setter Property="TextBoxStyle" Value="{StaticResource AutoSuggestBoxFormsTextBoxStyle}" />
@@ -133,7 +132,7 @@
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Center"
                                    FontStyle="Normal"
-                                   FontSize="12"
+                                   FontSize="{TemplateBinding FontSize}"
                                    Text="&#xE10A;"
                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                    AutomationProperties.AccessibilityView="Raw"/>

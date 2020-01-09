@@ -10,7 +10,7 @@
 		<ResourceDictionary Source="FormsProgressBarStyle.xaml" />
 		<ResourceDictionary Source="FormsTextBoxStyle.xaml" />
 		<ResourceDictionary Source="FormsCheckBoxStyle.xaml" />
-		<ResourceDictionary Source="AutoSuggestStyle.xaml" />
+		<ResourceDictionary Source="FormsAutoSuggestBoxStyle.xaml" />
 		<ResourceDictionary Source="MasterDetailControlStyle.xaml" />
 		<ResourceDictionary Source="TabbedPageStyle.xaml" />
 		<ResourceDictionary Source="SliderStyle.xaml" />

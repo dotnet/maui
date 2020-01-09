@@ -13,7 +13,7 @@ namespace Xamarin.Forms.ControlGallery.Tizen
 		protected override void OnCreate()
 		{
 			base.OnCreate();
-			ThemeLoader.Initialize(DirectoryInfo.Resource);
+			MaterialComponents.Init(DirectoryInfo.Resource);
 			NativeParent = MainWindow;
 			LoadApplication(new App());
 		}

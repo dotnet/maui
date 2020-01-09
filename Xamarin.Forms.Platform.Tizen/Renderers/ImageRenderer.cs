@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
+using EImage = ElmSharp.Image;
 
 using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Image;
 
@@ -110,12 +111,12 @@ namespace Xamarin.Forms.Platform.Tizen
 
 	public interface IImageSourceHandler : IRegisterable
 	{
-		Task<bool> LoadImageAsync(Native.Image image, ImageSource imageSource, CancellationToken cancelationToken = default(CancellationToken));
+		Task<bool> LoadImageAsync(EImage image, ImageSource imageSource, CancellationToken cancelationToken = default(CancellationToken));
 	}
 
 	public sealed class FileImageSourceHandler : IImageSourceHandler
 	{
-		public Task<bool> LoadImageAsync(Native.Image image, ImageSource imageSource, CancellationToken cancelationToken = default(CancellationToken))
+		public Task<bool> LoadImageAsync(EImage image, ImageSource imageSource, CancellationToken cancelationToken = default(CancellationToken))
 		{
 			var filesource = imageSource as FileImageSource;
 			if (filesource != null)
@@ -130,7 +131,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 	public sealed class StreamImageSourceHandler : IImageSourceHandler
 	{
-		public async Task<bool> LoadImageAsync(Native.Image image, ImageSource imageSource, CancellationToken cancelationToken = default(CancellationToken))
+		public async Task<bool> LoadImageAsync(EImage image, ImageSource imageSource, CancellationToken cancelationToken = default(CancellationToken))
 		{
 			var streamsource = imageSource as StreamImageSource;
 			if (streamsource != null && streamsource.Stream != null)
@@ -147,7 +148,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 	public sealed class UriImageSourceHandler : IImageSourceHandler
 	{
-		public Task<bool> LoadImageAsync(Native.Image image, ImageSource imageSource, CancellationToken cancelationToken = default(CancellationToken))
+		public Task<bool> LoadImageAsync(EImage image, ImageSource imageSource, CancellationToken cancelationToken = default(CancellationToken))
 		{
 			var urisource = imageSource as UriImageSource;
 			if (urisource != null && urisource.Uri != null)

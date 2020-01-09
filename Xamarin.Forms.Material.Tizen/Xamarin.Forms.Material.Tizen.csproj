@@ -32,7 +32,7 @@
 
   <ItemGroup>
     <PackageReference Include="Tizen.NET" Version="4.0.0" />
-    <PackageReference Include="Tizen.NET.MaterialComponents" Version="0.9.7-preview" />
+    <PackageReference Include="Tizen.NET.MaterialComponents" Version="0.9.9-pre1" />
   </ItemGroup>
 
   <ItemGroup>

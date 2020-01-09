@@ -263,6 +263,7 @@ namespace Xamarin.Forms.Internals
 		//typeof(ExportRendererAttribute);
 		//typeof(ExportCellAttribute);
 		//typeof(ExportImageSourceHandlerAttribute);
+		//TODO this is no longer used?
 		public static void RegisterRenderers(HandlerAttribute[] attributes)
 		{
 			var length = attributes.Length;
@@ -368,7 +369,10 @@ namespace Xamarin.Forms.Internals
 				var resolutionNameAttribute = (ResolutionGroupNameAttribute)assembly.GetCustomAttribute(typeof(ResolutionGroupNameAttribute));
 				if (resolutionNameAttribute != null)
 					resolutionName = resolutionNameAttribute.ShortName;
-				RegisterEffects(resolutionName, (ExportEffectAttribute[])effectAttributes);
+				//NOTE: a simple cast to ExportEffectAttribute[] failed on UWP, hence the Array.Copy
+				var typedEffectAttributes = new ExportEffectAttribute[effectAttributes.Length];
+				Array.Copy(effectAttributes, typedEffectAttributes, effectAttributes.Length);
+				RegisterEffects(resolutionName, typedEffectAttributes);
 
 				Profile.FrameEnd(assemblyName);
 			}

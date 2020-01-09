@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using ElmSharp;
 using EColor = ElmSharp.Color;
-using Xamarin.Forms;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -12,6 +10,10 @@ namespace Xamarin.Forms.Platform.Tizen
 		EvasObject Header { get; set; }
 
 		EColor BackgroundColor { get; set; }
+
+		ImageSource BackgroundImageSource { get; set; }
+
+		Aspect BackgroundImageAspect { get; set; }
 
 		void BuildMenu(List<List<Element>> flyout);
 

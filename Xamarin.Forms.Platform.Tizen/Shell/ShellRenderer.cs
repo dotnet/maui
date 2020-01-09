@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using ElmSharp;
 
 namespace Xamarin.Forms.Platform.Tizen
@@ -18,6 +17,8 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			RegisterPropertyHandler(Shell.CurrentItemProperty, UpdateCurrentItem);
 			RegisterPropertyHandler(Shell.FlyoutBackgroundColorProperty, UpdateFlyoutBackgroundColor);
+			RegisterPropertyHandler(Shell.FlyoutBackgroundImageProperty, UpdateFlyoutBackgroundImage);
+			RegisterPropertyHandler(Shell.FlyoutBackgroundImageAspectProperty, UpdateFlyoutBackgroundImageAspect);
 			RegisterPropertyHandler(Shell.FlyoutIsPresentedProperty, UpdateFlyoutIsPresented);
 		}
 
@@ -117,6 +118,16 @@ namespace Xamarin.Forms.Platform.Tizen
 		void UpdateFlyoutBackgroundColor()
 		{
 			_navigationView.BackgroundColor = Element.FlyoutBackgroundColor.ToNative();
+		}
+
+		void UpdateFlyoutBackgroundImageAspect()
+		{
+			_navigationView.BackgroundImageAspect = Element.FlyoutBackgroundImageAspect;
+		}
+
+		void UpdateFlyoutBackgroundImage()
+		{
+			_navigationView.BackgroundImageSource = Element.FlyoutBackgroundImage;
 		}
 
 		void UpdateFlyoutIsPresented()

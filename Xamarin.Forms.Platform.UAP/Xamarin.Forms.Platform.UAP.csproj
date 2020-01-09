@@ -30,7 +30,7 @@
     </NoWarn>
   </PropertyGroup>
   <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
-    <Page Include="AutoSuggestStyle.xaml">
+    <Page Include="FormsAutoSuggestBoxStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
