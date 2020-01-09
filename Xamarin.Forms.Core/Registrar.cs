@@ -338,7 +338,10 @@ namespace Xamarin.Forms.Internals
 					object[] attributes = assembly.GetCustomAttributesSafe(attrType);
 					if (attributes == null || attributes.Length == 0)
 						continue;
-					RegisterRenderers((HandlerAttribute[])attributes);
+					//NOTE: a simple cast to HandlerAttribute[] failed on UWP, hence the Array.Copy
+					var handlerAttributes = new HandlerAttribute[attributes.Length];
+					Array.Copy(attributes, handlerAttributes, attributes.Length);
+					RegisterRenderers(handlerAttributes);
 				}
 
 				object[] effectAttributes = assembly.GetCustomAttributesSafe(typeof (ExportEffectAttribute));
@@ -352,7 +355,10 @@ namespace Xamarin.Forms.Internals
 				var resolutionNameAttribute = (ResolutionGroupNameAttribute)assembly.GetCustomAttribute(typeof(ResolutionGroupNameAttribute));
 				if (resolutionNameAttribute != null)
 					resolutionName = resolutionNameAttribute.ShortName;
-				RegisterEffects(resolutionName, (ExportEffectAttribute[])effectAttributes);
+				//NOTE: a simple cast to ExportEffectAttribute[] failed on UWP, hence the Array.Copy
+				var typedEffectAttributes = new ExportEffectAttribute[effectAttributes.Length];
+				Array.Copy(effectAttributes, typedEffectAttributes, effectAttributes.Length);
+				RegisterEffects(resolutionName, typedEffectAttributes);
 
 				Profile.FrameEnd();
 			}
