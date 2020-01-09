@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using CoreGraphics;
+﻿using System.Collections;
 using Foundation;
 using UIKit;
 
@@ -9,7 +6,7 @@ namespace Xamarin.Forms.Platform.iOS
 {
 	public class CarouselViewController : ItemsViewController<CarouselView>
 	{
-		CarouselView _carouselView;
+		readonly CarouselView _carouselView;
 		bool _viewInitialized;
 
 		public CarouselViewController(CarouselView itemsView, ItemsViewLayout layout) : base(itemsView, layout)
@@ -86,6 +83,25 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateInitialPosition()
 		{
+			if (_carouselView.CurrentItem != null)
+			{
+				int position = 0;
+
+				var items = _carouselView.ItemsSource as IList;
+
+				for (int n = 0; n < items?.Count; n++)
+				{
+					if (items[n] == _carouselView.CurrentItem)
+					{
+						position = n;
+						break;
+					}
+				}
+
+				var initialPosition = position;
+				_carouselView.Position = initialPosition;
+			}
+
 			if (_carouselView.Position != 0)
 				_carouselView.ScrollTo(_carouselView.Position, -1, ScrollToPosition.Center, false);
 		}

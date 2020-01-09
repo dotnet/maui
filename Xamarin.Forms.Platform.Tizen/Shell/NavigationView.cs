@@ -1,26 +1,30 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using ElmSharp;
 using EColor = ElmSharp.Color;
+using EImage = ElmSharp.Image;
+using NBox = Xamarin.Forms.Platform.Tizen.Native.Box;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
-	public class NavigationView : Native.Box, INavigationView
+	public class NavigationView : Background, INavigationView
 	{
+		NBox _box;
+		EImage _bg;
+		Aspect _bgImageAspect;
+		ImageSource _bgImageSource;
 		EvasObject _header;
 		GenList _menu;
 		GenItemClass _defaultClass;
 		EColor _backgroundColor;
 		EColor _defaultBackgroundColor = EColor.White;
-
 		List<Group> _groups;
 		IDictionary<Item, Element> _flyoutMenu = new Dictionary<Item, Element>();
 
 		public NavigationView(EvasObject parent) : base(parent)
 		{
 			Initialize(parent);
-			LayoutUpdated += (s, e) =>
+			_box.LayoutUpdated += (s, e) =>
 			{
 				UpdateChildGeometry();
 			};
@@ -39,10 +43,58 @@ namespace Xamarin.Forms.Platform.Tizen
 			set
 			{
 				_backgroundColor = value;
-
 				EColor effectiveColor = _backgroundColor.IsDefault ? _defaultBackgroundColor : _backgroundColor;
-				_menu.BackgroundColor = effectiveColor;
 				base.BackgroundColor = effectiveColor;
+
+				if(_bg == null)
+				{
+					_menu.BackgroundColor = effectiveColor;
+				}
+			}
+		}
+
+		public Aspect BackgroundImageAspect
+		{
+			get
+			{
+				return _bgImageAspect;
+			}
+			set
+			{
+				_bgImageAspect = value;
+				if (_bg != null)
+				{
+					_bg.ApplyAspect(_bgImageAspect);
+				}
+			}
+		}
+
+		public ImageSource BackgroundImageSource
+		{
+			get
+			{
+				return _bgImageSource;
+			}
+			set
+			{
+				_bgImageSource = value;
+				if (_bgImageSource != null)
+				{
+					if (_bg == null)
+					{
+						_bg = new EImage(this);
+					}
+					_menu.BackgroundColor = EColor.Transparent;
+					SetPartContent("elm.swallow.background", _bg);
+					_bg.ApplyAspect(_bgImageAspect);
+					_ = _bg.LoadFromImageSourceAsync(_bgImageSource);
+				}
+				else
+				{
+					EColor effectiveColor = _backgroundColor.IsDefault ? _defaultBackgroundColor : _backgroundColor;
+					_menu.BackgroundColor = effectiveColor;
+					SetPartContent("elm.swallow.background", null);
+				}
 			}
 		}
 
@@ -56,14 +108,14 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				if (_header != null)
 				{
-					UnPack(_header);
+					_box.UnPack(_header);
 					_header.Hide();
 				}
 				_header = value;
 
 				if (_header != null)
 				{
-					PackStart(_header);
+					_box.PackStart(_header);
 					if (!_header.IsVisible)
 					{
 						_header.Show();
@@ -118,6 +170,15 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void Initialize(EvasObject parent)
 		{
+			_box = new Native.Box(parent)
+			{
+				AlignmentX = -1,
+				AlignmentY = -1,
+				WeightX = 1,
+				WeightY = 1
+			};
+			SetContent(_box);
+
 			_menu = new GenList(parent)
 			{
 				BackgroundColor = EColor.Transparent,
@@ -132,7 +193,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			};
 
 			_menu.Show();
-			PackEnd(_menu);
+			_box.PackEnd(_menu);
 
 			_defaultClass = new GenItemClass("double_label")
 			{

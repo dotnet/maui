@@ -45,7 +45,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		protected override void HandleLayoutPropertyChanged(PropertyChangedEventArgs property)
 		{
-			if (property.IsOneOf(LinearItemsLayout.ItemSpacingProperty))
+			if (property.Is(LinearItemsLayout.ItemSpacingProperty))
 				UpdateItemSpacing();
 			else if (property.Is(ItemsLayout.SnapPointsTypeProperty))
 				UpdateSnapPointsType();
