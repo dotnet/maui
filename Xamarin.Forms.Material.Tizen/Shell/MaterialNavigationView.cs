@@ -3,16 +3,63 @@ using System.Collections.Generic;
 using ElmSharp;
 using Tizen.NET.MaterialComponents;
 using Xamarin.Forms.Platform.Tizen;
+using EImage = ElmSharp.Image;
 
 namespace Xamarin.Forms.Material.Tizen
 {
 	public class MaterialNavigationView : MNavigationView, INavigationView
 	{
+		ImageSource _bgImageSource;
+		EImage _bg;
+		Aspect _bgImageAspect;
+
 		IDictionary<MItem, Element> _flyoutMenu = new Dictionary<MItem, Element>();
 
 		public MaterialNavigationView(EvasObject parent) : base(parent)
 		{
 			MenuItemSelected += OnSelectedItemChanged;
+		}
+
+		public Aspect BackgroundImageAspect
+		{
+			get
+			{
+				return _bgImageAspect;
+			}
+			set
+			{
+				_bgImageAspect = value;
+				if (_bg != null)
+				{
+					_bg.ApplyAspect(_bgImageAspect);
+				}
+			}
+		}
+
+		public ImageSource BackgroundImageSource
+		{
+			get
+			{
+				return _bgImageSource;
+			}
+			set
+			{
+				_bgImageSource = value;
+				if(_bgImageSource != null)
+				{
+					if(_bg == null)
+					{
+						_bg = new EImage(this);
+					}
+					_bg.ApplyAspect(_bgImageAspect);
+					BackgroundImage = _bg;
+					_ = _bg.LoadFromImageSourceAsync(_bgImageSource);
+				}
+				else
+				{
+					BackgroundImage = null;
+				}
+			}
 		}
 
 		public event EventHandler<SelectedItemChangedEventArgs> SelectedItemChanged;

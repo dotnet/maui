@@ -19,37 +19,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		}
 
 		/// <summary>
-		/// Loads image data from the given <see cref="Xamarin.Forms.ImageSource"/> asynchronously.
-		/// </summary>
-		/// <returns>A task which will be completed when image data is loaded.</returns>
-		/// <param name="source">Image source specifying from where the image data has to be loaded.</param>
-		public async Task<bool> LoadFromImageSourceAsync(ImageSource source)
-		{
-			IImageSourceHandler handler;
-			bool isLoadComplate = false;
-			if (source != null && (handler = Forms.GetHandlerForObject<IImageSourceHandler>(source)) != null)
-			{
-				isLoadComplate = await handler.LoadImageAsync(this, source);
-			}
-			if (!isLoadComplate)
-			{
-				//If it fails, call the Load function to remove the previous image.
-				Load(string.Empty);
-			}
-
-			return isLoadComplate;
-		}
-
-		public bool LoadFromFile(string file)
-		{
-			if (!string.IsNullOrEmpty(file))
-			{
-				return Load(ResourcePath.GetPath(file));
-			}
-			return false;
-		}
-
-		/// <summary>
 		/// Implements the <see cref="Xamarin.Forms.Platform.Tizen.Native.IMeasurable"/> interface.
 		/// </summary>
 		/// <param name="availableWidth">Available width.</param>
