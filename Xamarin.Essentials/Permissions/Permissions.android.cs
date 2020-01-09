@@ -48,7 +48,7 @@ namespace Xamarin.Essentials
                     if (!IsDeclaredInManifest(ap))
                         throw new PermissionException($"You need to declare using the permission: `{androidPermission}` in your AndroidManifest.xml");
 
-                    var status = PermissionStatus.Denied;
+                    var status = PermissionStatus.Granted;
 
                     if (targetsMOrHigher)
                     {
