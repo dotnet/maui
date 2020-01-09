@@ -65,7 +65,7 @@
       <Docs>
         <param name="key">Storage Key.</param>
         <summary>Gets the decrypted value for a given Key.</summary>
-        <returns>Decrypted string.</returns>
+        <returns>Decrypted string or null if key does not exist.</returns>
         <remarks>
           <para />
         </remarks>
