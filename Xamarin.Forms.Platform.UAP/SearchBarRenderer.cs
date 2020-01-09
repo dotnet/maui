@@ -29,7 +29,12 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (Control == null)
 				{
-					SetNativeControl(new AutoSuggestBox { QueryIcon = new SymbolIcon(Symbol.Find) });
+					AutoSuggestBox nativeAutoSuggestBox = new AutoSuggestBox
+					{
+						QueryIcon = new SymbolIcon(Symbol.Find),
+						Style = Windows.UI.Xaml.Application.Current.Resources["FormsAutoSuggestBoxStyle"] as Windows.UI.Xaml.Style
+					};
+					SetNativeControl(nativeAutoSuggestBox);
 					Control.QuerySubmitted += OnQuerySubmitted;
 					Control.TextChanged += OnTextChanged;
 					Control.Loaded += OnControlLoaded;
