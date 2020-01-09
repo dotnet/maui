@@ -54,7 +54,7 @@
       <Docs>
         <summary>Gets the current charge level of the device from 0.0 to 1.0.</summary>
         <value>
-          <para>Level of charge.</para>
+          <para>Level of charge. Returns -1 if no battery exists.</para>
         </value>
         <remarks>
           <para />
