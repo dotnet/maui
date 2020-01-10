@@ -24,6 +24,7 @@ namespace Xamarin.Forms.Platform.UWP
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
 		static Task<bool> s_currentAlert;
+		static Task<string> s_currentPrompt;
 
 		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer",
 			typeof(IVisualElementRenderer), typeof(Windows.Foundation.Metadata.Platform), default(IVisualElementRenderer));
@@ -493,6 +494,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			MessagingCenter.Subscribe<Page, AlertArguments>(Window.Current, Page.AlertSignalName, OnPageAlert);
 			MessagingCenter.Subscribe<Page, ActionSheetArguments>(Window.Current, Page.ActionSheetSignalName, OnPageActionSheet);
+			MessagingCenter.Subscribe<Page, PromptArguments>(Window.Current, Page.PromptSignalName, OnPagePrompt);
 		}
 
 		static void OnPageActionSheet(object sender, ActionSheetArguments options)
@@ -528,6 +530,45 @@ namespace Xamarin.Forms.Platform.UWP
 				if (Window.Current.Content is FrameworkElement mainPage)
 					actionSheet.ShowAt(mainPage);
 			}
+		}
+
+		static async void OnPagePrompt(Page sender, PromptArguments options)
+		{
+			var promptDialog = new PromptDialog
+			{
+				Title = options.Title ?? string.Empty,
+				Message = options.Message ?? string.Empty,
+				Input = options.InitialValue ?? string.Empty,
+				Placeholder = options.Placeholder ?? string.Empty,
+				MaxLength = options.MaxLength >= 0 ? options.MaxLength : 0,
+				InputScope = options.Keyboard.ToInputScope()
+			};
+
+			if (options.Cancel != null)
+				promptDialog.SecondaryButtonText = options.Cancel;
+
+			if (options.Accept != null)
+				promptDialog.PrimaryButtonText = options.Accept;
+
+			var currentAlert = s_currentPrompt;
+			while (currentAlert != null)
+			{
+				await currentAlert;
+				currentAlert = s_currentPrompt;
+			}
+
+			s_currentPrompt = ShowPrompt(promptDialog);
+			options.SetResult(await s_currentPrompt.ConfigureAwait(false));
+			s_currentPrompt = null;
+		}
+
+		static async Task<string> ShowPrompt(PromptDialog prompt)
+		{
+			ContentDialogResult result = await prompt.ShowAsync();
+
+			if (result == ContentDialogResult.Primary)
+				return prompt.Input;
+			return null;
 		}
 
 		static async void OnPageAlert(Page sender, AlertArguments options)
