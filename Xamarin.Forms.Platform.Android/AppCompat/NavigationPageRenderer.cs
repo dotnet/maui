@@ -547,6 +547,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			else if (e.PropertyName == NavigationPage.TitleIconImageSourceProperty.PropertyName ||
 					 e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
 				UpdateToolbar();
+			else if (e.PropertyName == NavigationPage.IconColorProperty.PropertyName)
+				UpdateToolbar();
 		}
 
 #pragma warning disable 1998 // considered for removal
@@ -984,6 +986,10 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			Color textColor = Element.BarTextColor;
 			if (!textColor.IsDefault)
 				bar.SetTitleTextColor(textColor.ToAndroid().ToArgb());
+
+			Color navIconColor = NavigationPage.GetIconColor(Current);
+			if(!navIconColor.IsDefault)
+				bar.NavigationIcon?.SetColorFilter(navIconColor.ToAndroid(), PorterDuff.Mode.SrcAtop);
 
 			bar.Title = currentPage?.Title ?? string.Empty;
 

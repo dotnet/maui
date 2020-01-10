@@ -32,6 +32,8 @@ namespace Xamarin.Forms
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static readonly BindableProperty TitleIconProperty = TitleIconImageSourceProperty;
 
+		public static readonly BindableProperty IconColorProperty = BindableProperty.CreateAttached("IconColor", typeof(Color), typeof(NavigationPage), Color.Default);
+
 		public static readonly BindableProperty TitleViewProperty = BindableProperty.CreateAttached("TitleView", typeof(View), typeof(NavigationPage), null, propertyChanging: TitleViewPropertyChanging);
 
 		static readonly BindablePropertyKey CurrentPagePropertyKey = BindableProperty.CreateReadOnly("CurrentPage", typeof(Page), typeof(NavigationPage), null);
@@ -159,6 +161,11 @@ namespace Xamarin.Forms
 			return (View)bindable.GetValue(TitleViewProperty);
 		}
 
+		public static Color GetIconColor(BindableObject bindable)
+		{
+			return (Color)bindable.GetValue(IconColorProperty);
+		}
+
 		public Task<Page> PopAsync()
 		{
 			return PopAsync(true);
@@ -276,6 +283,11 @@ namespace Xamarin.Forms
 		public static void SetTitleView(BindableObject bindable, View value)
 		{
 			bindable.SetValue(TitleViewProperty, value);
+		}
+
+		public static void SetIconColor(BindableObject bindable, Color value)
+		{
+			bindable.SetValue(IconColorProperty, value);
 		}
 
 		protected override bool OnBackButtonPressed()
