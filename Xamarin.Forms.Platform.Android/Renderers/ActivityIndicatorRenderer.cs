@@ -60,7 +60,7 @@ namespace Xamarin.Forms.Platform.Android
 			Color color = Element.Color;
 
 			if (!color.IsDefault)
-				Control.IndeterminateDrawable?.SetColorFilter(color.ToAndroid(), PorterDuff.Mode.SrcIn);
+				Control.IndeterminateDrawable?.SetColorFilter(color.ToAndroid(), FilterMode.SrcIn);
 			else
 				Control.IndeterminateDrawable?.ClearColorFilter();
 		}

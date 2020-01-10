@@ -43,6 +43,27 @@ namespace Xamarin.UITest
 			return true;
 		}
 
+		public static void TapOverflowMenuButton(this IApp app)
+		{
+#if __ANDROID__
+			// show secondary menu
+			// When running these tests as release/d8/r8/AndroidX the runner was having trouble locating "OverflowMenuButton"
+			// so we search through the ActionMenu for the button
+			var menuElements = app.WaitForElement(c => c.Class("ActionMenuView").Descendant());
+			var menuElement = menuElements.Where(x => x.Class.Contains("OverflowMenuButton")).FirstOrDefault();
+
+			if (menuElement != null)
+			{
+				app.Tap(c => c.Class(menuElement.Class));
+			}
+			else
+			{
+				app.WaitForElement(c => c.Class("OverflowMenuButton"));
+				app.Tap(c => c.Class("OverflowMenuButton"));
+			}
+#endif
+		}
+
 		public static bool IsTablet(this IApp app)
 		{
 #if __IOS__

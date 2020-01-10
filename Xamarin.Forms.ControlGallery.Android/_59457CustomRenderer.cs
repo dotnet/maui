@@ -24,7 +24,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 			if (Control != null)
 			{
 				Drawable drawable = Control.Background;
-				drawable.SetColorFilter(global::Android.Graphics.Color.Blue, PorterDuff.Mode.SrcAtop);
+				drawable.SetColorFilter(global::Android.Graphics.Color.Blue, FilterMode.SrcAtop);
 				Control.Background = drawable;
 			}
 		}

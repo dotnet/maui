@@ -66,7 +66,7 @@ jobs:
     displayName: Build Windows Phase
     vmImage: $(winVmImage)
     targetFolder: Xamarin.Forms.ControlGallery.Android/legacyRenderers/
-    msbuildExtraArguments: '/nowarn:VSX1000'
+    msbuildExtraArguments: '/nowarn:VSX1000 /p:AndroidTargetFrameworks=MonoAndroid90'
     buildConfiguration: $(DefaultBuildConfiguration)
     buildPlatform: $(DefaultBuildPlatform)
     provisionatorPath : 'build/provisioning/provisioning.csx'
@@ -74,16 +74,31 @@ jobs:
 
 - template: build/steps/build-windows.yml
   parameters:
+    name: win_2019_android
+    displayName: Build Android 10.0
+    vmImage: $(win2019VmImage)
+    targetFolder: Xamarin.Forms.ControlGallery.Android/legacyRenderers/
+    msbuildExtraArguments: '/nowarn:VSX1000 /p:AndroidTargetFrameworks=MonoAndroid10.0'
+    buildConfiguration: $(DefaultBuildConfiguration)
+    buildPlatform: $(DefaultBuildPlatform)
+    provisionatorPath : 'build/provisioning/provisioning.csx'
+    slnPath: '.Xamarin.Forms.Android.nuget.sln'
+    includeUwp: 'false'
+    includeNonUwpAndNonAndroid: 'false'
+
+- template: build/steps/build-windows.yml
+  parameters:
     name: win_2019
     displayName: Build UWP Phase
     vmImage: $(win2019VmImage)
     targetFolder: Xamarin.Forms.ControlGallery.Android/legacyRenderers/
-    msbuildExtraArguments: '/nowarn:VSX1000 /p:CreateAllAndroidTargets=true'
+    msbuildExtraArguments: '/nowarn:VSX1000'
     buildConfiguration: $(DefaultBuildConfiguration)
     buildPlatform: $(DefaultBuildPlatform)
     provisionatorPath : 'build/provisioning/provisioning.csx'
     slnPath: '.Xamarin.Forms.UAP.nuget.sln'
-    includeNonUwp: 'false'
+    includeNonUwpAndNonAndroid: 'false'
+    includeAndroid: 'false'
 
 
 - template: build/steps/build-android.yml
@@ -93,7 +108,7 @@ jobs:
     vmImage: $(macOSVmImage)
     targetFolder: Xamarin.Forms.ControlGallery.Android/legacyRenderers/
     androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /bl:$(Build.ArtifactStagingDirectory)/android-legacy.binlog'
-    buildConfiguration: $(DefaultBuildConfiguration)
+    buildConfiguration: $(AndroidBuildConfiguration)
     provisionatorPath : 'build/provisioning/provisioning.csx'
 
 - template: build/steps/build-android.yml
@@ -103,7 +118,7 @@ jobs:
     vmImage: $(macOSVmImage)
     targetFolder: Xamarin.Forms.ControlGallery.Android/preAppCompat
     androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /p:DefineConstants="TRACE DEBUG FORMS_APPLICATION_ACTIVITY APP" /bl:$(Build.ArtifactStagingDirectory)/android-preappcompact.binlog'
-    buildConfiguration: $(DefaultBuildConfiguration)
+    buildConfiguration: $(AndroidBuildConfiguration)
     provisionatorPath : 'build/provisioning/provisioning.csx'
 
 - template: build/steps/build-android.yml
@@ -113,7 +128,7 @@ jobs:
     vmImage: $(macOSVmImage)
     targetFolder: Xamarin.Forms.ControlGallery.Android/newRenderers/
     androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /p:DefineConstants="TRACE DEBUG TEST_EXPERIMENTAL_RENDERERS APP" /bl:$(Build.ArtifactStagingDirectory)/android-newrenderers.binlog'
-    buildConfiguration: $(DefaultBuildConfiguration)
+    buildConfiguration: $(AndroidBuildConfiguration)
     provisionatorPath : 'build/provisioning/provisioning.csx'
 
 - job: osx
@@ -132,7 +147,6 @@ jobs:
     slnPath: $(SolutionFile)
     iOSCertSecureFileName: 'Xamarin Forms iOS Certificate.p12'
     iOSProvisioningSecureFileName: 'Xamarin Forms iOS Provisioning.mobileprovision'
-    monoVersion : $(MONO_VERSION)
   steps:
      - template: build/steps/build-osx.yml
 
@@ -141,6 +155,7 @@ jobs:
   dependsOn:
    - win
    - win_2019
+   - win_2019_android
   condition: succeeded()
   pool:
     name: $(winVmImage)
@@ -161,6 +176,4 @@ jobs:
     steps:
       - template: build/steps/build-sign.yml
     condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
-
-
 

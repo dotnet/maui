@@ -180,7 +180,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateThumbColor()
 		{
-			Control.Thumb.SetColorFilter(Element.ThumbColor, defaultthumbcolorfilter, PorterDuff.Mode.SrcIn);
+			Control.Thumb.SetColorFilter(Element.ThumbColor, defaultthumbcolorfilter, FilterMode.SrcIn);
 		}
 
 		void UpdateThumbImage()

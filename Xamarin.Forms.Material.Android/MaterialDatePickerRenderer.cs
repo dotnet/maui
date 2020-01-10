@@ -1,4 +1,4 @@
-#if __ANDROID_28__
+
 using Android.Content;
 using Android.Views;
 using Android.Widget;
@@ -53,4 +53,3 @@ namespace Xamarin.Forms.Material.Android
 		AView ITabStop.TabStop => EditText;
 	}
 }
-#endif

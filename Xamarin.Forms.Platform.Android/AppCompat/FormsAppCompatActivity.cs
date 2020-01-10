@@ -1,5 +1,3 @@
-#region
-
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -9,18 +7,21 @@ using Android.Content;
 using Android.Content.Res;
 using Android.OS;
 using Android.Runtime;
+#if __ANDROID_29__
+using AndroidX.AppCompat.App;
+using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
+#else
 using Android.Support.V7.App;
+using AToolbar = Android.Support.V7.Widget.Toolbar;
+#endif
 using Android.Views;
 using Xamarin.Forms.Platform.Android.AppCompat;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat;
-using AToolbar = Android.Support.V7.Widget.Toolbar;
 using AColor = Android.Graphics.Color;
 using ARelativeLayout = Android.Widget.RelativeLayout;
 using Xamarin.Forms.Internals;
 using System.Runtime.CompilerServices;
-
-#endregion
 
 namespace Xamarin.Forms.Platform.Android
 {

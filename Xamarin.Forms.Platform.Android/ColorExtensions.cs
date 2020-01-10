@@ -2,7 +2,12 @@ using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Content.Res;
+#if __ANDROID_29__
+using AndroidX.Core.Content;
+#else
 using Android.Support.V4.Content;
+#endif
+
 using AColor = Android.Graphics.Color;
 
 namespace Xamarin.Forms.Platform.Android

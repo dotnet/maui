@@ -121,7 +121,7 @@ namespace Xamarin.Forms.Platform.Android
 					{
 						if (Forms.SdkInt >= BuildVersionCodes.JellyBean)
 						{
-							Control.TrackDrawable?.SetColorFilter(Element.OnColor.ToAndroid(), PorterDuff.Mode.Multiply);
+							Control.TrackDrawable?.SetColorFilter(Element.OnColor.ToAndroid(), FilterMode.Multiply);
 						}
 					}
 				}
@@ -139,7 +139,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (Element.ThumbColor != Color.Default)
 			{
-				Control.ThumbDrawable?.SetColorFilter(Element.ThumbColor.ToAndroid(), PorterDuff.Mode.Multiply);
+				Control.ThumbDrawable.SetColorFilter(Element.ThumbColor, FilterMode.Multiply);
 				_changedThumbColor = true;
 			}
 			else
@@ -150,6 +150,7 @@ namespace Xamarin.Forms.Platform.Android
 					_changedThumbColor = false;
 				}
 			}
+			Control.ThumbDrawable.SetColorFilter(Element.ThumbColor, FilterMode.Multiply);
 		}
 
 		void HandleToggled(object sender, EventArgs e)

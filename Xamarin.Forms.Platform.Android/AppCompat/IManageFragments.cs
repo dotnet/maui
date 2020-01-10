@@ -1,4 +1,8 @@
+#if __ANDROID_29__
+using AndroidX.Fragment.App;
+#else
 using Android.Support.V4.App;
+#endif
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {

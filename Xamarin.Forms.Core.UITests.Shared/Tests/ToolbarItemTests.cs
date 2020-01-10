@@ -1,8 +1,10 @@
-﻿using System.Threading;
+﻿using System;
+using System.Linq;
+using System.Threading;
 using NUnit.Framework;
 using Xamarin.Forms.Controls;
 using Xamarin.Forms.CustomAttributes;
-
+using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 
 namespace Xamarin.Forms.Core.UITests
@@ -29,11 +31,7 @@ namespace Xamarin.Forms.Core.UITests
 #endif
 		void ShouldShowMenu()
 		{
-#if __ANDROID__
-			//show secondary menu
-			App.WaitForElement(c => c.Class("OverflowMenuButton"));
-			App.Tap(c => c.Class("OverflowMenuButton"));
-#endif
+			App.TapOverflowMenuButton();
 		}
 
 		void ShouldHideMenu()

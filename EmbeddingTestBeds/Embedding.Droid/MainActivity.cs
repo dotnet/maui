@@ -1,13 +1,19 @@
 ﻿using System;
 using Android.App;
 using Android.OS;
+#if __ANDROID_29__
+using AndroidX.Fragment.App;
+using Fragment = AndroidX.Fragment.App.Fragment;
+using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
+#else
 using Android.Support.V4.App;
+using Fragment = Android.Support.V4.App.Fragment;
+using FragmentTransaction = Android.Support.V4.App.FragmentTransaction;
+#endif
 using Android.Views;
 using Embedding.XF;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
-using Fragment = Android.Support.V4.App.Fragment;
-using FragmentTransaction = Android.Support.V4.App.FragmentTransaction;
 using View = Android.Views.View;
 using Button = Android.Widget.Button;
 

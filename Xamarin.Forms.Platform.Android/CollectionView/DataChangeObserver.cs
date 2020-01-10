@@ -1,6 +1,12 @@
 using System;
+#if __ANDROID_29__
+using AndroidX.AppCompat.Widget;
+using static AndroidX.RecyclerView.Widget.RecyclerView;
+using AndroidX.RecyclerView.Widget;
+#else
 using Android.Support.V7.Widget;
 using static Android.Support.V7.Widget.RecyclerView;
+#endif
 using Object = Java.Lang.Object;
 
 namespace Xamarin.Forms.Platform.Android

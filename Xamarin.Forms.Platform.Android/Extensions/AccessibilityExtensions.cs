@@ -1,6 +1,12 @@
 ﻿using System;
 using Android.Views;
+#if __ANDROID_29__
+using AMenuItemCompat = AndroidX.Core.View.MenuItemCompat;
+using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
+#else
 using AMenuItemCompat = global::Android.Support.V4.View.MenuItemCompat;
+using AToolbar = Android.Support.V7.Widget.Toolbar;
+#endif
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -91,7 +97,7 @@ namespace Xamarin.Forms.Platform.Android
 			return _defaultLabelFor;
 		}
 
-		public static string SetNavigationContentDescription(this global::Android.Support.V7.Widget.Toolbar Control, Element Element, string _defaultNavigationContentDescription = null)
+		public static string SetNavigationContentDescription(this AToolbar Control, Element Element, string _defaultNavigationContentDescription = null)
 		{
 			if (Element == null)
 				return _defaultNavigationContentDescription;

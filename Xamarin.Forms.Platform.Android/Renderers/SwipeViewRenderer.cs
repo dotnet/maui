@@ -5,13 +5,20 @@ using System.Linq;
 using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
+#if __ANDROID_29__
+using AndroidX.Core.Widget;
+using AButton = AndroidX.AppCompat.Widget.AppCompatButton;
+using AndroidX.RecyclerView.Widget;
+using AndroidX.AppCompat.Widget;
+#else
 using Android.Support.V4.Widget;
+using AButton = Android.Support.V7.Widget.AppCompatButton;
 using Android.Support.V7.Widget;
+#endif
 using Android.Views;
 using Android.Widget;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using AButton = Android.Support.V7.Widget.AppCompatButton;
 using APointF = Android.Graphics.PointF;
 using ATextAlignment = Android.Views.TextAlignment;
 using AView = Android.Views.View;
@@ -600,7 +607,7 @@ namespace Xamarin.Forms.Platform.Android
 			_ = this.ApplyDrawableAsync(formsSwipeItem, MenuItem.IconImageSourceProperty, Context, drawable =>
 			{
 				drawable.SetBounds(0, 0, iconSize, iconSize);
-				drawable.SetColorFilter(textColor.ToAndroid(), PorterDuff.Mode.SrcAtop);
+				drawable.SetColorFilter(textColor.ToAndroid(), FilterMode.SrcAtop);
 				swipeButton.SetCompoundDrawables(null, drawable, null, null);
 			});
 

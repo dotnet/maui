@@ -10,12 +10,18 @@ using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.OS;
+#if __ANDROID_29__
+using AndroidX.Fragment.App;
+using FragmentManager = AndroidX.Fragment.App.FragmentManager;
+using AndroidX.Legacy.App;
+#else
 using Android.Support.V4.App;
+using FragmentManager = Android.Support.V4.App.FragmentManager;
+#endif
 using Android.Util;
 using Android.Views;
 using Android.Widget;
 using Xamarin.Forms.Platform.Android.AppCompat;
-using FragmentManager = Android.Support.V4.App.FragmentManager;
 using Xamarin.Forms.Internals;
 using AView = Android.Views.View;
 
@@ -634,7 +640,8 @@ namespace Xamarin.Forms.Platform.Android
 			TabbedPage currentTabs = CurrentTabbedPage;
 
 			var atab = actionBar.NewTab();
-			atab.SetText(page.Title);
+			
+			atab.SetText(new Java.Lang.String(page.Title));
 			atab.TabSelected += (sender, e) =>
 			{
 				if (!_ignoreAndroidSelection)
@@ -861,7 +868,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				var page = sender as Page;
 				var atab = actionBar.GetTabAt(currentTabs.Children.IndexOf(page));
-				atab.SetText(page.Title);
+				atab.SetText(new Java.Lang.String(page.Title));
 			}
 		}
 

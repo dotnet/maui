@@ -17,6 +17,14 @@
       <group>
         <dependency id="Xamarin.Forms" version="$version$"/>
       </group>
+      <group targetFramework="MonoAndroid10.0">
+        <dependency id="Xamarin.AndroidX.Migration" version="1.0.0-rc1"/>
+        <dependency id="Xamarin.AndroidX.Lifecycle.LiveData" version="2.1.0-rc1"/>
+        <dependency id="Xamarin.AndroidX.Legacy.Support.Core.UI" version="1.0.0-rc1"/>
+        <dependency id="Xamarin.AndroidX.AppCompat" version="1.1.0-rc1"/>
+        <dependency id="Xamarin.GooglePlayServices.Maps" version="71.1610.0"/>
+        <dependency id="Xamarin.Forms" version="$version$"/>
+      </group>
       <group targetFramework="MonoAndroid90">
         <dependency id="Xamarin.GooglePlayServices.Maps" version="71.1610.0"/>
         <dependency id="Xamarin.Android.Support.v7.AppCompat" version="28.0.0.3"/>
@@ -37,6 +45,10 @@
     <file src="..\Xamarin.Forms.Maps.Android\bin\$Configuration$\MonoAndroid90\Xamarin.Forms.Maps.Android.dll" target="lib\MonoAndroid90" />
     <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\MonoAndroid90" />
     <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\MonoAndroid90" />
+
+    <file src="..\Xamarin.Forms.Maps.Android\bin\$Configuration$\MonoAndroid10.0\Xamarin.Forms.Maps.Android.dll" target="lib\MonoAndroid10.0" />
+    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\MonoAndroid10.0" />
+    <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\MonoAndroid10.0" />
 
     <file src="..\Xamarin.Forms.Maps.iOS\bin\iPhoneSimulator\$Configuration$\Xamarin.Forms.Maps.iOS.dll" target="lib\Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\Xamarin.iOS10" />

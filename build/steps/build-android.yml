@@ -70,6 +70,7 @@ jobs:
         displayName: 'Build ${{ parameters.buildTaskPath  }}'
         inputs:
           solution: ${{ parameters.buildTaskPath }}
+          configuration: ${{ parameters.buildConfiguration }}
 
       - task: MSBuild@1
         displayName: 'Build Android ${{ parameters.name }}'
@@ -81,7 +82,7 @@ jobs:
       - task: CopyFiles@2
         displayName: 'Copy ${{ parameters.name }}'
         inputs:
-          SourceFolder: ${{ parameters.androidPath }}/bin/Debug/
+          SourceFolder: ${{ parameters.androidPath }}/bin/${{ parameters.buildConfiguration }}/
           Contents: '**/*.apk'
           TargetFolder: ${{ parameters.targetFolder }}
           CleanTargetFolder: true
@@ -97,6 +98,7 @@ jobs:
 
       - task: PublishBuildArtifacts@1
         displayName: 'Publish Artifact: AndroidApps'
+        condition: always()
         inputs:
           PathtoPublish: '$(build.artifactstagingdirectory)'
           ArtifactName: OSXArtifacts

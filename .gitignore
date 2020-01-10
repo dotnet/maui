@@ -70,3 +70,4 @@ caketools/
 .ionide/**
 /.nuspec
 .XamarinFormsVersionFile.txt
+.idea

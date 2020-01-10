@@ -5,7 +5,16 @@ using Android.Util;
 using Android.Views.InputMethods;
 using AApplicationInfoFlags = Android.Content.PM.ApplicationInfoFlags;
 using AActivity = Android.App.Activity;
+
+#if __ANDROID_29__
+using AndroidX.Fragment.App;
+using AndroidX.AppCompat.App;
+using AFragmentManager = AndroidX.Fragment.App.FragmentManager;
+#else
 using AFragmentManager = Android.Support.V4.App.FragmentManager;
+using Android.Support.V4.App;
+using Android.Support.V7.App;
+#endif
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -106,7 +115,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (context.IsDesignerContext())
 				return context;
 
-			if (context is global::Android.Support.V7.App.AppCompatActivity activity)
+			if (context is AppCompatActivity activity)
 				return activity.SupportActionBar.ThemedContext;
 
 			if (context is ContextWrapper contextWrapper)
@@ -140,7 +149,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			var activity = context.GetActivity();
 
-			if (activity is global::Android.Support.V4.App.FragmentActivity fa)
+			if (activity is FragmentActivity fa)
 				return fa.SupportFragmentManager;
 
 			return null;

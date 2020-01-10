@@ -1,8 +1,12 @@
-#if __ANDROID_28__
+
 using System;
 using System.ComponentModel;
 using Android.Content;
+#if __ANDROID_29__
+using AndroidX.Core.View;
+#else
 using Android.Support.V4.View;
+#endif
 using Android.Views;
 using Android.Widget;
 using Xamarin.Forms;
@@ -221,4 +225,3 @@ namespace Xamarin.Forms.Material.Android
 
 	}
 }
-#endif

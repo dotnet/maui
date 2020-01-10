@@ -2,12 +2,20 @@ using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Android.Content;
+using Android.Views;
+
+#if __ANDROID_29__
+using AndroidX.Fragment.App;
+using AndroidX.ViewPager.Widget;
+using AndroidX.Core.View;
+#else
 using Android.Support.V4.App;
 using Android.Support.V4.View;
-using Android.Views;
+#endif
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {
+	
 	public class CarouselPageRenderer : VisualElementRenderer<CarouselPage>, ViewPager.IOnPageChangeListener, IManageFragments
 	{
 		bool _disposed;

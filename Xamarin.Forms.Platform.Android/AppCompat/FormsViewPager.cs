@@ -1,7 +1,12 @@
 using System;
 using Android.Content;
 using Android.Runtime;
+#if __ANDROID_29__
+using AndroidX.Core.View;
+using AndroidX.ViewPager.Widget;
+#else
 using Android.Support.V4.View;
+#endif
 using Android.Util;
 using Android.Views;
 

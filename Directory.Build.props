@@ -19,14 +19,6 @@
   </ItemGroup>
   <!-- This target is replaced by GitInfo when restored. Allows Version.targets to rely on it before restore. -->
   <Target Name="GitVersion" />
-  <PropertyGroup Condition="'$(CI)' == ''">
-    <CI>false</CI>
-    <CI Condition="'$(TF_BUILD)' == 'true'">true</CI>
-  </PropertyGroup>
   
-  <!-- This is used by the libraries -->
-  <PropertyGroup Condition="'$(AndroidTargetFrameworks)' == ''">
-    <AndroidTargetFrameworks>MonoAndroid90;</AndroidTargetFrameworks>
-  </PropertyGroup>
-  
- </Project>
+  <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="Environment.Build.props" />
+</Project>

@@ -1,4 +1,4 @@
-﻿#if __ANDROID_28__
+﻿
 using System;
 using Android.Content;
 using Android.Runtime;
@@ -28,4 +28,3 @@ namespace Xamarin.Forms.Material.Android
 		}
 	}
 }
-#endif
