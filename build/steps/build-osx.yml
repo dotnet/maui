@@ -56,6 +56,7 @@ steps:
     inputs:
       solutionFile: $(slnPath)
       configuration: $(buildConfiguration)
+      args: /bl:$(Build.ArtifactStagingDirectory)/ios.binlog
 
 
   - task: CopyFiles@2

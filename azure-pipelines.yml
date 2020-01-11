@@ -18,11 +18,11 @@ variables:
 - name: BuildVersion44
   value: $[counter('xf-nuget-counter', 992000)]
 - name: NUGET_VERSION
-  value: 5.0.2
+  value: 5.4.0
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
   value: true
 - name: DOTNET_VERSION
-  value: 3.0.100
+  value: 3.1.100
 
 resources:
   repositories:
@@ -64,42 +64,11 @@ jobs:
   parameters:
     name: win
     displayName: Build Windows Phase
-    vmImage: $(winVmImage)
-    targetFolder: Xamarin.Forms.ControlGallery.Android/legacyRenderers/
-    msbuildExtraArguments: '/nowarn:VSX1000 /p:AndroidTargetFrameworks=MonoAndroid90'
-    buildConfiguration: $(DefaultBuildConfiguration)
-    buildPlatform: $(DefaultBuildPlatform)
-    provisionatorPath : 'build/provisioning/provisioning.csx'
-    includeUwp: 'false'
-
-- template: build/steps/build-windows.yml
-  parameters:
-    name: win_2019_android
-    displayName: Build Android 10.0
     vmImage: $(win2019VmImage)
-    targetFolder: Xamarin.Forms.ControlGallery.Android/legacyRenderers/
-    msbuildExtraArguments: '/nowarn:VSX1000 /p:AndroidTargetFrameworks=MonoAndroid10.0'
-    buildConfiguration: $(DefaultBuildConfiguration)
-    buildPlatform: $(DefaultBuildPlatform)
-    provisionatorPath : 'build/provisioning/provisioning.csx'
-    slnPath: '.Xamarin.Forms.Android.nuget.sln'
-    includeUwp: 'false'
-    includeNonUwpAndNonAndroid: 'false'
-
-- template: build/steps/build-windows.yml
-  parameters:
-    name: win_2019
-    displayName: Build UWP Phase
-    vmImage: $(win2019VmImage)
-    targetFolder: Xamarin.Forms.ControlGallery.Android/legacyRenderers/
     msbuildExtraArguments: '/nowarn:VSX1000'
     buildConfiguration: $(DefaultBuildConfiguration)
     buildPlatform: $(DefaultBuildPlatform)
     provisionatorPath : 'build/provisioning/provisioning.csx'
-    slnPath: '.Xamarin.Forms.UAP.nuget.sln'
-    includeNonUwpAndNonAndroid: 'false'
-    includeAndroid: 'false'
-
 
 - template: build/steps/build-android.yml
   parameters:
@@ -154,8 +123,6 @@ jobs:
   displayName: Nuget Phase
   dependsOn:
    - win
-   - win_2019
-   - win_2019_android
   condition: succeeded()
   pool:
     name: $(winVmImage)
