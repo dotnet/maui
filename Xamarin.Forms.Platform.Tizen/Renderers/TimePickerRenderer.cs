@@ -127,7 +127,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateFontFamily()
 		{
-			Control.FontFamily = Element.FontFamily;
+			Control.FontFamily = Element.FontFamily.ToNativeFontFamily();
 		}
 
 		void UpdateFontAttributes()

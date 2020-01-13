@@ -145,7 +145,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control is IEntry ie)
 			{
-				ie.FontFamily = Element.FontFamily;
+				ie.FontFamily = Element.FontFamily.ToNativeFontFamily();
 			}
 		}
 

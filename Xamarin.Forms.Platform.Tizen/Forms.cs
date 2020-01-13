@@ -346,6 +346,7 @@ namespace Xamarin.Forms
 
 				Elementary.Initialize();
 				Elementary.ThemeOverlay();
+				Utility.AppendGlobalFontPath(@"/usr/share/fonts");
 			}
 
 			Device.PlatformServices = new TizenPlatformServices();
@@ -394,7 +395,8 @@ namespace Xamarin.Forms
 										typeof(ExportRendererAttribute),
 										typeof(ExportImageSourceHandlerAttribute),
 										typeof(ExportCellAttribute),
-										typeof(ExportHandlerAttribute)
+										typeof(ExportHandlerAttribute),
+										typeof(ExportFontAttribute)
 									});
 								}
 						}
@@ -405,7 +407,8 @@ namespace Xamarin.Forms
 								typeof(ExportRendererAttribute),
 								typeof(ExportImageSourceHandlerAttribute),
 								typeof(ExportCellAttribute),
-								typeof(ExportHandlerAttribute)
+								typeof(ExportHandlerAttribute),
+								typeof(ExportFontAttribute)
 							});
 						}
 					}
@@ -439,7 +442,8 @@ namespace Xamarin.Forms
 						typeof(ExportRendererAttribute),
 						typeof(ExportImageSourceHandlerAttribute),
 						typeof(ExportCellAttribute),
-						typeof(ExportHandlerAttribute)
+						typeof(ExportHandlerAttribute),
+						typeof(ExportFontAttribute)
 					});
 				}
 			}
