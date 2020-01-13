@@ -163,6 +163,11 @@ namespace Xamarin.Forms
 
 		public static Color GetIconColor(BindableObject bindable)
 		{
+			if (bindable == null)
+			{
+				return Color.Default;		
+			}
+
 			return (Color)bindable.GetValue(IconColorProperty);
 		}
 
