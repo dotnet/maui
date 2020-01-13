@@ -31,15 +31,14 @@ namespace Xamarin.Forms.ControlGallery.Android
 				{
 					if (Control.Checked)
 					{
-						Control.TrackDrawable.SetColorFilter(_view.SwitchOnColor.ToAndroid(), PorterDuff.Mode.SrcAtop);
+						Control.TrackDrawable.SetColorFilter(_view.SwitchOnColor, FilterMode.SrcAtop);
 					}
 					else
 					{
-						Control.TrackDrawable.SetColorFilter(_view.SwitchOffColor.ToAndroid(), PorterDuff.Mode.SrcAtop);
+						Control.TrackDrawable.SetColorFilter(_view.SwitchOffColor, FilterMode.SrcAtop);
 					}
 
-					Control.ThumbDrawable.SetColorFilter(_view.SwitchThumbColor.ToAndroid(), PorterDuff.Mode.Multiply);
-
+					Control.TrackDrawable.SetColorFilter(_view.SwitchThumbColor, FilterMode.Multiply);
 					Control.CheckedChange += OnCheckedChange;
 				}
 			}
@@ -55,11 +54,20 @@ namespace Xamarin.Forms.ControlGallery.Android
 		{
 			if (Control.Checked)
 			{
+
+#if __ANDROID_29__
+				Control.TrackDrawable.SetColorFilter(new BlendModeColorFilter(_view.SwitchOffColor.ToAndroid(), BlendMode.SrcAtop));
+#else
 				Control.TrackDrawable.SetColorFilter(_view.SwitchOnColor.ToAndroid(), PorterDuff.Mode.SrcAtop);
+#endif
 			}
 			else
 			{
+#if __ANDROID_29__
+				Control.TrackDrawable.SetColorFilter(new BlendModeColorFilter(_view.SwitchOffColor.ToAndroid(), BlendMode.SrcAtop));
+#else
 				Control.TrackDrawable.SetColorFilter(_view.SwitchOffColor.ToAndroid(), PorterDuff.Mode.SrcAtop);
+#endif
 			}
 		}
 	}

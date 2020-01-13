@@ -1,7 +1,12 @@
 ﻿using Android.Content;
 using Android.Graphics.Drawables;
 using Android.OS;
+#if __ANDROID_29__
+using Google.Android.Material.BottomNavigation;
+using Google.Android.Material.BottomSheet;
+#else
 using Android.Support.Design.Widget;
+#endif
 using Android.Views;
 using Android.Widget;
 using System;

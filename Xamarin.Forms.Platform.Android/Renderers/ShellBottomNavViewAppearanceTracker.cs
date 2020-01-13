@@ -1,7 +1,13 @@
 ﻿using Android.Content.Res;
 using Android.Graphics.Drawables;
+#if __ANDROID_29__
+using AndroidX.Core.Widget;
+using Google.Android.Material.BottomNavigation;
+#else
 using Android.Support.Design.Internal;
 using Android.Support.Design.Widget;
+using Android.Support.V4.Widget;
+#endif
 using System;
 using AColor = Android.Graphics.Color;
 using R = Android.Resource;

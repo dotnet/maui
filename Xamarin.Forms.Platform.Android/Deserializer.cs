@@ -55,29 +55,30 @@ namespace Xamarin.Forms.Platform.Android
 			// Make sure to use Internal
 			return Task.Run(() =>
 			{
-				var success = false;
 				using (IsolatedStorageFile store = IsolatedStorageFile.GetUserStoreForApplication())
-				using (IsolatedStorageFileStream stream = store.OpenFile(PropertyStoreFile + ".tmp", System.IO.FileMode.OpenOrCreate))
-				using (XmlDictionaryWriter writer = XmlDictionaryWriter.CreateBinaryWriter(stream))
 				{
-					try
+					// No need to write 0 properties if no file exists
+					if (properties.Count == 0 && !store.FileExists(PropertyStoreFile))
 					{
-						var dcs = new DataContractSerializer(typeof(Dictionary<string, object>));
-						dcs.WriteObject(writer, properties);
-						writer.Flush();
-						success = true;
+						return;
 					}
-					catch (Exception e)
+					using (IsolatedStorageFileStream stream = store.OpenFile(PropertyStoreFile + ".tmp", System.IO.FileMode.OpenOrCreate))
+					using (XmlDictionaryWriter writer = XmlDictionaryWriter.CreateBinaryWriter(stream))
 					{
-						Debug.WriteLine("Could not serialize properties: " + e.Message);
-						Log.Warning("Xamarin.Forms PropertyStore", $"Exception while writing Application properties: {e}");
+						try
+						{
+							var dcs = new DataContractSerializer(typeof(Dictionary<string, object>));
+							dcs.WriteObject(writer, properties);
+							writer.Flush();
+						}
+						catch (Exception e)
+						{
+							Debug.WriteLine("Could not serialize properties: " + e.Message);
+							Log.Warning("Xamarin.Forms PropertyStore", $"Exception while writing Application properties: {e}");
+							return;
+						}
 					}
-				}
 
-				if (!success)
-					return;
-				using (IsolatedStorageFile store = IsolatedStorageFile.GetUserStoreForApplication())
-				{
 					try
 					{
 						if (store.FileExists(PropertyStoreFile))

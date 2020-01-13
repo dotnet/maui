@@ -3,7 +3,11 @@ using Android.Content;
 using Android.Content.Res;
 using Xamarin.Forms.Platform.Android;
 using AColor = Android.Graphics.Color;
+#if __ANDROID_29__
+using AColorUtils = AndroidX.Core.Graphics.ColorUtils;
+#else
 using AColorUtils = Android.Support.V4.Graphics.ColorUtils;
+#endif
 using AAttribute = Android.Resource.Attribute;
 using Android.Graphics.Drawables;
 using Android.Graphics;

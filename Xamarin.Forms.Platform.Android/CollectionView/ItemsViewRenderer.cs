@@ -2,12 +2,18 @@ using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Graphics;
+#if __ANDROID_29__
+using AndroidX.AppCompat.Widget;
+using AndroidX.RecyclerView.Widget;
+using AViewCompat = AndroidX.Core.View.ViewCompat;
+#else
 using Android.Support.V7.Widget;
+using AViewCompat = Android.Support.V4.View.ViewCompat;
+#endif
 using Android.Views;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android.CollectionView;
 using Xamarin.Forms.Platform.Android.FastRenderers;
-using AViewCompat = Android.Support.V4.View.ViewCompat;
 
 namespace Xamarin.Forms.Platform.Android
 {

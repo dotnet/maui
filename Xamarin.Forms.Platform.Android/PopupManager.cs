@@ -7,7 +7,11 @@ using Android.Text;
 using Android.Views;
 using Android.Widget;
 using Xamarin.Forms.Internals;
+#if __ANDROID_29__
+using AlertDialog = AndroidX.AppCompat.App.AlertDialog;
+#else
 using AlertDialog = Android.Support.V7.App.AlertDialog;
+#endif
 
 namespace Xamarin.Forms.Platform.Android
 {

@@ -201,7 +201,7 @@ namespace Xamarin.Forms.Material.Tizen
 			}
 			else
 			{
-				seekBar.Thumb.SetColorFilter(thumbColor.ToAndroid(), PorterDuff.Mode.SrcIn);
+				seekBar.Thumb.SetColorFilter(thumbColor.ToAndroid(), FilterMode.SrcIn);
 			}
 		}
 
@@ -216,7 +216,7 @@ namespace Xamarin.Forms.Material.Tizen
 			else
 			{
 				(progressBar.Indeterminate ? progressBar.IndeterminateDrawable :
-						   progressBar.ProgressDrawable).SetColorFilter(progressColor, PorterDuff.Mode.SrcIn);
+						   progressBar.ProgressDrawable).SetColorFilter(progressColor, FilterMode.SrcIn);
 
 			}
 		}

@@ -1,6 +1,11 @@
 using System.ComponentModel;
 using Android.Content;
+#if __ANDROID_29__
+using AndroidX.Core.Widget;
+using AndroidX.SwipeRefreshLayout.Widget;
+#else
 using Android.Support.V4.Widget;
+#endif
 using Android.Views;
 using AListView = Android.Widget.ListView;
 using AView = Android.Views.View;

@@ -1,6 +1,11 @@
+
+#if __ANDROID_29__
+using AndroidX.Fragment.App;
+#else
 using FragmentTransaction = Android.Support.V4.App.FragmentTransaction;
 using Fragment = Android.Support.V4.App.Fragment;
 using FragmentManager = Android.Support.V4.App.FragmentManager;
+#endif
 
 namespace Xamarin.Forms.Platform.Android
 {

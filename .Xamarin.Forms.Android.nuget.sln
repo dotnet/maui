@@ -13,7 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Control Gallery", "Control 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml", "{32F608E2-6406-4DCF-9105-E2A7CB7085CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Platform.Android", "Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj", "{0E16E70A-D6DD-4323-AD5D-363ABFF42D6A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Platform.Android", "Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj", "{0E16E70A-D6DD-4323-AD5D-363ABFF42D6A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuspec", ".nuspec", "{7E12C50D-A570-4DF1-94E1-8599843FA87C}"
 	ProjectSection(SolutionItems) = preProject
@@ -48,7 +48,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xamarin.Forms.Maps", "Xamar
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Maps", "Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj", "{7D13BAC2-C6A4-416A-B07E-C169B199E52B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Maps.Android", "Xamarin.Forms.Maps.Android\Xamarin.Forms.Maps.Android.csproj", "{BD50B39A-EBC5-408F-9C5E-923A8EBAE473}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Maps.Android", "Xamarin.Forms.Maps.Android\Xamarin.Forms.Maps.Android.csproj", "{BD50B39A-EBC5-408F-9C5E-923A8EBAE473}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UITests", "UITests", "{D4D57221-71D6-4031-A6F4-EC66AF0929D9}"
 EndProject
@@ -60,7 +60,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.CustomAttribu
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Forwarders", "Forwarders", "{5A2DADBC-9510-4DD1-BE58-01501F2DF65D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Platform.Android (Forwarders)", "Stubs\Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android (Forwarders).csproj", "{6E53FEB1-1100-46AE-8013-17BBA35CC197}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Platform.Android (Forwarders)", "Stubs\Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android (Forwarders).csproj", "{6E53FEB1-1100-46AE-8013-17BBA35CC197}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xamarin.Forms.Controls.Issues", "Xamarin.Forms.Controls.Issues", "{B2927DF0-F98E-45C8-A917-27941B2B6838}"
 EndProject
@@ -68,7 +68,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Pages", "Xama
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pages Gallery", "Pages Gallery", "{80BAC3FB-357A-4D05-A050-9F234DF49C97}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Platform.Android.AppLinks", "Xamarin.Forms.Platform.Android.AppLinks\Xamarin.Forms.Platform.Android.AppLinks.csproj", "{42DB052E-0909-45D2-8240-187F99F393FB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Platform.Android.AppLinks", "Xamarin.Forms.Platform.Android.AppLinks\Xamarin.Forms.Platform.Android.AppLinks.csproj", "{42DB052E-0909-45D2-8240-187F99F393FB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Pages.Azure", "Xamarin.Forms.Pages.Azure\Xamarin.Forms.Pages.Azure.csproj", "{C9696465-7657-4843-872E-3C01891C4A9B}"
 EndProject
@@ -81,6 +81,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Core.Design", "Xamarin.Forms.Core.Design\Xamarin.Forms.Core.Design.csproj", "{98637471-8E5C-4DDE-89CA-2EAA664FB0EF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Xaml.Design", "Xamarin.Forms.Xaml.Design\Xamarin.Forms.Xaml.Design.csproj", "{65BC4888-CC59-428A-9B75-540CF1C09480}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xamarin.Forms.Material", "Xamarin.Forms.Material", "{C52F2628-E374-4E09-B23C-B2E2CFFE21B5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Material.Android", "Xamarin.Forms.Material.Android\Xamarin.Forms.Material.Android.csproj", "{B244B404-FAA7-447D-8927-FA804E9ACA35}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -485,6 +489,30 @@ Global
 		{65BC4888-CC59-428A-9B75-540CF1C09480}.Release|x64.Build.0 = Release|Any CPU
 		{65BC4888-CC59-428A-9B75-540CF1C09480}.Release|x86.ActiveCfg = Release|Any CPU
 		{65BC4888-CC59-428A-9B75-540CF1C09480}.Release|x86.Build.0 = Release|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Debug|ARM.Build.0 = Debug|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Debug|x64.Build.0 = Debug|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Debug|x86.Build.0 = Debug|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Release|ARM.ActiveCfg = Release|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Release|ARM.Build.0 = Release|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Release|iPhone.Build.0 = Release|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Release|x64.ActiveCfg = Release|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Release|x64.Build.0 = Release|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Release|x86.ActiveCfg = Release|Any CPU
+		{B244B404-FAA7-447D-8927-FA804E9ACA35}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -508,6 +536,7 @@ Global
 		{D31A6537-ED9C-4EBD-B231-A8D4FE44126A} = {29AC50BF-B4FB-450B-9386-0C5AD4B84226}
 		{98637471-8E5C-4DDE-89CA-2EAA664FB0EF} = {9AD757F5-E57A-459D-A0A7-E0675E045B84}
 		{65BC4888-CC59-428A-9B75-540CF1C09480} = {32F608E2-6406-4DCF-9105-E2A7CB7085CF}
+		{B244B404-FAA7-447D-8927-FA804E9ACA35} = {C52F2628-E374-4E09-B23C-B2E2CFFE21B5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {650AE971-2F29-46A8-822C-FB4FCDC6A9A0}

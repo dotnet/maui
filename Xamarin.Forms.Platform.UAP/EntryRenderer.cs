@@ -457,5 +457,18 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			Control.IsReadOnly = Element.IsReadOnly;
 		}
+
+		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			FormsTextBox child = Control;
+
+			if (Children.Count == 0 || child == null)
+				return new SizeRequest();
+
+			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+            child.Measure(constraint);
+			var result = FormsTextBox.GetCopyOfSize(child, constraint);
+			return new SizeRequest(result);
+		}
 	}
 }

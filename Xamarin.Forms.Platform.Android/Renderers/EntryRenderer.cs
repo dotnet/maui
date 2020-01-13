@@ -3,7 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Android.Content;
 using Android.Graphics.Drawables;
+#if __ANDROID_29__
+using AndroidX.Core.Content;
+#else
 using Android.Support.V4.Content;
+#endif
 using Android.Text;
 using Android.Text.Method;
 using Android.Util;

@@ -3,7 +3,11 @@ using System.ComponentModel;
 using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
+#if __ANDROID_29__
+using AndroidX.AppCompat.Widget;
+#else
 using Android.Support.V7.Widget;
+#endif
 using Android.Widget;
 using Xamarin.Forms.Platform.Android.FastRenderers;
 
@@ -125,7 +129,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				}
 				else
 				{
-					Control.TrackDrawable?.SetColorFilter(Element.OnColor.ToAndroid(), PorterDuff.Mode.Multiply);
+					Control.TrackDrawable?.SetColorFilter(Element.OnColor, FilterMode.Multiply);
 				}
 			}
 			else
@@ -141,7 +145,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			if (Element.ThumbColor != Color.Default)
 			{
-				Control.ThumbDrawable?.SetColorFilter(Element.ThumbColor.ToAndroid(), PorterDuff.Mode.Multiply);
+				Control.ThumbDrawable?.SetColorFilter(Element.ThumbColor, FilterMode.Multiply);
 				_changedThumbColor = true;
 			}
 			else

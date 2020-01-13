@@ -1,6 +1,11 @@
 ﻿using System;
 using Android.Graphics;
+#if __ANDROID_29__
+using AndroidX.RecyclerView.Widget;
+using AndroidX.AppCompat.Widget;
+#else
 using Android.Support.V7.Widget;
+#endif
 using AView = Android.Views.View;
 using FormsCarouselView = Xamarin.Forms.CarouselView;
 

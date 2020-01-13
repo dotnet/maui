@@ -1,6 +1,12 @@
 ﻿using Android.Content;
+#if __ANDROID_29__
+using AndroidX.Core.Widget;
+using AndroidX.DrawerLayout.Widget;
+using AndroidX.AppCompat.Widget;
+#else
 using Android.Support.V4.Widget;
 using Android.Support.V7.Widget;
+#endif
 
 namespace Xamarin.Forms.Platform.Android
 {

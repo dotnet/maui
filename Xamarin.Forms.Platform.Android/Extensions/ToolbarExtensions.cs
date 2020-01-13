@@ -1,6 +1,10 @@
 ﻿using System.ComponentModel;
 using Android.Views;
+#if __ANDROID_29__
+using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
+#else
 using AToolbar = Android.Support.V7.Widget.Toolbar;
+#endif
 using ATextView = global::Android.Widget.TextView;
 using Android.Content;
 using Android.Graphics;
@@ -78,7 +82,7 @@ namespace Xamarin.Forms.Platform.Android
 					using (var iconDrawable = newDrawable.Mutate())
 					{
 						if(tintColor != null)
-							iconDrawable.SetColorFilter(tintColor.Value.ToAndroid(Color.White), PorterDuff.Mode.SrcAtop);
+							iconDrawable.SetColorFilter(tintColor.Value.ToAndroid(Color.White), FilterMode.SrcAtop);
 
 						if (!menuItem.IsEnabled)
 						{

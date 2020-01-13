@@ -1,8 +1,21 @@
 using Android.OS;
 using Android.Runtime;
-using Android.Support.Design.Widget;
-using Android.Support.V4.View;
+
+#if __ANDROID_29__
+using AndroidX.Core.Widget;
+using AndroidX.Fragment.App;
+using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.ViewPager.Widget;
+using Google.Android.Material.Tabs;
+using AndroidX.AppCompat.Widget;
+using AndroidX.Core.View;
+#else
 using Android.Support.V4.Widget;
+using Fragment = Android.Support.V4.App.Fragment;
+using Toolbar = Android.Support.V7.Widget.Toolbar;
+using Android.Support.V4.View;
+using Android.Support.Design.Widget;
+#endif
 using Android.Views;
 using System;
 using System.Collections.Specialized;
@@ -10,9 +23,7 @@ using System.ComponentModel;
 using System.Linq;
 using Xamarin.Forms.Platform.Android.AppCompat;
 using AView = Android.Views.View;
-using Fragment = Android.Support.V4.App.Fragment;
 using LP = Android.Views.ViewGroup.LayoutParams;
-using Toolbar = Android.Support.V7.Widget.Toolbar;
 
 namespace Xamarin.Forms.Platform.Android
 {

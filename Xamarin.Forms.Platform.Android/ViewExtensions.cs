@@ -1,7 +1,11 @@
 using Android.Content;
 using Android.Graphics.Drawables;
 using Android.OS;
+#if __ANDROID_29__
+using AndroidX.Core.Content;
+#else
 using Android.Support.V4.Content;
+#endif
 using Android.Util;
 using Android.Views;
 using AView = Android.Views.View;

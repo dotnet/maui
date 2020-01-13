@@ -3,7 +3,12 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
+#if __ANDROID_29__
+using AndroidX.Core.Widget;
+using AndroidX.DrawerLayout.Widget;
+#else
 using Android.Support.V4.Widget;
+#endif
 using Android.Views;
 using AView = Android.Views.View;
 using Android.OS;
