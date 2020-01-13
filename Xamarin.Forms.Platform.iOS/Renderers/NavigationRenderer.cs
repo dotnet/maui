@@ -952,6 +952,18 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				base.ViewDidDisappear(animated);
 
+				// force a redraw for right toolbar items by resetting TintColor to prevent
+				// toolbar items being grayed out when canceling swipe to a previous page
+				foreach (var item in NavigationItem?.RightBarButtonItems)
+				{
+					if (item.Image != null)
+						continue;
+
+					var tintColor = item.TintColor;
+					item.TintColor = tintColor == null ? UIColor.Clear : null;
+					item.TintColor = tintColor;
+				}
+				
 				Disappearing?.Invoke(this, EventArgs.Empty);
 			}
 
