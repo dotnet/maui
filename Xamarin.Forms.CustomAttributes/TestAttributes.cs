@@ -882,7 +882,8 @@ namespace Xamarin.Forms.CustomAttributes
 			IsScrollAnimated,
 			NumberOfSideItems, 
 			PeekAreaInsets,
-			Position
+			Position,
+			IsBounceEnabled
 		}
 	}
 }
