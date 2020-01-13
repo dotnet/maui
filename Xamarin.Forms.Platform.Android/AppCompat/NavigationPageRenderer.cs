@@ -1002,8 +1002,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				bar.SetTitleTextColor(textColor.ToAndroid().ToArgb());
 
 			Color navIconColor = NavigationPage.GetIconColor(Current);
-			if(!navIconColor.IsDefault)
-				bar.NavigationIcon?.SetColorFilter(navIconColor.ToAndroid(), PorterDuff.Mode.SrcAtop);
+			if (!navIconColor.IsDefault && bar.NavigationIcon != null)
+				DrawableExtensions.SetColorFilter(bar.NavigationIcon, navIconColor, FilterMode.SrcAtop);
 
 			bar.Title = currentPage?.Title ?? string.Empty;
 
