@@ -13,6 +13,7 @@ namespace Xamarin.Forms
 	internal class BindingExpression
 	{
 		internal const string PropertyNotFoundErrorMessage = "'{0}' property not found on '{1}', target property: '{2}.{3}'";
+		static readonly char[] ExpressionSplit = new[] { '.' };
 
 		readonly List<BindingExpressionPart> _parts = new List<BindingExpressionPart>();
 
@@ -110,7 +111,6 @@ namespace Xamarin.Forms
 			for (var i = 0; i < _parts.Count; i++)
 			{
 				part = _parts[i];
-				bool isLast = i + 1 == _parts.Count;
 
 				if (!part.IsSelf && current != null)
 				{
@@ -119,7 +119,7 @@ namespace Xamarin.Forms
 					if (part.LastGetter == null || !part.LastGetter.DeclaringType.GetTypeInfo().IsAssignableFrom(currentType))
 						SetupPart(currentType, part);
 
-					if (!isLast)
+					if (i < _parts.Count - 1)
 						part.TryGetValue(current, out current);
 				}
 
@@ -140,8 +140,7 @@ namespace Xamarin.Forms
 
 			if (needsGetter)
 			{
-				object value = property.DefaultValue;
-				if (part.TryGetValue(current, out value) || part.IsSelf) {
+				if (part.TryGetValue(current, out object value) || part.IsSelf) {
 					value = Binding.GetSourceValue(value, property.ReturnType);
 				}
 				else
@@ -185,38 +184,6 @@ namespace Xamarin.Forms
 			}
 		}
 
-		IEnumerable<BindingExpressionPart> GetPart(string part)
-		{
-			part = part.Trim();
-			if (part == string.Empty)
-				throw new FormatException("Path contains an empty part");
-
-			BindingExpressionPart indexer = null;
-
-			int lbIndex = part.IndexOf('[');
-			if (lbIndex != -1)
-			{
-				int rbIndex = part.LastIndexOf(']');
-				if (rbIndex == -1)
-					throw new FormatException("Indexer did not contain closing bracket");
-
-				int argLength = rbIndex - lbIndex - 1;
-				if (argLength == 0)
-					throw new FormatException("Indexer did not contain arguments");
-
-				string argString = part.Substring(lbIndex + 1, argLength);
-				indexer = new BindingExpressionPart(this, argString, true);
-
-				part = part.Substring(0, lbIndex);
-				part = part.Trim();
-			}
-
-			if (part.Length > 0)
-				yield return new BindingExpressionPart(this, part);
-			if (indexer != null)
-				yield return indexer;
-		}
-
 		void ParsePath()
 		{
 			string p = Path.Trim();
@@ -232,14 +199,44 @@ namespace Xamarin.Forms
 				p = p.Substring(1);
 			}
 
-			string[] pathParts = p.Split('.');
+			string[] pathParts = p.Split(ExpressionSplit);
 			for (var i = 0; i < pathParts.Length; i++)
 			{
-				foreach (BindingExpressionPart part in GetPart(pathParts[i]))
+				string part = pathParts[i].Trim();
+				if (part == string.Empty)
+					throw new FormatException("Path contains an empty part");
+
+				BindingExpressionPart indexer = null;
+
+				int lbIndex = part.IndexOf('[');
+				if (lbIndex != -1)
 				{
-					last.NextPart = part;
-					_parts.Add(part);
-					last = part;
+					int rbIndex = part.LastIndexOf(']');
+					if (rbIndex == -1)
+						throw new FormatException("Indexer did not contain closing bracket");
+
+					int argLength = rbIndex - lbIndex - 1;
+					if (argLength == 0)
+						throw new FormatException("Indexer did not contain arguments");
+
+					string argString = part.Substring(lbIndex + 1, argLength);
+					indexer = new BindingExpressionPart(this, argString, true);
+
+					part = part.Substring(0, lbIndex);
+					part = part.Trim();
+				}
+				if (part.Length > 0)
+				{
+					var next = new BindingExpressionPart(this, part);
+					last.NextPart = next;
+					_parts.Add(next);
+					last = next;
+				}
+				if (indexer != null)
+				{
+					last.NextPart = indexer;
+					_parts.Add(indexer);
+					last = indexer;
 				}
 			}
 		}
