@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Platform.iOS
 	public class SwipeViewRenderer : ViewRenderer<SwipeView, UIView>
 	{
 		const double SwipeThreshold = 250;
-		const int SwipeThresholdMargin = 6;
+		const int SwipeThresholdMargin = 0;
 		const double SwipeItemWidth = 100;
 		const double SwipeAnimationDuration = 0.2;
 
@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public SwipeViewRenderer()
 		{
-			Xamarin.Forms.SwipeView.VerifySwipeViewFlagEnabled(nameof(SwipeViewRenderer));
+			SwipeView.VerifySwipeViewFlagEnabled(nameof(SwipeViewRenderer));
 
 			_tapGestureRecognizer = new UITapGestureRecognizer(OnTap)
 			{

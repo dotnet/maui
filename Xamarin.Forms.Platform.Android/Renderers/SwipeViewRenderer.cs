@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.Android
 	public class SwipeViewRenderer : ViewRenderer<SwipeView, AView>, GestureDetector.IOnGestureListener
 	{
 		const int SwipeThreshold = 250;
-		const int SwipeThresholdMargin = 6;
+		const int SwipeThresholdMargin = 0;
 		const int SwipeItemWidth = 100;
 		const long SwipeAnimationDuration = 200;
 
@@ -52,7 +52,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public SwipeViewRenderer(Context context) : base(context)
 		{
-			Xamarin.Forms.SwipeView.VerifySwipeViewFlagEnabled(nameof(SwipeViewRenderer));
+			SwipeView.VerifySwipeViewFlagEnabled(nameof(SwipeViewRenderer));
 			_context = context;
 
 			AutoPackage = false;

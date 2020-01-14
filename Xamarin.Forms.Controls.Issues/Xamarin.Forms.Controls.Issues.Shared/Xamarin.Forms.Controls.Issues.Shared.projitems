@@ -1223,6 +1223,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue8638.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8392.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8672.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue8782.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8821.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8326.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8449.xaml.cs" />
@@ -1371,6 +1372,7 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8417.xaml" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7813.xaml" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8638.xaml" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8782.xaml" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8326.xaml" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8449.xaml" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7924.xaml" />

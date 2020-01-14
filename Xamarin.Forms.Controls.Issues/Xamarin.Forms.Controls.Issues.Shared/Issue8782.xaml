@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<controls:TestContentPage
+    xmlns:controls="clr-namespace:Xamarin.Forms.Controls"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    x:Class="Xamarin.Forms.Controls.Issues.Issue8782">
+    <StackLayout
+        Margin="20">
+        <SwipeView>
+            <SwipeView.LeftItems>
+                <SwipeItems>
+                    <SwipeItemView
+                        Invoked="OnIncorrectAnswerInvoked">
+                        <Grid
+                            WidthRequest="100">
+                            <Frame
+                                BackgroundColor="DarkGray"
+                                CornerRadius="30">
+                                <Label
+                                    Text="1"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center" />
+                            </Frame>
+                        </Grid>
+                    </SwipeItemView>
+                    <SwipeItemView
+                        Invoked="OnCorrectAnswerInvoked">
+                        <Grid
+                            WidthRequest="100">
+                            <Frame
+                                BackgroundColor="DarkGray"
+                                CornerRadius="30">
+                                <Label
+                                    Text="2"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center" />
+                            </Frame>
+                        </Grid>
+                    </SwipeItemView>
+                </SwipeItems>
+            </SwipeView.LeftItems>
+            <Grid
+                HeightRequest="70"
+                WidthRequest="300"
+                BackgroundColor="LightGray">
+                <Label
+                    Text="What's 1+1?"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center" />
+            </Grid>
+        </SwipeView>
+    </StackLayout>
+</controls:TestContentPage>
