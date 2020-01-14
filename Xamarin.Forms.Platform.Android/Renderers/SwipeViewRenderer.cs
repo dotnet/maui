@@ -133,9 +133,14 @@ namespace Xamarin.Forms.Platform.Android
 
 				SetBackgroundColor(backgroundColor);
 
-				if (_contentView != null && Element.Content == null && HasSwipeItems())
-					_contentView.SetBackgroundColor(backgroundColor);
+				if (Element.Content == null)
+					_contentView?.SetBackgroundColor(backgroundColor);
 			}
+			else
+				Control.SetWindowBackground();
+
+			if (_contentView.Background == null)
+				_contentView?.SetWindowBackground();
 		}
 
 		protected override void OnAttachedToWindow()
