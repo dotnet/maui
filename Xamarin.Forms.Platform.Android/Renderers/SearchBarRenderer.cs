@@ -61,7 +61,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override SearchView CreateNativeControl()
 		{
-			var context = (Context as ContextThemeWrapper)?.BaseContext ?? Context;
+			var context = (Context as ContextThemeWrapper).BaseContext ?? Context;
 			return new SearchView(context);
 		}
 
