@@ -32,7 +32,9 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty ValueProperty = BindableProperty.Create("Value", typeof(double), typeof(Stepper), 0.0, BindingMode.TwoWay, coerceValue: (bindable, value) =>
 		{
 			var stepper = (Stepper)bindable;
-			return ((double)value).Clamp(stepper.Minimum, stepper.Maximum);
+			stepper.StepperPosition = Convert.ToInt32(((double)value - stepper.Minimum) / stepper.Increment);
+			var stepVal = stepper.Minimum + (stepper.StepperPosition * stepper.Increment);
+			return stepVal.Clamp(stepper.Minimum, stepper.Maximum);
 		}, propertyChanged: (bindable, oldValue, newValue) =>
 		{
 			var stepper = (Stepper)bindable;
@@ -41,7 +43,9 @@ namespace Xamarin.Forms
 				eh(stepper, new ValueChangedEventArgs((double)oldValue, (double)newValue));
 		});
 
-		public static readonly BindableProperty IncrementProperty = BindableProperty.Create("Increment", typeof(double), typeof(Stepper), 1.0);
+		public static readonly BindableProperty IncrementProperty = BindableProperty.Create(nameof(Increment), typeof(double), typeof(Stepper), 1.0);
+
+		private static readonly BindableProperty StepperPositionProperty = BindableProperty.Create(nameof(StepperPosition), typeof(int), typeof(Stepper), 0);
 
 		readonly Lazy<PlatformConfigurationRegistry<Stepper>> _platformConfigurationRegistry;
 
@@ -65,8 +69,9 @@ namespace Xamarin.Forms
 				Maximum = max;
 			}
 
-			Value = val.Clamp(min, max);
+			StepperPosition = (int)((val - min) / increment);
 			Increment = increment;
+			Value = val.Clamp(min, max);
 		}
 
 		public double Increment
@@ -93,8 +98,14 @@ namespace Xamarin.Forms
 			set { SetValue(ValueProperty, value); }
 		}
 
+		public int StepperPosition
+		{
+			get { return (int)GetValue(StepperPositionProperty); }
+			set { SetValue(StepperPositionProperty, value); }
+		}
+
 		public event EventHandler<ValueChangedEventArgs> ValueChanged;
-		
+
 		public IPlatformElementConfiguration<T, Stepper> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
