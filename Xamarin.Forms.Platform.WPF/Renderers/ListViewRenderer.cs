@@ -2,21 +2,19 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Xamarin.Forms.Platform.WPF.Helpers;
 using WList = System.Windows.Controls.ListView;
+using WGrid = System.Windows.Controls.Grid;
 using WpfScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility;
 
 namespace Xamarin.Forms.Platform.WPF
 {
-	public class ListViewRenderer : ViewRenderer<ListView, WList>
+	public class ListViewRenderer : ViewRenderer<ListView, WGrid>
 	{
 		class ScrollViewerBehavior
 		{
@@ -29,10 +27,17 @@ namespace Xamarin.Forms.Platform.WPF
 				scrollViewer?.ScrollToVerticalOffset((double)e.NewValue);
 			}
 		}
+		
 		ITemplatedItemsView<Cell> TemplatedItemsView => Element;
 		WpfScrollBarVisibility? _defaultHorizontalScrollVisibility;
 		WpfScrollBarVisibility? _defaultVerticalScrollVisibility;
 		ScrollViewer _scrollViewer;
+
+		// Header and Footer
+        readonly WGrid _grid = new WGrid(); 
+		WList _listview = null;
+		IVisualElementRenderer _headerRenderer;
+		IVisualElementRenderer _footerRenderer;
 
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
@@ -51,17 +56,23 @@ namespace Xamarin.Forms.Platform.WPF
 				var templatedItems = ((ITemplatedItemsView<Cell>)e.OldElement).TemplatedItems;
 				templatedItems.CollectionChanged -= OnCollectionChanged;
 				templatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
-				if (Control != null)
+				if (_listview != null)
 				{
-					Control.MouseUp -= OnNativeMouseUp;
-					Control.KeyUp -= OnNativeKeyUp;
-					Control.TouchUp -= OnNativeTouchUp;
-					Control.StylusUp -= OnNativeStylusUp;
-					Control.Loaded -= ControlOnLoaded;
+					_listview.MouseUp -= OnNativeMouseUp;
+					_listview.KeyUp -= OnNativeKeyUp;
+					_listview.TouchUp -= OnNativeTouchUp;
+					_listview.StylusUp -= OnNativeStylusUp;
+					_listview.Loaded -= ControlOnLoaded;
 				}
+				
 				if (_scrollViewer != null)
 				{
 					_scrollViewer.ScrollChanged -= SendScrolled;
+				}
+
+				if(Control is object)
+				{
+					Control.SizeChanged -= Grid_SizeChanged;
 				}
 			}
 
@@ -70,24 +81,34 @@ namespace Xamarin.Forms.Platform.WPF
 				e.NewElement.ItemSelected += OnElementItemSelected;
 				e.NewElement.ScrollToRequested += OnElementScrollToRequested;
 
-				if (Control == null) // Construct and SetNativeControl and suscribe control event
+				if (_listview == null) // Construct and SetNativeControl and suscribe control event
 				{
-					var listView = new WList
+					_listview = new WList
 					{
 						DataContext = Element,
 						ItemTemplate = (System.Windows.DataTemplate)System.Windows.Application.Current.Resources["CellTemplate"],
 						Style = (System.Windows.Style)System.Windows.Application.Current.Resources["ListViewTemplate"]
 					};
 
-					VirtualizingPanel.SetVirtualizationMode(listView, VirtualizationMode.Recycling);
-					VirtualizingPanel.SetScrollUnit(listView, ScrollUnit.Pixel);
-					SetNativeControl(listView);
+					VirtualizingPanel.SetVirtualizationMode(_listview, VirtualizationMode.Recycling);
+					VirtualizingPanel.SetScrollUnit(_listview, ScrollUnit.Pixel);
+					
+					SetNativeControl(_grid);
 
-					Control.MouseUp += OnNativeMouseUp;
-					Control.KeyUp += OnNativeKeyUp;
-					Control.TouchUp += OnNativeTouchUp;
-					Control.StylusUp += OnNativeStylusUp;
-					Control.Loaded += ControlOnLoaded;
+					// Setup grid for header/listview/footer
+					Control.RowDefinitions.Add(new System.Windows.Controls.RowDefinition { Height = System.Windows.GridLength.Auto });
+					Control.RowDefinitions.Add(new System.Windows.Controls.RowDefinition { Height = new System.Windows.GridLength(1, System.Windows.GridUnitType.Star) });
+					Control.RowDefinitions.Add(new System.Windows.Controls.RowDefinition { Height = System.Windows.GridLength.Auto });
+
+					WGrid.SetRow(_listview, 1);
+					
+					Control.Children.Add(_listview);
+
+					_listview.MouseUp += OnNativeMouseUp;
+					_listview.KeyUp += OnNativeKeyUp;
+					_listview.TouchUp += OnNativeTouchUp;
+					_listview.StylusUp += OnNativeStylusUp;
+					_listview.Loaded += ControlOnLoaded;
 				}
 
 				// Suscribe element events
@@ -95,7 +116,11 @@ namespace Xamarin.Forms.Platform.WPF
 				templatedItems.CollectionChanged += OnCollectionChanged;
 				templatedItems.GroupedCollectionChanged += OnGroupedCollectionChanged;
 
+				Control.SizeChanged += Grid_SizeChanged;
+								
 				// Update control properties
+				UpdateHeader();
+				UpdateFooter();
 				UpdateItemSource();
 				UpdateHorizontalScrollBarVisibility();
 				UpdateVerticalScrollBarVisibility();
@@ -107,9 +132,80 @@ namespace Xamarin.Forms.Platform.WPF
 			base.OnElementChanged(e);
 		}
 
+		// If the control size changes, then re-layout the header and footer.
+		private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			if (_headerRenderer is object)
+			{
+				_headerRenderer.GetNativeElement().Width = e.NewSize.Width;
+				_headerRenderer.GetNativeElement().UpdateLayout();
+
+				var header = Element.HeaderElement;
+				var headerView = (VisualElement)header;
+				SizeRequest request = headerView.Measure(4096, 4096);
+
+				Layout.LayoutChildIntoBoundingRegion(headerView, new Rectangle(0, 0, e.NewSize.Width, request.Request.Height));
+			}
+
+			if (_footerRenderer is object)
+			{
+				_footerRenderer.GetNativeElement().Width = e.NewSize.Width;
+				_footerRenderer.GetNativeElement().UpdateLayout();
+
+				var footer = Element.FooterElement;
+				var footerView = (VisualElement)footer;
+				SizeRequest request = footerView.Measure(4096, 4096);
+
+				Layout.LayoutChildIntoBoundingRegion(footerView, new Rectangle(0, 0, e.NewSize.Width, request.Request.Height));
+			}
+		}
+
+		void UpdateHeader()
+		{
+			var header = Element.HeaderElement;
+			var headerView = (VisualElement)header;
+
+			if (_headerRenderer is object)
+			{
+				Control.Children.Remove(_headerRenderer.GetNativeElement());
+				_headerRenderer.Dispose();
+			}
+
+			if (headerView is null)
+				return;
+
+			_headerRenderer = Platform.CreateRenderer(headerView);
+			Platform.SetRenderer(headerView, _headerRenderer);
+		
+			WGrid.SetRow(_headerRenderer.GetNativeElement(), 0);
+			Control.Children.Add(_headerRenderer.GetNativeElement());
+
+		}
+		
+		void UpdateFooter() 
+		{
+			var footer = Element.FooterElement;
+			var footerView = (VisualElement)footer;
+
+			if (_footerRenderer is object)
+			{
+				Control.Children.Remove(_footerRenderer.GetNativeElement());
+				_footerRenderer.Dispose();
+			}
+
+			if (footerView is null)
+				return;
+
+			_footerRenderer = Platform.CreateRenderer(footerView);
+			Platform.SetRenderer(footerView, _footerRenderer);
+
+			WGrid.SetRow(_footerRenderer.GetNativeElement(), 2);
+			Control.Children.Add(_footerRenderer.GetNativeElement());
+		}
+
 		void ControlOnLoaded(object sender, RoutedEventArgs e)
 		{
-			_scrollViewer = Control.FindVisualChild<ScrollViewer>();
+			_scrollViewer = _listview.FindVisualChild<ScrollViewer>();
 			if (_scrollViewer != null)
 			{
 				_scrollViewer.ScrollChanged += SendScrolled;
@@ -140,6 +236,14 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				UpdateHorizontalScrollBarVisibility();
 			}
+			else if (e.PropertyName == ListView.HeaderProperty.PropertyName || e.PropertyName == "HeaderElement")
+			{
+				UpdateHeader();
+			}
+			else if (e.PropertyName == ListView.FooterProperty.PropertyName || e.PropertyName == "FooterElement")
+			{
+				UpdateFooter();
+			}
 		}
 
 		void UpdateItemSource()
@@ -163,7 +267,7 @@ namespace Xamarin.Forms.Platform.WPF
 					index++;
 				}
 
-				Control.ItemsSource = items;
+				_listview.ItemsSource = items;
 			}
 			else
 			{
@@ -172,25 +276,25 @@ namespace Xamarin.Forms.Platform.WPF
 					items.Add(item);
 				}
 
-				Control.ItemsSource = items;
+				_listview.ItemsSource = items;
 			}
 		}
 
 		void UpdateVerticalScrollBarVisibility()
 		{
 			if (_defaultVerticalScrollVisibility == null)
-				_defaultVerticalScrollVisibility = ScrollViewer.GetVerticalScrollBarVisibility(Control);
+				_defaultVerticalScrollVisibility = ScrollViewer.GetVerticalScrollBarVisibility(_listview);
 
 			switch (Element.VerticalScrollBarVisibility)
 			{
 				case (ScrollBarVisibility.Always):
-					ScrollViewer.SetVerticalScrollBarVisibility(Control, WpfScrollBarVisibility.Visible);
+					ScrollViewer.SetVerticalScrollBarVisibility(_listview, WpfScrollBarVisibility.Visible);
 					break;
 				case (ScrollBarVisibility.Never):
-					ScrollViewer.SetVerticalScrollBarVisibility(Control, WpfScrollBarVisibility.Hidden);
+					ScrollViewer.SetVerticalScrollBarVisibility(_listview, WpfScrollBarVisibility.Hidden);
 					break;
 				case (ScrollBarVisibility.Default):
-					ScrollViewer.SetVerticalScrollBarVisibility(Control, (WpfScrollBarVisibility)_defaultVerticalScrollVisibility);
+					ScrollViewer.SetVerticalScrollBarVisibility(_listview, (WpfScrollBarVisibility)_defaultVerticalScrollVisibility);
 					break;
 			}
 		}
@@ -198,33 +302,33 @@ namespace Xamarin.Forms.Platform.WPF
 		void UpdateHorizontalScrollBarVisibility()
 		{
 			if (_defaultHorizontalScrollVisibility == null)
-				_defaultHorizontalScrollVisibility = ScrollViewer.GetHorizontalScrollBarVisibility(Control);
+				_defaultHorizontalScrollVisibility = ScrollViewer.GetHorizontalScrollBarVisibility(_listview);
 
 			switch (Element.HorizontalScrollBarVisibility)
 			{
 				case (ScrollBarVisibility.Always):
-					ScrollViewer.SetHorizontalScrollBarVisibility(Control, WpfScrollBarVisibility.Visible);
+					ScrollViewer.SetHorizontalScrollBarVisibility(_listview, WpfScrollBarVisibility.Visible);
 					break;
 				case (ScrollBarVisibility.Never):
-					ScrollViewer.SetHorizontalScrollBarVisibility(Control, WpfScrollBarVisibility.Hidden);
+					ScrollViewer.SetHorizontalScrollBarVisibility(_listview, WpfScrollBarVisibility.Hidden);
 					break;
 				case (ScrollBarVisibility.Default):
-					ScrollViewer.SetHorizontalScrollBarVisibility(Control, (WpfScrollBarVisibility)_defaultHorizontalScrollVisibility);
+					ScrollViewer.SetHorizontalScrollBarVisibility(_listview, (WpfScrollBarVisibility)_defaultHorizontalScrollVisibility);
 					break;
 			}
 		}
 
 		void OnNativeKeyUp(object sender, KeyEventArgs e)
-			=> Element.NotifyRowTapped(Control.SelectedIndex, cell: null);
+			=> Element.NotifyRowTapped(_listview.SelectedIndex, cell: null);
 
 		void OnNativeMouseUp(object sender, MouseButtonEventArgs e)
-			=> Element.NotifyRowTapped(Control.SelectedIndex, cell: null);
+			=> Element.NotifyRowTapped(_listview.SelectedIndex, cell: null);
 
 		void OnNativeTouchUp(object sender, TouchEventArgs e)
-			=> Element.NotifyRowTapped(Control.SelectedIndex, cell: null);
+			=> Element.NotifyRowTapped(_listview.SelectedIndex, cell: null);
 
 		void OnNativeStylusUp(object sender, StylusEventArgs e)
-			=> Element.NotifyRowTapped(Control.SelectedIndex, cell: null);
+			=> Element.NotifyRowTapped(_listview.SelectedIndex, cell: null);
 
 		bool _isDisposed;
 
@@ -235,13 +339,13 @@ namespace Xamarin.Forms.Platform.WPF
 
 			if (disposing)
 			{
-				if (Control != null)
+				if (_listview != null)
 				{
-					Control.MouseUp -= OnNativeMouseUp;
-					Control.KeyUp -= OnNativeKeyUp;
-					Control.TouchUp -= OnNativeTouchUp;
-					Control.StylusUp -= OnNativeStylusUp;
-					Control.Loaded -= ControlOnLoaded;
+					_listview.MouseUp -= OnNativeMouseUp;
+					_listview.KeyUp -= OnNativeKeyUp;
+					_listview.TouchUp -= OnNativeTouchUp;
+					_listview.StylusUp -= OnNativeStylusUp;
+					_listview.Loaded -= ControlOnLoaded;
 				}
 				if (_scrollViewer != null)
 				{
@@ -253,6 +357,14 @@ namespace Xamarin.Forms.Platform.WPF
 					TemplatedItemsView.TemplatedItems.CollectionChanged -= OnCollectionChanged;
 					TemplatedItemsView.TemplatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
 				}
+
+				if (Control is object)
+				{
+					Control.SizeChanged -= Grid_SizeChanged;
+				}
+
+				_footerRenderer?.Dispose();
+				_headerRenderer?.Dispose();
 			}
 
 			_isDisposed = true;
@@ -266,7 +378,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 			if (e.SelectedItem == null)
 			{
-				Control.SelectedIndex = -1;
+				_listview.SelectedIndex = -1;
 				return;
 			}
 
@@ -286,7 +398,7 @@ namespace Xamarin.Forms.Platform.WPF
 				index = templatedItems.GetGlobalIndexOfItem(e.SelectedItem);
 			}
 
-			Control.SelectedIndex = index;
+			_listview.SelectedIndex = index;
 		}
 
 		void OnCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -300,16 +412,16 @@ namespace Xamarin.Forms.Platform.WPF
 		}
 		void ScrollTo(object group, object item, ScrollToPosition toPosition, bool shouldAnimate)
 		{
-			var viewer = Control.FindVisualChild<ScrollViewer>();
+			var viewer = _listview.FindVisualChild<ScrollViewer>();
 			if (viewer == null)
 			{
 				RoutedEventHandler loadedHandler = null;
 				loadedHandler = (o, e) =>
 				{
-					Control.Loaded -= loadedHandler;
+					_listview.Loaded -= loadedHandler;
 					Device.BeginInvokeOnMainThread(() => { ScrollTo(group, item, toPosition, shouldAnimate); });
 				};
-				Control.Loaded += loadedHandler;
+				_listview.Loaded += loadedHandler;
 				return;
 			}
 			var templatedItems = TemplatedItemsView.TemplatedItems;
@@ -322,7 +434,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 			Device.BeginInvokeOnMainThread(() =>
 			{
-				ScrollToPositionInView(Control, viewer, c, toPosition, shouldAnimate);
+				ScrollToPositionInView(_listview, viewer, c, toPosition, shouldAnimate);
 			});
 		}
 		static void ScrollToPositionInView(WList control, ScrollViewer sv, object item, ScrollToPosition position, bool animated)
