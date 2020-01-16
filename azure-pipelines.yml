@@ -64,7 +64,7 @@ jobs:
   parameters:
     name: win
     displayName: Build Windows Phase
-    vmImage: $(winVmImage)
+    vmImage: $(win2017VmImage)
     targetFolder: Xamarin.Forms.ControlGallery.Android/legacyRenderers/
     msbuildExtraArguments: '/nowarn:VSX1000 /p:CreateAllAndroidTargets=true'
     buildConfiguration: $(DefaultBuildConfiguration)
