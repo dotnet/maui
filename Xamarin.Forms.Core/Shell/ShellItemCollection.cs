@@ -90,6 +90,9 @@ namespace Xamarin.Forms
 		{
 			if (IsShellItemVisible(shellItem))
 			{
+				if (_visibleContents.Contains(shellItem))
+					return;
+
 				int visibleIndex = 0;
 				for (var i = 0; i < _inner.Count; i++)
 				{

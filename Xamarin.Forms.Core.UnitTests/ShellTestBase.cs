@@ -25,6 +25,17 @@ namespace Xamarin.Forms.Core.UnitTests
 
 		}
 
+
+		protected bool IsModal(BindableObject bindableObject)
+		{
+			return (Shell.GetPresentationMode(bindableObject) & PresentationMode.Modal) == PresentationMode.Modal;
+		}
+
+		protected bool IsAnimated(BindableObject bindableObject)
+		{
+			return (Shell.GetPresentationMode(bindableObject) & PresentationMode.NotAnimated) != PresentationMode.NotAnimated;
+		}
+
 		protected Uri CreateUri(string uri) => ShellUriHandler.CreateUri(uri);
 
 		protected ShellSection MakeSimpleShellSection(string route, string contentRoute)
@@ -44,10 +55,19 @@ namespace Xamarin.Forms.Core.UnitTests
 		[QueryProperty("SomeQueryParameter", "SomeQueryParameter")]
 		public class ShellTestPage : ContentPage
 		{
+			public ShellTestPage()
+			{
+			}
+
 			public string SomeQueryParameter
 			{
 				get;
 				set;
+			}
+
+			protected override void OnParentSet()
+			{
+				base.OnParentSet();
 			}
 		}
 

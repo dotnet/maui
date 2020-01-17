@@ -136,7 +136,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public async Task EnsureOnAppearingFiresForNavigatedToPage()
 		{
-			Routing.RegisterRoute("LifeCyclePage", typeof(LifeCyclePage));
 			Shell shell = new Shell();
 			shell.Items.Add(CreateShellItem());
 			await shell.GoToAsync("LifeCyclePage");
@@ -146,6 +145,39 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.IsTrue(page.Appearing);
 			Assert.IsTrue(page.ParentSet);
 		}
+
+		[Test]
+		public async Task EnsureOnAppearingFiresForLastPageOnly()
+		{
+			Shell shell = new Shell();
+			LifeCyclePage shellContentPage = new LifeCyclePage();
+			shell.Items.Add(CreateShellItem(page: shellContentPage));
+			await shell.GoToAsync("LifeCyclePage/LifeCyclePage");
+
+			var page = (LifeCyclePage)shell.GetVisiblePage();
+			var nonVisiblePage = (LifeCyclePage)shell.Navigation.NavigationStack[1];
+
+			Assert.IsFalse(nonVisiblePage.Appearing);
+			Assert.IsTrue(page.Appearing);
+		}
+		
+		[Test]
+		public async Task EnsureOnAppearingFiresForLastPageOnlyAbsoluteRoute()
+		{
+			Shell shell = new Shell();
+			LifeCyclePage shellContentPage = new LifeCyclePage();
+			shell.Items.Add(CreateShellItem());
+			shell.Items.Add(CreateShellItem(page: shellContentPage, shellItemRoute:"ShellItemRoute"));
+			await shell.GoToAsync("///ShellItemRoute/LifeCyclePage/LifeCyclePage");
+
+			var page = (LifeCyclePage)shell.GetVisiblePage();
+			var nonVisiblePage = (LifeCyclePage)shell.Navigation.NavigationStack[1];
+
+			Assert.IsFalse(shellContentPage.Appearing);
+			Assert.IsFalse(nonVisiblePage.Appearing);
+			Assert.IsTrue(page.Appearing);
+		}
+
 
 		[Test]
 		public async Task EnsureOnAppearingFiresForPushedPage()
@@ -452,7 +484,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.False(pageNotAppearingFired, "Incorrect Page Appearing Fired");
 		}
 
-		class LifeCyclePage : ContentPage
+		public class LifeCyclePage : ContentPage
 		{
 			public bool Appearing;
 			public bool ParentSet;
@@ -460,10 +492,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			protected override void OnAppearing()
 			{
 				base.OnAppearing();
-
-				if (Parent == null)
-					throw new Exception("Parent is null");
-
 				Appearing = true;
 			}
 
@@ -472,6 +500,12 @@ namespace Xamarin.Forms.Core.UnitTests
 				base.OnParentSet();
 				ParentSet = true;
 			}
+		}
+
+		public override void Setup()
+		{
+			base.Setup();
+			Routing.RegisterRoute("LifeCyclePage", typeof(LifeCyclePage));
 		}
 
 		class ShellLifeCycleState

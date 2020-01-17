@@ -160,7 +160,10 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			if (_application != null)
+			{
+				_application.PropertyChanging -= AppOnPropertyChanging;
 				_application.PropertyChanged -= AppOnPropertyChanged;
+			}
 
 			Profile.FramePartition("SetAppIndexingProvider");
 			_application = application ?? throw new ArgumentNullException(nameof(application));
@@ -177,6 +180,7 @@ namespace Xamarin.Forms.Platform.Android
 			CheckForAppLink(Intent);
 
 			application.PropertyChanged += AppOnPropertyChanged;
+			application.PropertyChanging += AppOnPropertyChanging;
 
 			// Wait if old activity destroying is not finished
 			PreviousActivityDestroying.Wait();
@@ -408,6 +412,20 @@ namespace Xamarin.Forms.Platform.Android
 				SetSoftInputMode();
 		}
 
+		void AppOnPropertyChanging(object sender, PropertyChangingEventArgs args)
+		{
+			// Activity in pause must not react to application changes
+			if (_currentState >= AndroidApplicationLifecycleState.OnPause)
+			{
+				return;
+			}
+
+			if (args.PropertyName == nameof(_application.MainPage))
+			{
+				SettingMainPage();
+			}
+		}
+		
 		void CheckForAppLink(Intent intent)
 		{
 			string action = intent.Action;
@@ -461,6 +479,11 @@ namespace Xamarin.Forms.Platform.Android
 		void SetMainPage()
 		{
 			InternalSetPage(_application.MainPage);
+		}
+				
+		void SettingMainPage()
+		{
+			Platform.SettingNewPage();
 		}
 
 		void SetSoftInputMode()

@@ -21,6 +21,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		bool _disposed;
 		bool _navAnimationInProgress;
 		NavigationModel _navModel = new NavigationModel();
+		NavigationModel _previousNavModel = null;
+
 		internal static string PackageName { get; private set; }
 		internal static string GetPackageName() => PackageName ?? Android.Platform.PackageName;
 
@@ -249,6 +251,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			base.OnBindingContextChanged();
 		}
 
+		internal void SettingNewPage()
+		{
+			_previousNavModel = _navModel;
+			_navModel = new NavigationModel();
+		}
+
 		internal void SetPage(Page newRoot)
 		{
 			if (Page == newRoot)
@@ -258,7 +266,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			if (Page != null)
 			{
-				foreach (var rootPage in _navModel.Roots)
+				var navModel = (_previousNavModel ?? _navModel);
+				foreach (var rootPage in navModel.Roots)
 				{
 					if (Android.Platform.GetRenderer(rootPage) is ILifeCycleState nr)
 						nr.MarkedForDispose = true;
@@ -270,7 +279,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				for (int i = 0; i < _renderer.ChildCount; i++)
 					viewsToRemove.Add(_renderer.GetChildAt(i));
 
-				foreach (var root in _navModel.Roots)
+				foreach (var root in navModel.Roots)
 					renderersToDispose.Add(Android.Platform.GetRenderer(root));
 
 				SetPageInternal(newRoot);
@@ -301,7 +310,15 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			if (Page != null)
 			{
-				_navModel = new NavigationModel();
+				// if _previousNavModel has been set than _navModel has already been reinitialized
+				if (_previousNavModel != null)
+				{
+					_previousNavModel = null;
+					if (_navModel == null)
+						_navModel = new NavigationModel();
+				}
+				else
+					_navModel = new NavigationModel();
 
 				layout = true;
 			}
