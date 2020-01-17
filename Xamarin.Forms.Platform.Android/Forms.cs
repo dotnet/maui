@@ -53,6 +53,7 @@ namespace Xamarin.Forms
 
 		const int TabletCrossover = 600;
 
+		static BuildVersionCodes? s_sdkInt;
 		static bool? s_isLollipopOrNewer;
 		static bool? s_is29OrNewer;
 		static bool? s_isMarshmallowOrNewer;
@@ -72,7 +73,13 @@ namespace Xamarin.Forms
 		static Color _ColorButtonNormal = Color.Default;
 		public static Color ColorButtonNormalOverride { get; set; }
 
-		internal static BuildVersionCodes SdkInt => Anticipator.SdkInt;
+		internal static BuildVersionCodes SdkInt {
+			get {
+				if (!s_sdkInt.HasValue)
+					s_sdkInt = Build.VERSION.SdkInt;
+				return (BuildVersionCodes)s_sdkInt;
+			}
+		}
 
 		internal static bool Is29OrNewer
 		{
