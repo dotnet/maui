@@ -39,6 +39,5 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.That(((Gh8936VM)layout.BindingContext).Data["Key"], Is.EqualTo("Bar"));
 			}
 		}
-
 	}
 }

@@ -53,7 +53,7 @@ namespace Xamarin.Forms
 				if (_styleClass == value)
 					return;
 
-				if (_styleClass != null && _classStyles != null)
+				if (_styleClass != null && _classStyleProperties != null)
 					foreach (var classStyleProperty in _classStyleProperties)
 						Target.RemoveDynamicResource(classStyleProperty);
 
@@ -67,6 +67,10 @@ namespace Xamarin.Forms
 						_classStyleProperties.Add (classStyleProperty);
 						Target.OnSetDynamicResource (classStyleProperty, Forms.Style.StyleClassPrefix + styleClass);
 					}
+
+					//reapply the css stylesheets
+					if (Target is Element targetelement)
+						targetelement.ApplyStyleSheetsOnParentSet();
 				}
 			}
 		}

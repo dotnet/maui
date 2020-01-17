@@ -38,7 +38,7 @@ namespace Xamarin.Forms
 		IStyleSelectable IStyleSelectable.Parent => Parent;
 
 		//on parent set, or on parent stylesheet changed, reapply all
-		void ApplyStyleSheetsOnParentSet()
+		internal void ApplyStyleSheetsOnParentSet()
 		{
 			var parent = Parent;
 			if (parent == null)
