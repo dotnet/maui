@@ -491,7 +491,8 @@ namespace Xamarin.Forms.Platform.Android
 		protected virtual void UpdateToolbarItems(Toolbar toolbar, Page page)
 		{
 			var menu = toolbar.Menu;
-			toolbar.UpdateMenuItems(page.ToolbarItems, _shellContext.AndroidContext, TintColor, OnToolbarItemPropertyChanged);
+			var sortedItems = System.Linq.Enumerable.OrderBy(page.ToolbarItems, x => x.Order);
+			toolbar.UpdateMenuItems(sortedItems, _shellContext.AndroidContext, TintColor, OnToolbarItemPropertyChanged);
 
 			SearchHandler = Shell.GetSearchHandler(page);
 			if (SearchHandler != null && SearchHandler.SearchBoxVisibility != SearchBoxVisibility.Hidden)
@@ -554,7 +555,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		void OnToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			_toolbar.OnToolbarItemPropertyChanged(e, Page.ToolbarItems, _shellContext.AndroidContext, TintColor, OnToolbarItemPropertyChanged);
+			var sortedItems = System.Linq.Enumerable.OrderBy(Page.ToolbarItems, x => x.Order);
+			_toolbar.OnToolbarItemPropertyChanged(e, sortedItems, _shellContext.AndroidContext, TintColor, OnToolbarItemPropertyChanged);
 		}
 
 		void OnSearchViewAttachedToWindow(object sender, AView.ViewAttachedToWindowEventArgs e)
