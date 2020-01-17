@@ -835,7 +835,7 @@ namespace Xamarin.Forms.Platform.iOS
 			else
 			{
 				if (isHorizontal)
-					swipeThreshold = SwipeThreshold;
+					swipeThreshold = CalculateSwipeThreshold();
 				else
 				{
 					var contentHeight = _contentView.Frame.Height;
@@ -844,6 +844,18 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			return ValidateSwipeThreshold(swipeThreshold);
+		}
+
+		double CalculateSwipeThreshold()
+		{
+			if (_contentView != null)
+			{
+				var swipeThreshold = _contentView.Frame.Width * 0.8;
+
+				return swipeThreshold;
+			}
+
+			return SwipeThreshold;
 		}
 
 		double ValidateSwipeThreshold(double swipeThreshold)
