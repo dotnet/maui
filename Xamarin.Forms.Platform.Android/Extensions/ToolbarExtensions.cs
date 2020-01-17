@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
-		static void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem, Color? tintColor)
+		internal static void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem, Color? tintColor)
 		{
 			_ = context.ApplyDrawableAsync(toolBarItem, ToolbarItem.IconImageSourceProperty, baseDrawable =>
 			{

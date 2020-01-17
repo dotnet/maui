@@ -30,6 +30,11 @@ namespace Xamarin.Forms.Platform.Android
 			return _defaultContentDescription;
 		}
 
+		public static bool? SetFocusable(this global::Android.Views.View Control, Element Element, bool? _defaultFocusable)
+		{
+			return Control.SetFocusable(Element, _defaultFocusable, null);
+		}
+
 		public static bool? SetFocusable(this global::Android.Views.View Control, Element Element, bool? _defaultFocusable = null, ImportantForAccessibility? _defaultImportantForAccessibility = null)
 		{
 			if (Element == null)

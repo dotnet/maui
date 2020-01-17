@@ -135,7 +135,7 @@ namespace Xamarin.Forms
 				return;
 			}
 
-			_associatedObjects.RemoveAll(t => !t.IsAlive);
+			_associatedObjects.RemoveAll(t => t == null || !t.IsAlive);
 			_cleanupThreshold = _associatedObjects.Count + CleanupTrigger;
 		}
 	}
