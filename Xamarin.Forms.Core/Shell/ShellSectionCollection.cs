@@ -88,21 +88,21 @@ namespace Xamarin.Forms
 		{
 			if (section is IShellSectionController controller && controller.GetItems().Count > 0)
 			{
-				if (!_visibleContents.Contains(section))
+				if (_visibleContents.Contains(section))
+					return;
+
+				int visibleIndex = 0;
+				for (var i = 0; i < _inner.Count; i++)
 				{
-					int visibleIndex = 0;
-					for (var i = 0; i < _inner.Count; i++)
+					var item = _inner[i];
+
+					if (item == section)
 					{
-						var item = _inner[i];
-
-						if (item == section)
-						{
-							_visibleContents.Insert(visibleIndex, section);
-							break;
-						}
-
-						visibleIndex++;
+						_visibleContents.Insert(visibleIndex, section);
+						break;
 					}
+
+					visibleIndex++;
 				}
 			}
 			else if (_visibleContents.Contains(section))

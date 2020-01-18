@@ -276,11 +276,7 @@ namespace Xamarin.Forms
 
 		internal override BindingBase Clone()
 		{
-			return new Binding(Path, Mode) {
-				Converter = Converter,
-				ConverterParameter = ConverterParameter,
-				StringFormat = StringFormat,
-				Source = Source,
+			return new Binding(Path, Mode, Converter, ConverterParameter, StringFormat, Source) {
 				UpdateSourceEventName = UpdateSourceEventName,
 				TargetNullValue = TargetNullValue,
 				FallbackValue = FallbackValue,

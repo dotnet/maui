@@ -8,9 +8,9 @@ using Android.Views;
 using Android.Widget;
 using Xamarin.Forms.Internals;
 #if __ANDROID_29__
-using AlertDialog = AndroidX.AppCompat.App.AlertDialog;
+using AppCompatAlertDialog = AndroidX.AppCompat.App.AlertDialog;
 #else
-using AlertDialog = Android.Support.V7.App.AlertDialog;
+using AppCompatAlertDialog = global::Android.Support.V7.App.AlertDialog;
 #endif
 
 namespace Xamarin.Forms.Platform.Android
@@ -94,7 +94,8 @@ namespace Xamarin.Forms.Platform.Android
 					return;
 				}
 
-				var builder = new AlertDialog.Builder(Activity);
+				var builder = new DialogBuilder(Activity);
+
 				builder.SetTitle(arguments.Title);
 				string[] items = arguments.Buttons.ToArray();
 				builder.SetItems(items, (o, args) => arguments.Result.TrySetResult(items[args.Which]));
@@ -105,12 +106,12 @@ namespace Xamarin.Forms.Platform.Android
 				if (arguments.Destruction != null)
 					builder.SetNegativeButton(arguments.Destruction, (o, args) => arguments.Result.TrySetResult(arguments.Destruction));
 
-				AlertDialog dialog = builder.Create();
+				var dialog = builder.Create();
 				builder.Dispose();
 				//to match current functionality of renderer we set cancelable on outside
 				//and return null
 				dialog.SetCanceledOnTouchOutside(true);
-				dialog.CancelEvent += (o, e) => arguments.SetResult(null);
+				dialog.SetCancelEvent((o, e) => arguments.SetResult(null));
 				dialog.Show();
 			}
 
@@ -122,13 +123,13 @@ namespace Xamarin.Forms.Platform.Android
 					return;
 				}
 
-				AlertDialog alert = new AlertDialog.Builder(Activity).Create();
+				var alert = new DialogBuilder(Activity).Create();
 				alert.SetTitle(arguments.Title);
 				alert.SetMessage(arguments.Message);
 				if (arguments.Accept != null)
 					alert.SetButton((int)DialogButtonType.Positive, arguments.Accept, (o, args) => arguments.SetResult(true));
 				alert.SetButton((int)DialogButtonType.Negative, arguments.Cancel, (o, args) => arguments.SetResult(false));
-				alert.CancelEvent += (o, args) => { arguments.SetResult(false); };
+				alert.SetCancelEvent((o, args) => { arguments.SetResult(false); }); 
 				alert.Show();
 			}
 
@@ -140,7 +141,7 @@ namespace Xamarin.Forms.Platform.Android
 					return;
 				}
 
-				AlertDialog alertDialog = new AlertDialog.Builder(Activity).Create();
+				var alertDialog = new DialogBuilder(Activity).Create();
 				alertDialog.SetTitle(arguments.Title);
 				alertDialog.SetMessage(arguments.Message);
 
@@ -165,7 +166,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				alertDialog.SetButton((int)DialogButtonType.Positive, arguments.Accept, (o, args) => arguments.SetResult(editText.Text));
 				alertDialog.SetButton((int)DialogButtonType.Negative, arguments.Cancel, (o, args) => arguments.SetResult(null));
-				alertDialog.CancelEvent += (o, args) => { arguments.SetResult(null); };
+				alertDialog.SetCancelEvent((o, args) => { arguments.SetResult(null); });
 
 				alertDialog.Window.SetSoftInputMode(SoftInput.StateVisible);
 				alertDialog.Show();
@@ -211,6 +212,203 @@ namespace Xamarin.Forms.Platform.Android
 				}
 
 				return renderer.View.Context.Equals(Activity);
+			}
+
+			// This is a proxy dialog builder class to support both pre-appcompat and appcompat dialogs for Alert,
+			// ActionSheet, Prompt, etc. 
+			internal sealed class DialogBuilder
+			{
+				AppCompatAlertDialog.Builder _appcompatBuilder;
+				AlertDialog.Builder _legacyBuilder;
+
+				bool _useAppCompat;
+
+				public DialogBuilder(Activity activity)
+				{
+					if (activity is global::Android.Support.V7.App.AppCompatActivity)
+					{
+						_appcompatBuilder = new AppCompatAlertDialog.Builder(activity);
+						_useAppCompat = true;
+					}
+					else
+					{
+						_legacyBuilder = new AlertDialog.Builder(activity);
+					}
+				}
+
+				public void SetTitle(string title)
+				{
+					if (_useAppCompat)
+					{
+						_appcompatBuilder.SetTitle(title);
+					}
+					else
+					{
+						_legacyBuilder.SetTitle(title);
+					}
+				}
+
+				public void SetItems(string[] items, EventHandler<DialogClickEventArgs> handler)
+				{
+					if (_useAppCompat)
+					{
+						_appcompatBuilder.SetItems(items, handler);
+					}
+					else
+					{
+						_legacyBuilder.SetItems(items, handler);
+					}
+				}
+
+				public void SetPositiveButton(string text, EventHandler<DialogClickEventArgs> handler)
+				{
+					if (_useAppCompat)
+					{
+						_appcompatBuilder.SetPositiveButton(text, handler);
+					}
+					else
+					{
+						_legacyBuilder.SetPositiveButton(text, handler);
+					}
+				}
+
+				public void SetNegativeButton(string text, EventHandler<DialogClickEventArgs> handler)
+				{
+					if (_useAppCompat)
+					{
+						_appcompatBuilder.SetNegativeButton(text, handler);
+					}
+					else
+					{
+						_legacyBuilder.SetNegativeButton(text, handler);
+					}
+				}
+
+				public FlexibleAlertDialog Create()
+				{
+					if (_useAppCompat)
+					{
+						return new FlexibleAlertDialog(_appcompatBuilder.Create());
+					}
+
+					return new FlexibleAlertDialog(_legacyBuilder.Create());
+				}
+
+				public void Dispose()
+				{
+					if (_useAppCompat)
+					{
+						_appcompatBuilder.Dispose();
+					}
+					else
+					{
+						_legacyBuilder.Dispose();
+					}
+				}
+			}
+
+			internal sealed class FlexibleAlertDialog
+			{
+				readonly AppCompatAlertDialog _appcompatAlertDialog;
+				readonly AlertDialog _legacyAlertDialog;
+				bool _useAppCompat;
+
+				public FlexibleAlertDialog(AlertDialog alertDialog)
+				{
+					_legacyAlertDialog = alertDialog;
+				}
+
+				public FlexibleAlertDialog(AppCompatAlertDialog alertDialog)
+				{
+					_appcompatAlertDialog = alertDialog;
+					_useAppCompat = true;
+				}
+
+				public void SetTitle(string title)
+				{
+					if (_useAppCompat)
+					{
+						_appcompatAlertDialog.SetTitle(title);
+					}
+					else
+					{
+						_legacyAlertDialog.SetTitle(title);
+					}
+				}
+
+				public void SetMessage(string message)
+				{
+					if (_useAppCompat)
+					{
+						_appcompatAlertDialog.SetMessage(message);
+					}
+					else
+					{
+						_legacyAlertDialog.SetMessage(message);
+					}
+				}
+
+				public void SetButton(int whichButton, string text, EventHandler<DialogClickEventArgs> handler)
+				{
+					if (_useAppCompat)
+					{
+						_appcompatAlertDialog.SetButton(whichButton, text, handler);
+					}
+					else
+					{
+						_legacyAlertDialog.SetButton(whichButton, text, handler);
+					}
+				}
+
+				public void SetCancelEvent(EventHandler cancel)
+				{
+					if (_useAppCompat)
+					{
+						_appcompatAlertDialog.CancelEvent += cancel;
+					}
+					else
+					{
+						_legacyAlertDialog.CancelEvent += cancel;
+					}
+				}
+
+				public void SetCanceledOnTouchOutside(bool canceledOnTouchOutSide)
+				{
+					if (_useAppCompat)
+					{
+						_appcompatAlertDialog.SetCanceledOnTouchOutside(canceledOnTouchOutSide);
+					}
+					else
+					{
+						_legacyAlertDialog.SetCanceledOnTouchOutside(canceledOnTouchOutSide);
+					}
+				}
+
+				public void SetView(global::Android.Views.View view)
+				{
+					if (_useAppCompat)
+					{
+						_appcompatAlertDialog.SetView(view);
+					}
+					else
+					{
+						_legacyAlertDialog.SetView(view);
+					}
+				}
+
+				public Window Window => _useAppCompat ? _appcompatAlertDialog.Window : _legacyAlertDialog.Window;
+
+				public void Show()
+				{
+					if (_useAppCompat)
+					{
+						_appcompatAlertDialog.Show();
+					}
+					else
+					{
+						_legacyAlertDialog.Show();
+					}
+				}
 			}
 		}
 	}

@@ -684,7 +684,14 @@ namespace Xamarin.Forms.Platform.iOS
 			if (statusBarColorMode == StatusBarTextColorMode.DoNotAdjust || barTextColor.Luminosity <= 0.5)
 			{
 				// Use dark text color for status bar
-				UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.Default;
+				if (Forms.IsiOS13OrNewer)
+				{
+					UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.DarkContent;
+				}
+				else
+				{
+					UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.Default;
+				}
 			}
 			else
 			{
@@ -957,6 +964,18 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				base.ViewDidDisappear(animated);
 
+				// force a redraw for right toolbar items by resetting TintColor to prevent
+				// toolbar items being grayed out when canceling swipe to a previous page
+				foreach (var item in NavigationItem?.RightBarButtonItems)
+				{
+					if (item.Image != null)
+						continue;
+
+					var tintColor = item.TintColor;
+					item.TintColor = tintColor == null ? UIColor.Clear : null;
+					item.TintColor = tintColor;
+				}
+				
 				Disappearing?.Invoke(this, EventArgs.Empty);
 			}
 

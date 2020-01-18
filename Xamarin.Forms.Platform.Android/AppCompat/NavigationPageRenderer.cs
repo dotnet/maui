@@ -923,6 +923,10 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			_toolbar.UpdateMenuItems(_toolbarTracker?.ToolbarItems, Context, null, OnToolbarItemPropertyChanged);
 		}
+		protected virtual void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem)
+		{
+			ToolbarExtensions.UpdateMenuItemIcon(context, menuItem, toolBarItem, null);
+		}
 
 		void UpdateToolbar()
 		{

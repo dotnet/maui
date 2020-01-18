@@ -22,6 +22,7 @@
     <AndroidResource Include="Resources\anim\**\*" />
     <AndroidResource Include="Resources\values\**\*" />
     <Compile Remove="Resources\Layout\**\*" />
+    <Compile Remove="Anticipator.cs" />
     <None Include="Resources\Layout\**\*" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'MonoAndroid10.0'">

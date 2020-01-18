@@ -121,7 +121,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control is IButton ib)
 			{
-				ib.FontFamily = Element.FontFamily;
+				ib.FontFamily = Element.FontFamily.ToNativeFontFamily();
 			}			
 		}
 

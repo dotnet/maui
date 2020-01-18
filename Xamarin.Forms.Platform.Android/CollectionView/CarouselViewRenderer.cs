@@ -48,6 +48,7 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			
 			UpdateIsSwipeEnabled();
+			UpdateIsBounceEnabled();
 			UpdateInitialPosition();
 			UpdateItemSpacing();
 		}

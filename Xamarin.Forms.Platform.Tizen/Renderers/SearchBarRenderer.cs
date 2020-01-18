@@ -93,7 +93,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// </summary>
 		void FontFamilyPropertyHandler()
 		{
-			Control.FontFamily = Element.FontFamily;
+			Control.FontFamily = Element.FontFamily.ToNativeFontFamily();
 		}
 
 		/// <summary>

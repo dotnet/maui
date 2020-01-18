@@ -76,6 +76,7 @@ namespace Xamarin.Forms
 				if (_mainPage != null)
 				{
 					InternalChildren.Remove(_mainPage);
+
 					_mainPage.Parent = null;
 				}
 

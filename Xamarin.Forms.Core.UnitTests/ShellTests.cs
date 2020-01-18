@@ -462,6 +462,46 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		public void ModalSetters()
+		{
+			var page = new ContentPage();
+
+			Assert.IsFalse(IsModal(page));
+			Assert.IsTrue(IsAnimated(page));
+
+			Shell.SetPresentationMode(page, PresentationMode.Modal | PresentationMode.NotAnimated);
+
+			Assert.IsTrue(IsModal(page));
+			Assert.IsFalse(IsAnimated(page));
+		}
+
+		[Test]
+		public void BackButtonBehaviorBindingContextPropagation()
+		{
+			object bindingContext = new object();
+			var page = new ContentPage();
+			var backButtonBehavior = new BackButtonBehavior();
+
+			Shell.SetBackButtonBehavior(page, backButtonBehavior);
+			page.BindingContext = bindingContext;
+
+			Assert.AreEqual(page.BindingContext, backButtonBehavior.BindingContext);
+		}
+
+		[Test]
+		public void BackButtonBehaviorBindingContextPropagationWithExistingBindingContext()
+		{
+			object bindingContext = new object();
+			var page = new ContentPage();
+			var backButtonBehavior = new BackButtonBehavior();
+
+			page.BindingContext = bindingContext;
+			Shell.SetBackButtonBehavior(page, backButtonBehavior);
+
+			Assert.AreEqual(page.BindingContext, backButtonBehavior.BindingContext);
+		}
+
+		[Test]
 		public void FlyoutHeaderProjection()
 		{
 			var shell = new Shell();

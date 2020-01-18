@@ -35,6 +35,7 @@
 		public const string Slider = "Slider";
 		public const string Stepper = "Stepper";
 		public const string Switch = "Switch";
+		public const string SwipeView = "SwipeView";
 		public const string TableView = "TableView";
 		public const string TimePicker = "TimePicker";
 		public const string ToolbarItem = "ToolbarItem";

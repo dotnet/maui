@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="Xamarin.Forms.Controls.Issues.Issue8781"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Issue 8781">
+    <StackLayout
+        Margin="20">
+        <Label
+            BackgroundColor="Black"
+            TextColor="White"
+            Text="Open the SwipeView and verify that the SwipeItemView is rendered correctly."/>
+        <Label
+            Text="Questions"
+            FontAttributes="Bold"
+            HorizontalOptions="Center" />
+        <Label
+            Text="Swipe right to answer the following questions." />
+        <SwipeView
+            x:Name="swipeView"
+            BackgroundColor="Green"
+            HeightRequest="70"
+            WidthRequest="300">
+            <SwipeView.LeftItems>
+                <SwipeItems>
+                    <SwipeItemView
+                        Command="{Binding CheckAnswerCommand}"
+                        CommandParameter="{Binding Source={x:Reference resultEntry}, Path=Text}">
+                        <StackLayout
+                            BackgroundColor="White"
+                            WidthRequest="300">
+                            <Entry
+                                x:Name="resultEntry"
+                                Placeholder="Enter answer"
+                                HorizontalOptions="CenterAndExpand" />
+                            <Label
+                                Text="Check"
+                                FontAttributes="Bold"
+                                HorizontalOptions="Center" />
+                        </StackLayout>
+                    </SwipeItemView>
+                </SwipeItems>
+            </SwipeView.LeftItems>
+            <Grid
+                HeightRequest="70"
+                WidthRequest="300"
+                BackgroundColor="LightGray">
+                <Label
+                    Text="What's 2+2?"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center" />
+            </Grid>
+        </SwipeView>
+    </StackLayout>
+</ContentPage>

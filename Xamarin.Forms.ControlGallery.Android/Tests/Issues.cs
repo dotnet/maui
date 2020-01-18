@@ -1,4 +1,5 @@
-﻿using Android.Views;
+﻿using System;
+using Android.Views;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using Xamarin.Forms.CustomAttributes;
@@ -23,7 +24,7 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 				var entry1 = new Entry { Text = "foo", HorizontalTextAlignment = TextAlignment.Center };
 				using (var editText = GetNativeControl(entry1))
 				{
-					var centeredHorizontal = 
+					var centeredHorizontal =
 					(editText.Gravity & GravityFlags.HorizontalGravityMask) == GravityFlags.CenterHorizontal;
 
 					Assert.That(centeredHorizontal, Is.True);
@@ -38,10 +39,33 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 					Assert.That(editText.TextAlignment, Is.EqualTo(global::Android.Views.TextAlignment.Center));
 				}
 			}
-			finally 
+			finally
 			{
 				// If something went wrong, make sure we leave the Context as it was when we started
 				ToggleRTLSupport(Context, supportsRTL);
+			}
+		}
+
+		[Test(Description = "No exceptions should be thrown")]
+		[Issue(IssueTracker.Github, 9185, "[Bug] Java.Lang.IllegalArgumentException: 'order does not contain a valid category.'")]
+		public void ToolbarItemWithReallyHighPriorityDoesntCrash()
+		{
+			try
+			{
+				ContentPage page = new ContentPage()
+				{
+					ToolbarItems =
+					{
+						new ToolbarItem() { Text = "2", Priority = int.MaxValue },
+						new ToolbarItem() { Text = "1", Priority = int.MaxValue - 1 }
+					}
+				};
+
+				GetRenderer(new NavigationPage(page));
+			}
+			catch (Exception exc)
+			{
+				Assert.Fail($"{exc}");
 			}
 		}
 	}

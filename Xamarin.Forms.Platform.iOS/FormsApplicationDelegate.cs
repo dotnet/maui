@@ -119,7 +119,10 @@ namespace Xamarin.Forms.Platform.iOS
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing && _application != null)
+			{
 				_application.PropertyChanged -= ApplicationOnPropertyChanged;
+				_application.PropertyChanging -= ApplicationOnPropertyChanging;
+			}
 
 			base.Dispose(disposing);
 		}
@@ -134,6 +137,13 @@ namespace Xamarin.Forms.Platform.iOS
 			(application as IApplicationController)?.SetAppIndexingProvider(new IOSAppIndexingProvider());
 
 			application.PropertyChanged += ApplicationOnPropertyChanged;
+			application.PropertyChanging += ApplicationOnPropertyChanging;
+		}
+
+		void ApplicationOnPropertyChanging(object sender, PropertyChangingEventArgs args)
+		{
+			if (args.PropertyName == nameof(_application.MainPage))
+				UpdatingMainPage();
 		}
 
 		void ApplicationOnPropertyChanged(object sender, PropertyChangedEventArgs args)
@@ -169,6 +179,15 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			UpdateMainPage();
 			Window.MakeKeyAndVisible();
+		}
+
+		void UpdatingMainPage()
+		{
+			if (_application.MainPage == null)
+				return;
+
+			var platformRenderer = Window.RootViewController as PlatformRenderer;
+			platformRenderer.Platform.MarkForRemoval();
 		}
 
 		void UpdateMainPage()

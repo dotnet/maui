@@ -66,7 +66,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		public static void RegisterHandlers(Dictionary<Type, Func<IRegisterable>> customHandlers)
 		{
-			////Renderers
+			//Renderers
 			Registered.Register(typeof(Layout), () => new LayoutRenderer());
 			Registered.Register(typeof(ScrollView), () => new ScrollViewRenderer());
 			Registered.Register(typeof(CarouselPage), () => new CarouselPageRenderer());
@@ -102,17 +102,20 @@ namespace Xamarin.Forms.Platform.Tizen
 			Registered.Register(typeof(SwipeView), () => new SwipeViewRenderer());
 			Registered.Register(typeof(RefreshView), () => new RefreshViewRenderer());
 
-			////ImageSourceHandlers
+			//ImageSourceHandlers
 			Registered.Register(typeof(FileImageSource), () => new FileImageSourceHandler());
 			Registered.Register(typeof(StreamImageSource), () => new StreamImageSourceHandler());
 			Registered.Register(typeof(UriImageSource), () => new UriImageSourceHandler());
 
-			////Cell Renderers
+			//Cell Renderers
 			Registered.Register(typeof(TextCell), () => new TextCellRenderer());
 			Registered.Register(typeof(ImageCell), () => new ImageCellRenderer());
 			Registered.Register(typeof(SwitchCell), () => new SwitchCellRenderer());
 			Registered.Register(typeof(EntryCell), () => new EntryCellRenderer());
 			Registered.Register(typeof(ViewCell), () => new ViewCellRenderer());
+
+			//Font Loaders
+			Registered.Register(typeof(EmbeddedFont), () => new EmbeddedFontLoader());
 
 			//Dependencies
 			DependencyService.Register<ISystemResourcesProvider, ResourcesProvider>();

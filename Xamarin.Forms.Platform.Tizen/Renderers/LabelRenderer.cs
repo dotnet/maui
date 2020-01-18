@@ -1,3 +1,5 @@
+using Xamarin.Forms.Core;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Tizen.Native;
 using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Label;
 
@@ -106,7 +108,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			Control.FontSize = Element.FontSize;
 			Control.FontAttributes = Element.FontAttributes;
-			Control.FontFamily = Element.FontFamily;
+			Control.FontFamily = Element.FontFamily.ToNativeFontFamily();
 
 			Control.BatchCommit();
 		}
