@@ -226,12 +226,58 @@ namespace Xamarin.Forms.Platform.Android
 			base.OnCreate(savedInstanceState);
 
 			Profile.FramePartition("SetSupportActionBar");
-			AToolbar bar;
+			AToolbar bar = null;
+
+#if __ANDROID_29__
+			if (ToolbarResource == 0)
+			{
+				ToolbarResource = Resource.Layout.Toolbar;
+			}
+
+			if (TabLayoutResource == 0)
+			{
+				TabLayoutResource = Resource.Layout.Tabbar;
+			}
+#endif
+
 			if (ToolbarResource != 0)
 			{
-				bar = LayoutInflater.Inflate(ToolbarResource, null).JavaCast<AToolbar>();
+				try
+				{
+					bar = LayoutInflater.Inflate(ToolbarResource, null).JavaCast<AToolbar>();
+				}
+#if __ANDROID_29__
+				catch (global::Android.Views.InflateException ie)
+				{
+					if ((ie.Cause is Java.Lang.ClassNotFoundException || ie.Cause.Cause is Java.Lang.ClassNotFoundException) &&
+						ie.Message.Contains("Error inflating class android.support.v7.widget.Toolbar") &&
+						this.TargetSdkVersion() >= 29)
+					{
+						Internals.Log.Warning(nameof(FormsAppCompatActivity),
+							"Toolbar layout needs to be updated from android.support.v7.widget.Toolbar to androidx.appcompat.widget.Toolbar. " +
+							"Tabbar layout need to be updated from android.support.design.widget.TabLayout to com.google.android.material.tabs.TabLayout. " +
+							"Or if you haven't made any changes to the default Toolbar and Tabbar layouts they can just be deleted.");
+
+						ToolbarResource = Resource.Layout.FallbackToolbarDoNotUse;
+						TabLayoutResource = Resource.Layout.FallbackTabbarDoNotUse;
+
+						bar = LayoutInflater.Inflate(ToolbarResource, null).JavaCast<AToolbar>();
+					}
+					else
+						throw;
+#else
+				catch
+				{
+					throw;
+#endif
+				}
+
 				if (bar == null)
+#if __ANDROID_29__
 					throw new InvalidOperationException("ToolbarResource must be set to a Android.Support.V7.Widget.Toolbar");
+#else
+					throw new InvalidOperationException("ToolbarResource must be set to a androidx.appcompat.widget.Toolbar");
+#endif
 			}
 			else 
 			{
@@ -514,7 +560,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 		}
 
-		#region Statics
+#region Statics
 
 		public static event BackButtonPressedEventHandler BackPressed;
 
@@ -522,6 +568,6 @@ namespace Xamarin.Forms.Platform.Android
 
 		public static int ToolbarResource { get; set; }
 
-		#endregion
+#endregion
 	}
 }

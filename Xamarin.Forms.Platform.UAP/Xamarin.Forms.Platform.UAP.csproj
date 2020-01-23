@@ -108,8 +108,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup  Condition=" '$(OS)' == 'Windows_NT' ">
-    <PackageReference Include="Microsoft.UI.Xaml">
+    <PackageReference Include="Microsoft.UI.Xaml" Condition="$(TargetFramework) == 'uap10.0.14393'">
       <Version>2.1.190606001</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.UI.Xaml" Condition="$(TargetFramework) == 'uap10.0.16299'">
+      <Version>2.3.191211002</Version>
     </PackageReference>
     <PackageReference Include="Win2D.uwp">
       <Version>1.20.0</Version>
