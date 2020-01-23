@@ -11,7 +11,7 @@
   <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
-  <PropertyGroup  Condition="'$(Use2017)' == 'true'">
+  <PropertyGroup Condition="'$(Use2017)' == 'true'">
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>bin\$(Configuration)\$(TargetFramework)</OutputPath>
   </PropertyGroup>
@@ -30,6 +30,10 @@
     <AndroidResource Link="Resources\Layout\FlyoutContent.axml" Include="Resources\Layout\AndroidX\FlyoutContent.axml" />
     <AndroidResource Link="Resources\Layout\RootLayout.axml" Include="Resources\Layout\AndroidX\RootLayout.axml" />
     <AndroidResource Link="Resources\Layout\ShellContent.axml" Include="Resources\Layout\AndroidX\ShellContent.axml" />
+    <AndroidResource Link="Resources\Layout\FallbackTabbarDoNotUse.axml" Include="Resources\Layout\AndroidX\FallbackTabbarDoNotUse.axml" />
+    <AndroidResource Link="Resources\Layout\FallbackToolbarDoNotUse.axml" Include="Resources\Layout\AndroidX\FallbackToolbarDoNotUse.axml" />
+    <AndroidResource Link="Resources\Layout\Tabbar.axml" Include="Resources\Layout\AndroidX\Tabbar.axml" />
+    <AndroidResource Link="Resources\Layout\Toolbar.axml" Include="Resources\Layout\AndroidX\Toolbar.axml" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'MonoAndroid90'">
     <AndroidResource Link="Resources\Layout\BottomTabLayout.axml" Include="Resources\Layout\Android\BottomTabLayout.axml" />
