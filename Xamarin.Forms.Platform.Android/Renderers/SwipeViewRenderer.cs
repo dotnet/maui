@@ -422,7 +422,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		bool ProcessTouchMove(APointF point)
 		{
-			if (_contentView == null)
+			if (_contentView == null || !TouchInsideContent(point))
 				return false;
 
 			if (!_isSwiping)
