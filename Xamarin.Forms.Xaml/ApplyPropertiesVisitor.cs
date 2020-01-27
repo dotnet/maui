@@ -347,21 +347,21 @@ namespace Xamarin.Forms.Xaml
 			//If it's a BindableProberty, SetValue
 			if (xpe == null && TrySetValue(xamlelement, property, attached, value, lineInfo, serviceProvider, out xpe)) {
 				if (!(node is ValueNode) && value != null && !value.GetType().GetTypeInfo().IsValueType && XamlFilePathAttribute.GetFilePathForObject(context.RootElement) is string path)
-					VisualDiagnostics.RegisterSourceInfo(value, new Uri(path, UriKind.Relative), ((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition);
+					VisualDiagnostics.RegisterSourceInfo(value, new Uri($"{path};assembly={context.RootAssembly.GetName().Name}", UriKind.Relative), ((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition);
 				return;
 			}
 
 			//If we can assign that value to a normal property, let's do it
 			if (xpe == null && TrySetProperty(xamlelement, localName, value, lineInfo, serviceProvider, context, out xpe)) {
 				if (!(node is ValueNode) && value != null && !value.GetType().GetTypeInfo().IsValueType && XamlFilePathAttribute.GetFilePathForObject(context.RootElement) is string path)
-					VisualDiagnostics.RegisterSourceInfo(value, new Uri(path, UriKind.Relative), ((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition);
+					VisualDiagnostics.RegisterSourceInfo(value, new Uri($"{path};assembly={context.RootAssembly.GetName().Name}", UriKind.Relative), ((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition);
 				return;
 			}
 
 			//If it's an already initialized property, add to it
 			if (xpe == null && TryAddToProperty(xamlelement, propertyName, value, xKey, lineInfo, serviceProvider, context, out xpe)) {
 				if (!(node is ValueNode) && value != null && !value.GetType().GetTypeInfo().IsValueType && XamlFilePathAttribute.GetFilePathForObject(context.RootElement) is string path)
-					VisualDiagnostics.RegisterSourceInfo(value, new Uri(path, UriKind.Relative), ((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition);
+					VisualDiagnostics.RegisterSourceInfo(value, new Uri($"{path};assembly={context.RootAssembly.GetName().Name}", UriKind.Relative), ((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition);
 				return;
 			}
 
