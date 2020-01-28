@@ -12,7 +12,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
 			{
 				Children =
 				{
-					GalleryBuilder.NavButton("Customize SwipeItem Gallery", () => new CustomizeSwipeItemGallery(), Navigation)
+					GalleryBuilder.NavButton("Customize SwipeItem Gallery", () => new CustomizeSwipeItemGallery(), Navigation),
+					GalleryBuilder.NavButton("No Icon or Text SwipeItem Gallery", () => new NoIconTextSwipeItemGallery(), Navigation)
 				}
 			};
 

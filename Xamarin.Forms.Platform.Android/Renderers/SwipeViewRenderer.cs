@@ -607,8 +607,8 @@ namespace Xamarin.Forms.Platform.Android
 
 			int contentHeight = _contentView.Height;
 			int contentWidth = (int)_context.ToPixels(SwipeItemWidth);
-			int iconSize = Math.Min(contentHeight, contentWidth) / 2;
-	
+			int iconSize = formsSwipeItem.IconImageSource != null ? Math.Min(contentHeight, contentWidth) / 2 : 0;
+
 			_ = this.ApplyDrawableAsync(formsSwipeItem, MenuItem.IconImageSourceProperty, Context, drawable =>
 			{
 				drawable.SetBounds(0, 0, iconSize, iconSize);
@@ -616,7 +616,7 @@ namespace Xamarin.Forms.Platform.Android
 				swipeButton.SetCompoundDrawables(null, drawable, null, null);
 			});
 
-			var textSize = (int)swipeButton.TextSize;
+			var textSize = !string.IsNullOrEmpty(formsSwipeItem.Text) ? (int)swipeButton.TextSize : 0;
 			var buttonPadding = (contentHeight - (iconSize + textSize + 6)) / 2;
 			swipeButton.SetPadding(0, buttonPadding, 0, buttonPadding);
 			swipeButton.SetOnTouchListener(null);
