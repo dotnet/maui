@@ -391,6 +391,19 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual("4321", testPage.SomeQueryParameter);
 		}
 
+		[Test]
+		public async Task BasicQueryStringTest()
+		{
+			var shell = new Shell();
+
+			var item = CreateShellItem(shellSectionRoute: "section2");
+			Routing.RegisterRoute("details", typeof(ShellTestPage));
+			shell.Items.Add(item);
+			await shell.GoToAsync(new ShellNavigationState($"details?{nameof(ShellTestPage.SomeQueryParameter)}=1234"));
+			var testPage = (shell.CurrentItem.CurrentItem as IShellSectionController).PresentedPage as ShellTestPage;
+			Assert.AreEqual("1234", testPage.SomeQueryParameter);
+		}
+
 
 		[Test]
 		public async Task NavigationWithQueryStringAndNoDataTemplate()

@@ -406,6 +406,7 @@ namespace Xamarin.Forms
 
 				var isModal = (Shell.GetPresentationMode(content) & PresentationMode.Modal) == PresentationMode.Modal;
 
+				Shell.ApplyQueryAttributes(content, queryData, isLast);
 				if (isModal)
 				{
 					modalPageStacks.Add(content);

@@ -284,32 +284,41 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.IsFalse(page1.Appearing);
 			Assert.IsTrue(page2.Appearing);
 		}
-		
 
-		public class ModalTestPage : ShellLifeCycleTests.LifeCyclePage
+		[Test]
+		public async Task BasicQueryStringTest()
 		{
-			public ModalTestPage()
+			var shell = new Shell();
+
+			var item = CreateShellItem(shellSectionRoute: "section2");
+			shell.Items.Add(item);
+			await shell.GoToAsync(new ShellNavigationState($"ModalTestPage?{nameof(ShellTestPage.SomeQueryParameter)}=1234"));
+			var testPage = (shell.CurrentItem.CurrentItem as IShellSectionController).PresentedPage as ModalTestPageBase;
+			Assert.AreEqual("1234", testPage.SomeQueryParameter);
+		}
+
+
+		[QueryProperty("SomeQueryParameter", "SomeQueryParameter")]
+		public class ModalTestPageBase : ShellLifeCycleTests.LifeCyclePage
+		{
+			public string SomeQueryParameter
 			{
-				Shell.SetPresentationMode(this, PresentationMode.Modal);
+				get;
+				set;
 			}
 
-			protected override void OnAppearing()
+			public ModalTestPageBase()
 			{
-				base.OnAppearing();
+				Shell.SetPresentationMode(this, PresentationMode.Modal);
 			}
 		}
 
-		public class ModalTestPage2 : ShellLifeCycleTests.LifeCyclePage
+		public class ModalTestPage : ModalTestPageBase
 		{
-			public ModalTestPage2()
-			{
-				Shell.SetPresentationMode(this, PresentationMode.Modal);
-			}
+		}
 
-			protected override void OnAppearing()
-			{
-				base.OnAppearing();
-			}
+		public class ModalTestPage2 : ModalTestPageBase
+		{
 		}
 
 		public class ModalNavigationTestPage : NavigationPage
@@ -317,11 +326,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			public ModalNavigationTestPage() : base(new ModalTestPage())
 			{
 				Shell.SetPresentationMode(this, PresentationMode.Modal);
-			}
-
-			protected override void OnAppearing()
-			{
-				base.OnAppearing();
 			}
 		}
 
