@@ -214,6 +214,9 @@ namespace Xamarin.Forms.Maps.UWP
 					case Polygon polygon:
 						nativeMapElement = LoadPolygon(polygon);
 						break;
+					case Circle circle:
+						nativeMapElement = LoadCircle(circle);
+						break;
 				}
 
 				Control.MapElements.Add(nativeMapElement);
@@ -241,6 +244,9 @@ namespace Xamarin.Forms.Maps.UWP
 					break;
 				case Polygon polygon:
 					OnPolygonPropertyChanged(polygon, e);
+					break;
+				case Circle circle:
+					OnCirclePropertyChanged(circle, e);
 					break;
 			}
 		}
@@ -339,6 +345,49 @@ namespace Xamarin.Forms.Maps.UWP
 			else if (e.PropertyName == nameof(Polygon.Geopath))
 			{
 				mapPolygon.Path = PositionsToGeopath(polygon.Geopath);
+			}
+		}
+
+		#endregion
+
+		#region Circles
+
+		protected virtual MapPolygon LoadCircle(Circle circle)
+		{
+			return new MapPolygon()
+			{
+				Path = PositionsToGeopath(circle.ToCircumferencePositions()),
+				StrokeColor = circle.StrokeColor.IsDefault ? Colors.Black : circle.StrokeColor.ToWindowsColor(),
+				StrokeThickness = circle.StrokeWidth,
+				FillColor = circle.FillColor.ToWindowsColor()
+			};
+		}
+
+		void OnCirclePropertyChanged(Circle circle, PropertyChangedEventArgs e)
+		{
+			var mapPolygon = (MapPolygon)circle.MapElementId;
+
+			if (mapPolygon == null)
+			{
+				return;
+			}
+
+			if (e.PropertyName == MapElement.StrokeColorProperty.PropertyName)
+			{
+				mapPolygon.StrokeColor = circle.StrokeColor.IsDefault ? Colors.Black : circle.StrokeColor.ToWindowsColor();
+			}
+			else if (e.PropertyName == MapElement.StrokeWidthProperty.PropertyName)
+			{
+				mapPolygon.StrokeThickness = circle.StrokeWidth;
+			}
+			else if (e.PropertyName == Circle.FillColorProperty.PropertyName)
+			{
+				mapPolygon.FillColor = circle.FillColor.ToWindowsColor();
+			}
+			else if (e.PropertyName == Circle.CenterProperty.PropertyName ||
+					 e.PropertyName == Circle.RadiusProperty.PropertyName)
+			{
+				mapPolygon.Path = PositionsToGeopath(circle.ToCircumferencePositions());
 			}
 		}
 

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 
 namespace Xamarin.Forms.Maps
 {
@@ -46,6 +47,26 @@ namespace Xamarin.Forms.Maps
 				kilometers = 0;
 			}
 			return new Distance(kilometers * MetersPerKilometer);
+		}
+
+		public static Distance BetweenPositions(Position position1, Position position2)
+		{
+			var latitude1 = position1.Latitude.ToRadians();
+			var longitude1 = position1.Longitude.ToRadians();
+
+			var latitude2 = position2.Latitude.ToRadians();
+			var longitude2 = position2.Longitude.ToRadians();
+
+			var distance = Math.Sin((latitude2 - latitude1) / 2.0);
+			distance *= distance;
+
+			var intermediate = Math.Sin((longitude2 - longitude1) / 2.0);
+			intermediate *= intermediate;
+
+			distance = distance + Math.Cos(latitude1) * Math.Cos(latitude2) * intermediate;
+			distance = 2 * GeographyUtils.EarthRadiusKm * Math.Atan2(Math.Sqrt(distance), Math.Sqrt(1 - distance));
+
+			return FromKilometers(distance);
 		}
 
 		public bool Equals(Distance other)

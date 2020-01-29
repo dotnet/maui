@@ -13,6 +13,7 @@
                 <Picker.Items>
                     <x:String>Polyline</x:String>
                     <x:String>Polygon</x:String>
+                    <x:String>Circle</x:String>
                 </Picker.Items>
             </Picker>
             <Button Clicked="AddClicked"

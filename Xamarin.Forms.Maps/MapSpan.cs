@@ -4,8 +4,7 @@ namespace Xamarin.Forms.Maps
 {
 	public sealed class MapSpan
 	{
-		const double EarthRadiusKm = 6371;
-		const double EarthCircumferenceKm = EarthRadiusKm * 2 * Math.PI;
+		const double EarthCircumferenceKm = GeographyUtils.EarthRadiusKm * 2 * Math.PI;
 		const double MinimumRangeDegrees = 0.001 / EarthCircumferenceKm * 360; // 1 meter
 
 		public MapSpan(Position center, double latitudeDegrees, double longitudeDegrees)

@@ -59,6 +59,21 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		public void ConstructFromPositions()
+		{
+			const double EPSILON = 0.001;
+
+			Position position1 = new Position(37.403992, -122.034988);
+			Position position2 = new Position(37.776691, -122.416534);
+
+			Distance distance = Distance.BetweenPositions(position1, position2);
+
+			Assert.True(Math.Abs(distance.Meters - 53363.08) < EPSILON);
+			Assert.True(Math.Abs(distance.Kilometers - 53.36308) < EPSILON);
+			Assert.True(Math.Abs(distance.Miles - 33.15828) < EPSILON);
+		}
+
+		[Test]
 		public void EqualityOp([Range(5, 9)] double x, [Range(5, 9)] double y)
 		{
 			bool result = Distance.FromMeters(x) == Distance.FromMeters(y);

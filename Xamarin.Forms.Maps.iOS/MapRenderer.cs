@@ -531,6 +531,11 @@ namespace Xamarin.Forms.Maps.MacOS
 							.Select(position => new CLLocationCoordinate2D(position.Latitude, position.Longitude))
 							.ToArray());
 						break;
+					case Circle circle:
+						overlay = MKCircle.Circle(
+							new CLLocationCoordinate2D(circle.Center.Latitude, circle.Center.Longitude),
+							circle.Radius.Meters);
+						break;
 				}
 
 				element.MapElementId = overlay;
@@ -566,6 +571,8 @@ namespace Xamarin.Forms.Maps.MacOS
 					return GetViewForPolyline(polyline);
 				case MKPolygon polygon:
 					return GetViewForPolygon(polygon);
+				case MKCircle circle:
+					return GetViewForCircle(circle);
 			}
 
 			return null;
@@ -632,6 +639,39 @@ namespace Xamarin.Forms.Maps.MacOS
 				FillColor = targetPolygon.FillColor.ToNSColor(),
 #endif
 				LineWidth = targetPolygon.StrokeWidth
+			};
+		}
+
+		protected virtual MKCircleRenderer GetViewForCircle(MKCircle mkCircle)
+		{
+			var map = (Map)Element;
+			Circle targetCircle = null;
+
+			for (int i = 0; i < map.MapElements.Count; i++)
+			{
+				var element = map.MapElements[i];
+				if (ReferenceEquals(element.MapElementId, mkCircle))
+				{
+					targetCircle = (Circle)element;
+					break;
+				}
+			}
+
+			if (targetCircle == null)
+			{
+				return null;
+			}
+
+			return new MKCircleRenderer(mkCircle)
+			{
+#if __MOBILE__
+				StrokeColor = targetCircle.StrokeColor.ToUIColor(Color.Black),
+				FillColor = targetCircle.FillColor.ToUIColor(),
+#else
+				StrokeColor = targetCircle.StrokeColor.ToNSColor(Color.Black),
+				FillColor = targetCircle.FillColor.ToNSColor(),
+#endif
+				LineWidth = targetCircle.StrokeWidth
 			};
 		}
 	}

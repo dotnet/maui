@@ -16,13 +16,15 @@ namespace Xamarin.Forms.Controls.GalleryPages
 		enum SelectedElementType
 		{
 			Polyline,
-			Polygon
+			Polygon,
+			Circle
 		}
 
 		SelectedElementType _selectedType;
 
 		Polyline _polyline;
 		Polygon _polygon;
+		Circle _circle;
 
 		Random _random = new Random();
 
@@ -58,8 +60,17 @@ namespace Xamarin.Forms.Controls.GalleryPages
 				}
 			};
 
+			_circle = new Circle
+			{
+				Center = new Position(42.352364, -71.067177),
+				Radius = Distance.FromMiles(100.0),
+				StrokeColor = Color.FromRgb(31, 174, 206),
+				FillColor = Color.FromRgba(31, 174, 206, 127)
+			};
+
 			Map.MapElements.Add(_polyline);
 			Map.MapElements.Add(_polygon);
+			Map.MapElements.Add(_circle);
 
 			ElementPicker.SelectedIndex = 0;
 		}
@@ -73,6 +84,16 @@ namespace Xamarin.Forms.Controls.GalleryPages
 					break;
 				case SelectedElementType.Polygon:
 					_polygon.Geopath.Add(e.Position);
+					break;
+				case SelectedElementType.Circle:
+					if (_circle.Center == default(Position))
+					{
+						_circle.Center = e.Position;
+					}
+					else
+					{
+						_circle.Radius = Distance.BetweenPositions(_circle.Center, e.Position);
+					}
 					break;
 			}
 		}
@@ -91,6 +112,9 @@ namespace Xamarin.Forms.Controls.GalleryPages
 					break;
 				case SelectedElementType.Polygon:
 					Map.MapElements.Add(_polygon = new Polygon());
+					break;
+				case SelectedElementType.Circle:
+					Map.MapElements.Add(_circle = new Circle());
 					break;
 			}
 		}
@@ -115,6 +139,14 @@ namespace Xamarin.Forms.Controls.GalleryPages
 						Map.MapElements.Add(_polygon = new Polygon());
 
 					break;
+				case SelectedElementType.Circle:
+					Map.MapElements.Remove(_circle);
+					_circle = Map.MapElements.OfType<Circle>().LastOrDefault();
+
+					if (_circle == null)
+						Map.MapElements.Add(_circle = new Circle());
+
+					break;
 			}
 		}
 
@@ -128,6 +160,9 @@ namespace Xamarin.Forms.Controls.GalleryPages
 					break;
 				case SelectedElementType.Polygon:
 					_polygon.StrokeColor = newColor;
+					break;
+				case SelectedElementType.Circle:
+					_circle.StrokeColor = newColor;
 					break;
 			}
 		}
@@ -143,6 +178,9 @@ namespace Xamarin.Forms.Controls.GalleryPages
 				case SelectedElementType.Polygon:
 					_polygon.StrokeWidth = newWidth;
 					break;
+				case SelectedElementType.Circle:
+					_circle.StrokeWidth = newWidth;
+					break;
 			}
 		}
 
@@ -153,6 +191,9 @@ namespace Xamarin.Forms.Controls.GalleryPages
 			{
 				case SelectedElementType.Polygon:
 					_polygon.FillColor = newColor;
+					break;
+				case SelectedElementType.Circle:
+					_circle.FillColor = newColor;
 					break;
 			}
 		}
