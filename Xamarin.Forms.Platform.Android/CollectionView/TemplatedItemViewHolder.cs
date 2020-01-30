@@ -43,20 +43,33 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			var template = _template.SelectDataTemplate(itemBindingContext, itemsView);
 
-			if(template != _selectedTemplate)
+			var templateChanging = template != _selectedTemplate;
+
+			if(templateChanging)
 			{
+				// Clean up any content we're still holding on to
 				_itemContentView.Recycle();
+
+				// Create the new content
 				View = (View)template.CreateContent();
+
+				// Set the binding context _before_ we create the renderer; that way, the bound data will be 
+				// available during OnElementChanged
+				View.BindingContext = itemBindingContext;
+
+				// Actually create the native renderer
 				_itemContentView.RealizeContent(View);
 				_selectedTemplate = template;
 			}
 
 			_itemContentView.HandleItemSizingStrategy(reportMeasure, size);
 
-			// Set the binding context before we add it as a child of the ItemsView; otherwise, it will
-			// inherit the ItemsView's binding context
-			View.BindingContext = itemBindingContext;
-
+			if (!templateChanging)
+			{
+				// Same template, new data
+				View.BindingContext = itemBindingContext;
+			}
+			
 			itemsView.AddLogicalChild(View);
 		}
 	}
