@@ -18,7 +18,13 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 				Title = "This is the detail page's Title",
 				Padding = new Thickness(0,20,0,0)
 			};
-			
+
+			void ToggleApplyShadow()
+			{
+				On<iOS>().SetApplyShadow(!On<iOS>().GetApplyShadow());
+				IsPresented = false;
+			}
+
 			var navItems = new List<NavItem>
 			{
 				new NavItem("Display Alert", "\uE171", new Command(() => DisplayAlert("Alert", "This is an alert", "OK"))),
@@ -27,6 +33,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 				new NavItem("Audio", "\uE189", new Command(() => DisplayAlert("Audio", "Never gonna give you up...", "OK"))),
 				new NavItem("Set Detail to Navigation Page", "\uE16F", new Command(() => Detail = CreateNavigationPage())),
 				new NavItem("Set Detail to Content Page", "\uE160", new Command(() => Detail = detail)),
+				new NavItem("Toggle Apply Shadow", "\u2728", new Command(ToggleApplyShadow))
 			};
 
 			var navList = new NavList(navItems);
