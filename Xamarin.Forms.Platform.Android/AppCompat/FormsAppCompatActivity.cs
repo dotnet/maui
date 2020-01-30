@@ -57,6 +57,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		bool _renderersAdded;
 		bool _activityCreated;
+		bool _needMainPageAssign;
 		bool _powerSaveReceiverRegistered;
 		PowerSaveModeBroadcastReceiver _powerSaveModeBroadcastReceiver;
 
@@ -393,6 +394,13 @@ namespace Xamarin.Forms.Platform.Android
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnResume;
 
+			if (_needMainPageAssign)
+			{
+				_needMainPageAssign = false;
+
+				SetMainPage();
+			}
+
 			if (!_powerSaveReceiverRegistered && Forms.IsLollipopOrNewer)
 			{
 				// Start listening for power save mode changes
@@ -449,6 +457,12 @@ namespace Xamarin.Forms.Platform.Android
 			// Activity in pause must not react to application changes
 			if (_currentState >= AndroidApplicationLifecycleState.OnPause)
 			{
+				// If the main page is set after the activity has been paused, delay it to resume step
+				if (args.PropertyName == nameof(_application.MainPage))
+				{
+					_needMainPageAssign = true;
+				}
+
 				return;
 			}
 
