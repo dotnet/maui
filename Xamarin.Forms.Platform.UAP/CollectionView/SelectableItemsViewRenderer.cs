@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Windows.UI.Xaml.Controls;
 using UWPListViewSelectionMode = Windows.UI.Xaml.Controls.ListViewSelectionMode;
+using UWPSelectionChangedEventArgs = Windows.UI.Xaml.Controls.SelectionChangedEventArgs;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -16,12 +18,12 @@ namespace Xamarin.Forms.Platform.UWP
 			if (oldListViewBase != null)
 			{
 				oldListViewBase.ClearValue(ListViewBase.SelectionModeProperty);
-				oldListViewBase.SelectionChanged -= OnNativeSelectionChanged;
+				oldListViewBase.SelectionChanged -= NativeSelectionChanged;
 			}
 
 			if (ItemsView != null)
 			{
-				ItemsView.SelectionChanged -= OnSelectionChanged;
+				ItemsView.SelectionChanged -= FormsSelectionChanged;
 			}
 
 			base.TearDownOldElement(oldElement);
@@ -38,7 +40,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (ItemsView != null)
 			{
-				ItemsView.SelectionChanged += OnSelectionChanged;
+				ItemsView.SelectionChanged += FormsSelectionChanged;
 			}
 
 			var newListViewBase = ListViewBase;
@@ -54,7 +56,7 @@ namespace Xamarin.Forms.Platform.UWP
 							Mode = Windows.UI.Xaml.Data.BindingMode.TwoWay
 						});
 
-				newListViewBase.SelectionChanged += OnNativeSelectionChanged;
+				newListViewBase.SelectionChanged += NativeSelectionChanged;
 			}
 
 			UpdateNativeSelection();
@@ -101,7 +103,7 @@ namespace Xamarin.Forms.Platform.UWP
 								});
 						}
 					}
-					
+
 					break;
 				case UWPListViewSelectionMode.Multiple:
 					ListViewBase.SelectedItems.Clear();
@@ -126,59 +128,63 @@ namespace Xamarin.Forms.Platform.UWP
 			_ignoreNativeSelectionChange = false;
 		}
 
-		void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+		void FormsSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			UpdateNativeSelection();
 		}
 
-		void OnNativeSelectionChanged(object sender, Windows.UI.Xaml.Controls.SelectionChangedEventArgs e)
+		void NativeSelectionChanged(object sender, UWPSelectionChangedEventArgs args)
+		{
+			UpdateFormsSelection();
+		}
+			
+		void UpdateFormsSelection()
 		{
 			if (_ignoreNativeSelectionChange)
 			{
 				return;
 			}
 
-			if (Element is SelectableItemsView selectableItemsView)
+			switch (ListViewBase.SelectionMode)
 			{
-				switch (ListViewBase.SelectionMode)
-				{
-					case UWPListViewSelectionMode.None:
-						break;
-					case UWPListViewSelectionMode.Single:
-						var selectedItem = 
-							ListViewBase.SelectedItem is ItemTemplateContext itemPair ? itemPair.Item : ListViewBase.SelectedItem;
-						selectableItemsView.SelectionChanged -= OnSelectionChanged;
-						selectableItemsView.SetValueFromRenderer(SelectableItemsView.SelectedItemProperty, selectedItem);
-						selectableItemsView.SelectionChanged += OnSelectionChanged;
-						break;
-					case UWPListViewSelectionMode.Multiple:
-						selectableItemsView.SelectionChanged -= OnSelectionChanged;
-
-						ItemsView.SelectedItems.Clear();
-						var selectedItems =
-							ListViewBase.SelectedItems
-								.Select(a =>
-								{
-									var item = a is ItemTemplateContext itemPair1 ? itemPair1.Item : a;
-									return item;
-								})
-								.ToList();
-
-						foreach (var item in selectedItems)
-						{
-							ItemsView.SelectedItems.Add(item);
-						}
-
-						selectableItemsView.SelectionChanged += OnSelectionChanged;
-						break;
-
-					case UWPListViewSelectionMode.Extended:
-						break;
-
-					default:
-						break;
-				}
+				case UWPListViewSelectionMode.None:
+					break;
+				case UWPListViewSelectionMode.Single:
+					UpdateFormsSingleSelection();
+					break;
+				case UWPListViewSelectionMode.Multiple:
+					UpdateFormsMultipleSelection();
+					break;
+				default:
+					break;
 			}
+		}
+
+		void UpdateFormsSingleSelection()
+		{
+			var selectedItem = ListViewBase.SelectedItem is ItemTemplateContext itemPair 
+				? itemPair.Item 
+				: ListViewBase.SelectedItem;
+			
+			ItemsView.SelectionChanged -= FormsSelectionChanged;
+			ItemsView.SelectedItem = selectedItem;
+			ItemsView.SelectionChanged += FormsSelectionChanged;
+		}
+
+		void UpdateFormsMultipleSelection()
+		{
+			ItemsView.SelectionChanged -= FormsSelectionChanged;
+
+			var selection = new List<object>();
+			for (int n = 0; n < ListViewBase.SelectedItems.Count; n++)
+			{
+				var item = ListViewBase.SelectedItems[n];
+				selection.Add(item is ItemTemplateContext itc ? itc.Item : item);
+			}
+
+			ItemsView.UpdateSelectedItems(selection);
+
+			ItemsView.SelectionChanged += FormsSelectionChanged;
 		}
 
 		class SelectionModeConvert : Windows.UI.Xaml.Data.IValueConverter
