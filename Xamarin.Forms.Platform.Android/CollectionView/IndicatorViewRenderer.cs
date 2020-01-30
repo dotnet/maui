@@ -50,6 +50,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public IndicatorViewRenderer(Context context) : base(context)
 		{
+			SetGravity(GravityFlags.Center);
 			_visualElementRenderer = new VisualElementRenderer(this);
 		}
 

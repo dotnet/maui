@@ -398,8 +398,8 @@ namespace Xamarin.Forms.Platform.iOS
 			var titleEdgeInsets = new UIEdgeInsets(spacing, -imageSize.Width, -imageSize.Height, 0.0f);
 			button.TitleEdgeInsets = titleEdgeInsets;
 
-			var labelString = button.TitleLabel.Text;
-			var titleSize = labelString.StringSize(button.TitleLabel.Font);
+			var labelString = button.TitleLabel.Text ?? string.Empty;
+			var titleSize = !string.IsNullOrEmpty(labelString) ? labelString.StringSize(button.TitleLabel.Font) : CGSize.Empty;
 			var imageEdgeInsets = new UIEdgeInsets(-(titleSize.Height + spacing), 0.0f, 0.0f, -titleSize.Width);
 			button.ImageEdgeInsets = imageEdgeInsets;
 		}

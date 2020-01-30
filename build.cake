@@ -29,7 +29,6 @@ PowerShell:
 // TOOLS
 //////////////////////////////////////////////////////////////////////
 #tool nuget:?package=NUnit.ConsoleRunner&version=3.4.0
-#tool nuget:?package=GitVersion.CommandLine&version=4.0.0
 
 //////////////////////////////////////////////////////////////////////
 // ARGUMENTS
@@ -37,12 +36,6 @@ PowerShell:
 
 var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Debug");
-
-var gitVersion = GitVersion();
-var majorMinorPatch = gitVersion.MajorMinorPatch;
-var informationalVersion = gitVersion.InformationalVersion;
-var buildVersion = gitVersion.FullBuildMetaData;
-var nugetversion = Argument<string>("packageVersion", gitVersion.NuGetVersion);
 
 var ANDROID_HOME = EnvironmentVariable ("ANDROID_HOME") ??
     (IsRunningOnWindows () ? "C:\\Program Files (x86)\\Android\\android-sdk\\" : "");
