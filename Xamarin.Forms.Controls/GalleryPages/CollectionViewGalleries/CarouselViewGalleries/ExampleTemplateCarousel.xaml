@@ -18,19 +18,17 @@
                     <Setter Property="Opacity" Value="0.7" />
                 </VisualState.Setters>
             </VisualState>
-			  <VisualState x:Name="VisibleItem">
-                <VisualState.Setters>
-                    <Setter Property="Opacity" Value="0.6" />
-                </VisualState.Setters>
-            </VisualState>
             <VisualState x:Name="DefaultItem">
                 <VisualState.Setters>
-                    <Setter Property="Opacity" Value="0.5" />
+                    <Setter Property="Opacity" Value="0.2" />
                 </VisualState.Setters>
             </VisualState>
         </VisualStateGroup>
     </VisualStateManager.VisualStateGroups>
     <Frame x:Name="frame" HasShadow="True" Padding="0" HorizontalOptions="Center" VerticalOptions="Center" BackgroundColor="Yellow">
-        <Image Source="{Binding FeaturedImage}" InputTransparent="true" Aspect="AspectFit" />
+        <Grid>
+            <Image Source="{Binding FeaturedImage}" InputTransparent="true" Aspect="AspectFit" />
+            <Label Text="{Binding Index}" HorizontalOptions="Center" VerticalOptions="End" ></Label>
+        </Grid>
     </Frame>
 </Grid>

@@ -26,6 +26,8 @@ namespace Xamarin.Forms.Platform.Android
 			RequestLayout();
 		}
 
+		internal IVisualElementRenderer VisualElementRenderer => Content;
+
 		internal void Recycle()
 		{
 			if (Content?.Element != null)
