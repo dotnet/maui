@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:issues="clr-namespace:Xamarin.Forms.Controls.Issues;assembly=Xamarin.Forms.Controls"
+             mc:Ignorable="d"
+             x:Class="Xamarin.Forms.Controls.Issues.Issue4459">
+    <ContentPage.Content>
+        <StackLayout>
+            <Label>Enter a corner radius for each corner and the box view below should update.</Label>
+            <StackLayout Orientation="Horizontal">
+                <Label Text="Top Left"></Label>
+                <Entry x:Name="TopLeft" Text="10" TextChanged="InputView_OnTextChanged"></Entry>
+            </StackLayout>
+
+            <StackLayout Orientation="Horizontal">
+                <Label Text="Top Right"></Label>
+                <Entry x:Name="TopRight" Text="0" TextChanged="InputView_OnTextChanged"></Entry>
+            </StackLayout>
+
+            <StackLayout Orientation="Horizontal">
+                <Label Text="Bottom Right"></Label>
+                <Entry x:Name="BottomRight" Text="10" TextChanged="InputView_OnTextChanged"></Entry>
+            </StackLayout>
+
+            <StackLayout Orientation="Horizontal">
+                <Label Text="Bottom Left"></Label>
+                <Entry x:Name="BottomLeft" Text="0" TextChanged="InputView_OnTextChanged"></Entry>
+            </StackLayout>
+
+            <BoxView x:Name="BoxView" BackgroundColor="#CC3300"
+                     WidthRequest="200"
+                     HeightRequest="100"
+                     CornerRadius="10,0,0,10"
+                     Margin="50"
+            />
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

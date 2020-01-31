@@ -1,13 +1,12 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation.Peers;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Shapes;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	[Obsolete("BoxViewRenderer is obsolete as of version 4.6.0. Please use BoxViewBorderRenderer instead.", false)]
-	public class BoxViewRenderer : ViewRenderer<BoxView, Windows.UI.Xaml.Shapes.Rectangle>
+	public class BoxViewBorderRenderer : ViewRenderer<BoxView, Border>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<BoxView> e)
 		{
@@ -17,7 +16,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (Control == null)
 				{
-					var rect = new Windows.UI.Xaml.Shapes.Rectangle
+					var rect = new Border
 					{
 						DataContext = Element
 					};
@@ -50,10 +49,20 @@ namespace Xamarin.Forms.Platform.UWP
 			return new FrameworkElementAutomationPeer(Control);
 		}
 
-		private void SetCornerRadius(CornerRadius cornerRadius)
+		protected override void UpdateBackgroundColor()
 		{
-			Control.RadiusX = cornerRadius.TopLeft;
-			Control.RadiusY = cornerRadius.BottomRight;
+			//background color change must be handled separately
+			//because the background would protrude through the border if the corners are rounded
+			//as the background would be applied to the renderer's FrameworkElement
+			if (Control == null)
+				return;
+			Color backgroundColor = Element.BackgroundColor;
+			Control.Background = backgroundColor.IsDefault ? null : backgroundColor.ToBrush();
+		}
+
+		void SetCornerRadius(CornerRadius cornerRadius)
+		{
+			Control.CornerRadius = new Windows.UI.Xaml.CornerRadius(cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomRight, cornerRadius.BottomLeft);
 		}
 	}
 }

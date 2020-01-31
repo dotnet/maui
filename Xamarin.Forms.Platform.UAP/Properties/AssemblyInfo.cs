@@ -7,7 +7,7 @@ using Xamarin.Forms.Platform.UWP;
 // Views
 
 [assembly: ExportRenderer(typeof(Layout), typeof(LayoutRenderer))]
-[assembly: ExportRenderer(typeof(BoxView), typeof(BoxViewRenderer))]
+[assembly: ExportRenderer(typeof(BoxView), typeof(BoxViewBorderRenderer))]
 [assembly: ExportRenderer(typeof(Image), typeof(ImageRenderer))]
 [assembly: ExportRenderer(typeof(ImageButton), typeof(ImageButtonRenderer))]
 [assembly: ExportRenderer(typeof(Label), typeof(LabelRenderer))]

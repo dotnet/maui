@@ -119,7 +119,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 	}
 
 
-	public class TextBoxViewRenderer : BoxViewRenderer
+	public class TextBoxViewRenderer : BoxViewBorderRenderer
 	{
 		Canvas m_Canvas;
 
