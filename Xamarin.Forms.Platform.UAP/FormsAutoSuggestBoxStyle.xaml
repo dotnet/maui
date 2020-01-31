@@ -376,22 +376,27 @@
                         ZoomMode="Disabled" />
 						<!-- Converting the TextAlignment set for the control's input text to a HorizontalAlignment 
                             so the PlaceholderText's alignment will match the input text -->
-						<ContentControl x:Name="PlaceholderTextContentPresenter"
-                        Grid.Row="1"
-                        Foreground="{Binding PlaceholderForegroundBrush, RelativeSource={RelativeSource TemplatedParent}}"
-                        Margin="{TemplateBinding BorderThickness}"
-                        Padding="{TemplateBinding Padding}"
-                        IsTabStop="False"
-                        Grid.ColumnSpan="3"
-                        Content="{TemplateBinding PlaceholderText}"
-                        FontFamily="{TemplateBinding FontFamily}"
-                        FontSize="{TemplateBinding FontSize}"
-                        FontStyle="{TemplateBinding FontStyle}"
-                        IsHitTestVisible="False"
-                        HorizontalAlignment="{Binding TextAlignment, 
-                                            RelativeSource={RelativeSource Mode=TemplatedParent}, 
-                                            Converter={StaticResource AlignmentConverter}}" />
-						<!-- We use a custom version of the cancel button so we can control the colors from Forms -->
+                        <ContentPresenter x:Name="PlaceholderTextContentPresenter"
+                            Grid.Row="1"
+                            Foreground="{Binding PlaceholderForegroundBrush, RelativeSource={RelativeSource TemplatedParent}}"
+                            HorizontalAlignment="{Binding TextAlignment, 
+                                                RelativeSource={RelativeSource Mode=TemplatedParent}, 
+                                                Converter={StaticResource AlignmentConverter}}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Margin="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}"
+                            FontFamily="{TemplateBinding FontFamily}"
+                            FontSize="{TemplateBinding FontSize}"
+                            FontStyle="{TemplateBinding FontStyle}"
+                            IsHitTestVisible="False"
+                            Content="{TemplateBinding PlaceholderText}">
+                            <ContentPresenter.ContentTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ElementName=PlaceholderTextContentPresenter, Path=Content}" TextTrimming="CharacterEllipsis"/>
+                                </DataTemplate>
+                            </ContentPresenter.ContentTemplate>
+                        </ContentPresenter>
+                        <!-- We use a custom version of the cancel button so we can control the colors from Forms -->
 						<uwp:FormsCancelButton x:Name="DeleteButton"
                   Grid.Row="1"
                   Style="{StaticResource DeleteButtonStyle}"
