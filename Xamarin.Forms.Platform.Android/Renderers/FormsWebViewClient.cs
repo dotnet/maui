@@ -37,6 +37,18 @@ namespace Xamarin.Forms.Platform.Android
 			if (_renderer == null || string.IsNullOrWhiteSpace(url) || url == WebViewRenderer.AssetBaseUrl)
 				return;
 
+			var cookieManager = CookieManager.Instance;
+			cookieManager.SetAcceptCookie(true);
+			cookieManager.RemoveAllCookie();
+			var cookies = _renderer.Element.Cookies.GetCookies(new System.Uri(url));
+			for (var i = 0; i < (cookies?.Count ?? -1); i++)
+			{
+				string cookieValue = cookies[i].Value;
+				string cookieDomain = cookies[i].Domain;
+				string cookieName = cookies[i].Name;
+				cookieManager.SetCookie(cookieDomain, cookieName + "=" + cookieValue);
+			}
+
 			var cancel = false;
 			if (!url.Equals(_renderer.UrlCanceled, StringComparison.OrdinalIgnoreCase))
 				cancel = SendNavigatingCanceled(url);
