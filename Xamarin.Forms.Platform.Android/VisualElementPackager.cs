@@ -263,7 +263,12 @@ namespace Xamarin.Forms.Platform.Android
 			else
 			{
 				_childViews.Remove(renderer);
-				renderer.View.RemoveFromParent();
+
+				if (renderer.View.IsAlive())
+				{
+					renderer.View.RemoveFromParent();
+				}
+
 				renderer.Dispose();
 			}
 		}
