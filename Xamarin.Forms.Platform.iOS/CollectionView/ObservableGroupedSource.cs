@@ -197,6 +197,14 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 			}
 
+			if (_collectionView.NumberOfSections() == 0)
+			{
+				// Okay, we're going from completely empty to more than 0 items; there's an iOS bug which apparently
+				// will just crash if we call InsertItems here, so we have to do ReloadData.
+				_collectionView.ReloadData();
+				return;
+			}
+
 			_collectionView.InsertSections(CreateIndexSetFrom(startIndex, count));
 		}
 
