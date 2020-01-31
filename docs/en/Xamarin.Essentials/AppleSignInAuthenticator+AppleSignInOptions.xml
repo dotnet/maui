@@ -1,0 +1,74 @@
+<Type Name="AppleSignInAuthenticator+AppleSignInOptions" FullName="Xamarin.Essentials.AppleSignInAuthenticator+AppleSignInOptions">
+  <TypeSignature Language="C#" Value="public class AppleSignInAuthenticator.AppleSignInOptions" />
+  <TypeSignature Language="ILAsm" Value=".class nested public auto ansi beforefieldinit AppleSignInAuthenticator/AppleSignInOptions extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.AppleSignInAuthenticator.AppleSignInOptions" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Native Apple Sign In Options</summary>
+    <remarks>
+      <para />
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public AppleSignInOptions ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.AppleSignInAuthenticator.AppleSignInOptions.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>
+          <para />
+        </summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="IncludeEmailScope">
+      <MemberSignature Language="C#" Value="public bool IncludeEmailScope { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance bool IncludeEmailScope" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.AppleSignInAuthenticator.AppleSignInOptions.IncludeEmailScope" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Request email scope.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="IncludeFullNameScope">
+      <MemberSignature Language="C#" Value="public bool IncludeFullNameScope { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance bool IncludeFullNameScope" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.AppleSignInAuthenticator.AppleSignInOptions.IncludeFullNameScope" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Request full name scope.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

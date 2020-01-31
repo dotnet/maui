@@ -13,15 +13,12 @@ namespace Xamarin.Essentials
 {
     public static partial class Permissions
     {
-        const string appManifestFilename = "AppxManifest.xml";
-        const string appManifestXmlns = "http://schemas.microsoft.com/appx/manifest/foundation/windows10";
-
         public static bool IsCapabilityDeclared(string capabilityName)
         {
-            var doc = XDocument.Load(appManifestFilename, LoadOptions.None);
+            var doc = XDocument.Load(Platform.AppManifestFilename, LoadOptions.None);
             var reader = doc.CreateReader();
             var namespaceManager = new XmlNamespaceManager(reader.NameTable);
-            namespaceManager.AddNamespace("x", appManifestXmlns);
+            namespaceManager.AddNamespace("x", Platform.AppManifestXmlns);
 
             // If the manifest doesn't contain a capability we need, throw
             return (!doc.Root.XPathSelectElements($"//x:DeviceCapability[@Name='{capabilityName}']", namespaceManager)?.Any() ?? false) &&

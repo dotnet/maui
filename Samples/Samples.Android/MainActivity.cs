@@ -1,4 +1,5 @@
 ﻿using Android.App;
+using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
@@ -25,6 +26,13 @@ namespace Samples.Droid
             LoadApplication(new App());
         }
 
+        protected override void OnResume()
+        {
+            base.OnResume();
+
+            Xamarin.Essentials.Platform.OnResume();
+        }
+
         protected override void OnDestroy()
         {
             base.OnDestroy();
@@ -40,5 +48,11 @@ namespace Samples.Droid
 
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
+    }
+
+    [Activity(NoHistory = true, LaunchMode = LaunchMode.SingleTop)]
+    [IntentFilter(new[] { Intent.ActionView }, Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable }, DataScheme = "xamarinessentials")]
+    public class WebAuthenticationCallbackActivity : Xamarin.Essentials.WebAuthenticatorCallbackActivity
+    {
     }
 }

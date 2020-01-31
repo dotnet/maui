@@ -79,6 +79,9 @@ namespace Xamarin.Essentials
         public static void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults) =>
             Permissions.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
+        public static void OnResume() =>
+            WebAuthenticator.OnResume(null);
+
         internal static bool HasSystemFeature(string systemFeature)
         {
             var packageManager = AppContext.PackageManager;

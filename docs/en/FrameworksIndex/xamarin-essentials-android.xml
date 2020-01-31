@@ -47,6 +47,14 @@
       <Member Id="P:Xamarin.Essentials.AppInfo.Version" />
       <Member Id="P:Xamarin.Essentials.AppInfo.VersionString" />
     </Type>
+    <Type Name="Xamarin.Essentials.AppleSignInAuthenticator" Id="T:Xamarin.Essentials.AppleSignInAuthenticator">
+      <Member Id="M:Xamarin.Essentials.AppleSignInAuthenticator.AuthenticateAsync(Xamarin.Essentials.AppleSignInAuthenticator.AppleSignInOptions)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.AppleSignInAuthenticator/AppleSignInOptions" Id="T:Xamarin.Essentials.AppleSignInAuthenticator.AppleSignInOptions">
+      <Member Id="M:Xamarin.Essentials.AppleSignInAuthenticator.AppleSignInOptions.#ctor" />
+      <Member Id="P:Xamarin.Essentials.AppleSignInAuthenticator.AppleSignInOptions.IncludeEmailScope" />
+      <Member Id="P:Xamarin.Essentials.AppleSignInAuthenticator.AppleSignInOptions.IncludeFullNameScope" />
+    </Type>
     <Type Name="Xamarin.Essentials.AppTheme" Id="T:Xamarin.Essentials.AppTheme">
       <Member Id="F:Xamarin.Essentials.AppTheme.Dark" />
       <Member Id="F:Xamarin.Essentials.AppTheme.Light" />
@@ -668,6 +676,7 @@
       <Member Id="M:Xamarin.Essentials.Platform.Init(Android.App.Activity,Android.OS.Bundle)" />
       <Member Id="M:Xamarin.Essentials.Platform.Init(Android.App.Application)" />
       <Member Id="M:Xamarin.Essentials.Platform.OnRequestPermissionsResult(System.Int32,System.String[],Android.Content.PM.Permission[])" />
+      <Member Id="M:Xamarin.Essentials.Platform.OnResume" />
       <Member Id="M:Xamarin.Essentials.Platform.WaitForActivityAsync(System.Threading.CancellationToken)" />
       <Member Id="P:Xamarin.Essentials.Platform.AppContext" />
       <Member Id="P:Xamarin.Essentials.Platform.CurrentActivity" />
@@ -845,6 +854,27 @@
       <Member Id="M:Xamarin.Essentials.Vibration.Vibrate" />
       <Member Id="M:Xamarin.Essentials.Vibration.Vibrate(System.Double)" />
       <Member Id="M:Xamarin.Essentials.Vibration.Vibrate(System.TimeSpan)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.WebAuthenticator" Id="T:Xamarin.Essentials.WebAuthenticator">
+      <Member Id="M:Xamarin.Essentials.WebAuthenticator.AuthenticateAsync(System.Uri,System.Uri)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.WebAuthenticatorCallbackActivity" Id="T:Xamarin.Essentials.WebAuthenticatorCallbackActivity">
+      <Member Id="M:Xamarin.Essentials.WebAuthenticatorCallbackActivity.#ctor" />
+      <Member Id="M:Xamarin.Essentials.WebAuthenticatorCallbackActivity.OnCreate(Android.OS.Bundle)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.WebAuthenticatorResult" Id="T:Xamarin.Essentials.WebAuthenticatorResult">
+      <Member Id="M:Xamarin.Essentials.WebAuthenticatorResult.#ctor" />
+      <Member Id="M:Xamarin.Essentials.WebAuthenticatorResult.#ctor(System.Collections.Generic.IDictionary{System.String,System.String})" />
+      <Member Id="M:Xamarin.Essentials.WebAuthenticatorResult.#ctor(System.Uri)" />
+      <Member Id="M:Xamarin.Essentials.WebAuthenticatorResult.Get(System.String)" />
+      <Member Id="M:Xamarin.Essentials.WebAuthenticatorResult.Put(System.String,System.String)" />
+      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.AccessToken" />
+      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.ExpiresIn" />
+      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.Properties" />
+      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.RefreshToken" />
+      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.RefreshTokenExpiresIn" />
+      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.Timestamp" />
+      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.TokenType" />
     </Type>
   </Namespace>
 </Framework>

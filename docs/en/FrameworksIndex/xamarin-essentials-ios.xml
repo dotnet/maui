@@ -34,6 +34,14 @@
       <Member Id="P:Xamarin.Essentials.AppInfo.Version" />
       <Member Id="P:Xamarin.Essentials.AppInfo.VersionString" />
     </Type>
+    <Type Name="Xamarin.Essentials.AppleSignInAuthenticator" Id="T:Xamarin.Essentials.AppleSignInAuthenticator">
+      <Member Id="M:Xamarin.Essentials.AppleSignInAuthenticator.AuthenticateAsync(Xamarin.Essentials.AppleSignInAuthenticator.AppleSignInOptions)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.AppleSignInAuthenticator/AppleSignInOptions" Id="T:Xamarin.Essentials.AppleSignInAuthenticator.AppleSignInOptions">
+      <Member Id="M:Xamarin.Essentials.AppleSignInAuthenticator.AppleSignInOptions.#ctor" />
+      <Member Id="P:Xamarin.Essentials.AppleSignInAuthenticator.AppleSignInOptions.IncludeEmailScope" />
+      <Member Id="P:Xamarin.Essentials.AppleSignInAuthenticator.AppleSignInOptions.IncludeFullNameScope" />
+    </Type>
     <Type Name="Xamarin.Essentials.AppTheme" Id="T:Xamarin.Essentials.AppTheme">
       <Member Id="F:Xamarin.Essentials.AppTheme.Dark" />
       <Member Id="F:Xamarin.Essentials.AppTheme.Light" />
@@ -669,6 +677,7 @@
     </Type>
     <Type Name="Xamarin.Essentials.Platform" Id="T:Xamarin.Essentials.Platform">
       <Member Id="M:Xamarin.Essentials.Platform.GetCurrentUIViewController" />
+      <Member Id="M:Xamarin.Essentials.Platform.OpenUrl(UIKit.UIApplication,Foundation.NSUrl,Foundation.NSDictionary)" />
     </Type>
     <Type Name="Xamarin.Essentials.PointExtensions" Id="T:Xamarin.Essentials.PointExtensions">
       <Member Id="M:Xamarin.Essentials.PointExtensions.ToSystemPoint(CoreGraphics.CGPoint)" />
@@ -845,6 +854,23 @@
       <Member Id="M:Xamarin.Essentials.Vibration.Vibrate" />
       <Member Id="M:Xamarin.Essentials.Vibration.Vibrate(System.Double)" />
       <Member Id="M:Xamarin.Essentials.Vibration.Vibrate(System.TimeSpan)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.WebAuthenticator" Id="T:Xamarin.Essentials.WebAuthenticator">
+      <Member Id="M:Xamarin.Essentials.WebAuthenticator.AuthenticateAsync(System.Uri,System.Uri)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.WebAuthenticatorResult" Id="T:Xamarin.Essentials.WebAuthenticatorResult">
+      <Member Id="M:Xamarin.Essentials.WebAuthenticatorResult.#ctor" />
+      <Member Id="M:Xamarin.Essentials.WebAuthenticatorResult.#ctor(System.Collections.Generic.IDictionary{System.String,System.String})" />
+      <Member Id="M:Xamarin.Essentials.WebAuthenticatorResult.#ctor(System.Uri)" />
+      <Member Id="M:Xamarin.Essentials.WebAuthenticatorResult.Get(System.String)" />
+      <Member Id="M:Xamarin.Essentials.WebAuthenticatorResult.Put(System.String,System.String)" />
+      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.AccessToken" />
+      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.ExpiresIn" />
+      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.Properties" />
+      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.RefreshToken" />
+      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.RefreshTokenExpiresIn" />
+      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.Timestamp" />
+      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.TokenType" />
     </Type>
   </Namespace>
 </Framework>
