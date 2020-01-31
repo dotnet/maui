@@ -598,7 +598,7 @@ namespace Xamarin.Forms.Platform.Android
 			var swipeButton = new AButton(_context)
 			{
 				Background = new ColorDrawable(formsSwipeItem.BackgroundColor.ToAndroid()),
-				Text = formsSwipeItem.Text
+				Text = formsSwipeItem.Text ?? string.Empty
 			};
 
 			var textColor = GetSwipeItemColor(formsSwipeItem.BackgroundColor);
@@ -616,7 +616,7 @@ namespace Xamarin.Forms.Platform.Android
 				swipeButton.SetCompoundDrawables(null, drawable, null, null);
 			});
 
-			var textSize = !string.IsNullOrEmpty(formsSwipeItem.Text) ? (int)swipeButton.TextSize : 0;
+			var textSize = !string.IsNullOrEmpty(swipeButton.Text) ? (int)swipeButton.TextSize : 0;
 			var buttonPadding = (contentHeight - (iconSize + textSize + 6)) / 2;
 			swipeButton.SetPadding(0, buttonPadding, 0, buttonPadding);
 			swipeButton.SetOnTouchListener(null);
