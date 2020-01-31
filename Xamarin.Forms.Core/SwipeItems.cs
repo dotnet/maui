@@ -1,18 +1,25 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Linq;
 
 namespace Xamarin.Forms
 {
 	public class SwipeItems : Element, IList<ISwipeItem>, INotifyCollectionChanged
 	{
-		readonly ObservableCollection<ISwipeItem> _internal;
+		readonly ObservableCollection<ISwipeItem> _swipeItems;
 
-		public SwipeItems()
+		public SwipeItems(IEnumerable<ISwipeItem> swipeItems)
 		{
-			_internal = new ObservableCollection<ISwipeItem>();
-			_internal.CollectionChanged += OnSwipeItemsChanged;
+			_swipeItems = new ObservableCollection<ISwipeItem>(swipeItems) ?? throw new ArgumentNullException(nameof(swipeItems));
+			_swipeItems.CollectionChanged += OnSwipeItemsChanged;
+		}
+
+		public SwipeItems() : this(Enumerable.Empty<ISwipeItem>())
+		{
+
 		}
 
 		public static readonly BindableProperty ModeProperty = BindableProperty.Create(nameof(Mode), typeof(SwipeMode), typeof(SwipeItems), SwipeMode.Reveal);
@@ -32,63 +39,63 @@ namespace Xamarin.Forms
 
 		public event NotifyCollectionChangedEventHandler CollectionChanged
 		{
-			add { _internal.CollectionChanged += value; }
-			remove { _internal.CollectionChanged -= value; }
+			add { _swipeItems.CollectionChanged += value; }
+			remove { _swipeItems.CollectionChanged -= value; }
 		}
 
 		public ISwipeItem this[int index]
 		{
-			get => _internal.Count > index ? _internal[index] : null;
-			set => _internal[index] = value;
+			get => _swipeItems.Count > index ? _swipeItems[index] : null;
+			set => _swipeItems[index] = value;
 		}
 
-		public int Count => _internal.Count;
+		public int Count => _swipeItems.Count;
 
 		public bool IsReadOnly => false;
 
 		public void Add(ISwipeItem item)
 		{
-			_internal.Add(item);
+			_swipeItems.Add(item);
 		}
 
 		public void Clear()
 		{
-			_internal.Clear();
+			_swipeItems.Clear();
 		}
 
 		public bool Contains(ISwipeItem item)
 		{
-			return _internal.Contains(item);
+			return _swipeItems.Contains(item);
 		}
 
 		public void CopyTo(ISwipeItem[] array, int arrayIndex)
 		{
-			_internal.CopyTo(array, arrayIndex);
+			_swipeItems.CopyTo(array, arrayIndex);
 		}
 
 		public IEnumerator<ISwipeItem> GetEnumerator()
 		{
-			return _internal.GetEnumerator();
+			return _swipeItems.GetEnumerator();
 		}
 
 		public int IndexOf(ISwipeItem item)
 		{
-			return _internal.IndexOf(item);
+			return _swipeItems.IndexOf(item);
 		}
 
 		public void Insert(int index, ISwipeItem item)
 		{
-			_internal.Insert(index, item);
+			_swipeItems.Insert(index, item);
 		}
 
 		public bool Remove(ISwipeItem item)
 		{
-			return _internal.Remove(item);
+			return _swipeItems.Remove(item);
 		}
 
 		public void RemoveAt(int index)
 		{
-			_internal.RemoveAt(index);
+			_swipeItems.RemoveAt(index);
 		}
 
 		protected override void OnBindingContextChanged()
@@ -97,7 +104,7 @@ namespace Xamarin.Forms
 
 			object bc = BindingContext;
 
-			foreach (BindableObject item in _internal)
+			foreach (BindableObject item in _swipeItems)
 				SetInheritedBindingContext(item, bc);
 		}
 
@@ -114,7 +121,7 @@ namespace Xamarin.Forms
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			return _internal.GetEnumerator();
+			return _swipeItems.GetEnumerator();
 		}
 	}
 }
