@@ -69,6 +69,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		bool _isAttachedToWindow;
 		Platform _platform;
 		string _defaultNavigationContentDescription;
+		List<IMenuItem> _currentMenuItems = new List<IMenuItem>();
 
 		// The following is based on https://android.googlesource.com/platform/frameworks/support.git/+/4a7e12af4ec095c3a53bb8481d8d92f63157c3b7/v4/java/android/support/v4/app/FragmentManager.java#677
 		// Must be overriden in a custom renderer to match durations in XML animation resource files
@@ -183,7 +184,13 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			if (disposing)
 			{
 				Device.Info.PropertyChanged -= DeviceInfoPropertyChanged;
-			
+
+				if (_currentMenuItems != null)
+				{
+					_currentMenuItems.Clear();
+					_currentMenuItems = null;
+				}
+
 				if (NavigationPageController != null)
 				{
 					var navController = NavigationPageController;
@@ -571,11 +578,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				ResetToolbar();
 		}
 
-		protected virtual void OnToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			_toolbar.OnToolbarItemPropertyChanged(e, _toolbarTracker?.ToolbarItems, Context, null, OnToolbarItemPropertyChanged);
-		}
-
 		void InsertPageBefore(Page page, Page before)
 		{
 			if (!_isAttachedToWindow)
@@ -916,14 +918,22 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		void UpdateMenu()
 		{
-			if (_disposed)
+			if (_disposed || _currentMenuItems == null)
 				return;
 
-			_toolbar.UpdateMenuItems(_toolbarTracker?.ToolbarItems, Context, null, OnToolbarItemPropertyChanged);
+			_currentMenuItems.Clear();
+			_currentMenuItems = new List<IMenuItem>();
+			_toolbar.UpdateMenuItems(_toolbarTracker?.ToolbarItems, Context, null, OnToolbarItemPropertyChanged, _currentMenuItems, UpdateMenuItemIcon);
 		}
+
+		protected virtual void OnToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			_toolbar.OnToolbarItemPropertyChanged(e, (ToolbarItem)sender, _toolbarTracker?.ToolbarItems, Context, null, OnToolbarItemPropertyChanged, _currentMenuItems, UpdateMenuItemIcon);
+		}
+
 		protected virtual void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem)
 		{
-			ToolbarExtensions.UpdateMenuItemIcon(context, menuItem, toolBarItem, null);
+			ToolbarExtensions.UpdateMenuItemIcon(context, _toolbar.Menu, _currentMenuItems, menuItem, toolBarItem, null);
 		}
 
 		void UpdateToolbar()

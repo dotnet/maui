@@ -15,5 +15,18 @@ namespace Xamarin.Forms.Platform.Android
 
 			return !obj.IsDisposed();
 		}
+
+		public static bool IsDisposed(this global::Android.Runtime.IJavaObject obj)
+		{
+			return obj.Handle == IntPtr.Zero;
+		}
+
+		public static bool IsAlive(this global::Android.Runtime.IJavaObject obj)
+		{
+			if (obj == null)
+				return false;
+
+			return !obj.IsDisposed();
+		}
 	}
 }

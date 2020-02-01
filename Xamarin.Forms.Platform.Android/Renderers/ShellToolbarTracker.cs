@@ -32,6 +32,7 @@ using R = Android.Resource;
 using ATextView = global::Android.Widget.TextView;
 using AColor = Android.Graphics.Color;
 using Xamarin.Forms.Internals;
+using System.Collections.Generic;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -67,6 +68,7 @@ namespace Xamarin.Forms.Platform.Android
 		AppBarLayout _appBar;
 		float _appBarElevation;
 		GenericGlobalLayoutListener _globalLayoutListener;
+		List<IMenuItem> _currentMenuItems = new List<IMenuItem>();
 
 		public ShellToolbarTracker(IShellContext shellContext, Toolbar toolbar, DrawerLayout drawerLayout)
 		{
@@ -182,9 +184,13 @@ namespace Xamarin.Forms.Platform.Android
 					_searchView.Dispose();
 				}
 
+				if (_currentMenuItems != null)
+					_currentMenuItems.Clear();
+
 				_drawerToggle?.Dispose();
 			}
 
+			_currentMenuItems = null;
 			_globalLayoutListener = null;
 			_backButtonBehavior = null;
 			SearchHandler = null;
@@ -503,7 +509,8 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			var menu = toolbar.Menu;
 			var sortedItems = System.Linq.Enumerable.OrderBy(page.ToolbarItems, x => x.Order);
-			toolbar.UpdateMenuItems(sortedItems, _shellContext.AndroidContext, TintColor, OnToolbarItemPropertyChanged);
+
+			toolbar.UpdateMenuItems(sortedItems, _shellContext.AndroidContext, TintColor, OnToolbarItemPropertyChanged, _currentMenuItems);
 
 			SearchHandler = Shell.GetSearchHandler(page);
 			if (SearchHandler != null && SearchHandler.SearchBoxVisibility != SearchBoxVisibility.Hidden)
@@ -567,7 +574,7 @@ namespace Xamarin.Forms.Platform.Android
 		void OnToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			var sortedItems = System.Linq.Enumerable.OrderBy(Page.ToolbarItems, x => x.Order);
-			_toolbar.OnToolbarItemPropertyChanged(e, sortedItems, _shellContext.AndroidContext, TintColor, OnToolbarItemPropertyChanged);
+			_toolbar.OnToolbarItemPropertyChanged(e, (ToolbarItem)sender, sortedItems, _shellContext.AndroidContext, TintColor, OnToolbarItemPropertyChanged, _currentMenuItems);
 		}
 
 		void OnSearchViewAttachedToWindow(object sender, AView.ViewAttachedToWindowEventArgs e)
