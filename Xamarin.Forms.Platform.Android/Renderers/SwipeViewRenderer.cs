@@ -510,6 +510,31 @@ namespace Xamarin.Forms.Platform.Android
 					break;
 			}
 
+			if (swipeOffset == 0)
+				swipeOffset = GetSwipeContentOffset();
+
+			return swipeOffset;
+		}
+
+		float GetSwipeContentOffset()
+		{
+			float swipeOffset = 0;
+
+			if (_contentView != null)
+			{
+				switch (_swipeDirection)
+				{
+					case SwipeDirection.Left:
+					case SwipeDirection.Right:
+						swipeOffset = _contentView.TranslationX;
+						break;
+					case SwipeDirection.Up:
+					case SwipeDirection.Down:
+						swipeOffset = _contentView.TranslationY;
+						break;
+				}
+			}
+
 			return swipeOffset;
 		}
 
