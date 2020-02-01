@@ -221,8 +221,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 				if (!Forms.IsiOS11OrNewer)
 					safeAreaInsets = new UIEdgeInsets(UIApplication.SharedApplication.StatusBarFrame.Size.Height, 0, 0, 0);
-				else if (UIApplication.SharedApplication.KeyWindow != null)
-					safeAreaInsets = UIApplication.SharedApplication.KeyWindow.SafeAreaInsets;
+				else if (UIApplication.SharedApplication.GetKeyWindow() != null)
+					safeAreaInsets = UIApplication.SharedApplication.GetKeyWindow().SafeAreaInsets;
 				else if (UIApplication.SharedApplication.Windows.Length > 0)
 					safeAreaInsets = UIApplication.SharedApplication.Windows[0].SafeAreaInsets;
 				else
@@ -563,7 +563,7 @@ namespace Xamarin.Forms.Platform.iOS
 			});
 
 			MessagingCenter.Subscribe(this, Page.AlertSignalName, (Page sender, AlertArguments arguments) =>
-			{
+			{	
 				if (!PageIsChildOfPlatform(sender))
 					return;
 				PresentAlert(arguments);

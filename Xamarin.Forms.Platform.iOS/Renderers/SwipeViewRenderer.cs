@@ -984,7 +984,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		UIViewController GetViewController()
 		{
-			var window = UIApplication.SharedApplication.KeyWindow;
+			var window = UIApplication.SharedApplication.GetKeyWindow();
 			var viewController = window.RootViewController;
 
 			while (viewController.PresentedViewController != null)

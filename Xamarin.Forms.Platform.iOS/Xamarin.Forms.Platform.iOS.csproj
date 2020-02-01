@@ -244,6 +244,7 @@
     <Compile Include="Renderers\ShellNavBarAppearanceTracker.cs" />
     <Compile Include="Renderers\IndicatorViewRenderer.cs" />
     <Compile Include="Renderers\SwipeViewRenderer.cs" />
+    <Compile Include="Extensions\UIApplicationExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\StringResources.ar.resx" />
