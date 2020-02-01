@@ -16,7 +16,6 @@ using AButton = Android.Support.V7.Widget.AppCompatButton;
 using Android.Support.V7.Widget;
 #endif
 using Android.Views;
-using Android.Widget;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using APointF = Android.Graphics.PointF;
@@ -32,10 +31,11 @@ namespace Xamarin.Forms.Platform.Android
 		const int SwipeThresholdMargin = 0;
 		const int SwipeItemWidth = 100;
 		const long SwipeAnimationDuration = 200;
+		const double SwipeMinimumDelta = 10;
 
 		readonly Context _context;
 		GestureDetector _detector;
-		AView _scrollParent;
+		View _scrollParent;
 		AView _contentView;
 		LinearLayoutCompat _actionView;
 		SwipeTransitionMode _swipeTransitionMode;
@@ -48,6 +48,8 @@ namespace Xamarin.Forms.Platform.Android
 		SwipeDirection? _swipeDirection;
 		float _swipeOffset;
 		float _swipeThreshold;
+		double _previousScrollX;
+		double _previousScrollY;
 		bool _isDisposed;
 
 		public SwipeViewRenderer(Context context) : base(context)
@@ -56,7 +58,8 @@ namespace Xamarin.Forms.Platform.Android
 			_context = context;
 
 			AutoPackage = false;
-			ClipToOutline = true;
+
+			this.SetClipToOutline(true, Element);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<SwipeView> e)
@@ -147,29 +150,29 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			base.OnAttachedToWindow();
 
-			if (Forms.IsLollipopOrNewer && Control != null)
+			if (Element != null && _scrollParent == null)
 			{
-				_scrollParent = Parent.GetParentOfType<NestedScrollView>();
+				_scrollParent = Element.FindParentOfType<ScrollView>();
 
-				if (_scrollParent != null)
+				if (_scrollParent is ScrollView scrollView)
 				{
-					_scrollParent.ScrollChange += OnParentScrollChange;
+					scrollView.Scrolled += OnParentScrolled;
 					return;
 				}
 
-				_scrollParent = Parent.GetParentOfType<AbsListView>();
+				_scrollParent = Element.FindParentOfType<ListView>();
 
-				if (_scrollParent is AbsListView listView)
+				if (_scrollParent is ListView listView)
 				{
-					listView.ScrollStateChanged += OnParentScrollStateChanged;
+					listView.Scrolled += OnParentScrolled;
 					return;
 				}
 
-				_scrollParent = Parent.GetParentOfType<RecyclerView>();
+				_scrollParent = Element.FindParentOfType<Xamarin.Forms.CollectionView>();
 
-				if (_scrollParent != null)
+				if (_scrollParent is Xamarin.Forms.CollectionView collectionView)
 				{
-					_scrollParent.ScrollChange += OnParentScrollChange;
+					collectionView.Scrolled += OnParentScrolled;
 				}
 			}
 		}
@@ -194,12 +197,14 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (_scrollParent != null)
 				{
-					if (_scrollParent is AbsListView listView)
-						listView.ScrollStateChanged += OnParentScrollStateChanged;
-					else
-						_scrollParent.ScrollChange -= OnParentScrollChange;
+					if (_scrollParent is ScrollView scrollView)
+						scrollView.Scrolled -= OnParentScrolled;
 
-					_scrollParent = null;
+					if (_scrollParent is ListView listView)
+						listView.Scrolled -= OnParentScrolled;
+
+					if (_scrollParent is Xamarin.Forms.CollectionView collectionView)
+						collectionView.Scrolled -= OnParentScrolled;
 				}
 
 				if (_contentView != null)
@@ -230,7 +235,7 @@ namespace Xamarin.Forms.Platform.Android
 			float x = Math.Abs((_downX - e.GetX()) / density);
 			float y = Math.Abs((_downY - e.GetY()) / density);
 
-			if (e.Action != MotionEventActions.Move | (x > 10f || y > 10f))
+			if (e.Action != MotionEventActions.Move | (x > SwipeMinimumDelta || y > SwipeMinimumDelta))
 			{
 				_detector.OnTouchEvent(e);
 			}
@@ -1078,28 +1083,21 @@ namespace Xamarin.Forms.Platform.Android
 			ResetSwipe();
 		}
 
-		void OnParentScrollChange(object sender, ScrollChangeEventArgs e)
+		void OnParentScrolled(object sender, ScrolledEventArgs e)
 		{
-			if (sender is RecyclerView recyclerView)
-			{
-				var scrollState = (ScrollState)recyclerView.ScrollState;
+			var horizontalDelta = e.ScrollX - _previousScrollX;
+			var verticalDelta = e.ScrollY - _previousScrollY;
 
-				if (scrollState == ScrollState.Fling || scrollState == ScrollState.TouchScroll)
-					ResetSwipe();
-			}
-			else
-			{
-				var x = Math.Abs(e.ScrollX - e.OldScrollX);
-				var y = Math.Abs(e.ScrollY - e.OldScrollY);
+			if (horizontalDelta > SwipeMinimumDelta || verticalDelta > SwipeMinimumDelta)
+				ResetSwipe();
 
-				if (x > 10 || y > 10)
-					ResetSwipe();
-			}
+			_previousScrollX = e.ScrollX;
+			_previousScrollY = e.ScrollY;
 		}
 
-		void OnParentScrollStateChanged(object sender, AbsListView.ScrollStateChangedEventArgs e)
+		void OnParentScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
-			if (e.ScrollState == ScrollState.Fling || e.ScrollState == ScrollState.TouchScroll)
+			if (e.HorizontalDelta > SwipeMinimumDelta || e.VerticalDelta > SwipeMinimumDelta)
 				ResetSwipe();
 		}
 
