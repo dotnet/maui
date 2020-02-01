@@ -31,6 +31,8 @@ namespace Xamarin.Forms
 
 		static readonly IList<object> s_empty = new List<object>(0);
 
+		bool _suppressSelectionChangeNotification;
+
 		public SelectableItemsView()
 		{
 		}
@@ -67,6 +69,27 @@ namespace Xamarin.Forms
 
 		public event EventHandler<SelectionChangedEventArgs> SelectionChanged;
 
+		public void UpdateSelectedItems(IList<object> newSelection) 
+		{
+			var oldSelection = new List<object>(SelectedItems);
+			
+			_suppressSelectionChangeNotification = true;
+			
+			SelectedItems.Clear();
+
+			if (newSelection?.Count > 0)
+			{
+				for (int n = 0; n < newSelection.Count; n++)
+				{
+					SelectedItems.Add(newSelection[n]);
+				}
+			}
+
+			_suppressSelectionChangeNotification = false;
+
+			SelectedItemsPropertyChanged(oldSelection, newSelection);
+		}
+
 		protected virtual void OnSelectionChanged(SelectionChangedEventArgs args)
 		{
 		}
@@ -102,6 +125,11 @@ namespace Xamarin.Forms
 
 		internal void SelectedItemsPropertyChanged(IList<object> oldSelection, IList<object> newSelection)
 		{
+			if (_suppressSelectionChangeNotification)
+			{
+				return;
+			}
+
 			SelectionPropertyChanged(this, new SelectionChangedEventArgs(oldSelection, newSelection));
 			
 			OnPropertyChanged(SelectedItemsProperty.PropertyName);
@@ -120,9 +148,8 @@ namespace Xamarin.Forms
 					command.Execute(commandParameter);
 				}
 			}
-			
-			selectableItemsView.SelectionChanged?.Invoke(selectableItemsView, args);
 
+			selectableItemsView.SelectionChanged?.Invoke(selectableItemsView, args);
 			selectableItemsView.OnSelectionChanged(args);
 		}
 
@@ -185,7 +212,6 @@ namespace Xamarin.Forms
 			}
 
 			var args = new SelectionChangedEventArgs(previousSelection, newSelection);
-
 			SelectionPropertyChanged(selectableItemsView, args);
 		}
 	}

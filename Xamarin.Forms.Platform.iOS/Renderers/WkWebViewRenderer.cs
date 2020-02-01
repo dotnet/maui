@@ -374,7 +374,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (cancelAction != null)
 					AddCancelAction(controller, () => cancelAction(controller));
 
-				GetTopViewController(UIApplication.SharedApplication.KeyWindow.RootViewController)
+				GetTopViewController(UIApplication.SharedApplication.GetKeyWindow().RootViewController)
 					.PresentViewController(controller, true, null);
 			}
 

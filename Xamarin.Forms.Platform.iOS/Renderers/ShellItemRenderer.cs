@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using Foundation;
+using ObjCRuntime;
 using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	public class ShellItemRenderer : UITabBarController, IShellItemRenderer, IAppearanceObserver
+	public class ShellItemRenderer : UITabBarController, IShellItemRenderer, IAppearanceObserver, IUINavigationControllerDelegate
 	{
 		#region IShellItemRenderer
 
@@ -68,9 +70,26 @@ namespace Xamarin.Forms.Platform.iOS
 				{
 					ShellItem.SetValueFromRenderer(ShellItem.CurrentItemProperty, renderer.ShellSection);
 					CurrentRenderer = renderer;
+					MoreNavigationController?.PopToRootViewController(false);
+				}
+
+				if (ReferenceEquals(value, MoreNavigationController))
+				{
+					MoreNavigationController.WeakDelegate = this;
 				}
 			}
-		}		
+		}
+
+		[Export("navigationController:didShowViewController:animated:")]
+		public virtual void DidShowViewController(UINavigationController navigationController, [Transient]UIViewController viewController, bool animated)
+		{
+			var renderer = RendererForViewController(this.SelectedViewController);
+			if (renderer != null)
+			{
+				ShellItem.SetValueFromRenderer(ShellItem.CurrentItemProperty, renderer.ShellSection);
+				CurrentRenderer = renderer;
+			}
+		}
 
 		public override void ViewDidLayoutSubviews()
 		{
@@ -145,6 +164,7 @@ namespace Xamarin.Forms.Platform.iOS
 					if (renderer != null)
 					{
 						ViewControllers = ViewControllers.Remove(renderer.ViewController);
+						CustomizableViewControllers = Array.Empty<UIViewController>();
 						RemoveRenderer(renderer);
 					}
 				}
@@ -181,6 +201,7 @@ namespace Xamarin.Forms.Platform.iOS
 				}
 
 				ViewControllers = viewControllers;
+				CustomizableViewControllers = Array.Empty<UIViewController>();
 
 				if (goTo)
 					GoTo(ShellItem.CurrentItem);
@@ -249,6 +270,7 @@ namespace Xamarin.Forms.Platform.iOS
 				viewControllers[i++] = renderer.ViewController;
 			}
 			ViewControllers = viewControllers;
+			CustomizableViewControllers = Array.Empty<UIViewController>();
 
 			// No sense showing a bar that has a single icon
 			if (ViewControllers.Length == 1)

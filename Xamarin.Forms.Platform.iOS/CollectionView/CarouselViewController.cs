@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using Foundation;
 using UIKit;
 
@@ -8,12 +9,21 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		readonly CarouselView _carouselView;
 		bool _viewInitialized;
+		List<View> _oldViews;
 
 		public CarouselViewController(CarouselView itemsView, ItemsViewLayout layout) : base(itemsView, layout)
 		{
 			_carouselView = itemsView;
 			CollectionView.AllowsSelection = false;
 			CollectionView.AllowsMultipleSelection = false;
+			_carouselView.PropertyChanged += CarouselViewPropertyChanged;
+			_carouselView.Scrolled += CarouselViewScrolled;
+			_oldViews = new List<View>();
+		}
+
+		void CarouselViewScrolled(object sender, ItemsViewScrolledEventArgs e)
+		{
+			UpdateVisualStates();
 		}
 
 		protected override UICollectionViewDelegateFlowLayout CreateDelegator()
@@ -41,8 +51,10 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				UpdateInitialPosition();
 
+				_carouselView.PlatformInitialized();
 				_viewInitialized = true;
 			}
+			UpdateVisualStates();
 		}
 
 		protected override bool IsHorizontal => (_carouselView?.ItemsLayout as ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal;
@@ -64,6 +76,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		internal void TearDown()
 		{
+			_carouselView.PropertyChanged -= CarouselViewPropertyChanged;
 		}
 
 		public override void DraggingStarted(UIScrollView scrollView)
@@ -102,8 +115,92 @@ namespace Xamarin.Forms.Platform.iOS
 				_carouselView.Position = initialPosition;
 			}
 
-			if (_carouselView.Position != 0)
-				_carouselView.ScrollTo(_carouselView.Position, -1, ScrollToPosition.Center, false);
+			while (_carouselView.ScrollToActions.Count > 0)
+			{
+				var action = _carouselView.ScrollToActions.Dequeue();
+				action();
+			}
+		}
+
+		void CarouselViewPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.Is(CarouselView.PositionProperty))
+				UpdateVisualStates();
+		}
+
+		void UpdateVisualStates()
+		{
+			var cells = CollectionView.VisibleCells;
+
+			var newViews = new List<View>();
+
+			var carouselPosition = _carouselView.Position;
+			var previousPosition = carouselPosition - 1;
+			var nextPosition = carouselPosition + 1;
+
+			foreach (var cell in cells)
+			{
+				var itemView = (cell as CarouselTemplatedCell)?.VisualElementRenderer?.Element as View;
+				var item = itemView.BindingContext;
+				var pos = GetPosition(item);
+
+				if (pos == carouselPosition)
+				{
+					VisualStateManager.GoToState(itemView, CarouselView.CurrentItemVisualState);
+				}
+				else if (pos == previousPosition)
+				{
+					VisualStateManager.GoToState(itemView, CarouselView.PreviousItemVisualState);
+				}
+				else if (pos == nextPosition)
+				{
+					VisualStateManager.GoToState(itemView, CarouselView.NextItemVisualState);
+				}
+				else
+				{
+					VisualStateManager.GoToState(itemView, CarouselView.DefaultItemVisualState);
+				}
+
+				newViews.Add(itemView);
+
+				if (!_carouselView.VisibleViews.Contains(itemView))
+				{
+					_carouselView.VisibleViews.Add(itemView);
+				}
+			}
+
+			foreach (var itemView in _oldViews)
+			{
+				if (!newViews.Contains(itemView))
+				{
+					VisualStateManager.GoToState(itemView, CarouselView.DefaultItemVisualState);
+					if (_carouselView.VisibleViews.Contains(itemView))
+					{
+						_carouselView.VisibleViews.Remove(itemView);
+					}
+				}
+			}
+
+			_oldViews = newViews;
+		}
+
+		int GetPosition(object item)
+		{
+			int position = 0;
+
+			var items = _carouselView.ItemsSource as IList;
+
+			for (int n = 0; n < items?.Count; n++)
+			{
+				if (items[n] == item)
+				{
+					position = n;
+					break;
+				}
+			}
+
+			return position;
+
 		}
 	}
 }

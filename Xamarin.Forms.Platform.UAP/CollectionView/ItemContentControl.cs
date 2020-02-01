@@ -133,15 +133,13 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 
 			var view = FormsDataTemplate.CreateContent(dataContext, container) as View;
-
+			view.BindingContext = dataContext;
 			_renderer = Platform.CreateRenderer(view);
 			Platform.SetRenderer(view, _renderer);
 
 			Content = _renderer.ContainerElement;
 
 			itemsView?.AddLogicalChild(view);
-			
-			BindableObject.SetInheritedBindingContext(_renderer.Element, dataContext);
 		}
 
 		void ContentLoaded(object sender, RoutedEventArgs e)

@@ -2,6 +2,8 @@
 <linker>
   <assembly fullname="Xamarin.Forms.ControlGallery.Android">
     <namespace fullname="Xamarin.Forms.ControlGallery.Android.Tests" />
+    <namespace fullname="Xamarin.Forms.Controls.Issues" />
+    <type fullname="*Renderer" />
   </assembly>
   <assembly fullname="Xamarin.Forms.Controls">
     <namespace fullname="Xamarin.Forms.Controls.Tests" />

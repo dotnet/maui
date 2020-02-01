@@ -13,6 +13,12 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			BindingContext = new CarouselViewModel(CarouselXamlSampleType.Peek);
 			carouselNormal.BindingContext = new CarouselViewModel(CarouselXamlSampleType.Normal);
 		}
+
+		protected override void OnAppearing()
+		{
+			base.OnAppearing();
+			(BindingContext as CarouselViewModel).Position = 2;
+		}
 	}
 
 	[Preserve(AllMembers = true)]
@@ -52,6 +58,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			Items = new ObservableCollection<CarouselItem>(items);
 			Items.CollectionChanged += ItemsCollectionChanged;
 			Count = Items.Count - 1;
+
 		}
 
 		void ItemsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
