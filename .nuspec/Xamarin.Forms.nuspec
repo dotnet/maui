@@ -294,6 +294,26 @@
     <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Platform.UAP\Microsoft.UI.Xaml\Themes\generic.xaml" target="lib\uap10.0.16299\Xamarin.Forms.Platform.UAP\Microsoft.UI.Xaml\Themes" />
 
 
+    <!-- VS 2017 needs these-->
+    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Platform.UAP\FormsAutoSuggestBoxStyle.xaml" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Platform.UAP\FormsCheckBoxStyle.xaml" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Platform.UAP\FormsCommandBarStyle.xaml" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Platform.UAP\FormsEmbeddedPageWrapper.xaml" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Platform.UAP\FormsFlyout.xaml" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Platform.UAP\FormsProgressBarStyle.xaml" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Platform.UAP\FormsTextBoxStyle.xaml" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Platform.UAP\MasterDetailControlStyle.xaml" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Platform.UAP\PageControlStyle.xaml" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Platform.UAP\PickerStyle.xaml" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Platform.UAP\Resources.xaml" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Platform.UAP\SliderStyle.xaml" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Platform.UAP\StepperControl.xaml" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Platform.UAP\TabbedPageStyle.xaml" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Platform.UAP\CollectionView\ItemsViewStyles.xaml" target="lib\uap10.0\Xamarin.Forms.Platform.UAP\CollectionView" />
+    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Platform.UAP\Shell\ShellStyles.xaml" target="lib\uap10.0\Xamarin.Forms.Platform.UAP\Shell" />
+    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Platform.UAP\Microsoft.UI.Xaml\DensityStyles\Compact.xaml" target="lib\uap10.0\Xamarin.Forms.Platform.UAP\Microsoft.UI.Xaml\DensityStyles" />
+    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\uap10.0.14393\Xamarin.Forms.Platform.UAP\Microsoft.UI.Xaml\Themes\generic.xaml" target="lib\uap10.0\Xamarin.Forms.Platform.UAP\Microsoft.UI.Xaml\Themes" />
+
     <!--Mac-->
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="lib\Xamarin.Mac" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.dll" target="lib\Xamarin.Mac" />
