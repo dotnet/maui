@@ -272,6 +272,7 @@
     <file src="..\Xamarin.Forms.Platform.UAP\obj\$Configuration$\uap10.0.14393\FormsCheckBoxStyle.xaml" target="lib\uap10.0.14393\Xamarin.Forms.Platform.UAP" />
     <file src="..\Xamarin.Forms.Platform.UAP\obj\$Configuration$\uap10.0.14393\FormsCommandBarStyle.xaml" target="lib\uap10.0.14393\Xamarin.Forms.Platform.UAP" />
     <file src="..\Xamarin.Forms.Platform.UAP\obj\$Configuration$\uap10.0.14393\FormsEmbeddedPageWrapper.xaml" target="lib\uap10.0.14393\Xamarin.Forms.Platform.UAP" />
+    <file src="..\Xamarin.Forms.Platform.UAP\obj\$Configuration$\uap10.0.14393\PromptDialog.xaml" target="lib\uap10.0.14393\Xamarin.Forms.Platform.UAP" />
 
     <!-- VS 2017 needs these 16299-->
     <file src="..\Xamarin.Forms.Platform.UAP\obj\$Configuration$\uap10.0.16299\FormsFlyout.xaml" target="lib\uap10.0.16299\Xamarin.Forms.Platform.UAP" />
@@ -292,6 +293,7 @@
     <file src="..\Xamarin.Forms.Platform.UAP\obj\$Configuration$\uap10.0.16299\FormsCheckBoxStyle.xaml" target="lib\uap10.0.16299\Xamarin.Forms.Platform.UAP" />
     <file src="..\Xamarin.Forms.Platform.UAP\obj\$Configuration$\uap10.0.16299\FormsCommandBarStyle.xaml" target="lib\uap10.0.16299\Xamarin.Forms.Platform.UAP" />
     <file src="..\Xamarin.Forms.Platform.UAP\obj\$Configuration$\uap10.0.16299\FormsEmbeddedPageWrapper.xaml" target="lib\uap10.0.16299\Xamarin.Forms.Platform.UAP" />
+    <file src="..\Xamarin.Forms.Platform.UAP\obj\$Configuration$\uap10.0.16299\PromptDialog.xaml" target="lib\uap10.0.16299\Xamarin.Forms.Platform.UAP" />
 
     <!--Mac-->
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="lib\Xamarin.Mac" />
