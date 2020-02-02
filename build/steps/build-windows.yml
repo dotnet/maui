@@ -182,6 +182,7 @@ jobs:
           Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.dll
           Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.pri
           Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.xr.xml
+          Xamarin.Forms.Platform.UAP/obj/$(BuildConfiguration)/**/*.xaml
           Xamarin.Forms.Platform.UAP/Properties/Xamarin.Forms.Platform.UAP.rd.xml
           Xamarin.Forms.Maps.UWP/bin/$(BuildConfiguration)/**/*.dll
           Xamarin.Forms.Maps.UWP/bin/$(BuildConfiguration)/**/*.pdb
