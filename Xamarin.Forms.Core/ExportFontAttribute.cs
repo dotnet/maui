@@ -1,6 +1,7 @@
 ﻿using System;
 namespace Xamarin.Forms
 {
+	[Internals.Preserve(AllMembers = true)]
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 	public class ExportFontAttribute : Attribute
 	{

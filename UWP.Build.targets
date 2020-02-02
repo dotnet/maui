@@ -1,12 +1,12 @@
 <Project>
-  <ItemGroup Condition="$(TargetFramework) == 'uap10.0.14393' AND  '$(OS)' == 'Windows_NT' ">
+  <ItemGroup Condition="$(TargetPlatformVersion) == '10.0.16299.0' AND  '$(OS)' == 'Windows_NT' ">
     <PackageReference Include="NETStandard.Library" Version="2.0.1" />
     <SDKReference Include="WindowsMobile, Version=10.0.16299.0">
       <Name>Windows Mobile Extensions for the UWP</Name>
     </SDKReference>
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework) == 'uap10.0.16299' AND  '$(OS)' == 'Windows_NT' ">
-    <SDKReference Include="WindowsMobile, Version=10.0.16299.0">
+  <ItemGroup Condition="$(TargetPlatformVersion) == '10.0.18362.0' AND  '$(OS)' == 'Windows_NT' ">
+    <SDKReference Include="WindowsMobile, Version=10.0.18362.0">
       <Name>Windows Mobile Extensions for the UWP</Name>
     </SDKReference>
   </ItemGroup>
