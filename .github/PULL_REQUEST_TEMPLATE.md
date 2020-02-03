@@ -2,7 +2,7 @@
      - If this is an enhancement or contains API changes or breaking changes, target master.
      - If the issue you're working on has a milestone, target the corresponding branch.
      - If this is a bug fix, target the branch of the latest stable version (unless the bug is only in a prerelease or master, of course!).
-     See [Contributing](https://github.com/xamarin/Xamarin.Forms/blob/master/CONTRIBUTING.md) for more tips!
+     See [Contributing](https://github.com/xamarin/Xamarin.Forms/blob/master/.github/CONTRIBUTING.md) for more tips!
 
      PLEASE DELETE THE ALL THESE COMMENTS BEFORE SUBMITTING! THANKS!!!
  -->
