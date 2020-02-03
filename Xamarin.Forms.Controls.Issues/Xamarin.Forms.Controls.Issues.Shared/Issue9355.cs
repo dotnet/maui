@@ -12,6 +12,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
+			PushAsync(new ContentPage());
 			var stacklayout = new StackLayout
 			{
 				Children =
