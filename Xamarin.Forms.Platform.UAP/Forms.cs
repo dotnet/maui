@@ -35,7 +35,10 @@ namespace Xamarin.Forms
 #else
 			Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
 #endif
-			Windows.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(GetTabletResources());
+			if (!Windows.UI.Xaml.Application.Current.Resources.ContainsKey("RootContainerStyle"))
+			{
+				Windows.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(GetTabletResources());
+			}
 
 			try
 			{
