@@ -11,6 +11,7 @@ using Android.Support.V7.Widget;
 using Android.Views;
 using Java.Interop;
 using FormsCarouselView = Xamarin.Forms.CarouselView;
+using Xamarin.Forms.Platform.Android.CollectionView;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -59,18 +60,22 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			Carousel = newElement as FormsCarouselView;
 
-			AddLayoutListener();
-
-			Carousel.Scrolled += CarouselViewScrolled;
 			base.SetUpNewElement(newElement);
 
 			if (newElement == null)
 				return;
 
+			Carousel.Scrolled += CarouselViewScrolled;
+			AddLayoutListener();
 			UpdateIsSwipeEnabled();
 			UpdateIsBounceEnabled();
 			UpdateInitialPosition();
 			UpdateItemSpacing();
+		}
+
+		protected override RecyclerViewScrollListener<ItemsView, IItemsViewSource> CreateScrollListener()
+		{
+			return new CarouselViewOnScrollListener(ItemsView, ItemsViewAdapter);
 		}
 
 		protected override void TearDownOldElement(ItemsView oldElement)
@@ -104,33 +109,12 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateVisualStates();
 		}
 
-		public override void OnScrolled(int dx, int dy)
-		{
-			base.OnScrolled(dx, dy);
-			UpdateVisualStates();
-		}
-
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
 		{
 			if (!_isSwipeEnabled)
 				return false;
 
 			return base.OnInterceptTouchEvent(ev);
-		}
-
-		public override void OnScrollStateChanged(int state)
-		{
-			base.OnScrollStateChanged(state);
-
-			if (_isSwipeEnabled)
-			{
-				if (state == ScrollStateDragging)
-					Carousel.SetIsDragging(true);
-				else
-					Carousel.SetIsDragging(false);
-			}
-
-			Carousel.IsScrolling = state != ScrollStateIdle;
 		}
 
 		protected override RecyclerView.ItemDecoration CreateSpacingDecoration(IItemsLayout itemsLayout)
@@ -320,6 +304,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		void AddLayoutListener()
 		{
+			if (_carouselViewLayoutListener != null)
+				return;
+
 			_carouselViewLayoutListener = new CarouselViewwOnGlobalLayoutListener();
 			_carouselViewLayoutListener.LayoutReady += LayoutReady;
 
@@ -347,6 +334,36 @@ namespace Xamarin.Forms.Platform.Android
 			ViewTreeObserver?.RemoveOnGlobalLayoutListener(_carouselViewLayoutListener);
 			_carouselViewLayoutListener.LayoutReady -= LayoutReady;
 			_carouselViewLayoutListener = null;
+		}
+
+		class CarouselViewOnScrollListener : RecyclerViewScrollListener<ItemsView, IItemsViewSource>
+		{
+			public CarouselViewOnScrollListener(ItemsView itemsView, ItemsViewAdapter<ItemsView, IItemsViewSource> itemsViewAdapter) : base(itemsView, itemsViewAdapter)
+			{
+			}
+
+			public override void OnScrollStateChanged(RecyclerView recyclerView, int state)
+			{
+				base.OnScrollStateChanged(recyclerView, state);
+				CarouselViewRenderer carouselViewRenderer = (CarouselViewRenderer)recyclerView;
+
+				if (carouselViewRenderer._isSwipeEnabled)
+				{
+					if (state == ScrollStateDragging)
+						carouselViewRenderer.Carousel.SetIsDragging(true);
+					else
+						carouselViewRenderer.Carousel.SetIsDragging(false);
+				}
+
+				carouselViewRenderer.Carousel.IsScrolling = state != ScrollStateIdle;
+			}
+
+			public override void OnScrolled(RecyclerView recyclerView, int dx, int dy)
+			{
+				base.OnScrolled(recyclerView, dx, dy);
+				CarouselViewRenderer carouselViewRenderer = (CarouselViewRenderer)recyclerView;
+				carouselViewRenderer.UpdateVisualStates();
+			}
 		}
 	}
 }
