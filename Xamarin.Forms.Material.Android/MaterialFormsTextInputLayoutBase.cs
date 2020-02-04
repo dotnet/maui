@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Material.Android
 			EditText.SetTextColor(new ColorStateList(s_colorStates, new[] { textColor, textColor }));
 		}
 
-		internal void ApplyTheme(Color formsTextColor, Color formsPlaceHolderColor)
+		public virtual void ApplyTheme(Color formsTextColor, Color formsPlaceHolderColor)
 		{
 			if (_disposed)
 				return;
@@ -116,7 +116,7 @@ namespace Xamarin.Forms.Material.Android
 
 		}
 
-		internal void SetHint(string hint, VisualElement element)
+		public virtual void SetHint(string hint, VisualElement element)
 		{
 			HintEnabled = !string.IsNullOrWhiteSpace(hint);
 			if (HintEnabled)
