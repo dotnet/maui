@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Platform.WPF
 				if (Element.BorderWidth != 0)
 					UpdateBorderWidth();
 
-				await TryUpdateSource().ConfigureAwait(false);
+				await TryUpdateSource();
 				UpdateAspect();
 
 				if (Element.IsSet(Button.PaddingProperty))
