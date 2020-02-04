@@ -52,9 +52,9 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void GroupsChanged(object sender, NotifyCollectionChangedEventArgs args)
 		{
-			if (Device.IsInvokeRequired)
+			if (_container.Dispatcher.IsInvokeRequired)
 			{
-				Device.BeginInvokeOnMainThread(() => GroupsChanged(args));
+				_container.Dispatcher.BeginInvokeOnMainThread(() => GroupsChanged(args));
 			}
 			else
 			{
@@ -163,12 +163,10 @@ namespace Xamarin.Forms.Platform.UWP
 		void Reset()
 		{
 			Items.Clear();
-			_groupList.Clear();
 
 			foreach (var group in _itemsSource)
 			{
 				var groupTemplateContext = CreateGroupTemplateContext(group);
-				_groupList.Add(group);
 				Items.Add(groupTemplateContext);
 			}
 
