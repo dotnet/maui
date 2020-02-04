@@ -185,6 +185,7 @@ namespace Xamarin.Forms.Platform.Android
 					PowerManager.ActionPowerSaveModeChanged));
 
 				_powerSaveReceiverRegistered = true;
+				_powerSaveModeBroadcastReceiver.CheckAnimationEnabledStatus();
 			}
 
 			OnStateChanged();
