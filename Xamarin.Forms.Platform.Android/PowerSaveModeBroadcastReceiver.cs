@@ -8,7 +8,12 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		public override void OnReceive(Context context, Intent intent)
 		{
-			((AndroidTicker)Ticker.Default).CheckPowerSaveModeStatus();
+			CheckAnimationEnabledStatus();
+		}
+
+		public void CheckAnimationEnabledStatus() 
+		{
+			((AndroidTicker)Ticker.Default).CheckAnimationEnabledStatus();
 		}
 	}
 }

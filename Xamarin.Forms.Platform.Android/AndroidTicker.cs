@@ -3,14 +3,15 @@ using Android.Animation;
 using Android.Content;
 using Android.OS;
 using Xamarin.Forms.Internals;
+using GlobalSettings = Android.Provider.Settings.Global;
+using SystemSettings = Android.Provider.Settings.System;
 
 namespace Xamarin.Forms.Platform.Android
 {
 	internal class AndroidTicker : Ticker, IDisposable
 	{
 		ValueAnimator _val;
-		bool _energySaveModeDisabled;
-		readonly bool _animatorEnabled;
+		bool _animatorEnabled;
 
 		public AndroidTicker()
 		{
@@ -19,37 +20,46 @@ namespace Xamarin.Forms.Platform.Android
 			_val.RepeatCount = ValueAnimator.Infinite;
 			_val.Update += OnValOnUpdate;
 			_animatorEnabled = IsAnimatorEnabled();
-			CheckPowerSaveModeStatus();
+			CheckAnimationEnabledStatus();
 		}
 
-		public override bool SystemEnabled => _energySaveModeDisabled && _animatorEnabled;
+		public override bool SystemEnabled => _animatorEnabled;
 
-		internal void CheckPowerSaveModeStatus()
+		internal void CheckAnimationEnabledStatus()
 		{
-			// Android disables animations when it's in power save mode
-			// So we need to keep track of whether we're in that mode and handle animations accordingly
-			// We can't just check ValueAnimator.AreAnimationsEnabled() because there's no event for that, and it's
-			// only supported on API >= 26
+			var animatorEnabled = IsAnimatorEnabled();
 
-			if (!Forms.IsLollipopOrNewer)
+			if (animatorEnabled != _animatorEnabled)
 			{
-				_energySaveModeDisabled = true;
-				return;
+				_animatorEnabled = animatorEnabled;
+				
+				// Notify the ticker that this value has changed, so it can manage animations in progress
+				OnSystemEnabledChanged();
 			}
-
-			var powerManager = (PowerManager)Forms.ApplicationContext.GetSystemService(Context.PowerService);
-
-			var powerSaveOn = powerManager.IsPowerSaveMode;
-
-			// If power saver is active, then animations will not run
-			_energySaveModeDisabled = !powerSaveOn;
-
-			// Notify the ticker that this value has changed, so it can manage animations in progress
-			OnSystemEnabledChanged();
 		}
 
 		static bool IsAnimatorEnabled()
 		{
+			if (Forms.IsOreoOrNewer)
+			{
+				// For more recent API levels, we can just check this method and be done with it
+				return ValueAnimator.AreAnimatorsEnabled();
+			}
+
+			if (Forms.IsLollipopOrNewer)
+			{
+				// For API levels which support power saving but not AreAnimatorsEnabled, we can check the
+				// power save mode; for these API levels, power saving == ON will mean that animations are disabled
+				var powerManager = (PowerManager)Forms.ApplicationContext.GetSystemService(Context.PowerService);
+				if (powerManager.IsPowerSaveMode)
+				{
+					return false;
+				}
+			}
+
+			// If we're not in power save mode (or don't support it), we still need to check the AnimatorDurationScale;
+			// animations might be disabled by developer mode
+
 			var resolver = global::Android.App.Application.Context?.ContentResolver;
 			if (resolver == null)
 			{
@@ -58,14 +68,14 @@ namespace Xamarin.Forms.Platform.Android
 
 			float animationScale;
 
-			if (Build.VERSION.SdkInt >= BuildVersionCodes.JellyBeanMr1)
+			if (Forms.IsJellyBeanMr1OrNewer)
 			{
-				animationScale = global::Android.Provider.Settings.Global.GetFloat(resolver, global::Android.Provider.Settings.Global.AnimatorDurationScale, 1);
+				animationScale = GlobalSettings.GetFloat(resolver, GlobalSettings.AnimatorDurationScale, 1);
 			}
 			else
 			{
 #pragma warning disable 0618
-				animationScale = global::Android.Provider.Settings.System.GetFloat(resolver, global::Android.Provider.Settings.System.AnimatorDurationScale, 1);
+				animationScale = SystemSettings.GetFloat(resolver, SystemSettings.AnimatorDurationScale, 1);
 #pragma warning restore 0618
 			}
 

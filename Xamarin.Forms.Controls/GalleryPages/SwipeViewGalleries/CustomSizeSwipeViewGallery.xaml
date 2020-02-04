@@ -26,37 +26,40 @@
                         Text="Test"
                         BackgroundColor="Red" />
                     <SwipeItemView>
-                        <Grid
+                        <StackLayout
                             BackgroundColor="LightSteelBlue"
                             WidthRequest="200">
                             <Label
-                                HorizontalOptions="Center"
-                                VerticalOptions="Center"
-                                Text="This is the RightItems Content"
-                                Margin="12"/>
-                        </Grid>
+                                Text="This is the RightItems Content"/>
+                            <Button
+                               Text="Test Click from RightItems"
+                               Clicked="OnRightItemsClicked"/>
+                        </StackLayout>
                     </SwipeItemView>
                 </SwipeView.RightItems>
                 <SwipeView.TopItems>
                     <SwipeItemView>
-                        <Grid
+                        <StackLayout
                             BackgroundColor="LightSkyBlue"
                             HeightRequest="100">
                             <Label
-                                HorizontalOptions="Center"
-                                VerticalOptions="Center"
                                 Text="This is the TopItems Content"
                                 Margin="12"/>
-                        </Grid>
+                            <Button
+                                Text="Click me!"
+                                Clicked="OnButtonClicked"/>
+                        </StackLayout>
                     </SwipeItemView>
                 </SwipeView.TopItems>
                 <Grid
                     BackgroundColor="LightGreen">
-                    <Label
-                        HorizontalOptions="Center"
-                        VerticalOptions="Center"
-                        Text="This is the Content"
-                        Margin="12"/>
+                   <StackLayout>
+                       <Label
+                           Text="This is the SwipeView Content"/>
+                       <Button
+                           Text="Test Click from Content"
+                           Clicked="OnContentClicked"/>
+                   </StackLayout>
                 </Grid>
             </SwipeView>
         </Grid>

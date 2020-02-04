@@ -140,5 +140,13 @@ namespace Xamarin.Forms
 			_children.Add(child);
 			return this;
 		}
+
+		public static bool IsEnabled 
+		{
+			get 
+			{
+				return Internals.Ticker.Default.SystemEnabled;
+			}
+		}
 	}
 }

@@ -20,7 +20,6 @@ using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android;
 using Resource = Android.Resource;
 using Trace = System.Diagnostics.Trace;
-using ALayoutDirection = Android.Views.LayoutDirection;
 using System.ComponentModel;
 
 namespace Xamarin.Forms
@@ -36,9 +35,9 @@ namespace Xamarin.Forms
 		public InitializationOptions(Context activity, Bundle bundle, Assembly resourceAssembly)
 		{
 			this = default(InitializationOptions);
-			this.Activity = activity;
-			this.Bundle = bundle;
-			this.ResourceAssembly = resourceAssembly;
+			Activity = activity;
+			Bundle = bundle;
+			ResourceAssembly = resourceAssembly;
 		}
 		public Context Activity;
 		public Bundle Bundle;
@@ -50,7 +49,6 @@ namespace Xamarin.Forms
 
 	public static class Forms
 	{
-
 		const int TabletCrossover = 600;
 
 		static BuildVersionCodes? s_sdkInt;
@@ -58,6 +56,8 @@ namespace Xamarin.Forms
 		static bool? s_is29OrNewer;
 		static bool? s_isMarshmallowOrNewer;
 		static bool? s_isNougatOrNewer;
+		static bool? s_isOreoOrNewer;
+		static bool? s_isJellyBeanMr1OrNewer;
 
 		[Obsolete("Context is obsolete as of version 2.5. Please use a local context instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -73,8 +73,10 @@ namespace Xamarin.Forms
 		static Color _ColorButtonNormal = Color.Default;
 		public static Color ColorButtonNormalOverride { get; set; }
 
-		internal static BuildVersionCodes SdkInt {
-			get {
+		internal static BuildVersionCodes SdkInt
+		{
+			get
+			{
 				if (!s_sdkInt.HasValue)
 					s_sdkInt = Build.VERSION.SdkInt;
 				return (BuildVersionCodes)s_sdkInt;
@@ -90,13 +92,23 @@ namespace Xamarin.Forms
 				return s_is29OrNewer.Value;
 			}
 		}
+		
+		internal static bool IsJellyBeanMr1OrNewer
+		{
+			get
+			{
+				if (!s_isJellyBeanMr1OrNewer.HasValue)
+					s_isJellyBeanMr1OrNewer = SdkInt >= BuildVersionCodes.JellyBeanMr1;
+				return s_isJellyBeanMr1OrNewer.Value;
+			}
+		}
 
 		internal static bool IsLollipopOrNewer
 		{
 			get
 			{
 				if (!s_isLollipopOrNewer.HasValue)
-					s_isLollipopOrNewer = (int)SdkInt >= 21;
+					s_isLollipopOrNewer = SdkInt >= BuildVersionCodes.Lollipop;
 				return s_isLollipopOrNewer.Value;
 			}
 		}
@@ -106,7 +118,7 @@ namespace Xamarin.Forms
 			get
 			{
 				if (!s_isMarshmallowOrNewer.HasValue)
-					s_isMarshmallowOrNewer = (int)SdkInt >= 23;
+					s_isMarshmallowOrNewer = SdkInt >= BuildVersionCodes.M;
 				return s_isMarshmallowOrNewer.Value;
 			}
 		}
@@ -116,8 +128,18 @@ namespace Xamarin.Forms
 			get
 			{
 				if (!s_isNougatOrNewer.HasValue)
-					s_isNougatOrNewer = (int)Build.VERSION.SdkInt >= 24;
+					s_isNougatOrNewer = SdkInt >= BuildVersionCodes.N;
 				return s_isNougatOrNewer.Value;
+			}
+		}
+
+		internal static bool IsOreoOrNewer
+		{
+			get
+			{
+				if (!s_isOreoOrNewer.HasValue)
+					s_isOreoOrNewer = SdkInt >= BuildVersionCodes.O;
+				return s_isOreoOrNewer.Value;
 			}
 		}
 

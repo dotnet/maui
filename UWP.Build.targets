@@ -7,10 +7,6 @@
       <Name>Windows Mobile Extensions for the UWP</Name>
     </SDKReference>
   </ItemGroup>
-  <ItemGroup  Condition=" '$(OS)' != 'Windows_NT' ">
-    <Compile Remove="**\*.*" />
-    <None Include="**\*.*" />
-  </ItemGroup>
   <ItemGroup  Condition="$(TargetFramework.StartsWith('uap10.0')) AND '$(OS)' == 'Windows_NT' ">
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.0.15" />
   </ItemGroup>
