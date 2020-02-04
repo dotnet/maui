@@ -495,6 +495,9 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 		void RequestLayoutItems()
 		{
+			if (AllocatedSize.Width <= 0 || AllocatedSize.Height <= 0)
+				return;
+
 			if (!_requestLayoutItems)
 			{
 				_requestLayoutItems = true;

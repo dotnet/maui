@@ -104,9 +104,9 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 		public override void RemoveNativeView(EvasObject native)
 		{
+			UnBinding(native);
 			if (_nativeFormsTable.TryGetValue(native, out View view))
 			{
-				ResetBindedView(view);
 				Platform.GetRenderer(view)?.Dispose();
 				_nativeFormsTable.Remove(native);
 			}
@@ -178,7 +178,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			int index = GetItemIndex(data);
 			if (index != -1)
 			{
-				CollectionView.ItemMeasureInvalidated(index);
+				CollectionView?.ItemMeasureInvalidated(index);
 			}
 		}
 	}
