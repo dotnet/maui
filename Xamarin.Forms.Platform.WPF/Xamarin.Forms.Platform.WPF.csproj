@@ -74,6 +74,9 @@
     <Compile Include="Controls\FormsPage.cs" />
     <Compile Include="Controls\FormsNavigationPage.cs" />
     <Compile Include="Controls\FormsPathIcon.cs" />
+    <Compile Include="Controls\FormsProgressRing.xaml.cs">
+      <DependentUpon>FormsProgressRing.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\FormsSymbolIcon.cs" />
     <Compile Include="Controls\FormsTabbedPage.cs" />
     <Compile Include="Controls\FormsTransitioningContentControl.cs" />
@@ -226,6 +229,9 @@
     <Page Include="Assets\Default.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\FormsProgressRing.xaml">
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Themes\Generic.xaml">
       <Generator>MSBuild:Compile</Generator>
