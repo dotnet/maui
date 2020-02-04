@@ -244,7 +244,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				_detector.OnTouchEvent(e);
 			}
-
+   
 			ProcessSwipingInteractions(e);
 
 			return true;
