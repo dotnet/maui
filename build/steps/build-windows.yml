@@ -91,6 +91,7 @@ jobs:
       inputs:
         testAssemblyVer2: |
           **/bin/$(BuildConfiguration)/Xamarin.Forms.Core.UnitTests.dll
+          **/bin/$(BuildConfiguration)/**/Xamarin.Forms.DualScreen.UnitTests.dll
           **/bin/$(BuildConfiguration)/Xamarin.Forms.Pages.UnitTests.dll
           **/bin/$(BuildConfiguration)/**/Xamarin.Forms.Xaml.UnitTests.dll
         searchFolder: ${{ parameters.nunitTestFolder }}
@@ -169,6 +170,10 @@ jobs:
           Microsoft.XamlStandard/bin/$(BuildConfiguration)/**/*.dll
           Microsoft.XamlStandard/bin/$(BuildConfiguration)/**/*.mdb
           Microsoft.XamlStandard/bin/$(BuildConfiguration)/**/*.pdb
+          Xamarin.Forms.DualScreen/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.DualScreen/bin/$(BuildConfiguration)/**/*.pdb
+          Xamarin.Forms.DualScreen/bin/$(BuildConfiguration)/**/*.mdb
+          Xamarin.Forms.DualScreen.UnitTests/bin/$(BuildConfiguration)/**/*.dll
           **/*.binlog
 
         TargetFolder: ${{ parameters.artifactsTargetFolder }}
@@ -188,6 +193,10 @@ jobs:
           Xamarin.Forms.Maps.UWP/bin/$(BuildConfiguration)/**/*.pdb
           Xamarin.Forms.Maps.UWP/bin/$(BuildConfiguration)/**/*.pri
           Xamarin.Forms.Maps.UWP/bin/$(BuildConfiguration)/**/*.xbf
+          Xamarin.Forms.DualScreen/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.DualScreen/bin/$(BuildConfiguration)/**/*.pdb
+          Xamarin.Forms.DualScreen/bin/$(BuildConfiguration)/**/*.mdb
+          Xamarin.Forms.DualScreen.UnitTests/bin/$(BuildConfiguration)/**/*.dll
 
         TargetFolder: ${{ parameters.artifactsTargetFolder }}
 
@@ -209,6 +218,10 @@ jobs:
           Xamarin.Forms.Platform.Android.AppLinks/bin/$(BuildConfiguration)/**/*.dll
           Xamarin.Forms.Platform.Android.AppLinks/bin/$(BuildConfiguration)/**/*.pdb
           Xamarin.Forms.Platform.Android.AppLinks/bin/$(BuildConfiguration)/**/*.mdb
+          Xamarin.Forms.DualScreen/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.DualScreen/bin/$(BuildConfiguration)/**/*.pdb
+          Xamarin.Forms.DualScreen/bin/$(BuildConfiguration)/**/*.mdb
+          Xamarin.Forms.DualScreen.UnitTests/bin/$(BuildConfiguration)/**/*.dll
           **/*.binlog
 
         TargetFolder: ${{ parameters.artifactsTargetFolder }}

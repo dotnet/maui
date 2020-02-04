@@ -1,4 +1,8 @@
 <Project>
   <Import Project="../Directory.Build.targets" />
   <Import Project="../UWP.Build.targets" />
+  <ItemGroup  Condition=" '$(OS)' != 'Windows_NT' ">
+    <Compile Remove="**\*.*" />
+    <None Include="**\*.*" />
+  </ItemGroup>
 </Project>

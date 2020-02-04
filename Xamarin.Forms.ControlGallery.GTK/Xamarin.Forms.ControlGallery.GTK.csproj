@@ -115,6 +115,10 @@
       <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
       <Name>Xamarin.Forms.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Xamarin.Forms.DualScreen\Xamarin.Forms.DualScreen.csproj">
+      <Project>{fb4a866a-5721-4545-9e5d-b7f7d59875a4}</Project>
+      <Name>Xamarin.Forms.DualScreen</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Maps.GTK\Xamarin.Forms.Maps.GTK.csproj">
       <Project>{a9772bb1-0e17-42f5-a6db-60bfccbfdb9d}</Project>
       <Name>Xamarin.Forms.Maps.GTK</Name>
