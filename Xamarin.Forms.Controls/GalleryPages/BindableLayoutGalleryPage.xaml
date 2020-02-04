@@ -6,16 +6,22 @@
 	<ContentPage.Resources>
 		<!-- Template for integer items -->
 		<DataTemplate x:Key="MyIntTemplate">
-			<Frame Padding="10"
+			<Frame Padding="10" HasShadow="False" 
 				   BackgroundColor="Yellow">
 				<Label Text="{Binding }" />
 			</Frame>
 		</DataTemplate>
 		<!-- Template for character items -->
 		<DataTemplate x:Key="MyCharTemplate">
-			<Frame Padding="10"
+			<Frame Padding="10" HasShadow="False" 
 				   BackgroundColor="Azure">
 				<Label Text="{Binding }" />
+			</Frame>
+		</DataTemplate>
+        <DataTemplate x:Key="EmptyTemplate">
+			<Frame Padding="10" HasShadow="False" 
+				   BackgroundColor="Fuschia">
+				<Label Text="No items here" />
 			</Frame>
 		</DataTemplate>
 		<local:BindableLayoutItemTemplateSelector x:Key="ItemTemplateSelector"
@@ -31,8 +37,15 @@
 					HorizontalScrollBarVisibility="Always">
 			<StackLayout BindableLayout.ItemsSource="{Binding ItemsSource}"
 						 BindableLayout.ItemTemplateSelector="{StaticResource ItemTemplateSelector}"
+                         
 						 Spacing="7"
-						 Padding="10, 5" />
+						 Padding="10, 5">
+                <BindableLayout.EmptyView>
+                    <Grid BackgroundColor="Blue" >
+        <Label Text="No Results"/>
+                        </Grid>
+    </BindableLayout.EmptyView>
+                </StackLayout>
 		</ScrollView>
 		<StackLayout BackgroundColor="Green"
 					 Orientation="Horizontal"

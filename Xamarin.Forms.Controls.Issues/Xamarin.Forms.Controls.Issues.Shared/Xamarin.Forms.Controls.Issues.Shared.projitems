@@ -1233,6 +1233,18 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue8198.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7249.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8200.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue6932.xaml.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>Issue6932.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Issue6932_emptyviewtemplate.xaml.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>Issue6932_emptyviewtemplate.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Issue6932_emptyviewstring.xaml.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>Issue6932_emptyviewstring.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue8417.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8647.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7510.cs" />
@@ -1392,6 +1404,9 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7886.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue6932.xaml" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue6932_emptyviewtemplate.xaml" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue6932_emptyviewstring.xaml" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8417.xaml" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7813.xaml" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8638.xaml" />

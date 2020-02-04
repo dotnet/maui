@@ -24,6 +24,12 @@ namespace Xamarin.Forms
 				 defaultValueCreator: (b) => new BindableLayoutController((Layout<View>)b),
 				 propertyChanged: (b, o, n) => OnControllerChanged(b, (BindableLayoutController)o, (BindableLayoutController)n));
 
+		public static readonly BindableProperty EmptyViewProperty =
+			BindableProperty.Create("EmptyView", typeof(object), typeof(Layout<View>), null, propertyChanged: (b, o, n) => { GetBindableLayoutController(b).EmptyView = n; });
+
+		public static readonly BindableProperty EmptyViewTemplateProperty =
+			BindableProperty.Create("EmptyViewTemplate", typeof(DataTemplate), typeof(Layout<View>), null, propertyChanged: (b, o, n) => { GetBindableLayoutController(b).EmptyViewTemplate = (DataTemplate)n; });
+
 		public static void SetItemsSource(BindableObject b, IEnumerable value)
 		{
 			b.SetValue(ItemsSourceProperty, value);
@@ -54,6 +60,26 @@ namespace Xamarin.Forms
 			return (DataTemplateSelector)b.GetValue(ItemTemplateSelectorProperty);
 		}
 
+		public static object GetEmptyView(BindableObject b)
+		{
+			return b.GetValue(EmptyViewProperty);
+		}
+
+		public static void SetEmptyView(BindableObject b, object value)
+		{
+			b.SetValue(EmptyViewProperty, value);
+		}
+
+		public static DataTemplate GetEmptyViewTemplate(BindableObject b)
+		{
+			return (DataTemplate)b.GetValue(EmptyViewTemplateProperty);
+		}
+
+		public static void SetEmptyViewTemplate(BindableObject b, DataTemplate value)
+		{
+			b.SetValue(EmptyViewProperty, value);
+		}
+
 		static BindableLayoutController GetBindableLayoutController(BindableObject b)
 		{
 			return (BindableLayoutController)b.GetValue(BindableLayoutControllerProperty);
@@ -80,6 +106,8 @@ namespace Xamarin.Forms
 			newC.ItemsSource = GetItemsSource(b);
 			newC.ItemTemplate = GetItemTemplate(b);
 			newC.ItemTemplateSelector = GetItemTemplateSelector(b);
+			newC.EmptyView = GetEmptyView(b);
+			newC.EmptyViewTemplate = GetEmptyViewTemplate(b);
 			newC.EndBatchUpdate();
 		}
 	}
@@ -91,11 +119,16 @@ namespace Xamarin.Forms
 		DataTemplate _itemTemplate;
 		DataTemplateSelector _itemTemplateSelector;
 		bool _isBatchUpdate;
+		object _emptyView;
+		DataTemplate _emptyViewTemplate;
+		View _currentEmptyView;
 
 		public IEnumerable ItemsSource { get => _itemsSource; set => SetItemsSource(value); }
 		public DataTemplate ItemTemplate { get => _itemTemplate; set => SetItemTemplate(value); }
 		public DataTemplateSelector ItemTemplateSelector { get => _itemTemplateSelector; set => SetItemTemplateSelector(value); }
 
+		public object EmptyView { get => _emptyView; set => SetEmptyView(value); }
+		public DataTemplate EmptyViewTemplate { get => _emptyViewTemplate; set => SetEmptyViewTemplate(value); }
 
 		public BindableLayoutController(Layout<View> layout)
 		{
@@ -158,25 +191,62 @@ namespace Xamarin.Forms
 			}
 		}
 
+		void SetEmptyView(object emptyView)
+		{
+			_emptyView = emptyView;
+
+			_currentEmptyView = CreateEmptyView(_emptyView, _emptyViewTemplate);
+
+			if (!_isBatchUpdate)
+			{
+				CreateChildren();
+			}
+		}
+
+		void SetEmptyViewTemplate(DataTemplate emptyViewTemplate)
+		{
+			_emptyViewTemplate = emptyViewTemplate;
+
+			_currentEmptyView = CreateEmptyView(_emptyView, _emptyViewTemplate);
+
+			if (!_isBatchUpdate)
+			{
+				CreateChildren();
+			}
+		}
+
 		void CreateChildren()
 		{
-			Layout<View> layout;
-			if (!_layoutWeakReference.TryGetTarget(out layout))
+			if (!_layoutWeakReference.TryGetTarget(out Layout<View> layout))
 			{
 				return;
 			}
 
 			layout.Children.Clear();
 
+			UpdateEmptyView(layout);
+
 			if (_itemsSource == null)
-			{
 				return;
-			}
 
 			foreach (object item in _itemsSource)
 			{
 				layout.Children.Add(CreateItemView(item, layout));
 			}
+		}
+
+		void UpdateEmptyView(Layout<View> layout)
+		{
+			if (_currentEmptyView == null)
+				return;
+
+			if (!_itemsSource?.GetEnumerator().MoveNext() ?? true)
+			{
+				layout.Children.Add(_currentEmptyView);
+				return;
+			}
+
+			layout.Children.Remove(_currentEmptyView);
 		}
 
 		View CreateItemView(object item, Layout<View> layout)
@@ -194,14 +264,35 @@ namespace Xamarin.Forms
 			}
 			else
 			{
-				return new Label() { Text = item?.ToString() };
+				return new Label { Text = item?.ToString(), HorizontalTextAlignment = TextAlignment.Center };
 			}
+		}
+
+		View CreateEmptyView(object emptyView, DataTemplate dataTemplate)
+		{
+			if (!_layoutWeakReference.TryGetTarget(out Layout<View> layout))
+			{
+				return null;
+			}
+
+			if (dataTemplate != null)
+			{
+				var view = (View)dataTemplate.CreateContent();
+				view.BindingContext = layout.BindingContext;
+				return view;
+			}
+
+			if (emptyView is View emptyLayout)
+			{
+				return emptyLayout;
+			}
+			
+			return new Label { Text = emptyView?.ToString(), HorizontalTextAlignment = TextAlignment.Center };
 		}
 
 		void ItemsSourceCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			Layout<View> layout;
-			if (!_layoutWeakReference.TryGetTarget(out layout))
+			if (!_layoutWeakReference.TryGetTarget(out Layout<View> layout))
 			{
 				return;
 			}
@@ -210,6 +301,10 @@ namespace Xamarin.Forms
 				insert: (item, index, _) => layout.Children.Insert(index, CreateItemView(item, layout)),
 				removeAt: (item, index) => layout.Children.RemoveAt(index),
 				reset: CreateChildren);
+
+			// UpdateEmptyView is called from within CreateChildren, therefor skip it for Reset
+			if (e.Action != NotifyCollectionChangedAction.Reset)
+				UpdateEmptyView(layout);
 		}
 	}
 }
