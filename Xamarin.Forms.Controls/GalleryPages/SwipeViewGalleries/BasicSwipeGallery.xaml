@@ -126,6 +126,62 @@
                     </Grid>
                 </SwipeView.Content>
             </SwipeView>
+            <SwipeView
+                HeightRequest="60"
+                WidthRequest="300"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                Margin="12">
+                <SwipeView.LeftItems>
+                    <SwipeItems
+                        Mode="Reveal">
+                        <SwipeItem
+                            Text="LeftItem"
+                            Icon="coffee.png"
+                            BackgroundColor="Red"
+                            Invoked="OnInvoked"/>
+                    </SwipeItems>
+                </SwipeView.LeftItems>
+                <SwipeView.TopItems>
+                    <SwipeItems
+                        Mode="Reveal">
+                        <SwipeItem
+                            Text="TopItem"
+                            Icon="coffee.png"
+                            BackgroundColor="Red"
+                            Invoked="OnInvoked"/>
+                    </SwipeItems>
+                </SwipeView.TopItems>
+                <SwipeView.RightItems>
+                    <SwipeItems
+                        Mode="Reveal">
+                        <SwipeItem
+                            Text="RightItem"
+                            Icon="coffee.png"
+                            BackgroundColor="Red"
+                            Invoked="OnInvoked"/>
+                    </SwipeItems>
+                </SwipeView.RightItems>
+                <SwipeView.BottomItems>
+                    <SwipeItems
+                        Mode="Reveal">
+                        <SwipeItem
+                            Text="BottomItem"
+                            Icon="coffee.png"
+                            BackgroundColor="Red"
+                            Invoked="OnInvoked"/>
+                    </SwipeItems>
+                </SwipeView.BottomItems>
+                <SwipeView.Content>
+                    <Grid
+                        BackgroundColor="LightGray">
+                        <Label
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"
+                            Text="Swipe in any direction"/>
+                    </Grid>
+                </SwipeView.Content>
+            </SwipeView>
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>
