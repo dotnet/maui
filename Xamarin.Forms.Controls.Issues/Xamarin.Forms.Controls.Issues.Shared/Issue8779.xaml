@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<controls:TestContentPage
+    xmlns:controls="clr-namespace:Xamarin.Forms.Controls"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    x:Class="Xamarin.Forms.Controls.Issues.Issue8779">
+     <StackLayout Margin="20">
+        <Label
+            Text="Questions"
+            FontAttributes="Bold"
+            HorizontalOptions="Center" />
+        <Label
+            Text="Swipe right to answer the following questions." />
+        <SwipeView
+            x:Name="swipeView">
+            <SwipeView.LeftItems>
+                <SwipeItems
+                    SwipeBehaviorOnInvoked="RemainOpen">
+                    <SwipeItemView
+                        Command="{Binding CheckAnswerCommand}"
+                        CommandParameter="{Binding Source={x:Reference resultEntry}, Path=Text}">
+                        <StackLayout
+                            Margin="10"
+                            WidthRequest="300">
+                            <Entry
+                                x:Name="resultEntry"
+                                Placeholder="Enter answer"
+                                HorizontalOptions="CenterAndExpand" />
+                            <Label
+                                Text="Check"
+                                FontAttributes="Bold"
+                                HorizontalOptions="Center" />
+                        </StackLayout>
+                    </SwipeItemView>
+                </SwipeItems>
+            </SwipeView.LeftItems>
+            <Grid
+                HeightRequest="70"
+                WidthRequest="300"
+                BackgroundColor="LightGray">
+                <Label
+                    Text="What's 2+2?"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center" />
+            </Grid>
+        </SwipeView>
+    </StackLayout>
+</controls:TestContentPage>

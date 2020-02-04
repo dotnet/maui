@@ -1,4 +1,5 @@
-﻿using Xamarin.Forms.Internals;
+﻿using System;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
 {
@@ -9,5 +10,10 @@ namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
 		{
 			InitializeComponent();
 		}
-	}
+
+        void OnButtonClicked(object sender, EventArgs e)
+        {
+			DisplayAlert("Custom SwipeItem", "Button Clicked!", "Ok");
+        }
+   	}
 }

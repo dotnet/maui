@@ -39,15 +39,16 @@
                 </SwipeView.RightItems>
                 <SwipeView.TopItems>
                     <SwipeItemView>
-                        <Grid
+                        <StackLayout
                             BackgroundColor="LightSkyBlue"
                             HeightRequest="100">
                             <Label
-                                HorizontalOptions="Center"
-                                VerticalOptions="Center"
                                 Text="This is the TopItems Content"
                                 Margin="12"/>
-                        </Grid>
+                            <Button
+                                Text="Click me!"
+                                Clicked="OnButtonClicked"/>
+                        </StackLayout>
                     </SwipeItemView>
                 </SwipeView.TopItems>
                 <Grid
