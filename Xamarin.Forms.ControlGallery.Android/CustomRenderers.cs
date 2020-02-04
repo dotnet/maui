@@ -32,6 +32,7 @@ using NestedScrollView = global::Android.Support.V4.Widget.NestedScrollView;
 #endif
 using System.IO;
 using AMenuItemCompat = global::Android.Support.V4.View.MenuItemCompat;
+using Android.Support.V4.Content;
 
 [assembly: ExportRenderer(typeof(Issue5461.ScrollbarFadingEnabledFalseScrollView), typeof(ScrollbarFadingEnabledFalseScrollViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue1942.CustomGrid), typeof(Issue1942GridRenderer))]
@@ -87,8 +88,16 @@ namespace Xamarin.Forms.ControlGallery.Android
 					var id = Xamarin.Forms.Platform.Android.ResourceManager.GetDrawableByName(name);
 					if (id != 0)
 					{
-						var drawable = context.GetDrawable(id);
-						menuItem.SetIcon(drawable);
+						if ((int)Build.VERSION.SdkInt >= 21)
+						{
+							var drawable = context.GetDrawable(id);
+							menuItem.SetIcon(drawable);
+						}
+						else
+						{	
+							var drawable = Context.GetDrawable(name);
+							menuItem.SetIcon(drawable);
+						}
 						AMenuItemCompat.SetContentDescription(menuItem, new Java.Lang.String("HEART"));
 						return;
 					}

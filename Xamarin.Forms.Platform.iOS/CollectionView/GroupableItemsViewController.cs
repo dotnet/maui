@@ -143,9 +143,14 @@ namespace Xamarin.Forms.Platform.iOS
 			return GetReferenceSizeForheaderOrFooter(collectionView, ItemsView.GroupFooterTemplate, UICollectionElementKindSectionKey.Footer, section);
 		}
 
-		internal CGSize GetReferenceSizeForheaderOrFooter(UICollectionView collectionView,DataTemplate template, NSString elementKind, nint section)
+		internal CGSize GetReferenceSizeForheaderOrFooter(UICollectionView collectionView, DataTemplate template, NSString elementKind, nint section)
 		{
 			if (!_isGrouped || template == null)
+			{
+				return CGSize.Empty;
+			}
+
+			if (ItemsSource.GroupCount < 1)
 			{
 				return CGSize.Empty;
 			}

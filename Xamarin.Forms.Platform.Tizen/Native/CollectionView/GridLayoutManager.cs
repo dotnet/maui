@@ -115,6 +115,9 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 		public void LayoutItems(Rect bound, bool force)
 		{
+			if (_allocatedSize.Width <= 0 || _allocatedSize.Height <= 0)
+				return;
+
 			// TODO : need to optimization. it was frequently called with similar bound value.
 			if (!ShouldRearrange(bound) && !force)
 			{
