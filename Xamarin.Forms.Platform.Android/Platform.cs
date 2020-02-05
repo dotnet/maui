@@ -1379,5 +1379,33 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		#endregion
+
+		internal static string ResolveMsAppDataUri(Uri uri)
+		{
+			if (uri.Scheme == "ms-appdata")
+			{
+				string filePath = string.Empty;
+
+				if (uri.LocalPath.StartsWith("/local"))
+				{
+					filePath = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments), uri.LocalPath.Substring(7));
+				}
+				else if (uri.LocalPath.StartsWith("/temp"))
+				{
+					filePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), uri.LocalPath.Substring(6));
+				}
+				else
+				{
+					throw new ArgumentException("Invalid Uri", "Source");
+				}
+
+				return filePath;
+			}
+			else
+			{
+				throw new ArgumentException("uri");
+			}
+
+		}
 	}
 }

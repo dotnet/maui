@@ -167,6 +167,7 @@
     <Compile Include="Renderers\LayoutRenderer.cs" />
     <Compile Include="Renderers\ListViewRenderer.cs" />
     <Compile Include="Renderers\MasterDetailPageRenderer.cs" />
+    <Compile Include="Renderers\MediaElementRenderer.cs" />
     <Compile Include="Renderers\NavigationPageRenderer.cs" />
     <Compile Include="Renderers\OpenGLViewRenderer.cs" />
     <Compile Include="Renderers\PageRenderer.cs" />
