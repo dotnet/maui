@@ -9,19 +9,22 @@ using Xamarin.Forms.Internals;
 namespace Xamarin.Forms.DualScreen.UnitTests
 {
 	[TestFixture]
-	public class TwoPaneViewTests : BaseTestFixture
+	public class TwoPaneViewNotSpannedTests : BaseTestFixture
 	{
 		[SetUp]
 		public override void Setup()
 		{
 			base.Setup();
 			Device.PlatformServices = new MockPlatformServices();
-			Device.info = new TestDeviceInfo();
 		}
 
-		TwoPaneView CreateTwoPaneView(View pane1 = null, View pane2 = null)
+		TwoPaneView CreateTwoPaneView(View pane1 = null, View pane2 = null, IDualScreenService dualScreenService = null)
 		{
-			TwoPaneView view = new TwoPaneView()
+			dualScreenService = dualScreenService ?? new TestDualScreenServicePortrait();
+			pane1 = pane1 ?? new BoxView();
+			pane2 = pane2 ?? new BoxView();
+
+			TwoPaneView view = new TwoPaneView(dualScreenService)
 			{
 				IsPlatformEnabled = true,
 				Pane1 = pane1,
@@ -46,16 +49,16 @@ namespace Xamarin.Forms.DualScreen.UnitTests
 			var Pane1 = new StackLayout();
 			var Pane2 = new Grid();
 
-			TwoPaneView twoPaneView = new TwoPaneView()
-			{
-				TallModeConfiguration = TwoPaneViewTallModeConfiguration.SinglePane,
-				WideModeConfiguration = TwoPaneViewWideModeConfiguration.SinglePane,
-				Pane1 = Pane1,
-				Pane2 = Pane2,
-				PanePriority = TwoPaneViewPriority.Pane2,
-				MinTallModeHeight = 1000,
-				MinWideModeWidth = 2000,
-			};
+			TwoPaneView twoPaneView = CreateTwoPaneView(Pane1, Pane2);
+
+			twoPaneView.TallModeConfiguration = TwoPaneViewTallModeConfiguration.SinglePane;
+			twoPaneView.WideModeConfiguration = TwoPaneViewWideModeConfiguration.SinglePane;
+			twoPaneView.Pane1 = Pane1;
+			twoPaneView.Pane2 = Pane2;
+			twoPaneView.PanePriority = TwoPaneViewPriority.Pane2;
+			twoPaneView.MinTallModeHeight = 1000;
+			twoPaneView.MinWideModeWidth = 2000;
+
 
 			Assert.AreEqual(TwoPaneViewTallModeConfiguration.SinglePane, twoPaneView.TallModeConfiguration);
 			Assert.AreEqual(TwoPaneViewWideModeConfiguration.SinglePane, twoPaneView.WideModeConfiguration);
@@ -67,19 +70,55 @@ namespace Xamarin.Forms.DualScreen.UnitTests
 		}
 
 		[Test]
-		public void BasicLayoutTest()
+		public void BasicLayoutTestPortrait()
 		{
-			TwoPaneView twoPaneView = new TwoPaneView();
-			twoPaneView.Layout(new Rectangle(0, 0, 300, 300));
+			TwoPaneView twoPaneView = CreateTwoPaneView();
+			twoPaneView.Layout(new Rectangle(0, 0, 300, 500));
 
-			Assert.AreEqual(300, twoPaneView.Height);
+			Assert.AreEqual(300, twoPaneView.Pane1.Width);
+			Assert.AreEqual(500, twoPaneView.Pane1.Height);
+
+		}
+
+		[Test]
+		public void BasicLayoutTestLandscape()
+		{
+			TwoPaneView twoPaneView = CreateTwoPaneView(dualScreenService: new TestDualScreenServiceLandscape());
+			twoPaneView.Layout(new Rectangle(0, 0, 300, 500));
+
 			Assert.AreEqual(300, twoPaneView.Width);
+			Assert.AreEqual(500, twoPaneView.Height);
+		}
+
+		[Test]
+		public void BasicLayoutTestSinglePanePortrait()
+		{
+			TwoPaneView twoPaneView = CreateTwoPaneView();
+			twoPaneView.MinWideModeWidth = 1000;
+			twoPaneView.MinTallModeHeight = 1000;
+			twoPaneView.Layout(new Rectangle(0, 0, 300, 500));
+
+			Assert.AreEqual(300, twoPaneView.Pane1.Width);
+			Assert.AreEqual(500, twoPaneView.Pane1.Height);
+
+		}
+
+		[Test]
+		public void BasicLayoutTestSinglePaneLandscape()
+		{
+			TwoPaneView twoPaneView = CreateTwoPaneView(dualScreenService: new TestDualScreenServiceLandscape());
+			twoPaneView.MinWideModeWidth = 1000;
+			twoPaneView.MinTallModeHeight = 1000;
+			twoPaneView.Layout(new Rectangle(0, 0, 300, 500));
+
+			Assert.AreEqual(300, twoPaneView.Pane1.Width);
+			Assert.AreEqual(500, twoPaneView.Pane1.Height);
 		}
 
 		[Test]
 		public void ModeSwitchesWithMinWideModeWidth()
 		{
-			TwoPaneView twoPaneView = new TwoPaneView();
+			TwoPaneView twoPaneView = CreateTwoPaneView();
 			twoPaneView.Layout(new Rectangle(0, 0, 300, 300));
 
 			twoPaneView.MinWideModeWidth = 400;
@@ -91,7 +130,7 @@ namespace Xamarin.Forms.DualScreen.UnitTests
 		[Test]
 		public void ModeSwitchesWithMinTallModeHeight()
 		{
-			TwoPaneView twoPaneView = new TwoPaneView();
+			TwoPaneView twoPaneView = CreateTwoPaneView();
 			twoPaneView.Layout(new Rectangle(0, 0, 300, 300));
 
 			twoPaneView.MinTallModeHeight = 400;
@@ -258,9 +297,9 @@ namespace Xamarin.Forms.DualScreen.UnitTests
 		}
 
 
-		internal class TestDeviceInfo : DeviceInfo
+		internal class TestDeviceInfoPortrait : DeviceInfo
 		{
-			public TestDeviceInfo()
+			public TestDeviceInfoPortrait()
 			{
 				CurrentOrientation = DeviceOrientation.Portrait;
 			}
@@ -278,6 +317,97 @@ namespace Xamarin.Forms.DualScreen.UnitTests
 			{
 				get { return 2; }
 			}
+		}
+
+		internal class TestDeviceInfoLandscape : DeviceInfo
+		{
+			public TestDeviceInfoLandscape()
+			{
+				CurrentOrientation = DeviceOrientation.Landscape;
+			}
+			public override Size PixelScreenSize
+			{
+				get { return new Size(2000, 1000); }
+			}
+
+			public override Size ScaledScreenSize
+			{
+				get { return new Size(1000, 500); }
+			}
+
+			public override double ScalingFactor
+			{
+				get { return 2; }
+			}
+		}
+
+
+		internal class TestDualScreenServiceLandscape : IDualScreenService
+		{
+			Point _location;
+			Rectangle _hinge;
+			public TestDualScreenServiceLandscape()
+			{
+				DeviceInfo = new TestDeviceInfoLandscape();
+				_hinge = Rectangle.Zero;
+				IsSpanned = false;
+				IsLandscape = true;
+				_location = Point.Zero;
+			}
+
+			public bool IsSpanned { get; set; }
+
+			public bool IsLandscape { get; set; }
+
+			public DeviceInfo DeviceInfo { get; set; }
+
+			public event EventHandler OnScreenChanged;
+
+			public void Dispose()
+			{
+			}
+
+			public Rectangle GetHinge() => _hinge;
+
+			public void SetHinge(Rectangle rectangle) => _hinge = rectangle;
+
+			public Point? GetLocationOnScreen(VisualElement visualElement) => _location;
+
+			public Point? SetLocationOnScreen(Point point) => _location = point;
+		}
+
+		internal class TestDualScreenServicePortrait : IDualScreenService
+		{
+			Point _location;
+			Rectangle _hinge;
+			public TestDualScreenServicePortrait()
+			{
+				DeviceInfo = new TestDeviceInfoPortrait();
+				_hinge = Rectangle.Zero;
+				IsSpanned = false;
+				IsLandscape = false;
+				_location = Point.Zero;
+			}
+
+			public bool IsSpanned { get; set; }
+
+			public bool IsLandscape { get; set; }
+
+			public DeviceInfo DeviceInfo { get; set; }
+
+			public event EventHandler OnScreenChanged;
+
+			public void Dispose()
+			{
+			}
+
+			public Rectangle GetHinge() => _hinge;
+
+			public void SetHinge(Rectangle rectangle) => _hinge = rectangle;
+
+			public Point? GetLocationOnScreen(VisualElement visualElement) => _location;
+
+			public Point? SetLocationOnScreen(Point point) => _location = point;
 		}
 
 	}

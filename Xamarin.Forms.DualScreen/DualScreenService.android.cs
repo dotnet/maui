@@ -7,6 +7,7 @@ using Android.Views;
 using Microsoft.Device.Display;
 using Xamarin.Forms;
 using Xamarin.Forms.DualScreen;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android;
 
 [assembly: Dependency(typeof(DualScreenService.DualScreenServiceImpl))]
@@ -101,6 +102,7 @@ namespace Xamarin.Forms.DualScreen
 
 			public bool IsSpanned
 				=> _isDuo && (_helper?.IsDualMode ?? false);
+			public DeviceInfo DeviceInfo => Device.info;
 
 			public Rectangle GetHinge()
 			{

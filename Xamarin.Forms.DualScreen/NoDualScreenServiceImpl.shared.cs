@@ -19,7 +19,9 @@ namespace Xamarin.Forms.DualScreen
 
         public bool IsLandscape => Device.info.CurrentOrientation.IsLandscape();
 
-        public event EventHandler OnScreenChanged
+		public DeviceInfo DeviceInfo => Device.info;
+
+		public event EventHandler OnScreenChanged
         {
             add
             {

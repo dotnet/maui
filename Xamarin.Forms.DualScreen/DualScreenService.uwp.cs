@@ -12,6 +12,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Hosting;
 using Xamarin.Forms;
 using Xamarin.Forms.DualScreen;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.UWP;
 
 [assembly: Dependency(typeof(DualScreenService))]
@@ -39,9 +40,10 @@ namespace Xamarin.Forms.DualScreen
 
                 return false;
             }
-        }
+		}
+		public DeviceInfo DeviceInfo => Device.info;
 
-        public bool IsLandscape
+		public bool IsLandscape
         {
             get
             {

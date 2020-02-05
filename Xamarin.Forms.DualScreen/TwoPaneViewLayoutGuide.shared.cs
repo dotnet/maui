@@ -6,236 +6,333 @@ using System.Runtime.CompilerServices;
 
 namespace Xamarin.Forms.DualScreen
 {
-    internal class TwoPaneViewLayoutGuide : INotifyPropertyChanged
-    {
-        public static TwoPaneViewLayoutGuide Instance => _twoPaneViewLayoutGuide.Value;
-        static Lazy<TwoPaneViewLayoutGuide> _twoPaneViewLayoutGuide = new Lazy<TwoPaneViewLayoutGuide>(() => new TwoPaneViewLayoutGuide());
+	internal class TwoPaneViewLayoutGuide : INotifyPropertyChanged
+	{
+		public static TwoPaneViewLayoutGuide Instance => _twoPaneViewLayoutGuide.Value;
+		static Lazy<TwoPaneViewLayoutGuide> _twoPaneViewLayoutGuide = new Lazy<TwoPaneViewLayoutGuide>(() => new TwoPaneViewLayoutGuide());
 
-        IDualScreenService DualScreenService =>
-            DependencyService.Get<IDualScreenService>() ?? NoDualScreenServiceImpl.Instance;
+		IDualScreenService DualScreenService =>
+			_dualScreenService ?? DependencyService.Get<IDualScreenService>() ?? NoDualScreenServiceImpl.Instance;
 
-        Rectangle _hinge;
-        Rectangle _leftPage;
-        Rectangle _rightPane;
-        TwoPaneViewMode _mode;
-        Layout _layout;
-        bool _isLandscape;
-        public event PropertyChangedEventHandler PropertyChanged;
-        List<string> _pendingPropertyChanges = new List<string>();
+		Rectangle _hinge;
+		Rectangle _leftPage;
+		Rectangle _rightPane;
+		TwoPaneViewMode _mode;
+		Layout _layout;
+		readonly IDualScreenService _dualScreenService;
+		bool _isLandscape;
+		public event PropertyChangedEventHandler PropertyChanged;
+		List<string> _pendingPropertyChanges = new List<string>();
 
-        TwoPaneViewLayoutGuide()
-        {
-        }
+		TwoPaneViewLayoutGuide()
+		{
+		}
 
-        public TwoPaneViewLayoutGuide(Layout layout)
-        {
-            _layout = layout;
-        }
+		public TwoPaneViewLayoutGuide(Layout layout)
+		{
+			_layout = layout;
+		}
 
-        public void WatchForChanges()
-        {
-            StopWatchingForChanges();
-            DualScreenService.OnScreenChanged += OnScreenChanged;
+		internal TwoPaneViewLayoutGuide(Layout layout, IDualScreenService dualScreenService)
+		{
+			_layout = layout;
+			_dualScreenService = dualScreenService;
+		}
 
-            if (_layout != null)
-            {
-                _layout.SizeChanged += OnLayoutChanged;
-            }
-            if (Device.Info is INotifyPropertyChanged npc)
-            {
-                npc.PropertyChanged += OnDeviceInfoChanged;
-            }
-        }
+		public void WatchForChanges()
+		{
+			StopWatchingForChanges();
+			DualScreenService.OnScreenChanged += OnScreenChanged;
 
-        public void StopWatchingForChanges()
-        {
-            DualScreenService.OnScreenChanged -= OnScreenChanged;
+			if (_layout != null)
+			{
+				_layout.SizeChanged += OnLayoutChanged;
+			}
 
-            if (_layout != null)
-            {
-                _layout.SizeChanged -= OnLayoutChanged;
-            }
-            if (Device.Info is INotifyPropertyChanged npc)
-            {
-                npc.PropertyChanged -= OnDeviceInfoChanged;
-            }
-        }
+			if (DualScreenService.DeviceInfo is INotifyPropertyChanged npc)
+			{
+				npc.PropertyChanged += OnDeviceInfoChanged;
+			}
+		}
 
-        void OnLayoutChanged(object sender, EventArgs e)
-        {
-            UpdateLayouts();
-        }
+		public void StopWatchingForChanges()
+		{
+			DualScreenService.OnScreenChanged -= OnScreenChanged;
 
-        void OnScreenChanged(object sender, EventArgs e)
-        {
-            UpdateLayouts();
-        }
+			if (_layout != null)
+			{
+				_layout.SizeChanged -= OnLayoutChanged;
+			}
 
-        void OnDeviceInfoChanged(object sender, PropertyChangedEventArgs args)
-        {
-            if (args.PropertyName == nameof(Device.Info.CurrentOrientation))
-            {
-                UpdateLayouts();
-            }
-        }
+			if (DualScreenService.DeviceInfo is INotifyPropertyChanged npc)
+			{
+				npc.PropertyChanged -= OnDeviceInfoChanged;
+			}
+		}
 
-        public bool IsLandscape
-        {
-            get => DualScreenService.IsLandscape;
-            set => SetProperty(ref _isLandscape, value);
-        }
+		void OnLayoutChanged(object sender, EventArgs e)
+		{
+			UpdateLayouts();
+		}
 
-        public TwoPaneViewMode Mode
-        {
-            get
-            {
-                return GetTwoPaneViewMode();
-            }
-            private set
-            {
-                SetProperty(ref _mode, value);
-            }
-        }
+		void OnScreenChanged(object sender, EventArgs e)
+		{
+			UpdateLayouts();
+		}
 
-        public Rectangle Pane1
-        {
-            get
-            {
-                return _leftPage;
-            }
-            private set
-            {
-                SetProperty(ref _leftPage, value);
-            }
-        }
+		void OnDeviceInfoChanged(object sender, PropertyChangedEventArgs args)
+		{
+			if (args.PropertyName == nameof(DualScreenService.DeviceInfo.CurrentOrientation))
+			{
+				UpdateLayouts();
+			}
+		}
 
-        public Rectangle Pane2
-        {
-            get
-            {
-                return _rightPane;
-            }
-            private set
-            {
-                SetProperty(ref _rightPane, value);
-            }
-        }
+		public bool IsLandscape
+		{
+			get => DualScreenService.IsLandscape;
+			set => SetProperty(ref _isLandscape, value);
+		}
 
-        public Rectangle Hinge
-        {
-            get
-            {
-                return DualScreenService.GetHinge();
-            }
-            private set
-            {
-                SetProperty(ref _hinge, value);
-            }
-        }
+		public TwoPaneViewMode Mode
+		{
+			get
+			{
+				return GetTwoPaneViewMode();
+			}
+			private set
+			{
+				SetProperty(ref _mode, value);
+			}
+		}
 
-        internal void UpdateLayouts()
-        {
-            Rectangle containerArea;
-            if (_layout == null)
-            {
-                containerArea = new Rectangle(Point.Zero, Device.info.ScaledScreenSize);
-            }
-            else
-            {
-                containerArea = _layout.Bounds;
-            }
+		public Rectangle Pane1
+		{
+			get
+			{
+				return _leftPage;
+			}
+			private set
+			{
+				SetProperty(ref _leftPage, value);
+			}
+		}
 
-            if (containerArea.Width <= 0)
-            {
-                return;
-            }
+		public Rectangle Pane2
+		{
+			get
+			{
+				return _rightPane;
+			}
+			private set
+			{
+				SetProperty(ref _rightPane, value);
+			}
+		}
 
-            Rectangle _newPane1 = Pane1;
-            Rectangle _newPane2 = Pane2;
+		public Rectangle Hinge
+		{
+			get
+			{
+				return DualScreenService.GetHinge();
+			}
+			private set
+			{
+				SetProperty(ref _hinge, value);
+			}
+		}
 
-            if (!DualScreenService.IsLandscape)
-            {
-                if (DualScreenService.IsSpanned)
-                {
-                    var paneWidth = (containerArea.Width - Hinge.Width) / 2;
-                    _newPane1 = new Rectangle(0, 0, paneWidth, containerArea.Height);
-                    _newPane2 = new Rectangle(paneWidth + Hinge.Width, 0, paneWidth, Pane1.Height);
-                }
-                else
-                {
-                    _newPane1 = new Rectangle(0, 0, containerArea.Width, containerArea.Height);
-                    _newPane2 = Rectangle.Zero;
-                }
-            }
-            else
-            {
-                if (DualScreenService.IsSpanned)
+		Rectangle GetContainerArea()
+		{
+			Rectangle containerArea;
+			if (_layout == null)
+			{
+				containerArea = new Rectangle(Point.Zero, DualScreenService.DeviceInfo.ScaledScreenSize);
+			}
+			else
+			{
+				containerArea = _layout.Bounds;
+			}
+
+			return containerArea;
+		}
+
+		Rectangle GetScreenRelativeBounds()
+		{
+			Rectangle containerArea;
+			if (_layout == null)
+			{
+				containerArea = new Rectangle(Point.Zero, DualScreenService.DeviceInfo.ScaledScreenSize);
+			}
+			else
+			{
+				var locationOnScreen = DualScreenService.GetLocationOnScreen(_layout);
+				if (!locationOnScreen.HasValue)
+					return Rectangle.Zero;
+
+				containerArea = new Rectangle(locationOnScreen.Value, _layout.Bounds.Size);
+			}
+
+			return containerArea;
+
+		}
+
+		internal void UpdateLayouts()
+		{
+			Rectangle containerArea = GetContainerArea();
+			if (containerArea.Width <= 0)
+			{
+				return;
+			}
+
+			// Pane dimensions are calculated relative to the layout container
+			Rectangle _newPane1 = Pane1;
+			Rectangle _newPane2 = Pane2;
+			var locationOnScreen = GetScreenRelativeBounds();
+			if (locationOnScreen == Rectangle.Zero && Hinge == Rectangle.Zero)
+				locationOnScreen = containerArea;
+
+			bool isSpanned = IsInMultipleRegions(locationOnScreen);
+
+			if (!DualScreenService.IsLandscape)
+			{
+				if (isSpanned)
 				{
-					Point displayedScreenAbsCoordinates = Point.Zero;
+					var pane2X = Hinge.X + Hinge.Width;
+					var containerRightX = locationOnScreen.X + locationOnScreen.Width;
+					var pane2Width = containerRightX - pane2X;
 
-					if (_layout != null)
-						displayedScreenAbsCoordinates = DualScreenService.GetLocationOnScreen(_layout) ?? Point.Zero;
+					_newPane1 = new Rectangle(0, 0, Hinge.X - locationOnScreen.X, locationOnScreen.Height);
+					_newPane2 = new Rectangle(_newPane1.Width + Hinge.Width, 0, pane2Width, locationOnScreen.Height);
+				}
+				else
+				{
+					// Check if part of the layout is underneath the hinge
+					var containerRightX = locationOnScreen.X + locationOnScreen.Width;
+					var hingeRightX = Hinge.X + Hinge.Width;
 
-					var screenSize = Device.info.ScaledScreenSize;
-                    var topStuffHeight = displayedScreenAbsCoordinates.Y;
-                    var bottomStuffHeight = screenSize.Height - topStuffHeight - containerArea.Height;
-                    var paneWidth = containerArea.Width;
-                    var leftPaneHeight = Hinge.Y - topStuffHeight;
-                    var rightPaneHeight = screenSize.Height - topStuffHeight - leftPaneHeight - bottomStuffHeight - Hinge.Height;
+					// Right side under hinge
+					if (containerRightX > Hinge.X && containerRightX < hingeRightX)
+					{
+						_newPane1 = new Rectangle(0, 0, Hinge.X - locationOnScreen.X, locationOnScreen.Height);
+					}
+					// left side under hinge
+					else if (Hinge.X < locationOnScreen.X && hingeRightX > locationOnScreen.X)
+					{
+						var amountObscured = hingeRightX - locationOnScreen.X;
+						_newPane1 = new Rectangle(amountObscured, 0, locationOnScreen.Width - amountObscured, locationOnScreen.Height);
+					}
+					else
+						_newPane1 = new Rectangle(0, 0, locationOnScreen.Width, locationOnScreen.Height);
 
-                    _newPane1 = new Rectangle(0, 0, paneWidth, leftPaneHeight);
-                    _newPane2 = new Rectangle(0, Hinge.Y + Hinge.Height - topStuffHeight, paneWidth, rightPaneHeight);
-                }
-                else
-                {
-                    _newPane1 = new Rectangle(0, 0, containerArea.Width, containerArea.Height);
-                    _newPane2 = Rectangle.Zero;
-                }
-            }
+					_newPane2 = Rectangle.Zero;
+				}
+			}
+			else
+			{
+				if (isSpanned)
+				{
+					var pane2Y = Hinge.Y + Hinge.Height;
+					var containerBottomY = locationOnScreen.Y + locationOnScreen.Height;
+					var pane2Height = containerBottomY - pane2Y;
 
-            if (_newPane2.Height < 0 || _newPane2.Width < 0)
-                _newPane2 = Rectangle.Zero;
+					_newPane1 = new Rectangle(0, 0, locationOnScreen.Width, Hinge.Y - locationOnScreen.Y);
+					_newPane2 = new Rectangle(0, _newPane1.Height + Hinge.Height, locationOnScreen.Width, pane2Height);
+				}
+				else
+				{
+					// Check if part of the layout is underneath the hinge
+					var containerBottomY = locationOnScreen.Y + locationOnScreen.Height;
+					var hingeBottomY = Hinge.Y + Hinge.Height;
 
-            if (_newPane1.Height < 0 || _newPane1.Width < 0)
-                _newPane1 = Rectangle.Zero;
+					// Right side under hinge
+					if (containerBottomY > Hinge.Y && containerBottomY < hingeBottomY)
+					{
+						_newPane1 = new Rectangle(0, 0, locationOnScreen.Width, Hinge.Y - locationOnScreen.Y);
+					}
+					// left side under hinge
+					else if (Hinge.Y < locationOnScreen.Y && hingeBottomY > locationOnScreen.Y)
+					{
+						var amountObscured = hingeBottomY - locationOnScreen.Y;
+						_newPane1 = new Rectangle(0, amountObscured, locationOnScreen.Width, locationOnScreen.Height - amountObscured);
+					}
+					else
+						_newPane1 = new Rectangle(0, 0, locationOnScreen.Width, locationOnScreen.Height);
 
-            Pane1 = _newPane1;
-            Pane2 = _newPane2;
-            Mode = GetTwoPaneViewMode();
-            Hinge = DualScreenService.GetHinge();
-            IsLandscape = DualScreenService.IsLandscape;
+					_newPane2 = Rectangle.Zero;
+				}
+			}
 
-            var properties = _pendingPropertyChanges.ToList();
-            _pendingPropertyChanges.Clear();
+			if (_newPane2.Height < 0 || _newPane2.Width < 0)
+				_newPane2 = Rectangle.Zero;
 
-            foreach(var property in properties)
-            {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
-            }
-        }
+			if (_newPane1.Height < 0 || _newPane1.Width < 0)
+				_newPane1 = Rectangle.Zero;
 
-        TwoPaneViewMode GetTwoPaneViewMode()
-        {
-            if (!DualScreenService.IsSpanned)
-                return TwoPaneViewMode.SinglePane;
+			Pane1 = _newPane1;
+			Pane2 = _newPane2;
+			Mode = GetTwoPaneViewMode();
+			Hinge = DualScreenService.GetHinge();
+			IsLandscape = DualScreenService.IsLandscape;
 
-            if (DualScreenService.IsLandscape)
-                return TwoPaneViewMode.Tall;
+			var properties = _pendingPropertyChanges.ToList();
+			_pendingPropertyChanges.Clear();
 
-            return TwoPaneViewMode.Wide;
-        }
+			foreach (var property in properties)
+			{
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
+			}
+		}
 
-        protected bool SetProperty<T>(ref T backingStore, T value,
-            [CallerMemberName]string propertyName = "",
-            Action onChanged = null)
-        {
-            if (EqualityComparer<T>.Default.Equals(backingStore, value))
-                return false;
 
-            backingStore = value;
-            onChanged?.Invoke();
-            _pendingPropertyChanges.Add(propertyName);
-            return true;
-        }
-    }
+		bool IsInMultipleRegions(Rectangle layoutBounds)
+		{
+			bool isInMultipleRegions = false;
+			var hinge = DualScreenService.GetHinge();
+
+			// Portrait
+			if (!DualScreenService.IsLandscape)
+			{
+				// Check that the control is over the split
+				if (layoutBounds.X < hinge.X && layoutBounds.X + layoutBounds.Width > (hinge.X + hinge.Width))
+				{
+					isInMultipleRegions = true;
+				}
+			}
+			else
+			{
+				// Check that the control is over the split
+				if (layoutBounds.Y < hinge.Y && layoutBounds.Y + layoutBounds.Height > (hinge.Y + hinge.Height))
+				{
+					isInMultipleRegions = true;
+				}
+			}
+
+			return isInMultipleRegions;
+		}
+
+		TwoPaneViewMode GetTwoPaneViewMode()
+		{
+			if (!IsInMultipleRegions(GetContainerArea()))
+				return TwoPaneViewMode.SinglePane;
+
+			if (DualScreenService.IsLandscape)
+				return TwoPaneViewMode.Tall;
+
+			return TwoPaneViewMode.Wide;
+		}
+
+		protected bool SetProperty<T>(ref T backingStore, T value,
+			[CallerMemberName]string propertyName = "",
+			Action onChanged = null)
+		{
+			if (EqualityComparer<T>.Default.Equals(backingStore, value))
+				return false;
+
+			backingStore = value;
+			onChanged?.Invoke();
+			_pendingPropertyChanges.Add(propertyName);
+			return true;
+		}
+	}
 }

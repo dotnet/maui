@@ -15,9 +15,23 @@ namespace Xamarin.Forms.DualScreen
         Rectangle _hingeBounds;
         bool _isLandscape;
         TwoPaneViewMode _spanMode;
+		TwoPaneViewLayoutGuide _twoPaneViewLayoutGuide;
+		public static DualScreenInfo Current => _dualScreenInfo.Value;
 
-        public static DualScreenInfo Current => _dualScreenInfo.Value;
-        public Rectangle[] SpanningBounds
+		public DualScreenInfo(Layout layout)
+		{
+			if(layout == null)
+			{
+				_twoPaneViewLayoutGuide = TwoPaneViewLayoutGuide.Instance;
+			}
+			else
+			{
+				_twoPaneViewLayoutGuide = new TwoPaneViewLayoutGuide(layout);
+				_twoPaneViewLayoutGuide.PropertyChanged += OnTwoPaneViewLayoutGuideChanged;
+			}
+		}
+
+		public Rectangle[] SpanningBounds
         {
             get => GetSpanningBounds();
             set
@@ -56,7 +70,7 @@ namespace Xamarin.Forms.DualScreen
 
         Rectangle[] GetSpanningBounds()
         {
-            var guide = TwoPaneViewLayoutGuide.Instance;
+            var guide = _twoPaneViewLayoutGuide;
             var hinge = guide.Hinge;
             guide.UpdateLayouts();
 
@@ -71,19 +85,19 @@ namespace Xamarin.Forms.DualScreen
 
         Rectangle GetHingeBounds()
         {
-            var guide = TwoPaneViewLayoutGuide.Instance;
+            var guide = _twoPaneViewLayoutGuide;
             guide.UpdateLayouts();
             return guide.Hinge;
         }
 
-        bool GetIsLandscape() => TwoPaneViewLayoutGuide.Instance.IsLandscape;
+        bool GetIsLandscape() => _twoPaneViewLayoutGuide.IsLandscape;
 
-        TwoPaneViewMode GetSpanMode() => TwoPaneViewLayoutGuide.Instance.Mode;
+        TwoPaneViewMode GetSpanMode() => _twoPaneViewLayoutGuide.Mode;
 
         static DualScreenInfo OnCreate()
         {
-            DualScreenInfo dualScreenInfo = new DualScreenInfo();
-            TwoPaneViewLayoutGuide.Instance.PropertyChanged += dualScreenInfo.OnTwoPaneViewLayoutGuideChanged;
+            DualScreenInfo dualScreenInfo = new DualScreenInfo(null);
+			dualScreenInfo._twoPaneViewLayoutGuide.PropertyChanged += dualScreenInfo.OnTwoPaneViewLayoutGuideChanged;
             return dualScreenInfo;
         }
 
