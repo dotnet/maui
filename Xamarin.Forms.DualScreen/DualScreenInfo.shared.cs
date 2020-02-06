@@ -18,15 +18,19 @@ namespace Xamarin.Forms.DualScreen
 		TwoPaneViewLayoutGuide _twoPaneViewLayoutGuide;
 		public static DualScreenInfo Current => _dualScreenInfo.Value;
 
-		public DualScreenInfo(Layout layout)
+		public DualScreenInfo(Layout layout) : this(layout, null)
 		{
-			if(layout == null)
+		}
+
+		internal DualScreenInfo(Layout layout, IDualScreenService dualScreenService)
+		{
+			if (layout == null)
 			{
 				_twoPaneViewLayoutGuide = TwoPaneViewLayoutGuide.Instance;
 			}
 			else
 			{
-				_twoPaneViewLayoutGuide = new TwoPaneViewLayoutGuide(layout);
+				_twoPaneViewLayoutGuide = new TwoPaneViewLayoutGuide(layout, dualScreenService);
 				_twoPaneViewLayoutGuide.PropertyChanged += OnTwoPaneViewLayoutGuideChanged;
 			}
 		}

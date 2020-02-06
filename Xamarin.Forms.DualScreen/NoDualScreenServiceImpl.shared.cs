@@ -21,17 +21,7 @@ namespace Xamarin.Forms.DualScreen
 
 		public DeviceInfo DeviceInfo => Device.info;
 
-		public event EventHandler OnScreenChanged
-        {
-            add
-            {
-
-            }
-            remove
-            {
-
-            }
-        }
+		public event EventHandler OnScreenChanged;
 
         public void Dispose()
         {
@@ -46,5 +36,20 @@ namespace Xamarin.Forms.DualScreen
         {
             return null;
         }
-    }
+
+		public void WatchForChangesOnLayout(VisualElement visualElement)
+		{
+			visualElement.BatchCommitted += OnLayoutChangesCommited;
+		}
+
+		public void StopWatchingForChangesOnLayout(VisualElement visualElement)
+		{
+			visualElement.BatchCommitted -= OnLayoutChangesCommited;
+		}
+
+		void OnLayoutChangesCommited(object sender, EventArg<VisualElement> e)
+		{
+			OnScreenChanged?.Invoke(this, EventArgs.Empty);
+		}
+	}
 }

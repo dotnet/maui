@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.DualScreen.UnitTests
 {
 	[TestFixture]
-	public class TwoPaneViewNotSpannedTests : BaseTestFixture
+	public partial class TwoPaneViewNotSpannedTests : BaseTestFixture
 	{
 		[SetUp]
 		public override void Setup()
@@ -42,6 +40,21 @@ namespace Xamarin.Forms.DualScreen.UnitTests
 
 			return view;
 		}
+
+
+		[Test]
+		public void DeviceWithoutSpanSupport()
+		{
+			TestDualScreenServicePortrait testDualScreenService = new TestDualScreenServicePortrait();
+			var result = CreateTwoPaneView(dualScreenService: testDualScreenService);
+
+			result.Layout(new Rectangle(100, 100, 200, 200));
+
+			Assert.AreEqual(200, result.Children[0].Width);
+			Assert.AreEqual(200, result.Children[0].Height);
+		}
+
+
 
 		[Test]
 		public void GettersAndSetters()
@@ -295,120 +308,5 @@ namespace Xamarin.Forms.DualScreen.UnitTests
 			Assert.IsTrue(twoPaneView.Children[0].IsVisible);
 			Assert.IsFalse(twoPaneView.Children[1].IsVisible);
 		}
-
-
-		internal class TestDeviceInfoPortrait : DeviceInfo
-		{
-			public TestDeviceInfoPortrait()
-			{
-				CurrentOrientation = DeviceOrientation.Portrait;
-			}
-			public override Size PixelScreenSize
-			{
-				get { return new Size(1000, 2000); }
-			}
-
-			public override Size ScaledScreenSize
-			{
-				get { return new Size(500, 1000); }
-			}
-
-			public override double ScalingFactor
-			{
-				get { return 2; }
-			}
-		}
-
-		internal class TestDeviceInfoLandscape : DeviceInfo
-		{
-			public TestDeviceInfoLandscape()
-			{
-				CurrentOrientation = DeviceOrientation.Landscape;
-			}
-			public override Size PixelScreenSize
-			{
-				get { return new Size(2000, 1000); }
-			}
-
-			public override Size ScaledScreenSize
-			{
-				get { return new Size(1000, 500); }
-			}
-
-			public override double ScalingFactor
-			{
-				get { return 2; }
-			}
-		}
-
-
-		internal class TestDualScreenServiceLandscape : IDualScreenService
-		{
-			Point _location;
-			Rectangle _hinge;
-			public TestDualScreenServiceLandscape()
-			{
-				DeviceInfo = new TestDeviceInfoLandscape();
-				_hinge = Rectangle.Zero;
-				IsSpanned = false;
-				IsLandscape = true;
-				_location = Point.Zero;
-			}
-
-			public bool IsSpanned { get; set; }
-
-			public bool IsLandscape { get; set; }
-
-			public DeviceInfo DeviceInfo { get; set; }
-
-			public event EventHandler OnScreenChanged;
-
-			public void Dispose()
-			{
-			}
-
-			public Rectangle GetHinge() => _hinge;
-
-			public void SetHinge(Rectangle rectangle) => _hinge = rectangle;
-
-			public Point? GetLocationOnScreen(VisualElement visualElement) => _location;
-
-			public Point? SetLocationOnScreen(Point point) => _location = point;
-		}
-
-		internal class TestDualScreenServicePortrait : IDualScreenService
-		{
-			Point _location;
-			Rectangle _hinge;
-			public TestDualScreenServicePortrait()
-			{
-				DeviceInfo = new TestDeviceInfoPortrait();
-				_hinge = Rectangle.Zero;
-				IsSpanned = false;
-				IsLandscape = false;
-				_location = Point.Zero;
-			}
-
-			public bool IsSpanned { get; set; }
-
-			public bool IsLandscape { get; set; }
-
-			public DeviceInfo DeviceInfo { get; set; }
-
-			public event EventHandler OnScreenChanged;
-
-			public void Dispose()
-			{
-			}
-
-			public Rectangle GetHinge() => _hinge;
-
-			public void SetHinge(Rectangle rectangle) => _hinge = rectangle;
-
-			public Point? GetLocationOnScreen(VisualElement visualElement) => _location;
-
-			public Point? SetLocationOnScreen(Point point) => _location = point;
-		}
-
 	}
 }

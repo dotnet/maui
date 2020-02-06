@@ -14,5 +14,7 @@ namespace Xamarin.Forms.DualScreen
 		Rectangle GetHinge();
 		Point? GetLocationOnScreen(VisualElement visualElement);
 		DeviceInfo DeviceInfo { get; }
+		void WatchForChangesOnLayout(VisualElement visualElement);
+		void StopWatchingForChangesOnLayout(VisualElement visualElement);
 	}
 }

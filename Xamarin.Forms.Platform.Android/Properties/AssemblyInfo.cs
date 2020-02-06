@@ -61,3 +61,4 @@ using Xamarin.Forms.Platform.Android;
 [assembly: Preserve]
 [assembly: InternalsVisibleTo("Xamarin.Forms.Platform")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.Material")]
+[assembly: InternalsVisibleTo("Xamarin.Forms.DualScreen")]

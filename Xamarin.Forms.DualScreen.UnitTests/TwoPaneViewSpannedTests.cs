@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NUnit.Framework;
-using Xamarin.Forms.Internals;
+﻿using NUnit.Framework;
 
 namespace Xamarin.Forms.DualScreen.UnitTests
 {
@@ -18,11 +12,12 @@ namespace Xamarin.Forms.DualScreen.UnitTests
 			Device.PlatformServices = new MockPlatformServices();
 		}
 
-		TwoPaneView CreateTwoPaneView(IDualScreenService dualScreenService, View pane1 = null, View pane2 = null)
+		TwoPaneView CreateTwoPaneView(TestDualScreenService dualScreenService, View pane1 = null, View pane2 = null)
 		{
 			pane1 = pane1 ?? new BoxView();
 			pane2 = pane2 ?? new BoxView();
-
+			dualScreenService.IsSpanned = true;
+			
 			TwoPaneView view = new TwoPaneView(dualScreenService)
 			{
 				IsPlatformEnabled = true,
@@ -48,11 +43,10 @@ namespace Xamarin.Forms.DualScreen.UnitTests
 		[Test]
 		public void BasicSpanTest()
 		{
-			var deviceInfo = new TestDeviceInfoPortrait();
-			TestDualScreenServicePortrait testDualScreenService = new TestDualScreenServicePortrait(deviceInfo);
+			TestDualScreenServicePortrait testDualScreenService = new TestDualScreenServicePortrait();
 			var result = CreateTwoPaneView(testDualScreenService);
 
-			result.Layout(new Rectangle(Point.Zero, deviceInfo.ScaledScreenSize));
+			result.Layout(new Rectangle(Point.Zero, testDualScreenService.DeviceInfo.ScaledScreenSize));
 
 			Assert.AreEqual(490, result.Children[0].Width);
 			Assert.AreEqual(490, result.Children[1].Width);
@@ -61,34 +55,18 @@ namespace Xamarin.Forms.DualScreen.UnitTests
 			Assert.AreEqual(490, result.Pane1.Width);
 			Assert.AreEqual(490, result.Pane2.Width);
 
-			Assert.AreEqual(deviceInfo.ScaledScreenSize.Height, result.Pane1.Height);
-			Assert.AreEqual(deviceInfo.ScaledScreenSize.Height, result.Pane2.Height);
-		}
-
-		[Test]
-		public void DeviceWithoutSpanSupport()
-		{
-			var deviceInfo = new TestDeviceInfoPortrait();
-			TestDualScreenServicePortrait testDualScreenService = new TestDualScreenServicePortrait(deviceInfo);
-			testDualScreenService.IsSpanned = false;
-			testDualScreenService.SetHinge(Rectangle.Zero);
-			var result = CreateTwoPaneView(testDualScreenService);
-
-			result.Layout(new Rectangle(100, 100 ,200, 200));
-
-			Assert.AreEqual(200, result.Children[0].Width);
-			Assert.AreEqual(200, result.Children[0].Height);
+			Assert.AreEqual(testDualScreenService.DeviceInfo.ScaledScreenSize.Height, result.Pane1.Height);
+			Assert.AreEqual(testDualScreenService.DeviceInfo.ScaledScreenSize.Height, result.Pane2.Height);
 		}
 
 		[Test]
 		public void LayoutShiftedOffCenterWideMode()
 		{
-			var deviceInfo = new TestDeviceInfoPortrait();
-			TestDualScreenServicePortrait testDualScreenService = new TestDualScreenServicePortrait(deviceInfo);
+			TestDualScreenServicePortrait testDualScreenService = new TestDualScreenServicePortrait();
 			testDualScreenService.SetLocationOnScreen(new Point(400, 0));
 			var result = CreateTwoPaneView(testDualScreenService);
 
-			result.Layout(new Rectangle(400, 0, 500, deviceInfo.ScaledScreenSize.Height));
+			result.Layout(new Rectangle(400, 0, 500, testDualScreenService.DeviceInfo.ScaledScreenSize.Height));
 
 			Assert.AreEqual(90, result.Children[0].Width);
 			Assert.AreEqual(400, result.Bounds.X);
@@ -98,14 +76,30 @@ namespace Xamarin.Forms.DualScreen.UnitTests
 
 
 		[Test]
-		public void PortraitLayoutStartUnderneathHinge()
+		public void LayoutShiftedOffCenterTallMode()
 		{
-			var deviceInfo = new TestDeviceInfoPortrait();
-			TestDualScreenServicePortrait testDualScreenService = new TestDualScreenServicePortrait(deviceInfo);
-			testDualScreenService.SetLocationOnScreen(new Point(500, 0));
+			var testDualScreenService = new TestDualScreenServiceLandscape();
+			testDualScreenService.SetLocationOnScreen(new Point(0, 400));
 			var result = CreateTwoPaneView(testDualScreenService);
 
-			result.Layout(new Rectangle(500, 0, 400, deviceInfo.ScaledScreenSize.Height));
+			result.Layout(new Rectangle(0, 400, testDualScreenService.DeviceInfo.ScaledScreenSize.Width, 500));
+
+			Assert.AreEqual(90, result.Children[0].Height);
+			Assert.AreEqual(400, result.Bounds.Y);
+			Assert.AreEqual(390, result.Children[1].Height);
+			Assert.AreEqual(110, result.Children[1].Y);
+		}
+
+
+
+		[Test]
+		public void PortraitLayoutStartUnderneathHinge()
+		{
+			TestDualScreenServicePortrait testDualScreenService = new TestDualScreenServicePortrait();
+			testDualScreenService.SetLocationOnScreen(new Point(500, 0));
+			var result = CreateTwoPaneView(dualScreenService: testDualScreenService);
+
+			result.Layout(new Rectangle(500, 0, 400, testDualScreenService.DeviceInfo.ScaledScreenSize.Height));
 
 			Assert.AreEqual(390, result.Pane1.Width);
 			Assert.AreEqual(10, result.Pane1.X);
@@ -115,12 +109,11 @@ namespace Xamarin.Forms.DualScreen.UnitTests
 		[Test]
 		public void PortraitLayoutEndsUnderneathHinge()
 		{
-			var deviceInfo = new TestDeviceInfoPortrait();
-			TestDualScreenServicePortrait testDualScreenService = new TestDualScreenServicePortrait(deviceInfo);
+			TestDualScreenServicePortrait testDualScreenService = new TestDualScreenServicePortrait();
 			testDualScreenService.SetLocationOnScreen(new Point(100, 0));
-			var result = CreateTwoPaneView(testDualScreenService);
+			var result = CreateTwoPaneView(dualScreenService: testDualScreenService);
 
-			result.Layout(new Rectangle(100, 0, 400, deviceInfo.ScaledScreenSize.Height));
+			result.Layout(new Rectangle(100, 0, 400, testDualScreenService.DeviceInfo.ScaledScreenSize.Height));
 
 			Assert.AreEqual(390, result.Pane1.Width);
 			Assert.AreEqual(0, result.Pane1.X);
@@ -131,12 +124,10 @@ namespace Xamarin.Forms.DualScreen.UnitTests
 		[Test]
 		public void LandscapeLayoutStartUnderneathHinge()
 		{
-			var deviceInfo = new TestDeviceInfoLandscape();
-			var testDualScreenService = new TestDualScreenServiceLandscape(deviceInfo);
+			var testDualScreenService = new TestDualScreenServiceLandscape();
 			testDualScreenService.SetLocationOnScreen(new Point(0, 500));
-			var result = CreateTwoPaneView(testDualScreenService);
-
-			result.Layout(new Rectangle(0, 500, deviceInfo.ScaledScreenSize.Width, 400));
+			var result = CreateTwoPaneView(dualScreenService: testDualScreenService);
+			result.Layout(new Rectangle(0, 500, testDualScreenService.DeviceInfo.ScaledScreenSize.Width, 400));
 
 			Assert.AreEqual(390, result.Pane1.Height);
 			Assert.AreEqual(10, result.Pane1.Y);
@@ -146,12 +137,11 @@ namespace Xamarin.Forms.DualScreen.UnitTests
 		[Test]
 		public void LandscapeLayoutEndsUnderneathHinge()
 		{
-			var deviceInfo = new TestDeviceInfoPortrait();
-			var testDualScreenService = new TestDualScreenServiceLandscape(deviceInfo);
+			var testDualScreenService = new TestDualScreenServiceLandscape();
 			testDualScreenService.SetLocationOnScreen(new Point(0, 100));
-			var result = CreateTwoPaneView(testDualScreenService);
+			var result = CreateTwoPaneView(dualScreenService: testDualScreenService);
 
-			result.Layout(new Rectangle(0, 100, deviceInfo.ScaledScreenSize.Width, 400));
+			result.Layout(new Rectangle(0, 100, testDualScreenService.DeviceInfo.ScaledScreenSize.Width, 400));
 
 			Assert.AreEqual(390, result.Pane1.Height);
 			Assert.AreEqual(0, result.Pane1.Y);
@@ -160,133 +150,31 @@ namespace Xamarin.Forms.DualScreen.UnitTests
 
 
 		[Test]
-		public void LayoutShiftedOffCenterTallMode()
+		public void NestedTwoPaneViews()
 		{
-			var deviceInfo = new TestDeviceInfoLandscape();
-			var testDualScreenService = new TestDualScreenServiceLandscape(deviceInfo);
-			testDualScreenService.SetLocationOnScreen(new Point(0, 400));
-			var result = CreateTwoPaneView(testDualScreenService);
+			Grid grid = new Grid();
+			TestDualScreenServicePortrait testDualScreenServicePortrait = new TestDualScreenServicePortrait();
+			var twoPaneViewNested = CreateTwoPaneView(testDualScreenServicePortrait);
+			testDualScreenServicePortrait.SetLocationOnScreen(new Point(400, 0));
+			twoPaneViewNested.HeightRequest = 200;
+			twoPaneViewNested.WidthRequest = 200;
+			twoPaneViewNested.HorizontalOptions = LayoutOptions.Center;
+			twoPaneViewNested.VerticalOptions = LayoutOptions.Center;
+			twoPaneViewNested.MinTallModeHeight = double.MaxValue;
+			twoPaneViewNested.MinWideModeWidth = double.MaxValue;
 
-			result.Layout(new Rectangle(0, 400, deviceInfo.ScaledScreenSize.Width, 500));
+			grid.Children.Add(twoPaneViewNested);
+			grid.Layout(new Rectangle(Point.Zero, testDualScreenServicePortrait.DeviceInfo.ScaledScreenSize));
 
-			Assert.AreEqual(90, result.Children[0].Height);
-			Assert.AreEqual(400, result.Bounds.Y);
-			Assert.AreEqual(390, result.Children[1].Height);
-			Assert.AreEqual(110, result.Children[1].Y);
-		}
+			Assert.AreEqual(twoPaneViewNested.Mode, TwoPaneViewMode.Wide);
 
-		internal class TestDualScreenServiceLandscape : IDualScreenService
-		{
-			Point _location;
-			Rectangle _hinge;
-			public TestDualScreenServiceLandscape(DeviceInfo deviceInfo)
-			{
-				DeviceInfo = deviceInfo;
-				_hinge = new Rectangle(0, 490, DeviceInfo.ScaledScreenSize.Width, 20);
-				IsSpanned = true;
-				IsLandscape = true;
-				_location = Point.Zero;
-			}
+			Assert.AreEqual(90, twoPaneViewNested.Pane1.Width);
+			Assert.AreEqual(90, twoPaneViewNested.Pane2.Width);
+			Assert.AreEqual(200, twoPaneViewNested.Pane1.Height);
+			Assert.AreEqual(200, twoPaneViewNested.Pane2.Height);
 
-			public bool IsSpanned { get; set; }
-
-			public bool IsLandscape { get; set; }
-
-			public DeviceInfo DeviceInfo { get; set; }
-
-			public event EventHandler OnScreenChanged;
-
-			public void Dispose()
-			{
-			}
-
-			public Rectangle GetHinge() => _hinge;
-
-			public void SetHinge(Rectangle rectangle) => _hinge = rectangle;
-
-			public Point? GetLocationOnScreen(VisualElement visualElement) => _location;
-
-			public Point? SetLocationOnScreen(Point point) => _location = point;
-		}
-
-		internal class TestDualScreenServicePortrait : IDualScreenService
-		{
-			Point _location;
-			Rectangle _hinge;
-			public TestDualScreenServicePortrait(DeviceInfo deviceInfo)
-			{
-				DeviceInfo = deviceInfo;
-				_hinge = new Rectangle(490, 0, 20, DeviceInfo.ScaledScreenSize.Height);
-				IsSpanned = true;
-				IsLandscape = false;
-				_location = Point.Zero;
-			}
-
-			public bool IsSpanned { get; set; }
-
-			public bool IsLandscape { get; set; }
-
-			public DeviceInfo DeviceInfo { get; set; }
-
-			public event EventHandler OnScreenChanged;
-
-			public void Dispose()
-			{
-			}
-
-			public Rectangle GetHinge() => _hinge;
-
-			public void SetHinge(Rectangle rectangle) => _hinge = rectangle;
-
-			public Point? GetLocationOnScreen(VisualElement visualElement) => _location;
-
-			public Point? SetLocationOnScreen(Point point) => _location = point;
-		}
-
-		internal class TestDeviceInfoLandscape : DeviceInfo
-		{
-			public TestDeviceInfoLandscape()
-			{
-				CurrentOrientation = DeviceOrientation.Landscape;
-			}
-
-			public override Size PixelScreenSize
-			{
-				get { return new Size(1000, 2000); }
-			}
-
-			public override Size ScaledScreenSize
-			{
-				get { return new Size(500, 1000); }
-			}
-
-			public override double ScalingFactor
-			{
-				get { return 2; }
-			}
-		}
-
-		internal class TestDeviceInfoPortrait : DeviceInfo
-		{
-			public TestDeviceInfoPortrait()
-			{
-				CurrentOrientation = DeviceOrientation.Portrait;
-			}
-
-			public override Size PixelScreenSize
-			{
-				get { return new Size(2000, 1000); }
-			}
-
-			public override Size ScaledScreenSize
-			{
-				get { return new Size(1000, 500); }
-			}
-
-			public override double ScalingFactor
-			{
-				get { return 2; }
-			}
+			Assert.AreEqual(0, twoPaneViewNested.Pane1.X);
+			Assert.AreEqual(0, twoPaneViewNested.Pane2.X);
 		}
 	}
 }

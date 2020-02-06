@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.DualScreen
 {
@@ -23,6 +25,7 @@ namespace Xamarin.Forms.DualScreen
 		bool _isLandscape;
 		public event PropertyChangedEventHandler PropertyChanged;
 		List<string> _pendingPropertyChanges = new List<string>();
+		Rectangle _absoluteLayoutPosition;
 
 		TwoPaneViewLayoutGuide()
 		{
@@ -46,10 +49,9 @@ namespace Xamarin.Forms.DualScreen
 
 			if (_layout != null)
 			{
-				_layout.SizeChanged += OnLayoutChanged;
+				DualScreenService.WatchForChangesOnLayout(_layout);
 			}
-
-			if (DualScreenService.DeviceInfo is INotifyPropertyChanged npc)
+			else if (DualScreenService.DeviceInfo is INotifyPropertyChanged npc)
 			{
 				npc.PropertyChanged += OnDeviceInfoChanged;
 			}
@@ -61,23 +63,34 @@ namespace Xamarin.Forms.DualScreen
 
 			if (_layout != null)
 			{
-				_layout.SizeChanged -= OnLayoutChanged;
+				DualScreenService.StopWatchingForChangesOnLayout(_layout);
 			}
-
+			
 			if (DualScreenService.DeviceInfo is INotifyPropertyChanged npc)
 			{
 				npc.PropertyChanged -= OnDeviceInfoChanged;
 			}
 		}
 
-		void OnLayoutChanged(object sender, EventArgs e)
-		{
-			UpdateLayouts();
-		}
-
 		void OnScreenChanged(object sender, EventArgs e)
 		{
-			UpdateLayouts();
+			if(_layout == null)
+			{
+				UpdateLayouts();
+				return;
+			}
+
+			var screenPosition = DualScreenService.GetLocationOnScreen(_layout);
+			if (screenPosition == null)
+				return;
+
+			var newPosition = new Rectangle(screenPosition.Value, _layout.Bounds.Size);
+
+			if (newPosition != _absoluteLayoutPosition)
+			{
+				_absoluteLayoutPosition = newPosition;
+				UpdateLayouts();
+			}
 		}
 
 		void OnDeviceInfoChanged(object sender, PropertyChangedEventArgs args)
@@ -245,12 +258,12 @@ namespace Xamarin.Forms.DualScreen
 					var containerBottomY = locationOnScreen.Y + locationOnScreen.Height;
 					var hingeBottomY = Hinge.Y + Hinge.Height;
 
-					// Right side under hinge
+					// bottom under hinge
 					if (containerBottomY > Hinge.Y && containerBottomY < hingeBottomY)
 					{
 						_newPane1 = new Rectangle(0, 0, locationOnScreen.Width, Hinge.Y - locationOnScreen.Y);
 					}
-					// left side under hinge
+					// top under hinge
 					else if (Hinge.Y < locationOnScreen.Y && hingeBottomY > locationOnScreen.Y)
 					{
 						var amountObscured = hingeBottomY - locationOnScreen.Y;
