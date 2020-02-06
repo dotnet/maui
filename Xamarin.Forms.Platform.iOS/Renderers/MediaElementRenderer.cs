@@ -56,6 +56,9 @@ namespace Xamarin.Forms.Platform.iOS
 				{
 					if (uriSource.Uri.Scheme == "ms-appx")
 					{
+						if (uriSource.Uri.LocalPath.Length <= 1)
+							return;
+
 						// used for a file embedded in the application package
 						asset = AVAsset.FromUrl(NSUrl.FromFilename(uriSource.Uri.LocalPath.Substring(1)));
 					}
