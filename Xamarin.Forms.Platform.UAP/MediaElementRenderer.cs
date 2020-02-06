@@ -152,6 +152,8 @@ namespace Xamarin.Forms.Platform.UWP
 			Controller.Duration = Control.NaturalDuration.HasTimeSpan ? Control.NaturalDuration.TimeSpan : (TimeSpan?)null;
 			Controller.VideoHeight = Control.NaturalVideoHeight;
 			Controller.VideoWidth = Control.NaturalVideoWidth;
+			Control.Volume = Element.Volume;
+			Control.Stretch = Element.Aspect.ToStretch();
 
 			Controller.OnMediaOpened();
 		}

@@ -7,6 +7,7 @@ using Android.Views;
 using Microsoft.Device.Display;
 using Xamarin.Forms;
 using Xamarin.Forms.DualScreen;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android;
 
 [assembly: Dependency(typeof(DualScreenService.DualScreenServiceImpl))]
@@ -23,6 +24,8 @@ namespace Xamarin.Forms.DualScreen
 
 		internal class DualScreenServiceImpl : IDualScreenService, IDisposable
 		{
+			public event EventHandler OnScreenChanged;
+			GenericGlobalLayoutListener _genericGlobalLayoutListener;
 			ScreenHelper _helper;
 			bool _isDuo = false;
 			HingeSensor _hingeSensor;
@@ -31,6 +34,7 @@ namespace Xamarin.Forms.DualScreen
 
 			int _hingeAngle;
 			Rectangle _hingeLocation;
+			bool _isLandscape;
 
 			Activity MainActivity
 			{
@@ -41,7 +45,7 @@ namespace Xamarin.Forms.DualScreen
 			public DualScreenServiceImpl()
 			{
 				_HingeService = this;
-
+				_genericGlobalLayoutListener = new GenericGlobalLayoutListener(() => OnScreenChanged?.Invoke(this, EventArgs.Empty));
 				if (_mainActivity != null)
 					Init(_mainActivity);
 			}
@@ -57,9 +61,22 @@ namespace Xamarin.Forms.DualScreen
 				if (activity == _HingeService.MainActivity && _HingeService._helper != null)
 					return;
 
+				if (_mainActivity is IDeviceInfoProvider oldDeviceInfoProvider)
+				{
+					oldDeviceInfoProvider.ConfigurationChanged -= _HingeService.ConfigurationChanged;
+				}
+
 				_mainActivity = activity;
+
+				if (_mainActivity is IDeviceInfoProvider newDeviceInfoProvider)
+				{
+					newDeviceInfoProvider.ConfigurationChanged += _HingeService.ConfigurationChanged;
+				}
+
 				if (_HingeService._helper == null)
+				{
 					_HingeService._helper = new ScreenHelper();
+				}
 
 				if (_HingeService._hingeSensor != null)
 				{
@@ -75,6 +92,14 @@ namespace Xamarin.Forms.DualScreen
 					_HingeService._hingeSensor.OnSensorChanged += _HingeService.OnSensorChanged;
 					_HingeService._hingeSensor.StartListening();
 				}
+			}
+
+			void ConfigurationChanged(object sender, EventArgs e)
+			{
+				if (_isLandscape != IsLandscape)
+					OnScreenChanged?.Invoke(this, e);
+
+				_isLandscape = IsLandscape;
 			}
 
 			void OnSensorChanged(object sender, HingeSensor.HingeSensorChangedEventArgs e)
@@ -101,6 +126,8 @@ namespace Xamarin.Forms.DualScreen
 
 			public bool IsSpanned
 				=> _isDuo && (_helper?.IsDualMode ?? false);
+
+			public DeviceInfo DeviceInfo => Device.info;
 
 			public Rectangle GetHinge()
 			{
@@ -130,8 +157,6 @@ namespace Xamarin.Forms.DualScreen
 			double PixelsToDp(double px)
 				=> px / MainActivity.Resources.DisplayMetrics.Density;
 
-			public event EventHandler OnScreenChanged;
-
 
 			public Point? GetLocationOnScreen(VisualElement visualElement)
 			{
@@ -143,6 +168,25 @@ namespace Xamarin.Forms.DualScreen
 				int[] location = new int[2];
 				view.View.GetLocationOnScreen(location);
 				return new Point(view.View.Context.FromPixels(location[0]), view.View.Context.FromPixels(location[1]));
+			}
+
+			public void WatchForChangesOnLayout(VisualElement visualElement)
+			{
+				var view = Platform.Android.Platform.GetRenderer(visualElement);
+
+				if (view?.View == null)
+					return;
+
+				view.View.ViewTreeObserver.AddOnGlobalLayoutListener(_genericGlobalLayoutListener);
+			}
+
+			public void StopWatchingForChangesOnLayout(VisualElement visualElement)
+			{
+				var view = Platform.Android.Platform.GetRenderer(visualElement);
+				if (view?.View == null)
+					return;
+
+				view.View.ViewTreeObserver.RemoveOnGlobalLayoutListener(_genericGlobalLayoutListener);
 			}
 		}
 	}

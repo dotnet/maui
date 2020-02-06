@@ -12,6 +12,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Hosting;
 using Xamarin.Forms;
 using Xamarin.Forms.DualScreen;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.UWP;
 
 [assembly: Dependency(typeof(DualScreenService))]
@@ -39,9 +40,10 @@ namespace Xamarin.Forms.DualScreen
 
                 return false;
             }
-        }
+		}
+		public DeviceInfo DeviceInfo => Device.info;
 
-        public bool IsLandscape
+		public bool IsLandscape
         {
             get
             {
@@ -86,5 +88,30 @@ namespace Xamarin.Forms.DualScreen
 
             return new Point(screenCoords.X, screenCoords.Y);
         }
+
+		public void WatchForChangesOnLayout(VisualElement visualElement)
+		{
+			var view = Platform.UWP.Platform.GetRenderer(visualElement);
+
+			if (view?.ContainerElement == null)
+				return;
+
+			view.ContainerElement.LayoutUpdated += OnContainerElementLayoutUpdated;
+		}
+
+		public void StopWatchingForChangesOnLayout(VisualElement visualElement)
+		{
+			var view = Platform.UWP.Platform.GetRenderer(visualElement);
+
+			if (view?.ContainerElement == null)
+				return;
+
+			view.ContainerElement.LayoutUpdated -= OnContainerElementLayoutUpdated;
+		}
+
+		void OnContainerElementLayoutUpdated(object sender, object e)
+		{
+			OnScreenChanged?.Invoke(this, EventArgs.Empty);
+		}
 	}
 }

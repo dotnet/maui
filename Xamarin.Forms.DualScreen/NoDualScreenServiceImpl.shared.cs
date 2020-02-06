@@ -19,17 +19,9 @@ namespace Xamarin.Forms.DualScreen
 
         public bool IsLandscape => Device.info.CurrentOrientation.IsLandscape();
 
-        public event EventHandler OnScreenChanged
-        {
-            add
-            {
+		public DeviceInfo DeviceInfo => Device.info;
 
-            }
-            remove
-            {
-
-            }
-        }
+		public event EventHandler OnScreenChanged;
 
         public void Dispose()
         {
@@ -44,5 +36,20 @@ namespace Xamarin.Forms.DualScreen
         {
             return null;
         }
-    }
+
+		public void WatchForChangesOnLayout(VisualElement visualElement)
+		{
+			visualElement.BatchCommitted += OnLayoutChangesCommited;
+		}
+
+		public void StopWatchingForChangesOnLayout(VisualElement visualElement)
+		{
+			visualElement.BatchCommitted -= OnLayoutChangesCommited;
+		}
+
+		void OnLayoutChangesCommited(object sender, EventArg<VisualElement> e)
+		{
+			OnScreenChanged?.Invoke(this, EventArgs.Empty);
+		}
+	}
 }

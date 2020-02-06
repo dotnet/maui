@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.DualScreen
 {
@@ -12,5 +13,8 @@ namespace Xamarin.Forms.DualScreen
 		bool IsLandscape { get; }
 		Rectangle GetHinge();
 		Point? GetLocationOnScreen(VisualElement visualElement);
+		DeviceInfo DeviceInfo { get; }
+		void WatchForChangesOnLayout(VisualElement visualElement);
+		void StopWatchingForChangesOnLayout(VisualElement visualElement);
 	}
 }

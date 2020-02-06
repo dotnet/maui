@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:dualScreen="clr-namespace:Xamarin.Forms.DualScreen;assembly=Xamarin.Forms.DualScreen"
+             mc:Ignorable="d"
+             x:Class="Xamarin.Forms.Controls.GalleryPages.TwoPaneViewGalleries.NestedTwoPaneViewSplitAcrossHinge">
+    <ContentPage.Content>
+        <Grid>
+            <dualScreen:TwoPaneView 
+                MinWideModeWidth="0" 
+                MinTallModeHeight="0" 
+                MeasureInvalidated="TwoPaneView_LayoutChanged" 
+                SizeChanged="TwoPaneView_LayoutChanged" 
+                LayoutChanged="TwoPaneView_LayoutChanged" 
+                BackgroundColor="Purple" HeightRequest="400" WidthRequest="400" 
+                Margin="100,0,0,0"
+                HorizontalOptions="Center" VerticalOptions="Center">
+                <dualScreen:TwoPaneView.Pane1>
+                    <Label Text="I should be one side of the hinge"></Label>
+                </dualScreen:TwoPaneView.Pane1>
+                <dualScreen:TwoPaneView.Pane2>
+                    <Label Text="I should be on the other side of the hinge"></Label>
+                </dualScreen:TwoPaneView.Pane2>
+            </dualScreen:TwoPaneView>
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>

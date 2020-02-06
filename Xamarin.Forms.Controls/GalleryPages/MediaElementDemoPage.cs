@@ -93,6 +93,15 @@ namespace Xamarin.Forms.Controls
 			aspectStack.Children.Add(aspectFillButton);
 			aspectStack.Children.Add(fillButton);
 
+			var volumeSlider = new Slider()
+			{
+				Minimum = 0,
+				Maximum = 1
+			};
+			volumeSlider.Value = 0.1;
+
+			volumeSlider.ValueChanged += VolumeSlider_ValueChanged;
+
 			var stack = new StackLayout();
 			stack.Padding = new Thickness(10);
 			stack.Spacing = 10;
@@ -104,7 +113,15 @@ namespace Xamarin.Forms.Controls
 			stack.Children.Add(mediaControlStack);
 			stack.Children.Add(aspectStack);
 			stack.Children.Add(consoleLabel);
+			stack.Children.Add(new Label() { Text = "Volume:" });
+			stack.Children.Add(volumeSlider);
+			element.Volume = 0.1;
 			Content = stack;	
+		}
+
+		private void VolumeSlider_ValueChanged(object sender, ValueChangedEventArgs e)
+		{
+			element.Volume = (sender as Slider).Value;
 		}
 
 		void Element_MediaOpened(object sender, EventArgs e)
