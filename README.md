@@ -48,23 +48,23 @@ If you want to use the latest dev build then you should read [this blog post](ht
 ## Getting Started ##
 
 ### Windows ###
-##### Install Visual Studio 2017+ #####
+##### Install Visual Studio 2019+ #####
 
-VS 2017+ is required for developing Xamarin.Forms. If you do not already have it installed, you can download it [here](https://www.visualstudio.com/downloads/download-visual-studio-vs). VS 2017+ Community is completely free. If you are installing VS 2017+ for the first time, select the "Custom" installation type and select the following from the features list to install:
+VS 2019+ is required for developing Xamarin.Forms. If you do not already have it installed, you can download it [here](https://www.visualstudio.com/downloads/download-visual-studio-vs). VS 2019+ Community is completely free. If you are installing VS 2019+ for the first time, select the "Custom" installation type and select the following from the features list to install:
 
 - .NET desktop development - In the `Summary > Optional select .NET Framework 4.7 SDK, .NET Framework 4.7 targeting pack`. 
 - Universal Windows Platform Development - In the `Summary > Optional select the Windows 10 Mobile Emulator`.
 - Mobile Development with .NET - In the `Summary > Optional select Xamarin Remoted Simulator, Xamarin SDK Manager, Intel Hardware Accelerated Execution Manager (HAXM)`
 
-The Android 7.0 Nougat API 24 SDK is required for developing Xamarin.Forms. It can be installed by using the [Xamarin Android SDK Manager](https://docs.microsoft.com/xamarin/android/get-started/installation/android-sdk).
+The Android 10.0 API 29 SDK is required for developing Xamarin.Forms. It can be installed by using the [Xamarin Android SDK Manager](https://docs.microsoft.com/xamarin/android/get-started/installation/android-sdk).
 
 We also recommend installing [Xamarin Android Device Manager](https://developer.xamarin.com/guides/android/getting_started/installation/android-emulator/xamarin-device-manager/) This will use the HAXM tools installed above and allow you to configure Android Virtual Devices (AVDs) that emulate Android devices.
-If you already have VS 2017+ installed, you can verify that these features are installed by modifying the VS 2017+ installation via the Visual Studio Installer.
+If you already have VS 2019+ installed, you can verify that these features are installed by modifying the VS 2019+ installation via the Visual Studio Installer.
 
 ### Mac ###
 #### Install Visual Studio for Mac 2019 ####
 
-If you do not already have it installed, instructions to download and setup can be found [here](https://docs.microsoft.com/en-us/visualstudio/mac/installation?view=vsmac-2017).
+If you do not already have it installed, instructions to download and setup can be found [here](https://docs.microsoft.com/en-us/visualstudio/mac/installation?view=vsmac-2019).
 
 Because of current Multi-Targeting limitations with Visual Studio for Mac you will need to manually build/restore some projects before you are able to work on the Xamarin Forms solution.
 
@@ -92,7 +92,7 @@ By default, the `Xamarin.Forms.Controls` project does not have a configuration f
 
     UWPMapsAuthKey:
 
-You will have to obtain your own API keys for each of these services, inserted directly after the identifier (e.g. `UWPMapsAuthKey:abcdefghijklmnopqrstuvwxyz`). You can find out how to obtain each of these as follows:
+If you aren't working with maps, you can ignore this. If you want to work with maps, you will have to obtain your own API keys for each of these services, inserted directly after the identifier (e.g. `UWPMapsAuthKey:abcdefghijklmnopqrstuvwxyz`). You can find out how to obtain each of these as follows:
 
 - `UWPMapsAuthKey` at https://microsoft.com/maps/create-a-bing-maps-key.aspx
 
