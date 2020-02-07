@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries.DeviceStateTriggerGallery"
+    Title="DeviceStateTrigger">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+
+            <Style x:Key="DeviceStateTriggerGridStyle" TargetType="Grid">
+				<Setter Property="VisualStateManager.VisualStateGroups">
+					<VisualStateGroupList>
+					     <VisualStateGroup>
+                            <VisualState
+                                x:Name="Android">
+                                <VisualState.StateTriggers>
+                                    <DeviceStateTrigger Device="Android" />
+                                </VisualState.StateTriggers>
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="Blue" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState
+                                x:Name="iOS">
+                                <VisualState.StateTriggers>
+                                    <DeviceStateTrigger Device="iOS" />
+                                </VisualState.StateTriggers>
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="Red" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState
+                                x:Name="UWP">
+                                <VisualState.StateTriggers>
+                                    <DeviceStateTrigger Device="UWP" />
+                                </VisualState.StateTriggers>
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="Green" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+					</VisualStateGroupList>
+				</Setter>
+			</Style>
+
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ContentPage.Content>
+         <Grid
+             Style="{StaticResource DeviceStateTriggerGridStyle}">
+             <Label
+                 Text="This page changes the color based on the device where the App is running."
+                 HorizontalOptions="Center"
+                 VerticalOptions="Center"/>
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>

@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewmodels="clr-namespace:Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries"
+    x:Class="Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries.StateTriggersDirectlyOnElements"
+    Title="StateTriggers directly on Elements">
+    <ContentPage.BindingContext>
+        <viewmodels:StateTriggersDirectlyOnElementsViewModel />
+    </ContentPage.BindingContext>
+    <ContentPage.Content>
+        <Grid>
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup>
+                    <VisualState x:Name="Wide">
+                        <VisualState.StateTriggers>
+                            <CompareStateTrigger Property="{Binding ToggleState}" Value="True" />
+                        </VisualState.StateTriggers>
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="Green" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="Narrow">
+                        <VisualState.StateTriggers>
+                            <CompareStateTrigger Property="{Binding ToggleState}" Value="False" />
+                        </VisualState.StateTriggers>
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="Red" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="Medium">
+                        <VisualState.StateTriggers>
+                            <AdaptiveTrigger MinWindowWidth="720" />
+                        </VisualState.StateTriggers>
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="Blue" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+            <Button
+                Text="Click to toggle BackgroundColor"
+                Command="{Binding ToggleCommand}"
+                HorizontalOptions="Center"
+                VerticalOptions="Center" />
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>

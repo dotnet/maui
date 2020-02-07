@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries.DualScreenStateTriggerGallery"
+    xmlns:dualScreen="clr-namespace:Xamarin.Forms.DualScreen;assembly=Xamarin.Forms.DualScreen"
+    Title="DualScreenStateTrigger Gallery">
+    <ContentPage.Content>
+        <Grid>
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup>
+                    <VisualState x:Name="NotSpanned">
+                        <VisualState.StateTriggers>
+                            <dualScreen:SpanModeStateTrigger SpanMode="SinglePane"/>
+                        </VisualState.StateTriggers>
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="Red" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="Spanned">
+                        <VisualState.StateTriggers>
+                            <dualScreen:SpanModeStateTrigger SpanMode="Wide" />
+                        </VisualState.StateTriggers>
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="Green" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>

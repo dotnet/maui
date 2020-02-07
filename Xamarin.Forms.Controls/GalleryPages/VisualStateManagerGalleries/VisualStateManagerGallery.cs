@@ -1,22 +1,26 @@
-﻿using System;
-
-namespace Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries
+﻿namespace Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries
 {
 	public class VisualStateManagerGallery : ContentPage
 	{
 		public VisualStateManagerGallery()
 		{
-			Content = new StackLayout
+			Title = "VisualStateManager Gallery";
+
+			Content = new ScrollView
 			{
-				Children =
+				Content = new StackLayout
 				{
-					GalleryBuilder.NavButton("Disabled States Gallery", () => new DisabledStatesGallery(), Navigation),
-					GalleryBuilder.NavButton("OnPlatform Example", () => new OnPlatformExample(), Navigation),
-					GalleryBuilder.NavButton("OnIdiom Example", () => new OnIdiomExample(), Navigation),
-					GalleryBuilder.NavButton("Validation Example", () => new ValidationExample(), Navigation),
-					GalleryBuilder.NavButton("Code (No XAML) Example", () => new CodeOnlyExample(), Navigation),
-					GalleryBuilder.NavButton("VisualStates directly on Elements", () => new VisualStatesDirectlyOnElements(), Navigation),
-					GalleryBuilder.NavButton("VisualStateManager Setter Target", () => new VisualStateSetterTarget(), Navigation)
+					Children =
+					{
+						GalleryBuilder.NavButton("Disabled States Gallery", () => new DisabledStatesGallery(), Navigation),
+						GalleryBuilder.NavButton("OnPlatform Example", () => new OnPlatformExample(), Navigation),
+						GalleryBuilder.NavButton("OnIdiom Example", () => new OnIdiomExample(), Navigation),
+						GalleryBuilder.NavButton("Validation Example", () => new ValidationExample(), Navigation),
+						GalleryBuilder.NavButton("Code (No XAML) Example", () => new CodeOnlyExample(), Navigation),
+						GalleryBuilder.NavButton("VisualStates directly on Elements", () => new VisualStatesDirectlyOnElements(), Navigation),
+						GalleryBuilder.NavButton("VisualStateManager Setter Target", () => new VisualStateSetterTarget(), Navigation),
+						GalleryBuilder.NavButton("StateTriggers Gallery", () => new StateTriggerGallery(), Navigation)
+					}
 				}
 			};
 		}
