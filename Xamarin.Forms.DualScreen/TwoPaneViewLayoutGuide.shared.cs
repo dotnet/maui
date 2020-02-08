@@ -26,21 +26,52 @@ namespace Xamarin.Forms.DualScreen
 		public event PropertyChangedEventHandler PropertyChanged;
 		List<string> _pendingPropertyChanges = new List<string>();
 		Rectangle _absoluteLayoutPosition;
+		bool _isWatchingForChanges = false;
 
 		TwoPaneViewLayoutGuide()
 		{
+			
 		}
 
-		public TwoPaneViewLayoutGuide(Layout layout)
+		public TwoPaneViewLayoutGuide(Layout layout) : this(layout, null)
 		{
-			_layout = layout;
 		}
+
 
 		internal TwoPaneViewLayoutGuide(Layout layout, IDualScreenService dualScreenService)
 		{
 			_layout = layout;
 			_dualScreenService = dualScreenService;
+
+			if(_layout != null)
+				_layout.PropertyChanged += OnLayoutPropertyChanged;
 		}
+
+		void CheckIsPlatformEnabled()
+		{
+			if (_layout == null)
+				return;
+
+			if (_layout.IsPlatformEnabled)
+			{
+				if (!_isWatchingForChanges)
+				{
+					WatchForChanges();
+					_isWatchingForChanges = true;
+				}
+			}
+			else
+			{
+				if (_isWatchingForChanges)
+				{
+					StopWatchingForChanges();
+					_isWatchingForChanges = false;
+				}
+			}
+
+		}
+
+		void OnLayoutPropertyChanged(object sender, PropertyChangedEventArgs e) => CheckIsPlatformEnabled();
 
 		public void WatchForChanges()
 		{
@@ -51,7 +82,8 @@ namespace Xamarin.Forms.DualScreen
 			{
 				DualScreenService.WatchForChangesOnLayout(_layout);
 			}
-			else if (DualScreenService.DeviceInfo is INotifyPropertyChanged npc)
+			
+			if (DualScreenService.DeviceInfo is INotifyPropertyChanged npc)
 			{
 				npc.PropertyChanged += OnDeviceInfoChanged;
 			}
@@ -74,11 +106,13 @@ namespace Xamarin.Forms.DualScreen
 
 		void OnScreenChanged(object sender, EventArgs e)
 		{
-			if(_layout == null)
+			if (_layout == null)
 			{
 				UpdateLayouts();
 				return;
 			}
+
+			CheckIsPlatformEnabled();
 
 			var screenPosition = DualScreenService.GetLocationOnScreen(_layout);
 			if (screenPosition == null)
@@ -95,6 +129,7 @@ namespace Xamarin.Forms.DualScreen
 
 		void OnDeviceInfoChanged(object sender, PropertyChangedEventArgs args)
 		{
+			CheckIsPlatformEnabled();
 			if (args.PropertyName == nameof(DualScreenService.DeviceInfo.CurrentOrientation))
 			{
 				UpdateLayouts();
@@ -192,6 +227,8 @@ namespace Xamarin.Forms.DualScreen
 
 		internal void UpdateLayouts()
 		{
+			CheckIsPlatformEnabled();
+
 			Rectangle containerArea = GetContainerArea();
 			if (containerArea.Width <= 0)
 			{

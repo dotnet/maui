@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="Xamarin.Forms.Controls.GalleryPages.TwoPaneViewGalleries.GridUsingDualScreenInfo">
+    <ContentPage.Content>
+        <Grid x:Name="grid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="{Binding Column1Width}"></ColumnDefinition>
+                <ColumnDefinition Width="{Binding Column2Width}"></ColumnDefinition>
+                <ColumnDefinition Width="{Binding Column3Width}"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+
+            <Label Text="I should be one side of the hinge"></Label>
+            <Label Grid.Column="2" Text="I should be on the other side of the hinge"></Label>
+            
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>

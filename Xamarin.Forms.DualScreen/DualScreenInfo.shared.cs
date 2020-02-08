@@ -113,7 +113,7 @@ namespace Xamarin.Forms.DualScreen
             SpanMode = GetSpanMode();
         }
 
-        protected bool SetProperty<T>(ref T backingStore, T value,
+        bool SetProperty<T>(ref T backingStore, T value,
             [CallerMemberName]string propertyName = "",
             Action onChanged = null)
         {

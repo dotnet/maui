@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries.OrientationStateTriggerGallery"
+    Title="OrientationStateTrigger">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+
+            <Style x:Key="OrientationStateTriggerGridStyle" TargetType="Grid">
+				<Setter Property="VisualStateManager.VisualStateGroups">
+					<VisualStateGroupList>
+					     <VisualStateGroup>
+                            <VisualState
+                                x:Name="Landscape">
+                                <VisualState.StateTriggers>
+                                    <OrientationStateTrigger Orientation="Landscape" />
+                                </VisualState.StateTriggers>
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="Blue" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState
+                                x:Name="Portrait">
+                                <VisualState.StateTriggers>
+                                    <OrientationStateTrigger Orientation="Portrait" />
+                                </VisualState.StateTriggers>
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="Red" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+					</VisualStateGroupList>
+				</Setter>
+			</Style>
+
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ContentPage.Content>
+         <Grid
+             Style="{StaticResource OrientationStateTriggerGridStyle}">
+            <Label
+                Text="This Grid changes the color based on the orientation device where the App is running."
+                HorizontalOptions="Center"
+                VerticalOptions="Center" />
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>

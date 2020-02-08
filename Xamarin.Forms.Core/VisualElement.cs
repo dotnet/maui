@@ -538,9 +538,11 @@ namespace Xamarin.Forms
 				if (value && IsNativeStateConsistent)
 					InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
 
+				InvalidateStateTriggers(IsPlatformEnabled);
+
 				OnIsPlatformEnabledChanged();
 			}
-		}
+		}		
 
 		internal LayoutConstraint SelfConstraint
 		{
@@ -737,6 +739,12 @@ namespace Xamarin.Forms
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
+		protected override void OnBindingContextChanged()
+		{
+			PropagateBindingContextToStateTriggers();
+			base.OnBindingContextChanged();
+		}
+
 		protected override void OnChildAdded(Element child)
 		{
 			base.OnChildAdded(child);
@@ -821,6 +829,24 @@ namespace Xamarin.Forms
 			InvalidateMeasureInternal(trigger);
 		}
 
+		internal void InvalidateStateTriggers(bool attach)
+		{
+			var groups = (IList<VisualStateGroup>)GetValue(VisualStateManager.VisualStateGroupsProperty);
+
+			if (groups.Count == 0)
+				return;
+
+			foreach (var group in groups)
+				foreach (var state in group.States)
+					foreach (var stateTrigger in state.StateTriggers)
+					{
+						if(attach)
+							stateTrigger.OnAttached();
+						else
+							stateTrigger.OnDetached();
+					}
+		}
+
 		internal void MockBounds(Rectangle bounds)
 		{
 #if NETSTANDARD2_0
@@ -888,6 +914,19 @@ namespace Xamarin.Forms
 		internal void UnmockBounds()
 		{
 			_mockX = _mockY = _mockWidth = _mockHeight = -1;
+		}
+
+		void PropagateBindingContextToStateTriggers()
+		{
+			var groups = (IList<VisualStateGroup>)GetValue(VisualStateManager.VisualStateGroupsProperty);
+
+			if (groups.Count == 0)
+				return;
+
+			foreach (var group in groups)
+				foreach (var state in group.States)
+					foreach (var stateTrigger in state.StateTriggers)
+						SetInheritedBindingContext(stateTrigger, BindingContext);
 		}
 
 		void OnFocused()
