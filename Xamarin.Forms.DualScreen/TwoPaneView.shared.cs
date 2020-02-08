@@ -73,7 +73,7 @@ namespace Xamarin.Forms.DualScreen
 		public static readonly BindableProperty Pane2Property
 			= BindableProperty.Create("Pane2", typeof(View), typeof(TwoPaneView), propertyChanged: (b, o, n) => OnPanePropertyChanged(b, o, n, 1));
 
-		public static readonly BindablePropertyKey ModePropertyKey
+		static readonly BindablePropertyKey ModePropertyKey
 			= BindableProperty.CreateReadOnly("Mode", typeof(TwoPaneViewMode), typeof(TwoPaneView), defaultValue: TwoPaneViewMode.SinglePane, propertyChanged: OnModePropertyChanged);
 
 		public static readonly BindableProperty ModeProperty = ModePropertyKey.BindableProperty;
@@ -223,8 +223,8 @@ namespace Xamarin.Forms.DualScreen
 
 			VisualStateManager.SetVisualStateGroups(this, new VisualStateGroupList() { _modeStates });
 
-			this.RowDefinitions = new RowDefinitionCollection() { new RowDefinition(), new RowDefinition(), new RowDefinition() };
-			this.ColumnDefinitions = new ColumnDefinitionCollection() { new ColumnDefinition(), new ColumnDefinition(), new ColumnDefinition() };
+			RowDefinitions = new RowDefinitionCollection() { new RowDefinition(), new RowDefinition(), new RowDefinition() };
+			ColumnDefinitions = new ColumnDefinitionCollection() { new ColumnDefinition(), new ColumnDefinition(), new ColumnDefinition() };
 
 		}
 
@@ -238,8 +238,8 @@ namespace Xamarin.Forms.DualScreen
 			}
 			else
 			{
-				TwoPaneViewLayoutGuide.WatchForChanges();
-				TwoPaneViewLayoutGuide.PropertyChanged += OnTwoPaneViewLayoutGuide;
+				TwoPaneViewLayoutGuide.StopWatchingForChanges();
+				TwoPaneViewLayoutGuide.PropertyChanged -= OnTwoPaneViewLayoutGuide;
 			}
 		}
 

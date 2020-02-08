@@ -33,6 +33,7 @@ using Xamarin.Forms.StyleSheets;
 [assembly: InternalsVisibleTo("Xamarin.Forms.Pages.UnitTests")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.CarouselView")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.DualScreen")]
+[assembly: InternalsVisibleTo("Xamarin.Forms.DualScreen.UnitTests")]
 [assembly: Preserve]
 
 [assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms", "Xamarin.Forms")]

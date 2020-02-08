@@ -20,10 +20,7 @@ namespace Xamarin.Forms.DualScreen
 {
     internal partial class DualScreenService : IDualScreenService
 	{
-#pragma warning disable CS0067
 		public event EventHandler OnScreenChanged;
-        public event PropertyChangedEventHandler PropertyChanged;
-#pragma warning restore CS0067
 
 		public DualScreenService()
         {
