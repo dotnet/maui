@@ -15,19 +15,24 @@ namespace Xamarin.Forms.DualScreen
         {
         }
 
-        public bool IsSpanned => false;
+		public Task<int> GetHingeAngleAsync() => Task.FromResult(0);
+
+		public bool IsSpanned => false;
 
         public bool IsLandscape => Device.info.CurrentOrientation.IsLandscape();
 
 		public DeviceInfo DeviceInfo => Device.info;
 
+#pragma warning disable CS0067
 		public event EventHandler OnScreenChanged;
+#pragma warning restore CS0067
 
-        public void Dispose()
+		public void Dispose()
         {
         }
 
-        public Rectangle GetHinge()
+		public Size ScaledScreenSize => Device.info.ScaledScreenSize;
+		public Rectangle GetHinge()
         {
             return Rectangle.Zero;
         }
@@ -37,19 +42,27 @@ namespace Xamarin.Forms.DualScreen
             return null;
         }
 
-		public void WatchForChangesOnLayout(VisualElement visualElement)
+		public object WatchForChangesOnLayout(VisualElement visualElement, Action action)
 		{
-			visualElement.BatchCommitted += OnLayoutChangesCommited;
+			if (action == null)
+				return null;
+
+			EventHandler<EventArg<VisualElement>> layoutUpdated = (_, __) =>
+			{
+				action();
+			};
+
+			visualElement.BatchCommitted += layoutUpdated;
+			return layoutUpdated;
 		}
 
-		public void StopWatchingForChangesOnLayout(VisualElement visualElement)
+		public void StopWatchingForChangesOnLayout(VisualElement visualElement, object handle)
 		{
-			visualElement.BatchCommitted -= OnLayoutChangesCommited;
-		}
+			if (handle == null)
+				return;
 
-		void OnLayoutChangesCommited(object sender, EventArg<VisualElement> e)
-		{
-			OnScreenChanged?.Invoke(this, EventArgs.Empty);
+			if (handle is EventHandler<EventArg<VisualElement>> handler)
+				visualElement.BatchCommitted -= handler;
 		}
 	}
 }

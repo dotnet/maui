@@ -6,11 +6,11 @@
              mc:Ignorable="d"
              x:Class="Xamarin.Forms.Controls.GalleryPages.TwoPaneViewGalleries.OpenCompactWindow">
     <ContentPage.Content>
-        <StackLayout>
-            <Button Text="Open Compact Window"
+        <StackLayout x:Name="layout">
+            <Button x:Name="button" Text="Open Compact Window"
                 Clicked="Button_Clicked"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
+                VerticalOptions="Start" 
+                HorizontalOptions="Start" />
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

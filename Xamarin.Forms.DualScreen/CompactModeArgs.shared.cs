@@ -7,6 +7,7 @@ namespace Xamarin.Forms.DualScreen
 {
 	public class CompactModeArgs : EventArgs
 	{
+		Func<Task> _close;
 		public CompactModeArgs(Func<Task> close, bool success)
 		{
 			if(close == null)
@@ -14,11 +15,11 @@ namespace Xamarin.Forms.DualScreen
 				close = () => Task.Delay(0);
 			}
 
-			Close = close;
+			_close = close;
 			Success = success;
 		}
 
-		public Func<Task> Close { get; }
+		public Task CloseAsync() => _close();
 		public bool Success { get; }
 	}
 }

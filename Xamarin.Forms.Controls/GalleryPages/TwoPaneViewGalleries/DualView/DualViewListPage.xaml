@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns:local="clr-namespace:Xamarin.Forms.Controls.GalleryPages.TwoPaneViewGalleries" xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:dualScreen="clr-namespace:Xamarin.Forms.DualScreen;assembly=Xamarin.Forms.DualScreen"
+    mc:Ignorable="d"
+    x:Class="Xamarin.Forms.Controls.GalleryPages.TwoPaneViewGalleries.DualViewListPage">
+    <dualScreen:TwoPaneView>
+        <dualScreen:TwoPaneView.Pane1>
+            <CollectionView SelectionMode="Single" x:Name="mapList">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="10,5,10,5">
+                            <Frame Visual="Material" BorderColor="LightGray">
+                                <StackLayout Padding="5">
+                                    <Label FontSize="Title" Text="{Binding Title}"></Label>
+                                </StackLayout>
+                            </Frame>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </dualScreen:TwoPaneView.Pane1>
+        <dualScreen:TwoPaneView.Pane2>
+            <local:DualViewMap x:Name="mapPage"></local:DualViewMap>
+        </dualScreen:TwoPaneView.Pane2>
+    </dualScreen:TwoPaneView>
+</ContentPage>

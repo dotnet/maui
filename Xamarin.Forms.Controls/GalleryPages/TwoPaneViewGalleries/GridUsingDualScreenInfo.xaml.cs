@@ -23,16 +23,17 @@ namespace Xamarin.Forms.Controls.GalleryPages.TwoPaneViewGalleries
 		protected override void OnAppearing()
 		{
 			base.OnAppearing();
-			DualScreenInfo.PropertyChanged += DualScreenInfo_PropertyChanged;
+			DualScreenInfo.PropertyChanged += OnInfoPropertyChanged;
+			UpdateColumns();
 		}
 
 		protected override void OnDisappearing()
 		{
 			base.OnDisappearing();
-			DualScreenInfo.PropertyChanged -= DualScreenInfo_PropertyChanged;
+			DualScreenInfo.PropertyChanged -= OnInfoPropertyChanged;
 		}
 
-		void DualScreenInfo_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		void UpdateColumns()
 		{
 			if (DualScreenInfo.SpanningBounds.Length > 0)
 			{
@@ -50,6 +51,12 @@ namespace Xamarin.Forms.Controls.GalleryPages.TwoPaneViewGalleries
 			OnPropertyChanged(nameof(Column1Width));
 			OnPropertyChanged(nameof(Column2Width));
 			OnPropertyChanged(nameof(Column3Width));
+
+		}
+
+		void OnInfoPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			UpdateColumns();
 		}
 
 		public double Column1Width { get; set; }

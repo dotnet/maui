@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.DualScreen.UnitTests
@@ -18,6 +19,8 @@ namespace Xamarin.Forms.DualScreen.UnitTests
 		public bool IsLandscape => DeviceInfo.CurrentOrientation == DeviceOrientation.Landscape;
 
 		public DeviceInfo DeviceInfo { get; set; }
+
+		public Size ScaledScreenSize => DeviceInfo.ScaledScreenSize;
 
 		public event EventHandler OnScreenChanged;
 
@@ -41,20 +44,20 @@ namespace Xamarin.Forms.DualScreen.UnitTests
 
 		public Point? SetLocationOnScreen(Point point) => _location = point;
 
-		public void WatchForChangesOnLayout(VisualElement visualElement)
+		public object WatchForChangesOnLayout(VisualElement visualElement, Action action)
 		{
-			visualElement.BatchCommitted += OnLayoutChangesCommited;
+			EventHandler<EventArg<VisualElement>> handler = (_, __) => action();
+			visualElement.BatchCommitted += handler;
+			return handler;
 		}
 
-		public void StopWatchingForChangesOnLayout(VisualElement visualElement)
+		public void StopWatchingForChangesOnLayout(VisualElement visualElement, object handle)
 		{
-			visualElement.BatchCommitted -= OnLayoutChangesCommited;
+			if(handle is EventHandler<EventArg<VisualElement>> eh)
+				visualElement.BatchCommitted -= eh;
 		}
 
-		void OnLayoutChangesCommited(object sender, EventArg<VisualElement> e)
-		{
-			OnScreenChanged?.Invoke(this, EventArgs.Empty);
-		}
+		public Task<int> GetHingeAngleAsync() => Task.FromResult(0);
 	}
 
 	internal class TestDualScreenServiceLandscape : TestDualScreenService

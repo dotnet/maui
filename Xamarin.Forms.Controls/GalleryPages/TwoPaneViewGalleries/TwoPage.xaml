@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="Xamarin.Forms.Controls.GalleryPages.TwoPaneViewGalleries.TwoPage"
+             xmlns:local="clr-namespace:Xamarin.Forms.Controls.GalleryPages.TwoPaneViewGalleries"
+             Visual="Material"
+             x:Name="mainPage">
+
+    <Grid x:Name="layout">
+        <CollectionView x:Name="cv" BackgroundColor="LightGray">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout 
+                    SnapPointsAlignment="Start" 
+                    SnapPointsType="MandatorySingle"
+                    Orientation="Horizontal"
+                    ItemSpacing="{Binding Source={x:Reference mainPage}, Path=HingeWidth}" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame BackgroundColor="LightGray" Padding="0" Margin="0" 
+                           WidthRequest="{Binding Source={x:Reference mainPage}, Path=ContentWidth}"
+                           HeightRequest="{Binding Source={x:Reference mainPage}, Path=ContentHeight}">
+                        <Frame Margin="20" BackgroundColor="White">
+                            <Label FontSize="Large" Text="{Binding .}" VerticalTextAlignment="Center" HorizontalTextAlignment="Center" HorizontalOptions="Center" VerticalOptions="Center"></Label>
+                        </Frame>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

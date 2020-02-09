@@ -23,7 +23,14 @@ namespace Xamarin.Forms.Platform.Android
 
 		void ElementMeasureInvalidated(object sender, System.EventArgs e)
 		{
-			RequestLayout();
+			if (this.IsAlive())
+			{
+				RequestLayout();
+			}
+			else if(sender is VisualElement ve)
+			{
+				ve.MeasureInvalidated -= ElementMeasureInvalidated;
+			}
 		}
 
 		internal IVisualElementRenderer VisualElementRenderer => Content;
