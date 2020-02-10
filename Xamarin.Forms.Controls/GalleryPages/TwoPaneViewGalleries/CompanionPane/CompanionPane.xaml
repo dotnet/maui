@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns:local="clr-namespace:Xamarin.Forms.Controls.GalleryPages.TwoPaneViewGalleries" xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:dualscreen="clr-namespace:Xamarin.Forms.DualScreen;assembly=Xamarin.Forms.DualScreen"
+    mc:Ignorable="d"
+             x:Name="mainPage"
+             x:Class="Xamarin.Forms.Controls.GalleryPages.TwoPaneViewGalleries.CompanionPane"
+             BackgroundColor="LightGray"
+             Visual="Material">
+    <dualscreen:TwoPaneView x:Name="twoPaneView" MinWideModeWidth="4000" MinTallModeHeight="4000">
+        <dualscreen:TwoPaneView.Pane1>
+            <CarouselView x:Name="cv" BackgroundColor="LightGray" IsScrollAnimated="False" >
+                <CarouselView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame BackgroundColor="LightGray" Padding="0" Margin="0" 
+                           WidthRequest="{Binding Source={x:Reference twoPaneView}, Path=Pane1.Width}"
+                           HeightRequest="{Binding Source={x:Reference twoPaneView}, Path=Pane1.Height}">
+                            <Frame Margin="20" BackgroundColor="White">
+                                <Label FontSize="Large" Text="{Binding ., StringFormat='Slide Content {0}'}" VerticalTextAlignment="Center" HorizontalTextAlignment="Center" HorizontalOptions="Center" VerticalOptions="Center"></Label>
+                            </Frame>
+                        </Frame>
+                    </DataTemplate>
+                </CarouselView.ItemTemplate>
+            </CarouselView>
+        </dualscreen:TwoPaneView.Pane1>
+        <dualscreen:TwoPaneView.Pane2>
+            <CollectionView x:Name="indicators" 
+            SelectionMode="Single"
+            Margin="20, 20, 20, 20"
+            BackgroundColor="LightGray"
+            WidthRequest="{Binding Source={x:Reference twoPaneView}, Path=Pane2.Width}"
+            ItemsSource="{Binding Source={x:Reference cv}, Path=ItemsSource}">
+                <CollectionView.Resources>
+                    <ResourceDictionary>
+                        <Style TargetType="Frame">
+                            <Setter Property="VisualStateManager.VisualStateGroups">
+                                <VisualStateGroupList>
+                                    <VisualStateGroup x:Name="CommonStates">
+                                        <VisualState x:Name="Normal">
+                                            <VisualState.Setters>
+                                                <Setter Property="Padding" Value="0"></Setter>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="Selected">
+                                            <VisualState.Setters>
+                                                <Setter Property="BorderColor" Value="Green" />
+                                                <Setter Property="Padding" Value="1"></Setter>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateGroupList>
+                            </Setter>
+                        </Style>
+                    </ResourceDictionary>
+                </CollectionView.Resources>
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="10"></LinearItemsLayout>
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame WidthRequest="{Binding Source={x:Reference twoPaneView}, Path=Pane2.Width}" CornerRadius="10" HeightRequest="60" BackgroundColor="White" Margin="0">
+                            <StackLayout HorizontalOptions="Fill" VerticalOptions="Fill"  Orientation="Horizontal">
+                                <Label FontSize="Micro" Padding="20,0,20,0" VerticalTextAlignment="Center" WidthRequest="140" Text="{Binding ., StringFormat='Slide Content {0}'}"></Label>
+                                <Label FontSize="Small" Padding="20,0,20,0" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand" BackgroundColor="DarkGray"  Grid.Column="1" Text="{Binding ., StringFormat='Slide {0}'}"></Label>
+                            </StackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </dualscreen:TwoPaneView.Pane2>
+    </dualscreen:TwoPaneView>
+</ContentPage>

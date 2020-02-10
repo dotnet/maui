@@ -12,9 +12,10 @@ namespace Xamarin.Forms.DualScreen
 		bool IsSpanned { get; }
 		bool IsLandscape { get; }
 		Rectangle GetHinge();
+		Size ScaledScreenSize { get; }
 		Point? GetLocationOnScreen(VisualElement visualElement);
-		DeviceInfo DeviceInfo { get; }
-		void WatchForChangesOnLayout(VisualElement visualElement);
-		void StopWatchingForChangesOnLayout(VisualElement visualElement);
+		object WatchForChangesOnLayout(VisualElement visualElement, Action action);
+		void StopWatchingForChangesOnLayout(VisualElement visualElement, object handle);
+		Task<int> GetHingeAngleAsync();
 	}
 }

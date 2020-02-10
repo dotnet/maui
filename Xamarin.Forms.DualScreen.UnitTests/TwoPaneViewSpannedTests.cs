@@ -176,5 +176,57 @@ namespace Xamarin.Forms.DualScreen.UnitTests
 			Assert.AreEqual(0, twoPaneViewNested.Pane1.X);
 			Assert.AreEqual(0, twoPaneViewNested.Pane2.X);
 		}
+
+		[Test]
+		public void SpanningBoundsLandscape()
+		{
+			var testDualScreenService = new TestDualScreenServiceLandscape();
+			testDualScreenService.IsSpanned = true;
+			testDualScreenService.SetLocationOnScreen(new Point(0, 400));
+			var result = new StackLayout() { IsPlatformEnabled = true };
+
+			result.Layout(new Rectangle(0, 400, testDualScreenService.ScaledScreenSize.Width, 200));
+			DualScreenInfo info = new DualScreenInfo(result, testDualScreenService);
+
+
+			var top = info.SpanningBounds[0];
+
+			Assert.AreEqual(0, top.X);
+			Assert.AreEqual(0, top.Y);
+			Assert.AreEqual(testDualScreenService.ScaledScreenSize.Width, top.Width);
+			Assert.AreEqual(90, top.Height);
+
+			var bottom = info.SpanningBounds[1];
+			Assert.AreEqual(0, bottom.X);
+			Assert.AreEqual(110, bottom.Y);
+			Assert.AreEqual(testDualScreenService.ScaledScreenSize.Width, bottom.Width);
+			Assert.AreEqual(90, bottom.Height);
+		}
+
+		[Test]
+		public void SpanningBoundsPortrait()
+		{
+			var testDualScreenService = new TestDualScreenServicePortrait();
+			testDualScreenService.IsSpanned = true;
+			testDualScreenService.SetLocationOnScreen(new Point(400, 0));
+			var result = new StackLayout() { IsPlatformEnabled = true };
+
+			result.Layout(new Rectangle(400, 0, 200, testDualScreenService.ScaledScreenSize.Height));
+			DualScreenInfo info = new DualScreenInfo(result, testDualScreenService);
+
+
+			var left = info.SpanningBounds[0];
+
+			Assert.AreEqual(0, left.X);
+			Assert.AreEqual(0, left.Y);
+			Assert.AreEqual(90, left.Width);
+			Assert.AreEqual(testDualScreenService.ScaledScreenSize.Height, left.Height);
+
+			var right = info.SpanningBounds[1];
+			Assert.AreEqual(110, right.X);
+			Assert.AreEqual(0, right.Y);
+			Assert.AreEqual(90, right.Width);
+			Assert.AreEqual(testDualScreenService.ScaledScreenSize.Height, right.Height);
+		}
 	}
 }

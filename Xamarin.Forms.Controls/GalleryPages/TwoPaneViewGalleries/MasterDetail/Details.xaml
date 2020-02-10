@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="Xamarin.Forms.Controls.GalleryPages.TwoPaneViewGalleries.Details">
+
+    <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto"></ColumnDefinition>
+        <ColumnDefinition Width="*"></ColumnDefinition>
+    </Grid.ColumnDefinitions>
+
+    <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"></RowDefinition>
+        <RowDefinition Height="*"></RowDefinition>
+    </Grid.RowDefinitions>
+    <Image Margin="16, 16, 0, 0" WidthRequest="100" HeightRequest="100" Source="ic_movie_black_24dp"></Image>
+
+    <Grid Grid.Column="1" VerticalOptions="Center">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Label FontSize="Title" FontAttributes="Bold" Text="Title:"></Label>
+        <Label FontSize="Title" Grid.Row="1" FontAttributes="Bold" Text="Details:"></Label>
+
+        <Label Grid.Column="1" Text="{Binding Title}"  VerticalTextAlignment="Center"></Label>
+        <Label Grid.Column="1" Grid.Row="1" Text="{Binding Details}"  VerticalTextAlignment="Center"></Label>
+    </Grid>
+</Grid>

@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:Xamarin.Forms.DualScreen;assembly=Xamarin.Forms.DualScreen"
+             xmlns:twoPaneGallery="clr-namespace:Xamarin.Forms.Controls.GalleryPages.TwoPaneViewGalleries"
+             mc:Ignorable="d"
+             x:Class="Xamarin.Forms.Controls.GalleryPages.TwoPaneViewGalleries.TwoPanePropertiesGallery">
+    <ContentPage.Content>
+        <local:TwoPaneView x:Name="twoPaneView"
+                           MinTallModeHeight="{Binding Source={x:Reference MinTallModeHeight}, Path=Value}" 
+                           MinWideModeWidth="{Binding Source={x:Reference MinWideModeWidth}, Path=Value}" 
+                           PanePriority="{Binding Source={x:Reference PanePriority}, Path=SelectedItem, Mode=TwoWay}" 
+                           TallModeConfiguration="{Binding Source={x:Reference TallModeConfiguration}, Path=SelectedItem}" 
+                           WideModeConfiguration="{Binding Source={x:Reference WideModeConfiguration}, Path=SelectedItem}">
+            <local:TwoPaneView.Pane1>
+                <StackLayout Padding="20">
+                    <Label Text="MinTallModeHeight"></Label>
+                    <Slider x:Name="MinTallModeHeight" ></Slider>
+                    <Label Text="MinWideModeWidth"></Label>
+                    <Slider x:Name="MinWideModeWidth"></Slider>
+                    <Label Text="Pane1Length"></Label>
+                    <Slider x:Name="Pane1Length" Maximum="1" Value="1"></Slider>
+                    <Label Text="Pane2Length"></Label>
+                    <Slider x:Name="Pane2Length" Maximum="1" Value="1"></Slider>
+                    <Picker Title="PanePriority" x:Name="PanePriority" SelectedIndex="0">
+                    </Picker>
+                    <Picker Title="TallModeConfiguration" x:Name="TallModeConfiguration" SelectedIndex="1">
+                    </Picker>
+                    <Picker Title="WideModeConfiguration" x:Name="WideModeConfiguration" SelectedIndex="1">
+                    </Picker>
+                    <Label Text="Hinge Angle (only works on Android):"></Label>
+                    <twoPaneGallery:HingeAngleLabel />
+                </StackLayout>
+            </local:TwoPaneView.Pane1>
+            <local:TwoPaneView.Pane2>
+                <StackLayout BackgroundColor="Yellow">
+                    <Label Text="Secondary Content"></Label>
+                    <Button Text="Reset" Clicked="OnReset"></Button>
+                </StackLayout>
+            </local:TwoPaneView.Pane2>
+        </local:TwoPaneView>
+    </ContentPage.Content>
+</ContentPage>
