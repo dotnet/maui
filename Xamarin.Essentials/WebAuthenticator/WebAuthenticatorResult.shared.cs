@@ -43,9 +43,6 @@ namespace Xamarin.Essentials
         public string AccessToken
             => Get("access_token");
 
-        public string TokenType
-            => Get("token_type");
-
         public string RefreshToken
             => Get("refresh_token");
 

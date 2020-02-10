@@ -16,9 +16,9 @@
   </Docs>
   <Members>
     <Member MemberName="AuthenticateAsync">
-      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;Xamarin.Essentials.WebAuthenticatorResult&gt; AuthenticateAsync (Xamarin.Essentials.AppleSignInAuthenticator.AppleSignInOptions options = null);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class Xamarin.Essentials.WebAuthenticatorResult&gt; AuthenticateAsync(class Xamarin.Essentials.AppleSignInAuthenticator/AppleSignInOptions options) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.AppleSignInAuthenticator.AuthenticateAsync(Xamarin.Essentials.AppleSignInAuthenticator.AppleSignInOptions)" />
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;Xamarin.Essentials.WebAuthenticatorResult&gt; AuthenticateAsync (Xamarin.Essentials.AppleSignInAuthenticator.Options options = null);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class Xamarin.Essentials.WebAuthenticatorResult&gt; AuthenticateAsync(class Xamarin.Essentials.AppleSignInAuthenticator/Options options) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.AppleSignInAuthenticator.AuthenticateAsync(Xamarin.Essentials.AppleSignInAuthenticator.Options)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -28,13 +28,17 @@
         <ReturnType>System.Threading.Tasks.Task&lt;Xamarin.Essentials.WebAuthenticatorResult&gt;</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="options" Type="Xamarin.Essentials.AppleSignInAuthenticator+AppleSignInOptions" />
+        <Parameter Name="options" Type="Xamarin.Essentials.AppleSignInAuthenticator+Options" />
       </Parameters>
       <Docs>
-        <param name="options">To be added.</param>
+        <param name="options">Additional Sign In options.</param>
         <summary>Performs a native Apple Sign In authentication request.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <returns>
+          <para />
+        </returns>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
   </Members>

@@ -48,11 +48,15 @@
         <Parameter Name="savedInstanceState" Type="Android.OS.Bundle" />
       </Parameters>
       <Docs>
-        <param name="savedInstanceState">To be added.</param>
-        <summary>
+        <param name="savedInstanceState">
           <para />
+        </param>
+        <summary>
+          <para>This method should be called from the same method in the parent activity which initiated the web authentication.</para>
         </summary>
-        <remarks>To be added.</remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
   </Members>

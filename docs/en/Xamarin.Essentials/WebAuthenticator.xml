@@ -37,7 +37,7 @@
         <summary>Begin an authentication flow by navigating to the specified url and waiting for a callback/redirect to the callbackUrl scheme.</summary>
         <returns>Returns a result parsed out from the callback url.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

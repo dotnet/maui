@@ -7,10 +7,10 @@ namespace Xamarin.Essentials
 {
     public static partial class AppleSignInAuthenticator
     {
-        public static Task<WebAuthenticatorResult> AuthenticateAsync(AppleSignInOptions options = null)
-            => PlatformAuthenticateAsync(options ?? new AppleSignInOptions());
+        public static Task<WebAuthenticatorResult> AuthenticateAsync(Options options = null)
+            => PlatformAuthenticateAsync(options ?? new Options());
 
-        public class AppleSignInOptions
+        public class Options
         {
             public bool IncludeFullNameScope { get; set; } = false;
 

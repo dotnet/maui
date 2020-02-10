@@ -12,7 +12,7 @@ namespace Xamarin.Essentials
     {
         static AuthManager authManager;
 
-        static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(AppleSignInOptions options)
+        static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(Options options)
         {
             if (DeviceInfo.Version.Major < 13)
                 throw new FeatureNotSupportedException();

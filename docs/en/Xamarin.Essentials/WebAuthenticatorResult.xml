@@ -82,8 +82,10 @@
       </ReturnValue>
       <Docs>
         <summary>The value for the `access_token` key.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <value>Access Token parsed from the callback URI access_token parameter.</value>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ExpiresIn">
@@ -100,8 +102,10 @@
       </ReturnValue>
       <Docs>
         <summary>The expiry date as calculated by the timestamp of when the result was created plus the value in seconds for the `expires_in` key.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <value>Timestamp of the creation of the object instance plus the expires_in seconds parsed from the callback URI.</value>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
@@ -120,10 +124,14 @@
         <Parameter Name="key" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
+        <param name="key">Key from the callback URI's query string.</param>
         <summary>Gets a value for a given key from the dictionary.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <returns>
+          <para />
+        </returns>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Properties">
@@ -139,9 +147,13 @@
         <ReturnType>System.Collections.Generic.Dictionary&lt;System.String,System.String&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>The dictionary of parsed key/value pairs.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>The dictionary of key/value pairs parsed form the callback URI's querystring.</summary>
+        <value>
+          <para />
+        </value>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Put">
@@ -161,10 +173,16 @@
         <Parameter Name="value" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <param name="value">To be added.</param>
+        <param name="key">
+          <para />
+        </param>
+        <param name="value">
+          <para />
+        </param>
         <summary>Puts a key/value pair into the dictionary.</summary>
-        <remarks>To be added.</remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="RefreshToken">
@@ -181,8 +199,10 @@
       </ReturnValue>
       <Docs>
         <summary>The value for the `refresh_token` key.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <value>Refresh Token parsed from the callback URI refresh_token parameter.</value>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="RefreshTokenExpiresIn">
@@ -198,9 +218,11 @@
         <ReturnType>System.Nullable&lt;System.DateTimeOffset&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>The expiry date as calculated by the timestamp of when the result was created plus the value in seconds for the `refresh_token_expires_in` key.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>The refresh token expiry date as calculated by the timestamp of when the result was created plus the value in seconds for the refresh_token_expires_in key.</summary>
+        <value>Timestamp of the creation of the object instance plus the expires_in seconds parsed from the callback URI.</value>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Timestamp">
@@ -217,8 +239,12 @@
       </ReturnValue>
       <Docs>
         <summary>The timestamp when the class was instantiated, which usually corresponds with the parsed result of a request.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <value>
+          <para></para>
+        </value>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
   </Members>

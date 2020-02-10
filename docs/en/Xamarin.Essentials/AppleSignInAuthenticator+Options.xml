@@ -1,7 +1,7 @@
-<Type Name="AppleSignInAuthenticator+AppleSignInOptions" FullName="Xamarin.Essentials.AppleSignInAuthenticator+AppleSignInOptions">
-  <TypeSignature Language="C#" Value="public class AppleSignInAuthenticator.AppleSignInOptions" />
-  <TypeSignature Language="ILAsm" Value=".class nested public auto ansi beforefieldinit AppleSignInAuthenticator/AppleSignInOptions extends System.Object" />
-  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.AppleSignInAuthenticator.AppleSignInOptions" />
+<Type Name="AppleSignInAuthenticator+Options" FullName="Xamarin.Essentials.AppleSignInAuthenticator+Options">
+  <TypeSignature Language="C#" Value="public class AppleSignInAuthenticator.Options" />
+  <TypeSignature Language="ILAsm" Value=".class nested public auto ansi beforefieldinit AppleSignInAuthenticator/Options extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.AppleSignInAuthenticator.Options" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -11,16 +11,16 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>Native Apple Sign In Options</summary>
+    <summary>Options for Native Apple Sign In</summary>
     <remarks>
-      <para />
+      <para></para>
     </remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public AppleSignInOptions ();" />
+      <MemberSignature Language="C#" Value="public Options ();" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.AppleSignInAuthenticator.AppleSignInOptions.#ctor" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.AppleSignInAuthenticator.Options.#ctor" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -37,7 +37,7 @@
     <Member MemberName="IncludeEmailScope">
       <MemberSignature Language="C#" Value="public bool IncludeEmailScope { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance bool IncludeEmailScope" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.AppleSignInAuthenticator.AppleSignInOptions.IncludeEmailScope" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.AppleSignInAuthenticator.Options.IncludeEmailScope" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -47,15 +47,19 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Request email scope.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Include email scope.</summary>
+        <value>
+          <para />
+        </value>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="IncludeFullNameScope">
       <MemberSignature Language="C#" Value="public bool IncludeFullNameScope { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance bool IncludeFullNameScope" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.AppleSignInAuthenticator.AppleSignInOptions.IncludeFullNameScope" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.AppleSignInAuthenticator.Options.IncludeFullNameScope" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -65,9 +69,13 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Request full name scope.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Include full name scope.</summary>
+        <value>
+          <para />
+        </value>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
   </Members>

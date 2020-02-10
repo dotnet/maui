@@ -93,7 +93,7 @@
           <AttributeName>System.Runtime.Versioning.TargetFramework("MonoAndroid,Version=v10.0", FrameworkDisplayName="Xamarin.Android v10.0 Support")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+c54a859c367ff3108025090d317b2ab4c66624a9")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+b911e8b023c1305d8b9c73257efd7fefb6e07e9a")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>
@@ -109,7 +109,7 @@
       <Type Name="ActivityStateChangedEventArgs" Kind="Class" />
       <Type Name="AppInfo" Kind="Class" />
       <Type Name="AppleSignInAuthenticator" Kind="Class" />
-      <Type Name="AppleSignInAuthenticator+AppleSignInOptions" Kind="Class" />
+      <Type Name="AppleSignInAuthenticator+Options" Kind="Class" />
       <Type Name="AppTheme" Kind="Enumeration" />
       <Type Name="Barometer" Kind="Class" />
       <Type Name="BarometerChangedEventArgs" Kind="Class" />
