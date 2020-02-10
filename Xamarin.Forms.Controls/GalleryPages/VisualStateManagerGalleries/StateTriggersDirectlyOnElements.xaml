@@ -10,6 +10,10 @@
     </ContentPage.BindingContext>
     <ContentPage.Content>
         <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
             <VisualStateManager.VisualStateGroups>
                 <VisualStateGroup>
                     <VisualState x:Name="Wide">
@@ -18,6 +22,8 @@
                         </VisualState.StateTriggers>
                         <VisualState.Setters>
                             <Setter Property="BackgroundColor" Value="Green" />
+                            <Setter TargetName="InfoLabel" Property="Label.Text" Value="Wide (CompareStateTrigger)"/>
+                            <Setter TargetName="InfoLabel" Property="Label.FontSize" Value="24"/>
                         </VisualState.Setters>
                     </VisualState>
                     <VisualState x:Name="Narrow">
@@ -26,6 +32,8 @@
                         </VisualState.StateTriggers>
                         <VisualState.Setters>
                             <Setter Property="BackgroundColor" Value="Red" />
+                            <Setter TargetName="InfoLabel" Property="Label.Text" Value="Narrow (CompareStateTrigger)"/>
+                            <Setter TargetName="InfoLabel" Property="Label.FontSize" Value="12"/>
                         </VisualState.Setters>
                     </VisualState>
                     <VisualState x:Name="Medium">
@@ -34,6 +42,8 @@
                         </VisualState.StateTriggers>
                         <VisualState.Setters>
                             <Setter Property="BackgroundColor" Value="Blue" />
+                            <Setter TargetName="InfoLabel" Property="Label.Text" Value="Medium (AdaptiveTrigger)"/>
+                            <Setter TargetName="InfoLabel" Property="Label.FontSize" Value="18"/>
                         </VisualState.Setters>
                     </VisualState>
                 </VisualStateGroup>
@@ -43,6 +53,9 @@
                 Command="{Binding ToggleCommand}"
                 HorizontalOptions="Center"
                 VerticalOptions="Center" />
+            <Label
+                Grid.Row="1"
+                x:Name="InfoLabel"/>
         </Grid>
     </ContentPage.Content>
 </ContentPage>
