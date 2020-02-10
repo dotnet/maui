@@ -149,7 +149,7 @@ namespace Xamarin.Forms
 		string GetDisplayMember(object item)
 		{
 			if (ItemDisplayBinding == null)
-				return item.ToString();
+				return item == null ? string.Empty : item.ToString();
 
 			ItemDisplayBinding.Apply(item, this, s_displayProperty);
 			ItemDisplayBinding.Unapply();
