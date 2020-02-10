@@ -124,7 +124,7 @@ namespace Xamarin.Forms.Platform.iOS
 			_insetTracker?.OnLayoutSubviews();
 			base.LayoutSubviews();
 
-			if(Superview != null)
+			if(Superview != null && ScrollView != null)
 			{
 				if (_requestedScroll != null)
 				{
