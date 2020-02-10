@@ -1,4 +1,11 @@
-﻿using Xamarin.Forms.Xaml;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using Xamarin.Forms;
+using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries
 {
@@ -8,7 +15,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries
 		public StateTriggerToggleGallery()
 		{
 			InitializeComponent();
-			BindingContext = new StateTriggerToggleGalleryViewModel();
+			this.BindingContext = new StateTriggerToggleGalleryViewModel();
 		}
 
 		public class StateTriggerToggleGalleryViewModel : BindableObject
