@@ -247,7 +247,10 @@ namespace Xamarin.Forms.Platform.iOS
 			var masterFrame = frame;
 			nfloat opacity = 1;
 			masterFrame.Width = (int)(Math.Min(masterFrame.Width, masterFrame.Height) * 0.8);
-			var detailView = Platform.GetRenderer(MasterDetailPage.Detail).ViewController.View;
+			var detailRenderer = Platform.GetRenderer(MasterDetailPage.Detail);
+			if (detailRenderer == null)
+				return;
+			var detailView = detailRenderer.ViewController.View;
 
 			var isRTL = (Element as IVisualElementController)?.EffectiveFlowDirection.IsRightToLeft() == true;
 			if (isRTL)
