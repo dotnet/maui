@@ -47,6 +47,9 @@ pushd .\Xamarin.Forms-api-docs
 # Temporary hack to handle a typo (https://github.com/xamarin/Xamarin.Forms/pull/6103)
 copy .\docs\Xamarin.Forms\SearchBoxVisibility.xml .\docs\Xamarin.Forms\SearchBoxVisiblity.xml
 
+# Temporary hack to handle outdated index in translations (ListItemsLayout does not exist anymore)
+Out-File -FilePath .\docs\Xamarin.Forms\ListItemsLayout.xml 
+
 # Run mdoc
 & $mdoc export-msxdoc .\docs
 
