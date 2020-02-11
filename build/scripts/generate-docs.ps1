@@ -82,7 +82,7 @@ $translations | % {
     $translationFolder = ".\Xamarin.Forms-api-docs.$($_.lang)"
     
     # Clone the translation repo
-    git clone -b $branch --single-branch $translationUri
+    git clone -qb $branch --single-branch $translationUri
 
     # Go into the language-specific folder
     pushd $translationFolder\docs
