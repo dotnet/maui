@@ -1,4 +1,7 @@
 steps:
+  - checkout: self
+    clean: true
+
   - task: DownloadBuildArtifacts@0
     displayName: 'Download build artifact win_build'
     inputs:
