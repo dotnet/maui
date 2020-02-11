@@ -20,7 +20,7 @@ steps:
     displayName: 'Generate docs from docs repo'
     inputs:
       scriptName: 'build/scripts/generate-docs.ps1'
-      arguments: '"$(Build.SourceBranch)" "$(GitHub.Token)"'
+      arguments: '"$(Build.SourceBranch)" "$(github--pat--xamarinreleasemanager)"'
       workingFolder: '$(System.DefaultWorkingDirectory)/build/scripts'
       failOnStandardError: false
 
