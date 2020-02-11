@@ -40,7 +40,7 @@ pushd docstemp
 
 # Default Language Stuff
 # Clone Xamarin.Forms-api-docs in docstemp\Xamarin.Forms-api-docs
-git clone -b $branch --single-branch $docsUri 
+git clone -qb $branch --single-branch $docsUri 
 
 pushd .\Xamarin.Forms-api-docs
 
