@@ -73,54 +73,54 @@ $translations =
 
 $branch = "live"
 
-$translations | % {
+#$translations | % {
     # Generate the URI for each translated version
-    $translationUri = "https://$token@github.com/xamarin/Xamarin.Forms-api-docs.$($_.lang).git"
-    $translationFolder = ".\Xamarin.Forms-api-docs.$($_.lang)"
+#    $translationUri = "https://$token@github.com/xamarin/Xamarin.Forms-api-docs.$($_.lang).git"
+#    $translationFolder = ".\Xamarin.Forms-api-docs.$($_.lang)"
     
     # Clone the translation repo
-    git clone -qb $branch --single-branch $translationUri
+#    git clone -qb $branch --single-branch $translationUri
 
     # Go into the language-specific folder
-    pushd $translationFolder\docs
+#    pushd $translationFolder\docs
 
     # Copy everything over the stuff in the default language folder 
     # (So untranslated bits still remain in the default language)
-    copy-item -Path . -Destination ..\..\Xamarin.Forms-api-docs -Recurse -Force -Exclude index.xml
+#    copy-item -Path . -Destination ..\..\Xamarin.Forms-api-docs -Recurse -Force -Exclude index.xml
 
     # Return from the language-specific folder
-    popd
+#    popd
 
     # Go into the default language folder
-    pushd .\Xamarin.Forms-api-docs
+#    pushd .\Xamarin.Forms-api-docs
 
-    Write-Host "Stripping out unused XML for $($_.lang)"
+#    Write-Host "Stripping out unused XML for $($_.lang)"
 
-    dir .\docs -R *.xml | Select -ExpandProperty FullName | % {
+#    dir .\docs -R *.xml | Select -ExpandProperty FullName | % {
     
-        $xpaths = "//remarks",
-            "//summary[text()='To be added.']",
-            "//param[text()='To be added.']",
-            "//returns[text()='To be added.']",
-            "//typeparam[text()='To be added.']",
-            "//value[text()='To be added.']",
-            "//related",
-            "//example"
+#        $xpaths = "//remarks",
+#            "//summary[text()='To be added.']",
+#            "//param[text()='To be added.']",
+#            "//returns[text()='To be added.']",
+#            "//typeparam[text()='To be added.']",
+#            "//value[text()='To be added.']",
+#            "//related",
+#            "//example"
 
-        StripNodes $_ $xpaths 
-    }
+#        StripNodes $_ $xpaths 
+#    }
 
     # Run mdoc
-    & $mdoc export-msxdoc .\docs
+#    & $mdoc export-msxdoc .\docs
 
     # And put the results in the language specific folder under docs
-    $dest = "..\..\docs\$($_.target)"
-    mkdir $dest
-    mv Xamarin.Forms.*.xml $dest -Force
+#    $dest = "..\..\docs\$($_.target)"
+#    mkdir $dest
+#    mv Xamarin.Forms.*.xml $dest -Force
 
     # Return from the default language folder
-    popd
-}
+#    popd
+#}
 
 popd
 
