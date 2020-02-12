@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewmodels="clr-namespace:Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries"
+    x:Class="Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries.StateTriggerEventsGallery"
+    Title="StateTriggerEvents Gallery">
+    <ContentPage.BindingContext>
+       <viewmodels:StateTriggerEventsGalleryViewModel />
+    </ContentPage.BindingContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="Greem">
+                    <VisualState.StateTriggers>
+                        <CompareStateTrigger Property="{Binding ToggleState}" Value="True" IsActiveChanged="OnGreenStateTriggerIsActiveChanged" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Property="BackgroundColor" Value="Green" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Red">
+                    <VisualState.StateTriggers>
+                        <CompareStateTrigger Property="{Binding ToggleState}" Value="False" IsActiveChanged="OnRedStateTriggerIsActiveChanged" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Property="BackgroundColor" Value="Red" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        <Button
+            Text="Click to toggle BackgroundColor"
+            Command="{Binding ToggleCommand}"
+            HorizontalOptions="Center"
+            VerticalOptions="Center" />
+        <ScrollView
+            Grid.Row="1">
+            <Label
+                x:Name="InfoLabel"/>
+        </ScrollView>
+    </Grid>
+</ContentPage>
