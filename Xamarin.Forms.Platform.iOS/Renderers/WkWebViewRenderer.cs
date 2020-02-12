@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Text;
 using System.Threading.Tasks;
 using Foundation;
 using ObjCRuntime;
@@ -94,12 +96,39 @@ namespace Xamarin.Forms.Platform.iOS
 				LoadHtmlString(html, baseUrl == null ? new NSUrl(NSBundle.MainBundle.BundlePath, true) : new NSUrl(baseUrl, true));
 		}
 
-		public void LoadUrl(string url)
+		public async void LoadUrl(string url)
 		{
 			var uri = new Uri(url);
 			var safeHostUri = new Uri($"{uri.Scheme}://{uri.Authority}", UriKind.Absolute);
 			var safeRelativeUri = new Uri($"{uri.PathAndQuery}{uri.Fragment}", UriKind.Relative);
-			LoadRequest(new NSUrlRequest(new Uri(safeHostUri, safeRelativeUri)));
+			NSUrlRequest request = new NSUrlRequest(new Uri(safeHostUri, safeRelativeUri));
+
+			if (WebView.Cookies != null)
+			{
+				if (Forms.IsiOS11OrNewer)
+				{
+					var existingCookies = await Configuration.WebsiteDataStore.HttpCookieStore.GetAllCookiesAsync();
+
+					foreach (var cookie in existingCookies)
+						await Configuration.WebsiteDataStore.HttpCookieStore.DeleteCookieAsync(cookie);
+
+
+					var jCookies = WebView.Cookies.GetCookies(uri);
+
+					foreach (System.Net.Cookie jCookie in jCookies)
+					{
+						await Configuration.WebsiteDataStore.HttpCookieStore.SetCookieAsync(new NSHttpCookie(jCookie));
+					}
+				}
+				else if(WebView.Cookies.Count > 0)
+				{
+					WKUserScript wKUserScript = new WKUserScript(new NSString(GetCookieString(uri)), WKUserScriptInjectionTime.AtDocumentStart, false);
+					Configuration.UserContentController.AddUserScript(wKUserScript);
+
+				}
+			}
+
+			LoadRequest(request);
 		}
 
 		public override void LayoutSubviews()
@@ -199,6 +228,49 @@ namespace Xamarin.Forms.Platform.iOS
 			((IWebViewController)WebView).CanGoForward = CanGoForward;
 		}
 
+
+
+		string GetCookieString(Uri url)
+		{ 
+			var jCookies = WebView.Cookies.GetCookies(url);
+
+			StringBuilder cookieBuilder = new StringBuilder();
+			foreach (System.Net.Cookie jCookie in jCookies)
+			{
+
+				cookieBuilder.Append("document.cookie = '");
+				cookieBuilder.Append(jCookie.Name);
+				cookieBuilder.Append("=");
+				cookieBuilder.Append(jCookie.Value);
+
+				if (!jCookie.Expired)
+				{
+					cookieBuilder.Append($"; Max-Age={jCookie.Expires.Subtract(DateTime.UtcNow).TotalSeconds}");
+				}
+
+				if (!String.IsNullOrWhiteSpace(jCookie.Domain))
+				{
+					cookieBuilder.Append($"; Domain={jCookie.Domain}");
+				}
+				if (!String.IsNullOrWhiteSpace(jCookie.Domain))
+				{
+					cookieBuilder.Append($"; Path={jCookie.Path}");
+				}
+				if (jCookie.Secure)
+				{
+					cookieBuilder.Append($"; Secure");
+				}
+				if (jCookie.HttpOnly)
+				{
+					cookieBuilder.Append($"; HttpOnly");
+				}
+
+				cookieBuilder.Append("';");
+			}
+
+			return cookieBuilder.ToString();
+		}
+
 		class CustomWebViewNavigationDelegate : WKNavigationDelegate
 		{
 			readonly WkWebViewRenderer _renderer;
@@ -240,6 +312,7 @@ namespace Xamarin.Forms.Platform.iOS
 				WebView.SendNavigated(args);
 
 				_renderer.UpdateCanGoBackForward();
+
 			}
 
 			public override void DidStartProvisionalNavigation(WKWebView webView, WKNavigation navigation)

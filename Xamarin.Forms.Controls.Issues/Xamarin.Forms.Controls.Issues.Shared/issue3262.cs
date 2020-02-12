@@ -52,13 +52,34 @@ namespace Xamarin.Forms.Controls.Issues
 					Cookies = cookieContainer
 				};
 
+
+
 				Content = new StackLayout
 				{
 					Padding = new Thickness(20),
 					Children =
 					{
 						header,
-						webView
+						webView,
+						new Button()
+						{
+							Text = "Display all Cookies. You should see a cookie called 'TestCookie'",
+							AutomationId = "DisplayAllCookies",
+							Command = new Command(async () =>
+							{
+								await webView.EvaluateJavaScriptAsync("alert(document.cookie);");
+							})
+						},
+						new Button()
+						{
+							Text = "Load page without cookies and app shouldn't crash",
+							AutomationId = "PageWithoutCookies",
+							Command = new Command(() =>
+							{
+								webView.Cookies = null;
+								webView.Source = "file:///android_asset/googlemapsearch.html";
+							})
+						}
 					}
 				};
 			}
@@ -68,5 +89,15 @@ namespace Xamarin.Forms.Controls.Issues
 				throw;
 			}
 		}
+
+#if UITEST
+		[Test]
+		public void LoadingPageWithoutCookiesSpecifiedDoesntCrash()
+		{
+			RunningApp.Tap("PageWithoutCookies");
+			RunningApp.WaitForElement("PageWithoutCookies");
+		}
+#endif
+
 	}
 }

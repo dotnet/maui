@@ -63,7 +63,7 @@ if(bases.length == 0){
 
 			if (!uri.IsAbsoluteUri)
 			{
-				uri = new Uri(LocalScheme +  url, UriKind.RelativeOrAbsolute);
+				uri = new Uri(LocalScheme + url, UriKind.RelativeOrAbsolute);
 			}
 
 			if (Element.Cookies?.Count > 0)
@@ -76,13 +76,28 @@ if(bases.length == 0){
 					httpCookie.Value = cookie.Value;
 					filter.CookieManager.SetCookie(httpCookie, false);
 				}
-				var httpRequestMessage = new Windows.Web.Http.HttpRequestMessage(Windows.Web.Http.HttpMethod.Get, uri);
-				Control.NavigateWithHttpRequestMessage(httpRequestMessage);
+
+				try
+				{
+					var httpRequestMessage = new Windows.Web.Http.HttpRequestMessage(Windows.Web.Http.HttpMethod.Get, uri);
+					Control.NavigateWithHttpRequestMessage(httpRequestMessage);
+				}
+				catch (System.Exception exc)
+				{
+					Internals.Log.Warning(nameof(WebViewRenderer), $"Failed to load: {uri} {exc}");
+				}
 			}
 			else
 			{
-				//No Cookies so just navigate...
-				Control.Source = uri;
+				try
+				{
+					//No Cookies so just navigate...
+					Control.Source = uri;
+				}
+				catch (System.Exception exc)
+				{
+					Internals.Log.Warning(nameof(WebViewRenderer), $"Failed to load: {uri} {exc}");
+				}
 			}
 		}
 

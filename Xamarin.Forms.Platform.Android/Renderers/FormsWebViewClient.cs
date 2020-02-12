@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Platform.Android
 			var cookieManager = CookieManager.Instance;
 			cookieManager.SetAcceptCookie(true);
 			cookieManager.RemoveAllCookie();
-			var cookies = _renderer.Element.Cookies.GetCookies(new System.Uri(url));
+			var cookies = _renderer.Element.Cookies?.GetCookies(new System.Uri(url));
 			for (var i = 0; i < (cookies?.Count ?? -1); i++)
 			{
 				string cookieValue = cookies[i].Value;

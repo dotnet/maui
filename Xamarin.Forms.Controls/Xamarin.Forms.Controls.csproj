@@ -72,9 +72,6 @@
     <EmbeddedResource Update="GalleryPages\TwoPaneViewGalleries\OpenCompactWindow.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\TwoPaneViewGalleries\TwoPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </EmbeddedResource>
     <EmbeddedResource Update="GalleryPages\TwoPaneViewGalleries\TwoPanePropertiesGallery.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
