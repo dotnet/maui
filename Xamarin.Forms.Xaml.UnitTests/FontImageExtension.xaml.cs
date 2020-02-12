@@ -29,7 +29,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				var layout = new FontImageExtension(useCompiledXaml);
 				var tabs = layout.AllChildren;
 
-				foreach (var tab in tabs)
+				int i = 0;
+				foreach(var tab in tabs)
 				{
 					Tab myTab = (Tab)tab;
 					if (myTab == null)
@@ -40,8 +41,14 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					var fontImage = (FontImageSource)myTab.Icon;
 					Assert.AreEqual(FontFamily, fontImage.FontFamily);
 					Assert.AreEqual(Glyph, fontImage.Glyph);
-					Assert.AreEqual(Size, fontImage.Size);
+
+					if(i == 3)
+						Assert.AreEqual(30d, fontImage.Size);
+					else
+						Assert.AreEqual(Size, fontImage.Size);
+
 					Assert.AreEqual(Color, fontImage.Color);
+					i++;
 				}
 			}
 

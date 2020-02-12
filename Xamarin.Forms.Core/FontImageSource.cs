@@ -28,7 +28,7 @@
 			set => SetValue(GlyphProperty, value);
 		}
 
-		public static readonly BindableProperty SizeProperty = BindableProperty.Create(nameof(Size), typeof(double), typeof(FontImageSource), default(double),
+		public static readonly BindableProperty SizeProperty = BindableProperty.Create(nameof(Size), typeof(double), typeof(FontImageSource), 30d,
 			propertyChanged: (b, o, n) => ((FontImageSource)b).OnSourceChanged());
 
 		[TypeConverter(typeof(FontSizeConverter))]

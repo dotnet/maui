@@ -1,4 +1,7 @@
 steps:
+  - checkout: self
+    clean: true
+
   - task: DownloadBuildArtifacts@0
     displayName: 'Download build artifact win_build'
     inputs:
@@ -17,9 +20,8 @@ steps:
     displayName: 'Generate docs from docs repo'
     inputs:
       scriptName: 'build/scripts/generate-docs.ps1'
-      arguments: '"$(Build.SourceBranch)" "$(GitHub.Token)"'
+      arguments: '"$(Build.SourceBranch)" "$(github--pat--xamarinreleasemanager)"'
       workingFolder: '$(System.DefaultWorkingDirectory)/build/scripts'
-      failOnStandardError: false
 
   - task: NuGetToolInstaller@1
     displayName: 'Use NuGet: $(NUGET_VERSION)'

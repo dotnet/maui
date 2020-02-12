@@ -10,6 +10,8 @@ parameters:
 
 steps:
   - checkout: none
+    clean: true
+    
   - template: sign-artifacts/steps/v1.yml@xamarin-templates
     parameters:
       targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed

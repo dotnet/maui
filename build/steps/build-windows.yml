@@ -23,6 +23,8 @@ parameters:
 
 jobs:
   - job: ${{ parameters.name }}
+    workspace:
+      clean: all
     displayName: ${{ parameters.displayName }}
     timeoutInMinutes: 120
     pool:
@@ -85,7 +87,7 @@ jobs:
         solution: ${{ parameters.csprojPath }}
         configuration: '$(BuildConfiguration)'
         msbuildArguments: ${{ parameters.msbuildExtraArguments }} /t:rebuild /p:DisableEmbeddedXbf=false /bl:$(Build.ArtifactStagingDirectory)\win-$(BuildConfiguration)-csproj.binlog
-  
+
     - task: VSTest@2
       displayName: 'Unit Tests'
       inputs:
