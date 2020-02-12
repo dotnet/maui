@@ -48,7 +48,7 @@ pushd .\Xamarin.Forms-api-docs
 copy .\docs\Xamarin.Forms\SearchBoxVisibility.xml .\docs\Xamarin.Forms\SearchBoxVisiblity.xml
 
 # Temporary hack to handle outdated index in translations (ListItemsLayout does not exist anymore)
-Out-File -FilePath .\docs\Xamarin.Forms\ListItemsLayout.xml 
+Set-Content -Path .\docs\Xamarin.Forms\ListItemsLayout.xml -Value "<!-- Placeholder -->" -Encoding UTF8
 
 # Run mdoc
 & $mdoc export-msxdoc .\docs
