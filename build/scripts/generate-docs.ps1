@@ -44,15 +44,6 @@ git clone -qb $branch --single-branch $docsUri
 
 pushd .\Xamarin.Forms-api-docs
 
-# Temporary hack to handle a typo (https://github.com/xamarin/Xamarin.Forms/pull/6103)
-copy .\docs\Xamarin.Forms\SearchBoxVisibility.xml .\docs\Xamarin.Forms\SearchBoxVisiblity.xml
-
-# Temporary hacks to handle outdated indexes in translation repos
-copy .\docs\Xamarin.Forms\LinearItemsLayout.xml .\docs\Xamarin.Forms\ListItemsLayout.xml
-copy .\docs\Xamarin.Forms\LinearItemsLayout.xml .\docs\Xamarin.Forms\MenuShellItem.xml
-copy .\docs\Xamarin.Forms\LinearItemsLayout.xml .\docs\Xamarin.Forms\MenuShellItem.xml
-copy .\docs\Xamarin.Forms\LinearItemsLayout.xml .\docs\Xamarin.Forms\Shell+NavigationImpl.xml
-
 # Run mdoc
 & $mdoc export-msxdoc .\docs
 
@@ -95,7 +86,7 @@ $translations | % {
 
     # Copy everything over the stuff in the default language folder 
     # (So untranslated bits still remain in the default language)
-    copy-item -Path . -Destination ..\..\Xamarin.Forms-api-docs -Recurse -Force    
+    copy-item -Path . -Destination ..\..\Xamarin.Forms-api-docs -Recurse -Force -Exclude index.xml
 
     # Return from the language-specific folder
     popd
