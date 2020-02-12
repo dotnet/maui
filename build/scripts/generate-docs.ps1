@@ -50,6 +50,9 @@ copy .\docs\Xamarin.Forms\SearchBoxVisibility.xml .\docs\Xamarin.Forms\SearchBox
 # Temporary hack to handle outdated index in translations (ListItemsLayout does not exist anymore)
 copy .\docs\Xamarin.Forms\LinearItemsLayout.xml .\docs\Xamarin.Forms\ListItemsLayout.xml
 
+# Temporary hack to handle outdated index in translations (MenuShellItem does not exist anymore)
+copy .\docs\Xamarin.Forms\LinearItemsLayout.xml .\docs\Xamarin.Forms\MenuShellItem.xml
+
 # Run mdoc
 & $mdoc export-msxdoc .\docs
 
