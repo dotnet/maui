@@ -117,6 +117,8 @@ jobs:
     provisionatorPath : 'build/provisioning/provisioning.csx'
 
 - job: osx
+  workspace:
+    clean: all
   displayName: OSX Phase
   pool:
     name: $(macOSVmImage)
@@ -137,6 +139,8 @@ jobs:
      - template: build/steps/build-osx.yml
 
 - job: nuget_pack
+  workspace:
+    clean: all
   displayName: Nuget Phase
   dependsOn:
    - win

@@ -35,6 +35,7 @@ function StripNodes {
 
 pushd ..\..
 
+if(test-path docstemp){ del docstemp -Recurse -Force }
 mkdir docstemp
 pushd docstemp
 
