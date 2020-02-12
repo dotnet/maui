@@ -22,7 +22,6 @@ steps:
       scriptName: 'build/scripts/generate-docs.ps1'
       arguments: '"$(Build.SourceBranch)" "$(github--pat--xamarinreleasemanager)"'
       workingFolder: '$(System.DefaultWorkingDirectory)/build/scripts'
-      failOnStandardError: false
 
   - task: NuGetToolInstaller@1
     displayName: 'Use NuGet: $(NUGET_VERSION)'

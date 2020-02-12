@@ -47,11 +47,11 @@ pushd .\Xamarin.Forms-api-docs
 # Temporary hack to handle a typo (https://github.com/xamarin/Xamarin.Forms/pull/6103)
 copy .\docs\Xamarin.Forms\SearchBoxVisibility.xml .\docs\Xamarin.Forms\SearchBoxVisiblity.xml
 
-# Temporary hack to handle outdated index in translations (ListItemsLayout does not exist anymore)
+# Temporary hacks to handle outdated indexes in translation repos
 copy .\docs\Xamarin.Forms\LinearItemsLayout.xml .\docs\Xamarin.Forms\ListItemsLayout.xml
-
-# Temporary hack to handle outdated index in translations (MenuShellItem does not exist anymore)
 copy .\docs\Xamarin.Forms\LinearItemsLayout.xml .\docs\Xamarin.Forms\MenuShellItem.xml
+copy .\docs\Xamarin.Forms\LinearItemsLayout.xml .\docs\Xamarin.Forms\MenuShellItem.xml
+copy .\docs\Xamarin.Forms\LinearItemsLayout.xml .\docs\Xamarin.Forms\Shell+NavigationImpl.xml
 
 # Run mdoc
 & $mdoc export-msxdoc .\docs
