@@ -89,6 +89,21 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
+		internal static UISearchBarStyle ToNativeSearchBarStyle(this PlatformConfiguration.iOSSpecific.UISearchBarStyle style)
+		{
+			switch (style)
+			{
+				case PlatformConfiguration.iOSSpecific.UISearchBarStyle.Default:
+					return UISearchBarStyle.Default;
+				case PlatformConfiguration.iOSSpecific.UISearchBarStyle.Prominent:
+					return UISearchBarStyle.Prominent;
+				case PlatformConfiguration.iOSSpecific.UISearchBarStyle.Minimal:
+					return UISearchBarStyle.Minimal;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(style));
+			}
+		}
+
 		internal static UIReturnKeyType ToUIReturnKeyType(this ReturnType returnType)
 		{
 			switch (returnType)

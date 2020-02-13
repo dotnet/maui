@@ -28,6 +28,7 @@ namespace Xamarin.Forms.Controls
 			var modalformsheetiOSButton = new Button() { Text = "Modal FormSheet (iOS)" };
 			var homeIndicatoriOSButton = new Button() { Text = "Home indicator (iOS)" };
 			var refreshWindowsButton = new Button { Text = "RefreshView (Windows)" };
+			var searchBariOSButton = new Button { Text = "SearchBar (iOS)" };
 
 			mdpiOSButton.Clicked += (sender, args) => { SetRoot(new MasterDetailPageiOS(new Command(RestoreOriginal))); };
 			mdpWindowsButton.Clicked += (sender, args) => { SetRoot(new MasterDetailPageWindows(new Command(RestoreOriginal))); };
@@ -45,6 +46,7 @@ namespace Xamarin.Forms.Controls
 			modalformsheetiOSButton.Clicked += async (sender, args) => { await Navigation.PushModalAsync(new ModalFormSheetPageiOS()); };
 			homeIndicatoriOSButton.Clicked += (sender, args) => { Navigation.PushAsync(new HomeIndicatorPageiOS(new Command(RestoreOriginal))); };
 			refreshWindowsButton.Clicked += (sender, args) => { Navigation.PushAsync(new RefreshViewWindows()); };
+			searchBariOSButton.Clicked += (sender, args) => { Navigation.PushAsync(new SearchBariOS()); };
 
 			Content = new ScrollView
 			{
@@ -52,7 +54,7 @@ namespace Xamarin.Forms.Controls
 				{
 					Children = { mdpiOSButton, mdpWindowsButton, npWindowsButton, tbiOSButton, tbWindowsButton, viselemiOSButton,
 						appAndroidButton, tbAndroidButton, entryiOSButton, entryAndroidButton, largeTitlesiOSButton, safeareaiOSButton, 
-						modalformsheetiOSButton, homeIndicatoriOSButton, refreshWindowsButton }
+						modalformsheetiOSButton, homeIndicatoriOSButton, refreshWindowsButton, searchBariOSButton }
 				}
 			};
 		}

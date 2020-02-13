@@ -4,6 +4,7 @@ using System.Drawing;
 using CoreGraphics;
 using Foundation;
 using UIKit;
+using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -81,6 +82,7 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateCharacterSpacing();
 				UpdateMaxLength();
 				UpdateKeyboard();
+				UpdateSearchBarStyle();
 			}
 
 			base.OnElementChanged(e);
@@ -129,6 +131,8 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateKeyboard();
 			else if(e.PropertyName == Xamarin.Forms.InputView.IsSpellCheckEnabledProperty.PropertyName)
 				UpdateKeyboard();
+			else if(e.PropertyName == PlatformConfiguration.iOSSpecific.SearchBar.SearchBarStyleProperty.PropertyName)
+				UpdateSearchBarStyle();
 		}
 
 		protected override void SetBackgroundColor(Color color)
@@ -396,6 +400,11 @@ namespace Xamarin.Forms.Platform.iOS
 			accessoryView.SetItems(new[] { spacer, searchButton }, false);
 
 			return accessoryView;
+		}
+
+		void UpdateSearchBarStyle()
+		{
+			Control.SearchBarStyle = Element.OnThisPlatform().GetSearchBarStyle().ToNativeSearchBarStyle();
 		}
 	}
 }
