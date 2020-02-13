@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Margin = new Thickness(0, 0, 0, 24)
 			};
 
-			IndicatorView.SetItemsSourceBy(indicatorView, carouselView);
+			carouselView.IndicatorView = indicatorView;
 
 			layout.Children.Add(instructions);
 			layout.Children.Add(updateButton);

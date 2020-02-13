@@ -62,7 +62,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 				AutomationId = "TheIndicatorView"
 			};
 
-			IndicatorView.SetItemsSourceBy(indicatorView, carouselView);
+			carouselView.IndicatorView = indicatorView;
 
 			layout.Children.Add(indicatorView);
 
