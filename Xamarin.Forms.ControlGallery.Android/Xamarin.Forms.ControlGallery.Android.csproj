@@ -28,8 +28,18 @@
     <AndroidEnableMultiDex>true</AndroidEnableMultiDex>
     <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- default locally to using fast renderers but if we're running on CI don't set a value for ANDROID_RENDERERS.
+      This will let the old and new yaml configurations coexist -->
+    <ANDROID_RENDERERS Condition="'$(ANDROID_RENDERERS)' == '' AND '$(CI)' == 'false'">FAST</ANDROID_RENDERERS>
+    <DefineConstants Condition="'$(ANDROID_RENDERERS)' == 'FAST'">$(DefineConstants);TEST_EXPERIMENTAL_RENDERERS</DefineConstants>
+    <DefineConstants Condition="'$(ANDROID_RENDERERS)' == 'PREAPPCOMPAT'">$(DefineConstants);FORMS_APPLICATION_ACTIVITY</DefineConstants>
+    <DefineConstants Condition="'$(ANDROID_RENDERERS)' == 'LEGACY'">$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+  
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <DefineConstants>HAVE_OPENTK</DefineConstants>
+    <DefineConstants>$(DefineConstants);HAVE_OPENTK</DefineConstants>
     <AndroidKeyStore>True</AndroidKeyStore>
     <AndroidSigningKeyStore>$(SolutionDir)debug.keystore</AndroidSigningKeyStore>
     <AndroidSigningStorePass>android</AndroidSigningStorePass>
@@ -40,7 +50,7 @@
     <DebugSymbols>true</DebugSymbols>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;HAVE_OPENTK</DefineConstants>
+    <DefineConstants>$(DefineConstants);TRACE;DEBUG;HAVE_OPENTK</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AndroidLinkMode>None</AndroidLinkMode>
@@ -54,7 +64,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;HAVE_OPENTK</DefineConstants>
+    <DefineConstants>$(DefineConstants);TRACE;HAVE_OPENTK</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AndroidLinkMode>SdkOnly</AndroidLinkMode>
