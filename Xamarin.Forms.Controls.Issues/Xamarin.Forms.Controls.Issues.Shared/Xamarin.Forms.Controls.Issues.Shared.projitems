@@ -71,6 +71,7 @@
       <DependentUpon>Issue7048.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Issue6804.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7181.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5367.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6878.cs" />
