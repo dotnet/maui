@@ -8,6 +8,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public static NSString ReuseId = new NSString("Xamarin.Forms.Platform.iOS.VerticalDefaultCell");
 
 		[Export("initWithFrame:")]
+		[Internals.Preserve(Conditional = true)]
 		public VerticalDefaultCell(CGRect frame) : base(frame)
 		{
 			Constraint = Label.WidthAnchor.ConstraintEqualTo(Frame.Width);

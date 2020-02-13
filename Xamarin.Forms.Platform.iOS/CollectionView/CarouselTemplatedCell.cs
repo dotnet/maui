@@ -9,6 +9,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public static NSString ReuseId = new NSString("Xamarin.Forms.Platform.iOS.CarouselTemplatedCell");
 
 		[Export("initWithFrame:")]
+		[Internals.Preserve(Conditional = true)]
 		protected CarouselTemplatedCell(CGRect frame) : base(frame)
 		{ }
 

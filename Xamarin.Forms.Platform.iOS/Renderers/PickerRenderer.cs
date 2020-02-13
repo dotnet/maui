@@ -25,6 +25,12 @@ namespace Xamarin.Forms.Platform.iOS
 
 	public class PickerRenderer : PickerRendererBase<UITextField>
 	{
+		[Internals.Preserve(Conditional = true)]
+		public PickerRenderer()
+		{
+
+		}
+
 		protected override UITextField CreateNativeControl()
 		{
 			return new ReadOnlyField { BorderStyle = UITextBorderStyle.RoundedRect };
@@ -41,6 +47,12 @@ namespace Xamarin.Forms.Platform.iOS
 
 		IElementController ElementController => Element as IElementController;
 
+
+		[Internals.Preserve(Conditional = true)]
+		public PickerRendererBase()
+		{
+
+		}
 
 		protected abstract override TControl CreateNativeControl();
 		protected override void OnElementChanged(ElementChangedEventArgs<Picker> e)

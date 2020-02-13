@@ -11,6 +11,7 @@ namespace Xamarin.Forms.Platform.iOS
 		protected virtual float MinimumSize => 44f; // Apple docs
 		bool _disposed;
 
+		[Internals.Preserve(Conditional = true)]
 		protected CheckBoxRendererBase()
 		{
 		}

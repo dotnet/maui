@@ -8,6 +8,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public static NSString ReuseId = new NSString("Xamarin.Forms.Platform.iOS.VerticalCell");
 
 		[Export("initWithFrame:")]
+		[Internals.Preserve(Conditional = true)]
 		public VerticalCell(CGRect frame) : base(frame)
 		{
 		}

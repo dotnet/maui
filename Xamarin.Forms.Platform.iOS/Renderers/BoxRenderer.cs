@@ -20,6 +20,12 @@ namespace Xamarin.Forms.Platform.iOS
 		const float HalfPI = PI * .5f;
 		const float TwoPI = PI * 2;
 
+		[Internals.Preserve(Conditional = true)]
+		public BoxRenderer()
+		{
+
+		}
+
 		public override void Draw(RectangleF rect)
 		{
 			UIBezierPath bezierPath = new UIBezierPath();

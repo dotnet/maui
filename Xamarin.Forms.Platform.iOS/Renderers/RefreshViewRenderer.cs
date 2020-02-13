@@ -38,6 +38,12 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
+		[Internals.Preserve(Conditional = true)]
+		public RefreshViewRenderer()
+		{
+
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<RefreshView> e)
 		{
 			base.OnElementChanged(e);

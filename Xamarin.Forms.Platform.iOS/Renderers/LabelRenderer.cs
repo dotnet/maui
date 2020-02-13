@@ -43,6 +43,12 @@ namespace Xamarin.Forms.Platform.MacOS
 			Label.TextTypeProperty.PropertyName
 		};
 
+		[Internals.Preserve(Conditional = true)]
+		public LabelRenderer()
+		{
+
+		}
+
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			if (!_perfectSizeValid)

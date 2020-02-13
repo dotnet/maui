@@ -7,6 +7,12 @@ namespace Xamarin.Forms.Platform.iOS
 {
 	public class StepperRenderer : ViewRenderer<Stepper, UIStepper>
 	{
+		[Internals.Preserve(Conditional = true)]
+		public StepperRenderer()
+		{
+
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (Control != null)

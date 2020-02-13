@@ -10,6 +10,12 @@ namespace Xamarin.Forms.Platform.iOS
 		UIColor _defaultOnColor;
 		UIColor _defaultThumbColor;
 
+		[Internals.Preserve(Conditional = true)]
+		public SwitchRenderer()
+		{
+
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
