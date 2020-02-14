@@ -47,11 +47,16 @@ function ScrubIndex {
 		$types | % {
             $typeName = $_.Name
             
-			if(-not (test-path "$($folder)\$($typeName).xml")) {
+			$path = Join-Path (Get-Location) "docs\$($folder)\$($typeName).xml"
+			
+			if(-not (Test-Path $path)) {
                 $selector = "//Namespace[@Name='$($folder)']/Type[@Name='$($typeName)']"
 				$toRemove =  $index.SelectSingleNode($selector)
-				$removed = $toRemove.ParentNode.RemoveChild($toRemove)
-			}
+				
+				if($toRemove -ne $null) {
+					$removed = $toRemove.ParentNode.RemoveChild($toRemove)	
+				}
+			} 
 		}
 	}
 	
@@ -92,6 +97,7 @@ $translations =
 @{"lang" = "ru-ru"; "target" = "ru"},
 @{"lang" = "zh-cn"; "target" = "zh-Hans"},
 @{"lang" = "zh-tw"; "target" = "zh-Hant"}
+
 #@{"lang" = "cs-cz"; "target" = "cs"},
 #@{"lang" = "pl-pl"; "target" = "pl"},
 #@{"lang" = "tr-tr"; "target" = "tr"},
@@ -125,7 +131,7 @@ $translations | % {
 
     Write-Host "Stripping out unused XML for $($_.lang)"
 
-    dir .\docs -R *.xml | Select -ExpandProperty FullName | % {
+    dir .\docs -R *.xml -Exclude ns-*.xml | Select -ExpandProperty FullName | % {
     
         $xpaths = "//remarks",
             "//summary[text()='To be added.']",
