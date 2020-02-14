@@ -15,7 +15,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue8262.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Issue8787.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8899.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8902.xaml.cs">
       <DependentUpon>Issue8902.xaml</DependentUpon>
@@ -157,7 +156,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue8366.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8269.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8526.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Issue8503.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8529.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8529_1.xaml.cs">
       <DependentUpon>Issue8529_1.xaml</DependentUpon>
@@ -1377,7 +1375,6 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue4040.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8787.xaml" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)VisualControlsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
