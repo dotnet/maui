@@ -8,6 +8,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public static NSString ReuseId = new NSString("Xamarin.Forms.Platform.iOS.VerticalSupplementaryView");
 
 		[Export("initWithFrame:")]
+		[Internals.Preserve(Conditional = true)]
 		public VerticalSupplementaryView(CGRect frame) : base(frame)
 		{
 		}

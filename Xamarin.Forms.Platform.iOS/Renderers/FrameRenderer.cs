@@ -11,6 +11,12 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		ShadowView _shadowView;
 
+		[Internals.Preserve(Conditional = true)]
+		public FrameRenderer()
+		{
+
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Frame> e)
 		{
 			base.OnElementChanged(e);

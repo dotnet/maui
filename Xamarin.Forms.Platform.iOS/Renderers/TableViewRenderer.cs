@@ -12,6 +12,12 @@ namespace Xamarin.Forms.Platform.iOS
 		UIView _originalBackgroundView;
 		RectangleF _previousFrame;
 
+		[Internals.Preserve(Conditional = true)]
+		public TableViewRenderer()
+		{
+
+		}
+
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			return Control.GetSizeRequest(widthConstraint, heightConstraint, DefaultRowHeight, DefaultRowHeight);

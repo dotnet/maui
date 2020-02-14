@@ -131,6 +131,12 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected MasterDetailPage MasterDetailPage => _masterDetailPage ?? (_masterDetailPage = (MasterDetailPage)Element);
 
+		[Internals.Preserve(Conditional = true)]
+		public TabletMasterDetailRenderer()
+		{
+
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)

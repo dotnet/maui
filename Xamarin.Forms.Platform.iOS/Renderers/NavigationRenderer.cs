@@ -1366,22 +1366,27 @@ namespace Xamarin.Forms.Platform.iOS
 
 		internal class FormsNavigationBar : UINavigationBar
 		{
+			[Internals.Preserve(Conditional = true)]
 			public FormsNavigationBar() : base()
 			{
 			}
 
+			[Internals.Preserve(Conditional = true)]
 			public FormsNavigationBar(Foundation.NSCoder coder) : base(coder)
 			{
 			}
 
+			[Internals.Preserve(Conditional = true)]
 			protected FormsNavigationBar(Foundation.NSObjectFlag t) : base(t)
 			{
 			}
 
+			[Internals.Preserve(Conditional = true)]
 			protected internal FormsNavigationBar(IntPtr handle) : base(handle)
 			{
 			}
 
+			[Internals.Preserve(Conditional = true)]
 			public FormsNavigationBar(RectangleF frame) : base(frame)
 			{
 			}

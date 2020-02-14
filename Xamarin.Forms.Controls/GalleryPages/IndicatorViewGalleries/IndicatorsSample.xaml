@@ -19,7 +19,7 @@
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
-        <CarouselView x:Name="carousel" ItemsSource="{Binding Items}" Grid.Row="0" Grid.RowSpan="3">
+        <CarouselView x:Name="carousel" ItemsSource="{Binding Items}" Grid.Row="0" Grid.RowSpan="3" IndicatorView="indicators">
             <CarouselView.ItemTemplate>
                 <DataTemplate>
                     <Frame BackgroundColor="{Binding Color}">
@@ -31,16 +31,5 @@
             </CarouselView.ItemTemplate>
         </CarouselView>
         <IndicatorView x:Name="indicators" Grid.Row="1" IndicatorColor="Gray" SelectedIndicatorColor="White" HorizontalOptions="Center" />
-        <IndicatorView x:Name="indicatorsForms" Grid.Row="2" ItemsSourceBy="carousel" IndicatorColor="Transparent" SelectedIndicatorColor="Gray" HorizontalOptions="Center"  Margin="0,20,0,20" Visual="Forms" >
-            <IndicatorView.IndicatorTemplate>
-                <DataTemplate>
-                    <Image>
-                        <Image.Source>
-                            <FontImageSource Glyph="{StaticResource Indicator}" FontFamily="{StaticResource IonicsFontFamily}" Color="Pink"></FontImageSource>
-                        </Image.Source>
-                    </Image>
-                </DataTemplate>
-            </IndicatorView.IndicatorTemplate>
-        </IndicatorView>
     </Grid>
 </ContentPage>

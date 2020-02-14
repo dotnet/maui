@@ -25,6 +25,12 @@ namespace Xamarin.Forms.Platform.iOS
 
 		IElementController ElementController => Element as IElementController;
 
+		[Internals.Preserve(Conditional = true)]
+		public SearchBarRenderer()
+		{
+
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)

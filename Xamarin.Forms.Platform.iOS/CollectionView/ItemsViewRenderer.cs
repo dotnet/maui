@@ -19,6 +19,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected TViewController Controller { get; private set; }
 
+		[Internals.Preserve(Conditional = true)]
 		protected ItemsViewRenderer()
 		{
 			AutoPackage = false;

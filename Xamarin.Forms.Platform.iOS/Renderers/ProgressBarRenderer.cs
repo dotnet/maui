@@ -6,6 +6,12 @@ namespace Xamarin.Forms.Platform.iOS
 {
 	public class ProgressBarRenderer : ViewRenderer<ProgressBar, UIProgressView>
 	{
+		[Internals.Preserve(Conditional = true)]
+		public ProgressBarRenderer()
+		{
+
+		}
+
 		public override SizeF SizeThatFits(SizeF size)
 		{
 			// progress bar will size itself to be as wide as the request, even if its inifinite

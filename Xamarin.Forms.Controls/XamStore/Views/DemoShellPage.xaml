@@ -107,7 +107,7 @@
                                     <TextCell Text="{Binding Title}" TextColor="#FFFFFF">
                                         <TextCell.ContextActions>
                                             <MenuItem Text="Delete" IsDestructive="true" 
-                                                      Command="{Binding BindingContext.DeleteEntryCommand, Source={x:Reference EntriesListView}" 
+                                                      Command="{Binding BindingContext.DeleteEntryCommand, Source={x:Reference EntriesListView}}" 
                                                       CommandParameter="{Binding .}" />
                                         </TextCell.ContextActions>
                                     </TextCell>

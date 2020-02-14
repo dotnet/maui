@@ -6,6 +6,9 @@ namespace Xamarin.Forms.Platform.iOS
 		where TItemsView : GroupableItemsView
 		where TViewController : GroupableItemsViewController<TItemsView>
 	{
+		[Internals.Preserve(Conditional = true)]
+		public GroupableItemsViewRenderer() { }
+
 		protected override TViewController CreateController(TItemsView itemsView, ItemsViewLayout layout)
 		{
 			return new GroupableItemsViewController<TItemsView>(itemsView, layout) as TViewController;

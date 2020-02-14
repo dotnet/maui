@@ -21,6 +21,7 @@ namespace Xamarin.Forms.Platform.iOS
 				
 		bool _idleTimerDisabled = false;
 
+		[Internals.Preserve(Conditional = true)]
 		public MediaElementRenderer()
 		{
 			Xamarin.Forms.MediaElement.VerifyMediaElementFlagEnabled(nameof(MediaElementRenderer));

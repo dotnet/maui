@@ -6,6 +6,12 @@ namespace Xamarin.Forms.Platform.iOS
 {
 	public class ShellRenderer : UIViewController, IShellContext, IVisualElementRenderer, IEffectControlProvider
 	{
+		[Internals.Preserve(Conditional = true)]
+		public ShellRenderer()
+		{
+
+		}
+
 		#region IShellContext
 
 		bool IShellContext.AllowFlyoutGesture

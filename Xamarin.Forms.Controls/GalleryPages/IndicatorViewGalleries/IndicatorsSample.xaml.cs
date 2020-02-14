@@ -18,7 +18,6 @@ namespace Xamarin.Forms.Controls
 			Device.SetFlags(new[] { ExperimentalFlags.CarouselViewExperimental, ExperimentalFlags.IndicatorViewExperimental });
 			InitializeComponent();
 			BindingContext = new GalleryPages.CollectionViewGalleries.CarouselViewGalleries.CarouselItemsGalleryViewModel();
-			IndicatorView.SetItemsSourceBy(indicators, carousel);
 		}
 	}
 }

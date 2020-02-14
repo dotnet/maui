@@ -26,6 +26,12 @@ namespace Xamarin.Forms.Platform.iOS
 
 		Page Page => Element as Page;
 
+		[Internals.Preserve(Conditional = true)]
+		public TabbedRenderer()
+		{
+
+		}
+
 		public override UIViewController SelectedViewController
 		{
 			get { return base.SelectedViewController; }

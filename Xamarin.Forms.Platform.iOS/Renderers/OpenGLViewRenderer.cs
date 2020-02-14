@@ -12,6 +12,12 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		CADisplayLink _displayLink;
 
+		[Internals.Preserve(Conditional = true)]
+		public OpenGLViewRenderer()
+		{
+
+		}
+
 		public void Display(object sender, EventArgs eventArgs)
 		{
 			if (Element.HasRenderLoop)

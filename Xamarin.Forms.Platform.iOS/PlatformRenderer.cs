@@ -8,6 +8,7 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		bool _disposed;
 
+		[Internals.Preserve(Conditional = true)]
 		internal PlatformRenderer(Platform platform)
 		{
 			Platform = platform;

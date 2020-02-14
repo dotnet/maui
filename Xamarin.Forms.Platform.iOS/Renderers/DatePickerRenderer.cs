@@ -24,6 +24,12 @@ namespace Xamarin.Forms.Platform.iOS
 
 	public class DatePickerRenderer : DatePickerRendererBase<UITextField>
 	{
+		[Internals.Preserve(Conditional = true)]
+		public DatePickerRenderer()
+		{
+
+		}
+
 		protected override UITextField CreateNativeControl()
 		{
 			return new NoCaretField { BorderStyle = UITextBorderStyle.RoundedRect };
@@ -42,6 +48,12 @@ namespace Xamarin.Forms.Platform.iOS
 
 
 		abstract protected override TControl CreateNativeControl();
+
+		[Internals.Preserve(Conditional = true)]
+		public DatePickerRendererBase()
+		{
+
+		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<DatePicker> e)
 		{

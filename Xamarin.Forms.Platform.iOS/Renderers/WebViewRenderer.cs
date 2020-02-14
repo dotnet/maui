@@ -22,6 +22,8 @@ namespace Xamarin.Forms.Platform.iOS
 #pragma warning disable 0414
 		VisualElementTracker _tracker;
 #pragma warning restore 0414
+
+		[Internals.Preserve(Conditional = true)]
 		public WebViewRenderer() : base(RectangleF.Empty)
 		{
 		}

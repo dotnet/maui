@@ -8,6 +8,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public static NSString ReuseId = new NSString("Xamarin.Forms.Platform.iOS.HorizontalDefaultCell");
 
 		[Export("initWithFrame:")]
+		[Internals.Preserve(Conditional = true)]
 		public HorizontalDefaultCell(CGRect frame) : base(frame)
 		{
 			Constraint = Label.HeightAnchor.ConstraintEqualTo(Frame.Height);

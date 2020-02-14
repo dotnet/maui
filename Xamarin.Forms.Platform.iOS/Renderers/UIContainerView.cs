@@ -70,8 +70,14 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected override void Dispose(bool disposing)
 		{
-			if (disposing && !_disposed)
+			if (_disposed)
+				return;
+
+			if (disposing)
 			{
+				if(_view != null)
+					_view.MeasureInvalidated -= OnMeasureInvalidated;
+
 				_renderer?.Dispose();
 				_renderer = null;
 				_view.ClearValue(Platform.RendererProperty);

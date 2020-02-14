@@ -6,6 +6,9 @@ namespace Xamarin.Forms.Platform.iOS
 		where TItemsView : StructuredItemsView
 		where TViewController : StructuredItemsViewController<TItemsView>
 	{
+		[Internals.Preserve(Conditional = true)]
+		public StructuredItemsViewRenderer() { }
+
 		protected override TViewController CreateController(TItemsView itemsView, ItemsViewLayout layout)
 		{
 			return new StructuredItemsViewController<TItemsView>(itemsView, layout) as TViewController;

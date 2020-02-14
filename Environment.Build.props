@@ -2,10 +2,21 @@
   <PropertyGroup>
     <EnvironmentBuildPropsImported>true</EnvironmentBuildPropsImported>
   </PropertyGroup>
+
+
   
   <PropertyGroup Condition="'$(CI)' == ''">
     <CI>false</CI>
     <CI Condition="'$(TF_BUILD)' == 'true'">true</CI>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      Set one of these if you want to test a particular set of renderers
+      <ANDROID_RENDERERS>FAST</ANDROID_RENDERERS>
+      <ANDROID_RENDERERS>PREAPPCOMPAT</ANDROID_RENDERERS>
+      <ANDROID_RENDERERS>LEGACY</ANDROID_RENDERERS>
+    -->
   </PropertyGroup>
   
   <PropertyGroup>

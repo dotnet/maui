@@ -122,7 +122,6 @@ namespace Xamarin.Forms.Platform.Android
 				v.HideKeyboard();
 				SearchConfirmed?.Invoke(this, EventArgs.Empty);
 				Controller.QueryConfirmed();
-				_textBlock.Text = "";
 			}
 
 			return true;

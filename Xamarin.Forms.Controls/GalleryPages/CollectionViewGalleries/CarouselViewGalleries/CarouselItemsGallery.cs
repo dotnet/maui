@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 				IndicatorsShape = IndicatorShape.Square
 			};
 
-			IndicatorView.SetItemsSourceBy(indicators, carouselView);
+			carouselView.IndicatorView = indicators;
 
 			absolute.Children.Add(indicators, new Rectangle(.5, 1, -1, -1), AbsoluteLayoutFlags.PositionProportional);
 

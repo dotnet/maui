@@ -14,6 +14,13 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public UIView View => this;
 
+
+		[Internals.Preserve(Conditional = true)]
+		public IndicatorViewRenderer()
+		{
+
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<IndicatorView> e)
 		{
 			base.OnElementChanged(e);

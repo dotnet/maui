@@ -13,6 +13,12 @@ namespace Xamarin.Forms.Platform.iOS
 		UIColor defaultmintrackcolor, defaultmaxtrackcolor, defaultthumbcolor;
 		UITapGestureRecognizer _sliderTapRecognizer;
 
+		[Internals.Preserve(Conditional = true)]
+		public SliderRenderer()
+		{
+
+		}
+
 		public override SizeF SizeThatFits(SizeF size)
 		{
 			return _fitSize;

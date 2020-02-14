@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using Xamarin.Forms;
 using Xamarin.Forms.ControlGallery.iOS;
 using Xamarin.Forms.Controls;
+using Xamarin.Forms.Internals;
 
 [assembly: AssemblyTitle ("Xamarin.Forms.ControlGallery.iOS")]
 [assembly: ComVisible (false)]
@@ -12,4 +13,5 @@ using Xamarin.Forms.Controls;
 // Deliberately broken image source and handler so we can test handling of image loading errors
 [assembly: ExportImageSourceHandler(typeof(FailImageSource), typeof(BrokenImageSourceHandler))]
 [assembly: ExportRenderer(typeof(WkWebView), typeof(Xamarin.Forms.Platform.iOS.WkWebViewRenderer))]
+[assembly: Preserve]
 

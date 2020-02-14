@@ -9,6 +9,12 @@ namespace Xamarin.Forms.Platform.iOS
 {
 	public class TimePickerRenderer : TimePickerRendererBase<UITextField>
 	{
+		[Internals.Preserve(Conditional = true)]
+		public TimePickerRenderer()
+		{
+
+		}
+
 		protected override UITextField CreateNativeControl()
 		{
 			return new NoCaretField { BorderStyle = UITextBorderStyle.RoundedRect };
@@ -24,6 +30,12 @@ namespace Xamarin.Forms.Platform.iOS
 		bool _useLegacyColorManagement;
 
 		IElementController ElementController => Element as IElementController;
+
+		[Internals.Preserve(Conditional = true)]
+		public TimePickerRendererBase()
+		{
+
+		}
 
 		protected override void Dispose(bool disposing)
 		{

@@ -36,6 +36,7 @@ namespace Xamarin.Forms.Platform.iOS
 		double _previousScrollY;
 		bool _isDisposed;
 
+		[Internals.Preserve(Conditional = true)]
 		public SwipeViewRenderer()
 		{
 			SwipeView.VerifySwipeViewFlagEnabled(nameof(SwipeViewRenderer));

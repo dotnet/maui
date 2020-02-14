@@ -7,6 +7,9 @@ namespace Xamarin.Forms.Platform.iOS
 		where TItemsView : SelectableItemsView
 		where TViewController : SelectableItemsViewController<TItemsView>
 	{
+		[Internals.Preserve(Conditional = true)]
+		public SelectableItemsViewRenderer() { }
+
 		protected override TViewController CreateController(TItemsView itemsView, ItemsViewLayout layout)
 		{
 			return new SelectableItemsViewController<TItemsView>(itemsView, layout) as TViewController;
