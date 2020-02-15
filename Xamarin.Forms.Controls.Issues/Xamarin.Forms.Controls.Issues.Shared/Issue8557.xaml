@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<controls:TestContentPage
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:Xamarin.Forms.Controls"
+    x:Class="Xamarin.Forms.Controls.Issues.Issue8557">
+<CollectionView
+        ItemsSource="{Binding GroupContent}"
+        IsGrouped="True"
+        ItemSizingStrategy="{OnPlatform Android=MeasureAllItems, iOS=MeasureFirstItem}">
+        <CollectionView.GroupHeaderTemplate>
+            <DataTemplate>
+                <Grid
+                    ColumnSpacing="0"
+                    Margin="0,30"
+                    BackgroundColor="Yellow">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="120" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <BoxView
+                        Grid.Column="0"
+                        VerticalOptions="Center"
+                        HeightRequest="1"
+                        BackgroundColor="Gray"/>
+                    <Label
+                        Grid.Column="1"
+                        Text="{Binding Name}"
+                        HorizontalTextAlignment="Center"
+                        VerticalTextAlignment="Center"
+                        FontSize="26"/>
+                    <BoxView
+                        Grid.Column="2"
+                        VerticalOptions="Center"
+                        HeightRequest="1"
+                        BackgroundColor="Gray"/>
+                </Grid>
+            </DataTemplate>
+        </CollectionView.GroupHeaderTemplate>
+        <CollectionView.ItemsLayout>
+            <GridItemsLayout
+                Orientation="Vertical"
+                Span="2"/>
+        </CollectionView.ItemsLayout>
+        <CollectionView.ItemTemplate>
+            <DataTemplate>
+                <Frame
+                    HasShadow="false"
+                    Padding="0">
+                    <Label
+                        Text="{Binding Description}"
+                        HorizontalTextAlignment="Center"
+                        VerticalTextAlignment="Center"
+                        HeightRequest="100"/>
+                </Frame>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+    </CollectionView>
+</controls:TestContentPage>
