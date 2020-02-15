@@ -22,7 +22,7 @@
         <!-- WindowButtonCommands -->
         <ResourceDictionary Source="/Xamarin.Forms.Platform.WPF;component/Themes/FormsWindowButtonCommands.xaml" />
 
-
+        <ResourceDictionary Source="/Xamarin.Forms.Platform.WPF;component/Themes/FormsFontIcon.xaml" />
         <ResourceDictionary Source="/Xamarin.Forms.Platform.WPF;component/Themes/FormsSymbolIcon.xaml" />
         <ResourceDictionary Source="/Xamarin.Forms.Platform.WPF;component/Themes/FormsBitmapIcon.xaml" />
         <ResourceDictionary Source="/Xamarin.Forms.Platform.WPF;component/Themes/FormsPathIcon.xaml" />

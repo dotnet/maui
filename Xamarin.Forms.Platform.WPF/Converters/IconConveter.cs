@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Windows;
 using System.Windows.Media;
 using Xamarin.Forms.Platform.WPF.Controls;
 using Xamarin.Forms.Platform.WPF.Enums;
@@ -19,6 +20,10 @@ namespace Xamarin.Forms.Platform.WPF.Converters
 					return new FormsPathIcon() { Data = geometry };
 				else if (Path.GetExtension(imageSource.File) != null)
 					return new FormsBitmapIcon() { UriSource = new Uri(imageSource.File, UriKind.RelativeOrAbsolute) };
+			}
+			else if (value is FontImageSource fontsource)
+			{
+				return new FormsFontIcon() { Source = fontsource };
 			}
 
 			return null;

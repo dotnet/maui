@@ -62,6 +62,7 @@
     <Compile Include="CellControl.cs" />
     <Compile Include="Controls\FormsAppBar.cs" />
     <Compile Include="Controls\FormsAppBarButton.cs" />
+    <Compile Include="Controls\FormsFontIcon.cs" />
     <Compile Include="Controls\FormsBitmapIcon.cs" />
     <Compile Include="Controls\FormsButton.cs" />
     <Compile Include="Controls\FormsCarouselPage.cs" />
@@ -86,6 +87,8 @@
     <Compile Include="Converters\CaseConverter.cs" />
     <Compile Include="Converters\CollapseWhenEmptyConverter.cs" />
     <Compile Include="Converters\ColorConverter.cs" />
+    <Compile Include="Converters\FontFamilyConveter.cs" />
+    <Compile Include="Converters\FontIconColorConverter.cs" />
     <Compile Include="Converters\HeightConverter.cs" />
     <Compile Include="Converters\IconConveter.cs" />
     <Compile Include="Converters\ImageConverter.cs" />
@@ -227,6 +230,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Assets\Default.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\FormsFontIcon.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
