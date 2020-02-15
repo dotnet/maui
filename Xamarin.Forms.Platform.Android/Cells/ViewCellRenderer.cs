@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (container != null)
 			{
 				container.Update(cell);
-				Performance.Stop(reference);
+				Performance.Stop(reference, "GetCellCore");
 				return container;
 			}
 

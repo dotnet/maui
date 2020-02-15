@@ -223,8 +223,13 @@ namespace Xamarin.Forms.Platform.Android
 				if (cell == null)
 				{
 					cell = GetCellForPosition(position);
+
 					if (cell == null)
+					{
+						Performance.Stop(reference);
+						
 						return new AView(_context);
+					}
 				}
 			}
 
