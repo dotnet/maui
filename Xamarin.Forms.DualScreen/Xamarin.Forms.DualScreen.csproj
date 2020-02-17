@@ -3,7 +3,8 @@
     <RootNamespace>Xamarin.Forms.DualScreen</RootNamespace>
     <AssemblyName>Xamarin.Forms.DualScreen</AssemblyName>
     <PackageId>Xamarin.Forms.DualScreen</PackageId>
-    <TargetFrameworks>$(TargetFrameworks);$(AndroidTargetFrameworks);netstandard1.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);$(AndroidTargetFrameworks);netstandard1.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">$(AndroidTargetFrameworks);netstandard1.0;netstandard2.0</TargetFrameworks>
     <SkipMicrosoftUIXamlCheckTargetPlatformVersion>true</SkipMicrosoftUIXamlCheckTargetPlatformVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
