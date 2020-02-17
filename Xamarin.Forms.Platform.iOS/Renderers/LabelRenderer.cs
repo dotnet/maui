@@ -520,7 +520,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			Control.TextColor = textColor.ToUIColor(ColorExtensions.Black);
 #else
 			var alignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
-			var textWithColor = new NSAttributedString(Element.Text ?? "", font: Element.ToNSFont(), foregroundColor: textColor.ToNSColor(), paragraphStyle: new NSMutableParagraphStyle() { Alignment = alignment });
+			var textWithColor = new NSAttributedString(Element.Text ?? "", font: Element.ToNSFont(), foregroundColor: textColor.ToNSColor(ColorExtensions.Black), paragraphStyle: new NSMutableParagraphStyle() { Alignment = alignment });
 			textWithColor = textWithColor.AddCharacterSpacing(Element.Text ?? string.Empty, Element.CharacterSpacing);
 			Control.AttributedStringValue = textWithColor;
 #endif
