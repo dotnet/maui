@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Linq;
 
 namespace Xamarin.Forms
 {
@@ -38,11 +39,21 @@ namespace Xamarin.Forms
 
 			if (e.OldItems != null)
 			{
-				foreach (ShellContent element in e.OldItems)
-				{
-					if (element is IShellContentController controller)
-						controller.IsPageVisibleChanged -= OnIsPageVisibleChanged;
-				}
+				Removing(e.OldItems);
+			}
+			
+			CollectionChanged?.Invoke(this, e);
+		}
+
+		void Removing(IEnumerable items)
+		{
+			foreach (ShellContent element in items)
+			{
+				if (_visibleContents.Contains(element))
+					_visibleContents.Remove(element);
+				
+				if (element is IShellContentController controller)
+					controller.IsPageVisibleChanged -= OnIsPageVisibleChanged;
 			}
 		}
 
@@ -77,11 +88,7 @@ namespace Xamarin.Forms
 			}
 		}
 
-		event NotifyCollectionChangedEventHandler INotifyCollectionChanged.CollectionChanged
-		{
-			add { ((INotifyCollectionChanged)_inner).CollectionChanged += value; }
-			remove { ((INotifyCollectionChanged)_inner).CollectionChanged -= value; }
-		}
+		public event NotifyCollectionChangedEventHandler CollectionChanged;
 
 		public int Count => _inner.Count;
 
@@ -95,7 +102,14 @@ namespace Xamarin.Forms
 
 		public void Add(ShellContent item) => _inner.Add(item);
 
-		public void Clear() => _inner.Clear();
+		public void Clear()
+		{
+			var list = _inner.ToList();
+			Removing(_inner);
+			_inner.Clear();
+			
+			CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, list));
+		}
 
 		public bool Contains(ShellContent item) => _inner.Contains(item);
 
