@@ -60,6 +60,11 @@
       <Generator></Generator>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="GalleryPages\RadioButtonGroupGalleryPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Fonts\" />

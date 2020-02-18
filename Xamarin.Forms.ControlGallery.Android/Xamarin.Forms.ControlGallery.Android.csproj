@@ -395,6 +395,12 @@
     <LinkDescription Include="LinkDescription.xml" />
   </ItemGroup>
   <ItemGroup>
+    <AndroidResource Include="Resources\drawable\rb_unchecked.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\rb_checked.png" />
+  </ItemGroup>
+  <ItemGroup>
     <AndroidAsset Include="Assets\googlemap.html" />
   </ItemGroup>
   <ItemGroup>

@@ -10,7 +10,6 @@ using Android.Support.V7.Widget;
 using Android.Util;
 using Android.Views;
 using Xamarin.Forms.Platform.Android.FastRenderers;
-using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;

@@ -35,6 +35,10 @@
 	{
 	}
 
+	internal class _RadioButtonRenderer
+	{
+	}
+
 	internal class _TableViewRenderer
 	{
 	}
