@@ -141,9 +141,10 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				UpdateIndicatorTemplate();
 			}
-			else if (changedProperty.Is(IndicatorView.IndicatorsShapeProperty) ||
-					 changedProperty.Is(IndicatorView.IndicatorColorProperty) ||
-					 changedProperty.Is(IndicatorView.SelectedIndicatorColorProperty))
+			else if (changedProperty.IsOneOf(IndicatorView.IndicatorsShapeProperty,
+											IndicatorView.IndicatorColorProperty,
+											IndicatorView.IndicatorSizeProperty,
+											IndicatorView.SelectedIndicatorColorProperty))
 			{
 				ResetIndicators();
 			}

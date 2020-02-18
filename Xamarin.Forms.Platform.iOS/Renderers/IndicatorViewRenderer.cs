@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using CoreGraphics;
 using UIKit;
 using static Xamarin.Forms.IndicatorView;
 
@@ -8,7 +9,7 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		UIColor _defaultPagesIndicatorTintColor;
 		UIColor _defaultCurrentPagesIndicatorTintColor;
-		UIPageControl UIPager => Control as UIPageControl;
+		FormsPageControl UIPager => Control as FormsPageControl;
 		bool _disposed;
 		bool _updatingPosition;
 
@@ -65,6 +66,8 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.OnElementPropertyChanged(sender, e);
 
+			if (e.PropertyName == IndicatorSizeProperty.PropertyName)
+				UpdateIndicatorSize();
 			if (e.PropertyName == IndicatorsShapeProperty.PropertyName ||
 				e.PropertyName == ItemsSourceProperty.PropertyName)
 				UpdateIndicator();
@@ -89,14 +92,18 @@ namespace Xamarin.Forms.Platform.iOS
 				UIPager.ValueChanged -= UIPagerValueChanged;
 			}
 
-			var uiPager = new UIPageControl();
+			var uiPager = new FormsPageControl
+			{
+				IsSquare = Element.IndicatorsShape == IndicatorShape.Square,
+				IndicatorSize = Element.IndicatorSize
+			};
 			_defaultPagesIndicatorTintColor = uiPager.PageIndicatorTintColor;
 			_defaultCurrentPagesIndicatorTintColor = uiPager.CurrentPageIndicatorTintColor;
 			uiPager.ValueChanged += UIPagerValueChanged;
 
 			return uiPager;
 		}
-	
+
 		void UpdateControl()
 		{
 			ClearIndicators();
@@ -116,7 +123,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateIndicator()
 		{
-			if (Element.IndicatorsShape == IndicatorShape.Circle && Element.IndicatorTemplate == null)
+			if (Element.IndicatorTemplate == null)
 				UpdateIndicatorShape();
 			else
 				UpdateIndicatorTemplate();
@@ -125,7 +132,15 @@ namespace Xamarin.Forms.Platform.iOS
 		void UpdateIndicatorShape()
 		{
 			ClearIndicators();
+			UIPager.IsSquare = Element.IndicatorsShape == IndicatorShape.Square;
 			AddSubview(UIPager);
+			UIPager.LayoutSubviews();
+		}
+
+		void UpdateIndicatorSize()
+		{
+			UIPager.IndicatorSize = Element.IndicatorSize;
+			UIPager.LayoutSubviews();
 		}
 
 		void UpdateIndicatorTemplate()
@@ -191,6 +206,35 @@ namespace Xamarin.Forms.Platform.iOS
 
 			var color = Element.SelectedIndicatorColor;
 			UIPager.CurrentPageIndicatorTintColor = color.IsDefault ? _defaultCurrentPagesIndicatorTintColor : color.ToUIColor();
+		}
+	}
+
+	class FormsPageControl : UIPageControl
+	{
+		const int DefaultIndicatorSize = 7;
+
+		public bool IsSquare { get; set; }
+
+		public double IndicatorSize { get; set; }
+
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			float scale = (float)IndicatorSize / DefaultIndicatorSize;
+			var newTransform = CGAffineTransform.MakeScale(scale, scale);
+
+			Transform = newTransform;
+			if (Subviews.Length == 0)
+				return;
+
+			foreach (var view in Subviews)
+			{
+				if (IsSquare)
+				{
+					view.Layer.CornerRadius = 0;
+				}
+			}
 		}
 	}
 }
