@@ -14,7 +14,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="controls:FormsFontIcon">
                     <TextBlock Text="{Binding Source.Glyph, RelativeSource={RelativeSource Mode=TemplatedParent}}" 
-                               FontFamily="{Binding Source.FontFamily, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource FontFamilyConveter}}"
+                               FontFamily="{Binding Source.FontFamily, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource FontFamilyConverter}}"
                                Foreground="{Binding Source.Color, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource FontIconColorConverter}}">
                     </TextBlock>
                 </ControlTemplate>

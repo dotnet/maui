@@ -4,7 +4,7 @@ using System.Windows.Media;
 
 namespace Xamarin.Forms.Platform.WPF.Converters
 {
-	public class FontFamilyConveter : System.Windows.Data.IValueConverter
+	public class FontFamilyConverter : System.Windows.Data.IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{

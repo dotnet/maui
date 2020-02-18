@@ -87,7 +87,7 @@
     <Compile Include="Converters\CaseConverter.cs" />
     <Compile Include="Converters\CollapseWhenEmptyConverter.cs" />
     <Compile Include="Converters\ColorConverter.cs" />
-    <Compile Include="Converters\FontFamilyConveter.cs" />
+    <Compile Include="Converters\FontFamilyConverter.cs" />
     <Compile Include="Converters\FontIconColorConverter.cs" />
     <Compile Include="Converters\HeightConverter.cs" />
     <Compile Include="Converters\IconConveter.cs" />
