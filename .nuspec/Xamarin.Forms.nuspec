@@ -15,10 +15,10 @@
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <dependencies>
       <group targetFramework="MonoAndroid10.0">
-        <dependency id="Xamarin.AndroidX.Lifecycle.LiveData" version="2.1.0-rc1" />
-        <dependency id="Xamarin.Google.Android.Material" version="1.0.0-rc1" />
-        <dependency id="Xamarin.AndroidX.Legacy.Support.V4" version="1.0.0-rc1" />
-        <dependency id="Xamarin.AndroidX.Browser" version="1.0.0-rc1" />
+        <dependency id="Xamarin.AndroidX.Lifecycle.LiveData" version="2.1.0" />
+        <dependency id="Xamarin.Google.Android.Material" version="1.0.0" />
+        <dependency id="Xamarin.AndroidX.Legacy.Support.V4" version="1.0.0" />
+        <dependency id="Xamarin.AndroidX.Browser" version="1.0.0" />
       </group>
       <group targetFramework="MonoAndroid90">
         <dependency id="Xamarin.Android.Support.v4" version="28.0.0.3"/>

@@ -16,10 +16,14 @@
     <dependencies>
       <group targetFramework="MonoAndroid90">
         <dependency id="Xamarin.Firebase.AppIndexing" version="71.1602.0"/>
+        <dependency id="Xamarin.Android.Support.v4" version="28.0.0.3"/>
       </group>
       <group targetFramework="MonoAndroid10.0">
-        <dependency id="Xamarin.AndroidX.Migration" version="1.0.0-rc1"/>
-        <dependency id="Xamarin.Firebase.AppIndexing" version="71.1602.0"/>
+        <dependency id="Xamarin.AndroidX.Migration" version="1.0.0"/>
+        <dependency id="Xamarin.Firebase.AppIndexing" version="71.1602.0"/>        
+        <dependency id="Xamarin.Android.Support.v4" version="28.0.0.3"/>
+        <dependency id="Xamarin.AndroidX.Lifecycle.LiveData" version="2.1.0"/>
+        <dependency id="Xamarin.AndroidX.Legacy.Support.V4" version="1.0.0"/>
       </group>
     </dependencies>
     <references>
