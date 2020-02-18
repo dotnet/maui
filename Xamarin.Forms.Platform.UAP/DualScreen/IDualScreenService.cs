@@ -1,10 +1,7 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Threading.Tasks;
-using Xamarin.Forms;
-using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms.DualScreen
+namespace Xamarin.Forms.Platform.UWP.DualScreen
 {
 	internal interface IDualScreenService
 	{

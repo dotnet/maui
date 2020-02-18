@@ -41,6 +41,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.TwoPaneViewGalleries
 					GalleryBuilder.NavButton("Open Picture in Picture Window", () => new OpenCompactWindow(), Navigation),
 					GalleryBuilder.NavButton("DualScreenInfo with non TwoPaneView", () => new GridUsingDualScreenInfo(), Navigation),
 					GalleryBuilder.NavButton("eReader Samples", () => new TwoPage(), Navigation),
+					GalleryBuilder.NavButton("Dual Screen Info Samples", () => new DualScreenInfoGallery(), Navigation),
 				}
 			};
 

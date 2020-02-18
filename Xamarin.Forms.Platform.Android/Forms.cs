@@ -493,6 +493,7 @@ namespace Xamarin.Forms
 			double _scalingFactor;
 
 			Orientation _previousOrientation = Orientation.Undefined;
+			Platform.Android.DualScreen.IDualScreenService DualScreenService => DependencyService.Get<Platform.Android.DualScreen.IDualScreenService>();
 
 			public AndroidDeviceInfo(Context formsActivity)
 			{
@@ -555,7 +556,16 @@ namespace Xamarin.Forms
 
 			void CheckOrientationChanged(Context formsActivity)
 			{
-				var orientation = formsActivity.Resources.Configuration.Orientation;
+				Orientation orientation;
+
+				if (DualScreenService?.IsSpanned == true)
+				{
+					orientation = (DualScreenService.IsLandscape) ? Orientation.Landscape : Orientation.Portrait;
+				}
+				else
+				{
+					orientation = formsActivity.Resources.Configuration.Orientation;
+				}
 
 				if (!_previousOrientation.Equals(orientation))
 					CurrentOrientation = orientation.ToDeviceOrientation();

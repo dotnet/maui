@@ -2,11 +2,9 @@
 
 namespace Xamarin.Forms.DualScreen
 {
-	public sealed class SpanModeStateTrigger : StateTriggerBase
+	public sealed class WindowSpanModeStateTrigger : StateTriggerBase
 	{
-		VisualElement _visualElement;
-		DualScreenInfo _info;
-		public SpanModeStateTrigger()
+		public WindowSpanModeStateTrigger()
 		{
 			UpdateState();
 		}
@@ -18,27 +16,12 @@ namespace Xamarin.Forms.DualScreen
 		}
 
 		public static readonly BindableProperty SpanModeProperty =
-			BindableProperty.Create(nameof(SpanMode), typeof(TwoPaneViewMode), typeof(SpanModeStateTrigger), default(TwoPaneViewMode),
+			BindableProperty.Create(nameof(SpanMode), typeof(TwoPaneViewMode), typeof(WindowSpanModeStateTrigger), default(TwoPaneViewMode),
 				propertyChanged: OnSpanModeChanged);
 
 		static void OnSpanModeChanged(BindableObject bindable, object oldvalue, object newvalue)
 		{
-			((SpanModeStateTrigger)bindable).UpdateState();
-		}
-
-		void AttachToVisualElement()
-		{
-			var visualElement = VisualState?.VisualStateGroup?.VisualElement;
-			if (visualElement == null || visualElement == _visualElement)
-			{
-				return;
-			}
-
-			if(_info != null)
-				_info.PropertyChanged -= OnDualScreenInfoPropertyChanged;
-
-			_visualElement = visualElement;
-			_info = new DualScreenInfo(_visualElement);
+			((WindowSpanModeStateTrigger)bindable).UpdateState();
 		}
 
 		internal override void OnAttached()
@@ -47,11 +30,8 @@ namespace Xamarin.Forms.DualScreen
 
 			if (!DesignMode.IsDesignModeEnabled)
 			{
-				AttachToVisualElement();
 				UpdateState();
-
-				if (_info != null)
-					_info.PropertyChanged += OnDualScreenInfoPropertyChanged;
+				DualScreenInfo.Current.PropertyChanged += OnDualScreenInfoPropertyChanged;
 			}
 		}
 
@@ -59,8 +39,7 @@ namespace Xamarin.Forms.DualScreen
 		{
 			base.OnDetached();
 
-			if (_info != null)
-				_info.PropertyChanged -= OnDualScreenInfoPropertyChanged;
+			DualScreenInfo.Current.PropertyChanged -= OnDualScreenInfoPropertyChanged;
 		}
 
 		void OnDualScreenInfoPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -70,10 +49,7 @@ namespace Xamarin.Forms.DualScreen
 
 		void UpdateState()
 		{
-			if (_info == null)
-				return;
-
-			var spanMode = _info.SpanMode;
+			var spanMode = DualScreenInfo.Current.SpanMode;
 
 			switch (SpanMode)
 			{

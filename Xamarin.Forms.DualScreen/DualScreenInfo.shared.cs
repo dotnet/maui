@@ -21,11 +21,11 @@ namespace Xamarin.Forms.DualScreen
 		IDualScreenService DualScreenService =>
 			_dualScreenService ?? DependencyService.Get<IDualScreenService>() ?? NoDualScreenServiceImpl.Instance;
 
-		public DualScreenInfo(Layout layout) : this(layout, null)
+		public DualScreenInfo(VisualElement layout) : this(layout, null)
 		{
 		}
 
-		internal DualScreenInfo(Layout layout, IDualScreenService dualScreenService)
+		internal DualScreenInfo(VisualElement layout, IDualScreenService dualScreenService)
 		{
 			_dualScreenService = dualScreenService;
 			if (layout == null)

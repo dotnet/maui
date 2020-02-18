@@ -64,22 +64,6 @@
   <ItemGroup>
     <Folder Include="Fonts\" />
   </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="GalleryPages\TwoPaneViewGalleries\GridUsingDualScreenInfo.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\TwoPaneViewGalleries\OpenCompactWindow.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\TwoPaneViewGalleries\TwoPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="GalleryPages\TwoPaneViewGalleries\TwoPanePropertiesGallery.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-  </ItemGroup>
-
   <Target Name="CreateControllGalleryConfig" BeforeTargets="Build">
     <CreateItem Include="blank.config">
       <Output TaskParameter="Include" ItemName="ConfigFile" />

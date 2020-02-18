@@ -23,7 +23,7 @@ namespace Xamarin.Forms.DualScreen
 			DualScreenServiceImpl.Init(activity);
 		}
 
-		internal class DualScreenServiceImpl : IDualScreenService, IDisposable
+		internal class DualScreenServiceImpl : IDualScreenService, Platform.Android.DualScreen.IDualScreenService
 		{
 			public event EventHandler OnScreenChanged;
 			ScreenHelper _helper;
@@ -32,7 +32,6 @@ namespace Xamarin.Forms.DualScreen
 			static Activity _mainActivity;
 			static DualScreenServiceImpl _HingeService;
 
-			bool _isDisposed;
 			bool _isLandscape;
 			Size _pixelScreenSize;
 			object _hingeAngleLock = new object();
@@ -116,19 +115,6 @@ namespace Xamarin.Forms.DualScreen
 					OnScreenChanged?.Invoke(this, e);
 			}
 
-
-			public void Dispose()
-			{
-				if (_isDisposed)
-					return;
-
-				_isDisposed = true;
-
-				// make sure the one shot task is cleared out if it's running
-				SetHingeAngle(0);
-				StopListeningForHingeChanges();
-			}
-
 			public Size ScaledScreenSize
 			{
 				get;
@@ -207,7 +193,13 @@ namespace Xamarin.Forms.DualScreen
 				get
 				{
 					if (!_isDuo || _helper == null)
-						return false;
+					{
+						if (_mainActivity == null)
+							return false;
+
+						var orientation = _mainActivity.Resources.Configuration.Orientation;
+						return orientation == global::Android.Content.Res.Orientation.Landscape;
+					}
 
 					var rotation = ScreenHelper.GetRotation(_helper.Activity);
 

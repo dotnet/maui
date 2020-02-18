@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:dualscreen="clr-namespace:Xamarin.Forms.DualScreen;assembly=Xamarin.Forms.DualScreen"
+             mc:Ignorable="d"
+             x:Class="Xamarin.Forms.Controls.GalleryPages.TwoPaneViewGalleries.DualScreenInfoGallery">
+    <ContentPage.Content>
+        <dualscreen:TwoPaneView x:Name="tpv">
+            <dualscreen:TwoPaneView.Pane1>
+
+
+                <StackLayout>
+                    <Label FontAttributes="Bold" Text="Two Pane View Properties" HorizontalOptions="Center" />
+
+                    <Label Text="SpanningBound 1" HorizontalOptions="Center" />
+                    <Label x:Name="tpvSpanningBounds1" Text="" HorizontalOptions="Center" />
+
+                    <Label Text="SpanningBound 2" HorizontalOptions="Center" />
+                    <Label x:Name="tpvSpanningBounds2" Text="" HorizontalOptions="Center" />
+
+
+                    <Label Text="HingeBounds" HorizontalOptions="Center" />
+                    <Label x:Name="tpvHingeBounds" Text="" HorizontalOptions="Center" />
+                    <Label Text="IsLandscape" HorizontalOptions="Center" />
+                    <Label x:Name="tpvIsLandscape" Text="" HorizontalOptions="Center" />
+                    <Label Text="SpanMode" HorizontalOptions="Center" />
+                    <Label x:Name="tpvSpanMode" Text="" HorizontalOptions="Center" />
+                </StackLayout>
+
+            </dualscreen:TwoPaneView.Pane1>
+            <dualscreen:TwoPaneView.Pane2>
+
+                <StackLayout>
+                    <Label FontAttributes="Bold" Text="Device Properties" HorizontalOptions="Center" />
+                    
+                    <Label Text="SpanningBound 1" HorizontalOptions="Center" />
+                    <Label x:Name="deviceSpanningBounds1" Text="" HorizontalOptions="Center" />
+                    
+                    <Label Text="SpanningBound 2" HorizontalOptions="Center" />
+                    <Label x:Name="deviceSpanningBounds2" Text="" HorizontalOptions="Center" />
+                    
+                    <Label Text="HingeBounds" HorizontalOptions="Center" />
+                    <Label x:Name="deviceHingeBounds" Text="" HorizontalOptions="Center" />
+                    <Label Text="IsLandscape" HorizontalOptions="Center" />
+                    <Label x:Name="deviceIsLandscape" Text="" HorizontalOptions="Center" />
+                    <Label Text="SpanMode" HorizontalOptions="Center" />
+                    <Label x:Name="deviceSpanMode" Text="" HorizontalOptions="Center" />
+                </StackLayout>
+
+            </dualscreen:TwoPaneView.Pane2>
+        </dualscreen:TwoPaneView>
+    </ContentPage.Content>
+</ContentPage>
