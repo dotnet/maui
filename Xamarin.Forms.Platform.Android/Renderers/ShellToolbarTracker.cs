@@ -1,4 +1,3 @@
-﻿using Android.App;
 using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
@@ -33,6 +32,7 @@ using ATextView = global::Android.Widget.TextView;
 using AColor = Android.Graphics.Color;
 using Xamarin.Forms.Internals;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -69,6 +69,7 @@ namespace Xamarin.Forms.Platform.Android
 		float _appBarElevation;
 		GenericGlobalLayoutListener _globalLayoutListener;
 		List<IMenuItem> _currentMenuItems = new List<IMenuItem>();
+		List<ToolbarItem> _currentToolbarItems = new List<ToolbarItem>();
 
 		public ShellToolbarTracker(IShellContext shellContext, Toolbar toolbar, DrawerLayout drawerLayout)
 		{
@@ -169,10 +170,9 @@ namespace Xamarin.Forms.Platform.Android
 				if (_backButtonBehavior != null)
 					_backButtonBehavior.PropertyChanged -= OnBackButtonBehaviorChanged;
 
+				_toolbar.DisposeMenuItems(_currentToolbarItems, OnToolbarItemPropertyChanged);
 
-				_toolbar.DisposeMenuItems(Page?.ToolbarItems, OnToolbarItemPropertyChanged);
-
-				((IShellController)_shellContext?.Shell)?.RemoveFlyoutBehaviorObserver(this);
+				((IShellController)_shellContext.Shell)?.RemoveFlyoutBehaviorObserver(this);
 
 				UpdateTitleView(_shellContext.AndroidContext, _toolbar, null);
 
@@ -184,13 +184,14 @@ namespace Xamarin.Forms.Platform.Android
 					_searchView.Dispose();
 				}
 
-				if (_currentMenuItems != null)
-					_currentMenuItems.Clear();
+				_currentMenuItems?.Clear();
+				_currentToolbarItems?.Clear();
 
 				_drawerToggle?.Dispose();
 			}
 
 			_currentMenuItems = null;
+			_currentToolbarItems = null;
 			_globalLayoutListener = null;
 			_backButtonBehavior = null;
 			SearchHandler = null;
@@ -201,6 +202,7 @@ namespace Xamarin.Forms.Platform.Android
 			_toolbar = null;
 			_appBar = null;
 			_drawerLayout = null;
+
 			base.Dispose(disposing);
 		}
 
@@ -360,7 +362,7 @@ namespace Xamarin.Forms.Platform.Android
 					icon = new FlyoutIconDrawerDrawable(context, tintColor, customIcon, text);
 			}
 
-			if (!String.IsNullOrWhiteSpace(text) && icon == null)
+			if (!string.IsNullOrWhiteSpace(text) && icon == null)
 				icon = new FlyoutIconDrawerDrawable(context, tintColor, icon, text);
 
 			if (icon == null)
@@ -391,7 +393,6 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				_drawerToggle.DrawerIndicatorEnabled = false;
 			}
-
 
 			_drawerToggle.SyncState();
 
@@ -508,9 +509,9 @@ namespace Xamarin.Forms.Platform.Android
 		protected virtual void UpdateToolbarItems(Toolbar toolbar, Page page)
 		{
 			var menu = toolbar.Menu;
-			var sortedItems = System.Linq.Enumerable.OrderBy(page.ToolbarItems, x => x.Order);
+			var sortedItems = page.ToolbarItems.OrderBy(x => x.Order);
 
-			toolbar.UpdateMenuItems(sortedItems, _shellContext.AndroidContext, TintColor, OnToolbarItemPropertyChanged, _currentMenuItems);
+			toolbar.UpdateMenuItems(sortedItems, _shellContext.AndroidContext, TintColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems);
 
 			SearchHandler = Shell.GetSearchHandler(page);
 			if (SearchHandler != null && SearchHandler.SearchBoxVisibility != SearchBoxVisibility.Hidden)
@@ -524,9 +525,7 @@ namespace Xamarin.Forms.Platform.Android
 					_searchView.LoadView();
 					_searchView.View.ViewAttachedToWindow += OnSearchViewAttachedToWindow;
 
-					var lp = new LP(LP.MatchParent, LP.MatchParent);
-					_searchView.View.LayoutParameters = lp;
-					lp.Dispose();
+					_searchView.View.LayoutParameters = new LP(LP.MatchParent, LP.MatchParent);
 					_searchView.SearchConfirmed += OnSearchConfirmed;
 				}
 
@@ -573,8 +572,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		void OnToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			var sortedItems = System.Linq.Enumerable.OrderBy(Page.ToolbarItems, x => x.Order);
-			_toolbar.OnToolbarItemPropertyChanged(e, (ToolbarItem)sender, sortedItems, _shellContext.AndroidContext, TintColor, OnToolbarItemPropertyChanged, _currentMenuItems);
+			var sortedItems = Page.ToolbarItems.OrderBy(x => x.Order).ToList();
+			_toolbar.OnToolbarItemPropertyChanged(e, (ToolbarItem)sender, sortedItems, _shellContext.AndroidContext, TintColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems);
 		}
 
 		void OnSearchViewAttachedToWindow(object sender, AView.ViewAttachedToWindowEventArgs e)
