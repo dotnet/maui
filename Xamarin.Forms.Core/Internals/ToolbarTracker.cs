@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -57,8 +57,8 @@ namespace Xamarin.Forms.Internals
 				List<ToolbarItem> returnValue = GetCurrentToolbarItems(Target);
 
 				if (AdditionalTargets != null)
-					foreach(var item in AdditionalTargets)
-						foreach(var toolbarItem in item.ToolbarItems)
+					foreach (var item in AdditionalTargets)
+						foreach (var toolbarItem in item.ToolbarItems)
 							returnValue.Add(toolbarItem);
 
 				returnValue.Sort(_toolBarItemComparer);

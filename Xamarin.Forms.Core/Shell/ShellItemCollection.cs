@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Linq;
 
 namespace Xamarin.Forms
 {
@@ -22,11 +23,7 @@ namespace Xamarin.Forms
 			};
 		}
 
-		event NotifyCollectionChangedEventHandler INotifyCollectionChanged.CollectionChanged
-		{
-			add { ((INotifyCollectionChanged)Inner).CollectionChanged += value; }
-			remove { ((INotifyCollectionChanged)Inner).CollectionChanged -= value; }
-		}
+		public event NotifyCollectionChangedEventHandler CollectionChanged;
 
 		public int Count => Inner.Count;
 		public bool IsReadOnly => ((IList<ShellItem>)Inner).IsReadOnly;
@@ -58,16 +55,25 @@ namespace Xamarin.Forms
 
 			if (e.OldItems != null)
 			{
-				foreach (ShellItem element in e.OldItems)
-				{
-					if (_visibleContents.Contains(element))
-						_visibleContents.Remove(element);
+				Removing(e.OldItems);
+			}
+			
+			CollectionChanged?.Invoke(this, e);
+		}
+		
+		
+		void Removing(IEnumerable items)
+		{
+			foreach (ShellItem element in items)
+			{
+				if (_visibleContents.Contains(element))
+					_visibleContents.Remove(element);
 
-					if (element is IShellItemController controller)
-						controller.ItemsCollectionChanged -= OnShellItemControllerItemsCollectionChanged;
-				}
+				if (element is IShellSectionController controller)
+					controller.ItemsCollectionChanged -= OnShellItemControllerItemsCollectionChanged;
 			}
 		}
+		
 		void OnShellItemControllerItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			foreach (ShellSection section in (e.NewItems ?? e.OldItems ?? (IList)_inner))
@@ -154,7 +160,13 @@ namespace Xamarin.Forms
 			Inner.Add(item);
 		}
 
-		public void Clear() => Inner.Clear();
+		public void Clear()
+		{
+			var list = Inner.ToList();
+			Removing(Inner);
+			Inner.Clear();
+			CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, list));
+		}
 
 		public bool Contains(ShellItem item) => Inner.Contains(item);
 

@@ -23,6 +23,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 					new RowDefinition { Height = GridLength.Auto },
 					new RowDefinition { Height = GridLength.Auto },
 					new RowDefinition { Height = GridLength.Auto },
+					new RowDefinition { Height = GridLength.Auto },
 					new RowDefinition { Height = GridLength.Star },
 					new RowDefinition { Height = GridLength.Auto }
 				}
@@ -148,11 +149,34 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 
 			layout.Children.Add(stckTemplate);
 
+			var stckSize = new StackLayout { Orientation = StackOrientation.Horizontal };
+			stckSize.Children.Add(new Label { VerticalOptions = LayoutOptions.Center, Text = "Indicator Size" });
+
+			//indicatorView.IndicatorSize = 25;
+
+			var sizeSlider = new Slider
+			{
+				WidthRequest = 150,
+				Value = indicatorView.IndicatorSize,
+				Maximum = 50,
+			};
+
+			sizeSlider.ValueChanged += (s, e) =>
+			{
+				var indicatorSize = sizeSlider.Value;
+				indicatorView.IndicatorSize = indicatorSize;
+			};
+
+			stckSize.Children.Add(sizeSlider);
+
+			layout.Children.Add(stckSize);
+
 			Grid.SetRow(generator, 0);
 			Grid.SetRow(stckColors, 1);
 			Grid.SetRow(stckTemplate, 2);
-			Grid.SetRow(carouselView, 3);
-			Grid.SetRow(indicatorView, 4);
+			Grid.SetRow(stckSize, 3);
+			Grid.SetRow(carouselView, 4);
+			Grid.SetRow(indicatorView, 5);
 
 			Content = layout;
 		}

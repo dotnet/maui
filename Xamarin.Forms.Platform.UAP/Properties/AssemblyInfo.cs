@@ -36,6 +36,7 @@ using Xamarin.Forms.Platform.UWP;
 [assembly: ExportRenderer(typeof(MediaElement), typeof(MediaElementRenderer))]
 [assembly: ExportRenderer(typeof(RefreshView), typeof(RefreshViewRenderer))]
 [assembly: ExportRenderer(typeof(Shell), typeof(ShellRenderer))]
+[assembly: ExportRenderer(typeof(IndicatorView), typeof(IndicatorViewRenderer))]
 
 //ImageSources
 
@@ -64,3 +65,5 @@ using Xamarin.Forms.Platform.UWP;
 
 //Fonts
 [assembly: ExportRenderer(typeof(EmbeddedFont), typeof(EmbeddedFontLoader))]
+
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.DualScreen")]

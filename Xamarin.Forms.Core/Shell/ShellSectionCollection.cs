@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Linq;
 
 namespace Xamarin.Forms
 {
@@ -22,11 +23,7 @@ namespace Xamarin.Forms
 
 		public ReadOnlyCollection<ShellSection> VisibleItems { get; }
 
-		event NotifyCollectionChangedEventHandler INotifyCollectionChanged.CollectionChanged
-		{
-			add { ((INotifyCollectionChanged)Inner).CollectionChanged += value; }
-			remove { ((INotifyCollectionChanged)Inner).CollectionChanged -= value; }
-		}
+		public event NotifyCollectionChangedEventHandler CollectionChanged;
 
 		public int Count => Inner.Count;
 		public bool IsReadOnly => Inner.IsReadOnly;
@@ -55,14 +52,21 @@ namespace Xamarin.Forms
 
 			if (e.OldItems != null)
 			{
-				foreach (ShellSection element in e.OldItems)
-				{
-					if (_visibleContents.Contains(element))
-						_visibleContents.Remove(element);
+				Removing(e.OldItems);
+			}
+			
+			CollectionChanged?.Invoke(this, e);
+		}
 
-					if (element is IShellSectionController controller)
-						controller.ItemsCollectionChanged -= OnShellSectionControllerItemsCollectionChanged;
-				}
+		void Removing(IEnumerable items)
+		{
+			foreach (ShellSection element in items)
+			{
+				if (_visibleContents.Contains(element))
+					_visibleContents.Remove(element);
+
+				if (element is IShellSectionController controller)
+					controller.ItemsCollectionChanged -= OnShellSectionControllerItemsCollectionChanged;
 			}
 		}
 
@@ -119,7 +123,13 @@ namespace Xamarin.Forms
 
 		public void Add(ShellSection item) => Inner.Add(item);
 
-		public void Clear() => Inner.Clear();
+		public void Clear()
+		{
+			var list = Inner.ToList();
+			Removing(Inner);
+			Inner.Clear();
+			CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, list));
+		}
 
 		public bool Contains(ShellSection item) => Inner.Contains(item);
 

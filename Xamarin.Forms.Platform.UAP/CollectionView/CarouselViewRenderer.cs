@@ -151,6 +151,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			CarouselView.SetIsDragging(e.IsIntermediate);
 			CarouselView.IsScrolling = e.IsIntermediate;
+
 			UpdatePositionFromScroll();
 		}
 

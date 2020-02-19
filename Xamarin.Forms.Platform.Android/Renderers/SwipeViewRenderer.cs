@@ -50,16 +50,18 @@ namespace Xamarin.Forms.Platform.Android
 		float _swipeThreshold;
 		double _previousScrollX;
 		double _previousScrollY;
+		bool _isSwipeEnabled;
 		bool _isDisposed;
 
 		public SwipeViewRenderer(Context context) : base(context)
 		{
 			SwipeView.VerifySwipeViewFlagEnabled(nameof(SwipeViewRenderer));
+
 			_context = context;
 
-			AutoPackage = false;
+			this.SetClipToOutline(true);
 
-			this.SetClipToOutline(true, Element);
+			AutoPackage = false;
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<SwipeView> e)
@@ -77,6 +79,7 @@ namespace Xamarin.Forms.Platform.Android
 				}
 
 				UpdateContent();
+				UpdateIsSwipeEnabled();
 				UpdateSwipeTransitionMode();
 				UpdateBackgroundColor();
 			}
@@ -100,6 +103,8 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateContent();
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackgroundColor();
+			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+				UpdateIsSwipeEnabled();
 			else if (e.PropertyName == Specifics.SwipeTransitionModeProperty.PropertyName)
 				UpdateSwipeTransitionMode();
 		}
@@ -142,7 +147,7 @@ namespace Xamarin.Forms.Platform.Android
 			else
 				Control.SetWindowBackground();
 
-			if (_contentView.Background == null)
+			if (_contentView != null && _contentView.Background == null)
 				_contentView?.SetWindowBackground();
 		}
 
@@ -420,6 +425,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		bool HandleTouchInteractions(GestureStatus status, APointF point)
 		{
+			if (!_isSwipeEnabled)
+				return false;
+
 			switch (status)
 			{
 				case GestureStatus.Started:
@@ -696,6 +704,11 @@ namespace Xamarin.Forms.Platform.Android
 
 			swipeItemView.Layout(new Rectangle(0, 0, swipeItemWidth, swipeItemHeight));
 			swipeItemView.Content?.Layout(new Rectangle(0, 0, swipeItemWidth, swipeItemHeight));
+		}
+
+		void UpdateIsSwipeEnabled()
+		{
+			_isSwipeEnabled = Element.IsEnabled;
 		}
 
 		void UpdateSwipeTransitionMode()

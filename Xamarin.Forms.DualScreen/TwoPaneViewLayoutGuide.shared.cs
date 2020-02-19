@@ -20,7 +20,7 @@ namespace Xamarin.Forms.DualScreen
 		Rectangle _leftPage;
 		Rectangle _rightPane;
 		TwoPaneViewMode _mode;
-		Layout _layout;
+		VisualElement _layout;
 		readonly IDualScreenService _dualScreenService;
 		bool _isLandscape;
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -33,12 +33,12 @@ namespace Xamarin.Forms.DualScreen
 			
 		}
 
-		public TwoPaneViewLayoutGuide(Layout layout) : this(layout, null)
+		public TwoPaneViewLayoutGuide(VisualElement layout) : this(layout, null)
 		{
 		}
 
 
-		internal TwoPaneViewLayoutGuide(Layout layout, IDualScreenService dualScreenService)
+		internal TwoPaneViewLayoutGuide(VisualElement layout, IDualScreenService dualScreenService)
 		{
 			_layout = layout;
 			_dualScreenService = dualScreenService;
@@ -48,6 +48,7 @@ namespace Xamarin.Forms.DualScreen
 				UpdateLayouts();
 				_layout.PropertyChanged += OnLayoutPropertyChanged;
 				_layout.PropertyChanging += OnLayoutPropertyChanging;
+				WatchForChanges();
 			}
 		}
 
@@ -70,6 +71,7 @@ namespace Xamarin.Forms.DualScreen
 			if (_layout != null)
 			{
 				_watchHandle = DualScreenService.WatchForChangesOnLayout(_layout, () => OnScreenChanged(DualScreenService, EventArgs.Empty));
+
 				if (_watchHandle == null)
 					return;
 			}
@@ -334,7 +336,7 @@ namespace Xamarin.Forms.DualScreen
 
 		TwoPaneViewMode GetTwoPaneViewMode()
 		{
-			if (!IsInMultipleRegions(GetContainerArea()))
+			if (!IsInMultipleRegions(GetScreenRelativeBounds()))
 				return TwoPaneViewMode.SinglePane;
 
 			if (DualScreenService.IsLandscape)

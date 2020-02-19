@@ -16,6 +16,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue3262.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue9419.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8262.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8899.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8902.xaml.cs">
@@ -1277,6 +1278,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue8461.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8777.cs" />   
     <Compile Include="$(MSBuildThisFileDirectory)Issue9143.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue9329.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">

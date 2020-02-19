@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Android.Views;
 #if __ANDROID_29__
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
@@ -10,7 +10,6 @@ using Android.Content;
 using Android.Graphics;
 using System.Collections.Generic;
 using System;
-using System.Linq;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -32,8 +31,10 @@ namespace Xamarin.Forms.Platform.Android
 			Color? tintColor,
 			PropertyChangedEventHandler toolbarItemChanged,
 			List<IMenuItem> menuItemsCreated,
-			Action<Context, IMenuItem, ToolbarItem> updateMenuItemIcon = null
-			)
+			List<ToolbarItem> toolbarItemsCreated,
+			Action<Context, 
+			IMenuItem, 
+			ToolbarItem> updateMenuItemIcon = null)
 		{
 			if (sortedToolbarItems == null || menuItemsCreated == null)
 				return;
@@ -44,37 +45,41 @@ namespace Xamarin.Forms.Platform.Android
 			foreach (var menuItem in menuItemsCreated)
 				menuItem.Dispose();
 
-			menuItemsCreated.Clear();
+			foreach (var toolbarItem in toolbarItemsCreated)
+				toolbarItem.PropertyChanged -= toolbarItemChanged;
 
-			int i = 0;
+			menuItemsCreated.Clear();
+			toolbarItemsCreated.Clear();
+
 			foreach (var item in sortedToolbarItems)
 			{
-				UpdateMenuItem(toolbar, context, menuItemsCreated, item, tintColor, toolbarItemChanged, null, updateMenuItemIcon);
-				i++;
+				UpdateMenuItem(toolbar, item, null, context, tintColor, toolbarItemChanged, menuItemsCreated, toolbarItemsCreated, updateMenuItemIcon);
 			}
 		}
 
-		internal static void UpdateMenuItem(
-			AToolbar toolbar,
-			Context context, 
-			List<IMenuItem> menuItemsCreated, 
-			ToolbarItem item, 
+		internal static void UpdateMenuItem(AToolbar toolbar,
+			ToolbarItem item,
+			int? menuItemIndex,
+			Context context,
 			Color? tintColor,
 			PropertyChangedEventHandler toolbarItemChanged,
-			int? menuItemIndex,
-			Action<Context, IMenuItem, ToolbarItem> updateMenuItemIcon = null)
+			List<IMenuItem> menuItemsCreated,
+			List<ToolbarItem> toolbarItemsCreated,
+			Action<Context,
+			IMenuItem, 
+			ToolbarItem> updateMenuItemIcon = null)
 		{
 			IMenu menu = toolbar.Menu;
 			item.PropertyChanged -= toolbarItemChanged;
 			item.PropertyChanged += toolbarItemChanged;
 
-			IMenuItem menuitem = null;
+			IMenuItem menuitem;
 
 			if (menuItemIndex == null)
 			{
 				menuitem = menu.Add(new Java.Lang.String(item.Text));
-				if (menuItemsCreated != null)
-					menuItemsCreated.Add(menuitem);
+				menuItemsCreated?.Add(menuitem);
+				toolbarItemsCreated?.Add(item);
 			}
 			else
 			{
@@ -95,7 +100,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (updateMenuItemIcon != null)
 				updateMenuItemIcon(context, menuitem, item);
 			else
-				UpdateMenuItemIcon(context, menu, menuItemsCreated, menuitem, item, tintColor);
+				UpdateMenuItemIcon(context, menuitem, item, tintColor);
 
 			if (item.Order != ToolbarItemOrder.Secondary)
 				menuitem.SetShowAsAction(ShowAsAction.Always);
@@ -115,9 +120,9 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
-		internal static void UpdateMenuItemIcon(Context context, IMenu menu, List<IMenuItem> menuItemsCreated, IMenuItem menuItem, ToolbarItem toolBarItem, Color? tintColor)
+		internal static void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem, Color? tintColor)
 		{
-			_ = context.ApplyDrawableAsync(toolBarItem, ToolbarItem.IconImageSourceProperty, baseDrawable =>
+			_ = context.ApplyDrawableAsync(toolBarItem, MenuItem.IconImageSourceProperty, baseDrawable =>
 			{
 				if (menuItem == null || !menuItem.IsAlive())
 				{
@@ -148,37 +153,41 @@ namespace Xamarin.Forms.Platform.Android
 			this AToolbar toolbar,
 			PropertyChangedEventArgs e,
 			ToolbarItem toolbarItem,
-			IEnumerable<ToolbarItem> toolbarItems,
+			ICollection<ToolbarItem> toolbarItems,
 			Context context,
 			Color? tintColor,
 			PropertyChangedEventHandler toolbarItemChanged,
 			List<IMenuItem> currentMenuItems,
-			Action<Context, IMenuItem, ToolbarItem> updateMenuItemIcon = null)
+			List<ToolbarItem> currentToolbarItems,
+			Action<Context, 
+			IMenuItem,
+			ToolbarItem> updateMenuItemIcon = null)
 		{
 			if (toolbarItems == null)
 				return;
 
-			if (e.IsOneOf(MenuItem.TextProperty, MenuItem.IconImageSourceProperty, MenuItem.IsEnabledProperty))
-			{
-				int index = 0;
-				foreach (var item in toolbarItems)
-				{
-					if(item == toolbarItem)
-					{
-						break;
-					}
+			if (!e.IsOneOf(MenuItem.TextProperty, MenuItem.IconImageSourceProperty, MenuItem.IsEnabledProperty))
+				return;
 
-					index++;
+			int index = 0;
+
+			foreach (var item in toolbarItems)
+			{
+				if(item == toolbarItem)
+				{
+					break;
 				}
 
-				if (index >= currentMenuItems.Count)
-					return;
-
-				if (currentMenuItems[index].IsAlive())
-					UpdateMenuItem(toolbar, context, currentMenuItems, toolbarItem, tintColor, toolbarItemChanged, index, updateMenuItemIcon);
-				else
-					UpdateMenuItems(toolbar, toolbarItems, context, tintColor, toolbarItemChanged, currentMenuItems, updateMenuItemIcon);
+				index++;
 			}
+
+			if (index >= currentMenuItems.Count)
+				return;
+
+			if (currentMenuItems[index].IsAlive())
+				UpdateMenuItem(toolbar, toolbarItem, index, context, tintColor, toolbarItemChanged, currentMenuItems, currentToolbarItems, updateMenuItemIcon);
+			else
+				UpdateMenuItems(toolbar, toolbarItems, context, tintColor, toolbarItemChanged, currentMenuItems, currentToolbarItems, updateMenuItemIcon);
 		}
 	}
 }
