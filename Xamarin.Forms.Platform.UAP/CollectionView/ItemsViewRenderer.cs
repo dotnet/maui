@@ -448,47 +448,13 @@ namespace Xamarin.Forms.Platform.UWP
 			_previousHorizontalOffset = _scrollViewer.HorizontalOffset;
 			_previousVerticalOffset = _scrollViewer.VerticalOffset;
 
-			int firstVisibleItemIndex = -1;
-			int lastVisibleItemIndex = -1;
+			var visibleIndexes = CollectionViewExtensions.GetVisibleIndexes(ListViewBase, ItemsLayoutOrientation.Vertical);
 
-			var presenters = ListViewBase.GetChildren<ListViewItemPresenter>();
-
-			if (presenters != null)
-			{
-				int count = 0;
-				foreach (ListViewItemPresenter presenter in presenters)
-				{
-					if (IsListViewItemVisible(presenter, _scrollViewer))
-					{
-						if (firstVisibleItemIndex == -1)
-							firstVisibleItemIndex = count;
-
-						lastVisibleItemIndex = count;
-					}
-
-					count++;
-				}
-
-				itemsViewScrolledEventArgs.FirstVisibleItemIndex = firstVisibleItemIndex;
-				itemsViewScrolledEventArgs.CenterItemIndex = (lastVisibleItemIndex + firstVisibleItemIndex) / 2;
-				itemsViewScrolledEventArgs.LastVisibleItemIndex = lastVisibleItemIndex;
-			}
+			itemsViewScrolledEventArgs.FirstVisibleItemIndex = visibleIndexes.firstVisibleItemIndex;
+			itemsViewScrolledEventArgs.CenterItemIndex = visibleIndexes.centerItemIndex;
+			itemsViewScrolledEventArgs.LastVisibleItemIndex = visibleIndexes.lastVisibleItemIndex;
 
 			Element.SendScrolled(itemsViewScrolledEventArgs);
-		}
-
-		bool IsListViewItemVisible(FrameworkElement element, FrameworkElement container)
-		{
-			if (element == null || container == null)
-				return false;
-
-			if (element.Visibility != Visibility.Visible)
-				return false;
-
-			var elementBounds = element.TransformToVisual(container).TransformBounds(new Rect(0, 0, element.ActualWidth, element.ActualHeight));
-			var containerBounds = new Rect(0, 0, container.ActualWidth, container.ActualHeight);
-
-			return elementBounds.Top < containerBounds.Bottom && elementBounds.Bottom > containerBounds.Top;
 		}
 	}
 }

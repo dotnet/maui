@@ -10,6 +10,7 @@
         <OnPlatform x:Key="IonicsFontFamily" x:TypeArguments="x:String">
             <On Platform="iOS" Value="Ionicons" />
             <On Platform="Android" Value="fonts/ionicons.ttf#" />
+            <On Platform="UWP" Value="Assets/Fonts/ionicons.ttf#ionicons" />
         </OnPlatform>
         <x:String x:Key="Indicator">&#xf30c;</x:String>
     </ContentPage.Resources>
