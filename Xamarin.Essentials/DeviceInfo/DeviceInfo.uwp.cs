@@ -10,11 +10,21 @@ namespace Xamarin.Essentials
     {
         static readonly EasClientDeviceInformation deviceInfo;
         static DeviceIdiom currentIdiom;
+        static DeviceType currentType = DeviceType.Unknown;
+        static string systemProductName;
 
         static DeviceInfo()
         {
             deviceInfo = new EasClientDeviceInformation();
             currentIdiom = DeviceIdiom.Unknown;
+            try
+            {
+                systemProductName = deviceInfo.SystemProductName;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Unable to get system product name. {ex.Message}");
+            }
         }
 
         static string GetModel() => deviceInfo.SystemProductName;
@@ -77,12 +87,23 @@ namespace Xamarin.Essentials
 
         static DeviceType GetDeviceType()
         {
-            var isVirtual = deviceInfo.SystemProductName.Contains("Virtual") || deviceInfo.SystemProductName == "HMV domU";
+            if (currentType != DeviceType.Unknown)
+                return currentType;
 
-            if (isVirtual)
-                return DeviceType.Virtual;
+            try
+            {
+                if (string.IsNullOrWhiteSpace(systemProductName))
+                    systemProductName = deviceInfo.SystemProductName;
 
-            return DeviceType.Physical;
+                var isVirtual = systemProductName.Contains("Virtual") || systemProductName == "HMV domU";
+
+                currentType = isVirtual ? DeviceType.Virtual : DeviceType.Physical;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Unable to get device type. {ex.Message}");
+            }
+            return currentType;
         }
     }
 }
