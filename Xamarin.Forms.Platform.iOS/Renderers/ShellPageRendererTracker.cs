@@ -126,7 +126,7 @@ namespace Xamarin.Forms.Platform.iOS
 				NavigationItem.Title = Page.Title;
 		}
 
-		protected virtual void OnPageSet(Page oldPage, Page newPage)
+		protected virtual async void OnPageSet(Page oldPage, Page newPage)
 		{
 			if (oldPage != null)
 			{
@@ -149,6 +149,18 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (oldPage == null)
 				((IShellController)_context.Shell).AddFlyoutBehaviorObserver(this);
+
+			if (newPage != null)
+			{
+				try
+				{
+					await UpdateToolbarItems().ConfigureAwait(false);
+				}
+				catch(Exception exc)
+				{
+					Internals.Log.Warning(nameof(ShellPageRendererTracker), $"Failed to update toolbar items: {exc}");
+				}
+			}
 		}
 
 		protected virtual void OnRendererSet()
