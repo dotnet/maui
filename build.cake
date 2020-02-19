@@ -36,6 +36,7 @@ PowerShell:
 
 var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Debug");
+var packageVersion = Argument("packageVersion", "");
 
 var ANDROID_HOME = EnvironmentVariable ("ANDROID_HOME") ??
     (IsRunningOnWindows () ? "C:\\Program Files (x86)\\Android\\android-sdk\\" : "");
@@ -171,9 +172,17 @@ Task("_NuGetPack")
     .Description("Create Nugets without building anything")
     .Does(() =>
     {
-        var nugetVersionFile = 
-            GetFiles(".XamarinFormsVersionFile.txt");
-        var nugetversion = FileReadText(nugetVersionFile.First());
+        var nugetversion = String.Empty;
+
+        if(!String.IsNullOrWhiteSpace(packageVersion))
+        {
+            nugetversion = packageVersion;
+        }
+        else
+        {
+            var nugetVersionFile = GetFiles(".XamarinFormsVersionFile.txt");
+            nugetversion = FileReadText(nugetVersionFile.First());
+        }
 
         Information("Nuget Version: {0}", nugetversion);
 
