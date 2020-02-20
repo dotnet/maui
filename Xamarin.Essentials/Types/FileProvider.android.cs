@@ -4,6 +4,11 @@ using Android.App;
 using Android.Content;
 using Android.OS;
 using AndroidEnvironment = Android.OS.Environment;
+#if __ANDROID_29__
+using ContentFileProvider = AndroidX.Core.Content.FileProvider;
+#else
+using ContentFileProvider = Android.Support.V4.Content.FileProvider;
+#endif
 
 namespace Xamarin.Essentials
 {
@@ -13,9 +18,9 @@ namespace Xamarin.Essentials
         Exported = false,
         GrantUriPermissions = true)]
     [MetaData(
-        "android.support.FILE_PROVIDER_PATHS",
+        "android.support.FILE_PROVIDER_PATHS", // IMPORTANT: This string doesn't change with AndroidX
         Resource = "@xml/xamarin_essentials_fileprovider_file_paths")]
-    public class FileProvider : global::Android.Support.V4.Content.FileProvider
+    public class FileProvider : ContentFileProvider
     {
         internal static bool AlwaysFailExternalMediaAccess { get; set; } = false;
 
@@ -89,9 +94,9 @@ namespace Xamarin.Essentials
 #if __ANDROID_29__
                 Platform.AppContext.GetExternalFilesDir(null).CanonicalPath,
 #else
-                #pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
                 AndroidEnvironment.ExternalStorageDirectory.CanonicalPath,
-                #pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 #endif
                 Platform.AppContext.ExternalCacheDir.CanonicalPath
             };

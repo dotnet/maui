@@ -11,7 +11,6 @@ using Android.Locations;
 using Android.Net;
 using Android.Net.Wifi;
 using Android.OS;
-using Android.Support.V4.Content;
 using AndroidUri = Android.Net.Uri;
 
 namespace Xamarin.Essentials

@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Android.Content;
+#if __ANDROID_29__
+using AndroidX.Browser.CustomTabs;
+#else
 using Android.Support.CustomTabs;
+#endif
 
 namespace Xamarin.Essentials
 {
