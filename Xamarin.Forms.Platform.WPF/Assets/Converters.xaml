@@ -5,6 +5,6 @@
     <converters:SymbolToValueConverter x:Key="SymbolToValue" />
     <BooleanToVisibilityConverter x:Key="BoolToVis" />
     <converters:ToUpperConverter x:Key="ToUpperConverter" />
-    <converters:FontFamilyConverter x:Key="FontFamilyConveter" />
+    <converters:FontFamilyConverter x:Key="FontFamilyConverter" />
     <converters:FontIconColorConverter x:Key="FontIconColorConverter" />
 </ResourceDictionary>
