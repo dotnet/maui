@@ -45,7 +45,7 @@ namespace Xamarin.Forms
 			}
 		}
 
-		void ResetIndicators()
+		internal void ResetIndicators()
 		{
 			try
 			{
@@ -92,7 +92,10 @@ namespace Xamarin.Forms
 
 			for (int index = 0; index < childrenCount; index++)
 			{
-				Children[index].BackgroundColor = index == _indicatorView.Position
+				var maxVisible = _indicatorView.MaximumVisible;
+				var position = _indicatorView.Position;
+				var selectedIndex = position >= maxVisible ? maxVisible - 1 : position;
+				Children[index].BackgroundColor = index == selectedIndex
 					? GetColorOrDefault(_indicatorView.SelectedIndicatorColor, Color.Gray)
 					: GetColorOrDefault(_indicatorView.IndicatorColor, Color.Silver);
 			}

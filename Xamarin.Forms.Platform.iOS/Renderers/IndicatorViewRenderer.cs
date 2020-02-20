@@ -81,8 +81,10 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdatePages();
 			else if (e.PropertyName == HideSingleProperty.PropertyName)
 				UpdateHidesForSinglePage();
-			else if (e.PropertyName == PositionProperty.PropertyName)
+			else if (e.Is(PositionProperty))
 				UpdateCurrentPage();
+			else if (e.Is(MaximumVisibleProperty))
+				UpdateMaximumVisible();
 		}
 
 		protected override UIView CreateNativeControl()
@@ -170,7 +172,10 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			_updatingPosition = true;
-			UIPager.CurrentPage = Element.Position;
+			var maxVisible = Element.MaximumVisible;
+			var position = Element.Position;
+			var index = position >= maxVisible ? maxVisible - 1 : position;
+			UIPager.CurrentPage = index;
 			_updatingPosition = false;
 		}
 
@@ -179,7 +184,10 @@ namespace Xamarin.Forms.Platform.iOS
 			if (UIPager == null)
 				return;
 
-			UIPager.Pages = Element.Count;
+			var maxCount = Element.MaximumVisible;
+			var count = Element.Count;
+
+			UIPager.Pages = maxCount != int.MaxValue ? maxCount : count;
 		}
 
 		void UpdateHidesForSinglePage()
@@ -206,6 +214,12 @@ namespace Xamarin.Forms.Platform.iOS
 
 			var color = Element.SelectedIndicatorColor;
 			UIPager.CurrentPageIndicatorTintColor = color.IsDefault ? _defaultCurrentPagesIndicatorTintColor : color.ToUIColor();
+		}
+
+		void UpdateMaximumVisible()
+		{
+			UpdatePages();
+			UpdateCurrentPage();
 		}
 	}
 

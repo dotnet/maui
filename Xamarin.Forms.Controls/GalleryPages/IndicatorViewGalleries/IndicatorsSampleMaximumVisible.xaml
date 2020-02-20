@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Xamarin.Forms.Controls.IndicatorsSampleMaximumVisible">
+    <ContentPage.Resources>
+        <OnPlatform x:Key="IonicsFontFamily" x:TypeArguments="x:String">
+            <On Platform="iOS" Value="Ionicons" />
+            <On Platform="Android" Value="fonts/ionicons.ttf#" />
+        </OnPlatform>
+        <x:String x:Key="Indicator">&#xf30c;</x:String>
+    </ContentPage.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Button Text="Change MaximumVisible" Clicked="MaximumVisibleClicked"></Button>
+        <CarouselView x:Name="carousel" ItemsSource="{Binding Items}" Grid.Row="1" Grid.RowSpan="3" IndicatorView="indicators">
+            <CarouselView.ItemTemplate>
+                <DataTemplate>
+                    <Frame BackgroundColor="{Binding Color}">
+                        <Grid HorizontalOptions="Center" VerticalOptions="Center">
+                            <Label Text="{Binding Name}" FontSize="25"></Label>
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CarouselView.ItemTemplate>
+        </CarouselView>
+        <IndicatorView x:Name="indicators" Grid.Row="2" IndicatorColor="Gray" SelectedIndicatorColor="White" HorizontalOptions="Center" />
+        <IndicatorView x:Name="indicatorsForms" Grid.Row="3" IndicatorColor="Gray"
+                       ItemsSource="{Binding Path=ItemsSource, Source={x:Reference carousel}}"
+                       Position="{Binding Path=Position, Source={x:Reference carousel}}"
+                       SelectedIndicatorColor="White" HorizontalOptions="Center" >
+            <IndicatorView.IndicatorTemplate>
+                <DataTemplate>
+                    <Label FontFamily="{StaticResource IonicsFontFamily}" Text="{StaticResource Indicator}"></Label>
+                </DataTemplate>
+            </IndicatorView.IndicatorTemplate>
+        </IndicatorView>
+    </Grid>
+</ContentPage>
