@@ -35,8 +35,11 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement("ScrollToMiddle");
 			RunningApp.Tap("ScrollToMiddle");	
 			RunningApp.WaitForElement("Vegetables.jpg, 10");
-			RunningApp.Tap("AddItemAbove");	
-			RunningApp.WaitForNoElement("photo.jpg, 9");
+			for (int n = 0; n < 25; n++)
+			{
+				RunningApp.Tap("AddItemAbove");
+			}
+			RunningApp.WaitForElement("Vegetables.jpg, 10");
 		}
 
 		[Test]
