@@ -176,6 +176,7 @@ namespace Xamarin.Forms.Platform.iOS
 			var position = Element.Position;
 			var index = position >= maxVisible ? maxVisible - 1 : position;
 			UIPager.CurrentPage = index;
+			UIPager.LayoutSubviews();
 			_updatingPosition = false;
 		}
 
