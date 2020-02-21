@@ -107,7 +107,16 @@
     <Compile Include="PerformanceTrackerRenderer.cs" />
     <Compile Include="PlatformSpecificCoreGalleryFactory.cs" />
     <Compile Include="Tests\CollectionViewTests.cs" />
+    <Compile Include="Tests\AssertionExtensions.cs" />
+    <Compile Include="Tests\BackgroundColorTests.cs" />
+    <Compile Include="Tests\CornerRadiusTests.cs" />
+    <Compile Include="Tests\IsEnabledTests.cs" />
     <Compile Include="Tests\Issues.cs" />
+    <Compile Include="Tests\IsVisibleTests.cs" />
+    <Compile Include="Tests\OpacityTests.cs" />
+    <Compile Include="Tests\RotationTests.cs" />
+    <Compile Include="Tests\ScaleTests.cs" />
+    <Compile Include="Tests\TestingPlatformService.cs" />
     <Compile Include="Tests\PlatformTestSettings.cs" />
     <Compile Include="PreApplicationClassActivity.cs" />
     <Compile Include="Properties\MapsKey.cs" />
@@ -121,6 +130,8 @@
     <Compile Include="TestCloudService.cs" />
     <Compile Include="Tests\PlatformTestFixture.cs" />
     <Compile Include="Tests\RendererTests.cs" />
+    <Compile Include="Tests\TextTests.cs" />
+    <Compile Include="Tests\TranslationTests.cs" />
     <Compile Include="_1909CustomRenderer.cs" />
     <Compile Include="_2489CustomRenderer.cs" />
     <Compile Include="_38989CustomRenderer.cs" />

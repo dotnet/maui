@@ -32,11 +32,6 @@ namespace Xamarin.Forms.Core.UITests
 		}
 
 		[UiTestExempt(ExemptReason.CannotTest, "Invalid interaction")]
-		public override void _IsEnabled()
-		{
-		}
-
-		[UiTestExempt(ExemptReason.CannotTest, "Invalid interaction")]
 		public override void _IsFocused()
 		{
 		}
@@ -57,5 +52,44 @@ namespace Xamarin.Forms.Core.UITests
 			App.NavigateBack();
 			base.FixtureTeardown();
 		}
+
+#if __ANDROID__ || __IOS__
+		[Ignore("This is covered by the platform opacity tests")]
+		public override void _Opacity() { }
+#endif
+
+#if __ANDROID__ || __IOS__ || __WINDOWS__
+		[Ignore("This is covered by the platform tests")]
+		public override void _IsEnabled() { }
+#endif
+
+#if __ANDROID__ || __IOS__ || __WINDOWS__
+		[Ignore("This is covered by the platform tests")]
+		public override void _Rotation() { }
+
+		[Ignore("This is covered by the platform tests")]
+		public override void _RotationX() { }
+
+		[Ignore("This is covered by the platform tests")]
+		public override void _RotationY() { }
+#endif
+
+#if __ANDROID__
+		[Ignore("This is covered by the platform tests")]
+		public override void _TranslationX() { }
+
+		[Ignore("This is covered by the platform tests")]
+		public override void _TranslationY() { }
+#endif
+
+#if __IOS__ || __WINDOWS__
+		[Ignore("This is covered by the platform tests")]
+		public override void _Scale() { }
+#endif
+
+#if __ANDROID__ || __IOS__
+		[Ignore("This is covered by the platform tests")]
+		public override void _IsVisible() { }
+#endif
 	}
 }

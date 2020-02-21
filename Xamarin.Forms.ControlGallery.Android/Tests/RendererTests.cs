@@ -8,17 +8,8 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 	[TestFixture]
 	public class RendererTests : PlatformTestFixture
 	{
-		[Test(Description = "Basic sanity check that Label text matches renderer text")]
-		public void LabelTextMatchesRendererText()
-		{
-			var label = new Label { Text = "foo" };
-			using (var textView = GetNativeControl(label))
-			{
-				Assert.That(label.Text == textView.Text);
-			}
-		}
-
-		[Test(Description = "Validate renderer vertical alignment for Entry with VerticalTextAlignment Center")]
+		[Test, Category("Entry")]
+		[Description("Validate renderer vertical alignment for Entry with VerticalTextAlignment Center")]
 		public void EntryVerticalAlignmentCenterInRenderer()
 		{ 
 			var entry1 = new Entry { Text = "foo", VerticalTextAlignment = TextAlignment.Center };

@@ -12,6 +12,7 @@ namespace Xamarin.Forms.Platform.iOS
 		SizeF _fitSize;
 		UIColor defaultmintrackcolor, defaultmaxtrackcolor, defaultthumbcolor;
 		UITapGestureRecognizer _sliderTapRecognizer;
+		bool _disposed;
 
 		[Internals.Preserve(Conditional = true)]
 		public SliderRenderer()
@@ -26,17 +27,27 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected override void Dispose(bool disposing)
 		{
-			if (Control != null)
+			if (_disposed)
 			{
-				Control.ValueChanged -= OnControlValueChanged;
-				if (_sliderTapRecognizer != null)
-				{
-					Control.RemoveGestureRecognizer(_sliderTapRecognizer);
-					_sliderTapRecognizer = null;
-				}
+				return;
+			}
 
-				Control.RemoveTarget(OnTouchDownControlEvent, UIControlEvent.TouchDown);
-				Control.RemoveTarget(OnTouchUpControlEvent, UIControlEvent.TouchUpInside | UIControlEvent.TouchUpOutside);
+			_disposed = true;
+
+			if (disposing)
+			{
+				if (Control != null)
+				{
+					Control.ValueChanged -= OnControlValueChanged;
+					if (_sliderTapRecognizer != null)
+					{
+						Control.RemoveGestureRecognizer(_sliderTapRecognizer);
+						_sliderTapRecognizer = null;
+					}
+
+					Control.RemoveTarget(OnTouchDownControlEvent, UIControlEvent.TouchDown);
+					Control.RemoveTarget(OnTouchUpControlEvent, UIControlEvent.TouchUpInside | UIControlEvent.TouchUpOutside);
+				}
 			}
 
 			base.Dispose(disposing);

@@ -87,7 +87,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (_shadowView != null)
 			{
-				if (_shadowView.Superview == null)
+				if (_shadowView.Superview == null && Superview != null)
 					Superview.InsertSubviewBelow(_shadowView, this);
 
 				_shadowView?.SetNeedsLayout();

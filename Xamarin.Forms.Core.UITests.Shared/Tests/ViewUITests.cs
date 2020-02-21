@@ -28,21 +28,6 @@ namespace Xamarin.Forms.Core.UITests
 
 		}
 
-		// [Test]
-		// [UiTest (Test.VisualElement.BackgroundColor)]
-		// [UiTestBroken (BrokenReason.UITestBug, "UITest Issue #107")]
-		public virtual void _BackgroundColor()
-		{
-			//TODO: this was failing and is changing in next version of calabash (UI-Test-pre nuget) to a json rgb
-			//			var remote = RemoteFactory.CreateRemote<ViewContainerRemote> (App, "BackgroundColor", PlatformViewType);
-			//			remote.GoTo ();
-			//			if (App is iOSApp) {
-			//				var backgroundColor = remote.GetProperty<Color> (View.BackgroundColorProperty);
-			//				Assert.AreEqual (Color.Blue, backgroundColor);
-			//			}
-
-		}
-
 		[Test]
 		[UiTest(typeof(VisualElement), "Focus")]
 		public abstract void _Focus();
@@ -230,7 +215,6 @@ namespace Xamarin.Forms.Core.UITests
 			Matrix generatedMatrix = NumericExtensions.BuildScaleMatrix(0.5f);
 			Assert.AreEqual(generatedMatrix, scaleMatrix);
 #endif
-
 		}
 
 		[Test]

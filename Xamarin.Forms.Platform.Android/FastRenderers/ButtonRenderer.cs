@@ -104,7 +104,10 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 			var result  = _buttonLayoutManager.GetDesiredSize(widthConstraint, heightConstraint);
 
-			Control.Hint = hint;
+			if (Control.Hint != hint)
+			{
+				Control.Hint = hint;
+			}
 
 			return result;
 		}

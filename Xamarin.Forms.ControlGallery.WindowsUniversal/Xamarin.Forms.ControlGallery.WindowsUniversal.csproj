@@ -131,6 +131,14 @@
     <Compile Include="RegistrarValidationService.cs" />
     <Compile Include="SampleNativeControl.cs" />
     <Compile Include="SecondaryWindowService.cs" />
+    <Compile Include="Tests\BackgroundColorTests.cs" />
+    <Compile Include="Tests\IsEnabledTests.cs" />
+    <Compile Include="Tests\PlatformTestFixture.cs" />
+    <Compile Include="Tests\PlatformTestSettings.cs" />
+    <Compile Include="Tests\RendererTests.cs" />
+    <Compile Include="Tests\RotationTests.cs" />
+    <Compile Include="Tests\ScaleTests.cs" />
+    <Compile Include="Tests\TestingPlatformService.cs" />
     <Compile Include="_2489CustomRenderer.cs" />
     <Compile Include="_57114Renderer.cs" />
     <Compile Include="_58406EffectRenderer.cs" />
@@ -250,6 +258,9 @@
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>11.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="NUnit">
+      <Version>3.12.0</Version>
     </PackageReference>
     <PackageReference Include="Xam.Plugin.DeviceInfo">
       <Version>3.0.2</Version>

@@ -21,7 +21,6 @@ using AColor = Android.Graphics.Color;
 [assembly: Dependency (typeof (TestCloudService))]
 [assembly: ExportRenderer (typeof (DisposePage), typeof (DisposePageRenderer))]
 [assembly: ExportRenderer (typeof (DisposeLabel), typeof (DisposeLabelRenderer))]
-[assembly: ExportRenderer (typeof (CustomButton), typeof (CustomButtonRenderer))]
 [assembly: ExportEffect (typeof (BorderEffect), "BorderEffect")]
 
 namespace Xamarin.Forms.ControlGallery.Android

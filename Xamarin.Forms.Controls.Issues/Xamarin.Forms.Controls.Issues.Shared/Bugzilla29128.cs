@@ -2,7 +2,9 @@
 
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
+
 #if UITEST
+using Xamarin.Forms.Core.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
@@ -25,6 +27,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
+		[Category(UITestCategories.ManualReview)]
 		public void Bugzilla29128Test ()
 		{
 			RunningApp.WaitForElement (q => q.Marked ("SliderId"));

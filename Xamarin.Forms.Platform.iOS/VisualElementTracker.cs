@@ -277,7 +277,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				const double epsilon = 0.001;
 
 #if !__MOBILE__
-				// fix position, position in macos is aslo relative to anchor point
+				// fix position, position in macos is also relative to anchor point
 				// but it's (0,0) by default, so we don't need to substract 0.5
 				transform = transform.Translate(anchorX * width, 0, 0);
 				transform = transform.Translate(0, anchorY * height, 0);

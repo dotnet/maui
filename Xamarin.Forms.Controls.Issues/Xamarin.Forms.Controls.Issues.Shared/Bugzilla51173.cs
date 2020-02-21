@@ -128,7 +128,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var instructions = new Label
 			{
 				Text =
-					"Pressing the 'Valid Image' button should display an image of a coffee cup. Every other button should cause the messager 'Error logged' to appear at the top of the page."
+					"Pressing the 'Valid Image' button should display an image of a coffee cup. Every other button should cause the message 'Error logged' to appear at the top of the page."
 			};
 
 			_image = new Image { BackgroundColor = Color.Bisque, HeightRequest = 20 };

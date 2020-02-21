@@ -3,11 +3,24 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d"
+             mc:Ignorable="d" 
+             Title="Platform Test Console"
+             xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
+             ios:Page.UseSafeArea="true"
              x:Class="Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery.PlatformTestsConsole">
     <ContentPage.Content>
-        <StackLayout>
-            <Label x:Name="Status" Text="Running Tests..."/>
+        <StackLayout Margin="2">
+            <Grid MinimumHeightRequest="90">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Label x:Name="Status" Text="Running Tests..." VerticalTextAlignment="Center"/>
+                <Label Grid.Column="1" x:Name="RunCount" Text="" VerticalTextAlignment="Center"/>
+                <Button Grid.Column="2" Text="Run Again" x:Name="Rerun" IsEnabled="False"/>
+            </Grid>
+            
             <ScrollView>
                 <StackLayout x:Name="Results">
                     

@@ -12,6 +12,7 @@ namespace Xamarin.Forms.Platform.UWP
 	public static class FontExtensions
 	{
 		static Dictionary<string, FontFamily> FontFamilies = new Dictionary<string, FontFamily>();
+		static double DefaultFontSize = double.NegativeInfinity;
 
 		public static void ApplyFont(this Control self, Font font)
 		{
@@ -52,7 +53,11 @@ namespace Xamarin.Forms.Platform.UWP
 			switch (size)
 			{
 				case NamedSize.Default:
-					return (double)WApplication.Current.Resources["ControlContentThemeFontSize"];
+					if(DefaultFontSize == double.NegativeInfinity)
+					{
+						DefaultFontSize = (double)WApplication.Current.Resources["ControlContentThemeFontSize"];
+					}
+					return DefaultFontSize;
 				case NamedSize.Micro:
 					return 15.667;
 				case NamedSize.Small:

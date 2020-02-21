@@ -16,8 +16,8 @@ namespace Xamarin.Forms.ControlGallery.iOS.Tests
 		{
 			TestRunSettings = new Dictionary<string, object>
 			{
-				// Creating/modifying any renderers on iOS off the UI thread causes problems
-				// so at least for iOS, we want to force the tests to run on main
+				// Creating/modifying any renderers off the UI thread causes problems
+				// so we want to force the tests to run on main
 				{ FrameworkPackageSettings.RunOnMainThread, true }
 			};
 		}

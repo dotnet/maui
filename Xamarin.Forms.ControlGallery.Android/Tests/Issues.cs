@@ -10,7 +10,8 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 	[TestFixture]
 	public class Issues : PlatformTestFixture
 	{
-		[Test(Description = "The HorizontalAlignment of an Entry's renderer should match the Entry")]
+		[Test, Category("Entry")]
+		[Description("The HorizontalAlignment of an Entry's renderer should match the Entry")]
 		[Issue(IssueTracker.Github, 8137, "[Bug] XF 4.3 Entry HorizontalTextAlignment display wrong position")]
 		public void EntryHorizontalAlignmentCenterInRenderer()
 		{

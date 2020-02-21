@@ -246,5 +246,10 @@ namespace Xamarin.Forms.Controls
 		{
 			SetMainPage(CreateDefaultMainPage());
 		}
+
+		public void PlatformTest() 
+		{
+			SetMainPage(new GalleryPages.PlatformTestsGallery.PlatformTestsConsole());
+		}
 	}
 }
