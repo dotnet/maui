@@ -28,6 +28,12 @@ namespace Xamarin.Essentials
                 Altitude = location.HasAltitude ? location.Altitude : default(double?),
                 Timestamp = location.GetTimestamp().ToUniversalTime(),
                 Accuracy = location.HasAccuracy ? location.Accuracy : default(float?),
+                VerticalAccuracy =
+#if __ANDROID_26__
+                    location.HasVerticalAccuracy ? location.VerticalAccuracyMeters : default(float?),
+#else
+                    default(float?),
+#endif
                 Course = location.HasBearing ? location.Bearing : default(double?),
                 Speed = location.HasSpeed ? location.Speed : default(double?),
                 IsFromMockProvider = Platform.HasApiLevel(global::Android.OS.BuildVersionCodes.JellyBeanMr2) ? location.IsFromMockProvider : false

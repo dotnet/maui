@@ -52,6 +52,8 @@ namespace Xamarin.Essentials
 
         public double? Accuracy { get; set; }
 
+        public double? VerticalAccuracy { get; set; }
+
         public double? Speed { get; set; }
 
         public double? Course { get; set; }
@@ -88,6 +90,7 @@ namespace Xamarin.Essentials
         public override string ToString() =>
             $"{nameof(Latitude)}: {Latitude}, {nameof(Longitude)}: {Longitude}, " +
             $"{nameof(Altitude)}: {Altitude ?? 0}, {nameof(Accuracy)}: {Accuracy ?? 0}, " +
+            $"{nameof(VerticalAccuracy)}: {VerticalAccuracy ?? 0}, " +
             $"{nameof(Speed)}: {Speed ?? 0}, {nameof(Course)}: {Course ?? 0}, " +
             $"{nameof(Timestamp)}: {Timestamp}";
     }
