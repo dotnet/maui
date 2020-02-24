@@ -18,10 +18,10 @@
         <dependency id="Xamarin.Forms" version="$version$"/>
       </group>
       <group targetFramework="MonoAndroid90">
-        <dependency id="Xamarin.DuoSdk" version="0.0.3.2" />
+        <dependency id="Xamarin.DuoSdk" version="0.0.3.4" />
       </group>
       <group targetFramework="MonoAndroid10.0">
-        <dependency id="Xamarin.DuoSdk" version="0.0.3.2" />
+        <dependency id="Xamarin.DuoSdk" version="0.0.3.4" />
       </group>
     </dependencies>
   </metadata>
