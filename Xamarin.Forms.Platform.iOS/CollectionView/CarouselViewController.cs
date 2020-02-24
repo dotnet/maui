@@ -140,7 +140,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 			foreach (var cell in cells)
 			{
-				var itemView = (cell as CarouselTemplatedCell)?.VisualElementRenderer?.Element as View;
+				if (!((cell as CarouselTemplatedCell)?.VisualElementRenderer?.Element is View itemView))
+					return;
+
 				var item = itemView.BindingContext;
 				var pos = GetPosition(item);
 
