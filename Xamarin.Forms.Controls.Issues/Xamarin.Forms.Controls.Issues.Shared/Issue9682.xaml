@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<controls:TestContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:controls="clr-namespace:Xamarin.Forms.Controls"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="Xamarin.Forms.Controls.Issues.Issue9682">
+    <ContentPage.Content>
+        <Grid ColumnSpacing="5" RowSpacing="0" BackgroundColor="LightGray">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <ListView ItemsSource="{Binding Monkeys}" HasUnevenRows="True">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell Height="150">
+                            <Frame
+                            Margin="10,5"
+                            Padding="0"
+                            BackgroundColor="White"
+                            CornerRadius="10"
+                            HeightRequest="125"
+                            InputTransparent="True"
+                            IsClippedToBounds="True"
+                            HasShadow="True"
+                            Visual="Material">
+                            <Grid Padding="0" ColumnSpacing="10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Image Aspect="AspectFill" AutomationId="MonkeyImages">
+                                    <Image.Source>
+                                        <UriImageSource Uri="{Binding Image}" CachingEnabled="False"></UriImageSource>
+                                    </Image.Source>
+                                </Image>
+                                <StackLayout
+                                Grid.Column="1"
+                                Padding="10"
+                                VerticalOptions="Center">
+                                    <Label FontSize="Large" Text="{Binding Name}" />
+                                    <Label FontSize="Medium" Text="{Binding Location}" />
+                                </StackLayout>
+                            </Grid>
+                        </Frame>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <BoxView Grid.Row="1" 
+                 Grid.ColumnSpan="2" 
+                 BackgroundColor="#FFC107" />
+
+            <Button
+                Grid.Row="1"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Margin="8"
+                Command="{Binding GetMonkeysCommand}"
+                AutomationId="MonkeyLoadButton"
+                Text="Click Me and Monkey Images Should Load" />
+
+            <Label Grid.Row="2" IsVisible="{Binding IsLoaded}" Text="Monkeys Loaded" x:Name="monkeysLoaded" AutomationId="monkeysLoaded"></Label>
+        </Grid>
+    </ContentPage.Content>
+</controls:TestContentPage>

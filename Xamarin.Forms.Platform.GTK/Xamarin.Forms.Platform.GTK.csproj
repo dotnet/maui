@@ -93,6 +93,9 @@
     <PackageReference Include="OpenTK" Version="3.0.1" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Xamarin.Forms.Core\StreamWrapper.cs">
+      <Link>StreamWrapper.cs</Link>
+    </Compile>
     <Compile Include="Animations\BaseAnimation.cs" />
     <Compile Include="Animations\FloatAnimation.cs" />
     <Compile Include="Cells\CellBase.cs" />
