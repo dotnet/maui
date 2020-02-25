@@ -42,6 +42,9 @@
     <AndroidResource Link="Resources\Layout\ShellContent.axml" Include="Resources\Layout\Android\ShellContent.axml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Xamarin.Forms.Core\StreamWrapper.cs" Link="StreamWrapper.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />
