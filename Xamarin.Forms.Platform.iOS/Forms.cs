@@ -285,14 +285,12 @@ namespace Xamarin.Forms
 			public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
 			{
 				using (var client = GetHttpClient())
-				using (var response = await client.GetAsync(uri, cancellationToken))
 				{
-					if (!response.IsSuccessStatusCode)
-					{
-						Log.Warning("HTTP Request", $"Could not retrieve {uri}, status code {response.StatusCode}");
-						return null;
-					}
-					return await response.Content.ReadAsStreamAsync();
+					// Do not remove this await otherwise the client will dispose before
+					// the stream even starts
+					var result = await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
+
+					return result;
 				}
 			}
 

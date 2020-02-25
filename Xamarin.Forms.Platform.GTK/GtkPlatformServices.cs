@@ -76,15 +76,11 @@ namespace Xamarin.Forms.Platform.GTK
 		{
 			using (var client = new HttpClient())
 			{
-				HttpResponseMessage streamResponse = await client.GetAsync(uri.AbsoluteUri).ConfigureAwait(false);
+				// Do not remove this await otherwise the client will dispose before
+				// the stream even starts
+				var result = await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
 
-				if (!streamResponse.IsSuccessStatusCode)
-				{
-					Log.Warning("HTTP Request", $"Could not retrieve {uri}, status code {streamResponse.StatusCode}");
-					return null;
-				}
-
-				return await streamResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
+				return result;
 			}
 		}
 

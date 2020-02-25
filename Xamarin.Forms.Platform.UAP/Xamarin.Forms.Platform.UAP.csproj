@@ -95,12 +95,15 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Xamarin.Forms.Core\StreamWrapper.cs" Link="StreamWrapper.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
     </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj">
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup  Condition=" '$(OS)' == 'Windows_NT' ">
+  <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
     <PackageReference Include="Microsoft.UI.Xaml" Condition="$(TargetFramework) == 'uap10.0.14393'">
       <Version>2.1.190606001</Version>
     </PackageReference>
