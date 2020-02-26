@@ -39,7 +39,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 				ItemsSource = viewModel.Items,
 				IsScrollAnimated = true,
 				IsBounceEnabled = true,
-				EmptyView = "This is the empty view"
+				EmptyView = "This is the empty view",
+				PeekAreaInsets = new Thickness(50)
 			};
 
 			var absolute = new AbsoluteLayout();
