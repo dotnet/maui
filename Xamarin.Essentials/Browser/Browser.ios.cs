@@ -31,7 +31,7 @@ namespace Xamarin.Essentials
                     await vc.PresentViewControllerAsync(sfViewController, true);
                     break;
                 case BrowserLaunchMode.External:
-                    if (Platform.HasOSVersion(12, 0))
+                    if (Platform.HasOSVersion(10, 0))
                     {
                         return await UIApplication.SharedApplication.OpenUrlAsync(nativeUrl, new UIApplicationOpenUrlOptions());
                     }

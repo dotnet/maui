@@ -20,7 +20,12 @@ namespace Xamarin.Essentials
             var canOpen = UIApplication.SharedApplication.CanOpenUrl(nativeUrl);
 
             if (canOpen)
-                return UIApplication.SharedApplication.OpenUrlAsync(nativeUrl, new UIApplicationOpenUrlOptions());
+            {
+                if (Platform.HasOSVersion(10, 0))
+                    return UIApplication.SharedApplication.OpenUrlAsync(nativeUrl, new UIApplicationOpenUrlOptions());
+                
+                UIApplication.SharedApplication.OpenUrl(nativeUrl);
+            }
 
             return Task.FromResult(canOpen);
         }
