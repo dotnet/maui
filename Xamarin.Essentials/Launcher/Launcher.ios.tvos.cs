@@ -23,7 +23,7 @@ namespace Xamarin.Essentials
             {
                 if (Platform.HasOSVersion(10, 0))
                     return UIApplication.SharedApplication.OpenUrlAsync(nativeUrl, new UIApplicationOpenUrlOptions());
-                
+
                 UIApplication.SharedApplication.OpenUrl(nativeUrl);
             }
 
