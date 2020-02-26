@@ -18,9 +18,14 @@ namespace Xamarin.Essentials
 
         static Task PlatformComposeAsync(SmsMessage message)
         {
-            var intent = CreateIntent(message?.Body, message?.Recipients)
-                .SetFlags(ActivityFlags.ClearTop)
-                .SetFlags(ActivityFlags.NewTask);
+            var intent = CreateIntent(message?.Body, message?.Recipients);
+
+            var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
+#if __ANDROID_24__
+            if (Platform.HasApiLevelN)
+                flags |= ActivityFlags.LaunchAdjacent;
+#endif
+            intent.SetFlags(flags);
 
             Platform.AppContext.StartActivity(intent);
 

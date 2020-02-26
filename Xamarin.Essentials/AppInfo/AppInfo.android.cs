@@ -2,6 +2,7 @@
 using Android.Content;
 using Android.Content.PM;
 using Android.Content.Res;
+using Android.Provider;
 
 namespace Xamarin.Essentials
 {
@@ -44,9 +45,15 @@ namespace Xamarin.Essentials
             settingsIntent.SetAction(global::Android.Provider.Settings.ActionApplicationDetailsSettings);
             settingsIntent.AddCategory(Intent.CategoryDefault);
             settingsIntent.SetData(global::Android.Net.Uri.Parse("package:" + PlatformGetPackageName()));
-            settingsIntent.AddFlags(ActivityFlags.NewTask);
-            settingsIntent.AddFlags(ActivityFlags.NoHistory);
-            settingsIntent.AddFlags(ActivityFlags.ExcludeFromRecents);
+
+            var flags = ActivityFlags.NewTask | ActivityFlags.NoHistory | ActivityFlags.ExcludeFromRecents;
+
+#if __ANDROID_24__
+            if (Platform.HasApiLevelN)
+                flags |= ActivityFlags.LaunchAdjacent;
+#endif
+            settingsIntent.SetFlags(flags);
+
             context.StartActivity(settingsIntent);
         }
 
