@@ -31,6 +31,7 @@ namespace Xamarin.Essentials
                 Timestamp = location.Coordinate.Timestamp,
                 Altitude = location.Coordinate.Point.Position.Altitude,
                 Accuracy = location.Coordinate.Accuracy,
+                VerticalAccuracy = location.Coordinate.AltitudeAccuracy,
                 Speed = (!location.Coordinate.Speed.HasValue || double.IsNaN(location.Coordinate.Speed.Value)) ? default : location.Coordinate.Speed,
                 Course = (!location.Coordinate.Heading.HasValue || double.IsNaN(location.Coordinate.Heading.Value)) ? default : location.Coordinate.Heading,
                 IsFromMockProvider = false
@@ -44,6 +45,7 @@ namespace Xamarin.Essentials
                  Timestamp = coordinate.Timestamp,
                  Altitude = coordinate.Point.Position.Altitude,
                  Accuracy = coordinate.Accuracy,
+                 VerticalAccuracy = coordinate.AltitudeAccuracy,
                  Speed = (!coordinate.Speed.HasValue || double.IsNaN(coordinate.Speed.Value)) ? default : coordinate.Speed,
                  Course = (!coordinate.Heading.HasValue || double.IsNaN(coordinate.Heading.Value)) ? default : coordinate.Heading
              };

@@ -113,8 +113,8 @@
         <ReturnType>System.Nullable&lt;System.Double&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets or sets the accuracy (in meters) of the location.</summary>
-        <value>The location accuracy.</value>
+        <summary>Gets or sets the horizontal accuracy (in meters) of the location.</summary>
+        <value>The horizontal accuracy of the location.</value>
         <remarks>
           <para />
         </remarks>
@@ -395,6 +395,26 @@
         <summary>A string representation of the location.</summary>
         <returns>A string representation of the location.</returns>
         <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="VerticalAccuracy">
+      <MemberSignature Language="C#" Value="public Nullable&lt;double&gt; VerticalAccuracy { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Nullable`1&lt;float64&gt; VerticalAccuracy" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Location.VerticalAccuracy" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Nullable&lt;System.Double&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the vertical accuracy (in meters) of the location.</summary>
+        <value>The vertical accuracy of the location.</value>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
   </Members>

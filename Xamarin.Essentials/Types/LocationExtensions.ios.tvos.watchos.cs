@@ -27,6 +27,7 @@ namespace Xamarin.Essentials
                 Longitude = location.Coordinate.Longitude,
                 Altitude = location.VerticalAccuracy < 0 ? default(double?) : location.Altitude,
                 Accuracy = location.HorizontalAccuracy,
+                VerticalAccuracy = location.VerticalAccuracy,
                 Timestamp = location.Timestamp.ToDateTime(),
 #if __iOS__ || __WATCHOS__
                 Course = location.Course < 0 ? default(double?) : location.Course,
