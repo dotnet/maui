@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Platform.Android
 				var item = items[i];
 				using (var title = new Java.Lang.String(item.title))
 				{
-					var menuItem = menu.Add(0, Platform.GenerateViewId(), 0, title);
+					var menuItem = menu.Add(0, i, 0, title);
 					menuItems.Add(menuItem);
 					loadTasks.Add(SetMenuItemIcon(menuItem, item.icon, context));
 					UpdateEnabled(item.tabEnabled, menuItem);
