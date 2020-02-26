@@ -255,7 +255,8 @@ namespace Xamarin.Forms.Platform.Android
 			for (int i = first; i <= last; i++)
 			{
 				var cell = layoutManager.FindViewByPosition(i);
-				var itemView = (cell as ItemContentView)?.VisualElementRenderer?.Element as View;
+				if (!((cell as ItemContentView)?.VisualElementRenderer?.Element is View itemView))
+					return;
 
 				if (i == carouselPosition)
 				{
