@@ -17,7 +17,9 @@ namespace Xamarin.Forms.Platform.iOS
 		bool _isEmpty;
 		bool _emptyViewDisplayed;
 		bool _disposed;
-  
+
+		CGSize _size;
+
 		UIView _emptyUIView;
 		VisualElement _emptyViewFormsElement;
 
@@ -148,7 +150,8 @@ namespace Xamarin.Forms.Platform.iOS
 			// are set up the first time this method is called.
 			if (!_initialConstraintsSet)
 			{
-				ItemsViewLayout.ConstrainTo(CollectionView.Bounds.Size);
+				_size = CollectionView.Bounds.Size;
+				ItemsViewLayout.ConstrainTo(_size);
 				UpdateEmptyView();
 				_initialConstraintsSet = true;
 			}
@@ -158,15 +161,24 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
-		public override void WillAnimateRotation(UIInterfaceOrientation toInterfaceOrientation, double duration)
+		
+		public override void ViewDidLayoutSubviews()
+		{
+			base.ViewDidLayoutSubviews();
+			if (CollectionView.Bounds.Size != _size)
+			{
+				_size = CollectionView.Bounds.Size;
+				BoundsSizeChanged();
+			}
+		}
+
+		protected virtual void BoundsSizeChanged()
 		{
 			//We are changing orientation and we need to tell our layout
 			//to update based on new size constrains
 			ItemsViewLayout.ConstrainTo(CollectionView.Bounds.Size);
 			//We call ReloadData so our VisibleCells also update their size
 			CollectionView.ReloadData();
-
-			base.WillAnimateRotation(toInterfaceOrientation, duration);
 		}
 
 		protected virtual UICollectionViewDelegateFlowLayout CreateDelegator()
