@@ -143,6 +143,8 @@ namespace Xamarin.Forms
 				collection.CollectionChanged += OnCollectionChanged;
 
 			OnCollectionChanged(ItemsSource, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+
+			InvalidateMeasureInternal(Internals.InvalidationTrigger.MeasureChanged);
 		}
 
 		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
