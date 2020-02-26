@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<local:TestShell xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             xmlns:local="using:Xamarin.Forms.Controls"
+             xmlns:issues="using:Xamarin.Forms.Controls.Issues"
+             x:Class="Xamarin.Forms.Controls.Issues.Issue8715">
+
+    <FlyoutItem Title="About" FlyoutDisplayOptions="AsMultipleItems">
+
+        <ShellContent Title="About" ContentTemplate="{DataTemplate issues:_8715AboutPage}" />
+
+    </FlyoutItem>
+
+    <FlyoutItem Title="CollectionView" FlyoutDisplayOptions="AsMultipleItems">
+
+        <ShellContent Title="CollectionView" ContentTemplate="{DataTemplate issues:_8715ItemsPage}" />
+
+    </FlyoutItem>
+</local:TestShell>

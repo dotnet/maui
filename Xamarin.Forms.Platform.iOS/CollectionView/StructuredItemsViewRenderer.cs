@@ -81,7 +81,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
-			Controller.UpdateLayoutMeasurements();
+			Controller?.UpdateLayoutMeasurements();
 		}
 	}
 }
