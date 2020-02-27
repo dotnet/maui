@@ -13,7 +13,6 @@ namespace Xamarin.Forms.Platform.MacOS
 		static readonly CGColor s_defaultHeaderViewsBackground = NSColor.LightGray.CGColor;
 		Cell _cell;
 		readonly NSTableViewCellStyle _style;
-		NSView _contexActionsTrackingView;
 
 		public Action<object, PropertyChangedEventArgs> PropertyChanged;
 
@@ -105,13 +104,6 @@ namespace Xamarin.Forms.Platform.MacOS
 			TextLabel?.CenterTextVertically(new CGRect(imageWidth + padding, availableHeight - labelHeights, labelWidth,
 				labelHeights));
 
-			var topNSView = Subviews.LastOrDefault();
-			if (_contexActionsTrackingView != topNSView)
-			{
-				_contexActionsTrackingView.RemoveFromSuperview();
-				_contexActionsTrackingView.Frame = Frame;
-				AddSubview(_contexActionsTrackingView, NSWindowOrderingMode.Above, Subviews.LastOrDefault());
-			}
 			base.Layout();
 		}
 
@@ -176,17 +168,7 @@ namespace Xamarin.Forms.Platform.MacOS
 					AddSubview(AccessoryView = accessoryView);
 				}
 			}
-			AddSubview(_contexActionsTrackingView = new TrackingClickNSView());
 		}
-	}
-
-	class TrackingClickNSView : NSView
-	{
-		internal TrackingClickNSView()
-		{
-			AutoresizingMask = NSViewResizingMask.WidthSizable | NSViewResizingMask.HeightSizable;
-		}
-
 		public override void RightMouseDown(NSEvent theEvent)
 		{
 			HandleContextActions(theEvent);
@@ -196,7 +178,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void HandleContextActions(NSEvent theEvent)
 		{
-			var contextActionCell = (Superview as INativeElementView).Element as Cell;
+			var contextActionCell = this.Element as Cell;
 			var contextActionsCount = contextActionCell.ContextActions.Count;
 			if (contextActionsCount > 0)
 			{

@@ -130,10 +130,14 @@ namespace Xamarin.Forms.Platform.MacOS
 				var eventTracker = weakEventTracker.Target as EventTracker;
 				var view = eventTracker?._renderer?.Element as View;
 
+				var handled = false;
 				if (tapGestureRecognizer != null && view != null)
+				{
 					tapGestureRecognizer.SendTapped(view);
+					handled = true;
+				}
 
-				return false;
+				return handled;
 			});
 		}
 
@@ -166,11 +170,17 @@ namespace Xamarin.Forms.Platform.MacOS
 				var nativeRecognizer = gesturerecognizer as NSClickGestureRecognizer;
 				var recognizers = childGestures?.GetChildGesturesFor<TapGestureRecognizer>(x => x.NumberOfTapsRequired == (int)nativeRecognizer.NumberOfClicksRequired);
 
-					foreach (var item in recognizers)
-						if (item == tapGestureRecognizer && view != null)
-							tapGestureRecognizer.SendTapped(view);
+				var handled = false;
+				foreach (var item in recognizers)
+				{
+					if (item == tapGestureRecognizer && view != null)
+					{
+						tapGestureRecognizer.SendTapped(view);
+						handled = true;
+					}
+				}
 						
-				return false;
+				return handled;
 			});
 		}
 #else
