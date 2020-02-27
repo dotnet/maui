@@ -76,6 +76,24 @@
     <Compile Include="CommandSourceTests.cs" />
     <Compile Include="CommandTests.cs" />
     <Compile Include="DependencyResolutionTests.cs" />
+    <Compile Include="Markup\DefaultBindablePropertiesTests.cs" />
+    <Compile Include="Markup\BindableObjectExtensionsTests.cs" />
+    <Compile Include="Markup\ElementExtensionsTests.cs" />
+    <Compile Include="Markup\GridRowsColumns.cs" />
+    <Compile Include="Markup\FuncConverter.cs" />
+    <Compile Include="Markup\LabelExtensionsRightToLeftTests.cs" />
+    <Compile Include="Markup\LabelExtensionsLeftToRightTests.cs" />
+    <Compile Include="Markup\LayoutExtensionsTests.cs" />
+    <Compile Include="Markup\StyleTests.cs" />
+    <Compile Include="Markup\ViewExtensionsRightToLeftTests.cs" />
+    <Compile Include="Markup\ViewExtensionsLeftToRightTests.cs" />
+    <Compile Include="Markup\ViewExtensionsTests.cs" />
+    <Compile Include="Markup\LabelExtensionsTests.cs" />
+    <Compile Include="Markup\MarkupBaseTestFixture.cs" />
+    <Compile Include="Markup\ElementGesturesExtensionsTests.cs" />
+    <Compile Include="Markup\ViewInFlexLayoutExtensionsTests.cs" />
+    <Compile Include="Markup\ViewInGridExtensionsTests.cs" />
+    <Compile Include="Markup\VisualElementExtensionsTests.cs" />
     <Compile Include="NumericExtensionsTests.cs" />
     <Compile Include="RefreshViewTests.cs" />
     <Compile Include="MockDispatcherProvider.cs" />
@@ -252,6 +270,7 @@
       <LogicalName>Images/crimson.jpg</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Target Name="_CopyNUnitTestAdapterFiles" AfterTargets="Build">
     <ItemGroup>
       <_NUnitTestAdapterFiles Include="$(NuGetPackageRoot)NUnit3TestAdapter\%(Version)\build\net35\**" Condition="@(PackageReference -> '%(Identity)') == 'NUnit3TestAdapter'" InProject="False" />

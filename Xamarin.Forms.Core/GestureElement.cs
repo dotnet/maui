@@ -6,7 +6,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
-	public class GestureElement : Element, ISpatialElement
+	public class GestureElement : Element, ISpatialElement, IGestureRecognizers
 	{
 		readonly GestureRecognizerCollection _gestureRecognizers = new GestureRecognizerCollection();
 		internal event NotifyCollectionChangedEventHandler GestureRecognizersCollectionChanged;
