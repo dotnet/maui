@@ -183,7 +183,13 @@ namespace Xamarin.Forms.Platform.iOS
 					break;
 
 				case AVPlayerStatus.ReadyToPlay:
-					Controller.Duration = TimeSpan.FromSeconds(_avPlayerViewController.Player.CurrentItem.Duration.Seconds);
+					var duration = _avPlayerViewController.Player.CurrentItem.Duration;
+
+					if (duration.IsIndefinite)
+						Controller.Duration = TimeSpan.Zero;
+					else
+						Controller.Duration = TimeSpan.FromSeconds(duration.Seconds);
+
 					Controller.VideoHeight = (int)_avPlayerViewController.Player.CurrentItem.Asset.NaturalSize.Height;
 					Controller.VideoWidth = (int)_avPlayerViewController.Player.CurrentItem.Asset.NaturalSize.Width;
 					Controller.OnMediaOpened();
