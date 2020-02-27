@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
@@ -39,7 +41,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 				ItemsSource = viewModel.Items,
 				IsScrollAnimated = true,
 				IsBounceEnabled = true,
-				EmptyView = "This is the empty view"
+				EmptyView = "This is the empty view",
+				PeekAreaInsets = new Thickness(50)
 			};
 
 			var absolute = new AbsoluteLayout();
@@ -150,18 +153,23 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 
 		public CarouselItemsGalleryViewModel()
 		{
-			Items = new ObservableCollection<CarouselData>();
-
-			var random = new Random();
-
-			for (int n = 0; n < 5; n++)
+			Task.Run(async () =>
 			{
-				_items.Add(new CarouselData
+				await Task.Delay(200);
+				var random = new Random();
+
+				var source = new List<CarouselData>();
+				for (int n = 0; n < 5; n++)
 				{
-					Color = Color.FromRgb(random.Next(0, 255), random.Next(0, 255), random.Next(0, 255)),
-					Name = $"{n + 1}"
-				});
-			}
+					source.Add(new CarouselData
+					{
+						Color = Color.FromRgb(random.Next(0, 255), random.Next(0, 255), random.Next(0, 255)),
+						Name = $"{n + 1}"
+					});
+				}
+				Items = new ObservableCollection<CarouselData>(source);
+			});
+
 		}
 
 		public ObservableCollection<CarouselData> Items

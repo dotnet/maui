@@ -65,6 +65,7 @@ namespace Xamarin.Forms.Platform.Android
 				return CurrentTargetPosition;
 			}
 
+			var itemCount = layoutManager.ItemCount;
 			var increment = 1;
 
 			if (layoutManager.CanScrollHorizontally())
@@ -85,6 +86,11 @@ namespace Xamarin.Forms.Platform.Android
 			if (IsLayoutReversed(layoutManager))
 			{
 				increment = increment * -1;
+			}
+
+			if (CurrentTargetPosition == itemCount - 1 && increment == 1)
+			{
+				return CurrentTargetPosition;
 			}
 
 			CurrentTargetPosition = CurrentTargetPosition + increment;

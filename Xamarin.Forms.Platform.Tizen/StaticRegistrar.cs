@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.Platform.Tizen.Native;
+using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
 using Xamarin.Forms.Xaml.Internals;
 
 namespace Xamarin.Forms.Platform.Tizen
@@ -101,6 +103,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			Registered.Register(typeof(CarouselView), () => new CarouselViewRenderer());
 			Registered.Register(typeof(SwipeView), () => new SwipeViewRenderer());
 			Registered.Register(typeof(RefreshView), () => new RefreshViewRenderer());
+			Registered.Register(typeof(MediaElement), () => new MediaElementRenderer());
 
 			//ImageSourceHandlers
 			Registered.Register(typeof(FileImageSource), () => new FileImageSourceHandler());
@@ -122,6 +125,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			DependencyService.Register<IDeserializer, Deserializer>();
 			DependencyService.Register<INativeBindingService, NativeBindingService>();
 			DependencyService.Register<INativeValueConverterService, NativeValueConverterService>();
+			DependencyService.Register<IPlatformMediaPlayer, MediaPlayerImpl>();
 
 			//Custom Handlers
 			if (customHandlers != null)

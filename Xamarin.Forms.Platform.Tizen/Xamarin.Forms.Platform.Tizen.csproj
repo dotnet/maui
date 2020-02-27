@@ -10,11 +10,15 @@
   <ItemGroup>
     <None Remove="Resource\arrow_left.png" />
     <None Remove="Resource\dots_horizontal.png" />
+    <None Remove="Resource\img_button_pause.png" />
+    <None Remove="Resource\img_button_play.png" />
     <None Remove="Resource\menu.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource\arrow_left.png" />
     <EmbeddedResource Include="Resource\dots_horizontal.png" />
+    <EmbeddedResource Include="Resource\img_button_pause.png" />
+    <EmbeddedResource Include="Resource\img_button_play.png" />
     <EmbeddedResource Include="Resource\menu.png" />
     <EmbeddedResource Include="Resource\refresh_48dp.png" />
   </ItemGroup>

@@ -140,5 +140,11 @@
       <Name>Xamarin.Forms.Platform.WPF</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="coffee.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="bank.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

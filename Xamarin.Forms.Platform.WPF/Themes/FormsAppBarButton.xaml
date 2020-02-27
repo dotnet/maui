@@ -39,7 +39,14 @@
 				<Setter
 					Property="Background"
 					Value="{DynamicResource SemiTransparentWhiteBrush}" />
-			</Trigger>
-		</Style.Triggers>
+            </Trigger>
+            <Trigger
+                Property="IsEnabled"
+                Value="false">
+                <Setter
+                    Property="Foreground"
+                    Value="{DynamicResource SemiTransparentWhiteBrush}" />
+            </Trigger>
+        </Style.Triggers>
 	</Style>
 </ResourceDictionary>
