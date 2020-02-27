@@ -102,6 +102,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 				appBar.SetBinding(FormsAppBarButton.IconProperty, iconBinding);
 				appBar.SetBinding(FormsAppBarButton.LabelProperty, nameof(item.Text));
+				appBar.SetBinding(FormsAppBarButton.IsEnabledProperty, nameof(item.IsEnabled));
 				appBar.SetValue(FrameworkElementAttached.PriorityProperty, item.Priority);
 
 				appBar.Click += (sender, e) =>

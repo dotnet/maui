@@ -40,6 +40,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewHeaderFooterView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewItemsUpdatingScrollMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue4606.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue8161.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8644.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8177.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue4744.xaml.cs">
