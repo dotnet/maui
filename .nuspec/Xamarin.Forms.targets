@@ -183,7 +183,41 @@
     <Error Code="XF005"  Condition="$(TargetFrameworkVersionWithoutV) &lt; $(MinTargetFrameworkVersionForForms)"
            Text="The %24(TargetFrameworkVersion) for $(ProjectName) ($(TargetFrameworkVersion)) is less than the minimum required %24(TargetFrameworkVersion) for Xamarin.Forms ($(MinTargetFrameworkVersionForForms)). You need to increase the %24(TargetFrameworkVersion) for $(ProjectName)."   />
   </Target>
+
+
+  <!-- Xamarin iOS targets -->
+  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.iOS' OR '$(TargetFrameworkIdentifier)' == 'Xamarin.Mac'">
+    <CoreCompileDependsOn>
+      IncludeCorrectXIOSReference;
+      $(CoreCompileDependsOn);
+    </CoreCompileDependsOn>
+    <PrepareForBuildDependsOn>
+      IncludeCorrectXIOSReference;
+      $(PrepareForBuildDependsOn);
+    </PrepareForBuildDependsOn>
+  </PropertyGroup>
+
   
+  <Target Name="IncludeCorrectXIOSReference" Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.iOS' OR '$(TargetFrameworkIdentifier)' == 'Xamarin.Mac'">
+	<PropertyGroup>
+		<Use2017 Condition="'$(Use2017)' == '' AND '$(MSBuildRuntimeType)' == 'Mono'">$(FrameworkSDKRoot.Contains('/Versions/5'))</Use2017>
+		<Use2017 Condition="'$(Use2017)' == '' AND '$(MSBuildAssemblyVersion)' &lt; '16.0'">true</Use2017>
+		<Use2017 Condition="'$(Use2017)' == ''">false</Use2017>
+		<FrameworkDll Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.iOS'">Xamarin.Forms.Platform.iOS.dll</FrameworkDll>
+		<FrameworkDll Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.Mac'">Xamarin.Forms.Platform.macOS.dll</FrameworkDll>
+	</PropertyGroup>
+    <ItemGroup Condition="'$(Use2017)' != 'true'">
+		<Reference Include="Xamarin.Forms.Platform.iOS">
+			<HintPath>$(MSBuildThisFileDirectory)\XCODE11\$(FrameworkDll)</HintPath>
+		</Reference>
+    </ItemGroup>
+    <ItemGroup Condition="'$(Use2017)' == 'true'">
+		<Reference Include="Xamarin.Forms.Platform.iOS">
+			<HintPath>$(MSBuildThisFileDirectory)\XCODE10\$(FrameworkDll)</HintPath>
+		</Reference>
+    </ItemGroup>
+  </Target>
+
   <!-- UWP Targets-->
   <Target Name="WinUICheckTargetPlatformVersion" BeforeTargets="PrepareForBuild"
       Condition="'$(TargetPlatformVersion)' != '' and '$(TargetPlatformMinVersion)' != ''">

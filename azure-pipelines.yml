@@ -65,9 +65,6 @@ jobs:
     name: win
     displayName: Build Windows Phase
     vmImage: $(win2019VmImage)
-    msbuildExtraArguments: '/nowarn:VSX1000'
-    buildConfiguration: $(DefaultBuildConfiguration)
-    buildPlatform: $(DefaultBuildPlatform)
     provisionatorPath : 'build/provisioning/provisioning.csx'
 
 - template: build/steps/build-android.yml
@@ -111,6 +108,12 @@ jobs:
       - sh
       - msbuild
       - Xamarin.iOS
+  strategy:
+    matrix:
+      BuildForVS2017:
+        buildForVS2017:  'true'
+      BuildForVS2019:
+        buildForVS2017:  'false'
   variables:
     provisionator.osxPath : 'build/provisioning/provisioning.csx'
     provisionator.signPath : 'build/provisioning/provisioning_sign.csx'
@@ -118,6 +121,7 @@ jobs:
     slnPath: $(SolutionFile)
     iOSCertSecureFileName: 'Xamarin Forms iOS Certificate.p12'
     iOSProvisioningSecureFileName: 'Xamarin Forms iOS Provisioning.mobileprovision'
+    buildForVS2017: $(buildForVS2017)
   steps:
      - template: build/steps/build-osx.yml
 

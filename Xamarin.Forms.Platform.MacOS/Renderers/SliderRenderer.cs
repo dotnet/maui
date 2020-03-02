@@ -3,6 +3,7 @@ using AppKit;
 using System.ComponentModel;
 using CoreGraphics;
 using Xamarin.Forms.Platform.macOS.Controls;
+using Foundation;
 
 namespace Xamarin.Forms.Platform.MacOS
 {
@@ -79,8 +80,9 @@ namespace Xamarin.Forms.Platform.MacOS
 				if (Control == null)
 				{
 					SetNativeControl(new FormsNSSlider());
-					Control.Activated += OnControlActivated;
 					Control.Cell = new FormsSliderCell();
+					Control.Action = new ObjCRuntime.Selector(nameof(ValueChanged));
+					Control.Target = this;
 				}
 
 				UpdateMaximum();
@@ -147,13 +149,18 @@ namespace Xamarin.Forms.Platform.MacOS
 			{
 				_disposed = true;
 				if (Control != null)
-					Control.Activated -= OnControlActivated;
+				{
+					Control.Target = null;
+					Control.Action = null;
+				}
 			}
 
 			base.Dispose(disposing);
 		}
 
-		void OnControlActivated(object sender, EventArgs eventArgs)
+
+		[Export(nameof(ValueChanged))]
+		void ValueChanged()
 		{
 			ElementController?.SetValueFromRenderer(Slider.ValueProperty, Control.DoubleValue);
 
