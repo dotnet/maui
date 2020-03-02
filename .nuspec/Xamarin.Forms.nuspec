@@ -58,7 +58,6 @@
         <reference file="Xamarin.Forms.Core.dll" />
         <reference file="Xamarin.Forms.Platform.dll" />
         <reference file="Xamarin.Forms.Xaml.dll" />
-        <reference file="Xamarin.Forms.Platform.iOS.dll" />
       </group>
       <group targetFramework="MonoAndroid10.0">
         <reference file="Xamarin.Forms.Core.dll" />
@@ -88,7 +87,6 @@
       </group>
       <group targetFramework="Xamarin.Mac">
         <reference file="Xamarin.Forms.Core.dll" />
-        <reference file="Xamarin.Forms.Platform.macOS.dll" />
         <reference file="Xamarin.Forms.Platform.dll" />
         <reference file="Xamarin.Forms.Xaml.dll" />
       </group>
@@ -207,9 +205,13 @@
     <file src="..\Stubs\Xamarin.Forms.Platform.Android\bin\$Configuration$\MonoAndroid10.0\Xamarin.Forms.Platform.dll" target="lib\MonoAndroid10.0" />
 
     <!--iPhone Unified-->
-    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\Xamarin.Forms.Platform.iOS.dll" target="lib\Xamarin.iOS10" />
-    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\Xamarin.Forms.Platform.iOS.*pdb" target="lib\Xamarin.iOS10" />
-    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\Xamarin.Forms.Platform.iOS.*mdb" target="lib\Xamarin.iOS10" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\Xamarin.Forms.Platform.iOS.dll" target="build\XCODE11" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\Xamarin.Forms.Platform.iOS.*pdb" target="build\XCODE11" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\Xamarin.Forms.Platform.iOS.*mdb" target="build\XCODE11" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\2017\Xamarin.Forms.Platform.iOS.dll" target="build\XCODE10" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\2017\Xamarin.Forms.Platform.iOS.*pdb" target="build\XCODE10" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\2017\Xamarin.Forms.Platform.iOS.*mdb" target="build\XCODE10" />
+
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="lib\Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.*pdb" target="lib\Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.*mdb" target="lib\Xamarin.iOS10" />
@@ -296,8 +298,9 @@
     <!--Mac-->
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="lib\Xamarin.Mac" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.dll" target="lib\Xamarin.Mac" />
-    <file src="..\Xamarin.Forms.Platform.MacOS\bin\$Configuration$\Xamarin.Forms.Platform.macOS.dll" target="lib\Xamarin.Mac" />
     <file src="..\Xamarin.Forms.Platform.MacOS\bin\$Configuration$\Xamarin.Forms.Platform.dll" target="lib\Xamarin.Mac" />
+    <file src="..\Xamarin.Forms.Platform.MacOS\bin\$Configuration$\Xamarin.Forms.Platform.macOS.dll" target="build\XCODE11" />
+    <file src="..\Xamarin.Forms.Platform.MacOS\bin\$Configuration$\2017\Xamarin.Forms.Platform.macOS.dll" target="build\XCODE10" />
 
     <!-- iOS Localized String Resource Assemblies -->
     <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\ar\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\ar" />

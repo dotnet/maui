@@ -9,9 +9,6 @@ parameters:
   postBuildSteps: []  # any additional steps to run after the build
   slnPath : 'Xamarin.Forms.sln'
   csprojPath : 'Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj'
-  buildConfiguration : 'Debug'
-  releaseBuildConfiguration : 'Release'
-  buildPlatform : 'any cpu'
   msbuildExtraArguments : ''
   artifactsTargetFolder: '$(build.artifactstagingdirectory)'
   artifactsName: 'win_build'
@@ -33,15 +30,13 @@ jobs:
     strategy:
       matrix:
         debug:
-          BuildConfiguration:  ${{ parameters.buildConfiguration }}
-          BuildPlatform: ${{ parameters.buildPlatform }}
+          BuildConfiguration:  'Debug'
         release:
-          BuildConfiguration:  ${{ parameters.releaseBuildConfiguration }}
-          BuildPlatform: ${{ parameters.buildPlatform }}
+          BuildConfiguration:  'Release'
     steps:
     - checkout: self
       clean: true
-    - script: build.cmd -Target provision --verbosity=diagnostic
+    - script: build.cmd -Target provision
       displayName: 'Cake Provision'
       condition: eq(variables['provisioningCake'], 'true')
 
@@ -70,23 +65,9 @@ jobs:
       inputs:
         restoreSolution: ${{ parameters.slnPath }}
 
-    - task: MSBuild@1
-      displayName: 'Build solution ${{ parameters.slnPath }}'
+    - script: build.cmd -Target BuildForNuget -ScriptArgs '-configuration="$(BuildConfiguration)"','-Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"'
       name: winbuild
-      inputs:
-        solution: ${{ parameters.slnPath }}
-        platform: '$(BuildPlatform)'
-        configuration: '$(BuildConfiguration)'
-        msbuildArguments: ${{ parameters.msbuildExtraArguments }} /bl:$(Build.ArtifactStagingDirectory)\win-$(BuildConfiguration).binlog
-
-    - task: MSBuild@1
-      displayName: 'Embed XBF into PRI'
-      condition: eq(${{ parameters.includeUwp }}, 'true')
-      name: winbuild_pri_embed
-      inputs:
-        solution: ${{ parameters.csprojPath }}
-        configuration: '$(BuildConfiguration)'
-        msbuildArguments: ${{ parameters.msbuildExtraArguments }} /t:rebuild /p:DisableEmbeddedXbf=false /bl:$(Build.ArtifactStagingDirectory)\win-$(BuildConfiguration)-csproj.binlog
+      displayName: 'Build Projects For Nuget'
 
     - task: VSTest@2
       displayName: 'Unit Tests'

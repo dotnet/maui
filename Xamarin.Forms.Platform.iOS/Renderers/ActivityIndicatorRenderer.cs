@@ -18,9 +18,11 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (Control == null)
 				{
+#if __XCODE11__
 					if(Forms.IsiOS13OrNewer)
 						SetNativeControl(new UIActivityIndicatorView(RectangleF.Empty) { ActivityIndicatorViewStyle = UIActivityIndicatorViewStyle.Medium });
 					else
+#endif
 						SetNativeControl(new UIActivityIndicatorView(RectangleF.Empty) { ActivityIndicatorViewStyle = UIActivityIndicatorViewStyle.Gray });
 				}
 

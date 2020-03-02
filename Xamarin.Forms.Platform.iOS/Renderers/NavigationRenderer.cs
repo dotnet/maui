@@ -619,14 +619,8 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			var barBackgroundColor = NavPage.BarBackgroundColor;
 
-			if (!Forms.IsiOS13OrNewer)
-			{
-				// Set navigation bar background color
-				NavigationBar.BarTintColor = barBackgroundColor == Color.Default
-				? UINavigationBar.Appearance.BarTintColor
-				: barBackgroundColor.ToUIColor();
-			}
-			else
+#if __XCODE11__
+			if (Forms.IsiOS13OrNewer)
 			{
 				var navigationBarAppearance = new UINavigationBarAppearance();
 
@@ -641,6 +635,14 @@ namespace Xamarin.Forms.Platform.iOS
 				NavigationBar.CompactAppearance = navigationBarAppearance;
 				NavigationBar.StandardAppearance = navigationBarAppearance;
 				NavigationBar.ScrollEdgeAppearance = navigationBarAppearance;
+			}
+			else
+#endif
+			{
+				// Set navigation bar background color
+				NavigationBar.BarTintColor = barBackgroundColor == Color.Default
+				? UINavigationBar.Appearance.BarTintColor
+				: barBackgroundColor.ToUIColor();
 			}
 		}
 
@@ -669,6 +671,7 @@ namespace Xamarin.Forms.Platform.iOS
 				};
 			}
 
+#if __XCODE11__
 			if (Forms.IsiOS13OrNewer)
 			{
 				NavigationBar.CompactAppearance.TitleTextAttributes = titleTextAttributes;
@@ -681,6 +684,7 @@ namespace Xamarin.Forms.Platform.iOS
 				NavigationBar.ScrollEdgeAppearance.LargeTitleTextAttributes = largeTitleTextAttributes;
 			}
 			else
+#endif
 			{
 				NavigationBar.TitleTextAttributes = titleTextAttributes;
 
@@ -701,14 +705,16 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (statusBarColorMode == StatusBarTextColorMode.DoNotAdjust || barTextColor.Luminosity <= 0.5)
 			{
+#if __XCODE11__
 				// Use dark text color for status bar
 				if (Forms.IsiOS13OrNewer)
 				{
 					UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.DarkContent;
 				}
 				else
+#endif
 				{
-					UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.Default;
+						UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.Default;
 				}
 			}
 			else
