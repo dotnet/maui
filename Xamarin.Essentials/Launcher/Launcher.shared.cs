@@ -56,7 +56,7 @@ namespace Xamarin.Essentials
             if (uri == null)
                 throw new ArgumentNullException(nameof(uri));
 
-            return PlatformCanOpenAsync(uri);
+            return PlatformTryOpenAsync(uri);
         }
     }
 
