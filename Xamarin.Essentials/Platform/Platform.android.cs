@@ -173,6 +173,13 @@ namespace Xamarin.Essentials
             false;
 #endif
 
+        internal static bool HasApiLevelQ =>
+#if __ANDROID_29__
+            HasApiLevel(BuildVersionCodes.Q);
+#else
+            false;
+#endif
+
         internal static bool HasApiLevel(BuildVersionCodes versionCode) =>
             (int)Build.VERSION.SdkInt >= (int)versionCode;
 
