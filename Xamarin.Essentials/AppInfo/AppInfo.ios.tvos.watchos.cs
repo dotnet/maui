@@ -30,7 +30,10 @@ namespace Xamarin.Essentials
             if (!Platform.HasOSVersion(13, 0))
                 return AppTheme.Unspecified;
 
-            return Platform.GetCurrentViewController().TraitCollection.UserInterfaceStyle switch
+            var uiStyle = Platform.GetCurrentUIViewController()?.TraitCollection?.UserInterfaceStyle ??
+                UITraitCollection.CurrentTraitCollection.UserInterfaceStyle;
+
+            return uiStyle switch
             {
                 UIUserInterfaceStyle.Light => AppTheme.Light,
                 UIUserInterfaceStyle.Dark => AppTheme.Dark,
