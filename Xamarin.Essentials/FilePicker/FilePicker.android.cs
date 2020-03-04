@@ -12,6 +12,8 @@ namespace Xamarin.Essentials
 {
     public static partial class FilePicker
     {
+        const int requestCodeFilePicker = 12345;
+
         static async Task<FilePickerResult> PlatformPickFileAsync(PickOptions options)
         {
             // we only need the permission when accessing the file, but it's more natural
@@ -26,13 +28,54 @@ namespace Xamarin.Essentials
             if (allowedTypes?.Length > 0)
                 intent.PutExtra(Intent.ExtraMimeTypes, allowedTypes);
 
-            var pickerIntent = Intent.CreateChooser(intent, options.PickerTitle ?? "Select file");
+            var pickerIntent = Intent.CreateChooser(intent, options?.PickerTitle ?? "Select file");
 
             try
             {
-                var result = await IntermediateActivity.StartAsync(pickerIntent, 12345);
+                var result = await IntermediateActivity.StartAsync(pickerIntent, requestCodeFilePicker);
                 var contentUri = result.Data;
                 return new FilePickerResult(contentUri);
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
+        }
+
+        static async Task<IEnumerable<FilePickerResult>> PlatformPickMultipleFilesAsync(PickOptions options)
+        {
+            if ((int)global::Android.OS.Build.VERSION.SdkInt < 18)
+                throw new FeatureNotSupportedException("multiple files picking is only available from API level 18 (Android 4.3) on");
+
+            // we only need the permission when accessing the file, but it's more natural
+            // to ask the user first, then show the picker.
+            await Permissions.RequestAsync<Permissions.StorageRead>();
+
+            var intent = new Intent(Intent.ActionGetContent);
+            intent.SetType("*/*");
+            intent.AddCategory(Intent.CategoryOpenable);
+            intent.PutExtra(Intent.ExtraAllowMultiple, true);
+
+            var allowedTypes = options?.FileTypes?.Value?.ToArray();
+            if (allowedTypes?.Length > 0)
+                intent.PutExtra(Intent.ExtraMimeTypes, allowedTypes);
+
+            var pickerIntent = Intent.CreateChooser(intent, options?.PickerTitle ?? "Select files");
+
+            try
+            {
+                var result = await IntermediateActivity.StartAsync(pickerIntent, requestCodeFilePicker);
+
+                var resultList = new List<FilePickerResult>();
+                for (var index = 0; index < result.ClipData.ItemCount; index++)
+                {
+                    var data = result.ClipData.GetItemAt(index);
+
+                    var contentUri = data.Uri;
+                    resultList.Add(new FilePickerResult(contentUri));
+                }
+
+                return resultList;
             }
             catch (OperationCanceledException)
             {

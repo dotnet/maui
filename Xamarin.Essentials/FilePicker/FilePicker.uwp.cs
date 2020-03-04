@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
@@ -27,6 +28,26 @@ namespace Xamarin.Essentials
             StorageApplicationPermissions.FutureAccessList.Add(file);
 
             return new FilePickerResult(file);
+        }
+
+        static async Task<IEnumerable<FilePickerResult>> PlatformPickMultipleFilesAsync(PickOptions options)
+        {
+            var picker = new FileOpenPicker
+            {
+                ViewMode = PickerViewMode.List,
+                SuggestedStartLocation = PickerLocationId.DocumentsLibrary
+            };
+
+            SetFileTypes(options, picker);
+
+            var fileList = await picker.PickMultipleFilesAsync();
+            if (fileList == null)
+                return Enumerable.Empty<FilePickerResult>();
+
+            foreach (var file in fileList)
+                StorageApplicationPermissions.FutureAccessList.Add(file);
+
+            return fileList.Select((storageFile) => new FilePickerResult(storageFile));
         }
 
         static void SetFileTypes(PickOptions options, FileOpenPicker picker)

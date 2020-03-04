@@ -30,7 +30,7 @@ namespace Xamarin.Essentials
             documentPicker.Picked += (sender, e) =>
             {
                 // there was a cancellation
-                if (e == null)
+                if (e == null || e.Urls.Length == 0)
                 {
                     tcs.TrySetResult(null);
                     return;
@@ -38,8 +38,56 @@ namespace Xamarin.Essentials
 
                 try
                 {
-                    var result = new FilePickerResult(e.Url);
+                    var result = new FilePickerResult(e.Urls[0]);
                     tcs.TrySetResult(result);
+                }
+                catch (Exception ex)
+                {
+                    // pass exception to task so that it doesn't get lost in the UI main loop
+                    tcs.SetException(ex);
+                }
+            };
+
+            var parentController = Platform.GetCurrentViewController();
+
+            parentController.PresentViewController(documentPicker, true, null);
+
+            return tcs.Task;
+        }
+
+        static Task<IEnumerable<FilePickerResult>> PlatformPickMultipleFilesAsync(PickOptions options)
+        {
+            if (!Platform.HasOSVersion(11, 0))
+                throw new FeatureNotSupportedException("multiple files picking is only available from iOS 11 on");
+
+            var allowedUtis = options?.FileTypes?.Value?.ToArray() ?? new string[]
+            {
+                UTType.Content,
+                UTType.Item,
+                "public.data"
+            };
+
+            // Note: Importing (UIDocumentPickerMode.Import) makes a local copy of the document,
+            // while opening (UIDocumentPickerMode.Open) opens the document directly. We do the
+            // first, so the user has to read the file immediately.
+            var documentPicker = new DocumentPicker(allowedUtis, UIDocumentPickerMode.Import);
+            documentPicker.AllowsMultipleSelection = true;
+
+            var tcs = new TaskCompletionSource<IEnumerable<FilePickerResult>>();
+
+            documentPicker.Picked += (sender, e) =>
+            {
+                // there was a cancellation
+                if (e == null || e.Urls.Length == 0)
+                {
+                    tcs.TrySetResult(null);
+                    return;
+                }
+
+                try
+                {
+                    var resultList = e.Urls.Select(url => new FilePickerResult(url));
+                    tcs.TrySetResult(resultList);
                 }
                 catch (Exception ex)
                 {
@@ -66,13 +114,13 @@ namespace Xamarin.Essentials
                 WasCancelled += OnCancelled;
             }
 
-            public event EventHandler<UIDocumentPickedEventArgs> Picked;
+            public event EventHandler<UIDocumentPickedAtUrlsEventArgs> Picked;
 
             void OnUrlsPicked(object sender, UIDocumentPickedAtUrlsEventArgs e) =>
-                Picked?.Invoke(this, new UIDocumentPickedEventArgs(e.Urls[0]));
+                Picked?.Invoke(this, e);
 
             void OnDocumentPicked(object sender, UIDocumentPickedEventArgs e) =>
-                Picked?.Invoke(this, e);
+                Picked?.Invoke(this, new UIDocumentPickedAtUrlsEventArgs(new NSUrl[] { e.Url }));
 
             void OnCancelled(object sender, EventArgs args) =>
                 Picked?.Invoke(this, null);

@@ -45,6 +45,9 @@ namespace Xamarin.Essentials
             });
             return tcs.Task;
         }
+
+        static Task<IEnumerable<FilePickerResult>> PlatformPickMultipleFilesAsync(PickOptions options)
+            => throw new NotImplementedInReferenceAssemblyException();
     }
 
     public partial class FilePickerFileType

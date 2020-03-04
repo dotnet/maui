@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Essentials;
@@ -20,6 +21,7 @@ namespace Samples.ViewModel
             PickImageCommand = new Command(() => DoPickImage());
             PickCustomTypeCommand = new Command(() => DoPickCustomType());
             PickAndSendCommand = new Command(() => DoPickAndSend());
+            PickMultipleFilesCommand = new Command(() => DoPickMultipleFiles());
         }
 
         public ICommand PickFileCommand { get; }
@@ -29,6 +31,8 @@ namespace Samples.ViewModel
         public ICommand PickCustomTypeCommand { get; }
 
         public ICommand PickAndSendCommand { get; }
+
+        public ICommand PickMultipleFilesCommand { get; }
 
         public string Text
         {
@@ -143,6 +147,44 @@ namespace Samples.ViewModel
                 Text = ex.ToString();
                 IsImageVisible = false;
                 return null;
+            }
+        }
+
+        async void DoPickMultipleFiles()
+        {
+            try
+            {
+                var options = PickOptions.Default;
+                var resultList = await FilePicker.PickMultipleFilesAsync(options);
+
+                if (resultList != null && resultList.Any())
+                {
+                    Text = "File Names: " + string.Join(", ", resultList.Select(result => result.FileName));
+
+                    // only showing the first file's content
+                    var firstResult = resultList.First();
+
+                    if (firstResult.FileName.EndsWith("jpg", StringComparison.OrdinalIgnoreCase) ||
+                        firstResult.FileName.EndsWith("png", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var stream = await firstResult.OpenReadStreamAsync();
+                        Image = ImageSource.FromStream(() => stream);
+                        IsImageVisible = true;
+                    }
+                    else
+                    {
+                        IsImageVisible = false;
+                    }
+                }
+                else
+                {
+                    Text = $"Pick cancelled.";
+                }
+            }
+            catch (Exception ex)
+            {
+                Text = ex.ToString();
+                IsImageVisible = false;
             }
         }
     }

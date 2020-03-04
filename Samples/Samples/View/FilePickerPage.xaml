@@ -11,13 +11,13 @@
     <StackLayout Padding="12" Spacing="6">
         <Label Text="Pick files from storage." FontAttributes="Bold" />
 
-        <StackLayout Orientation="Horizontal" Spacing="6">
+        <FlexLayout Direction="Row" Wrap="Wrap">
             <Button Text="Pick file" Command="{Binding PickFileCommand}" HorizontalOptions="FillAndExpand" />
             <Button Text="Pick image" Command="{Binding PickImageCommand}" HorizontalOptions="FillAndExpand" />
             <Button Text="Pick custom type" Command="{Binding PickCustomTypeCommand}" HorizontalOptions="FillAndExpand" />
-        </StackLayout>
-
-        <Button Text="Pick image and send email" Command="{Binding PickAndSendCommand}" />
+            <Button Text="Pick image and send email" Command="{Binding PickAndSendCommand}" HorizontalOptions="FillAndExpand" />
+            <Button Text="Pick multiple files" Command="{Binding PickMultipleFilesCommand}" HorizontalOptions="FillAndExpand" />
+        </FlexLayout>
 
         <Label Text="{Binding Text}" HorizontalOptions="FillAndExpand" />
 
