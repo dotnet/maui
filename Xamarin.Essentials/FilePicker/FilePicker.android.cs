@@ -16,7 +16,7 @@ namespace Xamarin.Essentials
         {
             // we only need the permission when accessing the file, but it's more natural
             // to ask the user first, then show the picker.
-            await Permissions.RequireAsync(PermissionType.ReadExternalStorage);
+            await Permissions.RequestAsync<Permissions.StorageRead>();
 
             var intent = new Intent(Intent.ActionGetContent);
             intent.SetType("*/*");
@@ -74,7 +74,10 @@ namespace Xamarin.Essentials
                 return contentUri.Path;
 
             // ask the content provider for the data column, which may contain the actual file path
+#pragma warning disable CS0618 // Type or member is obsolete
             var path = QueryContentResolverColumn(contentUri, MediaStore.Files.FileColumns.Data);
+#pragma warning restore CS0618 // Type or member is obsolete
+
             if (!string.IsNullOrEmpty(path) && Path.IsPathRooted(path))
                 return path;
 
