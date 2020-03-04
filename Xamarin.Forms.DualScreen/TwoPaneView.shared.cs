@@ -484,7 +484,7 @@ namespace Xamarin.Forms.DualScreen
 				case ViewMode.LeftRight:
 					SetRowColumn(_content1, 0, 0);
 					SetRowColumn(_content2, 0, 2);
-					_content2.IsVisible = true;
+					_content1.IsVisible = true;
 					_content2.IsVisible = true;
 
 					if (!isLayoutSpanned)
@@ -502,7 +502,7 @@ namespace Xamarin.Forms.DualScreen
 				case ViewMode.RightLeft:
 					SetRowColumn(_content1, 0, 2);
 					SetRowColumn(_content2, 0, 0);
-					_content2.IsVisible = true;
+					_content1.IsVisible = true;
 					_content2.IsVisible = true;
 
 					if (!isLayoutSpanned)
@@ -520,7 +520,7 @@ namespace Xamarin.Forms.DualScreen
 				case ViewMode.TopBottom:
 					SetRowColumn(_content1, 0, 0);
 					SetRowColumn(_content2, 2, 0);
-					_content2.IsVisible = true;
+					_content1.IsVisible = true;
 					_content2.IsVisible = true;
 
 					if (!isLayoutSpanned)
@@ -539,7 +539,7 @@ namespace Xamarin.Forms.DualScreen
 				case ViewMode.BottomTop:
 					SetRowColumn(_content1, 2, 0);
 					SetRowColumn(_content2, 0, 0);
-					_content2.IsVisible = true;
+					_content1.IsVisible = true;
 					_content2.IsVisible = true;
 
 					if (!isLayoutSpanned)

@@ -16,10 +16,13 @@
                            WideModeConfiguration="{Binding Source={x:Reference WideModeConfiguration}, Path=SelectedItem}">
             <local:TwoPaneView.Pane1>
                 <StackLayout Padding="20">
+                    <Label x:Name="lblScreenDim"  Text=""></Label>
                     <Label Text="MinTallModeHeight"></Label>
-                    <Slider x:Name="MinTallModeHeight" ></Slider>
+                    <Slider x:Name="MinTallModeHeight" Maximum="2000" ></Slider>
+                    <Label Text="{Binding Source={x:Reference MinTallModeHeight}, Path=Value}"></Label>
                     <Label Text="MinWideModeWidth"></Label>
-                    <Slider x:Name="MinWideModeWidth"></Slider>
+                    <Slider x:Name="MinWideModeWidth" Maximum="2000"></Slider>
+                    <Label Text="{Binding Source={x:Reference MinWideModeWidth}, Path=Value}"></Label>
                     <Label Text="Pane1Length"></Label>
                     <Slider x:Name="Pane1Length" Maximum="1" Value="1"></Slider>
                     <Label Text="Pane2Length"></Label>
