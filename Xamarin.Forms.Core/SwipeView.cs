@@ -16,7 +16,6 @@ namespace Xamarin.Forms
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<SwipeView>>(() => new PlatformConfigurationRegistry<SwipeView>(this));
 		}
 
-
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void VerifySwipeViewFlagEnabled(
 			string constructorHint = null,
@@ -25,10 +24,18 @@ namespace Xamarin.Forms
 			ExperimentalFlags.VerifyFlagEnabled(nameof(SwipeView), ExperimentalFlags.SwipeViewExperimental, memberName: memberName);
 		}
 
-		public static readonly BindableProperty LeftItemsProperty = BindableProperty.Create(nameof(LeftItems), typeof(SwipeItems), typeof(SwipeView), null, BindingMode.OneWay, null, defaultValueCreator: SwipeItemsDefaultValueCreator);
-		public static readonly BindableProperty RightItemsProperty = BindableProperty.Create(nameof(RightItems), typeof(SwipeItems), typeof(SwipeView), null, BindingMode.OneWay, null, defaultValueCreator: SwipeItemsDefaultValueCreator);
-		public static readonly BindableProperty TopItemsProperty = BindableProperty.Create(nameof(TopItems), typeof(SwipeItems), typeof(SwipeView), null, BindingMode.OneWay, null, defaultValueCreator: SwipeItemsDefaultValueCreator);
-		public static readonly BindableProperty BottomItemsProperty = BindableProperty.Create(nameof(BottomItems), typeof(SwipeItems), typeof(SwipeView), null, BindingMode.OneWay, null, defaultValueCreator: SwipeItemsDefaultValueCreator);
+		public static readonly BindableProperty LeftItemsProperty =
+			BindableProperty.Create(nameof(LeftItems), typeof(SwipeItems), typeof(SwipeView), null, BindingMode.OneWay, null, defaultValueCreator: SwipeItemsDefaultValueCreator,
+				propertyChanged: OnSwipeItemsChanged);
+
+		public static readonly BindableProperty RightItemsProperty =
+			BindableProperty.Create(nameof(RightItems), typeof(SwipeItems), typeof(SwipeView), null, BindingMode.OneWay, null, defaultValueCreator: SwipeItemsDefaultValueCreator);
+
+		public static readonly BindableProperty TopItemsProperty =
+			BindableProperty.Create(nameof(TopItems), typeof(SwipeItems), typeof(SwipeView), null, BindingMode.OneWay, null, defaultValueCreator: SwipeItemsDefaultValueCreator);
+
+		public static readonly BindableProperty BottomItemsProperty =
+			BindableProperty.Create(nameof(BottomItems), typeof(SwipeItems), typeof(SwipeView), null, BindingMode.OneWay, null, defaultValueCreator: SwipeItemsDefaultValueCreator);
 
 		public SwipeItems LeftItems
 		{
@@ -52,6 +59,11 @@ namespace Xamarin.Forms
 		{
 			get { return (SwipeItems)GetValue(BottomItemsProperty); }
 			set { SetValue(BottomItemsProperty, value); }
+		}
+
+		static void OnSwipeItemsChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			((SwipeView)bindable).UpdateSwipeItemsParent((SwipeItems)newValue);
 		}
 
 		public event EventHandler<SwipeStartedEventArgs> SwipeStarted;
@@ -99,6 +111,14 @@ namespace Xamarin.Forms
 		public IPlatformElementConfiguration<T, SwipeView> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
+		}
+
+		void UpdateSwipeItemsParent(SwipeItems swipeItems)
+		{
+			swipeItems.Parent = this;
+
+			foreach (var swipeItem in swipeItems)
+				((VisualElement)swipeItem).Parent = swipeItems;
 		}
 	}
 }

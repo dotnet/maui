@@ -308,5 +308,69 @@ namespace Xamarin.Forms.DualScreen.UnitTests
 			Assert.IsTrue(twoPaneView.Children[0].IsVisible);
 			Assert.IsFalse(twoPaneView.Children[1].IsVisible);
 		}
+
+		[Test]
+		public void Pane1BecomesVisibleAfterOnlyPane2IsVisibleWideMode()
+		{
+			TwoPaneView twoPaneView = CreateTwoPaneView();
+			twoPaneView.Layout(new Rectangle(0, 0, 300, 500));
+			twoPaneView.MinWideModeWidth = 4000;
+			twoPaneView.PanePriority = TwoPaneViewPriority.Pane2;
+
+			Assert.IsFalse(twoPaneView.Children[0].IsVisible);
+			Assert.IsTrue(twoPaneView.Children[1].IsVisible);
+			twoPaneView.MinWideModeWidth = 0;
+			Assert.AreEqual(twoPaneView.Mode, TwoPaneViewMode.Wide);
+			Assert.IsTrue(twoPaneView.Children[0].IsVisible);
+			Assert.IsTrue(twoPaneView.Children[1].IsVisible);
+		}
+
+		[Test]
+		public void Pane2BecomesVisibleAfterOnlyPane1IsVisibleWideMode()
+		{
+			TwoPaneView twoPaneView = CreateTwoPaneView();
+			twoPaneView.Layout(new Rectangle(0, 0, 300, 500));
+			twoPaneView.MinWideModeWidth = 4000;
+			twoPaneView.PanePriority = TwoPaneViewPriority.Pane1;
+
+			Assert.IsTrue(twoPaneView.Children[0].IsVisible);
+			Assert.IsFalse(twoPaneView.Children[1].IsVisible);
+			twoPaneView.MinWideModeWidth = 0;
+			Assert.AreEqual(twoPaneView.Mode, TwoPaneViewMode.Wide);
+			Assert.IsTrue(twoPaneView.Children[0].IsVisible);
+			Assert.IsTrue(twoPaneView.Children[1].IsVisible);
+		}
+
+		[Test]
+		public void Pane1BecomesVisibleAfterOnlyPane2IsVisibleTallMode()
+		{
+			TwoPaneView twoPaneView = CreateTwoPaneView();
+			twoPaneView.Layout(new Rectangle(0, 0, 300, 500));
+			twoPaneView.MinTallModeHeight = 4000;
+			twoPaneView.PanePriority = TwoPaneViewPriority.Pane2;
+			
+			Assert.IsFalse(twoPaneView.Children[0].IsVisible);
+			Assert.IsTrue(twoPaneView.Children[1].IsVisible);
+			twoPaneView.MinTallModeHeight = 0;
+			Assert.AreEqual(twoPaneView.Mode, TwoPaneViewMode.Tall);
+			Assert.IsTrue(twoPaneView.Children[0].IsVisible);
+			Assert.IsTrue(twoPaneView.Children[1].IsVisible);
+		}
+
+		[Test]
+		public void Pane2BecomesVisibleAfterOnlyPane1IsVisibleTallMode()
+		{
+			TwoPaneView twoPaneView = CreateTwoPaneView();
+			twoPaneView.Layout(new Rectangle(0, 0, 300, 500));
+			twoPaneView.MinTallModeHeight = 4000;
+			twoPaneView.PanePriority = TwoPaneViewPriority.Pane1;
+
+			Assert.IsTrue(twoPaneView.Children[0].IsVisible);
+			Assert.IsFalse(twoPaneView.Children[1].IsVisible);
+			twoPaneView.MinTallModeHeight = 0;
+			Assert.AreEqual(twoPaneView.Mode, TwoPaneViewMode.Tall);
+			Assert.IsTrue(twoPaneView.Children[0].IsVisible);
+			Assert.IsTrue(twoPaneView.Children[1].IsVisible);
+		}
 	}
 }

@@ -34,7 +34,6 @@ namespace Xamarin.Forms.Controls.GalleryPages.TwoPaneViewGalleries
 		protected override void OnAppearing()
 		{
 			base.OnAppearing();
-			Setup(Width, Height);
 
 			PanePriority.SelectedIndex = 0;
 			TallModeConfiguration.SelectedIndex = 1;
@@ -46,9 +45,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.TwoPaneViewGalleries
 			if (width <= 0 || height <= 0)
 				return;
 
-
-			MinTallModeHeight.Maximum = height;
-			MinWideModeWidth.Maximum = width;
+			lblScreenDim.Text = $"Screen Dimensions: {width}x{height}";
 		}
 
 		protected override void OnSizeAllocated(double width, double height)
