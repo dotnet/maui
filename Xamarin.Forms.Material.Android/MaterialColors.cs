@@ -9,6 +9,9 @@ using ASeekBar = Android.Widget.AbsSeekBar;
 using PlatformColor = Android.Graphics.Color;
 using Xamarin.Forms.Platform.Android;
 using System;
+using AGradientDrawable = Android.Graphics.Drawables.GradientDrawable;
+using AScaleDrawable = Android.Graphics.Drawables.ScaleDrawable;
+using ALayerDrawable = Android.Graphics.Drawables.LayerDrawable;
 #elif __IOS__
 using MaterialComponents;
 using Xamarin.Forms.Platform.iOS;
@@ -207,7 +210,22 @@ namespace Xamarin.Forms.Material.Tizen
 
 		internal static void ApplyProgressBarColors(this AProgressBar progressBar, PlatformColor progressColor, PlatformColor backgroundColor, PorterDuff.Mode mode)
 		{
-			if(Forms.IsLollipopOrNewer)
+			if((int)Forms.SdkInt == 21 && progressBar.ProgressDrawable is ALayerDrawable progressDrawable)
+			{
+				progressBar.ProgressTintList = ColorStateList.ValueOf(progressColor);
+				progressBar.ProgressBackgroundTintList = ColorStateList.ValueOf(backgroundColor);
+				progressBar.ProgressBackgroundTintMode = mode;
+
+				if (progressDrawable.GetDrawable(0) is AGradientDrawable layer0)
+					layer0.SetColor(backgroundColor);
+
+				if (progressDrawable.GetDrawable(1) is AScaleDrawable layer1)
+					layer1.SetColorFilter(progressColor, FilterMode.SrcIn);
+
+				if (progressDrawable.GetDrawable(2) is AScaleDrawable layer2)
+					layer2.SetColorFilter(progressColor, FilterMode.SrcIn);
+			}
+			else if (Forms.IsLollipopOrNewer)
 			{
 				progressBar.ProgressTintList = ColorStateList.ValueOf(progressColor);
 				progressBar.ProgressBackgroundTintList = ColorStateList.ValueOf(backgroundColor);
