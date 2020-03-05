@@ -43,6 +43,9 @@ namespace Xamarin.Essentials
 
         void ISensorEventListener.OnSensorChanged(SensorEvent e)
         {
+            if (e?.Values?.Count < 3)
+                return;
+
             var data = new GyroscopeData(e.Values[0], e.Values[1], e.Values[2]);
             Gyroscope.OnChanged(data);
         }
