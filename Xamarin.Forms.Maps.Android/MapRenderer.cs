@@ -103,6 +103,7 @@ namespace Xamarin.Forms.Maps.Android
 				if (NativeMap != null)
 				{
 					NativeMap.MyLocationEnabled = false;
+					NativeMap.TrafficEnabled = false;
 					NativeMap.SetOnCameraMoveListener(null);
 					NativeMap.MarkerClick -= OnMarkerClick;
 					NativeMap.InfoWindowClick -= OnInfoWindowClick;
@@ -195,6 +196,10 @@ namespace Xamarin.Forms.Maps.Android
 				gmap.UiSettings.ZoomControlsEnabled = Map.HasZoomEnabled;
 				gmap.UiSettings.ZoomGesturesEnabled = Map.HasZoomEnabled;
 			}
+			else if (e.PropertyName == Map.TrafficEnabledProperty.PropertyName)
+			{
+				gmap.TrafficEnabled = Map.TrafficEnabled;
+			}
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
@@ -235,6 +240,7 @@ namespace Xamarin.Forms.Maps.Android
 			map.InfoWindowClick += OnInfoWindowClick;
 			map.MapClick += OnMapClick;
 
+			map.TrafficEnabled = Map.TrafficEnabled;
 			map.UiSettings.ZoomControlsEnabled = Map.HasZoomEnabled;
 			map.UiSettings.ZoomGesturesEnabled = Map.HasZoomEnabled;
 			map.UiSettings.ScrollGesturesEnabled = Map.HasScrollEnabled;

@@ -52,6 +52,11 @@
                             Clicked="ToggleMoveToLastRegionOnLayoutChange"
                             VerticalOptions="Center" />
                 </StackLayout>
+                <StackLayout Orientation="Horizontal">
+                    <Label Text="Show traffic"
+                           VerticalOptions="Center" />
+                    <Switch Toggled="ShowTrafficToggled" VerticalOptions="Center" HorizontalOptions="End" />
+                </StackLayout>
             </StackLayout>
         </ScrollView>
     </Grid>

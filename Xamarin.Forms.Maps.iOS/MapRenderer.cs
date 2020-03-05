@@ -73,7 +73,7 @@ namespace Xamarin.Forms.Maps.MacOS
 				mkMapView.DidSelectAnnotationView -= MkMapViewOnAnnotationViewSelected;
 				mkMapView.RegionChanged -= MkMapViewOnRegionChanged;
 				mkMapView.GetViewForAnnotation = null;
-				mkMapView.OverlayRenderer = null;
+				mkMapView.OverlayRenderer = null; 
 				if (mkMapView.Delegate != null)
 				{
 					mkMapView.Delegate.Dispose();
@@ -165,6 +165,7 @@ namespace Xamarin.Forms.Maps.MacOS
 				if (mapModel.LastMoveToRegion != null)
 					MoveToRegion(mapModel.LastMoveToRegion, false);
 
+				UpdateTrafficEnabled();
 				UpdateMapType();
 				UpdateIsShowingUser();
 				UpdateHasScrollEnabled();
@@ -190,8 +191,10 @@ namespace Xamarin.Forms.Maps.MacOS
 				UpdateHasScrollEnabled();
 			else if (e.PropertyName == Map.HasZoomEnabledProperty.PropertyName)
 				UpdateHasZoomEnabled();
+			else if (e.PropertyName == Map.TrafficEnabledProperty.PropertyName)
+				UpdateTrafficEnabled();
 			else if (e.PropertyName == VisualElement.HeightProperty.PropertyName && ((Map)Element).LastMoveToRegion != null)
-				_shouldUpdateRegion = ((Map)Element).MoveToLastRegionOnLayoutChange;
+				_shouldUpdateRegion = ((Map)Element).MoveToLastRegionOnLayoutChange; 
 		}
 
 #if __MOBILE__
@@ -446,6 +449,11 @@ namespace Xamarin.Forms.Maps.MacOS
 		void UpdateHasScrollEnabled()
 		{
 			((MKMapView)Control).ScrollEnabled = ((Map)Element).HasScrollEnabled;
+		}
+
+		void UpdateTrafficEnabled()
+		{
+			((MKMapView)Control).ShowsTraffic = ((Map)Element).TrafficEnabled;
 		}
 
 		void UpdateHasZoomEnabled()

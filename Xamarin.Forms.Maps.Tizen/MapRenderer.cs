@@ -79,6 +79,7 @@ namespace Xamarin.Forms.Maps.Tizen
 				UpdateHasZoomEnabled();
 				UpdateIsShowingUser();
 				UpdateVisibleRegion();
+				UpdateTrafficEnabled();
 			}
 			base.OnElementChanged(e);
 		}
@@ -123,7 +124,10 @@ namespace Xamarin.Forms.Maps.Tizen
 				UpdateHasScrollEnabled();
 			else if (e.PropertyName == Map.HasZoomEnabledProperty.PropertyName)
 				UpdateHasZoomEnabled();
+			else if (e.PropertyName == Map.TrafficEnabledProperty.PropertyName)
+				UpdateTrafficEnabled();
 		}
+
 
 		void OnMoveToRegion(Map map, MapSpan span)
 		{
@@ -238,6 +242,11 @@ namespace Xamarin.Forms.Maps.Tizen
 			AddPins((Element as Map).Pins);
 		}
 
+		void UpdateTrafficEnabled()
+		{
+			Control.TrafficEnabled = Element.TrafficEnabled;
+		}
+
 		void UpdateHasZoomEnabled()
 		{
 			if (Element.HasZoomEnabled == true)
@@ -257,7 +266,7 @@ namespace Xamarin.Forms.Maps.Tizen
 		void Dummy(object sender, MapGestureEventArgs e)
 		{
 			// The implementation of Tizen.Maps needs to be changed to remove this method
-		}
+		} 
 
 		void ApplyIsShowingUser(Geocoordinates coordinates)
 		{

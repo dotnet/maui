@@ -35,16 +35,17 @@ namespace Xamarin.Forms.Maps.UWP
 
 				if (Control == null)
 				{
-					SetNativeControl(new MapControl()); 
+					SetNativeControl(new MapControl());  
 					Control.MapServiceToken = FormsMaps.AuthenticationToken;
 					Control.ZoomLevelChanged += async (s, a) => await UpdateVisibleRegion();
 					Control.CenterChanged += async (s, a) => await UpdateVisibleRegion();
-					Control.MapTapped += OnMapTapped;
+					Control.MapTapped += OnMapTapped; 
 					Control.LayoutUpdated += OnLayoutUpdated; 
 				}
 
 				MessagingCenter.Subscribe<Map, MapSpan>(this, "MapMoveToRegion", async (s, a) => await MoveToRegion(a), mapModel);
 
+				UpdateTrafficEnabled();
 				UpdateMapType();
 				UpdateHasScrollEnabled();
 				UpdateHasZoomEnabled();
@@ -88,6 +89,8 @@ namespace Xamarin.Forms.Maps.UWP
 				UpdateHasScrollEnabled();
 			else if (e.PropertyName == Map.HasZoomEnabledProperty.PropertyName)
 				UpdateHasZoomEnabled();
+			else if (e.PropertyName == Map.TrafficEnabledProperty.PropertyName)
+				UpdateTrafficEnabled();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -512,6 +515,11 @@ namespace Xamarin.Forms.Maps.UWP
 				Control.Center = point;
 				Control.ZoomLevel = 13;
 			}
+		}
+
+		void UpdateTrafficEnabled()
+		{
+			Control.TrafficFlowVisible = Element.TrafficEnabled;
 		}
 
 		void UpdateMapType()
