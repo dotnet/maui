@@ -622,7 +622,7 @@ namespace Xamarin.Forms.Platform.iOS
 #if __XCODE11__
 			if (Forms.IsiOS13OrNewer)
 			{
-				var navigationBarAppearance = new UINavigationBarAppearance();
+				var navigationBarAppearance = NavigationBar.StandardAppearance;
 
 				if (barBackgroundColor == Color.Default)
 					navigationBarAppearance.ConfigureWithDefaultBackground();
