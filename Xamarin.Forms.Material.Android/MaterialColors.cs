@@ -132,6 +132,13 @@ namespace Xamarin.Forms.Material.Tizen
 			new int[] { }
 		};
 
+		public static readonly int[][] ButtonTextStates =
+		{
+			new int[] { global::Android.Resource.Attribute.StateEnabled },
+			new int[] { ~global::Android.Resource.Attribute.StateEnabled },
+			new int[] { }
+		};
+
 		public static readonly int[][] EntryHintTextStates =
 		{
 			new []{ global::Android.Resource.Attribute.StateEnabled, global::Android.Resource.Attribute.StatePressed  },
@@ -154,10 +161,10 @@ namespace Xamarin.Forms.Material.Tizen
 
 		// State list from material-components-android
 		// https://github.com/material-components/material-components-android/blob/3637c23078afc909e42833fd1c5fd47bb3271b5f/lib/java/com/google/android/material/button/res/color/mtrl_btn_text_color_selector.xml
-		public static ColorStateList CreateButtonTextColors(PlatformColor primary, PlatformColor text)
+		public static ColorStateList CreateButtonTextColors(PlatformColor primary, PlatformColor text, PlatformColor disabledText)
 		{
-			var colors = new int[] { text, primary.WithAlpha(0.38) };
-			return new ColorStateList(ButtonStates, colors);
+			var colors = new int[] { text, disabledText, primary.WithAlpha(0.38) };
+			return new ColorStateList(ButtonTextStates, colors);
 		}
 
 		public static ColorStateList CreateEntryFilledPlaceholderColors(PlatformColor inlineColor, PlatformColor floatingColor)
@@ -268,6 +275,7 @@ namespace Xamarin.Forms.Material.Tizen
 			public static readonly PlatformColor OnPrimaryColor = PlatformColor.White;
 			public static readonly PlatformColor SecondaryColor = FromRgb(33, 33, 33);
 			public static readonly PlatformColor OnSecondaryColor = PlatformColor.White;
+			public static readonly PlatformColor DisabledColor = WithAlpha(PlatformColor.Black, 0.38f);
 
 			// the Colors for "UI"
 			public static readonly PlatformColor BackgroundColor = PlatformColor.White;
