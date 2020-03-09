@@ -9,7 +9,7 @@ namespace Xamarin.Forms
 
 		public StateTriggerBase()
 		{
-			ExperimentalFlags.VerifyFlagEnabled(nameof(IndicatorView), ExperimentalFlags.StateTriggersExperimental);
+			ExperimentalFlags.VerifyFlagEnabled(nameof(StateTriggerBase), ExperimentalFlags.StateTriggersExperimental);
 		}
 
 		public bool IsActive
