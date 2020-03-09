@@ -230,6 +230,12 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		{
 			ElementPropertyChanged?.Invoke(this, e);
 
+			if (Control?.LayoutParameters == null)
+			{
+				return;
+			}
+
+
 			if (e.PropertyName == Frame.HasShadowProperty.PropertyName)
 				UpdateShadow();
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)

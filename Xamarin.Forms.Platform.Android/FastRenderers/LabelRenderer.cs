@@ -121,14 +121,16 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 			//We need to clear the Hint or else it will interfere with the sizing of the Label
 			var hint = Control.Hint;
-			if (!string.IsNullOrEmpty(hint))
+			bool setHint = Control.LayoutParameters != null;
+			if (!string.IsNullOrEmpty(hint) && setHint)
 				Control.Hint = string.Empty;
 
 			Measure(widthConstraint, heightConstraint);
 			var result = new SizeRequest(new Size(MeasuredWidth, MeasuredHeight), new Size());
 
 			//Set Hint back after sizing
-			Control.Hint = hint;
+			if(setHint)
+				Control.Hint = hint;
 
 			result.Minimum = new Size(Math.Min(Context.ToPixels(10), result.Request.Width), result.Request.Height);
 
@@ -273,6 +275,9 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			ElementPropertyChanged?.Invoke(this, e);
+
+			if (Control?.LayoutParameters == null)
+				return;
 
 			if (e.PropertyName == Label.HorizontalTextAlignmentProperty.PropertyName || e.PropertyName == Label.VerticalTextAlignmentProperty.PropertyName)
 				UpdateGravity();

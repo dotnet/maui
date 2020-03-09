@@ -57,6 +57,7 @@ using Android.Support.V4.Content;
 [assembly: ExportRenderer(typeof(Issue7249Switch), typeof(Issue7249SwitchRenderer))]
 [assembly: ExportRenderer(typeof(Issue9360.Issue9360NavigationPage), typeof(Issue9360NavigationPageRenderer))]
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.GalleryPages.TwoPaneViewGalleries.HingeAngleLabel), typeof(HingeAngleLabelRenderer))]
+[assembly: ExportRenderer(typeof(Issue8801.PopupStackLayout), typeof(CustomStackLayoutRenderer))]
 
 #if PRE_APPLICATION_CLASS
 #elif FORMS_APPLICATION_ACTIVITY
@@ -115,6 +116,24 @@ namespace Xamarin.Forms.ControlGallery.Android
 		}
 	}
 
+	public class CustomStackLayoutRenderer : VisualElementRenderer<StackLayout>
+	{
+		public CustomStackLayoutRenderer(Context context) : base(context)
+		{
+
+
+		}
+
+		public override void AddView(global::Android.Views.View child)
+		{
+			if (child is global::Android.Widget.Button head && (head.Text == "Show" || head.Text == "Hide"))
+			{
+				base.AddView(child);
+			}
+
+		}
+	}
+
 	public class Issue9360NavigationPageRenderer : Xamarin.Forms.Platform.Android.AppCompat.NavigationPageRenderer
 	{
 		public Issue9360NavigationPageRenderer(Context context) : base(context)
@@ -145,7 +164,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 							menuItem.SetIcon(drawable);
 						}
 						else
-						{	
+						{
 							var drawable = Context.GetDrawable(name);
 							menuItem.SetIcon(drawable);
 						}
