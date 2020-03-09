@@ -195,13 +195,11 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(e.OldElement, e.NewElement));
 		}
-
-
+		
 		public override void Draw(Canvas canvas)
 		{
 			if (Element == null)
 				return;
-
 			var backgroundDrawable = _backgroundTracker?.BackgroundDrawable;
 			RectF drawableBounds = null;
 
@@ -210,12 +208,11 @@ namespace Xamarin.Forms.Platform.Android
 				if ((int)Forms.SdkInt >= 18 && backgroundDrawable != null)
 				{
 					var outlineBounds = backgroundDrawable.GetPaddingBounds(canvas.Width, canvas.Height);
-					var width = (float)MeasuredWidth;
-					var height = (float)MeasuredHeight;
-
+					var width = (float)canvas.Width;
+					var height = (float)canvas.Height;
 					var widthRatio = 1f;
 					var heightRatio = 1f;
-
+						
 					if (Element.Aspect == Aspect.AspectFill && OnThisPlatform().GetIsShadowEnabled())
 						Internals.Log.Warning(nameof(ImageButtonRenderer), "AspectFill isn't fully supported when using shadows. Image may be clipped incorrectly to Border");
 

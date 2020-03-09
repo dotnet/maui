@@ -256,7 +256,8 @@ Task("BuildForNuget")
         MSBuild("./Xamarin.Forms.Platform.UAP/Xamarin.Forms.Platform.UAP.csproj",
                     msbuildSettings
                         .WithTarget("rebuild")
-                        .WithProperty("DisableEmbeddedXbf", "false"));
+                        .WithProperty("DisableEmbeddedXbf", "false")
+                        .WithProperty("EnableTypeInfoReflection", "false"));
 
         binaryLogger.FileName = $"{artifactStagingDirectory}/ios-{configuration}-csproj.binlog";
         MSBuild("./Xamarin.Forms.Platform.iOS/Xamarin.Forms.Platform.iOS.csproj",
