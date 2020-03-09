@@ -14,7 +14,6 @@ namespace Xamarin.Forms.Platform.iOS
 	public class SwipeViewRenderer : ViewRenderer<SwipeView, UIView>
 	{
 		const double SwipeThreshold = 250;
-		const int SwipeThresholdMargin = 0;
 		const double SwipeItemWidth = 100;
 		const double SwipeAnimationDuration = 0.2;
 		const double SwipeMinimumDelta = 10;
@@ -148,7 +147,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				BackgroundColor = Element.BackgroundColor.ToUIColor();
 
-				if (_contentView != null && Element.Content == null)
+				if (_contentView != null && (Element.Content == null || (Element.Content != null && Element.Content.BackgroundColor == Color.Default)))
 					_contentView.BackgroundColor = Element.BackgroundColor.ToUIColor();
 			}
 			else
@@ -916,13 +915,13 @@ namespace Xamarin.Forms.Platform.iOS
 				if (swipeThreshold > _contentView.Frame.Width)
 					swipeThreshold = _contentView.Frame.Width;
 
-				return swipeThreshold - SwipeThresholdMargin;
+				return swipeThreshold;
 			}
 
 			if (swipeThreshold > _contentView.Frame.Height)
 				swipeThreshold = _contentView.Frame.Height;
 
-			return swipeThreshold - SwipeThresholdMargin / 2;
+			return swipeThreshold;
 		}
 
 		Size GetSwipeItemSize(ISwipeItem swipeItem)
