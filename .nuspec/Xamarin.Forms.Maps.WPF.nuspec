@@ -7,7 +7,7 @@
     <owners>microsoft xamarin</owners>
     <tags>xamarin forms maps xamarinforms xamarinformsmaps xamarin.forms.maps wpf</tags>
     <license type="expression">MIT</license>
-    <iconUrl>https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Assets/xamarin_128x128.png</iconUrl>
+    <icon>Assets\xamarin_128x128.png</icon>
     <projectUrl>http://xamarin.com/forms</projectUrl>
     <repository type="git" url="https://github.com/xamarin/xamarin.forms"/>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
@@ -24,6 +24,8 @@
     </dependencies>
   </metadata>
   <files>
+    <!--Icon-->
+    <file src="..\Assets\xamarin_128x128.png" target="Assets\" />
     <file src="..\Xamarin.Forms.Maps.WPF\bin\$Configuration$\Xamarin.Forms.Maps.WPF.dll" target="lib\net45" />
     <file src="..\Xamarin.Forms.Maps.WPF\bin\$Configuration$\Xamarin.Forms.Maps.WPF.*pdb" target="lib\net45" />
   </files>

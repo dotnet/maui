@@ -6,7 +6,7 @@
     <authors>Microsoft</authors>
     <owners>microsoft xamarin</owners>
     <license type="expression">MIT</license>
-    <iconUrl>https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Assets/xamarin_128x128.png</iconUrl>
+    <icon>Assets\xamarin_128x128.png</icon>
     <projectUrl>http://xamarin.com/forms</projectUrl>
     <repository type="git" url="https://github.com/xamarin/xamarin.forms"/>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
@@ -21,6 +21,8 @@
     </dependencies>
   </metadata>
   <files>
+    <!--Icon-->
+    <file src="..\Assets\xamarin_128x128.png" target="Assets\" />
     <file src="..\Xamarin.Forms.Pages.Azure\bin\$Configuration$\netstandard1.4\Xamarin.Forms.Pages.Azure.dll" target="lib\netstandard1.4" />
     <file src="..\Xamarin.Forms.Pages.Azure\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Pages.Azure.dll" target="lib\netstandard2.0" />
   </files>

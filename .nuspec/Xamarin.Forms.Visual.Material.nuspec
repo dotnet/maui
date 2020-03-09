@@ -7,7 +7,7 @@
     <owners>microsoft xamarin</owners>
     <tags>xamarin forms visual material xamarinforms xamarinformsvisualmaterial xamarin.forms.visual.material</tags>
     <license type="expression">MIT</license>
-    <iconUrl>https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Assets/xamarin_128x128.png</iconUrl>
+    <icon>Assets\xamarin_128x128.png</icon>
     <projectUrl>http://xamarin.com/forms</projectUrl>
     <repository type="git" url="https://github.com/xamarin/xamarin.forms"/>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
@@ -38,7 +38,8 @@
     </dependencies>
   </metadata>
   <files>
-    
+    <!--Icon-->
+    <file src="..\Assets\xamarin_128x128.png" target="Assets\" />
     <!--netstandard-->
     <file src="_._" target="lib\netstandard1.0\_._" />
 

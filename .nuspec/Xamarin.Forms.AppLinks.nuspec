@@ -7,7 +7,7 @@
     <owners>microsoft xamarin</owners>
     <tags>xamarin forms applinks xamarinforms xamarin.forms</tags>
     <license type="expression">MIT</license>
-    <iconUrl>https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Assets/xamarin_128x128.png</iconUrl>
+    <icon>Assets\xamarin_128x128.png</icon>
     <projectUrl>http://xamarin.com/forms</projectUrl>
     <repository type="git" url="https://github.com/xamarin/xamarin.forms"/>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
@@ -36,6 +36,8 @@
     </references>
   </metadata>
   <files>
+    <!--Icon-->
+    <file src="..\Assets\xamarin_128x128.png" target="Assets\" />
     <file src="..\Xamarin.Forms.Platform.Android.AppLinks\bin\$Configuration$\MonoAndroid90\Xamarin.Forms.Platform.Android.AppLinks.dll" target="lib\MonoAndroid90" />
     <file src="..\Xamarin.Forms.Platform.Android.AppLinks\bin\$Configuration$\MonoAndroid10.0\Xamarin.Forms.Platform.Android.AppLinks.dll" target="lib\MonoAndroid10.0" />
   </files>

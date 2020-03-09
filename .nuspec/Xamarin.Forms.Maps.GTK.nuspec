@@ -7,7 +7,7 @@
     <owners>microsoft xamarin</owners>
     <tags>xamarin forms maps xamarinforms xamarinformsmaps xamarin.forms.maps gtk gtk-sharp linux</tags>
     <license type="expression">MIT</license>
-    <iconUrl>https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Assets/xamarin_128x128.png</iconUrl>
+    <icon>Assets\xamarin_128x128.png</icon>
     <projectUrl>http://xamarin.com/forms</projectUrl>
     <repository type="git" url="https://github.com/xamarin/xamarin.forms"/>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
@@ -21,6 +21,8 @@
     </dependencies>
   </metadata>
   <files>
+    <!--Icon-->
+    <file src="..\Assets\xamarin_128x128.png" target="Assets\" />
     <file src="..\Xamarin.Forms.Platform.GTK\Libs\GMaps\GMap.NET.Core.dll" target="lib\net45" />
     <file src="..\Xamarin.Forms.Platform.GTK\Libs\GMaps\GMap.NET.GTK.dll" target="lib\net45" />
     <file src="..\Xamarin.Forms.Maps.GTK\bin\$Configuration$\Xamarin.Forms.Maps.GTK.dll" target="lib\net45"/>
