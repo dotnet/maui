@@ -49,6 +49,7 @@ using Android.Support.V4.Content;
 [assembly: ExportRenderer(typeof(ShellGestures.TouchTestView), typeof(ShellGesturesTouchTestViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue7249Switch), typeof(Issue7249SwitchRenderer))]
 [assembly: ExportRenderer(typeof(Issue9360.Issue9360NavigationPage), typeof(Issue9360NavigationPageRenderer))]
+[assembly: ExportRenderer(typeof(Issue8801.PopupStackLayout), typeof(CustomStackLayoutRenderer))]
 
 #if PRE_APPLICATION_CLASS
 #elif FORMS_APPLICATION_ACTIVITY
@@ -57,6 +58,24 @@ using Android.Support.V4.Content;
 #endif
 namespace Xamarin.Forms.ControlGallery.Android
 {
+	public class CustomStackLayoutRenderer : VisualElementRenderer<StackLayout>
+	{
+		public CustomStackLayoutRenderer(Context context) : base(context)
+		{
+
+
+		}
+
+		public override void AddView(global::Android.Views.View child)
+		{
+			if (child is global::Android.Widget.Button head && (head.Text == "Show" || head.Text == "Hide"))
+			{
+				base.AddView(child);
+			}
+
+		}
+	}
+
 	public class Issue9360NavigationPageRenderer : Xamarin.Forms.Platform.Android.AppCompat.NavigationPageRenderer
 	{
 		public Issue9360NavigationPageRenderer(Context context) : base(context)

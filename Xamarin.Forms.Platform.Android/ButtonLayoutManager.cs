@@ -248,7 +248,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		bool UpdateTextAndImage()
 		{
-			if (_disposed || _renderer == null || _element == null)
+			if (_disposed || _renderer == null || _element == null || View?.LayoutParameters == null)
 				return false;
 
 			AppCompatButton view = View;
