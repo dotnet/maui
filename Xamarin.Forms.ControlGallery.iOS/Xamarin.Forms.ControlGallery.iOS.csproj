@@ -128,6 +128,7 @@
     <Compile Include="Tests\CornerRadiusTests.cs" />
     <Compile Include="Tests\IsEnabledTests.cs" />
     <Compile Include="Tests\IsVisibleTests.cs" />
+    <Compile Include="Tests\NavigationTests.cs" />
     <Compile Include="Tests\OpacityTests.cs" />
     <Compile Include="Tests\PlatformTestSettings.cs" />
     <Compile Include="Tests\PlatformTestFixture.cs" />
