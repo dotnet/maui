@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using Xamarin.Forms.CustomAttributes;
@@ -32,22 +33,14 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 
 		[Test, Category("IsVisible"), TestCaseSource(nameof(TestCases))]
 		[Description("VisualElement visibility should match renderer visibility")]
-		public void VisibleConsistent(VisualElement element)
+		public async Task VisibleConsistent(VisualElement element)
 		{
-			using (var renderer = GetRenderer(element))
-			{
-				var expected = element.IsVisible 
-				? global::Android.Views.ViewStates.Visible 
-				: global::Android.Views.ViewStates.Invisible;
-				
-				var nativeView = renderer.View;
+			var expected = element.IsVisible
+					? global::Android.Views.ViewStates.Visible
+					: global::Android.Views.ViewStates.Invisible;
 
-				ParentView(nativeView);
-
-				Assert.That(renderer.View.Visibility, Is.EqualTo(expected));
-
-				UnparentView(nativeView);
-			}
+			var actual = await GetRendererProperty(element, ver => ver.View.Visibility, requiresParent: true);
+			Assert.That(actual, Is.EqualTo(expected));
 		}
 	}
 }

@@ -3,6 +3,7 @@ using System.Collections;
 using NUnit.Framework;
 using AView = Android.Views.View;
 using Xamarin.Forms.Platform.Android;
+using System.Threading.Tasks;
 
 namespace Xamarin.Forms.ControlGallery.Android.Tests
 {
@@ -33,34 +34,22 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 			}
 		}
 
-		void AssertTranslationConsistent(View view, Func<View, double> getTranslation,
-			Func<AView, double> getNativeTranslation)
-		{
-			using (var renderer = GetRenderer(view))
-			{
-				var expected =  Context.ToPixels(getTranslation(view));
-				var nativeView = renderer.View;
-
-				ParentView(nativeView);
-
-				Assert.That(getNativeTranslation(nativeView), Is.EqualTo(expected).Within(0.01));
-
-				UnparentView(nativeView);
-			}
-		}
-
 		[Test, Category("TranslateX"), TestCaseSource(nameof(TranslationXCases))]
 		[Description("View X translation should match renderer X translation")]
-		public void TranslationXConsistent(View view)
+		public async Task TranslationXConsistent(View view)
 		{
-			AssertTranslationConsistent(view, e => e.TranslationX, v => v.TranslationX);
+			var expected = Context.ToPixels(view.TranslationX);
+			var actual = await GetRendererProperty(view, ver => ver.View.TranslationX, requiresParent: true);
+			Assert.That((double)actual, Is.EqualTo(expected).Within(0.01d));
 		}
 
-		[Test, Category("ScaleY"), TestCaseSource(nameof(TranslationYCases))]
+		[Test, Category("TranslateY"), TestCaseSource(nameof(TranslationYCases))]
 		[Description("View Y translation should match renderer Y translation")]
-		public void TranslationYConsistent(View view)
+		public async Task TranslationYConsistent(View view)
 		{
-			AssertTranslationConsistent(view, e => e.TranslationY, v => v.TranslationY);
+			var expected = Context.ToPixels(view.TranslationY);
+			var actual = await GetRendererProperty(view, ver => ver.View.TranslationY, requiresParent: true);
+			Assert.That((double)actual, Is.EqualTo(expected).Within(0.01d));
 		}
 	}
 }

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Threading.Tasks;
+using NUnit.Framework;
 using Xamarin.Forms.Platform.iOS;
 
 namespace Xamarin.Forms.ControlGallery.iOS.Tests
@@ -7,7 +8,7 @@ namespace Xamarin.Forms.ControlGallery.iOS.Tests
 	public class CornerRadiusTests : PlatformTestFixture
 	{
 		[Test, Category("CornerRadius"), Category("BoxView")]
-		public void BoxviewCornerRadius()
+		public async Task BoxviewCornerRadius()
 		{
 			var boxView = new BoxView
 			{
@@ -17,11 +18,11 @@ namespace Xamarin.Forms.ControlGallery.iOS.Tests
 				BackgroundColor = Color.CadetBlue
 			};
 
-			CheckCornerRadius(boxView);
+			await CheckCornerRadius(boxView);
 		}
 
 		[Test, Category("CornerRadius"), Category("Button")]
-		public void ButtonCornerRadius()
+		public async Task ButtonCornerRadius()
 		{
 			var backgroundColor = Color.CadetBlue;
 
@@ -33,12 +34,12 @@ namespace Xamarin.Forms.ControlGallery.iOS.Tests
 				BackgroundColor = backgroundColor
 			};
 
-			CheckCornerRadius(button);
+			await CheckCornerRadius(button);
 		}
 
 		[Test, Category("CornerRadius"), Category("Frame")]
 		[Ignore("Will not pass until https://github.com/xamarin/Xamarin.Forms/issues/9265 is fixed")]
-		public void FrameCornerRadius()
+		public async Task FrameCornerRadius()
 		{
 			var backgroundColor = Color.CadetBlue;
 
@@ -52,11 +53,11 @@ namespace Xamarin.Forms.ControlGallery.iOS.Tests
 				Content = new Label { Text = "Hey" }
 			};
 
-			CheckCornerRadius(frame);
+			await CheckCornerRadius(frame);
 		}
 
 		[Test, Category("CornerRadius"), Category("ImageButton")]
-		public void ImageButtonCornerRadius()
+		public async Task ImageButtonCornerRadius()
 		{
 			var backgroundColor = Color.CadetBlue;
 
@@ -68,29 +69,20 @@ namespace Xamarin.Forms.ControlGallery.iOS.Tests
 				BackgroundColor = backgroundColor
 			};
 
-			CheckCornerRadius(button);
+			await CheckCornerRadius(button);
 		}
 
-		public void CheckCornerRadius(View view)
+		async Task CheckCornerRadius(View view)
 		{
 			var page = new ContentPage() { Content = view };
+			var centerColor = view.BackgroundColor.ToUIColor();
 
-			using (var pageRenderer = GetRenderer(page))
-			{
-				using (var uiView = GetRenderer(view).NativeView)
-				{
-					page.Layout(new Rectangle(0, 0, view.WidthRequest, view.HeightRequest));
-
-				
-						uiView
-							.AssertColorAtCenter(view.BackgroundColor.ToUIColor())
-							.AssertColorAtBottomLeft(EmptyBackground)
+			var screenshot = await GetRendererProperty(view, (ver) => ver.NativeView.ToBitmap(), requiresLayout: true);
+			screenshot.AssertColorAtCenter(centerColor)
+			.AssertColorAtBottomLeft(EmptyBackground)
 							.AssertColorAtBottomRight(EmptyBackground)
 							.AssertColorAtTopLeft(EmptyBackground)
 							.AssertColorAtTopRight(EmptyBackground);
-					
-				}
-			}
 		}
 	}
 }

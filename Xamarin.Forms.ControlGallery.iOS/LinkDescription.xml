@@ -11,4 +11,9 @@
     <namespace fullname="Xamarin.Forms.Controls.Tests" />
   </assembly>
   <assembly fullname="nunit.framework"/>
+  <assembly fullname="mscorlib">
+    <!-- If we don't preserve these, we can't run async unit tests on the platform -->
+    <type fullname="System.Runtime.CompilerServices.INotifyCompletion" />
+    <type fullname="System.Runtime.CompilerServices.TaskAwaiter" />
+  </assembly>
 </linker>

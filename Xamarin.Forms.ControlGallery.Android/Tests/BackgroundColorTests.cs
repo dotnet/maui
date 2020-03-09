@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections;
 using System.Linq;
-using System.Text;
+using System.Threading.Tasks;
 using Android.Graphics.Drawables;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
@@ -31,7 +28,7 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 
 		[Test, Category("BackgroundColor"), Category("Button")]
 		[Description("Button background color should match renderer background color")]
-		public void ButtonBackgroundColorConsistent()
+		public async Task ButtonBackgroundColorConsistent()
 		{
 			var button = new Button 
 			{ 
@@ -40,17 +37,14 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 				BackgroundColor = Color.AliceBlue 
 			};
 
-			using (var nativeButton = GetNativeControl(button))
-			{
-				var expectedColor = button.BackgroundColor.ToAndroid();
-				Layout(button, nativeButton);
-				nativeButton.AssertColorAtCenter(expectedColor);
-			}
+			var expectedColor = button.BackgroundColor.ToAndroid();
+			var screenshot = await GetControlProperty(button, abutton => abutton.ToBitmap(), requiresLayout: true);
+			screenshot.AssertColorAtCenter(expectedColor);
 		}
 
 		[Test, Category("BackgroundColor"), Category("Button")]
 		[Description("ImageButton background color should match renderer background color")]
-		public void ImageButtonBackgroundColorConsistent()
+		public async Task ImageButtonBackgroundColorConsistent()
 		{
 			var button = new ImageButton
 			{
@@ -59,17 +53,14 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 				BackgroundColor = Color.AliceBlue
 			};
 
-			using (var nativeButton = GetNativeControl(button))
-			{
-				var expectedColor = button.BackgroundColor.ToAndroid();
-				Layout(button, nativeButton);
-				nativeButton.AssertColorAtCenter(expectedColor);
-			}
+			var expectedColor = button.BackgroundColor.ToAndroid();
+			var screenshot = await GetControlProperty(button, abutton => abutton.ToBitmap(), requiresLayout: true);
+			screenshot.AssertColorAtCenter(expectedColor);
 		}
 
 		[Test, Category("BackgroundColor")]
 		[Description("Frame background color should match renderer background color")]
-		public void FrameBackgroundColorConsistent()
+		public async Task FrameBackgroundColorConsistent()
 		{
 			var frame = new Frame
 			{
@@ -78,27 +69,19 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 				BackgroundColor = Color.AliceBlue
 			};
 
-			using (var renderer = GetRenderer(frame))
-			{
-				var expectedColor = frame.BackgroundColor.ToAndroid();
-				var view = renderer.View;
-				Layout(frame, view);
-				view.AssertColorAtCenter(expectedColor);
-			}
+			var expectedColor = frame.BackgroundColor.ToAndroid();
+
+			var screenshot = await GetRendererProperty(frame, ver => ver.View.ToBitmap(), requiresLayout: true);
+			screenshot.AssertColorAtCenter(expectedColor);
 		}
 
 		[Test, Category("BackgroundColor"), TestCaseSource(nameof(TestCases))]
 		[Description("VisualElement background color should match renderer background color")]
-		public void BackgroundColorConsistent(VisualElement element)
+		public async Task BackgroundColorConsistent(VisualElement element)
 		{
-			using (var renderer = GetRenderer(element))
-			{
-				var expectedColor = element.BackgroundColor.ToAndroid();
-				var view = renderer.View;
-				var colorDrawable = view.Background as ColorDrawable;
-				var nativeColor = colorDrawable.Color;
-				Assert.That(nativeColor, Is.EqualTo(expectedColor));
-			}
+			var expectedColor = element.BackgroundColor.ToAndroid();
+			var nativeColor = await GetRendererProperty(element, ver => (ver.View.Background as ColorDrawable)?.Color);
+			Assert.That(nativeColor, Is.EqualTo(expectedColor));
 		}
 	}
 }

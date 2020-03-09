@@ -10,6 +10,7 @@ using AProgressBar = Android.Widget.ProgressBar;
 using ASearchView = Android.Widget.SearchView;
 using System.Collections.Generic;
 using NUnit.Framework;
+using System.Threading.Tasks;
 
 #if __ANDROID_29__
 using AndroidX.AppCompat.Widget;
@@ -293,6 +294,141 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 		protected void UnparentView(AView view)
 		{
 			((ViewGroup)Application.Current.MainPage.GetRenderer().View).RemoveView(view);
+		}
+
+		protected async Task<TProperty> GetRendererProperty<TProperty>(VisualElement element,
+			Func<IVisualElementRenderer, TProperty> getProperty, bool requiresLayout = false, bool requiresParent = false)
+		{
+			if (requiresLayout)
+			{
+				return await GetRendererPropertyWithLayout(element, getProperty);
+			}
+			else if (requiresParent)
+			{
+				return await GetRendererPropertyWithParent(element, getProperty);
+			}
+			else
+			{
+				return await GetRendererProperty(element, getProperty);
+			}
+		}
+
+		async Task<TProperty> GetRendererProperty<TProperty>(VisualElement element,
+			Func<IVisualElementRenderer, TProperty> getProperty)
+		{
+			return await Device.InvokeOnMainThreadAsync(() => {
+				using (var renderer = GetRenderer(element))
+				{
+					return getProperty(renderer);
+				}
+			});
+		}
+
+		async Task<TProperty> GetRendererPropertyWithParent<TProperty>(VisualElement element,
+			Func<IVisualElementRenderer, TProperty> getProperty)
+		{
+			return await Device.InvokeOnMainThreadAsync(() => {
+				using (var renderer = GetRenderer(element))
+				{
+					ParentView(renderer.View);
+					var result = getProperty(renderer);
+					UnparentView(renderer.View);
+					return result;
+				}
+			});
+		}
+
+		async Task<TProperty> GetRendererPropertyWithLayout<TProperty>(VisualElement element,
+			Func<IVisualElementRenderer, TProperty> getProperty)
+		{
+			return await Device.InvokeOnMainThreadAsync(() => {
+				using (var renderer = GetRenderer(element))
+				{
+					var view = renderer.View;
+					Layout(element, view);
+					return getProperty(renderer);
+				}
+			});
+		}
+
+		protected async Task<TProperty> GetControlProperty<TProperty>(ImageButton imageButton,
+			Func<AppCompatImageButton, TProperty> getProperty, bool requiresLayout = false)
+		{
+			return await Device.InvokeOnMainThreadAsync(() => {
+				using (var control = GetNativeControl(imageButton))
+				{
+					if (requiresLayout)
+					{
+						Layout(imageButton, control);
+					}
+
+					return getProperty(control);
+				}
+			});
+		}
+
+		protected async Task<TProperty> GetControlProperty<TProperty>(Button button,
+			Func<AppCompatButton, TProperty> getProperty, bool requiresLayout = false)
+		{
+			return await Device.InvokeOnMainThreadAsync(() => {
+				using (var control = GetNativeControl(button))
+				{
+					if (requiresLayout)
+					{
+						Layout(button, control);
+					}
+
+					return getProperty(control);
+				}
+			});
+		}
+
+		protected async Task<TProperty> GetControlProperty<TProperty>(Editor editor,
+			Func<EditText, TProperty> getProperty, bool requiresLayout = false)
+		{
+			return await Device.InvokeOnMainThreadAsync(() => {
+				using (var control = GetNativeControl(editor))
+				{
+					if (requiresLayout)
+					{
+						Layout(editor, control);
+					}
+
+					return getProperty(control);
+				}
+			});
+		}
+
+		protected async Task<TProperty> GetControlProperty<TProperty>(Entry entry,
+			Func<EditText, TProperty> getProperty, bool requiresLayout = false)
+		{
+			return await Device.InvokeOnMainThreadAsync(() => {
+				using (var control = GetNativeControl(entry))
+				{
+					if (requiresLayout)
+					{
+						Layout(entry, control);
+					}
+
+					return getProperty(control);
+				}
+			});
+		}
+
+		protected async Task<TProperty> GetControlProperty<TProperty>(Label label,
+			Func<TextView, TProperty> getProperty, bool requiresLayout = false)
+		{
+			return await Device.InvokeOnMainThreadAsync(() => {
+				using (var control = GetNativeControl(label))
+				{
+					if (requiresLayout)
+					{
+						Layout(label, control);
+					}
+
+					return getProperty(control);
+				}
+			});
 		}
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
@@ -45,41 +46,32 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal.Tests
 			}
 		}
 
-		void AssertRotationConsistent(View view, Func<View, double> getRotation,
-			Func<FrameworkElement, double> getNativeRotation)
-		{
-			var frameworkElement = GetRenderer(view).ContainerElement;
-				
-			var expected = getRotation(view);
-			var actual = getNativeRotation(frameworkElement);
-
-			Assert.That(actual, Is.EqualTo(expected));
-		}
-
 		[Test, Category("RotationX"), TestCaseSource(nameof(RotationXCases))]
 		[Description("View X rotation should match renderer X rotation")]
-		public void RotationXConsistent(View view)
+		public async Task RotationXConsistent(View view)
 		{
-			AssertRotationConsistent(view,
-			e => e.RotationX, GetRotationX);
+			var expected = view.RotationX;
+			var actual = await GetRendererProperty(view, ver => GetRotationX(ver.ContainerElement));
+			Assert.That(actual, Is.EqualTo(expected));
 		}
 
 		[Test, Category("RotationY"), TestCaseSource(nameof(RotationYCases))]
 		[Description("View Y rotation should match renderer Y rotation")]
-		public void RotationYConsistent(View view)
+		public async Task RotationYConsistent(View view)
 		{
-			AssertRotationConsistent(view,
-			e => e.RotationY, GetRotationY);
+			var expected = view.RotationY;
+			var actual = await GetRendererProperty(view, ver => GetRotationY(ver.ContainerElement));
+			Assert.That(actual, Is.EqualTo(expected));
 		}
 
 		[Test, Category("Rotation"), TestCaseSource(nameof(RotationCases))]
 		[Description("View rotation should match renderer rotation")]
-		public void RotationConsistent(View view)
+		public async Task RotationConsistent(View view)
 		{
-			AssertRotationConsistent(view,
-			e => e.Rotation, GetRotation);
+			var expected = view.Rotation;
+			var actual = await GetRendererProperty(view, ver => GetRotation(ver.ContainerElement));
+			Assert.That(actual, Is.EqualTo(expected));
 		}
-
 
 		double GetRotationX(FrameworkElement fe) 
 		{

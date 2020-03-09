@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
@@ -52,48 +53,54 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal.Tests
 			return (border.Background as SolidColorBrush).Color;
 		}
 
-		WColor GetNativeColor(View view)
+		async Task<WColor> GetNativeColor(View view)
 		{
-			var control = GetNativeControl(view);
-
-			if (control != null)
+			return await Device.InvokeOnMainThreadAsync(() =>
 			{
-				return GetBackgroundColor(control);
-			}
+				var control = GetNativeControl(view);
 
-			var border = GetBorder(view);
+				if (control != null)
+				{
+					return GetBackgroundColor(control);
+				}
 
-			if (border != null)
-			{
-				return GetBackgroundColor(border);
-			}
+				var border = GetBorder(view);
 
-			var panel = GetPanel(view);
-			return GetBackgroundColor(panel);
+				if (border != null)
+				{
+					return GetBackgroundColor(border);
+				}
+
+				var panel = GetPanel(view);
+				return GetBackgroundColor(panel);
+			});
 		}
 
 		[Test, TestCaseSource(nameof(TestCases))]
 		[Description("View background color should match renderer background color")]
-		public void BackgroundColorConsistent(View view)
+		public async Task BackgroundColorConsistent(View view)
 		{
-			var nativeColor = GetNativeColor(view);
+			var nativeColor = await GetNativeColor(view);
 			var formsColor = view.BackgroundColor.ToUwpColor();
 			Assert.That(nativeColor, Is.EqualTo(formsColor));
 		}
 
 		[Test, Category("BackgroundColor"), Category("Frame")]
 		[Description("Frame background color should match renderer background color")]
-		public void FrameBackgroundColorConsistent()
+		public async Task FrameBackgroundColorConsistent()
 		{
 			var frame = new Frame() { BackgroundColor = Color.Orange };
-
-			var renderer = GetRenderer(frame);
-			var nativeElement = renderer.GetNativeElement() as Border;
-
-			var backgroundBrush = nativeElement.Background as SolidColorBrush;
-			var actualColor = backgroundBrush.Color;
-
 			var expectedColor = frame.BackgroundColor.ToUwpColor();
+
+			var actualColor = await Device.InvokeOnMainThreadAsync(() =>
+			{
+				var renderer = GetRenderer(frame);
+				var nativeElement = renderer.GetNativeElement() as Border;
+
+				var backgroundBrush = nativeElement.Background as SolidColorBrush;
+				return backgroundBrush.Color;
+			});
+
 			Assert.That(actualColor, Is.EqualTo(expectedColor));
 		}
 	}

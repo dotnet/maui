@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using AView = Android.Views.View;
 
@@ -50,16 +51,20 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 
 		[Test, Category("ScaleX"), TestCaseSource(nameof(ScaleXCases))]
 		[Description("View X scale should match renderer X scale")]
-		public void ScaleXConsistent(View view)
+		public async Task ScaleXConsistent(View view)
 		{
-			AssertScaleConsistent(view, e => e.ScaleX, v => v.ScaleX);
+			var expected = view.ScaleX;
+			var actual = await GetRendererProperty(view, ver => ver.View.ScaleX, requiresParent: true);
+			Assert.That((double)actual, Is.EqualTo(expected).Within(0.01d));
 		}
 
 		[Test, Category("ScaleY"), TestCaseSource(nameof(ScaleYCases))]
 		[Description("View Y scale should match renderer Y scale")]
-		public void ScaleYConsistent(View view)
+		public async Task ScaleYConsistent(View view)
 		{
-			AssertScaleConsistent(view, e => e.ScaleY, v => v.ScaleY);
+			var expected = view.ScaleY;
+			var actual = await GetRendererProperty(view, ver => ver.View.ScaleY, requiresParent: true);
+			Assert.That((double)actual, Is.EqualTo(expected).Within(0.01d));
 		}
 	}
 }

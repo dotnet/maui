@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
@@ -45,37 +46,33 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal.Tests
 			}
 		}
 
-		void AssertScaleConsistent(View view, Func<View, double> getScale,
-			Func<FrameworkElement, double> getNativeScale)
-		{
-			var frameworkElement = GetRenderer(view).ContainerElement;
-
-			var expected = getScale(view);
-			var actual = getNativeScale(frameworkElement);
-
-			Assert.That(actual, Is.EqualTo(expected).Within(0.001d));
-		}
-
 		[Test, Category("ScaleX"), TestCaseSource(nameof(ScaleXCases))]
 		[Description("View X scale should match renderer X scale")]
-		public void ScaleXConsistent(View view)
+		public async Task ScaleXConsistent(View view)
 		{
-			AssertScaleConsistent(view, e => e.ScaleX, GetScaleX);
+			var expected = view.ScaleX;
+			var actual = await GetRendererProperty(view, ver => GetScaleX(ver.ContainerElement));
+			Assert.That(actual, Is.EqualTo(expected).Within(0.001d));
 		}
 
 		[Test, Category("ScaleY"), TestCaseSource(nameof(ScaleYCases))]
 		[Description("View Y scale should match renderer Y scale")]
-		public void ScaleYConsistent(View view)
+		public async Task ScaleYConsistent(View view)
 		{
-			AssertScaleConsistent(view, e => e.ScaleY, GetScaleY);
+			var expected = view.ScaleY;
+			var actual = await GetRendererProperty(view, ver => GetScaleY(ver.ContainerElement));
+			Assert.That(actual, Is.EqualTo(expected).Within(0.001d));
 		}
 
 		[Test, Category("Scale"), TestCaseSource(nameof(ScaleCases))]
 		[Description("View scale should match renderer scale")]
-		public void ScaleConsistent(View view)
+		public async Task ScaleConsistent(View view)
 		{
-			AssertScaleConsistent(view, e => e.Scale, GetScaleX);
-			AssertScaleConsistent(view, e => e.Scale, GetScaleY);
+			var expected = view.Scale;
+			var actualX = await GetRendererProperty(view, ver => GetScaleY(ver.ContainerElement));
+			var actualY = await GetRendererProperty(view, ver => GetScaleY(ver.ContainerElement));
+			Assert.That(actualX, Is.EqualTo(expected).Within(0.001d));
+			Assert.That(actualY, Is.EqualTo(expected).Within(0.001d));
 		}
 
 		double GetScaleX(FrameworkElement fe)

@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
-using UIKit;
 using Xamarin.Forms.Platform.iOS;
 
 namespace Xamarin.Forms.ControlGallery.iOS.Tests
@@ -25,57 +25,41 @@ namespace Xamarin.Forms.ControlGallery.iOS.Tests
 
 		[Test, Category("BackgroundColor"), TestCaseSource(nameof(TestCases))]
 		[Description("VisualElement background color should match renderer background color")]
-		public void BackgroundColorConsistent(VisualElement element)
+		public async Task BackgroundColorConsistent(VisualElement element)
 		{
-			using (var uiView = GetNativeControl(element))
-			{
-				var expectedColor = element.BackgroundColor.ToUIColor();
-				Assert.That(uiView.BackgroundColor, Is.EqualTo(expectedColor));
-			}
+			var expected = element.BackgroundColor.ToUIColor();
+			var actual = await GetControlProperty(element, uiview => uiview.BackgroundColor);
+			Assert.That(actual, Is.EqualTo(expected));
 		}
 
 		[Test, Category("BackgroundColor"), Category("Frame")]
 		[Description("Frame background color should match renderer background color")]
-		public void FrameBackgroundColorConsistent()
+		public async Task FrameBackgroundColorConsistent()
 		{
 			var frame = new Frame { BackgroundColor = Color.AliceBlue };
-			using (var renderer = GetRenderer(frame))
-			{
-				var expectedColor = frame.BackgroundColor.ToUIColor();
-				Assert.That(renderer.NativeView.BackgroundColor, Is.EqualTo(expectedColor));
-			}
+			var expected = frame.BackgroundColor.ToUIColor();
+			var actual = await GetRendererProperty(frame, r => r.NativeView.BackgroundColor);
+			Assert.That(actual, Is.EqualTo(expected));
 		}
 
 		[Test, Category("BackgroundColor"), Category("Label")]
 		[Description("Label background color should match renderer background color")]
-		public void LabelBackgroundColorConsistent()
+		public async Task LabelBackgroundColorConsistent()
 		{
 			var label = new Label { Text = "foo", BackgroundColor = Color.AliceBlue };
-			using (var renderer = GetRenderer(label))
-			{
-				var expectedColor = label.BackgroundColor.ToUIColor();
-				Assert.That(renderer.NativeView.BackgroundColor, Is.EqualTo(expectedColor));
-			}
+			var expected = label.BackgroundColor.ToUIColor();
+			var actual = await GetRendererProperty(label, r => r.NativeView.BackgroundColor);
+			Assert.That(actual, Is.EqualTo(expected));
 		}
 
 		[Test, Category("BackgroundColor"), Category("BoxView")]
 		[Description("BoxView background color should match renderer background color")]
-		public void BoxViewBackgroundColorConsistent()
+		public async Task BoxViewBackgroundColorConsistent2()
 		{
 			var boxView = new BoxView { BackgroundColor = Color.AliceBlue };
 			var expectedColor = boxView.BackgroundColor.ToUIColor();
-
-			var page = new ContentPage() { Content = boxView };
-
-			using (var pageRenderer = GetRenderer(page))
-			{
-				using (var uiView = GetRenderer(boxView).NativeView)
-				{
-					page.Layout(new Rectangle(0, 0, 200, 200));
-
-					uiView.AssertColorAtCenter(expectedColor);
-				}
-			}
+			var screenshot = await GetRendererProperty(boxView, (ver) => ver.NativeView.ToBitmap(), requiresLayout: true);
+			screenshot.AssertColorAtCenter(expectedColor);
 		}
 	}
 }

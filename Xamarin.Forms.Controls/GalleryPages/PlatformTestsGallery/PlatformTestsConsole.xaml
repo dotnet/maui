@@ -21,8 +21,8 @@
                 <Button Grid.Column="2" Text="Run Again" x:Name="Rerun" IsEnabled="False"/>
             </Grid>
             
-            <ScrollView>
-                <StackLayout x:Name="Results">
+            <ScrollView x:Name="ResultsScrollView">
+                <StackLayout x:Name="Results" ChildAdded="ResultsAdded">
                     
                 </StackLayout>
             </ScrollView>

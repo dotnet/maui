@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Threading.Tasks;
+using NUnit.Framework;
 using NUnit.Framework.Internal;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Platform.Android;
@@ -9,7 +10,7 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 	public class CornerRadiusTests : PlatformTestFixture
 	{
 		[Test, Category("CornerRadius"), Category("BoxView")]
-		public void BoxviewCornerRadius()
+		public async Task BoxviewCornerRadius()
 		{
 			var boxView = new BoxView
 			{
@@ -19,11 +20,11 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 				BackgroundColor = Color.Red
 			};
 
-			CheckCornerRadius(boxView);
+			await CheckCornerRadius(boxView);
 		}
-	
+
 		[Test, Category("CornerRadius"), Category("Button")]
-		public void ButtonCornerRadius()
+		public async Task ButtonCornerRadius()
 		{
 			var backgroundColor = Color.Red;
 
@@ -35,11 +36,11 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 				BackgroundColor = backgroundColor
 			};
 
-			CheckCornerRadius(button);
+			await CheckCornerRadius(button);
 		}
 
 		[Test, Category("CornerRadius"), Category("Frame")]
-		public void FrameCornerRadius()
+		public async Task FrameCornerRadius()
 		{
 			var backgroundColor = Color.Red;
 
@@ -51,11 +52,11 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 				BackgroundColor = backgroundColor
 			};
 
-			CheckCornerRadius(frame);
+			await CheckCornerRadius(frame);
 		}
 
 		[Test, Category("CornerRadius"), Category("ImageButton")]
-		public void ImageButtonCornerRadius()
+		public async Task ImageButtonCornerRadius()
 		{
 			var backgroundColor = Color.Red;
 
@@ -69,28 +70,33 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 				BorderWidth = 2
 			};
 
-			CheckCornerRadius(button);
+			await CheckCornerRadius(button);
 		}
 
-		public void CheckCornerRadius(VisualElement visualElement) 
+		public async Task CheckCornerRadius(VisualElement visualElement)
 		{
-			using (var renderer = GetRenderer(visualElement))
-			{
-				var view = renderer.View;
-				Layout(visualElement, view);
+			var screenshot = await Device.InvokeOnMainThreadAsync(() => { 
 
-				// Need to parent the Frame for it to work on lower APIs (below Marshmallow)
-				ParentView(view);
+				using (var renderer = GetRenderer(visualElement))
+				{
+					var view = renderer.View;
+					Layout(visualElement, view);
 
-				// The corners should show the background color
-				view.AssertColorAtTopLeft(EmptyBackground)
-					.AssertColorAtTopRight(EmptyBackground)
-					.AssertColorAtBottomLeft(EmptyBackground)
-					.AssertColorAtBottomRight(EmptyBackground)
-					.AssertColorAtCenter(visualElement.BackgroundColor.ToAndroid());
+					// Need to parent the Frame for it to work on lower APIs (below Marshmallow)
+					ParentView(view);
+					var image = view.ToBitmap();
+					UnparentView(view);
 
-				UnparentView(view);
-			}
+					return image;
+				}
+			});
+
+			// The corners should show the background color
+			screenshot.AssertColorAtTopLeft(EmptyBackground)
+				.AssertColorAtTopRight(EmptyBackground)
+				.AssertColorAtBottomLeft(EmptyBackground)
+				.AssertColorAtBottomRight(EmptyBackground)
+				.AssertColorAtCenter(visualElement.BackgroundColor.ToAndroid());
 		}
 	}
 }
