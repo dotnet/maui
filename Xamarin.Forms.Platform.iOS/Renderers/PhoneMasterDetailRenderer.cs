@@ -142,6 +142,8 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateBackground();
 
 			UpdatePanGesture();
+			UpdateApplyShadow(((MasterDetailPage)Element).OnThisPlatform().GetApplyShadow());
+
 		}
 
 		public override void WillRotate(UIInterfaceOrientation toInterfaceOrientation, double duration)
