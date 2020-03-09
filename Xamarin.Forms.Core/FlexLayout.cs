@@ -398,6 +398,9 @@ namespace Xamarin.Forms
 		bool _measuring;
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
+			if (_root == null)
+				return new SizeRequest(new Size(widthConstraint, heightConstraint));
+
 			//All of this is a HACK as X.Flex doesn't supports measuring
 			if (!double.IsPositiveInfinity(widthConstraint) && !double.IsPositiveInfinity(heightConstraint))
 				return new SizeRequest(new Size(widthConstraint, heightConstraint));
@@ -406,9 +409,10 @@ namespace Xamarin.Forms
 			//1. Set Shrink to 0, set align-self to start (to avoid stretching)
 			//   Set Image.Aspect to Fill to get the value we expect in measuring
 			foreach (var child in Children) {
-				var item = GetFlexItem(child);
-				item.Shrink = 0;
-				item.AlignSelf = Flex.AlignSelf.Start;
+				if (GetFlexItem(child) is Flex.Item item) {
+					item.Shrink = 0;
+					item.AlignSelf = Flex.AlignSelf.Start;
+				}
 			}
 			Layout(widthConstraint, heightConstraint);
 
@@ -426,9 +430,10 @@ namespace Xamarin.Forms
 
 			//3. reset Shrink, algin-self, and image.aspect
 			foreach (var child in Children) {
-				var item = GetFlexItem(child);
-				item.Shrink = (float)child.GetValue(ShrinkProperty);
-				item.AlignSelf = (Flex.AlignSelf)(FlexAlignSelf)child.GetValue(AlignSelfProperty);
+				if (GetFlexItem(child) is Flex.Item item) {
+					item.Shrink = (float)child.GetValue(ShrinkProperty);
+					item.AlignSelf = (Flex.AlignSelf)(FlexAlignSelf)child.GetValue(AlignSelfProperty);
+				}
 			}
 			_measuring = false;
 			return new SizeRequest(new Size(widthConstraint, heightConstraint));

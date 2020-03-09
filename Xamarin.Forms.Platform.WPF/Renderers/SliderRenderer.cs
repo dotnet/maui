@@ -60,7 +60,8 @@ namespace Xamarin.Forms.Platform.WPF
 
 		void HandleValueChanged(object sender, RoutedPropertyChangedEventArgs<double> routedPropertyChangedEventArgs)
 		{
-			((IElementController)Element).SetValueFromRenderer(Slider.ValueProperty, Control.Value);
+			if (Control.Value != Element.Value)
+				((IElementController)Element).SetValueFromRenderer(Slider.ValueProperty, Control.Value);
 		}
 
 		bool _isDisposed;
