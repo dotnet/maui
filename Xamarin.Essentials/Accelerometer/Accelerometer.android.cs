@@ -45,7 +45,7 @@ namespace Xamarin.Essentials
 
         void ISensorEventListener.OnSensorChanged(SensorEvent e)
         {
-            if (e?.Values?.Count < 3)
+            if ((e?.Values?.Count ?? 0) < 3)
                 return;
 
             var data = new AccelerometerData(e.Values[0] / gravity, e.Values[1] / gravity, e.Values[2] / gravity);
