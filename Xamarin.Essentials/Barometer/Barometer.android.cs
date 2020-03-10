@@ -41,7 +41,7 @@ namespace Xamarin.Essentials
 
         void ISensorEventListener.OnSensorChanged(SensorEvent e)
         {
-            if (e?.Values?.Count == 0)
+            if ((e?.Values?.Count ?? 0) == 0)
                 return;
 
             Barometer.OnChanged(new BarometerData(e.Values[0]));
