@@ -43,7 +43,7 @@ namespace Xamarin.Essentials
 
         void ISensorEventListener.OnSensorChanged(SensorEvent e)
         {
-            if (e?.Values?.Count < 4)
+            if ((e?.Values?.Count ?? 0) < 4)
                 return;
 
             var data = new OrientationSensorData(e.Values[0], e.Values[1], e.Values[2], e.Values[3]);
