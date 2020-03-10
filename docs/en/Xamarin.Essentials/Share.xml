@@ -13,7 +13,7 @@
   <Docs>
     <summary>Share data such as text and uris to other applications.</summary>
     <remarks>
-      <para />
+      <para></para>
     </remarks>
   </Docs>
   <Members>
@@ -37,7 +37,7 @@
         <summary>Show the share user interface to share text.</summary>
         <returns>Task when completed.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -60,7 +60,9 @@
         <param name="request">File request to share.</param>
         <summary>Show the user interface to share a file.</summary>
         <returns>Task when completed.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="RequestAsync">
@@ -82,7 +84,9 @@
         <param name="request">Share request with options.</param>
         <summary>Show the share user interface to share text or uri.</summary>
         <returns>Task when completed.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="RequestAsync">
@@ -107,7 +111,7 @@
         <summary>Show the share user interface to share text with a title.</summary>
         <returns>Task when completed.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

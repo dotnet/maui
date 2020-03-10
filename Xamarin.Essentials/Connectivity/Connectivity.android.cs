@@ -14,7 +14,7 @@ namespace Xamarin.Essentials
 
         static void StartListeners()
         {
-            Permissions.EnsureDeclared(PermissionType.NetworkState);
+            Permissions.EnsureDeclared<Permissions.NetworkState>();
 
             conectivityReceiver = new ConnectivityBroadcastReceiver(OnConnectivityChanged);
 
@@ -46,7 +46,7 @@ namespace Xamarin.Essentials
         {
             get
             {
-                Permissions.EnsureDeclared(PermissionType.NetworkState);
+                Permissions.EnsureDeclared<Permissions.NetworkState>();
 
                 try
                 {
@@ -55,7 +55,16 @@ namespace Xamarin.Essentials
 
                     if (Platform.HasApiLevel(BuildVersionCodes.Lollipop))
                     {
-                        foreach (var network in manager.GetAllNetworks())
+                        var networks = manager.GetAllNetworks();
+
+                        // some devices running 21 and 22 only use the older api.
+                        if (networks.Length == 0 && (int)Build.VERSION.SdkInt < 23)
+                        {
+                            ProcessAllNetworkInfo();
+                            return currentAccess;
+                        }
+
+                        foreach (var network in networks)
                         {
                             try
                             {
@@ -64,7 +73,9 @@ namespace Xamarin.Essentials
                                 if (capabilities == null)
                                     continue;
 
+#pragma warning disable CS0618 // Type or member is obsolete
                                 var info = manager.GetNetworkInfo(network);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 #pragma warning disable CS0618 // Type or member is obsolete
                                 if (info == null || !info.IsAvailable)
@@ -89,6 +100,11 @@ namespace Xamarin.Essentials
                     }
                     else
                     {
+                        ProcessAllNetworkInfo();
+                    }
+
+                    void ProcessAllNetworkInfo()
+                    {
 #pragma warning disable CS0618 // Type or member is obsolete
                         foreach (var info in manager.GetAllNetworkInfo())
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -97,19 +113,16 @@ namespace Xamarin.Essentials
                         }
                     }
 
+#pragma warning disable CS0618 // Type or member is obsolete
                     void ProcessNetworkInfo(NetworkInfo info)
                     {
-#pragma warning disable CS0618 // Type or member is obsolete
                         if (info == null || !info.IsAvailable)
-#pragma warning restore CS0618 // Type or member is obsolete
                             return;
-
                         if (info.IsConnected)
                             currentAccess = IsBetterAccess(currentAccess, NetworkAccess.Internet);
-#pragma warning disable CS0618 // Type or member is obsolete
                         else if (info.IsConnectedOrConnecting)
-#pragma warning restore CS0618 // Type or member is obsolete
                             currentAccess = IsBetterAccess(currentAccess, NetworkAccess.ConstrainedInternet);
+#pragma warning restore CS0618 // Type or member is obsolete
                     }
 
                     return currentAccess;
@@ -126,13 +139,14 @@ namespace Xamarin.Essentials
         {
             get
             {
-                Permissions.EnsureDeclared(PermissionType.NetworkState);
+                Permissions.EnsureDeclared<Permissions.NetworkState>();
 
                 var manager = Platform.ConnectivityManager;
                 if (Platform.HasApiLevel(BuildVersionCodes.Lollipop))
                 {
                     foreach (var network in manager.GetAllNetworks())
                     {
+#pragma warning disable CS0618 // Type or member is obsolete
                         NetworkInfo info = null;
                         try
                         {
@@ -142,6 +156,7 @@ namespace Xamarin.Essentials
                         {
                             // there is a possibility, but don't worry about it
                         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
                         var p = ProcessNetworkInfo(info);
                         if (p.HasValue)
@@ -160,15 +175,15 @@ namespace Xamarin.Essentials
                     }
                 }
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 ConnectionProfile? ProcessNetworkInfo(NetworkInfo info)
                 {
-#pragma warning disable CS0618 // Type or member is obsolete
                     if (info == null || !info.IsAvailable || !info.IsConnectedOrConnecting)
                         return null;
 
                     return GetConnectionType(info.Type, info.TypeName);
-#pragma warning restore CS0618 // Type or member is obsolete
                 }
+#pragma warning restore CS0618 // Type or member is obsolete
             }
         }
 

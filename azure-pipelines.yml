@@ -1,14 +1,15 @@
 
 variables:
-  CurrentSemanticVersionBase: '1.0.0'
-  CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(Build.BuildNumber)'
+  CurrentSemanticVersionBase: '1.4.0'
+  PreviewNumber: $[counter(variables['CurrentSemanticVersionBase'], 1001)]
+  CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(PreviewNumber)'
   NugetPackageVersion: '$(CurrentSemanticVersion)'
   MONO_VERSION: 6_4_0
   XCODE_VERSION: 11.1
-  NETCORE_VERSION: '3.0.x'
+  NETCORE_VERSION: '3.1.x'
   NETCORE_TEST_VERSION: '2.2.x'
-  IOS_SIM_NAME: 'iPhone Xs'
-  IOS_SIM_RUNTIME: 'com.apple.CoreSimulator.SimRuntime.iOS-12-4'
+  IOS_SIM_NAME: 'iPhone 11'
+  IOS_SIM_RUNTIME: 'com.apple.CoreSimulator.SimRuntime.iOS-13-3'
   ANDROID_EMU_TARGET: 'system-images;android-26;google_apis;x86'
   ANDROID_EMU_DEVICE: 'Nexus 5X'
   RunPoliCheck: 'false'
@@ -48,6 +49,13 @@ jobs:
           solution: Xamarin.Essentials/Xamarin.Essentials.csproj
           configuration: Release
           msbuildArguments: '/t:Pack /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
+#      - task: DotNetCoreCLI@2
+#        displayName: Publish to GitHub NuGet Packages
+#        condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))
+#        inputs:
+#          command: 'custom'
+#          custom: 'nuget'
+#          arguments: 'push --source https://nuget.pkg.github.com/xamarin/index.json --api-key $(GitHub.NuGet.Token) "$(Build.ArtifactStagingDirectory)\nuget\*.nupkg"'
       - task: DotNetCoreCLI@2
         displayName: Run Tests
         inputs:
@@ -192,7 +200,8 @@ jobs:
           provProfileSecureFile: 'Components iOS Provisioning.mobileprovision'
       - bash: |
           cd DeviceTests
-          sh ./build.sh --target=test-ios-emu --settings_skipverification=true --verbosity=diagnostic
+          dotnet tool install -g cake.tool --version 0.36.0
+          dotnet cake --target=test-ios-emu --settings_skipverification=true --verbosity=diagnostic
         displayName: 'Run Device Tests - iOS'
       - task: PublishTestResults@2
         displayName: 'Publish Test Results'
@@ -229,7 +238,8 @@ jobs:
           PATH="$ANDROID_HOME/tools/bin:$PATH"
           PATH="$ANDROID_HOME/emulator:$PATH"
           cd DeviceTests
-          sh ./build.sh --target=test-android-emu --settings_skipverification=true --verbosity=diagnostic
+          dotnet tool install -g cake.tool --version 0.36.0
+          dotnet cake --target=test-android-emu --settings_skipverification=true --verbosity=diagnostic
         displayName: 'Run Device Tests - Android'
       - task: PublishTestResults@2
         displayName: 'Publish Test Results'

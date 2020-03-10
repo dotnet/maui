@@ -33,7 +33,7 @@
         <summary>Gets if magnetometer is being monitored.</summary>
         <value>If monitoring.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -51,7 +51,9 @@
       </ReturnValue>
       <Docs>
         <summary>Event triggered when reading of sensor changes.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Start">
@@ -90,7 +92,9 @@
       <Parameters />
       <Docs>
         <summary>Stop monitoring for changes to magnetometer.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
   </Members>

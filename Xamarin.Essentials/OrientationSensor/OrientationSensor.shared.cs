@@ -93,10 +93,10 @@ namespace Xamarin.Essentials
             Orientation.Equals(other.Orientation);
 
         public static bool operator ==(OrientationSensorData left, OrientationSensorData right) =>
-            Equals(left, right);
+            left.Equals(right);
 
         public static bool operator !=(OrientationSensorData left, OrientationSensorData right) =>
-           !Equals(left, right);
+           !left.Equals(right);
 
         public override int GetHashCode() =>
             Orientation.GetHashCode();

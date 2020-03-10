@@ -51,6 +51,6 @@ namespace Xamarin.Essentials
             left.Equals(right);
 
         public static bool operator !=(DeviceIdiom left, DeviceIdiom right) =>
-            !(left == right);
+            !left.Equals(right);
     }
 }

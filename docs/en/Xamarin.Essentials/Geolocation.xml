@@ -12,7 +12,9 @@
   <Interfaces />
   <Docs>
     <summary>Provides a way to get the current location of the device.</summary>
-    <remarks></remarks>
+    <remarks>
+      <para></para>
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName="GetLastKnownLocationAsync">
@@ -50,7 +52,9 @@
       <Docs>
         <summary>Returns the current location of the device.</summary>
         <returns>Returns the location.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="GetLocationAsync">
@@ -72,7 +76,9 @@
         <param name="request">The criteria to use when determining the location of the device.</param>
         <summary>Returns the current location of the device using the specified criteria.</summary>
         <returns>Returns the location.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="GetLocationAsync">
@@ -96,7 +102,9 @@
         <param name="cancelToken">A token for cancelling the operation.</param>
         <summary>Returns the current location of the device using the specified criteria.</summary>
         <returns>Returns the location.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
   </Members>

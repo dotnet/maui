@@ -13,7 +13,9 @@
   <Interfaces />
   <Docs>
     <summary>Email file attachment.</summary>
-    <remarks></remarks>
+    <remarks>
+      <para></para>
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -26,12 +28,14 @@
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <Parameters>
-        <Parameter Name="fullPath" Type="System.String" Index="0" FrameworkAlternate="xamarin-essentials;xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp;xamarin-essentials-tvos;xamarin-essentials-watchos" />
+        <Parameter Name="fullPath" Type="System.String" />
       </Parameters>
       <Docs>
         <param name="fullPath">Full path and filename to file.</param>
         <summary>Email attachment from filename.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -49,7 +53,9 @@
       <Docs>
         <param name="file">Existing file.</param>
         <summary>Email attachment from existing file.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -69,7 +75,9 @@
         <param name="fullPath">Full path and filename to file.</param>
         <param name="contentType">Content type (MIME type) of the file (eg: `image/png`).</param>
         <summary>Explicit content type (MIME type) of file.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
   </Members>

@@ -12,7 +12,9 @@
   <Interfaces />
   <Docs>
     <summary>The latitude, longitude, and time information reported by the device.</summary>
-    <remarks></remarks>
+    <remarks>
+      <para></para>
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -27,7 +29,9 @@
       <Parameters />
       <Docs>
         <summary>Constructor for a location.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -45,7 +49,9 @@
       <Docs>
         <param name="point">Location to copy values from.</param>
         <summary>Constructor for a location.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -65,7 +71,9 @@
         <param name="latitude">Default latitude for location.</param>
         <param name="longitude">Default longitude for location.</param>
         <summary>Constructor for a location.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -87,7 +95,9 @@
         <param name="longitude">Default longitude for location.</param>
         <param name="timestamp">Timestamp for the location (Utc based).</param>
         <summary>Constructor for a location.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Accuracy">
@@ -103,9 +113,11 @@
         <ReturnType>System.Nullable&lt;System.Double&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets or sets the accuracy (in meters) of the location.</summary>
-        <value>The location accuracy.</value>
-        <remarks></remarks>
+        <summary>Gets or sets the horizontal accuracy (in meters) of the location.</summary>
+        <value>The horizontal accuracy of the location.</value>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Altitude">
@@ -149,7 +161,9 @@
         <param name="units">Units to return.</param>
         <summary>Calculate distance between two locations.</summary>
         <returns>Distance between two locations in the unit selected.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="CalculateDistance">
@@ -177,7 +191,9 @@
         <param name="units">Unit to return.</param>
         <summary>Calculate distance between two locations.</summary>
         <returns>Distance calculated.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="CalculateDistance">
@@ -205,7 +221,9 @@
         <param name="units">Unit to use.</param>
         <summary>Calculate distance between two locations.</summary>
         <returns>Distance calculated.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="CalculateDistance">
@@ -222,20 +240,22 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="latitudeStart" Type="System.Double" />
-        <Parameter Name="latitudeEnd" Type="System.Double" />
         <Parameter Name="longitudeStart" Type="System.Double" />
+        <Parameter Name="latitudeEnd" Type="System.Double" />
         <Parameter Name="longitudeEnd" Type="System.Double" />
         <Parameter Name="units" Type="Xamarin.Essentials.DistanceUnits" />
       </Parameters>
       <Docs>
         <param name="latitudeStart">Start latitude to calculate from.</param>
-        <param name="latitudeEnd">End latitude to calculate from.</param>
         <param name="longitudeStart">Start longitude to calculate from.</param>
+        <param name="latitudeEnd">End latitude to calculate from.</param>
         <param name="longitudeEnd">End longitude to calculate from.</param>
         <param name="units">Units to return.</param>
         <summary>Calculate distance between two locations.</summary>
         <returns>Distance between two locations in the unit selected.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Course">
@@ -254,7 +274,7 @@
         <summary>Degrees relative to true north.</summary>
         <value>0..360 in degrees relative to true north. null if unavailable.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -274,7 +294,7 @@
         <summary>Inform if location is from GPS or from Mock.</summary>
         <value>True if is from Mock and False if from GPS.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -293,7 +313,9 @@
       <Docs>
         <summary>Gets or sets the latitude of location.</summary>
         <value>Latitude of the location.</value>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Longitude">
@@ -311,7 +333,9 @@
       <Docs>
         <summary>Gets or sets the longitude of location.</summary>
         <value>Longitude of the location.</value>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Speed">
@@ -329,7 +353,9 @@
       <Docs>
         <summary>Speed in meters per second.</summary>
         <value>Speed measured by the device..</value>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Timestamp">
@@ -347,7 +373,9 @@
       <Docs>
         <summary>Gets or sets the timestamp of the location.</summary>
         <value>UTC timestamp.</value>
-        <remarks></remarks>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToString">
@@ -364,9 +392,29 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <summary>A string representation of the location.</summary>
+        <returns>A string representation of the location.</returns>
         <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="VerticalAccuracy">
+      <MemberSignature Language="C#" Value="public Nullable&lt;double&gt; VerticalAccuracy { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Nullable`1&lt;float64&gt; VerticalAccuracy" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Location.VerticalAccuracy" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Nullable&lt;System.Double&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the vertical accuracy (in meters) of the location.</summary>
+        <value>The vertical accuracy of the location.</value>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
   </Members>

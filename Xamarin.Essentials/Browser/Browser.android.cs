@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
-
 using Android.Content;
+#if __ANDROID_29__
+using AndroidX.Browser.CustomTabs;
+#else
 using Android.Support.CustomTabs;
-
+#endif
 using AndroidUri = Android.Net.Uri;
 
 namespace Xamarin.Essentials
@@ -25,8 +27,13 @@ namespace Xamarin.Essentials
                         tabsBuilder.SetShowTitle(options.TitleMode == BrowserTitleMode.Show);
 
                     var tabsIntent = tabsBuilder.Build();
-                    tabsIntent.Intent.SetFlags(ActivityFlags.ClearTop);
-                    tabsIntent.Intent.SetFlags(ActivityFlags.NewTask);
+                    var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
+#if __ANDROID_24__
+                    if (Platform.HasApiLevelN)
+                        flags |= ActivityFlags.LaunchAdjacent;
+#endif
+                    tabsIntent.Intent.SetFlags(flags);
+
 #if __ANDROID_25__
                     tabsIntent.LaunchUrl(Platform.AppContext, nativeUri);
 #else
@@ -35,8 +42,12 @@ namespace Xamarin.Essentials
                     break;
                 case BrowserLaunchMode.External:
                     var intent = new Intent(Intent.ActionView, nativeUri);
-                    intent.SetFlags(ActivityFlags.ClearTop);
-                    intent.SetFlags(ActivityFlags.NewTask);
+                    flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
+#if __ANDROID_24__
+                    if (Platform.HasApiLevelN)
+                        flags |= ActivityFlags.LaunchAdjacent;
+#endif
+                    intent.SetFlags(flags);
 
                     if (!Platform.IsIntentSupported(intent))
                         throw new FeatureNotSupportedException();

@@ -16,6 +16,11 @@ namespace Xamarin.Essentials
 {
     public static partial class Platform
     {
+#if __IOS__ || __TVOS__
+        public static bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)
+            => WebAuthenticator.OpenUrl(new Uri(url.AbsoluteString));
+#endif
+
 #if __IOS__
         [DllImport(Constants.SystemLibrary, EntryPoint = "sysctlbyname")]
 #else
@@ -51,6 +56,10 @@ namespace Xamarin.Essentials
             UIDevice.CurrentDevice.CheckSystemVersion(major, minor);
 
 #if __IOS__ || __TVOS__
+
+        public static UIViewController GetCurrentUIViewController() =>
+            GetCurrentViewController(false);
+
         internal static UIViewController GetCurrentViewController(bool throwIfNull = true)
         {
             UIViewController viewController = null;
@@ -80,6 +89,27 @@ namespace Xamarin.Essentials
                 throw new InvalidOperationException("Could not find current view controller.");
 
             return viewController;
+        }
+
+        internal static UIWindow GetCurrentWindow(bool throwIfNull = true)
+        {
+            var window = UIApplication.SharedApplication.KeyWindow;
+
+            if (window.WindowLevel == UIWindowLevel.Normal)
+                return window;
+
+            if (window == null)
+            {
+                window = UIApplication.SharedApplication
+                    .Windows
+                    .OrderByDescending(w => w.WindowLevel)
+                    .FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
+            }
+
+            if (throwIfNull && window == null)
+                throw new InvalidOperationException("Could not find current window.");
+
+            return window;
         }
 #endif
 

@@ -55,14 +55,32 @@
 	<string>1.0</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Access to your location is required for cool things to happen!</string>
-  <key>CFBundleURLTypes</key>
-  <array>
-    <dict>
-      <key>CFBundleURLSchemes</key>
-      <array>
-        <string>appcenter-APP_SECRET</string>
-      </array>
-    </dict>
-  </array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>appcenter-APP_SECRET</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>xamarinessentials</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>xamarinessentials</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+		</dict>
+	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Camera Photos</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Calendar Access</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Get Location</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Get Location</string>
 </dict>
 </plist>

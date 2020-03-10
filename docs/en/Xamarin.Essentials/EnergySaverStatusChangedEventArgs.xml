@@ -11,7 +11,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Event arguments when the energy saver status changes.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -28,8 +28,8 @@
         <Parameter Name="saverStatus" Type="Xamarin.Essentials.EnergySaverStatus" />
       </Parameters>
       <Docs>
-        <param name="saverStatus">To be added.</param>
-        <summary>To be added.</summary>
+        <param name="saverStatus">The current status of the event.</param>
+        <summary>Public constructor for event arguments</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -46,8 +46,8 @@
         <ReturnType>Xamarin.Essentials.EnergySaverStatus</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets the current status of energy saver mode</summary>
+        <value>The current statu of the energy saver mode.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -65,8 +65,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <summary>A string representation of the event arguments.</summary>
+        <returns>A string representation of the event arguments.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

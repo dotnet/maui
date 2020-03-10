@@ -12,8 +12,15 @@ namespace Xamarin.Essentials
         const double milesToMeters = 1609.344;
         const double kilometersToMiles = 1.0 / milesToKilometers;
         const double celsiusToKelvin = 273.15;
+        const double poundsToKg = 0.45359237;
+        const double poundsToStones = 0.07142857;
+        const double stonesToPounds = 14;
+        const double kgToPounds = 2.204623;
 
         const double meanEarthRadiusInKilometers = 6371.0;
+
+        const double internationalFootDefinition = 0.3048;
+        const double usSurveyFootDefinition = 1200.0 / 3937;
 
         public static double FahrenheitToCelsius(double fahrenheit) =>
             (fahrenheit - 32.0) / 1.8;
@@ -41,6 +48,18 @@ namespace Xamarin.Essentials
 
         public static double RadiansToDegrees(double radians) =>
             radians / degreesToRadians;
+
+        public static double PoundsToKilograms(double pounds) =>
+            pounds * poundsToKg;
+
+        public static double PoundsToStones(double pounds) =>
+            pounds * poundsToStones;
+
+        public static double StonesToPounds(double stones) =>
+           stones * stonesToPounds;
+
+        public static double KilogramsToPounds(double kilograms) =>
+            kilograms * kgToPounds;
 
         public static double DegreesPerSecondToRadiansPerSecond(double degrees) =>
             HertzToRadiansPerSecond(DegreesPerSecondToHertz(degrees));
@@ -73,10 +92,10 @@ namespace Xamarin.Essentials
             hpa * 100.0;
 
         public static double AtmospheresToPascals(double atm) =>
-            atm / atmospherePascals;
+            atm * atmospherePascals;
 
         public static double PascalsToAtmospheres(double pascals) =>
-            pascals * atmospherePascals;
+            pascals / atmospherePascals;
 
         public static double CoordinatesToMiles(double lat1, double lon1, double lat2, double lon2) =>
             KilometersToMiles(CoordinatesToKilometers(lat1, lon1, lat2, lon2));
@@ -100,5 +119,29 @@ namespace Xamarin.Essentials
 
             return meanEarthRadiusInKilometers * c;
         }
+
+        /// <summary>
+        /// International survey foot defined as exactly 0.3048 meters by convention in 1959. This is the most common modern foot measure.
+        /// </summary>
+        public static double MetersToInternationalFeet(double meters) =>
+            meters / internationalFootDefinition;
+
+        /// <summary>
+        /// International survey foot defined as exactly 0.3048 meters by convention in 1959. This is the most common modern foot measure.
+        /// </summary>
+        public static double InternationalFeetToMeters(double internationalFeet) =>
+            internationalFeet * internationalFootDefinition;
+
+        /// <summary>
+        /// Exactly 1200/3937 meters by definition. In decimal terms approximately 0.304 800 609 601 219 meters. Variation from the common international foot of exactly 0.3048 meters may only be considerable over large survey distances.
+        /// </summary>
+        public static double MetersToUSSurveyFeet(double meters) =>
+            meters / usSurveyFootDefinition;
+
+        /// <summary>
+        /// Exactly 1200/3937 meters by definition. In decimal terms approximately 0.304 800 609 601 219 meters. Variation from the common international foot of exactly 0.3048 meters may only be considerable over large survey distances.
+        /// </summary>
+        public static double USSurveyFeetToMeters(double usFeet) =>
+            usFeet * usSurveyFootDefinition;
     }
 }

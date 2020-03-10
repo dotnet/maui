@@ -31,7 +31,7 @@ namespace Xamarin.Essentials
         internal static void ValidateMapServiceToken()
         {
             if (string.IsNullOrWhiteSpace(Platform.MapServiceToken) && string.IsNullOrWhiteSpace(MapService.ServiceToken))
-                throw new ArgumentNullException(nameof(Platform.MapServiceToken));
+                throw new ArgumentNullException(nameof(Platform.MapServiceToken), "Please set the map service token(MapService.ServiceToken) to be able to use this API.");
 
             if (!string.IsNullOrWhiteSpace(Platform.MapServiceToken))
                 MapService.ServiceToken = Platform.MapServiceToken;

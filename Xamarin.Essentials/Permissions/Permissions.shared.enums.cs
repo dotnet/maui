@@ -1,34 +1,20 @@
 ﻿namespace Xamarin.Essentials
 {
-    enum PermissionStatus
+    public enum PermissionStatus
     {
+        // Permission is in an unknown state
+        Unknown = 0,
+
         // Denied by user
-        Denied,
+        Denied = 1,
 
         // Feature is disabled on device
-        Disabled,
+        Disabled = 2,
 
         // Granted by user
-        Granted,
+        Granted = 3,
 
         // Restricted (only iOS)
-        Restricted,
-
-        // Permission is in an unknown state
-        Unknown
-    }
-
-    enum PermissionType
-    {
-        Unknown,
-        Battery,
-        Camera,
-        Flashlight,
-        LaunchApp,
-        LocationWhenInUse,
-        Maps,
-        NetworkState,
-        Vibrate,
-        WriteExternalStorage,
+        Restricted = 4
     }
 }

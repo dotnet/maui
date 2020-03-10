@@ -43,11 +43,11 @@
         <Parameter Name="rotation" Type="Xamarin.Essentials.DisplayRotation" />
       </Parameters>
       <Docs>
-        <param name="width">To be added.</param>
-        <param name="height">To be added.</param>
-        <param name="density">To be added.</param>
-        <param name="orientation">To be added.</param>
-        <param name="rotation">To be added.</param>
+        <param name="width">The width of the display</param>
+        <param name="height">The height of the display</param>
+        <param name="density">The screen density</param>
+        <param name="orientation">The current orientation</param>
+        <param name="rotation">The rotation of the device.</param>
         <summary>Main constructor for Display Information</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -68,7 +68,7 @@
         <summary>Gets a value representing the screen density.</summary>
         <value>The screen density.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -92,7 +92,7 @@
         <summary>If equal to another object.</summary>
         <returns>If equal.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -119,7 +119,7 @@
         <summary>If equal to another object.</summary>
         <returns>If equal.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -140,7 +140,7 @@
         <summary>Gets the hash code for object.</summary>
         <returns>The hash code.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -160,7 +160,7 @@
         <summary>Gets the height of the screen for the current orientation.</summary>
         <value>The height in pixels.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -186,7 +186,7 @@
         <summary>If equal to another object.</summary>
         <returns>If equal</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -212,7 +212,7 @@
         <summary>If not equal to another object.</summary>
         <returns>If not equal</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -232,7 +232,7 @@
         <summary>Gets the orientation of the device.</summary>
         <value>The orientation.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -252,7 +252,7 @@
         <summary>Gets the rotation from the designated orientation.</summary>
         <value>The rotation</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -273,7 +273,7 @@
         <summary>String representation of information.</summary>
         <returns>String information about display info.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -293,7 +293,7 @@
         <summary>Gets the width of the scrreen for the current orientation.</summary>
         <value>The width in pixels.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

@@ -13,7 +13,7 @@
   <Docs>
     <summary>Represents information about the application.</summary>
     <remarks>
-      <para />
+      <para></para>
     </remarks>
   </Docs>
   <Members>
@@ -32,7 +32,9 @@
       <Docs>
         <summary>Gets the application build number.</summary>
         <value>The application build number.</value>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Name">
@@ -50,7 +52,9 @@
       <Docs>
         <summary>Gets the application name.</summary>
         <value>The application name.</value>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="PackageName">
@@ -71,6 +75,24 @@
         <remarks>On android and iOS, this is the application package name. On UWP, this is the application GUID.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="RequestedTheme">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.AppTheme RequestedTheme { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.AppTheme RequestedTheme" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.AppInfo.RequestedTheme" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.AppTheme</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the detected Theme of the system or application.</summary>
+        <value>The Theme.</value>
+        <remarks>For platforms or platform versions which aren't supported, Unspecified is returned.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="ShowSettingsUI">
       <MemberSignature Language="C#" Value="public static void ShowSettingsUI ();" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void ShowSettingsUI() cil managed" />
@@ -87,7 +109,7 @@
       <Docs>
         <summary>Open the settings menu or page for the application.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -106,7 +128,9 @@
       <Docs>
         <summary>Gets the application version.</summary>
         <value>The application version.</value>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="VersionString">
@@ -124,7 +148,9 @@
       <Docs>
         <summary>Gets the application version.</summary>
         <value>The application version.</value>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
   </Members>

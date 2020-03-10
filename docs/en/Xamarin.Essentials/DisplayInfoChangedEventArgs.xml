@@ -27,10 +27,10 @@
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <Parameters>
-        <Parameter Name="displayInfo" Type="Xamarin.Essentials.DisplayInfo" Index="0" FrameworkAlternate="xamarin-essentials;xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp;xamarin-essentials-tvos;xamarin-essentials-watchos" />
+        <Parameter Name="displayInfo" Type="Xamarin.Essentials.DisplayInfo" />
       </Parameters>
       <Docs>
-        <param name="displayInfo">To be added.</param>
+        <param name="displayInfo">The display info for the event</param>
         <summary>Main constructor for event args.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -49,7 +49,7 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the current display info for the main display.</summary>
-        <value>To be added.</value>
+        <value>The current display info.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

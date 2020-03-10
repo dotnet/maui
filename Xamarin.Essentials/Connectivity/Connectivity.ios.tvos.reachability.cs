@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+#if __IOS__
+using CoreTelephony;
+#endif
 using CoreFoundation;
 using SystemConfiguration;
 
@@ -148,6 +151,10 @@ namespace Xamarin.Essentials
 
             remoteHostReachability.SetNotification(OnChange);
             remoteHostReachability.Schedule(CFRunLoop.Main, CFRunLoop.ModeDefault);
+
+#if __IOS__
+            Connectivity.CellularData.RestrictionDidUpdateNotifier = new Action<CTCellularDataRestrictedState>(OnRestrictedStateChanged);
+#endif
         }
 
         internal event Action ReachabilityChanged;
@@ -160,7 +167,18 @@ namespace Xamarin.Essentials
             defaultRouteReachability = null;
             remoteHostReachability?.Dispose();
             remoteHostReachability = null;
+
+#if __IOS__
+            Connectivity.CellularData.RestrictionDidUpdateNotifier = null;
+#endif
         }
+
+#if __IOS__
+        void OnRestrictedStateChanged(CTCellularDataRestrictedState state)
+        {
+            ReachabilityChanged?.Invoke();
+        }
+#endif
 
         async void OnChange(NetworkReachabilityFlags flags)
         {

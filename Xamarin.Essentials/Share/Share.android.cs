@@ -30,8 +30,8 @@ namespace Xamarin.Essentials
             }
 
             var chooserIntent = Intent.CreateChooser(intent, request.Title ?? string.Empty);
-            chooserIntent.SetFlags(ActivityFlags.ClearTop);
-            chooserIntent.SetFlags(ActivityFlags.NewTask);
+            var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
+            chooserIntent.SetFlags(flags);
             Platform.AppContext.StartActivity(chooserIntent);
 
             return Task.CompletedTask;
@@ -52,8 +52,8 @@ namespace Xamarin.Essentials
             }
 
             var chooserIntent = Intent.CreateChooser(intent, request.Title ?? string.Empty);
-            chooserIntent.SetFlags(ActivityFlags.ClearTop);
-            chooserIntent.SetFlags(ActivityFlags.NewTask);
+            var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
+            chooserIntent.SetFlags(flags);
             Platform.AppContext.StartActivity(chooserIntent);
 
             return Task.CompletedTask;

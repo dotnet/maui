@@ -2,13 +2,17 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
+    <LangVersion>8.0</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)Xamarin.Essentials.ruleset</CodeAnalysisRuleSet>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
-    <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json" InProject="false" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json" InProject="false" Visible="false" />
   </ItemGroup>
 
 </Project>

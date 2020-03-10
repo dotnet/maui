@@ -147,7 +147,9 @@ namespace Xamarin.Essentials
             var context = Application.Context;
 
             return string.IsNullOrWhiteSpace(sharedName) ?
+#pragma warning disable CS0618 // Type or member is obsolete
                 PreferenceManager.GetDefaultSharedPreferences(context) :
+#pragma warning restore CS0618 // Type or member is obsolete
                     context.GetSharedPreferences(sharedName, FileCreationMode.Private);
         }
     }

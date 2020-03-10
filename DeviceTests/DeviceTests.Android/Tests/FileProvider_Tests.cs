@@ -31,7 +31,7 @@ namespace DeviceTests.Shared
 
             var intentChooser = Android.Content.Intent.CreateChooser(intent, "Pick something");
 
-            Platform.AppContext.StartActivity(intentChooser);
+            Platform.CurrentActivity.StartActivity(intentChooser);
         }
 
         [Theory]
@@ -56,7 +56,7 @@ namespace DeviceTests.Shared
                 var shareableUri = GetShareableUri(file, location);
 
                 // Determine where the file should be found
-                var isInternal = (failAccess || location == FileProviderLocation.Internal);
+                var isInternal = failAccess || location == FileProviderLocation.Internal;
                 var expectedCache = isInternal ? "internal_cache" : "external_cache";
                 var expectedCacheDir = isInternal
                     ? Platform.AppContext.CacheDir.AbsolutePath
@@ -185,7 +185,11 @@ namespace DeviceTests.Shared
         public void Get_Existing_External_Shareable_Uri(FileProviderLocation location)
         {
             // Save an external directory file
+
+            #if !__ANDROID_29__
             var externalRoot = AndroidEnvironment.ExternalStorageDirectory.AbsolutePath;
+            #endif
+
             var root = Platform.AppContext.GetExternalFilesDir(null).AbsolutePath;
             var file = CreateFile(root);
 
@@ -200,10 +204,12 @@ namespace DeviceTests.Shared
             Assert.Equal("content", shareableUri.Scheme);
             Assert.Equal("com.xamarin.essentials.devicetests.fileProvider", shareableUri.Authority);
 
+            #if !__ANDROID_29__
             // replace the real root with the providers "root"
             var segements = Path.Combine(root.Replace(externalRoot, "external_files"), Path.GetFileName(file));
 
             Assert.Equal(segements.Split(Path.DirectorySeparatorChar), shareableUri.PathSegments);
+            #endif
         }
 
         static string CreateFile(string root, string name = "the-file.txt")

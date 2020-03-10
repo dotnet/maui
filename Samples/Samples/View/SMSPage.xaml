@@ -16,7 +16,8 @@
                 <Label Text="Recipents (optional, separate multiple with ',' or '*'):" />
                 <Entry Text="{Binding Recipient}" Keyboard="Telephone" />
                 <Label Text="Message Text (optional):" />
-                <Entry Text="{Binding MessageText}" />
+                <Editor Text="{Binding MessageText}"
+                        Keyboard="Chat" AutoSize="TextChanges" />
 
                 <Button Text="Send SMS" Command="{Binding SendSmsCommand}" />
 

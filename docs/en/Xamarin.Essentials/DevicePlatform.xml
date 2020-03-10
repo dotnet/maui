@@ -40,7 +40,7 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the Android platform.</summary>
-        <value>To be added.</value>
+        <value>The Android platform</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -60,9 +60,9 @@
         <Parameter Name="devicePlatform" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="devicePlatform">To be added.</param>
+        <param name="devicePlatform">The device platform.</param>
         <summary>Creates a new Device Platform.</summary>
-        <returns>To be added.</returns>
+        <returns>The device platform</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -82,9 +82,9 @@
         <Parameter Name="obj" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="obj">To be added.</param>
+        <param name="obj">The object compare</param>
         <summary>Checks the equality of the platform.</summary>
-        <returns>To be added.</returns>
+        <returns>If they are equal</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -107,9 +107,9 @@
         <Parameter Name="other" Type="Xamarin.Essentials.DevicePlatform" />
       </Parameters>
       <Docs>
-        <param name="other">To be added.</param>
+        <param name="other">The platform to compare</param>
         <summary>Checks the equality of the platform.</summary>
-        <returns>To be added.</returns>
+        <returns>If they are equal</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -128,7 +128,7 @@
       <Parameters />
       <Docs>
         <summary>Gets the hash code of the platform.</summary>
-        <returns>To be added.</returns>
+        <returns>The hash code of the platform.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -146,7 +146,7 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the iOS platform.</summary>
-        <value>To be added.</value>
+        <value>The iOS Platform</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -167,10 +167,10 @@
         <Parameter Name="right" Type="Xamarin.Essentials.DevicePlatform" />
       </Parameters>
       <Docs>
-        <param name="left">To be added.</param>
-        <param name="right">To be added.</param>
+        <param name="left">The left side to compare.</param>
+        <param name="right">The right side to compare</param>
         <summary>Checks the equality of the platform.</summary>
-        <returns>To be added.</returns>
+        <returns>If they are equal</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -191,10 +191,28 @@
         <Parameter Name="right" Type="Xamarin.Essentials.DevicePlatform" />
       </Parameters>
       <Docs>
-        <param name="left">To be added.</param>
-        <param name="right">To be added.</param>
+        <param name="left">The left side to compare.</param>
+        <param name="right">The right side to compare</param>
         <summary>Checks the equality of the platform.</summary>
-        <returns>To be added.</returns>
+        <returns>If they are inequal</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Tizen">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DevicePlatform Tizen { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.DevicePlatform Tizen" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DevicePlatform.Tizen" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DevicePlatform</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the Tizen platform</summary>
+        <value>The Tizen platform</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -213,7 +231,7 @@
       <Parameters />
       <Docs>
         <summary>The string representation of the platform.</summary>
-        <returns>To be added.</returns>
+        <returns>The string representation of the platform.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -230,8 +248,8 @@
         <ReturnType>Xamarin.Essentials.DevicePlatform</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets the tvOS platform</summary>
+        <value>The tvOS platform</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -249,7 +267,7 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the unknown platform.</summary>
-        <value>To be added.</value>
+        <value>An unknown platform</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -267,7 +285,7 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the UWP platform.</summary>
-        <value>To be added.</value>
+        <value>The UWP platform</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -284,8 +302,8 @@
         <ReturnType>Xamarin.Essentials.DevicePlatform</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets the watchOS platform</summary>
+        <value>The watchOS platform.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

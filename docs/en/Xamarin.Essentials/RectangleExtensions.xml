@@ -13,142 +13,10 @@
   <Docs>
     <summary>Extension methods for Rectangle.</summary>
     <remarks>
-      <para />
+      <para></para>
     </remarks>
   </Docs>
   <Members>
-    <Member MemberName="ToPlatformRectangle">
-      <MemberSignature Language="C#" Value="public static Android.Graphics.Rect ToPlatformRectangle (this System.Drawing.Rectangle rect);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Android.Graphics.Rect ToPlatformRectangle(valuetype System.Drawing.Rectangle rect) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.Android.ToPlatformRectangle(System.Drawing.Rectangle)" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Android.Graphics.Rect</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="rect" Type="System.Drawing.Rectangle" RefType="this" />
-      </Parameters>
-      <Docs>
-        <param name="rect">The base rectangle to convert.</param>
-        <summary>Convert to platform rectangle.</summary>
-        <returns>The converted rectangle.</returns>
-        <remarks></remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="ToPlatformRectangle">
-      <MemberSignature Language="C#" Value="public static CoreGraphics.CGRect ToPlatformRectangle (this System.Drawing.Rectangle rect);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype CoreGraphics.CGRect ToPlatformRectangle(valuetype System.Drawing.Rectangle rect) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.iOS.ToPlatformRectangle(System.Drawing.Rectangle)" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>CoreGraphics.CGRect</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="rect" Type="System.Drawing.Rectangle" RefType="this" />
-      </Parameters>
-      <Docs>
-        <param name="rect">The base rectangle to convert.</param>
-        <summary>Convert to platform rectangle.</summary>
-        <returns>The converted rectangle.</returns>
-        <remarks></remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="ToPlatformRectangle">
-      <MemberSignature Language="C#" Value="public static Windows.Foundation.Rect ToPlatformRectangle (this System.Drawing.Rectangle rect);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Windows.Foundation.Rect ToPlatformRectangle(valuetype System.Drawing.Rectangle rect) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.UWP.ToPlatformRectangle(System.Drawing.Rectangle)" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Windows.Foundation.Rect</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="rect" Type="System.Drawing.Rectangle" RefType="this" />
-      </Parameters>
-      <Docs>
-        <param name="rect">The base rectangle to convert.</param>
-        <summary>Convert to platform rectangle.</summary>
-        <returns>The converted rectangle.</returns>
-        <remarks></remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="ToPlatformRectangle">
-      <MemberSignature Language="C#" Value="public static CoreGraphics.CGRect ToPlatformRectangle (this System.Drawing.RectangleF rect);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype CoreGraphics.CGRect ToPlatformRectangle(valuetype System.Drawing.RectangleF rect) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.iOS.ToPlatformRectangle(System.Drawing.RectangleF)" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>CoreGraphics.CGRect</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="rect" Type="System.Drawing.RectangleF" RefType="this" />
-      </Parameters>
-      <Docs>
-        <param name="rect">The base rectangle to convert.</param>
-        <summary>Convert to platform rectangle.</summary>
-        <returns>The converted rectangle.</returns>
-        <remarks></remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="ToPlatformRectangle">
-      <MemberSignature Language="C#" Value="public static Windows.Foundation.Rect ToPlatformRectangle (this System.Drawing.RectangleF rect);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Windows.Foundation.Rect ToPlatformRectangle(valuetype System.Drawing.RectangleF rect) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.UWP.ToPlatformRectangle(System.Drawing.RectangleF)" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Windows.Foundation.Rect</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="rect" Type="System.Drawing.RectangleF" RefType="this" />
-      </Parameters>
-      <Docs>
-        <param name="rect">The base rectangle to convert.</param>
-        <summary>Convert to platform rectangle.</summary>
-        <returns>The converted rectangle.</returns>
-        <remarks></remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="ToPlatformRectangleF">
-      <MemberSignature Language="C#" Value="public static Android.Graphics.RectF ToPlatformRectangleF (this System.Drawing.RectangleF rect);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Android.Graphics.RectF ToPlatformRectangleF(valuetype System.Drawing.RectangleF rect) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.RectangleExtensions.Android.ToPlatformRectangleF(System.Drawing.RectangleF)" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Android.Graphics.RectF</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="rect" Type="System.Drawing.RectangleF" RefType="this" />
-      </Parameters>
-      <Docs>
-        <param name="rect">The base rectangle to convert.</param>
-        <summary>Convert to platform rectangle.</summary>
-        <returns>The converted rectangle.</returns>
-        <remarks></remarks>
-      </Docs>
-    </Member>
     <Member MemberName="ToSystemRectangle">
       <MemberSignature Language="C#" Value="public static System.Drawing.Rectangle ToSystemRectangle (this Android.Graphics.Rect rect);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Rectangle ToSystemRectangle(class Android.Graphics.Rect rect) cil managed" />
@@ -162,13 +30,15 @@
         <ReturnType>System.Drawing.Rectangle</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="rect" Type="Android.Graphics.Rect" RefType="this" />
+        <Parameter Name="rect" Type="Android.Graphics.Rect" Index="0" FrameworkAlternate="xamarin-essentials-android" RefType="this" />
       </Parameters>
       <Docs>
         <param name="rect">The base rectangle to convert.</param>
         <summary>Convert to system rectangle.</summary>
         <returns>The converted rectangle.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemRectangle">
@@ -184,13 +54,15 @@
         <ReturnType>System.Drawing.Rectangle</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="rect" Type="CoreGraphics.CGRect" RefType="this" />
+        <Parameter Name="rect" Type="CoreGraphics.CGRect" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos" />
       </Parameters>
       <Docs>
         <param name="rect">The base rectangle to convert.</param>
         <summary>Convert to system rectangle.</summary>
         <returns>The converted rectangle.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemRectangle">
@@ -206,13 +78,15 @@
         <ReturnType>System.Drawing.Rectangle</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="rect" Type="Windows.Foundation.Rect" RefType="this" />
+        <Parameter Name="rect" Type="Windows.Foundation.Rect" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-uwp" />
       </Parameters>
       <Docs>
         <param name="rect">The base rectangle to convert.</param>
         <summary>Convert to system rectangle.</summary>
         <returns>The converted rectangle.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemRectangleF">
@@ -228,13 +102,15 @@
         <ReturnType>System.Drawing.RectangleF</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="rect" Type="Android.Graphics.RectF" RefType="this" />
+        <Parameter Name="rect" Type="Android.Graphics.RectF" Index="0" FrameworkAlternate="xamarin-essentials-android" RefType="this" />
       </Parameters>
       <Docs>
         <param name="rect">The base rectangle to convert.</param>
         <summary>Convert to system rectangle.</summary>
         <returns>The converted rectangle.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemRectangleF">
@@ -250,13 +126,15 @@
         <ReturnType>System.Drawing.RectangleF</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="rect" Type="CoreGraphics.CGRect" RefType="this" />
+        <Parameter Name="rect" Type="CoreGraphics.CGRect" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos" />
       </Parameters>
       <Docs>
         <param name="rect">The base rectangle to convert.</param>
         <summary>Convert to system rectangle.</summary>
         <returns>The converted rectangle.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemRectangleF">
@@ -272,13 +150,15 @@
         <ReturnType>System.Drawing.RectangleF</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="rect" Type="Windows.Foundation.Rect" RefType="this" />
+        <Parameter Name="rect" Type="Windows.Foundation.Rect" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-uwp" />
       </Parameters>
       <Docs>
         <param name="rect">The base rectangle to convert.</param>
         <summary>Convert to system rectangle.</summary>
         <returns>The converted rectangle.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
   </Members>

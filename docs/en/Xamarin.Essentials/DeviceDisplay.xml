@@ -33,7 +33,7 @@
         <summary>Gets or sets if the screen shold be kept on.</summary>
         <value>If the screen keep on is set.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -53,7 +53,7 @@
         <summary>Gets the main screens display info.</summary>
         <value>The main screen display info.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -72,7 +72,7 @@
       <Docs>
         <summary>Event that is triggered when the main display info changes.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

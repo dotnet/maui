@@ -28,8 +28,8 @@
 
         public static bool HasGyroscope =>
 #if __ANDROID__
-            // Android does not emulate, but most devices have, a gyroscope
-            Xamarin.Essentials.DeviceInfo.DeviceType == Xamarin.Essentials.DeviceType.Physical;
+            // Android emulators and devices have gyros
+            Xamarin.Essentials.Platform.SensorManager?.GetDefaultSensor(Android.Hardware.SensorType.Gyroscope) != null;
 #elif __IOS__
             // all iOS devices (and only devices) have a gyroscope
             Xamarin.Essentials.DeviceInfo.DeviceType == Xamarin.Essentials.DeviceType.Physical;
@@ -66,7 +66,7 @@
         public static bool HasFlash =>
 #if __ANDROID__
             // TODO: android emulates the lamp, I think...
-            true;
+            Xamarin.Essentials.Platform.HasSystemFeature(Android.Content.PM.PackageManager.FeatureCameraFlash);
 #elif __IOS__
             // all iOS devices (and only devices) have a camera
             Xamarin.Essentials.DeviceInfo.DeviceType == Xamarin.Essentials.DeviceType.Physical;
@@ -77,7 +77,7 @@
 
         public static bool HasBarometer =>
 #if __ANDROID__
-      true;
+            true;
 #elif __IOS__
             // iphone 6 and never have a barometer. looking in how to test this.
             Xamarin.Essentials.DeviceInfo.DeviceType == Xamarin.Essentials.DeviceType.Physical;
