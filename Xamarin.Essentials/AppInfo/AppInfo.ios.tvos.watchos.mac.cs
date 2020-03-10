@@ -1,5 +1,7 @@
 ﻿using Foundation;
+#if __IOS__ || __TVOS__
 using UIKit;
+#endif
 
 namespace Xamarin.Essentials
 {

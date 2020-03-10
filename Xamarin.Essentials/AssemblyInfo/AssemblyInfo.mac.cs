@@ -1,3 +1,0 @@
-﻿using Foundation;
-
-[assembly: LinkerSafe]

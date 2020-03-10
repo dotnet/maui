@@ -25,5 +25,11 @@ namespace Xamarin.Essentials
 
         static Task<string> PlatformGetTextAsync() =>
             Task.FromResult(Pasteboard.GetStringForType(pasteboardType));
+
+        static void StartClipboardListeners()
+            => throw ExceptionUtils.NotSupportedOrImplementedException;
+
+        static void StopClipboardListeners()
+            => throw ExceptionUtils.NotSupportedOrImplementedException;
     }
 }

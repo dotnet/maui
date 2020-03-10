@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Threading.Tasks;
 using CoreLocation;
 using Foundation;
@@ -105,3 +106,4 @@ namespace Xamarin.Essentials
         }
     }
 }
+*/
