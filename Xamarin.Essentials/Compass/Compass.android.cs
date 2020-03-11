@@ -79,7 +79,7 @@ namespace Xamarin.Essentials
                 SensorManager.GetRotationMatrix(r, null, lastAccelerometer, lastMagnetometer);
                 SensorManager.GetOrientation(r, orientation);
 
-                if (orientation.Length == 0)
+                if (orientation.Length <= 0)
                     return;
 
                 var azimuthInRadians = orientation[0];
