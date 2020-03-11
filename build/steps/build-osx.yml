@@ -15,7 +15,7 @@ steps:
     inputs:
       targetType: 'filePath'
       filePath: 'build.sh'
-      arguments: --target provision --buildForVS2017=$(buildForVS2017)
+      arguments: --target provision --TeamProject="$(System.TeamProject)" --buildForVS2017=$(buildForVS2017)
 
   - task: UseDotNet@2
     displayName: 'Install .net core $(DOTNET_VERSION)'
@@ -29,16 +29,34 @@ steps:
     condition: ne(variables['NUGET_VERSION'], '')
     inputs:
       versionSpec: $(NUGET_VERSION)
+  
+  - task: DownloadBuildArtifacts@0
+    displayName: 'Download build artifact nuget'
+    condition: eq(variables['System.TeamProject'], 'DevDiv')
+    inputs:
+      artifactName: 'nuget'
+      downloadPath: '$(Build.ArtifactsDirectory)'
+
+  - task: CopyFiles@2
+    displayName: 'Copy Files to: $(System.DefaultWorkingDirectory)'
+    condition: eq(variables['System.TeamProject'], 'DevDiv')
+    inputs:
+      SourceFolder: '$(Build.ArtifactsDirectory)/nuget/$(buildConfiguration)'
+      TargetFolder: '$(System.DefaultWorkingDirectory)/Nuget'
 
   - task: NuGetCommand@2
     displayName: 'NuGet restore'
     inputs:
-      restoreSolution: $(slnPath)
+      command: restore
+      restoreSolution: 'Xamarin.Forms.sln'
+      feedsToUse: config
+      nugetConfigPath: 'DevopsNuget.config'
 
   - task: MSBuild@1
     displayName: 'Build solution Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj'
     inputs:
       solution: Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj
+      msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/tasks.binlog
 
   - task: InstallAppleCertificate@2
     displayName: 'Install an Apple certificate'
@@ -51,13 +69,26 @@ steps:
     inputs:
       provProfileSecureFile: 'Xamarin Forms iOS Provisioning.mobileprovision'
 
-  - task: XamariniOS@2
-    displayName: 'Build Xamarin.iOS solution $(slnPath)'
+  - task: MSBuild@1
+    displayName: 'Build Control Gallery IPA'
     inputs:
-      solutionFile: $(slnPath)
+      solution: 'Xamarin.Forms.ControlGallery.iOS/Xamarin.Forms.ControlGallery.iOS.csproj'
       configuration: $(buildConfiguration)
-      args: /bl:$(Build.ArtifactStagingDirectory)/ios-2017_$(buildForVS2017).binlog
+      msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/ios-cg.binlog /p:BuildIpa=true
 
+  - task: MSBuild@1
+    displayName: 'Build iOS Tests'
+    inputs:
+      solution: 'Xamarin.Forms.Core.iOS.UITests/Xamarin.Forms.Core.iOS.UITests.csproj'
+      configuration: $(buildConfiguration)
+      msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/ios-uitests.binlog
+
+  - task: MSBuild@1
+    displayName: 'Build Android Tests'
+    inputs:
+      solution: 'Xamarin.Forms.Core.Android.UITests/Xamarin.Forms.Core.Android.UITests.csproj'
+      configuration: $(buildConfiguration)
+      msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/android-uitests.binlog
 
   - task: CopyFiles@2
     displayName: 'Copy test-cloud.exe'

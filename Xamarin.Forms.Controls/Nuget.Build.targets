@@ -1,0 +1,11 @@
+<Project>
+  <ItemGroup>
+    <PackageReference Include="Xamarin.Forms" Version="$(XamarinFormsVersion)">
+    </PackageReference>
+    <PackageReference Include="Xamarin.Forms.Maps" Version="$(XamarinFormsVersion)">
+    </PackageReference>
+    <PackageReference Include="Xamarin.Forms.Visual.Material" Version="$(XamarinFormsVersion)">
+    </PackageReference>
+    <ProjectReference Include="..\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj" />
+  </ItemGroup>
+</Project>

@@ -5,6 +5,7 @@
 
 
   
+  
   <PropertyGroup Condition="'$(CI)' == ''">
     <CI>false</CI>
     <CI Condition="'$(TF_BUILD)' == 'true'">true</CI>
@@ -19,6 +20,18 @@
     -->
   </PropertyGroup>
   
+  <PropertyGroup Condition="'$(CI)' == 'true'">
+    <_XamarinFormsVersion>$(BUILD_BUILDNUMBER.Split(`+`)[0])</_XamarinFormsVersion>
+    <XamarinFormsVersion Condition="Exists('$(BUILD_SOURCESDIRECTORY)/Nuget/Xamarin.Forms.$(_XamarinFormsVersion).nupkg')" >$(_XamarinFormsVersion)</XamarinFormsVersion>
+  </PropertyGroup>
+
+  <!-- Build from source or nugets-->
+  <PropertyGroup>
+    <XamarinFormsVersion Condition="'$(XamarinFormsVersion)' == ''"></XamarinFormsVersion>
+    <FromSource Condition="'$(XamarinFormsVersion)' != ''">false</FromSource>
+    <FromSource Condition="'$(FromSource)' == ''">true</FromSource>
+  </PropertyGroup>
+
   <PropertyGroup>
     <Use2017 Condition="'$(Use2017)' == '' AND '$(MSBuildRuntimeType)' == 'Mono'">$(FrameworkSDKRoot.Contains('/Versions/5'))</Use2017>
     <Use2017 Condition="'$(Use2017)' == '' AND '$(MSBuildAssemblyVersion)' &lt; '16.0'">true</Use2017>

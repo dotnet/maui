@@ -1,4 +1,4 @@
 <Project>
-  <Import Project="..\.nuspec\Xamarin.Forms.props" />
   <Import Project="..\Directory.Build.props" />
+  <Import Project="..\.nuspec\Xamarin.Forms.props" Condition="$(FromSource) == 'true'" />
 </Project> 

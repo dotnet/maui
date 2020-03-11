@@ -64,6 +64,8 @@ jobs:
       displayName: 'NuGet restore ${{ parameters.slnPath }}'
       inputs:
         restoreSolution: ${{ parameters.slnPath }}
+        feedsToUse: config
+        nugetConfigPath: 'DevopsNuget.config'
 
     - script: build.cmd -Target BuildForNuget -ScriptArgs '-configuration="$(BuildConfiguration)"','-Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"'
       name: winbuild

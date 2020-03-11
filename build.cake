@@ -68,7 +68,7 @@ string monoPatchVersion = "";
 string monoMajorVersion = "";
 string monoVersion = "";
 
-if(buildForVS2017)
+if(buildForVS2017 || teamProject == "DevDiv")
 {
     // VS2017
     monoMajorVersion = "5.18.1";

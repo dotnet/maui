@@ -1,0 +1,16 @@
+<Project>
+  <ItemGroup>
+    <PackageReference Include="Xamarin.Forms" Version="$(XamarinFormsVersion)">
+    </PackageReference>
+    <PackageReference Include="Xamarin.Forms.Maps" Version="$(XamarinFormsVersion)">
+    </PackageReference>
+    <PackageReference Include="Xamarin.Forms.Visual.Material" Version="$(XamarinFormsVersion)">
+    </PackageReference>
+    <PackageReference Include="Xamarin.Forms.DualScreen" Version="$(XamarinFormsVersion)">
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup Condition=" $(TargetFrameworkIdentifier.StartsWith('MonoAndroid')) ">
+    <PackageReference Include="Xamarin.Forms.AppLinks" Version="$(XamarinFormsVersion)">
+    </PackageReference>
+  </ItemGroup>
+</Project>

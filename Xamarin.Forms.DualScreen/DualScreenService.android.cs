@@ -14,6 +14,12 @@ namespace Xamarin.Forms.DualScreen
 {
 	public class DualScreenService
 	{
+		[Internals.Preserve(Conditional = true)]
+		public DualScreenService()
+		{
+
+		}
+
 		public static void Init(Activity activity)
 		{
 			DependencyService.Register<DualScreenServiceImpl>();
@@ -34,6 +40,7 @@ namespace Xamarin.Forms.DualScreen
 			object _hingeAngleLock = new object();
 			TaskCompletionSource<int> _gettingHingeAngle;
 
+			[Internals.Preserve(Conditional = true)]
 			public DualScreenServiceImpl()
 			{
 				_HingeService = this;

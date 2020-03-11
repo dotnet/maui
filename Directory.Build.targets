@@ -3,6 +3,5 @@
     <PackageReference Include="GitInfo" Version="2.0.20" PrivateAssets="All" />
     <PackageReference Include="MSBuilder.GenerateAssemblyInfo" Version="0.2.1" PrivateAssets="All" />
 	</ItemGroup>
-
   <Import Project="Version.targets" />
  </Project>

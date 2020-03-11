@@ -1,3 +1,6 @@
 <Project>
   <Import Project="Android10.Build.targets" Condition="'$(TargetFrameworkVersion)' == 'v10.0'" />
+  <Import Condition="'$(Use2017)' == 'true'" Project="Nuget2017.Build.targets" />
+  <Import Condition="'$(Use2017)' != 'true'" Project="Nuget2019.Build.targets" />
+  <Import Project="..\Nuget.targets" Condition="'$(FromSource)' == 'false'" />
 </Project>

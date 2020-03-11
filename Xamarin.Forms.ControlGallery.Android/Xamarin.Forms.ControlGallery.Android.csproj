@@ -28,7 +28,6 @@
     <AndroidEnableMultiDex>true</AndroidEnableMultiDex>
     <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
   </PropertyGroup>
-
   <PropertyGroup>
     <!-- default locally to using fast renderers but if we're running on CI don't set a value for ANDROID_RENDERERS.
       This will let the old and new yaml configurations coexist -->
@@ -37,7 +36,6 @@
     <DefineConstants Condition="'$(ANDROID_RENDERERS)' == 'PREAPPCOMPAT'">$(DefineConstants);FORMS_APPLICATION_ACTIVITY</DefineConstants>
     <DefineConstants Condition="'$(ANDROID_RENDERERS)' == 'LEGACY'">$(DefineConstants)</DefineConstants>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DefineConstants>$(DefineConstants);HAVE_OPENTK</DefineConstants>
     <AndroidKeyStore>True</AndroidKeyStore>
@@ -194,11 +192,7 @@
     <AndroidResource Include="Resources\drawable\Icon.png" />
     <AndroidResource Include="Resources\drawable\cover1.jpg" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Stubs\Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android (Forwarders).csproj">
-      <Project>{6e53feb1-1100-46ae-8013-17bba35cc197}</Project>
-      <Name>Xamarin.Forms.Platform.Android (Forwarders)</Name>
-    </ProjectReference>
+  <ItemGroup>  
     <ProjectReference Include="..\Xamarin.Forms.Controls\Xamarin.Forms.Controls.csproj">
       <Project>{cb9c96ce-125c-4a68-b6a1-c3ff1fbf93e1}</Project>
       <Name>Xamarin.Forms.Controls</Name>
@@ -206,6 +200,15 @@
     <ProjectReference Include="..\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj">
       <Project>{4dcd0420-1168-4b77-86db-6196ee4bd491}</Project>
       <Name>Xamarin.Forms.CustomAttributes</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup Condition="$(FromSource) == 'true'">
+    <ProguardConfiguration Include="..\.nuspec\proguard.cfg">
+      <Link>proguard.cfg</Link>
+    </ProguardConfiguration>
+    <ProjectReference Include="..\Stubs\Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android (Forwarders).csproj">
+      <Project>{6e53feb1-1100-46ae-8013-17bba35cc197}</Project>
+      <Name>Xamarin.Forms.Platform.Android (Forwarders)</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.DualScreen\Xamarin.Forms.DualScreen.csproj">
       <Project>{fb4a866a-5721-4545-9e5d-b7f7d59875a4}</Project>
@@ -358,9 +361,6 @@
     <PackageReference Include="Xam.Plugin.DeviceInfo">
       <Version>3.0.2</Version>
     </PackageReference>
-    <PackageReference Include="Xamarin.Build.Download">
-      <Version>0.7.1</Version>
-    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Xamarin.Android.Support.Animated.Vector.Drawable" Version="28.0.0.3" />
@@ -395,11 +395,6 @@
     <AndroidEnvironment Include="Environment.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProguardConfiguration Include="..\.nuspec\proguard.cfg">
-      <Link>proguard.cfg</Link>
-    </ProguardConfiguration>
-  </ItemGroup>
-  <ItemGroup>
     <AndroidResource Include="Resources\drawable\GifTwo.gif" />
   </ItemGroup>
   <ItemGroup>
@@ -424,7 +419,7 @@
     </AndroidResource>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="$(FromSource) == 'true' AND Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="BeforeBuild">
     <CreateItem Include="Properties\MapsKey.cs.blank">
       <Output TaskParameter="Include" ItemName="MapsKey" />
