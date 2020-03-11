@@ -230,7 +230,8 @@ namespace Xamarin.Essentials
                 {
                     var permissions = new List<(string, bool)>();
 #if __ANDROID_29__
-                    if (Platform.HasApiLevelQ)
+                    // Check if running and targeting Q
+                    if (Platform.HasApiLevelQ && Platform.AppContext.ApplicationInfo.TargetSdkVersion >= BuildVersionCodes.Q)
                         permissions.Add((Manifest.Permission.AccessBackgroundLocation, true));
 #endif
 
