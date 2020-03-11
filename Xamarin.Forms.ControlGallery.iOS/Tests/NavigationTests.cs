@@ -14,12 +14,15 @@ namespace Xamarin.Forms.ControlGallery.iOS.Tests
 				Title = "root",
 				Content = new Label { Text = "Hello" }
 			};
-			var navPage = new NavigationPage(root);
-			var renderer = GetRenderer(navPage);
 
-			// Calling Dispose more than once should be fine
-			renderer.Dispose();
-			renderer.Dispose();
+			Device.InvokeOnMainThreadAsync(() => { 
+				var navPage = new NavigationPage(root);
+				var renderer = GetRenderer(navPage);
+
+				// Calling Dispose more than once should be fine
+				renderer.Dispose();
+				renderer.Dispose();
+			});
 		}
 	}
 }

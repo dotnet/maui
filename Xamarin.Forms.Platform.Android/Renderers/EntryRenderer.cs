@@ -224,7 +224,6 @@ namespace Xamarin.Forms.Platform.Android
 			base.Dispose(disposing);
 		}
 
-
 		protected virtual void UpdatePlaceHolderText()
 		{
 			if (EditText.Hint == Element.Placeholder)
@@ -239,6 +238,11 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (this.IsDisposed())
+			{
+				return;
+			}
+
 			if (e.PropertyName == Entry.PlaceholderProperty.PropertyName)
 				UpdatePlaceHolderText();
 			else if (e.PropertyName == Entry.IsPasswordProperty.PropertyName)

@@ -3,8 +3,10 @@ using System.Threading.Tasks;
 using Android.Views;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
+using Xamarin.Forms.Controls.Tests;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Platform.Android;
+using AView = Android.Views.View;
 
 namespace Xamarin.Forms.ControlGallery.Android.Tests
 {
@@ -72,6 +74,54 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 			catch (Exception exc)
 			{
 				Assert.Fail($"{exc}");
+			}
+		}
+
+		[Test(Description = "No ObjectDisposedException should be thrown")]
+		[Issue(IssueTracker.Github, 5560, "[Android] Disposed EntryCell throws ObjectDisposed exception after updating an object that the EntryCell was previously bound to")]
+		public void EntryCellDisposed()
+		{
+			var text1 = "Foo";
+			var text2 = "Bar";
+			var model = new _5560Model() { Text = text1 };
+
+			for (int m = 0; m < 3; m++)
+			{
+				var entryCell = new EntryCell();
+				entryCell.SetBinding(EntryCell.TextProperty, new Binding("Text"));
+				entryCell.BindingContext = model;
+				CellFactory.GetCell(entryCell, null, null, Context, null);
+
+				if (m == 1)
+				{
+					GC.Collect();
+				}
+
+				model.Text = model.Text == text1 ? text2 : text1;
+			}
+		}
+
+		[Test(Description = "No ObjectDisposedException should be thrown")]
+		[Issue(IssueTracker.Github, 8607, "Cannot access a disposed object. Object name: 'Android.Widget.TextView'.")]
+		public void TextCellDisposed()
+		{
+			var text1 = "Foo";
+			var text2 = "Bar";
+			var model = new _5560Model() { Text = text1 };
+
+			for (int m = 0; m < 3; m++)
+			{
+				var cell = new TextCell();
+				cell.SetBinding(TextCell.TextProperty, new Binding("Text"));
+				cell.BindingContext = model;
+				CellFactory.GetCell(cell, null, null, Context, null);
+
+				if (m == 1)
+				{
+					GC.Collect();
+				}
+
+				model.Text = model.Text == text1 ? text2 : text1;
 			}
 		}
 	}

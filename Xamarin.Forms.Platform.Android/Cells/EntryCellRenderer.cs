@@ -40,6 +40,11 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void OnCellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (_view == null || _view.IsDisposed())
+			{
+				return;
+			}
+
 			base.OnCellPropertyChanged(sender, e);
 
 			if (e.PropertyName == EntryCell.LabelProperty.PropertyName)

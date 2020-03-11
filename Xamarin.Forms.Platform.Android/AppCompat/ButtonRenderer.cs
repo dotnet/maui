@@ -123,6 +123,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (this.IsDisposed())
+			{
+				return;
+			}
+
 			if (e.PropertyName == Button.TextColorProperty.PropertyName)
 				UpdateTextColor();
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)

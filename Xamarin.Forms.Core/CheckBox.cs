@@ -24,7 +24,6 @@ namespace Xamarin.Forms
 			set => SetValue(ColorProperty, value);
 		}
 
-
 		public CheckBox() => _platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<CheckBox>>(() => new PlatformConfigurationRegistry<CheckBox>(this));
 
 		public bool IsChecked

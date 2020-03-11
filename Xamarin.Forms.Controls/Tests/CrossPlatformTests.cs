@@ -1,22 +1,11 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Tests
 {
 	[TestFixture]
-	public class CrossPlatformTests
+	public class CrossPlatformTests : CrossPlatformTestFixture
 	{
-		ITestingPlatformService _testingPlatformService;
-		ITestingPlatformService TestingPlatform
-		{
-			get 
-			{
-				return _testingPlatformService = _testingPlatformService 
-					?? DependencyService.Resolve<ITestingPlatformService>();
-			}
-		}
-
 		[Test]
 		[Description("Always Passes")]
 		public void PassingCrossPlatformTest()
