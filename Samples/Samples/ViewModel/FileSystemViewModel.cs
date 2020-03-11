@@ -29,6 +29,10 @@ namespace Samples.ViewModel
 
         public ICommand DeleteFileCommand { get; }
 
+        public string AppDataDirectory => FileSystem.AppDataDirectory;
+
+        public string CacheDirectory => FileSystem.CacheDirectory;
+
         public string CurrentContents
         {
             get => currentContents;
