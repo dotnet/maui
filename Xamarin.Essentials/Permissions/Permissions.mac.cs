@@ -111,7 +111,7 @@ namespace Xamarin.Essentials
                 EnsureDeclared();
 
                 var status = GetLocationStatus();
-                if (status == PermissionStatus.Granted)
+                if (status == PermissionStatus.Granted || status == PermissionStatus.Disabled)
                     return status;
 
                 EnsureMainThread();
