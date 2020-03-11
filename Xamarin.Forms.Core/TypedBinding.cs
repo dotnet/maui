@@ -96,7 +96,7 @@ namespace Xamarin.Forms.Internals
 			BindableObject target;
 #if DO_NOT_CHECK_FOR_BINDING_REUSE
 			if (!_weakTarget.TryGetTarget(out target))
-				throw new InvalidOperationException();
+				return;
 #else
 			if (!_weakTarget.TryGetTarget(out target) || target == null) {
 				Unapply();
