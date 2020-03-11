@@ -43,11 +43,21 @@ namespace Xamarin.Essentials
 
         void ISensorEventListener.OnSensorChanged(SensorEvent e)
         {
-            if ((e?.Values?.Count ?? 0) < 4)
+            var count = e?.Values?.Count ?? 0;
+            if (count < 3)
                 return;
 
-            var data = new OrientationSensorData(e.Values[0], e.Values[1], e.Values[2], e.Values[3]);
-            OrientationSensor.OnChanged(data);
+            OrientationSensorData? data;
+
+            // Docs: https://developer.android.com/reference/android/hardware/SensorEvent#sensor.type_rotation_vector-:
+            // values[3], originally optional, will always be present from SDK Level 18 onwards. values[4] is a new value that has been added in SDK Level 18.
+
+            if (count < 4)
+                data = new OrientationSensorData(e.Values[0], e.Values[1], e.Values[2], -1);
+            else
+                data = new OrientationSensorData(e.Values[0], e.Values[1], e.Values[2], e.Values[3]);
+
+            OrientationSensor.OnChanged(data.Value);
         }
     }
 }
