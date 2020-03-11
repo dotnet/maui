@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using AppKit;
+﻿using AppKit;
 using CoreGraphics;
 using Foundation;
 using Xamarin.Forms;
@@ -34,80 +32,9 @@ namespace Samples.Mac
         {
             Forms.Init();
 
-            // LoadApplication(new App());
-
-            // HACK: There appears to be some issue with the ListView on macOS,
-            //       so we are just going to use the menu bar for now with a
-            //       dummy start/home page.
-            LoadMenuBasedSampleApp();
+            LoadApplication(new App());
 
             base.DidFinishLaunching(notification);
-        }
-
-        void LoadMenuBasedSampleApp()
-        {
-            var nav = new NavigationPage(new ContentPage
-            {
-                Title = "Xamarin.Essentials",
-                Content = new Label
-                {
-                    Text = "Select a sample from the \"Samples\" menu...",
-                    HorizontalTextAlignment = TextAlignment.Center,
-                    VerticalTextAlignment = TextAlignment.Center,
-                },
-            });
-            LoadApplication(new App { MainPage = nav });
-
-            // load the menu
-            var mainMenu = NSApplication.SharedApplication.MainMenu;
-            var samplesMenu = mainMenu.ItemWithTitle("Samples");
-
-            // deselect the samples when we return to the home page
-            nav.Popped += (s, e) =>
-            {
-                if (nav.StackDepth == 1)
-                {
-                    SelectSampleMenuItem(null);
-                }
-            };
-
-            // add the samples to the main menu
-            var home = new ViewModel.HomeViewModel();
-            var allSamples = home.FilteredItems.ToList();
-            for (var i = 0; i < allSamples.Count; i++)
-            {
-                var sample = allSamples[i];
-                var menuItem = new NSMenuItem(sample.Name, OnSampleSelected);
-                menuItem.Tag = i;
-                menuItem.ToolTip = sample.Description;
-                samplesMenu.Submenu.AddItem(menuItem);
-            }
-
-            async void OnSampleSelected(object sender, EventArgs e)
-            {
-                if (sender is NSMenuItem menuItem)
-                {
-                    SelectSampleMenuItem(menuItem);
-
-                    var sample = allSamples[(int)menuItem.Tag];
-                    await nav.PushAsync((Page)Activator.CreateInstance(sample.PageType));
-                }
-            }
-
-            void SelectSampleMenuItem(NSMenuItem menuItem)
-            {
-                // deselect previous
-                foreach (var mi in samplesMenu.Submenu.Items)
-                {
-                    mi.State = NSCellStateValue.Off;
-                }
-
-                // select this one
-                if (menuItem != null)
-                {
-                    menuItem.State = NSCellStateValue.On;
-                }
-            }
         }
 
         public override bool ApplicationShouldTerminateAfterLastWindowClosed(NSApplication sender) => true;
