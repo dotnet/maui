@@ -43,43 +43,49 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
+		List<NSObject> DefaultOrder()
+		{
+			var views = new List<NSObject>();
+			if (Container != null)
+				views.AddRange(Container.DescendantsTree());
+			return views;
+		}
+
 		public List<NSObject> GetAccessibilityElements()
 		{
 			if (Container == null || Element == null)
-				return null;
+				return new List<NSObject>();
 
-			var children = Element.Descendants();
 			SortedDictionary<int, List<ITabStopElement>> tabIndexes = null;
-			List<NSObject> views = new List<NSObject>();
-			foreach (var child in children)
+			foreach (var child in Element.LogicalChildren)
 			{
 				if (!(child is VisualElement ve))
 					continue;
 
-				tabIndexes = ve.GetSortedTabIndexesOnParentPage(out _);
+				tabIndexes = ve.GetSortedTabIndexesOnParentPage();
 				break;
 			}
 
 			if (tabIndexes == null)
-				return null;
+				return DefaultOrder();
 
+			// Just return all elements on the page in order.
+			if (tabIndexes.Count <= 1)
+				return DefaultOrder();
+
+			var views = new List<NSObject>();
 			foreach (var idx in tabIndexes?.Keys)
 			{
 				var tabGroup = tabIndexes[idx];
 				foreach (var child in tabGroup)
 				{
-					if (
-						!(
-							child is VisualElement ve && ve.IsTabStop
-							&& AutomationProperties.GetIsInAccessibleTree(ve) != false // accessible == true
-							&& ve.GetRenderer()?.NativeView is UIView view)
-						 )
+					if (!(child is VisualElement ve && ve.GetRenderer()?.NativeView is UIView view))
 						continue;
 
-					var thisControl = view;
+					UIView thisControl = null;
 
-					if (view is ITabStop tabstop)
-						thisControl = tabstop.TabStop;
+					if (view is ITabStop tabStop)
+						thisControl = tabStop.TabStop;
 
 					if (thisControl == null)
 						continue;

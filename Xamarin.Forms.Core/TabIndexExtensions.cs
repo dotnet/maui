@@ -7,14 +7,15 @@ namespace Xamarin.Forms
 {
 	public static class TabIndexExtensions
 	{
-		public static SortedDictionary<int, List<ITabStopElement>> GetSortedTabIndexesOnParentPage(this VisualElement element, out int countChildrensWithTabStopWithoutThis)
+		public static SortedDictionary<int, List<ITabStopElement>> GetSortedTabIndexesOnParentPage(this VisualElement element)
 		{
-			return new SortedDictionary<int, List<ITabStopElement>>(TabIndexExtensions.GetTabIndexesOnParentPage(element, out countChildrensWithTabStopWithoutThis));
+			return new SortedDictionary<int, List<ITabStopElement>>(GetTabIndexesOnParentPage(element, out _));
 		}
 
-		public static IDictionary<int, List<ITabStopElement>> GetTabIndexesOnParentPage(this ITabStopElement element, out int countChildrensWithTabStopWithoutThis, bool checkContainsElement = true)
-		{
-			countChildrensWithTabStopWithoutThis = 0;
+		public static IDictionary<int, List<ITabStopElement>> GetTabIndexesOnParentPage(this ITabStopElement element, out int countChildrenWithTabStopWithoutThis)
+        {
+			var empty = new Dictionary<int, List<ITabStopElement>>();
+			countChildrenWithTabStopWithoutThis = 0;
 
 			Element parentPage = (element as Element)?.Parent;
 			while (parentPage != null && !(parentPage is Page))
@@ -26,23 +27,20 @@ namespace Xamarin.Forms
 				descendantsOnPage = shell.Items;
 
 			if (descendantsOnPage == null)
-				return new Dictionary<int, List<ITabStopElement>>();
+				return empty;
 
-			var childrensWithTabStop = new List<ITabStopElement>();
+			var childrenWithTabStop = new List<ITabStopElement>();
 			foreach (var descendant in descendantsOnPage)
 			{
-				if (descendant is ITabStopElement visualElement && visualElement.IsTabStop)
-					childrensWithTabStop.Add(visualElement);
+				if (descendant is ITabStopElement visualElement && IsTabStop(descendant))
+					childrenWithTabStop.Add(visualElement);
 			}
 
-			if (checkContainsElement && !childrensWithTabStop.Contains(element))
-				return new Dictionary<int, List<ITabStopElement>>();
-
-			countChildrensWithTabStopWithoutThis = childrensWithTabStop.Count - 1;
-			return childrensWithTabStop.GroupToDictionary(c => c.TabIndex);
+			countChildrenWithTabStopWithoutThis = childrenWithTabStop.Count - 1;
+			return childrenWithTabStop.GroupToDictionary(c => c.TabIndex);
 		}
 
-		public static ITabStopElement FindNextElement(this ITabStopElement element, bool forwardDirection, IDictionary<int, List<ITabStopElement>> tabIndexes, ref int tabIndex) 
+		public static ITabStopElement FindNextElement(this ITabStopElement element, bool forwardDirection, IDictionary<int, List<ITabStopElement>> tabIndexes, ref int tabIndex)
 		{
 			if (!tabIndexes.TryGetValue(tabIndex, out var tabGroup))
 				return null;
@@ -93,6 +91,18 @@ namespace Xamarin.Forms
 					return tabIndexes[tabIndex][0];
 				}
 			}
+		}
+
+		static bool IsTabStop(BindableObject e)
+		{
+			if (e is VisualElement fe)
+				return
+					AutomationProperties.GetIsInAccessibleTree(fe) != false //Focusable
+					&& fe.IsTabStop
+					&& fe.IsEnabled
+					&& fe.IsVisible;
+
+			return false;
 		}
 	}
 }

@@ -161,7 +161,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public void FocusSearch(bool forwardDirection)
 		{
 			var element = Shell.CurrentItem as ITabStopElement;
-			var tabIndexes = element?.GetTabIndexesOnParentPage(out _, checkContainsElement: false);
+			var tabIndexes = element?.GetTabIndexesOnParentPage(out _);
 			if (tabIndexes == null)
 				return;
 

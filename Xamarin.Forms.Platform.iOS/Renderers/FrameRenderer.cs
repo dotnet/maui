@@ -4,8 +4,10 @@ using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	public class FrameRenderer : VisualElementRenderer<Frame>
+	public class FrameRenderer : VisualElementRenderer<Frame>, ITabStop
 	{
+		UIView ITabStop.TabStop => this;
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Frame> e)
 		{
 			base.OnElementChanged(e);

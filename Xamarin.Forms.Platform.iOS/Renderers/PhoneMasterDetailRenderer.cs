@@ -43,10 +43,13 @@ namespace Xamarin.Forms.Platform.iOS
 					return;
 				_presented = value;
 				LayoutChildren(true);
+
 				if (value)
 					AddClickOffView();
 				else
 					RemoveClickOffView();
+
+				ToggleAccessibilityElementsHidden();
 
 				((IElementController)Element).SetValueFromRenderer(Xamarin.Forms.MasterDetailPage.IsPresentedProperty, value);
 			}
@@ -341,6 +344,8 @@ namespace Xamarin.Forms.Platform.iOS
 			SetNeedsStatusBarAppearanceUpdate();
 			if (Forms.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
+
+			ToggleAccessibilityElementsHidden();
 		}
 
 		void UpdateLeftBarButton()
@@ -375,6 +380,17 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
+		void ToggleAccessibilityElementsHidden()
+		{
+			var masterView = _masterController?.View;
+			if (masterView != null)
+				masterView.AccessibilityElementsHidden = !Presented;
+
+			var detailView = _detailController?.View;
+			if (detailView != null)
+				detailView.AccessibilityElementsHidden = Presented;
+		}
+
 		void UpdatePanGesture()
 		{
 			var model = (MasterDetailPage)Element;
@@ -391,11 +407,11 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 			}
 
-   			bool shouldReceive(UIGestureRecognizer g, UITouch t)
+			bool shouldReceive(UIGestureRecognizer g, UITouch t)
 			{
 				return !(t.View is UISlider) && !(IsSwipeView(t.View));
 			}
-   
+
 			var center = new PointF();
 			_panGesture = new UIPanGestureRecognizer(g =>
 			{
