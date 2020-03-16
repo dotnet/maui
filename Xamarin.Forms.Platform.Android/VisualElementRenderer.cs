@@ -178,6 +178,10 @@ namespace Xamarin.Forms.Platform.Android
 			if (tabIndexes == null)
 				return base.FocusSearch(focused, direction);
 
+			// use OS default--there's no need for us to keep going if there's one or fewer tab indexes!
+			if (tabIndexes.Count <= 1)
+				return base.FocusSearch(focused, direction);
+
 			int tabIndex = element.TabIndex;
 			AView control = null;
 			int attempt = 0;
