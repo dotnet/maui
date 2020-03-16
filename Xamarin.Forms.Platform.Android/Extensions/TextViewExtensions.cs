@@ -115,6 +115,15 @@ namespace Xamarin.Forms.Platform.Android
 				var startSpanOffset = spannableString.GetSpanStart(startSpan);
 				var endSpanOffset = spannableString.GetSpanEnd(endSpan);
 
+				var thisLine = layout.GetLineForOffset(endSpanOffset);
+				var lineStart = layout.GetLineStart(thisLine);
+				var lineEnd = layout.GetLineEnd(thisLine);
+
+				//If this is true, endSpanOffset has the value for another line that belong to the next span and not it self. 
+				//So it should be rearranged to value not pass the lineEnd.
+				if (endSpanOffset > (lineEnd - lineStart))
+					endSpanOffset = lineEnd;
+
 				var startX = layout.GetPrimaryHorizontal(startSpanOffset);
 				var endX = layout.GetPrimaryHorizontal(endSpanOffset);
 
@@ -134,6 +143,7 @@ namespace Xamarin.Forms.Platform.Android
 				}
 
 				var yaxis = 0.0;
+
 
 				for (var line = startLine; line > 0; line--)
 					yaxis += totalLineHeights[line];

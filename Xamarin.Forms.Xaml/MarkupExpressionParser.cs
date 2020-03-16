@@ -122,7 +122,6 @@ namespace Xamarin.Forms.Xaml
 
 		protected Property ParseProperty(IServiceProvider serviceProvider, ref string remaining)
 		{
-			char next;
 			object value = null;
 			string str_value;
 			string name;
@@ -131,7 +130,7 @@ namespace Xamarin.Forms.Xaml
 			if (remaining[0] == '{')
 				return ParsePropertyExpression(null, serviceProvider, ref remaining);
 
-			str_value = GetNextPiece(serviceProvider, ref remaining, out next);
+			str_value = GetNextPiece(serviceProvider, ref remaining, out var next);
 			if (next == '=') {
 				remaining = remaining.TrimStart();
 				if (remaining[0] == '{')
@@ -147,7 +146,7 @@ namespace Xamarin.Forms.Xaml
 			return new Property { last = next == '}', name = name, strValue = str_value, value = value };
 		}
 
-		private Property ParsePropertyExpression(string prop, IServiceProvider serviceProvider, ref string remaining)
+		Property ParsePropertyExpression(string prop, IServiceProvider serviceProvider, ref string remaining)
 		{
 			bool last;
 			var value = ParseExpression(ref remaining, serviceProvider);
@@ -165,7 +164,7 @@ namespace Xamarin.Forms.Xaml
 			return new Property { last = last, name = prop, strValue = value as string, value = value };
 		}
 
-		private string GetNextPiece(IServiceProvider serviceProvider, ref string remaining, out char next)
+		string GetNextPiece(IServiceProvider serviceProvider, ref string remaining, out char next)
 		{
 			bool inString = false;
 			int end = 0;
@@ -182,6 +181,8 @@ namespace Xamarin.Forms.Xaml
 					{
 						inString = false;
 						end ++;
+						while (remaining[end] == ' ')
+							end++;
 						break;
 					}
 				}
