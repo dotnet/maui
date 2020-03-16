@@ -26,7 +26,7 @@ variables:
 
 resources:
   repositories:
-    - repository: xamarin-templates 
+    - repository: xamarin-templates
       type: github
       name: xamarin/yaml-templates
       endpoint: xamarin
@@ -67,7 +67,8 @@ stages:
       parameters:
         name: win
         displayName: Build Windows Phase
-        vmImage: $(win2019VmImage)
+        vmImage: $(vs2019VmImage)
+        vmPool: $(vs2019VmPool)
         provisionatorPath : 'build/provisioning/provisioning.csx'
     - job: nuget_pack
       workspace:
@@ -77,7 +78,8 @@ stages:
       displayName: Nuget Phase
       condition: succeeded()
       pool:
-        name: $(win2019VmImage)
+        name: $(vs2019VmPool)
+        vmImage: $(vs2019VmImage)
       variables:
         FormsIdAppend: ''
         buildConfiguration: $(DefaultBuildConfiguration)
@@ -91,10 +93,10 @@ stages:
       dependsOn: windows
     ${{ if eq(variables['System.TeamProject'], 'public') }}:
       dependsOn: []
-    jobs:   
+    jobs:
       - template: build/steps/build-android.yml
         parameters:
-          vmImage: $(macOSVmImage)
+          vmImage: $(macOSXVmImage)
           provisionatorPath : 'build/provisioning/provisioning.csx'
 
   - stage: build_osx
@@ -109,7 +111,7 @@ stages:
           clean: all
         displayName: OSX Phase
         pool:
-          name: $(macOSVmImage)
+          vmImage: $(macOSXVmImage)
           demands:
             - Agent.OS -equals darwin
             - sh

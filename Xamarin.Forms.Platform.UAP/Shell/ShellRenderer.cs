@@ -11,12 +11,17 @@ namespace Xamarin.Forms.Platform.UWP
 	[Windows.UI.Xaml.Data.Bindable]
 	public class ShellRenderer : Microsoft.UI.Xaml.Controls.NavigationView, IVisualElementRenderer, IAppearanceObserver, IFlyoutBehaviorObserver
 	{
+		public static readonly DependencyProperty FlyoutBackgroundColorProperty = DependencyProperty.Register(
+			nameof(FlyoutBackgroundColor), typeof(Brush), typeof(ShellRenderer),
+			new PropertyMetadata(default(Brush)));
+
 		internal static readonly Windows.UI.Color DefaultBackgroundColor = Windows.UI.Color.FromArgb(255, 3, 169, 244);
 		internal static readonly Windows.UI.Color DefaultForegroundColor = Windows.UI.Colors.White;
 		internal static readonly Windows.UI.Color DefaultTitleColor = Windows.UI.Colors.White;
 		internal static readonly Windows.UI.Color DefaultUnselectedColor = Windows.UI.Color.FromArgb(180, 255, 255, 255);
 		const string TogglePaneButton = "TogglePaneButton";
 		const string NavigationViewBackButton = "NavigationViewBackButton";
+		internal const string ShellStyle = "ShellNavigationView";
 		Shell _shell;
 
 		ShellItemRenderer ItemRenderer { get; }
@@ -36,6 +41,13 @@ namespace Xamarin.Forms.Platform.UWP
 			if (ApiInformation.IsEventPresent("Windows.UI.Xaml.Controls.NavigationView", "PaneOpening"))
 				PaneOpening += (s, e) => OnPaneOpening();
 			ItemInvoked += OnMenuItemInvoked;
+			Style = Windows.UI.Xaml.Application.Current.Resources["ShellNavigationView"] as Windows.UI.Xaml.Style;
+		}
+
+		public Brush FlyoutBackgroundColor
+		{
+			get => (Brush)GetValue(FlyoutBackgroundColorProperty);
+			set => SetValue(FlyoutBackgroundColorProperty, value);
 		}
 
 		protected override void OnApplyTemplate()
@@ -51,6 +63,7 @@ namespace Xamarin.Forms.Platform.UWP
 				Shell.FlyoutIsPresented = true;
 			UpdatePaneButtonColor(TogglePaneButton, false);
 			UpdatePaneButtonColor(NavigationViewBackButton, false);
+			UpdateFlyoutBackgroundColor();
 		}
 
 		void OnPaneClosed()
@@ -122,13 +135,13 @@ namespace Xamarin.Forms.Platform.UWP
 				ItemRenderer.SetShellContext(this);
 				_elementChanged?.Invoke(this, new VisualElementChangedEventArgs(null, Element));
 			}
-			else if(Element != null)
+			else if (Element != null)
 			{
 				Element.SizeChanged -= OnElementSizeChanged;
 				Element.PropertyChanged -= OnElementPropertyChanged;
 			}
 		}
-		
+
 		#endregion IVisualElementRenderer
 
 		protected internal Shell Element { get; set; }
@@ -150,11 +163,36 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				IsPaneOpen = Shell.FlyoutIsPresented;
 			}
+			else if (e.PropertyName == Shell.FlyoutBackgroundColorProperty.PropertyName)
+			{
+				UpdateFlyoutBackgroundColor();
+			}
+		}
+
+		protected virtual void UpdateFlyoutBackgroundColor()
+		{
+
+			if (_shell.FlyoutBackgroundColor == Color.Default)
+			{
+				object color = null;
+				if (IsPaneOpen)
+					color = Resources["NavigationViewExpandedPaneBackground"];
+				else
+					color = Resources["NavigationViewDefaultPaneBackground"];
+
+
+				if (color is Brush brush)
+					FlyoutBackgroundColor = brush;
+				else if (color is Windows.UI.Color uiColor)
+					new SolidColorBrush(uiColor);
+			}
+			else
+				FlyoutBackgroundColor = _shell.FlyoutBackgroundColor.ToBrush();
 		}
 
 		protected virtual void OnElementSet(Shell shell)
 		{
-			if(_shell != null)
+			if (_shell != null)
 			{
 				(_shell as IShellController).ItemsCollectionChanged -= OnItemsCollectionChanged;
 			}
@@ -172,6 +210,7 @@ namespace Xamarin.Forms.Platform.UWP
 			((IShellController)Element).AddFlyoutBehaviorObserver(this);
 			((IShellController)shell).AddAppearanceObserver(this, shell);
 			(shell as IShellController).ItemsCollectionChanged += OnItemsCollectionChanged;
+			UpdateFlyoutBackgroundColor();
 		}
 
 		void OnItemsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)

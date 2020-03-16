@@ -29,13 +29,16 @@ namespace Xamarin.Forms
 				propertyChanged: OnSwipeItemsChanged);
 
 		public static readonly BindableProperty RightItemsProperty =
-			BindableProperty.Create(nameof(RightItems), typeof(SwipeItems), typeof(SwipeView), null, BindingMode.OneWay, null, defaultValueCreator: SwipeItemsDefaultValueCreator);
+			BindableProperty.Create(nameof(RightItems), typeof(SwipeItems), typeof(SwipeView), null, BindingMode.OneWay, null, defaultValueCreator: SwipeItemsDefaultValueCreator,
+				propertyChanged: OnSwipeItemsChanged);
 
 		public static readonly BindableProperty TopItemsProperty =
-			BindableProperty.Create(nameof(TopItems), typeof(SwipeItems), typeof(SwipeView), null, BindingMode.OneWay, null, defaultValueCreator: SwipeItemsDefaultValueCreator);
+			BindableProperty.Create(nameof(TopItems), typeof(SwipeItems), typeof(SwipeView), null, BindingMode.OneWay, null, defaultValueCreator: SwipeItemsDefaultValueCreator,
+				propertyChanged: OnSwipeItemsChanged);
 
 		public static readonly BindableProperty BottomItemsProperty =
-			BindableProperty.Create(nameof(BottomItems), typeof(SwipeItems), typeof(SwipeView), null, BindingMode.OneWay, null, defaultValueCreator: SwipeItemsDefaultValueCreator);
+			BindableProperty.Create(nameof(BottomItems), typeof(SwipeItems), typeof(SwipeView), null, BindingMode.OneWay, null, defaultValueCreator: SwipeItemsDefaultValueCreator,
+				propertyChanged: OnSwipeItemsChanged);
 
 		public SwipeItems LeftItems
 		{
@@ -117,8 +120,14 @@ namespace Xamarin.Forms
 		{
 			swipeItems.Parent = this;
 
-			foreach (var swipeItem in swipeItems)
-				((VisualElement)swipeItem).Parent = swipeItems;
+			foreach (var item in swipeItems)
+			{
+				if (item is SwipeItem swipeItem)
+					swipeItem.Parent = swipeItems;
+
+				if (item is SwipeItemView swipeItemView)
+					swipeItemView.Parent = swipeItems;
+			}
 		}
 	}
 }

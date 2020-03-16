@@ -191,7 +191,7 @@ namespace Xamarin.Forms
 				return;
 			}
 
-			_targets.RemoveAll(t => !t.TryGetTarget(out _));
+			_targets.RemoveAll(t => t == null || !t.TryGetTarget(out _));
 			_cleanupThreshold = _targets.Count + CleanupTrigger;
 		}
 	}

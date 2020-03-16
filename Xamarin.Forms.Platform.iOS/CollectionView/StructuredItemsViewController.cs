@@ -34,11 +34,20 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (disposing)
 			{
+				if (_headerViewFormsElement != null)
+				{
+					_headerViewFormsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
+				}
+
+				if (_footerViewFormsElement != null)
+				{
+					_footerViewFormsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
+				}
+
 				_headerUIView = null;
 				_headerViewFormsElement = null;
 				_footerUIView = null;
 				_footerViewFormsElement = null;
-				
 			}
 
 			base.Dispose(disposing);
