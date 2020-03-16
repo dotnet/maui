@@ -78,22 +78,19 @@ namespace Xamarin.Forms.Build.Tasks
 			if (!resource.Name.EndsWith(".xaml", StringComparison.InvariantCulture))
 				return false;
 
-			using (var resourceStream = resource.GetResourceStream()) {
-				var xmlDoc = new XmlDocument();
-				xmlDoc.Load(resourceStream);
+			using (var resourceStream = resource.GetResourceStream())
+			using (var reader = XmlReader.Create(resourceStream))
+			{
+				// Read to the first Element
+				while (reader.Read() && reader.NodeType != XmlNodeType.Element) ;
 
-				var nsmgr = new XmlNamespaceManager(xmlDoc.NameTable);
-
-				var root = xmlDoc.SelectSingleNode("/*", nsmgr);
-				if (root == null)
+				if (reader.NodeType != XmlNodeType.Element)
 					return false;
 
-				var rootClass = root.Attributes["Class", XamlParser.X2006Uri] ??
-								root.Attributes["Class", XamlParser.X2009Uri];
-				if (rootClass != null) {
-					classname = rootClass.Value;
+				classname = reader.GetAttribute("Class", XamlParser.X2009Uri) ??
+							reader.GetAttribute("Class", XamlParser.X2006Uri);
+				if (classname != null)
 					return true;
-				}
 
 				//no x:Class, but it might be a RD without x:Class and with <?xaml-comp compile="true" ?>
 				//in that case, it has a XamlResourceIdAttribute
