@@ -94,6 +94,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				{
 					var btn = new FormsNSButton();
 					btn.SetButtonType(NSButtonType.MomentaryPushIn);
+					btn.BezelStyle = NSBezelStyle.Rounded;
 					btn.Pressed += HandleButtonPressed;
 					btn.Released += HandleButtonReleased;
 					SetNativeControl(btn);
