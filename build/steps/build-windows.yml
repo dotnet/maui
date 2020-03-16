@@ -27,7 +27,8 @@ jobs:
     displayName: ${{ parameters.displayName }}
     timeoutInMinutes: 120
     pool:
-      name: ${{ parameters.vmImage }}
+      name: ${{ parameters.vmPool }}
+      vmImage: ${{ parameters.vmImage }}
     dependsOn: ${{ parameters.dependsOn }}
     strategy:
       matrix:

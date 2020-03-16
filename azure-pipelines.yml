@@ -64,7 +64,8 @@ jobs:
   parameters:
     name: win
     displayName: Build Windows Phase
-    vmImage: $(win2017VmImage)
+    vmImage: $(vs2017VmImage)
+    vmPool: $(vs2017VmPool)
     targetFolder: Xamarin.Forms.ControlGallery.Android/legacyRenderers/
     msbuildExtraArguments: '/nowarn:VSX1000 /p:CreateAllAndroidTargets=true'
     buildConfiguration: $(DefaultBuildConfiguration)
@@ -76,7 +77,8 @@ jobs:
   parameters:
     name: win_2019
     displayName: Build UWP Phase
-    vmImage: $(win2019VmImage)
+    vmImage: $(vs2019VmImage)
+    vmPool: $(vs2019VmPool)
     targetFolder: Xamarin.Forms.ControlGallery.Android/legacyRenderers/
     msbuildExtraArguments: '/nowarn:VSX1000 /p:CreateAllAndroidTargets=true'
     buildConfiguration: $(DefaultBuildConfiguration)
@@ -90,7 +92,7 @@ jobs:
   parameters:
     name: android_legacy
     displayName: Build Android [Legacy Renderers]
-    vmImage: $(macOSVmImage)
+    vmImage: $(macOSXVmImage)
     targetFolder: Xamarin.Forms.ControlGallery.Android/legacyRenderers/
     androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /bl:$(Build.ArtifactStagingDirectory)/android-legacy.binlog'
     buildConfiguration: $(DefaultBuildConfiguration)
@@ -100,7 +102,7 @@ jobs:
   parameters:
     name: android_preappcompact
     displayName: Build Android [Pre-AppCompat]
-    vmImage: $(macOSVmImage)
+    vmImage: $(macOSXVmImage)
     targetFolder: Xamarin.Forms.ControlGallery.Android/preAppCompat
     androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /p:DefineConstants="TRACE DEBUG FORMS_APPLICATION_ACTIVITY APP" /bl:$(Build.ArtifactStagingDirectory)/android-preappcompact.binlog'
     buildConfiguration: $(DefaultBuildConfiguration)
@@ -110,7 +112,7 @@ jobs:
   parameters:
     name: android_fast
     displayName: Build Android [Fast Renderers]
-    vmImage: $(macOSVmImage)
+    vmImage: $(macOSXVmImage)
     targetFolder: Xamarin.Forms.ControlGallery.Android/newRenderers/
     androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /p:DefineConstants="TRACE DEBUG TEST_EXPERIMENTAL_RENDERERS APP" /bl:$(Build.ArtifactStagingDirectory)/android-newrenderers.binlog'
     buildConfiguration: $(DefaultBuildConfiguration)
@@ -121,9 +123,8 @@ jobs:
     clean: all
   displayName: OSX Phase
   pool:
-    name: $(macOSVmImage)
+    vmImage: $(macOSXVmImage)
     demands:
-      - Agent.OS -equals darwin
       - sh
       - msbuild
       - Xamarin.iOS
@@ -147,7 +148,8 @@ jobs:
    - win_2019
   condition: succeeded()
   pool:
-    name: $(winVmImage)
+    name: $(vs2019VmPool)
+    vmImage: $(vs2019VmImage)
   variables:
     FormsIdAppend: ''
     buildConfiguration: $(DefaultBuildConfiguration)
@@ -161,7 +163,7 @@ jobs:
     displayName: Sign Phase
     dependsOn: nuget_pack
     pool:
-      name: $(signVmImage)
+      name: $(signVmPool)
     steps:
       - template: build/steps/build-sign.yml
     condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
