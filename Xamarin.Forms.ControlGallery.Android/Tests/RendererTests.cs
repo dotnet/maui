@@ -1,4 +1,5 @@
-﻿using Android.Views;
+﻿using System.Threading.Tasks;
+using Android.Views;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using Xamarin.Forms.CustomAttributes;
@@ -10,16 +11,12 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 	{
 		[Test, Category("Entry")]
 		[Description("Validate renderer vertical alignment for Entry with VerticalTextAlignment Center")]
-		public void EntryVerticalAlignmentCenterInRenderer()
+		public async Task EntryVerticalAlignmentCenterInRenderer()
 		{ 
 			var entry1 = new Entry { Text = "foo", VerticalTextAlignment = TextAlignment.Center };
-			using (var editText = GetNativeControl(entry1))
-			{
-				var centeredVertical =
-				(editText.Gravity & GravityFlags.VerticalGravityMask) == GravityFlags.CenterVertical;
-
-				Assert.That(centeredVertical, Is.True);
-			}
+			var gravity = await GetControlProperty(entry1, control => control.Gravity);
+			var centeredVertical = (gravity & GravityFlags.VerticalGravityMask) == GravityFlags.CenterVertical;
+			Assert.That(centeredVertical, Is.True);
 		}
 	}
 }

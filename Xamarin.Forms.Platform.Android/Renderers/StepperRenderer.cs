@@ -52,6 +52,11 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (this.IsDisposed())
+			{
+				return;
+			}
+
 			base.OnElementPropertyChanged(sender, e);
 			StepperRendererManager.UpdateButtons(this, _downButton, _upButton, e);
 		}

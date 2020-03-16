@@ -16,7 +16,7 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 			{
 				// Creating/modifying any renderers off the UI thread causes problems
 				// so we want to force the tests to run on main
-				{ FrameworkPackageSettings.RunOnMainThread, true }
+				{ FrameworkPackageSettings.RunOnMainThread, false }
 			};
 		}
 

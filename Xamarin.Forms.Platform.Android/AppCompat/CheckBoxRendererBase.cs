@@ -162,6 +162,11 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (this.IsDisposed())
+			{
+				return;
+			}
+
 			if (e.PropertyName == CheckBox.ColorProperty.PropertyName)
 			{
 				UpdateOnColor();
@@ -190,7 +195,6 @@ namespace Xamarin.Forms.Platform.Android
 
 			Checked = Element.IsChecked;
 		}
-
 
 		protected virtual ColorStateList GetColorStateList()
 		{

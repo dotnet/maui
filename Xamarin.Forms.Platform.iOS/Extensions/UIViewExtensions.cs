@@ -22,6 +22,20 @@ namespace Xamarin.Forms.Platform.MacOS
 			return self.Subviews.Concat(self.Subviews.SelectMany(s => s.Descendants()));
 		}
 
+		internal static IEnumerable<UIView> DescendantsTree(this UIView self)
+		{
+			var children = self.Subviews;
+			for (var i = 0; i < children.Length; i++)
+			{
+				UIView child = children[i];
+				yield return child;
+				foreach (var grandChild in child.DescendantsTree())
+				{
+					yield return grandChild;
+				}
+			}
+		}
+
 		public static SizeRequest GetSizeRequest(this UIView self, double widthConstraint, double heightConstraint,
 			double minimumWidth = -1, double minimumHeight = -1)
 		{

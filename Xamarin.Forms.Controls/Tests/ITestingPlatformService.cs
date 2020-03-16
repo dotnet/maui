@@ -1,7 +1,9 @@
-﻿namespace Xamarin.Forms.Controls.Tests
+﻿using System.Threading.Tasks;
+
+namespace Xamarin.Forms.Controls.Tests
 {
 	public interface ITestingPlatformService
 	{
-		void CreateRenderer(VisualElement visualElement);
+		Task CreateRenderer(VisualElement visualElement);
 	}
 }

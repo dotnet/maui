@@ -1,5 +1,6 @@
 using System;
 using UIKit;
+using System.Linq;
 
 namespace Xamarin.Forms
 {
@@ -38,6 +39,18 @@ namespace Xamarin.Forms.Platform.iOS
 		public static UIViewController CreateViewController(this ContentPage page)
 		{
 			return Xamarin.Forms.PageExtensions.CreateViewController(page);
+		}
+
+		internal static Page GetCurrentPage(this Page currentPage)
+		{
+			if (currentPage.NavigationProxy.ModalStack.LastOrDefault() is Page modal)
+				return modal;
+			else if (currentPage is MasterDetailPage mdp)
+				return GetCurrentPage(mdp.Detail);
+			else if (currentPage is IPageContainer<Page> pc)
+				return GetCurrentPage(pc.CurrentPage);
+			else
+				return currentPage;
 		}
 	}
 }

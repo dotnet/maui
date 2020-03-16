@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using NUnit;
 using NUnit.Framework.Api;
 using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
@@ -26,47 +25,21 @@ namespace Xamarin.Forms.Controls.Tests
 			
 			// "platform" is the native assembly (ControGallery.iOS, ControlGallery.Android, etc.)
 			Assembly platform = platformTestSettings.Assembly;
+
+			// The TestRunSettings gives us a way to pass other parameters to the runner.
+			// We're not actually using them at the moment, but we might as well leave this here
+			// in case we need it in the future.
 			var testRunSettings = platformTestSettings.TestRunSettings;
 
 			var runner = new NUnitTestAssemblyRunner(new DefaultTestAssemblyBuilder());
 
-			bool runOnMainThread = false;
-			if (testRunSettings.TryGetValue(FrameworkPackageSettings.RunOnMainThread, out object runOnMainSetting))
-			{
-				runOnMainThread = (bool)runOnMainSetting;
-			}
-
 			try
 			{
-				if (runOnMainThread)
-				{
-					// FrameworkPackageSettings.RunOnMainThread will force all the tests to run sequentially on the thread
-					// they are started on; we have to do this for iOS to avoid cross-thread exceptions when updating
-					// renderer properties. It's a less nice runner experience, because we don't get progress updates
-					// while it runs, but that's life. Anyway, we push the test runs onto the main thread and wait.
+				runner.Load(controls, testRunSettings);
+				runner.Run(_testListener, testFilter);
 
-					Device.BeginInvokeOnMainThread(() =>
-					{
-						runner.Load(controls, testRunSettings);
-						runner.Run(_testListener, testFilter);
-
-						runner.Load(platform, testRunSettings);
-						runner.Run(_testListener, testFilter);
-					});
-				}
-				else
-				{
-					// So far, Android lets us get away with running tests asynchronously, so we get
-					// progress updates as they run. This should be our default until we run into cross-thread
-					// or "not on the UI thread" issues with a platform, at which point we need to set RunOnMainThread
-					// like we do for iOS
-
-					runner.Load(controls, testRunSettings);
-					runner.Run(_testListener, testFilter);
-
-					runner.Load(platform, testRunSettings);
-					runner.Run(_testListener, testFilter);
-				}
+				runner.Load(platform, testRunSettings);
+				runner.Run(_testListener, testFilter);
 			}
 			catch (Exception ex) 
 			{

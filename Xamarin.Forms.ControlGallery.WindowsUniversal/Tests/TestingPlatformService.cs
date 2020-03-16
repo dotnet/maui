@@ -1,4 +1,5 @@
-﻿using Xamarin.Forms;
+﻿using System.Threading.Tasks;
+using Xamarin.Forms;
 using Xamarin.Forms.ControlGallery.WindowsUniversal.Tests;
 using Xamarin.Forms.Controls.Tests;
 
@@ -7,9 +8,9 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal.Tests
 {
 	class TestingPlatformService : ITestingPlatformService
 	{
-		public void CreateRenderer(VisualElement visualElement)
+		public async Task CreateRenderer(VisualElement visualElement)
 		{
-			Platform.UWP.Platform.CreateRenderer(visualElement);
+			await Device.InvokeOnMainThreadAsync(() => Platform.UWP.Platform.CreateRenderer(visualElement));
 		}
 	}
 }

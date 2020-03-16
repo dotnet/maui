@@ -96,12 +96,11 @@ namespace Xamarin.Forms.ControlGallery.Android
 			});
 
 			LoadApplication(_app);
-			if (Forms.Flags.Contains("FastRenderers_Experimental"))
-			{
-				var masterPage = ((_app.MainPage as MasterDetailPage)?.Master as ContentPage);
-				if (masterPage != null)
-					masterPage.Content = new Label { Text = "Fast Renderers" };
-			}
+			
+			#if !TEST_EXPERIMENTAL_RENDERERS
+				// Show a purple status bar if we're looking at legacy renderers
+				Window.SetStatusBarColor(Color.MediumPurple.ToAndroid());
+			#endif
 		}
 
 		protected override void OnResume()

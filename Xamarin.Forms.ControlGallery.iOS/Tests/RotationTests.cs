@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
+using System.Threading.Tasks;
 using NUnit.Framework;
-using UIKit;
 using static Xamarin.Forms.Core.UITests.NumericExtensions;
 using static Xamarin.Forms.Core.UITests.ParsingUtils;
 
@@ -46,50 +45,34 @@ namespace Xamarin.Forms.ControlGallery.iOS.Tests
 			}
 		}
 
-		void AssertRotationConsistent(View view, Func<View, Core.UITests.Matrix> getRotation,
-			Func<UIView, Core.UITests.Matrix> getNativeRotation)
-		{
-			var page = new ContentPage() { Content = view };
-
-			using (var pageRenderer = GetRenderer(page))
-			{
-				using (var uiView = GetRenderer(view).NativeView)
-				{
-					page.Layout(new Rectangle(0, 0, 200, 200));
-
-					var expected = getRotation(view);
-					var actual = getNativeRotation(uiView);
-
-					Assert.That(actual, Is.EqualTo(expected));
-				}
-			}
-		}
-
 		[Test, Category("RotationX"), TestCaseSource(nameof(RotationXCases))]
 		[Description("VisualElement X rotation should match renderer X rotation")]
-		public void RotationXConsistent(View view)
+		public async Task RotationXConsistent(View view)
 		{
-			AssertRotationConsistent(view, 
-			e => CalculateRotationMatrixForDegrees((float)e.RotationX, Core.UITests.Axis.X), 
-			v => ParseCATransform3D(v.Layer.Transform.ToString()));
+			var transform = await GetRendererProperty(view, r => r.NativeView.Layer.Transform, requiresLayout: true);
+			var actual = ParseCATransform3D(transform.ToString());
+			var expected = CalculateRotationMatrixForDegrees((float)view.RotationX, Core.UITests.Axis.X);
+			Assert.That(actual, Is.EqualTo(expected));
 		}
 
 		[Test, Category("RotationY"), TestCaseSource(nameof(RotationYCases))]
 		[Description("VisualElement Y rotation should match renderer Y rotation")]
-		public void RotationYConsistent(View view)
+		public async Task RotationYConsistent(View view)
 		{
-			AssertRotationConsistent(view,
-			e => CalculateRotationMatrixForDegrees((float)e.RotationY, Core.UITests.Axis.Y),
-			v => ParseCATransform3D(v.Layer.Transform.ToString()));
+			var transform = await GetRendererProperty(view, r => r.NativeView.Layer.Transform, requiresLayout: true);
+			var actual = ParseCATransform3D(transform.ToString());
+			var expected = CalculateRotationMatrixForDegrees((float)view.RotationY, Core.UITests.Axis.Y);
+			Assert.That(actual, Is.EqualTo(expected));
 		}
 
 		[Test, Category("Rotation"), TestCaseSource(nameof(RotationCases))]
 		[Description("VisualElement rotation should match renderer rotation")]
-		public void RotationConsistent(View view)
+		public async Task RotationConsistent(View view)
 		{
-			AssertRotationConsistent(view,
-			e => CalculateRotationMatrixForDegrees((float)e.Rotation, Core.UITests.Axis.Z),
-			v => ParseCATransform3D(v.Layer.Transform.ToString()));
+			var transform = await GetRendererProperty(view, r => r.NativeView.Layer.Transform, requiresLayout: true);
+			var actual = ParseCATransform3D(transform.ToString());
+			var expected = CalculateRotationMatrixForDegrees((float)view.Rotation, Core.UITests.Axis.Z);
+			Assert.That(actual, Is.EqualTo(expected));
 		}
 	}
 }

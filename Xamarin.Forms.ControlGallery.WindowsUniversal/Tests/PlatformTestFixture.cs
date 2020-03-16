@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Shapes;
 using Xamarin.Forms.Platform.UWP;
 
 namespace Xamarin.Forms.ControlGallery.WindowsUniversal.Tests
@@ -69,6 +70,14 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal.Tests
 			return GetRenderer(label).GetNativeElement() as TextBlock;
 		}
 
+		protected async Task<TProperty> GetControlProperty<TProperty>(Label label, Func<TextBlock, TProperty> getProperty)
+		{
+			return await Device.InvokeOnMainThreadAsync(() => {
+				var textBlock = GetNativeControl(label);
+				return getProperty(textBlock);
+			});
+		}
+
 		protected FormsButton GetNativeControl(Button button)
 		{
 			return GetRenderer(button).GetNativeElement() as FormsButton;
@@ -82,6 +91,15 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal.Tests
 		protected FormsTextBox GetNativeControl(Editor editor)
 		{
 			return GetRenderer(editor).GetNativeElement() as FormsTextBox;
+		}
+
+		protected async Task<TProperty> GetRendererProperty<TProperty>(View view,
+			Func<IVisualElementRenderer, TProperty> getProperty)
+		{
+			return await Device.InvokeOnMainThreadAsync(() => {
+				var renderer = GetRenderer(view);
+				return getProperty(renderer);
+			});
 		}
 	}
 }

@@ -2,10 +2,12 @@
 using System.Linq;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using UIKit;
+using Foundation;
+using System.Threading.Tasks;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	internal class ModalWrapper : UIViewController
+	internal class ModalWrapper : UIViewController, IUIAdaptivePresentationControllerDelegate
 	{
 		IVisualElementRenderer _modal;
 
@@ -14,8 +16,18 @@ namespace Xamarin.Forms.Platform.iOS
 			_modal = modal;
 
 			var elementConfiguration = modal.Element as IElementConfiguration<Page>;
-			var modalPresentationStyle = elementConfiguration?.On<PlatformConfiguration.iOS>()?.ModalPresentationStyle() ?? PlatformConfiguration.iOSSpecific.UIModalPresentationStyle.FullScreen;
-			ModalPresentationStyle = modalPresentationStyle.ToNativeModalPresentationStyle();
+			if (elementConfiguration?.On<PlatformConfiguration.iOS>()?.ModalPresentationStyle() is PlatformConfiguration.iOSSpecific.UIModalPresentationStyle style)
+			{
+				var result = style.ToNativeModalPresentationStyle();
+#if __XCODE11__
+				if (!Forms.IsiOS13OrNewer && result == UIKit.UIModalPresentationStyle.Automatic)
+				{
+					result = UIKit.UIModalPresentationStyle.FullScreen;
+				}
+#endif
+
+				ModalPresentationStyle = result;
+			}
 
 			View.BackgroundColor = UIColor.White;
 			View.AddSubview(modal.ViewController.View);
@@ -23,8 +35,18 @@ namespace Xamarin.Forms.Platform.iOS
 			AddChildViewController(modal.ViewController);
 
 			modal.ViewController.DidMoveToParentViewController(this);
+#if __XCODE11__
+			if (Forms.IsiOS13OrNewer)
+				PresentationController.Delegate = this;
+#endif
 		}
-
+#if __XCODE11__
+		[Export("presentationControllerDidDismiss:")]
+		public async void DidDismiss(UIPresentationController presentationController)
+		{
+			await Application.Current.NavigationProxy.PopModalAsync(false);
+		}
+#endif
 		public override void DismissViewController(bool animated, Action completionHandler)
 		{
 			if (PresentedViewController == null)

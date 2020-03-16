@@ -8,6 +8,7 @@ using Foundation;
 using UIKit;
 using Xamarin.Forms.Internals;
 using RectangleF = CoreGraphics.CGRect;
+using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -126,6 +127,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 			modal.DisposeModalAndChildRenderers();
 
+			if (!IsModalPresentedFullScreen(modal))
+				Page.GetCurrentPage()?.SendAppearing();
+
 			return modal;
 		}
 
@@ -157,6 +161,34 @@ namespace Xamarin.Forms.Platform.iOS
 		Task INavigation.PushModalAsync(Page modal, bool animated)
 		{
 			EndEditing();
+
+
+			var elementConfiguration = modal as IElementConfiguration<Page>;
+
+			var presentationStyle = elementConfiguration?.On<PlatformConfiguration.iOS>()?.ModalPresentationStyle().ToNativeModalPresentationStyle();
+
+			bool shouldFire = true;
+
+			if (Forms.IsiOS13OrNewer)
+			{
+				if (presentationStyle == UIKit.UIModalPresentationStyle.FullScreen)
+					shouldFire = false; // This is mainly for backwards compatibility
+			}
+			else
+			{
+				// While the above IsiOS13OrNewer will always be false if __XCODE11__ is true
+				// the UIModalPresentationStyle.Automatic is the only Xcode 11 API
+				// for readability I decided to only take this part out
+#if __XCODE11__
+				if (presentationStyle == UIKit.UIModalPresentationStyle.Automatic)
+					shouldFire = false;
+#endif
+				if (presentationStyle == UIKit.UIModalPresentationStyle.FullScreen)
+					shouldFire = false; // This is mainly for backwards compatibility
+			}
+
+			if (_appeared && shouldFire)
+				Page.GetCurrentPage()?.SendDisappearing();
 
 			_modals.Add(modal);
 
@@ -612,6 +644,13 @@ namespace Xamarin.Forms.Platform.iOS
 
 				PresentActionSheet(arguments);
 			});
+		}
+
+		static bool IsModalPresentedFullScreen(Page modal)
+		{
+			var elementConfiguration = modal as IElementConfiguration<Page>;
+			var presentationStyle = elementConfiguration?.On<PlatformConfiguration.iOS>()?.ModalPresentationStyle();
+			return presentationStyle != null && presentationStyle == PlatformConfiguration.iOSSpecific.UIModalPresentationStyle.FullScreen;
 		}
 
 		internal void UnsubscribeFromAlertsAndActionsSheets()

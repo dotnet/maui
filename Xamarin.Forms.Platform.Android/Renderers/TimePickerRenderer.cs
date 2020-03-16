@@ -14,9 +14,8 @@ namespace Xamarin.Forms.Platform.Android
 	public abstract class TimePickerRendererBase<TControl> : ViewRenderer<TimePicker, TControl>, TimePickerDialog.IOnTimeSetListener, IPickerRenderer
 		where TControl : global::Android.Views.View
 	{
-		int _originalHintTextColor;
 		AlertDialog _dialog;
-		bool _isDisposed;
+		bool _disposed;
 
 		bool Is24HourView
 		{
@@ -59,7 +58,6 @@ namespace Xamarin.Forms.Platform.Android
 				var textField = CreateNativeControl();
 
 				SetNativeControl(textField);
-				_originalHintTextColor = EditText.CurrentHintTextColor;
 			}
 
 			SetTime(e.NewElement.Time);
@@ -73,6 +71,11 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (this.IsDisposed())
+			{
+				return;
+			}
+
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == TimePicker.TimeProperty.PropertyName || e.PropertyName == TimePicker.FormatProperty.PropertyName)
@@ -121,10 +124,12 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void Dispose(bool disposing)
 		{
-			if (_isDisposed)
+			if (_disposed)
+			{
 				return;
+			}
 
-			_isDisposed = true;
+			_disposed = true;
 
 			if (disposing)
 			{
@@ -156,7 +161,6 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			Element.Unfocus();
 		}
-
 
 		void SetTime(TimeSpan time)
 		{
@@ -205,7 +209,5 @@ namespace Xamarin.Forms.Platform.Android
 			_textColorSwitcher = _textColorSwitcher ?? new TextColorSwitcher(EditText.TextColors, Element.UseLegacyColorManagement());
 			_textColorSwitcher.UpdateTextColor(EditText, Element.TextColor);
 		}
-
     }
-
 }

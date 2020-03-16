@@ -218,6 +218,11 @@ namespace Xamarin.Forms.Platform.Android
 
 		void BorderElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (_renderer.View.IsDisposed())
+			{
+				return;
+			}
+
 			if (e.PropertyName.Equals(Button.BorderColorProperty.PropertyName) ||
 				e.PropertyName.Equals(Button.BorderWidthProperty.PropertyName) ||
 				e.PropertyName.Equals(Button.CornerRadiusProperty.PropertyName) ||

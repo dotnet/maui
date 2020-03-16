@@ -152,7 +152,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			ViewRenderer.MeasureExactly(this, Element, Context);
 		}
 
-
 		public override void Draw(Canvas canvas)
 		{
 			if (_backgroundTracker?.BackgroundDrawable != null)
@@ -245,6 +244,11 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (this.IsDisposed())
+			{
+				return;
+			}	
+
 			if(Control?.LayoutParameters == null)
 			{
 				ElementPropertyChanged?.Invoke(this, e);

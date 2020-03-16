@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace Xamarin.Forms.ControlGallery.WindowsUniversal.Tests
@@ -30,25 +31,28 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal.Tests
 
 		[Test, Category("IsEnabled"), TestCaseSource(nameof(TestCases))]
 		[Description("View enabled should match renderer enabled")]
-		public void EnabledConsistent(VisualElement element)
+		public async Task EnabledConsistent(VisualElement element)
 		{
-			using (var renderer = GetRenderer(element))
+			await Device.InvokeOnMainThreadAsync(() =>
 			{
-				var expected = element.IsEnabled;
-				var container = renderer.ContainerElement;
-
-				// Check the container control
-				Assert.That(container.IsHitTestVisible, Is.EqualTo(expected));
-
-				// Check the actual control (if there is one; for some renderers, like Frame and BoxView, the 
-				// native control isn't a Windows.UI.Xaml.Controls.Control)
-				var control = GetNativeControl(element);
-
-				if (control != null)
+				using (var renderer = GetRenderer(element))
 				{
-					Assert.That(control.IsEnabled, Is.EqualTo(expected));
+					var expected = element.IsEnabled;
+					var container = renderer.ContainerElement;
+
+					// Check the container control
+					Assert.That(container.IsHitTestVisible, Is.EqualTo(expected));
+
+					// Check the actual control (if there is one; for some renderers, like Frame and BoxView, the 
+					// native control isn't a Windows.UI.Xaml.Controls.Control)
+					var control = GetNativeControl(element);
+
+					if (control != null)
+					{
+						Assert.That(control.IsEnabled, Is.EqualTo(expected));
+					}
 				}
-			}
+			});
 		}
 	}
 }

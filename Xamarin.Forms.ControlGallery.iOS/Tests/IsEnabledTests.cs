@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using UIKit;
 
@@ -30,24 +31,26 @@ namespace Xamarin.Forms.ControlGallery.iOS.Tests
 
 		[Test, Category("IsEnabled"), TestCaseSource(nameof(TestCases))]
 		[Description("VisualElement enabled should match renderer enabled")]
-		public void EnabledConsistent(View view)
+		public async Task EnabledConsistent(View view)
 		{
-			using (var renderer = GetRenderer(view))
-			{
-				var expected = view.IsEnabled;
-				var nativeView = renderer.NativeView;
-
-				// Check the container
-				Assert.That(renderer.NativeView.UserInteractionEnabled, Is.EqualTo(expected));
-
-				// Check the actual control
-				var control = GetNativeControl(view);
-
-				if (control is UIControl uiControl)
+			await Device.InvokeOnMainThreadAsync(() => {
+				using (var renderer = GetRenderer(view))
 				{
-					Assert.That(uiControl.Enabled, Is.EqualTo(expected));
+					var expected = view.IsEnabled;
+					var nativeView = renderer.NativeView;
+
+					// Check the container
+					Assert.That(renderer.NativeView.UserInteractionEnabled, Is.EqualTo(expected));
+
+					// Check the actual control
+					var control = GetNativeControl(view);
+
+					if (control is UIControl uiControl)
+					{
+						Assert.That(uiControl.Enabled, Is.EqualTo(expected));
+					}
 				}
-			}
+			});
 		}
 	}
 }

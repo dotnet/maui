@@ -114,7 +114,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (_renderer == null)
+			if (_renderer == null || !_renderer.View.IsAlive())
 			{
 				return;
 			}

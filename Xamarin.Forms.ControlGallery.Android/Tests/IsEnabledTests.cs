@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using Xamarin.Forms.CustomAttributes;
@@ -32,24 +33,26 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 
 		[Test, Category("IsEnabled"), TestCaseSource(nameof(TestCases))]
 		[Description("VisualElement enabled should match renderer enabled")]
-		public void EnabledConsistent(VisualElement element)
+		public async Task EnabledConsistent(VisualElement element)
 		{
-			using (var renderer = GetRenderer(element))
-			{
-				var expected = element.IsEnabled;
-				var nativeView = renderer.View;
+			await Device.InvokeOnMainThreadAsync(() => { 
+				using (var renderer = GetRenderer(element))
+				{
+					var expected = element.IsEnabled;
+					var nativeView = renderer.View;
 
-				ParentView(nativeView);
+					ParentView(nativeView);
 
-				// Check the container control
-				Assert.That(renderer.View.Enabled, Is.EqualTo(expected));
+					// Check the container control
+					Assert.That(renderer.View.Enabled, Is.EqualTo(expected));
 
-				// Check the actual control
-				var control = GetNativeControl(element);
-				Assert.That(control.Enabled, Is.EqualTo(expected));
+					// Check the actual control
+					var control = GetNativeControl(element);
+					Assert.That(control.Enabled, Is.EqualTo(expected));
 
-				UnparentView(nativeView);
-			}
+					UnparentView(nativeView);
+				}
+			});
 		}
 	}
 }

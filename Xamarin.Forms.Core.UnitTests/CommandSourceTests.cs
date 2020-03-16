@@ -119,14 +119,18 @@ namespace Xamarin.Forms.Core.UnitTests
 			};
 
 			var cmd = new Command (() => { }, canExecute);
+
 			var source = CreateSource();
 			source.SetValue (CommandProperty, cmd);
-
+			
 			fired = false;
 			
 			cmd.ChangeCanExecute();
 
 			Assert.That (fired, Is.True, "CanExecute was not called when the event was raised");
+			
+			// Preserve source from GC during the test in Release mode
+			GC.KeepAlive(source);
 		}
 
 		class BoolViewModel

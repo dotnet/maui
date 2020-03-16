@@ -1,22 +1,11 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Tests
 {
 	[TestFixture]
-	public class CrossPlatformTests
+	public class CrossPlatformTests : CrossPlatformTestFixture
 	{
-		ITestingPlatformService _testingPlatformService;
-		ITestingPlatformService TestingPlatform
-		{
-			get 
-			{
-				return _testingPlatformService = _testingPlatformService 
-					?? DependencyService.Resolve<ITestingPlatformService>();
-			}
-		}
-
 		[Test]
 		[Description("Always Passes")]
 		public void PassingCrossPlatformTest()
@@ -61,30 +50,28 @@ namespace Xamarin.Forms.Controls.Tests
 
 		[Test]
 		[Description("ButtonRenderer UpdateTextColor function crash")]
-		public void Bugzilla35738() 
+		public async Task Bugzilla35738() 
 		{
 			var customButton = new TestClasses.CustomButton() { Text = "This is a custom button", TextColor = Color.Fuchsia };
-			TestingPlatform.CreateRenderer(customButton);
+			await TestingPlatform.CreateRenderer(customButton);
 		}
 
 		[Test]
 		[Description("[Bug] CollectionView exception when IsGrouped=true and null ItemSource")]
-		public void GitHub8269() 
+		public async Task GitHub8269() 
 		{
 			var collectionView = new CollectionView { ItemsSource = null, IsGrouped = true };
-			TestingPlatform.CreateRenderer(collectionView);
+			await TestingPlatform.CreateRenderer(collectionView);
 		}
 
 		[Test]
 		[Description("[Bug] [UWP] NullReferenceException when call SavePropertiesAsync method off the main thread")]
-		public void GitHub8682()
+		public async Task GitHub8682()
 		{
-			Task.Run(async () =>
+			await Task.Run(async () =>
 			{
 				await Application.Current.SavePropertiesAsync();
-			}).Wait();
-
-			Assert.True(true);
+			});
 		}
 	}
 }

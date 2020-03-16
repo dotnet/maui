@@ -1,4 +1,5 @@
-﻿using Xamarin.Forms;
+﻿using System.Threading.Tasks;
+using Xamarin.Forms;
 using Xamarin.Forms.ControlGallery.iOS.Tests;
 using Xamarin.Forms.Controls.Tests;
 
@@ -7,9 +8,9 @@ namespace Xamarin.Forms.ControlGallery.iOS.Tests
 {
 	class TestingPlatformService : ITestingPlatformService
 	{
-		public void CreateRenderer(VisualElement visualElement)
+		public async Task CreateRenderer(VisualElement visualElement)
 		{
-			Platform.iOS.Platform.CreateRenderer(visualElement);
+			await Device.InvokeOnMainThreadAsync(() => Platform.iOS.Platform.CreateRenderer(visualElement));
 		}
 	}
 }

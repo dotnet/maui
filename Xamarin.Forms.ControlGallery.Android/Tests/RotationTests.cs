@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using Xamarin.Forms.CustomAttributes;
-using AView = Android.Views.View;
 
 namespace Xamarin.Forms.ControlGallery.Android.Tests
 {
@@ -46,43 +45,31 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 			}
 		}
 
-		void AssertRotationConsistent(VisualElement element, Func<VisualElement, double> getRotation,
-			Func<AView, float> getNativeRotation)
-		{
-			using (var renderer = GetRenderer(element))
-			{
-				var expected = getRotation(element);
-				var nativeView = renderer.View;
-
-				ParentView(nativeView);
-
-				var actual = getNativeRotation(renderer.View);
-
-				Assert.That((double)actual, Is.EqualTo(expected).Within(0.0001d));
-
-				UnparentView(nativeView);
-			}
-		}
-
 		[Test, Category("RotationX"), TestCaseSource(nameof(RotationXCases))]
 		[Description("VisualElement X rotation should match renderer X rotation")]
-		public void RotationXConsistent(VisualElement element)
+		public async Task RotationXConsistent(VisualElement element)
 		{
-			AssertRotationConsistent(element, e => e.RotationX, v => v.RotationX);
+			var expected = element.RotationX;
+			var actual = await GetRendererProperty(element, ver => ver.View.RotationX, requiresParent: true);
+			Assert.That((double)actual, Is.EqualTo(expected).Within(0.0001d));
 		}
 
 		[Test, Category("RotationY"), TestCaseSource(nameof(RotationYCases))]
 		[Description("VisualElement Y rotation should match renderer Y rotation")]
-		public void RotationYConsistent(VisualElement element)
+		public async Task RotationYConsistent(VisualElement element)
 		{
-			AssertRotationConsistent(element, e => e.RotationY, v => v.RotationY);
+			var expected = element.RotationY;
+			var actual = await GetRendererProperty(element, ver => ver.View.RotationY, requiresParent: true);
+			Assert.That((double)actual, Is.EqualTo(expected).Within(0.0001d));
 		}
 
 		[Test, Category("Rotation"), TestCaseSource(nameof(RotationCases))]
 		[Description("VisualElement rotation should match renderer rotation")]
-		public void RotationConsistent(VisualElement element)
+		public async Task RotationConsistent(VisualElement element)
 		{
-			AssertRotationConsistent(element, e => e.Rotation, v => v.Rotation);
+			var expected = element.Rotation;
+			var actual = await GetRendererProperty(element, ver => ver.View.Rotation, requiresParent: true);
+			Assert.That((double)actual, Is.EqualTo(expected).Within(0.0001d));
 		}
 	}
 }

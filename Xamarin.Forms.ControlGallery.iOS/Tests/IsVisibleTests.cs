@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace Xamarin.Forms.ControlGallery.iOS.Tests
@@ -29,22 +30,11 @@ namespace Xamarin.Forms.ControlGallery.iOS.Tests
 
 		[Test, Category("IsVisible"), TestCaseSource(nameof(TestCases))]
 		[Description("VisualElement visibility should match renderer visibility")]
-		public void VisibleConsistent(View view)
+		public async Task VisibleConsistent(View view)
 		{
-			var page = new ContentPage() { Content = view };
-
-			using (var pageRenderer = GetRenderer(page))
-			{
-				using (var uiView = GetRenderer(view).NativeView)
-				{
-					page.Layout(new Rectangle(0, 0, 200, 200));
-
-					var expectedHidden = !view.IsVisible;
-					var actualHidden = uiView.Layer.Hidden;
-
-					Assert.That(actualHidden, Is.EqualTo(expectedHidden));
-				}
-			}
+			var expected = !view.IsVisible;
+			var actual = await GetRendererProperty(view, (ver) => ver.NativeView.Layer.Hidden, requiresLayout: true);
+			Assert.That(actual, Is.EqualTo(expected));
 		}
 	}
 }

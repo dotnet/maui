@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Threading.Tasks;
+using NUnit.Framework;
 using NUnit.Framework.Internal;
 using Xamarin.Forms.CustomAttributes;
 
@@ -8,7 +9,7 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 	{
 		[Issue(IssueTracker.Github, 9030, "[Bug] ClassNotFoundException when using snap points on API < 23")]
 		[Test(Description = "CollectionView with SnapPointsType set should not crash")]
-		public void SnapPointsDoNotCrashOnOlderAPIs()
+		public async Task SnapPointsDoNotCrashOnOlderAPIs()
 		{
 			var cv = new CollectionView();
 
@@ -19,7 +20,7 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 			cv.ItemsLayout = itemsLayout;
 
 			// Creating the renderer is enough to cause the ClassNotFoundException on older APIs
-			GetRenderer(cv).Dispose();
+			await Device.InvokeOnMainThreadAsync(() => { GetRenderer(cv).Dispose(); });
 		}
 	}
 }
