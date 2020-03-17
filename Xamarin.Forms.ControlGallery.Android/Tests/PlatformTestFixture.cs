@@ -37,6 +37,12 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 		protected TextView GetNativeControl(Label label) 
 		{
 			var renderer = GetRenderer(label);
+
+			if (renderer is Xamarin.Forms.Platform.Android.FastRenderers.LabelRenderer fastRenderer)
+			{
+				return fastRenderer;
+			}			
+			
 			var viewRenderer = renderer.View as ViewRenderer<Label, TextView>;
 			return viewRenderer.Control;
 		}
