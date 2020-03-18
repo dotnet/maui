@@ -378,7 +378,12 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 						Layout(button, control);
 					}
 
-					return getProperty(control);
+					// Some of the button stuff doesn't work with layout parameters, so we need to parent the control
+					ParentView(control); 
+					var result = getProperty(control);
+					UnparentView(control);
+
+					return result;
 				}
 			});
 		}
