@@ -11,7 +11,8 @@ using WSelectionChangedEventArgs = System.Windows.Controls.SelectionChangedEvent
 namespace Xamarin.Forms.Platform.WPF
 {
 	public class PickerRenderer : ViewRenderer<Picker, ComboBox>
-	{
+	{		
+		const string TextBoxTemplate = "PART_EditableTextBox";
 		protected override void OnElementChanged(ElementChangedEventArgs<Picker> e)
 		{
 			if (e.NewElement != null)
@@ -19,8 +20,10 @@ namespace Xamarin.Forms.Platform.WPF
 				if (Control == null) // construct and SetNativeControl and suscribe control event
 				{
 					SetNativeControl(new ComboBox());
+					Control.IsEditable = true;
 					Control.SelectionChanged += OnControlSelectionChanged;
-				}
+					Control.Loaded += OnControlLoaded;
+				}								
 
 				// Update control property 
 				UpdateTitle();
@@ -31,7 +34,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 			base.OnElementChanged(e);
 		}
-		
+
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			base.OnElementPropertyChanged(sender, e);
@@ -48,6 +51,10 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				UpdateTextColor();
 			}
+			else if (e.PropertyName == Picker.BackgroundColorProperty.PropertyName)
+			{
+				UpdateBackgroundColor();
+			}
 		}
 
 		void UpdateTitle()
@@ -60,15 +67,30 @@ namespace Xamarin.Forms.Platform.WPF
 			Control.UpdateDependencyColor(ComboBox.ForegroundProperty, Element.TextColor);
 		}
 
+		void UpdateBackgroundColor()
+		{			
+			var textbox = (TextBox)Control.Template.FindName(TextBoxTemplate, Control);
+			if (textbox != null)
+			{
+				var parent = (Border)textbox.Parent;
+				parent.Background = Element.BackgroundColor.ToBrush();
+			}			
+		}
+
 		void UpdateSelectedIndex()
 		{
 			Control.SelectedIndex = Element.SelectedIndex;
 		}
 
-		private void OnControlSelectionChanged(object sender, WSelectionChangedEventArgs e)
+		void OnControlSelectionChanged(object sender, WSelectionChangedEventArgs e)
 		{
 			if (Element != null)
 				Element.SelectedIndex = Control.SelectedIndex;
+		}
+
+		void OnControlLoaded(object sender, System.Windows.RoutedEventArgs e)
+		{
+			UpdateBackgroundColor();
 		}
 
 		bool _isDisposed;
@@ -83,6 +105,7 @@ namespace Xamarin.Forms.Platform.WPF
 				if (Control != null)
 				{
 					Control.SelectionChanged -= OnControlSelectionChanged;
+					Control.Loaded -= OnControlLoaded;
 					Control.ItemsSource = null;
 				}
 
