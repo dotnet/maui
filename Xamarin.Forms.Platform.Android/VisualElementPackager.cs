@@ -69,38 +69,41 @@ namespace Xamarin.Forms.Platform.Android
 
 			_disposed = true;
 
-			if (_renderer != null)
+			if (disposing)
 			{
-				_renderer.ElementChanged -= OnElementChanged;
-
-				if (_renderer.Element != null)
+				if (_renderer != null)
 				{
-					_renderer.Element.ChildAdded -= _childAddedHandler;
-					_renderer.Element.ChildRemoved -= _childRemovedHandler;
-					_renderer.Element.ChildrenReordered -= _childReorderedHandler;
+					_renderer.ElementChanged -= OnElementChanged;
+
+					if (_renderer.Element != null)
+					{
+						_renderer.Element.ChildAdded -= _childAddedHandler;
+						_renderer.Element.ChildRemoved -= _childRemovedHandler;
+						_renderer.Element.ChildrenReordered -= _childReorderedHandler;
+					}
+
+					if (_renderer.View is ILayoutChanges layout)
+						layout.LayoutChange -= OnInitialLayoutChange;
+
+					SetElement(_element, null);
+
+					if (_childViews != null)
+					{
+						_childViews.Clear();
+						_childViews = null;
+					}
+
+					if (_childPackagers != null)
+					{
+						foreach (var kvp in _childPackagers)
+							kvp.Value.Dispose();
+
+						_childPackagers.Clear();
+						_childPackagers = null;
+					}
+
+					_renderer = null;
 				}
-
-				if (_renderer.View is ILayoutChanges layout)
-					layout.LayoutChange -= OnInitialLayoutChange;
-
-				SetElement(_element, null);
-
-				if (_childViews != null)
-				{
-					_childViews.Clear();
-					_childViews = null;
-				}
-
-				if (_childPackagers != null)
-				{
-					foreach (var kvp in _childPackagers)
-						kvp.Value.Dispose();
-
-					_childPackagers.Clear();
-					_childPackagers = null;
-				}
-
-				_renderer = null;
 			}
 		}
 
