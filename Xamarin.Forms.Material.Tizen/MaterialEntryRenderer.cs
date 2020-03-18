@@ -23,8 +23,8 @@ namespace Xamarin.Forms.Material.Tizen
 			{
 				me.TextColor = Element.TextColor.ToNative();
 				me.TextFocusedColor = Element.TextColor.ToNative();
-				me.UnderlineColor = Element.TextColor.ToNative();
-				me.UnderlineFocusedColor = Element.TextColor.ToNative();
+				me.UnderlineColor = Element.PlaceholderColor.ToNative();
+				me.UnderlineFocusedColor = Element.PlaceholderColor.ToNative();
 				me.CursorColor = Element.TextColor.ToNative();
 			}
 		}
