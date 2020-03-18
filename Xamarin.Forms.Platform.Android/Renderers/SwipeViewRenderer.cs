@@ -3,17 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Android.Content;
-using Android.Graphics;
 using Android.Graphics.Drawables;
 #if __ANDROID_29__
 using AndroidX.Core.Widget;
-using AButton = AndroidX.AppCompat.Widget.AppCompatButton;
 using AndroidX.RecyclerView.Widget;
 using AndroidX.AppCompat.Widget;
+using AButton = AndroidX.AppCompat.Widget.AppCompatButton;
 #else
-using Android.Support.V4.Widget;
-using AButton = Android.Support.V7.Widget.AppCompatButton;
 using Android.Support.V7.Widget;
+using AButton = Android.Support.V7.Widget.AppCompatButton;
 #endif
 using Android.Views;
 using Xamarin.Forms.Internals;
@@ -67,6 +65,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (e.NewElement != null)
 			{
+				e.NewElement.OpenRequested += OnOpenRequested;
 				e.NewElement.CloseRequested += OnCloseRequested;
 
 				if (Control == null)
@@ -84,7 +83,10 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			if (e.OldElement != null)
+			{
+				e.NewElement.OpenRequested -= OnOpenRequested;
 				e.OldElement.CloseRequested -= OnCloseRequested;
+			}
 
 			base.OnElementChanged(e);
 		}
@@ -190,6 +192,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				if (Element != null)
 				{
+					Element.OpenRequested -= OnOpenRequested;
 					Element.CloseRequested -= OnCloseRequested;
 				}
 
@@ -473,6 +476,7 @@ namespace Xamarin.Forms.Platform.Android
 				return false;
 
 			_swipeOffset = GetSwipeOffset(_initialPoint, point);
+
 			UpdateSwipeItems();
 
 			if (Math.Abs(_swipeOffset) > double.Epsilon)
@@ -1121,6 +1125,45 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 
 			swipeItem.OnInvoked();
+		}
+
+		void OnOpenRequested(object sender, OpenSwipeEventArgs e)
+		{
+			if (_contentView == null)
+				return;
+
+			var openSwipeItem = e.OpenSwipeItem;
+			ProgrammaticallyOpenSwipeItem(openSwipeItem);
+		}
+
+		void ProgrammaticallyOpenSwipeItem(OpenSwipeItem openSwipeItem)
+		{
+			switch (openSwipeItem)
+			{
+				case OpenSwipeItem.BottomItems:
+					_swipeDirection = SwipeDirection.Up;
+					break;
+				case OpenSwipeItem.LeftItems:
+					_swipeDirection = SwipeDirection.Right;
+					break;
+				case OpenSwipeItem.RightItems:
+					_swipeDirection = SwipeDirection.Left;
+					break;
+				case OpenSwipeItem.TopItems:
+					_swipeDirection = SwipeDirection.Down;
+					break;
+			}
+
+			var swipeItems = GetSwipeItemsByDirection();
+
+			if (swipeItems.Count == 0)
+				return;
+
+			var swipeThreshold = GetSwipeThreshold();
+			_swipeOffset = swipeThreshold;
+
+			UpdateSwipeItems();
+			Swipe();
 		}
 
 		void OnCloseRequested(object sender, EventArgs e)

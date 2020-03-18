@@ -52,6 +52,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (e.NewElement != null)
 			{
+				e.NewElement.OpenRequested += OnOpenRequested;
 				e.NewElement.CloseRequested += OnCloseRequested;
 
 				if (Control == null)
@@ -66,7 +67,10 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			if (e.OldElement != null)
+			{
+				e.OldElement.OpenRequested -= OnOpenRequested;
 				e.OldElement.CloseRequested -= OnCloseRequested;
+			}
 
 			base.OnElementChanged(e);
 		}
@@ -113,9 +117,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (Element.Content != null)
 				Element.Content.Layout(Bounds.ToRectangle());
-
-			if (_contentView != null)
-				_contentView.Frame = Bounds;
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -166,6 +167,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (Element != null)
 				{
+					Element.OpenRequested -= OnOpenRequested;
 					Element.CloseRequested -= OnCloseRequested;
 				}
 
@@ -624,14 +626,10 @@ namespace Xamarin.Forms.Platform.iOS
 				switch (_swipeDirection)
 				{
 					case SwipeDirection.Left:
-						_contentView.Frame = new CGRect(_originalBounds.X + ValidateSwipeOffset(_swipeOffset), _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
-						break;
 					case SwipeDirection.Right:
 						_contentView.Frame = new CGRect(_originalBounds.X + ValidateSwipeOffset(_swipeOffset), _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
 						break;
 					case SwipeDirection.Up:
-						_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + ValidateSwipeOffset(_swipeOffset), _originalBounds.Width, _originalBounds.Height);
-						break;
 					case SwipeDirection.Down:
 						_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + ValidateSwipeOffset(_swipeOffset), _originalBounds.Width, _originalBounds.Height);
 						break;
@@ -1095,6 +1093,49 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (e.HorizontalDelta > SwipeMinimumDelta || e.VerticalDelta > SwipeMinimumDelta)
 				ResetSwipe();
+		}
+
+		void OnOpenRequested(object sender, OpenSwipeEventArgs e)
+		{
+			if (_contentView == null)
+				return;
+
+			var openSwipeItem = e.OpenSwipeItem;
+			ProgrammaticallyOpenSwipeItem(openSwipeItem);
+		}
+
+		void ProgrammaticallyOpenSwipeItem(OpenSwipeItem openSwipeItem)
+		{
+			switch (openSwipeItem)
+			{
+				case OpenSwipeItem.BottomItems:
+					_swipeDirection = SwipeDirection.Up;
+					break;
+				case OpenSwipeItem.LeftItems:
+					_swipeDirection = SwipeDirection.Right;
+					break;
+				case OpenSwipeItem.RightItems:
+					_swipeDirection = SwipeDirection.Left;
+					break;
+				case OpenSwipeItem.TopItems:
+					_swipeDirection = SwipeDirection.Down;
+					break;
+			}
+
+			var swipeItems = GetSwipeItemsByDirection();
+
+			if (swipeItems.Count == 0)
+				return;
+
+			var swipeThreshold = GetSwipeThreshold();
+			_swipeOffset = swipeThreshold;
+
+			UpdateSwipeItems();
+
+			Animate(SwipeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseOut, () =>
+			{
+				Swipe();
+			}, null);
 		}
 
 		void OnCloseRequested(object sender, EventArgs e)
