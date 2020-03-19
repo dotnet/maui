@@ -180,8 +180,15 @@ namespace Xamarin.Essentials
             false;
 #endif
 
+        static int? sdkInt;
+
+        internal static int SdkInt
+            => sdkInt.HasValue
+                ? sdkInt.Value
+                : (sdkInt = (int)Build.VERSION.SdkInt).Value;
+
         internal static bool HasApiLevel(BuildVersionCodes versionCode) =>
-            (int)Build.VERSION.SdkInt >= (int)versionCode;
+            SdkInt >= (int)versionCode;
 
         internal static CameraManager CameraManager =>
             AppContext.GetSystemService(Context.CameraService) as CameraManager;
