@@ -582,6 +582,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
+			(GetSnapManager()?.GetCurrentSnapHelper() as SingleSnapHelper)?.ResetCurrentTargetPosition();
 			ScrollTo(args);
 		}
 

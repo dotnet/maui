@@ -18,9 +18,6 @@ namespace Xamarin.Forms
 		public const string PreviousItemVisualState = "PreviousItem";
 		public const string DefaultItemVisualState = "DefaultItem";
 
-		bool _isInitialized;
-		int _gotoPosition = -1;
-
 		public static readonly BindableProperty PeekAreaInsetsProperty = BindableProperty.Create(nameof(PeekAreaInsets), typeof(Thickness), typeof(CarouselView), default(Thickness));
 
 		public Thickness PeekAreaInsets
@@ -114,15 +111,6 @@ namespace Xamarin.Forms
 				}
 			}
 
-			var positionItem = GetPositionForItem(carouselView, newValue);
-			var gotoPosition = carouselView._gotoPosition;
-
-			if (positionItem == gotoPosition || gotoPosition == -1)
-			{
-				carouselView._gotoPosition = -1;
-				carouselView.SetValueCore(PositionProperty, positionItem);
-			}
-
 			carouselView.CurrentItemChanged?.Invoke(carouselView, args);
 
 			carouselView.OnCurrentItemChanged(args);
@@ -195,9 +183,6 @@ namespace Xamarin.Forms
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool IsScrolling { get; set; }
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Queue<Action> ScrollToActions = new Queue<Action>();
-
 		public event EventHandler<CurrentItemChangedEventArgs> CurrentItemChanged;
 		public event EventHandler<PositionChangedEventArgs> PositionChanged;
 
@@ -235,16 +220,8 @@ namespace Xamarin.Forms
 		{
 		}
 
-		protected override void OnScrolled(ItemsViewScrolledEventArgs e)
-		{
-			SetCurrentItem(GetItemForPosition(this, e.CenterItemIndex));
-
-			base.OnScrolled(e);
-		}
-
 		static void PositionPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-
 			var carousel = (CarouselView)bindable;
 
 			var args = new PositionChangedEventArgs((int)oldValue, (int)newValue);
@@ -263,58 +240,7 @@ namespace Xamarin.Forms
 
 			carousel.PositionChanged?.Invoke(carousel, args);
 
-			if (args.CurrentPosition == carousel._gotoPosition)
-				carousel._gotoPosition = -1;
-
-			// User is interacting with the carousel we don't need to scroll to item 
-			if (!carousel.IsDragging && !carousel.IsScrolling)
-			{
-				carousel._gotoPosition = args.CurrentPosition;
-
-				Action actionSCroll = () =>
-				{
-					carousel.ScrollTo(args.CurrentPosition, position: ScrollToPosition.Center, animate: carousel.IsScrollAnimated);
-				};
-
-				if (!carousel._isInitialized)
-					carousel.ScrollToActions.Enqueue(actionSCroll);
-				else
-					actionSCroll();
-			}
-
 			carousel.OnPositionChanged(args);
-		}
-
-
-		static object GetItemForPosition(CarouselView carouselView, int index)
-		{
-			if (!(carouselView?.ItemsSource is IList itemSource))
-				return null;
-
-			if (itemSource.Count == 0)
-				return null;
-
-			return itemSource[index];
-		}
-
-		static int GetPositionForItem(CarouselView carouselView, object item)
-		{
-			var itemSource = carouselView?.ItemsSource as IList;
-
-			for (int n = 0; n < itemSource?.Count; n++)
-			{
-				if (itemSource[n] == item)
-				{
-					return n;
-				}
-			}
-			return 0;
-		}
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SetCurrentItem(object item)
-		{
-			SetValueFromRenderer(CurrentItemProperty, item);
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -324,9 +250,10 @@ namespace Xamarin.Forms
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void PlatformInitialized()
-		{
-			_isInitialized = true;
-		}
+		public virtual bool AnimatePositionChanges => IsScrollAnimated;
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public virtual bool AnimateCurrentItemChanges => IsScrollAnimated;
+
 	}
 }

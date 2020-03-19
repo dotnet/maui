@@ -23,8 +23,8 @@ namespace Xamarin.Forms.Platform.UWP
 		FrameworkElement _emptyView;
 		View _formsEmptyView;
 		ScrollViewer _scrollViewer;
-		double _previousHorizontalOffset;
-		double _previousVerticalOffset;
+		internal double _previousHorizontalOffset;
+		internal double _previousVerticalOffset;
 
 		protected ListViewBase ListViewBase { get; private set; }
 		protected UWPDataTemplate ViewTemplate => (UWPDataTemplate)UWPApp.Current.Resources["View"];
@@ -65,7 +65,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				UpdateVerticalScrollBarVisibility();
 			}
-			else if (changedProperty.IsOneOf(Xamarin.Forms.ItemsView.EmptyViewProperty, 
+			else if (changedProperty.IsOneOf(Xamarin.Forms.ItemsView.EmptyViewProperty,
 				Xamarin.Forms.ItemsView.EmptyViewTemplateProperty))
 			{
 				UpdateEmptyView();
@@ -144,7 +144,7 @@ namespace Xamarin.Forms.Platform.UWP
 					IsSourceGrouped = false
 				};
 			}
-			
+
 			return new CollectionViewSource
 			{
 				Source = itemsSource,
@@ -435,26 +435,47 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		void OnScrollViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+		internal void HandleScroll(ScrollViewer scrollViewer)
 		{
 			var itemsViewScrolledEventArgs = new ItemsViewScrolledEventArgs
 			{
-				HorizontalOffset = _scrollViewer.HorizontalOffset,
-				HorizontalDelta = _scrollViewer.HorizontalOffset - _previousHorizontalOffset,
-				VerticalOffset = _scrollViewer.VerticalOffset,
-				VerticalDelta = _scrollViewer.VerticalOffset - _previousVerticalOffset,
+				HorizontalOffset = scrollViewer.HorizontalOffset,
+				HorizontalDelta = scrollViewer.HorizontalOffset - _previousHorizontalOffset,
+				VerticalOffset = scrollViewer.VerticalOffset,
+				VerticalDelta = scrollViewer.VerticalOffset - _previousVerticalOffset,
 			};
 
-			_previousHorizontalOffset = _scrollViewer.HorizontalOffset;
-			_previousVerticalOffset = _scrollViewer.VerticalOffset;
+			_previousHorizontalOffset = scrollViewer.HorizontalOffset;
+			_previousVerticalOffset = scrollViewer.VerticalOffset;
 
-			var visibleIndexes = CollectionViewExtensions.GetVisibleIndexes(ListViewBase, ItemsLayoutOrientation.Vertical);
+			var layoutOrientaton = ItemsLayoutOrientation.Vertical;
+			bool goingNext = true;
+			switch (Layout)
+			{
+				case LinearItemsLayout linearItemsLayout:
+					layoutOrientaton = linearItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal ? ItemsLayoutOrientation.Horizontal : ItemsLayoutOrientation.Vertical;
+					goingNext = itemsViewScrolledEventArgs.HorizontalDelta > 0;
+					break;
+				case GridItemsLayout gridItemsLayout:
+					layoutOrientaton = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal ? ItemsLayoutOrientation.Horizontal : ItemsLayoutOrientation.Vertical;
+					goingNext = itemsViewScrolledEventArgs.VerticalDelta > 0;
+					break;
+				default:
+					break;
+			}
+
+			var visibleIndexes = ListViewBase.GetVisibleIndexes(layoutOrientaton, goingNext);
 
 			itemsViewScrolledEventArgs.FirstVisibleItemIndex = visibleIndexes.firstVisibleItemIndex;
 			itemsViewScrolledEventArgs.CenterItemIndex = visibleIndexes.centerItemIndex;
 			itemsViewScrolledEventArgs.LastVisibleItemIndex = visibleIndexes.lastVisibleItemIndex;
 
 			Element.SendScrolled(itemsViewScrolledEventArgs);
+		}
+
+		void OnScrollViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+		{
+			HandleScroll(_scrollViewer);
 		}
 	}
 }

@@ -54,6 +54,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.IsTrue(countFired == 1);
 		}
 
+		[Test]
 		public void TestPositionChangedEvent()
 		{
 			var gotoPosition = 1;
@@ -71,26 +72,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreSame(source, carouselView.ItemsSource);
 			carouselView.Position = gotoPosition;
 			Assert.IsTrue(countFired == 1);
-		}
-
-		[Test]
-		public void TestCurrentItemChangesPosition()
-		{
-			var gotoPosition = 1;
-			var source = new List<string> { "1", "2", "3" };
-			var carouselView = new CarouselView
-			{
-				ItemsSource = source
-			};
-
-			int countFired = 0;
-			carouselView.PositionChangedCommand = new Command(() =>
-			{
-				countFired += 1;
-			});
-			Assert.AreSame(source, carouselView.ItemsSource);
-			carouselView.CurrentItem = source[gotoPosition];
-			Assert.AreEqual(gotoPosition, carouselView.Position);
 		}
 
 		[Test]
@@ -132,28 +113,5 @@ namespace Xamarin.Forms.Core.UnitTests
 			carouselView.CurrentItem = source[gotoPosition];
 			Assert.IsTrue(countFired == 1);
 		}
-
-		// TODO when Scrolled is implemented
-		//[Test]
-		//public void TestScrolled()
-		//{
-		//	var scrollPosition = 100;
-		//	var scrollDirection = ScrollDirection.Down;
-		//	var scrolledDirection = ScrollDirection.Up;
-		//	var source = new List<string> { "1", "2", "3" };
-		//	var carouselView = new CarouselView
-		//	{
-		//		ItemsSource = source
-		//	};
-		//	int countFired = 0;
-		//	carouselView.Scrolled += (s, e) =>
-		//	{
-		//		countFired += 1;
-		//		scrolledDirection = e.Direction;
-		//	};
-		//	carouselView.SendScrolled(scrollPosition, scrollDirection);
-		//	Assert.IsTrue(countFired == 1);
-		//	Assert.IsTrue(scrollDirection == scrolledDirection);
-		//}
 	}
 }
