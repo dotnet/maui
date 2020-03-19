@@ -20,7 +20,7 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 			};
 		}
 
-		public Assembly Assembly { get => Assembly.GetExecutingAssembly(); }
+		public Assembly Assembly { get => Assembly.Load("Xamarin.Forms.Platform.Android.UnitTests, Version = 2.0.0.0, Culture = neutral, PublicKeyToken = null"); }
 		public Dictionary<string, object> TestRunSettings { get; }
 	}
 }

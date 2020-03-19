@@ -28,7 +28,6 @@
     <AndroidEnableMultiDex>true</AndroidEnableMultiDex>
     <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
   </PropertyGroup>
-
   <PropertyGroup>
     <!-- default locally to using fast renderers but if we're running on CI don't set a value for ANDROID_RENDERERS.
       This will let the old and new yaml configurations coexist -->
@@ -37,7 +36,6 @@
     <DefineConstants Condition="'$(ANDROID_RENDERERS)' == 'PREAPPCOMPAT'">$(DefineConstants);FORMS_APPLICATION_ACTIVITY</DefineConstants>
     <DefineConstants Condition="'$(ANDROID_RENDERERS)' == 'LEGACY'">$(DefineConstants)</DefineConstants>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DefineConstants>$(DefineConstants);HAVE_OPENTK</DefineConstants>
     <AndroidKeyStore>True</AndroidKeyStore>
@@ -106,32 +104,18 @@
     <Compile Include="MainApplication.cs" />
     <Compile Include="PerformanceTrackerRenderer.cs" />
     <Compile Include="PlatformSpecificCoreGalleryFactory.cs" />
-    <Compile Include="Tests\CollectionViewTests.cs" />
-    <Compile Include="Tests\AssertionExtensions.cs" />
-    <Compile Include="Tests\BackgroundColorTests.cs" />
-    <Compile Include="Tests\CornerRadiusTests.cs" />
-    <Compile Include="Tests\IsEnabledTests.cs" />
-    <Compile Include="Tests\Issues.cs" />
-    <Compile Include="Tests\IsVisibleTests.cs" />
-    <Compile Include="Tests\OpacityTests.cs" />
-    <Compile Include="Tests\RotationTests.cs" />
-    <Compile Include="Tests\ScaleTests.cs" />
+    <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Tests\TestingPlatformService.cs" />
     <Compile Include="Tests\PlatformTestSettings.cs" />
     <Compile Include="PreApplicationClassActivity.cs" />
     <Compile Include="Properties\MapsKey.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RegistrarValidationService.cs" />
-    <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="CustomRenderers.cs" />
     <Compile Include="ColorPicker.cs" />
     <Compile Include="SampleNativeControl.cs" />
     <Compile Include="StaggeredCollectionViewRenderer.cs" />
     <Compile Include="TestCloudService.cs" />
-    <Compile Include="Tests\PlatformTestFixture.cs" />
-    <Compile Include="Tests\RendererTests.cs" />
-    <Compile Include="Tests\TextTests.cs" />
-    <Compile Include="Tests\TranslationTests.cs" />
     <Compile Include="_1909CustomRenderer.cs" />
     <Compile Include="_2489CustomRenderer.cs" />
     <Compile Include="_38989CustomRenderer.cs" />
@@ -226,6 +210,10 @@
     <ProjectReference Include="..\Xamarin.Forms.Platform.Android.FormsViewGroup\Xamarin.Forms.Platform.Android.FormsViewGroup.csproj">
       <Project>{3b72465b-acae-43ae-9327-10f372fe5f80}</Project>
       <Name>Xamarin.Forms.Platform.Android.FormsViewGroup</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xamarin.Forms.Platform.Android.UnitTests\Xamarin.Forms.Platform.Android.UnitTests.csproj">
+      <Project>{a4c57790-71d1-467c-a69e-2bd84cb6666c}</Project>
+      <Name>Xamarin.Forms.Platform.Android.UnitTests</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj">
       <Project>{0e16e70a-d6dd-4323-ad5d-363abff42d6a}</Project>

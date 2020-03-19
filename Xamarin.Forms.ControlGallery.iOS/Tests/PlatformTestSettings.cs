@@ -20,7 +20,7 @@ namespace Xamarin.Forms.ControlGallery.iOS.Tests
 			};
 		}
 
-		public Assembly Assembly { get => Assembly.GetExecutingAssembly(); }
+		public Assembly Assembly { get => Assembly.Load("Xamarin.Forms.Platform.iOS.UnitTests, Version = 2.0.0.0, Culture = neutral, PublicKeyToken = null"); }
 		public Dictionary<string, object> TestRunSettings { get; }
 	}
 }

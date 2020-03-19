@@ -105,12 +105,6 @@
     <AppExtensionDebugBundleId />
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\Xamarin.Forms.Core.UITests.Shared\Utilities\NumericExtensions.cs">
-      <Link>Tests\NumericExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.UITests.Shared\Utilities\ParsingUtils.cs">
-      <Link>Tests\ParsingUtils.cs</Link>
-    </Compile>
     <Compile Include="AttachedStateEffectRenderer.cs" />
     <Compile Include="BrokenImageSourceHandler.cs" />
     <Compile Include="BrokenNativeControl.cs" />
@@ -123,19 +117,8 @@
     <Compile Include="PerformanceTrackerRenderer.cs" />
     <Compile Include="RegistrarValidationService.cs" />
     <Compile Include="SampleNativeControl.cs" />
-    <Compile Include="Tests\AssertionExtensions.cs" />
-    <Compile Include="Tests\BackgroundColorTests.cs" />
-    <Compile Include="Tests\CornerRadiusTests.cs" />
-    <Compile Include="Tests\IsEnabledTests.cs" />
-    <Compile Include="Tests\IsVisibleTests.cs" />
-    <Compile Include="Tests\NavigationTests.cs" />
-    <Compile Include="Tests\OpacityTests.cs" />
     <Compile Include="Tests\PlatformTestSettings.cs" />
-    <Compile Include="Tests\PlatformTestFixture.cs" />
-    <Compile Include="Tests\RotationTests.cs" />
-    <Compile Include="Tests\ScaleTests.cs" />
     <Compile Include="Tests\TestingPlatformService.cs" />
-    <Compile Include="Tests\TextTests.cs" />
     <Compile Include="_2489CustomRenderer.cs" />
     <Compile Include="_57114Renderer.cs" />
     <Compile Include="_58406EffectRenderer.cs" />
@@ -176,6 +159,12 @@
     <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
       <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
       <Name>Xamarin.Forms.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xamarin.Forms.Platform.iOS.UnitTests\Xamarin.Forms.Platform.iOS.UnitTests.csproj">
+      <Project>{52c50e88-7f15-45fe-a63c-8e7c76ca2bae}</Project>
+      <Name>Xamarin.Forms.Platform.iOS.UnitTests</Name>
+      <IsAppExtension>false</IsAppExtension>
+      <IsWatchApp>false</IsWatchApp>
     </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj">
       <Project>{271193c1-6e7c-429c-a36d-3f1be5267231}</Project>

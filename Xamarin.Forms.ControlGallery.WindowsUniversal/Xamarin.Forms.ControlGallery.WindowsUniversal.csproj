@@ -117,6 +117,10 @@
       <Project>{7d13bac2-c6a4-416a-b07e-c169b199e52b}</Project>
       <Name>Xamarin.Forms.Maps</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Xamarin.Forms.Platform.UAP.UnitTests\Xamarin.Forms.Platform.UAP.UnitTests.csproj">
+      <Project>{8f245976-f555-4814-b935-9ad58f4d2871}</Project>
+      <Name>Xamarin.Forms.Platform.UAP.UnitTests</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj">
       <Project>{00d8d049-ffaa-4759-8fc9-1eca30777f72}</Project>
       <Name>Xamarin.Forms.Platform.UAP</Name>
@@ -131,13 +135,7 @@
     <Compile Include="RegistrarValidationService.cs" />
     <Compile Include="SampleNativeControl.cs" />
     <Compile Include="SecondaryWindowService.cs" />
-    <Compile Include="Tests\BackgroundColorTests.cs" />
-    <Compile Include="Tests\IsEnabledTests.cs" />
-    <Compile Include="Tests\PlatformTestFixture.cs" />
     <Compile Include="Tests\PlatformTestSettings.cs" />
-    <Compile Include="Tests\RendererTests.cs" />
-    <Compile Include="Tests\RotationTests.cs" />
-    <Compile Include="Tests\ScaleTests.cs" />
     <Compile Include="Tests\TestingPlatformService.cs" />
     <Compile Include="_2489CustomRenderer.cs" />
     <Compile Include="_57114Renderer.cs" />
@@ -251,7 +249,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.0.15</Version>
+      <Version>6.2.9</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
       <Version>2.3.191211002</Version>
