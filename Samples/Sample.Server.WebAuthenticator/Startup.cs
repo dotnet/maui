@@ -29,7 +29,10 @@ namespace Sample.Server.WebAuthenticator
         {
             services.AddControllers();
 
-            services.AddAuthentication()
+            services.AddAuthentication(o =>
+                {
+                    o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                })
                 .AddCookie()
                 .AddFacebook(fb =>
                 {
