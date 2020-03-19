@@ -3,17 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Android.Content;
-using Android.Graphics;
 using Android.Graphics.Drawables;
 #if __ANDROID_29__
 using AndroidX.Core.Widget;
-using AButton = AndroidX.AppCompat.Widget.AppCompatButton;
 using AndroidX.RecyclerView.Widget;
 using AndroidX.AppCompat.Widget;
+using AButton = AndroidX.AppCompat.Widget.AppCompatButton;
 #else
-using Android.Support.V4.Widget;
-using AButton = Android.Support.V7.Widget.AppCompatButton;
 using Android.Support.V7.Widget;
+using AButton = Android.Support.V7.Widget.AppCompatButton;
 #endif
 using Android.Views;
 using Xamarin.Forms.Internals;
