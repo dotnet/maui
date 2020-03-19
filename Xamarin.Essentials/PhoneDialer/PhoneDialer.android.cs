@@ -41,7 +41,9 @@ namespace Xamarin.Essentials
                 phoneNumber = PhoneNumberUtils.FormatNumber(number);
 #pragma warning restore CS0618
 
-            phoneNumber = URLEncoder.Encode(phoneNumber, "UTF-8");
+            // if we are an extension then we need to encode
+            if (phoneNumber.Contains(",") || phoneNumber.Contains(";"))
+                phoneNumber = URLEncoder.Encode(phoneNumber, "UTF-8");
 
             var dialIntent = ResolveDialIntent(phoneNumber);
 
