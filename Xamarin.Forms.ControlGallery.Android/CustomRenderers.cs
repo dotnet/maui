@@ -205,18 +205,6 @@ namespace Xamarin.Forms.ControlGallery.Android
 		public AttachedStateEffectLabelRenderer(Context context) : base(context)
 		{
 		}
-
-#if TEST_EXPERIMENTAL_RENDERERS
-		protected override void Dispose(bool disposing)
-		{
-			foreach (var effect in Element.Effects.OfType<Controls.Effects.AttachedStateEffect>())
-			{
-				effect.Detached(Element);
-			}
-
-			base.Dispose(disposing);
-		}
-#endif
 	}
 
 	public class NativeDroidMasterDetail : Xamarin.Forms.Platform.Android.AppCompat.MasterDetailPageRenderer
