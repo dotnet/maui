@@ -122,6 +122,7 @@
   <ItemGroup>
     <Compile Include="BackgroundColorTests.cs" />
     <Compile Include="ColorTests.cs" />
+    <Compile Include="EmbeddingTests.cs" />
     <Compile Include="IsEnabledTests.cs" />
     <Compile Include="PlatformTestFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -51,6 +51,7 @@
     <Compile Include="BackgroundColorTests.cs" />
     <Compile Include="CollectionViewTests.cs" />
     <Compile Include="CornerRadiusTests.cs" />
+    <Compile Include="EmbeddingTests.cs" />
     <Compile Include="IsEnabledTests.cs" />
     <Compile Include="Issues.cs" />
     <Compile Include="IsVisibleTests.cs" />
