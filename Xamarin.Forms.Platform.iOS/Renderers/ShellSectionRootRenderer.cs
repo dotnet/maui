@@ -165,13 +165,18 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (e.PropertyName == ShellSection.CurrentItemProperty.PropertyName)
 			{
-				var items = ShellSectionController.GetItems();
 				var currentItem = ShellSection.CurrentItem;
+				if (currentItem == null)
+					return;
+
+				var items = ShellSectionController.GetItems();
+				if (items.Count == 0)
+					return;
 
 				var oldIndex = _currentIndex;
 				var oldItem = items[oldIndex];
 
-				_currentIndex = ShellSectionController.GetItems().IndexOf(currentItem);
+				_currentIndex = items.IndexOf(currentItem);
 
 				var oldRenderer = _renderers[oldItem];
 				var currentRenderer = _renderers[currentItem];
