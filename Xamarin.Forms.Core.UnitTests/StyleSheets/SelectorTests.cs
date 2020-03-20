@@ -100,6 +100,10 @@ namespace Xamarin.Forms.StyleSheets.UnitTests
 		[TestCase("visualelement", false, false, false, false, false, false)]
 		[TestCase("^visualelement", true, true, true, true, true, true)]
 		[TestCase("^layout", false, false, false, false, false, true)]
+		[TestCase("stacklayout visualelement", false, false, false, false, false, false)]
+		[TestCase("stacklayout>visualelement", false, false, false, false, false, false)]
+		[TestCase("stacklayout ^visualelement", true, true, true, true, true, true)]
+		[TestCase("stacklayout>^visualelement", true, true, false, true, true, true)]
 		public void TestCase(string selectorString, bool label0match, bool label1match, bool label2match, bool label3match, bool label4match, bool content0match)
 		{
 			var selector = Selector.Parse(new CssReader(new StringReader(selectorString)));

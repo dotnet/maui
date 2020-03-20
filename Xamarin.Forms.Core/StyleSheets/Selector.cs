@@ -82,7 +82,6 @@ namespace Xamarin.Forms.StyleSheets
 									&& c != '>'
 									&& c != ','
 									&& c != '~'
-									&& c != '^'
 									&& c != stopChar);
 						break;
 					}
