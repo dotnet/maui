@@ -22,7 +22,8 @@
             HeightRequest="70"
             WidthRequest="300">
             <SwipeView.LeftItems>
-                <SwipeItems>
+                <SwipeItems
+                    SwipeBehaviorOnInvoked="RemainOpen">
                     <SwipeItemView
                         Command="{Binding CheckAnswerCommand}"
                         CommandParameter="{Binding Source={x:Reference resultEntry}, Path=Text}">

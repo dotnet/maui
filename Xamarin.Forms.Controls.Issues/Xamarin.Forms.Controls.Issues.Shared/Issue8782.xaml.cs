@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml;
@@ -25,6 +26,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public Issue8782()
 		{
 #if APP
+			Device.SetFlags(new List<string> { ExperimentalFlags.SwipeViewExperimental });
 			Title = "Issue 8782";
 			InitializeComponent();
 #endif

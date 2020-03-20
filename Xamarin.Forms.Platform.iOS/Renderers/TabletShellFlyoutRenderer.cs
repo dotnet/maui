@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using Foundation;
 using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
@@ -22,7 +23,7 @@ namespace Xamarin.Forms.Platform.iOS
 			FlyoutContent.WillDisappear += OnFlyoutContentWillDisappear;
 
 			((IShellController)_context.Shell).AddFlyoutBehaviorObserver(this);
-
+		
 			ViewControllers = new UIViewController[]
 			{
 				FlyoutContent.ViewController,
@@ -107,6 +108,28 @@ namespace Xamarin.Forms.Platform.iOS
 			_context.Shell.PropertyChanged += OnShellPropertyChanged;
 		}
 
+		public override void TouchesBegan(NSSet touches, UIEvent evt)
+		{
+			base.TouchesBegan(touches, evt);
+
+			if (touches.AnyObject is UITouch touch)
+			{
+				var view = touch.View;
+
+				if (view == null)
+					return;
+
+				var swipeViewTouched = IsSwipeView(view);
+				PresentsWithGesture = !swipeViewTouched;
+			}
+		}
+
+		public override void TouchesEnded(NSSet touches, UIEvent evt)
+		{
+			base.TouchesEnded(touches, evt);
+			PresentsWithGesture = true;
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			base.Dispose(disposing);
@@ -125,6 +148,17 @@ namespace Xamarin.Forms.Platform.iOS
 				_content = null;
 				_context = null;
 			}
+		}
+
+		bool IsSwipeView(UIView view)
+		{
+			if (view == null)
+				return false;
+
+			if (view is SwipeViewRenderer)
+				return true;
+
+			return IsSwipeView(view.Superview);
 		}
 	}
 }
