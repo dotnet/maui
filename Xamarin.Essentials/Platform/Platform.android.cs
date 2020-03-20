@@ -183,7 +183,7 @@ namespace Xamarin.Essentials
         static int? sdkInt;
 
         internal static int SdkInt
-            => sdkInt ?? (sdkInt = (int)Build.VERSION.SdkInt).Value;
+            => sdkInt ??= (int)Build.VERSION.SdkInt;
 
         internal static bool HasApiLevel(BuildVersionCodes versionCode) =>
             SdkInt >= (int)versionCode;
