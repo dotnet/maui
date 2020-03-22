@@ -224,15 +224,23 @@ namespace Xamarin.Essentials
 
         public partial class LocationAlways : BasePlatformPermission
         {
-            public override (string androidPermission, bool isRuntime)[] RequiredPermissions =>
-                new (string, bool)[]
+            public override (string androidPermission, bool isRuntime)[] RequiredPermissions
+            {
+                get
                 {
+                    var permissions = new List<(string, bool)>();
 #if __ANDROID_29__
-                    (Manifest.Permission.AccessBackgroundLocation, true),
+                    // Check if running and targeting Q
+                    if (Platform.HasApiLevelQ && Platform.AppContext.ApplicationInfo.TargetSdkVersion >= BuildVersionCodes.Q)
+                        permissions.Add((Manifest.Permission.AccessBackgroundLocation, true));
 #endif
-                    (Manifest.Permission.AccessCoarseLocation, true),
-                    (Manifest.Permission.AccessFineLocation, true)
-                };
+
+                    permissions.Add((Manifest.Permission.AccessCoarseLocation, true));
+                    permissions.Add((Manifest.Permission.AccessFineLocation, true));
+
+                    return permissions.ToArray();
+                }
+            }
         }
 
         public partial class Maps : BasePlatformPermission

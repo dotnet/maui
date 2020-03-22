@@ -27,7 +27,7 @@ namespace Xamarin.Essentials
 
         public abstract partial class BasePlatformPermission : BasePermission
         {
-            protected virtual Func<IEnumerable<string>> RequiredDeclarations { get; }
+            protected virtual Func<IEnumerable<string>> RequiredDeclarations { get; } = () => Array.Empty<string>();
 
             public override Task<PermissionStatus> CheckStatusAsync()
             {

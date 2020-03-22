@@ -51,6 +51,7 @@
     <None Include="..\Assets\xamarin.essentials_128x128.png" PackagePath="icon.png" Pack="true" />
     <None Include="..\nugetreadme.txt" PackagePath="readme.txt" Pack="true" />
     <PackageReference Include="mdoc" Version="5.7.4.10" PrivateAssets="All" />
+    <PackageReference Include="Xamarin.Build.TypeRedirector" Version="0.1.2-preview" PrivateAssets="all" />
     <Compile Include="**\*.shared.cs" />
     <Compile Include="**\*.shared.*.cs" />
   </ItemGroup>
