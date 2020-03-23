@@ -34,33 +34,42 @@ namespace Xamarin.Forms.Platform.UWP
 			};
 		}
 
-		public static (int firstVisibleItemIndex, int lastVisibleItemIndex, int centerItemIndex) GetVisibleIndexes(ListViewBase listViewBase, ItemsLayoutOrientation itemsLayoutOrientation)
+		public static (int firstVisibleItemIndex, int lastVisibleItemIndex, int centerItemIndex) GetVisibleIndexes(this ListViewBase listViewBase, ItemsLayoutOrientation itemsLayoutOrientation , bool goingNext)
 		{
 			int firstVisibleItemIndex = -1;
 			int lastVisibleItemIndex = -1;
-			int centerItemIndex = -1;
-
-			var scrollViewer = listViewBase.GetFirstDescendant<ScrollViewer>();
-			var presenters = listViewBase.GetChildren<ListViewItemPresenter>();
-
-			if (presenters != null || scrollViewer == null)
+			
+			var itemsPanel = (listViewBase.ItemsPanelRoot as ItemsStackPanel);
+			if (itemsPanel != null)
 			{
-				int count = 0;
-				foreach (ListViewItemPresenter presenter in presenters)
-				{
-					if (CollectionViewExtensions.IsListViewItemVisible(presenter, scrollViewer, itemsLayoutOrientation))
-					{
-						if (firstVisibleItemIndex == -1)
-							firstVisibleItemIndex = count;
-
-						lastVisibleItemIndex = count;
-					}
-
-					count++;
-				}
-
-				centerItemIndex = (lastVisibleItemIndex + firstVisibleItemIndex) / 2;
+				firstVisibleItemIndex = itemsPanel.FirstVisibleIndex;
+				lastVisibleItemIndex = itemsPanel.LastVisibleIndex;
 			}
+			else
+			{
+				var scrollViewer = listViewBase.GetFirstDescendant<ScrollViewer>();
+				var presenters = listViewBase.GetChildren<ListViewItemPresenter>();
+
+				if (presenters != null || scrollViewer == null)
+				{
+					int count = 0;
+					foreach (ListViewItemPresenter presenter in presenters)
+					{
+						if (IsListViewItemVisible(presenter, scrollViewer, itemsLayoutOrientation))
+						{
+							if (firstVisibleItemIndex == -1)
+								firstVisibleItemIndex = count;
+
+							lastVisibleItemIndex = count;
+						}
+
+						count++;
+					}
+				}
+			}
+
+			double center = (lastVisibleItemIndex + firstVisibleItemIndex) / 2.0;
+			int centerItemIndex = goingNext ? (int)Math.Ceiling(center) : (int)Math.Floor(center);
 
 			return (firstVisibleItemIndex, lastVisibleItemIndex, centerItemIndex);
 		}

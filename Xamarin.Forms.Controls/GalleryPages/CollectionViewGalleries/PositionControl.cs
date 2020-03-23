@@ -38,9 +38,9 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 			var layout = new Grid
 			{
 				RowDefinitions = new RowDefinitionCollection {
-								new RowDefinition { Height = 30 },
-								new RowDefinition { Height = GridLength.Auto },
-								new RowDefinition { Height = GridLength.Auto },
+								new RowDefinition { Height = 20 },
+								new RowDefinition { Height = 20 },
+								new RowDefinition { Height = 20 },
 					},
 				ColumnDefinitions = new ColumnDefinitionCollection
 					{
@@ -69,6 +69,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 			Grid.SetColumnSpan(stacklayout, 3);
 
 			Content = layout;
+			_slider.Value = 1;
 		}
 
 		public void UpdatePositionCount(int itemsCount)

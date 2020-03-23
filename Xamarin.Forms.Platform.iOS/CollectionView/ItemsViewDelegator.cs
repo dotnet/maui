@@ -27,17 +27,13 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (indexPathsForVisibleItems.Count == 0)
 				return;
-
+	
 			var contentInset = scrollView.ContentInset;
 			var contentOffsetX = scrollView.ContentOffset.X + contentInset.Left;
 			var contentOffsetY = scrollView.ContentOffset.Y + contentInset.Top;
 
 			var firstVisibleItemIndex = (int)indexPathsForVisibleItems.First().Item;
-
-			var collectionView = ViewController.CollectionView;
-			var centerPoint = new CGPoint(collectionView.Center.X + collectionView.ContentOffset.X, collectionView.Center.Y + collectionView.ContentOffset.Y);
-			var centerIndexPath = collectionView.IndexPathForItemAtPoint(centerPoint);
-			var centerItemIndex = centerIndexPath?.Row ?? firstVisibleItemIndex;
+			var centerItemIndex = ViewController.CollectionView.GetCenteredIndex();
 			var lastVisibleItemIndex = (int)indexPathsForVisibleItems.Last().Item;
 			var itemsViewScrolledEventArgs = new ItemsViewScrolledEventArgs
 			{
