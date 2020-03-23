@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 		{
 			On<iOS>().SetLargeTitleDisplay(LargeTitleDisplayMode.Never);
 
-			var viewModel = new CarouselItemsGalleryViewModel();
+			var viewModel = new CarouselItemsGalleryViewModel(false, false);
 
 			Title = $"CarouselView Snap Options";
 

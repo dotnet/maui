@@ -64,6 +64,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Content = swipeContent
 			};
 
+			swipeLayout.Children.Add(instructions);
 			swipeLayout.Children.Add(swipeView);
 
 			Content = swipeLayout;

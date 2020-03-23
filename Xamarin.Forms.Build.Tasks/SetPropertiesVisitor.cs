@@ -921,6 +921,18 @@ namespace Xamarin.Forms.Build.Tasks
 			yield return Create(Ldloc, context.Variables[elementNode]);		//target
 
 			yield return Create(Ldstr, context.XamlFilePath);
+			yield return Create(Ldstr, ";assembly=");
+			yield return Create(Ldstr, context.Module.Assembly.Name.Name);
+			yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "String"),
+																   methodName: "Concat",
+																   parameterTypes: new[] {
+																	   ("mscorlib", "System", "String"),
+																	   ("mscorlib", "System", "String"),
+																	   ("mscorlib", "System", "String"),
+																   },
+																   isStatic: true));
+
+
 			yield return Create(Ldc_I4, (int)UriKind.RelativeOrAbsolute);
 			yield return Create(Newobj, module.ImportCtorReference(("System", "System", "Uri"),
 																   parameterTypes: new[] {

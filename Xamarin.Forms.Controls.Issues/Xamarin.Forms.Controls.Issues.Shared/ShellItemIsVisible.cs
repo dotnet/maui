@@ -9,6 +9,7 @@ using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using System.Threading;
 using System.ComponentModel;
+using System.Threading.Tasks;
 
 
 #if UITEST
@@ -33,6 +34,12 @@ namespace Xamarin.Forms.Controls.Issues
 			var vm = new ShellViewModel();
 			this.BindingContext = vm;
 
+			SetupShell();
+		}
+
+		void SetupShell()
+		{
+			var vm = BindingContext as ShellViewModel;
 			Func<string, ContentPage> createPage = (title) => new ContentPage()
 			{
 				Title = title,
@@ -84,6 +91,20 @@ namespace Xamarin.Forms.Controls.Issues
 							{
 								GoToAsync("//Item2");
 							})
+						},
+						new Button()
+						{
+							Text = "Clear and Recreate",
+							AutomationId = "ClearAndRecreate",
+							Command = new Command(async () =>
+							{
+								this.Items[0].Items[0].Items.Clear();
+								await Task.Delay(10);
+								this.Items[0].Items.Clear();
+								await Task.Delay(10);
+								this.Items.Clear();
+								SetupShell();
+							})
 						}
 					}
 				}
@@ -110,7 +131,6 @@ namespace Xamarin.Forms.Controls.Issues
 					this.FlyoutIsPresented = false;
 				})
 			}));
-
 		}
 
 		[Preserve(AllMembers = true)]
@@ -158,6 +178,15 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.Tap("ToggleItem1");
 			ShowFlyout();
 			RunningApp.WaitForNoElement("Item1 Flyout");
+		}
+
+		[Test]
+		public void ClearAndRecreateShellElements()
+		{
+			RunningApp.WaitForElement("ClearAndRecreate");
+			RunningApp.Tap("ClearAndRecreate");
+			RunningApp.WaitForElement("ClearAndRecreate");
+			RunningApp.Tap("ClearAndRecreate");
 		}
 #endif
 	}

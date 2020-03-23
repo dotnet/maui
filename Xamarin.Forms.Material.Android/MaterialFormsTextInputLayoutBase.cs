@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Material.Android
 			_formsPlaceholderColor = formsPlaceHolderColor;
 			_formsTextColor = formsTextColor;
 
-			var underlineColors = MaterialColors.GetUnderlineColor(_formsTextColor);
+			var underlineColors = MaterialColors.GetUnderlineColor(_formsPlaceholderColor);
 			var placeHolderColors = MaterialColors.GetPlaceHolderColor(_formsPlaceholderColor, _formsTextColor);
 
 			// I realize these are the same but I have to set it to a difference instance

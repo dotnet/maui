@@ -7,6 +7,14 @@ using System.Linq;
 
 namespace Xamarin.Forms
 {
+	public enum OpenSwipeItem
+	{
+		LeftItems,
+		TopItems,
+		RightItems,
+		BottomItems
+	}
+
 	public class SwipeItems : Element, IList<ISwipeItem>, INotifyCollectionChanged
 	{
 		readonly ObservableCollection<ISwipeItem> _swipeItems;

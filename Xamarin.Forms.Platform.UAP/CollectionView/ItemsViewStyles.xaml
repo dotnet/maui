@@ -4,7 +4,7 @@
     xmlns:local="using:Xamarin.Forms.Platform.UWP">
     
     <ItemsPanelTemplate x:Key="HorizontalListItemsPanel">
-        <ItemsStackPanel Orientation="Horizontal"  />
+        <ItemsStackPanel Orientation="Horizontal" />
     </ItemsPanelTemplate>
 
     <ItemsPanelTemplate x:Key="HorizontalGridItemsPanel">
@@ -174,6 +174,7 @@
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalAlignment" Value="Stretch" />
                     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="Padding" Value="0,0,0,0" />
                 </Style>
             </Setter.Value>
         </Setter>

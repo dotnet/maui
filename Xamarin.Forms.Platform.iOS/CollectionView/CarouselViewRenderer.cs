@@ -5,7 +5,7 @@ namespace Xamarin.Forms.Platform.iOS
 {
 	public class CarouselViewRenderer : ItemsViewRenderer<CarouselView, CarouselViewController>
 	{
-		CarouselView CarouselView => Element;
+		CarouselView Carousel => Element;
 
 		[Preserve(Conditional = true)]
 		public CarouselViewRenderer()
@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected override ItemsViewLayout SelectLayout()
 		{
-			return new CarouselViewLayout(CarouselView.ItemsLayout, CarouselView);
+			return new CarouselViewLayout(Carousel.ItemsLayout, Carousel);
 		}
 
 		protected override void SetUpNewElement(CarouselView newElement)
@@ -53,18 +53,18 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateIsSwipeEnabled()
 		{
-			if (CarouselView == null)
+			if (Carousel == null)
 				return;
 
-			Controller.CollectionView.ScrollEnabled = CarouselView.IsSwipeEnabled;
+			Controller.CollectionView.ScrollEnabled = Carousel.IsSwipeEnabled;
 		}
 
 		void UpdateIsBounceEnabled()
 		{
-			if (CarouselView == null)
+			if (Carousel == null)
 				return;
 
-			Controller.CollectionView.Bounces = CarouselView.IsBounceEnabled;
+			Controller.CollectionView.Bounces = Carousel.IsBounceEnabled;
 		}
 	}
 }

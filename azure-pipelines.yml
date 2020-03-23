@@ -110,22 +110,22 @@ stages:
         workspace:
           clean: all
         displayName: OSX Phase
-        pool:
-          vmImage: $(macOSXVmImage)
-          demands:
-            - Agent.OS -equals darwin
-            - sh
-            - msbuild
-            - Xamarin.iOS
         strategy:
           matrix:
             BuildForVS2017:
               buildForVS2017:  'true'
+              imageName : 'macOS-10.14'
             BuildForVS2019:
               buildForVS2017:  'false'
+              imageName : 'macOS-10.15'
+        pool:
+          vmImage: $(imageName)
+          demands:
+            - sh
+            - msbuild
+            - Xamarin.iOS
         variables:
           provisionator.osxPath : 'build/provisioning/provisioning.csx'
-          provisionator.signPath : 'build/provisioning/provisioning_sign.csx'
           buildConfiguration: $(DefaultBuildConfiguration)
           iOSCertSecureFileName: 'Xamarin Forms iOS Certificate.p12'
           iOSProvisioningSecureFileName: 'Xamarin Forms iOS Provisioning.mobileprovision'

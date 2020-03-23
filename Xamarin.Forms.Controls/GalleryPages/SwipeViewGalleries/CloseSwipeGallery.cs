@@ -4,18 +4,24 @@
 	{
 		public CloseSwipeGallery()
 		{
-			Title = "Close SwipeView Gallery";
+			Title = "Open/Close SwipeView Gallery";
    
 			var swipeLayout = new StackLayout
 			{
 				Margin = new Thickness(12)
 			};
-   
+
+			var openButton = new Button
+			{
+				Text = "Open SwipeView"
+			};
+
 			var closeButton = new Button
 			{
 				Text = "Close SwipeView"
 			};
 
+			swipeLayout.Children.Add(openButton);
 			swipeLayout.Children.Add(closeButton);
 
 			var swipeItem = new SwipeItem
@@ -56,6 +62,11 @@
 			swipeLayout.Children.Add(swipeView);
 
 			Content = swipeLayout;
+
+			openButton.Clicked += (sender, e) =>
+			{
+				swipeView.Open(OpenSwipeItem.LeftItems);
+			};
 
 			closeButton.Clicked += (sender, e) =>
 			{

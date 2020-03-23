@@ -31,10 +31,22 @@ namespace Xamarin.Forms.Platform.iOS
 				CGPoint loc = touch.LocationInView(View);
 				if (touch.View is UISlider ||
 					touch.View is MPVolumeView ||
+					IsSwipeView(touch.View) ||
 					(loc.X > view.Frame.Width * 0.1 && !IsOpen))
 					return false;
 				return true;
 			};
+		}
+
+		bool IsSwipeView(UIView view)
+		{
+			if (view == null)
+				return false;
+
+			if (view is SwipeViewRenderer)
+				return true;
+
+			return IsSwipeView(view.Superview);
 		}
 
 		#endregion IShellFlyoutRenderer

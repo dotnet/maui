@@ -30,6 +30,8 @@ namespace Xamarin.Forms.Platform.iOS
 			((INotifyCollectionChanged)itemSource).CollectionChanged += CollectionChanged;
 		}
 
+		internal event NotifyCollectionChangedEventHandler CollectionItemsSourceChanged;
+
 		public int Count { get; private set; }
 
 		public object this[int index] => ElementAt(index);
@@ -126,6 +128,8 @@ namespace Xamarin.Forms.Platform.iOS
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
+
+			CollectionItemsSourceChanged?.Invoke(this, args);
 		}
 
 		void Reload()
@@ -202,7 +206,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			// If we have a start index, we can be more clever about removing the item(s) (and get the nifty animations)
 			var count = args.OldItems.Count;
-
+			
 			_collectionView.PerformBatchUpdates(() =>
 			{
 				_collectionView.DeleteItems(CreateIndexesFrom(startIndex, count));

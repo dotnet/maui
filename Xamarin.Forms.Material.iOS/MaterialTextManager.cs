@@ -45,7 +45,7 @@ namespace Xamarin.Forms.Material.iOS
 
 			var textColor = MaterialColors.GetEntryTextColor(element.TextColor);
 			var placeHolderColors = MaterialColors.GetPlaceHolderColor(element.PlaceholderColor, element.TextColor);
-			var underlineColors = MaterialColors.GetUnderlineColor(element.TextColor);
+			var underlineColors = MaterialColors.GetUnderlineColor(element.PlaceholderColor);
 
 			textField.TextInput.TextColor = textColor;
 			textField.ActiveTextInputController.InlinePlaceholderColor = placeHolderColors.InlineColor;

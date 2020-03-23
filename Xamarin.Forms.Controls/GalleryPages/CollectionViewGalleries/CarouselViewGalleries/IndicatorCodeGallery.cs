@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
@@ -8,6 +9,9 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 	[Preserve(AllMembers = true)]
 	public class IndicatorCodeGallery : ContentPage
 	{
+		CarouselView _carouselView;
+		Button _btnPrev;
+		Button _btnNext;
 		public IndicatorCodeGallery()
 		{
 			Title = "IndicatorView Gallery";
@@ -25,6 +29,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 					new RowDefinition { Height = GridLength.Auto },
 					new RowDefinition { Height = GridLength.Auto },
 					new RowDefinition { Height = GridLength.Star },
+					new RowDefinition { Height = GridLength.Auto },
 					new RowDefinition { Height = GridLength.Auto }
 				}
 			};
@@ -37,7 +42,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 
 			var itemTemplate = ExampleTemplates.CarouselTemplate();
 
-			var carouselView = new CarouselView
+			_carouselView = new CarouselView
 			{
 				ItemsLayout = itemsLayout,
 				ItemTemplate = itemTemplate,
@@ -45,14 +50,15 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 				AutomationId = "TheCarouselView"
 			};
 
-			layout.Children.Add(carouselView);
-
-			var generator = new ItemsSourceGenerator(carouselView, nItems, ItemsSourceType.ObservableCollection);
-
+			layout.Children.Add(_carouselView);
+			var generator = new ItemsSourceGenerator(_carouselView, nItems, ItemsSourceType.ObservableCollection);
 			layout.Children.Add(generator);
 
 			generator.GenerateItems();
 
+			_carouselView.PropertyChanged += CarouselViewPropertyChanged;
+			(_carouselView.ItemsSource as ObservableCollection<CollectionViewGalleryTestItem>).CollectionChanged += IndicatorCodeGalleryCollectionChanged;
+ 
 			var indicatorView = new IndicatorView
 			{
 				HorizontalOptions = LayoutOptions.Center,
@@ -60,10 +66,12 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 				IndicatorColor = Color.Gray,
 				SelectedIndicatorColor = Color.Black,
 				IndicatorsShape = IndicatorShape.Square,
-				AutomationId = "TheIndicatorView"
+				AutomationId = "TheIndicatorView",
+				Count = 5,
+				Position = 2
 			};
 
-			carouselView.IndicatorView = indicatorView;
+			_carouselView.IndicatorView = indicatorView;
 
 			layout.Children.Add(indicatorView);
 
@@ -175,10 +183,101 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			Grid.SetRow(stckColors, 1);
 			Grid.SetRow(stckTemplate, 2);
 			Grid.SetRow(stckSize, 3);
-			Grid.SetRow(carouselView, 4);
-			Grid.SetRow(indicatorView, 5);
+			Grid.SetRow(_carouselView, 4);
+			Grid.SetRow(indicatorView, 6);
 
+			var layoutBtn = new StackLayout
+			{
+				Orientation = StackOrientation.Horizontal,
+				HorizontalOptions = LayoutOptions.Center,
+			};
+
+			var btnRemove = new Button
+			{
+				Text = "DEL First",
+				FontSize = 8,
+				AutomationId = "btnRemoveFirst",
+				BackgroundColor = Color.LightGray,
+				Padding = new Thickness(5),
+				Command = new Command(() =>
+				{
+					var items = (_carouselView.ItemsSource as ObservableCollection<CollectionViewGalleryTestItem>);
+					items.Remove(items[0]);
+				})
+			};
+
+			_btnPrev = new Button
+			{
+				Text = "Prev",
+				FontSize = 8,
+				AutomationId = "btnPrev",
+				BackgroundColor = Color.LightGray,
+				Padding = new Thickness(5),
+				Command = new Command(() =>
+				{
+					_carouselView.Position--;
+				}, () =>
+				{
+					return _carouselView.Position > 0;
+				})
+			};
+
+			_btnNext = new Button
+			{
+				Text = "Next",
+				FontSize = 8,
+				AutomationId = "btnNext",
+				BackgroundColor = Color.LightGray,
+				Padding = new Thickness(5),
+				Command = new Command(() =>
+				{
+					_carouselView.Position++;
+				}, () =>
+				{
+					var items = (_carouselView.ItemsSource as ObservableCollection<CollectionViewGalleryTestItem>);
+					return _carouselView.Position < items.Count - 1;
+				})
+			};
+
+			var btnRemoveLast = new Button
+			{
+				Text = "DEL Last",
+				FontSize = 8,
+				AutomationId = "btnRemoveLast",
+				BackgroundColor = Color.LightGray,
+				Padding = new Thickness(5),
+				Command = new Command(() =>
+				{
+					var items = (_carouselView.ItemsSource as ObservableCollection<CollectionViewGalleryTestItem>);
+					var indexToRemove = items.Count - 1;
+					items.Remove(items[indexToRemove]);
+				})
+			};
+
+			layoutBtn.Children.Add(btnRemove);
+			layoutBtn.Children.Add(_btnPrev);
+			layoutBtn.Children.Add(_btnNext);
+			layoutBtn.Children.Add(btnRemoveLast);
+
+			layout.Children.Add(layoutBtn);
+			Grid.SetRow(layoutBtn, 5);
 			Content = layout;
+		}
+
+		void IndicatorCodeGalleryCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		{
+			UpdateButtons();
+		}
+
+		void CarouselViewPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			UpdateButtons();
+		}
+
+		void UpdateButtons()
+		{
+			(_btnPrev?.Command as Command)?.ChangeCanExecute();
+			(_btnNext?.Command as Command)?.ChangeCanExecute();
 		}
 	}
 }

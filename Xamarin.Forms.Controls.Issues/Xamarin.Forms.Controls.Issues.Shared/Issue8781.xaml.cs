@@ -2,6 +2,8 @@
 using Xamarin.Forms.Xaml;
 using Xamarin.Forms.CustomAttributes;
 using System;
+using System.Windows.Input;
+using System.Collections.Generic;
 
 #if UITEST
 using NUnit.Framework;
@@ -24,18 +26,31 @@ namespace Xamarin.Forms.Controls.Issues
 		public Issue8781()
 		{
 #if APP
+			Device.SetFlags(new List<string> { ExperimentalFlags.SwipeViewExperimental });
 			InitializeComponent();
+			BindingContext = this;
 #endif
 		}
+#if APP
+		public ICommand CheckAnswerCommand => new Command<string>(OnCheckAnswer);
 
-		async void OnIncorrectAnswerInvoked(object sender, EventArgs e)
+		async void OnCheckAnswer(string parameter)
 		{
-			await DisplayAlert("Incorrect!", "Try again.", "OK");
-		}
+			if (string.IsNullOrEmpty(parameter))
+				return;
 
-		async void OnCorrectAnswerInvoked(object sender, EventArgs e)
-		{
-			await DisplayAlert("Correct!", "The answer is 2.", "OK");
+			if (parameter.Equals("4", StringComparison.InvariantCultureIgnoreCase))
+			{
+				resultEntry.Text = string.Empty;
+				swipeView.Close();
+				await DisplayAlert("Correct!", "The answer is 4.", "OK");
+			}
+			else
+			{
+				resultEntry.Text = string.Empty;
+				await DisplayAlert("Incorrect!", "Try again.", "OK");
+			}
 		}
+#endif
 	}
 }

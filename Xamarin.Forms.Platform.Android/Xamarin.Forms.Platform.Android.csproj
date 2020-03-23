@@ -69,5 +69,5 @@
   <ItemGroup>
     <PackageReference Condition="'$(CI)' == 'true'" Include="Xamarin.Build.TypeRedirector" Version="0.1.2-preview" PrivateAssets="all" />
   </ItemGroup>
-  
+
 </Project>

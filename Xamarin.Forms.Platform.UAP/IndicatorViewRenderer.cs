@@ -36,13 +36,12 @@ namespace Xamarin.Forms.Platform.UWP
 				{
 					UpdateControl();
 				}
+				_fillColor = new SolidColorBrush(Element.IndicatorColor.ToWindowsColor());
+
+				_selectedColor = new SolidColorBrush(Element.SelectedIndicatorColor.ToWindowsColor());
+
+				CreateIndicators();
 			}
-
-			_fillColor = new SolidColorBrush(Element.IndicatorColor.ToWindowsColor());
-
-			_selectedColor = new SolidColorBrush(Element.SelectedIndicatorColor.ToWindowsColor());
-
-			CreateIndicators();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

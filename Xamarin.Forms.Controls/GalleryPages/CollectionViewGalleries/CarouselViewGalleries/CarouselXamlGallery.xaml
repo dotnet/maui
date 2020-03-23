@@ -2,9 +2,10 @@
 <ContentPage
     xmlns:gallery="clr-namespace:Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries" xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries.CarouselXamlGallery"
-    Title="CarouselView Xaml" >
-    <Grid Margin="0,20,00,0">
+    Title="CarouselView Xaml">
+    <Grid Margin="0,0,0,10">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -15,46 +16,26 @@
             <ColumnDefinition />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <Slider x:Name="slider" Margin="5" Value="{Binding Position, Mode=TwoWay}" Maximum="{Binding Count}" Grid.ColumnSpan="2" />
-        <Label Text="{Binding Source={x:Reference slider},
-                      Path=Value,
-                      StringFormat='The current Position is {0}'}"
-                      VerticalTextAlignment="Center"
-                      VerticalOptions="Center"
-                      Grid.Column="0" Grid.Row="1" 
-                      Padding="7"/>
-        <Entry Text="{Binding Position}"
-                      VerticalTextAlignment="Center"
-                      VerticalOptions="Center"
-                      Grid.Column="1" Grid.Row="1"/>
-        <Label Text="{Binding Source={x:Reference carousel},
-                      Path=VisibleViews.Count,
-                      StringFormat='Number of VisibleViews {0}'}"
-                      VerticalTextAlignment="Center"
-                      VerticalOptions="Center"
-                      Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2"
-                      AutomationId="lblVisibleViews"
-                      Padding="7"/>
-        <CarouselView AutomationId="TheCarouselView" x:Name="carousel" ItemsSource="{Binding Items}" Position="{Binding Position}" Grid.Row="3" HeightRequest="400" Grid.ColumnSpan="2"
-                      PeekAreaInsets="50,0">
+        <Slider x:Name="slider" Margin="5" Value="{Binding Position, Mode=TwoWay}" Maximum="{Binding Count}" Grid.ColumnSpan="2"/>
+        <Label Text="Position:" Grid.Row="1" Grid.Column="0" />
+        <Label Text="{Binding Path=Position , Source={x:Reference Name=carousel}}"  AutomationId="lblPosition" Grid.Row="1" Grid.Column="1" />
+        <Label Text="CurrentItem :"  Grid.Row="2" Grid.Column="0" />
+        <Label Text="{Binding Path=CurrentItem.Index , Source={x:Reference Name=carousel}}" AutomationId="lblCurrentItem" Grid.Row="2" Grid.Column="1" />
+        <Label Text="Selected: " Grid.Row="3" Grid.Column="0" />
+        <Label Text="{Binding Selected.Index}" AutomationId="lblSelected" Grid.Row="3" Grid.Column="1" />
+
+        <StackLayout Grid.Row="4" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalOptions="Center">
+            <Button Command="{Binding PreviousCommand}" AutomationId="btnPrev" Text="&lt;" FontAttributes="Bold" BackgroundColor="LightGray" TextColor="Black" />
+            <Button Command="{Binding RemoveCommand}"  AutomationId="btnRemove" Text="{Binding Path=Selected.Index, StringFormat='Remove {0}'}" BackgroundColor="LightGray" TextColor="Black" />
+            <Button Command="{Binding NextCommand}"  AutomationId="btnNext" Text="&gt;" FontAttributes="Bold" BackgroundColor="LightGray" TextColor="Black" />
+        </StackLayout>
+        <CarouselView AutomationId="TheCarouselView" x:Name="carousel" ItemsSource="{Binding Items}" Position="{Binding Position}" Grid.Row="5" Grid.ColumnSpan="2"
+                      CurrentItem="{Binding Selected}" >
             <CarouselView.ItemTemplate>
                 <DataTemplate>
                     <gallery:ExampleTemplateCarousel />
                 </DataTemplate>
             </CarouselView.ItemTemplate>
         </CarouselView>
-
-        <Frame Margin="15" x:Name="layoutNormal" Grid.Row="4" Grid.ColumnSpan="2" HeightRequest="150" OutlineColor="#00000088" Padding="5">
-            <Grid>
-                <CarouselView x:Name="carouselNormal" ItemsSource="{Binding Items}" Position="{Binding Position}">
-                    <CarouselView.ItemTemplate>
-                        <DataTemplate>
-                            <Image Source="{Binding Image}" Aspect="AspectFill" />
-                        </DataTemplate>
-                    </CarouselView.ItemTemplate>
-                </CarouselView>
-            </Grid>
-        </Frame>
-        <IndicatorView x:Name="indicator" IndicatorColor="Gray" SelectedIndicatorColor="Black" Grid.Row="4"></IndicatorView>
     </Grid>
 </ContentPage>

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Windows.Input;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
@@ -11,13 +12,12 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 		{
 			InitializeComponent();
 			BindingContext = new CarouselViewModel(CarouselXamlSampleType.Peek);
-			carouselNormal.BindingContext = new CarouselViewModel(CarouselXamlSampleType.Normal);
 		}
 
 		protected override void OnAppearing()
 		{
 			base.OnAppearing();
-			(BindingContext as CarouselViewModel).Position = 2;
+			//	(BindingContext as CarouselViewModel).Position = 2;
 		}
 	}
 
@@ -56,13 +56,6 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			MessagingCenter.Subscribe<ExampleTemplateCarousel>(this, "remove", (obj) => Items.Remove(obj.BindingContext as CarouselItem));
 
 			Items = new ObservableCollection<CarouselItem>(items);
-			Items.CollectionChanged += ItemsCollectionChanged;
-			Count = Items.Count - 1;
-
-		}
-
-		void ItemsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-		{
 			Count = Items.Count - 1;
 		}
 
@@ -83,6 +76,39 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			get { return _items; }
 			set { SetProperty(ref _items, value); }
 		}
+
+		CarouselItem _selected;
+		public CarouselItem Selected
+		{
+			get { return _selected; }
+			set { SetProperty(ref _selected, value); }
+		}
+
+		public ICommand RemoveCommand => new Command(() =>
+		{
+			Items.Remove(Selected);
+			Count = Items.Count - 1;
+		});
+
+		public ICommand PreviousCommand => new Command(() =>
+		{
+			var indexCurrent = Items.IndexOf(Selected);
+			if (indexCurrent > 0)
+			{
+				var newItem = Items[indexCurrent - 1];
+				Selected = newItem;
+			}
+		});
+
+		public ICommand NextCommand => new Command(() =>
+		{
+			var indexCurrent = Items.IndexOf(Selected);
+			if (indexCurrent < Items.Count - 1)
+			{
+				var newItem = Items[indexCurrent + 1];
+				Selected = newItem;
+			}
+		});
 	}
 
 	[Preserve(AllMembers = true)]
