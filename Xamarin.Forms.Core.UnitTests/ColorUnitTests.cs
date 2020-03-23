@@ -242,6 +242,48 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		public void TestFromHsv()
+		{
+			var color = Color.FromRgb(1, .29, .752);
+			var colorHsv = Color.FromHsv(321, 71, 100);
+			Assert.That(color.R, Is.EqualTo(colorHsv.R).Within(0.001));
+			Assert.That(color.G, Is.EqualTo(colorHsv.G).Within(0.001));
+			Assert.That(color.B, Is.EqualTo(colorHsv.B).Within(0.001));
+		}
+
+		[Test]
+		public void TestFromHsva()
+		{
+			var color = Color.FromRgba(1, .29, .752, .5);
+			var colorHsv = Color.FromHsva(321, 71, 100, 50);
+			Assert.That(color.R, Is.EqualTo(colorHsv.R).Within(0.001));
+			Assert.That(color.G, Is.EqualTo(colorHsv.G).Within(0.001));
+			Assert.That(color.B, Is.EqualTo(colorHsv.B).Within(0.001));
+			Assert.That(color.A, Is.EqualTo(colorHsv.A).Within(0.001));
+		}
+
+		[Test]
+		public void TestFromHsvDouble()
+		{
+			var color = Color.FromRgb(1, .29, .758);
+			var colorHsv = Color.FromHsv(.89, .71, 1);
+			Assert.That(color.R, Is.EqualTo(colorHsv.R).Within(0.001));
+			Assert.That(color.G, Is.EqualTo(colorHsv.G).Within(0.001));
+			Assert.That(color.B, Is.EqualTo(colorHsv.B).Within(0.001));
+		}
+
+		[Test]
+		public void TestFromHsvaDouble()
+		{
+			var color = Color.FromRgba(1, .29, .758, .5);
+			var colorHsv = Color.FromHsva(.89, .71, 1, .5);
+			Assert.That(color.R, Is.EqualTo(colorHsv.R).Within(0.001));
+			Assert.That(color.G, Is.EqualTo(colorHsv.G).Within(0.001));
+			Assert.That(color.B, Is.EqualTo(colorHsv.B).Within(0.001));
+			Assert.That(color.A, Is.EqualTo(colorHsv.A).Within(0.001));
+		}
+
+		[Test]
 		public void FromRGBDouble ()
 		{
 			var color = Color.FromRgb (0.2, 0.3, 0.4);

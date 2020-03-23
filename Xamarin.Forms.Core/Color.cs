@@ -420,6 +420,49 @@ namespace Xamarin.Forms
 		{
 			return new Color(h, s, l, a, Mode.Hsl);
 		}
+
+		public static Color FromHsva(double h, double s, double v, double a)
+		{
+			h = h.Clamp(0, 1);
+			s = s.Clamp(0, 1);
+			v = v.Clamp(0, 1);
+			var range = (int)(Math.Floor(h * 6)) % 6;
+			var f = h * 6 - Math.Floor(h * 6);
+			var p = v * (1 - s);
+			var q = v * (1 - f * s);
+			var t = v * (1 - (1 - f) * s);
+
+			switch (range)
+			{
+				case 0:
+					return FromRgba(v, t, p, a);
+				case 1:
+					return FromRgba(q, v, p, a);
+				case 2:
+					return FromRgba(p, v, t, a);
+				case 3:
+					return FromRgba(p, q, v, a);
+				case 4:
+					return FromRgba(t, p, v, a);
+			}
+			return FromRgba(v, p, q, a);
+		}
+
+		public static Color FromHsv(double h, double s, double v)
+		{
+			return FromHsva(h, s, v, 1d);
+		}
+
+		public static Color FromHsva(int h, int s, int v, int a)
+		{
+			return FromHsva(h / 360d, s / 100d, v / 100d, a / 100d);
+		}
+
+		public static Color FromHsv(int h, int s, int v)
+		{
+			return FromHsva(h / 360d, s / 100d, v / 100d, 1d);
+		}
+
 #if !NETSTANDARD1_0
 		public static implicit operator System.Drawing.Color(Color color)
 		{
