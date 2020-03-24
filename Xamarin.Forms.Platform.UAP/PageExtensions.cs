@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Windows.UI.Xaml;
 
 namespace Xamarin.Forms.Platform.UWP
@@ -96,6 +97,16 @@ namespace Xamarin.Forms.Platform.UWP
 				return frame.Navigate(typeof(FormsEmbeddedPageWrapper), id, infoOverride);
 
 			return frame.Navigate(typeof(FormsEmbeddedPageWrapper), id);
+		}
+
+		internal static Page GetCurrentPage(this Page currentPage)
+		{
+			if (currentPage is MasterDetailPage mdp)
+				return GetCurrentPage(mdp.Detail);
+			else if (currentPage is IPageContainer<Page> pc)
+				return GetCurrentPage(pc.CurrentPage);
+			else
+				return currentPage;
 		}
 	}
 }
