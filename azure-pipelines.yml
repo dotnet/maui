@@ -114,7 +114,7 @@ stages:
           matrix:
             BuildForVS2017:
               buildForVS2017:  'true'
-              imageName : 'macOS-10.14'
+              imageName : 'macOS-10.15'
             BuildForVS2019:
               buildForVS2017:  'false'
               imageName : 'macOS-10.15'

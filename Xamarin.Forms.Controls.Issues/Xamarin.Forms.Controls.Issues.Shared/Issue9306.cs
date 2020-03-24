@@ -24,11 +24,12 @@ namespace Xamarin.Forms.Controls.Issues
 		const string LeftCountLabelId = "LeftCountLabel";
 
 		int _leftCount;
-
 		Label _leftSwipeCountLabel;
 
 		protected override void Init()
 		{
+			Device.SetFlags(new List<string> { ExperimentalFlags.SwipeViewExperimental });
+
 			Title = PageTitle;
 
 			_leftSwipeCountLabel = new Label
