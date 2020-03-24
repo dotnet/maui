@@ -102,7 +102,6 @@ jobs:
   workspace:
     clean: all
   displayName: OSX Phase
- 
   strategy:
     matrix:
       BuildForVS2017:
@@ -110,7 +109,7 @@ jobs:
         imageName : 'macOS-10.14'
       BuildForVS2019:
         buildForVS2017:  'false'
-        imageName : 'macOS-10.15'
+        imageName : 'macOS-10.14'
   pool:
     vmImage: $(imageName)
     demands:
@@ -119,7 +118,6 @@ jobs:
       - Xamarin.iOS
   variables:
     provisionator.osxPath : 'build/provisioning/provisioning.csx'
-    provisionator.signPath : 'build/provisioning/provisioning_sign.csx'
     buildConfiguration: $(DefaultBuildConfiguration)
     slnPath: $(SolutionFile)
     iOSCertSecureFileName: 'Xamarin Forms iOS Certificate.p12'
