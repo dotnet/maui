@@ -48,9 +48,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			{
 				ItemsLayout = itemsLayout,
 				ItemTemplate = itemTemplate,
-				Position = 1,
 				Margin = new Thickness(0,10,0,10),
-				BackgroundColor = Color.LightGray,
+				BackgroundColor = Color.Red,
 				AutomationId = "TheCarouselView"
 			};
 
@@ -59,7 +58,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			else
 				carouselView.PeekAreaInsets = new Thickness(0, 30, 0, 30);
 
-			carouselView.Scrolled += CarouselView_Scrolled;
+			carouselView.Scrolled += CarouselViewScrolled;
 
 			StackLayout stacklayoutInfo = GetReadOnlyInfo(carouselView);
 
@@ -119,9 +118,10 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			};
 
 			generator.GenerateItems();
+			positionControl.UpdatePosition(1);
 		}
 
-		private void CarouselView_Scrolled(object sender, ItemsViewScrolledEventArgs e)
+		void CarouselViewScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
 			_scrollInfoLabel.Text = $"First item: {e.FirstVisibleItemIndex}, Last item: {e.LastVisibleItemIndex}";
 

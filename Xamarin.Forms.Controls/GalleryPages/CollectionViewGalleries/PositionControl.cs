@@ -69,14 +69,17 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 			Grid.SetColumnSpan(stacklayout, 3);
 
 			Content = layout;
-			_slider.Value = 1;
 		}
 
 		public void UpdatePositionCount(int itemsCount)
 		{
 			if (itemsCount > 0)
 				_slider.Maximum = itemsCount - 1;
+		}
 
+		public void UpdatePosition(int position)
+		{
+			_slider.Value = position;
 		}
 	}
 }
