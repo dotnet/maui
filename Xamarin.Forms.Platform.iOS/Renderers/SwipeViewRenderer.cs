@@ -997,16 +997,18 @@ namespace Xamarin.Forms.Platform.iOS
 
 		double ValidateSwipeThreshold(double swipeThreshold)
 		{
+			var swipeFrame = _contentView != null ? _contentView.Frame : Frame;
+
 			if (IsHorizontalSwipe())
 			{
-				if (swipeThreshold > _contentView.Frame.Width)
-					swipeThreshold = _contentView.Frame.Width;
+				if (swipeThreshold > swipeFrame.Width)
+					swipeThreshold = swipeFrame.Width;
 
 				return swipeThreshold;
 			}
 
-			if (swipeThreshold > _contentView.Frame.Height)
-				swipeThreshold = _contentView.Frame.Height;
+			if (swipeThreshold > swipeFrame.Height)
+				swipeThreshold = swipeFrame.Height;
 
 			return swipeThreshold;
 		}
@@ -1014,27 +1016,28 @@ namespace Xamarin.Forms.Platform.iOS
 		Size GetSwipeItemSize(ISwipeItem swipeItem)
 		{
 			var items = GetSwipeItemsByDirection();
+			var swipeFrame = _contentView != null ? _contentView.Frame : Frame;
 
 			if (IsHorizontalSwipe())
 			{
 				if (swipeItem is SwipeItem)
-					return new Size(items.Mode == SwipeMode.Execute ? _contentView.Frame.Width / items.Count : SwipeItemWidth, _contentView.Frame.Height);
+					return new Size(items.Mode == SwipeMode.Execute ? swipeFrame.Width / items.Count : SwipeItemWidth, swipeFrame.Height);
 
 				if (swipeItem is SwipeItemView horizontalSwipeItemView)
 				{
 					var swipeItemViewSizeRequest = horizontalSwipeItemView.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-					return new Size(swipeItemViewSizeRequest.Request.Width > 0 ? (float)swipeItemViewSizeRequest.Request.Width : SwipeItemWidth, _contentView.Frame.Height);
+					return new Size(swipeItemViewSizeRequest.Request.Width > 0 ? (float)swipeItemViewSizeRequest.Request.Width : SwipeItemWidth, swipeFrame.Height);
 				}
 			}
 			else
 			{
 				if (swipeItem is SwipeItem)
-					return new Size(_contentView.Frame.Width / items.Count, GetSwipeItemHeight());
+					return new Size(swipeFrame.Width / items.Count, GetSwipeItemHeight()); 
 
 				if (swipeItem is SwipeItemView horizontalSwipeItemView)
 				{
 					var swipeItemViewSizeRequest = horizontalSwipeItemView.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-					return new Size(_contentView.Frame.Width / items.Count, swipeItemViewSizeRequest.Request.Height > 0 ? (float)swipeItemViewSizeRequest.Request.Height : _contentView.Frame.Height);
+					return new Size(swipeFrame.Width / items.Count, swipeItemViewSizeRequest.Request.Height > 0 ? (float)swipeItemViewSizeRequest.Request.Height : swipeFrame.Height);
 				}
 			}
 

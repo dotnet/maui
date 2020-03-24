@@ -190,6 +190,7 @@
                 <Style TargetType="ListViewItem">
                     <Setter Property="VerticalContentAlignment" Value="Stretch" />
                     <Setter Property="VerticalAlignment" Value="Stretch" />
+                    <Setter Property="Padding" Value="0,0,0,0" />
                 </Style>
             </Setter.Value>
         </Setter>

@@ -143,6 +143,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 				var frame = new Frame
 				{
 					Padding = new Thickness(5),
+					BackgroundColor = Color.Transparent,
 					Content = grid
 				};
 
