@@ -151,6 +151,9 @@ namespace Xamarin.Forms.Platform.UWP
 			// virtualization, but it'll be close enough to give us a direction to scroll toward
 			await JumpToItemAsync(list, targetItem, ScrollToPosition.Start);
 			var targetContainer = list.ContainerFromItem(targetItem) as UIElement;
+			if (targetContainer == null)
+				return new UWPPoint(0, 0);
+
 			var transform = targetContainer.TransformToVisual(scrollViewer.Content as UIElement);
 
 			// Return to the original position

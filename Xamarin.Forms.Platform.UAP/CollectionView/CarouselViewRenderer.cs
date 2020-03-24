@@ -191,6 +191,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdatePeekAreaInsets()
 		{
+			ListViewBase.Padding = new Windows.UI.Xaml.Thickness(Carousel.PeekAreaInsets.Left, Carousel.PeekAreaInsets.Top, Carousel.PeekAreaInsets.Right, Carousel.PeekAreaInsets.Bottom);
 			UpdateItemsSource();
 		}
 
@@ -392,6 +393,8 @@ namespace Xamarin.Forms.Platform.UWP
 					Style = (Windows.UI.Xaml.Style)UWPApp.Current.Resources["VerticalCarouselListStyle"]
 				};
 			}
+			
+			listView.Padding = new Windows.UI.Xaml.Thickness(Carousel.PeekAreaInsets.Left, Carousel.PeekAreaInsets.Top, Carousel.PeekAreaInsets.Right, Carousel.PeekAreaInsets.Bottom);
 
 			return listView;
 		}
@@ -402,7 +405,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
 			{
-				itemWidth = (ActualWidth - Carousel.PeekAreaInsets.Left - Carousel.PeekAreaInsets.Right - CarouselItemsLayout.ItemSpacing);
+				itemWidth = (ActualWidth - Carousel.PeekAreaInsets.Left - Carousel.PeekAreaInsets.Right);
 			}
 
 			return Math.Max(itemWidth, 0);
@@ -414,7 +417,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
 			{
-				itemHeight = (ActualHeight - Carousel.PeekAreaInsets.Top - Carousel.PeekAreaInsets.Bottom - CarouselItemsLayout.ItemSpacing);
+				itemHeight = (ActualHeight - Carousel.PeekAreaInsets.Top - Carousel.PeekAreaInsets.Bottom);
 			}
 
 			return Math.Max(itemHeight, 0);
