@@ -59,8 +59,8 @@ namespace Xamarin.Forms.Platform.iOS
 						result = UIFont.SystemFontOfSize(size, UIFontWeight.Regular);
 						return result;
 					}
-					
-					result = UIFont.FromName(family, size);
+					if(result == null)
+						result = UIFont.FromName(family, size);
 					if (result != null)
 						return result;
 				}
@@ -90,13 +90,18 @@ namespace Xamarin.Forms.Platform.iOS
 		static string CleanseFontName(string fontName)
 		{
 
+			//First check Alias
+			var (hasFontAlias, fontPostScriptName) = FontRegistrar.HasFont(fontName);
+			if (hasFontAlias)
+				return fontPostScriptName;
+
 			var fontFile = FontFile.FromString(fontName);
 
 			if (!string.IsNullOrWhiteSpace(fontFile.Extension))
 			{
-				var (hasFont, _) = FontRegistrar.HasFont(fontFile.FileNameWithExtension());
+				var (hasFont, filePath) = FontRegistrar.HasFont(fontFile.FileNameWithExtension());
 				if (hasFont)
-					return fontFile.PostScriptName;
+					return filePath ?? fontFile.PostScriptName;
 			}
 			else
 			{
@@ -106,7 +111,7 @@ namespace Xamarin.Forms.Platform.iOS
 					var formated = fontFile.FileNameWithExtension(ext);
 					var (hasFont, filePath) = FontRegistrar.HasFont(formated);
 					if (hasFont)
-						return fontFile.PostScriptName;
+						return filePath;
 				}
 			}
 			return fontFile.PostScriptName;

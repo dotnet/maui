@@ -26,6 +26,10 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		static string CleanseFontName(string fontName)
 		{
+			//First check Alias
+			var (hasFontAlias, fontPostScriptName) = FontRegistrar.HasFont(fontName);
+			if (hasFontAlias)
+				return fontPostScriptName;
 			var fontFile = FontFile.FromString(fontName);
 
 			if (!string.IsNullOrWhiteSpace(fontFile.Extension))
