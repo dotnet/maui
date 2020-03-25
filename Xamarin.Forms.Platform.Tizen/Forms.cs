@@ -11,6 +11,7 @@ using Tizen.Applications;
 using TSystemInfo = Tizen.System.Information;
 using ELayout = ElmSharp.Layout;
 using DeviceOrientation = Xamarin.Forms.Internals.DeviceOrientation;
+using ElmSharp.Wearable;
 
 namespace Xamarin.Forms
 {
@@ -184,6 +185,11 @@ namespace Xamarin.Forms
 		}
 
 		public static ELayout BaseLayout => NativeParent as ELayout;
+
+		public static CircleSurface CircleSurface
+		{
+			get; internal set;
+		}
 
 		public static bool IsInitialized
 		{
@@ -471,6 +477,10 @@ namespace Xamarin.Forms
 			}
 			Color.SetAccent(GetAccentColor(profile));
 			ExpressionSearch.Default = new TizenExpressionSearch();
+
+			if (application is WatchApplication)
+				s_platformType = PlatformType.Lightweight;
+
 			IsInitialized = true;
 		}
 
