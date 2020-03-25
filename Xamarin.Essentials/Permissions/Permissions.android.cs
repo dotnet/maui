@@ -166,6 +166,9 @@ namespace Xamarin.Essentials
         {
             public override (string androidPermission, bool isRuntime)[] RequiredPermissions =>
                 new (string, bool)[] { (Manifest.Permission.BatteryStats, false) };
+
+            public override Task<PermissionStatus> CheckStatusAsync() =>
+                Task.FromResult(IsDeclaredInManifest(Manifest.Permission.BatteryStats) ? PermissionStatus.Granted : PermissionStatus.Denied);
         }
 
         public partial class CalendarRead : BasePlatformPermission
