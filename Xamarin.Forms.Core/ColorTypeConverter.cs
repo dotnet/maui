@@ -15,6 +15,8 @@ namespace Xamarin.Forms
 		// RGBA		rgba(255, 0, 0, 0.8), rgba(100%, 0%, 0%, 0.8)	opacity is 0.0-1.0
 		// HSL		hsl(120, 100%, 50%)								h is 0-360, s and l are 0%-100%
 		// HSLA		hsla(120, 100%, 50%, .8)						opacity is 0.0-1.0
+		// HSV		hsv(120, 100%, 50%)								h is 0-360, s and v are 0%-100%
+		// HSVA		hsva(120, 100%, 50%, .8)						opacity is 0.0-1.0
 		// Predefined color											case insensitive
 		public override object ConvertFromInvariantString(string value)
 		{
@@ -80,6 +82,37 @@ namespace Xamarin.Forms
 					var s = ParseColorValue(triplet[1], 100, acceptPercent: true);
 					var l = ParseColorValue(triplet[2], 100, acceptPercent: true);
 					return Color.FromHsla(h, s, l);
+				}
+
+				if (value.StartsWith("hsva", StringComparison.OrdinalIgnoreCase))
+				{
+					var op = value.IndexOf('(');
+					var cp = value.LastIndexOf(')');
+					if (op < 0 || cp < 0 || cp < op)
+						throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Color)}");
+					var quad = value.Substring(op + 1, cp - op - 1).Split(',');
+					if (quad.Length != 4)
+						throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Color)}");
+					var h = ParseColorValue(quad[0], 360, acceptPercent: false);
+					var s = ParseColorValue(quad[1], 100, acceptPercent: true);
+					var v = ParseColorValue(quad[2], 100, acceptPercent: true);
+					var a = ParseOpacity(quad[3]);
+					return Color.FromHsva(h, s, v, a);
+				}
+
+				if (value.StartsWith("hsv", StringComparison.OrdinalIgnoreCase))
+				{
+					var op = value.IndexOf('(');
+					var cp = value.LastIndexOf(')');
+					if (op < 0 || cp < 0 || cp < op)
+						throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Color)}");
+					var triplet = value.Substring(op + 1, cp - op - 1).Split(',');
+					if (triplet.Length != 3)
+						throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Color)}");
+					var h = ParseColorValue(triplet[0], 360, acceptPercent: false);
+					var s = ParseColorValue(triplet[1], 100, acceptPercent: true);
+					var v = ParseColorValue(triplet[2], 100, acceptPercent: true);
+					return Color.FromHsv(h, s, v);
 				}
 
 				string[] parts = value.Split('.');
