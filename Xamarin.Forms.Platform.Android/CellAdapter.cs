@@ -265,6 +265,11 @@ namespace Xamarin.Forms.Platform.Android
 
 		void OnActionItemClickedImpl(IMenuItem item)
 		{
+			if (ActionModeContext == null)
+			{
+				return;
+			}
+
 			int index = item.ItemId;
 			IMenuItemController action = ActionModeContext.ContextActions[index];
 
