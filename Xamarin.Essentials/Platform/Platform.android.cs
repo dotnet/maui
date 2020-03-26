@@ -212,6 +212,9 @@ namespace Xamarin.Essentials
         internal static PowerManager PowerManager =>
             AppContext.GetSystemService(Context.PowerService) as PowerManager;
 
+        internal static ShortcutManager ShortcutManager =>
+            AppContext.GetSystemService(Context.ShortcutService) as ShortcutManager;
+
         internal static Java.Util.Locale GetLocale()
         {
             var resources = AppContext.Resources;
