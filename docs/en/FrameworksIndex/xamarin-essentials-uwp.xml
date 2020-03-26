@@ -835,6 +835,7 @@
       <Member Id="M:Xamarin.Essentials.WebAuthenticatorResult.Put(System.String,System.String)" />
       <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.AccessToken" />
       <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.ExpiresIn" />
+      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.IdToken" />
       <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.Properties" />
       <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.RefreshToken" />
       <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.RefreshTokenExpiresIn" />

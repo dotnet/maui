@@ -27,7 +27,7 @@
       <Parameters />
       <Docs>
         <summary>
-          <para />
+          <para></para>
         </summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -127,11 +127,29 @@
         <param name="key">Key from the callback URI's query string.</param>
         <summary>Gets a value for a given key from the dictionary.</summary>
         <returns>
-          <para />
+          <para></para>
         </returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="IdToken">
+      <MemberSignature Language="C#" Value="public string IdToken { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string IdToken" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.WebAuthenticatorResult.IdToken" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The value for the `id_token` key.</summary>
+        <value>The value for the `id_token` key.</value>
+        <remarks>Apple doesn't return an access token on iOS native sign in, but it does return id_token as a JWT.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Properties">
@@ -149,10 +167,10 @@
       <Docs>
         <summary>The dictionary of key/value pairs parsed form the callback URI's querystring.</summary>
         <value>
-          <para />
+          <para></para>
         </value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -174,14 +192,14 @@
       </Parameters>
       <Docs>
         <param name="key">
-          <para />
+          <para></para>
         </param>
         <param name="value">
-          <para />
+          <para></para>
         </param>
         <summary>Puts a key/value pair into the dictionary.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -201,7 +219,7 @@
         <summary>The value for the `refresh_token` key.</summary>
         <value>Refresh Token parsed from the callback URI refresh_token parameter.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

@@ -28,7 +28,7 @@ namespace Samples.ViewModel
 
         string accessToken = string.Empty;
 
-        public string AccessToken
+        public string AuthToken
         {
             get => accessToken;
             set => SetProperty(ref accessToken, value);
@@ -54,11 +54,11 @@ namespace Samples.ViewModel
                     r = await WebAuthenticator.AuthenticateAsync(authUrl, callbackUrl);
                 }
 
-                AccessToken = r?.AccessToken;
+                AuthToken = r?.AccessToken ?? r?.IdToken;
             }
             catch (Exception ex)
             {
-                AccessToken = string.Empty;
+                AuthToken = string.Empty;
                 await DisplayAlertAsync($"Failed: {ex.Message}");
             }
         }
