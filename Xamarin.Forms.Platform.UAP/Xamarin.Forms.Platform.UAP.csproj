@@ -105,6 +105,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Xamarin.Forms.Core\Crc64.cs" Link="Crc64.cs" />
     <Compile Include="..\Xamarin.Forms.Core\StreamWrapper.cs" Link="StreamWrapper.cs" />
   </ItemGroup>
   <ItemGroup>

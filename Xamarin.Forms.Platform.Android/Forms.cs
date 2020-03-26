@@ -610,7 +610,6 @@ namespace Xamarin.Forms
 
 		class AndroidPlatformServices : IPlatformServices
 		{
-			static readonly MD5CryptoServiceProvider Checksum = new MD5CryptoServiceProvider();
 			double _buttonDefaultSize;
 			double _editTextDefaultSize;
 			double _labelDefaultSize;
@@ -655,17 +654,9 @@ namespace Xamarin.Forms
 				return AppDomain.CurrentDomain.GetAssemblies();
 			}
 
-			public string GetMD5Hash(string input)
-			{
-				byte[] bytes = Checksum.ComputeHash(Encoding.UTF8.GetBytes(input));
-				var ret = new char[32];
-				for (var i = 0; i < 16; i++)
-				{
-					ret[i * 2] = (char)Hex(bytes[i] >> 4);
-					ret[i * 2 + 1] = (char)Hex(bytes[i] & 0xf);
-				}
-				return new string(ret);
-			}
+			public string GetHash(string input) => Crc64.GetHash(input);
+
+			string IPlatformServices.GetMD5Hash(string input) => GetHash(input);
 
 			public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 			{

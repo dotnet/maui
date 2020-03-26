@@ -101,7 +101,7 @@ namespace Xamarin.Forms
 
 		static string GetCacheKey(Uri uri)
 		{
-			return Device.PlatformServices.GetMD5Hash(uri.AbsoluteUri);
+			return Device.PlatformServices.GetHash(uri.AbsoluteUri);
 		}
 
 		async Task<bool> GetHasLocallyCachedCopyAsync(string key, bool checkValidity = true)

@@ -114,19 +114,6 @@ namespace Standard
             }
         }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public static string GetHashString(string value)
-        {
-            using (MD5 md5 = MD5.Create())
-            {
-                byte[] signatureHash = md5.ComputeHash(Encoding.UTF8.GetBytes(value));
-                string signature = signatureHash.Aggregate(
-                    new StringBuilder(),
-                    (sb, b) => sb.Append(b.ToString("x2", CultureInfo.InvariantCulture))).ToString();
-                return signature;
-            }
-        }
-
         // See: http://stackoverflow.com/questions/7913325/win-api-in-c-get-hi-and-low-word-from-intptr/7913393#7913393
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public static System.Windows.Point GetPoint(IntPtr ptr)
@@ -461,22 +448,6 @@ namespace Standard
 
             // Reset the Seek pointer before returning.
             destination.Position = 0;
-        }
-
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public static string HashStreamMD5(Stream stm)
-        {
-            stm.Position = 0;
-            var hashBuilder = new StringBuilder();
-            using (MD5 md5 = MD5.Create())
-            {
-                foreach (byte b in md5.ComputeHash(stm))
-                {
-                    hashBuilder.Append(b.ToString("x2", CultureInfo.InvariantCulture));
-                }
-            }
-
-            return hashBuilder.ToString();
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]

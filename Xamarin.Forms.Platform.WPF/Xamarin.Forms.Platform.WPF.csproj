@@ -55,6 +55,9 @@
     <PackageReference Include="OpenTK.GLControl" Version="3.0.1" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Xamarin.Forms.Core\Crc64.cs">
+      <Link>Crc64.cs</Link>
+    </Compile>
     <Compile Include="..\Xamarin.Forms.Platform.UAP\TextBlockExtensions.cs">
       <Link>Extensions\TextBlockExtensions.cs</Link>
     </Compile>

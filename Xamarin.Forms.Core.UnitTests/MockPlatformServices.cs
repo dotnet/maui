@@ -12,6 +12,7 @@ using FileMode = System.IO.FileMode;
 using FileAccess = System.IO.FileAccess;
 using FileShare = System.IO.FileShare;
 using Stream = System.IO.Stream;
+using Xamarin.Forms.Internals;
 
 [assembly:Dependency (typeof(MockDeserializer))]
 [assembly:Dependency (typeof(MockResourcesProvider))]
@@ -40,18 +41,13 @@ namespace Xamarin.Forms.Core.UnitTests
 			_isInvokeRequired = isInvokeRequired;
 		}
 
-		static MD5CryptoServiceProvider checksum = new MD5CryptoServiceProvider ();
-
-		public string GetMD5Hash (string input)
+		public string GetHash (string input)
 		{
-			var bytes = checksum.ComputeHash (Encoding.UTF8.GetBytes (input));
-			var ret = new char [32];
-			for (int i = 0; i < 16; i++){
-				ret [i*2] = (char)hex (bytes [i] >> 4);
-				ret [i*2+1] = (char)hex (bytes [i] & 0xf);
-			}
-			return new string (ret);
+			return Internals.Crc64.GetHash(input);
 		}
+
+		string IPlatformServices.GetMD5Hash(string input) => GetHash(input);
+
 		static int hex (int v)
 		{
 			if (v < 10)

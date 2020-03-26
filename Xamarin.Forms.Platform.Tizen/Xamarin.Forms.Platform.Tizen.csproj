@@ -15,6 +15,9 @@
     <None Remove="Resource\menu.png" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Xamarin.Forms.Core\Crc64.cs" Link="Crc64.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="Resource\arrow_left.png" />
     <EmbeddedResource Include="Resource\dots_horizontal.png" />
     <EmbeddedResource Include="Resource\img_button_pause.png" />

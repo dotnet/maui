@@ -19,6 +19,9 @@ namespace Xamarin.Forms.Internals
 
 		Assembly[] GetAssemblies();
 
+		string GetHash(string input);
+
+		[Obsolete("GetMD5Hash is obsolete as of version 4.7.0")]
 		string GetMD5Hash(string input);
 
 		double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes);
