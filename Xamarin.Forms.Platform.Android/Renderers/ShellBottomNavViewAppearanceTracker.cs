@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Platform.Android
 			SetBackgroundColor(bottomView, Color.White);
 		}
 
-		public virtual void SetAppearance(BottomNavigationView bottomView, ShellAppearance appearance)
+		public virtual void SetAppearance(BottomNavigationView bottomView, IShellAppearanceElement appearance)
 		{
 			IShellAppearanceElement controller = appearance;
 			var backgroundColor = controller.EffectiveTabBarBackgroundColor;
@@ -72,16 +72,21 @@ namespace Xamarin.Forms.Platform.Android
 			var colorDrawable = oldBackground as ColorDrawable;
 			var colorChangeRevealDrawable = oldBackground as ColorChangeRevealDrawable;
 			AColor lastColor = colorChangeRevealDrawable?.EndColor ?? colorDrawable?.Color ?? Color.Default.ToAndroid();
-			var newColor = color.ToAndroid();
+			AColor newColor;
+
+			if (color == Color.Default)
+				newColor = Color.White.ToAndroid();
+			else
+				newColor = color.ToAndroid();
 
 			if (menuView == null)
 			{
 				if (colorDrawable != null && lastColor == newColor)
 					return;
 
-				if (lastColor != color.ToAndroid() || colorDrawable == null)
+				if (lastColor != newColor || colorDrawable == null)
 				{
-					bottomView.SetBackground(new ColorDrawable(color.ToAndroid()));
+					bottomView.SetBackground(new ColorDrawable(newColor));
 				}
 			}
 			else
@@ -114,7 +119,7 @@ namespace Xamarin.Forms.Platform.Android
 				titleColor.ToAndroid().ToArgb();
 
 			var defaultColor = unselectedColor.IsDefault ?
-				_defaultList.GetColorForState(new int[0], AColor.Black) :
+				_defaultList.DefaultColor :
 				unselectedColor.ToAndroid().ToArgb();
 
 			return MakeColorStateList(checkedInt, disabledInt, defaultColor);
