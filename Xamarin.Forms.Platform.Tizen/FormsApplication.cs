@@ -8,6 +8,8 @@ using Tizen.Applications;
 using Xamarin.Forms.Internals;
 using ELayout = ElmSharp.Layout;
 using DeviceOrientation = Xamarin.Forms.Internals.DeviceOrientation;
+using ElmSharp.Wearable;
+using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Application;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -18,6 +20,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		Application _application;
 		bool _isInitialStart;
 		Window _window;
+		bool _useBezelInteration;
 
 		protected FormsApplication()
 		{
@@ -46,10 +49,18 @@ namespace Xamarin.Forms.Platform.Tizen
 			get; protected set;
 		}
 
+		public CircleSurface BaseCircleSurface
+		{
+			get; protected set;
+		}
+
+		public bool UseBezelInteration => _useBezelInteration;
+
 		protected override void OnPreCreate()
 		{
 			base.OnPreCreate();
 			Application.ClearCurrent();
+
 			var type = typeof(Window);
 			// Use reflection to avoid breaking compatibility. ElmSharp.Window.CreateWindow() is has been added since API6.
 			var methodInfo = type.GetMethod("CreateWindow", BindingFlags.NonPublic | BindingFlags.Static);
@@ -58,8 +69,10 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				window = (Window)methodInfo.Invoke(null, new object[] { "FormsWindow" });
 				BaseLayout = (ELayout)window.GetType().GetProperty("BaseLayout")?.GetValue(window);
+				BaseCircleSurface = (CircleSurface)window.GetType().GetProperty("BaseCircleSurface")?.GetValue(window);
+				Forms.CircleSurface = BaseCircleSurface;
 			}
-			else
+			else // in case of Xamarin Preload
 			{
 				window = PreloadedWindow.GetInstance() ?? new Window("FormsWindow");
 				if (window is PreloadedWindow precreated)
@@ -132,6 +145,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			application.SendStart();
 			application.PropertyChanged += new PropertyChangedEventHandler(this.AppOnPropertyChanged);
 			SetPage(_application.MainPage);
+			_useBezelInteration = Device.Idiom == TargetIdiom.Watch && Specific.GetUseBezelInteraction(_application);
 		}
 
 		void AppOnPropertyChanged(object sender, PropertyChangedEventArgs args)
@@ -139,6 +153,13 @@ namespace Xamarin.Forms.Platform.Tizen
 			if ("MainPage" == args.PropertyName)
 			{
 				SetPage(_application.MainPage);
+			}
+			else if (Device.Idiom == TargetIdiom.Watch)
+			{
+				if (Specific.UseBezelInteractionProperty.PropertyName == args.PropertyName)
+				{
+					_useBezelInteration = Specific.GetUseBezelInteraction(_application);
+				}
 			}
 		}
 
@@ -169,6 +190,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			MainWindow.Active();
 			MainWindow.Show();
 
+			// in case of no use of preloaded window
 			if (BaseLayout == null)
 			{
 				var conformant = new Conformant(MainWindow);
@@ -179,6 +201,12 @@ namespace Xamarin.Forms.Platform.Tizen
 				layout.Show();
 
 				BaseLayout = layout;
+
+				if (Device.Idiom == TargetIdiom.Watch)
+				{
+					BaseCircleSurface = new CircleSurface(conformant);
+					Forms.CircleSurface = BaseCircleSurface;
+				}
 				conformant.SetContent(BaseLayout);
 			}
 

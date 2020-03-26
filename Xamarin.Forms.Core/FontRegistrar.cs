@@ -15,6 +15,8 @@ namespace Xamarin.Forms.Internals
 		public static void Register(ExportFontAttribute fontAttribute, Assembly assembly)
 		{
 			EmbeddedFonts[fontAttribute.FontFileName] = (fontAttribute, assembly);
+			if (!string.IsNullOrWhiteSpace(fontAttribute.Alias))
+				EmbeddedFonts[fontAttribute.Alias] = (fontAttribute, assembly);
 		}
 
 		//TODO: Investigate making this Async
@@ -27,11 +29,11 @@ namespace Xamarin.Forms.Internals
 					return (false, null);
 				}
 
-				var fontStream = GetEmbeddedResourceStream(foundFont.assembly, font);
+				var fontStream = GetEmbeddedResourceStream(foundFont.assembly, foundFont.attribute.FontFileName);
 
 				var type = Registrar.Registered.GetHandlerType(typeof(EmbeddedFont));
 				var fontHandler = (IEmbeddedFontLoader)Activator.CreateInstance(type);
-				return fontHandler.LoadFont(new EmbeddedFont { FontName = font, ResourceStream = fontStream });
+				return fontHandler.LoadFont(new EmbeddedFont { FontName = foundFont.attribute.FontFileName, ResourceStream = fontStream });
 
 			}
 			catch (Exception ex)

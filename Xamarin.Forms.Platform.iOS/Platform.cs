@@ -7,8 +7,8 @@ using CoreGraphics;
 using Foundation;
 using UIKit;
 using Xamarin.Forms.Internals;
-using RectangleF = CoreGraphics.CGRect;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using RectangleF = CoreGraphics.CGRect;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -161,7 +161,6 @@ namespace Xamarin.Forms.Platform.iOS
 		Task INavigation.PushModalAsync(Page modal, bool animated)
 		{
 			EndEditing();
-
 
 			var elementConfiguration = modal as IElementConfiguration<Page>;
 
