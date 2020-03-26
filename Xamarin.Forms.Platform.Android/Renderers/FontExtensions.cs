@@ -59,6 +59,11 @@ namespace Xamarin.Forms.Platform.Android
 
 		static (bool success, Typeface typeface) TryGetFromAssets(this string fontName)
 		{
+			//First check Alias
+			var (hasFontAlias, fontPostScriptName) = FontRegistrar.HasFont(fontName);
+			if (hasFontAlias)
+				return (true, Typeface.CreateFromFile(fontPostScriptName));
+
 			var isAssetFont = IsAssetFontFamily(fontName);
 			if (isAssetFont)
 			{
@@ -74,7 +79,6 @@ namespace Xamarin.Forms.Platform.Android
 
 
 			//copied text
-
 			var fontFile = FontFile.FromString(fontName);
 
 			if (!string.IsNullOrWhiteSpace(fontFile.Extension))
@@ -174,8 +178,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 			else
 			{
-				var style = ToTypefaceStyle(fontAttribute);
-				result = Typeface.Create(fontFamily, style);
+				result = fontFamily.ToTypeFace(fontAttribute);
 			}
 
 			return result;

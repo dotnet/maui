@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Windows.UI.Text;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
@@ -107,6 +108,17 @@ namespace Xamarin.Forms.Platform.UWP
 
 		static IEnumerable<string> GetAllFontPossibilities(string fontFamily)
 		{
+			//First check Alias
+			var (hasFontAlias, fontPostScriptName) = FontRegistrar.HasFont(fontFamily);
+			if (hasFontAlias)
+			{
+				var file = FontFile.FromString(Path.GetFileName(fontPostScriptName));
+				var formated = $"{fontPostScriptName}#{file.GetPostScriptNameWithSpaces()}";
+				yield return formated;
+				yield return fontFamily;
+				yield break;
+			}
+
 			const string path = "Assets/Fonts/";
 			string[] extensions = new[]
 			{
