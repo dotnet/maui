@@ -929,5 +929,22 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual(2, item1.Items.Count);
 			Assert.AreEqual(section1, shell.CurrentItem.CurrentItem);
 		}
+
+		[Test]
+		public async Task ShellLocationRestoredWhenItemsAreReAdded()
+		{
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellContentRoute: "root1"));
+			shell.Items.Add(CreateShellItem(shellContentRoute: "root2"));
+
+			await shell.GoToAsync("//root2");
+			Assert.AreEqual("//root2", shell.CurrentState.Location.ToString());
+
+			shell.Items.Add(CreateShellItem(shellContentRoute: "root1"));
+			shell.Items.Add(CreateShellItem(shellContentRoute: "root2"));
+
+			shell.Items.Clear();
+			Assert.AreEqual("//root2", shell.CurrentState.Location.ToString());
+		}
 	}
 }
