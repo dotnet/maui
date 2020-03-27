@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -482,6 +483,59 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.True(pageAppearingFired, "Correct Page Appearing Fired");
 			Assert.False(pageNotAppearingFired, "Incorrect Page Appearing Fired");
+		}
+
+		[Test]
+		public void OnNavigatedCalledOnce()
+		{
+			List<ShellNavigatedEventArgs> args = new List<ShellNavigatedEventArgs>();
+			Action<ShellNavigatedEventArgs> onNavigated = (a) =>
+			{
+				args.Add(a);
+			};
+
+			TestShell testShell = new TestShell()
+			{
+				OnNavigatedHandler = onNavigated
+			};
+
+			testShell.Items.Add(base.CreateShellItem());
+
+			Assert.AreEqual(1, args.Count);
+		}
+
+
+		[Test]
+		public async Task OnNavigatedFiresWhenPopping()
+		{
+			Routing.RegisterRoute("AlarmPage", typeof(LifeCyclePage));
+			Routing.RegisterRoute("SoundsPage", typeof(LifeCyclePage));
+			TestShell shell = new TestShell();
+
+			var item = CreateShellItem(shellContentRoute: ContentRoute, shellSectionRoute: SectionRoute, shellItemRoute: ItemRoute);
+			shell.Items.Add(item);
+
+			await shell.GoToAsync("AlarmPage/SoundsPage");
+			shell.Reset();
+
+			await shell.Navigation.PopAsync();
+			shell.TestCount(1);
+		}
+
+		public async Task OnNavigatedFiresWhenPopToRoot()
+		{
+			Routing.RegisterRoute("AlarmPage", typeof(LifeCyclePage));
+			Routing.RegisterRoute("SoundsPage", typeof(LifeCyclePage));
+			TestShell shell = new TestShell();
+
+			var item = CreateShellItem(shellContentRoute: ContentRoute, shellSectionRoute: SectionRoute, shellItemRoute: ItemRoute);
+			shell.Items.Add(item);
+
+			await shell.GoToAsync("AlarmPage/SoundsPage");
+			shell.Reset();
+
+			await shell.Navigation.PopToRootAsync();
+			shell.TestCount(1);
 		}
 
 		public class LifeCyclePage : ContentPage

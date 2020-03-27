@@ -376,7 +376,7 @@ namespace Xamarin.Forms
 
 			SetValueFromRenderer(CurrentStatePropertyKey, result);
 
-			OnNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
+			ProcessNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
 		}
 		ReadOnlyCollection<ShellItem> IShellController.GetItems() => ((ShellItemCollection)Items).VisibleItems;
 
@@ -503,9 +503,19 @@ namespace Xamarin.Forms
 				if (navigationRequest.Request.GlobalRoutes.Count > 0 && navigationRequest.StackRequest != NavigationRequest.WhatToDoWithTheStack.ReplaceIt)
 				{
 					// TODO get rid of this hack and fix so if there's a stack the current page doesn't display
-					Device.BeginInvokeOnMainThread(async () =>
+					await Device.InvokeOnMainThreadAsync(() =>
 					{
-						await CurrentItem.CurrentItem.GoToAsync(navigationRequest, queryData, animate);
+						return CurrentItem.CurrentItem.GoToAsync(navigationRequest, queryData, animate);
+					});
+				}
+				else if(navigationRequest.Request.GlobalRoutes.Count == 0 &&
+					navigationRequest.StackRequest == NavigationRequest.WhatToDoWithTheStack.ReplaceIt &&
+					currentShellSection?.Navigation?.NavigationStack?.Count > 1)
+				{
+					// TODO get rid of this hack and fix so if there's a stack the current page doesn't display
+					await Device.InvokeOnMainThreadAsync(() =>
+					{
+						return CurrentItem.CurrentItem.GoToAsync(navigationRequest, queryData, animate);
 					});
 				}
 			}
@@ -518,7 +528,7 @@ namespace Xamarin.Forms
 
 			// this can be null in the event that no navigation actually took place!
 			if (_accumulatedEvent != null)
-				OnNavigated(_accumulatedEvent);
+				ProcessNavigated(_accumulatedEvent);
 		}
 
 		internal static void ApplyQueryAttributes(Element element, IDictionary<string, string> query, bool isLastItem)
@@ -931,23 +941,37 @@ namespace Xamarin.Forms
 			}
 		}
 
-
-		protected virtual void OnNavigated(ShellNavigatedEventArgs args)
+		internal void ProcessNavigated(ShellNavigatedEventArgs args)
 		{
 			if (_accumulateNavigatedEvents)
 				_accumulatedEvent = args;
 			else
 			{
-				var content = CurrentItem?.CurrentItem?.CurrentItem;
-				if (content != null)
+				BaseShellItem baseShellItem = CurrentItem?.CurrentItem?.CurrentItem;
+
+				if (baseShellItem != null)
 				{
-					content.OnAppearing(() => Navigated?.Invoke(this, args));
+					baseShellItem.OnAppearing(() =>
+					{
+						OnNavigated(args);
+						Navigated?.Invoke(this, args);
+					});
 				}
 				else
 				{
+					OnNavigated(args);
 					Navigated?.Invoke(this, args);
 				}
 			}
+		}
+
+		internal void ProcessNavigating(ShellNavigatingEventArgs args)
+		{
+			OnNavigating(args);
+		}
+
+		protected virtual void OnNavigated(ShellNavigatedEventArgs args)
+		{
 		}
 
 		ShellNavigationState _lastNavigating;

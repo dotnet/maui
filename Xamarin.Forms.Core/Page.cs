@@ -394,7 +394,25 @@ namespace Xamarin.Forms
 			}
 		}
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+
+		internal void OnAppearing(Action action)
+		{
+			if (_hasAppeared)
+				action();
+			else
+			{
+				EventHandler eventHandler = null;
+				eventHandler = (_, __) =>
+				{
+					this.Appearing -= eventHandler;
+					action();
+				};
+
+				this.Appearing += eventHandler;
+			}
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
         public void SendAppearing()
 		{
 			if (_hasAppeared)
