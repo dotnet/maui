@@ -12,8 +12,13 @@ namespace Xamarin.Forms.Material.iOS
 	{
 		CGSize _contentSize;
 
-		public MaterialMultilineTextField(IMaterialEntryRenderer element, IFontElement fontElement) => MaterialTextManager.Init(element, this, fontElement);
+		public MaterialMultilineTextField(IMaterialEntryRenderer element, IFontElement fontElement)
+		{
+			ContainerScheme = new ContainerScheme();
+			MaterialTextManager.Init(element, this, fontElement);
+		}
 
+		public ContainerScheme ContainerScheme { get; }
 		public SemanticColorScheme ColorScheme { get; set; }
 		public TypographyScheme TypographyScheme { get; set; }
 		public MTextInputControllerBase ActiveTextInputController { get; set; }

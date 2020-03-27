@@ -34,7 +34,10 @@ using Xamarin.Forms.Platform.iOS;
 [assembly: ExportRenderer(typeof(TableView), typeof(PerformanceTrackingTableView))]
 [assembly: ExportRenderer(typeof(TimePicker), typeof(PerformanceTrackingTimePicker))]
 [assembly: ExportRenderer(typeof(WebView), typeof(PerformanceTrackingWebView))]
+#if __XCODE11__
 [assembly: ExportRenderer(typeof(Entry), typeof(PerformanceTrackingMaterialEntry), new[] { typeof(VisualMarker.MaterialVisual) })]
+#endif
+
 [assembly: ExportRenderer(typeof(Frame), typeof(PerformanceTrackingFrame))]
 
 namespace Xamarin.Forms.ControlGallery.iOS
@@ -577,6 +580,7 @@ namespace Xamarin.Forms.ControlGallery.iOS
 		}
 	}
 
+#if __XCODE11__
 	public class PerformanceTrackingMaterialEntry : Material.iOS.MaterialEntryRenderer, IDrawnObservable
 	{
 		readonly SubviewWatcher<PerformanceTrackingMaterialEntry> _watcher;
@@ -625,6 +629,7 @@ namespace Xamarin.Forms.ControlGallery.iOS
 			base.Dispose(disposing);
 		}
 	}
+#endif
 
 	public class PerformanceTrackingImage : ImageRenderer, IDrawnObservable
 	{

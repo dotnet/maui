@@ -67,9 +67,10 @@
     <AndroidLinkMode>SdkOnly</AndroidLinkMode>
     <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <AndroidDexTool Condition="'$(Use2017)' == 'false'">d8</AndroidDexTool>
-    <AndroidLinkTool Condition="'$(Use2017)' == 'false'">r8</AndroidLinkTool>
-    <AndroidEnableMultiDex>$(Use2017)</AndroidEnableMultiDex>
+    <AndroidDexTool Condition="'$(Use2017)' != 'true'">d8</AndroidDexTool>
+    <AndroidLinkTool Condition="'$(Use2017)' != 'true'">r8</AndroidLinkTool>
+    <AndroidEnableMultiDex Condition="'$(Use2017)' != 'true'">false</AndroidEnableMultiDex>
+    <AndroidEnableMultiDex Condition="'$(Use2017)' == 'true'">true</AndroidEnableMultiDex>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TF_BUILD)' == 'true' OR '$(CI)' == 'true'">
     <AndroidLinkMode>Full</AndroidLinkMode>

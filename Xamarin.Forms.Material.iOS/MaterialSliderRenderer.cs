@@ -53,7 +53,9 @@ namespace Xamarin.Forms.Material.iOS
 
 		protected virtual void ApplyTheme()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			SliderColorThemer.ApplySemanticColorScheme(CreateColorScheme(), Control);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			// TODO: This is not very safe as Google may change the way it
 			//       colors the control.
