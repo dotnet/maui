@@ -11,7 +11,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>The latitude, longitude, and time information reported by the device.</summary>
+    <summary>The latitude, longitude, altitude and time information reported by the device.</summary>
     <remarks>
       <para></para>
     </remarks>
@@ -133,9 +133,14 @@
         <ReturnType>System.Nullable&lt;System.Double&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets the Altitude, if available in meters above sea level.</summary>
-        <value>Altidude of location if available.</value>
-        <remarks>Returns 0 or no value if not available.</remarks>
+        <summary>Gets the altitude in meters (if available). The reference system is platform specific.</summary>
+        <value>Altitude of location if available.</value>
+        <remarks>
+          <para>Returns 0 or no value if not available. The reference system is different for each platform:</para>
+          <para>- Android: Altitude is returned in meters above the WGS 84 reference ellipsoid. If this location does not have an altitude then 0.0 is returned.</para>
+          <para>- iOS: Altitude is returned in meters above mean sea level (MSL, parametrized by a geoid).</para>
+          <para>- UWP: Altitude can be returned in different reference systems. See Windows.Devices.Geolocation.Geopoint.AltitudeReferenceSystem.</para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="CalculateDistance">

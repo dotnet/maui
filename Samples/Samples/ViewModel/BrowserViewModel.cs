@@ -16,6 +16,9 @@ namespace Samples.ViewModel
         int browserTitleType = (int)BrowserTitleMode.Default;
         int controlColor = 0;
         int toolbarColor = 0;
+        bool presentAsFormSheet = false;
+        bool presentAsPageSheet = false;
+        bool launchAdjacent = false;
 
         Dictionary<string, Color> colorDictionary;
 
@@ -89,6 +92,24 @@ namespace Samples.ViewModel
             set => SetProperty(ref controlColor, value);
         }
 
+        public bool PresentAsFormSheet
+        {
+            get => presentAsFormSheet;
+            set => SetProperty(ref presentAsFormSheet, value);
+        }
+
+        public bool PresentAsPageSheet
+        {
+            get => presentAsPageSheet;
+            set => SetProperty(ref presentAsPageSheet, value);
+        }
+
+        public bool LaunchAdjacent
+        {
+            get => launchAdjacent;
+            set => SetProperty(ref launchAdjacent, value);
+        }
+
         async void OpenUri()
         {
             if (IsBusy)
@@ -97,12 +118,21 @@ namespace Samples.ViewModel
             IsBusy = true;
             try
             {
+                var flags = BrowserLaunchFlags.None;
+                if (PresentAsPageSheet)
+                    flags |= BrowserLaunchFlags.PresentAsPageSheet;
+                if (PresentAsFormSheet)
+                    flags |= BrowserLaunchFlags.PresentAsFormSheet;
+                if (LaunchAdjacent)
+                    flags |= BrowserLaunchFlags.LaunchAdjacent;
+
                 await Browser.OpenAsync(uri, new BrowserLaunchOptions
                 {
                     LaunchMode = (BrowserLaunchMode)BrowserType,
                     TitleMode = (BrowserTitleMode)BrowserTitleType,
                     PreferredToolbarColor = GetColor(ToolbarColor),
-                    PreferredControlColor = GetColor(ControlColor)
+                    PreferredControlColor = GetColor(ControlColor),
+                    Flags = flags
                 });
             }
             catch (Exception e)

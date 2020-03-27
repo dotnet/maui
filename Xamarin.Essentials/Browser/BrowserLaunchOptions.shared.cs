@@ -2,6 +2,8 @@
 using System.Drawing;
 #endif
 
+using System;
+
 namespace Xamarin.Essentials
 {
     public class BrowserLaunchOptions
@@ -15,5 +17,19 @@ namespace Xamarin.Essentials
         public BrowserLaunchMode LaunchMode { get; set; } = BrowserLaunchMode.SystemPreferred;
 
         public BrowserTitleMode TitleMode { get; set; } = BrowserTitleMode.Default;
+
+        public BrowserLaunchFlags Flags { get; set; } = BrowserLaunchFlags.None;
+
+        internal bool HasFlag(BrowserLaunchFlags flag)
+            => Flags.HasFlag(flag);
+    }
+
+    [Flags]
+    public enum BrowserLaunchFlags
+    {
+        None = 0,
+        LaunchAdjacent = 1,
+        PresentAsPageSheet = 2,
+        PresentAsFormSheet = 4
     }
 }

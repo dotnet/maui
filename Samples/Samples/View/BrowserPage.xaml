@@ -42,6 +42,25 @@
                         ItemsSource="{Binding AllColors}"
                         SelectedIndex="{Binding ControlColor, Mode=TwoWay}" />
 
+                <Label Text="Flags:" />
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Label Text="Launch Adjacent (Android)" Grid.Column="0" Grid.Row="0" />
+                    <Switch IsToggled="{Binding LaunchAdjacent, Mode=TwoWay}" Grid.Column="1" Grid.Row="0" />
+
+                    <Label Text="Present as Form Sheet (iOS)" Grid.Column="0" Grid.Row="1" />
+                    <Switch IsToggled="{Binding PresentAsFormSheet, Mode=TwoWay}" Grid.Column="1" Grid.Row="1" />
+
+                    <Label Text="Present as Page Sheet (iOS)" Grid.Column="0" Grid.Row="2" />
+                    <Switch IsToggled="{Binding PresentAsPageSheet, Mode=TwoWay}" Grid.Column="1" Grid.Row="2" />
+
+                </Grid>
+
                 <Label Text="{Binding BrowserStatus}" />
             </StackLayout>
         </ScrollView>
