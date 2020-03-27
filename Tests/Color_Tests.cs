@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Text;
 using Xamarin.Essentials;
 using Xunit;
 
@@ -137,6 +135,24 @@ namespace Tests
             Assert.Equal(8, color.R);
             Assert.Equal(29, color.G);
             Assert.Equal(43, color.B);
+        }
+
+        [Theory]
+        [InlineData("black", 0, 0, 0)]
+        [InlineData("red", 0, 100, 100)]
+        [InlineData("white", 0, 0, 100)]
+        [InlineData("green", 120, 100, 50.2)]
+        [InlineData("lime", 120, 100, 100)]
+        [InlineData("yellow", 60, 100, 100)]
+        [InlineData("magenta", 300, 100, 100)]
+        [InlineData("cyan", 180, 100, 100)]
+        public void RgbToHsv(string hex, double hTest, double sTest, double vTest)
+        {
+            var color = Color.FromName(hex);
+            color.ToHSV(out var h, out var s, out var v);
+            Assert.Equal(hTest, h);
+            Assert.Equal(sTest, s);
+            Assert.Equal(vTest, Math.Round(v, 1));
         }
     }
 }

@@ -66,6 +66,44 @@ namespace Xamarin.Essentials
             // multiply by 100 as `ConvertToHsl` specifies them as values between 0 and 1.
             return ColorConverters.FromHsl(h, s * 100, l * 100);
         }
+
+        public static void ToHSV(this Color color, out double h, out double s, out double v)
+        {
+            h = 0;
+            var rHSV = (double)color.R / 255;
+            var gHSV = (double)color.G / 255;
+            var bHSV = (double)color.B / 255;
+
+            v = Math.Max(Math.Max(rHSV, gHSV), bHSV);
+            var cMin = Math.Min(Math.Min(rHSV, gHSV), bHSV);
+            var delta = v - cMin;
+
+            if (v == 0)
+                s = 0;
+            else
+                s = delta / v;
+
+            if (delta == 0)
+            {
+                h = 0;
+            }
+            else
+            {
+                if (rHSV == v)
+                    h = (gHSV - bHSV) / delta;
+                else if (gHSV == v)
+                    h = 2 + ((bHSV - rHSV) / delta);
+                else if (bHSV == v)
+                    h = 4 + ((rHSV - gHSV) / delta);
+
+                h *= 60;
+
+                if (h < 0.0)
+                    h += 360;
+            }
+            s *= 100;
+            v *= 100;
+        }
     }
 }
 #endif
