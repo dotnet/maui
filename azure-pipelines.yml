@@ -1,6 +1,6 @@
 
 variables:
-  CurrentSemanticVersionBase: '1.4.0'
+  CurrentSemanticVersionBase: '1.5.3'
   PreviewNumber: $[counter(variables['CurrentSemanticVersionBase'], 1001)]
   CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(PreviewNumber)'
   NugetPackageVersion: '$(CurrentSemanticVersion)'
