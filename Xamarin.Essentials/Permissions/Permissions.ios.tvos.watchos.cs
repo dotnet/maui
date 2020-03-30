@@ -40,6 +40,8 @@ namespace Xamarin.Essentials
                 }
             }
 
+            public override bool ShouldShowRationale() => false;
+
             internal void EnsureMainThread()
             {
                 if (!MainThread.IsMainThread)
