@@ -72,7 +72,7 @@
       <Docs>
         <summary>Gets the application package name or identifier.</summary>
         <value>The package name or identifier.</value>
-        <remarks>On android and iOS, this is the application package name. On UWP, this is the application GUID.</remarks>
+        <remarks>On Android and iOS, this is the application package name. On UWP, this is the application GUID.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RequestedTheme">

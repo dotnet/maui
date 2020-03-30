@@ -30,6 +30,27 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="CheckStatusAsync">
+      <MemberSignature Language="C#" Value="public override System.Threading.Tasks.Task&lt;Xamarin.Essentials.PermissionStatus&gt; CheckStatusAsync ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance class System.Threading.Tasks.Task`1&lt;valuetype Xamarin.Essentials.PermissionStatus&gt; CheckStatusAsync() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Permissions.Battery.CheckStatusAsync" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;Xamarin.Essentials.PermissionStatus&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Check status of Battery permission.</summary>
+        <returns>Task of PermissionStatus for Battery.</returns>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
     <Member MemberName="RequiredPermissions">
       <MemberSignature Language="C#" Value="public override ValueTuple&lt;string,bool&gt;[] RequiredPermissions { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype System.ValueTuple`2&lt;string, bool&gt;[] RequiredPermissions" />

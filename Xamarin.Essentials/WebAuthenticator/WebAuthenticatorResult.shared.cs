@@ -46,6 +46,9 @@ namespace Xamarin.Essentials
         public string RefreshToken
             => Get("refresh_token");
 
+        public string IdToken
+            => Get("id_token");
+
         public DateTimeOffset? RefreshTokenExpiresIn
         {
             get
