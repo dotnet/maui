@@ -168,7 +168,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (ModalPresentationStyle == UIKit.UIModalPresentationStyle.FullScreen)
 			{
 				Color modalBkgndColor = ((Page)_modal.Element).BackgroundColor;
-				View.BackgroundColor = modalBkgndColor.IsDefault ? UIColor.White : modalBkgndColor.ToUIColor();
+				View.BackgroundColor = modalBkgndColor.IsDefault ? ColorExtensions.BackgroundColor : modalBkgndColor.ToUIColor();
 			}
 			else
 			{

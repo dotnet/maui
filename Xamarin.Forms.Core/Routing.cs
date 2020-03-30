@@ -9,7 +9,8 @@ namespace Xamarin.Forms
 		static int s_routeCount = 0;
 		static Dictionary<string, RouteFactory> s_routes = new Dictionary<string, RouteFactory>();
 
-		internal const string ImplicitPrefix = "IMPL_";
+		const string ImplicitPrefix = "IMPL_";
+		const string DefaultPrefix = "D_FAULT_";
 		const string _pathSeparator = "/";
 
 		internal static string GenerateImplicitRoute(string source)
@@ -26,7 +27,11 @@ namespace Xamarin.Forms
 		{
 			return IsImplicit(GetRoute(source));
 		}
-		
+		internal static bool IsDefault(string source)
+		{
+			return source.StartsWith(DefaultPrefix, StringComparison.Ordinal);
+		}
+
 		internal static void Clear()
 		{
 			s_routes.Clear();
@@ -38,7 +43,7 @@ namespace Xamarin.Forms
 
 		static object CreateDefaultRoute(BindableObject bindable)
 		{
-			return bindable.GetType().Name + ++s_routeCount;
+			return $"{DefaultPrefix}{bindable.GetType().Name}{++s_routeCount}";
 		}
 
 		internal static string[] GetRouteKeys()
@@ -83,18 +88,33 @@ namespace Xamarin.Forms
 			return $"{source}/";
 		}
 
-		internal static Uri RemoveImplicit(Uri uri)
+		internal static Uri Remove(Uri uri, bool implicitRoutes, bool defaultRoutes)
 		{
-			uri = ShellUriHandler.FormatUri(uri);
+			uri = ShellUriHandler.FormatUri(uri, null);
 
 			string[] parts = uri.OriginalString.TrimEnd(_pathSeparator[0]).Split(_pathSeparator[0]);
 
+			bool userDefinedRouteAdded = false;
 			List<string> toKeep = new List<string>();
 			for (int i = 0; i < parts.Length; i++)
-				if (!IsImplicit(parts[i]))
+				if (!(IsDefault(parts[i]) && defaultRoutes) && !(IsImplicit(parts[i]) && implicitRoutes))
+				{
+					if (!String.IsNullOrWhiteSpace(parts[i]))
+						userDefinedRouteAdded = true;
 					toKeep.Add(parts[i]);
+				}
+
+			if(!userDefinedRouteAdded && parts.Length > 0)
+			{
+				toKeep.Add(parts[parts.Length - 1]);
+			}
 
 			return new Uri(string.Join(_pathSeparator, toKeep), UriKind.Relative);
+		}
+
+		internal static Uri RemoveImplicit(Uri uri)
+		{
+			return Remove(uri, true, false);
 		}
 
 		public static string FormatRoute(List<string> segments)

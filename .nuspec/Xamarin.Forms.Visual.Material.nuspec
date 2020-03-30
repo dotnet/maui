@@ -29,7 +29,7 @@
         <dependency id="Xamarin.Google.Android.Material" version="1.0.0" />
       </group>
       <group targetFramework="Xamarin.iOS10">
-        <dependency id="Xamarin.iOS.MaterialComponents" version="72.2.0.1"/>
+        <dependency id="Xamarin.iOS.MaterialComponents" version="92.0.0"/>
       </group>
       <group targetFramework="tizen40">
         <dependency id="Tizen.NET" version="4.0.0"/>

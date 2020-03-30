@@ -133,11 +133,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (Element.Content != null)
 				Element.Content.Layout(Bounds.ToRectangle());
-
-			if (_contentView != null)
-			{
-				_contentView.Frame = Bounds;
-			}
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -156,14 +151,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected override void SetBackgroundColor(Color color)
 		{
-			UIColor backgroundColor;
-
-#if __XCODE11__
-			if (Forms.IsiOS13OrNewer)
-				backgroundColor = UIColor.SystemBackgroundColor;
-			else
-#endif
-				backgroundColor = UIColor.White;
+			UIColor backgroundColor = ColorExtensions.BackgroundColor;
 
 			if (Element.BackgroundColor != Color.Default)
 			{
@@ -398,7 +386,7 @@ namespace Xamarin.Forms.Platform.iOS
 			else
 				swipeItemsWidth = _contentView.Frame.Width;
 
-			if (items == null)
+			if (items == null || items.Count == 0)
 				return;
 
 			_actionView = new UIStackView
@@ -1205,6 +1193,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void ProgrammaticallyOpenSwipeItem(OpenSwipeItem openSwipeItem)
 		{
+			if (_isOpen)
+				return;
+
 			switch (openSwipeItem)
 			{
 				case OpenSwipeItem.BottomItems:
@@ -1230,11 +1221,7 @@ namespace Xamarin.Forms.Platform.iOS
 			_swipeOffset = swipeThreshold;
 
 			UpdateSwipeItems();
-
-			Animate(SwipeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseOut, () =>
-			{
-				Swipe();
-			}, null);
+			Swipe();
 		}
 
 		void OnCloseRequested(object sender, EventArgs e)

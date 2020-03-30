@@ -84,7 +84,7 @@ namespace Xamarin.Forms.Platform.iOS
 					if (!UIDevice.CurrentDevice.CheckSystemVersion(7, 0))
 						return;
 
-					uiBgColor = new UIColor(247f / 255f, 247f / 255f, 247f / 255f, 1);
+					uiBgColor = ColorExtensions.GroupedBackground;
 				}
 				else
 				{

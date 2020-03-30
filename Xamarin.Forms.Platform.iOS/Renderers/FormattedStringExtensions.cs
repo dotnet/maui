@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (fgcolor.IsDefault)
 				fgcolor = defaultForegroundColor;
 			if (fgcolor.IsDefault)
-				fgcolor = Color.Black; // as defined by apple docs		
+				fgcolor = ColorExtensions.LabelColor.ToColor();
 
 #if __MOBILE__
 			return new NSAttributedString(span.Text, font == Font.Default ? null : font.ToUIFont(), fgcolor.ToUIColor(), 
@@ -106,7 +106,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (fgcolor.IsDefault)
 				fgcolor = defaultForegroundColor;
 			if (fgcolor.IsDefault)
-				fgcolor = Color.Black; // as defined by apple docs
+				fgcolor = ColorExtensions.LabelColor.ToColor();
 
 #if __MOBILE__
 			UIColor spanFgColor;

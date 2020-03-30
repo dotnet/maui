@@ -376,7 +376,7 @@ namespace Xamarin.Forms
 
 			SetValueFromRenderer(CurrentStatePropertyKey, result);
 
-			OnNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
+			ProcessNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
 		}
 		ReadOnlyCollection<ShellItem> IShellController.GetItems() => ((ShellItemCollection)Items).VisibleItems;
 
@@ -448,7 +448,7 @@ namespace Xamarin.Forms
 			var shellSection = navigationRequest.Request.Section;
 			var currentShellSection = CurrentItem?.CurrentItem;
 			var nextActiveSection = shellSection ?? shellItem?.CurrentItem;
-			
+
 			ShellContent shellContent = navigationRequest.Request.Content;
 			bool modalStackPreBuilt = false;
 
@@ -458,7 +458,7 @@ namespace Xamarin.Forms
 				modalStackPreBuilt = true;
 				await nextActiveSection.GoToAsync(navigationRequest, queryData, false);
 			}
-			
+
 			if (shellItem != null)
 			{
 				ApplyQueryAttributes(shellItem, queryData, navigationRequest.Request.Section == null);
@@ -503,9 +503,19 @@ namespace Xamarin.Forms
 				if (navigationRequest.Request.GlobalRoutes.Count > 0 && navigationRequest.StackRequest != NavigationRequest.WhatToDoWithTheStack.ReplaceIt)
 				{
 					// TODO get rid of this hack and fix so if there's a stack the current page doesn't display
-					Device.BeginInvokeOnMainThread(async () =>
+					await Device.InvokeOnMainThreadAsync(() =>
 					{
-						await CurrentItem.CurrentItem.GoToAsync(navigationRequest, queryData, animate);
+						return CurrentItem.CurrentItem.GoToAsync(navigationRequest, queryData, animate);
+					});
+				}
+				else if(navigationRequest.Request.GlobalRoutes.Count == 0 &&
+					navigationRequest.StackRequest == NavigationRequest.WhatToDoWithTheStack.ReplaceIt &&
+					currentShellSection?.Navigation?.NavigationStack?.Count > 1)
+				{
+					// TODO get rid of this hack and fix so if there's a stack the current page doesn't display
+					await Device.InvokeOnMainThreadAsync(() =>
+					{
+						return CurrentItem.CurrentItem.GoToAsync(navigationRequest, queryData, animate);
 					});
 				}
 			}
@@ -518,7 +528,7 @@ namespace Xamarin.Forms
 
 			// this can be null in the event that no navigation actually took place!
 			if (_accumulatedEvent != null)
-				OnNavigated(_accumulatedEvent);
+				ProcessNavigated(_accumulatedEvent);
 		}
 
 		internal static void ApplyQueryAttributes(Element element, IDictionary<string, string> query, bool isLastItem)
@@ -527,7 +537,7 @@ namespace Xamarin.Forms
 			if (!isLastItem)
 			{
 				var route = Routing.GetRoute(element);
-				if (string.IsNullOrEmpty(route) || route.StartsWith(Routing.ImplicitPrefix, StringComparison.Ordinal))
+				if (string.IsNullOrEmpty(route) || Routing.IsImplicit(route))
 					return;
 				prefix = route + ".";
 			}
@@ -610,7 +620,7 @@ namespace Xamarin.Forms
 						{
 							var topPage = modalStack[i];
 
-							if(i > 0)
+							if (i > 0)
 								stateBuilder.Append("/");
 
 							stateBuilder.Append(Routing.GetRoute(topPage));
@@ -688,7 +698,7 @@ namespace Xamarin.Forms
 				SendStructureChanged();
 			};
 
-			void SetCurrentItem()
+			async void SetCurrentItem()
 			{
 				var shellItems = ShellController.GetItems();
 
@@ -697,12 +707,33 @@ namespace Xamarin.Forms
 
 				ShellItem shellItem = null;
 
-				foreach (var item in shellItems)
+				// If shell item has been removed try to renavigate to current location
+				// Just in case the item was replaced. This is mainly relevant for hot reload
+				if (CurrentItem != null)
 				{
-					if (item is ShellItem && ValidDefaultShellItem(item))
+					try
 					{
-						shellItem = item;
-						break;
+						var location = CurrentState.Location;
+						if (ShellUriHandler.GetNavigationRequest(this, ((ShellNavigationState)location).FullLocation, false) != null)
+							await GoToAsync(location, false);
+
+						return;
+					}
+					catch (Exception exc)
+					{
+						Log.Warning(nameof(Shell), $"If you're using hot reload add a route to everything in your shell file:  {exc}");
+					}
+				}
+
+				if (shellItem == null)
+				{
+					foreach (var item in shellItems)
+					{
+						if (item is ShellItem && ValidDefaultShellItem(item))
+						{
+							shellItem = item;
+							break;
+						}
 					}
 				}
 
@@ -931,23 +962,37 @@ namespace Xamarin.Forms
 			}
 		}
 
-
-		protected virtual void OnNavigated(ShellNavigatedEventArgs args)
+		internal void ProcessNavigated(ShellNavigatedEventArgs args)
 		{
 			if (_accumulateNavigatedEvents)
 				_accumulatedEvent = args;
 			else
 			{
-				var content = CurrentItem?.CurrentItem?.CurrentItem;
-				if (content != null)
+				BaseShellItem baseShellItem = CurrentItem?.CurrentItem?.CurrentItem;
+
+				if (baseShellItem != null)
 				{
-					content.OnAppearing(() => Navigated?.Invoke(this, args));
+					baseShellItem.OnAppearing(() =>
+					{
+						OnNavigated(args);
+						Navigated?.Invoke(this, args);
+					});
 				}
 				else
 				{
+					OnNavigated(args);
 					Navigated?.Invoke(this, args);
 				}
 			}
+		}
+
+		internal void ProcessNavigating(ShellNavigatingEventArgs args)
+		{
+			OnNavigating(args);
+		}
+
+		protected virtual void OnNavigated(ShellNavigatedEventArgs args)
+		{
 		}
 
 		ShellNavigationState _lastNavigating;
@@ -1273,7 +1318,7 @@ namespace Xamarin.Forms
 				if (ModalStack.Count == 0)
 					_shell.CurrentItem.SendDisappearing();
 
-				if(!_shell.CurrentItem.CurrentItem.IsPushingModalStack)
+				if (!_shell.CurrentItem.CurrentItem.IsPushingModalStack)
 					modal.SendAppearing();
 
 				return base.OnPushModal(modal, animated);

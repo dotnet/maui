@@ -372,7 +372,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void ViewWillLayoutSubviews()
 		{
 			base.ViewWillLayoutSubviews();
-			_masterController.View.BackgroundColor = UIColor.White;
+			_masterController.View.BackgroundColor = ColorExtensions.BackgroundColor;
 		}
 
 		public override void WillRotate(UIInterfaceOrientation toInterfaceOrientation, double duration)
@@ -511,7 +511,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (bgImage != null)
 					View.BackgroundColor = UIColor.FromPatternImage(bgImage);
 				else if (Element.BackgroundColor == Color.Default)
-					View.BackgroundColor = UIColor.White;
+					View.BackgroundColor = ColorExtensions.BackgroundColor;
 				else
 					View.BackgroundColor = Element.BackgroundColor.ToUIColor();
 			});

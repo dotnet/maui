@@ -146,6 +146,21 @@ namespace Xamarin.Forms
 				action();
 			else
 			{
+				if(Navigation.ModalStack.Count > 0)
+				{
+					Navigation.ModalStack[Navigation.ModalStack.Count - 1]
+						.OnAppearing(action);
+					
+					return;
+				}
+				else if(Navigation.NavigationStack.Count > 1)
+				{
+					Navigation.NavigationStack[Navigation.NavigationStack.Count - 1]
+						.OnAppearing(action);
+
+					return;
+				}
+
 				EventHandler eventHandler = null;
 				eventHandler = (_, __) =>
 				{

@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Platform.iOS
 		protected virtual void UpdateBackground()
 		{
 			var color = _shellContext.Shell.FlyoutBackgroundColor;
-			View.BackgroundColor = color.ToUIColor(Color.White);
+			View.BackgroundColor = color.ToUIColor(ColorExtensions.BackgroundColor);
 
 			if (View.BackgroundColor.CGColor.Alpha < 1)
 			{

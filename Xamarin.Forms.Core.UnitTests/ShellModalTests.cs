@@ -297,6 +297,35 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual("1234", testPage.SomeQueryParameter);
 		}
 
+		[Test]
+		public async Task NavigatingAndNavigatedFiresForShellModal()
+		{
+			Shell shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute", shellSectionRoute: "Section", shellContentRoute: "Content"));
+
+			ShellNavigatingEventArgs shellNavigatingEventArgs = null;
+			ShellNavigatedEventArgs shellNavigatedEventArgs = null;
+
+			shell.Navigating += (_, args) =>
+			{
+				shellNavigatingEventArgs = args;
+			};
+
+			shell.Navigated += (_, args) =>
+			{
+				shellNavigatedEventArgs = args;
+			};
+
+			await shell.GoToAsync("ModalTestPage");
+
+			Assert.IsNotNull(shellNavigatingEventArgs, "Shell.Navigating never fired");
+			Assert.IsNotNull(shellNavigatedEventArgs, "Shell.Navigated never fired");
+
+			Assert.AreEqual("//NewRoute/Section/Content/", shellNavigatingEventArgs.Current.FullLocation.ToString());
+			Assert.AreEqual("//NewRoute/Section/Content/ModalTestPage", shellNavigatedEventArgs.Current.FullLocation.ToString());
+
+		}
+
 
 		[QueryProperty("SomeQueryParameter", "SomeQueryParameter")]
 		public class ModalTestPageBase : ShellLifeCycleTests.LifeCyclePage

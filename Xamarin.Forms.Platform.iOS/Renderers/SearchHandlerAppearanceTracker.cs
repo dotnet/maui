@@ -172,7 +172,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			var formatted = (FormattedString)_searchHandler.Placeholder ?? string.Empty;
 			var targetColor = _searchHandler.PlaceholderColor;
-			var placeHolderColor = targetColor.IsDefault ? ColorExtensions.SeventyPercentGrey.ToColor() : targetColor;
+			var placeHolderColor = targetColor.IsDefault ? ColorExtensions.PlaceholderColor.ToColor() : targetColor;
 			textField.AttributedPlaceholder = formatted.ToAttributed(_searchHandler, placeHolderColor, _searchHandler.HorizontalTextAlignment);
 
 			//Center placeholder

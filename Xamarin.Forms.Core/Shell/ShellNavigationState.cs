@@ -15,7 +15,7 @@ namespace Xamarin.Forms
 			set
 			{
 				_fullLocation = value;
-				Location = Routing.RemoveImplicit(value);
+				Location = Routing.Remove(value, true, true);
 			}
 		}
 

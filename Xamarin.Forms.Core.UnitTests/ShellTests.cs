@@ -247,6 +247,9 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public async Task RelativeGoTo()
 		{
+			Routing.RegisterRoute("RelativeGoTo_Page1", typeof(ContentPage));
+			Routing.RegisterRoute("RelativeGoTo_Page2", typeof(ContentPage));
+
 			var shell = new Shell
 			{
 			};
@@ -279,6 +282,15 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("//two/tab21/content"));
 
 			await shell.GoToAsync("/tab23", false, true);
+			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("//two/tab23/content"));
+
+			await shell.GoToAsync("RelativeGoTo_Page1", false);
+			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("//two/tab23/content/RelativeGoTo_Page1"));
+
+			await shell.GoToAsync("../RelativeGoTo_Page2", false);
+			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("//two/tab23/content/RelativeGoTo_Page2"));
+
+			await shell.GoToAsync("..", false);
 			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("//two/tab23/content"));
 
 			/*
@@ -928,6 +940,23 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.IsNull(clearedSection.Parent);
 			Assert.AreEqual(2, item1.Items.Count);
 			Assert.AreEqual(section1, shell.CurrentItem.CurrentItem);
+		}
+
+		[Test]
+		public async Task ShellLocationRestoredWhenItemsAreReAdded()
+		{
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellContentRoute: "root1"));
+			shell.Items.Add(CreateShellItem(shellContentRoute: "root2"));
+
+			await shell.GoToAsync("//root2");
+			Assert.AreEqual("//root2", shell.CurrentState.Location.ToString());
+
+			shell.Items.Add(CreateShellItem(shellContentRoute: "root1"));
+			shell.Items.Add(CreateShellItem(shellContentRoute: "root2"));
+
+			shell.Items.Clear();
+			Assert.AreEqual("//root2", shell.CurrentState.Location.ToString());
 		}
 	}
 }

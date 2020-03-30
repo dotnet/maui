@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			var selectedBackgroundView = new UIView
 			{
-				BackgroundColor = UIColor.Gray
+				BackgroundColor = ColorExtensions.Gray
 			};
 
 			SelectedBackgroundView = selectedBackgroundView;

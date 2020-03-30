@@ -32,6 +32,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 				UpdateBackground();
 				UpdateCornerRadius();
+				UpdateSize();
 			}
 
 			base.OnElementChanged(e);

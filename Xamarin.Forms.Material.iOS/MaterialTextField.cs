@@ -11,11 +11,16 @@ namespace Xamarin.Forms.Material.iOS
 {
 	public class MaterialTextField : MTextField, IMaterialTextField
 	{
+		public ContainerScheme ContainerScheme { get; }
 		public SemanticColorScheme ColorScheme { get; set; }
 		public TypographyScheme TypographyScheme { get; set; }
 		public MTextInputControllerBase ActiveTextInputController { get; set; }
 		public ITextInput TextInput => this;
-		public MaterialTextField(IMaterialEntryRenderer element, IFontElement fontElement) => MaterialTextManager.Init(element, this, fontElement);
+		public MaterialTextField(IMaterialEntryRenderer element, IFontElement fontElement)
+		{
+			ContainerScheme = new ContainerScheme();
+			MaterialTextManager.Init(element, this, fontElement);
+		}
 
 		public override CGSize SizeThatFits(CGSize size)
 		{

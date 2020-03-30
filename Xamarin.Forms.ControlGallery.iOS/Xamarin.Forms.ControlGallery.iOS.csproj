@@ -13,13 +13,14 @@
     <AssemblyName>XamarinFormsControlGalleryiOS</AssemblyName>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <DefineConstants Condition="'$(Use2017)' != 'true'">__XCODE11__;$(DefineConstants);</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\iPhoneSimulator\Debug</OutputPath>
-    <DefineConstants>DEBUG;HAVE_OPENTK</DefineConstants>
+    <DefineConstants>DEBUG;HAVE_OPENTK;$(DefineConstants);</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
@@ -46,7 +47,7 @@
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\iPhoneSimulator\Release</OutputPath>
-    <DefineConstants>HAVE_OPENTK</DefineConstants>
+    <DefineConstants>HAVE_OPENTK;$(DefineConstants);</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <MtouchLink>None</MtouchLink>
@@ -59,7 +60,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\iPhone\Debug</OutputPath>
-    <DefineConstants>DEBUG;__UNIFIED__;__MOBILE__;__IOS__;HAVE_OPENTK</DefineConstants>
+    <DefineConstants>DEBUG;__UNIFIED__;__MOBILE__;__IOS__;HAVE_OPENTK;$(DefineConstants);</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
@@ -90,7 +91,7 @@
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\iPhone\Release</OutputPath>
-    <DefineConstants>HAVE_OPENTK</DefineConstants>
+    <DefineConstants>HAVE_OPENTK;$(DefineConstants);</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <MtouchArch>ARMv7, ARM64</MtouchArch>
@@ -188,7 +189,7 @@
       <IsAppExtension>false</IsAppExtension>
       <IsWatchApp>false</IsWatchApp>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Material.iOS\Xamarin.Forms.Material.iOS.csproj">
+    <ProjectReference Condition="'$(Use2017)' != 'true'" Include="..\Xamarin.Forms.Material.iOS\Xamarin.Forms.Material.iOS.csproj">
       <Project>{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}</Project>
       <Name>Xamarin.Forms.Material.iOS</Name>
       <IsAppExtension>false</IsAppExtension>
@@ -386,7 +387,6 @@
     </PackageReference>
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="3.0.2" />
     <PackageReference Include="Xamarin.Insights" Version="1.12.3" />
-    <PackageReference Include="Xamarin.iOS.MaterialComponents" Version="72.2.0.1" />
     <PackageReference Include="Xamarin.TestCloud.Agent" Version="0.21.9" />
   </ItemGroup>
   <ItemGroup>

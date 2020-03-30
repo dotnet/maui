@@ -52,7 +52,7 @@
     <Reference Include="Xamarin.iOS" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xamarin.iOS.MaterialComponents" Version="72.2.0.1" />
+    <PackageReference Include="Xamarin.iOS.MaterialComponents" Version="92.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Xamarin.Forms.Material.Android\MaterialColors.cs">

@@ -124,7 +124,8 @@ namespace Xamarin.Forms
 			if (IsInitialized)
 				return;
 			IsInitialized = true;
-			Color.SetAccent(Color.FromRgba(50, 79, 133, 255));
+
+			Color.SetAccent(ColorExtensions.AccentColor.ToColor());
 
 			Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
 
