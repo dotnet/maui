@@ -151,6 +151,28 @@
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\net46\Mono.Cecil.Rocks.dll" target="build\net46" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\net46\System.ValueTuple.dll" target="build\net46" />
 
+    <!--Xamlc stuff buildTransitive-->
+    <file src="Xamarin.Forms.targets" target="buildTransitive" />
+    <file src="Xamarin.Forms.props" target="buildTransitive" />
+    <file src="Xamarin.Forms.DefaultItems.targets" target="buildTransitive" />
+    <file src="Xamarin.Forms.DefaultItems.props" target="buildTransitive" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Build.Tasks.dll" target="buildTransitive\netstandard2.0" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="buildTransitive\netstandard2.0" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.dll" target="buildTransitive\netstandard2.0" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Mono.Cecil.dll" target="buildTransitive\netstandard2.0" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Mono.Cecil.Mdb.dll" target="buildTransitive\netstandard2.0" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Mono.Cecil.Pdb.dll" target="buildTransitive\netstandard2.0" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Mono.Cecil.Rocks.dll" target="buildTransitive\netstandard2.0" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\System.CodeDom.dll" target="buildTransitive\netstandard2.0" />   
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\net46\Xamarin.Forms.Build.Tasks.dll" target="buildTransitive\net46" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\net46\Xamarin.Forms.Core.dll" target="buildTransitive\net46" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\net46\Xamarin.Forms.Xaml.dll" target="buildTransitive\net46" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\net46\Mono.Cecil.dll" target="buildTransitive\net46" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\net46\Mono.Cecil.Mdb.dll" target="buildTransitive\net46" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\net46\Mono.Cecil.Pdb.dll" target="buildTransitive\net46" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\net46\Mono.Cecil.Rocks.dll" target="buildTransitive\net46" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\net46\System.ValueTuple.dll" target="buildTransitive\net46" />
+
     <!-- Xaml Design-time Stuff -->
     <file src="..\Xamarin.Forms.Core.Design\bin\$Configuration$\Xamarin.Forms.Core.Design.dll" target="lib\netstandard2.0\Design" />
     <file src="..\Xamarin.Forms.Xaml.Design\bin\$Configuration$\Xamarin.Forms.Xaml.Design.dll" target="lib\netstandard2.0\Design" />
@@ -173,6 +195,8 @@
     
     <!--Android 10-->
     <file src="proguard.cfg" target="build\MonoAndroid10\proguard.cfg" />
+
+    <file src="proguard.cfg" target="buildTransitive\MonoAndroid10\proguard.cfg" />
     
     <!--Android 90-->
     <file src="..\Xamarin.Forms.Platform.Android\bin\$Configuration$\MonoAndroid90\Xamarin.Forms.Platform.Android.dll" target="lib\MonoAndroid90" />
@@ -211,6 +235,15 @@
     <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\2017\Xamarin.Forms.Platform.iOS.dll" target="build\XCODE10" />
     <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\2017\Xamarin.Forms.Platform.iOS.*pdb" target="build\XCODE10" />
     <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\2017\Xamarin.Forms.Platform.iOS.*mdb" target="build\XCODE10" />
+
+
+    <!--iPhone Unified buildTransitive-->
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\Xamarin.Forms.Platform.iOS.dll" target="buildTransitive\XCODE11" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\Xamarin.Forms.Platform.iOS.*pdb" target="buildTransitive\XCODE11" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\Xamarin.Forms.Platform.iOS.*mdb" target="buildTransitive\XCODE11" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\2017\Xamarin.Forms.Platform.iOS.dll" target="buildTransitive\XCODE10" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\2017\Xamarin.Forms.Platform.iOS.*pdb" target="buildTransitive\XCODE10" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\2017\Xamarin.Forms.Platform.iOS.*mdb" target="buildTransitive\XCODE10" />
 
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="lib\Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.*pdb" target="lib\Xamarin.iOS10" />
@@ -302,6 +335,10 @@
     <file src="..\Xamarin.Forms.Platform.MacOS\bin\$Configuration$\Xamarin.Forms.Platform.macOS.dll" target="build\XCODE11" />
     <file src="..\Xamarin.Forms.Platform.MacOS\bin\$Configuration$\2017\Xamarin.Forms.Platform.macOS.dll" target="build\XCODE10" />
 
+    <!--Mac buildTransitive-->
+    <file src="..\Xamarin.Forms.Platform.MacOS\bin\$Configuration$\Xamarin.Forms.Platform.macOS.dll" target="buildTransitive\XCODE11" />
+    <file src="..\Xamarin.Forms.Platform.MacOS\bin\$Configuration$\2017\Xamarin.Forms.Platform.macOS.dll" target="buildTransitive\XCODE10" />
+
     <!-- iOS Localized String Resource Assemblies -->
     <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\ar\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\ar" />
     <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\ca\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\ca" />
@@ -349,6 +386,7 @@
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.dll" target="lib\tizen40" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.*pdb" target="lib\tizen40" />
     <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\tizen40" />
+
   </files>
 
 </package>
