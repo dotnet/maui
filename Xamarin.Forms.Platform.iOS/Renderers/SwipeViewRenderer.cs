@@ -133,11 +133,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (Element.Content != null)
 				Element.Content.Layout(Bounds.ToRectangle());
-
-			if (_contentView != null)
-			{
-				_contentView.Frame = Bounds;
-			}
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -398,7 +393,7 @@ namespace Xamarin.Forms.Platform.iOS
 			else
 				swipeItemsWidth = _contentView.Frame.Width;
 
-			if (items == null)
+			if (items == null || items.Count == 0)
 				return;
 
 			_actionView = new UIStackView
@@ -1205,6 +1200,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void ProgrammaticallyOpenSwipeItem(OpenSwipeItem openSwipeItem)
 		{
+			if (_isOpen)
+				return;
+
 			switch (openSwipeItem)
 			{
 				case OpenSwipeItem.BottomItems:
@@ -1230,11 +1228,7 @@ namespace Xamarin.Forms.Platform.iOS
 			_swipeOffset = swipeThreshold;
 
 			UpdateSwipeItems();
-
-			Animate(SwipeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseOut, () =>
-			{
-				Swipe();
-			}, null);
+			Swipe();
 		}
 
 		void OnCloseRequested(object sender, EventArgs e)
