@@ -195,7 +195,7 @@ namespace Xamarin.Forms.Platform.iOS
 			Control.Font = Element.ToUIFont();
 		}
 
-		readonly Color _defaultPlaceholderColor = ColorExtensions.SeventyPercentGrey.ToColor();
+		readonly Color _defaultPlaceholderColor = ColorExtensions.PlaceholderColor.ToColor();
 		protected internal virtual void UpdatePlaceholder()
 		{
 			var formatted = (FormattedString)Element.Title;

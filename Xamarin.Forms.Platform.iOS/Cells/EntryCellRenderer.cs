@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Platform.iOS
 {
 	public class EntryCellRenderer : CellRenderer
 	{
-		static readonly Color DefaultTextColor = Color.Black;
+		static readonly Color DefaultTextColor = ColorExtensions.LabelColor.ToColor();
 
 		[Preserve(Conditional = true)]
 		public EntryCellRenderer()

@@ -139,6 +139,16 @@ namespace Xamarin.Forms.Platform.iOS
 			return new RadioButtonCALayer(Element, Control);
 		}
 
+		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
+		{
+			base.TraitCollectionDidChange(previousTraitCollection);
+#if __XCODE11__
+			// Make sure the control adheres to changes in UI theme
+			if (previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+				_radioButtonLayer.SetNeedsDisplay();
+#endif
+		}
+
 		void SetRadioBoxLayer(CALayer layer)
 		{
 			_radioButtonLayer = layer;

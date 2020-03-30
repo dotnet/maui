@@ -245,8 +245,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 	public sealed class FontImageSourceHandler : IImageSourceHandler
 	{
-		//should this be the default color on the BP for iOS? 
-		readonly Color _defaultColor = Color.White;
+		readonly Color _defaultColor = ColorExtensions.LabelColor.ToColor();
 
 		[Preserve(Conditional = true)]
 		public FontImageSourceHandler()

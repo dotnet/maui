@@ -127,6 +127,16 @@ namespace Xamarin.Forms.Platform.iOS
 			base.UpdateNativeWidget();
 		}
 
+		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
+		{
+			base.TraitCollectionDidChange(previousTraitCollection);
+#if __XCODE11__
+			// Make sure the cells adhere to changes UI theme
+			if (previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+				Control.ReloadData();
+#endif
+		}
+
 		void SetSource()
 		{
 			var modeledView = Element;

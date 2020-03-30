@@ -313,7 +313,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_appeared)
 				return;
 
-			_renderer.View.BackgroundColor = UIColor.White;
+			_renderer.View.BackgroundColor = ColorExtensions.BackgroundColor;
 			_renderer.View.ContentMode = UIViewContentMode.Redraw;
 
 #pragma warning disable CS0618 // Type or member is obsolete

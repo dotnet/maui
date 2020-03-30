@@ -516,7 +516,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			// default value of color documented to be black in iOS docs
 #if __MOBILE__
-			Control.TextColor = textColor.ToUIColor(ColorExtensions.Black);
+			Control.TextColor = textColor.ToUIColor(ColorExtensions.LabelColor);
 #else
 			var alignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 			var textWithColor = new NSAttributedString(Element.Text ?? "", font: Element.ToNSFont(), foregroundColor: textColor.ToNSColor(ColorExtensions.Black), paragraphStyle: new NSMutableParagraphStyle() { Alignment = alignment });

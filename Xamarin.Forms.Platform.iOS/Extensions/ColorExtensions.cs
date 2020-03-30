@@ -18,9 +18,144 @@ namespace Xamarin.Forms.Platform.MacOS
 #if __MOBILE__
 		internal static readonly UIColor Black = UIColor.Black;
 		internal static readonly UIColor SeventyPercentGrey = new UIColor(0.7f, 0.7f, 0.7f, 1);
+
+		internal static UIColor LabelColor
+		{
+			get
+			{
+#if __XCODE11__
+				if (Forms.IsiOS13OrNewer)
+					return UIColor.LabelColor;
+#endif
+				return UIColor.Black;
+			}
+		}
+
+		internal static UIColor PlaceholderColor
+		{
+			get
+			{
+#if __XCODE11__
+				if (Forms.IsiOS13OrNewer)
+					return UIColor.PlaceholderTextColor;
+#endif
+				return SeventyPercentGrey;
+			}
+		}
+
+		internal static UIColor SecondaryLabelColor
+		{
+			get
+			{
+#if __XCODE11__
+				if (Forms.IsiOS13OrNewer)
+					return UIColor.SecondaryLabelColor;
+#endif
+				return new Color(.32, .4, .57).ToUIColor();
+			}
+		}
+
+		internal static UIColor BackgroundColor
+		{
+			get
+			{
+#if __XCODE11__
+				if (Forms.IsiOS13OrNewer)
+					return UIColor.SystemBackgroundColor;
+#endif
+				return UIColor.White;
+			}
+		}
+
+		internal static UIColor SeparatorColor
+		{
+			get
+			{
+#if __XCODE11__
+				if (Forms.IsiOS13OrNewer)
+					return UIColor.SeparatorColor;
+#endif
+				return UIColor.Gray;
+			}
+		}
+
+		internal static UIColor OpaqueSeparatorColor
+		{
+			get
+			{
+#if __XCODE11__
+				if (Forms.IsiOS13OrNewer)
+					return UIColor.OpaqueSeparatorColor;
+#endif
+				return UIColor.Black;
+			}
+		}
+
+		internal static UIColor GroupedBackground
+		{
+			get
+			{
+#if __XCODE11__
+				if (Forms.IsiOS13OrNewer)
+					return UIColor.SystemGroupedBackgroundColor;
+#endif
+				return new UIColor(247f / 255f, 247f / 255f, 247f / 255f, 1);
+			}
+		}
+
+		internal static UIColor AccentColor
+		{
+			get
+			{
+#if __XCODE11__
+				if (Forms.IsiOS13OrNewer)
+					return UIColor.SystemBlueColor;
+#endif
+				return Color.FromRgba(50, 79, 133, 255).ToUIColor();
+			}
+		}
+
+		internal static UIColor Red
+		{
+			get
+			{
+#if __XCODE11__
+				if (Forms.IsiOS13OrNewer)
+					return UIColor.SystemRedColor;
+#endif
+				return UIColor.FromRGBA(1, 0, 0, 1);
+			}
+		}
+
+		internal static UIColor Gray
+		{
+			get
+			{
+#if __XCODE11__
+				if (Forms.IsiOS13OrNewer)
+					return UIColor.SystemGrayColor;
+#endif
+				return UIColor.Gray;
+			}
+		}
+
+		internal static UIColor LightGray
+		{
+			get
+			{
+#if __XCODE11__
+				if (Forms.IsiOS13OrNewer)
+					return UIColor.SystemGray2Color;
+#endif
+				return UIColor.LightGray;
+			}
+		}
+
 #else
 		internal static readonly NSColor Black = NSColor.Black;
 		internal static readonly NSColor SeventyPercentGrey = NSColor.FromRgba(0.7f, 0.7f, 0.7f, 1);
+		internal static readonly NSColor LabelColor = NSColor.Black;
+		internal static readonly NSColor AccentColor = Color.FromRgba(50, 79, 133, 255).ToNSColor();
 #endif
 
 		public static CGColor ToCGColor(this Color color)

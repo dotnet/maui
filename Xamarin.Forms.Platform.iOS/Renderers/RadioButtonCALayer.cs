@@ -56,7 +56,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (_radioButton.IsChecked)
 				{
 					_containerLayer.StrokeColor = _checkBorderStrokeColor?.CGColor ?? _nativeControl.CurrentTitleColor.CGColor;
-					_containerLayer.FillColor = _checkMarkFillColor?.CGColor ?? UIColor.White.CGColor;
+					_containerLayer.FillColor = _checkMarkFillColor?.CGColor ?? ColorExtensions.BackgroundColor.CGColor;
 					_checkLayer.FillColor = _checkBorderFillColor?.CGColor ?? _nativeControl.CurrentTitleColor.CGColor;
 					_checkLayer.StrokeColor = _checkMarkStrokeColor?.CGColor ?? _nativeControl.CurrentTitleColor.CGColor;
 				}

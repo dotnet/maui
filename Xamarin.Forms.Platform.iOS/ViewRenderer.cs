@@ -5,6 +5,7 @@ using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 
 #if __MOBILE__
+using UIKit;
 using NativeColor = UIKit.UIColor;
 using NativeControl = UIKit.UIControl;
 using NativeView = UIKit.UIView;
@@ -233,6 +234,16 @@ namespace Xamarin.Forms.Platform.MacOS
 		}
 
 #if __MOBILE__
+		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
+		{
+			base.TraitCollectionDidChange(previousTraitCollection);
+#if __XCODE11__
+			// Make sure the control adheres to changes in UI theme
+			if (previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+				Control.SetNeedsDisplay();
+#endif
+		}
+
 		internal override void SendVisualElementInitialized(VisualElement element, NativeView nativeView)
 		{
 			base.SendVisualElementInitialized(element, Control);

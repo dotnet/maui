@@ -151,14 +151,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected override void SetBackgroundColor(Color color)
 		{
-			UIColor backgroundColor;
-
-#if __XCODE11__
-			if (Forms.IsiOS13OrNewer)
-				backgroundColor = UIColor.SystemBackgroundColor;
-			else
-#endif
-				backgroundColor = UIColor.White;
+			UIColor backgroundColor = ColorExtensions.BackgroundColor;
 
 			if (Element.BackgroundColor != Color.Default)
 			{
