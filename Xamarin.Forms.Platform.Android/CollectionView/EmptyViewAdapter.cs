@@ -234,7 +234,7 @@ namespace Xamarin.Forms.Platform.Android
 				}
 
 				// EmptyView is a Forms View; display that
-				return SimpleViewHolder.FromFormsView(formsView, context, () => GetWidth(parent), () => GetHeight(parent));
+				return SimpleViewHolder.FromFormsView(formsView, context, () => GetWidth(parent), () => GetHeight(parent), ItemsView);
 			}
 
 			var itemContentView = new SizedItemContentView(parent.Context, () => GetWidth(parent), () => GetHeight(parent));
