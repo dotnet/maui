@@ -105,12 +105,19 @@
       <Member Id="M:Xamarin.Essentials.Browser.OpenAsync(System.Uri,Xamarin.Essentials.BrowserLaunchMode)" />
       <Member Id="M:Xamarin.Essentials.Browser.OpenAsync(System.Uri,Xamarin.Essentials.BrowserLaunchOptions)" />
     </Type>
+    <Type Name="Xamarin.Essentials.BrowserLaunchFlags" Id="T:Xamarin.Essentials.BrowserLaunchFlags">
+      <Member Id="F:Xamarin.Essentials.BrowserLaunchFlags.LaunchAdjacent" />
+      <Member Id="F:Xamarin.Essentials.BrowserLaunchFlags.None" />
+      <Member Id="F:Xamarin.Essentials.BrowserLaunchFlags.PresentAsFormSheet" />
+      <Member Id="F:Xamarin.Essentials.BrowserLaunchFlags.PresentAsPageSheet" />
+    </Type>
     <Type Name="Xamarin.Essentials.BrowserLaunchMode" Id="T:Xamarin.Essentials.BrowserLaunchMode">
       <Member Id="F:Xamarin.Essentials.BrowserLaunchMode.External" />
       <Member Id="F:Xamarin.Essentials.BrowserLaunchMode.SystemPreferred" />
     </Type>
     <Type Name="Xamarin.Essentials.BrowserLaunchOptions" Id="T:Xamarin.Essentials.BrowserLaunchOptions">
       <Member Id="M:Xamarin.Essentials.BrowserLaunchOptions.#ctor" />
+      <Member Id="P:Xamarin.Essentials.BrowserLaunchOptions.Flags" />
       <Member Id="P:Xamarin.Essentials.BrowserLaunchOptions.LaunchMode" />
       <Member Id="P:Xamarin.Essentials.BrowserLaunchOptions.PreferredControlColor" />
       <Member Id="P:Xamarin.Essentials.BrowserLaunchOptions.PreferredToolbarColor" />
@@ -867,11 +874,11 @@
       <Member Id="M:Xamarin.Essentials.WebAuthenticatorResult.Put(System.String,System.String)" />
       <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.AccessToken" />
       <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.ExpiresIn" />
+      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.IdToken" />
       <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.Properties" />
       <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.RefreshToken" />
       <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.RefreshTokenExpiresIn" />
       <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.Timestamp" />
-      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.TokenType" />
     </Type>
   </Namespace>
 </Framework>
