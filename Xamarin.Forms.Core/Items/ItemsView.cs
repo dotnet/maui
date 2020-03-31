@@ -97,8 +97,6 @@ namespace Xamarin.Forms
 
 			_logicalChildren.Add(element);
 
-			PropertyPropagationExtensions.PropagatePropertyChanged(null, element);
-
 			element.Parent = this;
 		}
 

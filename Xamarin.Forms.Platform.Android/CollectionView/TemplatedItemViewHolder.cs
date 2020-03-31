@@ -57,8 +57,12 @@ namespace Xamarin.Forms.Platform.Android
 				// available during OnElementChanged
 				View.BindingContext = itemBindingContext;
 
+				// Make sure the Visual property is available when the renderer is created
+				PropertyPropagationExtensions.PropagatePropertyChanged(null, View, itemsView);
+
 				// Actually create the native renderer
 				_itemContentView.RealizeContent(View);
+
 				_selectedTemplate = template;
 			}
 
