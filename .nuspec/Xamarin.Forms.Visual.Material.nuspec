@@ -46,6 +46,9 @@
     <file src="_._" target="lib\MonoAndroid10\_._" />
     <file src="Xamarin.Forms.Visual.Material.targets" target="build\MonoAndroid10\Xamarin.Forms.Visual.Material.targets" />
 
+    <!--Android 10 buildTransitive-->
+    <file src="Xamarin.Forms.Visual.Material.targets" target="buildTransitive\MonoAndroid10\Xamarin.Forms.Visual.Material.targets" />
+
     <!--Android 90-->
     <file src="..\Xamarin.Forms.Material.Android\bin\$Configuration$\monoandroid90\Xamarin.Forms.Material.dll" target="lib\MonoAndroid90" />
     <file src="..\Xamarin.Forms.Material.Android\bin\$Configuration$\monoandroid90\Xamarin.Forms.Material.*pdb" target="lib\MonoAndroid90" />
@@ -64,5 +67,6 @@
     <!--Tizen-->
     <file src="..\Xamarin.Forms.Material.Tizen\bin\$Configuration$\tizen40\Xamarin.Forms.Material.dll" target="lib\tizen40" />
     <file src="..\Xamarin.Forms.Material.Tizen\bin\$Configuration$\tizen40\Xamarin.Forms.Material.*pdb" target="lib\tizen40" />
+
   </files>
 </package>
