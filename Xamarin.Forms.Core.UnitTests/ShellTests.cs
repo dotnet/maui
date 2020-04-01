@@ -314,6 +314,33 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		public async Task RoutePathDefaultRemovalWithGlobalRoutesKeepsOneDefaultRoute()
+		{
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem());
+
+			Routing.RegisterRoute(nameof(RoutePathDefaultRemovalWithGlobalRoutesKeepsOneDefaultRoute), typeof(ContentPage));
+			await shell.GoToAsync(nameof(RoutePathDefaultRemovalWithGlobalRoutesKeepsOneDefaultRoute));
+
+			// If all routes on the shell are default we still need to make sure it appends something that represents where you are in the
+			// shell structure
+			Assert.AreNotEqual($"//{nameof(RoutePathDefaultRemovalWithGlobalRoutesKeepsOneDefaultRoute)}", shell.CurrentState.Location.ToString());
+		}
+
+
+		[Test]
+		public async Task RoutePathDefaultRemovalWithGlobalRoutesKeepsOneNamedRoute()
+		{
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellContentRoute: "content"));
+
+			Routing.RegisterRoute(nameof(RoutePathDefaultRemovalWithGlobalRoutesKeepsOneNamedRoute), typeof(ContentPage));
+			await shell.GoToAsync(nameof(RoutePathDefaultRemovalWithGlobalRoutesKeepsOneNamedRoute));
+
+			Assert.AreEqual($"//content/{nameof(RoutePathDefaultRemovalWithGlobalRoutesKeepsOneNamedRoute)}", shell.CurrentState.Location.ToString());
+		}
+
+		[Test]
 		public async Task NavigationWithQueryStringWhenPageMatchesBindingContext()
 		{
 			var shell = new Shell();
