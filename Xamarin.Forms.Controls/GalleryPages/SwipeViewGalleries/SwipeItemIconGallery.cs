@@ -112,7 +112,7 @@
 					FontFamily = fontFamily,
 					Size = 16
 				},
-				Text = "Url"
+				Text = "Font"
 			};
 
 			fontSwipeItem.Invoked += (sender, e) => { DisplayAlert("SwipeView", "Font Invoked", "Ok"); };
