@@ -67,7 +67,7 @@ namespace Xamarin.Essentials
             return ColorConverters.FromHsl(h, s * 100, l * 100);
         }
 
-        public static void ToHSV(this Color color, out double h, out double s, out double v)
+        public static void ToHsv(this Color color, out double h, out double s, out double v)
         {
             h = 0;
             var rHSV = (double)color.R / 255;
