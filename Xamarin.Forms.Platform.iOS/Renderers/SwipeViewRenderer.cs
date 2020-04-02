@@ -418,6 +418,12 @@ namespace Xamarin.Forms.Platform.iOS
 						break;
 				}
 
+				if (swipeItem is UIButton button)
+				{
+					UpdateSwipeItemIconImage(button, (SwipeItem)item);
+					UpdateSwipeItemInsets(button);
+				}
+
 				_actionView.AddSubview(swipeItem);
 				_swipeItemsRect.Add(swipeItem.Frame);
 				previousWidth += swipeItemWidth;
@@ -438,12 +444,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 			swipeItem.SetTitle(formsSwipeItem.Text, UIControlState.Normal);
 
-			UpdateSwipeItemIconImage(swipeItem, formsSwipeItem);
-
 			var textColor = GetSwipeItemColor(formsSwipeItem.BackgroundColor);
 			swipeItem.SetTitleColor(textColor.ToUIColor(), UIControlState.Normal);
 			swipeItem.UserInteractionEnabled = false;
-			UpdateSwipeItemInsets(swipeItem);
 
 			return swipeItem;
 		}
@@ -476,6 +479,9 @@ namespace Xamarin.Forms.Platform.iOS
 			if (button.ImageView?.Image == null)
 				return;
 
+			button.ContentMode = UIViewContentMode.Center;
+			button.ImageView.ContentMode = UIViewContentMode.ScaleAspectFit;
+
 			var imageSize = button.ImageView.Image.Size;
 
 			var titleEdgeInsets = new UIEdgeInsets(spacing, -imageSize.Width, -imageSize.Height, 0.0f);
@@ -507,9 +513,14 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				var image = await swipeItem.IconImageSource.GetNativeImageAsync();
 
+				var maxWidth = swipeButton.Frame.Width * 0.5f;
+				var maxHeight = swipeButton.Frame.Height * 0.5f;
+
+				var resizedImage = MaxResizeSwipeItemIconImage(image, maxWidth, maxHeight);
+
 				try
 				{
-					swipeButton.SetImage(image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate), UIControlState.Normal);
+					swipeButton.SetImage(resizedImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate), UIControlState.Normal);
 					var tintColor = GetSwipeItemColor(swipeItem.BackgroundColor);
 					swipeButton.TintColor = tintColor.ToUIColor();
 				}
@@ -519,6 +530,27 @@ namespace Xamarin.Forms.Platform.iOS
 					Log.Warning("SwipeView", "Can not load SwipeItem Icon.");
 				}
 			}
+		}
+
+		UIImage MaxResizeSwipeItemIconImage(UIImage sourceImage, nfloat maxWidth, nfloat maxHeight)
+		{
+			if (sourceImage == null)
+				return null;
+
+			var sourceSize = sourceImage.Size;
+			var maxResizeFactor = Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
+
+			if (maxResizeFactor > 1)
+				return sourceImage;
+
+			var width = maxResizeFactor * sourceSize.Width;
+			var height = maxResizeFactor * sourceSize.Height;
+			UIGraphics.BeginImageContextWithOptions(new CGSize((nfloat)width, (nfloat)height), false, 0);
+			sourceImage.Draw(new CGRect(0, 0, (nfloat)width, (nfloat)height));
+			var resultImage = UIGraphics.GetImageFromCurrentImageContext();
+			UIGraphics.EndImageContext();
+
+			return resultImage;
 		}
 
 		void HandleTouchInteractions(GestureStatus status, CGPoint point)

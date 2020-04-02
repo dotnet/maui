@@ -52,7 +52,7 @@ jobs:
         inputs:
           targetType: 'filePath'
           filePath: 'build.sh'
-          arguments: --target provision --TeamProject="$(System.TeamProject)"
+          arguments: --target provision --TeamProject="$(System.TeamProject)" --releaseChannel=$(releaseChannel)
 
       - task: UseDotNet@2
         displayName: 'Install .net core $(DOTNET_VERSION)'
