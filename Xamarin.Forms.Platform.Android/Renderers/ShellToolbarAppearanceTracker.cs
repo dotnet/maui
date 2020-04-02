@@ -12,6 +12,7 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		bool _disposed;
 		IShellContext _shellContext;
+		int _titleTextColor = -1;
 
 		public ShellToolbarAppearanceTracker(IShellContext shellContext)
 		{
@@ -36,10 +37,23 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			var titleArgb = title.ToAndroid(ShellRenderer.DefaultTitleColor).ToArgb();
 
-			toolbar.SetTitleTextColor(titleArgb);
-			using (var colorDrawable = new ColorDrawable(background.ToAndroid(ShellRenderer.DefaultBackgroundColor)))
-				toolbar.SetBackground(colorDrawable);
-			toolbarTracker.TintColor = foreground.IsDefault ? ShellRenderer.DefaultForegroundColor : foreground;
+			if (_titleTextColor != titleArgb)
+			{
+				toolbar.SetTitleTextColor(titleArgb);
+				_titleTextColor = titleArgb;
+			}
+
+			var newColor = background.ToAndroid(ShellRenderer.DefaultBackgroundColor);
+			if (!(toolbar.Background is ColorDrawable cd) || cd.Color != newColor)
+			{
+				using (var colorDrawable = new ColorDrawable(background.ToAndroid(ShellRenderer.DefaultBackgroundColor)))
+					toolbar.SetBackground(colorDrawable);
+			}
+
+			var newTintColor = foreground.IsDefault ? ShellRenderer.DefaultForegroundColor : foreground;
+
+			if(toolbarTracker.TintColor != newTintColor)
+				toolbarTracker.TintColor = newTintColor;
 		}
 
 		#region IDisposable
