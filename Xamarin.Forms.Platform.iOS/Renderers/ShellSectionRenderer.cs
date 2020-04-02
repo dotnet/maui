@@ -336,15 +336,20 @@ namespace Xamarin.Forms.Platform.iOS
 			var page = e.Page;
 
 			var renderer = Platform.GetRenderer(page);
+			var viewController = renderer?.ViewController;
 
-			if (renderer != null)
+			if (viewController == null && _trackers.ContainsKey(page))
+				viewController = _trackers[page].ViewController;
+
+			if (viewController != null)
 			{
-				if (renderer.ViewController == TopViewController)
+				if (viewController == TopViewController)
 				{
 					e.Animated = false;
 					OnPopRequested(e);
 				}
-				ViewControllers = ViewControllers.Remove(renderer.ViewController);
+
+				ViewControllers = ViewControllers.Remove(viewController);
 				DisposePage(page);
 			}
 		}
@@ -371,9 +376,13 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (_trackers.TryGetValue(page, out var tracker))
 			{
+				if(tracker.ViewController != null && ViewControllers.Contains(tracker.ViewController))
+					ViewControllers = ViewControllers.Remove(_trackers[page].ViewController);
+
 				tracker.Dispose();
 				_trackers.Remove(page);
 			}
+
 
 			var renderer = Platform.GetRenderer(page);
 			if (renderer != null)
