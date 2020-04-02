@@ -240,6 +240,13 @@ namespace Xamarin.Forms.Platform.Android
 				carouselPosition = 0;
 			}
 
+			//If we are adding a new item make sure to maintain the CurrentItemPosition
+			else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add
+				&& currentItemPosition != -1)
+			{
+				carouselPosition = currentItemPosition;
+			}
+
 			_gotoPosition = -1;
 
 			SetCurrentItem(carouselPosition);
@@ -360,14 +367,13 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdatePosition(int position)
 		{
 			var carouselPosition = Carousel.Position;
+
 			//we arrived center
 			if (position == _gotoPosition)
 				_gotoPosition = -1;
 
 			if (_gotoPosition == -1 && carouselPosition != position)
-			{
 				Carousel.SetValueFromRenderer(FormsCarouselView.PositionProperty, position);
-			}
 		}
 
 		void SetCurrentItem(int carouselPosition)
@@ -381,7 +387,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateFromCurrentItem()
 		{
-			var currentItemPosition = (ItemsViewAdapter.ItemsSource as IItemsViewSource).GetPosition(Carousel.CurrentItem);
+			var currentItemPosition = ItemsViewAdapter.ItemsSource.GetPosition(Carousel.CurrentItem);
 			var carouselPosition = Carousel.Position;
 
 			if (_gotoPosition == -1 && currentItemPosition != carouselPosition)
