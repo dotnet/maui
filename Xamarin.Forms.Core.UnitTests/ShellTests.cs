@@ -313,6 +313,63 @@ namespace Xamarin.Forms.Core.UnitTests
 			*/
 		}
 
+
+		[Test]
+		public async Task DotDotNavigationPassesParameters()
+		{
+			Routing.RegisterRoute(nameof(DotDotNavigationPassesParameters), typeof(ContentPage));
+			var shell = new Shell();
+			var one = new ShellItem { Route = "one" };
+
+			var tabone = MakeSimpleShellSection("tabone", "content");
+
+			one.Items.Add(tabone);
+
+			shell.Items.Add(one);
+
+			one.CurrentItem.CurrentItem.ContentTemplate = new DataTemplate(() =>
+			{
+				ShellTestPage pagetoTest = new ShellTestPage();
+				pagetoTest.BindingContext = pagetoTest;
+				return pagetoTest;
+			});
+
+			var page = (ShellTestPage)(one.CurrentItem.CurrentItem as IShellContentController).GetOrCreateContent();
+			Assert.AreEqual(null, page.SomeQueryParameter);
+			await shell.GoToAsync(nameof(DotDotNavigationPassesParameters));
+			await shell.GoToAsync($"..?{nameof(ShellTestPage.SomeQueryParameter)}=1234");
+			Assert.AreEqual("1234", page.SomeQueryParameter);
+
+		}
+
+		[TestCase(true)]
+		[TestCase(false)]
+		public async Task ReNavigatingToCurrentLocationPassesParameters(bool useDataTemplates)
+		{
+			var shell = new Shell();
+			ShellTestPage pagetoTest = new ShellTestPage();
+			pagetoTest.BindingContext = pagetoTest;		
+			var one = CreateShellItem(pagetoTest, shellContentRoute: "content", templated: useDataTemplates);
+			shell.Items.Add(one);
+			ShellTestPage page = null;
+			if (useDataTemplates)
+			{
+				page = (ShellTestPage)(one.CurrentItem.CurrentItem as IShellContentController).GetOrCreateContent();
+			}
+			else
+			{
+				page = (ShellTestPage)one.CurrentItem.CurrentItem.Content;
+			}
+
+			Assert.AreEqual(null, page.SomeQueryParameter);
+			await shell.GoToAsync($"//content?{nameof(ShellTestPage.SomeQueryParameter)}=1234");
+			Assert.AreEqual("1234", page.SomeQueryParameter);
+			await shell.GoToAsync($"//content?{nameof(ShellTestPage.SomeQueryParameter)}=4321");
+			Assert.AreEqual("4321", page.SomeQueryParameter);
+			await shell.GoToAsync($"//content?{nameof(ShellTestPage.SomeQueryParameter)}");
+			Assert.AreEqual(null, page.SomeQueryParameter);
+		}
+
 		[Test]
 		public async Task RoutePathDefaultRemovalWithGlobalRoutesKeepsOneDefaultRoute()
 		{

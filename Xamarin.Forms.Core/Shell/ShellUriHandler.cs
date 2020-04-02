@@ -19,7 +19,7 @@ namespace Xamarin.Forms
 			{
 				var result = Path.Combine(shell.CurrentState.FullLocation.OriginalString, path.OriginalString);
 				var returnValue = ConvertToStandardFormat("scheme", "host", null, new Uri(result, UriKind.Relative));
-				return new Uri(FormatUri(returnValue.AbsolutePath), UriKind.Relative);
+				return new Uri(FormatUri(returnValue.PathAndQuery), UriKind.Relative);
 			}
 
 			if (path.IsAbsoluteUri)
