@@ -45,7 +45,7 @@ jobs:
         inputs:
           targetType: 'filePath'
           filePath: 'build.sh'
-          arguments: --target provision
+          arguments: --target provision --releaseChannel=$(releaseChannel)
 
       - task: UseDotNet@2
         displayName: 'Install .net core $(DOTNET_VERSION)'
