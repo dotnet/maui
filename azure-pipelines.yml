@@ -110,16 +110,8 @@ stages:
         workspace:
           clean: all
         displayName: OSX Phase
-        strategy:
-          matrix:
-            BuildForVS2017:
-              buildForVS2017:  'true'
-              imageName : 'macOS-10.14'
-            BuildForVS2019:
-              buildForVS2017:  'false'
-              imageName : 'macOS-10.14'
         pool:
-          vmImage: $(imageName)
+          vmImage: $(macOSXVmImage)
           demands:
             - sh
             - msbuild
@@ -129,7 +121,33 @@ stages:
           buildConfiguration: $(DefaultBuildConfiguration)
           iOSCertSecureFileName: 'Xamarin Forms iOS Certificate.p12'
           iOSProvisioningSecureFileName: 'Xamarin Forms iOS Provisioning.mobileprovision'
-          buildForVS2017: $(buildForVS2017)
+          buildForVS2017: 'false'
+        steps:
+          - template: build/steps/build-osx.yml
+
+  - stage: build_osx_2017
+    displayName: Build OSX 2017
+    ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+      dependsOn: windows
+    ${{ if eq(variables['System.TeamProject'], 'public') }}:
+      dependsOn: []
+    jobs:
+      - job: osx
+        workspace:
+          clean: all
+        displayName: OSX Phase
+        pool:
+          vmImage: 'macOS-10.14'
+          demands:
+            - sh
+            - msbuild
+            - Xamarin.iOS
+        variables:
+          provisionator.osxPath : 'build/provisioning/provisioning.csx'
+          buildConfiguration: $(DefaultBuildConfiguration)
+          iOSCertSecureFileName: 'Xamarin Forms iOS Certificate.p12'
+          iOSProvisioningSecureFileName: 'Xamarin Forms iOS Provisioning.mobileprovision'
+          buildForVS2017: 'true'
         steps:
           - template: build/steps/build-osx.yml
 
