@@ -319,7 +319,7 @@ namespace Xamarin.Forms
 
 			var state = GetNavigationState(shellItem, shellSection, shellContent, null, null);
 
-			if (FlyoutIsPresented && FlyoutBehavior == FlyoutBehavior.Flyout)
+			if (FlyoutIsPresented && GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
 				SetValueFromRenderer(FlyoutIsPresentedProperty, false);
 
 			if (shellSection == null)
@@ -984,11 +984,6 @@ namespace Xamarin.Forms
 					Navigated?.Invoke(this, args);
 				}
 			}
-		}
-
-		internal void ProcessNavigating(ShellNavigatingEventArgs args)
-		{
-			OnNavigating(args);
 		}
 
 		protected virtual void OnNavigated(ShellNavigatedEventArgs args)
