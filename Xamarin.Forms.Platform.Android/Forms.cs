@@ -21,7 +21,12 @@ using Xamarin.Forms.Platform.Android;
 using Resource = Android.Resource;
 using Trace = System.Diagnostics.Trace;
 using System.ComponentModel;
-using Xamarin.Forms;
+using AColor = Android.Graphics.Color;
+#if __ANDROID_29__
+using AndroidX.Core.Content;
+#else
+using Android.Support.V4.Content;
+#endif
 
 namespace Xamarin.Forms
 {
@@ -747,6 +752,75 @@ namespace Xamarin.Forms
 					default:
 						throw new ArgumentOutOfRangeException("size");
 				}
+			}
+
+			public Color GetNamedColor(string name)
+			{
+				int color;
+				switch (name)
+				{
+					case NamedPlatformColor.BackgroundDark:
+						color = ContextCompat.GetColor(_context, Resource.Color.BackgroundDark);
+						break;
+					case NamedPlatformColor.BackgroundLight:
+						color = ContextCompat.GetColor(_context, Resource.Color.BackgroundLight);
+						break;
+					case NamedPlatformColor.Black:
+						color = ContextCompat.GetColor(_context, Resource.Color.Black);
+						break;
+					case NamedPlatformColor.DarkerGray:
+						color = ContextCompat.GetColor(_context, Resource.Color.DarkerGray);
+						break;
+					case NamedPlatformColor.HoloBlueBright:
+						color = ContextCompat.GetColor(_context, Resource.Color.HoloBlueBright);
+						break;
+					case NamedPlatformColor.HoloBlueDark:
+						color = ContextCompat.GetColor(_context, Resource.Color.HoloBlueDark);
+						break;
+					case NamedPlatformColor.HoloBlueLight:
+						color = ContextCompat.GetColor(_context, Resource.Color.HoloBlueLight);
+						break;
+					case NamedPlatformColor.HoloGreenDark:
+						color = ContextCompat.GetColor(_context, Resource.Color.HoloGreenDark);
+						break;
+					case NamedPlatformColor.HoloGreenLight:
+						color = ContextCompat.GetColor(_context, Resource.Color.HoloGreenLight);
+						break;
+					case NamedPlatformColor.HoloOrangeDark:
+						color = ContextCompat.GetColor(_context, Resource.Color.HoloOrangeDark);
+						break;
+					case NamedPlatformColor.HoloOrangeLight:
+						color = ContextCompat.GetColor(_context, Resource.Color.HoloOrangeLight);
+						break;
+					case NamedPlatformColor.HoloPurple:
+						color = ContextCompat.GetColor(_context, Resource.Color.HoloPurple);
+						break;
+					case NamedPlatformColor.HoloRedDark:
+						color = ContextCompat.GetColor(_context, Resource.Color.HoloRedDark);
+						break;
+					case NamedPlatformColor.HoloRedLight:
+						color = ContextCompat.GetColor(_context, Resource.Color.HoloRedLight);
+						break;
+					case NamedPlatformColor.TabIndicatorText:
+						color = ContextCompat.GetColor(_context, Resource.Color.TabIndicatorText);
+						break;
+					case NamedPlatformColor.Transparent:
+						color = ContextCompat.GetColor(_context, Resource.Color.Transparent);
+						break;
+					case NamedPlatformColor.White:
+						color = ContextCompat.GetColor(_context, Resource.Color.White);
+						break;
+					case NamedPlatformColor.WidgetEditTextDark:
+						color = ContextCompat.GetColor(_context, Resource.Color.WidgetEditTextDark);
+						break;
+					default:
+						return Color.Default;
+				}
+
+				if (color != 0)
+					return new AColor(color).ToColor();
+
+				return Color.Default;
 			}
 
 			public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)

@@ -100,6 +100,12 @@ namespace Xamarin.Forms.Platform.WPF
 			}
 		}
 
+		public Color GetNamedColor(string name)
+		{
+			// Not supported on this platform
+			return Color.Default;
+		}
+
 		public Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
 		{
 			var tcs = new TaskCompletionSource<Stream>();

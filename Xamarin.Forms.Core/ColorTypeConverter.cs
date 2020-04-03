@@ -272,6 +272,10 @@ namespace Xamarin.Forms
 					if (property != null)
 						return (Color)property.GetValue(null, null);
 				}
+
+				var namedColor = Device.GetNamedColor(value);
+				if (namedColor != default)
+					return namedColor;
 			}
 
 			throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Color)}");

@@ -90,6 +90,12 @@ namespace Xamarin.Forms.Platform.Tizen
 			return Forms.ConvertToDPFont(pt);
 		}
 
+		public Color GetNamedColor(string name)
+		{
+			// Not supported on this platform
+			return Color.Default;
+		}
+
 		public void OpenUriAction(Uri uri)
 		{
 			if (uri == null || uri.AbsoluteUri == null)

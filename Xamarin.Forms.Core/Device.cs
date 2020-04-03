@@ -247,6 +247,11 @@ namespace Xamarin.Forms
 			return PlatformServices.GetNamedSize(size, targetElementType, useOldSizes);
 		}
 
+		public static Color GetNamedColor(string name)
+		{
+			return PlatformServices.GetNamedColor(name);
+		}
+
 		internal static Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
 		{
 			return PlatformServices.GetStreamAsync(uri, cancellationToken);

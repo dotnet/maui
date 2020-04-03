@@ -79,6 +79,12 @@ namespace Xamarin.Forms.DualScreen.UnitTests
 			}
 		}
 
+		public Color GetNamedColor(string name)
+		{
+			// Not supported on this platform
+			return Color.Default;
+		}
+
 		public void OpenUriAction(Uri uri)
 		{
 			if (openUriAction != null)
