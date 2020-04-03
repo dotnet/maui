@@ -146,13 +146,32 @@ namespace Tests
         [InlineData("yellow", 60, 100, 100)]
         [InlineData("magenta", 300, 100, 100)]
         [InlineData("cyan", 180, 100, 100)]
-        public void RgbToHsv(string hex, double hTest, double sTest, double vTest)
+        public void RgbToHsv(string name, double hTest, double sTest, double vTest)
         {
-            var color = Color.FromName(hex);
-            color.ToHSV(out var h, out var s, out var v);
+            var color = Color.FromName(name);
+            color.ToHsv(out var h, out var s, out var v);
             Assert.Equal(hTest, h);
             Assert.Equal(sTest, s);
             Assert.Equal(vTest, Math.Round(v, 1));
+        }
+
+        [Theory]
+        [InlineData("black", 0, 0, 0)]
+        [InlineData("red", 0, 100, 100)]
+        [InlineData("white", 0, 0, 100)]
+        [InlineData("green", 120, 100, 50.2)]
+        [InlineData("lime", 120, 100, 100)]
+        [InlineData("yellow", 60, 100, 100)]
+        [InlineData("magenta", 300, 100, 100)]
+        [InlineData("cyan", 180, 100, 100)]
+        public void HsvToRgba(string name, double hTest, double sTest, double vTest)
+        {
+            var colorExpected = Color.FromName(name);
+            var color = Xamarin.Essentials.ColorExtensions.FromHsva(hTest, sTest, vTest, 50);
+            Assert.Equal(colorExpected.R, color.R);
+            Assert.Equal(colorExpected.G, color.G);
+            Assert.Equal(colorExpected.B, color.B);
+            Assert.Equal(50, color.A);
         }
     }
 }

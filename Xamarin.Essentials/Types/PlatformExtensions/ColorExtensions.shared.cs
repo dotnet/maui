@@ -1,6 +1,7 @@
 ﻿#if !NETSTANDARD1_0
 using System;
 using System.Drawing;
+using System.Runtime.CompilerServices;
 
 namespace Xamarin.Essentials
 {
@@ -103,6 +104,86 @@ namespace Xamarin.Essentials
             }
             s *= 100;
             v *= 100;
+        }
+
+        public static Color FromHsva(double h, double s, double v, double a)
+        {
+            h /= 360d;
+            s /= 100d;
+            v /= 100d;
+            a /= 100d;
+
+            h = h.Clamp(0, 1);
+            s = s.Clamp(0, 1);
+            v = v.Clamp(0, 1);
+            var range = (int)Math.Floor(h * 6) % 6;
+            var f = (h * 6) - Math.Floor(h * 6);
+            var p = v * (1 - s);
+            var q = v * (1 - (f * s));
+            var t = v * (1 - (s * (1 - f)));
+
+            switch (range)
+            {
+                case 0:
+                    return ToRgba(v, t, p, a);
+                case 1:
+                    return ToRgba(q, v, p, a);
+                case 2:
+                    return ToRgba(p, v, t, a);
+                case 3:
+                    return ToRgba(p, q, v, a);
+                case 4:
+                    return ToRgba(t, p, v, a);
+            }
+            return ToRgba(v, p, q, a);
+
+            static Color ToRgba(double r, double g, double b, double a)
+            {
+                r = r.Clamp(0, 1);
+                g = g.Clamp(0, 1);
+                b = b.Clamp(0, 1);
+                a = a.Clamp(0, 1);
+
+                return Color.FromArgb((int)(a * 100), (int)(r * 255), (int)(g * 255), (int)(b * 255));
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static double Clamp(this double self, double min, double max)
+        {
+            if (max < min)
+            {
+                return max;
+            }
+            else if (self < min)
+            {
+                return min;
+            }
+            else if (self > max)
+            {
+                return max;
+            }
+
+            return self;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static int Clamp(this int self, int min, int max)
+        {
+            if (max < min)
+            {
+                return max;
+            }
+            else if (self < min)
+            {
+                return min;
+            }
+            else if (self > max)
+            {
+                return max;
+            }
+
+            return self;
         }
     }
 }
