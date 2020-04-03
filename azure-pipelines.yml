@@ -70,6 +70,19 @@ stages:
         vmImage: $(vs2019VmImage)
         vmPool: $(vs2019VmPool)
         provisionatorPath : 'build/provisioning/provisioning.csx'
+
+    - template: build/steps/build-windows.yml
+      parameters:
+        name: pages
+        displayName: Build Pages Phase
+        vmImage: $(vs2019VmImage)
+        vmPool: $(vs2019VmPool)
+        slnPath: build/Xamarin.Forms.Pages.sln
+        includeUwp: false
+        includeAndroid: false
+        includeNonUwpAndNonAndroid: false
+        includePages: true
+  
     - job: nuget_pack
       workspace:
         clean: all
