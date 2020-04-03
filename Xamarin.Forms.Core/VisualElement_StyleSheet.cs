@@ -6,11 +6,8 @@ using Xamarin.Forms.StyleSheets;
 
 namespace Xamarin.Forms
 {
-	public partial class VisualElement : IStyleSelectable, IStylable
+	public partial class VisualElement : IStylable
 	{
-		IList<string> IStyleSelectable.Classes
-			=> StyleClass;
-
 		BindableProperty IStylable.GetProperty(string key, bool inheriting)
 		{
 			if (!Internals.Registrar.StyleProperties.TryGetValue(key, out var attrList))

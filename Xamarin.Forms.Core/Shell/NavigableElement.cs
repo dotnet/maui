@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.StyleSheets;
 
 namespace Xamarin.Forms
 {
-	public class NavigableElement : Element, INavigationProxy
+	public class NavigableElement : Element, INavigationProxy, IStyleSelectable
 	{
 		static readonly BindablePropertyKey NavigationPropertyKey =
 			BindableProperty.CreateReadOnly("Navigation", typeof(INavigation), typeof(VisualElement), default(INavigation));
@@ -42,8 +43,16 @@ namespace Xamarin.Forms
 		[TypeConverter(typeof(ListStringTypeConverter))]
 		public IList<string> @class {
 			get { return _mergedStyle.StyleClass; }
-			set { _mergedStyle.StyleClass = value; }
+			set 
+			{ 
+				_mergedStyle.StyleClass = value; 
+				OnStyleClassChanged(); 
+			}
 		}
+
+		IList<string> IStyleSelectable.Classes => StyleClass;
+
+		internal virtual void OnStyleClassChanged() { }
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public NavigationProxy NavigationProxy {

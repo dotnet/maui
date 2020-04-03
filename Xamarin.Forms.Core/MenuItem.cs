@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Input;
+using Xamarin.Forms.StyleSheets;
 
 namespace Xamarin.Forms
 {
-	public class MenuItem : BaseMenuItem, IMenuItemController
+	public class MenuItem : BaseMenuItem, IMenuItemController, IStyleSelectable
 	{
 		public static readonly BindableProperty AcceleratorProperty = BindableProperty.CreateAttached(nameof(Accelerator), typeof(Accelerator), typeof(MenuItem), null);
 
@@ -31,6 +33,14 @@ namespace Xamarin.Forms
 		public static Accelerator GetAccelerator(BindableObject bindable) => (Accelerator)bindable.GetValue(AcceleratorProperty);
 
 		public static void SetAccelerator(BindableObject bindable, Accelerator value) => bindable.SetValue(AcceleratorProperty, value);
+
+		internal readonly MergedStyle _mergedStyle;
+		internal event EventHandler StyleClassChanged;
+
+		public MenuItem()
+		{
+			_mergedStyle = new MergedStyle(GetType(), this);
+		}
 
 		public ICommand Command
 		{
@@ -75,6 +85,26 @@ namespace Xamarin.Forms
 			get => (bool)GetValue(IsEnabledProperty);
 			[EditorBrowsable(EditorBrowsableState.Never)] set => SetValue(IsEnabledPropertyKey, value);
 		}
+
+		[TypeConverter(typeof(ListStringTypeConverter))]
+		public IList<string> StyleClass
+		{
+			get { return @class; }
+			set { @class = value; }
+		}
+
+		[TypeConverter(typeof(ListStringTypeConverter))]
+		public IList<string> @class
+		{
+			get { return _mergedStyle.StyleClass; }
+			set 
+			{ 
+				_mergedStyle.StyleClass = value;
+				StyleClassChanged?.Invoke(this, EventArgs.Empty);
+			}
+		}
+
+		IList<string> IStyleSelectable.Classes => StyleClass;
 
 		bool IsEnabledCore
 		{

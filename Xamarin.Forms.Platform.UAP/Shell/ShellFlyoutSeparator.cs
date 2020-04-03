@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Platform.UAP.Shell
+namespace Xamarin.Forms.Platform.UWP
 {
 	internal struct ShellFlyoutSeparator
 	{

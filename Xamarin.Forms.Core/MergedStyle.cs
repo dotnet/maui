@@ -10,7 +10,7 @@ namespace Xamarin.Forms
 	{
 		////If the base type is one of these, stop registering dynamic resources further
 		////The last one (typeof(Element)) is a safety guard as we might be creating VisualElement directly in internal code
-		static readonly IList<Type> s_stopAtTypes = new List<Type> { typeof(View), typeof(Layout<>), typeof(VisualElement), typeof(Element) };
+		static readonly IList<Type> s_stopAtTypes = new List<Type> { typeof(View), typeof(Layout<>), typeof(VisualElement), typeof(NavigableElement), typeof(Element) };
 
 		IList<BindableProperty> _classStyleProperties;
 
@@ -62,8 +62,8 @@ namespace Xamarin.Forms
 				if (_styleClass != null) {
 					_classStyleProperties = new List<BindableProperty> ();
 					foreach (var styleClass in _styleClass) {
-						var classStyleProperty = BindableProperty.Create ("ClassStyle", typeof(IList<Style>), typeof(VisualElement), default(IList<Style>),
-							propertyChanged: (bindable, oldvalue, newvalue) => ((VisualElement)bindable)._mergedStyle.OnClassStyleChanged());
+						var classStyleProperty = BindableProperty.Create ("ClassStyle", typeof(IList<Style>), typeof(Element), default(IList<Style>),
+							propertyChanged: (bindable, oldvalue, newvalue) => OnClassStyleChanged());
 						_classStyleProperties.Add (classStyleProperty);
 						Target.OnSetDynamicResource (classStyleProperty, Forms.Style.StyleClassPrefix + styleClass);
 					}
@@ -139,7 +139,7 @@ namespace Xamarin.Forms
 		{
 			Type type = TargetType;
 			while (true) {
-				BindableProperty implicitStyleProperty = BindableProperty.Create("ImplicitStyle", typeof(Style), typeof(VisualElement), default(Style),
+				BindableProperty implicitStyleProperty = BindableProperty.Create("ImplicitStyle", typeof(Style), typeof(NavigableElement), default(Style),
 						propertyChanged: (bindable, oldvalue, newvalue) => OnImplicitStyleChanged());
 				_implicitStyles.Add(implicitStyleProperty);
 				Target.SetDynamicResource(implicitStyleProperty, type.FullName);
@@ -157,7 +157,7 @@ namespace Xamarin.Forms
 			_implicitStyles.Clear();
 
 			//Register the fallback
-			BindableProperty implicitStyleProperty = BindableProperty.Create("ImplicitStyle", typeof(Style), typeof(VisualElement), default(Style),
+			BindableProperty implicitStyleProperty = BindableProperty.Create("ImplicitStyle", typeof(Style), typeof(NavigableElement), default(Style),
 						propertyChanged: (bindable, oldvalue, newvalue) => OnImplicitStyleChanged());
 			_implicitStyles.Add(implicitStyleProperty);
 			Target.SetDynamicResource(implicitStyleProperty, fallbackTypeName);

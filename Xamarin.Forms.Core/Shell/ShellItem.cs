@@ -12,6 +12,10 @@ namespace Xamarin.Forms
 	[EditorBrowsable(EditorBrowsableState.Always)]
 	public class FlyoutItem : ShellItem
 	{
+		public const string LabelStyle = "FlyoutItemLabelStyle";
+		public const string ImageStyle = "FlyoutItemImageStyle";
+		public const string GridStyle = "FlyoutItemGridStyle";
+
 		public FlyoutItem()
 		{
 			Shell.SetFlyoutBehavior(this, FlyoutBehavior.Flyout);
