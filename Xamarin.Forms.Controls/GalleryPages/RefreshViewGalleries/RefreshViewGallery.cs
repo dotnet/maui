@@ -29,7 +29,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.RefreshViewGalleries
 					GalleryBuilder.NavButton("Refresh ListView Gallery", () => new RefreshListViewGallery(), Navigation),
 					GalleryBuilder.NavButton("Refresh CollectionView Gallery", () => new RefreshCollectionViewGallery(), Navigation),
 					GalleryBuilder.NavButton("Refresh CarouselView Gallery", () => new RefreshCarouselViewGallery(), Navigation),
-					GalleryBuilder.NavButton("Refresh WebView Gallery", () => new RefreshWebViewGallery(), Navigation)
+					GalleryBuilder.NavButton("Refresh WebView Gallery", () => new RefreshWebViewGallery(), Navigation),
+					GalleryBuilder.NavButton("IsEnabled RefreshView Gallery", () => new IsEnabledRefreshViewGallery(), Navigation)
 				}
 			};
 		}

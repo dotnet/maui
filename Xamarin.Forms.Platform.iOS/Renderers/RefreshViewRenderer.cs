@@ -205,6 +205,8 @@ namespace Xamarin.Forms.Platform.iOS
 				if (_refreshControl.Superview != null)
 					_refreshControl.RemoveFromSuperview();
 			}
+
+			UserInteractionEnabled = true;
 		}
 
 		bool CanUseRefreshControlProperty()
