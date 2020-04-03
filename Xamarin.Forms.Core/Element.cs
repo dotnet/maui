@@ -201,7 +201,7 @@ namespace Xamarin.Forms
 					SetInheritedBindingContext(this, null);
 				}
 
-				VisualDiagnostics.SendVisualTreeChanged(this, value);
+				VisualDiagnostics.SendVisualTreeChanged(value, this);
 
 				OnParentSet();
 
