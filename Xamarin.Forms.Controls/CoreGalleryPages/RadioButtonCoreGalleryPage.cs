@@ -105,23 +105,23 @@ namespace Xamarin.Forms.Controls
 
 			var isCheckedContainer = new ValueViewContainer<RadioButton>(Test.RadioButton.IsChecked, new RadioButton() { IsChecked = true, HorizontalOptions = LayoutOptions.Start }, "IsChecked", value => value.ToString());
 
-			var checkedVisualState = new VisualState { Name = "IsChecked" };
-			checkedVisualState.Setters.Add(new Setter { Property = RadioButton.ButtonSourceProperty, Value = "rb_checked" });
+			//var checkedVisualState = new VisualState { Name = "IsChecked" };
+			//checkedVisualState.Setters.Add(new Setter { Property = RadioButton.ButtonSourceProperty, Value = "rb_checked" });
 
-			var group = new VisualStateGroup();
-			group.States.Add(checkedVisualState);
+			//var group = new VisualStateGroup();
+			//group.States.Add(checkedVisualState);
 
-			var normalVisualState = new VisualState{  Name = "Normal" };
-			normalVisualState.Setters.Add(new Setter { Property = RadioButton.ButtonSourceProperty, Value = "rb_unchecked" });
-			group.States.Add(normalVisualState);
+			//var normalVisualState = new VisualState{  Name = "Normal" };
+			//normalVisualState.Setters.Add(new Setter { Property = RadioButton.ButtonSourceProperty, Value = "rb_unchecked" });
+			//group.States.Add(normalVisualState);
 
-			var groupList = new VisualStateGroupList();
-			groupList.Add(group);
+			//var groupList = new VisualStateGroupList();
+			//groupList.Add(group);
 
-			var rbStateManaged = new RadioButton() { HorizontalOptions = LayoutOptions.Start };
-			VisualStateManager.SetVisualStateGroups(rbStateManaged, groupList);
+			//var rbStateManaged = new RadioButton() { HorizontalOptions = LayoutOptions.Start };
+			//VisualStateManager.SetVisualStateGroups(rbStateManaged, groupList);
 
-			var stateManagedContainer = new ValueViewContainer<RadioButton>(Test.RadioButton.ButtonSource, rbStateManaged, "IsChecked", value => value.ToString());
+			//var stateManagedContainer = new ValueViewContainer<RadioButton>(Test.RadioButton.ButtonSource, rbStateManaged, "IsChecked", value => value.ToString());
 
 			Add(borderButtonContainer);
 			Add(borderRadiusContainer);
@@ -134,7 +134,7 @@ namespace Xamarin.Forms.Controls
 			Add(textColorContainer);
 			Add(paddingContainer);
 			Add(isCheckedContainer);
-			Add(stateManagedContainer);
+			//Add(stateManagedContainer);
 		}
 	}
 }

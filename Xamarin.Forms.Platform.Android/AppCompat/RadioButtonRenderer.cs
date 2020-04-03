@@ -211,7 +211,7 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateInputTransparent();
 				UpdateBackgroundColor();
 				_buttonLayoutManager?.Update();
-				UpdateButtonImage(true);
+				//UpdateButtonImage(true);
 				UpdateIsChecked();
 				ElevationHelper.SetElevation(this, e.NewElement);
 			}
@@ -237,10 +237,10 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				UpdateIsChecked();
 			}
-			else if (e.PropertyName == RadioButton.ButtonSourceProperty.PropertyName)
-			{
-				UpdateButtonImage(false);
-			}
+			//else if (e.PropertyName == RadioButton.ButtonSourceProperty.PropertyName)
+			//{
+			//	UpdateButtonImage(false);
+			//}
 
 			ElementPropertyChanged?.Invoke(this, e);
 		}
@@ -338,28 +338,29 @@ namespace Xamarin.Forms.Platform.Android
 			_textColorSwitcher.Value.UpdateTextColor(this, Button.TextColor);
 		}
 
-		void UpdateButtonImage(bool isInitializing)
-		{
-			if (Element == null || _isDisposed)
-				return;
+		// TODO Needs implementations beyond Android
+		//void UpdateButtonImage(bool isInitializing)
+		//{
+		//	if (Element == null || _isDisposed)
+		//		return;
 
-			ImageSource buttonSource = ((RadioButton)Element).ButtonSource;
-			if (buttonSource != null && !buttonSource.IsEmpty)
-			{
-				Drawable currButtonImage = Control.ButtonDrawable;
+		//	ImageSource buttonSource = ((RadioButton)Element).ButtonSource;
+		//	if (buttonSource != null && !buttonSource.IsEmpty)
+		//	{
+		//		Drawable currButtonImage = Control.ButtonDrawable;
 
-				this.ApplyDrawableAsync(RadioButton.ButtonSourceProperty, Context, image =>
-				{
-					if (image == currButtonImage)
-						return;
-					Control.SetButtonDrawable(image);
+		//		this.ApplyDrawableAsync(RadioButton.ButtonSourceProperty, Context, image =>
+		//		{
+		//			if (image == currButtonImage)
+		//				return;
+		//			Control.SetButtonDrawable(image);
 
-					Element.InvalidateMeasureNonVirtual(InvalidationTrigger.MeasureChanged);
-				});
-			}
-			else if(!isInitializing)
-				Control.SetButtonDrawable(null);
-		}
+		//			Element.InvalidateMeasureNonVirtual(InvalidationTrigger.MeasureChanged);
+		//		});
+		//	}
+		//	else if(!isInitializing)
+		//		Control.SetButtonDrawable(null);
+		//}
 
 		void UpdateIsChecked()
 		{
