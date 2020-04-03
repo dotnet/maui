@@ -2,8 +2,7 @@
     x:Class="Xamarin.Forms.ControlGallery.WindowsUniversal.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Xamarin.Forms.ControlGallery.WindowsUniversal"
-	RequestedTheme="Light">
+    xmlns:local="using:Xamarin.Forms.ControlGallery.WindowsUniversal">
 
 	<Application.Resources>
 		<ResourceDictionary>

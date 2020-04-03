@@ -8,11 +8,11 @@
 		<Setter Property="MinWidth" Value="{ThemeResource TextControlThemeMinWidth}" />
 		<Setter Property="MinHeight" Value="{ThemeResource TextControlThemeMinHeight}" />
 		<Setter Property="Foreground" Value="{ThemeResource SystemControlForegroundBaseHighBrush}" />
-		<Setter Property="ForegroundFocusBrush" Value="{ThemeResource SystemControlForegroundChromeBlackHighBrush}" />
+        <Setter Property="ForegroundFocusBrush" Value="{ThemeResource SystemColorWindowTextColor}" />
 		<Setter Property="PlaceholderForegroundBrush" Value="{ThemeResource SystemControlPageTextBaseMediumBrush}" />
 		<Setter Property="PlaceholderForegroundFocusBrush" Value="{ThemeResource SystemControlPageTextChromeBlackMediumLowBrush}" />
 		<Setter Property="Background" Value="{ThemeResource SystemControlBackgroundAltHighBrush}" />
-		<Setter Property="BackgroundFocusBrush" Value="{ThemeResource SystemControlBackgroundChromeWhiteBrush}" />
+        <Setter Property="BackgroundFocusBrush" Value="{ThemeResource TextControlBackground}" />
 		<Setter Property="BorderBrush" Value="{ThemeResource SystemControlForegroundChromeDisabledLowBrush}" />
 		<Setter Property="SelectionHighlightColor" Value="{ThemeResource SystemControlHighlightAccentBrush}" />
 		<Setter Property="BorderThickness" Value="{ThemeResource TextControlBorderThemeThickness}" />
