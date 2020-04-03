@@ -250,6 +250,13 @@ namespace Xamarin.Forms
 			return OnBackButtonPressed();
 		}
 
+		protected override void OnRequestedThemeChanged(AppTheme newValue)
+		{
+			base.OnRequestedThemeChanged(newValue);
+
+			Resources?.Reload();
+		}
+
 		protected virtual void LayoutChildren(double x, double y, double width, double height)
 		{
 			var area = new Rectangle(x, y, width, height);

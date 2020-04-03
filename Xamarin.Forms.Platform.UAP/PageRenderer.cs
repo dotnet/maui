@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation.Peers;
 

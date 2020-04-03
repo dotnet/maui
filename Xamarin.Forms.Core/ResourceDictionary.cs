@@ -327,6 +327,12 @@ namespace Xamarin.Forms
 			ValuesChanged?.Invoke(this, new ResourcesChangedEventArgs(values));
 		}
 
+		internal void Reload()
+		{
+			foreach (var mr in MergedResources)
+				OnValuesChanged(mr);
+		}
+
 		event EventHandler<ResourcesChangedEventArgs> ValuesChanged;
 
 		//only used for unit testing

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Android.Content;
+using Android.Content.Res;
 using Android.OS;
 #if __ANDROID_29__
 using AndroidX.Core.Content;

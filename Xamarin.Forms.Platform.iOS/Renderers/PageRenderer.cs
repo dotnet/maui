@@ -364,6 +364,16 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
+		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
+		{
+			base.TraitCollectionDidChange(previousTraitCollection);
+
+#if __XCODE11__
+			if (Forms.IsiOS13OrNewer && previousTraitCollection.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+				Application.Current?.OnRequestedThemeChanged(new AppThemeChangedEventArgs(Application.Current.RequestedTheme));
+#endif
+		}
+
 		bool ShouldUseSafeArea()
 		{
 			bool usingSafeArea = Page.On<PlatformConfiguration.iOS>().UsingSafeArea();

@@ -21,6 +21,7 @@ using Xamarin.Forms.Platform.Android;
 using Resource = Android.Resource;
 using Trace = System.Diagnostics.Trace;
 using System.ComponentModel;
+using Xamarin.Forms;
 
 namespace Xamarin.Forms
 {
@@ -854,6 +855,25 @@ namespace Xamarin.Forms
 			{
 				return Platform.Android.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
 			}
+
+			#region Replace with Essentials API
+			public AppTheme RequestedTheme
+			{
+				get
+				{
+					var nightMode = _context.Resources.Configuration.UiMode & UiMode.NightMask;
+					switch (nightMode)
+					{
+						case UiMode.NightYes:
+							return AppTheme.Dark;
+						case UiMode.NightNo:
+							return AppTheme.Light;
+						default:
+							return AppTheme.Unspecified;
+					};
+				}
+			}
+			#endregion
 
 			public class _IsolatedStorageFile : IIsolatedStorageFile
 			{

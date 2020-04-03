@@ -202,6 +202,8 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			return new SizeRequest(new Size (100, 20));
 		}
+
+		public AppTheme RequestedTheme { get; set; }
 	}
 
 	internal class MockDeserializer : Internals.IDeserializer

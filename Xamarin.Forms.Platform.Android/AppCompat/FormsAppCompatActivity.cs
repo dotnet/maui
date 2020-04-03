@@ -86,6 +86,8 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			base.OnConfigurationChanged(newConfig);
 			ConfigurationChanged?.Invoke(this, new EventArgs());
+
+			Xamarin.Forms.Application.Current?.OnRequestedThemeChanged(new AppThemeChangedEventArgs(Xamarin.Forms.Application.Current.RequestedTheme));
 		}
 
 		public override bool OnOptionsItemSelected(IMenuItem item)
