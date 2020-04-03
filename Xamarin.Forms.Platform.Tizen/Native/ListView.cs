@@ -45,6 +45,18 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			internal TemplatedItemsList<ItemsView<Cell>, Cell> ListOfSubItems;
 		}
 
+		class ScrollerExtension : Scroller
+		{
+			public ScrollerExtension(GenList scrollableLayout) : base(scrollableLayout)
+			{
+			}
+
+			protected override IntPtr CreateHandle(EvasObject parent)
+			{
+				return parent.RealHandle;
+			}
+		}
+
 		/// <summary>
 		/// The item context list for each added element.
 		/// </summary>
@@ -85,11 +97,23 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// </summary>
 		GenItemClass _headerFooterItemClass = null;
 
+		ScrollerExtension _scrollerExtension;
+
 		/// <summary>
 		/// Gets or sets a value indicating whether this instance has grouping enabled.
 		/// </summary>
 		/// <value><c>true</c> if this instance has grouping enabled.</value>
 		public bool IsGroupingEnabled { get; set; }
+
+		/// <summary>
+		/// Gets the current region in the content object that is visible through the Scroller.
+		/// </summary>
+		public Rect CurrentRegion => _scrollerExtension.CurrentRegion;
+
+		/// <summary>
+		/// Occurs when the ListView has scrolled.
+		/// </summary>
+		public event EventHandler Scrolled;
 
 		/// <summary>
 		/// Constructor of ListView native control.
@@ -98,6 +122,11 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		public ListView(EvasObject parent)
 			: base(parent)
 		{
+			_scrollerExtension = new ScrollerExtension(this);
+			new SmartEvent(this, RealHandle, "scroll").On += (s,e) =>
+			{
+				Scrolled?.Invoke(this, null);
+			};
 		}
 
 		protected ListView() : base()

@@ -56,6 +56,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				SetNativeControl(new Native.ListView(Forms.NativeParent));
 
+				Control.Scrolled += OnScrolled;
 				Control.ItemSelected += OnListViewItemSelected;
 				Control.ItemUnselected += OnListViewItemUnselected;
 			}
@@ -96,6 +97,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 				if (Control != null)
 				{
+					Control.Scrolled -= OnScrolled;
 					Control.ItemSelected -= OnListViewItemSelected;
 					Control.ItemUnselected -= OnListViewItemUnselected;
 				}
@@ -160,6 +162,12 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				_lastSelectedItem = null;
 			}
+		}
+
+		void OnScrolled(object sender, EventArgs e)
+		{
+			var region = Control.CurrentRegion.ToDP();
+			Element.SendScrolled(new ScrolledEventArgs(region.X, region.Y));
 		}
 
 		/// <summary>
