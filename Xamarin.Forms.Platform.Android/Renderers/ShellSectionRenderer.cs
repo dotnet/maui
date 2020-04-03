@@ -59,8 +59,9 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				UpdateCurrentItem(shellContent);
 			}
-			else
+			else if(shellSection?.CurrentItem != null)
 			{
+				var currentPosition = SectionController.GetItems().IndexOf(shellSection.CurrentItem);
 				_selecting = true;
 
 				// Android doesn't really appreciate you calling SetCurrentItem inside a OnPageSelected callback.
@@ -69,10 +70,10 @@ namespace Xamarin.Forms.Platform.Android
 
 				Device.BeginInvokeOnMainThread(() =>
 				{
-					if (position < _viewPager.ChildCount && _toolbarTracker != null)
+					if (currentPosition < _viewPager.ChildCount && _toolbarTracker != null)
 					{
-						_viewPager.SetCurrentItem(position, false);
-						UpdateCurrentItem(shellContent);
+						_viewPager.SetCurrentItem(currentPosition, false);
+						UpdateCurrentItem(shellSection.CurrentItem);
 					}
 
 					_selecting = false;

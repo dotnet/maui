@@ -562,12 +562,31 @@ namespace Xamarin.Forms.Core.UnitTests
 			Routing.RegisterRoute("LifeCyclePage", typeof(LifeCyclePage));
 		}
 
-		class ShellLifeCycleState
+		public class ShellLifeCycleState
 		{
-			public bool ItemAppearing;
-			public bool SectionAppearing;
-			public bool ContentAppearing;
-			public bool PageAppearing;
+			public bool ItemAppearing
+			{
+				get;
+				set;
+			}
+
+			public bool SectionAppearing
+			{
+				get;
+				set;
+			}
+
+			public bool ContentAppearing
+			{
+				get;
+				set;
+			}
+
+			public bool PageAppearing
+			{
+				get;
+				set;
+			}
 
 			public ShellLifeCycleState(Shell shell)
 			{
@@ -608,6 +627,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				Assert.IsFalse(ContentAppearing);
 				Assert.IsFalse(PageAppearing);
 			}
+
 			public void AllTrue()
 			{
 				Assert.IsTrue(ItemAppearing);

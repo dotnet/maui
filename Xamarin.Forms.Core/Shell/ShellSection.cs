@@ -889,26 +889,6 @@ namespace Xamarin.Forms
 			protected override Task OnPushAsync(Page page, bool animated) => _owner.OnPushAsync(page, animated);
 
 			protected override void OnRemovePage(Page page) => _owner.OnRemovePage(page);
-
-			protected override Task<Page> OnPopModal(bool animated)
-			{
-				if(ModalStack.Count == 1)
-				{
-					_owner.PresentedPageAppearing();
-				}
-
-				return base.OnPopModal(animated);
-			}
-
-			protected override Task OnPushModal(Page modal, bool animated)
-			{
-				if (ModalStack.Count == 0)
-				{
-					_owner.PresentedPageDisappearing();
-				}
-
-				return base.OnPushModal(modal, animated);
-			}
 		}
 	}
 }
