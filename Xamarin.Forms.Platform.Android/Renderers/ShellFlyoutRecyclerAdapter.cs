@@ -19,19 +19,10 @@ namespace Xamarin.Forms.Platform.Android
 	public class ShellFlyoutRecyclerAdapter : RecyclerView.Adapter
 	{
 		readonly IShellContext _shellContext;
-
-		DataTemplate _defaultItemTemplate;
-
-		DataTemplate _defaultMenuItemTemplate;
-
 		List<AdapterListItem> _listItems;
-
 		Dictionary<int, DataTemplate> _templateMap = new Dictionary<int, DataTemplate>();
-
 		Action<Element> _selectedCallback;
-
 		bool _disposed;
-
 		ElementViewHolder _elementViewHolder;
 
 		public ShellFlyoutRecyclerAdapter(IShellContext shellContext, Action<Element> selectedCallback)
@@ -48,11 +39,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected Shell Shell => _shellContext.Shell;
 
-		protected virtual DataTemplate DefaultItemTemplate =>
-			_defaultItemTemplate ?? (_defaultItemTemplate = new DataTemplate(() => GenerateDefaultCell("Title", "FlyoutIcon")));
+		protected virtual DataTemplate DefaultItemTemplate => null;
 
-		protected virtual DataTemplate DefaultMenuItemTemplate =>
-			_defaultMenuItemTemplate ?? (_defaultMenuItemTemplate = new DataTemplate(() => GenerateDefaultCell("Text", "Icon")));
+		protected virtual DataTemplate DefaultMenuItemTemplate => null;
 
 		public override int GetItemViewType(int position)
 		{
@@ -60,11 +49,11 @@ namespace Xamarin.Forms.Platform.Android
 			DataTemplate dataTemplate = null;
 			if (item.Element is IMenuItemController)
 			{
-				dataTemplate = Shell.GetMenuItemTemplate(item.Element) ?? Shell.MenuItemTemplate ?? DefaultMenuItemTemplate;
+				dataTemplate = Shell.GetMenuItemTemplate(item.Element) ?? DefaultMenuItemTemplate ?? Shell.MenuItemTemplate;
 			}
 			else
 			{
-				dataTemplate = Shell.GetItemTemplate(item.Element) ?? Shell.ItemTemplate ?? DefaultItemTemplate;
+				dataTemplate = Shell.GetItemTemplate(item.Element) ?? DefaultItemTemplate ?? Shell.ItemTemplate;
 			}
 
 			var template = dataTemplate.SelectDataTemplate(item.Element, Shell);
@@ -208,54 +197,6 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			_listItems = GenerateItemList();
 			NotifyDataSetChanged();
-		}
-
-		View GenerateDefaultCell(string textBinding, string iconBinding)
-		{
-			var grid = new Grid();
-			var groups = new VisualStateGroupList();
-
-			var commonGroup = new VisualStateGroup();
-			commonGroup.Name = "CommonStates";
-			groups.Add(commonGroup);
-
-			var normalState = new VisualState();
-			normalState.Name = "Normal";
-			commonGroup.States.Add(normalState);
-
-			var selectedState = new VisualState();
-			selectedState.Name = "Selected";
-			selectedState.Setters.Add(new Setter
-			{
-				Property = VisualElement.BackgroundColorProperty,
-				Value = new Color(0.95)
-			});
-
-			commonGroup.States.Add(selectedState);
-
-			VisualStateManager.SetVisualStateGroups(grid, groups);
-
-			grid.HeightRequest = 50;
-			grid.ColumnDefinitions.Add(new ColumnDefinition { Width = 54 });
-			grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
-
-			var image = new Image();
-			image.VerticalOptions = image.HorizontalOptions = LayoutOptions.Center;
-			image.HeightRequest = image.WidthRequest = 24;
-			image.SetBinding(Image.SourceProperty, iconBinding);
-			grid.Children.Add(image);
-
-			var label = new Label();
-			label.Margin = new Thickness(20, 0, 0, 0);
-			label.VerticalTextAlignment = TextAlignment.Center;
-			label.SetBinding(Label.TextProperty, textBinding);
-			grid.Children.Add(label, 1, 0);
-
-			label.FontSize = 14;
-			label.TextColor = Color.Black.MultiplyAlpha(0.87);
-			label.FontFamily = "sans-serif-medium";
-
-			return grid;
 		}
 
 		protected override void Dispose(bool disposing)

@@ -58,13 +58,34 @@ namespace Xamarin.Forms
 			BindableProperty.CreateAttached("TitleView", typeof(View), typeof(Shell), null, propertyChanged: OnTitleViewChanged);
 
 		public static readonly BindableProperty MenuItemTemplateProperty =
-			BindableProperty.CreateAttached(nameof(MenuItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime);
+			BindableProperty.CreateAttached(nameof(MenuItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime, defaultValueCreator: OnMenuItemTemplateCreate);
+
+		static object OnMenuItemTemplateCreate(BindableObject bindable)
+		{
+			if(bindable is BaseShellItem baseShellItem)
+				return baseShellItem.CreateDefaultFlyoutItemCell("Text", "Icon");
+
+			if (bindable is MenuItem mi)
+			{
+				if (mi.Parent is BaseShellItem bsiMi)
+					return bsiMi.CreateDefaultFlyoutItemCell("Text", "Icon");
+				else
+					return null;
+			}
+
+			throw new ArgumentException($"Invalidate Menu Item Type: {bindable}", nameof(bindable));
+		}
 
 		public static DataTemplate GetMenuItemTemplate(BindableObject obj) => (DataTemplate)obj.GetValue(MenuItemTemplateProperty);
 		public static void SetMenuItemTemplate(BindableObject obj, DataTemplate menuItemTemplate) => obj.SetValue(MenuItemTemplateProperty, menuItemTemplate);
 
 		public static readonly BindableProperty ItemTemplateProperty =
-			BindableProperty.CreateAttached(nameof(ItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime);
+			BindableProperty.CreateAttached(nameof(ItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime, defaultValueCreator: OnItemTemplateCreator);
+
+		static object OnItemTemplateCreator(BindableObject bindable)
+		{
+			return (bindable as BaseShellItem).CreateDefaultFlyoutItemCell("Title", "FlyoutIcon");
+		}
 
 		public static DataTemplate GetItemTemplate(BindableObject obj) => (DataTemplate)obj.GetValue(ItemTemplateProperty);
 		public static void SetItemTemplate(BindableObject obj, DataTemplate itemTemplate) => obj.SetValue(ItemTemplateProperty, itemTemplate);
@@ -319,7 +340,7 @@ namespace Xamarin.Forms
 
 			var state = GetNavigationState(shellItem, shellSection, shellContent, null, null);
 
-			if (FlyoutIsPresented && FlyoutBehavior == FlyoutBehavior.Flyout)
+			if (FlyoutIsPresented && GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
 				SetValueFromRenderer(FlyoutIsPresentedProperty, false);
 
 			if (shellSection == null)
@@ -431,7 +452,7 @@ namespace Xamarin.Forms
 		internal async Task GoToAsync(ShellNavigationState state, bool? animate, bool enableRelativeShellRoutes)
 		{
 			// FIXME: This should not be none, we need to compute the delta and set flags correctly
-			var accept = ProposeNavigation(ShellNavigationSource.Unknown, state, true);
+			var accept = ProposeNavigation(ShellNavigationSource.Unknown, state, this.CurrentState != null);
 			if (!accept)
 				return;
 
@@ -948,7 +969,10 @@ namespace Xamarin.Forms
 				currentContent.Navigation.PopAsync();
 				return true;
 			}
-			return false;
+
+			var args = new ShellNavigatingEventArgs(this.CurrentState, "", ShellNavigationSource.Pop, true);
+			OnNavigating(args);
+			return args.Cancelled;
 		}
 
 		bool ValidDefaultShellItem(Element child) => !(child is MenuShellItem);
@@ -984,11 +1008,6 @@ namespace Xamarin.Forms
 					Navigated?.Invoke(this, args);
 				}
 			}
-		}
-
-		internal void ProcessNavigating(ShellNavigatingEventArgs args)
-		{
-			OnNavigating(args);
 		}
 
 		protected virtual void OnNavigated(ShellNavigatedEventArgs args)
@@ -1298,22 +1317,26 @@ namespace Xamarin.Forms
 
 			protected override void OnRemovePage(Page page) => SectionProxy.RemovePage(page);
 
-			protected override Task<Page> OnPopModal(bool animated)
+			protected override async Task<Page> OnPopModal(bool animated)
 			{
 				if (ModalStack.Count > 0)
 					ModalStack[ModalStack.Count - 1].SendDisappearing();
 
 				if (!_shell.CurrentItem.CurrentItem.IsPoppingModalStack)
 				{
-					if (ModalStack.Count == 1)
-						_shell.CurrentItem.SendAppearing();
-					else if (ModalStack.Count > 1)
+					if (ModalStack.Count > 1)
 						ModalStack[ModalStack.Count - 2].SendAppearing();
 				}
 
-				return base.OnPopModal(animated);
+				var modalPopped =  await base.OnPopModal(animated);
+				
+				if (ModalStack.Count == 0 && !_shell.CurrentItem.CurrentItem.IsPoppingModalStack)
+					_shell.CurrentItem.SendAppearing();
+				
+				return modalPopped;
 			}
-			protected override Task OnPushModal(Page modal, bool animated)
+			
+			protected override async Task OnPushModal(Page modal, bool animated)
 			{
 				if (ModalStack.Count == 0)
 					_shell.CurrentItem.SendDisappearing();
@@ -1321,8 +1344,27 @@ namespace Xamarin.Forms
 				if (!_shell.CurrentItem.CurrentItem.IsPushingModalStack)
 					modal.SendAppearing();
 
-				return base.OnPushModal(modal, animated);
+				await base.OnPushModal(modal, animated);
+
+				modal.NavigationProxy.Inner = new NavigationImplWrapper(modal.NavigationProxy.Inner,  this);
 			}
+			
+			
+			class NavigationImplWrapper : NavigationProxy
+			{
+				readonly INavigation _shellProxy;
+
+				public NavigationImplWrapper(INavigation proxy, INavigation shellProxy)
+				{
+					Inner = proxy;
+					_shellProxy = shellProxy;				
+
+				}
+
+				protected override Task<Page> OnPopModal(bool animated) => _shellProxy.PopModalAsync(animated);
+
+				protected override Task OnPushModal(Page modal, bool animated) => _shellProxy.PushModalAsync(modal, animated);
+			}			
 		}
 	}
 }

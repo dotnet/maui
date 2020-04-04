@@ -64,7 +64,8 @@ namespace Xamarin.Forms.Markup
 			{ "Xamarin.Forms.UriImageSource", UriImageSource.UriProperty },
 			{ "Xamarin.Forms.UriMediaSource", UriMediaSource.UriProperty },
 			{ "Xamarin.Forms.UrlWebViewSource", UrlWebViewSource.UrlProperty },
-			{ "Xamarin.Forms.WebView", WebView.SourceProperty }
+			{ "Xamarin.Forms.WebView", WebView.SourceProperty },
+			{ "Xamarin.Forms.AppThemeColor", AppThemeColor.DefaultProperty }
 		};
 
 		static Dictionary<string, (BindableProperty, BindableProperty)> bindableObjectTypeDefaultCommandAndParameterProperties = new Dictionary<string, (BindableProperty, BindableProperty)>

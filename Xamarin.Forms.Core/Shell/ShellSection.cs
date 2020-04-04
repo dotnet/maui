@@ -724,20 +724,22 @@ namespace Xamarin.Forms
 			bool currentPage = (((IShellSectionController)this).PresentedPage) == page;
 			var stack = _navStack.ToList();
 			stack.Remove(page);
-			var allow = ((IShellController)Shell).ProposeNavigation(
-				ShellNavigationSource.Remove,
-				ShellItem,
-				this,
-				CurrentItem,
-				stack,
-				true
-			);
+			var allow = (!currentPage) ? true : 
+				((IShellController)Shell).ProposeNavigation(
+					ShellNavigationSource.Remove,
+					ShellItem,
+					this,
+					CurrentItem,
+					stack,
+					true
+				);
 
 			if (!allow)
 				return;
 
 			if(currentPage)
 				PresentedPageDisappearing();
+
 			_navStack.Remove(page);
 
 			if(currentPage)
@@ -889,26 +891,6 @@ namespace Xamarin.Forms
 			protected override Task OnPushAsync(Page page, bool animated) => _owner.OnPushAsync(page, animated);
 
 			protected override void OnRemovePage(Page page) => _owner.OnRemovePage(page);
-
-			protected override Task<Page> OnPopModal(bool animated)
-			{
-				if(ModalStack.Count == 1)
-				{
-					_owner.PresentedPageAppearing();
-				}
-
-				return base.OnPopModal(animated);
-			}
-
-			protected override Task OnPushModal(Page modal, bool animated)
-			{
-				if (ModalStack.Count == 0)
-				{
-					_owner.PresentedPageDisappearing();
-				}
-
-				return base.OnPushModal(modal, animated);
-			}
 		}
 	}
 }

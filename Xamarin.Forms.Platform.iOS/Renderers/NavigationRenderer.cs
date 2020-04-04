@@ -363,7 +363,7 @@ namespace Xamarin.Forms.Platform.iOS
 			base.TraitCollectionDidChange(previousTraitCollection);
 #if __XCODE11__
 			// Make sure the control adheres to changes in UI theme
-			if (previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (Forms.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				UpdateBackgroundColor();
 #endif
 		}
@@ -665,7 +665,10 @@ namespace Xamarin.Forms.Platform.iOS
 				var navigationBarAppearance = NavigationBar.StandardAppearance;
 
 				if (barBackgroundColor == Color.Default)
+				{
 					navigationBarAppearance.ConfigureWithDefaultBackground();
+					navigationBarAppearance.BackgroundColor = UINavigationBar.Appearance.BarTintColor;
+				}
 				else
 				{
 					navigationBarAppearance.ConfigureWithOpaqueBackground();
@@ -758,7 +761,7 @@ namespace Xamarin.Forms.Platform.iOS
 				else
 #endif
 				{
-						UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.Default;
+					UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.Default;
 				}
 			}
 			else
@@ -1110,6 +1113,12 @@ namespace Xamarin.Forms.Platform.iOS
 					_tracker.Target = null;
 					_tracker.CollectionChanged -= TrackerOnCollectionChanged;
 					_tracker = null;
+
+					if (NavigationItem.TitleView != null)
+					{
+						NavigationItem.TitleView.Dispose();
+						NavigationItem.TitleView = null;
+					}
 
 					if (NavigationItem.RightBarButtonItems != null)
 					{

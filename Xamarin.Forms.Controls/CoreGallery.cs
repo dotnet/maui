@@ -16,6 +16,8 @@ using Xamarin.Forms.Controls.GalleryPages.RefreshViewGalleries;
 using Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries;
 using Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery;
 using Xamarin.Forms.Controls.GalleryPages.TwoPaneViewGalleries;
+using Xamarin.Forms.Controls.GalleryPages.AppThemeGalleries;
+using Xamarin.Forms.Controls.GalleryPages.ExpanderGalleries;
 
 namespace Xamarin.Forms.Controls
 {
@@ -296,6 +298,7 @@ namespace Xamarin.Forms.Controls
 				new GalleryPageFactory(() => new RadioButtonGroupGalleryPage(), "RadioButton group Gallery - Legacy"),
 				new GalleryPageFactory(() => new RadioButtonCoreGalleryPage(), "RadioButton Gallery"),
 				new GalleryPageFactory(() => new FontImageSourceGallery(), "Font ImageSource"),
+				new GalleryPageFactory(() => new ExpanderGalleries(), "Expander Gallery"),
 				new GalleryPageFactory(() => new IndicatorsSample(), "Indicator Gallery"),
 				new GalleryPageFactory(() => new CarouselViewGallery(), "CarouselView Gallery"),
 				new GalleryPageFactory(() => new CarouselViewCoreGalleryPage(), "CarouselView Core Gallery"),
@@ -369,6 +372,7 @@ namespace Xamarin.Forms.Controls
 				new GalleryPageFactory(() => new WebViewCoreGalleryPage(), "WebView Gallery"),
 				new GalleryPageFactory(() => new WkWebViewCoreGalleryPage(), "WkWebView Gallery"),
 				new GalleryPageFactory(() => new DynamicViewGallery(), "Dynamic ViewGallery"),
+				new GalleryPageFactory(() => new AppThemeGallery(), "AppTheme Gallery"),
 				//pages
  				new GalleryPageFactory(() => new RootContentPage ("Content"), "RootPages Gallery"),
 				new GalleryPageFactory(() => new MasterDetailPageTabletPage(), "MasterDetailPage Tablet Page"),

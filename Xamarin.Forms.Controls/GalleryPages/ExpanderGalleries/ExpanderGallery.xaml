@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Xamarin.Forms.Controls.GalleryPages.ExpanderGalleries.ExpanderGallery"
+             x:Name="page">
+    <ScrollView Padding="30, 20">
+        <StackLayout BindableLayout.ItemsSource="{Binding Path=Items, Source={x:Reference page}}">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate>
+                    <Expander ExpandAnimationEasing="{x:Static Easing.CubicIn}"
+                                CollapseAnimationEasing="{x:Static Easing.CubicOut}"
+                                IsExpanded="{Binding IsExpanded}"
+                                Command="{Binding Path=Command, Source={x:Reference page}}"
+                                CommandParameter="{Binding .}">
+                        <Expander.Header>
+                            <Label Text="{Binding Name}" FontSize="35" FontAttributes="Bold"/>
+                        </Expander.Header>
+                        <Expander>
+                            <Expander.Header>
+                                <Label Text="Expander Level 2" FontSize="30" FontAttributes="Bold"/>
+                            </Expander.Header>
+                            <Expander.ContentTemplate>
+                                <DataTemplate>
+                                    <StackLayout BackgroundColor="Red">
+                                        <Label Text="Hi, I am Red" FontSize="40" />
+                                        <BoxView HeightRequest="50" Color="Yellow" />
+                                        <Label Text="There is an yellow box above" FontSize="40"/>
+                                    </StackLayout>
+                                </DataTemplate>
+                            </Expander.ContentTemplate>
+                        </Expander>
+                    </Expander>
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

@@ -85,6 +85,7 @@
 
   <ItemGroup>
     <Folder Include="Fonts\" />
+    <Folder Include="GalleryPages\AppThemeGalleries\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -98,7 +99,20 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
-
+  <ItemGroup>
+    <Compile Update="GalleryPages\AppThemeGalleries\AppThemeCodeGallery.cs">
+      <SubType></SubType>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="GalleryPages\AppThemeGalleries\AppThemeGallery.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="GalleryPages\AppThemeGalleries\AppThemeGallery.cs">
+      <SubType></SubType>
+    </Compile>
+    <Compile Update="GalleryPages\AppThemeGalleries\OSThemesGallery.cs">
+      <SubType></SubType>
+    </Compile>
+  </ItemGroup>
   <Target Name="CreateControllGalleryConfig" BeforeTargets="Build">
     <CreateItem Include="blank.config">
       <Output TaskParameter="Include" ItemName="ConfigFile" />

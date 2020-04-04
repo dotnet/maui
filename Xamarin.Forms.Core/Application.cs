@@ -7,11 +7,13 @@ using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform;
 using System.Diagnostics;
+using Xamarin.Forms.Core;
 
 namespace Xamarin.Forms
 {
 	public class Application : Element, IResourcesProvider, IApplicationController, IElementConfiguration<Application>
 	{
+		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 		Task<IDictionary<string, object>> _propertiesTask;
 		readonly Lazy<PlatformConfigurationRegistry<Application>> _platformConfigurationRegistry;
 
@@ -154,6 +156,23 @@ namespace Xamarin.Forms
 				OnPropertyChanged();
 			}
 		}
+
+		public AppTheme RequestedTheme => Device.PlatformServices.RequestedTheme;
+
+		public event EventHandler<AppThemeChangedEventArgs> RequestedThemeChanged
+		{
+			add
+			{
+				ExperimentalFlags.VerifyFlagEnabled(nameof(Application), ExperimentalFlags.AppThemeExperimental, nameof(RequestedThemeChanged));
+
+				_weakEventManager.AddEventHandler(value);
+			}
+			remove => _weakEventManager.RemoveEventHandler(value);
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void OnRequestedThemeChanged(AppThemeChangedEventArgs args)
+			=> _weakEventManager.HandleEvent(this, args, nameof(RequestedThemeChanged));
 
 		public event EventHandler<ModalPoppedEventArgs> ModalPopped;
 

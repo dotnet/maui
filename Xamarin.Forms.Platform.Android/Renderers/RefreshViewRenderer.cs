@@ -69,6 +69,19 @@ namespace Xamarin.Forms.Platform.Android
 
 		public override bool CanChildScrollUp() => CanScrollUp(_renderer.View);
 
+		protected override void OnLayout(bool changed, int l, int t, int r, int b)
+		{
+			base.OnLayout(changed, l, t, r, b);
+
+			var refreshViewContent = RefreshView?.Content;
+
+			if (refreshViewContent == null)
+				return;
+
+			IVisualElementRenderer renderer = Platform.GetRenderer(refreshViewContent);
+			renderer?.UpdateLayout();
+		}
+
 		public void SetElement(VisualElement element)
 		{
 			var oldElement = Element;

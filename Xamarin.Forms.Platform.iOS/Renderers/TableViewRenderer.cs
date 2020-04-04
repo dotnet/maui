@@ -132,7 +132,7 @@ namespace Xamarin.Forms.Platform.iOS
 			base.TraitCollectionDidChange(previousTraitCollection);
 #if __XCODE11__
 			// Make sure the cells adhere to changes UI theme
-			if (previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (Forms.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				Control.ReloadData();
 #endif
 		}

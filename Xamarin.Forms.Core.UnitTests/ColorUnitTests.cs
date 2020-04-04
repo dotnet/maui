@@ -333,6 +333,10 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => converter.ConvertFromInvariantString("hsv(12, 100%)"));
 			Assert.Throws<InvalidOperationException>(() => converter.ConvertFromInvariantString("hsva(12, 100%)"));
 			Assert.Throws<InvalidOperationException>(() => converter.ConvertFromInvariantString("rgba(0,0,255)"));
+			Assert.AreEqual(Color.FromRgb(0, 122, 255), converter.ConvertFromInvariantString("SystemBlue"));
+			Assert.AreEqual(Color.FromHex("#FF767676"), converter.ConvertFromInvariantString("SystemChromeHighColor"));
+			Assert.AreEqual(Color.FromHex("#ff00ddff"), converter.ConvertFromInvariantString("HoloBlueBright"));
+			Assert.Throws<InvalidOperationException>(() => converter.ConvertFromInvariantString("NonExistentNamedColor"));
 		}
 
 		[Test]

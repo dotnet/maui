@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Core.UnitTests
 {
@@ -269,7 +270,25 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.IsTrue(invalidOperationThrown);
 		}
-		
+
+
+		[Test]
+		public async Task AppearingAndDisappearingFiresOnShellWithModal()
+		{
+			Shell shell = new Shell();
+			shell.NavigationProxy.Inner = new NavigationProxy();
+			var lifeCyclePage = new ShellLifeCycleTests.LifeCyclePage();
+			shell.Items.Add(CreateShellItem(lifeCyclePage, shellItemRoute: "item", shellSectionRoute: "section", shellContentRoute: "content"));
+
+			var shellLifeCycleState = new ShellLifeCycleTests.ShellLifeCycleState(shell);
+			await shell.GoToAsync("ModalTestPage");
+			await shell.Navigation.ModalStack[0].Navigation.PopModalAsync();
+			shellLifeCycleState.AllTrue();
+			await shell.GoToAsync("ModalTestPage");
+			shellLifeCycleState.AllFalse();
+		}
+
+
 		[Test]
 		public async Task IsAppearingFiredOnLastModalPageOnly()
 		{
@@ -339,6 +358,17 @@ namespace Xamarin.Forms.Core.UnitTests
 			public ModalTestPageBase()
 			{
 				Shell.SetPresentationMode(this, PresentationMode.Modal);
+			}
+
+			protected override void OnAppearing()
+			{
+				base.OnAppearing();
+			}
+			
+
+			protected override void OnParentSet()
+			{
+				base.OnParentSet();
 			}
 		}
 

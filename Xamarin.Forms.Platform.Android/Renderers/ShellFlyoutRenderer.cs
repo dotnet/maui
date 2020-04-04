@@ -46,6 +46,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		void IDrawerListener.OnDrawerStateChanged(int newState)
 		{
+			if(DrawerLayout.StateIdle == newState)
+			{
+				Shell.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, IsDrawerOpen(_flyoutContent.AndroidView));
+			}	
 		}
 
 		#endregion IDrawerListener

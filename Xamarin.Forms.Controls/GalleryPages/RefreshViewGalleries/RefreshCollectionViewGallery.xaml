@@ -5,7 +5,7 @@
     x:Class="Xamarin.Forms.Controls.GalleryPages.RefreshViewGalleries.RefreshCollectionViewGallery"
     Title="CollectionView (Pull To Refresh)">
     <ContentPage.Content>
-        <RefreshView
+        <RefreshView 
             IsRefreshing="{Binding IsRefreshing}"
             RefreshColor="Pink"
             Command="{Binding RefreshCommand}"

@@ -15,6 +15,7 @@ using Xamarin.Forms.Internals;
 using Foundation;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using Xamarin.Forms;
 
 #if __MOBILE__
 using UIKit;
@@ -275,6 +276,93 @@ namespace Xamarin.Forms
 				}
 			}
 
+			public Color GetNamedColor(string name)
+			{
+#if __XCODE11__ && __IOS__
+				UIColor resultColor = null;
+
+				switch (name)
+				{
+					case NamedPlatformColor.Label:
+						resultColor = UIColor.LabelColor;
+						break;
+					case NamedPlatformColor.Link:
+						resultColor = UIColor.LinkColor;
+						break;
+					case NamedPlatformColor.OpaqueSeparator:
+						resultColor = UIColor.OpaqueSeparatorColor;
+						break;
+					case NamedPlatformColor.PlaceholderText:
+						resultColor = UIColor.PlaceholderTextColor;
+						break;
+					case NamedPlatformColor.QuaternaryLabel:
+						resultColor = UIColor.QuaternaryLabelColor;
+						break;
+					case NamedPlatformColor.SecondaryLabel:
+						resultColor = UIColor.SecondaryLabelColor;
+						break;
+					case NamedPlatformColor.Separator:
+						resultColor = UIColor.SeparatorColor;
+						break;
+					case NamedPlatformColor.SystemBlue:
+						resultColor = UIColor.SystemBlueColor;
+						break;
+					case NamedPlatformColor.SystemGray:
+						resultColor = UIColor.SystemGrayColor;
+						break;
+					case NamedPlatformColor.SystemGray2:
+						resultColor = UIColor.SystemGray2Color;
+						break;
+					case NamedPlatformColor.SystemGray3:
+						resultColor = UIColor.SystemGray3Color;
+						break;
+					case NamedPlatformColor.SystemGray4:
+						resultColor = UIColor.SystemGray4Color;
+						break;
+					case NamedPlatformColor.SystemGray5:
+						resultColor = UIColor.SystemGray5Color;
+						break;
+					case NamedPlatformColor.SystemGray6:
+						resultColor = UIColor.SystemGray6Color;
+						break;
+					case NamedPlatformColor.SystemGreen:
+						resultColor = UIColor.SystemGreenColor;
+						break;
+					case NamedPlatformColor.SystemIndigo:
+						resultColor = UIColor.SystemIndigoColor;
+						break;
+					case NamedPlatformColor.SystemPink:
+						resultColor = UIColor.SystemPinkColor;
+						break;
+					case NamedPlatformColor.SystemPurple:
+						resultColor = UIColor.SystemPurpleColor;
+						break;
+					case NamedPlatformColor.SystemRed:
+						resultColor = UIColor.SystemRedColor;
+						break;
+					case NamedPlatformColor.SystemTeal:
+						resultColor = UIColor.SystemTealColor;
+						break;
+					case NamedPlatformColor.SystemYellow:
+						resultColor = UIColor.SystemYellowColor;
+						break;
+					case NamedPlatformColor.TertiaryLabel:
+						resultColor = UIColor.TertiaryLabelColor;
+						break;
+					default:
+						resultColor = UIColor.FromName(name);
+						break;
+				}
+
+				if (resultColor == null)
+					return Color.Default;
+
+				return resultColor.ToColor();
+#else
+				return Color.Default;
+#endif
+			}
+
 			public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
 			{
 				using (var client = GetHttpClient())
@@ -404,6 +492,74 @@ namespace Xamarin.Forms
 				return Platform.MacOS.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
 #endif
 			}
+
+			#region Remove with Essentials API
+			public AppTheme RequestedTheme
+			{
+				get
+				{
+#if __IOS__ || __TVOS__
+					if (!IsiOS13OrNewer)
+						return AppTheme.Unspecified;
+#if __XCODE11__
+					var uiStyle = GetCurrentUIViewController()?.TraitCollection?.UserInterfaceStyle ??
+						UITraitCollection.CurrentTraitCollection.UserInterfaceStyle;
+
+					switch (uiStyle)
+					{
+						case UIUserInterfaceStyle.Light:
+							return AppTheme.Light;
+						case UIUserInterfaceStyle.Dark:
+							return AppTheme.Dark;
+						default:
+							return AppTheme.Unspecified;
+					};
+#else
+					return AppTheme.Unspecified;
+#endif
+#else
+					return AppTheme.Unspecified;
+#endif
+				}
+			}
+
+#if __IOS__ || __TVOS__
+
+			static UIViewController GetCurrentUIViewController() =>
+				GetCurrentViewController(false);
+
+			static UIViewController GetCurrentViewController(bool throwIfNull = true)
+			{
+				UIViewController viewController = null;
+
+				var window = UIApplication.SharedApplication.GetKeyWindow();
+
+				if (window != null && window.WindowLevel == UIWindowLevel.Normal)
+					viewController = window.RootViewController;
+
+				if (viewController == null)
+				{
+					window = UIApplication.SharedApplication
+						.Windows
+						.OrderByDescending(w => w.WindowLevel)
+						.FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
+
+					if (window == null && throwIfNull)
+						throw new InvalidOperationException("Could not find current view controller.");
+					else
+						viewController = window?.RootViewController;
+				}
+
+				while (viewController?.PresentedViewController != null)
+					viewController = viewController.PresentedViewController;
+
+				if (throwIfNull && viewController == null)
+					throw new InvalidOperationException("Could not find current view controller.");
+
+				return viewController;
+			}
+#endif
 		}
+		#endregion
 	}
 }

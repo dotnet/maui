@@ -6,6 +6,7 @@ using Microsoft.Graphics.Canvas.Text;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
+using WFontIconSource = Microsoft.UI.Xaml.Controls.FontIconSource;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -57,13 +58,15 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (imagesource is FontImageSource fontImageSource)
 			{
-				image = new Microsoft.UI.Xaml.Controls.FontIconSource
+				image = new WFontIconSource
 				{
 					Glyph = fontImageSource.Glyph,
-					FontFamily = new FontFamily(fontImageSource.FontFamily),
 					FontSize = fontImageSource.Size,
 					Foreground = fontImageSource.Color.ToBrush()
 				};
+
+				if (!string.IsNullOrEmpty(fontImageSource.FontFamily))
+					((WFontIconSource)image).FontFamily = new FontFamily(fontImageSource.FontFamily);
 			}
 
 			return Task.FromResult(image);
@@ -78,10 +81,12 @@ namespace Xamarin.Forms.Platform.UWP
 				image = new FontIcon
 				{
 					Glyph = fontImageSource.Glyph,
-					FontFamily = new FontFamily(fontImageSource.FontFamily),
 					FontSize = fontImageSource.Size,
 					Foreground = fontImageSource.Color.ToBrush()
 				};
+
+				if (!string.IsNullOrEmpty(fontImageSource.FontFamily))
+					((FontIcon)image).FontFamily = new FontFamily(fontImageSource.FontFamily);
 			}
 
 			return Task.FromResult(image);

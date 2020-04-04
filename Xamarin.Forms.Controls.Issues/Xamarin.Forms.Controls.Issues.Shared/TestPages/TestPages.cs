@@ -670,6 +670,29 @@ namespace Xamarin.Forms.Controls
 			return page;
 		}
 
+		public FlyoutItem AddFlyoutItem(ContentPage page, string title)
+		{
+			var item = new FlyoutItem
+			{
+				Title = title,
+				Items =
+				{
+					new Tab
+					{
+						Title = title,
+						Items =
+						{
+							page
+						}
+					}
+				}
+			};
+
+			Items.Add(item);
+
+			return item;
+		}
+
 		public TabBar CreateTabBar(string shellItemTitle)
 		{
 			shellItemTitle = shellItemTitle ?? $"Item: {Items.Count}";
@@ -796,13 +819,20 @@ namespace Xamarin.Forms.Controls
 			}
 		}
 
-
 		public void TapInFlyout(string text, string flyoutIcon = FlyoutIconAutomationId, bool usingSwipe = false, string timeoutMessage = null)
 		{
 			timeoutMessage = timeoutMessage ?? text;
 			ShowFlyout(flyoutIcon, usingSwipe);
 			RunningApp.WaitForElement(text, timeoutMessage);
 			RunningApp.Tap(text);
+		}
+
+		public void DoubleTapInFlyout(string text, string flyoutIcon = FlyoutIconAutomationId, bool usingSwipe = false, string timeoutMessage = null)
+		{
+			timeoutMessage = timeoutMessage ?? text;
+			ShowFlyout(flyoutIcon, usingSwipe);
+			RunningApp.WaitForElement(text, timeoutMessage);
+			RunningApp.DoubleTap(text);
 		}
 
 #endif

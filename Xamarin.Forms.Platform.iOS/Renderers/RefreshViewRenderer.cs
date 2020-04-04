@@ -25,15 +25,18 @@ namespace Xamarin.Forms.Platform.iOS
 				if (Element != null && Element.IsRefreshing != _isRefreshing)
 					Element.SetValueFromRenderer(RefreshView.IsRefreshingProperty, _isRefreshing);
 
-
 				if (_isRefreshing != _refreshControl.Refreshing)
 				{
 					if (_isRefreshing)
+					{
+						TryOffsetRefresh(this, IsRefreshing);
 						_refreshControl.BeginRefreshing();
+					}
 					else
+					{
 						_refreshControl.EndRefreshing();
-
-					TryOffsetRefresh(this, IsRefreshing);
+						TryOffsetRefresh(this, IsRefreshing);
+					}
 				}
 			}
 		}
@@ -68,8 +71,8 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			UpdateColors();
-			UpdateIsRefreshing();
 			UpdateIsEnabled();
+			UpdateIsRefreshing();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -205,6 +208,8 @@ namespace Xamarin.Forms.Platform.iOS
 				if (_refreshControl.Superview != null)
 					_refreshControl.RemoveFromSuperview();
 			}
+
+			UserInteractionEnabled = true;
 		}
 
 		bool CanUseRefreshControlProperty()
