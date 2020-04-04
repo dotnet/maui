@@ -29,6 +29,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Tests\DisplayAlertUITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tests\EditorUITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tests\EntryUITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tests\ExpanderViewUITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tests\FrameUITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tests\ImageButtonUITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tests\ImageUITests.cs" />
