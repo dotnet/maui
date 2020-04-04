@@ -4,13 +4,17 @@ using Xamarin.Forms.Internals;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1625, "Slider value is not changed for the first position change", PlatformAffected.Android)]
-	public class Github1625 : TestContentPage // or TestMasterDetailPage, etc ...
+#if UITEST
+	[NUnit.Framework.Category(UITestCategories.Slider)]
+#endif
+	public class Github1625 : TestContentPage
 	{
 		protected override void Init()
 		{
@@ -19,7 +23,7 @@ namespace Xamarin.Forms.Controls.Issues
 			slider.Minimum = 1;
 			slider.Value = 5;
 
-			var valueLabel = new Label();
+			var valueLabel = new Label() { AutomationId = "LabelValue" };
 			var stack = new StackLayout { Orientation = StackOrientation.Vertical, Spacing = 15 };
 
 			valueLabel.SetBinding(Label.TextProperty, new Binding("Value", source: slider));
@@ -29,8 +33,10 @@ namespace Xamarin.Forms.Controls.Issues
 			var button = new Button
 			{
 				Text = "Set to 7",
+				AutomationId = "SetTo7",
 				Command = new Command(() => slider.Value = 7)
 			};
+
 			stack.Children.Add(button);
 
 			var label = new Label
@@ -39,7 +45,27 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 			stack.Children.Add(label);
 
+			var labelAccessibility = new Label
+			{
+				Text = "Turn on a screen reader and use the volume buttons to modify the slider value. Ensure that the slider value on the label updates correctly."
+			};
+			stack.Children.Add(labelAccessibility);
+
 			Content = stack;
 		}
+
+
+
+#if UITEST
+		[Test]
+		public void SettingSliderToSpecificValueWorks()
+		{
+			RunningApp.WaitForElement("LabelValue");
+			Assert.AreEqual("5", RunningApp.WaitForElement("LabelValue")[0].ReadText());
+			RunningApp.Tap("SetTo7");
+			Assert.AreEqual("7", RunningApp.WaitForElement("LabelValue")[0].ReadText());
+		}
+#endif
+
 	}
 }
