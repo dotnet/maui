@@ -724,20 +724,22 @@ namespace Xamarin.Forms
 			bool currentPage = (((IShellSectionController)this).PresentedPage) == page;
 			var stack = _navStack.ToList();
 			stack.Remove(page);
-			var allow = ((IShellController)Shell).ProposeNavigation(
-				ShellNavigationSource.Remove,
-				ShellItem,
-				this,
-				CurrentItem,
-				stack,
-				true
-			);
+			var allow = (!currentPage) ? true : 
+				((IShellController)Shell).ProposeNavigation(
+					ShellNavigationSource.Remove,
+					ShellItem,
+					this,
+					CurrentItem,
+					stack,
+					true
+				);
 
 			if (!allow)
 				return;
 
 			if(currentPage)
 				PresentedPageDisappearing();
+
 			_navStack.Remove(page);
 
 			if(currentPage)
