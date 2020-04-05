@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<controls:TestContentPage
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"      
+    xmlns:controls="clr-namespace:Xamarin.Forms.Controls"
+    mc:Ignorable="d"
+    x:Class="Xamarin.Forms.Controls.Issues.Issue9326"
+    Title="Issue 9326">
+    <ContentPage.Content>
+        <RefreshView
+            IsRefreshing="{Binding IsRefreshing, Mode=OneWay}"
+            RefreshColor="Black"
+            Command="{Binding RefreshCommand}">
+            <CollectionView
+                ItemsSource="{Binding Items}" >
+                <CollectionView.Header>
+                    <Label Text="Hello World" />
+                </CollectionView.Header>
+               <CollectionView.ItemTemplate>
+                   <DataTemplate>
+                       <Label Text="{Binding .}" />
+                   </DataTemplate>
+               </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </ContentPage.Content>
+</controls:TestContentPage>
