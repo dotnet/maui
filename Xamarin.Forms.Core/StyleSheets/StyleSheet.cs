@@ -108,15 +108,8 @@ namespace Xamarin.Forms.StyleSheets
 
 		void Apply(Element styleable)
 		{
-			ApplyCore(styleable);
-			foreach (var child in styleable.AllChildren)
-				((IStyle)this).Apply(child);
-		}
-
-		void ApplyCore(Element styleable)
-		{
-			if (!(styleable is VisualElement visualStylable))
-				return;
+            if (!(styleable is VisualElement visualStylable))
+                return;
 			foreach (var kvp in Styles) {
 				var selector = kvp.Key;
 				var style = kvp.Value;

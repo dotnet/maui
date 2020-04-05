@@ -344,7 +344,7 @@ namespace Xamarin.Forms
 		protected virtual void OnParentSet()
 		{
 			ParentSet?.Invoke(this, EventArgs.Empty);
-			ApplyStyleSheetsOnParentSet();
+			ApplyStyleSheets();
 			(this as IPropertyPropagationController)?.PropagatePropertyChanged(null);
 		}
 
@@ -388,7 +388,7 @@ namespace Xamarin.Forms
 		internal virtual void OnParentResourcesChanged(object sender, ResourcesChangedEventArgs e)
 		{
 			if (e == ResourcesChangedEventArgs.StyleSheets)
-				ApplyStyleSheetsOnParentSet();
+				ApplyStyleSheets();
 			else
 				OnParentResourcesChanged(e.Values);
 		}
@@ -409,7 +409,10 @@ namespace Xamarin.Forms
 
 		internal virtual void OnResourcesChanged(object sender, ResourcesChangedEventArgs e)
 		{
-			OnResourcesChanged(e.Values);
+			if (e == ResourcesChangedEventArgs.StyleSheets)
+				ApplyStyleSheets();
+			else
+				OnResourcesChanged(e.Values);
 		}
 
 		internal void OnResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)

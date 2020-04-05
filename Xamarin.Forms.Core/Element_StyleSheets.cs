@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using System.Reflection;
-
-using Xamarin.Forms.Internals;
 using Xamarin.Forms.StyleSheets;
 
 namespace Xamarin.Forms
@@ -18,14 +16,18 @@ namespace Xamarin.Forms
 		internal string _cssFallbackTypeName;
 
 		string[] _styleSelectableNameAndBaseNames;
-		string[] IStyleSelectable.NameAndBases {
-			get {
-				if (_styleSelectableNameAndBaseNames == null) {
+		string[] IStyleSelectable.NameAndBases
+		{
+			get
+			{
+				if (_styleSelectableNameAndBaseNames == null)
+				{
 					var list = new List<string>();
 					if (_cssFallbackTypeName != null)
 						list.Add(_cssFallbackTypeName);
 					var t = GetType();
-					while (t != typeof(BindableObject)) {
+					while (t != typeof(BindableObject))
+					{
 						list.Add(t.Name);
 						t = t.GetTypeInfo().BaseType;
 					}
@@ -38,21 +40,44 @@ namespace Xamarin.Forms
 		IStyleSelectable IStyleSelectable.Parent => Parent;
 
 		//on parent set, or on parent stylesheet changed, reapply all
-		internal void ApplyStyleSheetsOnParentSet()
+		internal void ApplyStyleSheets()
 		{
-			var parent = Parent;
-			if (parent == null)
-				return;
 			var sheets = new List<StyleSheet>();
-			while (parent != null) {
+			Element parent = this;
+			while (parent != null)
+			{
 				var resourceProvider = parent as IResourcesProvider;
 				var vpSheets = resourceProvider?.GetStyleSheets();
 				if (vpSheets != null)
 					sheets.AddRange(vpSheets);
 				parent = parent.Parent;
 			}
-			for (var i = sheets.Count - 1; i >= 0; i--)
-				((IStyle)sheets[i]).Apply(this);
+
+			ApplyStyleSheets(sheets, this);
+		}
+
+		void ApplyStyleSheets(List<StyleSheet> sheets, Element element)
+		{
+			if (element == null)
+				return;
+
+			for (var i = (sheets?.Count ?? 0) - 1; i >= 0; i--)
+			{
+				((IStyle)sheets[i]).Apply(element);
+			}
+
+			foreach (Element child in element.AllChildren)
+			{
+				var mergedSheets = sheets;
+				var resourceProvider = child as IResourcesProvider;
+				var childSheets = resourceProvider?.GetStyleSheets();
+				if (childSheets?.Any() ?? false)
+				{
+					mergedSheets = new List<StyleSheet>(childSheets);
+					mergedSheets.AddRange(sheets);
+				}
+				ApplyStyleSheets(mergedSheets, child);
+			}
 		}
 	}
 }

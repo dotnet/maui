@@ -70,7 +70,7 @@ namespace Xamarin.Forms
 
 					//reapply the css stylesheets
 					if (Target is Element targetelement)
-						targetelement.ApplyStyleSheetsOnParentSet();
+						targetelement.ApplyStyleSheets();
 				}
 			}
 		}

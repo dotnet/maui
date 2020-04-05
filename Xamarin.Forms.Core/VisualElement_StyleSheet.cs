@@ -46,11 +46,5 @@ namespace Xamarin.Forms
 
 			return (styleAttribute.BindableProperty = bpField.GetValue(null) as BindableProperty);
 		}
-
-		void ApplyStyleSheets()
-		{
-			foreach (var styleSheet in this.GetStyleSheets())
-				((IStyle)styleSheet).Apply(this);
-		}
 	}
 }
