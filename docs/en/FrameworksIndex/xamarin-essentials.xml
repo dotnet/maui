@@ -25,6 +25,13 @@
       <Member Id="M:Xamarin.Essentials.AccelerometerData.ToString" />
       <Member Id="P:Xamarin.Essentials.AccelerometerData.Acceleration" />
     </Type>
+    <Type Name="Xamarin.Essentials.AltitudeReferenceSystem" Id="T:Xamarin.Essentials.AltitudeReferenceSystem">
+      <Member Id="F:Xamarin.Essentials.AltitudeReferenceSystem.Unspecified" />
+      <Member Id="F:Xamarin.Essentials.AltitudeReferenceSystem.Terrain" />
+      <Member Id="F:Xamarin.Essentials.AltitudeReferenceSystem.Ellipsoid" />
+      <Member Id="F:Xamarin.Essentials.AltitudeReferenceSystem.Geoid" />
+      <Member Id="F:Xamarin.Essentials.AltitudeReferenceSystem.Surface" />
+    </Type>
     <Type Name="Xamarin.Essentials.AppInfo" Id="T:Xamarin.Essentials.AppInfo">
       <Member Id="M:Xamarin.Essentials.AppInfo.ShowSettingsUI" />
       <Member Id="P:Xamarin.Essentials.AppInfo.BuildString" />
@@ -415,6 +422,7 @@
       <Member Id="M:Xamarin.Essentials.Location.ToString" />
       <Member Id="P:Xamarin.Essentials.Location.Accuracy" />
       <Member Id="P:Xamarin.Essentials.Location.Altitude" />
+      <Member Id="P:Xamarin.Essentials.Location.AltitudeReferenceSystem" />
       <Member Id="P:Xamarin.Essentials.Location.Course" />
       <Member Id="P:Xamarin.Essentials.Location.IsFromMockProvider" />
       <Member Id="P:Xamarin.Essentials.Location.Latitude" />
