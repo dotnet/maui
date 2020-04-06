@@ -149,7 +149,7 @@ namespace Tests
         public void RgbToHsv(string name, double hTest, double sTest, double vTest)
         {
             var color = Color.FromName(name);
-            color.ToHsv(out var h, out var s, out var v);
+            var (h, s, v) = color.ToHsv();
             Assert.Equal(hTest, h);
             Assert.Equal(sTest, s);
             Assert.Equal(vTest, Math.Round(v, 1));
@@ -167,7 +167,7 @@ namespace Tests
         public void HsvToRgba(string name, double hTest, double sTest, double vTest)
         {
             var colorExpected = Color.FromName(name);
-            var color = Xamarin.Essentials.ColorExtensions.FromHsva(hTest, sTest, vTest, 50);
+            var color = ColorExtensions.FromHsva(hTest, sTest, vTest, 50);
             Assert.Equal(colorExpected.R, color.R);
             Assert.Equal(colorExpected.G, color.G);
             Assert.Equal(colorExpected.B, color.B);

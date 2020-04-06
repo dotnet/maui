@@ -68,14 +68,14 @@ namespace Xamarin.Essentials
             return ColorConverters.FromHsl(h, s * 100, l * 100);
         }
 
-        public static void ToHsv(this Color color, out double h, out double s, out double v)
+        public static (double h, double s, double v) ToHsv(this Color color)
         {
-            h = 0;
+            double h = 0, s;
             var rHSV = (double)color.R / 255;
             var gHSV = (double)color.G / 255;
             var bHSV = (double)color.B / 255;
 
-            v = Math.Max(Math.Max(rHSV, gHSV), bHSV);
+            var v = Math.Max(Math.Max(rHSV, gHSV), bHSV);
             var cMin = Math.Min(Math.Min(rHSV, gHSV), bHSV);
             var delta = v - cMin;
 
@@ -104,6 +104,7 @@ namespace Xamarin.Essentials
             }
             s *= 100;
             v *= 100;
+            return (h, s, v);
         }
 
         public static Color FromHsva(double h, double s, double v, double a)
@@ -111,7 +112,6 @@ namespace Xamarin.Essentials
             h /= 360d;
             s /= 100d;
             v /= 100d;
-            a /= 100d;
 
             h = h.Clamp(0, 1);
             s = s.Clamp(0, 1);
@@ -142,9 +142,8 @@ namespace Xamarin.Essentials
                 r = r.Clamp(0, 1);
                 g = g.Clamp(0, 1);
                 b = b.Clamp(0, 1);
-                a = a.Clamp(0, 1);
 
-                return Color.FromArgb((int)(a * 100), (int)(r * 255), (int)(g * 255), (int)(b * 255));
+                return Color.FromArgb((int)a, (int)(r * 255), (int)(g * 255), (int)(b * 255));
             }
         }
 
