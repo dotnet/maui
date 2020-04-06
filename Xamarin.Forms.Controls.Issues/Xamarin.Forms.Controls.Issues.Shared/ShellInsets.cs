@@ -343,7 +343,7 @@ namespace Xamarin.Forms.Controls.Issues
 				entry = RunningApp.Query(EntrySuccess);
 
 				if (entry.Length > 0)
-					Assert.Less(entry[0].Rect.Y, originalPosition.Y);
+					Assert.LessOrEqual(entry[0].Rect.Y, originalPosition.Y);
 			}
 
 			RunningApp.Tap(ResetKeyboard);
