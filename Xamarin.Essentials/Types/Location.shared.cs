@@ -47,8 +47,12 @@ namespace Xamarin.Essentials
             Latitude = point.Latitude;
             Longitude = point.Longitude;
             Timestamp = DateTime.UtcNow;
+            Altitude = point.Altitude;
+            Accuracy = point.Accuracy;
+            VerticalAccuracy = point.VerticalAccuracy;
             Speed = point.Speed;
             Course = point.Course;
+            IsFromMockProvider = point.IsFromMockProvider;
         }
 
         public DateTimeOffset Timestamp { get; set; }
