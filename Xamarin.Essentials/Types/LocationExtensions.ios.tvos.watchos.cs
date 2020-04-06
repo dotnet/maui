@@ -14,6 +14,7 @@ namespace Xamarin.Essentials
                 Latitude = placemark.Location.Coordinate.Latitude,
                 Longitude = placemark.Location.Coordinate.Longitude,
                 Altitude = placemark.Location.Altitude,
+                AltitudeReferenceSystem = AltitudeReferenceSystem.Geoid,
                 Timestamp = DateTimeOffset.UtcNow
             };
 
@@ -33,7 +34,8 @@ namespace Xamarin.Essentials
                 Course = location.Course < 0 ? default(double?) : location.Course,
                 Speed = location.Speed < 0 ? default(double?) : location.Speed,
 #endif
-                IsFromMockProvider = DeviceInfo.DeviceType == DeviceType.Virtual
+                IsFromMockProvider = DeviceInfo.DeviceType == DeviceType.Virtual,
+                AltitudeReferenceSystem = AltitudeReferenceSystem.Geoid
             };
 
         internal static DateTimeOffset ToDateTime(this NSDate timestamp)

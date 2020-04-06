@@ -10,6 +10,15 @@ namespace Xamarin.Essentials
         Miles
     }
 
+    public enum AltitudeReferenceSystem
+    {
+        Unspecified = 0,
+        Terrain = 1,
+        Ellipsoid = 2,
+        Geoid = 3,
+        Surface = 4
+    }
+
     public class Location
     {
         public Location()
@@ -59,6 +68,8 @@ namespace Xamarin.Essentials
         public double? Course { get; set; }
 
         public bool IsFromMockProvider { get; set; }
+
+        public AltitudeReferenceSystem AltitudeReferenceSystem { get; set; }
 
         public static double CalculateDistance(double latitudeStart, double longitudeStart, Location locationEnd, DistanceUnits units) =>
             CalculateDistance(latitudeStart, longitudeStart, locationEnd.Latitude, locationEnd.Longitude, units);

@@ -100,6 +100,7 @@ namespace Samples.ViewModel
                 $"Longitude: {location.Longitude}\n" +
                 $"HorizontalAccuracy: {location.Accuracy}\n" +
                 $"Altitude: {(location.Altitude.HasValue ? location.Altitude.Value.ToString() : notAvailable)}\n" +
+                $"AltitudeRefSys: {location.AltitudeReferenceSystem.ToString()}\n" +
                 $"VerticalAccuracy: {(location.VerticalAccuracy.HasValue ? location.VerticalAccuracy.Value.ToString() : notAvailable)}\n" +
                 $"Heading: {(location.Course.HasValue ? location.Course.Value.ToString() : notAvailable)}\n" +
                 $"Speed: {(location.Speed.HasValue ? location.Speed.Value.ToString() : notAvailable)}\n" +
