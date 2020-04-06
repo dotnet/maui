@@ -201,7 +201,15 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateIsEnabled()
 		{
-			if (Element.IsEnabled)
+			bool isRefreshViewEnabled = Element.IsEnabled;
+			_refreshControl.Enabled = isRefreshViewEnabled;
+
+			UserInteractionEnabled = true;
+
+			if (IsRefreshing)
+				return;
+
+			if (isRefreshViewEnabled)
 				TryInsertRefresh(_refreshControlParent);
 			else
 			{

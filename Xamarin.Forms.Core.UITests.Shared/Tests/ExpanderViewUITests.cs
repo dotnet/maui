@@ -13,6 +13,8 @@ namespace Xamarin.Forms.Core.UITests
 		[TestCase]
 		public void ExpanderView()
 		{
+			App.Tap("EnableExpander");
+			App.Tap("Expander Gallery");
 			App.WaitForElement("The Second", "");
 			App.Tap("Expander Level 2");
 			App.WaitForElement("Hi, I am Red", "View didn't expand the second level");
