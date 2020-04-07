@@ -124,9 +124,7 @@ namespace Xamarin.Forms.Platform
 	internal class _CheckBoxRenderer { }
 #endif
 
-#if !TIZEN4_0
 	[RenderWith(typeof(IndicatorViewRenderer))]
-#endif
 	internal class _IndicatorViewRenderer { }
 
 #if __IOS__
