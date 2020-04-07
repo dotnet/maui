@@ -68,10 +68,21 @@ namespace Xamarin.Forms.Controls.Issues
 				BarTextColor = Color.Default;
 			};
 
+			var navigateButton = new Button
+			{
+				Text = "Navigate"
+			};
+
+			navigateButton.Clicked += (sender, args) =>
+			{
+				Navigation.PushAsync(new Issue9767NavigationPage(new Issue9767()));
+			};
+
 			layout.Children.Add(updateBarBackgroundButton);
 			layout.Children.Add(updateBarTextButton);
 			layout.Children.Add(resetBarBackgroundButton);
 			layout.Children.Add(resetBarTextButton);
+			layout.Children.Add(navigateButton);
 
 			page.Content = layout;
 
@@ -80,7 +91,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-		
+
 		}
 
 		Color GetRandomColor()
@@ -102,4 +113,18 @@ namespace Xamarin.Forms.Controls.Issues
 			return (Color)result;
 		}
 	}
+
+	[Preserve(AllMembers = true)]
+	public class Issue9767NavigationPage : NavigationPage
+	{
+		public Issue9767NavigationPage()
+		{
+
+		}
+
+		public Issue9767NavigationPage(Page root) : base(root)
+		{
+
+		}
+	} 
 }

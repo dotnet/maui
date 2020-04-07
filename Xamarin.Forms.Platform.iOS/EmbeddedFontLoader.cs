@@ -4,6 +4,7 @@ using System.Linq;
 using CoreGraphics;
 using CoreText;
 using Foundation;
+using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -21,6 +22,12 @@ namespace Xamarin.Forms.Platform.iOS
 				if (CTFontManager.RegisterGraphicsFont(cGFont, out var error))
 				{
 					return (true, name);
+				}
+				else //Lets check if the font is already registered
+				{
+					var uiFont = UIFont.FromName(name, 10);
+					if (uiFont != null)
+						return (true, name);
 				}
 				Debug.WriteLine(error.Description);
 			}
