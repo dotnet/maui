@@ -147,6 +147,14 @@ namespace Xamarin.Forms.Platform.iOS
 			base.ViewWillAppear(animated);
 
 			SetStatusBarStyle();
+
+			if (Forms.IsiOS13OrNewer)
+			{
+				UpdateTint();
+				UpdateBarBackgroundColor();
+				UpdateBarTextColor();
+				UpdateHideNavigationBarSeparator();
+			}
 		}
 
 		public override void ViewDidDisappear(bool animated)
@@ -225,11 +233,16 @@ namespace Xamarin.Forms.Platform.iOS
 			navPage.RemovePageRequested += OnRemovedPageRequested;
 			navPage.InsertPageBeforeRequested += OnInsertPageBeforeRequested;
 
-			UpdateTint();
-			UpdateBarBackgroundColor();
-			UpdateBarTextColor();
+			if (!Forms.IsiOS13OrNewer)
+			{
+				UpdateTint();
+				UpdateBarBackgroundColor();
+				UpdateBarTextColor();
+				UpdateHideNavigationBarSeparator();
+			}
+
 			UpdateUseLargeTitles();
-			UpdateHideNavigationBarSeparator();
+
 			if (Forms.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
@@ -658,6 +671,9 @@ namespace Xamarin.Forms.Platform.iOS
 				NavigationBar.CompactAppearance = navigationBarAppearance;
 				NavigationBar.StandardAppearance = navigationBarAppearance;
 				NavigationBar.ScrollEdgeAppearance = navigationBarAppearance;
+
+				var parentingViewController = (ParentingViewController)ViewControllers.Last();
+				parentingViewController?.UpdateNavigationBarBackgroundImage();
 			}
 			else
 #endif
@@ -1055,6 +1071,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			public override void ViewWillAppear(bool animated)
 			{
+				UpdateNavigationBarBackgroundImage();
 				UpdateNavigationBarVisibility(animated);
 
 				NavigationRenderer n;
@@ -1120,6 +1137,22 @@ namespace Xamarin.Forms.Platform.iOS
 					UpdateTitleArea(Child);
 			}
 
+			internal void UpdateNavigationBarBackgroundImage()
+			{
+				if (!Forms.IsiOS13OrNewer)
+					return;
+
+				if (!_navigation.TryGetTarget(out NavigationRenderer navigationRenderer))
+					return;
+
+#if __XCODE11__
+				var backgroundImage = navigationRenderer.NavigationBar.GetBackgroundImage(UIBarMetrics.Default);
+
+				navigationRenderer.NavigationBar.CompactAppearance.BackgroundImage = backgroundImage;
+				navigationRenderer.NavigationBar.StandardAppearance.BackgroundImage = backgroundImage;
+				navigationRenderer.NavigationBar.ScrollEdgeAppearance.BackgroundImage = backgroundImage;
+#endif
+			}
 
 			internal void UpdateLeftBarButtonItem(Page pageBeingRemoved = null)
 			{
