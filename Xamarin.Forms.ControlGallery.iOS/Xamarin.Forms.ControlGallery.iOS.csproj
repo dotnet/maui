@@ -138,6 +138,7 @@
     <Compile Include="CustomRenderers\RoundedLabelRenderer.cs" />
     <Compile Include="ApiLabelRenderer.cs" />
     <Compile Include="CustomRenderers\CustomSearchBarRenderer.cs" />
+    <Compile Include="_9767CustomRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Controls\Xamarin.Forms.Controls.csproj">
