@@ -18,16 +18,16 @@ namespace Xamarin.Essentials
             new AppAction
             {
                 ActionType = shortcutItem.Type,
-                LocalizedTitle = shortcutItem.LocalizedTitle,
-                LocalizedSubtitle = shortcutItem.LocalizedSubtitle,
+                Title = shortcutItem.LocalizedTitle,
+                Subtitle = shortcutItem.LocalizedSubtitle,
                 Icon = null
             };
 
         static UIApplicationShortcutItem ToShortcutItem(this AppAction action) =>
             new UIApplicationShortcutItem(
                 action.ActionType,
-                action.LocalizedTitle,
-                action.LocalizedSubtitle,
+                action.Title,
+                action.Subtitle,
                 action.Icon != null ? UIApplicationShortcutIcon.FromTemplateImageName(action.Icon) : null,
                 new NSDictionary<NSString, NSObject>((NSString)"uri", (NSString)action.Uri.ToString()));
     }

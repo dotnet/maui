@@ -21,8 +21,8 @@ namespace Xamarin.Essentials
             new AppAction
             {
                 ActionType = shortcutInfo.Id,
-                LocalizedTitle = shortcutInfo.ShortLabel,
-                LocalizedSubtitle = shortcutInfo.LongLabel,
+                Title = shortcutInfo.ShortLabel,
+                Subtitle = shortcutInfo.LongLabel,
                 Icon = null
             };
 
@@ -30,11 +30,11 @@ namespace Xamarin.Essentials
         {
             var shortcut = new ShortcutInfo.Builder(Platform.AppContext, action.ActionType)
                 .SetIntent(new Intent(Intent.ActionView, AndroidUri.Parse(action.Uri.ToString())))
-                .SetShortLabel(action.LocalizedTitle);
+                .SetShortLabel(action.Title);
 
-            if (!string.IsNullOrWhiteSpace(action.LocalizedSubtitle))
+            if (!string.IsNullOrWhiteSpace(action.Subtitle))
             {
-                shortcut.SetLongLabel(action.LocalizedSubtitle);
+                shortcut.SetLongLabel(action.Subtitle);
             }
 
             if (!string.IsNullOrWhiteSpace(action.Icon))
