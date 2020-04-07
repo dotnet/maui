@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Internals
 	public static class FontRegistrar
 	{
 		internal static readonly Dictionary<string, (ExportFontAttribute attribute, Assembly assembly)> EmbeddedFonts = new Dictionary<string, (ExportFontAttribute attribute, Assembly assembly)>();
-
+		static Dictionary<string, (bool, string)> fontLookupCache = new Dictionary<string, (bool, string)>();
 		public static void Register(ExportFontAttribute fontAttribute, Assembly assembly)
 		{
 			EmbeddedFonts[fontAttribute.FontFileName] = (fontAttribute, assembly);
@@ -29,18 +29,23 @@ namespace Xamarin.Forms.Internals
 					return (false, null);
 				}
 
+				if (fontLookupCache.TryGetValue(font, out var foundResult))
+					return foundResult;
+
+
 				var fontStream = GetEmbeddedResourceStream(foundFont.assembly, foundFont.attribute.FontFileName);
 
 				var type = Registrar.Registered.GetHandlerType(typeof(EmbeddedFont));
 				var fontHandler = (IEmbeddedFontLoader)Activator.CreateInstance(type);
-				return fontHandler.LoadFont(new EmbeddedFont { FontName = foundFont.attribute.FontFileName, ResourceStream = fontStream });
+				var result = fontHandler.LoadFont(new EmbeddedFont { FontName = foundFont.attribute.FontFileName, ResourceStream = fontStream });
+				return fontLookupCache[font] = result;
 
 			}
 			catch (Exception ex)
 			{
 				Debug.WriteLine(ex);
 			}
-			return (false, null);
+			return fontLookupCache[font] = (false, null);
 		}
 
 		static Stream GetEmbeddedResourceStream(Assembly assembly, string resourceFileName)
