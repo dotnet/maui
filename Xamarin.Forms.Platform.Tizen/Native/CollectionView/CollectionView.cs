@@ -7,10 +7,11 @@ using EBox = ElmSharp.Box;
 using EScroller = ElmSharp.Scroller;
 using ESize = ElmSharp.Size;
 using EPoint = ElmSharp.Point;
+using ElmSharp.Wearable;
 
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
-	public class CollectionView : EBox, ICollectionViewController
+	public class CollectionView : EBox, ICollectionViewController, IRotaryInteraction
 	{
 		RecyclerPool _pool = new RecyclerPool();
 		ICollectionViewLayoutManager _layoutManager;
@@ -42,6 +43,9 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			_innerLayout.Show();
 			Scroller.SetContent(_innerLayout);
 		}
+
+		public IRotaryActionWidget RotaryWidget { get => Scroller as IRotaryActionWidget; }
+
 
 		public CollectionViewSelectionMode SelectionMode
 		{
@@ -316,7 +320,14 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 		protected virtual EScroller CreateScroller(EvasObject parent)
 		{
-			return new EScroller(parent);
+			if (Device.Idiom == TargetIdiom.Watch)
+			{
+				return new CircleScroller(parent, Forms.CircleSurface);
+			}
+			else
+			{
+				return new EScroller(parent);
+			}
 		}
 
 		void UpdateSelectedItemIndex()

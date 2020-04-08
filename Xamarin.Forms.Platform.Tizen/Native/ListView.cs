@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Xamarin.Forms.Internals;
 using ElmSharp;
+using ElmSharp.Wearable;
+using EScroller = ElmSharp.Scroller;
+using EColor = ElmSharp.Color;
 
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
@@ -45,7 +48,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			internal TemplatedItemsList<ItemsView<Cell>, Cell> ListOfSubItems;
 		}
 
-		class ScrollerExtension : Scroller
+		class ScrollerExtension : EScroller
 		{
 			public ScrollerExtension(GenList scrollableLayout) : base(scrollableLayout)
 			{
@@ -97,7 +100,10 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// </summary>
 		GenItemClass _headerFooterItemClass = null;
 
-		ScrollerExtension _scrollerExtension;
+		/// <summary>
+		/// The object to handle scroller properties.
+		/// </summary>
+		protected virtual EScroller Scroller { get; set; }
 
 		/// <summary>
 		/// Gets or sets a value indicating whether this instance has grouping enabled.
@@ -108,7 +114,39 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// <summary>
 		/// Gets the current region in the content object that is visible through the Scroller.
 		/// </summary>
-		public Rect CurrentRegion => _scrollerExtension.CurrentRegion;
+		public virtual Rect CurrentRegion => Scroller?.CurrentRegion ?? new Rect();
+
+		/// <summary>
+		/// Sets or gets the value of VerticalScrollBarVisibility
+		/// </summary>
+		public virtual ScrollBarVisiblePolicy VerticalScrollBarVisibility
+		{
+			get
+			{
+				return Scroller?.VerticalScrollBarVisiblePolicy ?? ScrollBarVisiblePolicy.Auto;
+			}
+			set
+			{
+				if (Scroller != null)
+					Scroller.VerticalScrollBarVisiblePolicy = value;
+			}
+		}
+
+		/// <summary>
+		/// Sets or gets the value of HorizontalScrollBarVisibility
+		/// </summary>
+		public virtual ScrollBarVisiblePolicy HorizontalScrollBarVisibility
+		{
+			get
+			{
+				return Scroller?.HorizontalScrollBarVisiblePolicy ?? ScrollBarVisiblePolicy.Auto;
+			}
+			set
+			{
+				if (Scroller != null)
+					Scroller.HorizontalScrollBarVisiblePolicy = value;
+			}
+		}
 
 		/// <summary>
 		/// Occurs when the ListView has scrolled.
@@ -122,14 +160,11 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		public ListView(EvasObject parent)
 			: base(parent)
 		{
-			_scrollerExtension = new ScrollerExtension(this);
-			new SmartEvent(this, RealHandle, "scroll").On += (s,e) =>
-			{
-				Scrolled?.Invoke(this, null);
-			};
+			Scroller = new ScrollerExtension(this);
+			Scroller.Scrolled += OnScrolled;
 		}
 
-		protected ListView() : base()
+		protected ListView()
 		{
 		}
 
@@ -167,7 +202,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// <param name="beforeCell">Cell before which new items will be placed. 
 		/// Null value may also be passed as this parameter, which results in appending new items to the end.
 		/// </param>
-		public void AddSource(IEnumerable source, Cell beforeCell = null)
+		public virtual void AddSource(IEnumerable source, Cell beforeCell = null)
 		{
 			foreach (var data in source)
 			{
@@ -274,7 +309,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// Sets the header.
 		/// </summary>
 		/// <param name="header">Header of the list.</param>
-		public void SetHeader(VisualElement header)
+		public virtual void SetHeader(VisualElement header)
 		{
 			if (header == null)
 			{
@@ -307,7 +342,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// Sets the footer.
 		/// </summary>
 		/// <param name="footer">Footer of the list.</param>
-		public void SetFooter(VisualElement footer)
+		public virtual void SetFooter(VisualElement footer)
 		{
 			if (footer == null)
 			{
@@ -391,6 +426,11 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		public VisualElement GetFooter()
 		{
 			return _footerElement;
+		}
+
+		protected virtual void OnScrolled(object sender, EventArgs e)
+		{
+			Scrolled?.Invoke(this, EventArgs.Empty);
 		}
 
 		/// <summary>

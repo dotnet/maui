@@ -28,8 +28,8 @@ namespace Xamarin.Forms.Platform.Tizen
 				{
 					IsSingleLine = false,
 				};
-				entry.Focused += OnFocused;
-				entry.Unfocused += OnUnfocused;
+				entry.Focused += OnEntryFocused;
+				entry.Unfocused += OnEntryUnfocused;
 				entry.TextChanged += OnTextChanged;
 				entry.Unfocused += OnCompleted;
 				entry.PrependMarkUpFilter(MaxLengthFilter);
@@ -47,8 +47,8 @@ namespace Xamarin.Forms.Platform.Tizen
 				{
 					Control.TextChanged -= OnTextChanged;
 					Control.BackButtonPressed -= OnCompleted;
-					Control.Unfocused -= OnUnfocused;
-					Control.Focused -= OnFocused;
+					Control.Unfocused -= OnEntryUnfocused;
+					Control.Focused -= OnEntryFocused;
 				}
 			}
 			base.Dispose(disposing);
@@ -66,7 +66,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		bool _isSendComplate = false;
 
-		void OnFocused(object sender, EventArgs e)
+		void OnEntryFocused(object sender, EventArgs e)
 		{
 			// BackButtonPressed is only passed to the object that is at the highest Z-Order, and it does not propagate to lower objects.
 			// If you want to make Editor input completed by using BackButtonPressed, you should subscribe BackButtonPressed event only when Editor gets focused.
@@ -74,7 +74,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			_isSendComplate = false;
 		}
 
-		void OnUnfocused(object sender, EventArgs e)
+		void OnEntryUnfocused(object sender, EventArgs e)
 		{
 			// BackButtonPressed is only passed to the object that is at the highest Z-Order, and it does not propagate to lower objects.
 			// When the object is unfocesed BackButtonPressed event has to be released to stop using it.
