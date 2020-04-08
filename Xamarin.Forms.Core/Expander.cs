@@ -167,7 +167,7 @@ namespace Xamarin.Forms
 		{
 			base.OnBindingContextChanged();
 			_lastVisibleHeight = -1;
-			SetContent(true);
+			SetContent(true, true);
 		}
 
 		protected override void OnSizeAllocated(double width, double height)
@@ -180,7 +180,7 @@ namespace Xamarin.Forms
 			_previousWidth = width;
 		}
 
-		void OnIsExpandedChanged()
+		void OnIsExpandedChanged(bool isBindingContextChanged = false)
 		{
 			if (Content == null || (!IsExpanded && !Content.IsVisible))
 			{
@@ -229,7 +229,7 @@ namespace Xamarin.Forms
 				_endHeight = 0;
 			}
 
-			_shouldIgnoreAnimation = Height < 0;
+			_shouldIgnoreAnimation = isBindingContextChanged || Height < 0;
 
 			if (shouldInvokeAnimation)
 			{
@@ -268,7 +268,7 @@ namespace Xamarin.Forms
 			}
 		}
 
-		void SetContent(bool isForceUpdate)
+		void SetContent(bool isForceUpdate, bool isBindingContextChanged = false)
 		{
 			if (IsExpanded && (Content == null || isForceUpdate))
 			{
@@ -276,7 +276,7 @@ namespace Xamarin.Forms
 				Content = CreateContent() ?? Content;
 				_shouldIgnoreContentSetting = false;
 			}
-			OnIsExpandedChanged();
+			OnIsExpandedChanged(isBindingContextChanged);
 		}
 
 		void SetContent(View oldContent, View newContent)
