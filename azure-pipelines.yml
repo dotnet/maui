@@ -5,7 +5,7 @@ variables:
   CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(PreviewNumber)'
   NugetPackageVersion: '$(CurrentSemanticVersion)'
   MONO_VERSION: 6_8_0
-  XCODE_VERSION: 11.4
+  XCODE_VERSION: 11.3
   NETCORE_VERSION: '3.1.x'
   NETCORE_TEST_VERSION: '2.2.x'
   IOS_SIM_NAME: 'iPhone 11'
