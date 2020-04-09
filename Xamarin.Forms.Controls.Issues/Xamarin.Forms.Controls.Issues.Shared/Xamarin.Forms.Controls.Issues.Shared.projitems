@@ -750,6 +750,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue7371.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8145.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue10222.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_TemplateMarkup.xaml.cs">
       <DependentUpon>_TemplateMarkup.xaml</DependentUpon>
       <SubType>Code</SubType>
