@@ -227,6 +227,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)NestedCollectionViews.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7339.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellAppearanceChange.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue10234.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellModal.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellFlyoutBehavior.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7128.cs" />
@@ -777,6 +778,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8145.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue10222.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_TemplateMarkup.xaml.cs">
       <DependentUpon>_TemplateMarkup.xaml</DependentUpon>
       <SubType>Code</SubType>

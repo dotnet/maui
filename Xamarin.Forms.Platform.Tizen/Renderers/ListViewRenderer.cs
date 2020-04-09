@@ -43,6 +43,8 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler("HeaderElement", UpdateHeader);
 			RegisterPropertyHandler("FooterElement", UpdateFooter);
 			RegisterPropertyHandler(ListView.SelectionModeProperty, UpdateSelectionMode);
+			RegisterPropertyHandler(ListView.VerticalScrollBarVisibilityProperty, UpdateVerticalScrollBarVisibility);
+			RegisterPropertyHandler(ListView.HorizontalScrollBarVisibilityProperty, UpdateHorizontalScrollBarVisibility);
 		}
 
 		/// <summary>
@@ -54,7 +56,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Native.ListView(Forms.NativeParent));
+				SetNativeControl(CreateNativeControl());
 
 				Control.Scrolled += OnScrolled;
 				Control.ItemSelected += OnListViewItemSelected;
@@ -76,6 +78,18 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 
 			base.OnElementChanged(e);
+		}
+
+		protected virtual Native.ListView CreateNativeControl()
+		{
+			if(Device.Idiom == TargetIdiom.Watch)
+			{
+				return new Native.Watch.WatchListView(Forms.NativeParent, Forms.CircleSurface);
+			}
+			else
+			{
+				return new Native.ListView(Forms.NativeParent);
+			}
 		}
 
 		/// <summary>
@@ -409,6 +423,16 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				Control.IsHighlight = true;
 			}
+		}
+
+		void UpdateVerticalScrollBarVisibility()
+		{
+			Control.VerticalScrollBarVisibility = Element.VerticalScrollBarVisibility.ToNative();
+		}
+
+		void UpdateHorizontalScrollBarVisibility()
+		{
+			Control.HorizontalScrollBarVisibility = Element.HorizontalScrollBarVisibility.ToNative();
 		}
 	}
 }

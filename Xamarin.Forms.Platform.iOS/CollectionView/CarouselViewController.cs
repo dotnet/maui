@@ -101,6 +101,7 @@ namespace Xamarin.Forms.Platform.iOS
 		internal void TearDown()
 		{
 			Carousel.PropertyChanged -= CarouselViewPropertyChanged;
+			Carousel.Scrolled -= CarouselViewScrolled;
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
 		}
 

@@ -30,6 +30,7 @@ using Xamarin.Forms.Platform.Tizen;
 [assembly: ExportRenderer(typeof(ListView), typeof(ListViewRenderer))]
 [assembly: ExportRenderer(typeof(BoxView), typeof(BoxViewRenderer))]
 [assembly: ExportRenderer(typeof(ActivityIndicator), typeof(ActivityIndicatorRenderer))]
+[assembly: ExportRenderer(typeof(IndicatorView), typeof(IndicatorViewRenderer))]
 [assembly: ExportRenderer(typeof(SearchBar), typeof(SearchBarRenderer))]
 [assembly: ExportRenderer(typeof(Entry), typeof(EntryRenderer))]
 [assembly: ExportRenderer(typeof(Editor), typeof(EditorRenderer))]
@@ -42,6 +43,7 @@ using Xamarin.Forms.Platform.Tizen;
 [assembly: ExportRenderer(typeof(SwipeView), typeof(SwipeViewRenderer))]
 [assembly: ExportRenderer(typeof(RefreshView), typeof(RefreshViewRenderer))]
 [assembly: ExportRenderer(typeof(MediaElement), typeof(MediaElementRenderer))]
+[assembly: ExportRenderer(typeof(IndicatorView), typeof(IndicatorViewRenderer))]
 
 [assembly: ExportImageSourceHandler(typeof(FileImageSource), typeof(FileImageSourceHandler))]
 [assembly: ExportImageSourceHandler(typeof(StreamImageSource), typeof(StreamImageSourceHandler))]

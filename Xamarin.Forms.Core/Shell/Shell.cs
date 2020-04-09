@@ -60,22 +60,6 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty MenuItemTemplateProperty =
 			BindableProperty.CreateAttached(nameof(MenuItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime, defaultValueCreator: OnMenuItemTemplateCreate);
 
-		static object OnMenuItemTemplateCreate(BindableObject bindable)
-		{
-			if(bindable is BaseShellItem baseShellItem)
-				return baseShellItem.CreateDefaultFlyoutItemCell("Text", "Icon");
-
-			if (bindable is MenuItem mi)
-			{
-				if (mi.Parent is BaseShellItem bsiMi)
-					return bsiMi.CreateDefaultFlyoutItemCell("Text", "Icon");
-				else
-					return null;
-			}
-
-			throw new ArgumentException($"Invalidate Menu Item Type: {bindable}", nameof(bindable));
-		}
-
 		public static DataTemplate GetMenuItemTemplate(BindableObject obj) => (DataTemplate)obj.GetValue(MenuItemTemplateProperty);
 		public static void SetMenuItemTemplate(BindableObject obj, DataTemplate menuItemTemplate) => obj.SetValue(MenuItemTemplateProperty, menuItemTemplate);
 
@@ -84,7 +68,28 @@ namespace Xamarin.Forms
 
 		static object OnItemTemplateCreator(BindableObject bindable)
 		{
-			return (bindable as BaseShellItem).CreateDefaultFlyoutItemCell("Title", "FlyoutIcon");
+			return OnFlyoutItemTemplateCreate(bindable, "Title", "FlyoutIcon");
+		}
+
+		static object OnMenuItemTemplateCreate(BindableObject bindable)
+		{
+			return OnFlyoutItemTemplateCreate(bindable, "Text", "Icon");
+		}
+
+		static object OnFlyoutItemTemplateCreate(BindableObject bindable, string textBinding, string iconBinding)
+		{
+			if (bindable is BaseShellItem baseShellItem)
+				return BaseShellItem.CreateDefaultFlyoutItemCell(baseShellItem, textBinding, iconBinding);
+
+			if (bindable is MenuItem mi)
+			{
+				if (mi.Parent is BaseShellItem bsiMi)
+					return BaseShellItem.CreateDefaultFlyoutItemCell(bsiMi, textBinding, iconBinding);
+				else
+					return null;
+			}
+
+			return BaseShellItem.CreateDefaultFlyoutItemCell(bindable as StyleSheets.IStyleSelectable, textBinding, iconBinding);
 		}
 
 		public static DataTemplate GetItemTemplate(BindableObject obj) => (DataTemplate)obj.GetValue(ItemTemplateProperty);
@@ -220,6 +225,30 @@ namespace Xamarin.Forms
 
 		List<(IAppearanceObserver Observer, Element Pivot)> _appearanceObservers = new List<(IAppearanceObserver Observer, Element Pivot)>();
 		List<IFlyoutBehaviorObserver> _flyoutBehaviorObservers = new List<IFlyoutBehaviorObserver>();
+
+		DataTemplate IShellController.GetFlyoutItemDataTemplate(BindableObject bo)
+		{
+			BindableProperty bp = null;
+
+			if (bo is IMenuItemController)
+			{
+				bp = MenuItemTemplateProperty;
+
+				if (bo is MenuItem mi && mi.Parent != null && mi.Parent.IsSet(bp))
+					bo = mi.Parent;
+				else if (bo is MenuShellItem msi && msi.MenuItem != null && msi.MenuItem.IsSet(bp))
+					bo = msi.MenuItem;
+			}
+			else
+			{
+				bp = ItemTemplateProperty;
+			}
+
+			if (bo.IsSet(bp))
+				return (DataTemplate)bo.GetValue(bp);
+
+			return (DataTemplate)GetValue(bp);
+		}
 
 		event EventHandler IShellController.StructureChanged
 		{

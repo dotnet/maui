@@ -16,7 +16,6 @@ namespace Xamarin.Forms
 		public event EventHandler Disappearing;
 
 		bool _hasAppearing;
-		Grid _defaultFlyoutItemCell;
 		const string DefaultFlyoutItemLabelStyle = "Default_FlyoutItemLabelStyle";
 		const string DefaultFlyoutItemImageStyle = "Default_FlyoutItemImageStyle";
 		const string DefaultFlyoutItemLayoutStyle = "Default_FlyoutItemLayoutStyle";
@@ -268,16 +267,6 @@ namespace Xamarin.Forms
 		{
 		}
 
-
-		internal override void OnStyleClassChanged()
-		{
-			if (_defaultFlyoutItemCell == null)
-				return;
-
-			base.OnStyleClassChanged();
-			UpdateFlyoutItemStyles(_defaultFlyoutItemCell, this as IStyleSelectable);
-		}
-
 		static void UpdateFlyoutItemStyles(Grid flyoutItemCell, IStyleSelectable source)
 		{
 			List<string> bindableObjectStyle = new List<string>() {
@@ -300,14 +289,11 @@ namespace Xamarin.Forms
 				.StyleClass = bindableObjectStyle;
 		}
 
-		internal DataTemplate CreateDefaultFlyoutItemCell(string textBinding, string iconBinding)
+		internal static DataTemplate CreateDefaultFlyoutItemCell(IStyleSelectable styleSelectable, string textBinding, string iconBinding)
 		{
 			return new DataTemplate(() =>
 			{
-				if (_defaultFlyoutItemCell != null)
-					return _defaultFlyoutItemCell;
-
-				var grid = _defaultFlyoutItemCell = new Grid();
+				var grid = new Grid();
 				if (Device.RuntimePlatform == Device.UWP)
 					grid.ColumnSpacing = grid.RowSpacing = 0;
 
@@ -422,7 +408,7 @@ namespace Xamarin.Forms
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.HorizontalTextAlignmentProperty, Value = TextAlignment.Start });
 				}
 
-				UpdateFlyoutItemStyles(_defaultFlyoutItemCell, this as IStyleSelectable);
+				UpdateFlyoutItemStyles(grid, styleSelectable);
 				grid.Resources = new ResourceDictionary() { defaultGridClass, defaultLabelClass, defaultImageClass };
 				return grid;
 			});

@@ -1,8 +1,11 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using ElmSharp;
+using ElmSharp.Wearable;
+using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Application;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -90,6 +93,32 @@ namespace Xamarin.Forms.Platform.Tizen
 				case NotifyCollectionChangedAction.Reset:
 					GestureDetector.Clear();
 					break;
+			}
+		}
+
+		protected override void OnFocused(object sender, EventArgs e)
+		{
+			base.OnFocused(sender, e);
+			UpdateRotaryInteraction(true);
+		}
+
+		protected override void OnUnfocused(object sender, EventArgs e)
+		{
+			base.OnUnfocused(sender, e);
+			UpdateRotaryInteraction(false);
+		}
+
+		protected virtual void UpdateRotaryInteraction(bool enable)
+		{
+			if (NativeView is IRotaryInteraction ri)
+			{
+				if (Specific.GetUseBezelInteraction(Application.Current))
+				{
+					if (enable)
+						ri.RotaryWidget?.Activate();
+					else
+						ri.RotaryWidget?.Deactivate();
+				}
 			}
 		}
 	}

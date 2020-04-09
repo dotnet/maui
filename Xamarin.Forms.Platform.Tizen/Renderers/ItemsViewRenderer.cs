@@ -1,4 +1,5 @@
-﻿using System.Collections.Specialized;
+﻿using System;
+using System.Collections.Specialized;
 using System.Linq;
 
 using Xamarin.Forms.Platform.Tizen.Native;
@@ -26,6 +27,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (Control == null)
 			{
 				SetNativeControl(CreateNativeControl(Forms.NativeParent));
+				Control.Scrolled += OnScrolled;
 			}
 			if (e.NewElement != null)
 			{
@@ -44,6 +46,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				{
 					Element.ScrollToRequested -= OnScrollToRequest;
 					ItemsLayout.PropertyChanged -= OnLayoutPropertyChanged;
+					Control.Scrolled -= OnScrolled;
 				}
 				if (_observableSource != null)
 				{
@@ -91,6 +94,11 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		protected virtual void OnItemSelectedFromUI(object sender, SelectedItemChangedEventArgs e)
 		{
+		}
+
+		void OnScrolled(object sender, ItemsViewScrolledEventArgs e)
+		{
+			Element.SendScrolled(e);
 		}
 
 		void OnScrollToRequest(object sender, ScrollToRequestEventArgs e)

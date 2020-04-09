@@ -49,5 +49,7 @@ namespace Xamarin.Forms
 		ReadOnlyCollection<ShellItem> GetItems();
 
 		event NotifyCollectionChangedEventHandler ItemsCollectionChanged;
+
+		DataTemplate GetFlyoutItemDataTemplate(BindableObject bo);
 	}
 }

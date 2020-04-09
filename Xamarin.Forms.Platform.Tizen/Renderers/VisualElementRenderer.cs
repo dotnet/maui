@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using ElmSharp;
 using ElmSharp.Accessible;
+using ElmSharp.Wearable;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Tizen.Native;
 using EFocusDirection = ElmSharp.FocusDirection;
@@ -693,7 +694,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// <summary>
 		/// Handles focus events.
 		/// </summary>
-		void OnFocused(object sender, EventArgs e)
+		protected virtual void OnFocused(object sender, EventArgs e)
 		{
 			if (null != Element)
 			{
@@ -704,7 +705,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// <summary>
 		/// Handles unfocus events.
 		/// </summary>
-		void OnUnfocused(object sender, EventArgs e)
+		protected virtual void OnUnfocused(object sender, EventArgs e)
 		{
 			if (null != Element)
 			{

@@ -338,6 +338,29 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			}
 		}
 
+		public int GetVisibleItemIndex(int x, int y)
+		{
+			int index = 0;
+			if (x < 0 || y < 0)
+				return index;
+			if (_scrollCanvasSize.Width < x || _scrollCanvasSize.Height < y)
+				return CollectionView.Count - 1;
+
+			int first = (IsHorizontal ? x : y) / BaseItemSize;
+			if (_hasUnevenRows)
+				first = _accumulatedItemSizes.FindIndex(current => (IsHorizontal ? x : y) <= current);
+
+			int second = (IsHorizontal ? y : x) / ColumnSize;
+			if (second == Span)
+				second -= 1;
+
+			index = (first * Span) + second;
+
+			if (index < CollectionView.Count)
+				return index;
+			return CollectionView.Count - 1;
+		}
+
 		void InitializeMeasureCache()
 		{
 			_baseItemSize = 0;

@@ -240,7 +240,7 @@ namespace Xamarin.Forms.Platform.MacOS
 #if __XCODE11__
 			// Make sure the control adheres to changes in UI theme
 			if (Forms.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
-				Control.SetNeedsDisplay();
+				Control?.SetNeedsDisplay();
 #endif
 		}
 
