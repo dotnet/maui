@@ -14,9 +14,7 @@ namespace Xamarin.Forms
 			SetBinding(IconProperty, new Binding(nameof(MenuItem.IconImageSource), BindingMode.OneWay, source: menuItem));
 			SetBinding(FlyoutIconProperty, new Binding(nameof(MenuItem.IconImageSource), BindingMode.OneWay, source: menuItem));
 
-			Shell.SetMenuItemTemplate(this, Shell.GetMenuItemTemplate(MenuItem));
 			MenuItem.PropertyChanged += OnMenuItemPropertyChanged;
-			MenuItem.StyleClassChanged += (_, __) => OnStyleClassChanged();
 		}
 
 		IList<string> IStyleSelectable.Classes => ((IStyleSelectable)MenuItem).Classes;

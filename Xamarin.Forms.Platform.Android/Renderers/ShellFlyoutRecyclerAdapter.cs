@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			_shellContext = shellContext;
 
-			((IShellController)Shell).StructureChanged += OnShellStructureChanged;
+			ShellController.StructureChanged += OnShellStructureChanged;
 
 			_listItems = GenerateItemList();
 			_selectedCallback = selectedCallback;
@@ -39,6 +39,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected Shell Shell => _shellContext.Shell;
 
+		IShellController ShellController => (IShellController)Shell;
+
 		protected virtual DataTemplate DefaultItemTemplate => null;
 
 		protected virtual DataTemplate DefaultMenuItemTemplate => null;
@@ -46,14 +48,16 @@ namespace Xamarin.Forms.Platform.Android
 		public override int GetItemViewType(int position)
 		{
 			var item = _listItems[position];
-			DataTemplate dataTemplate = null;
+			DataTemplate dataTemplate = ShellController.GetFlyoutItemDataTemplate(item.Element);
 			if (item.Element is IMenuItemController)
 			{
-				dataTemplate = Shell.GetMenuItemTemplate(item.Element) ?? DefaultMenuItemTemplate ?? Shell.MenuItemTemplate;
+				if (DefaultMenuItemTemplate != null && Shell.MenuItemTemplate == dataTemplate)
+					dataTemplate = DefaultMenuItemTemplate;
 			}
 			else
 			{
-				dataTemplate = Shell.GetItemTemplate(item.Element) ?? DefaultItemTemplate ?? Shell.ItemTemplate;
+				if (DefaultItemTemplate != null && Shell.ItemTemplate == dataTemplate)
+					dataTemplate = DefaultItemTemplate;
 			}
 
 			var template = dataTemplate.SelectDataTemplate(item.Element, Shell);

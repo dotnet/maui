@@ -35,7 +35,6 @@ namespace Xamarin.Forms
 		public static void SetAccelerator(BindableObject bindable, Accelerator value) => bindable.SetValue(AcceleratorProperty, value);
 
 		internal readonly MergedStyle _mergedStyle;
-		internal event EventHandler StyleClassChanged;
 
 		public MenuItem()
 		{
@@ -100,7 +99,6 @@ namespace Xamarin.Forms
 			set 
 			{ 
 				_mergedStyle.StyleClass = value;
-				StyleClassChanged?.Invoke(this, EventArgs.Empty);
 			}
 		}
 

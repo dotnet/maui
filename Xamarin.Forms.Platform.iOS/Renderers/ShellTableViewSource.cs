@@ -13,6 +13,8 @@ namespace Xamarin.Forms.Platform.iOS
 		List<List<Element>> _groups;
 		Dictionary<Element, View> _views;
 
+		IShellController ShellController => (IShellController)_context.Shell;
+
 		public ShellTableViewSource(IShellContext context, Action<Element> onElementSelected)
 		{
 			_context = context;
@@ -81,14 +83,16 @@ namespace Xamarin.Forms.Platform.iOS
 			int row = indexPath.Row;
 			var context = Groups[section][row];
 
-			DataTemplate template = null;
+			DataTemplate template = ShellController.GetFlyoutItemDataTemplate(context);
 			if (context is IMenuItemController)
 			{
-				template = Shell.GetMenuItemTemplate(context) ?? DefaultMenuItemTemplate ?? _context.Shell.MenuItemTemplate;
+				if (DefaultMenuItemTemplate != null && _context.Shell.MenuItemTemplate == template)
+					template = DefaultMenuItemTemplate;
 			}
 			else
 			{
-				template = Shell.GetItemTemplate(context) ?? DefaultItemTemplate ?? _context.Shell.ItemTemplate;
+				if (DefaultItemTemplate != null && _context.Shell.ItemTemplate == template)
+					template = DefaultItemTemplate;
 			}
 
 			var cellId = ((IDataTemplateController)template.SelectDataTemplate(context, _context.Shell)).IdString;

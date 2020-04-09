@@ -46,13 +46,10 @@ namespace Xamarin.Forms
 			set 
 			{ 
 				_mergedStyle.StyleClass = value; 
-				OnStyleClassChanged(); 
 			}
 		}
 
 		IList<string> IStyleSelectable.Classes => StyleClass;
-
-		internal virtual void OnStyleClassChanged() { }
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public NavigationProxy NavigationProxy {
