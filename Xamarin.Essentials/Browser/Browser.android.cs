@@ -27,24 +27,40 @@ namespace Xamarin.Essentials
                         tabsBuilder.SetShowTitle(options.TitleMode == BrowserTitleMode.Show);
 
                     var tabsIntent = tabsBuilder.Build();
-                    var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
-#if __ANDROID_24__
-                    if (Platform.HasApiLevelN)
-                        flags |= ActivityFlags.LaunchAdjacent;
-#endif
-                    tabsIntent.Intent.SetFlags(flags);
+                    ActivityFlags? tabsFlags = null;
 
-#if __ANDROID_25__
-                    tabsIntent.LaunchUrl(Platform.AppContext, nativeUri);
-#else
-                    tabsIntent.LaunchUrl(Platform.GetCurrentActivity(true), nativeUri);
+                    Context context = Platform.GetCurrentActivity(false);
+
+                    if (context == null)
+                    {
+                        context = Platform.AppContext;
+
+                        // If using ApplicationContext we need to set ClearTop/NewTask (See #225)
+                        tabsFlags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
+                    }
+
+#if __ANDROID_24__
+                    if (Platform.HasApiLevelN && options.HasFlag(BrowserLaunchFlags.LaunchAdjacent))
+                    {
+                        if (tabsFlags.HasValue)
+                            tabsFlags |= ActivityFlags.LaunchAdjacent | ActivityFlags.NewTask;
+                        else
+                            tabsFlags = ActivityFlags.LaunchAdjacent | ActivityFlags.NewTask;
+                    }
 #endif
+
+                    // Check if there's flags specified to use
+                    if (tabsFlags.HasValue)
+                        tabsIntent.Intent.SetFlags(tabsFlags.Value);
+
+                    tabsIntent.LaunchUrl(context, nativeUri);
+
                     break;
                 case BrowserLaunchMode.External:
                     var intent = new Intent(Intent.ActionView, nativeUri);
-                    flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
+                    var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
 #if __ANDROID_24__
-                    if (Platform.HasApiLevelN)
+                    if (Platform.HasApiLevelN && options.HasFlag(BrowserLaunchFlags.LaunchAdjacent))
                         flags |= ActivityFlags.LaunchAdjacent;
 #endif
                     intent.SetFlags(flags);

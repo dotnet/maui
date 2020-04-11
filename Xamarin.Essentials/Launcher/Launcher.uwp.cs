@@ -27,10 +27,10 @@ namespace Xamarin.Essentials
 
         static async Task<bool> PlatformTryOpenAsync(Uri uri)
         {
-            var canOpen = await PlatformCanOpenAsync(uri).ConfigureAwait(false);
+            var canOpen = await PlatformCanOpenAsync(uri);
 
             if (canOpen)
-                return await WinLauncher.LaunchUriAsync(uri).AsTask().ConfigureAwait(false);
+                return await WinLauncher.LaunchUriAsync(uri).AsTask();
 
             return canOpen;
         }

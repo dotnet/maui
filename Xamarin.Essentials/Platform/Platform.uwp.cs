@@ -6,6 +6,7 @@ namespace Xamarin.Essentials
     {
         internal const string AppManifestFilename = "AppxManifest.xml";
         internal const string AppManifestXmlns = "http://schemas.microsoft.com/appx/manifest/foundation/windows10";
+        internal const string AppManifestUapXmlns = "http://schemas.microsoft.com/appx/manifest/uap/windows10";
 
         public static string MapServiceToken { get; set; }
     }
