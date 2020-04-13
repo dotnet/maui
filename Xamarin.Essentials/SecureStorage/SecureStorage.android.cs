@@ -38,7 +38,6 @@ namespace Xamarin.Essentials
                         var v = Preferences.Get(md5Key, defaultEncStr, Alias);
                         Preferences.Set(keyHash, v, Alias);
 
-                        // Also try and remove the old key/value
                         try
                         {
                             Preferences.Remove(md5Key, Alias);
@@ -88,21 +87,7 @@ namespace Xamarin.Essentials
             var encStr = Convert.ToBase64String(encryptedData);
             Preferences.Set(Crc64(key), encStr, Alias);
 
-            if (LegacyKeyHashFallback)
-            {
-                // Remove old key if it exists
-                var md5Key = Utils.Md5Hash(key);
-                if (Preferences.ContainsKey(md5Key, Alias))
-                {
-                    try
-                    {
-                        Preferences.Remove(md5Key, Alias);
-                    }
-                    catch
-                    {
-                    }
-                }
-            }
+            CheckForAndRemoveLegacyKey(key);
 
             return Task.CompletedTask;
         }
@@ -113,10 +98,17 @@ namespace Xamarin.Essentials
 
             Preferences.Remove(Crc64(key), Alias);
 
+            CheckForAndRemoveLegacyKey(key);
+
+            return true;
+        }
+
+        static void CheckForAndRemoveLegacyKey(string key)
+        {
             if (LegacyKeyHashFallback)
             {
-                // Remove old key if it exists
                 var md5Key = Utils.Md5Hash(key);
+
                 if (Preferences.ContainsKey(md5Key, Alias))
                 {
                     try
@@ -128,8 +120,6 @@ namespace Xamarin.Essentials
                     }
                 }
             }
-
-            return true;
         }
 
         static void PlatformRemoveAll() =>
