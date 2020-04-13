@@ -88,10 +88,7 @@ namespace Xamarin.Forms.Controls
 
 			public void DoStuff()
 			{
-				if (_action == null)
-					return;
-
-				_action (this);
+				_action?.Invoke (this);
 			}
 
 			public Group Parent
@@ -249,7 +246,7 @@ namespace Xamarin.Forms.Controls
 			NavigationPage.SetHasNavigationBar (this, false);
 			_groups = CreateItemSource();
 
-			_list.ItemTapped += (sender, arg) => ((GroupAction)arg.Item).DoStuff();
+			_list.ItemTapped += (sender, arg) => ((GroupAction)arg.Item)?.DoStuff();
 
 			_list.ItemsSource = _groups;
 			Title = "Actions";

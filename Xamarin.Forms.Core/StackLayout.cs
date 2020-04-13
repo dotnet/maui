@@ -61,8 +61,8 @@ namespace Xamarin.Forms
 			for (var i = 0; i < LogicalChildrenInternal.Count; i++)
 			{
 				var child = (View)LogicalChildrenInternal[i];
-				if (child.IsVisible)
-					LayoutChildIntoBoundingRegion(child, layoutInformationCopy.Plots[i], layoutInformationCopy.Requests[i]);
+				if (child.IsVisible && layoutInformationCopy.Plots != null)
+						LayoutChildIntoBoundingRegion(child, layoutInformationCopy.Plots[i], layoutInformationCopy.Requests[i]);
 			}
 		}
 
@@ -95,7 +95,7 @@ namespace Xamarin.Forms
 
 		void AlignOffAxis(LayoutInformation layout, StackOrientation orientation, double widthConstraint, double heightConstraint)
 		{
-			for (var i = 0; i < layout.Plots.Length; i++)
+			for (var i = 0; i < layout.Plots?.Length; i++)
 			{
 				if (!((View)LogicalChildrenInternal[i]).IsVisible)
 					continue;
