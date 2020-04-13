@@ -147,6 +147,6 @@ namespace Xamarin.Forms.Platform.WPF
 			return Platform.GetNativeSize(view, widthConstraint, heightConstraint);
 		}
 
-		public AppTheme RequestedTheme => AppTheme.Unspecified;
+		public OSAppTheme RequestedTheme => OSAppTheme.Unspecified;
 	}
 }

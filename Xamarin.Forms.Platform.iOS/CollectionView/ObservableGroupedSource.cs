@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Threading;
+using System.Threading.Tasks;
 using Foundation;
 using UIKit;
 
@@ -13,6 +15,7 @@ namespace Xamarin.Forms.Platform.iOS
 		readonly UICollectionViewController _collectionViewController;
 		readonly IList _groupSource;
 		bool _disposed;
+		SemaphoreSlim _batchUpdating = new SemaphoreSlim(1, 1);
 		List<ObservableItemsSource> _groups = new List<ObservableItemsSource>();
 
 		public ObservableGroupedSource(IEnumerable groupSource, UICollectionViewController collectionViewController)
@@ -39,7 +42,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public int GroupCount => _groupSource.Count;
 
-		int IItemsViewSource.ItemCount
+		public int ItemCount
 		{
 			get
 			{
@@ -127,47 +130,53 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
-		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
+		async void CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
 		{
 			if (Device.IsInvokeRequired)
 			{
-				Device.BeginInvokeOnMainThread(() => CollectionChanged(args));
+				await Device.InvokeOnMainThreadAsync(async () => await CollectionChanged(args));
 			}
 			else
 			{
-				CollectionChanged(args);
+				await CollectionChanged(args);
 			}
 		}
 
-		void CollectionChanged(NotifyCollectionChangedEventArgs args)
+		async Task CollectionChanged(NotifyCollectionChangedEventArgs args)
 		{
 			switch (args.Action)
+
 			{
 				case NotifyCollectionChangedAction.Add:
-					Add(args);
+					await Add(args);
 					break;
 				case NotifyCollectionChangedAction.Remove:
-					Remove(args);
+					await Remove(args);
 					break;
 				case NotifyCollectionChangedAction.Replace:
-					Replace(args);
+					await Replace(args);
 					break;
 				case NotifyCollectionChangedAction.Move:
 					Move(args);
 					break;
 				case NotifyCollectionChangedAction.Reset:
-					Reload();
+					await Reload();
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
 		}
 
-		void Reload()
+		async Task Reload()
 		{
 			ResetGroupTracking();
+
+			await _batchUpdating.WaitAsync();
+
 			_collectionView.ReloadData();
 			_collectionView.CollectionViewLayout.InvalidateLayout();
+
+			_batchUpdating.Release();
 		}
 
 		NSIndexSet CreateIndexSetFrom(int startIndex, int count)
@@ -182,8 +191,14 @@ namespace Xamarin.Forms.Platform.iOS
 			return !_collectionViewController.IsViewLoaded || _collectionViewController.View.Window == null;
 		}
 
-		void Add(NotifyCollectionChangedEventArgs args)
+		async Task Add(NotifyCollectionChangedEventArgs args)
 		{
+			if (ReloadRequired())
+			{
+				await Reload();
+				return;
+			}
+
 			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _groupSource.IndexOf(args.NewItems[0]);
 			var count = args.NewItems.Count;
 
@@ -191,53 +206,40 @@ namespace Xamarin.Forms.Platform.iOS
 			// is to reset all the group tracking to get it up-to-date
 			ResetGroupTracking();
 
-			if (NotLoadedYet())
-			{
-				_collectionView.ReloadData();
-				return;
-			}
-
-			if (_collectionView.NumberOfSections() == 0)
-			{
-				// Okay, we're going from completely empty to more than 0 items; there's an iOS bug which apparently
-				// will just crash if we call InsertItems here, so we have to do ReloadData.
-				_collectionView.ReloadData();
-				return;
-			}
-
-			_collectionView.InsertSections(CreateIndexSetFrom(startIndex, count));
+			// Queue up the updates to the UICollectionView
+			BatchUpdate(() => _collectionView.InsertSections(CreateIndexSetFrom(startIndex, count)));
 		}
 
-		void Remove(NotifyCollectionChangedEventArgs args)
+		async Task Remove(NotifyCollectionChangedEventArgs args)
 		{
 			var startIndex = args.OldStartingIndex;
 
 			if (startIndex < 0)
 			{
 				// INCC implementation isn't giving us enough information to know where the removed items were in the
-				// collection. So the best we can do is a ReloadData()
-				Reload();
+				// collection. So the best we can do is a complete reload
+				await Reload();
 				return;
 			}
 
-			// If we have a start index, we can be more clever about removing the item(s) (and get the nifty animations)
-			var count = args.OldItems.Count;
+			if (ReloadRequired())
+			{
+				await Reload();
+				return;
+			}
 
 			// Removing a group will change the section index for all subsequent groups, so the easiest thing to do
 			// is to reset all the group tracking to get it up-to-date
 			ResetGroupTracking();
 
-			if (NotLoadedYet())
-			{
-				_collectionView.ReloadData();
-			}
-			else
-			{
-				_collectionView.DeleteSections(CreateIndexSetFrom(startIndex, count));
-			}
+			// Since we have a start index, we can be more clever about removing the item(s) (and get the nifty animations)
+			var count = args.OldItems.Count;
+
+			// Queue up the updates to the UICollectionView
+			BatchUpdate(() => _collectionView.DeleteSections(CreateIndexSetFrom(startIndex, count)));
 		}
 
-		void Replace(NotifyCollectionChangedEventArgs args)
+		async Task Replace(NotifyCollectionChangedEventArgs args)
 		{
 			var newCount = args.NewItems.Count;
 
@@ -254,7 +256,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			// The original and replacement sets are of unequal size; this means that everything currently in view will 
 			// have to be updated. So we just have to use ReloadData and let the UICollectionView update everything
-			Reload();
+			await Reload();
 		}
 
 		void Move(NotifyCollectionChangedEventArgs args)
@@ -287,7 +289,7 @@ namespace Xamarin.Forms.Platform.iOS
 					var enumerator = enumerable.GetEnumerator();
 					while (enumerator.MoveNext())
 					{
-						count += 1; 
+						count += 1;
 					}
 					return count;
 			}
@@ -339,6 +341,36 @@ namespace Xamarin.Forms.Platform.iOS
 
 			return -1;
 		}
-	}
 
+		bool ReloadRequired()
+		{
+			// If the UICollectionView has never been loaded, or doesn't yet have any sections, or has no actual
+			// cells (just supplementary views like Header/Footer), any insert/delete operations are gonna crash
+			// hard. We'll need to reload the data instead.
+
+			return NotLoadedYet()
+				|| _collectionView.NumberOfSections() == 0
+				|| _collectionView.VisibleCells.Length == 0;
+		}
+
+		void BatchUpdate(Action update)
+		{
+			_collectionView.PerformBatchUpdates(() =>
+			{
+				if (_batchUpdating.CurrentCount > 0)
+				{
+					_batchUpdating.Wait();
+				}
+
+				update();
+			},
+					(_) =>
+					{
+						if (_batchUpdating.CurrentCount == 0)
+						{
+							_batchUpdating.Release();
+						}
+					});
+		}
+	}
 }

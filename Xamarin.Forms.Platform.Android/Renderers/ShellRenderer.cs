@@ -275,7 +275,7 @@ namespace Xamarin.Forms.Platform.Android
 			var fragment = _currentRenderer.Fragment;
 
 			Profile.FramePartition("Transaction");
-			FragmentTransaction transaction = manager.BeginTransaction();
+			FragmentTransaction transaction = manager.BeginTransactionEx();
 
 			if (animate)
 				transaction.SetTransitionEx((int)global::Android.App.FragmentTransit.EnterMask);
@@ -428,7 +428,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				if (_currentRenderer != null && _currentRenderer.Fragment.IsAlive())
 				{
-					FragmentTransaction transaction = FragmentManager.BeginTransaction();
+					FragmentTransaction transaction = FragmentManager.BeginTransactionEx();
 					transaction.RemoveEx(_currentRenderer.Fragment);
 					transaction.CommitAllowingStateLossEx();
 					FragmentManager.ExecutePendingTransactionsEx();

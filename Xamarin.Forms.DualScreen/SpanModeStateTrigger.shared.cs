@@ -41,7 +41,7 @@ namespace Xamarin.Forms.DualScreen
 			_info = new DualScreenInfo(_visualElement);
 		}
 
-		internal override void OnAttached()
+		protected override void OnAttached()
 		{
 			base.OnAttached();
 
@@ -55,7 +55,7 @@ namespace Xamarin.Forms.DualScreen
 			}
 		}
 
-		internal override void OnDetached()
+		protected override void OnDetached()
 		{
 			base.OnDetached();
 

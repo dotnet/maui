@@ -256,6 +256,6 @@ namespace Xamarin.Forms.Platform.UWP
 			return await taskCompletionSource.Task;
 		}
 
-		public AppTheme RequestedTheme => Windows.UI.Xaml.Application.Current.RequestedTheme == ApplicationTheme.Dark ? AppTheme.Dark : AppTheme.Light;
+		public OSAppTheme RequestedTheme => Windows.UI.Xaml.Application.Current.RequestedTheme == ApplicationTheme.Dark ? OSAppTheme.Dark : OSAppTheme.Light;
 	}
 }

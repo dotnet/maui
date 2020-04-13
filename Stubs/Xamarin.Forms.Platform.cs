@@ -54,11 +54,7 @@ namespace Xamarin.Forms.Platform
 	[RenderWith(typeof(ImageButtonRenderer))]
 	internal class _ImageButtonRenderer { }
 
-#if __ANDROID__
 	[RenderWith(typeof(RadioButtonRenderer))]
-#elif !TIZEN4_0
-	[RenderWith(typeof(RadioButtonRenderer))]
-#endif
 	internal class _RadioButtonRenderer { }
 
 	[RenderWith (typeof (TableViewRenderer))]

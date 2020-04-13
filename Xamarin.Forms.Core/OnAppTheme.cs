@@ -2,7 +2,7 @@
 
 namespace Xamarin.Forms
 {
-	public class OnAppTheme<T> : BindableObject, IDisposable
+	public class OnAppTheme<T> : BindableObject
 	{
 		public OnAppTheme()
 		{
@@ -38,9 +38,9 @@ namespace Xamarin.Forms
 			switch (Application.Current?.RequestedTheme)
 			{
 				default:
-				case AppTheme.Light:
+				case OSAppTheme.Light:
 					return onAppTheme.IsSet(LightProperty) ? onAppTheme.Light : (onAppTheme.IsSet(DefaultProperty) ? onAppTheme.Default : default(T));
-				case AppTheme.Dark:
+				case OSAppTheme.Dark:
 					return onAppTheme.IsSet(DarkProperty) ? onAppTheme.Dark : (onAppTheme.IsSet(DefaultProperty) ? onAppTheme.Default : default(T));
 			}
 		}
@@ -56,21 +56,16 @@ namespace Xamarin.Forms
 			}
 		}
 
-		public void Dispose()
-		{
-			Application.Current.RequestedThemeChanged -= RequestedThemeChanged;
-		}
-
 		static void UpdateActualValue(BindableObject bo)
 		{
 			var appThemeColor = bo as OnAppTheme<T>;
 			switch (Application.Current?.RequestedTheme)
 			{
 				default:
-				case AppTheme.Light:
+				case OSAppTheme.Light:
 					appThemeColor.ActualValue = appThemeColor.IsSet(LightProperty) ? appThemeColor.Light : (appThemeColor.IsSet(DefaultProperty) ? appThemeColor.Default : default(T));
 					break;
-				case AppTheme.Dark:
+				case OSAppTheme.Dark:
 					appThemeColor.ActualValue = appThemeColor.IsSet(DarkProperty) ? appThemeColor.Dark : (appThemeColor.IsSet(DefaultProperty) ? appThemeColor.Default : default(T));
 					break;
 			}

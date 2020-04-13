@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.Forms
 {
-	public enum AppTheme
+	public enum OSAppTheme
 	{
 		Unspecified,
 		Light,
