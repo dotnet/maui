@@ -94,13 +94,13 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework) == 'uap10.0.16299'">
+  <ItemGroup Condition=" '$(OS)' == 'Windows_NT' AND $(TargetFramework.StartsWith('uap10.0')) AND $(TargetPlatformMinVersion) &gt;= '10.0.16299.0'">
     <Page Include="Shell\ShellStyles.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework) == 'uap10.0.14393'">
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT' AND $(TargetFramework.StartsWith('uap10.0')) AND $(TargetPlatformMinVersion) &lt; '10.0.16299.0'">
     <Page Remove="Shell\ShellStyles.xaml">
     </Page>
   </ItemGroup>
@@ -114,11 +114,11 @@
     <ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj">
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
-    <PackageReference Include="Microsoft.UI.Xaml" Condition="$(TargetFramework) == 'uap10.0.14393'">
+  <ItemGroup Condition=" '$(OS)' == 'Windows_NT' AND $(TargetFramework.StartsWith('uap10.0'))  ">
+    <PackageReference Include="Microsoft.UI.Xaml" Condition="$(TargetPlatformMinVersion) &lt; '10.0.16299.0'">
       <Version>2.1.190606001</Version>
     </PackageReference>
-    <PackageReference Include="Microsoft.UI.Xaml" Condition="$(TargetFramework) == 'uap10.0.16299'">
+    <PackageReference Include="Microsoft.UI.Xaml" Condition="$(TargetPlatformMinVersion) &gt;= '10.0.16299.0'">
       <Version>2.3.191211002</Version>
     </PackageReference>
     <PackageReference Include="Win2D.uwp">

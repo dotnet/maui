@@ -13,15 +13,6 @@
     <XamarinAndroidSupportSkipVerifyVersions>true</XamarinAndroidSupportSkipVerifyVersions>
     <GenerateLibraryLayout Condition=" $(TargetFramework.StartsWith('uap10.0')) ">false</GenerateLibraryLayout>
   </PropertyGroup>
-  <PropertyGroup Condition="$(TargetPlatformVersion) == 'uap10.0.14393'">
-    <DefineConstants>$(DefineConstants);UWP_14393</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="$(TargetPlatformVersion) == 'uap10.0.16299'">
-    <DefineConstants>$(DefineConstants);UWP_18362</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" $(TargetFramework.StartsWith('uap10.0')) ">
-    <DefineConstants>$(DefineConstants);UWP</DefineConstants>
-  </PropertyGroup>
   <PropertyGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid'))">
     <DefineConstants>$(DefineConstants);ANDROID</DefineConstants>
   </PropertyGroup>

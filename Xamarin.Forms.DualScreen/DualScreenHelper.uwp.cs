@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Windows.Foundation.Metadata;
 using Windows.UI.ViewManagement;
 
-#if !UWP_14393
+#if UWP_18362
 using Windows.UI.WindowManagement;
 #endif
 
@@ -18,7 +18,7 @@ namespace Xamarin.Forms.DualScreen
 	public static class DualScreenHelper
 	{
 
-#if !UWP_14393
+#if UWP_18362
 
         public static bool HasCompactModeSupport()
 		{

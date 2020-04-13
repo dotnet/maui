@@ -3,23 +3,36 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Xamarin.Forms.DualScreen
 {
+	public class HingeAngleChangedEventArgs : EventArgs
+	{
+		public HingeAngleChangedEventArgs(double hingeAngleInDegrees)
+		{
+			HingeAngleInDegrees = hingeAngleInDegrees;
+		}
+
+		public double HingeAngleInDegrees { get; }
+	}
+
 	public partial class DualScreenInfo : INotifyPropertyChanged
 	{
-		static Lazy<DualScreenInfo> _dualScreenInfo { get; } = new Lazy<DualScreenInfo>(OnCreate);
-		public event PropertyChangedEventHandler PropertyChanged;
 		Rectangle[] _spanningBounds;
 		Rectangle _hingeBounds;
 		bool _isLandscape;
 		TwoPaneViewMode _spanMode;
 		TwoPaneViewLayoutGuide _twoPaneViewLayoutGuide;
-		IDualScreenService _dualScreenService;
-		public static DualScreenInfo Current => _dualScreenInfo.Value;
+		IDualScreenService _dualScreenService;		
 		IDualScreenService DualScreenService =>
 			_dualScreenService ?? DependencyService.Get<IDualScreenService>() ?? NoDualScreenServiceImpl.Instance;
+
+		static Lazy<DualScreenInfo> _dualScreenInfo { get; } = new Lazy<DualScreenInfo>(OnCreate);
+
+		public static DualScreenInfo Current => _dualScreenInfo.Value;
+		public event PropertyChangedEventHandler PropertyChanged;
 
 		public DualScreenInfo(VisualElement layout) : this(layout, null)
 		{
@@ -35,9 +48,27 @@ namespace Xamarin.Forms.DualScreen
 			else
 			{
 				_twoPaneViewLayoutGuide = new TwoPaneViewLayoutGuide(layout, dualScreenService);
-				_twoPaneViewLayoutGuide.PropertyChanged += OnTwoPaneViewLayoutGuideChanged;
+				_twoPaneViewLayoutGuide.PropertyChanged += OnTwoPaneViewLayoutGuideChanged;				
 			}
 		}
+
+
+		EventHandler<HingeAngleChangedEventArgs> _hingeAngleChanged;
+		int subscriberCount = 0;
+		public event EventHandler<HingeAngleChangedEventArgs> HingeAngleChanged
+		{
+			add
+			{
+				ProcessHingeAngleSubscriberCount(Interlocked.Increment(ref subscriberCount));
+				_hingeAngleChanged += value;
+			}
+			remove
+			{
+				ProcessHingeAngleSubscriberCount(Interlocked.Decrement(ref subscriberCount));
+				_hingeAngleChanged -= value;
+			}
+		}
+
 
 		public Rectangle[] SpanningBounds
 		{
