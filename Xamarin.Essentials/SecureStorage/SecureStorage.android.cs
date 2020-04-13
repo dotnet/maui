@@ -37,6 +37,15 @@ namespace Xamarin.Essentials
                     {
                         var v = Preferences.Get(md5Key, defaultEncStr, Alias);
                         Preferences.Set(keyHash, v);
+
+                        // Also try and remove the old key/value
+                        try
+                        {
+                            Preferences.Remove(md5Key);
+                        }
+                        catch
+                        {
+                        }
                     }
                 }
             }
