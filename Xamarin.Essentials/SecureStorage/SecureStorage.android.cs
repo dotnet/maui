@@ -29,11 +29,11 @@ namespace Xamarin.Essentials
             if (LegacyKeyHashFallback)
             {
                 // If not found, could have been previously stored with md5 key
-                if (!Preferences.ContainsKey(keyHash))
+                if (!Preferences.ContainsKey(keyHash, Alias))
                 {
                     // If previously stored with md5 key, save with crc key
                     var md5Key = Utils.Md5Hash(key);
-                    if (Preferences.ContainsKey(md5Key))
+                    if (Preferences.ContainsKey(md5Key, Alias))
                     {
                         var v = Preferences.Get(md5Key, defaultEncStr, Alias);
                         Preferences.Set(keyHash, v);
@@ -41,7 +41,7 @@ namespace Xamarin.Essentials
                         // Also try and remove the old key/value
                         try
                         {
-                            Preferences.Remove(md5Key);
+                            Preferences.Remove(md5Key, Alias);
                         }
                         catch
                         {
@@ -88,6 +88,22 @@ namespace Xamarin.Essentials
             var encStr = Convert.ToBase64String(encryptedData);
             Preferences.Set(Crc64(key), encStr, Alias);
 
+            if (LegacyKeyHashFallback)
+            {
+                // Remove old key if it exists
+                var md5Key = Utils.Md5Hash(key);
+                if (Preferences.ContainsKey(md5Key, Alias))
+                {
+                    try
+                    {
+                        Preferences.Remove(md5Key, Alias);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+
             return Task.CompletedTask;
         }
 
@@ -96,6 +112,22 @@ namespace Xamarin.Essentials
             var context = Platform.AppContext;
 
             Preferences.Remove(Crc64(key), Alias);
+
+            if (LegacyKeyHashFallback)
+            {
+                // Remove old key if it exists
+                var md5Key = Utils.Md5Hash(key);
+                if (Preferences.ContainsKey(md5Key, Alias))
+                {
+                    try
+                    {
+                        Preferences.Remove(md5Key, Alias);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
 
             return true;
         }
