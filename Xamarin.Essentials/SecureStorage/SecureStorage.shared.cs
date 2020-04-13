@@ -34,6 +34,9 @@ namespace Xamarin.Essentials
             => PlatformRemoveAll();
 
         public static string Crc64(string value)
+            => Crc64(System.Text.Encoding.UTF8.GetBytes(value));
+
+        public static string Crc64(byte[] data)
         {
 #if NETSTANDARD1_0
             throw ExceptionUtils.NotSupportedOrImplementedException;
@@ -41,7 +44,6 @@ namespace Xamarin.Essentials
             static char GetHexValue(int i)
                 => (char)(i < 10 ? i + 48 : i - 10 + 65);
 
-            var data = System.Text.Encoding.UTF8.GetBytes(value);
             var crc = new Crc64();
             var hashedData = crc.ComputeHash(data);
 

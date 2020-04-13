@@ -41,9 +41,10 @@ namespace Xamarin.Essentials
     ///  * Starting Value: ulong.MaxValue
     ///  * XOR length in HashFinal()
     /// </summary>
-    internal class Crc64 : HashAlgorithm
+    class Crc64 : HashAlgorithm
     {
-        static readonly ulong[] table = {
+        static readonly ulong[] table =
+        {
             0x0000000000000000, 0x7ad870c830358979,
             0xf5b0e190606b12f2, 0x8f689158505e9b8b,
             0xc038e5739841b68f, 0xbae095bba8743ff6,
@@ -195,4 +196,4 @@ namespace Xamarin.Essentials
         protected override byte[] HashFinal() => BitConverter.GetBytes(crc ^ length);
     }
 }
- #endif
+#endif
