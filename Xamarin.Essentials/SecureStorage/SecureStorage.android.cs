@@ -14,6 +14,8 @@ namespace Xamarin.Essentials
 {
     public static partial class SecureStorage
     {
+        public static bool LegacyKeyHashFallback { get; set; } = true;
+
         static readonly object locker = new object();
 
         static Task<string> PlatformGetAsync(string key)
@@ -21,7 +23,25 @@ namespace Xamarin.Essentials
             var context = Platform.AppContext;
 
             string defaultEncStr = null;
-            var encStr = Preferences.Get(Utils.Md5Hash(key), defaultEncStr, Alias);
+
+            var keyHash = SecureStorage.Crc64(key);
+
+            if (LegacyKeyHashFallback)
+            {
+                // If not found, could have been previously stored with md5 key
+                if (!Preferences.ContainsKey(keyHash))
+                {
+                    // If previously stored with md5 key, save with crc key
+                    var md5Key = Utils.Md5Hash(key);
+                    if (Preferences.ContainsKey(md5Key))
+                    {
+                        var v = Preferences.Get(md5Key, defaultEncStr, Alias);
+                        Preferences.Set(keyHash, v);
+                    }
+                }
+            }
+
+            var encStr = Preferences.Get(keyHash, defaultEncStr, Alias);
 
             string decryptedData = null;
             if (!string.IsNullOrEmpty(encStr))
@@ -57,7 +77,7 @@ namespace Xamarin.Essentials
             }
 
             var encStr = Convert.ToBase64String(encryptedData);
-            Preferences.Set(Utils.Md5Hash(key), encStr, Alias);
+            Preferences.Set(Crc64(key), encStr, Alias);
 
             return Task.CompletedTask;
         }
@@ -66,8 +86,7 @@ namespace Xamarin.Essentials
         {
             var context = Platform.AppContext;
 
-            key = Utils.Md5Hash(key);
-            Preferences.Remove(key, Alias);
+            Preferences.Remove(Crc64(key), Alias);
 
             return true;
         }
