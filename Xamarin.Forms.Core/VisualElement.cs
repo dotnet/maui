@@ -272,7 +272,7 @@ namespace Xamarin.Forms
 				Application.Current.RequestedThemeChanged += (s, a) => OnRequestedThemeChanged(a.RequestedTheme);
 		}
 
-		protected virtual void OnRequestedThemeChanged(AppTheme newValue)
+		protected virtual void OnRequestedThemeChanged(OSAppTheme newValue)
 		{
 			ExperimentalFlags.VerifyFlagEnabled(nameof(VisualElement), ExperimentalFlags.AppThemeExperimental, nameof(OnRequestedThemeChanged));
 		}

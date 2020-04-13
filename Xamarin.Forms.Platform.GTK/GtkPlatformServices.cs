@@ -126,6 +126,6 @@ namespace Xamarin.Forms.Platform.GTK
 			return Platform.GetNativeSize(view, widthConstraint, heightConstraint);
 		}
 
-		public AppTheme RequestedTheme => AppTheme.Unspecified;
+		public OSAppTheme RequestedTheme => OSAppTheme.Unspecified;
 	}
 }

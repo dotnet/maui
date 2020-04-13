@@ -124,9 +124,9 @@ namespace Xamarin.Forms.Xaml
 			switch (Application.Current?.RequestedTheme)
 			{
 				default:
-				case AppTheme.Light:
+				case OSAppTheme.Light:
 					return Light ?? Default;
-				case AppTheme.Dark:
+				case OSAppTheme.Dark:
 					return Dark ?? Default;
 			}
 		}

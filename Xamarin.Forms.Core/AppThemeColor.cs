@@ -51,9 +51,9 @@ namespace Xamarin.Forms
 			switch (Application.Current?.RequestedTheme)
 			{
 				default:
-				case AppTheme.Light:
+				case OSAppTheme.Light:
 					return appThemeColor.IsSet(LightProperty) ? appThemeColor.Light : (appThemeColor.IsSet(DefaultProperty) ? appThemeColor.Default : default(Color));
-				case AppTheme.Dark:
+				case OSAppTheme.Dark:
 					return appThemeColor.IsSet(DarkProperty) ? appThemeColor.Dark : (appThemeColor.IsSet(DefaultProperty) ? appThemeColor.Default : default(Color));
 			}
 		}
@@ -64,10 +64,10 @@ namespace Xamarin.Forms
 			switch (Application.Current?.RequestedTheme)
 			{
 				default:
-				case AppTheme.Light:
+				case OSAppTheme.Light:
 					appThemeColor.Value = appThemeColor.IsSet(LightProperty) ? appThemeColor.Light : (appThemeColor.IsSet(DefaultProperty) ? appThemeColor.Default : default(Color));
 					break;
-				case AppTheme.Dark:
+				case OSAppTheme.Dark:
 					appThemeColor.Value = appThemeColor.IsSet(DarkProperty) ? appThemeColor.Dark : (appThemeColor.IsSet(DefaultProperty) ? appThemeColor.Default : default(Color));
 					break;
 			}

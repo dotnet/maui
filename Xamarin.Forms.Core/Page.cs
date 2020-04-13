@@ -250,7 +250,7 @@ namespace Xamarin.Forms
 			return OnBackButtonPressed();
 		}
 
-		protected override void OnRequestedThemeChanged(AppTheme newValue)
+		protected override void OnRequestedThemeChanged(OSAppTheme newValue)
 		{
 			base.OnRequestedThemeChanged(newValue);
 
