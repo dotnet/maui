@@ -33,10 +33,10 @@ namespace Xamarin.Essentials
         public static void RemoveAll()
             => PlatformRemoveAll();
 
-        public static string Crc64(string value)
+        internal static string Crc64(string value)
             => Crc64(System.Text.Encoding.UTF8.GetBytes(value));
 
-        public static string Crc64(byte[] data)
+        internal static string Crc64(byte[] data)
         {
 #if NETSTANDARD1_0
             throw ExceptionUtils.NotSupportedOrImplementedException;
