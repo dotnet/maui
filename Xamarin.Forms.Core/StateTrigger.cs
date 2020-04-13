@@ -20,7 +20,7 @@
 			}
 		}
 
-		internal override void OnAttached()
+		protected override void OnAttached()
 		{
 			base.OnAttached();
 			UpdateState();

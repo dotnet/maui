@@ -26,7 +26,7 @@ namespace Xamarin.Forms
 			((OrientationStateTrigger)bindable).UpdateState();
 		}
 
-		internal override void OnAttached()
+		protected override void OnAttached()
 		{
 			base.OnAttached();
 
@@ -37,7 +37,7 @@ namespace Xamarin.Forms
 			}
 		}
 
-		internal override void OnDetached()
+		protected override void OnDetached()
 		{
 			base.OnDetached();
 

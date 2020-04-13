@@ -40,7 +40,7 @@ namespace Xamarin.Forms
 			((CompareStateTrigger)bindable).UpdateState();
 		}
 
-		internal override void OnAttached()
+		protected override void OnAttached()
 		{
 			base.OnAttached();
 			UpdateState();

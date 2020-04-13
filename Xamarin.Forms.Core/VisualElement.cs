@@ -847,9 +847,9 @@ namespace Xamarin.Forms
 					foreach (var stateTrigger in state.StateTriggers)
 					{
 						if(attach)
-							stateTrigger.OnAttached();
+							stateTrigger.SendAttached();
 						else
-							stateTrigger.OnDetached();
+							stateTrigger.SendDetached();
 					}
 		}
 
