@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Tizen.Multimedia;
 using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
 
-[assembly: Xamarin.Forms.Dependency(typeof(IPlatformMediaPlayer))]
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
 	public class MediaPlayerImpl : IPlatformMediaPlayer
