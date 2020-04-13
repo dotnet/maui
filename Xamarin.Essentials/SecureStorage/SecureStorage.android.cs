@@ -36,7 +36,7 @@ namespace Xamarin.Essentials
                     if (Preferences.ContainsKey(md5Key, Alias))
                     {
                         var v = Preferences.Get(md5Key, defaultEncStr, Alias);
-                        Preferences.Set(keyHash, v);
+                        Preferences.Set(keyHash, v, Alias);
 
                         // Also try and remove the old key/value
                         try
