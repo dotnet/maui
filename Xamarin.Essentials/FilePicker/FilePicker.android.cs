@@ -91,11 +91,10 @@ namespace Xamarin.Essentials
                 var result = await IntermediateActivity.StartAsync(pickerIntent, requestCodeFilePicker);
 
                 var resultList = new List<FilePickerResult>();
-                for (var index = 0; index < result.ClipData.ItemCount; index++)
-                {
-                    var data = result.ClipData.GetItemAt(index);
 
-                    var contentUri = data.Uri;
+                if (result.ClipData == null)
+                {
+                    var contentUri = result.Data;
 
                     if (Build.VERSION.SdkInt >= BuildVersionCodes.Kitkat)
                     {
@@ -105,6 +104,24 @@ namespace Xamarin.Essentials
                     }
 
                     resultList.Add(new FilePickerResult(contentUri));
+                }
+                else
+                {
+                    for (var index = 0; index < result.ClipData.ItemCount; index++)
+                    {
+                        var data = result.ClipData.GetItemAt(index);
+
+                        var contentUri = data.Uri;
+
+                        if (Build.VERSION.SdkInt >= BuildVersionCodes.Kitkat)
+                        {
+                            Platform.AppContext.ContentResolver.TakePersistableUriPermission(
+                                contentUri,
+                                ActivityFlags.GrantReadUriPermission);
+                        }
+
+                        resultList.Add(new FilePickerResult(contentUri));
+                    }
                 }
 
                 return resultList;
