@@ -165,10 +165,15 @@ namespace Xamarin.Essentials
             // resolve file name by querying content provider for display name
             var filename = QueryContentResolverColumn(contentUri, MediaStore.MediaColumns.DisplayName);
 
-            if (!string.IsNullOrWhiteSpace(filename))
-                return filename;
+            if (string.IsNullOrWhiteSpace(filename))
+            {
+                filename = Path.GetFileName(WebUtility.UrlDecode(contentUri.ToString()));
+            }
 
-            return Path.GetFileName(WebUtility.UrlDecode(contentUri.ToString()));
+            if (!Path.HasExtension(filename))
+                filename = filename.TrimEnd('.') + '.' + GetFileExtensionFromUri(contentUri);
+
+            return filename;
         }
 
         static string QueryContentResolverColumn(global::Android.Net.Uri contentUri, string columnName)
@@ -185,6 +190,12 @@ namespace Xamarin.Essentials
             }
 
             return text;
+        }
+
+        static string GetFileExtensionFromUri(global::Android.Net.Uri uri)
+        {
+            var mimeType = Application.Context.ContentResolver.GetType(uri);
+            return mimeType != null ? global::Android.Webkit.MimeTypeMap.Singleton.GetExtensionFromMimeType(mimeType) : string.Empty;
         }
 
         Task<Stream> PlatformOpenReadStreamAsync()
