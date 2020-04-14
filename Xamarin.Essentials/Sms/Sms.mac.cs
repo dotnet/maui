@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using AppKit;
 using Foundation;
@@ -10,16 +8,8 @@ namespace Xamarin.Essentials
 {
     public static partial class Sms
     {
-        internal static bool IsComposeSupported
-        {
-            get
-            {
-                var can = false;
-                var url = NSUrl.FromString("sms:");
-                NSRunLoop.Main.InvokeOnMainThread(() => can = NSWorkspace.SharedWorkspace.UrlForApplication(url) != null);
-                return can;
-            }
-        }
+        internal static bool IsComposeSupported =>
+            MainThread.InvokeOnMainThread(() => NSWorkspace.SharedWorkspace.UrlForApplication(NSUrl.FromString("sms:")) != null);
 
         static Task PlatformComposeAsync(SmsMessage message)
         {

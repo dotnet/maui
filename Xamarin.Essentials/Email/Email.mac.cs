@@ -6,16 +6,8 @@ namespace Xamarin.Essentials
 {
     public static partial class Email
     {
-        internal static bool IsComposeSupported
-        {
-            get
-            {
-                var can = false;
-                var url = NSUrl.FromString("mailto:");
-                NSRunLoop.Main.InvokeOnMainThread(() => can = NSWorkspace.SharedWorkspace.UrlForApplication(url) != null);
-                return can;
-            }
-        }
+        internal static bool IsComposeSupported =>
+            MainThread.InvokeOnMainThread(() => NSWorkspace.SharedWorkspace.UrlForApplication(NSUrl.FromString("mailto:")) != null);
 
         static Task PlatformComposeAsync(EmailMessage message)
         {
