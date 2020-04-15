@@ -33,7 +33,7 @@ namespace Xamarin.Essentials
 
         static Task PlatformShowRequestAsync(ShareRequestBase request, List<NSObject> items)
         {
-            var window = NSApplication.SharedApplication.MainWindow;
+            var window = Platform.GetCurrentWindow();
             var view = window.ContentView;
 
             var rect = request.PresentationSourceBounds.ToPlatformRectangle();

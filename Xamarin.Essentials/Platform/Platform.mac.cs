@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using AppKit;
 using CoreFoundation;
 using Foundation;
 using ObjCRuntime;
@@ -8,6 +9,15 @@ namespace Xamarin.Essentials
 {
     public static partial class Platform
     {
+        internal static NSWindow GetCurrentWindow(bool throwIfNull = true)
+        {
+            var window = NSApplication.SharedApplication.MainWindow;
+
+            if (throwIfNull && window == null)
+                throw new InvalidOperationException("Could not find current window.");
+
+            return window;
+        }
     }
 
     internal static class IOKit
