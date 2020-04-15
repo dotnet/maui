@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
+using Android.OS;
 using Android.Provider;
 
 namespace Xamarin.Essentials
@@ -20,9 +21,16 @@ namespace Xamarin.Essentials
             // to ask the user first, then show the picker.
             await Permissions.RequestAsync<Permissions.StorageRead>();
 
-            var intent = new Intent(Intent.ActionGetContent);
+            // starting with KitKat, Android 5.0, we can use ActionOpenDocument
+            var action = Build.VERSION.SdkInt < BuildVersionCodes.Kitkat ? Intent.ActionGetContent : Intent.ActionOpenDocument;
+
+            var intent = new Intent(action);
             intent.SetType("*/*");
-            intent.AddCategory(Intent.CategoryOpenable);
+
+            if (Build.VERSION.SdkInt < BuildVersionCodes.Kitkat)
+                intent.AddCategory(Intent.CategoryOpenable);
+            else
+                intent.AddFlags(ActivityFlags.GrantPersistableUriPermission);
 
             var allowedTypes = options?.FileTypes?.Value?.ToArray();
             if (allowedTypes?.Length > 0)
@@ -34,9 +42,17 @@ namespace Xamarin.Essentials
             {
                 var result = await IntermediateActivity.StartAsync(pickerIntent, requestCodeFilePicker);
                 var contentUri = result.Data;
+
+                if (Build.VERSION.SdkInt >= BuildVersionCodes.Kitkat)
+                {
+                    Platform.AppContext.ContentResolver.TakePersistableUriPermission(
+                        contentUri,
+                        ActivityFlags.GrantReadUriPermission);
+                }
+
                 return new FilePickerResult(contentUri);
             }
-            catch (OperationCanceledException)
+            catch (System.OperationCanceledException)
             {
                 return null;
             }
@@ -51,9 +67,17 @@ namespace Xamarin.Essentials
             // to ask the user first, then show the picker.
             await Permissions.RequestAsync<Permissions.StorageRead>();
 
-            var intent = new Intent(Intent.ActionGetContent);
+            // starting with KitKat, Android 5.0, we can use ActionOpenDocument
+            var action = Build.VERSION.SdkInt < BuildVersionCodes.Kitkat ? Intent.ActionGetContent : Intent.ActionOpenDocument;
+
+            var intent = new Intent(action);
             intent.SetType("*/*");
-            intent.AddCategory(Intent.CategoryOpenable);
+
+            if (Build.VERSION.SdkInt < BuildVersionCodes.Kitkat)
+                intent.AddCategory(Intent.CategoryOpenable);
+            else
+                intent.AddFlags(ActivityFlags.GrantPersistableUriPermission);
+
             intent.PutExtra(Intent.ExtraAllowMultiple, true);
 
             var allowedTypes = options?.FileTypes?.Value?.ToArray();
@@ -67,17 +91,42 @@ namespace Xamarin.Essentials
                 var result = await IntermediateActivity.StartAsync(pickerIntent, requestCodeFilePicker);
 
                 var resultList = new List<FilePickerResult>();
-                for (var index = 0; index < result.ClipData.ItemCount; index++)
-                {
-                    var data = result.ClipData.GetItemAt(index);
 
-                    var contentUri = data.Uri;
+                if (result.ClipData == null)
+                {
+                    var contentUri = result.Data;
+
+                    if (Build.VERSION.SdkInt >= BuildVersionCodes.Kitkat)
+                    {
+                        Platform.AppContext.ContentResolver.TakePersistableUriPermission(
+                            contentUri,
+                            ActivityFlags.GrantReadUriPermission);
+                    }
+
                     resultList.Add(new FilePickerResult(contentUri));
+                }
+                else
+                {
+                    for (var index = 0; index < result.ClipData.ItemCount; index++)
+                    {
+                        var data = result.ClipData.GetItemAt(index);
+
+                        var contentUri = data.Uri;
+
+                        if (Build.VERSION.SdkInt >= BuildVersionCodes.Kitkat)
+                        {
+                            Platform.AppContext.ContentResolver.TakePersistableUriPermission(
+                                contentUri,
+                                ActivityFlags.GrantReadUriPermission);
+                        }
+
+                        resultList.Add(new FilePickerResult(contentUri));
+                    }
                 }
 
                 return resultList;
             }
-            catch (OperationCanceledException)
+            catch (System.OperationCanceledException)
             {
                 return null;
             }
@@ -133,10 +182,15 @@ namespace Xamarin.Essentials
             // resolve file name by querying content provider for display name
             var filename = QueryContentResolverColumn(contentUri, MediaStore.MediaColumns.DisplayName);
 
-            if (!string.IsNullOrWhiteSpace(filename))
-                return filename;
+            if (string.IsNullOrWhiteSpace(filename))
+            {
+                filename = Path.GetFileName(WebUtility.UrlDecode(contentUri.ToString()));
+            }
 
-            return Path.GetFileName(WebUtility.UrlDecode(contentUri.ToString()));
+            if (!Path.HasExtension(filename))
+                filename = filename.TrimEnd('.') + '.' + GetFileExtensionFromUri(contentUri);
+
+            return filename;
         }
 
         static string QueryContentResolverColumn(global::Android.Net.Uri contentUri, string columnName)
@@ -153,6 +207,12 @@ namespace Xamarin.Essentials
             }
 
             return text;
+        }
+
+        static string GetFileExtensionFromUri(global::Android.Net.Uri uri)
+        {
+            var mimeType = Application.Context.ContentResolver.GetType(uri);
+            return mimeType != null ? global::Android.Webkit.MimeTypeMap.Singleton.GetExtensionFromMimeType(mimeType) : string.Empty;
         }
 
         Task<Stream> PlatformOpenReadStreamAsync()

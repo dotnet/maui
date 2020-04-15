@@ -22,8 +22,8 @@ namespace Xamarin.Essentials
 
             // Note: Importing (UIDocumentPickerMode.Import) makes a local copy of the document,
             // while opening (UIDocumentPickerMode.Open) opens the document directly. We do the
-            // first, so the user has to read the file immediately.
-            var documentPicker = new DocumentPicker(allowedUtis, UIDocumentPickerMode.Import);
+            // latter, so the user accesses the original file.
+            var documentPicker = new DocumentPicker(allowedUtis, UIDocumentPickerMode.Open);
 
             var tcs = new TaskCompletionSource<FilePickerResult>();
 
@@ -69,8 +69,8 @@ namespace Xamarin.Essentials
 
             // Note: Importing (UIDocumentPickerMode.Import) makes a local copy of the document,
             // while opening (UIDocumentPickerMode.Open) opens the document directly. We do the
-            // first, so the user has to read the file immediately.
-            var documentPicker = new DocumentPicker(allowedUtis, UIDocumentPickerMode.Import);
+            // latter, so the user accesses the original file.
+            var documentPicker = new DocumentPicker(allowedUtis, UIDocumentPickerMode.Open);
             documentPicker.AllowsMultipleSelection = true;
 
             var tcs = new TaskCompletionSource<IEnumerable<FilePickerResult>>();
