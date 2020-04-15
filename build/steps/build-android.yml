@@ -3,19 +3,15 @@ parameters:
   displayName: ''     # the human name
   vmImage: ''         # the VM image
   vmPool: ''         # the VM pool
-  targetFolder: ''    # the bootstrapper target
   dependsOn: []       # the dependiencies
   preBuildSteps: []   # any steps to run before the build
   postBuildSteps: []  # any additional steps to run after the build
   slnPath : 'Xamarin.Forms.sln'
   buildTaskPath : 'Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj'
-  androidPath : 'Xamarin.Forms.ControlGallery.Android'
   androidProjectPath : 'Xamarin.Forms.ControlGallery.Android/Xamarin.Forms.ControlGallery.Android.csproj'
-  androidProjectArguments : ''
   buildConfiguration : 'Debug'
   nugetVersion: $(NUGET_VERSION)
   monoVersion: $(MONO_VERSION)
-  apkTargetFolder: '$(build.artifactstagingdirectory)/androidApp'
   provisionatorPath: 'build/provisioning/provisioning.csx'
   provisionatorExtraArguments: ''
 
@@ -28,6 +24,17 @@ jobs:
     pool:
       vmImage: ${{ parameters.vmImage }}
     dependsOn: ${{ parameters.dependsOn }}
+    strategy:
+      matrix:
+        android_legacy:
+          renderers: 'LEGACY'
+          outputfolder: 'legacyRenderers'
+        android_preAppCompat:
+          renderers: 'PREAPPCOMPAT'
+          outputfolder: 'preAppCompat'
+        android_newRenderers:
+          renderers: 'FAST'
+          outputfolder: 'newRenderers'
     steps:
       - checkout: self
         clean: true
@@ -45,7 +52,7 @@ jobs:
         inputs:
           targetType: 'filePath'
           filePath: 'build.sh'
-          arguments: --target provision --releaseChannel=$(releaseChannel)
+          arguments: --target provision --TeamProject="$(System.TeamProject)" --releaseChannel=$(releaseChannel)
 
       - task: UseDotNet@2
         displayName: 'Install .net core $(DOTNET_VERSION)'
@@ -75,27 +82,27 @@ jobs:
           configuration: ${{ parameters.buildConfiguration }}
 
       - task: MSBuild@1
-        displayName: 'Build Android ${{ parameters.name }}'
+        displayName: 'Build Android $(renderers)'
         inputs:
           solution: ${{ parameters.androidProjectPath }}
           configuration: ${{ parameters.buildConfiguration }}
-          msbuildArguments: ${{ parameters.androidProjectArguments }}
+          msbuildArguments: '/t:"Rebuild;SignAndroidPackage" /p:ANDROID_RENDERERS="$(renderers)" /bl:$(Build.ArtifactStagingDirectory)/android-$(renderers).binlog'
 
       - task: CopyFiles@2
-        displayName: 'Copy ${{ parameters.name }}'
+        displayName: 'Copy $(renderers)'
         inputs:
-          SourceFolder: ${{ parameters.androidPath }}/bin/${{ parameters.buildConfiguration }}/
+          SourceFolder: Xamarin.Forms.ControlGallery.Android/bin/${{ parameters.buildConfiguration }}/
           Contents: '**/*.apk'
-          TargetFolder: ${{ parameters.targetFolder }}
+          TargetFolder: 'Xamarin.Forms.ControlGallery.Android/$(outputfolder)/'
           CleanTargetFolder: true
           OverWrite: true
 
       - task: CopyFiles@2
-        displayName: 'Copy Android apk ${{ parameters.name }} for UITest'
+        displayName: 'Copy Android apk $(renderers) for UITest'
         inputs:
           Contents: |
-            ${{ parameters.targetFolder }}/$(ApkName)
-          TargetFolder: ${{ parameters.apkTargetFolder }}
+            Xamarin.Forms.ControlGallery.Android/$(outputfolder)/$(ApkName)
+          TargetFolder: '$(build.artifactstagingdirectory)/androidApp'
           CleanTargetFolder: true
 
       - task: PublishBuildArtifacts@1
