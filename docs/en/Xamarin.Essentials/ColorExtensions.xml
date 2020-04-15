@@ -43,36 +43,6 @@
         </remarks>
       </Docs>
     </Member>
-    <Member MemberName="FromHsva">
-      <MemberSignature Language="C#" Value="public static System.Drawing.Color FromHsva (double h, double s, double v, double a);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color FromHsva(float64 h, float64 s, float64 v, float64 a) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.FromHsva(System.Double,System.Double,System.Double,System.Double)" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Drawing.Color</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="h" Type="System.Double" />
-        <Parameter Name="s" Type="System.Double" />
-        <Parameter Name="v" Type="System.Double" />
-        <Parameter Name="a" Type="System.Double" />
-      </Parameters>
-      <Docs>
-        <param name="h">The Hue value in double.</param>
-        <param name="s">The Saturation value in double.</param>
-        <param name="v">The Value value in double.</param>
-        <param name="a">The Alpha value in double.</param>
-        <summary>Convert HSVa color into System.Drawing.Color.</summary>
-        <returns>System.Drawing.Color.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
-      </Docs>
-    </Member>
     <Member MemberName="GetComplementary">
       <MemberSignature Language="C#" Value="public static System.Drawing.Color GetComplementary (this System.Drawing.Color color);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color GetComplementary(valuetype System.Drawing.Color color) cil managed" />
@@ -118,35 +88,6 @@
         <param name="percentage">The percentage from 0-1f</param>
         <summary>Multiplies the current alpha by a percentage (0-1f)</summary>
         <returns>The new color.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="ToHsv">
-      <MemberSignature Language="C#" Value="public static ValueTuple&lt;double,double,double&gt; ToHsv (this System.Drawing.Color color);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.ValueTuple`3&lt;float64, float64, float64&gt; ToHsv(valuetype System.Drawing.Color color) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.ToHsv(System.Drawing.Color)" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.ValueTuple&lt;System.Double,System.Double,System.Double&gt;</ReturnType>
-        <Attributes>
-          <Attribute FrameworkAlternate="xamarin-essentials">
-            <AttributeName>System.Runtime.CompilerServices.TupleElementNames(new System.String[] { "h", "s", "v" })</AttributeName>
-          </Attribute>
-        </Attributes>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
-      </Parameters>
-      <Docs>
-        <param name="color">The current color to manipulate.</param>
-        <summary>Convert a System.Drawing.Color struct into HSV Color.</summary>
-        <returns>A tuple of doubles with the values of Hue, Saturation and Value, respectively.</returns>
         <remarks>
           <para></para>
         </remarks>

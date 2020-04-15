@@ -133,26 +133,14 @@
         <ReturnType>System.Nullable&lt;System.Double&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets the altitude in meters (if available) in a reference system which is specified by AltitudeReferenceSystem.</summary>
+        <summary>Gets the altitude in meters (if available). The reference system is platform specific.</summary>
         <value>Altitude of location if available.</value>
-        <remarks>Returns 0 or no value if not available.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="AltitudeReferenceSystem">
-      <MemberSignature Language="C#" Value="public AltitudeReferenceSystem AltitudeReferenceSystem { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.AltitudeReferenceSystem AltitudeReferenceSystem" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Location.AltitudeReferenceSystem" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Xamarin.Essentials.AltitudeReferenceSystem</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Specifies the reference system in which the altitude value is given.</summary>
-        <value>The altitude reference system.</value>
+        <remarks>
+          <para>Returns 0 or no value if not available. The reference system is different for each platform:</para>
+          <para>- Android: Altitude is returned in meters above the WGS 84 reference ellipsoid. If this location does not have an altitude then 0.0 is returned.</para>
+          <para>- iOS: Altitude is returned in meters above mean sea level (MSL, parametrized by a geoid).</para>
+          <para>- UWP: Altitude can be returned in different reference systems. See Windows.Devices.Geolocation.Geopoint.AltitudeReferenceSystem.</para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="CalculateDistance">

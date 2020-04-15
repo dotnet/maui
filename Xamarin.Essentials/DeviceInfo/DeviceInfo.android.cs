@@ -87,23 +87,15 @@ namespace Xamarin.Essentials
         static DeviceType GetDeviceType()
         {
             var isEmulator =
-                (Build.Brand.StartsWith("generic", StringComparison.InvariantCulture) && Build.Device.StartsWith("generic", StringComparison.InvariantCulture)) ||
                 Build.Fingerprint.StartsWith("generic", StringComparison.InvariantCulture) ||
                 Build.Fingerprint.StartsWith("unknown", StringComparison.InvariantCulture) ||
-                Build.Hardware.Contains("goldfish") ||
-                Build.Hardware.Contains("ranchu") ||
                 Build.Model.Contains("google_sdk") ||
                 Build.Model.Contains("Emulator") ||
                 Build.Model.Contains("Android SDK built for x86") ||
                 Build.Manufacturer.Contains("Genymotion") ||
                 Build.Manufacturer.Contains("VS Emulator") ||
-                Build.Product.Contains("emulator") ||
-                Build.Product.Contains("google_sdk") ||
-                Build.Product.Contains("sdk") ||
-                Build.Product.Contains("sdk_google") ||
-                Build.Product.Contains("sdk_x86") ||
-                Build.Product.Contains("simulator") ||
-                Build.Product.Contains("vbox86p");
+                (Build.Brand.StartsWith("generic", StringComparison.InvariantCulture) && Build.Device.StartsWith("generic", StringComparison.InvariantCulture)) ||
+                Build.Product.Equals("google_sdk", StringComparison.InvariantCulture);
 
             if (isEmulator)
                 return DeviceType.Virtual;

@@ -25,13 +25,6 @@
       <Member Id="M:Xamarin.Essentials.AccelerometerData.ToString" />
       <Member Id="P:Xamarin.Essentials.AccelerometerData.Acceleration" />
     </Type>
-    <Type Name="Xamarin.Essentials.AltitudeReferenceSystem" Id="T:Xamarin.Essentials.AltitudeReferenceSystem">
-      <Member Id="F:Xamarin.Essentials.AltitudeReferenceSystem.Ellipsoid" />
-      <Member Id="F:Xamarin.Essentials.AltitudeReferenceSystem.Geoid" />
-      <Member Id="F:Xamarin.Essentials.AltitudeReferenceSystem.Surface" />
-      <Member Id="F:Xamarin.Essentials.AltitudeReferenceSystem.Terrain" />
-      <Member Id="F:Xamarin.Essentials.AltitudeReferenceSystem.Unspecified" />
-    </Type>
     <Type Name="Xamarin.Essentials.AppInfo" Id="T:Xamarin.Essentials.AppInfo">
       <Member Id="M:Xamarin.Essentials.AppInfo.ShowSettingsUI" />
       <Member Id="P:Xamarin.Essentials.AppInfo.BuildString" />
@@ -149,10 +142,8 @@
     </Type>
     <Type Name="Xamarin.Essentials.ColorExtensions" Id="T:Xamarin.Essentials.ColorExtensions">
       <Member Id="M:Xamarin.Essentials.ColorExtensions.AddLuminosity(System.Drawing.Color,System.Single)" />
-      <Member Id="M:Xamarin.Essentials.ColorExtensions.FromHsva(System.Double,System.Double,System.Double,System.Double)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.GetComplementary(System.Drawing.Color)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.MultiplyAlpha(System.Drawing.Color,System.Single)" />
-      <Member Id="M:Xamarin.Essentials.ColorExtensions.ToHsv(System.Drawing.Color)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.ToInt(System.Drawing.Color)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.ToSystemColor(UIKit.UIColor)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.ToUInt(System.Drawing.Color)" />
@@ -425,7 +416,6 @@
       <Member Id="M:Xamarin.Essentials.Location.ToString" />
       <Member Id="P:Xamarin.Essentials.Location.Accuracy" />
       <Member Id="P:Xamarin.Essentials.Location.Altitude" />
-      <Member Id="P:Xamarin.Essentials.Location.AltitudeReferenceSystem" />
       <Member Id="P:Xamarin.Essentials.Location.Course" />
       <Member Id="P:Xamarin.Essentials.Location.IsFromMockProvider" />
       <Member Id="P:Xamarin.Essentials.Location.Latitude" />
