@@ -41,7 +41,16 @@
 						GalleryBuilder.NavButton("Reset", () => new ObservableCollectionResetGallery(), Navigation),
 
 						GalleryBuilder.NavButton("Add Items with timer to Empty Collection", () =>
-							new ObservableCodeCollectionViewGallery(grid: false, initialItems: 0, addItemsWithTimer: true), Navigation)
+							new ObservableCodeCollectionViewGallery(grid: false, initialItems: 0, addItemsWithTimer: true), Navigation),
+
+						GalleryBuilder.NavButton("Scroll mode Keep items in view", () =>
+                            new ObservableCodeCollectionViewGallery(grid: false, initialItems: 0, addItemsWithTimer: true, scrollMode: ItemsUpdatingScrollMode.KeepItemsInView), Navigation),
+
+						GalleryBuilder.NavButton("Scroll mode Keep scroll offset", () =>
+							new ObservableCodeCollectionViewGallery(grid: false, initialItems: 0, addItemsWithTimer: true, scrollMode: ItemsUpdatingScrollMode.KeepScrollOffset), Navigation),
+
+						GalleryBuilder.NavButton("Scroll mode Keep last item in view", () =>
+							new ObservableCodeCollectionViewGallery(grid: false, initialItems: 0, addItemsWithTimer: true, scrollMode: ItemsUpdatingScrollMode.KeepLastItemInView), Navigation)
 					}
 				}
 			};
