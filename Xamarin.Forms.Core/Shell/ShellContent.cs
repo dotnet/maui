@@ -163,9 +163,17 @@ namespace Xamarin.Forms
 			get => _contentCache;
 			set
 			{
+				if (_contentCache == value)
+					return;
+
+				var oldCache = _contentCache;
 				_contentCache = value;
+				if(oldCache != null)
+					OnChildRemoved(oldCache);
+
 				if (value != null && value.Parent != this)
 				{
+					_logicalChildren.Add(value);
 					OnChildAdded(value);
 				}
 
@@ -199,7 +207,6 @@ namespace Xamarin.Forms
 				// deparent old item
 				if (oldValue is Page oldElement)
 				{
-					shellContent.OnChildRemoved(oldElement);
 					shellContent.ContentCache = null;
 				}
 
@@ -207,7 +214,6 @@ namespace Xamarin.Forms
 				shellContent._logicalChildren.Clear();
 				if (newValue is Page newElement)
 				{
-					shellContent._logicalChildren.Add((Element)newValue);
 					shellContent.ContentCache = newElement;
 				}
 				else if(newValue != null)

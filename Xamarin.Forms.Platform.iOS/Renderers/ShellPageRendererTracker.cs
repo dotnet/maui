@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		#endregion IShellPageRendererTracker
 
-		readonly IShellContext _context;
+		IShellContext _context;
 		bool _disposed;
 		FlyoutBehavior _flyoutBehavior;
 		WeakReference<UIViewController> _rendererRef;
@@ -65,12 +65,19 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			_context = context;
 			_nSCache = new NSCache();
+			_context.Shell.PropertyChanged += HandleShellPropertyChanged;
 		}
 
 		public async void OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
 		{
 			_flyoutBehavior = behavior;
 			await UpdateToolbarItems().ConfigureAwait(false);
+		}
+
+		protected virtual void HandleShellPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.Is(VisualElement.FlowDirectionProperty))
+				UpdateFlowDirection();
 		}
 
 		protected virtual async void OnBackButtonBehaviorPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -491,6 +498,19 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
+		void UpdateFlowDirection()
+		{
+			if (_searchHandlerAppearanceTracker != null)
+			{
+				_searchHandlerAppearanceTracker.UpdateFlowDirection(_context.Shell);
+			}
+			if (_searchController != null)
+			{
+				_searchController.View.UpdateFlowDirection(_context.Shell);
+				_searchController.SearchBar.UpdateFlowDirection(_context.Shell);
+			}
+		}
+
 		void AttachSearchController()
 		{
 
@@ -548,6 +568,8 @@ namespace Xamarin.Forms.Platform.iOS
 			searchBar.ShowsBookmarkButton = SearchHandler.ClearPlaceholderEnabled;
 
 			_searchHandlerAppearanceTracker = new SearchHandlerAppearanceTracker(searchBar, SearchHandler);
+
+			UpdateFlowDirection();
 		}
 
 		void BookmarkButtonClicked(object sender, EventArgs e)
@@ -587,10 +609,13 @@ namespace Xamarin.Forms.Platform.iOS
 		async void SetSearchBarIcon(UISearchBar searchBar, ImageSource source, UISearchBarIcon icon)
 		{
 			var result = await source.GetNativeImageAsync();
-			var newResult = result.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
-			searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Normal);
-			searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Highlighted);
-			searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Selected);
+			if (result != null)
+			{
+				var newResult = result.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+				searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Normal);
+				searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Highlighted);
+				searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Selected);
+			}
 		}
 
 		void PageAppearing(object sender, EventArgs e)
@@ -625,8 +650,10 @@ namespace Xamarin.Forms.Platform.iOS
 				if (BackButtonBehavior != null)
 					BackButtonBehavior.PropertyChanged -= OnBackButtonBehaviorPropertyChanged;
 
+				_context.Shell.PropertyChanged -= HandleShellPropertyChanged;
 			}
 
+			_context = null;
 			SearchHandler = null;
 			Page = null;
 			BackButtonBehavior = null;

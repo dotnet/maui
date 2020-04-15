@@ -201,6 +201,10 @@ namespace Xamarin.Forms.Controls.XamStore
 					RemoveTopTab),
 				1, 13);
 
+			grid.Children.Add(MakeButton("Flow Direction",
+					ChangeFlowDirection),
+				2, 13);
+
 			grid.Children.Add(MakeSwitch("Nav Visible", out _navBarVisibleSwitch), 0, 14);
 			grid.Children.Add(MakeSwitch("Tab Visible", out _tabBarVisibleSwitch), 1, 14);
 
@@ -325,6 +329,16 @@ namespace Xamarin.Forms.Controls.XamStore
 					(control = new Switch {IsToggled = true})
 				}
 			};
+		}
+
+		private void ChangeFlowDirection()
+		{
+			var ve = (Shell)Parent.Parent.Parent.Parent;
+
+			if (ve.FlowDirection != FlowDirection.RightToLeft)
+				ve.FlowDirection = FlowDirection.RightToLeft;
+			else
+				ve.FlowDirection = FlowDirection.LeftToRight;
 		}
 
 		private void RemoveTopTab()

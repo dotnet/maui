@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Platform.iOS
 			else if (controller.EffectiveFlowDirection.IsLeftToRight())
 				updateValue = UISemanticContentAttribute.ForceLeftToRight;
 
-			if(updateValue != view.SemanticContentAttribute)
+			if (updateValue != view.SemanticContentAttribute)
 			{
 				view.SemanticContentAttribute = updateValue;
 				return true;

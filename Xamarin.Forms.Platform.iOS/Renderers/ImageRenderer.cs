@@ -278,7 +278,7 @@ namespace Xamarin.Forms.Platform.iOS
 				image = UIGraphics.GetImageFromCurrentImageContext();
 				UIGraphics.EndImageContext();
 
-				if (iconcolor != _defaultColor)
+				if (image != null && iconcolor != _defaultColor)
 					image = image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 			}
 			return Task.FromResult(image);

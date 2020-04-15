@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Platform.iOS
 		#endregion IShellSectionRootRenderer
 
 		const int HeaderHeight = 35;
-		readonly IShellContext _shellContext;
+		IShellContext _shellContext;
 		UIView _blurView;
 		UIView _containerArea;
 		int _currentIndex;
@@ -37,6 +37,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			ShellSection = shellSection ?? throw new ArgumentNullException(nameof(shellSection));
 			_shellContext = shellContext;
+			_shellContext.Shell.PropertyChanged += HandleShellPropertyChanged;
 		}
 
 		public override void ViewDidLayoutSubviews()
@@ -82,6 +83,13 @@ namespace Xamarin.Forms.Platform.iOS
 			tracker.ViewController = this;
 			tracker.Page = ((IShellContentController)ShellSection.CurrentItem).GetOrCreateContent();
 			_tracker = tracker;
+			UpdateFlowDirection();
+		}
+
+		public override void ViewWillAppear(bool animated)
+		{
+			UpdateFlowDirection();
+			base.ViewWillAppear(animated);
 		}
 
 		public override void ViewSafeAreaInsetsDidChange()
@@ -118,6 +126,12 @@ namespace Xamarin.Forms.Platform.iOS
 				}
 			}
 
+			if(disposing)
+			{
+				_shellContext.Shell.PropertyChanged -= HandleShellPropertyChanged;
+			}
+
+			_shellContext = null;
 			ShellSection = null;
 			_header = null;
 			_tracker = null;
@@ -159,6 +173,12 @@ namespace Xamarin.Forms.Platform.iOS
 
 				_renderers[item] = renderer;
 			}
+		}
+
+		protected virtual void HandleShellPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.Is(VisualElement.FlowDirectionProperty))
+				UpdateFlowDirection();
 		}
 
 		protected virtual void OnShellSectionPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -239,6 +259,12 @@ namespace Xamarin.Forms.Platform.iOS
 				}
 				_blurView.Hidden = true;
 			}
+		}
+
+		void UpdateFlowDirection()
+		{
+			if(_shellContext?.Shell?.CurrentItem?.CurrentItem == ShellSection)
+				this.View.UpdateFlowDirection(_shellContext.Shell);
 		}
 
 		void OnShellSectionItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
