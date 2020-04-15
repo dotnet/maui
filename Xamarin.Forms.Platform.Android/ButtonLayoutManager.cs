@@ -184,6 +184,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		public void Update()
 		{
+			if (View?.LayoutParameters == null && _hasLayoutOccurred)
+				return;
+
 			if (!UpdateTextAndImage())
 				UpdateImage();
 			UpdatePadding();
@@ -258,9 +261,12 @@ namespace Xamarin.Forms.Platform.Android
 
 		bool UpdateTextAndImage()
 		{
-			if (_disposed || _renderer == null || _element == null || View?.LayoutParameters == null)
+			if (_disposed || _renderer == null || _element == null)
 				return false;
 
+			if (View?.LayoutParameters == null && _hasLayoutOccurred)
+				return false;
+			
 			AButton view = View;
 			if (view == null)
 				return false;

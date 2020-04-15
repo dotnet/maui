@@ -57,8 +57,8 @@ using Android.Support.V4.Content;
 [assembly: ExportRenderer(typeof(Issue7249Switch), typeof(Issue7249SwitchRenderer))]
 [assembly: ExportRenderer(typeof(Issue9360.Issue9360NavigationPage), typeof(Issue9360NavigationPageRenderer))]
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.GalleryPages.TwoPaneViewGalleries.HingeAngleLabel), typeof(HingeAngleLabelRenderer))]
+[assembly: ExportRenderer(typeof(Issue8801.PopupStackLayout), typeof(Issue8801StackLayoutRenderer))]
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.Tests.TestClasses.CustomButton), typeof(CustomButtonRenderer))]
-[assembly: ExportRenderer(typeof(Issue8801.PopupStackLayout), typeof(CustomStackLayoutRenderer))]
 
 #if PRE_APPLICATION_CLASS
 #elif FORMS_APPLICATION_ACTIVITY
@@ -117,9 +117,9 @@ namespace Xamarin.Forms.ControlGallery.Android
 		}
 	}
 
-	public class CustomStackLayoutRenderer : VisualElementRenderer<StackLayout>
+	public class Issue8801StackLayoutRenderer : VisualElementRenderer<StackLayout>
 	{
-		public CustomStackLayoutRenderer(Context context) : base(context)
+		public Issue8801StackLayoutRenderer(Context context) : base(context)
 		{
 
 

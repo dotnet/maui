@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		VisualElementRenderer _visualElementRenderer;
 		readonly MotionEventHelper _motionEventHelper = new MotionEventHelper();
 		SpannableString _spannableString;
-
+		bool _hasLayoutOccurred;
 		bool _wasFormatted;
 
 		public LabelRenderer(Context context) : base(context)
@@ -154,6 +154,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		{
 			base.OnLayout(changed, left, top, right, bottom);
 			this.RecalculateSpanPositions(Element, _spannableString, new SizeRequest(new Size(right - left, bottom - top)));
+			_hasLayoutOccurred = true;
 		}
 
 		void IVisualElementRenderer.SetElement(VisualElement element)
@@ -281,7 +282,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 			ElementPropertyChanged?.Invoke(this, e);
 
-			if (Control?.LayoutParameters == null)
+			if (Control?.LayoutParameters == null && _hasLayoutOccurred)
 				return;
 
 			if (e.PropertyName == Label.HorizontalTextAlignmentProperty.PropertyName || e.PropertyName == Label.VerticalTextAlignmentProperty.PropertyName)

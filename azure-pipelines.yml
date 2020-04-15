@@ -59,84 +59,164 @@ schedules:
     include:
     - master
 
-jobs:
-- template: build/steps/build-windows.yml
-  parameters:
-    name: win
-    displayName: Build Windows Phase
-    vmImage: $(vs2019VmImage)
-    vmPool: $(vs2019VmPool)
-    provisionatorPath : 'build/provisioning/provisioning.csx'
+stages:
+  - stage: windows
+    displayName: Build Windows
+    dependsOn: []
+    jobs:
+      - job: win_hosted
+        condition: eq(variables['vs2019VmPool'], 'Azure Pipelines')
+        workspace:
+          clean: all
+        displayName: Build Windows Phase
+        timeoutInMinutes: 120
+        pool:
+          name: $(vs2019VmPool)
+          vmImage: $(vs2019VmImage)
+          demands: 
+            msbuild
+        strategy:
+          matrix:
+            debug:
+              BuildConfiguration:  'Debug'
+            release:
+              BuildConfiguration:  'Release'
+        steps:
+          - template: build/steps/build-windows.yml
+            parameters:
+              provisionatorPath : 'build/provisioning/provisioning.csx'
+      - job: nuget_pack_hosted
+        workspace:
+          clean: all
+        displayName: Nuget Phase
+        dependsOn:
+        - win_hosted
+        condition: succeeded()
+        pool:
+          name: $(vs2019VmPool)
+          vmImage: $(vs2019VmImage)
+          demands: 
+            msbuild
+        variables:
+          FormsIdAppend: ''
+          buildConfiguration: $(DefaultBuildConfiguration)
+          nugetPackageVersion : $[ dependencies.win_hosted.outputs['debug.winbuild.xamarinformspackageversion'] ]
+        steps:
+          - template: build/steps/build-nuget.yml
 
-- template: build/steps/build-android.yml
-  parameters:
-    name: android_legacy
-    displayName: Build Android [Legacy Renderers]
-    vmImage: $(macOSXVmImage)
-    targetFolder: Xamarin.Forms.ControlGallery.Android/legacyRenderers/
-    androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /p:ANDROID_RENDERERS="LEGACY" /bl:$(Build.ArtifactStagingDirectory)/android-legacy.binlog'
-    buildConfiguration: $(AndroidBuildConfiguration)
-    provisionatorPath : 'build/provisioning/provisioning.csx'
+      - job: win_bots
+        condition: ne(variables['vs2019VmPool'], 'Azure Pipelines')
+        workspace:
+          clean: all
+        displayName: Build Windows Phase Bots
+        timeoutInMinutes: 120
+        pool:
+          name: $(vs2019VmPool)
+          vmImage: $(vs2019VmImage)
+          demands: 
+            - Agent.OS -equals Windows_NT
+            - msbuild
+        strategy:
+          matrix:
+            debug:
+              BuildConfiguration:  'Debug'
+            release:
+              BuildConfiguration:  'Release'
+        steps:
+          - template: build/steps/build-windows.yml
+            parameters:
+              provisionatorPath : 'build/provisioning/provisioning.csx'
 
-- template: build/steps/build-android.yml
-  parameters:
-    name: android_preappcompact
-    displayName: Build Android [Pre-AppCompat]
-    vmImage: $(macOSXVmImage)
-    targetFolder: Xamarin.Forms.ControlGallery.Android/preAppCompat
-    androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /p:ANDROID_RENDERERS="PREAPPCOMPAT" /bl:$(Build.ArtifactStagingDirectory)/android-preappcompact.binlog'
-    buildConfiguration: $(AndroidBuildConfiguration)
-    provisionatorPath : 'build/provisioning/provisioning.csx'
+      - job: nuget_pack_bots
+        workspace:
+          clean: all
+        displayName: Nuget Phase
+        dependsOn:
+        - win_bots
+        condition: succeeded()
+        pool:
+          name: $(vs2019VmPool)
+          vmImage: $(vs2019VmImage)
+          demands: 
+            msbuild
+        variables:
+          FormsIdAppend: ''
+          buildConfiguration: $(DefaultBuildConfiguration)
+          nugetPackageVersion : $[ dependencies.win_bots.outputs['debug.winbuild.xamarinformspackageversion'] ]
+        steps:
+          - template: build/steps/build-nuget.yml
 
-- template: build/steps/build-android.yml
-  parameters:
-    name: android_fast
-    displayName: Build Android [Fast Renderers]
-    vmImage: $(macOSXVmImage)
-    targetFolder: Xamarin.Forms.ControlGallery.Android/newRenderers/
-    androidProjectArguments: '/t:"Rebuild;SignAndroidPackage" /p:ANDROID_RENDERERS="FAST" /bl:$(Build.ArtifactStagingDirectory)/android-newrenderers.binlog'
-    buildConfiguration: $(AndroidBuildConfiguration)
-    provisionatorPath : 'build/provisioning/provisioning.csx'
+  - stage: android
+    displayName: Build Android
+    dependsOn: []
+    jobs:
+      - template: build/steps/build-android.yml
+        parameters:
+          vmImage: $(macOSXVmImage)
+          provisionatorPath : 'build/provisioning/provisioning.csx'
 
-- template: build/steps/build-osx.yml
-  parameters:
-    vmImage: $(macOSXVmImage)
-    name: osx
-    buildForVS2017: 'false'
-    displayName: 'OSX Phase'
 
-- template: build/steps/build-osx.yml
-  parameters:
-    vmImage: 'macOS-10.14'
-    name: osx_2017
-    buildForVS2017: 'true'
-    displayName: 'OSX Phase 2017'
+  - stage: build_osx
+    displayName: Build OSX
+    dependsOn: []
+    jobs:
+    - job: osx
+      workspace:
+        clean: all
+      displayName: OSX Phase
+      pool:
+        name:  $(osx2019VmPool)
+        vmImage: $(macOSXVmImage)
+        demands:
+          - sh
+          - Xamarin.iOS
+      variables:
+        provisionator.osxPath : 'build/provisioning/provisioning.csx'
+        buildConfiguration: $(DefaultBuildConfiguration)
+        slnPath: $(SolutionFile)
+        iOSCertSecureFileName: 'Xamarin Forms iOS Certificate.p12'
+        iOSProvisioningSecureFileName: 'Xamarin Forms iOS Provisioning.mobileprovision'
+        buildForVS2017: 'false'
+      steps:
+        - template: build/steps/build-osx.yml
 
-- job: nuget_pack
-  workspace:
-    clean: all
-  displayName: Nuget Phase
-  dependsOn:
-   - win
-  condition: succeeded()
-  pool:
-    name: $(vs2019VmPool)
-    vmImage: $(vs2019VmImage)
-  variables:
-    FormsIdAppend: ''
-    buildConfiguration: $(DefaultBuildConfiguration)
-    nugetPackageVersion : $[ dependencies.win.outputs['debug.winbuild.xamarinformspackageversion'] ]
-  steps:
-     - template: build/steps/build-nuget.yml
+  - stage: build_osx_2017
+    displayName: Build OSX 2017
+    dependsOn: []
+    jobs:
+    - job: osx_2017
+      workspace:
+        clean: all
+      displayName: OSX Phase 201
+      pool:
+        name:  $(osx2017VmPool)
+        vmImage: 'macOS-10.14'
+        demands:
+          - sh
+          - Xamarin.iOS
+      variables:
+        provisionator.osxPath : 'build/provisioning/provisioning.csx'
+        buildConfiguration: $(DefaultBuildConfiguration)
+        slnPath: $(SolutionFile)
+        iOSCertSecureFileName: 'Xamarin Forms iOS Certificate.p12'
+        iOSProvisioningSecureFileName: 'Xamarin Forms iOS Provisioning.mobileprovision'
+        buildForVS2017: 'true'
+      steps:
+        - template: build/steps/build-osx.yml
 
   # only sign using the private server
-- ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-  - job: nuget_sign
-    displayName: Sign Phase
-    dependsOn: nuget_pack
-    pool:
-      name: $(signVmPool)
-    steps:
-      - template: build/steps/build-sign.yml
-    condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+    - stage: nuget_signing
+      dependsOn: windows
+      displayName: Sign Nuget
+      jobs:
+        - job: nuget_sign
+          displayName: Sign Phase
+          pool:
+            name: $(signVmPool)
+            demands: 
+              msbuild
+          steps:
+            - template: build/steps/build-sign.yml
+          condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
 
