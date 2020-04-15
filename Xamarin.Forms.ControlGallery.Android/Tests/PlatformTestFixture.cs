@@ -1,5 +1,6 @@
 ﻿using Android.Content;
 using Android.Content.PM;
+using Android.Support.V7.Widget;
 using Android.Widget;
 using Xamarin.Forms.Platform.Android;
 
@@ -44,6 +45,19 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 			}			
 			
 			var viewRenderer = renderer.View as ViewRenderer<Label, TextView>;
+			return viewRenderer.Control;
+		}
+
+		protected global::Android.Widget.Button GetNativeControl(Button button)
+		{
+			var renderer = GetRenderer(button);
+
+			if (renderer is Xamarin.Forms.Platform.Android.FastRenderers.ButtonRenderer fastRenderer)
+			{
+				return fastRenderer;
+			}
+
+			var viewRenderer = renderer.View as ViewRenderer<Button, AppCompatButton>;
 			return viewRenderer.Control;
 		}
 

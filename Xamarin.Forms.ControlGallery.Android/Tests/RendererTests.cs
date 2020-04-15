@@ -30,5 +30,16 @@ namespace Xamarin.Forms.ControlGallery.Android.Tests
 				Assert.That(centeredVertical, Is.True);
 			}
 		}
+
+		[Test(Description = "Button Initial Measure Correct")]
+		public void ButtonInitialMeasureWithText()
+		{
+			string text = "I am a long amount of text that should measure out to a long amount of text";
+			var button = new Button { Text = text };
+			using (var nativeButton = GetNativeControl(button))
+			{				
+				Assert.AreEqual(nativeButton.Text, button.Text, text);
+			}
+		}
 	}
 }

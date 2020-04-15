@@ -1205,6 +1205,7 @@ namespace Xamarin.Forms.Platform.Android
 			
 			IOnTouchListener _touchListener;
 			bool _disposed;
+			bool _hasLayoutOccurred;
 
 			[Obsolete("This constructor is obsolete as of version 2.5. Please use DefaultRenderer(Context) instead.")]
 			[EditorBrowsable(EditorBrowsableState.Never)]
@@ -1303,6 +1304,14 @@ namespace Xamarin.Forms.Platform.Android
 					SetOnTouchListener(null); 
 
 				base.Dispose(disposing);
+			}
+
+			bool ILayoutChanges.HasLayoutOccurred => _hasLayoutOccurred;
+
+			protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+			{
+				base.OnLayout(changed, left, top, right, bottom);
+				_hasLayoutOccurred = true;
 			}
 		}
 

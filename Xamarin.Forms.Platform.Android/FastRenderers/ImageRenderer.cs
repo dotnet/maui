@@ -18,6 +18,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 	public class ImageRenderer : AImageView, IVisualElementRenderer, IImageRendererController, IViewRenderer, ITabStop,
 		ILayoutChanges
 	{
+		bool _hasLayoutOccurred;
 		bool _disposed;
 		Image _element;
 		bool _skipInvalidate;
@@ -65,6 +66,12 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			}
 
 			base.Dispose(disposing);
+		}
+
+		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+		{
+			base.OnLayout(changed, left, top, right, bottom);
+			_hasLayoutOccurred = true;
 		}
 
 		public override void Invalidate()
@@ -183,6 +190,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			if (_formsAnimationDrawable != null)
 				_formsAnimationDrawable.AnimationStopped += OnAnimationStopped;
 		}
+
+		bool ILayoutChanges.HasLayoutOccurred => _hasLayoutOccurred;
 
 		void OnAnimationStopped(object sender, FormsAnimationDrawableStateEventArgs e) =>
 			ImageElementManager.OnAnimationStopped(Element, e);
