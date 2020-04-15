@@ -63,42 +63,137 @@ stages:
   - stage: windows
     displayName: Build Windows
     jobs:
-    - template: build/steps/build-windows.yml
-      parameters:
-        name: win
+      - job: win_hosted
+        condition: eq(variables['vs2019VmPool'], 'Azure Pipelines')
+        workspace:
+          clean: all
         displayName: Build Windows Phase
-        vmImage: $(vs2019VmImage)
-        vmPool: $(vs2019VmPool)
-        provisionatorPath : 'build/provisioning/provisioning.csx'
-
-    - template: build/steps/build-windows.yml
-      parameters:
-        name: pages
+        timeoutInMinutes: 120
+        pool:
+          name: $(vs2019VmPool)
+          vmImage: $(vs2019VmImage)
+          demands: 
+            msbuild
+        strategy:
+          matrix:
+            debug:
+              BuildConfiguration:  'Debug'
+            release:
+              BuildConfiguration:  'Release'
+        steps:
+          - template: build/steps/build-windows.yml
+            parameters:
+              provisionatorPath : 'build/provisioning/provisioning.csx'
+      - job: pages_hosted
+        condition: eq(variables['vs2019VmPool'], 'Azure Pipelines')
+        workspace:
+          clean: all
         displayName: Build Pages Phase
-        vmImage: $(vs2019VmImage)
-        vmPool: $(vs2019VmPool)
-        slnPath: build/Xamarin.Forms.Pages.sln
-        includeUwp: false
-        includeAndroid: false
-        includeNonUwpAndNonAndroid: false
-        includePages: true
-  
-    - job: nuget_pack
-      workspace:
-        clean: all
-      dependsOn:
-        - win
-      displayName: Nuget Phase
-      condition: succeeded()
-      pool:
-        name: $(vs2019VmPool)
-        vmImage: $(vs2019VmImage)
-      variables:
-        FormsIdAppend: ''
-        buildConfiguration: $(DefaultBuildConfiguration)
-        nugetPackageVersion : $[ dependencies.win.outputs['debug.winbuild.xamarinformspackageversion'] ]
-      steps:
-        - template: build/steps/build-nuget.yml
+        timeoutInMinutes: 120
+        pool:
+          name: $(vs2019VmPool)
+          vmImage: $(vs2019VmImage)
+          demands: 
+            msbuild
+        strategy:
+          matrix:
+            debug:
+              BuildConfiguration:  'Debug'
+            release:
+              BuildConfiguration:  'Release'
+        steps:
+          - template: build/steps/build-windows.yml
+            parameters:
+              slnPath: build/Xamarin.Forms.Pages.sln
+              includeUwp: false
+              includeAndroid: false
+              includeNonUwpAndNonAndroid: false
+              includePages: true
+      - job: nuget_pack_hosted
+        workspace:
+          clean: all
+        displayName: Nuget Phase
+        dependsOn:
+        - win_hosted
+        condition: succeeded()
+        pool:
+          name: $(vs2019VmPool)
+          vmImage: $(vs2019VmImage)
+          demands: 
+            msbuild
+        variables:
+          FormsIdAppend: ''
+          buildConfiguration: $(DefaultBuildConfiguration)
+          nugetPackageVersion : $[ dependencies.win_hosted.outputs['debug.winbuild.xamarinformspackageversion'] ]
+        steps:
+          - template: build/steps/build-nuget.yml
+      - job: win_bots
+        condition: ne(variables['vs2019VmPool'], 'Azure Pipelines')
+        workspace:
+          clean: all
+        displayName: Build Windows Phase
+        timeoutInMinutes: 120
+        pool:
+          name: $(vs2019VmPool)
+          vmImage: $(vs2019VmImage)
+          demands: 
+            - Agent.OS -equals Windows_NT
+            - msbuild
+        strategy:
+          matrix:
+            debug:
+              BuildConfiguration:  'Debug'
+            release:
+              BuildConfiguration:  'Release'
+        steps:
+          - template: build/steps/build-windows.yml
+            parameters:
+              provisionatorPath : 'build/provisioning/provisioning.csx'
+      - job: pages_bots
+        condition: ne(variables['vs2019VmPool'], 'Azure Pipelines')
+        workspace:
+          clean: all
+        displayName: Build Pages Phase
+        timeoutInMinutes: 120
+        pool:
+          name: $(vs2019VmPool)
+          vmImage: $(vs2019VmImage)
+          demands: 
+            - Agent.OS -equals Windows_NT
+            - msbuild
+        strategy:
+          matrix:
+            debug:
+              BuildConfiguration:  'Debug'
+            release:
+              BuildConfiguration:  'Release'
+        steps:
+          - template: build/steps/build-windows.yml
+            parameters:
+              slnPath: build/Xamarin.Forms.Pages.sln
+              includeUwp: false
+              includeAndroid: false
+              includeNonUwpAndNonAndroid: false
+              includePages: true
+      - job: nuget_pack_bots
+        workspace:
+          clean: all
+        displayName: Nuget Phase
+        dependsOn:
+        - win_bots
+        condition: succeeded()
+        pool:
+          name: $(vs2019VmPool)
+          vmImage: $(vs2019VmImage)
+          demands: 
+            - Agent.OS -equals Windows_NT
+            - msbuild
+        variables:
+          FormsIdAppend: ''
+          buildConfiguration: $(DefaultBuildConfiguration)
+          nugetPackageVersion : $[ dependencies.win_bots.outputs['debug.winbuild.xamarinformspackageversion'] ]
+        steps:
+          - template: build/steps/build-nuget.yml
 
   - stage: android
     displayName: Build Android
@@ -124,10 +219,10 @@ stages:
           clean: all
         displayName: OSX Phase
         pool:
+          name:  $(osx2019VmPool)
           vmImage: $(macOSXVmImage)
           demands:
             - sh
-            - msbuild
             - Xamarin.iOS
         variables:
           provisionator.osxPath : 'build/provisioning/provisioning.csx'
@@ -150,10 +245,10 @@ stages:
           clean: all
         displayName: OSX Phase
         pool:
+          name:  $(osx2017VmPool)
           vmImage: 'macOS-10.14'
           demands:
             - sh
-            - msbuild
             - Xamarin.iOS
         variables:
           provisionator.osxPath : 'build/provisioning/provisioning.csx'
@@ -174,6 +269,8 @@ stages:
           displayName: Sign Phase
           pool:
             name: $(signVmImage)
+            demands: 
+              msbuild
           steps:
             - template: build/steps/build-sign.yml
           condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
