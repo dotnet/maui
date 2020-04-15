@@ -145,7 +145,11 @@ namespace Xamarin.Forms.Platform.Tizen
 			application.SendStart();
 			application.PropertyChanged += new PropertyChangedEventHandler(this.AppOnPropertyChanged);
 			SetPage(_application.MainPage);
-			_useBezelInteration = Device.Idiom == TargetIdiom.Watch && Specific.GetUseBezelInteraction(_application);
+			if (Device.Idiom == TargetIdiom.Watch)
+			{
+				_useBezelInteration = Specific.GetUseBezelInteraction(_application);
+				UpdateOverlayContent();
+			}
 		}
 
 		void AppOnPropertyChanged(object sender, PropertyChangedEventArgs args)
@@ -160,7 +164,18 @@ namespace Xamarin.Forms.Platform.Tizen
 				{
 					_useBezelInteration = Specific.GetUseBezelInteraction(_application);
 				}
+				else if (Specific.OverlayContentProperty.PropertyName == args.PropertyName)
+				{
+					UpdateOverlayContent();
+				}
 			}
+		}
+
+		void UpdateOverlayContent()
+		{
+			var renderer = Platform.GetOrCreateRenderer(Specific.GetOverlayContent(_application));
+			(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
+			Forms.BaseLayout.SetPartContent("elm.swallow.overlay", renderer?.NativeView);
 		}
 
 		void SetPage(Page page)

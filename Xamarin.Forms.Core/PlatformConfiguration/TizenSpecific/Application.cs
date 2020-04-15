@@ -26,5 +26,29 @@
 			SetUseBezelInteraction(config.Element, value);
 			return config;
 		}
+
+		public static readonly BindableProperty OverlayContentProperty
+		   = BindableProperty.CreateAttached("OverlayContent", typeof(View), typeof(FormsElement), default(View));
+
+		public static View GetOverlayContent(BindableObject application)
+		{
+			return (View)application.GetValue(OverlayContentProperty);
+		}
+
+		public static void SetOverlayContent(BindableObject application, View value)
+		{
+			application.SetValue(OverlayContentProperty, value);
+		}
+
+		public static View GetOverlayContent(this IPlatformElementConfiguration<Tizen, FormsElement> config)
+		{
+			return GetOverlayContent(config.Element);
+		}
+
+		public static IPlatformElementConfiguration<Tizen, FormsElement> SetOverlayContent(this IPlatformElementConfiguration<Tizen, FormsElement> config, View value)
+		{
+			SetOverlayContent(config.Element, value);
+			return config;
+		}
 	}
 }
