@@ -21,7 +21,7 @@ namespace Xamarin.Forms.Platform.iOS
 					if (isLtr)
 						return UITextAlignment.Left;
 					else
-						return UITextAlignment.Natural;
+						return UITextAlignment.Right;
 			}
 		}
 

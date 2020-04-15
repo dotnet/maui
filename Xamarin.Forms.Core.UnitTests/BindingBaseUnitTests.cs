@@ -194,6 +194,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			bindable2.BindingContext = new MockViewModel();
 			Assert.Throws<InvalidOperationException>(() => bindable2.SetBinding(property, binding),
 				"Binding allowed reapplication with a different context");
+
+			GC.KeepAlive(bindable);
 		}
 
 		[Test, Category("[Binding] Set Value")]

@@ -7,7 +7,7 @@ using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Platform.UWP;
 using WColor = Windows.UI.Color;
 
-namespace Xamarin.Forms.Platform.UAP.Tests
+namespace Xamarin.Forms.Platform.UAP.UnitTests
 {
 	[TestFixture]
 	public class BackgroundColorTests : PlatformTestFixture
