@@ -10,73 +10,89 @@ namespace Xamarin.Forms.Controls
 {
 	internal sealed class ListViewSelectionColor : ContentPage
 	{
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		internal sealed class GroupHeaderTemplate : ViewCell
 		{
-			public GroupHeaderTemplate ()
+			public GroupHeaderTemplate()
 			{
 				var label = new Label { BackgroundColor = Color.Red };
-				label.SetBinding (Label.TextProperty, "Key");
+				label.SetBinding(Label.TextProperty, "Key");
 				View = label;
 			}
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		internal sealed class GroupItemTemplate : ViewCell
 		{
-			public GroupItemTemplate ()
+			public GroupItemTemplate()
 			{
 				var label = new Label { BackgroundColor = Color.Green };
-				label.SetBinding (Label.TextProperty, "Name");
+				label.SetBinding(Label.TextProperty, "Name");
 				View = label;
 			}
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		internal sealed class ItemTemplate : ViewCell
 		{
-			public ItemTemplate ()
+			public ItemTemplate()
 			{
-				var label = new Label { BackgroundColor = Color.Green };
-				label.SetBinding (Label.TextProperty, "Name");
+				var label = new Label { BackgroundColor = Color.Green, HorizontalOptions = LayoutOptions.CenterAndExpand };
+				label.SetBinding(Label.TextProperty, "Name");
 				View = label;
 			}
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
+		internal sealed class ItemTemplate2 : ViewCell
+		{
+			public ItemTemplate2()
+			{
+				var label = new Label { BackgroundColor = Color.Green };
+				label.SetBinding(Label.TextProperty, "Name");
+				var container = new StackLayout() { HorizontalOptions = LayoutOptions.FillAndExpand };
+				container.Children.Add(label);
+				View = container;
+			}
+		}
+
+		[Preserve(AllMembers = true)]
 		internal sealed class Artist
 		{
 			public string Name { get; private set; }
 
-			public Artist (string name)
+			public Artist(string name)
 			{
 				Name = name;
 			}
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		internal sealed class Grouping<K, T> : ObservableCollection<T>
 		{
 			public K Key { get; private set; }
 
-			public Grouping (K key, IEnumerable<T> values)
+			public Grouping(K key, IEnumerable<T> values)
 			{
 				Key = key;
 
-				foreach (T value in values) {
-					Items.Add (value);
+				foreach (T value in values)
+				{
+					Items.Add(value);
 				}
 			}
 		}
 
 		Button _swapListButton;
+		Button _changeItemTemplateButton;
+		Button _clearButton;
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public ListViewSelectionColor()
 		{
 			Title = "ListView ScrollTo";
 
-			var itemSource = new [] {
+			var itemSource = new[] {
 				new { Name = "John Hassel" },
 				new { Name = "Brian Eno" },
 				new { Name = "Rober Fripp" },
@@ -89,45 +105,77 @@ namespace Xamarin.Forms.Controls
 				new Grouping<string, Artist> ("Pop", new List<Artist> { new Artist ("Japan"), new Artist ("Roxy Music"), new Artist ("Talking Heads") }),
 			};
 
-			var normalList = new ListView {
-				ItemTemplate = new DataTemplate (typeof (ItemTemplate)),
+			var itemTemplate1 = new DataTemplate(typeof(ItemTemplate));
+			var itemTemplate2 = new DataTemplate(typeof(ItemTemplate2));
+			var normalList = new ListView
+			{
+				ItemTemplate = itemTemplate1,
 				ItemsSource = itemSource
 			};
-			var groupedList = new ListView {
+			var groupedList = new ListView
+			{
 				IsGroupingEnabled = true,
-				GroupHeaderTemplate = new DataTemplate (typeof (GroupHeaderTemplate)),
-				ItemTemplate = new DataTemplate (typeof (GroupItemTemplate)),
+				GroupHeaderTemplate = new DataTemplate(typeof(GroupHeaderTemplate)),
+				ItemTemplate = new DataTemplate(typeof(GroupItemTemplate)),
 				ItemsSource = groupedItemSource
 			};
 
 			var currentList = normalList;
-			_swapListButton = new Button {
+			_swapListButton = new Button
+			{
 				Text = "Swap List Type",
-				Command = new Command (() => {
-					if (currentList == normalList) {
-						SetContent (groupedList);
+				Command = new Command(() =>
+				{
+					if (currentList == normalList)
+					{
+						SetContent(groupedList);
 						currentList = groupedList;
-					} else {
-						SetContent (normalList);
+					}
+					else
+					{
+						SetContent(normalList);
 						currentList = normalList;
 					}
 				})
 			};
 
-			var clear = new Button {
+			var currentTemplate = normalList.ItemTemplate;
+			_changeItemTemplateButton = new Button
+			{
+				Text = "Change Item template",
+				Command = new Command(() =>
+				{
+					if (currentTemplate == itemTemplate1)
+					{
+						normalList.ItemTemplate = itemTemplate2;
+						currentTemplate = itemTemplate2;
+					}
+					else
+					{
+						normalList.ItemTemplate = itemTemplate1;
+						currentTemplate = itemTemplate1;
+					}
+				})
+			};
+
+			_clearButton = new Button
+			{
 				Text = "Clear",
-				Command = new Command (() => {
+				Command = new Command(() =>
+				{
 					currentList.SelectedItem = null;
 				})
 			};
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = {
 					new StackLayout {
 						Orientation = StackOrientation.Horizontal,
 						Children = {
 							_swapListButton,
-							clear
+							_changeItemTemplateButton,
+							_clearButton
 						}
 					},
 					normalList
@@ -136,16 +184,19 @@ namespace Xamarin.Forms.Controls
 
 		}
 
-		void SetContent (ListView list)
+		void SetContent(ListView list)
 		{
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = {
 					_swapListButton,
+					_changeItemTemplateButton,
+					_clearButton,
 					list
 				}
 			};
 		}
 
-		
+
 	}
 }

@@ -78,7 +78,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			var imageController = (IImageController)renderer.Element;
 
 
-			if (renderer?.View?.LayoutParameters == null)
+			if (renderer?.View?.LayoutParameters == null &&(renderer is ILayoutChanges lc && lc.HasLayoutOccurred))
 			{
 				return;
 			}

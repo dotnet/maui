@@ -29,6 +29,7 @@ namespace Xamarin.Forms.Platform.Android
 		ILayoutChanges,
 		IDisposedState
 	{
+		bool _hasLayoutOccurred;
 		bool _inputTransparent;
 		bool _disposed;
 		bool _skipInvalidate;
@@ -76,6 +77,12 @@ namespace Xamarin.Forms.Platform.Android
 			// Tag = this;
 
 			_backgroundTracker = new BorderBackgroundManager(this, false);
+		}
+
+		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+		{
+			base.OnLayout(changed, left, top, right, bottom);
+			_hasLayoutOccurred = true;
 		}
 
 		protected override void Dispose(bool disposing)
@@ -322,6 +329,8 @@ namespace Xamarin.Forms.Platform.Android
 		bool IBorderVisualElementRenderer.UseDefaultShadow() => false;
 		VisualElement IBorderVisualElementRenderer.Element => Element;
 		AView IBorderVisualElementRenderer.View => this;
+
+		bool ILayoutChanges.HasLayoutOccurred => _hasLayoutOccurred;
 
 		IPlatformElementConfiguration<PlatformConfiguration.Android, ImageButton> OnThisPlatform()
 		{

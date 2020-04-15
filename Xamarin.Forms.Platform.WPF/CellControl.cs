@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using Xamarin.Forms.Internals;
+using WSize = System.Windows.Size;
 
 namespace Xamarin.Forms.Platform.WPF
 {
@@ -24,8 +21,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			Unloaded += (sender, args) =>
 			{
-				ICellController cell = DataContext as ICellController;
-				if (cell != null)
+				if (DataContext is ICellController cell)
 					cell.SendDisappearing();
 			};
 
@@ -58,20 +54,18 @@ namespace Xamarin.Forms.Platform.WPF
 
 		void SetSource(object oldCellObj, object newCellObj)
 		{
-
 			var oldCell = oldCellObj as Cell;
 			var newCell = newCellObj as Cell;
 
 			if (oldCell != null)
 			{
 				oldCell.PropertyChanged -= _propertyChangedHandler;
+				oldCell.Appearing -= Cell_Appearing;
 				((ICellController)oldCell).SendDisappearing();
 			}
 
 			if (newCell != null)
 			{
-				((ICellController)newCell).SendAppearing();
-
 				if (oldCell == null || oldCell.GetType() != newCell.GetType())
 					ContentTemplate = GetTemplate(newCell);
 
@@ -80,13 +74,53 @@ namespace Xamarin.Forms.Platform.WPF
 				SetupContextMenu();
 
 				newCell.PropertyChanged += _propertyChangedHandler;
+				newCell.Appearing += Cell_Appearing;
+				((ICellController)newCell).SendAppearing();
 			}
 			else
 				Content = null;
 		}
 
+		void Cell_Appearing(object sender, EventArgs e)
+		{
+			CellLayoutContent(new WSize(ActualWidth, ActualHeight));
+		}
+
 		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
 		{
+			CellLayoutContent(sizeInfo.NewSize);
+			base.OnRenderSizeChanged(sizeInfo);
+			if (sizeInfo.WidthChanged || sizeInfo.HeightChanged)
+				InvalidateMeasure();
+		}
+		
+		protected override WSize MeasureOverride(WSize constraint)
+		{
+			constraint.Width = ActualWidth;
+			var size = new WSize();
+			UIElement child = GetFirstVisualChild();
+			if (child != null)
+			{
+				child.Measure(constraint);
+				size.Height = child.DesiredSize.Height;
+			}
+
+			return size;
+		}
+
+		UIElement GetFirstVisualChild()
+		{
+			if (VisualChildrenCount <= 0)
+				return null;
+
+			return GetVisualChild(0) as UIElement;
+		}
+
+		void CellLayoutContent(WSize size)
+		{
+			if (double.IsInfinity(size.Width) || double.IsInfinity(size.Height) || size.Width <= 0 || size.Height <= 0)
+				return;
+
 			if (Content is ViewCell vc)
 			{
 				if (vc.LogicalChildren != null && vc.LogicalChildren.Any())
@@ -95,15 +129,11 @@ namespace Xamarin.Forms.Platform.WPF
 					{
 						if (child is Layout layout)
 						{
-							if (layout.HorizontalOptions.Expands)
-							{
-								layout.Layout(new Rectangle(layout.X, layout.Y, sizeInfo.NewSize.Width, sizeInfo.NewSize.Height));
-							}
+							layout.Layout(new Rectangle(layout.X, layout.Y, size.Width, size.Height));
 						}
 					}
 				}
 			}
-			base.OnRenderSizeChanged(sizeInfo);
 		}
 
 		void SetupContextMenu()

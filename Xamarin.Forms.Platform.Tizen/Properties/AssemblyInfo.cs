@@ -1,10 +1,12 @@
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Tizen;
+using MediaPlayerImpl = Xamarin.Forms.Platform.Tizen.Native.MediaPlayerImpl;
 
 [assembly: Dependency(typeof(ResourcesProvider))]
 [assembly: Dependency(typeof(Deserializer))]
 [assembly: Dependency(typeof(NativeBindingService))]
 [assembly: Dependency(typeof(NativeValueConverterService))]
+[assembly: Dependency(typeof(MediaPlayerImpl))]
 
 [assembly: ExportRenderer(typeof(Layout), typeof(LayoutRenderer))]
 [assembly: ExportRenderer(typeof(ScrollView), typeof(ScrollViewRenderer))]

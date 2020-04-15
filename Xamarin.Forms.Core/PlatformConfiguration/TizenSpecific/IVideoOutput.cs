@@ -42,7 +42,10 @@ namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
 		event EventHandler PlaybackStarted;
 		event EventHandler PlaybackStopped;
 
-		}
+		Task<bool> Start();
+		void Stop();
+		void Pause();
+	}
 
 	public interface IPlatformMediaPlayer : IDisposable
 	{

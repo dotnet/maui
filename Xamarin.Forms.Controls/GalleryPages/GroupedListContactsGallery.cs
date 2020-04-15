@@ -157,6 +157,7 @@ namespace Xamarin.Forms.Controls
 
 			SetupContacts();
 			_list.ItemsSource = _sortedContacts;
+			_list.ItemSelected += (s, e) => { Console.WriteLine(e.SelectedItemIndex); };
 		}
 
 		const string Chars = "abcdefghijklmnopqrstuvwxyz";

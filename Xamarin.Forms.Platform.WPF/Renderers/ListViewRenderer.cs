@@ -111,7 +111,7 @@ namespace Xamarin.Forms.Platform.WPF
 					_listview.Loaded += ControlOnLoaded;
 				}
 
-				// Suscribe element events
+				// Subscribe element events
 				var templatedItems = TemplatedItemsView.TemplatedItems;
 				templatedItems.CollectionChanged += OnCollectionChanged;
 				templatedItems.GroupedCollectionChanged += OnGroupedCollectionChanged;
@@ -383,22 +383,15 @@ namespace Xamarin.Forms.Platform.WPF
 			}
 
 			var templatedItems = TemplatedItemsView.TemplatedItems;
-			var index = 0;
+			int selectedItemIndex = templatedItems.GetGlobalIndexOfItem(e.SelectedItem);;
 
 			if (Element.IsGroupingEnabled)
 			{
-				int selectedItemIndex = templatedItems.GetGlobalIndexOfItem(e.SelectedItem);
-				var leftOver = 0;
-				int groupIndex = templatedItems.GetGroupIndexFromGlobal(selectedItemIndex, out leftOver);
-
-				index = selectedItemIndex - (groupIndex + 1);
-			}
-			else
-			{
-				index = templatedItems.GetGlobalIndexOfItem(e.SelectedItem);
+				int groupIndex = templatedItems.GetGroupIndexFromGlobal(selectedItemIndex, out _);
+				int itemInGroupIndex = selectedItemIndex - (groupIndex + 1);
 			}
 
-			_listview.SelectedIndex = index;
+			_listview.SelectedIndex = selectedItemIndex;
 		}
 
 		void OnCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)

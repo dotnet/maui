@@ -177,7 +177,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 		async void OnImageButtonClicked(object sender, EventArgs e)
 		{
-			if (BindingContext is MediaPlayer player)
+			if (BindingContext is IMediaPlayer player)
 			{
 				if (player.State == PlayerState.Playing)
 				{

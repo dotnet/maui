@@ -67,7 +67,7 @@
 													</VisualStateGroup>
 												</VisualStateManager.VisualStateGroups>
 												<TextBlock x:Name="GlyphElement" AutomationProperties.AccessibilityView="Raw"
-												           Foreground="{ThemeResource SystemControlForegroundChromeBlackMediumBrush}" FontStyle="Normal"
+												           Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}" FontStyle="Normal"
 												           FontSize="12" FontFamily="{ThemeResource SymbolThemeFontFamily}" HorizontalAlignment="Center"
 												           Text="&#xE10A;" VerticalAlignment="Center" />
 											</Grid>

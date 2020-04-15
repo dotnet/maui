@@ -62,41 +62,38 @@ namespace Xamarin.Forms.Platform.WPF
 				return new System.Windows.Size(0, 0);
 
 			Element.IsInNativeLayout = true;
-
-			for (var i = 0; i < ElementController.LogicalChildren.Count; i++)
+			double elementDesiredWidth = 0;
+			double elementDesiredHeight = 0;
+			foreach (FrameworkElement child in InternalChildren)
 			{
-				var child = ElementController.LogicalChildren[i] as VisualElement;
-				if (child == null)
-					continue;
-				IVisualElementRenderer renderer = Platform.GetRenderer(child);
-				if (renderer == null)
-					continue;
-
-				FrameworkElement control = renderer.GetNativeElement();
-
-				if (control.ActualWidth != child.Width || control.ActualHeight != child.Height)
+				if (child.ActualWidth != child.Width || child.ActualHeight != child.Height)
 				{
-					double width = child.Width <= -1 ? ActualWidth : child.Width;
-					double height = child.Height <= -1 ? ActualHeight : child.Height;
-					control.Measure(new System.Windows.Size(width, height));
+					double width = child.Width <= -1 || double.IsNaN(child.Width) ? ActualWidth : child.Width;
+					width = width == 0 ? double.PositiveInfinity : width;
+					double height = child.Height <= -1 || double.IsNaN(child.Height) ? ActualHeight : child.Height;
+					height = height == 0 ? double.PositiveInfinity : height;
+					child.Measure(new System.Windows.Size(width, height));
+					elementDesiredWidth = Math.Max(width, elementDesiredWidth);
+					elementDesiredHeight = Math.Max(width, elementDesiredHeight);
 				}
 			}
 
 			System.Windows.Size result;
-			if (double.IsInfinity(availableSize.Width) || double.IsPositiveInfinity(availableSize.Height))
+			if (double.IsInfinity(elementDesiredWidth) || double.IsPositiveInfinity(elementDesiredHeight))
 			{
-				Size request = Element.Measure(availableSize.Width, availableSize.Height, MeasureFlags.IncludeMargins).Request;
+				Size request = Element.Measure(elementDesiredWidth, elementDesiredHeight, MeasureFlags.IncludeMargins).Request;
 				result = new System.Windows.Size(request.Width, request.Height);
 			}
 			else
 			{
 				result = availableSize;
 			}
+
 			Element.IsInNativeLayout = false;
 
-			if (Double.IsPositiveInfinity(result.Height))
+			if (double.IsPositiveInfinity(result.Height))
 				result.Height = 0.0;
-			if (Double.IsPositiveInfinity(result.Width))
+			if (double.IsPositiveInfinity(result.Width))
 				result.Width = 0.0;
 
 			return result;

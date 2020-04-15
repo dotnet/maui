@@ -69,13 +69,14 @@ namespace Xamarin.Forms.Controls
 			public ViewCellTest ()
 			{
 				var stackLayout = new StackLayout {
-					Orientation = StackOrientation.Horizontal
+					Orientation = StackOrientation.Horizontal,
+					HorizontalOptions = LayoutOptions.FillAndExpand
 				};
 
-				var label = new Label ();
+				var label = new Label (){HorizontalOptions = LayoutOptions.StartAndExpand};
 				label.SetBinding (Label.TextProperty, "Text");
 
-				var box = new BoxView {WidthRequest = 100, HeightRequest = 10, Color = Color.Red};
+				var box = new BoxView {WidthRequest = 100, HeightRequest = 10, Color = Color.Red, HorizontalOptions = LayoutOptions.End};
 
 				stackLayout.Children.Add (label);
 				stackLayout.Children.Add (box);

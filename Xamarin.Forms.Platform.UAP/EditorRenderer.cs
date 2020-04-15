@@ -50,6 +50,10 @@ namespace Xamarin.Forms.Platform.UWP
 					// color stuff, then the underlying textbox should just use the Forms VSM states
 					textBox.UseFormsVsm = e.NewElement.HasVisualStateGroups()
 						|| !e.NewElement.OnThisPlatform().GetIsLegacyColorModeEnabled();
+
+					// The default is DetectFromContent, which we don't want because it can
+					// override the FlowDirection settings. 
+					textBox.TextAlignment = Windows.UI.Xaml.TextAlignment.Left;
 				}
 
 				UpdateText();
@@ -57,7 +61,6 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateTextColor();
 				UpdateCharacterSpacing();
 				UpdateFont();
-				UpdateTextAlignment();
 				UpdateFlowDirection();
 				UpdateMaxLength();
 				UpdateDetectReadingOrderFromContent();
@@ -122,7 +125,6 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 			{
-				UpdateTextAlignment();
 				UpdateFlowDirection();
 			}
 			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
@@ -176,7 +178,6 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			Element.SetValueCore(Editor.TextProperty, Control.Text);
 		}
-
 
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
@@ -255,6 +256,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			Control.CharacterSpacing = Element.CharacterSpacing.ToEm();
 		}
+	
 		void UpdateText()
 		{
 			string newText = Element.Text ?? "";
@@ -266,11 +268,6 @@ namespace Xamarin.Forms.Platform.UWP
 
 			Control.Text = newText;
 			Control.SelectionStart = Control.Text.Length;
-		}
-
-		void UpdateTextAlignment()
-		{
-			Control.UpdateTextAlignment(Element);
 		}
 
 		void UpdateTextColor()

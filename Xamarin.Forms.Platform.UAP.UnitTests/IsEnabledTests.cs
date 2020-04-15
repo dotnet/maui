@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Platform.UAP.Tests
+namespace Xamarin.Forms.Platform.UAP.UnitTests
 {
 	[TestFixture]
 	public class IsEnabledTests : PlatformTestFixture 

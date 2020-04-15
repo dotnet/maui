@@ -74,21 +74,21 @@ steps:
     inputs:
       solution: 'Xamarin.Forms.ControlGallery.iOS/Xamarin.Forms.ControlGallery.iOS.csproj'
       configuration: $(buildConfiguration)
-      msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/ios-cg.binlog /p:BuildIpa=true
+      msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/ios-cg-2017_$(buildForVS2017).binlog /p:BuildIpa=true
 
   - task: MSBuild@1
     displayName: 'Build iOS Tests'
     inputs:
       solution: 'Xamarin.Forms.Core.iOS.UITests/Xamarin.Forms.Core.iOS.UITests.csproj'
       configuration: $(buildConfiguration)
-      msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/ios-uitests.binlog
+      msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/ios-uitests-2017_$(buildForVS2017).binlog
 
   - task: MSBuild@1
     displayName: 'Build Android Tests'
     inputs:
       solution: 'Xamarin.Forms.Core.Android.UITests/Xamarin.Forms.Core.Android.UITests.csproj'
       configuration: $(buildConfiguration)
-      msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/android-uitests.binlog
+      msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/android-uitests-2017_$(buildForVS2017).binlog
 
   - task: CopyFiles@2
     displayName: 'Copy test-cloud.exe'
