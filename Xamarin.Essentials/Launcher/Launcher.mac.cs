@@ -20,10 +20,7 @@ namespace Xamarin.Essentials
             var canOpen = NSWorkspace.SharedWorkspace.UrlForApplication(nativeUrl) != null;
 
             if (canOpen)
-            {
-                // TODO: there is an OpenUrlAsync that may be useful
                 return Task.FromResult(NSWorkspace.SharedWorkspace.OpenUrl(nativeUrl));
-            }
 
             return Task.FromResult(canOpen);
         }
