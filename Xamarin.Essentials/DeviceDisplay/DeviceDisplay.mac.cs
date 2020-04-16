@@ -34,8 +34,9 @@ namespace Xamarin.Essentials
 
         static DisplayInfo GetMainDisplayInfo()
         {
-            var frame = NSScreen.MainScreen.Frame;
-            var scale = NSScreen.MainScreen.BackingScaleFactor;
+            var mainScreen = NSScreen.MainScreen;
+            var frame = mainScreen.Frame;
+            var scale = mainScreen.BackingScaleFactor;
 
             return new DisplayInfo(
                 width: frame.Width,
