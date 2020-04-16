@@ -20,7 +20,17 @@ namespace Xamarin.Forms.Platform.iOS
 			else
 				shell.Frame = bounds;
 
-			flyout.Frame = new CGRect(-openLimit + openPixels, 0, flyoutWidth, bounds.Height);
+			var shellWidth = shell.Frame.Width;
+
+			if(shell.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft)
+			{
+				var positionY = shellWidth - openPixels;
+				flyout.Frame = new CGRect(positionY, 0, flyoutWidth, bounds.Height);
+			}
+			else
+			{
+				flyout.Frame = new CGRect(-openLimit + openPixels, 0, flyoutWidth, bounds.Height);
+			}
 
 			if (behavior != FlyoutBehavior.Locked)
 			{

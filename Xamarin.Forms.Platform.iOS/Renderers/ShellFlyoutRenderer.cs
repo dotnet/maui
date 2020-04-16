@@ -108,6 +108,12 @@ namespace Xamarin.Forms.Platform.iOS
 			LayoutSidebar(false);
 		}
 
+		public override void ViewWillAppear(bool animated)
+		{
+			UpdateFlowDirection();
+			base.ViewWillAppear(animated);
+		}
+
 		public override void ViewDidLoad()
 		{
 			base.ViewDidLoad();
@@ -121,6 +127,7 @@ namespace Xamarin.Forms.Platform.iOS
 			View.AddGestureRecognizer(PanGestureRecognizer);
 
 			((IShellController)Shell).AddFlyoutBehaviorObserver(this);
+			UpdateFlowDirection();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -153,6 +160,32 @@ namespace Xamarin.Forms.Platform.iOS
 					IsOpen = isPresented;
 					LayoutSidebar(true);
 				}
+			}
+			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
+				UpdateFlowDirection(true);
+			}
+		}
+
+		void UpdateFlowDirection(bool readdViews = false)
+		{
+			bool update = View.UpdateFlowDirection(Shell);
+			update = Flyout?.ViewController?.View.UpdateFlowDirection(Shell) == true || update;
+			update = Detail?.View?.UpdateFlowDirection(Shell) == true || update;
+
+			if (update && readdViews)
+			{
+				if (Detail?.View != null)
+					Detail.View.RemoveFromSuperview();
+
+				if (Flyout?.ViewController?.View != null)
+					Flyout.ViewController.View.RemoveFromSuperview();
+
+				if (Detail?.View != null)
+					View.AddSubview(Detail.View);
+
+				if (Flyout?.ViewController?.View != null)
+					View.AddSubview(Flyout.ViewController.View);
 			}
 		}
 

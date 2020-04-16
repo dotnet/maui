@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		#endregion IAppearanceObserver
 
-		readonly IShellContext _context;
+		IShellContext _context;
 
 		readonly Dictionary<Element, IShellPageRendererTracker> _trackers =
 			new Dictionary<Element, IShellPageRendererTracker>();
@@ -71,8 +71,9 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			Delegate = new NavDelegate(this);
 			_context = context;
+			_context.Shell.PropertyChanged += HandleShellPropertyChanged;
 		}
-		
+
 		[Export("navigationBar:shouldPopItem:")]
 		public bool ShouldPopItem(UINavigationBar navigationBar, UINavigationItem item)
 		{
@@ -105,6 +106,18 @@ namespace Xamarin.Forms.Platform.iOS
 			return false;
 		}
 
+		public override void ViewWillAppear(bool animated)
+		{
+			UpdateFlowDirection();
+			base.ViewWillAppear(animated);
+		}
+
+		internal void UpdateFlowDirection()
+		{
+			View.UpdateFlowDirection(_context.Shell);
+			NavigationBar.UpdateFlowDirection(_context.Shell);
+		}
+
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
@@ -122,6 +135,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.ViewDidLoad();
 			InteractivePopGestureRecognizer.Delegate = new GestureDelegate(this, ShouldPop);
+			UpdateFlowDirection();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -138,6 +152,7 @@ namespace Xamarin.Forms.Platform.iOS
 				_renderer.Dispose();
 				_appearanceTracker.Dispose();
 				_shellSection.PropertyChanged -= HandlePropertyChanged;
+				_context.Shell.PropertyChanged -= HandleShellPropertyChanged;
 
 				if (_displayedPage != null)
 					_displayedPage.PropertyChanged -= OnDisplayedPagePropertyChanged;
@@ -160,6 +175,13 @@ namespace Xamarin.Forms.Platform.iOS
 			_shellSection = null;
 			_appearanceTracker = null;
 			_renderer = null;
+			_context = null;
+		}
+
+		protected virtual void HandleShellPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.Is(VisualElement.FlowDirectionProperty))
+				UpdateFlowDirection();
 		}
 
 		protected virtual void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)

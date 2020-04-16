@@ -45,23 +45,25 @@ namespace Xamarin.Forms.Internals
 
 		internal static void PropagateFlowDirection(Element target, Element source)
 		{
-			IFlowDirectionController targetController = target as IFlowDirectionController;
-			if (targetController == null)
+			IFlowDirectionController controller = target as IFlowDirectionController;
+			if (controller == null)
 				return;
 
-			if (targetController.EffectiveFlowDirection.IsImplicit())
-			{
-				var sourceController = source as IFlowDirectionController;
-				if (sourceController == null)
-					return;
+			var sourceController = source as IFlowDirectionController;
+			if (sourceController == null)
+				return;
 
+			if (controller.EffectiveFlowDirection.IsImplicit())
+			{
 				var flowDirection = sourceController.EffectiveFlowDirection.ToFlowDirection();
 
-				if (flowDirection != targetController.EffectiveFlowDirection.ToFlowDirection())
+				if (flowDirection != controller.EffectiveFlowDirection.ToFlowDirection())
 				{
-					targetController.EffectiveFlowDirection = flowDirection.ToEffectiveFlowDirection();
+					controller.EffectiveFlowDirection = flowDirection.ToEffectiveFlowDirection();
 				}
 			}
+
+			controller.EffectiveFlowDirection = controller.EffectiveFlowDirection;
 		}
 
 		internal static void SetFlowDirectionFromParent(Element child)

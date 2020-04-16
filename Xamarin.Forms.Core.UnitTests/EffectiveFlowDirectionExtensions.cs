@@ -6,6 +6,11 @@ namespace Xamarin.Forms.Core.UnitTests
 	[TestFixture]
 	public class EffectiveFlowDirectionExtensions : BaseTestFixture
 	{
+		public override void Setup()
+		{
+			base.Setup();
+			Device.FlowDirection = FlowDirection.LeftToRight;
+		}
 
 		[Test]
 		public void LeftToRightImplicit()

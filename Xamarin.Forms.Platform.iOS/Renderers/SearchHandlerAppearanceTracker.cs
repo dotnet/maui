@@ -51,6 +51,12 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateSearchBarBackgroundColor(uiTextField);
 		}
 
+		internal void UpdateFlowDirection(Shell shell)
+		{
+			_uiSearchBar.UpdateFlowDirection(shell);
+			_numericAccessoryView.UpdateFlowDirection(shell);
+		}
+
 		void SearchHandlerFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
 		{
 			if (e.Focus)

@@ -259,9 +259,9 @@ namespace Xamarin.Forms
 				OnPropertyChanged(VisualElement.FlowDirectionProperty.PropertyName);
 			}
 		}
+
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => true;
 		double IFlowDirectionController.Width => (Parent as VisualElement)?.Width ?? 0;
-
 
 		internal virtual void ApplyQueryAttributes(IDictionary<string, string> query)
 		{
