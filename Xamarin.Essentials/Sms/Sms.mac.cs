@@ -13,10 +13,12 @@ namespace Xamarin.Essentials
 
         static Task PlatformComposeAsync(SmsMessage message)
         {
-            var firstNumber = message.Recipients?.FirstOrDefault();
-            var uri = $"sms:{firstNumber}";
+            var recipients = string.Join(",", message.Recipients.Select(r => System.Net.WebUtility.UrlEncode(r)));
+
+            var uri = $"sms:/open?addresses={recipients}";
+
             if (!string.IsNullOrEmpty(message?.Body))
-                uri += "&body=" + Uri.EscapeDataString(message.Body);
+                uri += "&body=" + System.Net.WebUtility.UrlEncode(message.Body);
 
             var nsurl = NSUrl.FromString(uri);
             NSWorkspace.SharedWorkspace.OpenUrl(nsurl);
