@@ -115,8 +115,8 @@
     <Compile Include="**\*.tizen.*.cs" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.Mac20')) ">
-    <Compile Include="**\*.mac.cs" />
-    <Compile Include="**\*.mac.*.cs" />
+    <Compile Include="**\*.macos.cs" />
+    <Compile Include="**\*.macos.*.cs" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
