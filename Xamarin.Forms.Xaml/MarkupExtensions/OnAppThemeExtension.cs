@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Xaml
 	{
 		public OnAppThemeExtension()
 		{
-			ExperimentalFlags.VerifyFlagEnabled(nameof(AppThemeColor), ExperimentalFlags.AppThemeExperimental, nameof(OnAppThemeExtension));
+			ExperimentalFlags.VerifyFlagEnabled(nameof(OnAppThemeExtension), ExperimentalFlags.AppThemeExperimental, nameof(OnAppThemeExtension));
 
 			Application.Current.RequestedThemeChanged += RequestedThemeChanged;
 		}
@@ -69,10 +69,10 @@ namespace Xamarin.Forms.Xaml
 			var value = GetValue();
 			var info = propertyType.GetTypeInfo();
 			if (value == null && info.IsValueType)
-				Value = Activator.CreateInstance(propertyType);
+				return Activator.CreateInstance(propertyType);
 
 			if (Converter != null)
-				Value = Converter.Convert(value, propertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+				return Converter.Convert(value, propertyType, ConverterParameter, CultureInfo.CurrentUICulture);
 
 			var converterProvider = serviceProvider?.GetService<IValueConverterProvider>();
 			if (converterProvider != null)
@@ -103,20 +103,15 @@ namespace Xamarin.Forms.Xaml
 					}
 				}
 
-				Value = converterProvider.Convert(value, propertyType, minforetriever, serviceProvider);
+				return converterProvider.Convert(value, propertyType, minforetriever, serviceProvider);
 			}
 			if (converterProvider != null)
-				Value = converterProvider.Convert(value, propertyType, () => pi, serviceProvider);
+				return converterProvider.Convert(value, propertyType, () => pi, serviceProvider);
 
 			var ret = value.ConvertTo(propertyType, () => pi, serviceProvider, out Exception exception);
 			if (exception != null)
 				throw exception;
-			Value = ret;
-
-			if (!(value is Binding))
-				return new Binding(nameof(Value), source: this);
-			else
-				return ret;
+			return ret;
 		}
 
 		object GetValue()
