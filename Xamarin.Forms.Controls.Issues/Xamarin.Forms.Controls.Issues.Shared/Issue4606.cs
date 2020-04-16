@@ -84,6 +84,54 @@ namespace Xamarin.Forms.Controls.Issues
 								Source = "coffee.png"
 							}
 						}
+					},
+					new Label()
+					{
+						Text = "The box view height should match the button border width"
+					},
+					new BoxView()
+					{
+						BackgroundColor = Color.Red,
+						HeightRequest = 2
+					},
+					new Button()
+					{
+						BorderColor = Color.Red,
+						BackgroundColor = Color.White,
+						CornerRadius = 25,
+						BorderWidth = 2
+					},
+					new Label()
+					{
+						Text = "The box view height should match the button border width"
+					},
+					new BoxView()
+					{
+						BackgroundColor = Color.Red,
+						HeightRequest = 5
+					},
+					new Button()
+					{
+						BorderColor = Color.Red,
+						BackgroundColor = Color.White,
+						CornerRadius = 25,
+						BorderWidth = 5
+					},
+					new Label()
+					{
+						Text = "The box view height should match the button border width"
+					},
+					new BoxView()
+					{
+						BackgroundColor = Color.Red,
+						HeightRequest = 1
+					},
+					new Button()
+					{
+						BorderColor = Color.Red,
+						BackgroundColor = Color.White,
+						CornerRadius = 25,
+						BorderWidth = 1
 					}
 				}
 			};
