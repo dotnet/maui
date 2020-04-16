@@ -21,6 +21,10 @@ namespace Xamarin.Essentials
         static string GetDeviceName()
         {
             var computerNameHandle = SCDynamicStoreCopyComputerName(IntPtr.Zero, IntPtr.Zero);
+
+            if (computerNameHandle == IntPtr.Zero)
+                return null;
+
             var computerName = NSString.FromHandle(computerNameHandle).ToString();
 
             try
