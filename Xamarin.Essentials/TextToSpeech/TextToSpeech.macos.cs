@@ -24,13 +24,6 @@ namespace Xamarin.Essentials
             var tcs = new TaskCompletionSource<bool>();
             try
             {
-                // Ensures linker doesn't remove.
-                if (DateTime.UtcNow.Ticks < 0)
-                {
-                    new NSSpeechSynthesizer();
-                    new SpeechSynthesizerDelegate();
-                }
-
                 if (options != null)
                 {
                     if (options.Volume.HasValue)
