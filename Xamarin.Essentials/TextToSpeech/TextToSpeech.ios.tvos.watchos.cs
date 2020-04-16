@@ -51,6 +51,10 @@ namespace Xamarin.Essentials
             var tcsUtterance = new TaskCompletionSource<bool>();
             try
             {
+                // Ensures linker doesn't remove.
+                if (DateTime.UtcNow.Ticks < 0)
+                    new AVSpeechSynthesizer();
+
                 speechSynthesizer.Value.DidFinishSpeechUtterance += OnFinishedSpeechUtterance;
                 speechSynthesizer.Value.SpeakUtterance(speechUtterance);
                 using (cancelToken.Register(TryCancel))
