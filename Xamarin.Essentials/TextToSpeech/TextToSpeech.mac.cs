@@ -69,7 +69,8 @@ namespace Xamarin.Essentials
 
             void OnEncounteredError(string errorMessage)
             {
-                tcs.TrySetException(new EssentialsException(errorMessage));
+                // TODO: a real exception type here
+                tcs.TrySetException(new Exception(errorMessage));
             }
         }
 

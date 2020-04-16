@@ -94,7 +94,7 @@ namespace Xamarin.Essentials
 #else
                 var opened = UIApplication.SharedApplication.OpenUrl(url);
                 if (!opened)
-                    tcsResponse.TrySetException(new EssentialsException("Error opening Safari"));
+                    tcsResponse.TrySetException(new Exception("Error opening Safari"));
 #endif
             }
             catch (Exception ex)

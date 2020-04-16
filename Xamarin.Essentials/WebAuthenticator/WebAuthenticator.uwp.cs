@@ -28,7 +28,7 @@ namespace Xamarin.Essentials
                 case WebAuthenticationStatus.ErrorHttp:
                     throw new UnauthorizedAccessException();
                 default:
-                    throw new EssentialsException(r.ResponseData.ToString());
+                    throw new Exception(r.ResponseData.ToString());
             }
         }
 
