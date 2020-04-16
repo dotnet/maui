@@ -4,6 +4,8 @@ using System.Linq;
 using Foundation;
 #if __IOS__ || __TVOS__
 using UIKit;
+#elif __MACOS__
+using AppKit;
 #endif
 
 namespace Xamarin.Essentials
@@ -54,6 +56,25 @@ namespace Xamarin.Essentials
                 UIUserInterfaceStyle.Dark => AppTheme.Dark,
                 _ => AppTheme.Unspecified
             };
+        }
+#elif __MACOS__
+        static AppTheme PlatformRequestedTheme()
+        {
+            if (DeviceInfo.Version >= new Version(10, 14))
+            {
+                var app = NSAppearance.CurrentAppearance?.FindBestMatch(new string[]
+                {
+                    NSAppearance.NameAqua,
+                    NSAppearance.NameDarkAqua
+                });
+
+                if (string.IsNullOrEmpty(app))
+                    return AppTheme.Unspecified;
+
+                if (app == NSAppearance.NameDarkAqua)
+                    return AppTheme.Dark;
+            }
+            return AppTheme.Light;
         }
 #else
         static AppTheme PlatformRequestedTheme() =>
