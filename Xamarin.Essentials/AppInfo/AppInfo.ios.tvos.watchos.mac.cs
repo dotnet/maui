@@ -24,6 +24,16 @@ namespace Xamarin.Essentials
 #if __IOS__ || __TVOS__
         static void PlatformShowSettingsUI() =>
             UIApplication.SharedApplication.OpenUrl(new NSUrl(UIApplication.OpenSettingsUrlString));
+#elif __MACOS__
+        static void PlatformShowSettingsUI()
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                var prefsApp = ScriptingBridge.SBApplication.FromBundleIdentifier("com.apple.systempreferences");
+                prefsApp.SendMode = ScriptingBridge.AESendMode.NoReply;
+                prefsApp.Activate();
+            });
+        }
 #else
         static void PlatformShowSettingsUI() =>
             throw new FeatureNotSupportedException();
