@@ -63,4 +63,21 @@ namespace Xamarin.Essentials
         {
         }
     }
+
+    public class EssentialsException : Exception
+    {
+        public EssentialsException()
+        {
+        }
+
+        public EssentialsException(string message)
+            : base(message)
+        {
+        }
+
+        public EssentialsException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
+    }
 }

@@ -112,7 +112,7 @@ namespace Xamarin.Essentials
                             {
                                 result = SecKeyChain.Add(newRecord);
                                 if (result != SecStatusCode.Success)
-                                    throw new Exception($"Error adding record: {result}");
+                                    throw new EssentialsException($"Error adding record: {result}");
                             }
                             else
                             {
@@ -123,7 +123,7 @@ namespace Xamarin.Essentials
                     case SecStatusCode.Success:
                         return;
                     default:
-                        throw new Exception($"Error adding record: {result}");
+                        throw new EssentialsException($"Error adding record: {result}");
                 }
             }
         }
@@ -166,7 +166,7 @@ namespace Xamarin.Essentials
         {
             var result = SecKeyChain.Remove(record);
             if (result != SecStatusCode.Success && result != SecStatusCode.ItemNotFound)
-                throw new Exception($"Error removing record: {result}");
+                throw new EssentialsException($"Error removing record: {result}");
 
             return true;
         }

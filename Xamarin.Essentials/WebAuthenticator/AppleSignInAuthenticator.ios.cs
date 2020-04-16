@@ -80,6 +80,6 @@ namespace Xamarin.Essentials
 
         [Export("authorizationController:didCompleteWithError:")]
         public void DidComplete(ASAuthorizationController controller, NSError error)
-            => tcsCredential?.TrySetException(new Exception(error.LocalizedDescription));
+            => tcsCredential?.TrySetException(new EssentialsException(error.LocalizedDescription));
     }
 }
