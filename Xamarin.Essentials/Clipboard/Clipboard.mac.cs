@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using AppKit;
 using Foundation;
 
@@ -23,8 +24,14 @@ namespace Xamarin.Essentials
         static bool PlatformHasText =>
             Pasteboard.GetStringForType(pasteboardType) != null;
 
-        static Task<string> PlatformGetTextAsync() =>
-            Task.FromResult(Pasteboard.GetStringForType(pasteboardType));
+        static Task<string> PlatformGetTextAsync()
+        {
+            var strs = Pasteboard.ReadObjectsForClasses(
+                new ObjCRuntime.Class[] { new ObjCRuntime.Class(typeof(NSString)) },
+                null);
+
+            return Task.FromResult(strs?[0]?.ToString());
+        }
 
         static void StartClipboardListeners()
             => throw ExceptionUtils.NotSupportedOrImplementedException;
