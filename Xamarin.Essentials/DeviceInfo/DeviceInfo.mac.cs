@@ -10,13 +10,29 @@ namespace Xamarin.Essentials
         [DllImport(Constants.SystemConfigurationLibrary)]
         static extern IntPtr SCDynamicStoreCopyComputerName(IntPtr store, IntPtr encoding);
 
+        [DllImport(Constants.CoreFoundationLibrary)]
+        static extern void CFRelease(IntPtr cf);
+
         static string GetModel() =>
             IOKit.GetPlatformExpertPropertyValue<NSData>("model")?.ToString() ?? string.Empty;
 
         static string GetManufacturer() => "Apple";
 
-        static string GetDeviceName() =>
-            NSString.FromHandle(SCDynamicStoreCopyComputerName(IntPtr.Zero, IntPtr.Zero));
+        static string GetDeviceName()
+        {
+            var computerNameHandle = SCDynamicStoreCopyComputerName(IntPtr.Zero, IntPtr.Zero);
+            var computerName = NSString.FromHandle(computerNameHandle).ToString();
+
+            try
+            {
+                CFRelease(computerNameHandle);
+            }
+            catch
+            {
+            }
+
+            return computerName;
+        }
 
         static string GetVersionString()
         {
