@@ -22,16 +22,15 @@ namespace Xamarin.Essentials
         }
 
         static bool PlatformHasText =>
-            Pasteboard.GetStringForType(pasteboardType) != null;
+            GetPasteboardText() != null;
 
         static Task<string> PlatformGetTextAsync()
-        {
-            var strs = Pasteboard.ReadObjectsForClasses(
-                new ObjCRuntime.Class[] { new ObjCRuntime.Class(typeof(NSString)) },
-                null);
+            => Task.FromResult(GetPasteboardText());
 
-            return Task.FromResult(strs?[0]?.ToString());
-        }
+        static string GetPasteboardText()
+            => Pasteboard.ReadObjectsForClasses(
+                new ObjCRuntime.Class[] { new ObjCRuntime.Class(typeof(NSString)) },
+                null)?[0]?.ToString();
 
         static void StartClipboardListeners()
             => throw ExceptionUtils.NotSupportedOrImplementedException;
