@@ -213,14 +213,15 @@ namespace Xamarin.Forms.Maps.Android
 			}
 			else if (changed)
 			{
-				if (NativeMap != null)
-				{
-					UpdateVisibleRegion(NativeMap.CameraPosition.Target);
-				}
-
 				if (Element.MoveToLastRegionOnLayoutChange)
 					MoveToRegion(Element.LastMoveToRegion, false);
 			}
+
+			if (NativeMap != null)
+			{
+				UpdateVisibleRegion(NativeMap.CameraPosition.Target);
+			}
+
 		}
 
 		protected virtual void OnMapReady(GoogleMap map)
