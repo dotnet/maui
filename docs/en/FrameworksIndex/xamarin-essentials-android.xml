@@ -744,6 +744,7 @@
       <Member Id="M:Xamarin.Essentials.SecureStorage.Remove(System.String)" />
       <Member Id="M:Xamarin.Essentials.SecureStorage.RemoveAll" />
       <Member Id="M:Xamarin.Essentials.SecureStorage.SetAsync(System.String,System.String)" />
+      <Member Id="P:Xamarin.Essentials.SecureStorage.LegacyKeyHashFallback" />
     </Type>
     <Type Name="Xamarin.Essentials.SensorSpeed" Id="T:Xamarin.Essentials.SensorSpeed">
       <Member Id="F:Xamarin.Essentials.SensorSpeed.Default" />
