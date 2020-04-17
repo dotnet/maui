@@ -32,30 +32,5 @@ namespace Xamarin.Essentials
 
         public static void RemoveAll()
             => PlatformRemoveAll();
-
-        internal static string Crc64(string value)
-            => Crc64(System.Text.Encoding.UTF8.GetBytes(value));
-
-        internal static string Crc64(byte[] data)
-        {
-#if NETSTANDARD1_0
-            throw ExceptionUtils.NotSupportedOrImplementedException;
-#else
-            static char GetHexValue(int i)
-                => (char)(i < 10 ? i + 48 : i - 10 + 65);
-
-            var crc = new Crc64();
-            var hashedData = crc.ComputeHash(data);
-
-            var array = new char[hashedData.Length * 2];
-            for (int i = 0, j = 0; i < hashedData.Length; i += 1, j += 2)
-            {
-                var b = hashedData[i];
-                array[j] = GetHexValue(b / 16);
-                array[j + 1] = GetHexValue(b % 16);
-            }
-            return new string(array);
-#endif
-        }
     }
 }
