@@ -30,7 +30,7 @@ namespace Xamarin.Essentials
                 // If not found, could have been previously stored with md5 key
                 if (!Preferences.ContainsKey(key, Alias))
                 {
-                    // If previously stored with md5 key, save with crc key
+                    // If previously stored with md5 key, save with new key
                     var md5Key = Md5Hash(key);
                     if (Preferences.ContainsKey(md5Key, Alias))
                     {
