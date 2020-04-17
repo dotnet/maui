@@ -7,8 +7,7 @@
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>Android.Support.V4.Content.FileProvider</BaseTypeName>
-    <BaseTypeName FrameworkAlternate="xamarin-essentials-android">AndroidX.Core.Content.FileProvider</BaseTypeName>
+    <BaseTypeName>AndroidX.Core.Content.FileProvider</BaseTypeName>
   </Base>
   <Interfaces />
   <Attributes>

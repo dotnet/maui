@@ -92,14 +92,14 @@
         <Attribute FrameworkAlternate="xamarin-essentials-android">
           <AttributeName>System.Runtime.Versioning.TargetFramework("MonoAndroid,Version=v10.0", FrameworkDisplayName="Xamarin.Android v10.0 Support")</AttributeName>
         </Attribute>
-        <Attribute>
-          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+8eabafeeaf5befbf8128284feff72e51d716a286")</AttributeName>
-        </Attribute>
         <Attribute FrameworkAlternate="xamarin-essentials-macos">
           <AttributeName>System.Reflection.AssemblyProduct("Xamarin.Essentials (Xamarin.Mac20)")</AttributeName>
         </Attribute>
         <Attribute FrameworkAlternate="xamarin-essentials-macos">
           <AttributeName>System.Runtime.Versioning.TargetFramework("Xamarin.Mac,Version=v2.0", FrameworkDisplayName="Xamarin.Mac")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+1e231372e77f40e2be36e6d78957a69d1e339964")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>
