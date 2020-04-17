@@ -22,12 +22,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				_editfieldLayout.SetTheme("layout", "editfield", style);
 		}
 
-		public event EventHandler TextBlockFocused;
-		public event EventHandler TextBlockUnfocused;
-
-		public event EventHandler LayoutFocused;
-		public event EventHandler LayoutUnfocused;
-
 		public bool IsTextBlockFocused { get; private set; }
 
 		public override EColor BackgroundColor
@@ -71,9 +65,9 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			IsTextBlockFocused = isFocused;
 
 			if (isFocused)
-				TextBlockFocused?.Invoke(this, EventArgs.Empty);
+				OnTextBlockFocused();
 			else
-				TextBlockUnfocused?.Invoke(this, EventArgs.Empty);
+				OnTextBlcokUnfocused();
 		}
 
 		public override ElmSharp.Size Measure(int availableWidth, int availableHeight)
@@ -136,12 +130,12 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			{
 				SetFocusOnTextBlock(false);
 				layout.SignalEmit("elm,state,unfocused", "");
-				LayoutUnfocused?.Invoke(this, EventArgs.Empty);
+				OnEntryLayoutUnfocused();
 			};
 			layout.Focused += (s, e) =>
 			{
 				layout.SignalEmit("elm,state,focused", "");
-				LayoutFocused?.Invoke(this, EventArgs.Empty);
+				OnEntryLayoutFocused();
 			};
 
 			layout.KeyDown += (s, e) =>

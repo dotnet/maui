@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using Xamarin.Forms.Platform.Tizen.Native;
 using Xamarin.Forms.Platform.Tizen.Native.Watch;
 using ElmSharp;
+using EEntry = ElmSharp.Entry;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
-	public class PickerRenderer : ViewRenderer<Picker, EditfieldEntry>
+	public class PickerRenderer : ViewRenderer<Picker, EEntry>
 	{
 		List _list;
 		Dialog _dialog;
@@ -29,11 +30,14 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				if (Control != null)
 				{
-					Control.TextBlockFocused -= OnTextBlockFocused;
-					if (Device.Idiom == TargetIdiom.TV)
+					if (Control is IEntry ie)
 					{
-						Control.LayoutFocused -= OnLayoutFocused;
-						Control.LayoutUnfocused -= OnLayoutUnfocused;
+						ie.TextBlockFocused -= OnTextBlockFocused;
+						if (Device.Idiom == TargetIdiom.TV)
+						{
+							ie.EntryLayoutFocused -= OnLayoutFocused;
+							ie.EntryLayoutUnfocused -= OnLayoutUnfocused;
+						}
 					}
 					CleanView();
 				}
@@ -45,70 +49,102 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				var entry = new EditfieldEntry(Forms.NativeParent)
-				{
-					IsSingleLine = true,
-					InputPanelShowByOnDemand = true,
-				};
+				var entry = CreateNativeControl();
 				entry.SetVerticalTextAlignment("elm.text", 0.5);
-				entry.HorizontalTextAlignment = Native.TextAlignment.Center;
-				entry.TextBlockFocused += OnTextBlockFocused;
-
-				if (Device.Idiom == TargetIdiom.TV)
+				if (entry is IEntry ie)
 				{
-					entry.LayoutFocused += OnLayoutFocused;
-					entry.LayoutUnfocused += OnLayoutUnfocused;
-				}
+					ie.TextBlockFocused += OnTextBlockFocused;
 
+					if (Device.Idiom == TargetIdiom.TV)
+					{
+						ie.EntryLayoutFocused += OnLayoutFocused;
+						ie.EntryLayoutUnfocused += OnLayoutUnfocused;
+					}
+				}
 				SetNativeControl(entry);
 			}
 			base.OnElementChanged(e);
 		}
 
-		void UpdateSelectedIndex()
+		protected virtual EEntry CreateNativeControl()
+		{
+			return new EditfieldEntry(Forms.NativeParent)
+			{
+				IsSingleLine = true,
+				InputPanelShowByOnDemand = true,
+				IsEditable = false,
+				HorizontalTextAlignment = Native.TextAlignment.Center
+			};
+		}
+
+		protected virtual void UpdateSelectedIndex()
 		{
 			Control.Text = (Element.SelectedIndex == -1 || Element.Items == null ?
 				"" : Element.Items[Element.SelectedIndex]);
 		}
 
-		void UpdateTextColor()
+		protected virtual void UpdateTitleColor()
 		{
-			Control.TextColor = Element.TextColor.ToNative();
+			if (Control is IEntry ie)
+			{
+				ie.PlaceholderColor = Element.TitleColor.ToNative();
+			}
+		}
+
+		protected virtual void UpdateTextColor()
+		{
+			if (Control is IEntry ie)
+			{
+				ie.TextColor = Element.TextColor.ToNative();
+			}
 		}
 
 		void UpdateFontSize()
 		{
-			Control.FontSize = Element.FontSize;
+			if (Control is IEntry ie)
+			{
+				ie.FontSize = Element.FontSize;
+			}
 		}
 
 		void UpdateFontFamily()
 		{
-			Control.FontFamily = Element.FontFamily;
+			if (Control is IEntry ie)
+			{
+				ie.FontFamily = Element.FontFamily;
+			}
 		}
 
 		void UpdateFontAttributes()
 		{
-			Control.FontAttributes = Element.FontAttributes;
+			if (Control is IEntry ie)
+			{
+				ie.FontAttributes = Element.FontAttributes;
+			}
 		}
 
 		void UpdateTitle()
 		{
-			Control.Placeholder = Element.Title;
-		}
-
-		void UpdateTitleColor()
-		{
-			Control.PlaceholderColor = Element.TitleColor.ToNative();
+			if (Control is IEntry ie)
+			{
+				ie.Placeholder = Element.Title;
+			}
 		}
 
 		void OnLayoutFocused(object sender, EventArgs e)
 		{
-			Control.FontSize = Control.FontSize * 1.5;
+			if (Control is IEntry ie)
+			{
+				ie.FontSize = ie.FontSize * 1.5;
+			}
 		}
 
 		void OnLayoutUnfocused(object sender, EventArgs e)
 		{
-			Control.FontSize = Control.FontSize / 1.5;
+			if (Control is IEntry ie)
+			{
+				ie.FontSize = ie.FontSize / 1.5;
+			}
 		}
 
 		void OnTextBlockFocused(object sender, EventArgs e)
