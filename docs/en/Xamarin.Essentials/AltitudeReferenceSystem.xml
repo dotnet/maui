@@ -16,40 +16,6 @@
     </remarks>
   </Docs>
   <Members>
-    <Member MemberName="Unspecified">
-      <MemberSignature Language="C#" Value="Unspecified" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.AltitudeReferenceSystem Unspecified = int32(0)" />
-      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.AltitudeReferenceSystem.Unspecified" />
-      <MemberType>Field</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Xamarin.Essentials.AltitudeReferenceSystem</ReturnType>
-      </ReturnValue>
-      <MemberValue>0</MemberValue>
-      <Docs>
-        <summary>The altitude reference system was not specified.</summary>
-      </Docs>
-    </Member>
-    <Member MemberName="Terrain">
-      <MemberSignature Language="C#" Value="Terrain" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.AltitudeReferenceSystem Terrain = int32(1)" />
-      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.AltitudeReferenceSystem.Terrain" />
-      <MemberType>Field</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Xamarin.Essentials.AltitudeReferenceSystem</ReturnType>
-      </ReturnValue>
-      <MemberValue>1</MemberValue>
-      <Docs>
-        <summary>The altitude reference system is based on distance above terrain or ground level.</summary>
-      </Docs>
-    </Member>
     <Member MemberName="Ellipsoid">
       <MemberSignature Language="C#" Value="Ellipsoid" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.AltitudeReferenceSystem Ellipsoid = int32(2)" />
@@ -99,6 +65,40 @@
       <MemberValue>4</MemberValue>
       <Docs>
         <summary>The altitude reference system is based on the distance above the tallest surface structures, such as buildings, trees, roads, etc., above terrain or ground level.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Terrain">
+      <MemberSignature Language="C#" Value="Terrain" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.AltitudeReferenceSystem Terrain = int32(1)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.AltitudeReferenceSystem.Terrain" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.AltitudeReferenceSystem</ReturnType>
+      </ReturnValue>
+      <MemberValue>1</MemberValue>
+      <Docs>
+        <summary>The altitude reference system is based on distance above terrain or ground level.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Unspecified">
+      <MemberSignature Language="C#" Value="Unspecified" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.AltitudeReferenceSystem Unspecified = int32(0)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.AltitudeReferenceSystem.Unspecified" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.AltitudeReferenceSystem</ReturnType>
+      </ReturnValue>
+      <MemberValue>0</MemberValue>
+      <Docs>
+        <summary>The altitude reference system was not specified.</summary>
       </Docs>
     </Member>
   </Members>

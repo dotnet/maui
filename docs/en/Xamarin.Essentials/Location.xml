@@ -139,7 +139,7 @@
       </Docs>
     </Member>
     <Member MemberName="AltitudeReferenceSystem">
-      <MemberSignature Language="C#" Value="public AltitudeReferenceSystem AltitudeReferenceSystem { get; set; }" />
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.AltitudeReferenceSystem AltitudeReferenceSystem { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.AltitudeReferenceSystem AltitudeReferenceSystem" />
       <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Location.AltitudeReferenceSystem" />
       <MemberType>Property</MemberType>
@@ -153,6 +153,7 @@
       <Docs>
         <summary>Specifies the reference system in which the altitude value is given.</summary>
         <value>The altitude reference system.</value>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CalculateDistance">

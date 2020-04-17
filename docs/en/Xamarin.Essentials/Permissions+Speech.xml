@@ -8,7 +8,6 @@
   </AssemblyInfo>
   <Base>
     <BaseTypeName>Xamarin.Essentials.Permissions+BasePlatformPermission</BaseTypeName>
-    <BaseTypeName FrameworkAlternate="xamarin-essentials-tvos">System.Object</BaseTypeName>
   </Base>
   <Interfaces />
   <Docs>

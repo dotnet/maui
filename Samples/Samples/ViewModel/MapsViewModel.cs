@@ -16,7 +16,7 @@ namespace Samples.ViewModel
             set => SetProperty(ref name, value);
         }
 
-        string longitude = "-122.130603";
+        string longitude = (-122.130603).ToString();
 
         public string Longitude
         {
@@ -24,7 +24,7 @@ namespace Samples.ViewModel
             set => SetProperty(ref longitude, value);
         }
 
-        string latitude = "47.645160";
+        string latitude = 47.645160.ToString();
 
         public string Latitude
         {
