@@ -1,6 +1,6 @@
 <Type Name="FileProvider" FullName="Xamarin.Essentials.FileProvider">
-  <TypeSignature Language="C#" Value="public class FileProvider : Android.Support.V4.Content.FileProvider" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit FileProvider extends Android.Support.V4.Content.FileProvider" />
+  <TypeSignature Language="C#" Value="public class FileProvider : AndroidX.Core.Content.FileProvider" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit FileProvider extends AndroidX.Core.Content.FileProvider" />
   <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.FileProvider" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -8,6 +8,7 @@
   </AssemblyInfo>
   <Base>
     <BaseTypeName>Android.Support.V4.Content.FileProvider</BaseTypeName>
+    <BaseTypeName FrameworkAlternate="xamarin-essentials-android">AndroidX.Core.Content.FileProvider</BaseTypeName>
   </Base>
   <Interfaces />
   <Attributes>

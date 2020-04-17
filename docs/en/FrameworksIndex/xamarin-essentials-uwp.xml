@@ -231,6 +231,7 @@
       <Member Id="M:Xamarin.Essentials.DevicePlatform.ToString" />
       <Member Id="P:Xamarin.Essentials.DevicePlatform.Android" />
       <Member Id="P:Xamarin.Essentials.DevicePlatform.iOS" />
+      <Member Id="P:Xamarin.Essentials.DevicePlatform.macOS" />
       <Member Id="P:Xamarin.Essentials.DevicePlatform.Tizen" />
       <Member Id="P:Xamarin.Essentials.DevicePlatform.tvOS" />
       <Member Id="P:Xamarin.Essentials.DevicePlatform.Unknown" />
@@ -545,9 +546,11 @@
     </Type>
     <Type Name="Xamarin.Essentials.Permissions/CalendarRead" Id="T:Xamarin.Essentials.Permissions.CalendarRead">
       <Member Id="M:Xamarin.Essentials.Permissions.CalendarRead.#ctor" />
+      <Member Id="P:Xamarin.Essentials.Permissions.CalendarRead.RequiredDeclarations" />
     </Type>
     <Type Name="Xamarin.Essentials.Permissions/CalendarWrite" Id="T:Xamarin.Essentials.Permissions.CalendarWrite">
       <Member Id="M:Xamarin.Essentials.Permissions.CalendarWrite.#ctor" />
+      <Member Id="P:Xamarin.Essentials.Permissions.CalendarWrite.RequiredDeclarations" />
     </Type>
     <Type Name="Xamarin.Essentials.Permissions/Camera" Id="T:Xamarin.Essentials.Permissions.Camera">
       <Member Id="M:Xamarin.Essentials.Permissions.Camera.#ctor" />
@@ -555,10 +558,12 @@
     <Type Name="Xamarin.Essentials.Permissions/ContactsRead" Id="T:Xamarin.Essentials.Permissions.ContactsRead">
       <Member Id="M:Xamarin.Essentials.Permissions.ContactsRead.#ctor" />
       <Member Id="M:Xamarin.Essentials.Permissions.ContactsRead.CheckStatusAsync" />
+      <Member Id="P:Xamarin.Essentials.Permissions.ContactsRead.RequiredDeclarations" />
     </Type>
     <Type Name="Xamarin.Essentials.Permissions/ContactsWrite" Id="T:Xamarin.Essentials.Permissions.ContactsWrite">
       <Member Id="M:Xamarin.Essentials.Permissions.ContactsWrite.#ctor" />
       <Member Id="M:Xamarin.Essentials.Permissions.ContactsWrite.CheckStatusAsync" />
+      <Member Id="P:Xamarin.Essentials.Permissions.ContactsWrite.RequiredDeclarations" />
     </Type>
     <Type Name="Xamarin.Essentials.Permissions/Flashlight" Id="T:Xamarin.Essentials.Permissions.Flashlight">
       <Member Id="M:Xamarin.Essentials.Permissions.Flashlight.#ctor" />

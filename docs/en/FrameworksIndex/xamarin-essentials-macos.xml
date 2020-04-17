@@ -1,4 +1,4 @@
-<Framework Name="xamarin-essentials">
+<Framework Name="xamarin-essentials-macos">
   <Assemblies>
     <Assembly Name="Xamarin.Essentials" Version="1.0.0.0" />
   </Assemblies>
@@ -145,6 +145,7 @@
       <Member Id="M:Xamarin.Essentials.ColorExtensions.GetComplementary(System.Drawing.Color)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.MultiplyAlpha(System.Drawing.Color,System.Single)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.ToInt(System.Drawing.Color)" />
+      <Member Id="M:Xamarin.Essentials.ColorExtensions.ToSystemColor(AppKit.NSColor)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.ToUInt(System.Drawing.Color)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.WithAlpha(System.Drawing.Color,System.Int32)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.WithHue(System.Drawing.Color,System.Single)" />
@@ -524,7 +525,9 @@
     </Type>
     <Type Name="Xamarin.Essentials.Permissions" Id="T:Xamarin.Essentials.Permissions">
       <Member Id="M:Xamarin.Essentials.Permissions.CheckStatusAsync``1" />
+      <Member Id="M:Xamarin.Essentials.Permissions.IsKeyDeclaredInInfoPlist(System.String)" />
       <Member Id="M:Xamarin.Essentials.Permissions.RequestAsync``1" />
+      <Member Id="P:Xamarin.Essentials.Permissions.LocationTimeout" />
     </Type>
     <Type Name="Xamarin.Essentials.Permissions/BasePermission" Id="T:Xamarin.Essentials.Permissions.BasePermission">
       <Member Id="M:Xamarin.Essentials.Permissions.BasePermission.#ctor" />
@@ -537,6 +540,8 @@
       <Member Id="M:Xamarin.Essentials.Permissions.BasePlatformPermission.CheckStatusAsync" />
       <Member Id="M:Xamarin.Essentials.Permissions.BasePlatformPermission.EnsureDeclared" />
       <Member Id="M:Xamarin.Essentials.Permissions.BasePlatformPermission.RequestAsync" />
+      <Member Id="P:Xamarin.Essentials.Permissions.BasePlatformPermission.RecommendedInfoPlistKeys" />
+      <Member Id="P:Xamarin.Essentials.Permissions.BasePlatformPermission.RequiredInfoPlistKeys" />
     </Type>
     <Type Name="Xamarin.Essentials.Permissions/Battery" Id="T:Xamarin.Essentials.Permissions.Battery">
       <Member Id="M:Xamarin.Essentials.Permissions.Battery.#ctor" />
@@ -556,6 +561,9 @@
     <Type Name="Xamarin.Essentials.Permissions/ContactsWrite" Id="T:Xamarin.Essentials.Permissions.ContactsWrite">
       <Member Id="M:Xamarin.Essentials.Permissions.ContactsWrite.#ctor" />
     </Type>
+    <Type Name="Xamarin.Essentials.Permissions/EventPermissions" Id="T:Xamarin.Essentials.Permissions.EventPermissions">
+      <Member Id="M:Xamarin.Essentials.Permissions.EventPermissions.#ctor" />
+    </Type>
     <Type Name="Xamarin.Essentials.Permissions/Flashlight" Id="T:Xamarin.Essentials.Permissions.Flashlight">
       <Member Id="M:Xamarin.Essentials.Permissions.Flashlight.#ctor" />
     </Type>
@@ -567,6 +575,9 @@
     </Type>
     <Type Name="Xamarin.Essentials.Permissions/LocationWhenInUse" Id="T:Xamarin.Essentials.Permissions.LocationWhenInUse">
       <Member Id="M:Xamarin.Essentials.Permissions.LocationWhenInUse.#ctor" />
+      <Member Id="M:Xamarin.Essentials.Permissions.LocationWhenInUse.CheckStatusAsync" />
+      <Member Id="M:Xamarin.Essentials.Permissions.LocationWhenInUse.RequestAsync" />
+      <Member Id="P:Xamarin.Essentials.Permissions.LocationWhenInUse.RecommendedInfoPlistKeys" />
     </Type>
     <Type Name="Xamarin.Essentials.Permissions/Maps" Id="T:Xamarin.Essentials.Permissions.Maps">
       <Member Id="M:Xamarin.Essentials.Permissions.Maps.#ctor" />
@@ -637,6 +648,11 @@
       <Member Id="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark)" />
       <Member Id="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapLaunchOptions)" />
     </Type>
+    <Type Name="Xamarin.Essentials.Platform" Id="T:Xamarin.Essentials.Platform" />
+    <Type Name="Xamarin.Essentials.PointExtensions" Id="T:Xamarin.Essentials.PointExtensions">
+      <Member Id="M:Xamarin.Essentials.PointExtensions.ToSystemPoint(CoreGraphics.CGPoint)" />
+      <Member Id="M:Xamarin.Essentials.PointExtensions.ToSystemPointF(CoreGraphics.CGPoint)" />
+    </Type>
     <Type Name="Xamarin.Essentials.Preferences" Id="T:Xamarin.Essentials.Preferences">
       <Member Id="M:Xamarin.Essentials.Preferences.Clear" />
       <Member Id="M:Xamarin.Essentials.Preferences.Clear(System.String)" />
@@ -678,11 +694,17 @@
       <Member Id="M:Xamarin.Essentials.ReadOnlyFile.#ctor(System.String,System.String)" />
       <Member Id="M:Xamarin.Essentials.ReadOnlyFile.#ctor(Xamarin.Essentials.FileBase)" />
     </Type>
+    <Type Name="Xamarin.Essentials.RectangleExtensions" Id="T:Xamarin.Essentials.RectangleExtensions">
+      <Member Id="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangle(CoreGraphics.CGRect)" />
+      <Member Id="M:Xamarin.Essentials.RectangleExtensions.ToSystemRectangleF(CoreGraphics.CGRect)" />
+    </Type>
     <Type Name="Xamarin.Essentials.SecureStorage" Id="T:Xamarin.Essentials.SecureStorage">
       <Member Id="M:Xamarin.Essentials.SecureStorage.GetAsync(System.String)" />
       <Member Id="M:Xamarin.Essentials.SecureStorage.Remove(System.String)" />
       <Member Id="M:Xamarin.Essentials.SecureStorage.RemoveAll" />
       <Member Id="M:Xamarin.Essentials.SecureStorage.SetAsync(System.String,System.String)" />
+      <Member Id="M:Xamarin.Essentials.SecureStorage.SetAsync(System.String,System.String,Security.SecAccessible)" />
+      <Member Id="P:Xamarin.Essentials.SecureStorage.DefaultAccessible" />
     </Type>
     <Type Name="Xamarin.Essentials.SensorSpeed" Id="T:Xamarin.Essentials.SensorSpeed">
       <Member Id="F:Xamarin.Essentials.SensorSpeed.Default" />
@@ -721,6 +743,10 @@
       <Member Id="P:Xamarin.Essentials.ShareTextRequest.Subject" />
       <Member Id="P:Xamarin.Essentials.ShareTextRequest.Text" />
       <Member Id="P:Xamarin.Essentials.ShareTextRequest.Uri" />
+    </Type>
+    <Type Name="Xamarin.Essentials.SizeExtensions" Id="T:Xamarin.Essentials.SizeExtensions">
+      <Member Id="M:Xamarin.Essentials.SizeExtensions.ToSystemSize(CoreGraphics.CGSize)" />
+      <Member Id="M:Xamarin.Essentials.SizeExtensions.ToSystemSizeF(CoreGraphics.CGSize)" />
     </Type>
     <Type Name="Xamarin.Essentials.Sms" Id="T:Xamarin.Essentials.Sms">
       <Member Id="M:Xamarin.Essentials.Sms.ComposeAsync" />

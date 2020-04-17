@@ -54,7 +54,7 @@
         <ReturnType>System.Drawing.Size</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="size" Type="CoreGraphics.CGSize" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios" />
+        <Parameter Name="size" Type="CoreGraphics.CGSize" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-macos" />
       </Parameters>
       <Docs>
         <param name="size">Base size to convert.</param>
@@ -126,7 +126,7 @@
         <ReturnType>System.Drawing.SizeF</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="size" Type="CoreGraphics.CGSize" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios" />
+        <Parameter Name="size" Type="CoreGraphics.CGSize" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-macos" />
       </Parameters>
       <Docs>
         <param name="size">Base size to convert.</param>
