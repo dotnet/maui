@@ -13,7 +13,7 @@
   <Docs>
     <summary>Event arguments when compass reading changes.</summary>
     <remarks>
-      <para />
+      <para></para>
     </remarks>
   </Docs>
   <Members>
@@ -30,8 +30,8 @@
         <Parameter Name="reading" Type="Xamarin.Essentials.CompassData" />
       </Parameters>
       <Docs>
-        <param name="reading">To be added.</param>
-        <summary>To be added.</summary>
+        <param name="reading">The current compass reading.</param>
+        <summary>Public constructor</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -51,7 +51,7 @@
         <summary>Gets the current reading.</summary>
         <value>The reading.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

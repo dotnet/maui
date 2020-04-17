@@ -11,7 +11,9 @@
   </Base>
   <Docs>
     <summary>Represents various types of email body formats.</summary>
-    <remarks></remarks>
+    <remarks>
+      <para></para>
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName="Html">

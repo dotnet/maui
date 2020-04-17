@@ -10,6 +10,15 @@ namespace Xamarin.Essentials
         Miles
     }
 
+    public enum AltitudeReferenceSystem
+    {
+        Unspecified = 0,
+        Terrain = 1,
+        Ellipsoid = 2,
+        Geoid = 3,
+        Surface = 4
+    }
+
     public class Location
     {
         public Location()
@@ -38,8 +47,12 @@ namespace Xamarin.Essentials
             Latitude = point.Latitude;
             Longitude = point.Longitude;
             Timestamp = DateTime.UtcNow;
+            Altitude = point.Altitude;
+            Accuracy = point.Accuracy;
+            VerticalAccuracy = point.VerticalAccuracy;
             Speed = point.Speed;
             Course = point.Course;
+            IsFromMockProvider = point.IsFromMockProvider;
         }
 
         public DateTimeOffset Timestamp { get; set; }
@@ -52,11 +65,15 @@ namespace Xamarin.Essentials
 
         public double? Accuracy { get; set; }
 
+        public double? VerticalAccuracy { get; set; }
+
         public double? Speed { get; set; }
 
         public double? Course { get; set; }
 
         public bool IsFromMockProvider { get; set; }
+
+        public AltitudeReferenceSystem AltitudeReferenceSystem { get; set; }
 
         public static double CalculateDistance(double latitudeStart, double longitudeStart, Location locationEnd, DistanceUnits units) =>
             CalculateDistance(latitudeStart, longitudeStart, locationEnd.Latitude, locationEnd.Longitude, units);
@@ -88,6 +105,7 @@ namespace Xamarin.Essentials
         public override string ToString() =>
             $"{nameof(Latitude)}: {Latitude}, {nameof(Longitude)}: {Longitude}, " +
             $"{nameof(Altitude)}: {Altitude ?? 0}, {nameof(Accuracy)}: {Accuracy ?? 0}, " +
+            $"{nameof(VerticalAccuracy)}: {VerticalAccuracy ?? 0}, " +
             $"{nameof(Speed)}: {Speed ?? 0}, {nameof(Course)}: {Course ?? 0}, " +
             $"{nameof(Timestamp)}: {Timestamp}";
     }

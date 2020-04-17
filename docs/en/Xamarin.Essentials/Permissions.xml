@@ -1,0 +1,169 @@
+<Type Name="Permissions" FullName="Xamarin.Essentials.Permissions">
+  <TypeSignature Language="C#" Value="public static class Permissions" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Permissions extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Permissions" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Access to checking and requesting application permissions.</summary>
+    <remarks>
+      <para></para>
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="CheckStatusAsync&lt;TPermission&gt;">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;Xamarin.Essentials.PermissionStatus&gt; CheckStatusAsync&lt;TPermission&gt; () where TPermission : Xamarin.Essentials.Permissions.BasePermissionnew();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;valuetype Xamarin.Essentials.PermissionStatus&gt; CheckStatusAsync&lt;.ctor (class Xamarin.Essentials.Permissions/BasePermission) TPermission&gt;() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Permissions.CheckStatusAsync``1" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;Xamarin.Essentials.PermissionStatus&gt;</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="TPermission">
+          <Constraints>
+            <ParameterAttribute>DefaultConstructorConstraint</ParameterAttribute>
+            <BaseTypeName>Xamarin.Essentials.Permissions+BasePermission</BaseTypeName>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters />
+      <Docs>
+        <typeparam name="TPermission">To be added.</typeparam>
+        <summary>Checks the status of a specific permission.</summary>
+        <returns>The current status of the permission.</returns>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="IsCapabilityDeclared">
+      <MemberSignature Language="C#" Value="public static bool IsCapabilityDeclared (string capabilityName);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool IsCapabilityDeclared(string capabilityName) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Permissions.IsCapabilityDeclared(System.String)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="capabilityName" Type="System.String" Index="0" FrameworkAlternate="xamarin-essentials-uwp" />
+      </Parameters>
+      <Docs>
+        <param name="capabilityName">Name of the capability on UWP.</param>
+        <summary>Checks if a specific capability name is declared.</summary>
+        <returns>If the capability is declared.</returns>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="IsDeclaredInManifest">
+      <MemberSignature Language="C#" Value="public static bool IsDeclaredInManifest (string permission);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool IsDeclaredInManifest(string permission) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Permissions.IsDeclaredInManifest(System.String)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="permission" Type="System.String" Index="0" FrameworkAlternate="xamarin-essentials-android" />
+      </Parameters>
+      <Docs>
+        <param name="permission">The name of the specific permission in the manifest to check.</param>
+        <summary>Checks if a permission is declared in the Android manifest file.</summary>
+        <returns>If the permission is declared or not.</returns>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="IsKeyDeclaredInInfoPlist">
+      <MemberSignature Language="C#" Value="public static bool IsKeyDeclaredInInfoPlist (string usageKey);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool IsKeyDeclaredInInfoPlist(string usageKey) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Permissions.IsKeyDeclaredInInfoPlist(System.String)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="usageKey" Type="System.String" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos" />
+      </Parameters>
+      <Docs>
+        <param name="usageKey">The usage key to check in the info.plist.</param>
+        <summary>Check if a usage key is specified in the info.plist file.</summary>
+        <returns>If it is declared in the info.plist.</returns>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="LocationTimeout">
+      <MemberSignature Language="C#" Value="public static TimeSpan LocationTimeout { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype System.TimeSpan LocationTimeout" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Permissions.LocationTimeout" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.TimeSpan</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the location timeout for iOS when switching between when in use and always.</summary>
+        <value>The specific TimeSpan to use in this time.</value>
+        <remarks>This is a special use case where the user is promoted for location permission which was already granted. iOS does not return a value and a timeout must be actived. The default is 10 seconds.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RequestAsync&lt;TPermission&gt;">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;Xamarin.Essentials.PermissionStatus&gt; RequestAsync&lt;TPermission&gt; () where TPermission : Xamarin.Essentials.Permissions.BasePermissionnew();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;valuetype Xamarin.Essentials.PermissionStatus&gt; RequestAsync&lt;.ctor (class Xamarin.Essentials.Permissions/BasePermission) TPermission&gt;() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Permissions.RequestAsync``1" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;Xamarin.Essentials.PermissionStatus&gt;</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="TPermission">
+          <Constraints>
+            <ParameterAttribute>DefaultConstructorConstraint</ParameterAttribute>
+            <BaseTypeName>Xamarin.Essentials.Permissions+BasePermission</BaseTypeName>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters />
+      <Docs>
+        <typeparam name="TPermission">To be added.</typeparam>
+        <summary>Request a specific permission from the user.</summary>
+        <returns>The status of the permission that was requested.</returns>
+        <remarks>The request will be prompted to the user if it hasn't been granted. iOS only allows the permission to be requested once, any additional requests will return immediatelly.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

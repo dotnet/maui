@@ -28,9 +28,16 @@ namespace Xamarin.Essentials
                 Altitude = location.HasAltitude ? location.Altitude : default(double?),
                 Timestamp = location.GetTimestamp().ToUniversalTime(),
                 Accuracy = location.HasAccuracy ? location.Accuracy : default(float?),
+                VerticalAccuracy =
+#if __ANDROID_26__
+                    Platform.HasApiLevelO && location.HasVerticalAccuracy ? location.VerticalAccuracyMeters : default(float?),
+#else
+                    default(float?),
+#endif
                 Course = location.HasBearing ? location.Bearing : default(double?),
                 Speed = location.HasSpeed ? location.Speed : default(double?),
-                IsFromMockProvider = location.IsFromMockProvider
+                IsFromMockProvider = Platform.HasApiLevel(global::Android.OS.BuildVersionCodes.JellyBeanMr2) ? location.IsFromMockProvider : false,
+                AltitudeReferenceSystem = AltitudeReferenceSystem.Ellipsoid
             };
 
         static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);

@@ -20,10 +20,20 @@
         </uap:DefaultTile>
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
+      <Extensions>
+        <uap:Extension Category="windows.protocol">
+          <uap:Protocol Name="xamarinessentials">
+            <uap:DisplayName>Xamarin Essentials</uap:DisplayName>
+          </uap:Protocol>
+        </uap:Extension>
+      </Extensions>
     </Application>
   </Applications>
   <Capabilities>
     <Capability Name="internetClient" />
+    <uap:Capability Name="contacts"/>
     <DeviceCapability Name="location" />
+    <DeviceCapability Name="microphone"/>
+    <DeviceCapability Name="webcam"/>
   </Capabilities>
 </Package>

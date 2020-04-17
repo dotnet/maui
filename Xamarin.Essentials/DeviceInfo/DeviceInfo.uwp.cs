@@ -1,4 +1,6 @@
-﻿using Windows.Security.ExchangeActiveSyncProvisioning;
+﻿using System;
+using System.Diagnostics;
+using Windows.Security.ExchangeActiveSyncProvisioning;
 using Windows.System.Profile;
 using Windows.UI.ViewManagement;
 
@@ -7,10 +9,22 @@ namespace Xamarin.Essentials
     public static partial class DeviceInfo
     {
         static readonly EasClientDeviceInformation deviceInfo;
+        static DeviceIdiom currentIdiom;
+        static DeviceType currentType = DeviceType.Unknown;
+        static string systemProductName;
 
         static DeviceInfo()
         {
             deviceInfo = new EasClientDeviceInformation();
+            currentIdiom = DeviceIdiom.Unknown;
+            try
+            {
+                systemProductName = deviceInfo.SystemProductName;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Unable to get system product name. {ex.Message}");
+            }
         }
 
         static string GetModel() => deviceInfo.SystemProductName;
@@ -42,31 +56,54 @@ namespace Xamarin.Essentials
             switch (AnalyticsInfo.VersionInfo.DeviceFamily)
             {
                 case "Windows.Mobile":
-                    return DeviceIdiom.Phone;
+                    currentIdiom = DeviceIdiom.Phone;
+                    break;
                 case "Windows.Universal":
                 case "Windows.Desktop":
                     {
-                        var uiMode = UIViewSettings.GetForCurrentView().UserInteractionMode;
-                        return uiMode == UserInteractionMode.Mouse ? DeviceIdiom.Desktop : DeviceIdiom.Tablet;
+                        try
+                        {
+                            var uiMode = UIViewSettings.GetForCurrentView().UserInteractionMode;
+                            currentIdiom = uiMode == UserInteractionMode.Mouse ? DeviceIdiom.Desktop : DeviceIdiom.Tablet;
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"Unable to get device . {ex.Message}");
+                        }
                     }
+                    break;
                 case "Windows.Xbox":
                 case "Windows.Team":
-                    return DeviceIdiom.TV;
+                    currentIdiom = DeviceIdiom.TV;
+                    break;
                 case "Windows.IoT":
-                    return DeviceIdiom.Unknown;
+                default:
+                    currentIdiom = DeviceIdiom.Unknown;
+                    break;
             }
 
-            return DeviceIdiom.Unknown;
+            return currentIdiom;
         }
 
         static DeviceType GetDeviceType()
         {
-            var isVirtual = deviceInfo.SystemProductName.Contains("Virtual") || deviceInfo.SystemProductName == "HMV domU";
+            if (currentType != DeviceType.Unknown)
+                return currentType;
 
-            if (isVirtual)
-                return DeviceType.Virtual;
+            try
+            {
+                if (string.IsNullOrWhiteSpace(systemProductName))
+                    systemProductName = deviceInfo.SystemProductName;
 
-            return DeviceType.Physical;
+                var isVirtual = systemProductName.Contains("Virtual") || systemProductName == "HMV domU";
+
+                currentType = isVirtual ? DeviceType.Virtual : DeviceType.Physical;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Unable to get device type. {ex.Message}");
+            }
+            return currentType;
         }
     }
 }

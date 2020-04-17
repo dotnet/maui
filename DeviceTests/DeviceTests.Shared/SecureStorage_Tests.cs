@@ -45,6 +45,18 @@ namespace DeviceTests
             Assert.Equal(data, c);
         }
 
+        [Theory]
+        [InlineData("test.txt", "data1", "data2")]
+        public async Task Saves_Same_Key_Twice(string key, string data1, string data2)
+        {
+            await SecureStorage.SetAsync(key, data1);
+            await SecureStorage.SetAsync(key, data2);
+
+            var c = await SecureStorage.GetAsync(key);
+
+            Assert.Equal(data2, c);
+        }
+
 #if __ANDROID__
         [Theory]
         [InlineData("test.txt", "data")]

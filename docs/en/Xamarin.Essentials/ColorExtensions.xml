@@ -38,7 +38,63 @@
         <param name="delta">The delta to add to the current luminosity.</param>
         <summary>Adds luminosity to the existing color</summary>
         <returns>The new color.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromHsva">
+      <MemberSignature Language="C#" Value="public static System.Drawing.Color FromHsva (double h, double s, double v, double a);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color FromHsva(float64 h, float64 s, float64 v, float64 a) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.FromHsva(System.Double,System.Double,System.Double,System.Double)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="h" Type="System.Double" />
+        <Parameter Name="s" Type="System.Double" />
+        <Parameter Name="v" Type="System.Double" />
+        <Parameter Name="a" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="h">The Hue value in double.</param>
+        <param name="s">The Saturation value in double.</param>
+        <param name="v">The Value value in double.</param>
+        <param name="a">The Alpha value in double.</param>
+        <summary>Convert HSVa color into System.Drawing.Color.</summary>
+        <returns>System.Drawing.Color.</returns>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetComplementary">
+      <MemberSignature Language="C#" Value="public static System.Drawing.Color GetComplementary (this System.Drawing.Color color);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color GetComplementary(valuetype System.Drawing.Color color) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.GetComplementary(System.Drawing.Color)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
+      </Parameters>
+      <Docs>
+        <param name="color">A color to obtain the complement for.</param>
+        <summary>Returns a new color that is on the opposite side of the color wheel from the original.</summary>
+        <returns>A color that is the complement of the value passed in.</returns>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="MultiplyAlpha">
@@ -62,7 +118,38 @@
         <param name="percentage">The percentage from 0-1f</param>
         <summary>Multiplies the current alpha by a percentage (0-1f)</summary>
         <returns>The new color.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToHsv">
+      <MemberSignature Language="C#" Value="public static ValueTuple&lt;double,double,double&gt; ToHsv (this System.Drawing.Color color);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.ValueTuple`3&lt;float64, float64, float64&gt; ToHsv(valuetype System.Drawing.Color color) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.ToHsv(System.Drawing.Color)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.ValueTuple&lt;System.Double,System.Double,System.Double&gt;</ReturnType>
+        <Attributes>
+          <Attribute FrameworkAlternate="xamarin-essentials">
+            <AttributeName>System.Runtime.CompilerServices.TupleElementNames(new System.String[] { "h", "s", "v" })</AttributeName>
+          </Attribute>
+        </Attributes>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
+      </Parameters>
+      <Docs>
+        <param name="color">The current color to manipulate.</param>
+        <summary>Convert a System.Drawing.Color struct into HSV Color.</summary>
+        <returns>A tuple of doubles with the values of Hue, Saturation and Value, respectively.</returns>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToInt">
@@ -81,9 +168,9 @@
         <Parameter Name="color" Type="System.Drawing.Color" RefType="this" />
       </Parameters>
       <Docs>
-        <param name="color">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="color">The color to convert</param>
+        <summary>Converts the current color to an interger</summary>
+        <returns>The color as an integer</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -106,7 +193,31 @@
         <param name="color">The color to use as a base.</param>
         <summary>Converts the color to the system specific color.</summary>
         <returns>The system color.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToSystemColor">
+      <MemberSignature Language="C#" Value="public static System.Drawing.Color ToSystemColor (this AppKit.NSColor color);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color ToSystemColor(class AppKit.NSColor color) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.ToSystemColor(AppKit.NSColor)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Drawing.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="color" Type="AppKit.NSColor" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-macos" />
+      </Parameters>
+      <Docs>
+        <param name="color">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemColor">
@@ -128,7 +239,9 @@
         <param name="color">The color to use as a base.</param>
         <summary>Converts the color to the system specific color.</summary>
         <returns>The system color.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToSystemColor">
@@ -150,7 +263,9 @@
         <param name="color">The color to use as a base.</param>
         <summary>Converts the color to the system specific color.</summary>
         <returns>The system color.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToUInt">
@@ -172,7 +287,9 @@
         <param name="color">The color to use as a base.</param>
         <summary>Converts the color to a UInt representation.</summary>
         <returns>The UInt representation.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="WithAlpha">
@@ -196,7 +313,9 @@
         <param name="alpha">The alpha to set 0-255.</param>
         <summary>Creates a new color based on this color, but with a new alpha (0-255).</summary>
         <returns>The new color.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="WithHue">
@@ -220,7 +339,9 @@
         <param name="hue">The hue to set 0-360.</param>
         <summary>Creates a new color based on this color, but with a new hue (0-360).</summary>
         <returns>The new color.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="WithLuminosity">
@@ -244,7 +365,9 @@
         <param name="luminosity">The luminosity to set 0-100.</param>
         <summary>Creates a new color based on this color, but with a new luminosity (0-100).</summary>
         <returns>The new color.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="WithSaturation">
@@ -268,7 +391,9 @@
         <param name="saturation">The saturation to set 0-100.</param>
         <summary>Creates a new color based on this color, but with a new saturation (0-100).</summary>
         <returns>The new color.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
   </Members>

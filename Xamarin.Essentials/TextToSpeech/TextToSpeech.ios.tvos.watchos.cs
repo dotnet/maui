@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,14 +9,18 @@ namespace Xamarin.Essentials
 {
     public static partial class TextToSpeech
     {
+        static readonly Lazy<AVSpeechSynthesizer> speechSynthesizer = new Lazy<AVSpeechSynthesizer>();
+
         internal static Task<IEnumerable<Locale>> PlatformGetLocalesAsync() =>
             Task.FromResult(AVSpeechSynthesisVoice.GetSpeechVoices()
                 .Select(v => new Locale(v.Language, null, v.Language, v.Identifier)));
 
-        internal static Task PlatformSpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default)
+        internal static async Task PlatformSpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default)
         {
-            var speechUtterance = GetSpeechUtterance(text, options);
-            return SpeakUtterance(speechUtterance, cancelToken);
+            using (var speechUtterance = GetSpeechUtterance(text, options))
+            {
+                await SpeakUtterance(speechUtterance, cancelToken);
+            }
         }
 
         static AVSpeechUtterance GetSpeechUtterance(string text, SpeechOptions options)
@@ -44,11 +49,14 @@ namespace Xamarin.Essentials
         internal static async Task SpeakUtterance(AVSpeechUtterance speechUtterance, CancellationToken cancelToken)
         {
             var tcsUtterance = new TaskCompletionSource<bool>();
-            var speechSynthesizer = new AVSpeechSynthesizer();
             try
             {
-                speechSynthesizer.DidFinishSpeechUtterance += OnFinishedSpeechUtterance;
-                speechSynthesizer.SpeakUtterance(speechUtterance);
+                // Ensures linker doesn't remove.
+                if (DateTime.UtcNow.Ticks < 0)
+                    new AVSpeechSynthesizer();
+
+                speechSynthesizer.Value.DidFinishSpeechUtterance += OnFinishedSpeechUtterance;
+                speechSynthesizer.Value.SpeakUtterance(speechUtterance);
                 using (cancelToken.Register(TryCancel))
                 {
                     await tcsUtterance.Task;
@@ -56,12 +64,12 @@ namespace Xamarin.Essentials
             }
             finally
             {
-                speechSynthesizer.DidFinishSpeechUtterance -= OnFinishedSpeechUtterance;
+                speechSynthesizer.Value.DidFinishSpeechUtterance -= OnFinishedSpeechUtterance;
             }
 
             void TryCancel()
             {
-                speechSynthesizer?.StopSpeaking(AVSpeechBoundary.Word);
+                speechSynthesizer.Value?.StopSpeaking(AVSpeechBoundary.Word);
                 tcsUtterance?.TrySetResult(true);
             }
 

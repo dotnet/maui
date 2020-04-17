@@ -5,8 +5,13 @@ using System.Threading.Tasks;
 using Android;
 using Android.Content.PM;
 using Android.OS;
+#if __ANDROID_29__
+using AndroidX.Core.App;
+using AndroidX.Core.Content;
+#else
 using Android.Support.V4.App;
 using Android.Support.V4.Content;
+#endif
 
 namespace Xamarin.Essentials
 {
@@ -48,7 +53,7 @@ namespace Xamarin.Essentials
                     if (!IsDeclaredInManifest(ap))
                         throw new PermissionException($"You need to declare using the permission: `{androidPermission}` in your AndroidManifest.xml");
 
-                    var status = PermissionStatus.Denied;
+                    var status = PermissionStatus.Granted;
 
                     if (targetsMOrHigher)
                     {
@@ -161,6 +166,9 @@ namespace Xamarin.Essentials
         {
             public override (string androidPermission, bool isRuntime)[] RequiredPermissions =>
                 new (string, bool)[] { (Manifest.Permission.BatteryStats, false) };
+
+            public override Task<PermissionStatus> CheckStatusAsync() =>
+                Task.FromResult(IsDeclaredInManifest(Manifest.Permission.BatteryStats) ? PermissionStatus.Granted : PermissionStatus.Denied);
         }
 
         public partial class CalendarRead : BasePlatformPermission
@@ -219,15 +227,23 @@ namespace Xamarin.Essentials
 
         public partial class LocationAlways : BasePlatformPermission
         {
-            public override (string androidPermission, bool isRuntime)[] RequiredPermissions =>
-                new (string, bool)[]
+            public override (string androidPermission, bool isRuntime)[] RequiredPermissions
+            {
+                get
                 {
+                    var permissions = new List<(string, bool)>();
 #if __ANDROID_29__
-                    (Manifest.Permission.AccessBackgroundLocation, true),
+                    // Check if running and targeting Q
+                    if (Platform.HasApiLevelQ && Platform.AppContext.ApplicationInfo.TargetSdkVersion >= BuildVersionCodes.Q)
+                        permissions.Add((Manifest.Permission.AccessBackgroundLocation, true));
 #endif
-                    (Manifest.Permission.AccessCoarseLocation, true),
-                    (Manifest.Permission.AccessFineLocation, true)
-                };
+
+                    permissions.Add((Manifest.Permission.AccessCoarseLocation, true));
+                    permissions.Add((Manifest.Permission.AccessFineLocation, true));
+
+                    return permissions.ToArray();
+                }
+            }
         }
 
         public partial class Maps : BasePlatformPermission

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Android.Content;
+using static Android.Content.ClipboardManager;
 
 namespace Xamarin.Essentials
 {
@@ -28,11 +29,9 @@ namespace Xamarin.Essentials
             => Platform.ClipboardManager.RemovePrimaryClipChangedListener(clipboardListener.Value);
     }
 
-    public class ClipboardChangeListener : Java.Lang.Object, ClipboardManager.IOnPrimaryClipChangedListener
+    class ClipboardChangeListener : Java.Lang.Object, IOnPrimaryClipChangedListener
     {
-        public void OnPrimaryClipChanged()
-        {
+        void IOnPrimaryClipChangedListener.OnPrimaryClipChanged() =>
             Clipboard.ClipboardChangedInternal();
-        }
     }
 }

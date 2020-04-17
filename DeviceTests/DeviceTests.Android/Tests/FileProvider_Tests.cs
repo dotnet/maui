@@ -185,7 +185,11 @@ namespace DeviceTests.Shared
         public void Get_Existing_External_Shareable_Uri(FileProviderLocation location)
         {
             // Save an external directory file
+
+            #if !__ANDROID_29__
             var externalRoot = AndroidEnvironment.ExternalStorageDirectory.AbsolutePath;
+            #endif
+
             var root = Platform.AppContext.GetExternalFilesDir(null).AbsolutePath;
             var file = CreateFile(root);
 
@@ -200,10 +204,12 @@ namespace DeviceTests.Shared
             Assert.Equal("content", shareableUri.Scheme);
             Assert.Equal("com.xamarin.essentials.devicetests.fileProvider", shareableUri.Authority);
 
+            #if !__ANDROID_29__
             // replace the real root with the providers "root"
             var segements = Path.Combine(root.Replace(externalRoot, "external_files"), Path.GetFileName(file));
 
             Assert.Equal(segements.Split(Path.DirectorySeparatorChar), shareableUri.PathSegments);
+            #endif
         }
 
         static string CreateFile(string root, string name = "the-file.txt")

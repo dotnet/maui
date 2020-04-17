@@ -28,8 +28,26 @@
       <Docs>
         <summary>Default constructor.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Flags">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.BrowserLaunchFlags Flags { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.BrowserLaunchFlags Flags" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.BrowserLaunchOptions.Flags" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.BrowserLaunchFlags</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Additional launch flags that may or may not take effect based on the device and launch mode.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="LaunchMode">
@@ -48,7 +66,7 @@
         <summary>Launch type of the browser.</summary>
         <value>The launch type.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -68,7 +86,7 @@
         <summary>Preferred color of the controls on the browser.</summary>
         <value>Gets the color for controls.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -88,7 +106,7 @@
         <summary>Preferred color of the background toolbar.</summary>
         <value>Gets the toolbar color.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -108,7 +126,7 @@
         <summary>Preferred mode for the title display.</summary>
         <value>Gets the title display mode.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

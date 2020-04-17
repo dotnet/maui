@@ -71,24 +71,6 @@ namespace Xamarin.Essentials
             return Color.FromArgb(a, r, g, b);
         }
 
-        public static Color GetComplementary(Color original)
-        {
-            // Divide RGB by 255 as ConvertToHsl expects a value between 0 & 1.
-            ConvertToHsl(original.R / 255f, original.G / 255f, original.B / 255f, out var h, out var s, out var l);
-
-            // Multiply by 360 as `ConvertToHsl` specifies it as a value between 0 and 1.
-            h *= 360;
-
-            // Add 180 (degrees) to get to the other side of the circle.
-            h += 180;
-
-            // Ensure still within the bounds of a circle.
-            h %= 360;
-
-            // multiply by 100 as `ConvertToHsl` specifies them as values between 0 and 1.
-            return FromHsl(h, s * 100, l * 100);
-        }
-
         internal static void ConvertToRgb(float hue, float saturation, float luminosity, out int r, out int g, out int b)
         {
             if (luminosity == 0)

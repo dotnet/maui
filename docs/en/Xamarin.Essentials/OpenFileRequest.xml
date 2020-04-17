@@ -30,7 +30,7 @@
       <Docs>
         <summary>Open request with an existing file.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -52,7 +52,7 @@
         <param name="file">File to open.</param>
         <summary>Open request with an existing file.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -74,7 +74,7 @@
         <param name="file">File to open.</param>
         <summary>Open request with an existing file.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -93,10 +93,10 @@
       <Docs>
         <summary>File to open.</summary>
         <value>
-          <para />
+          <para></para>
         </value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -115,10 +115,10 @@
       <Docs>
         <summary>Title to display on open dialog if available.</summary>
         <value>
-          <para />
+          <para></para>
         </value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

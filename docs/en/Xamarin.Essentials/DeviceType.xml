@@ -47,7 +47,7 @@
       </ReturnValue>
       <MemberValue>0</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>An unknown device type.</summary>
       </Docs>
     </Member>
     <Member MemberName="Virtual">

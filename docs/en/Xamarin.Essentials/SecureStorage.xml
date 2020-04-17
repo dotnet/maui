@@ -65,8 +65,10 @@
       <Docs>
         <param name="key">Storage Key.</param>
         <summary>Gets the decrypted value for a given Key.</summary>
-        <returns>Decrypted string.</returns>
-        <remarks></remarks>
+        <returns>Decrypted string or null if key does not exist.</returns>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Remove">
@@ -88,7 +90,9 @@
         <param name="key">The key to remove.</param>
         <summary>Removes the encrypted key/value pair for the given key.</summary>
         <returns>Returns true if the key value pair was removed.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="RemoveAll">
@@ -106,7 +110,9 @@
       <Parameters />
       <Docs>
         <summary>Removes all of the stored encrypted key/value pairs.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="SetAsync">
@@ -129,8 +135,12 @@
         <param name="key">Storage Key.</param>
         <param name="value">The value to be encrypted.</param>
         <summary>Stores the value which is encrypted, for a given Key.</summary>
-        <returns></returns>
-        <remarks></remarks>
+        <returns>
+          <para />
+        </returns>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="SetAsync">
@@ -146,17 +156,21 @@
         <ReturnType>System.Threading.Tasks.Task</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="key" Type="System.String" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos" />
-        <Parameter Name="value" Type="System.String" Index="1" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos" />
-        <Parameter Name="accessible" Type="Security.SecAccessible" Index="2" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos" />
+        <Parameter Name="key" Type="System.String" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos" />
+        <Parameter Name="value" Type="System.String" Index="1" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos" />
+        <Parameter Name="accessible" Type="Security.SecAccessible" Index="2" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos" />
       </Parameters>
       <Docs>
         <param name="key">Storage Key.</param>
         <param name="value">The value to be encrypted.</param>
         <param name="accessible">The KeyChain accessibility to create the encrypted record with.</param>
         <summary>Stores the value which is encrypted, for a given Key. iOS override to specify SecAccessible for the KeyChain.</summary>
-        <returns></returns>
-        <remarks></remarks>
+        <returns>
+          <para></para>
+        </returns>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
   </Members>

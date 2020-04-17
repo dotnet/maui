@@ -41,11 +41,18 @@ namespace Xamarin.Essentials
                 phoneNumber = PhoneNumberUtils.FormatNumber(number);
 #pragma warning restore CS0618
 
-            phoneNumber = URLEncoder.Encode(phoneNumber, "UTF-8");
+            // if we are an extension then we need to encode
+            if (phoneNumber.Contains(',') || phoneNumber.Contains(';'))
+                phoneNumber = URLEncoder.Encode(phoneNumber, "UTF-8");
 
-            var dialIntent = ResolveDialIntent(phoneNumber)
-                .SetFlags(ActivityFlags.ClearTop)
-                .SetFlags(ActivityFlags.NewTask);
+            var dialIntent = ResolveDialIntent(phoneNumber);
+
+            var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
+#if __ANDROID_24__
+            if (Platform.HasApiLevelN)
+                flags |= ActivityFlags.LaunchAdjacent;
+#endif
+            dialIntent.SetFlags(flags);
 
             Platform.AppContext.StartActivity(dialIntent);
         }

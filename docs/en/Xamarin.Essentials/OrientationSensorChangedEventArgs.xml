@@ -12,7 +12,9 @@
   <Interfaces />
   <Docs>
     <summary>Orientation event args when reading changes.</summary>
-    <remarks></remarks>
+    <remarks>
+      <para></para>
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -28,8 +30,8 @@
         <Parameter Name="reading" Type="Xamarin.Essentials.OrientationSensorData" />
       </Parameters>
       <Docs>
-        <param name="reading">To be added.</param>
-        <summary>To be added.</summary>
+        <param name="reading">Reading of the sensor data</param>
+        <summary>Public constructor</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -49,7 +51,7 @@
         <summary>Gets the reading when it changes.</summary>
         <value>The current Reading</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

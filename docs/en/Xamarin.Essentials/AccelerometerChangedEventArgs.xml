@@ -13,7 +13,7 @@
   <Docs>
     <summary>Event arguments containing the current reading.</summary>
     <remarks>
-      <para />
+      <para></para>
     </remarks>
   </Docs>
   <Members>
@@ -30,8 +30,8 @@
         <Parameter Name="reading" Type="Xamarin.Essentials.AccelerometerData" />
       </Parameters>
       <Docs>
-        <param name="reading">To be added.</param>
-        <summary>To be added.</summary>
+        <param name="reading">The accelerometer data reading.</param>
+        <summary>Public constructor that takes in a reading for event arguments.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -49,9 +49,9 @@
       </ReturnValue>
       <Docs>
         <summary>The current values of accelerometer.</summary>
-        <value>The readin.</value>
+        <value>The reading.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

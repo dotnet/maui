@@ -53,7 +53,7 @@
         <Attribute FrameworkAlternate="xamarin-essentials-android">
           <AttributeName>Android.Runtime.ResourceDesigner("Xamarin.Essentials.Resource", IsApplication=false)</AttributeName>
         </Attribute>
-        <Attribute FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos">
+        <Attribute FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos">
           <AttributeName>Foundation.LinkerSafe</AttributeName>
         </Attribute>
         <Attribute FrameworkAlternate="xamarin-essentials-ios">
@@ -87,13 +87,19 @@
           <AttributeName>System.Runtime.Versioning.TargetFramework("Xamarin.WatchOS,Version=v1.0", FrameworkDisplayName="Xamarin.WatchOS")</AttributeName>
         </Attribute>
         <Attribute FrameworkAlternate="xamarin-essentials-android">
-          <AttributeName>System.Reflection.AssemblyProduct("Xamarin.Essentials (MonoAndroid90)")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyProduct("Xamarin.Essentials (MonoAndroid10.0)")</AttributeName>
         </Attribute>
         <Attribute FrameworkAlternate="xamarin-essentials-android">
-          <AttributeName>System.Runtime.Versioning.TargetFramework("MonoAndroid,Version=v9.0", FrameworkDisplayName="Xamarin.Android v9.0 Support")</AttributeName>
+          <AttributeName>System.Runtime.Versioning.TargetFramework("MonoAndroid,Version=v10.0", FrameworkDisplayName="Xamarin.Android v10.0 Support")</AttributeName>
+        </Attribute>
+        <Attribute FrameworkAlternate="xamarin-essentials-macos">
+          <AttributeName>System.Reflection.AssemblyProduct("Xamarin.Essentials (Xamarin.Mac20)")</AttributeName>
+        </Attribute>
+        <Attribute FrameworkAlternate="xamarin-essentials-macos">
+          <AttributeName>System.Runtime.Versioning.TargetFramework("Xamarin.Mac,Version=v2.0", FrameworkDisplayName="Xamarin.Mac")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+f53016cb69904b13d54a592cd58cda29cc02230a")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+7ca82b58401f37750f9bc7e2c2003da56cc4dfa1")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>
@@ -107,7 +113,10 @@
       <Type Name="AccelerometerData" Kind="Structure" />
       <Type Name="ActivityState" Kind="Enumeration" />
       <Type Name="ActivityStateChangedEventArgs" Kind="Class" />
+      <Type Name="AltitudeReferenceSystem" Kind="Enumeration" />
       <Type Name="AppInfo" Kind="Class" />
+      <Type Name="AppleSignInAuthenticator" Kind="Class" />
+      <Type Name="AppleSignInAuthenticator+Options" Kind="Class" />
       <Type Name="AppTheme" Kind="Enumeration" />
       <Type Name="Barometer" Kind="Class" />
       <Type Name="BarometerChangedEventArgs" Kind="Class" />
@@ -117,6 +126,7 @@
       <Type Name="BatteryPowerSource" Kind="Enumeration" />
       <Type Name="BatteryState" Kind="Enumeration" />
       <Type Name="Browser" Kind="Class" />
+      <Type Name="BrowserLaunchFlags" Kind="Enumeration" />
       <Type Name="BrowserLaunchMode" Kind="Enumeration" />
       <Type Name="BrowserLaunchOptions" Kind="Class" />
       <Type Name="BrowserTitleMode" Kind="Enumeration" />
@@ -181,6 +191,34 @@
       <Type Name="OrientationSensorChangedEventArgs" Kind="Class" />
       <Type Name="OrientationSensorData" Kind="Structure" />
       <Type Name="PermissionException" Kind="Class" />
+      <Type Name="Permissions" Kind="Class" />
+      <Type Name="Permissions+BasePermission" Kind="Class" />
+      <Type Name="Permissions+BasePlatformPermission" Kind="Class" />
+      <Type Name="Permissions+Battery" Kind="Class" />
+      <Type Name="Permissions+CalendarRead" Kind="Class" />
+      <Type Name="Permissions+CalendarWrite" Kind="Class" />
+      <Type Name="Permissions+Camera" Kind="Class" />
+      <Type Name="Permissions+ContactsRead" Kind="Class" />
+      <Type Name="Permissions+ContactsWrite" Kind="Class" />
+      <Type Name="Permissions+EventPermissions" Kind="Class" />
+      <Type Name="Permissions+Flashlight" Kind="Class" />
+      <Type Name="Permissions+LaunchApp" Kind="Class" />
+      <Type Name="Permissions+LocationAlways" Kind="Class" />
+      <Type Name="Permissions+LocationWhenInUse" Kind="Class" />
+      <Type Name="Permissions+Maps" Kind="Class" />
+      <Type Name="Permissions+Media" Kind="Class" />
+      <Type Name="Permissions+Microphone" Kind="Class" />
+      <Type Name="Permissions+NetworkState" Kind="Class" />
+      <Type Name="Permissions+Phone" Kind="Class" />
+      <Type Name="Permissions+Photos" Kind="Class" />
+      <Type Name="Permissions+Reminders" Kind="Class" />
+      <Type Name="Permissions+Sensors" Kind="Class" />
+      <Type Name="Permissions+Sms" Kind="Class" />
+      <Type Name="Permissions+Speech" Kind="Class" />
+      <Type Name="Permissions+StorageRead" Kind="Class" />
+      <Type Name="Permissions+StorageWrite" Kind="Class" />
+      <Type Name="Permissions+Vibrate" Kind="Class" />
+      <Type Name="PermissionStatus" Kind="Enumeration" />
       <Type Name="PhoneDialer" Kind="Class" />
       <Type Name="PickerResultBase" Kind="Class" />
       <Type Name="PickOptions" Kind="Class" />
@@ -206,6 +244,9 @@
       <Type Name="UnitConverters" Kind="Class" />
       <Type Name="VersionTracking" Kind="Class" />
       <Type Name="Vibration" Kind="Class" />
+      <Type Name="WebAuthenticator" Kind="Class" />
+      <Type Name="WebAuthenticatorCallbackActivity" Kind="Class" />
+      <Type Name="WebAuthenticatorResult" Kind="Class" />
     </Namespace>
   </Types>
   <Title>Untitled</Title>
@@ -238,6 +279,28 @@
       <Targets>
         <Target Type="System.Drawing.Color" />
       </Targets>
+      <Member MemberName="GetComplementary">
+        <MemberSignature Language="C#" Value="public static System.Drawing.Color GetComplementary (this System.Drawing.Color color);" FrameworkAlternate="xamarin-essentials" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color GetComplementary(valuetype System.Drawing.Color color) cil managed" FrameworkAlternate="xamarin-essentials" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.GetComplementary(System.Drawing.Color)" FrameworkAlternate="xamarin-essentials" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.Color</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="color" Type="System.Drawing.Color" Index="0" FrameworkAlternate="xamarin-essentials" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="color">A color to obtain the complement for.</param>
+          <summary>Returns a new color that is on the opposite side of the color wheel from the original.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.ColorExtensions" Member="M:Xamarin.Essentials.ColorExtensions.GetComplementary(System.Drawing.Color)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="System.Drawing.Color" />
+      </Targets>
       <Member MemberName="MultiplyAlpha">
         <MemberSignature Language="C#" Value="public static System.Drawing.Color MultiplyAlpha (this System.Drawing.Color color, float percentage);" FrameworkAlternate="xamarin-essentials" />
         <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color MultiplyAlpha(valuetype System.Drawing.Color color, float32 percentage) cil managed" FrameworkAlternate="xamarin-essentials" />
@@ -262,6 +325,33 @@
       <Targets>
         <Target Type="System.Drawing.Color" />
       </Targets>
+      <Member MemberName="ToHsv">
+        <MemberSignature Language="C#" Value="public static ValueTuple&lt;double,double,double&gt; ToHsv (this System.Drawing.Color color);" FrameworkAlternate="xamarin-essentials" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.ValueTuple`3&lt;float64, float64, float64&gt; ToHsv(valuetype System.Drawing.Color color) cil managed" FrameworkAlternate="xamarin-essentials" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.ToHsv(System.Drawing.Color)" FrameworkAlternate="xamarin-essentials" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.ValueTuple&lt;System.Double,System.Double,System.Double&gt;</ReturnType>
+          <Attributes>
+            <Attribute FrameworkAlternate="xamarin-essentials">
+              <AttributeName>System.Runtime.CompilerServices.TupleElementNames(new System.String[] { "h", "s", "v" })</AttributeName>
+            </Attribute>
+          </Attributes>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="color" Type="System.Drawing.Color" Index="0" FrameworkAlternate="xamarin-essentials" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="color">The current color to manipulate.</param>
+          <summary>Convert a System.Drawing.Color struct into HSV Color.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.ColorExtensions" Member="M:Xamarin.Essentials.ColorExtensions.ToHsv(System.Drawing.Color)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="System.Drawing.Color" />
+      </Targets>
       <Member MemberName="ToInt">
         <MemberSignature Language="C#" Value="public static int ToInt (this System.Drawing.Color color);" FrameworkAlternate="xamarin-essentials" />
         <MemberSignature Language="ILAsm" Value=".method public static hidebysig int32 ToInt(valuetype System.Drawing.Color color) cil managed" FrameworkAlternate="xamarin-essentials" />
@@ -274,8 +364,8 @@
           <Parameter Name="color" Type="System.Drawing.Color" Index="0" FrameworkAlternate="xamarin-essentials" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="color">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="color">The color to convert</param>
+          <summary>Converts the current color to an interger</summary>
         </Docs>
         <Link Type="Xamarin.Essentials.ColorExtensions" Member="M:Xamarin.Essentials.ColorExtensions.ToInt(System.Drawing.Color)" />
       </Member>
@@ -287,7 +377,7 @@
     </ExtensionMethod>
     <ExtensionMethod>
       <Targets>
-        <Target Type="T:Android.Graphics.Color" />
+        <Target Type="Android.Graphics.Color" />
       </Targets>
       <Member MemberName="ToSystemColor">
         <MemberSignature Language="C#" Value="public static System.Drawing.Color ToSystemColor (this Android.Graphics.Color color);" />
@@ -305,6 +395,28 @@
           <summary>Converts the color to the system specific color.</summary>
         </Docs>
         <Link Type="Xamarin.Essentials.ColorExtensions" Member="M:Xamarin.Essentials.ColorExtensions.ToSystemColor(Android.Graphics.Color)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:AppKit.NSColor" />
+      </Targets>
+      <Member MemberName="ToSystemColor">
+        <MemberSignature Language="C#" Value="public static System.Drawing.Color ToSystemColor (this AppKit.NSColor color);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color ToSystemColor(class AppKit.NSColor color) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorExtensions.ToSystemColor(AppKit.NSColor)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Drawing.Color</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="color" Type="AppKit.NSColor" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-macos" />
+        </Parameters>
+        <Docs>
+          <param name="color">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.ColorExtensions" Member="M:Xamarin.Essentials.ColorExtensions.ToSystemColor(AppKit.NSColor)" />
       </Member>
     </ExtensionMethod>
     <ExtensionMethod>
@@ -585,8 +697,8 @@
           <Parameter Name="placemark" Type="Xamarin.Essentials.Placemark" Index="0" FrameworkAlternate="xamarin-essentials" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="placemark">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="placemark">The placemark to open the map to.</param>
+          <summary>Open the map to the placemark.</summary>
         </Docs>
         <Link Type="Xamarin.Essentials.PlacemarkExtensions" Member="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark)" />
       </Member>
@@ -608,9 +720,9 @@
           <Parameter Name="options" Type="Xamarin.Essentials.MapLaunchOptions" Index="1" FrameworkAlternate="xamarin-essentials" />
         </Parameters>
         <Docs>
-          <param name="placemark">To be added.</param>
-          <param name="options">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="placemark">A placemark to open the map to.</param>
+          <param name="options">Options for opening the map.</param>
+          <summary>Open the map to the placemark with options.</summary>
         </Docs>
         <Link Type="Xamarin.Essentials.PlacemarkExtensions" Member="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapLaunchOptions)" />
       </Member>
@@ -632,7 +744,7 @@
     </ExtensionMethod>
     <ExtensionMethod>
       <Targets>
-        <Target Type="T:Android.Graphics.Point" />
+        <Target Type="Android.Graphics.Point" />
       </Targets>
       <Member MemberName="ToSystemPoint">
         <MemberSignature Language="C#" Value="public static System.Drawing.Point ToSystemPoint (this Android.Graphics.Point point);" />
@@ -665,7 +777,7 @@
           <ReturnType>System.Drawing.Point</ReturnType>
         </ReturnValue>
         <Parameters>
-          <Parameter Name="point" Type="CoreGraphics.CGPoint" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos" />
+          <Parameter Name="point" Type="CoreGraphics.CGPoint" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos" />
         </Parameters>
         <Docs>
           <param name="point">The point to convert.</param>
@@ -698,7 +810,7 @@
     </ExtensionMethod>
     <ExtensionMethod>
       <Targets>
-        <Target Type="T:Android.Graphics.PointF" />
+        <Target Type="Android.Graphics.PointF" />
       </Targets>
       <Member MemberName="ToSystemPointF">
         <MemberSignature Language="C#" Value="public static System.Drawing.PointF ToSystemPointF (this Android.Graphics.PointF point);" />
@@ -731,7 +843,7 @@
           <ReturnType>System.Drawing.PointF</ReturnType>
         </ReturnValue>
         <Parameters>
-          <Parameter Name="point" Type="CoreGraphics.CGPoint" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos" />
+          <Parameter Name="point" Type="CoreGraphics.CGPoint" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos" />
         </Parameters>
         <Docs>
           <param name="point">The point to convert.</param>
@@ -779,7 +891,7 @@
     </ExtensionMethod>
     <ExtensionMethod>
       <Targets>
-        <Target Type="T:Android.Graphics.Rect" />
+        <Target Type="Android.Graphics.Rect" />
       </Targets>
       <Member MemberName="ToSystemRectangle">
         <MemberSignature Language="C#" Value="public static System.Drawing.Rectangle ToSystemRectangle (this Android.Graphics.Rect rect);" />
@@ -812,7 +924,7 @@
           <ReturnType>System.Drawing.Rectangle</ReturnType>
         </ReturnValue>
         <Parameters>
-          <Parameter Name="rect" Type="CoreGraphics.CGRect" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos" />
+          <Parameter Name="rect" Type="CoreGraphics.CGRect" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos" />
         </Parameters>
         <Docs>
           <param name="rect">The base rectangle to convert.</param>
@@ -845,7 +957,7 @@
     </ExtensionMethod>
     <ExtensionMethod>
       <Targets>
-        <Target Type="T:Android.Graphics.RectF" />
+        <Target Type="Android.Graphics.RectF" />
       </Targets>
       <Member MemberName="ToSystemRectangleF">
         <MemberSignature Language="C#" Value="public static System.Drawing.RectangleF ToSystemRectangleF (this Android.Graphics.RectF rect);" />
@@ -878,7 +990,7 @@
           <ReturnType>System.Drawing.RectangleF</ReturnType>
         </ReturnValue>
         <Parameters>
-          <Parameter Name="rect" Type="CoreGraphics.CGRect" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos" />
+          <Parameter Name="rect" Type="CoreGraphics.CGRect" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos" />
         </Parameters>
         <Docs>
           <param name="rect">The base rectangle to convert.</param>
@@ -926,7 +1038,7 @@
     </ExtensionMethod>
     <ExtensionMethod>
       <Targets>
-        <Target Type="T:Android.Util.Size" />
+        <Target Type="Android.Util.Size" />
       </Targets>
       <Member MemberName="ToSystemSize">
         <MemberSignature Language="C#" Value="public static System.Drawing.Size ToSystemSize (this Android.Util.Size size);" />
@@ -951,15 +1063,15 @@
         <Target Type="T:CoreGraphics.CGSize" />
       </Targets>
       <Member MemberName="ToSystemSize">
-        <MemberSignature Language="C#" Value="public static System.Drawing.Size ToSystemSize (this CoreGraphics.CGSize size);" />
-        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Size ToSystemSize(valuetype CoreGraphics.CGSize size) cil managed" />
-        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.ToSystemSize(CoreGraphics.CGSize)" />
+        <MemberSignature Language="C#" Value="public static System.Drawing.Size ToSystemSize (this CoreGraphics.CGSize size);" FrameworkAlternate="xamarin-essentials-ios" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Size ToSystemSize(valuetype CoreGraphics.CGSize size) cil managed" FrameworkAlternate="xamarin-essentials-ios" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.ToSystemSize(CoreGraphics.CGSize)" FrameworkAlternate="xamarin-essentials-ios" />
         <MemberType>ExtensionMethod</MemberType>
         <ReturnValue>
           <ReturnType>System.Drawing.Size</ReturnType>
         </ReturnValue>
         <Parameters>
-          <Parameter Name="size" Type="CoreGraphics.CGSize" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios" />
+          <Parameter Name="size" Type="CoreGraphics.CGSize" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-macos" />
         </Parameters>
         <Docs>
           <param name="size">Base size to convert.</param>
@@ -992,7 +1104,7 @@
     </ExtensionMethod>
     <ExtensionMethod>
       <Targets>
-        <Target Type="T:Android.Util.SizeF" />
+        <Target Type="Android.Util.SizeF" />
       </Targets>
       <Member MemberName="ToSystemSizeF">
         <MemberSignature Language="C#" Value="public static System.Drawing.SizeF ToSystemSizeF (this Android.Util.SizeF size);" />
@@ -1017,15 +1129,15 @@
         <Target Type="T:CoreGraphics.CGSize" />
       </Targets>
       <Member MemberName="ToSystemSizeF">
-        <MemberSignature Language="C#" Value="public static System.Drawing.SizeF ToSystemSizeF (this CoreGraphics.CGSize size);" />
-        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.SizeF ToSystemSizeF(valuetype CoreGraphics.CGSize size) cil managed" />
-        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.ToSystemSizeF(CoreGraphics.CGSize)" />
+        <MemberSignature Language="C#" Value="public static System.Drawing.SizeF ToSystemSizeF (this CoreGraphics.CGSize size);" FrameworkAlternate="xamarin-essentials-ios" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.SizeF ToSystemSizeF(valuetype CoreGraphics.CGSize size) cil managed" FrameworkAlternate="xamarin-essentials-ios" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SizeExtensions.ToSystemSizeF(CoreGraphics.CGSize)" FrameworkAlternate="xamarin-essentials-ios" />
         <MemberType>ExtensionMethod</MemberType>
         <ReturnValue>
           <ReturnType>System.Drawing.SizeF</ReturnType>
         </ReturnValue>
         <Parameters>
-          <Parameter Name="size" Type="CoreGraphics.CGSize" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios" />
+          <Parameter Name="size" Type="CoreGraphics.CGSize" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-macos" />
         </Parameters>
         <Docs>
           <param name="size">Base size to convert.</param>

@@ -11,7 +11,9 @@
   </Base>
   <Docs>
     <summary>Various states of the connection to the internet.</summary>
-    <remarks></remarks>
+    <remarks>
+      <para />
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName="ConstrainedInternet">

@@ -11,6 +11,11 @@
     <StackLayout Padding="12" Spacing="6">
         <Label Text="Easily save files to app data." FontAttributes="Bold" />
 
+        <Label Text="Paths:" FontAttributes="Bold" Margin="0,6,0,0" />
+        <Label Text="{Binding CacheDirectory, StringFormat='Cache: {0}'}" />
+        <Label Text="{Binding AppDataDirectory, StringFormat='App Data: {0}'}" />
+
+        <Label Text="Operations:" FontAttributes="Bold" Margin="0,6,0,0" />
         <StackLayout Orientation="Horizontal" Spacing="6">
             <Button Text="Load" Command="{Binding LoadFileCommand}" HorizontalOptions="FillAndExpand" />
             <Button Text="Save" Command="{Binding SaveFileCommand}" HorizontalOptions="FillAndExpand" />

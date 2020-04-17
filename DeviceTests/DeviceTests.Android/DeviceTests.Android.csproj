@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>DeviceTests.Droid</RootNamespace>
     <AssemblyName>XamarinEssentialsDeviceTestsAndroid</AssemblyName>
-    <TargetFrameworkVersion>v9.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v10.0</TargetFrameworkVersion>
     <AndroidApplication>True</AndroidApplication>
     <AndroidResgenFile>Resources\Resource.designer.cs</AndroidResgenFile>
     <AndroidResgenClass>Resource</AndroidResgenClass>
@@ -57,9 +57,13 @@
     <PackageReference Include="Xamarin.Android.Support.v7.MediaRouter" Version="28.0.0.3" />
     <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="28.0.0.3" />
     <PackageReference Include="Xamarin.Android.Support.Core.Utils" Version="28.0.0.3" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.1.0" />
+    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.0.0" />
+    <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" Version="1.0.0" />
+    <PackageReference Include="Xamarin.AndroidX.MediaRouter" Version="1.1.0" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <PackageReference Include="xunit" Version="2.4.1" />
-    <PackageReference Include="xunit.runner.devices" Version="2.3.3" />
+    <PackageReference Include="xunit.runner.devices" Version="2.5.25" />
     <PackageReference Include="UnitTests.HeadlessRunner" Version="2.0.0" />
   </ItemGroup>
   <ItemGroup>

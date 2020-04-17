@@ -12,7 +12,9 @@
   <Interfaces />
   <Docs>
     <summary>Easily convert between geographic coordinated and place names.</summary>
-    <remarks></remarks>
+    <remarks>
+      <para></para>
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName="GetLocationsAsync">
@@ -36,7 +38,9 @@
         <returns>
           <para>List of locations that best match the address or null if none found.</para>
         </returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="GetPlacemarksAsync">
@@ -58,7 +62,9 @@
         <param name="location">Location to find placemarks for.</param>
         <summary>Retrieve placemarks for a given location.</summary>
         <returns>List of placemarks or null if no placemarks are found.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="GetPlacemarksAsync">
@@ -82,7 +88,9 @@
         <param name="longitude">Longitude of the location.</param>
         <summary>Retrieve location for a given address.</summary>
         <returns>List of placemarks or null if no placemarks are found.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
   </Members>

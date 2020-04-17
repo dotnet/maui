@@ -15,14 +15,14 @@
     </Interface>
   </Interfaces>
   <Attributes>
-    <Attribute FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp;xamarin-essentials-tvos;xamarin-essentials-watchos">
+    <Attribute FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos">
       <AttributeName>System.Runtime.CompilerServices.IsReadOnly</AttributeName>
     </Attribute>
   </Attributes>
   <Docs>
     <summary>Sensor data for orientation.</summary>
     <remarks>
-      <para />
+      <para></para>
     </remarks>
   </Docs>
   <Members>
@@ -42,11 +42,11 @@
         <Parameter Name="w" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="x">To be added.</param>
-        <param name="y">To be added.</param>
-        <param name="z">To be added.</param>
-        <param name="w">To be added.</param>
-        <summary>To be added.</summary>
+        <param name="x">X data</param>
+        <param name="y">Y data</param>
+        <param name="z">Z data</param>
+        <param name="w">W data</param>
+        <summary>Public constructor</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -66,11 +66,11 @@
         <Parameter Name="w" Type="System.Single" />
       </Parameters>
       <Docs>
-        <param name="x">To be added.</param>
-        <param name="y">To be added.</param>
-        <param name="z">To be added.</param>
-        <param name="w">To be added.</param>
-        <summary>To be added.</summary>
+        <param name="x">X data</param>
+        <param name="y">Y data</param>
+        <param name="z">Z data</param>
+        <param name="w">W data</param>
+        <summary>Public constructor</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -94,7 +94,7 @@
         <summary>If equal to another object</summary>
         <returns>If equal</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -121,7 +121,7 @@
         <summary>Compares the underlying Quaternion instances.</summary>
         <returns>True if they match, otherwise false.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -142,7 +142,7 @@
         <summary>Get the hash code for object.</summary>
         <returns>The hash code</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -168,7 +168,7 @@
         <summary>Equality operator for equals</summary>
         <returns>If equal</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -194,7 +194,7 @@
         <summary>Inequality check</summary>
         <returns>If not equal</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -214,7 +214,7 @@
         <summary>Gets the current orientation that represents a Quaternion.</summary>
         <value>Gets the current orientation</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -232,8 +232,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <summary>A string representation of the data.</summary>
+        <returns>A string representation of the data.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

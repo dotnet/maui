@@ -25,13 +25,13 @@
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <PackageReference Include="Xamarin.Forms" Version="4.2.0.848062" />
     <PackageReference Include="xunit" Version="2.4.1" />
-    <PackageReference Include="xunit.runner.devices" Version="2.3.3" />
+    <PackageReference Include="xunit.runner.devices" Version="2.5.25" />
     <PackageReference Include="UnitTests.HeadlessRunner" Version="2.0.0" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <ProjectReference Include="..\..\Xamarin.Essentials\Xamarin.Essentials.csproj" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('uap10.0')) ">
-    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.1.9" />
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.2.9" />
     <SDKReference Include="WindowsMobile, Version=10.0.16299.0">
       <Name>Windows Mobile Extensions for the UWP</Name>
     </SDKReference>

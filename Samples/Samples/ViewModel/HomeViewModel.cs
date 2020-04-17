@@ -61,6 +61,12 @@ namespace Samples.ViewModel
                     "Quickly and easily use the clipboard.",
                     new[] { "clipboard", "copy", "paste" }),
                 new SampleItem(
+                    "🎨",
+                    "Color Converters",
+                    typeof(ColorConvertersPage),
+                    "Convert and adjust colors.",
+                    new[] { "color", "drawing", "style" }),
+                new SampleItem(
                     "🧭",
                     "Compass",
                     typeof(CompassPage),
@@ -204,6 +210,12 @@ namespace Samples.ViewModel
                     typeof(VibrationPage),
                     "Quickly and easily make the device vibrate.",
                     new[] { "vibration", "vibrate", "hardware", "device" }),
+                new SampleItem(
+                    "🔓",
+                    "Web Authenticator",
+                    typeof(WebAuthenticatorPage),
+                    "Quickly and easily authenticate and wait for a callback.",
+                    new[] { "auth", "authenticate", "authenticator", "web", "webauth" }),
             };
             filteredItems = samples;
             filterText = string.Empty;

@@ -13,7 +13,7 @@
   <Docs>
     <summary>Event argments when an Android Activity's state changes.</summary>
     <remarks>
-      <para />
+      <para></para>
     </remarks>
   </Docs>
   <Members>
@@ -33,7 +33,7 @@
         <summary>Gets the Activity of which the state changed.</summary>
         <value>The Activity for the event.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -53,7 +53,7 @@
         <summary>The state of the Activity.</summary>
         <value>The state of the Activity for the event.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

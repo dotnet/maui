@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Windows.Networking.Connectivity;
 
@@ -47,10 +48,14 @@ namespace Xamarin.Essentials
                 {
                     var type = ConnectionProfile.Unknown;
 
-                    if (interfaceInfo.NetworkAdapter != null)
+                    try
                     {
+                        var adapter = interfaceInfo.NetworkAdapter;
+                        if (adapter == null)
+                            continue;
+
                         // http://www.iana.org/assignments/ianaiftype-mib/ianaiftype-mib
-                        switch (interfaceInfo.NetworkAdapter.IanaInterfaceType)
+                        switch (adapter.IanaInterfaceType)
                         {
                             case 6:
                                 type = ConnectionProfile.Ethernet;
@@ -67,6 +72,10 @@ namespace Xamarin.Essentials
                             case 281:
                                 continue;
                         }
+                    }
+                    catch (System.Exception ex)
+                    {
+                        Debug.WriteLine($"Unable to get Network Adapter, returning Unknown: {ex.Message}");
                     }
 
                     yield return type;

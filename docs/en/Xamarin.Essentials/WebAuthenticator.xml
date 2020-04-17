@@ -1,0 +1,45 @@
+<Type Name="WebAuthenticator" FullName="Xamarin.Essentials.WebAuthenticator">
+  <TypeSignature Language="C#" Value="public static class WebAuthenticator" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit WebAuthenticator extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.WebAuthenticator" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>A web navigation API intended to be used for Authentication with external web services such as OAuth.</summary>
+    <remarks>This API helps with navigating to a start URL and waiting for a callback URL to the app.  Your app must be registered to handle the callback scheme you provide in the call to authenticate.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="AuthenticateAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;Xamarin.Essentials.WebAuthenticatorResult&gt; AuthenticateAsync (Uri url, Uri callbackUrl);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class Xamarin.Essentials.WebAuthenticatorResult&gt; AuthenticateAsync(class System.Uri url, class System.Uri callbackUrl) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.WebAuthenticator.AuthenticateAsync(System.Uri,System.Uri)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;Xamarin.Essentials.WebAuthenticatorResult&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="url" Type="System.Uri" />
+        <Parameter Name="callbackUrl" Type="System.Uri" />
+      </Parameters>
+      <Docs>
+        <param name="url">Url to navigate to, beginning the authentication flow.</param>
+        <param name="callbackUrl">Expected callback url that the navigation flow will eventually redirect to.</param>
+        <summary>Begin an authentication flow by navigating to the specified url and waiting for a callback/redirect to the callbackUrl scheme.</summary>
+        <returns>Returns a result parsed out from the callback url.</returns>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

@@ -43,7 +43,9 @@
       <Parameters />
       <Docs>
         <summary>Clears all keys and values.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Clear">
@@ -64,7 +66,9 @@
       <Docs>
         <param name="sharedName">Shared container name.</param>
         <summary>Clears all keys and values.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ContainsKey">
@@ -86,7 +90,9 @@
         <param name="key">Preference key.</param>
         <summary>Checks the existence of a given key.</summary>
         <returns>Returns true if the key exists.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ContainsKey">
@@ -110,7 +116,9 @@
         <param name="sharedName">Shared container name.</param>
         <summary>Checks the existence of a given key.</summary>
         <returns>Returns true if the key exists.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
@@ -134,7 +142,9 @@
         <param name="defaultValue">Default value to return if the key does not exist.</param>
         <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
         <returns>Value for the given key, or the default if it does not exist.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
@@ -158,7 +168,9 @@
         <param name="defaultValue">Default value to return if the key does not exist.</param>
         <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
         <returns>Value for the given key, or the default if it does not exist.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
@@ -182,7 +194,9 @@
         <param name="defaultValue">Default value to return if the key does not exist.</param>
         <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
         <returns>Value for the given key, or the default if it does not exist.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
@@ -206,7 +220,9 @@
         <param name="defaultValue">Default value to return if the key does not exist.</param>
         <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
         <returns>Value for the given key, or the default if it does not exist.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
@@ -230,7 +246,9 @@
         <param name="defaultValue">Default value to return if the key does not exist.</param>
         <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
         <returns>Value for the given key, or the default if it does not exist.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
@@ -254,7 +272,9 @@
         <param name="defaultValue">Default value to return if the key does not exist.</param>
         <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
         <returns>Value for the given key, or the default if it does not exist.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
@@ -278,7 +298,9 @@
         <param name="defaultValue">Default value to return if the key does not exist.</param>
         <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
         <returns>Value for the given key, or the default if it does not exist.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
@@ -305,7 +327,7 @@
         <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
         <returns>Value for the given key, or the default if it does not exist.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -333,7 +355,7 @@
         <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
         <returns>Value for the given key, or the default if it does not exist.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -360,7 +382,9 @@
         <param name="sharedName">Shared container key.</param>
         <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
         <returns>Value for the given key, or the default if it does not exist.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
@@ -386,7 +410,9 @@
         <param name="sharedName">Shared container key.</param>
         <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
         <returns>Value for the given key, or the default if it does not exist.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
@@ -412,7 +438,9 @@
         <param name="sharedName">Shared container key.</param>
         <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
         <returns>Value for the given key, or the default if it does not exist.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
@@ -438,7 +466,9 @@
         <param name="sharedName">Shared container key.</param>
         <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
         <returns>Value for the given key, or the default if it does not exist.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
@@ -464,7 +494,9 @@
         <param name="sharedName">Shared container key.</param>
         <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
         <returns>Value for the given key, or the default if it does not exist.</returns>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Remove">
@@ -485,7 +517,9 @@
       <Docs>
         <param name="key">Preference key.</param>
         <summary>Removes a key and its associated value if it exists.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Remove">
@@ -509,7 +543,7 @@
         <param name="sharedName">Shared container name.</param>
         <summary>Removes a key and its associated value if it exists.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -534,7 +568,7 @@
         <param name="value">Preference value.</param>
         <summary>Sets a value for a given key.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -559,7 +593,7 @@
         <param name="value">Preference value.</param>
         <summary>Sets a value for a given key.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -584,7 +618,7 @@
         <param name="value">Preference value.</param>
         <summary>Sets a value for a given key.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -609,7 +643,7 @@
         <param name="value">Preference value.</param>
         <summary>Sets a value for a given key.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -634,7 +668,7 @@
         <param name="value">Preference value.</param>
         <summary>Sets a value for a given key.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -659,7 +693,7 @@
         <param name="value">Preference value.</param>
         <summary>Sets a value for a given key.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -684,7 +718,7 @@
         <param name="value">Preference value.</param>
         <summary>Sets a value for a given key.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -710,7 +744,9 @@
         <param name="value">Preference value.</param>
         <param name="sharedName">Shared container name.</param>
         <summary>Sets a value for a given key.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Set">
@@ -735,7 +771,9 @@
         <param name="value">Preference value.</param>
         <param name="sharedName">Shared container name.</param>
         <summary>Sets a value for a given key.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Set">
@@ -760,7 +798,9 @@
         <param name="value">Preference value.</param>
         <param name="sharedName">Shared container name.</param>
         <summary>Sets a value for a given key.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Set">
@@ -785,7 +825,9 @@
         <param name="value">Preference value.</param>
         <param name="sharedName">Shared container name.</param>
         <summary>Sets a value for a given key.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Set">
@@ -810,7 +852,9 @@
         <param name="value">Preference value.</param>
         <param name="sharedName">Shared container name.</param>
         <summary>Sets a value for a given key.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Set">
@@ -835,7 +879,9 @@
         <param name="value">Preference value.</param>
         <param name="sharedName">Shared container name.</param>
         <summary>Sets a value for a given key.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Set">
@@ -860,7 +906,9 @@
         <param name="value">Preference value.</param>
         <param name="sharedName">Shared container name.</param>
         <summary>Sets a value for a given key.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
   </Members>

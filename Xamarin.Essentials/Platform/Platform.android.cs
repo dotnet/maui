@@ -12,7 +12,6 @@ using Android.Locations;
 using Android.Net;
 using Android.Net.Wifi;
 using Android.OS;
-using Android.Support.V4.Content;
 using AndroidUri = Android.Net.Uri;
 
 namespace Xamarin.Essentials
@@ -79,6 +78,9 @@ namespace Xamarin.Essentials
 
         public static void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults) =>
             Permissions.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        public static void OnResume() =>
+            WebAuthenticator.OnResume(null);
 
         internal static bool HasSystemFeature(string systemFeature)
         {
@@ -183,8 +185,20 @@ namespace Xamarin.Essentials
             false;
 #endif
 
+        internal static bool HasApiLevelQ =>
+#if __ANDROID_29__
+            HasApiLevel(BuildVersionCodes.Q);
+#else
+            false;
+#endif
+
+        static int? sdkInt;
+
+        internal static int SdkInt
+            => sdkInt ??= (int)Build.VERSION.SdkInt;
+
         internal static bool HasApiLevel(BuildVersionCodes versionCode) =>
-            (int)Build.VERSION.SdkInt >= (int)versionCode;
+            SdkInt >= (int)versionCode;
 
         internal static CameraManager CameraManager =>
             AppContext.GetSystemService(Context.CameraService) as CameraManager;

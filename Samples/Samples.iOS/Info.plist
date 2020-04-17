@@ -63,6 +63,16 @@
 				<string>appcenter-APP_SECRET</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>xamarinessentials</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>xamarinessentials</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+		</dict>
 	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>Camera Photos</string>

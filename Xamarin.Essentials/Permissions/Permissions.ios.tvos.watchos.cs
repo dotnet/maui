@@ -100,7 +100,7 @@ namespace Xamarin.Essentials
                 EnsureDeclared();
 
                 var status = GetLocationStatus(true);
-                if (status == PermissionStatus.Granted)
+                if (status == PermissionStatus.Granted || status == PermissionStatus.Disabled)
                     return status;
 
                 EnsureMainThread();
@@ -125,9 +125,11 @@ namespace Xamarin.Essentials
                 };
             }
 
+            static CLLocationManager locationManager;
+
             internal static Task<PermissionStatus> RequestLocationAsync(bool whenInUse, Action<CLLocationManager> invokeRequest)
             {
-                var locationManager = new CLLocationManager();
+                locationManager = new CLLocationManager();
 
                 var tcs = new TaskCompletionSource<PermissionStatus>(locationManager);
 
@@ -155,6 +157,8 @@ namespace Xamarin.Essentials
                                 {
                                     locationManager.AuthorizationChanged -= LocationAuthCallback;
                                     tcs.TrySetResult(GetLocationStatus(whenInUse));
+                                    locationManager.Dispose();
+                                    locationManager = null;
                                 }
                             });
                             return;
@@ -164,6 +168,8 @@ namespace Xamarin.Essentials
                     locationManager.AuthorizationChanged -= LocationAuthCallback;
 
                     tcs.TrySetResult(GetLocationStatus(whenInUse));
+                    locationManager.Dispose();
+                    locationManager = null;
                 }
             }
         }
@@ -201,6 +207,10 @@ namespace Xamarin.Essentials
         }
 
         public partial class Sensors : BasePlatformPermission
+        {
+        }
+
+        public partial class Speech : BasePlatformPermission
         {
         }
 
