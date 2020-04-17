@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 using System.Windows.Input;
+using Samples.ViewModel;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace Samples.Model
 {
-    public class PermissionItem : INotifyPropertyChanged
+    public class PermissionItem : ObservableObject
     {
         public PermissionItem(string title, Permissions.BasePermission permission)
         {
@@ -18,6 +19,8 @@ namespace Samples.Model
         }
 
         public string Title { get; set; }
+
+        public string Rationale { get; set; }
 
         public PermissionStatus Status { get; set; }
 
@@ -29,7 +32,7 @@ namespace Samples.Model
                 try
                 {
                     Status = await Permission.CheckStatusAsync();
-                    NotifyPropertyChanged(nameof(Status));
+                    OnPropertyChanged(nameof(Status));
                 }
                 catch (Exception ex)
                 {
@@ -43,7 +46,7 @@ namespace Samples.Model
                 try
                 {
                     Status = await Permission.RequestAsync();
-                    NotifyPropertyChanged(nameof(Status));
+                    OnPropertyChanged(nameof(Status));
                 }
                 catch (Exception ex)
                 {
@@ -51,9 +54,18 @@ namespace Samples.Model
                 }
             });
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public void NotifyPropertyChanged(string name)
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        public ICommand ShouldShowRationaleCommand =>
+            new Command(() =>
+            {
+                try
+                {
+                    Rationale = $"Should show rationale: {Permission.ShouldShowRationale()}";
+                    OnPropertyChanged(nameof(Rationale));
+                }
+                catch (Exception ex)
+                {
+                    MessagingCenter.Send<PermissionItem, Exception>(this, nameof(PermissionException), ex);
+                }
+            });
     }
 }

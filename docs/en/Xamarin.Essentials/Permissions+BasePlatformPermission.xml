@@ -165,5 +165,24 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="ShouldShowRationale">
+      <MemberSignature Language="C#" Value="public override bool ShouldShowRationale ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance bool ShouldShowRationale() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Permissions.BasePlatformPermission.ShouldShowRationale" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Gets whether you should show UI with rationale for requesting a permission.</summary>
+        <returns>A boolean if the user has declined the permission in the past and UI should be shown.</returns>
+        <remarks>Only relevant on Android after a user had denied a permission one time.</remarks>
+      </Docs>
+    </Member>
   </Members>
 </Type>

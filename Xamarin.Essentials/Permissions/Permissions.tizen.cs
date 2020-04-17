@@ -79,6 +79,8 @@ namespace Xamarin.Essentials
                         throw new PermissionException($"You need to declare the privilege: `{tizenPrivilege}` in your tizen-manifest.xml");
                 }
             }
+
+            public override bool ShouldShowRationale() => false;
         }
 
         public partial class Battery : BasePlatformPermission
