@@ -31,8 +31,7 @@ namespace Xamarin.Essentials
 
             // the location manager requires an active run loop
             // so just use the main loop
-            CLLocationManager manager = null;
-            NSRunLoop.Main.InvokeOnMainThread(() => manager = new CLLocationManager());
+            var manager = MainThread.InvokeOnMainThread(() => new CLLocationManager());
 
             var tcs = new TaskCompletionSource<CLLocation>(manager);
 

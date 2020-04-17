@@ -210,6 +210,10 @@ namespace Xamarin.Essentials
         {
         }
 
+        public partial class Speech : BasePlatformPermission
+        {
+        }
+
         public partial class Sms : BasePlatformPermission
         {
         }
