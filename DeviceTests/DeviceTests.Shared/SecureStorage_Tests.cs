@@ -166,12 +166,11 @@ namespace DeviceTests
         [InlineData("test-key", "value1")]
         public async Task Legacy_Key(string key, string data)
         {
-            byte[] encryptedData = null;
             var ks = new AndroidKeyStore(Platform.AppContext, SecureStorage.Alias, SecureStorage.AlwaysUseAsymmetricKeyStorage);
-            encryptedData = ks.Encrypt(data);
+            var encryptedData = ks.Encrypt(data);
 
             var encStr = System.Convert.ToBase64String(encryptedData);
-            Preferences.Set(Xamarin.Essentials.Utils.Md5Hash(key), encStr, SecureStorage.Alias);
+            Preferences.Set(SecureStorage.Md5Hash(key), encStr, SecureStorage.Alias);
 
             // Ensure we read back out the right key
             var c = await SecureStorage.GetAsync(key);
