@@ -19,8 +19,8 @@
       <MemberSignature Language="C#" Value="public BasePlatformPermission ();" FrameworkAlternate="xamarin-essentials" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" FrameworkAlternate="xamarin-essentials" />
       <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Permissions.BasePlatformPermission.#ctor" />
-      <MemberSignature Language="C#" Value="protected BasePlatformPermission ();" FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-macos;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-uwp" />
-      <MemberSignature Language="ILAsm" Value=".method familyhidebysig specialname rtspecialname instance void .ctor() cil managed" FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-macos;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-uwp" />
+      <MemberSignature Language="C#" Value="protected BasePlatformPermission ();" FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-macos;xamarin-essentials-watchos;xamarin-essentials-uwp" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig specialname rtspecialname instance void .ctor() cil managed" FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-macos;xamarin-essentials-watchos;xamarin-essentials-uwp" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>

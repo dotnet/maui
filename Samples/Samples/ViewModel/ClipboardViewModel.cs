@@ -34,24 +34,12 @@ namespace Samples.ViewModel
 
         public override void OnAppearing()
         {
-            try
-            {
-                Clipboard.ClipboardContentChanged += OnClipboardContentChanged;
-            }
-            catch (FeatureNotSupportedException)
-            {
-            }
+            Clipboard.ClipboardContentChanged += OnClipboardContentChanged;
         }
 
         public override void OnDisappearing()
         {
-            try
-            {
-                Clipboard.ClipboardContentChanged -= OnClipboardContentChanged;
-            }
-            catch (FeatureNotSupportedException)
-            {
-            }
+            Clipboard.ClipboardContentChanged -= OnClipboardContentChanged;
         }
 
         void OnClipboardContentChanged(object sender, EventArgs args)
