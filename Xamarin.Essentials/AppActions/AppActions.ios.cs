@@ -15,13 +15,7 @@ namespace Xamarin.Essentials
             UIApplication.SharedApplication.ShortcutItems = actions.Select(a => a.ToShortcutItem()).ToArray();
 
         static AppAction ToAppAction(this UIApplicationShortcutItem shortcutItem) =>
-            new AppAction
-            {
-                ActionType = shortcutItem.Type,
-                Title = shortcutItem.LocalizedTitle,
-                Subtitle = shortcutItem.LocalizedSubtitle,
-                Icon = null
-            };
+            new AppAction(shortcutItem.Type, shortcutItem.LocalizedTitle, shortcutItem.LocalizedSubtitle);
 
         static UIApplicationShortcutItem ToShortcutItem(this AppAction action) =>
             new UIApplicationShortcutItem(

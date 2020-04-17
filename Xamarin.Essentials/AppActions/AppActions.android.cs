@@ -18,13 +18,7 @@ namespace Xamarin.Essentials
             Platform.ShortcutManager.SetDynamicShortcuts(actions.Select(a => a.ToShortcutInfo()).ToList());
 
         static AppAction ToAppAction(this ShortcutInfo shortcutInfo) =>
-            new AppAction
-            {
-                ActionType = shortcutInfo.Id,
-                Title = shortcutInfo.ShortLabel,
-                Subtitle = shortcutInfo.LongLabel,
-                Icon = null
-            };
+            new AppAction(shortcutInfo.Id, shortcutInfo.ShortLabel, shortcutInfo.LongLabel);
 
         static ShortcutInfo ToShortcutInfo(this AppAction action)
         {

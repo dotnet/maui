@@ -14,14 +14,23 @@ namespace Xamarin.Essentials
 
     public class AppAction
     {
+        public AppAction(string actionType, string title, string subtitle = null, string icon = null, Uri uri = null)
+        {
+            ActionType = actionType;
+            Title = title;
+            Subtitle = subtitle;
+            Icon = icon;
+            Uri = uri;
+        }
+
         public string ActionType { get; set; }
 
         public string Title { get; set; }
 
         public string Subtitle { get; set; }
 
-        public string Icon { get; set; }
-
         public Uri Uri { get; set; }
+
+        internal string Icon { get; set; }
     }
 }
