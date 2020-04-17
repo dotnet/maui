@@ -25,17 +25,14 @@ namespace Xamarin.Essentials
             if (computerNameHandle == IntPtr.Zero)
                 return null;
 
-            var computerName = NSString.FromHandle(computerNameHandle).ToString();
-
             try
+            {
+                return NSString.FromHandle(computerNameHandle);
+            }
+            finally
             {
                 CFRelease(computerNameHandle);
             }
-            catch
-            {
-            }
-
-            return computerName;
         }
 
         static string GetVersionString()
