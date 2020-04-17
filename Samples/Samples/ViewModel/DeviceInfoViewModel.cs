@@ -33,11 +33,6 @@ namespace Samples.ViewModel
             base.OnAppearing();
             DeviceDisplay.MainDisplayInfoChanged += OnScreenMetricsChanged;
             ScreenMetrics = DeviceDisplay.MainDisplayInfo;
-
-            System.Threading.Tasks.Task.Run(() =>
-            {
-                var test = DeviceInfo.Idiom;
-            });
         }
 
         public override void OnDisappearing()

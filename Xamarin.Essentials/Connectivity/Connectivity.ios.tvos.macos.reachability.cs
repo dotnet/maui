@@ -33,8 +33,10 @@ namespace Xamarin.Essentials
                 if (!IsReachableWithoutRequiringConnection(flags))
                     return NetworkStatus.NotReachable;
 
+#if __IOS__
                 if ((flags & NetworkReachabilityFlags.IsWWAN) != 0)
                     return NetworkStatus.ReachableViaCarrierDataNetwork;
+#endif
 
                 return NetworkStatus.ReachableViaWiFiNetwork;
             }
@@ -46,9 +48,11 @@ namespace Xamarin.Essentials
 
             var defaultNetworkAvailable = IsNetworkAvailable(out var flags);
 
+#if __IOS__
             // If it's a WWAN connection..
             if ((flags & NetworkReachabilityFlags.IsWWAN) != 0)
                 status = NetworkStatus.ReachableViaCarrierDataNetwork;
+#endif
 
             // If the connection is reachable and no connection is required, then assume it's WiFi
             if (defaultNetworkAvailable)
@@ -73,12 +77,15 @@ namespace Xamarin.Essentials
 
             var defaultNetworkAvailable = IsNetworkAvailable(out var flags);
 
-            // If it's a WWAN connection..
+#if __IOS__
+            // If it's a WWAN connection.
             if ((flags & NetworkReachabilityFlags.IsWWAN) != 0)
             {
                 status.Add(NetworkStatus.ReachableViaCarrierDataNetwork);
             }
-            else if (defaultNetworkAvailable)
+#endif
+
+            if (defaultNetworkAvailable)
             {
                 status.Add(NetworkStatus.ReachableViaWiFiNetwork);
             }
@@ -113,10 +120,12 @@ namespace Xamarin.Essentials
             // Do we need a connection to reach it?
             var noConnectionRequired = (flags & NetworkReachabilityFlags.ConnectionRequired) == 0;
 
+#if __IOS__
             // Since the network stack will automatically try to get the WAN up,
             // probe that
             if ((flags & NetworkReachabilityFlags.IsWWAN) != 0)
                 noConnectionRequired = true;
+#endif
 
             return isReachable && noConnectionRequired;
         }

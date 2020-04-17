@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace Xamarin.Essentials
@@ -30,15 +28,15 @@ namespace Xamarin.Essentials
 
             var parts = new List<string>();
             if (!string.IsNullOrEmpty(message?.Body))
-                parts.Add("body=" + WebUtility.UrlEncode(message.Body));
+                parts.Add("body=" + Uri.EscapeDataString(message.Body));
             if (!string.IsNullOrEmpty(message?.Subject))
-                parts.Add("subject=" + WebUtility.UrlEncode(message.Subject));
-            if (message?.To.Count > 0)
-                parts.Add("to=" + WebUtility.UrlEncode(string.Join(",", message.To)));
-            if (message?.Cc.Count > 0)
-                parts.Add("cc=" + WebUtility.UrlEncode(string.Join(",", message.Cc)));
-            if (message?.Bcc.Count > 0)
-                parts.Add("bcc=" + WebUtility.UrlEncode(string.Join(",", message.Bcc)));
+                parts.Add("subject=" + Uri.EscapeDataString(message.Subject));
+            if (message?.To?.Count > 0)
+                parts.Add("to=" + Uri.EscapeDataString(string.Join(",", message.To)));
+            if (message?.Cc?.Count > 0)
+                parts.Add("cc=" + Uri.EscapeDataString(string.Join(",", message.Cc)));
+            if (message?.Bcc?.Count > 0)
+                parts.Add("bcc=" + Uri.EscapeDataString(string.Join(",", message.Bcc)));
 
             var uri = "mailto:";
             if (parts.Count > 0)
