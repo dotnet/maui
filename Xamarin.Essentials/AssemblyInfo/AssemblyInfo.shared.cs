@@ -5,4 +5,3 @@
 [assembly: InternalsVisibleTo("XamarinEssentialsDeviceTestsUWP")]
 [assembly: InternalsVisibleTo("XamarinEssentialsDeviceTestsShared")]
 [assembly: InternalsVisibleTo("XamarinEssentialsDeviceTestsiOS")]
-[assembly: InternalsVisibleTo("Xamarin.Forms.Core")]
