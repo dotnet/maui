@@ -173,9 +173,15 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateOverlayContent()
 		{
-			var renderer = Platform.GetOrCreateRenderer(Specific.GetOverlayContent(_application));
-			(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
-			Forms.BaseLayout.SetPartContent("elm.swallow.overlay", renderer?.NativeView);
+			EvasObject nativeView = null;
+			var content = Specific.GetOverlayContent(_application);
+			if(content != null)
+			{
+				var renderer = Platform.GetOrCreateRenderer(content);
+				(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
+				nativeView = renderer?.NativeView;
+			}
+			Forms.BaseLayout.SetPartContent("elm.swallow.overlay", nativeView);
 		}
 
 		void SetPage(Page page)
