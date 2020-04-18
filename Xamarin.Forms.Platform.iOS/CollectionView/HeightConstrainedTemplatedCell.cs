@@ -6,6 +6,7 @@ namespace Xamarin.Forms.Platform.iOS
 	internal abstract partial class HeightConstrainedTemplatedCell : TemplatedCell
 	{
 		[Export("initWithFrame:")]
+		[Internals.Preserve(Conditional = true)]
 		public HeightConstrainedTemplatedCell(CGRect frame) : base(frame)
 		{
 		}

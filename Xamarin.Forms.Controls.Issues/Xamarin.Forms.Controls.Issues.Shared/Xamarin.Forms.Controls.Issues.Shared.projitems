@@ -1297,6 +1297,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue9417.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8272.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8964.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue9794.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">

@@ -242,9 +242,11 @@ namespace Xamarin.Forms.Platform.MacOS
 
 
 		[Foundation.Export("tabForward:")]
+		[Internals.Preserve(Conditional = true)]
 		void TabForward(UIKeyCommand cmd) => FocusSearch(forwardDirection: true);
 
 		[Foundation.Export("tabBackward:")]
+		[Internals.Preserve(Conditional = true)]
 		void TabBackward(UIKeyCommand cmd) => FocusSearch(forwardDirection: false);
 #endif
 

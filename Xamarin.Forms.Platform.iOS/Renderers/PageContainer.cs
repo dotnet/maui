@@ -51,6 +51,7 @@ namespace Xamarin.Forms.Platform.iOS
 		}
 
 		[Export("accessibilityElementCount")]
+		[Internals.Preserve(Conditional = true)]
 		nint AccessibilityElementCount()
 		{
 			if (AccessibilityElements == null || AccessibilityElements.Count == 0)
@@ -61,6 +62,7 @@ namespace Xamarin.Forms.Platform.iOS
 		}
 
 		[Export("accessibilityElementAtIndex:")]
+		[Internals.Preserve(Conditional = true)]
 		NSObject GetAccessibilityElementAt(nint index)
 		{
 			if (AccessibilityElements == null || AccessibilityElements.Count == 0)
@@ -71,6 +73,7 @@ namespace Xamarin.Forms.Platform.iOS
 		}
 
 		[Export("indexOfAccessibilityElement:")]
+		[Internals.Preserve(Conditional = true)]
 		int GetIndexOfAccessibilityElement(NSObject element)
 		{
 			if (AccessibilityElements == null || AccessibilityElements.Count == 0)

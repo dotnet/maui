@@ -590,6 +590,12 @@ namespace Xamarin.Forms.Controls
 	public abstract class TestShell : Shell
 	{
 		protected const string FlyoutIconAutomationId = "OK";
+#if __IOS__
+		protected const string BackButtonAutomationId = "Back";
+#else
+		protected const string BackButtonAutomationId = "OK";
+#endif
+
 #if UITEST
 		public IApp RunningApp => AppSetup.RunningApp;
 		protected virtual bool Isolate => true;
@@ -794,6 +800,12 @@ namespace Xamarin.Forms.Controls
 			{
 				RunningApp.Tap(flyoutIcon);
 			}
+		}
+
+		public void TapBackArrow(string backArrowIcon = BackButtonAutomationId)
+		{
+			RunningApp.WaitForElement(backArrowIcon, "Back Arrow Not Found");
+			RunningApp.Tap(backArrowIcon);
 		}
 
 
