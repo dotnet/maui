@@ -37,7 +37,7 @@ namespace Xamarin.Essentials
             var action = message?.Attachments?.Count > 1 ? Intent.ActionSendMultiple : Intent.ActionSend;
             var intent = new Intent(action);
             intent.SetType("message/rfc822");
-			intent.SetData(Uri.Parse("mailto:")); // only email apps should handle this
+            intent.SetData(Uri.Parse("mailto:")); // only email apps should handle this
 
             if (!string.IsNullOrEmpty(message?.Body))
             {
