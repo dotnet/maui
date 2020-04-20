@@ -66,14 +66,14 @@ namespace Xamarin.Forms
 			if (isExperimentalFlagSet)
 				return;
 
-			ExperimentalFlags.VerifyFlagEnabled(nameof(Markup), ExperimentalFlags.ExpanderExperimental, constructorHint, memberName);
+			ExperimentalFlags.VerifyFlagEnabled(nameof(Expander), ExperimentalFlags.ExpanderExperimental, constructorHint, memberName);
 
 			isExperimentalFlagSet = true;
 		}
 
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{			
-			VerifyExperimental();
+			VerifyExperimental(nameof(Expander));
 			return base.OnMeasure(widthConstraint, heightConstraint);
 		}
 

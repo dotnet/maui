@@ -1,4 +1,5 @@
-﻿using Xamarin.Forms.CustomAttributes;
+﻿using System.Collections.Generic;
+using Xamarin.Forms.CustomAttributes;
 
 namespace Xamarin.Forms.Controls
 {
@@ -8,7 +9,14 @@ namespace Xamarin.Forms.Controls
 		protected override bool SupportsTapGestureRecognizer => true;
 		protected override void InitializeElement(RadioButton element)
 		{
+			Device.SetFlags(new List<string> { ExperimentalFlags.RadioButtonExperimental });
 			element.Text = "RadioButton";
+		}
+
+		protected override void OnDisappearing()
+		{
+			Device.SetFlags(new List<string>());
+			base.OnDisappearing();
 		}
 
 		protected override void Build(StackLayout stackLayout)
