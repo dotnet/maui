@@ -553,6 +553,7 @@
       <Member Id="M:Xamarin.Essentials.Permissions.CheckStatusAsync``1" />
       <Member Id="M:Xamarin.Essentials.Permissions.IsKeyDeclaredInInfoPlist(System.String)" />
       <Member Id="M:Xamarin.Essentials.Permissions.RequestAsync``1" />
+      <Member Id="M:Xamarin.Essentials.Permissions.ShouldShowRationale``1" />
       <Member Id="P:Xamarin.Essentials.Permissions.LocationTimeout" />
     </Type>
     <Type Name="Xamarin.Essentials.Permissions/BasePermission" Id="T:Xamarin.Essentials.Permissions.BasePermission">
@@ -560,12 +561,14 @@
       <Member Id="M:Xamarin.Essentials.Permissions.BasePermission.CheckStatusAsync" />
       <Member Id="M:Xamarin.Essentials.Permissions.BasePermission.EnsureDeclared" />
       <Member Id="M:Xamarin.Essentials.Permissions.BasePermission.RequestAsync" />
+      <Member Id="M:Xamarin.Essentials.Permissions.BasePermission.ShouldShowRationale" />
     </Type>
     <Type Name="Xamarin.Essentials.Permissions/BasePlatformPermission" Id="T:Xamarin.Essentials.Permissions.BasePlatformPermission">
       <Member Id="M:Xamarin.Essentials.Permissions.BasePlatformPermission.#ctor" />
       <Member Id="M:Xamarin.Essentials.Permissions.BasePlatformPermission.CheckStatusAsync" />
       <Member Id="M:Xamarin.Essentials.Permissions.BasePlatformPermission.EnsureDeclared" />
       <Member Id="M:Xamarin.Essentials.Permissions.BasePlatformPermission.RequestAsync" />
+      <Member Id="M:Xamarin.Essentials.Permissions.BasePlatformPermission.ShouldShowRationale" />
       <Member Id="P:Xamarin.Essentials.Permissions.BasePlatformPermission.RequiredInfoPlistKeys" />
     </Type>
     <Type Name="Xamarin.Essentials.Permissions/Battery" Id="T:Xamarin.Essentials.Permissions.Battery">

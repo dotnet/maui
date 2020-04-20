@@ -129,12 +129,30 @@ namespace Xamarin.Essentials
 
             public override void EnsureDeclared()
             {
+                if (RequiredPermissions == null || RequiredPermissions.Length <= 0)
+                    return;
+
                 foreach (var (androidPermission, isRuntime) in RequiredPermissions)
                 {
                     var ap = androidPermission;
                     if (!IsDeclaredInManifest(ap))
                         throw new PermissionException($"You need to declare using the permission: `{androidPermission}` in your AndroidManifest.xml");
                 }
+            }
+
+            public override bool ShouldShowRationale()
+            {
+                if (RequiredPermissions == null || RequiredPermissions.Length <= 0)
+                    return false;
+
+                var activity = Platform.GetCurrentActivity(true);
+                foreach (var (androidPermission, isRuntime) in RequiredPermissions)
+                {
+                    if (isRuntime && ActivityCompat.ShouldShowRequestPermissionRationale(activity, androidPermission))
+                        return true;
+                }
+
+                return false;
             }
 
             internal static void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
