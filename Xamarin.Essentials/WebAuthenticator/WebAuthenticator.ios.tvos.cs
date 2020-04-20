@@ -68,14 +68,20 @@ namespace Xamarin.Essentials
                     }
 
                     was.Start();
-                    return await tcsResponse.Task;
+                    var result = await tcsResponse.Task;
+                    was?.Dispose();
+                    was = null;
+                    return result;
                 }
 
                 if (UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
                 {
                     sf = new SFAuthenticationSession(new NSUrl(url.OriginalString), scheme, AuthSessionCallback);
                     sf.Start();
-                    return await tcsResponse.Task;
+                    var result = await tcsResponse.Task;
+                    sf?.Dispose();
+                    was = null;
+                    return result;
                 }
 
                 // THis is only on iOS9+ but we only support 10+ in Essentials anyway
