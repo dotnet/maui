@@ -16,6 +16,9 @@ namespace Xamarin.Essentials
                 CanChooseDirectories = false
             };
 
+            if (options.PickerTitle != null)
+                openPanel.Title = options.PickerTitle;
+
             SetFileTypes(options, openPanel);
 
             FilePickerResult result = null;
@@ -36,6 +39,9 @@ namespace Xamarin.Essentials
                 AllowsMultipleSelection = true,
                 CanChooseDirectories = false
             };
+
+            if (options.PickerTitle != null)
+                openPanel.Title = options.PickerTitle;
 
             SetFileTypes(options, openPanel);
 
