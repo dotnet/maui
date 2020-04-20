@@ -18,6 +18,7 @@ namespace Xamarin.Forms
 		internal const string MarkupExperimental = "Markup_Experimental";
 		internal const string AppThemeExperimental = "AppTheme_Experimental";
 		internal const string ExpanderExperimental = "Expander_Experimental";
+		internal const string RadioButtonExperimental = "RadioButton_Experimental";
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void VerifyFlagEnabled(
@@ -26,6 +27,11 @@ namespace Xamarin.Forms
 			string constructorHint = null,
 			[CallerMemberName] string memberName = "")
 		{
+			if (DesignMode.IsDesignModeEnabled)
+			{
+				return; 
+			}
+
 			if (Device.Flags == null || !Device.Flags.Contains(flagName))
 			{
 				if (!String.IsNullOrEmpty(memberName))

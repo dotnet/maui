@@ -64,3 +64,5 @@ using MediaPlayerImpl = Xamarin.Forms.Platform.Tizen.Native.MediaPlayerImpl;
 [assembly: ExportHandler(typeof(PinchGestureRecognizer), typeof(PinchGestureHandler))]
 [assembly: ExportHandler(typeof(PanGestureRecognizer), typeof(PanGestureHandler))]
 [assembly: ExportHandler(typeof(SwipeGestureRecognizer), typeof(SwipeGestureHandler))]
+
+[assembly: ExportRenderer(typeof(Shell), typeof(Xamarin.Forms.Platform.Tizen.Watch.ShellRenderer), TargetIdiom.Watch)]

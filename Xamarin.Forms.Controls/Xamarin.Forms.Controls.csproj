@@ -64,7 +64,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Update="GalleryPages\RadioButtonGroupGalleryPage.xaml">
+    <EmbeddedResource Update="GalleryPages\RadioButtonGalleries\RadioButtonGroupGalleryPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <Compile Update="TabIndexTest\DaysOfWeekView.xaml.cs">

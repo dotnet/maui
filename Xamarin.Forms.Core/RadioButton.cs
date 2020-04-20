@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
@@ -48,6 +49,24 @@ namespace Xamarin.Forms
 		public RadioButton()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<RadioButton>>(() => new PlatformConfigurationRegistry<RadioButton>(this));
+		}
+
+
+		static bool isExperimentalFlagSet = false;
+		internal static void VerifyExperimental([CallerMemberName] string memberName = "", string constructorHint = null)
+		{
+			if (isExperimentalFlagSet)
+				return;
+
+			ExperimentalFlags.VerifyFlagEnabled(nameof(RadioButton), ExperimentalFlags.RadioButtonExperimental, constructorHint, memberName);
+
+			isExperimentalFlagSet = true;
+		}
+
+		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
+		{
+			VerifyExperimental(nameof(RadioButton));
+			return base.OnMeasure(widthConstraint, heightConstraint);
 		}
 
 		public new IPlatformElementConfiguration<T, RadioButton> On<T>() where T : IConfigPlatform

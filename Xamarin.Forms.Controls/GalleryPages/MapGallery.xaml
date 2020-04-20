@@ -29,6 +29,8 @@
             Grid.Row="4" />
         <ScrollView Grid.Row="5">
             <StackLayout>
+                <Button Clicked="GetMapRegionClicked"
+                        Text="Map Region" />
                 <Button Clicked="MapTypeClicked"
                         Text="Map Type" />
                 <Button Clicked="ZoomInClicked"

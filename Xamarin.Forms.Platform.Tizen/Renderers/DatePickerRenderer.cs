@@ -1,10 +1,11 @@
 using System;
 using Xamarin.Forms.Platform.Tizen.Native;
 using WatchDataTimePickerDialog = Xamarin.Forms.Platform.Tizen.Native.Watch.WatchDataTimePickerDialog;
+using EEntry = ElmSharp.Entry;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
-	public class DatePickerRenderer : ViewRenderer<DatePicker, EditfieldEntry>
+	public class DatePickerRenderer : ViewRenderer<DatePicker, EEntry>
 	{
 		//TODO need to add internationalization support
 		const string DialogTitle = "Choose Date";
@@ -36,15 +37,14 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				var entry = new Native.EditfieldEntry(Forms.NativeParent)
-				{
-					IsSingleLine = true,
-					HorizontalTextAlignment = Native.TextAlignment.Center,
-					InputPanelShowByOnDemand = true,
-				};
+				var entry = CreateNativeControl();
 				entry.SetVerticalTextAlignment("elm.text", 0.5);
-				entry.TextBlockFocused += OnTextBlockFocused;
 				SetNativeControl(entry);
+
+				if (entry is IEntry ie)
+				{
+					ie.TextBlockFocused += OnTextBlockFocused;
+				}
 
 				_lazyDialog = new Lazy<IDateTimeDialog>(() =>
 				{
@@ -57,9 +57,27 @@ namespace Xamarin.Forms.Platform.Tizen
 			base.OnElementChanged(e);
 		}
 
+		protected virtual EEntry CreateNativeControl()
+		{
+			return new Native.EditfieldEntry(Forms.NativeParent)
+			{
+				IsSingleLine = true,
+				HorizontalTextAlignment = Native.TextAlignment.Center,
+				InputPanelShowByOnDemand = true,
+				IsEditable = false
+			};
+		}
+
 		protected override Size MinimumSize()
 		{
-			return Control.Measure(Control.MinimumWidth, Control.MinimumHeight).ToDP();
+			if (Control is IMeasurable im)
+			{
+				return im.Measure(Control.MinimumWidth, Control.MinimumHeight).ToDP();
+			}
+			else
+			{
+				return base.MinimumSize();
+			}
 		}
 
 		protected override void Dispose(bool disposing)
@@ -68,7 +86,10 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				if (Control != null)
 				{
-					Control.TextBlockFocused -= OnTextBlockFocused;
+					if (Control is IEntry ie)
+					{
+						ie.TextBlockFocused -= OnTextBlockFocused;
+					}
 				}
 				if (_lazyDialog.IsValueCreated)
 				{
@@ -95,35 +116,47 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 		}
 
-		void OnDateTimeChanged(object sender, Native.DateChangedEventArgs dcea)
+		protected virtual void OnDateTimeChanged(object sender, Native.DateChangedEventArgs dcea)
 		{
 			Element.Date = dcea.NewDate;
 			Control.Text = dcea.NewDate.ToString(Element.Format);
 		}
 
-		void UpdateDate()
+		protected virtual void UpdateDate()
 		{
 			Control.Text = Element.Date.ToString(Element.Format);
 		}
 
-		void UpdateTextColor()
+		protected virtual void UpdateTextColor()
 		{
-			Control.TextColor = Element.TextColor.ToNative();
+			if (Control is IEntry ie)
+			{
+				ie.TextColor = Element.TextColor.ToNative();
+			}
 		}
 
 		void UpdateFontSize()
 		{
-			Control.FontSize = Element.FontSize;
+			if (Control is IEntry ie)
+			{
+				ie.FontSize = Element.FontSize;
+			}
 		}
 
 		void UpdateFontFamily()
 		{
-			Control.FontFamily = Element.FontFamily.ToNativeFontFamily();
+			if (Control is IEntry ie)
+			{
+				ie.FontFamily = Element.FontFamily;
+			}
 		}
 
 		void UpdateFontAttributes()
 		{
-			Control.FontAttributes = Element.FontAttributes;
+			if (Control is IEntry ie)
+			{
+				ie.FontAttributes = Element.FontAttributes;
+			}
 		}
 	}
 }
