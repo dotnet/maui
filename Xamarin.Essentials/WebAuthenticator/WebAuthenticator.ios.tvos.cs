@@ -80,7 +80,7 @@ namespace Xamarin.Essentials
                     sf.Start();
                     var result = await tcsResponse.Task;
                     sf?.Dispose();
-                    was = null;
+                    sf = null;
                     return result;
                 }
 
