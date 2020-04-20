@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using AppKit;
+using MobileCoreServices;
 
 namespace Xamarin.Essentials
 {
@@ -22,8 +23,8 @@ namespace Xamarin.Essentials
             SetFileTypes(options, openPanel);
 
             FilePickerResult result = null;
-            var resultCount = openPanel.RunModal();
-            if (resultCount == 1)
+            var panelResult = openPanel.RunModal();
+            if (panelResult == (nint)(long)NSModalResponse.OK)
             {
                 result = new FilePickerResult(openPanel.Urls[0].Path);
             }
@@ -46,8 +47,8 @@ namespace Xamarin.Essentials
             SetFileTypes(options, openPanel);
 
             var resultList = new List<FilePickerResult>();
-            var result = openPanel.RunModal();
-            if (result != 0)
+            var panelResult = openPanel.RunModal();
+            if (panelResult == (nint)(long)NSModalResponse.OK)
             {
                 foreach (var url in openPanel.Urls)
                 {
