@@ -77,6 +77,7 @@ namespace Samples.ViewModel
                     { DevicePlatform.Android, new[] { "application/comics" } },
                     { DevicePlatform.UWP, new[] { ".cbr", ".cbz" } },
                     { DevicePlatform.Tizen, new[] { "*/*" } },
+                    { DevicePlatform.macOS, new[] { "cbr", "cbz" } }, // or general UTType values
                 });
 
             var options = new PickOptions
