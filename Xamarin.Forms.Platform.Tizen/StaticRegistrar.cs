@@ -76,7 +76,6 @@ namespace Xamarin.Forms.Platform.Tizen
 			Registered.Register(typeof(NavigationPage), () => new NavigationPageRenderer());
 			Registered.Register(typeof(MasterDetailPage), () => new MasterDetailPageRenderer());
 			Registered.Register(typeof(TabbedPage), () => new TabbedPageRenderer());
-			Registered.Register(typeof(Shell), () => new ShellRenderer());
 			Registered.Register(typeof(Label), () => new LabelRenderer());
 			Registered.Register(typeof(Button), () => new ButtonRenderer());
 			Registered.Register(typeof(Image), () => new ImageRenderer());
@@ -106,6 +105,15 @@ namespace Xamarin.Forms.Platform.Tizen
 			Registered.Register(typeof(MediaElement), () => new MediaElementRenderer());
 			Registered.Register(typeof(IndicatorView), () => new IndicatorViewRenderer());
 			Registered.Register(typeof(RadioButton), () => new RadioButtonRenderer());
+
+			if (Device.Idiom == TargetIdiom.Watch)
+			{
+				Registered.Register(typeof(Shell), () => new Watch.ShellRenderer());
+			}
+			else
+			{
+				Registered.Register(typeof(Shell), () => new ShellRenderer());
+			}
 
 			//ImageSourceHandlers
 			Registered.Register(typeof(FileImageSource), () => new FileImageSourceHandler());

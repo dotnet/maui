@@ -191,6 +191,12 @@ namespace Xamarin.Forms
 			get; internal set;
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static Element RotaryFocusObject
+		{
+			get; internal set;
+		}
+
 		public static bool IsInitialized
 		{
 			get;
@@ -365,6 +371,28 @@ namespace Xamarin.Forms
 			Device.Info = new Forms.TizenDeviceInfo();
 			Device.SetFlags(s_flags);
 
+			string profile = ((TizenDeviceInfo)Device.Info).Profile;
+			if (profile == "mobile")
+			{
+				Device.SetIdiom(TargetIdiom.Phone);
+			}
+			else if (profile == "tv")
+			{
+				Device.SetIdiom(TargetIdiom.TV);
+			}
+			else if (profile == "desktop")
+			{
+				Device.SetIdiom(TargetIdiom.Desktop);
+			}
+			else if (profile == "wearable")
+			{
+				Device.SetIdiom(TargetIdiom.Watch);
+			}
+			else
+			{
+				Device.SetIdiom(TargetIdiom.Unsupported);
+			}
+
 			if (!Forms.IsInitialized)
 			{
 				if (options != null)
@@ -454,27 +482,6 @@ namespace Xamarin.Forms
 				}
 			}
 
-			string profile = ((TizenDeviceInfo)Device.Info).Profile;
-			if (profile == "mobile")
-			{
-				Device.SetIdiom(TargetIdiom.Phone);
-			}
-			else if (profile == "tv")
-			{
-				Device.SetIdiom(TargetIdiom.TV);
-			}
-			else if (profile == "desktop")
-			{
-				Device.SetIdiom(TargetIdiom.Desktop);
-			}
-			else if (profile == "wearable")
-			{
-				Device.SetIdiom(TargetIdiom.Watch);
-			}
-			else
-			{
-				Device.SetIdiom(TargetIdiom.Unsupported);
-			}
 			Color.SetAccent(GetAccentColor(profile));
 			ExpressionSearch.Default = new TizenExpressionSearch();
 
