@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using AppKit;
@@ -67,12 +68,9 @@ namespace Xamarin.Essentials
             {
                 foreach (var type in options.FileTypes.Value)
                 {
-                    allowedFileTypes.Add(type);
+                    allowedFileTypes.Add(type.TrimStart('*', '.'));
                 }
             }
-
-            if (allowedFileTypes.Count == 0)
-                allowedFileTypes.Add("*.*");
 
             panel.AllowedFileTypes = allowedFileTypes.ToArray();
         }
@@ -83,13 +81,13 @@ namespace Xamarin.Essentials
         public static FilePickerFileType PlatformImageFileType() =>
             new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
             {
-                { DevicePlatform.macOS, new[] { "*.png", "*.jpg", "*.jpeg" } }
+                { DevicePlatform.macOS, new string[] { UTType.PNG, UTType.JPEG, "jpeg" } }
             });
 
         public static FilePickerFileType PlatformPngFileType() =>
             new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
             {
-                { DevicePlatform.macOS, new[] { "*.png" } }
+                { DevicePlatform.macOS, new string[] { UTType.PNG } }
             });
     }
 
