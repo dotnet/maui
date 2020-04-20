@@ -21,6 +21,7 @@ namespace Xamarin.Forms.Platform.iOS
 		Size _size;
 
 		[Export("initWithFrame:")]
+		[Internals.Preserve(Conditional = true)]
 		protected TemplatedCell(CGRect frame) : base(frame)
 		{
 		}

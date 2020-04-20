@@ -48,6 +48,7 @@ namespace Xamarin.Forms.Platform.iOS
 		}
 #if __XCODE11__
 		[Export("presentationControllerDidDismiss:")]
+		[Internals.Preserve(Conditional = true)]
 		public async void DidDismiss(UIPresentationController presentationController)
 		{
 			await Application.Current.NavigationProxy.PopModalAsync(false);
