@@ -108,7 +108,7 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="usageKey" Type="System.String" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos" />
+        <Parameter Name="usageKey" Type="System.String" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos" />
       </Parameters>
       <Docs>
         <param name="usageKey">The usage key to check in the info.plist.</param>
@@ -163,6 +163,33 @@
         <summary>Request a specific permission from the user.</summary>
         <returns>The status of the permission that was requested.</returns>
         <remarks>The request will be prompted to the user if it hasn't been granted. iOS only allows the permission to be requested once, any additional requests will return immediatelly.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ShouldShowRationale&lt;TPermission&gt;">
+      <MemberSignature Language="C#" Value="public static void ShouldShowRationale&lt;TPermission&gt; () where TPermission : Xamarin.Essentials.Permissions.BasePermissionnew();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void ShouldShowRationale&lt;.ctor (class Xamarin.Essentials.Permissions/BasePermission) TPermission&gt;() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Permissions.ShouldShowRationale``1" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="TPermission">
+          <Constraints>
+            <ParameterAttribute>DefaultConstructorConstraint</ParameterAttribute>
+            <BaseTypeName>Xamarin.Essentials.Permissions+BasePermission</BaseTypeName>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters />
+      <Docs>
+        <typeparam name="TPermission">To be added.</typeparam>
+        <summary>Gets whether you should show UI with rationale for requesting a permission.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

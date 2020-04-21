@@ -71,6 +71,24 @@
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="LegacyKeyHashFallback">
+      <MemberSignature Language="C#" Value="public static bool LegacyKeyHashFallback { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property bool LegacyKeyHashFallback" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.SecureStorage.LegacyKeyHashFallback" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>When set to `true` if the key/value pair is not found, the MD5 key hash is also used to attempt to locate a value.</summary>
+        <value></value>
+        <remarks>Before version 1.5.3, the key/value pair was stored with the key's MD5 hash instead of the key directly.  As of 1.5.3 and newer the key hash is no longer used.  When using the legacy fallback, and an old MD5 key hash is encountered, it is migrated to the new key/value pair and the old MD5 key hash / value pair is removed.  In future versions this will be set to false by default.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Remove">
       <MemberSignature Language="C#" Value="public static bool Remove (string key);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool Remove(string key) cil managed" />
@@ -156,9 +174,9 @@
         <ReturnType>System.Threading.Tasks.Task</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="key" Type="System.String" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos" />
-        <Parameter Name="value" Type="System.String" Index="1" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos" />
-        <Parameter Name="accessible" Type="Security.SecAccessible" Index="2" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos" />
+        <Parameter Name="key" Type="System.String" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos" />
+        <Parameter Name="value" Type="System.String" Index="1" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos" />
+        <Parameter Name="accessible" Type="Security.SecAccessible" Index="2" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos" />
       </Parameters>
       <Docs>
         <param name="key">Storage Key.</param>

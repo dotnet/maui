@@ -100,6 +100,7 @@
     <Copy SourceFiles="$(BinConfigDir)netstandard2.0\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials" />
     <Copy SourceFiles="$(BinConfigDir)monoandroid10.0\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-android" />
     <Copy SourceFiles="$(BinConfigDir)xamarin.ios10\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-ios" />
+    <Copy SourceFiles="$(BinConfigDir)xamarin.mac20\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-macos" />
     <Copy SourceFiles="$(BinConfigDir)xamarin.tvos10\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-tvos" />
     <Copy SourceFiles="$(BinConfigDir)xamarin.watchos10\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-watchos" />
     <Copy SourceFiles="$(BinConfigDir)uap10.0.16299\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-uwp" />

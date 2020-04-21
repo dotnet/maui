@@ -40,6 +40,8 @@ namespace Xamarin.Essentials
                 }
             }
 
+            public override bool ShouldShowRationale() => false;
+
             internal void EnsureMainThread()
             {
                 if (!MainThread.IsMainThread)
@@ -207,6 +209,10 @@ namespace Xamarin.Essentials
         }
 
         public partial class Sensors : BasePlatformPermission
+        {
+        }
+
+        public partial class Speech : BasePlatformPermission
         {
         }
 

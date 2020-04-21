@@ -12,5 +12,12 @@ namespace Xamarin.Essentials
         {
             NSRunLoop.Main.BeginInvokeOnMainThread(action.Invoke);
         }
+
+        internal static T InvokeOnMainThread<T>(Func<T> factory)
+        {
+            T value = default;
+            NSRunLoop.Main.InvokeOnMainThread(() => value = factory());
+            return value;
+        }
     }
 }
