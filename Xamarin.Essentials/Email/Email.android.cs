@@ -34,10 +34,18 @@ namespace Xamarin.Essentials
 
         static Intent CreateIntent(EmailMessage message)
         {
-            var action = message?.Attachments?.Count > 1 ? Intent.ActionSendMultiple : Intent.ActionSend;
+            var action = (message?.Attachments?.Count ?? 0) switch
+            {
+                0 => Intent.ActionSendto,
+                1 => Intent.ActionSend,
+                _ => Intent.ActionSendMultiple
+            };
             var intent = new Intent(action);
-            intent.SetType("message/rfc822");
-            intent.SetData(Uri.Parse("mailto:")); // only email apps should handle this
+
+            if (action == Intent.ActionSendto)
+                intent.SetData(Uri.Parse("mailto:"));
+            else
+                intent.SetType("message/rfc822");
 
             if (!string.IsNullOrEmpty(message?.Body))
             {
