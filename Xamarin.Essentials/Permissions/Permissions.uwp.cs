@@ -48,6 +48,8 @@ namespace Xamarin.Essentials
                         throw new PermissionException($"You need to declare the capability `{d}` in your AppxManifest.xml file");
                 }
             }
+
+            public override bool ShouldShowRationale() => false;
         }
 
         public partial class Battery : BasePlatformPermission
