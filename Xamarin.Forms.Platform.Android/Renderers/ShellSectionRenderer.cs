@@ -33,6 +33,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		void ViewPager.IOnPageChangeListener.OnPageScrolled(int position, float positionOffset, int positionOffsetPixels)
 		{
+			if(!_selecting && ShellSection?.CurrentItem != null)
+			{
+				UpdateCurrentItem(ShellSection.CurrentItem);
+			}
 		}
 
 		void ViewPager.IOnPageChangeListener.OnPageScrollStateChanged(int state)
@@ -163,8 +167,19 @@ namespace Xamarin.Forms.Platform.Android
 
 			_tablayout.SetupWithViewPager(_viewPager);
 
-			var currentPage = ((IShellContentController)shellSection.CurrentItem).GetOrCreateContent();
-			var currentIndex = SectionController.GetItems().IndexOf(ShellSection.CurrentItem);
+			Page currentPage = null;
+			int currentIndex = -1;
+			var currentItem = ShellSection.CurrentItem;
+
+			while (currentIndex < 0 && SectionController.GetItems().Count > 0 && ShellSection.CurrentItem != null)
+			{
+				currentItem = ShellSection.CurrentItem;
+				currentPage = ((IShellContentController)shellSection.CurrentItem).GetOrCreateContent();
+
+				// current item hasn't changed
+				if(currentItem == shellSection.CurrentItem)
+					currentIndex = SectionController.GetItems().IndexOf(currentItem);
+			}
 
 			_toolbarTracker = _shellContext.CreateTrackerForToolbar(_toolbar);
 			_toolbarTracker.Page = currentPage;

@@ -10,19 +10,48 @@ namespace Xamarin.Forms
 	internal sealed class ShellContentCollection : IList<ShellContent>, INotifyCollectionChanged
 	{
 		public event NotifyCollectionChangedEventHandler VisibleItemsChanged;
+		public event NotifyCollectionChangedEventHandler VisibleItemsChangedInternal;
+		public ReadOnlyCollection<ShellContent> VisibleItems { get; }
+
 		ObservableCollection<ShellContent> _inner = new ObservableCollection<ShellContent>();
 		ObservableCollection<ShellContent> _visibleContents = new ObservableCollection<ShellContent>();
-
-		public ReadOnlyCollection<ShellContent> VisibleItems { get; }
+		bool _pauseCollectionChanged;
+		List<NotifyCollectionChangedEventArgs> _notifyCollectionChangedEventArgs;
 
 		public ShellContentCollection()
 		{
+			_notifyCollectionChangedEventArgs = new List<NotifyCollectionChangedEventArgs>();
 			_inner.CollectionChanged += InnerCollectionChanged;
 			VisibleItems = new ReadOnlyCollection<ShellContent>(_visibleContents);
 			_visibleContents.CollectionChanged += (_, args) =>
 			{
-				VisibleItemsChanged?.Invoke(VisibleItems, args);
+				if(_pauseCollectionChanged)
+				{
+					_notifyCollectionChangedEventArgs.Add(args);
+					return;
+				}
+
+				OnVisibleItemsChanged(args);
 			};
+		}
+
+		void OnVisibleItemsChanged(NotifyCollectionChangedEventArgs args)
+		{
+			VisibleItemsChangedInternal?.Invoke(VisibleItems, args);
+			VisibleItemsChanged?.Invoke(VisibleItems, args);
+		}
+
+		void PauseCollectionChanged() => _pauseCollectionChanged = true;
+
+		void ResumeCollectionChanged()
+		{
+			_pauseCollectionChanged = false;
+
+			var pendingEvents = _notifyCollectionChangedEventArgs.ToList();
+			_notifyCollectionChangedEventArgs.Clear();
+
+			foreach(var args in pendingEvents)
+				OnVisibleItemsChanged(args);
 		}
 
 		void InnerCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -67,15 +96,24 @@ namespace Xamarin.Forms
 			if (shellContent is IShellContentController controller)
 			{
 				// Assume incoming page will be visible
-				if (controller.Page == null)
+				if (controller.Page == null || controller.Page.IsVisible)
 				{
-					if (!_visibleContents.Contains(shellContent))
-						_visibleContents.Add(shellContent);
-				}
-				else if(controller.Page.IsVisible)
-				{
-					if (!_visibleContents.Contains(shellContent))
-						_visibleContents.Add(shellContent);
+					if (_visibleContents.Contains(shellContent))
+						return;
+
+					int visibleIndex = 0;
+					for (var i = 0; i < _inner.Count; i++)
+					{
+						var item = _inner[i];
+
+						if (item == shellContent)
+						{
+							_visibleContents.Insert(visibleIndex, shellContent);
+							break;
+						}
+
+						visibleIndex++;
+					}
 				}
 				else
 				{
@@ -105,7 +143,16 @@ namespace Xamarin.Forms
 		public void Clear()
 		{
 			var list = _inner.ToList();
-			Removing(_inner);
+			try
+			{
+				PauseCollectionChanged();
+				Removing(_inner);
+			}
+			finally
+			{
+				ResumeCollectionChanged();
+			}
+
 			_inner.Clear();
 			
 			CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, list));

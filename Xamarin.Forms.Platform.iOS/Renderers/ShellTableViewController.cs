@@ -3,6 +3,7 @@ using CoreGraphics;
 using System;
 using UIKit;
 using System.ComponentModel;
+using System.Collections.Specialized;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -16,6 +17,7 @@ namespace Xamarin.Forms.Platform.iOS
 		double _headerSize;
 		bool _isDisposed;
 		Action<Element> _onElementSelected;
+		IShellController ShellController => ((IShellController)_context.Shell);
 
 		public ShellTableViewController(IShellContext context, UIContainerView headerView, Action<Element> onElementSelected)
 		{
@@ -24,10 +26,11 @@ namespace Xamarin.Forms.Platform.iOS
 			_headerView = headerView;
 			_source = CreateShellTableViewSource();
 			_source.ScrolledEvent += OnScrolled;
+
 			if (_headerView != null)
 				_headerView.HeaderSizeChanged += OnHeaderSizeChanged;
-			((IShellController)_context.Shell).StructureChanged += OnStructureChanged;
 
+			ShellController.StructureChanged += OnStructureChanged;
 			_context.Shell.PropertyChanged += OnShellPropertyChanged;
 		}
 

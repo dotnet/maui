@@ -428,7 +428,8 @@ namespace Xamarin.Forms
 
 			ProcessNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
 		}
-		ReadOnlyCollection<ShellItem> IShellController.GetItems() => ((ShellItemCollection)Items).VisibleItems;
+		ReadOnlyCollection<ShellItem> IShellController.GetItems() =>
+			new ReadOnlyCollection<ShellItem>(((ShellItemCollection)Items).VisibleItems.ToList());
 
 		event NotifyCollectionChangedEventHandler IShellController.ItemsCollectionChanged
 		{
