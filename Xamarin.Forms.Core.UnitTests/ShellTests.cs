@@ -1127,7 +1127,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			shell.Items.Add(shellItem);
 
-			var flyoutItemTemplate = Shell.GetItemTemplate(shellItem);
+			var flyoutItemTemplate = (shell as IShellController).GetFlyoutItemDataTemplate(shellItem);
 			var thing = (Element)flyoutItemTemplate.CreateContent();
 			thing.Parent = shell;
 
@@ -1154,7 +1154,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			shell.Items.Add(shellItem);
 
-			var flyoutItemTemplate = Shell.GetItemTemplate(shellItem);
+			var flyoutItemTemplate = (shell as IShellController).GetFlyoutItemDataTemplate(shellItem);
 			var thing = (Element)flyoutItemTemplate.CreateContent();
 			thing.Parent = shell;
 
@@ -1182,7 +1182,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			shell.Items.Add(shellItem);
 			shell.Items.Add(shellMenuItem);
 
-			var flyoutItemTemplate = Shell.GetItemTemplate(shellMenuItem);
+			var flyoutItemTemplate = (shell as IShellController).GetFlyoutItemDataTemplate(shellMenuItem);
 			var thing = (Element)flyoutItemTemplate.CreateContent();
 			thing.Parent = shell;
 
@@ -1198,7 +1198,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				Setters = {
 					new Setter { Property = Label.VerticalTextAlignmentProperty, Value = TextAlignment.Start }
 				},
-				Class = "FlyoutItemLabelStyle",
+				Class = FlyoutItem.LabelStyle,
 			};
 
 			Shell shell = new Shell();
@@ -1207,7 +1207,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			shell.Items.Add(shellItem);
 
-			var flyoutItemTemplate = Shell.GetItemTemplate(shellItem);
+			var flyoutItemTemplate = (shell as IShellController).GetFlyoutItemDataTemplate(shellItem);
 			var thing = (Element)flyoutItemTemplate.CreateContent();
 			thing.Parent = shell;
 
@@ -1310,7 +1310,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 		//	shell.Items.Add(shellItem);
 
-		//	var flyoutItemTemplate = Shell.GetItemTemplate(shellItem);
+		//	var flyoutItemTemplate = (shell as IShellController).GetFlyoutItemDataTemplate(shellItem);
 		//	var thing = (Element)flyoutItemTemplate.CreateContent();
 		//	thing.Parent = shell;
 
@@ -1339,7 +1339,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		//	shell.Items.Add(shellItem);
 		//	shell.Items.Add(shellMenuItem);
 
-		//	var flyoutItemTemplate = Shell.GetItemTemplate(shellMenuItem);
+		//	var flyoutItemTemplate = (shell as IShellController).GetFlyoutItemDataTemplate(shellMenuItem);
 		//	var thing = (Element)flyoutItemTemplate.CreateContent();
 		//	thing.Parent = shell;
 

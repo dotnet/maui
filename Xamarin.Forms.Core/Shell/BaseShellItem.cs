@@ -320,8 +320,9 @@ namespace Xamarin.Forms
 					Class = DefaultFlyoutItemLayoutStyle,
 				};
 
+				
 				var groups = new VisualStateGroupList();
-
+				
 				var commonGroup = new VisualStateGroup();
 				commonGroup.Name = "CommonStates";
 				groups.Add(commonGroup);
