@@ -1162,6 +1162,61 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual("MenuItemTemplate", ((Label)sc.GetFlyoutItemDataTemplate(menuItem.MenuItem).CreateContent()).Text);
 		}
 
+		[Test]
+		public void FlyoutItemLabelVisualStateManager()
+		{
+			var groups = new VisualStateGroupList();
+			var commonGroup = new VisualStateGroup();
+			commonGroup.Name = "CommonStates";
+			groups.Add(commonGroup);
+			var normalState = new VisualState();
+			normalState.Name = "Normal";
+			var selectedState = new VisualState();
+			selectedState.Name = "Selected";
+
+			normalState.Setters.Add(new Setter
+			{
+				Property = Label.BackgroundColorProperty,
+				Value = Color.Red,
+				TargetName = "FlyoutItemLabel"
+			});
+
+			selectedState.Setters.Add(new Setter
+			{
+				Property = Label.BackgroundColorProperty,
+				Value = Color.Green,
+				TargetName = "FlyoutItemLabel"
+			});
+
+			commonGroup.States.Add(normalState);
+			commonGroup.States.Add(selectedState);
+
+			var classStyle = new Style(typeof(Grid))
+			{
+				Setters = {
+					new Setter 
+					{
+						Property = VisualStateManager.VisualStateGroupsProperty,
+						Value = groups 
+					}
+				},
+				Class = FlyoutItem.LayoutStyle,
+			};
+
+			Shell shell = new Shell();
+			shell.Resources = new ResourceDictionary { classStyle };
+			var shellItem = CreateShellItem();
+			shell.Items.Add(shellItem);
+			var flyoutItemTemplate = (shell as IShellController).GetFlyoutItemDataTemplate(shellItem);
+			var grid = (VisualElement)flyoutItemTemplate.CreateContent();
+			grid.Parent = shell;
+			var label = grid.LogicalChildren.OfType<Label>().First();
+
+			Assert.AreEqual(Color.Red, label.BackgroundColor);
+			Assert.IsTrue(VisualStateManager.GoToState(grid, "Selected"));
+			Assert.AreEqual(Color.Green, label.BackgroundColor);
+		}
+
 
 		//[Test]
 		//public void FlyoutItemLabelStyleCanBeChangedAfterRendered()

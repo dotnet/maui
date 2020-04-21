@@ -14,7 +14,7 @@ namespace Xamarin.Forms
 	{
 		public const string LabelStyle = "FlyoutItemLabelStyle";
 		public const string ImageStyle = "FlyoutItemImageStyle";
-		public const string GridStyle = "FlyoutItemGridStyle";
+		public const string LayoutStyle = "FlyoutItemLayoutStyle";
 
 		public FlyoutItem()
 		{
