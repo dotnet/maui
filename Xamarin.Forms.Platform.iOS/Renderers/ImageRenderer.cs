@@ -261,7 +261,9 @@ namespace Xamarin.Forms.Platform.iOS
 			var fontsource = imagesource as FontImageSource;
 			if (fontsource != null)
 			{
-				var font = UIFont.FromName(fontsource.FontFamily ?? string.Empty, (float)fontsource.Size) ??
+				//This will allow lookup from the Embedded Fonts
+				var cleansedname = FontExtensions.CleanseFontName(fontsource.FontFamily);
+				var font = UIFont.FromName(cleansedname ?? string.Empty, (float)fontsource.Size) ??
 					UIFont.SystemFontOfSize((float)fontsource.Size);
 				var iconcolor = fontsource.Color.IsDefault ? _defaultColor : fontsource.Color;
 				var attString = new NSAttributedString(fontsource.Glyph, font: font, foregroundColor: iconcolor.ToUIColor());

@@ -87,7 +87,7 @@ namespace Xamarin.Forms.Platform.iOS
 			return UIFont.SystemFontOfSize(size);
 		}
 
-		static string CleanseFontName(string fontName)
+		internal static string CleanseFontName(string fontName)
 		{
 
 			//First check Alias
