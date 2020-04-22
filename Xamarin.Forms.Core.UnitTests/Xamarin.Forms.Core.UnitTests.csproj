@@ -76,6 +76,7 @@
     <Compile Include="CommandSourceTests.cs" />
     <Compile Include="CommandTests.cs" />
     <Compile Include="DependencyResolutionTests.cs" />
+    <Compile Include="MultiBindingTests.cs" />
     <Compile Include="Markup\DefaultBindablePropertiesTests.cs" />
     <Compile Include="Markup\BindableObjectExtensionsTests.cs" />
     <Compile Include="Markup\ElementExtensionsTests.cs" />

@@ -61,6 +61,8 @@ namespace Xamarin.Forms
 			{ typeof(ulong), new[] { typeof(string), typeof(float), typeof(double), typeof(decimal) } },
 		};
 
+		public static readonly object UnsetValue = new object();
+
 		BindableProperty(string propertyName, Type returnType, Type declaringType, object defaultValue, BindingMode defaultBindingMode = BindingMode.OneWay,
 								 ValidateValueDelegate validateValue = null, BindingPropertyChangedDelegate propertyChanged = null, BindingPropertyChangingDelegate propertyChanging = null,
 								 CoerceValueDelegate coerceValue = null, BindablePropertyBindingChanging bindingChanging = null, bool isReadOnly = false, CreateDefaultValueDelegate defaultValueCreator = null)
