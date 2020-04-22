@@ -115,7 +115,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected override UIButton CreateNativeControl()
 		{			
-			return new UIButton();
+			return new UIButton(UIButtonType.System);
 		}
 
 		protected override void SetAccessibilityLabel()
