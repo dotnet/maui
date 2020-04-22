@@ -176,7 +176,7 @@ namespace Xamarin.Forms
 
 			var info = new Info { Rate = rate, Length = length, Easing = easing ?? Easing.Linear };
 
-			var tweener = new Tweener(info.Length);
+			var tweener = new Tweener(info.Length, info.Rate);
 			tweener.Handle = key;
 			tweener.ValueUpdated += HandleTweenerUpdated;
 			tweener.Finished += HandleTweenerFinished;

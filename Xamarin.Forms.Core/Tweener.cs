@@ -34,17 +34,29 @@ namespace Xamarin.Forms
 		long _lastMilliseconds;
 
 		int _timer;
+		long _frames;
 
 		public Tweener(uint length)
 		{
 			Value = 0.0f;
 			Length = length;
+			Rate = 1;
+			Loop = false;
+		}
+
+		public Tweener(uint length, uint rate)
+		{
+			Value = 0.0f;
+			Length = length;
+			Rate = rate;
 			Loop = false;
 		}
 
 		public AnimatableKey Handle { get; set; }
 
 		public uint Length { get; }
+
+		public uint Rate { get; }
 
 		public bool Loop { get; set; }
 
@@ -66,6 +78,7 @@ namespace Xamarin.Forms
 			Pause();
 
 			_lastMilliseconds = 0;
+			_frames = 0;
 
 			if (!Ticker.Default.SystemEnabled)
 			{
@@ -89,7 +102,12 @@ namespace Xamarin.Forms
 					_lastMilliseconds = ms;
 				}
 
-				ValueUpdated?.Invoke(this, EventArgs.Empty);
+				long wantedFrames = (_lastMilliseconds / Rate) + 1;
+				if(wantedFrames > _frames || Value >= 1.0f)
+				{
+					ValueUpdated?.Invoke(this, EventArgs.Empty);
+				}
+				_frames = wantedFrames;
 
 				if (Value >= 1.0f)
 				{
