@@ -140,6 +140,23 @@ namespace Xamarin.Forms.Platform.iOS.UnitTests
 			});
 		}
 
+		protected UIButton GetNativeControl(ImageButton button)
+		{
+			var renderer = GetRenderer(button);
+			var viewRenderer = renderer.NativeView as ImageButtonRenderer;
+			return viewRenderer.Control;
+		}
+
+		protected async Task<TProperty> GetControlProperty<TProperty>(ImageButton button, Func<UIButton, TProperty> getProperty)
+		{
+			return await Device.InvokeOnMainThreadAsync(() => {
+				using (var uiButton = GetNativeControl(button))
+				{
+					return getProperty(uiButton);
+				}
+			});
+		}
+
 		protected async Task<TProperty> GetRendererProperty<TProperty>(View view,
 			Func<IVisualElementRenderer, TProperty> getProperty, bool requiresLayout = false)
 		{

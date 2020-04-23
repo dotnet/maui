@@ -275,7 +275,7 @@ namespace Xamarin.Forms
 				DefaultFlyoutItemLayoutStyle,
 				FlyoutItem.LabelStyle,
 				FlyoutItem.ImageStyle,
-				FlyoutItem.GridStyle };
+				FlyoutItem.LayoutStyle };
 
 			if (source?.Classes != null)
 				foreach (var styleClass in source.Classes)
@@ -320,8 +320,9 @@ namespace Xamarin.Forms
 					Class = DefaultFlyoutItemLayoutStyle,
 				};
 
+				
 				var groups = new VisualStateGroupList();
-
+				
 				var commonGroup = new VisualStateGroup();
 				commonGroup.Name = "CommonStates";
 				groups.Add(commonGroup);
@@ -383,11 +384,15 @@ namespace Xamarin.Forms
 					defaultImageClass.Setters.Add(new Setter { Property = Image.MarginProperty, Value = new Thickness(12, 0, 12, 0) });					
 				}
 
-				image.SetBinding(Image.SourceProperty, iconBinding);
+				Binding imageBinding = new Binding(iconBinding);
+				defaultImageClass.Setters.Add(new Setter { Property = Image.SourceProperty, Value = imageBinding });
+
 				grid.Children.Add(image);
 
 				var label = new Label();
-				label.SetBinding(Label.TextProperty, textBinding);
+				Binding labelBinding = new Binding(textBinding);
+				defaultLabelClass.Setters.Add(new Setter { Property = Label.TextProperty, Value = labelBinding });
+
 				grid.Children.Add(label, 1, 0);
 
 				if (Device.RuntimePlatform == Device.Android)
@@ -407,6 +412,12 @@ namespace Xamarin.Forms
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.HorizontalOptionsProperty, Value = LayoutOptions.Start });
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.HorizontalTextAlignmentProperty, Value = TextAlignment.Start });
 				}
+
+				INameScope nameScope = new NameScope();
+				NameScope.SetNameScope(grid, nameScope);
+				nameScope.RegisterName("FlyoutItemLayout", grid);
+				nameScope.RegisterName("FlyoutItemImage", image);
+				nameScope.RegisterName("FlyoutItemLabel", label);
 
 				UpdateFlyoutItemStyles(grid, styleSelectable);
 				grid.Resources = new ResourceDictionary() { defaultGridClass, defaultLabelClass, defaultImageClass };

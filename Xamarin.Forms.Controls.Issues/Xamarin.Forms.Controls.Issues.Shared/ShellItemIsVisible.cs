@@ -110,7 +110,7 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			var pageItem1 = createPage("Item 1");
+			var pageItem1 = createPage("Item Title Page");
 			var item1 = AddContentPage(pageItem1);
 			var pageItem2 = createPage("Item 2");
 			var item2 = AddContentPage(pageItem2);
@@ -119,6 +119,9 @@ namespace Xamarin.Forms.Controls.Issues
 			item1.Route = "Item1";
 			item2.Title = "Item2 Flyout";
 			item2.Route = "Item2";
+
+			AddTopTab("Top Tab 1").Content = new StackLayout() { Children = { new Label { Text = "Welcome to Tab 1" } } };
+			AddTopTab("Top Tab 2").Content = new StackLayout() { Children = { new Label { Text = "Welcome to Tab 2" } } };
 
 			pageItem1.SetBinding(Page.IsVisibleProperty, "Item1");
 			pageItem2.SetBinding(Page.IsVisibleProperty, "Item2");
@@ -168,16 +171,25 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST && (__SHELL__)
 
 		[Test]
+		public void HideActiveShellContent()
+		{
+			RunningApp.Tap("ToggleItem1");
+			RunningApp.WaitForElement("Welcome to Tab 1");
+			RunningApp.WaitForNoElement("ToggleItem1");
+		}
+
+		[Test]
 		public void HideFlyoutItem()
 		{
 			RunningApp.WaitForElement("ToggleItem1");
 			ShowFlyout();
-			RunningApp.WaitForElement("Item1 Flyout");
-			RunningApp.Tap("Hide Flyout");
+			RunningApp.WaitForElement("Item2 Flyout");
+			RunningApp.Tap("Item2 Flyout");
 			RunningApp.Tap("AllVisible");
-			RunningApp.Tap("ToggleItem1");
+			RunningApp.Tap("ToggleItem2");
 			ShowFlyout();
-			RunningApp.WaitForNoElement("Item1 Flyout");
+			RunningApp.WaitForElement("Item1 Flyout");
+			RunningApp.WaitForNoElement("Item2 Flyout");
 		}
 
 		[Test]
@@ -187,6 +199,19 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.Tap("ClearAndRecreate");
 			RunningApp.WaitForElement("ClearAndRecreate");
 			RunningApp.Tap("ClearAndRecreate");
+		}
+
+
+		[Test]
+		public void ClearAndRecreateFromSecondaryPage()
+		{
+			RunningApp.WaitForElement("ClearAndRecreate");
+			ShowFlyout();
+			RunningApp.Tap("Item2 Flyout");
+			RunningApp.Tap("ToggleItem1");
+			RunningApp.Tap("ClearAndRecreate");
+			RunningApp.Tap("Top Tab 2");
+			RunningApp.Tap("Top Tab 1");
 		}
 #endif
 	}

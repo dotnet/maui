@@ -40,21 +40,14 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 
 			var bo = (BindableObject)DataContext;
-			DataTemplate dataTemplate;
-			if (bo is IMenuItemController)
-			{
-				dataTemplate = Shell.GetMenuItemTemplate(bo);
-			}
-			else
-			{
-				dataTemplate = Shell.GetItemTemplate(bo);
-			}
+			var shell = (bo as Element)?.FindParent<Shell>();
+			DataTemplate dataTemplate = (shell as IShellController)?.GetFlyoutItemDataTemplate(bo);
 
 			if(dataTemplate != null)
 			{
 				_content = (View)dataTemplate.CreateContent();
 				_content.BindingContext = bo;
-				_content.Parent = (bo as Element)?.FindParent<Shell>();
+				_content.Parent = shell;
 				Content = new ViewToRendererConverter.WrapperControl(_content);
 			}
 		}

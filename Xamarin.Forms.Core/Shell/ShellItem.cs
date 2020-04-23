@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Linq;
 
 namespace Xamarin.Forms
 {
@@ -14,7 +15,7 @@ namespace Xamarin.Forms
 	{
 		public const string LabelStyle = "FlyoutItemLabelStyle";
 		public const string ImageStyle = "FlyoutItemImageStyle";
-		public const string GridStyle = "FlyoutItemGridStyle";
+		public const string LayoutStyle = "FlyoutItemLayoutStyle";
 
 		public FlyoutItem()
 		{
@@ -83,7 +84,9 @@ namespace Xamarin.Forms
 			return accept;
 		}
 
-		ReadOnlyCollection<ShellSection> IShellItemController.GetItems() => ((ShellSectionCollection)Items).VisibleItems;
+		// we want the list returned from here to remain point in time accurate
+		ReadOnlyCollection<ShellSection> IShellItemController.GetItems() => 
+			new ReadOnlyCollection<ShellSection>(((ShellSectionCollection)Items).VisibleItems.ToList());
 
 		event NotifyCollectionChangedEventHandler IShellItemController.ItemsCollectionChanged
 		{
@@ -113,7 +116,19 @@ namespace Xamarin.Forms
 
 		public ShellItem()
 		{
-			ShellItemController.ItemsCollectionChanged += (_, __) => SendStructureChanged();
+			ShellItemController.ItemsCollectionChanged += (_, args) =>
+			{
+				if (args.OldItems == null)
+					return;
+
+				foreach (Element item in args.OldItems)
+				{
+					OnVisibleChildRemoved(item);
+				}
+
+				SendStructureChanged();
+			};
+
 			(Items as INotifyCollectionChanged).CollectionChanged += ItemsCollectionChanged;
 
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<ShellItem>>(() => new PlatformConfigurationRegistry<ShellItem>(this));
@@ -210,6 +225,11 @@ namespace Xamarin.Forms
 		protected override void OnChildRemoved(Element child)
 		{
 			base.OnChildRemoved(child);
+			OnVisibleChildRemoved(child);
+		}
+
+		void OnVisibleChildRemoved(Element child)
+		{
 			if (CurrentItem == child)
 			{
 				if (ShellItemController.GetItems().Count == 0)
