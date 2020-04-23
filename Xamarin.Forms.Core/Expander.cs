@@ -20,7 +20,7 @@ namespace Xamarin.Forms
 			=> ((Expander)bindable).SetHeader((View)oldValue));
 
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View), typeof(Expander), default(View), propertyChanged: (bindable, oldValue, newValue)
-			=> ((Expander)bindable).SetContent((View)oldValue, (View)newValue));
+			=> ((Expander)bindable).SetContent());
 
 		public static readonly BindableProperty ContentTemplateProperty = BindableProperty.Create(nameof(ContentTemplate), typeof(DataTemplate), typeof(Expander), default(DataTemplate), propertyChanged: (bindable, oldValue, newValue)
 			=> ((Expander)bindable).SetContent(true));
@@ -45,7 +45,6 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty ForceUpdateSizeCommandProperty = BindableProperty.Create(nameof(ForceUpdateSizeCommand), typeof(ICommand), typeof(Expander), default(ICommand), BindingMode.OneWayToSource);
 
 		DataTemplate _previousTemplate;
-		double _contentHeightRequest = -1;
 		double _lastVisibleHeight = -1;
 		double _previousWidth = -1;
 		double _startHeight;
@@ -78,6 +77,19 @@ namespace Xamarin.Forms
 		}
 
 		StackLayout ExpanderLayout { get; }
+
+		ContentView ContentHolder { get; set; }
+		
+		double ContentHeightRequest
+		{
+			get
+			{
+				var heightRequest = Content.HeightRequest;
+				if (heightRequest < 0 || !(Content is Layout layout))
+					return heightRequest;
+				return heightRequest + layout.Padding.VerticalThickness;
+			}
+		}
 
 		public double Spacing
 		{
@@ -182,59 +194,49 @@ namespace Xamarin.Forms
 
 		void OnIsExpandedChanged(bool isBindingContextChanged = false)
 		{
-			if (Content == null || (!IsExpanded && !Content.IsVisible))
+			if (ContentHolder == null || (!IsExpanded && !ContentHolder.IsVisible))
 			{
 				return;
 			}
 
-			Content.SizeChanged -= OnContentSizeChanged;
+			var isAnimationRunning = ContentHolder.AnimationIsRunning(ExpandAnimationName);
+			ContentHolder.AbortAnimation(ExpandAnimationName);
 
-			var isAnimationRunning = Content.AnimationIsRunning(ExpandAnimationName);
-			Content.AbortAnimation(ExpandAnimationName);
-
-
-			_startHeight = Content.IsVisible
-				? Max(Content.Height - (Content is Layout l ? l.Padding.Top + l.Padding.Bottom : 0), 0)
+			_startHeight = ContentHolder.IsVisible
+				? Max(ContentHolder.Height, 0)
 				: 0;
 
 			if (IsExpanded)
 			{
-				Content.IsVisible = true;
+				ContentHolder.IsVisible = true;
 			}
 
-			_endHeight = _contentHeightRequest >= 0
-				? _contentHeightRequest
+			_endHeight = ContentHeightRequest >= 0
+				? ContentHeightRequest
 				: _lastVisibleHeight;
-
-			var shouldInvokeAnimation = true;
 
 			if (IsExpanded)
 			{
 				if (_endHeight <= 0)
 				{
-					shouldInvokeAnimation = false;
-					Content.SizeChanged += OnContentSizeChanged;
-					Content.HeightRequest = -1;
+					ContentHolder.HeightRequest = -1;
+					_endHeight = ContentHolder.Measure(Width, double.PositiveInfinity).Request.Height;
+					ContentHolder.HeightRequest = 0;
 				}
 			}
 			else
 			{
-				_lastVisibleHeight = _startHeight = _contentHeightRequest >= 0
-						? _contentHeightRequest
+				_lastVisibleHeight = _startHeight = ContentHeightRequest >= 0
+						? ContentHeightRequest
 						: !isAnimationRunning
-							? Content.Height - (Content is Layout layout
-								? layout.Padding.Top + layout.Padding.Bottom
-								: 0)
+							? ContentHolder.Height
 							: _lastVisibleHeight;
 				_endHeight = 0;
 			}
 
 			_shouldIgnoreAnimation = isBindingContextChanged || Height < 0;
 
-			if (shouldInvokeAnimation)
-			{
-				InvokeAnimation();
-			}
+			InvokeAnimation();
 		}
 
 		void SetHeader(View oldHeader)
@@ -256,7 +258,7 @@ namespace Xamarin.Forms
 						{
 							if (parent is Expander ancestorExpander)
 							{
-								ancestorExpander.Content.HeightRequest = -1;
+								ancestorExpander.ContentHolder.HeightRequest = -1;
 							}
 							parent = parent.Parent;
 						}
@@ -279,23 +281,24 @@ namespace Xamarin.Forms
 			OnIsExpandedChanged(isBindingContextChanged);
 		}
 
-		void SetContent(View oldContent, View newContent)
+		void SetContent()
 		{
-			if (oldContent != null)
+			if (ContentHolder != null)
 			{
-				oldContent.SizeChanged -= OnContentSizeChanged;
-				ExpanderLayout.Children.Remove(oldContent);
+				ContentHolder.AbortAnimation(ExpandAnimationName);
+				ExpanderLayout.Children.Remove(ContentHolder);
+				ContentHolder = null;
 			}
-			if (newContent != null)
+			if (Content != null)
 			{
-				if (newContent is Layout layout)
+				ContentHolder = new ContentView
 				{
-					layout.IsClippedToBounds = true;
-				}
-				_contentHeightRequest = newContent.HeightRequest;
-				newContent.HeightRequest = 0;
-				newContent.IsVisible = false;
-				ExpanderLayout.Children.Add(newContent);
+					IsClippedToBounds = true,
+					IsVisible = false,
+					HeightRequest = 0,
+					Content = Content
+				};
+				ExpanderLayout.Children.Add(ContentHolder);
 			}
 
 			if (!_shouldIgnoreContentSetting)
@@ -319,18 +322,6 @@ namespace Xamarin.Forms
 			return (View)template?.CreateContent();
 		}
 
-		void OnContentSizeChanged(object sender, EventArgs e)
-		{
-			if (Content.Height <= 0)
-			{
-				return;
-			}
-			Content.SizeChanged -= OnContentSizeChanged;
-			Content.HeightRequest = 0;
-			_endHeight = Content.Height;
-			InvokeAnimation();
-		}
-
 		void InvokeAnimation()
 		{
 			State = IsExpanded ? ExpanderState.Expanding : ExpanderState.Collapsing;
@@ -338,8 +329,8 @@ namespace Xamarin.Forms
 			if (_shouldIgnoreAnimation)
 			{
 				State = IsExpanded ? ExpanderState.Expanded : ExpanderState.Collapsed;
-				Content.HeightRequest = _endHeight;
-				Content.IsVisible = IsExpanded;
+				ContentHolder.HeightRequest = _endHeight;
+				ContentHolder.IsVisible = IsExpanded;
 				return;
 			}
 
@@ -356,8 +347,8 @@ namespace Xamarin.Forms
 				length = Max((uint)(length * (Abs(_endHeight - _startHeight) / _lastVisibleHeight)), 1);
 			}
 
-			new Animation(v => Content.HeightRequest = v, _startHeight, _endHeight)
-				.Commit(Content, ExpandAnimationName, 16, length, easing, (value, isInterrupted) =>
+			new Animation(v => ContentHolder.HeightRequest = v, _startHeight, _endHeight)
+				.Commit(ContentHolder, ExpandAnimationName, 16, length, easing, (value, isInterrupted) =>
 				{
 					if (isInterrupted)
 					{
@@ -365,7 +356,7 @@ namespace Xamarin.Forms
 					}
 					if (!IsExpanded)
 					{
-						Content.IsVisible = false;
+						ContentHolder.IsVisible = false;
 						State = ExpanderState.Collapsed;
 						return;
 					}
