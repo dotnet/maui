@@ -25,6 +25,8 @@ namespace Xamarin.Essentials
             public override Task<PermissionStatus> RequestAsync() =>
                 Task.FromResult(PermissionStatus.Granted);
 
+            public override bool ShouldShowRationale() => false;
+
             public override void EnsureDeclared()
             {
                 var plistKeys = RequiredInfoPlistKeys?.Invoke();
