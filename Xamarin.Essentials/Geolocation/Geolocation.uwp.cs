@@ -30,7 +30,6 @@ namespace Xamarin.Essentials
             if (permission != PermissionStatus.Granted)
                 throw new PermissionException($"LocationWhenInUse was not granted: {permission}");
 
-
             var geolocator = new Geolocator
             {
                 DesiredAccuracyInMeters = request.PlatformDesiredAccuracy
