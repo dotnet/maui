@@ -187,10 +187,22 @@ namespace Xamarin.Forms.Platform.MacOS
 #if __MOBILE__
 			color.GetRGBA(out red, out green, out blue, out alpha);
 #else
+			if (color.Type == NSColorType.Catalog)
+				throw new InvalidOperationException("Cannot convert a NSColorType.Catalog color without specifying the color space, use the overload to specify an NSColorSpace");
+
 			color.GetRgba(out red, out green, out blue, out alpha);
 #endif
 			return new Color(red, green, blue, alpha);
 		}
+
+#if __MACOS__
+		public static Color ToColor(this UIColor color, NSColorSpace colorSpace)
+		{
+			var convertedColor = color.UsingColorSpace(colorSpace);
+
+			return convertedColor.ToColor();
+		}
+#endif
 
 #if __MOBILE__
 		public static UIColor ToUIColor(this Color color)
