@@ -157,7 +157,7 @@ namespace Xamarin.Essentials
                                 {
                                     locationManager.AuthorizationChanged -= LocationAuthCallback;
                                     tcs.TrySetResult(GetLocationStatus(whenInUse));
-                                    locationManager.Dispose();
+                                    locationManager?.Dispose();
                                     locationManager = null;
                                 }
                             });
@@ -168,7 +168,7 @@ namespace Xamarin.Essentials
                     locationManager.AuthorizationChanged -= LocationAuthCallback;
 
                     tcs.TrySetResult(GetLocationStatus(whenInUse));
-                    locationManager.Dispose();
+                    locationManager?.Dispose();
                     locationManager = null;
                 }
             }

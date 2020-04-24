@@ -19,7 +19,10 @@ namespace Xamarin.Essentials
 
         static async Task<Location> PlatformLastKnownLocationAsync()
         {
-            await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+            var permission = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+
+            if (permission != PermissionStatus.Granted)
+                throw new PermissionException($"LocationWhenInUse was not granted: {permission}");
 
             var lm = Platform.LocationManager;
             AndroidLocation bestLocation = null;
@@ -37,7 +40,10 @@ namespace Xamarin.Essentials
 
         static async Task<Location> PlatformLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
         {
-            await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+            var permission = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+
+            if (permission != PermissionStatus.Granted)
+                throw new PermissionException($"LocationWhenInUse was not granted: {permission}");
 
             var locationManager = Platform.LocationManager;
 

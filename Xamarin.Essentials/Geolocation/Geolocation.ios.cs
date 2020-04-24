@@ -14,7 +14,10 @@ namespace Xamarin.Essentials
             if (!CLLocationManager.LocationServicesEnabled)
                 throw new FeatureNotEnabledException("Location services are not enabled on device.");
 
-            await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+            var permission = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+
+            if (permission != PermissionStatus.Granted)
+                throw new PermissionException($"LocationWhenInUse was not granted: {permission}");
 
             var manager = new CLLocationManager();
             var location = manager.Location;
@@ -27,7 +30,10 @@ namespace Xamarin.Essentials
             if (!CLLocationManager.LocationServicesEnabled)
                 throw new FeatureNotEnabledException("Location services are not enabled on device.");
 
-            await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+            var permission = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+
+            if (permission != PermissionStatus.Granted)
+                throw new PermissionException($"LocationWhenInUse was not granted: {permission}");
 
             // the location manager requires an active run loop
             // so just use the main loop

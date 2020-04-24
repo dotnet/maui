@@ -25,7 +25,11 @@ namespace Xamarin.Essentials
 
         static async Task<Location> PlatformLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
         {
-            await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+            var permission = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+
+            if (permission != PermissionStatus.Granted)
+                throw new PermissionException($"LocationWhenInUse was not granted: {permission}");
+
 
             var geolocator = new Geolocator
             {
