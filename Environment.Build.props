@@ -30,4 +30,10 @@
     <AndroidTargetFrameworks Condition="'$(Use2017)' == 'true'">MonoAndroid90;</AndroidTargetFrameworks>
     <AndroidTargetFrameworks Condition="'$(Use2017)' == 'false'">MonoAndroid90;MonoAndroid10.0;</AndroidTargetFrameworks>
   </PropertyGroup>
+
+  <!-- Auto install any missing Android SDKs -->
+  <PropertyGroup Condition="'$(CI)' == 'true'">
+    <AndroidRestoreOnBuild Condition="'$(AndroidRestoreOnBuild)' == ''">True</AndroidRestoreOnBuild>
+    <AcceptAndroidSDKLicenses Condition="'$(AcceptAndroidSDKLicenses)' == ''">True</AcceptAndroidSDKLicenses>
+  </PropertyGroup>
 </Project>

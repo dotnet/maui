@@ -37,18 +37,19 @@ PowerShell:
 var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Debug");
 var packageVersion = Argument("packageVersion", "");
-var releaseChannelArg = Argument("releaseChannel", "Stable");
-releaseChannelArg = EnvironmentVariable("releaseChannel") ?? releaseChannelArg;
+var releaseChannelArg = Argument("CHANNEL", "Stable");
+releaseChannelArg = EnvironmentVariable("CHANNEL") ?? releaseChannelArg;
 var teamProject = Argument("TeamProject", "");
 bool buildForVS2017 = Convert.ToBoolean(Argument("buildForVS2017", "false"));
 
 string artifactStagingDirectory = Argument("Build_ArtifactStagingDirectory", (string)null) ?? EnvironmentVariable("Build.ArtifactStagingDirectory") ?? EnvironmentVariable("Build_ArtifactStagingDirectory") ?? ".";
-var ANDROID_HOME = EnvironmentVariable ("ANDROID_HOME") ??
+var ANDROID_HOME = EnvironmentVariable("ANDROID_HOME") ??
     (IsRunningOnWindows () ? "C:\\Program Files (x86)\\Android\\android-sdk\\" : "");
 
-string[] androidSdkManagerInstalls = new string[0];//new [] { "platforms;android-24", "platforms;android-28"};
+string[] androidSdkManagerInstalls = new string[0]; //new [] { "platforms;android-24", "platforms;android-28", "platforms;android-29", "build-tools;29.0.3"};
 
 
+Information ("ANDROID_HOME: {0}", ANDROID_HOME);
 Information ("Team Project: {0}", teamProject);
 Information ("buildForVS2017: {0}", buildForVS2017);
 
@@ -110,12 +111,35 @@ if(String.IsNullOrWhiteSpace(monoSDK_macos))
         monoSDK_macos = $"https://download.mono-project.com/archive/{monoMajorVersion}/macos-10-universal/MonoFramework-MDK-{monoVersion}.macos10.xamarin.universal.pkg";
     }
 }
-    
 
-string androidSDK = IsRunningOnWindows() ? "" : androidSDK_macos;
-string monoSDK = IsRunningOnWindows() ? "" : monoSDK_macos;
-string iosSDK = IsRunningOnWindows() ? "" : iOSSDK_macos;
-string macSDK  = IsRunningOnWindows() ? "" : macSDK_macos;
+string androidSDK_windows = "";
+string iOSSDK_windows = "";
+string monoSDK_windows = "";
+string macSDK_windows = "";
+
+if(!buildForVS2017)
+{
+    androidSDK_macos = EnvironmentVariable("ANDROID_SDK_MAC", androidSDK_macos);
+    iOSSDK_macos = EnvironmentVariable("IOS_SDK_MAC", iOSSDK_macos);
+    monoSDK_macos = EnvironmentVariable("MONO_SDK_MAC", monoSDK_macos);
+    macSDK_macos = EnvironmentVariable("MAC_SDK_MAC", macSDK_macos);
+
+    androidSDK_windows = EnvironmentVariable("ANDROID_SDK_WINDOWS", "");
+    iOSSDK_windows = EnvironmentVariable("IOS_SDK_WINDOWS", "");
+    monoSDK_windows = EnvironmentVariable("MONO_SDK_WINDOWS", "");
+    macSDK_windows = EnvironmentVariable("MAC_SDK_WINDOWS", "");
+}
+
+string androidSDK = IsRunningOnWindows() ? androidSDK_windows : androidSDK_macos;
+string monoSDK = IsRunningOnWindows() ? monoSDK_windows : monoSDK_macos;
+string iosSDK = IsRunningOnWindows() ? iOSSDK_windows : iOSSDK_macos;
+string macSDK  = IsRunningOnWindows() ? macSDK_windows : macSDK_macos;
+
+
+Information ("androidSDK: {0}", androidSDK);
+Information ("monoSDK: {0}", monoSDK);
+Information ("macSDK: {0}", macSDK);
+Information ("iosSDK: {0}", iosSDK);
 
 //////////////////////////////////////////////////////////////////////
 // TASKS
@@ -140,6 +164,8 @@ Task("provision-macsdk")
             else
                 await Boots (Product.XamarinMac, releaseChannel);
         }
+        else if(!String.IsNullOrWhiteSpace(macSDK))
+            await Boots(macSDK);
     });
 
 Task("provision-iossdk")
@@ -152,6 +178,8 @@ Task("provision-iossdk")
             else
                 await Boots (Product.XamariniOS, releaseChannel);
         }
+        else if(!String.IsNullOrWhiteSpace(iosSDK))
+            await Boots(iosSDK);
     });
 
 Task("provision-androidsdk")
@@ -163,9 +191,11 @@ Task("provision-androidsdk")
         if(androidSdkManagerInstalls.Length > 0)
         {
             var androidSdkSettings = new AndroidSdkManagerToolSettings {
-                SdkRoot = ANDROID_HOME,
                 SkipVersionCheck = true
             };
+
+            if(!String.IsNullOrWhiteSpace(ANDROID_HOME))            
+                androidSdkSettings.SdkRoot = ANDROID_HOME;
 
             AcceptLicenses (androidSdkSettings);
             AndroidSdkManagerUpdateAll (androidSdkSettings);
@@ -179,6 +209,8 @@ Task("provision-androidsdk")
             else
                 await Boots (Product.XamarinAndroid, releaseChannel);
         }
+        else if(!String.IsNullOrWhiteSpace(androidSDK))
+            await Boots(androidSDK);
     });
 
 Task("provision-monosdk")
@@ -192,6 +224,8 @@ Task("provision-monosdk")
             else
                 await Boots (Product.Mono, releaseChannel);
         }
+        else if(!String.IsNullOrWhiteSpace(monoSDK))
+            await Boots(monoSDK);
     });
 
 Task("provision")
