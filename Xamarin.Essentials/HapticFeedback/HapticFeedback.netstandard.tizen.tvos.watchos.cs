@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Xamarin.Essentials
 {
@@ -7,10 +8,10 @@ namespace Xamarin.Essentials
         internal static bool IsSupported
             => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-        static void PlatformClick()
-            => throw ExceptionUtils.NotSupportedOrImplementedException;
-
-        static void PlatformLongPress()
-             => throw ExceptionUtils.NotSupportedOrImplementedException;
+        public static async Task PlatformExecute(HapticFeedbackType type)
+        {
+            await Task.FromResult(0);
+            throw ExceptionUtils.NotSupportedOrImplementedException;
+        }
     }
 }

@@ -9,20 +9,14 @@ namespace Xamarin.Essentials
     {
         internal static bool IsSupported => true;
 
-        static async void PlatformClick()
-            => await FeedBack(KnownSimpleHapticsControllerWaveforms.Click);
-
-        static async void PlatformLongPress()
-             => await FeedBack(KnownSimpleHapticsControllerWaveforms.Press);
-
-        static async Task FeedBack(ushort type)
+        public static async Task PlatformExecute(HapticFeedbackType type)
         {
             try
             {
                 if (await VibrationDevice.RequestAccessAsync() == VibrationAccessStatus.Allowed)
                 {
                     var controller = (await VibrationDevice.GetDefaultAsync())?.SimpleHapticsController;
-                    var feedback = FindFeedback(controller, type);
+                    var feedback = FindFeedback(controller, ConvertType(type));
                     if (controller != null && feedback != null)
                         controller.SendHapticFeedback(feedback);
                 }
@@ -46,6 +40,17 @@ namespace Xamarin.Essentials
                 }
             }
             return null;
+        }
+
+        static ushort ConvertType(HapticFeedbackType type)
+        {
+            switch (type)
+            {
+                case HapticFeedbackType.LongPress:
+                    return KnownSimpleHapticsControllerWaveforms.Press;
+                default:
+                    return KnownSimpleHapticsControllerWaveforms.Click;
+            }
         }
     }
 }

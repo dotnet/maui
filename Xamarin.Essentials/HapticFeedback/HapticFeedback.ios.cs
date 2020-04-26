@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using UIKit;
 
 namespace Xamarin.Essentials
@@ -7,9 +8,23 @@ namespace Xamarin.Essentials
     {
         internal static bool IsSupported => true;
 
+        public static async Task PlatformExecute(HapticFeedbackType type)
+        {
+            switch (type)
+            {
+                case HapticFeedbackType.LongPress:
+                    PlatformLongPress();
+                    break;
+                default:
+                    PlatformClick();
+                    break;
+            }
+            await Task.FromResult(0);
+        }
+
         static void PlatformClick()
         {
-            if (UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
+            if (UIDevice.CurrentDevice.CheckSystemVersion(10, 0))
             {
                 var impact = new UIImpactFeedbackGenerator(UIImpactFeedbackStyle.Light);
                 impact.Prepare();
