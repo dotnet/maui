@@ -12,8 +12,8 @@
   <Docs>
     <summary>Enumerates the possible types of HapticFeedback response</summary>
     <remarks>
-		<para />
-	</remarks>
+      <para />
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName="Click">

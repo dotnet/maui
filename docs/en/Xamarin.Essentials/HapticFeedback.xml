@@ -36,8 +36,8 @@
         <param name="type">The type of a HapticFeedback response that will be called</param>
         <summary>Calls the platform-oriented method to cause a HapticFeedback response of the specified type</summary>
         <remarks>
-			<para></para>
-		</remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
   </Members>
