@@ -22,12 +22,14 @@ namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
 					{
 	 					button,
 						GalleryBuilder.NavButton("Basic SwipeView Gallery", () => new BasicSwipeGallery(), Navigation),
-						GalleryBuilder.NavButton("SwipeView Events Gallery", () => new SwipeViewEventsGallery(), Navigation),   
-	  					GalleryBuilder.NavButton("SwipeItems from Resource Gallery", () => new ResourceSwipeItemsGallery(), Navigation),
+						GalleryBuilder.NavButton("SwipeView Events Gallery", () => new SwipeViewEventsGallery(), Navigation),
+						GalleryBuilder.NavButton("SwipeItems from Resource Gallery", () => new ResourceSwipeItemsGallery(), Navigation),
 						GalleryBuilder.NavButton("BindableLayout Gallery", () => new SwipeBindableLayoutGallery(), Navigation),
 						GalleryBuilder.NavButton("ListView (RecycleElement) Gallery", () => new SwipeListViewGallery(), Navigation),
 						GalleryBuilder.NavButton("CollectionView Galleries", () => new SwipeCollectionViewGallery(), Navigation),
+						GalleryBuilder.NavButton("CollectionView using VisualStates Gallery", () => new SwipeViewVisualStatesCollectionGallery(), Navigation),
 						GalleryBuilder.NavButton("CarouselView Gallery", () => new SwipeCarouselViewGallery(), Navigation),
+						GalleryBuilder.NavButton("SwipeView GestureRecognizer Gallery", () => new SwipeViewGestureRecognizerGallery(), Navigation),
 						GalleryBuilder.NavButton("SwipeBehaviorOnInvoked Gallery", () => new SwipeBehaviorOnInvokedGallery(), Navigation),
 						GalleryBuilder.NavButton("Custom SwipeItem Galleries", () => new CustomSwipeItemGallery(), Navigation),
 						GalleryBuilder.NavButton("SwipeView BindingContext Gallery", () => new SwipeViewBindingContextGallery(), Navigation),
@@ -49,7 +51,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
 			button.TextColor = Color.Black;
 			button.IsEnabled = false;
 
-			Device.SetFlags(new[] { ExperimentalFlags.SwipeViewExperimental });
+			Device.SetFlags(new[] { ExperimentalFlags.SwipeViewExperimental, ExperimentalFlags.CarouselViewExperimental });
 		}
 	}
 }

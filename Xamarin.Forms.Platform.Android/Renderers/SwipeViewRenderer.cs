@@ -257,6 +257,28 @@ namespace Xamarin.Forms.Platform.Android
 			return false;
 		}
 
+		public override bool DispatchTouchEvent(MotionEvent e)
+		{
+			if (e.Action == MotionEventActions.Up)
+				PropagateParentTouch();
+
+			return base.DispatchTouchEvent(e);
+		}
+
+		void PropagateParentTouch()
+		{
+			var itemContentView = _contentView.Parent.GetParentOfType<ItemContentView>();
+
+			// If the SwipeView container is ItemContentView we are using SwipeView with a CollectionView or CarouselView.
+			// When doing touch up, if the SwipeView is closed, we propagate the Touch to the parent. In this way, the parent
+			// element will manage the touch (SelectionChanged, etc.).
+			if (itemContentView != null && !((ISwipeViewController)Element).IsOpen)
+			{
+				itemContentView.ClickOn();
+			}
+		}
+
+
 		void UpdateContent()
 		{
 			if (Element.Content == null)
@@ -437,6 +459,7 @@ namespace Xamarin.Forms.Platform.Android
 				return false;
 			
 			_swipeOffset = GetSwipeOffset(_initialPoint, point);
+			UpdateIsOpen(_swipeOffset != 0);
 
 			if (Math.Abs(_swipeOffset) > double.Epsilon)
 				Swipe();
@@ -660,6 +683,9 @@ namespace Xamarin.Forms.Platform.Android
 			swipeButton.SetPadding(0, buttonPadding, 0, buttonPadding);
 			swipeButton.SetOnTouchListener(null);
 
+			if (!string.IsNullOrEmpty(formsSwipeItem.AutomationId))
+				swipeButton.ContentDescription = formsSwipeItem.AutomationId;
+
 			return swipeButton;
 		}
 
@@ -713,6 +739,8 @@ namespace Xamarin.Forms.Platform.Android
 				_actionView.Dispose();
 				_actionView = null;
 			}
+
+			UpdateIsOpen(false);
 		}
 
 		void Swipe()
@@ -999,7 +1027,8 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (_contentView != null)
 			{
-				var swipeThreshold = (float)(_contentView.Width * 0.8);
+				var contentWidth = (float)_context.FromPixels(_contentView.Width);
+				var swipeThreshold = contentWidth * 0.8f;
 
 				return swipeThreshold;
 			}
@@ -1124,6 +1153,11 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 
 			swipeItem.OnInvoked();
+		}
+
+		void UpdateIsOpen(bool isOpen)
+		{
+			((ISwipeViewController)Element).IsOpen = isOpen;
 		}
 
 		void OnCloseRequested(object sender, EventArgs e)

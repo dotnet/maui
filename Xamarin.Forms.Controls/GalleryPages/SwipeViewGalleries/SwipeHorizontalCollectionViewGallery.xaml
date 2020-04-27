@@ -97,7 +97,9 @@
                 x:Name="SwipeCollectionView"
                 ItemsSource="{Binding Messages}"
                 ItemTemplate="{StaticResource MessageTemplate}"
-                HeightRequest="120">
+                HeightRequest="120"
+                SelectionMode="Single"
+                SelectionChanged="OnSwipeCollectionViewSelectionChanged">
                 <CollectionView.ItemsLayout>
                     <LinearItemsLayout
                         Orientation="Horizontal"/>

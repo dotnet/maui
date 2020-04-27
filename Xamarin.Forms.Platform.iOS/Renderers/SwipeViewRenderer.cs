@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using CoreGraphics;
+using Foundation;
 using UIKit;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
@@ -39,7 +40,7 @@ namespace Xamarin.Forms.Platform.iOS
 		bool _isOpen;
 		bool _isDisposed;
 
-		[Preserve(Conditional = true)]
+		[Internals.Preserve(Conditional = true)]
 		public SwipeViewRenderer()
 		{
 			SwipeView.VerifySwipeViewFlagEnabled(nameof(SwipeViewRenderer));
@@ -50,6 +51,8 @@ namespace Xamarin.Forms.Platform.iOS
 				DelaysTouchesBegan = false,
 				DelaysTouchesEnded = false
 			};
+
+			_tapGestureRecognizer.ShouldReceiveTouch = OnShouldReceiveTouch;
 
 			_panGestureRecognizer = new UIPanGestureRecognizer(HandlePan)
 			{
@@ -175,6 +178,33 @@ namespace Xamarin.Forms.Platform.iOS
 				_contentView.BackgroundColor = backgroundColor;
 		}
 
+		public override void TouchesEnded(NSSet touches, UIEvent evt)
+		{
+			if (_swipeOffset != 0)
+			{
+				TouchesCancelled(touches, evt);
+				return;
+			}
+
+			base.TouchesEnded(touches, evt);
+		}
+
+		public override void TouchesCancelled(NSSet touches, UIEvent evt)
+		{
+			var navigationController = GetUINavigationController(GetViewController());
+
+			if (navigationController != null)
+				navigationController.InteractivePopGestureRecognizer.Enabled = true;
+			
+			if (touches.AnyObject is UITouch anyObject)
+			{
+				CGPoint point = anyObject.LocationInView(this);
+				HandleTouchInteractions(GestureStatus.Canceled, point);
+			}
+
+			base.TouchesCancelled(touches, evt);
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
@@ -270,6 +300,11 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			return null;
+		}
+
+		bool OnShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
+		{
+			return _swipeOffset != 0;
 		}
 
 		void UpdateContent()
@@ -440,6 +475,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			var swipeItem = new UIButton(UIButtonType.Custom)
 			{
+				RestorationIdentifier = formsSwipeItem.Text,
 				BackgroundColor = formsSwipeItem.BackgroundColor.ToUIColor()
 			};
 
@@ -451,6 +487,9 @@ namespace Xamarin.Forms.Platform.iOS
 			swipeItem.SetTitleColor(textColor.ToUIColor(), UIControlState.Normal);
 			swipeItem.UserInteractionEnabled = false;
 			UpdateSwipeItemInsets(swipeItem);
+
+			if (!string.IsNullOrEmpty(formsSwipeItem.AutomationId))
+				swipeItem.AccessibilityIdentifier = formsSwipeItem.AutomationId;
 
 			return swipeItem;
 		}
@@ -590,6 +629,7 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			_swipeOffset = GetSwipeOffset(_initialPoint, point);
+			UpdateIsOpen(_swipeOffset != 0);
 
 			if (Math.Abs(_swipeOffset) > double.Epsilon)
 				Swipe();
@@ -785,6 +825,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			_isOpen = false;
 			_swipeThreshold = 0;
+			_swipeOffset = 0;
 
 			if (_actionView != null)
 			{
@@ -798,6 +839,8 @@ namespace Xamarin.Forms.Platform.iOS
 				_swipeItemsRect.Clear();
 				_swipeItemsRect = null;
 			}
+
+			UpdateIsOpen(false);
 		}
 
 		void ResetSwipe(bool animated = true)
@@ -1165,6 +1208,11 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			swipeItem.OnInvoked();
+		}
+
+		void UpdateIsOpen(bool isOpen)
+		{
+			((ISwipeViewController)Element).IsOpen = isOpen;
 		}
 
 		void OnParentScrolled(object sender, ScrolledEventArgs e)

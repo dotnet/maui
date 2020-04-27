@@ -1,11 +1,8 @@
-﻿using Xamarin.Forms.Internals;
-
-namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
+﻿namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
 {
-	[Preserve(AllMembers = true)]
-	public partial class SwipeHorizontalCollectionViewGallery : ContentPage
+	public partial class SwipeViewVisualStatesCollectionGallery : ContentPage
 	{
-		public SwipeHorizontalCollectionViewGallery()
+		public SwipeViewVisualStatesCollectionGallery()
 		{
 			InitializeComponent();
 			BindingContext = new SwipeViewGalleryViewModel();
@@ -16,6 +13,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
 
 		async void OnSwipeCollectionViewSelectionChanged(object sender, SelectionChangedEventArgs args)
 		{
+			var currentSelection = args.CurrentSelection[0];
+			SelectedLabel.Text = $"Current selection: {((Message)currentSelection).Title}";
 			await DisplayAlert("OnSwipeCollectionViewSelectionChanged", "CollectionView SelectionChanged", "Ok");
 		}
 	}
