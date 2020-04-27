@@ -1,0 +1,54 @@
+<Type Name="HapticFeedbackType" FullName="Xamarin.Essentials.HapticFeedbackType">
+  <TypeSignature Language="C#" Value="public enum HapticFeedbackType" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed HapticFeedbackType extends System.Enum" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.HapticFeedbackType" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Enum</BaseTypeName>
+  </Base>
+  <Docs>
+    <summary>Enumerates the possible types of HapticFeedback response</summary>
+    <remarks>
+		<para />
+	</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Click">
+      <MemberSignature Language="C#" Value="Click" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.HapticFeedbackType Click = int32(0)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.HapticFeedbackType.Click" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.HapticFeedbackType</ReturnType>
+      </ReturnValue>
+      <MemberValue>0</MemberValue>
+      <Docs>
+        <summary>Click</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="LongPress">
+      <MemberSignature Language="C#" Value="LongPress" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.HapticFeedbackType LongPress = int32(1)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.HapticFeedbackType.LongPress" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.HapticFeedbackType</ReturnType>
+      </ReturnValue>
+      <MemberValue>1</MemberValue>
+      <Docs>
+        <summary>LongPress</summary>
+      </Docs>
+    </Member>
+  </Members>
+</Type>
