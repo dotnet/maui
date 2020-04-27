@@ -3,11 +3,23 @@ steps:
     clean: true
 
   - task: xamops.azdevex.provisionator-task.provisionator@1
+    displayName: 'Provision Xcode'
+    condition: and(ne(variables['REQUIRED_XCODE'], ''), eq(variables['buildForVS2017'], 'false'))
+    inputs:
+      provisioning_script: 'build/provisioning/xcode.csx'
+
+  - task: xamops.azdevex.provisionator-task.provisionator@1
     displayName: 'Provisionator'
     condition: and(eq(variables['provisioning'], 'true'), eq(variables['buildForVS2017'], 'false'))
     inputs:
       provisioning_script: $(provisionator.osxPath)
-      provisioning_extra_args: $(provisionator.extraArguments)
+      provisioning_extra_args: $(provisionator.extraArguments) --v
+
+  - script: |
+      echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
+      echo "##vso[task.prependpath]~/Library/Developer/Xamarin/android-sdk-macosx"
+    displayName: 'Setup SDK Paths'
+    condition: and(ne(variables['osx2019VmPool'], 'Azure Pipelines'), eq(variables['buildForVS2017'], 'false'))
 
   - task: Bash@3
     displayName: 'Cake Provision'
@@ -15,7 +27,7 @@ steps:
     inputs:
       targetType: 'filePath'
       filePath: 'build.sh'
-      arguments: --target provision --TeamProject="$(System.TeamProject)" --buildForVS2017=$(buildForVS2017) --releaseChannel=$(releaseChannel)
+      arguments: --target provision --TeamProject="$(System.TeamProject)" --buildForVS2017=$(buildForVS2017)
 
   - task: UseDotNet@2
     displayName: 'Install .net core $(DOTNET_VERSION)'
@@ -29,7 +41,7 @@ steps:
     condition: ne(variables['NUGET_VERSION'], '')
     inputs:
       versionSpec: $(NUGET_VERSION)
-  
+
   - task: DownloadBuildArtifacts@0
     displayName: 'Download build artifact nuget'
     condition: eq(variables['System.TeamProject'], 'DevDiv')
@@ -128,7 +140,7 @@ steps:
        Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/NUnit3.*
        Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/Plugin.*
        Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/Xamarin.*
-       
+
       TargetFolder: '$(build.artifactstagingdirectory)/android'
       CleanTargetFolder: true
       flattenFolders: true

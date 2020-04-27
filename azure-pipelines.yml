@@ -72,7 +72,7 @@ stages:
         pool:
           name: $(vs2019VmPool)
           vmImage: $(vs2019VmImage)
-          demands: 
+          demands:
             msbuild
         strategy:
           matrix:
@@ -93,7 +93,7 @@ stages:
         pool:
           name: $(vs2019VmPool)
           vmImage: $(vs2019VmImage)
-          demands: 
+          demands:
             msbuild
         strategy:
           matrix:
@@ -119,7 +119,7 @@ stages:
         pool:
           name: $(vs2019VmPool)
           vmImage: $(vs2019VmImage)
-          demands: 
+          demands:
             msbuild
         variables:
           FormsIdAppend: ''
@@ -136,7 +136,7 @@ stages:
         pool:
           name: $(vs2019VmPool)
           vmImage: $(vs2019VmImage)
-          demands: 
+          demands:
             - Agent.OS -equals Windows_NT
             - msbuild
         strategy:
@@ -158,7 +158,7 @@ stages:
         pool:
           name: $(vs2019VmPool)
           vmImage: $(vs2019VmImage)
-          demands: 
+          demands:
             - Agent.OS -equals Windows_NT
             - msbuild
         strategy:
@@ -185,7 +185,7 @@ stages:
         pool:
           name: $(vs2019VmPool)
           vmImage: $(vs2019VmImage)
-          demands: 
+          demands:
             - Agent.OS -equals Windows_NT
             - msbuild
         variables:
@@ -243,7 +243,7 @@ stages:
       - job: osx
         workspace:
           clean: all
-        displayName: OSX Phase
+        displayName: OSX Phase 2017
         pool:
           name:  $(osx2017VmPool)
           vmImage: 'macOS-10.14'
@@ -253,6 +253,7 @@ stages:
         variables:
           provisionator.osxPath : 'build/provisioning/provisioning.csx'
           buildConfiguration: $(DefaultBuildConfiguration)
+          slnPath: $(SolutionFile)
           iOSCertSecureFileName: 'Xamarin Forms iOS Certificate.p12'
           iOSProvisioningSecureFileName: 'Xamarin Forms iOS Provisioning.mobileprovision'
           buildForVS2017: 'true'
@@ -269,7 +270,7 @@ stages:
           displayName: Sign Phase
           pool:
             name: $(signVmImage)
-            demands: 
+            demands:
               msbuild
           steps:
             - template: build/steps/build-sign.yml
