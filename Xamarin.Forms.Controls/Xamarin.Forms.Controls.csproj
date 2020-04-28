@@ -67,6 +67,9 @@
     <Compile Update="TabIndexTest\DaysOfWeekView.xaml.cs">
       <DependentUpon>DaysOfWeekView.xaml</DependentUpon>
     </Compile>
+    <Compile Update="GalleryPages\IndicatorViewGalleries\IndicatorGalleries.cs">
+      <SubType></SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="TabIndexTest\DayView.xaml">

@@ -210,23 +210,29 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			}
 		}
 
+		readonly Random _random = new Random();
+
 		void SetSource(bool empty)
 		{
-			var random = new Random();
 
 			var source = new List<CarouselData>();
 			if (!empty)
 			{
 				for (int n = 0; n < 5; n++)
 				{
-					source.Add(new CarouselData
-					{
-						Color = Color.FromRgb(random.Next(0, 255), random.Next(0, 255), random.Next(0, 255)),
-						Name = $"{n + 1}"
-					});
+					source.Add(GetItem(n));
 				}
 			}
 			Items = new ObservableCollection<CarouselData>(source);
+		}
+
+		public CarouselData GetItem(int currentCount)
+		{
+			return new CarouselData
+			{
+				Color = Color.FromRgb(_random.Next(0, 255), _random.Next(0, 255), _random.Next(0, 255)),
+				Name = $"{currentCount + 1}"
+			};
 		}
 
 		public ObservableCollection<CarouselData> Items
