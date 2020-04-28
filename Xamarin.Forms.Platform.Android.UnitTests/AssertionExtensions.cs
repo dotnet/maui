@@ -16,15 +16,20 @@ namespace Xamarin.Forms.Platform.Android.UnitTests
 	{
 		public static string CreateColorAtPointError(this Bitmap bitmap, AColor expectedColor, int x, int y)
 		{
+			return CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
+		}
+
+		public static string CreateColorError(this Bitmap bitmap, string message)
+		{
 			using (var ms = new MemoryStream())
 			{
 				bitmap.Compress(Bitmap.CompressFormat.Png, 0, ms);
 				var imageAsString = Convert.ToBase64String(ms.ToArray());
-				return $"Expected {expectedColor} at point {x},{y} in renderered view. This is what it looked like:<img>{imageAsString}</img>";
+				return $"{message}. This is what it looked like:<img>{imageAsString}</img>";
 			}
 		}
 
-		public static AColor ColorAtPoint(this Bitmap bitmap, int x, int y)
+		public static AColor ColorAtPoint(this Bitmap bitmap, int x, int y, bool includeAlpha = false)
 		{
 			int pixel = bitmap.GetPixel(x, y);
 
@@ -32,7 +37,15 @@ namespace Xamarin.Forms.Platform.Android.UnitTests
 			int blue = AColor.GetBlueComponent(pixel);
 			int green = AColor.GetGreenComponent(pixel);
 
-			return AColor.Rgb(red, green, blue);
+			if (includeAlpha)
+			{
+				int alpha = AColor.GetAlphaComponent(pixel);
+				return AColor.Argb(alpha, red, green, blue);
+			}
+			else
+			{
+				return AColor.Rgb(red, green, blue);
+			}
 		}
 
 		public static Bitmap ToBitmap(this AView view)
@@ -78,6 +91,25 @@ namespace Xamarin.Forms.Platform.Android.UnitTests
 		public static Bitmap AssertColorAtTopRight(this Bitmap bitmap, AColor expectedColor)
 		{
 			return bitmap.AssertColorAtPoint(expectedColor, bitmap.Width - 1, bitmap.Height - 1);
+		}
+
+		public static Bitmap AssertContainsColor(this AView view, AColor expectedColor)
+		{
+			var bitmap = view.ToBitmap();
+
+			for(int x = 1; x < view.Width; x++)
+			{
+				for(int y = 1; y < view.Height; y++)
+				{
+					if(bitmap.ColorAtPoint(x, y, true) == expectedColor)
+					{
+						return bitmap;
+					}
+				}
+			}
+
+			Assert.Fail(CreateColorError(bitmap, $"Color {expectedColor} not found."));
+			return bitmap;
 		}
 
 		public static Bitmap AssertColorAtPoint(this AView view, AColor expectedColor, int x, int y)

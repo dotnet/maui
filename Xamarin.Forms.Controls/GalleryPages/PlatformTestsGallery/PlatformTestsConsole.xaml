@@ -10,7 +10,7 @@
              x:Class="Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery.PlatformTestsConsole">
     <ContentPage.Content>
         <StackLayout Margin="2">
-            <Grid MinimumHeightRequest="90">
+            <Grid MinimumHeightRequest="100">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"></ColumnDefinition>
                     <ColumnDefinition Width="Auto"></ColumnDefinition>
@@ -19,11 +19,10 @@
                 <Label x:Name="Status" Text="Running Tests..." VerticalTextAlignment="Center"/>
                 <Label Grid.Column="1" x:Name="RunCount" Text="" VerticalTextAlignment="Center"/>
                 <Button Grid.Column="2" Text="Run Again" x:Name="Rerun" IsEnabled="False"/>
+                <Button Grid.Column="3" Text="Toggle Passed" AutomationId="TogglePassed" x:Name="togglePassed"/>
             </Grid>
-            
             <ScrollView x:Name="ResultsScrollView">
                 <StackLayout x:Name="Results" ChildAdded="ResultsAdded">
-                    
                 </StackLayout>
             </ScrollView>
         </StackLayout>
