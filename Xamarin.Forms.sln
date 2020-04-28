@@ -120,7 +120,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.ControlGaller
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Maps.GTK", "Xamarin.Forms.Maps.GTK\Xamarin.Forms.Maps.GTK.csproj", "{A9772BB1-0E17-42F5-A6DB-60BFCCBFDB9D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Platform.WPF", "Xamarin.Forms.Platform.WPF\Xamarin.Forms.Platform.WPF.csproj", "{140BC260-8B15-4D3A-B1B0-DDD8072918CC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Platform.WPF", "Xamarin.Forms.Platform.WPF\Xamarin.Forms.Platform.WPF.csproj", "{140BC260-8B15-4D3A-B1B0-DDD8072918CC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Maps.WPF", "Xamarin.Forms.Maps.WPF\Xamarin.Forms.Maps.WPF.csproj", "{89B0DB73-A32E-447C-9390-A2A59D89B2E4}"
 EndProject
@@ -156,11 +156,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xamarin.Forms.DualScreen", "Xamarin.Forms.DualScreen", "{C97E54D4-DBC5-424E-B63F-4CF2F3EE8D13}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.DualScreen", "Xamarin.Forms.DualScreen\Xamarin.Forms.DualScreen.csproj", "{FB4A866A-5721-4545-9E5D-B7F7D59875A4}"
-	ProjectSection(ProjectDependencies) = postProject
-		{0E16E70A-D6DD-4323-AD5D-363ABFF42D6A} = {0E16E70A-D6DD-4323-AD5D-363ABFF42D6A}
-		{00D8D049-FFAA-4759-8FC9-1ECA30777F72} = {00D8D049-FFAA-4759-8FC9-1ECA30777F72}
-		{3B72465B-ACAE-43AE-9327-10F372FE5F80} = {3B72465B-ACAE-43AE-9327-10F372FE5F80}
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.DualScreen.UnitTests", "Xamarin.Forms.DualScreen.UnitTests\Xamarin.Forms.DualScreen.UnitTests.csproj", "{00D50743-7821-4293-92F2-7C614C256BD6}"
 EndProject
