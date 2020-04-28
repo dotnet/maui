@@ -8,10 +8,6 @@ namespace Xamarin.Essentials
         internal static bool IsSupported
             => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-        static async Task PlatformExecute(HapticFeedbackType type)
-        {
-            await Task.CompletedTask;
-            throw ExceptionUtils.NotSupportedOrImplementedException;
-        }
+        static void PlatformExecute(HapticFeedbackType type) => throw ExceptionUtils.NotSupportedOrImplementedException;
     }
 }

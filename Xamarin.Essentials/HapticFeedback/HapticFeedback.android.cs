@@ -9,13 +9,12 @@ namespace Xamarin.Essentials
     {
         internal static bool IsSupported => true;
 
-        static async Task PlatformExecute(HapticFeedbackType type)
+        static void PlatformExecute(HapticFeedbackType type)
         {
             Permissions.EnsureDeclared<Permissions.Vibrate>();
             try
             {
                 Platform.CurrentActivity?.Window?.DecorView?.PerformHapticFeedback(ConvertType(type));
-                await Task.CompletedTask;
             }
             catch (Exception ex)
             {

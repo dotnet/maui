@@ -8,7 +8,7 @@ namespace Xamarin.Essentials
     {
         internal static bool IsSupported => true;
 
-        static async Task PlatformExecute(HapticFeedbackType type)
+        static void PlatformExecute(HapticFeedbackType type)
         {
             switch (type)
             {
@@ -19,7 +19,6 @@ namespace Xamarin.Essentials
                     PlatformClick();
                     break;
             }
-            await Task.CompletedTask;
         }
 
         static void PlatformClick()
