@@ -1,13 +1,11 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace Xamarin.Forms.Xaml
 {
 	[ContentProperty(nameof(Default))]
-	public class OnAppThemeExtension : IMarkupExtension, INotifyPropertyChanged
+	public class OnAppThemeExtension : IMarkupExtension<BindingBase>
 	{
 		public OnAppThemeExtension()
 		{
@@ -16,31 +14,37 @@ namespace Xamarin.Forms.Xaml
 			Application.Current.RequestedThemeChanged += RequestedThemeChanged;
 		}
 
-		public event PropertyChangedEventHandler PropertyChanged;
-
-		protected void OnPropertyChanged([CallerMemberName] string propName = null)
-			=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
-
 		public object Default { get; set; }
 		public object Light { get; set; }
 		public object Dark { get; set; }
-
-		private object _value;
-		public object Value
-		{
-			get => _value;
-			private set
-			{
-				_value = value;
-				OnPropertyChanged();
-			}
-		}
+		public object Value	{ get; private set;	}
 
 		public IValueConverter Converter { get; set; }
-
 		public object ConverterParameter { get; set; }
 
 		public object ProvideValue(IServiceProvider serviceProvider)
+		{
+			return (this as IMarkupExtension<BindingBase>).ProvideValue(serviceProvider);
+		}
+
+		object GetValue()
+		{
+			switch (Application.Current?.RequestedTheme)
+			{
+				default:
+				case OSAppTheme.Light:
+					return Light ?? Default;
+				case OSAppTheme.Dark:
+					return Dark ?? Default;
+			}
+		}
+
+		void RequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
+		{
+			Value = GetValue();
+		}
+
+		BindingBase IMarkupExtension<BindingBase>.ProvideValue(IServiceProvider serviceProvider)
 		{
 			if (Default == null
 				&& Light == null
@@ -66,13 +70,15 @@ namespace Xamarin.Forms.Xaml
 							  ?? pi?.PropertyType
 							  ?? throw new InvalidOperationException("Cannot determine property to provide the value for.");
 
-			var value = GetValue();
-			var info = propertyType.GetTypeInfo();
-			if (value == null && info.IsValueType)
-				return Activator.CreateInstance(propertyType);
-
 			if (Converter != null)
-				return Converter.Convert(value, propertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+			{
+				var light = Converter.Convert(Light, propertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+
+				var dark = Converter.Convert(Dark, propertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+				var def = Converter.Convert(Dark, propertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+
+				return new OnAppTheme<object> { Light = light, Dark = dark, Default = def };
+			}
 
 			var converterProvider = serviceProvider?.GetService<IValueConverterProvider>();
 			if (converterProvider != null)
@@ -103,32 +109,39 @@ namespace Xamarin.Forms.Xaml
 					}
 				}
 
-				return converterProvider.Convert(value, propertyType, minforetriever, serviceProvider);
+				var light = converterProvider.Convert(Light, propertyType, minforetriever, serviceProvider);
+
+				var dark = converterProvider.Convert(Dark, propertyType, minforetriever, serviceProvider);
+				var def = converterProvider.Convert(Dark, propertyType, minforetriever, serviceProvider);
+
+				return new OnAppTheme<object> { Light = light, Dark = dark, Default = def };
 			}
 			if (converterProvider != null)
-				return converterProvider.Convert(value, propertyType, () => pi, serviceProvider);
-
-			var ret = value.ConvertTo(propertyType, () => pi, serviceProvider, out Exception exception);
-			if (exception != null)
-				throw exception;
-			return ret;
-		}
-
-		object GetValue()
-		{
-			switch (Application.Current?.RequestedTheme)
 			{
-				default:
-				case OSAppTheme.Light:
-					return Light ?? Default;
-				case OSAppTheme.Dark:
-					return Dark ?? Default;
-			}
-		}
+				var light = converterProvider.Convert(Light, propertyType, () => pi, serviceProvider);
 
-		void RequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
-		{
-			Value = GetValue();
+				var dark = converterProvider.Convert(Dark, propertyType, () => pi, serviceProvider);
+				var def = converterProvider.Convert(Default, propertyType, () => pi, serviceProvider);
+
+				return new OnAppTheme<object> { Light = light, Dark = dark, Default = def };
+			}
+
+			var lightConverted = Light.ConvertTo(propertyType, () => pi, serviceProvider, out Exception lightException);
+			
+			if (lightException != null)
+				throw lightException;
+
+			var darkConverted = Dark.ConvertTo(propertyType, () => pi, serviceProvider, out Exception darkException);
+
+			if (darkException != null)
+				throw darkException;
+
+			var defaultConverted = Dark.ConvertTo(propertyType, () => pi, serviceProvider, out Exception defaultException);
+
+			if (defaultException != null)
+				throw defaultException;
+
+			return new OnAppTheme<object> { Light = Light, Dark = Dark, Default = defaultConverted };
 		}
 	}
 }

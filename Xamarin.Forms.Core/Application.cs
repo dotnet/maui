@@ -6,8 +6,6 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform;
-using System.Diagnostics;
-using Xamarin.Forms.Core;
 
 namespace Xamarin.Forms
 {
@@ -59,7 +57,7 @@ namespace Xamarin.Forms
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrentApplication(Application value) => Current = value; 
+		public static void SetCurrentApplication(Application value) => Current = value;
 
 		public static Application Current { get; set; }
 
@@ -161,18 +159,36 @@ namespace Xamarin.Forms
 
 		public event EventHandler<AppThemeChangedEventArgs> RequestedThemeChanged
 		{
-			add
-			{
-				ExperimentalFlags.VerifyFlagEnabled(nameof(Application), ExperimentalFlags.AppThemeExperimental, nameof(RequestedThemeChanged));
-
-				_weakEventManager.AddEventHandler(value);
-			}
+			add => _weakEventManager.AddEventHandler(value);
 			remove => _weakEventManager.RemoveEventHandler(value);
 		}
 
+		bool _themeChangedFiring;
+		OSAppTheme _lastAppTheme;
+
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void OnRequestedThemeChanged(AppThemeChangedEventArgs args)
-			=> _weakEventManager.HandleEvent(this, args, nameof(RequestedThemeChanged));
+		{
+			if (Device.Flags.IndexOf(ExperimentalFlags.AppThemeExperimental) == -1)
+				return;
+
+			// On iOS the event is triggered more than once.
+			// To minimize that for us, we only do it when the theme actually changes and it's not currently firing
+			if (!_themeChangedFiring && RequestedTheme != _lastAppTheme)
+			{
+				try
+				{
+					_themeChangedFiring = true;
+					_lastAppTheme = RequestedTheme;
+
+					_weakEventManager.HandleEvent(this, args, nameof(RequestedThemeChanged));
+				}
+				finally
+				{
+					_themeChangedFiring = false;
+				}
+			}
+		}
 
 		public event EventHandler<ModalPoppedEventArgs> ModalPopped;
 

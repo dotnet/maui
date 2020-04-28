@@ -275,7 +275,7 @@ namespace Xamarin.Forms
 
 		internal VisualElement()
 		{
-			if (Device.Flags?.IndexOf(ExperimentalFlags.AppThemeExperimental) > 0)
+			if (Application.Current != null)
 				Application.Current.RequestedThemeChanged += (s, a) => OnRequestedThemeChanged(a.RequestedTheme);
 		}
 
