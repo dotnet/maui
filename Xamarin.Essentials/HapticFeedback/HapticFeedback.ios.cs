@@ -19,7 +19,7 @@ namespace Xamarin.Essentials
                     PlatformClick();
                     break;
             }
-            await Task.FromResult(0);
+            await Task.CompletedTask;
         }
 
         static void PlatformClick()

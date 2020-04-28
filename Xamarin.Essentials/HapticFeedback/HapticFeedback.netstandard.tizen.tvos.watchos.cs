@@ -10,7 +10,7 @@ namespace Xamarin.Essentials
 
         static async Task PlatformExecute(HapticFeedbackType type)
         {
-            await Task.FromResult(0);
+            await Task.CompletedTask;
             throw ExceptionUtils.NotSupportedOrImplementedException;
         }
     }
