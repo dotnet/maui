@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void OnCellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (_view == null || _view.IsDisposed())
+			if (!_view.IsAlive())
 			{
 				return;
 			}

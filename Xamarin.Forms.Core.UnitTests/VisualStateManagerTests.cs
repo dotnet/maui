@@ -130,6 +130,10 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var label1 = new Label();
 			Assert.False(label1.HasVisualStateGroups());
+			var vsg = VisualStateManager.GetVisualStateGroups(label1);
+			Assert.False(label1.HasVisualStateGroups());
+			vsg.Add(new VisualStateGroup());
+			Assert.True(label1.HasVisualStateGroups());
 		}
 
 		[Test]

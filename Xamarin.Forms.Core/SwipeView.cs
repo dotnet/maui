@@ -64,6 +64,8 @@ namespace Xamarin.Forms
 			set { SetValue(BottomItemsProperty, value); }
 		}
 
+		bool ISwipeViewController.IsOpen { get; set; }
+
 		static void OnSwipeItemsChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			((SwipeView)bindable).UpdateSwipeItemsParent((SwipeItems)newValue);

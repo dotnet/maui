@@ -99,7 +99,9 @@
                 ItemTemplate="{StaticResource MessageTemplate}"
                 CachingStrategy="RecycleElement"
                 HasUnevenRows="True"
-                SeparatorVisibility="None" />
+                SeparatorVisibility="None"  
+                SelectionMode="Single"
+                ItemTapped="OnSwipeListViewItemTapped" />
         </Grid>
     </ContentPage.Content>
 </ContentPage>

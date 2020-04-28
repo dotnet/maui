@@ -60,10 +60,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RotationTests.cs" />
     <Compile Include="ScaleTests.cs" />
+    <Compile Include="ToolbarExtensionsTests.cs" />
     <Compile Include="ShellTests.cs" />
     <Compile Include="TestClasses\_5560Model.cs" />
     <Compile Include="TextTests.cs" />
     <Compile Include="TranslationTests.cs" />
+    <Compile Include="ButtonTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NUnit">
