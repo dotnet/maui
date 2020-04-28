@@ -38,6 +38,8 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty CanGoForwardProperty = CanGoForwardPropertyKey.BindableProperty;
 
+		public static readonly BindableProperty ShouldManageCookiesProperty = BindableProperty.Create(nameof(ShouldManageCookies), typeof(bool), typeof(WebView), false);
+
 		public static readonly BindableProperty CookiesProperty = BindableProperty.Create(nameof(Cookies), typeof(CookieContainer), typeof(WebView), default(string));
 
 		readonly Lazy<PlatformConfigurationRegistry<WebView>> _platformConfigurationRegistry;
@@ -69,6 +71,12 @@ namespace Xamarin.Forms
 		public bool CanGoForward
 		{
 			get { return (bool)GetValue(CanGoForwardProperty); }
+		}
+
+		public bool ShouldManageCookies
+		{
+			get { return (bool)GetValue(ShouldManageCookiesProperty); }
+			set { SetValue(ShouldManageCookiesProperty, value); }
 		}
 
 		public CookieContainer Cookies
