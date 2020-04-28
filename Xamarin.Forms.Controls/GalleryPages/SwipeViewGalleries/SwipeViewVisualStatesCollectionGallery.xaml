@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries.SwipeVerticalCollectionViewGallery"
-    Title="Swipe CollectionView">
-    <ContentPage.Resources>
+    x:Class="Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries.SwipeViewVisualStatesCollectionGallery"
+    Title="Using VisualStates Gallery">
+   <ContentPage.Resources>
         <ResourceDictionary>
 
             <Style x:Key="TitleStyle" TargetType="Label">
@@ -27,7 +27,19 @@
 
             <DataTemplate x:Key="MessageTemplate">
                 <SwipeView
+                    BackgroundColor="White"
                     HeightRequest="80">
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal" />
+                            <VisualState x:Name="Selected">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor"
+                                            Value="LightSkyBlue" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateManager.VisualStateGroups>
                     <SwipeView.LeftItems>
                         <SwipeItems>
                             <SwipeItem
@@ -48,9 +60,7 @@
                             </SwipeItems>
                         </SwipeView.RightItems>
                     <SwipeView.Content>
-                        <Grid
-                            BackgroundColor="White"
-                            RowSpacing="0">
+                        <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
@@ -90,13 +100,27 @@
         </ResourceDictionary>
     </ContentPage.Resources>
     <ContentPage.Content>
-        <Grid>
+        <Grid
+            RowSpacing="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid
+                Grid.Row="0"
+                BackgroundColor="Black">
+                <Label
+                    x:Name="SelectedLabel"
+                    TextColor="White" />
+            </Grid>
             <CollectionView
+                Grid.Row="1"
                 x:Name="SwipeCollectionView"
                 ItemsSource="{Binding Messages}"
                 ItemTemplate="{StaticResource MessageTemplate}"
                 SelectionMode="Single"
-                SelectionChanged="OnSwipeCollectionViewSelectionChanged"/>
+                SelectionChanged="OnSwipeCollectionViewSelectionChanged">
+            </CollectionView>
         </Grid>
     </ContentPage.Content>
 </ContentPage>

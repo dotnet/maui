@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries.SwipeVerticalCollectionViewGallery"
-    Title="Swipe CollectionView">
-    <ContentPage.Resources>
+    x:Class="Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries.SwipeViewGestureRecognizerGallery"
+    Title="SwipeView GestureRecognizer Gallery">
+   <ContentPage.Resources>
         <ResourceDictionary>
 
             <Style x:Key="TitleStyle" TargetType="Label">
@@ -28,6 +28,11 @@
             <DataTemplate x:Key="MessageTemplate">
                 <SwipeView
                     HeightRequest="80">
+                    <SwipeView.GestureRecognizers>
+                        <TapGestureRecognizer
+                            NumberOfTapsRequired="2"
+                            Command="{Binding Source={x:Reference SwipeCollectionView}, Path=BindingContext.TapCommand}"/>
+                    </SwipeView.GestureRecognizers>
                     <SwipeView.LeftItems>
                         <SwipeItems>
                             <SwipeItem
@@ -38,19 +43,45 @@
                         </SwipeItems>
                     </SwipeView.LeftItems>
                     <SwipeView.RightItems>
-                            <SwipeItems
-                                Mode="Execute">
-                                <SwipeItem
-                                    Text="Delete"
-                                    Icon="coffee.png"
-                                    BackgroundColor="Red"
-                                    Command="{Binding Source={x:Reference SwipeCollectionView}, Path=BindingContext.DeleteCommand}"/>
+                            <SwipeItems>
+                                <SwipeItemView>
+                                    <SwipeItemView.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={x:Reference SwipeCollectionView}, Path=BindingContext.DeleteCommand}"/>
+                                    </SwipeItemView.GestureRecognizers>
+                                    <Grid
+                                        WidthRequest="100"
+                                        BackgroundColor="Red">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Image
+                                            Grid.Row="0"
+                                            Aspect="AspectFit"
+                                            Source="coffee.png"
+                                            HorizontalOptions="Center"/>
+                                        <Label
+                                            Grid.Row="1"
+                                            HorizontalOptions="Center"
+                                            TextColor="White"
+                                            Text="Delete"
+                                            Margin="0, 0, 0, 6"/>
+                                    </Grid>
+                                </SwipeItemView>
                             </SwipeItems>
                         </SwipeView.RightItems>
                     <SwipeView.Content>
                         <Grid
                             BackgroundColor="White"
                             RowSpacing="0">
+                            <!-- CAN ALSO USE FESTURERECOGNIZERS IN THE SWIPEVIEW CONTENT-->
+                            <!--
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer
+                                   Command="{Binding Source={x:Reference SwipeCollectionView}, Path=BindingContext.TapCommand}"/>
+                            </Grid.GestureRecognizers>
+                            -->
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
@@ -94,9 +125,7 @@
             <CollectionView
                 x:Name="SwipeCollectionView"
                 ItemsSource="{Binding Messages}"
-                ItemTemplate="{StaticResource MessageTemplate}"
-                SelectionMode="Single"
-                SelectionChanged="OnSwipeCollectionViewSelectionChanged"/>
+                ItemTemplate="{StaticResource MessageTemplate}"/>
         </Grid>
     </ContentPage.Content>
 </ContentPage>

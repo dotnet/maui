@@ -201,6 +201,20 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
+		internal void ClickOn(AView viewCell)
+		{
+			if (Control == null)
+			{
+				return;
+			}
+
+			var position = Control.GetPositionForView(viewCell);
+			var id = Control.GetItemIdAtPosition(position);
+
+			viewCell.PerformHapticFeedback(FeedbackConstants.ContextClick);
+			_adapter.OnItemClick(Control, viewCell, position, id);
+		}
+
 		internal void LongClickOn(AView viewCell)
 		{
 			if (Control == null)

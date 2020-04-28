@@ -14,6 +14,11 @@ namespace Xamarin.Forms.Platform.Android
 		{
 		}
 
+		internal void ClickOn()
+		{
+			CallOnClick();
+		}
+
 		internal void RealizeContent(View view)
 		{
 			Content = CreateRenderer(view, Context);

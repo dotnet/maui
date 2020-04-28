@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Platform.Android
 		LayoutDirection _prevLayoutDirection = LayoutDirection.Ltr;
 		bool _checkedForRtlScroll = false;
 
-		public ScrollViewRenderer(Context context) : base(new ContextThemeWrapper(context, Resource.Style.NestedScrollBarStyle))
+		public ScrollViewRenderer(Context context) : base(context)
 		{
 		}
 
