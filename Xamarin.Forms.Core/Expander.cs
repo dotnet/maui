@@ -13,9 +13,6 @@ namespace Xamarin.Forms
 
 		public event EventHandler Tapped;
 
-		public static readonly BindableProperty SpacingProperty = BindableProperty.Create(nameof(Spacing), typeof(double), typeof(Expander), 0d, propertyChanged: (bindable, oldvalue, newvalue)
-			=> ((Expander)bindable).ExpanderLayout.Spacing = (double)newvalue);
-
 		public static readonly BindableProperty HeaderProperty = BindableProperty.Create(nameof(Header), typeof(View), typeof(Expander), default(View), propertyChanged: (bindable, oldValue, newValue)
 			=> ((Expander)bindable).SetHeader((View)oldValue));
 
@@ -55,7 +52,7 @@ namespace Xamarin.Forms
 
 		public Expander()
 		{
-			ExpanderLayout = new StackLayout { Spacing = Spacing };
+			ExpanderLayout = new StackLayout { Spacing = 0 };
 			ForceUpdateSizeCommand = new Command(ForceUpdateSize);
 			InternalChildren.Add(ExpanderLayout);
 		}
@@ -89,12 +86,6 @@ namespace Xamarin.Forms
 					return heightRequest;
 				return heightRequest + layout.Padding.VerticalThickness;
 			}
-		}
-
-		public double Spacing
-		{
-			get => (double)GetValue(SpacingProperty);
-			set => SetValue(SpacingProperty, value);
 		}
 
 		public View Header
