@@ -844,6 +844,9 @@ namespace Xamarin.Forms
 
 		internal void InvalidateStateTriggers(bool attach)
 		{
+			if (!this.HasVisualStateGroups())
+				return;
+
 			var groups = (IList<VisualStateGroup>)GetValue(VisualStateManager.VisualStateGroupsProperty);
 
 			if (groups.Count == 0)

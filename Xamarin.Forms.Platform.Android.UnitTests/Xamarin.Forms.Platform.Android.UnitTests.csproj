@@ -64,6 +64,7 @@
     <Compile Include="TestClasses\_5560Model.cs" />
     <Compile Include="TextTests.cs" />
     <Compile Include="TranslationTests.cs" />
+    <Compile Include="ButtonTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NUnit">
