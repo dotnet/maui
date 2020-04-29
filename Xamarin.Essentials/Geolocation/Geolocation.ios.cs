@@ -14,7 +14,7 @@ namespace Xamarin.Essentials
             if (!CLLocationManager.LocationServicesEnabled)
                 throw new FeatureNotEnabledException("Location services are not enabled on device.");
 
-            await Permissions.RequestAndVerifyAsync<Permissions.LocationWhenInUse>(nameof(Permissions.LocationWhenInUse));
+            await Permissions.RequestAndVerifyAsync<Permissions.LocationWhenInUse>();
 
             var manager = new CLLocationManager();
             var location = manager.Location;
@@ -27,7 +27,7 @@ namespace Xamarin.Essentials
             if (!CLLocationManager.LocationServicesEnabled)
                 throw new FeatureNotEnabledException("Location services are not enabled on device.");
 
-            await Permissions.RequestAndVerifyAsync<Permissions.LocationWhenInUse>(nameof(Permissions.LocationWhenInUse));
+            await Permissions.RequestAndVerifyAsync<Permissions.LocationWhenInUse>();
 
             // the location manager requires an active run loop
             // so just use the main loop
