@@ -2,7 +2,7 @@
 {
     public partial class HaptickFeedbackPage : BasePage
     {
-        public HaptickFeadbackPage()
+        public HaptickFeedbackPage()
         {
             InitializeComponent();
         }

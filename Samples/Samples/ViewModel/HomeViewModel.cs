@@ -207,7 +207,7 @@ namespace Samples.ViewModel
                 new SampleItem(
                     "📳",
                     "HaptickFeadback",
-                    typeof(HaptickFeadbackPage),
+                    typeof(HaptickFeedbackPage),
                     "HaptickFeadback",
                     new[] { "HaptickFeadback", "Haptick", "Feadback", "hardware", "device" }),
                 new SampleItem(

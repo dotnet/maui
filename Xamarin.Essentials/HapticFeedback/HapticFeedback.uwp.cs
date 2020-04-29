@@ -13,7 +13,7 @@ namespace Xamarin.Essentials
         {
             try
             {
-                if (Windows.Foundation.Metadata.ApiInformation.IsTypePresent(typeof(VibrationDevice).FullName) && await VibrationDevice.RequestAccessAsync() == VibrationAccessStatus.Allowed)
+                if (Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.Devices.Haptics.VibrationDevice") && await VibrationDevice.RequestAccessAsync() == VibrationAccessStatus.Allowed)
                 {
                     var controller = (await VibrationDevice.GetDefaultAsync())?.SimpleHapticsController;
                     var feedback = FindFeedback(controller, ConvertType(type));
