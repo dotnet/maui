@@ -5,11 +5,11 @@
                 x:Class="Samples.View.HaptickFeedbackPage"
                 Title="Vibration">
     <views:BasePage.BindingContext>
-        <viewmodels:HaptickFeadbackViewModel />
+        <viewmodels:HaptickFeedbackViewModel />
     </views:BasePage.BindingContext>
 
     <StackLayout>
-        <Label Text="Quickly and easily make the device HaptickFeadback." FontAttributes="Bold" Margin="12" />
+        <Label Text="Quickly and easily make the device HaptickFeedback." FontAttributes="Bold" Margin="12" />
 
         <ScrollView>
             <StackLayout Padding="12,0,12,12" Spacing="6">

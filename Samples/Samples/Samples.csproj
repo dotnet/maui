@@ -24,4 +24,10 @@
     <ProjectReference Include="..\..\Xamarin.Essentials\Xamarin.Essentials.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="View\HaptickFeedbackPage.xaml.cs">
+      <DependentUpon>HaptickFeedbackPage.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
 </Project>

@@ -206,10 +206,10 @@ namespace Samples.ViewModel
                     new[] { "vibration", "vibrate", "hardware", "device" }),
                 new SampleItem(
                     "📳",
-                    "HaptickFeadback",
+                    "HaptickFeedback",
                     typeof(HaptickFeedbackPage),
-                    "HaptickFeadback",
-                    new[] { "HaptickFeadback", "Haptick", "Feadback", "hardware", "device" }),
+                    "HaptickFeedback",
+                    new[] { "HaptickFeedback", "Haptick", "Feedback", "hardware", "device" }),
                 new SampleItem(
                     "🔓",
                     "Web Authenticator",
