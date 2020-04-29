@@ -12,7 +12,7 @@ namespace Xamarin.Essentials
 
         static async Task<Location> PlatformLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
         {
-            await Permissions.RequestAndVerifyAsync<Permissions.LocationWhenInUse>();
+            await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
 
             Locator service = null;
             var gps = Platform.GetFeatureInfo<bool>("location.gps");

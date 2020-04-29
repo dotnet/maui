@@ -41,7 +41,7 @@ namespace Xamarin.Essentials
             if (!IsSupported)
                 throw new FeatureNotSupportedException();
 
-            await Permissions.RequestAndVerifyAsync<Permissions.Flashlight>();
+            await Permissions.EnsureGrantedAsync<Permissions.Flashlight>();
 
         }
 

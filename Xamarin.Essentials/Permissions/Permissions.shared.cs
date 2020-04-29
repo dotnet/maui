@@ -16,7 +16,7 @@ namespace Xamarin.Essentials
             where TPermission : BasePermission, new() =>
                 new TPermission().EnsureDeclared();
 
-        internal static async Task RequestAndVerifyAsync<TPermission>()
+        internal static async Task EnsureGrantedAsync<TPermission>()
             where TPermission : BasePermission, new()
         {
             var status = await RequestAsync<TPermission>();

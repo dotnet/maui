@@ -25,7 +25,7 @@ namespace Xamarin.Essentials
 
         static async Task<Location> PlatformLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
         {
-            await Permissions.RequestAndVerifyAsync<Permissions.LocationWhenInUse>();
+            await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
 
             var geolocator = new Geolocator
             {
