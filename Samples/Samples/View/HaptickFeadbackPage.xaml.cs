@@ -1,6 +1,6 @@
 ﻿namespace Samples.View
 {
-    public partial class HaptickFeadbackPage : BasePage
+    public partial class HaptickFeedbackPage : BasePage
     {
         public HaptickFeadbackPage()
         {
