@@ -11,11 +11,30 @@ namespace Xamarin.Essentials
 {
     public static partial class AppActions
     {
-        static IEnumerable<AppAction> PlatformGetActions() =>
-            Platform.ShortcutManager.DynamicShortcuts.Select(s => s.ToAppAction());
+        internal static bool PlatformIsSupported
+            => Platform.HasApiLevelNMr1;
 
-        static void PlatformSetActions(IEnumerable<AppAction> actions) =>
+        static IEnumerable<AppAction> PlatformGetActions()
+        {
+            if (!IsSupported)
+                throw new FeatureNotSupportedException();
+
+#if __ANDROID_25__
+            return Platform.ShortcutManager.DynamicShortcuts.Select(s => s.ToAppAction());
+#else
+            return null;
+#endif
+        }
+
+        static void PlatformSetActions(IEnumerable<AppAction> actions)
+        {
+            if (!IsSupported)
+                throw new FeatureNotSupportedException();
+
+#if __ANDROID_25__
             Platform.ShortcutManager.SetDynamicShortcuts(actions.Select(a => a.ToShortcutInfo()).ToList());
+#endif
+        }
 
         static AppAction ToAppAction(this ShortcutInfo shortcutInfo) =>
             new AppAction(shortcutInfo.Id, shortcutInfo.ShortLabel, shortcutInfo.LongLabel);

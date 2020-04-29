@@ -8,11 +8,24 @@ namespace Xamarin.Essentials
 {
     public static partial class AppActions
     {
-        static IEnumerable<AppAction> PlatformGetActions() =>
-            UIApplication.SharedApplication.ShortcutItems.Select(s => s.ToAppAction());
+        internal static bool PlatformIsSupported
+            => Platform.HasOSVersion(9, 0);
 
-        static void PlatformSetActions(IEnumerable<AppAction> actions) =>
+        static IEnumerable<AppAction> PlatformGetActions()
+        {
+            if (!IsSupported)
+                throw new FeatureNotSupportedException();
+
+            return UIApplication.SharedApplication.ShortcutItems.Select(s => s.ToAppAction());
+        }
+
+        static void PlatformSetActions(IEnumerable<AppAction> actions)
+        {
+            if (!IsSupported)
+                throw new FeatureNotSupportedException();
+
             UIApplication.SharedApplication.ShortcutItems = actions.Select(a => a.ToShortcutItem()).ToArray();
+        }
 
         static AppAction ToAppAction(this UIApplicationShortcutItem shortcutItem) =>
             new AppAction(shortcutItem.Type, shortcutItem.LocalizedTitle, shortcutItem.LocalizedSubtitle);

@@ -5,6 +5,9 @@ namespace Xamarin.Essentials
 {
     public static partial class AppActions
     {
+        internal static bool IsSupported
+            => PlatformIsSupported;
+
         public static IEnumerable<AppAction> Actions
         {
             get => PlatformGetActions();
@@ -14,7 +17,7 @@ namespace Xamarin.Essentials
 
     public class AppAction
     {
-        public AppAction(string actionType, string title, string subtitle = null, string icon = null, Uri uri = null)
+        public AppAction(string actionType, string title, string subtitle = null, Uri uri = null, string icon = null)
         {
             ActionType = actionType;
             Title = title;

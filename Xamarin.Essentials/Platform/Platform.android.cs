@@ -212,8 +212,10 @@ namespace Xamarin.Essentials
         internal static PowerManager PowerManager =>
             AppContext.GetSystemService(Context.PowerService) as PowerManager;
 
+#if __ANDROID_25__
         internal static ShortcutManager ShortcutManager =>
             AppContext.GetSystemService(Context.ShortcutService) as ShortcutManager;
+#endif
 
         internal static Java.Util.Locale GetLocale()
         {
