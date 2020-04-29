@@ -19,7 +19,7 @@ namespace Xamarin.Essentials
 
         static async Task<Location> PlatformLastKnownLocationAsync()
         {
-            await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>());
+            await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
 
             var lm = Platform.LocationManager;
             AndroidLocation bestLocation = null;

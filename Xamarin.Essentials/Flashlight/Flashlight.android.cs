@@ -42,7 +42,6 @@ namespace Xamarin.Essentials
                 throw new FeatureNotSupportedException();
 
             await Permissions.EnsureGrantedAsync<Permissions.Flashlight>();
-
         }
 
         static Task ToggleTorchAsync(bool switchOn)
