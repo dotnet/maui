@@ -8,22 +8,11 @@ namespace Xamarin.Essentials
     {
         static Location lastKnownLocation = new Location();
 
-        static async Task<Location> PlatformLastKnownLocationAsync()
-        {
-            var permission = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
-
-            if (permission != PermissionStatus.Granted)
-                throw new PermissionException($"LocationWhenInUse was not granted: {permission}");
-
-            return lastKnownLocation;
-        }
+        static Task<Location> PlatformLastKnownLocationAsync() => Task.FromResult(lastKnownLocation);
 
         static async Task<Location> PlatformLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
         {
-            var permission = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
-
-            if (permission != PermissionStatus.Granted)
-                throw new PermissionException($"LocationWhenInUse was not granted: {permission}");
+            await Permissions.RequestAndVerifyAsync<Permissions.LocationWhenInUse>(nameof(Permissions.LocationWhenInUse));
 
             Locator service = null;
             var gps = Platform.GetFeatureInfo<bool>("location.gps");

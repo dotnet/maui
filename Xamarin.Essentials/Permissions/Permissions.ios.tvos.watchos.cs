@@ -161,17 +161,21 @@ namespace Xamarin.Essentials
                                     try
                                     {
                                         // Wait for a timeout to see if the check is complete
-                                        if (!tcs.Task.IsCompleted)
+                                        if (tcs != null && !tcs.Task.IsCompleted)
                                         {
                                             locationManager.AuthorizationChanged -= LocationAuthCallback;
                                             tcs.TrySetResult(GetLocationStatus(whenInUse));
-                                            locationManager?.Dispose();
-                                            locationManager = null;
                                         }
                                     }
                                     catch (Exception ex)
                                     {
                                         Debug.WriteLine($"Exception processing location permission: {ex.Message}");
+                                        tcs?.TrySetException(ex);
+                                    }
+                                    finally
+                                    {
+                                        locationManager?.Dispose();
+                                        locationManager = null;
                                     }
                                 });
                                 return;
@@ -187,6 +191,9 @@ namespace Xamarin.Essentials
                     catch (Exception ex)
                     {
                         Debug.WriteLine($"Exception processing location permission: {ex.Message}");
+                        tcs?.TrySetException(ex);
+                        locationManager?.Dispose();
+                        locationManager = null;
                     }
                 }
             }

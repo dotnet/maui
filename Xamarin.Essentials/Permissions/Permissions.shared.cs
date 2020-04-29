@@ -16,6 +16,15 @@ namespace Xamarin.Essentials
             where TPermission : BasePermission, new() =>
                 new TPermission().EnsureDeclared();
 
+        internal static async Task RequestAndVerifyAsync<TPermission>(string name)
+            where TPermission : BasePermission, new()
+        {
+            var status = await RequestAsync<TPermission>();
+
+            if (status != PermissionStatus.Granted)
+                throw new PermissionException($"{name} permission was not granted: {status}");
+        }
+
         public abstract partial class BasePermission
         {
             [Preserve]
