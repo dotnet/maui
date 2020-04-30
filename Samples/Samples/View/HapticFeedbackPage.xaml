@@ -9,13 +9,13 @@
     </views:BasePage.BindingContext>
 
     <StackLayout>
-        <Label Text="Quickly and easily make the device HapticFeedback." FontAttributes="Bold" Margin="12" />
+        <Label Text="Quickly and easily make the device provide haptic feedback." FontAttributes="Bold" Margin="12" />
 
         <ScrollView>
             <StackLayout Padding="12,0,12,12" Spacing="6">
                 <Button Text="Click" Command="{Binding ClickCommand}" />
                 <Button Text="LongPress" Command="{Binding LongPressCommand}" />
-                <Label Text="HaptickFeadback is not supported." TextColor="Red" FontAttributes="Italic"
+                <Label Text="HapticFeadback is not supported." TextColor="Red" FontAttributes="Italic"
                        IsVisible="{Binding IsSupported, Converter={StaticResource NegativeConverter}}" />
             </StackLayout>
         </ScrollView>
