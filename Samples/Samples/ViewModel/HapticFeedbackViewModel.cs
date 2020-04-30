@@ -5,11 +5,11 @@ using Xamarin.Forms;
 
 namespace Samples.ViewModel
 {
-    public class HaptickFeedbackViewModel : BaseViewModel
+    public class HapticFeedbackViewModel : BaseViewModel
     {
         bool isSupported = true;
 
-        public HaptickFeedbackViewModel()
+        public HapticFeedbackViewModel()
         {
             ClickCommand = new Command(OnClick);
             LongPressCommand = new Command(OnLongPress);
