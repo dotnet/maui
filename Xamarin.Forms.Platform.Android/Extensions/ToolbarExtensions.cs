@@ -126,7 +126,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			menuitem.SetOnMenuItemClickListener(new GenericMenuClickListener(((IMenuItemController)item).Activate));
 
-			if (!Forms.IsLollipopOrNewer && (tintColor != null && tintColor != Color.Default))
+			if (!Forms.IsOreoOrNewer && (tintColor != null && tintColor != Color.Default))
 			{
 				var view = toolbar.FindViewById(menuitem.ItemId);
 				if (view is ATextView textView)
