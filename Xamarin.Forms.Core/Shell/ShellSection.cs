@@ -286,6 +286,11 @@ namespace Xamarin.Forms
 
 		internal static ShellSection CreateFromShellContent(ShellContent shellContent)
 		{
+			if(shellContent.Parent != null)
+			{
+				return (ShellSection)shellContent.Parent;
+			}
+
 			var shellSection = new ShellSection();
 
 			var contentRoute = shellContent.Route;
@@ -306,17 +311,11 @@ namespace Xamarin.Forms
 			return CreateFromShellContent((ShellContent)page);
 		}
 
-#if DEBUG
-		[Obsolete("Please dont use this in core code... its SUPER hard to debug when this happens", true)]
-#endif
 		public static implicit operator ShellSection(ShellContent shellContent)
 		{
 			return CreateFromShellContent(shellContent);
 		}
 
-#if DEBUG
-		[Obsolete("Please dont use this in core code... its SUPER hard to debug when this happens", true)]
-#endif
 		public static implicit operator ShellSection(TemplatedPage page)
 		{
 			return (ShellSection)(ShellContent)page;

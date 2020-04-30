@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,6 +26,25 @@ namespace Xamarin.Forms.Core.UnitTests
 
 		}
 
+		protected T FindParentOfType<T>(Element element)
+		{
+			var navPage = GetParentsPath(element)
+				.OfType<T>()
+				.FirstOrDefault();
+
+			return navPage;
+		}
+
+		protected IEnumerable<Element> GetParentsPath(Element self)
+		{
+			Element current = self;
+
+			while (!Application.IsApplicationOrNull(current.RealParent))
+			{
+				current = current.RealParent;
+				yield return current;
+			}
+		}
 
 		protected bool IsModal(BindableObject bindableObject)
 		{
