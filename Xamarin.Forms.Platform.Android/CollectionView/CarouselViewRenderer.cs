@@ -245,10 +245,13 @@ namespace Xamarin.Forms.Platform.Android
 				&& currentItemPosition != -1)
 			{
 				carouselPosition = currentItemPosition;
+				//if we are adding a item and we want to stay on the same position
+				//we don't need to scroll
+				_noNeedForScroll = true;
 			}
 
 			_gotoPosition = -1;
-
+		
 			SetCurrentItem(carouselPosition);
 			UpdatePosition(carouselPosition);
 
@@ -258,6 +261,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				UpdateItemDecoration();
 			}
+
 			UpdateVisualStates();
 		}
 

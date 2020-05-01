@@ -1346,6 +1346,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue9962.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\INativeColorService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue9794.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue10300.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue10438.cs" />
   </ItemGroup>
   <ItemGroup>

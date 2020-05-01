@@ -1,42 +1,54 @@
-﻿namespace Xamarin.Forms.Controls.GalleryPages.AppThemeGalleries
+﻿using System;
+
+namespace Xamarin.Forms.Controls.GalleryPages.AppThemeGalleries
 {
 	public class AppThemeCodeGallery : ContentPage
 	{
-		AppThemeColor color = new AppThemeColor { Light = Color.Green, Dark = Color.Red };
-		public Color TheColor
-		{
-			get => color.Value;
-		}
+		Label _currentThemeLabel;
 
 		public AppThemeCodeGallery()
 		{
-			var currentThemeLabel = new Label
+			_currentThemeLabel = new Label
 			{
 				Text = Application.Current.RequestedTheme.ToString()
 			};
 
-			Application.Current.RequestedThemeChanged += (s, a) =>
-			{
-				currentThemeLabel.Text = Application.Current.RequestedTheme.ToString();
-				OnPropertyChanged(nameof(TheColor));
-			};
+			Application.Current.RequestedThemeChanged += Current_RequestedThemeChanged;
 
 			var onThemeLabel = new Label
 			{
-				Text = "This text is green or red depending on Light (or default) or Dark"
+				Text = "TextColor through SetBinding"
 			};
 
-			onThemeLabel.SetBinding(Label.TextColorProperty, new Binding(nameof(TheColor)));
-			BindingContext = this;
+			var onThemeLabel1 = new Label
+			{
+				Text = "TextColor through SetAppTheme"
+			};
+
+			var onThemeLabel2 = new Label
+			{
+				Text = "TextColor through SetAppThemeColor"
+			};
+
+			onThemeLabel.SetBinding(Label.TextColorProperty, new AppThemeColor() { Light = Color.Green, Dark = Color.Red });
+
+			onThemeLabel1.SetOnAppTheme(Label.TextColorProperty, Color.Green, Color.Red);
+
+			onThemeLabel2.SetAppThemeColor(Label.TextColorProperty, Color.Green, Color.Red);
 
 			var stackLayout = new StackLayout
 			{
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,
-				Children = { currentThemeLabel, onThemeLabel }
+				Children = { _currentThemeLabel, onThemeLabel , onThemeLabel1,onThemeLabel2 }
 			};
 
 			Content = stackLayout;
+		}
+
+		private void Current_RequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
+		{
+			_currentThemeLabel.Text = Application.Current.RequestedTheme.ToString();
 		}
 	}
 }

@@ -85,7 +85,7 @@ namespace Xamarin.Forms
 		}
 
 		// we want the list returned from here to remain point in time accurate
-		ReadOnlyCollection<ShellSection> IShellItemController.GetItems() => 
+		ReadOnlyCollection<ShellSection> IShellItemController.GetItems() =>
 			new ReadOnlyCollection<ShellSection>(((ShellSectionCollection)Items).VisibleItems.ToList());
 
 		event NotifyCollectionChangedEventHandler IShellItemController.ItemsCollectionChanged
@@ -154,6 +154,11 @@ namespace Xamarin.Forms
 
 		internal static ShellItem CreateFromShellSection(ShellSection shellSection)
 		{
+			if (shellSection.Parent != null)
+			{
+				return (ShellItem)shellSection.Parent;
+			}
+
 			ShellItem result = null;
 
 			if (shellSection is Tab)
@@ -168,13 +173,10 @@ namespace Xamarin.Forms
 			result.SetBinding(IconProperty, new Binding(nameof(Icon), BindingMode.OneWay, source: shellSection));
 			result.SetBinding(FlyoutDisplayOptionsProperty, new Binding(nameof(FlyoutDisplayOptions), BindingMode.OneTime, source: shellSection));
 			result.SetBinding(FlyoutIconProperty, new Binding(nameof(FlyoutIcon), BindingMode.OneWay, source: shellSection));
-			
+
 			return result;
 		}
 
-#if DEBUG
-		[Obsolete ("Please dont use this in core code... its SUPER hard to debug when this happens", true)]
-#endif
 		public static implicit operator ShellItem(ShellSection shellSection)
 		{
 			return CreateFromShellSection(shellSection);
@@ -195,19 +197,10 @@ namespace Xamarin.Forms
 			return result;
 		}
 
-#if DEBUG
-		[Obsolete("Please dont use this in core code... its SUPER hard to debug when this happens", true)]
-#endif
 		public static implicit operator ShellItem(ShellContent shellContent) => (ShellSection)shellContent;
 
-#if DEBUG
-		[Obsolete("Please dont use this in core code... its SUPER hard to debug when this happens", true)]
-#endif
 		public static implicit operator ShellItem(TemplatedPage page) => (ShellSection)(ShellContent)page;
 
-#if DEBUG
-		[Obsolete("Please dont use this in core code... its SUPER hard to debug when this happens", true)]
-#endif
 		public static implicit operator ShellItem(MenuItem menuItem) => new MenuShellItem(menuItem);
 
 		public IPlatformElementConfiguration<T, ShellItem> On<T>() where T : IConfigPlatform
@@ -278,7 +271,7 @@ namespace Xamarin.Forms
 		internal override void SendAppearing()
 		{
 			base.SendAppearing();
-			if(CurrentItem != null && Parent is Shell shell && shell.CurrentItem == this)
+			if (CurrentItem != null && Parent is Shell shell && shell.CurrentItem == this)
 			{
 				CurrentItem.SendAppearing();
 			}

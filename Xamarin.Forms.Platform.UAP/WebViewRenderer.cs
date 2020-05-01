@@ -70,7 +70,7 @@ if(bases.length == 0){
 				uri = new Uri(LocalScheme + url, UriKind.RelativeOrAbsolute);
 			}
 
-			if (Element.Cookies?.Count > 0)
+			if (Element.ShouldManageCookies && Element.Cookies?.Count > 0)
 			{
 				//Set the Cookies...
 				var filter = new Windows.Web.Http.Filters.HttpBaseProtocolFilter();

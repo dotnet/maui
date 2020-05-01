@@ -32,6 +32,40 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That(shell.CurrentItem, Is.EqualTo(shellItem));
 		}
 
+
+		[TestCase(true)]
+		[TestCase(false)]
+		public void SetCurrentItemWithImplicitlyWrappedShellContent(bool useShellContent)
+		{
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem());
+
+			BaseShellItem shellElement = null;
+
+			if(useShellContent)
+				shellElement = CreateShellContent(shellContentRoute: "TestMe");
+			else
+				shellElement = CreateShellSection(shellSectionRoute: "TestMe");
+
+			if (useShellContent)
+				shell.Items.Add((ShellContent)shellElement);
+			else
+				shell.Items.Add((ShellSection)shellElement);
+
+			var item2 = shell.Items[1];
+
+			Assert.AreEqual(FindParentOfType<ShellItem>(shellElement), item2);
+
+			if (useShellContent)
+				shell.CurrentItem = (ShellContent)shellElement;
+			else
+				shell.CurrentItem = (ShellSection)shellElement;
+
+			Assert.AreEqual(2, shell.Items.Count);
+			Assert.AreEqual(FindParentOfType<ShellItem>(shellElement), item2);
+			Assert.AreEqual(item2, shell.CurrentItem);
+		}
+
 		[Test]
 		public void ShellChildrenBindingContext()
 		{

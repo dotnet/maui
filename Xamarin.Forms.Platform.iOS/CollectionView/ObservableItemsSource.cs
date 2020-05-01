@@ -320,7 +320,7 @@ namespace Xamarin.Forms.Platform.iOS
 			},
 					(_) =>
 					{
-						if (_batchUpdating.CurrentCount > 0)
+						if (_batchUpdating.CurrentCount == 0)
 						{
 							_batchUpdating.Release();
 						}
