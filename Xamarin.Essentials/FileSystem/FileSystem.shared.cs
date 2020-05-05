@@ -73,7 +73,9 @@ namespace Xamarin.Essentials
 
             // we haven't been able to determine this
             // leave it up to the sender
-            return null;
+            // return null;
+            // Instead of returning null return a catch all mime-type - see #1225
+            return "application/octet-stream";
         }
 
         string attachmentName;
