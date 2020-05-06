@@ -1052,6 +1052,9 @@ namespace Xamarin.Forms
 			if (oldValue is ShellItem oldShellItem)
 				oldShellItem.SendDisappearing();
 
+			if (newValue == null)
+				return;
+
 			if (newValue is ShellItem newShellItem)
 				newShellItem.SendAppearing();
 

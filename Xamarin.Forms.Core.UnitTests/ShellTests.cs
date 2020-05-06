@@ -1326,6 +1326,50 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual(Color.Green, label.BackgroundColor);
 		}
 
+		[Test]
+		public void ClearingShellContentAndReAddingSetsCurrentItem()
+		{
+			Shell shell = new Shell();
+			var item = CreateShellItem();
+			item.CurrentItem.Items.Add(CreateShellContent());
+			item.CurrentItem.Items.Add(CreateShellContent());
+			var item2 = CreateShellItem();
+
+			shell.Items.Add(item);
+			shell.Items.Add(item2);
+
+			item.Items[0].Items.Clear();
+
+			var content = CreateShellContent();
+			item.Items[0].Items.Add(content);
+			item.Items[0].Items.Add(CreateShellContent());
+
+			Assert.IsNotNull(item.CurrentItem);
+			Assert.IsNotNull(item.CurrentItem.CurrentItem);
+		}
+
+		[Test]
+		public void ClearingShellSectionAndReAddingSetsCurrentItem()
+		{
+			Shell shell = new Shell();
+			var item = CreateShellItem();
+			item.CurrentItem.Items.Add(CreateShellContent());
+			item.CurrentItem.Items.Add(CreateShellContent());
+			var item2 = CreateShellItem();
+
+			shell.Items.Add(item);
+			shell.Items.Add(item2);
+
+			item.Items.Clear();
+
+			var section = CreateShellSection();
+			item.Items.Add(section);
+			item.Items.Add(CreateShellSection());
+
+			Assert.IsNotNull(item.CurrentItem);
+			Assert.IsNotNull(item.CurrentItem.CurrentItem);
+		}
+
 
 		//[Test]
 		//public void FlyoutItemLabelStyleCanBeChangedAfterRendered()

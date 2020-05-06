@@ -105,6 +105,16 @@ namespace Xamarin.Forms.Controls.Issues
 								this.Items.Clear();
 								SetupShell();
 							})
+						},
+						new Button()
+						{
+							Text = "Clear and Recreate Shell Content",
+							AutomationId = "ClearAndRecreateShellContent",
+							Command = new Command(() =>
+							{
+								Items[0].Items[0].Items.Clear();
+								AddTopTabs();
+							})
 						}
 					}
 				}
@@ -120,8 +130,8 @@ namespace Xamarin.Forms.Controls.Issues
 			item2.Title = "Item2 Flyout";
 			item2.Route = "Item2";
 
-			AddTopTab("Top Tab 1").Content = new StackLayout() { Children = { new Label { Text = "Welcome to Tab 1" } } };
-			AddTopTab("Top Tab 2").Content = new StackLayout() { Children = { new Label { Text = "Welcome to Tab 2" } } };
+			AddTopTabs();
+
 
 			pageItem1.SetBinding(Page.IsVisibleProperty, "Item1");
 			pageItem2.SetBinding(Page.IsVisibleProperty, "Item2");
@@ -134,6 +144,12 @@ namespace Xamarin.Forms.Controls.Issues
 					this.FlyoutIsPresented = false;
 				})
 			}));
+
+			void AddTopTabs()
+			{
+				AddTopTab($"Top Tab 1").Content = new StackLayout() { Children = { new Label { Text = "Welcome to Tab 1" } } };
+				AddTopTab($"Top Tab 2").Content = new StackLayout() { Children = { new Label { Text = "Welcome to Tab 2" } } };
+			}
 		}
 
 		[Preserve(AllMembers = true)]
@@ -200,7 +216,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement("ClearAndRecreate");
 			RunningApp.Tap("ClearAndRecreate");
 		}
-
+		
 
 		[Test]
 		public void ClearAndRecreateFromSecondaryPage()
@@ -212,6 +228,15 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.Tap("ClearAndRecreate");
 			RunningApp.Tap("Top Tab 2");
 			RunningApp.Tap("Top Tab 1");
+		}
+
+		[Test]
+		public void ClearAndRecreateShellContent()
+		{
+			RunningApp.WaitForElement("ClearAndRecreateShellContent");
+			RunningApp.Tap("ClearAndRecreateShellContent");
+			RunningApp.WaitForElement("ClearAndRecreate");
+			RunningApp.Tap("ClearAndRecreate");
 		}
 #endif
 	}

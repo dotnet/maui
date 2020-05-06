@@ -267,6 +267,10 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				var newIndex = SectionController.GetItems().IndexOf(ShellSection.CurrentItem);
 
+
+				if (SectionController.GetItems().Count != _viewPager.ChildCount)
+					_viewPager.Adapter.NotifyDataSetChanged();
+
 				if (newIndex >= 0)
 				{
 					_viewPager.CurrentItem = newIndex;
