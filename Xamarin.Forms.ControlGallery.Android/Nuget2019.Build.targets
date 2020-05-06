@@ -1,7 +1,7 @@
 <Project>
     <ItemGroup>
         <PackageReference Include="Xamarin.Build.Download">
-            <Version>0.7.1</Version>
+            <Version>0.10.0</Version>
         </PackageReference>
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFrameworkVersion)' == 'v10.0'">

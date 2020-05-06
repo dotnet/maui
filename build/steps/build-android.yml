@@ -29,30 +29,33 @@ jobs:
         android_legacy:
           renderers: 'LEGACY'
           outputfolder: 'legacyRenderers'
+          buildForVS2017: ${{ parameters.buildForVS2017 }}
         android_preAppCompat:
           renderers: 'PREAPPCOMPAT'
           outputfolder: 'preAppCompat'
+          buildForVS2017: ${{ parameters.buildForVS2017 }}
         android_newRenderers:
           renderers: 'FAST'
           outputfolder: 'newRenderers'
+          buildForVS2017: ${{ parameters.buildForVS2017 }}
     steps:
       - checkout: self
         clean: true
 
       - task: xamops.azdevex.provisionator-task.provisionator@1
         displayName: 'Provisionator'
-        condition: eq(variables['provisioning'], 'true')
+        condition: and(eq(variables['provisioning'], 'true'), eq(variables['buildForVS2017'], 'false'))
         inputs:
           provisioning_script: ${{ parameters.provisionatorPath }}
           provisioning_extra_args: ${{ parameters.provisionator.extraArguments }}
 
       - task: Bash@3
         displayName: 'Cake Provision'
-        condition: eq(variables['provisioningCake'], 'true')
+        condition: or(eq(variables['provisioningCake'], 'true'), eq(variables['buildForVS2017'], 'true'))
         inputs:
           targetType: 'filePath'
           filePath: 'build.sh'
-          arguments: --target provision --TeamProject="$(System.TeamProject)"
+          arguments: --target provision --TeamProject="$(System.TeamProject)" --buildForVS2017=$(buildForVS2017)
 
       - task: UseDotNet@2
         displayName: 'Install .net core $(DOTNET_VERSION)'
@@ -102,7 +105,7 @@ jobs:
         inputs:
           solution: ${{ parameters.androidProjectPath }}
           configuration: ${{ parameters.buildConfiguration }}
-          msbuildArguments: '/t:"Rebuild;SignAndroidPackage" /p:ANDROID_RENDERERS="$(renderers)" /bl:$(Build.ArtifactStagingDirectory)/android-$(renderers).binlog'
+          msbuildArguments: '/t:"Rebuild;SignAndroidPackage" /p:ANDROID_RENDERERS="$(renderers)" /bl:$(Build.ArtifactStagingDirectory)/android-$(renderers)-2017_$(buildForVS2017).binlog'
 
       - task: CopyFiles@2
         displayName: 'Copy $(renderers)'
@@ -115,10 +118,20 @@ jobs:
 
       - task: CopyFiles@2
         displayName: 'Copy Android apk $(renderers) for UITest'
+        condition: eq(variables['buildForVS2017'], 'false')
         inputs:
           Contents: |
             Xamarin.Forms.ControlGallery.Android/$(outputfolder)/$(ApkName)
           TargetFolder: '$(build.artifactstagingdirectory)/androidApp'
+          CleanTargetFolder: true
+
+      - task: CopyFiles@2
+        displayName: 'Copy Android apk $(renderers) for UITest 2017'
+        condition: eq(variables['buildForVS2017'], 'true')
+        inputs:
+          Contents: |
+            Xamarin.Forms.ControlGallery.Android/$(outputfolder)/$(ApkName)
+          TargetFolder: '$(build.artifactstagingdirectory)/androidApp_2017'
           CleanTargetFolder: true
 
       - task: PublishBuildArtifacts@1

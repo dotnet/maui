@@ -40,7 +40,9 @@ var packageVersion = Argument("packageVersion", "");
 var releaseChannelArg = Argument("CHANNEL", "Stable");
 releaseChannelArg = EnvironmentVariable("CHANNEL") ?? releaseChannelArg;
 var teamProject = Argument("TeamProject", "");
-bool buildForVS2017 = Convert.ToBoolean(Argument("buildForVS2017", "false"));
+
+var buildForVS2017Arg = EnvironmentVariable("buildForVS2017") ?? Argument("buildForVS2017", "false");
+bool buildForVS2017 = Convert.ToBoolean(buildForVS2017Arg);
 
 string artifactStagingDirectory = Argument("Build_ArtifactStagingDirectory", (string)null) ?? EnvironmentVariable("Build.ArtifactStagingDirectory") ?? EnvironmentVariable("Build_ArtifactStagingDirectory") ?? ".";
 var ANDROID_HOME = EnvironmentVariable("ANDROID_HOME") ??
@@ -52,6 +54,8 @@ string[] androidSdkManagerInstalls = new string[0]; //new [] { "platforms;androi
 Information ("ANDROID_HOME: {0}", ANDROID_HOME);
 Information ("Team Project: {0}", teamProject);
 Information ("buildForVS2017: {0}", buildForVS2017);
+Information ("EnvironmentVariable buildForVS2017: {0}", EnvironmentVariable("buildForVS2017"));
+Information ("Argument buildForVS2017: {0}", Argument("buildForVS2017", "not set"));
 
 var releaseChannel = ReleaseChannel.Stable;
 if(releaseChannelArg == "Preview")
@@ -69,7 +73,7 @@ string monoPatchVersion = "";
 string monoMajorVersion = "";
 string monoVersion = "";
 
-if(buildForVS2017 || teamProject == "DevDiv")
+if(buildForVS2017)
 {
     // VS2017
     monoMajorVersion = "5.18.1";

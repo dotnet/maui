@@ -1,6 +1,4 @@
 variables:
-- name: DefaultBuildConfiguration
-  value: Debug
 - name: DefaultBuildPlatform
   value: 'any cpu'
 - name: ApkName
@@ -206,6 +204,23 @@ stages:
         parameters:
           vmImage: $(macOSXVmImage)
           provisionatorPath : 'build/provisioning/provisioning.csx'
+          buildForVS2017: false
+          buildConfiguration: $(DefaultBuildConfiguration)
+
+  - stage: android_2017
+    displayName: Build Android 2017
+    condition: eq(variables['System.TeamProject'], 'devdiv')
+    ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+      dependsOn: windows
+    ${{ if eq(variables['System.TeamProject'], 'public') }}:
+      dependsOn: []
+    jobs:
+      - template: build/steps/build-android.yml
+        parameters:
+          vmImage: 'macOS-10.14'
+          provisionatorPath : 'build/provisioning/provisioning.csx'
+          buildForVS2017: true
+          buildConfiguration: $(DefaultBuildConfiguration)
 
   - stage: build_osx
     displayName: Build OSX
@@ -274,6 +289,6 @@ stages:
               msbuild
           steps:
             - template: build/steps/build-sign.yml
-          condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
+          condition: and(succeeded(), ne(variables['signVmImage'], ''), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
 
 

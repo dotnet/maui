@@ -68,6 +68,7 @@ steps:
     displayName: 'Build solution Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj'
     inputs:
       solution: Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj
+      configuration: $(buildConfiguration)
       msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/tasks.binlog
 
   - task: InstallAppleCertificate@2
@@ -112,7 +113,6 @@ steps:
       OverWrite: true
       flattenFolders: true
 
-
   - task: CopyFiles@2
     displayName: 'Copy iOS Files for UITest'
     condition: eq(variables['buildForVS2017'], 'false')
@@ -129,6 +129,21 @@ steps:
       CleanTargetFolder: true
       flattenFolders: true
 
+  - task: CopyFiles@2
+    displayName: 'Copy iOS Files for UITest 2017'
+    condition: eq(variables['buildForVS2017'], 'true')
+    inputs:
+      Contents: |
+       **/$(IpaName)
+       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
+       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/nunit.*
+       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/NUnit3.*
+       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Plugin.*
+       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Xamarin.*
+
+      TargetFolder: '$(build.artifactstagingdirectory)/ios_2017'
+      CleanTargetFolder: true
+      flattenFolders: true
 
   - task: CopyFiles@2
     displayName: 'Copy Android Files for UITest'
