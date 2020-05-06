@@ -4,10 +4,18 @@ using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
 using Android.Widget;
+using Samples.View;
 
 namespace Samples.Droid
 {
     [Activity(Label = "@string/app_name", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [IntentFilter(
+        new[] { Intent.ActionView },
+        Categories = new[] { Intent.CategoryDefault },
+        DataScheme = "xam")] // Shortcuts with a xam:// Uri (Automatically passed to Xamarin.Forms OnAppLinkRequestReceived()
+    [IntentFilter(
+        new[] { "battery" },
+        Categories = new[] { Intent.CategoryDefault })] // Shortcuts without a Uri
     public class MainActivity : Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
         protected override void OnCreate(Bundle bundle)
@@ -31,6 +39,14 @@ namespace Samples.Droid
             base.OnResume();
 
             Xamarin.Essentials.Platform.OnResume();
+
+            // Handle shortcuts without a Uri here
+
+            if (Intent?.Action == "battery")
+            {
+                Xamarin.Forms.Application.Current.MainPage.Navigation.PopToRootAsync();
+                Xamarin.Forms.Application.Current.MainPage.Navigation.PushAsync(new BatteryPage());
+            }
         }
 
         protected override void OnDestroy()
