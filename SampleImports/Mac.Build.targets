@@ -1,0 +1,7 @@
+<Project>
+  <ItemGroup>
+    <ProjectReference Include="$(XamarinFormsSource)Xamarin.Forms.Platform.MacOS\Xamarin.Forms.Platform.MacOS.csproj">
+      <Name>Xamarin.Forms.Platform.MacOS</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

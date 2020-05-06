@@ -1,0 +1,7 @@
+<Project>
+  <ItemGroup>
+    <ProjectReference Include="$(XamarinFormsSource)Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj">
+      <Name>Xamarin.Forms.Platform.UAP</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

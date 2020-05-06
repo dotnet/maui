@@ -1,0 +1,23 @@
+<Project>
+
+  <ItemGroup>
+    <PackageReference ExcludeAssets="All" Include="Xamarin.Forms" Version="$(XamarinFormsVersion)">
+    </PackageReference>
+    <ProjectReference Include="$(XamarinFormsSource)Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+      <Name>Xamarin.Forms.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="$(XamarinFormsSource)Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj" >
+      <Name>Xamarin.Forms.Xaml</Name>
+    </ProjectReference>
+    <ProjectReference  Include="$(XamarinFormsSource)Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj" >
+      <Name>Xamarin.Forms.Build.Tasks</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="Android.Build.targets" Condition=" $(TargetFrameworkIdentifier.StartsWith('MonoAndroid'))" />
+  <Import Project="iOS.Build.targets" Condition=" $(TargetFrameworkIdentifier.StartsWith('Xamarin.iOS'))" />
+  <Import Project="Mac.Build.targets" Condition=" $(TargetFrameworkIdentifier.StartsWith('Xamarin.Mac'))" /> 
+  <Import Project="UWP.Build.targets" Condition=" '$(TargetPlatformIdentifier)' == 'UAP'" />
+  <Import Project="WPF.Build.targets" Condition="'$(UseWPF)' == 'true' AND '$(OS)' == 'Windows_NT'" />
+  <Import Project="Netstandard.Build.targets" Condition=" $(TargetFramework.StartsWith('netstandard'))" />
+</Project>
