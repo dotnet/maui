@@ -41,7 +41,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void OnShellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == Shell.FlyoutHeaderBehaviorProperty.PropertyName)
+			if (e.Is(Shell.FlyoutHeaderBehaviorProperty))
 			{
 				SetHeaderContentInset();
 				LayoutParallax();

@@ -102,5 +102,23 @@ namespace Xamarin.Forms.Platform.UAP.UnitTests
 
 			Assert.That(actualColor, Is.EqualTo(expectedColor));
 		}
+
+		[Test, Category("Color"), Category("BoxView")]
+		public async Task BoxViewColorConsistent() 
+		{
+			var box = new BoxView() { Color = Color.PapayaWhip };
+			var expectedColor = box.Color.ToWindowsColor();
+
+			var actualColor = await Device.InvokeOnMainThreadAsync(() =>
+			{
+				var renderer = GetRenderer(box);
+				var nativeElement = renderer.GetNativeElement() as Border;
+
+				var backgroundBrush = nativeElement.Background as SolidColorBrush;
+				return backgroundBrush.Color;
+			});
+
+			Assert.That(actualColor, Is.EqualTo(expectedColor));
+		}
 	}
 }

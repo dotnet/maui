@@ -21,8 +21,6 @@ namespace Xamarin.Forms.Platform.UWP
 						DataContext = Element
 					};
 
-					rect.SetBinding(Shape.FillProperty, new Windows.UI.Xaml.Data.Binding { Converter = new ColorConverter(), Path = new PropertyPath("Color") });
-
 					SetNativeControl(rect);
 				}
 
@@ -36,6 +34,9 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (e.PropertyName == BoxView.CornerRadiusProperty.PropertyName)
 				SetCornerRadius(Element.CornerRadius);
+			else if (e.PropertyName == BoxView.ColorProperty.PropertyName)
+				UpdateBackgroundColor();
+			
 		}
 
 		protected override AutomationPeer OnCreateAutomationPeer()
@@ -56,7 +57,12 @@ namespace Xamarin.Forms.Platform.UWP
 			//as the background would be applied to the renderer's FrameworkElement
 			if (Control == null)
 				return;
-			Color backgroundColor = Element.BackgroundColor;
+			Color backgroundColor = Element.Color;
+			if (backgroundColor.IsDefault)
+			{
+				backgroundColor = Element.BackgroundColor;
+			}
+
 			Control.Background = backgroundColor.IsDefault ? null : backgroundColor.ToBrush();
 		}
 

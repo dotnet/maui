@@ -201,10 +201,6 @@
       <Project>{6e53feb1-1100-46ae-8013-17bba35cc197}</Project>
       <Name>Xamarin.Forms.Platform.Android (Forwarders)</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.DualScreen\Xamarin.Forms.DualScreen.csproj">
-      <Project>{fb4a866a-5721-4545-9e5d-b7f7d59875a4}</Project>
-      <Name>Xamarin.Forms.DualScreen</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Maps.Android\Xamarin.Forms.Maps.Android.csproj">
       <Project>{bd50b39a-ebc5-408f-9c5e-923a8ebae473}</Project>
       <Name>Xamarin.Forms.Maps.Android</Name>

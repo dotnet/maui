@@ -124,7 +124,6 @@ namespace Xamarin.Forms.Platform.iOS
 				{
 					var renderer = kvp.Value;
 					RemoveRenderer(renderer);
-					renderer.Dispose();
 				}
 
 				if (_displayedPage != null)
@@ -345,6 +344,11 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (_sectionRenderers.Remove(renderer.ViewController))
 				renderer.ShellSection.PropertyChanged -= OnShellSectionPropertyChanged;
+
+			renderer?.Dispose();
+
+			if (CurrentRenderer == renderer)
+				CurrentRenderer = null;
 		}
 
 		IShellSectionRenderer RendererForShellContent(ShellSection shellSection)

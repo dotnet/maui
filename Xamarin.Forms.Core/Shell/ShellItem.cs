@@ -118,12 +118,21 @@ namespace Xamarin.Forms
 		{
 			ShellItemController.ItemsCollectionChanged += (_, args) =>
 			{
-				if (args.OldItems == null)
-					return;
 
-				foreach (Element item in args.OldItems)
+				if (args.OldItems != null)
 				{
-					OnVisibleChildRemoved(item);
+					foreach (Element item in args.OldItems)
+					{
+						OnVisibleChildRemoved(item);
+					}
+				}
+
+				if(args.NewItems != null)
+				{
+					foreach (Element item in args.NewItems)
+					{
+						OnVisibleChildAdded(item);
+					}
 				}
 
 				SendStructureChanged();
@@ -142,11 +151,13 @@ namespace Xamarin.Forms
 
 		public IList<ShellSection> Items => (IList<ShellSection>)GetValue(ItemsProperty);
 
+		internal bool IsVisibleItem => Parent is Shell shell && shell?.CurrentItem == this;
+
 		internal override ReadOnlyCollection<Element> LogicalChildrenInternal => _logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(_children));
 
 		internal void SendStructureChanged()
 		{
-			if (Parent is Shell shell)
+			if (Parent is Shell shell && IsVisibleItem)
 			{
 				shell.SendStructureChanged();
 			}
@@ -211,14 +222,19 @@ namespace Xamarin.Forms
 		protected override void OnChildAdded(Element child)
 		{
 			base.OnChildAdded(child);
-			if (CurrentItem == null)
-				SetValueFromRenderer(CurrentItemProperty, child);
+			OnVisibleChildAdded(child);
 		}
 
 		protected override void OnChildRemoved(Element child)
 		{
 			base.OnChildRemoved(child);
 			OnVisibleChildRemoved(child);
+		}
+
+		void OnVisibleChildAdded(Element child)
+		{
+			if (CurrentItem == null && ((IShellItemController)this).GetItems().Contains(child))
+				SetValueFromRenderer(CurrentItemProperty, child);
 		}
 
 		void OnVisibleChildRemoved(Element child)
@@ -238,19 +254,25 @@ namespace Xamarin.Forms
 				oldShellItem.SendDisappearing();
 
 			var shellItem = (ShellItem)bindable;
-			if (shellItem.Parent is Shell parentShell && parentShell.CurrentItem == shellItem)
+
+			if (newValue == null)
+				return;
+
+			if (shellItem.Parent is Shell)
 			{
 				if (newValue is BaseShellItem newShellItem)
 					newShellItem.SendAppearing();
 			}
 
-			if (shellItem.Parent is IShellController shell)
+			if (shellItem.Parent is IShellController shell && shellItem.IsVisibleItem)
 			{
 				shell.UpdateCurrentState(ShellNavigationSource.ShellSectionChanged);
 			}
 
 			shellItem.SendStructureChanged();
-			((IShellController)shellItem?.Parent)?.AppearanceChanged(shellItem, false);
+
+			if(shellItem.IsVisibleItem)
+				((IShellController)shellItem?.Parent)?.AppearanceChanged(shellItem, false);
 		}
 
 		void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
