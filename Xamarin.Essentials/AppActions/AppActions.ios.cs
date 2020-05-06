@@ -36,6 +36,6 @@ namespace Xamarin.Essentials
                 action.Title,
                 action.Subtitle,
                 action.Icon != null ? UIApplicationShortcutIcon.FromTemplateImageName(action.Icon) : null,
-                new NSDictionary<NSString, NSObject>((NSString)"uri", (NSString)action.Uri.ToString()));
+                action.Uri != null ? new NSDictionary<NSString, NSObject>((NSString)"uri", (NSString)action.Uri.ToString()) : null);
     }
 }

@@ -42,7 +42,6 @@ namespace Xamarin.Essentials
         static ShortcutInfo ToShortcutInfo(this AppAction action)
         {
             var shortcut = new ShortcutInfo.Builder(Platform.AppContext, action.ActionType)
-                .SetIntent(new Intent(Intent.ActionView, AndroidUri.Parse(action.Uri.ToString())))
                 .SetShortLabel(action.Title);
 
             if (!string.IsNullOrWhiteSpace(action.Subtitle))
@@ -55,6 +54,15 @@ namespace Xamarin.Essentials
                 var iconResId = Platform.AppContext.Resources.GetIdentifier(action.Icon, "drawable", Platform.AppContext.PackageName);
 
                 shortcut.SetIcon(Icon.CreateWithResource(Platform.AppContext, iconResId));
+            }
+
+            if (action.Uri != null)
+            {
+                shortcut.SetIntent(new Intent(Intent.ActionView, AndroidUri.Parse(action.Uri.ToString())));
+            }
+            else
+            {
+                shortcut.SetIntent(new Intent(action.ActionType));
             }
 
             return shortcut.Build();
