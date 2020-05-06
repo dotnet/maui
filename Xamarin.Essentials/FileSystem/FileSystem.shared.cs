@@ -70,11 +70,6 @@ namespace Xamarin.Essentials
                 if (!string.IsNullOrWhiteSpace(content))
                     return content;
             }
-
-            // we haven't been able to determine this
-            // leave it up to the sender
-            // return null;
-            // Instead of returning null return a catch all mime-type - see #1225
             return "application/octet-stream";
         }
 
