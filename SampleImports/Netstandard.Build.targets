@@ -1,0 +1,13 @@
+<Project>
+  <Import Project="..\.nuspec\Xamarin.Forms.DefaultItems.props" />
+  <Import Project="..\.nuspec\Xamarin.Forms.DefaultItems.targets" />
+  <PropertyGroup>
+    <XFDisableTargetsValidation>True</XFDisableTargetsValidation>
+  </PropertyGroup>
+
+  <ItemGroup>
+  </ItemGroup>
+  <Import Project="..\.nuspec\Xamarin.Forms.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(__XFBuildTasksLocation)Xamarin.Forms.Build.Tasks.dll')" />
+  <Import Project="..\.nuspec\Xamarin.Forms.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
+  
+</Project>

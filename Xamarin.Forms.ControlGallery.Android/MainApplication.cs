@@ -36,7 +36,6 @@ namespace Xamarin.Forms.ControlGallery.Android
         {
             CrossCurrentActivity.Current.Activity = activity;
 			ActivityContext = activity;
-            DualScreenService.Init(activity);
         }
 
         public void OnActivityDestroyed(Activity activity)

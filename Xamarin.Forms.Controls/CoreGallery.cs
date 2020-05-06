@@ -15,7 +15,6 @@ using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGa
 using Xamarin.Forms.Controls.GalleryPages.RefreshViewGalleries;
 using Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries;
 using Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery;
-using Xamarin.Forms.Controls.GalleryPages.TwoPaneViewGalleries;
 using Xamarin.Forms.Controls.GalleryPages.AppThemeGalleries;
 using Xamarin.Forms.Controls.GalleryPages.ExpanderGalleries;
 using Xamarin.Forms.Controls.GalleryPages.RadioButtonGalleries;
@@ -308,7 +307,6 @@ namespace Xamarin.Forms.Controls
 				new GalleryPageFactory(() => new Issues.PerformanceGallery(), "Performance"),
 				new GalleryPageFactory(() => new EntryReturnTypeGalleryPage(), "Entry ReturnType "),
 				new GalleryPageFactory(() => new VisualStateManagerGallery(), "VisualStateManager Gallery"),
-				new GalleryPageFactory(() => new TwoPaneViewGallery(), "TwoPaneView Gallery"),
 				new GalleryPageFactory(() => new FlowDirectionGalleryLandingPage(), "FlowDirection"),
 				new GalleryPageFactory(() => new AutomationPropertiesGallery(), "Accessibility"),
 				new GalleryPageFactory(() => new PlatformSpecificsGallery(), "Platform Specifics"),
