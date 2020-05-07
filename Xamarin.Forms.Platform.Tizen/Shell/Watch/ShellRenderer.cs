@@ -1,8 +1,6 @@
 ﻿using ElmSharp;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Xamarin.Forms;
 
 namespace Xamarin.Forms.Platform.Tizen.Watch
 {
@@ -48,11 +46,21 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 			base.Dispose(disposing);
 		}
 
+		protected virtual NavigationView CreateNavigationView(EvasObject parent)
+		{
+			return new NavigationView(parent);
+		}
+
+		protected virtual NavigationDrawer CreateNavigationDrawer(EvasObject parent)
+		{
+			return new NavigationDrawer(parent);
+		}
+
 		void InitializeComponent()
 		{
 			if (_drawer == null)
 			{
-				_drawer = new NavigationDrawer(Forms.NativeParent);
+				_drawer = CreateNavigationDrawer(Forms.NativeParent);
 				_drawer.IsOpen = Element.FlyoutIsPresented;
 				_drawer.Toggled += OnNavigationDrawerToggled;
 				SetNativeView(_drawer);
@@ -94,13 +102,12 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 				return;
 			}
 
-			_navigationView = new NavigationView(Forms.NativeParent)
-			{
-				AlignmentX = -1,
-				AlignmentY = -1,
-				WeightX = 1,
-				WeightY = 1,
-			};
+			_navigationView = CreateNavigationView(Forms.NativeParent);
+			_navigationView.AlignmentX = -1;
+			_navigationView.AlignmentY = -1;
+			_navigationView.WeightX = 1;
+			_navigationView.WeightY = 1;
+
 			_navigationView.Show();
 			_navigationView.ItemSelected += OnMenuItemSelected;
 
