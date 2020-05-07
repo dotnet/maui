@@ -274,7 +274,9 @@ namespace Xamarin.Forms.Platform.iOS
 				var lastUrl = request.Url.ToString();
 				var args = new WebNavigatingEventArgs(navEvent, new UrlWebViewSource { Url = lastUrl }, lastUrl);
 
-				if (WebView.ShouldManageCookies == true)
+				var jCookies = WebView.Cookies.GetCookies(request.Url);
+
+				if (jCookies != null)
 				{
 					// Set cookies here
 					var cookieJar = NSHttpCookieStorage.SharedStorage;
@@ -285,10 +287,10 @@ namespace Xamarin.Forms.Platform.iOS
 					{
 						cookieJar.DeleteCookie(aCookie);
 					}
+
 					//set up the new cookies
 					if (WebView.Cookies != null)
 					{
-						var jCookies = WebView.Cookies.GetCookies(request.Url);
 						IList<NSHttpCookie> eCookies =
 							(from object jCookie in jCookies
 							 where jCookie != null
