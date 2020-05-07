@@ -43,6 +43,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
+			this.IncreaseFlyoutItemsHeightSoUITestsCanClickOnThem();
 			var gesturePage = CreateContentPage(shellItemTitle: SwipeTitle);
 			var label = new Label()
 			{
@@ -139,7 +140,7 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 		}
 
-#if UITEST && (__IOS__ || __ANDROID__)
+#if UITEST && (__SHELL__)
 
 		[NUnit.Framework.Category(UITestCategories.Gestures)]
 		[Test]

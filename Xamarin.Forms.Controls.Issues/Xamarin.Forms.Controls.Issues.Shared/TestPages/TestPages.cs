@@ -601,6 +601,23 @@ namespace Xamarin.Forms.Controls
 		protected virtual bool Isolate => true;
 #endif
 
+		protected void IncreaseFlyoutItemsHeightSoUITestsCanClickOnThem()
+		{
+			this.Resources.Add(new Style(typeof(Label))
+			{
+				ApplyToDerivedTypes = true,
+				Class = FlyoutItem.LayoutStyle,
+				Setters =
+				{
+					new Setter()
+					{
+						Property = HeightRequestProperty,
+						Value = 50
+					}
+				}
+			});
+		}
+
 		protected TestShell() : base()
 		{
 			Routing.Clear();
