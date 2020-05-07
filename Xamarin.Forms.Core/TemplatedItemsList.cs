@@ -810,7 +810,7 @@ namespace Xamarin.Forms.Internals
 					oldItems = new List<TemplatedItemsList<TView, TItem>>(e.OldItems.Count);
 					for (var i = 0; i < e.OldItems.Count; i++)
 					{
-						int index = e.OldStartingIndex + i;
+						int index = e.OldStartingIndex;
 						TemplatedItemsList<TView, TItem> til = _groupedItems[index];
 						til.CollectionChanged -= OnInnerCollectionChanged;
 						oldItems.Add(til);

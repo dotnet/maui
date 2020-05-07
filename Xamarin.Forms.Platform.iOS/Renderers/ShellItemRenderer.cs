@@ -373,19 +373,6 @@ namespace Xamarin.Forms.Platform.iOS
 		void SetTabBarHidden(bool hidden)
 		{
 			TabBar.Hidden = hidden;
-
-			if (CurrentRenderer == null)
-				return;
-
-			// now we must do the uikit jiggly dance to make sure the safe area updates. Failure
-			// to perform the jiggle may result in the page not insetting properly when unhiding
-			// the TabBar
-
-			// a devious 1 pixel inset vertically
-			CurrentRenderer.ViewController.View.Frame = View.Bounds.Inset(0, 1);
-
-			// and quick as a whip we return it back to what it was with its insets being all proper
-			CurrentRenderer.ViewController.View.Frame = View.Bounds;
 		}
 
 		void UpdateTabBarHidden()

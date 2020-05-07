@@ -122,6 +122,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue8148.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8008.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6640.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue7890.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7556.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5108.xaml.cs">
       <SubType>Code</SubType>
@@ -1346,8 +1347,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue9962.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\INativeColorService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue9794.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue10134.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue10300.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue10438.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue8958.xaml.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">
@@ -1534,6 +1537,9 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue9417.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8958.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

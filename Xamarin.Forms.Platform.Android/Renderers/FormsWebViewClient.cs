@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Net;
 using Android.Graphics;
 using Android.Runtime;
 using Android.Webkit;
@@ -34,24 +35,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		public override void OnPageStarted(WView view, string url, Bitmap favicon)
 		{
-			if (_renderer == null || string.IsNullOrWhiteSpace(url) || url == WebViewRenderer.AssetBaseUrl)
+			if (_renderer?.Element == null || string.IsNullOrWhiteSpace(url) || url == WebViewRenderer.AssetBaseUrl)
 				return;
 
-			if (_renderer?.Element?.ShouldManageCookies == true)
-			{
-				var cookieManager = CookieManager.Instance;
-				cookieManager.SetAcceptCookie(true);
-				cookieManager.RemoveAllCookie();
-				var cookies = _renderer.Element.Cookies?.GetCookies(new System.Uri(url));
-				for (var i = 0; i < (cookies?.Count ?? -1); i++)
-				{
-					string cookieValue = cookies[i].Value;
-					string cookieDomain = cookies[i].Domain;
-					string cookieName = cookies[i].Name;
-					cookieManager.SetCookie(cookieDomain, cookieName + "=" + cookieValue);
-				}
-			}
-
+			_renderer.SyncNativeCookiesToElement(url);
 			var cancel = false;
 			if (!url.Equals(_renderer.UrlCanceled, StringComparison.OrdinalIgnoreCase))
 				cancel = SendNavigatingCanceled(url);
@@ -85,6 +72,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (navigate)
 			{
 				var args = new WebNavigatedEventArgs(_renderer.GetCurrentWebNavigationEvent(), source, url, _navigationResult);
+				_renderer.SyncNativeCookiesToElement(url);
 				_renderer.ElementController.SendNavigated(args);
 			}
 
