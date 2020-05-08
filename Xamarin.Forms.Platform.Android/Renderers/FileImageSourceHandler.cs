@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Platform.Android
 			return bitmap;
 		}
 
-		public Task LoadImageAsync(ImageSource imagesource, ImageView imageView, CancellationToken cancellationToken = default(CancellationToken))
+		public Task LoadImageAsync(ImageSource imagesource, ImageSource placeholder, ImageView imageView, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			string file = ((FileImageSource)imagesource).File;
 			if (File.Exists(file))
@@ -44,7 +44,10 @@ namespace Xamarin.Forms.Platform.Android
 				if (uri != null)
 					imageView.SetImageURI(uri);
 				else
+				{
 					Log.Warning(nameof(FileImageSourceHandler), "Could not find image or image file was invalid: {0}", imagesource);
+					return SetImagePlaceholderAsync(imageView, placeholder);
+				}
 			}
 			else
 			{
@@ -52,12 +55,28 @@ namespace Xamarin.Forms.Platform.Android
 				if (drawable != null)
 					imageView.SetImageDrawable(drawable);
 				else
+				{
 					Log.Warning(nameof(FileImageSourceHandler), "Could not find image or image file was invalid: {0}", imagesource);
+					return SetImagePlaceholderAsync(imageView, placeholder);
+				}
 			}
 
 			return Task.FromResult(true);
 		}
 
+		Task SetImagePlaceholderAsync(ImageView imageView, ImageSource placeholder, CancellationToken cancellation = default(CancellationToken))
+		{
+			string file = ((FileImageSource)placeholder).File;
+			var drawable = ResourceManager.GetDrawable(imageView.Context, file);
+			if (drawable != null)
+				imageView.SetImageDrawable(drawable);
+			else
+			{
+				Log.Warning(nameof(FileImageSourceHandler), "Could not find image or image file was invalid: {0}", placeholder);
+			}
+			return Task.CompletedTask;
+    }
+    
 		public Task<IFormsAnimationDrawable> LoadImageAnimationAsync(ImageSource imagesource, Context context, CancellationToken cancelationToken = default, float scale = 1)
 		{
 			return FormsAnimationDrawable.LoadImageAnimationAsync(imagesource, context, cancelationToken);

@@ -26,6 +26,14 @@ namespace Xamarin.Forms.Platform.Android
 			IImageController imageController = newView as IImageController;
 			newImageSource = newImageSource ?? newView?.Source;
 			previousImageSource = previousImageSource ?? previousView?.Source;
+			ImageSource errorPlaceholder = null;
+			ImageSource loadingPlaceholder = null;
+
+			if (imageController is Image img)
+			{
+				errorPlaceholder = img.ErrorPlaceholder;
+				loadingPlaceholder = img.LoadingPlaceholder;
+			}
 
 			if (imageView.IsDisposed())
 				return;
@@ -53,20 +61,23 @@ namespace Xamarin.Forms.Platform.Android
 							animation = await animationHandler.LoadImageAnimationAsync(newImageSource, imageView.Context);
 					}
 
-					if(animation == null)
+					if (animation == null)
 					{
 						var imageViewHandler = Registrar.Registered.GetHandlerForObject<IImageViewHandler>(newImageSource);
 						if (imageViewHandler != null)
 						{
-							await imageViewHandler.LoadImageAsync(newImageSource, imageView);
+							await imageViewHandler.LoadImageAsync(newImageSource, errorPlaceholder, imageView);
 						}
 						else
 						{
+							await SetImagePlaceholder(imageView, loadingPlaceholder);
 							using (var drawable = await imageView.Context.GetFormsDrawableAsync(newImageSource))
 							{
 								// only set the image if we are still on the same one
-								if (!imageView.IsDisposed() && SourceIsNotChanged(newView, newImageSource))
+								if (!imageView.IsDisposed() && SourceIsNotChanged(newView, newImageSource) && drawable != null)
 									imageView.SetImageDrawable(drawable);
+								else if (errorPlaceholder != null)
+									await SetImagePlaceholder(imageView, errorPlaceholder);
 							}
 						}
 					}
@@ -80,6 +91,10 @@ namespace Xamarin.Forms.Platform.Android
 							animation?.Dispose();
 						}
 					}
+				}
+				else if (errorPlaceholder != null)
+				{
+					await SetImagePlaceholder(imageView, errorPlaceholder);
 				}
 				else
 				{
@@ -100,6 +115,16 @@ namespace Xamarin.Forms.Platform.Android
 			bool SourceIsNotChanged(IImageElement imageElement, ImageSource imageSource)
 			{
 				return (imageElement != null) ? imageElement.Source == imageSource : true;
+			}
+		}
+
+		static async Task SetImagePlaceholder(AImageView imageView, ImageSource placeholder)
+		{
+			using (var drawable = await imageView.Context.GetFormsDrawableAsync(placeholder))
+			{
+				// only set the image if we are still on the same one
+				if (!imageView.IsDisposed())
+					imageView.SetImageDrawable(drawable);
 			}
 		}
 

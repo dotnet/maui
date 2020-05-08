@@ -9,6 +9,6 @@ namespace Xamarin.Forms.Platform.Android
 	/// </summary>
 	public interface IImageViewHandler : IRegisterable
 	{
-		Task LoadImageAsync(ImageSource imagesource, ImageView imageView, CancellationToken cancellationToken = default(CancellationToken));
+		Task LoadImageAsync(ImageSource imagesource, ImageSource placeholder, ImageView imageView, CancellationToken cancellationToken = default(CancellationToken));
 	}
 }
