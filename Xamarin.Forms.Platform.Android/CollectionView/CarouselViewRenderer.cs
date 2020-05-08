@@ -62,7 +62,6 @@ namespace Xamarin.Forms.Platform.Android
 			AddLayoutListener();
 			UpdateIsSwipeEnabled();
 			UpdateIsBounceEnabled();
-			UpdateInitialPosition();
 			UpdateItemSpacing();
 		}
 
@@ -131,7 +130,6 @@ namespace Xamarin.Forms.Platform.Android
 			if (adapter != null)
 			{
 				adapter.NotifyItemChanged(_oldPosition);
-				Carousel.ScrollTo(_oldPosition, position: Xamarin.Forms.ScrollToPosition.Center);
 			}
 
 			base.UpdateItemSpacing();
@@ -192,11 +190,14 @@ namespace Xamarin.Forms.Platform.Android
 
 			ItemsViewAdapter = new ItemsViewAdapter<ItemsView, IItemsViewSource>(ItemsView,
 				(view, context) => new SizedItemContentView(Context, GetItemWidth, GetItemHeight));
-
-
+			
 			_gotoPosition = -1;
 
+			
 			SwapAdapter(ItemsViewAdapter, false);
+			
+			if (_oldPosition > 0)
+				UpdateInitialPosition();
 
 			if (ItemsViewAdapter?.ItemsSource is ObservableItemsSource observableItemsSource)
 				observableItemsSource.CollectionItemsSourceChanged += CollectionItemsSourceChanged;
@@ -297,7 +298,10 @@ namespace Xamarin.Forms.Platform.Android
 
 			_oldPosition = position;
 
+			_gotoPosition = _oldPosition;
+
 			SetCurrentItem(_oldPosition);
+			Carousel.ScrollTo(_oldPosition, position: Xamarin.Forms.ScrollToPosition.Center, animate: Carousel.AnimatePositionChanges);
 		}
 
 		void UpdateVisualStates()
@@ -406,7 +410,12 @@ namespace Xamarin.Forms.Platform.Android
 			var carouselPosition = Carousel.Position;
 
 			if (itemCount == 0)
+			{
+				//we are trying to set a position but our Collection doesn't have items still
+				_oldPosition = carouselPosition;
 				return;
+			}
+				
 
 			if (carouselPosition >= itemCount || carouselPosition < 0)
 				throw new IndexOutOfRangeException($"Can't set CarouselView to position {carouselPosition}. ItemsSource has {itemCount} items.");
@@ -443,9 +452,9 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (!_initialized)
 			{
+				UpdateInitialPosition();
 				Carousel.Scrolled += CarouselViewScrolled;
 
-				UpdateInitialPosition();
 				_initialized = true;
 			}
 
