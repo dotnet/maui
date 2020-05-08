@@ -43,7 +43,8 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == Entry.TextProperty.PropertyName)
+			if (e.PropertyName == Entry.TextProperty.PropertyName ||
+				e.PropertyName == Entry.TextTransformProperty.PropertyName)
 				UpdateText();
 			else if (e.PropertyName == Entry.TextColorProperty.PropertyName)
 				UpdateColor();
@@ -98,8 +99,9 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 		private void UpdateText()
 		{
-			if (Control.Entry.Text != Element.Text)
-				Control.Entry.Text = Element.Text ?? string.Empty;
+			var text = Element.UpdateFormsText(Element.Text, Element.TextTransform);
+			if (Control.Entry.Text != text)
+				Control.Entry.Text = text;
 		}
 
 		private void UpdateColor()

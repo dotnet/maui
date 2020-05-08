@@ -47,6 +47,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.That(layout.stack.BackgroundColor, Is.EqualTo(Color.Green));
 				Assert.That(layout.button.BackgroundColor, Is.EqualTo(Color.Green));
 				Assert.That(layout.label.BackgroundColor, Is.EqualTo(VisualElement.BackgroundColorProperty.DefaultValue));
+				Assert.That(layout.label.TextTransform, Is.EqualTo(TextTransform.Uppercase));
 			}
 		}
 	}

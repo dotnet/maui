@@ -94,6 +94,8 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				UpdateText();
 			else if (e.PropertyName == Label.FormattedTextProperty.PropertyName)
 				UpdateText();
+			else if (e.PropertyName == Label.TextTransformProperty.PropertyName)
+				UpdateText();
 			else if (e.PropertyName == Label.HorizontalTextAlignmentProperty.PropertyName || e.PropertyName == Label.VerticalTextAlignmentProperty.PropertyName)
 				UpdateTextAlignment();
 			else if (e.PropertyName == Label.LineBreakModeProperty.PropertyName)
@@ -138,7 +140,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 					FontAttributes = Element.FontAttributes,
 					FontFamily = Element.FontFamily,
 					FontSize = Element.FontSize,
-					Text = Element.Text ?? string.Empty
+					Text = GLib.Markup.EscapeText(Element.UpdateFormsText(Element.Text ?? string.Empty, Element.TextTransform)) ?? string.Empty
 				};
 
 				Control.SetTextFromSpan(span);

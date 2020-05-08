@@ -49,7 +49,9 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == Label.TextProperty.PropertyName || e.PropertyName == Label.FormattedTextProperty.PropertyName)
+			if (e.PropertyName == Label.TextProperty.PropertyName || 
+				e.PropertyName == Label.FormattedTextProperty.PropertyName ||
+				e.PropertyName == Label.TextTransformProperty.PropertyName)
 				UpdateText();
 			else if (e.PropertyName == Label.TextDecorationsProperty.PropertyName)
 				UpdateTextDecorations();
@@ -192,7 +194,7 @@ namespace Xamarin.Forms.Platform.WPF
 			if (label != null)
 			{
 				if (label.FormattedText == null)
-					Control.Text = label.Text;
+					Control.Text = label.UpdateFormsText(label.Text, label.TextTransform);
 				else
 				{
 					FormattedString formattedText = label.FormattedText ?? label.Text;

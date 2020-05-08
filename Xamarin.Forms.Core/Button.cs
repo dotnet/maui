@@ -35,6 +35,8 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
 
+		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
+
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
 		public static readonly BindableProperty BorderWidthProperty = BindableProperty.Create("BorderWidth", typeof(double), typeof(Button), -1d);
@@ -209,6 +211,12 @@ namespace Xamarin.Forms
 			set { SetValue(FontSizeProperty, value); }
 		}
 
+		public TextTransform TextTransform
+		{
+			get => (TextTransform)GetValue(TextTransformProperty);
+			set => SetValue(TextTransformProperty, value);
+		}
+
 		public event EventHandler Clicked;
 		public event EventHandler Pressed;
 
@@ -361,6 +369,11 @@ namespace Xamarin.Forms
 		bool IBorderElement.IsBorderColorSet() => IsSet(BorderColorProperty);
 		bool IBorderElement.IsBorderWidthSet() => IsSet(BorderWidthProperty);
 
+		void ITextElement.OnTextTransformChanged(TextTransform oldValue, TextTransform newValue)
+			=> InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+
+		public virtual string UpdateFormsText(string source, TextTransform textTransform)
+			=> TextTransformUtilites.GetTransformedText(source, textTransform);
 
 		[DebuggerDisplay("Image Position = {Position}, Spacing = {Spacing}")]
 		[TypeConverter(typeof(ButtonContentTypeConverter))]

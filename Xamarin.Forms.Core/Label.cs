@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform;
 
@@ -40,6 +41,8 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
+		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
+
 		public static readonly BindableProperty TextDecorationsProperty = DecorableTextElement.TextDecorationsProperty;
 
 		public static readonly BindableProperty FormattedTextProperty = BindableProperty.Create(nameof(FormattedText), typeof(FormattedString), typeof(Label), default(FormattedString),
@@ -74,6 +77,15 @@ namespace Xamarin.Forms
 				if (newvalue != null)
 					label.Text = null;
 			});
+
+		public TextTransform TextTransform
+		{
+			get { return (TextTransform)GetValue(TextTransformProperty); }
+			set { SetValue(TextTransformProperty, value); }
+		}
+
+		public virtual string UpdateFormsText(string source, TextTransform textTransform)
+			=> TextTransformUtilites.GetTransformedText(source, textTransform);
 
 		public static readonly BindableProperty LineBreakModeProperty = BindableProperty.Create(nameof(LineBreakMode), typeof(LineBreakMode), typeof(Label), LineBreakMode.WordWrap,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((Label)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
@@ -244,6 +256,10 @@ namespace Xamarin.Forms
 		{
 			OnPropertyChanging("FormattedText");
 		}
+
+		void ITextElement.OnTextTransformChanged(TextTransform oldValue, TextTransform newValue) =>
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+
 		void OnFormattedTextChanged(object sender, PropertyChangedEventArgs e)
 		{
 			OnPropertyChanged("FormattedText");

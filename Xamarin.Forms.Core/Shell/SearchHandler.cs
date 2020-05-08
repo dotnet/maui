@@ -136,6 +136,21 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty PlaceholderColorProperty = PlaceholderElement.PlaceholderColorProperty;
 
+		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
+
+		public TextTransform TextTransform
+		{
+			get => (TextTransform)GetValue(TextTransformProperty);
+			set => SetValue(TextTransformProperty, value);
+		}
+
+		void ITextElement.OnTextTransformChanged(TextTransform oldValue, TextTransform newValue)
+		{
+		}
+
+		public virtual string UpdateFormsText(string source, TextTransform textTransform)
+			=> TextTransformUtilites.GetTransformedText(source, textTransform);
+
 		public Color CancelButtonColor
 		{
 			get { return (Color)GetValue(CancelButtonColorProperty); }

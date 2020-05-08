@@ -225,6 +225,8 @@ namespace Xamarin.Forms.Platform.MacOS
 				UpdatePadding();
 			else if (e.PropertyName == Label.TextTypeProperty.PropertyName)
 				UpdateText();
+			else if (e.PropertyName == Label.TextTransformProperty.PropertyName)
+				UpdateText();
 		}
 
 		protected override NativeLabel CreateNativeControl()
@@ -432,10 +434,11 @@ namespace Xamarin.Forms.Platform.MacOS
 			}
 			else
 			{
+				var text = Element.UpdateFormsText(Element.Text, Element.TextTransform);
 #if __MOBILE__
-				Control.Text = Element.Text;
+				Control.Text = text;
 #else
-				Control.StringValue = Element.Text ?? "";
+				Control.StringValue = text ?? "";
 #endif
 			}
 			UpdateLayout();

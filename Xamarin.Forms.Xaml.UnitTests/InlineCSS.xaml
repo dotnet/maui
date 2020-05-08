@@ -11,6 +11,7 @@
 }
 label {
     color: pink;
+	text-transform: uppercase;
     background-color: initial;
 }
             ]]>

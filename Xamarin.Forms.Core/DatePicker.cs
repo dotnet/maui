@@ -30,6 +30,8 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
+		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
+
 		readonly Lazy<PlatformConfigurationRegistry<DatePicker>> _platformConfigurationRegistry;
 
 		public DatePicker()
@@ -47,6 +49,12 @@ namespace Xamarin.Forms
 		{
 			get { return (string)GetValue(FormatProperty); }
 			set { SetValue(FormatProperty, value); }
+		}
+
+		public TextTransform TextTransform
+		{
+			get { return (TextTransform)GetValue(TextTransformProperty); }
+			set { SetValue(TextTransformProperty, value); }
 		}
 
 		public DateTime MaximumDate
@@ -106,6 +114,13 @@ namespace Xamarin.Forms
 
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+
+		void ITextElement.OnTextTransformChanged(TextTransform oldValue, TextTransform newValue)
+		{
+		}
+
+		public virtual string UpdateFormsText(string source, TextTransform textTransform)
+			=> TextTransformUtilites.GetTransformedText(source, textTransform);
 
 		public event EventHandler<DateChangedEventArgs> DateSelected;
 

@@ -19,6 +19,8 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty TextDecorationsProperty = DecorableTextElement.TextDecorationsProperty;
 
+		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
+
 		public Style Style
 		{
 			get { return (Style)GetValue(StyleProperty); }
@@ -49,6 +51,15 @@ namespace Xamarin.Forms
 			get { return (double)GetValue(TextElement.CharacterSpacingProperty); }
 			set { SetValue(TextElement.CharacterSpacingProperty, value); }
 		}
+		
+		public TextTransform TextTransform
+		{
+			get => (TextTransform)GetValue(TextTransformProperty);
+			set => SetValue(TextTransformProperty, value);
+		}
+
+		public virtual string UpdateFormsText(string source, TextTransform textTransform)
+			=> TextTransformUtilites.GetTransformedText(source, textTransform);
 
 		[Obsolete("Foreground is obsolete as of version 3.1.0. Please use the TextColor property instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -150,6 +161,10 @@ namespace Xamarin.Forms
 		}
 
 		void ITextElement.OnCharacterSpacingPropertyChanged(double oldValue, double newValue)
+		{
+		}
+		
+		void ITextElement.OnTextTransformChanged(TextTransform oldValue, TextTransform newValue)
 		{
 		}
 

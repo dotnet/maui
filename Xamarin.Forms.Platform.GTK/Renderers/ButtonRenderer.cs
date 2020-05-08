@@ -72,6 +72,8 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				UpdateText();
 			else if (e.PropertyName == Button.FontProperty.PropertyName)
 				UpdateText();
+			else if (e.PropertyName == Button.TextTransformProperty.PropertyName)
+                UpdateText();
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackgroundColor();
 			else if (e.PropertyName == Button.TextColorProperty.PropertyName)
@@ -136,7 +138,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				FontAttributes = Element.FontAttributes,
 				FontFamily = Element.FontFamily,
 				FontSize = Element.FontSize,
-				Text = Element.Text ?? string.Empty
+				Text = GLib.Markup.EscapeText(Element.UpdateFormsText(Element.Text ?? string.Empty, Element.TextTransform)) ?? string.Empty
 			};
 
 			Control.LabelWidget.SetTextFromSpan(span);

@@ -49,7 +49,8 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == Editor.TextProperty.PropertyName)
+			if (e.PropertyName == Editor.TextProperty.PropertyName ||
+				e.PropertyName == Editor.TextTransformProperty.PropertyName)
 				UpdateText();
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
 				UpdateEditable();
@@ -133,8 +134,9 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void UpdateText()
 		{
-			if (Control.StringValue != Element.Text)
-				Control.StringValue = Element.Text ?? string.Empty;
+			var text = Element.UpdateFormsText(Element.Text, Element.TextTransform);
+			if (Control.StringValue != text)
+				Control.StringValue = text;
 		}
 
 		void UpdateTextColor()

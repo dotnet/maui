@@ -1,4 +1,5 @@
 using System;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
@@ -23,6 +24,8 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
 
 		public static readonly BindableProperty CharacterSpacingProperty = TextElement.CharacterSpacingProperty;
+
+		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
 
 		public int MaxLength
 		{
@@ -82,6 +85,12 @@ namespace Xamarin.Forms
 			set => SetValue(CharacterSpacingProperty, value);
 		}
 
+		public TextTransform TextTransform
+		{
+			get => (TextTransform)GetValue(TextTransformProperty);
+			set => SetValue(TextTransformProperty, value);
+		}
+
 		public event EventHandler<TextChangedEventArgs> TextChanged;
 
 		protected virtual void OnTextChanged(string oldValue, string newValue)
@@ -96,6 +105,16 @@ namespace Xamarin.Forms
 		void ITextElement.OnCharacterSpacingPropertyChanged(double oldValue, double newValue)
 		{
 			InvalidateMeasure();
+		}
+
+		public void OnTextTransformChanged(TextTransform oldValue, TextTransform newValue)
+		{
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+		}
+
+		public string UpdateFormsText(string original, TextTransform transform)
+		{
+			return TextTransformUtilites.GetTransformedText(original, transform);
 		}
 	}
 

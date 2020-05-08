@@ -71,7 +71,8 @@ namespace Xamarin.Forms.Platform.MacOS
 			}
 			else if (e.PropertyName == SearchBar.TextColorProperty.PropertyName)
 				UpdateTextColor();
-			else if (e.PropertyName == SearchBar.TextProperty.PropertyName)
+			else if (e.PropertyName == SearchBar.TextProperty.PropertyName ||
+				e.PropertyName == SearchBar.TextTransformProperty.PropertyName)
 				UpdateText();
 			else if (e.PropertyName == SearchBar.CancelButtonColorProperty.PropertyName)
 				UpdateCancelButton();
@@ -166,7 +167,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void UpdateText()
 		{
-			Control.StringValue = Element.Text ?? "";
+			Control.StringValue = Element.UpdateFormsText(Element.Text, Element.TextTransform);
 			UpdateCancelButton();
 		}
 

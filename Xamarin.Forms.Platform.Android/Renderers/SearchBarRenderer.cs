@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		bool SearchView.IOnQueryTextListener.OnQueryTextChange(string newText)
 		{
-			((IElementController)Element).SetValueFromRenderer(SearchBar.TextProperty, newText);
+			Internals.TextTransformUtilites.SetPlainText(Element, newText);
 
 			return true;
 		}
@@ -144,7 +144,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (e.PropertyName == SearchBar.PlaceholderProperty.PropertyName)
 				UpdatePlaceholder();
-			else if (e.PropertyName == SearchBar.TextProperty.PropertyName)
+			else if (e.IsOneOf(SearchBar.TextProperty, SearchBar.TextTransformProperty))
 				UpdateText();
 			else if (e.PropertyName == SearchBar.CancelButtonColorProperty.PropertyName)
 				UpdateCancelButtonColor();
@@ -266,8 +266,9 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdateText()
 		{
 			string query = Control.Query;
-			if (query != Element.Text)
-				Control.SetQuery(Element.Text, false);
+			var text = Element.UpdateFormsText(Element.Text, Element.TextTransform);
+			if (query != text)
+				Control.SetQuery(text, false);
 		}
 
 		void UpdateCharacterSpacing()
