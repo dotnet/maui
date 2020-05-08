@@ -679,7 +679,10 @@ namespace Xamarin.Forms.Platform.iOS
 				if (barBackgroundColor == Color.Default)
 				{
 					navigationBarAppearance.ConfigureWithDefaultBackground();
-					navigationBarAppearance.BackgroundColor = UINavigationBar.Appearance.BarTintColor;
+					navigationBarAppearance.BackgroundColor = null;
+
+					var parentingViewController = GetParentingViewController();
+					parentingViewController?.SetupDefaultNavigationBarAppearance();
 				}
 				else
 				{
@@ -690,9 +693,6 @@ namespace Xamarin.Forms.Platform.iOS
 				NavigationBar.CompactAppearance = navigationBarAppearance;
 				NavigationBar.StandardAppearance = navigationBarAppearance;
 				NavigationBar.ScrollEdgeAppearance = navigationBarAppearance;
-
-				var parentingViewController = GetParentingViewController();
-				parentingViewController?.UpdateNavigationBarBackgroundImage();
 			}
 			else
 #endif
@@ -1096,7 +1096,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			public override void ViewWillAppear(bool animated)
 			{
-				UpdateNavigationBarBackgroundImage();
+				SetupDefaultNavigationBarAppearance();
 				UpdateNavigationBarVisibility(animated);
 
 				NavigationRenderer n;
@@ -1171,7 +1171,7 @@ namespace Xamarin.Forms.Platform.iOS
 					UpdateIconColor();
 			}
 
-			internal void UpdateNavigationBarBackgroundImage()
+			internal void SetupDefaultNavigationBarAppearance()
 			{
 				if (!Forms.IsiOS13OrNewer)
 					return;
@@ -1180,12 +1180,63 @@ namespace Xamarin.Forms.Platform.iOS
 					return;
 
 #if __XCODE11__
-				var backgroundImage = navigationRenderer.NavigationBar.GetBackgroundImage(UIBarMetrics.Default);
 
-				navigationRenderer.NavigationBar.CompactAppearance.BackgroundImage = backgroundImage;
-				navigationRenderer.NavigationBar.StandardAppearance.BackgroundImage = backgroundImage;
-				navigationRenderer.NavigationBar.ScrollEdgeAppearance.BackgroundImage = backgroundImage;
+				// We will use UINavigationBar.Appareance to infer settings that
+				// were already set to navigation bar in older versions of
+				// iOS.
+				var navBar = navigationRenderer.NavigationBar;
+				var navAppearance = navBar.StandardAppearance;
+
+				if (navAppearance.BackgroundColor == null)
+				{
+					var backgroundColor = navBar.BarTintColor;
+					navBar.CompactAppearance.BackgroundColor = navBar.StandardAppearance.BackgroundColor = navBar.ScrollEdgeAppearance.BackgroundColor = backgroundColor;
+				}
+
+				if (navAppearance.BackgroundImage == null)
+				{
+					var backgroundImage = navBar.GetBackgroundImage(UIBarMetrics.Default);
+					navBar.CompactAppearance.BackgroundImage = navBar.StandardAppearance.BackgroundImage = navBar.ScrollEdgeAppearance.BackgroundImage = backgroundImage;
+				}
+
+				if (navAppearance.ShadowImage == null)
+				{
+					var shadowImage = navBar.ShadowImage;
+					navBar.CompactAppearance.ShadowImage = navBar.StandardAppearance.ShadowImage = navBar.ScrollEdgeAppearance.ShadowImage = shadowImage;
+
+					if (shadowImage != null && shadowImage.Size == SizeF.Empty)
+						navBar.CompactAppearance.ShadowColor = navBar.StandardAppearance.ShadowColor = navBar.ScrollEdgeAppearance.ShadowColor = UIColor.Clear;
+				}
+
+				UIImage backIndicatorImage = navBar.BackIndicatorImage;
+				UIImage backIndicatorTransitionMaskImage = navBar.BackIndicatorTransitionMaskImage;
+
+				if (backIndicatorImage != null && backIndicatorImage.Size == SizeF.Empty)
+					backIndicatorImage = GetEmptyBackIndicatorImage();
+
+				if (backIndicatorTransitionMaskImage != null && backIndicatorTransitionMaskImage.Size == SizeF.Empty)
+					backIndicatorTransitionMaskImage = GetEmptyBackIndicatorImage();
+
+				navBar.CompactAppearance.SetBackIndicatorImage(backIndicatorImage, backIndicatorTransitionMaskImage);
+				navBar.StandardAppearance.SetBackIndicatorImage(backIndicatorImage, backIndicatorTransitionMaskImage);
+				navBar.ScrollEdgeAppearance.SetBackIndicatorImage(backIndicatorImage, backIndicatorTransitionMaskImage);
 #endif
+			}
+
+			UIImage GetEmptyBackIndicatorImage()
+			{
+				var rect = RectangleF.Empty;
+				var size = rect.Size;
+
+				UIGraphics.BeginImageContext(size);
+				var context = UIGraphics.GetCurrentContext();
+				context.SetFillColor(1, 1, 1, 0);
+				context.FillRect(rect);
+
+				var empty = UIGraphics.GetImageFromCurrentImageContext();
+				context.Dispose();
+
+				return empty;
 			}
 
 			internal void UpdateLeftBarButtonItem(Page pageBeingRemoved = null)

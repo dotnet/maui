@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Xamarin.Forms.Core
+namespace Xamarin.Forms
 {
 	public class FontFile
 	{
