@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 		protected override void OnAppearing()
 		{
 			base.OnAppearing();
-			//	(BindingContext as CarouselViewModel).Position = 2;
+			//(BindingContext as CarouselViewModel).Position = 2;
 		}
 	}
 
@@ -45,7 +45,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 				switch (_type)
 				{
 					case CarouselXamlSampleType.Peek:
-						items.Add(new CarouselItem(i, "cardBackground"));
+						items.Add(new CarouselItem(i, "cardBackground.png"));
 						break;
 					default:
 						items.Add(new CarouselItem(i));

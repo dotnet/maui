@@ -143,6 +143,7 @@
     <Content Include="Assets\Fonts\OFL.txt" />
     <Content Include="bank.png" />
     <Content Include="calculator.png" />
+    <Content Include="cardBackground.png" />
     <Content Include="coffee.png" />
     <Content Include="cover1.jpg" />
     <Content Include="cover1small.jpg" />

@@ -10,9 +10,17 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 	[Preserve(AllMembers = true)]
 	public class CarouselItemsGallery : ContentPage
 	{
-		public CarouselItemsGallery(bool empty, bool async, bool nativeIndicator)
+		CarouselItemsGalleryViewModel _viewModel;
+		bool _setPositionOnAppering;
+		public CarouselItemsGallery(bool startEmptyCollection = false, bool setCollectionWithAsync = false, 
+									bool useNativeIndicators = false, bool setPositionOnConstructor = false, 
+									bool setPositionOnAppearing = false, bool useScrollAnimated = true)
 		{
-			var viewModel = new CarouselItemsGalleryViewModel(empty, async);
+			_viewModel = new CarouselItemsGalleryViewModel(startEmptyCollection, setCollectionWithAsync);
+			_setPositionOnAppering = setPositionOnAppearing;
+
+			if (setPositionOnConstructor)
+				_viewModel.CarouselPosition = 3;
 
 			Title = $"CarouselView (Indicators)";
 
@@ -39,14 +47,14 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			{
 				ItemsLayout = itemsLayout,
 				ItemTemplate = itemTemplate,
-				IsScrollAnimated = true,
+				IsScrollAnimated = useScrollAnimated,
 				IsBounceEnabled = true,
 				EmptyView = "This is the empty view",
 				PeekAreaInsets = new Thickness(50),
-				BindingContext = viewModel
 			};
 
-			carouselView.SetBinding(CarouselView.ItemsSourceProperty, nameof(viewModel.Items));
+			carouselView.SetBinding(CarouselView.ItemsSourceProperty, nameof(_viewModel.Items));
+			carouselView.SetBinding(CarouselView.PositionProperty, nameof(_viewModel.CarouselPosition));
 
 			var absolute = new AbsoluteLayout();
 			absolute.Children.Add(carouselView, new Rectangle(0, 0, 1, 1), AbsoluteLayoutFlags.All);
@@ -59,7 +67,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 				IndicatorsShape = IndicatorShape.Square
 			};
 
-			if (!nativeIndicator)
+			if (!useNativeIndicators)
 			{
 				indicators.IndicatorTemplate = new DataTemplate(() =>
 				{
@@ -92,12 +100,12 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 
 			addItemButton.Clicked += (sender, e) =>
 			{
-				viewModel.Items.Add(new CarouselData
+				_viewModel.Items.Add(new CarouselData
 				{
 					Color = Color.Red,
-					Name = $"{viewModel.Items.Count + 1}"
+					Name = $"{_viewModel.Items.Count + 1}"
 				});
-				carouselView.Position = viewModel.Items.Count - 1;
+				_viewModel.CarouselPosition = _viewModel.Items.Count - 1;
 			};
 
 			var removeItemButton = new Button
@@ -107,11 +115,11 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 
 			removeItemButton.Clicked += (sender, e) =>
 			{
-				if (viewModel.Items.Any())
-					viewModel.Items.RemoveAt(viewModel.Items.Count - 1);
+				if (_viewModel.Items.Any())
+					_viewModel.Items.RemoveAt(_viewModel.Items.Count - 1);
 
-				if (viewModel.Items.Count > 0)
-					carouselView.Position = viewModel.Items.Count - 1;
+				if (_viewModel.Items.Count > 0)
+					_viewModel.CarouselPosition = _viewModel.Items.Count - 1;
 			};
 
 			var clearItemsButton = new Button
@@ -121,7 +129,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 
 			clearItemsButton.Clicked += (sender, e) =>
 			{
-				viewModel.Items.Clear();
+				_viewModel.Items.Clear();
 			};
 
 			var lbl = new Label();
@@ -136,7 +144,15 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			grid.Children.Add(stacklayoutButtons, 0, 1);
 
 			Content = grid;
-			BindingContext = viewModel;
+			BindingContext = _viewModel;
+		}
+
+		protected override void OnAppearing()
+		{
+			if (_viewModel.CarouselPosition != 3)
+				_viewModel.CarouselPosition = 3;
+
+			base.OnAppearing();
 		}
 
 		internal DataTemplate GetCarouselTemplate()
@@ -193,6 +209,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 	public class CarouselItemsGalleryViewModel : BindableObject
 	{
 		ObservableCollection<CarouselData> _items;
+		int _carouselPosition;
 
 		public CarouselItemsGalleryViewModel(bool empty, bool async)
 		{
@@ -242,6 +259,16 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			{
 				_items = value;
 				OnPropertyChanged(nameof(Items));
+			}
+		}
+
+		public int CarouselPosition
+		{
+			get => _carouselPosition;
+			set
+			{
+				_carouselPosition = value;
+				OnPropertyChanged(nameof(CarouselPosition));
 			}
 		}
 	}
