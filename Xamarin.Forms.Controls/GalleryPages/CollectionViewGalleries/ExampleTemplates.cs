@@ -14,7 +14,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
 				{
 					RowDefinitions = new RowDefinitionCollection { new RowDefinition(), new RowDefinition() },
 					WidthRequest = 200,
-					HeightRequest = 100
+					HeightRequest = 100,
+					BackgroundColor = Color.White
 				};
 
 				var image = new Image

@@ -19,7 +19,8 @@
 			{
 				ItemsLayout = itemsLayout,
 				ItemTemplate = itemTemplate,
-				AutomationId = "collectionview"
+				AutomationId = "collectionview",
+				BackgroundColor = Color.Red
 			};
 
 			var generator = new ItemsSourceGenerator(collectionView, initialItems: 20);

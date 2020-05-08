@@ -410,9 +410,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			AToolbar bar = _toolbar;
 			// make sure bar stays on top of everything
 			bar.BringToFront();
-
-			base.OnLayout(changed, l, t, r, b);
-
+			
 			int barHeight = ActionBarHeight();
 
 			if (Element.IsSet(BarHeightProperty))
@@ -435,6 +433,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			// Potential for optimization here, the exact conditions by which you don't need to do this are complex
 			// and the cost of doing when it's not needed is moderate to low since the layout will short circuit pretty fast
 			Element.ForceLayout();
+
+			base.OnLayout(changed, l, t, r, b);
 
 			bool toolbarLayoutCompleted = false;
 			for (var i = 0; i < ChildCount; i++)
