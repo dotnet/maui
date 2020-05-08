@@ -124,5 +124,14 @@ namespace Xamarin.Forms.Core.UnitTests
 			var global = DependencyService.Get<IDependencyTestRegister> ();
 			Assert.IsInstanceOf<DependencyTestRegisterImpl2> (global);
 		}
+
+		[Test]
+		public void RegisterSingletonInterface ()
+		{
+			var local = new DependencyTestRegisterImpl();
+			DependencyService.RegisterSingleton<IDependencyTestRegister> (local);
+			var global = DependencyService.Get<IDependencyTestRegister> ();
+			Assert.AreEqual(local, global);
+		}
 	}
 }
