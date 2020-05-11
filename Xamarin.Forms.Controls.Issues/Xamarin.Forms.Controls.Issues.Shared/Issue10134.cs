@@ -22,6 +22,7 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override void Init()
 		{
 			ContentPage page1 = AddTopTab("Tab 1");
+			page1.Title = "Top Bar Page 1";
 
 			for(int i = 2; i < 20; i++)
 			{

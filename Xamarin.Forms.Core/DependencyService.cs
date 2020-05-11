@@ -76,6 +76,17 @@ namespace Xamarin.Forms
 				DependencyImplementations[targetType] = new DependencyData { ImplementorType = implementorType };
 		}
 
+		public static void RegisterSingleton<T>(T instance) where T : class
+		{
+			Type targetType = typeof(T);
+			Type implementorType = typeof(T);
+			if (!DependencyTypes.Contains(targetType))
+				DependencyTypes.Add(targetType);
+
+			lock (s_dependencyLock)
+				DependencyImplementations[targetType] = new DependencyData { ImplementorType = implementorType, GlobalInstance = instance };
+		}
+
 		static Type FindImplementor(Type target) =>
 			DependencyTypes.FirstOrDefault(t => target.IsAssignableFrom(t));
 	
