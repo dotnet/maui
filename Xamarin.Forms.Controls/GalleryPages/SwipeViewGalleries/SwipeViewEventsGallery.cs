@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
 				deleteSwipeItem
 			};
 
-			leftSwipeItems.Mode = SwipeMode.Execute;
+			leftSwipeItems.Mode = SwipeMode.Reveal;
 
 			var swipeContent = new Grid
 			{
@@ -79,7 +79,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
 
 			swipeView.SwipeEnded += (sender, e) =>
 			{
-				eventsInfo.Text += $"SwipeEnded - Direction:{e.SwipeDirection}" + Environment.NewLine;
+				eventsInfo.Text += $"SwipeEnded - Direction:{e.SwipeDirection}, IsOpen: {e.IsOpen}" + Environment.NewLine;
 			};
 		}
 	}

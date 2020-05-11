@@ -25,6 +25,7 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public class SwipeViewRenderer : ViewRenderer<SwipeView, AView>
 	{
+		const float OpenSwipeThresholdPercentage = 0.6f; // 60%
 		const int SwipeThreshold = 250;
 		const int SwipeItemWidth = 100;
 		const long SwipeAnimationDuration = 200;
@@ -449,7 +450,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				UpdateSwipeItems();
 			}
-			
+
 			if (!_isSwiping)
 			{
 				RaiseSwipeStarted();
@@ -735,7 +736,7 @@ namespace Xamarin.Forms.Platform.Android
 				int drawableWidth = drawable.IntrinsicWidth;
 				int drawableHeight = drawable.IntrinsicHeight;
 
-				if(drawableWidth > drawableHeight)
+				if (drawableWidth > drawableHeight)
 				{
 					var iconWidth = iconSize;
 					var iconHeight = drawableHeight * iconWidth / drawableWidth;
@@ -1050,7 +1051,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (_swipeDirection == null)
 				return;
 
-			var swipeThresholdPercent = 0.6 * GetSwipeThreshold();
+			var swipeThresholdPercent = OpenSwipeThresholdPercentage * GetSwipeThreshold();
 
 			if (Math.Abs(_swipeOffset) >= swipeThresholdPercent)
 			{
@@ -1366,7 +1367,14 @@ namespace Xamarin.Forms.Platform.Android
 			if (_swipeDirection == null || !ValidateSwipeDirection())
 				return;
 
-			var swipeEndedEventArgs = new SwipeEndedEventArgs(_swipeDirection.Value);
+			bool isOpen = false;
+
+			var swipeThresholdPercent = OpenSwipeThresholdPercentage * GetSwipeThreshold();
+
+			if (Math.Abs(_swipeOffset) >= swipeThresholdPercent)
+				isOpen = true;
+
+			var swipeEndedEventArgs = new SwipeEndedEventArgs(_swipeDirection.Value, isOpen);
 			((ISwipeViewController)Element).SendSwipeEnded(swipeEndedEventArgs);
 		}
 	}
