@@ -1,5 +1,6 @@
 ﻿namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
 {
+	using System.ComponentModel;
 	using FormsElement = Forms.Application;
 
 	public static class Application
@@ -27,8 +28,7 @@
 			return config;
 		}
 
-		public static readonly BindableProperty OverlayContentProperty
-		   = BindableProperty.CreateAttached("OverlayContent", typeof(View), typeof(FormsElement), default(View));
+		public static readonly BindableProperty OverlayContentProperty = BindableProperty.CreateAttached("OverlayContent", typeof(View), typeof(FormsElement), default(View));
 
 		public static View GetOverlayContent(BindableObject application)
 		{
@@ -48,6 +48,31 @@
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetOverlayContent(this IPlatformElementConfiguration<Tizen, FormsElement> config, View value)
 		{
 			SetOverlayContent(config.Element, value);
+			return config;
+		}
+
+		public static readonly BindableProperty ActiveBezelInteractionElementProperty = BindableProperty.CreateAttached("ActiveBezelInteractionElement", typeof(Element), typeof(FormsElement), default(Element));
+
+		public static Element GetActiveBezelInteractionElement(BindableObject application)
+		{
+			return (Element)application.GetValue(ActiveBezelInteractionElementProperty);
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void SetActiveBezelInteractionElement(BindableObject application, Element value)
+		{
+			application.SetValue(ActiveBezelInteractionElementProperty, value);
+		}
+
+		public static Element GetActiveBezelInteractionElement(this IPlatformElementConfiguration<Tizen, FormsElement> config)
+		{
+			return GetActiveBezelInteractionElement(config.Element);
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static IPlatformElementConfiguration<Tizen, FormsElement> SetActiveBezelInteractionElement(this IPlatformElementConfiguration<Tizen, FormsElement> config, Element value)
+		{
+			SetActiveBezelInteractionElement(config.Element, value);
 			return config;
 		}
 	}
