@@ -6,6 +6,7 @@
 		public const string SystemBlue = "systemBlue";
 		public const string SystemGreen = "systemGreen";
 		public const string SystemIndigo = "systemIndigo";
+		public const string SystemOrange = "systemOrange";
 		public const string SystemPink = "systemPink";
 		public const string SystemPurple = "systemPurple";
 		public const string SystemRed = "systemRed";

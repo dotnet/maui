@@ -331,6 +331,9 @@ namespace Xamarin.Forms
 					case NamedPlatformColor.SystemIndigo:
 						resultColor = UIColor.SystemIndigoColor;
 						break;
+					case NamedPlatformColor.SystemOrange:
+						resultColor = UIColor.SystemOrangeColor;
+						break;
 					case NamedPlatformColor.SystemPink:
 						resultColor = UIColor.SystemPinkColor;
 						break;
