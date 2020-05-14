@@ -1,8 +1,8 @@
 parameters:
   name: ''            # in the form type_platform_host
   displayName: ''     # the human name
-  vmImage: ''         # the VM image
-  vmPool: ''         # the VM pool
+  vmImage: 'macOS-10.15'         # the VM image
+  vmPool: 'Azure Pipelines'         # the VM pool
   dependsOn: []       # the dependiencies
   preBuildSteps: []   # any steps to run before the build
   postBuildSteps: []  # any additional steps to run after the build
@@ -14,7 +14,6 @@ parameters:
   monoVersion: $(MONO_VERSION)
   provisionatorPath: 'build/provisioning/provisioning.csx'
   provisionatorExtraArguments: ''
-
 jobs:
   - job: ${{ parameters.name }}
     workspace:
@@ -22,7 +21,8 @@ jobs:
     displayName: ${{ parameters.displayName }}
     timeoutInMinutes: 120
     pool:
-      vmImage: ${{ parameters.vmImage }}
+      name: ${{ coalesce(parameters.vmPool, 'Azure Pipelines') }}
+      vmImage: ${{ coalesce(parameters.vmImage, 'macOS-10.15') }}
     dependsOn: ${{ parameters.dependsOn }}
     strategy:
       matrix:
