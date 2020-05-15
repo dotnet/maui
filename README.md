@@ -51,7 +51,7 @@ This is an evolution of [Xamarin.Forms](https://github.com/xamarin/xamarin.forms
 |Linux     |Community         |Community         |
 |macOS     |Community         |Microsoft         |
 |Tizen     |Samsung           |Samsung           |
-|Windows     |UWP Microsoft<br/>WPF Community         |WinUI 3 Microsoft<br/>WPF Community         |
+|Windows     |UWP Microsoft<br/>WPF Community         |Microsoft        |
 |**Features**     |         |         |
 |Renderers     |Tightly coupled to BindableObject         |Loosely coupled, no Core dependencies         |
 |App Models     |MVVM, RxUI         |MVVM, RxUI, MVU, Blazor         |
