@@ -1,8 +1,9 @@
 using System;
 using System.Globalization;
 using Xamarin.Forms.Platform.Tizen.Native;
-using WatchDataTimePickerDialog = Xamarin.Forms.Platform.Tizen.Native.Watch.WatchDataTimePickerDialog;
+using WatchDateTimePickerDialog = Xamarin.Forms.Platform.Tizen.Native.Watch.WatchDateTimePickerDialog;
 using EEntry = ElmSharp.Entry;
+using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Application;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -30,7 +31,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Device.Idiom == TargetIdiom.Watch)
 			{
-				return new WatchDataTimePickerDialog(Forms.NativeParent);
+				return new WatchDateTimePickerDialog(Forms.NativeParent);
 			}
 			else
 			{
@@ -53,9 +54,11 @@ namespace Xamarin.Forms.Platform.Tizen
 
 				_lazyDialog = new Lazy<IDateTimeDialog>(() => {
 					var dialog = CreateDialog();
-					dialog.Picker.Mode = DateTimePickerMode.Time;
+					dialog.Mode = DateTimePickerMode.Time;
 					dialog.Title = DialogTitle;
 					dialog.DateTimeChanged += OnDialogTimeChanged;
+					dialog.PickerOpened += OnPickerOpened;
+					dialog.PickerClosed += OnPickerClosed;
 					return dialog;
 				});
 			}
@@ -87,6 +90,8 @@ namespace Xamarin.Forms.Platform.Tizen
 				if (_lazyDialog.IsValueCreated)
 				{
 					_lazyDialog.Value.DateTimeChanged -= OnDialogTimeChanged;
+					_lazyDialog.Value.PickerOpened -= OnPickerOpened;
+					_lazyDialog.Value.PickerClosed -= OnPickerClosed;
 					_lazyDialog.Value.Unrealize();
 				}
 			}
@@ -113,7 +118,9 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (Element.IsEnabled)
 			{
 				var dialog = _lazyDialog.Value;
-				dialog.Picker.Time = Element.Time;
+				dialog.DateTime -= dialog.DateTime.TimeOfDay;
+				dialog.DateTime += Element.Time;
+
 				// You need to call Show() after ui thread occupation because of EFL problem.
 				// Otherwise, the content of the popup will not receive focus.
 				Device.BeginInvokeOnMainThread(() => dialog.Show());
@@ -130,7 +137,6 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			UpdateTimeAndFormat();
 		}
-
 		protected virtual void UpdateTextColor()
 		{
 			if (Control is IEntry ie)
@@ -166,6 +172,26 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (Control is IEntry ie)
 			{
 				ie.FontAttributes = Element.FontAttributes;
+			}
+		}
+		protected virtual void OnPickerOpened(object sender, EventArgs args)
+		{
+			if (Specific.GetUseBezelInteraction(Application.Current))
+			{
+				// picker included in WatchDatePickedDialog has been activated, whenever the dialog is opend.
+				Forms.RotaryFocusObject = Element;
+				Specific.SetActiveBezelInteractionElement(Application.Current, Element);
+			}
+		}
+
+		protected virtual void OnPickerClosed(object sender, EventArgs args)
+		{
+			if (Specific.GetUseBezelInteraction(Application.Current))
+			{
+				if (Forms.RotaryFocusObject == Element)
+					Forms.RotaryFocusObject = null;
+				if (Specific.GetActiveBezelInteractionElement(Application.Current) == Element)
+					Specific.SetActiveBezelInteractionElement(Application.Current, null);
 			}
 		}
 

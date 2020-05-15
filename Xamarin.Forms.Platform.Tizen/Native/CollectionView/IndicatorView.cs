@@ -6,6 +6,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 {
 	public class IndicatorView : Index
 	{
+		const int OddMiddleItem = 10;
+		const int EvenMiddleItem = 11;
 		List<IndexItem> _list = new List<IndexItem>();
 
 		public IndicatorView(EvasObject parent) : base(parent)
@@ -53,17 +55,15 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		{
 			foreach (var item in _list)
 			{
-				int center = 10;
-				int start = center - (_list.Count / 2);
-				int index = _list.IndexOf(item);
-				int position = start + index;
 				if (_list.Count % 2 == 0)
 				{
+					int position = EvenMiddleItem - (_list.Count / 2) + _list.IndexOf(item);
 					string itemStyle = "item/even_" + position;
 					item.Style = itemStyle;
 				}
 				else
 				{
+					int position = OddMiddleItem - (_list.Count / 2) + _list.IndexOf(item);
 					string itemStyle = "item/odd_" + position;
 					item.Style = itemStyle;
 				}

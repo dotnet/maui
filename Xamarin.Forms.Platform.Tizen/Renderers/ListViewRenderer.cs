@@ -246,14 +246,8 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			public void Dispose()
 			{
-				if (headerElement != null)
-				{
-					Control.SetHeader(headerElement);
-				}
-				if (footerElement != null)
-				{
-					Control.SetFooter(footerElement);
-				}
+				Control.SetHeader(headerElement);
+				Control.SetFooter(footerElement);
 			}
 		}
 

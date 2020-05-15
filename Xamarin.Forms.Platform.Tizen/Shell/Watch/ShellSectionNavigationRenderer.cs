@@ -81,6 +81,7 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 				_lastTop?.Hide();
 				_lastTop = InternalStack.LastOrDefault();
 				_lastTop.Show();
+				(_lastTop as Widget)?.SetFocus(true);
 			}
 		}
 
@@ -134,6 +135,11 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 
 			_rootPageRenderer = ShellRendererFactory.Default.CreateItemRenderer(ShellSection);
 			_viewStack.Push(_rootPageRenderer.NativeView);
+
+			Device.BeginInvokeOnMainThread(() =>
+			{
+				(_rootPageRenderer.NativeView as Widget)?.SetFocus(true);
+			});
 		}
 
 		void OnInsertRequest(NavigationRequestedEventArgs request)
@@ -154,6 +160,10 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 			var renderer = Platform.GetOrCreateRenderer(request.Page);
 			_viewStack.Push(renderer.NativeView);
 			request.Task = Task.FromResult(true);
+			Device.BeginInvokeOnMainThread(() =>
+			{
+				(renderer.NativeView as Widget)?.SetFocus(true);
+			});
 		}
 
 		void OnPopRequest(NavigationRequestedEventArgs request)
