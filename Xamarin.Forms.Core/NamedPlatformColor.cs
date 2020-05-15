@@ -2,7 +2,7 @@
 {
 	public static class NamedPlatformColor
 	{
-		// iOS
+		// iOS & macOS
 		public const string SystemBlue = "systemBlue";
 		public const string SystemGreen = "systemGreen";
 		public const string SystemIndigo = "systemIndigo";
@@ -13,19 +13,56 @@
 		public const string SystemTeal = "systemTeal";
 		public const string SystemYellow = "systemYellow";
 		public const string SystemGray = "systemGray";
-		public const string SystemGray2 = "systemGray2";
-		public const string SystemGray3 = "systemGray3";
-		public const string SystemGray4 = "systemGray4";
-		public const string SystemGray5 = "systemGray5";
-		public const string SystemGray6 = "systemGray6";
 		public const string Label = "label";
 		public const string SecondaryLabel = "secondaryLabel";
 		public const string TertiaryLabel = "tertiaryLabel";
 		public const string QuaternaryLabel = "quaternaryLabellabel";
 		public const string PlaceholderText = "placeholderText";
 		public const string Separator = "separator";
-		public const string OpaqueSeparator = "opaqueSeparator";
 		public const string Link = "link";
+
+		// iOS Only
+		public const string SystemGray2 = "systemGray2";
+		public const string SystemGray3 = "systemGray3";
+		public const string SystemGray4 = "systemGray4";
+		public const string SystemGray5 = "systemGray5";
+		public const string SystemGray6 = "systemGray6";
+		public const string OpaqueSeparator = "opaqueSeparator";
+
+		// macOS Only
+		public const string AlternateSelectedControlTextColor = "alternateSelectedControlTextColor";
+		public const string ControlAccent = "controlAccent";
+		public const string ControlBackgroundColor = "controlBackgroundColor";
+		public const string ControlColor = "controlColor";
+		public const string ControlTextColor = "controlTextColor";
+		public const string DisabledControlTextColor = "disabledControlTextColor";
+		public const string FindHighlightColor = "findHighlightColor";
+		public const string GridColor = "gridColor";
+		public const string HeaderTextColor = "headerTextColor";
+		public const string HighlightColor = "highlightColor";
+		public const string KeyboardFocusIndicatorColor = "keyboardFocusIndicatorColor";
+		public const string LabelColor = "labelColor";
+		public const string LinkColor = "linkColor";
+		public const string PlaceholderTextColor = "placeholderTextColor";
+		public const string QuaternaryLabelColor = "quaternaryLabelColor";
+		public const string SecondaryLabelColor = "secondaryLabelColor";
+		public const string SelectedContentBackgroundColor = "selectedContentBackgroundColor";
+		public const string SelectedControlColor = "selectedControlColor";
+		public const string SelectedControlTextColor = "selectedControlTextColor";
+		public const string SelectedMenuItemTextColor = "selectedMenuItemTextColor";
+		public const string SelectedTextBackgroundColor = "selectedTextBackgroundColor";
+		public const string SelectedTextColor = "selectedTextColor";
+		public const string SeparatorColor = "separatorColor";
+		public const string ShadowColor = "shadowColor";
+		public const string TertiaryLabelColor = "tertiaryLabelColor";
+		public const string TextBackgroundColor = "	textBackgroundColor";
+		public const string TextColor = "textColor";
+		public const string UnderPageBackgroundColor = "underPageBackgroundColor";
+		public const string UnemphasizedSelectedContentBackgroundColor = "unemphasizedSelectedContentBackgroundColor";
+		public const string UnemphasizedSelectedTextBackgroundColor = "unemphasizedSelectedTextBackgroundColor";
+		public const string UnemphasizedSelectedTextColor = "unemphasizedSelectedTextColor";
+		public const string WindowBackgroundColor = "windowBackgroundColor";
+		public const string WindowFrameTextColor = "windowFrameTextColor";
 
 		// Android
 		public const string BackgroundDark = "background_dark";
