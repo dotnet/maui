@@ -51,17 +51,17 @@
 			return config;
 		}
 
-		public static readonly BindableProperty ActiveBezelInteractionElementProperty = BindableProperty.CreateAttached("ActiveBezelInteractionElement", typeof(Element), typeof(FormsElement), default(Element));
+		public static readonly BindablePropertyKey ActiveBezelInteractionElementPropertyKey = BindableProperty.CreateAttachedReadOnly("ActiveBezelInteractionElement", typeof(Element), typeof(FormsElement), default(Element));
 
 		public static Element GetActiveBezelInteractionElement(BindableObject application)
 		{
-			return (Element)application.GetValue(ActiveBezelInteractionElementProperty);
+			return (Element)application.GetValue(ActiveBezelInteractionElementPropertyKey.BindableProperty);
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetActiveBezelInteractionElement(BindableObject application, Element value)
 		{
-			application.SetValue(ActiveBezelInteractionElementProperty, value);
+			application.SetValue(ActiveBezelInteractionElementPropertyKey, value);
 		}
 
 		public static Element GetActiveBezelInteractionElement(this IPlatformElementConfiguration<Tizen, FormsElement> config)
