@@ -35,10 +35,9 @@ Active development is happening today to build Android and iOS SDKs against the 
 * MAUI release candidate September 2021
 * MAUI general availability November 2021
 
-
 ## Source Code
 
-This is an evolution of [Xamarin.Forms](https://github.com/xamarin/xamarin.forms). Preview releases of MAUI will initially be made from [xamarin/xamarin.forms](https://github.com/xamarin/xamarin.forms). As we slow development in Xamarin.Forms and near the transition to MAUI, code will be moved to this repository.
+This is an evolution of [Xamarin.Forms](https://github.com/xamarin/xamarin.forms).
 
 ## Xamarin.Forms vs MAUI
 
