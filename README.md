@@ -38,7 +38,7 @@ Active development is happening today to build Android and iOS SDKs against the 
 
 ## Source Code
 
-This is an evolution of [Xamarin.Forms](https://github.com/xamarin/xamarin.forms). Preview releases of Maui will initially be made from [xamarin/xamarin.forms](https://github.com/xamarin/xamarin.forms). As we slow development in Xamarin.Forms and near the transition to Maui, code will be moved to this repository.
+This is an evolution of [Xamarin.Forms](https://github.com/xamarin/xamarin.forms). 
 
 ## Xamarin.Forms vs Maui
 
