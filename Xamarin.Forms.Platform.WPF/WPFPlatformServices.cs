@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Platform.WPF
 	{
 		public bool IsInvokeRequired
 		{
-			get { return !System.Windows.Application.Current.Dispatcher.CheckAccess(); }
+			get { return System.Windows.Application.Current == null ? false : !System.Windows.Application.Current.Dispatcher.CheckAccess(); }
 		}
 
 		public string RuntimePlatform => Device.WPF;
@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			System.Diagnostics.Process.Start(uri.AbsoluteUri);
 		}
-		
+
 		public void BeginInvokeOnMainThread(Action action)
 		{
 			System.Windows.Application.Current?.Dispatcher.BeginInvoke(action);
@@ -124,7 +124,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			return new WPFIsolatedStorageFile(IsolatedStorageFile.GetUserStoreForAssembly());
 		}
-		
+
 		public void StartTimer(TimeSpan interval, Func<bool> callback)
 		{
 			var timer = new DispatcherTimer(DispatcherPriority.Background, System.Windows.Application.Current.Dispatcher) { Interval = interval };
