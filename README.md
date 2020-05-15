@@ -1,6 +1,6 @@
 # Introducing .NET Multi-platform App UI (MAUI)
 
-Maui is:
+MAUI is:
 
 * Multi-platform native UI
 * Deploy to multiple devices across mobile & desktop
@@ -23,27 +23,27 @@ Active development is happening today to build Android and iOS SDKs against the 
 
 ### Roadmap
 
-.NET Maui and mobile SDK support will ship in concert with .NET 6. At present we do not have a shipping schedule for .NET 6.
+.NET MAUI and mobile SDK support will ship in concert with .NET 6. At present we do not have a shipping schedule for .NET 6.
 
 ### Milestones
 
-* Maui previews Q4 2020 through Q3 2021
+* MAUI previews Q4 2020 through Q3 2021
   * [Renderer architecture revisions](tbd)
   * [Source solution and project simplification](tbd)
   * [Completete approved proposals]()
   * [Implement MVU]()
-* Maui release candidate September 2021
-* Maui general availability November 2021
+* MAUI release candidate September 2021
+* MAUI general availability November 2021
 
 
 ## Source Code
 
-This is an evolution of [Xamarin.Forms](https://github.com/xamarin/xamarin.forms). Preview releases of Maui will initially be made from [xamarin/xamarin.forms](https://github.com/xamarin/xamarin.forms). As we slow development in Xamarin.Forms and near the transition to Maui, code will be moved to this repository.
+This is an evolution of [Xamarin.Forms](https://github.com/xamarin/xamarin.forms). Preview releases of MAUI will initially be made from [xamarin/xamarin.forms](https://github.com/xamarin/xamarin.forms). As we slow development in Xamarin.Forms and near the transition to MAUI, code will be moved to this repository.
 
-## Xamarin.Forms vs Maui
+## Xamarin.Forms vs MAUI
 
 
-|  |Xamarin.Forms  |Maui  |
+|  |Xamarin.Forms  |MAUI  |
 |---------|---------|---------|
 |**Platforms**     |         |         |
 |Android     |API 19+        |API 21+        |
@@ -71,7 +71,7 @@ This is an evolution of [Xamarin.Forms](https://github.com/xamarin/xamarin.forms
 ## How to Engage, Contribute, and Give Feedback
 
 Some of the best ways to contribute are to try things out, file issues, join in design conversations,
-and make pull-requests. Proposals for changes specific to Maui can be found [here for discussion](../../issues).
+and make pull-requests. Proposals for changes specific to MAUI can be found [here for discussion](../../issues).
 
 ## Code of conduct
 
