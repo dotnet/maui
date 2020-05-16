@@ -13,6 +13,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 
 		public CircleSurface CircleSurface => _surface;
 
+		public CircleScroller CircleScroller => _circleScroller;
+
 		public IRotaryActionWidget RotaryWidget { get => this; }
 
 		public WatchScroller(EvasObject parent, CircleSurface surface)

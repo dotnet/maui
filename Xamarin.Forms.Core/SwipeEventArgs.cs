@@ -42,9 +42,11 @@ namespace Xamarin.Forms
 
 	public class SwipeEndedEventArgs : BaseSwipeEventArgs
 	{
-		public SwipeEndedEventArgs(SwipeDirection swipeDirection) : base(swipeDirection)
+		public SwipeEndedEventArgs(SwipeDirection swipeDirection, bool isOpen) : base(swipeDirection)
 		{
-
+			IsOpen = isOpen;
 		}
+
+		public bool IsOpen { get; set; }
 	}
 }

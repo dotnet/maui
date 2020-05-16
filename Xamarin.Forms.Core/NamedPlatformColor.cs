@@ -16,7 +16,7 @@
 		public const string Label = "label";
 		public const string SecondaryLabel = "secondaryLabel";
 		public const string TertiaryLabel = "tertiaryLabel";
-		public const string QuaternaryLabel = "quaternaryLabellabel";
+		public const string QuaternaryLabel = "quaternaryLabel";
 		public const string PlaceholderText = "placeholderText";
 		public const string Separator = "separator";
 		public const string Link = "link";

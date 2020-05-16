@@ -15,6 +15,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 
 		public IntPtr CircleHandle => _circleGenList.CircleHandle;
 
+		public CircleGenList CircleGenList => _circleGenList;
+
 		public CircleSurface CircleSurface => _surface;
 
 		public IRotaryActionWidget RotaryWidget { get => this; }
@@ -32,13 +34,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 
 			Scroller = new CircleScrollerExtension(this);
 			Scroller.Scrolled += OnScrolled;
-		}
-
-		public override void AddSource(IEnumerable source, Cell beforeCell = null)
-		{
-			base.AddSource(source, beforeCell);
-			AddHeaderPadding();
-			AddFooterPadding();
 		}
 
 		public override void SetHeader(VisualElement header)

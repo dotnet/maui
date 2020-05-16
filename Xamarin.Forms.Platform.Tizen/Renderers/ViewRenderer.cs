@@ -118,12 +118,15 @@ namespace Xamarin.Forms.Platform.Tizen
 					{
 						ri.RotaryWidget?.Activate();
 						Forms.RotaryFocusObject = Element;
+						Specific.SetActiveBezelInteractionElement(Application.Current, Element);
 					}
 					else
 					{
 						ri.RotaryWidget?.Deactivate();
 						if (Forms.RotaryFocusObject == Element)
 							Forms.RotaryFocusObject = null;
+						if (Specific.GetActiveBezelInteractionElement(Application.Current) == Element)
+							Specific.SetActiveBezelInteractionElement(Application.Current, null);
 					}
 				}
 			}

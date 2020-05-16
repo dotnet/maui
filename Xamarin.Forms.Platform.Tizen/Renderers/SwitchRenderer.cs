@@ -2,6 +2,7 @@ using System;
 using ElmSharp;
 using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
 using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.VisualElement;
+using SpecificSwitch = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Switch;
 using EColor = ElmSharp.Color;
 
 namespace Xamarin.Forms.Platform.Tizen
@@ -18,6 +19,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			_onColorPart = _isTV ? "slider_on" : Device.Idiom == TargetIdiom.Watch ? "outer_bg_on" : "bg_on";
 			RegisterPropertyHandler(Switch.IsToggledProperty, HandleToggled);
 			RegisterPropertyHandler(Switch.OnColorProperty, UpdateOnColor);
+			RegisterPropertyHandler(SpecificSwitch.ColorProperty, UpdateColor);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Switch> e)
@@ -58,6 +60,8 @@ namespace Xamarin.Forms.Platform.Tizen
 				case SwitchStyle.Toggle:
 				case SwitchStyle.Favorite:
 				case SwitchStyle.CheckBox:
+				case SwitchStyle.OnOff:
+				case SwitchStyle.Small:
 					Control.Style = style;
 					break;
 				default:
@@ -67,17 +71,16 @@ namespace Xamarin.Forms.Platform.Tizen
 			((IVisualElementController)Element).NativeSizeChanged();
 		}
 
-		void OnStateChanged(object sender, EventArgs e)
+		protected virtual void UpdateColor()
 		{
-			Element.SetValueFromRenderer(Switch.IsToggledProperty, Control.IsChecked);
+			var color = SpecificSwitch.GetColor(Element);
+			if (color != Color.Default)
+			{
+				Control.Color = color.ToNative();
+			}
 		}
 
-		void HandleToggled()
-		{
-			Control.IsChecked = Element.IsToggled;
-		}
-
-		void UpdateOnColor(bool initialize)
+		protected void UpdateOnColor(bool initialize)
 		{
 			if (initialize && Element.OnColor.IsDefault)
 				return;
@@ -96,5 +99,16 @@ namespace Xamarin.Forms.Platform.Tizen
 					Control.SetPartColor("slider_focused_on", color);
 			}
 		}
+
+		void OnStateChanged(object sender, EventArgs e)
+		{
+			Element.SetValueFromRenderer(Switch.IsToggledProperty, Control.IsChecked);
+		}
+
+		void HandleToggled()
+		{
+			Control.IsChecked = Element.IsToggled;
+		}
+
 	}
 }

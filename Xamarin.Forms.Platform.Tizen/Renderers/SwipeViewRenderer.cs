@@ -187,7 +187,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				_itemsRenderer = null;
 			}
 
-			((ISwipeViewController)Element).SendSwipeEnded(new SwipeEndedEventArgs(SwipeDirection));
+			((ISwipeViewController)Element).SendSwipeEnded(new SwipeEndedEventArgs(SwipeDirection, DrawerState == SwipeDrawerState.Opend));
 			DrawerState = SwipeDrawerState.Closed;
 			SwipeDirection = 0;
 		}

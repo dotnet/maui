@@ -41,19 +41,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			}
 		}
 
-		public TimeSpan Time
-		{
-			get
-			{
-				return DateTime.TimeOfDay;
-			}
-			set
-			{
-				DateTime -= DateTime.TimeOfDay;
-				DateTime += value;
-			}
-		}
-
 		protected virtual void UpdateMode()
 		{
 			if (Mode == DateTimePickerMode.Date)

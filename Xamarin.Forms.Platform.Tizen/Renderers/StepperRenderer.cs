@@ -1,5 +1,6 @@
 ﻿using System;
 using ElmSharp;
+using Xamarin.Forms.Platform.Tizen.Native.Watch;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -18,13 +19,25 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Spinner(Forms.NativeParent)
-				{
-					IsEditable = false,
-				});
+				SetNativeControl(CreateNativeControl());
 				Control.ValueChanged += OnValueChanged;
 			}
 			base.OnElementChanged(e);
+		}
+
+		protected virtual Spinner CreateNativeControl()
+		{
+			if (Device.Idiom == TargetIdiom.Watch)
+			{
+				return new WatchSpinner(Forms.NativeParent, Forms.CircleSurface);
+			}
+			else
+			{
+				return new Spinner(Forms.NativeParent)
+				{
+					IsEditable = false
+				};
+			}
 		}
 
 		protected override void Dispose(bool disposing)
@@ -39,7 +52,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			base.Dispose(disposing);
 		}
 
-		void OnValueChanged(object sender, EventArgs e)
+		protected virtual void OnValueChanged(object sender, EventArgs e)
 		{
 			double newValue = Control.Value;
 			((IElementController)Element).SetValueFromRenderer(Stepper.ValueProperty, newValue);
