@@ -44,11 +44,11 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				case FlyoutBehavior.Disabled:
 					PreferredDisplayMode = UISplitViewControllerDisplayMode.PrimaryHidden;
-					PresentsWithGesture = false;
+					TryToUpdatePresentsWithGesture(false);
 					break;
 				case FlyoutBehavior.Flyout:
 					PreferredDisplayMode = UISplitViewControllerDisplayMode.PrimaryHidden;
-					PresentsWithGesture = true;
+					TryToUpdatePresentsWithGesture(true);
 					_isPresented = false;
 					_context.Shell.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, false);
 					break;
@@ -145,15 +145,19 @@ namespace Xamarin.Forms.Platform.iOS
 				if (view == null)
 					return;
 
-				var swipeViewTouched = IsSwipeView(view);
-				PresentsWithGesture = !swipeViewTouched;
+				if (_flyoutBehavior == FlyoutBehavior.Flyout)
+				{
+					var swipeViewTouched = IsSwipeView(view);
+					TryToUpdatePresentsWithGesture(!swipeViewTouched);
+				}
 			}
 		}
 
 		public override void TouchesEnded(NSSet touches, UIEvent evt)
 		{
 			base.TouchesEnded(touches, evt);
-			PresentsWithGesture = true;
+
+			TryToUpdatePresentsWithGesture(true);
 		}
 
 		protected override void Dispose(bool disposing)
@@ -175,6 +179,20 @@ namespace Xamarin.Forms.Platform.iOS
 				_content = null;
 				_context = null;
 			}
+		}
+
+		bool TryToUpdatePresentsWithGesture(bool value)
+		{
+			if (_flyoutBehavior != FlyoutBehavior.Flyout)
+			{
+				if (PresentsWithGesture)
+					PresentsWithGesture = false;
+
+				return false;
+			}
+
+			PresentsWithGesture = value;
+			return true;
 		}
 
 		bool IsSwipeView(UIView view)

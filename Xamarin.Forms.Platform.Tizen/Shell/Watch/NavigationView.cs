@@ -154,7 +154,6 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 						data.Icon = (menuItem.IconImageSource as FileImageSource)?.ToAbsPath();
 					}
 					var genitem = _naviMenu.Append(_defaultClass, data, GenListItemType.Normal);
-					genitem.SetPartColor("bg", _backgroundColor);
 					_items.Add(genitem);
 					data.PropertyChanged += OnItemPropertyChanged;
 				}
@@ -223,7 +222,7 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 
 			_surfaceLayout.StackAbove(_naviMenu);
 
-			_defaultClass = new GenItemClass("1icon_1text")
+			_defaultClass = new GenItemClass("1icon_2text")
 			{
 				GetTextHandler = (obj, part) =>
 				{
@@ -276,10 +275,6 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 		void UpdateBackgroundColor()
 		{
 			_naviMenu.BackgroundColor = _backgroundColor;
-			foreach (var item in _items)
-			{
-				item.SetPartColor("bg", _backgroundColor);
-			}
 		}
 
 		void UpdateForegroundColor()

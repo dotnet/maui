@@ -14,6 +14,8 @@ namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
 		public const string CheckBox = "default";
 		public const string Toggle = "toggle";
 		public const string Favorite = "favorite";
+		public const string OnOff = "on&off";
+		public const string Small = "small";
 	}
 
 	public static class ProgressBarStyle

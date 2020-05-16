@@ -169,7 +169,7 @@ namespace Xamarin.Forms
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void OnRequestedThemeChanged(AppThemeChangedEventArgs args)
 		{
-			if (Device.Flags.IndexOf(ExperimentalFlags.AppThemeExperimental) == -1)
+			if (Device.Flags == null || Device.Flags.IndexOf(ExperimentalFlags.AppThemeExperimental) == -1)
 				return;
 
 			// On iOS the event is triggered more than once.
