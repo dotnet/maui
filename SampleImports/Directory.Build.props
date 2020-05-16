@@ -1,10 +1,9 @@
 <Project>
   <PropertyGroup>
-    <XamarinFormsSource>..\..\</XamarinFormsSource>
-    <FromSource Condition="'$(FromSource)' == ''">true</FromSource>
-    <XamarinFormsVersion>4.6.0.494-pre2</XamarinFormsVersion>
+    <XamarinFormsSource Condition="'$(XamarinFormsSource)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\'))</XamarinFormsSource>
+    <FromSource Condition="'$(FromSource)' == ''">true</FromSource>    
     <NoWarn>$(NoWarn);NU1605</NoWarn>
-    <SampleProject>true</SampleProject>
+    <SampleProject Condition="'$(SampleProject)' == ''">true</SampleProject>
   </PropertyGroup>
   <Import Project="..\Directory.Build.props" />
   <Import Project="Netstandard.Build.props" Condition=" $(TargetFramework.StartsWith('netstandard'))" />
