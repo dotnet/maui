@@ -19,12 +19,21 @@
     -->
   </PropertyGroup>
   
+  <PropertyGroup Condition="'$(CI)' == 'true'">
+    <_XamarinFormsVersion>$(BUILD_BUILDNUMBER.Split(`+`)[0])</_XamarinFormsVersion>
+    <XamarinFormsVersion Condition="Exists('$(BUILD_SOURCESDIRECTORY)/Nuget/Xamarin.Forms.$(_XamarinFormsVersion).nupkg')" >$(_XamarinFormsVersion)</XamarinFormsVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <FromSource Condition="'$(XamarinFormsVersion)' != '' AND '$(FromSource)' == ''">false</FromSource>
+    <FromSource Condition="'$(FromSource)' == ''">true</FromSource>
+  </PropertyGroup>
+  
   <PropertyGroup>
     <Use2017 Condition="'$(Use2017)' == '' AND '$(MSBuildRuntimeType)' == 'Mono'">$(FrameworkSDKRoot.Contains('/Versions/5'))</Use2017>
     <Use2017 Condition="'$(Use2017)' == '' AND '$(MSBuildAssemblyVersion)' &lt; '16.0'">true</Use2017>
     <Use2017 Condition="'$(Use2017)' == ''">false</Use2017>
   </PropertyGroup>
-
   <!-- This is used by the libraries -->
   <PropertyGroup Condition="'$(AndroidTargetFrameworks)' == ''">
     <AndroidTargetFrameworks Condition="'$(Use2017)' == 'true'">MonoAndroid90;</AndroidTargetFrameworks>
