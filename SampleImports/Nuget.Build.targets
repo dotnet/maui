@@ -1,0 +1,6 @@
+<Project>
+  <ItemGroup>
+    <PackageReference ExcludeAssets="All" Include="Xamarin.Forms" Version="$(XamarinFormsVersion)">
+    </PackageReference>
+  </ItemGroup>
+</Project>

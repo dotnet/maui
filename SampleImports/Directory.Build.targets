@@ -1,8 +1,8 @@
 <Project>
 
+  <Import Project="Nuget.Build.targets" Condition="'$(XamarinFormsVersion)' != ''" />
+  
   <ItemGroup>
-    <PackageReference ExcludeAssets="All" Include="Xamarin.Forms" Version="$(XamarinFormsVersion)">
-    </PackageReference>
     <ProjectReference Include="$(XamarinFormsSource)Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
       <Name>Xamarin.Forms.Core</Name>
     </ProjectReference>
