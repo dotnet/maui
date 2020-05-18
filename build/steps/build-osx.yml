@@ -4,13 +4,13 @@ steps:
 
   - task: xamops.azdevex.provisionator-task.provisionator@1
     displayName: 'Provision Xcode'
-    condition: and(ne(variables['REQUIRED_XCODE'], ''), eq(variables['buildForVS2017'], 'false'))
+    condition: ne(variables['REQUIRED_XCODE'], '')
     inputs:
       provisioning_script: 'build/provisioning/xcode.csx'
 
   - task: xamops.azdevex.provisionator-task.provisionator@1
     displayName: 'Provisionator'
-    condition: and(eq(variables['provisioning'], 'true'), eq(variables['buildForVS2017'], 'false'))
+    condition: eq(variables['provisioning'], 'true')
     inputs:
       provisioning_script: $(provisionator.osxPath)
       provisioning_extra_args: $(provisionator.extraArguments) --v
@@ -19,15 +19,15 @@ steps:
       echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
       echo "##vso[task.prependpath]~/Library/Developer/Xamarin/android-sdk-macosx"
     displayName: 'Setup SDK Paths'
-    condition: and(ne(variables['osx2019VmPool'], 'Azure Pipelines'), eq(variables['buildForVS2017'], 'false'))
+    condition: ne(variables['osx2019VmPool'], 'Azure Pipelines')
 
   - task: Bash@3
     displayName: 'Cake Provision'
-    condition: or(eq(variables['provisioningCake'], 'true'), eq(variables['buildForVS2017'], 'true'))
+    condition: eq(variables['provisioningCake'], 'true')
     inputs:
       targetType: 'filePath'
       filePath: 'build.sh'
-      arguments: --target provision --TeamProject="$(System.TeamProject)" --buildForVS2017=$(buildForVS2017)
+      arguments: --target provision --TeamProject="$(System.TeamProject)"
 
   - task: UseDotNet@2
     displayName: 'Install .net core $(DOTNET_VERSION)'
@@ -87,25 +87,25 @@ steps:
     inputs:
       solution: 'System.Maui.ControlGallery.iOS/System.Maui.ControlGallery.iOS.csproj'
       configuration: $(buildConfiguration)
-      msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/ios-cg-2017_$(buildForVS2017).binlog /p:BuildIpa=true
+      msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/ios-cg.binlog /p:BuildIpa=true
 
   - task: MSBuild@1
     displayName: 'Build iOS Tests'
     inputs:
       solution: 'System.Maui.Core.iOS.UITests/System.Maui.Core.iOS.UITests.csproj'
       configuration: $(buildConfiguration)
-      msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/ios-uitests-2017_$(buildForVS2017).binlog
+      msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/ios-uitests.binlog
 
   - task: MSBuild@1
     displayName: 'Build Android Tests'
     inputs:
       solution: 'System.Maui.Core.Android.UITests/System.Maui.Core.Android.UITests.csproj'
       configuration: $(buildConfiguration)
-      msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/android-uitests-2017_$(buildForVS2017).binlog
+      msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/android-uitests.binlog
 
   - task: CopyFiles@2
     displayName: 'Copy test-cloud.exe'
-    condition: eq(variables['buildForVS2017'], 'false')
+    condition: always()
     inputs:
       Contents: '**/Xamarin.UITest.*/tools/test-cloud.exe'
       TargetFolder: '$(build.artifactstagingdirectory)/testcloud'
@@ -115,7 +115,7 @@ steps:
 
   - task: CopyFiles@2
     displayName: 'Copy iOS Files for UITest'
-    condition: eq(variables['buildForVS2017'], 'false')
+    condition: always()
     inputs:
       Contents: |
        **/$(IpaName)
@@ -130,24 +130,8 @@ steps:
       flattenFolders: true
 
   - task: CopyFiles@2
-    displayName: 'Copy iOS Files for UITest 2017'
-    condition: eq(variables['buildForVS2017'], 'true')
-    inputs:
-      Contents: |
-       **/$(IpaName)
-       System.Maui.Core.iOS.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
-       System.Maui.Core.iOS.UITests/bin/$(BuildConfiguration)/nunit.*
-       System.Maui.Core.iOS.UITests/bin/$(BuildConfiguration)/NUnit3.*
-       System.Maui.Core.iOS.UITests/bin/$(BuildConfiguration)/Plugin.*
-       System.Maui.Core.iOS.UITests/bin/$(BuildConfiguration)/Xamarin.*
-
-      TargetFolder: '$(build.artifactstagingdirectory)/ios_2017'
-      CleanTargetFolder: true
-      flattenFolders: true
-
-  - task: CopyFiles@2
     displayName: 'Copy Android Files for UITest'
-    condition: eq(variables['buildForVS2017'], 'false')
+    condition: always()
     inputs:
       Contents: |
        System.Maui.Core.Android.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*

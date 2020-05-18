@@ -233,18 +233,11 @@
     <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\System.Maui.Platform.iOS.dll" target="build\XCODE11" />
     <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\System.Maui.Platform.iOS.*pdb" target="build\XCODE11" />
     <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\System.Maui.Platform.iOS.*mdb" target="build\XCODE11" />
-    <!--<file src="..\System.Maui.Platform.iOS\bin\$Configuration$\2017\System.Maui.Platform.iOS.dll" target="build\XCODE10" />-->
-    <!--<file src="..\System.Maui.Platform.iOS\bin\$Configuration$\2017\System.Maui.Platform.iOS.*pdb" target="build\XCODE10" />-->
-    <!--<file src="..\System.Maui.Platform.iOS\bin\$Configuration$\2017\System.Maui.Platform.iOS.*mdb" target="build\XCODE10" />-->
-
 
     <!--iPhone Unified buildTransitive-->
     <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\System.Maui.Platform.iOS.dll" target="buildTransitive\XCODE11" />
     <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\System.Maui.Platform.iOS.*pdb" target="buildTransitive\XCODE11" />
     <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\System.Maui.Platform.iOS.*mdb" target="buildTransitive\XCODE11" />
-    <!--<file src="..\System.Maui.Platform.iOS\bin\$Configuration$\2017\System.Maui.Platform.iOS.dll" target="buildTransitive\XCODE10" />-->
-    <!--<file src="..\System.Maui.Platform.iOS\bin\$Configuration$\2017\System.Maui.Platform.iOS.*pdb" target="buildTransitive\XCODE10" />-->
-    <!--<file src="..\System.Maui.Platform.iOS\bin\$Configuration$\2017\System.Maui.Platform.iOS.*mdb" target="buildTransitive\XCODE10" />-->
 
     <file src="..\System.Maui.Core\bin\$Configuration$\netstandard2.0\System.Maui.Core.dll" target="lib\Xamarin.iOS10" />
     <file src="..\System.Maui.Core\bin\$Configuration$\netstandard2.0\System.Maui.Core.*pdb" target="lib\Xamarin.iOS10" />
@@ -288,23 +281,14 @@
     <file src="..\System.Maui.Xaml\bin\$Configuration$\netstandard2.0\System.Maui.Xaml.*pdb" target="lib\uap10.0.16299" />
     <file src="..\docs\System.Maui.Xaml.xml" target="lib\uap10.0.16299" />
 
-
-    <!-- VS 2017 needs these-->
-    <file src="..\System.Maui.Platform.UAP\obj\$Configuration$\uap10.0.14393\**\*.xaml" target="lib\uap10.0.14393\System.Maui.Platform.UAP" />
-    <!-- VS 2017 needs these 16299-->
-    <file src="..\System.Maui.Platform.UAP\obj\$Configuration$\uap10.0.16299\**\*.xaml" target="lib\uap10.0.16299\System.Maui.Platform.UAP" />
-    <file src="..\System.Maui.Platform.UAP\obj\$Configuration$\uap10.0.14393\Microsoft.UI.Xaml\**\*.xaml" target="lib\uap10.0.16299\System.Maui.Platform.UAP\Microsoft.UI.Xaml" />
-
     <!--Mac-->
     <file src="..\System.Maui.Core\bin\$Configuration$\netstandard2.0\System.Maui.Core.dll" target="lib\Xamarin.Mac" />
     <file src="..\System.Maui.Xaml\bin\$Configuration$\netstandard2.0\System.Maui.Xaml.dll" target="lib\Xamarin.Mac" />
     <file src="..\System.Maui.Platform.MacOS\bin\$Configuration$\System.Maui.Platform.dll" target="lib\Xamarin.Mac" />
     <file src="..\System.Maui.Platform.MacOS\bin\$Configuration$\System.Maui.Platform.macOS.dll" target="build\XCODE11" />
-    <!--<file src="..\System.Maui.Platform.MacOS\bin\$Configuration$\2017\System.Maui.Platform.macOS.dll" target="build\XCODE10" />-->
 
     <!--Mac buildTransitive-->
     <file src="..\System.Maui.Platform.MacOS\bin\$Configuration$\System.Maui.Platform.macOS.dll" target="buildTransitive\XCODE11" />
-    <!--<file src="..\System.Maui.Platform.MacOS\bin\$Configuration$\2017\System.Maui.Platform.macOS.dll" target="buildTransitive\XCODE10" />-->
 
     <!-- iOS Localized String Resource Assemblies -->
     <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\ar\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\ar" />
