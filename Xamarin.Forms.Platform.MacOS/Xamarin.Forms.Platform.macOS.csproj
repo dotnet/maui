@@ -61,11 +61,7 @@
     <XamMacArch>
     </XamMacArch>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Use2017)' == 'true' ">
-    <DefineConstants>__XCODE10__;$(DefineConstants);</DefineConstants>
-    <OutputPath>$(OutputPath)\2017</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Use2017)' != 'true' ">
+  <PropertyGroup>
     <DefineConstants>__XCODE11__;$(DefineConstants);</DefineConstants>
   </PropertyGroup>
   <ItemGroup>

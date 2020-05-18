@@ -200,20 +200,12 @@
   
   <Target Name="IncludeCorrectXIOSReference" Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.iOS' OR '$(TargetFrameworkIdentifier)' == 'Xamarin.Mac'">
 	<PropertyGroup>
-		<Use2017 Condition="'$(Use2017)' == '' AND '$(MSBuildRuntimeType)' == 'Mono'">$(FrameworkSDKRoot.Contains('/Versions/5'))</Use2017>
-		<Use2017 Condition="'$(Use2017)' == '' AND '$(MSBuildAssemblyVersion)' &lt; '16.0'">true</Use2017>
-		<Use2017 Condition="'$(Use2017)' == ''">false</Use2017>
 		<FrameworkDll Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.iOS'">Xamarin.Forms.Platform.iOS.dll</FrameworkDll>
 		<FrameworkDll Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.Mac'">Xamarin.Forms.Platform.macOS.dll</FrameworkDll>
 	</PropertyGroup>
-    <ItemGroup Condition="'$(Use2017)' != 'true'">
+    <ItemGroup>
 		<Reference Include="Xamarin.Forms.Platform.iOS">
 			<HintPath>$(MSBuildThisFileDirectory)\XCODE11\$(FrameworkDll)</HintPath>
-		</Reference>
-    </ItemGroup>
-    <ItemGroup Condition="'$(Use2017)' == 'true'">
-		<Reference Include="Xamarin.Forms.Platform.iOS">
-			<HintPath>$(MSBuildThisFileDirectory)\XCODE10\$(FrameworkDll)</HintPath>
 		</Reference>
     </ItemGroup>
   </Target>

@@ -32,16 +32,9 @@
     <FromSource Condition="'$(FromSource)' == ''">true</FromSource>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <Use2017 Condition="'$(Use2017)' == '' AND '$(MSBuildRuntimeType)' == 'Mono'">$(FrameworkSDKRoot.Contains('/Versions/5'))</Use2017>
-    <Use2017 Condition="'$(Use2017)' == '' AND '$(MSBuildAssemblyVersion)' &lt; '16.0'">true</Use2017>
-    <Use2017 Condition="'$(Use2017)' == ''">false</Use2017>
-  </PropertyGroup>
-
   <!-- This is used by the libraries -->
   <PropertyGroup Condition="'$(AndroidTargetFrameworks)' == ''">
-    <AndroidTargetFrameworks Condition="'$(Use2017)' == 'true'">MonoAndroid90;</AndroidTargetFrameworks>
-    <AndroidTargetFrameworks Condition="'$(Use2017)' == 'false'">MonoAndroid90;MonoAndroid10.0;</AndroidTargetFrameworks>
+    <AndroidTargetFrameworks>MonoAndroid90;MonoAndroid10.0;</AndroidTargetFrameworks>
   </PropertyGroup>
 
   <!-- Auto install any missing Android SDKs -->

@@ -13,7 +13,7 @@
     <AssemblyName>XamarinFormsControlGalleryiOS</AssemblyName>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
-    <DefineConstants Condition="'$(Use2017)' != 'true'">__XCODE11__;$(DefineConstants);</DefineConstants>
+    <DefineConstants>__XCODE11__;$(DefineConstants);</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
     <DebugSymbols>true</DebugSymbols>
@@ -187,7 +187,7 @@
       <IsAppExtension>false</IsAppExtension>
       <IsWatchApp>false</IsWatchApp>
     </ProjectReference>
-    <ProjectReference Condition="'$(Use2017)' != 'true'" Include="..\Xamarin.Forms.Material.iOS\Xamarin.Forms.Material.iOS.csproj">
+    <ProjectReference Include="..\Xamarin.Forms.Material.iOS\Xamarin.Forms.Material.iOS.csproj">
       <Project>{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}</Project>
       <Name>Xamarin.Forms.Material.iOS</Name>
       <IsAppExtension>false</IsAppExtension>
