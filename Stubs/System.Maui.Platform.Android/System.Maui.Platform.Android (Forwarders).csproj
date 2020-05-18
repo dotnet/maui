@@ -10,10 +10,6 @@
   <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
-  <PropertyGroup  Condition="'$(Use2017)' == 'true'">
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>bin\$(Configuration)\$(TargetFramework)</OutputPath>
-  </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\System.Maui.Platform.cs" Link="System.Maui.Platform.cs" />
   </ItemGroup>
