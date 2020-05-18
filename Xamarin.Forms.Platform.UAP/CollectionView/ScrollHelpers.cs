@@ -85,7 +85,10 @@ namespace Xamarin.Forms.Platform.UWP
 		static async Task AdjustToEndAsync(ListViewBase list, ScrollViewer scrollViewer, object targetItem)
 		{
 			var point = new UWPPoint(scrollViewer.HorizontalOffset, scrollViewer.VerticalOffset);
-			var targetContainer = list.ContainerFromItem(targetItem) as UIElement;
+
+			if (!(list.ContainerFromItem(targetItem) is UIElement targetContainer))
+				return;
+
 			point = AdjustToEnd(point, targetContainer.DesiredSize, scrollViewer);
 			await JumpToOffsetAsync(scrollViewer, point.X, point.Y);
 		}
@@ -115,7 +118,10 @@ namespace Xamarin.Forms.Platform.UWP
 		static async Task AdjustToCenterAsync(ListViewBase list, ScrollViewer scrollViewer, object targetItem)
 		{
 			var point = new UWPPoint(scrollViewer.HorizontalOffset, scrollViewer.VerticalOffset);
-			var targetContainer = list.ContainerFromItem(targetItem) as UIElement;
+
+			if (!(list.ContainerFromItem(targetItem) is UIElement targetContainer))
+				return;
+
 			point = AdjustToCenter(point, targetContainer.DesiredSize, scrollViewer);
 			await JumpToOffsetAsync(scrollViewer, point.X, point.Y);
 		}

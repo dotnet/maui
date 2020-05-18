@@ -303,9 +303,10 @@ namespace Xamarin.Forms.Platform.UWP
 										_scrollViewer.VerticalOffset > _previousVerticalOffset;
 
 			var position = ListViewBase.GetVisibleIndexes(CarouselItemsLayout.Orientation, goingNext).centerItemIndex;
+		
 			if (position == -1)
 				return;
-			System.Diagnostics.Debug.WriteLine(position);
+
 			UpdatePosition(position);
 		}
 
