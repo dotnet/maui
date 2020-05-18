@@ -43,9 +43,6 @@ var releaseChannelArg = Argument("CHANNEL", "Stable");
 releaseChannelArg = EnvironmentVariable("CHANNEL") ?? releaseChannelArg;
 var teamProject = Argument("TeamProject", "");
 
-var buildForVS2017Arg = EnvironmentVariable("buildForVS2017") ?? Argument("buildForVS2017", "false");
-bool buildForVS2017 = Convert.ToBoolean(buildForVS2017Arg);
-
 string artifactStagingDirectory = Argument("Build_ArtifactStagingDirectory", (string)null) ?? EnvironmentVariable("Build.ArtifactStagingDirectory") ?? EnvironmentVariable("Build_ArtifactStagingDirectory") ?? ".";
 var ANDROID_HOME = EnvironmentVariable("ANDROID_HOME") ??
     (IsRunningOnWindows () ? "C:\\Program Files (x86)\\Android\\android-sdk\\" : "");
@@ -58,9 +55,6 @@ Information ("ANDROID_RENDERERS: {0}", ANDROID_RENDERERS);
 Information ("configuration: {0}", configuration);
 Information ("ANDROID_HOME: {0}", ANDROID_HOME);
 Information ("Team Project: {0}", teamProject);
-Information ("buildForVS2017: {0}", buildForVS2017);
-Information ("EnvironmentVariable buildForVS2017: {0}", EnvironmentVariable("buildForVS2017"));
-Information ("Argument buildForVS2017: {0}", Argument("buildForVS2017", "not set"));
 
 var releaseChannel = ReleaseChannel.Stable;
 if(releaseChannelArg == "Preview")
@@ -78,17 +72,7 @@ string monoPatchVersion = "";
 string monoMajorVersion = "";
 string monoVersion = "";
 
-if(buildForVS2017)
-{
-    // VS2017
-    monoMajorVersion = "5.18.1";
-    monoPatchVersion = "";
-    androidSDK_macos = "https://aka.ms/xamarin-android-commercial-d15-9-macos";
-    iOSSDK_macos = $"https://bosstoragemirror.blob.core.windows.net/wrench/jenkins/xcode10.2/9c8d8e0a50e68d9abc8cd48fcd47a669e981fcc9/53/package/xamarin.ios-12.4.0.64.pkg";
-    macSDK_macos = $"https://bosstoragemirror.blob.core.windows.net/wrench/jenkins/xcode10.2/9c8d8e0a50e68d9abc8cd48fcd47a669e981fcc9/53/package/xamarin.mac-5.4.0.64.pkg";
-
-}
-else if(releaseChannel == ReleaseChannel.Stable)
+if(releaseChannel == ReleaseChannel.Stable)
 {
     if(IsXcodeVersionOver("11.4"))
     {
@@ -121,23 +105,15 @@ if(String.IsNullOrWhiteSpace(monoSDK_macos))
     }
 }
 
-string androidSDK_windows = "";
-string iOSSDK_windows = "";
-string monoSDK_windows = "";
-string macSDK_windows = "";
+string androidSDK_windows = EnvironmentVariable("ANDROID_SDK_WINDOWS", "");
+string iOSSDK_windows = EnvironmentVariable("IOS_SDK_WINDOWS", "");
+string monoSDK_windows = EnvironmentVariable("MONO_SDK_WINDOWS", "");
+string macSDK_windows = EnvironmentVariable("MAC_SDK_WINDOWS", "");
 
-if(!buildForVS2017)
-{
-    androidSDK_macos = EnvironmentVariable("ANDROID_SDK_MAC", androidSDK_macos);
-    iOSSDK_macos = EnvironmentVariable("IOS_SDK_MAC", iOSSDK_macos);
-    monoSDK_macos = EnvironmentVariable("MONO_SDK_MAC", monoSDK_macos);
-    macSDK_macos = EnvironmentVariable("MAC_SDK_MAC", macSDK_macos);
-
-    androidSDK_windows = EnvironmentVariable("ANDROID_SDK_WINDOWS", "");
-    iOSSDK_windows = EnvironmentVariable("IOS_SDK_WINDOWS", "");
-    monoSDK_windows = EnvironmentVariable("MONO_SDK_WINDOWS", "");
-    macSDK_windows = EnvironmentVariable("MAC_SDK_WINDOWS", "");
-}
+androidSDK_macos = EnvironmentVariable("ANDROID_SDK_MAC", androidSDK_macos);
+iOSSDK_macos = EnvironmentVariable("IOS_SDK_MAC", iOSSDK_macos);
+monoSDK_macos = EnvironmentVariable("MONO_SDK_MAC", monoSDK_macos);
+macSDK_macos = EnvironmentVariable("MAC_SDK_MAC", macSDK_macos);
 
 string androidSDK = IsRunningOnWindows() ? androidSDK_windows : androidSDK_macos;
 string monoSDK = IsRunningOnWindows() ? monoSDK_windows : monoSDK_macos;
@@ -334,22 +310,6 @@ Task("BuildForNuget")
                         .WithTarget("rebuild")
                         .WithProperty("DisableEmbeddedXbf", "false")
                         .WithProperty("EnableTypeInfoReflection", "false"));
-
-        msbuildSettings = GetMSBuildSettings();
-        msbuildSettings.BinaryLogger = binaryLogger;
-        binaryLogger.FileName = $"{artifactStagingDirectory}/ios-{configuration}-csproj.binlog";
-        MSBuild("./Xamarin.Forms.Platform.iOS/Xamarin.Forms.Platform.iOS.csproj",
-                    msbuildSettings
-                        .WithTarget("rebuild")
-                        .WithProperty("USE2017", "true"));
-
-        msbuildSettings = GetMSBuildSettings();
-        msbuildSettings.BinaryLogger = binaryLogger;
-        binaryLogger.FileName = $"{artifactStagingDirectory}/macos-{configuration}-csproj.binlog";
-        MSBuild("./Xamarin.Forms.Platform.MacOS/Xamarin.Forms.Platform.MacOS.csproj",
-                    msbuildSettings
-                        .WithTarget("rebuild")
-                        .WithProperty("USE2017", "true"));
 
     }
     catch(Exception)

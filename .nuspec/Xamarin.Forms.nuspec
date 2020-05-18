@@ -233,18 +233,12 @@
     <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\Xamarin.Forms.Platform.iOS.dll" target="build\XCODE11" />
     <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\Xamarin.Forms.Platform.iOS.*pdb" target="build\XCODE11" />
     <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\Xamarin.Forms.Platform.iOS.*mdb" target="build\XCODE11" />
-    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\2017\Xamarin.Forms.Platform.iOS.dll" target="build\XCODE10" />
-    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\2017\Xamarin.Forms.Platform.iOS.*pdb" target="build\XCODE10" />
-    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\2017\Xamarin.Forms.Platform.iOS.*mdb" target="build\XCODE10" />
 
 
     <!--iPhone Unified buildTransitive-->
     <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\Xamarin.Forms.Platform.iOS.dll" target="buildTransitive\XCODE11" />
     <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\Xamarin.Forms.Platform.iOS.*pdb" target="buildTransitive\XCODE11" />
     <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\Xamarin.Forms.Platform.iOS.*mdb" target="buildTransitive\XCODE11" />
-    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\2017\Xamarin.Forms.Platform.iOS.dll" target="buildTransitive\XCODE10" />
-    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\2017\Xamarin.Forms.Platform.iOS.*pdb" target="buildTransitive\XCODE10" />
-    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\2017\Xamarin.Forms.Platform.iOS.*mdb" target="buildTransitive\XCODE10" />
 
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="lib\Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.*pdb" target="lib\Xamarin.iOS10" />
@@ -288,23 +282,14 @@
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.*pdb" target="lib\uap10.0.16299" />
     <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\uap10.0.16299" />
 
-
-    <!-- VS 2017 needs these-->
-    <file src="..\Xamarin.Forms.Platform.UAP\obj\$Configuration$\uap10.0.14393\**\*.xaml" target="lib\uap10.0.14393\Xamarin.Forms.Platform.UAP" />
-    <!-- VS 2017 needs these 16299-->
-    <file src="..\Xamarin.Forms.Platform.UAP\obj\$Configuration$\uap10.0.16299\**\*.xaml" target="lib\uap10.0.16299\Xamarin.Forms.Platform.UAP" />
-    <file src="..\Xamarin.Forms.Platform.UAP\obj\$Configuration$\uap10.0.14393\Microsoft.UI.Xaml\**\*.xaml" target="lib\uap10.0.16299\Xamarin.Forms.Platform.UAP\Microsoft.UI.Xaml" />
-
     <!--Mac-->
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="lib\Xamarin.Mac" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.dll" target="lib\Xamarin.Mac" />
     <file src="..\Xamarin.Forms.Platform.MacOS\bin\$Configuration$\Xamarin.Forms.Platform.dll" target="lib\Xamarin.Mac" />
     <file src="..\Xamarin.Forms.Platform.MacOS\bin\$Configuration$\Xamarin.Forms.Platform.macOS.dll" target="build\XCODE11" />
-    <file src="..\Xamarin.Forms.Platform.MacOS\bin\$Configuration$\2017\Xamarin.Forms.Platform.macOS.dll" target="build\XCODE10" />
 
     <!--Mac buildTransitive-->
     <file src="..\Xamarin.Forms.Platform.MacOS\bin\$Configuration$\Xamarin.Forms.Platform.macOS.dll" target="buildTransitive\XCODE11" />
-    <file src="..\Xamarin.Forms.Platform.MacOS\bin\$Configuration$\2017\Xamarin.Forms.Platform.macOS.dll" target="buildTransitive\XCODE10" />
 
     <!-- iOS Localized String Resource Assemblies -->
     <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\ar\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\ar" />
