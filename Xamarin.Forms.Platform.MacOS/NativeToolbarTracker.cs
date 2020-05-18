@@ -206,11 +206,9 @@ namespace Xamarin.Forms.Platform.MacOS
 			var items = new List<ToolbarItem>();
 			if (ShowBackButton(forceShowBackButton))
 			{
-				bool isBackButtonTextSet = _navigation.IsSet(NavigationPage.BackButtonTitleProperty);
-				var backButtonTitle = isBackButtonTextSet ? NavigationPage.GetBackButtonTitle(_navigation) : GetPreviousPageTitle();
 				var backButtonItem = new ToolbarItem
 				{
-					Text = backButtonTitle,
+					Text = GetBackButtonText(),
 					Command = new Command(async () => await NavigateBackFrombackButton())
 				};
 				items.Add(backButtonItem);
@@ -297,12 +295,15 @@ namespace Xamarin.Forms.Platform.MacOS
 			return _navigation.Peek(0).Title ?? "";
 		}
 
-		string GetPreviousPageTitle()
+		string GetBackButtonText()
 		{
 			if (_navigation == null || _navigation.StackDepth <= 1)
 				return string.Empty;
 
-			return _navigation.Peek(1).Title ?? _defaultBackButtonTitle;
+			var page = _navigation.Peek(1);
+			return NavigationPage.GetBackButtonTitle(page)
+				?? page.Title
+				?? _defaultBackButtonTitle;
 		}
 
 		List<ToolbarItem> GetToolbarItems()
