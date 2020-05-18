@@ -1,5 +1,5 @@
 <Project>
   <Import Project="Android10.Build.targets" Condition="'$(TargetFrameworkVersion)' == 'v10.0'" />
-  <Import Project="Nuget2019.Build.targets" />
+  <Import Project="Nuget.Build.targets" />
   <Import Project="..\Nuget.targets" Condition="'$(FromSource)' == 'false'" />
 </Project>
