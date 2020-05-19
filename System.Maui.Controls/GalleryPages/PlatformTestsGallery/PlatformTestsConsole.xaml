@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" 
+             Title="Platform Test Console"
+             xmlns:ios="clr-namespace:System.Maui.PlatformConfiguration.iOSSpecific;assembly=System.Maui.Core"
+             ios:Page.UseSafeArea="true"
+             x:Class="System.Maui.Controls.GalleryPages.PlatformTestsGallery.PlatformTestsConsole">
+    <ContentPage.Content>
+        <StackLayout Margin="2">
+            <Grid MinimumHeightRequest="100">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Label x:Name="Status" Text="Running Tests..." VerticalTextAlignment="Center"/>
+                <Label Grid.Column="1" x:Name="RunCount" Text="" VerticalTextAlignment="Center"/>
+                <Button Grid.Column="2" Text="Run Again" x:Name="Rerun" IsEnabled="False"/>
+                <Button Grid.Column="3" Text="Toggle Passed" AutomationId="TogglePassed" x:Name="togglePassed"/>
+            </Grid>
+            <ScrollView x:Name="ResultsScrollView">
+                <StackLayout x:Name="Results" ChildAdded="ResultsAdded">
+                </StackLayout>
+            </ScrollView>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

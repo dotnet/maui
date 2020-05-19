@@ -1,0 +1,33 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ResourceDictionary.MergedDictionaries>
+
+        <!-- Pages -->
+        <ResourceDictionary Source="/System.Maui.Platform.WPF;component/Themes/FormsContentPage.xaml" />
+        <ResourceDictionary Source="/System.Maui.Platform.WPF;component/Themes/FormsTabbedPage.xaml" />
+        <ResourceDictionary Source="/System.Maui.Platform.WPF;component/Themes/FormsNavigationPage.xaml" />
+        <ResourceDictionary Source="/System.Maui.Platform.WPF;component/Themes/FormsCarouselPage.xaml" />
+        <ResourceDictionary Source="/System.Maui.Platform.WPF;component/Themes/FormsMasterDetailPage.xaml" /> 
+
+        <!-- Windows -->
+        <ResourceDictionary Source="/System.Maui.Platform.WPF;component/Themes/FormsWindow.xaml" />
+        <ResourceDictionary Source="/System.Maui.Platform.WPF;component/Themes/FormsContentDialog.xaml" />
+
+        <!-- Content Control -->
+        <ResourceDictionary Source="/System.Maui.Platform.WPF;component/Themes/FormsTransitioningContentControl.xaml" />
+        <ResourceDictionary Source="/System.Maui.Platform.WPF;component/Themes/FormsContentControl.xaml" />
+        <ResourceDictionary Source="/System.Maui.Platform.WPF;component/Themes/FormsAppBar.xaml" />
+
+        <!-- WindowButtonCommands -->
+        <ResourceDictionary Source="/System.Maui.Platform.WPF;component/Themes/FormsWindowButtonCommands.xaml" />
+
+        <ResourceDictionary Source="/System.Maui.Platform.WPF;component/Themes/FormsFontIcon.xaml" />
+        <ResourceDictionary Source="/System.Maui.Platform.WPF;component/Themes/FormsSymbolIcon.xaml" />
+        <ResourceDictionary Source="/System.Maui.Platform.WPF;component/Themes/FormsBitmapIcon.xaml" />
+        <ResourceDictionary Source="/System.Maui.Platform.WPF;component/Themes/FormsPathIcon.xaml" />
+        <ResourceDictionary Source="/System.Maui.Platform.WPF;component/Themes/FormsAppBarButton.xaml" />
+
+    </ResourceDictionary.MergedDictionaries>
+
+</ResourceDictionary>

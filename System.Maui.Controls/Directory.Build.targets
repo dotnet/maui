@@ -1,0 +1,5 @@
+<Project>
+  <Import Project="..\.nuspec\System.Maui.targets" Condition="$(FromSource) == 'true' AND '$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(__XFBuildTasksLocation)System.Maui.Build.Tasks.dll')" />
+  <Import Project="..\.nuspec\System.Maui.targets" Condition="$(FromSource) == 'true' AND '$(BuildingInsideVisualStudio)' != 'true'" />
+  <Import Project="..\Nuget.targets" Condition="'$(FromSource)' == 'false'" />
+</Project>

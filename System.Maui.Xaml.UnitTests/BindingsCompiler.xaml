@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+		xmlns="http://xamarin.com/schemas/2014/forms"
+		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		xmlns:local="clr-namespace:System.Maui.Xaml.UnitTests"
+		xmlns:sys="clr-namespace:System;assembly=mscorlib"
+
+		x:Class="System.Maui.Xaml.UnitTests.BindingsCompiler" >
+	<StackLayout>
+		<StackLayout x:DataType="local:MockViewModel">
+			<Label Text="{Binding Text}" x:Name="label0" />
+			<Label Text="{Binding Path=Text}" x:Name="label1" />
+			<Label Text="{Binding Model.Text}" x:Name="label2" />
+			<Label Text="{Binding Model[3]}" x:Name="label3" />
+            <Label Text="{Binding}" x:Name="label4" x:DataType="sys:String"/>
+            <Label Text="{Binding I}" x:Name="label5" />
+            <Label Text="{Binding Model.Text}" x:Name="label6" x:DataType="local:MockStructViewModel" />
+			<Entry Text="{Binding Text, Mode=TwoWay}" x:Name="entry0"/>
+			<Entry Text="{Binding Model.Text, Mode=TwoWay}" x:Name="entry1" />
+            <Label Text="{Binding .}" x:Name="label7" x:DataType="sys:Int32"/>
+            <Label Text="{Binding Text, Mode=OneTime}" x:Name="label8" />
+			<Label Text="{Binding StructModel.Text, Mode=TwoWay}" x:Name="label9" />
+			<Label Text="{Binding StructModel.Model.Text, Mode=TwoWay}" x:Name="label10" />
+		</StackLayout>
+		<Label Text="{Binding Text}" x:Name="labelWithUncompiledBinding" />
+	</StackLayout>
+</ContentPage>

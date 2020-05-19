@@ -1,4 +1,0 @@
-﻿<Project>
-  <Import Project="..\..\..\..\..\..\.nuspec\Xamarin.Forms.props" />
-  <Import Project="..\..\..\..\..\..\Directory.Build.props" />
-</Project> 

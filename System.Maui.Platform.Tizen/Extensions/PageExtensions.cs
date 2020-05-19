@@ -1,0 +1,59 @@
+using System;
+using ElmSharp;
+
+namespace System.Maui
+{
+	public static class PageExtensions
+	{
+		public static EvasObject CreateEvasObject(this Page page, EvasObject parent, bool hasAlpha = false)
+		{
+			if (!System.Maui.Maui.IsInitialized)
+				throw new InvalidOperationException("call System.Maui.Maui.Init() before this");
+
+			if (parent == null)
+				throw new InvalidOperationException("Window could not be null");
+
+			if (!(page.RealParent is Application))
+			{
+				Application app = new DefaultApplication();
+				app.MainPage = page;
+			}
+
+			var platform = Platform.Tizen.Platform.CreatePlatform(parent);
+			platform.HasAlpha = hasAlpha;
+			platform.SetPage(page);
+			return platform.GetRootNativeView();
+		}
+
+		class DefaultApplication : Application
+		{
+		}
+	}
+}
+
+namespace System.Maui.Platform.Tizen
+{
+	public static class PageExtensions
+	{
+		public static EvasObject CreateEvasObject(this ContentPage page, EvasObject parent, bool hasAlpha = false)
+		{
+			return System.Maui.PageExtensions.CreateEvasObject(page, parent, hasAlpha);
+		}
+
+		public static void UpdateFocusTreePolicy<T>(this MultiPage<T> multiPage) where T : Page
+		{
+			foreach (var pageItem in multiPage.Children)
+			{
+				if (Platform.GetRenderer(pageItem)?.NativeView is ElmSharp.Widget nativeWidget)
+				{
+					if (pageItem == multiPage.CurrentPage)
+					{
+						nativeWidget.AllowTreeFocus = true;
+						continue;
+					}
+					nativeWidget.AllowTreeFocus = false;
+				}
+			}
+		}
+	}
+}

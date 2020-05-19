@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="..\..\Environment.Build.props" />
   <PropertyGroup>
@@ -92,17 +92,17 @@
     <None Include="Properties\AndroidManifest28.xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Stubs\Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android %28Forwarders%29.csproj">
+    <ProjectReference Include="..\..\Stubs\System.Maui.Platform.Android\System.Maui.Platform.Android %28Forwarders%29.csproj">
       <Project>{6e53feb1-1100-46ae-8013-17bba35cc197}</Project>
-      <Name>Xamarin.Forms.Platform.Android (Forwarders)</Name>
+      <Name>System.Maui.Platform.Android (Forwarders)</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\..\System.Maui.Core\System.Maui.Core.csproj">
       <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
-      <Name>Xamarin.Forms.Core</Name>
+      <Name>System.Maui.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj">
+    <ProjectReference Include="..\..\System.Maui.Platform.Android\System.Maui.Platform.Android.csproj">
       <Project>{0e16e70a-d6dd-4323-ad5d-363abff42d6a}</Project>
-      <Name>Xamarin.Forms.Platform.Android</Name>
+      <Name>System.Maui.Platform.Android</Name>
     </ProjectReference>
     <ProjectReference Include="..\Embedding.XF\Embedding.XF.csproj">
       <Project>{02eac00f-0425-4959-ac64-e921627265ca}</Project>
@@ -113,9 +113,9 @@
     <AndroidEnvironment Include="environment.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Xamarin.Forms.Material.Android\Xamarin.Forms.Material.Android.csproj">
+    <ProjectReference Include="..\..\System.Maui.Material.Android\System.Maui.Material.Android.csproj">
       <Project>{e1586ce6-8eac-4388-a15a-1aabf108b5f8}</Project>
-      <Name>Xamarin.Forms.Material.Android</Name>
+      <Name>System.Maui.Material.Android</Name>
     </ProjectReference>
     <PackageReference Include="Xamarin.Android.Support.v4" Version="28.0.0.3" />
     <PackageReference Include="Xamarin.Android.Support.v7.RecyclerView" Version="28.0.0.3" />

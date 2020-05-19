@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:issues="clr-namespace:System.Maui.Controls.Issues;assembly=System.Maui.Controls"
+             mc:Ignorable="d"
+             x:Class="System.Maui.Controls.Issues.Issue6698View2"
+             x:DataType="{x:Type issues:Issue6698ContainerViewModel}">
+  <ContentView.Content>
+      <StackLayout>
+          <Label BackgroundColor="IndianRed"
+                 Text="{Binding LongLifecycleModel.Entity.Name}"
+                 FontSize="28" />
+      </StackLayout>
+  </ContentView.Content>
+</ContentView>

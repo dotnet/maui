@@ -1,0 +1,359 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>System.Maui</id>
+    <version>$version$</version>
+    <authors>Microsoft</authors>
+    <owners>microsoft xamarin</owners>
+    <tags>xamarin forms xamarinforms system.maui</tags>
+    <license type="expression">MIT</license>
+    <icon>Assets\xamarin_128x128.png</icon>
+    <projectUrl>http://xamarin.com/forms</projectUrl>
+    <repository type="git" url="https://github.com/dotnet/maui"/>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>Build native UIs for iOS, Android, UWP, macOS, Tizen and many more from a single, shared C# codebase</description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <dependencies>
+      <group targetFramework="MonoAndroid10.0">
+        <dependency id="Xamarin.AndroidX.Lifecycle.LiveData" version="2.1.0" />
+        <dependency id="Xamarin.Google.Android.Material" version="1.0.0" />
+        <dependency id="Xamarin.AndroidX.Legacy.Support.V4" version="1.0.0" />
+        <dependency id="Xamarin.AndroidX.Browser" version="1.0.0" />
+      </group>
+      <group targetFramework="MonoAndroid90">
+        <dependency id="Xamarin.Android.Support.v4" version="28.0.0.3"/>
+        <dependency id="Xamarin.Android.Support.Design" version="28.0.0.3"/>
+        <dependency id="Xamarin.Android.Support.v7.AppCompat" version="28.0.0.3"/>
+        <dependency id="Xamarin.Android.Support.v7.CardView" version="28.0.0.3"/>
+        <dependency id="Xamarin.Android.Support.CustomTabs" version="28.0.0.3"/>
+      </group>
+      <group targetFramework="uap10.0.14393">
+        <dependency id="NETStandard.Library" version="2.0.1"/>
+        <dependency id="Microsoft.NETCore.UniversalWindowsPlatform" version="6.0.15" />
+        <dependency id="Win2D.uwp" version="1.20.0" />
+        <dependency id="Microsoft.UI.Xaml" version="2.1.190606001" />
+        <dependency id="System.ValueTuple" version="4.5.0" />
+      </group>
+      <group targetFramework="uap10.0.16299">
+        <dependency id="Microsoft.NETCore.UniversalWindowsPlatform" version="6.0.15" />
+        <dependency id="Win2D.uwp" version="1.20.0" />
+        <dependency id="Microsoft.UI.Xaml" version="2.3.191211002" />
+      </group>
+      <group targetFramework="tizen40">
+        <dependency id="Tizen.NET" version="4.0.0"/>
+      </group>
+    </dependencies>
+    
+    <!-- DO NOT DELETE THESE REFERENCES -->
+    <!-- IF YOU DELETE THESE REFERENCES THE PACKAGE WILL NOT WORK ON MAC -->
+    <!-- https://github.com/xamarin/System.Maui/pull/2575 -->
+    <!-- DO NOT DELETE THESE REFERENCES -->
+    <references>
+      <group>
+        <reference file="System.Maui.Core.dll" />
+        <reference file="System.Maui.Platform.dll" />
+        <reference file="System.Maui.Xaml.dll" />
+      </group>
+      <group targetFramework="Xamarin.iOS10">
+        <reference file="System.Maui.Core.dll" />
+        <reference file="System.Maui.Platform.dll" />
+        <reference file="System.Maui.Xaml.dll" />
+      </group>
+      <group targetFramework="MonoAndroid10.0">
+        <reference file="System.Maui.Core.dll" />
+        <reference file="System.Maui.Platform.dll" />
+        <reference file="System.Maui.Xaml.dll" />
+        <reference file="FormsViewGroup.dll" />
+        <reference file="System.Maui.Platform.Android.dll" />
+      </group>
+      <group targetFramework="MonoAndroid90">
+        <reference file="System.Maui.Core.dll" />
+        <reference file="System.Maui.Platform.dll" />
+        <reference file="System.Maui.Xaml.dll" />
+        <reference file="FormsViewGroup.dll" />
+        <reference file="System.Maui.Platform.Android.dll" />
+      </group>
+      <group targetFramework="uap10.0.14393">
+        <reference file="System.Maui.Core.dll" />
+        <reference file="System.Maui.Platform.dll" />
+        <reference file="System.Maui.Xaml.dll" />
+        <reference file="System.Maui.Platform.UAP.dll" />
+      </group>
+      <group targetFramework="uap10.0.16299">
+        <reference file="System.Maui.Core.dll" />
+        <reference file="System.Maui.Platform.dll" />
+        <reference file="System.Maui.Xaml.dll" />
+        <reference file="System.Maui.Platform.UAP.dll" />
+      </group>
+      <group targetFramework="Xamarin.Mac">
+        <reference file="System.Maui.Core.dll" />
+        <reference file="System.Maui.Platform.dll" />
+        <reference file="System.Maui.Xaml.dll" />
+      </group>
+      <group targetFramework="tizen40">
+        <reference file="System.Maui.Core.dll" />
+        <reference file="System.Maui.Platform.Tizen.dll" />
+        <reference file="System.Maui.Platform.dll" />
+        <reference file="System.Maui.Xaml.dll" />
+      </group>
+    </references>
+  </metadata>
+
+  <files>
+    <!--Icon-->
+    <file src="..\Assets\xamarin_128x128.png" target="Assets\" />
+    <!--netstandard 1.0-->
+    <file src="..\System.Maui.Core\bin\$Configuration$\netstandard1.0\System.Maui.Core.dll" target="lib\netstandard1.0" />
+    <file src="..\System.Maui.Core\bin\$Configuration$\netstandard1.0\System.Maui.Core.*pdb" target="lib\netstandard1.0" />
+    <file src="..\System.Maui.Core\bin\$Configuration$\netstandard1.0\System.Maui.Core.*mdb" target="lib\netstandard1.0" />
+    <file src="..\docs\System.Maui.Core.xml" target="lib\netstandard1.0" />
+    <file src="..\System.Maui.Xaml\bin\$Configuration$\netstandard1.0\System.Maui.Xaml.dll" target="lib\netstandard1.0" />
+    <file src="..\System.Maui.Xaml\bin\$Configuration$\netstandard1.0\System.Maui.Xaml.*pdb" target="lib\netstandard1.0" />
+    <file src="..\System.Maui.Xaml\bin\$Configuration$\netstandard1.0\System.Maui.Xaml.*mdb" target="lib\netstandard1.0" />
+    <file src="..\docs\System.Maui.Xaml.xml" target="lib\netstandard1.0" />
+    <file src="..\System.Maui.Platform\bin\$Configuration$\netstandard1.0\System.Maui.Platform.dll" target="lib\netstandard1.0" />
+    <file src="..\System.Maui.Platform\bin\$Configuration$\netstandard1.0\System.Maui.Platform.*pdb" target="lib\netstandard1.0" />
+    <file src="..\System.Maui.Platform\bin\$Configuration$\netstandard1.0\System.Maui.Platform.*mdb" target="lib\netstandard1.0" />
+
+    <!--netstandard-->
+    <file src="..\System.Maui.Core\bin\$Configuration$\netstandard2.0\System.Maui.Core.dll" target="lib\netstandard2.0" />
+    <file src="..\System.Maui.Core\bin\$Configuration$\netstandard2.0\System.Maui.Core.*pdb" target="lib\netstandard2.0" />
+    <file src="..\System.Maui.Core\bin\$Configuration$\netstandard2.0\System.Maui.Core.*mdb" target="lib\netstandard2.0" />
+    <file src="..\docs\System.Maui.Core.xml" target="lib\netstandard2.0" />
+    <file src="..\docs\System.Maui.Xaml.xml" target="lib\netstandard2.0" />
+    <file src="..\docs\**\System.Maui.Core.xml" target="lib\netstandard2.0" />
+    <file src="..\docs\**\System.Maui.Xaml.xml" target="lib\netstandard2.0" />
+    <file src="..\System.Maui.Xaml\bin\$Configuration$\netstandard2.0\System.Maui.Xaml.dll" target="lib\netstandard2.0" />
+    <file src="..\System.Maui.Xaml\bin\$Configuration$\netstandard2.0\System.Maui.Xaml.*pdb" target="lib\netstandard2.0" />
+    <file src="..\System.Maui.Xaml\bin\$Configuration$\netstandard2.0\System.Maui.Xaml.*mdb" target="lib\netstandard2.0" />
+    <file src="..\System.Maui.Platform\bin\$Configuration$\netstandard2.0\System.Maui.Platform.dll" target="lib\netstandard2.0" />
+    <file src="..\System.Maui.Platform\bin\$Configuration$\netstandard2.0\System.Maui.Platform.*pdb" target="lib\netstandard2.0" />
+    <file src="..\System.Maui.Platform\bin\$Configuration$\netstandard2.0\System.Maui.Platform.*mdb" target="lib\netstandard2.0" />
+
+    <!--Xamlc stuff-->
+    <file src="System.Maui.targets" target="build" />
+    <file src="System.Maui.props" target="build" />
+    <file src="System.Maui.DefaultItems.targets" target="build" />
+    <file src="System.Maui.DefaultItems.props" target="build" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\netstandard2.0\System.Maui.Build.Tasks.dll" target="build\netstandard2.0" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\netstandard2.0\System.Maui.Core.dll" target="build\netstandard2.0" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\netstandard2.0\System.Maui.Xaml.dll" target="build\netstandard2.0" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\netstandard2.0\Mono.Cecil.dll" target="build\netstandard2.0" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\netstandard2.0\Mono.Cecil.Mdb.dll" target="build\netstandard2.0" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\netstandard2.0\Mono.Cecil.Pdb.dll" target="build\netstandard2.0" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\netstandard2.0\Mono.Cecil.Rocks.dll" target="build\netstandard2.0" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\netstandard2.0\System.CodeDom.dll" target="build\netstandard2.0" />   
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\net46\System.Maui.Build.Tasks.dll" target="build\net46" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\net46\System.Maui.Core.dll" target="build\net46" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\net46\System.Maui.Xaml.dll" target="build\net46" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\net46\Mono.Cecil.dll" target="build\net46" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\net46\Mono.Cecil.Mdb.dll" target="build\net46" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\net46\Mono.Cecil.Pdb.dll" target="build\net46" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\net46\Mono.Cecil.Rocks.dll" target="build\net46" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\net46\System.ValueTuple.dll" target="build\net46" />
+
+    <!--Xamlc stuff buildTransitive-->
+    <file src="System.Maui.targets" target="buildTransitive" />
+    <file src="System.Maui.props" target="buildTransitive" />
+    <file src="System.Maui.DefaultItems.targets" target="buildTransitive" />
+    <file src="System.Maui.DefaultItems.props" target="buildTransitive" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\netstandard2.0\System.Maui.Build.Tasks.dll" target="buildTransitive\netstandard2.0" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\netstandard2.0\System.Maui.Core.dll" target="buildTransitive\netstandard2.0" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\netstandard2.0\System.Maui.Xaml.dll" target="buildTransitive\netstandard2.0" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\netstandard2.0\Mono.Cecil.dll" target="buildTransitive\netstandard2.0" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\netstandard2.0\Mono.Cecil.Mdb.dll" target="buildTransitive\netstandard2.0" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\netstandard2.0\Mono.Cecil.Pdb.dll" target="buildTransitive\netstandard2.0" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\netstandard2.0\Mono.Cecil.Rocks.dll" target="buildTransitive\netstandard2.0" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\netstandard2.0\System.CodeDom.dll" target="buildTransitive\netstandard2.0" />   
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\net46\System.Maui.Build.Tasks.dll" target="buildTransitive\net46" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\net46\System.Maui.Core.dll" target="buildTransitive\net46" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\net46\System.Maui.Xaml.dll" target="buildTransitive\net46" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\net46\Mono.Cecil.dll" target="buildTransitive\net46" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\net46\Mono.Cecil.Mdb.dll" target="buildTransitive\net46" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\net46\Mono.Cecil.Pdb.dll" target="buildTransitive\net46" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\net46\Mono.Cecil.Rocks.dll" target="buildTransitive\net46" />
+    <file src="..\System.Maui.Build.Tasks\bin\$Configuration$\net46\System.ValueTuple.dll" target="buildTransitive\net46" />
+
+    <!-- Xaml Design-time Stuff -->
+    <file src="..\System.Maui.Core.Design\bin\$Configuration$\System.Maui.Core.Design.dll" target="lib\netstandard2.0\Design" />
+    <file src="..\System.Maui.Xaml.Design\bin\$Configuration$\System.Maui.Xaml.Design.dll" target="lib\netstandard2.0\Design" />
+    <file src="..\System.Maui.Core.Design\bin\$Configuration$\System.Maui.Core.Design.dll" target="lib\netstandard1.0\Design" />
+    <file src="..\System.Maui.Xaml.Design\bin\$Configuration$\System.Maui.Xaml.Design.dll" target="lib\netstandard1.0\Design" />
+    <file src="..\System.Maui.Core.Design\bin\$Configuration$\System.Maui.Core.Design.dll" target="lib\MonoAndroid10.0\Design" />
+    <file src="..\System.Maui.Xaml.Design\bin\$Configuration$\System.Maui.Xaml.Design.dll" target="lib\MonoAndroid10.0\Design" />
+    <file src="..\System.Maui.Core.Design\bin\$Configuration$\System.Maui.Core.Design.dll" target="lib\MonoAndroid90\Design" /> 
+    <file src="..\System.Maui.Xaml.Design\bin\$Configuration$\System.Maui.Xaml.Design.dll" target="lib\MonoAndroid90\Design" />
+    <file src="..\System.Maui.Core.Design\bin\$Configuration$\System.Maui.Core.Design.dll" target="lib\Xamarin.iOS10\Design" /> 
+    <file src="..\System.Maui.Xaml.Design\bin\$Configuration$\System.Maui.Xaml.Design.dll" target="lib\Xamarin.iOS10\Design" /> 
+    <file src="..\System.Maui.Core.Design\bin\$Configuration$\System.Maui.Core.Design.dll" target="lib\uap10.0.14393\Design" />
+    <file src="..\System.Maui.Xaml.Design\bin\$Configuration$\System.Maui.Xaml.Design.dll" target="lib\uap10.0.14393\Design" />
+    <file src="..\System.Maui.Core.Design\bin\$Configuration$\System.Maui.Core.Design.dll" target="lib\uap10.0.16299\Design" />
+    <file src="..\System.Maui.Xaml.Design\bin\$Configuration$\System.Maui.Xaml.Design.dll" target="lib\uap10.0.16299\Design" />
+    <file src="..\System.Maui.Core.Design\bin\$Configuration$\System.Maui.Core.Design.dll" target="lib\Xamarin.Mac\Design" />   
+    <file src="..\System.Maui.Xaml.Design\bin\$Configuration$\System.Maui.Xaml.Design.dll" target="lib\Xamarin.Mac\Design" />   
+    <file src="..\System.Maui.Core.Design\bin\$Configuration$\System.Maui.Core.Design.dll" target="lib\tizen40\Design" />   
+    <file src="..\System.Maui.Xaml.Design\bin\$Configuration$\System.Maui.Xaml.Design.dll" target="lib\tizen40\Design" />
+    
+    <!--Android 10-->
+    <file src="proguard.cfg" target="build\MonoAndroid10\proguard.cfg" />
+
+    <file src="proguard.cfg" target="buildTransitive\MonoAndroid10\proguard.cfg" />
+    
+    <!--Android 90-->
+    <file src="..\System.Maui.Platform.Android\bin\$Configuration$\MonoAndroid90\System.Maui.Platform.Android.dll" target="lib\MonoAndroid90" />
+    <file src="..\System.Maui.Platform.Android\bin\$Configuration$\MonoAndroid90\System.Maui.Platform.Android.*pdb" target="lib\MonoAndroid90" />
+    <file src="..\System.Maui.Platform.Android.FormsViewGroup\bin\$Configuration$\FormsViewGroup.dll" target="lib\MonoAndroid90" />
+    <file src="..\System.Maui.Platform.Android.FormsViewGroup\bin\$Configuration$\FormsViewGroup.*pdb" target="lib\MonoAndroid90" />
+    <file src="..\System.Maui.Core\bin\$Configuration$\netstandard2.0\System.Maui.Core.dll" target="lib\MonoAndroid90" />
+    <file src="..\System.Maui.Core\bin\$Configuration$\netstandard2.0\System.Maui.Core.*pdb" target="lib\MonoAndroid90" />
+    <file src="..\docs\System.Maui.Core.xml" target="lib\MonoAndroid90" />
+    <file src="..\docs\System.Maui.Xaml.xml" target="lib\MonoAndroid90" />
+    <file src="..\docs\**\System.Maui.Core.xml" target="lib\MonoAndroid90" />
+    <file src="..\docs\**\System.Maui.Xaml.xml" target="lib\MonoAndroid90" />
+    <file src="..\System.Maui.Xaml\bin\$Configuration$\netstandard2.0\System.Maui.Xaml.dll" target="lib\MonoAndroid90" />
+    <file src="..\System.Maui.Xaml\bin\$Configuration$\netstandard2.0\System.Maui.Xaml.*pdb" target="lib\MonoAndroid90" />
+    <file src="..\Stubs\System.Maui.Platform.Android\bin\$Configuration$\MonoAndroid90\System.Maui.Platform.dll" target="lib\MonoAndroid90" />
+    
+    <!--Android 100-->
+    <file src="..\System.Maui.Platform.Android\bin\$Configuration$\MonoAndroid10.0\System.Maui.Platform.Android.dll" target="lib\MonoAndroid10.0" />
+    <file src="..\System.Maui.Platform.Android\bin\$Configuration$\MonoAndroid10.0\System.Maui.Platform.Android.*pdb" target="lib\MonoAndroid10.0" />
+    <file src="..\System.Maui.Platform.Android.FormsViewGroup\bin\$Configuration$\FormsViewGroup.dll" target="lib\MonoAndroid10.0" />
+    <file src="..\System.Maui.Platform.Android.FormsViewGroup\bin\$Configuration$\FormsViewGroup.*pdb" target="lib\MonoAndroid10.0" />
+    <file src="..\System.Maui.Core\bin\$Configuration$\netstandard2.0\System.Maui.Core.dll" target="lib\MonoAndroid10.0" />
+    <file src="..\System.Maui.Core\bin\$Configuration$\netstandard2.0\System.Maui.Core.*pdb" target="lib\MonoAndroid10.0" />
+    <file src="..\docs\System.Maui.Core.xml" target="lib\MonoAndroid10.0" />
+    <file src="..\docs\System.Maui.Xaml.xml" target="lib\MonoAndroid10.0" />
+    <file src="..\docs\**\System.Maui.Core.xml" target="lib\MonoAndroid10.0" />
+    <file src="..\docs\**\System.Maui.Xaml.xml" target="lib\MonoAndroid10.0" />
+    <file src="..\System.Maui.Xaml\bin\$Configuration$\netstandard2.0\System.Maui.Xaml.dll" target="lib\MonoAndroid10.0" />
+    <file src="..\System.Maui.Xaml\bin\$Configuration$\netstandard2.0\System.Maui.Xaml.*pdb" target="lib\MonoAndroid10.0" />
+    <file src="..\Stubs\System.Maui.Platform.Android\bin\$Configuration$\MonoAndroid10.0\System.Maui.Platform.dll" target="lib\MonoAndroid10.0" />
+
+    <!--iPhone Unified-->
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\System.Maui.Platform.iOS.dll" target="build\XCODE11" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\System.Maui.Platform.iOS.*pdb" target="build\XCODE11" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\System.Maui.Platform.iOS.*mdb" target="build\XCODE11" />
+    <!--<file src="..\System.Maui.Platform.iOS\bin\$Configuration$\2017\System.Maui.Platform.iOS.dll" target="build\XCODE10" />-->
+    <!--<file src="..\System.Maui.Platform.iOS\bin\$Configuration$\2017\System.Maui.Platform.iOS.*pdb" target="build\XCODE10" />-->
+    <!--<file src="..\System.Maui.Platform.iOS\bin\$Configuration$\2017\System.Maui.Platform.iOS.*mdb" target="build\XCODE10" />-->
+
+
+    <!--iPhone Unified buildTransitive-->
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\System.Maui.Platform.iOS.dll" target="buildTransitive\XCODE11" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\System.Maui.Platform.iOS.*pdb" target="buildTransitive\XCODE11" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\System.Maui.Platform.iOS.*mdb" target="buildTransitive\XCODE11" />
+    <!--<file src="..\System.Maui.Platform.iOS\bin\$Configuration$\2017\System.Maui.Platform.iOS.dll" target="buildTransitive\XCODE10" />-->
+    <!--<file src="..\System.Maui.Platform.iOS\bin\$Configuration$\2017\System.Maui.Platform.iOS.*pdb" target="buildTransitive\XCODE10" />-->
+    <!--<file src="..\System.Maui.Platform.iOS\bin\$Configuration$\2017\System.Maui.Platform.iOS.*mdb" target="buildTransitive\XCODE10" />-->
+
+    <file src="..\System.Maui.Core\bin\$Configuration$\netstandard2.0\System.Maui.Core.dll" target="lib\Xamarin.iOS10" />
+    <file src="..\System.Maui.Core\bin\$Configuration$\netstandard2.0\System.Maui.Core.*pdb" target="lib\Xamarin.iOS10" />
+    <file src="..\System.Maui.Core\bin\$Configuration$\netstandard2.0\System.Maui.Core.*mdb" target="lib\Xamarin.iOS10" />
+    <file src="..\docs\System.Maui.Core.xml" target="lib\Xamarin.iOS10" />
+    <file src="..\docs\System.Maui.Xaml.xml" target="lib\Xamarin.iOS10" />
+    <file src="..\docs\**\System.Maui.Core.xml" target="lib\Xamarin.iOS10" />
+    <file src="..\docs\**\System.Maui.Xaml.xml" target="lib\Xamarin.iOS10" />
+    <file src="..\System.Maui.Xaml\bin\$Configuration$\netstandard2.0\System.Maui.Xaml.dll" target="lib\Xamarin.iOS10" />
+    <file src="..\System.Maui.Xaml\bin\$Configuration$\netstandard2.0\System.Maui.Xaml.*pdb" target="lib\Xamarin.iOS10" />
+    <file src="..\System.Maui.Xaml\bin\$Configuration$\netstandard2.0\System.Maui.Xaml.*mdb" target="lib\Xamarin.iOS10" />
+    <file src="..\Stubs\System.Maui.Platform.iOS\bin\iPhone\$Configuration$\System.Maui.Platform.dll" target="lib\Xamarin.iOS10" />
+
+    <!--UWP 14393-->
+    <file src="..\System.Maui.Platform.UAP\bin\$Configuration$\uap10.0.14393\System.Maui.Platform.UAP.dll" target="lib\uap10.0.14393" />
+    <file src="..\System.Maui.Platform.UAP\bin\$Configuration$\uap10.0.14393\System.Maui.Platform.UAP.*pdb" target="lib\uap10.0.14393" />
+    <file src="..\System.Maui.Platform.UAP\bin\$Configuration$\uap10.0.14393\System.Maui.Platform.UAP\System.Maui.Platform.UAP.xr.xml" target="lib\uap10.0.14393\System.Maui.Platform.UAP" />
+    <file src="..\System.Maui.Platform\bin\$Configuration$\netstandard1.0\System.Maui.Platform.dll" target="lib\uap10.0.14393" />
+    <file src="..\System.Maui.Platform\bin\$Configuration$\netstandard1.0\System.Maui.Platform.*pdb" target="lib\uap10.0.14393" />
+    <file src="..\System.Maui.Platform.UAP\Properties\System.Maui.Platform.UAP.rd.xml" target="lib\uap10.0.14393\Properties" />
+    <file src="..\System.Maui.Platform.UAP\bin\$Configuration$\uap10.0.14393\System.Maui.Platform.UAP.pri" target="lib\uap10.0.14393" />
+    <file src="..\System.Maui.Core\bin\$Configuration$\netstandard1.0\System.Maui.Core.dll" target="lib\uap10.0.14393" />
+    <file src="..\System.Maui.Core\bin\$Configuration$\netstandard1.0\System.Maui.Core.*pdb" target="lib\uap10.0.14393" />
+    <file src="..\docs\System.Maui.Core.xml" target="lib\uap10.0.14393" />
+    <file src="..\System.Maui.Xaml\bin\$Configuration$\netstandard1.0\System.Maui.Xaml.dll" target="lib\uap10.0.14393" />
+    <file src="..\System.Maui.Xaml\bin\$Configuration$\netstandard1.0\System.Maui.Xaml.*pdb" target="lib\uap10.0.14393" />
+    <file src="..\docs\System.Maui.Xaml.xml" target="lib\uap10.0.14393" />
+
+    <!--UWP 16299-->
+    <file src="..\System.Maui.Platform.UAP\bin\$Configuration$\uap10.0.16299\System.Maui.Platform.UAP.dll" target="lib\uap10.0.16299" />
+    <file src="..\System.Maui.Platform.UAP\bin\$Configuration$\uap10.0.16299\System.Maui.Platform.UAP.*pdb" target="lib\uap10.0.16299" />
+    <file src="..\System.Maui.Platform.UAP\bin\$Configuration$\uap10.0.16299\System.Maui.Platform.UAP\System.Maui.Platform.UAP.xr.xml" target="lib\uap10.0.16299\System.Maui.Platform.UAP" />
+    <file src="..\System.Maui.Platform\bin\$Configuration$\netstandard2.0\System.Maui.Platform.dll" target="lib\uap10.0.16299" />
+    <file src="..\System.Maui.Platform\bin\$Configuration$\netstandard2.0\System.Maui.Platform.*pdb" target="lib\uap10.0.16299" />
+    <file src="..\System.Maui.Platform.UAP\Properties\System.Maui.Platform.UAP.rd.xml" target="lib\uap10.0.16299\Properties" />
+    <file src="..\System.Maui.Platform.UAP\bin\$Configuration$\uap10.0.16299\System.Maui.Platform.UAP.pri" target="lib\uap10.0.16299" />
+    <file src="..\System.Maui.Core\bin\$Configuration$\netstandard2.0\System.Maui.Core.dll" target="lib\uap10.0.16299" />
+    <file src="..\System.Maui.Core\bin\$Configuration$\netstandard2.0\System.Maui.Core.*pdb" target="lib\uap10.0.16299" />
+    <file src="..\docs\System.Maui.Core.xml" target="lib\uap10.0.16299" />
+    <file src="..\System.Maui.Xaml\bin\$Configuration$\netstandard2.0\System.Maui.Xaml.dll" target="lib\uap10.0.16299" />
+    <file src="..\System.Maui.Xaml\bin\$Configuration$\netstandard2.0\System.Maui.Xaml.*pdb" target="lib\uap10.0.16299" />
+    <file src="..\docs\System.Maui.Xaml.xml" target="lib\uap10.0.16299" />
+
+
+    <!-- VS 2017 needs these-->
+    <file src="..\System.Maui.Platform.UAP\obj\$Configuration$\uap10.0.14393\**\*.xaml" target="lib\uap10.0.14393\System.Maui.Platform.UAP" />
+    <!-- VS 2017 needs these 16299-->
+    <file src="..\System.Maui.Platform.UAP\obj\$Configuration$\uap10.0.16299\**\*.xaml" target="lib\uap10.0.16299\System.Maui.Platform.UAP" />
+    <file src="..\System.Maui.Platform.UAP\obj\$Configuration$\uap10.0.14393\Microsoft.UI.Xaml\**\*.xaml" target="lib\uap10.0.16299\System.Maui.Platform.UAP\Microsoft.UI.Xaml" />
+
+    <!--Mac-->
+    <file src="..\System.Maui.Core\bin\$Configuration$\netstandard2.0\System.Maui.Core.dll" target="lib\Xamarin.Mac" />
+    <file src="..\System.Maui.Xaml\bin\$Configuration$\netstandard2.0\System.Maui.Xaml.dll" target="lib\Xamarin.Mac" />
+    <file src="..\System.Maui.Platform.MacOS\bin\$Configuration$\System.Maui.Platform.dll" target="lib\Xamarin.Mac" />
+    <file src="..\System.Maui.Platform.MacOS\bin\$Configuration$\System.Maui.Platform.macOS.dll" target="build\XCODE11" />
+    <!--<file src="..\System.Maui.Platform.MacOS\bin\$Configuration$\2017\System.Maui.Platform.macOS.dll" target="build\XCODE10" />-->
+
+    <!--Mac buildTransitive-->
+    <file src="..\System.Maui.Platform.MacOS\bin\$Configuration$\System.Maui.Platform.macOS.dll" target="buildTransitive\XCODE11" />
+    <!--<file src="..\System.Maui.Platform.MacOS\bin\$Configuration$\2017\System.Maui.Platform.macOS.dll" target="buildTransitive\XCODE10" />-->
+
+    <!-- iOS Localized String Resource Assemblies -->
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\ar\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\ar" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\ca\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\ca" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\cs\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\cs" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\da\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\da" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\de\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\de" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\el\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\el" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\es\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\es" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\fi\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\fi" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\fr\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\fr" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\he\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\he" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\hi\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\hi" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\hr\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\hr" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\hu\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\hu" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\id\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\id" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\it\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\it" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\ja\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\ja" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\ko\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\ko" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\ms\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\ms" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\nb\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\nb" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\nl\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\nl" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\pl\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\pl" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\pt-BR\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\pt-BR" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\pt\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\pt" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\ro\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\ro" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\ru\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\ru" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\sk\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\sk" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\sv\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\sv" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\th\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\th" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\tr\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\tr" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\uk\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\uk" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\vi\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\vi" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\zh-Hans\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\zh-Hans" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\zh-Hant\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\zh-Hant" />
+    <file src="..\System.Maui.Platform.iOS\bin\$Configuration$\zh-HK\System.Maui.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\zh-HK" />
+
+    <!--Tizen-->
+    <file src="..\System.Maui.Platform.Tizen\bin\$Configuration$\tizen40\System.Maui.Platform.Tizen.dll" target="lib\tizen40" />
+    <file src="..\System.Maui.Platform.Tizen\bin\$Configuration$\tizen40\System.Maui.Platform.Tizen.*pdb" target="lib\tizen40" />
+    <file src="..\System.Maui.Platform.Tizen\bin\$Configuration$\tizen40\System.Maui.Platform.Tizen.dll" target="lib\tizen40" />
+    <file src="..\Stubs\System.Maui.Platform.Tizen\bin\$Configuration$\tizen40\System.Maui.Platform.dll" target="lib\tizen40" />
+    <file src="..\System.Maui.Core\bin\$Configuration$\netstandard2.0\System.Maui.Core.dll" target="lib\tizen40" />
+    <file src="..\System.Maui.Core\bin\$Configuration$\netstandard2.0\System.Maui.Core.*pdb" target="lib\tizen40" />
+    <file src="..\docs\System.Maui.Core.xml" target="lib\tizen40" />
+    <file src="..\System.Maui.Xaml\bin\$Configuration$\netstandard2.0\System.Maui.Xaml.dll" target="lib\tizen40" />
+    <file src="..\System.Maui.Xaml\bin\$Configuration$\netstandard2.0\System.Maui.Xaml.*pdb" target="lib\tizen40" />
+    <file src="..\docs\System.Maui.Xaml.xml" target="lib\tizen40" />
+
+  </files>
+
+</package>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using Android.App;
 using Android.Content.PM;
@@ -10,17 +10,17 @@ using Android.OS;
 namespace DualScreen.Droid
 {
     [Activity(Label = "DualScreen", Icon = "@mipmap/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
-    public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
+    public class MainActivity : global::System.Maui.Platform.Android.FormsAppCompatActivity
     {
         protected override void OnCreate(Bundle savedInstanceState)
         {
-			Xamarin.Forms.DualScreen.DualScreenService.Init(this);
+			System.Maui.DualScreen.DualScreenService.Init(this);
             TabLayoutResource = Resource.Layout.Tabbar;
             ToolbarResource = Resource.Layout.Toolbar;
 
             base.OnCreate(savedInstanceState);
 
-            global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
+            global::System.Maui.Maui.Init(this, savedInstanceState);
             LoadApplication(new App());
         }
     }

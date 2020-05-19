@@ -1,7 +1,7 @@
-﻿using AppKit;
+using AppKit;
 using Foundation;
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.MacOS;
+using System.Maui;
+using System.Maui.Platform.MacOS;
 
 namespace DualScreen.Mac
 {
@@ -15,7 +15,7 @@ namespace DualScreen.Mac
 
             var rect = new CoreGraphics.CGRect(200, 1000, 1024, 768);
             window = new NSWindow(rect, style, NSBackingStore.Buffered, false);
-            window.Title = "Xamarin.Forms on Mac!"; // choose your own Title here
+            window.Title = "System.Maui on Mac!"; // choose your own Title here
             window.TitleVisibility = NSWindowTitleVisibility.Hidden;
         }
 
@@ -26,7 +26,7 @@ namespace DualScreen.Mac
 
         public override void DidFinishLaunching(NSNotification notification)
         {
-            Forms.Init();
+            System.Maui.Maui.Init();
             LoadApplication(new DualScreen.App());
             base.DidFinishLaunching(notification);
         }

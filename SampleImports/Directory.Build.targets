@@ -1,16 +1,16 @@
 <Project>
 
   <ItemGroup>
-    <PackageReference ExcludeAssets="All" Include="Xamarin.Forms" Version="$(XamarinFormsVersion)">
+    <PackageReference ExcludeAssets="All" Include="System.Maui" Version="$(XamarinFormsVersion)">
     </PackageReference>
-    <ProjectReference Include="$(XamarinFormsSource)Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
-      <Name>Xamarin.Forms.Core</Name>
+    <ProjectReference Include="$(XamarinFormsSource)System.Maui.Core\System.Maui.Core.csproj">
+      <Name>System.Maui.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="$(XamarinFormsSource)Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj" >
-      <Name>Xamarin.Forms.Xaml</Name>
+    <ProjectReference Include="$(XamarinFormsSource)System.Maui.Xaml\System.Maui.Xaml.csproj" >
+      <Name>System.Maui.Xaml</Name>
     </ProjectReference>
-    <ProjectReference  Include="$(XamarinFormsSource)Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj" >
-      <Name>Xamarin.Forms.Build.Tasks</Name>
+    <ProjectReference  Include="$(XamarinFormsSource)System.Maui.Build.Tasks\System.Maui.Build.Tasks.csproj" >
+      <Name>System.Maui.Build.Tasks</Name>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>

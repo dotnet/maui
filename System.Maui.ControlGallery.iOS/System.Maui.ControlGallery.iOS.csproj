@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="..\Environment.Build.props" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' And '$(BuildIpa)' == 'True' ">iPhone</Platform>
+    <Platform Condition=" '$(Platform)' == '' ">iPhoneSimulator</Platform>
+    <ProjectGuid>{C7131F14-274F-4B55-ACA9-E81731AD012F}</ProjectGuid>
+    <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>System.Maui.ControlGallery.iOS</RootNamespace>
+    <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
+    <AssemblyName>XamarinFormsControlGalleryiOS</AssemblyName>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <DefineConstants Condition="'$(Use2017)' != 'true'">__XCODE11__;$(DefineConstants);</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\iPhoneSimulator\Debug</OutputPath>
+    <DefineConstants>DEBUG;HAVE_OPENTK;$(DefineConstants);</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <MtouchArch>i386, x86_64</MtouchArch>
+    <MtouchLink>SdkOnly</MtouchLink>
+    <MtouchDebug>True</MtouchDebug>
+    <MtouchProfiling>False</MtouchProfiling>
+    <MtouchFastDev>False</MtouchFastDev>
+    <MtouchEnableGenericValueTypeSharing>True</MtouchEnableGenericValueTypeSharing>
+    <MtouchUseLlvm>False</MtouchUseLlvm>
+    <MtouchUseThumb>False</MtouchUseThumb>
+    <MtouchOptimizePNGs>False</MtouchOptimizePNGs>
+    <MtouchEnableBitcode>False</MtouchEnableBitcode>
+    <OptimizePNGs>True</OptimizePNGs>
+    <MtouchTlsProvider>Default</MtouchTlsProvider>
+    <MtouchHttpClientHandler>HttpClientHandler</MtouchHttpClientHandler>
+    <MtouchFloat32>False</MtouchFloat32>
+    <CodesignKey>iPhone Developer</CodesignKey>
+    <CodesignProvision />
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <MtouchExtraArgs>--nolinkaway</MtouchExtraArgs>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\iPhoneSimulator\Release</OutputPath>
+    <DefineConstants>HAVE_OPENTK;$(DefineConstants);</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <MtouchLink>None</MtouchLink>
+    <MtouchArch>i386, x86_64</MtouchArch>
+    <ConsolePause>false</ConsolePause>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhone' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\iPhone\Debug</OutputPath>
+    <DefineConstants>DEBUG;__UNIFIED__;__MOBILE__;__IOS__;HAVE_OPENTK;$(DefineConstants);</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <MtouchArch>ARM64</MtouchArch>
+    <CodesignKey>iPhone Developer</CodesignKey>
+    <MtouchDebug>True</MtouchDebug>
+    <CodesignEntitlements>
+    </CodesignEntitlements>
+    <MtouchLink>SdkOnly</MtouchLink>
+    <MtouchProfiling>False</MtouchProfiling>
+    <MtouchExtraArgs>--nolinkaway --optimize=experimental-xforms-product-type</MtouchExtraArgs>
+    <MtouchFastDev>False</MtouchFastDev>
+    <MtouchEnableGenericValueTypeSharing>True</MtouchEnableGenericValueTypeSharing>
+    <MtouchUseLlvm>False</MtouchUseLlvm>
+    <MtouchUseThumb>False</MtouchUseThumb>
+    <MtouchOptimizePNGs>True</MtouchOptimizePNGs>
+    <MtouchI18n>mideast</MtouchI18n>
+    <BuildIpa>True</BuildIpa>
+    <IpaMetadata />
+    <IpaPackageName />
+    <CodesignProvision>Automatic</CodesignProvision>
+    <CodesignResourceRules />
+    <CodesignExtraArgs />
+    <MtouchHttpClientHandler>NSUrlSessionHandler</MtouchHttpClientHandler>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\iPhone\Release</OutputPath>
+    <DefineConstants>HAVE_OPENTK;$(DefineConstants);</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <MtouchArch>ARMv7, ARM64</MtouchArch>
+    <ConsolePause>false</ConsolePause>
+    <CodesignKey>iPhone Developer</CodesignKey>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TF_BUILD)' == 'true' OR '$(CI)' == 'true'">
+    <MtouchLink>Full</MtouchLink>
+    <MtouchExtraArgs>--nolinkaway --optimize=experimental-xforms-product-type</MtouchExtraArgs>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
+    <AppExtensionDebugBundleId />
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AttachedStateEffectRenderer.cs" />
+    <Compile Include="BrokenImageSourceHandler.cs" />
+    <Compile Include="BrokenNativeControl.cs" />
+    <Compile Include="CustomRenderers\_9087CustomRenderer.cs" />
+    <Compile Include="PlatformSpecificCoreGalleryFactory.cs" />
+    <Compile Include="SearchbarEffect.cs" />
+    <Compile Include="CustomRenderer40251.cs" />
+    <Compile Include="Main.cs" />
+    <Compile Include="AppDelegate.cs" />
+    <Compile Include="PerformanceTrackerRenderer.cs" />
+    <Compile Include="RegistrarValidationService.cs" />
+    <Compile Include="SampleNativeControl.cs" />
+    <Compile Include="Tests\PlatformTestSettings.cs" />
+    <Compile Include="Tests\TestingPlatformService.cs" />
+    <Compile Include="_2489CustomRenderer.cs" />
+    <Compile Include="_57114Renderer.cs" />
+    <Compile Include="_58406EffectRenderer.cs" />
+    <Compile Include="_60122ImageRenderer.cs" />
+    <None Include="Info.plist" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="CustomRenderers.cs" />
+    <Compile Include="CustomRendererBugzila38731.cs" />
+    <Compile Include="CustomApplication.cs" />
+    <Compile Include="..\System.Maui.controls\gallerypages\openglgalleries\AdvancedOpenGLGallery.cs">
+      <Link>GalleryPages\AdvancedOpenGLGallery.cs</Link>
+    </Compile>
+    <Compile Include="CustomEffects\GradientEffect.cs" />
+    <Compile Include="CustomRenderers\CustomRenderer.cs" />
+    <Compile Include="CustomRenderers\RoundedLabelRenderer.cs" />
+    <Compile Include="ApiLabelRenderer.cs" />
+    <Compile Include="CustomRenderers\CustomSearchBarRenderer.cs" />
+    <Compile Include="_9767CustomRenderer.cs" />
+    <Compile Include="_10337CustomRenderer.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\System.Maui.Controls\System.Maui.Controls.csproj">
+      <Project>{cb9c96ce-125c-4a68-b6a1-c3ff1fbf93e1}</Project>
+      <Name>System.Maui.Controls</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\System.Maui.Platform.iOS.UnitTests\System.Maui.Platform.iOS.UnitTests.csproj">
+      <Project>{52c50e88-7f15-45fe-a63c-8e7c76ca2bae}</Project>
+      <Name>System.Maui.Platform.iOS.UnitTests</Name>
+      <IsAppExtension>false</IsAppExtension>
+      <IsWatchApp>false</IsWatchApp>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup Condition="$(FromSource) == 'false'">
+    <ProjectReference Include="..\System.Maui.CustomAttributes\System.Maui.CustomAttributes.csproj">
+      <Project>{4dcd0420-1168-4b77-86db-6196ee4bd491}</Project>
+      <Name>System.Maui.CustomAttributes</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup Condition="$(FromSource) == 'true'">
+    <ProjectReference Include="..\System.Maui.Maps.iOS\System.Maui.Maps.iOS.csproj">
+      <Project>{aba078c4-f9bb-4924-8b2b-10fe0d2f5491}</Project>
+      <Name>System.Maui.Maps.iOS</Name>
+      <IsAppExtension>false</IsAppExtension>
+      <IsWatchApp>false</IsWatchApp>
+    </ProjectReference>
+    <ProjectReference Include="..\System.Maui.Maps\System.Maui.Maps.csproj">
+      <Project>{7d13bac2-c6a4-416a-b07e-c169b199e52b}</Project>
+      <Name>System.Maui.Maps</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj">
+      <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
+      <Name>System.Maui.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\System.Maui.Platform.iOS\System.Maui.Platform.iOS.csproj">
+      <Project>{271193c1-6e7c-429c-a36d-3f1be5267231}</Project>
+      <Name>System.Maui.Platform.iOS</Name>
+      <IsAppExtension>false</IsAppExtension>
+      <IsWatchApp>false</IsWatchApp>
+    </ProjectReference>
+    <ProjectReference Include="..\Stubs\System.Maui.Platform.iOS\System.Maui.Platform.iOS %28Forwarders%29.csproj">
+      <Project>{39b3457f-01d8-43d0-8e84-d8c4f73cf48d}</Project>
+      <Name>System.Maui.Platform.iOS (Forwarders)</Name>
+      <IsAppExtension>false</IsAppExtension>
+      <IsWatchApp>false</IsWatchApp>
+    </ProjectReference>
+    <ProjectReference Condition="'$(Use2017)' != 'true'" Include="..\System.Maui.Material.iOS\System.Maui.Material.iOS.csproj">
+      <Project>{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}</Project>
+      <Name>System.Maui.Material.iOS</Name>
+      <IsAppExtension>false</IsAppExtension>
+      <IsWatchApp>false</IsWatchApp>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="bank%402x.png" />
+    <Content Include="bank.png" />
+    <Content Include="calculator%402x.png" />
+    <Content Include="calculator.png" />
+    <BundleResource Include="caret_r.png" />
+    <Content Include="cover1.jpg" />
+    <Content Include="crimson.jpg" />
+    <BundleResource Include="default.css" />
+    <Content Include="Entitlements.plist">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="GifOne.gif" />
+    <Content Include="GifTwo.gif" />
+    <Content Include="Goobuntu-icon.png" />
+    <Content Include="Intranet-icon.png" />
+    <BundleResource Include="local.html" />
+    <LinkDescription Include="LinkDescription.xml" />
+    <Content Include="oasis.jpg" />
+    <BundleResource Include="oasissmall.jpg" />
+    <Content Include="coffee%402x.png" />
+    <BundleResource Include="Resources\invalidimage.jpg" />
+    <BundleResource Include="Resources\FlowerBuds.jpg" />
+    <BundleResource Include="Resources\Fruits.jpg" />
+    <BundleResource Include="Resources\Legumes.jpg" />
+    <BundleResource Include="Resources\Vegetables.jpg" />
+    <BundleResource Include="Resources\gamesflyout.png" />
+    <BundleResource Include="Resources\gamesflyout%402x.png" />
+    <BundleResource Include="Resources\games.png" />
+    <BundleResource Include="Resources\games%402x.png" />
+    <BundleResource Include="Resources\booksflyout.png" />
+    <BundleResource Include="Resources\booksflyout%402x.png" />
+    <BundleResource Include="Resources\books.png" />
+    <BundleResource Include="Resources\books%402x.png" />
+    <BundleResource Include="Resources\homeflyout.png" />
+    <BundleResource Include="Resources\homeflyout%402x.png" />
+    <BundleResource Include="Resources\home%402x.png" />
+    <BundleResource Include="Resources\jet.png" />
+    <BundleResource Include="Resources\jet%402x.png" />
+    <BundleResource Include="Resources\loop.png" />
+    <BundleResource Include="Resources\loop%402x.png" />
+    <BundleResource Include="Resources\newspaperflyout.png" />
+    <BundleResource Include="Resources\newspaperflyout%402x.png" />
+    <BundleResource Include="Resources\newspaper.png" />
+    <BundleResource Include="Resources\newspaper%402x.png" />
+    <BundleResource Include="Resources\person.png" />
+    <BundleResource Include="Resources\person%402x.png" />
+    <BundleResource Include="Resources\star-flyout.png" />
+    <BundleResource Include="Resources\star-flyout%402x.png" />
+    <BundleResource Include="Resources\star.png" />
+    <BundleResource Include="Resources\star%402x.png" />
+    <BundleResource Include="Resources\headphone%402x.png" />
+    <BundleResource Include="Resources\headphone.png" />
+    <BundleResource Include="Resources\headphoneflyout%402x.png" />
+    <BundleResource Include="Resources\headphoneflyout.png" />
+    <BundleResource Include="Resources\grid%402x.png" />
+    <BundleResource Include="Resources\grid.png" />
+    <BundleResource Include="Resources\gear%402x.png" />
+    <BundleResource Include="Resources\gear.png" />
+    <BundleResource Include="Resources\film%402x.png" />
+    <BundleResource Include="Resources\film.png" />
+    <BundleResource Include="Resources\filmflyout%402x.png" />
+    <BundleResource Include="Resources\filmflyout.png" />
+    <BundleResource Include="Resources\card%402x.png" />
+    <BundleResource Include="Resources\card.png" />
+    <BundleResource Include="Resources\bell%402x.png" />
+    <BundleResource Include="Resources\bell.png" />
+    <BundleResource Include="Resources\mic.png" />
+    <BundleResource Include="Resources\photo.jpg" />
+    <Content Include="settings%402x.png" />
+    <Content Include="menuIcon%402x.png" />
+    <Content Include="crimsonsmall.jpg" />
+    <Content Include="seth%402x.png" />
+    <Content Include="cover1small.jpg" />
+    <Content Include="menuIcon.png" />
+    <Content Include="seth.png" />
+    <BundleResource Include="photo.jpg" />
+    <BundleResource Include="ionicons.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </BundleResource>
+    <BundleResource Include="WebImages\XamarinLogo.png" />
+    <BundleResource Include="Images\FlowerBuds.jpg" />
+    <BundleResource Include="Images\FlowerBuds%402x.jpg" />
+    <BundleResource Include="Images\Fruits.jpg" />
+    <BundleResource Include="Images\Fruits%402x.jpg" />
+    <BundleResource Include="Images\Legumes.jpg" />
+    <BundleResource Include="Images\Legumes%402x.jpg" />
+    <BundleResource Include="Images\Vegetables.jpg" />
+    <BundleResource Include="Images\Vegetables%402x.jpg" />
+    <BundleResource Include="toolbar_close.png" />
+    <BundleResource Include="test.jpg" />
+    <BundleResource Include="Resources\about.png" />
+    <BundleResource Include="Resources\about%402x.png" />
+    <BundleResource Include="Resources\blog.png" />
+    <BundleResource Include="Resources\blog%402x.png" />
+    <BundleResource Include="Resources\facebook.png" />
+    <BundleResource Include="Resources\facebook%402x.png" />
+    <BundleResource Include="Resources\favorite.png" />
+    <BundleResource Include="Resources\googleplus.png" />
+    <BundleResource Include="Resources\googleplus%402x.png" />
+    <BundleResource Include="Resources\hm_full.jpg" />
+    <BundleResource Include="Resources\hm.png" />
+    <BundleResource Include="Resources\hm%402x.png" />
+    <BundleResource Include="Resources\home.png" />
+    <BundleResource Include="Resources\ic_pause.png" />
+    <BundleResource Include="Resources\ic_pause%402x.png" />
+    <BundleResource Include="Resources\ic_play.png" />
+    <BundleResource Include="Resources\ic_play%402x.png" />
+    <BundleResource Include="Resources\ic_share.png" />
+    <BundleResource Include="Resources\ic_share%402x.png" />
+    <BundleResource Include="Resources\ic_stop.png" />
+    <BundleResource Include="Resources\ic_stop%402x.png" />
+    <BundleResource Include="Resources\instagram.png" />
+    <BundleResource Include="Resources\instagram%402x.png" />
+    <BundleResource Include="Resources\lists.png" />
+    <BundleResource Include="Resources\messages.png" />
+    <BundleResource Include="Resources\notifications.png" />
+    <BundleResource Include="Resources\profile.png" />
+    <BundleResource Include="Resources\ratchet_full.jpg" />
+    <BundleResource Include="Resources\ratchet.png" />
+    <BundleResource Include="Resources\ratchet%402x.png" />
+    <BundleResource Include="Resources\refresh.png" />
+    <BundleResource Include="Resources\refresh%402x.png" />
+    <BundleResource Include="Resources\reply.png" />
+    <BundleResource Include="Resources\retweet.png" />
+    <BundleResource Include="Resources\rui.jpg" />
+    <BundleResource Include="Resources\scott.png" />
+    <BundleResource Include="Resources\scott159.png" />
+    <BundleResource Include="Resources\search.png" />
+    <BundleResource Include="Resources\slideout.png" />
+    <BundleResource Include="Resources\slideout%402x.png" />
+    <BundleResource Include="Resources\tdl_full.jpg" />
+    <BundleResource Include="Resources\tdl.png" />
+    <BundleResource Include="Resources\tdl%402x.png" />
+    <BundleResource Include="Resources\tweet.png" />
+    <BundleResource Include="Resources\twitter.png" />
+    <BundleResource Include="Resources\twitter%402x.png" />
+    <BundleResource Include="Resources\twitternav.png" />
+    <BundleResource Include="Resources\twitternav%402x.png" />
+    <BundleResource Include="Resources\xamarinlogo.png" />
+    <BundleResource Include="coffee.png" />
+    <BundleResource Include="Resources\Default%402x.png" />
+    <BundleResource Include="Resources\Default.png" />
+    <BundleResource Include="Resources\Default-Portrait%402x.png" />
+    <BundleResource Include="Resources\Default-Portrait.png" />
+    <BundleResource Include="Resources\Default-568h%402x.png" />
+    <BundleResource Include="Resources\xamarin_logo%403x.png" />
+    <BundleResource Include="Resources\xamarin_logo%402x.png" />
+    <BundleResource Include="Resources\xamarin_logo.png" />
+    <BundleResource Include="..\System.Maui.ControlGallery.MacOS\Resources\Fonts\Roboto-Bold.ttf">
+      <Link>Resources\Fonts\Roboto-Bold.ttf</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </BundleResource>
+    <BundleResource Include="..\System.Maui.ControlGallery.MacOS\Resources\Fonts\Roboto-BoldItalic.ttf">
+      <Link>Resources\Fonts\Roboto-BoldItalic.ttf</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </BundleResource>
+    <BundleResource Include="..\System.Maui.ControlGallery.MacOS\Resources\Fonts\Roboto-Italic.ttf">
+      <Link>Resources\Fonts\Roboto-Italic.ttf</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </BundleResource>
+    <BundleResource Include="..\System.Maui.ControlGallery.MacOS\Resources\Fonts\Roboto-Regular.ttf">
+      <Link>Resources\Fonts\Roboto-Regular.ttf</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </BundleResource>
+    <BundleResource Include="Resources\button_add%402x.png" />
+    <BundleResource Include="Resources\icon_search%402x.png" />
+    <BundleResource Include="Resources\icon_bookmark%402x.png" />
+    <BundleResource Include="Resources\xamarinstore.jpg" />
+    <BundleResource Include="Resources\cardBackground%402x.png" />
+    <BundleResource Include="Resources\Fonts\fa-solid-900.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="Xamarin.iOS" />
+    <Reference Include="netstandard" />
+    <Reference Include="OpenTK-1.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="AdvancedColorPicker" Version="2.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="NUnit">
+      <Version>3.12.0</Version>
+    </PackageReference>
+    <PackageReference Include="Xam.Plugin.DeviceInfo" Version="3.0.2" />
+    <PackageReference Include="Xamarin.Insights" Version="1.12.3" />
+    <PackageReference Include="Xamarin.TestCloud.Agent" Version="0.21.9" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />
+  </ItemGroup>
+  <ItemGroup>
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Contents.json">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon1024.png">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon180.png">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon167.png">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon152.png">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon120.png">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon87.png">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon80.png">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon76.png">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon60.png">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon58.png">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon40.png">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon29.png">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon20.png">
+      <Visible>false</Visible>
+    </ImageAsset>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
+</Project>

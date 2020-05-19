@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -16,13 +16,13 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj" />
-    <ProjectReference Include="..\..\Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj" />
-    <ProjectReference Include="..\..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj" />
-    <ProjectReference Include="..\..\Xamarin.Forms.Platform.Tizen\Xamarin.Forms.Platform.Tizen.csproj" />
+    <ProjectReference Include="..\..\System.Maui.Core\System.Maui.Core.csproj" />
+    <ProjectReference Include="..\..\System.Maui.Platform\System.Maui.Platform.csproj" />
+    <ProjectReference Include="..\..\System.Maui.Xaml\System.Maui.Xaml.csproj" />
+    <ProjectReference Include="..\..\System.Maui.Platform.Tizen\System.Maui.Platform.Tizen.csproj" />
     <ProjectReference Include="..\PagesGallery\PagesGallery.csproj" />
-    <ProjectReference Include="..\..\Xamarin.Forms.Pages\Xamarin.Forms.Pages.csproj" />
-    <ProjectReference Include="..\..\Xamarin.Forms.Pages.Azure\Xamarin.Forms.Pages.Azure.csproj" />
+    <ProjectReference Include="..\..\System.Maui.Pages\System.Maui.Pages.csproj" />
+    <ProjectReference Include="..\..\System.Maui.Pages.Azure\System.Maui.Pages.Azure.csproj" />
   </ItemGroup>
 
 </Project>

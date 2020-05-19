@@ -1,6 +1,6 @@
 using System;
 using System.Globalization;
-using Xamarin.Forms;
+using System.Maui;
 
 namespace PagesGallery
 {

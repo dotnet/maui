@@ -1,0 +1,4 @@
+<Project>
+  <Import Project="..\Directory.Build.props" />
+  <Import Project="..\.nuspec\System.Maui.props" Condition="$(FromSource) == 'true'" />
+</Project> 

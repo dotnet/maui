@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -102,17 +102,17 @@
     <InterfaceDefinition Include="Main.storyboard" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\..\System.Maui.Core\System.Maui.Core.csproj">
       <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
-      <Name>Xamarin.Forms.Core</Name>
+      <Name>System.Maui.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Xamarin.Forms.DualScreen\Xamarin.Forms.DualScreen.csproj">
+    <ProjectReference Include="..\..\System.Maui.DualScreen\System.Maui.DualScreen.csproj">
       <Project>{fb4a866a-5721-4545-9e5d-b7f7d59875a4}</Project>
-      <Name>Xamarin.Forms.DualScreen</Name>
+      <Name>System.Maui.DualScreen</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Xamarin.Forms.Platform.MacOS\Xamarin.Forms.Platform.MacOS.csproj">
+    <ProjectReference Include="..\..\System.Maui.Platform.MacOS\System.Maui.Platform.MacOS.csproj">
       <Project>{c0059c45-ea1e-42f3-8a0e-794bb547ec3c}</Project>
-      <Name>Xamarin.Forms.Platform.MacOS</Name>
+      <Name>System.Maui.Platform.MacOS</Name>
     </ProjectReference>
     <ProjectReference Include="..\DualScreen\DualScreen.csproj">
       <Project>{FF1E07E3-8756-48CB-ABF8-421907028B82}</Project>

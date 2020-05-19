@@ -287,11 +287,11 @@ Task("_NuGetPack")
 
 
 Task("Restore")
-    .Description("Restore target on Xamarin.Forms.sln")
+    .Description("Restore target on System.Maui.sln")
     .Does(() =>
     {
         try{
-            MSBuild("./Xamarin.Forms.sln", GetMSBuildSettings().WithTarget("restore"));
+            MSBuild("./System.Maui.sln", GetMSBuildSettings().WithTarget("restore"));
         }
         catch{
             // ignore restore errors that come from uwp
@@ -315,12 +315,12 @@ Task("BuildForNuget")
         msbuildSettings.ArgumentCustomization = args => args.Append("/nowarn:VSX1000");
         binaryLogger.FileName = $"{artifactStagingDirectory}/win-{configuration}.binlog";
 
-        MSBuild("./Xamarin.Forms.sln", msbuildSettings);
+        MSBuild("./System.Maui.sln", msbuildSettings);
 
         msbuildSettings = GetMSBuildSettings();
         msbuildSettings.BinaryLogger = binaryLogger;
         binaryLogger.FileName = $"{artifactStagingDirectory}/dualscreen-{configuration}-csproj.binlog";
-        MSBuild("./Xamarin.Forms.DualScreen/Xamarin.Forms.DualScreen.csproj",
+        MSBuild("./System.Maui.DualScreen/System.Maui.DualScreen.csproj",
                     msbuildSettings
                         .WithRestore()
                         .WithTarget("rebuild"));
@@ -329,7 +329,7 @@ Task("BuildForNuget")
         msbuildSettings = GetMSBuildSettings();
         msbuildSettings.BinaryLogger = binaryLogger;
         binaryLogger.FileName = $"{artifactStagingDirectory}/win-{configuration}-csproj.binlog";
-        MSBuild("./Xamarin.Forms.Platform.UAP/Xamarin.Forms.Platform.UAP.csproj",
+        MSBuild("./System.Maui.Platform.UAP/System.Maui.Platform.UAP.csproj",
                     msbuildSettings
                         .WithTarget("rebuild")
                         .WithProperty("DisableEmbeddedXbf", "false")
@@ -338,7 +338,7 @@ Task("BuildForNuget")
         msbuildSettings = GetMSBuildSettings();
         msbuildSettings.BinaryLogger = binaryLogger;
         binaryLogger.FileName = $"{artifactStagingDirectory}/ios-{configuration}-csproj.binlog";
-        MSBuild("./Xamarin.Forms.Platform.iOS/Xamarin.Forms.Platform.iOS.csproj",
+        MSBuild("./System.Maui.Platform.iOS/System.Maui.Platform.iOS.csproj",
                     msbuildSettings
                         .WithTarget("rebuild")
                         .WithProperty("USE2017", "true"));
@@ -346,7 +346,7 @@ Task("BuildForNuget")
         msbuildSettings = GetMSBuildSettings();
         msbuildSettings.BinaryLogger = binaryLogger;
         binaryLogger.FileName = $"{artifactStagingDirectory}/macos-{configuration}-csproj.binlog";
-        MSBuild("./Xamarin.Forms.Platform.MacOS/Xamarin.Forms.Platform.MacOS.csproj",
+        MSBuild("./System.Maui.Platform.MacOS/System.Maui.Platform.MacOS.csproj",
                     msbuildSettings
                         .WithTarget("rebuild")
                         .WithProperty("USE2017", "true"));
@@ -360,10 +360,10 @@ Task("BuildForNuget")
 });
 
 Task("BuildTasks")
-    .Description("Build Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj")
+    .Description("Build System.Maui.Build.Tasks/System.Maui.Build.Tasks.csproj")
     .Does(() =>
 {
-    MSBuild("./Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj", GetMSBuildSettings().WithRestore());
+    MSBuild("./System.Maui.Build.Tasks/System.Maui.Build.Tasks.csproj", GetMSBuildSettings().WithRestore());
 });
 
 Task("Build")
@@ -372,7 +372,7 @@ Task("Build")
     .Does(() =>
 {
     try{
-        MSBuild("./Xamarin.Forms.sln", GetMSBuildSettings().WithRestore());
+        MSBuild("./System.Maui.sln", GetMSBuildSettings().WithRestore());
     }
     catch(Exception)
     {
@@ -385,7 +385,7 @@ Task("Android100")
     .Description("Builds Monodroid10.0 targets")
     .Does(() =>
     {
-            MSBuild("Xamarin.Forms.sln",
+            MSBuild("System.Maui.sln",
                     GetMSBuildSettings()
                         .WithRestore()
                         .WithProperty("AndroidTargetFrameworks", "MonoAndroid90;MonoAndroid10.0"));
@@ -395,7 +395,7 @@ Task("VSMAC")
     .Description("Builds projects necessary so solution compiles on VSMAC")
     .Does(() =>
     {
-        StartProcess("open", new ProcessSettings{ Arguments = "Xamarin.Forms.sln" });
+        StartProcess("open", new ProcessSettings{ Arguments = "System.Maui.sln" });
     });
 
 /*
@@ -409,7 +409,7 @@ Task("DeployiOS")
     .Does(() =>
     {
         // not sure how to get this to deploy to iOS
-        BuildiOSIpa("./Xamarin.Forms.sln", platform:"iPhoneSimulator", configuration:"Debug");
+        BuildiOSIpa("./System.Maui.sln", platform:"iPhoneSimulator", configuration:"Debug");
 
     });
 */
@@ -417,11 +417,11 @@ Task("DeployAndroid")
     .Description("Builds and deploy Android Control Gallery")
     .Does(() =>
     {
-        MSBuild("./Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj", GetMSBuildSettings().WithRestore());
-        MSBuild("./Xamarin.Forms.ControlGallery.Android/Xamarin.Forms.ControlGallery.Android.csproj", GetMSBuildSettings().WithRestore());
-        BuildAndroidApk("./Xamarin.Forms.ControlGallery.Android/Xamarin.Forms.ControlGallery.Android.csproj", sign:true, configuration:configuration);
+        MSBuild("./System.Maui.Build.Tasks/System.Maui.Build.Tasks.csproj", GetMSBuildSettings().WithRestore());
+        MSBuild("./System.Maui.ControlGallery.Android/System.Maui.ControlGallery.Android.csproj", GetMSBuildSettings().WithRestore());
+        BuildAndroidApk("./System.Maui.ControlGallery.Android/System.Maui.ControlGallery.Android.csproj", sign:true, configuration:configuration);
         AdbUninstall("AndroidControlGallery.AndroidControlGallery");
-        AdbInstall("./Xamarin.Forms.ControlGallery.Android/bin/Debug/AndroidControlGallery.AndroidControlGallery-Signed.apk");
+        AdbInstall("./System.Maui.ControlGallery.Android/bin/Debug/AndroidControlGallery.AndroidControlGallery-Signed.apk");
         AmStartActivity("AndroidControlGallery.AndroidControlGallery/md546303760447087909496d02dc7b17ae8.Activity1");
     });
 

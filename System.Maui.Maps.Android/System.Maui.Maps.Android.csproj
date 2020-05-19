@@ -1,0 +1,40 @@
+<Project Sdk="MSBuild.Sdk.Extras">
+  <PropertyGroup>
+    <RootNamespace>System.Maui.Maps.Android</RootNamespace>
+    <AssemblyName>System.Maui.Maps.Android</AssemblyName>
+    <TargetFrameworks>$(AndroidTargetFrameworks)</TargetFrameworks>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup  Condition="'$(Use2017)' == 'true'">
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>bin\$(Configuration)\$(TargetFramework)</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj">
+    </ProjectReference>
+    <ProjectReference Include="..\System.Maui.Maps\System.Maui.Maps.csproj">
+    </ProjectReference>
+    <ProjectReference Include="..\System.Maui.Platform.Android.FormsViewGroup\System.Maui.Platform.Android.FormsViewGroup.csproj">
+    </ProjectReference>
+    <ProjectReference Include="..\System.Maui.Platform.Android\System.Maui.Platform.Android.csproj">
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'MonoAndroid10.0'">
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.1.0" />
+    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.0.0" />
+    <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" Version="1.0.0" />
+    <PackageReference Include="Xamarin.AndroidX.Migration">
+      <Version>1.0.0</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Xamarin.GooglePlayServices.Maps" Version="71.1610.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Condition="'$(CI)' == 'true'" Include="Xamarin.Build.TypeRedirector" Version="0.1.2-preview" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

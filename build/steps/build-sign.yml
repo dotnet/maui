@@ -15,7 +15,7 @@ steps:
   - template: sign-artifacts/steps/v1.yml@xamarin-templates
     parameters:
       targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
-      sourceRepo: 'xamarin/xamarin.forms'
+      sourceRepo: 'dotnet/maui'
       jenkinsEndpoint: Xamarin Code Signing Jenkins
       jenkinsJob: sign-from-vsts
       artifactHost: 'https://dl.internalx.com/vsts-devdiv'

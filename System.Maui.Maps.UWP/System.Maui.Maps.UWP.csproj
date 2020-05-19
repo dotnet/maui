@@ -1,0 +1,32 @@
+<Project Sdk="MSBuild.Sdk.Extras">
+  <PropertyGroup Condition="$(TargetFramework) == 'uap10.0.14393'">
+    <DefineConstants>$(DefineConstants);UWP_14393</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>System.Maui.Maps.UWP</RootNamespace>
+    <AssemblyName>System.Maui.Maps.UWP</AssemblyName>
+    <SkipMicrosoftUIXamlCheckTargetPlatformVersion>true</SkipMicrosoftUIXamlCheckTargetPlatformVersion>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <GenerateLibraryLayout>false</GenerateLibraryLayout>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup  Condition=" '$(OS)' == 'Windows_NT' ">
+    <EmbeddedResource Include="Properties\System.Maui.Maps.UWP.rd.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj">    
+    </ProjectReference>
+    <ProjectReference Include="..\System.Maui.Maps\System.Maui.Maps.csproj">   
+    </ProjectReference>
+    <ProjectReference Include="..\System.Maui.Platform.UAP\System.Maui.Platform.UAP.csproj">    
+    </ProjectReference>
+  </ItemGroup>
+</Project>

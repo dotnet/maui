@@ -1,17 +1,17 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
+using global::Windows.Foundation;
+using global::Windows.Foundation.Collections;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Controls.Primitives;
+using global::Windows.UI.Xaml.Data;
+using global::Windows.UI.Xaml.Input;
+using global::Windows.UI.Xaml.Media;
+using global::Windows.UI.Xaml.Navigation;
 
 namespace DualScreen.UWP
 {

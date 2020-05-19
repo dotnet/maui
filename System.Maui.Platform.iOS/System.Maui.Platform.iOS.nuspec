@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>System.Maui.Platform.iOS</id>
+    <version>$version$</version>
+    <title>System.Maui iOS Platform Renderers</title>
+    <authors>Xamarin Inc.</authors>
+    <owners>Xamarin Inc.</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>System.Maui platform abstruction library for mobile applications.</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2013</copyright>
+  </metadata>
+</package>

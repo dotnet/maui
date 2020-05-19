@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>tizen40</TargetFramework>
+    <TargetFrameworkIdentifier>Tizen</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Tizen.NET" Version="4.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\System.Maui.Maps\System.Maui.Maps.csproj" />
+    <ProjectReference Include="..\System.Maui.Platform.Tizen\System.Maui.Platform.Tizen.csproj" />
+  </ItemGroup>
+</Project>

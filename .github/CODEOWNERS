@@ -1,42 +1,42 @@
 # Tizen
-/Xamarin.Forms.ControlGallery.Tizen/ @rookiejava
-/Stubs/Xamarin.Forms.Platform.Tizen/ @rookiejava
-/Xamarin.Forms.Platform.Tizen/ @rookiejava
-/Xamarin.Forms.Maps.Tizen/ @rookiejava
+/System.Maui.ControlGallery.Tizen/ @rookiejava
+/Stubs/System.Maui.Platform.Tizen/ @rookiejava
+/System.Maui.Platform.Tizen/ @rookiejava
+/System.Maui.Maps.Tizen/ @rookiejava
 /EmbeddingTestBeds/Embedding.Tizen/ @rookiejava
 /PagesGallery/PagesGallery.Tizen/ @rookiejava
-/Xamarin.Forms.Core/PlatformConfiguration/TizenSpecific @rookiejava
+/System.Maui.Core/PlatformConfiguration/TizenSpecific @rookiejava
 
 # GTK
-/Xamarin.Forms.ControlGallery.GTK/ @jsuarezruiz
-/Stubs/Xamarin.Forms.Platform.GTK/ @jsuarezruiz
-/Xamarin.Forms.Platform.GTK/ @jsuarezruiz
-/Xamarin.Forms.Maps.GTK/ @jsuarezruiz
+/System.Maui.ControlGallery.GTK/ @jsuarezruiz
+/Stubs/System.Maui.Platform.GTK/ @jsuarezruiz
+/System.Maui.Platform.GTK/ @jsuarezruiz
+/System.Maui.Maps.GTK/ @jsuarezruiz
 /EmbeddingTestBeds/Embedding.GTK/ @jsuarezruiz
 /PagesGallery/PagesGallery.GTK/ @jsuarezruiz
-/Xamarin.Forms.Core/PlatformConfiguration/GTKSpecific @jsuarezruiz
+/System.Maui.Core/PlatformConfiguration/GTKSpecific @jsuarezruiz
 
 # WPF
-/Xamarin.Forms.ControlGallery.WPF/ @mohachouch
-/Stubs/Xamarin.Forms.Platform.WPF/ @mohachouch
-/Xamarin.Forms.Platform.WPF/ @mohachouch
-/Xamarin.Forms.Maps.WPF/ @mohachouch
+/System.Maui.ControlGallery.WPF/ @mohachouch
+/Stubs/System.Maui.Platform.WPF/ @mohachouch
+/System.Maui.Platform.WPF/ @mohachouch
+/System.Maui.Maps.WPF/ @mohachouch
 /EmbeddingTestBeds/Embedding.WPF/ @mohachouch
 /PagesGallery/PagesGallery.WPF/ @mohachouch
-/Xamarin.Forms.Core/PlatformConfiguration/WPFSpecific @mohachouch
+/System.Maui.Core/PlatformConfiguration/WPFSpecific @mohachouch
 
 # macOS
-/Xamarin.Forms.ControlGallery.macOS/ @rmarinho
-/Stubs/Xamarin.Forms.Platform.macOS/ @rmarinho
-/Xamarin.Forms.Platform.macOS/ @rmarinho
-/Xamarin.Forms.Maps.macOS/ @rmarinho
+/System.Maui.ControlGallery.macOS/ @rmarinho
+/Stubs/System.Maui.Platform.macOS/ @rmarinho
+/System.Maui.Platform.macOS/ @rmarinho
+/System.Maui.Maps.macOS/ @rmarinho
 /EmbeddingTestBeds/Embedding.macOS/ @rmarinho
 /PagesGallery/PagesGallery.macOS/ @rmarinho
-/Xamarin.Forms.Core/PlatformConfiguration/macOSSpecific @rmarinho
+/System.Maui.Core/PlatformConfiguration/macOSSpecific @rmarinho
 
 # XAML
-/Xamarin.Forms.Xaml/ @StephaneDelcroix
-/Xamarin.Forms.Build.Tasks/ @StephaneDelcroix
+/System.Maui.Xaml/ @StephaneDelcroix
+/System.Maui.Build.Tasks/ @StephaneDelcroix
 
 # Core
-/Xamarin.Forms.Core/ @StephaneDelcroix
+/System.Maui.Core/ @StephaneDelcroix

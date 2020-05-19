@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj" />
-    <ProjectReference Include="..\..\Xamarin.Forms.Platform.Tizen\Xamarin.Forms.Platform.Tizen.csproj" />
-    <ProjectReference Include="..\..\Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj" />
+    <ProjectReference Include="..\..\System.Maui.Core\System.Maui.Core.csproj" />
+    <ProjectReference Include="..\..\System.Maui.Platform.Tizen\System.Maui.Platform.Tizen.csproj" />
+    <ProjectReference Include="..\..\System.Maui.Platform\System.Maui.Platform.csproj" />
     <ProjectReference Include="..\Embedding.XF\Embedding.XF.csproj" />
   </ItemGroup>
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Android.App;
 using Android.OS;
 #if __ANDROID_29__
@@ -12,8 +12,8 @@ using FragmentTransaction = Android.Support.V4.App.FragmentTransaction;
 #endif
 using Android.Views;
 using Embedding.XF;
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.Android;
+using System.Maui;
+using System.Maui.Platform.Android;
 using View = Android.Views.View;
 using Button = Android.Widget.Button;
 
@@ -31,7 +31,7 @@ namespace Embedding.Droid
 		{
 			base.OnCreate(bundle);
 
-			Forms.Init(this, null);
+			System.Maui.Maui.Init(this, null);
 
 			SetContentView (Resource.Layout.Main);
 			

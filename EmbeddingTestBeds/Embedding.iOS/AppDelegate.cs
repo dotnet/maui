@@ -1,9 +1,9 @@
-﻿using CoreGraphics;
+using CoreGraphics;
 using Embedding.XF;
 using Foundation;
 using UIKit;
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui;
+using System.Maui.Platform.iOS;
 
 namespace Embedding.iOS
 {
@@ -25,7 +25,7 @@ namespace Embedding.iOS
 
 		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
-			Forms.Init();
+			System.Maui.Maui.Init();
 #if __XCODE11__
 			FormsMaterial.Init();
 #endif

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+        xmlns="http://xamarin.com/schemas/2014/forms"
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+        xmlns:local="using:System.Maui.Xaml.UnitTests"
+        x:Class="System.Maui.Xaml.UnitTests.Gh7494">
+    <local:Gh7494Content Title="Foo">
+        <local:Gh7494Content.ControlTemplate>
+            <ControlTemplate>
+                <StackLayout>
+                    <Label>
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="{TemplateBinding Title}" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <ContentPresenter/>
+                </StackLayout>
+            </ControlTemplate>
+        </local:Gh7494Content.ControlTemplate>            
+        <Label Text="Content"/>
+    </local:Gh7494Content>
+</ContentPage>

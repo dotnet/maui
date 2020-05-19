@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup>
+    <Description>Tizen Backend for System.Maui</Description>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>tizen40</TargetFramework>
+    <TargetFrameworkIdentifier>Tizen</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Resource\arrow_left.png" />
+    <None Remove="Resource\dots_horizontal.png" />
+    <None Remove="Resource\img_button_pause.png" />
+    <None Remove="Resource\img_button_play.png" />
+    <None Remove="Resource\menu.png" />
+    <None Remove="Resource\wc_visual_cue.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\System.Maui.Core\Crc64.cs" Link="Crc64.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resource\arrow_left.png" />
+    <EmbeddedResource Include="Resource\dots_horizontal.png" />
+    <EmbeddedResource Include="Resource\img_button_pause.png" />
+    <EmbeddedResource Include="Resource\img_button_play.png" />
+    <EmbeddedResource Include="Resource\menu.png" />
+    <EmbeddedResource Include="Resource\refresh_48dp.png" />
+    <EmbeddedResource Include="Resource\wc_visual_cue.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Tizen.NET" Version="4.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj" />
+  </ItemGroup>
+
+</Project>

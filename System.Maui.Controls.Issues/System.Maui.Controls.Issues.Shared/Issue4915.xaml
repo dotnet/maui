@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="System.Maui.Controls.Issues.Issue4915ContentPage"
+             xmlns:local="clr-namespace:System.Maui.Controls"
+             BackgroundImage="{Binding Image}"
+             Icon="{Binding Image}">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Name="MenuItem1" Order="Primary" Icon="{Binding Image}" Text="Item 1" Priority="0" />
+        <ToolbarItem Name="MenuItem1" Order="Primary" IconImageSource="{Binding ImageUrl}" Text="Item 1" Priority="0" />
+    </ContentPage.ToolbarItems>
+    <ContentPage.Content>
+        <ScrollView>
+            <StackLayout>
+                <Label Text="Nothing Crashed"></Label>
+                <Label Text="Verify that Button.Image, MenuItem.Icon, Page.BackgroundImage, Page.Icon, Slider.ThumbImage all have coffee cups"></Label>
+                <Button Image="{Binding Image}" Clicked="ButtonClicked"></Button>
+                <Slider ThumbImage="{Binding Image}"></Slider>
+                <Button AutomationId="Image1" ImageSource="{Binding ImageUrl}" Clicked="ButtonClicked"></Button>
+                <Slider ThumbImageSource="{Binding ImageUrl}"></Slider>          
+            </StackLayout>
+        </ScrollView>
+    </ContentPage.Content>
+</ContentPage>

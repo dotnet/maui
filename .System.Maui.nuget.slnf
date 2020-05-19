@@ -1,0 +1,39 @@
+{
+  "solution": {
+    "path": "System.Maui.sln",
+    "projects": [
+      "Stubs\\System.Maui.Platform.Android\\System.Maui.Platform.Android (Forwarders).csproj",
+      "Stubs\\System.Maui.Platform.Tizen\\System.Maui.Platform.Tizen (Forwarders).csproj",
+      "Stubs\\System.Maui.Platform.iOS\\System.Maui.Platform.iOS (Forwarders).csproj",
+      "XFCorePostProcessor.Tasks\\XFCorePostProcessor.Tasks.csproj",
+      "Xamarin.Flex\\Xamarin.Flex.shproj",
+      "System.Maui.Build.Tasks\\System.Maui.Build.Tasks.csproj",
+      "System.Maui.Core.Design\\System.Maui.Core.Design.csproj",
+      "System.Maui.Core\\System.Maui.Core.csproj",
+      "System.Maui.Maps.Android\\System.Maui.Maps.Android.csproj",
+      "System.Maui.Maps.GTK\\System.Maui.Maps.GTK.csproj",
+      "System.Maui.Maps.MacOS\\System.Maui.Maps.MacOS.csproj",
+      "System.Maui.Maps.Tizen\\System.Maui.Maps.Tizen.csproj",
+      "System.Maui.Maps.UWP\\System.Maui.Maps.UWP.csproj",
+      "System.Maui.Maps.WPF\\System.Maui.Maps.WPF.csproj",
+      "System.Maui.Maps.iOS\\System.Maui.Maps.iOS.csproj",
+      "System.Maui.Maps\\System.Maui.Maps.csproj",
+      "System.Maui.Material.Android\\System.Maui.Material.Android.csproj",
+      "System.Maui.Material.Tizen\\System.Maui.Material.Tizen.csproj",
+      "System.Maui.Material.iOS\\System.Maui.Material.iOS.csproj",
+      "System.Maui.Pages.Azure\\System.Maui.Pages.Azure.csproj",
+      "System.Maui.Pages\\System.Maui.Pages.csproj",
+      "System.Maui.Platform.Android.AppLinks\\System.Maui.Platform.Android.AppLinks.csproj",
+      "System.Maui.Platform.Android.FormsViewGroup\\System.Maui.Platform.Android.FormsViewGroup.csproj",
+      "System.Maui.Platform.Android\\System.Maui.Platform.Android.csproj",
+      "System.Maui.Platform.GTK\\System.Maui.Platform.GTK.csproj",
+      "System.Maui.Platform.MacOS\\System.Maui.Platform.MacOS.csproj",
+      "System.Maui.Platform.Tizen\\System.Maui.Platform.Tizen.csproj",
+      "System.Maui.Platform.UAP\\System.Maui.Platform.UAP.csproj",
+      "System.Maui.Platform.WPF\\System.Maui.Platform.WPF.csproj",
+      "System.Maui.Platform.iOS\\System.Maui.Platform.iOS.csproj",
+      "System.Maui.Platform\\System.Maui.Platform.csproj",
+      "System.Maui.Xaml\\System.Maui.Xaml.csproj"
+    ]
+  }
+}

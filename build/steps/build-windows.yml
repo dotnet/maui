@@ -1,5 +1,5 @@
 parameters:
-  slnPath : 'Xamarin.Forms.sln'
+  slnPath : 'System.Maui.sln'
   msbuildExtraArguments : ''
   artifactsTargetFolder: '$(build.artifactstagingdirectory)'
   artifactsName: 'win_build'
@@ -62,10 +62,10 @@ steps:
     displayName: 'Unit Tests'
     inputs:
       testAssemblyVer2: |
-        **/bin/$(BuildConfiguration)/Xamarin.Forms.Core.UnitTests.dll
-        **/bin/$(BuildConfiguration)/**/Xamarin.Forms.DualScreen.UnitTests.dll
-        **/bin/$(BuildConfiguration)/Xamarin.Forms.Pages.UnitTests.dll
-        **/bin/$(BuildConfiguration)/**/Xamarin.Forms.Xaml.UnitTests.dll
+        **/bin/$(BuildConfiguration)/System.Maui.Core.UnitTests.dll
+        **/bin/$(BuildConfiguration)/**/System.Maui.DualScreen.UnitTests.dll
+        **/bin/$(BuildConfiguration)/System.Maui.Pages.UnitTests.dll
+        **/bin/$(BuildConfiguration)/**/System.Maui.Xaml.UnitTests.dll
       searchFolder: ${{ parameters.nunitTestFolder }}
       codeCoverageEnabled: true
       testRunTitle: '$(BuildConfiguration)_UnitTests'
@@ -80,65 +80,65 @@ steps:
         Stubs/**/bin/**/*.dll
         Microsoft.XamlStandard/bin/**/*.dll
         Microsoft.XamlStandard.Design/bin/**/*.dll
-        Xamarin.Forms.Core/bin/**/*.dll
-        Xamarin.Forms.Core/bin/**/*.pdb
-        Xamarin.Forms.Core/bin/**/*.mdb
-        Xamarin.Forms.Xaml/bin/**/*.dll
-        Xamarin.Forms.Xaml/bin/**/*.pdb
-        Xamarin.Forms.Xaml/bin/**/*.mdb
-        Xamarin.Forms.Platform/bin/**/*.dll
-        Xamarin.Forms.Build.Tasks/bin/**/*.dll
-        Xamarin.Forms.Core.Design/bin/**/*.dll
-        Xamarin.Forms.Xaml.Design/bin/**/*.dll
-        Xamarin.Forms.Maps/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Maps/bin/$(BuildConfiguration)/**/*.mdb
-        Xamarin.Forms.Maps/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.Platform.iOS/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Platform.iOS/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.Platform.iOS/bin/$(BuildConfiguration)/**/*.mdb
-        Xamarin.Forms.Material.iOS/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Material.iOS/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.Material.iOS/bin/$(BuildConfiguration)/**/*.mdb
-        Xamarin.Forms.Material.Tizen/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Material.Tizen/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.Material.Tizen/bin/$(BuildConfiguration)/**/*.mdb
-        Xamarin.Forms.Platform.MacOS/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Platform.MacOS/bin/$(BuildConfiguration)/**/*.mdb
-        Xamarin.Forms.Maps/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Maps/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.Maps/bin/$(BuildConfiguration)/**/*.mdb
-        Xamarin.Forms.Maps.iOS/bin/iPhoneSimulator/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Maps.MacOS/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Core.UnitTests/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Xaml.UnitTests/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Maps.Tizen/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Maps.Tizen/bin/$(BuildConfiguration)/**/*.mdb
-        Xamarin.Forms.Maps.Tizen/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.Platform.Tizen/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Platform.Tizen/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.Platform.Tizen/bin/$(BuildConfiguration)/**/*.mdb
-        Xamarin.Forms.Build.Tasks.Core/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Build.Tasks.Core/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.Build.Tasks.Core/bin/$(BuildConfiguration)/**/*.mdb
-        Xamarin.Forms.Maps.WPF/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Maps.WPF/bin/$(BuildConfiguration)/**/*.mdb
-        Xamarin.Forms.Maps.WPF/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.Maps.GTK/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Maps.GTK/bin/$(BuildConfiguration)/**/*.mdb
-        Xamarin.Forms.Maps.GTK/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.Platform.WPF/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Platform.WPF/bin/$(BuildConfiguration)/**/*.mdb
-        Xamarin.Forms.Platform.WPF/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.Platform.GTK/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Platform.GTK/bin/$(BuildConfiguration)/**/*.mdb
-        Xamarin.Forms.Platform.GTK/bin/$(BuildConfiguration)/**/*.pdb
+        System.Maui.Core/bin/**/*.dll
+        System.Maui.Core/bin/**/*.pdb
+        System.Maui.Core/bin/**/*.mdb
+        System.Maui.Xaml/bin/**/*.dll
+        System.Maui.Xaml/bin/**/*.pdb
+        System.Maui.Xaml/bin/**/*.mdb
+        System.Maui.Platform/bin/**/*.dll
+        System.Maui.Build.Tasks/bin/**/*.dll
+        System.Maui.Core.Design/bin/**/*.dll
+        System.Maui.Xaml.Design/bin/**/*.dll
+        System.Maui.Maps/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Maps/bin/$(BuildConfiguration)/**/*.mdb
+        System.Maui.Maps/bin/$(BuildConfiguration)/**/*.pdb
+        System.Maui.Platform.iOS/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Platform.iOS/bin/$(BuildConfiguration)/**/*.pdb
+        System.Maui.Platform.iOS/bin/$(BuildConfiguration)/**/*.mdb
+        System.Maui.Material.iOS/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Material.iOS/bin/$(BuildConfiguration)/**/*.pdb
+        System.Maui.Material.iOS/bin/$(BuildConfiguration)/**/*.mdb
+        System.Maui.Material.Tizen/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Material.Tizen/bin/$(BuildConfiguration)/**/*.pdb
+        System.Maui.Material.Tizen/bin/$(BuildConfiguration)/**/*.mdb
+        System.Maui.Platform.MacOS/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Platform.MacOS/bin/$(BuildConfiguration)/**/*.mdb
+        System.Maui.Maps/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Maps/bin/$(BuildConfiguration)/**/*.pdb
+        System.Maui.Maps/bin/$(BuildConfiguration)/**/*.mdb
+        System.Maui.Maps.iOS/bin/iPhoneSimulator/$(BuildConfiguration)/**/*.dll
+        System.Maui.Maps.MacOS/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Core.UnitTests/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Xaml.UnitTests/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Maps.Tizen/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Maps.Tizen/bin/$(BuildConfiguration)/**/*.mdb
+        System.Maui.Maps.Tizen/bin/$(BuildConfiguration)/**/*.pdb
+        System.Maui.Platform.Tizen/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Platform.Tizen/bin/$(BuildConfiguration)/**/*.pdb
+        System.Maui.Platform.Tizen/bin/$(BuildConfiguration)/**/*.mdb
+        System.Maui.Build.Tasks.Core/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Build.Tasks.Core/bin/$(BuildConfiguration)/**/*.pdb
+        System.Maui.Build.Tasks.Core/bin/$(BuildConfiguration)/**/*.mdb
+        System.Maui.Maps.WPF/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Maps.WPF/bin/$(BuildConfiguration)/**/*.mdb
+        System.Maui.Maps.WPF/bin/$(BuildConfiguration)/**/*.pdb
+        System.Maui.Maps.GTK/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Maps.GTK/bin/$(BuildConfiguration)/**/*.mdb
+        System.Maui.Maps.GTK/bin/$(BuildConfiguration)/**/*.pdb
+        System.Maui.Platform.WPF/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Platform.WPF/bin/$(BuildConfiguration)/**/*.mdb
+        System.Maui.Platform.WPF/bin/$(BuildConfiguration)/**/*.pdb
+        System.Maui.Platform.GTK/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Platform.GTK/bin/$(BuildConfiguration)/**/*.mdb
+        System.Maui.Platform.GTK/bin/$(BuildConfiguration)/**/*.pdb
         Microsoft.XamlStandard/bin/$(BuildConfiguration)/**/*.dll
         Microsoft.XamlStandard/bin/$(BuildConfiguration)/**/*.mdb
         Microsoft.XamlStandard/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.DualScreen/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.DualScreen/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.DualScreen/bin/$(BuildConfiguration)/**/*.mdb
-        Xamarin.Forms.DualScreen.UnitTests/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.DualScreen/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.DualScreen/bin/$(BuildConfiguration)/**/*.pdb
+        System.Maui.DualScreen/bin/$(BuildConfiguration)/**/*.mdb
+        System.Maui.DualScreen.UnitTests/bin/$(BuildConfiguration)/**/*.dll
         **/*.binlog
 
       TargetFolder: ${{ parameters.artifactsTargetFolder }}
@@ -148,20 +148,20 @@ steps:
     condition: eq(${{ parameters.includeUwp }}, 'true')
     inputs:
       Contents: |
-        Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.pri
-        Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.xr.xml
-        Xamarin.Forms.Platform.UAP/obj/$(BuildConfiguration)/**/*.xaml
-        Xamarin.Forms.Platform.UAP/Properties/Xamarin.Forms.Platform.UAP.rd.xml
-        Xamarin.Forms.Maps.UWP/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Maps.UWP/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.Maps.UWP/bin/$(BuildConfiguration)/**/*.pri
-        Xamarin.Forms.Maps.UWP/bin/$(BuildConfiguration)/**/*.xbf
-        Xamarin.Forms.DualScreen/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.DualScreen/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.DualScreen/bin/$(BuildConfiguration)/**/*.mdb
-        Xamarin.Forms.DualScreen.UnitTests/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Platform.UAP/bin/$(BuildConfiguration)/**/*.pdb
+        System.Maui.Platform.UAP/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Platform.UAP/bin/$(BuildConfiguration)/**/*.pri
+        System.Maui.Platform.UAP/bin/$(BuildConfiguration)/**/*.xr.xml
+        System.Maui.Platform.UAP/obj/$(BuildConfiguration)/**/*.xaml
+        System.Maui.Platform.UAP/Properties/System.Maui.Platform.UAP.rd.xml
+        System.Maui.Maps.UWP/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Maps.UWP/bin/$(BuildConfiguration)/**/*.pdb
+        System.Maui.Maps.UWP/bin/$(BuildConfiguration)/**/*.pri
+        System.Maui.Maps.UWP/bin/$(BuildConfiguration)/**/*.xbf
+        System.Maui.DualScreen/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.DualScreen/bin/$(BuildConfiguration)/**/*.pdb
+        System.Maui.DualScreen/bin/$(BuildConfiguration)/**/*.mdb
+        System.Maui.DualScreen.UnitTests/bin/$(BuildConfiguration)/**/*.dll
 
       TargetFolder: ${{ parameters.artifactsTargetFolder }}
 
@@ -172,21 +172,21 @@ steps:
     inputs:
       Contents: |
         Stubs/**/bin/**/*.dll
-        Xamarin.Forms.Platform.Android/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Platform.Android/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.Platform.Android.FormsViewGroup/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Platform.Android.FormsViewGroup/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.Material.Android/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Material.Android/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.Material.Android/bin/$(BuildConfiguration)/**/*.mdb
-        Xamarin.Forms.Maps.Android/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Platform.Android.AppLinks/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Platform.Android.AppLinks/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.Platform.Android.AppLinks/bin/$(BuildConfiguration)/**/*.mdb
-        Xamarin.Forms.DualScreen/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.DualScreen/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.DualScreen/bin/$(BuildConfiguration)/**/*.mdb
-        Xamarin.Forms.DualScreen.UnitTests/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Platform.Android/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Platform.Android/bin/$(BuildConfiguration)/**/*.pdb
+        System.Maui.Platform.Android.FormsViewGroup/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Platform.Android.FormsViewGroup/bin/$(BuildConfiguration)/**/*.pdb
+        System.Maui.Material.Android/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Material.Android/bin/$(BuildConfiguration)/**/*.pdb
+        System.Maui.Material.Android/bin/$(BuildConfiguration)/**/*.mdb
+        System.Maui.Maps.Android/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Platform.Android.AppLinks/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Platform.Android.AppLinks/bin/$(BuildConfiguration)/**/*.pdb
+        System.Maui.Platform.Android.AppLinks/bin/$(BuildConfiguration)/**/*.mdb
+        System.Maui.DualScreen/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.DualScreen/bin/$(BuildConfiguration)/**/*.pdb
+        System.Maui.DualScreen/bin/$(BuildConfiguration)/**/*.mdb
+        System.Maui.DualScreen.UnitTests/bin/$(BuildConfiguration)/**/*.dll
         **/*.binlog
 
       TargetFolder: ${{ parameters.artifactsTargetFolder }}
@@ -196,13 +196,13 @@ steps:
     condition: eq('${{ parameters.includePages }}', true)
     inputs:
       Contents: |
-        Xamarin.Forms.Pages/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Pages/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.Pages/bin/$(BuildConfiguration)/**/*.mdb
-        Xamarin.Forms.Pages.Azure/bin/$(BuildConfiguration)/**/*.dll
-        Xamarin.Forms.Pages.Azure/bin/$(BuildConfiguration)/**/*.pdb
-        Xamarin.Forms.Pages.Azure/bin/$(BuildConfiguration)/**/*.mdb
-        Xamarin.Forms.Pages.UnitTests/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Pages/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Pages/bin/$(BuildConfiguration)/**/*.pdb
+        System.Maui.Pages/bin/$(BuildConfiguration)/**/*.mdb
+        System.Maui.Pages.Azure/bin/$(BuildConfiguration)/**/*.dll
+        System.Maui.Pages.Azure/bin/$(BuildConfiguration)/**/*.pdb
+        System.Maui.Pages.Azure/bin/$(BuildConfiguration)/**/*.mdb
+        System.Maui.Pages.UnitTests/bin/$(BuildConfiguration)/**/*.dll
 
       TargetFolder: ${{ parameters.artifactsTargetFolder }}
 

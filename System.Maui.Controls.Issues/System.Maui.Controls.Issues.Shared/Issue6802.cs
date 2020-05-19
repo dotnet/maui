@@ -1,0 +1,27 @@
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
+using System.Collections.ObjectModel;
+
+#if UITEST
+using System.Maui.Core.UITests;
+using Xamarin.UITest;
+using NUnit.Framework;
+#endif
+
+namespace System.Maui.Controls.Issues
+{
+#if UITEST
+	[Category(UITestCategories.ManualReview)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 6802, "[Bug] Shell SearchHandler - Cancel is visible by default?", PlatformAffected.iOS)]
+	public class Issue6802 : TestShell
+	{
+		protected override void Init()
+		{
+			var cp = CreateContentPage();
+
+			Shell.SetSearchHandler(cp, new SearchHandler());
+		}
+	}
+}

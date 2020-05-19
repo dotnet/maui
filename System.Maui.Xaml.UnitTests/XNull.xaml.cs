@@ -1,0 +1,32 @@
+using System.Maui;
+
+using NUnit.Framework;
+
+namespace System.Maui.Xaml.UnitTests
+{
+	public partial class XNull : ContentPage
+	{
+		public XNull ()
+		{
+			InitializeComponent ();
+		}
+
+		public XNull (bool useCompiledXaml)
+		{
+			//this stub will be replaced at compile time
+		}
+
+		[TestFixture]
+		public class Tests
+		{
+			[TestCase(false)]
+			[TestCase(true)]
+			public void SupportsXNull (bool useCompiledXaml)
+			{
+				var layout = new XNull (useCompiledXaml);
+				Assert.True (layout.Resources.ContainsKey ("null"));
+				Assert.Null (layout.Resources ["null"]);
+			}
+		}
+	}
+}

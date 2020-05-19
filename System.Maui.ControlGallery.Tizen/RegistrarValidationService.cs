@@ -1,0 +1,31 @@
+using System.Maui;
+using System.Maui.ControlGallery.Tizen;
+using System.Maui.Controls;
+using System.Maui.Platform.Tizen;
+
+[assembly: Dependency(typeof(RegistrarValidationService))]
+namespace System.Maui.ControlGallery.Tizen
+{
+	public class RegistrarValidationService : IRegistrarValidationService
+	{
+		public bool Validate(VisualElement element, out string message)
+		{
+			message = "Success";
+
+			if (element == null || element is OpenGLView)
+				return true;
+
+			var renderer = Platform.Tizen.Platform.GetOrCreateRenderer(element);
+
+			if (renderer == null 
+				|| renderer.GetType().Name == "DefaultRenderer"
+				)
+			{
+				message = $"Failed to load proper Tizen renderer for {element.GetType().Name}";
+				return false;
+			}
+
+			return true;
+		}
+	}
+}

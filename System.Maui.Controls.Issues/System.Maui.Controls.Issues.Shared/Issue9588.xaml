@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<controls:TestContentPage
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:controls="clr-namespace:System.Maui.Controls"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    x:Class="System.Maui.Controls.Issues.Issue9588"
+    Title="Issue 9588">
+    <ContentPage.Content>
+        <StackLayout>
+            <Label
+                BackgroundColor="Black"
+                TextColor="White"
+                Text="If you can swipe the test passed."/>
+            <SwipeView>
+                <SwipeView.RightItems>
+                    <SwipeItems>
+                        <SwipeItem
+                            Text="Favorite"
+                            BackgroundColor="LightGreen"/>
+                        <SwipeItem
+                            Text="Delete"
+                            BackgroundColor="LightPink"/>
+                    </SwipeItems>
+                </SwipeView.RightItems>
+                <Frame>
+                    <Grid
+                        HeightRequest="60"
+                        WidthRequest="300"
+                        BackgroundColor="LightGray">
+                        <Label
+                            Text="Swipe left"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center" />
+                    </Grid>
+                </Frame>
+            </SwipeView>
+        </StackLayout>
+    </ContentPage.Content>
+</controls:TestContentPage>

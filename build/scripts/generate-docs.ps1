@@ -8,7 +8,7 @@ param(
 $branch = "live"
 
 $mdoc = '..\..\tools\mdoc\mdoc.exe'
-$docsUri = "https://$token@github.com/xamarin/Xamarin.Forms-api-docs.git"
+$docsUri = "https://$token@github.com/xamarin/System.Maui-api-docs.git"
 
 function StripNodes {
     Param($file, $xpaths)
@@ -70,16 +70,16 @@ mkdir docstemp
 pushd docstemp
 
 # Default Language Stuff
-# Clone Xamarin.Forms-api-docs in docstemp\Xamarin.Forms-api-docs
+# Clone System.Maui-api-docs in docstemp\System.Maui-api-docs
 git clone -qb $branch --single-branch $docsUri 
 
-pushd .\Xamarin.Forms-api-docs
+pushd .\System.Maui-api-docs
 
 # Run mdoc
 & $mdoc export-msxdoc .\docs
 
 # Put the results in the docs folder (where NuGet will find it)
-mv Xamarin.Forms.*.xml ..\..\docs -Force
+mv System.Maui.*.xml ..\..\docs -Force
 
 # Return from the default language folder
 popd
@@ -106,8 +106,8 @@ $branch = "live"
 
 $translations | % {
     # Generate the URI for each translated version
-    $translationUri = "https://$token@github.com/xamarin/Xamarin.Forms-api-docs.$($_.lang).git"
-    $translationFolder = ".\Xamarin.Forms-api-docs.$($_.lang)"
+    $translationUri = "https://$token@github.com/xamarin/System.Maui-api-docs.$($_.lang).git"
+    $translationFolder = ".\System.Maui-api-docs.$($_.lang)"
     
     # Clone the translation repo
     git clone -qb $branch --single-branch $translationUri
@@ -117,13 +117,13 @@ $translations | % {
 
     # Copy everything over the stuff in the default language folder 
     # (So untranslated bits still remain in the default language)
-    copy-item -Path . -Destination ..\..\Xamarin.Forms-api-docs -Recurse -Force 
+    copy-item -Path . -Destination ..\..\System.Maui-api-docs -Recurse -Force 
 
     # Return from the language-specific folder
     popd
 
     # Go into the default language folder
-    pushd .\Xamarin.Forms-api-docs
+    pushd .\System.Maui-api-docs
 
     # Clean up the index so it's not trying to convert missing docs
     Write-Host "Cleaning up the index for $($_.lang)"
@@ -151,7 +151,7 @@ $translations | % {
     # And put the results in the language specific folder under docs
     $dest = "..\..\docs\$($_.target)"
     mkdir $dest
-    mv Xamarin.Forms.*.xml $dest -Force
+    mv System.Maui.*.xml $dest -Force
 
     # Return from the default language folder
     popd

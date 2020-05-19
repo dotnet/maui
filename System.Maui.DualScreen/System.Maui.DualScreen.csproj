@@ -1,0 +1,74 @@
+<Project Sdk="MSBuild.Sdk.Extras">
+  <PropertyGroup>
+    <RootNamespace>System.Maui.DualScreen</RootNamespace>
+    <AssemblyName>System.Maui.DualScreen</AssemblyName>
+    <PackageId>System.Maui.DualScreen</PackageId>
+    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);$(AndroidTargetFrameworks);netstandard1.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">$(AndroidTargetFrameworks);netstandard1.0;netstandard2.0</TargetFrameworks>
+    <SkipMicrosoftUIXamlCheckTargetPlatformVersion>true</SkipMicrosoftUIXamlCheckTargetPlatformVersion>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <XamarinAndroidSupportSkipVerifyVersions>true</XamarinAndroidSupportSkipVerifyVersions>
+    <GenerateLibraryLayout Condition=" $(TargetFramework.StartsWith('uap10.0')) ">false</GenerateLibraryLayout>
+  </PropertyGroup>
+  <PropertyGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid'))">
+    <DefineConstants>$(DefineConstants);ANDROID</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Use2017)' == 'true'">
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>bin\$(Configuration)\$(TargetFramework)</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="**\*.shared.cs" />
+    <Compile Include="**\*.shared.*.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard')) ">
+    <Compile Include="**\*.netstandard.cs" />
+    <Compile Include="**\*.netstandard.*.cs" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
+    <PackageReference Include="System.ComponentModel" Version="4.3.0" />
+    <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+  </ItemGroup>
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('uap10.0')) ">
+    <Compile Include="**\*.uwp.cs" />
+    <Compile Include="**\*.uwp.*.cs" />
+    <ProjectReference Include="..\System.Maui.Platform.UAP\System.Maui.Platform.UAP.csproj">
+    </ProjectReference>
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.0.15" />
+  </ItemGroup>
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) ">
+    <Compile Include="**\*.android.cs" />
+    <Compile Include="**\*.android.*.cs" />
+    <AndroidResource Include="Resources\xml\*.xml" />
+    <PackageReference Include="Xamarin.DuoSdk" Version="0.0.3.4" />
+    <ProjectReference Include="..\System.Maui.Platform.Android.FormsViewGroup\System.Maui.Platform.Android.FormsViewGroup.csproj">
+    </ProjectReference>
+    <ProjectReference Include="..\System.Maui.Platform.Android\System.Maui.Platform.Android.csproj">
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj">
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'MonoAndroid10.0'">
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.1.0" />
+    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.0.0" />
+    <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" Version="1.0.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'MonoAndroid90'">
+    <PackageReference Include="Xamarin.Android.Support.Design" Version="28.0.0.3" />
+    <PackageReference Include="Xamarin.Android.Support.v4" Version="28.0.0.3" />
+    <PackageReference Include="Xamarin.Android.Support.v7.CardView" Version="28.0.0.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Condition="'$(CI)' == 'true'" Include="Xamarin.Build.TypeRedirector" Version="0.1.2-preview" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

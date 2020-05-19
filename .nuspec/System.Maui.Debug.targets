@@ -1,0 +1,24 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+		<XFKeepXamlResources>True</XFKeepXamlResources>
+	</PropertyGroup>
+
+	<Import Project="$(MSBuildThisFileDirectory)System.Maui.targets" />
+	<UsingTask TaskName="System.Maui.Build.Tasks.DebugXamlCTask" AssemblyFile="$(_XFBuildTasksLocation)System.Maui.Build.Tasks.dll" />
+	
+	<PropertyGroup>
+		<CompileDependsOn>
+			$(CompileDependsOn);
+			GenerateDebugCode;
+		</CompileDependsOn>
+	</PropertyGroup>
+
+	<!-- duplicate legacy InitializeComponent, create a ctor with bool param -->
+	<Target Name="GenerateDebugCode" AfterTargets="AfterCompile">
+		<DebugXamlCTask 
+			Assembly = "$(IntermediateOutputPath)$(TargetFileName)"
+			ReferencePath = "@(ReferencePath)"
+			DebugSymbols = "$(DebugSymbols)"
+			DebugType = "$(DebugType)"/>
+	</Target>
+</Project>

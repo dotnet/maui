@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>tizen40</TargetFramework>
+    <TargetFrameworkIdentifier>Tizen</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Tizen.NET" Version="4.0.0">
+      <ExcludeAssets>Runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Tizen.NET.MaterialComponents" Version="0.9.9-pre1" />
+    <PackageReference Include="Tizen.NET.Sdk" Version="1.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj" />
+    <ProjectReference Include="..\System.Maui.Material.Tizen\System.Maui.Material.Tizen.csproj" />
+    <ProjectReference Include="..\System.Maui.Platform\System.Maui.Platform.csproj" />
+    <ProjectReference Include="..\System.Maui.Xaml\System.Maui.Xaml.csproj" />
+    <ProjectReference Include="..\System.Maui.Platform.Tizen\System.Maui.Platform.Tizen.csproj" />
+    <ProjectReference Include="..\System.Maui.Maps\System.Maui.Maps.csproj" />
+    <ProjectReference Include="..\System.Maui.Maps.Tizen\System.Maui.Maps.Tizen.csproj" />
+    <ProjectReference Include="..\System.Maui.Controls\System.Maui.Controls.csproj" />
+  </ItemGroup>
+
+</Project>

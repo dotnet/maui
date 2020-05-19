@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>System.Maui.Pages</id>
+    <version>$version$</version>
+    <authors>Microsoft</authors>
+    <owners>microsoft xamarin</owners>
+    <license type="expression">MIT</license>
+    <icon>Assets\xamarin_128x128.png</icon>
+    <projectUrl>http://xamarin.com/forms</projectUrl>
+    <repository type="git" url="https://github.com/dotnet/maui"/>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>Pre-built themeable pages for System.Maui</description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <dependencies>
+      <group>
+        <dependency id="System.Maui" version="$version$"/>
+        <dependency id="Newtonsoft.Json" version="10.0.3"/>
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <!--Icon-->
+    <file src="..\Assets\xamarin_128x128.png" target="Assets\" />
+    <file src="..\System.Maui.Pages\bin\$Configuration$\netstandard1.4\System.Maui.Pages.dll" target="lib\netstandard1.4" />
+    <file src="..\System.Maui.Pages\bin\$Configuration$\netstandard2.0\System.Maui.Pages.dll" target="lib\netstandard2.0" />
+  </files>
+</package>

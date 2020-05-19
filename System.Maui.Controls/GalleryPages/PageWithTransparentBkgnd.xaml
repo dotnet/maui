@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="System.Maui.Controls.GalleryPages.PageWithTransparentBkgnd"
+             xmlns:ios="clr-namespace:System.Maui.PlatformConfiguration.iOSSpecific;assembly=System.Maui.Core"
+             ios:Page.UseSafeArea="true"
+             BackgroundColor="#700000FF">
+    <Frame
+        VerticalOptions="Center"
+        HorizontalOptions="Center"
+        WidthRequest="300"
+        HeightRequest="200"
+        Padding="15, 10"
+        BackgroundColor="LightGreen">
+        <StackLayout>
+            <Label
+                Text="Modal page with custom modal background"
+                HorizontalOptions="Center"
+                VerticalOptions="CenterAndExpand" />
+            <Button
+                Text="Close"
+                HorizontalOptions="End"
+                Clicked="ClosePageButtonClicked"
+                VerticalOptions="End" />
+        </StackLayout>
+    </Frame>
+</ContentPage>

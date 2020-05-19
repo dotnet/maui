@@ -1,0 +1,11 @@
+<Project>
+  <Import Project="..\.nuspec\System.Maui.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(__XFBuildTasksLocation)System.Maui.Build.Tasks.dll')" />
+  <Import Project="..\.nuspec\System.Maui.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
+  <ItemGroup>
+    <!-- A reference to the entire .NET Framework is automatically included -->
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj" />
+    <ProjectReference Include="..\System.Maui.CustomAttributes\System.Maui.CustomAttributes.csproj" />
+    <ProjectReference Include="..\System.Maui.Maps\System.Maui.Maps.csproj" />
+    <ProjectReference Include="..\System.Maui.Xaml\System.Maui.Xaml.csproj" />
+  </ItemGroup>
+</Project>

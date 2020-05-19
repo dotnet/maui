@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="System.Maui.Controls.GalleryPages.RefreshViewGalleries.RefreshCarouselViewGallery"  
+             Title="CarouselView (Pull To Refresh)">
+    <ContentPage.Content>
+        <RefreshView
+            IsRefreshing="{Binding IsRefreshing}"
+            RefreshColor="Pink"
+            Command="{Binding RefreshCommand}"
+            HorizontalOptions="FillAndExpand"
+            VerticalOptions="FillAndExpand">
+            <CarouselView
+                ItemsSource="{Binding Items}">
+                <CarouselView.ItemsLayout>
+                    <LinearItemsLayout
+                        Orientation="Horizontal"
+                        SnapPointsAlignment="Center"
+                        SnapPointsType="MandatorySingle"/>
+                </CarouselView.ItemsLayout>
+                <CarouselView.ItemTemplate>
+                    <DataTemplate>
+                        <ScrollView>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <BoxView
+                                    Grid.Row="0"
+                                    Color="{Binding Color}"/>
+                                <Label
+                                    Grid.Row="1"
+                                    Text="{Binding Name}"
+                                    VerticalOptions="Center"
+                                    HeightRequest="48"/>
+                            </Grid>
+                        </ScrollView>
+                    </DataTemplate>
+                </CarouselView.ItemTemplate>
+            </CarouselView>
+        </RefreshView>
+    </ContentPage.Content>
+</ContentPage>

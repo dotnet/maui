@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="System.Maui.Controls.Issues.Bugzilla39483">
+
+
+<ListView ItemsSource="{Binding DataList}">
+  <ListView.ItemTemplate>
+    <DataTemplate>
+      <ViewCell >
+        <ViewCell.ContextActions>
+          <MenuItem  Text="Menü 1"  />
+          <MenuItem  Text="Menü 2"  />
+          <MenuItem  Text="Menü 3"  />
+          <MenuItem  Text="Menü 4"  />
+        </ViewCell.ContextActions>
+        <ViewCell.View>
+          <Label Text="{Binding .}" />
+        </ViewCell.View>
+      </ViewCell>
+    </DataTemplate>
+  </ListView.ItemTemplate>
+</ListView>
+</ContentPage>

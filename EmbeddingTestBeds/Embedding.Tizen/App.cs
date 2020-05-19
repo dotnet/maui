@@ -1,8 +1,8 @@
-﻿using Tizen.Applications;
+using Tizen.Applications;
 using ElmSharp;
 using Embedding.XF;
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.Tizen;
+using System.Maui;
+using System.Maui.Platform.Tizen;
 using EButton = ElmSharp.Button;
 
 namespace Embedding.Tizen
@@ -24,7 +24,7 @@ namespace Embedding.Tizen
 				AvailableRotations = DisplayRotation.Degree_0 | DisplayRotation.Degree_180 | DisplayRotation.Degree_270 | DisplayRotation.Degree_90
 			};
 			_mainWindow.Show();
-			Forms.Init(this);
+			System.Maui.Maui.Init(this);
 			Initialize();
 		}
 

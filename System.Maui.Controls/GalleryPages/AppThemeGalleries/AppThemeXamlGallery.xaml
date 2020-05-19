@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:gallerypages="clr-namespace:System.Maui.Controls.GalleryPages.AppThemeGalleries" x:Class="System.Maui.Controls.GalleryPages.AppThemeGalleries.AppThemeXamlGallery" BackgroundColor="{OnAppTheme Light=Lightgray, Dark=Black}">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <gallerypages:FooConverter x:Key="fooConv"/>
+        </ResourceDictionary>
+        <AppThemeColor x:Key="MyColor" Light="HotPink" Dark="Yellow" />
+        <Style x:Key="OSThemeStyle" TargetType="Label">
+            <Setter Property="TextColor" Value="{OnAppTheme Black, Light=Green, Dark=Red}" />
+        </Style>
+        <!--<StyleSheet>
+            <OnAppTheme>
+                <OnAppTheme.Light>
+                    <![CDATA[
+                            #cssStyledLabel {
+                                color: purple;
+                            }
+                        ]]>
+                </OnAppTheme.Light>
+                <OnAppTheme.Dark>
+                    <![CDATA[
+                            #cssStyledLabel {
+                                color: orange;
+                            }
+                        ]]>
+                </OnAppTheme.Dark>
+            </OnAppTheme>
+        </StyleSheet>-->
+    </ContentPage.Resources>
+    <ScrollView>
+        <StackLayout HorizontalOptions="Center" VerticalOptions="Center">
+            <Label TextColor="{OnAppTheme Light=Green, Dark=Red}">OnAppThemeExtension</Label>
+            <Label Text="OnAppTheme XAML tag">
+                <Label.TextColor>
+                    <OnAppTheme x:TypeArguments="Color" Light="Green" Dark="Red" />
+                </Label.TextColor>
+            </Label>
+            <Label Style="{DynamicResource Key=OSThemeStyle}">DynamicResource Style</Label>
+            <Label TextColor="{DynamicResource MyColor}">DynamicResource Color</Label>
+            <Label TextColor="{StaticResource MyColor}">StaticResource</Label>
+            <!--<Label x:Name="cssStyledLabel">This text is Purple or Orange depending on Light (or default) or Dark (through CSS)</Label>-->
+            <Label>Image with OnAppThemeExtension</Label>
+            <Image Source="{OnAppTheme Light=xamarinlogo.png, Dark=Fruits.jpg}" />
+            <!--<gallerypages:CustomControl TextColor="Brown" Text="This custom control should have brown text" />-->
+            <Label TextColor="{OnAppTheme Light=1, Dark=2, Converter={StaticResource fooConv}}">With ValueConverter</Label>
+
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ContentView xmlns="http://xamarin.com/schemas/2014/forms"
-	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	x:Class="Xamarin.Forms.Xaml.UnitTests.Bz53381">
-	<Grid BackgroundColor="Green">
-		<Label Text="This is my custom control."/>
-	</Grid>
-</ContentView>

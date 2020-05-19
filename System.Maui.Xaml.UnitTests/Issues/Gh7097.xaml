@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<local:Gh7097Base
+        xmlns="http://xamarin.com/schemas/2014/forms"
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+        xmlns:local="using:System.Maui.Xaml.UnitTests"
+        x:Class="System.Maui.Xaml.UnitTests.Gh7097"
+        Title="Foo"
+        x:Name="self">
+    <CollectionView ItemsSource="{Binding Items}" x:Name="collectionview">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout ItemSpacing="4">
+                    <x:Arguments>
+                        <ItemsLayoutOrientation>Vertical</ItemsLayoutOrientation>
+                    </x:Arguments>
+                </LinearItemsLayout>
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <StackLayout Orientation="Horizontal" HorizontalOptions="FillAndExpand" BackgroundColor="Green">
+                        <Button 
+                            Text="BTN 1" 
+                            HorizontalOptions="FillAndExpand" 
+                            CommandParameter="{Binding}" 
+                            Command="{Binding BindingContext.Button1Command, Source={x:Reference self}}"/>
+                        <Button 
+                            Text="BTN 2" 
+                            HorizontalOptions="FillAndExpand" 
+                            CommandParameter="{Binding}" 
+                            Command="{Binding BindingContext.Button2Command, Source={x:Reference self}}"/>
+                    </StackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+</local:Gh7097Base>

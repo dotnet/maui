@@ -1,4 +1,0 @@
-<BindableObject xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Xamarin.Forms.Xaml.UnitTests.DuplicatePropertyElements">
-	<BindableObject.BindingContext>0</BindableObject.BindingContext>
-	<BindableObject.BindingContext>0</BindableObject.BindingContext>
-</BindableObject>

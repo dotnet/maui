@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<linker>
+  <assembly fullname="System.Maui.ControlGallery.Android">
+    <namespace fullname="System.Maui.ControlGallery.Android.Tests" />
+    <namespace fullname="System.Maui.Controls.Issues" />
+    <type fullname="*Renderer" />
+  </assembly>
+  <assembly fullname="System.Maui.Controls">
+    <namespace fullname="System.Maui.Controls.Tests" />
+  </assembly>
+  <assembly fullname="nunit.framework"/>
+  <assembly fullname="mscorlib">
+    <!-- If we don't preserve these, we can't run async unit tests on the platform -->
+    <type fullname="System.Runtime.CompilerServices.INotifyCompletion" />
+    <type fullname="System.Runtime.CompilerServices.TaskAwaiter" />
+  </assembly>
+  <assembly fullname="System.Maui.Platform.Android.UnitTests" />
+</linker>

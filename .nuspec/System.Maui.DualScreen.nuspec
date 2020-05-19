@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>System.Maui.DualScreen</id>
+    <version>$version$</version>
+    <authors>Microsoft</authors>
+    <owners>microsoft xamarin</owners>
+    <tags>xamarin forms twopaneview DualScreen xamarinforms xamarinformsdualscreen system.maui.dualscreen</tags>
+    <license type="expression">MIT</license>
+    <icon>Assets\xamarin_128x128.png</icon>
+    <projectUrl>http://xamarin.com/forms</projectUrl>
+    <repository type="git" url="https://github.com/dotnet/maui"/>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>DualScreen support for System.Maui</description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <dependencies>
+      <group>
+        <dependency id="System.Maui" version="$version$"/>
+      </group>
+      <group targetFramework="MonoAndroid90">
+        <dependency id="Xamarin.DuoSdk" version="0.0.3.4" />
+      </group>
+      <group targetFramework="MonoAndroid10.0">
+        <dependency id="Xamarin.DuoSdk" version="0.0.3.4" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <!--Icon-->
+    <file src="..\Assets\xamarin_128x128.png" target="Assets\" />
+    <!--netstandard 1.0-->
+    <file src="..\System.Maui.DualScreen\bin\$Configuration$\netstandard1.0\System.Maui.DualScreen.dll" target="lib\netstandard1.0" />
+    <file src="..\System.Maui.DualScreen\bin\$Configuration$\netstandard1.0\System.Maui.DualScreen.*pdb" target="lib\netstandard1.0" />
+    <file src="..\System.Maui.DualScreen\bin\$Configuration$\netstandard1.0\System.Maui.DualScreen.*mdb" target="lib\netstandard1.0" />
+
+    <!--netstandard 2.0 -->
+    <file src="..\System.Maui.DualScreen\bin\$Configuration$\netstandard2.0\System.Maui.DualScreen.dll" target="lib\netstandard2.0" />
+    <file src="..\System.Maui.DualScreen\bin\$Configuration$\netstandard2.0\System.Maui.DualScreen.*pdb" target="lib\netstandard2.0" />
+    <file src="..\System.Maui.DualScreen\bin\$Configuration$\netstandard2.0\System.Maui.DualScreen.*mdb" target="lib\netstandard2.0" />
+
+    <!--Android 90-->
+    <file src="..\System.Maui.DualScreen\bin\$Configuration$\monoandroid90\System.Maui.DualScreen.dll" target="lib\MonoAndroid90" />
+    <file src="..\System.Maui.DualScreen\bin\$Configuration$\monoandroid90\System.Maui.DualScreen.*pdb" target="lib\MonoAndroid90" />
+    <file src="..\System.Maui.DualScreen\bin\$Configuration$\monoandroid90\System.Maui.DualScreen.*mdb" target="lib\MonoAndroid90" />
+    
+    <!--Android 10.0-->
+    <file src="..\System.Maui.DualScreen\bin\$Configuration$\monoandroid10.0\System.Maui.DualScreen.dll" target="lib\MonoAndroid10.0" />
+    <file src="..\System.Maui.DualScreen\bin\$Configuration$\monoandroid10.0\System.Maui.DualScreen.*pdb" target="lib\MonoAndroid10.0" />
+    <file src="..\System.Maui.DualScreen\bin\$Configuration$\monoandroid10.0\System.Maui.DualScreen.*mdb" target="lib\MonoAndroid10.0" />
+    
+    <!--UAP-->
+    <file src="..\System.Maui.DualScreen\bin\$Configuration$\uap10.0.16299\System.Maui.DualScreen.dll" target="lib\uap10.0.16299" />
+    <file src="..\System.Maui.DualScreen\bin\$Configuration$\uap10.0.16299\System.Maui.DualScreen.*pdb" target="lib\uap10.0.16299" />
+    <file src="..\System.Maui.DualScreen\bin\$Configuration$\uap10.0.16299\System.Maui.DualScreen.*mdb" target="lib\uap10.0.16299" />
+
+  </files>
+</package>

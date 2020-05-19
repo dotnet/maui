@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See the LICENSE file in the project root
 // for the license information.
 // 
@@ -10,10 +10,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Xamarin.Flex
+namespace System.Maui.Flex
 {
 	/// <summary>
-	/// Values for <see cref="P:Xamarin.Flex.Item.AlignContent" />.
+	/// Values for <see cref="P:System.Maui.Flex.Item.AlignContent" />.
 	/// </summary>
 	enum AlignContent
 	{
@@ -48,7 +48,7 @@ namespace Xamarin.Flex
 	}
 
 	/// <summary>
-	/// Values for <see cref="P:Xamarin.Flex.Item.AlignItems" />.
+	/// Values for <see cref="P:System.Maui.Flex.Item.AlignItems" />.
 	/// </summary>
 	enum AlignItems
 	{
@@ -72,7 +72,7 @@ namespace Xamarin.Flex
 	}
 
 	/// <summary>
-	/// Values for <see cref="P:Xamarin.Flex.Item.AlignSelf" />.
+	/// Values for <see cref="P:System.Maui.Flex.Item.AlignSelf" />.
 	/// </summary>
 	enum AlignSelf
 	{
@@ -100,7 +100,7 @@ namespace Xamarin.Flex
 	}
 
 	/// <summary>
-	/// Values for <see cref="P:Xamarin.Flex.Item.Direction" />.
+	/// Values for <see cref="P:System.Maui.Flex.Item.Direction" />.
 	/// </summary>
 	enum Direction
 	{
@@ -123,7 +123,7 @@ namespace Xamarin.Flex
 	}
 
 	/// <summary>
-	/// Values for <see cref="P:Xamarin.Flex.Item.Justify" />.
+	/// Values for <see cref="P:System.Maui.Flex.Item.Justify" />.
 	/// </summary>
 	enum Justify
 	{
@@ -154,7 +154,7 @@ namespace Xamarin.Flex
 	}
 
 	/// <summary>
-	/// Values for <see cref="P:Xamarin.Flex.Item.Position" />.
+	/// Values for <see cref="P:System.Maui.Flex.Item.Position" />.
 	/// </summary>
 	enum Position
 	{
@@ -163,13 +163,13 @@ namespace Xamarin.Flex
 		/// </summary>
 		Relative = 0,
 		/// <summary>
-		/// Whether the item's frame will be determined by fixed position values (<see cref="P:Xamarin.Flex.Item.Left" />, <see cref="P:Xamarin.Flex.Item.Right" />, <see cref="P:Xamarin.Flex.Item.Top" /> and <see cref="P:Xamarin.Flex.Item.Bottom" />).
+		/// Whether the item's frame will be determined by fixed position values (<see cref="P:System.Maui.Flex.Item.Left" />, <see cref="P:System.Maui.Flex.Item.Right" />, <see cref="P:System.Maui.Flex.Item.Top" /> and <see cref="P:System.Maui.Flex.Item.Bottom" />).
 		/// </summary>
 		Absolute = 1,
 	}
 
 	/// <summary>
-	/// Values for <see cref="P:Xamarin.Flex.Item.Wrap" />.
+	/// Values for <see cref="P:System.Maui.Flex.Item.Wrap" />.
 	/// </summary>
 	enum Wrap
 	{
@@ -188,7 +188,7 @@ namespace Xamarin.Flex
 	}
 
 	/// <summary>
-	/// Value for <see cref="P:Xamarin.Flex.Item.Basis" />.
+	/// Value for <see cref="P:System.Maui.Flex.Item.Basis" />.
 	/// </summary>
 	struct Basis {
 		readonly bool _isRelative;
@@ -212,7 +212,7 @@ namespace Xamarin.Flex
 		/// <value>The length.</value>
 		public float Length => _length;
 		/// <summary>
-		/// Initializes a new instance of the <see cref="T:Xamarin.Flex.Basis"/> struct.
+		/// Initializes a new instance of the <see cref="T:System.Maui.Flex.Basis"/> struct.
 		/// </summary>
 		/// <param name="length">Length.</param>
 		/// <param name="isRelative">If set to <c>true</c> is relative.</param>
@@ -241,7 +241,7 @@ namespace Xamarin.Flex
 		IList<Item> Children { get; set; }
 		bool ShouldOrderChildren { get; set; }
 
-		///<summary>This property defines how the layout engine will distribute space between and around child items that have been laid out on multiple lines. This property is ignored if the root item does not have its <see cref="P:Xamarin.Flex.Item.Wrap" /> property set to Wrap or WrapReverse.</summary>
+		///<summary>This property defines how the layout engine will distribute space between and around child items that have been laid out on multiple lines. This property is ignored if the root item does not have its <see cref="P:System.Maui.Flex.Item.Wrap" /> property set to Wrap or WrapReverse.</summary>
 		///<remarks>The default value for this property is Stretch.</remarks>
 		/// <value>The content of the align.</value>
 		public AlignContent AlignContent { get; set; } = AlignContent.Stretch;
@@ -251,22 +251,22 @@ namespace Xamarin.Flex
 		/// <remarks>The default value for this property is Stretch.</remarks>
 		public AlignItems AlignItems { get; set; } = AlignItems.Stretch;
 
-		/// <summary>This property defines how the layout engine will distribute space between and around child items for a specific child along the cross-axis. If this property is set to Auto on a child item, the parent's value for <see cref="P:Xamarin.Flex.Item.AlignItems" /> will be used instead.</summary>
+		/// <summary>This property defines how the layout engine will distribute space between and around child items for a specific child along the cross-axis. If this property is set to Auto on a child item, the parent's value for <see cref="P:System.Maui.Flex.Item.AlignItems" /> will be used instead.</summary>
 		/// <value>The align self.</value>
 		public AlignSelf AlignSelf { get; set; } = AlignSelf.Auto;
 
-		/// <summary>This property defines the initial main-axis dimension of the item. If <see cref="P:Xamarin.Flex.Item.Direction" /> is row-based (horizontal), it will be used instead of <see cref="P:Xamarin.Flex.Item.Width" />, and if it's column-based (vertical), it will be used instead of <see cref="P:Xamarin.Flex.Item.Height" />.</summary>
+		/// <summary>This property defines the initial main-axis dimension of the item. If <see cref="P:System.Maui.Flex.Item.Direction" /> is row-based (horizontal), it will be used instead of <see cref="P:System.Maui.Flex.Item.Width" />, and if it's column-based (vertical), it will be used instead of <see cref="P:System.Maui.Flex.Item.Height" />.</summary>
 		/// <value>The basis.</value>
 		/// <remarks>The default value for this property is Auto.</remarks>
 		public Basis Basis { get; set; } = Basis.Auto;
 
-		/// <summary>This property defines the bottom edge absolute position of the item. It also defines the item's height if <see cref="P:Xamarin.Flex.Item.Top" /> is also set and if <see cref="P:Xamarin.Flex.Item.Height" /> isn't set. It is ignored if <see cref="P:Xamarin.Flex.Item.Position" /> isn't set to Absolute.</summary>
+		/// <summary>This property defines the bottom edge absolute position of the item. It also defines the item's height if <see cref="P:System.Maui.Flex.Item.Top" /> is also set and if <see cref="P:System.Maui.Flex.Item.Height" /> isn't set. It is ignored if <see cref="P:System.Maui.Flex.Item.Position" /> isn't set to Absolute.</summary>
 		/// <value>The value for the property.</value>
 		/// <remarks>The default value for this property is NaN.</remarks>
 		public float Bottom { get; set; } = float.NaN;
 
 		/// <summary>This property defines the direction and main-axis of child items. If set to Column (or ColumnReverse), the main-axis will be the y-axis and items will be stacked vertically. If set to Row (or RowReverse), the main-axis will be the x-axis and items will be stacked horizontally.</summary>
-		/// <value>Any value part of the<see cref="T:Xamarin.Flex.Direction" /> enumeration.</value>
+		/// <value>Any value part of the<see cref="T:System.Maui.Flex.Direction" /> enumeration.</value>
 		/// <remarks>The default value for this property is Column.</remarks>
 		public Direction Direction { get; set; } = Direction.Column;
 
@@ -283,11 +283,11 @@ namespace Xamarin.Flex
 		public bool IsVisible { get; set; } = true;
 
 		/// <summary>This property defines how the layout engine will distribute space between and around child items along the main-axis.</summary>
-		/// <value>Any value part of the<see cref="T:Xamarin.Flex.Align" /> enumeration, with the exception of Stretch and Auto.</value>
+		/// <value>Any value part of the<see cref="T:System.Maui.Flex.Align" /> enumeration, with the exception of Stretch and Auto.</value>
 		/// <remarks>The default value for this property is Start.</remarks>
 		public Justify JustifyContent { get; set; } = Justify.Start;
 
-		/// <summary>This property defines the left edge absolute position of the item.It also defines the item's width if <see cref="P:Xamarin.Flex.Item.Right" /> is also set and if <see cref="P:Xamarin.Flex.Item.Width" /> isn't set.It is ignored if <see cref = "P:Xamarin.Flex.Item.Position" /> isn't set to Absolute.</summary>
+		/// <summary>This property defines the left edge absolute position of the item.It also defines the item's width if <see cref="P:System.Maui.Flex.Item.Right" /> is also set and if <see cref="P:System.Maui.Flex.Item.Width" /> isn't set.It is ignored if <see cref = "P:System.Maui.Flex.Item.Position" /> isn't set to Absolute.</summary>
 		/// <value>The value for the property.</value>
 		/// <remarks>The default value for this property is NaN.</remarks>
 		public float Left { get; set; } = float.NaN;
@@ -341,12 +341,12 @@ namespace Xamarin.Flex
 		/// <value>The bottom edge padding space.Negative values are not allowed.</value>
 		public float PaddingTop { get; set; } = 0f;
 
-		/// <summary>This property defines whether the item should be positioned by the flexbox rules of the layout engine(Relative) or have an absolute fixed position (Absolute). If this property is set to Absolute, the<see cref="P:Xamarin.Flex.Item.Left" />, <see cref = "P:Xamarin.Flex.Item.Right" />, <see cref = "P:Xamarin.Flex.Item.Top" /> and <see cref= "P:Xamarin.Flex.Item.Bottom" /> properties will then be used to determine the item's fixed position in its container.</summary>
-		/// <value>Any value part of the<see cref="T:Xamarin.Flex.Position" /> enumeration.</value>
+		/// <summary>This property defines whether the item should be positioned by the flexbox rules of the layout engine(Relative) or have an absolute fixed position (Absolute). If this property is set to Absolute, the<see cref="P:System.Maui.Flex.Item.Left" />, <see cref = "P:System.Maui.Flex.Item.Right" />, <see cref = "P:System.Maui.Flex.Item.Top" /> and <see cref= "P:System.Maui.Flex.Item.Bottom" /> properties will then be used to determine the item's fixed position in its container.</summary>
+		/// <value>Any value part of the<see cref="T:System.Maui.Flex.Position" /> enumeration.</value>
 		/// <remarks>The default value for this property is Relative</remarks>
 		public Position Position { get; set; } = Position.Relative;
 
-		/// <summary>This property defines the right edge absolute position of the item.It also defines the item's width if <see cref="P:Xamarin.Flex.Item.Left" /> is also set and if <see cref="P:Xamarin.Flex.Item.Width" /> isn't set.It is ignored if <see cref = "P:Xamarin.Flex.Item.Position" /> isn't set to Absolute.</summary>
+		/// <summary>This property defines the right edge absolute position of the item.It also defines the item's width if <see cref="P:System.Maui.Flex.Item.Left" /> is also set and if <see cref="P:System.Maui.Flex.Item.Width" /> isn't set.It is ignored if <see cref = "P:System.Maui.Flex.Item.Position" /> isn't set to Absolute.</summary>
 		/// <value>The value for the property.</value>
 		/// <remarks>The default value for this property is NaN.</remarks>
 		public float Right { get; set; } = float.NaN;
@@ -356,7 +356,7 @@ namespace Xamarin.Flex
 		/// <remarks>The default value for this property is 1 (all items will shrink equally).</remarks>
 		public float Shrink { get; set; } = 1f;
 
-		/// <summary>This property defines the top edge absolute position of the item. It also defines the item's height if <see cref="P:Xamarin.Flex.Item.Bottom" /> is also set and if <see cref="P:Xamarin.Flex.Item.Height" /> isn't set. It is ignored if <see cref="P:Xamarin.Flex.Item.Position" /> isn't set to Absolute.</summary>
+		/// <summary>This property defines the top edge absolute position of the item. It also defines the item's height if <see cref="P:System.Maui.Flex.Item.Bottom" /> is also set and if <see cref="P:System.Maui.Flex.Item.Height" /> isn't set. It is ignored if <see cref="P:System.Maui.Flex.Item.Position" /> isn't set to Absolute.</summary>
 		/// <value>The value for the property.</value>
 		/// <remarks>The default value for this property is NaN.</remarks>
 		public float Top { get; set; } = float.NaN;
@@ -366,20 +366,20 @@ namespace Xamarin.Flex
 		/// <remarks>The default value for this property is NaN.</remarks>
 		public float Width { get; set; } = float.NaN;
 
-		/// <summary>This property defines whether child items should be laid out in a single line(NoWrap) or multiple lines(Wrap or WrapReverse). If this property is set to Wrap or WrapReverse, <see cref = "P:Xamarin.Flex.Item.AlignContent" /> can then be used to specify how the lines should be distributed.</summary>
-		/// <value>Any value part of the<see cref="T:Xamarin.Flex.Wrap" /> enumeration.</value>
+		/// <summary>This property defines whether child items should be laid out in a single line(NoWrap) or multiple lines(Wrap or WrapReverse). If this property is set to Wrap or WrapReverse, <see cref = "P:System.Maui.Flex.Item.AlignContent" /> can then be used to specify how the lines should be distributed.</summary>
+		/// <value>Any value part of the<see cref="T:System.Maui.Flex.Wrap" /> enumeration.</value>
 		/// <remarks>The default value for this property is NoWrap.</remarks>
 		public Wrap Wrap { get; set; } = Wrap.NoWrap;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="T:Xamarin.Flex.Item"/> class.
+		/// Initializes a new instance of the <see cref="T:System.Maui.Flex.Item"/> class.
 		/// </summary>
 		public Item()
 		{
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="T:Xamarin.Flex.Item"/> class.
+		/// Initializes a new instance of the <see cref="T:System.Maui.Flex.Item"/> class.
 		/// </summary>
 		/// <param name="width">Width.</param>
 		/// <param name="height">Height.</param>

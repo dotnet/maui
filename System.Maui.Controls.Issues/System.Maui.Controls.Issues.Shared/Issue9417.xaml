@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<controls:TestContentPage
+    xmlns:controls="clr-namespace:System.Maui.Controls"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    xmlns:androidSpecific="clr-namespace:System.Maui.PlatformConfiguration.AndroidSpecific;assembly=System.Maui.Core"
+    xmlns:local="clr-namespace:System.Maui.Controls.Issues"
+    x:Class="System.Maui.Controls.Issues.Issue9417"
+    x:Name="Issue9417Page">
+    <controls:TestContentPage.BindingContext>
+        <x:Reference Name="Issue9417Page"/>
+    </controls:TestContentPage.BindingContext>
+    <controls:TestContentPage.Resources>
+        <ResourceDictionary>
+
+            <x:String x:Key="TrashCanImage">calculator.png</x:String>
+            <x:String x:Key="EditImage">calculator.png</x:String>
+            <Color x:Key="DeleteButtonColor">Red</Color>
+            <Color x:Key="SaveButtonColor">Blue</Color>
+
+        </ResourceDictionary>
+    </controls:TestContentPage.Resources> 
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <CollectionView
+            Grid.Row="1"
+            ItemsSource="{Binding Items}"
+            androidSpecific:ListView.IsFastScrollEnabled="True"
+            VerticalOptions="FillAndExpand"
+            ItemSizingStrategy="MeasureAllItems">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="local:Issue9417Model">
+                    <SwipeView>
+                        <SwipeView.RightItems>
+                            <SwipeItems>
+                                <SwipeItem
+                                    Command="{Binding Source={x:Reference Issue9417Page}, Path=BindingContext.DeleteCommand}" 
+                                    CommandParameter="{Binding .}" 
+                                    Text="Delete" 
+                                    Icon="{StaticResource TrashCanImage}"
+                                    BackgroundColor="{StaticResource DeleteButtonColor}" />
+                            </SwipeItems>
+                        </SwipeView.RightItems>
+                        <SwipeView.LeftItems>
+                            <SwipeItems>
+                                <SwipeItem
+                                    Command="{Binding Source={x:Reference Issue9417Page}, Path=BindingContext.EditCommand}"
+                                    CommandParameter="{Binding .}"
+                                    Text="Edit"
+                                    Icon="{StaticResource EditImage}"
+                                    BackgroundColor="{StaticResource SaveButtonColor}" />
+                            </SwipeItems>
+                        </SwipeView.LeftItems>
+                            <Label
+                                HeightRequest="60"
+                                BackgroundColor="Beige"
+                                HorizontalTextAlignment="Center"
+                                VerticalTextAlignment="Center"
+                                Text="Swipe me"/>
+                        </SwipeView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</controls:TestContentPage>

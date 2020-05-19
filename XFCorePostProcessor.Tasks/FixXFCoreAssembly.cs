@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 
@@ -32,7 +32,7 @@ namespace XFCorePostProcessor.Tasks
 			}
 
 			using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(Assembly, new ReaderParameters { AssemblyResolver = resolver, ReadWrite = true, ReadSymbols = true })) {
-				var resourceLoader = assemblyDefinition.MainModule.GetType("Xamarin.Forms.Internals.ResourceLoader");
+				var resourceLoader = assemblyDefinition.MainModule.GetType("System.Maui.Internals.ResourceLoader");
 				var module = assemblyDefinition.MainModule;
 				if(resourceLoader.GetMethods().Count(md=>md.Name == "get_ResourceProvider") > 1) {
 					Log.LogMessage("  already executed");

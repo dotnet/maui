@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -11,10 +11,10 @@
   </PropertyGroup>
   <ItemGroup  >
     <!-- A reference to the entire .NET Framework is automatically included -->
-    <ProjectReference Include="..\..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj" />
-    <ProjectReference Include="..\..\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj" />
-    <ProjectReference Include="..\..\Xamarin.Forms.DualScreen\Xamarin.Forms.DualScreen.csproj" />
-    <ProjectReference Include="..\..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj" />
+    <ProjectReference Include="..\..\System.Maui.Core\System.Maui.Core.csproj" />
+    <ProjectReference Include="..\..\System.Maui.CustomAttributes\System.Maui.CustomAttributes.csproj" />
+    <ProjectReference Include="..\..\System.Maui.DualScreen\System.Maui.DualScreen.csproj" />
+    <ProjectReference Include="..\..\System.Maui.Xaml\System.Maui.Xaml.csproj" />
   </ItemGroup>
 
 </Project>

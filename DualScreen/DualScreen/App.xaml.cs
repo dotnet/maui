@@ -1,6 +1,6 @@
-﻿using System;
-using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
+using System;
+using System.Maui;
+using System.Maui.Xaml;
 
 namespace DualScreen
 {

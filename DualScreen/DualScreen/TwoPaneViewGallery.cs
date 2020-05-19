@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using Xamarin.Forms;
-using Xamarin.Forms.DualScreen;
+using System.Maui;
+using System.Maui.DualScreen;
 
 namespace DualScreen
 {

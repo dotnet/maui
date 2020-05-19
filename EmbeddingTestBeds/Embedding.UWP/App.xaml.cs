@@ -1,23 +1,23 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.ApplicationModel;
-using Windows.ApplicationModel.Activation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI.Core;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using Xamarin.Forms;
-using Application = Windows.UI.Xaml.Application;
-using Frame = Windows.UI.Xaml.Controls.Frame;
-using NavigationEventArgs = Windows.UI.Xaml.Navigation.NavigationEventArgs;
+using global::Windows.ApplicationModel;
+using global::Windows.ApplicationModel.Activation;
+using global::Windows.Foundation;
+using global::Windows.Foundation.Collections;
+using global::Windows.UI.Core;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls.Primitives;
+using global::Windows.UI.Xaml.Data;
+using global::Windows.UI.Xaml.Input;
+using global::Windows.UI.Xaml.Media;
+using global::Windows.UI.Xaml.Navigation;
+using System.Maui;
+using Application = global::Windows.UI.Xaml.Application;
+using Frame = global::Windows.UI.Xaml.Controls.Frame;
+using NavigationEventArgs = global::Windows.UI.Xaml.Navigation.NavigationEventArgs;
 
 namespace Embedding.UWP
 {
@@ -61,7 +61,7 @@ namespace Embedding.UWP
                 rootFrame.NavigationFailed += OnNavigationFailed;
 	            rootFrame.Navigated += OnNavigated;
 
-	            Forms.Init(e);
+	            System.Maui.Maui.Init(e);
 
                 if (e.PreviousExecutionState == ApplicationExecutionState.Terminated)
                 {

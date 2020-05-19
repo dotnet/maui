@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<controls:TestContentPage xmlns:controls="clr-namespace:System.Maui.Controls"
+                          xmlns="http://xamarin.com/schemas/2014/forms"
+                          xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                          x:Class="System.Maui.Controls.Issues.Issue1747">
+    <StackLayout>
+        <Switch x:Name="ToggleSwitch"
+                IsToggled="{Binding ShouldBeToggled, Mode=TwoWay}"
+                IsEnabled="{Binding ShouldBeEnabled}" />
+        <Button x:Name="ToggleButton"
+                Text="Toggle Enabled"
+                Clicked="Button_OnClick" />
+    </StackLayout>
+</controls:TestContentPage>

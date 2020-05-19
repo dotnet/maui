@@ -1,0 +1,35 @@
+{
+  "solution": {
+    "path": "System.Maui.sln",
+    "projects": [
+      "EmbeddingTestBeds\\Embedding.UWP\\Embedding.UWP.csproj",
+      "EmbeddingTestBeds\\Embedding.XF\\Embedding.XF.csproj",
+      "PagesGallery\\PagesGallery.UWP\\PagesGallery.UWP.csproj",
+      "PagesGallery\\PagesGallery\\PagesGallery.csproj",
+      "XFCorePostProcessor.Tasks\\XFCorePostProcessor.Tasks.csproj",
+      "Xamarin.Flex\\Xamarin.Flex.shproj",
+      "System.Maui.Build.Tasks\\System.Maui.Build.Tasks.csproj",
+      "System.Maui.ControlGallery.WindowsUniversal\\System.Maui.ControlGallery.WindowsUniversal.csproj",
+      "System.Maui.Controls.Issues\\System.Maui.Controls.Issues.Shared\\System.Maui.Controls.Issues.Shared.shproj",
+      "System.Maui.Controls\\System.Maui.Controls.csproj",
+      "System.Maui.Core.Design\\System.Maui.Core.Design.csproj",
+      "System.Maui.Core.UITests.Shared\\System.Maui.Core.UITests.Shared.shproj",
+      "System.Maui.Core.UnitTests\\System.Maui.Core.UnitTests.csproj",
+      "System.Maui.Core.Windows.UITests\\System.Maui.Core.Windows.UITests.csproj",
+      "System.Maui.Core\\System.Maui.Core.csproj",
+      "System.Maui.CustomAttributes\\System.Maui.CustomAttributes.csproj",
+      "System.Maui.Maps.UWP\\System.Maui.Maps.UWP.csproj",
+      "System.Maui.Maps\\System.Maui.Maps.csproj",
+      "System.Maui.Pages.Azure\\System.Maui.Pages.Azure.csproj",
+      "System.Maui.Pages.UnitTests\\System.Maui.Pages.UnitTests.csproj",
+      "System.Maui.Pages\\System.Maui.Pages.csproj",
+      "System.Maui.Platform.UAP\\System.Maui.Platform.UAP.csproj",
+      "System.Maui.Platform\\System.Maui.Platform.csproj",
+      "System.Maui.Sandbox.UWP\\System.Maui.Sandbox.UWP.csproj",
+      "System.Maui.Sandbox\\System.Maui.Sandbox.csproj",
+      "System.Maui.Xaml.Design\\System.Maui.Xaml.Design.csproj",
+      "System.Maui.Xaml.UnitTests\\System.Maui.Xaml.UnitTests.csproj",
+      "System.Maui.Xaml\\System.Maui.Xaml.csproj"
+    ]
+  }
+}

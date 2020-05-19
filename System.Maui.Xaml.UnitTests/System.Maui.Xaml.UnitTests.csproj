@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net47</TargetFramework>
+    <RootNamespace>System.Maui.Xaml.UnitTests</RootNamespace>
+    <AssemblyName>System.Maui.Xaml.UnitTests</AssemblyName>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>0672;0219;0414;CS0436</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DefineConstants>DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\System.Maui.Controls\System.Maui.Controls.csproj" />
+    <ProjectReference Include="..\System.Maui.Build.Tasks\System.Maui.Build.Tasks.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="JetBrains.DotMemoryUnit" Version="3.0.20171219.105559" />
+    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.2.6" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.15.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\System.Maui.Core.UnitTests\MockDispatcherProvider.cs">
+      <Link>MockDispatcherProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\System.Maui.Core.UnitTests\MockDispatcher.cs">
+      <Link>MockDispatcher.cs</Link>
+    </Compile>
+    <Compile Include="..\System.Maui.Core.UnitTests\MockPlatformServices.cs">
+      <Link>MockPlatformServices.cs</Link>
+    </Compile>
+    <Compile Include="..\System.Maui.Core.UnitTests\BaseTestFixture.cs">
+      <Link>BaseTestFixture.cs</Link>
+    </Compile>
+  </ItemGroup>
+</Project>

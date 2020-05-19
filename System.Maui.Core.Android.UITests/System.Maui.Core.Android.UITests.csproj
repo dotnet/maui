@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A34EBE01-25BF-4E69-A2DC-2288DC625541}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>System.Maui.Core.UITests</RootNamespace>
+    <AssemblyName>System.Maui.Core.Android.UITests</AssemblyName>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;__ANDROID__;UITEST;__SHELL__</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>0114;0108;4014;0649;0168;0169;0219</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;__ANDROID__;UITEST</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>0114;0108;4014;0649;0168;0169;0219</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="Xam.Plugin.DeviceInfo" Version="3.0.2" />
+    <PackageReference Include="Xamarin.UITest" Version="3.0.6-dev1" />
+    <PackageReference Include="NUnit3TestAdapter">
+      <Version>3.15.1</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BaseViewContainerRemoteAndroid.cs" />
+    <Compile Include="PlatformTests\DisplayAlertUITestsAndroid.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj">
+      <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
+      <Name>System.Maui.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\System.Maui.CustomAttributes\System.Maui.CustomAttributes.csproj">
+      <Project>{4DCD0420-1168-4B77-86DB-6196EE4BD491}</Project>
+      <Name>System.Maui.CustomAttributes</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\System.Maui.Maps\System.Maui.Maps.csproj">
+      <Project>{7d13bac2-c6a4-416a-b07e-c169b199e52b}</Project>
+      <Name>System.Maui.Maps</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\System.Maui.Platform\System.Maui.Platform.csproj">
+      <Project>{D31A6537-ED9C-4EBD-B231-A8D4FE44126A}</Project>
+      <Name>System.Maui.Platform</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\System.Maui.Xaml\System.Maui.Xaml.csproj">
+      <Project>{9DB2F292-8034-4E06-89AD-98BBDA4306B9}</Project>
+      <Name>System.Maui.Xaml</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <Import Project="..\System.Maui.Controls.Issues\System.Maui.Controls.Issues.Shared\System.Maui.Controls.Issues.Shared.projitems" Label="Shared" />
+  <Import Project="..\System.Maui.Core.UITests.Shared\System.Maui.Core.UITests.projitems" Label="Shared" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="_CopyXamarinUITestFiles" AfterTargets="Build">
+    <ItemGroup>
+      <_XamarinUITestFiles Include="$(NuGetPackageRoot)Xamarin.UITest\%(Version)\**" Condition="@(PackageReference -> '%(Identity)') == 'Xamarin.UITest'" InProject="False" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_XamarinUITestFiles)" DestinationFolder="$(SolutionDir)packages\Xamarin.UITest.AnyVersion\%(RecursiveDir)" ContinueOnError="true" Retries="0" />
+  </Target>
+</Project>

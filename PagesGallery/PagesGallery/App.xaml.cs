@@ -1,5 +1,5 @@
-﻿
-using Xamarin.Forms;
+
+using System.Maui;
 
 
 [assembly: ExportFont("CuteFont-Regular.ttf", Alias = "Foo")]

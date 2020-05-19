@@ -1,7 +1,7 @@
 <Project>
   <ItemGroup>
-    <ProjectReference Include="..\..\Xamarin.Forms.DualScreen\Xamarin.Forms.DualScreen.csproj" >
-      <Name>Xamarin.Forms.DualScreen</Name>
+    <ProjectReference Include="..\..\System.Maui.DualScreen\System.Maui.DualScreen.csproj" >
+      <Name>System.Maui.DualScreen</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\..\SampleImports\Directory.Build.targets" />

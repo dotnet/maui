@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="System.Maui.Controls.Issues.Issue5046">
+    <ContentPage.Resources>
+        <Style TargetType="Button">
+            <!--<Setter Property="CornerRadius" Value="0"></Setter>-->
+            <Setter Property="BackgroundColor" Value="Blue"></Setter>
+            <Setter Property="TextColor" Value="White"></Setter>
+        </Style>
+
+        <Style x:Key="ButtonStyle" TargetType="Button">
+            <Setter Property="CornerRadius" Value="0"></Setter>
+            <Setter Property="BackgroundColor" Value="Blue"></Setter>
+            <Setter Property="TextColor" Value="Yellow"></Setter>
+        </Style>
+    </ContentPage.Resources>
+
+    <StackLayout Padding="10">
+        <Label Text="Button CornerRadius doesn't work in explicit style when implicit style exists" />
+        <Label Text="This button should have a CornerRadius of '0'" />
+
+        <Button Text="Look at me!" Style="{StaticResource ButtonStyle}" Clicked="Button_Clicked" />
+
+    </StackLayout>
+</ContentPage>
