@@ -8,6 +8,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <NoWarn>$(NoWarn);NU1701</NoWarn>
+    <AssemblyName>System.Maui.Platform.WPF</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj" />
