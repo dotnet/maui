@@ -1,6 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	static class BindingBaseExtensions
 	{

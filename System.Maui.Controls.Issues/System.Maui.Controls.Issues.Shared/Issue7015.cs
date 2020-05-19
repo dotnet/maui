@@ -1,10 +1,10 @@
-﻿using System;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using System;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 7015, "Test the placeholder implementation for Image control ")]

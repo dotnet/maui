@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	public class ImageSourcesGallery : NavigationPage
 	{
@@ -29,12 +29,12 @@ namespace Xamarin.Forms.Controls
 				new ImageSourcePickerItem
 				{
 					Text = "Embedded",
-					Getter = () => ImageSource.FromResource("Xamarin.Forms.Controls.GalleryPages.crimson.jpg", typeof(App))
+					Getter = () => ImageSource.FromResource("System.Maui.Controls.GalleryPages.crimson.jpg", typeof(App))
 				},
 				new ImageSourcePickerItem
 				{
 					Text = "Stream",
-					Getter = () => ImageSource.FromStream(() => typeof(App).GetTypeInfo().Assembly.GetManifestResourceStream("Xamarin.Forms.Controls.coffee.png"))
+					Getter = () => ImageSource.FromStream(() => typeof(App).GetTypeInfo().Assembly.GetManifestResourceStream("System.Maui.Controls.coffee.png"))
 				},
 				new ImageSourcePickerItem
 				{

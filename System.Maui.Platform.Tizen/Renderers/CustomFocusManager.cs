@@ -5,7 +5,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using ElmSharp;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	class CustomFocusManager : IDisposable
 	{

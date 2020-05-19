@@ -1,10 +1,10 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public abstract class TableSectionBase<T> : TableSectionBase, IList<T>, INotifyCollectionChanged where T : BindableObject
 	{

@@ -1,8 +1,8 @@
-﻿using Xamarin.Forms;
+using System.Maui;
 using System;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	[Preserve (AllMembers = true)]
 	public partial class BehaviorsAndTriggers : ContentPage

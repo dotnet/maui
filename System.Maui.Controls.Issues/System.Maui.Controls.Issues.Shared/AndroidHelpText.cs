@@ -1,5 +1,5 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
 #if UITEST && __ANDROID__
 using Xamarin.UITest;
@@ -12,7 +12,7 @@ using NUnit.Framework;
 [assembly: NUnit.Framework.Category("Issues")]
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 #if UITEST && __ANDROID__
 	[Ignore("Ignoring this test until FastRenderers.LabelRenderer is no longer sealed")]

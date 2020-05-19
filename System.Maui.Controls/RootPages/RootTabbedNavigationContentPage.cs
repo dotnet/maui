@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Resources;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	public class RootTabbedNavigationContentPage : TabbedPage
 	{

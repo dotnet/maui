@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
+namespace System.Maui.PlatformConfiguration.iOSSpecific
 {
-	using FormsElement = Forms.Picker;
+	using FormsElement = System.Maui.Picker;
 
 	public static class Picker
 	{

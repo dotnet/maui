@@ -2,7 +2,7 @@ using System;
 using Android.Content.Res;
 using Android.Widget;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	/// <summary>
 	/// Handles color state management for the TextColor property 

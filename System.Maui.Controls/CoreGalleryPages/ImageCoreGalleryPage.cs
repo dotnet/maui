@@ -1,8 +1,8 @@
 using System;
 
-using Xamarin.Forms.CustomAttributes;
+using System.Maui.CustomAttributes;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	internal class ImageCoreGalleryPage : CoreGalleryPage<Image>
 	{
@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Controls
 			InitializeElement (isLoadingContainer.View);
 			InitializeElement (isOpaqueContainer.View);
 			
-			var sourceContainer = new ViewContainer<Image> (Test.Image.Source, new Image { Source = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Xamarin.Forms.Controls/coffee.png" });
+			var sourceContainer = new ViewContainer<Image> (Test.Image.Source, new Image { Source = "https://raw.githubusercontent.com/xamarin/System.Maui/master/System.Maui.Controls/coffee.png" });
 		
 			Add (aspectFillContainer);
 			Add (aspectFitContainer);

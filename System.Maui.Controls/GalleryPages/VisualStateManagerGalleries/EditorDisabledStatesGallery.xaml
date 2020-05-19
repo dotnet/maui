@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			xmlns:windowsSpecific="clr-namespace:Xamarin.Forms.PlatformConfiguration.WindowsSpecific;assembly=Xamarin.Forms.Core"
-			xmlns:androidSpecific="clr-namespace:Xamarin.Forms.PlatformConfiguration.AndroidSpecific;assembly=Xamarin.Forms.Core"
-			xmlns:iosSpecific="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
-             x:Class="Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries.EditorDisabledStatesGallery"
+			xmlns:windowsSpecific="clr-namespace:System.Maui.PlatformConfiguration.WindowsSpecific;assembly=System.Maui.Core"
+			xmlns:androidSpecific="clr-namespace:System.Maui.PlatformConfiguration.AndroidSpecific;assembly=System.Maui.Core"
+			xmlns:iosSpecific="clr-namespace:System.Maui.PlatformConfiguration.iOSSpecific;assembly=System.Maui.Core"
+             x:Class="System.Maui.Controls.GalleryPages.VisualStateManagerGalleries.EditorDisabledStatesGallery"
 			Title="Editor Disabled States Gallery">
 
 	<ContentPage.Resources>

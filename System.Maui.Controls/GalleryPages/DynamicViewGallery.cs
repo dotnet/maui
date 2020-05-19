@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	[Preserve(AllMembers = true)]
 	public class DynamicViewGallery : ContentPage

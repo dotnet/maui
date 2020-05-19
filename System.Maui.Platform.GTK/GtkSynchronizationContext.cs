@@ -1,8 +1,8 @@
-﻿using GLib;
+using GLib;
 using System;
 using System.Threading;
 
-namespace Xamarin.Forms.Platform.GTK
+namespace System.Maui.Platform.GTK
 {
 	public class GtkSynchronizationContext : SynchronizationContext
 	{

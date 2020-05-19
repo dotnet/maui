@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-namespace Xamarin.Forms.Core.UITests
+namespace System.Maui.Core.UITests
 {
 
 	internal static class ParsingUtils 

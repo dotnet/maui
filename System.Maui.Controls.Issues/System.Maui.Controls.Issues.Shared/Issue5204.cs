@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 5204, "[MacOS] Image size issue (not rendered if skip setting WidthRequest and HeightRequest", PlatformAffected.macOS)]

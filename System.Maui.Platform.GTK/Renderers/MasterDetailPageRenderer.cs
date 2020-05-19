@@ -1,12 +1,12 @@
-﻿using Gtk;
+using Gtk;
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK.Controls;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using System.Maui.Internals;
+using System.Maui.Platform.GTK.Controls;
+using System.Maui.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers
+namespace System.Maui.Platform.GTK.Renderers
 {
 	public class MasterDetailPageRenderer : AbstractPageRenderer<Controls.MasterDetailPage, MasterDetailPage>
 	{
@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 		public MasterDetailPageRenderer()
 		{
-			MessagingCenter.Subscribe(this, Forms.BarTextColor, (NavigationPage sender, Color color) =>
+			MessagingCenter.Subscribe(this, System.Maui.Maui.BarTextColor, (NavigationPage sender, Color color) =>
 			{
 				var barTextColor = color;
 
@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				}
 			});
 
-			MessagingCenter.Subscribe(this, Forms.BarBackgroundColor, (NavigationPage sender, Color color) =>
+			MessagingCenter.Subscribe(this, System.Maui.Maui.BarBackgroundColor, (NavigationPage sender, Color color) =>
 			{
 				var barBackgroundColor = color;
 
@@ -53,8 +53,8 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 					Widget.IsPresentedChanged -= OnIsPresentedChanged;
 				}
 
-				MessagingCenter.Unsubscribe<NavigationPage, Color>(this, Forms.BarTextColor);
-				MessagingCenter.Unsubscribe<NavigationPage, Color>(this, Forms.BarBackgroundColor);
+				MessagingCenter.Unsubscribe<NavigationPage, Color>(this, System.Maui.Maui.BarTextColor);
+				MessagingCenter.Unsubscribe<NavigationPage, Color>(this, System.Maui.Maui.BarBackgroundColor);
 
 				if (Page?.Master != null)
 				{
@@ -117,7 +117,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 		private async void HandleMasterPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == Xamarin.Forms.Page.IconImageSourceProperty.PropertyName)
+			if (e.PropertyName == System.Maui.Page.IconImageSourceProperty.PropertyName)
 				await UpdateHamburguerIconAsync();
 		}
 
@@ -197,7 +197,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 		private Task UpdateHamburguerIconAsync()
 		{
-			return Page.Master.ApplyNativeImageAsync(Xamarin.Forms.Page.IconImageSourceProperty, image =>
+			return Page.Master.ApplyNativeImageAsync(System.Maui.Page.IconImageSourceProperty, image =>
 			{
 				Widget.UpdateHamburguerIcon(image);
 

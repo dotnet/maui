@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Xamarin.Forms.Pages
+namespace System.Maui.Pages
 {
 	public class DataItem : IDataItem, INotifyPropertyChanged
 	{

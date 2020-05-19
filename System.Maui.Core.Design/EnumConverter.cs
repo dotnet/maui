@@ -1,6 +1,6 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
-namespace Xamarin.Forms.Core.Design
+namespace System.Maui.Core.Design
 {
 	/// <summary>
 	/// Generic version of the <see cref="EnumConverter"/> for reuse.

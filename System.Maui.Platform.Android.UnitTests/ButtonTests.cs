@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Xamarin.Forms.CustomAttributes;
+using System.Maui.CustomAttributes;
 using AColor = Android.Graphics.Color;
 
-namespace Xamarin.Forms.Platform.Android.UnitTests
+namespace System.Maui.Platform.Android.UnitTests
 {
 
 	[TestFixture]

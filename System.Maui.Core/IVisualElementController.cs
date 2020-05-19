@@ -1,8 +1,8 @@
 using System;
-using Xamarin.Forms.Internals;
-using static Xamarin.Forms.VisualElement;
+using System.Maui.Internals;
+using static System.Maui.VisualElement;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public interface IVisualElementController : IElementController
 	{

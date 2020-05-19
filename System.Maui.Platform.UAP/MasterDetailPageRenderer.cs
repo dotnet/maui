@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Automation.Peers;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.MasterDetailPage;
-using WImageSource = Windows.UI.Xaml.Media.ImageSource;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Data;
+using global::Windows.UI.Xaml.Media;
+using global::Windows.UI.Xaml.Automation.Peers;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
+using Specifics = System.Maui.PlatformConfiguration.WindowsSpecific.MasterDetailPage;
+using WImageSource = global::Windows.UI.Xaml.Media.ImageSource;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class MasterDetailPageRenderer : IVisualElementRenderer, IToolbarProvider, ITitleProvider, ITitleIconProvider, ITitleViewProvider, IToolBarForegroundBinder
 	{
@@ -175,9 +175,9 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateIsPresented();
 
 				if (!string.IsNullOrEmpty(e.NewElement.AutomationId))
-					Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, e.NewElement.AutomationId);
+					Control.SetValue(global::Windows.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, e.NewElement.AutomationId);
 
-				((ITitleProvider)this).BarBackgroundBrush = (Brush)Windows.UI.Xaml.Application.Current.Resources["SystemControlBackgroundChromeMediumLowBrush"];
+				((ITitleProvider)this).BarBackgroundBrush = (Brush)global::Windows.UI.Xaml.Application.Current.Resources["SystemControlBackgroundChromeMediumLowBrush"];
 				UpdateToolbarPlacement();
 				UpdateToolbarDynamicOverflowEnabled();
 
@@ -299,8 +299,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateBounds()
 		{
-			Windows.Foundation.Size masterSize = Control.MasterSize;
-			Windows.Foundation.Size detailSize = Control.DetailSize;
+			global::Windows.Foundation.Size masterSize = Control.MasterSize;
+			global::Windows.Foundation.Size detailSize = Control.DetailSize;
 
 			Element.MasterBounds = new Rectangle(0, 0, masterSize.Width, masterSize.Height);
 			Element.DetailBounds = new Rectangle(0, 0, detailSize.Width, detailSize.Height);
@@ -432,8 +432,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void SetAppBarForegroundBinding(FrameworkElement element)
 		{
-			element.SetBinding(Windows.UI.Xaml.Controls.Control.ForegroundProperty,
-				new Windows.UI.Xaml.Data.Binding { Path = new PropertyPath("Control.ToolbarForeground"), Source = this, RelativeSource = new RelativeSource { Mode = RelativeSourceMode.TemplatedParent } });
+			element.SetBinding(global::Windows.UI.Xaml.Controls.Control.ForegroundProperty,
+				new global::Windows.UI.Xaml.Data.Binding { Path = new PropertyPath("Control.ToolbarForeground"), Source = this, RelativeSource = new RelativeSource { Mode = RelativeSourceMode.TemplatedParent } });
 		}
 
 		Page GetCurrentPage()

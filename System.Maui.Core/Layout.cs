@@ -4,9 +4,9 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[ContentProperty("Children")]
 	public abstract class Layout<T> : Layout, IViewContainer<T> where T : View

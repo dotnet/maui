@@ -1,4 +1,4 @@
-﻿using Android.Database;
+using Android.Database;
 using Android.OS;
 #if __ANDROID_29__
 using AndroidX.Fragment.App;
@@ -7,9 +7,9 @@ using Android.Support.V4.App;
 #endif
 using Java.Lang;
 using System.Collections.Specialized;
-using Xamarin.Forms.Platform.Android.AppCompat;
+using System.Maui.Platform.Android.AppCompat;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal class ShellFragmentPagerAdapter : FragmentPagerAdapter
 	{
@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 #pragma warning disable RCS1168 // Parameter name differs from base name.
-		public override int GetItemPosition(Object objectValue)
+		public override int GetItemPosition(Java.Lang.Object objectValue)
 #pragma warning restore RCS1168 // Parameter name differs from base name.
 		{
 			var fragContainer = objectValue as ShellFragmentContainer;
@@ -63,7 +63,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public override ICharSequence GetPageTitleFormatted(int position)
 		{
-			return new String(SectionController.GetItems()[position].Title);
+			return new Java.Lang.String(SectionController.GetItems()[position].Title);
 		}
 
 		// http://stackoverflow.com/questions/18642890/fragmentstatepageradapter-with-childfragmentmanager-fragmentmanagerimpl-getfra/19099987#19099987

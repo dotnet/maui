@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using Android.Content;
 using Android.Graphics;
@@ -10,9 +10,9 @@ using Android.Support.Design.Widget;
 #endif
 using Android.Runtime;
 using Android.Util;
-using Xamarin.Forms.Platform.Android;
+using System.Maui.Platform.Android;
 
-namespace Xamarin.Forms.Material.Android
+namespace System.Maui.Material.Android
 {
 	public class MaterialFormsEditTextBase : TextInputEditText, IDescendantFocusToggler
 	{

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Xamarin.Forms.Internals
+namespace System.Maui.Internals
 {
 	public interface IGestureController
 	{

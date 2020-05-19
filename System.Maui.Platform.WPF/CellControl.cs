@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using WSize = System.Windows.Size;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public class CellControl : ContentControl
 	{

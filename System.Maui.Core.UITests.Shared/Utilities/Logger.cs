@@ -2,7 +2,7 @@ using System.IO;
 
 using Xamarin.UITest.Queries;
 
-namespace Xamarin.Forms.Core.UITests
+namespace System.Maui.Core.UITests
 {
 	internal static class Logger
 	{
@@ -10,7 +10,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		public static void Init ()
 		{
-			queryWriter = new StreamWriter ("../../Xamarin.Forms.Core-UITest-queries.log", false);	
+			queryWriter = new StreamWriter ("../../System.Maui.Core-UITest-queries.log", false);	
 		}
 
 		public static void Log (string text)

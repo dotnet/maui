@@ -1,9 +1,9 @@
-﻿using System;
-using Xamarin.Forms;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using System;
+using System.Maui;
+using System.Maui.PlatformConfiguration;
+using System.Maui.PlatformConfiguration.iOSSpecific;
 
-namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
+namespace System.Maui.Controls.GalleryPages.PlatformSpecificsGalleries
 {
 	public class EntryPageiOS : ContentPage
 	{

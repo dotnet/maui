@@ -1,8 +1,8 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Android.Support.V4.App;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Platform.Android.UnitTests
+namespace System.Maui.Platform.Android.UnitTests
 {
 	[TestFixture]
 	public class EmbeddingTests : PlatformTestFixture

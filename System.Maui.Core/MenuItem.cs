@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Input;
-using Xamarin.Forms.StyleSheets;
+using System.Maui.StyleSheets;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public class MenuItem : BaseMenuItem, IMenuItemController, IStyleSelectable
 	{

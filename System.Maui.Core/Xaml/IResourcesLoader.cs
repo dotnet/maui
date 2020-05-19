@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Reflection;
 using System.Xml;
 using System.IO;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	interface IResourcesLoader
 	{

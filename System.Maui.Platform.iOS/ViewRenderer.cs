@@ -10,13 +10,13 @@ using NativeColor = UIKit.UIColor;
 using NativeControl = UIKit.UIControl;
 using NativeView = UIKit.UIView;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 #else
 using NativeView = AppKit.NSView;
 using NativeColor = CoreGraphics.CGColor;
 using NativeControl = AppKit.NSControl;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 #endif
 {
 	public interface ITabStop
@@ -239,7 +239,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			base.TraitCollectionDidChange(previousTraitCollection);
 #if __XCODE11__
 			// Make sure the control adheres to changes in UI theme
-			if (Forms.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (System.Maui.Maui.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				Control?.SetNeedsDisplay();
 #endif
 		}

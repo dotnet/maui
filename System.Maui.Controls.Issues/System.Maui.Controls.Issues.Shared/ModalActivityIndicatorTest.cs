@@ -1,11 +1,11 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.None, 0, "Activity Indicator Does Not Show when set to default color")]
@@ -102,10 +102,10 @@ namespace Xamarin.Forms.Controls.Issues
 						Opacity = .4,
 						BackgroundColor = Color.FromHex("#ccc")
 					},
-					widthConstraint: Forms.Constraint.RelativeToParent((parent) => {
+					widthConstraint: System.Maui.Constraint.RelativeToParent((parent) => {
 						return parent.Width;
 					}),
-					heightConstraint: Forms.Constraint.RelativeToParent((parent) => {
+					heightConstraint: System.Maui.Constraint.RelativeToParent((parent) => {
 						return parent.Height;
 					})
 					);
@@ -133,16 +133,16 @@ namespace Xamarin.Forms.Controls.Issues
 
 				Children.Add(
 					view: content,
-					widthConstraint: Forms.Constraint.RelativeToParent((parent) => {
+					widthConstraint: System.Maui.Constraint.RelativeToParent((parent) => {
 						return parent.Width / 2;
 					}),
-					heightConstraint: Forms.Constraint.RelativeToParent((parent) => {
+					heightConstraint: System.Maui.Constraint.RelativeToParent((parent) => {
 						return parent.Width / 3;
 					}),
-					xConstraint: Forms.Constraint.RelativeToParent((parent) => {
+					xConstraint: System.Maui.Constraint.RelativeToParent((parent) => {
 						return parent.Width / 4;
 					}),
-					yConstraint: Forms.Constraint.RelativeToParent((parent) => {
+					yConstraint: System.Maui.Constraint.RelativeToParent((parent) => {
 						return (parent.Height / 2) - (parent.Width / 6);
 					})
 					);

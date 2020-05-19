@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	// Lets observable items sources notify observers about dataset changes
 	internal interface ICollectionChangedNotifier

@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Platform.iOS.UnitTests
+namespace System.Maui.Platform.iOS.UnitTests
 {
 	[TestFixture]
 	public class TextTests : PlatformTestFixture

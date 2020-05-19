@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Windows.Input;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public class SelectableItemsView : StructuredItemsView
 	{

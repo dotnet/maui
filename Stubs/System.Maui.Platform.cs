@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Xamarin.Forms;
+using System.Maui;
 
 #if __ANDROID__
-using Xamarin.Forms.Platform.Android;
+using System.Maui.Platform.Android;
 #elif TIZEN4_0
-using Xamarin.Forms.Platform.Tizen;
+using System.Maui.Platform.Tizen;
 #elif __IOS__
-using Xamarin.Forms.Platform.iOS;
+using System.Maui.Platform.iOS;
 #endif
 
-namespace Xamarin.Forms.Platform
+namespace System.Maui.Platform
 {
 	internal static class Loader
 	{
@@ -35,14 +35,14 @@ namespace Xamarin.Forms.Platform
 	[RenderWith (typeof (EditorRenderer))]
 	internal class _EditorRenderer { }
 #if __ANDROID__
-	[RenderWith(typeof(Xamarin.Forms.Platform.Android.LabelRenderer))]
+	[RenderWith(typeof(System.Maui.Platform.Android.LabelRenderer))]
 #else
 	[RenderWith (typeof (LabelRenderer))]
 #endif
 	internal class _LabelRenderer { }
 
 #if __ANDROID__
-	[RenderWith(typeof(Xamarin.Forms.Platform.Android.ImageRenderer))]
+	[RenderWith(typeof(System.Maui.Platform.Android.ImageRenderer))]
 #else
 	[RenderWith (typeof (ImageRenderer))]
 #endif

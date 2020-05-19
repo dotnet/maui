@@ -9,14 +9,14 @@ using Android.Support.V4.View;
 #endif
 using Android.Views;
 using Android.Widget;
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.Android.FastRenderers;
-using Xamarin.Forms.Material.Android;
+using System.Maui;
+using System.Maui.Platform.Android.FastRenderers;
+using System.Maui.Material.Android;
 using AView = Android.Views.View;
-using Xamarin.Forms.Platform.Android;
+using System.Maui.Platform.Android;
 
 
-namespace Xamarin.Forms.Material.Android
+namespace System.Maui.Material.Android
 {
 	public class MaterialSliderRenderer : SeekBar,
 		SeekBar.IOnSeekBarChangeListener,

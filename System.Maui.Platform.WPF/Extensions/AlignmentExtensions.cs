@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Windows;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	internal static class AlignmentExtensions
 	{

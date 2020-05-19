@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using AppKit;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public class SwitchRenderer : ViewRenderer<Switch, NSButton>
 	{

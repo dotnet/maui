@@ -1,7 +1,7 @@
 using System;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class TemplatedItemViewHolder : SelectableViewHolder
 	{

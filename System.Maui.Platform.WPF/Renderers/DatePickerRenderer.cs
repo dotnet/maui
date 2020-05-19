@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WDatePicker = System.Windows.Controls.DatePicker;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public class DatePickerRenderer : ViewRenderer<DatePicker, WDatePicker>
 	{

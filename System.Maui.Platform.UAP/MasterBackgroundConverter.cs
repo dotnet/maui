@@ -1,12 +1,12 @@
-﻿using System;
-using Windows.UI;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
+using System;
+using global::Windows.UI;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Media;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	public class MasterBackgroundConverter : Windows.UI.Xaml.Data.IValueConverter
+	public class MasterBackgroundConverter : global::Windows.UI.Xaml.Data.IValueConverter
 	{
 		// Obtained by comparing the Mail apps master section background to the detail background
 		const double Shift = 0.03;

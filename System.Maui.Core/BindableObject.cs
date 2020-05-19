@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public abstract class BindableObject : INotifyPropertyChanged, IDynamicResourceHandler
 	{

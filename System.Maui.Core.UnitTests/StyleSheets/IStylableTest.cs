@@ -2,9 +2,9 @@ using System;
 
 using NUnit.Framework;
 
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.StyleSheets.UnitTests
+namespace System.Maui.StyleSheets.UnitTests
 {
 	[TestFixture]
 	public class IStylableTest

@@ -2,10 +2,10 @@ using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using Xamarin.Forms.Platform;
-using Xamarin.Forms.Internals;
+using System.Maui.Platform;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[ContentProperty("Root")]
 	[RenderWith(typeof(_TableViewRenderer))]

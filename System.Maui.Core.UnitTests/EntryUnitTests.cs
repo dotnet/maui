@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class EntryUnitTests : BaseTestFixture

@@ -3,7 +3,7 @@ using Android.Runtime;
 using Android.Views;
 using System;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal class PageContainer : ViewGroup
 	{

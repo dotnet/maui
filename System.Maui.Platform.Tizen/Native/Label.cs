@@ -4,7 +4,7 @@ using ELabel = ElmSharp.Label;
 using EColor = ElmSharp.Color;
 using ESize = ElmSharp.Size;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	/// <summary>
 	/// The Label class extends <c>ElmSharp.Label</c> to be better suited for Xamarin renderers.
@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		readonly Span _span = new Span();
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Xamarin.Forms.Platform.Tizen.Native.Label"/> class.
+		/// Initializes a new instance of the <see cref="System.Maui.Platform.Tizen.Native.Label"/> class.
 		/// </summary>
 		/// <param name="parent">Parent evas object.</param>
 		public Label(EvasObject parent) : base(parent)
@@ -372,7 +372,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		}
 
 		/// <summary>
-		/// Implements <see cref="Xamarin.Forms.Platform.Tizen.Native.IMeasurable"/> to provide a desired size of the label.
+		/// Implements <see cref="System.Maui.Platform.Tizen.Native.IMeasurable"/> to provide a desired size of the label.
 		/// </summary>
 		/// <param name="availableWidth">Available width.</param>
 		/// <param name="availableHeight">Available height.</param>

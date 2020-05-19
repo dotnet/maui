@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Core.UITests.Shared
+namespace System.Maui.Core.UITests.Shared
 {
 	internal class PlatformAutomatedTest : BaseTestFixture
 	{

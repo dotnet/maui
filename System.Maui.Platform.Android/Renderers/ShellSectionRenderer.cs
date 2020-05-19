@@ -21,11 +21,11 @@ using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using Xamarin.Forms.Platform.Android.AppCompat;
+using System.Maui.Platform.Android.AppCompat;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class ShellSectionRenderer : Fragment, IShellSectionRenderer, ViewPager.IOnPageChangeListener, AView.IOnClickListener, IShellObservableFragment, IAppearanceObserver
 	{

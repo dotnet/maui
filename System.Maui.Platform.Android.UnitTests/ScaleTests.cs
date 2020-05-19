@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android.UnitTests
+namespace System.Maui.Platform.Android.UnitTests
 {
 	[TestFixture]
 	public class ScaleTests : PlatformTestFixture

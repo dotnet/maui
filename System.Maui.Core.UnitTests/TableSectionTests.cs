@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 using NContains = NUnit.Framework.Contains;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class TableSectionTests : BaseTestFixture

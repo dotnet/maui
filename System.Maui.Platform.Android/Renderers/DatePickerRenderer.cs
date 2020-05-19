@@ -7,7 +7,7 @@ using Android.Views;
 using Android.Widget;
 using AColor = Android.Graphics.Color;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public abstract class DatePickerRendererBase<TControl> : ViewRenderer<DatePicker, TControl>, IPickerRenderer
 		where TControl : global::Android.Views.View
@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Platform.Android
 		public DatePickerRendererBase(Context context) : base(context)
 		{
 			AutoPackage = false;
-			if (Forms.IsLollipopOrNewer)
+			if (System.Maui.Maui.IsLollipopOrNewer)
 				Device.Info.PropertyChanged += DeviceInfoPropertyChanged;
 		}
 
@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.Android
 		public DatePickerRendererBase()
 		{
 			AutoPackage = false;
-			if (Forms.IsLollipopOrNewer)
+			if (System.Maui.Maui.IsLollipopOrNewer)
 				Device.Info.PropertyChanged += DeviceInfoPropertyChanged;
 		}
 
@@ -37,13 +37,13 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (disposing && !_disposed)
 			{
-				if (Forms.IsLollipopOrNewer)
+				if (System.Maui.Maui.IsLollipopOrNewer)
 					Device.Info.PropertyChanged -= DeviceInfoPropertyChanged;
 
 				_disposed = true;
 				if (_dialog != null)
 				{
-					if (Forms.IsLollipopOrNewer)
+					if (System.Maui.Maui.IsLollipopOrNewer)
 						_dialog.CancelEvent -= OnCancelButtonClicked;
 
 					_dialog.Hide();
@@ -108,7 +108,7 @@ namespace Xamarin.Forms.Platform.Android
 				_dialog.Hide();
 				((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 
-				if (Forms.IsLollipopOrNewer)
+				if (System.Maui.Maui.IsLollipopOrNewer)
 					_dialog.CancelEvent -= OnCancelButtonClicked;
 
 				_dialog = null;
@@ -135,7 +135,7 @@ namespace Xamarin.Forms.Platform.Android
 				if (currentDialog != null && currentDialog.IsShowing)
 				{
 					currentDialog.Dismiss();
-					if (Forms.IsLollipopOrNewer)
+					if (System.Maui.Maui.IsLollipopOrNewer)
 						currentDialog.CancelEvent -= OnCancelButtonClicked;
 
 					ShowPickerDialog(currentDialog.DatePicker.Year, currentDialog.DatePicker.Month, currentDialog.DatePicker.DayOfMonth);
@@ -162,7 +162,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			UpdateMinimumDate();
 			UpdateMaximumDate();
-			if (Forms.IsLollipopOrNewer)
+			if (System.Maui.Maui.IsLollipopOrNewer)
 				_dialog.CancelEvent += OnCancelButtonClicked;
 
 			_dialog.Show();
@@ -180,7 +180,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateCharacterSpacing()
 		{
-			if (Forms.IsLollipopOrNewer)
+			if (System.Maui.Maui.IsLollipopOrNewer)
 			{
 				EditText.LetterSpacing = Element.CharacterSpacing.ToEm();
 			}

@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class SwitchCellTemplateTests : BaseTestFixture

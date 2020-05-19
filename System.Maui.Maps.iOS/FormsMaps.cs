@@ -1,11 +1,11 @@
 #if __MOBILE__
 using UIKit;
-using Xamarin.Forms.Maps.iOS;
+using System.Maui.Maps.iOS;
 #else
-using Xamarin.Forms.Maps.MacOS;
+using System.Maui.Maps.MacOS;
 #endif
 
-namespace Xamarin
+namespace System.Maui
 {
 	public static class FormsMaps
 	{

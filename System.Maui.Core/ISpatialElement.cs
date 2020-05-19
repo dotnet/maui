@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Internals
+namespace System.Maui.Internals
 {
 	public interface ISpatialElement
 	{

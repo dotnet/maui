@@ -1,19 +1,19 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-using Xamarin.Forms;
+using System.Maui;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Github, 3319, "[iOS] Clear and adding rows exception")]
@@ -70,7 +70,7 @@ namespace Xamarin.Forms.Controls.Issues
 #pragma warning disable 4014
 			// For some reason, Jason seemed to think we deliberately should _not_ add an await here.
 			// So leaving it out unless someone comes up with a really good reason to add it.
-			// (see https://github.com/xamarin/Xamarin.Forms/pull/65#discussion-diff-59305011) 
+			// (see https://github.com/xamarin/System.Maui/pull/65#discussion-diff-59305011) 
 			if (articlelistingitem != null)
 				DisplayAlert ("Alert", "I'm not deleting just refreshing...", "Ok");
 #pragma warning restore 4014

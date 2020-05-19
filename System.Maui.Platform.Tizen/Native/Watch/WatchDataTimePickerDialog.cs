@@ -4,7 +4,7 @@ using ElmSharp.Wearable;
 using ELayout = ElmSharp.Layout;
 using EButton = ElmSharp.Button;
 
-namespace Xamarin.Forms.Platform.Tizen.Native.Watch
+namespace System.Maui.Platform.Tizen.Native.Watch
 {
 	public class WatchDataTimePickerDialog : Popup, IDateTimeDialog
 	{

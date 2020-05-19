@@ -1,4 +1,4 @@
-﻿using Android.Content;
+using Android.Content;
 using Android.Graphics.Drawables;
 #if __ANDROID_29__
 using AndroidX.AppCompat.Widget;
@@ -15,10 +15,10 @@ using System;
 using System.ComponentModel;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using Android.Runtime;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class ShellFlyoutTemplatedContentRenderer : Java.Lang.Object, IShellFlyoutContentRenderer
 		, AppBarLayout.IOnOffsetChangedListener

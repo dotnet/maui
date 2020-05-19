@@ -1,22 +1,22 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 using System.Linq;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using System.Maui.PlatformConfiguration;
+using System.Maui.PlatformConfiguration.iOSSpecific;
 using System.Threading;
 using System.ComponentModel;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 
 	[Preserve(AllMembers = true)]

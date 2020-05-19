@@ -1,12 +1,12 @@
-﻿using Android.Content;
+using Android.Content;
 using Android.Widget;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Android;
-using Xamarin.Forms.Controls.Issues.Helpers;
-using Xamarin.Forms.Platform.Android;
+using System.Maui;
+using System.Maui.ControlGallery.Android;
+using System.Maui.Controls.Issues.Helpers;
+using System.Maui.Platform.Android;
 
 [assembly: Dependency(typeof(SampleNativeControl))]
-namespace Xamarin.Forms.ControlGallery.Android
+namespace System.Maui.ControlGallery.Android
 {
 	public class SampleNativeControl : ISampleNativeControl
 	{

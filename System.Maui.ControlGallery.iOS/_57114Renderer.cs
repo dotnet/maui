@@ -1,14 +1,14 @@
 using System;
 using Foundation;
 using UIKit;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.iOS;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui;
+using System.Maui.ControlGallery.iOS;
+using System.Maui.Controls.Issues;
+using System.Maui.Platform.iOS;
 
 [assembly: ExportRenderer(typeof(Bugzilla57114._57114View), typeof(_57114Renderer))]
 
-namespace Xamarin.Forms.ControlGallery.iOS
+namespace System.Maui.ControlGallery.iOS
 {
 	public class _57114Renderer : ViewRenderer<Bugzilla57114._57114View, _57114NativeView>
 	{

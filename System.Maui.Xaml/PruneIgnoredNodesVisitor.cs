@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	class PruneIgnoredNodesVisitor : IXamlNodeVisitor
 	{

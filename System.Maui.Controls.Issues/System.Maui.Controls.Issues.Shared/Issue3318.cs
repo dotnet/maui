@@ -1,23 +1,23 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 3318, "[MAC] ScrollTo method is not working in Xamarin.Forms for mac platform", PlatformAffected.macOS)]
+	[Issue(IssueTracker.Github, 3318, "[MAC] ScrollTo method is not working in System.Maui for mac platform", PlatformAffected.macOS)]
 
 	public class Issue3318 : TestContentPage
 	{

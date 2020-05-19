@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,14 +14,14 @@ using Android.Text.Style;
 using Android.Views;
 using Android.Widget;
 using NUnit.Framework;
-using Xamarin.Forms;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Platform.Android.UnitTests;
+using System.Maui;
+using System.Maui.CustomAttributes;
+using System.Maui.Platform.Android.UnitTests;
 using AToolBar = Android.Support.V7.Widget.Toolbar;
 using AView = Android.Views.View;
 
 [assembly: ExportRenderer(typeof(TestShell), typeof(TestShellRenderer))]
-namespace Xamarin.Forms.Platform.Android.UnitTests
+namespace System.Maui.Platform.Android.UnitTests
 {
 	public class ToolbarExtensionsTests : PlatformTestFixture
 	{

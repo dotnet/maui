@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using Xamarin.Forms.CustomAttributes;
+using System.Collections.Generic;
+using System.Maui.CustomAttributes;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	class RadioButtonCoreGalleryPage : CoreGalleryPage<RadioButton>
 	{

@@ -3,7 +3,7 @@ using UIKit;
 using NSAction = System.Action;
 using RectangleF = CoreGraphics.CGRect;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	internal class GlobalCloseContextGestureRecognizer : UIGestureRecognizer
 	{

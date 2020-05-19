@@ -1,9 +1,9 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="..\Environment.Build.props" />
   <PropertyGroup>
-    <Description>iOS Backend for Xamarin.Forms</Description>
-    <AssemblyName>Xamarin.Forms.Platform.iOS</AssemblyName>
+    <Description>iOS Backend for System.Maui</Description>
+    <AssemblyName>System.Maui.Platform.iOS</AssemblyName>
   </PropertyGroup>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -11,7 +11,7 @@
     <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <ProjectGuid>{271193C1-6E7C-429C-A36D-3F1BE5267231}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Xamarin.Forms.Platform.iOS</RootNamespace>
+    <RootNamespace>System.Maui.Platform.iOS</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -113,10 +113,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\WebViewRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CellExtensions.cs" />
-    <Compile Include="..\Xamarin.Forms.Core\Crc64.cs">
+    <Compile Include="..\System.Maui.Core\Crc64.cs">
       <Link>Crc64.cs</Link>
     </Compile>
-    <Compile Include="..\Xamarin.Forms.Core\StreamWrapper.cs">
+    <Compile Include="..\System.Maui.Core\StreamWrapper.cs">
       <Link>StreamWrapper.cs</Link>
     </Compile>
     <Compile Include="CADisplayLinkTicker.cs" />
@@ -309,9 +309,9 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj">
       <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
-      <Name>Xamarin.Forms.Core</Name>
+      <Name>System.Maui.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup Condition="'$(Use2017)' == 'true'">

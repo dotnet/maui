@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-using Xamarin.Forms;
+using System.Maui;
 using NUnit.Framework;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using System.Maui.PlatformConfiguration;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
 
-using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+using WindowsOS = System.Maui.PlatformConfiguration.Windows;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public partial class PlatformSpecific : MasterDetailPage
 	{

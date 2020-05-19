@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Windows.Input;
 using System.Windows.Controls;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public class TextCellRenderer : ICellRenderer
 	{

@@ -1,7 +1,7 @@
-﻿using Android.Views.Accessibility;
-using Xamarin.Forms.Platform.Android.FastRenderers;
+using Android.Views.Accessibility;
+using System.Maui.Platform.Android.FastRenderers;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	class EntryAccessibilityDelegate : global::Android.Views.View.AccessibilityDelegate
 	{

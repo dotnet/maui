@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Linq;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 
 	public class FlowDirectionGalleryLandingPage : ContentPage
@@ -205,16 +205,16 @@ namespace Xamarin.Forms.Controls
 				string parentType = ParentPage.GetType().ToString();
 				switch (parentType)
 				{
-					case "Xamarin.Forms.Controls.FlowDirectionGalleryMDP":
+					case "System.Maui.Controls.FlowDirectionGalleryMDP":
 						FlowDirectionGalleryLandingPage.PushMasterDetailPage(newDirection);
 						break;
-					case "Xamarin.Forms.Controls.FlowDirectionGalleryCarP":
+					case "System.Maui.Controls.FlowDirectionGalleryCarP":
 						FlowDirectionGalleryLandingPage.PushCarouselPage(newDirection);
 						break;
-					case "Xamarin.Forms.Controls.FlowDirectionGalleryNP":
+					case "System.Maui.Controls.FlowDirectionGalleryNP":
 						FlowDirectionGalleryLandingPage.PushNavigationPage(newDirection);
 						break;
-					case "Xamarin.Forms.Controls.FlowDirectionGalleryTP":
+					case "System.Maui.Controls.FlowDirectionGalleryTP":
 						FlowDirectionGalleryLandingPage.PushTabbedPage(newDirection);
 						break;
 				}

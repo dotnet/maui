@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using TChromium = Tizen.WebView.Chromium;
 using TWebView = Tizen.WebView.WebView;
-using Xamarin.Forms.Platform.Tizen.Native;
+using System.Maui.Platform.Tizen.Native;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class WebViewRenderer : ViewRenderer<WebView, WebViewContainer>, IWebViewDelegate
 	{
@@ -59,8 +59,8 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (Control == null)
 			{
 				TChromium.Initialize();
-				Forms.Context.Terminated += (sender, arg) => TChromium.Shutdown();
-				SetNativeControl(new WebViewContainer(Forms.NativeParent));
+				System.Maui.Maui.Context.Terminated += (sender, arg) => TChromium.Shutdown();
+				SetNativeControl(new WebViewContainer(System.Maui.Maui.NativeParent));
 				NativeWebView.LoadStarted += OnLoadStarted;
 				NativeWebView.LoadFinished += OnLoadFinished;
 				NativeWebView.LoadError += OnLoadError;

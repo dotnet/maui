@@ -10,7 +10,7 @@ using AndroidX.Core.Widget;
 using Android.Support.V4.Widget;
 #endif
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class TableViewRenderer : ViewRenderer<TableView, AListView>
 	{
@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			base.OnAttachedToWindow();
 
-			if (Forms.IsLollipopOrNewer && Control != null)
+			if (System.Maui.Maui.IsLollipopOrNewer && Control != null)
 				Control.NestedScrollingEnabled = (Parent.GetParentOfType<NestedScrollView>() != null);
 		}
 

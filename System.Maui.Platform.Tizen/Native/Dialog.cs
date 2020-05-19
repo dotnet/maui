@@ -3,7 +3,7 @@ using ElmSharp;
 using EButton = ElmSharp.Button;
 using EColor = ElmSharp.Color;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 
 	/// <summary>
@@ -37,11 +37,11 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		{
 			if (Device.Idiom == TargetIdiom.Watch)
 			{
-				return new Watch.WatchDialog(Forms.NativeParent, hasAcceptButton);
+				return new Watch.WatchDialog(System.Maui.Maui.NativeParent, hasAcceptButton);
 			}
 			else
 			{
-				return new Dialog(Forms.NativeParent);
+				return new Dialog(System.Maui.Maui.NativeParent);
 			}
 		}
 

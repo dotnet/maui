@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Controls.Tests
+namespace System.Maui.Controls.Tests
 {
 	public interface ITestingPlatformService
 	{

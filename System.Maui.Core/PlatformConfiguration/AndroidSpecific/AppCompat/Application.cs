@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat
+namespace System.Maui.PlatformConfiguration.AndroidSpecific.AppCompat
 {
-	using FormsElement = Forms.Application;
+	using FormsElement = System.Maui.Application;
 
 	public static class Application
 	{

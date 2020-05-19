@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -6,11 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
-using Xamarin.Forms.Platform.WPF.Extensions;
-using Xamarin.Forms.Platform.WPF.Helpers;
-using Xamarin.Forms.Platform.WPF.Interfaces;
+using System.Maui.Platform.WPF.Extensions;
+using System.Maui.Platform.WPF.Helpers;
+using System.Maui.Platform.WPF.Interfaces;
 
-namespace Xamarin.Forms.Platform.WPF.Controls
+namespace System.Maui.Platform.WPF.Controls
 {
 	[TemplatePart(Name = "PART_TopAppBar", Type = typeof(FormsAppBar))]
 	[TemplatePart(Name = "PART_BottomAppBar", Type = typeof(FormsAppBar))]

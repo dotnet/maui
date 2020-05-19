@@ -1,10 +1,10 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Drawing;
 using AppKit;
 using CoreImage;
 using System.Linq;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public class ActivityIndicatorRenderer : ViewRenderer<ActivityIndicator, NSProgressIndicator>
 	{

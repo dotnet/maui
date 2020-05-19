@@ -5,9 +5,9 @@ using Android.Views;
 using Android.Widget;
 using AView = Android.Views.View;
 using Object = Java.Lang.Object;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class CellRenderer : IRegisterable
 	{
@@ -130,7 +130,7 @@ namespace Xamarin.Forms.Platform.Android
 			renderer.OnCellPropertyChanged(sender, e);
 		}
 
-		class RendererHolder : Object
+		class RendererHolder : Java.Lang.Object
 		{
 			readonly WeakReference<CellRenderer> _rendererRef;
 

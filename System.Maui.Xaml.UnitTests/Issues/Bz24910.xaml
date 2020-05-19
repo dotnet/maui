@@ -1,8 +1,8 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-			 xmlns:local="clr-namespace:Xamarin.Forms.Xaml.UnitTests"
+			 xmlns:local="clr-namespace:System.Maui.Xaml.UnitTests"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			 x:Class="Xamarin.Forms.Xaml.UnitTests.Bz24910" >
+			 x:Class="System.Maui.Xaml.UnitTests.Bz24910" >
 	<StackLayout>
 		<local:Bz24910Control x:Name="control0" Text="CustomButton" NullableInt="1" NullableDouble="2.2" />
 		<local:Bz24910Control x:Name="control1" Text="CustomButton" NullableDouble="2"  />

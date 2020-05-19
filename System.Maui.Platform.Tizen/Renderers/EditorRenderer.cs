@@ -1,8 +1,8 @@
 using System;
-using Xamarin.Forms.Platform.Tizen.Native;
+using System.Maui.Platform.Tizen.Native;
 using EEntry = ElmSharp.Entry;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class EditorRenderer : ViewRenderer<Editor, EEntry>
 	{
@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		protected virtual EEntry CreateNativeControl()
 		{
 			// Multiline EditField style is only available on Mobile and TV profile
-			var entry = Device.Idiom == TargetIdiom.Phone || Device.Idiom == TargetIdiom.TV ? new Native.EditfieldEntry(Forms.NativeParent, "multiline") : new Native.Entry(Forms.NativeParent)
+			var entry = Device.Idiom == TargetIdiom.Phone || Device.Idiom == TargetIdiom.TV ? new Native.EditfieldEntry(System.Maui.Maui.NativeParent, "multiline") : new Native.Entry(System.Maui.Maui.NativeParent)
 			{
 				IsSingleLine = false,
 			};

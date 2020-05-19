@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using NUnit.Framework;
 using System.Xml;
 
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 using System.Reflection;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public class FooMarkupExtension : IMarkupExtension
 	{
@@ -93,7 +93,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		{
 			base.Setup ();
 			var nsManager = new XmlNamespaceManager (new NameTable ());
-			nsManager.AddNamespace ("local", "clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests");
+			nsManager.AddNamespace ("local", "clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests");
 			nsManager.AddNamespace ("x", "http://schemas.microsoft.com/winfx/2006/xaml");
 
 			typeResolver = new Internals.XamlTypeResolver (nsManager, XamlParser.GetElementType, Assembly.GetCallingAssembly ());
@@ -148,7 +148,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			<Label 
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests""
+				xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests""
 				Text=""{local:AppendMarkupExtension Value0=Foo, Value1=Bar}""
 			/>";
 
@@ -162,7 +162,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		{
 			var xaml = @"
 			<forms:Label 
-				xmlns=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests""
+				xmlns=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				xmlns:forms=""http://xamarin.com/schemas/2014/forms""
 				Text=""{AppendMarkupExtension Value0=Foo, Value1=Bar}""
@@ -180,7 +180,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			<Label
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests""
+				xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests""
 				TextColor=""{local:ColorMarkup R=100, G=80, B=60}""/>";
 
 			var label = new Label ().LoadFromXaml (xaml);

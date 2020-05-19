@@ -1,8 +1,8 @@
-﻿#if HAVE_OPENTK
+#if HAVE_OPENTK
 using System;
 using OpenTK.Graphics.OpenGL;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
     public class BasicOpenGLGallery : ContentPage
     {

@@ -1,11 +1,11 @@
-﻿using CoreGraphics;
+using CoreGraphics;
 using Foundation;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	internal sealed class VerticalDefaultCell : DefaultCell
 	{
-		public static NSString ReuseId = new NSString("Xamarin.Forms.Platform.iOS.VerticalDefaultCell");
+		public static NSString ReuseId = new NSString("System.Maui.Platform.iOS.VerticalDefaultCell");
 
 		[Export("initWithFrame:")]
 		[Internals.Preserve(Conditional = true)]

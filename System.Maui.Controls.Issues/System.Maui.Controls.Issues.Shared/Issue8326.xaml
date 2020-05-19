@@ -1,9 +1,9 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <controls:TestContentPage
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:controls="clr-namespace:Xamarin.Forms.Controls"
-    x:Class="Xamarin.Forms.Controls.Issues.Issue8326">
+    xmlns:controls="clr-namespace:System.Maui.Controls"
+    x:Class="System.Maui.Controls.Issues.Issue8326">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />

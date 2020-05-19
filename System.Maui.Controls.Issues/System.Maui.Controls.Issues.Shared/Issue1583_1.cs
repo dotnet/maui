@@ -1,5 +1,5 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
 #if UITEST
 using System;
@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1583, "WebView fails to load from urlwebviewsource with non-ascii characters (works with Uri)", PlatformAffected.iOS, issueTestNumber: 1)]
@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Controls.Issues
 			_label = new Label { AutomationId = "label" };
 
 			var hashButton = new Button { Text = "1:hash", HorizontalOptions = LayoutOptions.FillAndExpand, AutomationId = "hashButton" };
-			hashButton.Clicked += (sender, args) => Load("https://github.com/xamarin/Xamarin.Forms/issues/2736#issuecomment-389443737");
+			hashButton.Clicked += (sender, args) => Load("https://github.com/xamarin/System.Maui/issues/2736#issuecomment-389443737");
 
 			var unicodeButton = new Button { Text = "2:unicode", HorizontalOptions = LayoutOptions.FillAndExpand, AutomationId = "unicodeButton" };
 			unicodeButton.Clicked += (sender, args) => Load("https://www.google.no/maps/place/Skøyen");

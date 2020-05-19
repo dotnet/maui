@@ -1,7 +1,7 @@
-﻿using Windows.UI.Xaml;
-using WFlowDirection = Windows.UI.Xaml.FlowDirection;
+using global::Windows.UI.Xaml;
+using WFlowDirection = global::Windows.UI.Xaml.FlowDirection;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	internal static class FlowDirectionExtensions
 	{

@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Core.UITests
+namespace System.Maui.Core.UITests
 {
 	[Ignore("Test only meant for Mac and iOS, besides needing API keys for Android and Windows is also failing on iOS9, should be enable later when iOS9 support is dropped")]
 	[TestFixture]

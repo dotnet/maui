@@ -1,4 +1,4 @@
-﻿using OpenTK;
+using OpenTK;
 using OpenTK.Graphics;
 using System;
 using System.Windows.Threading;
@@ -6,7 +6,7 @@ using System.ComponentModel;
 using System.Windows.Forms;
 using System.Windows.Forms.Integration;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
     public class OpenGLViewRenderer : ViewRenderer<OpenGLView, WindowsFormsHost>
     {

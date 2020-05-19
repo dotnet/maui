@@ -1,6 +1,6 @@
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.Tizen;
-using MediaPlayerImpl = Xamarin.Forms.Platform.Tizen.Native.MediaPlayerImpl;
+using System.Maui;
+using System.Maui.Platform.Tizen;
+using MediaPlayerImpl = System.Maui.Platform.Tizen.Native.MediaPlayerImpl;
 
 [assembly: Dependency(typeof(ResourcesProvider))]
 [assembly: Dependency(typeof(Deserializer))]
@@ -65,4 +65,4 @@ using MediaPlayerImpl = Xamarin.Forms.Platform.Tizen.Native.MediaPlayerImpl;
 [assembly: ExportHandler(typeof(PanGestureRecognizer), typeof(PanGestureHandler))]
 [assembly: ExportHandler(typeof(SwipeGestureRecognizer), typeof(SwipeGestureHandler))]
 
-[assembly: ExportRenderer(typeof(Shell), typeof(Xamarin.Forms.Platform.Tizen.Watch.ShellRenderer), TargetIdiom.Watch)]
+[assembly: ExportRenderer(typeof(Shell), typeof(System.Maui.Platform.Tizen.Watch.ShellRenderer), TargetIdiom.Watch)]

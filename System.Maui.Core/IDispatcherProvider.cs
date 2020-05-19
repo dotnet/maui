@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public interface IDispatcherProvider

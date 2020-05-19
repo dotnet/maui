@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using Xamarin.Forms;
-using Xamarin.Forms.Core.UnitTests;
-using Xamarin.Forms.Xaml;
+using System.Maui;
+using System.Maui.Core.UnitTests;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public class Bz53318ListView : ListView
 	{

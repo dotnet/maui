@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.ControlGallery.WPF
+namespace System.Maui.ControlGallery.WPF
 {
     /// <summary>
     /// Logique d'interaction pour App.xaml

@@ -1,10 +1,10 @@
-﻿using Windows.UI.Text;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Xamarin.Forms.Internals;
-using WStyle = Windows.UI.Xaml.Style;
+using global::Windows.UI.Text;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using System.Maui.Internals;
+using WStyle = global::Windows.UI.Xaml.Style;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	internal sealed class WindowsResourcesProvider : ISystemResourcesProvider
 	{
@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		Style GetStyle(object nativeKey, TextBlock prototype)
 		{
-			var style = (WStyle)Windows.UI.Xaml.Application.Current.Resources[nativeKey];
+			var style = (WStyle)global::Windows.UI.Xaml.Application.Current.Resources[nativeKey];
 
 			prototype.Style = style;
 

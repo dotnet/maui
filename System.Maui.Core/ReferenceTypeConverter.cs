@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Globalization;
 
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
-using Xamarin.Forms.Xaml.Internals;
+using System.Maui.Internals;
+using System.Maui.Xaml;
+using System.Maui.Xaml.Internals;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public sealed class ReferenceTypeConverter : TypeConverter, IExtendedTypeConverter
 	{

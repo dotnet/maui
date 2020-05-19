@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
+namespace System.Maui.Controls.GalleryPages.CollectionViewGalleries
 {
 	internal class ExampleTemplates
 	{

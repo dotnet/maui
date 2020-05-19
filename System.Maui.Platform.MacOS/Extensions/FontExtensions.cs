@@ -1,8 +1,8 @@
-﻿using System.Diagnostics;
-using Xamarin.Forms.Internals;
+using System.Diagnostics;
+using System.Maui.Internals;
 using AppKit;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public static partial class FontExtensions
 	{

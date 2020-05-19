@@ -1,10 +1,10 @@
-﻿using Gtk;
+using Gtk;
 using System.ComponentModel;
 using System.Linq;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using System.Maui.Internals;
+using System.Maui.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers
+namespace System.Maui.Platform.GTK.Renderers
 {
 	public class PickerRenderer : ViewRenderer<Picker, ComboBox>
 	{

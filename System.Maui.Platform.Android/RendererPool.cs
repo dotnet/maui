@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Android.Views;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public sealed class RendererPool
 	{

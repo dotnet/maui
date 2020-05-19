@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public interface IShellItemTransition
 	{

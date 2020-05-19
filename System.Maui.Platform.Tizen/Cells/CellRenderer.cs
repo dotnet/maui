@@ -1,7 +1,7 @@
 using ElmSharp;
 using System.Collections.Generic;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public abstract class CellRenderer : IRegisterable
 	{

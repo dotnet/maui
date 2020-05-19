@@ -3,7 +3,7 @@ using System.Drawing;
 using System.ComponentModel;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class StepperRenderer : ViewRenderer<Stepper, UIStepper>
 	{

@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.ComponentModel;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls.Primitives;
+using global::Windows.UI.Xaml.Input;
+using global::Windows.UI.Xaml.Media;
+using global::Windows.UI.Xaml.Media.Imaging;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class SliderRenderer : ViewRenderer<Slider, FormsSlider>
 	{
@@ -71,11 +71,11 @@ namespace Xamarin.Forms.Platform.UWP
 					//
 					// The VerticalAlignment needs to be set as well since a control would not actually be
 					// centered if a larger HeightRequest is set.
-					if (Element.VerticalOptions.Alignment == LayoutAlignment.Center && Control.Orientation == Windows.UI.Xaml.Controls.Orientation.Horizontal)
+					if (Element.VerticalOptions.Alignment == LayoutAlignment.Center && Control.Orientation == global::Windows.UI.Xaml.Controls.Orientation.Horizontal)
 					{
 						Control.VerticalAlignment = VerticalAlignment.Center;
 
-						slider.Margin = new Windows.UI.Xaml.Thickness(0, 7, 0, 0);
+						slider.Margin = new global::Windows.UI.Xaml.Thickness(0, 7, 0, 0);
 					}
 
 					_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
@@ -194,7 +194,7 @@ namespace Xamarin.Forms.Platform.UWP
 				}
 				else
 				{
-					Control.ClearValue(Windows.UI.Xaml.Controls.Control.BackgroundProperty);
+					Control.ClearValue(global::Windows.UI.Xaml.Controls.Control.BackgroundProperty);
 				}
 			}
 		}

@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	public abstract class MultiPageTests<T> : BaseTestFixture
 		where T : Page

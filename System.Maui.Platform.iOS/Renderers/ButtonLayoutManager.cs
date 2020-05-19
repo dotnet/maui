@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	// TODO: The entire layout system. iOS buttons were not designed for
 	//       anything but image left, text right, single line layouts.

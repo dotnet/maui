@@ -11,10 +11,10 @@ using Android.Support.V4.Widget;
 #endif
 using Android.Views;
 using Android.Widget;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class ScrollViewRenderer : NestedScrollView, IVisualElementRenderer, IEffectControlProvider, IScrollView
 	{
@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use ScrollViewRenderer(Context) instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public ScrollViewRenderer() : base(Forms.Context)
+		public ScrollViewRenderer() : base(System.Maui.Maui.Context)
 		{
 		}
 

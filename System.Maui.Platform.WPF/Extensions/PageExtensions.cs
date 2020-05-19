@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Windows;
 
-namespace Xamarin.Forms.Platform.WPF.Extensions
+namespace System.Maui.Platform.WPF.Extensions
 {
 	public static class PageExtensions
 	{
 		public static FrameworkElement ToFrameworkElement(this Page view)
 		{
-			if (!Forms.IsInitialized)
-				throw new InvalidOperationException("Call Forms.Init() before this");
+			if (!System.Maui.Maui.IsInitialized)
+				throw new InvalidOperationException("Call System.Maui.Maui.Init() before this");
 
 			if (!(view.RealParent is Application))
 			{

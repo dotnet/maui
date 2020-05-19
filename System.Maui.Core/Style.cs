@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[ContentProperty("Setters")]
 	public sealed class Style : IStyle
 	{
-		internal const string StyleClassPrefix = "Xamarin.Forms.StyleClass.";
+		internal const string StyleClassPrefix = "System.Maui.StyleClass.";
 
 		const int CleanupTrigger = 128;
 		int _cleanupThreshold = CleanupTrigger;

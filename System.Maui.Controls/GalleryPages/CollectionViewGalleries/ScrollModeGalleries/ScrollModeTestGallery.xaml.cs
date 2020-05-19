@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
+using System.Maui;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ScrollModeGalleries
+namespace System.Maui.Controls.GalleryPages.CollectionViewGalleries.ScrollModeGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class ScrollModeTestGallery : ContentPage

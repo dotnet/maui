@@ -1,12 +1,12 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class FlexLayoutAlignItemsTests : BaseTestFixture

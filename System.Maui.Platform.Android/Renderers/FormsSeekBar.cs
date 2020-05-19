@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using Android.Widget;
 using Android.Content;
 using Android.Views;
 
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal class FormsSeekBar : SeekBar
 	{

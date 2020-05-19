@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	public sealed class HeightConverter : Windows.UI.Xaml.Data.IValueConverter
+	public sealed class HeightConverter : global::Windows.UI.Xaml.Data.IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{

@@ -1,5 +1,5 @@
-﻿using System;
-namespace Xamarin.Forms
+using System;
+namespace System.Maui
 {
 	public interface IEmbeddedFontLoader
 	{

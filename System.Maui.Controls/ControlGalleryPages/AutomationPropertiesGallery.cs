@@ -1,5 +1,5 @@
-﻿
-namespace Xamarin.Forms.Controls
+
+namespace System.Maui.Controls
 {
 	public class AutomationPropertiesGallery : ContentPage
 	{

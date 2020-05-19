@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Linq;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.PerformanceGallery.Scenarios
+namespace System.Maui.Controls.GalleryPages.PerformanceGallery.Scenarios
 {
 	[Preserve(AllMembers = true)]
 	internal class DatePickerScenario1 : PerformanceScenario

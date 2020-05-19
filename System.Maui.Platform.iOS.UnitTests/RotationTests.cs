@@ -1,10 +1,10 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using static Xamarin.Forms.Core.UITests.NumericExtensions;
-using static Xamarin.Forms.Core.UITests.ParsingUtils;
+using static System.Maui.Core.UITests.NumericExtensions;
+using static System.Maui.Core.UITests.ParsingUtils;
 
-namespace Xamarin.Forms.Platform.iOS.UnitTests
+namespace System.Maui.Platform.iOS.UnitTests
 {
 	[TestFixture]
 	public class RotationTests : PlatformTestFixture 

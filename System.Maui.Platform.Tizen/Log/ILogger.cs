@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	/// <summary>
 	/// Reports log messages with various log levels.

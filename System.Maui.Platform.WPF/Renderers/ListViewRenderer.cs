@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -7,12 +7,12 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
-using Xamarin.Forms.Platform.WPF.Helpers;
+using System.Maui.Platform.WPF.Helpers;
 using WList = System.Windows.Controls.ListView;
 using WGrid = System.Windows.Controls.Grid;
 using WpfScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public class ListViewRenderer : ViewRenderer<ListView, WGrid>
 	{

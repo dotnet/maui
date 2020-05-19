@@ -1,11 +1,11 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using static Xamarin.Forms.DependencyService;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
+using static System.Maui.DependencyService;
 using System.Linq;
 using System.Threading.Tasks;
 using System;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 4097, "Dependency service thread safety test", PlatformAffected.All)]

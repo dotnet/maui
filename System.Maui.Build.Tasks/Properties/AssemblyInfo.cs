@@ -1,6 +1,6 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 #if DEBUG
-[assembly:InternalsVisibleTo("Xamarin.Forms.Xaml.UnitTests")]
+[assembly:InternalsVisibleTo("System.Maui.Xaml.UnitTests")]
 #endif

@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using NUnit.Framework;
 using Mono.Cecil;
-using Xamarin.Forms.Build.Tasks;
+using System.Maui.Build.Tasks;
 using System.Collections.Generic;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public class Effect
 	{
 	}
 }
-namespace Xamarin.Forms.XamlcUnitTests
+namespace System.Maui.XamlcUnitTests
 {
 	[TestFixture]
 	public class TypeReferenceExtensionsTests
@@ -156,7 +156,7 @@ namespace Xamarin.Forms.XamlcUnitTests
 		[TestCase(typeof(Bar<string>), typeof(Foo), ExpectedResult = true)]
 		[TestCase(typeof(Bar<string>), typeof(Foo<bool>), ExpectedResult = false)]
 		[TestCase(typeof(Bar<string>), typeof(Foo<string>), ExpectedResult = true)]
-		[TestCase(typeof(Qux<string>), typeof(double), ExpectedResult = false)] //https://github.com/xamarin/Xamarin.Forms/issues/1497
+		[TestCase(typeof(Qux<string>), typeof(double), ExpectedResult = false)] //https://github.com/xamarin/System.Maui/issues/1497
 		[TestCase(typeof(IGrault<object>), typeof(IGrault<string>), ExpectedResult = false)]
 		[TestCase(typeof(IGrault<string>), typeof(IGrault<object>), ExpectedResult = false)]
 		[TestCase(typeof(ICovariant<object>), typeof(ICovariant<string>), ExpectedResult = false)]
@@ -176,7 +176,7 @@ namespace Xamarin.Forms.XamlcUnitTests
 			var core = typeof(BindableObject).Assembly;
 			var test = typeof(TypeReferenceExtensionsTests).Assembly;
 
-			Assert.False(TestInheritsFromOrImplements(test.GetType("Xamarin.Forms.Effect"), core.GetType("Xamarin.Forms.Effect")));
+			Assert.False(TestInheritsFromOrImplements(test.GetType("System.Maui.Effect"), core.GetType("System.Maui.Effect")));
 		}
 
 		[Test]
@@ -234,7 +234,7 @@ namespace Xamarin.Forms.XamlcUnitTests
 			IList<TypeReference> arguments;
 			var garply = module.ImportReference(typeof(Garply<System.Byte>));
 
-			Assert.That(garply.ImplementsGenericInterface("Xamarin.Forms.XamlcUnitTests.TypeReferenceExtensionsTests/IGrault`1<T>", out igrault, out arguments));
+			Assert.That(garply.ImplementsGenericInterface("System.Maui.XamlcUnitTests.TypeReferenceExtensionsTests/IGrault`1<T>", out igrault, out arguments));
 
 			Assert.AreEqual("System", igrault.GenericArguments[0].Namespace);
 			Assert.AreEqual("Byte", igrault.GenericArguments[0].Name);

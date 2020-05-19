@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Globalization;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	[TestFixture]
 	public class Issue1493

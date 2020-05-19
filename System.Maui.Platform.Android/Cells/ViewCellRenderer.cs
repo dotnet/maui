@@ -1,13 +1,13 @@
 using Android.Content;
 using Android.Views;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using System;
 using System.Linq;
 using Android.Runtime;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class ViewCellRenderer : CellRenderer
 	{
@@ -243,7 +243,7 @@ namespace Xamarin.Forms.Platform.Android
 				double height = Context.FromPixels(b - t);
 
 				Performance.Start(reference, "Element.Layout");
-				Xamarin.Forms.Layout.LayoutChildIntoBoundingRegion(_view.Element, new Rectangle(0, 0, width, height));
+				System.Maui.Layout.LayoutChildIntoBoundingRegion(_view.Element, new Rectangle(0, 0, width, height));
 				Performance.Stop(reference, "Element.Layout");
 
 				_view.UpdateLayout();
@@ -289,7 +289,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			void UpdateWatchForLongPress()
 			{
-				var vw = _view.Element as Xamarin.Forms.View;
+				var vw = _view.Element as System.Maui.View;
 				if (vw == null)
 				{
 					return;

@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Platform;
+using System.Maui.Platform;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[ContentProperty("Content")]
 	[RenderWith(typeof(_SwipeViewRenderer))]

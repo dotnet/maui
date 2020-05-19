@@ -12,9 +12,9 @@ using Android.Support.V4.Widget;
 using Android.Views;
 using AView = Android.Views.View;
 using Android.OS;
-using Xamarin.Forms.Platform.Android.FastRenderers;
+using System.Maui.Platform.Android.FastRenderers;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 
 	public class MasterDetailRenderer : DrawerLayout, IVisualElementRenderer, DrawerLayout.IDrawerListener
@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use MasterDetailRenderer(Context) instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public MasterDetailRenderer() : base(Forms.Context)
+		public MasterDetailRenderer() : base(System.Maui.Maui.Context)
 		{
 		}
 

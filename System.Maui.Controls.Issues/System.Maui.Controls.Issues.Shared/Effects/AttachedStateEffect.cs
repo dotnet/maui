@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.Effects
+namespace System.Maui.Controls.Effects
 {
 
 	[Preserve(AllMembers = true)]

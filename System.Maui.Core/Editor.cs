@@ -1,9 +1,9 @@
 using System;
 using System.ComponentModel;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform;
+using System.Maui.Internals;
+using System.Maui.Platform;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[RenderWith(typeof(_EditorRenderer))]
 	public class Editor : InputView, IEditorController, IFontElement, IElementConfiguration<Editor>

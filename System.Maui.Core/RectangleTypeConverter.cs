@@ -1,9 +1,9 @@
 using System;
 using System.Globalization;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
-	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.RectangleTypeConverter")]
+	[Xaml.ProvideCompiled("System.Maui.Core.XamlC.RectangleTypeConverter")]
 	[Xaml.TypeConversion(typeof(Rectangle))]
 	public class RectangleTypeConverter : TypeConverter
 	{

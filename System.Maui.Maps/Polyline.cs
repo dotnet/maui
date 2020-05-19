@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace Xamarin.Forms.Maps
+namespace System.Maui.Maps
 {
 	public class Polyline : MapElement
 	{

@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.StyleSheets;
+using System.Maui.Internals;
+using System.Maui.StyleSheets;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public class NavigableElement : Element, INavigationProxy, IStyleSelectable
 	{

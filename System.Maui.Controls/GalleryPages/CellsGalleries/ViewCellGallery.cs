@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	public class ViewCellGallery : ContentPage
 	{
@@ -68,7 +68,7 @@ namespace Xamarin.Forms.Controls
 			{
 				albums[n] =
 					string.Format(
-						"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Xamarin.Forms.Controls/coffee.png?ticks={0}", n);
+						"https://raw.githubusercontent.com/xamarin/System.Maui/master/System.Maui.Controls/coffee.png?ticks={0}", n);
 			}
 
 			var label = new Label { Text = "I have not been selected" };

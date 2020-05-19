@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Mono.Cecil;
-using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace System.Maui.Build.Tasks
 {
 	static class MethodDefinitionExtensions
 	{

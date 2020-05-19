@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public class StreamImageSource : ImageSource, IStreamImageSource
 	{

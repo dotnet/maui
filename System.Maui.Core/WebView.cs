@@ -1,14 +1,14 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform;
+using System.Maui.Internals;
+using System.Maui.Platform;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Net;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[RenderWith(typeof(_WebViewRenderer))]
 	public class WebView : View, IWebViewController, IElementConfiguration<WebView>
@@ -98,7 +98,7 @@ namespace Xamarin.Forms
 				return null;
 
 			//make all the platforms mimic Android's implementation, which is by far the most complete.
-			if (Xamarin.Forms.Device.RuntimePlatform != "Android")
+			if (System.Maui.Device.RuntimePlatform != "Android")
 			{
 				script = EscapeJsString(script);
 				script = "try{JSON.stringify(eval('" + script + "'))}catch(e){'null'};";

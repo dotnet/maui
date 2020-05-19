@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using Xamarin.Forms.CustomAttributes;
+using System.Maui.CustomAttributes;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Issue (IssueTracker.Bugzilla, 29229, "ListView crash on Windows Phone", PlatformAffected.WinPhone, NavigationBehavior.PushModalAsync)]
     public class Bugzilla29229

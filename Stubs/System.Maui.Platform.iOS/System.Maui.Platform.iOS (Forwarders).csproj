@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -8,10 +8,10 @@
     <ProjectGuid>{39B3457F-01D8-43D0-8E84-D8C4F73CF48D}</ProjectGuid>
     <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
-    <RootNamespace>Xamarin.Forms.Platform</RootNamespace>
+    <RootNamespace>System.Maui.Platform</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
-    <AssemblyName>Xamarin.Forms.Platform</AssemblyName>
-    <PackageId>Xamarin.Forms.Platform.iOSForwarders</PackageId>
+    <AssemblyName>System.Maui.Platform</AssemblyName>
+    <PackageId>System.Maui.Platform.iOSForwarders</PackageId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,19 +33,19 @@
     <CodesignKey>iPhone Developer</CodesignKey>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\Xamarin.Forms.Platform.cs">
-      <Link>Xamarin.Forms.Platform.cs</Link>
+    <Compile Include="..\System.Maui.Platform.cs">
+      <Link>System.Maui.Platform.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\..\System.Maui.Core\System.Maui.Core.csproj">
       <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
-      <Name>Xamarin.Forms.Core</Name>
+      <Name>System.Maui.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj">
+    <ProjectReference Include="..\..\System.Maui.Platform.iOS\System.Maui.Platform.iOS.csproj">
       <Project>{271193c1-6e7c-429c-a36d-3f1be5267231}</Project>
-      <Name>Xamarin.Forms.Platform.iOS</Name>
+      <Name>System.Maui.Platform.iOS</Name>
       <IsAppExtension>false</IsAppExtension>
       <IsWatchApp>false</IsWatchApp>
     </ProjectReference>

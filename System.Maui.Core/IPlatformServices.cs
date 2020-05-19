@@ -4,9 +4,9 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Internals
+namespace System.Maui.Internals
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public interface IPlatformServices

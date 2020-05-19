@@ -5,7 +5,7 @@ using Android.Content;
 using Android.Graphics;
 using Android.Util;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public sealed class FontImageSourceHandler : IImageSourceHandler
 	{

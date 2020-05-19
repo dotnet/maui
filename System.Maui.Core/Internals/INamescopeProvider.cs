@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.ComponentModel;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Xaml.Internals
+namespace System.Maui.Xaml.Internals
 {
 	[Obsolete]
 	[EditorBrowsable(EditorBrowsableState.Never)]

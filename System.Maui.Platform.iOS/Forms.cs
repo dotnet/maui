@@ -11,25 +11,25 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using Foundation;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using Xamarin.Forms;
+using System.Maui.PlatformConfiguration;
+using System.Maui.PlatformConfiguration.iOSSpecific;
+using System.Maui;
 
 #if __MOBILE__
 using UIKit;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui.Platform.iOS;
 using TNativeView = UIKit.UIView;
 #else
 using AppKit;
-using Xamarin.Forms.Platform.MacOS;
+using System.Maui.Platform.MacOS;
 using TNativeView = AppKit.NSView;
 #endif
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
-	public static class Forms
+	public static class Maui
 	{
 		public static bool IsInitialized { get; private set; }
 

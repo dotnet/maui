@@ -2,13 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using ElmSharp;
 using ElmSharp.Wearable;
 using EScroller = ElmSharp.Scroller;
 using EColor = ElmSharp.Color;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	/// <summary>
 	/// Type alias which identifies list of cells whose data model was transformed by Xamarin.
@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 	public class ListView : GenList
 	{
 		/// <summary>
-		/// ItemContext helper class. This represents the association between Xamarin.Forms.Cell and
+		/// ItemContext helper class. This represents the association between System.Maui.Cell and
 		/// native elements. It also stores useful context for them.
 		/// </summary>
 		public class ItemContext
@@ -515,7 +515,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				return cache[type];
 
 			CellRenderer renderer = null;
-			renderer = Forms.GetHandler<CellRenderer>(type);
+			renderer = System.Maui.Maui.GetHandler<CellRenderer>(type);
 
 			if (renderer == null)
 			{
@@ -663,11 +663,11 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 						if (element.MinimumHeightRequest == -1)
 						{
 							SizeRequest request = element.Measure(double.PositiveInfinity, double.PositiveInfinity);
-							renderer.NativeView.MinimumHeight = Forms.ConvertToScaledPixel(request.Request.Height);
+							renderer.NativeView.MinimumHeight = System.Maui.Maui.ConvertToScaledPixel(request.Request.Height);
 						}
 						else
 						{
-							renderer.NativeView.MinimumHeight = Forms.ConvertToScaledPixel(element.MinimumHeightRequest);
+							renderer.NativeView.MinimumHeight = System.Maui.Maui.ConvertToScaledPixel(element.MinimumHeightRequest);
 						}
 
 						(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();

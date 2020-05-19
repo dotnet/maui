@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using NUnit.Framework;
-using Xamarin.Forms;
+using System.Maui;
 using System.Globalization;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Collections.Generic;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class MultiBindingTests : BaseTestFixture

@@ -3,15 +3,15 @@ using System.ComponentModel;
 using Android.Content;
 using Android.Webkit;
 using Android.OS;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using Xamarin.Forms.Internals;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
+using System.Maui.Internals;
 using MixedContentHandling = Android.Webkit.MixedContentHandling;
 using AWebView = Android.Webkit.WebView;
 using System.Threading.Tasks;
 using System.Net;
 using System.Collections.Generic;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class WebViewRenderer : ViewRenderer<WebView, AWebView>, IWebViewDelegate
 	{
@@ -362,7 +362,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateMixedContentMode()
 		{
-			if (Control != null && ((int)Forms.SdkInt >= 21))
+			if (Control != null && ((int)System.Maui.Maui.SdkInt >= 21))
 			{
 				Control.Settings.MixedContentMode = (MixedContentHandling)Element.OnThisPlatform().MixedContentMode();
 			}

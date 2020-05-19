@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.Pages.UnitTests
+namespace System.Maui.Pages.UnitTests
 {
 	[TestFixture]
 	public class DataPageTests

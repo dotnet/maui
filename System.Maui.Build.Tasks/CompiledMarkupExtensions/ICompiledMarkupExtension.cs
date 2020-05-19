@@ -1,9 +1,9 @@
-﻿using Mono.Cecil;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System.Collections.Generic;
-using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace System.Maui.Build.Tasks
 {
 	interface ICompiledMarkupExtension
 	{

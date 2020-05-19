@@ -1,11 +1,11 @@
-﻿using CoreGraphics;
+using CoreGraphics;
 using Foundation;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	internal sealed class HorizontalSupplementaryView : HeightConstrainedTemplatedCell
 	{
-		public static NSString ReuseId = new NSString("Xamarin.Forms.Platform.iOS.HorizontalSupplementaryView");
+		public static NSString ReuseId = new NSString("System.Maui.Platform.iOS.HorizontalSupplementaryView");
 
 		[Export("initWithFrame:")]
 		[Internals.Preserve(Conditional = true)]

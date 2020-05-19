@@ -1,7 +1,7 @@
 using Android.Content;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	[BroadcastReceiver(Enabled = true, Exported = false)]
 	public class PowerSaveModeBroadcastReceiver : BroadcastReceiver

@@ -1,7 +1,7 @@
 using EColor = ElmSharp.Color;
 using ESize = ElmSharp.Size;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	public interface IButton
 	{

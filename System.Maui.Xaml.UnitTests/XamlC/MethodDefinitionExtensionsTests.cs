@@ -1,15 +1,15 @@
-﻿using System;
+using System;
 using System.Linq;
 
 using Mono.Cecil;
 
-using Xamarin.Forms.Build.Tasks;
+using System.Maui.Build.Tasks;
 
 using NUnit.Framework;
 using System.Collections.Generic;
-using Xamarin.Forms.Xaml.UnitTests;
+using System.Maui.Xaml.UnitTests;
 
-namespace Xamarin.Forms.XamlcUnitTests
+namespace System.Maui.XamlcUnitTests
 {
 	[TestFixture]
 	public class MethodDefinitionExtensionsTests

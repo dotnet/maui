@@ -1,7 +1,7 @@
-﻿using System.Windows;
-using Xamarin.Forms.Platform.WPF.Enums;
+using System.Windows;
+using System.Maui.Platform.WPF.Enums;
 
-namespace Xamarin.Forms.Platform.WPF.Controls
+namespace System.Maui.Platform.WPF.Controls
 {
 	public class FormsSymbolIcon : FormsElementIcon
 	{

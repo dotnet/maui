@@ -8,7 +8,7 @@ using Android.Graphics;
 using Android.Views;
 using Android.Widget;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class AHorizontalScrollView : HorizontalScrollView, IScrollView
 	{

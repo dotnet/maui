@@ -2,7 +2,7 @@ using System;
 using ElmSharp;
 using Tizen.Uix.InputMethod;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class IMEApplication : FormsApplication
 	{

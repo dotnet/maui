@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	internal class PlatformNavigation : INavigation, IDisposable
 	{

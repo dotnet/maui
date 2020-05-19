@@ -1,10 +1,10 @@
-﻿using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.GTK;
-using Xamarin.Forms.Controls.Issues.Helpers;
-using Xamarin.Forms.Platform.GTK;
+using System.Maui;
+using System.Maui.ControlGallery.GTK;
+using System.Maui.Controls.Issues.Helpers;
+using System.Maui.Platform.GTK;
 
 [assembly: Dependency(typeof(SampleNativeControl))]
-namespace Xamarin.Forms.ControlGallery.GTK
+namespace System.Maui.ControlGallery.GTK
 {
 	public class SampleNativeControl : ISampleNativeControl
 	{

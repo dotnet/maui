@@ -1,13 +1,13 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
-using Xamarin.Forms.Platform.UWP;
-using WColor = Windows.UI.Color;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Media;
+using System.Maui.Platform.UWP;
+using WColor = global::Windows.UI.Color;
 
-namespace Xamarin.Forms.Platform.UAP.UnitTests
+namespace System.Maui.Platform.UAP.UnitTests
 {
 	[TestFixture]
 	public class BackgroundColorTests : PlatformTestFixture

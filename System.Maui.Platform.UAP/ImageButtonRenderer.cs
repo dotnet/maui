@@ -1,16 +1,16 @@
 using System;
 using System.ComponentModel;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
-using Xamarin.Forms.Internals;
-using WThickness = Windows.UI.Xaml.Thickness;
-using WImage = Windows.UI.Xaml.Controls.Image;
-using Windows.UI.Xaml.Input;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Media;
+using global::Windows.UI.Xaml.Media.Imaging;
+using System.Maui.Internals;
+using WThickness = global::Windows.UI.Xaml.Thickness;
+using WImage = global::Windows.UI.Xaml.Controls.Image;
+using global::Windows.UI.Xaml.Input;
 using System.Threading.Tasks;
 using System.Diagnostics;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class ImageButtonRenderer : ViewRenderer<ImageButton, FormsButton>, IImageVisualElementRenderer
 	{
@@ -57,7 +57,7 @@ namespace Xamarin.Forms.Platform.UWP
 			// The size needs to be the entire size needed for the button (including padding, borders, etc.)
 			// Not just the size of the image.
 			var btn = Control;
-			btn.Measure(new Windows.Foundation.Size(widthConstraint, heightConstraint));
+			btn.Measure(new global::Windows.Foundation.Size(widthConstraint, heightConstraint));
 
 			var size = new Size(Math.Ceiling(btn.DesiredSize.Width), Math.Ceiling(btn.DesiredSize.Height));
 
@@ -77,7 +77,7 @@ namespace Xamarin.Forms.Platform.UWP
 					_formsButton.BorderThickness = new WThickness(0);
 					_formsButton.Background = null;
 
-					_image = new Windows.UI.Xaml.Controls.Image()
+					_image = new global::Windows.UI.Xaml.Controls.Image()
 					{
 						VerticalAlignment = VerticalAlignment.Center,
 						HorizontalAlignment = HorizontalAlignment.Center,
@@ -175,7 +175,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			if (Element.UseFormsVsm())
 			{
-				InterceptVisualStateManager.Hook(Control.GetFirstDescendant<Windows.UI.Xaml.Controls.Grid>(), Control, Element);
+				InterceptVisualStateManager.Hook(Control.GetFirstDescendant<global::Windows.UI.Xaml.Controls.Grid>(), Control, Element);
 			}
 		}
 
@@ -243,12 +243,12 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateBackground()
 		{
-			Control.BackgroundColor = Element.BackgroundColor != Color.Default ? Element.BackgroundColor.ToBrush() : (Brush)Windows.UI.Xaml.Application.Current.Resources["ButtonBackgroundThemeBrush"];
+			Control.BackgroundColor = Element.BackgroundColor != Color.Default ? Element.BackgroundColor.ToBrush() : (Brush)global::Windows.UI.Xaml.Application.Current.Resources["ButtonBackgroundThemeBrush"];
 		}
 
 		void UpdateBorderColor()
 		{
-			Control.BorderBrush = Element.BorderColor != Color.Default ? Element.BorderColor.ToBrush() : (Brush)Windows.UI.Xaml.Application.Current.Resources["ButtonBorderThemeBrush"];
+			Control.BorderBrush = Element.BorderColor != Color.Default ? Element.BorderColor.ToBrush() : (Brush)global::Windows.UI.Xaml.Application.Current.Resources["ButtonBorderThemeBrush"];
 		}
 
 		void UpdateBorderRadius()
@@ -261,7 +261,7 @@ namespace Xamarin.Forms.Platform.UWP
 			Control.BorderThickness = Element.BorderWidth == (double)ImageButton.BorderWidthProperty.DefaultValue ? new WThickness(3) : new WThickness(Element.BorderWidth);
 		}
 
-		void IImageVisualElementRenderer.SetImage(Windows.UI.Xaml.Media.ImageSource image)
+		void IImageVisualElementRenderer.SetImage(global::Windows.UI.Xaml.Media.ImageSource image)
 		{
 			_image.Source = image;
 		}

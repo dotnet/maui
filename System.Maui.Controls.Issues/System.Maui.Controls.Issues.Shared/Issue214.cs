@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Linq;
 
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Github, 214, "TextCell DetailColor change not immediate", PlatformAffected.iOS)]

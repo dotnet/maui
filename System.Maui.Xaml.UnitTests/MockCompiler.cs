@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Xamarin.Forms.Build.Tasks;
+using System.Maui.Build.Tasks;
 using Mono.Cecil;
-using Xamarin.Forms.MSBuild.UnitTests;
+using System.Maui.MSBuild.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public static class MockCompiler
 	{

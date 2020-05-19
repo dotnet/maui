@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Net;
 using Android.Graphics;
@@ -6,7 +6,7 @@ using Android.Runtime;
 using Android.Webkit;
 using WView = Android.Webkit.WebView;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class FormsWebViewClient : WebViewClient
 	{

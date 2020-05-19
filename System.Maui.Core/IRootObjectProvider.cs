@@ -1,4 +1,4 @@
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	public interface IRootObjectProvider
 	{

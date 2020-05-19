@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using NUnit.Framework;
 
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class EffectTests : BaseTestFixture

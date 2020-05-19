@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Linq;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGalleries;
-using Xamarin.Forms.Xaml;
+using System.Maui.Controls.GalleryPages.CollectionViewGalleries.GroupingGalleries;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ScrollToGalleries
+namespace System.Maui.Controls.GalleryPages.CollectionViewGalleries.ScrollToGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class ScrollToGroup : ContentPage

@@ -2,7 +2,7 @@ using System;
 using ElmSharp;
 using EBox = ElmSharp.Box;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class NavigationDrawer : Native.Box, INavigationDrawer
 	{

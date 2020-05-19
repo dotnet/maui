@@ -8,7 +8,7 @@ using Android.Widget;
 using AView = Android.Views.View;
 using AColor = Android.Graphics.Color;
 using AColorDraw = Android.Graphics.Drawables.ColorDrawable;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 #if __ANDROID_29__
 using AndroidX.Core.Widget;
 using AndroidX.Core.Content;
@@ -19,7 +19,7 @@ using Android.Support.V4.Content;
 using Android.OS;
 using System;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class BaseCellView : LinearLayout, INativeElementView
 	{
@@ -88,7 +88,7 @@ namespace Xamarin.Forms.Platform.Android
 			SetMinimumHeight((int)context.ToPixels(DefaultMinHeight));
 			_androidDefaultTextColor = Color.FromUint((uint)_mainText.CurrentTextColor);
 
-			if ((int)Forms.SdkInt > 16)
+			if ((int)System.Maui.Maui.SdkInt > 16)
 			{
 				_mainText.TextAlignment = global::Android.Views.TextAlignment.ViewStart;
 				_detailText.TextAlignment = global::Android.Views.TextAlignment.ViewStart;

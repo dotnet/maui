@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public interface IImageSourceHandler : IRegisterable
 	{

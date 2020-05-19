@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.RefreshViewGalleries
+namespace System.Maui.Controls.GalleryPages.RefreshViewGalleries
 {
 	[Preserve(AllMembers = true)]
 	public class RefreshViewGallery : ContentPage

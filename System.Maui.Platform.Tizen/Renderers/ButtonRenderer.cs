@@ -1,9 +1,9 @@
 using System;
-using Xamarin.Forms.Platform.Tizen.Native;
+using System.Maui.Platform.Tizen.Native;
 using EButton = ElmSharp.Button;
-using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.VisualElement;
+using Specific = System.Maui.PlatformConfiguration.TizenSpecific.VisualElement;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class ButtonRenderer : ViewRenderer<Button, EButton>
 	{
@@ -36,9 +36,9 @@ namespace Xamarin.Forms.Platform.Tizen
 		protected virtual EButton CreateNativeControl()
 		{
 			if (Device.Idiom == TargetIdiom.Watch)
-				return new Native.Watch.WatchButton(Forms.NativeParent);
+				return new Native.Watch.WatchButton(System.Maui.Maui.NativeParent);
 			else
-				return new Native.Button(Forms.NativeParent);
+				return new Native.Button(System.Maui.Maui.NativeParent);
 		}
 
 		protected override Size MinimumSize()

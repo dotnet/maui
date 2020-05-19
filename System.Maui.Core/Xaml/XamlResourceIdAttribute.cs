@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Reflection;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	[AttributeUsage(AttributeTargets.Assembly, Inherited = false, AllowMultiple = true)]
 	public sealed class XamlResourceIdAttribute : Attribute

@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
-using Windows.Foundation;
-using Windows.UI.Core;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.RefreshView;
+using global::Windows.Foundation;
+using global::Windows.UI.Core;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Media;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
+using Specifics = System.Maui.PlatformConfiguration.WindowsSpecific.RefreshView;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class RefreshViewRenderer : ViewRenderer<RefreshView, RefreshContainer>
 	{
@@ -159,7 +159,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			Control.Visualizer.Foreground = Element.RefreshColor != Color.Default
 				? Element.RefreshColor.ToBrush()
-				: (Brush)Windows.UI.Xaml.Application.Current.Resources["DefaultTextForegroundThemeBrush"];
+				: (Brush)global::Windows.UI.Xaml.Application.Current.Resources["DefaultTextForegroundThemeBrush"];
 
 			UpdateBackgroundColor();
 		}

@@ -1,9 +1,9 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 6132, "[Bug] [Forms 4.0] [Android] WebView.EnableZoomControls platform-specific doesn't work ", PlatformAffected.Android)]

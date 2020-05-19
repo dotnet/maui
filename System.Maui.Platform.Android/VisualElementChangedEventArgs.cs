@@ -1,4 +1,4 @@
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class VisualElementChangedEventArgs : ElementChangedEventArgs<VisualElement>
 	{

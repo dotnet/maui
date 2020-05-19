@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using UIKit;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.iOS;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui;
+using System.Maui.ControlGallery.iOS;
+using System.Maui.Platform.iOS;
 
 [assembly: ExportEffect(typeof(SearchbarEffect), "SearchbarEffect")]
-namespace Xamarin.Forms.ControlGallery.iOS
+namespace System.Maui.ControlGallery.iOS
 {
 	public class SearchbarEffect : PlatformEffect
 	{

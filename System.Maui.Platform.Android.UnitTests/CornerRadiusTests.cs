@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Platform.Android;
+using System.Maui.CustomAttributes;
+using System.Maui.Platform.Android;
 
-namespace Xamarin.Forms.Platform.Android.UnitTests
+namespace System.Maui.Platform.Android.UnitTests
 {
 	[TestFixture]
 	public class CornerRadiusTests : PlatformTestFixture

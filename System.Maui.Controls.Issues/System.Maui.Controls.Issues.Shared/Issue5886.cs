@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 #if UITEST
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 using System.Linq;
 #endif
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Layout)]

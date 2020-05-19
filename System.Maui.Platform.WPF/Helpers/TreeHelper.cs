@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
 
-namespace Xamarin.Forms.Platform.WPF.Helpers
+namespace System.Maui.Platform.WPF.Helpers
 {
 	/// <summary>
 	/// Helper methods for UI-related tasks.

@@ -1,6 +1,6 @@
-﻿using ElmSharp;
+using ElmSharp;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	internal static class EntryExtensions
 	{

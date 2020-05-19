@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel;
 using AppKit;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public class TableViewRenderer : ViewRenderer<TableView, NSView>
 	{
@@ -77,9 +77,9 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == Xamarin.Forms.TableView.RowHeightProperty.PropertyName)
+			if (e.PropertyName == System.Maui.TableView.RowHeightProperty.PropertyName)
 				UpdateRowHeight();
-			else if (e.PropertyName == Xamarin.Forms.TableView.HasUnevenRowsProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.TableView.HasUnevenRowsProperty.PropertyName)
 				SetSource();
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackgroundView();

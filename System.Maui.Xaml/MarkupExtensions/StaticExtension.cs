@@ -3,10 +3,10 @@ using System.Linq;
 using System.Reflection;
 using System.Xml;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	[ContentProperty(nameof(Member))]
-	[ProvideCompiled("Xamarin.Forms.Build.Tasks.StaticExtension")]
+	[ProvideCompiled("System.Maui.Build.Tasks.StaticExtension")]
 	public class StaticExtension : IMarkupExtension
 	{
 		public string Member { get; set; }

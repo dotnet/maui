@@ -4,7 +4,7 @@ using System.Threading;
 
 using NUnit.Framework;
 
-namespace Xamarin.Forms.DualScreen.UnitTests
+namespace System.Maui.DualScreen.UnitTests
 {
 	public class BaseTestFixture
 	{

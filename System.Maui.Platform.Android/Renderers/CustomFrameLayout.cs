@@ -1,11 +1,11 @@
-﻿using Android.Content;
+using Android.Content;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
 using System;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class CustomFrameLayout : FrameLayout
 	{

@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-using Xamarin.Forms;
-using Xamarin.Forms.CustomAttributes;
+using System.Maui;
+using System.Maui.CustomAttributes;
 using System.Collections.ObjectModel;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue (IssueTracker.Github, 4040, "[iOS] Label TextColor has no effect with FormattedString", PlatformAffected.iOS)]

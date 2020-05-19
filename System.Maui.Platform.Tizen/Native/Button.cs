@@ -2,14 +2,14 @@ using System;
 using ElmSharp;
 using EColor = ElmSharp.Color;
 using ESize = ElmSharp.Size;
-using TSButtonStyle = Xamarin.Forms.PlatformConfiguration.TizenSpecific.ButtonStyle;
+using TSButtonStyle = System.Maui.PlatformConfiguration.TizenSpecific.ButtonStyle;
 using EButton = ElmSharp.Button;
 
 #if __MATERIAL__
 using Tizen.NET.MaterialComponents;
 #endif
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 #if __MATERIAL__
 	public class MaterialButton : MButton, IMeasurable, IBatchable, IButton
@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 	public class Button : EButton, IMeasurable, IBatchable, IButton
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Xamarin.Forms.Platform.Tizen.Native.Button"/> class.
+		/// Initializes a new instance of the <see cref="System.Maui.Platform.Tizen.Native.Button"/> class.
 		/// </summary>
 		/// <param name="parent">Parent evas object.</param>
 		public Button(EvasObject parent) : base(parent)

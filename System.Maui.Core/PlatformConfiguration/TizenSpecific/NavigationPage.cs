@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
+namespace System.Maui.PlatformConfiguration.TizenSpecific
 {
-	using FormsElement = Forms.NavigationPage;
+	using FormsElement = System.Maui.NavigationPage;
 
 	public static class NavigationPage
 	{

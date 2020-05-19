@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Platform.WPF.Interfaces
+namespace System.Maui.Platform.WPF.Interfaces
 {
 	using System;
 	using System.Threading;

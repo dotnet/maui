@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Platform.WPF.Enums
+namespace System.Maui.Platform.WPF.Enums
 {
 	public enum Symbol
 	{

@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	[Preserve(AllMembers = true)]
 	internal class PerformanceViewModel : INotifyPropertyChanged

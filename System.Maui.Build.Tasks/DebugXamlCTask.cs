@@ -9,7 +9,7 @@ using Mono.Cecil.Rocks;
 
 using static Microsoft.Build.Framework.MessageImportance;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace System.Maui.Build.Tasks
 {
 	public class DebugXamlCTask : XamlTask
 	{
@@ -78,18 +78,18 @@ namespace Xamarin.Forms.Build.Tasks
 						}
 
 //						IL_0000:  ldarg.0 
-//						IL_0001:  callvirt instance void class [Xamarin.Forms.Core]Xamarin.Forms.ContentPage::'.ctor'()
+//						IL_0001:  callvirt instance void class [System.Maui.Core]System.Maui.ContentPage::'.ctor'()
 //
 //						IL_0006:  nop 
 //						IL_0007:  ldarg.1 
 //						IL_0008:  brfalse IL_0018
 //
 //						IL_000d:  ldarg.0 
-//						IL_000e:  callvirt instance void class Xamarin.Forms.Xaml.XamlcTests.MyPage::InitializeComponent()
+//						IL_000e:  callvirt instance void class System.Maui.Xaml.XamlcTests.MyPage::InitializeComponent()
 //						IL_0013:  br IL_001e
 //
 //						IL_0018:  ldarg.0 
-//						IL_0019:  callvirt instance void class Xamarin.Forms.Xaml.XamlcTests.MyPage::__InitComponentRuntime()
+//						IL_0019:  callvirt instance void class System.Maui.Xaml.XamlcTests.MyPage::__InitComponentRuntime()
 //						IL_001e:  ret 
 
 						var altCtor = typeDef.Methods.FirstOrDefault(md => md.IsConstructor

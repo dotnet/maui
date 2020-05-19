@@ -1,9 +1,9 @@
-﻿using Xamarin.Forms;
+using System.Maui;
 using NUnit.Framework;
 using System;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public partial class TypeConverterTests : ContentPage
 	{

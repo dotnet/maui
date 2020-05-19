@@ -1,11 +1,11 @@
-﻿using Xamarin.Forms.CustomAttributes;
+using System.Maui.CustomAttributes;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 34720, "Incorrect iOS button IsEnabled when scrolling ListView with command binding ")]

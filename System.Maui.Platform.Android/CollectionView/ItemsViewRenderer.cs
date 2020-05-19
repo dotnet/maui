@@ -11,11 +11,11 @@ using Android.Support.V7.Widget;
 using AViewCompat = Android.Support.V4.View.ViewCompat;
 #endif
 using Android.Views;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.Android.CollectionView;
-using Xamarin.Forms.Platform.Android.FastRenderers;
+using System.Maui.Internals;
+using System.Maui.Platform.Android.CollectionView;
+using System.Maui.Platform.Android.FastRenderers;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public abstract class ItemsViewRenderer<TItemsView, TAdapter, TItemsViewSource> : RecyclerView, IVisualElementRenderer, IEffectControlProvider 
 		where TItemsView : ItemsView
@@ -211,11 +211,11 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			ElementPropertyChanged?.Invoke(this, changedProperty);
 
-			if (changedProperty.Is(Xamarin.Forms.ItemsView.ItemsSourceProperty))
+			if (changedProperty.Is(System.Maui.ItemsView.ItemsSourceProperty))
 			{
 				UpdateItemsSource();
 			}
-			else if (changedProperty.Is(Xamarin.Forms.ItemsView.ItemTemplateProperty))
+			else if (changedProperty.Is(System.Maui.ItemsView.ItemTemplateProperty))
 			{
 				GetRecycledViewPool().Clear();
 				UpdateAdapter();
@@ -228,20 +228,20 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				UpdateFlowDirection();
 			}
-			else if (changedProperty.IsOneOf(Xamarin.Forms.ItemsView.EmptyViewProperty,
-				Xamarin.Forms.ItemsView.EmptyViewTemplateProperty))
+			else if (changedProperty.IsOneOf(System.Maui.ItemsView.EmptyViewProperty,
+				System.Maui.ItemsView.EmptyViewTemplateProperty))
 			{
 				UpdateEmptyView();
 			}
-			else if (changedProperty.Is(Xamarin.Forms.ItemsView.HorizontalScrollBarVisibilityProperty))
+			else if (changedProperty.Is(System.Maui.ItemsView.HorizontalScrollBarVisibilityProperty))
 			{
 				UpdateHorizontalScrollBarVisibility();
 			}
-			else if (changedProperty.Is(Xamarin.Forms.ItemsView.VerticalScrollBarVisibilityProperty))
+			else if (changedProperty.Is(System.Maui.ItemsView.VerticalScrollBarVisibilityProperty))
 			{
 				UpdateVerticalScrollBarVisibility();
 			}
-			else if (changedProperty.Is(Xamarin.Forms.ItemsView.ItemsUpdatingScrollModeProperty))
+			else if (changedProperty.Is(System.Maui.ItemsView.ItemsUpdatingScrollModeProperty))
 			{
 				UpdateItemsUpdatingScrollMode();
 			}
@@ -426,7 +426,7 @@ namespace Xamarin.Forms.Platform.Android
 					gridLayoutManager.SpanCount = ((GridItemsLayout)ItemsLayout).Span;
 				}
 			}
-			else if (propertyChanged.IsOneOf(Xamarin.Forms.ItemsLayout.SnapPointsTypeProperty, Xamarin.Forms.ItemsLayout.SnapPointsAlignmentProperty))
+			else if (propertyChanged.IsOneOf(System.Maui.ItemsLayout.SnapPointsTypeProperty, System.Maui.ItemsLayout.SnapPointsAlignmentProperty))
 			{
 				UpdateSnapBehavior();
 			}
@@ -647,7 +647,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
 				ScrollTo(new ScrollToRequestEventArgs(ItemsViewAdapter.ItemCount, 0,
-					Xamarin.Forms.ScrollToPosition.MakeVisible, true));
+					System.Maui.ScrollToPosition.MakeVisible, true));
 			}
 			else if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
 			{

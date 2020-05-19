@@ -1,15 +1,15 @@
-﻿using GLib;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.GTK;
+using GLib;
+using System.Maui;
+using System.Maui.ControlGallery.GTK;
 using System;
-using Xamarin.Forms.Platform.GTK;
-using Xamarin.Forms.Platform.GTK.Renderers;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Maps.GTK;
+using System.Maui.Platform.GTK;
+using System.Maui.Platform.GTK.Renderers;
+using System.Maui.Controls;
+using System.Maui.Maps.GTK;
 
 [assembly: ExportRenderer(typeof(DisposePage), typeof(DisposePageRenderer))]
 [assembly: ExportRenderer(typeof(DisposeLabel), typeof(DisposeLabelRenderer))]
-namespace Xamarin.Forms.ControlGallery.GTK
+namespace System.Maui.ControlGallery.GTK
 {
     class Program
     {
@@ -21,13 +21,13 @@ namespace Xamarin.Forms.ControlGallery.GTK
             GtkOpenGL.Init();
             GtkThemes.Init();
             Gtk.Application.Init();
-            Forms.SetFlags("CarouselView_Experimental");
+            System.Maui.Maui.SetFlags("CarouselView_Experimental");
             FormsMaps.Init(string.Empty);
-            Forms.Init();
+            System.Maui.Maui.Init();
             var app = new App();
             var window = new FormsWindow();
             window.LoadApplication(app);
-            window.SetApplicationTitle("Xamarin.Forms GTK# Backend");
+            window.SetApplicationTitle("System.Maui GTK# Backend");
             window.SetApplicationIcon("xamarinlogo.png");
             window.Show();
             Gtk.Application.Run();

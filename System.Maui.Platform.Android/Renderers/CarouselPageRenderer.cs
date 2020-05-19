@@ -9,7 +9,7 @@ using Android.Support.V4.View;
 #endif
 using Android.Views;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class CarouselPageRenderer : VisualElementRenderer<CarouselPage>
 	{

@@ -1,9 +1,9 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Windows.Input;
 using System.Windows.Media;
 using WControl = System.Windows.Controls.Control;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public class SearchBarRenderer : ViewRenderer<SearchBar, FormsTextBox>
 	{

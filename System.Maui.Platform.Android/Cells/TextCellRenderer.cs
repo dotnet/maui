@@ -2,10 +2,10 @@ using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Views;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class TextCellRenderer : CellRenderer
 	{

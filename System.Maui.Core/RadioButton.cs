@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Platform;
+using System.Maui.Platform;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[RenderWith(typeof(_RadioButtonRenderer))]
 	public class RadioButton : Button, IElementConfiguration<RadioButton>

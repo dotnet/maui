@@ -1,8 +1,8 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.EmptyViewGalleries
+namespace System.Maui.Controls.GalleryPages.CollectionViewGalleries.EmptyViewGalleries
 {
 	[Preserve(AllMembers = true)]
 	public class EmptyViewGalleryFilterInfo : INotifyPropertyChanged

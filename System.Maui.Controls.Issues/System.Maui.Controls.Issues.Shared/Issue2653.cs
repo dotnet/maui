@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration;
+using System.Maui.PlatformConfiguration.iOSSpecific;
 
 
 #if UITEST
@@ -14,7 +14,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2653, "[UWP] Grid insert z-order on UWP broken in Forms 3",
@@ -148,7 +148,7 @@ namespace Xamarin.Forms.Controls.Issues
 			return true;
 		}
 
-// https://github.com/xamarin/Xamarin.Forms/issues/2989
+// https://github.com/xamarin/System.Maui/issues/2989
 #if UITEST
 		[Test]
 		public void ZIndexWhenInsertingChildren()

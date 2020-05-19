@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms.Maps
+namespace System.Maui.Maps
 {
 	public sealed class MapSpan
 	{

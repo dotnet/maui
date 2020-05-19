@@ -1,9 +1,9 @@
 using System;
 using System.Globalization;
 using System.Windows.Input;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	[Preserve (AllMembers = true)]
 	public class BoundContentPage : ContentPage

@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
 #if UITEST
 using NUnit.Framework;
@@ -10,7 +10,7 @@ using Xamarin.UITest;
 using Xamarin.UITest.iOS;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 #if UITEST
 	[Category(Core.UITests.UITestCategories.MasterDetailPage)]

@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
+namespace System.Maui.PlatformConfiguration.iOSSpecific
 {
-	using FormsElement = Forms.ScrollView;
+	using FormsElement = System.Maui.ScrollView;
 
 	public static class ScrollView
 	{

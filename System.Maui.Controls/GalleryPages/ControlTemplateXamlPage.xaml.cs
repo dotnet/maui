@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Xamarin.Forms;
+using System.Maui;
 
-namespace Xamarin.Forms.Controls.GalleryPages
+namespace System.Maui.Controls.GalleryPages
 {
 	public partial class ControlTemplateXamlPage : ContentPage
 	{

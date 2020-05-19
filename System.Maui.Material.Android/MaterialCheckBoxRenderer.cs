@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using Android.Content;
 using Android.Content.Res;
-using Xamarin.Forms.Platform.Android;
+using System.Maui.Platform.Android;
 using AColor = Android.Graphics.Color;
 #if __ANDROID_29__
 using AColorUtils = AndroidX.Core.Graphics.ColorUtils;
@@ -12,7 +12,7 @@ using AAttribute = Android.Resource.Attribute;
 using Android.Graphics.Drawables;
 using Android.Graphics;
 
-namespace Xamarin.Forms.Material.Android
+namespace System.Maui.Material.Android
 {
 	public class MaterialCheckBoxRenderer : CheckBoxRendererBase
 	{

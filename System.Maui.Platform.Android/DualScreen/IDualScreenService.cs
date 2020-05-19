@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Platform.Android.DualScreen
+namespace System.Maui.Platform.Android.DualScreen
 {
 	internal interface IDualScreenService
 	{

@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using NativeView = UIKit.UIView;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	internal static class BorderElementManager
 	{

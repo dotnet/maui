@@ -1,10 +1,10 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:System="clr-namespace:System;assembly=mscorlib"
-                    xmlns:controls="clr-namespace:Xamarin.Forms.Platform.WPF.Controls">
+                    xmlns:controls="clr-namespace:System.Maui.Platform.WPF.Controls">
 
     <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="/Xamarin.Forms.Platform.WPF;component/Assets/Converters.xaml" />
+        <ResourceDictionary Source="/System.Maui.Platform.WPF;component/Assets/Converters.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
     <DataTemplate x:Key="TitleDefaultTemplate" >

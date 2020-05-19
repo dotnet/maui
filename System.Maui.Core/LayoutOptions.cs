@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[TypeConverter(typeof(LayoutOptionsConverter))]
 	public struct LayoutOptions

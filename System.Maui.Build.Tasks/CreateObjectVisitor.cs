@@ -4,13 +4,13 @@ using System.Globalization;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 using System.Xml;
 
 using static Mono.Cecil.Cil.Instruction;
 using static Mono.Cecil.Cil.OpCodes;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace System.Maui.Build.Tasks
 {
 	class CreateObjectVisitor : IXamlNodeVisitor
 	{
@@ -33,8 +33,8 @@ namespace Xamarin.Forms.Build.Tasks
 		public bool IsResourceDictionary(ElementNode node)
 		{
 			var parentVar = Context.Variables[(IElementNode)node];
-			return parentVar.VariableType.FullName == "Xamarin.Forms.ResourceDictionary"
-				|| parentVar.VariableType.Resolve().BaseType?.FullName == "Xamarin.Forms.ResourceDictionary";
+			return parentVar.VariableType.FullName == "System.Maui.ResourceDictionary"
+				|| parentVar.VariableType.Resolve().BaseType?.FullName == "System.Maui.ResourceDictionary";
 		}
 
 		public void Visit(ValueNode node, INode parentNode)
@@ -64,7 +64,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 			//if this is a MarkupExtension that can be compiled directly, compile and returns the value
 			var compiledMarkupExtensionName = typeref
-				.GetCustomAttribute(Module, ("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "ProvideCompiledAttribute"))
+				.GetCustomAttribute(Module, ("System.Maui.Core", "System.Maui.Xaml", "ProvideCompiledAttribute"))
 				?.ConstructorArguments?[0].Value as string;
 			Type compiledMarkupExtensionType;
 			ICompiledMarkupExtension markupProvider;
@@ -128,7 +128,7 @@ namespace Xamarin.Forms.Build.Tasks
 																					 pd.CustomAttributes.Any(
 																						 ca =>
 																							 ca.AttributeType.FullName ==
-																							 "Xamarin.Forms.ParameterAttribute")));
+																							 "System.Maui.ParameterAttribute")));
 			}
 			string missingCtorParameter = null;
 			if (parameterizedCtorInfo != null && ValidateCtorArguments(parameterizedCtorInfo, node, out missingCtorParameter)) {
@@ -175,7 +175,7 @@ namespace Xamarin.Forms.Build.Tasks
 					Context.IL.Emit(OpCodes.Stloc, vardef);
 				} else if (!typedef.IsValueType) {
 					var ctor = Module.ImportReference(ctorinforef);
-//					IL_0001:  newobj instance void class [Xamarin.Forms.Core]Xamarin.Forms.Button::'.ctor'()
+//					IL_0001:  newobj instance void class [System.Maui.Core]System.Maui.Button::'.ctor'()
 //					IL_0006:  stloc.0 
 					Context.IL.Emit(OpCodes.Newobj, ctor);
 					Context.IL.Emit(OpCodes.Stloc, vardef);
@@ -196,7 +196,7 @@ namespace Xamarin.Forms.Build.Tasks
 					Context.IL.Emit(OpCodes.Initobj, Module.ImportReference(typedef));
 				}
 
-				if (typeref.FullName == "Xamarin.Forms.Xaml.ArrayExtension") {
+				if (typeref.FullName == "System.Maui.Xaml.ArrayExtension") {
 					var visitor = new SetPropertiesVisitor(Context);
 					foreach (var cnode in node.Properties.Values.ToList())
 						cnode.Accept(visitor, node);
@@ -253,7 +253,7 @@ namespace Xamarin.Forms.Build.Tasks
 			foreach (var parameter in ctorinfo.Parameters)
 			{
 				var propname =
-					parameter.CustomAttributes.First(ca => ca.AttributeType.FullName == "Xamarin.Forms.ParameterAttribute")
+					parameter.CustomAttributes.First(ca => ca.AttributeType.FullName == "System.Maui.ParameterAttribute")
 						.ConstructorArguments.First()
 						.Value as string;
 				if (!enode.Properties.ContainsKey(new XmlName("", propname))) {
@@ -269,7 +269,7 @@ namespace Xamarin.Forms.Build.Tasks
 			foreach (var parameter in ctorinfo.Parameters)
 			{
 				var propname =
-					parameter.CustomAttributes.First(ca => ca.AttributeType.FullName == "Xamarin.Forms.ParameterAttribute")
+					parameter.CustomAttributes.First(ca => ca.AttributeType.FullName == "System.Maui.ParameterAttribute")
 						.ConstructorArguments.First()
 						.Value as string;
 				var node = enode.Properties[new XmlName("", propname)];

@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Xamarin.Forms.Internals
+namespace System.Maui.Internals
 {
 	public static class PropertyPropagationExtensions
 	{

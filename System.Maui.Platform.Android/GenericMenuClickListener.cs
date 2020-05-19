@@ -2,9 +2,9 @@ using System;
 using Android.Views;
 using Object = Java.Lang.Object;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
-	internal class GenericMenuClickListener : Object, IMenuItemOnMenuItemClickListener
+	internal class GenericMenuClickListener : Java.Lang.Object, IMenuItemOnMenuItemClickListener
 	{
 		readonly Action _callback;
 

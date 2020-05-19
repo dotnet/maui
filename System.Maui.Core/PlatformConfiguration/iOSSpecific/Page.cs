@@ -1,7 +1,7 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
+namespace System.Maui.PlatformConfiguration.iOSSpecific
 {
 	using System.ComponentModel;
-	using FormsElement = Forms.Page;
+	using FormsElement = System.Maui.Page;
 
 	public static class Page
 	{

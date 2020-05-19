@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Internals
+namespace System.Maui.Internals
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class AlertArguments

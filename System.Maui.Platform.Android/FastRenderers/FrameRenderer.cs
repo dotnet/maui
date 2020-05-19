@@ -14,7 +14,7 @@ using Android.Views;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android.FastRenderers
+namespace System.Maui.Platform.Android.FastRenderers
 {
 	public class FrameRenderer : CardView, IVisualElementRenderer, IViewRenderer, ITabStop
 	{
@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use FrameRenderer(Context) instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public FrameRenderer() : base(Forms.Context)
+		public FrameRenderer() : base(System.Maui.Maui.Context)
 		{
 			_visualElementRenderer = new VisualElementRenderer(this);
 		}
@@ -252,7 +252,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				UpdateCornerRadius();
 			else if (e.PropertyName == Frame.BorderColorProperty.PropertyName)
 				UpdateBorderColor();
-			else if (e.Is(Xamarin.Forms.Layout.IsClippedToBoundsProperty))
+			else if (e.Is(System.Maui.Layout.IsClippedToBoundsProperty))
 				UpdateClippedToBounds();
 		}
 

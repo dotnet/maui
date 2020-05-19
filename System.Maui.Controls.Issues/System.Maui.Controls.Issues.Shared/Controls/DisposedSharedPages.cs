@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 
-using Xamarin.Forms;
+using System.Maui;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	public class DisposePage : ContentPage
 	{

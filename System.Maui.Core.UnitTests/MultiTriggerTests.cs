@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class MultiTriggerTests : BaseTestFixture

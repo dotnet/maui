@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.MacOS;
+using System.Maui;
+using System.Maui.Internals;
+using System.Maui.Platform.MacOS;
 
 [assembly: Dependency(typeof(Deserializer))]
 [assembly: Dependency(typeof(ResourcesProvider))]

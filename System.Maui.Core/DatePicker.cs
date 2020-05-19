@@ -1,8 +1,8 @@
 using System;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform;
+using System.Maui.Internals;
+using System.Maui.Platform;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[RenderWith(typeof(_DatePickerRenderer))]
 	public class DatePicker : View, IFontElement, ITextElement, IElementConfiguration<DatePicker>

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public interface INavigation
 	{

@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using System.Maui.Controls.Issues;
+using System.Maui.PlatformConfiguration.iOSSpecific;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	public class PickerGallery : ContentPage
 	{

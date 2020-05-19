@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Windows.Foundation;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation.Peers;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
-using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.VisualElement;
-using Xamarin.Forms.Internals;
-using Windows.UI.Xaml.Input;
+using global::Windows.Foundation;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Automation.Peers;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Media;
+using Specifics = System.Maui.PlatformConfiguration.WindowsSpecific.VisualElement;
+using System.Maui.Internals;
+using global::Windows.UI.Xaml.Input;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class VisualElementRenderer<TElement, TNativeElement> : Panel, IVisualNativeElementRenderer, IDisposable, IEffectControlProvider where TElement : VisualElement
 																																	  where TNativeElement : FrameworkElement
@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Platform.UWP
 		event EventHandler _controlChanging;
 		event EventHandler _controlChanged;
 		VisualElementTracker<TElement, TNativeElement> _tracker;
-		Windows.UI.Xaml.Controls.Page _containingPage; // Cache of containing page used for unfocusing
+		global::Windows.UI.Xaml.Controls.Page _containingPage; // Cache of containing page used for unfocusing
 		Control _control => Control as Control;
 
 		Canvas _backgroundLayer;
@@ -106,7 +106,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (Children.Count == 0 || Control == null)
 				return new SizeRequest();
 
-			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 			TNativeElement child = Control;
 
 			child.Measure(constraint);
@@ -198,7 +198,7 @@ namespace Xamarin.Forms.Platform.UWP
 			remove { _controlChanged -= value; }
 		}
 
-		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
+		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
 			if (Element == null || finalSize.Width * finalSize.Height == 0)
 				return finalSize;
@@ -285,10 +285,10 @@ namespace Xamarin.Forms.Platform.UWP
 			SetElement(null);
 		}
 
-		protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
 			if (Element == null || availableSize.Width * availableSize.Height == 0)
-				return new Windows.Foundation.Size(0, 0);
+				return new global::Windows.Foundation.Size(0, 0);
 
 			Element.IsInNativeLayout = true;
 
@@ -306,7 +306,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			double width = Math.Max(0, Element.Width);
 			double height = Math.Max(0, Element.Height);
-			var result = new Windows.Foundation.Size(width, height);
+			var result = new global::Windows.Foundation.Size(width, height);
 			if (Control != null)
 			{
 				double w = Element.Width;
@@ -317,7 +317,7 @@ namespace Xamarin.Forms.Platform.UWP
 					h = availableSize.Height;
 				w = Math.Max(0, w);
 				h = Math.Max(0, h);
-				Control.Measure(new Windows.Foundation.Size(w, h));
+				Control.Measure(new global::Windows.Foundation.Size(w, h));
 			}
 
 			Element.IsInNativeLayout = false;
@@ -454,7 +454,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (Element == null)
 				throw new InvalidOperationException(
 					"Cannot assign a native control without an Element; Renderer unbound and/or disposed. " +
-					"Please consult Xamarin.Forms renderers for reference implementation of OnElementChanged.");
+					"Please consult System.Maui renderers for reference implementation of OnElementChanged.");
 
 			Element.IsNativeStateConsistent = false;
 			control.Loaded += OnControlLoaded;
@@ -489,7 +489,7 @@ namespace Xamarin.Forms.Platform.UWP
 				}
 				else
 				{
-					_control.ClearValue(Windows.UI.Xaml.Controls.Control.BackgroundProperty);
+					_control.ClearValue(global::Windows.UI.Xaml.Controls.Control.BackgroundProperty);
 				}
 			}
 			else
@@ -556,11 +556,11 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				// Work our way up the tree to find the containing Page
 				DependencyObject parent = _control;
-				while (parent != null && !(parent is Windows.UI.Xaml.Controls.Page))
+				while (parent != null && !(parent is global::Windows.UI.Xaml.Controls.Page))
 				{
 					parent = VisualTreeHelper.GetParent(parent);
 				}
-				_containingPage = parent as Windows.UI.Xaml.Controls.Page;
+				_containingPage = parent as global::Windows.UI.Xaml.Controls.Page;
 			}
 
 			if (_containingPage != null)
@@ -628,7 +628,7 @@ namespace Xamarin.Forms.Platform.UWP
 				// in hit testing. 
 				if (Element is Layout && Background == null)
 				{
-					Background = new SolidColorBrush(Windows.UI.Colors.Transparent);
+					Background = new SolidColorBrush(global::Windows.UI.Colors.Transparent);
 				}
 			}
 		}

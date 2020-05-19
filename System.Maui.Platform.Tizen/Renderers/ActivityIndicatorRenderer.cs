@@ -1,7 +1,7 @@
 using EProgressBar = ElmSharp.ProgressBar;
 using EColor = ElmSharp.Color;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class ActivityIndicatorRenderer : ViewRenderer<ActivityIndicator, EProgressBar>
 	{
@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new EProgressBar(Forms.NativeParent)
+				SetNativeControl(new EProgressBar(System.Maui.Maui.NativeParent)
 				{
 					Style = "process_small",
 					IsPulseMode = true,

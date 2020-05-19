@@ -10,7 +10,7 @@ using AndroidX.Core.Graphics.Drawable;
 using Android.Support.V4.Graphics.Drawable;
 #endif
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class FormsEditText : FormsEditTextBase, IFormsEditText
 	{
@@ -90,7 +90,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 	}
 
-	[Obsolete("EntryEditText is obsolete as of version 2.4.0. Please use Xamarin.Forms.Platform.Android.FormsEditText instead.")]
+	[Obsolete("EntryEditText is obsolete as of version 2.4.0. Please use System.Maui.Platform.Android.FormsEditText instead.")]
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class EntryEditText : FormsEditText
 	{
@@ -99,7 +99,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 	}
 
-	[Obsolete("EditorEditText is obsolete as of version 2.4.0. Please use Xamarin.Forms.Platform.Android.FormsEditText instead.")]
+	[Obsolete("EditorEditText is obsolete as of version 2.4.0. Please use System.Maui.Platform.Android.FormsEditText instead.")]
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class EditorEditText : FormsEditText
 	{

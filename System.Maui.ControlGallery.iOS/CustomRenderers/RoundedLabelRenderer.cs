@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using UIKit;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.iOS.CustomRenderers;
-using Xamarin.Forms.Platform.iOS;
-using static Xamarin.Forms.Controls.Issues.Issue6368;
+using System.Maui;
+using System.Maui.ControlGallery.iOS.CustomRenderers;
+using System.Maui.Platform.iOS;
+using static System.Maui.Controls.Issues.Issue6368;
 
 [assembly: ExportRenderer(typeof(RoundedLabel), typeof(RoundedLabelRenderer))]
-namespace Xamarin.Forms.ControlGallery.iOS.CustomRenderers
+namespace System.Maui.ControlGallery.iOS.CustomRenderers
 {
 	public class RoundedLabelRenderer : LabelRenderer
 	{

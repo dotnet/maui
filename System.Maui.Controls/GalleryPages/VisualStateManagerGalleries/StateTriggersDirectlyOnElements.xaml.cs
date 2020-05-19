@@ -1,6 +1,6 @@
-﻿using System.Windows.Input;
+using System.Windows.Input;
 
-namespace Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries
+namespace System.Maui.Controls.GalleryPages.VisualStateManagerGalleries
 {
 	public partial class StateTriggersDirectlyOnElements : ContentPage
 	{

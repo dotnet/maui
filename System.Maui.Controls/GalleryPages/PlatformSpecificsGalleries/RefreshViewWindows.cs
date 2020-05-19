@@ -1,11 +1,11 @@
-﻿using Xamarin.Forms.Controls.GalleryPages.RefreshViewGalleries;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-using static Xamarin.Forms.PlatformConfiguration.WindowsSpecific.RefreshView;
-using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+using System.Maui.Controls.GalleryPages.RefreshViewGalleries;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
+using static System.Maui.PlatformConfiguration.WindowsSpecific.RefreshView;
+using WindowsOS = System.Maui.PlatformConfiguration.Windows;
 
-namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
+namespace System.Maui.Controls.GalleryPages.PlatformSpecificsGalleries
 {
 	[Preserve(AllMembers = true)]
 	public class RefreshViewWindows : ContentPage

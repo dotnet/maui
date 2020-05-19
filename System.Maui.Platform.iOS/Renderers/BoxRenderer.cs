@@ -4,7 +4,7 @@ using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class BoxRenderer : VisualElementRenderer<BoxView>
 	{

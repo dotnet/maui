@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 
 using ESize = ElmSharp.Size;
-using XLabel = Xamarin.Forms.Label;
+using XLabel = System.Maui.Label;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	public class EmptyItemAdaptor : ItemTemplateAdaptor, IEmptyAdaptor
 	{
@@ -51,8 +51,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 						Text = "No items found",
 						VerticalOptions = LayoutOptions.CenterAndExpand,
 						HorizontalOptions = LayoutOptions.CenterAndExpand,
-						HorizontalTextAlignment = Xamarin.Forms.TextAlignment.Center,
-						VerticalTextAlignment = Xamarin.Forms.TextAlignment.Center,
+						HorizontalTextAlignment = System.Maui.TextAlignment.Center,
+						VerticalTextAlignment = System.Maui.TextAlignment.Center,
 					}
 				);
 			}

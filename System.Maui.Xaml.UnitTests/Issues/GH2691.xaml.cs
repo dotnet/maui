@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Build.Utilities;
-using Xamarin.Forms;
-using Xamarin.Forms.Build.Tasks;
+using System.Maui;
+using System.Maui.Build.Tasks;
 
 using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.MSBuild.UnitTests;
+using System.Maui.Core.UnitTests;
+using System.Maui.Controls;
+using System.Maui.MSBuild.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {	
 	public partial class Gh2691 : ContentPage
 	{
@@ -32,9 +32,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 							 xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							 xmlns:test=""http://xamarin.com/schemas/2014/forms/customurl1""
 							 xmlns:test2=""http://xamarin.com/schemas/2014/forms/customurl2""
-							 xmlns:test3=""clr-namespace:Xamarin.Forms.Controls.CustomNamespace1;assembly=Xamarin.Forms.Controls""
-							 xmlns:test4=""using:Xamarin.Forms.Xaml.UnitTests""
-							 x:Class=""Xamarin.Forms.Xaml.UnitTests.Gh2691"">
+							 xmlns:test3=""clr-namespace:System.Maui.Controls.CustomNamespace1;assembly=System.Maui.Controls""
+							 xmlns:test4=""using:System.Maui.Xaml.UnitTests""
+							 x:Class=""System.Maui.Xaml.UnitTests.Gh2691"">
 					<ContentPage.Content>
 						<StackLayout>
 							<test:CustomButton x:Name=""_testButton1""
@@ -67,27 +67,27 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			{
 				Gh2691 issue2691 = new Gh2691(useCompiledXaml);
 
-				// http://xamarin.com/schemas/2014/forms/customurl1 -> Xamarin.Forms.Controls.CustomNamespace1
+				// http://xamarin.com/schemas/2014/forms/customurl1 -> System.Maui.Controls.CustomNamespace1
 				var button = issue2691.FindByName("_testButton1") as Controls.CustomNamespace1.CustomButton;
 				Assert.IsNotNull(button);
 
-				// http://xamarin.com/schemas/2014/forms/customurl1 -> Xamarin.Forms.Controls.CustomNamespace2
+				// http://xamarin.com/schemas/2014/forms/customurl1 -> System.Maui.Controls.CustomNamespace2
 				var label1 = issue2691.FindByName("_testLabel1") as Controls.CustomNamespace2.CustomLabel;
 				Assert.IsNotNull(label1);
 
-				// http://xamarin.com/schemas/2014/forms/customurl2 -> Xamarin.Forms.Controls.CustomNamespace3
+				// http://xamarin.com/schemas/2014/forms/customurl2 -> System.Maui.Controls.CustomNamespace3
 				var label2 = issue2691.FindByName("_testLabel2") as Controls.CustomNamespace3.CustomLabel;
 				Assert.IsNotNull(label2);
 
-				// http://xamarin.com/schemas/2014/forms/customurl2 -> Xamarin.Forms.Controls.CustomNamespace3
+				// http://xamarin.com/schemas/2014/forms/customurl2 -> System.Maui.Controls.CustomNamespace3
 				var stack = issue2691.FindByName("_testStackLayout") as Controls.CustomNamespace3.CustomStackLayout;
 				Assert.IsNotNull(stack);
 
-				// clr-namespace:Xamarin.Forms.Controls.CustomNamespace1;assembly=Xamarin.Forms.Controls
+				// clr-namespace:System.Maui.Controls.CustomNamespace1;assembly=System.Maui.Controls
 				var button2 = issue2691.FindByName("_testButton2") as Controls.CustomNamespace1.CustomButton;
 				Assert.IsNotNull(button2);
 
-				// using:Xamarin.Forms.Xaml.UnitTests
+				// using:System.Maui.Xaml.UnitTests
 				var label3 = issue2691.FindByName("_testLabel3") as Gh2691TestUsingSyntaxLabel;
 				Assert.IsNotNull(label3);
 			}
@@ -115,7 +115,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 				var dir = Path.GetFullPath(
 						Path.Combine(
-							TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Controls.dll"));
+							TestContext.CurrentContext.TestDirectory, "System.Maui.Controls.dll"));
 				var xamlg = new XamlGTask()
 				{
 					BuildEngine = new DummyBuildEngine(),

@@ -3,7 +3,7 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 xmlns:sys="clr-namespace:System;assembly=mscorlib"
 			 xmlns:scg="clr-namespace:System.Collections.Generic;assembly=mscorlib"
-			 x:Class="Xamarin.Forms.Xaml.UnitTests.GenericsTests"
+			 x:Class="System.Maui.Xaml.UnitTests.GenericsTests"
 			 P="{scg:List x:TypeArguments=x:String}">
 	<ContentPage.Resources>
 		<ResourceDictionary>

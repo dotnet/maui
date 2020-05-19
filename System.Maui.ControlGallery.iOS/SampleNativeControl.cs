@@ -1,12 +1,12 @@
-﻿using UIKit;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.iOS;
-using Xamarin.Forms.Controls.Issues.Helpers;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.iOS;
+using UIKit;
+using System.Maui;
+using System.Maui.ControlGallery.iOS;
+using System.Maui.Controls.Issues.Helpers;
+using System.Maui.Internals;
+using System.Maui.Platform.iOS;
 
 [assembly: Dependency(typeof(SampleNativeControl))]
-namespace Xamarin.Forms.ControlGallery.iOS
+namespace System.Maui.ControlGallery.iOS
 {
 	[Preserve(AllMembers = true)]
 	public class SampleNativeControl : ISampleNativeControl

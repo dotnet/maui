@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
+namespace System.Maui.PlatformConfiguration.TizenSpecific
 {
-	using FormsElement = Forms.Page;
+	using FormsElement = System.Maui.Page;
 
 	public static class Page
 	{

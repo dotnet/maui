@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.ComponentModel;
-using Windows.UI.Text;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.InputView;
+using global::Windows.UI.Text;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Media;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
+using Specifics = System.Maui.PlatformConfiguration.WindowsSpecific.InputView;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class EditorRenderer : ViewRenderer<Editor, FormsTextBox>
 	{
@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				AcceptsReturn = true,
 				TextWrapping = TextWrapping.Wrap,
-				Style = Windows.UI.Xaml.Application.Current.Resources["FormsTextBoxStyle"] as Windows.UI.Xaml.Style,
+				Style = global::Windows.UI.Xaml.Application.Current.Resources["FormsTextBoxStyle"] as global::Windows.UI.Xaml.Style,
 				VerticalContentAlignment = VerticalAlignment.Top
 			};
 		}
@@ -54,7 +54,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 					// The default is DetectFromContent, which we don't want because it can
 					// override the FlowDirection settings. 
-					textBox.TextAlignment = Windows.UI.Xaml.TextAlignment.Left;
+					textBox.TextAlignment = global::Windows.UI.Xaml.TextAlignment.Left;
 				}
 
 				UpdateText();
@@ -175,7 +175,7 @@ namespace Xamarin.Forms.Platform.UWP
 				() => Control.BackgroundFocusBrush, brush => Control.BackgroundFocusBrush = brush);
 		}
 
-		void OnNativeTextChanged(object sender, Windows.UI.Xaml.Controls.TextChangedEventArgs args)
+		void OnNativeTextChanged(object sender, global::Windows.UI.Xaml.Controls.TextChangedEventArgs args)
 		{
 			_transformedText = Element.UpdateFormsText(Control.Text, Element.TextTransform);
 			Element.SetValueCore(Editor.TextProperty, _transformedText);
@@ -188,7 +188,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (Children.Count == 0 || child == null)
 				return new SizeRequest();
 
-			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 			child.Measure(constraint);
 			var result = FormsTextBox.GetCopyOfSize(child, constraint);
 			return new SizeRequest(result);

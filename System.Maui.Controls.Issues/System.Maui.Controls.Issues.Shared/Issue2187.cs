@@ -1,12 +1,12 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2187, "[WPF] FontFamily Assignment in platform specific project don't work", PlatformAffected.WPF)]
@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var stack = new StackLayout();
 			Label issueTestLabel1Description = new Label();
 			issueTestLabel1Description.Text = "Below is supposed to show a hamburger icon (like used in a mobile app)" +
-				" from the FontAwesome font (in the current project with namespace) :\nFontFamily = \"/Xamarin.Forms.ControlGallery.WPF;component/Assets/#FontAwesome\"";
+				" from the FontAwesome font (in the current project with namespace) :\nFontFamily = \"/System.Maui.ControlGallery.WPF;component/Assets/#FontAwesome\"";
 
 
 			Label issueTestLabel1 = new Label
@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Controls.Issues
 			switch (Device.RuntimePlatform)
 			{
 				case Device.WPF:
-					issueTestLabel1.FontFamily = "/Xamarin.Forms.ControlGallery.WPF;component/Assets/#FontAwesome";
+					issueTestLabel1.FontFamily = "/System.Maui.ControlGallery.WPF;component/Assets/#FontAwesome";
 					break;
 				default:
 					break;

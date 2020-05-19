@@ -2,9 +2,9 @@ using System;
 using Android.Views;
 using Object = Java.Lang.Object;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
-	internal class GenericGlobalLayoutListener : Object, ViewTreeObserver.IOnGlobalLayoutListener
+	internal class GenericGlobalLayoutListener : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener
 	{
 		Action _callback;
 

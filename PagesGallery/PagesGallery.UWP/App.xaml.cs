@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Diagnostics;
-using Windows.ApplicationModel;
-using Windows.ApplicationModel.Activation;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Navigation;
-using Xamarin.Forms;
-using Application = Windows.UI.Xaml.Application;
-using Frame = Windows.UI.Xaml.Controls.Frame;
+using global::Windows.ApplicationModel;
+using global::Windows.ApplicationModel.Activation;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Navigation;
+using System.Maui;
+using Application = global::Windows.UI.Xaml.Application;
+using Frame = global::Windows.UI.Xaml.Controls.Frame;
 
 namespace PagesGallery.UWP
 {
@@ -48,7 +48,7 @@ namespace PagesGallery.UWP
 
 				rootFrame.NavigationFailed += OnNavigationFailed;
 
-				Forms.Init(e);
+				System.Maui.Maui.Init(e);
 
 				if (e.PreviousExecutionState == ApplicationExecutionState.Terminated)
 				{

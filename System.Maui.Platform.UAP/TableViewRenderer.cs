@@ -1,12 +1,12 @@
-﻿using System;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
-using WItemsControl = Windows.UI.Xaml.Controls.ItemsControl;
-using WSelectionChangedEventArgs = Windows.UI.Xaml.Controls.SelectionChangedEventArgs;
+using System;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Data;
+using WItemsControl = global::Windows.UI.Xaml.Controls.ItemsControl;
+using WSelectionChangedEventArgs = global::Windows.UI.Xaml.Controls.SelectionChangedEventArgs;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	public class TableViewRenderer : ViewRenderer<TableView, Windows.UI.Xaml.Controls.ListView>
+	public class TableViewRenderer : ViewRenderer<TableView, global::Windows.UI.Xaml.Controls.ListView>
 	{
 		bool _ignoreSelectionEvent;
 		bool _disposed;
@@ -29,13 +29,13 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (Control == null)
 				{
-					SetNativeControl(new Windows.UI.Xaml.Controls.ListView
+					SetNativeControl(new global::Windows.UI.Xaml.Controls.ListView
 					{
-						ItemContainerStyle = (Windows.UI.Xaml.Style)Windows.UI.Xaml.Application.Current.Resources["FormsListViewItem"],
-						ItemTemplate = (Windows.UI.Xaml.DataTemplate)Windows.UI.Xaml.Application.Current.Resources["CellTemplate"],
-						GroupStyle = { new GroupStyle { HidesIfEmpty = false, HeaderTemplate = (Windows.UI.Xaml.DataTemplate)Windows.UI.Xaml.Application.Current.Resources["TableSection"] } },
-						HeaderTemplate = (Windows.UI.Xaml.DataTemplate)Windows.UI.Xaml.Application.Current.Resources["TableRoot"],
-						SelectionMode = Windows.UI.Xaml.Controls.ListViewSelectionMode.Single
+						ItemContainerStyle = (global::Windows.UI.Xaml.Style)global::Windows.UI.Xaml.Application.Current.Resources["FormsListViewItem"],
+						ItemTemplate = (global::Windows.UI.Xaml.DataTemplate)global::Windows.UI.Xaml.Application.Current.Resources["CellTemplate"],
+						GroupStyle = { new GroupStyle { HidesIfEmpty = false, HeaderTemplate = (global::Windows.UI.Xaml.DataTemplate)global::Windows.UI.Xaml.Application.Current.Resources["TableSection"] } },
+						HeaderTemplate = (global::Windows.UI.Xaml.DataTemplate)global::Windows.UI.Xaml.Application.Current.Resources["TableRoot"],
+						SelectionMode = global::Windows.UI.Xaml.Controls.ListViewSelectionMode.Single
 					});
 
 					// You can't set ItemsSource directly to a CollectionViewSource, it crashes.

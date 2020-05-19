@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	// NavigationPage -> ContentPage
 	public class RootNavigationContentPage : NavigationPage {

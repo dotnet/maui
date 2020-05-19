@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.RefreshViewGalleries
+namespace System.Maui.Controls.GalleryPages.RefreshViewGalleries
 {
 	[Preserve(AllMembers = true)]
 	public partial class RefreshCarouselViewGallery : ContentPage

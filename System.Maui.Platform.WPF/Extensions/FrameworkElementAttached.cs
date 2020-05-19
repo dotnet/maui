@@ -1,7 +1,7 @@
-﻿using System.Windows;
+using System.Windows;
 
 
-namespace Xamarin.Forms.Platform.WPF.Extensions
+namespace System.Maui.Platform.WPF.Extensions
 {
 	public class FrameworkElementAttached : FrameworkElement
 	{

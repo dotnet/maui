@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Xml;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	static class TypeArgumentsParser
 	{

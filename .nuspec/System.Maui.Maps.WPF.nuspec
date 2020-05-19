@@ -1,22 +1,22 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>Xamarin.Forms.Maps.WPF</id>
+    <id>System.Maui.Maps.WPF</id>
     <version>$version$</version>
     <authors>Microsoft</authors>
     <owners>microsoft xamarin</owners>
-    <tags>xamarin forms maps xamarinforms xamarinformsmaps xamarin.forms.maps wpf</tags>
+    <tags>xamarin forms maps xamarinforms xamarinformsmaps system.maui.maps wpf</tags>
     <license type="expression">MIT</license>
     <icon>Assets\xamarin_128x128.png</icon>
     <projectUrl>http://xamarin.com/forms</projectUrl>
-    <repository type="git" url="https://github.com/xamarin/xamarin.forms"/>
+    <repository type="git" url="https://github.com/dotnet/maui"/>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
-    <description>Xamarin.Forms.Maps Renderer for WPF</description>
+    <description>System.Maui.Maps Renderer for WPF</description>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <dependencies>
       <group>
-        <dependency id="Xamarin.Forms" version="$version$"/>
-        <dependency id="Xamarin.Forms.Maps" version="$version$"/>
+        <dependency id="System.Maui" version="$version$"/>
+        <dependency id="System.Maui.Maps" version="$version$"/>
       </group>
       <group targetFramework="net45">
         <dependency id="Microsoft.Maps.MapControl.WPF" version="1.0.0.3"/>
@@ -26,7 +26,7 @@
   <files>
     <!--Icon-->
     <file src="..\Assets\xamarin_128x128.png" target="Assets\" />
-    <file src="..\Xamarin.Forms.Maps.WPF\bin\$Configuration$\Xamarin.Forms.Maps.WPF.dll" target="lib\net45" />
-    <file src="..\Xamarin.Forms.Maps.WPF\bin\$Configuration$\Xamarin.Forms.Maps.WPF.*pdb" target="lib\net45" />
+    <file src="..\System.Maui.Maps.WPF\bin\$Configuration$\System.Maui.Maps.WPF.dll" target="lib\net45" />
+    <file src="..\System.Maui.Maps.WPF\bin\$Configuration$\System.Maui.Maps.WPF.*pdb" target="lib\net45" />
   </files>
 </package>

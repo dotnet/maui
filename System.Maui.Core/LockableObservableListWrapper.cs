@@ -5,10 +5,10 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform;
+using System.Maui.Internals;
+using System.Maui.Platform;
 
-namespace Xamarin.Forms.Internals
+namespace System.Maui.Internals
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class LockableObservableListWrapper : IList<string>, ICollection<string>, INotifyCollectionChanged, INotifyPropertyChanged, IReadOnlyList<string>, IReadOnlyCollection<string>, IEnumerable<string>, IEnumerable

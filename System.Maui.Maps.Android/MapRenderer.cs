@@ -17,14 +17,14 @@ using AndroidX.Core.Content;
 using Android.Support.V4.Content;
 #endif
 using Java.Lang;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.Android;
+using System.Maui.Internals;
+using System.Maui.Platform.Android;
 using Math = System.Math;
 using APolyline = Android.Gms.Maps.Model.Polyline;
 using APolygon = Android.Gms.Maps.Model.Polygon;
 using ACircle = Android.Gms.Maps.Model.Circle;
 
-namespace Xamarin.Forms.Maps.Android
+namespace System.Maui.Maps.Android
 {
 	public class MapRenderer : ViewRenderer<Map, MapView>, GoogleMap.IOnCameraMoveListener, IOnMapReadyCallback
 	{
@@ -418,7 +418,7 @@ namespace Xamarin.Forms.Maps.Android
 			catch (IllegalStateException exc)
 			{
 				System.Diagnostics.Debug.WriteLine("MoveToRegion exception: " + exc);
-				Log.Warning("Xamarin.Forms MapRenderer", $"MoveToRegion exception: {exc}");
+				Log.Warning("System.Maui MapRenderer", $"MoveToRegion exception: {exc}");
 			}
 		}
 
@@ -1010,7 +1010,7 @@ namespace Xamarin.Forms.Maps.Android
 				}
 				else
 				{
-					Log.Warning("Xamarin.Forms.MapRenderer", "Missing location permissions for IsShowingUser");
+					Log.Warning("System.Maui.MapRenderer", "Missing location permissions for IsShowingUser");
 					map.MyLocationEnabled = map.UiSettings.MyLocationButtonEnabled = false;
 				}
 			}

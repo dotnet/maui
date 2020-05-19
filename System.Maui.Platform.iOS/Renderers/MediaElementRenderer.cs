@@ -1,4 +1,4 @@
-﻿using AVFoundation;
+using AVFoundation;
 using AVKit;
 using CoreGraphics;
 using CoreMedia;
@@ -6,9 +6,9 @@ using Foundation;
 using System;
 using System.IO;
 using UIKit;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public sealed class MediaElementRenderer : ViewRenderer<MediaElement, UIView>
 	{
@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Platform.iOS
 		[Internals.Preserve(Conditional = true)]
 		public MediaElementRenderer()
 		{
-			Xamarin.Forms.MediaElement.VerifyMediaElementFlagEnabled(nameof(MediaElementRenderer));
+			System.Maui.MediaElement.VerifyMediaElementFlagEnabled(nameof(MediaElementRenderer));
 
 			_playedToEndObserver = NSNotificationCenter.DefaultCenter.AddObserver(AVPlayerItem.DidPlayToEndTimeNotification, PlayedToEnd);
 		}

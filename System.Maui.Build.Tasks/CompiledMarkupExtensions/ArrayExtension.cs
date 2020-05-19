@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
-using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace System.Maui.Build.Tasks
 {
 	class ArrayExtension : ICompiledMarkupExtension
 	{

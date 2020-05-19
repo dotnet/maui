@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
@@ -8,10 +8,10 @@ using System.Runtime.CompilerServices;
 using CategoryAttribute = NUnit.Framework.CategoryAttribute;
 using DescriptionAttribute = NUnit.Framework.DescriptionAttribute;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using System.Diagnostics;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class TypedBindingUnitTests : BindingBaseUnitTests
@@ -1004,7 +1004,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		//https://github.com/xamarin/Xamarin.Forms/issues/4103
+		//https://github.com/xamarin/System.Maui/issues/4103
 		public void TestTargetNullValue()
 		{
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), default(string));
@@ -1647,8 +1647,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		//https://github.com/xamarin/Xamarin.Forms/issues/3650
-		//https://github.com/xamarin/Xamarin.Forms/issues/3613
+		//https://github.com/xamarin/System.Maui/issues/3650
+		//https://github.com/xamarin/System.Maui/issues/3613
 		public void TypedBindingsShouldNotHang()
 		{
 			var typedBinding = new TypedBinding<VM3650, string>(

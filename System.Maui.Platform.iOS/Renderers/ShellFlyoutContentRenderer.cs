@@ -1,9 +1,9 @@
-﻿using CoreGraphics;
+using CoreGraphics;
 using System;
 using System.ComponentModel;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class ShellFlyoutContentRenderer : UIViewController, IShellFlyoutContentRenderer
 	{

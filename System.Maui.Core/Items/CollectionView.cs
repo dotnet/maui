@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Xamarin.Forms.Platform;
+using System.Maui.Platform;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[RenderWith(typeof(_CollectionViewRenderer))]
 	public class CollectionView : GroupableItemsView

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -7,7 +7,7 @@ using System.Windows.Media;
 using System.Windows.Controls;
 using System.Windows.Threading;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	/// <summary>
 	///     An intermediate class for injecting bindings for things the default

@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using Mono.Cecil.Cil;
 
-using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 
 using static System.String;
-using Xamarin.Forms.Build.Tasks;
+using System.Maui.Build.Tasks;
 
-namespace Xamarin.Forms.Core.XamlC
+namespace System.Maui.Core.XamlC
 {
 	class BindingTypeConverter : ICompiledTypeConverter
 	{
@@ -23,10 +23,10 @@ namespace Xamarin.Forms.Core.XamlC
 			yield return Instruction.Create(OpCodes.Ldnull);
 			yield return Instruction.Create(OpCodes.Ldnull);
 			yield return Instruction.Create(OpCodes.Ldnull);
-			yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Binding"), parameterTypes: new[] {
+			yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("System.Maui.Core", "System.Maui", "Binding"), parameterTypes: new[] {
 				("mscorlib", "System", "String"),
-				("Xamarin.Forms.Core", "Xamarin.Forms", "BindingMode"),
-				("Xamarin.Forms.Core", "Xamarin.Forms", "IValueConverter"),
+				("System.Maui.Core", "System.Maui", "BindingMode"),
+				("System.Maui.Core", "System.Maui", "IValueConverter"),
 				("mscorlib", "System", "Object"),
 				("mscorlib", "System", "String"),
 				("mscorlib", "System", "Object")}));

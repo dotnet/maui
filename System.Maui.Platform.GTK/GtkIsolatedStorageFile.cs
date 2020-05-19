@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.IO;
 using System.IO.IsolatedStorage;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.GTK
+namespace System.Maui.Platform.GTK
 {
 	public class GtkIsolatedStorageFile : IIsolatedStorageFile
 	{

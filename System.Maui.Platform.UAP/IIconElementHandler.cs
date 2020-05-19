@@ -1,8 +1,8 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Controls;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public interface IIconElementHandler : IRegisterable
 	{

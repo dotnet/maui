@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Reflection;
 using System.Windows.Input;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public sealed class Command<T> : Command 
 	{

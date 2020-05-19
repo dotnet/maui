@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Xamarin.Forms.Controls.LegacyComponents
+namespace System.Maui.Controls.LegacyComponents
 {
     public class NonAppCompatSwitch : Switch
     {

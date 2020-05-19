@@ -1,7 +1,7 @@
-﻿using Gtk;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk;
+using System.Maui.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Cells
+namespace System.Maui.Platform.GTK.Cells
 {
 	internal class TextCell : CellBase
 	{

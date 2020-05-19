@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Reflection;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Markup.UnitTests
+namespace System.Maui.Markup.UnitTests
 {
 	using System.Globalization;
 	using System.Linq;
 	using System.Windows.Input;
-	using XamarinFormsMarkupUnitTestsBindableObjectViews;
+	using MauiMarkupUnitTestsBindableObjectViews;
 
 	[TestFixture(true)]
 	[TestFixture(false)]
@@ -752,9 +752,9 @@ namespace Xamarin.Forms.Markup.UnitTests
 	}
 }
 
-namespace XamarinFormsMarkupUnitTestsBindableObjectViews
+namespace System.MauiMarkupUnitTestsBindableObjectViews
 {
-	using Xamarin.Forms;
+	using System.Maui;
 
 	class DerivedFromLabel : Label { }
 	class DerivedFromTextCell : TextCell { }

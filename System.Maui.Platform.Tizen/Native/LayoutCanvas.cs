@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using ElmSharp;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 
 using ELayout = ElmSharp.Layout;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	public class LayoutCanvas : ELayout, IContainable<EvasObject>
 	{

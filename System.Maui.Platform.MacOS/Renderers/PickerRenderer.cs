@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using AppKit;
 using System.ComponentModel;
 using Foundation;
 using System.Collections.Specialized;
 using System.Linq;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public class PickerRenderer : ViewRenderer<Picker, NSPopUpButton>
 	{

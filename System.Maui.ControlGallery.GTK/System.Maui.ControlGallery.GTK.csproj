@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -7,8 +7,8 @@
     <ProjectGuid>{03A51E5B-0A1E-41F0-AAE3-4B19406F7340}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Xamarin.Forms.ControlGallery.GTK</RootNamespace>
-    <AssemblyName>Xamarin.Forms.ControlGallery.GTK</AssemblyName>
+    <RootNamespace>System.Maui.ControlGallery.GTK</RootNamespace>
+    <AssemblyName>System.Maui.ControlGallery.GTK</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -41,37 +41,37 @@
   <ItemGroup>
     <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Xamarin.Forms.Platform.GTK\Libs\gtk-sharp\gtk-sharp-2.0\atk-sharp.dll</HintPath>
+      <HintPath>..\System.Maui.Platform.GTK\Libs\gtk-sharp\gtk-sharp-2.0\atk-sharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Xamarin.Forms.Platform.GTK\Libs\gtk-sharp\gtk-sharp-2.0\gdk-sharp.dll</HintPath>
+      <HintPath>..\System.Maui.Platform.GTK\Libs\gtk-sharp\gtk-sharp-2.0\gdk-sharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="glade-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Xamarin.Forms.Platform.GTK\Libs\gtk-sharp\gtk-sharp-2.0\glade-sharp.dll</HintPath>
+      <HintPath>..\System.Maui.Platform.GTK\Libs\gtk-sharp\gtk-sharp-2.0\glade-sharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Xamarin.Forms.Platform.GTK\Libs\gtk-sharp\gtk-sharp-2.0\glib-sharp.dll</HintPath>
+      <HintPath>..\System.Maui.Platform.GTK\Libs\gtk-sharp\gtk-sharp-2.0\glib-sharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="gtk-dotnet, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Xamarin.Forms.Platform.GTK\Libs\gtk-sharp\gtk-sharp-2.0\gtk-dotnet.dll</HintPath>
+      <HintPath>..\System.Maui.Platform.GTK\Libs\gtk-sharp\gtk-sharp-2.0\gtk-dotnet.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Xamarin.Forms.Platform.GTK\Libs\gtk-sharp\gtk-sharp-2.0\gtk-sharp.dll</HintPath>
+      <HintPath>..\System.Maui.Platform.GTK\Libs\gtk-sharp\gtk-sharp-2.0\gtk-sharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="pango-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Xamarin.Forms.Platform.GTK\Libs\gtk-sharp\gtk-sharp-2.0\pango-sharp.dll</HintPath>
+      <HintPath>..\System.Maui.Platform.GTK\Libs\gtk-sharp\gtk-sharp-2.0\pango-sharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -89,10 +89,10 @@
     <PackageReference Include="OpenTK" Version="3.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\xamarin.forms.controls\gallerypages\openglgalleries\AdvancedOpenGLGallery.cs">
+    <Compile Include="..\System.Maui.controls\gallerypages\openglgalleries\AdvancedOpenGLGallery.cs">
       <Link>GalleryPages\AdvancedOpenGLGallery.cs</Link>
     </Compile>
-    <Compile Include="..\xamarin.forms.controls\gallerypages\openglgalleries\BasicOpenGLGallery.cs">
+    <Compile Include="..\System.Maui.controls\gallerypages\openglgalleries\BasicOpenGLGallery.cs">
       <Link>GalleryPages\BasicOpenGLGallery.cs</Link>
     </Compile>
     <Compile Include="PlatformSpecificCoreGalleryFactory.cs" />
@@ -107,145 +107,145 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Controls\Xamarin.Forms.Controls.csproj">
+    <ProjectReference Include="..\System.Maui.Controls\System.Maui.Controls.csproj">
       <Project>{cb9c96ce-125c-4a68-b6a1-c3ff1fbf93e1}</Project>
-      <Name>Xamarin.Forms.Controls</Name>
+      <Name>System.Maui.Controls</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj">
       <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
-      <Name>Xamarin.Forms.Core</Name>
+      <Name>System.Maui.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Maps.GTK\Xamarin.Forms.Maps.GTK.csproj">
+    <ProjectReference Include="..\System.Maui.Maps.GTK\System.Maui.Maps.GTK.csproj">
       <Project>{a9772bb1-0e17-42f5-a6db-60bfccbfdb9d}</Project>
-      <Name>Xamarin.Forms.Maps.GTK</Name>
+      <Name>System.Maui.Maps.GTK</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
+    <ProjectReference Include="..\System.Maui.Maps\System.Maui.Maps.csproj">
       <Project>{7d13bac2-c6a4-416a-b07e-c169b199e52b}</Project>
-      <Name>Xamarin.Forms.Maps</Name>
+      <Name>System.Maui.Maps</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Platform.GTK\Xamarin.Forms.Platform.GTK.csproj">
+    <ProjectReference Include="..\System.Maui.Platform.GTK\System.Maui.Platform.GTK.csproj">
       <Project>{1f058504-62f9-4279-ac8f-16738e0f4417}</Project>
-      <Name>Xamarin.Forms.Platform.GTK</Name>
+      <Name>System.Maui.Platform.GTK</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\bank.png">
+    <Content Include="..\System.Maui.ControlGallery.iOS\bank.png">
       <Link>bank.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\calculator.png">
+    <Content Include="..\System.Maui.ControlGallery.iOS\calculator.png">
       <Link>calculator.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\coffee.png">
+    <Content Include="..\System.Maui.ControlGallery.iOS\coffee.png">
       <Link>coffee.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\cover1.jpg">
+    <Content Include="..\System.Maui.ControlGallery.iOS\cover1.jpg">
       <Link>cover1.jpg</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\cover1small.jpg">
+    <Content Include="..\System.Maui.ControlGallery.iOS\cover1small.jpg">
       <Link>cover1small.jpg</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\crimson.jpg">
+    <Content Include="..\System.Maui.ControlGallery.iOS\crimson.jpg">
       <Link>crimson.jpg</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\crimsonsmall.jpg">
+    <Content Include="..\System.Maui.ControlGallery.iOS\crimsonsmall.jpg">
       <Link>crimsonsmall.jpg</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\default.css">
+    <Content Include="..\System.Maui.ControlGallery.iOS\default.css">
       <Link>default.css</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\local.html">
+    <Content Include="..\System.Maui.ControlGallery.iOS\local.html">
       <Link>local.html</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\menuIcon.png">
+    <Content Include="..\System.Maui.ControlGallery.iOS\menuIcon.png">
       <Link>menuIcon.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\oasis.jpg">
+    <Content Include="..\System.Maui.ControlGallery.iOS\oasis.jpg">
       <Link>oasis.jpg</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\oasissmall.jpg">
+    <Content Include="..\System.Maui.ControlGallery.iOS\oasissmall.jpg">
       <Link>oasissmall.jpg</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\about.png">
+    <Content Include="..\System.Maui.ControlGallery.iOS\Resources\about.png">
       <Link>about.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\blog.png">
+    <Content Include="..\System.Maui.ControlGallery.iOS\Resources\blog.png">
       <Link>blog.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\facebook.png">
+    <Content Include="..\System.Maui.ControlGallery.iOS\Resources\facebook.png">
       <Link>facebook.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\favorite.png">
+    <Content Include="..\System.Maui.ControlGallery.iOS\Resources\favorite.png">
       <Link>favorite.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\googleplus.png">
+    <Content Include="..\System.Maui.ControlGallery.iOS\Resources\googleplus.png">
       <Link>googleplus.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\hm.png">
+    <Content Include="..\System.Maui.ControlGallery.iOS\Resources\hm.png">
       <Link>hm.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\hm_full.jpg">
+    <Content Include="..\System.Maui.ControlGallery.iOS\Resources\hm_full.jpg">
       <Link>hm_full.jpg</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\home.png">
+    <Content Include="..\System.Maui.ControlGallery.iOS\Resources\home.png">
       <Link>home.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\lists.png">
+    <Content Include="..\System.Maui.ControlGallery.iOS\Resources\lists.png">
       <Link>lists.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\notifications.png">
+    <Content Include="..\System.Maui.ControlGallery.iOS\Resources\notifications.png">
       <Link>notifications.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\profile.png">
+    <Content Include="..\System.Maui.ControlGallery.iOS\Resources\profile.png">
       <Link>profile.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\rui.jpg">
+    <Content Include="..\System.Maui.ControlGallery.iOS\Resources\rui.jpg">
       <Link>rui.jpg</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\scott.png">
+    <Content Include="..\System.Maui.ControlGallery.iOS\Resources\scott.png">
       <Link>scott.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\scott159.png">
+    <Content Include="..\System.Maui.ControlGallery.iOS\Resources\scott159.png">
       <Link>scott159.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\search.png">
+    <Content Include="..\System.Maui.ControlGallery.iOS\Resources\search.png">
       <Link>search.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\xamarinlogo.png">
+    <Content Include="..\System.Maui.ControlGallery.iOS\Resources\xamarinlogo.png">
       <Link>xamarinlogo.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\test.jpg">
+    <Content Include="..\System.Maui.ControlGallery.iOS\test.jpg">
       <Link>test.jpg</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.iOS\toolbar_close.png">
+    <Content Include="..\System.Maui.ControlGallery.iOS\toolbar_close.png">
       <Link>toolbar_close.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

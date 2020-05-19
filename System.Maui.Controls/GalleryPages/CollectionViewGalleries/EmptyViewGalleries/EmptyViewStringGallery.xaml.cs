@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.EmptyViewGalleries
+namespace System.Maui.Controls.GalleryPages.CollectionViewGalleries.EmptyViewGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class EmptyViewStringGallery : ContentPage

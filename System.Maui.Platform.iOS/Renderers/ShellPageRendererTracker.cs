@@ -1,4 +1,4 @@
-﻿using CoreGraphics;
+using CoreGraphics;
 using Foundation;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class ShellPageRendererTracker : IShellPageRendererTracker, IFlyoutBehaviorObserver
 	{
@@ -174,7 +174,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			NavigationItem = ViewController.NavigationItem;
 
-			if (!Forms.IsiOS11OrNewer)
+			if (!System.Maui.Maui.IsiOS11OrNewer)
 			{
 				ViewController.AutomaticallyAdjustsScrollViewInsets = false;
 			}
@@ -194,7 +194,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				var view = new TitleViewContainer(titleView);
 
-				if (Forms.IsiOS11OrNewer)
+				if (System.Maui.Maui.IsiOS11OrNewer)
 				{
 					view.TranslatesAutoresizingMaskIntoConstraints = false;
 				}
@@ -388,7 +388,7 @@ namespace Xamarin.Forms.Platform.iOS
 				get => base.Frame;
 				set
 				{
-					if (!Forms.IsiOS11OrNewer && Superview != null)
+					if (!System.Maui.Maui.IsiOS11OrNewer && Superview != null)
 					{
 						value.Y = Superview.Bounds.Y;
 						value.Height = Superview.Bounds.Height;
@@ -478,7 +478,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (searchController != null)
 				{
-					if (Forms.IsiOS11OrNewer)
+					if (System.Maui.Maui.IsiOS11OrNewer)
 						RemoveSearchController(NavigationItem);
 					else
 						NavigationItem.TitleView = null;
@@ -486,7 +486,7 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 			else if (visibility == SearchBoxVisibility.Collapsible || visibility == SearchBoxVisibility.Expanded)
 			{
-				if (Forms.IsiOS11OrNewer)
+				if (System.Maui.Maui.IsiOS11OrNewer)
 				{
 					NavigationItem.SearchController = _searchController;
 					NavigationItem.HidesSearchBarWhenScrolling = visibility == SearchBoxVisibility.Collapsible;
@@ -526,7 +526,7 @@ namespace Xamarin.Forms.Platform.iOS
 			var visibility = SearchHandler.SearchBoxVisibility;
 			if (visibility != SearchBoxVisibility.Hidden)
 			{
-				if (Forms.IsiOS11OrNewer)
+				if (System.Maui.Maui.IsiOS11OrNewer)
 					NavigationItem.SearchController = _searchController;
 				else
 					NavigationItem.TitleView = _searchController.SearchBar;
@@ -544,7 +544,7 @@ namespace Xamarin.Forms.Platform.iOS
 			searchBar.Placeholder = SearchHandler.Placeholder;
 			UpdateSearchIsEnabled(_searchController);
 			searchBar.SearchButtonClicked += SearchButtonClicked;
-			if (Forms.IsiOS11OrNewer)
+			if (System.Maui.Maui.IsiOS11OrNewer)
 				NavigationItem.HidesSearchBarWhenScrolling = visibility == SearchBoxVisibility.Collapsible;
 
 			var icon = SearchHandler.QueryIcon;
@@ -581,7 +581,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			_searchHandlerAppearanceTracker.Dispose();
 			_searchHandlerAppearanceTracker = null;
-			if (Forms.IsiOS11OrNewer)
+			if (System.Maui.Maui.IsiOS11OrNewer)
 			{
 				RemoveSearchController(NavigationItem);
 			}

@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Views;
 using Android.Widget;
-using Xamarin.Forms.Platform.Android;
+using System.Maui.Platform.Android;
 using Droid = Android;
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace System.Maui.ControlGallery.Android
 {
 	public class ColorPickerView : ViewGroup
 	//, INotifyPropertyChanged

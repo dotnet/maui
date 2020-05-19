@@ -1,15 +1,15 @@
-﻿using System;
-using Xamarin.Forms;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System;
+using System.Maui;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
 #if UITEST
 using NUnit.Framework;
 using Xamarin.UITest.iOS;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Github, 2414, "NullReferenceException when swiping over Context Actions", PlatformAffected.WinPhone)]

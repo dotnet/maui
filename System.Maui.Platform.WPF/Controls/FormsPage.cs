@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Xamarin.Forms.Platform.WPF.Helpers;
-using Xamarin.Forms.Platform.WPF.Interfaces;
+using System.Maui.Platform.WPF.Helpers;
+using System.Maui.Platform.WPF.Interfaces;
 
-namespace Xamarin.Forms.Platform.WPF.Controls
+namespace System.Maui.Platform.WPF.Controls
 {
 	public class FormsPage : UserControl
 	{

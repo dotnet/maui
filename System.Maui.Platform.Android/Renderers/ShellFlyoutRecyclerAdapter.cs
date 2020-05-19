@@ -1,4 +1,4 @@
-﻿using Android.Runtime;
+using Android.Runtime;
 #if __ANDROID_29__
 using AndroidX.AppCompat.Widget;
 using AndroidX.RecyclerView.Widget;
@@ -10,11 +10,11 @@ using Android.Widget;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class ShellFlyoutRecyclerAdapter : RecyclerView.Adapter
 	{

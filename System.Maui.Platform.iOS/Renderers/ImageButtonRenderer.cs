@@ -5,10 +5,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
 using UIKit;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using System.Maui.PlatformConfiguration.iOSSpecific;
 using SizeF = CoreGraphics.CGSize;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class ImageButtonRenderer : ViewRenderer<ImageButton, UIButton>, IImageVisualElementRenderer
 	{

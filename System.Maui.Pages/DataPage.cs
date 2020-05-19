@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 
-namespace Xamarin.Forms.Pages
+namespace System.Maui.Pages
 {
 	public class DataPage : ContentPage, IDataSourceProvider
 	{

@@ -1,13 +1,13 @@
 using System;
 using UIKit;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.iOS;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui;
+using System.Maui.ControlGallery.iOS;
+using System.Maui.Controls.Issues;
+using System.Maui.Platform.iOS;
 
 [assembly: ExportRenderer(typeof(Bugzilla60122._60122Image), typeof(_60122ImageRenderer))]
 
-namespace Xamarin.Forms.ControlGallery.iOS
+namespace System.Maui.ControlGallery.iOS
 {
 	public class _60122ImageRenderer : ImageRenderer
 	{

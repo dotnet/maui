@@ -1,11 +1,11 @@
 using System;
 using System.ComponentModel;
 using System.Reflection;
-using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
-	[ProvideCompiled("Xamarin.Forms.Core.XamlC.PassthroughValueProvider")]
+	[ProvideCompiled("System.Maui.Core.XamlC.PassthroughValueProvider")]
 	[AcceptEmptyServiceProvider]
 	public sealed class PropertyCondition : Condition, IValueProvider
 	{

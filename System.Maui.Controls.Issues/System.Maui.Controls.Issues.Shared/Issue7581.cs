@@ -1,8 +1,8 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Maps;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
+using System.Maui.Maps;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 { 
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 7581, "UWP Map not moving to location when map hidden then shown", PlatformAffected.UWP)]

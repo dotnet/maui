@@ -1,18 +1,18 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29920.165
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Pages", "..\Xamarin.Forms.Pages\Xamarin.Forms.Pages.csproj", "{B237F558-EC6C-42FD-97AF-26533AF79907}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.Pages", "..\System.Maui.Pages\System.Maui.Pages.csproj", "{B237F558-EC6C-42FD-97AF-26533AF79907}"
 	ProjectSection(ProjectDependencies) = postProject
 		{F19CE85F-D376-4C80-BC6D-1CEF02758D23} = {F19CE85F-D376-4C80-BC6D-1CEF02758D23}
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Core", "..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj", "{C47CA368-46E4-4FF6-A273-6878D0899EE3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.Core", "..\System.Maui.Core\System.Maui.Core.csproj", "{C47CA368-46E4-4FF6-A273-6878D0899EE3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Pages.Azure", "..\Xamarin.Forms.Pages.Azure\Xamarin.Forms.Pages.Azure.csproj", "{33104A4F-424D-4580-858C-CAF40EA33C23}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.Pages.Azure", "..\System.Maui.Pages.Azure\System.Maui.Pages.Azure.csproj", "{33104A4F-424D-4580-858C-CAF40EA33C23}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Pages.UnitTests", "..\Xamarin.Forms.Pages.UnitTests\Xamarin.Forms.Pages.UnitTests.csproj", "{447DC60E-C485-4427-8CF7-50074C6B61DE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Maui.Pages.UnitTests", "..\System.Maui.Pages.UnitTests\System.Maui.Pages.UnitTests.csproj", "{447DC60E-C485-4427-8CF7-50074C6B61DE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PagesGallery", "..\PagesGallery\PagesGallery\PagesGallery.csproj", "{343EBF1B-F26D-4D4D-B7D9-F6E25247AF31}"
 EndProject
@@ -24,31 +24,31 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PagesGallery.UWP", "..\Page
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Gallery", "Gallery", "{B665CDCF-B452-40C1-913F-B21A43F133E8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Platform", "..\Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj", "{C5D456D0-F03E-4E76-A6E4-C648FE55E448}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.Platform", "..\System.Maui.Platform\System.Maui.Platform.csproj", "{C5D456D0-F03E-4E76-A6E4-C648FE55E448}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Xaml", "..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj", "{1CF8E623-638A-491A-8AA6-9E15550FE166}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.Xaml", "..\System.Maui.Xaml\System.Maui.Xaml.csproj", "{1CF8E623-638A-491A-8AA6-9E15550FE166}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Platform.iOS", "..\Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj", "{271193C1-6E7C-429C-A36D-3F1BE5267231}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Maui.Platform.iOS", "..\System.Maui.Platform.iOS\System.Maui.Platform.iOS.csproj", "{271193C1-6E7C-429C-A36D-3F1BE5267231}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Platform.UAP", "..\Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj", "{4C8CFF50-3DE9-4F08-8EB9-0B5C64841375}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.Platform.UAP", "..\System.Maui.Platform.UAP\System.Maui.Platform.UAP.csproj", "{4C8CFF50-3DE9-4F08-8EB9-0B5C64841375}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Platform.Android", "..\Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj", "{308C6272-220A-4241-918B-3EE86C0961E8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.Platform.Android", "..\System.Maui.Platform.Android\System.Maui.Platform.Android.csproj", "{308C6272-220A-4241-918B-3EE86C0961E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Platform.Android.FormsViewGroup", "..\Xamarin.Forms.Platform.Android.FormsViewGroup\Xamarin.Forms.Platform.Android.FormsViewGroup.csproj", "{3B72465B-ACAE-43AE-9327-10F372FE5F80}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Maui.Platform.Android.FormsViewGroup", "..\System.Maui.Platform.Android.FormsViewGroup\System.Maui.Platform.Android.FormsViewGroup.csproj", "{3B72465B-ACAE-43AE-9327-10F372FE5F80}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Platform.Tizen", "..\Xamarin.Forms.Platform.Tizen\Xamarin.Forms.Platform.Tizen.csproj", "{71832CC7-F2F5-483D-95BE-8C82DDD51838}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.Platform.Tizen", "..\System.Maui.Platform.Tizen\System.Maui.Platform.Tizen.csproj", "{71832CC7-F2F5-483D-95BE-8C82DDD51838}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platforms", "Platforms", "{7DC6E225-9835-4691-A909-C296675581CA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Forwarders", "Forwarders", "{8F3ED24F-C888-4884-AAF8-216828F7E944}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Platform.Android (Forwarders)", "..\Stubs\Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android (Forwarders).csproj", "{047FA2C2-D044-4222-B54B-8F401A9DA54F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.Platform.Android (Forwarders)", "..\Stubs\System.Maui.Platform.Android\System.Maui.Platform.Android (Forwarders).csproj", "{047FA2C2-D044-4222-B54B-8F401A9DA54F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Platform.iOS (Forwarders)", "..\Stubs\Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS (Forwarders).csproj", "{39B3457F-01D8-43D0-8E84-D8C4F73CF48D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Maui.Platform.iOS (Forwarders)", "..\Stubs\System.Maui.Platform.iOS\System.Maui.Platform.iOS (Forwarders).csproj", "{39B3457F-01D8-43D0-8E84-D8C4F73CF48D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Platform.Tizen (Forwarders)", "..\Stubs\Xamarin.Forms.Platform.Tizen\Xamarin.Forms.Platform.Tizen (Forwarders).csproj", "{C8A1C366-2220-4642-B9F9-4C5461BBB94F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.Platform.Tizen (Forwarders)", "..\Stubs\System.Maui.Platform.Tizen\System.Maui.Platform.Tizen (Forwarders).csproj", "{C8A1C366-2220-4642-B9F9-4C5461BBB94F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Build.Tasks", "..\Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj", "{F19CE85F-D376-4C80-BC6D-1CEF02758D23}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.Build.Tasks", "..\System.Maui.Build.Tasks\System.Maui.Build.Tasks.csproj", "{F19CE85F-D376-4C80-BC6D-1CEF02758D23}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution

@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using ElmSharp;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class TableViewRenderer : ViewRenderer<TableView, Native.TableView>
 	{
@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Native.TableView(Forms.NativeParent));
+				SetNativeControl(new Native.TableView(System.Maui.Maui.NativeParent));
 				Control.ItemSelected += OnSelected;
 			}
 

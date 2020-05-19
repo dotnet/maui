@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
+namespace System.Maui.Controls.GalleryPages.SwipeViewGalleries
 {
 	public partial class SwipeViewVisualStatesCollectionGallery : ContentPage
 	{

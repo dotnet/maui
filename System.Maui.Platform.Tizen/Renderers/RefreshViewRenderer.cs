@@ -1,16 +1,16 @@
-﻿using ElmSharp;
+using ElmSharp;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using TWebView = Tizen.WebView.WebView;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	class RefreshIcon : ContentView
 	{
 		public static readonly int IconSize = 48;
 		static readonly Color DefaultColor = Color.FromHex("#6200EE");
-		static readonly string IconPath = "Xamarin.Forms.Platform.Tizen.Resource.refresh_48dp.png";
+		static readonly string IconPath = "System.Maui.Platform.Tizen.Resource.refresh_48dp.png";
 
 		bool _isPlaying;
 		Image _icon;
@@ -209,7 +209,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				X = parentBound.X,
 				Y = parentBound.Y,
 				Width = parentBound.Width,
-				Height = Forms.ConvertToScaledPixel(measured.Request.Height)
+				Height = System.Maui.Maui.ConvertToScaledPixel(measured.Request.Height)
 			};
 
 			_refreshLayoutRenderer.NativeView.Geometry = bound;
@@ -309,7 +309,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (RefreshState == RefreshState.Drag)
 			{
 				var dy = moment.Y2 - moment.Y1;
-				_refreshLayout?.SetDistance(Forms.ConvertToScaledDP(dy));
+				_refreshLayout?.SetDistance(System.Maui.Maui.ConvertToScaledDP(dy));
 			}
 		}
 

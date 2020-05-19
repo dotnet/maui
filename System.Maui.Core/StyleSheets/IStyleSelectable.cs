@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-namespace Xamarin.Forms.StyleSheets
+namespace System.Maui.StyleSheets
 {
 	interface IStyleSelectable
 	{

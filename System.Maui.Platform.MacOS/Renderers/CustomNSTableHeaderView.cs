@@ -1,8 +1,8 @@
-﻿using AppKit;
+using AppKit;
 using CoreGraphics;
 using Foundation;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	sealed class CustomNSTableHeaderView : NSTableHeaderView
 	{
@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				var request = headerView.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
 				height = request.Request.Height;
 				var bounds = new Rectangle(0, 0, width, height);
-				Xamarin.Forms.Layout.LayoutChildIntoBoundingRegion(headerView, bounds);
+				System.Maui.Layout.LayoutChildIntoBoundingRegion(headerView, bounds);
 				headerRenderer.NativeView.Frame = bounds.ToRectangleF();
 				AddSubview(headerRenderer.NativeView);
 

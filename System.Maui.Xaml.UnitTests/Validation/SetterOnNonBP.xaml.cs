@@ -1,7 +1,7 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 
-using Xamarin.Forms;
-namespace Xamarin.Forms.Xaml.UnitTests
+using System.Maui;
+namespace System.Maui.Xaml.UnitTests
 {	
 	public class FakeView : View
 	{

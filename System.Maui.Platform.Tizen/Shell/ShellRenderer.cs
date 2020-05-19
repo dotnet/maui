@@ -1,7 +1,7 @@
 using System;
 using ElmSharp;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class ShellRenderer : VisualElementRenderer<Shell>, IFlyoutController
 	{
@@ -69,9 +69,9 @@ namespace Xamarin.Forms.Platform.Tizen
 				var headerView = Platform.GetOrCreateRenderer(flyoutHeader);
 				(headerView as LayoutRenderer)?.RegisterOnLayoutUpdated();
 
-				Size request = flyoutHeader.Measure(Forms.ConvertToScaledDP(_native.NavigationView.MinimumWidth),
-													Forms.ConvertToScaledDP(_native.NavigationView.MinimumHeight)).Request;
-				headerView.NativeView.MinimumHeight = Forms.ConvertToScaledPixel(request.Height);
+				Size request = flyoutHeader.Measure(System.Maui.Maui.ConvertToScaledDP(_native.NavigationView.MinimumWidth),
+													System.Maui.Maui.ConvertToScaledDP(_native.NavigationView.MinimumHeight)).Request;
+				headerView.NativeView.MinimumHeight = System.Maui.Maui.ConvertToScaledPixel(request.Height);
 
 				_navigationView.Header = headerView.NativeView;
 			}
@@ -91,12 +91,12 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		protected virtual INavigationDrawer CreateNavigationDrawer()
 		{
-			return new NavigationDrawer(Forms.NativeParent);
+			return new NavigationDrawer(System.Maui.Maui.NativeParent);
 		}
 
 		protected virtual INavigationView CreateNavigationView()
 		{
-			return new NavigationView(Forms.NativeParent);
+			return new NavigationView(System.Maui.Maui.NativeParent);
 		}
 
 		void UpdateCurrentItem()

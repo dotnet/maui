@@ -1,7 +1,7 @@
-﻿using Foundation;
+using Foundation;
 using UIKit;
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui;
+using System.Maui.Platform.iOS;
 
 namespace PagesGallery.iOS
 {
@@ -20,7 +20,7 @@ namespace PagesGallery.iOS
 		//
 		public override bool FinishedLaunching(UIApplication app, NSDictionary options)
 		{
-			Forms.Init();
+			System.Maui.Maui.Init();
 #if __XCODE11__
 			FormsMaterial.Init();
 #endif

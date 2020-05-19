@@ -1,12 +1,12 @@
 using System;
 using System.Linq;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
 
-using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+using WindowsOS = System.Maui.PlatformConfiguration.Windows;
 
-namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
+namespace System.Maui.Controls.GalleryPages.PlatformSpecificsGalleries
 {
     internal static class WindowsPlatformSpecificsGalleryHelpers
     {

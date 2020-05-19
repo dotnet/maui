@@ -3,7 +3,7 @@ using System.IO;
 using ElmSharp;
 using TApplication = Tizen.Applications.Application;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class EmbeddedFontLoader : IEmbeddedFontLoader, IRegisterable
 	{

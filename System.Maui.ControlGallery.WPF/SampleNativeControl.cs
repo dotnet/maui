@@ -1,10 +1,10 @@
-﻿using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.WPF;
-using Xamarin.Forms.Controls.Issues.Helpers;
-using Xamarin.Forms.Platform.WPF;
+using System.Maui;
+using System.Maui.ControlGallery.WPF;
+using System.Maui.Controls.Issues.Helpers;
+using System.Maui.Platform.WPF;
 
 [assembly: Dependency(typeof(SampleNativeControl))]
-namespace Xamarin.Forms.ControlGallery.WPF
+namespace System.Maui.ControlGallery.WPF
 {
 	public class SampleNativeControl : ISampleNativeControl
 	{

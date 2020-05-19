@@ -1,11 +1,11 @@
-﻿using CoreGraphics;
+using CoreGraphics;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class ShellSectionRootRenderer : UIViewController, IShellSectionRootRenderer
 	{
@@ -70,7 +70,7 @@ namespace Xamarin.Forms.Platform.iOS
 			base.ViewDidLoad();
 
 			_containerArea = new UIView();
-			if (Forms.IsiOS11OrNewer)
+			if (System.Maui.Maui.IsiOS11OrNewer)
 				_containerArea.InsetsLayoutMarginsFromSafeArea = false;
 
 			View.AddSubview(_containerArea);
@@ -410,7 +410,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_header != null)
 			{
 				tabThickness = HeaderHeight;
-				var headerTop = Forms.IsiOS11OrNewer ? View.SafeAreaInsets.Top : TopLayoutGuide.Length;
+				var headerTop = System.Maui.Maui.IsiOS11OrNewer ? View.SafeAreaInsets.Top : TopLayoutGuide.Length;
 				CGRect frame = new CGRect(View.Bounds.X, headerTop, View.Bounds.Width, HeaderHeight);
 				_blurView.Frame = frame;
 				_header.ViewController.View.Frame = frame;
@@ -420,7 +420,7 @@ namespace Xamarin.Forms.Platform.iOS
 			nfloat top;
 			nfloat right;
 			nfloat bottom;
-			if (Forms.IsiOS11OrNewer)
+			if (System.Maui.Maui.IsiOS11OrNewer)
 			{
 				left = View.SafeAreaInsets.Left;
 				top = View.SafeAreaInsets.Top;

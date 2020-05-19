@@ -5,15 +5,15 @@ using System.Linq;
 using ElmSharp;
 using ElmSharp.Accessible;
 using ElmSharp.Wearable;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.Tizen.Native;
+using System.Maui.Internals;
+using System.Maui.Platform.Tizen.Native;
 using EFocusDirection = ElmSharp.FocusDirection;
 using ERect = ElmSharp.Rect;
 using ESize = ElmSharp.Size;
-using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.VisualElement;
-using XFocusDirection = Xamarin.Forms.PlatformConfiguration.TizenSpecific.FocusDirection;
+using Specific = System.Maui.PlatformConfiguration.TizenSpecific.VisualElement;
+using XFocusDirection = System.Maui.PlatformConfiguration.TizenSpecific.FocusDirection;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	/// <summary>
 	/// Base class for rendering of a Xamarin element.
@@ -122,14 +122,14 @@ namespace Xamarin.Forms.Platform.Tizen
 		protected bool IsDisposed => _flags.HasFlag(VisualElementRendererFlags.Disposed);
 
 		/// <summary>
-		/// Releases all resource used by the <see cref="Xamarin.Forms.Platform.Tizen.VisualElementRenderer"/> object.
+		/// Releases all resource used by the <see cref="System.Maui.Platform.Tizen.VisualElementRenderer"/> object.
 		/// </summary>
 		/// <remarks>Call <see cref="Dispose"/> when you are finished using the
-		/// <see cref="Xamarin.Forms.Platform.Tizen.VisualElementRenderer"/>. The <see cref="Dispose"/> method
-		/// leaves the <see cref="Xamarin.Forms.Platform.Tizen.VisualElementRenderer"/> in an unusable state.
+		/// <see cref="System.Maui.Platform.Tizen.VisualElementRenderer"/>. The <see cref="Dispose"/> method
+		/// leaves the <see cref="System.Maui.Platform.Tizen.VisualElementRenderer"/> in an unusable state.
 		/// After calling <see cref="Dispose"/>, you must release all references to the
-		/// <see cref="Xamarin.Forms.Platform.Tizen.VisualElementRenderer"/> so the garbage collector can reclaim
-		/// the memory that the <see cref="Xamarin.Forms.Platform.Tizen.VisualElementRenderer"/> was occupying.</remarks>
+		/// <see cref="System.Maui.Platform.Tizen.VisualElementRenderer"/> so the garbage collector can reclaim
+		/// the memory that the <see cref="System.Maui.Platform.Tizen.VisualElementRenderer"/> was occupying.</remarks>
 		public void Dispose()
 		{
 			Dispose(true);
@@ -144,8 +144,8 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 			else
 			{
-				int availableWidth = Forms.ConvertToScaledPixel(widthConstraint);
-				int availableHeight = Forms.ConvertToScaledPixel(heightConstraint);
+				int availableWidth = System.Maui.Maui.ConvertToScaledPixel(widthConstraint);
+				int availableHeight = System.Maui.Maui.ConvertToScaledPixel(heightConstraint);
 
 				if (availableWidth < 0)
 					availableWidth = int.MaxValue;
@@ -678,12 +678,12 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		static double ComputeAbsoluteX(VisualElement e)
 		{
-			return e.X + ((e.RealParent is VisualElement) && !(e.RealParent is ListView || e.RealParent is ItemsView) ? Forms.ConvertToScaledDP(Platform.GetRenderer(e.RealParent).GetNativeContentGeometry().X) : 0.0);
+			return e.X + ((e.RealParent is VisualElement) && !(e.RealParent is ListView || e.RealParent is ItemsView) ? System.Maui.Maui.ConvertToScaledDP(Platform.GetRenderer(e.RealParent).GetNativeContentGeometry().X) : 0.0);
 		}
 
 		static double ComputeAbsoluteY(VisualElement e)
 		{
-			return e.Y + ((e.RealParent is VisualElement) && !(e.RealParent is ListView || e.RealParent is ItemsView) ? Forms.ConvertToScaledDP(Platform.GetRenderer(e.RealParent).GetNativeContentGeometry().Y) : 0.0);
+			return e.Y + ((e.RealParent is VisualElement) && !(e.RealParent is ListView || e.RealParent is ItemsView) ? System.Maui.Maui.ConvertToScaledDP(Platform.GetRenderer(e.RealParent).GetNativeContentGeometry().Y) : 0.0);
 		}
 
 		static Point ComputeAbsolutePoint(VisualElement e)
@@ -1040,8 +1040,8 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void ApplyTranslation(EvasMap map, ERect geometry, ref bool changed)
 		{
-			var shiftX = Forms.ConvertToScaledPixel(Element.TranslationX);
-			var shiftY = Forms.ConvertToScaledPixel(Element.TranslationY);
+			var shiftX = System.Maui.Maui.ConvertToScaledPixel(Element.TranslationX);
+			var shiftY = System.Maui.Maui.ConvertToScaledPixel(Element.TranslationY);
 
 			// apply translation, i.e. move/shift the object a little
 			if (shiftX != 0 || shiftY != 0)
@@ -1110,7 +1110,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateTabIndex()
 		{
-			if (!Forms.Flags.Contains(Flags.DisableTabIndex))
+			if (!System.Maui.Maui.Flags.Contains(Flags.DisableTabIndex))
 			{
 				if (Element is View && NativeView is Widget widget && widget.IsFocusAllowed)
 				{
@@ -1125,7 +1125,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				return;
 			}
-			if (!Forms.Flags.Contains(Flags.DisableTabIndex))
+			if (!System.Maui.Maui.Flags.Contains(Flags.DisableTabIndex))
 			{
 				if (Element is View && NativeView is Widget widget && widget.IsFocusAllowed)
 				{

@@ -1,7 +1,7 @@
 using System;
 using ElmSharp;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	/// <summary>
 	/// Base interface for VisualElement renderer.

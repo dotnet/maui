@@ -5,9 +5,9 @@ using System.IO.IsolatedStorage;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal class Deserializer : IDeserializer
 	{
@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Platform.Android
 						catch (Exception e)
 						{
 							Debug.WriteLine("Could not deserialize properties: " + e.Message);
-							Log.Warning("Xamarin.Forms PropertyStore", $"Exception while reading Application properties: {e}");
+							Log.Warning("System.Maui PropertyStore", $"Exception while reading Application properties: {e}");
 						}
 					}
 
@@ -74,7 +74,7 @@ namespace Xamarin.Forms.Platform.Android
 						catch (Exception e)
 						{
 							Debug.WriteLine("Could not serialize properties: " + e.Message);
-							Log.Warning("Xamarin.Forms PropertyStore", $"Exception while writing Application properties: {e}");
+							Log.Warning("System.Maui PropertyStore", $"Exception while writing Application properties: {e}");
 							return;
 						}
 					}
@@ -88,7 +88,7 @@ namespace Xamarin.Forms.Platform.Android
 					catch (Exception e)
 					{
 						Debug.WriteLine("Could not move new serialized property file over old: " + e.Message);
-						Log.Warning("Xamarin.Forms PropertyStore", $"Exception while writing Application properties: {e}");
+						Log.Warning("System.Maui PropertyStore", $"Exception while writing Application properties: {e}");
 					}
 				}
 			});

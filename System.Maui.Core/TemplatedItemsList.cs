@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -6,9 +6,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Cadenza.Collections;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Internals
+namespace System.Maui.Internals
 {
 
 	[EditorBrowsable(EditorBrowsableState.Never)]

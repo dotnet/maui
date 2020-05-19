@@ -1,17 +1,17 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Linq;
-using Windows.UI.Text;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Documents;
-using Windows.UI.Xaml.Media;
-using Xamarin.Forms.Internals;
+using global::Windows.UI.Text;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Controls.Primitives;
+using global::Windows.UI.Xaml.Documents;
+using global::Windows.UI.Xaml.Media;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	public class DatePickerRenderer : ViewRenderer<DatePicker, Windows.UI.Xaml.Controls.DatePicker>, ITabStopOnDescendants
+	public class DatePickerRenderer : ViewRenderer<DatePicker, global::Windows.UI.Xaml.Controls.DatePicker>, ITabStopOnDescendants
 	{
 		Brush _defaultBrush;
 		bool _fontApplied;
@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (Control == null)
 				{
-					var picker = new Windows.UI.Xaml.Controls.DatePicker();
+					var picker = new global::Windows.UI.Xaml.Controls.DatePicker();
 					SetNativeControl(picker);
 					Control.Loaded += ControlOnLoaded;
 					Control.DateChanged += OnControlDateChanged;
@@ -88,10 +88,10 @@ namespace Xamarin.Forms.Platform.UWP
 			InterceptVisualStateManager.Hook(Control.GetFirstDescendant<StackPanel>(), Control, Element);
 
 			// We also have to intercept the VSM changes on the DatePicker's button
-			var button = Control.GetDescendantsByName<Windows.UI.Xaml.Controls.Button>("FlyoutButton").FirstOrDefault();
+			var button = Control.GetDescendantsByName<global::Windows.UI.Xaml.Controls.Button>("FlyoutButton").FirstOrDefault();
 
 			if (button != null)
-				InterceptVisualStateManager.Hook(button.GetFirstDescendant<Windows.UI.Xaml.Controls.Grid>(), button, Element);
+				InterceptVisualStateManager.Hook(button.GetFirstDescendant<global::Windows.UI.Xaml.Controls.Grid>(), button, Element);
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

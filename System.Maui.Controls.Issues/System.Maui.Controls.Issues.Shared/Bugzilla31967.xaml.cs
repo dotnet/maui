@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-using Xamarin.Forms.CustomAttributes;
+using System.Maui.CustomAttributes;
 
-using Xamarin.Forms;
+using System.Maui;
 using System.ComponentModel;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 #if APP
 	[Preserve (AllMembers = true)]

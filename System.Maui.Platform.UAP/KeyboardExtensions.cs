@@ -1,8 +1,8 @@
-﻿using System;
-using Windows.UI.Xaml.Input;
-using Xamarin.Forms.Internals;
+using System;
+using global::Windows.UI.Xaml.Input;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public static class KeyboardExtensions
 	{

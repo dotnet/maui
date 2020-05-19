@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Android.Views;
 #if __ANDROID_29__
 using AMenuItemCompat = AndroidX.Core.View.MenuItemCompat;
@@ -8,7 +8,7 @@ using AMenuItemCompat = global::Android.Support.V4.View.MenuItemCompat;
 using AToolbar = Android.Support.V7.Widget.Toolbar;
 #endif
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public static class AccessibilityExtensions
 	{

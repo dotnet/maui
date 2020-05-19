@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using Xamarin.Forms;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public partial class Gh6361 : ContentPage
 	{
@@ -21,7 +21,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void Setup()
 			{
 				Device.PlatformServices = new MockPlatformServices();
-				Xamarin.Forms.Internals.Registrar.RegisterAll(new Type[0]);
+				System.Maui.Internals.Registrar.RegisterAll(new Type[0]);
 			}
 
 			[TearDown] public void TearDown() => Device.PlatformServices = null;

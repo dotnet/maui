@@ -7,7 +7,7 @@ using Android.OS;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class SwitchCellRenderer : CellRenderer
 	{
@@ -97,7 +97,7 @@ namespace Xamarin.Forms.Platform.Android
 					}
 					else
 					{
-						if (Forms.SdkInt >= BuildVersionCodes.JellyBean)
+						if (System.Maui.Maui.SdkInt >= BuildVersionCodes.JellyBean)
 						{
 							aSwitch.TrackDrawable.SetColorFilter(switchCell.OnColor, FilterMode.Multiply);
 						}

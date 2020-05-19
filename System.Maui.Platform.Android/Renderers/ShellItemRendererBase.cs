@@ -1,4 +1,4 @@
-﻿using Android.OS;
+using Android.OS;
 #if __ANDROID_29__
 using AndroidX.Fragment.App;
 #else
@@ -11,9 +11,9 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public abstract class ShellItemRendererBase : Fragment, IShellItemRenderer
 	{

@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Core.Design
+namespace System.Maui.Core.Design
 {
 	using System;
 	using System.Collections.Generic;

@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using ElmSharp;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	/// <summary>
 	/// Holds information about size of the area which can be used for layout.

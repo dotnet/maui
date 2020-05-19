@@ -2,7 +2,7 @@ using System;
 
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class DatePickerUnitTest : BaseTestFixture
@@ -176,7 +176,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		//https://github.com/xamarin/Xamarin.Forms/issues/5784
+		//https://github.com/xamarin/System.Maui/issues/5784
 		public void SetMaxAndMinDateTimeToNow()
 		{
 			var datePicker = new DatePicker();

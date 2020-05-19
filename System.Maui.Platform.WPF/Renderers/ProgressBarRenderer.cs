@@ -1,9 +1,9 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Windows;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using WProgressBar = System.Windows.Controls.ProgressBar;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public class ProgressBarRenderer : ViewRenderer<ProgressBar, WProgressBar>
 	{

@@ -1,6 +1,6 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[TypeConverter(typeof(ItemsLayoutTypeConverter))]
 	public interface IItemsLayout : INotifyPropertyChanged {}

@@ -1,6 +1,6 @@
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[TypeConverter(typeof(KeyboardTypeConverter))]
 	public class Keyboard

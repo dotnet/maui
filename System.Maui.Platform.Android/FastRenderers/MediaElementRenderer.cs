@@ -1,14 +1,14 @@
-﻿using Android.Content;
+using Android.Content;
 using Android.Media;
 using Android.Views;
 using Android.Widget;
 using System;
 using System.ComponentModel;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.Android.FastRenderers;
+using System.Maui.Internals;
+using System.Maui.Platform.Android.FastRenderers;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public sealed class MediaElementRenderer : FrameLayout, IVisualElementRenderer, IViewRenderer, IEffectControlProvider, MediaPlayer.IOnCompletionListener, MediaPlayer.IOnInfoListener, MediaPlayer.IOnPreparedListener, MediaPlayer.IOnErrorListener
 	{
@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.Android
 		
 		public MediaElementRenderer(Context context) : base(context)
 		{
-			Xamarin.Forms.MediaElement.VerifyMediaElementFlagEnabled(nameof(MediaElementRenderer));
+			System.Maui.MediaElement.VerifyMediaElementFlagEnabled(nameof(MediaElementRenderer));
 			_automationPropertiesProvider = new AutomationPropertiesProvider(this);
 			_effectControlProvider = new EffectControlProvider(this);
 

@@ -7,7 +7,7 @@ using AndroidX.RecyclerView.Widget;
 using Android.Support.V7.Widget;
 #endif
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal class ScrollHelper : RecyclerView.OnScrollListener
 	{
@@ -87,7 +87,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			// If ScrollToPosition is Start, then we can just use an offset of 0 and we're fine
 			// (Though that may change in RTL situations or if we're stacking from the end)
-			if (scrollToPosition == Xamarin.Forms.ScrollToPosition.Start)
+			if (scrollToPosition == System.Maui.ScrollToPosition.Start)
 			{
 				linearLayoutManager.ScrollToPositionWithOffset(index, 0);
 				return;

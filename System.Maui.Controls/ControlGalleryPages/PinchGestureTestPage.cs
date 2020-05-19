@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Diagnostics;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	public class PinchToZoomContainer : ContentView
 	{

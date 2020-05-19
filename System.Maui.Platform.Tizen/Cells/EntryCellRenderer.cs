@@ -4,7 +4,7 @@ using System.Globalization;
 using ElmSharp;
 using EColor = ElmSharp.Color;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class EntryCellRenderer : ViewCellRenderer
 	{
@@ -22,8 +22,8 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (part == MainContentPart)
 			{
 				var entryCell = cell as EntryCell;
-				int pixelHeight = Forms.ConvertToScaledPixel(entryCell.RenderHeight);
-				pixelHeight = pixelHeight > 0 ? pixelHeight : Forms.ConvertToPixel(s_defaultHeight);
+				int pixelHeight = System.Maui.Maui.ConvertToScaledPixel(entryCell.RenderHeight);
+				pixelHeight = pixelHeight > 0 ? pixelHeight : System.Maui.Maui.ConvertToPixel(s_defaultHeight);
 
 				var label = new Label()
 				{
@@ -56,7 +56,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				};
 				layout.Parent = cell;
 				layout.BindingContext = entryCell;
-				layout.MinimumHeightRequest = Forms.ConvertToScaledDP(pixelHeight);
+				layout.MinimumHeightRequest = System.Maui.Maui.ConvertToScaledDP(pixelHeight);
 
 				var renderer = Platform.GetOrCreateRenderer(layout);
 				(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
@@ -89,8 +89,8 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			var layout = _cacheCandidate[old];
 			layout.BindingContext = cell;
-			int height = Forms.ConvertToScaledPixel(cell.RenderHeight);
-			height = height > 0 ? height : Forms.ConvertToPixel(s_defaultHeight);
+			int height = System.Maui.Maui.ConvertToScaledPixel(cell.RenderHeight);
+			height = height > 0 ? height : System.Maui.Maui.ConvertToPixel(s_defaultHeight);
 			old.MinimumHeight = height;
 			return old;
 		}

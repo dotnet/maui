@@ -1,7 +1,7 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class SafeShellTabBarAppearanceTracker : IShellTabBarAppearanceTracker
@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Platform.iOS
 			var titleColor = appearanceElement.EffectiveTabBarTitleColor;
 
 			var tabBar = controller.TabBar;
-			bool operatingSystemSupportsUnselectedTint = Forms.IsiOS10OrNewer;
+			bool operatingSystemSupportsUnselectedTint = System.Maui.Maui.IsiOS10OrNewer;
 
 			if (_defaultTint == null)
 			{

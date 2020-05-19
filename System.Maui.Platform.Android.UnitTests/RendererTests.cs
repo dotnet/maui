@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Android.Views;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Platform.Android.UnitTests
+namespace System.Maui.Platform.Android.UnitTests
 {
 	[TestFixture]
 	public class RendererTests : PlatformTestFixture

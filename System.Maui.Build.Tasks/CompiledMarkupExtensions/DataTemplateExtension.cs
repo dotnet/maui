@@ -1,22 +1,22 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Xml;
 using System.Collections.Generic;
 
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 
 using static Mono.Cecil.Cil.Instruction;
 using static Mono.Cecil.Cil.OpCodes;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace System.Maui.Build.Tasks
 {
 	class DataTemplateExtension : ICompiledMarkupExtension
 	{
 		public IEnumerable<Instruction> ProvideValue(IElementNode node, ModuleDefinition module, ILContext context, out TypeReference typeRef)
 		{
-			typeRef = module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms", "DataTemplate"));
+			typeRef = module.ImportReference(("System.Maui.Core", "System.Maui", "DataTemplate"));
 			var name = new XmlName("", "TypeName");
 
 			if (!node.Properties.TryGetValue(name, out INode typeNameNode) && node.CollectionItems.Any())

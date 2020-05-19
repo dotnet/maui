@@ -1,9 +1,9 @@
-﻿using Android.Widget;
+using Android.Widget;
 using ALayoutDirection = Android.Views.LayoutDirection;
 using ATextDirection = Android.Views.TextDirection;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal static class FlowDirectionExtensions
 	{
@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		internal static void UpdateFlowDirection(this AView view, IVisualElementController controller)
 		{
-			if (view == null || controller == null || (int)Forms.SdkInt < 17)
+			if (view == null || controller == null || (int)System.Maui.Maui.SdkInt < 17)
 				return;
 
 			// if android:targetSdkVersion < 17 setting these has no effect

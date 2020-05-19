@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using ElmSharp;
 using Tizen.NET.MaterialComponents;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class MaterialShellTabs : MTabs, IShellTabs
 	{

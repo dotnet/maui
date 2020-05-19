@@ -1,13 +1,13 @@
-﻿using Android.Views;
+using Android.Views;
 using Android.Widget;
 using Java.Lang;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class ShellSearchViewAdapter : BaseAdapter, IFilterable
 	{

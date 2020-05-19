@@ -1,9 +1,9 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
-using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[TypeConversion(typeof(double))]
 	public class FontSizeConverter : TypeConverter, IExtendedTypeConverter

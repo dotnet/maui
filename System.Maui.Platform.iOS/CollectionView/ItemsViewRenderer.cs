@@ -1,8 +1,8 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Foundation;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public abstract class ItemsViewRenderer<TItemsView, TViewController> : ViewRenderer<TItemsView, UIView>
 		where TItemsView : ItemsView
@@ -42,28 +42,28 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.OnElementPropertyChanged(sender, changedProperty);
 
-			if (changedProperty.Is(Xamarin.Forms.ItemsView.ItemsSourceProperty))
+			if (changedProperty.Is(System.Maui.ItemsView.ItemsSourceProperty))
 			{
 				UpdateItemsSource();
 			}
-			else if (changedProperty.Is(Xamarin.Forms.ItemsView.ItemTemplateProperty))
+			else if (changedProperty.Is(System.Maui.ItemsView.ItemTemplateProperty))
 			{
 				UpdateLayout();
 			}
-			else if (changedProperty.IsOneOf(Xamarin.Forms.ItemsView.EmptyViewProperty,
-				Xamarin.Forms.ItemsView.EmptyViewTemplateProperty))
+			else if (changedProperty.IsOneOf(System.Maui.ItemsView.EmptyViewProperty,
+				System.Maui.ItemsView.EmptyViewTemplateProperty))
 			{
 				Controller.UpdateEmptyView();
 			}
-			else if (changedProperty.Is(Xamarin.Forms.ItemsView.HorizontalScrollBarVisibilityProperty))
+			else if (changedProperty.Is(System.Maui.ItemsView.HorizontalScrollBarVisibilityProperty))
 			{
 				UpdateHorizontalScrollBarVisibility();
 			}
-			else if (changedProperty.Is(Xamarin.Forms.ItemsView.VerticalScrollBarVisibilityProperty))
+			else if (changedProperty.Is(System.Maui.ItemsView.VerticalScrollBarVisibilityProperty))
 			{
 				UpdateVerticalScrollBarVisibility();
 			}
-			else if (changedProperty.Is(Xamarin.Forms.ItemsView.ItemsUpdatingScrollModeProperty))
+			else if (changedProperty.Is(System.Maui.ItemsView.ItemsUpdatingScrollModeProperty))
 			{
 				UpdateItemsUpdatingScrollMode();
 			}

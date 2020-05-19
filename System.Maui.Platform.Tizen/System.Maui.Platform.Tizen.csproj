@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
  <PropertyGroup>
-    <Description>Tizen Backend for Xamarin.Forms</Description>
+    <Description>Tizen Backend for System.Maui</Description>
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>tizen40</TargetFramework>
@@ -16,7 +16,7 @@
     <None Remove="Resource\wc_visual_cue.png" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Xamarin.Forms.Core\Crc64.cs" Link="Crc64.cs" />
+    <Compile Include="..\System.Maui.Core\Crc64.cs" Link="Crc64.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource\arrow_left.png" />
@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj" />
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using Foundation;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using CoreVideo;
 using AppKit;
 using CoreAnimation;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	// ReSharper disable once InconsistentNaming
 	internal class CADisplayLinkTicker : Ticker

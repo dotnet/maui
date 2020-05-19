@@ -4,7 +4,7 @@ using Foundation;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class EntryCellRenderer : CellRenderer
 	{

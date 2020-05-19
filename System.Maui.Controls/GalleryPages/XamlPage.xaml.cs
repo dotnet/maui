@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms;
+using System.Maui;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {	
 	public partial class XamlPage : ContentPage
 	{	

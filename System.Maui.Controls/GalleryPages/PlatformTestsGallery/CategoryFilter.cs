@@ -1,8 +1,8 @@
-﻿using NUnit.Framework.Interfaces;
+using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery
+namespace System.Maui.Controls.GalleryPages.PlatformTestsGallery
 {
 	[Preserve(AllMembers = true)]
 	public class CategoryFilter : TestFilter

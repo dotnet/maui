@@ -1,9 +1,9 @@
 using System;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	[ContentProperty(nameof(TypeName))]
-	[ProvideCompiled("Xamarin.Forms.Build.Tasks.TypeExtension")]
+	[ProvideCompiled("System.Maui.Build.Tasks.TypeExtension")]
 	public class TypeExtension : IMarkupExtension<Type>
 	{
 		public string TypeName { get; set; }

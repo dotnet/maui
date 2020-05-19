@@ -16,7 +16,7 @@ using AndroidX.AppCompat.App;
 using AActionMode = global::Android.Support.V7.View.ActionMode;
 using Android.Support.V7.App;
 #endif
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public abstract class CellAdapter : BaseAdapter<object>, AdapterView.IOnItemLongClickListener, ActionMode.ICallback, AdapterView.IOnItemClickListener, AActionMode.ICallback
 	{

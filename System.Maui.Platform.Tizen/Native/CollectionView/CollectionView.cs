@@ -9,7 +9,7 @@ using ESize = ElmSharp.Size;
 using EPoint = ElmSharp.Point;
 using ElmSharp.Wearable;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	public class CollectionView : EBox, ICollectionViewController, IRotaryInteraction
 	{
@@ -322,7 +322,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		{
 			if (Device.Idiom == TargetIdiom.Watch)
 			{
-				return new CircleScroller(parent, Forms.CircleSurface);
+				return new CircleScroller(parent, System.Maui.Maui.CircleSurface);
 			}
 			else
 			{

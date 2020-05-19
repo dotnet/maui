@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.StyleSheets.UnitTests
+namespace System.Maui.StyleSheets.UnitTests
 {
 	[TestFixture]
 	public class SelectorTests

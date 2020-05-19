@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 	public abstract class HandlerAttribute : Attribute

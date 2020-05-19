@@ -1,7 +1,7 @@
-using Xamarin.Forms.Core;
-using Xamarin.Forms.Internals;
+using System.Maui.Core;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public static class FontExtensions
 	{

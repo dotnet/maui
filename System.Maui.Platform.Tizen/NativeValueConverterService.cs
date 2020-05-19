@@ -1,10 +1,10 @@
-﻿using System;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml.Internals;
+using System;
+using System.Maui.Internals;
+using System.Maui.Xaml.Internals;
 
 using EObject = ElmSharp.EvasObject;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	class NativeValueConverterService : INativeValueConverterService
 	{

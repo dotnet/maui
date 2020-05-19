@@ -1,4 +1,4 @@
-﻿using Foundation;
+using Foundation;
 using ObjCRuntime;
 using System;
 using System.Collections.Generic;
@@ -6,9 +6,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using UIKit;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class ShellSectionRenderer : UINavigationController, IShellSectionRenderer, IAppearanceObserver
 	{
@@ -570,7 +570,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (coordinator != null && coordinator.IsInteractive)
 				{
 					// handle swipe to dismiss gesture 
-					if (Forms.IsiOS10OrNewer)
+					if (System.Maui.Maui.IsiOS10OrNewer)
 						coordinator.NotifyWhenInteractionChanges(OnInteractionChanged);
 					else
 						coordinator.NotifyWhenInteractionEndsUsingBlock(OnInteractionChanged);

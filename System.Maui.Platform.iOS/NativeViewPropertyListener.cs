@@ -3,10 +3,10 @@ using System.ComponentModel;
 using Foundation;
 
 #if __MOBILE__
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 #else
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 #endif
 {
 	class NativeViewPropertyListener : NSObject, INotifyPropertyChanged

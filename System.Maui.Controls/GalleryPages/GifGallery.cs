@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using Xamarin.Forms.Internals;
+using System.Collections.Generic;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages
+namespace System.Maui.Controls.GalleryPages
 {
 	[Preserve(AllMembers = true)]
 	public class GifGallery : ContentPage

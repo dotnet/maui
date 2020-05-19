@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Linq;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using System.Maui.PlatformConfiguration.iOSSpecific;
 using UIKit;
 using Foundation;
 using System.Threading.Tasks;
 using System.ComponentModel;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	internal class ModalWrapper : UIViewController, IUIAdaptivePresentationControllerDelegate
 	{
@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				var result = style.ToNativeModalPresentationStyle();
 #if __XCODE11__
-				if (!Forms.IsiOS13OrNewer && result == UIKit.UIModalPresentationStyle.Automatic)
+				if (!System.Maui.Maui.IsiOS13OrNewer && result == UIKit.UIModalPresentationStyle.Automatic)
 				{
 					result = UIKit.UIModalPresentationStyle.FullScreen;
 				}
@@ -38,12 +38,12 @@ namespace Xamarin.Forms.Platform.iOS
 
 			modal.ViewController.DidMoveToParentViewController(this);
 #if __XCODE11__
-			if (Forms.IsiOS13OrNewer)
+			if (System.Maui.Maui.IsiOS13OrNewer)
 				PresentationController.Delegate = this;
 #endif
 			((Page)modal.Element).PropertyChanged += OnModalPagePropertyChanged;
 
-			if (Forms.IsiOS13OrNewer)
+			if (System.Maui.Maui.IsiOS13OrNewer)
 				PresentationController.Delegate = this;
 		}
 #if __XCODE11__
@@ -146,7 +146,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.ViewDidLoad();
 			SetNeedsStatusBarAppearanceUpdate();
-			if (Forms.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
+			if (System.Maui.Maui.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 		}
 

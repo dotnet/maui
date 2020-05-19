@@ -1,8 +1,8 @@
 using System;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform;
+using System.Maui.Internals;
+using System.Maui.Platform;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[RenderWith(typeof(_StepperRenderer))]
 	public class Stepper : View, IElementConfiguration<Stepper>

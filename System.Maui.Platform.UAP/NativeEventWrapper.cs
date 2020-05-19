@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.UI.Xaml;
-using Xamarin.Forms.Internals;
+using global::Windows.UI.Xaml;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	class NativeEventWrapper : INotifyPropertyChanged
 	{

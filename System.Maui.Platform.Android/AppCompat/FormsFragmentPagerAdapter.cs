@@ -6,10 +6,10 @@ using AndroidX.Fragment.App;
 using Android.Support.V4.App;
 #endif
 using Java.Lang;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using FragmentTransit = Android.App.FragmentTransit;
 
-namespace Xamarin.Forms.Platform.Android.AppCompat
+namespace System.Maui.Platform.Android.AppCompat
 {
 	internal class FormsFragmentPagerAdapter<T> : FragmentPagerAdapter where T : Page
 	{
@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			return _page.Children[position].GetHashCode();
 		}
 
-		public override int GetItemPosition(Object objectValue)
+		public override int GetItemPosition(Java.Lang.Object objectValue)
 		{
 			var fragContainer = objectValue as FragmentContainer;
 			
@@ -66,7 +66,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		public override ICharSequence GetPageTitleFormatted(int position)
 		{
-			return new String(_page.Children[position].Title);
+			return new Java.Lang.String(_page.Children[position].Title);
 		}
 
 		// http://stackoverflow.com/questions/18642890/fragmentstatepageradapter-with-childfragmentmanager-fragmentmanagerimpl-getfra/19099987#19099987

@@ -8,7 +8,7 @@ using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using Path = System.IO.Path;
 #if __ANDROID_29__
 using AndroidAppCompat = AndroidX.AppCompat.Content.Res.AppCompatResources;
@@ -17,7 +17,7 @@ using AndroidAppCompat = Android.Support.V7.Content.Res.AppCompatResources;
 #endif
 using System.ComponentModel;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public static class ResourceManager
 	{
@@ -286,7 +286,7 @@ namespace Xamarin.Forms.Platform.Android
 			await ApplyDrawableAsync(null, bindable, imageSourceProperty, context, onSet, onLoading, cancellationToken);
 		}
 
-		public static Bitmap GetBitmap(this Resources resource, FileImageSource fileImageSource)
+		public static Bitmap GetBitmap(this global::Android.Content.Res.Resources resource, FileImageSource fileImageSource)
 		{
 			var file = fileImageSource.File;
 
@@ -297,22 +297,22 @@ namespace Xamarin.Forms.Platform.Android
 			return BitmapFactory.DecodeFile(file);
 		}
 
-		public static Bitmap GetBitmap(this Resources resource, string name)
+		public static Bitmap GetBitmap(this global::Android.Content.Res.Resources resource, string name)
 		{
 			return BitmapFactory.DecodeResource(resource, IdFromTitle(name, DrawableClass, _drawableDefType, resource));
 		}
 
-		public static Bitmap GetBitmap(this Resources resource, string name, Context context)
+		public static Bitmap GetBitmap(this global::Android.Content.Res.Resources resource, string name, Context context)
 		{
 			return BitmapFactory.DecodeResource(resource, IdFromTitle(name, DrawableClass, _drawableDefType, resource, context.PackageName));
 		}
 
-		public static Task<Bitmap> GetBitmapAsync(this Resources resource, string name)
+		public static Task<Bitmap> GetBitmapAsync(this global::Android.Content.Res.Resources resource, string name)
 		{
 			return BitmapFactory.DecodeResourceAsync(resource, IdFromTitle(name, DrawableClass, _drawableDefType, resource));
 		}
 
-		public static Task<Bitmap> GetBitmapAsync(this Resources resource, string name, Context context)
+		public static Task<Bitmap> GetBitmapAsync(this global::Android.Content.Res.Resources resource, string name, Context context)
 		{
 			return BitmapFactory.DecodeResourceAsync(resource, IdFromTitle(name, DrawableClass, _drawableDefType, resource, context.PackageName));
 		}
@@ -320,7 +320,7 @@ namespace Xamarin.Forms.Platform.Android
 		[Obsolete("GetDrawable(this Resources, string) is obsolete as of version 2.5. "
 			+ "Please use GetDrawable(this Context, string) instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static Drawable GetDrawable(this Resources resource, string name)
+		public static Drawable GetDrawable(this global::Android.Content.Res.Resources resource, string name)
 		{
 			int id = IdFromTitle(name, DrawableClass, _drawableDefType, resource);
 			if (id == 0)
@@ -329,7 +329,7 @@ namespace Xamarin.Forms.Platform.Android
 				return null;
 			}
 
-			return AndroidAppCompat.GetDrawable(Forms.Context, id);
+			return AndroidAppCompat.GetDrawable(System.Maui.Maui.Context, id);
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -398,7 +398,7 @@ namespace Xamarin.Forms.Platform.Android
 			return id;
 		}
 
-		static int IdFromTitle(string title, Type resourceType, string defType, Resources resource)
+		static int IdFromTitle(string title, Type resourceType, string defType, global::Android.Content.Res.Resources resource)
 		{
 			return IdFromTitle(title, resourceType, defType, resource, AppCompat.Platform.GetPackageName());
 		}
@@ -408,7 +408,7 @@ namespace Xamarin.Forms.Platform.Android
 			return IdFromTitle(title, resourceType, defType, context.Resources, context.PackageName);
 		}
 
-		static int IdFromTitle(string title, Type resourceType, string defType, Resources resource, string packageName)
+		static int IdFromTitle(string title, Type resourceType, string defType, global::Android.Content.Res.Resources resource, string packageName)
 		{
 			int id = 0;
 			if (title == null)

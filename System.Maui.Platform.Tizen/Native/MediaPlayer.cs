@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration.TizenSpecific;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	public class MediaPlayer : Element, IMediaPlayer, IDisposable
 	{
@@ -151,7 +151,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			}
 		}
 
-		[Xamarin.Forms.TypeConverter(typeof(MediaSourceConverter))]
+		[System.Maui.TypeConverter(typeof(MediaSourceConverter))]
 		public MediaSource Source
 		{
 			get { return (MediaSource)GetValue(SourceProperty); }

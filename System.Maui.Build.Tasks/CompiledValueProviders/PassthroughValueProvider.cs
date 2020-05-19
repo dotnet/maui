@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-using Xamarin.Forms.Xaml;
-using Xamarin.Forms.Build.Tasks;
+using System.Maui.Xaml;
+using System.Maui.Build.Tasks;
 
-namespace Xamarin.Forms.Core.XamlC
+namespace System.Maui.Core.XamlC
 {
 	class PassthroughValueProvider : ICompiledValueProvider
 	{

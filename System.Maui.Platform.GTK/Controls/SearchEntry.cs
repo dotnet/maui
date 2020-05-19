@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using Gtk;
 using Pango;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using System.Maui.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Controls
+namespace System.Maui.Platform.GTK.Controls
 {
 	public class SearchEntry : Gtk.Frame
 	{

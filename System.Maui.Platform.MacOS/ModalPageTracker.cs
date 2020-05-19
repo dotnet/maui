@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using System.Linq;
 using AppKit;
 using System.Collections.Generic;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	internal class ModalPageTracker : IDisposable
 	{

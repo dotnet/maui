@@ -3,11 +3,11 @@ using System.Linq;
 using System;
 using System.Collections.Generic;
 
-using Xamarin.Forms.Core.UnitTests;
-using Xamarin.Forms.Build.Tasks;
+using System.Maui.Core.UnitTests;
+using System.Maui.Build.Tasks;
 using Mono.Cecil;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	[ContentProperty ("Content")]
 	public class CustomView : View
@@ -99,14 +99,14 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				<View
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				x:Class=""Xamarin.Forms.Xaml.UnitTests.CustomView"" 
+				x:Class=""System.Maui.Xaml.UnitTests.CustomView"" 
 				x:Name=""customView"" 
 				/>";
 
 			var view = new CustomView ();
 			view.LoadFromXaml (xaml);
 
-			Assert.AreSame (view, ((Forms.Internals.INameScope)view).FindByName("customView"));
+			Assert.AreSame (view, ((System.Maui.Internals.INameScope)view).FindByName("customView"));
 		}
 
 		[Test]
@@ -184,7 +184,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				<View 
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				x:Class=""Xamarin.Forms.Xaml.UnitTests.CustomView"" 
+				x:Class=""System.Maui.Xaml.UnitTests.CustomView"" 
 				Name=""customView"" 
 				NotBindable=""{Binding text}""
 				/>";
@@ -233,7 +233,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				<ContentPage 
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+				xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests"">
 					<ContentPage.Resources>
 						<ResourceDictionary>
 							<local:ReverseConverter x:Key=""reverseConverter""/>
@@ -306,7 +306,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				<Label 
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+				xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests"">
 					<Label.Resources>
 						<ResourceDictionary>
 							<local:ReverseConverter x:Key=""reverseConverter""/>
@@ -327,7 +327,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				<Label 
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+				xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests"">
 					<Label.Resources>
 						<ResourceDictionary>
 							<local:ReverseConverter />
@@ -430,7 +430,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				<Button 
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				x:Class=""Xamarin.Forms.Xaml.UnitTests.CustView"" Clicked=""onButtonClicked"" />
+				x:Class=""System.Maui.Xaml.UnitTests.CustView"" Clicked=""onButtonClicked"" />
 				</Button>";
 			var view = new CustView ();
 			view.LoadFromXaml (xaml);
@@ -446,7 +446,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				<View 
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				x:Class=""Xamarin.Forms.Xaml.UnitTests.CustView"" Activated=""missingMethod"" />
+				x:Class=""System.Maui.Xaml.UnitTests.CustView"" Activated=""missingMethod"" />
 				</View>";
 			var view = new CustView ();
 			Assert.Throws (new XamlParseExceptionConstraint (5, 53), () => view.LoadFromXaml (xaml));
@@ -459,7 +459,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				<View 
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				x:Class=""Xamarin.Forms.Xaml.UnitTests.CustView"" Activated=""wrongSignature"" />
+				x:Class=""System.Maui.Xaml.UnitTests.CustView"" Activated=""wrongSignature"" />
 				</View>";
 			var view = new CustView ();
 
@@ -484,7 +484,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			<Entry
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				x:Class=""Xamarin.Forms.Xaml.UnitTests.CustEntry"" TextChanged=""onValueChanged"" />
+				x:Class=""System.Maui.Xaml.UnitTests.CustEntry"" TextChanged=""onValueChanged"" />
 			</Entry>";
 			new CustEntry ().LoadFromXaml (xaml);
 		}
@@ -504,7 +504,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			</ContentPage>";
 			var page = new ContentPage ();
 			page.LoadFromXaml (xaml);
-			var template = page.Resources["datatemplate"]as Forms.DataTemplate;
+			var template = page.Resources["datatemplate"]as System.Maui.DataTemplate;
 			Assert.Throws<InvalidOperationException>(() => template.CreateContent());
 		}
 
@@ -546,7 +546,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				<Label
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"" 
+				xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests"" 
 				local:Catalog.Message=""foobar""/>";
 			var label = new Label ().LoadFromXaml (xaml);
 			Assert.AreEqual ("raboof", label.Text);
@@ -559,7 +559,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				<Label
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"" 
+				xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests"" 
 				local:Catalog.Message=""{Binding .}""/>";
 			var label = new Label ().LoadFromXaml (xaml);
 			label.BindingContext = "foobar";
@@ -573,13 +573,13 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				<local:CustomView
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"" >
+				xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests"" >
 					<Label x:Name=""contentview""/>
 				</local:CustomView>";
 			CustomView customView = null;
 			Assert.DoesNotThrow(()=> customView = new CustomView ().LoadFromXaml (xaml));
 			Assert.NotNull (customView.Content);
-			Assert.AreSame (customView.Content, ((Forms.Internals.INameScope)customView).FindByName("contentview"));
+			Assert.AreSame (customView.Content, ((System.Maui.Internals.INameScope)customView).FindByName("contentview"));
 		}
 
 		[Test]
@@ -647,7 +647,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				<local:ViewWithChildrenContent
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"" >
+				xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests"" >
 					<local:ViewWithChildrenContent.Children>
 						<local:ViewList>
 							<Label x:Name=""child0""/>
@@ -659,8 +659,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			Assert.DoesNotThrow (() => layout = new ViewWithChildrenContent ().LoadFromXaml (xaml));
 			Assert.IsNotNull (layout);
 			Assert.AreNotSame (layout.DefaultChildren, layout.Children);
-			Assert.Contains (((Forms.Internals.INameScope)layout).FindByName ("child0"), layout.Children);
-			Assert.Contains (((Forms.Internals.INameScope)layout).FindByName ("child1"), layout.Children);
+			Assert.Contains (((System.Maui.Internals.INameScope)layout).FindByName ("child0"), layout.Children);
+			Assert.Contains (((System.Maui.Internals.INameScope)layout).FindByName ("child1"), layout.Children);
 		}
 
 		[Test]
@@ -670,7 +670,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				<local:ViewWithChildrenContent
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"" >
+				xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests"" >
 					<Label x:Name=""child0""/>
 					<Label x:Name=""child1""/>
 				</local:ViewWithChildrenContent>";
@@ -678,8 +678,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			Assert.DoesNotThrow (() => layout = new ViewWithChildrenContent ().LoadFromXaml (xaml));
 			Assert.IsNotNull (layout);
 			Assert.AreSame (layout.DefaultChildren, layout.Children);
-			Assert.Contains (((Forms.Internals.INameScope)layout).FindByName ("child0"), layout.Children);
-			Assert.Contains (((Forms.Internals.INameScope)layout).FindByName ("child1"), layout.Children);
+			Assert.Contains (((System.Maui.Internals.INameScope)layout).FindByName ("child0"), layout.Children);
+			Assert.Contains (((System.Maui.Internals.INameScope)layout).FindByName ("child1"), layout.Children);
 		}
 
 		[Test]
@@ -689,7 +689,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				<local:ViewWithChildrenContent
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"" >
+				xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests"" >
 					<local:ViewWithChildrenContent.Children>
 						<Label x:Name=""child0""/>
 						<Label x:Name=""child1""/>
@@ -699,8 +699,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			Assert.DoesNotThrow (() => layout = new ViewWithChildrenContent ().LoadFromXaml (xaml));
 			Assert.IsNotNull (layout);
 			Assert.AreSame (layout.DefaultChildren, layout.Children);
-			Assert.Contains (((Forms.Internals.INameScope)layout).FindByName ("child0"), layout.Children);
-			Assert.Contains (((Forms.Internals.INameScope)layout).FindByName ("child1"), layout.Children);
+			Assert.Contains (((System.Maui.Internals.INameScope)layout).FindByName ("child0"), layout.Children);
+			Assert.Contains (((System.Maui.Internals.INameScope)layout).FindByName ("child1"), layout.Children);
 
 		}
 
@@ -711,14 +711,14 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				<local:ViewWithChildrenContent
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"" >
+				xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests"" >
 					<Label x:Name=""child0""/>
 				</local:ViewWithChildrenContent>";
 			ViewWithChildrenContent layout = null;
 			Assert.DoesNotThrow (() => layout = new ViewWithChildrenContent ().LoadFromXaml (xaml));
 			Assert.IsNotNull (layout);
 			Assert.AreSame (layout.DefaultChildren, layout.Children);
-			Assert.Contains (((Forms.Internals.INameScope)layout).FindByName ("child0"), layout.Children);
+			Assert.Contains (((System.Maui.Internals.INameScope)layout).FindByName ("child0"), layout.Children);
 		}
 
 		[Test]
@@ -751,7 +751,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				<local:CustomView
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"" 
+				xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests"" 
 				MockFlags=""Bar""
 				/>";
 			var view = new CustomView ().LoadFromXaml (xaml);
@@ -766,7 +766,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				<local:CustomView
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"" 
+				xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests"" 
 				MockFlags=""Baz,Bar""
 				/>";
 			var view = new CustomView ().LoadFromXaml (xaml);
@@ -790,7 +790,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 		[Test]
 		public void BindingIsResolvedAsBindingExtension()
-		// https://github.com/xamarin/Xamarin.Forms/issues/3606#issuecomment-422377338
+		// https://github.com/xamarin/System.Maui/issues/3606#issuecomment-422377338
 		{
 			var bindingType = XamlParser.GetElementType(new XmlType("http://xamarin.com/schemas/2014/forms", "Binding", null), null, null, out var ex);
 			Assert.That(ex, Is.Null);
@@ -801,7 +801,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Kind = ModuleKind.Dll,
 			});
 			var bindingTypeRef = new XmlType("http://xamarin.com/schemas/2014/forms", "Binding", null).GetTypeReference(module, null);
-			Assert.That(bindingType.FullName, Is.EqualTo("Xamarin.Forms.Xaml.BindingExtension"));
+			Assert.That(bindingType.FullName, Is.EqualTo("System.Maui.Xaml.BindingExtension"));
 		}
 	}
 }

@@ -1,9 +1,9 @@
-﻿// Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 using System;
 using System.Diagnostics;
 
-namespace Xamarin.Forms.Xaml.Diagnostics
+namespace System.Maui.Xaml.Diagnostics
 {
 	static class DebuggerHelper
 	{

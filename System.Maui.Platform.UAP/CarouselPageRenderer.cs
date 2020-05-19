@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Xamarin.Forms.Internals;
-using WSelectionChangedEventArgs = Windows.UI.Xaml.Controls.SelectionChangedEventArgs;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using System.Maui.Internals;
+using WSelectionChangedEventArgs = global::Windows.UI.Xaml.Controls.SelectionChangedEventArgs;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class CarouselPageRenderer : FlipView, IVisualElementRenderer
 	{
@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Platform.UWP
 		public CarouselPageRenderer()
 		{
 			VirtualizingStackPanel.SetVirtualizationMode(this, VirtualizationMode.Standard);
-			ItemTemplate = (Windows.UI.Xaml.DataTemplate)Windows.UI.Xaml.Application.Current.Resources["ContainedPageTemplate"];
+			ItemTemplate = (global::Windows.UI.Xaml.DataTemplate)global::Windows.UI.Xaml.Application.Current.Resources["ContainedPageTemplate"];
 			SelectionChanged += OnSelectionChanged;
 			Loaded += OnLoaded;
 			Unloaded += OnUnloaded;
@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 
 			double oldWidth = Width;
 			double oldHeight = Height;
@@ -111,7 +111,7 @@ namespace Xamarin.Forms.Platform.UWP
 			OnElementChanged(new ElementChangedEventArgs<CarouselPage>(oldPage, newPage));
 
 			if (!string.IsNullOrEmpty(Element?.AutomationId))
-				SetValue(Windows.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, Element.AutomationId);
+				SetValue(global::Windows.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, Element.AutomationId);
 		}
 
 		protected virtual void Dispose(bool disposing)

@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific
+namespace System.Maui.PlatformConfiguration.AndroidSpecific
 {
-	using FormsElement = Forms.VisualElement;
+	using FormsElement = System.Maui.VisualElement;
 
 	public static class VisualElement
     {

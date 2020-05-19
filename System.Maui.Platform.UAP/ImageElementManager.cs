@@ -1,26 +1,26 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.UWP;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Media;
+using global::Windows.UI.Xaml.Media.Imaging;
+using System.Maui.Internals;
+using System.Maui.Platform.UWP;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public static class ImageElementManager
 	{
 		static bool _nativeAnimationSupport = false;
 		static ImageElementManager()
 		{
-			if (Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Windows.UI.Xaml.Media.Imaging.BitmapImage", "AutoPlay"))
-				if (Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Windows.UI.Xaml.Media.Imaging.BitmapImage", "IsPlaying"))
-					if (Windows.Foundation.Metadata.ApiInformation.IsMethodPresent("Windows.UI.Xaml.Media.Imaging.BitmapImage", "Play"))
-						if (Windows.Foundation.Metadata.ApiInformation.IsMethodPresent("Windows.UI.Xaml.Media.Imaging.BitmapImage", "Stop"))
+			if (global::Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("global::Windows.UI.Xaml.Media.Imaging.BitmapImage", "AutoPlay"))
+				if (global::Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("global::Windows.UI.Xaml.Media.Imaging.BitmapImage", "IsPlaying"))
+					if (global::Windows.Foundation.Metadata.ApiInformation.IsMethodPresent("global::Windows.UI.Xaml.Media.Imaging.BitmapImage", "Play"))
+						if (global::Windows.Foundation.Metadata.ApiInformation.IsMethodPresent("global::Windows.UI.Xaml.Media.Imaging.BitmapImage", "Stop"))
 							_nativeAnimationSupport = true;
 		}
 

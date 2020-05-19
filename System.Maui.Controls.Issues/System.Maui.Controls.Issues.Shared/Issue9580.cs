@@ -1,13 +1,13 @@
-﻿using System.Collections.ObjectModel;
-using Xamarin.Forms.CustomAttributes;
+using System.Collections.ObjectModel;
+using System.Maui.CustomAttributes;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Issue(IssueTracker.Github, 9580, "[Bug] CollectionView - iOS - Crash when adding first item to empty item group", 
 		PlatformAffected.iOS)]

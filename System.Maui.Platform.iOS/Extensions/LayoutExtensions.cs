@@ -1,15 +1,15 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using CoreGraphics;
 #if __MOBILE__
 using UIKit;
-using Xamarin.Forms.Platform.iOS;
-namespace Xamarin.Forms.Platform.iOS
+using System.Maui.Platform.iOS;
+namespace System.Maui.Platform.iOS
 #else
 using AppKit;
 using UIView = AppKit.NSView;
-using Xamarin.Forms.Platform.MacOS;
+using System.Maui.Platform.MacOS;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 #endif
 {
 	public delegate SizeRequest? GetDesiredSizeDelegate(

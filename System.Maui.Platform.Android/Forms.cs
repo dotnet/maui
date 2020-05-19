@@ -16,8 +16,8 @@ using Android.Content.Res;
 using Android.OS;
 using Android.Util;
 using Android.Views;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.Android;
+using System.Maui.Internals;
+using System.Maui.Platform.Android;
 using Resource = Android.Resource;
 using Trace = System.Diagnostics.Trace;
 using System.ComponentModel;
@@ -28,7 +28,7 @@ using AndroidX.Core.Content;
 using Android.Support.V4.Content;
 #endif
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public struct InitializationOptions
 	{
@@ -53,7 +53,7 @@ namespace Xamarin.Forms
 		public InitializationFlags Flags;
 	}
 
-	public static class Forms
+	public static class Maui
 	{
 		const int TabletCrossover = 600;
 
@@ -179,7 +179,7 @@ namespace Xamarin.Forms
 			return _ColorButtonNormal;
 		}
 
-		// Provide backwards compat for Forms.Init and AndroidActivity
+		// Provide backwards compat for System.Maui.Init and AndroidActivity
 		// Why is bundle a param if never used?
 		public static void Init(Context activity, Bundle bundle)
 		{
@@ -213,7 +213,7 @@ namespace Xamarin.Forms
 		}
 
 		/// <summary>
-		/// Sets title bar visibility programmatically. Must be called after Xamarin.Forms.Forms.Init() method
+		/// Sets title bar visibility programmatically. Must be called after System.Maui.Maui.Init() method
 		/// </summary>
 		/// <param name="visibility">Title bar visibility enum</param>
 		[Obsolete("SetTitleBarVisibility(AndroidTitleBarVisibility) is obsolete as of version 2.5. "
@@ -222,7 +222,7 @@ namespace Xamarin.Forms
 		public static void SetTitleBarVisibility(AndroidTitleBarVisibility visibility)
 		{
 			if (Context.GetActivity() == null)
-				throw new NullReferenceException("Must be called after Xamarin.Forms.Forms.Init() method");
+				throw new NullReferenceException("Must be called after System.Maui.Maui.Init() method");
 
 			if (visibility == AndroidTitleBarVisibility.Never)
 			{
@@ -441,7 +441,7 @@ namespace Xamarin.Forms
 			Color rc;
 			using (var value = new TypedValue())
 			{
-				if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorAccent, value, true) && Forms.IsLollipopOrNewer) // Android 5.0+
+				if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorAccent, value, true) && System.Maui.Maui.IsLollipopOrNewer) // Android 5.0+
 				{
 					rc = Color.FromUint((uint)value.Data);
 				}
@@ -477,7 +477,7 @@ namespace Xamarin.Forms
 			{
 				using (var value = new TypedValue())
 				{
-					if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorButtonNormal, value, true) && Forms.IsLollipopOrNewer) // Android 5.0+
+					if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorButtonNormal, value, true) && System.Maui.Maui.IsLollipopOrNewer) // Android 5.0+
 					{
 						rc = Color.FromUint((uint)value.Data);
 					}
@@ -906,7 +906,7 @@ namespace Xamarin.Forms
 				}
 				catch (Exception ex)
 				{
-					Internals.Log.Warning("Xamarin.Forms.Platform.Android.AndroidPlatformServices", "Error retrieving text appearance: {0}", ex);
+					Internals.Log.Warning("System.Maui.Platform.Android.AndroidPlatformServices", "Error retrieving text appearance: {0}", ex);
 				}
 				return false;
 			}

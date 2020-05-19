@@ -1,12 +1,12 @@
-﻿using Android.Content;
+using Android.Content;
 using System;
 using System.Linq;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Android;
-using Xamarin.Forms.Platform.Android;
+using System.Maui;
+using System.Maui.ControlGallery.Android;
+using System.Maui.Platform.Android;
 
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Page), typeof(_2489CustomRenderer))]
-namespace Xamarin.Forms.ControlGallery.Android
+[assembly: ExportRenderer(typeof(System.Maui.Page), typeof(_2489CustomRenderer))]
+namespace System.Maui.ControlGallery.Android
 {
 	public class _2489CustomRenderer : PageRenderer
 	{

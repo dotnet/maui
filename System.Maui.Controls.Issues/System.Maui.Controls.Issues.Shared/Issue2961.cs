@@ -1,8 +1,8 @@
-﻿using System;
-using Xamarin.Forms.CustomAttributes;
+using System;
+using System.Maui.CustomAttributes;
 using System.ComponentModel;
 using System.Diagnostics;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
 #if UITEST
 using Xamarin.UITest;
@@ -10,7 +10,7 @@ using NUnit.Framework;
 using Xamarin.UITest.iOS;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 #if UITEST
 	[Ignore("This test is looking for an invalid behavior; the second tap *should* keep the drawer open.")] 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,10 +8,10 @@ using Mono.Cecil.Cil;
 using static Mono.Cecil.Cil.Instruction;
 using static Mono.Cecil.Cil.OpCodes;
 
-using Xamarin.Forms.Xaml;
-using Xamarin.Forms.Build.Tasks;
+using System.Maui.Xaml;
+using System.Maui.Build.Tasks;
 
-namespace Xamarin.Forms.Core.XamlC
+namespace System.Maui.Core.XamlC
 {
 	class UriTypeConverter : ICompiledTypeConverter
 	{

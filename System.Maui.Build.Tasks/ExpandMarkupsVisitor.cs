@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Xml;
-using Xamarin.Forms.Xaml;
-using Xamarin.Forms.Xaml.Internals;
+using System.Maui.Xaml;
+using System.Maui.Xaml.Internals;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace System.Maui.Build.Tasks
 {
 	class ExpandMarkupsVisitor : IXamlNodeVisitor
 	{
@@ -29,8 +29,8 @@ namespace Xamarin.Forms.Build.Tasks
 		public bool IsResourceDictionary(ElementNode node)
 		{
 			var parentVar = Context.Variables[(IElementNode)node];
-			return parentVar.VariableType.FullName == "Xamarin.Forms.ResourceDictionary"
-				|| parentVar.VariableType.Resolve().BaseType?.FullName == "Xamarin.Forms.ResourceDictionary";
+			return parentVar.VariableType.FullName == "System.Maui.ResourceDictionary"
+				|| parentVar.VariableType.Resolve().BaseType?.FullName == "System.Maui.ResourceDictionary";
 		}
 
 		public void Visit(ValueNode node, INode parentNode)

@@ -1,10 +1,10 @@
 using System;
 using ElmSharp;
-using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
-using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.VisualElement;
+using System.Maui.PlatformConfiguration.TizenSpecific;
+using Specific = System.Maui.PlatformConfiguration.TizenSpecific.VisualElement;
 using EColor = ElmSharp.Color;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class SwitchRenderer : ViewRenderer<Switch, Check>
 	{
@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Check(Forms.NativeParent)
+				SetNativeControl(new Check(System.Maui.Maui.NativeParent)
 				{
 					Style = SwitchStyle.Toggle
 				});

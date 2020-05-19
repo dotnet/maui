@@ -1,9 +1,9 @@
-﻿using Tizen.Multimedia;
-using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
+using Tizen.Multimedia;
+using System.Maui.PlatformConfiguration.TizenSpecific;
 using ERect = ElmSharp.Rect;
 using MRect = Tizen.Multimedia.Rectangle;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public static class MediaElementExtension
 	{

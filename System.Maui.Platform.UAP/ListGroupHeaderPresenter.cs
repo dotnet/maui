@@ -1,18 +1,18 @@
-﻿using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Input;
+using global::Windows.UI.Xaml.Media;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	public class ListGroupHeaderPresenter : Windows.UI.Xaml.Controls.ContentPresenter
+	public class ListGroupHeaderPresenter : global::Windows.UI.Xaml.Controls.ContentPresenter
 	{
 		void OnTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
 		{
 			var element = VisualTreeHelper.GetParent(this) as FrameworkElement;
 			while (element != null)
 			{
-				var list = element as Windows.UI.Xaml.Controls.ListView;
+				var list = element as global::Windows.UI.Xaml.Controls.ListView;
 				if (list != null)
 					element = list.SemanticZoomOwner;
 

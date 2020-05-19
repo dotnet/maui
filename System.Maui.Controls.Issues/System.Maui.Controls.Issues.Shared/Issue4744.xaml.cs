@@ -1,21 +1,21 @@
-﻿using System.Collections.ObjectModel;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Collections.ObjectModel;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 using System;
-using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 using System.Collections.Generic;
 
 #if UITEST && __ANDROID__
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 using System.Linq;
 #endif
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	/// <summary>
 	/// An empty page that can be used on its own or navigated to within a Frame.

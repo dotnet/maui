@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[DebuggerDisplay("Left={Left}, Top={Top}, Right={Right}, Bottom={Bottom}, HorizontalThickness={HorizontalThickness}, VerticalThickness={VerticalThickness}")]
 	[TypeConverter(typeof(ThicknessTypeConverter))]

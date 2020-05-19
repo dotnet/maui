@@ -1,7 +1,7 @@
-﻿<ResourceDictionary
+<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Xamarin.Forms.Platform.UWP">
+    xmlns:local="using:System.Maui.Platform.UWP">
 
     <Style TargetType="local:FormsComboBox">
         <Setter Property="Padding" Value="12,5,0,7" />

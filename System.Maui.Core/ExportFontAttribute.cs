@@ -1,5 +1,5 @@
-﻿using System;
-namespace Xamarin.Forms
+using System;
+namespace System.Maui
 {
 	[Internals.Preserve(AllMembers = true)]
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]

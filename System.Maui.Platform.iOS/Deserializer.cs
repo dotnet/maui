@@ -5,13 +5,13 @@ using System.IO.IsolatedStorage;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
 #if __MOBILE__
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 #else
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 #endif
 {
 	[Preserve(AllMembers = true)]
@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Platform.MacOS
 					catch (Exception e)
 					{
 						Debug.WriteLine("Could not deserialize properties: " + e.Message);
-						Log.Warning("Xamarin.Forms PropertyStore", $"Exception while reading Application properties: {e}");
+						Log.Warning("System.Maui PropertyStore", $"Exception while reading Application properties: {e}");
 					}
 				}
 
@@ -74,7 +74,7 @@ namespace Xamarin.Forms.Platform.MacOS
 						catch (Exception e)
 						{
 							Debug.WriteLine("Could not serialize properties: " + e.Message);
-							Log.Warning("Xamarin.Forms PropertyStore", $"Exception while writing Application properties: {e}");
+							Log.Warning("System.Maui PropertyStore", $"Exception while writing Application properties: {e}");
 							return;
 						}
 					}
@@ -88,7 +88,7 @@ namespace Xamarin.Forms.Platform.MacOS
 					catch (Exception e)
 					{
 						Debug.WriteLine("Could not move new serialized property file over old: " + e.Message);
-						Log.Warning("Xamarin.Forms PropertyStore", $"Exception while writing Application properties: {e}");
+						Log.Warning("System.Maui PropertyStore", $"Exception while writing Application properties: {e}");
 					}
 				}
 			});

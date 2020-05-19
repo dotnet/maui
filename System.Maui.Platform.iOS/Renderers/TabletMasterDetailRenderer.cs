@@ -3,7 +3,7 @@ using System.ComponentModel;
 using CoreGraphics;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	internal class ChildViewController : UIViewController
 	{
@@ -206,7 +206,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			ViewControllers = new[] { _masterController = new EventedViewController(), _detailController = new ChildViewController() };
 			
-			if (!Forms.IsiOS9OrNewer)
+			if (!System.Maui.Maui.IsiOS9OrNewer)
 				Delegate = _innerDelegate = new InnerDelegate(MasterDetailPage.MasterBehavior);
 
 			UpdateControllers();
@@ -254,7 +254,7 @@ namespace Xamarin.Forms.Platform.iOS
 			bool layoutMaster = false;
 			bool layoutDetails = false;
 
-			if (Forms.IsiOS13OrNewer)
+			if (System.Maui.Maui.IsiOS13OrNewer)
 			{
 				layoutMaster = _masterController?.View?.Superview != null;
 				layoutDetails = _detailController?.View?.Superview != null;
@@ -273,7 +273,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				var masterBounds = _masterController.View.Frame;
 
-				if (Forms.IsiOS13OrNewer)
+				if (System.Maui.Maui.IsiOS13OrNewer)
 					_masterWidth = masterBounds.Width;
 				else
 					_masterWidth = (nfloat)Math.Max(_masterWidth, masterBounds.Width);
@@ -378,7 +378,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void WillRotate(UIInterfaceOrientation toInterfaceOrientation, double duration)
 		{
 			// I tested this code on iOS9+ and it's never called
-			if (!Forms.IsiOS9OrNewer)
+			if (!System.Maui.Maui.IsiOS9OrNewer)
 			{
 				if (!MasterDetailPage.ShouldShowSplitMode && IsMasterVisible)
 				{
@@ -456,9 +456,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (e.PropertyName == "Master" || e.PropertyName == "Detail")
 				UpdateControllers();
-			else if (e.PropertyName == Xamarin.Forms.MasterDetailPage.IsPresentedProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.MasterDetailPage.IsPresentedProperty.PropertyName)
 				ToggleMaster();
-			else if (e.PropertyName == Xamarin.Forms.MasterDetailPage.IsGestureEnabledProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.MasterDetailPage.IsGestureEnabledProperty.PropertyName)
 				base.PresentsWithGesture = this.MasterDetailPage.IsGestureEnabled;
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateFlowDirection();
@@ -542,7 +542,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateFlowDirection()
 		{
-			if(NativeView.UpdateFlowDirection(Element) && Forms.IsiOS13OrNewer && NativeView.Superview != null)
+			if(NativeView.UpdateFlowDirection(Element) && System.Maui.Maui.IsiOS13OrNewer && NativeView.Superview != null)
 			{
 				var view = NativeView.Superview;
 				NativeView.RemoveFromSuperview();

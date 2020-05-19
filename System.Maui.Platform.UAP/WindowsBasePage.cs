@@ -1,20 +1,20 @@
-﻿using System;
+using System;
 using System.ComponentModel;
-using Windows.ApplicationModel;
+using global::Windows.ApplicationModel;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	public abstract class WindowsBasePage : Windows.UI.Xaml.Controls.Page
+	public abstract class WindowsBasePage : global::Windows.UI.Xaml.Controls.Page
 	{
 
 		Application _application;
 
 		public WindowsBasePage()
 		{
-			if (!Windows.ApplicationModel.DesignMode.DesignModeEnabled)
+			if (!global::Windows.ApplicationModel.DesignMode.DesignModeEnabled)
 			{
-				Windows.UI.Xaml.Application.Current.Suspending += OnApplicationSuspending;
-				Windows.UI.Xaml.Application.Current.Resuming += OnApplicationResuming;
+				global::Windows.UI.Xaml.Application.Current.Suspending += OnApplicationSuspending;
+				global::Windows.UI.Xaml.Application.Current.Resuming += OnApplicationResuming;
 			}
 		}
 

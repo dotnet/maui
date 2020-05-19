@@ -1,7 +1,7 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
+namespace System.Maui.Controls.GalleryPages.CollectionViewGalleries
 {
 	internal class ItemMover : ObservableCollectionModifier
 	{

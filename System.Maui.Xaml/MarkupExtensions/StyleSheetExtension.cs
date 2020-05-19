@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Xml;
-using Xamarin.Forms.StyleSheets;
+using System.Maui.StyleSheets;
 using System.Reflection;
 using System.IO;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	[ContentProperty(nameof(Style))]
-	[ProvideCompiled("Xamarin.Forms.Core.XamlC.StyleSheetProvider")]
+	[ProvideCompiled("System.Maui.Core.XamlC.StyleSheetProvider")]
 	public sealed class StyleSheetExtension : IValueProvider
 	{
 		public string Style { get; set; }

@@ -1,9 +1,9 @@
 using System;
-using IEntry = Xamarin.Forms.Platform.Tizen.Native.IEntry;
+using IEntry = System.Maui.Platform.Tizen.Native.IEntry;
 using EEntry = ElmSharp.Entry;
-using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Entry;
+using Specific = System.Maui.PlatformConfiguration.TizenSpecific.Entry;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class EntryRenderer : ViewRenderer<Entry, EEntry>
 	{
@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		protected virtual EEntry CreateNativeControl()
 		{
-			return new Native.EditfieldEntry(Forms.NativeParent)
+			return new Native.EditfieldEntry(System.Maui.Maui.NativeParent)
 			{
 				IsSingleLine = true,
 			};

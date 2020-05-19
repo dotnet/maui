@@ -1,23 +1,23 @@
-﻿using System;
+using System;
 
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Maps;
+using System.Maui.CustomAttributes;
+using System.Maui.Maps;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
 #endif
 	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 26171, "Xamarin.Forms.Maps is not updating VisibleRegion property when layout is changed")]
+	[Issue (IssueTracker.Bugzilla, 26171, "System.Maui.Maps is not updating VisibleRegion property when layout is changed")]
 	public class Bugzilla26171 : TestContentPage // or TestMasterDetailPage, etc ...
 	{
 		protected override void Init ()

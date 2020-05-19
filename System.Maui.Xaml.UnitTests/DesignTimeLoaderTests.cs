@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	[TestFixture]
 	public class DesignTimeLoaderTests
@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public void Setup()
 		{
 			Device.PlatformServices = new MockPlatformServices();
-			Xamarin.Forms.Internals.Registrar.RegisterAll(new Type[0]);
+			System.Maui.Internals.Registrar.RegisterAll(new Type[0]);
 		}
 
 		[TearDown]
@@ -24,8 +24,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			XamlLoader.ValueCreatedCallback = null;
 			XamlLoader.InstantiationFailedCallback = null;
 #pragma warning disable 0618
-			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = null;
-			Xamarin.Forms.Xaml.Internals.XamlLoader.DoNotThrowOnExceptions = false;
+			System.Maui.Internals.ResourceLoader.ExceptionHandler = null;
+			System.Maui.Xaml.Internals.XamlLoader.DoNotThrowOnExceptions = false;
 #pragma warning restore 0618
 		}
 
@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var xaml = @"
 				<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-					x:Class=""Xamarin.Forms.Xaml.UnitTests.CustomView""
+					x:Class=""System.Maui.Xaml.UnitTests.CustomView""
 				/>";
 
 			Assert.That(XamlLoader.Create(xaml, true), Is.TypeOf<ContentPage>());
@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var xaml = @"
 				<ContentView xmlns=""http://xamarin.com/schemas/2014/forms""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-					x:Class=""Xamarin.Forms.Xaml.UnitTests.CustomView""
+					x:Class=""System.Maui.Xaml.UnitTests.CustomView""
 				/>";
 
 			Assert.That(XamlLoader.Create(xaml, true), Is.TypeOf<ContentView>());
@@ -304,7 +304,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		{
 			int exceptionCount = 0;
 #pragma warning disable 0618 // Type or member is obsolete
-			Forms.Internals.ResourceLoader.ExceptionHandler = _ => exceptionCount++;
+			System.Maui.Internals.ResourceLoader.ExceptionHandler = _ => exceptionCount++;
 			XamlLoader.FallbackTypeResolver = (p, type) => type ?? typeof(MockView);
 #pragma warning restore 0618 // Type or member is obsolete
 
@@ -388,7 +388,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 			var exceptions = new List<Exception>();
 #pragma warning disable CS0618 // Type or member is obsolete
-			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+			System.Maui.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
 #pragma warning restore CS0618 // Type or member is obsolete
 
 			var page = (ContentPage)XamlLoader.Create(xaml, true);
@@ -507,7 +507,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var xaml = @"
 					<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 						xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-						xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests""
+						xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests""
 						xmlns:missing=""clr-namespace:MissingNamespace;assembly=MissingAssembly"">
 						<StackLayout>
 							<local:InstantiateThrows />
@@ -536,7 +536,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var xaml = @"
 						<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-							xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+							xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests"">
 							<StackLayout>
 								<local:ReplacedType x:FactoryMethod=""CreateInstance"" />
 							</StackLayout>
@@ -552,13 +552,13 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var xaml = @"
 					<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 						xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-						xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+						xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests"">
 						<local:SettingPropertyThrows TestValue=""Test"" TestBP=""bar""/>
 					</ContentPage>";
 
 			var exceptions = new List<Exception>();
 #pragma warning disable CS0618 // Type or member is obsolete
-			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+			System.Maui.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
 #pragma warning restore CS0618 // Type or member is obsolete
 			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 			Assert.That(exceptions.Count, Is.EqualTo(2));
@@ -570,13 +570,13 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var xaml = @"
 					<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 						xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-						xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+						xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests"">
 						<Label BackgroundColor=""AlmostPink"" />
 					</ContentPage>";
 
 			var exceptions = new List<Exception>();
 #pragma warning disable CS0618 // Type or member is obsolete
-			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+			System.Maui.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
 #pragma warning restore CS0618 // Type or member is obsolete
 			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 			Assert.That(exceptions.Count, Is.EqualTo(1));
@@ -588,7 +588,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var xaml = @"
 						<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-								xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+								xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests"">
 								<StackLayout>
 									<ListView ItemsSource=""{x:Static Foo}"" />
 									<ListView ItemsSource=""{local:Missing Test}"" />
@@ -597,7 +597,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 						</ContentPage>";
 			var exceptions = new List<Exception>();
 #pragma warning disable CS0618 // Type or member is obsolete
-			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+			System.Maui.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
 #pragma warning restore CS0618 // Type or member is obsolete
 			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 			Assert.That(exceptions.Count, Is.GreaterThan(1));
@@ -663,7 +663,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var xaml = @"
 					<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 						xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-						xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+						xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests"">
 						<StackLayout>
 							<local:Missing x:Name=""MyName"" />
 							<Button x:Name=""button"" />
@@ -672,7 +672,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					</ContentPage>";
 			var exceptions = new List<Exception>();
 #pragma warning disable CS0618 // Type or member is obsolete
-			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+			System.Maui.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
 #pragma warning restore CS0618 // Type or member is obsolete
 			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 			Assert.That(exceptions.Count, Is.GreaterThan(1));
@@ -689,7 +689,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 			var exceptions = new List<Exception>();
 #pragma warning disable CS0618 // Type or member is obsolete
-			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+			System.Maui.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
 #pragma warning restore CS0618 // Type or member is obsolete
 			var content = (ContentPage)XamlLoader.Create(xaml, true);
 			Assert.DoesNotThrow(() => content.FindByName<Button>("MyName"));
@@ -702,7 +702,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var xaml = @"
 						<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-								xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+								xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests"">
 								<StackLayout>
 									<Label>xyz</Label>
 									<StackLayout>foo</StackLayout>
@@ -712,7 +712,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			XamlLoader.Create(xaml, true);
 			var exceptions = new List<Exception>();
 #pragma warning disable CS0618 // Type or member is obsolete
-			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+			System.Maui.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
 #pragma warning restore CS0618 // Type or member is obsolete
 			Assert.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 			Assert.That(exceptions.Count, Is.GreaterThanOrEqualTo(1));

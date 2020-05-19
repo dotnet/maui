@@ -1,6 +1,6 @@
-﻿using System.Reflection;
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.UWP;
+using System.Reflection;
+using System.Maui;
+using System.Maui.Platform.UWP;
 
 [assembly: Dependency(typeof(WindowsSerializer))]
 
@@ -66,5 +66,5 @@ using Xamarin.Forms.Platform.UWP;
 //Fonts
 [assembly: ExportRenderer(typeof(EmbeddedFont), typeof(EmbeddedFontLoader))]
 
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.DualScreen")]
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform.UAP.UnitTests")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("System.Maui.DualScreen")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("System.Maui.Platform.UAP.UnitTests")]

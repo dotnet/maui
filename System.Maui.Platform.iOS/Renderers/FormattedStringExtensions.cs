@@ -1,15 +1,15 @@
 using Foundation;
 using System;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 #if __MOBILE__
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 #else
 using AppKit;
 using UIColor = AppKit.NSColor;
 using UITextAlignment = AppKit.NSTextAlignment;
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 #endif
 {
 	public static class FormattedStringExtensions

@@ -1,25 +1,25 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Windows.Foundation.Metadata;
-using Windows.Graphics.Display;
-using Windows.UI.ViewManagement;
+using global::Windows.Foundation.Metadata;
+using global::Windows.Graphics.Display;
+using global::Windows.UI.ViewManagement;
 
 #if UWP_18362
-using Windows.UI.WindowManagement;
+using global::Windows.UI.WindowManagement;
 #endif
 
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Hosting;
-using Xamarin.Forms;
-using Xamarin.Forms.DualScreen;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.UWP;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Hosting;
+using System.Maui;
+using System.Maui.DualScreen;
+using System.Maui.Internals;
+using System.Maui.Platform.UWP;
 
 [assembly: Dependency(typeof(DualScreenService))]
-namespace Xamarin.Forms.DualScreen
+namespace System.Maui.DualScreen
 {
     internal partial class DualScreenService : IDualScreenService, Platform.UWP.DualScreen.IDualScreenService
 	{
@@ -35,13 +35,13 @@ namespace Xamarin.Forms.DualScreen
 
 		public async Task<int> GetHingeAngleAsync()
 		{
-			if (!ApiInformation.IsMethodPresent("Windows.Devices.Sensors.HingeAngleSensor", "GetDefaultAsync"))
+			if (!ApiInformation.IsMethodPresent("global::Windows.Devices.Sensors.HingeAngleSensor", "GetDefaultAsync"))
 			{
 				return await NoDualScreenServiceImpl.Instance.GetHingeAngleAsync();
 			}
 
 #if UWP_18362
-			var sensor = await Windows.Devices.Sensors.HingeAngleSensor.GetDefaultAsync();
+			var sensor = await global::Windows.Devices.Sensors.HingeAngleSensor.GetDefaultAsync();
 
 			if (sensor == null)
 				return await NoDualScreenServiceImpl.Instance.GetHingeAngleAsync();
@@ -53,7 +53,7 @@ namespace Xamarin.Forms.DualScreen
 #endif
 		}
 
-		void OnCurrentSizeChanged(object sender, Windows.UI.Core.WindowSizeChangedEventArgs e)
+		void OnCurrentSizeChanged(object sender, global::Windows.UI.Core.WindowSizeChangedEventArgs e)
 		{
 			OnScreenChanged?.Invoke(this, EventArgs.Empty);
 		}
@@ -111,14 +111,14 @@ namespace Xamarin.Forms.DualScreen
 		{
 			get
 			{
-				Windows.Foundation.Rect windowSize = Window.Current.Bounds;
+				global::Windows.Foundation.Rect windowSize = Window.Current.Bounds;
 				return new Size(windowSize.Width, windowSize.Height);
 			}
 		}
 
         public Rectangle GetHinge()
         {
-			if (!ApiInformation.IsMethodPresent("Windows.UI.ViewManagement.ApplicationView", "GetSpanningRects"))
+			if (!ApiInformation.IsMethodPresent("global::Windows.UI.ViewManagement.ApplicationView", "GetSpanningRects"))
 				return Rectangle.Zero;
 
 			if (!IsSpanned)
@@ -129,7 +129,7 @@ namespace Xamarin.Forms.DualScreen
 
 #if UWP_18362
 			var applicationView = ApplicationView.GetForCurrentView();
-			List<Windows.Foundation.Rect> spanningRects = null;
+			List<global::Windows.Foundation.Rect> spanningRects = null;
 
 #if UWP_19000
 			spanningRects = applicationView.GetSpanningRects().ToList();
@@ -180,7 +180,7 @@ namespace Xamarin.Forms.DualScreen
                 return null;
 
             var ttv = view.ContainerElement.TransformToVisual(Window.Current.Content);
-            Windows.Foundation.Point screenCoords = ttv.TransformPoint(new Windows.Foundation.Point(0, 0));
+            global::Windows.Foundation.Point screenCoords = ttv.TransformPoint(new global::Windows.Foundation.Point(0, 0));
 
             return new Point(screenCoords.X, screenCoords.Y);
         }

@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class ElementChangedEventArgs<TElement> : EventArgs where TElement : Element
 	{

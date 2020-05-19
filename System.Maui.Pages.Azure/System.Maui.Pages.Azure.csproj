@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard1.4</TargetFrameworks>
   </PropertyGroup>
@@ -7,7 +7,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj" />
-    <ProjectReference Include="..\Xamarin.Forms.Pages\Xamarin.Forms.Pages.csproj" />
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj" />
+    <ProjectReference Include="..\System.Maui.Pages\System.Maui.Pages.csproj" />
   </ItemGroup>
  </Project>

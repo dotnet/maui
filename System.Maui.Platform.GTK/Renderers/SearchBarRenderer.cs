@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.ComponentModel;
-using Xamarin.Forms.Platform.GTK.Controls;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using System.Maui.Platform.GTK.Controls;
+using System.Maui.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers
+namespace System.Maui.Platform.GTK.Renderers
 {
 	public class SearchBarRenderer : ViewRenderer<SearchBar, SearchEntry>
 	{

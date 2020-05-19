@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.StyleSheets.UnitTests
+namespace System.Maui.StyleSheets.UnitTests
 {
 	class MockStylable : IStyleSelectable
 	{

@@ -2,7 +2,7 @@
 <ContentPage
 	xmlns="http://xamarin.com/schemas/2014/forms"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	x:Class="Xamarin.Forms.Xaml.UnitTests.Bz41048">
+	x:Class="System.Maui.Xaml.UnitTests.Bz41048">
 	<ContentPage.Resources>
 		<ResourceDictionary>
 			<!-- Standard Style -->

@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using AppKit;
 using CoreGraphics;
 using Foundation;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public class CellRenderer : IRegisterable
 	{

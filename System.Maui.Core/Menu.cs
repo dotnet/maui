@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public class Menu : BaseMenuItem, IList<Menu>
 	{

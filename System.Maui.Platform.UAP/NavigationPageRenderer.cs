@@ -1,24 +1,24 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Windows.Devices.Input;
-using Windows.UI.Input;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Animation;
-using Xamarin.Forms.Internals;
-using static Xamarin.Forms.PlatformConfiguration.WindowsSpecific.Page;
-using WImageSource = Windows.UI.Xaml.Media.ImageSource;
+using global::Windows.Devices.Input;
+using global::Windows.UI.Input;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Input;
+using global::Windows.UI.Xaml.Media;
+using global::Windows.UI.Xaml.Media.Animation;
+using System.Maui.Internals;
+using static System.Maui.PlatformConfiguration.WindowsSpecific.Page;
+using WImageSource = global::Windows.UI.Xaml.Media.ImageSource;
 
 
-using Windows.UI.Core;
-using Windows.UI.Xaml.Data;
+using global::Windows.UI.Core;
+using global::Windows.UI.Xaml.Data;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class NavigationPageRenderer : IVisualElementRenderer, ITitleProvider, ITitleIconProvider, 
 		ITitleViewProvider, IToolbarProvider, IToolBarForegroundBinder
@@ -138,7 +138,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 			IVisualElementRenderer childRenderer = Platform.GetRenderer(Element.CurrentPage);
 			FrameworkElement child = childRenderer.ContainerElement;
 
@@ -222,7 +222,7 @@ namespace Xamarin.Forms.Platform.UWP
 				Element.InternalChildren.CollectionChanged += OnChildrenChanged;
 
 				if (!string.IsNullOrEmpty(Element.AutomationId))
-					_container.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, Element.AutomationId);
+					_container.SetValue(global::Windows.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, Element.AutomationId);
 
 				PushExistingNavigationStack();
 			}
@@ -282,7 +282,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		Brush GetBarForegroundBrush()
 		{
-			object defaultColor = Windows.UI.Xaml.Application.Current.Resources["ApplicationForegroundThemeBrush"];
+			object defaultColor = global::Windows.UI.Xaml.Application.Current.Resources["ApplicationForegroundThemeBrush"];
 			if (Element.BarTextColor.IsDefault)
 				return (Brush)defaultColor;
 			return Element.BarTextColor.ToBrush();
@@ -593,7 +593,7 @@ namespace Xamarin.Forms.Platform.UWP
 		void SetAppBarForegroundBinding(FrameworkElement element)
 		{
 			element.SetBinding(Control.ForegroundProperty,
-				new Windows.UI.Xaml.Data.Binding { Path = new PropertyPath("TitleBrush"), Source = _container, RelativeSource = new RelativeSource { Mode = RelativeSourceMode.TemplatedParent } });
+				new global::Windows.UI.Xaml.Data.Binding { Path = new PropertyPath("TitleBrush"), Source = _container, RelativeSource = new RelativeSource { Mode = RelativeSourceMode.TemplatedParent } });
 		}
 
 		void UpdateToolbarPlacement()
@@ -624,7 +624,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		static object GetDefaultColor()
 		{
-			return Windows.UI.Xaml.Application.Current.Resources["SystemControlBackgroundChromeMediumLowBrush"];
+			return global::Windows.UI.Xaml.Application.Current.Resources["SystemControlBackgroundChromeMediumLowBrush"];
 		}
 
 		void UpdateBackButton()

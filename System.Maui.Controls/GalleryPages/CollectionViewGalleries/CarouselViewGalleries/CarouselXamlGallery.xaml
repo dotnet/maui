@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ContentPage
-    xmlns:gallery="clr-namespace:Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries" xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries.CarouselXamlGallery"
+    xmlns:gallery="clr-namespace:System.Maui.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries" xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="System.Maui.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries.CarouselXamlGallery"
     Title="CarouselView Xaml">
     <Grid Margin="0,0,0,10">
         <Grid.RowDefinitions>

@@ -1,10 +1,10 @@
-﻿using System;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
+using System;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Media;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	internal class FormsCancelButton : Windows.UI.Xaml.Controls.Button
+	internal class FormsCancelButton : global::Windows.UI.Xaml.Controls.Button
 	{
 		TextBlock _cancelButtonGlyph;
 		Border _cancelButtonBackground;

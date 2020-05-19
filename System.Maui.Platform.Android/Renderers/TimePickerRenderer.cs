@@ -9,7 +9,7 @@ using Android.OS;
 using Android.Widget;
 using AColor = Android.Graphics.Color;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public abstract class TimePickerRendererBase<TControl> : ViewRenderer<TimePicker, TControl>, TimePickerDialog.IOnTimeSetListener, IPickerRenderer
 		where TControl : global::Android.Views.View
@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Platform.Android
 			ElementController.SetValueFromRenderer(TimePicker.TimeProperty, new TimeSpan(hourOfDay, minute, 0));
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 
-			if (Forms.IsLollipopOrNewer)
+			if (System.Maui.Maui.IsLollipopOrNewer)
 				_dialog.CancelEvent -= OnCancelButtonClicked;
 
 			_dialog = null;
@@ -65,7 +65,7 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateCharacterSpacing();
 			UpdateFont();
 
-			if ((int)Forms.SdkInt > 16)
+			if ((int)System.Maui.Maui.SdkInt > 16)
 				Control.TextAlignment = global::Android.Views.TextAlignment.ViewStart;
 		}
 
@@ -104,7 +104,7 @@ namespace Xamarin.Forms.Platform.Android
 				_dialog.Hide();
 				ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 
-				if (Forms.IsLollipopOrNewer)
+				if (System.Maui.Maui.IsLollipopOrNewer)
 					_dialog.CancelEvent -= OnCancelButtonClicked;
 
 				_dialog?.Dispose();
@@ -116,7 +116,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			var dialog = new TimePickerDialog(Context, this, hours, minutes, Is24HourView);
 
-			if (Forms.IsLollipopOrNewer)
+			if (System.Maui.Maui.IsLollipopOrNewer)
 				dialog.CancelEvent += OnCancelButtonClicked;
 
 			return dialog;
@@ -133,7 +133,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (disposing)
 			{
-				if (Forms.IsLollipopOrNewer && _dialog.IsAlive())
+				if (System.Maui.Maui.IsLollipopOrNewer && _dialog.IsAlive())
 					_dialog.CancelEvent -= OnCancelButtonClicked;
 
 				_dialog?.Dispose();
@@ -177,7 +177,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateCharacterSpacing()
 		{
-			if (Forms.IsLollipopOrNewer)
+			if (System.Maui.Maui.IsLollipopOrNewer)
 			{
 				EditText.LetterSpacing = Element.CharacterSpacing.ToEm();
 			}

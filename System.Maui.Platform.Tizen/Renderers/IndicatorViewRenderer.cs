@@ -1,6 +1,6 @@
-﻿using System.Collections;
+using System.Collections;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class IndicatorViewRenderer : ViewRenderer<IndicatorView, Native.IndicatorView>
 	{
@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Native.IndicatorView(Forms.NativeParent));
+				SetNativeControl(new Native.IndicatorView(System.Maui.Maui.NativeParent));
 			}
 			if (e.NewElement != null)
 			{

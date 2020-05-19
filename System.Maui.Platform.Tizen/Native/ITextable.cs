@@ -1,6 +1,6 @@
 using EColor = ElmSharp.Color;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	/// <summary>
 	/// Interface defining properties of formattable text.

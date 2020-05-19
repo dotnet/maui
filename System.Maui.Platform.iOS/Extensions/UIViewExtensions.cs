@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using static System.String;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 #if __MOBILE__
 using UIKit;
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 #else
 using UIView = AppKit.NSView;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 #endif
 {
 	public static class UIViewExtensions

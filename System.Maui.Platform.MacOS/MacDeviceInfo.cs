@@ -1,7 +1,7 @@
-﻿using AppKit;
-using Xamarin.Forms.Internals;
+using AppKit;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.macOS
+namespace System.Maui.Platform.macOS
 {
 	internal class MacDeviceInfo : DeviceInfo
 	{

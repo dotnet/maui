@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel;
 using ElmSharp;
 
-namespace Xamarin.Forms.Platform.Tizen.Watch
+namespace System.Maui.Platform.Tizen.Watch
 {
 	public class ShellItemRenderer : IShellItemRenderer
 	{
@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 
 		void InitializeComponent()
 		{
-			_mainLayout = new Box(Forms.NativeParent);
+			_mainLayout = new Box(System.Maui.Maui.NativeParent);
 			_mainLayout.SetLayoutCallback(OnLayout);
 		}
 

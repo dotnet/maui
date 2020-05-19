@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Maps
+namespace System.Maui.Maps
 {
 	public class Geocoder
 	{
@@ -16,14 +16,14 @@ namespace Xamarin.Forms.Maps
 		public Task<IEnumerable<string>> GetAddressesForPositionAsync(Position position)
 		{
 			if (GetAddressesForPositionFuncAsync == null)
-				throw new InvalidOperationException("You MUST call Xamarin.FormsMaps.Init (); prior to using it.");
+				throw new InvalidOperationException("You MUST call System.MauiMaps.Init (); prior to using it.");
 			return GetAddressesForPositionFuncAsync(position);
 		}
 
 		public Task<IEnumerable<Position>> GetPositionsForAddressAsync(string address)
 		{
 			if (GetPositionsForAddressAsyncFunc == null)
-				throw new InvalidOperationException("You MUST call Xamarin.FormsMaps.Init (); prior to using it.");
+				throw new InvalidOperationException("You MUST call System.MauiMaps.Init (); prior to using it.");
 			return GetPositionsForAddressAsyncFunc(address);
 		}
 	}

@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using CoreAnimation;
 using Foundation;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public static class ImageExtensions
 	{

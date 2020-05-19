@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xamarin.forms.material.android.MaterialPickerTextInputLayout
+<system.maui.material.android.MaterialPickerTextInputLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     style="@style/XamarinFormsMaterialEntryFilled">
-    <xamarin.forms.material.android.MaterialPickerEditText
+    <system.maui.material.android.MaterialPickerEditText
 		android:id="@+id/materialformsedittext"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="-7dp"/>
-</xamarin.forms.material.android.MaterialPickerTextInputLayout>
+</system.maui.material.android.MaterialPickerTextInputLayout>

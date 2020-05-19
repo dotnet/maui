@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Pages
+namespace System.Maui.Pages
 {
 	public abstract class JsonSource : Element
 	{

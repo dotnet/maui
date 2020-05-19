@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[Xaml.TypeConversion(typeof(FileMediaSource))]
 	public sealed class FileMediaSourceConverter : TypeConverter

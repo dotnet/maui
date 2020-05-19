@@ -1,11 +1,11 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using static System.String;
 using WControl = System.Windows.Controls.Control;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public class EntryRenderer : ViewRenderer<Entry, FormsTextBox>
 	{

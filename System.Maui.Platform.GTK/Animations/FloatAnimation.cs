@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms.Platform.GTK.Animations
+namespace System.Maui.Platform.GTK.Animations
 {
 	internal class FloatAnimation : BaseAnimation
 	{

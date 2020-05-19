@@ -1,10 +1,10 @@
-﻿using System.ComponentModel;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation.Peers;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Shapes;
+using System.ComponentModel;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Automation.Peers;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Shapes;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class BoxViewBorderRenderer : ViewRenderer<BoxView, Border>
 	{
@@ -68,7 +68,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void SetCornerRadius(CornerRadius cornerRadius)
 		{
-			Control.CornerRadius = new Windows.UI.Xaml.CornerRadius(cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomRight, cornerRadius.BottomLeft);
+			Control.CornerRadius = new global::Windows.UI.Xaml.CornerRadius(cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomRight, cornerRadius.BottomLeft);
 		}
 	}
 }

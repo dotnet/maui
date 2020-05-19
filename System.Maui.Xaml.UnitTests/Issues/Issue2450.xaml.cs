@@ -1,9 +1,9 @@
-﻿using Xamarin.Forms;
+using System.Maui;
 
 using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	//this covers Issue2125 as well
 	[XamlCompilation(XamlCompilationOptions.Skip)]
@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			{
 				var layout = new Issue2450(useCompiledXaml);
 				Assert.Throws(new XamlParseExceptionConstraint(11, 13, m => m == "An element with the name \"label0\" already exists in this NameScope"),
-							  () => (layout.Resources ["foo"] as Forms.DataTemplate).CreateContent());
+							  () => (layout.Resources ["foo"] as System.Maui.DataTemplate).CreateContent());
 			}
 		}
 	}

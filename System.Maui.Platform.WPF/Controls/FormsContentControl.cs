@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using Xamarin.Forms.Platform.WPF.Interfaces;
+using System.Maui.Platform.WPF.Interfaces;
 
-namespace Xamarin.Forms.Platform.WPF.Controls
+namespace System.Maui.Platform.WPF.Controls
 {
 	public class FormsContentControl : ContentControl
 	{

@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
-using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionGalleries
+namespace System.Maui.Controls.GalleryPages.CollectionViewGalleries.SelectionGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class MultipleBoundSelection : ContentPage

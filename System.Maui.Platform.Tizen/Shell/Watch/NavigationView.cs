@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -8,7 +8,7 @@ using ElmSharp.Wearable;
 using EColor = ElmSharp.Color;
 using ELayout = ElmSharp.Layout;
 
-namespace Xamarin.Forms.Platform.Tizen.Watch
+namespace System.Maui.Platform.Tizen.Watch
 {
 	public class NavigationView : ELayout
 	{
@@ -241,7 +241,7 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 				{
 					if (part == "elm.swallow.icon" && obj is Item menuItem && !string.IsNullOrEmpty(menuItem.Icon))
 					{
-						var icon = new ElmSharp.Image(Xamarin.Forms.Forms.NativeParent)
+						var icon = new ElmSharp.Image(System.Maui.Maui.NativeParent)
 						{
 							AlignmentX = -1,
 							AlignmentY = -1,

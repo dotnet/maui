@@ -4,7 +4,7 @@ using Android.Views;
 using AView = Android.Views.View;
 using ALayoutChangeEventArgs = Android.Views.View.LayoutChangeEventArgs;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public interface IVisualElementRenderer : IRegisterable, IDisposable
 	{

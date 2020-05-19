@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 
-using Xamarin.Forms.CustomAttributes;
+using System.Maui.CustomAttributes;
 using System.Collections.Generic;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
 #if UITEST
 using Xamarin.UITest;
@@ -11,7 +11,7 @@ using Xamarin.UITest.iOS;
 
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]

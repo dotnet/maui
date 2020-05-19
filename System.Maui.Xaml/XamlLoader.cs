@@ -34,10 +34,10 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml.Diagnostics;
+using System.Maui.Internals;
+using System.Maui.Xaml.Diagnostics;
 
-namespace Xamarin.Forms.Xaml.Internals
+namespace System.Maui.Xaml.Internals
 {
 	[Obsolete ("Replaced by ResourceLoader")]
 	[EditorBrowsable(EditorBrowsableState.Never)]
@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Xaml.Internals
 			get { return xamlFileProvider; }
 			internal set {
 				xamlFileProvider = value;
-				Xamarin.Forms.DesignMode.IsDesignModeEnabled = true;
+				System.Maui.DesignMode.IsDesignModeEnabled = true;
 				//¯\_(ツ)_/¯ the previewer forgot to set that bool
 				DoNotThrowOnExceptions = value != null;
 			}
@@ -59,7 +59,7 @@ namespace Xamarin.Forms.Xaml.Internals
 	}
 }
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	static class XamlLoader
 	{
@@ -172,7 +172,7 @@ namespace Xamarin.Forms.Xaml
 						continue;
 					}
 
-					//the root is set to null, and not to rootView, on purpose as we don't want to erase the current Resources of the view
+					//the root is set to null, and not to rootView, on purpose as we don't want to erase the current global::Android.Content.Res.Resources of the view
 					RootNode rootNode = new RuntimeRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), null, (IXmlNamespaceResolver)reader) { LineNumber = ((IXmlLineInfo)reader).LineNumber, LinePosition = ((IXmlLineInfo)reader).LinePosition };
 					XamlParser.ParseXaml(rootNode, reader);
 					var rNode = (IElementNode)rootNode;

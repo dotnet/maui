@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Reflection;
 using ElmSharp;
-using Xamarin.Forms.Platform.Tizen.Native;
+using System.Maui.Platform.Tizen.Native;
 using EColor = ElmSharp.Color;
 using EButton = ElmSharp.Button;
 using EImage = ElmSharp.Image;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class ShellNavBar : Native.Box
 	{
@@ -26,25 +26,25 @@ namespace Xamarin.Forms.Platform.Tizen
 		EColor _foregroudColor = ShellRenderer.DefaultForegroundColor.ToNative();
 
 		// The source of icon resources is https://materialdesignicons.com/
-		const string _menuIcon = "Xamarin.Forms.Platform.Tizen.Resource.menu.png";
-		const string _backIcon = "Xamarin.Forms.Platform.Tizen.Resource.arrow_left.png";
+		const string _menuIcon = "System.Maui.Platform.Tizen.Resource.menu.png";
+		const string _backIcon = "System.Maui.Platform.Tizen.Resource.arrow_left.png";
 
 		bool _hasBackButton = false;
 
-		public ShellNavBar(IFlyoutController flyoutController) : base(Forms.NativeParent)
+		public ShellNavBar(IFlyoutController flyoutController) : base(System.Maui.Maui.NativeParent)
 		{
 			_flyoutController = flyoutController;
 
-			_menuButton = new EButton(Forms.NativeParent);
+			_menuButton = new EButton(System.Maui.Maui.NativeParent);
 			_menuButton.Clicked += OnMenuClicked;
-			_menu = new EImage(Forms.NativeParent);
+			_menu = new EImage(System.Maui.Maui.NativeParent);
 			UpdateMenuIcon();
 			_menu.Show();
 			_menuButton.Show();
 
 			_menuButton.SetPartContent("icon", _menu);
 
-			_title = new Native.Label(Forms.NativeParent)
+			_title = new Native.Label(System.Maui.Maui.NativeParent)
 			{
 				FontSize = Device.Idiom == TargetIdiom.TV ? 60 : 23,
 				VerticalTextAlignment = Native.TextAlignment.Center,
@@ -216,7 +216,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			if (handler != null)
 			{
-				_nativeSearchHandler = new Native.SearchBar(Forms.NativeParent);
+				_nativeSearchHandler = new Native.SearchBar(System.Maui.Maui.NativeParent);
 				_nativeSearchHandler.IsSingleLine = true;
 				_nativeSearchHandler.BackgroundColor = ElmSharp.Color.White;
 				_nativeSearchHandler.Placeholder = handler.Placeholder;
@@ -227,7 +227,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		Native.Image GetSearchHandlerIcon(ImageSource source)
 		{
-			Native.Image _icon = new Native.Image(Forms.NativeParent);
+			Native.Image _icon = new Native.Image(System.Maui.Maui.NativeParent);
 			if (source != null)
 			{
 				var task = _icon.LoadFromImageSourceAsync(source);

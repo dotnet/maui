@@ -1,12 +1,12 @@
-﻿using Gtk;
+using Gtk;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK.Extensions;
-using Container = Xamarin.Forms.Platform.GTK.GtkFormsContainer;
+using System.Maui.Internals;
+using System.Maui.Platform.GTK.Extensions;
+using Container = System.Maui.Platform.GTK.GtkFormsContainer;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers
+namespace System.Maui.Platform.GTK.Renderers
 {
 	public abstract class AbstractPageRenderer<TWidget, TPage> : Container, IPageControl, IVisualElementRenderer, IEffectControlProvider
 		where TWidget : Widget
@@ -192,7 +192,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 		{
 			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackgroundColor();
-			else if (e.PropertyName == Xamarin.Forms.Page.BackgroundImageSourceProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.Page.BackgroundImageSourceProperty.PropertyName)
 				UpdateBackgroundImage();
 		}
 

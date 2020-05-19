@@ -1,11 +1,11 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class StyleTests : BaseTestFixture
@@ -191,7 +191,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			};
 
 			Assert.AreEqual (3, rd.Count);
-			Assert.Contains ("Xamarin.Forms.Label", (System.Collections.ICollection)rd.Keys);
+			Assert.Contains ("System.Maui.Label", (System.Collections.ICollection)rd.Keys);
 		}
 
 		[Test]
@@ -858,7 +858,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			t.Style = s;
 			
 			Assert.AreEqual(log.Messages.Count, 1);
-			Assert.AreEqual(log.Messages.FirstOrDefault(), $"[Styles] Style TargetType Xamarin.Forms.Button is not compatible with element target type Xamarin.Forms.View");
+			Assert.AreEqual(log.Messages.FirstOrDefault(), $"[Styles] Style TargetType System.Maui.Button is not compatible with element target type System.Maui.View");
 		}
 
 		[Test]
@@ -870,7 +870,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			t.Style = s;
 
 			Assert.AreEqual(log.Messages.Count, 1);
-			Assert.AreEqual(log.Messages.FirstOrDefault(), $"[Styles] Style TargetType Xamarin.Forms.Button is not compatible with element target type Xamarin.Forms.Label");
+			Assert.AreEqual(log.Messages.FirstOrDefault(), $"[Styles] Style TargetType System.Maui.Button is not compatible with element target type System.Maui.Label");
 		}
 
 		[Test]

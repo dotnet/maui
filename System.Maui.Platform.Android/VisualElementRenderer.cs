@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Android.Content;
 using Android.Views;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using AView = Android.Views.View;
-using Xamarin.Forms.Platform.Android.FastRenderers;
+using System.Maui.Platform.Android.FastRenderers;
 using Android.Runtime;
 using Android.Content.Res;
 #if __ANDROID_29__
@@ -15,9 +15,9 @@ using Android.Support.V4.View;
 #endif
 
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
-	public abstract class VisualElementRenderer<TElement> : FormsViewGroup, IVisualElementRenderer, IDisposedState,
+	public abstract class VisualElementRenderer<TElement> : System.Maui.Platform.Android.FormsViewGroup, IVisualElementRenderer, IDisposedState,
 		IEffectControlProvider where TElement : VisualElement
 	{
 		readonly List<EventHandler<VisualElementChangedEventArgs>> _elementChangedHandlers = new List<EventHandler<VisualElementChangedEventArgs>>();
@@ -73,7 +73,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use VisualElementRenderer(Context) instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		protected VisualElementRenderer() : this(Forms.Context)
+		protected VisualElementRenderer() : this(System.Maui.Maui.Context)
 		{
 		}
 
@@ -335,7 +335,7 @@ namespace Xamarin.Forms.Platform.Android
 			base.Dispose(disposing);
 		}
 
-		protected override void OnConfigurationChanged(Configuration newConfig)
+		protected override void OnConfigurationChanged(global::Android.Content.Res.Configuration newConfig)
 		{
 			base.OnConfigurationChanged(newConfig);
 
@@ -374,7 +374,7 @@ namespace Xamarin.Forms.Platform.Android
 				SetFocusable();
 			else if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
 				UpdateInputTransparent();
-			else if (e.PropertyName == Xamarin.Forms.Layout.CascadeInputTransparentProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.Layout.CascadeInputTransparentProperty.PropertyName)
 				UpdateInputTransparentInherited();
 			else if (e.PropertyName == VisualElement.IsTabStopProperty.PropertyName)
 				UpdateTabStop();

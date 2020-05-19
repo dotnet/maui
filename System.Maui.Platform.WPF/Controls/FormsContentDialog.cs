@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace Xamarin.Forms.Platform.WPF.Controls
+namespace System.Maui.Platform.WPF.Controls
 {
 	public class FormsContentDialog : ContentControl, ILightContentDialog
 	{

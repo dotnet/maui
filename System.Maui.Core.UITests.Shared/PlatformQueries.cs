@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Xamarin.UITest.Queries;
 
-namespace Xamarin.Forms.Core.UITests
+namespace System.Maui.Core.UITests
 {
 	internal static class PlatformMethodQueries
 	{
@@ -61,13 +61,13 @@ namespace Xamarin.Forms.Core.UITests
 	{
 #if __IOS__ || __MACOS__
 		public static readonly string ActivityIndicator = "UIActivityIndicatorView";
-		public static readonly string BoxView = "Xamarin_Forms_Platform_iOS_BoxRenderer";
+		public static readonly string BoxView = "System_Maui_Platform_iOS_BoxRenderer";
 		public static readonly string Button = "UIButton";
-		public static readonly string CheckBox = "Xamarin_Forms_Platform_iOS_CheckBoxRenderer";
+		public static readonly string CheckBox = "System_Maui_Platform_iOS_CheckBoxRenderer";
 		public static readonly string DatePicker = "UITextField";
 		public static readonly string Editor = "UITextView";
 		public static readonly string Entry = "UITextField";
-		public static readonly string Frame = "view:'Xamarin_Forms_Platform_iOS_FrameRenderer'";
+		public static readonly string Frame = "view:'System_Maui_Platform_iOS_FrameRenderer'";
 		public static readonly string Image = "UIImageView";
 		public static readonly string ImageButton = "UIButton";
 		public static readonly string Label = "UILabel";
@@ -86,13 +86,13 @@ namespace Xamarin.Forms.Core.UITests
 		public static readonly string WebView = "UIWebView";
 #elif __ANDROID__ || __WINDOWS__
 		public static readonly string ActivityIndicator = "android.widget.ProgressBar";
-		public static readonly string BoxView = "xamarin.forms.platform.android.BoxRenderer";
+		public static readonly string BoxView = "system.maui.platform.android.BoxRenderer";
 		public static readonly string Button = "android.widget.Button";
 		public static readonly string CheckBox = "android.widget.CheckBox";
 		public static readonly string DatePicker = "android.widget.EditText";
-		public static readonly string Editor = "xamarin.forms.platform.android.EditorEditText";
-		public static readonly string Entry = "xamarin.forms.platform.android.EntryEditText";
-		public static readonly string Frame = "xamarin.forms.platform.android.appcompat.FrameRenderer";
+		public static readonly string Editor = "system.maui.platform.android.EditorEditText";
+		public static readonly string Entry = "system.maui.platform.android.EntryEditText";
+		public static readonly string Frame = "system.maui.platform.android.appcompat.FrameRenderer";
 		public static readonly string Image = "android.widget.ImageView";
 		public static readonly string ImageButton = "android.widget.ImageButton";
 		public static readonly string Label = "android.widget.TextView";
@@ -116,8 +116,8 @@ namespace Xamarin.Forms.Core.UITests
 	{
 #if __IOS__ || __MACOS__
 		public static readonly Func<AppQuery, AppQuery> Root = q => q.Class("UIWindow");
-		public static readonly Func<AppQuery, AppQuery> RootPageListView = q => q.Class("Xamarin_Forms_Platform_iOS_ListViewRenderer index:0");
-		public static readonly Func<AppQuery, AppQuery> GalleryListView = q => q.Class("Xamarin_Forms_Platform_iOS_ListViewRenderer index:1");
+		public static readonly Func<AppQuery, AppQuery> RootPageListView = q => q.Class("System_Maui_Platform_iOS_ListViewRenderer index:0");
+		public static readonly Func<AppQuery, AppQuery> GalleryListView = q => q.Class("System_Maui_Platform_iOS_ListViewRenderer index:1");
 		public static readonly Func<AppQuery, AppQuery> PageWithoutNavigationBar = q => q.Raw("*").Index(7);
 		public static readonly Func<AppQuery, AppQuery> NavigationBarBackButton = q => q.Class("UINavigationItemButtonView");
 

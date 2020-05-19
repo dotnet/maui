@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using ElmSharp;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	enum SwipeDrawerState
 	{
@@ -13,8 +13,8 @@ namespace Xamarin.Forms.Platform.Tizen
 
 	public class SwipeViewRenderer : LayoutRenderer
 	{
-		static readonly double SwipeItemWidth = Forms.ConvertToScaledDP(100);
-		static readonly double SwipeItemHeight = Forms.ConvertToScaledDP(40);
+		static readonly double SwipeItemWidth = System.Maui.Maui.ConvertToScaledDP(100);
+		static readonly double SwipeItemHeight = System.Maui.Maui.ConvertToScaledDP(40);
 		static readonly int MovementThreshold = 1000;
 		static readonly uint SwipeAnimationDuration = 120;
 
@@ -135,7 +135,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				toDragBound.Y += offset;
 			}
 			Platform.GetRenderer(SwipeView.Content).NativeView.Geometry = toDragBound;
-			((ISwipeViewController)Element).SendSwipeChanging(new SwipeChangingEventArgs(SwipeDirection, Forms.ConvertToScaledDP(offset)));
+			((ISwipeViewController)Element).SendSwipeChanging(new SwipeChangingEventArgs(SwipeDirection, System.Maui.Maui.ConvertToScaledDP(offset)));
 		}
 		async void OnEnd(GestureLayer.MomentumData moment)
 		{
@@ -302,7 +302,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			(itemsRenderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
 			var measured = itemsLayout.Measure(Element.Width, Element.Height);
 
-			MaximumSwipeSize = Forms.ConvertToScaledPixel(
+			MaximumSwipeSize = System.Maui.Maui.ConvertToScaledPixel(
 				IsHorizontalSwipe ?
 				Math.Min(measured.Request.Width, Element.Width) :
 				Math.Min(measured.Request.Height, Element.Height));

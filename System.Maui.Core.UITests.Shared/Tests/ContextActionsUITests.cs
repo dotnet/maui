@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using Xamarin.UITest;
 using System;
 using System.Threading;
@@ -7,7 +7,7 @@ using Xamarin.UITest.Android;
 using Xamarin.UITest.iOS;
 using Xamarin.UITest.Queries;
 
-namespace Xamarin.Forms.Core.UITests
+namespace System.Maui.Core.UITests
 {
 	[TestFixture]
 	[Category(UITestCategories.Cells)]

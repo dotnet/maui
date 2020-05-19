@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Windows.UI.Core;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
-using Xamarin.Forms.Internals;
-using WSelectionChangedEventArgs = Windows.UI.Xaml.Controls.SelectionChangedEventArgs;
+using global::Windows.UI.Core;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Media;
+using System.Maui.Internals;
+using WSelectionChangedEventArgs = global::Windows.UI.Xaml.Controls.SelectionChangedEventArgs;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class PickerRenderer : ViewRenderer<Picker, FormsComboBox>
 	{
@@ -93,7 +93,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			if (Element.UseFormsVsm())
 			{
-				InterceptVisualStateManager.Hook(Control.GetFirstDescendant<Windows.UI.Xaml.Controls.Grid>(), Control, Element);
+				InterceptVisualStateManager.Hook(Control.GetFirstDescendant<global::Windows.UI.Xaml.Controls.Grid>(), Control, Element);
 			}
 		}
 
@@ -217,7 +217,7 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateTitle()
 		{
 			Control.Header = null;
-			Control.HeaderTemplate = string.IsNullOrEmpty(Element.Title) ? null : (Windows.UI.Xaml.DataTemplate)Windows.UI.Xaml.Application.Current.Resources["ComboBoxHeader"];
+			Control.HeaderTemplate = string.IsNullOrEmpty(Element.Title) ? null : (global::Windows.UI.Xaml.DataTemplate)global::Windows.UI.Xaml.Application.Current.Resources["ComboBoxHeader"];
 			Control.DataContext = Element;
 		}
 	}

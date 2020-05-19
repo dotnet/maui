@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Platform
+namespace System.Maui.Platform
 {
 	internal static class Loader
 	{

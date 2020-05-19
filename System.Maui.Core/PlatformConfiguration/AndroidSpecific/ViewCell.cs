@@ -1,11 +1,11 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific
+namespace System.Maui.PlatformConfiguration.AndroidSpecific
 {
 	using System;
-	using FormsCell = Forms.Cell;
+	using FormsCell = System.Maui.Cell;
 
 	public static class ViewCell
 	{
-		public static readonly BindableProperty IsContextActionsLegacyModeEnabledProperty = BindableProperty.Create("IsContextActionsLegacyModeEnabled", typeof(bool), typeof(Forms.ViewCell), false, propertyChanged: OnIsContextActionsLegacyModeEnabledPropertyChanged);
+		public static readonly BindableProperty IsContextActionsLegacyModeEnabledProperty = BindableProperty.Create("IsContextActionsLegacyModeEnabled", typeof(bool), typeof(System.Maui.ViewCell), false, propertyChanged: OnIsContextActionsLegacyModeEnabledPropertyChanged);
 
 		private static void OnIsContextActionsLegacyModeEnabledPropertyChanged(BindableObject element, object oldValue, object newValue)
 		{

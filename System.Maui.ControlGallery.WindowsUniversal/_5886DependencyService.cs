@@ -1,10 +1,10 @@
-﻿using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.WindowsUniversal;
-using Xamarin.Forms.Platform.UWP;
-using static Xamarin.Forms.Controls.Issues.Issue5886;
+using System.Maui;
+using System.Maui.ControlGallery.WindowsUniversal;
+using System.Maui.Platform.UWP;
+using static System.Maui.Controls.Issues.Issue5886;
 
 [assembly: Dependency(typeof(MyInterfaceImplementation))]
-namespace Xamarin.Forms.ControlGallery.WindowsUniversal
+namespace System.Maui.ControlGallery.WindowsUniversal
 {
 	public class MyInterfaceImplementation : IReplaceUWPRendererService
 	{
@@ -14,7 +14,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 
 		public void ConvertToNative(View formsView)
 		{
-			var renderer = Xamarin.Forms.Platform.UWP.Platform.GetRenderer(formsView);
+			var renderer = System.Maui.Platform.UWP.Platform.GetRenderer(formsView);
 			if (renderer != null)
 			{
 				renderer.Dispose();

@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Reflection;
 
-namespace Xamarin.Forms.Internals
+namespace System.Maui.Internals
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class ResourceLoader

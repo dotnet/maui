@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
+namespace System.Maui.Controls.GalleryPages.CollectionViewGalleries
 {
 	[Preserve(AllMembers = true)]
 	public class CollectionViewGalleryTestItem : INotifyPropertyChanged

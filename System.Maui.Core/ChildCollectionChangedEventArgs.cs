@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Specialized;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	internal class ChildCollectionChangedEventArgs : EventArgs
 	{

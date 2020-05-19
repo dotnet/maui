@@ -1,5 +1,5 @@
-﻿using Xamarin.Forms;
-using Xamarin.Forms.Platform.Tizen;
+using System.Maui;
+using System.Maui.Platform.Tizen;
 
 namespace PagesGallery.Tizen
 {
@@ -14,7 +14,7 @@ namespace PagesGallery.Tizen
 		static void Main(string[] args)
 		{
 			var app = new Program();
-			Forms.Init(app);
+			System.Maui.Maui.Init(app);
 			app.Run(args);
 		}
 	}

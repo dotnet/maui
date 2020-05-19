@@ -1,10 +1,10 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 1483, "Xamarin.Forms.ActivityIndicator in Forms v 2.5 doesn\'t work (UWP)", PlatformAffected.UWP)]
+	[Issue(IssueTracker.Github, 1483, "System.Maui.ActivityIndicator in Forms v 2.5 doesn\'t work (UWP)", PlatformAffected.UWP)]
 	public class Issue1483 : TestNavigationPage 
 	{
 		protected override void Init()

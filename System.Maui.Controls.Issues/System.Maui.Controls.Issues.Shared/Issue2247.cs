@@ -1,10 +1,10 @@
-﻿using System.Linq;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Linq;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
-	// This test covers the issue reported in https://github.com/xamarin/Xamarin.Forms/issues/2247
+	// This test covers the issue reported in https://github.com/xamarin/System.Maui/issues/2247
 	// for NavigationBehavior.PushAsync. Coverage for NavigationBehavior.PushModalAsync is provided by Bugzilla33561.
 
 	[Preserve(AllMembers = true)]

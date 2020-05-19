@@ -14,7 +14,7 @@ using Android.Views;
 using AView = Android.Views.View;
 using Android.OS;
 
-namespace Xamarin.Forms.Platform.Android.AppCompat
+namespace System.Maui.Platform.Android.AppCompat
 {
 	public class MasterDetailPageRenderer : DrawerLayout, IVisualElementRenderer, DrawerLayout.IDrawerListener, IManageFragments, ILifeCycleState
 	{
@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use MasterDetailPageRenderer(Context) instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public MasterDetailPageRenderer() : base(Forms.Context)
+		public MasterDetailPageRenderer() : base(System.Maui.Maui.Context)
 		{
 		}
 

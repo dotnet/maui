@@ -1,15 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Xamarin.Forms;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui;
+using System.Maui.Core.UnitTests;
 
 [assembly: Dependency(typeof (DependencyTestImpl))]
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	public interface IDependencyTest
 	{

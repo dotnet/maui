@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Linq;
 
-namespace Xamarin.Forms.Platform.GTK.Controls
+namespace System.Maui.Platform.GTK.Controls
 {
 	public class TimeEventArgs : EventArgs
 	{

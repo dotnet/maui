@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading;
 using NUnit.Framework;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.CustomAttributes;
+using System.Maui.Controls;
+using System.Maui.CustomAttributes;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 
-namespace Xamarin.Forms.Core.UITests
+namespace System.Maui.Core.UITests
 {
 	[TestFixture]
 	[Category(UITestCategories.ToolbarItem)]

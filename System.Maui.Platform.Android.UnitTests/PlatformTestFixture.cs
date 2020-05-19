@@ -1,7 +1,7 @@
-﻿using Android.Content;
+using Android.Content;
 using Android.Content.PM;
 using Android.Widget;
-using Xamarin.Forms.Platform.Android;
+using System.Maui.Platform.Android;
 using AView = Android.Views.View;
 using AColor = Android.Graphics.Color;
 using Android.Views;
@@ -19,7 +19,7 @@ using AndroidX.CardView.Widget;
 using Android.Support.V7.Widget;
 #endif
 
-namespace Xamarin.Forms.Platform.Android.UnitTests
+namespace System.Maui.Platform.Android.UnitTests
 {
 	public class PlatformTestFixture
 	{

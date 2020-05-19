@@ -1,7 +1,7 @@
-﻿using Xamarin.UITest;
+using Xamarin.UITest;
 using System.Linq;
 
-namespace Xamarin.Forms.Core.UITests
+namespace System.Maui.Core.UITests
 {
 	internal static class ViewInspector
 	{

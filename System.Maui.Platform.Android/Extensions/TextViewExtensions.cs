@@ -2,9 +2,9 @@ using System;
 using Android.Text;
 using Android.Widget;
 using System.Collections.Generic;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal static class TextViewExtensions
 	{

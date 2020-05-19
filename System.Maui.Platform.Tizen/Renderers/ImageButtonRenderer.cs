@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using ElmSharp;
 using EButton = ElmSharp.Button;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class ImageButtonRenderer : ViewRenderer<ImageButton, Box>
 	{
@@ -24,15 +24,15 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Box(Forms.NativeParent));
+				SetNativeControl(new Box(System.Maui.Maui.NativeParent));
 				Control.SetLayoutCallback(OnLayout);
-				_round = new Native.RoundRectangle(Forms.NativeParent);
+				_round = new Native.RoundRectangle(System.Maui.Maui.NativeParent);
 				_round.Show();
-				_border = new Native.BorderRectangle(Forms.NativeParent);
+				_border = new Native.BorderRectangle(System.Maui.Maui.NativeParent);
 				_border.Show();
-				_image = new Native.Image(Forms.NativeParent);
+				_image = new Native.Image(System.Maui.Maui.NativeParent);
 				_image.Show();
-				_button = new EButton(Forms.NativeParent)
+				_button = new EButton(System.Maui.Maui.NativeParent)
 				{
 					Style = "transparent"
 				};
@@ -56,8 +56,8 @@ namespace Xamarin.Forms.Platform.Tizen
 		protected override ElmSharp.Size Measure(int availableWidth, int availableHeight)
 		{
 			var size = _image.Measure(availableHeight, availableHeight);
-			size.Width += Forms.ConvertToScaledPixel(Element.Padding.HorizontalThickness);
-			size.Height += Forms.ConvertToScaledPixel(Element.Padding.VerticalThickness);
+			size.Width += System.Maui.Maui.ConvertToScaledPixel(Element.Padding.HorizontalThickness);
+			size.Height += System.Maui.Maui.ConvertToScaledPixel(Element.Padding.VerticalThickness);
 			return size;
 		}
 
@@ -99,10 +99,10 @@ namespace Xamarin.Forms.Platform.Tizen
 		void OnLayout()
 		{
 			var outter = Control.Geometry;
-			var width = outter.Width - Forms.ConvertToScaledPixel(Element.Padding.HorizontalThickness);
-			var height = outter.Height - Forms.ConvertToScaledPixel(Element.Padding.VerticalThickness);
-			var left = outter.Left + Forms.ConvertToScaledPixel(Element.Padding.Left);
-			var top = outter.Top + Forms.ConvertToScaledPixel(Element.Padding.Top);
+			var width = outter.Width - System.Maui.Maui.ConvertToScaledPixel(Element.Padding.HorizontalThickness);
+			var height = outter.Height - System.Maui.Maui.ConvertToScaledPixel(Element.Padding.VerticalThickness);
+			var left = outter.Left + System.Maui.Maui.ConvertToScaledPixel(Element.Padding.Left);
+			var top = outter.Top + System.Maui.Maui.ConvertToScaledPixel(Element.Padding.Top);
 			var imageBound = new Rect(left, top, width, height);
 
 			_image.Geometry = imageBound;
@@ -139,8 +139,8 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Element.CornerRadius > 0)
 			{
-				_round.SetRadius(Forms.ConvertToScaledPixel(Element.CornerRadius));
-				_border.SetRadius(Forms.ConvertToScaledPixel(Element.CornerRadius));
+				_round.SetRadius(System.Maui.Maui.ConvertToScaledPixel(Element.CornerRadius));
+				_border.SetRadius(System.Maui.Maui.ConvertToScaledPixel(Element.CornerRadius));
 			}
 			else
 			{
@@ -158,7 +158,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Element.BorderWidth > 0)
 			{
-				_border.BorderWidth = Forms.ConvertToScaledPixel(Element.BorderWidth);
+				_border.BorderWidth = System.Maui.Maui.ConvertToScaledPixel(Element.BorderWidth);
 			}
 			else
 			{

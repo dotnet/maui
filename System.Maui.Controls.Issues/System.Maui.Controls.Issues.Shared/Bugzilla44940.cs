@@ -1,5 +1,5 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 using System.Threading.Tasks;
 
 #if UITEST
@@ -13,7 +13,7 @@ using NUnit.Framework;
 [assembly: NUnit.Framework.Category("Issues")]
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 44940, "[WinRT/UWP] ScrollView.ScrollToAsync does not return from await", PlatformAffected.WinRT)]

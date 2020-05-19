@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	[Flags]
 	public enum VisualElementRendererFlags : byte

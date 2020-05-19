@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.ComponentModel;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers
+namespace System.Maui.Platform.GTK.Renderers
 {
 	public class WebViewRenderer : ViewRenderer<WebView, Controls.WebView>, IWebViewDelegate, IEffectControlProvider
 	{
@@ -82,7 +82,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 					try
 					{
 						// On Linux and MacOS use C#/CLI bindings to WebKit/Gtk+: https://github.com/mono/webkit-sharp
-						// On Windows, use the WebBrowser class from System.Windows.Forms.
+						// On Windows, use the WebBrowser class from System.Windows.System.Maui.
 						Control = new Controls.WebView();
 					}
 					catch (Exception ex)

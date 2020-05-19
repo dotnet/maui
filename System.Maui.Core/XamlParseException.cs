@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Xml;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 #if NETSTANDARD2_0
 	[Serializable]

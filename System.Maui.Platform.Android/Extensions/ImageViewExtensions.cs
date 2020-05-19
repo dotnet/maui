@@ -1,11 +1,11 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Android.Graphics.Drawables;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using Android.Content;
 using Android.Graphics;
 using AImageView = Android.Widget.ImageView;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal static class ImageViewExtensions
 	{

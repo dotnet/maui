@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
+namespace System.Maui.PlatformConfiguration.iOSSpecific
 {
-	using FormsElement = Forms.Application;
+	using FormsElement = System.Maui.Application;
 
 	public static class Application
 	{

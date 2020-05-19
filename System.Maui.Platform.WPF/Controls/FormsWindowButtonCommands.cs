@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using Xamarin.Forms.Platform.WPF.Helpers;
+using System.Maui.Platform.WPF.Helpers;
 
-namespace Xamarin.Forms.Platform.WPF.Controls
+namespace System.Maui.Platform.WPF.Controls
 {
 	[TemplatePart(Name = "PART_Min", Type = typeof(Button))]
 	[TemplatePart(Name = "PART_Max", Type = typeof(Button))]

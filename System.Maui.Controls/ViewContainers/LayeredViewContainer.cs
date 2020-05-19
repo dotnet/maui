@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	internal class LayeredViewContainer<T> : ViewContainer<T>
 		where T : View

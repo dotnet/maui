@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Reflection;
 using NUnit.Framework.Api;
 using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
 
-namespace Xamarin.Forms.Controls.Tests
+namespace System.Maui.Controls.Tests
 {
 	public class PlatformTestRunner
 	{

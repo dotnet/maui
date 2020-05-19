@@ -1,10 +1,10 @@
-﻿using GMap.NET;
+using GMap.NET;
 using GMap.NET.MapProviders;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Maps.GTK
+namespace System.Maui.Maps.GTK
 {
     internal class GeocoderBackend
     {

@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Globalization;
-using Xamarin.Forms.Platform.WPF.Enums;
+using System.Maui.Platform.WPF.Enums;
 
-namespace Xamarin.Forms.Platform.WPF.Converters
+namespace System.Maui.Platform.WPF.Converters
 {
 	public class SymbolToValueConverter : System.Windows.Data.IValueConverter
 	{

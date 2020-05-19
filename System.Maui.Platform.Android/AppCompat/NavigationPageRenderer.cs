@@ -32,15 +32,15 @@ using Android.Support.V7.App;
 #endif
 using Android.Util;
 using Android.Views;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using AView = Android.Views.View;
 
 using Object = Java.Lang.Object;
-using static Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage;
+using static System.Maui.PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage;
 using static Android.Views.View;
 using Android.Widget;
 
-namespace Xamarin.Forms.Platform.Android.AppCompat
+namespace System.Maui.Platform.Android.AppCompat
 {
 	public class NavigationPageRenderer : VisualElementRenderer<NavigationPage>, IManageFragments, IOnClickListener, ILifeCycleState
 	{
@@ -995,7 +995,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			Color tintColor = Element.BarBackgroundColor;
 
-			if (Forms.IsLollipopOrNewer)
+			if (System.Maui.Maui.IsLollipopOrNewer)
 			{
 				if (tintColor.IsDefault)
 					bar.BackgroundTintMode = null;
@@ -1157,7 +1157,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			}
 		}
 
-		class ClickListener : Object, IOnClickListener
+		class ClickListener : Java.Lang.Object, IOnClickListener
 		{
 			readonly NavigationPage _element;
 
@@ -1222,7 +1222,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				var width = (int)ctx.FromPixels(MeasureSpecFactory.GetSize(widthMeasureSpec));
 
 				SizeRequest request = _child.Element.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-				Xamarin.Forms.Layout.LayoutChildIntoBoundingRegion(_child.Element, new Rectangle(0, 0, width, request.Request.Height));
+				System.Maui.Layout.LayoutChildIntoBoundingRegion(_child.Element, new Rectangle(0, 0, width, request.Request.Height));
 
 				int widthSpec = MeasureSpecFactory.MakeMeasureSpec((int)ctx.ToPixels(width), MeasureSpecMode.Exactly);
 				int heightSpec = MeasureSpecFactory.MakeMeasureSpec((int)ctx.ToPixels(request.Request.Height), MeasureSpecMode.Exactly);
@@ -1232,7 +1232,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			}
 		}
 
-		class DrawerMultiplexedListener : Object, DrawerLayout.IDrawerListener
+		class DrawerMultiplexedListener : Java.Lang.Object, DrawerLayout.IDrawerListener
 		{
 			public List<DrawerLayout.IDrawerListener> Listeners { get; } = new List<DrawerLayout.IDrawerListener>(2);
 

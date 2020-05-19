@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using ElmSharp;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class StepperRenderer : ViewRenderer<Stepper, Spinner>
 	{
@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Spinner(Forms.NativeParent)
+				SetNativeControl(new Spinner(System.Maui.Maui.NativeParent)
 				{
 					IsEditable = false,
 				});

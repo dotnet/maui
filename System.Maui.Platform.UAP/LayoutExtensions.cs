@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using Windows.UI.Xaml;
-using WSize = Windows.Foundation.Size;
+using System.Collections.Generic;
+using global::Windows.UI.Xaml;
+using WSize = global::Windows.Foundation.Size;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public delegate SizeRequest? GetDesiredSizeDelegate(NativeViewWrapperRenderer renderer, double widthConstraint, double heightConstraint);
 

@@ -1,5 +1,5 @@
-﻿using System;
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
+using System;
+namespace System.Maui.Controls.GalleryPages.CollectionViewGalleries
 {
 	internal class PositionControl : ContentView
 	{

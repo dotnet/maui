@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 36788, "Truncation Issues with Relative Layouts")]
@@ -49,17 +49,17 @@ namespace Xamarin.Forms.Controls.Issues
 							BackgroundColor = Color.Blue,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Forms.Constraint.Constant (0)},
+						}, System.Maui.Constraint.Constant (0)},
 						{new Label {
 							BackgroundColor = Color.Fuchsia,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Forms.Constraint.Constant (0), Forms.Constraint.Constant (40)},
+						}, System.Maui.Constraint.Constant (0), System.Maui.Constraint.Constant (40)},
 						{new Label {
 							BackgroundColor = Color.Fuchsia,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Forms.Constraint.Constant (10), Forms.Constraint.Constant (80)},
+						}, System.Maui.Constraint.Constant (10), System.Maui.Constraint.Constant (80)},
 					}
 				}
 			};
@@ -78,17 +78,17 @@ namespace Xamarin.Forms.Controls.Issues
 							BackgroundColor = Color.Blue,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Forms.Constraint.Constant (0)},
+						}, System.Maui.Constraint.Constant (0)},
 						{new Label {
 							BackgroundColor = Color.Fuchsia,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Forms.Constraint.Constant (0), Forms.Constraint.Constant (40)},
+						}, System.Maui.Constraint.Constant (0), System.Maui.Constraint.Constant (40)},
 						{new Label {
 							BackgroundColor = Color.Fuchsia,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Forms.Constraint.Constant (10), Forms.Constraint.Constant (80)},
+						}, System.Maui.Constraint.Constant (10), System.Maui.Constraint.Constant (80)},
 					}
 				}
 			};

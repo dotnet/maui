@@ -1,12 +1,12 @@
-﻿using Gtk;
+using Gtk;
 using Pango;
 using System;
 using System.ComponentModel;
-using Xamarin.Forms.Platform.GTK.Controls;
-using Xamarin.Forms.Platform.GTK.Extensions;
-using Xamarin.Forms.Platform.GTK.Helpers;
+using System.Maui.Platform.GTK.Controls;
+using System.Maui.Platform.GTK.Extensions;
+using System.Maui.Platform.GTK.Helpers;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers
+namespace System.Maui.Platform.GTK.Renderers
 {
 	public class EditorRenderer : ViewRenderer<Editor, ScrolledTextView>
 	{

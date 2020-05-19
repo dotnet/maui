@@ -1,9 +1,9 @@
 using System;
 using System.Globalization;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
-	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.ThicknessTypeConverter")]
+	[Xaml.ProvideCompiled("System.Maui.Core.XamlC.ThicknessTypeConverter")]
 	[Xaml.TypeConversion(typeof(Thickness))]
 	public class ThicknessTypeConverter : TypeConverter
 	{

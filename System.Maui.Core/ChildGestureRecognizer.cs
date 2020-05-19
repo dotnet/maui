@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public sealed class ChildGestureRecognizer : IGestureRecognizer
 	{

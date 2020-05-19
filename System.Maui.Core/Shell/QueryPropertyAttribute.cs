@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 	public class QueryPropertyAttribute : Attribute

@@ -1,14 +1,14 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
 #if UITEST
 using NUnit.Framework;
 using Xamarin.UITest;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 using Xamarin.UITest.Queries;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 7823, "[Bug] Frame corner radius.", PlatformAffected.Android)]

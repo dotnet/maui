@@ -1,31 +1,31 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>tizen40</TargetFramework>
     <TargetFrameworkIdentifier>Tizen</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <RootNamespace>Xamarin.Forms.Material.Tizen</RootNamespace>
-    <AssemblyName>Xamarin.Forms.Material</AssemblyName>
+    <RootNamespace>System.Maui.Material.Tizen</RootNamespace>
+    <AssemblyName>System.Maui.Material</AssemblyName>
     <OutputType>Library</OutputType>
-    <PackageId>Xamarin.Forms.Material.Tizen</PackageId>
+    <PackageId>System.Maui.Material.Tizen</PackageId>
     <DefineConstants>__TIZEN__;__MATERIAL__</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Xamarin.Forms.Material.Android\MaterialColors.cs">
+    <Compile Include="..\System.Maui.Material.Android\MaterialColors.cs">
       <Link>MaterialColors.cs</Link>
     </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.Tizen\Native\Canvas.cs">
+    <Compile Include="..\System.Maui.Platform.Tizen\Native\Canvas.cs">
       <Link>Native\Canvas.cs</Link>
     </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.Tizen\Native\Button.cs">
+    <Compile Include="..\System.Maui.Platform.Tizen\Native\Button.cs">
       <Link>Native\Button.cs</Link>
     </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.Tizen\Native\Box.cs">
+    <Compile Include="..\System.Maui.Platform.Tizen\Native\Box.cs">
       <Link>Native\Box.cs</Link>
     </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.Tizen\Native\Entry.cs">
+    <Compile Include="..\System.Maui.Platform.Tizen\Native\Entry.cs">
       <Link>Native\Entry.cs</Link>
     </Compile>
   </ItemGroup>
@@ -36,7 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj" />
-    <ProjectReference Include="..\Xamarin.Forms.Platform.Tizen\Xamarin.Forms.Platform.Tizen.csproj" />
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj" />
+    <ProjectReference Include="..\System.Maui.Platform.Tizen\System.Maui.Platform.Tizen.csproj" />
   </ItemGroup>
 </Project>

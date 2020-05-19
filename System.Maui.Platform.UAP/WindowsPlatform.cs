@@ -1,8 +1,8 @@
-﻿namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	internal sealed class WindowsPlatform : Platform
 	{
-		public WindowsPlatform(Windows.UI.Xaml.Controls.Page page) : base(page)
+		public WindowsPlatform(global::Windows.UI.Xaml.Controls.Page page) : base(page)
 		{
 		}
 	}

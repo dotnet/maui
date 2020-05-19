@@ -1,16 +1,16 @@
-﻿using System;
-using Windows.Foundation.Collections;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Media;
+using System;
+using global::Windows.Foundation.Collections;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Data;
+using global::Windows.UI.Xaml.Media;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class FormsCommandBar : CommandBar
 	{
-		Windows.UI.Xaml.Controls.Button _moreButton;
-		Windows.UI.Xaml.Controls.ItemsControl _primaryItemsControl;
+		global::Windows.UI.Xaml.Controls.Button _moreButton;
+		global::Windows.UI.Xaml.Controls.ItemsControl _primaryItemsControl;
 		bool _isInValidLocation;
 
 		public FormsCommandBar()
@@ -39,8 +39,8 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			base.OnApplyTemplate();
 
-			_moreButton = GetTemplateChild("MoreButton") as Windows.UI.Xaml.Controls.Button;
-			_primaryItemsControl = GetTemplateChild("PrimaryItemsControl") as Windows.UI.Xaml.Controls.ItemsControl;
+			_moreButton = GetTemplateChild("MoreButton") as global::Windows.UI.Xaml.Controls.Button;
+			_primaryItemsControl = GetTemplateChild("PrimaryItemsControl") as global::Windows.UI.Xaml.Controls.ItemsControl;
 		}
 
 		void OnCommandsChanged(IObservableVector<ICommandBarElement> sender, IVectorChangedEventArgs args)
@@ -125,11 +125,11 @@ namespace Xamarin.Forms.Platform.UWP
 
 			// There's no event on CommandBar when the content changes, so we'll bind our own
 			// dependency property to Content and update our visibility when it changes
-			var binding = new Windows.UI.Xaml.Data.Binding
+			var binding = new global::Windows.UI.Xaml.Data.Binding
 			{
 				Source = this,
 				Path = new PropertyPath(nameof(Content)),
-				Mode = Windows.UI.Xaml.Data.BindingMode.OneWay
+				Mode = global::Windows.UI.Xaml.Data.BindingMode.OneWay
 			};
 
 			BindingOperations.SetBinding(this, s_contentChangeWatcher, binding);

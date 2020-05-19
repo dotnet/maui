@@ -15,9 +15,9 @@ using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
 using Java.Lang;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class EntryRenderer : EntryRendererBase<FormsEditText>
 	{
@@ -395,7 +395,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateCharacterSpacing()
 		{
-			if (Forms.IsLollipopOrNewer)
+			if (System.Maui.Maui.IsLollipopOrNewer)
 			{
 				EditText.LetterSpacing = Element.CharacterSpacing.ToEm();
 			}

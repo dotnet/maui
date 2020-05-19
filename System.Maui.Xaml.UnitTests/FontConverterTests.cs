@@ -1,14 +1,14 @@
 using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	[TestFixture]
 	public class FontConverterTests : BaseTestFixture
 	{
-		[TestCase ("Bold", Forms.FontAttributes.Bold)]
-		[TestCase ("Italic", Forms.FontAttributes.Italic)]
-		[TestCase ("Bold, Italic", Forms.FontAttributes.Bold | Forms.FontAttributes.Italic)]
+		[TestCase ("Bold", System.Maui.FontAttributes.Bold)]
+		[TestCase ("Italic", System.Maui.FontAttributes.Italic)]
+		[TestCase ("Bold, Italic", System.Maui.FontAttributes.Bold | System.Maui.FontAttributes.Italic)]
 		public void FontAttributes (string attributeString, FontAttributes result)
 		{
 			var xaml = @"

@@ -1,8 +1,8 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Platform.UAP.UnitTests
+namespace System.Maui.Platform.UAP.UnitTests
 {
 	[TestFixture]
 	public class IsEnabledTests : PlatformTestFixture 
@@ -44,7 +44,7 @@ namespace Xamarin.Forms.Platform.UAP.UnitTests
 					Assert.That(container.IsHitTestVisible, Is.EqualTo(expected));
 
 					// Check the actual control (if there is one; for some renderers, like Frame and BoxView, the 
-					// native control isn't a Windows.UI.Xaml.Controls.Control)
+					// native control isn't a global::Windows.UI.Xaml.Controls.Control)
 					var control = GetNativeControl(element);
 
 					if (control != null)

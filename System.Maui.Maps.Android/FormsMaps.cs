@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using Android.App;
 using Android.Content;
 using Android.Gms.Common;
 using Android.Gms.Maps;
 using Android.OS;
-using Xamarin.Forms.Maps.Android;
+using System.Maui.Maps.Android;
 
-namespace Xamarin
+namespace System.Maui
 {
 	public static class FormsMaps
 	{

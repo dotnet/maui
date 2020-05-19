@@ -17,7 +17,7 @@ using AColor = Android.Graphics.Color;
 using AColorRes = Android.Resource.Color;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class PageRenderer : VisualElementRenderer<Page>, IOrderedTraversalController
 	{
@@ -149,7 +149,7 @@ namespace Xamarin.Forms.Platform.Android
 					|| (page.Parent is TabbedPage && page.Parent?.Parent is BaseShellItem);
 					if (isInShell && isDefaultBkgndColor)
 					{
-						var color = Forms.IsMarshmallowOrNewer ?
+						var color = System.Maui.Maui.IsMarshmallowOrNewer ?
 							Context.Resources.GetColor(AColorRes.BackgroundLight, Context.Theme) :
 							new AColor(ContextCompat.GetColor(Context, global::Android.Resource.Color.BackgroundLight));
 						SetBackgroundColor(color);
@@ -165,7 +165,7 @@ namespace Xamarin.Forms.Platform.Android
 		void IOrderedTraversalController.UpdateTraversalOrder()
 		{
 			// traversal order wasn't added until API 22
-			if ((int)Forms.SdkInt < 22)
+			if ((int)System.Maui.Maui.SdkInt < 22)
 				return;
 
 			// since getting and updating the traversal order is expensive, let's only do it when a screen reader is active

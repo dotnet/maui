@@ -1,9 +1,9 @@
-﻿using System;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media.Animation;
-using WVisualState = Windows.UI.Xaml.VisualState;
+using System;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Media.Animation;
+using WVisualState = global::Windows.UI.Xaml.VisualState;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class FormsComboBox : ComboBox
 	{
@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Platform.UWP
 			MinWidth = ActualWidth;
 		}
 
-		void FormsComboBoxSelectionChanged(object sender, Windows.UI.Xaml.Controls.SelectionChangedEventArgs e)
+		void FormsComboBoxSelectionChanged(object sender, global::Windows.UI.Xaml.Controls.SelectionChangedEventArgs e)
 		{
 			MinWidth = 0;
 		}

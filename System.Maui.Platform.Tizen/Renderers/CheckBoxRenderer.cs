@@ -2,7 +2,7 @@ using System;
 using ElmSharp;
 using EColor = ElmSharp.Color;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class CheckBoxRenderer : ViewRenderer<CheckBox, Check>
 	{
@@ -21,7 +21,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Check(Forms.NativeParent));
+				SetNativeControl(new Check(System.Maui.Maui.NativeParent));
 				Control.StateChanged += OnStateChanged;
 				for (int i=0; i<_onColorParts.Length; i++)
 				{

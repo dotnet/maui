@@ -5,7 +5,7 @@ using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace System.Maui.Build.Tasks
 {
 	class TypeRefComparer : IEqualityComparer<TypeReference>
 	{

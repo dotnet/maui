@@ -11,11 +11,11 @@ using Foundation;
 using ObjCRuntime;
 using UIKit;
 using WebKit;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using PreserveAttribute = Foundation.PreserveAttribute;
 using Uri = System.Uri;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class WkWebViewRenderer : WKWebView, IVisualElementRenderer, IWebViewDelegate, IEffectControlProvider, ITabStop
 	{
@@ -158,7 +158,7 @@ namespace Xamarin.Forms.Platform.iOS
 		async Task<List<NSHttpCookie>> GetCookiesFromNativeStore(string url)
 		{
 			NSHttpCookie[] _initialCookiesLoaded = null;
-			if (Forms.IsiOS11OrNewer)
+			if (System.Maui.Maui.IsiOS11OrNewer)
 			{
 				_initialCookiesLoaded = await Configuration.WebsiteDataStore.HttpCookieStore.GetAllCookiesAsync();
 			}
@@ -213,7 +213,7 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			// pre ios 11 we sync cookies after navigated
-			if (!Forms.IsiOS11OrNewer)
+			if (!System.Maui.Maui.IsiOS11OrNewer)
 				return;
 
 			var cookies = myCookieJar.GetCookies(uri);
@@ -311,7 +311,7 @@ namespace Xamarin.Forms.Platform.iOS
 				// So on iOS10 if the user wants to remove any cookies we just delete 
 				// the cookie for the entire domain inside of DeleteCookies and then rewrite
 				// all the cookies
-				if (Forms.IsiOS11OrNewer || deleteCookies.Count == 0)
+				if (System.Maui.Maui.IsiOS11OrNewer || deleteCookies.Count == 0)
 				{
 					foreach (var nsCookie in retrieveCurrentWebCookies)
 					{
@@ -336,7 +336,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		async Task SetCookie(List<Cookie> cookies)
 		{
-			if (Forms.IsiOS11OrNewer)
+			if (System.Maui.Maui.IsiOS11OrNewer)
 			{
 				foreach(var cookie in cookies)
 					await Configuration.WebsiteDataStore.HttpCookieStore.SetCookieAsync(new NSHttpCookie(cookie));
@@ -356,7 +356,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		async Task DeleteCookies(List<NSHttpCookie> cookies)
 		{
-			if (Forms.IsiOS11OrNewer)
+			if (System.Maui.Maui.IsiOS11OrNewer)
 			{
 				foreach (var cookie in cookies)
 					await Configuration.WebsiteDataStore.HttpCookieStore.DeleteCookieAsync(cookie);

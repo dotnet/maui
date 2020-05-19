@@ -5,7 +5,7 @@ using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Pages.UnitTests
+namespace System.Maui.Pages.UnitTests
 {
 	[TestFixture]
 	public class DataSourceListTests

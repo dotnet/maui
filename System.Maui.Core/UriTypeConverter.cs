@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
-	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.UriTypeConverter")]
+	[Xaml.ProvideCompiled("System.Maui.Core.XamlC.UriTypeConverter")]
 	[Xaml.TypeConversion(typeof(Uri))]
 	public class UriTypeConverter : TypeConverter
 	{

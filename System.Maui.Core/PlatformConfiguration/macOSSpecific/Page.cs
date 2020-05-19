@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.macOSSpecific
+namespace System.Maui.PlatformConfiguration.macOSSpecific
 {
-	using FormsElement = Forms.Page;
+	using FormsElement = System.Maui.Page;
 
 	public static class Page
 	{

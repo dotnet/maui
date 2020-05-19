@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -16,11 +16,11 @@ using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 using Xamarin.UITest.Queries.Tokens;
 
-namespace Xamarin.Forms.Core.UITests
+namespace System.Maui.Core.UITests
 {
 	public class WinDriverApp : IApp
 	{
-		public const string AppName = "Xamarin.Forms.ControlGallery.WindowsUniversal";
+		public const string AppName = "System.Maui.ControlGallery.WindowsUniversal";
 
 		readonly Dictionary<string, string> _controlNameToTag = new Dictionary<string, string>
 		{

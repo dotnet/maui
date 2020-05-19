@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Xamarin.Forms.StyleSheets;
-using Xamarin.Forms.StyleSheets.UnitTests;
+using System.Maui.StyleSheets;
+using System.Maui.StyleSheets.UnitTests;
 
-namespace Xamarin.Forms.Core.UnitTests.StyleSheets
+namespace System.Maui.Core.UnitTests.StyleSheets
 {
 	[TestFixture]
 	public class BaseClassSelectorTests

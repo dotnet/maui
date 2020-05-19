@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
-using Windows.UI.Xaml.Controls;
+using System.Threading.Tasks;
+using global::Windows.UI.Xaml.Controls;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	internal interface IToolbarProvider
 	{

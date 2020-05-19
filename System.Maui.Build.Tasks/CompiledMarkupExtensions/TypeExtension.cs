@@ -5,12 +5,12 @@ using System.Xml;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 
 using static Mono.Cecil.Cil.Instruction;
 using static Mono.Cecil.Cil.OpCodes;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace System.Maui.Build.Tasks
 {
 	class TypeExtension : ICompiledMarkupExtension
 	{

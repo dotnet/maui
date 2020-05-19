@@ -11,15 +11,15 @@ using Android.Support.V4.View;
 #endif
 using Android.Util;
 using Android.Views;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.Android.FastRenderers;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using System.Maui.Internals;
+using System.Maui.Platform.Android.FastRenderers;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
 using Android.Graphics.Drawables;
 using Android.Widget;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class RadioButtonRenderer : AppCompatRadioButton,
 		IBorderVisualElementRenderer, IButtonLayoutRenderer, IVisualElementRenderer, IViewRenderer, ITabStop,

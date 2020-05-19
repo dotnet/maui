@@ -1,14 +1,14 @@
-﻿using GLib;
+using GLib;
 using Gtk;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK.Cells;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using System.Maui.Internals;
+using System.Maui.Platform.GTK.Cells;
+using System.Maui.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Controls
+namespace System.Maui.Platform.GTK.Controls
 {
 	public class ItemTappedEventArgs : EventArgs
 	{

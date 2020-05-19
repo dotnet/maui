@@ -1,8 +1,8 @@
-﻿using System.Windows.Input;
+using System.Windows.Input;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public class Gh5256Entry : Entry
 	{

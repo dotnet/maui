@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using Mono.Cecil.Cil;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using System.Maui.Internals;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace System.Maui.Build.Tasks
 {
 	class SetNamescopesAndRegisterNamesVisitor : IXamlNodeVisitor
 	{
@@ -23,8 +23,8 @@ namespace Xamarin.Forms.Build.Tasks
 		public bool IsResourceDictionary(ElementNode node)
 		{
 			var parentVar = Context.Variables[node];
-			return parentVar.VariableType.FullName == "Xamarin.Forms.ResourceDictionary"
-				|| parentVar.VariableType.Resolve().BaseType?.FullName == "Xamarin.Forms.ResourceDictionary";
+			return parentVar.VariableType.FullName == "System.Maui.ResourceDictionary"
+				|| parentVar.VariableType.Resolve().BaseType?.FullName == "System.Maui.ResourceDictionary";
 		}
 
 		public void Visit(ValueNode node, INode parentNode)
@@ -54,7 +54,7 @@ namespace Xamarin.Forms.Build.Tasks
 				namescopeVarDef = Context.Scopes[parentNode].Item1;
 				namesInNamescope = Context.Scopes[parentNode].Item2;
 			}
-			if (setNameScope && Context.Variables[node].VariableType.InheritsFromOrImplements(Context.Body.Method.Module.ImportReference(("Xamarin.Forms.Core","Xamarin.Forms","BindableObject"))))
+			if (setNameScope && Context.Variables[node].VariableType.InheritsFromOrImplements(Context.Body.Method.Module.ImportReference(("System.Maui.Core","System.Maui","BindableObject"))))
 				SetNameScope(node, namescopeVarDef);
 			Context.Scopes[node] = new Tuple<VariableDefinition, IList<string>>(namescopeVarDef, namesInNamescope);
 		}
@@ -63,7 +63,7 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			var namescopeVarDef = GetOrCreateNameScope(node);
 			IList<string> namesInNamescope = new List<string>();
-			if (Context.Variables[node].VariableType.InheritsFromOrImplements(Context.Body.Method.Module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms", "BindableObject"))))
+			if (Context.Variables[node].VariableType.InheritsFromOrImplements(Context.Body.Method.Module.ImportReference(("System.Maui.Core", "System.Maui", "BindableObject"))))
 				SetNameScope(node, namescopeVarDef);
 			Context.Scopes[node] = new System.Tuple<VariableDefinition, IList<string>>(namescopeVarDef, namesInNamescope);
 		}
@@ -86,14 +86,14 @@ namespace Xamarin.Forms.Build.Tasks
 		VariableDefinition GetOrCreateNameScope(ElementNode node)
 		{
 			var module = Context.Body.Method.Module;
-			var vardef = new VariableDefinition(module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "NameScope")));
+			var vardef = new VariableDefinition(module.ImportReference(("System.Maui.Core", "System.Maui.Internals", "NameScope")));
 			Context.Body.Variables.Add(vardef);
 			var stloc = Instruction.Create(OpCodes.Stloc, vardef);
 
-			if (Context.Variables[node].VariableType.InheritsFromOrImplements(Context.Body.Method.Module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms", "BindableObject")))) {
-				var namescoperef = ("Xamarin.Forms.Core", "Xamarin.Forms", "BindableObject");
+			if (Context.Variables[node].VariableType.InheritsFromOrImplements(Context.Body.Method.Module.ImportReference(("System.Maui.Core", "System.Maui", "BindableObject")))) {
+				var namescoperef = ("System.Maui.Core", "System.Maui", "BindableObject");
 				Context.IL.Append(Context.Variables[node].LoadAs(module.GetTypeDefinition(namescoperef), module));
-				Context.IL.Emit(OpCodes.Call, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "NameScope"),
+				Context.IL.Emit(OpCodes.Call, module.ImportMethodReference(("System.Maui.Core", "System.Maui.Internals", "NameScope"),
 																		   methodName: "GetNameScope",
 																		   parameterTypes: new[] { namescoperef },
 																		   isStatic: true));
@@ -102,7 +102,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 				Context.IL.Emit(OpCodes.Pop);
 			}
-			Context.IL.Emit(OpCodes.Newobj, module.ImportCtorReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "NameScope"), parameterTypes: null));
+			Context.IL.Emit(OpCodes.Newobj, module.ImportCtorReference(("System.Maui.Core", "System.Maui.Internals", "NameScope"), parameterTypes: null));
 
 			Context.IL.Append(stloc);
 			return vardef;
@@ -111,9 +111,9 @@ namespace Xamarin.Forms.Build.Tasks
 		VariableDefinition CreateNamescope()
 		{
 			var module = Context.Body.Method.Module;
-			var vardef = new VariableDefinition(module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "NameScope")));
+			var vardef = new VariableDefinition(module.ImportReference(("System.Maui.Core", "System.Maui.Internals", "NameScope")));
 			Context.Body.Variables.Add(vardef);
-			Context.IL.Emit(OpCodes.Newobj, module.ImportCtorReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "NameScope"), parameterTypes: null));
+			Context.IL.Emit(OpCodes.Newobj, module.ImportCtorReference(("System.Maui.Core", "System.Maui.Internals", "NameScope"), parameterTypes: null));
 			Context.IL.Emit(OpCodes.Stloc, vardef);
 			return vardef;
 		}
@@ -122,12 +122,12 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			var module = Context.Body.Method.Module;
 			var parameterTypes = new[] {
-				("Xamarin.Forms.Core", "Xamarin.Forms", "BindableObject"),
-				("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "INameScope"),
+				("System.Maui.Core", "System.Maui", "BindableObject"),
+				("System.Maui.Core", "System.Maui.Internals", "INameScope"),
 			};
 			Context.IL.Append(Context.Variables[node].LoadAs(module.GetTypeDefinition(parameterTypes[0]), module));
 			Context.IL.Append(ns.LoadAs(module.GetTypeDefinition(parameterTypes[1]), module));
-			Context.IL.Emit(OpCodes.Call, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "NameScope"),
+			Context.IL.Emit(OpCodes.Call, module.ImportMethodReference(("System.Maui.Core", "System.Maui.Internals", "NameScope"),
 																	   methodName: "SetNameScope",
 																	   parameterTypes: parameterTypes,
 																	   isStatic: true));
@@ -140,7 +140,7 @@ namespace Xamarin.Forms.Build.Tasks
 			namesInNamescope.Add(str);
 
 			var module = Context.Body.Method.Module;
-			var namescopeType = ("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "INameScope");
+			var namescopeType = ("System.Maui.Core", "System.Maui.Internals", "INameScope");
 			Context.IL.Append(namescopeVarDef.LoadAs(module.GetTypeDefinition(namescopeType), module));
 			Context.IL.Emit(OpCodes.Ldstr, str);
 			Context.IL.Append(element.LoadAs(module.TypeSystem.Object, module));
@@ -154,11 +154,11 @@ namespace Xamarin.Forms.Build.Tasks
 
 		void SetStyleId(string str, VariableDefinition element)
 		{
-			if (!element.VariableType.InheritsFromOrImplements(Context.Body.Method.Module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Element"))))
+			if (!element.VariableType.InheritsFromOrImplements(Context.Body.Method.Module.ImportReference(("System.Maui.Core", "System.Maui", "Element"))))
 				return;
 
 			var module = Context.Body.Method.Module;
-			var elementType = ("Xamarin.Forms.Core", "Xamarin.Forms", "Element");
+			var elementType = ("System.Maui.Core", "System.Maui", "Element");
 			var elementTypeRef = module.GetTypeDefinition(elementType);
 
 			var nop = Instruction.Create(OpCodes.Nop);

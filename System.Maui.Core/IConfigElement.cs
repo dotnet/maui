@@ -1,5 +1,5 @@
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public interface IConfigElement<out T> where T : Element
 	{

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.OS;
@@ -15,11 +15,11 @@ using Android.Support.V7.Widget;
 #endif
 using Android.Views;
 using Android.Widget;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using AView = Android.Views.View;
 using AWebView = Android.Webkit.WebView;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class RefreshViewRenderer : SwipeRefreshLayout, IVisualElementRenderer, IEffectControlProvider, SwipeRefreshLayout.IOnRefreshListener
 	{
@@ -155,7 +155,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (!(view is ViewGroup viewGroup))
 				return base.CanChildScrollUp();
 
-			if (Forms.SdkInt < BuildVersionCodes.JellyBean && viewGroup.IsScrollContainer)
+			if (System.Maui.Maui.SdkInt < BuildVersionCodes.JellyBean && viewGroup.IsScrollContainer)
 				return base.CanChildScrollUp();
 
 			if (!CanScrollUpViewByType(view))

@@ -1,15 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Xamarin.Forms;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using System.Maui;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Issue(IssueTracker.Github, 8902, "CarouselView Layout on orientation change", PlatformAffected.iOS)]
 	public partial class Issue8902 : TestContentPage

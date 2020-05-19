@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
+namespace System.Maui.PlatformConfiguration.iOSSpecific
 {
-	using FormsElement = Xamarin.Forms.DatePicker;
+	using FormsElement = System.Maui.DatePicker;
 
 	public static class DatePicker
 	{

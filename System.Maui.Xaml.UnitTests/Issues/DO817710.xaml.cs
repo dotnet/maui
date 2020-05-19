@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 
-using Xamarin.Forms;
+using System.Maui;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public partial class DO817710 : ContentPage
 	{

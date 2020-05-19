@@ -1,6 +1,6 @@
-﻿using AppKit;
+using AppKit;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	internal static class NSTableViewExtensions
 	{

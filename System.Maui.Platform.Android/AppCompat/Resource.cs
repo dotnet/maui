@@ -1,8 +1,8 @@
 using Android.Runtime;
 
-[assembly: ResourceDesigner("Xamarin.Forms.Platform.Android.Resource", IsApplication = false)]
+[assembly: ResourceDesigner("System.Maui.Platform.Android.Resource", IsApplication = false)]
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class Resource
 	{

@@ -3,10 +3,10 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Views;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using AndroidAnimation = Android.Animation;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class NavigationRenderer : VisualElementRenderer<NavigationPage>
 	{

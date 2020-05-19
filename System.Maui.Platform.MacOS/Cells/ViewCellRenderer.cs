@@ -1,9 +1,9 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using AppKit;
 
 // ReSharper disable UnusedParameter.Local
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public class ViewCellRenderer : CellRenderer
 	{

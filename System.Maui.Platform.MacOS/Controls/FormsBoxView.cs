@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using AppKit;
 using CoreGraphics;
 
-namespace Xamarin.Forms.Platform.macOS.Controls
+namespace System.Maui.Platform.macOS.Controls
 {
 	internal class FormsBoxView : NSView
 	{

@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Xamarin.Forms;
-using Xamarin.Forms.Controls.Issues;
+using System.Maui;
+using System.Maui.Controls.Issues;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	public class VisualGallery : VisualControlsPage
 	{

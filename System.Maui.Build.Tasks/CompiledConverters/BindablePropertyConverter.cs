@@ -4,12 +4,12 @@ using System.Xml;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Xaml;
+using System.Maui.Build.Tasks;
+using System.Maui.Xaml;
 
 using static System.String;
 
-namespace Xamarin.Forms.Core.XamlC
+namespace System.Maui.Core.XamlC
 {
 	class BindablePropertyConverter : ICompiledTypeConverter
 	{

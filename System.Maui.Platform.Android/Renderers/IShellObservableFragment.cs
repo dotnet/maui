@@ -1,11 +1,11 @@
-﻿#if __ANDROID_29__
+#if __ANDROID_29__
 using AndroidX.Fragment.App;
 #else
 using Android.Support.V4.App;
 #endif
 using System;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public interface IShellObservableFragment
 	{

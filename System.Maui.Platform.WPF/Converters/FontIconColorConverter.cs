@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Globalization;
 
-namespace Xamarin.Forms.Platform.WPF.Converters
+namespace System.Maui.Platform.WPF.Converters
 {
 	public sealed class FontIconColorConverter : System.Windows.Data.IValueConverter
 	{

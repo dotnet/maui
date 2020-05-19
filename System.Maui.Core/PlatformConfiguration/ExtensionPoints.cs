@@ -1,5 +1,5 @@
 
-namespace Xamarin.Forms.PlatformConfiguration
+namespace System.Maui.PlatformConfiguration
 {
 	public sealed class Android : IConfigPlatform { }
 	public sealed class iOS : IConfigPlatform { }

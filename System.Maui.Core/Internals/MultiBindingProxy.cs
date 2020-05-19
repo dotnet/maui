@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Internals
+namespace System.Maui.Internals
 {
 	// This class serves as a "proxy" for the target and the sources,
 	// with the MultiBinding serving as the bridge between them. 

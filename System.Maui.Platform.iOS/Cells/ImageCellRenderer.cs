@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Foundation;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class ImageCellRenderer : TextCellRenderer
 	{

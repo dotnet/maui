@@ -1,9 +1,9 @@
-﻿using Windows.ApplicationModel.Core;
+using global::Windows.ApplicationModel.Core;
 using System;
-using Windows.UI.Xaml.Media;
-using Xamarin.Forms.Internals;
+using global::Windows.UI.Xaml.Media;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	internal class WindowsTicker : Ticker
 	{

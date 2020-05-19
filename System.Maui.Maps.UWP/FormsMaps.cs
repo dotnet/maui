@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Maps.UWP;
+using System.Maui.Maps.UWP;
 
-namespace Xamarin
+namespace System.Maui
 {
 	public static class FormsMaps
 	{

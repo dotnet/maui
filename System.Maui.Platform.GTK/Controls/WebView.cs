@@ -1,11 +1,11 @@
-﻿using Gtk;
+using Gtk;
 using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using Xamarin.Forms.Platform.GTK.Helpers;
+using System.Maui.Platform.GTK.Helpers;
 
-namespace Xamarin.Forms.Platform.GTK.Controls
+namespace System.Maui.Platform.GTK.Controls
 {
 	// WebView definition for all platforms (Linux, macOS and Windows).
 	public interface IWebView

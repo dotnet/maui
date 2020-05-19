@@ -1,12 +1,12 @@
-﻿using Xamarin.Forms.CustomAttributes;
+using System.Maui.CustomAttributes;
 
 #if UITEST
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 using System.Threading.Tasks;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Issue(IssueTracker.Github, 9951, "Android 10 Setting ThumbColor on Switch causes a square block", PlatformAffected.Android)]
 #if UITEST

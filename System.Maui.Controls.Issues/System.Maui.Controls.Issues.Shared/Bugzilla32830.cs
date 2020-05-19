@@ -1,5 +1,5 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 using System;
 
 #if UITEST
@@ -7,7 +7,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	// Uses a custom renderer on Android to override SetupPageTransition.
 	// While these transitions are often desired, they can appear to cause the "flash"
@@ -59,13 +59,13 @@ namespace Xamarin.Forms.Controls.Issues
 							TextColor = Color.White
 						}
 					}
-				}, yConstraint: Xamarin.Forms.Constraint.RelativeToParent(parent => { return parent.Y; }));
+				}, yConstraint: System.Maui.Constraint.RelativeToParent(parent => { return parent.Y; }));
 
 				relativeLayout.Children.Add(new Label
 				{
 					Text = BottomLabel,
 					TextColor = Color.White
-				}, yConstraint: Xamarin.Forms.Constraint.RelativeToParent(parent => { return parent.Height - 30; }));
+				}, yConstraint: System.Maui.Constraint.RelativeToParent(parent => { return parent.Height - 30; }));
 
 				Content = relativeLayout;
 
@@ -102,13 +102,13 @@ namespace Xamarin.Forms.Controls.Issues
 								TextColor = Color.White
 							}
 						}
-				}, yConstraint: Xamarin.Forms.Constraint.RelativeToParent(parent => { return parent.Y; }));
+				}, yConstraint: System.Maui.Constraint.RelativeToParent(parent => { return parent.Y; }));
 
 				relativeLayout.Children.Add(new Label
 				{
 					Text = BottomLabel,
 					TextColor = Color.White
-				}, yConstraint: Xamarin.Forms.Constraint.RelativeToParent(parent => { return parent.Height - 30; }));
+				}, yConstraint: System.Maui.Constraint.RelativeToParent(parent => { return parent.Height - 30; }));
 
 				Content = relativeLayout;
 			}

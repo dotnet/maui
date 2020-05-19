@@ -4,10 +4,10 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml.Internals;
+using System.Maui.Internals;
+using System.Maui.Xaml.Internals;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	class CreateValuesVisitor : IXamlNodeVisitor
 	{
@@ -185,7 +185,7 @@ namespace Xamarin.Forms.Xaml
 				return true;
 			foreach (var parameter in ctorInfo.GetParameters()) {
 				var propname =
-					parameter.CustomAttributes.First(ca => ca.AttributeType.FullName == "Xamarin.Forms.ParameterAttribute")
+					parameter.CustomAttributes.First(ca => ca.AttributeType.FullName == "System.Maui.ParameterAttribute")
 						.ConstructorArguments.First()
 						.Value as string;
 				if (!node.Properties.ContainsKey(new XmlName("", propname))) {

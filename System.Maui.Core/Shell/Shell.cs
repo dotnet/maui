@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -7,10 +7,10 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.StyleSheets;
+using System.Maui.Internals;
+using System.Maui.StyleSheets;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[ContentProperty(nameof(Items))]
 	public class Shell : Page, IShellController, IPropertyPropagationController

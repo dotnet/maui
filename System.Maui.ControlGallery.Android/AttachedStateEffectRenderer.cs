@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Linq;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Android;
-using Xamarin.Forms.Controls.Effects;
-using Xamarin.Forms.Platform.Android;
+using System.Maui;
+using System.Maui.ControlGallery.Android;
+using System.Maui.Controls.Effects;
+using System.Maui.Platform.Android;
 
 [assembly: ExportEffect(typeof(AttachedStateEffectRenderer), AttachedStateEffect.EffectName)]
-namespace Xamarin.Forms.ControlGallery.Android
+namespace System.Maui.ControlGallery.Android
 {
 	public class AttachedStateEffectRenderer : PlatformEffect
 	{

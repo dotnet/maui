@@ -6,7 +6,7 @@ using Android.Content;
 using Android.Text;
 using Android.Views;
 using Android.Widget;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 #if __ANDROID_29__
 using AppCompatAlertDialog = AndroidX.AppCompat.App.AlertDialog;
 using AppCompatActivity = AndroidX.AppCompat.App.AppCompatActivity;
@@ -15,7 +15,7 @@ using AppCompatAlertDialog = global::Android.Support.V7.App.AlertDialog;
 using AppCompatActivity =global::Android.Support.V7.App.AppCompatActivity;
 #endif
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal static class PopupManager
 	{

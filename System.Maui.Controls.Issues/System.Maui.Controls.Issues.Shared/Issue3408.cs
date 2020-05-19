@@ -1,19 +1,19 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static Xamarin.Forms.Controls.Issues.Issue3408;
+using static System.Maui.Controls.Issues.Issue3408;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	// This may crash for you on Android if you click too many buttons
-	// https://github.com/xamarin/Xamarin.Forms/issues/3603
+	// https://github.com/xamarin/System.Maui/issues/3603
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3408, "System.ObjectDisposedException: from SwitchCellRenderer when changing ItemSource", PlatformAffected.iOS)]
 	public class Issue3408 : TestContentPage
@@ -168,7 +168,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		// This work around exists because of this issue
-		// https://github.com/xamarin/Xamarin.Forms/issues/3602
+		// https://github.com/xamarin/System.Maui/issues/3602
 		object context = null;
 		protected override void OnBindingContextChanged()
 		{

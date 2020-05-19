@@ -1,8 +1,8 @@
 using System;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	public class HorizontalTextAlignmentConverter : Windows.UI.Xaml.Data.IValueConverter
+	public class HorizontalTextAlignmentConverter : global::Windows.UI.Xaml.Data.IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{

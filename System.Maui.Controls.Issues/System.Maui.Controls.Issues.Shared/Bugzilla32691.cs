@@ -1,13 +1,13 @@
-﻿using System;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 32691, "Clearing an image by setting Image.Source to null, while Image.IsLoading is true, doesn't work.")]
@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Controls.Issues
 				if (btnSetOrClear.Text == KSetImageSource) {
 					ClearImageCache ();
 					image.Source =
-						"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/banner.png";
+						"https://raw.githubusercontent.com/xamarin/System.Maui/master/banner.png";
 					btnSetOrClear.Text = KClearImageSource;
 				} else {
 					image.Source = null;

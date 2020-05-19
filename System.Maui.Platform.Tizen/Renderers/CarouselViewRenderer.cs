@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class CarouselViewRenderer : ItemsViewRenderer<CarouselView, Native.CarouselView>
 	{

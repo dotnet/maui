@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms.Controls.XamStore
+namespace System.Maui.Controls.XamStore
 {
 	static class Icons
 	{

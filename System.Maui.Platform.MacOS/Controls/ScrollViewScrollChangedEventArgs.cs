@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using PointF = CoreGraphics.CGPoint;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	internal class ScrollViewScrollChangedEventArgs : EventArgs
 	{

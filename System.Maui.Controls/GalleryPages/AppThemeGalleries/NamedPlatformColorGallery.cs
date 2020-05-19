@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
-namespace Xamarin.Forms.Controls.GalleryPages.AppThemeGalleries
+namespace System.Maui.Controls.GalleryPages.AppThemeGalleries
 {
 	public class NamedPlatformColorGallery : ContentPage
 	{

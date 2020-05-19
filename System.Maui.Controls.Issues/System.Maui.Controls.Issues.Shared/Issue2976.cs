@@ -1,15 +1,15 @@
-﻿using System;
+using System;
 
-using Xamarin.Forms.CustomAttributes;
+using System.Maui.CustomAttributes;
 using System.Collections.Generic;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Github, 2976, "Sample 'WorkingWithListviewNative' throw Exception on Xam.Android project.", PlatformAffected.Android)]
@@ -18,13 +18,13 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override void Init ()
 		{
 
-			// built-in Xamarin.Forms controls
+			// built-in System.Maui controls
 			Children.Add (new XamarinFormsPage {Title = "DEMOA", IconImageSource = "bank.png"});
 
 			// custom renderer for the list, using a native built-in cell type
 			Children.Add (new NativeListPage {Title = "DEMOB", IconImageSource = "bank.png"});
 
-			// built in Xamarin.Forms list, but with a native cell custom-renderer
+			// built in System.Maui list, but with a native cell custom-renderer
 			Children.Add (new XamarinFormsNativeCellPage {Title = "DEMOC", IconImageSource = "bank.png"});
 
 			// custom renderer for the list, using a native cell that has been custom-defined in native code
@@ -47,11 +47,11 @@ namespace Xamarin.Forms.Controls.Issues
 	/// <summary>
 	/// This page uses a custom renderer that wraps native list controls:
 	///    iOS :           UITableView
-	///    Android :       ListView   (do not confuse with Xamarin.Forms ListView)
+	///    Android :       ListView   (do not confuse with System.Maui ListView)
 	///    Windows Phone : ?
 	/// 
 	/// It uses a built-in row/cell class provided by the native platform
-	/// and is therefore faster than building a custom ViewCell in Xamarin.Forms.
+	/// and is therefore faster than building a custom ViewCell in System.Maui.
 	/// </summary>
 	[Preserve (AllMembers = true)]
 	public class NativeListPage : ContentPage
@@ -88,7 +88,7 @@ namespace Xamarin.Forms.Controls.Issues
 	}
 
 	/// <summary>
-	/// Xamarin.Forms representation for a custom-renderer that uses 
+	/// System.Maui representation for a custom-renderer that uses 
 	/// the native list control on each platform.
 	/// </summary>
 	public class NativeListView : View
@@ -115,10 +115,10 @@ namespace Xamarin.Forms.Controls.Issues
 	}
 
 	/// <summary>
-	/// This page uses built-in Xamarin.Forms controls to display a fast-scrolling list.
+	/// This page uses built-in System.Maui controls to display a fast-scrolling list.
 	/// 
 	/// It uses the built-in <c>TextCell</c> class which does not require special 'layout'
-	/// and is therefore faster than building a custom ViewCell in Xamarin.Forms.
+	/// and is therefore faster than building a custom ViewCell in System.Maui.
 	/// </summary>
 	[Preserve (AllMembers = true)]
 	public class XamarinFormsPage : ContentPage
@@ -149,7 +149,7 @@ namespace Xamarin.Forms.Controls.Issues
 #pragma warning disable 618
 						XAlign = TextAlignment.Center,
 #pragma warning restore 618
-						Text = "Xamarin.Forms built-in ListView"
+						Text = "System.Maui built-in ListView"
 					},
 					listView
 				}
@@ -158,10 +158,10 @@ namespace Xamarin.Forms.Controls.Issues
 	}
 
 	/// <summary>
-	/// This page uses built-in Xamarin.Forms controls to display a fast-scrolling list.
+	/// This page uses built-in System.Maui controls to display a fast-scrolling list.
 	/// 
 	/// It uses the built-in <c>TextCell</c> class which does not require special 'layout'
-	/// and is therefore faster than building a custom ViewCell in Xamarin.Forms.
+	/// and is therefore faster than building a custom ViewCell in System.Maui.
 	/// </summary>
 	[Preserve (AllMembers = true)]
 	public class XamarinFormsNativeCellPage : ContentPage
@@ -191,7 +191,7 @@ namespace Xamarin.Forms.Controls.Issues
 #pragma warning disable 618
 						XAlign = TextAlignment.Center,
 #pragma warning restore 618
-						Text = "Xamarin.Forms native Cell" 
+						Text = "System.Maui native Cell" 
 					},
 					listView
 				}
@@ -236,7 +236,7 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		public DetailPage (object detail)
 		{
-			var l = new Label { Text = "Xamarin.Forms Detail Page" }; 
+			var l = new Label { Text = "System.Maui Detail Page" }; 
 
 			var t = new Label ();
 
@@ -265,11 +265,11 @@ namespace Xamarin.Forms.Controls.Issues
 	/// <summary>
 	/// This page uses a custom renderer that wraps native list controls:
 	///    iOS :           UITableView
-	///    Android :       ListView   (do not confuse with Xamarin.Forms ListView)
+	///    Android :       ListView   (do not confuse with System.Maui ListView)
 	///    Windows Phone : ?
 	/// 
 	/// It uses a CUSTOM row/cell class that is defined natively which 
-	/// is still faster than a Xamarin.Forms-defined ViewCell subclass.
+	/// is still faster than a System.Maui-defined ViewCell subclass.
 	/// </summary>
 	[Preserve (AllMembers = true)]
 	public class NativeListViewPage2 : ContentPage
@@ -304,7 +304,7 @@ namespace Xamarin.Forms.Controls.Issues
 	}
 
 	/// <summary>
-	/// Xamarin.Forms representation for a custom-renderer that uses 
+	/// System.Maui representation for a custom-renderer that uses 
 	/// the native list control on each platform.
 	/// </summary>
 	public class NativeListView2 : View

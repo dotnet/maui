@@ -1,8 +1,8 @@
 using System.Xml;
 using Mono.Cecil;
-using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace System.Maui.Build.Tasks
 {
 	class ILRootNode : RootNode
 	{

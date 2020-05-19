@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Linq;
 using CoreGraphics;
 using Foundation;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class ItemsViewDelegator<TItemsView, TViewController> : UICollectionViewDelegateFlowLayout
 		where TItemsView : ItemsView

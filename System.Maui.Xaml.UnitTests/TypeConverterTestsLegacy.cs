@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using NUnit.Framework;
 using System.Xml;
 using System.Globalization;
 
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public class FooConverter : TypeConverter
 	{
@@ -123,7 +123,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var bindable = new Bindable();
 
 			Assert.IsNull(bindable.Baz);
-			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null) {
+			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests", "Bindable", null), bindable, null) {
 				Properties = {
 					{ new XmlName (null, "Baz"), node },
 				}
@@ -142,7 +142,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var bindable = new Bindable();
 
 			Assert.IsNull(bindable.Baz);
-			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null) {
+			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests", "Bindable", null), bindable, null) {
 				Properties = {
 					{ new XmlName (null, "Baz"), node },
 				}
@@ -159,7 +159,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var bindable = new Bindable();
 
 			Assert.IsNull(bindable.Foo);
-			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null) {
+			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests", "Bindable", null), bindable, null) {
 				Properties = {
 					{ new XmlName (null, "Foo"), node },
 				}
@@ -180,7 +180,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var bindable = new Bindable();
 
 			Assert.IsNull(bindable.Bar);
-			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null) {
+			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests", "Bindable", null), bindable, null) {
 				Properties = {
 					{ new XmlName (null, "Bar"), node },
 				}
@@ -200,9 +200,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var bindable = new Bindable();
 
 			Assert.IsNull(Bindable.GetQux(bindable));
-			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null) {
+			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests", "Bindable", null), bindable, null) {
 				Properties = {
-					{ new XmlName ("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable.Qux"), node },
+					{ new XmlName ("clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests", "Bindable.Qux"), node },
 				}
 			};
 			var context = new HydrationContext { RootElement = new Label() };
@@ -220,7 +220,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var bindable = new Bindable();
 
 			Assert.IsNull(bindable.FooBar);
-			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null) {
+			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests", "Bindable", null), bindable, null) {
 				Properties = {
 					{ new XmlName (null, "FooBar"), node },
 				}

@@ -1,16 +1,16 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Linq;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Animation;
-using Windows.UI.Xaml.Shapes;
-using WColor = Windows.UI.Color;
-using WGrid = Windows.UI.Xaml.Controls.Grid;
-using WRectangle = Windows.UI.Xaml.Shapes.Rectangle;
-using WVisualStateManager = Windows.UI.Xaml.VisualStateManager;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Media;
+using global::Windows.UI.Xaml.Media.Animation;
+using global::Windows.UI.Xaml.Shapes;
+using WColor = global::Windows.UI.Color;
+using WGrid = global::Windows.UI.Xaml.Controls.Grid;
+using WRectangle = global::Windows.UI.Xaml.Shapes.Rectangle;
+using WVisualStateManager = global::Windows.UI.Xaml.VisualStateManager;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class SwitchRenderer : ViewRenderer<Switch, ToggleSwitch>
 	{
@@ -188,7 +188,7 @@ namespace Xamarin.Forms.Platform.UWP
 							{
 								if (_originalThumbOnBrush == null)
 								{
-									if (frame.Value is Windows.UI.Color color)
+									if (frame.Value is global::Windows.UI.Color color)
 										_originalOnColorBrush = new SolidColorBrush(color);
 
 									if (frame.Value is Brush brush)

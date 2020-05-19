@@ -1,8 +1,8 @@
-﻿using System.ComponentModel;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Data;
+using System.ComponentModel;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Data;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	class NativePropertyListener : DependencyObject, INotifyPropertyChanged
 	{
@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			_target = target;
 			_targetProperty = propertyName;
-			BindingOperations.SetBinding(this, TargetPropertyValueProperty, new Windows.UI.Xaml.Data.Binding() { Source = _target, Path = new PropertyPath(_targetProperty), Mode = Windows.UI.Xaml.Data.BindingMode.OneWay });
+			BindingOperations.SetBinding(this, TargetPropertyValueProperty, new global::Windows.UI.Xaml.Data.Binding() { Source = _target, Path = new PropertyPath(_targetProperty), Mode = global::Windows.UI.Xaml.Data.BindingMode.OneWay });
 		}
 
 		public void Dispose()

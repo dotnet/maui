@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	[Flags]
 	public enum XamlCompilationOptions

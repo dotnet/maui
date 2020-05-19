@@ -4,16 +4,16 @@ using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.Tizen;
+using System.Maui.Internals;
+using System.Maui.Platform.Tizen;
 using ElmSharp;
 using Tizen.Applications;
 using TSystemInfo = Tizen.System.Information;
 using ELayout = ElmSharp.Layout;
-using DeviceOrientation = Xamarin.Forms.Internals.DeviceOrientation;
+using DeviceOrientation = System.Maui.Internals.DeviceOrientation;
 using ElmSharp.Wearable;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public enum StaticRegistrarStrategy
 	{
@@ -75,7 +75,7 @@ namespace Xamarin.Forms
 		}
 	}
 
-	public static class Forms
+	public static class Maui
 	{
 		static Lazy<string> s_profile = new Lazy<string>(() =>
 		{
@@ -236,7 +236,7 @@ namespace Xamarin.Forms
 
 		internal static void SendViewInitialized(this VisualElement self, EvasObject nativeView)
 		{
-			EventHandler<ViewInitializedEventArgs> viewInitialized = Forms.ViewInitialized;
+			EventHandler<ViewInitializedEventArgs> viewInitialized = System.Maui.Maui.ViewInitialized;
 			if (viewInitialized != null)
 			{
 				viewInitialized.Invoke(self, new ViewInitializedEventArgs
@@ -370,7 +370,7 @@ namespace Xamarin.Forms
 				Device.info = null;
 			}
 
-			Device.Info = new Forms.TizenDeviceInfo();
+			Device.Info = new System.Maui.Maui.TizenDeviceInfo();
 			Device.SetFlags(s_flags);
 
 			string profile = ((TizenDeviceInfo)Device.Info).Profile;
@@ -395,7 +395,7 @@ namespace Xamarin.Forms
 				Device.SetIdiom(TargetIdiom.Unsupported);
 			}
 
-			if (!Forms.IsInitialized)
+			if (!System.Maui.Maui.IsInitialized)
 			{
 				if (options != null)
 				{
@@ -415,8 +415,8 @@ namespace Xamarin.Forms
 					}
 					else
 					{
-						// Add Xamarin.Forms.Core assembly by default to apply the styles.
-						TizenPlatformServices.AppDomain.CurrentDomain.AddAssembly(Assembly.GetAssembly(typeof(Xamarin.Forms.View)));
+						// Add System.Maui.Core assembly by default to apply the styles.
+						TizenPlatformServices.AppDomain.CurrentDomain.AddAssembly(Assembly.GetAssembly(typeof(System.Maui.View)));
 
 						// static registrar
 						if (options.StaticRegistarStrategy != StaticRegistrarStrategy.None)

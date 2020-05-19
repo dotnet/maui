@@ -1,7 +1,7 @@
 using System.Linq;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	[Preserve (AllMembers = true)]
 	public class TextCellTest {

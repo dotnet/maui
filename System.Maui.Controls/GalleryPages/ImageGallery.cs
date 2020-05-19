@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	public class ImageGallery : ContentPage
 	{
@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Controls
 			var disabled = new Image { Source = ImageSource.FromFile("cover1.jpg") };
 			var rotate = new Image { Source = ImageSource.FromFile("cover1.jpg") };
 			var transparent = new Image { Source = ImageSource.FromFile("cover1.jpg") };
-			var embedded = new Image { Source = ImageSource.FromResource("Xamarin.Forms.Controls.GalleryPages.crimson.jpg", typeof(ImageGallery).GetTypeInfo().Assembly) };
+			var embedded = new Image { Source = ImageSource.FromResource("System.Maui.Controls.GalleryPages.crimson.jpg", typeof(ImageGallery).GetTypeInfo().Assembly) };
 			var gif = new Image { Source = "GifOne.gif" };
 			_autoPlayGif = new Image { Source = "GifOne.gif" };
 

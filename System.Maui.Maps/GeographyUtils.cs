@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-namespace Xamarin.Forms.Maps
+namespace System.Maui.Maps
 {
 	public static class GeographyUtils
 	{

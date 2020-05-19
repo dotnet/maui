@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Xml;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	[TestFixture]
 	public class MarkupExpressionParserTests : BaseTestFixture
@@ -79,7 +79,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		{
 			base.Setup ();
 			var nsManager = new XmlNamespaceManager (new NameTable ());
-			nsManager.AddNamespace ("local", "clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests");
+			nsManager.AddNamespace ("local", "clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests");
 			nsManager.AddNamespace ("x", "http://schemas.microsoft.com/winfx/2009/xaml");
 			typeResolver = new Internals.XamlTypeResolver (nsManager, XamlParser.GetElementType, Assembly.GetCallingAssembly ());
 		}

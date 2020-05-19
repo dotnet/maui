@@ -1,9 +1,9 @@
 using System;
-using Xamarin.Forms.Platform.Tizen.Native;
-using WatchDataTimePickerDialog = Xamarin.Forms.Platform.Tizen.Native.Watch.WatchDataTimePickerDialog;
+using System.Maui.Platform.Tizen.Native;
+using WatchDataTimePickerDialog = System.Maui.Platform.Tizen.Native.Watch.WatchDataTimePickerDialog;
 using EEntry = ElmSharp.Entry;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class DatePickerRenderer : ViewRenderer<DatePicker, EEntry>
 	{
@@ -25,11 +25,11 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Device.Idiom == TargetIdiom.Watch)
 			{
-				return new WatchDataTimePickerDialog(Forms.NativeParent);
+				return new WatchDataTimePickerDialog(System.Maui.Maui.NativeParent);
 			}
 			else
 			{
-				return new DateTimePickerDialog(Forms.NativeParent);
+				return new DateTimePickerDialog(System.Maui.Maui.NativeParent);
 			}
 		}
 
@@ -59,7 +59,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		protected virtual EEntry CreateNativeControl()
 		{
-			return new Native.EditfieldEntry(Forms.NativeParent)
+			return new Native.EditfieldEntry(System.Maui.Maui.NativeParent)
 			{
 				IsSingleLine = true,
 				HorizontalTextAlignment = Native.TextAlignment.Center,

@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 using NUnit.Framework;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using System.Maui.PlatformConfiguration;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class MediaElementTests : BaseTestFixture

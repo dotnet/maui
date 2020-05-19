@@ -1,7 +1,7 @@
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 32033, "WebView on Windows does not display local HTML files", PlatformAffected.WinRT)]
@@ -84,7 +84,7 @@ Clicking that link should navigate to a page with the heading 'Xamarin Forms' an
 <link rel=""stylesheet"" href=""default.css"">
 </head>
 <body>
-<h1>Xamarin.Forms</h1>
+<h1>System.Maui</h1>
 <p>The CSS and image are loaded from local files!</p>
 <img src='WebImages/XamarinLogo.png'/>
 <p><a href=""local.html"">next page</a></p>
@@ -122,7 +122,7 @@ Clicking that link should navigate to a page with the heading 'Xamarin Forms' an
 				{
 					Html = @"<html>
 <body>
-<h1>Xamarin.Forms</h1>
+<h1>System.Maui</h1>
 <p>The CSS and image are loaded from local files!</p>
 <img src='WebImages/XamarinLogo.png'/>
 <p><a href=""local.html"">next page</a></p>

@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK.Cells;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using System.Maui.Internals;
+using System.Maui.Platform.GTK.Cells;
+using System.Maui.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers
+namespace System.Maui.Platform.GTK.Renderers
 {
 	public class ListViewRenderer : ViewRenderer<ListView, Controls.ListView>
 	{

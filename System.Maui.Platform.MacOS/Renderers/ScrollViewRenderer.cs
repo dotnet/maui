@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using AppKit;
 using RectangleF = CoreGraphics.CGRect;
@@ -8,7 +8,7 @@ using Foundation;
 // ReSharper disable UnusedMember.Local
 // ReSharper disable UnusedParameter.Local
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public class ScrollViewRenderer : NSScrollView, IVisualElementRenderer
 	{
@@ -81,7 +81,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		public void SetElementSize(Size size)
 		{
-			Xamarin.Forms.Layout.LayoutChildIntoBoundingRegion(Element,
+			System.Maui.Layout.LayoutChildIntoBoundingRegion(Element,
 				new Rectangle(Element.X, Element.Y, size.Width, size.Height));
 		}
 

@@ -1,7 +1,7 @@
-﻿using System;
-using Xamarin.Forms.Controls.Issues;
+using System;
+using System.Maui.Controls.Issues;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	public class MasterDetailPageTabletPage : ContentPage
 	{

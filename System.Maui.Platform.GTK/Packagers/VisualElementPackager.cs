@@ -1,7 +1,7 @@
-﻿using System;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using System;
+using System.Maui.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Packagers
+namespace System.Maui.Platform.GTK.Packagers
 {
 	public class VisualElementPackager<TElementRenderer> : IDisposable 
 		where TElementRenderer : class, IVisualElementRenderer

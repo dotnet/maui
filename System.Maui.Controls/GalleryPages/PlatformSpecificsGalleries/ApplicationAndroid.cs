@@ -1,8 +1,8 @@
 using System.Windows.Input;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using System.Maui.PlatformConfiguration;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
 
-namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
+namespace System.Maui.Controls.GalleryPages.PlatformSpecificsGalleries
 {
 	public class ApplicationAndroid : ContentPage
 	{
@@ -20,8 +20,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 				VerticalOptions = LayoutOptions.StartAndExpand,
 				HorizontalOptions = LayoutOptions.Center,
 			};
-			layout.Children.Add(buttons, yConstraint: Xamarin.Forms.Constraint.RelativeToParent(parent => { return parent.Y; }));
-			layout.Children.Add(entry, yConstraint: Xamarin.Forms.Constraint.RelativeToParent(parent => { return parent.Height - 100; }));
+			layout.Children.Add(buttons, yConstraint: System.Maui.Constraint.RelativeToParent(parent => { return parent.Y; }));
+			layout.Children.Add(entry, yConstraint: System.Maui.Constraint.RelativeToParent(parent => { return parent.Height - 100; }));
 
 			Content = layout;
 			Title = "Application Features";

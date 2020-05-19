@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class ElementChangedEventArgs<TElement> : EventArgs where TElement : Element
 	{
@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Xamarin.Forms.Platform.Tizen.ElementChangedEventArgs`1"/> class.
+		/// Initializes a new instance of the <see cref="System.Maui.Platform.Tizen.ElementChangedEventArgs`1"/> class.
 		/// </summary>
 		/// <param name="oldElement">The old element which will be replaced by a newElement momentarily.</param>
 		/// <param name="newElement">The new element, taking place of an old element.</param>

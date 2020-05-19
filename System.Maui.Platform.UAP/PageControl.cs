@@ -1,11 +1,11 @@
-﻿﻿using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-using WImageSource = Windows.UI.Xaml.Media.ImageSource;
+﻿using System.Threading.Tasks;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Media;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
+using WImageSource = global::Windows.UI.Xaml.Media.ImageSource;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public sealed class PageControl : ContentControl, IToolbarProvider, ITitleViewRendererController
 	{
@@ -16,8 +16,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public static readonly DependencyProperty BackButtonTitleProperty = DependencyProperty.Register("BackButtonTitle", typeof(string), typeof(PageControl), new PropertyMetadata(false));
 
-		public static readonly DependencyProperty ContentMarginProperty = DependencyProperty.Register("ContentMargin", typeof(Windows.UI.Xaml.Thickness), typeof(PageControl),
-			new PropertyMetadata(default(Windows.UI.Xaml.Thickness)));
+		public static readonly DependencyProperty ContentMarginProperty = DependencyProperty.Register("ContentMargin", typeof(global::Windows.UI.Xaml.Thickness), typeof(PageControl),
+			new PropertyMetadata(default(global::Windows.UI.Xaml.Thickness)));
 
 		public static readonly DependencyProperty TitleIconProperty = DependencyProperty.Register(nameof(TitleIcon), typeof(WImageSource), typeof(PageControl), new PropertyMetadata(default(WImageSource)));
 
@@ -55,12 +55,12 @@ namespace Xamarin.Forms.Platform.UWP
 		}
 
 		TaskCompletionSource<CommandBar> _commandBarTcs;
-		Windows.UI.Xaml.Controls.ContentPresenter _presenter;
+		global::Windows.UI.Xaml.Controls.ContentPresenter _presenter;
 		TitleViewManager _titleViewManager;
 
 		public PageControl()
 		{
-			Style = Windows.UI.Xaml.Application.Current.Resources["DefaultPageControlStyle"] as Windows.UI.Xaml.Style;
+			Style = global::Windows.UI.Xaml.Application.Current.Resources["DefaultPageControlStyle"] as global::Windows.UI.Xaml.Style;
 		}
 
 		public string BackButtonTitle
@@ -74,9 +74,9 @@ namespace Xamarin.Forms.Platform.UWP
 			get { return _presenter != null ? _presenter.ActualHeight : 0; }
 		}
 
-		public Windows.UI.Xaml.Thickness ContentMargin
+		public global::Windows.UI.Xaml.Thickness ContentMargin
 		{
-			get { return (Windows.UI.Xaml.Thickness)GetValue(ContentMarginProperty); }
+			get { return (global::Windows.UI.Xaml.Thickness)GetValue(ContentMarginProperty); }
 			set { SetValue(ContentMarginProperty, value); }
 		}
 
@@ -152,7 +152,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			base.OnApplyTemplate();
 
-			_presenter = GetTemplateChild("presenter") as Windows.UI.Xaml.Controls.ContentPresenter;
+			_presenter = GetTemplateChild("presenter") as global::Windows.UI.Xaml.Controls.ContentPresenter;
 
 			_titleViewPresenter = GetTemplateChild("TitleViewPresenter") as FrameworkElement;
 

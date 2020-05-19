@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Windows.Input;
-using WDataTemplate = Windows.UI.Xaml.DataTemplate;
-using WApplication = Windows.UI.Xaml.Application;
-using Xamarin.Forms.Internals;
+using WDataTemplate = global::Windows.UI.Xaml.DataTemplate;
+using WApplication = global::Windows.UI.Xaml.Application;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class TextCellRenderer : ICellRenderer
 	{

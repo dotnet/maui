@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms.Platform.Tizen.Renderers
+namespace System.Maui.Platform.Tizen.Renderers
 {
 	public class MasterDetailContainer : ElmSharp.Box, IDisposable
 	{
@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Platform.Tizen.Renderers
 		IPageController PageController => ChildView as IPageController;
 		IMasterDetailPageController MasterDetailPageController => _parent as IMasterDetailPageController;
 
-		public MasterDetailContainer(MasterDetailPage parentElement, bool isMaster) : base(Forms.NativeParent)
+		public MasterDetailContainer(MasterDetailPage parentElement, bool isMaster) : base(System.Maui.Maui.NativeParent)
 		{
 			_parent = parentElement;
 			_isMaster = isMaster;

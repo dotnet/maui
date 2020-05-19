@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	internal class AnimatableKey
 	{

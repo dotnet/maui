@@ -1,14 +1,14 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using System.Maui.PlatformConfiguration;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1724, "[Enhancement] ImageButton", PlatformAffected.All)]
@@ -95,7 +95,7 @@ namespace Xamarin.Forms.Controls.Issues
 					new Label(){ Text = "Do you see image from a Uri?" },
 					new ImageButton()
 					{
-						Source = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Xamarin.Forms.Controls/coffee.png",
+						Source = "https://raw.githubusercontent.com/xamarin/System.Maui/master/System.Maui.Controls/coffee.png",
 						BackgroundColor = Color.ForestGreen
 					},
 					new Label(){ Text = "Invalid Image Uri just to test it doesn't crash" },

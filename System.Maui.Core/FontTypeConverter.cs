@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[Xaml.TypeConversion(typeof(Font))]
 	public sealed class FontTypeConverter : TypeConverter

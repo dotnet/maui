@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform;
+using System.Maui.Internals;
+using System.Maui.Platform;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public class Application : Element, IResourcesProvider, IApplicationController, IElementConfiguration<Application>
 	{
@@ -51,7 +51,7 @@ namespace Xamarin.Forms
 				if (_appIndexProvider == null)
 					throw new ArgumentException("No IAppIndexingProvider was provided");
 				if (_appIndexProvider.AppLinks == null)
-					throw new ArgumentException("No AppLinks implementation was found, if in Android make sure you installed the Xamarin.Forms.AppLinks");
+					throw new ArgumentException("No AppLinks implementation was found, if in Android make sure you installed the System.Maui.AppLinks");
 				return _appIndexProvider.AppLinks;
 			}
 		}

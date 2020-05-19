@@ -2,8 +2,8 @@
 <ContentPage
 		xmlns="http://xamarin.com/schemas/2014/forms"
 		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-		xmlns:local="using:Xamarin.Forms.Xaml.UnitTests"
-		x:Class="Xamarin.Forms.Xaml.UnitTests.DataTemplateExtension">
+		xmlns:local="using:System.Maui.Xaml.UnitTests"
+		x:Class="System.Maui.Xaml.UnitTests.DataTemplateExtension">
 	<ContentPage.Resources>
 		<ShellContent x:Key="content" ContentTemplate="{DataTemplate local:DataTemplateExtension}" />
 	</ContentPage.Resources>

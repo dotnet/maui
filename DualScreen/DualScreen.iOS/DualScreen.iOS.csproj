@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -123,21 +123,21 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\..\System.Maui.Core\System.Maui.Core.csproj">
       <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
-      <Name>Xamarin.Forms.Core</Name>
+      <Name>System.Maui.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj">
+    <ProjectReference Include="..\..\System.Maui.CustomAttributes\System.Maui.CustomAttributes.csproj">
       <Project>{a204bbc8-f83b-4e43-9032-2e97899ec474}</Project>
-      <Name>Xamarin.Forms.CustomAttributes</Name>
+      <Name>System.Maui.CustomAttributes</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Xamarin.Forms.DualScreen\Xamarin.Forms.DualScreen.csproj">
+    <ProjectReference Include="..\..\System.Maui.DualScreen\System.Maui.DualScreen.csproj">
       <Project>{fb4a866a-5721-4545-9e5d-b7f7d59875a4}</Project>
-      <Name>Xamarin.Forms.DualScreen</Name>
+      <Name>System.Maui.DualScreen</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj">
+    <ProjectReference Include="..\..\System.Maui.Platform.iOS\System.Maui.Platform.iOS.csproj">
       <Project>{271193c1-6e7c-429c-a36d-3f1be5267231}</Project>
-      <Name>Xamarin.Forms.Platform.iOS</Name>
+      <Name>System.Maui.Platform.iOS</Name>
       <IsAppExtension>false</IsAppExtension>
       <IsWatchApp>false</IsWatchApp>
     </ProjectReference>
@@ -145,13 +145,13 @@
       <Project>{ff1e07e3-8756-48cb-abf8-421907028b82}</Project>
       <Name>DualScreen</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj">
+    <ProjectReference Include="..\..\System.Maui.Platform\System.Maui.Platform.csproj">
       <Project>{D31A6537-ED9C-4EBD-B231-A8D4FE44126A}</Project>
-      <Name>Xamarin.Forms.Platform</Name>
+      <Name>System.Maui.Platform</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Stubs\Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS %28Forwarders%29.csproj">
+    <ProjectReference Include="..\..\Stubs\System.Maui.Platform.iOS\System.Maui.Platform.iOS %28Forwarders%29.csproj">
       <Project>{39B3457F-01D8-43D0-8E84-D8C4F73CF48D}</Project>
-      <Name>Xamarin.Forms.Platform.iOS (Forwarders)</Name>
+      <Name>System.Maui.Platform.iOS (Forwarders)</Name>
       <IsAppExtension>false</IsAppExtension>
       <IsWatchApp>false</IsWatchApp>
     </ProjectReference>

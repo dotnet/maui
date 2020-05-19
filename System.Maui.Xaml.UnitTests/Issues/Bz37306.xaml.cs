@@ -1,7 +1,7 @@
-﻿using Xamarin.Forms;
+using System.Maui;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public partial class Bz37306 : ContentPage
 	{

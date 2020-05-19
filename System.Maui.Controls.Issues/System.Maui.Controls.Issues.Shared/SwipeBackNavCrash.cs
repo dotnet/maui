@@ -1,19 +1,19 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 using NUnit.Framework;
 using Xamarin.UITest;
 using Xamarin.UITest.iOS;
 #endif
 
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.None, 0, "Swipe back nav crash", PlatformAffected.iOS)]
@@ -55,7 +55,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var mainBounds = RunningApp.RootViewRect();
 
-			Xamarin.Forms.Core.UITests.Gestures.Pan (RunningApp, new Xamarin.Forms.Core.UITests.Drag (mainBounds, 0, 125, 75, 125, Xamarin.Forms.Core.UITests.Drag.Direction.LeftToRight));
+			System.Maui.Core.UITests.Gestures.Pan (RunningApp, new System.Maui.Core.UITests.Drag (mainBounds, 0, 125, 75, 125, System.Maui.Core.UITests.Drag.Direction.LeftToRight));
 			System.Threading.Thread.Sleep (3);
 			RunningApp.Screenshot ("Crash?");
 			RunningApp.WaitForElement (q => q.Marked ("Swipe lightly left and right to crash this page"));

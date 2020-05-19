@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Xamarin.Forms;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Maps;
-using Xamarin.Forms.Xaml;
+using System.Maui;
+using System.Maui.Internals;
+using System.Maui.Maps;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class MapGallery : ContentPage

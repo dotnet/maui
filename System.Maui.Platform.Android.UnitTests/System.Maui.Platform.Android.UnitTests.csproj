@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -10,8 +10,8 @@
     <TemplateGuid>{9ef11e43-1701-4396-8835-8392d57abb70}</TemplateGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Xamarin.Forms.Platform.Android.UnitTests</RootNamespace>
-    <AssemblyName>Xamarin.Forms.Platform.Android.UnitTests</AssemblyName>
+    <RootNamespace>System.Maui.Platform.Android.UnitTests</RootNamespace>
+    <AssemblyName>System.Maui.Platform.Android.UnitTests</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <Deterministic>True</Deterministic>
     <AndroidResgenFile>Resources\Resource.designer.cs</AndroidResgenFile>
@@ -74,21 +74,21 @@
     <PackageReference Include="Xamarin.Android.Support.v7.AppCompat" Version="28.0.0.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj">
       <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
-      <Name>Xamarin.Forms.Core</Name>
+      <Name>System.Maui.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj">
+    <ProjectReference Include="..\System.Maui.CustomAttributes\System.Maui.CustomAttributes.csproj">
       <Project>{4dcd0420-1168-4b77-86db-6196ee4bd491}</Project>
-      <Name>Xamarin.Forms.CustomAttributes</Name>
+      <Name>System.Maui.CustomAttributes</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Platform.Android.FormsViewGroup\Xamarin.Forms.Platform.Android.FormsViewGroup.csproj">
+    <ProjectReference Include="..\System.Maui.Platform.Android.FormsViewGroup\System.Maui.Platform.Android.FormsViewGroup.csproj">
       <Project>{3b72465b-acae-43ae-9327-10f372fe5f80}</Project>
-      <Name>Xamarin.Forms.Platform.Android.FormsViewGroup</Name>
+      <Name>System.Maui.Platform.Android.FormsViewGroup</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj">
+    <ProjectReference Include="..\System.Maui.Platform.Android\System.Maui.Platform.Android.csproj">
       <Project>{0e16e70a-d6dd-4323-ad5d-363abff42d6a}</Project>
-      <Name>Xamarin.Forms.Platform.Android</Name>
+      <Name>System.Maui.Platform.Android</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />

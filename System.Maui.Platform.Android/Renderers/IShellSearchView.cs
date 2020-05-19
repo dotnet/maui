@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public interface IShellSearchView : IDisposable
 	{

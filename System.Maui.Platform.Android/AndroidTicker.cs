@@ -2,11 +2,11 @@ using System;
 using Android.Animation;
 using Android.Content;
 using Android.OS;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using GlobalSettings = Android.Provider.Settings.Global;
 using SystemSettings = Android.Provider.Settings.System;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal class AndroidTicker : Ticker, IDisposable
 	{
@@ -40,17 +40,17 @@ namespace Xamarin.Forms.Platform.Android
 
 		static bool IsAnimatorEnabled()
 		{
-			if (Forms.IsOreoOrNewer)
+			if (System.Maui.Maui.IsOreoOrNewer)
 			{
 				// For more recent API levels, we can just check this method and be done with it
 				return ValueAnimator.AreAnimatorsEnabled();
 			}
 
-			if (Forms.IsLollipopOrNewer)
+			if (System.Maui.Maui.IsLollipopOrNewer)
 			{
 				// For API levels which support power saving but not AreAnimatorsEnabled, we can check the
 				// power save mode; for these API levels, power saving == ON will mean that animations are disabled
-				var powerManager = (PowerManager)Forms.ApplicationContext.GetSystemService(Context.PowerService);
+				var powerManager = (PowerManager)System.Maui.Maui.ApplicationContext.GetSystemService(Context.PowerService);
 				if (powerManager.IsPowerSaveMode)
 				{
 					return false;
@@ -68,7 +68,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			float animationScale;
 
-			if (Forms.IsJellyBeanMr1OrNewer)
+			if (System.Maui.Maui.IsJellyBeanMr1OrNewer)
 			{
 				animationScale = GlobalSettings.GetFloat(resolver, GlobalSettings.AnimatorDurationScale, 1);
 			}

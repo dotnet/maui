@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -7,8 +7,8 @@
     <ProjectGuid>{447DC60E-C485-4427-8CF7-50074C6B61DE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Xamarin.Forms.Pages.UnitTests</RootNamespace>
-    <AssemblyName>Xamarin.Forms.Pages.UnitTests</AssemblyName>
+    <RootNamespace>System.Maui.Pages.UnitTests</RootNamespace>
+    <AssemblyName>System.Maui.Pages.UnitTests</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -48,13 +48,13 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Xamarin.Forms.Core.UnitTests\MockDispatcherProvider.cs">
+    <Compile Include="..\System.Maui.Core.UnitTests\MockDispatcherProvider.cs">
       <Link>MockDispatcherProvider.cs</Link>
     </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.UnitTests\MockDispatcher.cs">
+    <Compile Include="..\System.Maui.Core.UnitTests\MockDispatcher.cs">
       <Link>MockDispatcher.cs</Link>
     </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.UnitTests\MockPlatformServices.cs">
+    <Compile Include="..\System.Maui.Core.UnitTests\MockPlatformServices.cs">
       <Link>MockPlatformServices.cs</Link>
     </Compile>
     <Compile Include="DataPageTests.cs" />
@@ -62,13 +62,13 @@
     <Compile Include="IntegrationTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj">
       <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
-      <Name>Xamarin.Forms.Core</Name>
+      <Name>System.Maui.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Pages\Xamarin.Forms.Pages.csproj">
+    <ProjectReference Include="..\System.Maui.Pages\System.Maui.Pages.csproj">
       <Project>{d6133dbd-6c60-4bd5-bea2-07e0a3927c31}</Project>
-      <Name>Xamarin.Forms.Pages</Name>
+      <Name>System.Maui.Pages</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

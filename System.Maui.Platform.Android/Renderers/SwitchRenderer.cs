@@ -7,7 +7,7 @@ using Android.OS;
 using Android.Widget;
 using ASwitch = Android.Widget.Switch;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class SwitchRenderer : ViewRenderer<Switch, ASwitch>, CompoundButton.IOnCheckedChangeListener
 	{
@@ -119,7 +119,7 @@ namespace Xamarin.Forms.Platform.Android
 					}
 					else
 					{
-						if (Forms.SdkInt >= BuildVersionCodes.JellyBean)
+						if (System.Maui.Maui.SdkInt >= BuildVersionCodes.JellyBean)
 						{
 							Control.TrackDrawable?.SetColorFilter(Element.OnColor.ToAndroid(), FilterMode.SrcAtop);
 						}

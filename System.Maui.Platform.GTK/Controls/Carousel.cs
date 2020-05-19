@@ -1,12 +1,12 @@
-﻿using Gdk;
+using Gdk;
 using Gtk;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using System.Maui.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Controls
+namespace System.Maui.Platform.GTK.Controls
 {
 	public class CarouselEventArgs : EventArgs
 	{
@@ -30,9 +30,9 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 	{
 		public Container GtkPage { get; set; }
 
-		public Xamarin.Forms.Page Page { get; set; }
+		public System.Maui.Page Page { get; set; }
 
-		public CarouselPage(Container gtkPage, Xamarin.Forms.Page page)
+		public CarouselPage(Container gtkPage, System.Maui.Page page)
 		{
 			GtkPage = gtkPage;
 			Page = page;
@@ -123,7 +123,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 		public void AddPage(int index, object element)
 		{
-			var page = element as Xamarin.Forms.Page;
+			var page = element as System.Maui.Page;
 
 			if (page != null)
 			{
@@ -139,7 +139,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 		public void RemovePage(object element)
 		{
-			var page = element as Xamarin.Forms.Page;
+			var page = element as System.Maui.Page;
 
 			if (page != null)
 			{

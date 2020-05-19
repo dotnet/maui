@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using AppKit;
 using RectangleF = CoreGraphics.CGRect;
 using System.Linq;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public class Platform : BindableObject, IDisposable
 #pragma warning disable CS0618

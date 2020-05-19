@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls.GalleryPages.RadioButtonGalleries
+namespace System.Maui.Controls.GalleryPages.RadioButtonGalleries
 {
 	public class RadioButtonGalleries : ContentPage
 	{

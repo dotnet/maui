@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Linq;
 using CoreGraphics;
@@ -6,7 +6,7 @@ using CoreText;
 using Foundation;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	[Preserve(AllMembers = true)]
 	public class EmbeddedFontLoader : IEmbeddedFontLoader

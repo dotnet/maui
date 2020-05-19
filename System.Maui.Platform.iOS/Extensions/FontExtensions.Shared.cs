@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 #if __MOBILE__
 using UIKit;
 using NativeFont = UIKit.UIFont;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 #else
 using AppKit;
 using NativeFont = AppKit.NSFont;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 #endif
 {
 	public static partial class FontExtensions

@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
-using Xamarin.Forms;
+using System.Maui;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public class Bz36422Control : ContentView
 	{

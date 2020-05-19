@@ -1,13 +1,13 @@
 using System;
 using System.ComponentModel;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using UIKit;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using System.Maui.PlatformConfiguration.iOSSpecific;
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using CoreGraphics;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 
 	public class ScrollViewRenderer : UIScrollView, IVisualElementRenderer, IEffectControlProvider

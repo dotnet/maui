@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Xamarin.Forms;
-using Xamarin.Forms.Internals;
+using System.Maui;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.DualScreen
+namespace System.Maui.DualScreen
 {
 	internal interface IDualScreenService
 	{

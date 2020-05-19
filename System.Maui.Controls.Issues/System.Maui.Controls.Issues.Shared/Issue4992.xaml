@@ -1,8 +1,8 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <local:TestShell xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Xamarin.Forms.Controls.Issues.Issue4992"
-                  xmlns:local="using:Xamarin.Forms.Controls">
+             x:Class="System.Maui.Controls.Issues.Issue4992"
+                  xmlns:local="using:System.Maui.Controls">
     <ShellItem Title="Home" Route="Home">
         <ShellContent Title="Control">
             <ContentPage Title="Control">

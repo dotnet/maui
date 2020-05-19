@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Platform.GTK.Extensions
+namespace System.Maui.Platform.GTK.Extensions
 {
 	public static class ColorExtensions
 	{
@@ -11,7 +11,7 @@
 			return gtkColor;
 		}
 
-		internal static Xamarin.Forms.Color ToXFColor(this Gdk.Color color, double opacity = 255)
+		internal static System.Maui.Color ToXFColor(this Gdk.Color color, double opacity = 255)
 		{
 			return new Color(color.Red, color.Green, color.Blue, opacity);
 		}

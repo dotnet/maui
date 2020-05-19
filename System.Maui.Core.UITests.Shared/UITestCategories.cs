@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Core.UITests
+namespace System.Maui.Core.UITests
 {
 	internal static class UITestCategories
 	{

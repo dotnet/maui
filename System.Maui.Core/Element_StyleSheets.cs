@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Xamarin.Forms.StyleSheets;
+using System.Maui.StyleSheets;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public partial class Element : IStyleSelectable
 	{

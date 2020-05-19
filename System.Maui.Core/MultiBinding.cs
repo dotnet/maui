@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[ContentProperty(nameof(Bindings))]
 	public sealed class MultiBinding : BindingBase

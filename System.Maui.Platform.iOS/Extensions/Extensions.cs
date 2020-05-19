@@ -1,9 +1,9 @@
 using Foundation;
 using System;
 using UIKit;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public static class Extensions
 	{

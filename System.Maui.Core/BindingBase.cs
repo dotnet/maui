@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Runtime.CompilerServices;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public abstract class BindingBase
 	{

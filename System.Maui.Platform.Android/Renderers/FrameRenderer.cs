@@ -8,7 +8,7 @@ using AButton = Android.Widget.Button;
 using ACanvas = Android.Graphics.Canvas;
 using GlobalResource = Android.Resource;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class FrameRenderer : VisualElementRenderer<Frame>
 	{

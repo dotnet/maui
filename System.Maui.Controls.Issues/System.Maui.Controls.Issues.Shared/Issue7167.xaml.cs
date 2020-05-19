@@ -1,19 +1,19 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Windows.Input;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
+using System.Maui.Xaml;
 #if UITEST && __WINDOWS__
 using Xamarin.UITest;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 using NUnit.Framework;
 #endif
 
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 { 
 #if APP
 	[XamlCompilation(XamlCompilationOptions.Compile)]

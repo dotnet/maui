@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Globalization;
-using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
-using Xamarin.Forms.Platform.Tizen.Native;
+using System.Maui.PlatformConfiguration.TizenSpecific;
+using System.Maui.Platform.Tizen.Native;
 using ElmSharp;
 using Tizen.Multimedia;
-using XForms = Xamarin.Forms.Forms;
+using MauiApp = System.Maui.Maui;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class MediaElementRenderer : ViewRenderer<MediaElement, LayoutCanvas>, IMediaViewProvider, IVideoOutput
 	{
@@ -68,8 +68,8 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			if (Control == null)
 			{
-				SetNativeControl(new LayoutCanvas(XForms.NativeParent));
-				_mediaView = new MediaView(XForms.NativeParent);
+				SetNativeControl(new LayoutCanvas(MauiApp.NativeParent));
+				_mediaView = new MediaView(MauiApp.NativeParent);
 				Control.LayoutUpdated += (s, evt) => OnLayout();
 				Control.Children.Add(_mediaView);
 				Control.AllowFocus(true);

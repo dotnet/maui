@@ -1,4 +1,4 @@
-﻿#if UITEST
+#if UITEST
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,7 +7,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 using Xamarin.UITest.Queries;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	public static class UITestHelper
 	{

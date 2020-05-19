@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using Android.App;
@@ -6,12 +6,12 @@ using Android.Content.PM;
 using Android.OS;
 using Android.Widget;
 using Java.Interop;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Android;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.Android;
-using Xamarin.Forms.Platform.Android.AppLinks;
+using System.Maui;
+using System.Maui.ControlGallery.Android;
+using System.Maui.Controls;
+using System.Maui.Controls.Issues;
+using System.Maui.Platform.Android;
+using System.Maui.Platform.Android.AppLinks;
 using Android.Content;
 using Android.Content.Res;
 using Android.Views;
@@ -23,7 +23,7 @@ using AColor = Android.Graphics.Color;
 [assembly: ExportRenderer (typeof (DisposeLabel), typeof (DisposeLabelRenderer))]
 [assembly: ExportEffect (typeof (BorderEffect), "BorderEffect")]
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace System.Maui.ControlGallery.Android
 {
 	public partial class Activity1 
 	{
@@ -168,7 +168,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 				// And put things back to normal so we can keep running tests
 				uiModeManager.DisableCarMode(DisableCarModeFlags.None);
 
-				((App)Xamarin.Forms.Application.Current).Reset();
+				((App)System.Maui.Application.Current).Reset();
 			});
 		}
 	}

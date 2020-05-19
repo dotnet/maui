@@ -1,6 +1,6 @@
-﻿using ElmSharp.Accessible;
+using ElmSharp.Accessible;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public static class AccessibilityExtensions
 	{

@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Input;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Maps;
-using Xamarin.Forms.Xaml;
+using System.Maui.Internals;
+using System.Maui.Maps;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages
+namespace System.Maui.Controls.GalleryPages
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class MapWithItemsSourceGallery : ContentPage

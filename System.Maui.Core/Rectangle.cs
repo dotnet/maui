@@ -28,7 +28,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[DebuggerDisplay("X={X}, Y={Y}, Width={Width}, Height={Height}")]
 	[TypeConverter(typeof(RectangleTypeConverter))]

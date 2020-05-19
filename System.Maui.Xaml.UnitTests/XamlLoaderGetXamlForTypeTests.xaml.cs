@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 using NUnit.Framework;
 
-using Xamarin.Forms;
+using System.Maui;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public partial class XamlLoaderGetXamlForTypeTests : ContentPage
 	{
@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void SetUp()
 			{
 #pragma warning disable 0618
-				Xamarin.Forms.Xaml.Internals.XamlLoader.XamlFileProvider = null;
+				System.Maui.Xaml.Internals.XamlLoader.XamlFileProvider = null;
 #pragma warning restore 0618
 			}
 
@@ -38,13 +38,13 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.That(layout.Content, Is.TypeOf<Button>());
 
 #pragma warning disable 0618
-				Xamarin.Forms.Xaml.Internals.XamlLoader.XamlFileProvider = (t) => {
+				System.Maui.Xaml.Internals.XamlLoader.XamlFileProvider = (t) => {
 #pragma warning restore 0618
 					if (t == typeof(XamlLoaderGetXamlForTypeTests))
 						return @"
 	<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 		xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-		x:Class=""Xamarin.Forms.Xaml.UnitTests.XamlLoaderGetXamlForTypeTests"">
+		x:Class=""System.Maui.Xaml.UnitTests.XamlLoaderGetXamlForTypeTests"">
 		<Label x:Name=""Label""/>
 	</ContentPage>";
 					return null;

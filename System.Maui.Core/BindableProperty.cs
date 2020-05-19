@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using System.Maui.Internals;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[DebuggerDisplay("{PropertyName}")]
 	[TypeConverter(typeof(BindablePropertyConverter))]

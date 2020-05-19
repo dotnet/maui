@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms.Maps.WPF;
+using System.Maui.Maps.WPF;
 
-namespace Xamarin
+namespace System.Maui
 {
 	public static class FormsMaps
 	{

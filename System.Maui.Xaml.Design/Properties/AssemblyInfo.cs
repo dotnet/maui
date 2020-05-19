@@ -1,5 +1,5 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Microsoft.Windows.Design.Metadata;
-using Xamarin.Forms.Xaml.Design;
+using System.Maui.Xaml.Design;
 
 [assembly: ProvideMetadata(typeof (RegisterMetadata))]

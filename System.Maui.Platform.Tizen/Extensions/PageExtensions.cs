@@ -1,14 +1,14 @@
 using System;
 using ElmSharp;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public static class PageExtensions
 	{
 		public static EvasObject CreateEvasObject(this Page page, EvasObject parent, bool hasAlpha = false)
 		{
-			if (!Forms.IsInitialized)
-				throw new InvalidOperationException("call Forms.Init() before this");
+			if (!System.Maui.Maui.IsInitialized)
+				throw new InvalidOperationException("call System.Maui.Maui.Init() before this");
 
 			if (parent == null)
 				throw new InvalidOperationException("Window could not be null");
@@ -31,13 +31,13 @@ namespace Xamarin.Forms
 	}
 }
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public static class PageExtensions
 	{
 		public static EvasObject CreateEvasObject(this ContentPage page, EvasObject parent, bool hasAlpha = false)
 		{
-			return Xamarin.Forms.PageExtensions.CreateEvasObject(page, parent, hasAlpha);
+			return System.Maui.PageExtensions.CreateEvasObject(page, parent, hasAlpha);
 		}
 
 		public static void UpdateFocusTreePolicy<T>(this MultiPage<T> multiPage) where T : Page

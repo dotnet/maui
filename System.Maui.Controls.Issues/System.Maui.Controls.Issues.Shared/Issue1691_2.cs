@@ -2,20 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-using Xamarin.Forms;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using System.Maui;
+using System.Maui.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.PlatformConfiguration;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
 
-using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+using WindowsOS = System.Maui.PlatformConfiguration.Windows;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1691, "[Enhancement] Add SearchBar platform specific for IsSpellCheckEnabled",

@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ElmSharp;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.Tizen.Watch
+namespace System.Maui.Platform.Tizen.Watch
 {
 	class SimpleViewStack : Box
 	{
@@ -129,7 +129,7 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 
 		void InitializeComponent()
 		{
-			_viewStack = new SimpleViewStack(Forms.NativeParent);
+			_viewStack = new SimpleViewStack(System.Maui.Maui.NativeParent);
 			_viewStack.Show();
 
 			_rootPageRenderer = ShellRendererFactory.Default.CreateItemRenderer(ShellSection);

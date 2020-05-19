@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[Xaml.TypeConversion(typeof(LinearItemsLayout))]
 	public class CarouselLayoutTypeConverter : TypeConverter

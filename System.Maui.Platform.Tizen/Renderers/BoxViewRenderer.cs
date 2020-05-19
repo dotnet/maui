@@ -1,8 +1,8 @@
 using System.ComponentModel;
 using EColor = ElmSharp.Color;
-using Xamarin.Forms.Platform.Tizen.Native;
+using System.Maui.Platform.Tizen.Native;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class BoxViewRenderer : ViewRenderer<BoxView, RoundRectangle>
 	{
@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new RoundRectangle(Forms.NativeParent));
+				SetNativeControl(new RoundRectangle(System.Maui.Maui.NativeParent));
 			}
 
 			UpdateColor();
@@ -58,10 +58,10 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void OnRadiusUpdate(bool init)
 		{
-			int topLeft = Forms.ConvertToScaledPixel(Element.CornerRadius.TopLeft);
-			int topRight = Forms.ConvertToScaledPixel(Element.CornerRadius.TopRight);
-			int bottomLeft = Forms.ConvertToScaledPixel(Element.CornerRadius.BottomLeft);
-			int bottomRight = Forms.ConvertToScaledPixel(Element.CornerRadius.BottomRight);
+			int topLeft = System.Maui.Maui.ConvertToScaledPixel(Element.CornerRadius.TopLeft);
+			int topRight = System.Maui.Maui.ConvertToScaledPixel(Element.CornerRadius.TopRight);
+			int bottomLeft = System.Maui.Maui.ConvertToScaledPixel(Element.CornerRadius.BottomLeft);
+			int bottomRight = System.Maui.Maui.ConvertToScaledPixel(Element.CornerRadius.BottomRight);
 			Control.SetRadius(topLeft, topRight, bottomLeft, bottomRight);
 			if (!init)
 			{

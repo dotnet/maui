@@ -1,4 +1,4 @@
-﻿using GMap.NET;
+using GMap.NET;
 using GMap.NET.GTK;
 using GMap.NET.MapProviders;
 using Newtonsoft.Json;
@@ -11,10 +11,10 @@ using System.Net;
 using System.Net.Http;
 using System.Timers;
 using System.Windows.Forms.Markers;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK;
+using System.Maui.Internals;
+using System.Maui.Platform.GTK;
 
-namespace Xamarin.Forms.Maps.GTK
+namespace System.Maui.Maps.GTK
 {
     public class MapRenderer : ViewRenderer<Map, GMapControl>
     {
@@ -376,7 +376,7 @@ namespace Xamarin.Forms.Maps.GTK
             catch (Exception ex)
             {
                 Debug.WriteLine("MoveToRegion exception: " + ex);
-                Log.Warning("Xamarin.Forms MapRenderer", $"MoveToRegion exception: {ex}");
+                Log.Warning("System.Maui MapRenderer", $"MoveToRegion exception: {ex}");
             }
         }
 
@@ -403,7 +403,7 @@ namespace Xamarin.Forms.Maps.GTK
             catch (Exception ex)
             {
                 Debug.WriteLine("UpdateVisibleRegion exception: " + ex);
-                Log.Warning("Xamarin.Forms MapRenderer", $"UpdateVisibleRegion exception: {ex}");
+                Log.Warning("System.Maui MapRenderer", $"UpdateVisibleRegion exception: {ex}");
 
                 return;
             }

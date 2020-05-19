@@ -1,8 +1,8 @@
-﻿using Mono.Cecil;
+using Mono.Cecil;
 using NUnit.Framework;
 using System.IO;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public class MockAssemblyResolver : BaseAssemblyResolver
 	{

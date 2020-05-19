@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using AppKit;
 using RectangleF = CoreGraphics.CGRect;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	internal class ViewCellNSView : CellNSView
 	{
@@ -54,7 +54,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			var contentFrame = Frame;
 			var view = ViewCell.View;
 
-			Xamarin.Forms.Layout.LayoutChildIntoBoundingRegion(view, contentFrame.ToRectangle());
+			System.Maui.Layout.LayoutChildIntoBoundingRegion(view, contentFrame.ToRectangle());
 
 			if (_rendererRef == null)
 				return;

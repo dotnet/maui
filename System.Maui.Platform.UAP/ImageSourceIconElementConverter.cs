@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	internal class ImageSourceIconElementConverter : Windows.UI.Xaml.Data.IValueConverter
+	internal class ImageSourceIconElementConverter : global::Windows.UI.Xaml.Data.IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{

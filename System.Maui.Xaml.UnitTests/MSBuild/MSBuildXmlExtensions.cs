@@ -1,6 +1,6 @@
-﻿using System.Xml.Linq;
+using System.Xml.Linq;
 
-namespace Xamarin.Forms.MSBuild.UnitTests
+namespace System.Maui.MSBuild.UnitTests
 {
 	static class MSBuildXmlExtensions
 	{

@@ -4,9 +4,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Pages
+namespace System.Maui.Pages
 {
 	public abstract class BaseDataSource : IDataSource, INotifyPropertyChanged
 	{
@@ -94,7 +94,7 @@ namespace Xamarin.Forms.Pages
 			IList<IDataItem> rawData = await GetRawData();
 			if (!(rawData is INotifyCollectionChanged))
 			{
-				Log.Warning("Xamarin.Forms.Pages", "DataSource does not implement INotifyCollectionChanged, updates will not be reflected");
+				Log.Warning("System.Maui.Pages", "DataSource does not implement INotifyCollectionChanged, updates will not be reflected");
 				rawData = rawData.ToList(); // Make a copy so we can be sure this list wont change out from under us
 			}
 			_dataSourceList.MainList = rawData;

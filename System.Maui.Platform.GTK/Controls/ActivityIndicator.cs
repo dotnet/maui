@@ -1,7 +1,7 @@
-﻿using Cairo;
+using Cairo;
 using System;
 
-namespace Xamarin.Forms.Platform.GTK.Controls
+namespace System.Maui.Platform.GTK.Controls
 {
 	public class ActivityIndicator : GtkFormsContainer
 	{

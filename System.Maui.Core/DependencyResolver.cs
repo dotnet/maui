@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 
-namespace Xamarin.Forms.Internals
+namespace System.Maui.Internals
 {
 	public static class DependencyResolver
 	{

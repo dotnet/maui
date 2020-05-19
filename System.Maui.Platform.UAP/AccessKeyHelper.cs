@@ -1,10 +1,10 @@
-﻿using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-using VisualElementSpecifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.VisualElement;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Input;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
+using VisualElementSpecifics = System.Maui.PlatformConfiguration.WindowsSpecific.VisualElement;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	static class AccessKeyHelper
 	{

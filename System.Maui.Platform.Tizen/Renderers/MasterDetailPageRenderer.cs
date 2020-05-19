@@ -1,7 +1,7 @@
-﻿using System;
-using Xamarin.Forms.Platform.Tizen.Renderers;
+using System;
+using System.Maui.Platform.Tizen.Renderers;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class MasterDetailPageRenderer : VisualElementRenderer<MasterDetailPage>
 	{
@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (_mdpage == null)
 			{
-				_mdpage = new Native.MasterDetailPage(Forms.NativeParent)
+				_mdpage = new Native.MasterDetailPage(System.Maui.Maui.NativeParent)
 				{
 					IsPresented = e.NewElement.IsPresented,
 					Master = _masterContainer = new MasterDetailContainer(Element, true),

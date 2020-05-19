@@ -3,7 +3,7 @@ using EButton = ElmSharp.Button;
 using ELayout = ElmSharp.Layout;
 using EColor = ElmSharp.Color;
 
-namespace Xamarin.Forms.Platform.Tizen.Native.Watch
+namespace System.Maui.Platform.Tizen.Native.Watch
 {
 	public class WatchDialog : Dialog
 	{

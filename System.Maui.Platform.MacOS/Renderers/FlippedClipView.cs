@@ -1,7 +1,7 @@
-﻿using AppKit;
+using AppKit;
 using RectangleF = CoreGraphics.CGRect;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	internal class FlippedClipView : NSClipView
 	{

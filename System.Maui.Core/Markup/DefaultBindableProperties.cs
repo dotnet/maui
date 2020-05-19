@@ -1,83 +1,83 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
-using static Xamarin.Forms.Core.Markup.Markup;
+using static System.Maui.Core.Markup.Markup;
 
-namespace Xamarin.Forms.Markup
+namespace System.Maui.Markup
 {
 	public static class DefaultBindableProperties
 	{
 		static Dictionary<string, BindableProperty> bindableObjectTypeDefaultProperty = new Dictionary<string, BindableProperty>
 		{ // Key: full type name of BindableObject, Value: the default BindableProperty
 		  // Note that we don't specify default properties for unconstructed generic types
-			{ "Xamarin.Forms.ActivityIndicator", ActivityIndicator.IsRunningProperty },
-			{ "Xamarin.Forms.BackButtonBehavior", BackButtonBehavior.CommandProperty },
-			{ "Xamarin.Forms.BoxView", BoxView.ColorProperty },
-			{ "Xamarin.Forms.Button", Button.CommandProperty },
-			{ "Xamarin.Forms.CarouselPage", Page.TitleProperty },
-			{ "Xamarin.Forms.CheckBox", CheckBox.IsCheckedProperty },
-			{ "Xamarin.Forms.ClickGestureRecognizer", ClickGestureRecognizer.CommandProperty },
-			{ "Xamarin.Forms.CollectionView", CollectionView.ItemsSourceProperty },
-			{ "Xamarin.Forms.ContentPage", Page.TitleProperty },
-			{ "Xamarin.Forms.DatePicker", DatePicker.DateProperty },
-			{ "Xamarin.Forms.Editor", Editor.TextProperty },
-			{ "Xamarin.Forms.Entry", Entry.TextProperty },
-			{ "Xamarin.Forms.EntryCell", EntryCell.TextProperty },
-			{ "Xamarin.Forms.FileImageSource", FileImageSource.FileProperty },
-			{ "Xamarin.Forms.FileMediaSource", FileMediaSource.FileProperty },
-			{ "Xamarin.Forms.HtmlWebViewSource", HtmlWebViewSource.HtmlProperty },
-			{ "Xamarin.Forms.Image", Image.SourceProperty },
-			{ "Xamarin.Forms.ImageButton", ImageButton.CommandProperty },
-			{ "Xamarin.Forms.ImageCell", ImageCell.ImageSourceProperty },
-			{ "Xamarin.Forms.ItemsView", ItemsView.ItemsSourceProperty },
-			{ "Xamarin.Forms.Label", Label.TextProperty },
-			{ "Xamarin.Forms.ListView", ListView.ItemsSourceProperty },
-			{ "Xamarin.Forms.MasterDetailPage", Page.TitleProperty },
-			{ "Xamarin.Forms.MediaElement", MediaElement.SourceProperty },
-			{ "Xamarin.Forms.MenuItem", MenuItem.CommandProperty },
-			{ "Xamarin.Forms.MultiPage", Page.TitleProperty },
-			{ "Xamarin.Forms.NavigationPage", Page.TitleProperty },
-			{ "Xamarin.Forms.Page", Page.TitleProperty },
-			{ "Xamarin.Forms.Picker", Picker.SelectedIndexProperty },
-			{ "Xamarin.Forms.ProgressBar", ProgressBar.ProgressProperty },
-			{ "Xamarin.Forms.RadioButton", RadioButton.IsCheckedProperty },
-			{ "Xamarin.Forms.RefreshView", RefreshView.CommandProperty },
-			{ "Xamarin.Forms.SearchBar", SearchBar.SearchCommandProperty },
-			{ "Xamarin.Forms.SearchHandler", SearchHandler.CommandProperty },
-			{ "Xamarin.Forms.Slider", Slider.ValueProperty },
-			{ "Xamarin.Forms.Span", Span.TextProperty },
-			{ "Xamarin.Forms.Stepper", Stepper.ValueProperty },
-			{ "Xamarin.Forms.StreamImageSource", StreamImageSource.StreamProperty },
-			{ "Xamarin.Forms.SwipeGestureRecognizer", SwipeGestureRecognizer.CommandProperty },
-			{ "Xamarin.Forms.SwipeItem", SwipeItem.CommandProperty },
-			{ "Xamarin.Forms.Switch", Switch.IsToggledProperty },
-			{ "Xamarin.Forms.SwitchCell", SwitchCell.OnProperty },
-			{ "Xamarin.Forms.TabbedPage", Page.TitleProperty },
-			{ "Xamarin.Forms.TableRoot", TableRoot.TitleProperty },
-			{ "Xamarin.Forms.TableSection", TableSection.TitleProperty },
-			{ "Xamarin.Forms.TableSectionBase", TableSectionBase.TitleProperty },
-			{ "Xamarin.Forms.TapGestureRecognizer", TapGestureRecognizer.CommandProperty },
-			{ "Xamarin.Forms.TemplatedPage", Page.TitleProperty },
-			{ "Xamarin.Forms.TextCell", TextCell.TextProperty },
-			{ "Xamarin.Forms.TimePicker", TimePicker.TimeProperty },
-			{ "Xamarin.Forms.ToolbarItem", ToolbarItem.CommandProperty },
-			{ "Xamarin.Forms.UriImageSource", UriImageSource.UriProperty },
-			{ "Xamarin.Forms.UriMediaSource", UriMediaSource.UriProperty },
-			{ "Xamarin.Forms.UrlWebViewSource", UrlWebViewSource.UrlProperty },
-			{ "Xamarin.Forms.WebView", WebView.SourceProperty }
+			{ "System.Maui.ActivityIndicator", ActivityIndicator.IsRunningProperty },
+			{ "System.Maui.BackButtonBehavior", BackButtonBehavior.CommandProperty },
+			{ "System.Maui.BoxView", BoxView.ColorProperty },
+			{ "System.Maui.Button", Button.CommandProperty },
+			{ "System.Maui.CarouselPage", Page.TitleProperty },
+			{ "System.Maui.CheckBox", CheckBox.IsCheckedProperty },
+			{ "System.Maui.ClickGestureRecognizer", ClickGestureRecognizer.CommandProperty },
+			{ "System.Maui.CollectionView", CollectionView.ItemsSourceProperty },
+			{ "System.Maui.ContentPage", Page.TitleProperty },
+			{ "System.Maui.DatePicker", DatePicker.DateProperty },
+			{ "System.Maui.Editor", Editor.TextProperty },
+			{ "System.Maui.Entry", Entry.TextProperty },
+			{ "System.Maui.EntryCell", EntryCell.TextProperty },
+			{ "System.Maui.FileImageSource", FileImageSource.FileProperty },
+			{ "System.Maui.FileMediaSource", FileMediaSource.FileProperty },
+			{ "System.Maui.HtmlWebViewSource", HtmlWebViewSource.HtmlProperty },
+			{ "System.Maui.Image", Image.SourceProperty },
+			{ "System.Maui.ImageButton", ImageButton.CommandProperty },
+			{ "System.Maui.ImageCell", ImageCell.ImageSourceProperty },
+			{ "System.Maui.ItemsView", ItemsView.ItemsSourceProperty },
+			{ "System.Maui.Label", Label.TextProperty },
+			{ "System.Maui.ListView", ListView.ItemsSourceProperty },
+			{ "System.Maui.MasterDetailPage", Page.TitleProperty },
+			{ "System.Maui.MediaElement", MediaElement.SourceProperty },
+			{ "System.Maui.MenuItem", MenuItem.CommandProperty },
+			{ "System.Maui.MultiPage", Page.TitleProperty },
+			{ "System.Maui.NavigationPage", Page.TitleProperty },
+			{ "System.Maui.Page", Page.TitleProperty },
+			{ "System.Maui.Picker", Picker.SelectedIndexProperty },
+			{ "System.Maui.ProgressBar", ProgressBar.ProgressProperty },
+			{ "System.Maui.RadioButton", RadioButton.IsCheckedProperty },
+			{ "System.Maui.RefreshView", RefreshView.CommandProperty },
+			{ "System.Maui.SearchBar", SearchBar.SearchCommandProperty },
+			{ "System.Maui.SearchHandler", SearchHandler.CommandProperty },
+			{ "System.Maui.Slider", Slider.ValueProperty },
+			{ "System.Maui.Span", Span.TextProperty },
+			{ "System.Maui.Stepper", Stepper.ValueProperty },
+			{ "System.Maui.StreamImageSource", StreamImageSource.StreamProperty },
+			{ "System.Maui.SwipeGestureRecognizer", SwipeGestureRecognizer.CommandProperty },
+			{ "System.Maui.SwipeItem", SwipeItem.CommandProperty },
+			{ "System.Maui.Switch", Switch.IsToggledProperty },
+			{ "System.Maui.SwitchCell", SwitchCell.OnProperty },
+			{ "System.Maui.TabbedPage", Page.TitleProperty },
+			{ "System.Maui.TableRoot", TableRoot.TitleProperty },
+			{ "System.Maui.TableSection", TableSection.TitleProperty },
+			{ "System.Maui.TableSectionBase", TableSectionBase.TitleProperty },
+			{ "System.Maui.TapGestureRecognizer", TapGestureRecognizer.CommandProperty },
+			{ "System.Maui.TemplatedPage", Page.TitleProperty },
+			{ "System.Maui.TextCell", TextCell.TextProperty },
+			{ "System.Maui.TimePicker", TimePicker.TimeProperty },
+			{ "System.Maui.ToolbarItem", ToolbarItem.CommandProperty },
+			{ "System.Maui.UriImageSource", UriImageSource.UriProperty },
+			{ "System.Maui.UriMediaSource", UriMediaSource.UriProperty },
+			{ "System.Maui.UrlWebViewSource", UrlWebViewSource.UrlProperty },
+			{ "System.Maui.WebView", WebView.SourceProperty }
 		};
 
 		static Dictionary<string, (BindableProperty, BindableProperty)> bindableObjectTypeDefaultCommandAndParameterProperties = new Dictionary<string, (BindableProperty, BindableProperty)>
 		{ // Key: full type name of BindableObject, Value: command property and corresponding commandParameter property 
-			{ "Xamarin.Forms.Button", (Button.CommandProperty, Button.CommandParameterProperty) },
-			{ "Xamarin.Forms.TextCell", (TextCell.CommandProperty, TextCell.CommandParameterProperty) },
-			{ "Xamarin.Forms.ClickGestureRecognizer", (ClickGestureRecognizer.CommandProperty, ClickGestureRecognizer.CommandParameterProperty) },
-			{ "Xamarin.Forms.ImageButton", (ImageButton.CommandProperty, ImageButton.CommandParameterProperty) },
-			{ "Xamarin.Forms.MenuItem", (MenuItem.CommandProperty, MenuItem.CommandParameterProperty) },
-			{ "Xamarin.Forms.RefreshView", (RefreshView.CommandProperty, RefreshView.CommandParameterProperty) },
-			{ "Xamarin.Forms.SwipeGestureRecognizer", (SwipeGestureRecognizer.CommandProperty, SwipeGestureRecognizer.CommandParameterProperty) },
-			{ "Xamarin.Forms.SwipeItemView", (SwipeItemView.CommandProperty, SwipeItemView.CommandParameterProperty) },
-			{ "Xamarin.Forms.TapGestureRecognizer", (TapGestureRecognizer.CommandProperty, TapGestureRecognizer.CommandParameterProperty) }
+			{ "System.Maui.Button", (Button.CommandProperty, Button.CommandParameterProperty) },
+			{ "System.Maui.TextCell", (TextCell.CommandProperty, TextCell.CommandParameterProperty) },
+			{ "System.Maui.ClickGestureRecognizer", (ClickGestureRecognizer.CommandProperty, ClickGestureRecognizer.CommandParameterProperty) },
+			{ "System.Maui.ImageButton", (ImageButton.CommandProperty, ImageButton.CommandParameterProperty) },
+			{ "System.Maui.MenuItem", (MenuItem.CommandProperty, MenuItem.CommandParameterProperty) },
+			{ "System.Maui.RefreshView", (RefreshView.CommandProperty, RefreshView.CommandParameterProperty) },
+			{ "System.Maui.SwipeGestureRecognizer", (SwipeGestureRecognizer.CommandProperty, SwipeGestureRecognizer.CommandParameterProperty) },
+			{ "System.Maui.SwipeItemView", (SwipeItemView.CommandProperty, SwipeItemView.CommandParameterProperty) },
+			{ "System.Maui.TapGestureRecognizer", (TapGestureRecognizer.CommandProperty, TapGestureRecognizer.CommandParameterProperty) }
 		};
 
 		public static void Register(params BindableProperty[] properties)
@@ -117,7 +117,7 @@ namespace Xamarin.Forms.Markup
 				string bindableObjectTypeName = bindableObjectType.FullName;
 				if (bindableObjectTypeDefaultProperty.TryGetValue(bindableObjectTypeName, out defaultProperty))
 					break;
-				if (bindableObjectTypeName.StartsWith("Xamarin.Forms.", StringComparison.Ordinal))
+				if (bindableObjectTypeName.StartsWith("System.Maui.", StringComparison.Ordinal))
 					break;
 
 				bindableObjectType = bindableObjectType.GetTypeInfo().BaseType;
@@ -149,7 +149,7 @@ namespace Xamarin.Forms.Markup
 				string bindableObjectTypeName = bindableObjectType.FullName;
 				if (bindableObjectTypeDefaultCommandAndParameterProperties.TryGetValue(bindableObjectTypeName, out commandAndParameterProperties))
 					break;
-				if (bindableObjectTypeName.StartsWith("Xamarin.Forms.", StringComparison.Ordinal))
+				if (bindableObjectTypeName.StartsWith("System.Maui.", StringComparison.Ordinal))
 					break;
 
 				bindableObjectType = bindableObjectType.GetTypeInfo().BaseType;

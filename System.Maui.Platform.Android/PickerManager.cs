@@ -1,4 +1,4 @@
-﻿using Android.Views;
+using Android.Views;
 using Android.Widget;
 using Android.Text;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using AView = global::Android.Views.View;
 using Java.Lang;
 using Android.Text.Style;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal static class PickerManager
 	{

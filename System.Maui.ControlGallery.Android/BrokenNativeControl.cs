@@ -6,7 +6,7 @@ using Android.Util;
 using Android.Views;
 using Android.Widget;
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace System.Maui.ControlGallery.Android
 {
 	/// <summary>
 	///     This is a custom Android control which deliberately does some incorrect measuring

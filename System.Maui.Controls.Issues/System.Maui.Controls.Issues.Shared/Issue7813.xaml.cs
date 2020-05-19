@@ -1,17 +1,17 @@
-﻿using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using System.Maui.Internals;
+using System.Maui.Xaml;
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
-using Xamarin.Forms.CustomAttributes;
+using System.Maui.CustomAttributes;
 
 #if UITEST
 using NUnit.Framework;
 using Xamarin.UITest;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.CarouselView)]

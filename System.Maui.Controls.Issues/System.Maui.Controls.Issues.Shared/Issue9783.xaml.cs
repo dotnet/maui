@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.CustomAttributes;
+using System.Maui.CustomAttributes;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Issue(IssueTracker.Github, 9783, "DatePicker begin to cause Exception in version 4.5.0-282-pre4 and above in some situations",
 		PlatformAffected.UWP)]

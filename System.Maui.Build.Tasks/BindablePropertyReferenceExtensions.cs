@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 
 using Mono.Cecil;
 
-using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace System.Maui.Build.Tasks
 {
 	static class BindablePropertyReferenceExtensions
 	{
@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Build.Tasks
 												md.IsStatic &&
 												md.IsPublic &&
 												md.Parameters.Count == 1 &&
-												md.Parameters[0].ParameterType.InheritsFromOrImplements(module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms", "BindableObject"))), module).SingleOrDefault()?.Item1;
+												md.Parameters[0].ParameterType.InheritsFromOrImplements(module.ImportReference(("System.Maui.Core", "System.Maui", "BindableObject"))), module).SingleOrDefault()?.Item1;
 			if (getter == null)
 				throw new XamlParseException($"Missing a public static Get{bpName} or a public instance property getter for the attached property \"{bpRef.DeclaringType}.{bpRef.Name}\"", iXmlLineInfo);
 			return getter.ResolveGenericReturnType(declaringTypeRef, module);
@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Build.Tasks
 												md.IsStatic &&
 												md.IsPublic &&
 												md.Parameters.Count == 1 &&
-												md.Parameters[0].ParameterType.InheritsFromOrImplements(module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms", "BindableObject"))), module).SingleOrDefault()?.Item1;
+												md.Parameters[0].ParameterType.InheritsFromOrImplements(module.ImportReference(("System.Maui.Core", "System.Maui", "BindableObject"))), module).SingleOrDefault()?.Item1;
 
 			var attributes = new List<CustomAttribute>();
 			if (property != null && property.HasCustomAttributes)

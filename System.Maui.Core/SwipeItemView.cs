@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Windows.Input;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public class SwipeItemView : ContentView, ISwipeItem
 	{

@@ -1,7 +1,7 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public interface IShellItemController : IElementController
 	{

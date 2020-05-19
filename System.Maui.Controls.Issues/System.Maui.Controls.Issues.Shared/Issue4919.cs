@@ -1,7 +1,7 @@
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 4919, "Webview Navigation cancel not working", PlatformAffected.Android)]
@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Controls.Issues
 					new Button
 					{
 						Text = "Go to github",
-						Command = new Command(() => webView.Source = "https://github.com/xamarin/Xamarin.Forms")
+						Command = new Command(() => webView.Source = "https://github.com/xamarin/System.Maui")
 					},
 					new Button
 					{

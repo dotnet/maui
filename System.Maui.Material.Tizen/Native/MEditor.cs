@@ -1,9 +1,9 @@
 using System;
 using ElmSharp;
 using Tizen.NET.MaterialComponents;
-using Xamarin.Forms.Platform.Tizen.Native;
+using System.Maui.Platform.Tizen.Native;
 
-namespace Xamarin.Forms.Material.Tizen.Native
+namespace System.Maui.Material.Tizen.Native
 {
 	public class MEditor : MaterialEntry
 	{

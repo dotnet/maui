@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using NUnit.Framework;
-using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class TemplatedViewUnitTests : BaseTestFixture
@@ -41,7 +41,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var xaml = @"<ContentView
 					xmlns=""http://xamarin.com/schemas/2014/forms""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-					x:Class=""Xamarin.Forms.Core.UnitTests.MyTestContentView"">
+					x:Class=""System.Maui.Core.UnitTests.MyTestContentView"">
                        <ContentView.ControlTemplate>
                          <ControlTemplate>
                            <Label x:Name=""label0""/>
@@ -62,7 +62,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var xaml = @"<ContentPage
 					xmlns=""http://xamarin.com/schemas/2014/forms""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-					x:Class=""Xamarin.Forms.Core.UnitTests.MyTestContentPage"">
+					x:Class=""System.Maui.Core.UnitTests.MyTestContentPage"">
                        <ContentPage.ControlTemplate>
                          <ControlTemplate>
                            <Label x:Name=""label0""/>
@@ -83,7 +83,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var xaml = @"<ContentView
 					xmlns=""http://xamarin.com/schemas/2014/forms""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-					x:Class=""Xamarin.Forms.Core.UnitTests.MyTestContentView"">
+					x:Class=""System.Maui.Core.UnitTests.MyTestContentView"">
                        <ContentView.ControlTemplate>
                          <ControlTemplate>
                            <Label x:Name=""label0""/>
@@ -102,7 +102,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var xaml = @"<ContentPage
 					xmlns=""http://xamarin.com/schemas/2014/forms""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-					x:Class=""Xamarin.Forms.Core.UnitTests.MyTestContentPage"">
+					x:Class=""System.Maui.Core.UnitTests.MyTestContentPage"">
                        <ContentPage.ControlTemplate>
                          <ControlTemplate>
                            <Label x:Name=""label0""/>

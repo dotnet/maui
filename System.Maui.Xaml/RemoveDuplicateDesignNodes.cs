@@ -1,6 +1,6 @@
-﻿using System.Linq;
+using System.Linq;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	class RemoveDuplicateDesignNodes : IXamlNodeVisitor
 	{

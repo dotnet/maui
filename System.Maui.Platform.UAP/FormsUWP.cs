@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
-	public static partial class Forms
+	public static partial class Maui
 	{
 		static IReadOnlyList<string> s_flags;
 		public static IReadOnlyList<string> Flags => s_flags ?? (s_flags = new string [0]);

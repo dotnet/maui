@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ContentView xmlns="http://xamarin.com/schemas/2014/forms" 
 				xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-				x:Class="Xamarin.Forms.Controls.XamStore.FlyoutHeader"
+				x:Class="System.Maui.Controls.XamStore.FlyoutHeader"
 				HeightRequest="143">
 	<ContentView.Content>
 		<Grid BackgroundColor="Black">

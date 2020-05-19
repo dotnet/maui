@@ -1,6 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
-namespace Xamarin.Forms.Core.Markup
+namespace System.Maui.Core.Markup
 {
 	internal static class Markup
 	{

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,14 +14,14 @@ using Android.Support.V7.Widget;
 using AButton = Android.Support.V7.Widget.AppCompatButton;
 #endif
 using Android.Views;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
 using APointF = Android.Graphics.PointF;
 using ATextAlignment = Android.Views.TextAlignment;
 using AView = Android.Views.View;
-using Specifics = Xamarin.Forms.PlatformConfiguration.AndroidSpecific.SwipeView;
+using Specifics = System.Maui.PlatformConfiguration.AndroidSpecific.SwipeView;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class SwipeViewRenderer : ViewRenderer<SwipeView, AView>
 	{
@@ -177,9 +177,9 @@ namespace Xamarin.Forms.Platform.Android
 					return;
 				}
 
-				_scrollParent = Element.FindParentOfType<Xamarin.Forms.CollectionView>();
+				_scrollParent = Element.FindParentOfType<System.Maui.CollectionView>();
 
-				if (_scrollParent is Xamarin.Forms.CollectionView collectionView)
+				if (_scrollParent is System.Maui.CollectionView collectionView)
 				{
 					collectionView.Scrolled += OnParentScrolled;
 				}
@@ -207,7 +207,7 @@ namespace Xamarin.Forms.Platform.Android
 					if (_scrollParent is ListView listView)
 						listView.Scrolled -= OnParentScrolled;
 
-					if (_scrollParent is Xamarin.Forms.CollectionView collectionView)
+					if (_scrollParent is System.Maui.CollectionView collectionView)
 						collectionView.Scrolled -= OnParentScrolled;
 				}
 

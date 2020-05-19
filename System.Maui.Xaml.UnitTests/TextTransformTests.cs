@@ -1,8 +1,8 @@
 using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
-using Xamarin.Forms.Internals;
+using System.Maui.Core.UnitTests;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	[TestFixture]
 	public class TextTransformTests : BaseTestFixture

@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Windows.Input;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	[Preserve(AllMembers = true)]
 	internal class RefreshViewCoreGalleryPage : CoreGalleryPage<RefreshView>

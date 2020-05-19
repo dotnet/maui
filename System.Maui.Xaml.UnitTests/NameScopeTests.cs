@@ -1,8 +1,8 @@
 using NUnit.Framework;
 
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 
 	[TestFixture]
@@ -18,8 +18,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 			var view = new CustomView ().LoadFromXaml (xaml);
 
-			Assert.IsNotNull (Forms.Internals.NameScope.GetNameScope (view));
-			Assert.That (Forms.Internals.NameScope.GetNameScope (view), Is.TypeOf<Forms.Internals.NameScope> ());
+			Assert.IsNotNull (System.Maui.Internals.NameScope.GetNameScope (view));
+			Assert.That (System.Maui.Internals.NameScope.GetNameScope (view), Is.TypeOf<System.Maui.Internals.NameScope> ());
 		}
 
 		[Test]
@@ -35,12 +35,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 			var layout = new StackLayout ().LoadFromXaml (xaml);
 
-			Assert.IsNotNull (Forms.Internals.NameScope.GetNameScope (layout));
-			Assert.That (Forms.Internals.NameScope.GetNameScope (layout), Is.TypeOf<Forms.Internals.NameScope> ());
+			Assert.IsNotNull (System.Maui.Internals.NameScope.GetNameScope (layout));
+			Assert.That (System.Maui.Internals.NameScope.GetNameScope (layout), Is.TypeOf<System.Maui.Internals.NameScope> ());
 
 			foreach (var child in layout.Children) {
-				Assert.IsNull (Forms.Internals.NameScope.GetNameScope (child));
-				Assert.AreSame (Forms.Internals.NameScope.GetNameScope (layout), child.GetNameScope());
+				Assert.IsNull (System.Maui.Internals.NameScope.GetNameScope (child));
+				Assert.AreSame (System.Maui.Internals.NameScope.GetNameScope (layout), child.GetNameScope());
 			}
 		}
 
@@ -62,8 +62,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var listview = new ListView ();
 			listview.LoadFromXaml (xaml);	
 
-			Assert.AreSame (listview, ((Forms.Internals.INameScope)listview).FindByName ("listview"));
-			Assert.IsNull (((Forms.Internals.INameScope)listview).FindByName ("textcell"));
+			Assert.AreSame (listview, ((System.Maui.Internals.INameScope)listview).FindByName ("listview"));
+			Assert.IsNull (((System.Maui.Internals.INameScope)listview).FindByName ("textcell"));
 		}
 
 		[Test]
@@ -83,26 +83,26 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 			var listview = new ListView ();
 			listview.LoadFromXaml (xaml);	
-			Assert.IsNotNull (Forms.Internals.NameScope.GetNameScope (listview));
-			Assert.That (Forms.Internals.NameScope.GetNameScope (listview), Is.TypeOf<Forms.Internals.NameScope> ());
+			Assert.IsNotNull (System.Maui.Internals.NameScope.GetNameScope (listview));
+			Assert.That (System.Maui.Internals.NameScope.GetNameScope (listview), Is.TypeOf<System.Maui.Internals.NameScope> ());
 
 			var cell0 = listview.ItemTemplate.CreateContent () as Element;
 			var cell1 = listview.ItemTemplate.CreateContent () as Element;
 
-			Assert.IsNotNull (Forms.Internals.NameScope.GetNameScope (cell0));
-			Assert.That (Forms.Internals.NameScope.GetNameScope (cell0), Is.TypeOf<Forms.Internals.NameScope> ());
-			Assert.IsNotNull (Forms.Internals.NameScope.GetNameScope (cell1));
-			Assert.That (Forms.Internals.NameScope.GetNameScope (cell1), Is.TypeOf<Forms.Internals.NameScope> ());
+			Assert.IsNotNull (System.Maui.Internals.NameScope.GetNameScope (cell0));
+			Assert.That (System.Maui.Internals.NameScope.GetNameScope (cell0), Is.TypeOf<System.Maui.Internals.NameScope> ());
+			Assert.IsNotNull (System.Maui.Internals.NameScope.GetNameScope (cell1));
+			Assert.That (System.Maui.Internals.NameScope.GetNameScope (cell1), Is.TypeOf<System.Maui.Internals.NameScope> ());
 
-			Assert.AreNotSame (Forms.Internals.NameScope.GetNameScope (listview), Forms.Internals.NameScope.GetNameScope (cell0));
-			Assert.AreNotSame (Forms.Internals.NameScope.GetNameScope (listview), Forms.Internals.NameScope.GetNameScope (cell1));
-			Assert.AreNotSame (Forms.Internals.NameScope.GetNameScope (cell0), Forms.Internals.NameScope.GetNameScope (cell1));
+			Assert.AreNotSame (System.Maui.Internals.NameScope.GetNameScope (listview), System.Maui.Internals.NameScope.GetNameScope (cell0));
+			Assert.AreNotSame (System.Maui.Internals.NameScope.GetNameScope (listview), System.Maui.Internals.NameScope.GetNameScope (cell1));
+			Assert.AreNotSame (System.Maui.Internals.NameScope.GetNameScope (cell0), System.Maui.Internals.NameScope.GetNameScope (cell1));
 
-			Assert.IsNull (((Forms.Internals.INameScope)listview).FindByName ("textcell"));
-			Assert.NotNull (((Forms.Internals.INameScope)cell0).FindByName ("textcell"));
-			Assert.NotNull (((Forms.Internals.INameScope)cell1).FindByName ("textcell"));
+			Assert.IsNull (((System.Maui.Internals.INameScope)listview).FindByName ("textcell"));
+			Assert.NotNull (((System.Maui.Internals.INameScope)cell0).FindByName ("textcell"));
+			Assert.NotNull (((System.Maui.Internals.INameScope)cell1).FindByName ("textcell"));
 
-			Assert.AreNotSame (((Forms.Internals.INameScope)cell0).FindByName ("textcell"), ((Forms.Internals.INameScope)cell1).FindByName ("textcell"));
+			Assert.AreNotSame (((System.Maui.Internals.INameScope)cell0).FindByName ("textcell"), ((System.Maui.Internals.INameScope)cell1).FindByName ("textcell"));
 
 		}
 	}

@@ -22,7 +22,7 @@
 
   <PropertyGroup Condition="'$(CI)' == 'true'">
     <_XamarinFormsVersion>$(BUILD_BUILDNUMBER.Split(`+`)[0])</_XamarinFormsVersion>
-    <XamarinFormsVersion Condition="Exists('$(BUILD_SOURCESDIRECTORY)/Nuget/Xamarin.Forms.$(_XamarinFormsVersion).nupkg')" >$(_XamarinFormsVersion)</XamarinFormsVersion>
+    <XamarinFormsVersion Condition="Exists('$(BUILD_SOURCESDIRECTORY)/Nuget/System.Maui.$(_XamarinFormsVersion).nupkg')" >$(_XamarinFormsVersion)</XamarinFormsVersion>
   </PropertyGroup>
 
   <!-- Build from source or nugets-->

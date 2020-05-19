@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Reflection;
-using Xamarin.Forms.CustomAttributes;
+using System.Maui.CustomAttributes;
 using System.IO;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 using NUnit.Framework;
 using Xamarin.UITest;
 
@@ -13,13 +13,13 @@ using Xamarin.UITest;
 [assembly: Category("Issues")]
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	internal static class AppPaths
 	{
-		public static string ApkPath = "../../../Xamarin.Forms.ControlGallery.Android/bin/Debug/AndroidControlGallery.AndroidControlGallery-Signed.apk";
+		public static string ApkPath = "../../../System.Maui.ControlGallery.Android/bin/Debug/AndroidControlGallery.AndroidControlGallery-Signed.apk";
 
-		public static string MacOSPath = "../../../Xamarin.Forms.ControlGallery.MacOS/bin/Debug/Xamarin.Forms.ControlGallery.MacOS.app";
+		public static string MacOSPath = "../../../System.Maui.ControlGallery.MacOS/bin/Debug/System.Maui.ControlGallery.MacOS.app";
 
 		// Have to continue using the old BundleId for now; Test Cloud doesn't like
 		// when you change the BundleId
@@ -62,7 +62,7 @@ namespace Xamarin.Forms.Controls
 		static IApp InitializeAndroidApp()
 		{
 			var fullApkPath = Path.Combine(TestContext.CurrentContext.TestDirectory, AppPaths.ApkPath);
-			var app = ConfigureApp.Android.ApkFile(fullApkPath).Debug().StartApp(UITest.Configuration.AppDataMode.DoNotClear);
+			var app = ConfigureApp.Android.ApkFile(fullApkPath).Debug().StartApp(Xamarin.UITest.Configuration.AppDataMode.DoNotClear);
 
 			if (bool.Parse((string)app.Invoke("IsPreAppCompat")))
 			{
@@ -91,7 +91,7 @@ namespace Xamarin.Forms.Controls
 			// Running on the simulator
 			// var app = ConfigureApp.iOS
 			//				  .PreferIdeSettings()
-			//		  		  .AppBundle("../../../Xamarin.Forms.ControlGallery.iOS/bin/iPhoneSimulator/Debug/XamarinFormsControlGalleryiOS.app")
+			//		  		  .AppBundle("../../../System.Maui.ControlGallery.iOS/bin/iPhoneSimulator/Debug/XamarinFormsControlGalleryiOS.app")
 			//				  .Debug()
 			//				  .StartApp();
 
@@ -107,11 +107,11 @@ namespace Xamarin.Forms.Controls
 			// Running on a device
 			var configurator = new Xamarin.UITest.Desktop.CocoaAppConfigurator();
 			var app = configurator
-							//.AppBundle("/Users/rmarinho/Xamarin/Xamarin.Forms/Xamarin.Forms.ControlGallery.MacOS/bin/Debug/Xamarin.Forms.ControlGallery.MacOS.app")
+							//.AppBundle("/Users/rmarinho/Xamarin/System.Maui/System.Maui.ControlGallery.MacOS/bin/Debug/System.Maui.ControlGallery.MacOS.app")
 							.AppBundle(AppPaths.MacOSPath)
 							.BundleId(AppPaths.MacOSBundleId)
 							.StartApp();
-			return new Xamarin.Forms.Core.macOS.UITests.MacOSApp(app);
+			return new System.Maui.Core.macOS.UITests.MacOSApp(app);
 		}
 #endif
 
@@ -877,12 +877,12 @@ namespace Xamarin.Forms.Controls
 }
 
 #if UITEST
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	using System;
 	using NUnit.Framework;
 
-// Run setup once for all tests in the Xamarin.Forms.Controls.Issues namespace
+// Run setup once for all tests in the System.Maui.Controls.Issues namespace
 	// (instead of once for each test)
 	[SetUpFixture]
 	public class IssuesSetup

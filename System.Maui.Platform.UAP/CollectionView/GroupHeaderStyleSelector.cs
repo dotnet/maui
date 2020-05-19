@@ -1,8 +1,8 @@
-﻿using Windows.UI.Xaml.Controls;
-using UWPApp = Windows.UI.Xaml.Application;
-using UWPDataTemplate = Windows.UI.Xaml.DataTemplate;
+using global::Windows.UI.Xaml.Controls;
+using UWPApp = global::Windows.UI.Xaml.Application;
+using UWPDataTemplate = global::Windows.UI.Xaml.DataTemplate;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	internal class GroupHeaderStyleSelector : GroupStyleSelector
 	{

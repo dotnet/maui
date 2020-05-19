@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public abstract class WebViewSource : BindableObject
 	{

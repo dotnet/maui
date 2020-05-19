@@ -7,13 +7,13 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using System.Maui.Internals;
+using System.Maui.Xaml;
 
 using static Mono.Cecil.Cil.Instruction;
 using static Mono.Cecil.Cil.OpCodes;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace System.Maui.Build.Tasks
 {
 	class SetPropertiesVisitor : IXamlNodeVisitor
 	{
@@ -47,8 +47,8 @@ namespace Xamarin.Forms.Build.Tasks
 		public bool IsResourceDictionary(ElementNode node)
 		{
 			var parentVar = Context.Variables[(IElementNode)node];
-			return parentVar.VariableType.FullName == "Xamarin.Forms.ResourceDictionary"
-				|| parentVar.VariableType.Resolve().BaseType?.FullName == "Xamarin.Forms.ResourceDictionary";
+			return parentVar.VariableType.FullName == "System.Maui.ResourceDictionary"
+				|| parentVar.VariableType.Resolve().BaseType?.FullName == "System.Maui.ResourceDictionary";
 		}
 
 		ModuleDefinition Module { get; }
@@ -138,7 +138,7 @@ namespace Xamarin.Forms.Build.Tasks
 				string contentProperty;
 
 				if (CanAddToResourceDictionary(parentVar, parentVar.VariableType, node, node, Context)) {
-					Context.IL.Append(parentVar.LoadAs(Module.GetTypeDefinition(("Xamarin.Forms.Core", "Xamarin.Forms", "ResourceDictionary")), Module));
+					Context.IL.Append(parentVar.LoadAs(Module.GetTypeDefinition(("System.Maui.Core", "System.Maui", "ResourceDictionary")), Module));
 					Context.IL.Append(AddToResourceDictionary(node, node, Context));
 				}
 				// Collection element, implicit content, or implicit collection element.
@@ -169,9 +169,9 @@ namespace Xamarin.Forms.Build.Tasks
 			else if (IsCollectionItem(node, parentNode) && parentNode is ListNode)
 			{
 //				IL_000d:  ldloc.2 
-//				IL_000e:  callvirt instance class [mscorlib]System.Collections.Generic.IList`1<!0> class [Xamarin.Forms.Core]Xamarin.Forms.Layout`1<class [Xamarin.Forms.Core]Xamarin.Forms.View>::get_Children()
+//				IL_000e:  callvirt instance class [mscorlib]System.Collections.Generic.IList`1<!0> class [System.Maui.Core]System.Maui.Layout`1<class [System.Maui.Core]System.Maui.View>::get_Children()
 //				IL_0013:  ldloc.0 
-//				IL_0014:  callvirt instance void class [mscorlib]System.Collections.Generic.ICollection`1<class [Xamarin.Forms.Core]Xamarin.Forms.View>::Add(!0)
+//				IL_0014:  callvirt instance void class [mscorlib]System.Collections.Generic.ICollection`1<class [System.Maui.Core]System.Maui.View>::Add(!0)
 
 				var parentList = (ListNode)parentNode;
 				var parent = Context.Variables[((IElementNode)parentNode.Parent)];
@@ -252,8 +252,8 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			GenericInstanceType markupExtension;
 			IList<TypeReference> genericArguments;
-			if (vardefref.VariableDefinition.VariableType.FullName == "Xamarin.Forms.Xaml.ArrayExtension" &&
-			    vardefref.VariableDefinition.VariableType.ImplementsGenericInterface("Xamarin.Forms.Xaml.IMarkupExtension`1",
+			if (vardefref.VariableDefinition.VariableType.FullName == "System.Maui.Xaml.ArrayExtension" &&
+			    vardefref.VariableDefinition.VariableType.ImplementsGenericInterface("System.Maui.Xaml.IMarkupExtension`1",
 				    out markupExtension, out genericArguments))
 			{
 				var markExt = markupExtension.ResolveCached();
@@ -278,11 +278,11 @@ namespace Xamarin.Forms.Build.Tasks
 					yield return Instruction.Create(OpCodes.Castclass, module.ImportReference(arrayTypeRef.MakeArrayType()));
 				yield return Instruction.Create(OpCodes.Stloc, vardefref.VariableDefinition);
 			}
-			else if (vardefref.VariableDefinition.VariableType.ImplementsGenericInterface("Xamarin.Forms.Xaml.IMarkupExtension`1",
+			else if (vardefref.VariableDefinition.VariableType.ImplementsGenericInterface("System.Maui.Xaml.IMarkupExtension`1",
 				out markupExtension, out genericArguments))
 			{
-				var acceptEmptyServiceProvider = vardefref.VariableDefinition.VariableType.GetCustomAttribute(module, ("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "AcceptEmptyServiceProviderAttribute")) != null;
-				if (   vardefref.VariableDefinition.VariableType.FullName == "Xamarin.Forms.Xaml.BindingExtension"
+				var acceptEmptyServiceProvider = vardefref.VariableDefinition.VariableType.GetCustomAttribute(module, ("System.Maui.Core", "System.Maui.Xaml", "AcceptEmptyServiceProviderAttribute")) != null;
+				if (   vardefref.VariableDefinition.VariableType.FullName == "System.Maui.Xaml.BindingExtension"
 				    && (node.Properties == null || !node.Properties.ContainsKey(new XmlName("", "Source"))) //do not compile bindings if Source is set
 				    && bpRef != null //do not compile bindings if we're not gonna SetBinding
 					)
@@ -306,10 +306,10 @@ namespace Xamarin.Forms.Build.Tasks
 				yield return Instruction.Create(OpCodes.Callvirt, provideValue);
 				yield return Instruction.Create(OpCodes.Stloc, vardefref.VariableDefinition);
 			}
-			else if (context.Variables[node].VariableType.ImplementsInterface(module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "IMarkupExtension"))))
+			else if (context.Variables[node].VariableType.ImplementsInterface(module.ImportReference(("System.Maui.Core", "System.Maui.Xaml", "IMarkupExtension"))))
 			{
-				var acceptEmptyServiceProvider = context.Variables[node].VariableType.GetCustomAttribute(module, ("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "AcceptEmptyServiceProviderAttribute")) != null;
-				var markupExtensionType = ("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "IMarkupExtension");
+				var acceptEmptyServiceProvider = context.Variables[node].VariableType.GetCustomAttribute(module, ("System.Maui.Core", "System.Maui.Xaml", "AcceptEmptyServiceProviderAttribute")) != null;
+				var markupExtensionType = ("System.Maui.Core", "System.Maui.Xaml", "IMarkupExtension");
 				vardefref.VariableDefinition = new VariableDefinition(module.TypeSystem.Object);
 				foreach (var instruction in context.Variables[node].LoadAs(module.GetTypeDefinition(markupExtensionType), module))
 					yield return instruction;
@@ -323,12 +323,12 @@ namespace Xamarin.Forms.Build.Tasks
 																		   parameterTypes: new[] { ("System.ComponentModel", "System", "IServiceProvider") }));
 				yield return Create(Stloc, vardefref.VariableDefinition);
 			}
-			else if (context.Variables[node].VariableType.ImplementsInterface(module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "IValueProvider"))))
+			else if (context.Variables[node].VariableType.ImplementsInterface(module.ImportReference(("System.Maui.Core", "System.Maui.Xaml", "IValueProvider"))))
 			{
-				var acceptEmptyServiceProvider = context.Variables[node].VariableType.GetCustomAttribute(module, ("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "AcceptEmptyServiceProviderAttribute")) != null;
+				var acceptEmptyServiceProvider = context.Variables[node].VariableType.GetCustomAttribute(module, ("System.Maui.Core", "System.Maui.Xaml", "AcceptEmptyServiceProviderAttribute")) != null;
 				var valueProviderType = context.Variables[node].VariableType;
 				//If the IValueProvider has a ProvideCompiledAttribute that can be resolved, shortcut this
-				var compiledValueProviderName = valueProviderType?.GetCustomAttribute(module, ("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "ProvideCompiledAttribute"))?.ConstructorArguments?[0].Value as string;
+				var compiledValueProviderName = valueProviderType?.GetCustomAttribute(module, ("System.Maui.Core", "System.Maui.Xaml", "ProvideCompiledAttribute"))?.ConstructorArguments?[0].Value as string;
 				Type compiledValueProviderType;
 				if (compiledValueProviderName != null && (compiledValueProviderType = Type.GetType(compiledValueProviderName)) != null) {
 					var compiledValueProvider = Activator.CreateInstance(compiledValueProviderType);
@@ -343,7 +343,7 @@ namespace Xamarin.Forms.Build.Tasks
 					yield break;
 				}
 
-				var valueProviderInterface = ("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "IValueProvider");
+				var valueProviderInterface = ("System.Maui.Core", "System.Maui.Xaml", "IValueProvider");
 				vardefref.VariableDefinition = new VariableDefinition(module.TypeSystem.Object);
 				foreach (var instruction in context.Variables[node].LoadAs(module.GetTypeDefinition(valueProviderInterface), module))
 					yield return instruction;
@@ -385,16 +385,16 @@ namespace Xamarin.Forms.Build.Tasks
 
 			if (   dataTypeNode is ElementNode enode
 				&& enode.XmlType.NamespaceUri == XamlParser.X2009Uri
-				&& enode.XmlType.Name == nameof(Xamarin.Forms.Xaml.NullExtension))
+				&& enode.XmlType.Name == nameof(System.Maui.Xaml.NullExtension))
 				yield break;
 
 			string dataType = null;
 
 			if (   dataTypeNode is ElementNode elementNode
 				&& elementNode.XmlType.NamespaceUri == XamlParser.X2009Uri
-				&& elementNode.XmlType.Name == nameof(Xamarin.Forms.Xaml.TypeExtension)
-				&& elementNode.Properties.ContainsKey(new XmlName("", nameof(Xamarin.Forms.Xaml.TypeExtension.TypeName)))
-				&& (elementNode.Properties[new XmlName("", nameof(Xamarin.Forms.Xaml.TypeExtension.TypeName))] as ValueNode)?.Value is string stringtype)
+				&& elementNode.XmlType.Name == nameof(System.Maui.Xaml.TypeExtension)
+				&& elementNode.Properties.ContainsKey(new XmlName("", nameof(System.Maui.Xaml.TypeExtension.TypeName)))
+				&& (elementNode.Properties[new XmlName("", nameof(System.Maui.Xaml.TypeExtension.TypeName))] as ValueNode)?.Value is string stringtype)
 				dataType = stringtype;
 
 			if ((dataTypeNode as ValueNode)?.Value is string sType)
@@ -426,7 +426,7 @@ namespace Xamarin.Forms.Build.Tasks
 			var actionRef = module.ImportReference(module.ImportReference(("mscorlib", "System", "Action`2")).MakeGenericInstanceType(new [] { tSourceRef, tPropertyRef }));
 			var funcObjRef = module.ImportReference(module.ImportReference(("mscorlib", "System", "Func`2")).MakeGenericInstanceType(new [] { tSourceRef, module.TypeSystem.Object }));
 			var tupleRef = module.ImportReference(module.ImportReference(("mscorlib", "System", "Tuple`2")).MakeGenericInstanceType(new [] { funcObjRef, module.TypeSystem.String}));
-			var typedBindingRef = module.ImportReference(module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "TypedBinding`2")).MakeGenericInstanceType(new [] { tSourceRef, tPropertyRef}));
+			var typedBindingRef = module.ImportReference(module.ImportReference(("System.Maui.Core", "System.Maui.Internals", "TypedBinding`2")).MakeGenericInstanceType(new [] { tSourceRef, tPropertyRef}));
 
 			//FIXME: make sure the non-deprecated one is used
 			var ctorInfo =  module.ImportReference(typedBindingRef.ResolveCached().Methods.FirstOrDefault(md => 
@@ -436,7 +436,7 @@ namespace Xamarin.Forms.Build.Tasks
 					&& !md.HasCustomAttributes (module.ImportReference(("mscorlib", "System", "ObsoleteAttribute")))));
 			var ctorinforef = ctorInfo.MakeGeneric(typedBindingRef, funcRef, actionRef, tupleRef);
 
-			var bindingExtensionType = ("Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml", "BindingExtension");
+			var bindingExtensionType = ("System.Maui.Xaml", "System.Maui.Xaml", "BindingExtension");
 
 			foreach (var instruction in bindingExt.LoadAs(module.GetTypeDefinition(bindingExtensionType), module))
 				yield return instruction;
@@ -943,7 +943,7 @@ namespace Xamarin.Forms.Build.Tasks
 			yield return Create(Ldc_I4, lineInfo.LineNumber);				//lineNumber
 			yield return Create(Ldc_I4, lineInfo.LinePosition);             //linePosition
 
-			yield return Create(Call, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml.Diagnostics", "VisualDiagnostics"),
+			yield return Create(Call, module.ImportMethodReference(("System.Maui.Core", "System.Maui.Xaml.Diagnostics", "VisualDiagnostics"),
 																   methodName: "RegisterSourceInfo",
 																   parameterTypes: new[] {
 																	   ("mscorlib", "System", "Object"),
@@ -1007,13 +1007,13 @@ namespace Xamarin.Forms.Build.Tasks
 //			IL_0007:  ldloc.0 
 //			IL_0008:  ldarg.0 
 //
-//			IL_0009:  ldftn instance void class Xamarin.Forms.Xaml.XamlcTests.MyPage::OnButtonClicked(object, class [mscorlib]System.EventArgs)
+//			IL_0009:  ldftn instance void class System.Maui.Xaml.XamlcTests.MyPage::OnButtonClicked(object, class [mscorlib]System.EventArgs)
 //OR, if the handler is virtual
 //			IL_000x:  ldarg.0 
-//			IL_0009:  ldvirtftn instance void class Xamarin.Forms.Xaml.XamlcTests.MyPage::OnButtonClicked(object, class [mscorlib]System.EventArgs)
+//			IL_0009:  ldvirtftn instance void class System.Maui.Xaml.XamlcTests.MyPage::OnButtonClicked(object, class [mscorlib]System.EventArgs)
 //
 //			IL_000f:  newobj instance void class [mscorlib]System.EventHandler::'.ctor'(object, native int)
-//			IL_0014:  callvirt instance void class [Xamarin.Forms.Core]Xamarin.Forms.Button::add_Clicked(class [mscorlib]System.EventHandler)
+//			IL_0014:  callvirt instance void class [System.Maui.Core]System.Maui.Button::add_Clicked(class [mscorlib]System.EventHandler)
 
 			var value = ((ValueNode)valueNode).Value;
 
@@ -1090,8 +1090,8 @@ namespace Xamarin.Forms.Build.Tasks
 		static IEnumerable<Instruction> SetDynamicResource(VariableDefinition parent, FieldReference bpRef, IElementNode elementNode, IXmlLineInfo iXmlLineInfo, ILContext context)
 		{
 			var module = context.Body.Method.Module;
-			var dynamicResourceType = ("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "DynamicResource");
-			var dynamicResourceHandlerType = ("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "IDynamicResourceHandler");
+			var dynamicResourceType = ("System.Maui.Core", "System.Maui.Internals", "DynamicResource");
+			var dynamicResourceHandlerType = ("System.Maui.Core", "System.Maui.Internals", "IDynamicResourceHandler");
 
 			foreach (var instruction in parent.LoadAs(module.GetTypeDefinition(dynamicResourceHandlerType), module))
 				yield return instruction;
@@ -1102,7 +1102,7 @@ namespace Xamarin.Forms.Build.Tasks
 			yield return Create(Callvirt, module.ImportMethodReference(dynamicResourceHandlerType,
 																	   methodName: "SetDynamicResource",
 																	   parameterTypes: new[] {
-																		   ("Xamarin.Forms.Core", "Xamarin.Forms", "BindableProperty"),
+																		   ("System.Maui.Core", "System.Maui", "BindableProperty"),
 																		   ("mscorlib", "System", "String"),
 																	   }));
 		}
@@ -1118,20 +1118,20 @@ namespace Xamarin.Forms.Build.Tasks
 
 			if (!context.Variables.TryGetValue(valueNode as IElementNode, out VariableDefinition varValue))
 				return false;
-			var implicitOperator = varValue.VariableType.GetImplicitOperatorTo(module.ImportReference(("Xamarin.Forms.Core","Xamarin.Forms","BindingBase")), module);
+			var implicitOperator = varValue.VariableType.GetImplicitOperatorTo(module.ImportReference(("System.Maui.Core","System.Maui","BindingBase")), module);
 			if (implicitOperator != null)
 				return true;
 
-			return varValue.VariableType.InheritsFromOrImplements(module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms", "BindingBase")));
+			return varValue.VariableType.InheritsFromOrImplements(module.ImportReference(("System.Maui.Core", "System.Maui", "BindingBase")));
 		}
 
 		static IEnumerable<Instruction> SetBinding(VariableDefinition parent, FieldReference bpRef, IElementNode elementNode, IXmlLineInfo iXmlLineInfo, ILContext context)
 		{
 			var module = context.Body.Method.Module;
-			var bindableObjectType = ("Xamarin.Forms.Core", "Xamarin.Forms", "BindableObject");
+			var bindableObjectType = ("System.Maui.Core", "System.Maui", "BindableObject");
 			var parameterTypes = new[] {
-				("Xamarin.Forms.Core", "Xamarin.Forms", "BindableProperty"),
-				("Xamarin.Forms.Core", "Xamarin.Forms", "BindingBase"),
+				("System.Maui.Core", "System.Maui", "BindableProperty"),
+				("System.Maui.Core", "System.Maui", "BindingBase"),
 			};
 
 			//TODO: check if parent is a BP
@@ -1140,7 +1140,7 @@ namespace Xamarin.Forms.Build.Tasks
 			yield return Create(Ldsfld, bpRef);
 			foreach (var instruction in context.Variables [elementNode].LoadAs(module.GetTypeDefinition(parameterTypes[1]), module))
 				yield return instruction;
-			yield return Create(Callvirt, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms", "BindableObject"),
+			yield return Create(Callvirt, module.ImportMethodReference(("System.Maui.Core", "System.Maui", "BindableObject"),
 																	   methodName: "SetBinding",
 																	   parameterTypes: parameterTypes));
 		}
@@ -1185,7 +1185,7 @@ namespace Xamarin.Forms.Build.Tasks
 			if (bpRef == null)
 				return false;
 
-			if (!parent.VariableType.InheritsFromOrImplements(module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms", "BindableObject"))))
+			if (!parent.VariableType.InheritsFromOrImplements(module.ImportReference(("System.Maui.Core", "System.Maui", "BindableObject"))))
 				return false;
 
 			propertyType = bpRef.GetBindablePropertyType(iXmlLineInfo, module);
@@ -1197,12 +1197,12 @@ namespace Xamarin.Forms.Build.Tasks
 			var valueNode = node as ValueNode;
 			var elementNode = node as IElementNode;
 			var module = context.Body.Method.Module;
-			var bindableObjectType = ("Xamarin.Forms.Core", "Xamarin.Forms", "BindableObject");
+			var bindableObjectType = ("System.Maui.Core", "System.Maui", "BindableObject");
 
 //			IL_0007:  ldloc.0 
-//			IL_0008:  ldsfld class [Xamarin.Forms.Core]Xamarin.Forms.BindableProperty [Xamarin.Forms.Core]Xamarin.Forms.Label::TextProperty
+//			IL_0008:  ldsfld class [System.Maui.Core]System.Maui.BindableProperty [System.Maui.Core]System.Maui.Label::TextProperty
 //			IL_000d:  ldstr "foo"
-//			IL_0012:  callvirt instance void class [Xamarin.Forms.Core]Xamarin.Forms.BindableObject::SetValue(class [Xamarin.Forms.Core]Xamarin.Forms.BindableProperty, object)
+//			IL_0012:  callvirt instance void class [System.Maui.Core]System.Maui.BindableObject::SetValue(class [System.Maui.Core]System.Maui.BindableProperty, object)
 
 			foreach (var instruction in parent.LoadAs(module.GetTypeDefinition(bindableObjectType), module))
 				yield return instruction;
@@ -1222,7 +1222,7 @@ namespace Xamarin.Forms.Build.Tasks
 			yield return Create(Callvirt, module.ImportMethodReference(bindableObjectType,
 																	   methodName: "SetValue",
 																	   parameterTypes: new[] {
-																		   ("Xamarin.Forms.Core", "Xamarin.Forms", "BindableProperty"),
+																		   ("System.Maui.Core", "System.Maui", "BindableProperty"),
 																		   ("mscorlib", "System", "Object"),
 																	   }));
 		}
@@ -1236,7 +1236,7 @@ namespace Xamarin.Forms.Build.Tasks
 		static IEnumerable<Instruction> GetValue(VariableDefinition parent, FieldReference bpRef, IXmlLineInfo iXmlLineInfo, ILContext context)
 		{
 			var module = context.Body.Method.Module;
-			var bindableObjectType = ("Xamarin.Forms.Core", "Xamarin.Forms", "BindableObject");
+			var bindableObjectType = ("System.Maui.Core", "System.Maui", "BindableObject");
 
 			foreach (var instruction in parent.LoadAs(module.GetTypeDefinition(bindableObjectType), module))
 				yield return instruction;
@@ -1244,7 +1244,7 @@ namespace Xamarin.Forms.Build.Tasks
 			yield return Create(Ldsfld, bpRef);
 			yield return Create(Callvirt,  module.ImportMethodReference(bindableObjectType,
 																		methodName: "GetValue",
-																		parameterTypes: new[] { ("Xamarin.Forms.Core", "Xamarin.Forms", "BindableProperty")}));
+																		parameterTypes: new[] { ("System.Maui.Core", "System.Maui", "BindableProperty")}));
 		}
 
 		static bool CanSet(VariableDefinition parent, string localName, INode node, ILContext context)
@@ -1313,7 +1313,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 //			IL_0007:  ldloc.0
 //			IL_0008:  ldstr "foo"
-//			IL_000d:  callvirt instance void class [Xamarin.Forms.Core]Xamarin.Forms.Label::set_Text(string)
+//			IL_000d:  callvirt instance void class [System.Maui.Core]System.Maui.Label::set_Text(string)
 
 			module.ImportReference(parent.VariableType.ResolveCached());
 			var propertySetterRef = module.ImportReference(module.ImportReference(propertySetter).ResolveGenericParameters(declaringTypeReference, module));
@@ -1391,8 +1391,8 @@ namespace Xamarin.Forms.Build.Tasks
 		static Dictionary<VariableDefinition, IList<string>> resourceNamesInUse = new Dictionary<VariableDefinition, IList<string>>();
 		static bool CanAddToResourceDictionary(VariableDefinition parent, TypeReference collectionType, IElementNode node, IXmlLineInfo lineInfo, ILContext context)
 		{
-			if (   collectionType.FullName != "Xamarin.Forms.ResourceDictionary"
-				&& collectionType.ResolveCached().BaseType?.FullName != "Xamarin.Forms.ResourceDictionary")
+			if (   collectionType.FullName != "System.Maui.ResourceDictionary"
+				&& collectionType.ResolveCached().BaseType?.FullName != "System.Maui.ResourceDictionary")
 				return false;
 
 
@@ -1409,7 +1409,7 @@ namespace Xamarin.Forms.Build.Tasks
 			//is there a RD.Add() overrides that accepts this ?
 			var nodeTypeRef = context.Variables[node].VariableType;
 			var module = context.Body.Method.Module;
-			if (module.ImportMethodReference(module.GetTypeDefinition(("Xamarin.Forms.Core", "Xamarin.Forms", "ResourceDictionary")),
+			if (module.ImportMethodReference(module.GetTypeDefinition(("System.Maui.Core", "System.Maui", "ResourceDictionary")),
 											 methodName: "Add",
 											 parameterTypes: new[] { (nodeTypeRef) }) != null)
 				return true;
@@ -1451,11 +1451,11 @@ namespace Xamarin.Forms.Build.Tasks
 			if (node.Properties.ContainsKey(XmlName.xKey)) {
 //				IL_0014:  ldstr "key"
 //				IL_0019:  ldstr "foo"
-//				IL_001e:  callvirt instance void class [Xamarin.Forms.Core]Xamarin.Forms.ResourceDictionary::Add(string, object)
+//				IL_001e:  callvirt instance void class [System.Maui.Core]System.Maui.ResourceDictionary::Add(string, object)
 				yield return Create(Ldstr, (node.Properties[XmlName.xKey] as ValueNode).Value as string);
 				foreach (var instruction in context.Variables[node].LoadAs(module.TypeSystem.Object, module))
 					yield return instruction;
-				yield return Create(Callvirt, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms", "ResourceDictionary"),
+				yield return Create(Callvirt, module.ImportMethodReference(("System.Maui.Core", "System.Maui", "ResourceDictionary"),
 																		   methodName: "Add",
 																		   parameterTypes: new[] {
 																			   ("mscorlib", "System", "String"),
@@ -1466,7 +1466,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 			var nodeTypeRef = context.Variables[node].VariableType;
 			yield return Create(Ldloc, context.Variables[node]);
-			yield return Create(Callvirt, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms", "ResourceDictionary"),
+			yield return Create(Callvirt, module.ImportMethodReference(("System.Maui.Core", "System.Maui", "ResourceDictionary"),
 																	   methodName: "Add",
 																	   parameterTypes: new[] { (nodeTypeRef.Scope.Name, nodeTypeRef.Namespace, nodeTypeRef.Name) }));
 			yield break;
@@ -1490,7 +1490,7 @@ namespace Xamarin.Forms.Build.Tasks
 			IXmlLineInfo xmlLineInfo)
 		{
 			var module = parentContext.Module;
-			var dataTemplateType = ("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "IDataTemplate");
+			var dataTemplateType = ("System.Maui.Core", "System.Maui.Internals", "IDataTemplate");
 			var parentVar = parentContext.Variables[parentNode];
 			//Push the DataTemplate to the stack, for setting the template
 			parentContext.IL.Append(parentVar.LoadAs(module.GetTypeDefinition(dataTemplateType), module));
@@ -1590,7 +1590,7 @@ namespace Xamarin.Forms.Build.Tasks
 				return false;
 
 			var attributes = variableDefinition.VariableType.ResolveCached()
-				.CustomAttributes.Where(attribute => attribute.AttributeType.FullName == "Xamarin.Forms.Xaml.RuntimeNamePropertyAttribute").ToList();
+				.CustomAttributes.Where(attribute => attribute.AttributeType.FullName == "System.Maui.Xaml.RuntimeNamePropertyAttribute").ToList();
 
 			if (!attributes.Any())
 				return false;

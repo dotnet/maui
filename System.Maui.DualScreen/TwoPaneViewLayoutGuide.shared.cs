@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.DualScreen
+namespace System.Maui.DualScreen
 {
 	internal class TwoPaneViewLayoutGuide : INotifyPropertyChanged
 	{

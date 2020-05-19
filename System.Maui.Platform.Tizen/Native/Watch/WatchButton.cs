@@ -1,9 +1,9 @@
 using System;
 using ElmSharp;
-using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
+using System.Maui.PlatformConfiguration.TizenSpecific;
 using ESize = ElmSharp.Size;
 
-namespace Xamarin.Forms.Platform.Tizen.Native.Watch
+namespace System.Maui.Platform.Tizen.Native.Watch
 {
 	public class WatchButton : Button, IMeasurable
 	{

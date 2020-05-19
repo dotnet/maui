@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using ElmSharp;
-using Xamarin.Forms.Platform.Tizen.Native;
+using System.Maui.Platform.Tizen.Native;
 using System.Linq;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class ShellMoreToolbar : GenList
 	{
@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		const int _iconPadding = 30;
 		const int _iconSize = 60;
 
-		public ShellMoreToolbar(ShellItemRenderer renderer) : base(Forms.NativeParent)
+		public ShellMoreToolbar(ShellItemRenderer renderer) : base(System.Maui.Maui.NativeParent)
 		{
 			_shellItemRenderer = renderer;
 
@@ -76,21 +76,21 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			ShellSection section = data as ShellSection;
 
-			var box = new Native.Box(Forms.NativeParent);
+			var box = new Native.Box(System.Maui.Maui.NativeParent);
 			box.Show();
 
-			var icon = new Native.Image(Forms.NativeParent)
+			var icon = new Native.Image(System.Maui.Maui.NativeParent)
 			{
-				MinimumWidth = Forms.ConvertToScaledPixel(44),
-				MinimumHeight = Forms.ConvertToScaledPixel(27)
+				MinimumWidth = System.Maui.Maui.ConvertToScaledPixel(44),
+				MinimumHeight = System.Maui.Maui.ConvertToScaledPixel(27)
 			};
 			var task = icon.LoadFromImageSourceAsync(section.Icon);
 			icon.Show();
 
-			var title = new Native.Label(Forms.NativeParent)
+			var title = new Native.Label(System.Maui.Maui.NativeParent)
 			{
 				Text = section.Title,
-				FontSize = Forms.ConvertToEflFontPoint(14),
+				FontSize = System.Maui.Maui.ConvertToEflFontPoint(14),
 				HorizontalTextAlignment = Native.TextAlignment.Start,
 				VerticalTextAlignment = Native.TextAlignment.Center
 			};

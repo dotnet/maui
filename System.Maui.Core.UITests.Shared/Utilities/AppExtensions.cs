@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Linq;
 
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 using System.Text.RegularExpressions;
 using System.Threading;
-using Xamarin.Forms.Controls.Issues;
+using System.Maui.Controls.Issues;
 #if __IOS__
 using Xamarin.UITest.iOS;
 #endif
@@ -67,7 +67,7 @@ namespace Xamarin.UITest
 		public static bool IsTablet(this IApp app)
 		{
 #if __IOS__
-			if (app is Xamarin.Forms.Controls.ScreenshotConditionalApp sca)
+			if (app is System.Maui.Controls.ScreenshotConditionalApp sca)
 			{
 				return sca.IsTablet;
 			}
@@ -82,7 +82,7 @@ namespace Xamarin.UITest
 		public static bool IsPhone(this IApp app)
 		{
 #if __IOS__
-			if (app is Xamarin.Forms.Controls.ScreenshotConditionalApp sca)
+			if (app is System.Maui.Controls.ScreenshotConditionalApp sca)
 			{
 				return sca.IsPhone;
 			}
@@ -100,7 +100,7 @@ namespace Xamarin.UITest
 #if __IOS__
 		public static void SendAppToBackground(this IApp app, TimeSpan timeSpan)
 		{
-			if(app is Xamarin.Forms.Controls.ScreenshotConditionalApp sca)
+			if(app is System.Maui.Controls.ScreenshotConditionalApp sca)
 			{
 				sca.SendAppToBackground(timeSpan);
 				Thread.Sleep(timeSpan.Add(TimeSpan.FromSeconds(2)));
@@ -110,7 +110,7 @@ namespace Xamarin.UITest
 	}
 }
 
-namespace Xamarin.Forms.Core.UITests
+namespace System.Maui.Core.UITests
 {
 	internal static class AppExtensions
 	{

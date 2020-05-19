@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
-using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionGalleries
+namespace System.Maui.Controls.GalleryPages.CollectionViewGalleries.SelectionGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class SelectionModeGallery : ContentPage

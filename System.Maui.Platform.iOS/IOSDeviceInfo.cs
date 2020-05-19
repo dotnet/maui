@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 
 using Foundation;
 using UIKit;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	internal class IOSDeviceInfo : DeviceInfo
 	{

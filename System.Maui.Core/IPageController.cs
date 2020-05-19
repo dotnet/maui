@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public interface IPageController : IVisualElementController
 	{

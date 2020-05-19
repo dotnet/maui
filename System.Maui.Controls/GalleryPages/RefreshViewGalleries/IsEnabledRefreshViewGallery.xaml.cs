@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms.Controls.GalleryPages.RefreshViewGalleries
+namespace System.Maui.Controls.GalleryPages.RefreshViewGalleries
 {
 	public partial class IsEnabledRefreshViewGallery : ContentPage
 	{

@@ -11,7 +11,7 @@ using Android.Views.InputMethods;
 using Android.Widget;
 using Java.Lang;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public sealed class EntryCellView : LinearLayout, ITextWatcher, global::Android.Views.View.IOnFocusChangeListener, TextView.IOnEditorActionListener, INativeElementView
 	{

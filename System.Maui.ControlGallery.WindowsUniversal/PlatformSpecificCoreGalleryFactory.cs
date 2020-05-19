@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.WindowsUniversal;
-using Xamarin.Forms.Controls;
+using System.Maui;
+using System.Maui.ControlGallery.WindowsUniversal;
+using System.Maui.Controls;
 
 [assembly: Dependency(typeof(PlatformSpecificCoreGalleryFactory))]
 
-namespace Xamarin.Forms.ControlGallery.WindowsUniversal
+namespace System.Maui.ControlGallery.WindowsUniversal
 {
 	public class PlatformSpecificCoreGalleryFactory : IPlatformSpecificCoreGalleryFactory
 	{

@@ -1,7 +1,7 @@
-﻿using AppKit;
+using AppKit;
 using Foundation;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
     internal static class NSAttributedStringExtensions
     {

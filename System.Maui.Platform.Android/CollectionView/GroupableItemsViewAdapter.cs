@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Android.Content;
 #if __ANDROID_29__
 using AndroidX.AppCompat.Widget;
@@ -8,7 +8,7 @@ using Android.Support.V7.Widget;
 #endif
 using Android.Views;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class GroupableItemsViewAdapter<TItemsView, TItemsViewSource> : SelectableItemsViewAdapter<TItemsView, TItemsViewSource> 
 		where TItemsView : GroupableItemsView

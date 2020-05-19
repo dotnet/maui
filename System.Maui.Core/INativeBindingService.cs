@@ -1,4 +1,4 @@
-namespace Xamarin.Forms.Xaml.Internals
+namespace System.Maui.Xaml.Internals
 {
 
 	public interface INativeBindingService

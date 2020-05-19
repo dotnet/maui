@@ -1,9 +1,9 @@
-﻿// Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System;
 
-namespace Xamarin.Forms.Xaml.Diagnostics
+namespace System.Maui.Xaml.Diagnostics
 {
 	public class VisualTreeChangeEventArgs : EventArgs
 	{

@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.DualScreen
+namespace System.Maui.DualScreen
 {
 	public class CompactModeArgs : EventArgs
 	{

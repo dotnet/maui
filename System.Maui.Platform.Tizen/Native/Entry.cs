@@ -8,7 +8,7 @@ using ESize = ElmSharp.Size;
 using Tizen.NET.MaterialComponents;
 #endif
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 #if __MATERIAL__
 	public class MaterialEntry : MTextField, IMeasurable, IBatchable, IEntry
@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 	public class Entry : EEntry, IMeasurable, IBatchable, IEntry
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Xamarin.Forms.Platform.Tizen.Native.MaterialEntry"/> class.
+		/// Initializes a new instance of the <see cref="System.Maui.Platform.Tizen.Native.MaterialEntry"/> class.
 		/// </summary>
 		/// <param name="parent">Parent evas object.</param>
 		public Entry(EvasObject parent) : base(parent)

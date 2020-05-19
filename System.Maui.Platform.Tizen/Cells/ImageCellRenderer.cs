@@ -1,7 +1,7 @@
 using ElmSharp;
 using System.Collections.Generic;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class ImageCellRenderer : TextCellRenderer
 	{
@@ -23,13 +23,13 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (part == ImagePart)
 			{
 				var imgCell = cell as ImageCell;
-				int pixelSize = Forms.ConvertToScaledPixel(imgCell.RenderHeight);
+				int pixelSize = System.Maui.Maui.ConvertToScaledPixel(imgCell.RenderHeight);
 				if (pixelSize <= 0)
 				{
-					pixelSize = Forms.ConvertToPixel(_defaultHeight);
+					pixelSize = System.Maui.Maui.ConvertToPixel(_defaultHeight);
 				}
 
-				var image = new Native.Image(Forms.NativeParent)
+				var image = new Native.Image(System.Maui.Maui.NativeParent)
 				{
 					MinimumWidth = pixelSize,
 					MinimumHeight = pixelSize

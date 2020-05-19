@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Specialized;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public interface IListProxy : IList
 	{

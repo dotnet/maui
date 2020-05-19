@@ -1,7 +1,7 @@
-﻿using CoreGraphics;
+using CoreGraphics;
 using Foundation;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	internal abstract partial class HeightConstrainedTemplatedCell : TemplatedCell
 	{

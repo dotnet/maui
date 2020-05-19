@@ -1,6 +1,6 @@
-﻿using Android.Content;
+using Android.Content;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal class ShellPageContainer : PageContainer
 	{

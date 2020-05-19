@@ -2,9 +2,9 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class FlowDirectionTests : BaseTestFixture
@@ -465,7 +465,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			StackLayout flyout = new StackLayout();
 			Shell shell = new Shell()
 			{
-				Visual = Forms.VisualMarker.Default,
+				Visual = System.Maui.VisualMarker.Default,
 				Items =
 				{
 					new ShellItem()

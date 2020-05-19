@@ -1,15 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Xamarin.Forms;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Xaml;
-using Xamarin.Forms.Internals;
+using System.Maui;
+using System.Maui.CustomAttributes;
+using System.Maui.Xaml;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 6693, "[Bug] [WPF] ViewRenderer does not work properly with FrameworkElement derived native controls", PlatformAffected.WPF)]

@@ -1,11 +1,11 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
-	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.LayoutOptionsConverter")]
+	[Xaml.ProvideCompiled("System.Maui.Core.XamlC.LayoutOptionsConverter")]
 	[Xaml.TypeConversion(typeof(LayoutOptions))]
 	public sealed class LayoutOptionsConverter : TypeConverter
 	{

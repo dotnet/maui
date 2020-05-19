@@ -1,4 +1,4 @@
-namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
+namespace System.Maui.PlatformConfiguration.WindowsSpecific
 {
 	public enum ToolbarPlacement
 	{

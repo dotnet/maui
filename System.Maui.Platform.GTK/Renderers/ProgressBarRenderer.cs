@@ -1,7 +1,7 @@
-﻿using System.ComponentModel;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using System.ComponentModel;
+using System.Maui.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers
+namespace System.Maui.Platform.GTK.Renderers
 {
 	public class ProgressBarRenderer : ViewRenderer<ProgressBar, Gtk.ProgressBar>
 	{

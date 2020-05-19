@@ -1,15 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Xamarin.Forms.Internals;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Input;
+using global::Windows.UI.Xaml.Media;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class VisualElementTracker<TElement, TNativeElement> : IDisposable where TElement : VisualElement where TNativeElement : FrameworkElement
 	{
@@ -284,7 +284,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			_isPinching = true;
 
-			Windows.Foundation.Point translationPoint = e.Container.TransformToVisual(Container).TransformPoint(e.Position);
+			global::Windows.Foundation.Point translationPoint = e.Container.TransformToVisual(Container).TransformPoint(e.Position);
 
 			var scaleOriginPoint = new Point(translationPoint.X / view.Width, translationPoint.Y / view.Height);
 			IEnumerable<PinchGestureRecognizer> pinchGestures = view.GestureRecognizers.GetGesturesFor<PinchGestureRecognizer>();
@@ -575,7 +575,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			double anchorX = view.AnchorX;
 			double anchorY = view.AnchorY;
-			frameworkElement.RenderTransformOrigin = new Windows.Foundation.Point(anchorX, anchorY);
+			frameworkElement.RenderTransformOrigin = new global::Windows.Foundation.Point(anchorX, anchorY);
 			frameworkElement.RenderTransform = new ScaleTransform { ScaleX = view.Scale * view.ScaleX, ScaleY = view.Scale * view.ScaleY };
 
 			UpdateRotation(view, frameworkElement);

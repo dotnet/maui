@@ -5,7 +5,7 @@ using System.Threading;
 using Xamarin.UITest.Queries;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Core.UITests
+namespace System.Maui.Core.UITests
 {
 	[TestFixture]
 	[Category(UITestCategories.AutomationId)]

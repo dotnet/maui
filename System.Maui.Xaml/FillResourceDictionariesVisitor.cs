@@ -1,10 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml.Internals;
+using System.Maui.Internals;
+using System.Maui.Xaml.Internals;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	class FillResourceDictionariesVisitor : IXamlNodeVisitor
 	{

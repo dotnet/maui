@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms.Platform.WPF;
+using System.Maui.Platform.WPF;
 using Microsoft.Maps.MapControl.WPF;
 using WMap = Microsoft.Maps.MapControl.WPF.Map;
 using System.ComponentModel;
@@ -12,7 +12,7 @@ using System.Collections.Specialized;
 using System.Device.Location;
 using System.Windows.Threading;
 
-namespace Xamarin.Forms.Maps.WPF
+namespace System.Maui.Maps.WPF
 {
 	public class MapRenderer : ViewRenderer<Map, WMap>
 	{

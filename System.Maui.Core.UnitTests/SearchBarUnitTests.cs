@@ -4,7 +4,7 @@ using System.Linq;
 using System.Windows.Input;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class SearchBarUnitTests : BaseTestFixture

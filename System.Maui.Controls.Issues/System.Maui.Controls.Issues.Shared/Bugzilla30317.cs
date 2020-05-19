@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
@@ -9,7 +9,7 @@ using Xamarin.UITest.Android;
 using System.Collections.Generic;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 30317, "https://bugzilla.xamarin.com/show_bug.cgi?id=30137")]

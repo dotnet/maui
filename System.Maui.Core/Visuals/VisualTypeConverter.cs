@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using System.Maui.Internals;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[Xaml.TypeConversion(typeof(IVisual))]
 	public class VisualTypeConverter : TypeConverter

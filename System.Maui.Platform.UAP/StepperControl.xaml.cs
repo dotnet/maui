@@ -1,9 +1,9 @@
-﻿using System;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Xamarin.Forms.Platform.UWP;
+using System;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using System.Maui.Platform.UWP;
 
-namespace Xamarin.Forms.Platform.WinRT
+namespace System.Maui.Platform.WinRT
 {
 	public sealed partial class StepperControl : UserControl
 	{
@@ -95,7 +95,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		void UpdateButtonBackgroundColor(Color value)
 		{
-			Windows.UI.Xaml.Media.Brush brush = value.ToBrush();
+			global::Windows.UI.Xaml.Media.Brush brush = value.ToBrush();
 			Minus.Background = brush;
 			Plus.Background = brush;
 		}

@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
+namespace System.Maui.PlatformConfiguration.WindowsSpecific
 {
-	using FormsElement = Forms.RefreshView;
+	using FormsElement = System.Maui.RefreshView;
 
 	public static class RefreshView
 	{

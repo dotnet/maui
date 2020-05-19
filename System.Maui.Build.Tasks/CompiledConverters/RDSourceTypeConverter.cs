@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 using Mono.Cecil;
@@ -7,10 +7,10 @@ using Mono.Cecil.Cil;
 using static Mono.Cecil.Cil.Instruction;
 using static Mono.Cecil.Cil.OpCodes;
 
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Xaml;
+using System.Maui.Build.Tasks;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Core.XamlC
+namespace System.Maui.Core.XamlC
 {
 	class RDSourceTypeConverter : ICompiledTypeConverter
 	{
@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Core.XamlC
 			if (resourceId == null)
 				throw new XamlParseException($"Resource '{value}' not found.", node);
 
-			var resourceDictionaryType = ("Xamarin.Forms.Core", "Xamarin.Forms", "ResourceDictionary");
+			var resourceDictionaryType = ("System.Maui.Core", "System.Maui", "ResourceDictionary");
 
 			//abuse the converter, produce some side effect, but leave the stack untouched
 			//public void SetAndLoadSource(Uri value, string resourceID, Assembly assembly, System.Xml.IXmlLineInfo lineInfo)
@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Core.XamlC
 		internal static string GetPathForType(ModuleDefinition module, TypeReference type)
 		{
 			foreach (var ca in type.Module.GetCustomAttributes()) {
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "XamlResourceIdAttribute"))))
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("System.Maui.Core", "System.Maui.Xaml", "XamlResourceIdAttribute"))))
 					continue;
 				if (!TypeRefComparer.Default.Equals(ca.ConstructorArguments[2].Value as TypeReference, type))
 					continue;

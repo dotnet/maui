@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using AppKit;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.macOS.Extensions;
+using System.Maui.Internals;
+using System.Maui.Platform.macOS.Extensions;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public abstract class FormsApplicationDelegate : NSApplicationDelegate
 	{

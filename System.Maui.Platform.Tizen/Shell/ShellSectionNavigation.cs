@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using ElmSharp;
-using Xamarin.Forms.Platform.Tizen.Native;
+using System.Maui.Platform.Tizen.Native;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class ShellSectionNavigation : Native.Box, IAppearanceObserver
 	{
@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		const int _defaultNavBarHeight = 110;
 		int _navBarHeight = _defaultNavBarHeight;
 
-		public ShellSectionNavigation(IFlyoutController flyoutController, ShellSection section) : base(Forms.NativeParent)
+		public ShellSectionNavigation(IFlyoutController flyoutController, ShellSection section) : base(System.Maui.Maui.NativeParent)
 		{
 			_section = section;
 			_section.PropertyChanged += OnSectionPropertyChanged;
@@ -182,7 +182,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			Native.Page native = Platform.GetOrCreateRenderer(page).NativeView as Native.Page;
 			_pageToNative[page] = native;
 			_nativeToPage[native] = page;
-			native.BackgroundColor = (page.BackgroundColor != Xamarin.Forms.Color.Default ? page.BackgroundColor.ToNative() : ElmSharp.Color.White);
+			native.BackgroundColor = (page.BackgroundColor != System.Maui.Color.Default ? page.BackgroundColor.ToNative() : ElmSharp.Color.White);
 			PackEnd(native);
 			return native;
 		}

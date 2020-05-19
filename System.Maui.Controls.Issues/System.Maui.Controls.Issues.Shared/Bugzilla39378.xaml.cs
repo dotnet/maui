@@ -1,7 +1,7 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 39378, "Image binding with caching not operating as expected", PlatformAffected.All)]
@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Controls.Issues
 			
 			public ImageController39378()
 			{
-				HomeImage = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/banner.png";
+				HomeImage = "https://raw.githubusercontent.com/xamarin/System.Maui/master/banner.png";
 				BackgroundColor = "#f5f5dc";
 			}
 

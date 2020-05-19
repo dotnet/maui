@@ -1,10 +1,10 @@
 #if __MOBILE__
-using CurrentPlatform = Xamarin.Forms.PlatformConfiguration.iOS;
-namespace Xamarin.Forms.Platform.iOS
+using CurrentPlatform = System.Maui.PlatformConfiguration.iOS;
+namespace System.Maui.Platform.iOS
 #else
-using CurrentPlatform = Xamarin.Forms.PlatformConfiguration.macOS;
+using CurrentPlatform = System.Maui.PlatformConfiguration.macOS;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 #endif
 {
 	public static class PlatformConfigurationExtensions

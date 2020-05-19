@@ -5,7 +5,7 @@ using CoreGraphics;
 using Foundation;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class FrameRenderer : VisualElementRenderer<Frame>, ITabStop
 	{
@@ -31,9 +31,9 @@ namespace Xamarin.Forms.Platform.iOS
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName ||
-			    e.PropertyName == Xamarin.Forms.Frame.BorderColorProperty.PropertyName ||
-				e.PropertyName == Xamarin.Forms.Frame.HasShadowProperty.PropertyName ||
-				e.PropertyName == Xamarin.Forms.Frame.CornerRadiusProperty.PropertyName ||
+			    e.PropertyName == System.Maui.Frame.BorderColorProperty.PropertyName ||
+				e.PropertyName == System.Maui.Frame.HasShadowProperty.PropertyName ||
+				e.PropertyName == System.Maui.Frame.CornerRadiusProperty.PropertyName ||
 				e.PropertyName == VisualElement.IsVisibleProperty.PropertyName)
 				SetupLayer();
 		}
@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Platform.iOS
 			base.TraitCollectionDidChange(previousTraitCollection);
 #if __XCODE11__
 			// Make sure the control adheres to changes in UI theme
-			if (Forms.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (System.Maui.Maui.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				SetupLayer();
 #endif
 		}

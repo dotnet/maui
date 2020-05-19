@@ -1,15 +1,15 @@
 
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.EmptyViewGalleries;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGalleries;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionGalleries;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ScrollModeGalleries;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.AlternateLayoutGalleries;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.HeaderFooterGalleries;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ItemSizeGalleries;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SpacingGalleries;
+using System.Maui.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
+using System.Maui.Controls.GalleryPages.CollectionViewGalleries.EmptyViewGalleries;
+using System.Maui.Controls.GalleryPages.CollectionViewGalleries.GroupingGalleries;
+using System.Maui.Controls.GalleryPages.CollectionViewGalleries.SelectionGalleries;
+using System.Maui.Controls.GalleryPages.CollectionViewGalleries.ScrollModeGalleries;
+using System.Maui.Controls.GalleryPages.CollectionViewGalleries.AlternateLayoutGalleries;
+using System.Maui.Controls.GalleryPages.CollectionViewGalleries.HeaderFooterGalleries;
+using System.Maui.Controls.GalleryPages.CollectionViewGalleries.ItemSizeGalleries;
+using System.Maui.Controls.GalleryPages.CollectionViewGalleries.SpacingGalleries;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
+namespace System.Maui.Controls.GalleryPages.CollectionViewGalleries
 {
 	public class CollectionViewGallery : ContentPage
 	{

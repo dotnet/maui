@@ -2,7 +2,7 @@ using System;
 using ElmSharp;
 using EButton = ElmSharp.Button;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	public class DateTimePickerDialog : Dialog, IDateTimeDialog
 	{

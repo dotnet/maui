@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Maps.GTK
+namespace System.Maui.Maps.GTK
 {
     public static class FormsMaps
     {

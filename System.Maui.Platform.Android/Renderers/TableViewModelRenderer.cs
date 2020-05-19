@@ -7,7 +7,7 @@ using AListView = Android.Widget.ListView;
 using System;
 using System.Collections.Generic;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class TableViewModelRenderer : CellAdapter
 	{

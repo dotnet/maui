@@ -6,7 +6,7 @@ using Android.Views.InputMethods;
 using Android.Widget;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal static class KeyboardManager
 	{

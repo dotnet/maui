@@ -1,17 +1,17 @@
-﻿using System;
-using Windows.UI;
-using Windows.UI.Xaml.Media;
+using System;
+using global::Windows.UI;
+using global::Windows.UI.Xaml.Media;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	public sealed class ColorConverter : Windows.UI.Xaml.Data.IValueConverter
+	public sealed class ColorConverter : global::Windows.UI.Xaml.Data.IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{
 			var color = (Color)value;
 			var defaultColorKey = (string)parameter;
 
-			Brush defaultBrush = defaultColorKey != null ? (Brush)Windows.UI.Xaml.Application.Current.Resources[defaultColorKey] : new SolidColorBrush(Colors.Transparent);
+			Brush defaultBrush = defaultColorKey != null ? (Brush)global::Windows.UI.Xaml.Application.Current.Resources[defaultColorKey] : new SolidColorBrush(Colors.Transparent);
 
 			return color == Color.Default ? defaultBrush : color.ToBrush();
 		}

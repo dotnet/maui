@@ -1,7 +1,7 @@
-﻿namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	internal interface ITitleIconProvider
 	{
-		Windows.UI.Xaml.Media.ImageSource TitleIcon { get; set; }
+		global::Windows.UI.Xaml.Media.ImageSource TitleIcon { get; set; }
 	}
 }

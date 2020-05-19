@@ -3,7 +3,7 @@ using System.Linq;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 
-namespace Xamarin.Forms.Core.UITests
+namespace System.Maui.Core.UITests
 {
 	internal sealed class EventViewContainerRemote : BaseViewContainerRemote
 	{

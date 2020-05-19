@@ -1,20 +1,20 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using Windows.Foundation;
-using Windows.UI.Text;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation.Peers;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Documents;
-using Xamarin.Forms.Platform.UAP;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.Label;
-using WThickness = Windows.UI.Xaml.Thickness;
+using global::Windows.Foundation;
+using global::Windows.UI.Text;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Automation.Peers;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Documents;
+using System.Maui.Platform.UAP;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
+using Specifics = System.Maui.PlatformConfiguration.WindowsSpecific.Label;
+using WThickness = global::Windows.UI.Xaml.Thickness;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public static class FormattedStringExtensions
 	{
@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Platform.UWP
 #pragma warning restore 618
 
 			if (span.IsSet(Span.TextDecorationsProperty))
-				run.TextDecorations = (Windows.UI.Text.TextDecorations)span.TextDecorations;
+				run.TextDecorations = (global::Windows.UI.Text.TextDecorations)span.TextDecorations;
 
 			run.CharacterSpacing = span.CharacterSpacing.ToEm();
 
@@ -62,7 +62,7 @@ namespace Xamarin.Forms.Platform.UWP
 		//	return new TextBlockAutomationPeer(Control);
 		//}
 
-		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
+		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
 			if (Element == null)
 				return finalSize;
@@ -194,14 +194,14 @@ namespace Xamarin.Forms.Platform.UWP
 			var elementTextDecorations = Element.TextDecorations;
 
 			if ((elementTextDecorations & TextDecorations.Underline) == 0)
-				textBlock.TextDecorations &= ~Windows.UI.Text.TextDecorations.Underline;
+				textBlock.TextDecorations &= ~global::Windows.UI.Text.TextDecorations.Underline;
 			else
-				textBlock.TextDecorations |= Windows.UI.Text.TextDecorations.Underline;
+				textBlock.TextDecorations |= global::Windows.UI.Text.TextDecorations.Underline;
 
 			if ((elementTextDecorations & TextDecorations.Strikethrough) == 0)
-				textBlock.TextDecorations &= ~Windows.UI.Text.TextDecorations.Strikethrough;
+				textBlock.TextDecorations &= ~global::Windows.UI.Text.TextDecorations.Strikethrough;
 			else
-				textBlock.TextDecorations |= Windows.UI.Text.TextDecorations.Strikethrough;
+				textBlock.TextDecorations |= global::Windows.UI.Text.TextDecorations.Strikethrough;
 
 			//TextDecorations are not updated in the UI until the text changes
 			if (textBlock.Inlines != null && textBlock.Inlines.Count > 0)
@@ -357,7 +357,7 @@ namespace Xamarin.Forms.Platform.UWP
 				{
 					textBlock.Inlines.Clear();
 					// Have to implement a measure here, otherwise inline.ContentStart and ContentEnd will be null, when used in RecalculatePositions
-					textBlock.Measure(new Windows.Foundation.Size(double.MaxValue, double.MaxValue));
+					textBlock.Measure(new global::Windows.Foundation.Size(double.MaxValue, double.MaxValue));
 
 					var heights = new List<double>();
 					for (var i = 0; i < formatted.Spans.Count; i++)
@@ -390,7 +390,7 @@ namespace Xamarin.Forms.Platform.UWP
 			catch (Exception)
 			{
 				// if anything goes wrong just show the html
-				textBlock.Text = Windows.Data.Html.HtmlUtilities.ConvertToText(Element.Text);
+				textBlock.Text = global::Windows.Data.Html.HtmlUtilities.ConvertToText(Element.Text);
 			}
 		}
 

@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using Windows.UI.Text;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
-using Xamarin.Forms.Core;
-using Xamarin.Forms.Internals;
-using WApplication = Windows.UI.Xaml.Application;
+using global::Windows.UI.Text;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Media;
+using System.Maui.Core;
+using System.Maui.Internals;
+using WApplication = global::Windows.UI.Xaml.Application;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public static class FontExtensions
 	{
@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Platform.UWP
 			self.FontWeight = font.FontAttributes.HasFlag(FontAttributes.Bold) ? FontWeights.Bold : FontWeights.Normal;
 		}
 
-		public static void ApplyFont(this Windows.UI.Xaml.Documents.TextElement self, Font font)
+		public static void ApplyFont(this global::Windows.UI.Xaml.Documents.TextElement self, Font font)
 		{
 			self.FontSize = font.UseNamedSize ? font.NamedSize.GetFontSize() : font.FontSize;
 			self.FontFamily = font.ToFontFamily();

@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[TypeConverter(typeof(FileMediaSourceConverter))]
 	public sealed class FileMediaSource : MediaSource

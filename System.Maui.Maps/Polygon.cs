@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
 
-namespace Xamarin.Forms.Maps
+namespace System.Maui.Maps
 {
 	public class Polygon : MapElement
 	{

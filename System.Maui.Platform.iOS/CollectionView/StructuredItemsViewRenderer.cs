@@ -1,6 +1,6 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class StructuredItemsViewRenderer<TItemsView, TViewController> : ItemsViewRenderer<TItemsView, TViewController>
 		where TItemsView : StructuredItemsView

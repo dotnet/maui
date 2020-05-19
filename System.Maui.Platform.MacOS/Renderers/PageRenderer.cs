@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using AppKit;
-using Xamarin.Forms.PlatformConfiguration.macOSSpecific;
+using System.Maui.PlatformConfiguration.macOSSpecific;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public class PageRenderer : NSViewController, IVisualElementRenderer, IEffectControlProvider
 	{

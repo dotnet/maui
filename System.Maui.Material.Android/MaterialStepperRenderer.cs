@@ -3,9 +3,9 @@ using System.ComponentModel;
 using Android.Content;
 using Android.Views;
 using Android.Widget;
-using Xamarin.Forms;
-using Xamarin.Forms.Material.Android;
-using Xamarin.Forms.Platform.Android;
+using System.Maui;
+using System.Maui.Material.Android;
+using System.Maui.Platform.Android;
 using AButton = Android.Widget.Button;
 #if __ANDROID_29__
 using MButton = Google.Android.Material.Button.MaterialButton;
@@ -14,7 +14,7 @@ using MButton = Android.Support.Design.Button.MaterialButton;
 #endif
 
 
-namespace Xamarin.Forms.Material.Android
+namespace System.Maui.Material.Android
 {
 	public class MaterialStepperRenderer : ViewRenderer<Stepper, LinearLayout>, IStepperRenderer
 	{

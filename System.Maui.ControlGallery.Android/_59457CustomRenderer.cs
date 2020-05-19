@@ -1,15 +1,15 @@
-﻿using System;
+using System;
 using Android.Content;
 using Android.OS;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Android;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.Android;
+using System.Maui;
+using System.Maui.ControlGallery.Android;
+using System.Maui.Controls.Issues;
+using System.Maui.Platform.Android;
 using Android.Graphics.Drawables;
 using Android.Graphics;
 
 [assembly: ExportRenderer(typeof(Bugzilla59457.Bugzilla59457Entry), typeof(_59457CustomRenderer))]
-namespace Xamarin.Forms.ControlGallery.Android
+namespace System.Maui.ControlGallery.Android
 {
 	public class _59457CustomRenderer : EntryRenderer
 	{

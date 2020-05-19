@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel; 
 using System.Windows;
@@ -6,7 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using WControl = System.Windows.Controls.Control;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public class DefaultViewRenderer : ViewRenderer<View, UserControl>
 	{

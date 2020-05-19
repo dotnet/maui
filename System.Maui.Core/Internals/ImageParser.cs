@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 
-namespace Xamarin.Forms.Internals
+namespace System.Maui.Internals
 {
 	public class GIFDecoderFormatException : Exception
 	{

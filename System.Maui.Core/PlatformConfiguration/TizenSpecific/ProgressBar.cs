@@ -1,7 +1,7 @@
 
-namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
+namespace System.Maui.PlatformConfiguration.TizenSpecific
 {
-	using FormsElement = Forms.ProgressBar;
+	using FormsElement = System.Maui.ProgressBar;
 
 	public static class ProgressBar
 	{

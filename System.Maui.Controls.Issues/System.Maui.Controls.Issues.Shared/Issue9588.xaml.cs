@@ -1,13 +1,13 @@
-﻿using Xamarin.Forms.CustomAttributes;
+using System.Maui.CustomAttributes;
 using System.Collections.Generic;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Issue(IssueTracker.Github, 9588, "Frame inside SwipeView can't be swiped", PlatformAffected.iOS)]
 	public partial class Issue9588 : TestContentPage

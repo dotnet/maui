@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using CoreAnimation;
@@ -6,7 +6,7 @@ using Foundation;
 using UIKit;
 using SizeF = CoreGraphics.CGSize;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class RadioButtonRenderer : ViewRenderer<RadioButton, UIButton>
 	{
@@ -144,7 +144,7 @@ namespace Xamarin.Forms.Platform.iOS
 			base.TraitCollectionDidChange(previousTraitCollection);
 #if __XCODE11__
 			// Make sure the control adheres to changes in UI theme
-			if (Forms.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (System.Maui.Maui.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				_radioButtonLayer.SetNeedsDisplay();
 #endif
 		}

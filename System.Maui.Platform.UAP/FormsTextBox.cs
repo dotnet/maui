@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.System;
-using Windows.UI.Core;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using WVisualStateManager = Windows.UI.Xaml.VisualStateManager;
+using global::Windows.UI.Core;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Input;
+using global::Windows.UI.Xaml.Media;
+using WVisualStateManager = global::Windows.UI.Xaml.VisualStateManager;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	/// <summary>
 	///     An intermediate class for injecting bindings for things the default
@@ -299,7 +299,7 @@ namespace Xamarin.Forms.Platform.UWP
 				base.OnKeyDown(e);
 		}
 
-		void OnTextChanged(object sender, Windows.UI.Xaml.Controls.TextChangedEventArgs textChangedEventArgs)
+		void OnTextChanged(object sender, global::Windows.UI.Xaml.Controls.TextChangedEventArgs textChangedEventArgs)
 		{
 			if (IsPassword)
 			{
@@ -384,7 +384,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			// If we're modifying the properties related to the focus state of the control (e.g., 
 			// ForegroundFocusBrush), the changes won't be reflected immediately because they are only applied
-			// when the Windows.UI.XAML.VisualStateManager moves to the "Focused" state. So we have to force a 
+			// when the global::Windows.UI.XAML.VisualStateManager moves to the "Focused" state. So we have to force a 
 			// "refresh" of the Focused state by going to that state again
 
 			if (!(dependencyObject is Control control) || control.FocusState == FocusState.Unfocused)
@@ -418,14 +418,14 @@ namespace Xamarin.Forms.Platform.UWP
 		 * the size of the text as it would fit into the TextBox unconstrained and then just return that Size from the GetDesiredSize call.
 		 * */
 		static FormsTextBox _copyOfTextBox;
-		static readonly Windows.Foundation.Size _zeroSize = new Windows.Foundation.Size(0, 0);
-		public static Size GetCopyOfSize(FormsTextBox control, Windows.Foundation.Size constraint)
+		static readonly global::Windows.Foundation.Size _zeroSize = new global::Windows.Foundation.Size(0, 0);
+		public static Size GetCopyOfSize(FormsTextBox control, global::Windows.Foundation.Size constraint)
 		{
 			if (_copyOfTextBox == null)
 			{
 				_copyOfTextBox = new FormsTextBox
 				{
-					Style = Windows.UI.Xaml.Application.Current.Resources["FormsTextBoxStyle"] as Windows.UI.Xaml.Style
+					Style = global::Windows.UI.Xaml.Application.Current.Resources["FormsTextBoxStyle"] as global::Windows.UI.Xaml.Style
 				};
 
 				// This causes the copy to be initially setup correctly. 

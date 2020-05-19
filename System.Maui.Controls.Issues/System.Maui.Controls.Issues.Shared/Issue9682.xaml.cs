@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Xamarin.Forms;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Xaml;
+using System.Maui;
+using System.Maui.CustomAttributes;
+using System.Maui.Xaml;
 using Newtonsoft.Json;
 using System.Collections.ObjectModel;
 using System.Net.Http;
@@ -14,12 +14,12 @@ using System.Diagnostics;
 using System.ComponentModel;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Issue(IssueTracker.Github, 9682, "[iOS] URI Images no longer loading",
 		PlatformAffected.iOS)]

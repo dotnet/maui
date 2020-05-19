@@ -5,9 +5,9 @@ using Android.Runtime;
 using Android.Views;
 using Object = Java.Lang.Object;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
-	internal class InnerGestureListener : Object, GestureDetector.IOnGestureListener, GestureDetector.IOnDoubleTapListener
+	internal class InnerGestureListener : Java.Lang.Object, GestureDetector.IOnGestureListener, GestureDetector.IOnDoubleTapListener
 	{
 		TapGestureHandler _tapGestureHandler;
 		PanGestureHandler _panGestureHandler;

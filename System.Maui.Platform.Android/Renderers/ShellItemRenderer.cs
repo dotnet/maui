@@ -1,4 +1,4 @@
-﻿using Android.Content;
+using Android.Content;
 using Android.Graphics.Drawables;
 using Android.OS;
 #if __ANDROID_29__
@@ -23,7 +23,7 @@ using Orientation = Android.Widget.Orientation;
 using Typeface = Android.Graphics.Typeface;
 using TypefaceStyle = Android.Graphics.TypefaceStyle;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class ShellItemRenderer : ShellItemRendererBase, BottomNavigationView.IOnNavigationItemSelectedListener, IAppearanceObserver
 	{

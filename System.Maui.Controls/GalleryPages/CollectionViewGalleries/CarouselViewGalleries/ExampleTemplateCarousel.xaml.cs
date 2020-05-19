@@ -1,7 +1,7 @@
-﻿using System;
-using Xamarin.Forms.Internals;
+using System;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
+namespace System.Maui.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
 {
 	[Preserve(AllMembers = true)]
 	public partial class ExampleTemplateCarousel : Grid

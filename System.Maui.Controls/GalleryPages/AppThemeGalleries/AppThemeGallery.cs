@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls.GalleryPages.AppThemeGalleries
+namespace System.Maui.Controls.GalleryPages.AppThemeGalleries
 {
 	public class AppThemeGallery : ContentPage
 	{

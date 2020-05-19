@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Core;
-using Windows.UI.Core;
-using Windows.UI.ViewManagement;
-using Windows.UI.Xaml;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.WindowsUniversal;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Platform.UWP;
+using global::Windows.ApplicationModel.Core;
+using global::Windows.UI.Core;
+using global::Windows.UI.ViewManagement;
+using global::Windows.UI.Xaml;
+using System.Maui;
+using System.Maui.ControlGallery.WindowsUniversal;
+using System.Maui.Controls;
+using System.Maui.Platform.UWP;
 
 [assembly: Dependency(typeof(SecondaryWindowService))]
-namespace Xamarin.Forms.ControlGallery.WindowsUniversal
+namespace System.Maui.ControlGallery.WindowsUniversal
 {
 	class SecondaryWindowService : ISecondaryWindowService
 	{
@@ -20,7 +20,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			int newViewId = 0;
 			await newView.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
 			{
-				var frame = new Windows.UI.Xaml.Controls.Frame();
+				var frame = new global::Windows.UI.Xaml.Controls.Frame();
 
 				//The page instance must be created inside the new UI Thread.
 				ContentPage instance = (ContentPage)Activator.CreateInstance(pageType);

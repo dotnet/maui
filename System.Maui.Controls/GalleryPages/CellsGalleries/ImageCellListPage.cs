@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	[Preserve (AllMembers = true)]
 	public class ImageCellTest {
@@ -88,7 +88,7 @@ namespace Xamarin.Forms.Controls
 
 			var albums = new List<string> ();
 			for (int i = 0; i < 30; i++) {
-				albums.Add (string.Format ("https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Xamarin.Forms.Controls/coffee.png?ticks={0}", i ));
+				albums.Add (string.Format ("https://raw.githubusercontent.com/xamarin/System.Maui/master/System.Maui.Controls/coffee.png?ticks={0}", i ));
 			}
 
 

@@ -1,8 +1,8 @@
-﻿using System.ComponentModel;
-using Xamarin.Forms.Platform.GTK.Extensions;
-using Xamarin.Forms.PlatformConfiguration.GTKSpecific;
+using System.ComponentModel;
+using System.Maui.Platform.GTK.Extensions;
+using System.Maui.PlatformConfiguration.GTKSpecific;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers
+namespace System.Maui.Platform.GTK.Renderers
 {
 	public class BoxViewRenderer : ViewRenderer<BoxView, Controls.BoxView>
 	{

@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Reflection;
 using System.Xml;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	[ContentProperty(nameof(Default))]
 	public class OnIdiomExtension : IMarkupExtension

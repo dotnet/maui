@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.DualScreen
+namespace System.Maui.DualScreen
 {
 	public class HingeAngleChangedEventArgs : EventArgs
 	{

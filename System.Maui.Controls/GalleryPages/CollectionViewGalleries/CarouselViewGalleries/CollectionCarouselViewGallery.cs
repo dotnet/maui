@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
+namespace System.Maui.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
 {
  	[Preserve(AllMembers = true)]
 	public class CollectionCarouselViewGallery : ContentPage

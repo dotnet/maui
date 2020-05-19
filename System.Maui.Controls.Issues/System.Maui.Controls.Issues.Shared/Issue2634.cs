@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 
-using Xamarin.Forms;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Github, 2634, "Keyboard causes view to scroll incorrectly", PlatformAffected.iOS)]
@@ -229,16 +229,16 @@ namespace Xamarin.Forms.Controls.Issues
 				};
 
 				var rl = new RelativeLayout ();
-				rl.Children.Add (bvBackground, Forms.Constraint.Constant (0), Forms.Constraint.Constant (0),
-					Forms.Constraint.RelativeToParent ((parent) =>
+				rl.Children.Add (bvBackground, System.Maui.Constraint.Constant (0), System.Maui.Constraint.Constant (0),
+					System.Maui.Constraint.RelativeToParent ((parent) =>
 						parent.Width),
-					Forms.Constraint.RelativeToParent ((parent) =>
+					System.Maui.Constraint.RelativeToParent ((parent) =>
 						parent.Height));
 
 				rl.Children.Add(addFrame,
-					Forms.Constraint.RelativeToParent((parent) => (parent.Width * .25) / 2),
-					Forms.Constraint.Constant(Device.RuntimePlatform == Device.iOS ? 60 : 40),
-					Forms.Constraint.RelativeToParent((parent) => parent.Width * .75));
+					System.Maui.Constraint.RelativeToParent((parent) => (parent.Width * .25) / 2),
+					System.Maui.Constraint.Constant(Device.RuntimePlatform == Device.iOS ? 60 : 40),
+					System.Maui.Constraint.RelativeToParent((parent) => parent.Width * .75));
 
 				Content = rl;
 			}

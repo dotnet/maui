@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific
+namespace System.Maui.PlatformConfiguration.AndroidSpecific
 {
-	using FormsElement = Forms.Entry;
+	using FormsElement = System.Maui.Entry;
 
 	public static class Entry
 	{
@@ -21,7 +21,7 @@
 			return GetImeOptions(config.Element);
 		}
 
-		public static IPlatformElementConfiguration<Android, FormsElement> SetImeOptions(this IPlatformElementConfiguration<Xamarin.Forms.PlatformConfiguration.Android, FormsElement> config, ImeFlags value)
+		public static IPlatformElementConfiguration<Android, FormsElement> SetImeOptions(this IPlatformElementConfiguration<System.Maui.PlatformConfiguration.Android, FormsElement> config, ImeFlags value)
 		{
 			SetImeOptions(config.Element, value);
 			return config;

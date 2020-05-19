@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.CustomAttributes;
+using System.Maui.CustomAttributes;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	internal class SwipeViewCoreGalleryPage : CoreGalleryPage<SwipeView>
 	{

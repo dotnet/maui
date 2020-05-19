@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using Xamarin.Forms.Platform.Tizen.Native;
+using System.Maui.Platform.Tizen.Native;
 using ElmSharp;
 using Tizen.NET.MaterialComponents;
 
-namespace Xamarin.Forms.Material.Tizen.Native
+namespace System.Maui.Material.Tizen.Native
 {
 	public class MCanvas : MCard, IContainable<EvasObject>
 	{

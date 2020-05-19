@@ -1,4 +1,4 @@
-﻿using Xamarin.Forms.Pages;
+using System.Maui.Pages;
 
 namespace PagesGallery
 {

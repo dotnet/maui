@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using Microsoft.Windows.Design;
 
-namespace Xamarin.Forms.Xaml.Design
+namespace System.Maui.Xaml.Design
 {
 	class AttributeTableBuilder : Microsoft.Windows.Design.Metadata.AttributeTableBuilder
 	{

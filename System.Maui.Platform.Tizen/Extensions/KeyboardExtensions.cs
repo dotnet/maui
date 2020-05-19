@@ -1,16 +1,16 @@
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using ElmSharp;
 using EEntry = ElmSharp.Entry;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public static class KeyboardExtensions
 	{
 		/// <summary>
-		/// Creates an instance of ElmSharp.Keyboard reflecting the provided Xamarin.Forms.Keyboard instance
+		/// Creates an instance of ElmSharp.Keyboard reflecting the provided System.Maui.Keyboard instance
 		/// </summary>
-		/// <returns>Keyboard type corresponding to the provided Xamarin.Forms.Keyboard</returns>
-		/// <param name="keyboard">The Xamarin.Forms.Keyboard class instance to be converted to ElmSharp.Keyboard.</param>
+		/// <returns>Keyboard type corresponding to the provided System.Maui.Keyboard</returns>
+		/// <param name="keyboard">The System.Maui.Keyboard class instance to be converted to ElmSharp.Keyboard.</param>
 		public static Native.Keyboard ToNative(this Keyboard keyboard)
 		{
 			if (keyboard == Keyboard.Numeric)

@@ -1,11 +1,11 @@
 using System;
 using UIKit;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml.Internals;
+using System.Maui.Internals;
+using System.Maui.Xaml.Internals;
 
-[assembly: Xamarin.Forms.Dependency(typeof(Xamarin.Forms.Platform.iOS.NativeBindingService))]
+[assembly: System.Maui.Dependency(typeof(System.Maui.Platform.iOS.NativeBindingService))]
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	[Preserve(AllMembers = true)]
 	class NativeBindingService : INativeBindingService

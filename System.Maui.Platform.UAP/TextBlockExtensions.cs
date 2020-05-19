@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 #if WINDOWS_UWP
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Documents;
-using NativeSize = Windows.Foundation.Size;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Documents;
+using NativeSize = global::Windows.Foundation.Size;
 #else
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -12,9 +12,9 @@ using NativeSize = System.Windows.Size;
 #endif
 
 #if WINDOWS_UWP
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 #else
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 #endif
 {
 	internal static class TextBlockExtensions

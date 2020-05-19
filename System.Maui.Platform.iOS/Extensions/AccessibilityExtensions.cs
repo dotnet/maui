@@ -1,12 +1,12 @@
-﻿#if __MOBILE__
+#if __MOBILE__
 using UIKit;
 using NativeView = UIKit.UIView;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 #else
 using NativeView = AppKit.NSView;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 #endif
 {
 	public static class AccessibilityExtensions

@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-using Xamarin.Forms;
+using System.Maui;
 
 namespace Embedding.XF
 {
@@ -14,7 +14,7 @@ namespace Embedding.XF
 			var htmlSource = new HtmlWebViewSource();
 
 			htmlSource.Html = @"<html><body>
-<h1>Xamarin.Forms</h1>
+<h1>System.Maui</h1>
 <p>Welcome to WebView.</p>
 </body>
 </html>";

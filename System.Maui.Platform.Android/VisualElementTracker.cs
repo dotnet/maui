@@ -5,9 +5,9 @@ using Android.Content;
 using Android.Views;
 using AView = Android.Views.View;
 using Object = Java.Lang.Object;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class VisualElementTracker : IDisposable
 	{
@@ -114,7 +114,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			// If we're running sufficiently new Android, we have to make sure to update the ClipBounds to
 			// match the new size of the ViewGroup
-			if ((int)Forms.SdkInt >= 18)
+			if ((int)System.Maui.Maui.SdkInt >= 18)
 			{
 				UpdateClipToBounds();
 			}
@@ -408,7 +408,7 @@ namespace Xamarin.Forms.Platform.Android
 			_renderer.View.Enabled = _renderer.Element.IsEnabled;
 		}
 
-		class AttachTracker : Object, AView.IOnAttachStateChangeListener
+		class AttachTracker : Java.Lang.Object, AView.IOnAttachStateChangeListener
 		{
 			public static readonly AttachTracker Instance = new AttachTracker();
 

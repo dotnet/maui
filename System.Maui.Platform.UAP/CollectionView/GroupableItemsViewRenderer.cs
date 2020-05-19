@@ -1,8 +1,8 @@
-﻿using System.ComponentModel;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
+using System.ComponentModel;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Data;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class GroupableItemsViewRenderer<TItemsView> : SelectableItemsViewRenderer<TItemsView>
 		where TItemsView : GroupableItemsView
@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Platform.UWP
 					Source = TemplatedItemSourceFactory.CreateGrouped(itemsSource, itemTemplate,
 					ItemsView.GroupHeaderTemplate, ItemsView.GroupFooterTemplate, Element),
 					IsSourceGrouped = true,
-					ItemsPath = new Windows.UI.Xaml.PropertyPath(nameof(GroupTemplateContext.Items))
+					ItemsPath = new global::Windows.UI.Xaml.PropertyPath(nameof(GroupTemplateContext.Items))
 				};
 			}
 			else

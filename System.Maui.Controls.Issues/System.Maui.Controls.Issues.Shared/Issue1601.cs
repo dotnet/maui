@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1601, "Exception thrown when `Removing Content Using LayoutCompression", PlatformAffected.Android)]
@@ -19,13 +19,13 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override void Init()
 		{
 			var grid = new Grid();
-			Forms.CompressedLayout.SetIsHeadless(grid, true);
+			System.Maui.CompressedLayout.SetIsHeadless(grid, true);
 			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
 			grid.RowDefinitions.Add(new RowDefinition { Height = 40 });
 
 			var boxView = new BoxView { BackgroundColor = Color.Red };
 			var backgroundContainer = new Grid();
-			Forms.CompressedLayout.SetIsHeadless(backgroundContainer, true);
+			System.Maui.CompressedLayout.SetIsHeadless(backgroundContainer, true);
 			backgroundContainer.Children.Add(boxView);
 			grid.Children.Add(backgroundContainer);
 
@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				Orientation = StackOrientation.Horizontal
 			};
-			Forms.CompressedLayout.SetIsHeadless(stack, true);
+			System.Maui.CompressedLayout.SetIsHeadless(stack, true);
 			var button = new Button { Text = "CRASH!" };
 			stack.Children.Add(button);
 			grid.Children.Add(stack, 0, 1);

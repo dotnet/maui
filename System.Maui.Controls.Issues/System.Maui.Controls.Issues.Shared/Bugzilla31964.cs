@@ -2,13 +2,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 31964, "[Xamarin.Forms SwitchCell]OnChange() did not work for Windows platform",
+	[Issue (IssueTracker.Bugzilla, 31964, "[System.Maui SwitchCell]OnChange() did not work for Windows platform",
 		PlatformAffected.WinRT)]
 	public class Bugzilla31964 : TestContentPage
 	{

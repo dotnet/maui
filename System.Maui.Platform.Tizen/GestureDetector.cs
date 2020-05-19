@@ -3,7 +3,7 @@ using System.Linq;
 using ElmSharp;
 using EGestureType = ElmSharp.GestureLayer.GestureType;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	internal class GestureDetector
 	{
@@ -485,7 +485,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				return new SwipeGestureHandler(recognizer);
 			}
-			return Forms.GetHandlerForObject<GestureHandler>(recognizer, recognizer);
+			return System.Maui.Maui.GetHandlerForObject<GestureHandler>(recognizer, recognizer);
 		}
 
 		GestureHandler LookupHandler(IGestureRecognizer recognizer)

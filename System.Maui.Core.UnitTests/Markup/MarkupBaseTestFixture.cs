@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 
-using Xamarin.Forms.Core.UnitTests;
-using static Xamarin.Forms.Core.Markup.Markup;
+using System.Maui.Core.UnitTests;
+using static System.Maui.Core.Markup.Markup;
 
-namespace Xamarin.Forms.Markup.UnitTests
+namespace System.Maui.Markup.UnitTests
 {
 	public class MarkupBaseTestFixture<TBindable> : MarkupBaseTestFixture where TBindable : BindableObject, new()
 	{
@@ -89,7 +89,7 @@ namespace Xamarin.Forms.Markup.UnitTests
 				test();
 			else
 				StringAssert.EndsWith(
-					"part of Markup; to use it, you must opt-in by calling Forms.SetFlags(\"Markup_Experimental\") before calling Forms.Init().",
+					"part of Markup; to use it, you must opt-in by calling System.Maui.Maui.SetFlags(\"Markup_Experimental\") before calling System.Maui.Maui.Init().",
 					Assert.Throws<InvalidOperationException>(test).Message
 				);
 		}

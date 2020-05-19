@@ -1,7 +1,7 @@
-﻿using Xamarin.Forms;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Maps;
-using Xamarin.Forms.Maps.iOS;
+using System.Maui;
+using System.Maui.Internals;
+using System.Maui.Maps;
+using System.Maui.Maps.iOS;
 
 [assembly: ExportRenderer(typeof(Map), typeof(MapRenderer))]
 [assembly: Preserve]

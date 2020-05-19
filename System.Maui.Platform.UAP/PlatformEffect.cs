@@ -1,6 +1,6 @@
-﻿using Windows.UI.Xaml;
+using global::Windows.UI.Xaml;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public abstract class PlatformEffect : PlatformEffect<FrameworkElement, FrameworkElement>
 	{

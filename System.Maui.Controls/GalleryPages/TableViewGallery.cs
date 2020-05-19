@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	internal class TableViewGallery : ContentPage
 	{

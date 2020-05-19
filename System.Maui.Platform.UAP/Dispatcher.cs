@@ -1,10 +1,10 @@
-﻿using System;
-using Windows.ApplicationModel.Core;
-using Windows.UI.Core;
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.UWP;
+using System;
+using global::Windows.ApplicationModel.Core;
+using global::Windows.UI.Core;
+using System.Maui;
+using System.Maui.Platform.UWP;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	internal class Dispatcher : IDispatcher
 	{

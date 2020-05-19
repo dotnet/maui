@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using CoreAnimation;
 using CoreGraphics;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.iOS;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui;
+using System.Maui.ControlGallery.iOS;
+using System.Maui.Controls.Issues;
+using System.Maui.Platform.iOS;
 
 [assembly: ExportEffect(typeof(GradientEffect), Issue6334.EffectName)]
-namespace Xamarin.Forms.ControlGallery.iOS
+namespace System.Maui.ControlGallery.iOS
 {
 	public class GradientEffect : PlatformEffect
 	{

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using Android.Content;
 #if __ANDROID_29__
@@ -10,19 +10,19 @@ using Android.Support.V4.Widget;
 #endif
 using AView = Android.Views.View;
 using Android.Views;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using AColor = Android.Graphics.Color;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
 using Android.Graphics.Drawables;
 using Android.Graphics;
-using Xamarin.Forms.Platform.Android.FastRenderers;
+using System.Maui.Platform.Android.FastRenderers;
 using Android.OS;
 using Android.Widget;
 using Android.Content.Res;
 using AAttribute = Android.Resource.Attribute;
 using ACheckBox = Android.Widget.CheckBox;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	// current previewer doesn't work with appcompat so this renderer is here for the previewer only
 	sealed class CheckBoxDesignerRenderer :

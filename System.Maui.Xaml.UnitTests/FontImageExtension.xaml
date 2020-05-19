@@ -2,8 +2,8 @@
 <TabBar 
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="using:Xamarin.Forms.Xaml.UnitTests"
-    x:Class="Xamarin.Forms.Xaml.UnitTests.FontImageExtension">
+    xmlns:local="using:System.Maui.Xaml.UnitTests"
+    x:Class="System.Maui.Xaml.UnitTests.FontImageExtension">
 
     <Tab Title="Hello" Icon="{FontImage Size={x:Static local:FontImageExtension.Size}, Color={x:Static local:FontImageExtension.Color}, FontFamily={x:Static local:FontImageExtension.FontFamily}, Glyph={x:Static local:FontImageExtension.Glyph}}" />
     <Tab Title="World" Icon="{FontImage Size={x:Static local:FontImageExtension.Size}, Color={x:Static local:FontImageExtension.Color}, FontFamily={x:Static local:FontImageExtension.FontFamily}, Glyph={x:Static local:FontImageExtension.Glyph}}" />

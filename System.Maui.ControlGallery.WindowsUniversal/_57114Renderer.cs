@@ -1,12 +1,12 @@
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Xamarin.Forms.ControlGallery.WindowsUniversal;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.UWP;
+using global::Windows.UI.Xaml.Input;
+using global::Windows.UI.Xaml.Media;
+using System.Maui.ControlGallery.WindowsUniversal;
+using System.Maui.Controls.Issues;
+using System.Maui.Platform.UWP;
 
 [assembly: ExportRenderer(typeof(Bugzilla57114._57114View), typeof(_57114Renderer))]
 
-namespace Xamarin.Forms.ControlGallery.WindowsUniversal
+namespace System.Maui.ControlGallery.WindowsUniversal
 {
 	public class _57114Renderer : VisualElementRenderer<Bugzilla57114._57114View, _57114NativeView>
 	{
@@ -29,11 +29,11 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 
 		Brush ColorToBrush(Color color)
 		{
-			return new SolidColorBrush(Windows.UI.Color.FromArgb((byte)(color.A * 255), (byte)(color.R * 255), (byte)(color.G * 255), (byte)(color.B * 255)));
+			return new SolidColorBrush(global::Windows.UI.Color.FromArgb((byte)(color.A * 255), (byte)(color.R * 255), (byte)(color.G * 255), (byte)(color.B * 255)));
 		}
 	}
 
-	public class _57114NativeView : Windows.UI.Xaml.Controls.Grid
+	public class _57114NativeView : global::Windows.UI.Xaml.Controls.Grid
 	{
 		public _57114NativeView()
 		{

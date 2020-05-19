@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using Windows.Storage;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class EmbeddedFontLoader : IEmbeddedFontLoader
 	{

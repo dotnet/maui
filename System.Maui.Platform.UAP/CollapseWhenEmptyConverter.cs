@@ -1,9 +1,9 @@
-﻿using System;
-using Windows.UI.Xaml;
+using System;
+using global::Windows.UI.Xaml;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	public class CollapseWhenEmptyConverter : Windows.UI.Xaml.Data.IValueConverter
+	public class CollapseWhenEmptyConverter : global::Windows.UI.Xaml.Data.IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{

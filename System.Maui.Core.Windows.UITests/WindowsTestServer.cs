@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using OpenQA.Selenium.Appium.Windows;
 using Xamarin.UITest;
 
-namespace Xamarin.Forms.Core.UITests
+namespace System.Maui.Core.UITests
 {
 	internal class WindowsTestServer : ITestServer
 	{

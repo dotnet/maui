@@ -1,5 +1,5 @@
-﻿using System;
-namespace Xamarin.Forms.Xaml.Diagnostics
+using System;
+namespace System.Maui.Xaml.Diagnostics
 {
 	internal static class ResourceDictionaryDiagnostics
 	{

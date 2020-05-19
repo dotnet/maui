@@ -1,9 +1,9 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public sealed class MenuItemCollection : IEnumerable<MenuItem>, IList<MenuItem>, INotifyCollectionChanged
 	{

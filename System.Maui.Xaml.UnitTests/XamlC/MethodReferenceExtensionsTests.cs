@@ -2,13 +2,13 @@ using System.Linq;
 
 using Mono.Cecil;
 
-using Xamarin.Forms.Build.Tasks;
+using System.Maui.Build.Tasks;
 
 using NUnit.Framework;
 using System.Collections.Generic;
-using Xamarin.Forms.Xaml.UnitTests;
+using System.Maui.Xaml.UnitTests;
 
-namespace Xamarin.Forms.XamlcUnitTests
+namespace System.Maui.XamlcUnitTests
 {
 	[TestFixture]
 	public class MethodReferenceExtensionsTests
@@ -45,12 +45,12 @@ namespace Xamarin.Forms.XamlcUnitTests
 			var adderT = propertyType.GetMethods ((md, tr) => md.Name == "Add", module).Single ();
 			var adder = adderT.Item1;
 			var ptype = adderT.Item2;
-			Assert.AreEqual ("System.Void Xamarin.Forms.DefinitionCollection`1::Add(T)", adder.FullName);
-			Assert.AreEqual ("Xamarin.Forms.DefinitionCollection`1<Xamarin.Forms.RowDefinition>", ptype.FullName);
+			Assert.AreEqual ("System.Void System.Maui.DefinitionCollection`1::Add(T)", adder.FullName);
+			Assert.AreEqual ("System.Maui.DefinitionCollection`1<System.Maui.RowDefinition>", ptype.FullName);
 			var adderRef = module.ImportReference (adder);
-			Assert.AreEqual ("System.Void Xamarin.Forms.DefinitionCollection`1::Add(T)", adderRef.FullName);
+			Assert.AreEqual ("System.Void System.Maui.DefinitionCollection`1::Add(T)", adderRef.FullName);
 			adderRef = adderRef.ResolveGenericParameters (ptype, module);
-			Assert.AreEqual ("System.Void Xamarin.Forms.DefinitionCollection`1<Xamarin.Forms.RowDefinition>::Add(T)", adderRef.FullName);
+			Assert.AreEqual ("System.Void System.Maui.DefinitionCollection`1<System.Maui.RowDefinition>::Add(T)", adderRef.FullName);
 		}
 
 		[Test]
@@ -59,17 +59,17 @@ namespace Xamarin.Forms.XamlcUnitTests
 			TypeReference declaringTypeReference;
 			var type = module.ImportReference (typeof (StackLayout));
 			var property = type.GetProperty (pd => pd.Name == "Children", out declaringTypeReference);
-			Assert.AreEqual ("System.Collections.Generic.IList`1<T> Xamarin.Forms.Layout`1::Children()", property.FullName);
-			Assert.AreEqual ("Xamarin.Forms.Layout`1<Xamarin.Forms.View>", declaringTypeReference.FullName);
+			Assert.AreEqual ("System.Collections.Generic.IList`1<T> System.Maui.Layout`1::Children()", property.FullName);
+			Assert.AreEqual ("System.Maui.Layout`1<System.Maui.View>", declaringTypeReference.FullName);
 			var propertyGetter = property.GetMethod;
-			Assert.AreEqual ("System.Collections.Generic.IList`1<T> Xamarin.Forms.Layout`1::get_Children()", propertyGetter.FullName);
+			Assert.AreEqual ("System.Collections.Generic.IList`1<T> System.Maui.Layout`1::get_Children()", propertyGetter.FullName);
 			var propertyGetterRef = module.ImportReference (propertyGetter);
-			Assert.AreEqual ("System.Collections.Generic.IList`1<T> Xamarin.Forms.Layout`1::get_Children()", propertyGetterRef.FullName);
+			Assert.AreEqual ("System.Collections.Generic.IList`1<T> System.Maui.Layout`1::get_Children()", propertyGetterRef.FullName);
 
 			propertyGetterRef = module.ImportReference (propertyGetterRef.ResolveGenericParameters (declaringTypeReference, module));
-			Assert.AreEqual ("System.Collections.Generic.IList`1<T> Xamarin.Forms.Layout`1<Xamarin.Forms.View>::get_Children()", propertyGetterRef.FullName);
+			Assert.AreEqual ("System.Collections.Generic.IList`1<T> System.Maui.Layout`1<System.Maui.View>::get_Children()", propertyGetterRef.FullName);
 			var returnType = propertyGetterRef.ReturnType.ResolveGenericParameters (declaringTypeReference);
-			Assert.AreEqual ("System.Collections.Generic.IList`1<Xamarin.Forms.View>", returnType.FullName);
+			Assert.AreEqual ("System.Collections.Generic.IList`1<System.Maui.View>", returnType.FullName);
 		}
 
 		[Test]
@@ -78,17 +78,17 @@ namespace Xamarin.Forms.XamlcUnitTests
 			TypeReference declaringTypeReference;
 			var type = module.ImportReference (typeof (Style));
 			var property = type.GetProperty (pd => pd.Name == "Setters", out declaringTypeReference);
-			Assert.AreEqual ("System.Collections.Generic.IList`1<Xamarin.Forms.Setter> Xamarin.Forms.Style::Setters()", property.FullName);
-			Assert.AreEqual ("Xamarin.Forms.Style", declaringTypeReference.FullName);
+			Assert.AreEqual ("System.Collections.Generic.IList`1<System.Maui.Setter> System.Maui.Style::Setters()", property.FullName);
+			Assert.AreEqual ("System.Maui.Style", declaringTypeReference.FullName);
 			var propertyGetter = property.GetMethod;
-			Assert.AreEqual ("System.Collections.Generic.IList`1<Xamarin.Forms.Setter> Xamarin.Forms.Style::get_Setters()", propertyGetter.FullName);
+			Assert.AreEqual ("System.Collections.Generic.IList`1<System.Maui.Setter> System.Maui.Style::get_Setters()", propertyGetter.FullName);
 
 			var propertyGetterRef = module.ImportReference (propertyGetter);
-			Assert.AreEqual ("System.Collections.Generic.IList`1<Xamarin.Forms.Setter> Xamarin.Forms.Style::get_Setters()", propertyGetterRef.FullName);
+			Assert.AreEqual ("System.Collections.Generic.IList`1<System.Maui.Setter> System.Maui.Style::get_Setters()", propertyGetterRef.FullName);
 			propertyGetterRef = module.ImportReference (propertyGetterRef.ResolveGenericParameters (declaringTypeReference, module));
-			Assert.AreEqual ("System.Collections.Generic.IList`1<Xamarin.Forms.Setter> Xamarin.Forms.Style::get_Setters()", propertyGetterRef.FullName);
+			Assert.AreEqual ("System.Collections.Generic.IList`1<System.Maui.Setter> System.Maui.Style::get_Setters()", propertyGetterRef.FullName);
 			var returnType = propertyGetterRef.ReturnType.ResolveGenericParameters (declaringTypeReference);
-			Assert.AreEqual ("System.Collections.Generic.IList`1<Xamarin.Forms.Setter>", returnType.FullName);
+			Assert.AreEqual ("System.Collections.Generic.IList`1<System.Maui.Setter>", returnType.FullName);
 		}
 
 		[Test]
@@ -99,11 +99,11 @@ namespace Xamarin.Forms.XamlcUnitTests
 			var adder = adderT.Item1;
 			var ptype = adderT.Item2;
 			Assert.AreEqual ("System.Void System.Collections.Generic.ICollection`1::Add(T)", adder.FullName);
-			Assert.AreEqual ("System.Collections.Generic.ICollection`1<Xamarin.Forms.View>", ptype.FullName);
+			Assert.AreEqual ("System.Collections.Generic.ICollection`1<System.Maui.View>", ptype.FullName);
 			var adderRef = module.ImportReference (adder);
 			Assert.AreEqual ("System.Void System.Collections.Generic.ICollection`1::Add(T)", adderRef.FullName);
 			adderRef = adderRef.ResolveGenericParameters (ptype, module);
-			Assert.AreEqual ("System.Void System.Collections.Generic.ICollection`1<Xamarin.Forms.View>::Add(T)", adderRef.FullName);
+			Assert.AreEqual ("System.Void System.Collections.Generic.ICollection`1<System.Maui.View>::Add(T)", adderRef.FullName);
 		}
 
 		[Test]
@@ -123,7 +123,7 @@ namespace Xamarin.Forms.XamlcUnitTests
 			var method = type.Resolve ().Methods.Where (md => md.Name == "CustmAttributeParameterMethod").Single ();
 			var resolved = method.ResolveGenericParameters (type, module);
 
-			Assert.AreEqual ("Xamarin.Forms.ParameterAttribute", resolved.Parameters[0].CustomAttributes[0].AttributeType.FullName);
+			Assert.AreEqual ("System.Maui.ParameterAttribute", resolved.Parameters[0].CustomAttributes[0].AttributeType.FullName);
 		}
 
 		[Test]

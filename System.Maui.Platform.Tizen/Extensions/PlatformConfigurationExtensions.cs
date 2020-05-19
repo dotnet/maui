@@ -1,6 +1,6 @@
-using CurrentPlatform = Xamarin.Forms.PlatformConfiguration.Tizen;
+using CurrentPlatform = System.Maui.PlatformConfiguration.Tizen;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public static class PlatformConfigurationExtensions
 	{

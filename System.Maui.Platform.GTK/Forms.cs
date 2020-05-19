@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK;
+using System.Maui.Internals;
+using System.Maui.Platform.GTK;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
-	public static class Forms
+	public static class Maui
 	{
 		internal static string BarTextColor = "Xamarin.BarTextColor";
 		internal static string BarBackgroundColor = "Xamarin.BarBackgroundColor";

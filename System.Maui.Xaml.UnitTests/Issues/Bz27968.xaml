@@ -1,8 +1,8 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <local:Bz27968Page xmlns="http://xamarin.com/schemas/2014/forms"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			 xmlns:local="clr-namespace:Xamarin.Forms.Xaml.UnitTests"
-			 x:Class="Xamarin.Forms.Xaml.UnitTests.Bz27968">
+			 xmlns:local="clr-namespace:System.Maui.Xaml.UnitTests"
+			 x:Class="System.Maui.Xaml.UnitTests.Bz27968">
 	<ContentPage.Resources>
 		<ResourceDictionary>
 			<DataTemplate x:Key="template">

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -12,7 +12,7 @@ using System.Windows.Input;
 using WList = System.Windows.Controls.ListView;
 using WSelectionChangedEventArgs = System.Windows.Controls.SelectionChangedEventArgs;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public class TableViewDataTemplateSelector : System.Windows.Controls.DataTemplateSelector
 	{
@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Platform.WPF
 		}
 
 
-		protected override void OnElementChanged(ElementChangedEventArgs<Xamarin.Forms.TableView> e)
+		protected override void OnElementChanged(ElementChangedEventArgs<System.Maui.TableView> e)
 		{
 			if (e.OldElement != null)
 			{

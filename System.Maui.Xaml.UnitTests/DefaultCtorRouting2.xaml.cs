@@ -1,7 +1,7 @@
-﻿using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
+using NUnit.Framework;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public partial class DefaultCtorRouting2 : ContentPage
 	{
@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 						return @"<?xml version=""1.0"" encoding=""UTF-8""?>
 <ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 	xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-	x:Class=""Xamarin.Forms.Xaml.UnitTests.DefaultCtorRouting2""
+	x:Class=""System.Maui.Xaml.UnitTests.DefaultCtorRouting2""
 	IsCompiled=""IsCompiled?"">
 </ContentPage>";
 					return null;

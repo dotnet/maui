@@ -9,12 +9,12 @@ using Android.Support.V7.Widget;
 #endif
 using Android.Util;
 using Android.Views;
-using Xamarin.Forms.Platform.Android.FastRenderers;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using System.Maui.Platform.Android.FastRenderers;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android.AppCompat
+namespace System.Maui.Platform.Android.AppCompat
 {
 	public class ButtonRenderer : ViewRenderer<Button, AppCompatButton>,
 		AView.IOnAttachStateChangeListener, AView.IOnClickListener, AView.IOnTouchListener,
@@ -195,7 +195,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		void UpdateCharacterSpacing()
 		{
-			if (Forms.IsLollipopOrNewer)
+			if (System.Maui.Maui.IsLollipopOrNewer)
 			{
 				NativeButton.LetterSpacing = Element.CharacterSpacing.ToEm();
 			}

@@ -9,13 +9,13 @@ using Android.Support.V4.Widget;
 using Android.Views;
 using AListView = Android.Widget.ListView;
 using AView = Android.Views.View;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using System;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
 using Android.Widget;
 using Android.Runtime;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class ListViewRenderer : ViewRenderer<ListView, AListView>, SwipeRefreshLayout.IOnRefreshListener
 	{
@@ -116,7 +116,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			base.OnAttachedToWindow();
 
-			if (Forms.IsLollipopOrNewer && Control != null)
+			if (System.Maui.Maui.IsLollipopOrNewer && Control != null)
 				Control.NestedScrollingEnabled = (Parent.GetParentOfType<NestedScrollView>() != null);
 
 			_isAttached = true;
@@ -542,7 +542,7 @@ namespace Xamarin.Forms.Platform.Android
 				var width = (int)ctx.FromPixels(MeasureSpecFactory.GetSize(widthMeasureSpec));
 
 				SizeRequest request = element.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-				Xamarin.Forms.Layout.LayoutChildIntoBoundingRegion(element, new Rectangle(0, 0, width, request.Request.Height));
+				System.Maui.Layout.LayoutChildIntoBoundingRegion(element, new Rectangle(0, 0, width, request.Request.Height));
 
 				int widthSpec = MeasureSpecFactory.MakeMeasureSpec((int)ctx.ToPixels(width), MeasureSpecMode.Exactly);
 				int heightSpec = MeasureSpecFactory.MakeMeasureSpec((int)ctx.ToPixels(request.Request.Height), MeasureSpecMode.Exactly);

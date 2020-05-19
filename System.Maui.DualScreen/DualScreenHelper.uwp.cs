@@ -1,19 +1,19 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.Foundation.Metadata;
-using Windows.UI.ViewManagement;
+using global::Windows.Foundation.Metadata;
+using global::Windows.UI.ViewManagement;
 
 #if UWP_18362
-using Windows.UI.WindowManagement;
+using global::Windows.UI.WindowManagement;
 #endif
 
-using Windows.UI.Xaml.Hosting;
-using Xamarin.Forms.Platform.UWP;
+using global::Windows.UI.Xaml.Hosting;
+using System.Maui.Platform.UWP;
 
-namespace Xamarin.Forms.DualScreen
+namespace System.Maui.DualScreen
 {
 	public static class DualScreenHelper
 	{
@@ -22,7 +22,7 @@ namespace Xamarin.Forms.DualScreen
 
         public static bool HasCompactModeSupport()
 		{
-			if (!ApiInformation.IsTypePresent("Windows.UI.WindowManagement.AppWindow"))
+			if (!ApiInformation.IsTypePresent("global::Windows.UI.WindowManagement.AppWindow"))
 			{
 				return false;
 			}
@@ -32,7 +32,7 @@ namespace Xamarin.Forms.DualScreen
 
         public static async Task<CompactModeArgs> OpenCompactMode(ContentPage contentPage)
         {
-			if (!ApiInformation.IsTypePresent("Windows.UI.WindowManagement.AppWindow"))
+			if (!ApiInformation.IsTypePresent("global::Windows.UI.WindowManagement.AppWindow"))
 			{
 				return new CompactModeArgs(null, false);
 			}
@@ -42,7 +42,7 @@ namespace Xamarin.Forms.DualScreen
 
             var frameworkElement = contentPage.CreateFrameworkElement();
 
-            Windows.UI.Xaml.Controls.Frame frame = new Windows.UI.Xaml.Controls.Frame()
+            global::Windows.UI.Xaml.Controls.Frame frame = new global::Windows.UI.Xaml.Controls.Frame()
             {
                 Content = frameworkElement
             };
@@ -76,7 +76,7 @@ namespace Xamarin.Forms.DualScreen
 					true);
 
 
-					void OnFrameSizeChanged(object sender, Windows.UI.Xaml.SizeChangedEventArgs e)
+					void OnFrameSizeChanged(object sender, global::Windows.UI.Xaml.SizeChangedEventArgs e)
                     {
 						if (windowClosed)
 							return;

@@ -7,13 +7,13 @@ ifeq ($(UNAME_S),Linux)
 endif
 
 DOTNETPCL=$(MONOHOME)/xbuild-frameworks/.NETPortable/v4.5/Profile/Profile259/
-CORE=Xamarin.Forms.Core
+CORE=System.Maui.Core
 COREASSEMBLY=$(CORE)/bin/Release/netstandard2.0/$(CORE).dll
-XAML=Xamarin.Forms.Xaml
+XAML=System.Maui.Xaml
 XAMLASSEMBLY=$(XAML)/bin/Release/netstandard2.0/$(XAML).dll
-MAPS=Xamarin.Forms.Maps
+MAPS=System.Maui.Maps
 MAPSASSEMBLY=$(MAPS)/bin/Release/netstandard2.0/$(MAPS).dll
-PAGES=Xamarin.Forms.Pages
+PAGES=System.Maui.Pages
 PAGESASSEMBLY=$(PAGES)/bin/Release/netstandard2.0/$(PAGES).dll
 MDOC=mdoc
 
@@ -32,16 +32,16 @@ $(PAGES).docs: $(PAGESASSEMBLY)
 	$(MDOC) update --delete -o docs/$(PAGES) $(PAGESASSEMBLY) -L $(DOTNETPCL)
 
 $(COREASSEMBLY): .FORCE
-	msbuild /property:Configuration=Release Xamarin.Forms.Core/Xamarin.Forms.Core.csproj
+	msbuild /property:Configuration=Release System.Maui.Core/System.Maui.Core.csproj
 
 $(XAMLASSEMBLY): .FORCE
-	msbuild /property:Configuration=Release Xamarin.Forms.Xaml/Xamarin.Forms.Xaml.csproj
+	msbuild /property:Configuration=Release System.Maui.Xaml/System.Maui.Xaml.csproj
 
 $(MAPSASSEMBLY): .FORCE
-	msbuild /property:Configuration=Release Xamarin.Forms.Maps/Xamarin.Forms.Maps.csproj
+	msbuild /property:Configuration=Release System.Maui.Maps/System.Maui.Maps.csproj
 
 $(PAGESASSEMBLY): .FORCE
-	msbuild /property:Configuration=Release Xamarin.Forms.Pages/Xamarin.Forms.Pages.csproj
+	msbuild /property:Configuration=Release System.Maui.Pages/System.Maui.Pages.csproj
 
 htmldocs: docs
 	$(MDOC) export-html -o htmldocs docs/*

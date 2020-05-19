@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using Xamarin.Forms.PlatformConfiguration;
+using System.Maui.PlatformConfiguration;
 
-namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
+namespace System.Maui.PlatformConfiguration.iOSSpecific
 {
-	using FormsElement = Xamarin.Forms.SearchBar;
+	using FormsElement = System.Maui.SearchBar;
 
 	public static class SearchBar
 	{

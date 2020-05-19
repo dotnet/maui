@@ -1,7 +1,7 @@
 using ElmSharp;
 using ELayout = ElmSharp.Layout;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public sealed class DefaultRenderer : VisualElementRenderer<VisualElement>
 	{
@@ -9,7 +9,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (NativeView == null)
 			{
-				var control = new ELayout(Forms.NativeParent);
+				var control = new ELayout(System.Maui.Maui.NativeParent);
 				SetNativeView(control);
 			}
 			base.OnElementChanged(e);

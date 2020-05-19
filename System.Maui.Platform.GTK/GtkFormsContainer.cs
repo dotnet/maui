@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using Cairo;
 using Gdk;
 using Gtk;
 
-namespace Xamarin.Forms.Platform.GTK
+namespace System.Maui.Platform.GTK
 {
 	/// <summary>
 	/// A generic container to embed visual elements.

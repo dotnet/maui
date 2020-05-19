@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Linq;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.WindowsUniversal;
-using Xamarin.Forms.Platform.UWP;
+using System.Maui;
+using System.Maui.ControlGallery.WindowsUniversal;
+using System.Maui.Platform.UWP;
 
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Page), typeof(_2489CustomRenderer))]
-namespace Xamarin.Forms.ControlGallery.WindowsUniversal
+[assembly: ExportRenderer(typeof(System.Maui.Page), typeof(_2489CustomRenderer))]
+namespace System.Maui.ControlGallery.WindowsUniversal
 {
 	public class _2489CustomRenderer : PageRenderer
 	{

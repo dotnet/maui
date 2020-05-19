@@ -1,19 +1,19 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 using System.Linq;
 using System.Threading;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 4597, "[Android] ImageCell not loading images and setting ImageSource to null has no effect",
@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Controls.Issues
 		string _theListView = "theListViewAutomationId";
 		string _fileName = "xamarinlogo.png";
 		string _fileNameAutomationId = "CoffeeAutomationId";
-		string _uriImage = "https://github.com/xamarin/Xamarin.Forms/blob/3216ce4ccd096f8b9f909bbeea572dcf2a8c4466/Xamarin.Forms.ControlGallery.iOS/Resources/xamarinlogo.png?raw=true";
+		string _uriImage = "https://github.com/xamarin/System.Maui/blob/3216ce4ccd096f8b9f909bbeea572dcf2a8c4466/System.Maui.ControlGallery.iOS/Resources/xamarinlogo.png?raw=true";
 		bool _isUri = false;
 		string _nextTestId = "NextTest";
 		string _activeTestId = "activeTestId";
@@ -235,7 +235,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			imageVisible = GetImage();
 
-			UITest.Queries.AppResult[] GetImage()
+			Xamarin.UITest.Queries.AppResult[] GetImage()
 			{
 				return RunningApp
 					.Query(app => app.Marked(_theListView).Descendant())
@@ -259,7 +259,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement(_appearText);
 		}
 
-		UITest.Queries.AppResult TestForImageVisible()
+		Xamarin.UITest.Queries.AppResult TestForImageVisible()
 		{
 			var images = RunningApp.QueryUntilPresent(() =>
 			{
@@ -268,7 +268,7 @@ namespace Xamarin.Forms.Controls.Issues
 				if (result[0].Rect.Height > 1)
 					return result;
 
-				return new UITest.Queries.AppResult[0];
+				return new Xamarin.UITest.Queries.AppResult[0];
 			}, 10, 4000);
 
 			Assert.AreEqual(1, images.Length);
@@ -279,7 +279,7 @@ namespace Xamarin.Forms.Controls.Issues
 			return imageVisible;
 		}
 
-		void TestForImageNotVisible(UITest.Queries.AppResult previousFinding)
+		void TestForImageNotVisible(Xamarin.UITest.Queries.AppResult previousFinding)
 		{
 			var imageVisible = RunningApp.Query(_fileNameAutomationId);
 

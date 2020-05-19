@@ -1,8 +1,8 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 
-using Xamarin.Forms;
+using System.Maui;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public partial class FindByName : ContentPage
 	{	
@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void TestRootName (bool useCompiledXaml)
 			{
 				var page = new FindByName (useCompiledXaml);
-				Assert.AreSame (page, ((Forms.Internals.INameScope)page).FindByName ("root"));
+				Assert.AreSame (page, ((System.Maui.Internals.INameScope)page).FindByName ("root"));
 				Assert.AreSame (page, page.FindByName<FindByName> ("root"));
 			}
 

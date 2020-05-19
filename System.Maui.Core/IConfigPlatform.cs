@@ -1,5 +1,5 @@
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public interface IConfigPlatform { }
 }

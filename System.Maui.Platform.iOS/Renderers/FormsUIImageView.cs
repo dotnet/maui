@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using CoreGraphics;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class FormsUIImageView : UIImageView
 	{

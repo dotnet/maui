@@ -1,6 +1,6 @@
-﻿using FormsDevice = Xamarin.Forms.Device;
+using FormsDevice = System.Maui.Device;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public sealed class DeviceStateTrigger : StateTriggerBase
 	{

@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, ITabStopElement
 	{
@@ -58,10 +58,10 @@ namespace Xamarin.Forms
 		internal static readonly BindableProperty TransformProperty = BindableProperty.Create("Transform", typeof(string), typeof(VisualElement), null, propertyChanged: OnTransformChanged);
 
 		public static readonly BindableProperty VisualProperty =
-			BindableProperty.Create(nameof(Visual), typeof(IVisual), typeof(VisualElement), Forms.VisualMarker.MatchParent,
+			BindableProperty.Create(nameof(Visual), typeof(IVisual), typeof(VisualElement), System.Maui.VisualMarker.MatchParent,
 									validateValue: (b, v) => v != null, propertyChanged: OnVisualChanged);
 
-		static IVisual _defaultVisual = Xamarin.Forms.VisualMarker.Default;
+		static IVisual _defaultVisual = System.Maui.VisualMarker.Default;
 		IVisual _effectiveVisual = _defaultVisual;
 
 		public IVisual Visual
@@ -969,7 +969,7 @@ namespace Xamarin.Forms
 			var newVisual = (IVisual)newValue;
 
 			if (newVisual.IsMatchParent())
-				self.EffectiveVisual = Xamarin.Forms.VisualMarker.Default;
+				self.EffectiveVisual = System.Maui.VisualMarker.Default;
 			else
 				self.EffectiveVisual = (IVisual)newValue;
 

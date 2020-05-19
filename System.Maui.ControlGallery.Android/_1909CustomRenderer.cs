@@ -1,13 +1,13 @@
-﻿using Android.Content;
+using Android.Content;
 using System;
 using System.Linq;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Android;
-using Xamarin.Forms.Platform.Android.AppCompat;
-using Xamarin.Forms.Controls.Issues;
+using System.Maui;
+using System.Maui.ControlGallery.Android;
+using System.Maui.Platform.Android.AppCompat;
+using System.Maui.Controls.Issues;
 
 [assembly: ExportRenderer(typeof(Issue1909.FlatButton), typeof(FlatButtonRenderer))]
-namespace Xamarin.Forms.ControlGallery.Android
+namespace System.Maui.ControlGallery.Android
 {
 		public class FlatButtonRenderer :
 #if TEST_EXPERIMENTAL_RENDERERS

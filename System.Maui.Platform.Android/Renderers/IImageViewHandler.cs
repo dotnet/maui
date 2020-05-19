@@ -1,8 +1,8 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using Android.Widget;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	/// <summary>
 	/// The successor to IImageSourceHandler, the goal being we can achieve better performance by never creating an Android.Graphics.Bitmap instance

@@ -1,10 +1,10 @@
 using System;
 using System.ComponentModel;
 using Android.Views;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android.FastRenderers
+namespace System.Maui.Platform.Android.FastRenderers
 {
 	public sealed class VisualElementRenderer : IDisposable, IEffectControlProvider, ITabStop
 	{

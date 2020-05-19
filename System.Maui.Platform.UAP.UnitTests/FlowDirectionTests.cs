@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using NUnit.Framework;
-using WTextAlignment = Windows.UI.Xaml.TextAlignment;
-using WFlowDirection = Windows.UI.Xaml.FlowDirection;
+using WTextAlignment = global::Windows.UI.Xaml.TextAlignment;
+using WFlowDirection = global::Windows.UI.Xaml.FlowDirection;
 using System;
 
-namespace Xamarin.Forms.Platform.UAP.UnitTests
+namespace System.Maui.Platform.UAP.UnitTests
 {
 	public class FlowDirectionTests : PlatformTestFixture
 	{

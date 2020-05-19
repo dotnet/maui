@@ -2,22 +2,22 @@
 
 <Catalog Version="3.3">
 	<Category Name="Controls">
-		<Item Class="Xamarin.Forms.BoxView" Name="BoxView" Image="view-BoxView.png">
+		<Item Class="System.Maui.BoxView" Name="BoxView" Image="view-BoxView.png">
 			<Snippet>
 				<BoxView />
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.ActivityIndicator" Name="ActivityIndicator" Image="view-ActivityIndicator.png">
+		<Item Class="System.Maui.ActivityIndicator" Name="ActivityIndicator" Image="view-ActivityIndicator.png">
 			<Snippet>
 				<ActivityIndicator />
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.Button" Name="Button" Image="view-Button.png">
+		<Item Class="System.Maui.Button" Name="Button" Image="view-Button.png">
 			<Snippet>
 				<Button Text="" />
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.CarouselView" Name="CarouselView" Image="view-ListView.png">
+		<Item Class="System.Maui.CarouselView" Name="CarouselView" Image="view-ListView.png">
 			<Snippet>
 				<CarouselView>
 					<CarouselView.ItemTemplate>
@@ -27,7 +27,7 @@
 				</CarouselView>
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.CollectionView" Name="CollectionView" Image="view-ListView.png">
+		<Item Class="System.Maui.CollectionView" Name="CollectionView" Image="view-ListView.png">
 			<Snippet>
 				<CollectionView>
 					<CollectionView.ItemsLayout>
@@ -40,32 +40,32 @@
 				</CollectionView>
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.DatePicker" Name="DatePicker" Image="view-DatePicker.png">
+		<Item Class="System.Maui.DatePicker" Name="DatePicker" Image="view-DatePicker.png">
 			<Snippet>
 				<DatePicker />
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.Editor" Name="Editor" Image="view-Editor.png">
+		<Item Class="System.Maui.Editor" Name="Editor" Image="view-Editor.png">
 			<Snippet>
 				<Editor />
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.Entry" Name="Entry" Image="view-Entry.png">
+		<Item Class="System.Maui.Entry" Name="Entry" Image="view-Entry.png">
 			<Snippet>
 				<Entry Placeholder="" />
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.Image" Name="Image" Image="view-Image.png">
+		<Item Class="System.Maui.Image" Name="Image" Image="view-Image.png">
 			<Snippet>
 				<Image Source="" />
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.Label" Name="Label" Image="view-Label.png">
+		<Item Class="System.Maui.Label" Name="Label" Image="view-Label.png">
 			<Snippet>
 				<Label Text="" />
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.ListView" Name="ListView" Image="view-ListView.png">
+		<Item Class="System.Maui.ListView" Name="ListView" Image="view-ListView.png">
 			<Snippet>
 				<ListView>
 					<ListView.ItemTemplate>
@@ -75,37 +75,37 @@
 				</ListView>
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.Picker" Name="Picker" Image="view-Picker.png">
+		<Item Class="System.Maui.Picker" Name="Picker" Image="view-Picker.png">
 			<Snippet>
 				<Picker Title="" />
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.ProgressBar" Name="ProgressBar" Image="view-ProgressBar.png">
+		<Item Class="System.Maui.ProgressBar" Name="ProgressBar" Image="view-ProgressBar.png">
 			<Snippet>
 				<ProgressBar />
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.SearchBar" Name="SearchBar" Image="view-SearchBar.png">
+		<Item Class="System.Maui.SearchBar" Name="SearchBar" Image="view-SearchBar.png">
 			<Snippet>
 				<SearchBar Placeholder="" />
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.Slider" Name="Slider" Image="view-Slider.png">
+		<Item Class="System.Maui.Slider" Name="Slider" Image="view-Slider.png">
 			<Snippet>
 				<Slider Minimum="0" Maximum="1" />
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.Stepper" Name="Stepper" Image="view-Stepper.png">
+		<Item Class="System.Maui.Stepper" Name="Stepper" Image="view-Stepper.png">
 			<Snippet>
 				<Stepper Minimum="0" Maximum="10" Increment="1" />
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.Switch" Name="Switch" Image="view-Switch.png">
+		<Item Class="System.Maui.Switch" Name="Switch" Image="view-Switch.png">
 			<Snippet>
 				<Switch IsToggled="false" />
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.TableView" Name="TableView" Image="view-TableView.png">
+		<Item Class="System.Maui.TableView" Name="TableView" Image="view-TableView.png">
 			<Snippet>
 				<TableView>
 					<TableRoot>
@@ -115,44 +115,44 @@
 				</TableView>
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.TimePicker" Name="TimePicker" Image="view-TimePicker.png">
+		<Item Class="System.Maui.TimePicker" Name="TimePicker" Image="view-TimePicker.png">
 			<Snippet>
 				<TimePicker />
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.WebView" Name="WebView" Image="view-WebView.png">
+		<Item Class="System.Maui.WebView" Name="WebView" Image="view-WebView.png">
 			<Snippet>
 				<WebView Source="" />
 			</Snippet>
 		</Item>
 	</Category>
 	<Category Name="Layouts">
-		<Item Class="Xamarin.Forms.ContentView" Name="ContentView" Image="layout-ContentView.png">
+		<Item Class="System.Maui.ContentView" Name="ContentView" Image="layout-ContentView.png">
 			<Snippet>
 				<ContentView></ContentView>
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.Frame" Name="Frame" Image="layout-Frame.png">
+		<Item Class="System.Maui.Frame" Name="Frame" Image="layout-Frame.png">
 			<Snippet>
 				<Frame></Frame>
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.ScrollView" Name="ScrollView" Image="layout-ScrollView.png">
+		<Item Class="System.Maui.ScrollView" Name="ScrollView" Image="layout-ScrollView.png">
 			<Snippet>
 				<ScrollView></ScrollView>
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.AbsoluteLayout" Name="AbsoluteLayout" Image="layout-AbsoluteLayout.png">
+		<Item Class="System.Maui.AbsoluteLayout" Name="AbsoluteLayout" Image="layout-AbsoluteLayout.png">
 			<Snippet>
 				<AbsoluteLayout></AbsoluteLayout>
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.FlexLayout" Name="FlexLayout" Image="layout-FlexLayout.png">
+		<Item Class="System.Maui.FlexLayout" Name="FlexLayout" Image="layout-FlexLayout.png">
 			<Snippet>
 				<FlexLayout></FlexLayout>
 			</Snippet>
 		</Item>		
-		<Item Class="Xamarin.Forms.Grid" Name="Grid" Image="layout-Grid.png">
+		<Item Class="System.Maui.Grid" Name="Grid" Image="layout-Grid.png">
 			<Snippet>
 				<Grid>
 					<Grid.ColumnDefinitions>
@@ -164,39 +164,39 @@
 				</Grid>
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.RelativeLayout" Name="RelativeLayout" Image="layout-RelativeLayout.png">
+		<Item Class="System.Maui.RelativeLayout" Name="RelativeLayout" Image="layout-RelativeLayout.png">
 			<Snippet>
 				<RelativeLayout></RelativeLayout>
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.StackLayout" Name="StackLayout" Image="layout-StackLayout.png">
+		<Item Class="System.Maui.StackLayout" Name="StackLayout" Image="layout-StackLayout.png">
 			<Snippet>
 				<StackLayout></StackLayout>
 			</Snippet>
 		</Item>
 	</Category>
 	<Category Name="Cells">
-		<Item Class="Xamarin.Forms.EntryCell" Name="EntryCell" Image="cell-EntryCell.png">
+		<Item Class="System.Maui.EntryCell" Name="EntryCell" Image="cell-EntryCell.png">
 			<Snippet>
 				<EntryCell Label="" Placeholder="" />
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.SwitchCell" Name="SwitchCell" Image="cell-SwitchCell.png">
+		<Item Class="System.Maui.SwitchCell" Name="SwitchCell" Image="cell-SwitchCell.png">
 			<Snippet>
 				<SwitchCell Text="" On="false" />
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.TextCell" Name="TextCell" Image="cell-TextCell.png">
+		<Item Class="System.Maui.TextCell" Name="TextCell" Image="cell-TextCell.png">
 			<Snippet>
 				<TextCell Text="" Detail="" />
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.ImageCell" Name="ImageCell" Image="cell-ImageCell.png">
+		<Item Class="System.Maui.ImageCell" Name="ImageCell" Image="cell-ImageCell.png">
 			<Snippet>
 				<ImageCell Text="" ImageSource="" />
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.ViewCell" Name="ViewCell" Image="cell-ViewCell.png">
+		<Item Class="System.Maui.ViewCell" Name="ViewCell" Image="cell-ViewCell.png">
 			<Snippet>
 				<ViewCell />
 			</Snippet>

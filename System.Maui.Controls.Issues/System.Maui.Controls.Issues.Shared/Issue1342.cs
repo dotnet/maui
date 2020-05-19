@@ -1,20 +1,20 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text;
 using System.Windows.Input;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1342, "[iOS] ListView throws Exception on ObservableCollection.Add/Remove for non visible list view",
@@ -56,11 +56,11 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			public MainPageCode()
 			{
-				ToolbarItems.Add(new Xamarin.Forms.ToolbarItem() { Text = "add1" });
-				ToolbarItems.Add(new Xamarin.Forms.ToolbarItem() { Text = $"{add2}" });
-				ToolbarItems.Add(new Xamarin.Forms.ToolbarItem() { Text = $"{add3}" });
-				ToolbarItems.Add(new Xamarin.Forms.ToolbarItem() { Text = "reload" });
-				ToolbarItems.Add(new Xamarin.Forms.ToolbarItem() { Text = "visible" });
+				ToolbarItems.Add(new System.Maui.ToolbarItem() { Text = "add1" });
+				ToolbarItems.Add(new System.Maui.ToolbarItem() { Text = $"{add2}" });
+				ToolbarItems.Add(new System.Maui.ToolbarItem() { Text = $"{add3}" });
+				ToolbarItems.Add(new System.Maui.ToolbarItem() { Text = "reload" });
+				ToolbarItems.Add(new System.Maui.ToolbarItem() { Text = "visible" });
 
 
 				ToolbarItems[0].SetBinding(ToolbarItem.CommandProperty, "Add1Command");

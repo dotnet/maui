@@ -5,7 +5,7 @@ using Android.Widget;
 using Android.Views;
 using AButton = Android.Widget.Button;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class StepperRenderer : ViewRenderer<Stepper, LinearLayout>, IStepperRenderer
 	{

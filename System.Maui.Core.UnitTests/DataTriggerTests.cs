@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class DataTriggerTests : BaseTestFixture

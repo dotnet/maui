@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -6,10 +6,10 @@
     <ProjectGuid>{8A75B1DC-CEED-4B1B-8675-A7DFFD1E6DE4}</ProjectGuid>
     <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
-    <RootNamespace>Xamarin.Forms.Material.iOS</RootNamespace>
-    <AssemblyName>Xamarin.Forms.Material</AssemblyName>
+    <RootNamespace>System.Maui.Material.iOS</RootNamespace>
+    <AssemblyName>System.Maui.Material</AssemblyName>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
-    <PackageId>Xamarin.Forms.Material.iOS</PackageId>
+    <PackageId>System.Maui.Material.iOS</PackageId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -55,7 +55,7 @@
     <PackageReference Include="Xamarin.iOS.MaterialComponents" Version="92.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Xamarin.Forms.Material.Android\MaterialColors.cs">
+    <Compile Include="..\System.Maui.Material.Android\MaterialColors.cs">
       <Link>MaterialColors.cs</Link>
     </Compile>
     <Compile Include="IMaterialEntryRenderer.cs" />
@@ -82,15 +82,15 @@
     <Compile Include="MaterialFormsCheckBox.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj">
+    <ProjectReference Include="..\System.Maui.Platform.iOS\System.Maui.Platform.iOS.csproj">
       <Project>{271193C1-6E7C-429C-A36D-3F1BE5267231}</Project>
-      <Name>Xamarin.Forms.Platform.iOS</Name>
+      <Name>System.Maui.Platform.iOS</Name>
       <IsAppExtension>false</IsAppExtension>
       <IsWatchApp>false</IsWatchApp>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj">
       <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
-      <Name>Xamarin.Forms.Core</Name>
+      <Name>System.Maui.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />

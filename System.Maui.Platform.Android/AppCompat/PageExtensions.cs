@@ -10,7 +10,7 @@ using Fragment = AndroidX.Fragment.App.Fragment;
 using Fragment = global::Android.Support.V4.App.Fragment;
 #endif
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public static class PageExtensions
 	{
@@ -19,8 +19,8 @@ namespace Xamarin.Forms.Platform.Android
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static Fragment CreateFragment(this ContentPage view, Context context)
 		{
-			if (!Forms.IsInitialized)
-				throw new InvalidOperationException("call Forms.Init() before this");
+			if (!System.Maui.Maui.IsInitialized)
+				throw new InvalidOperationException("call System.Maui.Maui.Init() before this");
 
 			if (!(view.RealParent is Application))
 			{
@@ -79,8 +79,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		public static Fragment CreateSupportFragment(this ContentPage view, Context context)
 		{
-			if (!Forms.IsInitialized)
-				throw new InvalidOperationException("call Forms.Init() before this");
+			if (!System.Maui.Maui.IsInitialized)
+				throw new InvalidOperationException("call System.Maui.Maui.Init() before this");
 
 			if (!(view.RealParent is Application))
 			{

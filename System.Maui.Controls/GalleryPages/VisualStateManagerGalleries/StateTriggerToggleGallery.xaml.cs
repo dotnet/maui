@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries
+namespace System.Maui.Controls.GalleryPages.VisualStateManagerGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class StateTriggerToggleGallery : ContentPage

@@ -1,6 +1,6 @@
-﻿using AppKit;
+using AppKit;
 
-namespace Xamarin.Forms.ControlGallery.MacOS
+namespace System.Maui.ControlGallery.MacOS
 {
 	static class MainClass
 	{

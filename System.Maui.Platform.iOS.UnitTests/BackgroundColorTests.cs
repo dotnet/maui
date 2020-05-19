@@ -1,10 +1,10 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui.Platform.iOS;
 
-namespace Xamarin.Forms.Platform.iOS.UnitTests
+namespace System.Maui.Platform.iOS.UnitTests
 {
 	[TestFixture]
 	public class BackgroundColorTests : PlatformTestFixture

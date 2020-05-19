@@ -4,7 +4,7 @@ using Android.Text.Method;
 using Java.Lang;
 using Java.Text;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal class LocalizedDigitsKeyListener : NumberKeyListener
 	{
@@ -149,7 +149,7 @@ namespace Xamarin.Forms.Platform.Android
 				char c = dest.CharAt(i);
 				if (IsSignChar(c))
 				{
-					return new String(""); // Nothing can be inserted in front of a sign character.
+					return new Java.Lang.String(""); // Nothing can be inserted in front of a sign character.
 				}
 
 				if (IsDecimalPointChar(c))
@@ -199,7 +199,7 @@ namespace Xamarin.Forms.Platform.Android
 				{
 					if (end == start + 1)
 					{
-						return new String(""); // Only one character, and it was stripped.
+						return new Java.Lang.String(""); // Only one character, and it was stripped.
 					}
 					if (stripped == null)
 					{

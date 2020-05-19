@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Graphics;
 using Android.Util;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
 using static System.String;
 using AButton = Android.Widget.Button;
 using AView = Android.Views.View;
@@ -13,7 +13,7 @@ using AMotionEventActions = Android.Views.MotionEventActions;
 using Object = Java.Lang.Object;
 using AColor = Android.Graphics.Color;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class ButtonRenderer : ViewRenderer<Button, AButton>, AView.IOnAttachStateChangeListener, IBorderVisualElementRenderer
 	{
@@ -277,7 +277,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateCharacterSpacing()
 		{
-			if (Forms.IsLollipopOrNewer)
+			if (System.Maui.Maui.IsLollipopOrNewer)
 			{
 				Control.LetterSpacing = Element.CharacterSpacing.ToEm();
 			}
@@ -314,7 +314,7 @@ namespace Xamarin.Forms.Platform.Android
 			UpdatePadding();
 		}
 
-		class ButtonClickListener : Object, IOnClickListener
+		class ButtonClickListener : Java.Lang.Object, IOnClickListener
 		{
 			public static readonly Lazy<ButtonClickListener> Instance = new Lazy<ButtonClickListener>(() => new ButtonClickListener());
 
@@ -326,7 +326,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
-		class ButtonTouchListener : Object, IOnTouchListener
+		class ButtonTouchListener : Java.Lang.Object, IOnTouchListener
 		{
 			public static readonly Lazy<ButtonTouchListener> Instance = new Lazy<ButtonTouchListener>(() => new ButtonTouchListener());
 

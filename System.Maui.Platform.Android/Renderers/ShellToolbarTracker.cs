@@ -30,11 +30,11 @@ using LP = Android.Views.ViewGroup.LayoutParams;
 using R = Android.Resource;
 using ATextView = global::Android.Widget.TextView;
 using AColor = Android.Graphics.Color;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class ShellToolbarTracker : Java.Lang.Object, AView.IOnClickListener, IShellToolbarTracker, IFlyoutBehaviorObserver
 	{
@@ -634,7 +634,7 @@ namespace Xamarin.Forms.Platform.Android
 			public FlyoutIconDrawerDrawable(Context context, Color defaultColor, Drawable icon, string text) : base(context)
 			{
 				_defaultColor = defaultColor;
-				_defaultSize = Forms.GetFontSizeNormal(context);
+				_defaultSize = System.Maui.Maui.GetFontSizeNormal(context);
 				_iconBitmap = icon;
 				_text = text;
 			}

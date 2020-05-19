@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Xamarin.Forms;
-using Xamarin.Forms.CustomAttributes;
+using System.Maui;
+using System.Maui.CustomAttributes;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Issue(IssueTracker.Bugzilla, 39483, "ListView Context Menu localization", PlatformAffected.iOS)]
 	public partial class Bugzilla39483 : ContentPage

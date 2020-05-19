@@ -3,7 +3,7 @@ using ElmSharp;
 using ESize = ElmSharp.Size;
 using ELayout = ElmSharp.Layout;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	/// <summary>
 	/// The Text Helper contains functions that assist in working with text-able objects.

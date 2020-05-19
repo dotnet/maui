@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using ElmSharp;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class ViewCellRenderer : CellRenderer
 	{
@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				double height = viewCell.RenderHeight;
 				height = height > 0 ? height : FindCellContentHeight(viewCell);
 
-				renderer.NativeView.MinimumHeight = Forms.ConvertToScaledPixel(height);
+				renderer.NativeView.MinimumHeight = System.Maui.Maui.ConvertToScaledPixel(height);
 				(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
 
 				UpdatePropagateEvent(viewCell.View);
@@ -77,7 +77,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			var renderer = Platform.GetOrCreateRenderer(duplicatedCell.View);
 			double height = duplicatedCell.RenderHeight;
 			height = height > 0 ? height : FindCellContentHeight(duplicatedCell);
-			renderer.NativeView.MinimumHeight = Forms.ConvertToScaledPixel(height);
+			renderer.NativeView.MinimumHeight = System.Maui.Maui.ConvertToScaledPixel(height);
 
 			_cacheCandidate[renderer.NativeView] = duplicatedCell;
 			renderer.NativeView.Deleted += (sender, e) =>

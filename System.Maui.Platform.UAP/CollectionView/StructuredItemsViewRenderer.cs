@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.ComponentModel;
-using Windows.UI.Xaml.Controls;
-using UWPApp = Windows.UI.Xaml.Application;
-using WListView = Windows.UI.Xaml.Controls.ListView;
-using WScrollMode = Windows.UI.Xaml.Controls.ScrollMode;
-using WSetter = Windows.UI.Xaml.Setter;
-using WStyle = Windows.UI.Xaml.Style;
-using WThickness = Windows.UI.Xaml.Thickness;
+using global::Windows.UI.Xaml.Controls;
+using UWPApp = global::Windows.UI.Xaml.Application;
+using WListView = global::Windows.UI.Xaml.Controls.ListView;
+using WScrollMode = global::Windows.UI.Xaml.Controls.ScrollMode;
+using WSetter = global::Windows.UI.Xaml.Setter;
+using WStyle = global::Windows.UI.Xaml.Style;
+using WThickness = global::Windows.UI.Xaml.Thickness;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class StructuredItemsViewRenderer<TItemsView> : ItemsViewRenderer<TItemsView>
 		where TItemsView : StructuredItemsView
@@ -219,7 +219,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			ScrollViewer.SetHorizontalScrollMode(horizontalListView, WScrollMode.Auto);
 			ScrollViewer.SetHorizontalScrollBarVisibility(horizontalListView,
-				Windows.UI.Xaml.Controls.ScrollBarVisibility.Auto);
+				global::Windows.UI.Xaml.Controls.ScrollBarVisibility.Auto);
 
 			return horizontalListView;
 		}

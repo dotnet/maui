@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.IO;
 using System.IO.IsolatedStorage;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	internal class WPFIsolatedStorageFile : IIsolatedStorageFile
 	{

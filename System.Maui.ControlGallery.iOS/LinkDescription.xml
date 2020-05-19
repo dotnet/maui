@@ -1,14 +1,14 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <linker>
   <assembly fullname="XamarinFormsControlGalleryiOS">
-    <namespace fullname="Xamarin.Forms.ControlGallery.iOS.Tests" />
-    <namespace fullname="Xamarin.Forms.Controls.Issues" />
+    <namespace fullname="System.Maui.ControlGallery.iOS.Tests" />
+    <namespace fullname="System.Maui.Controls.Issues" />
     <type fullname="*Renderer" />
     <type fullname="*Effect" />
     <type fullname="*Service" />
   </assembly>
-  <assembly fullname="Xamarin.Forms.Controls">
-    <namespace fullname="Xamarin.Forms.Controls.Tests" />
+  <assembly fullname="System.Maui.Controls">
+    <namespace fullname="System.Maui.Controls.Tests" />
   </assembly>
   <assembly fullname="nunit.framework"/>
   <assembly fullname="mscorlib">
@@ -16,5 +16,5 @@
     <type fullname="System.Runtime.CompilerServices.INotifyCompletion" />
     <type fullname="System.Runtime.CompilerServices.TaskAwaiter" />
   </assembly>
-  <assembly fullname="Xamarin.Forms.Platform.iOS.UnitTests" />
+  <assembly fullname="System.Maui.Platform.iOS.UnitTests" />
 </linker>

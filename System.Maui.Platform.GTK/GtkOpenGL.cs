@@ -1,6 +1,6 @@
-﻿using OpenTK;
+using OpenTK;
 
-namespace Xamarin.Forms.Platform.GTK
+namespace System.Maui.Platform.GTK
 {
 	public static class GtkOpenGL
 	{

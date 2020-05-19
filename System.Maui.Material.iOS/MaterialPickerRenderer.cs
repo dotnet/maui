@@ -1,9 +1,9 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Foundation;
 using UIKit;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui.Platform.iOS;
 
-namespace Xamarin.Forms.Material.iOS
+namespace System.Maui.Material.iOS
 {
 	public class MaterialPickerRenderer : PickerRendererBase<MaterialTextField>, IMaterialEntryRenderer
 	{

@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
-using Xamarin.Forms.Platform.WPF.Interfaces;
+using System.Maui.Platform.WPF.Interfaces;
 
-namespace Xamarin.Forms.Platform.WPF.Controls
+namespace System.Maui.Platform.WPF.Controls
 {
 	public class SelectionChangedEventArgs : EventArgs
 	{

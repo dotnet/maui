@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 	public class VisualAttribute : Attribute

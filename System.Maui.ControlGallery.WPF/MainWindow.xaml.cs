@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Platform.WPF;
+using System.Maui.Platform.WPF;
 
-namespace Xamarin.Forms.ControlGallery.WPF
+namespace System.Maui.ControlGallery.WPF
 {
     /// <summary>
     /// Logique d'interaction pour MainWindow.xaml
@@ -10,8 +10,8 @@ namespace Xamarin.Forms.ControlGallery.WPF
 		public MainWindow()
 		{
 			InitializeComponent();
-			Forms.SetFlags("CarouselView_Experimental", "MediaElement_Experimental");
-			Xamarin.Forms.Forms.Init();
+			System.Maui.Maui.SetFlags("CarouselView_Experimental", "MediaElement_Experimental");
+			System.Maui.Maui.Init();
 			FormsMaps.Init("");
 			LoadApplication(new Controls.App());
         }

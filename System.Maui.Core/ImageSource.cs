@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[TypeConverter(typeof(ImageSourceConverter))]
 	public abstract class ImageSource : Element

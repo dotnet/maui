@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Windows.Input;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public sealed class TapGestureRecognizer : GestureRecognizer
 	{

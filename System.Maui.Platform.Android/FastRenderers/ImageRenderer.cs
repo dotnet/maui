@@ -6,14 +6,14 @@ using Android.Graphics;
 using AImageView = Android.Widget.ImageView;
 using AView = Android.Views.View;
 using Android.Views;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 #if __ANDROID_29__
 using AndroidX.Core.View;
 #else
 using Android.Support.V4.View;
 #endif
 
-namespace Xamarin.Forms.Platform.Android.FastRenderers
+namespace System.Maui.Platform.Android.FastRenderers
 {
 	public class ImageRenderer : AImageView, IVisualElementRenderer, IImageRendererController, IViewRenderer, ITabStop,
 		ILayoutChanges
@@ -208,7 +208,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use ImageRenderer(Context) instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public ImageRenderer() : base(Forms.Context)
+		public ImageRenderer() : base(System.Maui.Maui.Context)
 		{
 		}
 

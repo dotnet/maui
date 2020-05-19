@@ -1,10 +1,10 @@
-﻿using Gtk;
+using Gtk;
 using System;
 using System.Collections.Generic;
-using Xamarin.Forms.Platform.GTK.Cells;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using System.Maui.Platform.GTK.Cells;
+using System.Maui.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Controls
+namespace System.Maui.Platform.GTK.Controls
 {
 	public class TableView : ScrolledWindow
 	{

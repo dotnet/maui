@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace System.Maui.Build.Tasks
 {
 	[Preserve(AllMembers = true)]
 	internal class PerformanceProvider : IPerformanceProvider
@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 		static string ShortenPath(string path)
 		{
-			int index = path.IndexOf("Xamarin.Forms.");
+			int index = path.IndexOf("System.Maui.");
 			if (index > -1)
 				path = path.Substring(index + 14);
 

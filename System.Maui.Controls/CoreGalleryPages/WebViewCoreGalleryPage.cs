@@ -1,11 +1,11 @@
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using System.Maui.CustomAttributes;
+using System.Maui.PlatformConfiguration;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
 
-using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+using WindowsOS = System.Maui.PlatformConfiguration.Windows;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	internal class WebViewCoreGalleryPage : CoreGalleryPage<WebView>
 	{
@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Controls
 <link rel=""stylesheet"" href=""default.css"">
 </head>
 <body>
-<h1>Xamarin.Forms</h1>
+<h1>System.Maui</h1>
 <p>The CSS and image are loaded from local files!</p>
 <img src='WebImages/XamarinLogo.png'/>
 <p><a href=""local.html"">next page</a></p>

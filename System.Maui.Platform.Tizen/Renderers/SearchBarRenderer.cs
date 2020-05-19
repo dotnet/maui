@@ -1,13 +1,13 @@
 using System;
 using EColor = ElmSharp.Color;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class SearchBarRenderer : ViewRenderer<SearchBar, Native.SearchBar>
 	{
 
 		/// <summary>
-		/// Creates a new instance of the <see cref="Xamarin.Forms.Platform.Tizen.SearchBarRenderer"/> class.
+		/// Creates a new instance of the <see cref="System.Maui.Platform.Tizen.SearchBarRenderer"/> class.
 		/// Registers handlers for various properties of the SearchBar widget.
 		/// </summary>
 		public SearchBarRenderer()
@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Native.SearchBar(Forms.NativeParent));
+				SetNativeControl(new Native.SearchBar(System.Maui.Maui.NativeParent));
 				Control.IsSingleLine = true;
 				Control.SetInputPanelReturnKeyType(ElmSharp.InputPanelReturnKeyType.Search);
 
@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		/// <summary>
 		/// Called upon changing of Xamarin widget's cancel button color property.
-		/// Converts current Color to ElmSharp.Color instance and sets it in the underlying Xamarin.Forms.Platform.Tizen.Native widget.
+		/// Converts current Color to ElmSharp.Color instance and sets it in the underlying System.Maui.Platform.Tizen.Native widget.
 		/// </summary>
 		void CancelButtonColorPropertyHandler(bool initialize)
 		{
@@ -80,7 +80,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// <summary>
 		/// Called upon changing of Xamarin widget's font attributes property.
 		/// Converts current FontAttributes to ElmSharp.FontAttributes instance
-		/// and sets it in the underlying Xamarin.Forms.Platform.Tizen.Native.SearchBar widget.
+		/// and sets it in the underlying System.Maui.Platform.Tizen.Native.SearchBar widget.
 		/// </summary>
 		void FontAttributesPropertyHandler()
 		{
@@ -89,7 +89,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		/// <summary>
 		/// Called upon changing of Xamarin widget's font family property.
-		/// Sets current value of FontFamily property to the underlying Xamarin.Forms.Platform.Tizen.Native.SearchBar widget.
+		/// Sets current value of FontFamily property to the underlying System.Maui.Platform.Tizen.Native.SearchBar widget.
 		/// </summary>
 		void FontFamilyPropertyHandler()
 		{
@@ -98,7 +98,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		/// <summary>
 		/// Called upon changing of Xamarin widget's font size property.
-		/// Sets current value of FontSize property to the underlying Xamarin.Forms.Platform.Tizen.Native.SearchBar widget.
+		/// Sets current value of FontSize property to the underlying System.Maui.Platform.Tizen.Native.SearchBar widget.
 		/// </summary>
 		void FontSizePropertyHandler()
 		{
@@ -107,8 +107,8 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		/// <summary>
 		/// Called upon changing of Xamarin widget's horizontal text alignment property.
-		/// Converts current HorizontalTextAlignment property's value to Xamarin.Forms.Platform.Tizen.Native.TextAlignment instance
-		/// and sets it in the underlying Xamarin.Forms.Platform.Tizen.Native.SearchBar widget.
+		/// Converts current HorizontalTextAlignment property's value to System.Maui.Platform.Tizen.Native.TextAlignment instance
+		/// and sets it in the underlying System.Maui.Platform.Tizen.Native.SearchBar widget.
 		/// </summary>
 		void HorizontalTextAlignmentPropertyHandler()
 		{
@@ -118,7 +118,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// <summary>
 		/// Called upon changing of Xamarin widget's placeholder color property.
 		/// Converts current PlaceholderColor property value to ElmSharp.Color instance
-		/// and sets it in the underlying Xamarin.Forms.Platform.Tizen.Native.SearchBar widget.
+		/// and sets it in the underlying System.Maui.Platform.Tizen.Native.SearchBar widget.
 		/// </summary>
 		void PlaceholderColorPropertyHandler(bool initialize)
 		{
@@ -138,7 +138,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		/// <summary>
 		/// Called on every change of underlying SearchBar's Text property.
-		/// Rewrites current underlying Xamarin.Forms.Platform.Tizen.Native.SearchBar's Text contents to its Xamarin counterpart.
+		/// Rewrites current underlying System.Maui.Platform.Tizen.Native.SearchBar's Text contents to its Xamarin counterpart.
 		/// </summary>
 		/// <param name="sender">Sender.</param>
 		void OnTextChanged(object sender, EventArgs e)
@@ -160,7 +160,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// <summary>
 		/// Called upon changing of Xamarin widget's text color property.
 		/// Converts current TextColor property value to ElmSharp.Color instance
-		/// and sets it in the underlying Xamarin.Forms.Platform.Tizen.Native.SearchBar widget.
+		/// and sets it in the underlying System.Maui.Platform.Tizen.Native.SearchBar widget.
 		/// </summary>
 		void TextColorPropertyHandler(bool initialize)
 		{

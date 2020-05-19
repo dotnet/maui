@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public interface IItemsView<T> where T : BindableObject
 	{

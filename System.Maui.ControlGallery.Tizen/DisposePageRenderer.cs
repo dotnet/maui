@@ -1,10 +1,10 @@
-using Xamarin.Forms;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.ControlGallery.Tizen;
-using Xamarin.Forms.Platform.Tizen;
+using System.Maui;
+using System.Maui.Controls;
+using System.Maui.ControlGallery.Tizen;
+using System.Maui.Platform.Tizen;
 
 [assembly: ExportRenderer(typeof(DisposePage), typeof(DisposePageRenderer))]
-namespace Xamarin.Forms.ControlGallery.Tizen
+namespace System.Maui.ControlGallery.Tizen
 {
 	public class DisposePageRenderer : PageRenderer
 	{

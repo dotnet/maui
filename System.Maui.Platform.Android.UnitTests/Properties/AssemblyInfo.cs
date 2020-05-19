@@ -1,8 +1,8 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.InteropServices;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-[assembly: AssemblyTitle("Xamarin.Forms.Platform.Android.UnitTests")]
+[assembly: AssemblyTitle("System.Maui.Platform.Android.UnitTests")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyCopyright("Copyright © 2020")]
 [assembly: AssemblyTrademark("")]

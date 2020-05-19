@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,9 +14,9 @@ using Android.Views;
 using Android.Widget;
 using AView = Android.Views.View;
 using AImageButton = Android.Widget.ImageButton;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class SearchHandlerAppearanceTracker : IDisposable
 	{
@@ -122,12 +122,12 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateHorizontalTextAlignment()
 		{
-			_editText.UpdateHorizontalAlignment(_searchHandler.HorizontalTextAlignment, _control.Context.HasRtlSupport(), Xamarin.Forms.TextAlignment.Center.ToVerticalGravityFlags());
+			_editText.UpdateHorizontalAlignment(_searchHandler.HorizontalTextAlignment, _control.Context.HasRtlSupport(), System.Maui.TextAlignment.Center.ToVerticalGravityFlags());
 		}
 
 		void UpdateVerticalTextAlignment()
 		{
-			_editText.UpdateVerticalAlignment(_searchHandler.VerticalTextAlignment, Xamarin.Forms.TextAlignment.Center.ToVerticalGravityFlags());
+			_editText.UpdateVerticalAlignment(_searchHandler.VerticalTextAlignment, System.Maui.TextAlignment.Center.ToVerticalGravityFlags());
 		}
 		
 		void UpdateTextTransform()

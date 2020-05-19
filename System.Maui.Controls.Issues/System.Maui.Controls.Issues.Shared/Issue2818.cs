@@ -1,5 +1,5 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 using System;
 
 #if UITEST
@@ -7,10 +7,10 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 2818, "Right-to-Left MasterDetail in Xamarin.Forms Hamburger icon issue", PlatformAffected.Android)]
+	[Issue(IssueTracker.Github, 2818, "Right-to-Left MasterDetail in System.Maui Hamburger icon issue", PlatformAffected.Android)]
 	public class Issue2818 : TestMasterDetailPage
 	{
 

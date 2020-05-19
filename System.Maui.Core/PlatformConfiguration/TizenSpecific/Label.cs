@@ -1,6 +1,6 @@
-namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
+namespace System.Maui.PlatformConfiguration.TizenSpecific
 {
-	using FormsElement = Forms.Label;
+	using FormsElement = System.Maui.Label;
 
 	public static class Label
 	{

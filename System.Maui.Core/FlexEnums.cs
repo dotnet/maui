@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Globalization;
             
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[TypeConverter(typeof(FlexJustifyTypeConverter))]
 	public enum FlexJustify

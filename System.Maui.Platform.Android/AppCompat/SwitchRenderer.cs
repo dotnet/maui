@@ -9,9 +9,9 @@ using AndroidX.AppCompat.Widget;
 using Android.Support.V7.Widget;
 #endif
 using Android.Widget;
-using Xamarin.Forms.Platform.Android.FastRenderers;
+using System.Maui.Platform.Android.FastRenderers;
 
-namespace Xamarin.Forms.Platform.Android.AppCompat
+namespace System.Maui.Platform.Android.AppCompat
 {
 	public class SwitchRenderer : ViewRenderer<Switch, SwitchCompat>, CompoundButton.IOnCheckedChangeListener
 	{

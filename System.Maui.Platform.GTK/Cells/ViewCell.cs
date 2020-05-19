@@ -1,7 +1,7 @@
-﻿using System;
-using static Xamarin.Forms.Platform.GTK.Platform;
+using System;
+using static System.Maui.Platform.GTK.Platform;
 
-namespace Xamarin.Forms.Platform.GTK.Cells
+namespace System.Maui.Platform.GTK.Cells
 {
 	internal class ViewCell : CellBase
 	{
@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 			{
 				_lastAllocation = allocation;
 
-				var viewCell = Cell as Xamarin.Forms.ViewCell;
+				var viewCell = Cell as System.Maui.ViewCell;
 				var view = viewCell.View;
 
 				if (view == null)
@@ -44,7 +44,7 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 			}
 		}
 
-		private double GetHeightMeasure(Xamarin.Forms.ViewCell viewCell, Gdk.Rectangle allocation)
+		private double GetHeightMeasure(System.Maui.ViewCell viewCell, Gdk.Rectangle allocation)
 		{
 			var request = viewCell.View.Measure(allocation.Width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
 
@@ -64,7 +64,7 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 
 		protected override void UpdateCell()
 		{
-			var viewCell = Cell as Xamarin.Forms.ViewCell;
+			var viewCell = Cell as System.Maui.ViewCell;
 
 			if (viewCell != null)
 				Device.BeginInvokeOnMainThread(viewCell.SendDisappearing);
@@ -93,7 +93,7 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 
 		private IVisualElementRenderer GetNewRenderer()
 		{
-			var viewCell = Cell as Xamarin.Forms.ViewCell;
+			var viewCell = Cell as System.Maui.ViewCell;
 
 			if (viewCell.View == null)
 			{

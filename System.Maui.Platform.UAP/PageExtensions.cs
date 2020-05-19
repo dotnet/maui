@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Windows.UI.Xaml;
+using global::Windows.UI.Xaml;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	public sealed partial class FormsEmbeddedPageWrapper : Windows.UI.Xaml.Controls.Page
+	public sealed partial class FormsEmbeddedPageWrapper : global::Windows.UI.Xaml.Controls.Page
 	{
 		internal static Dictionary<Guid, ContentPage> Pages = new Dictionary<Guid, ContentPage>();
 
@@ -14,14 +14,14 @@ namespace Xamarin.Forms.Platform.UWP
 			InitializeComponent();
 		}
 
-		protected override void OnNavigatedTo(Windows.UI.Xaml.Navigation.NavigationEventArgs e)
+		protected override void OnNavigatedTo(global::Windows.UI.Xaml.Navigation.NavigationEventArgs e)
 		{
 			base.OnNavigatedTo(e);
 
 			if (e.Parameter == null)
 			{
 				throw new InvalidOperationException($"Cannot navigate to {nameof(FormsEmbeddedPageWrapper)} without "
-					+ $"providing a {nameof(Xamarin.Forms.Page)} identifier.");
+					+ $"providing a {nameof(System.Maui.Page)} identifier.");
 			}
 
 			// Find the page instance in the dictionary and then discard it so we don't prevent it from being collected
@@ -50,12 +50,12 @@ namespace Xamarin.Forms.Platform.UWP
 
 		internal static FrameworkElement ToFrameworkElement(this VisualElement visualElement)
 		{
-			if (!Forms.IsInitialized)
+			if (!System.Maui.Maui.IsInitialized)
 			{
-				throw new InvalidOperationException("call Forms.Init() before this");
+				throw new InvalidOperationException("call System.Maui.Maui.Init() before this");
 			}
 
-			var root = new Windows.UI.Xaml.Controls.Page();
+			var root = new global::Windows.UI.Xaml.Controls.Page();
 
 			// Yes, this looks awkward. But the page needs to be Platformed or several things won't work
 			new WindowsPlatform(root);
@@ -77,12 +77,12 @@ namespace Xamarin.Forms.Platform.UWP
 			return frameworkElement;
 		}
 
-		public static bool Navigate(this Windows.UI.Xaml.Controls.Frame frame, ContentPage page)
+		public static bool Navigate(this global::Windows.UI.Xaml.Controls.Frame frame, ContentPage page)
 		{
 			return Navigate(frame, page, null);
 		}
 
-		internal static bool Navigate(this Windows.UI.Xaml.Controls.Frame frame, ContentPage page, Windows.UI.Xaml.Media.Animation.NavigationTransitionInfo infoOverride)
+		internal static bool Navigate(this global::Windows.UI.Xaml.Controls.Frame frame, ContentPage page, global::Windows.UI.Xaml.Media.Animation.NavigationTransitionInfo infoOverride)
 		{
 
 			if (page == null)

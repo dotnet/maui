@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
+namespace System.Maui.PlatformConfiguration.iOSSpecific
 {
-	using FormsElement = Xamarin.Forms.TimePicker;
+	using FormsElement = System.Maui.TimePicker;
 
 	public static class TimePicker
 	{

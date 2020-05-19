@@ -1,4 +1,4 @@
-﻿using Microsoft.Maps.MapControl.WPF;
+using Microsoft.Maps.MapControl.WPF;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace Xamarin.Forms.Maps.WPF
+namespace System.Maui.Maps.WPF
 {
 	internal class FormsPushPin : Pushpin
 	{

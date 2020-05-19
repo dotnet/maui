@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using UIKit;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.iOS;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui;
+using System.Maui.ControlGallery.iOS;
+using System.Maui.Controls;
+using System.Maui.Platform.iOS;
 
 [assembly: ExportRenderer(typeof(ApiLabel), typeof(ApiLabelRenderer))]
-namespace Xamarin.Forms.ControlGallery.iOS
+namespace System.Maui.ControlGallery.iOS
 {
 	public class ApiLabelRenderer : LabelRenderer
 	{

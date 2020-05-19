@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace Xamarin.Forms.StyleSheets
+namespace System.Maui.StyleSheets
 {
 	static class CharExtensions
 	{

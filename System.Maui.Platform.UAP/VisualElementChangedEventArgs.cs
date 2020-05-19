@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class VisualElementChangedEventArgs : ElementChangedEventArgs<VisualElement>
 	{

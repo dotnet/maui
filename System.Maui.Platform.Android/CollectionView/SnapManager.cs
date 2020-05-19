@@ -6,7 +6,7 @@ using AndroidX.RecyclerView.Widget;
 using Android.Support.V7.Widget;
 #endif
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class SnapManager : IDisposable
 	{

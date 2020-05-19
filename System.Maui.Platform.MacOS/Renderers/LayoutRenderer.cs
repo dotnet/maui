@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using CoreGraphics;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	internal class LayoutRenderer : DefaultRenderer
 	{

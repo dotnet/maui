@@ -1,6 +1,6 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:converters="clr-namespace:Xamarin.Forms.Platform.WPF.Converters">
+                    xmlns:converters="clr-namespace:System.Maui.Platform.WPF.Converters">
 
     <converters:SymbolToValueConverter x:Key="SymbolToValue" />
     <BooleanToVisibilityConverter x:Key="BoolToVis" />

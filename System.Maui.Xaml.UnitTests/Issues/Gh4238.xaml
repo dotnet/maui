@@ -1,7 +1,7 @@
-﻿<x:Object
+<x:Object
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:collections="clr-namespace:System.Collections;assembly=mscorlib"
-    x:Class="Xamarin.Forms.Xaml.UnitTests.Gh4238">
+    x:Class="System.Maui.Xaml.UnitTests.Gh4238">
     <x:Object.Property>
         <collections:ArrayList>
             <x:Single>0</x:Single>

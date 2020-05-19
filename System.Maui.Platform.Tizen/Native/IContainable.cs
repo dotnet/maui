@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	/// <summary>
 	/// Interface defining methods for managing elements of the container.

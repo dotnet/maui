@@ -1,6 +1,6 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public interface IBorderElement

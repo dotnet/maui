@@ -1,16 +1,16 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.CarouselView)]
@@ -144,7 +144,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		}
 
-		void SwipePreviousItem(UITest.Queries.AppRect rect)
+		void SwipePreviousItem(Xamarin.UITest.Queries.AppRect rect)
 		{
 #if __ANDROID__
 			RunningApp.DragCoordinates(rect.X + 10, rect.Y, rect.X + rect.Width - 10, rect.Y);

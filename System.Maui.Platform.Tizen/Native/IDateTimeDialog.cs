@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using ElmSharp;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	public interface IDateTimeDialog
 	{

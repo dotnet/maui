@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	class NamescopingVisitor : IXamlNodeVisitor
 	{

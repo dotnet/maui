@@ -1,11 +1,11 @@
-﻿using Android.Content;
+using Android.Content;
 using Android.Graphics;
 using Android.OS;
-using Xamarin.Forms.Platform.Android;
-using Xamarin.Forms.Controls.Issues;
+using System.Maui.Platform.Android;
+using System.Maui.Controls.Issues;
 using static Android.Widget.CompoundButton;
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace System.Maui.ControlGallery.Android
 {
 	public class Issue7249SwitchRenderer : SwitchRenderer
 	{

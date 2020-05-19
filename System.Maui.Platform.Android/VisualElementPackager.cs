@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using Android.Views;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class VisualElementPackager : IDisposable
 	{
@@ -177,7 +177,7 @@ namespace Xamarin.Forms.Platform.Android
 					IVisualElementRenderer r = Platform.GetRenderer(element);
 					if (r != null)
 					{
-						if (Forms.IsLollipopOrNewer)
+						if (System.Maui.Maui.IsLollipopOrNewer)
 						{
 							var elevation = ElevationHelper.GetElevation(r.View) ?? 0;
 							var elementElevation = ElevationHelper.GetElevation(element, r.View.Context);
@@ -216,7 +216,7 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			}
 
-			if (!Forms.IsLollipopOrNewer)
+			if (!System.Maui.Maui.IsLollipopOrNewer)
 				return;
 
 			Element previousChild = ElementController.LogicalChildren[itemCount - 2];

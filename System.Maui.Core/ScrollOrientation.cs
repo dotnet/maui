@@ -1,4 +1,4 @@
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public enum ScrollOrientation
 	{

@@ -1,7 +1,7 @@
-﻿using NUnit.Framework;
-using Xamarin.Forms.Markup.LeftToRight;
+using NUnit.Framework;
+using System.Maui.Markup.LeftToRight;
 
-namespace Xamarin.Forms.Markup.UnitTests
+namespace System.Maui.Markup.UnitTests
 {
 	[TestFixture(true)]
 	[TestFixture(false)]

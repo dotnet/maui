@@ -1,19 +1,19 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using AToolbarPlacement = Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ToolbarPlacement;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
+using AToolbarPlacement = System.Maui.PlatformConfiguration.AndroidSpecific.ToolbarPlacement;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
 
-using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+using WindowsOS = System.Maui.PlatformConfiguration.Windows;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1898, "TabbedPage Page not watching icon changes", PlatformAffected.Android, issueTestNumber: 1)]

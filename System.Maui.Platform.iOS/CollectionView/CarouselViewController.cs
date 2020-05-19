@@ -1,9 +1,9 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using Foundation;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class CarouselViewController : ItemsViewController<CarouselView>
 	{
@@ -86,7 +86,7 @@ namespace Xamarin.Forms.Platform.iOS
 		protected override void BoundsSizeChanged()
 		{
 			base.BoundsSizeChanged();
-			Carousel.ScrollTo(Carousel.Position, position: Xamarin.Forms.ScrollToPosition.Center, animate: false);
+			Carousel.ScrollTo(Carousel.Position, position: System.Maui.ScrollToPosition.Center, animate: false);
 		}
 
 		internal void TearDown()
@@ -202,7 +202,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_gotoPosition == -1 && (goToPosition != carouselPosition || forceScroll))
 			{
 				_gotoPosition = goToPosition;
-				Carousel.ScrollTo(goToPosition, position: Xamarin.Forms.ScrollToPosition.Center, animate: animate);
+				Carousel.ScrollTo(goToPosition, position: System.Maui.ScrollToPosition.Center, animate: animate);
 			}
 		}
 

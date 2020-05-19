@@ -1,11 +1,11 @@
-﻿using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Tizen;
-using Xamarin.Forms.Controls.Issues.Helpers;
-using Xamarin.Forms.Platform.Tizen;
+using System.Maui;
+using System.Maui.ControlGallery.Tizen;
+using System.Maui.Controls.Issues.Helpers;
+using System.Maui.Platform.Tizen;
 using ELabel = ElmSharp.Label;
 
 [assembly: Dependency(typeof(SampleNativeControl))]
-namespace Xamarin.Forms.ControlGallery.Tizen
+namespace System.Maui.ControlGallery.Tizen
 {
 	public class SampleNativeControl : ISampleNativeControl
 	{

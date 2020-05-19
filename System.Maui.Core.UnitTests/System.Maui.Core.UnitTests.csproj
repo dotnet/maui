@@ -7,8 +7,8 @@
     <ProjectGuid>{00259593-A283-47A5-ACB7-9C3819B16364}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Xamarin.Forms.Core.UnitTests</RootNamespace>
-    <AssemblyName>Xamarin.Forms.Core.UnitTests</AssemblyName>
+    <RootNamespace>System.Maui.Core.UnitTests</RootNamespace>
+    <AssemblyName>System.Maui.Core.UnitTests</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
@@ -242,21 +242,21 @@
     <Compile Include="AppThemeTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj">
       <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
-      <Name>Xamarin.Forms.Core</Name>
+      <Name>System.Maui.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
+    <ProjectReference Include="..\System.Maui.Maps\System.Maui.Maps.csproj">
       <Project>{7D13BAC2-C6A4-416A-B07E-C169B199E52B}</Project>
-      <Name>Xamarin.Forms.Maps</Name>
+      <Name>System.Maui.Maps</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj">
+    <ProjectReference Include="..\System.Maui.Platform\System.Maui.Platform.csproj">
       <Project>{D31A6537-ED9C-4EBD-B231-A8D4FE44126A}</Project>
-      <Name>Xamarin.Forms.Platform</Name>
+      <Name>System.Maui.Platform</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj">
+    <ProjectReference Include="..\System.Maui.Xaml\System.Maui.Xaml.csproj">
       <Project>{9db2f292-8034-4e06-89ad-98bbda4306b9}</Project>
-      <Name>Xamarin.Forms.Xaml</Name>
+      <Name>System.Maui.Xaml</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

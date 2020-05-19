@@ -4,7 +4,7 @@ using AndroidX.Fragment.App;
 using Android.Support.V4.App;
 #endif
 
-namespace Xamarin.Forms.Platform.Android.AppCompat
+namespace System.Maui.Platform.Android.AppCompat
 {
 	/// <summary>
 	///     Allows the platform to inject child fragment managers for renderers

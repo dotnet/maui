@@ -3,24 +3,24 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
 #if __MOBILE__
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using System.Maui.PlatformConfiguration.iOSSpecific;
 using UIKit;
 using NativeView = UIKit.UIView;
 using NativeViewController = UIKit.UIViewController;
 using NativeColor = UIKit.UIColor;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 #else
 using AppKit;
 using NativeView = AppKit.NSView;
 using NativeViewController = AppKit.NSViewController;
 using NativeColor = AppKit.NSColor;
-using Xamarin.Forms.Platform.macOS.Extensions;
+using System.Maui.Platform.macOS.Extensions;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 #endif
 {
 	[Flags]
@@ -161,7 +161,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		public void SetElementSize(Size size)
 		{
-			Xamarin.Forms.Layout.LayoutChildIntoBoundingRegion(Element, new Rectangle(Element.X, Element.Y, size.Width, size.Height));
+			System.Maui.Layout.LayoutChildIntoBoundingRegion(Element, new Rectangle(Element.X, Element.Y, size.Width, size.Height));
 		}
 
 		public virtual NativeViewController ViewController => null;
@@ -334,7 +334,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		public override void RightMouseUp(NSEvent theEvent)
 		{
-			var menu = Xamarin.Forms.Element.GetMenu(Element);
+			var menu = System.Maui.Element.GetMenu(Element);
 			if (menu != null && NativeView != null)
 				NSMenu.PopUpContextMenu(menu.ToNSMenu(), theEvent, NativeView);
 
@@ -394,7 +394,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				SetBackgroundColor(Element.BackgroundColor);
-			else if (e.PropertyName == Xamarin.Forms.Layout.IsClippedToBoundsProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.Layout.IsClippedToBoundsProperty.PropertyName)
 				UpdateClipToBounds();
 			else if (e.PropertyName == VisualElement.IsTabStopProperty.PropertyName)
 				UpdateTabStop();

@@ -6,7 +6,7 @@ using EBox = ElmSharp.Box;
 using Tizen.NET.MaterialComponents;
 #endif
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 #if __MATERIAL__
 	public class MaterialBox : MCard
@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		}
 #else
 	/// <summary>
-	/// Extends the ElmSharp.Box class with functionality useful to Xamarin.Forms renderer.
+	/// Extends the ElmSharp.Box class with functionality useful to System.Maui renderer.
 	/// </summary>
 	/// <remarks>
 	/// This class overrides the layout mechanism. Instead of using the native layout,

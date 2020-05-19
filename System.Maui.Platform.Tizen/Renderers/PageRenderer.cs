@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Specialized;
 using ElmSharp.Wearable;
-using Xamarin.Forms.Platform.Tizen.Native.Watch;
+using System.Maui.Platform.Tizen.Native.Watch;
 using EColor = ElmSharp.Color;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	/// <summary>
 	/// Renderer of ContentPage.
@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (null == _page)
 			{
-				_page = new Native.Page(Forms.NativeParent);
+				_page = new Native.Page(System.Maui.Maui.NativeParent);
 				_page.LayoutUpdated += OnLayoutUpdated;
 				SetNativeView(_page);
 			}

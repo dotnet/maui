@@ -1,7 +1,7 @@
-﻿using System;
-using Xamarin.Forms.Xaml;
+using System;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.StyleSheets
+namespace System.Maui.StyleSheets
 {
 	class StyleSheetServiceProvider : IServiceProvider
 	{

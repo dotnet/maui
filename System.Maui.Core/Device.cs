@@ -5,9 +5,9 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public static class Device
 	{
@@ -62,7 +62,7 @@ namespace Xamarin.Forms
 			get
 			{
 				if (info == null)
-					throw new InvalidOperationException("You MUST call Xamarin.Forms.Init(); prior to using it.");
+					throw new InvalidOperationException("You MUST call System.Maui.Maui.Init(); prior to using it.");
 				return info;
 			}
 			set { info = value; }
@@ -84,7 +84,7 @@ namespace Xamarin.Forms
 			get
 			{
 				if (s_platformServices == null)
-					throw new InvalidOperationException("You MUST call Xamarin.Forms.Init(); prior to using it.");
+					throw new InvalidOperationException("You MUST call System.Maui.Maui.Init(); prior to using it.");
 				return s_platformServices;
 			}
 			set { s_platformServices = value; }

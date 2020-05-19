@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[TypeConverter(typeof(FileImageSourceConverter))]
 	public sealed class FileImageSource : ImageSource

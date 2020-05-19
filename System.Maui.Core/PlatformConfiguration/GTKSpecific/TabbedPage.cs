@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.GTKSpecific
+namespace System.Maui.PlatformConfiguration.GTKSpecific
 {
-    using FormsElement = Forms.TabbedPage;
+    using FormsElement = System.Maui.TabbedPage;
 
     public static class TabbedPage
     {

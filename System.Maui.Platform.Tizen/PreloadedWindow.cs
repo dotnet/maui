@@ -1,7 +1,7 @@
-﻿using ElmSharp;
+using ElmSharp;
 using ELayout = ElmSharp.Layout;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class PreloadedWindow : Window
 	{

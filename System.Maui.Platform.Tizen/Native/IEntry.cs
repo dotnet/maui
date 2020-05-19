@@ -2,7 +2,7 @@ using System;
 using EColor = ElmSharp.Color;
 
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	public interface IEntry
 	{

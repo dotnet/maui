@@ -1,6 +1,6 @@
-﻿using UIKit;
+using UIKit;
 
-namespace Xamarin.Forms.ControlGallery.iOS
+namespace System.Maui.ControlGallery.iOS
 {
 	public class Application
 	{

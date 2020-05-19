@@ -10,7 +10,7 @@ using FragmentManager = Android.Support.V4.App.FragmentManager;
 using FragmentTransaction = Android.Support.V4.App.FragmentTransaction;
 #endif
 
-namespace Xamarin.Forms.Platform.Android.AppCompat
+namespace System.Maui.Platform.Android.AppCompat
 {
 	internal class MasterDetailContainer : Android.MasterDetailContainer, IManageFragments
 	{

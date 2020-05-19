@@ -1,11 +1,11 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras">
+<Project Sdk="MSBuild.Sdk.Extras">
   <PropertyGroup>
-    <Description>Android Backend for Xamarin.Forms</Description>
-    <AssemblyName>Xamarin.Forms.Platform.Android</AssemblyName>
+    <Description>Android Backend for System.Maui</Description>
+    <AssemblyName>System.Maui.Platform.Android</AssemblyName>
     <TargetFrameworks>$(AndroidTargetFrameworks)</TargetFrameworks>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <RootNamespace>Xamarin.Forms.Platform.Android</RootNamespace>
+    <RootNamespace>System.Maui.Platform.Android</RootNamespace>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
@@ -42,8 +42,8 @@
     <AndroidResource Link="Resources\Layout\ShellContent.axml" Include="Resources\Layout\Android\ShellContent.axml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Xamarin.Forms.Core\Crc64.cs" Link="Crc64.cs" />
-    <Compile Include="..\Xamarin.Forms.Core\StreamWrapper.cs" Link="StreamWrapper.cs" />
+    <Compile Include="..\System.Maui.Core\Crc64.cs" Link="Crc64.cs" />
+    <Compile Include="..\System.Maui.Core\StreamWrapper.cs" Link="StreamWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Runtime.Serialization" />
@@ -62,9 +62,9 @@
     <PackageReference Include="Xamarin.Android.Support.v7.CardView" Version="28.0.0.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj">
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Platform.Android.FormsViewGroup\Xamarin.Forms.Platform.Android.FormsViewGroup.csproj">
+    <ProjectReference Include="..\System.Maui.Platform.Android.FormsViewGroup\System.Maui.Platform.Android.FormsViewGroup.csproj">
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

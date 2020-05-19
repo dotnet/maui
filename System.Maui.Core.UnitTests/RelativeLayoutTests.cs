@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using NUnit.Framework;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class RelativeLayoutTests : BaseTestFixture
@@ -115,7 +115,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		//https://github.com/xamarin/Xamarin.Forms/issues/2169
+		//https://github.com/xamarin/System.Maui/issues/2169
 		public void BoundsUpdatedIfConstraintsChangedWhileNotParented()
 		{
 			var relativeLayout = new RelativeLayout {

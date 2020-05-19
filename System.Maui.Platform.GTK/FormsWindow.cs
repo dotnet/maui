@@ -1,9 +1,9 @@
-﻿using Gtk;
+using Gtk;
 using System;
 using System.ComponentModel;
 using System.Threading;
 
-namespace Xamarin.Forms.Platform.GTK
+namespace System.Maui.Platform.GTK
 {
 	public class FormsWindow : Window
 	{

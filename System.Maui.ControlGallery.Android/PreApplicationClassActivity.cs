@@ -1,4 +1,4 @@
-﻿#if PRE_APPLICATION_CLASS
+#if PRE_APPLICATION_CLASS
 
 using System;
 using System.Collections.Generic;
@@ -12,10 +12,10 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Platform.Android;
+using System.Maui.Controls;
+using System.Maui.Platform.Android;
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace System.Maui.ControlGallery.Android
 {
 	[Activity (Label = "Control Gallery", 
 			   Icon = "@drawable/icon",
@@ -28,7 +28,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 		{
 			base.OnCreate (bundle);
 			
-			Forms.Init (this, bundle);
+			System.Maui.Maui.Init(this, bundle);
 			FormsMaps.Init (this, bundle);
 
 			SetPage (FormsApp.GetFormsApp ());

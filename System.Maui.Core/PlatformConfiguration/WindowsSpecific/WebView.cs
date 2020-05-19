@@ -1,7 +1,7 @@
-﻿
-namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
+
+namespace System.Maui.PlatformConfiguration.WindowsSpecific
 {
-	using FormsElement = Forms.WebView;
+	using FormsElement = System.Maui.WebView;
 
     public static class WebView
     {

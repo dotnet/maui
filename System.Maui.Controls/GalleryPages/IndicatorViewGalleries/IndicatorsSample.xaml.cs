@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class IndicatorsSample : ContentPage

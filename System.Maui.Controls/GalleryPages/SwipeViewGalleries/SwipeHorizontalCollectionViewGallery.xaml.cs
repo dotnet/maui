@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
+namespace System.Maui.Controls.GalleryPages.SwipeViewGalleries
 {
 	[Preserve(AllMembers = true)]
 	public partial class SwipeHorizontalCollectionViewGallery : ContentPage

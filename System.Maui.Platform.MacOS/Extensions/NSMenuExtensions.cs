@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Linq;
 using AppKit;
-using Xamarin.Forms.Platform.MacOS;
+using System.Maui.Platform.MacOS;
 
-namespace Xamarin.Forms.Platform.macOS.Extensions
+namespace System.Maui.Platform.macOS.Extensions
 {
 	internal static class NSMenuExtensions
 	{

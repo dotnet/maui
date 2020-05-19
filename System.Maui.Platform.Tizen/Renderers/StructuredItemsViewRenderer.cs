@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Platform.Tizen.Native;
+using System.Maui.Platform.Tizen.Native;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class StructuredItemsViewRenderer : ItemsViewRenderer<StructuredItemsView, Native.CollectionView>
 	{

@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public partial class AutomationProperties : ContentPage
 	{
@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			{
 				var layout = new AutomationProperties(useCompiledXaml);
 
-				Assert.AreEqual("Name", (string)layout.entry.GetValue(Xamarin.Forms.AutomationProperties.NameProperty));
+				Assert.AreEqual("Name", (string)layout.entry.GetValue(System.Maui.AutomationProperties.NameProperty));
 			}
 
 			[TestCase(false)]
@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			{
 				var layout = new AutomationProperties(useCompiledXaml);
 
-				Assert.AreEqual("Sets your name", (string)layout.entry.GetValue(Xamarin.Forms.AutomationProperties.HelpTextProperty));
+				Assert.AreEqual("Sets your name", (string)layout.entry.GetValue(System.Maui.AutomationProperties.HelpTextProperty));
 			}
 
 			[TestCase(false)]
@@ -58,7 +58,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				var layout = new AutomationProperties(useCompiledXaml);
 				Application.Current.MainPage = layout;
 
-				Assert.AreEqual(true, (bool)layout.entry.GetValue(Xamarin.Forms.AutomationProperties.IsInAccessibleTreeProperty));
+				Assert.AreEqual(true, (bool)layout.entry.GetValue(System.Maui.AutomationProperties.IsInAccessibleTreeProperty));
 			}
 
 			[TestCase(false)]
@@ -68,7 +68,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				var layout = new AutomationProperties(useCompiledXaml);
 				Application.Current.MainPage = layout;
 
-				Assert.AreEqual(layout.label, (Element)layout.entry.GetValue(Xamarin.Forms.AutomationProperties.LabeledByProperty));
+				Assert.AreEqual(layout.label, (Element)layout.entry.GetValue(System.Maui.AutomationProperties.LabeledByProperty));
 			}
 		}
 	}

@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
-namespace Xamarin.Forms.Xaml.UnitTests
+using System.Maui.Core.UnitTests;
+namespace System.Maui.Xaml.UnitTests
 {
 	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class ResourceDictionaryWithInvalidSource : ContentPage

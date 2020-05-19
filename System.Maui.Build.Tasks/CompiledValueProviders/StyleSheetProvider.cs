@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Xaml;
+using System.Maui.Build.Tasks;
+using System.Maui.Xaml;
 
 using static Mono.Cecil.Cil.Instruction;
 using static Mono.Cecil.Cil.OpCodes;
 
-namespace Xamarin.Forms.Core.XamlC
+namespace System.Maui.Core.XamlC
 {
 	class StyleSheetProvider : ICompiledValueProvider
 	{
@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Core.XamlC
 			if (styleNode != null) {
 				var style = (styleNode as ValueNode).Value as string;
 				yield return Create(Ldstr, style);
-				yield return Create(Call, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms.StyleSheets", "StyleSheet"),
+				yield return Create(Call, module.ImportMethodReference(("System.Maui.Core", "System.Maui.StyleSheets", "StyleSheet"),
 																	   methodName: "FromString",
 																	   parameterTypes: new[] { ("mscorlib", "System", "String") },
 																	   isStatic: true));
@@ -71,14 +71,14 @@ namespace Xamarin.Forms.Core.XamlC
 				foreach (var instruction in node.PushXmlLineInfo(context))
 					yield return instruction; //lineinfo
 
-				yield return Create(Call, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms.StyleSheets", "StyleSheet"),
+				yield return Create(Call, module.ImportMethodReference(("System.Maui.Core", "System.Maui.StyleSheets", "StyleSheet"),
 																	   methodName: "FromResource",
 																	   parameterTypes: new[] { ("mscorlib", "System", "String"), ("mscorlib", "System.Reflection", "Assembly"),  ("System.Xml.ReaderWriter", "System.Xml", "IXmlLineInfo") },
 																	   isStatic: true));
 			}
 
 			//the variable is of type `object`. fix that
-			var vardef = new VariableDefinition(module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.StyleSheets", "StyleSheet")));
+			var vardef = new VariableDefinition(module.ImportReference(("System.Maui.Core", "System.Maui.StyleSheets", "StyleSheet")));
 			yield return Create(Stloc, vardef);
 			vardefref.VariableDefinition = vardef;
 		}

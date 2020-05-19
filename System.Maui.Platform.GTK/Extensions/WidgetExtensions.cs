@@ -1,9 +1,9 @@
-﻿using Gtk;
+using Gtk;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Xamarin.Forms.Platform.GTK.Extensions
+namespace System.Maui.Platform.GTK.Extensions
 {
 	public static class WidgetExtensions
 	{

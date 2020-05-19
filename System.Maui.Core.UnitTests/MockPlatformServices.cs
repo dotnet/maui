@@ -4,20 +4,20 @@ using System.Threading;
 using System.Reflection;
 using System.IO.IsolatedStorage;
 using System.Collections.Generic;
-using Xamarin.Forms;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui;
+using System.Maui.Core.UnitTests;
 using System.Security.Cryptography;
 using System.Text;
 using FileMode = System.IO.FileMode;
 using FileAccess = System.IO.FileAccess;
 using FileShare = System.IO.FileShare;
 using Stream = System.IO.Stream;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
 [assembly:Dependency (typeof(MockDeserializer))]
 [assembly:Dependency (typeof(MockResourcesProvider))]
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	internal class MockPlatformServices : Internals.IPlatformServices
 	{

@@ -1,17 +1,17 @@
-﻿using System;
-using Xamarin.Forms.CustomAttributes;
+using System;
+using System.Maui.CustomAttributes;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
 #if UITEST
 using Xamarin.UITest.iOS;
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 57317, "Modifying Cell.ContextActions can crash on Android", PlatformAffected.Android)]

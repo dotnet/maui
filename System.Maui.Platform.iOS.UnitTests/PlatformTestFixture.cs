@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS.UnitTests
+namespace System.Maui.Platform.iOS.UnitTests
 {
 	[Internals.Preserve(AllMembers = true)]
 	public class PlatformTestFixture

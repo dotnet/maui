@@ -1,8 +1,8 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using AppKit;
 using Foundation;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public class DatePickerRenderer : ViewRenderer<DatePicker, NSDatePicker>
 	{

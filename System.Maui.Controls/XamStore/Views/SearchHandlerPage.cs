@@ -1,15 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Xamarin.Forms;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using static Xamarin.Forms.Controls.DynamicViewGallery;
-using static Xamarin.Forms.Controls.XamStore.BasePage;
+using System.Maui;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration;
+using System.Maui.PlatformConfiguration.iOSSpecific;
+using static System.Maui.Controls.DynamicViewGallery;
+using static System.Maui.Controls.XamStore.BasePage;
 
-namespace Xamarin.Forms.Controls.XamStore
+namespace System.Maui.Controls.XamStore
 {
 	[Preserve(AllMembers = true)]
 	public class SearchHandlerPage : ContentPage

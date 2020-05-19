@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public interface IViewContainer<T> where T : VisualElement
 	{

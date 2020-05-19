@@ -1,7 +1,7 @@
-﻿namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public interface ICellRenderer : IRegisterable
 	{
-		Windows.UI.Xaml.DataTemplate GetTemplate(Cell cell);
+		global::Windows.UI.Xaml.DataTemplate GetTemplate(Cell cell);
 	}
 }

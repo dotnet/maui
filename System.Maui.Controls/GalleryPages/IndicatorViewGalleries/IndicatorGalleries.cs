@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms.Controls.GalleryPages
+namespace System.Maui.Controls.GalleryPages
 {
 	public class IndicatorGalleries : ContentPage
 	{

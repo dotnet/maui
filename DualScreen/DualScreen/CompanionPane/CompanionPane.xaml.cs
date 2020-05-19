@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,8 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
+using System.Maui;
+using System.Maui.Xaml;
 
 namespace DualScreen
 {
@@ -24,7 +24,7 @@ namespace DualScreen
                     .Select(i => $"{i}")
                     .ToList();
 
-            twoPaneView.TallModeConfiguration = Xamarin.Forms.DualScreen.TwoPaneViewTallModeConfiguration.TopBottom;
+            twoPaneView.TallModeConfiguration = System.Maui.DualScreen.TwoPaneViewTallModeConfiguration.TopBottom;
             cv.ItemsSource = _dataSource;
 
             indicators.SelectedItem = _dataSource[0];

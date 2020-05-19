@@ -1,8 +1,8 @@
-﻿<ResourceDictionary
+<ResourceDictionary
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:uwp="using:Xamarin.Forms.Platform.UWP"
-	x:Class="Xamarin.Forms.Platform.UWP.Resources">
+	xmlns:uwp="using:System.Maui.Platform.UWP"
+	x:Class="System.Maui.Platform.UWP.Resources">
 
 	<ResourceDictionary.MergedDictionaries>
 		<ResourceDictionary Source="FormsCommandBarStyle.xaml" />

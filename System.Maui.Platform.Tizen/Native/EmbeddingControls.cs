@@ -1,17 +1,17 @@
-﻿using System;
+using System;
 using System.Globalization;
-using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
+using System.Maui.PlatformConfiguration.TizenSpecific;
 
-using XLabel = Xamarin.Forms.Label;
-using XTextAlignment = Xamarin.Forms.TextAlignment;
-using PlayerState = Xamarin.Forms.PlatformConfiguration.TizenSpecific.PlaybackState;
+using XLabel = System.Maui.Label;
+using XTextAlignment = System.Maui.TextAlignment;
+using PlayerState = System.Maui.PlatformConfiguration.TizenSpecific.PlaybackState;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	public class EmbeddingControls : ContentView
 	{
-		static readonly string PlayImagePath = "Xamarin.Forms.Platform.Tizen.Resource.img_button_play.png";
-		static readonly string PauseImagePath = "Xamarin.Forms.Platform.Tizen.Resource.img_button_pause.png";
+		static readonly string PlayImagePath = "System.Maui.Platform.Tizen.Resource.img_button_play.png";
+		static readonly string PauseImagePath = "System.Maui.Platform.Tizen.Resource.img_button_pause.png";
 
 		public ImageButton PlayImage { get; private set; }
 		public ImageButton PauseImage { get; private set; }

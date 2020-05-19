@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using Foundation;
 using UIKit;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using Specifics = Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration.iOSSpecific;
+using Specifics = System.Maui.PlatformConfiguration.iOSSpecific;
 using SizeF = CoreGraphics.CGSize;
 using PreserveAttribute = Foundation.PreserveAttribute;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class ButtonRenderer : ViewRenderer<Button, UIButton>, IImageVisualElementRenderer, IButtonLayoutRenderer
 	{

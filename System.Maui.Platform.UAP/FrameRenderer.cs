@@ -1,9 +1,9 @@
-﻿using System.ComponentModel;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation.Peers;
-using Windows.UI.Xaml.Controls;
+using System.ComponentModel;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Automation.Peers;
+using global::Windows.UI.Xaml.Controls;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class FrameRenderer : ViewRenderer<Frame, Border>
 	{
@@ -82,7 +82,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (Element.BorderColor != Color.Default)
 			{
 				Control.BorderBrush = Element.BorderColor.ToBrush();
-				Control.BorderThickness = new Windows.UI.Xaml.Thickness(1);
+				Control.BorderThickness = new global::Windows.UI.Xaml.Thickness(1);
 			}
 			else
 			{
@@ -97,7 +97,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (cornerRadius == -1f)
 				cornerRadius = 5f; // default corner radius
 
-			Control.CornerRadius = new Windows.UI.Xaml.CornerRadius(cornerRadius);
+			Control.CornerRadius = new global::Windows.UI.Xaml.CornerRadius(cornerRadius);
 		}
 	}
 }

@@ -1,28 +1,28 @@
-﻿using System;
+using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Media;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-using WGrid = Windows.UI.Xaml.Controls.Grid;
-using WTextAlignment = Windows.UI.Xaml.TextAlignment;
-using WHorizontalAlignment = Windows.UI.Xaml.HorizontalAlignment;
-using WVisibility = Windows.UI.Xaml.Visibility;
-using WStackPanel = Windows.UI.Xaml.Controls.StackPanel;
-using WImage = Windows.UI.Xaml.Controls.Image;
-using WTextBlock = Windows.UI.Xaml.Controls.TextBlock;
-using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.TabbedPage;
-using VisualElementSpecifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.VisualElement;
-using PageSpecifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.Page;
-using Windows.UI.Xaml.Input;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Data;
+using global::Windows.UI.Xaml.Media;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
+using WGrid = global::Windows.UI.Xaml.Controls.Grid;
+using WTextAlignment = global::Windows.UI.Xaml.TextAlignment;
+using WHorizontalAlignment = global::Windows.UI.Xaml.HorizontalAlignment;
+using WVisibility = global::Windows.UI.Xaml.Visibility;
+using WStackPanel = global::Windows.UI.Xaml.Controls.StackPanel;
+using WImage = global::Windows.UI.Xaml.Controls.Image;
+using WTextBlock = global::Windows.UI.Xaml.Controls.TextBlock;
+using Specifics = System.Maui.PlatformConfiguration.WindowsSpecific.TabbedPage;
+using VisualElementSpecifics = System.Maui.PlatformConfiguration.WindowsSpecific.VisualElement;
+using PageSpecifics = System.Maui.PlatformConfiguration.WindowsSpecific.Page;
+using global::Windows.UI.Xaml.Input;
 using System.Linq;
-using WSelectionChangedEventArgs = Windows.UI.Xaml.Controls.SelectionChangedEventArgs;
+using WSelectionChangedEventArgs = global::Windows.UI.Xaml.Controls.SelectionChangedEventArgs;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class TabbedPageRenderer : IVisualElementRenderer, ITitleProvider, IToolbarProvider, 
 		IToolBarForegroundBinder
@@ -124,7 +124,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 
 			double oldWidth = Control.Width;
 			double oldHeight = Control.Height;
@@ -166,12 +166,12 @@ namespace Xamarin.Forms.Platform.UWP
 				if (Control == null)
 				{
 					Control = new FormsPivot {
-						Style = (Windows.UI.Xaml.Style)Windows.UI.Xaml.Application.Current.Resources["TabbedPageStyle"],
+						Style = (global::Windows.UI.Xaml.Style)global::Windows.UI.Xaml.Application.Current.Resources["TabbedPageStyle"],
 					};
 
 					Control.SelectionChanged += OnSelectionChanged;
 
-					Tracker = new BackgroundTracker<Pivot>(Windows.UI.Xaml.Controls.Control.BackgroundProperty) {
+					Tracker = new BackgroundTracker<Pivot>(global::Windows.UI.Xaml.Controls.Control.BackgroundProperty) {
 						Element = (Page)element,
 						Control = Control,
 						Container = Control
@@ -193,7 +193,7 @@ namespace Xamarin.Forms.Platform.UWP
 				element.PropertyChanged += OnElementPropertyChanged;
 
 				if (!string.IsNullOrEmpty(element.AutomationId))
-					Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, element.AutomationId);
+					Control.SetValue(global::Windows.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, element.AutomationId);
 			}
 
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
@@ -330,7 +330,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		Brush GetBarBackgroundBrush()
 		{
-			object defaultColor = new SolidColorBrush(Windows.UI.Colors.Transparent);
+			object defaultColor = new SolidColorBrush(global::Windows.UI.Colors.Transparent);
 
 			if (Element.BarBackgroundColor.IsDefault && defaultColor != null)
 				return (Brush)defaultColor;
@@ -339,7 +339,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		Brush GetBarForegroundBrush()
 		{
-			object defaultColor = Windows.UI.Xaml.Application.Current.Resources["ApplicationForegroundThemeBrush"];
+			object defaultColor = global::Windows.UI.Xaml.Application.Current.Resources["ApplicationForegroundThemeBrush"];
 			if (Element.BarTextColor.IsDefault && defaultColor != null)
 				return (Brush)defaultColor;
 			return Element.BarTextColor.ToBrush();
@@ -547,8 +547,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void SetAppBarForegroundBinding(FrameworkElement element)
 		{
-			element.SetBinding(Windows.UI.Xaml.Controls.Control.ForegroundProperty,
-				new Windows.UI.Xaml.Data.Binding { Path = new PropertyPath("ToolbarForeground"), 
+			element.SetBinding(global::Windows.UI.Xaml.Controls.Control.ForegroundProperty,
+				new global::Windows.UI.Xaml.Data.Binding { Path = new PropertyPath("ToolbarForeground"), 
 					Source = Control, RelativeSource = new RelativeSource { Mode = RelativeSourceMode.TemplatedParent } });
 		}
 

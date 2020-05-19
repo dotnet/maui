@@ -1,8 +1,8 @@
-﻿using Android.Graphics;
+using Android.Graphics;
 using Android.Views;
 using System;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal interface IFormsEditText
 	{

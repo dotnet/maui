@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.WPF.Controls;
+using System.Maui.Internals;
+using System.Maui.Platform.WPF.Controls;
 using WButton = System.Windows.Controls.Button;
 using WImage = System.Windows.Controls.Image;
 using WThickness = System.Windows.Thickness;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public class ButtonRenderer : ViewRenderer<Button, FormsButton>
 	{

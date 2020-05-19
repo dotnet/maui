@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.DualScreen
+namespace System.Maui.DualScreen
 {
     internal class NoDualScreenServiceImpl : IDualScreenService
     {

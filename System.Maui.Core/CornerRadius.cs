@@ -1,6 +1,6 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[DebuggerDisplay ("TopLeft={TopLeft}, TopRight={TopRight}, BottomLeft={BottomLeft}, BottomRight={BottomRight}")]
 	[TypeConverter (typeof (CornerRadiusTypeConverter))]

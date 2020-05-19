@@ -1,8 +1,8 @@
-﻿using CoreGraphics;
+using CoreGraphics;
 using UIKit;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Material.iOS
+namespace System.Maui.Material.iOS
 {
 	internal class NoCaretMaterialTextField : MaterialTextField
 	{

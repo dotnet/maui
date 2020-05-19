@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	internal class Deserializer : Internals.IDeserializer
 	{
@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Platform.Tizen
 						catch (Exception e)
 						{
 							Debug.WriteLine("Could not deserialize properties: " + e.Message);
-							Internals.Log.Warning("Xamarin.Forms PropertyStore", $"Exception while reading Application properties: {e}");
+							Internals.Log.Warning("System.Maui PropertyStore", $"Exception while reading Application properties: {e}");
 						}
 					}
 
@@ -73,7 +73,7 @@ namespace Xamarin.Forms.Platform.Tizen
 						catch (Exception e)
 						{
 							Debug.WriteLine("Could not serialize properties: " + e.Message);
-							Internals.Log.Warning("Xamarin.Forms PropertyStore", $"Exception while writing Application properties: {e}");
+							Internals.Log.Warning("System.Maui PropertyStore", $"Exception while writing Application properties: {e}");
 							return;
 						}
 					}
@@ -87,7 +87,7 @@ namespace Xamarin.Forms.Platform.Tizen
 					catch (Exception e)
 					{
 						Debug.WriteLine("Could not move new serialized property file over old: " + e.Message);
-						Internals.Log.Warning("Xamarin.Forms PropertyStore", $"Exception while writing Application properties: {e}");
+						Internals.Log.Warning("System.Maui PropertyStore", $"Exception while writing Application properties: {e}");
 					}
 				}
 			});

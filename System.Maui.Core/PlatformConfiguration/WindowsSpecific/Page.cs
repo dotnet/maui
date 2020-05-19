@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
+namespace System.Maui.PlatformConfiguration.WindowsSpecific
 {
-	using FormsElement = Forms.Page;
+	using FormsElement = System.Maui.Page;
 
 	public static class Page
 	{

@@ -1,10 +1,10 @@
 using System;
 using System.ComponentModel;
 using UIKit;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration.iOSSpecific;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class CellRenderer : IRegisterable
 	{
@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		EventHandler _onForceUpdateSizeRequested;
 		PropertyChangedEventHandler _onPropertyChangedEventHandler;
-		readonly UIColor _defaultCellBgColor = Forms.IsiOS13OrNewer ? UIColor.Clear : UIColor.White;
+		readonly UIColor _defaultCellBgColor = System.Maui.Maui.IsiOS13OrNewer ? UIColor.Clear : UIColor.White;
 
 		[Preserve(Conditional = true)]
 		public CellRenderer()

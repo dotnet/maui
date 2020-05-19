@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.Tizen.Native;
-using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
-using Xamarin.Forms.Xaml.Internals;
+using System.Maui.Internals;
+using System.Maui.Platform.Tizen.Native;
+using System.Maui.PlatformConfiguration.TizenSpecific;
+using System.Maui.Xaml.Internals;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class StaticRegistrar<TRegistrable> where TRegistrable : class
 	{

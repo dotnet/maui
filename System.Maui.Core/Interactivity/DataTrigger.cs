@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[ContentProperty("Setters")]
-	[ProvideCompiled("Xamarin.Forms.Core.XamlC.PassthroughValueProvider")]
+	[ProvideCompiled("System.Maui.Core.XamlC.PassthroughValueProvider")]
 	[AcceptEmptyServiceProvider]
 	public sealed class DataTrigger : TriggerBase, IValueProvider
 	{

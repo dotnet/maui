@@ -1,23 +1,23 @@
-﻿using System;
+using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using Windows.UI.Xaml.Controls;
-using Xamarin.Forms.Internals;
-using Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using System.Maui.Internals;
+using global::Windows.UI.Xaml;
 
-using UwpGrid = Windows.UI.Xaml.Controls.Grid;
-using UwpColumnDefinition = Windows.UI.Xaml.Controls.ColumnDefinition;
-using UwpRowDefinition = Windows.UI.Xaml.Controls.RowDefinition;
-using UwpGridLength = Windows.UI.Xaml.GridLength;
-using UwpGridUnitType = Windows.UI.Xaml.GridUnitType;
-using UwpDataTemplate = Windows.UI.Xaml.DataTemplate;
-using UwpThickness = Windows.UI.Xaml.Thickness;
-using UwpStyle = Windows.UI.Xaml.Style;
-using Windows.UI.Xaml.Media;
-using UwpApplication = Windows.UI.Xaml.Application;
+using UwpGrid = global::Windows.UI.Xaml.Controls.Grid;
+using UwpColumnDefinition = global::Windows.UI.Xaml.Controls.ColumnDefinition;
+using UwpRowDefinition = global::Windows.UI.Xaml.Controls.RowDefinition;
+using UwpGridLength = global::Windows.UI.Xaml.GridLength;
+using UwpGridUnitType = global::Windows.UI.Xaml.GridUnitType;
+using UwpDataTemplate = global::Windows.UI.Xaml.DataTemplate;
+using UwpThickness = global::Windows.UI.Xaml.Thickness;
+using UwpStyle = global::Windows.UI.Xaml.Style;
+using global::Windows.UI.Xaml.Media;
+using UwpApplication = global::Windows.UI.Xaml.Application;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	// Responsible for rendering the content title, as well as the bottom bar list of shell sections
 	public class ShellItemRenderer : UwpGrid, IAppearanceObserver, IFlyoutBehaviorObserver
@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public ShellItemRenderer(ShellRenderer shellContext)
 		{
-			Xamarin.Forms.Shell.VerifyShellUWPFlagEnabled(nameof(ShellItemRenderer));
+			System.Maui.Shell.VerifyShellUWPFlagEnabled(nameof(ShellItemRenderer));
 			_ = shellContext ?? throw new ArgumentNullException(nameof(shellContext));
 
 			ShellContext = shellContext;
@@ -114,7 +114,7 @@ namespace Xamarin.Forms.Platform.UWP
 			double inset = 10;
 			if (ShellContext.IsPaneToggleButtonVisible)
 				inset += 45;
-			if (Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Controls.NavigationView", "IsBackButtonVisible"))
+			if (global::Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Controls.NavigationView", "IsBackButtonVisible"))
 			{
 				if (ShellContext.IsBackButtonVisible != Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible.Collapsed)
 					inset += 45;
@@ -349,12 +349,12 @@ namespace Xamarin.Forms.Platform.UWP
 			if (DisplayedPage == null || Shell.GetNavBarIsVisible(DisplayedPage))
 			{
 				_HeaderArea.Visibility = Visibility.Visible;
-				Shell.SetFlyoutBehavior(Shell.Current, Xamarin.Forms.FlyoutBehavior.Flyout);
+				Shell.SetFlyoutBehavior(Shell.Current, System.Maui.FlyoutBehavior.Flyout);
 			}
 			else
 			{
 				_HeaderArea.Visibility = Visibility.Collapsed;
-				Shell.SetFlyoutBehavior(Shell.Current, Xamarin.Forms.FlyoutBehavior.Disabled);
+				Shell.SetFlyoutBehavior(Shell.Current, System.Maui.FlyoutBehavior.Disabled);
 			}
 		}
 

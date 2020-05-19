@@ -1,7 +1,7 @@
 using System;
 using System.Linq.Expressions;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	internal enum ViewLayoutType
 	{

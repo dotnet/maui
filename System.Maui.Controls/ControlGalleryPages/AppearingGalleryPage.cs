@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 
-using Xamarin.Forms;
+using System.Maui;
 using System.Diagnostics;
 using System.Collections.Generic;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	public class AppearingGalleryPage : ContentPage
 	{

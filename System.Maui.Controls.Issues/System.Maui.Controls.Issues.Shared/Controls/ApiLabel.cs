@@ -1,5 +1,5 @@
-﻿using System;
-namespace Xamarin.Forms.Controls
+using System;
+namespace System.Maui.Controls
 {
 	public class ApiLabel : Label
 	{

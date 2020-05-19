@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using ElmSharp;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration.TizenSpecific;
 using EButton = ElmSharp.Button;
 using EColor = ElmSharp.Color;
 using EProgressBar = ElmSharp.ProgressBar;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class PopupManager : IDisposable
 	{
@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			if (null == _pageBusyDialog)
 			{
-				_pageBusyDialog = new Native.Dialog(Forms.NativeParent)
+				_pageBusyDialog = new Native.Dialog(System.Maui.Maui.NativeParent)
 				{
 					Orientation = PopupOrientation.Center,
 					BackgroundColor = EColor.Transparent
@@ -94,7 +94,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (!_platform.PageIsChildOfPlatform(sender))
 				return;
 
-			var alert = Native.Dialog.CreateDialog(Forms.NativeParent, (arguments.Accept != null));
+			var alert = Native.Dialog.CreateDialog(System.Maui.Maui.NativeParent, (arguments.Accept != null));
 
 			alert.Title = arguments.Title;
 			var message = arguments.Message.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace(Environment.NewLine, "<br>");
@@ -136,7 +136,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (!_platform.PageIsChildOfPlatform(sender))
 				return;
 
-			var alert = Native.Dialog.CreateDialog(Forms.NativeParent);
+			var alert = Native.Dialog.CreateDialog(System.Maui.Maui.NativeParent);
 
 			alert.Title = arguments.Title;
 			var box = new Box(alert);
@@ -181,7 +181,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			if (null != arguments.Cancel)
 			{
-				var cancel = new EButton(Forms.NativeParent) { Text = arguments.Cancel };
+				var cancel = new EButton(System.Maui.Maui.NativeParent) { Text = arguments.Cancel };
 				alert.NegativeButton = cancel;
 				cancel.Clicked += (s, evt) =>
 				{
@@ -206,7 +206,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (!_platform.PageIsChildOfPlatform(sender))
 				return;
 
-			var prompt = Native.Dialog.CreateDialog(Forms.NativeParent, (args.Accept != null));
+			var prompt = Native.Dialog.CreateDialog(System.Maui.Maui.NativeParent, (args.Accept != null));
 			prompt.Title = args.Title;
 
 			var entry = new Entry
@@ -250,8 +250,8 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			var request = layout.Measure(Device.Idiom == TargetIdiom.Watch ? sender.Width * 0.7 : sender.Width, sender.Height);
 			(layoutrenderer as LayoutRenderer).RegisterOnLayoutUpdated();
-			layoutrenderer.NativeView.MinimumHeight = Forms.ConvertToScaledPixel(request.Request.Height);
-			layoutrenderer.NativeView.MinimumWidth = Forms.ConvertToScaledPixel(request.Request.Width);
+			layoutrenderer.NativeView.MinimumHeight = System.Maui.Maui.ConvertToScaledPixel(request.Request.Height);
+			layoutrenderer.NativeView.MinimumWidth = System.Maui.Maui.ConvertToScaledPixel(request.Request.Width);
 
 			prompt.Content = layoutrenderer.NativeView;
 

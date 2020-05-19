@@ -1,7 +1,7 @@
-﻿using System;
-using Xamarin.Forms.Platform.iOS;
+using System;
+using System.Maui.Platform.iOS;
 
-namespace Xamarin.Forms.Material.iOS
+namespace System.Maui.Material.iOS
 {
 	public class MaterialCheckBoxRenderer : CheckBoxRendererBase<MaterialFormsCheckBox>
 	{

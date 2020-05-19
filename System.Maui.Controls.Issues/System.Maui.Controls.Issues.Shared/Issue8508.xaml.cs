@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
+using System.Maui.Xaml;
 using System.Collections;
 using System.Linq;
 using System.Diagnostics;
@@ -9,10 +9,10 @@ using System.Diagnostics;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.CollectionView)]

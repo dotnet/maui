@@ -1,10 +1,10 @@
-﻿using UIKit;
+using UIKit;
 using MaterialComponents;
 using System;
 using Foundation;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui.Platform.iOS;
 
-namespace Xamarin.Forms.Material.iOS
+namespace System.Maui.Material.iOS
 {
 	public class MaterialEditorRenderer : EditorRendererBase<MaterialMultilineTextField>, IMaterialEntryRenderer
 	{

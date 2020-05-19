@@ -1,10 +1,10 @@
 using System;
 using System.Globalization;
-using Xamarin.Forms.Platform.Tizen.Native;
-using WatchDataTimePickerDialog = Xamarin.Forms.Platform.Tizen.Native.Watch.WatchDataTimePickerDialog;
+using System.Maui.Platform.Tizen.Native;
+using WatchDataTimePickerDialog = System.Maui.Platform.Tizen.Native.Watch.WatchDataTimePickerDialog;
 using EEntry = ElmSharp.Entry;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class TimePickerRenderer : ViewRenderer<TimePicker, EEntry>
 	{
@@ -30,11 +30,11 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Device.Idiom == TargetIdiom.Watch)
 			{
-				return new WatchDataTimePickerDialog(Forms.NativeParent);
+				return new WatchDataTimePickerDialog(System.Maui.Maui.NativeParent);
 			}
 			else
 			{
-				return new DateTimePickerDialog(Forms.NativeParent);
+				return new DateTimePickerDialog(System.Maui.Maui.NativeParent);
 			}
 		}
 
@@ -64,7 +64,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		protected virtual EEntry CreateNativeControl()
 		{
-			return new Native.EditfieldEntry(Forms.NativeParent)
+			return new Native.EditfieldEntry(System.Maui.Maui.NativeParent)
 			{
 				IsSingleLine = true,
 				HorizontalTextAlignment = Native.TextAlignment.Center,
@@ -171,7 +171,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		protected virtual void UpdateTimeAndFormat()
 		{
-			// Xamarin using DateTime formatting (https://developer.xamarin.com/api/property/Xamarin.Forms.TimePicker.Format/)
+			// Xamarin using DateTime formatting (https://developer.xamarin.com/api/property/System.Maui.TimePicker.Format/)
 			Control.Text = new DateTime(Time.Ticks).ToString(Element.Format ?? s_defaultFormat);
 		}
 	}

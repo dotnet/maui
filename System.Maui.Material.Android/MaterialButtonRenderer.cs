@@ -15,16 +15,16 @@ using MButton = Android.Support.Design.Button.MaterialButton;
 #endif
 using Android.Util;
 using Android.Views;
-using Xamarin.Forms;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.Android.FastRenderers;
-using Xamarin.Forms.Material.Android;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using System.Maui;
+using System.Maui.Internals;
+using System.Maui.Platform.Android.FastRenderers;
+using System.Maui.Material.Android;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
-using Xamarin.Forms.Platform.Android;
+using System.Maui.Platform.Android;
 
-namespace Xamarin.Forms.Material.Android
+namespace System.Maui.Material.Android
 {
 	public class MaterialButtonRenderer : MButton,
 		IBorderVisualElementRenderer, IButtonLayoutRenderer, IVisualElementRenderer, IViewRenderer, ITabStop,
@@ -283,7 +283,7 @@ namespace Xamarin.Forms.Material.Android
 					_defaultBorderWidth = StrokeWidth;
 
 				// TODO: The Material button does not support borders:
-				//       https://github.com/xamarin/Xamarin.Forms/issues/4951
+				//       https://github.com/xamarin/System.Maui/issues/4951
 				if (borderWidth > 1)
 					borderWidth = 1;
 

@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public class BoxView1501 : BoxView 
 	{
@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				<BoxView 
 					xmlns=""http://xamarin.com/schemas/2014/forms""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-					x:Class=""Xamarin.Forms.Xaml.UnitTests.BoxView1501"" >
+					x:Class=""System.Maui.Xaml.UnitTests.BoxView1501"" >
 				    <BoxView.GestureRecognizers>
 				      <TapGestureRecognizer Tapped=""OnBoxViewTapped"" />
 				    </BoxView.GestureRecognizers>

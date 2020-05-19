@@ -3,7 +3,7 @@ using NUnit.Framework;
 using System.Collections.ObjectModel;
 using System.Globalization;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class PickerTests : BaseTestFixture

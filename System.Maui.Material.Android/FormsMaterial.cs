@@ -1,7 +1,7 @@
-﻿using Android.Content;
+using Android.Content;
 using Android.OS;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
     public static class FormsMaterial
     {

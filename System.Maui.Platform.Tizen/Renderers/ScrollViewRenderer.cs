@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using ElmSharp;
-using NScroller = Xamarin.Forms.Platform.Tizen.Native.Scroller;
-using NBox = Xamarin.Forms.Platform.Tizen.Native.Box;
+using NScroller = System.Maui.Platform.Tizen.Native.Scroller;
+using NBox = System.Maui.Platform.Tizen.Native.Box;
 using ERect = ElmSharp.Rect;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	/// <summary>
 	/// This class provides a Renderer for a ScrollView widget.
@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		NBox _scrollCanvas;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Xamarin.Forms.Platform.Tizen.ScrollViewRenderer"/> class.
+		/// Initializes a new instance of the <see cref="System.Maui.Platform.Tizen.ScrollViewRenderer"/> class.
 		/// </summary>
 		public ScrollViewRenderer()
 		{
@@ -66,11 +66,11 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			if (Device.Idiom == TargetIdiom.Watch)
 			{
-				return new Native.Watch.WatchScroller(Forms.NativeParent, Forms.CircleSurface);
+				return new Native.Watch.WatchScroller(System.Maui.Maui.NativeParent, System.Maui.Maui.CircleSurface);
 			}
 			else
 			{
-				return new NScroller(Forms.NativeParent);
+				return new NScroller(System.Maui.Maui.NativeParent);
 			}
 		}
 
@@ -143,8 +143,8 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateContentSize()
 		{
-			_scrollCanvas.MinimumWidth = Forms.ConvertToScaledPixel(Element.ContentSize.Width + Element.Padding.HorizontalThickness);
-			_scrollCanvas.MinimumHeight = Forms.ConvertToScaledPixel(Element.ContentSize.Height + Element.Padding.VerticalThickness);
+			_scrollCanvas.MinimumWidth = System.Maui.Maui.ConvertToScaledPixel(Element.ContentSize.Width + Element.Padding.HorizontalThickness);
+			_scrollCanvas.MinimumHeight = System.Maui.Maui.ConvertToScaledPixel(Element.ContentSize.Height + Element.Padding.VerticalThickness);
 
 			// elm-scroller updates the CurrentRegion after render
 			Device.BeginInvokeOnMainThread(() =>

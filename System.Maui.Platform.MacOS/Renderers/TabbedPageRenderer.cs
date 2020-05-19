@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using AppKit;
 using CoreGraphics;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.macOSSpecific;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration.macOSSpecific;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public class TabbedPageRenderer : NSTabViewController, IVisualElementRenderer, IEffectControlProvider
 	{

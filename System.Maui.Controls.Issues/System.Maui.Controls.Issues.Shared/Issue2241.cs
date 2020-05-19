@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 
-using Xamarin.Forms;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 using System.Linq;
 
 #if UITEST
@@ -11,7 +11,7 @@ using Xamarin.UITest;
 using Xamarin.UITest.Android;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Github, 2241, "ScrollView content can become stuck on orientation change (iOS)", PlatformAffected.iOS)]

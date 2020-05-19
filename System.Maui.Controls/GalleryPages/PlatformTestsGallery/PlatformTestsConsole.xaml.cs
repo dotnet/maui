@@ -1,16 +1,16 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using NUnit.Framework.Interfaces;
-using Xamarin.Forms.Controls.Tests;
-using Xamarin.Forms.Xaml;
+using System.Maui.Controls.Tests;
+using System.Maui.Xaml;
 using NUnit.Framework.Internal;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using System;
 using System.Threading.Tasks;
 using System.IO;
 using System.Reflection;
 using System.ComponentModel;
 
-namespace Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery
+namespace System.Maui.Controls.GalleryPages.PlatformTestsGallery
 {
 	[Preserve(AllMembers = true)]
 	[XamlCompilation(XamlCompilationOptions.Compile)]

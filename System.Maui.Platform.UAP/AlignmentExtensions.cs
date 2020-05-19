@@ -1,26 +1,26 @@
-using Windows.UI.Xaml;
+using global::Windows.UI.Xaml;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	internal static class AlignmentExtensions
 	{
-		internal static Windows.UI.Xaml.TextAlignment ToNativeTextAlignment(this TextAlignment alignment, EffectiveFlowDirection flowDirection = default(EffectiveFlowDirection))
+		internal static global::Windows.UI.Xaml.TextAlignment ToNativeTextAlignment(this TextAlignment alignment, EffectiveFlowDirection flowDirection = default(EffectiveFlowDirection))
 		{
 			var isLtr = flowDirection.IsLeftToRight();
 			switch (alignment)
 			{
 				case TextAlignment.Center:
-					return Windows.UI.Xaml.TextAlignment.Center;
+					return global::Windows.UI.Xaml.TextAlignment.Center;
 				case TextAlignment.End:
 					if (isLtr)
-						return Windows.UI.Xaml.TextAlignment.Right;
+						return global::Windows.UI.Xaml.TextAlignment.Right;
 					else
-						return Windows.UI.Xaml.TextAlignment.Left;
+						return global::Windows.UI.Xaml.TextAlignment.Left;
 				default:
 					if (isLtr)
-						return Windows.UI.Xaml.TextAlignment.Left;
+						return global::Windows.UI.Xaml.TextAlignment.Left;
 					else
-						return Windows.UI.Xaml.TextAlignment.Right;
+						return global::Windows.UI.Xaml.TextAlignment.Right;
 			}
 		}
 

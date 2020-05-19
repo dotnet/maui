@@ -2,7 +2,7 @@ using System;
 using Android.Runtime;
 using Android.Views;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal class InnerScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener
 	{

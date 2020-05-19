@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms.Maps
+namespace System.Maui.Maps
 {
 	public struct Position
 	{

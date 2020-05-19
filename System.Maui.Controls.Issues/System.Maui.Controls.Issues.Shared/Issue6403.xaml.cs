@@ -1,14 +1,14 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 #if APP
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 6403, "Xamarin.Forms UWP Picker collapses on opening Dropdown menu [Bug]", PlatformAffected.UWP)]
+	[Issue(IssueTracker.Github, 6403, "System.Maui UWP Picker collapses on opening Dropdown menu [Bug]", PlatformAffected.UWP)]
 	public partial class Issue6403 : TestContentPage
 	{
 

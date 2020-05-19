@@ -1,4 +1,4 @@
-﻿//
+//
 // AsyncValue.cs
 //
 // Author:
@@ -30,7 +30,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Internals
+namespace System.Maui.Internals
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public sealed class AsyncValue<T> : INotifyPropertyChanged

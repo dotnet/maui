@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -6,13 +6,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
-using Xamarin.Forms.ControlGallery.WPF.Renderers;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.WPF;
+using System.Maui.ControlGallery.WPF.Renderers;
+using System.Maui.Controls.Issues;
+using System.Maui.Platform.WPF;
 using WColor = System.Windows.Media.Color;
 
 [assembly:ExportRenderer(typeof(Issue6693Control), typeof(Issue6693ControlRenderer))]
-namespace Xamarin.Forms.ControlGallery.WPF.Renderers
+namespace System.Maui.ControlGallery.WPF.Renderers
 {
 	public class Issue6693ControlRenderer:ViewRenderer<Issue6693Control,WIssue6693Control>
 	{

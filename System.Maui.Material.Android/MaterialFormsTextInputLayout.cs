@@ -1,10 +1,10 @@
-﻿
+
 using System;
 using Android.Content;
 using Android.Runtime;
 using Android.Util;
 
-namespace Xamarin.Forms.Material.Android
+namespace System.Maui.Material.Android
 {
 	public class MaterialFormsTextInputLayout : MaterialFormsTextInputLayoutBase
 	{

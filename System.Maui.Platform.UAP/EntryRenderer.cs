@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using Windows.System;
-using Windows.UI.Text;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.InputView;
+using global::Windows.UI.Text;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Input;
+using global::Windows.UI.Xaml.Media;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
+using Specifics = System.Maui.PlatformConfiguration.WindowsSpecific.InputView;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class EntryRenderer : ViewRenderer<Entry, FormsTextBox>
 	{
@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (Control == null)
 				{
-					var textBox = new FormsTextBox { Style = Windows.UI.Xaml.Application.Current.Resources["FormsTextBoxStyle"] as Windows.UI.Xaml.Style };
+					var textBox = new FormsTextBox { Style = global::Windows.UI.Xaml.Application.Current.Resources["FormsTextBoxStyle"] as global::Windows.UI.Xaml.Style };
 
 					SetNativeControl(textBox);
 					textBox.TextChanged += OnNativeTextChanged;
@@ -165,7 +165,7 @@ namespace Xamarin.Forms.Platform.UWP
 				() => Control.BackgroundFocusBrush, brush => Control.BackgroundFocusBrush = brush);
 		}
 
-		void OnNativeTextChanged(object sender, Windows.UI.Xaml.Controls.TextChangedEventArgs args)
+		void OnNativeTextChanged(object sender, global::Windows.UI.Xaml.Controls.TextChangedEventArgs args)
 		{
 			if (Control.Text == _transformedText)
 				return;
@@ -185,7 +185,7 @@ namespace Xamarin.Forms.Platform.UWP
 			else
 			{
 				// Hide the soft keyboard; this matches the behavior of Forms on Android/iOS
-				Windows.UI.ViewManagement.InputPane.GetForCurrentView().TryHide();
+				global::Windows.UI.ViewManagement.InputPane.GetForCurrentView().TryHide();
 			}
 
 			((IEntryController)Element).SendCompleted();
@@ -469,7 +469,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (Children.Count == 0 || child == null)
 				return new SizeRequest();
 
-			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
             child.Measure(constraint);
 			var result = FormsTextBox.GetCopyOfSize(child, constraint);
 			return new SizeRequest(result);

@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Markup;
 using Microsoft.Windows.Design;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Core.Design
+namespace System.Maui.Core.Design
 {
 	internal class AttributeTableBuilder : Microsoft.Windows.Design.Metadata.AttributeTableBuilder
 	{

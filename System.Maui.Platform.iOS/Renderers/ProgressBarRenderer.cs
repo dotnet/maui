@@ -2,7 +2,7 @@ using System.ComponentModel;
 using UIKit;
 using SizeF = CoreGraphics.CGSize;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class ProgressBarRenderer : ViewRenderer<ProgressBar, UIProgressView>
 	{

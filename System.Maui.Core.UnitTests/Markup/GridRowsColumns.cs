@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using NUnit.Framework;
-using static Xamarin.Forms.Markup.GridRowsColumns;
+using static System.Maui.Markup.GridRowsColumns;
 
-namespace Xamarin.Forms.Markup.UnitTests
+namespace System.Maui.Markup.UnitTests
 {
 	[TestFixture(true)]
 	[TestFixture(false)]
@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Markup.UnitTests
 		[Test]
 		public void DefineRowsWithoutEnums() => AssertExperimental(() =>
 		{
-			var grid = new Forms.Grid
+			var grid = new System.Maui.Grid
 			{
 				RowDefinitions = Rows.Define(Auto, Star, 20)
 			};
@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Markup.UnitTests
 		[Test]
 		public void DefineRowsWithEnums() => AssertExperimental(() =>
 		{
-			var grid = new Forms.Grid
+			var grid = new System.Maui.Grid
 			{
 				RowDefinitions = Rows.Define(
 					(Row.First, Auto),
@@ -59,7 +59,7 @@ namespace Xamarin.Forms.Markup.UnitTests
 		[Test]
 		public void DefineColumnsWithoutEnums() => AssertExperimental(() =>
 		{
-			var grid = new Forms.Grid
+			var grid = new System.Maui.Grid
 			{
 				ColumnDefinitions = Columns.Define(Auto, Star, 20, 40)
 			};
@@ -74,7 +74,7 @@ namespace Xamarin.Forms.Markup.UnitTests
 		[Test]
 		public void DefineColumnsWithEnums() => AssertExperimental(() =>
 		{
-			var grid = new Forms.Grid
+			var grid = new System.Maui.Grid
 			{
 				ColumnDefinitions = Columns.Define(
 					(Col.First, Auto),

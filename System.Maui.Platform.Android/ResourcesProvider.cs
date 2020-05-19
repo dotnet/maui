@@ -1,8 +1,8 @@
 using Android.Content.Res;
 using Android.Util;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal class ResourcesProvider : ISystemResourcesProvider
 	{
@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Platform.Android
 			global::Android.Graphics.Color defaultColor = global::Android.Graphics.Color.Argb(0, 0, 0, 0);
 			global::Android.Graphics.Color androidColor = defaultColor;
 
-			var context = Forms.ApplicationContext;
+			var context = System.Maui.Maui.ApplicationContext;
 			using (var value = new TypedValue())
 			{
 				if (context.Theme.ResolveAttribute(style, value, true))

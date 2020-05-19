@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using CoreGraphics;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class ShellNavBarAppearanceTracker : IShellNavBarAppearanceTracker
 	{

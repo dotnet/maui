@@ -1,11 +1,11 @@
 using System;
 using System.Reflection;
 
-using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
+using System.Maui;
+using System.Maui.Xaml;
 
 [assembly:Dependency(typeof(ValueConverterProvider))]
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	class ValueConverterProvider : IValueConverterProvider
 	{

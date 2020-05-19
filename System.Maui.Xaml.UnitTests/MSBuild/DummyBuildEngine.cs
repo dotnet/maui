@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Build.Framework;
 
-namespace Xamarin.Forms.MSBuild.UnitTests
+namespace System.Maui.MSBuild.UnitTests
 {
 	public class DummyBuildEngine : IBuildEngine
 	{

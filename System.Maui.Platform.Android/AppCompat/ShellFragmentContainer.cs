@@ -6,7 +6,7 @@ using System;
 using LP = Android.Views.ViewGroup.LayoutParams;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android.AppCompat
+namespace System.Maui.Platform.Android.AppCompat
 {
 	internal class ShellFragmentContainer : FragmentContainer
 	{

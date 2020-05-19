@@ -1,10 +1,10 @@
-﻿using System;
-using Windows.Foundation;
-using Windows.UI.Xaml;
+using System;
+using global::Windows.Foundation;
+using global::Windows.UI.Xaml;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	public class ShellHeaderRenderer : Windows.UI.Xaml.Controls.ContentControl
+	public class ShellHeaderRenderer : global::Windows.UI.Xaml.Controls.ContentControl
 	{
 		Shell _shell;
 

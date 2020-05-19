@@ -1,4 +1,4 @@
-﻿//
+//
 // OrderedDictionary.cs
 //
 // Author:
@@ -30,8 +30,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Xamarin.Forms;
-using Xamarin.Forms.Internals;
+using System.Maui;
+using System.Maui.Internals;
 
 namespace Cadenza.Collections
 {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Android.Content;
 using Android.Graphics;
 #if __ANDROID_29__
@@ -7,14 +7,14 @@ using AndroidX.RecyclerView.Widget;
 #else
 using Android.Support.V7.Widget;
 #endif
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Android;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.AlternateLayoutGalleries;
-using Xamarin.Forms.Platform.Android;
+using System.Maui;
+using System.Maui.ControlGallery.Android;
+using System.Maui.Controls.GalleryPages.CollectionViewGalleries.AlternateLayoutGalleries;
+using System.Maui.Platform.Android;
 using AView = Android.Views.View;
 
 [assembly: ExportRenderer(typeof(StaggeredCollectionView), typeof(StaggeredCollectionViewRenderer))]
-namespace Xamarin.Forms.ControlGallery.Android
+namespace System.Maui.ControlGallery.Android
 {
 	public class StaggeredCollectionViewRenderer : CollectionViewRenderer
 	{

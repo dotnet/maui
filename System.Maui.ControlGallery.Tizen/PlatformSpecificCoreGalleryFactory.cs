@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Tizen;
-using Xamarin.Forms.Controls;
+using System.Maui;
+using System.Maui.ControlGallery.Tizen;
+using System.Maui.Controls;
 
 [assembly: Dependency(typeof(PlatformSpecificCoreGalleryFactory))]
 
-namespace Xamarin.Forms.ControlGallery.Tizen
+namespace System.Maui.ControlGallery.Tizen
 {
 	public class PlatformSpecificCoreGalleryFactory : IPlatformSpecificCoreGalleryFactory
 	{

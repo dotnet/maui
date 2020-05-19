@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Pages
+namespace System.Maui.Pages
 {
 	public class CompoundCollection : Element, IList, INotifyCollectionChanged
 	{

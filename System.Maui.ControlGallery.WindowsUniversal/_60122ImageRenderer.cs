@@ -1,18 +1,18 @@
 using System;
-using Windows.UI.Input;
-using Windows.UI.Xaml.Input;
-using Xamarin.Forms.ControlGallery.WindowsUniversal;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.UWP;
+using global::Windows.UI.Input;
+using global::Windows.UI.Xaml.Input;
+using System.Maui.ControlGallery.WindowsUniversal;
+using System.Maui.Controls.Issues;
+using System.Maui.Platform.UWP;
 
 [assembly: ExportRenderer(typeof(Bugzilla60122._60122Image), typeof(_60122ImageRenderer))]
 
-namespace Xamarin.Forms.ControlGallery.WindowsUniversal
+namespace System.Maui.ControlGallery.WindowsUniversal
 {
 	public class _60122ImageRenderer : ImageRenderer
 	{
 		Bugzilla60122._60122Image _customControl;
-		readonly Windows.UI.Input.GestureRecognizer _gestureRecognizer = new Windows.UI.Input.GestureRecognizer();
+		readonly global::Windows.UI.Input.GestureRecognizer _gestureRecognizer = new global::Windows.UI.Input.GestureRecognizer();
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Image> e)
 		{

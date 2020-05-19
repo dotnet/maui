@@ -7,7 +7,7 @@ using Fragment = Android.Support.V4.App.Fragment;
 using FragmentManager = Android.Support.V4.App.FragmentManager;
 #endif
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	// This is a way to centralize all fragment modifications which makes it a lot easier to debug
 	internal static class FragmentManagerExtensions

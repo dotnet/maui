@@ -1,7 +1,7 @@
-﻿using ElmSharp;
+using ElmSharp;
 using EColor = ElmSharp.Color;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class FrameRenderer : LayoutRenderer
 	{
@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Native.Canvas(Forms.NativeParent));
+				SetNativeControl(new Native.Canvas(System.Maui.Maui.NativeParent));
 
 				_shadow = new Polygon(NativeView);
 				_shadow.Color = s_ShadowColor;

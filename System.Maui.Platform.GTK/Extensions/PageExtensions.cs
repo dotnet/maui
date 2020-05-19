@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms.Platform.GTK.Extensions
+namespace System.Maui.Platform.GTK.Extensions
 {
 	public static class PageExtensions
 	{
 		public static GtkFormsContainer CreateContainer(this Page view)
 		{
-			if (!Forms.IsInitialized)
-				throw new InvalidOperationException("call Forms.Init() before this");
+			if (!System.Maui.Maui.IsInitialized)
+				throw new InvalidOperationException("call System.Maui.Maui.Init() before this");
 
 			if (!(view.RealParent is Application))
 			{

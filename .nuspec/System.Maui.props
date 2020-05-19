@@ -10,7 +10,7 @@
 	The actual item groups are in a separate conditionally-imported file as they use constructs that
 	are not compatible with older MSBuild versions.
 	-->
-	<Import Project="$(MSBuildThisFileDirectory)Xamarin.Forms.DefaultItems.props" Condition="'$(MSBuildSDKsPath)'!=''" />
+	<Import Project="$(MSBuildThisFileDirectory)System.Maui.DefaultItems.props" Condition="'$(MSBuildSDKsPath)'!=''" />
 
 	<PropertyGroup>
 		<_IsHotRestartDefined>$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants.Trim())', '(^|;)HOTRESTART($|;)'))</_IsHotRestartDefined>

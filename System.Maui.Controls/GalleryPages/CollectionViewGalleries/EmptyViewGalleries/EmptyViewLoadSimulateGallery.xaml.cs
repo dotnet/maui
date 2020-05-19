@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.EmptyViewGalleries
+namespace System.Maui.Controls.GalleryPages.CollectionViewGalleries.EmptyViewGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class EmptyViewLoadSimulateGallery : ContentPage

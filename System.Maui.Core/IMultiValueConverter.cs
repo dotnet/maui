@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	//
 	// (For Documentation Authors)

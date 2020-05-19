@@ -6,11 +6,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Foundation;
 using UIKit;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using RectangleF = CoreGraphics.CGRect;
 using PreserveAttribute = Foundation.PreserveAttribute;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public static class ImageExtensions
 	{

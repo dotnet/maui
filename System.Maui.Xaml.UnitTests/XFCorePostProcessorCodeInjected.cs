@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Reflection;
 using System.Linq;
 
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	[TestFixture]
 	public class XFCorePostProcessorCodeInjected
@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[Test]
 		public void InjectedCodeIsPresent()
 		{
-			var resLoader = typeof(Xamarin.Forms.Internals.ResourceLoader);
+			var resLoader = typeof(System.Maui.Internals.ResourceLoader);
 			Assert.True(resLoader.GetMethods().Any(mi => mi.Name == "get_ResourceProvider" && mi.ReturnType == typeof(Func<string, string>)));
 			Assert.True(resLoader.GetMethods().Any(mi => mi.Name == "get_ResourceProvider" && mi.ReturnType == typeof(Func<AssemblyName, string, string>)));
 			Assert.True(resLoader.GetProperty("ResourceProvider") != null);

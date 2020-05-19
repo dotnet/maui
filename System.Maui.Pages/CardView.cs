@@ -1,8 +1,8 @@
-﻿using System;
-using Xamarin.Forms;
-using Xamarin.Forms.Pages;
+using System;
+using System.Maui;
+using System.Maui.Pages;
 
-namespace Xamarin.Forms.Pages
+namespace System.Maui.Pages
 {
 	public class CardView : DataView
 	{

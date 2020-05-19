@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using ElmSharp;
 using ESize = ElmSharp.Size;
-using XLabel = Xamarin.Forms.Label;
+using XLabel = System.Maui.Label;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	public class ItemDefaultTemplateAdaptor : ItemTemplateAdaptor
 	{
@@ -142,7 +142,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		{
 			if (_dataBindedViewTable.TryGetValue(this[index], out View createdView) && createdView != null)
 			{
-				return createdView.Measure(Forms.ConvertToScaledDP(widthConstraint), Forms.ConvertToScaledDP(heightConstraint), MeasureFlags.IncludeMargins).Request.ToPixel();
+				return createdView.Measure(System.Maui.Maui.ConvertToScaledDP(widthConstraint), System.Maui.Maui.ConvertToScaledDP(heightConstraint), MeasureFlags.IncludeMargins).Request.ToPixel();
 			}
 
 			View view = null;
@@ -159,7 +159,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				view.Parent = _itemsView;
 				if (Count > index)
 					view.BindingContext = this[index];
-				var request = view.Measure(Forms.ConvertToScaledDP(widthConstraint), Forms.ConvertToScaledDP(heightConstraint), MeasureFlags.IncludeMargins).Request;
+				var request = view.Measure(System.Maui.Maui.ConvertToScaledDP(widthConstraint), System.Maui.Maui.ConvertToScaledDP(heightConstraint), MeasureFlags.IncludeMargins).Request;
 				return request.ToPixel();
 			}
 		}

@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Android;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Internals;
+using System.Maui;
+using System.Maui.ControlGallery.Android;
+using System.Maui.Controls;
+using System.Maui.Internals;
 
 [assembly: Dependency(typeof(PlatformSpecificCoreGalleryFactory))]
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace System.Maui.ControlGallery.Android
 {
 	[Preserve(AllMembers = true)]
 	public class PlatformSpecificCoreGalleryFactory : IPlatformSpecificCoreGalleryFactory

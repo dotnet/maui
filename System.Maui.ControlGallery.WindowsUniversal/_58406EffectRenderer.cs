@@ -1,12 +1,12 @@
 using System.Linq;
-using Windows.UI.Xaml.Controls;
-using Xamarin.Forms;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.UWP;
+using global::Windows.UI.Xaml.Controls;
+using System.Maui;
+using System.Maui.Controls.Issues;
+using System.Maui.Platform.UWP;
 
-[assembly: ExportEffect(typeof(Xamarin.Forms.ControlGallery.WindowsUniversal._58406EffectRenderer), Bugzilla58406.EffectName)]
+[assembly: ExportEffect(typeof(System.Maui.ControlGallery.WindowsUniversal._58406EffectRenderer), Bugzilla58406.EffectName)]
 
-namespace Xamarin.Forms.ControlGallery.WindowsUniversal
+namespace System.Maui.ControlGallery.WindowsUniversal
 {
 	public class _58406EffectRenderer : PlatformEffect
 	{

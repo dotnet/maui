@@ -6,7 +6,7 @@ using Javax.Microedition.Khronos.Opengles;
 using EGLConfig = Javax.Microedition.Khronos.Egl.EGLConfig;
 using Object = Java.Lang.Object;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	//public class OpenGLViewRenderer : ViewRenderer<OpenGLView, GLSurfaceView>
 	internal class OpenGLViewRenderer : ViewRenderer<OpenGLView, GLSurfaceView>
@@ -85,7 +85,7 @@ namespace Xamarin.Forms.Platform.Android
 			Control.RenderMode = Element.HasRenderLoop ? Rendermode.Continuously : Rendermode.WhenDirty;
 		}
 
-		class Renderer : Object, GLSurfaceView.IRenderer
+		class Renderer : Java.Lang.Object, GLSurfaceView.IRenderer
 		{
 			readonly OpenGLView _model;
 			Rectangle _rect;

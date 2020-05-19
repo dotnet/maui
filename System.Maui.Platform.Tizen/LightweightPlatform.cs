@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ElmSharp;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using EColor = ElmSharp.Color;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class LightweightPlatform : ITizenPlatform, INavigation, IDisposable
 	{
@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		public LightweightPlatform(EvasObject parent)
 		{
-			Forms.NativeParent = parent;
+			System.Maui.Maui.NativeParent = parent;
 			_defaultPlatformColor = Device.Idiom == TargetIdiom.Phone ? EColor.White : EColor.Transparent;
 			_viewStack = new Native.Canvas(parent)
 			{
@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			_viewStack.LayoutUpdated += OnLayout;
 			_viewStack.Show();
 
-			if (Forms.UseMessagingCenter)
+			if (System.Maui.Maui.UseMessagingCenter)
 			{
 				_popupManager = new PopupManager(this);
 			}

@@ -1,15 +1,15 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.ScrollView)]
@@ -135,7 +135,7 @@ namespace Xamarin.Forms.Controls.Issues
 			});
 			page.Title = "GH1931 Test";
 
-			listView.ItemTapped += async (object sender, Xamarin.Forms.ItemTappedEventArgs e) =>
+			listView.ItemTapped += async (object sender, System.Maui.ItemTappedEventArgs e) =>
 		   {
 			   (e.Item as Item2).TapCount++;
 			   await Navigation.PopAsync();

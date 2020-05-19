@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Pages
+namespace System.Maui.Pages
 {
 	public class ListDataPageControl : ListView
 	{

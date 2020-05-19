@@ -14,7 +14,7 @@ using Android.Graphics;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public static class ViewExtensions
 	{
@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		static ViewExtensions()
 		{
-			s_apiLevel = (int)Forms.SdkInt;
+			s_apiLevel = (int)System.Maui.Maui.SdkInt;
 		}
 
 		public static void RemoveFromParent(this AView view)
@@ -87,7 +87,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public static bool GetClipToOutline(this AView view)
 		{
-			if (view.IsDisposed() || !Forms.IsLollipopOrNewer)
+			if (view.IsDisposed() || !System.Maui.Maui.IsLollipopOrNewer)
 				return false;
 
 			return view.ClipToOutline;
@@ -95,7 +95,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public static void SetClipToOutline(this AView view, bool value)
 		{
-			if (view.IsDisposed() || !Forms.IsLollipopOrNewer)
+			if (view.IsDisposed() || !System.Maui.Maui.IsLollipopOrNewer)
 				return;
 
 			view.ClipToOutline = value;
@@ -113,7 +113,7 @@ namespace Xamarin.Forms.Platform.Android
 					? frame.IsClippedToBounds : frame.CornerRadius > 0f;
 			}
 
-			if (view is FastRenderers.FrameRenderer && Forms.IsLollipopOrNewer)
+			if (view is FastRenderers.FrameRenderer && System.Maui.Maui.IsLollipopOrNewer)
 			{
 				view.SetClipToOutline(shouldClip);
 				return;
@@ -150,7 +150,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public static bool SetElevation(this AView view, float value)
 		{
-			if (view.IsDisposed() || !Forms.IsLollipopOrNewer)
+			if (view.IsDisposed() || !System.Maui.Maui.IsLollipopOrNewer)
 				return false;
 
 			view.Elevation = value;

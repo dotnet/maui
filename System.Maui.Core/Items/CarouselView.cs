@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Input;
-using Xamarin.Forms.Platform;
+using System.Maui.Platform;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Collections.ObjectModel;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[RenderWith(typeof(_CarouselViewRenderer))]
 	public class CarouselView : ItemsView

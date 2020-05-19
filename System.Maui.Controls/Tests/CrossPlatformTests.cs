@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Controls.Tests
+namespace System.Maui.Controls.Tests
 {
 	[TestFixture]
 	public class CrossPlatformTests : CrossPlatformTestFixture

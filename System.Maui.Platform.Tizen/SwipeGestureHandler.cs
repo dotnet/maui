@@ -1,6 +1,6 @@
-﻿using ElmSharp;
+using ElmSharp;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class SwipeGestureHandler : GestureHandler
 	{
@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (Recognizer is SwipeGestureRecognizer swipeGesture)
 			{
 				var lineData = (GestureLayer.LineData)data;
-				(swipeGesture as ISwipeGestureController)?.SendSwipe(sender, Forms.ConvertToScaledDP(lineData.X2 - lineData.X1), Forms.ConvertToScaledDP(lineData.Y2 - lineData.Y1));
+				(swipeGesture as ISwipeGestureController)?.SendSwipe(sender, System.Maui.Maui.ConvertToScaledDP(lineData.X2 - lineData.X1), System.Maui.Maui.ConvertToScaledDP(lineData.Y2 - lineData.Y1));
 				(swipeGesture as ISwipeGestureController)?.DetectSwipe(sender, swipeGesture.Direction);
 			}
 		}

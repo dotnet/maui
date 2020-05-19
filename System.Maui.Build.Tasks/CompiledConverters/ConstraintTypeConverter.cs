@@ -3,13 +3,13 @@ using System.Globalization;
 
 using Mono.Cecil.Cil;
 
-using Xamarin.Forms.Xaml;
-using Xamarin.Forms.Build.Tasks;
+using System.Maui.Xaml;
+using System.Maui.Build.Tasks;
 
 using static Mono.Cecil.Cil.Instruction;
 using static Mono.Cecil.Cil.OpCodes;
 
-namespace Xamarin.Forms.Core.XamlC
+namespace System.Maui.Core.XamlC
 {
 	class ConstraintTypeConverter : ICompiledTypeConverter
 	{
@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Core.XamlC
 				throw new XamlParseException($"Cannot convert \"{value}\" into {typeof(Constraint)}", node);
 
 			yield return Create(Ldc_R8, size);
-			yield return Create(Call, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Constraint"),
+			yield return Create(Call, module.ImportMethodReference(("System.Maui.Core", "System.Maui", "Constraint"),
 																   methodName: "Constant",
 																   parameterTypes: new[] { ("mscorlib", "System", "Double") },
 																   isStatic: true));

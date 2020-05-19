@@ -1,10 +1,10 @@
-﻿using CoreGraphics;
+using CoreGraphics;
 using MediaPlayer;
 using System;
 using System.ComponentModel;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class ShellFlyoutRenderer : UIViewController, IShellFlyoutRenderer, IFlyoutBehaviorObserver
 	{

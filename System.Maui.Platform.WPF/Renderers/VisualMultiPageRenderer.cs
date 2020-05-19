@@ -1,10 +1,10 @@
-﻿using System.Collections.Specialized;
+using System.Collections.Specialized;
 using System.ComponentModel;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.WPF.Controls;
-using WSelectionChangedEventArgs = Xamarin.Forms.Platform.WPF.Controls.SelectionChangedEventArgs;
+using System.Maui.Internals;
+using System.Maui.Platform.WPF.Controls;
+using WSelectionChangedEventArgs = System.Maui.Platform.WPF.Controls.SelectionChangedEventArgs;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public class VisualMultiPageRenderer<TElement, TContainer, TNativeElement> : VisualPageRenderer<TElement, TNativeElement>
 		where TElement : MultiPage<TContainer>

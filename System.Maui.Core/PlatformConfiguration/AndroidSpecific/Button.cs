@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific
+namespace System.Maui.PlatformConfiguration.AndroidSpecific
 {
-	using FormsElement = Forms.Button;
+	using FormsElement = System.Maui.Button;
 
 	public static class Button
 	{

@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Xamarin.Forms;
+using System.Maui;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	internal class ListViewDemoPage : ContentPage
     {

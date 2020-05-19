@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using Android.Content;
 
-namespace Xamarin.Forms.Platform.Android.AppCompat
+namespace System.Maui.Platform.Android.AppCompat
 {
     // This version of FrameRenderer is here for backward compatibility with anyone referencing 
     // FrameRenderer from this namespace

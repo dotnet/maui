@@ -1,7 +1,7 @@
-﻿using System;
-using Xamarin.Forms.Internals;
+using System;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	static class ImageElement
 	{

@@ -1,9 +1,9 @@
-﻿using Gtk;
+using Gtk;
 using OpenTK.GLWidget;
 using OpenTK.Graphics;
 using System;
 
-namespace Xamarin.Forms.Platform.GTK.Controls
+namespace System.Maui.Platform.GTK.Controls
 {
 	public class OpenGLView : EventBox
 	{

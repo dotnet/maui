@@ -1,9 +1,9 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Description>Provides the design-time metadata for the XAML language service.</Description>
-    <AssemblyName>Xamarin.Forms.Xaml.Design</AssemblyName>
+    <AssemblyName>System.Maui.Xaml.Design</AssemblyName>
   </PropertyGroup>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -11,7 +11,7 @@
     <ProjectGuid>{65BC4888-CC59-428A-9B75-540CF1C09480}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Xamarin.Forms.Xaml.Design</RootNamespace>
+    <RootNamespace>System.Maui.Xaml.Design</RootNamespace>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
@@ -50,13 +50,13 @@
     <Compile Include="RegisterMetadata.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj">
       <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
-      <Name>Xamarin.Forms.Core</Name>
+      <Name>System.Maui.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj">
+    <ProjectReference Include="..\System.Maui.Xaml\System.Maui.Xaml.csproj">
       <Project>{9db2f292-8034-4e06-89ad-98bbda4306b9}</Project>
-      <Name>Xamarin.Forms.Xaml</Name>
+      <Name>System.Maui.Xaml</Name>
       <GenerateDesignMetadata>true</GenerateDesignMetadata>
       <Private>False</Private>
     </ProjectReference>

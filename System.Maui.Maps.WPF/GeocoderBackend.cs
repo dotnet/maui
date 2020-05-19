@@ -1,11 +1,11 @@
-﻿using Microsoft.Maps.MapControl.WPF;
+using Microsoft.Maps.MapControl.WPF;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Maps.WPF
+namespace System.Maui.Maps.WPF
 {
 	internal class GeocoderBackend
 	{

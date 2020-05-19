@@ -1,12 +1,12 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1702, "[Enhancement] Padding on Buttons", PlatformAffected.All)]

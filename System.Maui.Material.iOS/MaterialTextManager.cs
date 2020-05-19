@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using CoreGraphics;
 using MaterialComponents;
 using UIKit;
@@ -8,10 +8,10 @@ using MTextInputControllerBase = MaterialComponents.TextInputControllerBase;
 using System.Collections.Generic;
 using ObjCRuntime;
 using Foundation;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui.Internals;
+using System.Maui.Platform.iOS;
 
-namespace Xamarin.Forms.Material.iOS
+namespace System.Maui.Material.iOS
 {
 	internal static class MaterialTextManager
 	{

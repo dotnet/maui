@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using AppKit;
 using System.ComponentModel;
 using CoreGraphics;
-using Xamarin.Forms.Platform.macOS.Controls;
+using System.Maui.Platform.macOS.Controls;
 using Foundation;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	internal class FormsSliderCell : NSSliderCell
 	{

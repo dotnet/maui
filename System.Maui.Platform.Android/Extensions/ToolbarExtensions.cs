@@ -13,7 +13,7 @@ using System;
 using Android.Text;
 using Android.Text.Style;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal static class ToolbarExtensions
 	{
@@ -126,7 +126,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			menuitem.SetOnMenuItemClickListener(new GenericMenuClickListener(((IMenuItemController)item).Activate));
 
-			if (!Forms.IsOreoOrNewer && (tintColor != null && tintColor != Color.Default))
+			if (!System.Maui.Maui.IsOreoOrNewer && (tintColor != null && tintColor != Color.Default))
 			{
 				var view = toolbar.FindViewById(menuitem.ItemId);
 				if (view is ATextView textView)

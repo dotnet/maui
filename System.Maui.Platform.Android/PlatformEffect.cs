@@ -2,7 +2,7 @@ using System;
 using Android.Views;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public abstract class PlatformEffect : PlatformEffect<ViewGroup, AView>
 	{

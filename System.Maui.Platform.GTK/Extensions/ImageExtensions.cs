@@ -1,12 +1,12 @@
-﻿using Gdk;
+using Gdk;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK.Renderers;
+using System.Maui.Internals;
+using System.Maui.Platform.GTK.Renderers;
 
-namespace Xamarin.Forms.Platform.GTK.Extensions
+namespace System.Maui.Platform.GTK.Extensions
 {
 	public static class ImageExtensions
 	{

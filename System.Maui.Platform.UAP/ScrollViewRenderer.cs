@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using UwpScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility;
+using global::Windows.Foundation;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using UwpScrollBarVisibility = global::Windows.UI.Xaml.Controls.ScrollBarVisibility;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class ScrollViewRenderer : ViewRenderer<ScrollView, ScrollViewer>, IDontGetFocus
 	{
@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Platform.UWP
 			return result;
 		}
 
-		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
+		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
 			if (Element == null)
 				return finalSize;
@@ -45,14 +45,14 @@ namespace Xamarin.Forms.Platform.UWP
 			base.Dispose(disposing);
 		}
 
-		protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
 			if (Element == null)
-				return new Windows.Foundation.Size(0, 0);
+				return new global::Windows.Foundation.Size(0, 0);
 
 			double width = Math.Max(0, Element.Width);
 			double height = Math.Max(0, Element.Height);
-			var result = new Windows.Foundation.Size(width, height);
+			var result = new global::Windows.Foundation.Size(width, height);
 
 			Control?.Measure(result);
 
@@ -231,9 +231,9 @@ namespace Xamarin.Forms.Platform.UWP
 				Element.SendScrollFinished();
 		}
 
-		Windows.UI.Xaml.Thickness AddMargin(Thickness original, double left, double top, double right, double bottom)
+		global::Windows.UI.Xaml.Thickness AddMargin(Thickness original, double left, double top, double right, double bottom)
 		{
-			return new Windows.UI.Xaml.Thickness(original.Left + left, original.Top + top, original.Right + right, original.Bottom + bottom);
+			return new global::Windows.UI.Xaml.Thickness(original.Left + left, original.Top + top, original.Right + right, original.Bottom + bottom);
 		}
 
 		// UAP ScrollView forces Content origin to be the same as the ScrollView origin.

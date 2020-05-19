@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using System.Linq;
 using System;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public static class TabIndexExtensions
 	{

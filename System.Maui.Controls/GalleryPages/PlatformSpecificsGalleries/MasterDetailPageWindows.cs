@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Input;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-using static Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries.WindowsPlatformSpecificsGalleryHelpers;
+using System.Maui.PlatformConfiguration;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
+using static System.Maui.Controls.GalleryPages.PlatformSpecificsGalleries.WindowsPlatformSpecificsGalleryHelpers;
 
-using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+using WindowsOS = System.Maui.PlatformConfiguration.Windows;
 
-namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
+namespace System.Maui.Controls.GalleryPages.PlatformSpecificsGalleries
 {
     public class MasterDetailPageWindows : MasterDetailPage
 	{

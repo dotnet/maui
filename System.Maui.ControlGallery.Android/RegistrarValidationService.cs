@@ -1,9 +1,9 @@
-﻿using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Android;
-using Xamarin.Forms.Controls;
+using System.Maui;
+using System.Maui.ControlGallery.Android;
+using System.Maui.Controls;
 
 [assembly: Dependency(typeof(RegistrarValidationService))]
-namespace Xamarin.Forms.ControlGallery.Android
+namespace System.Maui.ControlGallery.Android
 {
 	public class RegistrarValidationService : IRegistrarValidationService
 	{

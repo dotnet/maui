@@ -1,6 +1,6 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 
-namespace Xamarin.Forms.Platform.iOS.UnitTests
+namespace System.Maui.Platform.iOS.UnitTests
 {
 	[TestFixture]
 	public class NavigationTests : PlatformTestFixture

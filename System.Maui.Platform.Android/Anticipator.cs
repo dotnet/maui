@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using ABuildVersionCodes = Android.OS.BuildVersionCodes;
 using ABuild = Android.OS.Build;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	/// <summary>
 	/// 
@@ -36,7 +36,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			s_singleton.AnticipateClassConstruction(typeof(Resource.Layout));
 			s_singleton.AnticipateClassConstruction(typeof(Resource.Attribute));
-			s_singleton.AnticipateGetter(() => Forms.SdkInt);
+			s_singleton.AnticipateGetter(() => System.Maui.Maui.SdkInt);
 		}
 
 		internal static ABuildVersionCodes SdkInt

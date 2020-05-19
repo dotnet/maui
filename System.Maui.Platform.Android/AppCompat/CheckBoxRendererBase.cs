@@ -8,10 +8,10 @@ using Android.Support.V7.Widget;
 #endif
 using AView = Android.Views.View;
 using Android.Views;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using AColor = Android.Graphics.Color;
 using Android.Graphics;
-using Xamarin.Forms.Platform.Android.FastRenderers;
+using System.Maui.Platform.Android.FastRenderers;
 using Android.Widget;
 using Android.Content.Res;
 #if __ANDROID_29__
@@ -21,7 +21,7 @@ using Android.Support.V4.Widget;
 #endif
 using AAttribute = Android.Resource.Attribute;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class CheckBoxRendererBase :
 		AppCompatCheckBox,

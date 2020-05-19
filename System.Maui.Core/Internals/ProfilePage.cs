@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using Xamarin.Forms;
-using Xamarin.Forms.Internals;
+using System.Maui;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Internals
+namespace System.Maui.Internals
 {
 	public class ProfileDatum
 	{

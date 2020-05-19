@@ -6,7 +6,7 @@
     <SharedGUID>0f0db9cc-ea65-429c-9363-38624bf8f49c</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>Xamarin.Forms.Controls.Issues</Import_RootNamespace>
+    <Import_RootNamespace>System.Maui.Controls.Issues</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewGroupTypeIssue.cs" />

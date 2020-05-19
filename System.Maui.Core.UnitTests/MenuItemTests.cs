@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	public class MenuItemTests
 		: MenuItemTests<MenuItem>
@@ -52,7 +52,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var item = new MenuItem ();
 			string shourtCutKeyBinding = "ctrl+A";
-			MenuItem.SetAccelerator(item, Xamarin.Forms.Accelerator.FromString(shourtCutKeyBinding));
+			MenuItem.SetAccelerator(item, System.Maui.Accelerator.FromString(shourtCutKeyBinding));
 		
 			Assert.AreEqual(MenuItem.GetAccelerator(item).ToString(), shourtCutKeyBinding);
 		}
@@ -62,7 +62,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var item = new MenuItem ();
 			string shourtCutKeyLikeSeparator = "+";
-			MenuItem.SetAccelerator (item, Xamarin.Forms.Accelerator.FromString (shourtCutKeyLikeSeparator));
+			MenuItem.SetAccelerator (item, System.Maui.Accelerator.FromString (shourtCutKeyLikeSeparator));
 
 			var accelerator = MenuItem.GetAccelerator(item);
 			Assert.AreEqual (accelerator.ToString (), shourtCutKeyLikeSeparator);

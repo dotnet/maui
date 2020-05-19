@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -8,8 +8,8 @@
     <OutputType>AppContainerExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <OutputPath>bin\Debug\</OutputPath>
-    <RootNamespace>Xamarin.Forms.ControlGallery.WindowsUniversal</RootNamespace>
-    <AssemblyName>Xamarin.Forms.ControlGallery.WindowsUniversal</AssemblyName>
+    <RootNamespace>System.Maui.ControlGallery.WindowsUniversal</RootNamespace>
+    <AssemblyName>System.Maui.ControlGallery.WindowsUniversal</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion>10.0.18362.0</TargetPlatformVersion>
@@ -19,7 +19,7 @@
     <EnableDotNetNativeCompatibleProfile>true</EnableDotNetNativeCompatibleProfile>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <PackageCertificateKeyFile>Xamarin.Forms.ControlGallery.WindowsUniversal_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <PackageCertificateKeyFile>System.Maui.ControlGallery.WindowsUniversal_TemporaryKey.pfx</PackageCertificateKeyFile>
     <PackageCertificateThumbprint>D5A43FC916D476D1E32C2DADF178F6206989B043</PackageCertificateThumbprint>
     <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
     <AppxBundle>Always</AppxBundle>
@@ -97,37 +97,37 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
-    <ProjectReference Include="..\Xamarin.Forms.Controls\Xamarin.Forms.Controls.csproj">
+    <ProjectReference Include="..\System.Maui.Controls\System.Maui.Controls.csproj">
       <Project>{cb9c96ce-125c-4a68-b6a1-c3ff1fbf93e1}</Project>
-      <Name>Xamarin.Forms.Controls</Name>
+      <Name>System.Maui.Controls</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Platform.UAP.UnitTests\Xamarin.Forms.Platform.UAP.UnitTests.csproj">
+    <ProjectReference Include="..\System.Maui.Platform.UAP.UnitTests\System.Maui.Platform.UAP.UnitTests.csproj">
       <Project>{8f245976-f555-4814-b935-9ad58f4d2871}</Project>
-      <Name>Xamarin.Forms.Platform.UAP.UnitTests</Name>
+      <Name>System.Maui.Platform.UAP.UnitTests</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup Condition="$(FromSource) == 'false'">
-    <ProjectReference Include="..\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj">
+    <ProjectReference Include="..\System.Maui.CustomAttributes\System.Maui.CustomAttributes.csproj">
       <Project>{4dcd0420-1168-4b77-86db-6196ee4bd491}</Project>
-      <Name>Xamarin.Forms.CustomAttributes</Name>
+      <Name>System.Maui.CustomAttributes</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup Condition="$(FromSource) == 'true'">
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj">
       <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
-      <Name>Xamarin.Forms.Core</Name>
+      <Name>System.Maui.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Maps.UWP\Xamarin.Forms.Maps.UWP.csproj">
+    <ProjectReference Include="..\System.Maui.Maps.UWP\System.Maui.Maps.UWP.csproj">
       <Project>{04d89a60-78ef-4a32-ae17-87e47e0233a5}</Project>
-      <Name>Xamarin.Forms.Maps.UWP</Name>
+      <Name>System.Maui.Maps.UWP</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
+    <ProjectReference Include="..\System.Maui.Maps\System.Maui.Maps.csproj">
       <Project>{7d13bac2-c6a4-416a-b07e-c169b199e52b}</Project>
-      <Name>Xamarin.Forms.Maps</Name>
+      <Name>System.Maui.Maps</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj">
+    <ProjectReference Include="..\System.Maui.Platform.UAP\System.Maui.Platform.UAP.csproj">
       <Project>{00d8d049-ffaa-4759-8fc9-1eca30777f72}</Project>
-      <Name>Xamarin.Forms.Platform.UAP</Name>
+      <Name>System.Maui.Platform.UAP</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

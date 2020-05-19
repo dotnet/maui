@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.Devices.Sensors;
+using global::Windows.Devices.Sensors;
 
-namespace Xamarin.Forms.DualScreen
+namespace System.Maui.DualScreen
 {
 	public partial class DualScreenInfo : INotifyPropertyChanged
 	{
@@ -15,7 +15,7 @@ namespace Xamarin.Forms.DualScreen
 		public Task<int> GetHingeAngleAsync() => DualScreenService.GetHingeAngleAsync();
 
 #if UWP_18362
-		Windows.Devices.Sensors.HingeAngleSensor _angleSensor;
+		global::Windows.Devices.Sensors.HingeAngleSensor _angleSensor;
 #endif
 
 #if UWP_18362
@@ -24,7 +24,7 @@ namespace Xamarin.Forms.DualScreen
 			try
 			{
 				if (_angleSensor == null)
-					_angleSensor = await Windows.Devices.Sensors.HingeAngleSensor.GetDefaultAsync();
+					_angleSensor = await global::Windows.Devices.Sensors.HingeAngleSensor.GetDefaultAsync();
 
 				if (_angleSensor == null)
 					return;

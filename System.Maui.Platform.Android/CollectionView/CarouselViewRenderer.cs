@@ -10,10 +10,10 @@ using Android.Support.V7.Widget;
 #endif
 using Android.Views;
 using Java.Interop;
-using FormsCarouselView = Xamarin.Forms.CarouselView;
-using Xamarin.Forms.Platform.Android.CollectionView;
+using FormsCarouselView = System.Maui.CarouselView;
+using System.Maui.Platform.Android.CollectionView;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class CarouselViewRenderer : ItemsViewRenderer<ItemsView, ItemsViewAdapter<ItemsView, IItemsViewSource>, IItemsViewSource>
 	{
@@ -301,7 +301,7 @@ namespace Xamarin.Forms.Platform.Android
 			_gotoPosition = _oldPosition;
 
 			SetCurrentItem(_oldPosition);
-			Carousel.ScrollTo(_oldPosition, position: Xamarin.Forms.ScrollToPosition.Center, animate: Carousel.AnimatePositionChanges);
+			Carousel.ScrollTo(_oldPosition, position: System.Maui.ScrollToPosition.Center, animate: Carousel.AnimatePositionChanges);
 		}
 
 		void UpdateVisualStates()
@@ -401,7 +401,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (_gotoPosition == -1 && currentItemPosition != carouselPosition)
 			{
 				_gotoPosition = currentItemPosition;
-				Carousel.ScrollTo(currentItemPosition, position: Xamarin.Forms.ScrollToPosition.Center, animate: Carousel.AnimateCurrentItemChanges);
+				Carousel.ScrollTo(currentItemPosition, position: System.Maui.ScrollToPosition.Center, animate: Carousel.AnimateCurrentItemChanges);
 			}
 		}
 		void UpdateFromPosition()
@@ -432,7 +432,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (_gotoPosition == -1 && !Carousel.IsDragging && !Carousel.IsScrolling)
 			{
 				_gotoPosition = carouselPosition;
-				Carousel.ScrollTo(carouselPosition, position: Xamarin.Forms.ScrollToPosition.Center, animate: Carousel.AnimatePositionChanges);
+				Carousel.ScrollTo(carouselPosition, position: System.Maui.ScrollToPosition.Center, animate: Carousel.AnimatePositionChanges);
 			}
 			SetCurrentItem(carouselPosition);
 		}

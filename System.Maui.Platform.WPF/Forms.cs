@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Media;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.WPF;
+using System.Maui.Internals;
+using System.Maui.Platform.WPF;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
-	public static class Forms
+	public static class Maui
 	{
 		public static bool IsInitialized { get; private set; }
 

@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	internal interface IBatchable
 	{

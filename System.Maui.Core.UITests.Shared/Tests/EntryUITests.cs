@@ -1,10 +1,10 @@
 using NUnit.Framework;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.CustomAttributes;
+using System.Maui.Controls.Issues;
+using System.Maui.CustomAttributes;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 
-namespace Xamarin.Forms.Core.UITests
+namespace System.Maui.Core.UITests
 {
 
 	[TestFixture]

@@ -1,4 +1,4 @@
-﻿using AView = Android.Views.View;
+using AView = Android.Views.View;
 using AColor = Android.Graphics.Color;
 using Android.Graphics;
 using System;
@@ -10,7 +10,7 @@ using System.IO;
 using Android.Support.V7.Widget;
 #endif
 
-namespace Xamarin.Forms.Platform.Android.UnitTests
+namespace System.Maui.Platform.Android.UnitTests
 {
 	internal static class AssertionExtensions
 	{

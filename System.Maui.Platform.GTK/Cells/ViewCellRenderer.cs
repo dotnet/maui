@@ -1,7 +1,7 @@
-﻿using Gtk;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk;
+using System.Maui.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Cells
+namespace System.Maui.Platform.GTK.Cells
 {
 	public class ViewCellRenderer : CellRenderer
 	{
@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 
 		protected override void OnForceUpdateSizeRequest(Cell cell, Container nativeCell)
 		{
-			var viewCell = cell as Xamarin.Forms.ViewCell;
+			var viewCell = cell as System.Maui.ViewCell;
 			var view = viewCell?.View;
 
 			if (view != null)

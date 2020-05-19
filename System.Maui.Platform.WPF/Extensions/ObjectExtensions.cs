@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Reflection;
 
-namespace Xamarin.Forms.Platform.WPF.Extensions
+namespace System.Maui.Platform.WPF.Extensions
 {
 	public static class OthersExtensions
 	{

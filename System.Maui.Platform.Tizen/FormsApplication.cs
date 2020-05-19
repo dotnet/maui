@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 using System.Reflection;
 using ElmSharp;
 using Tizen.Applications;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using ELayout = ElmSharp.Layout;
-using DeviceOrientation = Xamarin.Forms.Internals.DeviceOrientation;
+using DeviceOrientation = System.Maui.Internals.DeviceOrientation;
 using ElmSharp.Wearable;
-using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Application;
+using Specific = System.Maui.PlatformConfiguration.TizenSpecific.Application;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 
 	public class FormsApplication : CoreUIApplication
@@ -70,7 +70,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				window = (Window)methodInfo.Invoke(null, new object[] { "FormsWindow" });
 				BaseLayout = (ELayout)window.GetType().GetProperty("BaseLayout")?.GetValue(window);
 				BaseCircleSurface = (CircleSurface)window.GetType().GetProperty("BaseCircleSurface")?.GetValue(window);
-				Forms.CircleSurface = BaseCircleSurface;
+				System.Maui.Maui.CircleSurface = BaseCircleSurface;
 			}
 			else // in case of Xamarin Preload
 			{
@@ -181,14 +181,14 @@ namespace Xamarin.Forms.Platform.Tizen
 				(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
 				nativeView = renderer?.NativeView;
 			}
-			Forms.BaseLayout.SetPartContent("elm.swallow.overlay", nativeView);
+			System.Maui.Maui.BaseLayout.SetPartContent("elm.swallow.overlay", nativeView);
 		}
 
 		void SetPage(Page page)
 		{
-			if (!Forms.IsInitialized)
+			if (!System.Maui.Maui.IsInitialized)
 			{
-				throw new InvalidOperationException("Call Forms.Init (UIApplication) before this");
+				throw new InvalidOperationException("Call System.Maui.Maui.Init(UIApplication) before this");
 			}
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -226,7 +226,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				if (Device.Idiom == TargetIdiom.Watch)
 				{
 					BaseCircleSurface = new CircleSurface(conformant);
-					Forms.CircleSurface = BaseCircleSurface;
+					System.Maui.Maui.CircleSurface = BaseCircleSurface;
 				}
 				conformant.SetContent(BaseLayout);
 			}
@@ -294,7 +294,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		public static DeviceOrientation GetDeviceOrientation(this Window window)
 		{
 			DeviceOrientation orientation = DeviceOrientation.Other;
-			var isPortraitDevice = Forms.NaturalOrientation.IsPortrait();
+			var isPortraitDevice = System.Maui.Maui.NaturalOrientation.IsPortrait();
 			switch (window.Rotation)
 			{
 				case 0:

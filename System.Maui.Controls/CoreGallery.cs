@@ -1,25 +1,25 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Xamarin.Forms.Controls.GalleryPages;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
-using Xamarin.Forms.Controls.GalleryPages.RefreshViewGalleries;
-using Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries;
-using Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery;
-using Xamarin.Forms.Controls.GalleryPages.AppThemeGalleries;
-using Xamarin.Forms.Controls.GalleryPages.ExpanderGalleries;
-using Xamarin.Forms.Controls.GalleryPages.RadioButtonGalleries;
+using System.Maui.Controls.GalleryPages;
+using System.Maui.Controls.GalleryPages.CollectionViewGalleries;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
+using System.Maui.PlatformConfiguration.iOSSpecific;
+using System.Maui.Controls.GalleryPages.VisualStateManagerGalleries;
+using System.Maui.Controls.Issues;
+using System.Maui.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
+using System.Maui.Controls.GalleryPages.RefreshViewGalleries;
+using System.Maui.Controls.GalleryPages.SwipeViewGalleries;
+using System.Maui.Controls.GalleryPages.PlatformTestsGallery;
+using System.Maui.Controls.GalleryPages.AppThemeGalleries;
+using System.Maui.Controls.GalleryPages.ExpanderGalleries;
+using System.Maui.Controls.GalleryPages.RadioButtonGalleries;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	[Preserve(AllMembers = true)]
 	public static class Messages

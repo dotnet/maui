@@ -1,7 +1,7 @@
-﻿using System.Xml.Linq;
-using Windows.UI.Xaml.Documents;
+using System.Xml.Linq;
+using global::Windows.UI.Xaml.Documents;
 
-namespace Xamarin.Forms.Platform.UAP
+namespace System.Maui.Platform.UAP
 {
 	internal static class LabelHtmlHelper
 	{
@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Platform.UAP
 						inlines.Add(new LineBreak());
 					}
 
-					var paragraphSpan = new Windows.UI.Xaml.Documents.Span();
+					var paragraphSpan = new global::Windows.UI.Xaml.Documents.Span();
 					inlines.Add(paragraphSpan);
 					currentInlines = paragraphSpan.Inlines;
 					break;
@@ -64,7 +64,7 @@ namespace Xamarin.Forms.Platform.UAP
 				case ElementUl:
 				case ElementDiv:
 					AddLineBreakIfNeeded(inlines);
-					var divSpan = new Windows.UI.Xaml.Documents.Span();
+					var divSpan = new global::Windows.UI.Xaml.Documents.Span();
 					inlines.Add(divSpan);
 					currentInlines = divSpan.Inlines;
 					break;
@@ -93,9 +93,9 @@ namespace Xamarin.Forms.Platform.UAP
 				return false;
 
 			var lastInline = inlines[inlines.Count - 1];
-			while ((lastInline is Windows.UI.Xaml.Documents.Span))
+			while ((lastInline is global::Windows.UI.Xaml.Documents.Span))
 			{
-				var span = (Windows.UI.Xaml.Documents.Span)lastInline;
+				var span = (global::Windows.UI.Xaml.Documents.Span)lastInline;
 				if (span.Inlines.Count > 0)
 				{
 					lastInline = span.Inlines[span.Inlines.Count - 1];

@@ -21,11 +21,11 @@ using FragmentManager = Android.Support.V4.App.FragmentManager;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
-using Xamarin.Forms.Platform.Android.AppCompat;
-using Xamarin.Forms.Internals;
+using System.Maui.Platform.Android.AppCompat;
+using System.Maui.Internals;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class Platform : BindableObject, INavigation, IDisposable, IPlatformLayout
 #pragma warning disable CS0618
@@ -339,7 +339,7 @@ namespace Xamarin.Forms.Platform.Android
 		public static IVisualElementRenderer CreateRenderer(VisualElement element)
 		{
 			// If there's a previewer context set, use that when created 
-			return CreateRenderer(element, GetPreviewerContext(element) ?? Forms.Context);
+			return CreateRenderer(element, GetPreviewerContext(element) ?? System.Maui.Maui.Context);
 		}
 
 		internal static IVisualElementRenderer CreateRenderer(VisualElement element, Context context)
@@ -957,7 +957,7 @@ namespace Xamarin.Forms.Platform.Android
 			Color navigationBarTextColor = CurrentNavigationPage == null ? Color.Default : CurrentNavigationPage.BarTextColor;
 			TextView actionBarTitleTextView = null;
 
-			if (Forms.IsLollipopOrNewer && _activity != null)
+			if (System.Maui.Maui.IsLollipopOrNewer && _activity != null)
 			{
 				int actionbarId = _activity.Resources.GetIdentifier("action_bar", "id", "android");
 				if (actionbarId > 0)
@@ -1144,7 +1144,7 @@ namespace Xamarin.Forms.Platform.Android
 		internal static int GenerateViewId()
 		{
 			// getting unique Id's is an art, and I consider myself the Jackson Pollock of the field
-			if ((int)Forms.SdkInt >= 17)
+			if ((int)System.Maui.Maui.SdkInt >= 17)
 				return global::Android.Views.View.GenerateViewId();
 
 			// Numbers higher than this range reserved for xml

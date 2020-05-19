@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	internal class PageContainer : UIView, IUIAccessibilityContainer
 	{

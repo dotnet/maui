@@ -1,9 +1,9 @@
-﻿using System;
-using Xamarin.Forms.CustomAttributes;
+using System;
+using System.Maui.CustomAttributes;
 using System.Collections.ObjectModel;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Github, 3624, "Layout Compression causes the app to crash when scrolling a ListView with ListViewCachingStrategy.RetainElement")]
@@ -95,7 +95,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				var nameLabel = new Label();
 				var verticaLayout = new StackLayout();
-				Forms.CompressedLayout.SetIsHeadless(verticaLayout, TestPage.ShouldUseCompressedLayout);
+				System.Maui.CompressedLayout.SetIsHeadless(verticaLayout, TestPage.ShouldUseCompressedLayout);
 				var horizontalLayout = new StackLayout() { BackgroundColor = Color.Olive };
 
 				nameLabel.SetBinding(Label.TextProperty, new Binding("Name"));
@@ -128,12 +128,12 @@ namespace Xamarin.Forms.Controls.Issues
 						new ColumnDefinition { Width = GridLength.Star }
 					}
 				};
-				Forms.CompressedLayout.SetIsHeadless(stack, true);
+				System.Maui.CompressedLayout.SetIsHeadless(stack, true);
 				grid.AddChild(stack, 0, 0);
 				layout.Children.Add(grid, new Rectangle(0,0,1,1), AbsoluteLayoutFlags.All);
 
 				View = layout;
-				Forms.CompressedLayout.SetIsHeadless(stack, TestPage.ShouldUseCompressedLayout);
+				System.Maui.CompressedLayout.SetIsHeadless(stack, TestPage.ShouldUseCompressedLayout);
 			}
 		}
 

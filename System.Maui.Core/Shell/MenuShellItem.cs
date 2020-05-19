@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.StyleSheets;
+using System.Maui.StyleSheets;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	internal class MenuShellItem : ShellItem, IMenuItemController, IStyleSelectable
 	{

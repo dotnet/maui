@@ -1,6 +1,6 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
-namespace Xamarin.Forms.Platform.GTK.Cells
+namespace System.Maui.Platform.GTK.Cells
 {
 	public class SwitchCellRenderer : CellRenderer
 	{
@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 
 		protected override Gtk.Container GetCellWidgetInstance(Cell item)
 		{
-			var switchCell = (Xamarin.Forms.SwitchCell)item;
+			var switchCell = (System.Maui.SwitchCell)item;
 
 			var text = switchCell.Text ?? string.Empty;
 			var on = switchCell.On;
@@ -29,13 +29,13 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 			base.CellPropertyChanged(sender, args);
 
 			var gtkSwitchCell = (SwitchCell)sender;
-			var switchCell = (Xamarin.Forms.SwitchCell)gtkSwitchCell.Cell;
+			var switchCell = (System.Maui.SwitchCell)gtkSwitchCell.Cell;
 
-			if (args.PropertyName == Xamarin.Forms.SwitchCell.TextProperty.PropertyName)
+			if (args.PropertyName == System.Maui.SwitchCell.TextProperty.PropertyName)
 			{
 				gtkSwitchCell.Text = switchCell.Text ?? string.Empty;
 			}
-			else if (args.PropertyName == Xamarin.Forms.SwitchCell.OnProperty.PropertyName)
+			else if (args.PropertyName == System.Maui.SwitchCell.OnProperty.PropertyName)
 			{
 				gtkSwitchCell.On = switchCell.On;
 			}
@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 
 		private void OnToggled(object sender, bool active)
 		{
-			((Xamarin.Forms.SwitchCell)Cell).On = active;
+			((System.Maui.SwitchCell)Cell).On = active;
 		}
 	}
 }

@@ -1,7 +1,7 @@
 using ElmSharp;
 using ESize = ElmSharp.Size;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public delegate ESize? MeasureDelegate(NativeViewWrapperRenderer renderer, int availableWidth, int availableHeight);
 

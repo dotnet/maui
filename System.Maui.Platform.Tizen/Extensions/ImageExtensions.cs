@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using EImage = ElmSharp.Image;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public static class ImageExtensions
 	{
@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			IImageSourceHandler handler;
 			bool isLoadComplate = false;
-			if (source != null && (handler = Forms.GetHandlerForObject<IImageSourceHandler>(source)) != null)
+			if (source != null && (handler = System.Maui.Maui.GetHandlerForObject<IImageSourceHandler>(source)) != null)
 			{
 				isLoadComplate = await handler.LoadImageAsync(image, source);
 			}

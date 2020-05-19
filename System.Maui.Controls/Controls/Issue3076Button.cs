@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	public class Issue3076Button : Button
 	{

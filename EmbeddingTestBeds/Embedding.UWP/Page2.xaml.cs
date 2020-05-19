@@ -1,7 +1,7 @@
-﻿using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
 using Embedding.XF;
-using Xamarin.Forms.Platform.UWP;
+using System.Maui.Platform.UWP;
 
 namespace Embedding.UWP
 {

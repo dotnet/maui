@@ -1,9 +1,9 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using System;
 using System.Globalization;
 using System.Threading;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class FlexLayoutTests : BaseTestFixture
@@ -377,7 +377,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		//https://github.com/xamarin/Xamarin.Forms/issues/2551
+		//https://github.com/xamarin/System.Maui/issues/2551
 		public void TestReverseWithGrow()
 		{
 			var label0 = new Label {
@@ -398,7 +398,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 		[Test]
 		public void TestIsVisible()
-		//https://github.com/xamarin/Xamarin.Forms/issues/2593
+		//https://github.com/xamarin/System.Maui/issues/2593
 		{
 			var label0 = new Label {
 				IsPlatformEnabled = true,
@@ -436,7 +436,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 		[Test]
 		public void ChangingGrowTriggersLayout()
-		//https://github.com/xamarin/Xamarin.Forms/issues/2821
+		//https://github.com/xamarin/System.Maui/issues/2821
 		{
 			var layout = new FlexLayout {
 				IsPlatformEnabled = true,
@@ -457,7 +457,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 		[Test]
 		public void PaddingOnLayout()
-		//https://github.com/xamarin/Xamarin.Forms/issues/2663
+		//https://github.com/xamarin/System.Maui/issues/2663
 		{
 			var label0 = new Label {
 				IsPlatformEnabled = true,

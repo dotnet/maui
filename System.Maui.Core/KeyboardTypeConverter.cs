@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[Xaml.TypeConversion(typeof(Keyboard))]
 	public class KeyboardTypeConverter : TypeConverter

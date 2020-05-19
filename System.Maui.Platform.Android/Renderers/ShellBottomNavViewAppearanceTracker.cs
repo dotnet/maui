@@ -1,4 +1,4 @@
-﻿using Android.Content.Res;
+using Android.Content.Res;
 using Android.Graphics.Drawables;
 #if __ANDROID_29__
 using AndroidX.Core.Widget;
@@ -12,7 +12,7 @@ using System;
 using AColor = Android.Graphics.Color;
 using R = Android.Resource;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class ShellBottomNavViewAppearanceTracker : IShellBottomNavViewAppearanceTracker
 	{

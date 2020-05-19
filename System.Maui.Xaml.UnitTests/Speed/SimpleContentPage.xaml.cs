@@ -1,20 +1,20 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-using Xamarin.Forms;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui;
+using System.Maui.Core.UnitTests;
 
 using NUnit.Framework;
 using System.Diagnostics;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public class SimpleContentPageCode : ContentPage
 	{
 		public SimpleContentPageCode ()
 		{
 			Content = new Label {
-				Text="Hello, Xamarin.Forms!",
+				Text="Hello, System.Maui!",
 				VerticalOptions=LayoutOptions.CenterAndExpand,
 				HorizontalOptions=LayoutOptions.CenterAndExpand
 			};

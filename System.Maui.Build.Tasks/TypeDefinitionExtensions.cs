@@ -6,7 +6,7 @@ using Mono.Cecil.Cil;
 using MethodAttributes = Mono.Cecil.MethodAttributes;
 using MethodImplAttributes = Mono.Cecil.MethodImplAttributes;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace System.Maui.Build.Tasks
 {
 	static class TypeDefinitionExtensions
 	{

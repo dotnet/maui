@@ -1,5 +1,5 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 using System.Collections.ObjectModel;
 
 #if UITEST
@@ -8,10 +8,10 @@ using NUnit.Framework;
 #endif
 
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 1864, "[WPF] Xamarin.Forms WPF load local html throw ArgumentException with message 'Relative URIs are not allowed'", PlatformAffected.WPF)]
+	[Issue(IssueTracker.Github, 1864, "[WPF] System.Maui WPF load local html throw ArgumentException with message 'Relative URIs are not allowed'", PlatformAffected.WPF)]
 	public class Issue1864 : TestContentPage
 	{
 		protected override void Init()
@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Controls.Issues
 			WebView webView = new WebView();
 			var source = new HtmlWebViewSource()
 			{
-				Html = @"<html><body> <h1>Xamarin.Forms</h1> <p>Welcome to WebView.</p> </body> </html>"
+				Html = @"<html><body> <h1>System.Maui</h1> <p>Welcome to WebView.</p> </body> </html>"
 			};
 			webView.Source = source;
 			Content = webView;

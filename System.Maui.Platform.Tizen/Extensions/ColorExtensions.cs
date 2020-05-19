@@ -1,14 +1,14 @@
 using EColor = ElmSharp.Color;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public static class ColorExtensions
 	{
 		/// <summary>
-		/// Creates an instance of ElmSharp.Color class based on provided Xamarin.Forms.Color instance
+		/// Creates an instance of ElmSharp.Color class based on provided System.Maui.Color instance
 		/// </summary>
-		/// <returns>ElmSharp.Color instance representing a color which corresponds to the provided Xamarin.Forms.Color</returns>
-		/// <param name="c">The Xamarin.Forms.Color instance which will be converted to a ElmSharp.Color</param>
+		/// <returns>ElmSharp.Color instance representing a color which corresponds to the provided System.Maui.Color</returns>
+		/// <param name="c">The System.Maui.Color instance which will be converted to a ElmSharp.Color</param>
 		public static EColor ToNative(this Color c)
 		{
 			if (c.IsDefault)

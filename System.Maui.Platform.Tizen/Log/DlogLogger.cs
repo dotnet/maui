@@ -1,6 +1,6 @@
-﻿using T = Tizen;
+using T = Tizen;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	/// <summary>
 	/// Logs a message to the dlog.

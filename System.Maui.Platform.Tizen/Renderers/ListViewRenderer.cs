@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Specialized;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using ElmSharp;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	/// <summary>
 	/// Renderer class for Xamarin ListView class. This provides necessary logic translating
 	/// Xamarin API to Tizen Native API. This is a derivate of a ViewRenderer base class.
 	/// This is a template class with two template parameters. First one is restricted to
-	/// Xamarin.Forms.View and can be accessed via property Element. This represent actual
+	/// System.Maui.View and can be accessed via property Element. This represent actual
 	/// xamarin view which represents control logic. Second one is restricted to ElmSharp.Widget
 	/// types, and can be accessed with Control property. This represents actual native control
 	/// which is used to draw control and realize xamarin forms api.
@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		int _selectedItemChanging = 0;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Xamarin.Forms.Platform.Tizen.ListViewRenderer"/> class.
+		/// Initializes a new instance of the <see cref="System.Maui.Platform.Tizen.ListViewRenderer"/> class.
 		/// Note that at this stage of construction renderer dose not have required native element. This should
 		/// only be used with xamarin engine.
 		/// </summary>
@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// Invoked on creation of new ListView renderer. Handles the creation of a native
 		/// element and initialization of the renderer.
 		/// </summary>
-		/// <param name="e"><see cref="Xamarin.Forms.Platform.Tizen.ElementChangedEventArgs"/>.</param>
+		/// <param name="e"><see cref="System.Maui.Platform.Tizen.ElementChangedEventArgs"/>.</param>
 		protected override void OnElementChanged(ElementChangedEventArgs<ListView> e)
 		{
 			if (Control == null)
@@ -84,11 +84,11 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if(Device.Idiom == TargetIdiom.Watch)
 			{
-				return new Native.Watch.WatchListView(Forms.NativeParent, Forms.CircleSurface);
+				return new Native.Watch.WatchListView(System.Maui.Maui.NativeParent, System.Maui.Maui.CircleSurface);
 			}
 			else
 			{
-				return new Native.ListView(Forms.NativeParent);
+				return new Native.ListView(System.Maui.Maui.NativeParent);
 			}
 		}
 

@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Specialized;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal class ObservableItemsSource : IItemsViewSource
 	{

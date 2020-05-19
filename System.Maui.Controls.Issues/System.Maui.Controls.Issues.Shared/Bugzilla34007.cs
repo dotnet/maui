@@ -1,7 +1,7 @@
 using System;
 using System.Xml.Linq;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
 #if UITEST
 using NUnit.Framework;
@@ -9,7 +9,7 @@ using Xamarin.UITest;
 
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 34007, "Z order drawing of children views are different on Android, iOS, Win", PlatformAffected.Android | PlatformAffected.iOS)]

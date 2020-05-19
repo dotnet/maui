@@ -1,20 +1,20 @@
-﻿using Xamarin.Forms;
-using Xamarin.Forms.Material.Tizen;
-using Xamarin.Forms.Platform.Tizen;
+using System.Maui;
+using System.Maui.Material.Tizen;
+using System.Maui.Platform.Tizen;
 
 [assembly: ExportRenderer(typeof(Shell), typeof(MaterialShellRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
-namespace Xamarin.Forms.Material.Tizen
+namespace System.Maui.Material.Tizen
 {
 	public class MaterialShellRenderer : ShellRenderer
 	{
 		protected override INavigationDrawer CreateNavigationDrawer()
 		{
-			return new MaterialNavigationDrawer(Forms.NativeParent);
+			return new MaterialNavigationDrawer(System.Maui.Maui.NativeParent);
 		}
 
 		protected override INavigationView CreateNavigationView()
 		{
-			return new MaterialNavigationView(Forms.NativeParent);
+			return new MaterialNavigationView(System.Maui.Maui.NativeParent);
 		}
 
 		protected override ShellItemRenderer CreateShellItem(ShellItem item)

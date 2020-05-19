@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers
+namespace System.Maui.Platform.GTK.Renderers
 {
 	public class SliderRenderer : ViewRenderer<Slider, Gtk.HScale>
 	{
@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 					// Use gtk.HScale, a horizontal slider widget for selecting a value from a range.
 					SetNativeControl(new Gtk.HScale(_minimum, _maximum, stepping)
 					{
-						// Do not show a label in order to mimic the rest of the Xamarin.Forms backends
+						// Do not show a label in order to mimic the rest of the System.Maui backends
 						DrawValue = false
 					});
 					Control.ValueChanged += OnControlValueChanged;

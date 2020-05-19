@@ -1,13 +1,13 @@
-﻿using Microsoft.Build.Framework;
+using Microsoft.Build.Framework;
 using NUnit.Framework;
 using System.CodeDom;
 using System.IO;
 using System.Linq;
-using Xamarin.Forms.Build.Tasks;
+using System.Maui.Build.Tasks;
 
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.MSBuild.UnitTests
+namespace System.Maui.MSBuild.UnitTests
 {
 	[TestFixture]
 	public class XamlgTests : BaseTestFixture
@@ -18,7 +18,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			var xaml = @"<View
 					xmlns=""http://xamarin.com/schemas/2014/forms""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-					x:Class=""Xamarin.Forms.Xaml.UnitTests.CustomView"" >
+					x:Class=""System.Maui.Xaml.UnitTests.CustomView"" >
 						<Label x:Name=""label0""/>
 					</View>";
 
@@ -32,11 +32,11 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			Assert.NotNull (generator.NamedFields);
 
 			Assert.AreEqual ("CustomView", generator.RootType);
-			Assert.AreEqual ("Xamarin.Forms.Xaml.UnitTests", generator.RootClrNamespace);
-			Assert.AreEqual ("Xamarin.Forms.View", generator.BaseType.BaseType);
+			Assert.AreEqual ("System.Maui.Xaml.UnitTests", generator.RootClrNamespace);
+			Assert.AreEqual ("System.Maui.View", generator.BaseType.BaseType);
 			Assert.AreEqual (1, generator.NamedFields.Count());
 			Assert.AreEqual ("label0", generator.NamedFields.First().Name);
-			Assert.AreEqual ("Xamarin.Forms.Label", generator.NamedFields.First().Type.BaseType);
+			Assert.AreEqual ("System.Maui.Label", generator.NamedFields.First().Type.BaseType);
 		}
 
 		[Test]
@@ -45,7 +45,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			var xaml = @"<View
 					xmlns=""http://xamarin.com/schemas/2014/forms""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-					x:Class=""Xamarin.Forms.Xaml.UnitTests.CustomView"" >
+					x:Class=""System.Maui.Xaml.UnitTests.CustomView"" >
 						<Label x:Name=""label0""/>
 					</View>";
 
@@ -59,11 +59,11 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			Assert.NotNull(generator.NamedFields);
 
 			Assert.AreEqual("CustomView", generator.RootType);
-			Assert.AreEqual("Xamarin.Forms.Xaml.UnitTests", generator.RootClrNamespace);
-			Assert.AreEqual("Xamarin.Forms.View", generator.BaseType.BaseType);
+			Assert.AreEqual("System.Maui.Xaml.UnitTests", generator.RootClrNamespace);
+			Assert.AreEqual("System.Maui.View", generator.BaseType.BaseType);
 			Assert.AreEqual(1, generator.NamedFields.Count());
 			Assert.AreEqual("label0", generator.NamedFields.First().Name);
-			Assert.AreEqual("Xamarin.Forms.Label", generator.NamedFields.First().Type.BaseType);
+			Assert.AreEqual("System.Maui.Label", generator.NamedFields.First().Type.BaseType);
 		}
 
 		[Test]
@@ -169,7 +169,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			generator.ParseXaml(reader);
 
 			Assert.AreEqual("FooBar", generator.RootType);
-			Assert.AreEqual ("Xamarin.Forms.Foo`1", generator.BaseType.BaseType);
+			Assert.AreEqual ("System.Maui.Foo`1", generator.BaseType.BaseType);
 			Assert.AreEqual (1, generator.BaseType.TypeArguments.Count);
 			Assert.AreEqual ("System.String", generator.BaseType.TypeArguments [0].BaseType);
 		}
@@ -189,7 +189,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			generator.ParseXaml(reader);
 
 			Assert.AreEqual ("FooBar", generator.RootType);
-			Assert.AreEqual ("Xamarin.Forms.Foo`2", generator.BaseType.BaseType);
+			Assert.AreEqual ("System.Maui.Foo`2", generator.BaseType.BaseType);
 			Assert.AreEqual (2, generator.BaseType.TypeArguments.Count);
 			Assert.AreEqual ("System.String", generator.BaseType.TypeArguments [0].BaseType);
 			Assert.AreEqual ("System.Int32", generator.BaseType.TypeArguments [1].BaseType);
@@ -210,7 +210,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			generator.ParseXaml(reader);
 
 			Assert.AreEqual ("FooBar", generator.RootType);
-			Assert.AreEqual ("Xamarin.Forms.Foo`2", generator.BaseType.BaseType);
+			Assert.AreEqual ("System.Maui.Foo`2", generator.BaseType.BaseType);
 			Assert.AreEqual (2, generator.BaseType.TypeArguments.Count);
 			Assert.AreEqual ("System.String", generator.BaseType.TypeArguments [0].BaseType);
 			Assert.AreEqual ("System.Int32", generator.BaseType.TypeArguments [1].BaseType);
@@ -224,8 +224,8 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 						    xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							x:Class=""FooBar"" 
 							x:TypeArguments=""nsone:IDummyInterface,nstwo:IDummyInterfaceTwo""
-							xmlns:nsone=""clr-namespace:Xamarin.Forms.Xaml.UnitTests.Bugzilla24258.Interfaces""
-							xmlns:nstwo=""clr-namespace:Xamarin.Forms.Xaml.UnitTests.Bugzilla24258.InterfacesTwo""
+							xmlns:nsone=""clr-namespace:System.Maui.Xaml.UnitTests.Bugzilla24258.Interfaces""
+							xmlns:nstwo=""clr-namespace:System.Maui.Xaml.UnitTests.Bugzilla24258.InterfacesTwo""
 
 			/>";
 			var reader = new StringReader (xaml);
@@ -234,10 +234,10 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			generator.ParseXaml(reader);
 
 			Assert.AreEqual ("FooBar", generator.RootType);
-			Assert.AreEqual ("Xamarin.Forms.Foo`2", generator.BaseType.BaseType);
+			Assert.AreEqual ("System.Maui.Foo`2", generator.BaseType.BaseType);
 			Assert.AreEqual (2, generator.BaseType.TypeArguments.Count);
-			Assert.AreEqual ("Xamarin.Forms.Xaml.UnitTests.Bugzilla24258.Interfaces.IDummyInterface", generator.BaseType.TypeArguments [0].BaseType);
-			Assert.AreEqual ("Xamarin.Forms.Xaml.UnitTests.Bugzilla24258.InterfacesTwo.IDummyInterfaceTwo", generator.BaseType.TypeArguments [1].BaseType);
+			Assert.AreEqual ("System.Maui.Xaml.UnitTests.Bugzilla24258.Interfaces.IDummyInterface", generator.BaseType.TypeArguments [0].BaseType);
+			Assert.AreEqual ("System.Maui.Xaml.UnitTests.Bugzilla24258.InterfacesTwo.IDummyInterfaceTwo", generator.BaseType.TypeArguments [1].BaseType);
 		}
 
 		[Test]
@@ -248,8 +248,8 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 						    xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							x:Class=""FooBar"" 
 							x:TypeArguments=""nsone:IDummyInterface, nstwo:IDummyInterfaceTwo""
-							xmlns:nsone=""clr-namespace:Xamarin.Forms.Xaml.UnitTests.Bugzilla24258.Interfaces""
-							xmlns:nstwo=""clr-namespace:Xamarin.Forms.Xaml.UnitTests.Bugzilla24258.InterfacesTwo""
+							xmlns:nsone=""clr-namespace:System.Maui.Xaml.UnitTests.Bugzilla24258.Interfaces""
+							xmlns:nstwo=""clr-namespace:System.Maui.Xaml.UnitTests.Bugzilla24258.InterfacesTwo""
 
 			/>";
 			var reader = new StringReader (xaml);
@@ -258,10 +258,10 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			generator.ParseXaml(reader);
 
 			Assert.AreEqual ("FooBar", generator.RootType);
-			Assert.AreEqual ("Xamarin.Forms.Foo`2", generator.BaseType.BaseType);
+			Assert.AreEqual ("System.Maui.Foo`2", generator.BaseType.BaseType);
 			Assert.AreEqual (2, generator.BaseType.TypeArguments.Count);
-			Assert.AreEqual ("Xamarin.Forms.Xaml.UnitTests.Bugzilla24258.Interfaces.IDummyInterface", generator.BaseType.TypeArguments [0].BaseType);
-			Assert.AreEqual ("Xamarin.Forms.Xaml.UnitTests.Bugzilla24258.InterfacesTwo.IDummyInterfaceTwo", generator.BaseType.TypeArguments [1].BaseType);
+			Assert.AreEqual ("System.Maui.Xaml.UnitTests.Bugzilla24258.Interfaces.IDummyInterface", generator.BaseType.TypeArguments [0].BaseType);
+			Assert.AreEqual ("System.Maui.Xaml.UnitTests.Bugzilla24258.InterfacesTwo.IDummyInterfaceTwo", generator.BaseType.TypeArguments [1].BaseType);
 		}
 
 		[Test]
@@ -291,8 +291,8 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			var xaml = @"
 			<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 			             xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-			             xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests""
-			             x:Class=""Xamarin.Forms.Xaml.UnitTests.FieldModifier"">
+			             xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests""
+			             x:Class=""System.Maui.Xaml.UnitTests.FieldModifier"">
 				<StackLayout>
 			        <Label x:Name=""privateLabel"" />
 			        <Label x:Name=""internalLabel"" x:FieldModifier=""NotPublic"" />
@@ -313,7 +313,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 		}
 
 		[Test]
-		//https://github.com/xamarin/Xamarin.Forms/issues/2574
+		//https://github.com/xamarin/System.Maui/issues/2574
 		public void xNameOnRoot()
 		{
 			var xaml = @"<ContentPage
@@ -328,7 +328,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 
 			Assert.AreEqual(1, generator.NamedFields.Count());
 			Assert.AreEqual("bar", generator.NamedFields.First().Name);
-			Assert.AreEqual("Xamarin.Forms.ContentPage", generator.NamedFields.First().Type.BaseType);
+			Assert.AreEqual("System.Maui.ContentPage", generator.NamedFields.First().Type.BaseType);
 		}
 		
 		[Test]

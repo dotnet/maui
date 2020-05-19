@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Globalization;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 5003, "iOS StrikeThrough applied to null string throws error", PlatformAffected.iOS)]

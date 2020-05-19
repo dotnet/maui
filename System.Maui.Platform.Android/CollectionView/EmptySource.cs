@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	sealed internal class EmptySource : IItemsViewSource
 	{

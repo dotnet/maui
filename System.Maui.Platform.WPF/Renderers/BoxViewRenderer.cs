@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Windows.Controls;
 using System.Windows.Media;
 using WRectangle = System.Windows.Shapes.Rectangle;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public class BoxViewRenderer : ViewRenderer<BoxView, WRectangle>
 	{

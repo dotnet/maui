@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
 using UIKit;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration.iOSSpecific;
 using RectangleF = CoreGraphics.CGRect;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class Platform : BindableObject, INavigation, IDisposable
 #pragma warning disable CS0618
@@ -168,7 +168,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			bool shouldFire = true;
 
-			if (Forms.IsiOS13OrNewer)
+			if (System.Maui.Maui.IsiOS13OrNewer)
 			{
 				if (presentationStyle == UIKit.UIModalPresentationStyle.FullScreen)
 					shouldFire = false; // This is mainly for backwards compatibility
@@ -251,7 +251,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				UIEdgeInsets safeAreaInsets;
 
-				if (!Forms.IsiOS11OrNewer)
+				if (!System.Maui.Maui.IsiOS11OrNewer)
 					safeAreaInsets = new UIEdgeInsets(UIApplication.SharedApplication.StatusBarFrame.Size.Height, 0, 0, 0);
 				else if (UIApplication.SharedApplication.GetKeyWindow() != null)
 					safeAreaInsets = UIApplication.SharedApplication.GetKeyWindow().SafeAreaInsets;
@@ -471,7 +471,7 @@ namespace Xamarin.Forms.Platform.iOS
 				alert.PopoverPresentationController.PermittedArrowDirections = 0; // No arrow
 			}
 
-			if(!Forms.IsiOS9OrNewer)
+			if(!System.Maui.Maui.IsiOS9OrNewer)
 			{
 				// For iOS 8, we need to explicitly set the size of the window
 				window.Frame = new RectangleF(0, 0, UIScreen.MainScreen.Bounds.Width, UIScreen.MainScreen.Bounds.Height);

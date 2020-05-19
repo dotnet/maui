@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	[ContentProperty(nameof(Path))]
 	[AcceptEmptyServiceProvider]

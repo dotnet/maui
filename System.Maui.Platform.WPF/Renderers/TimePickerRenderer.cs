@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -6,11 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
-	public class TimePickerRenderer : ViewRenderer<Xamarin.Forms.TimePicker, FormsTimePicker>
+	public class TimePickerRenderer : ViewRenderer<System.Maui.TimePicker, FormsTimePicker>
 	{
 		Brush _defaultBrush;
 		bool _fontApplied;
@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.WPF
 			base.Dispose(disposing);
 		}
 
-		protected override void OnElementChanged(ElementChangedEventArgs<Xamarin.Forms.TimePicker> e)
+		protected override void OnElementChanged(ElementChangedEventArgs<System.Maui.TimePicker> e)
 		{
 			base.OnElementChanged(e);
 
@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Platform.WPF
 			else if (e.PropertyName == TimePicker.FontAttributesProperty.PropertyName || e.PropertyName == TimePicker.FontFamilyProperty.PropertyName || e.PropertyName == TimePicker.FontSizeProperty.PropertyName)
 				UpdateFont();
 
-			if (e.PropertyName == Xamarin.Forms.TimePicker.FormatProperty.PropertyName)
+			if (e.PropertyName == System.Maui.TimePicker.FormatProperty.PropertyName)
 				UpdateTimeFormat();
 
 			if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
@@ -78,7 +78,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 		void OnControlTimeChanged(object sender, TimeChangedEventArgs e)
 		{
-			Element.Time = e.NewTime.HasValue ? e.NewTime.Value : (TimeSpan)Xamarin.Forms.TimePicker.TimeProperty.DefaultValue;
+			Element.Time = e.NewTime.HasValue ? e.NewTime.Value : (TimeSpan)System.Maui.TimePicker.TimeProperty.DefaultValue;
 			((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.SizeRequestChanged);
 		}
 
@@ -89,7 +89,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 		void UpdateFlowDirection()
 		{
-			Control.FlowDirection = Element.FlowDirection == Xamarin.Forms.FlowDirection.RightToLeft ? System.Windows.FlowDirection.RightToLeft : System.Windows.FlowDirection.LeftToRight;
+			Control.FlowDirection = Element.FlowDirection == System.Maui.FlowDirection.RightToLeft ? System.Windows.FlowDirection.RightToLeft : System.Windows.FlowDirection.LeftToRight;
 		}
 
 		void PickerOnForceInvalidate(object sender, EventArgs eventArgs)

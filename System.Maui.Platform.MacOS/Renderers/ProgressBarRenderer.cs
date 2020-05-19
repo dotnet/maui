@@ -1,9 +1,9 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Linq;
 using AppKit;
 using CoreImage;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public class ProgressBarRenderer : ViewRenderer<ProgressBar, NSProgressIndicator>
 	{

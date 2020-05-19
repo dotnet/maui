@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Input;
-using Xamarin.Forms.Internals;
-using static Xamarin.Forms.VisualElement;
+using System.Maui.Internals;
+using static System.Maui.VisualElement;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public class SearchHandler : BindableObject, ISearchHandlerController, IPlaceholderElement, IFontElement, ITextElement, ITextAlignmentElement
 	{

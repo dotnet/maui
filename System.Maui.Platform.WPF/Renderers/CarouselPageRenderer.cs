@@ -1,7 +1,7 @@
-﻿using System.ComponentModel;
-using Xamarin.Forms.Platform.WPF.Controls;
+using System.ComponentModel;
+using System.Maui.Platform.WPF.Controls;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public class CarouselPageRenderer : VisualMultiPageRenderer<CarouselPage, ContentPage, FormsCarouselPage>
 	{

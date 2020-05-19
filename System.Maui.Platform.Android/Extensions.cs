@@ -1,8 +1,8 @@
-﻿using Android.Content.Res;
+using Android.Content.Res;
 using Android.Views;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public static class Extensions
 	{

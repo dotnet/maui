@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Github, 1758, "LayoutTo needs to be smarted about using layout specific API calls", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.WinPhone)]
@@ -36,15 +36,15 @@ namespace Xamarin.Forms.Controls.Issues
 			var layout = new RelativeLayout();
                    
 			layout.Children.Add(_list,
-				Forms.Constraint.RelativeToParent(p => p.X),
-				Forms.Constraint.RelativeToParent(p => p.Y),
-				Forms.Constraint.RelativeToParent(p => p.Width),
-				Forms.Constraint.RelativeToParent(p => p.Height)
+				System.Maui.Constraint.RelativeToParent(p => p.X),
+				System.Maui.Constraint.RelativeToParent(p => p.Y),
+				System.Maui.Constraint.RelativeToParent(p => p.Width),
+				System.Maui.Constraint.RelativeToParent(p => p.Height)
 			);
         
 			layout.Children.Add(_button, 
-				Forms.Constraint.Constant(0),
-				Forms.Constraint.Constant(300));
+				System.Maui.Constraint.Constant(0),
+				System.Maui.Constraint.Constant(300));
  
 			return layout;
 		}

@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	interface IXamlNodeVisitor
 	{

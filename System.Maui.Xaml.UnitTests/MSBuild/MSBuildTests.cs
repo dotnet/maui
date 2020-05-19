@@ -1,4 +1,4 @@
-﻿using Microsoft.Build.Locator;
+using Microsoft.Build.Locator;
 using Mono.Cecil;
 using NUnit.Framework;
 using System;
@@ -7,11 +7,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
-using static Xamarin.Forms.MSBuild.UnitTests.MSBuildXmlExtensions;
+using static System.Maui.MSBuild.UnitTests.MSBuildXmlExtensions;
 
-namespace Xamarin.Forms.MSBuild.UnitTests
+namespace System.Maui.MSBuild.UnitTests
 {
-	//This set of tests is for validating Xamarin.Forms.targets
+	//This set of tests is for validating System.Maui.targets
 	[TestFixture]
 	[Category("LongRunning")]
 	public class MSBuildTests
@@ -19,8 +19,8 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 		static readonly string [] references = {
 			"mscorlib",
 			"System",
-			"Xamarin.Forms.Core.dll",
-			"Xamarin.Forms.Xaml.dll",
+			"System.Maui.Core.dll",
+			"System.Maui.Xaml.dll",
 		};
 
 		class Xaml
@@ -32,7 +32,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 				<ContentPage
 					xmlns=""{XamarinFormsDefaultNamespace}""
 					xmlns:x=""{XamarinFormsXNamespace}""
-					x:Class=""Xamarin.Forms.Xaml.UnitTests.MainPage"">
+					x:Class=""System.Maui.Xaml.UnitTests.MainPage"">
 					<Label x:Name=""label0""/>
 				</ContentPage>";
 
@@ -40,7 +40,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 				<ContentView
 					xmlns=""{XamarinFormsDefaultNamespace}""
 					xmlns:x=""{XamarinFormsXNamespace}""
-					x:Class=""Xamarin.Forms.Xaml.UnitTests.CustomView"">
+					x:Class=""System.Maui.Xaml.UnitTests.CustomView"">
 					<Label x:Name=""label0""/>
 				</ContentView>";
 		}
@@ -75,8 +75,8 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 				//https://docs.microsoft.com/en-us/vsts/build-release/concepts/definitions/build/variables?view=vsts&tabs=batch#buildsourcesdirectory
 				var sourcesDirectory = Environment.GetEnvironmentVariable("BUILD_SOURCESDIRECTORY");
 				if (!string.IsNullOrEmpty(sourcesDirectory)) {
-					props = Path.Combine(sourcesDirectory, "Xamarin.Forms.Xaml.UnitTests", "MSBuild", "_Directory.Build.props");
-					targets = Path.Combine(sourcesDirectory, "Xamarin.Forms.Xaml.UnitTests", "MSBuild", "_Directory.Build.targets");
+					props = Path.Combine(sourcesDirectory, "System.Maui.Xaml.UnitTests", "MSBuild", "_Directory.Build.props");
+					targets = Path.Combine(sourcesDirectory, "System.Maui.Xaml.UnitTests", "MSBuild", "_Directory.Build.targets");
 
 					if (!File.Exists(props))
 						Assert.Fail("Unable to find _Directory.Build.props at path: " + props);
@@ -157,7 +157,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			project.Add (itemGroup);
 
 			//Let's enable XamlC assembly-wide
-			project.Add (AddFile ("AssemblyInfo.cs", "Compile", "[assembly: Xamarin.Forms.Xaml.XamlCompilation (Xamarin.Forms.Xaml.XamlCompilationOptions.Compile)]"));
+			project.Add (AddFile ("AssemblyInfo.cs", "Compile", "[assembly: System.Maui.Xaml.XamlCompilation (System.Maui.Xaml.XamlCompilationOptions.Compile)]"));
 
 			//Add a single CSS file
 			project.Add (AddFile ("Foo.css", "EmbeddedResource", Css.Foo));

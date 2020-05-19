@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	// Used by the SelectableItemsView to keep track of (and respond to changes in) the SelectedItems property
 	internal class SelectionList : IList<object>

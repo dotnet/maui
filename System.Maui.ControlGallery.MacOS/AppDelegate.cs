@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Linq;
 using AppKit;
 using CoreGraphics;
 using Foundation;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.MacOS;
+using System.Maui.Controls;
+using System.Maui.Controls.Issues;
+using System.Maui.Platform.MacOS;
 
-namespace Xamarin.Forms.ControlGallery.MacOS
+namespace System.Maui.ControlGallery.MacOS
 {
 	[Register("AppDelegate")]
 	public class AppDelegate : FormsApplicationDelegate
@@ -39,7 +39,7 @@ namespace Xamarin.Forms.ControlGallery.MacOS
 
 		public override void DidFinishLaunching(NSNotification notification)
 		{
-			Forms.Init();
+			System.Maui.Maui.Init();
 			FormsMaps.Init();
 
 			var app = new App();
@@ -278,7 +278,7 @@ namespace Xamarin.Forms.ControlGallery.MacOS
 			var loginViewController = new NSViewController { View = { } };
 			var button = NSButtonExtensions.CreateButton("Login", () =>
 			{
-				Xamarin.Forms.Application.Current.MainPage = new ContentPage { Content = new Label { Text = "40911 Success" } };
+				System.Maui.Application.Current.MainPage = new ContentPage { Content = new Label { Text = "40911 Success" } };
 				//loginViewController.DismissViewController()true, null);
 
 			});

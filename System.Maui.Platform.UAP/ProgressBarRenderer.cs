@@ -1,11 +1,11 @@
-﻿using System.ComponentModel;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls.Primitives;
-using Xamarin.Forms.Internals;
+using System.ComponentModel;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls.Primitives;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	public class ProgressBarRenderer : ViewRenderer<ProgressBar, Windows.UI.Xaml.Controls.ProgressBar>
+	public class ProgressBarRenderer : ViewRenderer<ProgressBar, global::Windows.UI.Xaml.Controls.ProgressBar>
 	{
 		object _foregroundDefault;
 
@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (Control == null)
 				{
-					var progressBar = new Windows.UI.Xaml.Controls.ProgressBar { Minimum = 0, Maximum = 1 };
+					var progressBar = new global::Windows.UI.Xaml.Controls.ProgressBar { Minimum = 0, Maximum = 1 };
 
 					progressBar.ValueChanged += ProgressBarOnValueChanged;
 

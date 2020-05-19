@@ -1,4 +1,4 @@
-﻿#if __ANDROID_29__
+#if __ANDROID_29__
 using AndroidX.AppCompat.Widget;
 using AndroidX.RecyclerView.Widget;
 #else
@@ -6,7 +6,7 @@ using System;
 using Android.Support.V7.Widget;
 #endif
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal abstract class NongreedySnapHelper : LinearSnapHelper
 	{

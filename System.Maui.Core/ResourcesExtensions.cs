@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	static class ResourcesExtensions
 	{

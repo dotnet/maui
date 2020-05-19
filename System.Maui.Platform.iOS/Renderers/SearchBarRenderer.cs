@@ -4,9 +4,9 @@ using System.Drawing;
 using CoreGraphics;
 using Foundation;
 using UIKit;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using System.Maui.PlatformConfiguration.iOSSpecific;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class SearchBarRenderer : ViewRenderer<SearchBar, UISearchBar>
 	{
@@ -130,11 +130,11 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateVerticalTextAlignment();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateHorizontalTextAlignment();
-			else if(e.PropertyName == Xamarin.Forms.InputView.MaxLengthProperty.PropertyName)
+			else if(e.PropertyName == System.Maui.InputView.MaxLengthProperty.PropertyName)
 				UpdateMaxLength();
-			else if(e.PropertyName == Xamarin.Forms.InputView.KeyboardProperty.PropertyName)
+			else if(e.PropertyName == System.Maui.InputView.KeyboardProperty.PropertyName)
 				UpdateKeyboard();
-			else if(e.PropertyName == Xamarin.Forms.InputView.IsSpellCheckEnabledProperty.PropertyName)
+			else if(e.PropertyName == System.Maui.InputView.IsSpellCheckEnabledProperty.PropertyName)
 				UpdateKeyboard();
 			else if(e.PropertyName == PlatformConfiguration.iOSSpecific.SearchBar.SearchBarStyleProperty.PropertyName)
 				UpdateSearchBarStyle();
@@ -167,7 +167,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			var sizeThatFits = Control.SizeThatFits(size);
 
-			if (Forms.IsiOS11OrNewer)
+			if (System.Maui.Maui.IsiOS11OrNewer)
 				return sizeThatFits;
 
 			////iOS10 hack because SizeThatFits always returns a width of 0
@@ -181,7 +181,7 @@ namespace Xamarin.Forms.Platform.iOS
 			base.TraitCollectionDidChange(previousTraitCollection);
 #if __XCODE11__
 			// Make sure the control adheres to changes in UI theme
-			if (Forms.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (System.Maui.Maui.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				UpdateTextColor();
 #endif
 		}
@@ -382,7 +382,7 @@ namespace Xamarin.Forms.Platform.iOS
 			Control.ApplyKeyboard(keyboard);
 			if (!(keyboard is Internals.CustomKeyboard))
 			{
-				if (Element.IsSet(Xamarin.Forms.InputView.IsSpellCheckEnabledProperty))
+				if (Element.IsSet(System.Maui.InputView.IsSpellCheckEnabledProperty))
 				{
 					if (!Element.IsSpellCheckEnabled)
 					{

@@ -1,4 +1,4 @@
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	/// <summary>
 	/// Represents the arguments passed to every VisualElement change event.
@@ -6,7 +6,7 @@ namespace Xamarin.Forms.Platform.Tizen
 	public class VisualElementChangedEventArgs : ElementChangedEventArgs<VisualElement>
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Xamarin.Forms.Platform.Tizen.VisualElementChangedEventArgs"/> class.
+		/// Initializes a new instance of the <see cref="System.Maui.Platform.Tizen.VisualElementChangedEventArgs"/> class.
 		/// </summary>
 		/// <param name="oldElement">Old element.</param>
 		/// <param name="newElement">New element.</param>

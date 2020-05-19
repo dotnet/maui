@@ -4,14 +4,14 @@ using System.Drawing;
 using System.Threading;
 using CoreAnimation;
 using CoreGraphics;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 #if __MOBILE__
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using System.Maui.PlatformConfiguration.iOSSpecific;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 #else
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 #endif
 {
 	public class VisualElementTracker : IDisposable

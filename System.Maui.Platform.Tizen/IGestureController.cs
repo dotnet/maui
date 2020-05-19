@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public interface IGestureController
 	{

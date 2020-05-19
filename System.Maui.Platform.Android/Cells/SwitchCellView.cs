@@ -1,7 +1,7 @@
 using Android.Content;
 using Android.Widget;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class SwitchCellView : BaseCellView, CompoundButton.IOnCheckedChangeListener
 	{

@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using NUnit.Framework;
 
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 using NUnit.Framework.Constraints;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public partial class StyleSheet : ContentPage
 	{
@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void SetUp()
 			{
 				Device.PlatformServices = new MockPlatformServices();
-				Xamarin.Forms.Internals.Registrar.RegisterAll(new Type[0]);
+				System.Maui.Internals.Registrar.RegisterAll(new Type[0]);
 			}
 
 			[TestCase(false), TestCase(true)]

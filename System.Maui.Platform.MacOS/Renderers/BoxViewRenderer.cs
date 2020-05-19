@@ -1,8 +1,8 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using AppKit;
-using Xamarin.Forms.Platform.macOS.Controls;
+using System.Maui.Platform.macOS.Controls;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public class BoxViewRenderer : ViewRenderer<BoxView, NSView>
 	{

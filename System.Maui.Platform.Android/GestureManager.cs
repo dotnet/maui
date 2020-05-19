@@ -10,7 +10,7 @@ using Android.Support.V4.View;
 #endif
 using Android.Views;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal class GestureManager : IDisposable
 	{
@@ -78,7 +78,7 @@ namespace Xamarin.Forms.Platform.Android
 			void InitializeLongPressSettings()
 			{
 				// Right now this just disables long press, since we don't support a long press gesture
-				// in Forms. If we ever do, we'll need to selectively enable it, probably by hooking into the 
+				// in System.Maui. If we ever do, we'll need to selectively enable it, probably by hooking into the 
 				// InnerGestureListener and listening for the addition of any long press gesture recognizers.
 				// (since a long press will prevent a pan gesture from starting, we can't just leave support for it 
 				// on by default).

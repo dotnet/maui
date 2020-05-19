@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
-namespace Xamarin.Forms.Xaml.UnitTests
+using System.Maui.Core.UnitTests;
+namespace System.Maui.Xaml.UnitTests
 {
 	public class Bz60575Helpers
 	{

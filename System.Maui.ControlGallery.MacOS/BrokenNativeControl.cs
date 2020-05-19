@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using AppKit;
 using CoreGraphics;
 
-namespace Xamarin.Forms.ControlGallery.MacOS
+namespace System.Maui.ControlGallery.MacOS
 {
 	/// <summary>
 	///     This is a custom Android control which deliberately does some incorrect measuring/layout

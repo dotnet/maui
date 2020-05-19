@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
-using Xamarin.Forms;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui;
+using System.Maui.Core.UnitTests;
 
 [assembly: TestHandler (typeof (Button), typeof (ButtonTarget))]
 [assembly: TestHandler (typeof (Slider), typeof (SliderTarget))]
@@ -13,7 +13,7 @@ using Xamarin.Forms.Core.UnitTests;
 [assembly: TestHandler(typeof(ButtonPriority), typeof(ButtonHigherPriorityTarget), Priority = 1)]
 [assembly: TestHandlerLowerPriority(typeof(ButtonPriority), typeof(ButtonLowerPriorityTarget), Priority = 0)]
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	internal class TestHandlerAttribute : HandlerAttribute
 	{
@@ -127,7 +127,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void EnsureDefaultChildRendererTrumpsParentRenderWith()
 		{
-			Xamarin.Forms.Internals.Registrar.Registered.Register(typeof(RenderWithChild), typeof(RenderWithChildTarget));
+			System.Maui.Internals.Registrar.Registered.Register(typeof(RenderWithChild), typeof(RenderWithChildTarget));
 
 			IRegisterable renderWithTarget;
 

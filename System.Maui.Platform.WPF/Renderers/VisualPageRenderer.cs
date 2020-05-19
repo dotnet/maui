@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Xamarin.Forms.Platform.WPF.Controls;
-using Xamarin.Forms.Platform.WPF.Converters;
-using Xamarin.Forms.Platform.WPF.Extensions;
+using System.Maui.Platform.WPF.Controls;
+using System.Maui.Platform.WPF.Converters;
+using System.Maui.Platform.WPF.Extensions;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public class VisualPageRenderer<TElement, TNativeElement> : ViewRenderer<TElement, TNativeElement>
 		where TElement : Page

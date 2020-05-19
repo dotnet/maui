@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Drawing;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class SwitchRenderer : ViewRenderer<Switch, UISwitch>
 	{

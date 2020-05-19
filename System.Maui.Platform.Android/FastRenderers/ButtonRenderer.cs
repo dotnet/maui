@@ -11,12 +11,12 @@ using Android.Support.V7.Widget;
 #endif
 using Android.Util;
 using Android.Views;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android.FastRenderers
+namespace System.Maui.Platform.Android.FastRenderers
 {
 	public class ButtonRenderer : AppCompatButton,
 		IBorderVisualElementRenderer, IButtonLayoutRenderer, IVisualElementRenderer, IViewRenderer, ITabStop,
@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use ButtonRenderer(Context) instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public ButtonRenderer() : base(Forms.Context)
+		public ButtonRenderer() : base(System.Maui.Maui.Context)
 		{
 			Initialize();
 		}
@@ -372,7 +372,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		void UpdateCharacterSpacing()
 		{
-			if (Forms.IsLollipopOrNewer)
+			if (System.Maui.Maui.IsLollipopOrNewer)
 			{
 				LetterSpacing = Button.CharacterSpacing.ToEm();
 			}

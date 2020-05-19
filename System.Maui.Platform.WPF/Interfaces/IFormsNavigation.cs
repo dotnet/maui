@@ -1,7 +1,7 @@
-﻿namespace Xamarin.Forms.Platform.WPF.Interfaces
+namespace System.Maui.Platform.WPF.Interfaces
 {
 	using System;
-	using Xamarin.Forms.Platform.WPF.Controls;
+	using System.Maui.Platform.WPF.Controls;
 
 	public interface IFormsNavigation
 	{

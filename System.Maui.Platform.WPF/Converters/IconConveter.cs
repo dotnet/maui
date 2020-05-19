@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Media;
-using Xamarin.Forms.Platform.WPF.Controls;
-using Xamarin.Forms.Platform.WPF.Enums;
+using System.Maui.Platform.WPF.Controls;
+using System.Maui.Platform.WPF.Enums;
 
-namespace Xamarin.Forms.Platform.WPF.Converters
+namespace System.Maui.Platform.WPF.Converters
 {
 	public class IconConveter : System.Windows.Data.IValueConverter
 	{

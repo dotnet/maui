@@ -1,4 +1,4 @@
-﻿#if !NETSTANDARD1_0
+#if !NETSTANDARD1_0
 
 using System;
 using System.Runtime.InteropServices;
@@ -8,7 +8,7 @@ using System.Text;
 /// <summary>
 /// https://github.com/xamarin/java.interop/blob/master/src/Java.Interop.Tools.JavaCallableWrappers/Java.Interop.Tools.JavaCallableWrappers/Crc64.cs
 /// </summary>
-namespace Xamarin.Forms.Internals
+namespace System.Maui.Internals
 {
 	/// <summary>
 	///  CRC64 variant: crc-64-jones 64-bit

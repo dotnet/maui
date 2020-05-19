@@ -1,14 +1,14 @@
-﻿using System.Threading;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Threading;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.ManualReview)]
@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Children = { new Label { Text = "Turn on the Screen Reader. If you do not hear 'I am the StackLayout', this test has failed." } },
 			};
 			
-			Xamarin.Forms.CompressedLayout.SetIsHeadless(stack, true);
+			System.Maui.CompressedLayout.SetIsHeadless(stack, true);
 			
 			AutomationProperties.SetIsInAccessibleTree(stack, true);
 			AutomationProperties.SetName(stack, "I am the StackLayout. This should be announced.");

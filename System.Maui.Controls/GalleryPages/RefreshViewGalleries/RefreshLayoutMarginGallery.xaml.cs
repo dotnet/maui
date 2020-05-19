@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls.GalleryPages.RefreshViewGalleries
+namespace System.Maui.Controls.GalleryPages.RefreshViewGalleries
 {
 	public partial class RefreshLayoutMarginGallery : ContentPage
 	{

@@ -7,10 +7,10 @@ using Android.OS;
 using Android.Views;
 using Android.Views.Animations;
 using AView = Android.Views.View;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using System.ComponentModel;
 
-namespace Xamarin.Forms.Platform.Android.AppCompat
+namespace System.Maui.Platform.Android.AppCompat
 {
 	internal class Platform : BindableObject, IPlatformLayout, INavigation, IDisposable
 #pragma warning disable CS0618

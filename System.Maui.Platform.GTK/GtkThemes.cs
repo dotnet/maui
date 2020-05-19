@@ -1,10 +1,10 @@
-﻿using Gtk;
+using Gtk;
 using System;
 using System.Diagnostics;
 using System.IO;
-using Xamarin.Forms.Platform.GTK.Helpers;
+using System.Maui.Platform.GTK.Helpers;
 
-namespace Xamarin.Forms.Platform.GTK
+namespace System.Maui.Platform.GTK
 {
 	public static class GtkThemes
 	{

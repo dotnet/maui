@@ -1,8 +1,8 @@
-﻿
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
+
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 8161, "On WPF ToolbarItem.IsEnabled = false does nothing", PlatformAffected.WPF, navigationBehavior: NavigationBehavior.SetApplicationRoot)]

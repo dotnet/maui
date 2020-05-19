@@ -1,9 +1,9 @@
-﻿using Gdk;
+using Gdk;
 using Gtk;
 using System;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using System.Maui.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Controls
+namespace System.Maui.Platform.GTK.Controls
 {
 	public class Page : Table
 	{

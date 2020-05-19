@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionGalleries
+namespace System.Maui.Controls.GalleryPages.CollectionViewGalleries.SelectionGalleries
 {
 	internal class SelectionGallery : ContentPage
 	{

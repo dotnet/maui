@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -7,8 +7,8 @@
     <ProjectGuid>{EADD8100-B3AE-4A31-92C4-267A64A1C6EB}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Xamarin.Forms.Core.UITests</RootNamespace>
-    <AssemblyName>Xamarin.Forms.Core.iOS.UITests</AssemblyName>
+    <RootNamespace>System.Maui.Core.UITests</RootNamespace>
+    <AssemblyName>System.Maui.Core.iOS.UITests</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
@@ -57,25 +57,25 @@
     <Compile Include="BaseViewContainerRemoteiOS.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj">
       <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
-      <Name>Xamarin.Forms.Core</Name>
+      <Name>System.Maui.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj">
+    <ProjectReference Include="..\System.Maui.CustomAttributes\System.Maui.CustomAttributes.csproj">
       <Project>{4DCD0420-1168-4B77-86DB-6196EE4BD491}</Project>
-      <Name>Xamarin.Forms.CustomAttributes</Name>
+      <Name>System.Maui.CustomAttributes</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
+    <ProjectReference Include="..\System.Maui.Maps\System.Maui.Maps.csproj">
       <Project>{7d13bac2-c6a4-416a-b07e-c169b199e52b}</Project>
-      <Name>Xamarin.Forms.Maps</Name>
+      <Name>System.Maui.Maps</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj">
+    <ProjectReference Include="..\System.Maui.Platform\System.Maui.Platform.csproj">
       <Project>{D31A6537-ED9C-4EBD-B231-A8D4FE44126A}</Project>
-      <Name>Xamarin.Forms.Platform</Name>
+      <Name>System.Maui.Platform</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.ControlGallery.iOS\Xamarin.Forms.ControlGallery.iOS.csproj">
+    <ProjectReference Include="..\System.Maui.ControlGallery.iOS\System.Maui.ControlGallery.iOS.csproj">
       <Project>{C7131F14-274F-4B55-ACA9-E81731AD012F}</Project>
-      <Name>Xamarin.Forms.ControlGallery.iOS</Name>
+      <Name>System.Maui.ControlGallery.iOS</Name>
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
       <Private>False</Private>
     </ProjectReference>
@@ -83,8 +83,8 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
-  <Import Project="..\Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems" Label="Shared" />
-  <Import Project="..\Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.projitems" Label="Shared" />
+  <Import Project="..\System.Maui.Controls.Issues\System.Maui.Controls.Issues.Shared\System.Maui.Controls.Issues.Shared.projitems" Label="Shared" />
+  <Import Project="..\System.Maui.Core.UITests.Shared\System.Maui.Core.UITests.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="AfterBuild">
     <Delete Files="bin/$(Configuration)/System.Net.Http.dll" />

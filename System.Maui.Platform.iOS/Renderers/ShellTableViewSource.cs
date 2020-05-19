@@ -1,10 +1,10 @@
-﻿using Foundation;
+using Foundation;
 using System;
 using System.Collections.Generic;
 using UIKit;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class ShellTableViewSource : UITableViewSource
 	{

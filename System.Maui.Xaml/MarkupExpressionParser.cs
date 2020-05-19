@@ -34,7 +34,7 @@
 using System;
 using System.Text;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	abstract class MarkupExpressionParser
 	{

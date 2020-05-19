@@ -1,19 +1,19 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 using System.Linq;
 
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 8262, "[Android] ImageRenderer still being accessed after control destroyed",
@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Controls.Issues
 					{
 						Children = {
 
-							WithBounds(new Image { Source = ImageSource.FromResource("Xamarin.Forms.Controls.GalleryPages.crimson.jpg", System.Reflection.Assembly.GetCallingAssembly()) }, 23.6, 14.5, 14.9, 20.7),
+							WithBounds(new Image { Source = ImageSource.FromResource("System.Maui.Controls.GalleryPages.crimson.jpg", System.Reflection.Assembly.GetCallingAssembly()) }, 23.6, 14.5, 14.9, 20.7),
 
 							WithBounds(new Label { Text = item.ToString(), TextColor = Color.FromUint(0xff5a5a5a), FontSize = 10 }, 58, 18.2, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize)
 						},

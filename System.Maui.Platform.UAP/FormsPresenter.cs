@@ -1,10 +1,10 @@
-﻿using System;
-using Windows.UI.Xaml;
-using Xamarin.Forms;
+using System;
+using global::Windows.UI.Xaml;
+using System.Maui;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	internal class FormsPresenter : Windows.UI.Xaml.Controls.ContentPresenter
+	internal class FormsPresenter : global::Windows.UI.Xaml.Controls.ContentPresenter
 	{
 		public FormsPresenter()
 		{

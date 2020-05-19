@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Pages
+namespace System.Maui.Pages
 {
 	public class UriJsonSource : JsonSource
 	{

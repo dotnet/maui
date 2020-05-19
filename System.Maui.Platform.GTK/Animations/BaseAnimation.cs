@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using System.Timers;
 
-namespace Xamarin.Forms.Platform.GTK.Animations
+namespace System.Maui.Platform.GTK.Animations
 {
 	internal abstract class BaseAnimation
 	{

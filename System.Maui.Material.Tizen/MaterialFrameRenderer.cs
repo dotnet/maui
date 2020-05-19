@@ -1,11 +1,11 @@
-﻿using Xamarin.Forms;
-using Xamarin.Forms.Platform.Tizen;
-using Xamarin.Forms.Platform.Tizen.Native;
-using Xamarin.Forms.Material.Tizen;
+using System.Maui;
+using System.Maui.Platform.Tizen;
+using System.Maui.Platform.Tizen.Native;
+using System.Maui.Material.Tizen;
 using Tizen.NET.MaterialComponents;
 
 [assembly: ExportRenderer(typeof(Frame), typeof(MaterialFrameRenderer), new[] { typeof(VisualMarker.MaterialVisual) }, Priority = short.MinValue)]
-namespace Xamarin.Forms.Material.Tizen
+namespace System.Maui.Material.Tizen
 {
 	public class MaterialFrameRenderer : ViewRenderer<Frame, MCard>
 	{
@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Material.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new MaterialCanvas(Forms.NativeParent));
+				SetNativeControl(new MaterialCanvas(System.Maui.Maui.NativeParent));
 			}
 			base.OnElementChanged(e);
 		}

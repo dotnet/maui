@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
 		<SignAssembly>false</SignAssembly>
 		<_DisableStrongNamer>True</_DisableStrongNamer>
@@ -7,15 +7,15 @@
 
 	<PropertyGroup>
 	    <_DisableStrongNamer Condition=" '$(_DisableStrongNamer)' != 'True' ">False</_DisableStrongNamer>
-	    <AssemblyName>Xamarin.Forms.Build.Tasks</AssemblyName>
+	    <AssemblyName>System.Maui.Build.Tasks</AssemblyName>
       <Description>Xamarin Forms Build Task</Description>
 	    <TargetFrameworks>net46;netstandard2.0</TargetFrameworks>
 	    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 	    <SignAssembly Condition=" '$(_DisableStrongNamer)' != 'True' ">True</SignAssembly>
 	    <DisableStrongNamer Condition=" '$(_DisableStrongNamer)' == 'True' ">True</DisableStrongNamer>
 	    <DelaySign>true</DelaySign>
-	    <AssemblyOriginatorKeyFile>..\xamarin.forms.snk</AssemblyOriginatorKeyFile>
-	    <StrongNamerKeyFile>..\xamarin.forms.snk</StrongNamerKeyFile>
+	    <AssemblyOriginatorKeyFile>..\System.Maui.snk</AssemblyOriginatorKeyFile>
+	    <StrongNamerKeyFile>..\System.Maui.snk</StrongNamerKeyFile>
 	</PropertyGroup>
 
   <ItemGroup>
@@ -30,8 +30,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj" />
-    <ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj" />
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj" />
+    <ProjectReference Include="..\System.Maui.Xaml\System.Maui.Xaml.csproj" />
   </ItemGroup>
 
 	<PropertyGroup Condition="'$(SnExe)' == '' And '$(OS)' != 'Windows_NT'">
@@ -51,7 +51,7 @@
 	</Target>
 
   <Target Name="_StrongName" AfterTargets="Build" DependsOnTargets="_SetSnExe" Condition="'$(TargetPath)' != ''" Inputs="$(TargetPath)" Outputs="$(IntermediateOutputPath)Sn.stamp">
-  	<Exec Command='"$(SnExe)" -R $(TargetPath) ..\xamarin.forms.snk' Condition=" '$(SignAssembly)' == 'true' " />
+  	<Exec Command='"$(SnExe)" -R $(TargetPath) ..\System.Maui.snk' Condition=" '$(SignAssembly)' == 'true' " />
   </Target>
 
   <Target Name="_CopyToNuspecDir" AfterTargets="_StrongName;Build">

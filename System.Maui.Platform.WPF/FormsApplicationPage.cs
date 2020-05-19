@@ -1,8 +1,8 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Windows;
-using Xamarin.Forms.Platform.WPF.Controls;
+using System.Maui.Platform.WPF.Controls;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public class FormsApplicationPage : FormsWindow
 	{

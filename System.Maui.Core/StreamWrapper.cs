@@ -7,9 +7,9 @@ using System.Net.Http;
 
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	internal class StreamWrapper : Stream
 	{

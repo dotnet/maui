@@ -5,10 +5,10 @@ using System.Drawing;
 using CoreGraphics;
 using Foundation;
 using UIKit;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using Specifics = Xamarin.Forms.PlatformConfiguration.iOSSpecific.Entry;
+using System.Maui.PlatformConfiguration.iOSSpecific;
+using Specifics = System.Maui.PlatformConfiguration.iOSSpecific.Entry;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class EntryRenderer : EntryRendererBase<UITextField>
 	{
@@ -56,7 +56,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			var baseResult = base.GetDesiredSize(widthConstraint, heightConstraint);
 
-			if (Forms.IsiOS11OrNewer)
+			if (System.Maui.Maui.IsiOS11OrNewer)
 				return baseResult;
 
 			NSString testString = new NSString("Tj");
@@ -167,9 +167,9 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateColor();
 			else if (e.PropertyName == Entry.CharacterSpacingProperty.PropertyName)
 				UpdateCharacterSpacing();
-			else if (e.PropertyName == Xamarin.Forms.InputView.KeyboardProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.InputView.KeyboardProperty.PropertyName)
 				UpdateKeyboard();
-			else if (e.PropertyName == Xamarin.Forms.InputView.IsSpellCheckEnabledProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.InputView.IsSpellCheckEnabledProperty.PropertyName)
 				UpdateKeyboard();
 			else if (e.PropertyName == Entry.IsTextPredictionEnabledProperty.PropertyName)
 				UpdateKeyboard();
@@ -192,7 +192,7 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateAdjustsFontSizeToFitWidth();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateHorizontalTextAlignment();
-			else if (e.PropertyName == Xamarin.Forms.InputView.MaxLengthProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.InputView.MaxLengthProperty.PropertyName)
 				UpdateMaxLength();
 			else if (e.PropertyName == Entry.ReturnTypeProperty.PropertyName)
 				UpdateReturnType();
@@ -202,7 +202,7 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateCursorSelection();
 			else if (e.PropertyName == Specifics.CursorColorProperty.PropertyName)
 				UpdateCursorColor();
-			else if (e.PropertyName == Xamarin.Forms.InputView.IsReadOnlyProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.InputView.IsReadOnlyProperty.PropertyName)
 				UpdateIsReadOnly();
 			else if (e.PropertyName == Entry.ClearButtonVisibilityProperty.PropertyName)
 				UpdateClearButtonVisibility();
@@ -301,14 +301,14 @@ namespace Xamarin.Forms.Platform.iOS
 			Control.ApplyKeyboard(keyboard);
 			if (!(keyboard is Internals.CustomKeyboard))
 			{
-				if (Element.IsSet(Xamarin.Forms.InputView.IsSpellCheckEnabledProperty))
+				if (Element.IsSet(System.Maui.InputView.IsSpellCheckEnabledProperty))
 				{
 					if (!Element.IsSpellCheckEnabled)
 					{
 						Control.SpellCheckingType = UITextSpellCheckingType.No;
 					}
 				}
-				if (Element.IsSet(Xamarin.Forms.Entry.IsTextPredictionEnabledProperty))
+				if (Element.IsSet(System.Maui.Entry.IsTextPredictionEnabledProperty))
 				{
 					if (!Element.IsTextPredictionEnabled)
 					{

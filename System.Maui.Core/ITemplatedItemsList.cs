@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Collections;
 
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public interface ITemplatedItemsList<TItem> : IReadOnlyList<TItem>, INotifyCollectionChanged where TItem : BindableObject
 	{

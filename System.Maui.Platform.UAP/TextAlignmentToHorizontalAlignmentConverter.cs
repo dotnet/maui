@@ -1,21 +1,21 @@
-﻿using System;
-using Windows.UI.Xaml;
+using System;
+using global::Windows.UI.Xaml;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	public sealed class TextAlignmentToHorizontalAlignmentConverter : Windows.UI.Xaml.Data.IValueConverter
+	public sealed class TextAlignmentToHorizontalAlignmentConverter : global::Windows.UI.Xaml.Data.IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{
-			var alignment = (Windows.UI.Xaml.TextAlignment)value;
+			var alignment = (global::Windows.UI.Xaml.TextAlignment)value;
 
 			switch (alignment)
 			{
-				case Windows.UI.Xaml.TextAlignment.Center:
+				case global::Windows.UI.Xaml.TextAlignment.Center:
 					return HorizontalAlignment.Center;
-				case Windows.UI.Xaml.TextAlignment.Left:
+				case global::Windows.UI.Xaml.TextAlignment.Left:
 					return HorizontalAlignment.Left;
-				case Windows.UI.Xaml.TextAlignment.Right:
+				case global::Windows.UI.Xaml.TextAlignment.Right:
 					return HorizontalAlignment.Right;
 				default:
 					return HorizontalAlignment.Left;
@@ -29,13 +29,13 @@ namespace Xamarin.Forms.Platform.UWP
 			switch (alignment)
 			{
 				case HorizontalAlignment.Left:
-					return Windows.UI.Xaml.TextAlignment.Left;
+					return global::Windows.UI.Xaml.TextAlignment.Left;
 				case HorizontalAlignment.Center:
-					return Windows.UI.Xaml.TextAlignment.Center;
+					return global::Windows.UI.Xaml.TextAlignment.Center;
 				case HorizontalAlignment.Right:
-					return Windows.UI.Xaml.TextAlignment.Right;
+					return global::Windows.UI.Xaml.TextAlignment.Right;
 				default:
-					return Windows.UI.Xaml.TextAlignment.Left;
+					return global::Windows.UI.Xaml.TextAlignment.Left;
 			}
 		}
 	}

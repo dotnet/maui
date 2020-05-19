@@ -9,20 +9,20 @@ using System.Diagnostics;
 using System.Threading;
 using System.Drawing;
 
-namespace Xamarin.Forms.Core.macOS.UITests
+namespace System.Maui.Core.macOS.UITests
 {
 	public static class MacOSAppExtensions
 	{
-		public static UITest.Queries.AppResult ToUITestResult(this UITest.Desktop.AppResult result)
+		public static Xamarin.UITest.Queries.AppResult ToUITestResult(this Xamarin.UITest.Desktop.AppResult result)
 		{
-			return new UITest.Queries.AppResult
+			return new Xamarin.UITest.Queries.AppResult
 			{
 				Id = result.Id ?? result.TestId,
 				Label = result.Label,
 				Text = result.Text ?? result.Value,
 				Enabled = result.Enabled,
 				Class = result.Class,
-				Rect = new UITest.Queries.AppRect
+				Rect = new Xamarin.UITest.Queries.AppRect
 				{
 					X = result.Rect.X,
 					Y = result.Rect.Y,
@@ -167,13 +167,13 @@ namespace Xamarin.Forms.Core.macOS.UITests
 				EnterText(markedWord, indexMarked, text);
 		}
 
-		public UITest.Queries.AppResult[] Flash(string marked)
+		public Xamarin.UITest.Queries.AppResult[] Flash(string marked)
 		{
 			var resulr = new List<Xamarin.UITest.Queries.AppResult>();
 			return resulr.ToArray();
 		}
 
-		public UITest.Queries.AppResult[] Flash(Func<AppQuery, AppQuery> query = null)
+		public Xamarin.UITest.Queries.AppResult[] Flash(Func<AppQuery, AppQuery> query = null)
 		{
 			var resulr = new List<Xamarin.UITest.Queries.AppResult>();
 			return resulr.ToArray();
@@ -245,7 +245,7 @@ namespace Xamarin.Forms.Core.macOS.UITests
 			return new List<string>().ToArray();
 		}
 
-		public UITest.Queries.AppResult[] Query(string marked)
+		public Xamarin.UITest.Queries.AppResult[] Query(string marked)
 		{
 			var results = new List<Xamarin.UITest.Queries.AppResult>();
 			var allResults = _cocoaApp.Query();
@@ -258,7 +258,7 @@ namespace Xamarin.Forms.Core.macOS.UITests
 			return results.ToArray();
 		}
 
-		public UITest.Queries.AppResult[] Query(Func<UITest.Queries.AppQuery, UITest.Queries.AppQuery> query = null)
+		public Xamarin.UITest.Queries.AppResult[] Query(Func<Xamarin.UITest.Queries.AppQuery, Xamarin.UITest.Queries.AppQuery> query = null)
 		{
 			var queryStr = query(new AppQuery(QueryPlatform.iOS)).ToString();
 			var results = new List<Xamarin.UITest.Queries.AppResult>();
@@ -303,7 +303,7 @@ namespace Xamarin.Forms.Core.macOS.UITests
 			return results.ToArray();
 		}
 
-		public T[] Query<T>(Func<UITest.Queries.AppQuery, UITest.Queries.AppTypedSelector<T>> query)
+		public T[] Query<T>(Func<Xamarin.UITest.Queries.AppQuery, Xamarin.UITest.Queries.AppTypedSelector<T>> query)
 		{
 
 			var results = new List<T>();
@@ -542,7 +542,7 @@ namespace Xamarin.Forms.Core.macOS.UITests
 			return resulr.ToArray();
 		}
 
-		public UITest.Queries.AppResult[] WaitForElement(string marked, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = default(TimeSpan?), TimeSpan? retryFrequency = default(TimeSpan?), TimeSpan? postTimeout = default(TimeSpan?))
+		public Xamarin.UITest.Queries.AppResult[] WaitForElement(string marked, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = default(TimeSpan?), TimeSpan? retryFrequency = default(TimeSpan?), TimeSpan? postTimeout = default(TimeSpan?))
 		{
 			var results = new List<Xamarin.UITest.Queries.AppResult>();
 
@@ -569,7 +569,7 @@ namespace Xamarin.Forms.Core.macOS.UITests
 			return results.ToArray();
 		}
 
-		public UITest.Queries.AppResult[] WaitForElement(Func<AppQuery, AppQuery> query, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = default(TimeSpan?), TimeSpan? retryFrequency = default(TimeSpan?), TimeSpan? postTimeout = default(TimeSpan?))
+		public Xamarin.UITest.Queries.AppResult[] WaitForElement(Func<AppQuery, AppQuery> query, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = default(TimeSpan?), TimeSpan? retryFrequency = default(TimeSpan?), TimeSpan? postTimeout = default(TimeSpan?))
 		{
 			var queryStr = query(new AppQuery(QueryPlatform.iOS)).ToString();
 			var isMarked = System.Text.RegularExpressions.Regex.IsMatch(queryStr, @"\bmarked\b");
@@ -676,7 +676,7 @@ namespace Xamarin.Forms.Core.macOS.UITests
 
 		static void EnterText(string marked, int index, string text)
 		{
-			UITest.Desktop.AppResult textField = null;
+			Xamarin.UITest.Desktop.AppResult textField = null;
 			var safeIndex = Math.Max(index, 0);
 			var textFields = _cocoaApp.QueryById(marked).Where((arg) => arg.Class.Contains("SearchField") || arg.Class.Contains("TextField"));
 			if (textFields.Count() > 0)

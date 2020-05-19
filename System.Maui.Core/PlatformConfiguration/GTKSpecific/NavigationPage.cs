@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.GTKSpecific
+namespace System.Maui.PlatformConfiguration.GTKSpecific
 {
-    using FormsElement = Forms.NavigationPage;
+    using FormsElement = System.Maui.NavigationPage;
 
     public static class NavigationPage
     {

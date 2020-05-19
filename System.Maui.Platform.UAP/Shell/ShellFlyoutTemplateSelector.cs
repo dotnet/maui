@@ -1,27 +1,27 @@
-﻿using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	public class ShellFlyoutTemplateSelector : Windows.UI.Xaml.Controls.DataTemplateSelector
+	public class ShellFlyoutTemplateSelector : global::Windows.UI.Xaml.Controls.DataTemplateSelector
 	{
-		Windows.UI.Xaml.DataTemplate BaseShellItemTemplate { get; }
-		Windows.UI.Xaml.DataTemplate MenuItemTemplate { get; }
-		Windows.UI.Xaml.DataTemplate SeperatorTemplate { get; }
+		global::Windows.UI.Xaml.DataTemplate BaseShellItemTemplate { get; }
+		global::Windows.UI.Xaml.DataTemplate MenuItemTemplate { get; }
+		global::Windows.UI.Xaml.DataTemplate SeperatorTemplate { get; }
 
 		public ShellFlyoutTemplateSelector()
 		{
-			BaseShellItemTemplate = (Windows.UI.Xaml.DataTemplate)Windows.UI.Xaml.Application.Current.Resources["ShellFlyoutBaseShellItemTemplate"];
-			MenuItemTemplate = (Windows.UI.Xaml.DataTemplate)Windows.UI.Xaml.Application.Current.Resources["ShellFlyoutMenuItemTemplate"];
-			SeperatorTemplate = (Windows.UI.Xaml.DataTemplate)Windows.UI.Xaml.Application.Current.Resources["ShellFlyoutSeperatorTemplate"];
+			BaseShellItemTemplate = (global::Windows.UI.Xaml.DataTemplate)global::Windows.UI.Xaml.Application.Current.Resources["ShellFlyoutBaseShellItemTemplate"];
+			MenuItemTemplate = (global::Windows.UI.Xaml.DataTemplate)global::Windows.UI.Xaml.Application.Current.Resources["ShellFlyoutMenuItemTemplate"];
+			SeperatorTemplate = (global::Windows.UI.Xaml.DataTemplate)global::Windows.UI.Xaml.Application.Current.Resources["ShellFlyoutSeperatorTemplate"];
 		}
 
-		protected override Windows.UI.Xaml.DataTemplate SelectTemplateCore(object item, DependencyObject container)
+		protected override global::Windows.UI.Xaml.DataTemplate SelectTemplateCore(object item, DependencyObject container)
 		{
 			return SelectTemplateCore(item);
 		}
 
-		protected override Windows.UI.Xaml.DataTemplate SelectTemplateCore(object item)
+		protected override global::Windows.UI.Xaml.DataTemplate SelectTemplateCore(object item)
 		{
 			if (item is MenuFlyoutSeparator)
 				return SeperatorTemplate;

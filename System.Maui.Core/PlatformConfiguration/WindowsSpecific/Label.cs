@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
+namespace System.Maui.PlatformConfiguration.WindowsSpecific
 {
-	using FormsElement = Forms.Label;
+	using FormsElement = System.Maui.Label;
 
 	public static class Label
 	{

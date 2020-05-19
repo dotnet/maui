@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.GTKSpecific
+namespace System.Maui.PlatformConfiguration.GTKSpecific
 {
     public enum TabPosition
     {

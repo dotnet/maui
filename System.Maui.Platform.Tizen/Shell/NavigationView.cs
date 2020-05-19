@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using ElmSharp;
 using EColor = ElmSharp.Color;
 using EImage = ElmSharp.Image;
-using NBox = Xamarin.Forms.Platform.Tizen.Native.Box;
+using NBox = System.Maui.Platform.Tizen.Native.Box;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class NavigationView : Background, INavigationView
 	{
@@ -217,8 +217,8 @@ namespace Xamarin.Forms.Platform.Tizen
 						{
 							var image = new Native.Image(parent)
 							{
-								MinimumWidth = Forms.ConvertToScaledPixel(24),
-								MinimumHeight = Forms.ConvertToScaledPixel(24)
+								MinimumWidth = System.Maui.Maui.ConvertToScaledPixel(24),
+								MinimumHeight = System.Maui.Maui.ConvertToScaledPixel(24)
 							};
 							var result = image.LoadFromImageSourceAsync(icon);
 							return image;

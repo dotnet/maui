@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{411B960D-6D30-4079-83B2-ABB9987D2EDF}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>Xamarin.Forms.ControlGallery.WPF</RootNamespace>
-    <AssemblyName>Xamarin.Forms.ControlGallery.WPF</AssemblyName>
+    <RootNamespace>System.Maui.ControlGallery.WPF</RootNamespace>
+    <AssemblyName>System.Maui.ControlGallery.WPF</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -62,10 +62,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="..\Xamarin.Forms.Controls\GalleryPages\OpenGLGalleries\AdvancedOpenGLGallery.cs">
+    <Compile Include="..\System.Maui.Controls\GalleryPages\OpenGLGalleries\AdvancedOpenGLGallery.cs">
       <Link>GalleryPages\AdvancedOpenGLGallery.cs</Link>
     </Compile>
-    <Compile Include="..\Xamarin.Forms.Controls\GalleryPages\OpenGLGalleries\BasicOpenGLGallery.cs">
+    <Compile Include="..\System.Maui.Controls\GalleryPages\OpenGLGalleries\BasicOpenGLGallery.cs">
       <Link>GalleryPages\BasicOpenGLGallery.cs</Link>
     </Compile>
     <Compile Include="PlatformSpecificCoreGalleryFactory.cs" />
@@ -115,25 +115,25 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Controls\Xamarin.Forms.Controls.csproj">
+    <ProjectReference Include="..\System.Maui.Controls\System.Maui.Controls.csproj">
       <Project>{cb9c96ce-125c-4a68-b6a1-c3ff1fbf93e1}</Project>
-      <Name>Xamarin.Forms.Controls</Name>
+      <Name>System.Maui.Controls</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj">
       <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
-      <Name>Xamarin.Forms.Core</Name>
+      <Name>System.Maui.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Maps.WPF\Xamarin.Forms.Maps.WPF.csproj">
+    <ProjectReference Include="..\System.Maui.Maps.WPF\System.Maui.Maps.WPF.csproj">
       <Project>{89b0db73-a32e-447c-9390-a2a59d89b2e4}</Project>
-      <Name>Xamarin.Forms.Maps.WPF</Name>
+      <Name>System.Maui.Maps.WPF</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
+    <ProjectReference Include="..\System.Maui.Maps\System.Maui.Maps.csproj">
       <Project>{7d13bac2-c6a4-416a-b07e-c169b199e52b}</Project>
-      <Name>Xamarin.Forms.Maps</Name>
+      <Name>System.Maui.Maps</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Platform.WPF\Xamarin.Forms.Platform.WPF.csproj">
+    <ProjectReference Include="..\System.Maui.Platform.WPF\System.Maui.Platform.WPF.csproj">
       <Project>{140bc260-8b15-4d3a-b1b0-ddd8072918cc}</Project>
-      <Name>Xamarin.Forms.Platform.WPF</Name>
+      <Name>System.Maui.Platform.WPF</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

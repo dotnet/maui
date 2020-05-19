@@ -1,13 +1,13 @@
-﻿using System.ComponentModel;
-using Windows.UI.Text;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.SearchBar;
+using System.ComponentModel;
+using global::Windows.UI.Text;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Media;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
+using Specifics = System.Maui.PlatformConfiguration.WindowsSpecific.SearchBar;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class SearchBarRenderer : ViewRenderer<SearchBar, AutoSuggestBox>, ITabStopOnDescendants
 	{
@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Platform.UWP
 					AutoSuggestBox nativeAutoSuggestBox = new AutoSuggestBox
 					{
 						QueryIcon = new SymbolIcon(Symbol.Find),
-						Style = Windows.UI.Xaml.Application.Current.Resources["FormsAutoSuggestBoxStyle"] as Windows.UI.Xaml.Style
+						Style = global::Windows.UI.Xaml.Application.Current.Resources["FormsAutoSuggestBoxStyle"] as global::Windows.UI.Xaml.Style
 					};
 					SetNativeControl(nativeAutoSuggestBox);
 					Control.QuerySubmitted += OnQuerySubmitted;
@@ -195,11 +195,11 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (searchBarIsDefault)
 			{
-				Control.ClearValue(Windows.UI.Xaml.Controls.Control.FontStyleProperty);
-				Control.ClearValue(Windows.UI.Xaml.Controls.Control.FontSizeProperty);
-				Control.ClearValue(Windows.UI.Xaml.Controls.Control.FontFamilyProperty);
-				Control.ClearValue(Windows.UI.Xaml.Controls.Control.FontWeightProperty);
-				Control.ClearValue(Windows.UI.Xaml.Controls.Control.FontStretchProperty);
+				Control.ClearValue(global::Windows.UI.Xaml.Controls.Control.FontStyleProperty);
+				Control.ClearValue(global::Windows.UI.Xaml.Controls.Control.FontSizeProperty);
+				Control.ClearValue(global::Windows.UI.Xaml.Controls.Control.FontFamilyProperty);
+				Control.ClearValue(global::Windows.UI.Xaml.Controls.Control.FontWeightProperty);
+				Control.ClearValue(global::Windows.UI.Xaml.Controls.Control.FontStretchProperty);
 			}
 			else
 				Control.ApplyFont(searchBar);
@@ -310,7 +310,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 			else
 			{
-				_queryTextBox.ClearValue(Windows.UI.Xaml.Controls.Control.BackgroundProperty);
+				_queryTextBox.ClearValue(global::Windows.UI.Xaml.Controls.Control.BackgroundProperty);
 			}
 		}
 	}

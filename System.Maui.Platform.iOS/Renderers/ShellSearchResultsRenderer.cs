@@ -1,10 +1,10 @@
-﻿using Foundation;
+using Foundation;
 using System;
 using System.Collections.Specialized;
 using UIKit;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class ShellSearchResultsRenderer : UITableViewController, IShellSearchResultsRenderer
 	{

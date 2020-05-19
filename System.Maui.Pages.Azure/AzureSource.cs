@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
-namespace Xamarin.Forms.Pages.Azure
+namespace System.Maui.Pages.Azure
 {
 	public abstract class AzureSource : Element
 	{

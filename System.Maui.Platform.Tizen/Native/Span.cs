@@ -1,9 +1,9 @@
 using System;
 using System.Text;
 using EColor = ElmSharp.Color;
-using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific;
+using Specific = System.Maui.PlatformConfiguration.TizenSpecific;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	/// <summary>
 	/// Represent a text with attributes applied.
@@ -176,7 +176,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 			if (FontSize != -1)
 			{
-				_formattingString.AppendFormat("font_size={0} ", Forms.ConvertToEflFontPoint(FontSize));
+				_formattingString.AppendFormat("font_size={0} ", System.Maui.Maui.ConvertToEflFontPoint(FontSize));
 			}
 
 			if ((FontAttributes & FontAttributes.Bold) != 0)

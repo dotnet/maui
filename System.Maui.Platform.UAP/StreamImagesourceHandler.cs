@@ -2,13 +2,13 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.UI.Xaml.Media.Imaging;
+using global::Windows.UI.Xaml.Media.Imaging;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public sealed class StreamImageSourceHandler : IImageSourceHandler
 	{
-		public async Task<Windows.UI.Xaml.Media.ImageSource> LoadImageAsync(ImageSource imagesource, CancellationToken cancellationToken = new CancellationToken())
+		public async Task<global::Windows.UI.Xaml.Media.ImageSource> LoadImageAsync(ImageSource imagesource, CancellationToken cancellationToken = new CancellationToken())
 		{
 			BitmapImage bitmapimage = null;
 

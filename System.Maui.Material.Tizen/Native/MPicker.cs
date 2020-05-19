@@ -2,7 +2,7 @@ using System;
 using ElmSharp;
 using Tizen.NET.MaterialComponents;
 
-namespace Xamarin.Forms.Material.Tizen.Native
+namespace System.Maui.Material.Tizen.Native
 {
 	public class MPicker : MEditor
 	{

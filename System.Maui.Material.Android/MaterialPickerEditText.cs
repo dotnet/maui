@@ -1,13 +1,13 @@
-﻿
+
 using System;
 using Android.Content;
 using Android.Graphics;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
-using Xamarin.Forms.Platform.Android;
+using System.Maui.Platform.Android;
 
-namespace Xamarin.Forms.Material.Android
+namespace System.Maui.Material.Android
 {
 	public class MaterialPickerEditText : MaterialFormsEditTextBase
 	{

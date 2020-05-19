@@ -1,15 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 using System.Threading.Tasks;
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 using NUnit.Framework;
 using System.Linq;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Editor)]
@@ -43,21 +43,21 @@ namespace Xamarin.Forms.Controls.Issues
 				Text = "Click Me To call Properties Save a bunch of times",
 				Command = new Command(() =>
 				{
-					Xamarin.Forms.Application.Current.Properties.Clear();
-					Xamarin.Forms.Application.Current.SendSleep();
+					System.Maui.Application.Current.Properties.Clear();
+					System.Maui.Application.Current.SendSleep();
 
 					for (int i = 0; i < 20; i++)
 					{
-						Xamarin.Forms.Application.Current.Properties[i.ToString()] = expectedValues[i];
-						Xamarin.Forms.Application.Current.SendSleep();
+						System.Maui.Application.Current.Properties[i.ToString()] = expectedValues[i];
+						System.Maui.Application.Current.SendSleep();
 					}
 
 					for (int i = 20; i < 40; i++)
 					{
-						Xamarin.Forms.Application.Current.Properties[i.ToString()] = expectedValues[i];
+						System.Maui.Application.Current.Properties[i.ToString()] = expectedValues[i];
 						Task.Run(() =>
 						{
-							Xamarin.Forms.Application.Current.SendSleep();
+							System.Maui.Application.Current.SendSleep();
 						});
 					}
 
@@ -71,8 +71,8 @@ namespace Xamarin.Forms.Controls.Issues
 				AutomationId = "Clear",
 				Command = new Command(() =>
 				{
-					Xamarin.Forms.Application.Current.Properties.Clear();
-					Xamarin.Forms.Application.Current.SendSleep();
+					System.Maui.Application.Current.Properties.Clear();
+					System.Maui.Application.Current.SendSleep();
 				}),
 			};
 

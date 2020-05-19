@@ -1,4 +1,4 @@
-namespace Xamarin.Forms.Maps
+namespace System.Maui.Maps
 {
 	public enum PinType
 	{

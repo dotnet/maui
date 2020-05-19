@@ -2,10 +2,10 @@ using System;
 using NUnit.Framework;
 using System.Xml;
 
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 using System.Reflection;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 
 	[TestFixture]
@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			base.Setup ();
 			var nsManager = new XmlNamespaceManager (new NameTable ());
 			nsManager.AddNamespace("", "http://xamarin.com/schemas/2014/forms");
-			nsManager.AddNamespace("local", "clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests");
+			nsManager.AddNamespace("local", "clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests");
 			nsManager.AddNamespace("sys", "clr-namespace:System;assembly=mscorlib");
 			nsManager.AddNamespace("x", "http://schemas.microsoft.com/winfx/2006/xaml");
 

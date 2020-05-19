@@ -1,8 +1,8 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Platform.iOS.UnitTests
+namespace System.Maui.Platform.iOS.UnitTests
 {
 	public class IsVisibleTests : PlatformTestFixture
 	{

@@ -1,4 +1,4 @@
-﻿#if __ANDROID_29__
+#if __ANDROID_29__
 using AndroidX.AppCompat.Widget;
 using AndroidX.RecyclerView.Widget;
 #else
@@ -6,7 +6,7 @@ using Android.Support.V7.Widget;
 #endif
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android.CollectionView
+namespace System.Maui.Platform.Android.CollectionView
 {
 	public class RecyclerViewScrollListener<TItemsView, TItemsViewSource> : RecyclerView.OnScrollListener
 		where TItemsView : ItemsView

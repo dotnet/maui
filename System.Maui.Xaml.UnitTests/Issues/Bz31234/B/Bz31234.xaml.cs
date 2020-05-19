@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-using Xamarin.Forms;
+using System.Maui;
 
-namespace Xamarin.Forms.Xaml.UnitTests.B
+namespace System.Maui.Xaml.UnitTests.B
 {
 	public partial class Bz31234 : ContentPage
 	{

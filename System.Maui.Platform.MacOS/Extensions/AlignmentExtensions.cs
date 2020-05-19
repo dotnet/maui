@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using AppKit;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	internal static class AlignmentExtensions
 	{

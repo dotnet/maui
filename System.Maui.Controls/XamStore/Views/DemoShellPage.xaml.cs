@@ -3,10 +3,10 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Input;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using System.Maui.Internals;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Controls.XamStore
+namespace System.Maui.Controls.XamStore
 {
 	[Preserve(AllMembers = true)]
 	public partial class DemoShellPage : ContentPage

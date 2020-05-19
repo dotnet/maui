@@ -7,7 +7,7 @@ using Android.Support.V7.Widget;
 using AView = Android.Views.View;
 using ALayoutDirection = Android.Views.LayoutDirection;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal abstract class EdgeSnapHelper : NongreedySnapHelper
 	{

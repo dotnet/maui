@@ -1,10 +1,10 @@
 using NUnit.Framework;
-using ImAVendor.Forms.PlatformConfiguration.iOS;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using ImAVendor.Maui.PlatformConfiguration.iOS;
+using System.Maui.PlatformConfiguration;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
+using System.Maui.PlatformConfiguration.iOSSpecific;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class PlatformSpecificsTests
@@ -67,11 +67,11 @@ namespace Xamarin.Forms.Core.UnitTests
 	}
 }
 
-namespace ImAVendor.Forms.PlatformConfiguration.iOS
+namespace ImAVendor.Maui.PlatformConfiguration.iOS
 {
-	using Xamarin.Forms;
-	using Xamarin.Forms.PlatformConfiguration;
-	using FormsElement = Xamarin.Forms.MasterDetailPage;
+	using System.Maui;
+	using System.Maui.PlatformConfiguration;
+	using FormsElement = System.Maui.MasterDetailPage;
 
 	public static class MasterDetailPage
 	{
@@ -102,11 +102,11 @@ namespace ImAVendor.Forms.PlatformConfiguration.iOS
 	}
 }
 
-namespace ImAVendor.Forms.PlatformConfiguration.iOS
+namespace ImAVendor.Maui.PlatformConfiguration.iOS
 {
-	using Xamarin.Forms;
-	using Xamarin.Forms.PlatformConfiguration;
-	using FormsElement = Xamarin.Forms.NavigationPage;
+	using System.Maui;
+	using System.Maui.PlatformConfiguration;
+	using FormsElement = System.Maui.NavigationPage;
 
 	public static class NavigationPage
 	{
@@ -153,9 +153,9 @@ namespace ImAVendor.Forms.PlatformConfiguration.iOS
 	}
 }
 
-namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific
+namespace System.Maui.PlatformConfiguration.AndroidSpecific
 {
-	using FormsElement = Xamarin.Forms.MasterDetailPage;
+	using FormsElement = System.Maui.MasterDetailPage;
 
 	public static class MasterDetailPage
 	{

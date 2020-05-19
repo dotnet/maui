@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Android.Content;
 #if __ANDROID_29__
 using AndroidX.AppCompat.Widget;
@@ -9,7 +9,7 @@ using Android.Support.V7.Widget;
 using Android.Views;
 using Android.Widget;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal class SimpleViewHolder : RecyclerView.ViewHolder
 	{

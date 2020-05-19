@@ -7,9 +7,9 @@ using Android.Views;
 using Android.Widget;
 using System;
 using System.ComponentModel;
-using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
+using System.Maui.PlatformConfiguration.TizenSpecific;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class LabelRenderer : ViewRenderer<Label, TextView>
 	{
@@ -239,7 +239,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 		void UpdateCharacterSpacing()
 		{
-			if (Forms.IsLollipopOrNewer && Control is TextView textControl)
+			if (System.Maui.Maui.IsLollipopOrNewer && Control is TextView textControl)
 			{
 				textControl.LetterSpacing = Element.CharacterSpacing.ToEm();
 			}
@@ -281,7 +281,7 @@ namespace Xamarin.Forms.Platform.Android
 				{
 
 					case TextType.Html:
-						if (Forms.IsNougatOrNewer)
+						if (System.Maui.Maui.IsNougatOrNewer)
 							Control.SetText(Html.FromHtml(Element.Text ?? string.Empty, FromHtmlOptions.ModeCompact), TextView.BufferType.Spannable);
 						else
 #pragma warning disable CS0618 // Type or member is obsolete

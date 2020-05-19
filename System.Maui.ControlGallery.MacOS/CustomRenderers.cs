@@ -1,17 +1,17 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using AppKit;
 using CoreGraphics;
 using Foundation;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.MacOS;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.MacOS;
+using System.Maui;
+using System.Maui.ControlGallery.MacOS;
+using System.Maui.Controls.Issues;
+using System.Maui.Platform.MacOS;
 
 [assembly: ExportRenderer(typeof(NativeCell), typeof(NativeMacCellRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView2), typeof(NativeMacOSListViewRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView), typeof(NativeListViewRenderer))]
-namespace Xamarin.Forms.ControlGallery.MacOS
+namespace System.Maui.ControlGallery.MacOS
 {
 	public class NativeMacOSListViewRenderer : ViewRenderer<NativeListView2, NSView>
 	{

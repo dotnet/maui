@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration.iOSSpecific;
 
 #if __MOBILE__
 using UIKit;
@@ -12,14 +12,14 @@ using NativeView = UIKit.UIView;
 using NativeGestureRecognizer = UIKit.UIGestureRecognizer;
 using NativeGestureRecognizerState = UIKit.UIGestureRecognizerState;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 #else
 using AppKit;
 using NativeView = AppKit.NSView;
 using NativeGestureRecognizer = AppKit.NSGestureRecognizer;
 using NativeGestureRecognizerState = AppKit.NSGestureRecognizerState;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 #endif
 {
 	public class EventTracker : IDisposable

@@ -1,10 +1,10 @@
-﻿using System;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using System;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	internal class InterceptVisualStateManager : Windows.UI.Xaml.VisualStateManager
+	internal class InterceptVisualStateManager : global::Windows.UI.Xaml.VisualStateManager
 	{
 		static InterceptVisualStateManager s_instance;
 
@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Platform.UWP
 		// So until that's resolved, the FormsTextBox control is doing that work as best it can. 
 
 		protected override bool GoToStateCore(Control control, FrameworkElement templateRoot, string stateName, 
-			Windows.UI.Xaml.VisualStateGroup @group, Windows.UI.Xaml.VisualState state, bool useTransitions)
+			global::Windows.UI.Xaml.VisualStateGroup @group, global::Windows.UI.Xaml.VisualState state, bool useTransitions)
 		{
 			// If this custom VSM is in play, it's because the control is using the Forms VSM or the user has disabled
 			// legacy color handling. Either way, we may need to prevent the Windows VSM from transitioning to the new
@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Platform.UWP
 			return base.GoToStateCore(control, templateRoot, stateName, @group, state, useTransitions);
 		}
 
-		static bool ShouldIntercept(Control control, Windows.UI.Xaml.VisualState state, string stateName)
+		static bool ShouldIntercept(Control control, global::Windows.UI.Xaml.VisualState state, string stateName)
 		{
 			if (state == null || state.Name == "Normal")
 			{

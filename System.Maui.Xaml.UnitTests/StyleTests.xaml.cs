@@ -1,12 +1,12 @@
-﻿using System.Linq;
+using System.Linq;
 
 using NUnit.Framework;
 
-using Xamarin.Forms;
-using Xamarin.Forms.Xaml.UnitTests;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui;
+using System.Maui.Xaml.UnitTests;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public partial class StyleTests : ContentPage
 	{

@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using ElmSharp;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class PanGestureHandler : GestureHandler
 	{
@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		protected override void OnMoved(View sender, object data)
 		{
 			var lineData = (GestureLayer.MomentumData)data;
-			(Recognizer as IPanGestureController)?.SendPan(sender, Forms.ConvertToScaledDP(lineData.X2 - lineData.X1), Forms.ConvertToScaledDP(lineData.Y2 - lineData.Y1), _currentPanGestureId);
+			(Recognizer as IPanGestureController)?.SendPan(sender, System.Maui.Maui.ConvertToScaledDP(lineData.X2 - lineData.X1), System.Maui.Maui.ConvertToScaledDP(lineData.Y2 - lineData.Y1), _currentPanGestureId);
 		}
 
 		protected override void OnCompleted(View sender, object data)

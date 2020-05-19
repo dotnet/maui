@@ -1,11 +1,11 @@
-﻿using CoreGraphics;
+using CoreGraphics;
 using Foundation;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	internal sealed class VerticalCell : WidthConstrainedTemplatedCell
 	{
-		public static NSString ReuseId = new NSString("Xamarin.Forms.Platform.iOS.VerticalCell");
+		public static NSString ReuseId = new NSString("System.Maui.Platform.iOS.VerticalCell");
 
 		[Export("initWithFrame:")]
 		[Internals.Preserve(Conditional = true)]

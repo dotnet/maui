@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.GTK
+namespace System.Maui.Platform.GTK
 {
 	internal class ResourcesProvider : ISystemResourcesProvider
 	{

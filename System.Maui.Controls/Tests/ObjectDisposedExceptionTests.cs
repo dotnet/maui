@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Controls.Tests
+namespace System.Maui.Controls.Tests
 {
 	[TestFixture]
 	public class ObjectDisposedExceptionTests : CrossPlatformTestFixture

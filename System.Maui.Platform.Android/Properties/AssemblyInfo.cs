@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
-using Xamarin.Forms;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.Android;
+using System.Maui;
+using System.Maui.Internals;
+using System.Maui.Platform.Android;
 
 // These renderers are now registered via the RenderWithAttribute in the Android Forwarders project.
 // Note that AppCompat and FastRenderers are also registered conditionally in FormsAppCompatActivity.LoadApplication
@@ -56,10 +56,10 @@ using Xamarin.Forms.Platform.Android;
 [assembly: ExportImageSourceHandler(typeof(StreamImageSource), typeof(StreamImagesourceHandler))]
 [assembly: ExportImageSourceHandler(typeof(UriImageSource), typeof(ImageLoaderSourceHandler))]
 [assembly: ExportImageSourceHandler(typeof(FontImageSource), typeof(FontImageSourceHandler))]
-[assembly: Xamarin.Forms.Dependency(typeof(Deserializer))]
-[assembly: Xamarin.Forms.Dependency(typeof(ResourcesProvider))]
+[assembly: System.Maui.Dependency(typeof(Deserializer))]
+[assembly: System.Maui.Dependency(typeof(ResourcesProvider))]
 [assembly: Preserve]
-[assembly: InternalsVisibleTo("Xamarin.Forms.Platform")]
-[assembly: InternalsVisibleTo("Xamarin.Forms.Material")]
-[assembly: InternalsVisibleTo("Xamarin.Forms.DualScreen")]
-[assembly: InternalsVisibleTo("Xamarin.Forms.Platform.Android.UnitTests")]
+[assembly: InternalsVisibleTo("System.Maui.Platform")]
+[assembly: InternalsVisibleTo("System.Maui.Material")]
+[assembly: InternalsVisibleTo("System.Maui.DualScreen")]
+[assembly: InternalsVisibleTo("System.Maui.Platform.Android.UnitTests")]

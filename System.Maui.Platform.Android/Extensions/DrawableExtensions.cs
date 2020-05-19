@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using ADrawable = Android.Graphics.Drawables.Drawable;
 using AColorFilter = Android.Graphics.ColorFilter;
 using AColor = Android.Graphics.Color;
@@ -9,7 +9,7 @@ using ADrawableCompat = Android.Support.V4.Graphics.Drawable.DrawableCompat;
 #endif
 using Android.Graphics;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	enum FilterMode
 	{
@@ -108,7 +108,7 @@ namespace Xamarin.Forms.Platform.Android
 		public static void SetColorFilter(this ADrawable drawable, AColor color, FilterMode mode)
 		{
 #if __ANDROID_29__
-			if(Forms.Is29OrNewer)
+			if(System.Maui.Maui.Is29OrNewer)
 				drawable.SetColorFilter(new BlendModeColorFilter(color, GetFilterMode(mode)));
 			else
 #pragma warning disable CS0612 // Type or member is obsolete

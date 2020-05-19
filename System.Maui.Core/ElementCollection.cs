@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	internal class ElementCollection<T> : ObservableWrapper<Element, T> where T : Element
 	{

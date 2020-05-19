@@ -1,7 +1,7 @@
-﻿using Xamarin.Forms;
-using Xamarin.Forms.Platform.GTK;
-using Xamarin.Forms.Platform.GTK.Cells;
-using Xamarin.Forms.Platform.GTK.Renderers;
+using System.Maui;
+using System.Maui.Platform.GTK;
+using System.Maui.Platform.GTK.Cells;
+using System.Maui.Platform.GTK.Renderers;
 
 [assembly: ExportImageSourceHandler(typeof(FileImageSource), typeof(FileImageSourceHandler))]
 [assembly: ExportImageSourceHandler(typeof(StreamImageSource), typeof(StreamImagesourceHandler))]
@@ -40,8 +40,8 @@ using Xamarin.Forms.Platform.GTK.Renderers;
 [assembly: ExportRenderer(typeof(WebView), typeof(WebViewRenderer))]
 
 [assembly: ExportCell(typeof(Cell), typeof(CellRenderer))]
-[assembly: ExportCell(typeof(Xamarin.Forms.EntryCell), typeof(EntryCellRenderer))]
-[assembly: ExportCell(typeof(Xamarin.Forms.TextCell), typeof(TextCellRenderer))]
-[assembly: ExportCell(typeof(Xamarin.Forms.ImageCell), typeof(ImageCellRenderer))]
-[assembly: ExportCell(typeof(Xamarin.Forms.SwitchCell), typeof(SwitchCellRenderer))]
-[assembly: ExportCell(typeof(Xamarin.Forms.ViewCell), typeof(ViewCellRenderer))]
+[assembly: ExportCell(typeof(System.Maui.EntryCell), typeof(EntryCellRenderer))]
+[assembly: ExportCell(typeof(System.Maui.TextCell), typeof(TextCellRenderer))]
+[assembly: ExportCell(typeof(System.Maui.ImageCell), typeof(ImageCellRenderer))]
+[assembly: ExportCell(typeof(System.Maui.SwitchCell), typeof(SwitchCellRenderer))]
+[assembly: ExportCell(typeof(System.Maui.ViewCell), typeof(ViewCellRenderer))]

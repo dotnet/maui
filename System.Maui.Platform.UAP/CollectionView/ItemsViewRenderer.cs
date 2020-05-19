@@ -1,17 +1,17 @@
-﻿using System.Collections.Specialized;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.Foundation;
-using Xamarin.Forms.Internals;
-using UwpScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility;
-using UWPApp = Windows.UI.Xaml.Application;
-using UWPDataTemplate = Windows.UI.Xaml.DataTemplate;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Data;
+using global::Windows.UI.Xaml.Controls.Primitives;
+using global::Windows.Foundation;
+using System.Maui.Internals;
+using UwpScrollBarVisibility = global::Windows.UI.Xaml.Controls.ScrollBarVisibility;
+using UWPApp = global::Windows.UI.Xaml.Application;
+using UWPDataTemplate = global::Windows.UI.Xaml.DataTemplate;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public abstract class ItemsViewRenderer<TItemsView> : ViewRenderer<TItemsView, ListViewBase>
 		where TItemsView : ItemsView
@@ -49,24 +49,24 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			base.OnElementPropertyChanged(sender, changedProperty);
 
-			if (changedProperty.Is(Xamarin.Forms.ItemsView.ItemsSourceProperty))
+			if (changedProperty.Is(System.Maui.ItemsView.ItemsSourceProperty))
 			{
 				UpdateItemsSource();
 			}
-			else if (changedProperty.Is(Xamarin.Forms.ItemsView.ItemTemplateProperty))
+			else if (changedProperty.Is(System.Maui.ItemsView.ItemTemplateProperty))
 			{
 				UpdateItemTemplate();
 			}
-			else if (changedProperty.Is(Xamarin.Forms.ItemsView.HorizontalScrollBarVisibilityProperty))
+			else if (changedProperty.Is(System.Maui.ItemsView.HorizontalScrollBarVisibilityProperty))
 			{
 				UpdateHorizontalScrollBarVisibility();
 			}
-			else if (changedProperty.Is(Xamarin.Forms.ItemsView.VerticalScrollBarVisibilityProperty))
+			else if (changedProperty.Is(System.Maui.ItemsView.VerticalScrollBarVisibilityProperty))
 			{
 				UpdateVerticalScrollBarVisibility();
 			}
-			else if (changedProperty.IsOneOf(Xamarin.Forms.ItemsView.EmptyViewProperty,
-				Xamarin.Forms.ItemsView.EmptyViewTemplateProperty))
+			else if (changedProperty.IsOneOf(System.Maui.ItemsView.EmptyViewProperty,
+				System.Maui.ItemsView.EmptyViewTemplateProperty))
 			{
 				UpdateEmptyView();
 			}

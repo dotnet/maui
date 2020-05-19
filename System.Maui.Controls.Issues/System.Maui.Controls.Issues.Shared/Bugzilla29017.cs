@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Maps;
+using System.Maui.CustomAttributes;
+using System.Maui.Maps;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Issue (IssueTracker.Bugzilla, 29017, "Pin clicked does not work on iOS maps")]
 	public class Issue29017 : TestContentPage // or TestMasterDetailPage, etc ...

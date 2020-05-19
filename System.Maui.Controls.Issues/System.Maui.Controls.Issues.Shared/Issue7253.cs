@@ -1,13 +1,13 @@
-﻿using Xamarin.Forms.Internals;
-using Xamarin.Forms.CustomAttributes;
+using System.Maui.Internals;
+using System.Maui.CustomAttributes;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 7253, "[UWP] Switch custom Renderer using custom colors throws exception", PlatformAffected.UWP)]

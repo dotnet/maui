@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms
+namespace System.Maui
 {
-	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.BindingTypeConverter")]
+	[Xaml.ProvideCompiled("System.Maui.Core.XamlC.BindingTypeConverter")]
 	[Xaml.TypeConversion(typeof(Binding))]
 	public sealed class BindingTypeConverter : TypeConverter
 	{

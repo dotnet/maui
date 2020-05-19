@@ -1,4 +1,4 @@
-﻿#if __ANDROID_29__
+#if __ANDROID_29__
 using AndroidX.Fragment.App;
 #else
 using Android.Support.V4.App;
@@ -6,7 +6,7 @@ using Android.Support.V4.App;
 using System;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public interface IShellItemRenderer : IDisposable
 	{

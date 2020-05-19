@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 #if __ANDROID_29__
 using AndroidX.AppCompat.Widget;
 #else
 using Android.Support.V7.Widget;
 #endif
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public interface IButtonLayoutRenderer
 	{

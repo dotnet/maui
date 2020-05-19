@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Foundation;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class SelectableItemsViewController<TItemsView> : StructuredItemsViewController<TItemsView>
 		where TItemsView : SelectableItemsView

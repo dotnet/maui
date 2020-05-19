@@ -1,5 +1,5 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:gallerypages="clr-namespace:Xamarin.Forms.Controls.GalleryPages.AppThemeGalleries" x:Class="Xamarin.Forms.Controls.GalleryPages.AppThemeGalleries.AppThemeXamlGallery" BackgroundColor="{OnAppTheme Light=Lightgray, Dark=Black}">
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:gallerypages="clr-namespace:System.Maui.Controls.GalleryPages.AppThemeGalleries" x:Class="System.Maui.Controls.GalleryPages.AppThemeGalleries.AppThemeXamlGallery" BackgroundColor="{OnAppTheme Light=Lightgray, Dark=Black}">
     <ContentPage.Resources>
         <ResourceDictionary>
             <gallerypages:FooConverter x:Key="fooConv"/>

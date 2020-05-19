@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 using Tizen.Multimedia;
-using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
+using System.Maui.PlatformConfiguration.TizenSpecific;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	public class MediaPlayerImpl : IPlatformMediaPlayer
 	{

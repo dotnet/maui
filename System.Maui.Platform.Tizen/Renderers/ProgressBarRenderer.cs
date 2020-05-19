@@ -1,11 +1,11 @@
 using System.ComponentModel;
 
-using SpecificVE = Xamarin.Forms.PlatformConfiguration.TizenSpecific.VisualElement;
-using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.ProgressBar;
+using SpecificVE = System.Maui.PlatformConfiguration.TizenSpecific.VisualElement;
+using Specific = System.Maui.PlatformConfiguration.TizenSpecific.ProgressBar;
 using EProgressBar = ElmSharp.ProgressBar;
 using EColor = ElmSharp.Color;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class ProgressBarRenderer : ViewRenderer<ProgressBar, EProgressBar>
 	{
@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new EProgressBar(Forms.NativeParent));
+				SetNativeControl(new EProgressBar(System.Maui.Maui.NativeParent));
 			}
 
 			if (e.NewElement != null)

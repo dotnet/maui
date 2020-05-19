@@ -1,15 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using ElmSharp;
 using EColor = ElmSharp.Color;
 using EToolbarItem = ElmSharp.ToolbarItem;
-using Xamarin.Forms.Platform.Tizen.Native;
+using System.Maui.Platform.Tizen.Native;
 using System.Collections.Specialized;
 using System.Linq;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class ShellItemRenderer : IAppearanceObserver, IDisposable
 	{
@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		bool _disposed = false;
 		EColor _backgroudColor = ShellRenderer.DefaultBackgroundColor.ToNative();
 		// The source of icon resources is https://materialdesignicons.com/
-		const string _dotsIcon = "Xamarin.Forms.Platform.Tizen.Resource.dots_horizontal.png";
+		const string _dotsIcon = "System.Maui.Platform.Tizen.Resource.dots_horizontal.png";
 
 		public ShellItemRenderer(IFlyoutController flyoutController, ShellItem item)
 		{
@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			_shellItem.PropertyChanged += OnShellItemPropertyChanged;
 			(_shellItem.Items as INotifyCollectionChanged).CollectionChanged += OnShellItemsCollectionChanged;
 
-			_box = new Native.Box(Forms.NativeParent);
+			_box = new Native.Box(System.Maui.Maui.NativeParent);
 			_box.LayoutUpdated += OnLayoutUpdated;
 			_box.Show();
 
@@ -165,7 +165,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		protected virtual IShellTabs CreateTabs()
 		{ 
-			return new ShellTabs(Forms.NativeParent);
+			return new ShellTabs(System.Maui.Maui.NativeParent);
 		}
 
 		protected virtual ShellSectionNavigation CreateShellSectionNavigation(IFlyoutController flyoutController, ShellSection section)
@@ -200,7 +200,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		Panel CreateDrawer()
 		{
-			return new Panel(Forms.NativeParent);
+			return new Panel(System.Maui.Maui.NativeParent);
 		}
 
 		void InitialzeDrawer(EvasObject content)
@@ -358,7 +358,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			//The source of icon resources is https://materialdesignicons.com/
 			ImageSource src = ImageSource.FromResource(resource, typeof(ShellItemRenderer).GetTypeInfo().Assembly);
-			Native.Image icon = new Native.Image(Forms.NativeParent);
+			Native.Image icon = new Native.Image(System.Maui.Maui.NativeParent);
 			var task = icon.LoadFromImageSourceAsync(src);
 
 			item.SetPartContent("elm.swallow.icon", icon);

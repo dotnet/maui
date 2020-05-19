@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using CoreGraphics;
 using MaterialComponents;
 using UIKit;
 using MMultilineTextField = MaterialComponents.MultilineTextField;
 using MTextInputControllerBase = MaterialComponents.TextInputControllerBase;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Material.iOS
+namespace System.Maui.Material.iOS
 {
 	public class MaterialMultilineTextField : MMultilineTextField, IMaterialTextField
 	{

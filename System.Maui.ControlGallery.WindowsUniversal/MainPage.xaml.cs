@@ -1,23 +1,23 @@
-﻿// The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
+// The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
 using System;
 using System.Globalization;
-using Windows.Foundation;
-using Windows.Graphics.Display;
+using global::Windows.Foundation;
+using global::Windows.Graphics.Display;
 using Windows.System;
-using Windows.UI.Core;
-using Windows.UI.ViewManagement;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.WindowsUniversal;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Platform.UWP;
+using global::Windows.UI.Core;
+using global::Windows.UI.ViewManagement;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Input;
+using global::Windows.UI.Xaml.Media;
+using System.Maui;
+using System.Maui.ControlGallery.WindowsUniversal;
+using System.Maui.Controls;
+using System.Maui.Platform.UWP;
 
 
-namespace Xamarin.Forms.ControlGallery.WindowsUniversal
+namespace System.Maui.ControlGallery.WindowsUniversal
 {
 	/// <summary>
 	/// An empty page that can be used on its own or navigated to within a Frame.
@@ -34,7 +34,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			// can we make this only open to window size for UI Tests?
 			//var bounds = ApplicationView.GetForCurrentView().VisibleBounds;
 			//var scaleFactor = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
-			//var size = new Windows.Foundation.Size(bounds.Width * scaleFactor, bounds.Height * scaleFactor);
+			//var size = new global::Windows.Foundation.Size(bounds.Width * scaleFactor, bounds.Height * scaleFactor);
 			//ApplicationView.PreferredLaunchViewSize = size;
 			//ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
 
@@ -87,7 +87,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			sl?.Children.Add(textBlock);
 
 			// Create and add a native Button 
-			var button = new Windows.UI.Xaml.Controls.Button { Content = "Toggle Font Size", Height = 80 };
+			var button = new global::Windows.UI.Xaml.Controls.Button { Content = "Toggle Font Size", Height = 80 };
 			button.Click += (sender, args) => { textBlock.FontSize = textBlock.FontSize == 14 ? 24 : 14; };
 
 			sl?.Children.Add(button.ToView());
@@ -158,10 +158,10 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 				FontFamily = new FontFamily("HelveticaNeue")
 			};
 
-			var btnColor = new Windows.UI.Xaml.Controls.Button { Content = "Toggle Label Color", Height = 80 };
-			btnColor.Click += (sender, args) => txbLabel.Foreground = new SolidColorBrush(Windows.UI.Colors.Pink);
+			var btnColor = new global::Windows.UI.Xaml.Controls.Button { Content = "Toggle Label Color", Height = 80 };
+			btnColor.Click += (sender, args) => txbLabel.Foreground = new SolidColorBrush(global::Windows.UI.Colors.Pink);
 
-			var btnTextBox = new Windows.UI.Xaml.Controls.Button { Content = "Change text textbox", Height = 80 };
+			var btnTextBox = new global::Windows.UI.Xaml.Controls.Button { Content = "Change text textbox", Height = 80 };
 			btnTextBox.Click += (sender, args) => txbBox.Text = "Hello 2 way native";
 
 			txbLabel.SetBinding("Text", new Binding("NativeLabel"));
@@ -197,11 +197,11 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 
 				return null;
 			}
-			public static Windows.UI.Color ToWindowsColor(Color color)
+			public static global::Windows.UI.Color ToWindowsColor(Color color)
 			{
-				return Windows.UI.Color.FromArgb((byte)(color.A * 255), (byte)(color.R * 255), (byte)(color.G * 255), (byte)(color.B * 255));
+				return global::Windows.UI.Color.FromArgb((byte)(color.A * 255), (byte)(color.R * 255), (byte)(color.G * 255), (byte)(color.B * 255));
 			}
-			public static Color ToColor(Windows.UI.Color color)
+			public static Color ToColor(global::Windows.UI.Color color)
 			{
 				return Color.FromRgba(color.R, color.G, color.B, color.A);
 			}

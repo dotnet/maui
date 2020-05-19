@@ -1,8 +1,8 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 
-namespace Xamarin.Forms.Platform.WPF.Controls
+namespace System.Maui.Platform.WPF.Controls
 {
 	public class FormsCarouselPage : FormsMultiPage
 	{

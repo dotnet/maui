@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Platform.GTK.Extensions;
+using System.Maui.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Controls
+namespace System.Maui.Platform.GTK.Controls
 {
 	// CustomCombobox, Gtk.Entry + Gtk.Button
 	public class CustomComboBox : Gtk.HBox
@@ -43,8 +43,8 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 		public void SetBackgroundColor(Gdk.Color color)
 		{
-			ModifyBg(Gtk.StateType.Normal, Xamarin.Forms.Color.Red.ToGtkColor());
-			Entry.ModifyBase(Gtk.StateType.Normal, Xamarin.Forms.Color.Blue.ToGtkColor());
+			ModifyBg(Gtk.StateType.Normal, System.Maui.Color.Red.ToGtkColor());
+			Entry.ModifyBase(Gtk.StateType.Normal, System.Maui.Color.Blue.ToGtkColor());
 		}
 
 		private void BuildCustomComboBox()

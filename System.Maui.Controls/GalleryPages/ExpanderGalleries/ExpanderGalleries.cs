@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls.GalleryPages.ExpanderGalleries
+namespace System.Maui.Controls.GalleryPages.ExpanderGalleries
 {
 	public class ExpanderGalleries : ContentPage
 	{

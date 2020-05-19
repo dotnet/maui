@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using NUnit.Framework;
 using System.Threading;
 using System.IO;
@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Reflection;
 using System.IO.IsolatedStorage;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class UriImageSourceTests : BaseTestFixture

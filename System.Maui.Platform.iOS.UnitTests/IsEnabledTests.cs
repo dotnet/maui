@@ -1,9 +1,9 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS.UnitTests
+namespace System.Maui.Platform.iOS.UnitTests
 {
 	public class IsEnabledTests : PlatformTestFixture 
 	{

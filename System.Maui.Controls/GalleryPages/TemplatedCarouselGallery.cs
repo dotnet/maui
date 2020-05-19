@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	internal class TemplatedCarouselGallery
 		: CarouselPage

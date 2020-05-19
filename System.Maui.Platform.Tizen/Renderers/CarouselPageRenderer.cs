@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using ElmSharp;
 using ESize = ElmSharp.Size;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	/// <summary>
 	/// Renderer of a CarouselPage widget.
@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (NativeView == null)
 			{
 				//Create box that holds toolbar and selected content
-				_outterLayout = new Box(Forms.NativeParent)
+				_outterLayout = new Box(System.Maui.Maui.NativeParent)
 				{
 					AlignmentX = -1,
 					AlignmentY = -1,
@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				};
 				_outterLayout.Show();
 
-				_scroller = new Scroller(Forms.NativeParent);
+				_scroller = new Scroller(System.Maui.Maui.NativeParent);
 				_scroller.PageScrolled += OnScrolled;
 
 				// Disables the visibility of the scrollbar in both directions:
@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				_scroller.SetWeight(1.0, 1.0);
 				_scroller.Show();
 
-				_innerContainer = new Box(Forms.NativeParent);
+				_innerContainer = new Box(System.Maui.Maui.NativeParent);
 				_innerContainer.SetLayoutCallback(OnInnerLayoutUpdate);
 				_innerContainer.SetAlignment(-1, -1);
 				_innerContainer.SetWeight(1.0, 1.0);

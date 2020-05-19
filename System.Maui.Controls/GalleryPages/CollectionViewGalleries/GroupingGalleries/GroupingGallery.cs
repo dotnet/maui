@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGalleries
+namespace System.Maui.Controls.GalleryPages.CollectionViewGalleries.GroupingGalleries
 {
     class GroupingGallery : ContentPage
     {

@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using Android.Content;
 #if __ANDROID_29__
@@ -6,9 +6,9 @@ using Google.Android.Material.TextField;
 #else
 using Android.Support.Design.Widget;
 #endif
-using Xamarin.Forms.Platform.Android;
+using System.Maui.Platform.Android;
 
-namespace Xamarin.Forms.Material.Android
+namespace System.Maui.Material.Android
 {
 	internal static class MaterialFormsEditTextManager
 	{

@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 
-using Xamarin.Forms.CustomAttributes;
+using System.Maui.CustomAttributes;
 using System.Collections.Generic;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using System.Linq;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Controls.Issues
 					HeightRequest = 300,
 					Source = new HtmlWebViewSource
 					{
-						Html = "<html><head><link rel=\"stylesheet\" href=\"default.css\"></head><body><h1 id=\"CellID" + s_id + "\">Xamarin.Forms " + s_id + "</h1><p>The CSS and image are loaded from local files!</p><img src='WebImages/XamarinLogo.png'/><p><a id=\"LinkID" + s_id++ + "\" href=\"local.html\">next page</a></p></body></html>"
+						Html = "<html><head><link rel=\"stylesheet\" href=\"default.css\"></head><body><h1 id=\"CellID" + s_id + "\">System.Maui " + s_id + "</h1><p>The CSS and image are loaded from local files!</p><img src='WebImages/XamarinLogo.png'/><p><a id=\"LinkID" + s_id++ + "\" href=\"local.html\">next page</a></p></body></html>"
 					}
 				};
 			}
@@ -109,7 +109,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.Screenshot("Load local HTML");
 
 			RunningApp.WaitForNoElement(q => q.Class("WKWebView").Css("#LinkID0"));
-			UITest.Queries.AppWebResult[] newElem =
+			Xamarin.UITest.Queries.AppWebResult[] newElem =
 			  RunningApp.QueryUntilPresent(() => RunningApp.Query(q => q.Class("WKWebView").Css("a")));
 
 			Assert.AreEqual("#LocalHtmlPageLink", newElem[0].Id);
@@ -121,7 +121,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			RunningApp.WaitForNoElement(q => q.WebView(0).Css("#LinkID0"));
 
-			UITest.Queries.AppWebResult[] newElem =
+			Xamarin.UITest.Queries.AppWebResult[] newElem =
 			  RunningApp.QueryUntilPresent(() => RunningApp.Query(q => q.WebView(0).Css("h1")));
 
 			Assert.AreEqual("#LocalHtmlPage", newElem[0].Id);

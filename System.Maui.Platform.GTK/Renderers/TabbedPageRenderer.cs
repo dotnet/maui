@@ -1,13 +1,13 @@
-﻿using Gtk;
+using Gtk;
 using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK.Controls;
-using Xamarin.Forms.Platform.GTK.Extensions;
-using Xamarin.Forms.PlatformConfiguration.GTKSpecific;
+using System.Maui.Internals;
+using System.Maui.Platform.GTK.Controls;
+using System.Maui.Platform.GTK.Extensions;
+using System.Maui.PlatformConfiguration.GTKSpecific;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers
+namespace System.Maui.Platform.GTK.Renderers
 {
 	public class TabbedPageRenderer : AbstractPageRenderer<NotebookWrapper, TabbedPage>
 	{
@@ -178,14 +178,14 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 		void OnPagePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == Xamarin.Forms.Page.TitleProperty.PropertyName)
+			if (e.PropertyName == System.Maui.Page.TitleProperty.PropertyName)
 			{
 				var page = (Page)sender;
 				var index = TabbedPage.GetIndex(page);
 
 				Widget.SetTabLabelText(index, page.Title);
 			}
-			else if (e.PropertyName == Xamarin.Forms.Page.IconImageSourceProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.Page.IconImageSourceProperty.PropertyName)
 			{
 				var page = (Page)sender;
 				var index = TabbedPage.GetIndex(page);

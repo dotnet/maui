@@ -1,7 +1,7 @@
-﻿using System;
-using Xamarin.Forms.Xaml;
+using System;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.HeaderFooterGalleries
+namespace System.Maui.Controls.GalleryPages.CollectionViewGalleries.HeaderFooterGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class HeaderFooterGrid : ContentPage

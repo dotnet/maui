@@ -1,4 +1,4 @@
-﻿//
+//
 // System.ComponentModel.TypeConverterAttribute
 //
 // Authors:
@@ -32,12 +32,12 @@
 
 using System;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[AttributeUsage(AttributeTargets.All)]
 	public sealed class TypeConverterAttribute : Attribute
 	{
-		internal static string[] TypeConvertersType = { "Xamarin.Forms.TypeConverterAttribute", "System.ComponentModel.TypeConverterAttribute" };
+		internal static string[] TypeConvertersType = { "System.Maui.TypeConverterAttribute", "System.ComponentModel.TypeConverterAttribute" };
 
 		public static readonly TypeConverterAttribute Default = new TypeConverterAttribute();
 

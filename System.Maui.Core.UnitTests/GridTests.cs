@@ -2,9 +2,9 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class GridTests : BaseTestFixture
@@ -1521,7 +1521,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 
 		[Test]
-		//https://github.com/xamarin/Xamarin.Forms/issues/4933
+		//https://github.com/xamarin/System.Maui/issues/4933
 		public void GridHeightCorrectWhenAspectFitImageGetsShrinked()
 		{
 			var contentGrid = new Grid

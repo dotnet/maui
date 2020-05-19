@@ -2,16 +2,16 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration.TizenSpecific;
 using ElmSharp;
 using EButton = ElmSharp.Button;
 using EToolbar = ElmSharp.Toolbar;
 using EToolbarItem = ElmSharp.ToolbarItem;
-using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.NavigationPage;
-using SpecificPage = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Page;
+using Specific = System.Maui.PlatformConfiguration.TizenSpecific.NavigationPage;
+using SpecificPage = System.Maui.PlatformConfiguration.TizenSpecific.Page;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class NavigationPageRenderer : VisualElementRenderer<NavigationPage>
 	{
@@ -61,7 +61,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (_naviFrame == null)
 			{
-				_naviFrame = new Naviframe(Forms.NativeParent);
+				_naviFrame = new Naviframe(System.Maui.Maui.NativeParent);
 				_naviFrame.PreserveContentOnPop = true;
 				_naviFrame.DefaultBackButtonEnabled = false;
 				_naviFrame.AnimationFinished += OnAnimationFinished;
@@ -273,11 +273,11 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		EButton CreateNavigationButton(string text)
 		{
-			EButton button = new EButton(Forms.NativeParent);
+			EButton button = new EButton(System.Maui.Maui.NativeParent);
 			button.Clicked += (sender, e) =>
 			{
 				if (!Element.SendBackButtonPressed())
-					Forms.Context.Exit();
+					System.Maui.Maui.Context.Exit();
 			};
 
 			button.Style = StyleBackButton;
@@ -320,7 +320,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		EToolbar GetBreadCrumbsBar()
 		{
-			EToolbar toolbar = new EToolbar(Forms.NativeParent)
+			EToolbar toolbar = new EToolbar(System.Maui.Maui.NativeParent)
 			{
 				Style = StyleNavigationBar,
 				ItemAlignment = 0,
@@ -466,7 +466,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (titleView != null)
 			{
 				titleView.Parent = this.Element;
-				nativeView = new Native.TitleViewPage(Forms.NativeParent, page, titleView);
+				nativeView = new Native.TitleViewPage(System.Maui.Maui.NativeParent, page, titleView);
 				nativeView.Show();
 			}
 			else

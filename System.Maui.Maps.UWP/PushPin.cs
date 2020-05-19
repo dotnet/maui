@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.ComponentModel;
-using Windows.Devices.Geolocation;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Maps;
-using Windows.UI.Xaml.Input;
+using global::Windows.Devices.Geolocation;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Controls.Maps;
+using global::Windows.UI.Xaml.Input;
 
-namespace Xamarin.Forms.Maps.UWP
+namespace System.Maui.Maps.UWP
 {
 	internal class PushPin : ContentControl
 	{
@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Maps.UWP
 			if (pin == null)
 				throw new ArgumentNullException();
 
-			ContentTemplate = Windows.UI.Xaml.Application.Current.Resources["PushPinTemplate"] as Windows.UI.Xaml.DataTemplate;
+			ContentTemplate = global::Windows.UI.Xaml.Application.Current.Resources["PushPinTemplate"] as global::Windows.UI.Xaml.DataTemplate;
 			DataContext = Content = _pin = pin;
 
 			UpdateLocation();
@@ -54,7 +54,7 @@ namespace Xamarin.Forms.Maps.UWP
 
 		void UpdateLocation()
 		{
-			var anchor = new Windows.Foundation.Point(0.65, 1);
+			var anchor = new global::Windows.Foundation.Point(0.65, 1);
 			var location = new Geopoint(new BasicGeoposition
 			{
 				Latitude = _pin.Position.Latitude,

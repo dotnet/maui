@@ -4,7 +4,7 @@ using Android.Content;
 using AButton = Android.Widget.Button;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class TabbedRenderer : VisualElementRenderer<TabbedPage>
 	{

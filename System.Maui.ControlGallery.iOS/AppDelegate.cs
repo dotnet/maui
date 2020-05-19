@@ -1,22 +1,22 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using CoreGraphics;
 using Foundation;
 using UIKit;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.iOS;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui;
+using System.Maui.ControlGallery.iOS;
+using System.Maui.Controls;
+using System.Maui.Controls.Issues;
+using System.Maui.Platform.iOS;
 
 [assembly: Dependency(typeof(TestCloudService))]
 [assembly: Dependency(typeof(CacheService))]
 [assembly: ExportRenderer(typeof(DisposePage), typeof(DisposePageRenderer))]
 [assembly: ExportRenderer(typeof(DisposeLabel), typeof(DisposeLabelRenderer))]
 [assembly: ExportEffect(typeof(BorderEffect), nameof(BorderEffect))]
-namespace Xamarin.Forms.ControlGallery.iOS
+namespace System.Maui.ControlGallery.iOS
 {
 	public class BorderEffect : PlatformEffect
 	{
@@ -114,7 +114,7 @@ namespace Xamarin.Forms.ControlGallery.iOS
 			});
 
 			Xamarin.Calabash.Start ();
-			Forms.Init ();
+			System.Maui.Maui.Init();
 			FormsMaps.Init ();
 			window.RootViewController = FormsApp.GetFormsApp ().CreateViewController ();
 		
@@ -150,14 +150,14 @@ namespace Xamarin.Forms.ControlGallery.iOS
 			App.IOSVersion = int.Parse(versionPart[0]);
 
 			Xamarin.Calabash.Start();
-			Forms.SetFlags("SwipeView_Experimental", "MediaElement_Experimental", "AppTheme_Experimental");
-			Forms.Init();
+			System.Maui.Maui.SetFlags("SwipeView_Experimental", "MediaElement_Experimental", "AppTheme_Experimental");
+			System.Maui.Maui.Init();
 			FormsMaps.Init();
 #if __XCODE11__
 			FormsMaterial.Init();
 #endif
 
-			Forms.ViewInitialized += (object sender, ViewInitializedEventArgs e) =>
+			System.Maui.Maui.ViewInitialized += (object sender, ViewInitializedEventArgs e) =>
 			{
 				// http://developer.xamarin.com/recipes/testcloud/set-accessibilityidentifier-ios/
 				if (null != e.View.AutomationId && null != e.NativeView)
@@ -370,7 +370,7 @@ namespace Xamarin.Forms.ControlGallery.iOS
 
 			button.TouchUpInside += (sender, e) =>
 			{
-				Xamarin.Forms.Application.Current.MainPage = new ContentPage { Content = new Label { Text = "40911 Success" } };
+				System.Maui.Application.Current.MainPage = new ContentPage { Content = new Label { Text = "40911 Success" } };
 				loginViewController.DismissViewController(true, null);
 			};
 

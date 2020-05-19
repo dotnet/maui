@@ -10,7 +10,7 @@ using Android.Support.V4.Content;
 
 using AColor = Android.Graphics.Color;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public static class ColorExtensions
 	{
@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (self == Color.Default)
 			{
-				return new AColor(ContextCompat.GetColor(Forms.Context, defaultColorResourceId));
+				return new AColor(ContextCompat.GetColor(System.Maui.Maui.Context, defaultColorResourceId));
 			}
 
 			return ToAndroid(self);

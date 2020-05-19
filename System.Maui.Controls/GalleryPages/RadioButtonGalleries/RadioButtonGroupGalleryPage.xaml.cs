@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.RadioButtonGalleries
+namespace System.Maui.Controls.GalleryPages.RadioButtonGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class RadioButtonGroupGalleryPage : TabbedPage

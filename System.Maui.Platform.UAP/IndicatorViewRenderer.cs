@@ -1,18 +1,18 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Markup;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Shapes;
-using Xamarin.Forms.Platform.UWP;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Markup;
+using global::Windows.UI.Xaml.Media;
+using global::Windows.UI.Xaml.Shapes;
+using System.Maui.Platform.UWP;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	class IndicatorViewRenderer : ViewRenderer<IndicatorView, FrameworkElement>
 	{
@@ -135,17 +135,17 @@ namespace Xamarin.Forms.Platform.UWP
 					Fill = i == position ? _selectedColor : _fillColor,
 					Height = indicatorSize,
 					Width = indicatorSize,
-					Margin = new Windows.UI.Xaml.Thickness(DefaultPadding, 0, DefaultPadding, 0)
+					Margin = new global::Windows.UI.Xaml.Thickness(DefaultPadding, 0, DefaultPadding, 0)
 				};
 			}
 			else
 			{
-				return new Windows.UI.Xaml.Shapes.Rectangle()
+				return new global::Windows.UI.Xaml.Shapes.Rectangle()
 				{
 					Fill = i == position ? _selectedColor : _fillColor,
 					Height = indicatorSize,
 					Width = indicatorSize,
-					Margin = new Windows.UI.Xaml.Thickness(DefaultPadding, 0, DefaultPadding, 0)
+					Margin = new global::Windows.UI.Xaml.Thickness(DefaultPadding, 0, DefaultPadding, 0)
 				};
 			}
 		}

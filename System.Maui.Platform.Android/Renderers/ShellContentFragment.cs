@@ -1,4 +1,4 @@
-﻿using Android.OS;
+using Android.OS;
 using Android.Runtime;
 #if __ANDROID_29__
 using AndroidX.Fragment.App;
@@ -19,7 +19,7 @@ using AndroidAnimation = Android.Views.Animations.Animation;
 using AnimationSet = Android.Views.Animations.AnimationSet;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class ShellContentFragment : Fragment, AndroidAnimation.IAnimationListener, IShellObservableFragment, IAppearanceObserver
 	{

@@ -5,7 +5,7 @@ using UIKit;
 using MonoTouch.UIKit;
 #endif
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[AttributeUsage (AttributeTargets.Assembly, AllowMultiple = true)]
 	public sealed class ExportRendererAttribute : HandlerAttribute {

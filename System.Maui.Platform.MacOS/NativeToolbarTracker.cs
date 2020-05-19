@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AppKit;
 using CoreGraphics;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.macOSSpecific;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration.macOSSpecific;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	class NativeToolbarGroup
 	{
@@ -146,7 +146,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				Delegate = this
 			};
 
-			if (Forms.IsMojaveOrNewer)
+			if (System.Maui.Maui.IsMojaveOrNewer)
 				toolbar.CenteredItemIdentifier = TitleGroupIdentifier;
 
 			return toolbar;

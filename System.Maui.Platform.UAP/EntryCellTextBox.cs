@@ -1,8 +1,8 @@
-﻿using Windows.System;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
+using Windows.System;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Input;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class EntryCellTextBox : TextBox
 	{

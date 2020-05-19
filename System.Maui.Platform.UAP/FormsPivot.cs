@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using System.Threading.Tasks;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Media;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class FormsPivot : Pivot, IToolbarProvider
 	{
@@ -115,7 +115,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (pivotItem != null && page?.Title != null)
 			{
 				// This way we can find tabs with automation (for testing, etc.)
-				Windows.UI.Xaml.Automation.AutomationProperties.SetName(pivotItem, page.Title);	
+				global::Windows.UI.Xaml.Automation.AutomationProperties.SetName(pivotItem, page.Title);	
 			}
 		}
 

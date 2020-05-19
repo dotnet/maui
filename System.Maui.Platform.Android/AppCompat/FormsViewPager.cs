@@ -10,7 +10,7 @@ using Android.Support.V4.View;
 using Android.Util;
 using Android.Views;
 
-namespace Xamarin.Forms.Platform.Android.AppCompat
+namespace System.Maui.Platform.Android.AppCompat
 {
 	internal class FormsViewPager : ViewPager
 	{

@@ -1,8 +1,8 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries.OrientationStateTriggerGallery"
+    x:Class="System.Maui.Controls.GalleryPages.VisualStateManagerGalleries.OrientationStateTriggerGallery"
     Title="OrientationStateTrigger">
     <ContentPage.Resources>
         <ResourceDictionary>

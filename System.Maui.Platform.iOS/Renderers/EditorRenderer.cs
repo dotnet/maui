@@ -5,7 +5,7 @@ using Foundation;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class EditorRenderer : EditorRendererBase<UITextView>
 	{
@@ -222,13 +222,13 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateText();
 				UpdateCharacterSpacing();
 			}
-			else if (e.PropertyName == Xamarin.Forms.InputView.KeyboardProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.InputView.KeyboardProperty.PropertyName)
 				UpdateKeyboard();
-			else if (e.PropertyName == Xamarin.Forms.InputView.IsSpellCheckEnabledProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.InputView.IsSpellCheckEnabledProperty.PropertyName)
 				UpdateKeyboard();
 			else if (e.PropertyName == Editor.IsTextPredictionEnabledProperty.PropertyName)
 				UpdateKeyboard();
-			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName || e.PropertyName == Xamarin.Forms.InputView.IsReadOnlyProperty.PropertyName)
+			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName || e.PropertyName == System.Maui.InputView.IsReadOnlyProperty.PropertyName)
 				UpdateUserInteraction();
 			else if (e.PropertyName == Editor.TextColorProperty.PropertyName)
 				UpdateTextColor();
@@ -242,7 +242,7 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateCharacterSpacing();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateTextAlignment();
-			else if (e.PropertyName == Xamarin.Forms.InputView.MaxLengthProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.InputView.MaxLengthProperty.PropertyName)
 				UpdateMaxLength();
 			else if (e.PropertyName == Editor.PlaceholderProperty.PropertyName)
 			{
@@ -306,7 +306,7 @@ namespace Xamarin.Forms.Platform.iOS
 			TextView.ApplyKeyboard(keyboard);
 			if (!(keyboard is Internals.CustomKeyboard))
 			{
-				if (Element.IsSet(Xamarin.Forms.InputView.IsSpellCheckEnabledProperty))
+				if (Element.IsSet(System.Maui.InputView.IsSpellCheckEnabledProperty))
 				{
 					if (!Element.IsSpellCheckEnabled)
 					{

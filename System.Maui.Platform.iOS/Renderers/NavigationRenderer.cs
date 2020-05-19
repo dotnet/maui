@@ -5,16 +5,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using CoreGraphics;
 using UIKit;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using static Xamarin.Forms.PlatformConfiguration.iOSSpecific.NavigationPage;
-using static Xamarin.Forms.PlatformConfiguration.iOSSpecific.Page;
-using PageUIStatusBarAnimation = Xamarin.Forms.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration.iOSSpecific;
+using static System.Maui.PlatformConfiguration.iOSSpecific.NavigationPage;
+using static System.Maui.PlatformConfiguration.iOSSpecific.Page;
+using PageUIStatusBarAnimation = System.Maui.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class NavigationRenderer : UINavigationController, IVisualElementRenderer, IEffectControlProvider
 	{
@@ -149,7 +149,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			SetStatusBarStyle();
 
-			if (Forms.IsiOS13OrNewer)
+			if (System.Maui.Maui.IsiOS13OrNewer)
 				UpdateBarBackgroundColor();
 		}
 
@@ -235,7 +235,7 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateHideNavigationBarSeparator();
 			UpdateUseLargeTitles();
 
-			if (Forms.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
+			if (System.Maui.Maui.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
 			// If there is already stuff on the stack we need to push it
@@ -367,7 +367,7 @@ namespace Xamarin.Forms.Platform.iOS
 			base.TraitCollectionDidChange(previousTraitCollection);
 #if __XCODE11__
 			// Make sure the control adheres to changes in UI theme
-			if (Forms.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (System.Maui.Maui.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				UpdateBackgroundColor();
 #endif
 		}
@@ -508,7 +508,7 @@ namespace Xamarin.Forms.Platform.iOS
 				_defaultNavBarShadowImage = NavigationBar.ShadowImage;
 
 #if __XCODE11__
-			if (Forms.IsiOS13OrNewer)
+			if (System.Maui.Maui.IsiOS13OrNewer)
 			{
 				if (shouldHide)
 				{
@@ -532,7 +532,7 @@ namespace Xamarin.Forms.Platform.iOS
 					NavigationBar.ShadowImage = _defaultNavBarShadowImage;
 			}
 
-			if (!Forms.IsiOS11OrNewer)
+			if (!System.Maui.Maui.IsiOS11OrNewer)
 			{
 				// For iOS 10 and lower, you need to set the background image.
 				// If you set this for iOS11, you'll remove the background color.
@@ -556,7 +556,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateUseLargeTitles()
 		{
-			if (Forms.IsiOS11OrNewer && NavPage != null)
+			if (System.Maui.Maui.IsiOS11OrNewer && NavPage != null)
 				NavigationBar.PrefersLargeTitles = NavPage.OnThisPlatform().PrefersLargeTitles();
 		}
 
@@ -672,7 +672,7 @@ namespace Xamarin.Forms.Platform.iOS
 			var barBackgroundColor = NavPage.BarBackgroundColor;
 
 #if __XCODE11__
-			if (Forms.IsiOS13OrNewer)
+			if (System.Maui.Maui.IsiOS13OrNewer)
 			{
 				var navigationBarAppearance = NavigationBar.StandardAppearance;
 
@@ -718,7 +718,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			// Determine new large title text attributes via global static data
 			var largeTitleTextAttributes = titleTextAttributes;
-			if (Forms.IsiOS11OrNewer)
+			if (System.Maui.Maui.IsiOS11OrNewer)
 			{
 				var globalLargeTitleTextAttributes = UINavigationBar.Appearance.LargeTitleTextAttributes;
 
@@ -730,7 +730,7 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 #if __XCODE11__
-			if (Forms.IsiOS13OrNewer)
+			if (System.Maui.Maui.IsiOS13OrNewer)
 			{
 				NavigationBar.CompactAppearance.TitleTextAttributes = titleTextAttributes;
 				NavigationBar.CompactAppearance.LargeTitleTextAttributes = largeTitleTextAttributes;
@@ -746,7 +746,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				NavigationBar.TitleTextAttributes = titleTextAttributes;
 
-				if (Forms.IsiOS11OrNewer)
+				if (System.Maui.Maui.IsiOS11OrNewer)
 					NavigationBar.LargeTitleTextAttributes = largeTitleTextAttributes;
 			}
 
@@ -769,7 +769,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 #if __XCODE11__
 				// Use dark text color for status bar
-				if (Forms.IsiOS13OrNewer)
+				if (System.Maui.Maui.IsiOS13OrNewer)
 				{
 					UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.DarkContent;
 				}
@@ -1173,7 +1173,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			internal void SetupDefaultNavigationBarAppearance()
 			{
-				if (!Forms.IsiOS13OrNewer)
+				if (!System.Maui.Maui.IsiOS13OrNewer)
 					return;
 
 				if (!_navigation.TryGetTarget(out NavigationRenderer navigationRenderer))
@@ -1292,7 +1292,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 				// on iOS 10 if the user hasn't set the back button text
 				// we set it to an empty string so it's consistent with iOS 11
-				if (!Forms.IsiOS11OrNewer && !isBackButtonTextSet)
+				if (!System.Maui.Maui.IsiOS11OrNewer && !isBackButtonTextSet)
 					backButtonText = "";
 
 				// First page and we have a master detail to contend with
@@ -1375,7 +1375,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (!_navigation.TryGetTarget(out n))
 					return;
 
-				if (!Forms.IsiOS11OrNewer || n._parentMasterDetailPage != null)
+				if (!System.Maui.Maui.IsiOS11OrNewer || n._parentMasterDetailPage != null)
 					UpdateTitleArea(Child);
 			}
 
@@ -1433,7 +1433,7 @@ namespace Xamarin.Forms.Platform.iOS
 			void UpdateLargeTitles()
 			{
 				var page = Child;
-				if (page != null && Forms.IsiOS11OrNewer)
+				if (page != null && System.Maui.Maui.IsiOS11OrNewer)
 				{
 					var largeTitleDisplayMode = page.OnThisPlatform().LargeTitleDisplay();
 					switch (largeTitleDisplayMode)
@@ -1542,7 +1542,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			public override void LayoutSubviews()
 			{
-				if (!Forms.IsiOS11OrNewer)
+				if (!System.Maui.Maui.IsiOS11OrNewer)
 				{
 					for (int i = 0; i < this.Subviews.Length; i++)
 					{
@@ -1582,7 +1582,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			public Container(View view, UINavigationBar bar) : base(bar.Bounds)
 			{
-				if (Forms.IsiOS11OrNewer)
+				if (System.Maui.Maui.IsiOS11OrNewer)
 				{
 					TranslatesAutoresizingMaskIntoConstraints = false;
 				}
@@ -1629,7 +1629,7 @@ namespace Xamarin.Forms.Platform.iOS
 				{
 					if (Superview != null)
 					{
-						if (!Forms.IsiOS11OrNewer)
+						if (!System.Maui.Maui.IsiOS11OrNewer)
 						{
 							value.Y = Superview.Bounds.Y;
 

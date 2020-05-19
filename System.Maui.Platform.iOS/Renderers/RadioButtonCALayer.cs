@@ -1,8 +1,8 @@
-﻿using CoreAnimation;
+using CoreAnimation;
 using CoreGraphics;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class RadioButtonCALayer : CALayer
 	{

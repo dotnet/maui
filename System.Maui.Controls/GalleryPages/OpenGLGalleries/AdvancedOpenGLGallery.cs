@@ -1,4 +1,4 @@
-﻿#if HAVE_OPENTK
+#if HAVE_OPENTK
 using System;
 using OpenTK;
 
@@ -8,7 +8,7 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Graphics.ES20;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
     public class AdvancedOpenGLGallery : ContentPage
     {
@@ -44,7 +44,7 @@ namespace Xamarin.Forms.Controls
         private Matrix4 _mViewMatrix;
         private Matrix4 _mModelViewProjectionMatrix;
 
-        private Xamarin.Forms.OpenGLView _openGLView = null;
+        private System.Maui.OpenGLView _openGLView = null;
 
         public AdvancedOpenGLGallery()
         {

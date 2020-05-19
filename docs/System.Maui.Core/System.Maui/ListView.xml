@@ -1,27 +1,27 @@
-<Type Name="ListView" FullName="Xamarin.Forms.ListView">
-  <TypeSignature Language="C#" Value="public class ListView : Xamarin.Forms.ItemsView&lt;Xamarin.Forms.Cell&gt;, Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.ListView&gt;, Xamarin.Forms.IListViewController" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit ListView extends Xamarin.Forms.ItemsView`1&lt;class Xamarin.Forms.Cell&gt; implements class Xamarin.Forms.IElementConfiguration`1&lt;class Xamarin.Forms.ListView&gt;, class Xamarin.Forms.IElementController, class Xamarin.Forms.IListViewController, class Xamarin.Forms.IViewController, class Xamarin.Forms.IVisualElementController" />
+<Type Name="ListView" FullName="System.Maui.ListView">
+  <TypeSignature Language="C#" Value="public class ListView : System.Maui.ItemsView&lt;System.Maui.Cell&gt;, System.Maui.IElementConfiguration&lt;System.Maui.ListView&gt;, System.Maui.IListViewController" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit ListView extends System.Maui.ItemsView`1&lt;class System.Maui.Cell&gt; implements class System.Maui.IElementConfiguration`1&lt;class System.Maui.ListView&gt;, class System.Maui.IElementController, class System.Maui.IListViewController, class System.Maui.IViewController, class System.Maui.IVisualElementController" />
   <AssemblyInfo>
-    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyName>System.Maui.Core</AssemblyName>
     <AssemblyVersion>2.0.0.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>Xamarin.Forms.ItemsView&lt;Xamarin.Forms.Cell&gt;</BaseTypeName>
+    <BaseTypeName>System.Maui.ItemsView&lt;System.Maui.Cell&gt;</BaseTypeName>
     <BaseTypeArguments>
-      <BaseTypeArgument TypeParamName="TVisual">Xamarin.Forms.Cell</BaseTypeArgument>
+      <BaseTypeArgument TypeParamName="TVisual">System.Maui.Cell</BaseTypeArgument>
     </BaseTypeArguments>
   </Base>
   <Interfaces>
     <Interface>
-      <InterfaceName>Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.ListView&gt;</InterfaceName>
+      <InterfaceName>System.Maui.IElementConfiguration&lt;System.Maui.ListView&gt;</InterfaceName>
     </Interface>
     <Interface>
-      <InterfaceName>Xamarin.Forms.IListViewController</InterfaceName>
+      <InterfaceName>System.Maui.IListViewController</InterfaceName>
     </Interface>
   </Interfaces>
   <Attributes>
     <Attribute>
-      <AttributeName>Xamarin.Forms.RenderWith(typeof(Xamarin.Forms.Platform._ListViewRenderer))</AttributeName>
+      <AttributeName>System.Maui.RenderWith(typeof(System.Maui.Platform._ListViewRenderer))</AttributeName>
     </Attribute>
   </Attributes>
   <Docs>
@@ -43,14 +43,14 @@
       </Docs>
     </Member>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public ListView (Xamarin.Forms.ListViewCachingStrategy cachingStrategy);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Xamarin.Forms.ListViewCachingStrategy cachingStrategy) cil managed" />
+      <MemberSignature Language="C#" Value="public ListView (System.Maui.ListViewCachingStrategy cachingStrategy);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype System.Maui.ListViewCachingStrategy cachingStrategy) cil managed" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <Parameters>
-        <Parameter Name="cachingStrategy" Type="Xamarin.Forms.ListViewCachingStrategy" />
+        <Parameter Name="cachingStrategy" Type="System.Maui.ListViewCachingStrategy" />
       </Parameters>
       <Docs>
         <param name="cachingStrategy">To be added.</param>
@@ -75,8 +75,8 @@
       </Docs>
     </Member>
     <Member MemberName="CachingStrategy">
-      <MemberSignature Language="C#" Value="public Xamarin.Forms.ListViewCachingStrategy CachingStrategy { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Forms.ListViewCachingStrategy CachingStrategy" />
+      <MemberSignature Language="C#" Value="public System.Maui.ListViewCachingStrategy CachingStrategy { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Maui.ListViewCachingStrategy CachingStrategy" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
@@ -87,7 +87,7 @@
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.ListViewCachingStrategy</ReturnType>
+        <ReturnType>System.Maui.ListViewCachingStrategy</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -96,14 +96,14 @@
       </Docs>
     </Member>
     <Member MemberName="CreateDefault">
-      <MemberSignature Language="C#" Value="protected override Xamarin.Forms.Cell CreateDefault (object item);" />
-      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance class Xamarin.Forms.Cell CreateDefault(object item) cil managed" />
+      <MemberSignature Language="C#" Value="protected override System.Maui.Cell CreateDefault (object item);" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance class System.Maui.Cell CreateDefault(object item) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.Cell</ReturnType>
+        <ReturnType>System.Maui.Cell</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="item" Type="System.Object" />
@@ -116,8 +116,8 @@
       </Docs>
     </Member>
     <Member MemberName="CreateDefaultCell">
-      <MemberSignature Language="C#" Value="public Xamarin.Forms.Cell CreateDefaultCell (object item);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance class Xamarin.Forms.Cell CreateDefaultCell(object item) cil managed" />
+      <MemberSignature Language="C#" Value="public System.Maui.Cell CreateDefaultCell (object item);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance class System.Maui.Cell CreateDefaultCell(object item) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
@@ -128,7 +128,7 @@
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.Cell</ReturnType>
+        <ReturnType>System.Maui.Cell</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="item" Type="System.Object" />
@@ -173,8 +173,8 @@
       </Docs>
     </Member>
     <Member MemberName="FooterElement">
-      <MemberSignature Language="C#" Value="public Xamarin.Forms.Element FooterElement { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Forms.Element FooterElement" />
+      <MemberSignature Language="C#" Value="public System.Maui.Element FooterElement { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Maui.Element FooterElement" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
@@ -185,7 +185,7 @@
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.Element</ReturnType>
+        <ReturnType>System.Maui.Element</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -194,14 +194,14 @@
       </Docs>
     </Member>
     <Member MemberName="FooterProperty">
-      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty FooterProperty;" />
-      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty FooterProperty" />
+      <MemberSignature Language="C#" Value="public static readonly System.Maui.BindableProperty FooterProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class System.Maui.BindableProperty FooterProperty" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+        <ReturnType>System.Maui.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -209,14 +209,14 @@
       </Docs>
     </Member>
     <Member MemberName="FooterTemplate">
-      <MemberSignature Language="C#" Value="public Xamarin.Forms.DataTemplate FooterTemplate { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Forms.DataTemplate FooterTemplate" />
+      <MemberSignature Language="C#" Value="public System.Maui.DataTemplate FooterTemplate { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Maui.DataTemplate FooterTemplate" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.DataTemplate</ReturnType>
+        <ReturnType>System.Maui.DataTemplate</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -225,14 +225,14 @@
       </Docs>
     </Member>
     <Member MemberName="FooterTemplateProperty">
-      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty FooterTemplateProperty;" />
-      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty FooterTemplateProperty" />
+      <MemberSignature Language="C#" Value="public static readonly System.Maui.BindableProperty FooterTemplateProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class System.Maui.BindableProperty FooterTemplateProperty" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+        <ReturnType>System.Maui.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -265,14 +265,14 @@
       </Docs>
     </Member>
     <Member MemberName="GroupDisplayBinding">
-      <MemberSignature Language="C#" Value="public Xamarin.Forms.BindingBase GroupDisplayBinding { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Forms.BindingBase GroupDisplayBinding" />
+      <MemberSignature Language="C#" Value="public System.Maui.BindingBase GroupDisplayBinding { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Maui.BindingBase GroupDisplayBinding" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.BindingBase</ReturnType>
+        <ReturnType>System.Maui.BindingBase</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -281,14 +281,14 @@
       </Docs>
     </Member>
     <Member MemberName="GroupHeaderTemplate">
-      <MemberSignature Language="C#" Value="public Xamarin.Forms.DataTemplate GroupHeaderTemplate { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Forms.DataTemplate GroupHeaderTemplate" />
+      <MemberSignature Language="C#" Value="public System.Maui.DataTemplate GroupHeaderTemplate { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Maui.DataTemplate GroupHeaderTemplate" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.DataTemplate</ReturnType>
+        <ReturnType>System.Maui.DataTemplate</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -297,14 +297,14 @@
       </Docs>
     </Member>
     <Member MemberName="GroupHeaderTemplateProperty">
-      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty GroupHeaderTemplateProperty;" />
-      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty GroupHeaderTemplateProperty" />
+      <MemberSignature Language="C#" Value="public static readonly System.Maui.BindableProperty GroupHeaderTemplateProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class System.Maui.BindableProperty GroupHeaderTemplateProperty" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+        <ReturnType>System.Maui.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -312,14 +312,14 @@
       </Docs>
     </Member>
     <Member MemberName="GroupShortNameBinding">
-      <MemberSignature Language="C#" Value="public Xamarin.Forms.BindingBase GroupShortNameBinding { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Forms.BindingBase GroupShortNameBinding" />
+      <MemberSignature Language="C#" Value="public System.Maui.BindingBase GroupShortNameBinding { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Maui.BindingBase GroupShortNameBinding" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.BindingBase</ReturnType>
+        <ReturnType>System.Maui.BindingBase</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -344,14 +344,14 @@
       </Docs>
     </Member>
     <Member MemberName="HasUnevenRowsProperty">
-      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty HasUnevenRowsProperty;" />
-      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty HasUnevenRowsProperty" />
+      <MemberSignature Language="C#" Value="public static readonly System.Maui.BindableProperty HasUnevenRowsProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class System.Maui.BindableProperty HasUnevenRowsProperty" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+        <ReturnType>System.Maui.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -375,8 +375,8 @@
       </Docs>
     </Member>
     <Member MemberName="HeaderElement">
-      <MemberSignature Language="C#" Value="public Xamarin.Forms.Element HeaderElement { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Forms.Element HeaderElement" />
+      <MemberSignature Language="C#" Value="public System.Maui.Element HeaderElement { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Maui.Element HeaderElement" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
@@ -387,7 +387,7 @@
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.Element</ReturnType>
+        <ReturnType>System.Maui.Element</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -396,14 +396,14 @@
       </Docs>
     </Member>
     <Member MemberName="HeaderProperty">
-      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty HeaderProperty;" />
-      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty HeaderProperty" />
+      <MemberSignature Language="C#" Value="public static readonly System.Maui.BindableProperty HeaderProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class System.Maui.BindableProperty HeaderProperty" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+        <ReturnType>System.Maui.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -411,14 +411,14 @@
       </Docs>
     </Member>
     <Member MemberName="HeaderTemplate">
-      <MemberSignature Language="C#" Value="public Xamarin.Forms.DataTemplate HeaderTemplate { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Forms.DataTemplate HeaderTemplate" />
+      <MemberSignature Language="C#" Value="public System.Maui.DataTemplate HeaderTemplate { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Maui.DataTemplate HeaderTemplate" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.DataTemplate</ReturnType>
+        <ReturnType>System.Maui.DataTemplate</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -427,14 +427,14 @@
       </Docs>
     </Member>
     <Member MemberName="HeaderTemplateProperty">
-      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty HeaderTemplateProperty;" />
-      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty HeaderTemplateProperty" />
+      <MemberSignature Language="C#" Value="public static readonly System.Maui.BindableProperty HeaderTemplateProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class System.Maui.BindableProperty HeaderTemplateProperty" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+        <ReturnType>System.Maui.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -458,14 +458,14 @@
       </Docs>
     </Member>
     <Member MemberName="IsGroupingEnabledProperty">
-      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty IsGroupingEnabledProperty;" />
-      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty IsGroupingEnabledProperty" />
+      <MemberSignature Language="C#" Value="public static readonly System.Maui.BindableProperty IsGroupingEnabledProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class System.Maui.BindableProperty IsGroupingEnabledProperty" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+        <ReturnType>System.Maui.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -489,14 +489,14 @@
       </Docs>
     </Member>
     <Member MemberName="IsPullToRefreshEnabledProperty">
-      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty IsPullToRefreshEnabledProperty;" />
-      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty IsPullToRefreshEnabledProperty" />
+      <MemberSignature Language="C#" Value="public static readonly System.Maui.BindableProperty IsPullToRefreshEnabledProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class System.Maui.BindableProperty IsPullToRefreshEnabledProperty" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+        <ReturnType>System.Maui.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -520,14 +520,14 @@
       </Docs>
     </Member>
     <Member MemberName="IsRefreshingProperty">
-      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty IsRefreshingProperty;" />
-      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty IsRefreshingProperty" />
+      <MemberSignature Language="C#" Value="public static readonly System.Maui.BindableProperty IsRefreshingProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class System.Maui.BindableProperty IsRefreshingProperty" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+        <ReturnType>System.Maui.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -535,14 +535,14 @@
       </Docs>
     </Member>
     <Member MemberName="ItemAppearing">
-      <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.ItemVisibilityEventArgs&gt; ItemAppearing;" />
-      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.ItemVisibilityEventArgs&gt; ItemAppearing" />
+      <MemberSignature Language="C#" Value="public event EventHandler&lt;System.Maui.ItemVisibilityEventArgs&gt; ItemAppearing;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class System.Maui.ItemVisibilityEventArgs&gt; ItemAppearing" />
       <MemberType>Event</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.EventHandler&lt;Xamarin.Forms.ItemVisibilityEventArgs&gt;</ReturnType>
+        <ReturnType>System.EventHandler&lt;System.Maui.ItemVisibilityEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -550,14 +550,14 @@
       </Docs>
     </Member>
     <Member MemberName="ItemDisappearing">
-      <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.ItemVisibilityEventArgs&gt; ItemDisappearing;" />
-      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.ItemVisibilityEventArgs&gt; ItemDisappearing" />
+      <MemberSignature Language="C#" Value="public event EventHandler&lt;System.Maui.ItemVisibilityEventArgs&gt; ItemDisappearing;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class System.Maui.ItemVisibilityEventArgs&gt; ItemDisappearing" />
       <MemberType>Event</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.EventHandler&lt;Xamarin.Forms.ItemVisibilityEventArgs&gt;</ReturnType>
+        <ReturnType>System.EventHandler&lt;System.Maui.ItemVisibilityEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -565,14 +565,14 @@
       </Docs>
     </Member>
     <Member MemberName="ItemSelected">
-      <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.SelectedItemChangedEventArgs&gt; ItemSelected;" />
-      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.SelectedItemChangedEventArgs&gt; ItemSelected" />
+      <MemberSignature Language="C#" Value="public event EventHandler&lt;System.Maui.SelectedItemChangedEventArgs&gt; ItemSelected;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class System.Maui.SelectedItemChangedEventArgs&gt; ItemSelected" />
       <MemberType>Event</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.EventHandler&lt;Xamarin.Forms.SelectedItemChangedEventArgs&gt;</ReturnType>
+        <ReturnType>System.EventHandler&lt;System.Maui.SelectedItemChangedEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -580,14 +580,14 @@
       </Docs>
     </Member>
     <Member MemberName="ItemTapped">
-      <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.ItemTappedEventArgs&gt; ItemTapped;" />
-      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.ItemTappedEventArgs&gt; ItemTapped" />
+      <MemberSignature Language="C#" Value="public event EventHandler&lt;System.Maui.ItemTappedEventArgs&gt; ItemTapped;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class System.Maui.ItemTappedEventArgs&gt; ItemTapped" />
       <MemberType>Event</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.EventHandler&lt;Xamarin.Forms.ItemTappedEventArgs&gt;</ReturnType>
+        <ReturnType>System.EventHandler&lt;System.Maui.ItemTappedEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -595,8 +595,8 @@
       </Docs>
     </Member>
     <Member MemberName="NotifyRowTapped">
-      <MemberSignature Language="C#" Value="public void NotifyRowTapped (int index, Xamarin.Forms.Cell cell = null);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void NotifyRowTapped(int32 index, class Xamarin.Forms.Cell cell) cil managed" />
+      <MemberSignature Language="C#" Value="public void NotifyRowTapped (int index, System.Maui.Cell cell = null);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void NotifyRowTapped(int32 index, class System.Maui.Cell cell) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
@@ -611,7 +611,7 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="index" Type="System.Int32" />
-        <Parameter Name="cell" Type="Xamarin.Forms.Cell" />
+        <Parameter Name="cell" Type="System.Maui.Cell" />
       </Parameters>
       <Docs>
         <param name="index">To be added.</param>
@@ -621,8 +621,8 @@
       </Docs>
     </Member>
     <Member MemberName="NotifyRowTapped">
-      <MemberSignature Language="C#" Value="public void NotifyRowTapped (int groupIndex, int inGroupIndex, Xamarin.Forms.Cell cell = null);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void NotifyRowTapped(int32 groupIndex, int32 inGroupIndex, class Xamarin.Forms.Cell cell) cil managed" />
+      <MemberSignature Language="C#" Value="public void NotifyRowTapped (int groupIndex, int inGroupIndex, System.Maui.Cell cell = null);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void NotifyRowTapped(int32 groupIndex, int32 inGroupIndex, class System.Maui.Cell cell) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
@@ -638,7 +638,7 @@
       <Parameters>
         <Parameter Name="groupIndex" Type="System.Int32" />
         <Parameter Name="inGroupIndex" Type="System.Int32" />
-        <Parameter Name="cell" Type="Xamarin.Forms.Cell" />
+        <Parameter Name="cell" Type="System.Maui.Cell" />
       </Parameters>
       <Docs>
         <param name="groupIndex">To be added.</param>
@@ -649,19 +649,19 @@
       </Docs>
     </Member>
     <Member MemberName="On&lt;T&gt;">
-      <MemberSignature Language="C#" Value="public Xamarin.Forms.IPlatformElementConfiguration&lt;T,Xamarin.Forms.ListView&gt; On&lt;T&gt; () where T : Xamarin.Forms.IConfigPlatform;" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance class Xamarin.Forms.IPlatformElementConfiguration`2&lt;!!T, class Xamarin.Forms.ListView&gt; On&lt;(class Xamarin.Forms.IConfigPlatform) T&gt;() cil managed" />
+      <MemberSignature Language="C#" Value="public System.Maui.IPlatformElementConfiguration&lt;T,System.Maui.ListView&gt; On&lt;T&gt; () where T : System.Maui.IConfigPlatform;" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance class System.Maui.IPlatformElementConfiguration`2&lt;!!T, class System.Maui.ListView&gt; On&lt;(class System.Maui.IConfigPlatform) T&gt;() cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.IPlatformElementConfiguration&lt;T,Xamarin.Forms.ListView&gt;</ReturnType>
+        <ReturnType>System.Maui.IPlatformElementConfiguration&lt;T,System.Maui.ListView&gt;</ReturnType>
       </ReturnValue>
       <TypeParameters>
         <TypeParameter Name="T">
           <Constraints>
-            <InterfaceName>Xamarin.Forms.IConfigPlatform</InterfaceName>
+            <InterfaceName>System.Maui.IConfigPlatform</InterfaceName>
           </Constraints>
         </TypeParameter>
       </TypeParameters>
@@ -690,8 +690,8 @@
       </Docs>
     </Member>
     <Member MemberName="OnSizeRequest">
-      <MemberSignature Language="C#" Value="protected override Xamarin.Forms.SizeRequest OnSizeRequest (double widthConstraint, double heightConstraint);" />
-      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance valuetype Xamarin.Forms.SizeRequest OnSizeRequest(float64 widthConstraint, float64 heightConstraint) cil managed" />
+      <MemberSignature Language="C#" Value="protected override System.Maui.SizeRequest OnSizeRequest (double widthConstraint, double heightConstraint);" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance valuetype System.Maui.SizeRequest OnSizeRequest(float64 widthConstraint, float64 heightConstraint) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
@@ -702,7 +702,7 @@
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.SizeRequest</ReturnType>
+        <ReturnType>System.Maui.SizeRequest</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="widthConstraint" Type="System.Double" />
@@ -754,14 +754,14 @@
       </Docs>
     </Member>
     <Member MemberName="RefreshCommandProperty">
-      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty RefreshCommandProperty;" />
-      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty RefreshCommandProperty" />
+      <MemberSignature Language="C#" Value="public static readonly System.Maui.BindableProperty RefreshCommandProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class System.Maui.BindableProperty RefreshCommandProperty" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+        <ReturnType>System.Maui.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -769,14 +769,14 @@
       </Docs>
     </Member>
     <Member MemberName="RefreshControlColor">
-      <MemberSignature Language="C#" Value="public Xamarin.Forms.Color RefreshControlColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Forms.Color RefreshControlColor" />
+      <MemberSignature Language="C#" Value="public System.Maui.Color RefreshControlColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Maui.Color RefreshControlColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.Color</ReturnType>
+        <ReturnType>System.Maui.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -785,14 +785,14 @@
       </Docs>
     </Member>
     <Member MemberName="RefreshControlColorProperty">
-      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty RefreshControlColorProperty;" />
-      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty RefreshControlColorProperty" />
+      <MemberSignature Language="C#" Value="public static readonly System.Maui.BindableProperty RefreshControlColorProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class System.Maui.BindableProperty RefreshControlColorProperty" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+        <ReturnType>System.Maui.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -831,14 +831,14 @@
       </Docs>
     </Member>
     <Member MemberName="RowHeightProperty">
-      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty RowHeightProperty;" />
-      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty RowHeightProperty" />
+      <MemberSignature Language="C#" Value="public static readonly System.Maui.BindableProperty RowHeightProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class System.Maui.BindableProperty RowHeightProperty" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+        <ReturnType>System.Maui.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -846,8 +846,8 @@
       </Docs>
     </Member>
     <Member MemberName="ScrollTo">
-      <MemberSignature Language="C#" Value="public void ScrollTo (object item, Xamarin.Forms.ScrollToPosition position, bool animated);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void ScrollTo(object item, valuetype Xamarin.Forms.ScrollToPosition position, bool animated) cil managed" />
+      <MemberSignature Language="C#" Value="public void ScrollTo (object item, System.Maui.ScrollToPosition position, bool animated);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void ScrollTo(object item, valuetype System.Maui.ScrollToPosition position, bool animated) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
@@ -857,7 +857,7 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="item" Type="System.Object" />
-        <Parameter Name="position" Type="Xamarin.Forms.ScrollToPosition" />
+        <Parameter Name="position" Type="System.Maui.ScrollToPosition" />
         <Parameter Name="animated" Type="System.Boolean" />
       </Parameters>
       <Docs>
@@ -869,8 +869,8 @@
       </Docs>
     </Member>
     <Member MemberName="ScrollTo">
-      <MemberSignature Language="C#" Value="public void ScrollTo (object item, object group, Xamarin.Forms.ScrollToPosition position, bool animated);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void ScrollTo(object item, object group, valuetype Xamarin.Forms.ScrollToPosition position, bool animated) cil managed" />
+      <MemberSignature Language="C#" Value="public void ScrollTo (object item, object group, System.Maui.ScrollToPosition position, bool animated);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void ScrollTo(object item, object group, valuetype System.Maui.ScrollToPosition position, bool animated) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
@@ -881,7 +881,7 @@
       <Parameters>
         <Parameter Name="item" Type="System.Object" />
         <Parameter Name="group" Type="System.Object" />
-        <Parameter Name="position" Type="Xamarin.Forms.ScrollToPosition" />
+        <Parameter Name="position" Type="System.Maui.ScrollToPosition" />
         <Parameter Name="animated" Type="System.Boolean" />
       </Parameters>
       <Docs>
@@ -894,8 +894,8 @@
       </Docs>
     </Member>
     <Member MemberName="ScrollToRequested">
-      <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.ScrollToRequestedEventArgs&gt; ScrollToRequested;" />
-      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.ScrollToRequestedEventArgs&gt; ScrollToRequested" />
+      <MemberSignature Language="C#" Value="public event EventHandler&lt;System.Maui.ScrollToRequestedEventArgs&gt; ScrollToRequested;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class System.Maui.ScrollToRequestedEventArgs&gt; ScrollToRequested" />
       <MemberType>Event</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
@@ -906,7 +906,7 @@
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>System.EventHandler&lt;Xamarin.Forms.ScrollToRequestedEventArgs&gt;</ReturnType>
+        <ReturnType>System.EventHandler&lt;System.Maui.ScrollToRequestedEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -930,14 +930,14 @@
       </Docs>
     </Member>
     <Member MemberName="SelectedItemProperty">
-      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty SelectedItemProperty;" />
-      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty SelectedItemProperty" />
+      <MemberSignature Language="C#" Value="public static readonly System.Maui.BindableProperty SelectedItemProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class System.Maui.BindableProperty SelectedItemProperty" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+        <ReturnType>System.Maui.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -945,14 +945,14 @@
       </Docs>
     </Member>
     <Member MemberName="SelectionMode">
-      <MemberSignature Language="C#" Value="public Xamarin.Forms.ListViewSelectionMode SelectionMode { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Forms.ListViewSelectionMode SelectionMode" />
+      <MemberSignature Language="C#" Value="public System.Maui.ListViewSelectionMode SelectionMode { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Maui.ListViewSelectionMode SelectionMode" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.ListViewSelectionMode</ReturnType>
+        <ReturnType>System.Maui.ListViewSelectionMode</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -961,14 +961,14 @@
       </Docs>
     </Member>
     <Member MemberName="SelectionModeProperty">
-      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty SelectionModeProperty;" />
-      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty SelectionModeProperty" />
+      <MemberSignature Language="C#" Value="public static readonly System.Maui.BindableProperty SelectionModeProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class System.Maui.BindableProperty SelectionModeProperty" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+        <ReturnType>System.Maui.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -976,8 +976,8 @@
       </Docs>
     </Member>
     <Member MemberName="SendCellAppearing">
-      <MemberSignature Language="C#" Value="public void SendCellAppearing (Xamarin.Forms.Cell cell);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void SendCellAppearing(class Xamarin.Forms.Cell cell) cil managed" />
+      <MemberSignature Language="C#" Value="public void SendCellAppearing (System.Maui.Cell cell);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void SendCellAppearing(class System.Maui.Cell cell) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
@@ -991,7 +991,7 @@
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="cell" Type="Xamarin.Forms.Cell" />
+        <Parameter Name="cell" Type="System.Maui.Cell" />
       </Parameters>
       <Docs>
         <param name="cell">To be added.</param>
@@ -1000,8 +1000,8 @@
       </Docs>
     </Member>
     <Member MemberName="SendCellDisappearing">
-      <MemberSignature Language="C#" Value="public void SendCellDisappearing (Xamarin.Forms.Cell cell);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void SendCellDisappearing(class Xamarin.Forms.Cell cell) cil managed" />
+      <MemberSignature Language="C#" Value="public void SendCellDisappearing (System.Maui.Cell cell);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void SendCellDisappearing(class System.Maui.Cell cell) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
@@ -1015,7 +1015,7 @@
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="cell" Type="Xamarin.Forms.Cell" />
+        <Parameter Name="cell" Type="System.Maui.Cell" />
       </Parameters>
       <Docs>
         <param name="cell">To be added.</param>
@@ -1045,14 +1045,14 @@
       </Docs>
     </Member>
     <Member MemberName="SeparatorColor">
-      <MemberSignature Language="C#" Value="public Xamarin.Forms.Color SeparatorColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Forms.Color SeparatorColor" />
+      <MemberSignature Language="C#" Value="public System.Maui.Color SeparatorColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Maui.Color SeparatorColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.Color</ReturnType>
+        <ReturnType>System.Maui.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -1061,14 +1061,14 @@
       </Docs>
     </Member>
     <Member MemberName="SeparatorColorProperty">
-      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty SeparatorColorProperty;" />
-      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty SeparatorColorProperty" />
+      <MemberSignature Language="C#" Value="public static readonly System.Maui.BindableProperty SeparatorColorProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class System.Maui.BindableProperty SeparatorColorProperty" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+        <ReturnType>System.Maui.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -1076,14 +1076,14 @@
       </Docs>
     </Member>
     <Member MemberName="SeparatorVisibility">
-      <MemberSignature Language="C#" Value="public Xamarin.Forms.SeparatorVisibility SeparatorVisibility { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Forms.SeparatorVisibility SeparatorVisibility" />
+      <MemberSignature Language="C#" Value="public System.Maui.SeparatorVisibility SeparatorVisibility { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Maui.SeparatorVisibility SeparatorVisibility" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.SeparatorVisibility</ReturnType>
+        <ReturnType>System.Maui.SeparatorVisibility</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -1092,14 +1092,14 @@
       </Docs>
     </Member>
     <Member MemberName="SeparatorVisibilityProperty">
-      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty SeparatorVisibilityProperty;" />
-      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty SeparatorVisibilityProperty" />
+      <MemberSignature Language="C#" Value="public static readonly System.Maui.BindableProperty SeparatorVisibilityProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class System.Maui.BindableProperty SeparatorVisibilityProperty" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+        <ReturnType>System.Maui.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -1107,8 +1107,8 @@
       </Docs>
     </Member>
     <Member MemberName="SetupContent">
-      <MemberSignature Language="C#" Value="protected override void SetupContent (Xamarin.Forms.Cell content, int index);" />
-      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance void SetupContent(class Xamarin.Forms.Cell content, int32 index) cil managed" />
+      <MemberSignature Language="C#" Value="protected override void SetupContent (System.Maui.Cell content, int index);" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance void SetupContent(class System.Maui.Cell content, int32 index) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
@@ -1117,7 +1117,7 @@
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="content" Type="Xamarin.Forms.Cell" />
+        <Parameter Name="content" Type="System.Maui.Cell" />
         <Parameter Name="index" Type="System.Int32" />
       </Parameters>
       <Docs>
@@ -1128,8 +1128,8 @@
       </Docs>
     </Member>
     <Member MemberName="UnhookContent">
-      <MemberSignature Language="C#" Value="protected override void UnhookContent (Xamarin.Forms.Cell content);" />
-      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance void UnhookContent(class Xamarin.Forms.Cell content) cil managed" />
+      <MemberSignature Language="C#" Value="protected override void UnhookContent (System.Maui.Cell content);" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance void UnhookContent(class System.Maui.Cell content) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
@@ -1138,7 +1138,7 @@
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="content" Type="Xamarin.Forms.Cell" />
+        <Parameter Name="content" Type="System.Maui.Cell" />
       </Parameters>
       <Docs>
         <param name="content">To be added.</param>
@@ -1147,8 +1147,8 @@
       </Docs>
     </Member>
     <Member MemberName="ValidateItemTemplate">
-      <MemberSignature Language="C#" Value="protected override bool ValidateItemTemplate (Xamarin.Forms.DataTemplate template);" />
-      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance bool ValidateItemTemplate(class Xamarin.Forms.DataTemplate template) cil managed" />
+      <MemberSignature Language="C#" Value="protected override bool ValidateItemTemplate (System.Maui.DataTemplate template);" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance bool ValidateItemTemplate(class System.Maui.DataTemplate template) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
@@ -1157,7 +1157,7 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="template" Type="Xamarin.Forms.DataTemplate" />
+        <Parameter Name="template" Type="System.Maui.DataTemplate" />
       </Parameters>
       <Docs>
         <param name="template">To be added.</param>

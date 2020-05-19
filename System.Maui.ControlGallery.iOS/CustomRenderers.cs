@@ -1,18 +1,18 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using CoreLocation;
 using Foundation;
 using MapKit;
 using UIKit;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.iOS;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui;
+using System.Maui.ControlGallery.iOS;
+using System.Maui.Controls;
+using System.Maui.Controls.Issues;
+using System.Maui.Platform.iOS;
 using RectangleF = CoreGraphics.CGRect;
 
-[assembly: ExportRenderer(typeof(Bugzilla21177.CollectionView), typeof(Xamarin.Forms.ControlGallery.iOS.CollectionViewRenderer))]
+[assembly: ExportRenderer(typeof(Bugzilla21177.CollectionView), typeof(System.Maui.ControlGallery.iOS.CollectionViewRenderer))]
 [assembly: ExportRenderer(typeof(Bugzilla31395.CustomContentView), typeof(CustomContentRenderer))]
 [assembly: ExportRenderer(typeof(NativeCell), typeof(NativeiOSCellRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView2), typeof(NativeiOSListViewRenderer))]
@@ -25,7 +25,7 @@ using RectangleF = CoreGraphics.CGRect;
 [assembly: ExportRenderer(typeof(Issue1683.EntryKeyboardFlags), typeof(EntryRendererKeyboardFlags))]
 [assembly: ExportRenderer(typeof(Issue1683.EditorKeyboardFlags), typeof(EditorRendererKeyboardFlags))]
 [assembly: ExportRenderer(typeof(Issue5830.ExtendedEntryCell), typeof(ExtendedEntryCellRenderer))]
-namespace Xamarin.Forms.ControlGallery.iOS
+namespace System.Maui.ControlGallery.iOS
 {
 
 	public class CustomIOSMapRenderer : ViewRenderer<Bugzilla39987.CustomMapView, MKMapView>
@@ -80,7 +80,7 @@ namespace Xamarin.Forms.ControlGallery.iOS
 		{
 		}
 
-		public override UITableViewCell GetCell(Xamarin.Forms.Cell item, UITableViewCell reusableCell, UITableView tv)
+		public override UITableViewCell GetCell(System.Maui.Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
 			var x = (NativeCell)item;
 			Console.WriteLine(x);

@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using CoreGraphics;
 using Foundation;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class CarouselTemplatedCell : TemplatedCell
 	{
-		public static NSString ReuseId = new NSString("Xamarin.Forms.Platform.iOS.CarouselTemplatedCell");
+		public static NSString ReuseId = new NSString("System.Maui.Platform.iOS.CarouselTemplatedCell");
 
 		[Export("initWithFrame:")]
 		[Internals.Preserve(Conditional = true)]

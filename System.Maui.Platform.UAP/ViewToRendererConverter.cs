@@ -1,11 +1,11 @@
-﻿using System;
-using Windows.Foundation;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using System;
+using global::Windows.Foundation;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	public class ViewToRendererConverter : Windows.UI.Xaml.Data.IValueConverter
+	public class ViewToRendererConverter : global::Windows.UI.Xaml.Data.IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{
@@ -75,7 +75,7 @@ namespace Xamarin.Forms.Platform.UWP
 				InvalidateMeasure();
 			}
 
-			protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
+			protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 			{
 				_view.IsInNativeLayout = true;
 				Layout.LayoutChildIntoBoundingRegion(_view, new Rectangle(0, 0, finalSize.Width, finalSize.Height));
@@ -96,7 +96,7 @@ namespace Xamarin.Forms.Platform.UWP
 				return finalSize;
 			}
 
-			protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
+			protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 			{
 				Size request = _view.Measure(availableSize.Width, availableSize.Height, MeasureFlags.IncludeMargins).Request;
 
@@ -105,14 +105,14 @@ namespace Xamarin.Forms.Platform.UWP
 					request.Height = availableSize.Height;
 				}
 
-				Windows.Foundation.Size result;
+				global::Windows.Foundation.Size result;
 				if (_view.HorizontalOptions.Alignment == LayoutAlignment.Fill && !double.IsInfinity(availableSize.Width) && availableSize.Width != 0)
 				{
-					result = new Windows.Foundation.Size(availableSize.Width, request.Height);
+					result = new global::Windows.Foundation.Size(availableSize.Width, request.Height);
 				}
 				else
 				{
-					result = new Windows.Foundation.Size(request.Width, request.Height);
+					result = new global::Windows.Foundation.Size(request.Width, request.Height);
 				}
 
 				Layout.LayoutChildIntoBoundingRegion(_view, new Rectangle(0, 0, result.Width, result.Height));

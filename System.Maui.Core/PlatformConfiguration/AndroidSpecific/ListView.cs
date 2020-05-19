@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific
+namespace System.Maui.PlatformConfiguration.AndroidSpecific
 {
-	using FormsElement = Forms.ListView;
+	using FormsElement = System.Maui.ListView;
 
 	public static class ListView
 	{

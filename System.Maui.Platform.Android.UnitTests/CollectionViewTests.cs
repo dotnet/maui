@@ -1,9 +1,9 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
-using Xamarin.Forms.CustomAttributes;
+using System.Maui.CustomAttributes;
 
-namespace Xamarin.Forms.Platform.Android.UnitTests
+namespace System.Maui.Platform.Android.UnitTests
 {
 	public class CollectionViewTests : PlatformTestFixture 
 	{
@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Platform.Android.UnitTests
 		[Test(Description = "CollectionView with SnapPointsType set should not crash")]
 		public async Task SnapPointsDoNotCrashOnOlderAPIs()
 		{
-			var cv = new Xamarin.Forms.CollectionView();
+			var cv = new System.Maui.CollectionView();
 
 			var itemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical)
 			{

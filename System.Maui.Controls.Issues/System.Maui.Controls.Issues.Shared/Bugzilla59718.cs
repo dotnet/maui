@@ -1,19 +1,19 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 using System.Collections.Generic;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using System.Maui.PlatformConfiguration;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
 
-using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+using WindowsOS = System.Maui.PlatformConfiguration.Windows;
 
 #if UITEST
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 59718, "Multiple issues with listview and navigation in UWP", PlatformAffected.UWP)]
@@ -72,7 +72,7 @@ namespace Xamarin.Forms.Controls.Issues
 				})
 			};
 
-			_list.On<WindowsOS>().SetSelectionMode(Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ListViewSelectionMode.Inaccessible);
+			_list.On<WindowsOS>().SetSelectionMode(System.Maui.PlatformConfiguration.WindowsSpecific.ListViewSelectionMode.Inaccessible);
 
 			_list.ItemTapped += ListView_ItemTapped;
 

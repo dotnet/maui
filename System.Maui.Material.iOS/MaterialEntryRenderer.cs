@@ -1,9 +1,9 @@
-﻿using CoreGraphics;
+using CoreGraphics;
 using Foundation;
 using UIKit;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui.Platform.iOS;
 
-namespace Xamarin.Forms.Material.iOS
+namespace System.Maui.Material.iOS
 {
 	public class MaterialEntryRenderer : EntryRendererBase<MaterialTextField>, IMaterialEntryRenderer
 	{

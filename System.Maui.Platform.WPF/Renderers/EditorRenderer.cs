@@ -1,11 +1,11 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using WpfScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility;
 using WControl = System.Windows.Controls.Control;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public class EditorRenderer : ViewRenderer<Editor, FormsTextBox>
 	{

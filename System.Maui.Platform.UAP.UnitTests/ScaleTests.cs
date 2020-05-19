@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Media;
 
-namespace Xamarin.Forms.Platform.UAP.UnitTests
+namespace System.Maui.Platform.UAP.UnitTests
 {
 	[TestFixture]
 	public class ScaleTests : PlatformTestFixture

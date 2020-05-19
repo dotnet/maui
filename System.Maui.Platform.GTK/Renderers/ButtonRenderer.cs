@@ -1,11 +1,11 @@
-﻿using Gtk;
+using Gtk;
 using System;
 using System.ComponentModel;
-using Xamarin.Forms.Platform.GTK.Controls;
-using Xamarin.Forms.Platform.GTK.Extensions;
-using GtkImageButton = Xamarin.Forms.Platform.GTK.Controls.ImageButton;
+using System.Maui.Platform.GTK.Controls;
+using System.Maui.Platform.GTK.Extensions;
+using GtkImageButton = System.Maui.Platform.GTK.Controls.ImageButton;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers
+namespace System.Maui.Platform.GTK.Renderers
 {
 	public class ButtonRenderer : ViewRenderer<Button, GtkImageButton>
 	{
@@ -44,7 +44,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			{
 				if (Control == null)
 				{
-					// To allow all available options in Xamarin.Forms, a custom control has been created.
+					// To allow all available options in System.Maui, a custom control has been created.
 					// Can set text, text color, border, image, etc.
 					var btn = new GtkImageButton();
 					SetNativeControl(btn);

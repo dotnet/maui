@@ -1,7 +1,7 @@
-﻿using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation.Peers;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Automation.Peers;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class ViewRenderer<TElement, TNativeElement> : VisualElementRenderer<TElement, TNativeElement> where TElement : View where TNativeElement : FrameworkElement
 	{
@@ -78,16 +78,16 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 
 			if (_defaultAutomationPropertiesLabeledBy == null)
-				_defaultAutomationPropertiesLabeledBy = (UIElement)Control.GetValue(Windows.UI.Xaml.Automation.AutomationProperties.LabeledByProperty);
+				_defaultAutomationPropertiesLabeledBy = (UIElement)Control.GetValue(global::Windows.UI.Xaml.Automation.AutomationProperties.LabeledByProperty);
 
 			var elemValue = (VisualElement)Element.GetValue(AutomationProperties.LabeledByProperty);
 			var renderer = elemValue?.GetOrCreateRenderer();
 			var nativeElement = renderer?.GetNativeElement();
 
 			if (nativeElement != null)
-				Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.LabeledByProperty, nativeElement);
+				Control.SetValue(global::Windows.UI.Xaml.Automation.AutomationProperties.LabeledByProperty, nativeElement);
 			else
-				Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.LabeledByProperty, _defaultAutomationPropertiesLabeledBy);
+				Control.SetValue(global::Windows.UI.Xaml.Automation.AutomationProperties.LabeledByProperty, _defaultAutomationPropertiesLabeledBy);
 		}
 
 		void UpdateFlowDirection()

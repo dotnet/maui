@@ -1,11 +1,11 @@
-﻿using CoreAnimation;
+using CoreAnimation;
 using CoreGraphics;
 using System;
 using UIKit;
 using System.ComponentModel;
 using System.Collections.Specialized;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class ShellTableViewController : UITableViewController
 	{
@@ -132,7 +132,7 @@ namespace Xamarin.Forms.Platform.iOS
 			_headerView?.MeasureIfNeeded();
 
 			TableView.SeparatorStyle = UITableViewCellSeparatorStyle.None;
-			if (Forms.IsiOS11OrNewer)
+			if (System.Maui.Maui.IsiOS11OrNewer)
 				TableView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
 
 			SetHeaderContentInset();

@@ -1,7 +1,7 @@
 using UIKit;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	internal static class FlowDirectionExtensions
 	{
@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		internal static bool UpdateFlowDirection(this UIView view, IVisualElementController controller)
 		{
-			if (controller == null || view == null || !Forms.IsiOS9OrNewer)
+			if (controller == null || view == null || !System.Maui.Maui.IsiOS9OrNewer)
 				return false;
 
 			UISemanticContentAttribute updateValue = view.SemanticContentAttribute;

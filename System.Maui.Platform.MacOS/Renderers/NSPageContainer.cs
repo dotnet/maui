@@ -1,6 +1,6 @@
-﻿using Foundation;
+using Foundation;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	internal class NSPageContainer : NSObject
 	{

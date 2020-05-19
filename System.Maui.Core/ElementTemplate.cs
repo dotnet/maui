@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 #pragma warning disable 612
 	public class ElementTemplate : IElement, IDataTemplate

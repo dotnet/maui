@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.GTKSpecific
+namespace System.Maui.PlatformConfiguration.GTKSpecific
 {
-    using FormsElement = Forms.BoxView;
+    using FormsElement = System.Maui.BoxView;
 
     public static class BoxView
     {

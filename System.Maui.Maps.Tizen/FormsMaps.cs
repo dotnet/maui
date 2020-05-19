@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Tizen.Maps;
-using Xamarin.Forms.Maps.Tizen;
-using Xamarin.Forms.Platform.Tizen;
+using System.Maui.Maps.Tizen;
+using System.Maui.Platform.Tizen;
 
-namespace Xamarin
+namespace System.Maui
 {
 	public static class FormsMaps
 	{

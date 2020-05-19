@@ -2,9 +2,9 @@ using Android.Content;
 using Android.Views;
 using AView = Android.Views.View;
 using AListView = Android.Widget.ListView;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public static class CellFactory
 	{

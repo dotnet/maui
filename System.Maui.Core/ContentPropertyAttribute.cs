@@ -9,12 +9,12 @@
 
 using System;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[AttributeUsage(AttributeTargets.Class, Inherited = true)]
 	public sealed class ContentPropertyAttribute : Attribute
 	{
-		internal static string[] ContentPropertyTypes = { "Xamarin.Forms.ContentPropertyAttribute", "System.Windows.Markup.ContentPropertyAttribute" };
+		internal static string[] ContentPropertyTypes = { "System.Maui.ContentPropertyAttribute", "System.Windows.Markup.ContentPropertyAttribute" };
 
 		public ContentPropertyAttribute(string name)
 		{

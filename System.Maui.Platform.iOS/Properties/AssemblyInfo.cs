@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
-using Xamarin.Forms;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui;
+using System.Maui.Internals;
+using System.Maui.Platform.iOS;
 using UIKit;
 
 // These renderers are now registered via the RenderWithAttribute in the iOS Forwarders project.
@@ -55,10 +55,10 @@ using UIKit;
 [assembly: ExportImageSourceHandler(typeof(UriImageSource), typeof(ImageLoaderSourceHandler))]
 [assembly: ExportImageSourceHandler(typeof(FontImageSource), typeof(FontImageSourceHandler))]
 [assembly: InternalsVisibleTo("iOSUnitTests")]
-[assembly: InternalsVisibleTo("Xamarin.Forms.Platform")]
-[assembly: InternalsVisibleTo("Xamarin.Forms.Material")]
-[assembly: InternalsVisibleTo("Xamarin.Forms.Platform.iOS.UnitTests")]
-[assembly: Xamarin.Forms.Dependency(typeof(Deserializer))]
-[assembly: Xamarin.Forms.Dependency(typeof(ResourcesProvider))]
+[assembly: InternalsVisibleTo("System.Maui.Platform")]
+[assembly: InternalsVisibleTo("System.Maui.Material")]
+[assembly: InternalsVisibleTo("System.Maui.Platform.iOS.UnitTests")]
+[assembly: System.Maui.Dependency(typeof(Deserializer))]
+[assembly: System.Maui.Dependency(typeof(ResourcesProvider))]
 [assembly: ResolutionGroupName("Xamarin")]
 [assembly: LinkerSafe]

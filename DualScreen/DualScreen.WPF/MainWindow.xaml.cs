@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,8 +12,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.WPF;
+using System.Maui;
+using System.Maui.Platform.WPF;
 
 namespace DualScreen.WPF
 {
@@ -25,7 +25,7 @@ namespace DualScreen.WPF
         public MainWindow()
         {
             InitializeComponent();
-			Forms.Init();
+			System.Maui.Maui.Init();
 			LoadApplication(new DualScreen.App());
 		}
     }

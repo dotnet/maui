@@ -1,7 +1,7 @@
-﻿using Tizen.NET.MaterialComponents;
-using Xamarin.Forms.Material.Tizen;
+using Tizen.NET.MaterialComponents;
+using System.Maui.Material.Tizen;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
     public static class FormsMaterial
     {

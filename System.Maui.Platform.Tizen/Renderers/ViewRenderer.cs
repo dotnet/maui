@@ -5,9 +5,9 @@ using System.Diagnostics;
 using System.Linq;
 using ElmSharp;
 using ElmSharp.Wearable;
-using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Application;
+using Specific = System.Maui.PlatformConfiguration.TizenSpecific.Application;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	/// <summary>
 	/// Base class for view renderers.
@@ -117,13 +117,13 @@ namespace Xamarin.Forms.Platform.Tizen
 					if (enable)
 					{
 						ri.RotaryWidget?.Activate();
-						Forms.RotaryFocusObject = Element;
+						System.Maui.Maui.RotaryFocusObject = Element;
 					}
 					else
 					{
 						ri.RotaryWidget?.Deactivate();
-						if (Forms.RotaryFocusObject == Element)
-							Forms.RotaryFocusObject = null;
+						if (System.Maui.Maui.RotaryFocusObject == Element)
+							System.Maui.Maui.RotaryFocusObject = null;
 					}
 				}
 			}

@@ -1,8 +1,8 @@
 
-namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
+namespace System.Maui.PlatformConfiguration.iOSSpecific
 {
 	using System;
-	using FormsElement = Forms.VisualElement;
+	using FormsElement = System.Maui.VisualElement;
 
 	public static class VisualElement
 	{

@@ -5,9 +5,9 @@ using Android.Content;
 using Android.OS;
 using Android.Views;
 using AView = Android.Views.View;
-using Xamarin.Forms.Platform.Android.FastRenderers;
+using System.Maui.Platform.Android.FastRenderers;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public interface IViewRenderer
 	{

@@ -1,7 +1,7 @@
 using System;
 using NUnit.Framework.Constraints;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public class XamlParseExceptionConstraint : ExceptionTypeConstraint
 	{

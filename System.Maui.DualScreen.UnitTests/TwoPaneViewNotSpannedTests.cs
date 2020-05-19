@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.DualScreen.UnitTests
+namespace System.Maui.DualScreen.UnitTests
 {
 	[TestFixture]
 	public partial class TwoPaneViewNotSpannedTests : BaseTestFixture

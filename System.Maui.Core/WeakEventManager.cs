@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 using static System.String;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	class WeakEventManager
 	{

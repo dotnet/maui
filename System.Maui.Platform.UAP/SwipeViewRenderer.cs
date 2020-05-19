@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.ComponentModel;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using WSwipeItems = Microsoft.UI.Xaml.Controls.SwipeItems;
 using WSwipeItem = Microsoft.UI.Xaml.Controls.SwipeItem;
 using WSwipeMode = Microsoft.UI.Xaml.Controls.SwipeMode;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class SwipeViewRenderer : ViewRenderer<SwipeView, WSwipeControl>
 	{
@@ -21,7 +21,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public SwipeViewRenderer()
 		{
-			Xamarin.Forms.SwipeView.VerifySwipeViewFlagEnabled(nameof(SwipeViewRenderer));
+			System.Maui.SwipeView.VerifySwipeViewFlagEnabled(nameof(SwipeViewRenderer));
 			AutoPackage = false;
 		}
 
@@ -137,20 +137,20 @@ namespace Xamarin.Forms.Platform.UWP
 			base.UpdateBackgroundColor();
 		}
 
-		protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
 			if (Control.Parent != null)
 				return base.MeasureOverride(availableSize);
 			else
 			{
 				if (Element == null || availableSize.Width * availableSize.Height == 0)
-					return new Windows.Foundation.Size(0, 0);
+					return new global::Windows.Foundation.Size(0, 0);
 
 				Element.IsInNativeLayout = true;
 
 				double width = Math.Max(0, Element.Width);
 				double height = Math.Max(0, Element.Height);
-				var result = new Windows.Foundation.Size(width, height);
+				var result = new global::Windows.Foundation.Size(width, height);
 
 				if (Control != null)
 				{
@@ -167,7 +167,7 @@ namespace Xamarin.Forms.Platform.UWP
 					h = Math.Max(0, h);
 
 					// SwipeLayout sometimes crashes when Measure if not previously fully loaded into the VisualTree.
-					Control.Loaded += (sender, args) => { Control.Measure(new Windows.Foundation.Size(w, h)); };
+					Control.Loaded += (sender, args) => { Control.Measure(new global::Windows.Foundation.Size(w, h)); };
 				}
 
 				Element.IsInNativeLayout = false;

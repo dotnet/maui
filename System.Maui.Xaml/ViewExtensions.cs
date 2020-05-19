@@ -28,7 +28,7 @@
 using System;
 using System.Reflection;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	public static class Extensions
 	{

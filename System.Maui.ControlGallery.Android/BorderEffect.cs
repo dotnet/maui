@@ -1,6 +1,6 @@
-using Xamarin.Forms.Platform.Android;
+using System.Maui.Platform.Android;
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace System.Maui.ControlGallery.Android
 {
     public class BorderEffect : PlatformEffect
     {

@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 
-namespace Xamarin.Forms.Platform.WPF.Controls
+namespace System.Maui.Platform.WPF.Controls
 {
 	[TemplatePart(Name = "PART_More", Type = typeof(ToggleButton))]
 	[TemplatePart(Name = "PART_Command", Type = typeof(ItemsControl))]

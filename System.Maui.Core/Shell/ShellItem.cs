@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Linq;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[EditorBrowsable(EditorBrowsableState.Always)]
 	public class FlyoutItem : ShellItem

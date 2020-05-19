@@ -1,9 +1,9 @@
-﻿using System.Collections.ObjectModel;
-using Windows.UI.ViewManagement;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation.Peers;
+using System.Collections.ObjectModel;
+using global::Windows.UI.ViewManagement;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Automation.Peers;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class PageRenderer : VisualElementRenderer<Page, FrameworkElement>
 	{

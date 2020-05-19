@@ -1,17 +1,17 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Util;
 using Android.Views;
 using Microsoft.Device.Display;
-using Xamarin.Forms;
-using Xamarin.Forms.DualScreen;
-using Xamarin.Forms.Platform.Android;
+using System.Maui;
+using System.Maui.DualScreen;
+using System.Maui.Platform.Android;
 
 [assembly: Dependency(typeof(DualScreenService.DualScreenServiceImpl))]
 
-namespace Xamarin.Forms.DualScreen
+namespace System.Maui.DualScreen
 {
 	public class DualScreenService
 	{

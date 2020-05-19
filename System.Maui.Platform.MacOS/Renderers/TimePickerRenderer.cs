@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using AppKit;
 using Foundation;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public class TimePickerRenderer : ViewRenderer<TimePicker, NSDatePicker>
 	{

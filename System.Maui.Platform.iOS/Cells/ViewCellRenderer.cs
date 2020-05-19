@@ -1,11 +1,11 @@
 using System;
 using System.ComponentModel;
 using UIKit;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class ViewCellRenderer : CellRenderer
 	{

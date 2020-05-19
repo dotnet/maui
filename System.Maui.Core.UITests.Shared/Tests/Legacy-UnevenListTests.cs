@@ -1,8 +1,8 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using Xamarin.UITest;
 using Xamarin.UITest.iOS;
 
-namespace Xamarin.Forms.Core.UITests
+namespace System.Maui.Core.UITests
 {
 	[TestFixture]
     [Ignore("check if the last one fails")]

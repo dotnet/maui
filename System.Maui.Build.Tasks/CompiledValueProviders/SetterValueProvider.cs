@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-using Xamarin.Forms.Xaml;
-using Xamarin.Forms.Build.Tasks;
+using System.Maui.Xaml;
+using System.Maui.Build.Tasks;
 using System.Xml;
 
-namespace Xamarin.Forms.Core.XamlC
+namespace System.Maui.Core.XamlC
 {
 	class SetterValueProvider : ICompiledValueProvider
 	{
@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Core.XamlC
 				yield break;
 
 			var value = ((string)((ValueNode)valueNode).Value);
-			var setterType = ("Xamarin.Forms.Core", "Xamarin.Forms", "Setter");
+			var setterType = ("System.Maui.Core", "System.Maui", "Setter");
 
 			//push the setter
 			foreach (var instruction in vardefref.VariableDefinition.LoadAs(module.GetTypeDefinition(setterType), module))

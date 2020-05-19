@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using AView = Android.Views.View;
 using AViewGroup = Android.Views.ViewGroup;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal static class ViewGroupExtensions
 	{

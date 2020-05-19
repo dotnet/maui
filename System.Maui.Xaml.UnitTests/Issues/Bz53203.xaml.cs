@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 using NUnit.Framework;
 
-using Xamarin.Forms.Core.UnitTests;
-using Xamarin.Forms;
+using System.Maui.Core.UnitTests;
+using System.Maui;
 
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public enum Bz53203Values
 	{

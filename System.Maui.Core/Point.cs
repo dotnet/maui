@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[DebuggerDisplay("X={X}, Y={Y}")]
 	[TypeConverter(typeof(PointTypeConverter))]

@@ -1,11 +1,11 @@
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.Tizen;
-using Xamarin.Forms.Controls;
+using System.Maui;
+using System.Maui.Platform.Tizen;
+using System.Maui.Controls;
 using ElmSharp;
 using Tizen.Applications;
 using Tizen.NET.MaterialComponents;
 
-namespace Xamarin.Forms.ControlGallery.Tizen
+namespace System.Maui.ControlGallery.Tizen
 {
 	class MainApplication : FormsApplication
 	{
@@ -22,8 +22,8 @@ namespace Xamarin.Forms.ControlGallery.Tizen
 		{
 			var app = new MainApplication();
 			FormsMaps.Init("HERE", "write-your-API-key-here");
-			Forms.SetFlags("CollectionView_Experimental", "Shell_Experimental", "MediaElement_Experimental", "IndicatorView_Experimental");
-			Forms.Init(app);
+			System.Maui.Maui.SetFlags("CollectionView_Experimental", "Shell_Experimental", "MediaElement_Experimental", "IndicatorView_Experimental");
+			System.Maui.Maui.Init(app);
 			FormsMaterial.Init();
 			app.Run(args);
 		}

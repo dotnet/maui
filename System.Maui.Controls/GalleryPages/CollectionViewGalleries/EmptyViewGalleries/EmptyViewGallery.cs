@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.EmptyViewGalleries
+namespace System.Maui.Controls.GalleryPages.CollectionViewGalleries.EmptyViewGalleries
 {
 	internal class EmptyViewGallery : ContentPage
 	{

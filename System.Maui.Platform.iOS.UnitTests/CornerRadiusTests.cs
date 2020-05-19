@@ -1,8 +1,8 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using NUnit.Framework;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui.Platform.iOS;
 
-namespace Xamarin.Forms.Platform.iOS.UnitTests
+namespace System.Maui.Platform.iOS.UnitTests
 {
 	[TestFixture]
 	public class CornerRadiusTests : PlatformTestFixture
@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Platform.iOS.UnitTests
 		}
 
 		[Test, Category("CornerRadius"), Category("Frame")]
-		[Ignore("Will not pass until https://github.com/xamarin/Xamarin.Forms/issues/9265 is fixed")]
+		[Ignore("Will not pass until https://github.com/xamarin/System.Maui/issues/9265 is fixed")]
 		public async Task FrameCornerRadius()
 		{
 			var backgroundColor = Color.CadetBlue;

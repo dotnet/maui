@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.WindowsUniversal.Tests;
-using Xamarin.Forms.Controls.Tests;
+using System.Threading.Tasks;
+using System.Maui;
+using System.Maui.ControlGallery.WindowsUniversal.Tests;
+using System.Maui.Controls.Tests;
 
 [assembly: Dependency(typeof(TestingPlatformService))]
-namespace Xamarin.Forms.ControlGallery.WindowsUniversal.Tests
+namespace System.Maui.ControlGallery.WindowsUniversal.Tests
 {
 	class TestingPlatformService : ITestingPlatformService
 	{

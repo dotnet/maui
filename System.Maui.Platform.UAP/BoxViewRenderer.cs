@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.ComponentModel;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation.Peers;
-using Windows.UI.Xaml.Shapes;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Automation.Peers;
+using global::Windows.UI.Xaml.Shapes;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	[Obsolete("BoxViewRenderer is obsolete as of version 4.6.0. Please use BoxViewBorderRenderer instead.", false)]
-	public class BoxViewRenderer : ViewRenderer<BoxView, Windows.UI.Xaml.Shapes.Rectangle>
+	public class BoxViewRenderer : ViewRenderer<BoxView, global::Windows.UI.Xaml.Shapes.Rectangle>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<BoxView> e)
 		{
@@ -17,12 +17,12 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (Control == null)
 				{
-					var rect = new Windows.UI.Xaml.Shapes.Rectangle
+					var rect = new global::Windows.UI.Xaml.Shapes.Rectangle
 					{
 						DataContext = Element
 					};
 
-					rect.SetBinding(Shape.FillProperty, new Windows.UI.Xaml.Data.Binding { Converter = new ColorConverter(), Path = new PropertyPath("Color") });
+					rect.SetBinding(Shape.FillProperty, new global::Windows.UI.Xaml.Data.Binding { Converter = new ColorConverter(), Path = new PropertyPath("Color") });
 
 					SetNativeControl(rect);
 				}

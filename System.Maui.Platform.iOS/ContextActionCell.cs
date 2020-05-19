@@ -1,15 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Foundation;
 using UIKit;
-using Xamarin.Forms.Platform.iOS.Resources;
+using System.Maui.Platform.iOS.Resources;
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	internal class ContextActionsCell : UITableViewCell, INativeElementView
 	{

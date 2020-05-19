@@ -1,9 +1,9 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage
 	xmlns="http://xamarin.com/schemas/2014/forms"
 			xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			xmlns:coll="clr-namespace:System.Collections.ObjectModel;assembly=mscorlib"
-			x:Class="Xamarin.Forms.Xaml.UnitTests.VisualStateManagerTests">
+			x:Class="System.Maui.Xaml.UnitTests.VisualStateManagerTests">
 	<ContentPage.Resources>
 		<ResourceDictionary>
 			<Style TargetType="Entry" x:Key="CustomDisabledState">

@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[Obsolete("Use Binding.Source=RelativeBindingSource.TemplatedParent")]
 	public sealed class TemplateBinding : BindingBase

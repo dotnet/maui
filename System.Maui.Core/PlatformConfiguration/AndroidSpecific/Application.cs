@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific
+namespace System.Maui.PlatformConfiguration.AndroidSpecific
 {
-	using FormsElement = Forms.Application;
+	using FormsElement = System.Maui.Application;
 
 	public enum WindowSoftInputModeAdjust
 	{

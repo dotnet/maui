@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using CoreGraphics;
 using UIKit;
-using static Xamarin.Forms.IndicatorView;
+using static System.Maui.IndicatorView;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class IndicatorViewRenderer : ViewRenderer<IndicatorView, UIView>
 	{

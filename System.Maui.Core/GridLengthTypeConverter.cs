@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[Xaml.TypeConversion(typeof(GridLength))]
 	public class GridLengthTypeConverter : TypeConverter

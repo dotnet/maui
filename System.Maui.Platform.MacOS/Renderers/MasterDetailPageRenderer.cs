@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Linq;
 using AppKit;
 using CoreGraphics;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public class MasterDetailPageRenderer : NSSplitViewController, IVisualElementRenderer, IEffectControlProvider
 	{
@@ -131,7 +131,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			if (e.PropertyName == "Master" || e.PropertyName == "Detail")
 				UpdateControllers();
-			else if (e.PropertyName == Xamarin.Forms.MasterDetailPage.IsPresentedProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.MasterDetailPage.IsPresentedProperty.PropertyName)
 				UpdateIsPresented();
 		}
 

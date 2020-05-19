@@ -1,9 +1,9 @@
 using System;
 using System.Globalization;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
-	[Xaml.ProvideCompiled ("Xamarin.Forms.Core.XamlC.BoundsTypeConverter")]
+	[Xaml.ProvideCompiled ("System.Maui.Core.XamlC.BoundsTypeConverter")]
 	[Xaml.TypeConversion(typeof(Rectangle))]
 	public sealed class BoundsTypeConverter : TypeConverter
 	{

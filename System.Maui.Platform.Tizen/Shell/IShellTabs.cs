@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using ElmSharp;
 using EColor = ElmSharp.Color;
 using EToolbarItem = ElmSharp.ToolbarItem;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public interface IShellTabs
 	{

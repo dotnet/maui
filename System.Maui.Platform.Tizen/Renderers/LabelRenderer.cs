@@ -1,9 +1,9 @@
-using Xamarin.Forms.Core;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.Tizen.Native;
-using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Label;
+using System.Maui.Core;
+using System.Maui.Internals;
+using System.Maui.Platform.Tizen.Native;
+using Specific = System.Maui.PlatformConfiguration.TizenSpecific.Label;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 
 	public class LabelRenderer : ViewRenderer<Label, Native.Label>
@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				base.SetNativeControl(new Native.Label(Forms.NativeParent));
+				base.SetNativeControl(new Native.Label(System.Maui.Maui.NativeParent));
 			}
 			base.OnElementChanged(e);
 		}

@@ -5,11 +5,11 @@ using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public static class ToolbarItemExtensions
 	{
-		public static UIKit.UIBarButtonItem ToUIBarButtonItem(this Xamarin.Forms.ToolbarItem item, bool forceName)
+		public static UIKit.UIBarButtonItem ToUIBarButtonItem(this System.Maui.ToolbarItem item, bool forceName)
 		{
 			return ToUIBarButtonItem(item, false, false);
 		}

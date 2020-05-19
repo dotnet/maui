@@ -1,14 +1,14 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 using System;
 
 #if UITEST
 using Xamarin.UITest;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Shell)]
@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				Items =
 				{
-					new Forms.ShellContent
+					new System.Maui.ShellContent
 					{
 						Content = new ContentPage
 						{

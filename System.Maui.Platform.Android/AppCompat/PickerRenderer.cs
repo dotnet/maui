@@ -9,7 +9,7 @@ using Android.Widget;
 using Android.Text;
 using Android.Text.Style;
 
-namespace Xamarin.Forms.Platform.Android.AppCompat
+namespace System.Maui.Platform.Android.AppCompat
 {
 	public abstract class PickerRendererBase<TControl> : ViewRenderer<Picker, TControl>, IPickerRenderer
 		where TControl : global::Android.Views.View
@@ -166,7 +166,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		protected void UpdateCharacterSpacing()
 		{
-			if (Forms.IsLollipopOrNewer)
+			if (System.Maui.Maui.IsLollipopOrNewer)
 			{
 				EditText.LetterSpacing = Element.CharacterSpacing.ToEm();
 			}

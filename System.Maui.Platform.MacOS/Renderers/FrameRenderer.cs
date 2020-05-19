@@ -1,8 +1,8 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Drawing;
 using AppKit;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public class FrameRenderer : VisualElementRenderer<Frame>
 	{
@@ -19,9 +19,9 @@ namespace Xamarin.Forms.Platform.MacOS
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName ||
-			    e.PropertyName == Xamarin.Forms.Frame.BorderColorProperty.PropertyName ||
-				e.PropertyName == Xamarin.Forms.Frame.HasShadowProperty.PropertyName ||
-				e.PropertyName == Xamarin.Forms.Frame.CornerRadiusProperty.PropertyName)
+			    e.PropertyName == System.Maui.Frame.BorderColorProperty.PropertyName ||
+				e.PropertyName == System.Maui.Frame.HasShadowProperty.PropertyName ||
+				e.PropertyName == System.Maui.Frame.CornerRadiusProperty.PropertyName)
 				SetupLayer();
 		}
 

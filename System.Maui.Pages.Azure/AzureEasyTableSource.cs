@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.WindowsAzure.MobileServices;
 using Newtonsoft.Json.Linq;
 
-namespace Xamarin.Forms.Pages.Azure
+namespace System.Maui.Pages.Azure
 {
 	public class AzureEasyTableSource : AzureSource
 	{

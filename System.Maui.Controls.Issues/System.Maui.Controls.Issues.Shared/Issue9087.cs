@@ -1,18 +1,18 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.CustomAttributes;
+using System.Maui.Internals;
+using System.Maui.CustomAttributes;
 using System.ComponentModel;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 using CategoryAttribute = NUnit.Framework.CategoryAttribute;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Issue(IssueTracker.Github, 9087, 
 		"[Bug] Collection View items don't load bindable properties values inside OnElementChanged", PlatformAffected.All)]

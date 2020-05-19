@@ -1,11 +1,11 @@
-﻿using Gtk;
+using Gtk;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using System.Maui.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Cells
+namespace System.Maui.Platform.GTK.Cells
 {
 	public abstract class CellBase : EventBox
 	{

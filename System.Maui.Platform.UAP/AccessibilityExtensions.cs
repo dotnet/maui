@@ -1,8 +1,8 @@
-﻿using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation.Peers;
-using NativeAutomationProperties = Windows.UI.Xaml.Automation.AutomationProperties;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Automation.Peers;
+using NativeAutomationProperties = global::Windows.UI.Xaml.Automation.AutomationProperties;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public static class AccessibilityExtensions
 	{

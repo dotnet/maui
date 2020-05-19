@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Windows.UI.Xaml;
-using Xamarin.Forms.Internals;
+using global::Windows.UI.Xaml;
+using System.Maui.Internals;
 using static System.String;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public static class NativeBindingExtensions
 	{

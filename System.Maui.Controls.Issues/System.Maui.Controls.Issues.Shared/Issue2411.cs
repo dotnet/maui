@@ -1,19 +1,19 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
 #if UITEST
 using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
@@ -50,7 +50,7 @@ namespace Xamarin.Forms.Controls.Issues
             RunningApp.WaitForElement(q => q.Marked("99 99 99 99 99 99"));
 
             var listViewBound = RunningApp.Query(q => q.Marked("listView"))[0].Rect;
-            Xamarin.Forms.Core.UITests.Gestures.ScrollForElement(RunningApp, "* marked:'0 0 0 0 0 0'", new Xamarin.Forms.Core.UITests.Drag(listViewBound, Xamarin.Forms.Core.UITests.Drag.Direction.TopToBottom, Xamarin.Forms.Core.UITests.Drag.DragLength.Long));
+            System.Maui.Core.UITests.Gestures.ScrollForElement(RunningApp, "* marked:'0 0 0 0 0 0'", new System.Maui.Core.UITests.Drag(listViewBound, System.Maui.Core.UITests.Drag.Direction.TopToBottom, System.Maui.Core.UITests.Drag.DragLength.Long));
             RunningApp.Screenshot("Scrolled to Top");
 
             RunningApp.Tap(q => q.Marked("Crash in ScrollToPosition.End"));

@@ -1,8 +1,8 @@
-﻿using System.Collections;
+using System.Collections;
 using NUnit.Framework;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Platform.Android.UnitTests
+namespace System.Maui.Platform.Android.UnitTests
 {
 	[TestFixture]
 	public class TranslationTests : PlatformTestFixture

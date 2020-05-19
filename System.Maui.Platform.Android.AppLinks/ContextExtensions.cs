@@ -1,7 +1,7 @@
 using Android.Content;
 using AActivity = Android.App.Activity;
 
-namespace Xamarin.Forms.Platform.Android.AppLinks
+namespace System.Maui.Platform.Android.AppLinks
 {
 	internal static class ContextExtensions
 	{

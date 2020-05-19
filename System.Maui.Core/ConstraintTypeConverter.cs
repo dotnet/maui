@@ -1,9 +1,9 @@
 using System;
 using System.Globalization;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
-	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.ConstraintTypeConverter")]
+	[Xaml.ProvideCompiled("System.Maui.Core.XamlC.ConstraintTypeConverter")]
 	[Xaml.TypeConversion(typeof(Constraint))]
 	public class ConstraintTypeConverter : TypeConverter
 	{

@@ -1,6 +1,6 @@
-﻿using ElmSharp;
+using ElmSharp;
 
-namespace Xamarin.Forms.Platform.Tizen.Watch
+namespace System.Maui.Platform.Tizen.Watch
 {
 	public class ShellContentRenderer : IShellItemRenderer
 	{

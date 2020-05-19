@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,7 +11,7 @@ using NUnit.Framework;
 using System.Diagnostics;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1683, "Auto Capitalization Implementation")]

@@ -1,13 +1,13 @@
-﻿using System.Linq;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
+using System.Linq;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Media;
 
-using WContentPresenter = Windows.UI.Xaml.Controls.ContentPresenter;
+using WContentPresenter = global::Windows.UI.Xaml.Controls.ContentPresenter;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	public class FormsButton : Windows.UI.Xaml.Controls.Button
+	public class FormsButton : global::Windows.UI.Xaml.Controls.Button
 	{
 		public static readonly DependencyProperty BorderRadiusProperty = DependencyProperty.Register(nameof(BorderRadius), typeof(int), typeof(FormsButton),
 			new PropertyMetadata(default(int), OnBorderRadiusChanged));
@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Platform.UWP
 			new PropertyMetadata(default(Brush), OnBackgroundColorChanged));
 
 		WContentPresenter _contentPresenter;
-		Windows.UI.Xaml.Controls.Grid _rootGrid;
+		global::Windows.UI.Xaml.Controls.Grid _rootGrid;
 
 		public Brush BackgroundColor
 		{
@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Platform.UWP
 			base.OnApplyTemplate();
 
 			_contentPresenter = GetTemplateChild("ContentPresenter") as WContentPresenter;
-			_rootGrid = GetTemplateChild("RootGrid") as Windows.UI.Xaml.Controls.Grid;
+			_rootGrid = GetTemplateChild("RootGrid") as global::Windows.UI.Xaml.Controls.Grid;
 
 			UpdateBackgroundColor();
 			UpdateBorderRadius();
@@ -76,7 +76,7 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateBorderRadius()
 		{
 			var radius = BorderRadius == -1 ? 0 : BorderRadius;
-			var cornerRadius = new Windows.UI.Xaml.CornerRadius(radius);
+			var cornerRadius = new global::Windows.UI.Xaml.CornerRadius(radius);
 			if (_contentPresenter != null)						
 				_contentPresenter.CornerRadius = cornerRadius;				
 			

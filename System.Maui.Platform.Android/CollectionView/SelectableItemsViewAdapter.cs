@@ -9,7 +9,7 @@ using Android.Support.V7.Widget;
 #endif
 using Object = Java.Lang.Object;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class SelectableItemsViewAdapter<TItemsView, TItemsSource> : StructuredItemsViewAdapter<TItemsView, TItemsSource> 
 		where TItemsView : SelectableItemsView
@@ -41,7 +41,7 @@ namespace Xamarin.Forms.Platform.Android
 			selectable.IsSelected = PositionIsSelected(position);
 		}
 
-		public override void OnViewRecycled(Object holder)
+		public override void OnViewRecycled(Java.Lang.Object holder)
 		{
 			if (holder is SelectableViewHolder selectable)
 			{

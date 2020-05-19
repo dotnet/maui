@@ -1,7 +1,7 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras">
+<Project Sdk="MSBuild.Sdk.Extras">
   <PropertyGroup>
-    <RootNamespace>Xamarin.Forms.Maps.Android</RootNamespace>
-    <AssemblyName>Xamarin.Forms.Maps.Android</AssemblyName>
+    <RootNamespace>System.Maui.Maps.Android</RootNamespace>
+    <AssemblyName>System.Maui.Maps.Android</AssemblyName>
     <TargetFrameworks>$(AndroidTargetFrameworks)</TargetFrameworks>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -14,13 +14,13 @@
     <OutputPath>bin\$(Configuration)\$(TargetFramework)</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj">
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
+    <ProjectReference Include="..\System.Maui.Maps\System.Maui.Maps.csproj">
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Platform.Android.FormsViewGroup\Xamarin.Forms.Platform.Android.FormsViewGroup.csproj">
+    <ProjectReference Include="..\System.Maui.Platform.Android.FormsViewGroup\System.Maui.Platform.Android.FormsViewGroup.csproj">
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj">
+    <ProjectReference Include="..\System.Maui.Platform.Android\System.Maui.Platform.Android.csproj">
     </ProjectReference>
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'MonoAndroid10.0'">

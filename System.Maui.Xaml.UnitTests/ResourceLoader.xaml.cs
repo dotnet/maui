@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public partial class ResourceLoader : ContentPage
 	{
@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			{
 				Device.PlatformServices = null;
 #pragma warning disable CS0618 // Type or member is obsolete
-				Xamarin.Forms.Internals.ResourceLoader.ResourceProvider = null;
+				System.Maui.Internals.ResourceLoader.ResourceProvider = null;
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 
@@ -41,14 +41,14 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.That(layout.label.TextColor, Is.EqualTo(Color.FromHex("#368F95")));
 
 #pragma warning disable CS0618 // Type or member is obsolete
-				Xamarin.Forms.Internals.ResourceLoader.ResourceProvider = (asmName, path) => {
+				System.Maui.Internals.ResourceLoader.ResourceProvider = (asmName, path) => {
 #pragma warning restore CS0618 // Type or member is obsolete
 					if (path == "ResourceLoader.xaml")
 						return @"
 <ContentPage 
 	xmlns=""http://xamarin.com/schemas/2014/forms""
 	xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-	x:Class=""Xamarin.Forms.Xaml.UnitTests.ResourceLoader"" >
+	x:Class=""System.Maui.Xaml.UnitTests.ResourceLoader"" >
   
 	<Label x:Name = ""label"" TextColor = ""Pink"" />
 </ContentPage >";
@@ -64,16 +64,16 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				var layout = new ResourceLoader(useCompiledXaml);
 				Assert.That(layout.label.TextColor, Is.EqualTo(Color.FromHex("#368F95")));
 				object instance = null;
-				Xamarin.Forms.Internals.ResourceLoader.ResourceProvider2 = (rlq) => {
+				System.Maui.Internals.ResourceLoader.ResourceProvider2 = (rlq) => {
 					if (rlq.ResourcePath == "ResourceLoader.xaml") {
 						instance = rlq.Instance;
-						return new Forms.Internals.ResourceLoader.ResourceLoadingResponse
+						return new System.Maui.Internals.ResourceLoader.ResourceLoadingResponse
 						{
 							ResourceContent = @"
 <ContentPage 
 	xmlns=""http://xamarin.com/schemas/2014/forms""
 	xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-	x:Class=""Xamarin.Forms.Xaml.UnitTests.ResourceLoader""
+	x:Class=""System.Maui.Xaml.UnitTests.ResourceLoader""
 	xmlns:d=""http://xamarin.com/schemas/2014/forms/design""
 	xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006""
 	mc:Ignorable=""d"" >
@@ -97,15 +97,15 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				var layout = new ResourceLoader(useCompiledXaml);
 				Assert.That(layout.label.TextColor, Is.EqualTo(Color.FromHex("#368F95")));
 
-				Xamarin.Forms.Internals.ResourceLoader.ResourceProvider2 = (rlq) => {
+				System.Maui.Internals.ResourceLoader.ResourceProvider2 = (rlq) => {
 					if (rlq.ResourcePath == "ResourceLoader.xaml")
-						return new Forms.Internals.ResourceLoader.ResourceLoadingResponse {
+						return new System.Maui.Internals.ResourceLoader.ResourceLoadingResponse {
 							UseDesignProperties = true,
 							ResourceContent = @"
 <ContentPage 
 	xmlns=""http://xamarin.com/schemas/2014/forms""
 	xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-	x:Class=""Xamarin.Forms.Xaml.UnitTests.ResourceLoader""
+	x:Class=""System.Maui.Xaml.UnitTests.ResourceLoader""
 	xmlns:d=""http://xamarin.com/schemas/2014/forms/design""
 	xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006""
 	mc:Ignorable=""d"" >
@@ -127,7 +127,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.That(layout.label.TextColor, Is.EqualTo(Color.FromHex("#368F95")));
 
 #pragma warning disable CS0618 // Type or member is obsolete
-				Xamarin.Forms.Internals.ResourceLoader.ResourceProvider = (asmName, path) => {
+				System.Maui.Internals.ResourceLoader.ResourceProvider = (asmName, path) => {
 #pragma warning restore CS0618 // Type or member is obsolete
 					if (path == "AppResources/Colors.xaml")
 						return @"

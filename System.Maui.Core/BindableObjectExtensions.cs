@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq.Expressions;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public static class BindableObjectExtensions
 	{

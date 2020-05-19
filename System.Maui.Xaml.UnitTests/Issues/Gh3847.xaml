@@ -1,8 +1,8 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Xamarin.Forms.Xaml.UnitTests.Gh3847"
-			 xmlns:local="clr-namespace:Xamarin.Forms.Xaml.UnitTests">
+             x:Class="System.Maui.Xaml.UnitTests.Gh3847"
+			 xmlns:local="clr-namespace:System.Maui.Xaml.UnitTests">
 	<ContentPage.Resources>
 		<ControlTemplate x:Key="CustomControlTemplate">
 			<Label Text="{Binding Source={RelativeSource TemplatedParent}, Path=StyleId}"/>

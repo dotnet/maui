@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using CoreGraphics;
 using Foundation;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public abstract class ItemsViewCell : UICollectionViewCell
 	{

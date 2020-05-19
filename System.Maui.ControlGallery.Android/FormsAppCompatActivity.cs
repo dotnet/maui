@@ -1,18 +1,18 @@
-﻿#if !FORMS_APPLICATION_ACTIVITY && !PRE_APPLICATION_CLASS
+#if !FORMS_APPLICATION_ACTIVITY && !PRE_APPLICATION_CLASS
 
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using Java.Interop;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.Android;
-using Xamarin.Forms.Platform.Android.AppLinks;
+using System.Maui.Controls;
+using System.Maui.Controls.Issues;
+using System.Maui.Platform.Android;
+using System.Maui.Platform.Android.AppLinks;
 using System.Linq;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.ControlGallery.Android
+namespace System.Maui.ControlGallery.Android
 {
 	// This is the AppCompat version of Activity1
 
@@ -45,23 +45,23 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 #if TEST_EXPERIMENTAL_RENDERERS
 			// Fake_Flag is here so we can test for flag initialization issues
-			Forms.SetFlags("Fake_Flag"/*, "CollectionView_Experimental", "Shell_Experimental"*/); 
+			System.Maui.Maui.SetFlags("Fake_Flag"/*, "CollectionView_Experimental", "Shell_Experimental"*/); 
 #else
-			Forms.SetFlags("UseLegacyRenderers", "SwipeView_Experimental", "MediaElement_Experimental", "AppTheme_Experimental");
+			System.Maui.Maui.SetFlags("UseLegacyRenderers", "SwipeView_Experimental", "MediaElement_Experimental", "AppTheme_Experimental");
 #endif
-			Forms.Init(this, bundle);
+			System.Maui.Maui.Init(this, bundle);
 
 			FormsMaps.Init(this, bundle);
 			FormsMaterial.Init(this, bundle);
 			AndroidAppLinks.Init(this);
-			Forms.ViewInitialized += (sender, e) => {
+			System.Maui.Maui.ViewInitialized += (sender, e) => {
 				//				if (!string.IsNullOrWhiteSpace(e.View.StyleId)) {
 				//					e.NativeView.ContentDescription = e.View.StyleId;
 				//				}
 			};
 
 			// uncomment to verify turning off title bar works. This is not intended to be dynamic really.
-			//Forms.SetTitleBarVisibility (AndroidTitleBarVisibility.Never);
+			//System.Maui.SetTitleBarVisibility (AndroidTitleBarVisibility.Never);
 
 			if (RestartAppTest.App != null)
 			{

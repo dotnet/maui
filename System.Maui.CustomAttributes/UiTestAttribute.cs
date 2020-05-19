@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 
-namespace Xamarin.Forms.CustomAttributes
+namespace System.Maui.CustomAttributes
 {
 	[Conditional ("DEBUG")]
 	[AttributeUsage (

@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Specialized;
-using Xamarin.Forms.Platform;
+using System.Maui.Platform;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[ContentProperty(nameof(IndicatorLayout))]
 	[RenderWith(typeof(_IndicatorViewRenderer))]

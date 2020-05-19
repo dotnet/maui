@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using Foundation;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class TabletShellFlyoutRenderer : UISplitViewController, IShellFlyoutRenderer, IFlyoutBehaviorObserver
 	{
@@ -104,7 +104,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			bool update = View.UpdateFlowDirection(_context.Shell);
 			update = FlyoutContent.ViewController.View.UpdateFlowDirection(_context.Shell) == true || update;
-			if (update && readdViews && Forms.IsiOS13OrNewer && View != null)
+			if (update && readdViews && System.Maui.Maui.IsiOS13OrNewer && View != null)
 			{
 				var view = View.Superview;
 				View.RemoveFromSuperview();

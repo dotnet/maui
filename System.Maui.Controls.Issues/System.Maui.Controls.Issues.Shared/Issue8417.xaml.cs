@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Collections.Generic;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
@@ -10,7 +10,7 @@ using NUnit.Framework;
 using Xamarin.UITest.iOS;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 8417, "(Android) CarouselView Java.Lang.IllegalStateException", PlatformAffected.Android)]

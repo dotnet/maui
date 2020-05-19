@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Xml;
-using Xamarin.Forms.Xaml.Internals;
+using System.Maui.Xaml.Internals;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	class ExpandMarkupsVisitor : IXamlNodeVisitor
 	{

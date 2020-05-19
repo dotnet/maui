@@ -1,10 +1,10 @@
-﻿using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using UWPApp = Windows.UI.Xaml.Application;
-using UWPControls = Windows.UI.Xaml.Controls;
-using WScrollMode = Windows.UI.Xaml.Controls.ScrollMode;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using UWPApp = global::Windows.UI.Xaml.Application;
+using UWPControls = global::Windows.UI.Xaml.Controls;
+using WScrollMode = global::Windows.UI.Xaml.Controls.ScrollMode;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	internal class FormsGridView : GridView, IEmptyView
 	{
@@ -130,7 +130,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
+		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
 			if (_formsEmptyView != null)
 			{

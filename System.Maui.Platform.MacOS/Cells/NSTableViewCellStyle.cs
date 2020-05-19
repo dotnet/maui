@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	internal enum NSTableViewCellStyle
 	{

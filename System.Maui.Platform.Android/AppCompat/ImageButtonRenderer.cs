@@ -8,15 +8,15 @@ using Android.Support.V7.Widget;
 #endif
 using AView = Android.Views.View;
 using Android.Views;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using AColor = Android.Graphics.Color;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
 using Android.Graphics.Drawables;
 using Android.Graphics;
-using Xamarin.Forms.Platform.Android.FastRenderers;
+using System.Maui.Platform.Android.FastRenderers;
 using Android.OS;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class ImageButtonRenderer :
 		AppCompatImageButton,
@@ -212,7 +212,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (Drawable != null)
 			{
-				if ((int)Forms.SdkInt >= 18 && backgroundDrawable != null)
+				if ((int)System.Maui.Maui.SdkInt >= 18 && backgroundDrawable != null)
 				{
 					var outlineBounds = backgroundDrawable.GetPaddingBounds(canvas.Width, canvas.Height);
 					var width = (float)canvas.Width;

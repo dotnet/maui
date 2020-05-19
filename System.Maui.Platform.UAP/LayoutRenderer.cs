@@ -1,11 +1,11 @@
-﻿using System.ComponentModel;
-using Windows.Foundation;
-using Windows.UI;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation.Peers;
-using Windows.UI.Xaml.Media;
+using System.ComponentModel;
+using global::Windows.Foundation;
+using global::Windows.UI;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Automation.Peers;
+using global::Windows.UI.Xaml.Media;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class LayoutRenderer : ViewRenderer<Layout, FrameworkElement>
 	{

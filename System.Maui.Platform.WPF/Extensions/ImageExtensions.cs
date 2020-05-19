@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using WImageSource = System.Windows.Media.ImageSource;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public static class ImageExtensions
 	{

@@ -2,7 +2,7 @@ using Android.Content;
 using Android.Views;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal class ScrollViewContainer : ViewGroup
 	{

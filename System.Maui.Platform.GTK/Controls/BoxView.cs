@@ -1,8 +1,8 @@
-﻿using Cairo;
+using Cairo;
 using System;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using System.Maui.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Controls
+namespace System.Maui.Platform.GTK.Controls
 {
 	public class BoxView : GtkFormsContainer
 	{

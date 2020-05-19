@@ -2,10 +2,10 @@ using System;
 using System.ComponentModel;
 using Foundation;
 using UIKit;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using System.Maui.PlatformConfiguration.iOSSpecific;
 using RectangleF = CoreGraphics.CGRect;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class TimePickerRenderer : TimePickerRendererBase<UITextField>
 	{

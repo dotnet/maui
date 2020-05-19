@@ -1,9 +1,9 @@
 using System;
 using NUnit.Framework;
 using Mono.Cecil;
-using Xamarin.Forms.Build.Tasks;
+using System.Maui.Build.Tasks;
 
-namespace Xamarin.Forms.XamlcUnitTests
+namespace System.Maui.XamlcUnitTests
 {
 	[TestFixture]
 	public class ModuleDefinitionExtensionsTests

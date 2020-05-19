@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 
-namespace Xamarin.Forms.Maps
+namespace System.Maui.Maps
 {
 	public class Pin : Element
 	{

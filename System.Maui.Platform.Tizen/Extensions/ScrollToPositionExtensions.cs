@@ -1,6 +1,6 @@
 using EScrollToPosition = ElmSharp.ScrollToPosition;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public static class ScrollToPositionExtensions
 	{

@@ -1,10 +1,10 @@
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
+using System.Maui;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
-	// This test covers the issue reported in https://github.com/xamarin/Xamarin.Forms/issues/2763
+	// This test covers the issue reported in https://github.com/xamarin/System.Maui/issues/2763
 
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2763,
@@ -88,10 +88,10 @@ namespace Xamarin.Forms.Controls.Issues
 				Maximum = 100.0,
 			};
 
-			stackLayout.SetBinding(Forms.Layout.PaddingProperty, new Binding() { Path = "Value", Source = paddingSlider });
-			contentView.SetBinding(Forms.Layout.PaddingProperty, new Binding() { Path = "Value", Source = paddingSlider });
-			flex.SetBinding(Forms.Layout.PaddingProperty, new Binding() { Path = "Value", Source = paddingSlider });
-			stackLayout2.SetBinding(Forms.Layout.PaddingProperty, new Binding() { Path = "Value", Source = paddingSlider });
+			stackLayout.SetBinding(System.Maui.Layout.PaddingProperty, new Binding() { Path = "Value", Source = paddingSlider });
+			contentView.SetBinding(System.Maui.Layout.PaddingProperty, new Binding() { Path = "Value", Source = paddingSlider });
+			flex.SetBinding(System.Maui.Layout.PaddingProperty, new Binding() { Path = "Value", Source = paddingSlider });
+			stackLayout2.SetBinding(System.Maui.Layout.PaddingProperty, new Binding() { Path = "Value", Source = paddingSlider });
 
 			// Build the page.
 			this.Padding = new Thickness(20);

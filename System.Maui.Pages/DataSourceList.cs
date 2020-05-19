@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 
-namespace Xamarin.Forms.Pages
+namespace System.Maui.Pages
 {
 	internal class DataSourceList : IList<IDataItem>, IReadOnlyList<IDataItem>, INotifyCollectionChanged
 	{

@@ -8,10 +8,10 @@ using Android.Views;
 using Android.Widget;
 using AView = Android.Views.View;
 using AListView = Android.Widget.ListView;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using System.Collections;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal class ListViewAdapter : CellAdapter
 	{

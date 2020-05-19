@@ -1,9 +1,9 @@
 using System;
 using ElmSharp;
 using ESize = ElmSharp.Size;
-using TSpan = Xamarin.Forms.Platform.Tizen.Native.Span;
+using TSpan = System.Maui.Platform.Tizen.Native.Span;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class RadioButtonRenderer : ViewRenderer<RadioButton, Radio>
 	{
@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Radio(Forms.NativeParent) { StateValue = 1 });
+				SetNativeControl(new Radio(System.Maui.Maui.NativeParent) { StateValue = 1 });
 				Control.ValueChanged += OnValueChanged;
 			}
 			base.OnElementChanged(e);

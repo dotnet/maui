@@ -2,9 +2,9 @@ using System.Collections.Generic;
 
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Xamarin.Forms.Build.Tasks;
+using System.Maui.Build.Tasks;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	interface ICompiledValueProvider
 	{

@@ -16,7 +16,7 @@ using Android.Support.V4.App;
 using Android.Support.V7.App;
 #endif
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public static class ContextExtensions
 	{

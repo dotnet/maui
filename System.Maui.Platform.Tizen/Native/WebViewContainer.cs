@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using ElmSharp;
 using TWebView = Tizen.WebView.WebView;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	public class WebViewContainer : ElmSharp.Layout
 	{

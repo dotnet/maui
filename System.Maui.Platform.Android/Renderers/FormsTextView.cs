@@ -4,7 +4,7 @@ using Android.Runtime;
 using Android.Util;
 using Android.Widget;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class FormsTextView : TextView
 	{

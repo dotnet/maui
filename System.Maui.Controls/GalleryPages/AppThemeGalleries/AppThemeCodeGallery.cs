@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms.Controls.GalleryPages.AppThemeGalleries
+namespace System.Maui.Controls.GalleryPages.AppThemeGalleries
 {
 	public class AppThemeCodeGallery : ContentPage
 	{

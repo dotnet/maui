@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.ComponentModel;
@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using CategoryAttribute = NUnit.Framework.CategoryAttribute;
 using DescriptionAttribute = NUnit.Framework.DescriptionAttribute;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class BindingUnitTests
@@ -1590,8 +1590,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That (log.Messages.Count, Is.EqualTo (1), "An error was not logged");
 			Assert.That (log.Messages[0], Does.Contain(String.Format (BindingExpression.PropertyNotFoundErrorMessage,
 				"Text2",
-				"Xamarin.Forms.Core.UnitTests.BindingUnitTests+DifferentViewModel",
-				"Xamarin.Forms.Core.UnitTests.MockBindable",
+				"System.Maui.Core.UnitTests.BindingUnitTests+DifferentViewModel",
+				"System.Maui.Core.UnitTests.MockBindable",
 				"Text")));
 
 			Assert.That (((DifferentViewModel) bindable.BindingContext).Text, Is.EqualTo (MockBindable.TextProperty.DefaultValue));
@@ -1609,8 +1609,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That (log.Messages.Count, Is.Not.GreaterThan (1), "Too many errors were logged");
 			Assert.That (log.Messages[0], Does.Contain(String.Format (BindingExpression.PropertyNotFoundErrorMessage,
 				"Text",
-				"Xamarin.Forms.Core.UnitTests.BindingUnitTests+EmptyViewModel",
-				"Xamarin.Forms.Core.UnitTests.MockBindable",
+				"System.Maui.Core.UnitTests.BindingUnitTests+EmptyViewModel",
+				"System.Maui.Core.UnitTests.MockBindable",
 				"Text")));
 		}
 
@@ -1623,8 +1623,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That (log.Messages.Count, Is.EqualTo (1), "An error was not logged");
 			Assert.That (log.Messages[0], Does.Contain(String.Format (BindingExpression.PropertyNotFoundErrorMessage,
 				"Text",
-				"Xamarin.Forms.Core.UnitTests.BindingUnitTests+DifferentViewModel",
-				"Xamarin.Forms.Core.UnitTests.MockBindable",
+				"System.Maui.Core.UnitTests.BindingUnitTests+DifferentViewModel",
+				"System.Maui.Core.UnitTests.MockBindable",
 				"Text")));
 
 			Assert.That (() => bindable.SetValueCore (MockBindable.TextProperty, "foo"), Throws.Nothing);
@@ -1639,8 +1639,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That (log.Messages.Count, Is.EqualTo (1), "An error was not logged");
 			Assert.That (log.Messages[0], Does.Contain(String.Format (BindingExpression.PropertyNotFoundErrorMessage,
 				"PrivateSetter",
-				"Xamarin.Forms.Core.UnitTests.BindingUnitTests+DifferentViewModel",
-				"Xamarin.Forms.Core.UnitTests.MockBindable",
+				"System.Maui.Core.UnitTests.BindingUnitTests+DifferentViewModel",
+				"System.Maui.Core.UnitTests.MockBindable",
 				"Text")));
 
 			Assert.That (() => bindable.SetValueCore (MockBindable.TextProperty, "foo"), Throws.Nothing);
@@ -1648,8 +1648,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That (log.Messages.Count, Is.EqualTo (2), "An error was not logged");
 			Assert.That (log.Messages[1], Does.Contain(String.Format (BindingExpression.PropertyNotFoundErrorMessage,
 				"PrivateSetter",
-				"Xamarin.Forms.Core.UnitTests.BindingUnitTests+DifferentViewModel",
-				"Xamarin.Forms.Core.UnitTests.MockBindable",
+				"System.Maui.Core.UnitTests.BindingUnitTests+DifferentViewModel",
+				"System.Maui.Core.UnitTests.MockBindable",
 				"Text")));
 		}
 
@@ -1662,8 +1662,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That (log.Messages.Count, Is.EqualTo (1), "An error was not logged");
 			Assert.That (log.Messages[0], Does.Contain(String.Format (BindingExpression.PropertyNotFoundErrorMessage,
 				"MissingProperty",
-				"Xamarin.Forms.Core.UnitTests.MockViewModel",
-				"Xamarin.Forms.Core.UnitTests.MockBindable",
+				"System.Maui.Core.UnitTests.MockViewModel",
+				"System.Maui.Core.UnitTests.MockBindable",
 				"Text")));
 		}
 
@@ -1690,8 +1690,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That (log.Messages.Count, Is.EqualTo (1), "An error was not logged");
 			Assert.That (log.Messages[0], Does.Contain(String.Format (BindingExpression.PropertyNotFoundErrorMessage,
 				"MissingProperty",
-				"Xamarin.Forms.Core.UnitTests.BindingBaseUnitTests+ComplexMockViewModel",
-				"Xamarin.Forms.Core.UnitTests.MockBindable",
+				"System.Maui.Core.UnitTests.BindingBaseUnitTests+ComplexMockViewModel",
+				"System.Maui.Core.UnitTests.MockBindable",
 				"Text")));
 
 			Assert.That (bindable.Text, Is.EqualTo (MockBindable.TextProperty.DefaultValue));
@@ -2222,7 +2222,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		//https://github.com/xamarin/Xamarin.Forms/issues/3467
+		//https://github.com/xamarin/System.Maui/issues/3467
 		public void TargetNullValueIgnoredWhenBindingIsResolved()
 		{
 			var bindable = new MockBindable();
@@ -2245,7 +2245,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		//https://github.com/xamarin/Xamarin.Forms/issues/3994
+		//https://github.com/xamarin/System.Maui/issues/3994
 		public void INPCOnBindingWithSource()
 		{
 			var page = new ContentPage {Title = "Foo"};

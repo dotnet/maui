@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using CoreGraphics;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class FormsCheckBox : UIButton
 	{

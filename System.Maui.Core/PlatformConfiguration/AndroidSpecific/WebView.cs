@@ -1,7 +1,7 @@
-﻿
-namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific
+
+namespace System.Maui.PlatformConfiguration.AndroidSpecific
 {
-	using FormsElement = Forms.WebView;
+	using FormsElement = System.Maui.WebView;
 
 	public enum MixedContentHandling
 	{

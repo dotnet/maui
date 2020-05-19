@@ -1,7 +1,7 @@
 using System;
-using Xamarin.Forms.Platform;
+using System.Maui.Platform;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[RenderWith(typeof(_CarouselPageRenderer))]
 	public class CarouselPage : MultiPage<ContentPage>, IElementConfiguration<CarouselPage>

@@ -1,6 +1,6 @@
-﻿using ESize = ElmSharp.Size;
+using ESize = ElmSharp.Size;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	/// <summary>
 	/// Interface of the controls which can measure their size taking into

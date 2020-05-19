@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using ElmSharp;
 using Tizen.NET.MaterialComponents;
-using Xamarin.Forms;
-using Xamarin.Forms.Material.Tizen;
-using Xamarin.Forms.Platform.Tizen;
-using Xamarin.Forms.Platform.Tizen.Native;
+using System.Maui;
+using System.Maui.Material.Tizen;
+using System.Maui.Platform.Tizen;
+using System.Maui.Platform.Tizen.Native;
 using EBox = ElmSharp.Box;
 using EColor = ElmSharp.Color;
 
 [assembly: ExportRenderer(typeof(Stepper), typeof(MaterialStepperRenderer), new[] { typeof(VisualMarker.MaterialVisual) })]
-namespace Xamarin.Forms.Material.Tizen
+namespace System.Maui.Material.Tizen
 {
 	public class MaterialStepperRenderer : ViewRenderer<Stepper, EBox>
 	{
@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Material.Tizen
 		{
 			if (Control == null)
 			{
-				var outter = new EBox(Forms.NativeParent)
+				var outter = new EBox(System.Maui.Maui.NativeParent)
 				{
 					AlignmentX = -1,
 					AlignmentY = -1,
@@ -47,13 +47,13 @@ namespace Xamarin.Forms.Material.Tizen
 				outter.Show();
 				outter.SetLayoutCallback(OnLayout);
 
-				_borderL = new BorderRectangle(Forms.NativeParent);
+				_borderL = new BorderRectangle(System.Maui.Maui.NativeParent);
 				_borderL.Show();
 				_borderL.SetRadius(radius);
 				_borderL.BorderWidth = borderWidth;
 				_borderL.Color = defaultColor;
 
-				_buttonL = new MButton(Forms.NativeParent)
+				_buttonL = new MButton(System.Maui.Maui.NativeParent)
 				{
 					BackgroundColor = EColor.Transparent,
 					Text = "<span color='#000000'>-</span>",
@@ -65,13 +65,13 @@ namespace Xamarin.Forms.Material.Tizen
 				outter.PackEnd(_borderL);
 				outter.PackEnd(_buttonL);
 
-				_borderR = new BorderRectangle(Forms.NativeParent);
+				_borderR = new BorderRectangle(System.Maui.Maui.NativeParent);
 				_borderR.Show();
 				_borderR.SetRadius(radius);
 				_borderR.BorderWidth = borderWidth;
 				_borderR.Color = defaultColor;
 
-				_buttonR = new MButton(Forms.NativeParent)
+				_buttonR = new MButton(System.Maui.Maui.NativeParent)
 				{
 					BackgroundColor = EColor.Transparent,
 					Text = "<span color='#000000'>+</span>",
@@ -136,12 +136,12 @@ namespace Xamarin.Forms.Material.Tizen
 
 			if (size.Width < minimumWidth)
 			{
-				size.Width = Forms.ConvertToScaledPixel(minimumWidth + horizontalPadding);
+				size.Width = System.Maui.Maui.ConvertToScaledPixel(minimumWidth + horizontalPadding);
 			}
 
 			if (size.Height < minimumHeight)
 			{
-				size.Height = Forms.ConvertToScaledPixel(minimumHeight);
+				size.Height = System.Maui.Maui.ConvertToScaledPixel(minimumHeight);
 			}
 
 			return size;

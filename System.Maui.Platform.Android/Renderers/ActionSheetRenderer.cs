@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Android.App;
 using Android.Graphics;
 using Android.OS;
@@ -6,10 +6,10 @@ using Android.Views;
 using Android.Widget;
 using AButton = Android.Widget.Button;
 using AView = Android.Views.View;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using System.ComponentModel;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	[Obsolete("ActionSheetRenderer is obsolete as of version 1.3.2. ActionSheet now uses default implementation.")]
 	[EditorBrowsable(EditorBrowsableState.Never)]
@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Platform.Android
 		readonly ActionSheetArguments _arguments;
 		readonly LinearLayout _layout;
 
-		internal ActionSheetRenderer(ActionSheetArguments actionSheetArguments) : base(Forms.Context)
+		internal ActionSheetRenderer(ActionSheetArguments actionSheetArguments) : base(System.Maui.Maui.Context)
 		{
 			_arguments = actionSheetArguments;
 			_layout = new LinearLayout(Context);

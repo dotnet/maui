@@ -2,7 +2,7 @@ using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public sealed class TableRoot : TableSectionBase<TableSection>
 	{

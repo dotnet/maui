@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ScrollModeGalleries
+namespace System.Maui.Controls.GalleryPages.CollectionViewGalleries.ScrollModeGalleries
 {
 	internal class ScrollModeGallery : ContentPage
 	{

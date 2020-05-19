@@ -1,6 +1,6 @@
-﻿<wpf:FormsApplicationPage 
+<wpf:FormsApplicationPage 
         x:Class="DualScreen.WPF.MainWindow"
-        xmlns:wpf="clr-namespace:Xamarin.Forms.Platform.WPF;assembly=Xamarin.Forms.Platform.WPF"
+        xmlns:wpf="clr-namespace:System.Maui.Platform.WPF;assembly=System.Maui.Platform.WPF"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"

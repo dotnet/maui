@@ -1,3 +1,3 @@
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Xamarin.Forms.DualScreen.UnitTests")]
+[assembly: InternalsVisibleTo("System.Maui.DualScreen.UnitTests")]

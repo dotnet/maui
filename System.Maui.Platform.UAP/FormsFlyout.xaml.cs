@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Linq;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Xamarin.Forms.Internals;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public sealed partial class FormsFlyout : UserControl
 	{
@@ -44,7 +44,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void ActionButtonClicked(object sender, RoutedEventArgs e)
 		{
-			var button = (Windows.UI.Xaml.Controls.Button)sender;
+			var button = (global::Windows.UI.Xaml.Controls.Button)sender;
 			var selection = (string)button.Content;
 			options.SetResult(selection);
 

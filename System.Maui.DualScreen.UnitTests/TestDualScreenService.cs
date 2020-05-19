@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.DualScreen.UnitTests
+namespace System.Maui.DualScreen.UnitTests
 {
 	internal class TestDualScreenService : IDualScreenService
 	{

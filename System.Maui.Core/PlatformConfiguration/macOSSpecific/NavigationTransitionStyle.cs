@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.macOSSpecific
+namespace System.Maui.PlatformConfiguration.macOSSpecific
 {
 	public enum NavigationTransitionStyle
 	{

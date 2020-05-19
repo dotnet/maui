@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[ContentProperty("Spans")]
 	public class FormattedString : Element

@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	/// <summary>
 	/// Keyboard layout type on entry control.

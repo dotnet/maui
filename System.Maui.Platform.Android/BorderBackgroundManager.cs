@@ -3,10 +3,10 @@ using System.ComponentModel;
 using Android.Content.Res;
 using AView = Android.Views.View;
 using Android.Graphics.Drawables;
-using Specifics = Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using Specifics = System.Maui.PlatformConfiguration.AndroidSpecific;
 using AColor = Android.Graphics.Color;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal class BorderBackgroundManager : IDisposable
 	{
@@ -99,7 +99,7 @@ namespace Xamarin.Forms.Platform.Android
 			else
 			{
 				if (_backgroundDrawable == null)
-					_backgroundDrawable = new BorderDrawable(Control.Context.ToPixels, Forms.GetColorButtonNormal(Control.Context), _drawOutlineWithBackground);
+					_backgroundDrawable = new BorderDrawable(Control.Context.ToPixels, System.Maui.Maui.GetColorButtonNormal(Control.Context), _drawOutlineWithBackground);
 
 				_backgroundDrawable.BorderElement = BorderElement;
 
@@ -124,7 +124,7 @@ namespace Xamarin.Forms.Platform.Android
 					shadowColor = _backgroundDrawable.PressedBackgroundColor.ToAndroid();
 				}
 				// Otherwise get values from the control (but only for supported APIs)
-				else if ((int)Forms.SdkInt >= 16)
+				else if ((int)System.Maui.Maui.SdkInt >= 16)
 				{
 					shadowRadius = _renderer.ShadowRadius;
 					shadowDy = _renderer.ShadowDy;
@@ -147,7 +147,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (!backgroundColorIsDefault || _drawOutlineWithBackground)
 				{
-					if (Forms.IsLollipopOrNewer)
+					if (System.Maui.Maui.IsLollipopOrNewer)
 					{
 						var rippleColor = _backgroundDrawable.PressedBackgroundColor.ToAndroid();
 

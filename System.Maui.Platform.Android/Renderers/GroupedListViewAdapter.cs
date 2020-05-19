@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Android.Content;
 using Android.Widget;
 using AListView = Android.Widget.ListView;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 
 	internal class GroupedListViewAdapter : ListViewAdapter, ISectionIndexer

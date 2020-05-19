@@ -1,6 +1,6 @@
-﻿using Windows.UI.Xaml.Media;
+using global::Windows.UI.Xaml.Media;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	internal interface ITitleProvider
 	{

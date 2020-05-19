@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Mono.Cecil;
 using NUnit.Framework;
-using Xamarin.Forms.Build.Tasks;
+using System.Maui.Build.Tasks;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	[TestFixture]
 	public class CecilExtensionsTests : IAssemblyResolver
 	{
-		const string testNamespace = "Xamarin.Forms.Xaml.UnitTests";
+		const string testNamespace = "System.Maui.Xaml.UnitTests";
 		AssemblyDefinition assembly;
 		readonly List<AssemblyDefinition> assemblies = new List<AssemblyDefinition>();
 		readonly ReaderParameters readerParameters;

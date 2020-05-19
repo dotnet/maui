@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Windows.Devices.Geolocation;
+using global::Windows.Devices.Geolocation;
 using Windows.Services.Maps;
 
-namespace Xamarin.Forms.Maps.UWP
+namespace System.Maui.Maps.UWP
 {
 	internal class GeocoderBackend
 	{

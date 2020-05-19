@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Globalization;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using WImageSource = System.Windows.Media.ImageSource;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public sealed class ImageConverter : System.Windows.Data.IValueConverter
 	{

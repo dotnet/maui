@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using Foundation;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class CheckBoxRenderer : CheckBoxRendererBase<FormsCheckBox>
 	{

@@ -1,8 +1,8 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific
+namespace System.Maui.PlatformConfiguration.AndroidSpecific
 {
 	using System;
 	using System.ComponentModel;
-	using FormsElement = Forms.TabbedPage;
+	using FormsElement = System.Maui.TabbedPage;
 
 	public static class TabbedPage
 	{

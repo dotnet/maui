@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Android.Views;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class ViewPool : IDisposable
 	{

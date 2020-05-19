@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Specialized;
 using System.Linq;
 
-using Xamarin.Forms.Platform.Tizen.Native;
+using System.Maui.Platform.Tizen.Native;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public abstract class ItemsViewRenderer<TItemsView, TNative> : ViewRenderer<TItemsView, TNative>
 		where TItemsView : ItemsView
@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(CreateNativeControl(Forms.NativeParent));
+				SetNativeControl(CreateNativeControl(System.Maui.Maui.NativeParent));
 				Control.Scrolled += OnScrolled;
 			}
 			if (e.NewElement != null)
@@ -80,7 +80,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		protected virtual void OnLayoutPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == nameof(Xamarin.Forms.ItemsLayout.SnapPointsType))
+			if (e.PropertyName == nameof(System.Maui.ItemsLayout.SnapPointsType))
 			{
 				Control.SnapPointsType = (sender as ItemsLayout)?.SnapPointsType ?? SnapPointsType.None;
 			}

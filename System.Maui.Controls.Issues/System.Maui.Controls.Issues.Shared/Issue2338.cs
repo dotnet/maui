@@ -1,17 +1,17 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 using System.Linq;
 using System.Collections.Generic;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 
 #if UITEST
@@ -65,7 +65,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		// Various tests are commented out on certain platforms because
-		// https://github.com/xamarin/Xamarin.Forms/issues/3188
+		// https://github.com/xamarin/System.Maui/issues/3188
 		[Test]
 		public async Task SwapMainPageOut()
 		{

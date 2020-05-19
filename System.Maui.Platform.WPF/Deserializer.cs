@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -7,9 +7,9 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	internal sealed class Deserializer : IDeserializer
 	{
@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Platform.WPF
 				catch (Exception e)
 				{
 					Debug.WriteLine("Could not deserialize properties: " + e.Message);
-					Log.Warning("Xamarin.Forms PropertyStore", $"Exception while reading Application properties: {e}");
+					Log.Warning("System.Maui PropertyStore", $"Exception while reading Application properties: {e}");
 				}
 
 				return Task.FromResult<IDictionary<string, object>>(null);

@@ -23,7 +23,7 @@ using Android.Support.Design.Widget;
 using Android.Support.Design.Internal;
 #endif
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public static class BottomNavigationViewUtils
 	{
@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Platform.Android
 			var stateList = ColorStateList.ValueOf(Color.Black.MultiplyAlpha(0.2).ToAndroid());
 			var colorDrawable = new ColorDrawable(AColor.White);
 
-			if (Forms.IsLollipopOrNewer)
+			if (System.Maui.Maui.IsLollipopOrNewer)
 				return new RippleDrawable(stateList, colorDrawable, null);
 
 			return colorDrawable;
@@ -138,7 +138,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				using (var innerLayout = new LinearLayout(context))
 				{
-					if(Forms.IsLollipopOrNewer)
+					if(System.Maui.Maui.IsLollipopOrNewer)
 					{
 						innerLayout.ClipToOutline = true;
 					}
@@ -170,7 +170,7 @@ namespace Xamarin.Forms.Platform.Android
 					image.LayoutParameters = lp;
 					lp.Dispose();
 					
-					if (Forms.IsLollipopOrNewer)
+					if (System.Maui.Maui.IsLollipopOrNewer)
 					{
 						image.ImageTintList = ColorStateList.ValueOf(Color.Black.MultiplyAlpha(0.6).ToAndroid());
 					}

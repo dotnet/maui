@@ -1,10 +1,10 @@
-﻿using Plugin.DeviceInfo;
+using Plugin.DeviceInfo;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -13,10 +13,10 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 #if UITEST
-	[Category(Xamarin.Forms.Core.UITests.UITestCategories.Performance)] 
+	[Category(System.Maui.Core.UITests.UITestCategories.Performance)] 
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
 #endif
 	[Preserve(AllMembers = true)]
@@ -113,7 +113,7 @@ namespace Xamarin.Forms.Controls.Issues
 			try
 			{
 				var assembly = typeof(PerformanceGallery).GetTypeInfo().Assembly;
-				var txt = "Xamarin.Forms.Controls.BuildNumber.txt";
+				var txt = "System.Maui.Controls.BuildNumber.txt";
 
 				using (Stream s = assembly.GetManifestResourceStream(txt))
 				using (StreamReader sr = new StreamReader(s))

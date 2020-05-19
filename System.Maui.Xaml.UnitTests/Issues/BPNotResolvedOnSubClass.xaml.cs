@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-using Xamarin.Forms;
+using System.Maui;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public partial class BPNotResolvedOnSubClass : ContentPage
 	{
@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void CorrectlyResolveBPOnSubClasses (bool useCompiledXaml)
 			{
 				var layout = new BPNotResolvedOnSubClass (useCompiledXaml);
-				var style = (Style)layout.Resources["Xamarin.Forms.Button"];
+				var style = (Style)layout.Resources["System.Maui.Button"];
 				Assert.NotNull (style);
 
 				var button = new Button ();

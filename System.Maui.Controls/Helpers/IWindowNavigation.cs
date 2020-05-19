@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
     public interface IWindowNavigation
     {

@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	public class CaseConverter : Windows.UI.Xaml.Data.IValueConverter
+	public class CaseConverter : global::Windows.UI.Xaml.Data.IValueConverter
 	{
 		public bool ConvertToUpper { get; set; }
 

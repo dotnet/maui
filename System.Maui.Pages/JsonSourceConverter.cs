@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms.Pages
+namespace System.Maui.Pages
 {
 	[Xaml.TypeConversion(typeof(JsonSource))]
 	public class JsonSourceConverter : TypeConverter

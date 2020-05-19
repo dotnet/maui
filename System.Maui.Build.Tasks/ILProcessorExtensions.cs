@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Mono.Cecil.Cil;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace System.Maui.Build.Tasks
 {
 	static class ILProcessorExtensions
 	{

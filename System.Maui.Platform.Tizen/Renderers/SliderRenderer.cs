@@ -4,7 +4,7 @@ using ESlider = ElmSharp.Slider;
 using ESize = ElmSharp.Size;
 using EColor = ElmSharp.Color;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class SliderRenderer : ViewRenderer<Slider, ESlider>
 	{
@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new ESlider(Forms.NativeParent));
+				SetNativeControl(new ESlider(System.Maui.Maui.NativeParent));
 				Control.ValueChanged += OnValueChanged;
 				Control.DragStarted += OnDragStarted;
 				Control.DragStopped += OnDragStopped;

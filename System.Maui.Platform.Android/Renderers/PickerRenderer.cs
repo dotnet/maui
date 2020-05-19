@@ -12,7 +12,7 @@ using AColor = Android.Graphics.Color;
 using Android.Text;
 using Android.Text.Style;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class PickerRenderer : ViewRenderer<Picker, EditText>, IPickerRenderer
 	{
@@ -195,7 +195,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateCharacterSpacing()
 		{
-			if (Forms.IsLollipopOrNewer)
+			if (System.Maui.Maui.IsLollipopOrNewer)
 			{
 				Control.LetterSpacing = Element.CharacterSpacing.ToEm();
 			}

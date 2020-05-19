@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public interface ITemplatedItemsView<TItem> : IItemsView<TItem> where TItem : BindableObject
 	{

@@ -1,9 +1,9 @@
-﻿using System;
-using Xamarin.Forms.Xaml.Internals;
+using System;
+using System.Maui.Xaml.Internals;
 using AView = Android.Views.View;
 
-[assembly: Xamarin.Forms.Dependency(typeof(Xamarin.Forms.Platform.Android.NativeValueConverterService))]
-namespace Xamarin.Forms.Platform.Android
+[assembly: System.Maui.Dependency(typeof(System.Maui.Platform.Android.NativeValueConverterService))]
+namespace System.Maui.Platform.Android
 {
 	class NativeValueConverterService : INativeValueConverterService
 	{

@@ -4,10 +4,10 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Collections.Generic;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using System.Reflection;
 
-namespace Xamarin.Forms.Internals
+namespace System.Maui.Internals
 {
 	//FIXME: need a better name for this, and share with Binding, so we can share more unittests
 	[EditorBrowsable(EditorBrowsableState.Never)]

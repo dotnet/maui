@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using Android.Content;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class GroupableItemsViewRenderer<TItemsView, TAdapter, TItemsViewSource> : SelectableItemsViewRenderer<TItemsView, TAdapter, TItemsViewSource>
 		where TItemsView : GroupableItemsView

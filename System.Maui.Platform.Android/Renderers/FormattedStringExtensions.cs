@@ -7,7 +7,7 @@ using Android.Text.Style;
 using Android.Util;
 using Android.Widget;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public static class FormattedStringExtensions
 	{
@@ -77,7 +77,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				Font = font;
 				TextView = view;
-				if (Forms.IsLollipopOrNewer)
+				if (System.Maui.Maui.IsLollipopOrNewer)
 				{
 					CharacterSpacing = characterSpacing;
 				}
@@ -104,7 +104,7 @@ namespace Xamarin.Forms.Platform.Android
 				paint.SetTypeface(Font.ToTypeface());
 				float value = Font.ToScaledPixel();
 				paint.TextSize = TypedValue.ApplyDimension(ComplexUnitType.Sp, value, TextView.Resources.DisplayMetrics);
-				if (Forms.IsLollipopOrNewer)
+				if (System.Maui.Maui.IsLollipopOrNewer)
 				{
 					paint.LetterSpacing = CharacterSpacing;
 				}

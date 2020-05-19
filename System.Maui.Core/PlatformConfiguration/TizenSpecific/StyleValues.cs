@@ -1,4 +1,4 @@
-namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
+namespace System.Maui.PlatformConfiguration.TizenSpecific
 {
 	public static class ButtonStyle
 	{

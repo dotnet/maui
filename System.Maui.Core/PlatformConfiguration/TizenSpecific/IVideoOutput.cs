@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using XVisualElement = Xamarin.Forms.VisualElement;
+using XVisualElement = System.Maui.VisualElement;
 
-namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
+namespace System.Maui.PlatformConfiguration.TizenSpecific
 {
 	public interface IVideoOutput
 	{

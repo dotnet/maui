@@ -1,3 +1,3 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Xamarin.Forms.Core")]
+[assembly: InternalsVisibleTo("System.Maui.Core")]

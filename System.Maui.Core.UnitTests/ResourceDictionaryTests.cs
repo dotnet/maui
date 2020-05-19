@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Linq;
 using NUnit.Framework;
 using System.Collections.Generic;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using System.Collections.ObjectModel;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class ResourceDictionaryTests : BaseTestFixture

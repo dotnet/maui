@@ -5,11 +5,11 @@ using CoreAnimation;
 using CoreGraphics;
 using MaterialComponents;
 using UIKit;
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui;
+using System.Maui.Platform.iOS;
 using MCard = MaterialComponents.Card;
 
-namespace Xamarin.Forms.Material.iOS
+namespace System.Maui.Material.iOS
 {
 	public class MaterialFrameRenderer : MCard,
 		IVisualElementRenderer
@@ -176,16 +176,16 @@ namespace Xamarin.Forms.Material.iOS
 		{
 			var updatedTheme = false;
 
-			if (e.PropertyName == Xamarin.Forms.Frame.HasShadowProperty.PropertyName)
+			if (e.PropertyName == System.Maui.Frame.HasShadowProperty.PropertyName)
 			{
 				// this is handled in ApplyTheme
 				updatedTheme = true;
 			}
-			else if (e.PropertyName == Xamarin.Forms.Frame.CornerRadiusProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.Frame.CornerRadiusProperty.PropertyName)
 			{
 				updatedTheme = true;
 			}
-			else if (e.PropertyName == Xamarin.Forms.Frame.BorderColorProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.Frame.BorderColorProperty.PropertyName)
 			{
 				updatedTheme = true;
 			}

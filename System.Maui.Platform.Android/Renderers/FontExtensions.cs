@@ -2,11 +2,11 @@ using Android.Graphics;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using Xamarin.Forms.Core;
-using Xamarin.Forms.Internals;
+using System.Maui.Core;
+using System.Maui.Internals;
 using AApplication = Android.App.Application;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public static class FontExtensions
 	{

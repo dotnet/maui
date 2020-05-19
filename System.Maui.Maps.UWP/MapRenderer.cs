@@ -1,19 +1,19 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Windows.Devices.Geolocation;
-using Windows.UI;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls.Maps;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Shapes;
-using Xamarin.Forms.Platform.UWP;
+using global::Windows.Devices.Geolocation;
+using global::Windows.UI;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls.Maps;
+using global::Windows.UI.Xaml.Media;
+using global::Windows.UI.Xaml.Shapes;
+using System.Maui.Platform.UWP;
 
-namespace Xamarin.Forms.Maps.UWP
+namespace System.Maui.Maps.UWP
 {
 	public class MapRenderer : ViewRenderer<Map, MapControl>
 	{
@@ -207,7 +207,7 @@ namespace Xamarin.Forms.Maps.UWP
 		{
 			foreach (var formsMapElement in mapElements)
 			{
-				Windows.UI.Xaml.Controls.Maps.MapElement nativeMapElement = null;
+				global::Windows.UI.Xaml.Controls.Maps.MapElement nativeMapElement = null;
 
 				switch (formsMapElement)
 				{
@@ -234,7 +234,7 @@ namespace Xamarin.Forms.Maps.UWP
 			foreach (var mapElement in mapElements)
 			{
 				mapElement.PropertyChanged -= MapElementPropertyChanged;
-				Control.MapElements.Remove((Windows.UI.Xaml.Controls.Maps.MapElement)mapElement.MapElementId);
+				Control.MapElements.Remove((global::Windows.UI.Xaml.Controls.Maps.MapElement)mapElement.MapElementId);
 			}
 		}
 
@@ -455,8 +455,8 @@ namespace Xamarin.Forms.Maps.UWP
 			try
 			{
 				Geopoint nw, se = null;
-				Control.GetLocationFromOffset(new Windows.Foundation.Point(0, 0), out nw);
-				Control.GetLocationFromOffset(new Windows.Foundation.Point(Control.ActualWidth, Control.ActualHeight), out se);
+				Control.GetLocationFromOffset(new global::Windows.Foundation.Point(0, 0), out nw);
+				Control.GetLocationFromOffset(new global::Windows.Foundation.Point(Control.ActualWidth, Control.ActualHeight), out se);
 
 				if (nw != null && se != null)
 				{
@@ -464,7 +464,7 @@ namespace Xamarin.Forms.Maps.UWP
 					var center = new Position(boundingBox.Center.Latitude, boundingBox.Center.Longitude);
 					var latitudeDelta = Math.Abs(nw.Position.Latitude - se.Position.Latitude);
 					var longitudeDelta = Math.Abs(nw.Position.Longitude - se.Position.Longitude);
-					await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+					await Dispatcher.RunAsync(global::Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
 					{
 						Element.SetVisibleRegion(new MapSpan(center, latitudeDelta, longitudeDelta));
 					});
@@ -506,7 +506,7 @@ namespace Xamarin.Forms.Maps.UWP
 				Control.Children.Remove(_userPositionCircle);
 
 			MapControl.SetLocation(_userPositionCircle, point);
-			MapControl.SetNormalizedAnchorPoint(_userPositionCircle, new Windows.Foundation.Point(0.5, 0.5));
+			MapControl.SetNormalizedAnchorPoint(_userPositionCircle, new global::Windows.Foundation.Point(0.5, 0.5));
 
 			Control.Children.Add(_userPositionCircle);
 

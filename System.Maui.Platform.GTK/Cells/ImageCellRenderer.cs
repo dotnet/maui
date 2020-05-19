@@ -1,22 +1,22 @@
-﻿using System;
+using System;
 using System.ComponentModel;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using System.Maui.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Cells
+namespace System.Maui.Platform.GTK.Cells
 {
 	public class ImageCellRenderer : CellRenderer
 	{
 		public override CellBase GetCell(Cell item, Gtk.Container reusableView, Controls.ListView listView)
 		{
 			var gtkImageCell = base.GetCell(item, reusableView, listView) as ImageCell;
-			var imageCell = (Xamarin.Forms.ImageCell)item;
+			var imageCell = (System.Maui.ImageCell)item;
 			SetImage(imageCell, gtkImageCell);
 			return gtkImageCell;
 		}
 
 		protected override Gtk.Container GetCellWidgetInstance(Cell item)
 		{
-			var imageCell = (Xamarin.Forms.ImageCell)item;
+			var imageCell = (System.Maui.ImageCell)item;
 
 			var text = imageCell.Text ?? string.Empty;
 			var textColor = imageCell.TextColor.ToGtkColor();
@@ -36,26 +36,26 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 			base.CellPropertyChanged(sender, args);
 
 			var gtkImageCell = (ImageCell)sender;
-			var imageCell = (Xamarin.Forms.ImageCell)gtkImageCell.Cell;
+			var imageCell = (System.Maui.ImageCell)gtkImageCell.Cell;
 
-			if (args.PropertyName == Xamarin.Forms.TextCell.TextProperty.PropertyName)
+			if (args.PropertyName == System.Maui.TextCell.TextProperty.PropertyName)
 			{
 				gtkImageCell.Text = imageCell.Text ?? string.Empty;
 			}
-			else if (args.PropertyName == Xamarin.Forms.TextCell.DetailProperty.PropertyName)
+			else if (args.PropertyName == System.Maui.TextCell.DetailProperty.PropertyName)
 			{
 				gtkImageCell.Detail = imageCell.Detail ?? string.Empty;
 			}
-			else if (args.PropertyName == Xamarin.Forms.ImageCell.ImageSourceProperty.PropertyName)
+			else if (args.PropertyName == System.Maui.ImageCell.ImageSourceProperty.PropertyName)
 			{
 				SetImage(imageCell, gtkImageCell);
 			}
 		}
 
-		private static void SetImage(Xamarin.Forms.ImageCell cell, ImageCell target)
+		private static void SetImage(System.Maui.ImageCell cell, ImageCell target)
 		{
 			target.Image = null;
-			_ = cell.ApplyNativeImageAsync(Xamarin.Forms.ImageCell.ImageSourceProperty, image =>
+			_ = cell.ApplyNativeImageAsync(System.Maui.ImageCell.ImageSourceProperty, image =>
 			{
 				target.Image = image;
 			});

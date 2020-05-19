@@ -1,9 +1,9 @@
-﻿
-using NUnit.Framework;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.CustomAttributes;
 
-namespace Xamarin.Forms.Core.UITests
+using NUnit.Framework;
+using System.Maui.Controls.Issues;
+using System.Maui.CustomAttributes;
+
+namespace System.Maui.Core.UITests
 {
 	[Category(UITestCategories.ViewBaseTests)]
 	internal abstract class _ViewUITests : BaseTestFixture

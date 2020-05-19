@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Foundation;
 using UIKit;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using PageUIStatusBarAnimation = Xamarin.Forms.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
-using PageSpecific = Xamarin.Forms.PlatformConfiguration.iOSSpecific.Page;
+using System.Maui.PlatformConfiguration.iOSSpecific;
+using PageUIStatusBarAnimation = System.Maui.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
+using PageSpecific = System.Maui.PlatformConfiguration.iOSSpecific.Page;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class PageRenderer : UIViewController, IVisualElementRenderer, IEffectControlProvider, IAccessibilityElementsController, IShellContentInsetObserver
 	{
@@ -178,7 +178,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (Element.Parent is BaseShellItem)
 				Element.Layout(View.Bounds.ToRectangle());
 
-			if (_safeAreasSet || !Forms.IsiOS11OrNewer)
+			if (_safeAreasSet || !System.Maui.Maui.IsiOS11OrNewer)
 				UpdateUseSafeArea();
 		}
 
@@ -200,7 +200,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			_appeared = true;
 			UpdateStatusBarPrefersHidden();
-			if (Forms.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
+			if (System.Maui.Maui.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
 			if (Element.Parent is CarouselPage)
@@ -330,12 +330,12 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateTitle();
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName)
 				UpdateStatusBarPrefersHidden();
-			else if (Forms.IsiOS11OrNewer && e.PropertyName == PlatformConfiguration.iOSSpecific.Page.UseSafeAreaProperty.PropertyName)
+			else if (System.Maui.Maui.IsiOS11OrNewer && e.PropertyName == PlatformConfiguration.iOSSpecific.Page.UseSafeAreaProperty.PropertyName)
 			{
 				_userOverriddenSafeArea = false;
 				UpdateUseSafeArea();
 			}
-			else if (Forms.IsiOS11OrNewer && e.PropertyName == PlatformConfiguration.iOSSpecific.Page.SafeAreaInsetsProperty.PropertyName)
+			else if (System.Maui.Maui.IsiOS11OrNewer && e.PropertyName == PlatformConfiguration.iOSSpecific.Page.SafeAreaInsetsProperty.PropertyName)
 				UpdateUseSafeArea();
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName)
 				UpdateHomeIndicatorAutoHidden();
@@ -369,7 +369,7 @@ namespace Xamarin.Forms.Platform.iOS
 			base.TraitCollectionDidChange(previousTraitCollection);
 
 #if __XCODE11__
-			if (Forms.IsiOS13OrNewer && previousTraitCollection.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (System.Maui.Maui.IsiOS13OrNewer && previousTraitCollection.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				Application.Current?.OnRequestedThemeChanged(new AppThemeChangedEventArgs(Application.Current.RequestedTheme));
 #endif
 		}
@@ -393,7 +393,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_userOverriddenSafeArea)
 				return;
 
-			if (!IsPartOfShell && !Forms.IsiOS11OrNewer)
+			if (!IsPartOfShell && !System.Maui.Maui.IsiOS11OrNewer)
 				return;
 
 			var tabThickness = _tabThickness;
@@ -405,7 +405,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (Page.Padding != SafeAreaInsets)
 				_userPadding = Page.Padding;
 
-			if (Forms.IsiOS11OrNewer)
+			if (System.Maui.Maui.IsiOS11OrNewer)
 			{
 				var insets = NativeView.SafeAreaInsets;
 				if (Page.Parent is TabbedPage)
@@ -540,7 +540,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateHomeIndicatorAutoHidden()
 		{
-			if (Element == null || !Forms.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
+			if (Element == null || !System.Maui.Maui.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
 				return;
 
 			SetNeedsUpdateOfHomeIndicatorAutoHidden();

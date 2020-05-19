@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using ElmSharp;
 using Tizen.NET.MaterialComponents;
-using Xamarin.Forms.Platform.Tizen;
+using System.Maui.Platform.Tizen;
 using EImage = ElmSharp.Image;
 
-namespace Xamarin.Forms.Material.Tizen
+namespace System.Maui.Material.Tizen
 {
 	public class MaterialNavigationView : MNavigationView, INavigationView
 	{

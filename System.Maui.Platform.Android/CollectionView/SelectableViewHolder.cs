@@ -11,7 +11,7 @@ using Android.Support.V7.Widget;
 #endif
 using Android.Util;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public abstract class SelectableViewHolder : RecyclerView.ViewHolder, global::Android.Views.View.IOnClickListener
 	{
@@ -61,7 +61,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void SetSelectionStates(bool isSelected)
 		{
-			if (Forms.IsMarshmallowOrNewer)
+			if (System.Maui.Maui.IsMarshmallowOrNewer)
 			{
 				// We're looking for the foreground ripple effect, which is not available on older APIs
 				// Limiting this to Marshmallow and newer, because View.setForeground() is not available on lower APIs

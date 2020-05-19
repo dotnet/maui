@@ -2,7 +2,7 @@ using System.Linq;
 using NUnit.Framework;
 
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 
 }

@@ -1,9 +1,9 @@
 using System;
 using NUnit.Framework;
-using Xamarin.Forms.Maps;
+using System.Maui.Maps;
 
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class DistanceTests : BaseTestFixture

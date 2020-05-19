@@ -1,6 +1,6 @@
-﻿using Android.Views.InputMethods;
+using Android.Views.InputMethods;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal static class EntryRendererExtensions
 	{

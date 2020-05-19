@@ -5,9 +5,9 @@ using Android.Content.Res;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal class MasterDetailContainer : ViewGroup
 	{

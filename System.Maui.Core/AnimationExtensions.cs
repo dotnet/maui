@@ -26,9 +26,9 @@
 
 using System;
 using System.Collections.Generic;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public static class AnimationExtensions
 	{

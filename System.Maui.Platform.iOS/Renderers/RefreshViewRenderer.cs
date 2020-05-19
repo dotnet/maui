@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using UIKit;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using System.Maui.PlatformConfiguration.iOSSpecific;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class RefreshViewRenderer : ViewRenderer<RefreshView, UIView>, IEffectControlProvider
 	{
@@ -58,7 +58,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (Control == null)
 				{
-					if (Forms.IsiOS11OrNewer)
+					if (System.Maui.Maui.IsiOS11OrNewer)
 					{
 						var parentNav = e.NewElement.FindParentOfType<NavigationPage>();
 						_usingLargeTitles = parentNav != null && parentNav.OnThisPlatform().PrefersLargeTitles();
@@ -222,7 +222,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		bool CanUseRefreshControlProperty()
 		{
-			return Forms.IsiOS10OrNewer && !_usingLargeTitles;
+			return System.Maui.Maui.IsiOS10OrNewer && !_usingLargeTitles;
 		}
 
 		void OnRefresh(object sender, EventArgs e)

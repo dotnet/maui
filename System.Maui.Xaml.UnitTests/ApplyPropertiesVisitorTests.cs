@@ -1,8 +1,8 @@
 using NUnit.Framework;
 using System.Collections;
-using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	[TestFixture]
 	public static class ApplyPropertiesVisitorTests
@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[Test]
 		public static void ProvideValueForCollectionItem()
 		{
-			const string NAMESPACE = "clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests";
+			const string NAMESPACE = "clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests";
 			var resolver = new MockNameSpaceResolver();
 			var type = new XmlType(NAMESPACE, "ApplyPropertiesVisitorTests+MarkupExtension", null);
 			var listNode = new ListNode(new[]

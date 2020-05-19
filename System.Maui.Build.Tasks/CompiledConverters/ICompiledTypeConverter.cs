@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using Mono.Cecil.Cil;
 using Mono.Cecil;
-using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 using System;
-using Xamarin.Forms.Build.Tasks;
+using System.Maui.Build.Tasks;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	interface ICompiledTypeConverter
 	{
@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Xaml
 	}
 }
 
-namespace Xamarin.Forms.Core.XamlC
+namespace System.Maui.Core.XamlC
 {
 	//only used in unit tests to make sure the compiled InitializeComponent is invoked
 	class IsCompiledTypeConverter : ICompiledTypeConverter

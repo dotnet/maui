@@ -1,8 +1,8 @@
-﻿using Android.OS;
+using Android.OS;
 using Android.Widget;
 using AGravityFlags = Android.Views.GravityFlags;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal static class TextAlignmentExtensions
 	{

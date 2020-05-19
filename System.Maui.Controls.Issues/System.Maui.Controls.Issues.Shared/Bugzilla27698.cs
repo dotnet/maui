@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 
-using Xamarin.Forms.CustomAttributes;
+using System.Maui.CustomAttributes;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Issue (IssueTracker.Bugzilla, 27698, "[iOS] DisplayAlert and DisplayActionSheet are shown below master page ")]
 	public class Bugzilla27698 : TestMasterDetailPage // or TestMasterDetailPage, etc ...

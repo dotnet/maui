@@ -1,14 +1,14 @@
 using System.Collections.Generic;
 using ElmSharp;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	/// <summary>
 	/// Extension class, provides native embedding functionalities:
 	/// https://developer.xamarin.com/guides/xamarin-forms/user-interface/layouts/add-platform-controls/
 	/// </summary>
 	/// <remarks>
-	/// This code is not used in the Xamarin.Forms.Platform.Tizen implementation, however it should not
+	/// This code is not used in the System.Maui.Platform.Tizen implementation, however it should not
 	/// be removed as it allows developers to use native controls directly.
 	/// </remarks>
 	public static class LayoutExtensions

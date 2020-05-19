@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public partial class Bz59818 : ContentPage
 	{

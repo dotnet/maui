@@ -1,7 +1,7 @@
 using System;
 using ElmSharp;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public class ViewInitializedEventArgs : EventArgs
 	{

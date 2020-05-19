@@ -1,7 +1,7 @@
-﻿<UserControl
+<UserControl
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	x:Class="Xamarin.Forms.Platform.WPF.Controls.FormsProgressRing"
+	x:Class="System.Maui.Platform.WPF.Controls.FormsProgressRing"
     x:Name="Control"
     Foreground="Black"
     MinWidth="50"

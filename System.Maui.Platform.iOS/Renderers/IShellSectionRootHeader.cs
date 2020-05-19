@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public interface IShellSectionRootHeader : IDisposable
 	{

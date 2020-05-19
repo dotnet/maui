@@ -1,18 +1,18 @@
-﻿using System;
+using System;
 using Microsoft.Graphics.Canvas.UI.Xaml;
-using Windows.UI.Xaml.Media.Imaging;
+using global::Windows.UI.Xaml.Media.Imaging;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Xamarin.Forms.Internals;
-using WImageSource = Windows.UI.Xaml.Media.ImageSource;
+using global::Windows.Foundation;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Input;
+using global::Windows.UI.Xaml.Media;
+using System.Maui.Internals;
+using WImageSource = global::Windows.UI.Xaml.Media.ImageSource;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	internal static class ImageExtensions
 	{

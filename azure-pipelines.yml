@@ -6,7 +6,7 @@ variables:
 - name: IpaName
   value: XamarinFormsControlGalleryiOS.ipa
 - name: SolutionFile
-  value: Xamarin.Forms.sln
+  value: System.Maui.sln
 - name: BuildVersion
   value: $[counter('nuget-counter', 126)]
 - name: BuildVersion42
@@ -102,7 +102,7 @@ stages:
         steps:
           - template: build/steps/build-windows.yml
             parameters:
-              slnPath: build/Xamarin.Forms.Pages.sln
+              slnPath: build/System.Maui.Pages.sln
               includeUwp: false
               includeAndroid: false
               includeNonUwpAndNonAndroid: false
@@ -168,7 +168,7 @@ stages:
         steps:
           - template: build/steps/build-windows.yml
             parameters:
-              slnPath: build/Xamarin.Forms.Pages.sln
+              slnPath: build/System.Maui.Pages.sln
               includeUwp: false
               includeAndroid: false
               includeNonUwpAndNonAndroid: false

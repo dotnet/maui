@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	[ContentProperty(nameof(TypeName))]
-	[ProvideCompiled("Xamarin.Forms.Build.Tasks.DataTemplateExtension")]
+	[ProvideCompiled("System.Maui.Build.Tasks.DataTemplateExtension")]
 	public sealed class DataTemplateExtension : IMarkupExtension<DataTemplate>
 	{
 		public string TypeName { get; set; }

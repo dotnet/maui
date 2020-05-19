@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Xamarin.Forms.CustomAttributes;
+using System.Maui.CustomAttributes;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	internal class CoreGalleryPage<T> : ContentPage
 		where T : View, new()

@@ -6,10 +6,10 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform;
+using System.Maui.Internals;
+using System.Maui.Platform;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[RenderWith(typeof(_PageRenderer))]
 	public class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement
@@ -280,9 +280,9 @@ namespace Xamarin.Forms
 					continue;
 				var page = child as Page;
 				if (page != null && page.IgnoresContainerArea)
-					Forms.Layout.LayoutChildIntoBoundingRegion(child, originalArea);
+					System.Maui.Layout.LayoutChildIntoBoundingRegion(child, originalArea);
 				else
-					Forms.Layout.LayoutChildIntoBoundingRegion(child, area);
+					System.Maui.Layout.LayoutChildIntoBoundingRegion(child, area);
 			}
 		}
 

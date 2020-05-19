@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Xml;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Xaml.Internals
+namespace System.Maui.Xaml.Internals
 {
 	public class XamlServiceProvider : IServiceProvider
 	{

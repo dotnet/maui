@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
-namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
+namespace System.Maui.Controls.GalleryPages.SwipeViewGalleries
 {
 	public partial class SwipeItemsDisposeGallery : ContentPage
 	{

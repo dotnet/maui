@@ -2,10 +2,10 @@
 <ContentPage
 		xmlns="http://xamarin.com/schemas/2014/forms"
 		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-		xmlns:local="clr-namespace:Xamarin.Forms.Xaml.UnitTests"
+		xmlns:local="clr-namespace:System.Maui.Xaml.UnitTests"
 		xmlns:sys="clr-namespace:System;assembly=mscorlib"
 
-		x:Class="Xamarin.Forms.Xaml.UnitTests.BindingsCompiler" >
+		x:Class="System.Maui.Xaml.UnitTests.BindingsCompiler" >
 	<StackLayout>
 		<StackLayout x:DataType="local:MockViewModel">
 			<Label Text="{Binding Text}" x:Name="label0" />

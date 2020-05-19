@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.ComponentModel;
-using Xamarin.Forms.Platform;
+using System.Maui.Platform;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[RenderWith(typeof(_OpenGLViewRenderer))]
 	public sealed class OpenGLView : View, IOpenGlViewController, IElementConfiguration<OpenGLView>

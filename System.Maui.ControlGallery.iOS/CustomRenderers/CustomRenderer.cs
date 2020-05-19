@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using UIKit;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.iOS;
-using Xamarin.Forms.Platform.iOS;
-using static Xamarin.Forms.Controls.Issues.Issue6368;
+using System.Maui;
+using System.Maui.ControlGallery.iOS;
+using System.Maui.Platform.iOS;
+using static System.Maui.Controls.Issues.Issue6368;
 
 [assembly: ExportRenderer(typeof(CustomView), typeof(CustomRenderer))]
-namespace Xamarin.Forms.ControlGallery.iOS
+namespace System.Maui.ControlGallery.iOS
 {
 	public class CustomRenderer : ViewRenderer<CustomView, UIView>
 	{

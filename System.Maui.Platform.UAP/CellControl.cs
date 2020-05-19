@@ -1,18 +1,18 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using Windows.UI.Input;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation.Peers;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Animation;
-using Xamarin.Forms.Internals;
+using global::Windows.UI.Input;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Automation.Peers;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Controls.Primitives;
+using global::Windows.UI.Xaml.Input;
+using global::Windows.UI.Xaml.Media;
+using global::Windows.UI.Xaml.Media.Animation;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class CellControl : ContentControl
 	{
@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.UWP
 		Brush _defaultOnColor;
 
 		IList<MenuItem> _contextActions;
-		Windows.UI.Xaml.DataTemplate _currentTemplate;
+		global::Windows.UI.Xaml.DataTemplate _currentTemplate;
 		bool _isListViewRealized;
 		object _newValue;
 
@@ -62,7 +62,7 @@ namespace Xamarin.Forms.Platform.UWP
 			get { return (FrameworkElement)Content; }
 		}
 
-		protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
 			ListView lv = _listView.Value;
 
@@ -82,23 +82,23 @@ namespace Xamarin.Forms.Platform.UWP
 					{
 						var estimate = (double)lv.GetValue(MeasuredEstimateProperty);
 						if (estimate > -1)
-							return new Windows.Foundation.Size(availableSize.Width, estimate);
+							return new global::Windows.Foundation.Size(availableSize.Width, estimate);
 					}
 					else
 					{
 						double rowHeight = lv.RowHeight;
 						if (rowHeight > -1)
-							return new Windows.Foundation.Size(availableSize.Width, rowHeight);
+							return new global::Windows.Foundation.Size(availableSize.Width, rowHeight);
 					}
 				}
 
 				// This needs to return a size with a non-zero height; 
 				// otherwise, it kills virtualization.
-				return new Windows.Foundation.Size(0, Cell.DefaultCellHeight);
+				return new global::Windows.Foundation.Size(0, Cell.DefaultCellHeight);
 			}
 
 			// Children still need measure called on them
-			Windows.Foundation.Size result = base.MeasureOverride(availableSize);
+			global::Windows.Foundation.Size result = base.MeasureOverride(availableSize);
 
 			if (lv != null)
 			{
@@ -128,7 +128,7 @@ namespace Xamarin.Forms.Platform.UWP
 			return null;
 		}
 
-		Windows.UI.Xaml.DataTemplate GetTemplate(Cell cell)
+		global::Windows.UI.Xaml.DataTemplate GetTemplate(Cell cell)
 		{
 			var renderer = Registrar.Registered.GetHandlerForObject<ICellRenderer>(cell);
 			return renderer.GetTemplate(cell);
@@ -161,14 +161,14 @@ namespace Xamarin.Forms.Platform.UWP
 			var nativeSwitch = FrameworkElementExtensions.GetFirstDescendant<ToggleSwitch>(this);
 
 			// change fill color in switch rectangle
-			var rects = nativeSwitch.GetDescendantsByName<Windows.UI.Xaml.Shapes.Rectangle>("SwitchKnobBounds");
+			var rects = nativeSwitch.GetDescendantsByName<global::Windows.UI.Xaml.Shapes.Rectangle>("SwitchKnobBounds");
 			foreach (var rect in rects)
 				rect.Fill = color;
 
 			// change color in animation on PointerOver
-			var grid = nativeSwitch.GetFirstDescendant<Windows.UI.Xaml.Controls.Grid>();
-			var gridVisualStateGroups = Windows.UI.Xaml.VisualStateManager.GetVisualStateGroups(grid);
-			Windows.UI.Xaml.VisualStateGroup vsGroup = null;
+			var grid = nativeSwitch.GetFirstDescendant<global::Windows.UI.Xaml.Controls.Grid>();
+			var gridVisualStateGroups = global::Windows.UI.Xaml.VisualStateManager.GetVisualStateGroups(grid);
+			global::Windows.UI.Xaml.VisualStateGroup vsGroup = null;
 			foreach (var visualGroup in gridVisualStateGroups)
 			{
 				if (visualGroup.Name == "CommonStates")
@@ -180,7 +180,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (vsGroup == null)
 				return;
 
-			Windows.UI.Xaml.VisualState vState = null;
+			global::Windows.UI.Xaml.VisualState vState = null;
 			foreach (var visualState in vsGroup.States)
 			{
 				if (visualState.Name == "PointerOver")
@@ -208,7 +208,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (_defaultOnColor == null && Cell is SwitchCell)
 			{
 				var nativeSwitch = FrameworkElementExtensions.GetFirstDescendant<ToggleSwitch>(this);
-				var rects = nativeSwitch.GetDescendantsByName<Windows.UI.Xaml.Shapes.Rectangle>("SwitchKnobBounds");
+				var rects = nativeSwitch.GetDescendantsByName<global::Windows.UI.Xaml.Shapes.Rectangle>("SwitchKnobBounds");
 				foreach (var rect in rects)
 					_defaultOnColor = rect.Fill;
 				UpdateOnColor();
@@ -404,7 +404,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateContent(Cell newCell)
 		{
-			Windows.UI.Xaml.DataTemplate dt = GetTemplate(newCell);
+			global::Windows.UI.Xaml.DataTemplate dt = GetTemplate(newCell);
 			if (dt != _currentTemplate || Content == null)
 			{
 				_currentTemplate = dt;

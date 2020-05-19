@@ -1,10 +1,10 @@
-﻿using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.MacOS;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Platform.MacOS;
+using System.Maui;
+using System.Maui.ControlGallery.MacOS;
+using System.Maui.Controls;
+using System.Maui.Platform.MacOS;
 
 [assembly: Dependency(typeof(RegistrarValidationService))]
-namespace Xamarin.Forms.ControlGallery.MacOS
+namespace System.Maui.ControlGallery.MacOS
 {
 	public class RegistrarValidationService : IRegistrarValidationService
 	{

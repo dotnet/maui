@@ -1,17 +1,17 @@
-﻿using Xamarin.Forms;
-using Xamarin.Forms.Material.Tizen;
-using Xamarin.Forms.Material.Tizen.Native;
-using Xamarin.Forms.Platform.Tizen;
-using Xamarin.Forms.Platform.Tizen.Native;
+using System.Maui;
+using System.Maui.Material.Tizen;
+using System.Maui.Material.Tizen.Native;
+using System.Maui.Platform.Tizen;
+using System.Maui.Platform.Tizen.Native;
 
 [assembly: ExportRenderer(typeof(Editor), typeof(MaterialEditorRenderer), new[] { typeof(VisualMarker.MaterialVisual) }, Priority = short.MinValue)]
-namespace Xamarin.Forms.Material.Tizen
+namespace System.Maui.Material.Tizen
 {
 	public class MaterialEditorRenderer : EditorRenderer
 	{
 		protected override ElmSharp.Entry CreateNativeControl()
 		{
-			return new MEditor(Forms.NativeParent)
+			return new MEditor(System.Maui.Maui.NativeParent)
 			{
 				IsSingleLine = false,
 				LineWrapType = ElmSharp.WrapType.Mixed

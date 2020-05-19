@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using System.Maui.Internals;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public class ConstraintExpression : IMarkupExtension<Constraint>
 	{

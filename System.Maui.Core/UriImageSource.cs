@@ -5,9 +5,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public sealed class UriImageSource : ImageSource
 	{
@@ -16,7 +16,7 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty UriProperty = BindableProperty.Create("Uri", typeof(Uri), typeof(UriImageSource), default(Uri),
 			propertyChanged: (bindable, oldvalue, newvalue) => ((UriImageSource)bindable).OnUriChanged(), validateValue: (bindable, value) => value == null || ((Uri)value).IsAbsoluteUri);
 
-		static readonly Xamarin.Forms.Internals.IIsolatedStorageFile Store = Device.PlatformServices.GetUserStoreForApplication();
+		static readonly System.Maui.Internals.IIsolatedStorageFile Store = Device.PlatformServices.GetUserStoreForApplication();
 
 		static readonly object s_syncHandle = new object();
 		static readonly Dictionary<string, LockingSemaphore> s_semaphores = new Dictionary<string, LockingSemaphore>();
@@ -87,7 +87,7 @@ namespace Xamarin.Forms
 			}
 			catch (Exception ex)
 			{
-				Xamarin.Forms.Internals.Log.Warning("Image Loading", $"Error getting stream for {Uri}: {ex}");
+				System.Maui.Internals.Log.Warning("Image Loading", $"Error getting stream for {Uri}: {ex}");
 				throw;
 			}
 
@@ -137,7 +137,7 @@ namespace Xamarin.Forms
 				}
 				catch (Exception ex) 
 				{
-					Xamarin.Forms.Internals.Log.Warning("Image Loading", $"Error getting stream for {Uri}: {ex}");
+					System.Maui.Internals.Log.Warning("Image Loading", $"Error getting stream for {Uri}: {ex}");
 					stream = null;
 				}
 			}

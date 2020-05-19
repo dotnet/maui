@@ -1,7 +1,7 @@
-﻿using Android.Content;
+using Android.Content;
 using System;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class AndroidAppIndexProvider : IAppIndexingProvider
 	{
@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public IAppLinks AppLinks { get; }
 
-		const string AppLinksAssemblyName = "Xamarin.Forms.Platform.Android.AppLinks";
+		const string AppLinksAssemblyName = "System.Maui.Platform.Android.AppLinks";
 		const string AppLinksClassName = "AndroidAppLinks";
 	}
 }

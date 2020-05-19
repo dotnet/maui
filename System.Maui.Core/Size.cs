@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[DebuggerDisplay("Width={Width}, Height={Height}")]
 	[TypeConverter(typeof(SizeTypeConverter))]

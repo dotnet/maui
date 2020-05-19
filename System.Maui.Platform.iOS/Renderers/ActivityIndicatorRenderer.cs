@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.Drawing;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class ActivityIndicatorRenderer : ViewRenderer<ActivityIndicator, UIActivityIndicatorView>
 	{
@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (Control == null)
 				{
 #if __XCODE11__
-					if(Forms.IsiOS13OrNewer)
+					if(System.Maui.Maui.IsiOS13OrNewer)
 						SetNativeControl(new UIActivityIndicatorView(RectangleF.Empty) { ActivityIndicatorViewStyle = UIActivityIndicatorViewStyle.Medium });
 					else
 #endif

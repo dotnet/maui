@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Linq;
 using NUnit.Framework;
 using System.Collections.Generic;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 using System.Globalization;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public class BasePage : ContentPage
 	{
@@ -54,7 +54,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			<ContentPage
 			xmlns=""http://xamarin.com/schemas/2014/forms""
 			xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-			xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests""
+			xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests""
 			Title=""Home"">
 				<local:TestCases.InnerView>
 					<Label x:Name=""innerView""/>
@@ -76,7 +76,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 			Assert.NotNull (GetInnerView (contentPage));
 //			Assert.AreEqual ("innerView", GetInnerView (contentPage).Name);
-			Assert.AreEqual (GetInnerView (contentPage), ((Forms.Internals.INameScope)contentPage).FindByName ("innerView"));
+			Assert.AreEqual (GetInnerView (contentPage), ((System.Maui.Internals.INameScope)contentPage).FindByName ("innerView"));
 			Assert.NotNull (label0);
 			Assert.NotNull (label1);
 			Assert.AreEqual (4, contentPage.Content.Descendants ().Count ());
@@ -90,7 +90,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
             <local:BasePage
                 xmlns=""http://xamarin.com/schemas/2014/forms""
                 xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-			    xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests""
+			    xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests""
                 x:Class=""Tramchester.App.Views.HomeView"">
                 <local:BasePage.Content>
                   <Label Text=""Hi There!"" />
@@ -191,7 +191,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 						<ContentPage 
 							xmlns=""http://xamarin.com/schemas/2014/forms"" 
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-							xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+							xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests"">
 							<Label x:Name=""label"" Text=""{Binding Converter={x:Static local:ReverseConverter.Instance}, Mode=TwoWay}""/>
 						</ContentPage>";
 			var page = new ContentPage ().LoadFromXaml (xaml);

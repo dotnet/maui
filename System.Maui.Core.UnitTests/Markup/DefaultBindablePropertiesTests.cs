@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Markup.UnitTests
+namespace System.Maui.Markup.UnitTests
 {
-	using XamarinFormsMarkupUnitTestsDefaultBindablePropertiesViews;
+	using MauiMarkupUnitTestsDefaultBindablePropertiesViews;
 
 	[TestFixture(true)]
 	[TestFixture(false)]
@@ -129,7 +129,7 @@ namespace Xamarin.Forms.Markup.UnitTests
 		public void GetDefaultBindablePropertyForUnsupportedType()
 			=> Assert.Throws<ArgumentException>(
 				() => DefaultBindableProperties.GetFor(new CustomView()),
-				"No default bindable property is registered for BindableObject type XamarinFormsMarkupUnitTestsDefaultBindablePropertiesViews.CustomView" +
+				"No default bindable property is registered for BindableObject type MauiMarkupUnitTestsDefaultBindablePropertiesViews.CustomView" +
 				"\r\nEither specify a property when calling Bind() or register a default bindable property for this BindableObject type");
 
 		[Test]
@@ -156,7 +156,7 @@ namespace Xamarin.Forms.Markup.UnitTests
 		public void GetDefaultBindableCommandPropertiesForUnsupportedType()
 			=> Assert.Throws<ArgumentException>(
 				() => DefaultBindableProperties.GetFor(new CustomView()),
-				"No command + command parameter properties are registered for BindableObject type XamarinFormsMarkupUnitTestsDefaultBindablePropertiesViews.CustomView" +
+				"No command + command parameter properties are registered for BindableObject type MauiMarkupUnitTestsDefaultBindablePropertiesViews.CustomView" +
 				"\r\nRegister command + command parameter properties for this BindableObject type");
 
 		[Test]
@@ -184,10 +184,10 @@ namespace Xamarin.Forms.Markup.UnitTests
 	}
 }
 
-namespace XamarinFormsMarkupUnitTestsDefaultBindablePropertiesViews
+namespace System.MauiMarkupUnitTestsDefaultBindablePropertiesViews
 {
 	using System.Windows.Input;
-	using Xamarin.Forms;
+	using System.Maui;
 
 	internal class DerivedFromBoxView : BoxView { }
 	internal class DerivedFromButton : Button { }

@@ -1,7 +1,7 @@
-﻿using System;
-using Xamarin.Forms.Platform;
+using System;
+using System.Maui.Platform;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[RenderWith(typeof(_CheckBoxRenderer))]
 	public class CheckBox : View, IElementConfiguration<CheckBox>, IBorderElement, IColorElement

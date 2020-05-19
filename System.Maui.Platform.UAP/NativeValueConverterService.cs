@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Reflection;
-using Windows.UI.Xaml;
-using Xamarin.Forms.Xaml.Internals;
+using global::Windows.UI.Xaml;
+using System.Maui.Xaml.Internals;
 
 
-[assembly: Xamarin.Forms.Dependency(typeof(Xamarin.Forms.Platform.UWP.NativeValueConverterService))]
-namespace Xamarin.Forms.Platform.UWP
+[assembly: System.Maui.Dependency(typeof(System.Maui.Platform.UWP.NativeValueConverterService))]
+namespace System.Maui.Platform.UWP
 {
     public class NativeValueConverterService : INativeValueConverterService
     {

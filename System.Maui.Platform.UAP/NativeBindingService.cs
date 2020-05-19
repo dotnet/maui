@@ -1,10 +1,10 @@
-﻿using System.Reflection;
-using Windows.UI.Xaml;
-using Xamarin.Forms.Xaml.Internals;
+using System.Reflection;
+using global::Windows.UI.Xaml;
+using System.Maui.Xaml.Internals;
 
 
-[assembly: Xamarin.Forms.Dependency(typeof(Xamarin.Forms.Platform.UWP.NativeBindingService))]
-namespace Xamarin.Forms.Platform.UWP
+[assembly: System.Maui.Dependency(typeof(System.Maui.Platform.UWP.NativeBindingService))]
+namespace System.Maui.Platform.UWP
 {
     public class NativeBindingService : INativeBindingService
     {

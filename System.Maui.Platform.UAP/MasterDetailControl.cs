@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-using WImageSource = Windows.UI.Xaml.Media.ImageSource;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Media;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
+using WImageSource = global::Windows.UI.Xaml.Media.ImageSource;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class MasterDetailControl : Control, IToolbarProvider, ITitleViewRendererController
 	{
@@ -93,7 +93,7 @@ namespace Xamarin.Forms.Platform.UWP
 			set { SetValue(DetailProperty, value); }
 		}
 
-		public Windows.Foundation.Size DetailSize
+		public global::Windows.Foundation.Size DetailSize
 		{
 			get
 			{
@@ -111,7 +111,7 @@ namespace Xamarin.Forms.Platform.UWP
 						width -= _masterPresenter.ActualWidth;
 				}
 
-				return new Windows.Foundation.Size(Math.Max(width, 0), Math.Max(height, 0));
+				return new global::Windows.Foundation.Size(Math.Max(width, 0), Math.Max(height, 0));
 			}
 		}
 
@@ -157,7 +157,7 @@ namespace Xamarin.Forms.Platform.UWP
 			set { SetValue(MasterProperty, value); }
 		}
 
-		public Windows.Foundation.Size MasterSize
+		public global::Windows.Foundation.Size MasterSize
 		{
 			get
 			{
@@ -177,7 +177,7 @@ namespace Xamarin.Forms.Platform.UWP
 				else if (_masterPresenter != null)
 					width = _masterPresenter.ActualWidth;
 
-				return new Windows.Foundation.Size(Math.Max(width, 0), Math.Max(height, 0));
+				return new global::Windows.Foundation.Size(Math.Max(width, 0), Math.Max(height, 0));
 			}
 		}
 
@@ -283,11 +283,11 @@ namespace Xamarin.Forms.Platform.UWP
 			if (_split == null)
 				return;
 
-			var paneToggle = GetTemplateChild("PaneTogglePane") as Windows.UI.Xaml.Controls.Button;
+			var paneToggle = GetTemplateChild("PaneTogglePane") as global::Windows.UI.Xaml.Controls.Button;
 			if (paneToggle != null)
 				paneToggle.Click += OnToggleClicked;
 
-			var contentToggle = GetTemplateChild("ContentTogglePane") as Windows.UI.Xaml.Controls.Button;
+			var contentToggle = GetTemplateChild("ContentTogglePane") as global::Windows.UI.Xaml.Controls.Button;
 			if (contentToggle != null)
 				contentToggle.Click += OnToggleClicked;
 

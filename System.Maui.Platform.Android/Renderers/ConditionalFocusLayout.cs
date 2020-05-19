@@ -2,7 +2,7 @@ using Android.Content;
 using Android.Views;
 using Android.Widget;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal class ConditionalFocusLayout : LinearLayout, global::Android.Views.View.IOnTouchListener
 	{

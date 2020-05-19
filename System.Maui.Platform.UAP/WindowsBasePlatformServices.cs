@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -8,22 +8,22 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.ApplicationModel;
-using Windows.ApplicationModel.Core;
-using Windows.ApplicationModel.LockScreen;
+using global::Windows.ApplicationModel;
+using global::Windows.ApplicationModel.Core;
+using global::Windows.ApplicationModel.LockScreen;
 using Windows.Security.Cryptography;
 using Windows.Security.Cryptography.Core;
 using Windows.Storage;
 using Windows.Storage.Search;
 using Windows.Storage.Streams;
 using Windows.System;
-using Windows.UI.Core;
-using Windows.UI.ViewManagement;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
-using Xamarin.Forms.Internals;
+using global::Windows.UI.Core;
+using global::Windows.UI.ViewManagement;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Media;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	internal abstract class WindowsBasePlatformServices : IPlatformServices
 	{
@@ -83,11 +83,11 @@ namespace Xamarin.Forms.Platform.UWP
 			if (!assemblies.Contains(thisAssembly))
 				assemblies.Add(thisAssembly);
 
-			Assembly coreAssembly = typeof(Xamarin.Forms.Label).GetTypeInfo().Assembly;
+			Assembly coreAssembly = typeof(System.Maui.Label).GetTypeInfo().Assembly;
 			if (!assemblies.Contains(coreAssembly))
 				assemblies.Add(coreAssembly);
 
-			Assembly xamlAssembly = typeof(Xamarin.Forms.Xaml.Extensions).GetTypeInfo().Assembly;
+			Assembly xamlAssembly = typeof(System.Maui.Xaml.Extensions).GetTypeInfo().Assembly;
 			if (!assemblies.Contains(xamlAssembly))
 				assemblies.Add(xamlAssembly);
 
@@ -105,10 +105,10 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public Color GetNamedColor(string name)
 		{
-			if (!Windows.UI.Xaml.Application.Current?.Resources.ContainsKey(name) ?? true)
+			if (!global::Windows.UI.Xaml.Application.Current?.Resources.ContainsKey(name) ?? true)
 				return Color.Default;
 
-			return ((Windows.UI.Color)Windows.UI.Xaml.Application.Current?.Resources[name]).ToFormsColor();
+			return ((global::Windows.UI.Color)global::Windows.UI.Xaml.Application.Current?.Resources[name]).ToFormsColor();
 		}
 
 		public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
@@ -256,6 +256,6 @@ namespace Xamarin.Forms.Platform.UWP
 			return await taskCompletionSource.Task;
 		}
 
-		public OSAppTheme RequestedTheme => Windows.UI.Xaml.Application.Current.RequestedTheme == ApplicationTheme.Dark ? OSAppTheme.Dark : OSAppTheme.Light;
+		public OSAppTheme RequestedTheme => global::Windows.UI.Xaml.Application.Current.RequestedTheme == ApplicationTheme.Dark ? OSAppTheme.Dark : OSAppTheme.Light;
 	}
 }

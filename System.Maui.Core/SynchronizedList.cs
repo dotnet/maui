@@ -1,9 +1,9 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	internal class SynchronizedList<T> : IList<T>, IReadOnlyList<T>
 	{

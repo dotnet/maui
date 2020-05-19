@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Input;
-using Xamarin.Forms;
+using System.Maui;
 
-namespace Xamarin.Forms.Controls.GalleryPages.ExpanderGalleries
+namespace System.Maui.Controls.GalleryPages.ExpanderGalleries
 {
 	public partial class ExpanderGallery : ContentPage
 	{

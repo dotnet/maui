@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Reflection;
 using NUnit;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.WindowsUniversal.Tests;
-using Xamarin.Forms.Controls.Tests;
+using System.Maui;
+using System.Maui.ControlGallery.WindowsUniversal.Tests;
+using System.Maui.Controls.Tests;
 
 [assembly: Dependency(typeof(PlatformTestSettings))]
-namespace Xamarin.Forms.ControlGallery.WindowsUniversal.Tests
+namespace System.Maui.ControlGallery.WindowsUniversal.Tests
 {
 	public class PlatformTestSettings : IPlatformTestSettings
 	{
@@ -18,7 +18,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal.Tests
 			};
 		}
 
-		public Assembly Assembly { get => Assembly.Load("Xamarin.Forms.Platform.UAP.UnitTests, Version = 2.0.0.0, Culture = neutral, PublicKeyToken = null"); }
+		public Assembly Assembly { get => Assembly.Load("System.Maui.Platform.UAP.UnitTests, Version = 2.0.0.0, Culture = neutral, PublicKeyToken = null"); }
 		public Dictionary<string, object> TestRunSettings { get; }
 	}
 }

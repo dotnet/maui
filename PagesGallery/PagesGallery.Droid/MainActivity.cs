@@ -1,8 +1,8 @@
-﻿using Android.App;
+using Android.App;
 using Android.Content.PM;
 using Android.OS;
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.Android;
+using System.Maui;
+using System.Maui.Platform.Android;
 
 namespace PagesGallery.Droid
 {
@@ -19,7 +19,7 @@ namespace PagesGallery.Droid
 
 			base.OnCreate(bundle);
 			
-			Forms.Init(this, bundle);
+			System.Maui.Maui.Init(this, bundle);
 			LoadApplication(new App());
 		}
 	}

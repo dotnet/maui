@@ -1,11 +1,11 @@
-using Xamarin.Forms.ControlGallery.WindowsUniversal;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Platform.UWP;
+using System.Maui.ControlGallery.WindowsUniversal;
+using System.Maui.Controls;
+using System.Maui.Platform.UWP;
 
 [assembly: ExportRenderer(typeof(DisposePage), typeof(DisposePageRenderer))]
 [assembly: ExportRenderer(typeof(DisposeLabel), typeof(DisposeLabelRenderer))]
 
-namespace Xamarin.Forms.ControlGallery.WindowsUniversal
+namespace System.Maui.ControlGallery.WindowsUniversal
 {
 	public class DisposePageRenderer : PageRenderer
 	{

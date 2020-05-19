@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using ElmSharp;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	public enum DateTimePickerMode
 	{

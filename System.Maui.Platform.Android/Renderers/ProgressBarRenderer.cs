@@ -6,7 +6,7 @@ using Android.Graphics;
 using Android.OS;
 using AProgressBar = Android.Widget.ProgressBar;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class ProgressBarRenderer : ViewRenderer<ProgressBar, AProgressBar>
 	{
@@ -74,7 +74,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 			else
 			{
-				if (Forms.SdkInt < BuildVersionCodes.Lollipop)
+				if (System.Maui.Maui.SdkInt < BuildVersionCodes.Lollipop)
 				{
 					(Control.Indeterminate ? Control.IndeterminateDrawable :
 						Control.ProgressDrawable).SetColorFilter(color, FilterMode.SrcIn);

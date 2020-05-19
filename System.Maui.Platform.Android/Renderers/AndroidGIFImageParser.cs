@@ -1,5 +1,5 @@
-﻿using System;
-using Xamarin.Forms.Internals;
+using System;
+using System.Maui.Internals;
 using Android.OS;
 using Android.Content;
 using Android.Graphics;
@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.IO;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	// All this animation code will go away if/once we pull in GlideX
 	public class FormsAnimationDrawableStateEventArgs : EventArgs
@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			RepeatCount = 1;
 
-			if (!Forms.IsLollipopOrNewer)
+			if (!System.Maui.Maui.IsLollipopOrNewer)
 				base.SetVisible(false, true);
 		}
 
@@ -78,7 +78,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			base.Start();
 
-			if (!Forms.IsLollipopOrNewer)
+			if (!System.Maui.Maui.IsLollipopOrNewer)
 				base.SetVisible(true, true);
 
 			_isRunning = true;
@@ -89,7 +89,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			base.Stop();
 
-			if (!Forms.IsLollipopOrNewer)
+			if (!System.Maui.Maui.IsLollipopOrNewer)
 				base.SetVisible(false, true);
 
 			_isRunning = false;

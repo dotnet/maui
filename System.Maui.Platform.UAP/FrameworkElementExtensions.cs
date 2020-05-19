@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
-using Xamarin.Forms.Internals;
-using WBinding = Windows.UI.Xaml.Data.Binding;
-using WBindingExpression = Windows.UI.Xaml.Data.BindingExpression;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Media;
+using System.Maui.Internals;
+using WBinding = global::Windows.UI.Xaml.Data.Binding;
+using WBindingExpression = global::Windows.UI.Xaml.Data.BindingExpression;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	internal static class FrameworkElementExtensions
 	{

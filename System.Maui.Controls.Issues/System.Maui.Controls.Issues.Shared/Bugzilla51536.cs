@@ -1,11 +1,11 @@
-﻿using System.Linq;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Linq;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 51536, "[iOS] Xamarin.Forms ListView Row Height Does Not Adapt")]
+	[Issue(IssueTracker.Bugzilla, 51536, "[iOS] System.Maui ListView Row Height Does Not Adapt")]
 	public class Bugzilla51536 : TestContentPage
 	{
 		protected override void Init()

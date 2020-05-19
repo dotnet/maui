@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	internal class MediaElementDemoPage : ContentPage
 	{

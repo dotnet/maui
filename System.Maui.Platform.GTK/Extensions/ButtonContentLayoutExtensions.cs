@@ -1,8 +1,8 @@
-﻿using Gtk;
+using Gtk;
 using System;
-using static Xamarin.Forms.Button;
+using static System.Maui.Button;
 
-namespace Xamarin.Forms.Platform.GTK.Extensions
+namespace System.Maui.Platform.GTK.Extensions
 {
 	public static class ButtonContentLayoutExtensions
 	{

@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Maps.Tizen
+namespace System.Maui.Maps.Tizen
 {
 	internal class GeocoderBackend
 	{

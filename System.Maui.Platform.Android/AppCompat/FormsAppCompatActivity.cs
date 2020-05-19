@@ -15,15 +15,15 @@ using Android.Support.V7.App;
 using AToolbar = Android.Support.V7.Widget.Toolbar;
 #endif
 using Android.Views;
-using Xamarin.Forms.Platform.Android.AppCompat;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat;
+using System.Maui.Platform.Android.AppCompat;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
+using System.Maui.PlatformConfiguration.AndroidSpecific.AppCompat;
 using AColor = Android.Graphics.Color;
 using ARelativeLayout = Android.Widget.RelativeLayout;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using System.Runtime.CompilerServices;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	[Flags]
 	public enum ActivationFlags : long
@@ -82,12 +82,12 @@ namespace Xamarin.Forms.Platform.Android
 			base.OnBackPressed();
 		}
 
-		public override void OnConfigurationChanged(Configuration newConfig)
+		public override void OnConfigurationChanged(global::Android.Content.Res.Configuration newConfig)
 		{
 			base.OnConfigurationChanged(newConfig);
 			ConfigurationChanged?.Invoke(this, new EventArgs());
 
-			Xamarin.Forms.Application.Current?.OnRequestedThemeChanged(new AppThemeChangedEventArgs(Xamarin.Forms.Application.Current.RequestedTheme));
+			System.Maui.Application.Current?.OnRequestedThemeChanged(new AppThemeChangedEventArgs(System.Maui.Application.Current.RequestedTheme));
 		}
 
 		public override bool OnOptionsItemSelected(IMenuItem item)
@@ -100,7 +100,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public void SetStatusBarColor(AColor color)
 		{
-			if (Forms.IsLollipopOrNewer)
+			if (System.Maui.Maui.IsLollipopOrNewer)
 			{
 				Window.SetStatusBarColor(color);
 			}
@@ -133,7 +133,7 @@ namespace Xamarin.Forms.Platform.Android
 			RegisterHandler(typeof(CarouselPage), typeof(AppCompat.CarouselPageRenderer), typeof(CarouselPageRenderer));
 			RegisterHandler(typeof(CheckBox), typeof(CheckBoxRenderer), typeof(CheckBoxDesignerRenderer));
 
-			if (Forms.Flags.Contains(Flags.UseLegacyRenderers))
+			if (System.Maui.Maui.Flags.Contains(Flags.UseLegacyRenderers))
 			{
 				RegisterHandler(typeof(Button), typeof(AppCompat.ButtonRenderer), typeof(ButtonRenderer));
 				RegisterHandler(typeof(Frame), typeof(AppCompat.FrameRenderer), typeof(FrameRenderer));
@@ -173,10 +173,10 @@ namespace Xamarin.Forms.Platform.Android
 			((IApplicationController)application).SetAppIndexingProvider(new AndroidAppIndexProvider(this));
 
 			Profile.FramePartition("SetCurrentApplication");
-			Xamarin.Forms.Application.SetCurrentApplication(application);
+			System.Maui.Application.SetCurrentApplication(application);
 
 			Profile.FramePartition("SetSoftInputMode");
-			if (Xamarin.Forms.Application.Current.OnThisPlatform().GetWindowSoftInputModeAdjust() != WindowSoftInputModeAdjust.Unspecified)
+			if (System.Maui.Application.Current.OnThisPlatform().GetWindowSoftInputModeAdjust() != WindowSoftInputModeAdjust.Unspecified)
 				SetSoftInputMode();
 
 			Profile.FramePartition("CheckForAppLink");
@@ -294,15 +294,15 @@ namespace Xamarin.Forms.Platform.Android
 			SetContentView(_layout);
 
 			Profile.FramePartition("OnStateChanged");
-			Xamarin.Forms.Application.ClearCurrent();
+			System.Maui.Application.ClearCurrent();
 
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnCreate;
 
 			OnStateChanged();
 
-			Profile.FramePartition("Forms.IsLollipopOrNewer");
-			if (Forms.IsLollipopOrNewer)
+			Profile.FramePartition("System.Maui.Maui.IsLollipopOrNewer");
+			if (System.Maui.Maui.IsLollipopOrNewer)
 			{
 				// Allow for the status bar color to be changed
 				if ((flags & ActivationFlags.DisableSetStatusBarColor) == 0)
@@ -311,7 +311,7 @@ namespace Xamarin.Forms.Platform.Android
 					Window.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
 				}
 			}
-			if (Forms.IsLollipopOrNewer)
+			if (System.Maui.Maui.IsLollipopOrNewer)
 			{
 				// Listen for the device going into power save mode so we can handle animations being disabled
 				Profile.FramePartition("Allocate PowerSaveModeReceiver");
@@ -353,7 +353,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			_layout.HideKeyboard(true);
 
-			if (_powerSaveReceiverRegistered && Forms.IsLollipopOrNewer)
+			if (_powerSaveReceiverRegistered && System.Maui.Maui.IsLollipopOrNewer)
 			{
 					// Don't listen for power save mode changes while we're paused
 					UnregisterReceiver(_powerSaveModeBroadcastReceiver);
@@ -404,7 +404,7 @@ namespace Xamarin.Forms.Platform.Android
 				SetMainPage();
 			}
 
-			if (!_powerSaveReceiverRegistered && Forms.IsLollipopOrNewer)
+			if (!_powerSaveReceiverRegistered && System.Maui.Maui.IsLollipopOrNewer)
 			{
 				// Start listening for power save mode changes
 				RegisterReceiver(_powerSaveModeBroadcastReceiver, new IntentFilter(
@@ -502,8 +502,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		void InternalSetPage(Page page)
 		{
-			if (!Forms.IsInitialized)
-				throw new InvalidOperationException("Call Forms.Init (Activity, Bundle) before this");
+			if (!System.Maui.Maui.IsInitialized)
+				throw new InvalidOperationException("Call System.Maui.Maui.Init(Activity, Bundle) before this");
 
 			if (Platform != null)
 			{
@@ -552,9 +552,9 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			var adjust = SoftInput.AdjustPan;
 
-			if (Xamarin.Forms.Application.Current != null)
+			if (System.Maui.Application.Current != null)
 			{
-				WindowSoftInputModeAdjust elementValue = Xamarin.Forms.Application.Current.OnThisPlatform().GetWindowSoftInputModeAdjust();
+				WindowSoftInputModeAdjust elementValue = System.Maui.Application.Current.OnThisPlatform().GetWindowSoftInputModeAdjust();
 				switch (elementValue)
 				{
 					case WindowSoftInputModeAdjust.Resize:

@@ -1,10 +1,10 @@
-﻿using System;
-using Windows.Foundation;
-using Windows.Graphics.Display;
-using Windows.UI.Xaml;
-using Xamarin.Forms.Internals;
+using System;
+using global::Windows.Foundation;
+using global::Windows.Graphics.Display;
+using global::Windows.UI.Xaml;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	internal class WindowsDeviceInfo : DeviceInfo
 	{

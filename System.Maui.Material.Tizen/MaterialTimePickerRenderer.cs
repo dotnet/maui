@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Globalization;
-using Xamarin.Forms;
-using Xamarin.Forms.Material.Tizen;
-using Xamarin.Forms.Material.Tizen.Native;
-using Xamarin.Forms.Platform.Tizen;
+using System.Maui;
+using System.Maui.Material.Tizen;
+using System.Maui.Material.Tizen.Native;
+using System.Maui.Platform.Tizen;
 
 [assembly: ExportRenderer(typeof(TimePicker), typeof(MaterialTimePickerRenderer), new[] { typeof(VisualMarker.MaterialVisual) }, Priority = short.MinValue)]
-namespace Xamarin.Forms.Material.Tizen
+namespace System.Maui.Material.Tizen
 {
 	public class MaterialTimePickerRenderer : TimePickerRenderer
 	{
@@ -15,14 +15,14 @@ namespace Xamarin.Forms.Material.Tizen
 
 		protected override ElmSharp.Entry CreateNativeControl()
 		{
-			return new MPicker(Forms.NativeParent);
+			return new MPicker(System.Maui.Maui.NativeParent);
 		}
 
 		protected override void UpdateTimeAndFormat()
 		{
 			if (Control is MPicker mp)
 			{
-				// Xamarin using DateTime formatting (https://developer.xamarin.com/api/property/Xamarin.Forms.TimePicker.Format/)
+				// Xamarin using DateTime formatting (https://developer.xamarin.com/api/property/System.Maui.TimePicker.Format/)
 				mp.Placeholder = new DateTime(Time.Ticks).ToString(Element.Format ?? _defaultFormat);
 			}
 		}

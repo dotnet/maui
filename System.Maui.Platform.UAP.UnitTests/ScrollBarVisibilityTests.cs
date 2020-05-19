@@ -1,7 +1,7 @@
-﻿using NUnit.Framework;
-using Xamarin.Forms.Platform.UWP;
+using NUnit.Framework;
+using System.Maui.Platform.UWP;
 
-namespace Xamarin.Forms.Platform.UAP.UnitTests
+namespace System.Maui.Platform.UAP.UnitTests
 {
 	[TestFixture]
 	public class ScrollBarVisibilityTests
@@ -13,9 +13,9 @@ namespace Xamarin.Forms.Platform.UAP.UnitTests
 			var defaultVisibility = ScrollBarVisibility.Default.ToUwpScrollBarVisibility();
 			var never = ScrollBarVisibility.Never.ToUwpScrollBarVisibility();
 
-			Assert.That(always, Is.EqualTo(Windows.UI.Xaml.Controls.ScrollBarVisibility.Visible));
-			Assert.That(defaultVisibility, Is.EqualTo(Windows.UI.Xaml.Controls.ScrollBarVisibility.Auto));
-			Assert.That(never, Is.EqualTo(Windows.UI.Xaml.Controls.ScrollBarVisibility.Hidden));
+			Assert.That(always, Is.EqualTo(global::Windows.UI.Xaml.Controls.ScrollBarVisibility.Visible));
+			Assert.That(defaultVisibility, Is.EqualTo(global::Windows.UI.Xaml.Controls.ScrollBarVisibility.Auto));
+			Assert.That(never, Is.EqualTo(global::Windows.UI.Xaml.Controls.ScrollBarVisibility.Hidden));
 		}
 	}
 }

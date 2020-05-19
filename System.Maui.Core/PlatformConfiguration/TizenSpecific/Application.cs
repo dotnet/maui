@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
+namespace System.Maui.PlatformConfiguration.TizenSpecific
 {
-	using FormsElement = Forms.Application;
+	using FormsElement = System.Maui.Application;
 
 	public static class Application
 	{

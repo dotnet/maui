@@ -1,12 +1,12 @@
-﻿using CoreGraphics;
+using CoreGraphics;
 using Foundation;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	internal sealed class HorizontalDefaultSupplementalView : DefaultCell
 	{
-		public static NSString ReuseId = new NSString("Xamarin.Forms.Platform.iOS.HorizontalDefaultSupplementalView");
+		public static NSString ReuseId = new NSString("System.Maui.Platform.iOS.HorizontalDefaultSupplementalView");
 
 		[Export("initWithFrame:")]
 		[Internals.Preserve(Conditional = true)]

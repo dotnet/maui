@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	[System.AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
 	public sealed class TypeConversionAttribute : Attribute

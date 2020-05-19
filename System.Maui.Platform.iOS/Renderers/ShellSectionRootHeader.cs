@@ -1,11 +1,11 @@
-﻿using CoreGraphics;
+using CoreGraphics;
 using Foundation;
 using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class ShellSectionRootHeader : UICollectionViewController, IAppearanceObserver, IShellSectionRootHeader
 	{

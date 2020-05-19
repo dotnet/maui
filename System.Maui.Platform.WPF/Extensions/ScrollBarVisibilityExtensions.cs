@@ -1,6 +1,6 @@
-﻿using WpfScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility;
+using WpfScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility;
 
-namespace Xamarin.Forms.Platform.WPF.Extensions
+namespace System.Maui.Platform.WPF.Extensions
 {
 	static class ScrollBarVisibilityExtensions
 	{

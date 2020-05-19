@@ -1,10 +1,10 @@
-﻿using System.IO;
+using System.IO;
 using System.Reflection;
-using Xamarin.Forms;
+using System.Maui;
 using System.Xml;
 
-[assembly:Dependency(typeof(Xamarin.Forms.Xaml.ResourcesLoader))]
-namespace Xamarin.Forms.Xaml
+[assembly:Dependency(typeof(System.Maui.Xaml.ResourcesLoader))]
+namespace System.Maui.Xaml
 {
 	class ResourcesLoader : IResourcesLoader
 	{
@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Xaml
 		{
 			var rd = new T();
 
-			var resourceLoadingResponse = Forms.Internals.ResourceLoader.ResourceProvider2?.Invoke(new Forms.Internals.ResourceLoader.ResourceLoadingQuery {
+			var resourceLoadingResponse = System.Maui.Internals.ResourceLoader.ResourceProvider2?.Invoke(new System.Maui.Internals.ResourceLoader.ResourceLoadingQuery {
 				AssemblyName = assembly.GetName(),
 				ResourcePath = resourcePath,
 				Instance = rd,
@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Xaml
 
 		public string GetResource(string resourcePath, Assembly assembly, object target, IXmlLineInfo lineInfo)
 		{
-			var resourceLoadingResponse = Forms.Internals.ResourceLoader.ResourceProvider2?.Invoke(new Forms.Internals.ResourceLoader.ResourceLoadingQuery {
+			var resourceLoadingResponse = System.Maui.Internals.ResourceLoader.ResourceProvider2?.Invoke(new System.Maui.Internals.ResourceLoader.ResourceLoadingQuery {
 				AssemblyName = assembly.GetName(),
 				ResourcePath = resourcePath,
 				Instance = target

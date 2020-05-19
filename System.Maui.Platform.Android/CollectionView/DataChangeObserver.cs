@@ -9,7 +9,7 @@ using static Android.Support.V7.Widget.RecyclerView;
 #endif
 using Object = Java.Lang.Object;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal class DataChangeObserver : RecyclerView.AdapterDataObserver
 	{
@@ -65,7 +65,7 @@ namespace Xamarin.Forms.Platform.Android
 			_onDataChange?.Invoke();
 		}
 
-		public override void OnItemRangeChanged(int positionStart, int itemCount, Object payload)
+		public override void OnItemRangeChanged(int positionStart, int itemCount, Java.Lang.Object payload)
 		{
 			base.OnItemRangeChanged(positionStart, itemCount, payload);
 			_onDataChange?.Invoke();

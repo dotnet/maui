@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using ElmSharp;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	public class TitleViewPage : Native.Box
 	{
@@ -9,7 +9,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		View _titleView = null;
 		bool _hasNavigationBar = true;
 
-		public TitleViewPage(EvasObject parent, Xamarin.Forms.Page page, View titleView) : base(parent)
+		public TitleViewPage(EvasObject parent, System.Maui.Page page, View titleView) : base(parent)
 		{
 			_page = Platform.GetOrCreateRenderer(page).NativeView as Native.Page;
 			_titleView = titleView;
@@ -48,11 +48,11 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 		void UpdatPageLayout(object sender, LayoutEventArgs e)
 		{
-			double dHeight = _titleView.Measure(Forms.ConvertToScaledDP(e.Geometry.Width), Forms.ConvertToScaledDP(e.Geometry.Height)).Request.Height;
+			double dHeight = _titleView.Measure(System.Maui.Maui.ConvertToScaledDP(e.Geometry.Width), System.Maui.Maui.ConvertToScaledDP(e.Geometry.Height)).Request.Height;
 			int height = 0;
 			if (_hasNavigationBar)
 			{
-				height = Forms.ConvertToScaledPixel(dHeight);
+				height = System.Maui.Maui.ConvertToScaledPixel(dHeight);
 			}
 
 			var renderer = Platform.GetOrCreateRenderer(_titleView);

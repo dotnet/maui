@@ -1,16 +1,16 @@
-﻿using CoreGraphics;
+using CoreGraphics;
 using Foundation;
 using ObjCRuntime;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using UIKit;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.iOS;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Maps;
-using Xamarin.Forms.Maps.iOS;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui;
+using System.Maui.ControlGallery.iOS;
+using System.Maui.Controls;
+using System.Maui.Maps;
+using System.Maui.Maps.iOS;
+using System.Maui.Platform.iOS;
 
 [assembly: ExportRenderer(typeof(PerformanceTracker), typeof(PerformanceTrackerRenderer))]
 [assembly: ExportRenderer(typeof(ActivityIndicator), typeof(PerformanceTrackingActivityIndicator))]
@@ -40,7 +40,7 @@ using Xamarin.Forms.Platform.iOS;
 
 [assembly: ExportRenderer(typeof(Frame), typeof(PerformanceTrackingFrame))]
 
-namespace Xamarin.Forms.ControlGallery.iOS
+namespace System.Maui.ControlGallery.iOS
 {
 	public interface IDrawnObservable
 	{

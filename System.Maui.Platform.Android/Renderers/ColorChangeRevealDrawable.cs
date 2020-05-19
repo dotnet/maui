@@ -1,10 +1,10 @@
-﻿using Android.Animation;
+using Android.Animation;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using System;
 using AColor = Android.Graphics.Color;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class ColorChangeRevealDrawable : AnimationDrawable
 	{

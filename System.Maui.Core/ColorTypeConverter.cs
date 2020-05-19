@@ -1,11 +1,11 @@
 using System;
 using System.Linq;
 using System.Globalization;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
-	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.ColorTypeConverter")]
+	[Xaml.ProvideCompiled("System.Maui.Core.XamlC.ColorTypeConverter")]
 	[Xaml.TypeConversion(typeof(Color))]
 	public class ColorTypeConverter : TypeConverter
 	{

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -6,24 +6,24 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation.Peers;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using WListView = Windows.UI.Xaml.Controls.ListView;
-using WBinding = Windows.UI.Xaml.Data.Binding;
-using WApp = Windows.UI.Xaml.Application;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ListView;
+using global::Windows.Foundation;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Automation.Peers;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Data;
+using global::Windows.UI.Xaml.Input;
+using global::Windows.UI.Xaml.Media;
+using WListView = global::Windows.UI.Xaml.Controls.ListView;
+using WBinding = global::Windows.UI.Xaml.Data.Binding;
+using WApp = global::Windows.UI.Xaml.Application;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
+using Specifics = System.Maui.PlatformConfiguration.WindowsSpecific.ListView;
 using System.Collections.ObjectModel;
-using UwpScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility;
-using WSelectionChangedEventArgs = Windows.UI.Xaml.Controls.SelectionChangedEventArgs;
+using UwpScrollBarVisibility = global::Windows.UI.Xaml.Controls.ScrollBarVisibility;
+using WSelectionChangedEventArgs = global::Windows.UI.Xaml.Controls.SelectionChangedEventArgs;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class ListViewRenderer : ViewRenderer<ListView, FrameworkElement>
 	{
@@ -77,10 +77,10 @@ namespace Xamarin.Forms.Platform.UWP
 					List = new ListViewTransparent
 					{
 						IsSynchronizedWithCurrentItem = false,
-						ItemTemplate = (Windows.UI.Xaml.DataTemplate)WApp.Current.Resources["CellTemplate"],
-						HeaderTemplate = (Windows.UI.Xaml.DataTemplate)WApp.Current.Resources["View"],
-						FooterTemplate = (Windows.UI.Xaml.DataTemplate)WApp.Current.Resources["View"],
-						ItemContainerStyle = (Windows.UI.Xaml.Style)WApp.Current.Resources["FormsListViewItem"],
+						ItemTemplate = (global::Windows.UI.Xaml.DataTemplate)WApp.Current.Resources["CellTemplate"],
+						HeaderTemplate = (global::Windows.UI.Xaml.DataTemplate)WApp.Current.Resources["View"],
+						FooterTemplate = (global::Windows.UI.Xaml.DataTemplate)WApp.Current.Resources["View"],
+						ItemContainerStyle = (global::Windows.UI.Xaml.Style)WApp.Current.Resources["FormsListViewItem"],
 						GroupStyleSelector = (GroupStyleSelector)WApp.Current.Resources["ListViewGroupSelector"]
 					};
 
@@ -404,7 +404,7 @@ namespace Xamarin.Forms.Platform.UWP
 				{
 					ScrollViewer.SetIsVerticalScrollChainingEnabled(List, false);
 
-					var grid = new GridView { ItemsSource = templatedItems.ShortNames, Style = (Windows.UI.Xaml.Style)WApp.Current.Resources["JumpListGrid"] };
+					var grid = new GridView { ItemsSource = templatedItems.ShortNames, Style = (global::Windows.UI.Xaml.Style)WApp.Current.Resources["JumpListGrid"] };
 
 					ScrollViewer.SetIsHorizontalScrollChainingEnabled(grid, false);
 
@@ -435,13 +435,13 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			if (Element.SelectionMode == ListViewSelectionMode.None)
 			{
-				List.SelectionMode = Windows.UI.Xaml.Controls.ListViewSelectionMode.None;
+				List.SelectionMode = global::Windows.UI.Xaml.Controls.ListViewSelectionMode.None;
 				List.SelectedIndex = -1;
 				Element.SelectedItem = null;
 			}
 			else if (Element.SelectionMode == ListViewSelectionMode.Single)
 			{
-				List.SelectionMode = Windows.UI.Xaml.Controls.ListViewSelectionMode.Single;
+				List.SelectionMode = global::Windows.UI.Xaml.Controls.ListViewSelectionMode.Single;
 
 				// UWP seems to reset the selected item when SelectionMode is set, make sure our items stays selected by doing this call
 				if (Element.SelectedItem != null)
@@ -552,9 +552,9 @@ namespace Xamarin.Forms.Platform.UWP
 
 		bool ScrollToItemWithAnimation(ScrollViewer viewer, object item)
 		{
-			var selectorItem = List.ContainerFromItem(item) as Windows.UI.Xaml.Controls.Primitives.SelectorItem;
+			var selectorItem = List.ContainerFromItem(item) as global::Windows.UI.Xaml.Controls.Primitives.SelectorItem;
 			var transform = selectorItem?.TransformToVisual(viewer.Content as UIElement);
-			var position = transform?.TransformPoint(new Windows.Foundation.Point(0, 0));
+			var position = transform?.TransformPoint(new global::Windows.Foundation.Point(0, 0));
 			if (!position.HasValue)
 				return false;
 			// scroll with animation
@@ -597,7 +597,7 @@ namespace Xamarin.Forms.Platform.UWP
 			var semanticLocation = new SemanticZoomLocation { Item = c };
 
 			// async scrolling
-			await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+			await Dispatcher.RunAsync(global::Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
 			{
 				switch (toPosition)
 				{
@@ -619,7 +619,7 @@ namespace Xamarin.Forms.Platform.UWP
 						{
 							var content = (FrameworkElement)List.ItemTemplate.LoadContent();
 							content.DataContext = c;
-							content.Measure(new Windows.Foundation.Size(viewer.ActualWidth, double.PositiveInfinity));
+							content.Measure(new global::Windows.Foundation.Size(viewer.ActualWidth, double.PositiveInfinity));
 
 							double tHeight = content.DesiredSize.Height;
 

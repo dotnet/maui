@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Platform.Tizen;
+using System.Maui.Platform.Tizen;
 
-namespace Xamarin.Forms.Material.Tizen
+namespace System.Maui.Material.Tizen
 {
 	public class MaterialShellSectionNavigation : ShellSectionNavigation
 	{

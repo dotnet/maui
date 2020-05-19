@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
 #if UITEST
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1760, "Content set after an await is not visible", PlatformAffected.Android)]
@@ -122,9 +122,9 @@ namespace Xamarin.Forms.Controls.Issues
 					};
 
 					headerLayout.Children.Add(_headerLabel,
-						Forms.Constraint.Constant(0),
-						Forms.Constraint.Constant(0),
-						Forms.Constraint.RelativeToParent(parent => parent.Width));
+						System.Maui.Constraint.Constant(0),
+						System.Maui.Constraint.Constant(0),
+						System.Maui.Constraint.RelativeToParent(parent => parent.Width));
 
 					Content = new StackLayout
 					{

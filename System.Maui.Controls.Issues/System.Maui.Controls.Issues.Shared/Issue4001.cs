@@ -1,15 +1,15 @@
-﻿using System;
+using System;
 using System.Linq;
 
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
 #if UITEST
 using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 4001, "[MacOS] NullRef in WebViewRenderer", PlatformAffected.macOS, NavigationBehavior.PushAsync)]
@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			(Content as StackLayout).Children.Insert(0, new WebView
 			{
-				Source = "https://github.com/xamarin/Xamarin.Forms/issues/4001",
+				Source = "https://github.com/xamarin/System.Maui/issues/4001",
 				HeightRequest = 400
 			});
 		}

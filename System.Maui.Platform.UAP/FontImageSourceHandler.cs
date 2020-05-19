@@ -1,27 +1,27 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.Graphics.Canvas.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Media;
 using WFontIconSource = Microsoft.UI.Xaml.Controls.FontIconSource;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public sealed class FontImageSourceHandler : IImageSourceHandler, IIconElementHandler
 	{
 		float _minimumDpi = 300;
 
-		public Task<Windows.UI.Xaml.Media.ImageSource> LoadImageAsync(ImageSource imagesource,
+		public Task<global::Windows.UI.Xaml.Media.ImageSource> LoadImageAsync(ImageSource imagesource,
 			CancellationToken cancelationToken = default(CancellationToken))
 		{
 			if (!(imagesource is FontImageSource fontsource))
 				return null;
 
 			var device = CanvasDevice.GetSharedDevice();
-			var dpi = Math.Max(_minimumDpi, Windows.Graphics.Display.DisplayInformation.GetForCurrentView().LogicalDpi);
+			var dpi = Math.Max(_minimumDpi, global::Windows.Graphics.Display.DisplayInformation.GetForCurrentView().LogicalDpi);
 
 			var textFormat = new CanvasTextFormat
 			{
@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Platform.UWP
 				var canvasHeight = (float)layout.LayoutBounds.Height + 2;
 
 				var imageSource = new CanvasImageSource(device, canvasWidth, canvasHeight, dpi);
-				using (var ds = imageSource.CreateDrawingSession(Windows.UI.Colors.Transparent))
+				using (var ds = imageSource.CreateDrawingSession(global::Windows.UI.Colors.Transparent))
 				{
 					var iconcolor = (fontsource.Color != Color.Default ? fontsource.Color : Color.White).ToWindowsColor();
 
@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Platform.UWP
 					ds.DrawTextLayout(layout, x, 1f, iconcolor);
 				}
 
-				return Task.FromResult((Windows.UI.Xaml.Media.ImageSource)imageSource);
+				return Task.FromResult((global::Windows.UI.Xaml.Media.ImageSource)imageSource);
 			}
 		}
 

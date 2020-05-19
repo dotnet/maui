@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Windows.Input;
 using NUnit.Framework;
-using Xamarin.Forms;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public partial class Gh7097 : Gh7097Base
 	{
@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			}
 
 			[Test]
-			//this was later reported as https://github.com/xamarin/Xamarin.Forms/issues/7286
+			//this was later reported as https://github.com/xamarin/System.Maui/issues/7286
 			public void RegisteringXNameOnSubPages([Values(false, true)]bool useCompiledXaml)
 			{
 				var layout = new Gh7097(useCompiledXaml);

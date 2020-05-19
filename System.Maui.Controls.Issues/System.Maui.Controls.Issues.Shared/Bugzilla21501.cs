@@ -1,9 +1,9 @@
-﻿using System;
-using Xamarin.Forms.CustomAttributes;
+using System;
+using System.Maui.CustomAttributes;
 using System.Collections.Generic;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Bugzilla, 21501, "ListView: Button in ItemTemplate breaks SelectedItem",PlatformAffected.Android)]

@@ -4,11 +4,11 @@ using CoreAnimation;
 using CoreGraphics;
 using MaterialComponents;
 using UIKit;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui.Platform.iOS;
 using MActivityIndicator = MaterialComponents.ActivityIndicator;
 
 
-namespace Xamarin.Forms.Material.iOS
+namespace System.Maui.Material.iOS
 {
 	public class MaterialActivityIndicatorRenderer : ViewRenderer<ActivityIndicator, MActivityIndicator>
 	{

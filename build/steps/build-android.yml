@@ -6,9 +6,9 @@ parameters:
   dependsOn: []       # the dependiencies
   preBuildSteps: []   # any steps to run before the build
   postBuildSteps: []  # any additional steps to run after the build
-  slnPath : 'Xamarin.Forms.sln'
-  buildTaskPath : 'Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj'
-  androidProjectPath : 'Xamarin.Forms.ControlGallery.Android/Xamarin.Forms.ControlGallery.Android.csproj'
+  slnPath : 'System.Maui.sln'
+  buildTaskPath : 'System.Maui.Build.Tasks/System.Maui.Build.Tasks.csproj'
+  androidProjectPath : 'System.Maui.ControlGallery.Android/System.Maui.ControlGallery.Android.csproj'
   buildConfiguration : 'Debug'
   nugetVersion: $(NUGET_VERSION)
   monoVersion: $(MONO_VERSION)
@@ -110,9 +110,9 @@ jobs:
       - task: CopyFiles@2
         displayName: 'Copy $(renderers)'
         inputs:
-          SourceFolder: Xamarin.Forms.ControlGallery.Android/bin/${{ parameters.buildConfiguration }}/
+          SourceFolder: System.Maui.ControlGallery.Android/bin/${{ parameters.buildConfiguration }}/
           Contents: '**/*.apk'
-          TargetFolder: 'Xamarin.Forms.ControlGallery.Android/$(outputfolder)/'
+          TargetFolder: 'System.Maui.ControlGallery.Android/$(outputfolder)/'
           CleanTargetFolder: true
           OverWrite: true
 
@@ -121,7 +121,7 @@ jobs:
         condition: eq(variables['buildForVS2017'], 'false')
         inputs:
           Contents: |
-            Xamarin.Forms.ControlGallery.Android/$(outputfolder)/$(ApkName)
+            System.Maui.ControlGallery.Android/$(outputfolder)/$(ApkName)
           TargetFolder: '$(build.artifactstagingdirectory)/androidApp'
           CleanTargetFolder: true
 
@@ -130,7 +130,7 @@ jobs:
         condition: eq(variables['buildForVS2017'], 'true')
         inputs:
           Contents: |
-            Xamarin.Forms.ControlGallery.Android/$(outputfolder)/$(ApkName)
+            System.Maui.ControlGallery.Android/$(outputfolder)/$(ApkName)
           TargetFolder: '$(build.artifactstagingdirectory)/androidApp_2017'
           CleanTargetFolder: true
 

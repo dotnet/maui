@@ -23,15 +23,15 @@ using ADrawableCompat = Android.Support.V4.Graphics.Drawable.DrawableCompat;
 #endif
 using AWidget = Android.Widget;
 using Android.Views;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
 using AView = Android.Views.View;
 using AMenu = Android.Views.Menu;
 using AColor = Android.Graphics.Color;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-namespace Xamarin.Forms.Platform.Android.AppCompat
+namespace System.Maui.Platform.Android.AppCompat
 {
 	public class TabbedPageRenderer : VisualElementRenderer<TabbedPage>, TabLayout.IOnTabSelectedListener, ViewPager.IOnPageChangeListener, IManageFragments, BottomNavigationView.IOnNavigationItemSelectedListener
 	{
@@ -428,7 +428,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				if (tabs.Visibility != ViewStates.Gone)
 				{
 					//MinimumHeight is only available on API 16+
-					if ((int)Forms.SdkInt >= 16)
+					if ((int)System.Maui.Maui.SdkInt >= 16)
 						tabsHeight = Math.Min(height, Math.Max(tabs.MeasuredHeight, tabs.MinimumHeight));
 					else
 						tabsHeight = Math.Min(height, tabs.MeasuredHeight);
@@ -742,7 +742,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			{
 				Color tintColor = Element.BarBackgroundColor;
 
-				if (Forms.IsLollipopOrNewer)
+				if (System.Maui.Maui.IsLollipopOrNewer)
 				{
 					if (tintColor.IsDefault)
 						_tabLayout.BackgroundTintMode = null;

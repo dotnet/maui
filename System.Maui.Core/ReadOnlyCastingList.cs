@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	internal class ReadOnlyCastingList<T, TFrom> : IReadOnlyList<T> where T : class where TFrom : class
 	{

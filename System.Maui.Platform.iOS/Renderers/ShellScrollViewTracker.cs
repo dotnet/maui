@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using UIKit;
 using PointF = CoreGraphics.CGPoint;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class ShellScrollViewTracker : IDisposable, IShellContentInsetObserver
 	{
@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (!_isInShell)
 				return;
 
-			if (Forms.IsiOS11OrNewer)
+			if (System.Maui.Maui.IsiOS11OrNewer)
 			{
 				var newBounds = _scrollView.AdjustedContentInset.InsetRect(_scrollView.Bounds).ToRectangle();
 				newBounds.X = 0;
@@ -88,7 +88,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_lastInset == 0 && _tabThickness == 0)
 				return false;
 
-			if (!Forms.IsiOS11OrNewer)
+			if (!System.Maui.Maui.IsiOS11OrNewer)
 			{
 				UpdateContentInset(_lastInset, _tabThickness);
 				return true;
@@ -107,7 +107,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			_lastInset = inset;
 			_tabThickness = tabThickness;
-			if (Forms.IsiOS11OrNewer)
+			if (System.Maui.Maui.IsiOS11OrNewer)
 			{
 				if (ShellSectionController.GetItems().Count > 1 && _isInItems)
 				{
@@ -154,7 +154,7 @@ namespace Xamarin.Forms.Platform.iOS
 			// If we can't bounce in that case you may not be able to expose the handler.
 			// Also the hiding behavior only depends on scroll on iOS 11. In 10 and below
 			// the search goes in the TitleView so there is nothing to collapse/expand.
-			if (!Forms.IsiOS11OrNewer || 
+			if (!System.Maui.Maui.IsiOS11OrNewer || 
 				(_renderer.Element is ScrollView scrollView && scrollView.Orientation == ScrollOrientation.Horizontal))
 				return;
 

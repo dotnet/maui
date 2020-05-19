@@ -1,11 +1,11 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Android;
 using Android.App;
-using Xamarin.Forms;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Maps;
-using Xamarin.Forms.Maps.Android;
+using System.Maui;
+using System.Maui.Internals;
+using System.Maui.Maps;
+using System.Maui.Maps.Android;
 
 [assembly: ComVisible(false)]
 

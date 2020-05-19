@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using AppKit;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public class SwitchCellRenderer : CellRenderer
 	{

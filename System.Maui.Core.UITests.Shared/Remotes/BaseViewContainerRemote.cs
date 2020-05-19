@@ -5,7 +5,7 @@ using System.Threading;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 
-namespace Xamarin.Forms.Core.UITests
+namespace System.Maui.Core.UITests
 {
 	internal abstract partial class BaseViewContainerRemote
 	{

@@ -5,21 +5,21 @@ using System.IO;
 using System.Reflection;
 using System.Diagnostics;
 
-namespace Xamarin.Forms.MSBuild.UnitTests
+namespace System.Maui.MSBuild.UnitTests
 {
 	[TestFixture]
 	public class AssemblyInfoTests
 	{
 		static readonly string[] references = new[]
 		{
-			"Xamarin.Forms.Core",
-			"Xamarin.Forms.Maps",
-			"Xamarin.Forms.Xaml",
-			"Xamarin.Forms.Build.Tasks",
-			"Xamarin.Forms.Platform",
+			"System.Maui.Core",
+			"System.Maui.Maps",
+			"System.Maui.Xaml",
+			"System.Maui.Build.Tasks",
+			"System.Maui.Platform",
 		};
 
-		const string s_productName = "Xamarin.Forms";
+		const string s_productName = "System.Maui";
 
 		const string s_company = "Microsoft";
 

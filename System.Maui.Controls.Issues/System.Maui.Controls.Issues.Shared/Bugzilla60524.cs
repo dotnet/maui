@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.CustomAttributes;
+using System.Maui.Internals;
+using System.Maui.CustomAttributes;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 60524, "NRE when rendering ListView with grouping enabled and HasUnevenRows set to true", PlatformAffected.iOS)]
@@ -72,7 +72,7 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 		}
 		[Preserve(AllMembers = true)]
-		public class GroupedItemsDataTemplateSelector : Xamarin.Forms.DataTemplateSelector
+		public class GroupedItemsDataTemplateSelector : System.Maui.DataTemplateSelector
 		{
 			private readonly DataTemplate firstGroupTemplate;
 			private readonly DataTemplate secondGroupTemplate;

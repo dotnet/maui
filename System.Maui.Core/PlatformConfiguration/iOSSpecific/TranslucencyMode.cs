@@ -1,5 +1,5 @@
-﻿
-namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
+
+namespace System.Maui.PlatformConfiguration.iOSSpecific
 {
 	public enum TranslucencyMode
 	{

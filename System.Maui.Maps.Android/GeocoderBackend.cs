@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Locations;
 using AGeocoder = Android.Locations.Geocoder;
 
-namespace Xamarin.Forms.Maps.Android
+namespace System.Maui.Maps.Android
 {
 	internal class GeocoderBackend
 	{

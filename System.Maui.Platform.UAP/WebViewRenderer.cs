@@ -1,23 +1,23 @@
 using System;
 using System.ComponentModel;
-using Windows.UI.Core;
-using Windows.UI.Xaml.Controls;
-using Xamarin.Forms.Internals;
+using global::Windows.UI.Core;
+using global::Windows.UI.Xaml.Controls;
+using System.Maui.Internals;
 using static System.String;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
 using System.Threading.Tasks;
 using System.Net;
-using Windows.Web.Http;
+using global::Windows.Web.Http;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	public class WebViewRenderer : ViewRenderer<WebView, Windows.UI.Xaml.Controls.WebView>, IWebViewDelegate
+	public class WebViewRenderer : ViewRenderer<WebView, global::Windows.UI.Xaml.Controls.WebView>, IWebViewDelegate
 	{
 		WebNavigationEvent _eventState;
 		bool _updating;
-		Windows.UI.Xaml.Controls.WebView _internalWebView;
+		global::Windows.UI.Xaml.Controls.WebView _internalWebView;
 		const string LocalScheme = "ms-appx-web:///";
 
 		// Script to insert a <base> tag into an HTML document
@@ -41,7 +41,7 @@ if(bases.length == 0){
 
 			// Set up an internal WebView we can use to load and parse the original HTML string
 			// Make _internalWebView a field instead of local variable to avoid garbage collection
-			_internalWebView = new Windows.UI.Xaml.Controls.WebView();
+			_internalWebView = new global::Windows.UI.Xaml.Controls.WebView();
 
 			// When the 'navigation' to the original HTML string is done, we can modify it to include our <base> tag
 			_internalWebView.NavigationCompleted += async (sender, args) =>
@@ -79,7 +79,7 @@ if(bases.length == 0){
 
 				try
 				{
-					var httpRequestMessage = new Windows.Web.Http.HttpRequestMessage(Windows.Web.Http.HttpMethod.Get, uri);
+					var httpRequestMessage = new global::Windows.Web.Http.HttpRequestMessage(global::Windows.Web.Http.HttpMethod.Get, uri);
 					Control.NavigateWithHttpRequestMessage(httpRequestMessage);
 				}
 				catch (System.Exception exc)
@@ -135,7 +135,7 @@ if(bases.length == 0){
 			{
 				if (Control == null)
 				{
-					var webView = new Windows.UI.Xaml.Controls.WebView();
+					var webView = new global::Windows.UI.Xaml.Controls.WebView();
 					webView.NavigationStarting += OnNavigationStarted;
 					webView.NavigationCompleted += OnNavigationCompleted;
 					webView.NavigationFailed += OnNavigationFailed;
@@ -170,7 +170,7 @@ if(bases.length == 0){
 		HttpCookieCollection GetCookiesFromNativeStore(string url)
 		{
 			CookieContainer existingCookies = new CookieContainer();
-			var filter = new Windows.Web.Http.Filters.HttpBaseProtocolFilter();
+			var filter = new global::Windows.Web.Http.Filters.HttpBaseProtocolFilter();
 			var uri = new Uri(url);
 			var nativeCookies = filter.CookieManager.GetCookies(uri);
 			return nativeCookies;
@@ -213,7 +213,7 @@ if(bases.length == 0){
 			var cookies = myCookieJar.GetCookies(uri);
 			var retrieveCurrentWebCookies = GetCookiesFromNativeStore(url);
 
-			var filter = new Windows.Web.Http.Filters.HttpBaseProtocolFilter();
+			var filter = new global::Windows.Web.Http.Filters.HttpBaseProtocolFilter();
 			var nativeCookies = filter.CookieManager.GetCookies(uri);
 
 			foreach (Cookie cookie in cookies)
@@ -247,7 +247,7 @@ if(bases.length == 0){
 
 			var retrieveCurrentWebCookies = GetCookiesFromNativeStore(url);
 
-			var filter = new Windows.Web.Http.Filters.HttpBaseProtocolFilter();
+			var filter = new global::Windows.Web.Http.Filters.HttpBaseProtocolFilter();
 			foreach (Cookie cookie in cookies)
 			{
 				HttpCookie httpCookie = new HttpCookie(cookie.Name, cookie.Domain, cookie.Path);
@@ -310,7 +310,7 @@ if(bases.length == 0){
 			Control.Refresh();
 		}
 
-		async void OnNavigationCompleted(Windows.UI.Xaml.Controls.WebView sender, WebViewNavigationCompletedEventArgs e)
+		async void OnNavigationCompleted(global::Windows.UI.Xaml.Controls.WebView sender, WebViewNavigationCompletedEventArgs e)
 		{
 			if (e.Uri != null)
 				SendNavigated(new UrlWebViewSource { Url = e.Uri.AbsoluteUri }, _eventState, WebNavigationResult.Success);
@@ -327,7 +327,7 @@ if(bases.length == 0){
 				SendNavigated(new UrlWebViewSource { Url = e.Uri.AbsoluteUri }, _eventState, WebNavigationResult.Failure);
 		}
 
-		void OnNavigationStarted(Windows.UI.Xaml.Controls.WebView sender, WebViewNavigationStartingEventArgs e)
+		void OnNavigationStarted(global::Windows.UI.Xaml.Controls.WebView sender, WebViewNavigationStartingEventArgs e)
 		{
 			Uri uri = e.Uri;
 
@@ -347,7 +347,7 @@ if(bases.length == 0){
 		async void OnScriptNotify(object sender, NotifyEventArgs e)
 		{
 			if (Element.OnThisPlatform().IsJavaScriptAlertEnabled())
-				await new Windows.UI.Popups.MessageDialog(e.Value).ShowAsync();
+				await new global::Windows.UI.Popups.MessageDialog(e.Value).ShowAsync();
 		}
 
 		void SendNavigated(UrlWebViewSource source, WebNavigationEvent evnt, WebNavigationResult result)

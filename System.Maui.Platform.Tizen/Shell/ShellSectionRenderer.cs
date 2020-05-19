@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using ElmSharp;
 using EToolbarItem = ElmSharp.ToolbarItem;
 using EColor = ElmSharp.Color;
-using Xamarin.Forms.Platform.Tizen.Native;
+using System.Maui.Platform.Tizen.Native;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class ShellSectionRenderer : IAppearanceObserver
 	{
@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			_section.PropertyChanged += OnSectionPropertyChanged;
 			(_section.Items as INotifyCollectionChanged).CollectionChanged += OnShellSectionCollectionChanged;
 
-			_box = new Native.Box(Forms.NativeParent);
+			_box = new Native.Box(System.Maui.Maui.NativeParent);
 			_box.LayoutUpdated += OnLayoutUpdated;
 
 			_tabs = CreateToolbar();
@@ -127,7 +127,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		protected virtual IShellTabs CreateToolbar()
 		{
-			return new ShellTabs(Forms.NativeParent);
+			return new ShellTabs(System.Maui.Maui.NativeParent);
 		}
 
 		void InitializeTabs()

@@ -1,7 +1,7 @@
 using CoreGraphics;
 using UIKit;
 
-namespace Xamarin.Forms.ControlGallery.iOS
+namespace System.Maui.ControlGallery.iOS
 {
 	/// <summary>
 	///     This is a custom Android control which deliberately does some incorrect measuring/layout

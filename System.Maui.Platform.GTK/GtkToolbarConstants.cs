@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Platform.GTK
+namespace System.Maui.Platform.GTK
 {
 	internal class GtkToolbarConstants
 	{

@@ -1,12 +1,12 @@
-using Windows.Foundation;
-using Windows.Graphics.Display;
-using Windows.UI;
-using Windows.UI.ViewManagement;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
+using global::Windows.Foundation;
+using global::Windows.Graphics.Display;
+using global::Windows.UI;
+using global::Windows.UI.ViewManagement;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Media;
 
-namespace Xamarin.Forms.ControlGallery.WindowsUniversal
+namespace System.Maui.ControlGallery.WindowsUniversal
 {
 	internal class BrokenNativeControl : Panel
 	{
@@ -45,14 +45,14 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 
 		readonly TextBlock _textBlock;
 
-		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
+		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
 			_textBlock.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
 			return finalSize;
 		}
 
 
-		protected override Windows.Foundation.Size  MeasureOverride (Windows.Foundation.Size availableSize)
+		protected override global::Windows.Foundation.Size  MeasureOverride (global::Windows.Foundation.Size availableSize)
 		{
 			_textBlock.Measure (availableSize);
 
@@ -61,7 +61,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			double scaleFactor = DisplayInformation.GetForCurrentView ().RawPixelsPerViewPixel;
 			var size = new Size (bounds.Width * scaleFactor, bounds.Height * scaleFactor);
 
-			return new Windows.Foundation.Size (size.Width, _textBlock.DesiredSize.Height);
+			return new global::Windows.Foundation.Size (size.Width, _textBlock.DesiredSize.Height);
 		}
 	}
 }

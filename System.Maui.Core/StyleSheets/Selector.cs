@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms.StyleSheets
+namespace System.Maui.StyleSheets
 {
 	abstract class Selector
 	{

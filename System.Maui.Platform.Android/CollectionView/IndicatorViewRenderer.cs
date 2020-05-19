@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Views;
 using Android.Widget;
-using Xamarin.Forms.Platform.Android.FastRenderers;
+using System.Maui.Platform.Android.FastRenderers;
 using Android.Graphics.Drawables;
 using AView = Android.Views.View;
 using AColor = Android.Graphics.Color;
 using AShapes = Android.Graphics.Drawables.Shapes;
 using AShapeType = Android.Graphics.Drawables.ShapeType;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class IndicatorViewRenderer : LinearLayout, IVisualElementRenderer, IViewRenderer, ITabStop
 	{

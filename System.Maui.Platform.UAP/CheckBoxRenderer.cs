@@ -1,8 +1,8 @@
-﻿using System.ComponentModel;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
+using System.ComponentModel;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Media;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class CheckBoxRenderer : ViewRenderer<CheckBox, FormsCheckBox>
 	{
@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			return new FormsCheckBox()
 			{
-				Style = Windows.UI.Xaml.Application.Current.Resources["FormsCheckBoxStyle"] as Windows.UI.Xaml.Style,			
+				Style = global::Windows.UI.Xaml.Application.Current.Resources["FormsCheckBoxStyle"] as global::Windows.UI.Xaml.Style,			
 			};
 		}
 

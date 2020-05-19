@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using NUnit.Framework;
-using Xamarin.Forms;
-using Xamarin.Forms.Core.UnitTests;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml.Internals;
+using System.Maui;
+using System.Maui.Core.UnitTests;
+using System.Maui.Internals;
+using System.Maui.Xaml.Internals;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public abstract class MockNativeView
 	{ 

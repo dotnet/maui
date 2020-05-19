@@ -1,18 +1,18 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 6260, "[Android] infinite layout loop",
@@ -60,7 +60,7 @@ namespace Xamarin.Forms.Controls.Issues
 				{
 					new Label()
 					{
-						Text = "Welcome to Xamarin.Forms!",
+						Text = "Welcome to System.Maui!",
 						HorizontalOptions = LayoutOptions.Center,
 						VerticalOptions = LayoutOptions.CenterAndExpand
 					},

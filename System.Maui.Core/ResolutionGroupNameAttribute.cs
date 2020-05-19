@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[AttributeUsage(AttributeTargets.Assembly)]
 	public sealed class ResolutionGroupNameAttribute : Attribute

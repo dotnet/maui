@@ -1,7 +1,7 @@
-﻿using MaterialComponents;
+using MaterialComponents;
 using MTextInputControllerBase = MaterialComponents.TextInputControllerBase;
 
-namespace Xamarin.Forms.Material.iOS
+namespace System.Maui.Material.iOS
 {
 	internal interface IMaterialTextField
 	{

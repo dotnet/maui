@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Globalization;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public class Bz47703Converter : IValueConverter
 	{

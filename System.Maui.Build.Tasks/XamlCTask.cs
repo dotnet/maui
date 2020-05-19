@@ -9,12 +9,12 @@ using Microsoft.Build.Framework;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 
 using static Microsoft.Build.Framework.MessageImportance;
 using static Mono.Cecil.Cil.OpCodes;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace System.Maui.Build.Tasks
 {
 	public class XamlCTask : XamlTask
 	{
@@ -87,7 +87,7 @@ namespace Xamarin.Forms.Build.Tasks
 					if (assemblyDefinition.HasCustomAttributes &&
 						(xamlcAttr =
 							assemblyDefinition.CustomAttributes.FirstOrDefault(
-								ca => ca.AttributeType.FullName == "Xamarin.Forms.Xaml.XamlCompilationAttribute")) != null) {
+								ca => ca.AttributeType.FullName == "System.Maui.Xaml.XamlCompilationAttribute")) != null) {
 						var options = (XamlCompilationOptions)xamlcAttr.ConstructorArguments[0].Value;
 						if ((options & XamlCompilationOptions.Skip) == XamlCompilationOptions.Skip)
 							skipassembly = true;
@@ -100,7 +100,7 @@ namespace Xamarin.Forms.Build.Tasks
 						if (module.HasCustomAttributes &&
 							(xamlcAttr =
 								module.CustomAttributes.FirstOrDefault(
-									ca => ca.AttributeType.FullName == "Xamarin.Forms.Xaml.XamlCompilationAttribute")) != null) {
+									ca => ca.AttributeType.FullName == "System.Maui.Xaml.XamlCompilationAttribute")) != null) {
 							var options = (XamlCompilationOptions)xamlcAttr.ConstructorArguments[0].Value;
 							if ((options & XamlCompilationOptions.Skip) == XamlCompilationOptions.Skip)
 								skipmodule = true;
@@ -126,7 +126,7 @@ namespace Xamarin.Forms.Build.Tasks
 							if (typeDef.HasCustomAttributes &&
 								(xamlcAttr =
 									typeDef.CustomAttributes.FirstOrDefault(
-										ca => ca.AttributeType.FullName == "Xamarin.Forms.Xaml.XamlCompilationAttribute")) != null) {
+										ca => ca.AttributeType.FullName == "System.Maui.Xaml.XamlCompilationAttribute")) != null) {
 								var options = (XamlCompilationOptions)xamlcAttr.ConstructorArguments[0].Value;
 								if ((options & XamlCompilationOptions.Skip) == XamlCompilationOptions.Skip)
 									skiptype = true;
@@ -149,7 +149,7 @@ namespace Xamarin.Forms.Build.Tasks
 							}
 
 							CustomAttribute xamlFilePathAttr;
-							var xamlFilePath = typeDef.HasCustomAttributes && (xamlFilePathAttr = typeDef.CustomAttributes.FirstOrDefault(ca => ca.AttributeType.FullName == "Xamarin.Forms.Xaml.XamlFilePathAttribute")) != null ?
+							var xamlFilePath = typeDef.HasCustomAttributes && (xamlFilePathAttr = typeDef.CustomAttributes.FirstOrDefault(ca => ca.AttributeType.FullName == "System.Maui.Xaml.XamlFilePathAttribute")) != null ?
 													  (string)xamlFilePathAttr.ConstructorArguments[0].Value :
 													  resource.Name;
 
@@ -282,7 +282,7 @@ namespace Xamarin.Forms.Build.Tasks
 					//First using the ResourceLoader
 					var nop = Instruction.Create(Nop);
 
-					il.Emit(Newobj, module.ImportCtorReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "ResourceLoader/ResourceLoadingQuery"), 0));
+					il.Emit(Newobj, module.ImportCtorReference(("System.Maui.Core", "System.Maui.Internals", "ResourceLoader/ResourceLoadingQuery"), 0));
 
 					//AssemblyName
 					il.Emit(Dup); //dup the RLQ
@@ -291,19 +291,19 @@ namespace Xamarin.Forms.Build.Tasks
 					il.Emit(Call, module.ImportMethodReference(("mscorlib", "System.Reflection", "IntrospectionExtensions"), methodName: "GetTypeInfo", parameterTypes: new[] { ("mscorlib", "System", "Type") }, isStatic: true));
 					il.Emit(Callvirt, module.ImportPropertyGetterReference(("mscorlib", "System.Reflection", "TypeInfo"), propertyName: "Assembly", flatten: true));
 					il.Emit(Callvirt, module.ImportMethodReference(("mscorlib", "System.Reflection", "Assembly"), methodName: "GetName", parameterTypes: null));
-					il.Emit(Callvirt, module.ImportPropertySetterReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "ResourceLoader/ResourceLoadingQuery"), "AssemblyName"));
+					il.Emit(Callvirt, module.ImportPropertySetterReference(("System.Maui.Core", "System.Maui.Internals", "ResourceLoader/ResourceLoadingQuery"), "AssemblyName"));
 
 					//ResourcePath
 					il.Emit(Dup); //dup the RLQ
 					il.Emit(Ldstr, resourcePath);
-					il.Emit(Callvirt, module.ImportPropertySetterReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "ResourceLoader/ResourceLoadingQuery"), "ResourcePath"));
+					il.Emit(Callvirt, module.ImportPropertySetterReference(("System.Maui.Core", "System.Maui.Internals", "ResourceLoader/ResourceLoadingQuery"), "ResourcePath"));
 
 					//Instance
 					il.Emit(Dup); //dup the RLQ
 					il.Emit(Ldarg_0); //Instance = this
-					il.Emit(Callvirt, module.ImportPropertySetterReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "ResourceLoader/ResourceLoadingQuery"), "Instance"));
+					il.Emit(Callvirt, module.ImportPropertySetterReference(("System.Maui.Core", "System.Maui.Internals", "ResourceLoader/ResourceLoadingQuery"), "Instance"));
 
-					il.Emit(Call, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "ResourceLoader"), "CanProvideContentFor", 1, isStatic: true));
+					il.Emit(Call, module.ImportMethodReference(("System.Maui.Core", "System.Maui.Internals", "ResourceLoader"), "CanProvideContentFor", 1, isStatic: true));
 					il.Emit(Brfalse, nop);
 					il.Emit(Ldarg_0);
 					il.Emit(Call, initCompRuntime);
@@ -313,7 +313,7 @@ namespace Xamarin.Forms.Build.Tasks
 					//Or using the deprecated XamlLoader
 					nop = Instruction.Create(Nop);
 
-					var getXamlFileProvider = module.ImportPropertyGetterReference(("Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml.Internals", "XamlLoader"), propertyName: "XamlFileProvider", isStatic: true);
+					var getXamlFileProvider = module.ImportPropertyGetterReference(("System.Maui.Xaml", "System.Maui.Xaml.Internals", "XamlLoader"), propertyName: "XamlFileProvider", isStatic: true);
 					il.Emit(Call, getXamlFileProvider);
 					il.Emit(Brfalse, nop);
 					il.Emit(Call, getXamlFileProvider);
@@ -361,7 +361,7 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			foreach (var ca in type.Module.GetCustomAttributes())
 			{
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "XamlResourceIdAttribute"))))
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("System.Maui.Core", "System.Maui.Xaml", "XamlResourceIdAttribute"))))
 					continue;
 				if (!TypeRefComparer.Default.Equals(ca.ConstructorArguments[2].Value as TypeReference, type))
 					continue;
@@ -374,7 +374,7 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			foreach (var ca in module.GetCustomAttributes())
 			{
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "XamlResourceIdAttribute"))))
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("System.Maui.Core", "System.Maui.Xaml", "XamlResourceIdAttribute"))))
 					continue;
 				if (ca.ConstructorArguments[1].Value as string != path)
 					continue;

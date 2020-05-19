@@ -2,9 +2,9 @@ using System.Collections.Concurrent;
 using MapKit;
 
 #if __MOBILE__
-namespace Xamarin.Forms.Maps.iOS
+namespace System.Maui.Maps.iOS
 #else
-namespace Xamarin.Forms.Maps.MacOS
+namespace System.Maui.Maps.MacOS
 #endif
 {
 	// A static pool of MKMapView instances we can reuse 

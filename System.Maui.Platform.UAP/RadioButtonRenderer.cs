@@ -1,10 +1,10 @@
-﻿using System.ComponentModel;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using WThickness = Windows.UI.Xaml.Thickness;
+using System.ComponentModel;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Input;
+using global::Windows.UI.Xaml.Media;
+using WThickness = global::Windows.UI.Xaml.Thickness;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class RadioButtonRenderer : ViewRenderer<RadioButton, FormsRadioButton>
 	{
@@ -68,7 +68,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			if (Element.UseFormsVsm())
 			{
-				InterceptVisualStateManager.Hook(Control.GetFirstDescendant<Windows.UI.Xaml.Controls.Grid>(), Control, Element);
+				InterceptVisualStateManager.Hook(Control.GetFirstDescendant<global::Windows.UI.Xaml.Controls.Grid>(), Control, Element);
 			}
 		}
 
@@ -147,12 +147,12 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateBackground()
 		{
-			Control.BackgroundColor = Element.BackgroundColor != Color.Default ? Element.BackgroundColor.ToBrush() : (Brush)Windows.UI.Xaml.Application.Current.Resources["ButtonBackgroundThemeBrush"];
+			Control.BackgroundColor = Element.BackgroundColor != Color.Default ? Element.BackgroundColor.ToBrush() : (Brush)global::Windows.UI.Xaml.Application.Current.Resources["ButtonBackgroundThemeBrush"];
 		}
 
 		void UpdateBorderColor()
 		{
-			Control.BorderBrush = Element.BorderColor != Color.Default ? Element.BorderColor.ToBrush() : (Brush)Windows.UI.Xaml.Application.Current.Resources["ButtonBorderThemeBrush"];
+			Control.BorderBrush = Element.BorderColor != Color.Default ? Element.BorderColor.ToBrush() : (Brush)global::Windows.UI.Xaml.Application.Current.Resources["ButtonBorderThemeBrush"];
 		}
 
 		void UpdateBorderRadius()
@@ -187,7 +187,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateTextColor()
 		{
-			Control.Foreground = Element.TextColor != Color.Default ? Element.TextColor.ToBrush() : (Brush)Windows.UI.Xaml.Application.Current.Resources["DefaultTextForegroundThemeBrush"];
+			Control.Foreground = Element.TextColor != Color.Default ? Element.TextColor.ToBrush() : (Brush)global::Windows.UI.Xaml.Application.Current.Resources["DefaultTextForegroundThemeBrush"];
 		}
 
 		void UpdatePadding()

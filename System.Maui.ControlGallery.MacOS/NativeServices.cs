@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.IO;
 using AppKit;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.MacOS;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Platform.MacOS;
+using System.Maui;
+using System.Maui.ControlGallery.MacOS;
+using System.Maui.Controls;
+using System.Maui.Platform.MacOS;
 
 [assembly: Dependency(typeof(TestCloudService))]
 [assembly: Dependency(typeof(CacheService))]
@@ -12,7 +12,7 @@ using Xamarin.Forms.Platform.MacOS;
 [assembly: ExportRenderer(typeof(DisposePage), typeof(DisposePageRenderer))]
 [assembly: ExportRenderer(typeof(DisposeLabel), typeof(DisposeLabelRenderer))]
 
-namespace Xamarin.Forms.ControlGallery.MacOS
+namespace System.Maui.ControlGallery.MacOS
 {
 	public class CacheService : ICacheService
 	{

@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.macOSSpecific
+namespace System.Maui.PlatformConfiguration.macOSSpecific
 {
-	using FormsElement = Forms.NavigationPage;
+	using FormsElement = System.Maui.NavigationPage;
 
 	public static class NavigationPage
 	{

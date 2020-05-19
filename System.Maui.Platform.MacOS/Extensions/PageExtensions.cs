@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using AppKit;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public static class PageExtensions
 	{
 		public static NSViewController CreateViewController(this Page view)
 		{
-			if (!Forms.IsInitialized)
-				throw new InvalidOperationException("call Forms.Init() before this");
+			if (!System.Maui.Maui.IsInitialized)
+				throw new InvalidOperationException("call System.Maui.Maui.Init() before this");
 
 			if (!(view.RealParent is Application))
 			{

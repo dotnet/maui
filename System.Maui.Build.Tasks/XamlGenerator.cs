@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
@@ -8,11 +8,11 @@ using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.CSharp;
-using Xamarin.Forms.Xaml;
-using Xamarin.Forms.Internals;
+using System.Maui.Xaml;
+using System.Maui.Internals;
 using Mono.Cecil;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace System.Maui.Build.Tasks
 {
 	class XamlGenerator
 	{
@@ -167,7 +167,7 @@ namespace Xamarin.Forms.Build.Tasks
 		static Version version = typeof(XamlGenerator).Assembly.GetName().Version;
 		static CodeAttributeDeclaration GeneratedCodeAttrDecl =>
 			new CodeAttributeDeclaration(new CodeTypeReference($"global::{typeof(GeneratedCodeAttribute).FullName}"),
-						new CodeAttributeArgument(new CodePrimitiveExpression("Xamarin.Forms.Build.Tasks.XamlG")),
+						new CodeAttributeArgument(new CodePrimitiveExpression("System.Maui.Build.Tasks.XamlG")),
 						new CodeAttributeArgument(new CodePrimitiveExpression($"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}")));
 
 		void GenerateCode()
@@ -352,7 +352,7 @@ namespace Xamarin.Forms.Build.Tasks
 		static string GetClrNamespace(string namespaceuri)
 		{
 			if (namespaceuri == XamlParser.XFUri)
-				return "Xamarin.Forms";
+				return "System.Maui";
 			if (namespaceuri == XamlParser.X2009Uri)
 				return "System";
 			if (namespaceuri != XamlParser.X2006Uri && 

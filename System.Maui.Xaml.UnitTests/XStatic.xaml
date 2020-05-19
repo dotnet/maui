@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			 xmlns:local="clr-namespace:Xamarin.Forms.Xaml.UnitTests"
-			 xmlns:remote="clr-namespace:Xamarin.Forms.Controls;assembly=Xamarin.Forms.Controls"
-			 x:Class="Xamarin.Forms.Xaml.UnitTests.XStatic">
+			 xmlns:local="clr-namespace:System.Maui.Xaml.UnitTests"
+			 xmlns:remote="clr-namespace:System.Maui.Controls;assembly=System.Maui.Controls"
+			 x:Class="System.Maui.Xaml.UnitTests.XStatic">
 	<ContentPage.ToolbarItems>
 		<ToolbarItem Icon="{x:Static local:MockxStatic.MockFieldRef}" />
 	</ContentPage.ToolbarItems>

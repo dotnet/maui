@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Android.Util;
 using Android.App;
 using Android.Content;
@@ -9,7 +9,7 @@ using Actions = Firebase.AppIndexing.Builders.Actions;
 using GMSTask = Android.Gms.Tasks.Task;
 using IndexingAction = Firebase.AppIndexing.IAction;
 
-namespace Xamarin.Forms.Platform.Android.AppLinks
+namespace System.Maui.Platform.Android.AppLinks
 {
 	[Preserve(AllMembers = true)]
 	public class AndroidAppLinks : IAppLinks, IDisposable

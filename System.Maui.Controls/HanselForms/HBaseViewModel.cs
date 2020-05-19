@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	public class HBaseViewModel : INotifyPropertyChanged
 	{

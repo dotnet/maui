@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using Android.Content;
 #if __ANDROID_29__
@@ -9,7 +9,7 @@ using Android.Support.V7.Widget;
 #endif
 using ViewGroup = Android.Views.ViewGroup;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class StructuredItemsViewAdapter<TItemsView, TItemsViewSource> : ItemsViewAdapter<TItemsView, TItemsViewSource>
 		where TItemsView : StructuredItemsView
@@ -28,12 +28,12 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			base.ItemsViewPropertyChanged(sender, property);
 
-			if (property.Is(Xamarin.Forms.StructuredItemsView.HeaderProperty))
+			if (property.Is(System.Maui.StructuredItemsView.HeaderProperty))
 			{
 				UpdateHasHeader();
 				NotifyDataSetChanged();
 			}
-			else if (property.Is(Xamarin.Forms.StructuredItemsView.FooterProperty))
+			else if (property.Is(System.Maui.StructuredItemsView.FooterProperty))
 			{
 				UpdateHasFooter();
 				NotifyDataSetChanged();

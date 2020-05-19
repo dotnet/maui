@@ -1,13 +1,13 @@
 <Project>
   <ItemGroup>
-    <ProjectReference Include="$(XamarinFormsSource)Stubs\Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android %28Forwarders%29.csproj">
-      <Name>Xamarin.Forms.Platform.Android %28Forwarders%29</Name>
+    <ProjectReference Include="$(XamarinFormsSource)Stubs\System.Maui.Platform.Android\System.Maui.Platform.Android %28Forwarders%29.csproj">
+      <Name>System.Maui.Platform.Android %28Forwarders%29</Name>
     </ProjectReference>
-    <ProjectReference Include="$(XamarinFormsSource)Xamarin.Forms.Platform.Android.FormsViewGroup\Xamarin.Forms.Platform.Android.FormsViewGroup.csproj">
-      <Name>Xamarin.Forms.Platform.Android.FormsViewGroup</Name>
+    <ProjectReference Include="$(XamarinFormsSource)System.Maui.Platform.Android.FormsViewGroup\System.Maui.Platform.Android.FormsViewGroup.csproj">
+      <Name>System.Maui.Platform.Android.FormsViewGroup</Name>
     </ProjectReference>
-    <ProjectReference Include="$(XamarinFormsSource)Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj">
-      <Name>Xamarin.Forms.Platform.Android</Name>
+    <ProjectReference Include="$(XamarinFormsSource)System.Maui.Platform.Android\System.Maui.Platform.Android.csproj">
+      <Name>System.Maui.Platform.Android</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

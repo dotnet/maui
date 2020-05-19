@@ -1,13 +1,13 @@
 using Android.Content;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public static class ElevationHelper
 	{
 		public static void SetElevation(global::Android.Views.View view, VisualElement element)
 		{
-			if (view == null || element == null || !Forms.IsLollipopOrNewer)
+			if (view == null || element == null || !System.Maui.Maui.IsLollipopOrNewer)
 			{
 				return;
 			}
@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		internal static float? GetElevation(global::Android.Views.View view)
 		{
-			if (view == null || !Forms.IsLollipopOrNewer)
+			if (view == null || !System.Maui.Maui.IsLollipopOrNewer)
 			{
 				return null;
 			}
@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		internal static float? GetElevation(VisualElement element, Context context)
 		{
-			if (element == null || !Forms.IsLollipopOrNewer)
+			if (element == null || !System.Maui.Maui.IsLollipopOrNewer)
 			{
 				return null;
 			}

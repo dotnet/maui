@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Build.Tasks;
+using System.Maui.Core.UnitTests;
 using Microsoft.Build.Utilities;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	[TestFixture]
 	public class XamlgFileLockTests : BaseTestFixture

@@ -1,7 +1,7 @@
 using System;
 using Xamarin.UITest;
 
-namespace Xamarin.Forms.Core.UITests
+namespace System.Maui.Core.UITests
 {
 	internal sealed class ViewContainerRemote : BaseViewContainerRemote
 	{

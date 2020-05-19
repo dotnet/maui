@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
-using Xamarin.Forms.CustomAttributes;
+using System.Collections.Generic;
+using System.Maui.CustomAttributes;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Issue(IssueTracker.Github, 9735, "SwipeView broken in 4.5.0.356; creating huge number of overlapping SwipeItemViews on reveal",
 		PlatformAffected.Android)]

@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
+namespace System.Maui.PlatformConfiguration.TizenSpecific
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class FocusDirection

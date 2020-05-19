@@ -1,11 +1,11 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<controls:TestContentPage x:Class="Xamarin.Forms.Controls.Issues.Issue1455"
+<?xml version="1.0" encoding="utf-8" ?>
+<controls:TestContentPage x:Class="System.Maui.Controls.Issues.Issue1455"
                           xmlns="http://xamarin.com/schemas/2014/forms"
                           xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                          xmlns:android="clr-namespace:Xamarin.Forms.PlatformConfiguration.AndroidSpecific;assembly=Xamarin.Forms.Core"
-                          xmlns:controls="clr-namespace:Xamarin.Forms.Controls"
+                          xmlns:android="clr-namespace:System.Maui.PlatformConfiguration.AndroidSpecific;assembly=System.Maui.Core"
+                          xmlns:controls="clr-namespace:System.Maui.Controls"
                           xmlns:d="http://xamarin.com/schemas/2014/forms/design"
-                          xmlns:local="clr-namespace:Xamarin.Forms.Controls.Issues"
+                          xmlns:local="clr-namespace:System.Maui.Controls.Issues"
                           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                           x:Name="Issue1455Page"
                           mc:Ignorable="d">

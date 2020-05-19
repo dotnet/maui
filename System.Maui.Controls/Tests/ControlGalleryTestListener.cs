@@ -1,8 +1,8 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
 
-namespace Xamarin.Forms.Controls.Tests
+namespace System.Maui.Controls.Tests
 {
 	public class ControlGalleryTestListener : ITestListener
 	{

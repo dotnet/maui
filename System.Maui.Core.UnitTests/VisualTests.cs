@@ -2,9 +2,9 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class VisualTests : BaseTestFixture
@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			StackLayout flyout = new StackLayout();
 			Shell shell = new Shell()
 			{
-				Visual = Forms.VisualMarker.Default,
+				Visual = System.Maui.VisualMarker.Default,
 				Items =
 				{
 					new ShellItem()
@@ -75,8 +75,8 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			var buttonVisualController = (button as IVisualController);
 			var stacklayoutVisualController = (flyout as IVisualController);
-			Assert.AreEqual(Forms.VisualMarker.Material, buttonVisualController.EffectiveVisual);
-			Assert.AreEqual(Forms.VisualMarker.Material, stacklayoutVisualController.EffectiveVisual);
+			Assert.AreEqual(System.Maui.VisualMarker.Material, buttonVisualController.EffectiveVisual);
+			Assert.AreEqual(System.Maui.VisualMarker.Material, stacklayoutVisualController.EffectiveVisual);
 		}
 
 
@@ -88,7 +88,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Shell shell = new Shell()
 			{
 				
-				Visual = Forms.VisualMarker.Default,
+				Visual = System.Maui.VisualMarker.Default,
 				FlyoutHeader = flyout,
 				Items =
 				{
@@ -117,36 +117,36 @@ namespace Xamarin.Forms.Core.UnitTests
 			var buttonVisualController = (button as IVisualController);
 			var stacklayoutVisualController = (flyout as IVisualController);
 
-			Assert.AreEqual(Forms.VisualMarker.Default, buttonVisualController.EffectiveVisual);
-			Assert.AreEqual(Forms.VisualMarker.Default, stacklayoutVisualController.EffectiveVisual);
+			Assert.AreEqual(System.Maui.VisualMarker.Default, buttonVisualController.EffectiveVisual);
+			Assert.AreEqual(System.Maui.VisualMarker.Default, stacklayoutVisualController.EffectiveVisual);
 			shell.Visual = VisualMarker.Material;
-			Assert.AreEqual(Forms.VisualMarker.Material, buttonVisualController.EffectiveVisual);
-			Assert.AreEqual(Forms.VisualMarker.Material, stacklayoutVisualController.EffectiveVisual);
+			Assert.AreEqual(System.Maui.VisualMarker.Material, buttonVisualController.EffectiveVisual);
+			Assert.AreEqual(System.Maui.VisualMarker.Material, stacklayoutVisualController.EffectiveVisual);
 		}
 
 
 		[Test]
 		public void ListViewVisualIsInheritedByViewCells()
 		{
-			var lv = new ListView { Visual = Forms.VisualMarker.Material, ItemTemplate = new DataTemplate(() => new ViewCell { View = new View() }) };
+			var lv = new ListView { Visual = System.Maui.VisualMarker.Material, ItemTemplate = new DataTemplate(() => new ViewCell { View = new View() }) };
 
 			lv.ItemsSource = Enumerable.Range(0, 10);
 
 			ViewCell cell = lv.TemplatedItems[0] as ViewCell;
 			IVisualController target = cell.View;
-			Assert.AreEqual(Forms.VisualMarker.Material, target.EffectiveVisual, "ViewCell View is not Material");
+			Assert.AreEqual(System.Maui.VisualMarker.Material, target.EffectiveVisual, "ViewCell View is not Material");
 		}
 
 		[Test]
 		public void ListViewVisualIsInheritedByImageInViewCells()
 		{
-			var lv = new ListView { Visual = Forms.VisualMarker.Material, ItemTemplate = new DataTemplate(() => new ViewCell { View = new Label() }) };
+			var lv = new ListView { Visual = System.Maui.VisualMarker.Material, ItemTemplate = new DataTemplate(() => new ViewCell { View = new Label() }) };
 
 			lv.ItemsSource = Enumerable.Range(0, 10);
 
 			ViewCell cell = lv.TemplatedItems[0] as ViewCell;
 			IVisualController target = cell.View;
-			Assert.AreEqual(Forms.VisualMarker.Material, target.EffectiveVisual, "ViewCell View is not Material");
+			Assert.AreEqual(System.Maui.VisualMarker.Material, target.EffectiveVisual, "ViewCell View is not Material");
 		}
 
 		[Test]
@@ -159,14 +159,14 @@ namespace Xamarin.Forms.Core.UnitTests
 			AddExplicitMaterialToScrollView(layout, layout2);
 			AddImplicitToMaterialScrollView(layout2, (View)view);
 
-			layout.Visual = Forms.VisualMarker.Default;
+			layout.Visual = System.Maui.VisualMarker.Default;
 
 			var target = view.EffectiveVisual;
 
-			Assert.IsTrue(target == Forms.VisualMarker.Material, "EffectiveVisual should be Material");
+			Assert.IsTrue(target == System.Maui.VisualMarker.Material, "EffectiveVisual should be Material");
 
-			Assert.AreEqual(Forms.VisualMarker.MatchParent, ((View)view).Visual);
-			Assert.AreEqual(Forms.VisualMarker.Material, layout2.Visual);
+			Assert.AreEqual(System.Maui.VisualMarker.MatchParent, ((View)view).Visual);
+			Assert.AreEqual(System.Maui.VisualMarker.Material, layout2.Visual);
 		}
 
 		[Test]
@@ -179,15 +179,15 @@ namespace Xamarin.Forms.Core.UnitTests
 			AddExplicitDefaultToLayout(layout, layout2);
 			AddImplicitToDefault(layout2, (View)view);
 
-			layout.Visual = Forms.VisualMarker.Material;
+			layout.Visual = System.Maui.VisualMarker.Material;
 
 			var target = view.EffectiveVisual;
 
 			Assert.IsTrue(!target.IsMaterial(), "EffectiveVisual should be Default");
 			Assert.IsTrue(target.IsDefault(), "EffectiveVisual should be Default");
 
-			Assert.AreEqual(Forms.VisualMarker.MatchParent, ((View)view).Visual);
-			Assert.AreEqual(Forms.VisualMarker.Default, layout2.Visual);
+			Assert.AreEqual(System.Maui.VisualMarker.MatchParent, ((View)view).Visual);
+			Assert.AreEqual(System.Maui.VisualMarker.Default, layout2.Visual);
 		}
 
 		[Test]
@@ -201,7 +201,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			AddImplicitToDefault(layout2, (View)view);
 
-			layout.Visual = Forms.VisualMarker.Material;
+			layout.Visual = System.Maui.VisualMarker.Material;
 
 			Assume.That(((IVisualController)layout).EffectiveVisual.IsMaterial());
 			Assume.That(((IVisualController)layout2).EffectiveVisual.IsMaterial());
@@ -211,8 +211,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.IsTrue(target.IsMaterial(), "EffectiveVisual should be Material");
 			Assert.IsTrue(!target.IsDefault(), "EffectiveVisual should be Material");
 
-			Assert.AreEqual(Forms.VisualMarker.MatchParent, ((View)view).Visual);
-			Assert.AreEqual(Forms.VisualMarker.MatchParent, layout2.Visual);
+			Assert.AreEqual(System.Maui.VisualMarker.MatchParent, ((View)view).Visual);
+			Assert.AreEqual(System.Maui.VisualMarker.MatchParent, layout2.Visual);
 		}
 
 		[Test]
@@ -226,7 +226,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			AddImplicitToMaterial(layout2, (View)view);
 
-			layout.Visual = Forms.VisualMarker.Default;
+			layout.Visual = System.Maui.VisualMarker.Default;
 
 			Assume.That(((IVisualController)layout).EffectiveVisual.IsDefault());
 
@@ -236,7 +236,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			var target = ((View)view).Visual;
 
-			Assert.AreEqual(Forms.VisualMarker.MatchParent, target);
+			Assert.AreEqual(System.Maui.VisualMarker.MatchParent, target);
 		}
 
 		[Test]
@@ -250,11 +250,11 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			AddImplicitToMaterial(layout2, (View)view);
 
-			layout2.Visual = Forms.VisualMarker.Material;
+			layout2.Visual = System.Maui.VisualMarker.Material;
 			Assume.That(view.EffectiveVisual.IsMaterial(), "Implicit Visual not set on view");
 
-			layout.Visual = Forms.VisualMarker.Default;
-			Assume.That(layout2.Visual == Forms.VisualMarker.Material, "Explicit Visual not respected on inner layout");
+			layout.Visual = System.Maui.VisualMarker.Default;
+			Assume.That(layout2.Visual == System.Maui.VisualMarker.Material, "Explicit Visual not respected on inner layout");
 			Assume.That(view.EffectiveVisual.IsMaterial(), "Implicit Visual not set on view");
 
 			var target = ((PropertyWatchingView)view).VisualPropertyChangedCount;
@@ -280,7 +280,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.IsTrue(!target.IsMaterial(), "EffectiveVisual should be Default");
 			Assert.IsTrue(target.IsDefault(), "EffectiveVisual should be Default");
 
-			Assert.AreEqual(Forms.VisualMarker.MatchParent, ((View)view).Visual);
+			Assert.AreEqual(System.Maui.VisualMarker.MatchParent, ((View)view).Visual);
 		}
 
 		[Test]
@@ -302,7 +302,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			var target = ((View)view).Visual;
 
-			Assert.AreEqual(Forms.VisualMarker.MatchParent, target);
+			Assert.AreEqual(System.Maui.VisualMarker.MatchParent, target);
 		}
 
 		[Test]
@@ -316,7 +316,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			AddExplicitDefaultToLayout(layout2, (View)view);
 
-			((View)view).Visual = Forms.VisualMarker.MatchParent;
+			((View)view).Visual = System.Maui.VisualMarker.MatchParent;
 
 			var target = view.EffectiveVisual;
 
@@ -349,10 +349,10 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var layout = new StackLayout
 			{
-				Visual = Forms.VisualMarker.Material,
+				Visual = System.Maui.VisualMarker.Material,
 				Children = {
 					new StackLayout {
-						Visual = Forms.VisualMarker.Default,
+						Visual = System.Maui.VisualMarker.Default,
 						Children = { ImplicitDefaultView() }
 					}
 				}
@@ -375,8 +375,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void SetGrandparentUsingCtorAndMaintainExplicitParentValue()
 		{
 			IVisualController view = ImplicitDefaultView();
-			var layout2 = new StackLayout { Visual = Forms.VisualMarker.Default, Children = { (View)view } };
-			var layout = new StackLayout { Visual = Forms.VisualMarker.Material, Children = { layout2 } };
+			var layout2 = new StackLayout { Visual = System.Maui.VisualMarker.Default, Children = { (View)view } };
+			var layout = new StackLayout { Visual = System.Maui.VisualMarker.Material, Children = { layout2 } };
 
 			var target = view.EffectiveVisual;
 
@@ -449,24 +449,24 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.IsTrue(!target.IsMaterial(), "EffectiveVisual should be Default");
 			Assert.IsTrue(target.IsDefault(), "EffectiveVisual should be Default");
-			Assert.AreEqual(Forms.VisualMarker.Default, ((View)view).Visual);
+			Assert.AreEqual(System.Maui.VisualMarker.Default, ((View)view).Visual);
 		}
 
 		[Test]
 		public void SetParentUsingCtorAndInheritParentValue()
 		{
 			IVisualController view = ImplicitDefaultView();
-			var layout = new StackLayout { Visual = Forms.VisualMarker.Material, Children = { (View)view } };
+			var layout = new StackLayout { Visual = System.Maui.VisualMarker.Material, Children = { (View)view } };
 
 			Assume.That(((IVisualController)layout).EffectiveVisual.IsMaterial());
 
-			Assume.That(((View)view).Visual == Forms.VisualMarker.MatchParent);
+			Assume.That(((View)view).Visual == System.Maui.VisualMarker.MatchParent);
 
 			var target = view.EffectiveVisual;
 
 			Assert.IsTrue(target.IsMaterial(), "EffectiveVisual should be Material");
 			Assert.IsTrue(!target.IsDefault(), "EffectiveVisual should be Material");
-			Assert.AreEqual(Forms.VisualMarker.MatchParent, ((View)view).Visual);
+			Assert.AreEqual(System.Maui.VisualMarker.MatchParent, ((View)view).Visual);
 		}
 
 		[TearDown]
@@ -483,7 +483,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			IVisualController controller = child;
 
 			Assume.That(controller.EffectiveVisual.IsDefault(), "child view Visual should be Default");
-			Assume.That(child.Visual == Forms.VisualMarker.Default, "child view Visual should be Default");
+			Assume.That(child.Visual == System.Maui.VisualMarker.Default, "child view Visual should be Default");
 		}
 
 		static void AddExplicitDefaultToLayout(StackLayout parent, View child)
@@ -493,7 +493,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			IVisualController controller = child;
 
 			Assume.That(controller.EffectiveVisual.IsDefault(), "child view Visual should be Default");
-			Assume.That(child.Visual == Forms.VisualMarker.Default, "child view Visual should be Default");
+			Assume.That(child.Visual == System.Maui.VisualMarker.Default, "child view Visual should be Default");
 		}
 
 		static void AddExplicitMaterialToScrollView(ScrollView parent, View child)
@@ -502,7 +502,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			IVisualController controller = child;
 
-			Assume.That(child.Visual == Forms.VisualMarker.Material, "child view Visual should be Material");
+			Assume.That(child.Visual == System.Maui.VisualMarker.Material, "child view Visual should be Material");
 		}
 
 		static void AddExplicitMaterialToLayout(StackLayout parent, View child)
@@ -512,7 +512,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			IVisualController controller = child;
 
 			Assume.That(controller.EffectiveVisual.IsMaterial(), "child view EffectiveVisual should be Material");
-			Assume.That(child.Visual == Forms.VisualMarker.Material, "child view Visual should be Material");
+			Assume.That(child.Visual == System.Maui.VisualMarker.Material, "child view Visual should be Material");
 		}
 
 		static void AddImplicitToDefault(StackLayout parent, View child)
@@ -521,7 +521,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			IVisualController controller = child;
 
-			Assume.That(child.Visual == Forms.VisualMarker.MatchParent, "child view Visual should be MatchParent");
+			Assume.That(child.Visual == System.Maui.VisualMarker.MatchParent, "child view Visual should be MatchParent");
 		}
 
 		static void AddImplicitToMaterial(StackLayout parent, View child)
@@ -532,7 +532,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 
 			Assume.That(controller.EffectiveVisual.IsMaterial(), "child view EffectiveVisual should be Material");
-			Assume.That(child.Visual == Forms.VisualMarker.MatchParent, "child view Visual should be MatchParent");
+			Assume.That(child.Visual == System.Maui.VisualMarker.MatchParent, "child view Visual should be MatchParent");
 		}
 
 		static void AddImplicitToMaterialScrollView(ScrollView parent, View child)
@@ -541,53 +541,53 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			IVisualController controller = child;
 
-			Assume.That(controller.EffectiveVisual == Forms.VisualMarker.Material, "child view EffectiveVisual should be Material");
-			Assume.That(child.Visual == Forms.VisualMarker.MatchParent, "child view Visual should be MatchParent");
+			Assume.That(controller.EffectiveVisual == System.Maui.VisualMarker.Material, "child view EffectiveVisual should be Material");
+			Assume.That(child.Visual == System.Maui.VisualMarker.MatchParent, "child view Visual should be MatchParent");
 		}
 
 		static StackLayout ExplicitDefaultLayout()
 		{
-			var layout = new StackLayout { Visual = Forms.VisualMarker.Default };
+			var layout = new StackLayout { Visual = System.Maui.VisualMarker.Default };
 
 			IVisualController controller = layout;
 
-			Assume.That(controller.EffectiveVisual == Forms.VisualMarker.Default, "Explicit Default view EffectiveVisual should be Default");
-			Assume.That(layout.Visual == Forms.VisualMarker.Default, "Explicit Default view Visual should be Default");
+			Assume.That(controller.EffectiveVisual == System.Maui.VisualMarker.Default, "Explicit Default view EffectiveVisual should be Default");
+			Assume.That(layout.Visual == System.Maui.VisualMarker.Default, "Explicit Default view Visual should be Default");
 			return layout;
 		}
 
 		static View ExplicitDefaultView()
 		{
-			var view = new View { Visual = Forms.VisualMarker.Default };
+			var view = new View { Visual = System.Maui.VisualMarker.Default };
 
 			IVisualController controller = view;
 
 			Assume.That(controller.EffectiveVisual.IsDefault(), "Explicit Default view EffectiveVisual should be Default");
-			Assume.That(((View)view).Visual == Forms.VisualMarker.Default, "Explicit Default view Visual should be Default");
+			Assume.That(((View)view).Visual == System.Maui.VisualMarker.Default, "Explicit Default view Visual should be Default");
 
 			return view;
 		}
 
 		static ScrollView ExplicitMaterialScrollView()
 		{
-			var layout = new ScrollView { Visual = Forms.VisualMarker.Material };
+			var layout = new ScrollView { Visual = System.Maui.VisualMarker.Material };
 
 			IVisualController controller = layout;
 
-			Assume.That(controller.EffectiveVisual == Forms.VisualMarker.Material, "Explicit RTL view EffectiveVisual should be Material");
-			Assume.That(layout.Visual == Forms.VisualMarker.Material, "Explicit RTL view Visual should be Material");
+			Assume.That(controller.EffectiveVisual == System.Maui.VisualMarker.Material, "Explicit RTL view EffectiveVisual should be Material");
+			Assume.That(layout.Visual == System.Maui.VisualMarker.Material, "Explicit RTL view Visual should be Material");
 
 			return layout;
 		}
 
 		static StackLayout ExplicitMaterialLayout()
 		{
-			var layout = new StackLayout { Visual = Forms.VisualMarker.Material };
+			var layout = new StackLayout { Visual = System.Maui.VisualMarker.Material };
 
 			IVisualController controller = layout;
 
 			Assume.That(controller.EffectiveVisual.IsMaterial(), "Explicit RTL view EffectiveVisual should be Material");
-			Assume.That(layout.Visual == Forms.VisualMarker.Material, "Explicit RTL view Visual should be Material");
+			Assume.That(layout.Visual == System.Maui.VisualMarker.Material, "Explicit RTL view Visual should be Material");
 
 			return layout;
 		}
@@ -598,8 +598,8 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			IVisualController controller = layout;
 
-			Assume.That(controller.EffectiveVisual == Forms.VisualMarker.Default, "New view EffectiveVisual should be Default");
-			Assume.That(layout.Visual == Forms.VisualMarker.MatchParent, "New view Visual should be MatchParent");
+			Assume.That(controller.EffectiveVisual == System.Maui.VisualMarker.Default, "New view EffectiveVisual should be Default");
+			Assume.That(layout.Visual == System.Maui.VisualMarker.MatchParent, "New view Visual should be MatchParent");
 
 			return layout;
 		}
@@ -611,8 +611,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			IVisualController controller = layout;
 
 
-			Assume.That(controller.EffectiveVisual == Forms.VisualMarker.Default, "New view EffectiveVisual should be Default");
-			Assume.That(layout.Visual == Forms.VisualMarker.MatchParent, "New view Visual should be MatchParent");
+			Assume.That(controller.EffectiveVisual == System.Maui.VisualMarker.Default, "New view EffectiveVisual should be Default");
+			Assume.That(layout.Visual == System.Maui.VisualMarker.MatchParent, "New view Visual should be MatchParent");
 
 			return layout;
 		}
@@ -623,7 +623,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			IVisualController controller = view;
 
-			Assume.That(((View)view).Visual == Forms.VisualMarker.MatchParent, "New view Visual should be MatchParent");
+			Assume.That(((View)view).Visual == System.Maui.VisualMarker.MatchParent, "New view Visual should be MatchParent");
 
 			return view;
 		}

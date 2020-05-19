@@ -9,10 +9,10 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using System.Maui.Internals;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public class ResourceDictionary : IResourceDictionary, IDictionary<string, object>
 	{
@@ -338,7 +338,7 @@ namespace Xamarin.Forms
 		//only used for unit testing
 		internal static void ClearCache() => s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
 
-		[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.RDSourceTypeConverter")]
+		[Xaml.ProvideCompiled("System.Maui.Core.XamlC.RDSourceTypeConverter")]
 		public class RDSourceTypeConverter : TypeConverter, IExtendedTypeConverter
 		{
 			object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)

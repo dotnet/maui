@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 using NUnit.Framework;
 
-using Xamarin.Forms.Core.UnitTests;
-using Xamarin.Forms;
-namespace Xamarin.Forms.Xaml.UnitTests
+using System.Maui.Core.UnitTests;
+using System.Maui;
+namespace System.Maui.Xaml.UnitTests
 {
 	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class Gh2549 : ContentPage

@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat
+namespace System.Maui.PlatformConfiguration.AndroidSpecific.AppCompat
 {
-	using FormsElement = Forms.NavigationPage;
+	using FormsElement = System.Maui.NavigationPage;
 
 	public static class NavigationPage
 	{

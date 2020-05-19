@@ -3,9 +3,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public sealed class ImageLoaderSourceHandler : IAnimationSourceHandler, IImageSourceHandler
 	{

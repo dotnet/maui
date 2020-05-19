@@ -5,9 +5,9 @@
 		<_XFBuildTasksLocation Condition="'$(_XFBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory)net46\</_XFBuildTasksLocation>
 	</PropertyGroup>
 	
-	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlGTask" AssemblyFile="$(_XFBuildTasksLocation)Xamarin.Forms.Build.Tasks.dll" />
-	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.CssGTask" AssemblyFile="$(_XFBuildTasksLocation)Xamarin.Forms.Build.Tasks.dll" />
-	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlCTask" AssemblyFile="$(_XFBuildTasksLocation)Xamarin.Forms.Build.Tasks.dll" />
+	<UsingTask TaskName="System.Maui.Build.Tasks.XamlGTask" AssemblyFile="$(_XFBuildTasksLocation)System.Maui.Build.Tasks.dll" />
+	<UsingTask TaskName="System.Maui.Build.Tasks.CssGTask" AssemblyFile="$(_XFBuildTasksLocation)System.Maui.Build.Tasks.dll" />
+	<UsingTask TaskName="System.Maui.Build.Tasks.XamlCTask" AssemblyFile="$(_XFBuildTasksLocation)System.Maui.Build.Tasks.dll" />
 
 	<PropertyGroup>
 		<SynthesizeLinkMetadata>true</SynthesizeLinkMetadata>
@@ -20,7 +20,7 @@
 		<SkipMicrosoftUIXamlCheckTargetPlatformVersion Condition="'$(SkipMicrosoftUIXamlCheckTargetPlatformVersion)'=='false'"></SkipMicrosoftUIXamlCheckTargetPlatformVersion>
 	</PropertyGroup>
 
-	<Import Project="$(MSBuildThisFileDirectory)Xamarin.Forms.DefaultItems.targets" Condition="'$(MSBuildSDKsPath)'!=''" />
+	<Import Project="$(MSBuildThisFileDirectory)System.Maui.DefaultItems.targets" Condition="'$(MSBuildSDKsPath)'!=''" />
 
 	<ItemGroup>
 		<ProjectCapability Include="XamarinForms" />
@@ -36,13 +36,13 @@
 	
 	<Target Name="_ValidateXFTasks" BeforeTargets="_CheckForInvalidConfigurationAndPlatform" Condition="'$(XFDisableTargetsValidation)' != 'True'">
 		<Error Code="XF001"
-			Text="Xamarin.Forms targets have been imported multiple times. Please check your project file and remove the duplicate import(s)."
+			Text="System.Maui targets have been imported multiple times. Please check your project file and remove the duplicate import(s)."
 			Condition="'$(_XFTargetsImportedAgain)' == 'True'" />
 	</Target>
 
 	<Target Name="_ValidateMSBuild" BeforeTargets="_CheckForInvalidConfigurationAndPlatform">
 		<Error Code="XF003"
-			Text="Xamarin.Forms require msbuild. xbuild is no longer supported."
+			Text="System.Maui require msbuild. xbuild is no longer supported."
 			Condition="'$(IsXBuild)' == 'true'" />
 	</Target>
 
@@ -154,7 +154,7 @@
   
  <!-- 
     Platform Specific Targets.
-    We can't use a framework specific targets file because it breaks shared projects i.e.  /build/MonoAndroid10/Xamarin.Forms.targets
+    We can't use a framework specific targets file because it breaks shared projects i.e.  /build/MonoAndroid10/System.Maui.targets
   -->
 
   <!-- MonoAndroid targets. -->
@@ -181,7 +181,7 @@
       <TargetFrameworkVersionWithoutV>$(TargetFrameworkVersion.TrimStart('vV'))</TargetFrameworkVersionWithoutV>
     </PropertyGroup>
     <Error Code="XF005"  Condition="$(TargetFrameworkVersionWithoutV) &lt; $(MinTargetFrameworkVersionForForms)"
-           Text="The %24(TargetFrameworkVersion) for $(ProjectName) ($(TargetFrameworkVersion)) is less than the minimum required %24(TargetFrameworkVersion) for Xamarin.Forms ($(MinTargetFrameworkVersionForForms)). You need to increase the %24(TargetFrameworkVersion) for $(ProjectName)."   />
+           Text="The %24(TargetFrameworkVersion) for $(ProjectName) ($(TargetFrameworkVersion)) is less than the minimum required %24(TargetFrameworkVersion) for System.Maui ($(MinTargetFrameworkVersionForForms)). You need to increase the %24(TargetFrameworkVersion) for $(ProjectName)."   />
   </Target>
 
 
@@ -203,16 +203,16 @@
 		<Use2017 Condition="'$(Use2017)' == '' AND '$(MSBuildRuntimeType)' == 'Mono'">$(FrameworkSDKRoot.Contains('/Versions/5'))</Use2017>
 		<Use2017 Condition="'$(Use2017)' == '' AND '$(MSBuildAssemblyVersion)' &lt; '16.0'">true</Use2017>
 		<Use2017 Condition="'$(Use2017)' == ''">false</Use2017>
-		<FrameworkDll Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.iOS'">Xamarin.Forms.Platform.iOS.dll</FrameworkDll>
-		<FrameworkDll Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.Mac'">Xamarin.Forms.Platform.macOS.dll</FrameworkDll>
+		<FrameworkDll Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.iOS'">System.Maui.Platform.iOS.dll</FrameworkDll>
+		<FrameworkDll Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.Mac'">System.Maui.Platform.macOS.dll</FrameworkDll>
 	</PropertyGroup>
     <ItemGroup Condition="'$(Use2017)' != 'true'">
-		<Reference Include="Xamarin.Forms.Platform.iOS">
+		<Reference Include="System.Maui.Platform.iOS">
 			<HintPath>$(MSBuildThisFileDirectory)\XCODE11\$(FrameworkDll)</HintPath>
 		</Reference>
     </ItemGroup>
     <ItemGroup Condition="'$(Use2017)' == 'true'">
-		<Reference Include="Xamarin.Forms.Platform.iOS">
+		<Reference Include="System.Maui.Platform.iOS">
 			<HintPath>$(MSBuildThisFileDirectory)\XCODE10\$(FrameworkDll)</HintPath>
 		</Reference>
     </ItemGroup>
@@ -225,13 +225,13 @@
       <MicrosoftUIXamlTargetPlatformMinCheckValue>$([System.Version]::Parse('$(TargetPlatformMinVersion)').Build)</MicrosoftUIXamlTargetPlatformMinCheckValue>
     </PropertyGroup>
     <Warning
-        Text="Xamarin.Forms recommends TargetPlatformMinVersion &gt;= 10.0.14393.0 (current project is $(MicrosoftUIXamlTargetPlatformMinCheckValue))"
+        Text="System.Maui recommends TargetPlatformMinVersion &gt;= 10.0.14393.0 (current project is $(MicrosoftUIXamlTargetPlatformMinCheckValue))"
         Condition="$(MicrosoftUIXamlTargetPlatformMinCheckValue) &lt; 14393" />
     <PropertyGroup>
       <MicrosoftUIXamlTargetPlatformCheckValue>$([System.Version]::Parse('$(TargetPlatformVersion)').Build)</MicrosoftUIXamlTargetPlatformCheckValue>
     </PropertyGroup>
     <Warning
-        Text="Xamarin.Forms recommends TargetPlatformVersion &gt;= 10.0.17763.0 (current project is $(MicrosoftUIXamlTargetPlatformCheckValue))"
+        Text="System.Maui recommends TargetPlatformVersion &gt;= 10.0.17763.0 (current project is $(MicrosoftUIXamlTargetPlatformCheckValue))"
         Condition="$(MicrosoftUIXamlTargetPlatformCheckValue) &lt; 17763" />
   </Target>
 </Project>

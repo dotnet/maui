@@ -1,6 +1,6 @@
-﻿using Foundation;
+using Foundation;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	internal static class IndexPathExtensions
 	{

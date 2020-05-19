@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +8,7 @@ using System.Windows.Controls;
 using WMenuItem = System.Windows.Controls.MenuItem;
 using WApplication = System.Windows.Application;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public sealed class CustomContextMenu : ContextMenu
 	{

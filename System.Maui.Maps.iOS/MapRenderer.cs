@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -11,12 +11,12 @@ using RectangleF = CoreGraphics.CGRect;
 
 #if __MOBILE__
 using UIKit;
-using Xamarin.Forms.Platform.iOS;
-namespace Xamarin.Forms.Maps.iOS
+using System.Maui.Platform.iOS;
+namespace System.Maui.Maps.iOS
 #else
 using AppKit;
-using Xamarin.Forms.Platform.MacOS;
-namespace Xamarin.Forms.Maps.MacOS
+using System.Maui.Platform.MacOS;
+namespace System.Maui.Maps.MacOS
 #endif
 {
 	public class MapRenderer : ViewRenderer
@@ -226,7 +226,7 @@ namespace Xamarin.Forms.Maps.MacOS
 			MKAnnotationView mapPin = null;
 
 			// https://bugzilla.xamarin.com/show_bug.cgi?id=26416
-			var userLocationAnnotation = Runtime.GetNSObject(annotation.Handle) as MKUserLocation;
+			var userLocationAnnotation = ObjCRuntime.Runtime.GetNSObject(annotation.Handle) as MKUserLocation;
 			if (userLocationAnnotation != null)
 				return null;
 

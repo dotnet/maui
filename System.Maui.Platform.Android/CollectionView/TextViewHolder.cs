@@ -1,6 +1,6 @@
 using Android.Widget;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal class TextViewHolder : SelectableViewHolder
 	{

@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.ComponentModel;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Media;
+using global::Windows.UI.Xaml.Media.Imaging;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	internal sealed class BackgroundTracker<T> : VisualElementTracker<Page, T> where T : FrameworkElement
 	{

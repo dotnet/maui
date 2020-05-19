@@ -1,10 +1,10 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform;
+using System.Maui.Internals;
+using System.Maui.Platform;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[RenderWith(typeof(_ProgressBarRenderer))]
 	public class ProgressBar : View, IElementConfiguration<ProgressBar>

@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using AppKit;
 using Foundation;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using System.Threading.Tasks;
 
 using WebKit;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public class WebViewRenderer : ViewRenderer<WebView, WebKit.WebView>, IWebViewDelegate, WebKit.IWebPolicyDelegate
 	{

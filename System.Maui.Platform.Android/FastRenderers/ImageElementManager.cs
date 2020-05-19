@@ -1,17 +1,17 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.Widget;
 using AScaleType = Android.Widget.ImageView.ScaleType;
 using ARect = Android.Graphics.Rect;
 using System;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 #if __ANDROID_29__
 using AViewCompat = AndroidX.Core.View.ViewCompat;
 #else
 using AViewCompat = Android.Support.V4.View.ViewCompat;
 #endif
 
-namespace Xamarin.Forms.Platform.Android.FastRenderers
+namespace System.Maui.Platform.Android.FastRenderers
 {
 	public static class ImageElementManager
 	{

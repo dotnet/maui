@@ -1,7 +1,7 @@
 using System;
-using Xamarin.Forms.Platform.Tizen;
+using System.Maui.Platform.Tizen;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 	public sealed class ExportRendererAttribute : HandlerAttribute

@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	sealed class MergedStyle : IStyle
 	{
@@ -65,7 +65,7 @@ namespace Xamarin.Forms
 						var classStyleProperty = BindableProperty.Create ("ClassStyle", typeof(IList<Style>), typeof(Element), default(IList<Style>),
 							propertyChanged: (bindable, oldvalue, newvalue) => OnClassStyleChanged());
 						_classStyleProperties.Add (classStyleProperty);
-						Target.OnSetDynamicResource (classStyleProperty, Forms.Style.StyleClassPrefix + styleClass);
+						Target.OnSetDynamicResource (classStyleProperty, System.Maui.Style.StyleClassPrefix + styleClass);
 					}
 
 					//reapply the css stylesheets

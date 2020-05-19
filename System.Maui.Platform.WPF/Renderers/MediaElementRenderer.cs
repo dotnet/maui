@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public sealed class MediaElementRenderer : ViewRenderer<MediaElement, System.Windows.Controls.MediaElement>
 	{
@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 		public MediaElementRenderer()
 		{
-			Xamarin.Forms.MediaElement.VerifyMediaElementFlagEnabled(nameof(MediaElementRenderer));
+			System.Maui.MediaElement.VerifyMediaElementFlagEnabled(nameof(MediaElementRenderer));
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<MediaElement> e)

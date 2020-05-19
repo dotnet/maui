@@ -1,9 +1,9 @@
-﻿using System;
-using Windows.UI.Xaml;
+using System;
+using global::Windows.UI.Xaml;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	public sealed class BoolToVisibilityConverter : Windows.UI.Xaml.Data.IValueConverter
+	public sealed class BoolToVisibilityConverter : global::Windows.UI.Xaml.Data.IValueConverter
 	{
 		public bool FalseIsVisible { get; set; }
 

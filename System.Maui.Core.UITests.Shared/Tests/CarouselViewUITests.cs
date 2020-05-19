@@ -2,7 +2,7 @@ using System.Linq;
 using NUnit.Framework;
 using Xamarin.UITest;
 
-namespace Xamarin.Forms.Core.UITests
+namespace System.Maui.Core.UITests
 {
 	[Category(UITestCategories.CarouselView)]
 	internal class CarouselViewUITests : BaseTestFixture

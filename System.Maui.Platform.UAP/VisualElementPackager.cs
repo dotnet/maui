@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
-using Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Controls;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class VisualElementPackager : IDisposable
 	{
@@ -118,13 +118,13 @@ namespace Xamarin.Forms.Platform.UWP
 			Platform.SetRenderer(view, childRenderer);
 
 			if (_row > 0)
-				Windows.UI.Xaml.Controls.Grid.SetRow(childRenderer.ContainerElement, _row);
+				global::Windows.UI.Xaml.Controls.Grid.SetRow(childRenderer.ContainerElement, _row);
 			if (_rowSpan > 0)
-				Windows.UI.Xaml.Controls.Grid.SetRowSpan(childRenderer.ContainerElement, _rowSpan);
+				global::Windows.UI.Xaml.Controls.Grid.SetRowSpan(childRenderer.ContainerElement, _rowSpan);
 			if (_column > 0)
-				Windows.UI.Xaml.Controls.Grid.SetColumn(childRenderer.ContainerElement, _column);
+				global::Windows.UI.Xaml.Controls.Grid.SetColumn(childRenderer.ContainerElement, _column);
 			if (_columnSpan > 0)
-				Windows.UI.Xaml.Controls.Grid.SetColumnSpan(childRenderer.ContainerElement, _columnSpan);
+				global::Windows.UI.Xaml.Controls.Grid.SetColumnSpan(childRenderer.ContainerElement, _columnSpan);
 
 			_panel.Children.Add(childRenderer.ContainerElement);
 		}
@@ -153,13 +153,13 @@ namespace Xamarin.Forms.Platform.UWP
 			if (childRenderer != null)
 			{
 				if (_row > 0)
-					childRenderer.ContainerElement.ClearValue(Windows.UI.Xaml.Controls.Grid.RowProperty);
+					childRenderer.ContainerElement.ClearValue(global::Windows.UI.Xaml.Controls.Grid.RowProperty);
 				if (_rowSpan > 0)
-					childRenderer.ContainerElement.ClearValue(Windows.UI.Xaml.Controls.Grid.RowSpanProperty);
+					childRenderer.ContainerElement.ClearValue(global::Windows.UI.Xaml.Controls.Grid.RowSpanProperty);
 				if (_column > 0)
-					childRenderer.ContainerElement.ClearValue(Windows.UI.Xaml.Controls.Grid.ColumnProperty);
+					childRenderer.ContainerElement.ClearValue(global::Windows.UI.Xaml.Controls.Grid.ColumnProperty);
 				if (_columnSpan > 0)
-					childRenderer.ContainerElement.ClearValue(Windows.UI.Xaml.Controls.Grid.ColumnSpanProperty);
+					childRenderer.ContainerElement.ClearValue(global::Windows.UI.Xaml.Controls.Grid.ColumnSpanProperty);
 
 				_panel.Children.Remove(childRenderer.ContainerElement);
 

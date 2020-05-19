@@ -1,6 +1,6 @@
-﻿using NativeView = Gtk.Widget;
+using NativeView = Gtk.Widget;
 
-namespace Xamarin.Forms.Platform.GTK
+namespace System.Maui.Platform.GTK
 {
 	public abstract class ViewRenderer : ViewRenderer<View, NativeView>
 	{

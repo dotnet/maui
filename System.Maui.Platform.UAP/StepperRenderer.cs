@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class StepperRenderer : ViewRenderer<Stepper, StepperControl>, ITabStopOnDescendants
 	{

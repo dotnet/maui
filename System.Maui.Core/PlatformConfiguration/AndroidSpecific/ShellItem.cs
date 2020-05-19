@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific
+namespace System.Maui.PlatformConfiguration.AndroidSpecific
 {
-	using FormsElement = Forms.ShellItem;
+	using FormsElement = System.Maui.ShellItem;
 
 	public static class ShellItem
 	{

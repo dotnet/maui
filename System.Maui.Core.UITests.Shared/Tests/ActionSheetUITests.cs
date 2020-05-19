@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using NUnit.Framework;
 using Xamarin.UITest.Queries;
 
-namespace Xamarin.Forms.Core.UITests
+namespace System.Maui.Core.UITests
 {
 	[TestFixture]
 	[Category(UITestCategories.ActionSheet)]

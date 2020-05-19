@@ -3,9 +3,9 @@ using System;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Xamarin.Forms.Maps;
+using System.Maui.Maps;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class MapTests : BaseTestFixture

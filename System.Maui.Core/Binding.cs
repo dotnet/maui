@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -7,9 +7,9 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Diagnostics;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public sealed class Binding : BindingBase
 	{

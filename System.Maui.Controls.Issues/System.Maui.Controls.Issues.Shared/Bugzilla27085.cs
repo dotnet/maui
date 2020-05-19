@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 
-using Xamarin.Forms.CustomAttributes;
+using System.Maui.CustomAttributes;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Issue (IssueTracker.Bugzilla, 27085, "EntryCell has no possibility to hide keyboard on iOS")]
 	public class Bugzilla27085 : TestContentPage // or TestMasterDetailPage, etc ...

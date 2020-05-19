@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
+namespace System.Maui.PlatformConfiguration.iOSSpecific
 {
-	using FormsElement = Forms.SwipeView;
+	using FormsElement = System.Maui.SwipeView;
 
 	public enum SwipeTransitionMode
 	{

@@ -10,16 +10,16 @@ set NUGET_EXE=%NUGET_DIR%NuGet.exe
 if "%1" == "droid" (
    set CONFIG=debug
    call .create-stubs.bat
-   %NUGET_EXE% restore .xamarin.forms.android.nuget.sln
-   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 .xamarin.forms.android.nuget.sln /t:Restore
-   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 .xamarin.forms.android.nuget.sln
+   %NUGET_EXE% restore .system.maui.android.nuget.sln
+   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 .system.maui.android.nuget.sln /t:Restore
+   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 .system.maui.android.nuget.sln
 )
 if "%1" == "rdroid" (
    set CONFIG=release
    call .create-stubs.bat
-   %NUGET_EXE% restore .xamarin.forms.android.nuget.sln
-   msbuild /v:m /p:configuration=release /p:platform="any cpu" /p:WarningLevel=0 .xamarin.forms.android.nuget.sln /t:Restore
-   msbuild /v:m /p:configuration=release /p:platform="any cpu" /p:WarningLevel=0 .xamarin.forms.android.nuget.sln
+   %NUGET_EXE% restore .system.maui.android.nuget.sln
+   msbuild /v:m /p:configuration=release /p:platform="any cpu" /p:WarningLevel=0 .system.maui.android.nuget.sln /t:Restore
+   msbuild /v:m /p:configuration=release /p:platform="any cpu" /p:WarningLevel=0 .system.maui.android.nuget.sln
 )
 if "%1" == "adroid" (
    call .create-nuget.bat droid
@@ -28,34 +28,34 @@ if "%1" == "adroid" (
 )
 if "%1" == "pdroid" (
    set CONFIG=release
-   msbuild /v:m /p:configuration=release /p:platform="anyCpu" /p:WarningLevel=0 Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj /t:Restore
-   msbuild /v:m /p:configuration=release /p:platform="anyCpu" /p:WarningLevel=0 Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj
+   msbuild /v:m /p:configuration=release /p:platform="anyCpu" /p:WarningLevel=0 System.Maui.Platform.Android\System.Maui.Platform.Android.csproj /t:Restore
+   msbuild /v:m /p:configuration=release /p:platform="anyCpu" /p:WarningLevel=0 System.Maui.Platform.Android\System.Maui.Platform.Android.csproj
 )
 if "%1" == "pddroid" (
    set CONFIG=debug
-   msbuild /v:m /p:configuration=debug /p:platform="anyCpu" /p:WarningLevel=0 Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj /t:Restore
-   msbuild /v:m /p:configuration=debug /p:platform="anyCpu" /p:WarningLevel=0 Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj
+   msbuild /v:m /p:configuration=debug /p:platform="anyCpu" /p:WarningLevel=0 System.Maui.Platform.Android\System.Maui.Platform.Android.csproj /t:Restore
+   msbuild /v:m /p:configuration=debug /p:platform="anyCpu" /p:WarningLevel=0 System.Maui.Platform.Android\System.Maui.Platform.Android.csproj
 )
 if "%1" == "ios" (
    set CONFIG=debug
    call .create-stubs.bat
-   %NUGET_EXE% restore .xamarin.forms.ios.nuget.sln
-   msbuild /v:m /p:platform="any cpu" .xamarin.forms.ios.nuget.sln
+   %NUGET_EXE% restore .system.maui.ios.nuget.sln
+   msbuild /v:m /p:platform="any cpu" .system.maui.ios.nuget.sln
 )
 if "%1" == "droidios" (
    set CONFIG=debug
    call .create-stubs.bat
-   %NUGET_EXE% restore .xamarin.forms.android.nuget.sln
-   %NUGET_EXE% restore .xamarin.forms.ios.nuget.sln
-   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 .xamarin.forms.android.nuget.sln
-   msbuild /v:m /p:platform="any cpu" .xamarin.forms.ios.nuget.sln
+   %NUGET_EXE% restore .system.maui.android.nuget.sln
+   %NUGET_EXE% restore .system.maui.ios.nuget.sln
+   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 .system.maui.android.nuget.sln
+   msbuild /v:m /p:platform="any cpu" .system.maui.ios.nuget.sln
 )
 if "%1" == "uap" (
    set CONFIG=debug
    call .create-stubs.bat
-   %NUGET_EXE% restore .xamarin.forms.uap.nuget.sln
-   msbuild /v:m /p:platform="any cpu" .xamarin.forms.uap.nuget.sln /t:restore
-   msbuild /v:m /p:platform="any cpu" .xamarin.forms.uap.nuget.sln
+   %NUGET_EXE% restore .system.maui.uap.nuget.sln
+   msbuild /v:m /p:platform="any cpu" .system.maui.uap.nuget.sln /t:restore
+   msbuild /v:m /p:platform="any cpu" .system.maui.uap.nuget.sln
 )
 if [%1] == [] (
    rem Create all nugets
@@ -65,25 +65,25 @@ if "%1" == "all" (
    :all
    set CONFIG=debug
    call .create-stubs.bat
-   %NUGET_EXE% restore .xamarin.forms.nuget.sln
-   msbuild /v:m /p:platform="any cpu" .xamarin.forms.uap.nuget.sln /t:restore
-   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 .xamarin.forms.nuget.sln
+   %NUGET_EXE% restore .system.maui.nuget.sln
+   msbuild /v:m /p:platform="any cpu" .system.maui.uap.nuget.sln /t:restore
+   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 .system.maui.nuget.sln
 )
 if "%1" == "rall" (
    set CONFIG=release
    call .create-stubs.bat
-   %NUGET_EXE% restore .xamarin.forms.nuget.sln
-   msbuild /v:m /p:platform="any cpu" .xamarin.forms.uap.nuget.sln /t:restore /p:configuration=release
-   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 .xamarin.forms.nuget.sln /p:configuration=release /t:Restore
-   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 .xamarin.forms.nuget.sln /p:configuration=release
+   %NUGET_EXE% restore .system.maui.nuget.sln
+   msbuild /v:m /p:platform="any cpu" .system.maui.uap.nuget.sln /t:restore /p:configuration=release
+   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 .system.maui.nuget.sln /p:configuration=release /t:Restore
+   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 .system.maui.nuget.sln /p:configuration=release
 )
 
 if "%DEBUG_VERSION%"=="" set DEBUG_VERSION=0
 set /a DEBUG_VERSION=%DEBUG_VERSION%+1
 pushd .nuspec
-%NUGET_EXE% pack Xamarin.Forms.nuspec -properties configuration=%CONFIG%;platform=anycpu -Version 9.9.%DEBUG_VERSION%
+%NUGET_EXE% pack System.Maui.nuspec -properties configuration=%CONFIG%;platform=anycpu -Version 9.9.%DEBUG_VERSION%
 if "%CREATE_MAP_NUGET%" NEQ "" (
 REM Requires building x86, x64, AMD
-	%NUGET_EXE% pack Xamarin.Forms.Maps.nuspec -properties configuration=%CONFIG%;platform=anycpu -Version 9.9.%DEBUG_VERSION%
+	%NUGET_EXE% pack System.Maui.Maps.nuspec -properties configuration=%CONFIG%;platform=anycpu -Version 9.9.%DEBUG_VERSION%
 )
 popd

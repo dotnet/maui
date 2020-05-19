@@ -1,9 +1,9 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using NUnit.Framework;
-using Windows.UI.Xaml;
-using Xamarin.Forms.Platform.UWP;
+using global::Windows.UI.Xaml;
+using System.Maui.Platform.UWP;
 
-namespace Xamarin.Forms.Platform.UAP.UnitTests
+namespace System.Maui.Platform.UAP.UnitTests
 {
 	[TestFixture]
 	public class EmbeddingTests

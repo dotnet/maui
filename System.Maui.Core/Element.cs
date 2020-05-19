@@ -4,10 +4,10 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml.Diagnostics;
+using System.Maui.Internals;
+using System.Maui.Xaml.Diagnostics;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public abstract partial class Element : BindableObject, IElement, INameScope, IElementController
 	{

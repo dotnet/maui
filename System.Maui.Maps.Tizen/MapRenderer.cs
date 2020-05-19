@@ -6,11 +6,11 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using Tizen.Location;
 using Tizen.Maps;
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.Tizen;
+using System.Maui;
+using System.Maui.Platform.Tizen;
 using TPin = Tizen.Maps.Pin;
 
-namespace Xamarin.Forms.Maps.Tizen
+namespace System.Maui.Maps.Tizen
 {
 	public class MapRenderer : ViewRenderer<Map, MapView>
 	{
@@ -41,7 +41,7 @@ namespace Xamarin.Forms.Maps.Tizen
 		{
 			if (Control == null)
 			{
-				var mapControl = new MapView(Forms.NativeParent, FormsMaps.MapService);
+				var mapControl = new MapView(System.Maui.Maui.NativeParent, FormsMaps.MapService);
 
 				mapControl.RenderPost += OnVisibleRegionChanged;
 

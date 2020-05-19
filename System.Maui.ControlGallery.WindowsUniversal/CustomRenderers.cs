@@ -1,22 +1,22 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Linq;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Shapes;
-using Xamarin.Forms.ControlGallery.WindowsUniversal;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.UWP;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Input;
+using global::Windows.UI.Xaml.Media;
+using global::Windows.UI.Xaml.Shapes;
+using System.Maui.ControlGallery.WindowsUniversal;
+using System.Maui.Controls.Issues;
+using System.Maui.Platform.UWP;
 
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.Issues.Bugzilla42602.TextBoxView), typeof(Xamarin.Forms.ControlGallery.WindowsUniversal.TextBoxViewRenderer))]
+[assembly: ExportRenderer(typeof(System.Maui.Controls.Issues.Bugzilla42602.TextBoxView), typeof(System.Maui.ControlGallery.WindowsUniversal.TextBoxViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue1683.EntryKeyboardFlags), typeof(EntryRendererKeyboardFlags))]
 [assembly: ExportRenderer(typeof(Issue1683.EditorKeyboardFlags), typeof(EditorRendererKeyboardFlags))]
 [assembly: ExportRenderer(typeof(Issue3273.SortableListView), typeof(SortableListViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue2172OldEntry), typeof(Issue2172OldEntryRenderer))]
 [assembly: ExportRenderer(typeof(Issue2172OldEditor), typeof(Issue2172OldEditorRenderer))]
-namespace Xamarin.Forms.ControlGallery.WindowsUniversal
+namespace System.Maui.ControlGallery.WindowsUniversal
 {
 	public class EntryRendererKeyboardFlags : EntryRenderer
 	{
@@ -49,7 +49,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 
 			if (e.NewElement != null)
 			{
-				var control = Control as Windows.UI.Xaml.Controls.ListView;
+				var control = Control as global::Windows.UI.Xaml.Controls.ListView;
 
 				control.AllowDrop = true;
 				control.CanDragItems = true;
@@ -136,7 +136,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			{
 				Width = 200,
 				Height = 200,
-				Background = new SolidColorBrush(Windows.UI.Color.FromArgb(0, 255, 255, 255)),
+				Background = new SolidColorBrush(global::Windows.UI.Color.FromArgb(0, 255, 255, 255)),
 				IsHitTestVisible = false
 			};
 
@@ -147,7 +147,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			{
 				Width = 100,
 				Height = 100,
-				Fill = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 0, 0)),
+				Fill = new SolidColorBrush(global::Windows.UI.Color.FromArgb(255, 255, 0, 0)),
 
 			};
 			Canvas.SetLeft(ellipse, 0);
@@ -158,9 +158,9 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			TextBlock text = new TextBlock()
 			{
 				FontSize = 50,
-				FontWeight = Windows.UI.Text.FontWeights.Normal,
+				FontWeight = global::Windows.UI.Text.FontWeights.Normal,
 				Text = "hello world",
-				Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 0, 0))
+				Foreground = new SolidColorBrush(global::Windows.UI.Color.FromArgb(255, 255, 0, 0))
 			};
 			Canvas.SetLeft(text, 0);
 			Canvas.SetTop(text, 150);
@@ -175,7 +175,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			if (Children.Count == 0 || Control == null)
 				return new SizeRequest();
 
-			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 			FormsTextBox child = Control;
 
 			child.Measure(constraint);
@@ -188,7 +188,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 	public class Issue2172OldEditorRenderer : EditorRenderer
 	{
 		static FormsTextBox _copyOfTextBox;
-		static Windows.Foundation.Size _zeroSize = new Windows.Foundation.Size(0, 0);
+		static global::Windows.Foundation.Size _zeroSize = new global::Windows.Foundation.Size(0, 0);
 
 		FormsTextBox CreateTextBox()
 		{
@@ -196,7 +196,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			{
 				AcceptsReturn = true,
 				TextWrapping = TextWrapping.Wrap,
-				Style = Windows.UI.Xaml.Application.Current.Resources["FormsTextBoxStyle"] as Windows.UI.Xaml.Style
+				Style = global::Windows.UI.Xaml.Application.Current.Resources["FormsTextBoxStyle"] as global::Windows.UI.Xaml.Style
 			};
 		}
 
@@ -210,7 +210,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 		 * Both of these issues were fixed by just creating a static TextBox that is not part of the layout which let me just measure
 		 * the size of the text as it would fit into the TextBox unconstrained and then just return that Size from the GetDesiredSize call.
 		 * */
-		Size GetCopyOfSize(FormsTextBox control, Windows.Foundation.Size constraint)
+		Size GetCopyOfSize(FormsTextBox control, global::Windows.Foundation.Size constraint)
 		{
 			if (_copyOfTextBox == null)
 			{
@@ -244,7 +244,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 		}
 
 
-		SizeRequest CalculateDesiredSizes(FormsTextBox control, Windows.Foundation.Size constraint, EditorAutoSizeOption sizeOption)
+		SizeRequest CalculateDesiredSizes(FormsTextBox control, global::Windows.Foundation.Size constraint, EditorAutoSizeOption sizeOption)
 		{
 			if (sizeOption == EditorAutoSizeOption.TextChanges)
 			{
@@ -267,7 +267,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			if (Children.Count == 0 || child == null)
 				return new SizeRequest();
 
-			return CalculateDesiredSizes(child, new Windows.Foundation.Size(widthConstraint, heightConstraint), Element.AutoSize);
+			return CalculateDesiredSizes(child, new global::Windows.Foundation.Size(widthConstraint, heightConstraint), Element.AutoSize);
 		}
 	}
 }

@@ -1,15 +1,15 @@
-﻿using System.Collections.ObjectModel;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Collections.ObjectModel;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 using System;
 using System.Security.Cryptography;
-using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 using System.Threading;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 
 

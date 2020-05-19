@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Threading;
@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Foundation;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	internal class ObservableItemsSource : IItemsViewSource
 	{

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,13 +10,13 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal static class ScrollViewExtensions
 	{
 		internal static void HandleScrollBarVisibilityChange(this IScrollView scrollView)
 		{
-			if (Forms.SdkInt <= BuildVersionCodes.Kitkat)
+			if (System.Maui.Maui.SdkInt <= BuildVersionCodes.Kitkat)
 				return;
 
 			// According to the Android Documentation

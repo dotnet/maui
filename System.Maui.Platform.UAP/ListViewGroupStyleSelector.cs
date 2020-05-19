@@ -1,12 +1,12 @@
-﻿using Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Controls;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class ListViewGroupStyleSelector : GroupStyleSelector
 	{
 		protected override GroupStyle SelectGroupStyleCore(object group, uint level)
 		{
-			return (GroupStyle)Windows.UI.Xaml.Application.Current.Resources["ListViewGroup"];
+			return (GroupStyle)global::Windows.UI.Xaml.Application.Current.Resources["ListViewGroup"];
 		}
 	}
 }

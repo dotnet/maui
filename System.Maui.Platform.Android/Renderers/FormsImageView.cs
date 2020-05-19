@@ -2,9 +2,9 @@ using System;
 using Android.Content;
 using Android.Runtime;
 using Android.Widget;
-using Xamarin.Forms.Platform.Android.FastRenderers;
+using System.Maui.Platform.Android.FastRenderers;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal class FormsImageView : ImageView, IImageRendererController
 	{

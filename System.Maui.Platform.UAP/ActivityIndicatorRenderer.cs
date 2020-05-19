@@ -1,7 +1,7 @@
-﻿using System.ComponentModel;
-using Windows.UI.Xaml;
+using System.ComponentModel;
+using global::Windows.UI.Xaml;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class ActivityIndicatorRenderer : ViewRenderer<ActivityIndicator, FormsProgressBar>
 	{
@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (Control == null)
 				{
-					SetNativeControl(new FormsProgressBar { IsIndeterminate = true, Style = Windows.UI.Xaml.Application.Current.Resources["FormsProgressBarStyle"] as Windows.UI.Xaml.Style });
+					SetNativeControl(new FormsProgressBar { IsIndeterminate = true, Style = global::Windows.UI.Xaml.Application.Current.Resources["FormsProgressBarStyle"] as global::Windows.UI.Xaml.Style });
 
 					Control.Loaded += OnControlLoaded;
 				}

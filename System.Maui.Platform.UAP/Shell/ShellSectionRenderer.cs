@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.ComponentModel;
-using Windows.Foundation.Metadata;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media.Animation;
+using global::Windows.Foundation.Metadata;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Media.Animation;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	// Renders the actual page area where the contents gets rendered, as well as set of optional top-bar menu items and search box.
-	[Windows.UI.Xaml.Data.Bindable]
+	[global::Windows.UI.Xaml.Data.Bindable]
 	public class ShellSectionRenderer : Microsoft.UI.Xaml.Controls.NavigationView, IAppearanceObserver
 	{
-		Windows.UI.Xaml.Controls.Frame Frame { get; }
+		global::Windows.UI.Xaml.Controls.Frame Frame { get; }
 		Page Page;
 		ShellContent CurrentContent;
 		ShellSection ShellSection;
@@ -18,29 +18,29 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public ShellSectionRenderer()
 		{
-			Xamarin.Forms.Shell.VerifyShellUWPFlagEnabled(nameof(ShellSectionRenderer));
-			MenuItemTemplate = (Windows.UI.Xaml.DataTemplate)Windows.UI.Xaml.Application.Current.Resources["ShellSectionMenuItemTemplate"];
+			System.Maui.Shell.VerifyShellUWPFlagEnabled(nameof(ShellSectionRenderer));
+			MenuItemTemplate = (global::Windows.UI.Xaml.DataTemplate)global::Windows.UI.Xaml.Application.Current.Resources["ShellSectionMenuItemTemplate"];
 			IsBackButtonVisible = Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible.Collapsed;
 			IsSettingsVisible = false;
 			AlwaysShowHeader = false;
 			PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.Top;
 			ItemInvoked += OnMenuItemInvoked;
 
-			AutoSuggestBox = new Windows.UI.Xaml.Controls.AutoSuggestBox() { Width = 300 };
+			AutoSuggestBox = new global::Windows.UI.Xaml.Controls.AutoSuggestBox() { Width = 300 };
 			AutoSuggestBox.TextChanged += OnSearchBoxTextChanged;
 			AutoSuggestBox.QuerySubmitted += OnSearchBoxQuerySubmitted;
 			AutoSuggestBox.SuggestionChosen += OnSearchBoxSuggestionChosen;
 
-			Frame = new Windows.UI.Xaml.Controls.Frame();
+			Frame = new global::Windows.UI.Xaml.Controls.Frame();
 			Content = Frame;
 			this.SizeChanged += OnShellSectionRendererSizeChanged;
-			Resources["NavigationViewTopPaneBackground"] = new Windows.UI.Xaml.Media.SolidColorBrush(ShellRenderer.DefaultBackgroundColor);
-			Resources["TopNavigationViewItemForeground"] = new Windows.UI.Xaml.Media.SolidColorBrush(ShellRenderer.DefaultForegroundColor);
-			Resources["TopNavigationViewItemForegroundSelected"] = new Windows.UI.Xaml.Media.SolidColorBrush(ShellRenderer.DefaultForegroundColor);
-			Resources["NavigationViewSelectionIndicatorForeground"] = new Windows.UI.Xaml.Media.SolidColorBrush(ShellRenderer.DefaultForegroundColor);
+			Resources["NavigationViewTopPaneBackground"] = new global::Windows.UI.Xaml.Media.SolidColorBrush(ShellRenderer.DefaultBackgroundColor);
+			Resources["TopNavigationViewItemForeground"] = new global::Windows.UI.Xaml.Media.SolidColorBrush(ShellRenderer.DefaultForegroundColor);
+			Resources["TopNavigationViewItemForegroundSelected"] = new global::Windows.UI.Xaml.Media.SolidColorBrush(ShellRenderer.DefaultForegroundColor);
+			Resources["NavigationViewSelectionIndicatorForeground"] = new global::Windows.UI.Xaml.Media.SolidColorBrush(ShellRenderer.DefaultForegroundColor);
 		}
 
-		void OnShellSectionRendererSizeChanged(object sender, Windows.UI.Xaml.SizeChangedEventArgs e)
+		void OnShellSectionRendererSizeChanged(object sender, global::Windows.UI.Xaml.SizeChangedEventArgs e)
 		{
 			Page.ContainerArea = new Rectangle(0, 0, e.NewSize.Width, e.NewSize.Height);
 		}
@@ -156,8 +156,8 @@ namespace Xamarin.Forms.Platform.UWP
 			if (searchHandler != null)
 			{
 				searchHandler.PropertyChanged += SearchHandler_PropertyChanged;
-				AutoSuggestBox.Visibility = searchHandler.SearchBoxVisibility == SearchBoxVisibility.Hidden ? Windows.UI.Xaml.Visibility.Collapsed : Windows.UI.Xaml.Visibility.Visible;
-				AutoSuggestBox.HorizontalAlignment = Windows.UI.Xaml.HorizontalAlignment.Stretch;
+				AutoSuggestBox.Visibility = searchHandler.SearchBoxVisibility == SearchBoxVisibility.Hidden ? global::Windows.UI.Xaml.Visibility.Collapsed : global::Windows.UI.Xaml.Visibility.Visible;
+				AutoSuggestBox.HorizontalAlignment = global::Windows.UI.Xaml.HorizontalAlignment.Stretch;
 				AutoSuggestBox.PlaceholderText = searchHandler.Placeholder;
 				AutoSuggestBox.IsEnabled = searchHandler.IsSearchEnabled;
 				AutoSuggestBox.ItemsSource = _currentSearchHandler.ItemsSource;
@@ -168,7 +168,7 @@ namespace Xamarin.Forms.Platform.UWP
 			else
 			{
 				IsPaneVisible = ShellSectionController.GetItems().Count > 1;
-				AutoSuggestBox.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+				AutoSuggestBox.Visibility = global::Windows.UI.Xaml.Visibility.Collapsed;
 			}
 		}
 
@@ -204,7 +204,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void ToggleSearchBoxVisibility()
 		{
-			AutoSuggestBox.Visibility = _currentSearchHandler == null || _currentSearchHandler.SearchBoxVisibility == SearchBoxVisibility.Hidden ? Windows.UI.Xaml.Visibility.Collapsed : Windows.UI.Xaml.Visibility.Visible;
+			AutoSuggestBox.Visibility = _currentSearchHandler == null || _currentSearchHandler.SearchBoxVisibility == SearchBoxVisibility.Hidden ? global::Windows.UI.Xaml.Visibility.Collapsed : global::Windows.UI.Xaml.Visibility.Visible;
 			if (_currentSearchHandler != null && _currentSearchHandler.SearchBoxVisibility != SearchBoxVisibility.Hidden)
 			{
 				if (_currentSearchHandler.SearchBoxVisibility == SearchBoxVisibility.Expanded)
@@ -229,18 +229,18 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		void OnSearchBoxTextChanged(Windows.UI.Xaml.Controls.AutoSuggestBox sender, Windows.UI.Xaml.Controls.AutoSuggestBoxTextChangedEventArgs args)
+		void OnSearchBoxTextChanged(global::Windows.UI.Xaml.Controls.AutoSuggestBox sender, global::Windows.UI.Xaml.Controls.AutoSuggestBoxTextChangedEventArgs args)
 		{
-			if (args.Reason != Windows.UI.Xaml.Controls.AutoSuggestionBoxTextChangeReason.ProgrammaticChange)
+			if (args.Reason != global::Windows.UI.Xaml.Controls.AutoSuggestionBoxTextChangeReason.ProgrammaticChange)
 				_currentSearchHandler.Query = sender.Text;
 		}
 
-		void OnSearchBoxSuggestionChosen(Windows.UI.Xaml.Controls.AutoSuggestBox sender, Windows.UI.Xaml.Controls.AutoSuggestBoxSuggestionChosenEventArgs args)
+		void OnSearchBoxSuggestionChosen(global::Windows.UI.Xaml.Controls.AutoSuggestBox sender, global::Windows.UI.Xaml.Controls.AutoSuggestBoxSuggestionChosenEventArgs args)
 		{
 			((ISearchHandlerController)_currentSearchHandler).ItemSelected(args.SelectedItem);
 		}
 
-		void OnSearchBoxQuerySubmitted(Windows.UI.Xaml.Controls.AutoSuggestBox sender, Windows.UI.Xaml.Controls.AutoSuggestBoxQuerySubmittedEventArgs args)
+		void OnSearchBoxQuerySubmitted(global::Windows.UI.Xaml.Controls.AutoSuggestBox sender, global::Windows.UI.Xaml.Controls.AutoSuggestBoxQuerySubmittedEventArgs args)
 		{
 			((ISearchHandlerController)_currentSearchHandler).QueryConfirmed();
 		}
@@ -268,9 +268,9 @@ namespace Xamarin.Forms.Platform.UWP
 			UpdateBrushColor("NavigationViewSelectionIndicatorForeground", tabBarForegroundColor);
 		}
 
-		void UpdateBrushColor(string resourceKey, Windows.UI.Color color)
+		void UpdateBrushColor(string resourceKey, global::Windows.UI.Color color)
 		{
-			if (Resources[resourceKey] is Windows.UI.Xaml.Media.SolidColorBrush sb)
+			if (Resources[resourceKey] is global::Windows.UI.Xaml.Media.SolidColorBrush sb)
 				sb.Color = color;
 		}
 

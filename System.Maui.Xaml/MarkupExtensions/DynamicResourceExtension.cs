@@ -1,7 +1,7 @@
 using System;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	[ContentProperty(nameof(Key))]
 	public sealed class DynamicResourceExtension : IMarkupExtension<DynamicResource>

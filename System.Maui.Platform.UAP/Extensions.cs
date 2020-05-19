@@ -1,20 +1,20 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.UI.Text;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Xamarin.Forms.Internals;
-using WImageSource = Windows.UI.Xaml.Media.ImageSource;
-using UwpScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility;
-using Windows.UI.Xaml.Media.Imaging;
+using global::Windows.Foundation;
+using global::Windows.UI.Text;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Input;
+using global::Windows.UI.Xaml.Media;
+using System.Maui.Internals;
+using WImageSource = global::Windows.UI.Xaml.Media.ImageSource;
+using UwpScrollBarVisibility = global::Windows.UI.Xaml.Controls.ScrollBarVisibility;
+using global::Windows.UI.Xaml.Media.Imaging;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	internal static class Extensions
 	{
@@ -30,12 +30,12 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public static void SetBinding(this FrameworkElement self, DependencyProperty property, string path)
 		{
-			self.SetBinding(property, new Windows.UI.Xaml.Data.Binding { Path = new PropertyPath(path) });
+			self.SetBinding(property, new global::Windows.UI.Xaml.Data.Binding { Path = new PropertyPath(path) });
 		}
 
-		public static void SetBinding(this FrameworkElement self, DependencyProperty property, string path, Windows.UI.Xaml.Data.IValueConverter converter)
+		public static void SetBinding(this FrameworkElement self, DependencyProperty property, string path, global::Windows.UI.Xaml.Data.IValueConverter converter)
 		{
-			self.SetBinding(property, new Windows.UI.Xaml.Data.Binding { Path = new PropertyPath(path), Converter = converter });
+			self.SetBinding(property, new global::Windows.UI.Xaml.Data.Binding { Path = new PropertyPath(path), Converter = converter });
 		}
 
 		internal static InputScopeNameValue GetKeyboardButtonType(this ReturnType returnType)

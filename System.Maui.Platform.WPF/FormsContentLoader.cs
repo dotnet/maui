@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using Xamarin.Forms.Platform.WPF.Interfaces;
+using System.Maui.Platform.WPF.Interfaces;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public class FormsContentLoader : IContentLoader
 	{

@@ -1,16 +1,16 @@
-﻿using System.Linq;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using System.Linq;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration.iOSSpecific;
 
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3809, "SetUseSafeArea is wiping out Page Padding ")]
@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 			Detail.Padding = new Thickness(25, 25, 25, 25);
-			Detail.On<Xamarin.Forms.PlatformConfiguration.iOS>().SetUseSafeArea(true);
+			Detail.On<System.Maui.PlatformConfiguration.iOS>().SetUseSafeArea(true);
 		}
 
 		protected override void OnAppearing()

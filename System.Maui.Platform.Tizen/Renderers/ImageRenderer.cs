@@ -3,9 +3,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using EImage = ElmSharp.Image;
 
-using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Image;
+using Specific = System.Maui.PlatformConfiguration.TizenSpecific.Image;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class ImageRenderer : ViewRenderer<Image, Native.Image>
 	{
@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Native.Image(Forms.NativeParent));
+				SetNativeControl(new Native.Image(System.Maui.Maui.NativeParent));
 			}
 			base.OnElementChanged(e);
 		}

@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using CoreGraphics;
 using NUnit.Framework;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS.UnitTests
+namespace System.Maui.Platform.iOS.UnitTests
 {
 	internal static class AssertionExtensions
 	{

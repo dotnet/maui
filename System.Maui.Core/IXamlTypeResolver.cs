@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	public interface IXamlTypeResolver
 	{

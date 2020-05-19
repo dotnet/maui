@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 
 	[DebuggerDisplay("Location = {Location}")]

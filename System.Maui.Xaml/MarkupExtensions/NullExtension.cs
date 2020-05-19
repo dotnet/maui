@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
-	[ProvideCompiled("Xamarin.Forms.Build.Tasks.NullExtension")]
+	[ProvideCompiled("System.Maui.Build.Tasks.NullExtension")]
 	[AcceptEmptyServiceProvider]
 	public class NullExtension : IMarkupExtension
 	{

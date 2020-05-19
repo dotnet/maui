@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using ElmSharp;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class PinchGestureHandler : GestureHandler
 	{

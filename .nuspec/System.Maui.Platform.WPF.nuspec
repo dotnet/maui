@@ -1,20 +1,20 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>Xamarin.Forms.Platform.WPF</id>
+    <id>System.Maui.Platform.WPF</id>
     <version>$version$</version>
     <authors>Microsoft</authors>
     <owners>microsoft xamarin</owners>
-    <tags>xamarin forms xamarinforms xamarin.forms wpf</tags>
+    <tags>xamarin forms xamarinforms system.maui wpf</tags>
     <license type="expression">MIT</license>
     <icon>Assets\xamarin_128x128.png</icon>
     <projectUrl>http://xamarin.com/forms</projectUrl>
-    <repository type="git" url="https://github.com/xamarin/xamarin.forms"/>
+    <repository type="git" url="https://github.com/dotnet/maui"/>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>Xamarin Forms Renderer to build native UIs for WPF</description>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <dependencies>
-      <dependency id="Xamarin.Forms" version="$version$"/>
+      <dependency id="System.Maui" version="$version$"/>
       <dependency id="OpenTK" version="3.0.1"/>
       <dependency id="OpenTK.GLControl" version="3.0.1"/>
     </dependencies>
@@ -22,10 +22,10 @@
   <files>
     <!--Icon-->
     <file src="..\Assets\xamarin_128x128.png" target="Assets\" />
-    <file src="..\Xamarin.Forms.Platform.WPF\bin\$Configuration$\net461\Xamarin.Forms.Platform.WPF.dll" target="lib\net461" />
-    <file src="..\Xamarin.Forms.Platform.WPF\bin\$Configuration$\net461\Xamarin.Forms.Platform.WPF.*pdb" target="lib\net461" />
+    <file src="..\System.Maui.Platform.WPF\bin\$Configuration$\net461\System.Maui.Platform.WPF.dll" target="lib\net461" />
+    <file src="..\System.Maui.Platform.WPF\bin\$Configuration$\net461\System.Maui.Platform.WPF.*pdb" target="lib\net461" />
 
-    <file src="..\Xamarin.Forms.Platform.WPF\bin\$Configuration$\netcoreapp3.1\Xamarin.Forms.Platform.WPF.dll" target="lib\netcoreapp3.1" />
-    <file src="..\Xamarin.Forms.Platform.WPF\bin\$Configuration$\netcoreapp3.1\Xamarin.Forms.Platform.WPF.*pdb" target="lib\netcoreapp3.1" />
+    <file src="..\System.Maui.Platform.WPF\bin\$Configuration$\netcoreapp3.1\System.Maui.Platform.WPF.dll" target="lib\netcoreapp3.1" />
+    <file src="..\System.Maui.Platform.WPF\bin\$Configuration$\netcoreapp3.1\System.Maui.Platform.WPF.*pdb" target="lib\netcoreapp3.1" />
   </files>
 </package>

@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	[TestFixture]
 	public class HRTests
@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public void Setup()
 		{
 			Device.PlatformServices = new MockPlatformServices();
-			Xamarin.Forms.Internals.Registrar.RegisterAll(new Type[0]);
+			System.Maui.Internals.Registrar.RegisterAll(new Type[0]);
 			Application.Current = null;
 		}
 
@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			XamlLoader.FallbackTypeResolver = null;
 			XamlLoader.ValueCreatedCallback = null;
 			XamlLoader.InstantiationFailedCallback = null;
-			Forms.Internals.ResourceLoader.ExceptionHandler2 = null;
+			System.Maui.Internals.ResourceLoader.ExceptionHandler2 = null;
 #pragma warning disable 0618
 			Internals.XamlLoader.DoNotThrowOnExceptions = false;
 #pragma warning restore 0618

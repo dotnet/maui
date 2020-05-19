@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Collections.Generic;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 using System.Threading.Tasks;
 
 #if UITEST
@@ -8,7 +8,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 32956, "Setting ListView.SelectedItem to null does not remove list item highlight when list item is tapped multiple times quickly", PlatformAffected.Android | PlatformAffected.iOS)]

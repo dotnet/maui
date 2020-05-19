@@ -1,19 +1,19 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Core;
-using Windows.Foundation.Metadata;
-using Windows.UI;
-using Windows.UI.Core;
-using Windows.UI.ViewManagement;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Xamarin.Forms.Internals;
-using NativeAutomationProperties = Windows.UI.Xaml.Automation.AutomationProperties;
-using WImage = Windows.UI.Xaml.Controls.Image;
+using global::Windows.ApplicationModel.Core;
+using global::Windows.Foundation.Metadata;
+using global::Windows.UI;
+using global::Windows.UI.Core;
+using global::Windows.UI.ViewManagement;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using System.Maui.Internals;
+using NativeAutomationProperties = global::Windows.UI.Xaml.Automation.AutomationProperties;
+using WImage = global::Windows.UI.Xaml.Controls.Image;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public abstract class Platform : INavigation
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Platform.UWP
 		static Task<string> s_currentPrompt;
 
 		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer",
-			typeof(IVisualElementRenderer), typeof(Windows.Foundation.Metadata.Platform), default(IVisualElementRenderer));
+			typeof(IVisualElementRenderer), typeof(global::Windows.Foundation.Metadata.Platform), default(IVisualElementRenderer));
 
 		public static IVisualElementRenderer GetRenderer(VisualElement element)
 		{
@@ -52,38 +52,38 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			get
 			{
-				var frame = Window.Current?.Content as Windows.UI.Xaml.Controls.Frame;
+				var frame = Window.Current?.Content as global::Windows.UI.Xaml.Controls.Frame;
 				var wbp = frame?.Content as WindowsBasePage;
 				return wbp?.Platform;
 			}
 		}
 
-		internal Platform(Windows.UI.Xaml.Controls.Page page)
+		internal Platform(global::Windows.UI.Xaml.Controls.Page page)
 		{
 			if (page == null)
 				throw new ArgumentNullException(nameof(page));
 
 			_page = page;
 
-			var current = Windows.UI.Xaml.Application.Current;
+			var current = global::Windows.UI.Xaml.Application.Current;
 
 			if (!current.Resources.ContainsKey("RootContainerStyle"))
 			{
-				Windows.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(Forms.GetTabletResources());
+				global::Windows.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(System.Maui.Maui.GetTabletResources());
 			}
 
 #if !UWP_14393
 			if (!current.Resources.ContainsKey(ShellRenderer.ShellStyle))
 			{
-				var myResourceDictionary = new Windows.UI.Xaml.ResourceDictionary();
-				myResourceDictionary.Source = new Uri("ms-appx:///Xamarin.Forms.Platform.UAP/Shell/ShellStyles.xbf");
-				Windows.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
+				var myResourceDictionary = new global::Windows.UI.Xaml.ResourceDictionary();
+				myResourceDictionary.Source = new Uri("ms-appx:///System.Maui.Platform.UAP/Shell/ShellStyles.xbf");
+				global::Windows.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
 			}
 #endif
 
 			_container = new Canvas
 			{
-				Style = (Windows.UI.Xaml.Style)current.Resources["RootContainerStyle"]
+				Style = (global::Windows.UI.Xaml.Style)current.Resources["RootContainerStyle"]
 			};
 
 			_page.Content = _container;
@@ -92,7 +92,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			MessagingCenter.Subscribe(this, Page.BusySetSignalName, (Page sender, bool enabled) =>
 			{
-				Windows.UI.Xaml.Controls.ProgressBar indicator = GetBusyIndicator();
+				global::Windows.UI.Xaml.Controls.ProgressBar indicator = GetBusyIndicator();
 				indicator.Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
 			});
 
@@ -103,7 +103,7 @@ namespace Xamarin.Forms.Platform.UWP
 			InitializeStatusBar();
 
 			SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
-			Windows.UI.Xaml.Application.Current.Resuming += OnResumingAsync;
+			global::Windows.UI.Xaml.Application.Current.Resuming += OnResumingAsync;
 		}
 
 		async void OnResumingAsync(object sender, object e)
@@ -257,8 +257,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 		Rectangle _bounds;
 		readonly Canvas _container;
-		readonly Windows.UI.Xaml.Controls.Page _page;
-		Windows.UI.Xaml.Controls.ProgressBar _busyIndicator;
+		readonly global::Windows.UI.Xaml.Controls.Page _page;
+		global::Windows.UI.Xaml.Controls.ProgressBar _busyIndicator;
 		Page _currentPage;
 		Page _modalBackgroundPage;
 		readonly NavigationModel _navModel = new NavigationModel();
@@ -266,11 +266,11 @@ namespace Xamarin.Forms.Platform.UWP
 		readonly ImageConverter _imageConverter = new ImageConverter();
 		readonly ImageSourceIconElementConverter _imageSourceIconElementConverter = new ImageSourceIconElementConverter();
 
-		Windows.UI.Xaml.Controls.ProgressBar GetBusyIndicator()
+		global::Windows.UI.Xaml.Controls.ProgressBar GetBusyIndicator()
 		{
 			if (_busyIndicator == null)
 			{
-				_busyIndicator = new Windows.UI.Xaml.Controls.ProgressBar
+				_busyIndicator = new global::Windows.UI.Xaml.Controls.ProgressBar
 				{
 					IsIndeterminate = true,
 					Visibility = Visibility.Collapsed,
@@ -340,7 +340,7 @@ namespace Xamarin.Forms.Platform.UWP
 					if (popping)
 					{
 						previousPage.Cleanup();
-						// Un-parent the page; otherwise the Resources Changed Listeners won't be unhooked and the 
+						// Un-parent the page; otherwise the global::Android.Content.Res.Resources Changed Listeners won't be unhooked and the 
 						// page will leak 
 						previousPage.Parent = null;
 					}
@@ -417,7 +417,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			_bounds = new Rectangle(0, 0, _page.ActualWidth, _page.ActualHeight);
 
-            if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
+            if (ApiInformation.IsTypePresent("global::Windows.UI.ViewManagement.StatusBar"))
             {
 				StatusBar statusBar = StatusBar.GetForCurrentView();
 				if (statusBar != null)
@@ -442,7 +442,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void InitializeStatusBar()
 		{
-            if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
+            if (ApiInformation.IsTypePresent("global::Windows.UI.ViewManagement.StatusBar"))
             {
 				StatusBar statusBar = StatusBar.GetForCurrentView();
 				if (statusBar != null)
@@ -457,7 +457,7 @@ namespace Xamarin.Forms.Platform.UWP
 					// Since the Light theme should have a Black on White status bar, we will set it explicitly. 
 					// This can be overriden by setting the status bar colors in App.xaml.cs OnLaunched.
 
-					if (statusBar.BackgroundColor == null && statusBar.ForegroundColor == null && Windows.UI.Xaml.Application.Current.RequestedTheme == ApplicationTheme.Light)
+					if (statusBar.BackgroundColor == null && statusBar.ForegroundColor == null && global::Windows.UI.Xaml.Application.Current.RequestedTheme == ApplicationTheme.Light)
 					{
 						statusBar.BackgroundColor = Colors.White;
 						statusBar.ForegroundColor = Colors.Black;
@@ -560,8 +560,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 			var actionSheet = new Flyout
 			{
-				FlyoutPresenterStyle = (Windows.UI.Xaml.Style)Windows.UI.Xaml.Application.Current.Resources["FormsFlyoutPresenterStyle"],
-				Placement = Windows.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.Full,
+				FlyoutPresenterStyle = (global::Windows.UI.Xaml.Style)global::Windows.UI.Xaml.Application.Current.Resources["FormsFlyoutPresenterStyle"],
+				Placement = global::Windows.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.Full,
 				Content = flyoutContent
 			};
 
@@ -636,7 +636,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				Content = content,
 				Title = title,
-				VerticalScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility.Auto
+				VerticalScrollBarVisibility = global::Windows.UI.Xaml.Controls.ScrollBarVisibility.Auto
 			};
 
 			if (options.Cancel != null)

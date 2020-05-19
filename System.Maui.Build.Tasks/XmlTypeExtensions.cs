@@ -3,10 +3,10 @@ using System.Linq;
 using System.Xml;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
-using Xamarin.Forms.Xaml;
-using Xamarin.Forms.Internals;
+using System.Maui.Xaml;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace System.Maui.Build.Tasks
 {
 	static class XmlTypeExtensions
 	{

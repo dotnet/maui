@@ -1,7 +1,7 @@
 using Android.Views;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android.FastRenderers
+namespace System.Maui.Platform.Android.FastRenderers
 {
 	internal class EffectControlProvider : IEffectControlProvider
 	{

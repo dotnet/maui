@@ -6,9 +6,9 @@ using Android.Content.Res;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class FormsApplicationActivity : Activity, IDeviceInfoProvider
 	{
@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			// We seem to get a different color from the theme than we use by default
 			// Override to use the old color
-			Forms.ColorButtonNormalOverride = Color.FromHex("#5a595b");
+			System.Maui.Maui.ColorButtonNormalOverride = Color.FromHex("#5a595b");
 		}
 
 		public event EventHandler ConfigurationChanged;
@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Platform.Android
 			base.OnBackPressed();
 		}
 
-		public override void OnConfigurationChanged(Configuration newConfig)
+		public override void OnConfigurationChanged(global::Android.Content.Res.Configuration newConfig)
 		{
 			base.OnConfigurationChanged(newConfig);
 			EventHandler handler = ConfigurationChanged;
@@ -86,7 +86,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			_application = application ?? throw new ArgumentNullException(nameof(application));
 			((IApplicationController)application).SetAppIndexingProvider(new AndroidAppIndexProvider(this));
-			Xamarin.Forms.Application.SetCurrentApplication(application);
+			System.Maui.Application.SetCurrentApplication(application);
 
 			SetSoftInputMode();
 
@@ -110,12 +110,12 @@ namespace Xamarin.Forms.Platform.Android
 			_layout = new LinearLayout(BaseContext);
 			SetContentView(_layout);
 
-			Xamarin.Forms.Application.ClearCurrent();
+			System.Maui.Application.ClearCurrent();
 
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnCreate;
 
-			if (Forms.IsLollipopOrNewer)
+			if (System.Maui.Maui.IsLollipopOrNewer)
 			{
 				// Listen for the device going into power save mode so we can handle animations being disabled
 				_powerSaveModeBroadcastReceiver = new PowerSaveModeBroadcastReceiver();
@@ -150,7 +150,7 @@ namespace Xamarin.Forms.Platform.Android
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnPause;
 
-			if (_powerSaveReceiverRegistered && Forms.IsLollipopOrNewer)
+			if (_powerSaveReceiverRegistered && System.Maui.Maui.IsLollipopOrNewer)
 			{
 				// Don't listen for power save mode changes while we're paused
 				UnregisterReceiver(_powerSaveModeBroadcastReceiver);
@@ -178,7 +178,7 @@ namespace Xamarin.Forms.Platform.Android
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnResume;
 
-			if (!_powerSaveReceiverRegistered && Forms.IsLollipopOrNewer)
+			if (!_powerSaveReceiverRegistered && System.Maui.Maui.IsLollipopOrNewer)
 			{
 				// Start listening for power save mode changes
 				RegisterReceiver(_powerSaveModeBroadcastReceiver, new IntentFilter(
@@ -231,8 +231,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		void InternalSetPage(Page page)
 		{
-			if (!Forms.IsInitialized)
-				throw new InvalidOperationException("Call Forms.Init (Activity, Bundle) before this");
+			if (!System.Maui.Maui.IsInitialized)
+				throw new InvalidOperationException("Call System.Maui.Maui.Init(Activity, Bundle) before this");
 
 			if (Platform != null)
 			{
@@ -279,9 +279,9 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			SoftInput adjust = SoftInput.AdjustPan;
 
-			if (Xamarin.Forms.Application.Current != null)
+			if (System.Maui.Application.Current != null)
 			{
-				var elementValue = Xamarin.Forms.Application.Current.OnThisPlatform().GetWindowSoftInputModeAdjust();
+				var elementValue = System.Maui.Application.Current.OnThisPlatform().GetWindowSoftInputModeAdjust();
 				switch (elementValue)
 				{
 					default:

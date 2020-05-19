@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	internal sealed class MarkupExtensionParser : MarkupExpressionParser, IExpressionParser<object>
 	{

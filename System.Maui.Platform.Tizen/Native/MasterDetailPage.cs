@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using ElmSharp;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	/// <summary>
 	/// The native widget which provides Xamarin.MasterDetailPage features.
@@ -75,7 +75,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		double _popoverRatio = 0.8;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Xamarin.Forms.Platform.Tizen.Native.MasterDetailPage"/> class.
+		/// Initializes a new instance of the <see cref="System.Maui.Platform.Tizen.Native.MasterDetailPage"/> class.
 		/// </summary>
 		/// <param name="parent">Parent evas object.</param>
 		public MasterDetailPage(EvasObject parent) : base(parent)
@@ -113,7 +113,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				Proportion = _splitRatio,
 			};
 
-			_drawer = new Panel(Forms.NativeParent);
+			_drawer = new Panel(System.Maui.Maui.NativeParent);
 			_drawer.SetScrollable(_isGestureEnabled);
 			_drawer.SetScrollableArea(1.0);
 			_drawer.Direction = PanelDirection.Left;

@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
-using WindowsCheckbox = Windows.UI.Xaml.Controls.CheckBox;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Media;
+using WindowsCheckbox = global::Windows.UI.Xaml.Controls.CheckBox;
 
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class FormsCheckBox : WindowsCheckbox
 	{

@@ -1,8 +1,8 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.WPF; 
+using System.Maui;
+using System.Maui.Platform.WPF; 
 
 [assembly: ThemeInfo(ResourceDictionaryLocation.None, ResourceDictionaryLocation.SourceAssembly)]
 
@@ -62,5 +62,5 @@ using Xamarin.Forms.Platform.WPF;
 [assembly: ExportCell(typeof(ViewCell), typeof(ViewCellRenderer))]
 
 // Others
-[assembly: Xamarin.Forms.Dependency(typeof(ResourcesProvider))]
-[assembly: Xamarin.Forms.Dependency(typeof(Deserializer))]
+[assembly: System.Maui.Dependency(typeof(ResourcesProvider))]
+[assembly: System.Maui.Dependency(typeof(Deserializer))]

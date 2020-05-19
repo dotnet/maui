@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using UIKit;
-using Xamarin.Forms.Internals;
-using PlatformElement = Xamarin.Forms.PlatformConfiguration.iOSSpecific.VisualElement;
+using System.Maui.Internals;
+using PlatformElement = System.Maui.PlatformConfiguration.iOSSpecific.VisualElement;
 
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	[Preserve(AllMembers = true)]
 	internal class ShadowEffect : PlatformEffect

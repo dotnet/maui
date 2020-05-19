@@ -3,7 +3,7 @@ using System.ComponentModel;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class TableViewRenderer : ViewRenderer<TableView, UITableView>
 	{
@@ -80,7 +80,7 @@ namespace Xamarin.Forms.Platform.iOS
 					_originalBackgroundView = tv.BackgroundView;
 
 					SetNativeControl(tv);
-					if (Forms.IsiOS9OrNewer)
+					if (System.Maui.Maui.IsiOS9OrNewer)
 						tv.CellLayoutMarginsFollowReadableWidth = false;
 
 					_insetTracker = new KeyboardInsetTracker(tv, () => Control.Window, insets => Control.ContentInset = Control.ScrollIndicatorInsets = insets, point =>
@@ -132,7 +132,7 @@ namespace Xamarin.Forms.Platform.iOS
 			base.TraitCollectionDidChange(previousTraitCollection);
 #if __XCODE11__
 			// Make sure the cells adhere to changes UI theme
-			if (Forms.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (System.Maui.Maui.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				Control.ReloadData();
 #endif
 		}

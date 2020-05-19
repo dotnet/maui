@@ -3,11 +3,11 @@ using System.ComponentModel;
 using CoreGraphics;
 using MaterialComponents;
 using UIKit;
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui;
+using System.Maui.Platform.iOS;
 using MProgressView = MaterialComponents.ProgressView;
 
-namespace Xamarin.Forms.Material.iOS
+namespace System.Maui.Material.iOS
 {
 	public class MaterialProgressBarRenderer : ViewRenderer<ProgressBar, MProgressView>
 	{

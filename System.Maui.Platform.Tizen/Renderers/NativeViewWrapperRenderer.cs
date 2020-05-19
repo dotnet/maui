@@ -1,7 +1,7 @@
 using ElmSharp;
 using ESize = ElmSharp.Size;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class NativeViewWrapperRenderer : ViewRenderer<NativeViewWrapper, EvasObject>
 	{

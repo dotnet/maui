@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Linq;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration;
+using System.Maui.PlatformConfiguration.AndroidSpecific;
+using System.Maui.PlatformConfiguration.iOSSpecific;
 
-namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
+namespace System.Maui.Controls.GalleryPages.SwipeViewGalleries
 {
 	[Preserve(AllMembers = true)]
 	public class SwipeTransitionModeGallery : ContentPage

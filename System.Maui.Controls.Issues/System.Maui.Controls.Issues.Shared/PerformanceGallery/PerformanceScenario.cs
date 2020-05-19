@@ -1,7 +1,7 @@
-﻿
-using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms.Controls
+using System.Maui.Internals;
+
+namespace System.Maui.Controls
 {
 	[Preserve(AllMembers = true)]
 	internal class PerformanceScenario

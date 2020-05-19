@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
-namespace Xamarin.Forms.Pages.Azure
+namespace System.Maui.Pages.Azure
 {
 	public class AzureDataSource : BaseDataSource
 	{

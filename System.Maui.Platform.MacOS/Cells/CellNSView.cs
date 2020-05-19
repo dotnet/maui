@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.ComponentModel;
 using AppKit;
 using CoreGraphics;
-using Xamarin.Forms.Platform.macOS.Extensions;
+using System.Maui.Platform.macOS.Extensions;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	internal class CellNSView : NSView, INativeElementView
 	{

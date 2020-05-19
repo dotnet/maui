@@ -6,7 +6,7 @@ using Android.OS;
 using Android.Views;
 using AProgressBar = Android.Widget.ProgressBar;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class ActivityIndicatorRenderer : ViewRenderer<ActivityIndicator, AProgressBar>
 	{

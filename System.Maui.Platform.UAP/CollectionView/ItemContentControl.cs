@@ -1,11 +1,11 @@
-﻿using System;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Xamarin.Forms.Internals;
-using WThickness = Windows.UI.Xaml.Thickness;
-using WSize = Windows.Foundation.Size;
+using System;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using System.Maui.Internals;
+using WThickness = global::Windows.UI.Xaml.Thickness;
+using WSize = global::Windows.Foundation.Size;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public class ItemContentControl : ContentControl
 	{

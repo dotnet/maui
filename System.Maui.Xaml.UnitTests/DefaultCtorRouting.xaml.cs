@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
-using Xamarin.Forms.Xaml;
-using Xamarin.Forms.Build.Tasks;
+using System.Maui.Core.UnitTests;
+using System.Maui.Xaml;
+using System.Maui.Build.Tasks;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class DefaultCtorRouting : ContentPage
@@ -44,7 +44,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 	}
 
-	[ProvideCompiled("Xamarin.Forms.Core.XamlC.IsCompiledTypeConverter")]
+	[ProvideCompiled("System.Maui.Core.XamlC.IsCompiledTypeConverter")]
 	class IsCompiledTypeConverter : TypeConverter, ICompiledTypeConverter
 	{
 		public override object ConvertFromInvariantString(string value)

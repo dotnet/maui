@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 34061, "RelativeLayout - First child added after page display does not appear")]
@@ -32,10 +32,10 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 			_layout.Children.Add (stack,
-				Forms.Constraint.Constant (0),
-				Forms.Constraint.Constant (0),
-				Forms.Constraint.RelativeToParent (p => p.Width),
-				Forms.Constraint.RelativeToParent (p => p.Height));
+				System.Maui.Constraint.Constant (0),
+				System.Maui.Constraint.Constant (0),
+				System.Maui.Constraint.RelativeToParent (p => p.Width),
+				System.Maui.Constraint.RelativeToParent (p => p.Height));
 
 			Content = _layout;
 		}
@@ -51,10 +51,10 @@ namespace Xamarin.Forms.Controls.Issues
 
 			_layout.Children.Add (
 				newView,
-				Forms.Constraint.Constant (0),
-				Forms.Constraint.RelativeToParent (p => p.Height / 2),
-				Forms.Constraint.RelativeToParent (p => p.Width),
-				Forms.Constraint.RelativeToParent (p => p.Height / 2));
+				System.Maui.Constraint.Constant (0),
+				System.Maui.Constraint.RelativeToParent (p => p.Height / 2),
+				System.Maui.Constraint.RelativeToParent (p => p.Width),
+				System.Maui.Constraint.RelativeToParent (p => p.Height / 2));
 		}
 
 		void RemovePopover (View view)

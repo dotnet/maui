@@ -5,7 +5,7 @@ using CoreSpotlight;
 using Foundation;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class FormsApplicationDelegate : UIApplicationDelegate
 	{

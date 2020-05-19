@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class DuplicateXArgumentsElements : BindableObject

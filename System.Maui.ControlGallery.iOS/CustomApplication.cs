@@ -1,7 +1,7 @@
-﻿using Foundation;
+using Foundation;
 using UIKit;
 
-namespace Xamarin.Forms.ControlGallery.iOS
+namespace System.Maui.ControlGallery.iOS
 {
 	public class CustomApplication : UIApplication
 	{

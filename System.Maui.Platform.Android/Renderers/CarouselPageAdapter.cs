@@ -9,10 +9,10 @@ using AndroidX.ViewPager.Widget;
 using Android.Support.V4.View;
 #endif
 using Android.Views;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using Object = Java.Lang.Object;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal class CarouselPageAdapter : PagerAdapter, ViewPager.IOnPageChangeListener
 	{
@@ -54,7 +54,7 @@ namespace Xamarin.Forms.Platform.Android
 			_page.CurrentPage = currentItem >= 0 && currentItem < ElementController.LogicalChildren.Count ? ElementController.LogicalChildren[currentItem] as ContentPage : null;
 		}
 
-		public override void DestroyItem(ViewGroup p0, int p1, Object p2)
+		public override void DestroyItem(ViewGroup p0, int p1, Java.Lang.Object p2)
 		{
 			var holder = (ObjectJavaBox<Tuple<ViewGroup, Page, int>>)p2;
 			Page destroyedPage = holder.Instance.Item2;
@@ -64,7 +64,7 @@ namespace Xamarin.Forms.Platform.Android
 			holder.Instance.Item1.RemoveFromParent();
 		}
 
-		public override int GetItemPosition(Object item)
+		public override int GetItemPosition(Java.Lang.Object item)
 		{
 			// The int is the current index.
 			var holder = (ObjectJavaBox<Tuple<ViewGroup, Page, int>>)item;
@@ -88,7 +88,7 @@ namespace Xamarin.Forms.Platform.Android
 			return PositionUnchanged;
 		}
 
-		public override Object InstantiateItem(ViewGroup container, int position)
+		public override Java.Lang.Object InstantiateItem(ViewGroup container, int position)
 		{
 			ContentPage child = _page.Children.ElementAt(position);
 			if (Platform.GetRenderer(child) == null)
@@ -104,7 +104,7 @@ namespace Xamarin.Forms.Platform.Android
 			return new ObjectJavaBox<Tuple<ViewGroup, Page, int>>(new Tuple<ViewGroup, Page, int>(frame, child, position));
 		}
 
-		public override bool IsViewFromObject(global::Android.Views.View p0, Object p1)
+		public override bool IsViewFromObject(global::Android.Views.View p0, Java.Lang.Object p1)
 		{
 			var holder = (ObjectJavaBox<Tuple<ViewGroup, Page, int>>)p1;
 			ViewGroup frame = holder.Instance.Item1;

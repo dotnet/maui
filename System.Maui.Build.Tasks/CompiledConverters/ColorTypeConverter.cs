@@ -5,10 +5,10 @@ using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-using Xamarin.Forms.Xaml;
-using Xamarin.Forms.Build.Tasks;
+using System.Maui.Xaml;
+using System.Maui.Build.Tasks;
 
-namespace Xamarin.Forms.Core.XamlC
+namespace System.Maui.Core.XamlC
 {
 	class ColorTypeConverter : ICompiledTypeConverter
 	{
@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Core.XamlC
 					yield return Instruction.Create(OpCodes.Ldc_R8, color.B);
 					yield return Instruction.Create(OpCodes.Ldc_R8, color.A);
 
-					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Color"), parameterTypes: new[] {
+					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("System.Maui.Core", "System.Maui", "Color"), parameterTypes: new[] {
 						("mscorlib", "System", "Double"),
 						("mscorlib", "System", "Double"),
 						("mscorlib", "System", "Double"),
@@ -41,7 +41,7 @@ namespace Xamarin.Forms.Core.XamlC
 					var color = parts [parts.Length - 1];
 					if (color == "lightgrey")
 						color = "lightgray";
-					var fieldReference = module.ImportFieldReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Color"),
+					var fieldReference = module.ImportFieldReference(("System.Maui.Core", "System.Maui", "Color"),
 																	 color,
 																	 isStatic: true,
 																	 caseSensitive: false);
@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Core.XamlC
 						yield return Instruction.Create(OpCodes.Ldsfld, fieldReference);
 						yield break;
 					}
-					var propertyGetterReference = module.ImportPropertyGetterReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Color"),
+					var propertyGetterReference = module.ImportPropertyGetterReference(("System.Maui.Core", "System.Maui", "Color"),
 																					   color,
 																					   isStatic: true,
 																					   caseSensitive: false);

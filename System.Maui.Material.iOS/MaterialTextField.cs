@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using CoreGraphics;
 using MaterialComponents;
 using UIKit;
 using MTextField = MaterialComponents.TextField;
 using MTextInputControllerFilled = MaterialComponents.TextInputControllerFilled;
 using MTextInputControllerBase = MaterialComponents.TextInputControllerBase;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Material.iOS
+namespace System.Maui.Material.iOS
 {
 	public class MaterialTextField : MTextField, IMaterialTextField
 	{

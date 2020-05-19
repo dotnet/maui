@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -8,7 +8,7 @@ using System.Windows.Documents;
 using System.Windows.Media;
 using WThickness = System.Windows.Thickness;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public class LabelRenderer : ViewRenderer<Label, TextBlock>
 	{

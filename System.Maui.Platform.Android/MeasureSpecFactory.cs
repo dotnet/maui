@@ -1,6 +1,6 @@
 using Android.Views;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal static class MeasureSpecFactory
 	{

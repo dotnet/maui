@@ -1,6 +1,6 @@
-﻿using Control = Gtk.Widget;
+using Control = Gtk.Widget;
 
-namespace Xamarin.Forms.Platform.GTK
+namespace System.Maui.Platform.GTK
 {
 	public interface IVisualNativeElementRenderer : IVisualElementRenderer
 	{

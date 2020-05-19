@@ -1,8 +1,8 @@
-﻿<local:TestContentPage 
+<local:TestContentPage 
 	xmlns="http://xamarin.com/schemas/2014/forms"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	xmlns:local="clr-namespace:Xamarin.Forms.Controls"
-	x:Class=" Xamarin.Forms.Controls.Issues.Bugzilla60045"
+	xmlns:local="clr-namespace:System.Maui.Controls"
+	x:Class="System.Maui.Controls.Issues.Bugzilla60045"
 	x:Name="This"
 	BindingContext="{x:Reference This}">
 

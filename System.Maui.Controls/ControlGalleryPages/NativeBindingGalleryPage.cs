@@ -1,7 +1,7 @@
-﻿using System;
-using Xamarin.Forms.Internals;
+using System;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	public class NativeBindingGalleryPage : ContentPage
 	{

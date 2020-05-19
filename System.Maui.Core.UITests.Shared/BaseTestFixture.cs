@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using NUnit.Framework;
-using Xamarin.Forms.Controls;
+using System.Maui.Controls;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 
-namespace Xamarin.Forms.Core.UITests
+namespace System.Maui.Core.UITests
 {
 	internal abstract class BaseTestFixture
 	{
@@ -111,7 +111,7 @@ namespace Xamarin.Forms.Core.UITests
 }
 #if UITEST
 
-namespace Xamarin.Forms.Core.UITests
+namespace System.Maui.Core.UITests
 {
 	using NUnit.Framework;
 

@@ -1,7 +1,7 @@
-﻿using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
+using NUnit.Framework;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	[TestFixture]
 	public class Issue1545
@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		{
 			string xaml = @"<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 						 xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-						 x:Class=""Xamarin.Forms.Controls.Issue1545"">
+						 x:Class=""System.Maui.Controls.Issue1545"">
 						<ListView x:Name=""List"" ItemsSource=""{Binding}"">
 							<ListView.ItemTemplate>
 								<DataTemplate>
@@ -52,7 +52,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		{
 			string xaml = @"<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 						 xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-						 x:Class=""Xamarin.Forms.Controls.Issue1545"">
+						 x:Class=""System.Maui.Controls.Issue1545"">
 							<ContentPage.Resources>
 							<ResourceDictionary>
 							<Color x:Key=""color"">#ff00aa</Color>
@@ -99,7 +99,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var xaml = @"<ListView 
 						xmlns=""http://xamarin.com/schemas/2014/forms""
 						xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-						xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests""
+						xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests""
 						ItemsSource=""{Binding}"">
 							<ListView.ItemTemplate>
 								<DataTemplate>

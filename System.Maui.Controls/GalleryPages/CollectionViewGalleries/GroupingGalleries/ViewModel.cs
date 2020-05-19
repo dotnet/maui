@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGalleries
+namespace System.Maui.Controls.GalleryPages.CollectionViewGalleries.GroupingGalleries
 {
 	[Preserve(AllMembers = true)]
 	class Team : List<Member>

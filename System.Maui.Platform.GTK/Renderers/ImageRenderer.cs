@@ -1,4 +1,4 @@
-﻿using Gdk;
+using Gdk;
 using System;
 using System.ComponentModel;
 using System.Drawing;
@@ -8,10 +8,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using System.Maui.Platform.GTK.Extensions;
 using DrawingFont = System.Drawing.Font;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers
+namespace System.Maui.Platform.GTK.Renderers
 {
 	public class ImageRenderer : ViewRenderer<Image, Controls.ImageControl>
 	{

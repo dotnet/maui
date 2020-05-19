@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
+namespace System.Maui.Controls.GalleryPages.CollectionViewGalleries
 {
 	internal class ItemReplacer : ObservableCollectionModifier
 	{

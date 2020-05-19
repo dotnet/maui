@@ -1,13 +1,13 @@
-﻿using CoreAnimation;
+using CoreAnimation;
 using CoreGraphics;
 using UIKit;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.iOS;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui;
+using System.Maui.ControlGallery.iOS;
+using System.Maui.Controls.Issues;
+using System.Maui.Platform.iOS;
 
 [assembly: ExportRenderer(typeof(Issue9767NavigationPage), typeof(_9767CustomRenderer))]
-namespace Xamarin.Forms.ControlGallery.iOS
+namespace System.Maui.ControlGallery.iOS
 {
 	public class _9767CustomRenderer : NavigationRenderer
     {

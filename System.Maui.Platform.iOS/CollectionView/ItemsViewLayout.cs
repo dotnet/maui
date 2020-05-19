@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
 using UIKit;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public abstract class ItemsViewLayout : UICollectionViewFlowLayout
 	{
@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			Initialize(scrollDirection);
 
-			if (Forms.IsiOS11OrNewer)
+			if (System.Maui.Maui.IsiOS11OrNewer)
 			{
 				// `ContentInset` is actually the default value, but I'm leaving this here as a note to
 				// future maintainers; it's likely that someone will want a Platform Specific to change this behavior
@@ -175,7 +175,7 @@ namespace Xamarin.Forms.Platform.iOS
 				}
 			}
 
-			if (Forms.IsiOS11OrNewer)
+			if (System.Maui.Maui.IsiOS11OrNewer)
 			{
 				return base.ShouldInvalidateLayout(preferredAttributes, originalAttributes);
 			}
@@ -384,7 +384,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override UICollectionViewLayoutInvalidationContext GetInvalidationContext(UICollectionViewLayoutAttributes preferredAttributes, UICollectionViewLayoutAttributes originalAttributes)
 		{
-			if (Forms.IsiOS11OrNewer)
+			if (System.Maui.Maui.IsiOS11OrNewer)
 			{
 				return base.GetInvalidationContext(preferredAttributes, originalAttributes);
 			}
@@ -425,7 +425,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override UICollectionViewLayoutAttributes LayoutAttributesForSupplementaryView(NSString kind, NSIndexPath indexPath)
 		{
-			if (Forms.IsiOS11OrNewer)
+			if (System.Maui.Maui.IsiOS11OrNewer)
 			{
 				return base.LayoutAttributesForSupplementaryView(kind, indexPath);
 			}

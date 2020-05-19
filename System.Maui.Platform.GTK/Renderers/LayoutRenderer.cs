@@ -1,7 +1,7 @@
-﻿using Gtk;
-using Xamarin.Forms.Platform.GTK.Packagers;
+using Gtk;
+using System.Maui.Platform.GTK.Packagers;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers
+namespace System.Maui.Platform.GTK.Renderers
 {
 	public class LayoutRenderer : ViewRenderer<Layout, Fixed>
 	{

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using GLKit;
 using OpenGLES;
@@ -6,7 +6,7 @@ using Foundation;
 using CoreAnimation;
 using RectangleF = CoreGraphics.CGRect;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	internal class OpenGLViewRenderer : ViewRenderer<OpenGLView, GLKView>
 	{

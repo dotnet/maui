@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[Xaml.TypeConversion(typeof(ImageSource))]
 	public sealed class ImageSourceConverter : TypeConverter

@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using ALayoutChangeEventArgs = Android.Views.View.LayoutChangeEventArgs;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal interface ILayoutChanges
 	{

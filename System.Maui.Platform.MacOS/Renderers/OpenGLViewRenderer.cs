@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using CoreVideo;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	// ReSharper disable once InconsistentNaming
 	internal class OpenGLViewRenderer : ViewRenderer<OpenGLView, MacOSOpenGLView>

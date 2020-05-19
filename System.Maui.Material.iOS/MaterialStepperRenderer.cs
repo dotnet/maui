@@ -3,10 +3,10 @@ using System.ComponentModel;
 using CoreGraphics;
 using MaterialComponents;
 using UIKit;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui.Platform.iOS;
 using MButton = MaterialComponents.Button;
 
-namespace Xamarin.Forms.Material.iOS
+namespace System.Maui.Material.iOS
 {
 	public class MaterialStepperRenderer : ViewRenderer<Stepper, MaterialStepper>
 	{

@@ -1,15 +1,15 @@
-﻿using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
 #if UITEST
 using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 7049, "Null reference exception on some Android devices - Xamarin.Forms.Platform.Android.PageRenderer.Xamarin.Forms.Platform.Android.IOrderedTraversalController.UpdateTraversalOrder", PlatformAffected.Android)]
+	[Issue (IssueTracker.Github, 7049, "Null reference exception on some Android devices - System.Maui.Platform.Android.PageRenderer.System.Maui.Platform.Android.IOrderedTraversalController.UpdateTraversalOrder", PlatformAffected.Android)]
 	public class Issue7049 : TestContentPage
 	{
 		const string ContinueButton = "ContinueButton";

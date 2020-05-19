@@ -1,13 +1,13 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" 
              Title="Platform Test Console"
-             xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
+             xmlns:ios="clr-namespace:System.Maui.PlatformConfiguration.iOSSpecific;assembly=System.Maui.Core"
              ios:Page.UseSafeArea="true"
-             x:Class="Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery.PlatformTestsConsole">
+             x:Class="System.Maui.Controls.GalleryPages.PlatformTestsGallery.PlatformTestsConsole">
     <ContentPage.Content>
         <StackLayout Margin="2">
             <Grid MinimumHeightRequest="100">

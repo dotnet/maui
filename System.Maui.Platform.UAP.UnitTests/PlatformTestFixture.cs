@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Windows.UI.Xaml.Controls;
-using Xamarin.Forms.Platform.UWP;
+using global::Windows.UI.Xaml.Controls;
+using System.Maui.Platform.UWP;
 
-namespace Xamarin.Forms.Platform.UAP.UnitTests
+namespace System.Maui.Platform.UAP.UnitTests
 {
 	public class PlatformTestFixture
 	{

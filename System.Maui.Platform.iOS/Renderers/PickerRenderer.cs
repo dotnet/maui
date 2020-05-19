@@ -5,10 +5,10 @@ using System.ComponentModel;
 using Foundation;
 using ObjCRuntime;
 using UIKit;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using System.Maui.PlatformConfiguration.iOSSpecific;
 using RectangleF = CoreGraphics.CGRect;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	internal class ReadOnlyField : NoCaretField
 	{
@@ -94,7 +94,7 @@ namespace Xamarin.Forms.Platform.iOS
 					entry.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 					entry.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 
-					if (Forms.IsiOS9OrNewer)
+					if (System.Maui.Maui.IsiOS9OrNewer)
 					{
 						entry.InputAssistantItem.LeadingBarButtonGroups = null;
 						entry.InputAssistantItem.TrailingBarButtonGroups = null;

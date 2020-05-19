@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -6,8 +6,8 @@
     <ProjectGuid>{8D3DFCB7-DB10-40E5-ACFE-411AAA85520D}</ProjectGuid>
     <ProjectTypeGuids>{A3F8F2AB-B479-4A4A-A458-A89E7DC349F1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Xamarin.Forms.ControlGallery.MacOS</RootNamespace>
-    <AssemblyName>Xamarin.Forms.ControlGallery.MacOS</AssemblyName>
+    <RootNamespace>System.Maui.ControlGallery.MacOS</RootNamespace>
+    <AssemblyName>System.Maui.ControlGallery.MacOS</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <TargetFrameworkIdentifier>Xamarin.Mac</TargetFrameworkIdentifier>
     <MonoMacResourcePrefix>Resources</MonoMacResourcePrefix>
@@ -104,291 +104,291 @@
     <Compile Include="RegistrarValidationService.cs" />
     <Compile Include="SampleNativeControl.cs" />
     <Compile Include="SeparatorMenuItem.cs" />
-    <Compile Include="..\Xamarin.Forms.Controls\GalleryPages\OpenGLGalleries\AdvancedOpenGLGallery.cs">
+    <Compile Include="..\System.Maui.Controls\GalleryPages\OpenGLGalleries\AdvancedOpenGLGallery.cs">
       <Link>GalleryPages\AdvancedOpenGLGallery.cs</Link>
     </Compile>
-    <Compile Include="..\Xamarin.Forms.Controls\GalleryPages\OpenGLGalleries\BasicOpenGLGallery.cs">
+    <Compile Include="..\System.Maui.Controls\GalleryPages\OpenGLGalleries\BasicOpenGLGallery.cs">
       <Link>GalleryPages\BasicOpenGLGallery.cs</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Controls\Xamarin.Forms.Controls.csproj">
+    <ProjectReference Include="..\System.Maui.Controls\System.Maui.Controls.csproj">
       <Project>{CB9C96CE-125C-4A68-B6A1-C3FF1FBF93E1}</Project>
-      <Name>Xamarin.Forms.Controls</Name>
+      <Name>System.Maui.Controls</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj">
       <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
-      <Name>Xamarin.Forms.Core</Name>
+      <Name>System.Maui.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
+    <ProjectReference Include="..\System.Maui.Maps\System.Maui.Maps.csproj">
       <Project>{7D13BAC2-C6A4-416A-B07E-C169B199E52B}</Project>
-      <Name>Xamarin.Forms.Maps</Name>
+      <Name>System.Maui.Maps</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj">
+    <ProjectReference Include="..\System.Maui.Platform\System.Maui.Platform.csproj">
       <Project>{D31A6537-ED9C-4EBD-B231-A8D4FE44126A}</Project>
-      <Name>Xamarin.Forms.Platform</Name>
+      <Name>System.Maui.Platform</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Platform.MacOS\Xamarin.Forms.Platform.MacOS.csproj">
+    <ProjectReference Include="..\System.Maui.Platform.MacOS\System.Maui.Platform.MacOS.csproj">
       <Project>{C0059C45-EA1E-42F3-8A0E-794BB547EC3C}</Project>
-      <Name>Xamarin.Forms.Platform.MacOS</Name>
+      <Name>System.Maui.Platform.MacOS</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj">
+    <ProjectReference Include="..\System.Maui.Xaml\System.Maui.Xaml.csproj">
       <Project>{9DB2F292-8034-4E06-89AD-98BBDA4306B9}</Project>
-      <Name>Xamarin.Forms.Xaml</Name>
+      <Name>System.Maui.Xaml</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Maps.MacOS\Xamarin.Forms.Maps.MacOS.csproj">
+    <ProjectReference Include="..\System.Maui.Maps.MacOS\System.Maui.Maps.MacOS.csproj">
       <Project>{C3C24A6D-2D0C-4053-9FCC-E54FF9CA1884}</Project>
-      <Name>Xamarin.Forms.Maps.MacOS</Name>
+      <Name>System.Maui.Maps.MacOS</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\about.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\about.png">
       <Link>Resources\about.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\about%402x.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\about%402x.png">
       <Link>Resources\about%402x.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\blog.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\blog.png">
       <Link>Resources\blog.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\blog%402x.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\blog%402x.png">
       <Link>Resources\blog%402x.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\facebook.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\facebook.png">
       <Link>Resources\facebook.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\facebook%402x.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\facebook%402x.png">
       <Link>Resources\facebook%402x.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\favorite.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\favorite.png">
       <Link>Resources\favorite.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\googleplus.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\googleplus.png">
       <Link>Resources\googleplus.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\googleplus%402x.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\googleplus%402x.png">
       <Link>Resources\googleplus%402x.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\hm_full.jpg">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\hm_full.jpg">
       <Link>Resources\hm_full.jpg</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\hm.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\hm.png">
       <Link>Resources\hm.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\hm%402x.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\hm%402x.png">
       <Link>Resources\hm%402x.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\home.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\home.png">
       <Link>Resources\home.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\ic_pause.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\ic_pause.png">
       <Link>Resources\ic_pause.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\ic_pause%402x.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\ic_pause%402x.png">
       <Link>Resources\ic_pause%402x.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\ic_play.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\ic_play.png">
       <Link>Resources\ic_play.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\ic_play%402x.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\ic_play%402x.png">
       <Link>Resources\ic_play%402x.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\ic_share.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\ic_share.png">
       <Link>Resources\ic_share.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\ic_share%402x.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\ic_share%402x.png">
       <Link>Resources\ic_share%402x.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\ic_stop.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\ic_stop.png">
       <Link>Resources\ic_stop.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\ic_stop%402x.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\ic_stop%402x.png">
       <Link>Resources\ic_stop%402x.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\instagram.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\instagram.png">
       <Link>Resources\instagram.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\instagram%402x.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\instagram%402x.png">
       <Link>Resources\instagram%402x.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\lists.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\lists.png">
       <Link>Resources\lists.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\messages.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\messages.png">
       <Link>Resources\messages.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\notifications.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\notifications.png">
       <Link>Resources\notifications.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\profile.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\profile.png">
       <Link>Resources\profile.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\ratchet_full.jpg">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\ratchet_full.jpg">
       <Link>Resources\ratchet_full.jpg</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\ratchet.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\ratchet.png">
       <Link>Resources\ratchet.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\ratchet%402x.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\ratchet%402x.png">
       <Link>Resources\ratchet%402x.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\refresh.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\refresh.png">
       <Link>Resources\refresh.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\refresh%402x.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\refresh%402x.png">
       <Link>Resources\refresh%402x.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\reply.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\reply.png">
       <Link>Resources\reply.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\retweet.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\retweet.png">
       <Link>Resources\retweet.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\rui.jpg">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\rui.jpg">
       <Link>Resources\rui.jpg</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\scott.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\scott.png">
       <Link>Resources\scott.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\scott159.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\scott159.png">
       <Link>Resources\scott159.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\search.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\search.png">
       <Link>Resources\search.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\slideout.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\slideout.png">
       <Link>Resources\slideout.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\slideout%402x.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\slideout%402x.png">
       <Link>Resources\slideout%402x.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\tdl_full.jpg">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\tdl_full.jpg">
       <Link>Resources\tdl_full.jpg</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\tdl.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\tdl.png">
       <Link>Resources\tdl.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\tdl%402x.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\tdl%402x.png">
       <Link>Resources\tdl%402x.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\tweet.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\tweet.png">
       <Link>Resources\tweet.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\twitter.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\twitter.png">
       <Link>Resources\twitter.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\twitter%402x.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\twitter%402x.png">
       <Link>Resources\twitter%402x.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\twitternav.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\twitternav.png">
       <Link>Resources\twitternav.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\twitternav%402x.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\twitternav%402x.png">
       <Link>Resources\twitternav%402x.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\xamarinlogo.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Resources\xamarinlogo.png">
       <Link>Resources\xamarinlogo.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\bank.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\bank.png">
       <Link>Resources\bank.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\bank%402x.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\bank%402x.png">
       <Link>Resources\bank%402x.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\calculator.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\calculator.png">
       <Link>Resources\calculator.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\calculator%402x.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\calculator%402x.png">
       <Link>Resources\calculator%402x.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\coffee%402x.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\coffee%402x.png">
       <Link>Resources\coffee%402x.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\cover1.jpg">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\cover1.jpg">
       <Link>Resources\cover1.jpg</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\cover1small.jpg">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\cover1small.jpg">
       <Link>Resources\cover1small.jpg</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\crimson.jpg">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\crimson.jpg">
       <Link>Resources\crimson.jpg</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\crimsonsmall.jpg">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\crimsonsmall.jpg">
       <Link>Resources\crimsonsmall.jpg</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Goobuntu-icon.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Goobuntu-icon.png">
       <Link>Resources\Goobuntu-icon.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Intranet-icon.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Intranet-icon.png">
       <Link>Resources\Intranet-icon.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\local.html">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\local.html">
       <Link>Resources\local.html</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\menuIcon.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\menuIcon.png">
       <Link>Resources\menuIcon.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\menuIcon%402x.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\menuIcon%402x.png">
       <Link>Resources\menuIcon%402x.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\move_slider_one_right_ios6_iphone.base64">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\move_slider_one_right_ios6_iphone.base64">
       <Link>Resources\move_slider_one_right_ios6_iphone.base64</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\move_slider_three_right_ios6_iphone.base64">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\move_slider_three_right_ios6_iphone.base64">
       <Link>Resources\move_slider_three_right_ios6_iphone.base64</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\move_slider_two_right_ios6_iphone.base64">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\move_slider_two_right_ios6_iphone.base64">
       <Link>Resources\move_slider_two_right_ios6_iphone.base64</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\oasis.jpg">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\oasis.jpg">
       <Link>Resources\oasis.jpg</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\oasissmall.jpg">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\oasissmall.jpg">
       <Link>Resources\oasissmall.jpg</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\photo.jpg">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\photo.jpg">
       <Link>Resources\photo.jpg</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\seth.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\seth.png">
       <Link>Resources\seth.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\seth%402x.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\seth%402x.png">
       <Link>Resources\seth%402x.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\settings%402x.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\settings%402x.png">
       <Link>Resources\settings%402x.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\test.jpg">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\test.jpg">
       <Link>Resources\test.jpg</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\toolbar_close.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\toolbar_close.png">
       <Link>Resources\toolbar_close.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\coffee.png">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\coffee.png">
       <Link>Resources\coffee.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Images\FlowerBuds.jpg">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Images\FlowerBuds.jpg">
       <Link>Images\FlowerBuds.jpg</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Images\FlowerBuds%402x.jpg">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Images\FlowerBuds%402x.jpg">
       <Link>Images\FlowerBuds%402x.jpg</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Images\Fruits.jpg">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Images\Fruits.jpg">
       <Link>Images\Fruits.jpg</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Images\Fruits%402x.jpg">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Images\Fruits%402x.jpg">
       <Link>Images\Fruits%402x.jpg</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Images\Legumes.jpg">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Images\Legumes.jpg">
       <Link>Images\Legumes.jpg</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Images\Legumes%402x.jpg">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Images\Legumes%402x.jpg">
       <Link>Images\Legumes%402x.jpg</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Images\Vegetables.jpg">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Images\Vegetables.jpg">
       <Link>Images\Vegetables.jpg</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Images\Vegetables%402x.jpg">
+    <BundleResource Include="..\System.Maui.ControlGallery.iOS\Images\Vegetables%402x.jpg">
       <Link>Images\Vegetables%402x.jpg</Link>
     </BundleResource>
     <BundleResource Include="Resources\Fonts\Roboto-Bold.ttf">

@@ -1,17 +1,17 @@
-﻿using System;
-using Xamarin.Forms.Xaml.Internals;
-using Xamarin.Forms.Internals;
+using System;
+using System.Maui.Xaml.Internals;
+using System.Maui.Internals;
 #if __MOBILE__
 using UIKit;
 
-[assembly: Xamarin.Forms.Dependency(typeof(Xamarin.Forms.Platform.iOS.NativeValueConverterService))]
-namespace Xamarin.Forms.Platform.iOS
+[assembly: System.Maui.Dependency(typeof(System.Maui.Platform.iOS.NativeValueConverterService))]
+namespace System.Maui.Platform.iOS
 #else
 using UIView = AppKit.NSView;
 
-[assembly: Xamarin.Forms.Dependency(typeof(Xamarin.Forms.Platform.MacOS.NativeValueConverterService))]
+[assembly: System.Maui.Dependency(typeof(System.Maui.Platform.MacOS.NativeValueConverterService))]
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 #endif
 {
 	[Preserve(AllMembers = true)]

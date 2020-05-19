@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 #if __ANDROID_29__
 using Google.Android.Material.Tabs;
 #else
 using Android.Support.Design.Widget;
 #endif
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public interface IShellTabLayoutAppearanceTracker : IDisposable
 	{

@@ -7,7 +7,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Threading;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class ImageTests : BaseTestFixture

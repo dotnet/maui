@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Maps;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
+using System.Maui.Maps;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Github, 1613, "Map.GetSizeRequest always returns map's current size", PlatformAffected.Android | PlatformAffected.iOS)]
@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Controls.Issues
 		async void Build ()
 		{
 			var image = new Image {
-				Source = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/banner.png",
+				Source = "https://raw.githubusercontent.com/xamarin/System.Maui/master/banner.png",
 				Aspect = Aspect.AspectFill,
 				Opacity = 0.5,
 			};

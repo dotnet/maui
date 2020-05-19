@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 45330, "System.ObjectDisposedException: Cannot access a disposed object. Object name: 'Android.Views.GestureDetector'.", PlatformAffected.Android)]

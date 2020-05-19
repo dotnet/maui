@@ -1,7 +1,7 @@
-﻿using Xamarin.Forms.Platform.GTK.Extensions;
-using Xamarin.Forms.Platform.GTK.Renderers;
+using System.Maui.Platform.GTK.Extensions;
+using System.Maui.Platform.GTK.Renderers;
 
-namespace Xamarin.Forms.Platform.GTK.Packagers
+namespace System.Maui.Platform.GTK.Packagers
 {
 	public class LayoutElementPackager : VisualElementPackager<LayoutRenderer>
 	{

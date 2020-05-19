@@ -1,11 +1,11 @@
 using System.Diagnostics;
 using System.Linq;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using UIKit;
 using System;
-using Xamarin.Forms.Core;
+using System.Maui.Core;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public static partial class FontExtensions
 	{

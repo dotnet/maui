@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using Xamarin.Forms.Platform.Tizen.Native;
-using Xamarin.Forms.Platform.Tizen.Native.Watch;
+using System.Maui.Platform.Tizen.Native;
+using System.Maui.Platform.Tizen.Native.Watch;
 using ElmSharp;
 using EEntry = ElmSharp.Entry;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public class PickerRenderer : ViewRenderer<Picker, EEntry>
 	{
@@ -68,7 +68,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		protected virtual EEntry CreateNativeControl()
 		{
-			return new EditfieldEntry(Forms.NativeParent)
+			return new EditfieldEntry(System.Maui.Maui.NativeParent)
 			{
 				IsSingleLine = true,
 				InputPanelShowByOnDemand = true,
@@ -156,11 +156,11 @@ namespace Xamarin.Forms.Platform.Tizen
 				int i = 0;
 				if (Device.Idiom == TargetIdiom.Watch)
 				{
-					_dialog = new WatchDialog(Forms.NativeParent, false);
+					_dialog = new WatchDialog(System.Maui.Maui.NativeParent, false);
 				}
 				else
 				{
-					_dialog = new Dialog(Forms.NativeParent);
+					_dialog = new Dialog(System.Maui.Maui.NativeParent);
 				}
 				_dialog.AlignmentX = -1;
 				_dialog.AlignmentY = -1;

@@ -6,7 +6,7 @@ using TNativeView = AppKit.NSView;
 
 #endif
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public class ViewInitializedEventArgs : EventArgs
 	{

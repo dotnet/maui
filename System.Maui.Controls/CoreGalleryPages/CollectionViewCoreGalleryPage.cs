@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	internal class CollectionViewCoreGalleryPage : CoreGalleryPage<CollectionView>
 	{

@@ -1,8 +1,8 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Application xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:PagesGallery"
-             xmlns:p="clr-namespace:Xamarin.Forms.Pages;assembly=Xamarin.Forms.Pages"
+             xmlns:p="clr-namespace:System.Maui.Pages;assembly=System.Maui.Pages"
              x:Class="PagesGallery.App">
   <Application.Resources>
     <ResourceDictionary>

@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using ElmSharp;
 using ElmSharp.Wearable;
 
-namespace Xamarin.Forms.Platform.Tizen.Watch
+namespace System.Maui.Platform.Tizen.Watch
 {
 	internal static class IndexStyle
 	{
@@ -62,7 +62,7 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 
 		void InitializeComponent()
 		{
-			_mainBox = new Box(Forms.NativeParent)
+			_mainBox = new Box(System.Maui.Maui.NativeParent)
 			{
 				AlignmentX = -1,
 				AlignmentY = -1,
@@ -228,7 +228,7 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 
 		protected virtual bool OnRotated(bool isClockwise)
 		{
-			if (Forms.RotaryFocusObject != null)
+			if (System.Maui.Maui.RotaryFocusObject != null)
 				return false;
 
 			MoveNextPage(isClockwise);

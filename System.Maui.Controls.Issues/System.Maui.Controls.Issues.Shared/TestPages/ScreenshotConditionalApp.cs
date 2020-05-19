@@ -8,7 +8,7 @@ using Xamarin.UITest.Queries;
 using Xamarin.UITest.iOS;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	/// <summary>
 	/// Decorator for IApp which only takes screenshots if the SCREENSHOTS symbol  is specified

@@ -1,11 +1,11 @@
 using System;
 using Android.Content.Res;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public interface IDeviceInfoProvider
 	{
-		Resources Resources { get; }
+		global::Android.Content.Res.Resources Resources { get; }
 
 		event EventHandler ConfigurationChanged;
 	}

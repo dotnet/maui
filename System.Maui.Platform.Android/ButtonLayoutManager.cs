@@ -12,11 +12,11 @@ using Android.Support.V4.View;
 using Android.Support.V4.Widget;
 using Android.Support.V7.Widget;
 #endif
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using AView = Android.Views.View;
 using AButton = Android.Widget.Button;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	// TODO: Currently the drawable is reloaded if the text or the layout changes.
 	//       This is obviously not great, but it works. An optimization should

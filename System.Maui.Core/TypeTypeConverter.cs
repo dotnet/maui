@@ -1,11 +1,11 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
-using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
-	[ProvideCompiled("Xamarin.Forms.Core.XamlC.TypeTypeConverter")]
+	[ProvideCompiled("System.Maui.Core.XamlC.TypeTypeConverter")]
 	[TypeConversion(typeof(Type))]
 	public sealed class TypeTypeConverter : TypeConverter, IExtendedTypeConverter
 	{

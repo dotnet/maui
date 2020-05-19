@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using System.ComponentModel;
 using System.Linq;
-using Xamarin.Forms.StyleSheets;
+using System.Maui.StyleSheets;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[DebuggerDisplay("Title = {Title}, Route = {Route}")]
 	public class BaseShellItem : NavigableElement, IPropertyPropagationController, IVisualController, IFlowDirectionController, ITabStopElement
@@ -181,7 +181,7 @@ namespace Xamarin.Forms
 
 		protected virtual bool TabStopDefaultValueCreator() => true;
 
-		IVisual _effectiveVisual = Xamarin.Forms.VisualMarker.Default;
+		IVisual _effectiveVisual = System.Maui.VisualMarker.Default;
 		IVisual IVisualController.EffectiveVisual
 		{
 			get { return _effectiveVisual; }
@@ -194,7 +194,7 @@ namespace Xamarin.Forms
 				OnPropertyChanged(VisualElement.VisualProperty.PropertyName);
 			}
 		}
-		IVisual IVisualController.Visual => Xamarin.Forms.VisualMarker.MatchParent;
+		IVisual IVisualController.Visual => System.Maui.VisualMarker.MatchParent;
 
 		static void OnIconChanged(BindableObject bindable, object oldValue, object newValue)
 		{

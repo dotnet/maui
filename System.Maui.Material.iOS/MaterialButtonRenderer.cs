@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
 using MaterialComponents;
 using UIKit;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui.Platform.iOS;
 using MButton = MaterialComponents.Button;
 
-namespace Xamarin.Forms.Material.iOS
+namespace System.Maui.Material.iOS
 {
 	public class MaterialButtonRenderer : ViewRenderer<Button, MButton>, IImageVisualElementRenderer, IButtonLayoutRenderer
 	{
@@ -201,7 +201,7 @@ namespace Xamarin.Forms.Material.iOS
 				_defaultBorderWidth = Control.GetBorderWidth(UIControlState.Normal);
 
 			// TODO: The Material button does not support borders:
-			//       https://github.com/xamarin/Xamarin.Forms/issues/4951
+			//       https://github.com/xamarin/System.Maui/issues/4951
 			if (borderWidth > 1)
 				borderWidth = 1;
 

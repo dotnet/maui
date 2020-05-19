@@ -1,12 +1,12 @@
 using UIKit;
-using Xamarin.Forms.Platform.iOS;
-using Xamarin.Forms;
+using System.Maui.Platform.iOS;
+using System.Maui;
 using System.Collections.Generic;
-using Xamarin.Forms.ControlGallery.iOS;
-using Xamarin.Forms.Controls.Issues;
+using System.Maui.ControlGallery.iOS;
+using System.Maui.Controls.Issues;
 
 [assembly: ExportRenderer(typeof(Button), typeof(CustomRenderer40251))]
-namespace Xamarin.Forms.ControlGallery.iOS
+namespace System.Maui.ControlGallery.iOS
 {
 	public class CustomRenderer40251 : ButtonRenderer
 	{

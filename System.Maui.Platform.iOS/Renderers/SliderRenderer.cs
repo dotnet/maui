@@ -2,10 +2,10 @@ using System;
 using System.ComponentModel;
 using UIKit;
 using SizeF = CoreGraphics.CGSize;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using Specifics = Xamarin.Forms.PlatformConfiguration.iOSSpecific.Slider;
+using System.Maui.PlatformConfiguration.iOSSpecific;
+using Specifics = System.Maui.PlatformConfiguration.iOSSpecific.Slider;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class SliderRenderer : ViewRenderer<Slider, UISlider>
 	{

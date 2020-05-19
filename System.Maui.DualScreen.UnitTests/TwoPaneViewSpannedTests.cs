@@ -1,6 +1,6 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 
-namespace Xamarin.Forms.DualScreen.UnitTests
+namespace System.Maui.DualScreen.UnitTests
 {
 	[TestFixture]
 	public class TwoPaneViewSpannedTests : BaseTestFixture

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Xamarin.Forms.Platform.WPF.Extensions;
-using Xamarin.Forms.Platform.WPF.Helpers;
+using System.Maui.Platform.WPF.Extensions;
+using System.Maui.Platform.WPF.Helpers;
 using WpfScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public class ScrollViewRenderer : ViewRenderer<ScrollView, ScrollViewer>
 	{

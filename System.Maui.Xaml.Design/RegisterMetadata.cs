@@ -1,6 +1,6 @@
-﻿using Microsoft.Windows.Design.Metadata;
+using Microsoft.Windows.Design.Metadata;
 
-namespace Xamarin.Forms.Xaml.Design
+namespace System.Maui.Xaml.Design
 {
 	class RegisterMetadata : IProvideAttributeTable
 	{

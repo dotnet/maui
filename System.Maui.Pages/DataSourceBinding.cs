@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Pages
+namespace System.Maui.Pages
 {
 	public class DataSourceBinding : BindingBase
 	{

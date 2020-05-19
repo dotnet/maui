@@ -1,20 +1,20 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Xamarin.Forms;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using System.Maui;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
+using System.Maui.Xaml;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 4915, "Unify the image handling")]
@@ -90,7 +90,7 @@ namespace Xamarin.Forms.Controls.Issues
 				vm = new ViewModel()
 				{
 					Image = "oasis.png",
-					ImageUrl = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/78385f9fc1fc56dc88bd98e73bf9c8f2f2d0a90a/Xamarin.Forms.ControlGallery.iOS/Resources/jet.png"
+					ImageUrl = "https://raw.githubusercontent.com/xamarin/System.Maui/78385f9fc1fc56dc88bd98e73bf9c8f2f2d0a90a/System.Maui.ControlGallery.iOS/Resources/jet.png"
 				};
 
 			}
@@ -108,7 +108,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public class ViewModel
 		{
 			public string Image { get; set; } = "coffee.png";
-			public string ImageUrl { get; set; } = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/f27f5a3650f37894d4a1ac925d6fab4dc7350087/Xamarin.Forms.ControlGallery.iOS/oasis.jpg";
+			public string ImageUrl { get; set; } = "https://raw.githubusercontent.com/xamarin/System.Maui/f27f5a3650f37894d4a1ac925d6fab4dc7350087/System.Maui.ControlGallery.iOS/oasis.jpg";
 		}
 	}
 }

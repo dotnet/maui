@@ -25,12 +25,12 @@
     http://go.microsoft.com/fwlink/?LinkId=613100
 -->
 <Directives xmlns="http://schemas.microsoft.com/netfx/2013/01/metadata">
-  <Library Name="Xamarin.Forms.Platform.UAP">
+  <Library Name="System.Maui.Platform.UAP">
 
   	<!-- add directives for your library here -->
     <Namespace Name="Windows.UI.Xaml.Automation.Peers" MarshalObject="Required All"/>
-    <Type Name="Xamarin.Forms.Platform.UWP.WindowsPlatformServices" Activate="Required All"/>
-    <Type Name="Xamarin.Forms.Platform.UWP.WindowsBasePlatformServices" Activate="Required All"/>
-    <Type Name="Xamarin.Forms.Platform.UWP.WindowsPlatform" Activate="Required All"/>
+    <Type Name="System.Maui.Platform.UWP.WindowsPlatformServices" Activate="Required All"/>
+    <Type Name="System.Maui.Platform.UWP.WindowsBasePlatformServices" Activate="Required All"/>
+    <Type Name="System.Maui.Platform.UWP.WindowsPlatform" Activate="Required All"/>
   </Library>
 </Directives>

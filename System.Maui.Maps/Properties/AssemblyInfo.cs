@@ -1,3 +1,3 @@
-﻿using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
 [assembly: Preserve]

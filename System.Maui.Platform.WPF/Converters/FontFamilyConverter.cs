@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Windows.Media;
 
-namespace Xamarin.Forms.Platform.WPF.Converters
+namespace System.Maui.Platform.WPF.Converters
 {
 	public class FontFamilyConverter : System.Windows.Data.IValueConverter
 	{

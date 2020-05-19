@@ -1,18 +1,18 @@
-﻿using System;
+using System;
 using System.Net;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using System.Maui.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.PlatformConfiguration;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
 using System.Text.RegularExpressions;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.ManualReview)]
@@ -56,7 +56,7 @@ namespace Xamarin.Forms.Controls.Issues
 					VerticalOptions = LayoutOptions.FillAndExpand,
 					Cookies = cookieContainer
 				};
-				webView.On<Windows>().SetIsJavaScriptAlertEnabled(true);
+				webView.On<System.Maui.PlatformConfiguration.Windows>().SetIsJavaScriptAlertEnabled(true);
 
 				Action<string> cookieExpectation = null;
 				var cookieResult = new Label()

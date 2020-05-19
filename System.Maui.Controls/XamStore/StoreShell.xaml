@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <localTest:TestShell xmlns="http://xamarin.com/schemas/2014/forms"
 			xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			xmlns:local="clr-namespace:Xamarin.Forms.Controls.XamStore"
-			xmlns:localTest="clr-namespace:Xamarin.Forms.Controls"
-			x:Class="Xamarin.Forms.Controls.XamStore.StoreShell">
+			xmlns:local="clr-namespace:System.Maui.Controls.XamStore"
+			xmlns:localTest="clr-namespace:System.Maui.Controls"
+			x:Class="System.Maui.Controls.XamStore.StoreShell">
 	<Shell.Resources>
 		<Style x:Key="BaseStyle" TargetType="Element">
 			<Setter Property="Shell.BackgroundColor" Value="#455A64" />

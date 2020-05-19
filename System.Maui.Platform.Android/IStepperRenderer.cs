@@ -1,6 +1,6 @@
-﻿using AButton = Android.Widget.Button;
+using AButton = Android.Widget.Button;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public interface IStepperRenderer
 	{

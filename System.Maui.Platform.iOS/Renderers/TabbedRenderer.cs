@@ -4,13 +4,13 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using UIKit;
-using Xamarin.Forms.Internals;
-using static Xamarin.Forms.PlatformConfiguration.iOSSpecific.Page;
-using PageUIStatusBarAnimation = Xamarin.Forms.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
-using TabbedPageConfiguration = Xamarin.Forms.PlatformConfiguration.iOSSpecific.TabbedPage;
-using TranslucencyMode = Xamarin.Forms.PlatformConfiguration.iOSSpecific.TranslucencyMode;
+using System.Maui.Internals;
+using static System.Maui.PlatformConfiguration.iOSSpecific.Page;
+using PageUIStatusBarAnimation = System.Maui.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
+using TabbedPageConfiguration = System.Maui.PlatformConfiguration.iOSSpecific.TabbedPage;
+using TranslucencyMode = System.Maui.PlatformConfiguration.iOSSpecific.TranslucencyMode;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class TabbedRenderer : UITabBarController, IVisualElementRenderer, IEffectControlProvider
 	{
@@ -187,7 +187,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			// Setting TabBarItem.Title in iOS 10 causes rendering bugs
 			// Work around this by creating a new UITabBarItem on each change
-			if (e.PropertyName == Page.TitleProperty.PropertyName && !Forms.IsiOS10OrNewer)
+			if (e.PropertyName == Page.TitleProperty.PropertyName && !System.Maui.Maui.IsiOS10OrNewer)
 			{
 				var page = (Page)sender;
 				var renderer = Platform.GetRenderer(page);
@@ -197,7 +197,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (renderer.ViewController.TabBarItem != null)
 					renderer.ViewController.TabBarItem.Title = page.Title;
 			}
-			else if (e.PropertyName == Page.IconImageSourceProperty.PropertyName || e.PropertyName == Page.TitleProperty.PropertyName && Forms.IsiOS10OrNewer)
+			else if (e.PropertyName == Page.IconImageSourceProperty.PropertyName || e.PropertyName == Page.TitleProperty.PropertyName && System.Maui.Maui.IsiOS10OrNewer)
 			{
 				var page = (Page)sender;
 
@@ -474,7 +474,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (Tabbed.IsSet(TabbedPage.SelectedTabColorProperty) && Tabbed.SelectedTabColor != Color.Default)
 			{
-				if (Forms.IsiOS10OrNewer)
+				if (System.Maui.Maui.IsiOS10OrNewer)
 					TabBar.TintColor = Tabbed.SelectedTabColor.ToUIColor();
 				else
 					TabBar.SelectedImageTintColor = Tabbed.SelectedTabColor.ToUIColor();
@@ -482,13 +482,13 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 			else
 			{
-				if (Forms.IsiOS10OrNewer)
+				if (System.Maui.Maui.IsiOS10OrNewer)
 					TabBar.TintColor = UITabBar.Appearance.TintColor;
 				else
 					TabBar.SelectedImageTintColor = UITabBar.Appearance.SelectedImageTintColor;
 			}
 
-			if (!Forms.IsiOS10OrNewer)
+			if (!System.Maui.Maui.IsiOS10OrNewer)
 				return;
 
 			if (Tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) && Tabbed.UnselectedTabColor != Color.Default)

@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using NUnit.Framework;
 using System.Collections.ObjectModel;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 
 	public class SeverityColorConverter : IValueConverter
@@ -75,7 +75,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 <ContentPage 							
 xmlns=""http://xamarin.com/schemas/2014/forms"" 
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-							xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+							xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests"">
 
 <ContentPage.Resources>
 <ResourceDictionary>
@@ -104,7 +104,7 @@ xmlns=""http://xamarin.com/schemas/2014/forms""
 <ContentPage 							
 xmlns=""http://xamarin.com/schemas/2014/forms"" 
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-							xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+							xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests"">
 
 <ContentPage.Resources>
 <ResourceDictionary>
@@ -132,7 +132,7 @@ xmlns=""http://xamarin.com/schemas/2014/forms""
 			var xaml = @"<local:BaseView 
 	xmlns=""http://xamarin.com/schemas/2014/forms"" 
 	xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"" 
-  	xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests""
+  	xmlns:local=""clr-namespace:System.Maui.Xaml.UnitTests;assembly=System.Maui.Xaml.UnitTests""
 	Padding=""0,40,0,0"">
     <local:BaseView.Resources>
     <ResourceDictionary>

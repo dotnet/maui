@@ -1,9 +1,9 @@
-﻿using Gtk;
+using Gtk;
 using System.Linq;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using System.Maui.Internals;
+using System.Maui.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Helpers
+namespace System.Maui.Platform.GTK.Helpers
 {
 	internal static class DialogHelper
 	{

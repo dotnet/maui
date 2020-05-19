@@ -13,7 +13,7 @@ using Android.Widget;
 using Android.Views;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class SearchBarRenderer : ViewRenderer<SearchBar, SearchView>, SearchView.IOnQueryTextListener
 	{
@@ -52,7 +52,7 @@ namespace Xamarin.Forms.Platform.Android
 		public override SizeRequest GetDesiredSize(int widthConstraint, int heightConstraint)
 		{
 			var sizerequest = base.GetDesiredSize(widthConstraint, heightConstraint);
-			if (Forms.SdkInt == BuildVersionCodes.N && heightConstraint == 0 && sizerequest.Request.Height == 0)
+			if (System.Maui.Maui.SdkInt == BuildVersionCodes.N && heightConstraint == 0 && sizerequest.Request.Height == 0)
 			{
 				sizerequest.Request = new Size(sizerequest.Request.Width, _defaultHeight);
 			}
@@ -189,7 +189,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (_editText == null)
 				return;
 
-			_editText.UpdateHorizontalAlignment(Element.HorizontalTextAlignment, Context.HasRtlSupport(), Xamarin.Forms.TextAlignment.Center.ToVerticalGravityFlags());
+			_editText.UpdateHorizontalAlignment(Element.HorizontalTextAlignment, Context.HasRtlSupport(), System.Maui.TextAlignment.Center.ToVerticalGravityFlags());
 		}
 
 		void UpdateVerticalTextAlignment()
@@ -199,7 +199,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (_editText == null)
 				return;
 
-			_editText.UpdateVerticalAlignment(Element.VerticalTextAlignment, Xamarin.Forms.TextAlignment.Center.ToVerticalGravityFlags());
+			_editText.UpdateVerticalAlignment(Element.VerticalTextAlignment, System.Maui.TextAlignment.Center.ToVerticalGravityFlags());
 		}
 
 		void UpdateCancelButtonColor()
@@ -273,7 +273,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateCharacterSpacing()
 		{
-			if(!Forms.IsLollipopOrNewer)
+			if(!System.Maui.Maui.IsLollipopOrNewer)
 				return;
 
 			_editText = _editText ?? Control.GetChildrenOfType<EditText>().FirstOrDefault();

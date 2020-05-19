@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Globalization;
 using NUnit.Framework;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TypeConverter(typeof(ToBarConverter))]
 	internal class Bar
@@ -1510,7 +1510,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		//https://github.com/xamarin/Xamarin.Forms/issues/2019
+		//https://github.com/xamarin/System.Maui/issues/2019
 		public void EventSubscribingOnBindingContextChanged()
 		{
 			var source = new MockBindable();
@@ -1570,7 +1570,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		//https://github.com/xamarin/Xamarin.Forms/issues/6281
+		//https://github.com/xamarin/System.Maui/issues/6281
 		public void SetValueToTextInvokesToString()
 		{
 			var prop = BindableProperty.Create("foo", typeof(string), typeof(MockBindable), null);
@@ -1581,7 +1581,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		//https://github.com/xamarin/Xamarin.Forms/issues/6281
+		//https://github.com/xamarin/System.Maui/issues/6281
 		public void SetBindingToTextInvokesToString()
 		{
 			var prop = BindableProperty.Create("foo", typeof(string), typeof(MockBindable), null);

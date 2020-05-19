@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using ElmSharp;
 using ElmSharp.Wearable;
 
-namespace Xamarin.Forms.Platform.Tizen.Native.Watch
+namespace System.Maui.Platform.Tizen.Native.Watch
 {
 	public class WatchScroller : Native.Scroller, IRotaryActionWidget, IRotaryInteraction
 	{

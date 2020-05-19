@@ -2,14 +2,14 @@ using System;
 using System.Linq;
 using UIKit;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public static class PageExtensions
 	{
 		public static UIViewController CreateViewController(this Page page)
 		{
-			if (!Forms.IsInitialized)
-				throw new InvalidOperationException("call Forms.Init() before this");
+			if (!System.Maui.Maui.IsInitialized)
+				throw new InvalidOperationException("call System.Maui.Maui.Init() before this");
 
 			if (!(page.RealParent is Application))
 			{
@@ -32,13 +32,13 @@ namespace Xamarin.Forms
 	}
 }
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public static class PageExtensions
 	{
 		public static UIViewController CreateViewController(this ContentPage page)
 		{
-			return Xamarin.Forms.PageExtensions.CreateViewController(page);
+			return System.Maui.PageExtensions.CreateViewController(page);
 		}
 
 		internal static Page GetCurrentPage(this Page currentPage)

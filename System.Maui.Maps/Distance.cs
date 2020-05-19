@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 
-namespace Xamarin.Forms.Maps
+namespace System.Maui.Maps
 {
 	public struct Distance
 	{

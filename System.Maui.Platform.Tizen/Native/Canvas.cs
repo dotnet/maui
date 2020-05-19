@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using ElmSharp;
 
@@ -6,7 +6,7 @@ using ElmSharp;
 using Tizen.NET.MaterialComponents;
 #endif
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 #if __MATERIAL__
 	public class MaterialCanvas : MaterialBox, IContainable<EvasObject>
@@ -21,13 +21,13 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 	/// A Canvas provides a class which can be a container for other controls.
 	/// </summary>
 	/// <remarks>
-	/// This class is used as a container view for Layouts from Xamarin.Forms.Platform.Tizen framework.
+	/// This class is used as a container view for Layouts from System.Maui.Platform.Tizen framework.
 	/// It is used for implementing xamarin pages and layouts.
 	/// </remarks>
 	public class Canvas : Box, IContainable<EvasObject>
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Xamarin.Forms.Platform.Tizen.Native.Canvas"/> class.
+		/// Initializes a new instance of the <see cref="System.Maui.Platform.Tizen.Native.Canvas"/> class.
 		/// </summary>
 		/// <remarks>Canvas doesn't support replacing its children, this will be ignored.</remarks>
 		/// <param name="parent">Parent of this instance.</param>

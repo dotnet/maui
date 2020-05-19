@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using AppKit;
 using CoreAnimation;
 using Foundation;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.macOSSpecific;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration.macOSSpecific;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public class NavigationPageRenderer : NSViewController, IVisualElementRenderer, IEffectControlProvider
 	{
@@ -440,9 +440,9 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (_tracker == null)
 				return;
 
-			if (e.PropertyName == Xamarin.Forms.NavigationPage.BarBackgroundColorProperty.PropertyName)
+			if (e.PropertyName == System.Maui.NavigationPage.BarBackgroundColorProperty.PropertyName)
 				UpdateBarBackgroundColor();
-			else if (e.PropertyName == Xamarin.Forms.NavigationPage.BarTextColorProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.NavigationPage.BarTextColorProperty.PropertyName)
 				UpdateBarTextColor();
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackgroundColor();

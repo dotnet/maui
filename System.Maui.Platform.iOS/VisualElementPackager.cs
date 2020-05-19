@@ -1,11 +1,11 @@
 using System;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
 #if __MOBILE__
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 #else
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 #endif
 {
 	public class VisualElementPackager : IDisposable

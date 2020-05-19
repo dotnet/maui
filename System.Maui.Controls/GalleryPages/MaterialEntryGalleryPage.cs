@@ -1,6 +1,6 @@
-﻿using System.Linq;
+using System.Linq;
 
-namespace Xamarin.Forms.Controls.GalleryPages
+namespace System.Maui.Controls.GalleryPages
 {
 	public class MaterialEntryGalleryPage : ContentPage
 	{

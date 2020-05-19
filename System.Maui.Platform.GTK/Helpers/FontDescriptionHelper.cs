@@ -1,6 +1,6 @@
-﻿using Pango;
+using Pango;
 
-namespace Xamarin.Forms.Platform.GTK.Helpers
+namespace System.Maui.Platform.GTK.Helpers
 {
 	internal static class FontDescriptionHelper
 	{

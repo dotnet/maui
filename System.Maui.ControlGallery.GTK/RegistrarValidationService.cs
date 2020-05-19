@@ -1,10 +1,10 @@
-﻿using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.GTK;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Platform.GTK;
+using System.Maui;
+using System.Maui.ControlGallery.GTK;
+using System.Maui.Controls;
+using System.Maui.Platform.GTK;
 
 [assembly: Dependency(typeof(RegistrarValidationService))]
-namespace Xamarin.Forms.ControlGallery.GTK
+namespace System.Maui.ControlGallery.GTK
 {
 	public class RegistrarValidationService : IRegistrarValidationService
 	{

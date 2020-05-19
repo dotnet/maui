@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SpacingGalleries
+namespace System.Maui.Controls.GalleryPages.CollectionViewGalleries.SpacingGalleries
 {
 	internal class ItemsSpacingGallery : ContentPage
 	{

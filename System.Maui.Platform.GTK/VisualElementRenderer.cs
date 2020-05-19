@@ -1,12 +1,12 @@
-﻿using Gtk;
+using Gtk;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Xamarin.Forms.Platform.GTK.Extensions;
-using Container = Xamarin.Forms.Platform.GTK.GtkFormsContainer;
+using System.Maui.Platform.GTK.Extensions;
+using Container = System.Maui.Platform.GTK.GtkFormsContainer;
 using Control = Gtk.Widget;
 
-namespace Xamarin.Forms.Platform.GTK
+namespace System.Maui.Platform.GTK
 {
 	public class VisualElementRenderer<TElement, TNativeElement> : Container, IVisualNativeElementRenderer, IVisualElementRenderer, IDisposable, IEffectControlProvider
 		where TElement : VisualElement

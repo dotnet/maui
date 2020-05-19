@@ -1,9 +1,9 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29102.190
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xamarin.Forms", "Xamarin.Forms", "{9AD757F5-E57A-459D-A0A7-E0675E045B84}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "System.Maui", "System.Maui", "{9AD757F5-E57A-459D-A0A7-E0675E045B84}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platforms", "Platforms", "{29AC50BF-B4FB-450B-9386-0C5AD4B84226}"
 EndProject
@@ -11,84 +11,84 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Control Gallery", "Control Gallery", "{4F5E2D21-17F6-4A42-B8FB-D03D82E24EC8}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml", "{32F608E2-6406-4DCF-9105-E2A7CB7085CF}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "System.Maui.Xaml", "System.Maui.Xaml", "{32F608E2-6406-4DCF-9105-E2A7CB7085CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Platform.iOS", "Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj", "{271193C1-6E7C-429C-A36D-3F1BE5267231}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Maui.Platform.iOS", "System.Maui.Platform.iOS\System.Maui.Platform.iOS.csproj", "{271193C1-6E7C-429C-A36D-3F1BE5267231}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Xaml.UnitTests", "Xamarin.Forms.Xaml.UnitTests\Xamarin.Forms.Xaml.UnitTests.csproj", "{4B14D295-C09B-4C38-B880-7CC768E50585}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.Xaml.UnitTests", "System.Maui.Xaml.UnitTests\System.Maui.Xaml.UnitTests.csproj", "{4B14D295-C09B-4C38-B880-7CC768E50585}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuspec", ".nuspec", "{7E12C50D-A570-4DF1-94E1-8599843FA87C}"
 	ProjectSection(SolutionItems) = preProject
-		.nuspec\Xamarin.Forms.AppLinks.nuspec = .nuspec\Xamarin.Forms.AppLinks.nuspec
-		.nuspec\Xamarin.Forms.Debug.targets = .nuspec\Xamarin.Forms.Debug.targets
-		.nuspec\Xamarin.Forms.DefaultItems.props = .nuspec\Xamarin.Forms.DefaultItems.props
-		.nuspec\Xamarin.Forms.DefaultItems.targets = .nuspec\Xamarin.Forms.DefaultItems.targets
-		.nuspec\Xamarin.Forms.Maps.GTK.nuspec = .nuspec\Xamarin.Forms.Maps.GTK.nuspec
-		.nuspec\Xamarin.Forms.Maps.nuspec = .nuspec\Xamarin.Forms.Maps.nuspec
-		.nuspec\Xamarin.Forms.Maps.WPF.nuspec = .nuspec\Xamarin.Forms.Maps.WPF.nuspec
-		.nuspec\Xamarin.Forms.nuspec = .nuspec\Xamarin.Forms.nuspec
-		.nuspec\Xamarin.Forms.Pages.Azure.nuspec = .nuspec\Xamarin.Forms.Pages.Azure.nuspec
-		.nuspec\Xamarin.Forms.Pages.nuspec = .nuspec\Xamarin.Forms.Pages.nuspec
-		.nuspec\Xamarin.Forms.Platform.GTK.nuspec = .nuspec\Xamarin.Forms.Platform.GTK.nuspec
-		.nuspec\Xamarin.Forms.Platform.WPF.nuspec = .nuspec\Xamarin.Forms.Platform.WPF.nuspec
-		.nuspec\Xamarin.Forms.props = .nuspec\Xamarin.Forms.props
-		.nuspec\Xamarin.Forms.targets = .nuspec\Xamarin.Forms.targets
+		.nuspec\System.Maui.AppLinks.nuspec = .nuspec\System.Maui.AppLinks.nuspec
+		.nuspec\System.Maui.Debug.targets = .nuspec\System.Maui.Debug.targets
+		.nuspec\System.Maui.DefaultItems.props = .nuspec\System.Maui.DefaultItems.props
+		.nuspec\System.Maui.DefaultItems.targets = .nuspec\System.Maui.DefaultItems.targets
+		.nuspec\System.Maui.Maps.GTK.nuspec = .nuspec\System.Maui.Maps.GTK.nuspec
+		.nuspec\System.Maui.Maps.nuspec = .nuspec\System.Maui.Maps.nuspec
+		.nuspec\System.Maui.Maps.WPF.nuspec = .nuspec\System.Maui.Maps.WPF.nuspec
+		.nuspec\System.Maui.nuspec = .nuspec\System.Maui.nuspec
+		.nuspec\System.Maui.Pages.Azure.nuspec = .nuspec\System.Maui.Pages.Azure.nuspec
+		.nuspec\System.Maui.Pages.nuspec = .nuspec\System.Maui.Pages.nuspec
+		.nuspec\System.Maui.Platform.GTK.nuspec = .nuspec\System.Maui.Platform.GTK.nuspec
+		.nuspec\System.Maui.Platform.WPF.nuspec = .nuspec\System.Maui.Platform.WPF.nuspec
+		.nuspec\System.Maui.props = .nuspec\System.Maui.props
+		.nuspec\System.Maui.targets = .nuspec\System.Maui.targets
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Core", "Xamarin.Forms.Core\Xamarin.Forms.Core.csproj", "{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.Core", "System.Maui.Core\System.Maui.Core.csproj", "{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj", "{9DB2F292-8034-4E06-89AD-98BBDA4306B9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.Xaml", "System.Maui.Xaml\System.Maui.Xaml.csproj", "{9DB2F292-8034-4E06-89AD-98BBDA4306B9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Controls", "Xamarin.Forms.Controls\Xamarin.Forms.Controls.csproj", "{CB9C96CE-125C-4A68-B6A1-C3FF1FBF93E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.Controls", "System.Maui.Controls\System.Maui.Controls.csproj", "{CB9C96CE-125C-4A68-B6A1-C3FF1FBF93E1}"
 	ProjectSection(ProjectDependencies) = postProject
 		{96D89208-4EB9-4451-BE73-8A9DF3D9D7B7} = {96D89208-4EB9-4451-BE73-8A9DF3D9D7B7}
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Build.Tasks", "Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj", "{96D89208-4EB9-4451-BE73-8A9DF3D9D7B7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.Build.Tasks", "System.Maui.Build.Tasks\System.Maui.Build.Tasks.csproj", "{96D89208-4EB9-4451-BE73-8A9DF3D9D7B7}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xamarin.Forms.Maps", "Xamarin.Forms.Maps", "{132FB9A4-613F-44CE-95D5-758D32D231DD}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "System.Maui.Maps", "System.Maui.Maps", "{132FB9A4-613F-44CE-95D5-758D32D231DD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Maps", "Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj", "{7D13BAC2-C6A4-416A-B07E-C169B199E52B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.Maps", "System.Maui.Maps\System.Maui.Maps.csproj", "{7D13BAC2-C6A4-416A-B07E-C169B199E52B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Maps.iOS", "Xamarin.Forms.Maps.iOS\Xamarin.Forms.Maps.iOS.csproj", "{ABA078C4-F9BB-4924-8B2B-10FE0D2F5491}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Maui.Maps.iOS", "System.Maui.Maps.iOS\System.Maui.Maps.iOS.csproj", "{ABA078C4-F9BB-4924-8B2B-10FE0D2F5491}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UITests", "UITests", "{D4D57221-71D6-4031-A6F4-EC66AF0929D9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{DDDFBCAF-93DE-4868-8296-FD909EF32EF7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.CustomAttributes", "Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj", "{4DCD0420-1168-4B77-86DB-6196EE4BD491}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.CustomAttributes", "System.Maui.CustomAttributes\System.Maui.CustomAttributes.csproj", "{4DCD0420-1168-4B77-86DB-6196EE4BD491}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Forwarders", "Forwarders", "{5A2DADBC-9510-4DD1-BE58-01501F2DF65D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Platform.iOS (Forwarders)", "Stubs\Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS (Forwarders).csproj", "{39B3457F-01D8-43D0-8E84-D8C4F73CF48D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Maui.Platform.iOS (Forwarders)", "Stubs\System.Maui.Platform.iOS\System.Maui.Platform.iOS (Forwarders).csproj", "{39B3457F-01D8-43D0-8E84-D8C4F73CF48D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xamarin.Forms.Controls.Issues", "Xamarin.Forms.Controls.Issues", "{B2927DF0-F98E-45C8-A917-27941B2B6838}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "System.Maui.Controls.Issues", "System.Maui.Controls.Issues", "{B2927DF0-F98E-45C8-A917-27941B2B6838}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Xamarin.Forms.Controls.Issues.Shared", "Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.shproj", "{0F0DB9CC-EA65-429C-9363-38624BF8F49C}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "System.Maui.Controls.Issues.Shared", "System.Maui.Controls.Issues\System.Maui.Controls.Issues.Shared\System.Maui.Controls.Issues.Shared.shproj", "{0F0DB9CC-EA65-429C-9363-38624BF8F49C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Pages", "Xamarin.Forms.Pages\Xamarin.Forms.Pages.csproj", "{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.Pages", "System.Maui.Pages\System.Maui.Pages.csproj", "{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pages Gallery", "Pages Gallery", "{80BAC3FB-357A-4D05-A050-9F234DF49C97}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Pages.Azure", "Xamarin.Forms.Pages.Azure\Xamarin.Forms.Pages.Azure.csproj", "{C9696465-7657-4843-872E-3C01891C4A9B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.Pages.Azure", "System.Maui.Pages.Azure\System.Maui.Pages.Azure.csproj", "{C9696465-7657-4843-872E-3C01891C4A9B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EmbeddingTestBeds", "EmbeddingTestBeds", "{406DE4B0-F541-4092-B0EE-F0A20E9A89F5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Platform", "Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj", "{D31A6537-ED9C-4EBD-B231-A8D4FE44126A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.Platform", "System.Maui.Platform\System.Maui.Platform.csproj", "{D31A6537-ED9C-4EBD-B231-A8D4FE44126A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xamarin.Flex", "Xamarin.Flex", "{CA1DF598-3650-4A7B-A065-492C26009295}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Xamarin.Flex", "Xamarin.Flex\Xamarin.Flex.shproj", "{A6703C7D-D362-452A-A7A5-73771194D38C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Core.Design", "Xamarin.Forms.Core.Design\Xamarin.Forms.Core.Design.csproj", "{98637471-8E5C-4DDE-89CA-2EAA664FB0EF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Maui.Core.Design", "System.Maui.Core.Design\System.Maui.Core.Design.csproj", "{98637471-8E5C-4DDE-89CA-2EAA664FB0EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Xaml.Design", "Xamarin.Forms.Xaml.Design\Xamarin.Forms.Xaml.Design.csproj", "{65BC4888-CC59-428A-9B75-540CF1C09480}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Maui.Xaml.Design", "System.Maui.Xaml.Design\System.Maui.Xaml.Design.csproj", "{65BC4888-CC59-428A-9B75-540CF1C09480}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{0f0db9cc-ea65-429c-9363-38624bf8f49c}*SharedItemsImports = 13
+		System.Maui.Controls.Issues\System.Maui.Controls.Issues.Shared\System.Maui.Controls.Issues.Shared.projitems*{0f0db9cc-ea65-429c-9363-38624bf8f49c}*SharedItemsImports = 13
 		Xamarin.Flex\Xamarin.Flex.projitems*{a6703c7d-d362-452a-a7a5-73771194d38c}*SharedItemsImports = 13
-		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{cb9c96ce-125c-4a68-b6a1-c3ff1fbf93e1}*SharedItemsImports = 4
+		System.Maui.Controls.Issues\System.Maui.Controls.Issues.Shared\System.Maui.Controls.Issues.Shared.projitems*{cb9c96ce-125c-4a68-b6a1-c3ff1fbf93e1}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -10,7 +10,7 @@ using Android.Widget;
 using Object = Java.Lang.Object;
 using ViewGroup = Android.Views.ViewGroup;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class ItemsViewAdapter<TItemsView, TItemsViewSource> : RecyclerView.Adapter 
 		where TItemsView : ItemsView
@@ -47,17 +47,17 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual void ItemsViewPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs property)
 		{
-			if (property.Is(Xamarin.Forms.ItemsView.ItemsSourceProperty))
+			if (property.Is(System.Maui.ItemsView.ItemsSourceProperty))
 			{
 				UpdateItemsSource();
 			}
-			else if (property.Is(Xamarin.Forms.ItemsView.ItemTemplateProperty))
+			else if (property.Is(System.Maui.ItemsView.ItemTemplateProperty))
 			{
 				UpdateUsingItemTemplate();
 			}
 		}
 
-		public override void OnViewRecycled(Object holder)
+		public override void OnViewRecycled(Java.Lang.Object holder)
 		{
 			if (holder is TemplatedItemViewHolder templatedItemViewHolder)
 			{

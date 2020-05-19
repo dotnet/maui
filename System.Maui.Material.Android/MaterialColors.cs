@@ -1,4 +1,4 @@
-﻿// once we implement material configurations on core elements this can all be moved up to that
+// once we implement material configurations on core elements this can all be moved up to that
 // for now just leaving this as an internal class to make matching colors between two platforms easier
 
 #if __ANDROID__
@@ -7,28 +7,28 @@ using Android.Graphics;
 using AProgressBar = Android.Widget.ProgressBar;
 using ASeekBar = Android.Widget.AbsSeekBar;
 using PlatformColor = Android.Graphics.Color;
-using Xamarin.Forms.Platform.Android;
+using System.Maui.Platform.Android;
 using System;
 using AGradientDrawable = Android.Graphics.Drawables.GradientDrawable;
 using AScaleDrawable = Android.Graphics.Drawables.ScaleDrawable;
 using ALayerDrawable = Android.Graphics.Drawables.LayerDrawable;
 #elif __IOS__
 using MaterialComponents;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui.Platform.iOS;
 using PlatformColor = UIKit.UIColor;
 #elif __TIZEN__
 using System;
 using Tizen.NET.MaterialComponents;
-using Xamarin.Forms.Platform.Tizen;
+using System.Maui.Platform.Tizen;
 using PlatformColor = ElmSharp.Color;
 #endif
 
 #if __ANDROID__
-namespace Xamarin.Forms.Material.Android
+namespace System.Maui.Material.Android
 #elif __IOS__
-namespace Xamarin.Forms.Material.iOS
+namespace System.Maui.Material.iOS
 #elif __TIZEN__
-namespace Xamarin.Forms.Material.Tizen
+namespace System.Maui.Material.Tizen
 #endif
 {
 	// Colors from material-components-android
@@ -195,7 +195,7 @@ namespace Xamarin.Forms.Material.Tizen
 		{
 			seekBar.ApplyProgressBarColors(progressColor, backgroundColor);
 
-			if (Forms.IsLollipopOrNewer)
+			if (System.Maui.Maui.IsLollipopOrNewer)
 			{
 				if (thumbColor.IsDefault)
 				{
@@ -217,7 +217,7 @@ namespace Xamarin.Forms.Material.Tizen
 
 		internal static void ApplyProgressBarColors(this AProgressBar progressBar, PlatformColor progressColor, PlatformColor backgroundColor, PorterDuff.Mode mode)
 		{
-			if((int)Forms.SdkInt == 21 && progressBar.ProgressDrawable is ALayerDrawable progressDrawable)
+			if((int)System.Maui.Maui.SdkInt == 21 && progressBar.ProgressDrawable is ALayerDrawable progressDrawable)
 			{
 				progressBar.ProgressTintList = ColorStateList.ValueOf(progressColor);
 				progressBar.ProgressBackgroundTintList = ColorStateList.ValueOf(backgroundColor);
@@ -232,7 +232,7 @@ namespace Xamarin.Forms.Material.Tizen
 				if (progressDrawable.GetDrawable(2) is AScaleDrawable layer2)
 					layer2.SetColorFilter(progressColor, FilterMode.SrcIn);
 			}
-			else if (Forms.IsLollipopOrNewer)
+			else if (System.Maui.Maui.IsLollipopOrNewer)
 			{
 				progressBar.ProgressTintList = ColorStateList.ValueOf(progressColor);
 				progressBar.ProgressBackgroundTintList = ColorStateList.ValueOf(backgroundColor);

@@ -60,14 +60,14 @@ steps:
     displayName: 'NuGet restore'
     inputs:
       command: restore
-      restoreSolution: 'Xamarin.Forms.sln'
+      restoreSolution: 'System.Maui.sln'
       feedsToUse: config
       nugetConfigPath: 'DevopsNuget.config'
 
   - task: MSBuild@1
-    displayName: 'Build solution Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj'
+    displayName: 'Build solution System.Maui.Build.Tasks/System.Maui.Build.Tasks.csproj'
     inputs:
-      solution: Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj
+      solution: System.Maui.Build.Tasks/System.Maui.Build.Tasks.csproj
       configuration: $(buildConfiguration)
       msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/tasks.binlog
 
@@ -85,21 +85,21 @@ steps:
   - task: MSBuild@1
     displayName: 'Build Control Gallery IPA'
     inputs:
-      solution: 'Xamarin.Forms.ControlGallery.iOS/Xamarin.Forms.ControlGallery.iOS.csproj'
+      solution: 'System.Maui.ControlGallery.iOS/System.Maui.ControlGallery.iOS.csproj'
       configuration: $(buildConfiguration)
       msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/ios-cg-2017_$(buildForVS2017).binlog /p:BuildIpa=true
 
   - task: MSBuild@1
     displayName: 'Build iOS Tests'
     inputs:
-      solution: 'Xamarin.Forms.Core.iOS.UITests/Xamarin.Forms.Core.iOS.UITests.csproj'
+      solution: 'System.Maui.Core.iOS.UITests/System.Maui.Core.iOS.UITests.csproj'
       configuration: $(buildConfiguration)
       msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/ios-uitests-2017_$(buildForVS2017).binlog
 
   - task: MSBuild@1
     displayName: 'Build Android Tests'
     inputs:
-      solution: 'Xamarin.Forms.Core.Android.UITests/Xamarin.Forms.Core.Android.UITests.csproj'
+      solution: 'System.Maui.Core.Android.UITests/System.Maui.Core.Android.UITests.csproj'
       configuration: $(buildConfiguration)
       msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/android-uitests-2017_$(buildForVS2017).binlog
 
@@ -119,11 +119,11 @@ steps:
     inputs:
       Contents: |
        **/$(IpaName)
-       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
-       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/nunit.*
-       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/NUnit3.*
-       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Plugin.*
-       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Xamarin.*
+       System.Maui.Core.iOS.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
+       System.Maui.Core.iOS.UITests/bin/$(BuildConfiguration)/nunit.*
+       System.Maui.Core.iOS.UITests/bin/$(BuildConfiguration)/NUnit3.*
+       System.Maui.Core.iOS.UITests/bin/$(BuildConfiguration)/Plugin.*
+       System.Maui.Core.iOS.UITests/bin/$(BuildConfiguration)/Xamarin.*
 
       TargetFolder: '$(build.artifactstagingdirectory)/ios'
       CleanTargetFolder: true
@@ -135,11 +135,11 @@ steps:
     inputs:
       Contents: |
        **/$(IpaName)
-       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
-       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/nunit.*
-       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/NUnit3.*
-       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Plugin.*
-       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Xamarin.*
+       System.Maui.Core.iOS.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
+       System.Maui.Core.iOS.UITests/bin/$(BuildConfiguration)/nunit.*
+       System.Maui.Core.iOS.UITests/bin/$(BuildConfiguration)/NUnit3.*
+       System.Maui.Core.iOS.UITests/bin/$(BuildConfiguration)/Plugin.*
+       System.Maui.Core.iOS.UITests/bin/$(BuildConfiguration)/Xamarin.*
 
       TargetFolder: '$(build.artifactstagingdirectory)/ios_2017'
       CleanTargetFolder: true
@@ -150,11 +150,11 @@ steps:
     condition: eq(variables['buildForVS2017'], 'false')
     inputs:
       Contents: |
-       Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
-       Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/nunit.*
-       Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/NUnit3.*
-       Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/Plugin.*
-       Xamarin.Forms.Core.Android.UITests/bin/$(BuildConfiguration)/Xamarin.*
+       System.Maui.Core.Android.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
+       System.Maui.Core.Android.UITests/bin/$(BuildConfiguration)/nunit.*
+       System.Maui.Core.Android.UITests/bin/$(BuildConfiguration)/NUnit3.*
+       System.Maui.Core.Android.UITests/bin/$(BuildConfiguration)/Plugin.*
+       System.Maui.Core.Android.UITests/bin/$(BuildConfiguration)/Xamarin.*
 
       TargetFolder: '$(build.artifactstagingdirectory)/android'
       CleanTargetFolder: true

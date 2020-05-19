@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using Android.Content;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.Android;
-using Xamarin.Forms.Platform.Android;
-using static Xamarin.Forms.Controls.Issues.Issue9087;
+using System.Maui;
+using System.Maui.ControlGallery.Android;
+using System.Maui.Platform.Android;
+using static System.Maui.Controls.Issues.Issue9087;
 
 [assembly: ExportRenderer(typeof(_9087Label), typeof(_9087CustomRenderer))]
-namespace Xamarin.Forms.ControlGallery.Android
+namespace System.Maui.ControlGallery.Android
 {
 	public class _9087CustomRenderer : Platform.Android.FastRenderers.LabelRenderer
 	{

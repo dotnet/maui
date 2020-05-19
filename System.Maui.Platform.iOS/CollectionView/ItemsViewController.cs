@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using CoreGraphics;
 using Foundation;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public abstract class ItemsViewController<TItemsView> : UICollectionViewController
 	where TItemsView : ItemsView
@@ -127,7 +127,7 @@ namespace Xamarin.Forms.Platform.iOS
 			Delegator = CreateDelegator();
 			CollectionView.Delegate = Delegator;
 
-			if (!Forms.IsiOS11OrNewer)
+			if (!System.Maui.Maui.IsiOS11OrNewer)
 				AutomaticallyAdjustsScrollViewInsets = false;
 			else
 			{
@@ -326,12 +326,12 @@ namespace Xamarin.Forms.Platform.iOS
 			if (IsHorizontal)
 			{
 				var request = formsElement.Measure(double.PositiveInfinity, CollectionView.Frame.Height, MeasureFlags.IncludeMargins);
-				Xamarin.Forms.Layout.LayoutChildIntoBoundingRegion(formsElement, new Rectangle(0, 0, request.Request.Width, CollectionView.Frame.Height));
+				System.Maui.Layout.LayoutChildIntoBoundingRegion(formsElement, new Rectangle(0, 0, request.Request.Width, CollectionView.Frame.Height));
 			}
 			else
 			{
 				var request = formsElement.Measure(CollectionView.Frame.Width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-				Xamarin.Forms.Layout.LayoutChildIntoBoundingRegion(formsElement, new Rectangle(0, 0, CollectionView.Frame.Width, request.Request.Height));
+				System.Maui.Layout.LayoutChildIntoBoundingRegion(formsElement, new Rectangle(0, 0, CollectionView.Frame.Width, request.Request.Height));
 			}
 		}
 

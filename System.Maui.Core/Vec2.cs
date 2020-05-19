@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[Obsolete("This is no longer used, and might be removed at some point ")]
 	[EditorBrowsable(EditorBrowsableState.Never)]

@@ -12,7 +12,7 @@ using Java.Lang;
 using Android.Widget;
 using Android.Views.InputMethods;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class EditorRenderer : EditorRendererBase<FormsEditText>
 	{
@@ -133,7 +133,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			EditText.SetSingleLine(false);
 			EditText.Gravity = GravityFlags.Top;
-			if ((int)Forms.SdkInt > 16)
+			if ((int)System.Maui.Maui.SdkInt > 16)
 				EditText.TextAlignment = global::Android.Views.TextAlignment.ViewStart;
 			EditText.SetHorizontallyScrolling(false);
 
@@ -254,7 +254,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateCharacterSpacing()
 		{
-			if (Forms.IsLollipopOrNewer)
+			if (System.Maui.Maui.IsLollipopOrNewer)
 			{
 				EditText.LetterSpacing = Element.CharacterSpacing.ToEm();
 			}

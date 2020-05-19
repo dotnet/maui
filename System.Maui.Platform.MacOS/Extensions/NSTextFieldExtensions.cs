@@ -1,7 +1,7 @@
-﻿using AppKit;
+using AppKit;
 using CoreGraphics;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	internal static class NSTextFieldExtensions
 	{

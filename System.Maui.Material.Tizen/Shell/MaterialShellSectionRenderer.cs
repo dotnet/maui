@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Platform.Tizen;
+using System.Maui.Platform.Tizen;
 
-namespace Xamarin.Forms.Material.Tizen
+namespace System.Maui.Material.Tizen
 {
 	public class MaterialShellSectionRenderer : ShellSectionRenderer
 	{
@@ -10,7 +10,7 @@ namespace Xamarin.Forms.Material.Tizen
 
 		protected override IShellTabs CreateToolbar()
 		{
-			return new MaterialShellTabs(Forms.NativeParent);
+			return new MaterialShellTabs(System.Maui.Maui.NativeParent);
 		}
 	}
 }

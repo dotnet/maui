@@ -1,6 +1,6 @@
-﻿using static Xamarin.Forms.Core.Markup.Markup;
+using static System.Maui.Core.Markup.Markup;
 
-namespace Xamarin.Forms.Markup
+namespace System.Maui.Markup
 {
 	public class Style<T> where T : BindableObject
 	{

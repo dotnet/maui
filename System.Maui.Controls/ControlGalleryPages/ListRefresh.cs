@@ -1,9 +1,9 @@
-﻿using System;
-using Xamarin.Forms;
+using System;
+using System.Maui;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	public class ListRefresh : ContentPage
 	{

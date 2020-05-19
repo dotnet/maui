@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -7,13 +7,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
 using UIKit;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using Specifics = Xamarin.Forms.PlatformConfiguration.iOSSpecific.ListView;
+using System.Maui.PlatformConfiguration.iOSSpecific;
+using Specifics = System.Maui.PlatformConfiguration.iOSSpecific.ListView;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class ListViewRenderer : ViewRenderer<ListView, UITableView>
 	{
@@ -219,7 +219,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (Control == null)
 				{
-					if (Forms.IsiOS11OrNewer)
+					if (System.Maui.Maui.IsiOS11OrNewer)
 					{
 						var parentNav = e.NewElement.FindParentOfType<NavigationPage>();
 						_usingLargeTitles = (parentNav != null && parentNav.OnThisPlatform().PrefersLargeTitles());
@@ -269,22 +269,22 @@ namespace Xamarin.Forms.Platform.iOS
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			base.OnElementPropertyChanged(sender, e);
-			if (e.PropertyName == Xamarin.Forms.ListView.RowHeightProperty.PropertyName)
+			if (e.PropertyName == System.Maui.ListView.RowHeightProperty.PropertyName)
 				UpdateRowHeight();
-			else if (e.PropertyName == Xamarin.Forms.ListView.IsGroupingEnabledProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.ListView.IsGroupingEnabledProperty.PropertyName)
 				_dataSource.UpdateGrouping();
-			else if (e.PropertyName == Xamarin.Forms.ListView.HasUnevenRowsProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.ListView.HasUnevenRowsProperty.PropertyName)
 			{
 				Control.Source = _dataSource = Element.HasUnevenRows ? new UnevenListViewDataSource(_dataSource) : new ListViewDataSource(_dataSource);
 				ReloadData();
 			}
-			else if (e.PropertyName == Xamarin.Forms.ListView.IsPullToRefreshEnabledProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.ListView.IsPullToRefreshEnabledProperty.PropertyName)
 				UpdatePullToRefreshEnabled();
-			else if (e.PropertyName == Xamarin.Forms.ListView.IsRefreshingProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.ListView.IsRefreshingProperty.PropertyName)
 				UpdateIsRefreshing();
-			else if (e.PropertyName == Xamarin.Forms.ListView.SeparatorColorProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.ListView.SeparatorColorProperty.PropertyName)
 				UpdateSeparatorColor();
-			else if (e.PropertyName == Xamarin.Forms.ListView.SeparatorVisibilityProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.ListView.SeparatorVisibilityProperty.PropertyName)
 				UpdateSeparatorVisibility();
 			else if (e.PropertyName == "HeaderElement")
 				UpdateHeader();
@@ -292,9 +292,9 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateFooter();
 			else if (e.PropertyName == "RefreshAllowed")
 				UpdatePullToRefreshEnabled();
-			else if (e.PropertyName == Xamarin.Forms.ListView.SelectionModeProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.ListView.SelectionModeProperty.PropertyName)
 				UpdateSelectionMode();
-			else if (e.PropertyName == Xamarin.Forms.ListView.RefreshControlColorProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.ListView.RefreshControlColorProperty.PropertyName)
 				UpdateSpinnerColor();
 			else if (e.PropertyName == ScrollView.VerticalScrollBarVisibilityProperty.PropertyName)
 				UpdateVerticalScrollBarVisibility();
@@ -307,7 +307,7 @@ namespace Xamarin.Forms.Platform.iOS
 			base.TraitCollectionDidChange(previousTraitCollection);
 #if __XCODE11__
 			// Make sure the cells adhere to changes UI theme
-			if (Forms.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (System.Maui.Maui.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				ReloadData();
 #endif
 		}
@@ -402,7 +402,7 @@ namespace Xamarin.Forms.Platform.iOS
 				{
 					Control.Layer.RemoveAllAnimations();
 					//iOS11 hack
-					if (Forms.IsiOS11OrNewer)
+					if (System.Maui.Maui.IsiOS11OrNewer)
 						this.QueueForLater(() =>
 						{
 							if (Control != null && !_disposed)
@@ -840,7 +840,7 @@ namespace Xamarin.Forms.Platform.iOS
 				var estimatedRowHeight = GetEstimatedRowHeight(tableView);
 				//if we are providing 0 we are disabling EstimatedRowHeight,
 				//this works fine on newer versions, but iOS10 it will cause a crash so we leave the default value
-				if (estimatedRowHeight > 0 || (estimatedRowHeight == 0 && Forms.IsiOS11OrNewer))
+				if (estimatedRowHeight > 0 || (estimatedRowHeight == 0 && System.Maui.Maui.IsiOS11OrNewer))
 					tableView.EstimatedRowHeight = estimatedRowHeight;
 			}
 
@@ -1484,7 +1484,7 @@ namespace Xamarin.Forms.Platform.iOS
 			? UITableViewStyle.Plain
 			  : UITableViewStyle.Grouped)
 		{
-			if (Forms.IsiOS9OrNewer)
+			if (System.Maui.Maui.IsiOS9OrNewer)
 				TableView.CellLayoutMarginsFollowReadableWidth = false;
 
 			_usingLargeTitles = usingLargeTitles;

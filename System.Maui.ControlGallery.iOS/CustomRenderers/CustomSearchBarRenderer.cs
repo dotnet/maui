@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using UIKit;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.iOS.CustomRenderers;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui;
+using System.Maui.ControlGallery.iOS.CustomRenderers;
+using System.Maui.Platform.iOS;
 
 // REMARK: Test renderer to validate that Virtual UpdateCancelButton works
 
 //[assembly: ExportRenderer(typeof(SearchBar), typeof(CustomSearchBarRenderer))]
-//namespace Xamarin.Forms.ControlGallery.iOS.CustomRenderers
+//namespace System.Maui.ControlGallery.iOS.CustomRenderers
 //{
 //	public class CustomSearchBarRenderer : SearchBarRenderer
 //	{

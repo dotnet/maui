@@ -1,18 +1,18 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media.Imaging;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Media.Imaging;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public sealed class FileImageSourceHandler : IImageSourceHandler, IIconElementHandler
 	{
-		public Task<Windows.UI.Xaml.Media.ImageSource> LoadImageAsync(ImageSource imagesource, CancellationToken cancellationToken = new CancellationToken())
+		public Task<global::Windows.UI.Xaml.Media.ImageSource> LoadImageAsync(ImageSource imagesource, CancellationToken cancellationToken = new CancellationToken())
 		{
-			Windows.UI.Xaml.Media.ImageSource image = null;
+			global::Windows.UI.Xaml.Media.ImageSource image = null;
 			if (imagesource is FileImageSource filesource)
 			{
 				UpdateImageDirectory(filesource);

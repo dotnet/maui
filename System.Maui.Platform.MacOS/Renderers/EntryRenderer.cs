@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using AppKit;
 using Foundation;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 {
 	public class EntryRenderer : ViewRenderer<Entry, NSTextField>
 	{
@@ -138,7 +138,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				UpdateAlignment();
 			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
 				UpdateMaxLength();
-			else if (e.PropertyName == Xamarin.Forms.InputView.IsReadOnlyProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.InputView.IsReadOnlyProperty.PropertyName)
 				UpdateIsReadOnly();
 
 			base.OnElementPropertyChanged(sender, e);

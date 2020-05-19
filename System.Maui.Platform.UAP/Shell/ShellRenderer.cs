@@ -1,24 +1,24 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Windows.Foundation.Metadata;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
+using global::Windows.Foundation.Metadata;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Media;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	[Windows.UI.Xaml.Data.Bindable]
+	[global::Windows.UI.Xaml.Data.Bindable]
 	public class ShellRenderer : Microsoft.UI.Xaml.Controls.NavigationView, IVisualElementRenderer, IAppearanceObserver, IFlyoutBehaviorObserver
 	{
 		public static readonly DependencyProperty FlyoutBackgroundColorProperty = DependencyProperty.Register(
 			nameof(FlyoutBackgroundColor), typeof(Brush), typeof(ShellRenderer),
 			new PropertyMetadata(default(Brush)));
 
-		internal static readonly Windows.UI.Color DefaultBackgroundColor = Windows.UI.Color.FromArgb(255, 3, 169, 244);
-		internal static readonly Windows.UI.Color DefaultForegroundColor = Windows.UI.Colors.White;
-		internal static readonly Windows.UI.Color DefaultTitleColor = Windows.UI.Colors.White;
-		internal static readonly Windows.UI.Color DefaultUnselectedColor = Windows.UI.Color.FromArgb(180, 255, 255, 255);
+		internal static readonly global::Windows.UI.Color DefaultBackgroundColor = global::Windows.UI.Color.FromArgb(255, 3, 169, 244);
+		internal static readonly global::Windows.UI.Color DefaultForegroundColor = global::Windows.UI.Colors.White;
+		internal static readonly global::Windows.UI.Color DefaultTitleColor = global::Windows.UI.Colors.White;
+		internal static readonly global::Windows.UI.Color DefaultUnselectedColor = global::Windows.UI.Color.FromArgb(180, 255, 255, 255);
 		const string TogglePaneButton = "TogglePaneButton";
 		const string NavigationViewBackButton = "NavigationViewBackButton";
 		internal const string ShellStyle = "ShellNavigationView";
@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public ShellRenderer()
 		{
-			Xamarin.Forms.Shell.VerifyShellUWPFlagEnabled(nameof(ShellRenderer));
+			System.Maui.Shell.VerifyShellUWPFlagEnabled(nameof(ShellRenderer));
 			IsBackEnabled = false;
 			IsBackButtonVisible = Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible.Collapsed;
 			IsSettingsVisible = false;
@@ -36,12 +36,12 @@ namespace Xamarin.Forms.Platform.UWP
 			IsPaneOpen = false;
 			Content = ItemRenderer = CreateShellItemRenderer();
 			MenuItemTemplateSelector = CreateShellFlyoutTemplateSelector();
-			if (ApiInformation.IsEventPresent("Windows.UI.Xaml.Controls.NavigationView", "PaneClosing"))
+			if (ApiInformation.IsEventPresent("global::Windows.UI.Xaml.Controls.NavigationView", "PaneClosing"))
 				PaneClosing += (s, e) => OnPaneClosed();
-			if (ApiInformation.IsEventPresent("Windows.UI.Xaml.Controls.NavigationView", "PaneOpening"))
+			if (ApiInformation.IsEventPresent("global::Windows.UI.Xaml.Controls.NavigationView", "PaneOpening"))
 				PaneOpening += (s, e) => OnPaneOpening();
 			ItemInvoked += OnMenuItemInvoked;
-			Style = Windows.UI.Xaml.Application.Current.Resources["ShellNavigationView"] as Windows.UI.Xaml.Style;
+			Style = global::Windows.UI.Xaml.Application.Current.Resources["ShellNavigationView"] as global::Windows.UI.Xaml.Style;
 		}
 
 		public Brush FlyoutBackgroundColor
@@ -97,7 +97,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		SizeRequest IVisualElementRenderer.GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 
 			double oldWidth = Width;
 			double oldHeight = Height;
@@ -183,7 +183,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 				if (color is Brush brush)
 					FlyoutBackgroundColor = brush;
-				else if (color is Windows.UI.Color uiColor)
+				else if (color is global::Windows.UI.Color uiColor)
 					new SolidColorBrush(uiColor);
 			}
 			else
@@ -245,7 +245,7 @@ namespace Xamarin.Forms.Platform.UWP
 			var toggleButton = GetTemplateChild(name) as Control;
 			if (toggleButton != null)
 			{
-				var titleBar = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TitleBar;
+				var titleBar = global::Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TitleBar;
 				if (overrideColor)
 					toggleButton.Foreground = new SolidColorBrush(titleBar.ButtonForegroundColor.Value);
 				else
@@ -257,8 +257,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
-			Windows.UI.Color backgroundColor = DefaultBackgroundColor;
-			Windows.UI.Color titleColor = DefaultTitleColor;
+			global::Windows.UI.Color backgroundColor = DefaultBackgroundColor;
+			global::Windows.UI.Color titleColor = DefaultTitleColor;
 			if (appearance != null)
 			{
 				if (!appearance.BackgroundColor.IsDefault)
@@ -267,7 +267,7 @@ namespace Xamarin.Forms.Platform.UWP
 					titleColor = appearance.TitleColor.ToWindowsColor();
 			}
 
-			var titleBar = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TitleBar;
+			var titleBar = global::Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TitleBar;
 			titleBar.BackgroundColor = titleBar.ButtonBackgroundColor = backgroundColor;
 			titleBar.ForegroundColor = titleBar.ButtonForegroundColor = titleColor;
 			UpdatePaneButtonColor(TogglePaneButton, !IsPaneOpen);

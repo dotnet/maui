@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using Xamarin.Forms.Platform.WPF.Helpers;
+using System.Maui.Platform.WPF.Helpers;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public class LayoutRenderer : ViewRenderer<Layout, FormsPanel>
 	{

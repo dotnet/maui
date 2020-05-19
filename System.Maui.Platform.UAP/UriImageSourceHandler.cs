@@ -3,11 +3,11 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage.Streams;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media.Imaging;
-using Xamarin.Forms.Internals;
+using global::Windows.UI.Xaml.Controls;
+using global::Windows.UI.Xaml.Media.Imaging;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public sealed class UriImageSourceHandler : IImageSourceHandler, IIconElementHandler
 	{
@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Platform.UWP
 			return Task.FromResult(image);
 		}
 
-		public async Task<Windows.UI.Xaml.Media.ImageSource> LoadImageAsync(ImageSource imagesource, CancellationToken cancellationToken = new CancellationToken())
+		public async Task<global::Windows.UI.Xaml.Media.ImageSource> LoadImageAsync(ImageSource imagesource, CancellationToken cancellationToken = new CancellationToken())
 		{
 			var imageLoader = imagesource as UriImageSource;
 

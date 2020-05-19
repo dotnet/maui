@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using ElmSharp;
@@ -9,13 +9,13 @@ using EImage = ElmSharp.Image;
 using ELayout = ElmSharp.Layout;
 using EWidget = ElmSharp.Widget;
 
-namespace Xamarin.Forms.Platform.Tizen.Watch
+namespace System.Maui.Platform.Tizen.Watch
 {
 	public class NavigationDrawer : ELayout, IAnimatable
 	{
 		static readonly int TouchWidth = 50;
 		static readonly int IconSize = 40;
-		static readonly string DefaultIcon = "Xamarin.Forms.Platform.Tizen.Resource.wc_visual_cue.png";
+		static readonly string DefaultIcon = "System.Maui.Platform.Tizen.Resource.wc_visual_cue.png";
 
 		Box _mainLayout;
 		Box _contentGestureBox;

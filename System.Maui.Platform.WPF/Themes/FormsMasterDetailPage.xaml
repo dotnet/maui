@@ -1,6 +1,6 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:controls="clr-namespace:Xamarin.Forms.Platform.WPF.Controls">
+                    xmlns:controls="clr-namespace:System.Maui.Platform.WPF.Controls">
 
     <Style TargetType="controls:FormsMasterDetailPage">
         <Setter Property="Background" Value="Transparent" />

@@ -5,10 +5,10 @@ using Android.Content;
 using Android.Graphics;
 using Android.Widget;
 using Android.Net;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using Android.Graphics.Drawables;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public sealed class FileImageSourceHandler : IImageSourceHandler, IImageViewHandler, IAnimationSourceHandler
     {
@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Platform.Android
 			string file = ((FileImageSource)imagesource).File;
 			if (File.Exists(file))
 			{
-				var uri = Uri.Parse(file);
+				var uri = global::Android.Net.Uri.Parse(file);
 				if (uri != null)
 					imageView.SetImageURI(uri);
 				else

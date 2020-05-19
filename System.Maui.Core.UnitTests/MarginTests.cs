@@ -1,7 +1,7 @@
-﻿using NUnit.Framework;
-using Xamarin.Forms;
+using NUnit.Framework;
+using System.Maui;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	public class MarginTests : BaseTestFixture
 	{

@@ -1,7 +1,7 @@
-﻿using System;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using System;
+using System.Maui.PlatformConfiguration.WindowsSpecific;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	public static class ElementExtensions
 	{

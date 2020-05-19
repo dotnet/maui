@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using static System.Math;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	[ContentProperty(nameof(Content))]
 	public class Expander : TemplatedView

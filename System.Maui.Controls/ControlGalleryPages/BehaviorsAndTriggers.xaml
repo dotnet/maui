@@ -1,9 +1,9 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage
 	xmlns="http://xamarin.com/schemas/2014/forms"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	x:Class="Xamarin.Forms.Controls.BehaviorsAndTriggers"
-	xmlns:local="clr-namespace:Xamarin.Forms.Controls;assembly=Xamarin.Forms.Controls"
+	x:Class="System.Maui.Controls.BehaviorsAndTriggers"
+	xmlns:local="clr-namespace:System.Maui.Controls;assembly=System.Maui.Controls"
 	Padding="8">
 	<StackLayout>
 		<Label Text="Type red in the entry below" />

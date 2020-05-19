@@ -1,4 +1,4 @@
-﻿using Android.Content;
+using Android.Content;
 #if __ANDROID_29__
 using AndroidX.Core.Widget;
 using AndroidX.DrawerLayout.Widget;
@@ -9,11 +9,11 @@ using Android.Util;
 using Android.Views;
 using System;
 using System.ComponentModel;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class ShellFlyoutRenderer : DrawerLayout, IShellFlyoutRenderer, DrawerLayout.IDrawerListener, IFlyoutBehaviorObserver
 	{

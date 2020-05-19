@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleName</key>
-	<string>Xamarin.Forms.ControlGallery.MacOS</string>
+	<string>System.Maui.ControlGallery.MacOS</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.xamarin.xamarin-forms-controlgallery-macos</string>
 	<key>CFBundleShortVersionString</key>

@@ -1,12 +1,12 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://xamarin.com/schemas/2014/forms" 
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:enums="clr-namespace:Xamarin.Forms.Controls.TabIndexTest"
-             xmlns:views="clr-namespace:Xamarin.Forms.Controls.TabIndexTest"
+             xmlns:enums="clr-namespace:System.Maui.Controls.TabIndexTest"
+             xmlns:views="clr-namespace:System.Maui.Controls.TabIndexTest"
              mc:Ignorable="d"
-             x:Class="Xamarin.Forms.Controls.TabIndexTest.DaysOfWeekView">
+             x:Class="System.Maui.Controls.TabIndexTest.DaysOfWeekView">
 
     <views:DayView x:Name="Sunday" Grid.Column="0" 
                    Day="{x:Static enums:DaysOfWeek.Sunday}" 

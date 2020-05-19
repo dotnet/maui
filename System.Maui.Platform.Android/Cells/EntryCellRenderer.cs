@@ -4,7 +4,7 @@ using Android.Text;
 using Android.Text.Method;
 using Android.Views;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class EntryCellRenderer : CellRenderer
 	{

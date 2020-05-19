@@ -10,7 +10,7 @@ using Android.Support.V7.Widget;
 using Android.Views;
 using Object = Java.Lang.Object;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class EmptyViewAdapter : RecyclerView.Adapter
 	{
@@ -109,7 +109,7 @@ namespace Xamarin.Forms.Platform.Android
 			_footerViewType = 3;
 		}
 
-		public override void OnViewRecycled(Object holder)
+		public override void OnViewRecycled(Java.Lang.Object holder)
 		{
 			if (holder is TemplatedItemViewHolder templatedItemViewHolder)
 			{

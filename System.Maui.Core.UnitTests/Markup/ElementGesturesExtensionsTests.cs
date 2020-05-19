@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Windows.Input;
 using NUnit.Framework;
 
-namespace Xamarin.Forms.Markup.UnitTests
+namespace System.Maui.Markup.UnitTests
 {
 	[TestFixture(typeof(Label), true)] // Derived from View
 	[TestFixture(typeof(Label), false)]

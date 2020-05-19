@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
+using System.Maui;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Controls.XamStore
+namespace System.Maui.Controls.XamStore
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class FlyoutHeader : ContentView

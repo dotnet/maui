@@ -5,13 +5,13 @@ using System.Linq;
 using System.Xml;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Xamarin.Forms.Xaml;
-using Xamarin.Forms.Xaml.Internals;
+using System.Maui.Xaml;
+using System.Maui.Xaml.Internals;
 
 using static Mono.Cecil.Cil.Instruction;
 using static Mono.Cecil.Cil.OpCodes;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace System.Maui.Build.Tasks
 {
 	static class NodeILExtensions
 	{
@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 			//If there's a [TypeConverter], use it
 			if (typeConverter != null && str != null) {
-				var typeConvAttribute = typeConverter.GetCustomAttribute(module, ("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "TypeConversionAttribute"));
+				var typeConvAttribute = typeConverter.GetCustomAttribute(module, ("System.Maui.Core", "System.Maui.Xaml", "TypeConversionAttribute"));
 				if (typeConvAttribute == null) //trust the unattributed TypeConverter
 					return true;
 				var toType = typeConvAttribute.ConstructorArguments.First().Value as TypeReference;
@@ -139,7 +139,7 @@ namespace Xamarin.Forms.Build.Tasks
 			var str = (string)node.Value;
 			//If the TypeConverter has a ProvideCompiledAttribute that can be resolved, shortcut this
 			Type compiledConverterType;
-			if (typeConverter?.GetCustomAttribute(module, ("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "ProvideCompiledAttribute"))?.ConstructorArguments?.First().Value is string compiledConverterName && (compiledConverterType = Type.GetType (compiledConverterName)) != null) {
+			if (typeConverter?.GetCustomAttribute(module, ("System.Maui.Core", "System.Maui.Xaml", "ProvideCompiledAttribute"))?.ConstructorArguments?.First().Value is string compiledConverterName && (compiledConverterType = Type.GetType (compiledConverterName)) != null) {
 				var compiledConverter = Activator.CreateInstance (compiledConverterType);
 				var converter = typeof(ICompiledTypeConverter).GetMethods ().FirstOrDefault (md => md.Name == "ConvertFromString");
 				IEnumerable<Instruction> instructions;
@@ -158,10 +158,10 @@ namespace Xamarin.Forms.Build.Tasks
 
 			//If there's a [TypeConverter], use it
 			if (typeConverter != null) {
-				var isExtendedConverter = typeConverter.ImplementsInterface(module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms", "IExtendedTypeConverter")));
+				var isExtendedConverter = typeConverter.ImplementsInterface(module.ImportReference(("System.Maui.Core", "System.Maui", "IExtendedTypeConverter")));
 				var typeConverterCtorRef = module.ImportCtorReference(typeConverter, paramCount: 0);
 				var convertFromInvariantStringDefinition = isExtendedConverter
-					? module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms", "IExtendedTypeConverter"))
+					? module.ImportReference(("System.Maui.Core", "System.Maui", "IExtendedTypeConverter"))
 						.ResolveCached()
 						.Methods.FirstOrDefault(md => md.Name == "ConvertFromInvariantString" && md.Parameters.Count == 2)
 					: typeConverter.ResolveCached()
@@ -386,13 +386,13 @@ namespace Xamarin.Forms.Build.Tasks
 			if (xmlLineInfo.HasLineInfo()) {
 				yield return Create(Ldc_I4, xmlLineInfo.LineNumber);
 				yield return Create(Ldc_I4, xmlLineInfo.LinePosition);
-				ctor = module.ImportCtorReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "XmlLineInfo"), parameterTypes: new[] {
+				ctor = module.ImportCtorReference(("System.Maui.Core", "System.Maui.Xaml", "XmlLineInfo"), parameterTypes: new[] {
 					("mscorlib", "System", "Int32"),
 					("mscorlib", "System", "Int32"),
 				});
 			}
 			else
-				ctor = module.ImportCtorReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "XmlLineInfo"), parameterTypes: null);
+				ctor = module.ImportCtorReference(("System.Maui.Core", "System.Maui.Xaml", "XmlLineInfo"), parameterTypes: null);
 			yield return Create(Newobj, ctor);
 		}
 
@@ -515,20 +515,20 @@ namespace Xamarin.Forms.Build.Tasks
 			yield break;
 #endif
 
-			var addService = module.ImportMethodReference(("Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml.Internals", "XamlServiceProvider"),
+			var addService = module.ImportMethodReference(("System.Maui.Xaml", "System.Maui.Xaml.Internals", "XamlServiceProvider"),
 														  methodName: "Add",
 														  parameterTypes: new[] {
 															  ("mscorlib", "System", "Type"),
 															  ("mscorlib", "System", "Object"),
 														  });
 
-			yield return Create(Newobj, module.ImportCtorReference(("Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml.Internals", "XamlServiceProvider"), parameterTypes: null));
+			yield return Create(Newobj, module.ImportCtorReference(("System.Maui.Xaml", "System.Maui.Xaml.Internals", "XamlServiceProvider"), parameterTypes: null));
 
 			//Add a SimpleValueTargetProvider and register it as IProvideValueTarget and IReferenceProvider
 			var pushParentIl = node.PushParentObjectsArray(context).ToList();
 			if (pushParentIl[pushParentIl.Count - 1].OpCode != Ldnull) {
 				yield return Create(Dup); //Keep the serviceProvider on the stack
-				yield return Create(Ldtoken, module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "IProvideValueTarget")));
+				yield return Create(Ldtoken, module.ImportReference(("System.Maui.Core", "System.Maui.Xaml", "IProvideValueTarget")));
 				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
 
 				foreach (var instruction in pushParentIl)
@@ -542,7 +542,7 @@ namespace Xamarin.Forms.Build.Tasks
 				else
 					yield return Create(Ldnull);
 
-				yield return Create(Newobj, module.ImportCtorReference(("Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml.Internals", "SimpleValueTargetProvider"), paramCount: 3));
+				yield return Create(Newobj, module.ImportCtorReference(("System.Maui.Xaml", "System.Maui.Xaml.Internals", "SimpleValueTargetProvider"), paramCount: 3));
 				//store the provider so we can register it again with a different key
 				yield return Create(Dup);
 				var refProvider = new VariableDefinition(module.ImportReference(("mscorlib", "System", "Object")));
@@ -551,7 +551,7 @@ namespace Xamarin.Forms.Build.Tasks
 				yield return Create(Callvirt, addService);
 
 				yield return Create(Dup); //Keep the serviceProvider on the stack
-				yield return Create(Ldtoken, module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "IReferenceProvider")));
+				yield return Create(Ldtoken, module.ImportReference(("System.Maui.Core", "System.Maui.Xaml", "IReferenceProvider")));
 				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
 				yield return Create(Ldloc, refProvider);
 				yield return Create(Callvirt, addService);
@@ -560,14 +560,14 @@ namespace Xamarin.Forms.Build.Tasks
 			//Add a XamlTypeResolver
 			if (node.NamespaceResolver != null) {
 				yield return Create(Dup); //Duplicate the serviceProvider
-				yield return Create(Ldtoken, module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "IXamlTypeResolver")));
+				yield return Create(Ldtoken, module.ImportReference(("System.Maui.Core", "System.Maui.Xaml", "IXamlTypeResolver")));
 				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
-				yield return Create(Newobj, module.ImportCtorReference(("Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml.Internals", "XmlNamespaceResolver"), parameterTypes: null));
+				yield return Create(Newobj, module.ImportCtorReference(("System.Maui.Xaml", "System.Maui.Xaml.Internals", "XmlNamespaceResolver"), parameterTypes: null));
 				foreach (var kvp in node.NamespaceResolver.GetNamespacesInScope(XmlNamespaceScope.ExcludeXml)) {
 					yield return Create(Dup); //dup the resolver
 					yield return Create(Ldstr, kvp.Key);
 					yield return Create(Ldstr, kvp.Value);
-					yield return Create(Callvirt, module.ImportMethodReference(("Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml.Internals", "XmlNamespaceResolver"),
+					yield return Create(Callvirt, module.ImportMethodReference(("System.Maui.Xaml", "System.Maui.Xaml.Internals", "XmlNamespaceResolver"),
 																			   methodName: "Add",
 																			   parameterTypes: new[] {
 																				   ("mscorlib", "System", "String"),
@@ -578,17 +578,17 @@ namespace Xamarin.Forms.Build.Tasks
 				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
 				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System.Reflection", "IntrospectionExtensions"), methodName: "GetTypeInfo", parameterTypes: new[] { ("mscorlib", "System", "Type") }, isStatic: true));
 				yield return Create(Callvirt, module.ImportPropertyGetterReference(("mscorlib", "System.Reflection", "TypeInfo"), propertyName: "Assembly", flatten: true));
-				yield return Create(Newobj, module.ImportCtorReference(("Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml.Internals", "XamlTypeResolver"), paramCount: 2));
+				yield return Create(Newobj, module.ImportCtorReference(("System.Maui.Xaml", "System.Maui.Xaml.Internals", "XamlTypeResolver"), paramCount: 2));
 				yield return Create(Callvirt, addService);
 			}
 
 			if (node is IXmlLineInfo) {
 				yield return Create(Dup); //Duplicate the serviceProvider
-				yield return Create(Ldtoken, module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "IXmlLineInfoProvider")));
+				yield return Create(Ldtoken, module.ImportReference(("System.Maui.Core", "System.Maui.Xaml", "IXmlLineInfoProvider")));
 				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
 				foreach (var instruction in node.PushXmlLineInfo(context))
 					yield return instruction;
-				yield return Create(Newobj, module.ImportCtorReference(("Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml.Internals", "XmlLineInfoProvider"), parameterTypes: new[] { ("System.Xml.ReaderWriter", "System.Xml", "IXmlLineInfo") }));
+				yield return Create(Newobj, module.ImportCtorReference(("System.Maui.Xaml", "System.Maui.Xaml.Internals", "XmlLineInfoProvider"), parameterTypes: new[] { ("System.Xml.ReaderWriter", "System.Xml", "IXmlLineInfo") }));
 				yield return Create(Callvirt, addService);
 			}
 		}

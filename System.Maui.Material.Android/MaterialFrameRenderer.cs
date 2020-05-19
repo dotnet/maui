@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.ComponentModel;
 using Android.Content;
@@ -10,14 +10,14 @@ using Android.Support.V4.View;
 using MaterialCardView = Android.Support.Design.Card.MaterialCardView;
 #endif
 using Android.Views;
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.Android.FastRenderers;
-using Xamarin.Forms.Material.Android;
+using System.Maui;
+using System.Maui.Platform.Android.FastRenderers;
+using System.Maui.Material.Android;
 using AView = Android.Views.View;
-using Xamarin.Forms.Platform.Android;
+using System.Maui.Platform.Android;
 
 
-namespace Xamarin.Forms.Material.Android
+namespace System.Maui.Material.Android
 {
 	public class MaterialFrameRenderer : MaterialCardView,
 		IVisualElementRenderer, IEffectControlProvider, IViewRenderer, ITabStop

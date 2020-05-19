@@ -1,6 +1,6 @@
-﻿using Windows.UI.Core;
+using global::Windows.UI.Core;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	internal class WindowsPlatformServices : WindowsBasePlatformServices
 	{

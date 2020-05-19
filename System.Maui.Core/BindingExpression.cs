@@ -5,10 +5,10 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using System.Runtime.CompilerServices;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	internal class BindingExpression
 	{
@@ -659,7 +659,7 @@ namespace Xamarin.Forms
 			public BindingExpressionPart(BindingExpression expression, string content, bool isIndexer = false)
 			{
 				_expression = expression;
-				IsSelf = content == Forms.Binding.SelfPath;
+				IsSelf = content == System.Maui.Binding.SelfPath;
 				Content = content;
 				IsIndexer = isIndexer;
 

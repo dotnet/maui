@@ -8,10 +8,10 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using TAppControl = Tizen.Applications.AppControl;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	internal class TizenPlatformServices : IPlatformServices
 	{
@@ -85,7 +85,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				default:
 					throw new ArgumentOutOfRangeException(nameof(size));
 			}
-			return Forms.ConvertToDPFont(pt);
+			return System.Maui.Maui.ConvertToDPFont(pt);
 		}
 
 		public Color GetNamedColor(string name)
@@ -168,7 +168,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		public void QuitApplication()
 		{
-			Forms.Context.Exit();
+			System.Maui.Maui.Context.Exit();
 		}
 
 		public bool IsInvokeRequired

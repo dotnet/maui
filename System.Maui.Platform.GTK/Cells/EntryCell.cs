@@ -1,8 +1,8 @@
-﻿using Gtk;
+using Gtk;
 using System;
-using Xamarin.Forms.Platform.GTK.Controls;
+using System.Maui.Platform.GTK.Controls;
 
-namespace Xamarin.Forms.Platform.GTK.Cells
+namespace System.Maui.Platform.GTK.Cells
 {
 	internal class EntryCell : CellBase
 	{

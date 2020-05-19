@@ -3,11 +3,11 @@ using System.ComponentModel;
 using CoreGraphics;
 using MaterialComponents;
 using UIKit;
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.iOS;
+using System.Maui;
+using System.Maui.Platform.iOS;
 using MSlider = MaterialComponents.Slider;
 
-namespace Xamarin.Forms.Material.iOS
+namespace System.Maui.Material.iOS
 {
 	public class MaterialSliderRenderer : ViewRenderer<Slider, MSlider>
 	{

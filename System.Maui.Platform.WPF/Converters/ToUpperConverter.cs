@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms.Platform.WPF.Converters
+namespace System.Maui.Platform.WPF.Converters
 {
 	public class ToUpperConverter : System.Windows.Data.IValueConverter
 	{

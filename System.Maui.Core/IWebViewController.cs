@@ -1,8 +1,8 @@
 using System;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public interface IWebViewController : IViewController
 	{

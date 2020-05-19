@@ -6,7 +6,7 @@ using Android.Support.V7.Widget;
 #endif
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal class StartSnapHelper : EdgeSnapHelper
 	{

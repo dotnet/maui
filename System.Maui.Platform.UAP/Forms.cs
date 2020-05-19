@@ -1,20 +1,20 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using Windows.ApplicationModel.Activation;
-using Windows.ApplicationModel.Resources.Core;
-using Windows.Foundation.Metadata;
-using Windows.UI.Core;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.UWP;
+using global::Windows.ApplicationModel.Activation;
+using global::Windows.ApplicationModel.Resources.Core;
+using global::Windows.Foundation.Metadata;
+using global::Windows.UI.Core;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Media;
+using System.Maui.Internals;
+using System.Maui.Platform.UWP;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
-	public static partial class Forms
+	public static partial class Maui
 	{
 		const string LogFormat = "[{0}] {1}";
 
@@ -27,7 +27,7 @@ namespace Xamarin.Forms
 			if (IsInitialized)
 				return;
 
-			var accent = (SolidColorBrush)Windows.UI.Xaml.Application.Current.Resources["SystemColorControlAccentBrush"];
+			var accent = (SolidColorBrush)global::Windows.UI.Xaml.Application.Current.Resources["SystemColorControlAccentBrush"];
 			Color.SetAccent(accent.ToFormsColor());
 
 #if UWP_14393
@@ -35,18 +35,18 @@ namespace Xamarin.Forms
 #else
 			Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
 #endif
-			if (!Windows.UI.Xaml.Application.Current.Resources.ContainsKey("RootContainerStyle"))
+			if (!global::Windows.UI.Xaml.Application.Current.Resources.ContainsKey("RootContainerStyle"))
 			{
-				Windows.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(GetTabletResources());
+				global::Windows.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(GetTabletResources());
 			}
 
 			try
 			{
-				Windows.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(new Microsoft.UI.Xaml.Controls.XamlControlsResources());
+				global::Windows.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(new Microsoft.UI.Xaml.Controls.XamlControlsResources());
 			}
 			catch
 			{
-				Log.Warning("Resources", "Unable to load WinUI resources. Try adding Xamarin.Forms nuget to UWP project");
+				Log.Warning("Resources", "Unable to load WinUI resources. Try adding System.Maui nuget to UWP project");
 			}
 
 			Device.SetIdiom(TargetIdiom.Tablet);
@@ -55,11 +55,11 @@ namespace Xamarin.Forms
 			Device.SetFlags(s_flags);
 			Device.Info = new WindowsDeviceInfo();
 
-			switch (Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily)
+			switch (global::Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily)
 			{
 				case "Windows.Desktop":
-					if (Windows.UI.ViewManagement.UIViewSettings.GetForCurrentView().UserInteractionMode ==
-						Windows.UI.ViewManagement.UserInteractionMode.Touch)
+					if (global::Windows.UI.ViewManagement.UIViewSettings.GetForCurrentView().UserInteractionMode ==
+						global::Windows.UI.ViewManagement.UserInteractionMode.Touch)
 						Device.SetIdiom(TargetIdiom.Tablet);
 					else
 						Device.SetIdiom(TargetIdiom.Desktop);
@@ -98,10 +98,10 @@ namespace Xamarin.Forms
 			return FlowDirection.MatchParent;
 		}
 
-		internal static Windows.UI.Xaml.ResourceDictionary GetTabletResources()
+		internal static global::Windows.UI.Xaml.ResourceDictionary GetTabletResources()
 		{
-			return new Windows.UI.Xaml.ResourceDictionary {
-				Source = new Uri("ms-appx:///Xamarin.Forms.Platform.UAP/Resources.xbf")
+			return new global::Windows.UI.Xaml.ResourceDictionary {
+				Source = new Uri("ms-appx:///System.Maui.Platform.UAP/Resources.xbf")
 			};
 		}
 	}

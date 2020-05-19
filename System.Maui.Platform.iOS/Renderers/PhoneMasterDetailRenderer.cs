@@ -2,11 +2,11 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using UIKit;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using System.Maui.Internals;
+using System.Maui.PlatformConfiguration.iOSSpecific;
 using PointF = CoreGraphics.CGPoint;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public class PhoneMasterDetailRenderer : UIViewController, IVisualElementRenderer, IEffectControlProvider
 	{
@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 				ToggleAccessibilityElementsHidden();
 
-				((IElementController)Element).SetValueFromRenderer(Xamarin.Forms.MasterDetailPage.IsPresentedProperty, value);
+				((IElementController)Element).SetValueFromRenderer(System.Maui.MasterDetailPage.IsPresentedProperty, value);
 			}
 		}
 
@@ -234,9 +234,9 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (e.PropertyName == "Master" || e.PropertyName == "Detail")
 				UpdateMasterDetailContainers();
-			else if (e.PropertyName == Xamarin.Forms.MasterDetailPage.IsPresentedProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.MasterDetailPage.IsPresentedProperty.PropertyName)
 				Presented = ((MasterDetailPage)Element).IsPresented;
-			else if (e.PropertyName == Xamarin.Forms.MasterDetailPage.IsGestureEnabledProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.MasterDetailPage.IsGestureEnabledProperty.PropertyName)
 				UpdatePanGesture();
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackground();
@@ -361,10 +361,10 @@ namespace Xamarin.Forms.Platform.iOS
 			_detailController.AddChildViewController(detailRenderer.ViewController);
 
 			SetNeedsStatusBarAppearanceUpdate();
-			if (Forms.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
+			if (System.Maui.Maui.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
-			detailRenderer.ViewController.View.Superview.BackgroundColor = Xamarin.Forms.Color.Black.ToUIColor();
+			detailRenderer.ViewController.View.Superview.BackgroundColor = System.Maui.Color.Black.ToUIColor();
 
 			ToggleAccessibilityElementsHidden();
 		}

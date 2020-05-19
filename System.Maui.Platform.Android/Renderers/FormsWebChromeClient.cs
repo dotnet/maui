@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using Android.App;
 using Android.Content;
 using Android.Webkit;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using Object = Java.Lang.Object;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class FormsWebChromeClient : WebChromeClient
 	{
@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Platform.Android
 				if (filePathCallback == null)
 					return;
 
-				Object result = ParseResult(resultCode, intentData);
+				Java.Lang.Object result = ParseResult(resultCode, intentData);
 				filePathCallback.OnReceiveValue(result);
 			};
 
@@ -64,7 +64,7 @@ namespace Xamarin.Forms.Platform.Android
 			base.Dispose(disposing);
 		}
 
-		protected virtual Object ParseResult(Result resultCode, Intent data)
+		protected virtual Java.Lang.Object ParseResult(Result resultCode, Intent data)
 		{
 			return FileChooserParams.ParseResult((int)resultCode, data);
 		}

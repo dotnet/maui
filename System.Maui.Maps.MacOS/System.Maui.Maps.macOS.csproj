@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -6,8 +6,8 @@
     <ProjectGuid>{C3C24A6D-2D0C-4053-9FCC-E54FF9CA1884}</ProjectGuid>
     <ProjectTypeGuids>{A3F8F2AB-B479-4A4A-A458-A89E7DC349F1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
-    <RootNamespace>Xamarin.Forms.Maps.MacOS</RootNamespace>
-    <AssemblyName>Xamarin.Forms.Maps.macOS</AssemblyName>
+    <RootNamespace>System.Maui.Maps.MacOS</RootNamespace>
+    <AssemblyName>System.Maui.Maps.macOS</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <TargetFrameworkIdentifier>Xamarin.Mac</TargetFrameworkIdentifier>
     <MonoMacResourcePrefix>Resources</MonoMacResourcePrefix>
@@ -62,31 +62,31 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="..\Xamarin.Forms.Maps.iOS\FormsMaps.cs">
+    <Compile Include="..\System.Maui.Maps.iOS\FormsMaps.cs">
       <Link>FormsMaps.cs</Link>
     </Compile>
-    <Compile Include="..\Xamarin.Forms.Maps.iOS\GeocoderBackend.cs">
+    <Compile Include="..\System.Maui.Maps.iOS\GeocoderBackend.cs">
       <Link>GeocoderBackend.cs</Link>
     </Compile>
-    <Compile Include="..\Xamarin.Forms.Maps.iOS\MapRenderer.cs">
+    <Compile Include="..\System.Maui.Maps.iOS\MapRenderer.cs">
       <Link>MapRenderer.cs</Link>
     </Compile>
-    <Compile Include="..\Xamarin.Forms.Maps.iOS\MapPool.cs">
+    <Compile Include="..\System.Maui.Maps.iOS\MapPool.cs">
       <Link>MapPool.cs</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj">
       <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
-      <Name>Xamarin.Forms.Core</Name>
+      <Name>System.Maui.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Platform.MacOS\Xamarin.Forms.Platform.MacOS.csproj">
+    <ProjectReference Include="..\System.Maui.Platform.MacOS\System.Maui.Platform.MacOS.csproj">
       <Project>{C0059C45-EA1E-42F3-8A0E-794BB547EC3C}</Project>
-      <Name>Xamarin.Forms.Platform.MacOS</Name>
+      <Name>System.Maui.Platform.MacOS</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
+    <ProjectReference Include="..\System.Maui.Maps\System.Maui.Maps.csproj">
       <Project>{7D13BAC2-C6A4-416A-B07E-C169B199E52B}</Project>
-      <Name>Xamarin.Forms.Maps</Name>
+      <Name>System.Maui.Maps</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />

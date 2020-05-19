@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Globalization;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using System.Maui.Internals;
+using System.Maui.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.AppThemeGalleries
+namespace System.Maui.Controls.GalleryPages.AppThemeGalleries
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class AppThemeXamlGallery : ContentPage

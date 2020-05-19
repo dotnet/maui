@@ -1,8 +1,8 @@
-﻿using ElmSharp;
+using ElmSharp;
 using System;
 using System.Collections.Generic;
 
-namespace Xamarin.Forms.Platform.Tizen.Watch
+namespace System.Maui.Platform.Tizen.Watch
 {
 	public class ShellRenderer : VisualElementRenderer<Shell>
 	{
@@ -60,7 +60,7 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 		{
 			if (_drawer == null)
 			{
-				_drawer = CreateNavigationDrawer(Forms.NativeParent);
+				_drawer = CreateNavigationDrawer(System.Maui.Maui.NativeParent);
 				_drawer.IsOpen = Element.FlyoutIsPresented;
 				_drawer.Toggled += OnNavigationDrawerToggled;
 				SetNativeView(_drawer);
@@ -102,7 +102,7 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 				return;
 			}
 
-			_navigationView = CreateNavigationView(Forms.NativeParent);
+			_navigationView = CreateNavigationView(System.Maui.Maui.NativeParent);
 			_navigationView.AlignmentX = -1;
 			_navigationView.AlignmentY = -1;
 			_navigationView.WeightX = 1;

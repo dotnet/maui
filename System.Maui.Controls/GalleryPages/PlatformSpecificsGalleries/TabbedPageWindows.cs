@@ -1,6 +1,6 @@
 using System.Windows.Input;
 
-namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
+namespace System.Maui.Controls.GalleryPages.PlatformSpecificsGalleries
 {
 	public class TabbedPageWindows : TabbedPage
 	{

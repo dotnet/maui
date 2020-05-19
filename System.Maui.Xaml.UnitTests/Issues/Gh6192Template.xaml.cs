@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	public partial class Gh6192Template : ContentView
 	{

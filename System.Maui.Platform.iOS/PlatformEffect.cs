@@ -1,10 +1,10 @@
-﻿#if __MOBILE__
+#if __MOBILE__
 using UIKit;
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 #else
 using UIView = AppKit.NSView;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 #endif
 {
 	public abstract class PlatformEffect : PlatformEffect<UIView, UIView>

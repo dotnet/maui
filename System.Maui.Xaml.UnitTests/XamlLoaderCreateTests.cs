@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Windows.Input;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 #pragma warning disable 0618 //retaining legacy call to obsolete code
 
@@ -17,8 +17,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			XamlLoader.FallbackTypeResolver = null;
 			XamlLoader.ValueCreatedCallback = null;
 			XamlLoader.InstantiationFailedCallback = null;
-			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = null;
-			Xamarin.Forms.Xaml.Internals.XamlLoader.DoNotThrowOnExceptions = false;
+			System.Maui.Internals.ResourceLoader.ExceptionHandler = null;
+			System.Maui.Xaml.Internals.XamlLoader.DoNotThrowOnExceptions = false;
 		}
 
 		[Test]
@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var xaml = @"
 				<ContentView xmlns=""http://xamarin.com/schemas/2014/forms""
 							 xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-						 	 x:Class=""Xamarin.Forms.Xaml.UnitTests.FOO"">
+						 	 x:Class=""System.Maui.Xaml.UnitTests.FOO"">
 					<Label Text=""Foo""  x:Name=""label""/>
 				</ContentView>";
 

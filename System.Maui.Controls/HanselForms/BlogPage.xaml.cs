@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -6,9 +6,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Linq;
-using Xamarin.Forms;
+using System.Maui;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 	public partial class BlogPage : ContentPage
 	{

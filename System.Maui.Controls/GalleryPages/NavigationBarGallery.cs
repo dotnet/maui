@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat;
-using static Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage;
-namespace Xamarin.Forms.Controls
+using System.Maui.PlatformConfiguration;
+using System.Maui.PlatformConfiguration.iOSSpecific;
+using System.Maui.PlatformConfiguration.AndroidSpecific.AppCompat;
+using static System.Maui.PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage;
+namespace System.Maui.Controls
 {
 	public class NavigationBarGallery : ContentPage
 	{

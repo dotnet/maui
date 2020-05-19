@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 
-using Xamarin.Forms.CustomAttributes;
+using System.Maui.CustomAttributes;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
 #if UITEST
 using Xamarin.UITest;
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 35733, "iOS WebView crashes when loading an URL with encoded parameters", PlatformAffected.iOS)]
@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		async Task ShowLocation(string locationString) 
 		{
-			var stringUri = $"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/README.md?l=en&px_location={Uri.EscapeDataString(locationString)}";
+			var stringUri = $"https://raw.githubusercontent.com/xamarin/System.Maui/master/README.md?l=en&px_location={Uri.EscapeDataString(locationString)}";
 
 			var uri = new Uri(stringUri);
 			var webPage = new ContentPage {

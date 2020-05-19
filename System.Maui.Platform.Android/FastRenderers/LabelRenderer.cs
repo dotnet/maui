@@ -14,7 +14,7 @@ using Android.Views;
 using Android.Widget;
 using AView = Android.Views.View;
 
-namespace Xamarin.Forms.Platform.Android.FastRenderers
+namespace System.Maui.Platform.Android.FastRenderers
 {
 	public class LabelRenderer : FormsTextView, IVisualElementRenderer, IViewRenderer, ITabStop
 	{
@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use LabelRenderer(Context) instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public LabelRenderer() : base(Forms.Context)
+		public LabelRenderer() : base(System.Maui.Maui.Context)
 		{
 			_labelTextColorDefault = TextColors;
 			_visualElementRenderer = new VisualElementRenderer(this);
@@ -371,7 +371,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		void UpdateCharacterSpacing()
 		{
-			if (Forms.IsLollipopOrNewer)
+			if (System.Maui.Maui.IsLollipopOrNewer)
 			{
 				LetterSpacing = Element.CharacterSpacing.ToEm();
 			}
@@ -409,7 +409,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				switch (Element.TextType)
 				{
 					case TextType.Html:
-						if (Forms.IsNougatOrNewer)
+						if (System.Maui.Maui.IsNougatOrNewer)
 							Control.SetText(Html.FromHtml(Element.Text ?? string.Empty, FromHtmlOptions.ModeCompact), BufferType.Spannable);
 						else
 #pragma warning disable CS0618 // Type or member is obsolete

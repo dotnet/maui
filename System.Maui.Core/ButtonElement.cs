@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Windows.Input;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	static class ButtonElement
 	{

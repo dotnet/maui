@@ -4,7 +4,7 @@ using ERectangle = ElmSharp.Rectangle;
 using EColor = ElmSharp.Color;
 
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 
 	public enum ViewHolderState

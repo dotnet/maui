@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Xml;
 
-namespace Xamarin.Forms.Internals
+namespace System.Maui.Internals
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public interface INameScope

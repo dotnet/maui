@@ -5,9 +5,9 @@ using Android.Content;
 using Android.Graphics;
 using Android.Views;
 using AImageView = Android.Widget.ImageView;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	internal interface IImageRendererController
 	{

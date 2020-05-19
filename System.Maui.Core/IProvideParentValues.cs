@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	internal interface IProvideParentValues : IProvideValueTarget
 	{

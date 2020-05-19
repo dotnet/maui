@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using WSelectionChangedEventArgs = System.Windows.Controls.SelectionChangedEventArgs;
 
-namespace Xamarin.Forms.Platform.WPF
+namespace System.Maui.Platform.WPF
 {
 	public class PickerRenderer : ViewRenderer<Picker, ComboBox>
 	{		

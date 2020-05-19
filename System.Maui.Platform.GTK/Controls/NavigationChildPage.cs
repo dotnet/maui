@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 
-namespace Xamarin.Forms.Platform.GTK.Controls
+namespace System.Maui.Platform.GTK.Controls
 {
 	public class NavigationChildPage : IDisposable
 	{
 		bool _disposed;
 
-		public NavigationChildPage(Xamarin.Forms.Page page)
+		public NavigationChildPage(System.Maui.Page page)
 		{
 			Page = page;
 			Identifier = Guid.NewGuid().ToString();
@@ -23,6 +23,6 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 		public string Identifier { get; set; }
 
-		public Xamarin.Forms.Page Page { get; private set; }
+		public System.Maui.Page Page { get; private set; }
 	}
 }

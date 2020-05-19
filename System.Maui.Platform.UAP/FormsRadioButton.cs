@@ -1,10 +1,10 @@
-﻿using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
-using WContentPresenter = Windows.UI.Xaml.Controls.ContentPresenter;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Media;
+using WContentPresenter = global::Windows.UI.Xaml.Controls.ContentPresenter;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	public class FormsRadioButton : Windows.UI.Xaml.Controls.RadioButton
+	public class FormsRadioButton : global::Windows.UI.Xaml.Controls.RadioButton
 	{
 		public static readonly DependencyProperty BorderRadiusProperty = DependencyProperty.Register(nameof(BorderRadius), typeof(int), typeof(FormsButton),
 	new PropertyMetadata(default(int), OnBorderRadiusChanged));
@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateBorderRadius()
 		{
 			if (_contentPresenter != null)
-				_contentPresenter.CornerRadius = new Windows.UI.Xaml.CornerRadius(BorderRadius);
+				_contentPresenter.CornerRadius = new global::Windows.UI.Xaml.CornerRadius(BorderRadius);
 		}
 	}
 }

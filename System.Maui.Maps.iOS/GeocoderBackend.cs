@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Contacts;
@@ -11,9 +11,9 @@ using AddressBookUI;
 using CCLGeocoder = CoreLocation.CLGeocoder;
 
 #if __MOBILE__
-namespace Xamarin.Forms.Maps.iOS
+namespace System.Maui.Maps.iOS
 #else
-namespace Xamarin.Forms.Maps.MacOS
+namespace System.Maui.Maps.MacOS
 #endif
 {
 	internal class GeocoderBackend

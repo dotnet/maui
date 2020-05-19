@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <controls:TestContentPage
-	xmlns:controls="clr-namespace:Xamarin.Forms.Controls"
+	xmlns:controls="clr-namespace:System.Maui.Controls"
 	xmlns="http://xamarin.com/schemas/2014/forms" 
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	xmlns:local="clr-namespace:Xamarin.Forms.Controls.Issues"
-	x:Class="Xamarin.Forms.Controls.Issues.Issue1588">
+	xmlns:local="clr-namespace:System.Maui.Controls.Issues"
+	x:Class="System.Maui.Controls.Issues.Issue1588">
 
 	<StackLayout VerticalOptions="FillAndExpand" >
 

@@ -1,8 +1,8 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras">
+<Project Sdk="MSBuild.Sdk.Extras">
   <PropertyGroup>
-    <RootNamespace>Xamarin.Forms.Material.Android</RootNamespace>
-    <AssemblyName>Xamarin.Forms.Material</AssemblyName>
-    <PackageId>Xamarin.Forms.Material.Android</PackageId>
+    <RootNamespace>System.Maui.Material.Android</RootNamespace>
+    <AssemblyName>System.Maui.Material</AssemblyName>
+    <PackageId>System.Maui.Material.Android</PackageId>
     <TargetFrameworks>$(AndroidTargetFrameworks)</TargetFrameworks>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -27,11 +27,11 @@
     <PackageReference Include="Xamarin.Android.Support.Design" Version="28.0.0.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj">
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Platform.Android.FormsViewGroup\Xamarin.Forms.Platform.Android.FormsViewGroup.csproj">
+    <ProjectReference Include="..\System.Maui.Platform.Android.FormsViewGroup\System.Maui.Platform.Android.FormsViewGroup.csproj">
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj">
+    <ProjectReference Include="..\System.Maui.Platform.Android\System.Maui.Platform.Android.csproj">
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

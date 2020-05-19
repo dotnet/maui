@@ -1,9 +1,9 @@
-﻿using System;
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.UWP;
+using System;
+using System.Maui;
+using System.Maui.Platform.UWP;
 
 [assembly: Dependency(typeof(DispatcherProvider))]
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
 	internal class DispatcherProvider : IDispatcherProvider
 	{

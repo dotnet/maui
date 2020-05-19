@@ -3,7 +3,7 @@ using System.ComponentModel;
 using CoreGraphics;
 using UIKit;
 
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 {
 	public abstract class CheckBoxRendererBase<T> : ViewRenderer<CheckBox, T>
 		where T : FormsCheckBox

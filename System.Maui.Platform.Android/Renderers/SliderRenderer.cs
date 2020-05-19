@@ -7,7 +7,7 @@ using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Widget;
 
-namespace Xamarin.Forms.Platform.Android
+namespace System.Maui.Platform.Android
 {
 	public class SliderRenderer : ViewRenderer<Slider, SeekBar>, SeekBar.IOnSeekBarChangeListener
 	{
@@ -68,7 +68,7 @@ namespace Xamarin.Forms.Platform.Android
 				seekBar.Max = 1000;
 				seekBar.SetOnSeekBarChangeListener(this);
 
-				if (Forms.SdkInt > BuildVersionCodes.Kitkat)
+				if (System.Maui.Maui.SdkInt > BuildVersionCodes.Kitkat)
 				{
 					defaultthumbcolorfilter = seekBar.Thumb.GetColorFilter();
 					defaultprogresstintmode = seekBar.ProgressTintMode;
@@ -83,7 +83,7 @@ namespace Xamarin.Forms.Platform.Android
 			_min = slider.Minimum;
 			_max = slider.Maximum;
 			Value = slider.Value;
-			if (Forms.SdkInt > BuildVersionCodes.Kitkat)
+			if (System.Maui.Maui.SdkInt > BuildVersionCodes.Kitkat)
 			{
 				UpdateSliderColors();
 			}
@@ -118,7 +118,7 @@ namespace Xamarin.Forms.Platform.Android
 					break;
 			}
 
-			if (Forms.SdkInt > BuildVersionCodes.Kitkat)
+			if (System.Maui.Maui.SdkInt > BuildVersionCodes.Kitkat)
 			{
 				if (e.PropertyName == Slider.MinimumTrackColorProperty.PropertyName)
 					UpdateMinimumTrackColor();
@@ -197,7 +197,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			base.OnLayout(changed, l, t, r, b);
 
-			BuildVersionCodes androidVersion = Forms.SdkInt;
+			BuildVersionCodes androidVersion = System.Maui.Maui.SdkInt;
 			if (androidVersion < BuildVersionCodes.JellyBean)
 				return;
 

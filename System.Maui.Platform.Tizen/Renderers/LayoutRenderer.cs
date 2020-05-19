@@ -2,7 +2,7 @@ using ElmSharp;
 using System;
 using System.ComponentModel;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	/// <summary>
 	/// Renderer of a Layout.
@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (null == Control)
 			{
-				SetNativeControl(new Native.Canvas(Forms.NativeParent));
+				SetNativeControl(new Native.Canvas(System.Maui.Maui.NativeParent));
 			}
 
 			base.OnElementChanged(e);

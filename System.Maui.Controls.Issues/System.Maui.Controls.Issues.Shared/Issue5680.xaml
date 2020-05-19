@@ -1,5 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<local:TestContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Xamarin.Forms.Controls" x:Class="Xamarin.Forms.Controls.Issues.Issue5680" x:Name="page1">
+<?xml version="1.0" encoding="utf-8" ?>
+<local:TestContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:System.Maui.Controls" x:Class="System.Maui.Controls.Issues.Issue5680" x:Name="page1">
     <StackLayout Padding="0,20,0,0" BindingContext="{x:Reference page1}">
         <Label Text="Bindable Property CoerceValue Callback Demo" FontAttributes="Bold" HorizontalOptions="Center" />
         <StackLayout Orientation="Horizontal" HorizontalOptions="Center">

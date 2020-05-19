@@ -1,11 +1,11 @@
-﻿using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using UWPApp = Windows.UI.Xaml.Application;
-using UWPControlTemplate = Windows.UI.Xaml.Controls.ControlTemplate;
+using global::Windows.UI.Xaml;
+using global::Windows.UI.Xaml.Controls;
+using UWPApp = global::Windows.UI.Xaml.Application;
+using UWPControlTemplate = global::Windows.UI.Xaml.Controls.ControlTemplate;
 
-namespace Xamarin.Forms.Platform.UWP
+namespace System.Maui.Platform.UWP
 {
-	internal class FormsListView : Windows.UI.Xaml.Controls.ListView, IEmptyView
+	internal class FormsListView : global::Windows.UI.Xaml.Controls.ListView, IEmptyView
 	{
 		ContentControl _emptyViewContentControl;
 		FrameworkElement _emptyView;
@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
+		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
 			if (_formsEmptyView != null)
 			{

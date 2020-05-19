@@ -1,17 +1,17 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
 
 #if UITEST
-using Xamarin.Forms.Core.UITests;
+using System.Maui.Core.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.CollectionView)]
@@ -121,11 +121,11 @@ namespace Xamarin.Forms.Controls.Issues
 			var source = new ObservableCollection<_7128Model>();
 
 			var images = new string[] {
-				"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Xamarin.Forms.ControlGallery.iOS/oasis.jpg",
-				"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Xamarin.Forms.ControlGallery.iOS/photo.jpg",
-				"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Xamarin.Forms.ControlGallery.iOS/xamarinstore.jpg",
-				"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Xamarin.Forms.ControlGallery.iOS/crimson.jpg",
-				"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Xamarin.Forms.ControlGallery.WindowsUniversal/cover1.jpg"
+				"https://raw.githubusercontent.com/xamarin/System.Maui/master/System.Maui.ControlGallery.iOS/oasis.jpg",
+				"https://raw.githubusercontent.com/xamarin/System.Maui/master/System.Maui.ControlGallery.iOS/photo.jpg",
+				"https://raw.githubusercontent.com/xamarin/System.Maui/master/System.Maui.ControlGallery.iOS/xamarinstore.jpg",
+				"https://raw.githubusercontent.com/xamarin/System.Maui/master/System.Maui.ControlGallery.iOS/crimson.jpg",
+				"https://raw.githubusercontent.com/xamarin/System.Maui/master/System.Maui.ControlGallery.WindowsUniversal/cover1.jpg"
 			};
 
 			for (int n = 0; n < 35; n++)

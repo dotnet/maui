@@ -9,13 +9,13 @@ using Microsoft.Build.Utilities;
 
 using Mono.Cecil;
 
-using Xamarin.Forms.Xaml;
+using System.Maui.Xaml;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Pdb;
 using Mono.Cecil.Mdb;
 using System.ComponentModel;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace System.Maui.Build.Tasks
 {
 	[LoadInSeparateAppDomain]
 	public abstract class XamlTask : MarshalByRefObject, ITask
@@ -107,7 +107,7 @@ namespace Xamarin.Forms.Build.Tasks
 		static TypeReference GetTypeForResourceId(ModuleDefinition module, string resourceId)
 		{
 			foreach (var ca in module.GetCustomAttributes()) {
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "XamlResourceIdAttribute"))))
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("System.Maui.Core", "System.Maui.Xaml", "XamlResourceIdAttribute"))))
 					continue;
 				if (ca.ConstructorArguments[0].Value as string != resourceId)
 					continue;

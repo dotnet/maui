@@ -3,7 +3,7 @@ using System.IO;
 
 using AppFW = Tizen.Applications;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public static class ResourcePath
 	{

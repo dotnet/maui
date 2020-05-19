@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 
-namespace Xamarin.Forms.Controls
+namespace System.Maui.Controls
 {
 
 	public class ImageLoadingGallery : ContentPage
@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Controls
 			Padding = new Thickness (20);
 
 			var source = new UriImageSource {
-				Uri = new Uri ("https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/banner.png"),
+				Uri = new Uri ("https://raw.githubusercontent.com/xamarin/System.Maui/master/banner.png"),
 				CachingEnabled = false
 			};
 

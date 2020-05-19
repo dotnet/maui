@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.IO;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public class EmbeddedFont
 	{

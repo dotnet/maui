@@ -1,8 +1,8 @@
-﻿using NUnit.Framework;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.CustomAttributes;
+using NUnit.Framework;
+using System.Maui.Controls.Issues;
+using System.Maui.CustomAttributes;
 
-namespace Xamarin.Forms.Core.UITests
+namespace System.Maui.Core.UITests
 {
 
 #if __ANDROID__ || __IOS__

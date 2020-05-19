@@ -1,7 +1,7 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras">
+<Project Sdk="MSBuild.Sdk.Extras">
   <PropertyGroup>
-    <AssemblyName>Xamarin.Forms.Platform.UAP</AssemblyName>
-    <RootNamespace>Xamarin.Forms.Platform.UAP</RootNamespace>
+    <AssemblyName>System.Maui.Platform.UAP</AssemblyName>
+    <RootNamespace>System.Maui.Platform.UAP</RootNamespace>
     <SkipMicrosoftUIXamlCheckTargetPlatformVersion>true</SkipMicrosoftUIXamlCheckTargetPlatformVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -105,13 +105,13 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Xamarin.Forms.Core\Crc64.cs" Link="Crc64.cs" />
-    <Compile Include="..\Xamarin.Forms.Core\StreamWrapper.cs" Link="StreamWrapper.cs" />
+    <Compile Include="..\System.Maui.Core\Crc64.cs" Link="Crc64.cs" />
+    <Compile Include="..\System.Maui.Core\StreamWrapper.cs" Link="StreamWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+    <ProjectReference Include="..\System.Maui.Core\System.Maui.Core.csproj">
     </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj">
+    <ProjectReference Include="..\System.Maui.Xaml\System.Maui.Xaml.csproj">
     </ProjectReference>
   </ItemGroup>
   <ItemGroup Condition=" '$(OS)' == 'Windows_NT' AND $(TargetFramework.StartsWith('uap10.0'))  ">

@@ -1,6 +1,6 @@
-﻿using System;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using System;
+using System.Maui.CustomAttributes;
+using System.Maui.Internals;
 
 #if UITEST
 using Xamarin.UITest;
@@ -13,10 +13,10 @@ using NUnit.Framework;
 [assembly: NUnit.Framework.Category("Issues")]
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace System.Maui.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 38731, "Xamarin.Forms.Platform.iOS.NavigationRenderer.GetAppearedOrDisappearedTask NullReferenceExceptionObject", PlatformAffected.iOS)]
+	[Issue(IssueTracker.Bugzilla, 38731, "System.Maui.Platform.iOS.NavigationRenderer.GetAppearedOrDisappearedTask NullReferenceExceptionObject", PlatformAffected.iOS)]
 	public class Bugzilla38731 : TestContentPage // or TestMasterDetailPage, etc ...
 	{
 		protected override void Init()

@@ -5,10 +5,10 @@ using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-using Xamarin.Forms.Xaml;
-using Xamarin.Forms.Build.Tasks;
+using System.Maui.Xaml;
+using System.Maui.Build.Tasks;
 
-namespace Xamarin.Forms.Core.XamlC
+namespace System.Maui.Core.XamlC
 {
 	class LayoutOptionsConverter : ICompiledTypeConverter
 	{
@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Core.XamlC
 				if (parts.Length == 1 || (parts.Length == 2 && parts [0] == "LayoutOptions")) {
 					var options = parts [parts.Length - 1];
 
-					var fieldReference = module.ImportFieldReference(("Xamarin.Forms.Core", "Xamarin.Forms", "LayoutOptions"),
+					var fieldReference = module.ImportFieldReference(("System.Maui.Core", "System.Maui", "LayoutOptions"),
 																	 fieldName: options,
 																	 isStatic: true);
 					if (fieldReference != null) {

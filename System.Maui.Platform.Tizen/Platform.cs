@@ -5,11 +5,11 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using ElmSharp;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 
-[assembly: InternalsVisibleTo("Xamarin.Forms.Material")]
+[assembly: InternalsVisibleTo("System.Maui.Material")]
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	public static class Platform
 	{
@@ -43,14 +43,14 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		internal static IVisualElementRenderer CreateRenderer(VisualElement element)
 		{
-			IVisualElementRenderer renderer = Forms.GetHandlerForObject<IVisualElementRenderer>(element) ?? new DefaultRenderer();
+			IVisualElementRenderer renderer = System.Maui.Maui.GetHandlerForObject<IVisualElementRenderer>(element) ?? new DefaultRenderer();
 			renderer.SetElement(element);
 			return renderer;
 		}
 
 		internal static ITizenPlatform CreatePlatform(EvasObject parent)
 		{
-			if (Forms.PlatformType == PlatformType.Lightweight || Forms.Flags.Contains(Flags.LightweightPlatformExperimental))
+			if (System.Maui.Maui.PlatformType == PlatformType.Lightweight || System.Maui.Maui.Flags.Contains(Flags.LightweightPlatformExperimental))
 			{
 				return new LightweightPlatform(parent);
 			}
@@ -105,9 +105,9 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		internal DefaultPlatform(EvasObject parent)
 		{
-			Forms.NativeParent = parent;
+			System.Maui.Maui.NativeParent = parent;
 
-			_internalNaviframe = new Naviframe(Forms.NativeParent)
+			_internalNaviframe = new Naviframe(System.Maui.Maui.NativeParent)
 			{
 				PreserveContentOnPop = true,
 				DefaultBackButtonEnabled = false,
@@ -117,7 +117,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			_internalNaviframe.Show();
 			_internalNaviframe.AnimationFinished += NaviAnimationFinished;
 
-			if (Forms.UseMessagingCenter)
+			if (System.Maui.Maui.UseMessagingCenter)
 			{
 				_popupManager = new PopupManager(this);
 			}

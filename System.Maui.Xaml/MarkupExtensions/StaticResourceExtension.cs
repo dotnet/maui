@@ -2,10 +2,10 @@ using System;
 using System.Reflection;
 using System.Xml;
 using System.Linq;
-using Xamarin.Forms.Internals;
+using System.Maui.Internals;
 using System.Collections.Generic;
 
-namespace Xamarin.Forms.Xaml
+namespace System.Maui.Xaml
 {
 	[ContentProperty(nameof(Key))]
 	public sealed class StaticResourceExtension : IMarkupExtension

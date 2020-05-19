@@ -1,18 +1,18 @@
-﻿using Gtk;
+using Gtk;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK.Animations;
-using Xamarin.Forms.Platform.GTK.Controls;
-using Xamarin.Forms.Platform.GTK.Extensions;
-using Xamarin.Forms.Platform.GTK.Helpers;
-using Xamarin.Forms.PlatformConfiguration.GTKSpecific;
-using Container = Xamarin.Forms.Platform.GTK.GtkFormsContainer;
+using System.Maui.Internals;
+using System.Maui.Platform.GTK.Animations;
+using System.Maui.Platform.GTK.Controls;
+using System.Maui.Platform.GTK.Extensions;
+using System.Maui.Platform.GTK.Helpers;
+using System.Maui.PlatformConfiguration.GTKSpecific;
+using Container = System.Maui.Platform.GTK.GtkFormsContainer;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers
+namespace System.Maui.Platform.GTK.Renderers
 {
 	public class NavigationPageRenderer : AbstractPageRenderer<Fixed, NavigationPage>, IToolbarTracker
 	{
@@ -265,9 +265,9 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 		private void OnCurrentPagePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == Xamarin.Forms.Page.TitleProperty.PropertyName)
+			if (e.PropertyName == System.Maui.Page.TitleProperty.PropertyName)
 				UpdateTitle();
-			else if (e.PropertyName == Xamarin.Forms.Page.IconImageSourceProperty.PropertyName)
+			else if (e.PropertyName == System.Maui.Page.IconImageSourceProperty.PropertyName)
 				UpdateIcon();
 		}
 
@@ -517,7 +517,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 			if (Element != null)
 			{
-				MessagingCenter.Send(Element, Forms.BarBackgroundColor, Page?.BarBackgroundColor);
+				MessagingCenter.Send(Element, System.Maui.Maui.BarBackgroundColor, Page?.BarBackgroundColor);
 			}
 		}
 
@@ -527,7 +527,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 			if (Element != null)
 			{
-				MessagingCenter.Send(Element, Forms.BarTextColor, Page?.BarTextColor);
+				MessagingCenter.Send(Element, System.Maui.Maui.BarTextColor, Page?.BarTextColor);
 			}
 		}
 

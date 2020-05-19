@@ -3,7 +3,7 @@ using System.ComponentModel;
 using ElmSharp.Accessible;
 using EColor = ElmSharp.Color;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	public class ToolbarItemButton : Button
 	{
@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		string _defaultAccessibilityDescription;
 		bool? _defaultIsAccessibilityElement;
 
-		public ToolbarItemButton(ToolbarItem item) : base(Forms.NativeParent)
+		public ToolbarItemButton(ToolbarItem item) : base(System.Maui.Maui.NativeParent)
 		{
 			_item = item;
 			BackgroundColor = EColor.Transparent;
@@ -102,7 +102,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			{
 				// In reverse, the style should be set before setting the part content.
 				UpdateStyle();
-				Native.Image iconImage = new Native.Image(Forms.NativeParent);
+				Native.Image iconImage = new Native.Image(System.Maui.Maui.NativeParent);
 				_ = iconImage.LoadFromImageSourceAsync(_item.IconImageSource);
 				Image = iconImage;
 			}

@@ -13,7 +13,7 @@ using Android.Support.V4.App;
 using Android.Support.V4.View;
 #endif
 
-namespace Xamarin.Forms.Platform.Android.AppCompat
+namespace System.Maui.Platform.Android.AppCompat
 {
 	
 	public class CarouselPageRenderer : VisualElementRenderer<CarouselPage>, ViewPager.IOnPageChangeListener, IManageFragments

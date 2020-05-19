@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Globalization;
 
-namespace Xamarin.Forms
+namespace System.Maui
 {
 	public abstract class TypeConverter
 	{

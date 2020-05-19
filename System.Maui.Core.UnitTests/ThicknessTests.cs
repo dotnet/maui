@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
 
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace System.Maui.Core.UnitTests
 {
 	[TestFixture]
 	public class ThicknessTests : BaseTestFixture

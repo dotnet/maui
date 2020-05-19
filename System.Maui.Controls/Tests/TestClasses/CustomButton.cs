@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Xamarin.Forms.Controls.Tests.TestClasses
+namespace System.Maui.Controls.Tests.TestClasses
 {
 	public class CustomButton : Button
 	{

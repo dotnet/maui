@@ -1,12 +1,12 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <controls:TestContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             xmlns:local="clr-namespace:Xamarin.Forms.Controls.Issues"
-             xmlns:controls="clr-namespace:Xamarin.Forms.Controls"
-             x:Class="Xamarin.Forms.Controls.Issues.Issue9771">
+             xmlns:local="clr-namespace:System.Maui.Controls.Issues"
+             xmlns:controls="clr-namespace:System.Maui.Controls"
+             x:Class="System.Maui.Controls.Issues.Issue9771">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>

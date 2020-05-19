@@ -1,4 +1,4 @@
-﻿using Xamarin.Forms;
+using System.Maui;
 using NUnit.Framework;
 
 namespace Foo.Xamarin.Bar

@@ -1,7 +1,7 @@
 using ERect = ElmSharp.Rect;
 using ESize = ElmSharp.Size;
 
-namespace Xamarin.Forms.Platform.Tizen
+namespace System.Maui.Platform.Tizen
 {
 	/// <summary>
 	/// Extension class, provides DIP convert functionalities
@@ -10,22 +10,22 @@ namespace Xamarin.Forms.Platform.Tizen
 	{
 		public static Rectangle ToDP(this ERect rect)
 		{
-			return new Rectangle(Forms.ConvertToScaledDP(rect.X), Forms.ConvertToScaledDP(rect.Y), Forms.ConvertToScaledDP(rect.Width), Forms.ConvertToScaledDP(rect.Height));
+			return new Rectangle(System.Maui.Maui.ConvertToScaledDP(rect.X), System.Maui.Maui.ConvertToScaledDP(rect.Y), System.Maui.Maui.ConvertToScaledDP(rect.Width), System.Maui.Maui.ConvertToScaledDP(rect.Height));
 		}
 
 		public static ERect ToPixel(this Rectangle rect)
 		{
-			return new ERect(Forms.ConvertToScaledPixel(rect.X), Forms.ConvertToScaledPixel(rect.Y), Forms.ConvertToScaledPixel(rect.Width), Forms.ConvertToScaledPixel(rect.Height));
+			return new ERect(System.Maui.Maui.ConvertToScaledPixel(rect.X), System.Maui.Maui.ConvertToScaledPixel(rect.Y), System.Maui.Maui.ConvertToScaledPixel(rect.Width), System.Maui.Maui.ConvertToScaledPixel(rect.Height));
 		}
 
 		public static Size ToDP(this ESize size)
 		{
-			return new Size(Forms.ConvertToScaledDP(size.Width), Forms.ConvertToScaledDP(size.Height));
+			return new Size(System.Maui.Maui.ConvertToScaledDP(size.Width), System.Maui.Maui.ConvertToScaledDP(size.Height));
 		}
 
 		public static ESize ToPixel(this Size size)
 		{
-			return new ESize(Forms.ConvertToScaledPixel(size.Width), Forms.ConvertToScaledPixel(size.Height));
+			return new ESize(System.Maui.Maui.ConvertToScaledPixel(size.Width), System.Maui.Maui.ConvertToScaledPixel(size.Height));
 		}
 	}
 }

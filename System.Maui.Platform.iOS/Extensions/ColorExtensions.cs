@@ -5,12 +5,12 @@ using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 #if __MOBILE__
 using UIKit;
-namespace Xamarin.Forms.Platform.iOS
+namespace System.Maui.Platform.iOS
 #else
 using AppKit;
 using UIColor = AppKit.NSColor;
 
-namespace Xamarin.Forms.Platform.MacOS
+namespace System.Maui.Platform.MacOS
 #endif
 {
 	public static class ColorExtensions
@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			get
 			{
 #if __XCODE11__
-				if (Forms.IsiOS13OrNewer)
+				if (System.Maui.Maui.IsiOS13OrNewer)
 					return UIColor.LabelColor;
 #endif
 				return UIColor.Black;
@@ -36,7 +36,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			get
 			{
 #if __XCODE11__
-				if (Forms.IsiOS13OrNewer)
+				if (System.Maui.Maui.IsiOS13OrNewer)
 					return UIColor.PlaceholderTextColor;
 #endif
 				return SeventyPercentGrey;
@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			get
 			{
 #if __XCODE11__
-				if (Forms.IsiOS13OrNewer)
+				if (System.Maui.Maui.IsiOS13OrNewer)
 					return UIColor.SecondaryLabelColor;
 #endif
 				return new Color(.32, .4, .57).ToUIColor();
@@ -60,7 +60,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			get
 			{
 #if __XCODE11__
-				if (Forms.IsiOS13OrNewer)
+				if (System.Maui.Maui.IsiOS13OrNewer)
 					return UIColor.SystemBackgroundColor;
 #endif
 				return UIColor.White;
@@ -72,7 +72,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			get
 			{
 #if __XCODE11__
-				if (Forms.IsiOS13OrNewer)
+				if (System.Maui.Maui.IsiOS13OrNewer)
 					return UIColor.SeparatorColor;
 #endif
 				return UIColor.Gray;
@@ -84,7 +84,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			get
 			{
 #if __XCODE11__
-				if (Forms.IsiOS13OrNewer)
+				if (System.Maui.Maui.IsiOS13OrNewer)
 					return UIColor.OpaqueSeparatorColor;
 #endif
 				return UIColor.Black;
@@ -96,7 +96,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			get
 			{
 #if __XCODE11__
-				if (Forms.IsiOS13OrNewer)
+				if (System.Maui.Maui.IsiOS13OrNewer)
 					return UIColor.SystemGroupedBackgroundColor;
 #endif
 				return new UIColor(247f / 255f, 247f / 255f, 247f / 255f, 1);
@@ -108,7 +108,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			get
 			{
 #if __XCODE11__
-				if (Forms.IsiOS13OrNewer)
+				if (System.Maui.Maui.IsiOS13OrNewer)
 					return UIColor.SystemBlueColor;
 #endif
 				return Color.FromRgba(50, 79, 133, 255).ToUIColor();
@@ -120,7 +120,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			get
 			{
 #if __XCODE11__
-				if (Forms.IsiOS13OrNewer)
+				if (System.Maui.Maui.IsiOS13OrNewer)
 					return UIColor.SystemRedColor;
 #endif
 				return UIColor.FromRGBA(1, 0, 0, 1);
@@ -132,7 +132,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			get
 			{
 #if __XCODE11__
-				if (Forms.IsiOS13OrNewer)
+				if (System.Maui.Maui.IsiOS13OrNewer)
 					return UIColor.SystemGrayColor;
 #endif
 				return UIColor.Gray;
@@ -144,7 +144,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			get
 			{
 #if __XCODE11__
-				if (Forms.IsiOS13OrNewer)
+				if (System.Maui.Maui.IsiOS13OrNewer)
 					return UIColor.SystemGray2Color;
 #endif
 				return UIColor.LightGray;

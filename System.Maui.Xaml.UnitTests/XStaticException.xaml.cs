@@ -1,7 +1,7 @@
-﻿using NUnit.Framework;
-using Xamarin.Forms.Core.UnitTests;
+using NUnit.Framework;
+using System.Maui.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace System.Maui.Xaml.UnitTests
 {
 	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class XStaticException : ContentPage
@@ -36,8 +36,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 				//there's a test not resetting the values correctly, but can't find which one...
 #pragma warning disable 0618
-				Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = null;
-				Xamarin.Forms.Xaml.Internals.XamlLoader.DoNotThrowOnExceptions = false;
+				System.Maui.Internals.ResourceLoader.ExceptionHandler = null;
+				System.Maui.Xaml.Internals.XamlLoader.DoNotThrowOnExceptions = false;
 #pragma warning restore 0618
 			}
 

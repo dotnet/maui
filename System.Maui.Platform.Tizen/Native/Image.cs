@@ -1,9 +1,9 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using ElmSharp;
 using EImage = ElmSharp.Image;
 using ESize = ElmSharp.Size;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace System.Maui.Platform.Tizen.Native
 {
 	/// <summary>
 	/// Extends the ElmSharp.Image class with functionality useful to renderer.
@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 	public class Image : EImage, IMeasurable
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Xamarin.Forms.Platform.Tizen.Native.Image"/> class.
+		/// Initializes a new instance of the <see cref="System.Maui.Platform.Tizen.Native.Image"/> class.
 		/// </summary>
 		/// <param name="parent">The parent EvasObject.</param>
 		public Image(EvasObject parent) : base(parent)
@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		}
 
 		/// <summary>
-		/// Implements the <see cref="Xamarin.Forms.Platform.Tizen.Native.IMeasurable"/> interface.
+		/// Implements the <see cref="System.Maui.Platform.Tizen.Native.IMeasurable"/> interface.
 		/// </summary>
 		/// <param name="availableWidth">Available width.</param>
 		/// <param name="availableHeight">Available height.</param>

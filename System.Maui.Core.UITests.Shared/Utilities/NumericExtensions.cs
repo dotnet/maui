@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms.Core.UITests
+namespace System.Maui.Core.UITests
 {
 	internal class Matrix : Object
 	{
