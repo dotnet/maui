@@ -7,7 +7,6 @@
       "PagesGallery\\PagesGallery.iOS\\PagesGallery.iOS.csproj",
       "PagesGallery\\PagesGallery\\PagesGallery.csproj",
       "Stubs\\System.Maui.Platform.iOS\\System.Maui.Platform.iOS (Forwarders).csproj",
-      "XFCorePostProcessor.Tasks\\XFCorePostProcessor.Tasks.csproj",
       "Xamarin.Flex\\Xamarin.Flex.shproj",
       "System.Maui.Build.Tasks\\System.Maui.Build.Tasks.csproj",
       "System.Maui.ControlGallery.iOS\\System.Maui.ControlGallery.iOS.csproj",

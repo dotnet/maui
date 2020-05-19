@@ -1,0 +1,6 @@
+<Project>
+  <ItemGroup>
+    <PackageReference ExcludeAssets="All" Include="System.Maui" Version="$(XamarinFormsVersion)">
+    </PackageReference>
+  </ItemGroup>
+</Project>

@@ -6,7 +6,6 @@
       "PagesGallery\\PagesGallery.Droid\\PagesGallery.Droid.csproj",
       "PagesGallery\\PagesGallery\\PagesGallery.csproj",
       "Stubs\\System.Maui.Platform.Android\\System.Maui.Platform.Android (Forwarders).csproj",
-      "XFCorePostProcessor.Tasks\\XFCorePostProcessor.Tasks.csproj",
       "Xamarin.Flex\\Xamarin.Flex.shproj",
       "System.Maui.Build.Tasks\\System.Maui.Build.Tasks.csproj",
       "System.Maui.ControlGallery.Android\\System.Maui.ControlGallery.Android.csproj",

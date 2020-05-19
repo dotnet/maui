@@ -6,7 +6,6 @@
       "EmbeddingTestBeds\\Embedding.XF\\Embedding.XF.csproj",
       "PagesGallery\\PagesGallery.UWP\\PagesGallery.UWP.csproj",
       "PagesGallery\\PagesGallery\\PagesGallery.csproj",
-      "XFCorePostProcessor.Tasks\\XFCorePostProcessor.Tasks.csproj",
       "Xamarin.Flex\\Xamarin.Flex.shproj",
       "System.Maui.Build.Tasks\\System.Maui.Build.Tasks.csproj",
       "System.Maui.ControlGallery.WindowsUniversal\\System.Maui.ControlGallery.WindowsUniversal.csproj",
