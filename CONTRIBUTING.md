@@ -7,11 +7,7 @@ Start a discussion on the [repository issue tracker](https://github.com/dotnet/m
 
 ## Bugs and feature requests?
 
-For bugs, log a new [bug issue](https://github.com/dotnet/maui/issues/new?template=bug.md).
-
----
-
-For feature requests, log a new [enhancement proposal](https://github.com/dotnet/tye/issues/new?template=enhancement.md).
+For bugs, log a new [bug issue](https://github.com/dotnet/maui/issues/new?assignees=&labels=s%2Funverified%2C+t%2Fbug+%3Abug%3A&template=bug_report.md&title=%5BBug%5D+). For feature requests, log a new [enhancement proposal](https://github.com/dotnet/maui/issues/new?assignees=&labels=proposal-open%2C+t%2Fenhancement+%E2%9E%95&template=feature_request.md&title=%5BEnhancement%5D+YOUR+IDEA%21).
 
 ## Contributing code and content
 
