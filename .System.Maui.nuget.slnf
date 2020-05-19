@@ -5,7 +5,6 @@
       "Stubs\\System.Maui.Platform.Android\\System.Maui.Platform.Android (Forwarders).csproj",
       "Stubs\\System.Maui.Platform.Tizen\\System.Maui.Platform.Tizen (Forwarders).csproj",
       "Stubs\\System.Maui.Platform.iOS\\System.Maui.Platform.iOS (Forwarders).csproj",
-      "XFCorePostProcessor.Tasks\\XFCorePostProcessor.Tasks.csproj",
       "Xamarin.Flex\\Xamarin.Flex.shproj",
       "System.Maui.Build.Tasks\\System.Maui.Build.Tasks.csproj",
       "System.Maui.Core.Design\\System.Maui.Core.Design.csproj",

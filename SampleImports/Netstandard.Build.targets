@@ -1,13 +1,13 @@
 <Project>
-  <Import Project="..\.nuspec\System.Maui.DefaultItems.props" />
-  <Import Project="..\.nuspec\System.Maui.DefaultItems.targets" />
+  <Import Project="$(XamarinFormsSource).nuspec\System.Maui.DefaultItems.props" />
+  <Import Project="$(XamarinFormsSource).nuspec\System.Maui.DefaultItems.targets" />
   <PropertyGroup>
     <XFDisableTargetsValidation>True</XFDisableTargetsValidation>
   </PropertyGroup>
 
   <ItemGroup>
   </ItemGroup>
-  <Import Project="..\.nuspec\System.Maui.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(__XFBuildTasksLocation)System.Maui.Build.Tasks.dll')" />
-  <Import Project="..\.nuspec\System.Maui.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
+  <Import Project="$(XamarinFormsSource).nuspec\System.Maui.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(__XFBuildTasksLocation)System.Maui.Build.Tasks.dll')" />
+  <Import Project="$(XamarinFormsSource).nuspec\System.Maui.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
   
 </Project>

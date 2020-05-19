@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	
+             x:Class="System.Maui.Xaml.UnitTests.Gh2691">
+    <ContentPage.Content>
+        <StackLayout>
+            
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>
+    
+<!--<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 xmlns:test="http://xamarin.com/schemas/2014/forms/customurl1"
 			 xmlns:test2="http://xamarin.com/schemas/2014/forms/customurl2" 
 			 xmlns:test3="clr-namespace:System.Maui.Controls.CustomNamespace1;assembly=System.Maui.Controls"
@@ -23,4 +35,4 @@
 			</test2:CustomStackLayout>
 		</StackLayout>
 	</ContentPage.Content>
-</ContentPage>
+</ContentPage>-->

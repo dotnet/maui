@@ -1,8 +1,8 @@
 <Project>
 
+  <Import Project="Nuget.Build.targets" Condition="'$(XamarinFormsVersion)' != ''" />
+  
   <ItemGroup>
-    <PackageReference ExcludeAssets="All" Include="System.Maui" Version="$(XamarinFormsVersion)">
-    </PackageReference>
     <ProjectReference Include="$(XamarinFormsSource)System.Maui.Core\System.Maui.Core.csproj">
       <Name>System.Maui.Core</Name>
     </ProjectReference>
