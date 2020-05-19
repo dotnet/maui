@@ -8,9 +8,9 @@ MAUI is:
 * Evolution of [Xamarin.Forms](https://github.com/xamarin/xamarin.forms)
 * Targeting .NET 6, previews end of year
 
-## Status: Planning and Development
+## Status: Planning and Early Development
 
-While [Xamarin.Forms](https://github.com/xamarin/xamarin.forms) continues to be actively developed to meet customer needs today, we are [proposing evolutionary changes](../../issues) during this planning phase based on some early customer interviews of what would be most beneficial.
+While [Xamarin.Forms](https://github.com/xamarin/xamarin.forms) continues to be actively developed to meet customer needs today, we are [proposing evolutionary changes](../../issues) based on some early customer research of what would be most beneficial.
 
 Active development is happening today to build Android and iOS SDKs against the next version of .NET. [Samples may be found here](https://github.com/xamarin/net5-samples).
 
@@ -65,8 +65,10 @@ Active development is happening today to build Android and iOS SDKs against the 
 
 ## How to Engage, Contribute, and Give Feedback
 
-Some of the best ways to [contribute](./CONTRIBUTION.md) are to try things out, file issues, join in design conversations,
+Some of the best ways to [contribute](./CONTRIBUTING.md) are to try things out, file issues, join in design conversations,
 and make pull-requests. Proposals for changes specific to MAUI can be found [here for discussion](../../issues).
+
+See [CONTRIBUTING](./CONTRIBUTING.md)
 
 ## Code of conduct
 
