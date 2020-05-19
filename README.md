@@ -65,7 +65,7 @@ Active development is happening today to build Android and iOS SDKs against the 
 
 ## How to Engage, Contribute, and Give Feedback
 
-Some of the best ways to contribute are to try things out, file issues, join in design conversations,
+Some of the best ways to [contribute](./CONTRIBUTION.md) are to try things out, file issues, join in design conversations,
 and make pull-requests. Proposals for changes specific to MAUI can be found [here for discussion](../../issues).
 
 ## Code of conduct
