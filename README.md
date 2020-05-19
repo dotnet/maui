@@ -28,16 +28,12 @@ Active development is happening today to build Android and iOS SDKs against the 
 ### Milestones
 
 * MAUI previews Q4 2020 through Q3 2021
-  * [Renderer architecture revisions](tbd)
-  * [Source solution and project simplification](tbd)
-  * [Completete approved proposals]()
-  * [Implement MVU]()
+  * [Renderer architecture revisions](https://github.com/dotnet/maui/issues/28)
+  * Source solution and project simplification
+  * Completete approved proposals
+  * Implement MVU
 * MAUI release candidate September 2021
 * MAUI general availability November 2021
-
-## Source Code
-
-This is an evolution of [Xamarin.Forms](https://github.com/xamarin/xamarin.forms).
 
 ## Xamarin.Forms vs MAUI
 
