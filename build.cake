@@ -22,7 +22,7 @@ PowerShell:
 #addin "nuget:?package=Cake.Android.Adb&version=3.2.0"
 #addin "nuget:?package=Cake.Git&version=0.21.0"
 #addin "nuget:?package=Cake.Android.SdkManager&version=3.0.2"
-#addin "nuget:?package=Cake.Boots&version=1.0.2.421"
+#addin "nuget:?package=Cake.Boots&version=1.0.2.437"
 
 #addin "nuget:?package=Cake.FileHelpers&version=3.2.1"
 //////////////////////////////////////////////////////////////////////
@@ -43,13 +43,29 @@ var releaseChannelArg = Argument("CHANNEL", "Stable");
 releaseChannelArg = EnvironmentVariable("CHANNEL") ?? releaseChannelArg;
 var teamProject = Argument("TeamProject", "");
 bool buildForVS2017 = Convert.ToBoolean(Argument("buildForVS2017", "false"));
-
+string agentName = EnvironmentVariable("Agent_Name", "");
+bool isHostedAgent = agentName.StartsWith("Azure Pipelines");
+bool isCIBuild = !String.IsNullOrWhiteSpace(agentName);
 string artifactStagingDirectory = Argument("Build_ArtifactStagingDirectory", (string)null) ?? EnvironmentVariable("Build.ArtifactStagingDirectory") ?? EnvironmentVariable("Build_ArtifactStagingDirectory") ?? ".";
 var ANDROID_HOME = EnvironmentVariable("ANDROID_HOME") ??
     (IsRunningOnWindows () ? "C:\\Program Files (x86)\\Android\\android-sdk\\" : "");
 
-string[] androidSdkManagerInstalls = new string[0]; //new [] { "platforms;android-24", "platforms;android-28", "platforms;android-29", "build-tools;29.0.3"};
+string[] androidSdkManagerInstalls =  new string[0];//new [] { "platforms;android-24", "platforms;android-28", "platforms;android-29", "build-tools;29.0.3"};
 
+(string name, string location)[] windowsSdksInstalls = new (string name, string location)[]
+{
+    ("10.0.19041.0", "https://go.microsoft.com/fwlink/p/?linkid=2120843"), 
+    ("10.0.18362.0", "https://go.microsoft.com/fwlink/?linkid=2083338"),
+    ("10.0.16299.0", "https://go.microsoft.com/fwlink/p/?linkid=864422"),
+    ("10.0.14393.0", "https://go.microsoft.com/fwlink/p/?LinkId=838916")
+};
+
+// these don't run on CI
+string[] netFrameworkSdksLocalInstall = new string[]
+{
+    "https://download.microsoft.com/download/F/1/D/F1DEB8DB-D277-4EF9-9F48-3A65D4D8F965/NDP461-DevPack-KB3105179-ENU.exe",
+    "https://go.microsoft.com/fwlink/?linkid=874338", //NET472
+};
 
 Information ("XamarinFormsVersion: {0}", XamarinFormsVersion);
 Information ("ANDROID_RENDERERS: {0}", ANDROID_RENDERERS);
@@ -57,6 +73,9 @@ Information ("configuration: {0}", configuration);
 Information ("ANDROID_HOME: {0}", ANDROID_HOME);
 Information ("Team Project: {0}", teamProject);
 Information ("buildForVS2017: {0}", buildForVS2017);
+Information ("Agent.Name: {0}", EnvironmentVariable("Agent_Name"));
+Information ("isCIBuild: {0}", isCIBuild);
+
 
 var releaseChannel = ReleaseChannel.Stable;
 if(releaseChannelArg == "Preview")
@@ -177,7 +196,7 @@ Task("provision-iossdk")
     .Description("Install Xamarin.iOS SDK")
     .Does(async () =>
     {
-        if (!IsRunningOnWindows ()) {
+        if (!IsRunningOnWindows()) {
             if(!String.IsNullOrWhiteSpace(iosSDK))
                 await Boots(iosSDK);
             else
@@ -202,10 +221,25 @@ Task("provision-androidsdk")
             if(!String.IsNullOrWhiteSpace(ANDROID_HOME))            
                 androidSdkSettings.SdkRoot = ANDROID_HOME;
 
-            AcceptLicenses (androidSdkSettings);
-            AndroidSdkManagerUpdateAll (androidSdkSettings);
-            AcceptLicenses (androidSdkSettings);
-            AndroidSdkManagerInstall (androidSdkManagerInstalls, androidSdkSettings);
+            try{
+                AcceptLicenses (androidSdkSettings);
+            }
+            catch{}
+
+            try{
+                AndroidSdkManagerUpdateAll (androidSdkSettings);
+            }
+            catch{}
+            
+            try{
+                AcceptLicenses (androidSdkSettings);
+            }
+            catch{}
+
+            try{
+                AndroidSdkManagerInstall (androidSdkManagerInstalls, androidSdkSettings);
+            }
+            catch{}
         }
 
         if (!IsRunningOnWindows ()) {
@@ -233,12 +267,121 @@ Task("provision-monosdk")
             await Boots(monoSDK);
     });
 
+Task("provision-windowssdk")
+    .Description("Install Windows SDK")
+    .Does(() =>
+    {
+        if(IsRunningOnWindows() && !isHostedAgent)
+        {
+            int i = 0;
+            foreach(var windowsSdk in windowsSdksInstalls)
+            {
+                string sdkPath = System.IO.Path.Combine(@"C:\Program Files (x86)\Windows Kits\10\Platforms\UAP", windowsSdk.name);
+                if(DirectoryExists(sdkPath) && GetFiles(System.IO.Path.Combine(sdkPath, "*.*")).Count() > 0)
+                    continue;
+
+
+                Information(sdkPath);
+                Information(DirectoryExists(sdkPath).ToString());
+                Information(GetFiles(sdkPath).Count().ToString());
+                string installUrl = windowsSdk.location;
+                string installerPath = $"{System.IO.Path.GetTempPath()}" + $"WindowsSDK{i}.exe";
+                DownloadFile(installUrl, installerPath);
+
+                var result = StartProcess(installerPath, new ProcessSettings {
+                    Arguments = new ProcessArgumentBuilder()
+                        .Append(@"/features + /q")
+                    }
+                );
+
+                i++;
+            }
+        }
+    });
+
+Task("provision-netsdk-local")
+    .Description("Install .NET SDK")
+    .Does(() =>
+    {
+        if(IsRunningOnWindows() && !isCIBuild)
+        {
+            int i = 0;
+            foreach(var installUrl in netFrameworkSdksLocalInstall)
+            {
+                string installerPath = $"{System.IO.Path.GetTempPath()}" + $"netSDKS{i}.exe";
+                DownloadFile(installUrl, installerPath);
+
+                var result = StartProcess(installerPath, new ProcessSettings {
+                    Arguments = new ProcessArgumentBuilder()
+                        .Append(@"/quiet")
+                    }
+                );
+
+                i++;
+            }
+        }
+    });
+
+Task("provision-uitests-uwp")
+    .Description("Installs and Starts WindowsApplicationDriver. Use WinAppDriverPath to specify WinAppDriver Location.")
+    .Does(() =>
+    {
+        if(IsRunningOnWindows())
+        {
+            string installPath = Argument("WinAppDriverPath", @"C:\Program Files (x86)\");
+            string driverPath = System.IO.Path.Combine(installPath, "Windows Application Driver");
+            if(!DirectoryExists(driverPath))
+                InstallMsi("https://github.com/microsoft/WinAppDriver/releases/download/v1.2-RC/WindowsApplicationDriver.msi", installPath);
+
+            var info = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "WinAppDriver",
+                WorkingDirectory = driverPath
+            };
+
+            Information("Starting: {0}", driverPath);
+            System.Diagnostics.Process.Start(info);
+        }
+        
+    });
+
+void InstallMsi(string msiFile, string installTo)
+{
+    string installerPath = $"{System.IO.Path.GetTempPath()}" + "InstallFile.msi";
+        
+    try{
+        Information ("Installing: {0}", msiFile);
+        Information("Installing into: {0}", installTo);
+        DownloadFile(msiFile, installerPath);
+        Information("File Downloaded To: {0}", installerPath);
+
+        var result = StartProcess("msiexec", new ProcessSettings {
+            Arguments = new ProcessArgumentBuilder()
+
+                .Append(@"/a")
+                .Append(installerPath)
+                .Append("TARGETDIR=\"" + installTo + "\"")
+                .Append("/qn")
+            }
+        );
+
+        if(result != 0)
+            throw new Exception("Failed to install: " + msiFile);
+
+        Information("File Installed: {0}", result);
+    }
+    finally{
+        DeleteFile(installerPath);
+
+    }
+}
+
 Task("provision")
     .Description("Install SDKs required to build project")
     .IsDependentOn("provision-macsdk")
     .IsDependentOn("provision-iossdk")
-    .IsDependentOn("provision-monosdk")
-    .IsDependentOn("provision-androidsdk");
+    .IsDependentOn("provision-androidsdk")
+    .IsDependentOn("provision-monosdk"); // always provision monosdk last otherwise CI might fail
 
 Task("NuGetPack")
     .Description("Build and Create Nugets")
