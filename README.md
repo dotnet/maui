@@ -1,6 +1,6 @@
 # Introducing .NET Multi-platform App UI (MAUI)
 
-MAUI is:
+.NET MAUI is:
 
 * Multi-platform native UI
 * Deploy to multiple devices across mobile & desktop
@@ -27,18 +27,18 @@ Active development is happening today to build Android and iOS SDKs against the 
 
 ### Milestones
 
-* MAUI previews Q4 2020 through Q3 2021
+* .NET MAUI previews Q4 2020 through Q3 2021
   * [Renderer architecture revisions](https://github.com/dotnet/maui/issues/28)
   * Source solution and project simplification
   * Completete approved proposals
   * Implement MVU
-* MAUI release candidate September 2021
-* MAUI general availability November 2021
+* .NET MAUI release candidate September 2021
+* .NET MAUI general availability November 2021
 
-## Xamarin.Forms vs MAUI
+## Xamarin.Forms vs .NET MAUI
 
 
-|  |Xamarin.Forms  |MAUI  |
+|  |Xamarin.Forms  |.NET MAUI  |
 |---------|---------|---------|
 |**Platforms**     |         |         |
 |Android     |API 19+        |API 21+        |
