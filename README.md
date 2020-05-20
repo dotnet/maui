@@ -63,6 +63,10 @@ Active development is happening today to build Android and iOS SDKs against the 
 |Visual Studio 2019 for Mac     |Yes         |Yes         |
 |Visual Studio Code     |No         |Yes         |
 
+## FAQs
+
+Do you have questions? Do not worry, we have prepared a complete [FAQ](https://github.com/dotnet/maui/wiki/FAQs) answering the most common questions.
+
 ## How to Engage, Contribute, and Give Feedback
 
 Some of the best ways to [contribute](./CONTRIBUTING.md) are to try things out, file issues, join in design conversations,
