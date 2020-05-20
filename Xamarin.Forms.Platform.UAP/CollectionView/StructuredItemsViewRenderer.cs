@@ -211,7 +211,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		static ListViewBase CreateHorizontalListView(LinearItemsLayout listItemsLayout)
 		{
-			var horizontalListView = new WListView()
+			var horizontalListView = new FormsListView()
 			{
 				ItemsPanel = (ItemsPanelTemplate)UWPApp.Current.Resources["HorizontalListItemsPanel"],
 				ItemContainerStyle = GetHorizontalItemContainerStyle(listItemsLayout)
