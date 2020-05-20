@@ -305,7 +305,7 @@ namespace Xamarin.Forms.Maps.MacOS
 				}
 			}
 		}
-		
+
 		void OnCalloutClicked(IMKAnnotation annotation)
 		{
 			// lookup pin
@@ -411,19 +411,31 @@ namespace Xamarin.Forms.Maps.MacOS
 			((MKMapView)Control).SetRegion(mapRegion, animated);
 		}
 
-		void OnPinCollectionChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
+		void OnPinCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			switch (notifyCollectionChangedEventArgs.Action)
+			if (Device.IsInvokeRequired)
+			{
+				Device.BeginInvokeOnMainThread(() => PinCollectionChanged(e));
+			}
+			else
+			{
+				PinCollectionChanged(e);
+			}
+		}
+
+		void PinCollectionChanged(NotifyCollectionChangedEventArgs e)
+		{
+			switch (e.Action)
 			{
 				case NotifyCollectionChangedAction.Add:
-					AddPins(notifyCollectionChangedEventArgs.NewItems);
+					AddPins(e.NewItems);
 					break;
 				case NotifyCollectionChangedAction.Remove:
-					RemovePins(notifyCollectionChangedEventArgs.OldItems);
+					RemovePins(e.OldItems);
 					break;
 				case NotifyCollectionChangedAction.Replace:
-					RemovePins(notifyCollectionChangedEventArgs.OldItems);
-					AddPins(notifyCollectionChangedEventArgs.NewItems);
+					RemovePins(e.OldItems);
+					AddPins(e.NewItems);
 					break;
 				case NotifyCollectionChangedAction.Reset:
 					var mapView = (MKMapView)Control;
@@ -490,6 +502,18 @@ namespace Xamarin.Forms.Maps.MacOS
 		}
 
 		void OnMapElementCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			if (Device.IsInvokeRequired)
+			{
+				Device.BeginInvokeOnMainThread(() => MapElementCollectionChanged(e));
+			}
+			else
+			{
+				MapElementCollectionChanged(e);
+			}
+		}
+
+		void MapElementCollectionChanged(NotifyCollectionChangedEventArgs e)
 		{
 			switch (e.Action)
 			{

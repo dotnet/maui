@@ -422,19 +422,31 @@ namespace Xamarin.Forms.Maps.Android
 			}
 		}
 
-		void OnPinCollectionChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
+		void OnPinCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			switch (notifyCollectionChangedEventArgs.Action)
+			if (Device.IsInvokeRequired)
+			{
+				Device.BeginInvokeOnMainThread(() => PinCollectionChanged(e));
+			}
+			else
+			{
+				PinCollectionChanged(e);
+			}
+		}
+
+		void PinCollectionChanged(NotifyCollectionChangedEventArgs e)
+		{
+			switch (e.Action)
 			{
 				case NotifyCollectionChangedAction.Add:
-					AddPins(notifyCollectionChangedEventArgs.NewItems);
+					AddPins(e.NewItems);
 					break;
 				case NotifyCollectionChangedAction.Remove:
-					RemovePins(notifyCollectionChangedEventArgs.OldItems);
+					RemovePins(e.OldItems);
 					break;
 				case NotifyCollectionChangedAction.Replace:
-					RemovePins(notifyCollectionChangedEventArgs.OldItems);
-					AddPins(notifyCollectionChangedEventArgs.NewItems);
+					RemovePins(e.OldItems);
+					AddPins(e.NewItems);
 					break;
 				case NotifyCollectionChangedAction.Reset:
 					if (_markers != null)
@@ -550,6 +562,18 @@ namespace Xamarin.Forms.Maps.Android
 		}
 
 		void OnMapElementCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			if (Device.IsInvokeRequired)
+			{
+				Device.BeginInvokeOnMainThread(() => MapElementCollectionChanged(e));
+			}
+			else
+			{
+				MapElementCollectionChanged(e);
+			}
+		}
+
+		void MapElementCollectionChanged(NotifyCollectionChangedEventArgs e)
 		{
 			switch (e.Action)
 			{

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Maps;
@@ -52,42 +53,54 @@ namespace Xamarin.Forms.Controls.GalleryPages
 				ReplacePlaceCommand = new Command(ReplacePlace);
 			}
 
-			void AddPlace()
+			async void AddPlace()
 			{
-				_places.Add(NewPlace());
+				await Task.Run(() =>
+				{
+					_places.Add(NewPlace());
+				});
 			}
 
-			void RemovePlace()
+			async void RemovePlace()
 			{
-				if (_places.Any())
+				await Task.Run(() =>
 				{
-					_places.Remove(_places.First());
-				}
+					if (_places.Any())
+					{
+						_places.Remove(_places.First());
+					}
+				});
 			}
 
-			void UpdatePlaces()
+			async void UpdatePlaces()
 			{
-				if (!_places.Any())
+				await Task.Run(() =>
 				{
-					return;
-				}
+					if (!_places.Any())
+					{
+						return;
+					}
 
-				double lastLatitude = _places.Last().Position.Latitude;
+					double lastLatitude = _places.Last().Position.Latitude;
 
-				foreach (Place place in Places)
-				{
-					place.Position = new Position(lastLatitude, place.Position.Longitude);
-				}
+					foreach (Place place in Places)
+					{
+						place.Position = new Position(lastLatitude, place.Position.Longitude);
+					}
+				});
 			}
 
-			void ReplacePlace()
+			async void ReplacePlace()
 			{
-				if (!_places.Any())
+				await Task.Run(() =>
 				{
-					return;
-				}
+					if (!_places.Any())
+					{
+						return;
+					}
 
-				_places[_places.Count - 1] = NewPlace();
+					_places[_places.Count - 1] = NewPlace();
+				});
 			}
 
 			static class RandomPosition
