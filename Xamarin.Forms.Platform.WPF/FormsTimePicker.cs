@@ -50,7 +50,7 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				var dateTime = new DateTime(Time.Value.Ticks);
 				
-				String text = dateTime.ToString(String.IsNullOrWhiteSpace(TimeFormat) ? @"hh\:mm" : TimeFormat.ToLower());
+				String text = dateTime.ToString(String.IsNullOrWhiteSpace(TimeFormat) ? @"hh\:mm" : TimeFormat);
 				if (text.CompareTo(Text) != 0)
 					Text = text;
 			}
@@ -59,7 +59,7 @@ namespace Xamarin.Forms.Platform.WPF
 		private void SetTime()
 		{
 			DateTime dateTime = DateTime.MinValue;
-			String timeFormat = String.IsNullOrWhiteSpace(TimeFormat) ? @"hh\:mm" : TimeFormat.ToLower();
+			String timeFormat = String.IsNullOrWhiteSpace(TimeFormat) ? @"hh\:mm" : TimeFormat;
 
 			if (DateTime.TryParseExact(Text, timeFormat, null, System.Globalization.DateTimeStyles.None, out dateTime))
 			{
