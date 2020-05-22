@@ -52,7 +52,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.Build.Tasks", "
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		..\Xamarin.Flex\Xamarin.Flex.projitems*{c47ca368-46e4-4ff6-a273-6878d0899ee3}*SharedItemsImports = 5
+		..\System.Maui.Flex\System.Maui.Flex.projitems*{c47ca368-46e4-4ff6-a273-6878d0899ee3}*SharedItemsImports = 5
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -6,7 +6,7 @@
       "EmbeddingTestBeds\\Embedding.XF\\Embedding.XF.csproj",
       "PagesGallery\\PagesGallery.UWP\\PagesGallery.UWP.csproj",
       "PagesGallery\\PagesGallery\\PagesGallery.csproj",
-      "Xamarin.Flex\\Xamarin.Flex.shproj",
+      "System.Maui.Flex\\System.Maui.Flex.shproj",
       "System.Maui.Build.Tasks\\System.Maui.Build.Tasks.csproj",
       "System.Maui.ControlGallery.WindowsUniversal\\System.Maui.ControlGallery.WindowsUniversal.csproj",
       "System.Maui.Controls.Issues\\System.Maui.Controls.Issues.Shared\\System.Maui.Controls.Issues.Shared.shproj",

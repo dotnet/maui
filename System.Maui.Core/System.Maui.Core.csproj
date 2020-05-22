@@ -26,5 +26,5 @@
 	<PropertyGroup>
     <GitInfoReportImportance>high</GitInfoReportImportance>
   </PropertyGroup>
-	<Import Project="..\Xamarin.Flex\Xamarin.Flex.projitems" Label="Shared" Condition="Exists('..\Xamarin.Flex\Xamarin.Flex.projitems')" />
+	<Import Project="..\System.Maui.Flex\System.Maui.Flex.projitems" Label="Shared" Condition="Exists('..\System.Maui.Flex\System.Maui.Flex.projitems')" />
 </Project>

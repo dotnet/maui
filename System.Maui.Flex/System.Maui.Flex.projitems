@@ -6,7 +6,7 @@
     <SharedGUID>{A6703C7D-D362-452A-A7A5-73771194D38C}</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>Xamarin.Flex</Import_RootNamespace>
+    <Import_RootNamespace>System.Maui.Flex</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Flex.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />

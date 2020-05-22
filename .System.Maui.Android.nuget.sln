@@ -76,7 +76,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EmbeddingTestBeds", "Embedd
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.Platform", "System.Maui.Platform\System.Maui.Platform.csproj", "{D31A6537-ED9C-4EBD-B231-A8D4FE44126A}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xamarin.Flex", "Xamarin.Flex", "{CA1DF598-3650-4A7B-A065-492C26009295}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "System.Maui.Flex", "System.Maui.Flex", "{CA1DF598-3650-4A7B-A065-492C26009295}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Maui.Core.Design", "System.Maui.Core.Design\System.Maui.Core.Design.csproj", "{98637471-8E5C-4DDE-89CA-2EAA664FB0EF}"
 EndProject
