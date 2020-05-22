@@ -30,7 +30,7 @@ Active development is happening today to build Android and iOS SDKs against the 
 * .NET MAUI previews Q4 2020 through Q3 2021
   * [Renderer architecture revisions](https://github.com/dotnet/maui/issues/28)
   * Source solution and project simplification
-  * Completete approved proposals
+  * Complete approved proposals
   * Implement MVU
 * .NET MAUI release candidate September 2021
 * .NET MAUI general availability November 2021
@@ -48,7 +48,7 @@ Active development is happening today to build Android and iOS SDKs against the 
 |Tizen     |Samsung           |Samsung           |
 |Windows     |UWP Microsoft<br/>WPF Community         |Microsoft         |
 |**Features**     |         |         |
-|Renderers     |Tightly coupled to BindableObject         |Loosely coupled, no Core dependencies         |
+|Renderers     |Tightly coupled to `BindableObject`         |Loosely coupled, no Core dependencies         |
 |App Models     |MVVM, RxUI         |MVVM, RxUI, MVU, Blazor         |
 |Single Project     |No         |Yes         |
 |Multi-targeting     |No         |Yes         |
