@@ -324,7 +324,7 @@ namespace Xamarin.Forms.Platform.UWP
 			var children = (view as IGestureController)?.GetChildElements(new Point(tapPosition.X, tapPosition.Y));
 
 			if (children != null)
-				foreach (var recognizer in children.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 2))
+				foreach (var recognizer in children.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2))
 				{
 					recognizer.SendTapped(view);
 					e.Handled = true;
@@ -333,7 +333,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (e.Handled)
 				return;
 
-			IEnumerable<TapGestureRecognizer> doubleTapGestures = view.GestureRecognizers.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 2);
+			IEnumerable<TapGestureRecognizer> doubleTapGestures = view.GestureRecognizers.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2);
 			foreach (TapGestureRecognizer recognizer in doubleTapGestures)
 			{
 				recognizer.SendTapped(view);
@@ -612,8 +612,8 @@ namespace Xamarin.Forms.Platform.UWP
 				}
 			}
 
-			if (gestures.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 2).Any()
-				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 2).Any() == true)
+			if (gestures.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2).Any()
+				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2).Any() == true)
 			{
 				_container.DoubleTapped += OnDoubleTap;
 			}
