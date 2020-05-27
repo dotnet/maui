@@ -28,7 +28,11 @@ namespace Xamarin.Forms.Platform.MacOS
 					font = NSFont.FromDescription(descriptor, size);
 
 					if (font == null)
-						font = NSFont.FromFontName(family, size);
+					{
+						var cleansedFont = CleanseFontName(family);
+						font = NSFont.FromFontName(cleansedFont, size);
+					}
+						
 				}
 				catch
 				{
@@ -46,6 +50,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (descriptor == null)
 				descriptor = defaultFont.FontDescriptor;
 
+
 			if (bold || italic)
 			{
 				var traits = (NSFontSymbolicTraits)0;
@@ -58,8 +63,38 @@ namespace Xamarin.Forms.Platform.MacOS
 
 				font = NSFont.FromDescription(fontDescriptorWithTraits, size);
 			}
-
+			
 			return font.ScreenFontWithRenderingMode(NSFontRenderingMode.AntialiasedIntegerAdvancements);
+		}
+
+		internal static string CleanseFontName(string fontName)
+		{
+
+			//First check Alias
+			var (hasFontAlias, fontPostScriptName) = FontRegistrar.HasFont(fontName);
+			if (hasFontAlias)
+				return fontPostScriptName;
+
+			var fontFile = FontFile.FromString(fontName);
+
+			if (!string.IsNullOrWhiteSpace(fontFile.Extension))
+			{
+				var (hasFont, filePath) = FontRegistrar.HasFont(fontFile.FileNameWithExtension());
+				if (hasFont)
+					return filePath ?? fontFile.PostScriptName;
+			}
+			else
+			{
+				foreach (var ext in FontFile.Extensions)
+				{
+
+					var formated = fontFile.FileNameWithExtension(ext);
+					var (hasFont, filePath) = FontRegistrar.HasFont(formated);
+					if (hasFont)
+						return filePath;
+				}
+			}
+			return fontFile.PostScriptName;
 		}
 	}
 }

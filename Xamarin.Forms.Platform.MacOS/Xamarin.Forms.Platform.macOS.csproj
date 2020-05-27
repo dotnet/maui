@@ -269,6 +269,7 @@
       <Link>Extensions\FontExtensions.Shared.cs</Link>
     </Compile>
     <Compile Include="Extensions\NSAttributedStringExtensions.cs" />
+    <Compile Include="EmbeddedFontLoader.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj">
