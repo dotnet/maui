@@ -425,7 +425,7 @@ namespace Xamarin.Forms
 			ProcessNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
 		}
 		ReadOnlyCollection<ShellItem> IShellController.GetItems() =>
-			new ReadOnlyCollection<ShellItem>(((ShellItemCollection)Items).VisibleItems.ToList());
+			new ReadOnlyCollection<ShellItem>(((ShellItemCollection)Items).VisibleItemsReadOnly.ToList());
 
 		event NotifyCollectionChangedEventHandler IShellController.ItemsCollectionChanged
 		{
@@ -739,7 +739,7 @@ namespace Xamarin.Forms
 			if (CurrentItem != null)
 				SetCurrentItem();
 
-			ShellController.ItemsCollectionChanged += (s, e) =>
+			((ShellElementCollection)Items).VisibleItemsChangedInternal += (s, e) =>
 			{
 				SetCurrentItem();
 				SendStructureChanged();
@@ -1068,12 +1068,16 @@ namespace Xamarin.Forms
 		static void OnCurrentItemChanging(BindableObject bindable, object oldValue, object newValue)
 		{
 			var shell = (Shell)bindable;
+			var shellItem = (ShellItem)newValue;
+
+			if (!shell.Items.Contains(shellItem))
+				shell.Items.Add(shellItem);
+
 			if (!shell._accumulateNavigatedEvents)
 			{
 				// We are not in the middle of a GoToAsync so this is a user requested change.
 				// We need to emit the Navigating event since GoToAsync wont be emitting it.
 
-				var shellItem = (ShellItem)newValue;
 				var shellSection = shellItem.CurrentItem;
 				var shellContent = shellSection.CurrentItem;
 				var stack = shellSection.Stack;

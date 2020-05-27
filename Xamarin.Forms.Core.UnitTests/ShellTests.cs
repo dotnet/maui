@@ -66,6 +66,27 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual(item2, shell.CurrentItem);
 		}
 
+
+		[Test]
+		public void SetCurrentItemAddsToShellCollection()
+		{
+			var shell = new Shell();
+			var shellItem = CreateShellItem();
+			var shellSection = CreateShellSection();
+			var shellContent = CreateShellContent();
+
+			shell.CurrentItem = shellItem;
+			Assert.IsTrue(shell.Items.Contains(shellItem));
+			Assert.AreEqual(shell.CurrentItem, shellItem);
+
+			shell.CurrentItem = shellSection;
+			Assert.AreEqual(shell.CurrentItem, shellSection.Parent);
+
+			shell.CurrentItem = shellContent;
+			Assert.AreEqual(shell.CurrentItem, shellContent.Parent.Parent);
+		}
+
+
 		[Test]
 		public void ShellChildrenBindingContext()
 		{
@@ -1369,7 +1390,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.IsNotNull(item.CurrentItem);
 			Assert.IsNotNull(item.CurrentItem.CurrentItem);
 		}
-
 
 		//[Test]
 		//public void FlyoutItemLabelStyleCanBeChangedAfterRendered()

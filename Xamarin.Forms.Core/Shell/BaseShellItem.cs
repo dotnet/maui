@@ -151,14 +151,14 @@ namespace Xamarin.Forms
 				action();
 			else
 			{
-				if(Navigation.ModalStack.Count > 0)
+				if (Navigation.ModalStack.Count > 0)
 				{
 					Navigation.ModalStack[Navigation.ModalStack.Count - 1]
 						.OnAppearing(action);
-					
+
 					return;
 				}
-				else if(Navigation.NavigationStack.Count > 1)
+				else if (Navigation.NavigationStack.Count > 1)
 				{
 					Navigation.NavigationStack[Navigation.NavigationStack.Count - 1]
 						.OnAppearing(action);
@@ -320,9 +320,9 @@ namespace Xamarin.Forms
 					Class = DefaultFlyoutItemLayoutStyle,
 				};
 
-				
+
 				var groups = new VisualStateGroupList();
-				
+
 				var commonGroup = new VisualStateGroup();
 				commonGroup.Name = "CommonStates";
 				groups.Add(commonGroup);
@@ -381,7 +381,7 @@ namespace Xamarin.Forms
 				if (Device.RuntimePlatform == Device.UWP)
 				{
 					defaultImageClass.Setters.Add(new Setter { Property = Image.HorizontalOptionsProperty, Value = LayoutOptions.Start });
-					defaultImageClass.Setters.Add(new Setter { Property = Image.MarginProperty, Value = new Thickness(12, 0, 12, 0) });					
+					defaultImageClass.Setters.Add(new Setter { Property = Image.MarginProperty, Value = new Thickness(12, 0, 12, 0) });
 				}
 
 				Binding imageBinding = new Binding(iconBinding);

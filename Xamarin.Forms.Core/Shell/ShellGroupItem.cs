@@ -10,5 +10,7 @@
 			get { return (FlyoutDisplayOptions)GetValue(FlyoutDisplayOptionsProperty); }
 			set { SetValue(FlyoutDisplayOptionsProperty, value); }
 		}
+
+		internal virtual ShellElementCollection ShellElementCollection { get; }
 	}
 }

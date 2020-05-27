@@ -86,7 +86,7 @@ namespace Xamarin.Forms
 
 		// we want the list returned from here to remain point in time accurate
 		ReadOnlyCollection<ShellSection> IShellItemController.GetItems() =>
-			new ReadOnlyCollection<ShellSection>(((ShellSectionCollection)Items).VisibleItems.ToList());
+			new ReadOnlyCollection<ShellSection>(((ShellSectionCollection)Items).VisibleItemsReadOnly.ToList());
 
 		event NotifyCollectionChangedEventHandler IShellItemController.ItemsCollectionChanged
 		{
@@ -116,9 +116,8 @@ namespace Xamarin.Forms
 
 		public ShellItem()
 		{
-			ShellItemController.ItemsCollectionChanged += (_, args) =>
+			((ShellElementCollection)Items).VisibleItemsChangedInternal += (_, args) =>
 			{
-
 				if (args.OldItems != null)
 				{
 					foreach (Element item in args.OldItems)
@@ -150,6 +149,7 @@ namespace Xamarin.Forms
 		}
 
 		public IList<ShellSection> Items => (IList<ShellSection>)GetValue(ItemsProperty);
+		internal override ShellElementCollection ShellElementCollection => (ShellElementCollection)Items;
 
 		internal bool IsVisibleItem => Parent is Shell shell && shell?.CurrentItem == this;
 

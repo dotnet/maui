@@ -181,7 +181,7 @@ namespace Xamarin.Forms
 
 		// we want the list returned from here to remain point in time accurate
 		ReadOnlyCollection<ShellContent> IShellSectionController.GetItems() 
-			=> new ReadOnlyCollection<ShellContent>(((ShellContentCollection)Items).VisibleItems.ToList());
+			=> new ReadOnlyCollection<ShellContent>(((ShellContentCollection)Items).VisibleItemsReadOnly.ToList());
 
 		[Obsolete]
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -238,9 +238,7 @@ namespace Xamarin.Forms
 
 		public ShellSection()
 		{
-			(Items as INotifyCollectionChanged).CollectionChanged += ItemsCollectionChanged;
-
-			((ShellContentCollection)Items).VisibleItemsChangedInternal += (_, args) =>
+			((ShellElementCollection)Items).VisibleItemsChangedInternal += (_, args) =>
 			{
 				if (args.OldItems != null)
 				{
@@ -257,7 +255,11 @@ namespace Xamarin.Forms
 						OnVisibleChildAdded(item);
 					}
 				}
+
+				SendStructureChanged();
 			};
+
+			(Items as INotifyCollectionChanged).CollectionChanged += ItemsCollectionChanged;
 
 			Navigation = new NavigationImpl(this);
 		}
@@ -269,6 +271,7 @@ namespace Xamarin.Forms
 		}
 
 		public IList<ShellContent> Items => (IList<ShellContent>)GetValue(ItemsProperty);
+		internal override ShellElementCollection ShellElementCollection => (ShellElementCollection)Items;
 
 		public IReadOnlyList<Page> Stack => _navStack;
 
@@ -526,10 +529,23 @@ namespace Xamarin.Forms
 			base.OnChildAdded(child);
 			OnVisibleChildAdded(child);
 		}
-
+				
 		protected override void OnChildRemoved(Element child)
 		{
-			base.OnChildRemoved(child);
+			if(child is IShellContentController sc && sc.Page.IsPlatformEnabled)
+			{
+				sc.Page.PlatformEnabledChanged += WaitForRendererToGetRemoved;
+				void WaitForRendererToGetRemoved(object s, EventArgs p)
+				{
+					sc.Page.PlatformEnabledChanged -= WaitForRendererToGetRemoved;
+					base.OnChildRemoved(child);
+				};
+			}
+			else
+			{
+				base.OnChildRemoved(child);
+			}
+
 			OnVisibleChildRemoved(child);
 		}
 
@@ -865,8 +881,6 @@ namespace Xamarin.Forms
 				foreach (Element element in e.OldItems)
 					OnChildRemoved(element);
 			}
-
-			SendStructureChanged();
 		}
 
 		void RemovePage(Page page)
