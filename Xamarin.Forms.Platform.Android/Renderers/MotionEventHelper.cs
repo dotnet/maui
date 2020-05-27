@@ -9,7 +9,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public bool HandleMotionEvent(IViewParent parent, MotionEvent motionEvent)
 		{
-			if (_isInViewCell || motionEvent.Action == MotionEventActions.Cancel)
+			if (_isInViewCell || _element == null || motionEvent == null || motionEvent.Action == MotionEventActions.Cancel)
 			{
 				return false;
 			}
