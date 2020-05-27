@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
-		internal void UpdateConstraints(CGSize size)
+		internal override void UpdateConstraints(CGSize size)
 		{
 			ConstrainTo(size);
 			UpdateCellConstraints();

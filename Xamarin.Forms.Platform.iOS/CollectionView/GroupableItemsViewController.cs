@@ -62,7 +62,7 @@ namespace Xamarin.Forms.Platform.iOS
 				kind, VerticalDefaultSupplementalView.ReuseId);
 		}
 
-		public override UICollectionReusableView GetViewForSupplementaryElement(UICollectionView collectionView, 
+		public override UICollectionReusableView GetViewForSupplementaryElement(UICollectionView collectionView,
 			NSString elementKind, NSIndexPath indexPath)
 		{
 			var reuseId = DetermineViewReuseId(elementKind);
@@ -132,6 +132,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 		internal CGSize GetReferenceSizeForHeader(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
 		{
+			if (!_isGrouped)
+			{
+				return CGSize.Empty;
+			}
+
 			// Currently we explicitly measure all of the headers/footers 
 			// Long-term, we might want to look at performance hints (similar to ItemSizingStrategy) for 
 			// headers/footers (if the dev knows for sure they'll all the be the same size)
@@ -140,6 +145,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 		internal CGSize GetReferenceSizeForFooter(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
 		{
+			if (!_isGrouped)
+			{
+				return CGSize.Empty;
+			}
+
 			return GetReferenceSizeForheaderOrFooter(collectionView, ItemsView.GroupFooterTemplate, UICollectionElementKindSectionKey.Footer, section);
 		}
 
@@ -207,21 +217,21 @@ namespace Xamarin.Forms.Platform.iOS
 
 				if (scrollDirection == UICollectionViewScrollDirection.Horizontal)
 				{
-					return new UIEdgeInsets(itemSpacing + uIEdgeInsets.Top, lineSpacing + uIEdgeInsets.Left, 
+					return new UIEdgeInsets(itemSpacing + uIEdgeInsets.Top, lineSpacing + uIEdgeInsets.Left,
 						uIEdgeInsets.Bottom, uIEdgeInsets.Right);
 				}
 
-				return new UIEdgeInsets(lineSpacing + uIEdgeInsets.Top, itemSpacing + uIEdgeInsets.Left, 
+				return new UIEdgeInsets(lineSpacing + uIEdgeInsets.Top, itemSpacing + uIEdgeInsets.Left,
 					uIEdgeInsets.Bottom, uIEdgeInsets.Right);
 			}
 
 			if (scrollDirection == UICollectionViewScrollDirection.Horizontal)
 			{
-				return new UIEdgeInsets(uIEdgeInsets.Top, lineSpacing + uIEdgeInsets.Left, 
+				return new UIEdgeInsets(uIEdgeInsets.Top, lineSpacing + uIEdgeInsets.Left,
 					uIEdgeInsets.Bottom, uIEdgeInsets.Right);
 			}
 
-			return new UIEdgeInsets(lineSpacing + uIEdgeInsets.Top, uIEdgeInsets.Left, 
+			return new UIEdgeInsets(lineSpacing + uIEdgeInsets.Top, uIEdgeInsets.Left,
 				uIEdgeInsets.Bottom, uIEdgeInsets.Right);
 		}
 	}
