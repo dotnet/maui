@@ -10,6 +10,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CollectionViewGroupTypeIssue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Github9536.xaml.cs">
+    <DependentUpon>Github9536.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue10110.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue10672.xaml.cs">
       <DependentUpon>Issue10672.xaml</DependentUpon>
@@ -2014,4 +2018,10 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+      <EmbeddedResource Include="$(MSBuildThisFileDirectory)Github9536.xaml">
+        <SubType>Designer</SubType>
+        <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+      </EmbeddedResource>
+    </ItemGroup>
 </Project>

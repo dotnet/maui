@@ -30,15 +30,15 @@ namespace Xamarin.Forms.Platform.MacOS
 				renderer = Platform.GetRenderer(visualElement);
 				if (renderer != null)
 				{
+#if __MOBILE__
 					if (renderer.ViewController != null)
 					{
-#if __MOBILE__
+
 						var modalWrapper = renderer.ViewController.ParentViewController as ModalWrapper;
 						if (modalWrapper != null)
 							modalWrapper.Dispose();
-#endif
 					}
-
+#endif
 					renderer.NativeView.RemoveFromSuperview();
 					renderer.Dispose();
 				}

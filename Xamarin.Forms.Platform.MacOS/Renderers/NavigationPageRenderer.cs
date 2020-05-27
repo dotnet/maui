@@ -86,6 +86,9 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			if (!_disposed && disposing)
 			{
+
+				_disposed = true;
+
 				if (Element != null)
 				{
 					if (NavigationPage != null)
@@ -99,6 +102,8 @@ namespace Xamarin.Forms.Platform.MacOS
 						NavigationPage.PoppedToRoot -= OnPoppedToRoot;
 
 						NavigationPage.SendDisappearing();
+
+						Platform.NativeToolbarTracker.TryHide(NavigationPage);
 					}
 					((Element as IPageContainer<Page>)?.CurrentPage as Page)?.SendDisappearing();
 					Element.PropertyChanged -= OnElementPropertyChanged;
@@ -121,10 +126,6 @@ namespace Xamarin.Forms.Platform.MacOS
 					_currentStack.Clear();
 					_currentStack = null;
 				}
-
-				Platform.NativeToolbarTracker.Navigation = null;
-				_disposed = true;
-
 			}
 			base.Dispose(disposing);
 		}
