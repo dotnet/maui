@@ -45,7 +45,12 @@ namespace Xamarin.Forms.Platform.Android
 
 		public void LoadUrl(string url)
 		{
-			if (!SendNavigatingCanceled(url))
+			LoadUrl(url, true);
+		}
+
+		void LoadUrl(string url, bool fireNavigatingCanceled)
+		{
+			if (!fireNavigatingCanceled || !SendNavigatingCanceled(url))
 			{
 				_eventState = WebNavigationEvent.NewPage;
 				Control.LoadUrl(url);
@@ -198,12 +203,33 @@ namespace Xamarin.Forms.Platform.Android
 
 		HashSet<string> _loadedCookies = new HashSet<string>();
 
+		Uri CreateUriForCookies(string url)
+		{
+			if (url == null)
+				return null;
+
+			Uri uri;
+
+			if (url.Length > 2000)
+				url = url.Substring(0, 2000);
+
+			if (Uri.TryCreate(url, UriKind.Absolute, out uri))
+			{
+				if (String.IsNullOrWhiteSpace(uri.Host))
+					return null;
+
+				return uri;
+			}
+
+			return null;
+		}
+
 		CookieCollection GetCookiesFromNativeStore(string url)
 		{
 			CookieContainer existingCookies = new CookieContainer();
 			var cookieManager = CookieManager.Instance;
 			var currentCookies = cookieManager.GetCookie(url);
-			var uri = new Uri(url);
+			var uri = CreateUriForCookies(url);
 
 			if (currentCookies != null)
 			{
@@ -220,7 +246,9 @@ namespace Xamarin.Forms.Platform.Android
 			if (myCookieJar == null)
 				return;
 
-			var uri = new System.Uri(url);
+			var uri = CreateUriForCookies(url);
+			if (uri == null)
+				return;
 
 			if (!_loadedCookies.Add(uri.Host))
 				return;
@@ -240,14 +268,14 @@ namespace Xamarin.Forms.Platform.Android
 
 		internal void SyncNativeCookiesToElement(string url)
 		{
-			if (String.IsNullOrWhiteSpace(url))
-				return;
-
 			var myCookieJar = Element.Cookies;
 			if (myCookieJar == null)
 				return;
 
-			var uri = new Uri(url);
+			var uri = CreateUriForCookies(url);
+			if (uri == null)
+				return;
+
 			var cookies = myCookieJar.GetCookies(uri);
 			var retrieveCurrentWebCookies = GetCookiesFromNativeStore(url);
 
@@ -265,10 +293,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		void SyncNativeCookies(string url)
 		{
-			if (String.IsNullOrWhiteSpace(url))
+			var uri = CreateUriForCookies(url);
+			if (uri == null)
 				return;
 
-			var uri = new Uri(url);
 			var myCookieJar = Element.Cookies;
 			if (myCookieJar == null)
 				return;
@@ -311,7 +339,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void OnEvalRequested(object sender, EvalRequested eventArg)
 		{
-			LoadUrl("javascript:" + eventArg.Script);
+			LoadUrl("javascript:" + eventArg.Script, false);
 		}
 
 		async Task<string> OnEvaluateJavaScriptRequested(string script)
