@@ -1230,11 +1230,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 				UIGraphics.BeginImageContext(size);
 				var context = UIGraphics.GetCurrentContext();
-				context.SetFillColor(1, 1, 1, 0);
-				context.FillRect(rect);
+				context?.SetFillColor(1, 1, 1, 0);
+				context?.FillRect(rect);
 
 				var empty = UIGraphics.GetImageFromCurrentImageContext();
-				context.Dispose();
+				context?.Dispose();
 
 				return empty;
 			}
