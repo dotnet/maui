@@ -16,11 +16,18 @@ namespace Xamarin.Forms.Platform.Android.CollectionView
 		int _horizontalOffset, _verticalOffset;
 		TItemsView _itemsView;
 		ItemsViewAdapter<TItemsView, TItemsViewSource> _itemsViewAdapter;
+		bool _getCenteredItemOnXAndY = false;
 
-		public RecyclerViewScrollListener(TItemsView itemsView, ItemsViewAdapter<TItemsView, TItemsViewSource> itemsViewAdapter)
+		public RecyclerViewScrollListener(TItemsView itemsView, ItemsViewAdapter<TItemsView, TItemsViewSource> itemsViewAdapter) : this(itemsView, itemsViewAdapter, false)
+		{
+
+		}
+
+		public RecyclerViewScrollListener(TItemsView itemsView, ItemsViewAdapter<TItemsView, TItemsViewSource> itemsViewAdapter, bool getCenteredItemOnXAndY)
 		{
 			_itemsView = itemsView;
 			_itemsViewAdapter = itemsViewAdapter;
+			_getCenteredItemOnXAndY = getCenteredItemOnXAndY;
 		}
 
 		public override void OnScrolled(RecyclerView recyclerView, int dx, int dy)
@@ -42,7 +49,7 @@ namespace Xamarin.Forms.Platform.Android.CollectionView
 			{
 				firstVisibleItemIndex = linearLayoutManager.FindFirstVisibleItemPosition();
 				lastVisibleItemIndex = linearLayoutManager.FindLastVisibleItemPosition();
-				centerItemIndex = recyclerView.CalculateCenterItemIndex(firstVisibleItemIndex, linearLayoutManager);
+				centerItemIndex = recyclerView.CalculateCenterItemIndex(firstVisibleItemIndex, linearLayoutManager, _getCenteredItemOnXAndY);
 			}
 
 			var context = recyclerView.Context;

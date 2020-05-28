@@ -10,7 +10,7 @@ namespace Xamarin.Forms.Platform.Android
 {
 	internal static class RecyclerExtensions
 	{
-		public static int CalculateCenterItemIndex(this RecyclerView recyclerView, int firstVisibleItemIndex, LinearLayoutManager linearLayoutManager)
+		public static int CalculateCenterItemIndex(this RecyclerView recyclerView, int firstVisibleItemIndex, LinearLayoutManager linearLayoutManager, bool lookCenteredOnXAndY)
 		{
 			// This can happen if a layout pass has not happened yet
 			if (firstVisibleItemIndex == -1)
@@ -21,12 +21,22 @@ namespace Xamarin.Forms.Platform.Android
 			if (linearLayoutManager.Orientation == LinearLayoutManager.Horizontal)
 			{
 				float centerX = recyclerView.Width / 2;
-				centerView = recyclerView.FindChildViewUnder(centerX, recyclerView.Top);
+				float centerY = recyclerView.Top;
+
+				if (lookCenteredOnXAndY)
+					centerY = recyclerView.Height / 2;
+
+				centerView = recyclerView.FindChildViewUnder(centerX, centerY);
 			}
 			else
 			{
 				float centerY = recyclerView.Height / 2;
-				centerView = recyclerView.FindChildViewUnder(recyclerView.Left, centerY);
+				float centerX = recyclerView.Left;
+
+				if (lookCenteredOnXAndY)
+					centerX = recyclerView.Width / 2;
+
+				centerView = recyclerView.FindChildViewUnder(centerX, centerY);
 			}
 
 			if (centerView != null)
