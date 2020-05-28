@@ -237,8 +237,8 @@ Task("provision")
     .Description("Install SDKs required to build project")
     .IsDependentOn("provision-macsdk")
     .IsDependentOn("provision-iossdk")
-    .IsDependentOn("provision-monosdk")
-    .IsDependentOn("provision-androidsdk");
+    .IsDependentOn("provision-androidsdk")
+    .IsDependentOn("provision-monosdk"); // always provision monosdk last otherwise CI might fail
 
 Task("NuGetPack")
     .Description("Build and Create Nugets")
