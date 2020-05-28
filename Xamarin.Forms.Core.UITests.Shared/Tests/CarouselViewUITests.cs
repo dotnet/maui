@@ -62,6 +62,26 @@ namespace Xamarin.Forms.Core.UITests
 
 
 		[TestCase("CarouselView (XAML, Horizontal)")]
+		public void CarouselViewGoToNextCurrentItem(string subgallery)
+		{
+			VisitSubGallery(subgallery);
+
+			CheckPositionValue("lblPosition", "0");
+			CheckPositionValue("lblCurrentItem", "0");
+			App.Tap(x => x.Marked("btnNext"));
+			CheckPositionValue("lblPosition", "1");
+			CheckPositionValue("lblCurrentItem", "1");
+			CheckPositionValue("lblSelected", "1");
+			App.Tap(x => x.Marked("btnPrev"));
+			CheckPositionValue("lblPosition", "0");
+			CheckPositionValue("lblCurrentItem", "0");
+			CheckPositionValue("lblSelected", "0");
+
+			App.Back();
+		}
+
+
+		[TestCase("CarouselView (XAML, Horizontal)")]
 		public void CarouselViewRemoveLastCurrentItem(string subgallery)
 		{
 			VisitSubGallery(subgallery);
