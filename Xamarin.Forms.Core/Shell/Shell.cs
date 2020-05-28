@@ -819,6 +819,9 @@ namespace Xamarin.Forms
 			set => SetValue(CurrentItemProperty, value);
 		}
 
+		internal ShellContent CurrentContent => CurrentItem?.CurrentItem?.CurrentItem;
+		internal ShellSection CurrentSection => CurrentItem?.CurrentItem;
+
 		public ShellNavigationState CurrentState => (ShellNavigationState)GetValue(CurrentStateProperty);
 
 		[TypeConverter(typeof(ImageSourceConverter))]
@@ -1188,21 +1191,48 @@ namespace Xamarin.Forms
 			return lookupDict;
 		}
 
-		internal FlyoutBehavior GetEffectiveFlyoutBehavior() => GetEffectiveValue(Shell.FlyoutBehaviorProperty, FlyoutBehavior);
+		internal FlyoutBehavior GetEffectiveFlyoutBehavior()
+		{
+			ShellItem rootItem = null;
+			return GetEffectiveValue(Shell.FlyoutBehaviorProperty, 
+				() =>
+				{
+					if (this.IsSet(FlyoutBehaviorProperty))
+						return FlyoutBehavior;
+
+					if (rootItem is FlyoutItem)
+						return FlyoutBehavior.Flyout;
+					else if (rootItem is TabBar)
+						return FlyoutBehavior.Disabled;
+
+					return FlyoutBehavior;
+				},
+				(o) => rootItem = rootItem ?? o as ShellItem);
+		}
 
 		T GetEffectiveValue<T>(BindableProperty property, T defaultValue)
 		{
-			Element element = GetVisiblePage();
+			return GetEffectiveValue(property, () => defaultValue, null);
+		}
+		
+		T GetEffectiveValue<T>(BindableProperty property, Func<T> defaultValue, Action<Element> observer)
+		{
+			Element element = GetVisiblePage() ?? CurrentContent;
 
 			while (element != this && element != null)
 			{
+				observer?.Invoke(element);
+
 				if (element.IsSet(property))
 					return (T)element.GetValue(property);
 
 				element = element.Parent;
 			}
 
-			return defaultValue;
+			if (defaultValue == null)
+				return default(T);
+
+			return defaultValue();
 		}
 
 		ShellAppearance GetAppearanceForPivot(Element pivot)

@@ -19,7 +19,7 @@ namespace Xamarin.Forms
 
 		public FlyoutItem()
 		{
-			Shell.SetFlyoutBehavior(this, FlyoutBehavior.Flyout);
+
 		}
 	}
 
@@ -28,7 +28,6 @@ namespace Xamarin.Forms
 	{
 		public TabBar()
 		{
-			Shell.SetFlyoutBehavior(this, FlyoutBehavior.Disabled);
 		}
 	}
 
