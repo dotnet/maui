@@ -369,6 +369,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void CarouselViewScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
+			_noNeedForScroll = false;
 			UpdatePosition(e.CenterItemIndex);
 			UpdateVisualStates();
 		}
@@ -474,7 +475,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		class CarouselViewOnScrollListener : RecyclerViewScrollListener<ItemsView, IItemsViewSource>
 		{
-			public CarouselViewOnScrollListener(ItemsView itemsView, ItemsViewAdapter<ItemsView, IItemsViewSource> itemsViewAdapter) : base(itemsView, itemsViewAdapter)
+			public CarouselViewOnScrollListener(ItemsView itemsView, ItemsViewAdapter<ItemsView, IItemsViewSource> itemsViewAdapter) : base(itemsView, itemsViewAdapter, true)
 			{
 			}
 
