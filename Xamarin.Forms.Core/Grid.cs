@@ -71,6 +71,7 @@ namespace Xamarin.Forms
 			get { return _children; }
 		}
 
+		[TypeConverter(typeof(ColumnDefinitionCollectionTypeConverter))]
 		public ColumnDefinitionCollection ColumnDefinitions
 		{
 			get { return (ColumnDefinitionCollection)GetValue(ColumnDefinitionsProperty); }
@@ -83,6 +84,7 @@ namespace Xamarin.Forms
 			set { SetValue(ColumnSpacingProperty, value); }
 		}
 
+		[TypeConverter(typeof(RowDefinitionCollectionTypeConverter))]
 		public RowDefinitionCollection RowDefinitions
 		{
 			get { return (RowDefinitionCollection)GetValue(RowDefinitionsProperty); }
