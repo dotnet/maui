@@ -1,4 +1,6 @@
-﻿using CoreGraphics;
+﻿using CoreAnimation;
+using CoreGraphics;
+using Foundation;
 using MediaPlayer;
 using System;
 using System.ComponentModel;
@@ -6,8 +8,22 @@ using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	public class ShellFlyoutRenderer : UIViewController, IShellFlyoutRenderer, IFlyoutBehaviorObserver
+	public class ShellFlyoutRenderer : UIViewController, IShellFlyoutRenderer, IFlyoutBehaviorObserver, IAppearanceObserver
 	{
+		#region IAppearanceObserver
+
+		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
+		{
+			if (appearance == null)
+				_backdropColor = Color.Default;
+			else
+				_backdropColor = appearance.FlyoutBackdropColor;
+
+			UpdateTapoffViewBackgroundColor();
+		}
+
+		#endregion IAppearanceObserver
+
 		#region IShellFlyoutRenderer
 
 		UIView IShellFlyoutRenderer.View => View;
@@ -23,6 +39,19 @@ namespace Xamarin.Forms.Platform.iOS
 			Shell.PropertyChanged += OnShellPropertyChanged;
 
 			PanGestureRecognizer = new UIPanGestureRecognizer(HandlePanGesture);
+			PanGestureRecognizer.ShouldRecognizeSimultaneously += (a,b) =>
+			{
+				// This handles tapping outside the open flyout
+				if(a is UIPanGestureRecognizer pr && pr.State == UIGestureRecognizerState.Failed &&
+					b is UITapGestureRecognizer && b.State == UIGestureRecognizerState.Ended && IsOpen)
+				{
+					IsOpen = false;
+					LayoutSidebar(true);
+				}
+
+				return false;
+			};
+
 			PanGestureRecognizer.ShouldReceiveTouch += (sender, touch) =>
 			{
 				if (!context.AllowFlyoutGesture || _flyoutBehavior != FlyoutBehavior.Flyout)
@@ -34,8 +63,11 @@ namespace Xamarin.Forms.Platform.iOS
 					IsSwipeView(touch.View) ||
 					(loc.X > view.Frame.Width * 0.1 && !IsOpen))
 					return false;
+
 				return true;
 			};
+						
+			ShellController.AddAppearanceObserver(this, Shell);
 		}
 
 		bool IsSwipeView(UIView view)
@@ -70,9 +102,14 @@ namespace Xamarin.Forms.Platform.iOS
 		FlyoutBehavior _flyoutBehavior;
 		bool _gestureActive;
 		bool _isOpen;
+		UIViewPropertyAnimator _flyoutAnimation;
+		Color _backdropColor;
+
 		public UIViewAnimationCurve AnimationCurve { get; set; } = UIViewAnimationCurve.EaseOut;
 
 		public int AnimationDuration { get; set; } = 250;
+
+		double AnimationDurationInSeconds => ((double)AnimationDuration) / 1000.0;
 
 		public IShellFlyoutTransition FlyoutTransition { get; set; }
 
@@ -99,13 +136,16 @@ namespace Xamarin.Forms.Platform.iOS
 
 		Shell Shell { get; set; }
 
+		IShellController ShellController => Shell;
+
 		UIView TapoffView { get; set; }
 
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
 
-			LayoutSidebar(false);
+			if(_flyoutAnimation == null)
+				LayoutSidebar(false);
 		}
 
 		public override void ViewWillAppear(bool animated)
@@ -138,6 +178,8 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (!_disposed)
 				{
+					ShellController.RemoveAppearanceObserver(this);
+
 					_disposed = true;
 
 					Shell.PropertyChanged -= OnShellPropertyChanged;
@@ -189,18 +231,34 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
+		void UpdateTapoffViewBackgroundColor()
+		{
+			if (TapoffView == null)
+				return;
+
+			
+			if (_backdropColor != Color.Default)
+				TapoffView.BackgroundColor = _backdropColor.ToUIColor();
+			else
+				TapoffView.BackgroundColor = ColorExtensions.BackgroundColor.ColorWithAlpha(0.5f);
+		}
+
 		void AddTapoffView()
 		{
 			if (TapoffView != null)
 				return;
 
 			TapoffView = new UIView(View.Bounds);
+			TapoffView.Layer.Opacity = 0;
 			View.InsertSubviewBelow(TapoffView, Flyout.ViewController.View);
-			TapoffView.AddGestureRecognizer(new UITapGestureRecognizer(t =>
+			UpdateTapoffViewBackgroundColor();
+			var recognizer = new UITapGestureRecognizer(t =>
 			{
 				IsOpen = false;
 				LayoutSidebar(true);
-			}));
+			});
+
+			TapoffView.AddGestureRecognizer(recognizer);
 		}
 
 		public void FocusSearch(bool forwardDirection)
@@ -259,6 +317,19 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				case UIGestureRecognizerState.Changed:
 					_gestureActive = true;
+
+					if (TapoffView == null)
+						AddTapoffView();
+
+					if (_flyoutAnimation != null)
+					{
+						TapoffView.Layer.RemoveAllAnimations();
+						_flyoutAnimation?.StopAnimation(true);
+						_flyoutAnimation = null;
+					}
+
+					TapoffView.Layer.Opacity = (float)openProgress;
+
 					FlyoutTransition.LayoutViews(View.Bounds, (nfloat)openProgress, Flyout.ViewController.View, Detail.View, _flyoutBehavior);
 					break;
 
@@ -286,23 +357,94 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_gestureActive)
 				return;
 
-			if (animate)
-				UIView.BeginAnimations(FlyoutAnimationName);
+			if (animate && _flyoutAnimation != null)
+				return;
 
-			FlyoutTransition.LayoutViews(View.Bounds, IsOpen ? 1 : 0, Flyout.ViewController.View, Detail.View, _flyoutBehavior);
-
-			if (animate)
+			if(!animate && _flyoutAnimation != null)
 			{
-				UIView.SetAnimationCurve(AnimationCurve);
-				UIView.SetAnimationDuration(AnimationDuration);
-				UIView.CommitAnimations();
-				View.LayoutIfNeeded();
+				_flyoutAnimation.StopAnimation(true);
+				_flyoutAnimation = null;
 			}
 
-			if (IsOpen && _flyoutBehavior == FlyoutBehavior.Flyout)
-				AddTapoffView();
+			if (Forms.IsiOS10OrNewer)
+			{
+				if (IsOpen)
+					UpdateTapoffView();
+
+				if (animate && TapoffView != null)
+				{
+					var tapOffViewAnimation = CABasicAnimation.FromKeyPath(@"opacity");
+					tapOffViewAnimation.BeginTime = 0;
+					tapOffViewAnimation.Duration = AnimationDurationInSeconds;
+					tapOffViewAnimation.SetFrom(NSNumber.FromFloat(TapoffView.Layer.Opacity));
+					tapOffViewAnimation.SetTo(NSNumber.FromFloat(IsOpen ? 1 : 0));
+					tapOffViewAnimation.FillMode = CAFillMode.Forwards;
+					tapOffViewAnimation.RemovedOnCompletion = false;
+
+					_flyoutAnimation = new UIViewPropertyAnimator(AnimationDurationInSeconds, UIViewAnimationCurve.EaseOut, () =>
+					{
+						FlyoutTransition.LayoutViews(View.Bounds, IsOpen ? 1 : 0, Flyout.ViewController.View, Detail.View, _flyoutBehavior);
+
+						if (TapoffView != null)
+						{
+							TapoffView.Layer.AddAnimation(tapOffViewAnimation, "opacity");
+						}
+					});
+
+					_flyoutAnimation.AddCompletion((p) =>
+					{
+						if (p == UIViewAnimatingPosition.End)
+						{
+							if (TapoffView != null)
+							{
+								TapoffView.Layer.Opacity = IsOpen ? 1 : 0;
+								TapoffView.Layer.RemoveAllAnimations();
+							}
+
+							UpdateTapoffView();
+							_flyoutAnimation = null;
+						}
+					});
+
+					_flyoutAnimation.StartAnimation();
+					View.LayoutIfNeeded();
+				}
+				else if (_flyoutAnimation == null)
+				{
+					FlyoutTransition.LayoutViews(View.Bounds, IsOpen ? 1 : 0, Flyout.ViewController.View, Detail.View, _flyoutBehavior);
+					UpdateTapoffView();
+
+					if (TapoffView != null)
+					{
+						TapoffView.Layer.Opacity = IsOpen ? 1 : 0;
+					}
+				}
+			}
 			else
-				RemoveTapoffView();
+			{
+
+				if (animate)
+					UIView.BeginAnimations(FlyoutAnimationName);
+
+				FlyoutTransition.LayoutViews(View.Bounds, IsOpen ? 1 : 0, Flyout.ViewController.View, Detail.View, _flyoutBehavior);
+
+				if (animate)
+				{
+					UIView.SetAnimationCurve(AnimationCurve);
+					UIView.SetAnimationDuration(AnimationDurationInSeconds);
+					UIView.CommitAnimations();
+					View.LayoutIfNeeded();
+				}
+				UpdateTapoffView();
+			}
+
+			void UpdateTapoffView()
+			{
+				if (IsOpen && _flyoutBehavior == FlyoutBehavior.Flyout)
+					AddTapoffView();
+				else
+					RemoveTapoffView();
+			}
 		}
 
 		void RemoveTapoffView()

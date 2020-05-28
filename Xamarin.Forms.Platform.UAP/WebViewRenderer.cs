@@ -167,11 +167,32 @@ if(bases.length == 0){
 
 		HashSet<string> _loadedCookies = new HashSet<string>();
 
+		Uri CreateUriForCookies(string url)
+		{
+			if (url == null)
+				return null;
+
+			Uri uri;
+
+			if (url.Length > 2000)
+				url = url.Substring(0, 2000);
+
+			if (Uri.TryCreate(url, UriKind.Absolute, out uri))
+			{
+				if (String.IsNullOrWhiteSpace(uri.Host))
+					return null;
+
+				return uri;
+			}
+
+			return null;
+		}
+
 		HttpCookieCollection GetCookiesFromNativeStore(string url)
 		{
+			var uri = CreateUriForCookies(url);
 			CookieContainer existingCookies = new CookieContainer();
-			var filter = new Windows.Web.Http.Filters.HttpBaseProtocolFilter();
-			var uri = new Uri(url);
+			var filter = new Windows.Web.Http.Filters.HttpBaseProtocolFilter();			
 			var nativeCookies = filter.CookieManager.GetCookies(uri);
 			return nativeCookies;
 		}
@@ -202,14 +223,15 @@ if(bases.length == 0){
 
 		void SyncNativeCookiesToElement(string url)
 		{
-			if (String.IsNullOrWhiteSpace(url))
-				return;
-
 			var myCookieJar = Element.Cookies;
 			if (myCookieJar == null)
 				return;
 
-			var uri = new Uri(url);
+			var uri = CreateUriForCookies(url);
+
+			if (uri == null)
+				return;
+
 			var cookies = myCookieJar.GetCookies(uri);
 			var retrieveCurrentWebCookies = GetCookiesFromNativeStore(url);
 
@@ -232,10 +254,10 @@ if(bases.length == 0){
 
 		void SyncNativeCookies(string url)
 		{
-			if (String.IsNullOrWhiteSpace(url))
+			var uri = CreateUriForCookies(url);
+			if (uri == null)
 				return;
 
-			var uri = new Uri(url);
 			var myCookieJar = Element.Cookies;
 			if (myCookieJar == null)
 				return;
@@ -274,7 +296,18 @@ if(bases.length == 0){
 
 		async void OnEvalRequested(object sender, EvalRequested eventArg)
 		{
-			await Control.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () => await Control.InvokeScriptAsync("eval", new[] { eventArg.Script }));
+			await Control.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, 
+				async () =>
+				{
+					try
+					{
+						await Control.InvokeScriptAsync("eval", new[] { eventArg.Script });
+					}
+					catch(Exception exc)
+					{
+						Log.Warning(nameof(WebView), $"Eval of script failed: {exc} Script: {eventArg.Script}");
+					}
+				});
 		}
 
 		async Task<string> OnEvaluateJavaScriptRequested(string script)

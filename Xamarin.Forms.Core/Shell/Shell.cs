@@ -146,6 +146,10 @@ namespace Xamarin.Forms
 			BindableProperty.CreateAttached("UnselectedColor", typeof(Color), typeof(Shell), Color.Default,
 				propertyChanged: OnColorValueChanged);
 
+		public static readonly BindableProperty FlyoutBackdropColorProperty =
+			BindableProperty.CreateAttached("FlyoutBackdropColor", typeof(Color), typeof(Shell), Color.Default,
+				propertyChanged: OnColorValueChanged);
+
 		public static Color GetBackgroundColor(BindableObject obj) => (Color)obj.GetValue(BackgroundColorProperty);
 		public static void SetBackgroundColor(BindableObject obj, Color value) => obj.SetValue(BackgroundColorProperty, value);
 
@@ -175,6 +179,9 @@ namespace Xamarin.Forms
 
 		public static Color GetUnselectedColor(BindableObject obj) => (Color)obj.GetValue(UnselectedColorProperty);
 		public static void SetUnselectedColor(BindableObject obj, Color value) => obj.SetValue(UnselectedColorProperty, value);
+
+		public static Color GetFlyoutBackdropColor(BindableObject obj) => (Color)obj.GetValue(FlyoutBackdropColorProperty);
+		public static void SetFlyoutBackdropColor(BindableObject obj, Color value) => obj.SetValue(FlyoutBackdropColorProperty, value);
 
 		static void OnColorValueChanged(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -316,6 +323,7 @@ namespace Xamarin.Forms
 						observer.OnAppearanceChanged(GetAppearanceForPivot(pivot));
 						break;
 					}
+
 					leaf = leaf.Parent;
 				}
 			}
@@ -425,7 +433,7 @@ namespace Xamarin.Forms
 			ProcessNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
 		}
 		ReadOnlyCollection<ShellItem> IShellController.GetItems() =>
-			new ReadOnlyCollection<ShellItem>(((ShellItemCollection)Items).VisibleItems.ToList());
+			new ReadOnlyCollection<ShellItem>(((ShellItemCollection)Items).VisibleItemsReadOnly.ToList());
 
 		event NotifyCollectionChangedEventHandler IShellController.ItemsCollectionChanged
 		{
@@ -739,7 +747,7 @@ namespace Xamarin.Forms
 			if (CurrentItem != null)
 				SetCurrentItem();
 
-			ShellController.ItemsCollectionChanged += (s, e) =>
+			((ShellElementCollection)Items).VisibleItemsChangedInternal += (s, e) =>
 			{
 				SetCurrentItem();
 				SendStructureChanged();
@@ -811,6 +819,9 @@ namespace Xamarin.Forms
 			set => SetValue(CurrentItemProperty, value);
 		}
 
+		internal ShellContent CurrentContent => CurrentItem?.CurrentItem?.CurrentItem;
+		internal ShellSection CurrentSection => CurrentItem?.CurrentItem;
+
 		public ShellNavigationState CurrentState => (ShellNavigationState)GetValue(CurrentStateProperty);
 
 		[TypeConverter(typeof(ImageSourceConverter))]
@@ -830,6 +841,12 @@ namespace Xamarin.Forms
 		{
 			get => (Color)GetValue(FlyoutBackgroundColorProperty);
 			set => SetValue(FlyoutBackgroundColorProperty, value);
+		}
+
+		public Color FlyoutBackdropColor
+		{
+			get => (Color)GetValue(FlyoutBackdropColorProperty);
+			set => SetValue(FlyoutBackdropColorProperty, value);
 		}
 
 		public FlyoutBehavior FlyoutBehavior
@@ -1068,12 +1085,16 @@ namespace Xamarin.Forms
 		static void OnCurrentItemChanging(BindableObject bindable, object oldValue, object newValue)
 		{
 			var shell = (Shell)bindable;
+			var shellItem = (ShellItem)newValue;
+
+			if (!shell.Items.Contains(shellItem))
+				shell.Items.Add(shellItem);
+
 			if (!shell._accumulateNavigatedEvents)
 			{
 				// We are not in the middle of a GoToAsync so this is a user requested change.
 				// We need to emit the Navigating event since GoToAsync wont be emitting it.
 
-				var shellItem = (ShellItem)newValue;
 				var shellSection = shellItem.CurrentItem;
 				var shellContent = shellSection.CurrentItem;
 				var stack = shellSection.Stack;
@@ -1170,21 +1191,48 @@ namespace Xamarin.Forms
 			return lookupDict;
 		}
 
-		internal FlyoutBehavior GetEffectiveFlyoutBehavior() => GetEffectiveValue(Shell.FlyoutBehaviorProperty, FlyoutBehavior);
+		internal FlyoutBehavior GetEffectiveFlyoutBehavior()
+		{
+			ShellItem rootItem = null;
+			return GetEffectiveValue(Shell.FlyoutBehaviorProperty, 
+				() =>
+				{
+					if (this.IsSet(FlyoutBehaviorProperty))
+						return FlyoutBehavior;
+
+					if (rootItem is FlyoutItem)
+						return FlyoutBehavior.Flyout;
+					else if (rootItem is TabBar)
+						return FlyoutBehavior.Disabled;
+
+					return FlyoutBehavior;
+				},
+				(o) => rootItem = rootItem ?? o as ShellItem);
+		}
 
 		T GetEffectiveValue<T>(BindableProperty property, T defaultValue)
 		{
-			Element element = GetVisiblePage();
+			return GetEffectiveValue(property, () => defaultValue, null);
+		}
+		
+		T GetEffectiveValue<T>(BindableProperty property, Func<T> defaultValue, Action<Element> observer)
+		{
+			Element element = GetVisiblePage() ?? CurrentContent;
 
 			while (element != this && element != null)
 			{
+				observer?.Invoke(element);
+
 				if (element.IsSet(property))
 					return (T)element.GetValue(property);
 
 				element = element.Parent;
 			}
 
-			return defaultValue;
+			if (defaultValue == null)
+				return default(T);
+
+			return defaultValue();
 		}
 
 		ShellAppearance GetAppearanceForPivot(Element pivot)

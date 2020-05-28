@@ -155,6 +155,27 @@ namespace Xamarin.Forms.Platform.iOS
 
 		HashSet<string> _loadedCookies = new HashSet<string>();
 
+		Uri CreateUriForCookies(string url)
+		{
+			if (url == null)
+				return null;
+
+			Uri uri;
+
+			if (url.Length > 2000)
+				url = url.Substring(0, 2000);
+
+			if (Uri.TryCreate(url, UriKind.Absolute, out uri))
+			{
+				if (String.IsNullOrWhiteSpace(uri.Host))
+					return null;
+
+				return uri;
+			}
+
+			return null;
+		}
+
 		async Task<List<NSHttpCookie>> GetCookiesFromNativeStore(string url)
 		{
 			NSHttpCookie[] _initialCookiesLoaded = null;
@@ -170,7 +191,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (cookieString != null)
 				{
 					CookieContainer extractCookies = new CookieContainer();
-					var uri = new Uri(url);
+					var uri = CreateUriForCookies(url);
 
 					foreach (var cookie in cookieString.Split(';'))
 						extractCookies.SetCookies(uri, cookie);
@@ -187,7 +208,7 @@ namespace Xamarin.Forms.Platform.iOS
 			_initialCookiesLoaded = _initialCookiesLoaded ?? new NSHttpCookie[0];
 
 			List<NSHttpCookie> existingCookies = new List<NSHttpCookie>();
-			string domain = new Uri(url).Host;
+			string domain = CreateUriForCookies(url).Host;
 			foreach (var cookie in _initialCookiesLoaded)
 			{
 				// we don't care that much about this being accurate
@@ -207,7 +228,10 @@ namespace Xamarin.Forms.Platform.iOS
 			if (myCookieJar == null)
 				return;
 
-			var uri = new Uri(url);
+			var uri = CreateUriForCookies(url);
+
+			if (uri == null)
+				return;
 
 			if (!_loadedCookies.Add(uri.Host))
 				return;
@@ -237,7 +261,10 @@ namespace Xamarin.Forms.Platform.iOS
 			if (myCookieJar == null)
 				return;
 
-			var uri = new Uri(url);
+			var uri = CreateUriForCookies(url);
+			if (uri == null)
+				return;
+
 			var cookies = myCookieJar.GetCookies(uri);
 			var retrieveCurrentWebCookies = await GetCookiesFromNativeStore(url);
 
@@ -275,10 +302,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 		async Task SyncNativeCookies(string url)
 		{
-			if (String.IsNullOrWhiteSpace(url))
+			var uri = CreateUriForCookies(url);
+
+			if (uri == null)
 				return;
 
-			var uri = new Uri(url);
 			var myCookieJar = WebView.Cookies;
 			if (myCookieJar == null)
 				return;

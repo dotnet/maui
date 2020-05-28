@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Xamarin.Forms
 {
-	internal class ObservableWrapper<TTrack, TRestrict> : IList<TRestrict>, INotifyCollectionChanged where TTrack : Element where TRestrict : TTrack
+	internal class ObservableWrapper<TTrack, TRestrict> : IList<TRestrict>, IList, INotifyCollectionChanged where TTrack : Element where TRestrict : TTrack
 	{
 		readonly ObservableCollection<TTrack> _list;
 
@@ -263,5 +263,52 @@ namespace Xamarin.Forms
 
 			return outerIndex;
 		}
+
+		#region IList
+		public int Add(object value)
+		{
+			Add((TRestrict)value);
+			return IndexOf(value);
+		}
+
+		public bool Contains(object value)
+		{
+			return Contains((TRestrict)value);
+		}
+
+		public int IndexOf(object value)
+		{
+			return IndexOf((TRestrict)value);
+		}
+
+		public void Insert(int index, object value)
+		{
+			Insert(index, (TRestrict)value);
+		}
+
+		public void Remove(object value)
+		{
+			Remove((TRestrict)value);
+		}
+
+		public void CopyTo(Array array, int index)
+		{
+			CopyTo(array.Cast<TRestrict>().ToArray(), index);
+		}
+
+		public bool IsFixedSize => ((IList)_list).IsFixedSize;
+
+		public bool IsSynchronized => ((IList)_list).IsSynchronized;
+
+		public object SyncRoot => ((IList)_list).SyncRoot;
+
+		object IList.this[int index] 
+		{ 
+			get => (this as IList<TRestrict>)[index]; 
+			set => (this as IList<TRestrict>)[index] = (TRestrict)value; 
+		}
+
+		#endregion
+
 	}
 }

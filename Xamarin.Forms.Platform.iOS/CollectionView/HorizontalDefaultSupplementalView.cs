@@ -15,6 +15,7 @@ namespace Xamarin.Forms.Platform.iOS
 			Label.Font = UIFont.PreferredHeadline;
 
 			Constraint = Label.HeightAnchor.ConstraintEqualTo(Frame.Height);
+			Constraint.Priority = (float)UILayoutPriority.DefaultHigh;
 			Constraint.Active = true;
 		}
 
@@ -28,5 +29,4 @@ namespace Xamarin.Forms.Platform.iOS
 			return new CGSize(Label.IntrinsicContentSize.Width, Constraint.Constant);
 		}
 	}
-
 }

@@ -190,12 +190,12 @@ namespace Xamarin.Forms.Platform.Android
 
 			ItemsViewAdapter = new ItemsViewAdapter<ItemsView, IItemsViewSource>(ItemsView,
 				(view, context) => new SizedItemContentView(Context, GetItemWidth, GetItemHeight));
-			
+
 			_gotoPosition = -1;
 
-			
+
 			SwapAdapter(ItemsViewAdapter, false);
-			
+
 			if (_oldPosition > 0)
 				UpdateInitialPosition();
 
@@ -252,7 +252,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			_gotoPosition = -1;
-		
+
 			SetCurrentItem(carouselPosition);
 			UpdatePosition(carouselPosition);
 
@@ -298,7 +298,8 @@ namespace Xamarin.Forms.Platform.Android
 
 			_oldPosition = position;
 
-			_gotoPosition = _oldPosition;
+			if (_oldPosition > 0)
+				_gotoPosition = _oldPosition;
 
 			SetCurrentItem(_oldPosition);
 			Carousel.ScrollTo(_oldPosition, position: Xamarin.Forms.ScrollToPosition.Center, animate: Carousel.AnimatePositionChanges);
@@ -368,6 +369,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void CarouselViewScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
+			_noNeedForScroll = false;
 			UpdatePosition(e.CenterItemIndex);
 			UpdateVisualStates();
 		}
@@ -415,7 +417,7 @@ namespace Xamarin.Forms.Platform.Android
 				_oldPosition = carouselPosition;
 				return;
 			}
-				
+
 
 			if (carouselPosition >= itemCount || carouselPosition < 0)
 				throw new IndexOutOfRangeException($"Can't set CarouselView to position {carouselPosition}. ItemsSource has {itemCount} items.");
@@ -473,7 +475,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		class CarouselViewOnScrollListener : RecyclerViewScrollListener<ItemsView, IItemsViewSource>
 		{
-			public CarouselViewOnScrollListener(ItemsView itemsView, ItemsViewAdapter<ItemsView, IItemsViewSource> itemsViewAdapter) : base(itemsView, itemsViewAdapter)
+			public CarouselViewOnScrollListener(ItemsView itemsView, ItemsViewAdapter<ItemsView, IItemsViewSource> itemsViewAdapter) : base(itemsView, itemsViewAdapter, true)
 			{
 			}
 

@@ -19,6 +19,7 @@
       <DependentUpon>Issue10672.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Issue10744.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8291.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2674.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6484.cs" />
@@ -38,6 +39,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue8766.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8801.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue8870.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue9428.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue9419.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8262.cs" />
@@ -797,6 +799,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8145.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue10222.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue4714.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue9827.xaml.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>Issue9827.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)_TemplateMarkup.xaml.cs">
       <DependentUpon>_TemplateMarkup.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -1561,6 +1568,10 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8958.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue9827.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla27417Xaml.xaml">
@@ -1930,7 +1941,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8263.xaml">
-      <Generator>MSBuild:Compile</Generator>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

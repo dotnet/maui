@@ -201,7 +201,7 @@ namespace Xamarin.Forms
 					return _innerDictionary[index];
 				if (_mergedInstance != null && _mergedInstance.ContainsKey(index))
 					return _mergedInstance[index];
-				if (MergedDictionaries != null)
+				if (_mergedDictionaries != null)
 					foreach (var dict in MergedDictionaries.Reverse())
 						if (dict.ContainsKey(index))
 							return dict[index];
@@ -241,7 +241,7 @@ namespace Xamarin.Forms
 
 		internal IEnumerable<KeyValuePair<string, object>> MergedResources {
 			get {
-				if (MergedDictionaries != null)
+				if (_mergedDictionaries != null)
 				{
 					for (int i = _mergedDictionaries.Count - 1; i >= 0; i--)
 					{
@@ -267,7 +267,7 @@ namespace Xamarin.Forms
 			source = this;
 			return _innerDictionary.TryGetValue(key, out value)
 				|| (_mergedInstance != null && _mergedInstance.TryGetValueAndSource(key, out value, out source))
-				|| (MergedDictionaries != null && TryGetMergedDictionaryValue(key, out value, out source));
+				|| (_mergedDictionaries != null && TryGetMergedDictionaryValue(key, out value, out source));
 		}
 
 		bool TryGetMergedDictionaryValue(string key, out object value, out ResourceDictionary source)

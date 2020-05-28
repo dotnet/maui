@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using CoreGraphics;
 using Foundation;
 using UIKit;
 
@@ -10,8 +11,10 @@ namespace Xamarin.Forms.Platform.iOS
 		protected readonly CarouselView Carousel;
 
 		bool _initialPositionSet;
+		bool _viewInitialized;
 		List<View> _oldViews;
 		int _gotoPosition = -1;
+		CGSize _size;
 
 		public CarouselViewController(CarouselView itemsView, ItemsViewLayout layout) : base(itemsView, layout)
 		{
@@ -33,9 +36,27 @@ namespace Xamarin.Forms.Platform.iOS
 			return cell;
 		}
 
+		public override void ViewWillLayoutSubviews()
+		{
+			base.ViewWillLayoutSubviews();
+			if (!_viewInitialized)
+			{
+				_viewInitialized = true;
+				_size = CollectionView.Bounds.Size;
+			}
+
+			UpdateVisualStates();
+		}
+
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
+			if (CollectionView.Bounds.Size != _size)
+			{
+				_size = CollectionView.Bounds.Size;
+				BoundsSizeChanged();
+			}
+			
 			UpdateInitialPosition();
 		}
 
@@ -83,9 +104,13 @@ namespace Xamarin.Forms.Platform.iOS
 			return itemsSource;
 		}
 
-		protected override void BoundsSizeChanged()
+		protected void BoundsSizeChanged()
 		{
-			base.BoundsSizeChanged();
+			ItemsViewLayout.ConstrainTo(CollectionView.Bounds.Size);
+			
+			//We call ReloadData so our VisibleCells also update their size
+			CollectionView.ReloadData();
+
 			Carousel.ScrollTo(Carousel.Position, position: Xamarin.Forms.ScrollToPosition.Center, animate: false);
 		}
 

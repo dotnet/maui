@@ -112,6 +112,40 @@ namespace Xamarin.Forms.Platform.Android.UnitTests
 				Assert.Fail(exc.ToString());
 			}
 		}
+				
+		[Test, Category("ToolbarExtensions")]
+		[Description("Secondary ToolBarItems don't Change Color based on ForegroundColor")]
+		public void SecondaryToolbarItemsDontChangeColor()
+		{
+			List<ToolbarItem> sortedItems = new List<ToolbarItem>()
+			{
+				new ToolbarItem() { IsEnabled = true, Text = "a", Order = ToolbarItemOrder.Secondary },
+			};
+
+			var settings = new ToolbarSettings(sortedItems) { TintColor = Color.Red };
+			SetupToolBar(settings, Context);
+			AToolBar aToolBar = settings.ToolBar;
+			IMenuItem menuItem = settings.MenuItemsCreated.First();
+
+			MenuItemImpl menuItemImpl = (MenuItemImpl)menuItem;
+			Assert.IsNotNull(menuItemImpl, "menuItem is not of type MenuItemImpl");
+
+			if(menuItemImpl.TitleFormatted is SpannableString tf)
+			{
+				var colorSpan =
+					tf.GetSpans(0, tf.Length(), Java.Lang.Class.FromType(typeof(ForegroundColorSpan)))
+					.OfType<ForegroundColorSpan>()
+					.FirstOrDefault();
+
+				if (colorSpan != null)
+				{
+					Assert.AreNotEqual(
+						colorSpan.ForegroundColor,
+						(int)Color.Red.ToAndroid(),
+						"Secondary Menu Item Incorrectly set to ForegroundColor");
+				}
+			}
+		}
 
 		static void SetupToolBar(ToolbarSettings settings, Context context)
 		{

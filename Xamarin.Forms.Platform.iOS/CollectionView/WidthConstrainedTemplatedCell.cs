@@ -13,8 +13,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void ConstrainTo(CGSize constraint)
 		{
-			base.ConstrainTo(constraint);
-
+			ClearConstraints();
 			ConstrainedDimension = constraint.Width;
 		}
 

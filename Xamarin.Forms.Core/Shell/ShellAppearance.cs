@@ -17,7 +17,8 @@ namespace Xamarin.Forms
 			Shell.TabBarTitleColorProperty,
 			Shell.TabBarUnselectedColorProperty,
 			Shell.TitleColorProperty,
-			Shell.UnselectedColorProperty
+			Shell.UnselectedColorProperty,
+			Shell.FlyoutBackdropColorProperty
 		};
 
 		Color?[] _colorArray = new Color?[s_ingestArray.Length];
@@ -42,6 +43,8 @@ namespace Xamarin.Forms
 
 		public Color UnselectedColor => _colorArray[9].Value;
 
+		public Color FlyoutBackdropColor => _colorArray[10].Value;
+
 		Color IShellAppearanceElement.EffectiveTabBarBackgroundColor =>
 			!TabBarBackgroundColor.IsDefault ? TabBarBackgroundColor : BackgroundColor;
 
@@ -64,33 +67,24 @@ namespace Xamarin.Forms
 
 		public override bool Equals(object obj)
 		{
-			var appearance = obj as ShellAppearance;
-			return appearance != null &&
-				   EqualityComparer<Color>.Default.Equals(BackgroundColor, appearance.BackgroundColor) &&
-				   EqualityComparer<Color>.Default.Equals(DisabledColor, appearance.DisabledColor) &&
-				   EqualityComparer<Color>.Default.Equals(ForegroundColor, appearance.ForegroundColor) &&
-				   EqualityComparer<Color>.Default.Equals(TabBarBackgroundColor, appearance.TabBarBackgroundColor) &&
-				   EqualityComparer<Color>.Default.Equals(TabBarDisabledColor, appearance.TabBarDisabledColor) &&
-				   EqualityComparer<Color>.Default.Equals(TabBarForegroundColor, appearance.TabBarForegroundColor) &&
-				   EqualityComparer<Color>.Default.Equals(TabBarTitleColor, appearance.TabBarTitleColor) &&
-				   EqualityComparer<Color>.Default.Equals(TabBarUnselectedColor, appearance.TabBarUnselectedColor) &&
-				   EqualityComparer<Color>.Default.Equals(TitleColor, appearance.TitleColor) &&
-				   EqualityComparer<Color>.Default.Equals(UnselectedColor, appearance.UnselectedColor);
+			if(!(obj is ShellAppearance appearance))
+				return false;
+
+			for(int i = 0; i < _colorArray.Length; i++)
+			{
+				if (!EqualityComparer<Color>.Default.Equals(_colorArray[i].Value, appearance._colorArray[i].Value))
+					return false;
+			}
+
+			return true;
 		}
 
 		public override int GetHashCode()
 		{
 			var hashCode = -1988429770;
-			hashCode = hashCode * -1521134295 + EqualityComparer<Color>.Default.GetHashCode(BackgroundColor);
-			hashCode = hashCode * -1521134295 + EqualityComparer<Color>.Default.GetHashCode(DisabledColor);
-			hashCode = hashCode * -1521134295 + EqualityComparer<Color>.Default.GetHashCode(ForegroundColor);
-			hashCode = hashCode * -1521134295 + EqualityComparer<Color>.Default.GetHashCode(TabBarBackgroundColor);
-			hashCode = hashCode * -1521134295 + EqualityComparer<Color>.Default.GetHashCode(TabBarDisabledColor);
-			hashCode = hashCode * -1521134295 + EqualityComparer<Color>.Default.GetHashCode(TabBarForegroundColor);
-			hashCode = hashCode * -1521134295 + EqualityComparer<Color>.Default.GetHashCode(TabBarTitleColor);
-			hashCode = hashCode * -1521134295 + EqualityComparer<Color>.Default.GetHashCode(TabBarUnselectedColor);
-			hashCode = hashCode * -1521134295 + EqualityComparer<Color>.Default.GetHashCode(TitleColor);
-			hashCode = hashCode * -1521134295 + EqualityComparer<Color>.Default.GetHashCode(UnselectedColor);
+			for (int i = 0; i < _colorArray.Length; i++)
+				hashCode = hashCode * -1521134295 + EqualityComparer<Color>.Default.GetHashCode(_colorArray[i].Value);
+
 			return hashCode;
 		}
 

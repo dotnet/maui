@@ -18,8 +18,6 @@ namespace Xamarin.Forms.Platform.iOS
 		bool _emptyViewDisplayed;
 		bool _disposed;
 
-		CGSize _size;
-
 		UIView _emptyUIView;
 		VisualElement _emptyViewFormsElement;
 
@@ -144,15 +142,14 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void ViewWillLayoutSubviews()
 		{
 			base.ViewWillLayoutSubviews();
-			
+
 			// We can't set this constraint up on ViewDidLoad, because Forms does other stuff that resizes the view
 			// and we end up with massive layout errors. And View[Will/Did]Appear do not fire for this controller
 			// reliably. So until one of those options is cleared up, we set this flag so that the initial constraints
 			// are set up the first time this method is called.
 			if (!_initialConstraintsSet)
 			{
-				_size = CollectionView.Bounds.Size;
-				ItemsViewLayout.ConstrainTo(_size);
+				ItemsViewLayout.SetInitialConstraints(CollectionView.Bounds.Size);
 				UpdateEmptyView();
 				_initialConstraintsSet = true;
 			}
@@ -160,26 +157,6 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				LayoutEmptyView();
 			}
-		}
-
-		
-		public override void ViewDidLayoutSubviews()
-		{
-			base.ViewDidLayoutSubviews();
-			if (CollectionView.Bounds.Size != _size)
-			{
-				_size = CollectionView.Bounds.Size;
-				BoundsSizeChanged();
-			}
-		}
-
-		protected virtual void BoundsSizeChanged()
-		{
-			//We are changing orientation and we need to tell our layout
-			//to update based on new size constrains
-			ItemsViewLayout.ConstrainTo(CollectionView.Bounds.Size);
-			//We call ReloadData so our VisibleCells also update their size
-			CollectionView.ReloadData();
 		}
 
 		protected virtual UICollectionViewDelegateFlowLayout CreateDelegator()
@@ -225,7 +202,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			ItemsViewLayout.PrepareCellForLayout(cell);
 		}
-
+		
 		public virtual NSIndexPath GetIndexForItem(object item)
 		{
 			return ItemsSource.GetIndexForItem(item);
@@ -411,5 +388,6 @@ namespace Xamarin.Forms.Platform.iOS
 				_emptyViewDisplayed = false;
 			}
 		}
+		
 	}
 }

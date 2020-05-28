@@ -212,7 +212,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			var maxVisible = GetMaximumVisible();
 			var position = IndicatorView.Position;
-			_selectedIndex = position >= maxVisible ? maxVisible - 1 : position;
+			_selectedIndex = Math.Max(0, position >= maxVisible ? maxVisible - 1 : position);
 			UpdateIndicators();
 		}
 

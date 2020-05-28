@@ -30,16 +30,20 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void ConstrainTo(CGSize constraint)
 		{
+			ClearConstraints();
 			ConstrainedSize = constraint;
 		}
 
 		public override void ConstrainTo(nfloat constant)
 		{
+			ClearConstraints();
 			ConstrainedDimension = constant;
-
-			// Reset constrained size in case ItemSizingStrategy changes
-			// and we want to measure each item
-			ConstrainedSize = default(CGSize);
+		}
+		
+		protected void ClearConstraints()
+		{
+			ConstrainedSize = default;
+			ConstrainedDimension = default;
 		}
 
 		public override UICollectionViewLayoutAttributes PreferredLayoutAttributesFittingAttributes(

@@ -12,11 +12,24 @@ using System.ComponentModel;
 using Xamarin.Forms.Internals;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
+using AColor = Android.Graphics.Color;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public class ShellFlyoutRenderer : DrawerLayout, IShellFlyoutRenderer, DrawerLayout.IDrawerListener, IFlyoutBehaviorObserver
+	public class ShellFlyoutRenderer : DrawerLayout, IShellFlyoutRenderer, DrawerLayout.IDrawerListener, IFlyoutBehaviorObserver, IAppearanceObserver
 	{
+		#region IAppearanceObserver
+
+		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
+		{
+			if (appearance == null)
+				UpdateScrimColor(Color.Default);
+			else
+				UpdateScrimColor(appearance.FlyoutBackdropColor);
+		}
+
+		#endregion IAppearanceObserver
+
 		#region IShellFlyoutRenderer
 
 		AView IShellFlyoutRenderer.AndroidView => this;
@@ -46,10 +59,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		void IDrawerListener.OnDrawerStateChanged(int newState)
 		{
-			if(DrawerLayout.StateIdle == newState)
+			if (DrawerLayout.StateIdle == newState)
 			{
 				Shell.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, IsDrawerOpen(_flyoutContent.AndroidView));
-			}	
+			}
 		}
 
 		#endregion IDrawerListener
@@ -58,6 +71,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void IFlyoutBehaviorObserver.OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
 		{
+			_behavior = behavior;
 			UpdateDrawerLockMode(behavior);
 		}
 
@@ -70,15 +84,22 @@ namespace Xamarin.Forms.Platform.Android
 		int _flyoutWidth;
 		int _currentLockMode;
 		bool _disposed;
+		Color _scrimColor;
+		FlyoutBehavior _behavior;
 
 		public ShellFlyoutRenderer(IShellContext shellContext, Context context) : base(context)
 		{
+			_scrimColor = Color.Default;
 			_shellContext = shellContext;
 
 			Shell.PropertyChanged += OnShellPropertyChanged;
+
+			ShellController.AddAppearanceObserver(this, Shell);
 		}
 
 		Shell Shell => _shellContext.Shell;
+
+		IShellController ShellController => _shellContext.Shell;
 
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
 		{
@@ -187,9 +208,28 @@ namespace Xamarin.Forms.Platform.Android
 					break;
 			}
 
-			unchecked
+			UpdateScrimColor(_scrimColor);
+		}
+
+		void UpdateScrimColor(Color backdropColor)
+		{
+			_scrimColor = backdropColor;
+
+			if (_behavior == FlyoutBehavior.Locked)
 			{
-				SetScrimColor(behavior == FlyoutBehavior.Locked ? Color.Transparent.ToAndroid() : (int)DefaultScrimColor);
+				SetScrimColor(Color.Transparent.ToAndroid());
+			}
+			else
+			{
+				if (backdropColor == Color.Default)
+				{
+					unchecked
+					{
+						SetScrimColor((int)DefaultScrimColor);
+					}
+				}
+				else
+					SetScrimColor(_scrimColor.ToAndroid());
 			}
 		}
 
@@ -202,6 +242,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (disposing)
 			{
+				ShellController.RemoveAppearanceObserver(this);
 				Shell.PropertyChanged -= OnShellPropertyChanged;
 
 				RemoveDrawerListener(this);

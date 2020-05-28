@@ -386,7 +386,7 @@
                                     Child="{TemplateBinding ContentOverlay}" />
                             </StackPanel>
 
-                            <SplitView
+                            <xf:ShellSplitView
                                 x:Name="RootSplitView"
                                 Background="{TemplateBinding Background}"
                                 CompactPaneLength="{TemplateBinding CompactPaneLength}"
@@ -536,7 +536,7 @@
                                             Content="{TemplateBinding Content}"/>
                                     </Grid>
                                 </SplitView.Content>
-                            </SplitView>
+                            </xf:ShellSplitView>
 
                         </Grid>
                     </Grid>

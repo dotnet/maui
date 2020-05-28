@@ -15,6 +15,7 @@ namespace Xamarin.Forms.Platform.iOS
 			Label.Font = UIFont.PreferredHeadline;
 
 			Constraint = Label.WidthAnchor.ConstraintEqualTo(Frame.Width);
+			Constraint.Priority = (float)UILayoutPriority.DefaultHigh;
 			Constraint.Active = true;
 		}
 
