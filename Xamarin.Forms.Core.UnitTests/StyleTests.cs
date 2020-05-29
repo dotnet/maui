@@ -884,5 +884,31 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That(log.Messages.Count, Is.EqualTo(0),
 				"A warning was logged: " + log.Messages.FirstOrDefault());
     	}
+
+		[Test]
+		public async Task CreatingStyledElementsOffMainThreadShouldNotCrash() 
+		{
+			List<Task> tasks = new List<Task>();
+
+			var style = new Style(typeof(VisualElement))
+			{
+				Setters = {
+					new Setter { Property = Label.TextProperty, Value = "foo" },
+					new Setter { Property = VisualElement.BackgroundColorProperty, Value = Color.Pink },
+				}
+			};
+
+			for (int n = 0; n < 100000; n++)
+			{
+				tasks.Add(Task.Run(() => {
+					var label = new Label
+					{
+						Style = style
+					};
+				}));
+			}
+
+			await Task.WhenAll(tasks);
+		} 
 	}
 }
