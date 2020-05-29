@@ -590,6 +590,17 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assume.That(shell.CurrentState.Location.ToString(), Is.EqualTo("//one/tabone/content"));
 		}
 
+
+		[Test]
+		public async Task OnBackbuttonPressedFiresOnPage()
+		{
+			Shell shell = new Shell();
+			Routing.RegisterRoute("OnBackbuttonPressedFiresOnPage", typeof(ShellTestPage));
+			shell.Items.Add(CreateShellItem());
+			await shell.GoToAsync($"OnBackbuttonPressedFiresOnPage?CancelNavigationOnBackButtonPressed=true");
+			Assert.AreEqual(false, shell.SendBackButtonPressed());
+		}
+
 		[Test]
 		public void BackButtonBehaviorSet()
 		{

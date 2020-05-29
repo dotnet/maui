@@ -292,6 +292,9 @@ namespace Xamarin.Forms
 
 		protected virtual bool OnBackButtonPressed()
 		{
+			if (RealParent is BaseShellItem || RealParent is Shell)
+				return true;
+
 			var application = RealParent as Application;
 			if (application == null || this == application.MainPage)
 				return false;

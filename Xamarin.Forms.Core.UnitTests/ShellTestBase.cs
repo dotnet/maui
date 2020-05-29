@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -73,8 +74,10 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[QueryProperty("SomeQueryParameter", "SomeQueryParameter")]
+		[QueryProperty("CancelNavigationOnBackButtonPressed", "CancelNavigationOnBackButtonPressed")]
 		public class ShellTestPage : ContentPage
 		{
+			public string CancelNavigationOnBackButtonPressed { get; set; }
 			public ShellTestPage()
 			{
 			}
@@ -88,6 +91,14 @@ namespace Xamarin.Forms.Core.UnitTests
 			protected override void OnParentSet()
 			{
 				base.OnParentSet();
+			}
+
+			protected override bool OnBackButtonPressed()
+			{
+				if (CancelNavigationOnBackButtonPressed == "true")
+					return false;
+
+				return base.OnBackButtonPressed();
 			}
 		}
 
@@ -227,6 +238,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			public int OnNavigatingCount;
 			public int NavigatedCount;
 			public int NavigatingCount;
+			public int OnBackButtonPressedCount;
 
 			public TestShell()
 			{
@@ -248,9 +260,19 @@ namespace Xamarin.Forms.Core.UnitTests
 				OnNavigatingCount++;
 			}
 
+			protected override bool OnBackButtonPressed()
+			{
+				OnBackButtonPressedCount++;
+				return base.OnBackButtonPressed();
+			}
+
 			public void Reset()
 			{
-				OnNavigatedCount = OnNavigatingCount = NavigatedCount = NavigatingCount = 0;
+				OnNavigatedCount = 
+					OnNavigatingCount = 
+					NavigatedCount = 
+					NavigatingCount =
+					OnBackButtonPressedCount = 0;
 			}
 
 			public void TestCount(int count, string message = null)
