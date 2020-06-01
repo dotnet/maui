@@ -4,9 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Xamarin.Forms.Internals;
 using ElmSharp;
-using ElmSharp.Wearable;
 using EScroller = ElmSharp.Scroller;
-using EColor = ElmSharp.Color;
 
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
@@ -48,6 +46,11 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			internal TemplatedItemsList<ItemsView<Cell>, Cell> ListOfSubItems;
 		}
 
+		public class HeaderFooterItemContext : ItemContext
+		{
+			public VisualElement Element;
+		}
+
 		class ScrollerExtension : EScroller
 		{
 			public ScrollerExtension(GenList scrollableLayout) : base(scrollableLayout)
@@ -76,19 +79,10 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		protected readonly IDictionary<Type, CellRenderer> _groupCellRendererCache = new Dictionary<Type, CellRenderer>();
 
 		/// <summary>
-		/// The header context.
-		/// </summary>
-		ItemContext _headerContext;
-
-		/// <summary>
 		/// The header element.
 		/// </summary>
 		VisualElement _headerElement;
 
-		/// <summary>
-		/// The footer context.
-		/// </summary>
-		ItemContext _footerContext;
 
 		/// <summary>
 		/// The footer element.
@@ -104,6 +98,10 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// The object to handle scroller properties.
 		/// </summary>
 		protected virtual EScroller Scroller { get; set; }
+
+		protected HeaderFooterItemContext HeaderItemContext { get; set; }
+
+		protected HeaderFooterItemContext FooterItemContext { get; set; }
 
 		/// <summary>
 		/// Gets or sets a value indicating whether this instance has grouping enabled.
@@ -311,31 +309,53 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// <param name="header">Header of the list.</param>
 		public virtual void SetHeader(VisualElement header)
 		{
-			if (header == null)
-			{
-				if (HasHeader())
-				{
-					RemoveHeader();
-				}
+			_headerElement = header;
+			UpdateHeader();
+		}
 
+		protected virtual void UpdateHeader()
+		{
+			if (GetHeader() == null)
+			{
+				if (HasHeaderContext())
+				{
+					RemoveHeaderItemContext();
+				}
 				return;
 			}
 
-			GenItemClass headerTemplate = GetHeaderFooterItemClass();
-
-			_headerElement = header;
-			if (HasHeader())
+			var headerTemplate = GetHeaderFooterItemClass();
+			if (!HasHeaderContext())
 			{
-				FirstItem.UpdateItemClass(headerTemplate, header);
+				InitializeHeaderItemContext(headerTemplate);
 			}
 			else
 			{
-				_headerContext = new ItemContext();
-				_headerContext.Item = _itemContextList.Count > 0 ? InsertBefore(headerTemplate, header, FirstItem) : Append(headerTemplate, header);
-				_headerContext.Item.SelectionMode = GenItemSelectionMode.None;
-				_headerContext.Item.Deleted += HeaderDeletedHandler;
-				_itemContextList.Insert(0, _headerContext);
+				HeaderItemContext.Element = GetHeader();
+				(HeaderItemContext.Item as GenListItem).UpdateItemClass(headerTemplate, HeaderItemContext);
 			}
+		}
+
+		protected void InitializeHeaderItemContext(GenItemClass headerTemplate)
+		{
+			var context = new HeaderFooterItemContext();
+			context.Element = GetHeader();
+			if (FirstItem != null)
+			{
+				context.Item = InsertBefore(headerTemplate, context, FirstItem);
+			}
+			else
+			{
+				context.Item = Append(headerTemplate, context);
+			}
+			context.Item.SelectionMode = GenItemSelectionMode.None;
+			context.Item.Deleted += OnHeaderItemDeleted;
+			HeaderItemContext = context;
+		}
+
+		void OnHeaderItemDeleted(object sender, EventArgs e)
+		{
+			HeaderItemContext = null;
 		}
 
 		/// <summary>
@@ -344,70 +364,68 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// <param name="footer">Footer of the list.</param>
 		public virtual void SetFooter(VisualElement footer)
 		{
-			if (footer == null)
+			_footerElement = footer;
+			UpdateFooter();
+		}
+
+		protected virtual void UpdateFooter()
+		{
+			if (GetFooter() == null)
 			{
-				if (HasFooter())
+				if (HasFooterContext())
 				{
-					RemoveFooter();
+					RemoveFooterItemContext();
 				}
 				return;
 			}
 
-			GenItemClass footerTemplate = GetHeaderFooterItemClass();
-
-			_footerElement = footer;
-			if (HasFooter())
+			var footerTemplate = GetHeaderFooterItemClass();
+			if (!HasFooterContext())
 			{
-				(_footerContext.Item as GenListItem).UpdateItemClass(footerTemplate, footer);
+				InitializeFooterItemContext(footerTemplate);
 			}
 			else
 			{
-				_footerContext = new ItemContext();
-				_footerContext.Item = Append(footerTemplate, footer);
-				_footerContext.Item.SelectionMode = GenItemSelectionMode.None;
-				_footerContext.Item.Deleted += FooterDeletedHandler;
-				_itemContextList.Add(_footerContext);
+				FooterItemContext.Element = GetFooter();
+				(HeaderItemContext.Item as GenListItem).UpdateItemClass(footerTemplate, HeaderItemContext);
 			}
 		}
 
-		/// <summary>
-		/// Removes the header.
-		/// </summary>
-		public void RemoveHeader()
+		protected void InitializeFooterItemContext(GenItemClass headerTemplate)
 		{
-			_itemContextList.Remove(_headerContext);
-			_headerContext?.Item?.Delete();
-			_headerContext = null;
-			_headerElement = null;
+			var context = new HeaderFooterItemContext();
+			context.Element = GetFooter();
+			context.Item = Append(headerTemplate, context);
+			context.Item.SelectionMode = GenItemSelectionMode.None;
+			context.Item.Deleted += OnFooterItemDeleted;
+			FooterItemContext = context;
 		}
 
-		/// <summary>
-		/// Removes the footer.
-		/// </summary>
-		public void RemoveFooter()
+		void OnFooterItemDeleted(object sender, EventArgs e)
 		{
-			_itemContextList.Remove(_footerContext);
-			_footerContext?.Item?.Delete();
-			_footerContext = null;
-			_footerElement = null;
+			FooterItemContext = null;
 		}
 
-		/// <summary>
-		/// Determines whether this instance has a header.
-		/// </summary>
-		/// <returns><c>true</c> if the header is present.</returns>
-		public bool HasHeader()
+		protected void RemoveHeaderItemContext()
 		{
-			return _headerContext != null;
+			HeaderItemContext?.Item?.Delete();
+			HeaderItemContext = null;
 		}
 
-		/// <summary>
-		/// Determines whether this instance has a footer.
-		/// </summary>
-		/// <returns><c>true</c> if the footer is present.</returns>
-		public bool HasFooter()
+		protected void RemoveFooterItemContext()
 		{
-			return _footerContext != null;
+			FooterItemContext?.Item?.Delete();
+			FooterItemContext = null;
+		}
+
+		public bool HasHeaderContext()
+		{
+			return HeaderItemContext != null;
+		}
+
+		public bool HasFooterContext()
+		{
+			return FooterItemContext != null;
 		}
 
 		/// <summary>
@@ -431,28 +449,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		protected virtual void OnScrolled(object sender, EventArgs e)
 		{
 			Scrolled?.Invoke(this, EventArgs.Empty);
-		}
-
-		/// <summary>
-		/// Handles the header deleted event.
-		/// </summary>
-		/// <param name="sender">Sender of the event.</param>
-		/// <param name="e">Empty argument.</param>
-		void HeaderDeletedHandler(object sender, EventArgs e)
-		{
-			_itemContextList.Remove(_headerContext);
-			_headerContext = null;
-		}
-
-		/// <summary>
-		/// Handles the footer deleted event.
-		/// </summary>
-		/// <param name="sender">Sender of the event.</param>
-		/// <param name="e">Empty argument.</param>
-		void FooterDeletedHandler(object sender, EventArgs e)
-		{
-			_itemContextList.Remove(_footerContext);
-			_footerContext = null;
 		}
 
 		/// <summary>
@@ -593,6 +589,10 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				GenListItem beforeItem = GetItemContext(beforeCell)?.Item as GenListItem;
 				itemContext.Item = InsertBefore(renderer.Class, itemContext, beforeItem, GenListItemType.Normal, parentItem);
 			}
+			else if (HasFooterContext())
+			{
+				itemContext.Item = InsertBefore(renderer.Class, itemContext, FooterItemContext.Item as GenListItem, GenListItemType.Normal, parentItem);
+			}
 			else
 			{
 				itemContext.Item = Append(renderer.Class, itemContext, GenListItemType.Normal, parentItem);
@@ -649,7 +649,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// Gets the item class used for header and footer cells.
 		/// </summary>
 		/// <returns>The header and footer item class.</returns>
-		GenItemClass GetHeaderFooterItemClass()
+		protected GenItemClass GetHeaderFooterItemClass()
 		{
 			if (_headerFooterItemClass == null)
 			{
@@ -657,17 +657,19 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				{
 					GetContentHandler = (data, part) =>
 					{
-						VisualElement element = data as VisualElement;
-						var renderer = Platform.GetOrCreateRenderer(element);
+						var context = data as HeaderFooterItemContext;
+						if (context == null || context.Element == null)
+							return null;
 
-						if (element.MinimumHeightRequest == -1)
+						var renderer = Platform.GetOrCreateRenderer(context.Element);
+						if (context.Element.MinimumHeightRequest == -1)
 						{
-							SizeRequest request = element.Measure(double.PositiveInfinity, double.PositiveInfinity);
+							SizeRequest request = context.Element.Measure(double.PositiveInfinity, double.PositiveInfinity);
 							renderer.NativeView.MinimumHeight = Forms.ConvertToScaledPixel(request.Request.Height);
 						}
 						else
 						{
-							renderer.NativeView.MinimumHeight = Forms.ConvertToScaledPixel(element.MinimumHeightRequest);
+							renderer.NativeView.MinimumHeight = Forms.ConvertToScaledPixel(context.Element.MinimumHeightRequest);
 						}
 
 						(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
