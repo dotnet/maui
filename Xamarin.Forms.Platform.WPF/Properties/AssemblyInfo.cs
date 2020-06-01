@@ -2,13 +2,14 @@
 using System.Runtime.InteropServices;
 using System.Windows;
 using Xamarin.Forms;
-using Xamarin.Forms.Platform.WPF; 
+using Xamarin.Forms.Platform.WPF;
 
 [assembly: ThemeInfo(ResourceDictionaryLocation.None, ResourceDictionaryLocation.SourceAssembly)]
 
 [assembly: ExportRenderer(typeof(Layout), typeof(LayoutRenderer))]
 [assembly: ExportRenderer(typeof(Label), typeof(LabelRenderer))]
 [assembly: ExportRenderer(typeof(Button), typeof(ButtonRenderer))]
+[assembly: ExportRenderer(typeof(RadioButton), typeof(RadioButtonRenderer))]
 [assembly: ExportRenderer(typeof(BoxView), typeof(BoxViewRenderer))]
 [assembly: ExportRenderer(typeof(Switch), typeof(SwitchRenderer))]
 [assembly: ExportRenderer(typeof(DatePicker), typeof(DatePickerRenderer))]
