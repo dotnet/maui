@@ -81,6 +81,7 @@ namespace Xamarin.Forms.Platform.Android
 				UpdatePicker();
 				UpdateTextColor();
 				UpdateCharacterSpacing();
+				UpdateGravity();
 			}
 
 			base.OnElementChanged(e);
@@ -100,6 +101,8 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateTextColor();
 			else if (e.PropertyName == Picker.FontAttributesProperty.PropertyName || e.PropertyName == Picker.FontFamilyProperty.PropertyName || e.PropertyName == Picker.FontSizeProperty.PropertyName)
 				UpdateFont();
+			else if (e.PropertyName == Picker.HorizontalTextAlignmentProperty.PropertyName || e.PropertyName == Picker.VerticalTextAlignmentProperty.PropertyName)
+				UpdateGravity();
 		}
 
 		protected override void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
@@ -232,6 +235,11 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdateTextColor()
 		{
 			_textColorSwitcher?.UpdateTextColor(Control, Element.TextColor);
+		}
+
+		void UpdateGravity()
+		{
+			Control.Gravity = Element.HorizontalTextAlignment.ToHorizontalGravityFlags() | Element.VerticalTextAlignment.ToVerticalGravityFlags();			
 		}
 	}
 }

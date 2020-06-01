@@ -71,6 +71,20 @@ namespace Xamarin.Forms.Controls
 			fontSizeContainer.View.Items.Add("Item 2");
 			fontSizeContainer.View.Items.Add("Item 3");
 
+			var horizontalTextAlignmentContainer = new ViewContainer<Picker>(Test.Picker.HorizontalTextAlignment,
+				new Picker { HorizontalTextAlignment = TextAlignment.End });
+
+			horizontalTextAlignmentContainer.View.Items.Add("Item 1");
+			horizontalTextAlignmentContainer.View.Items.Add("Item 2");
+			horizontalTextAlignmentContainer.View.Items.Add("Item 3");
+
+			var verticalTextAlignmentContainer = new ViewContainer<Picker>(Test.Picker.VerticalTextAlignment,
+				new Picker { VerticalTextAlignment = TextAlignment.End });
+
+			verticalTextAlignmentContainer.View.Items.Add("Item 1");
+			verticalTextAlignmentContainer.View.Items.Add("Item 2");
+			verticalTextAlignmentContainer.View.Items.Add("Item 3");
+			
 			Add(itemsContainer);
 			Add(selectedIndexContainer);
 			Add(titleContainer);
@@ -79,6 +93,8 @@ namespace Xamarin.Forms.Controls
 			Add(fontAttributesContainer);
 			Add(fontFamilyContainer);
 			Add(fontSizeContainer);
+			Add(horizontalTextAlignmentContainer);
+			Add(verticalTextAlignmentContainer);
 		}
 	}
 }

@@ -34,6 +34,8 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				UpdateItemsSource();
 				UpdateSelectedIndex();
 				UpdateTextColor();
+				UpdateHorizontalTextAlignment();
+				UpdateVerticalTextAlignment();
 			}
 
 			base.OnElementChanged(e);
@@ -51,6 +53,10 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				UpdateItemsSource();
 			if (e.PropertyName == Picker.TextColorProperty.PropertyName)
 				UpdateTextColor();
+			else if (e.PropertyName == Label.HorizontalTextAlignmentProperty.PropertyName )
+				UpdateHorizontalTextAlignment();
+			else if (e.PropertyName == Label.VerticalTextAlignmentProperty.PropertyName)
+				UpdateVerticalTextAlignment();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -139,9 +145,35 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 				if (cellRenderer != null)
 				{
-					var textColor = Element.TextColor.ToGtkColor();
-
 					cellRenderer.ForegroundGdk = Element.TextColor.ToGtkColor();
+				}
+			}
+		}
+
+		private void UpdateHorizontalTextAlignment()
+		{
+			if (Control == null || Element == null)
+				return;
+
+			if (Control.Child is CellView cellView)
+			{
+				if (cellView.Cells.FirstOrDefault() is CellRendererText cellRenderer)
+				{
+					cellRenderer.Xalign = Element.HorizontalTextAlignment.ToAlignmentValue();
+				}
+			}
+		}
+
+		private void UpdateVerticalTextAlignment()
+		{
+			if (Control == null || Element == null)
+				return;
+
+			if (Control.Child is CellView cellView)
+			{
+				if (cellView.Cells.FirstOrDefault() is CellRendererText cellRenderer)
+				{
+					cellRenderer.Yalign = Element.VerticalTextAlignment.ToAlignmentValue();
 				}
 			}
 		}
@@ -188,6 +220,19 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			Control.Popdown();
 
 			return true;
+		}
+
+		private float GetAlignmentValue(TextAlignment alignment)
+		{
+			switch (alignment)
+			{
+				case TextAlignment.Start:
+					return 0f;
+				case TextAlignment.End:
+					return 1f;
+				default:
+					return 0.5f;
+			}
 		}
 	}
 }

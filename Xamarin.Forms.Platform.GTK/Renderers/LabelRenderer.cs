@@ -159,8 +159,10 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 		private void UpdateTextAlignment()
 		{
-			var hAlignmentValue = GetAlignmentValue(Element.HorizontalTextAlignment);
-			var vAlignmentValue = GetAlignmentValue(Element.VerticalTextAlignment);
+			_perfectSizeValid = false;
+
+			var hAlignmentValue = Element.HorizontalTextAlignment.ToAlignmentValue();
+			var vAlignmentValue = Element.VerticalTextAlignment.ToAlignmentValue();
 
 			Control.SetAlignment(hAlignmentValue, vAlignmentValue);
 		}
@@ -203,22 +205,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
-		}
-
-		private float GetAlignmentValue(TextAlignment alignment)
-		{
-			_perfectSizeValid = false;
-
-			switch (alignment)
-			{
-				case TextAlignment.Start:
-					return 0f;
-				case TextAlignment.End:
-					return 1f;
-				default:
-					return 0.5f;
-			}
-		}
+		}		
 
 		private SizeRequest GetPerfectSize(int widthConstraint = -1)
 		{

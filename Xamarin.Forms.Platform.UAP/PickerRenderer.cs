@@ -57,6 +57,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateTitle();
 				UpdateSelectedIndex();
 				UpdateCharacterSpacing();
+				UpdateHorizontalTextAlignment();
+				UpdateVerticalTextAlignment();
 			}
 
 			base.OnElementChanged(e);
@@ -76,6 +78,10 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateTextColor();
 			else if (e.PropertyName == Picker.FontAttributesProperty.PropertyName || e.PropertyName == Picker.FontFamilyProperty.PropertyName || e.PropertyName == Picker.FontSizeProperty.PropertyName)
 				UpdateFont();
+			else if (e.PropertyName == Picker.HorizontalTextAlignmentProperty.PropertyName || e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+				UpdateHorizontalTextAlignment();
+			else if (e.PropertyName == Picker.VerticalTextAlignmentProperty.PropertyName)
+				UpdateVerticalTextAlignment();			
 		}
 
 		void ControlOnLoaded(object sender, RoutedEventArgs routedEventArgs)
@@ -219,6 +225,15 @@ namespace Xamarin.Forms.Platform.UWP
 			Control.Header = null;
 			Control.HeaderTemplate = string.IsNullOrEmpty(Element.Title) ? null : (Windows.UI.Xaml.DataTemplate)Windows.UI.Xaml.Application.Current.Resources["ComboBoxHeader"];
 			Control.DataContext = Element;
+		}
+
+		void UpdateHorizontalTextAlignment()
+		{
+			Control.HorizontalContentAlignment = Element.HorizontalTextAlignment.ToNativeHorizontalAlignment();
+		}
+		void UpdateVerticalTextAlignment()
+		{
+			Control.VerticalContentAlignment = Element.VerticalTextAlignment.ToNativeVerticalAlignment();
 		}
 	}
 }

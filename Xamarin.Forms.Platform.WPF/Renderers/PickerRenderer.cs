@@ -13,6 +13,8 @@ namespace Xamarin.Forms.Platform.WPF
 	public class PickerRenderer : ViewRenderer<Picker, ComboBox>
 	{		
 		const string TextBoxTemplate = "PART_EditableTextBox";
+    bool _isDisposed;
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Picker> e)
 		{
 			if (e.NewElement != null)
@@ -29,6 +31,8 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateTitle();
 				UpdateSelectedIndex();
 				UpdateTextColor();
+				UpdateHorizontalTextAlignment();
+				UpdateVerticalTextAlignment();
 				Control.ItemsSource = ((LockableObservableListWrapper)Element.Items)._list;
 			}
 
@@ -51,6 +55,14 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				UpdateTextColor();
 			}
+			else if (e.PropertyName == Picker.HorizontalTextAlignmentProperty.PropertyName || e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
+				UpdateHorizontalTextAlignment();
+			}
+			else if (e.PropertyName == Picker.VerticalTextAlignmentProperty.PropertyName)
+			{
+				UpdateVerticalTextAlignment();
+      }
 			else if (e.PropertyName == Picker.BackgroundColorProperty.PropertyName)
 			{
 				UpdateBackgroundColor();
@@ -82,6 +94,16 @@ namespace Xamarin.Forms.Platform.WPF
 			Control.SelectedIndex = Element.SelectedIndex;
 		}
 
+		void UpdateHorizontalTextAlignment()
+		{
+			Control.HorizontalContentAlignment = Element.HorizontalTextAlignment.ToNativeHorizontalAlignment();
+		}
+    
+		void UpdateVerticalTextAlignment()
+		{
+			Control.VerticalContentAlignment = Element.VerticalTextAlignment.ToNativeVerticalAlignment();
+		}
+
 		void OnControlSelectionChanged(object sender, WSelectionChangedEventArgs e)
 		{
 			if (Element != null)
@@ -92,8 +114,6 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			UpdateBackgroundColor();
 		}
-
-		bool _isDisposed;
 
 		protected override void Dispose(bool disposing)
 		{
