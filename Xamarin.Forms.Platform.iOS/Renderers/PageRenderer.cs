@@ -370,7 +370,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 #if __XCODE11__
 			if (Forms.IsiOS13OrNewer && previousTraitCollection.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
-				Application.Current?.OnRequestedThemeChanged(new AppThemeChangedEventArgs(Application.Current.RequestedTheme));
+				Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Application.Current.RequestedTheme));
 #endif
 		}
 

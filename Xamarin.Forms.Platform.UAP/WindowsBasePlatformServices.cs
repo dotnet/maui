@@ -171,7 +171,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		async void UISettingsColorValuesChanged(UISettings sender, object args)
 		{
-			await _dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => Application.Current?.OnRequestedThemeChanged(new AppThemeChangedEventArgs(Application.Current.RequestedTheme)));
+			await _dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Application.Current.RequestedTheme)));
 		}
 
 		async Task TryAllDispatchers(Action action)

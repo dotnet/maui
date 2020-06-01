@@ -275,13 +275,6 @@ namespace Xamarin.Forms
 
 		internal VisualElement()
 		{
-			if (Application.Current != null)
-				Application.Current.RequestedThemeChanged += (s, a) => OnRequestedThemeChanged(a.RequestedTheme);
-		}
-
-		protected virtual void OnRequestedThemeChanged(OSAppTheme newValue)
-		{
-			ExperimentalFlags.VerifyFlagEnabled(nameof(VisualElement), ExperimentalFlags.AppThemeExperimental, nameof(OnRequestedThemeChanged));
 		}
 
 		public double AnchorX
