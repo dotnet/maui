@@ -11,8 +11,11 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 32902, "[iOS | iPad] App Crashes (without debug log) when Master Detail isPresented and navigation being popped")]
+#if UITEST
+	[Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 32902, "[iOS | iPad] App Crashes (without debug log) when Master Detail isPresented and navigation being popped")]
 	public class Bugzilla32902 : TestContentPage // or TestMasterDetailPage, etc ...
 	{
 		ContentPage FirstContentPage { get; set; }
@@ -23,7 +26,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		ContentPage MasterPage { get; set; }
 
-		protected override void Init ()
+		protected override void Init()
 		{
 			var rootContentPageLayout = new StackLayout();
 			var rootContentPageButton = new Button()
@@ -42,7 +45,7 @@ namespace Xamarin.Forms.Controls.Issues
 			Content = rootContentPageLayout;
 
 			Title = "RootPage";
-			BackgroundColor = Color.FromHex ("#2c3e50");
+			BackgroundColor = Color.FromHex("#2c3e50");
 
 			//MASTER PAGE
 			MasterPage = new ContentPage()
@@ -68,14 +71,17 @@ namespace Xamarin.Forms.Controls.Issues
 
 
 			//DETAIL PAGE
-			DetailPage = new NavigationPage (new ContentPage () { 
-				Title = "RootNavigationDetailPage", 
-				BackgroundColor = Color.FromHex ("#2980b9"), 
-				Content = new Button { 
-					Text = "PopModal", 
-					TextColor = Color.White, 
-					Command = new Command (async () => {
-						await Navigation.PopModalAsync ();
+			DetailPage = new NavigationPage(new ContentPage()
+			{
+				Title = "RootNavigationDetailPage",
+				BackgroundColor = Color.FromHex("#2980b9"),
+				Content = new Button
+				{
+					Text = "PopModal",
+					TextColor = Color.White,
+					Command = new Command(async () =>
+					{
+						await Navigation.PopModalAsync();
 					})
 				}
 			});
@@ -113,14 +119,14 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST && __IOS__
 		[Test]
-		public void Bugzilla32902Test ()
+		public void Bugzilla32902Test()
 		{
 			if (RunningApp.IsTablet())
 			{
-				RunningApp.Tap (q => q.Marked ("btnNext"));
-				RunningApp.Tap (q => q.Marked ("btnPushModal"));
-				RunningApp.Tap (q => q.Marked ("Master"));
-				RunningApp.Tap (q => q.Marked ("btnPop"));
+				RunningApp.Tap(q => q.Marked("btnNext"));
+				RunningApp.Tap(q => q.Marked("btnPushModal"));
+				RunningApp.Tap(q => q.Marked("Master"));
+				RunningApp.Tap(q => q.Marked("btnPop"));
 			}
 		}
 #endif

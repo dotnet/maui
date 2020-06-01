@@ -10,6 +10,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 41778, "Slider Inside ScrollView Will Open MasterDetailPage.Master", PlatformAffected.iOS)]
 	public class Bugzilla41778 : TestMasterDetailPage // or TestMasterDetailPage, etc ...
@@ -42,7 +45,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 				var label = new Label
 				{
-					Text = "This test is originally intended to be run on an iPad. Slide the slider back and forth quickly. Make sure that the slider thumb is moving along with your gesture." 
+					Text = "This test is originally intended to be run on an iPad. Slide the slider back and forth quickly. Make sure that the slider thumb is moving along with your gesture."
 					+ " Verify that the master detail menu does not open.",
 					LineBreakMode = LineBreakMode.WordWrap,
 					MaxLines = 4

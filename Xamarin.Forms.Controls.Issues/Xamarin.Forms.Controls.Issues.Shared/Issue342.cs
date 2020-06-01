@@ -11,14 +11,15 @@ using Xamarin.Forms.Core.UITests;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 342, "NRE when Image is not assigned source", PlatformAffected.WinPhone)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 342, "NRE when Image is not assigned source", PlatformAffected.WinPhone)]
 	public class Issue342NoSource : TestContentPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
 			Title = "Issue 342";
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = {
 					new Label {
 						Text = "Uninitialized image"
@@ -32,42 +33,44 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void Issue342NoSourceTestsLablePresentNoImage ()
+		public void Issue342NoSourceTestsLablePresentNoImage()
 		{
-			RunningApp.WaitForElement (q => q.Marked ("Uninitialized image"), "Cannot see label");
-			RunningApp.Screenshot ("All elements present");
+			RunningApp.WaitForElement(q => q.Marked("Uninitialized image"), "Cannot see label");
+			RunningApp.Screenshot("All elements present");
 		}
 #endif
-    }
+	}
 
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 342, "NRE when Image is delayed source", PlatformAffected.WinPhone)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 342, "NRE when Image is delayed source", PlatformAffected.WinPhone)]
 	public class Issue342DelayedSource : TestContentPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
 			Title = "Issue 342";
 
-			_image = new Image ();
+			_image = new Image();
 
-			Content = new StackLayout {
-				Children = { 
+			Content = new StackLayout
+			{
+				Children = {
 					new Label {
 						Text = "Delayed image"
 					},
-					_image 
+					_image
 				}
 			};
 
-			AddSourceAfterDelay ();
+			AddSourceAfterDelay();
 		}
 
 		// Should not throw exception when user does not include image
 		Image _image;
 
-		void AddSourceAfterDelay ()
+		void AddSourceAfterDelay()
 		{
-			Device.StartTimer (TimeSpan.FromSeconds (2), () => {
+			Device.StartTimer(TimeSpan.FromSeconds(2), () =>
+			{
 				_image.Source = "cover1.jpg";
 				return false;
 			});
@@ -76,9 +79,9 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 		[Test]
 		[Category(UITestCategories.ManualReview)]
-		public void Issue342DelayedLoadTestsImageLoads ()
+		public void Issue342DelayedLoadTestsImageLoads()
 		{
-			RunningApp.Screenshot ("Should not crash");
+			RunningApp.Screenshot("Should not crash");
 		}
 #endif
 	}

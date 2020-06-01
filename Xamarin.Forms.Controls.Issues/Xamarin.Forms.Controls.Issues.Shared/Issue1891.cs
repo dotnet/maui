@@ -13,6 +13,9 @@ using Xamarin.UITest;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Github, 1891, "Modal dialog scrolls to far when focusing input boxes", PlatformAffected.iOS)]
 	public class Issue1891 : TestContentPage

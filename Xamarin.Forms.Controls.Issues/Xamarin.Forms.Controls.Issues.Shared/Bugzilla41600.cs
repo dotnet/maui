@@ -9,6 +9,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 41600, "[Android] Invalid item param value for ScrollTo throws an error", PlatformAffected.Android)]
 	public class Bugzilla41600 : TestContentPage
@@ -35,7 +38,7 @@ namespace Xamarin.Forms.Controls.Issues
 					listView,
 					new Button
 					{
-						AutomationId = _btnScrollToNonExistentItem, 
+						AutomationId = _btnScrollToNonExistentItem,
 						Text = "Click for ScrollTo (should do nothing)",
 						Command = new Command(() =>
 						{
@@ -44,7 +47,7 @@ namespace Xamarin.Forms.Controls.Issues
 					},
 					new Button
 					{
-						AutomationId = _btnScrollToExistentItem, 
+						AutomationId = _btnScrollToExistentItem,
 						Text = "Click for ScrollTo (should go to 15)",
 						Command = new Command(() =>
 						{

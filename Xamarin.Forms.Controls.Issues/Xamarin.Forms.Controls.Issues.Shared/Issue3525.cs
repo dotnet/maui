@@ -18,6 +18,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3525, "[iOS] Finicky tap gesture recognition on Spans")]
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(UITestCategories.Gestures)]
 #endif
 	public class Issue3525 : TestContentPage

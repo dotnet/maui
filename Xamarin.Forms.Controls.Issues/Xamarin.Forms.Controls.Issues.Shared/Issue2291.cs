@@ -8,6 +8,9 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Github, 2291, "DatePicker.IsVisible = false issue", PlatformAffected.WinPhone)]
 	public class Issue2291 : ContentPage

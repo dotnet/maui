@@ -10,6 +10,9 @@ using Xamarin.Forms.Internals;
 namespace Xamarin.Forms.Controls.Issues
 {
 #if APP
+#if UITEST
+	[Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 22229, "ToolbarItems not clearing", PlatformAffected.iOS | PlatformAffected.WinPhone, NavigationBehavior.PushAsync)]
 	public partial class Bugzilla22229 : TabbedPage

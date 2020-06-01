@@ -8,6 +8,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 27731, "[Android] Action Bar can not be controlled reliably on MasterDetailPage", PlatformAffected.Android)]
 	public class Bugzilla27731 : TestMasterDetailPage

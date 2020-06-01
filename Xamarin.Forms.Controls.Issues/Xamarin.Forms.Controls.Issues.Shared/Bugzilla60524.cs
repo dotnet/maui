@@ -12,6 +12,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 60524, "NRE when rendering ListView with grouping enabled and HasUnevenRows set to true", PlatformAffected.iOS)]
 	public class Bugzilla60524 : TestNavigationPage
@@ -40,7 +43,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 			private void GetItems()
 			{
-				var zeroGroup = new Grouping<string, GroupedItem>("Group 0", new List<GroupedItem> {
+				var zeroGroup = new Grouping<string, GroupedItem>("Group 0", new List<GroupedItem>
+				{
 				});
 
 				var firstGroup = new Grouping<string, GroupedItem>("Group 1", new List<GroupedItem> {

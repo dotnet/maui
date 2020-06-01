@@ -12,11 +12,12 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[Category(UITestCategories.InputTransparent)]
 	[Category(UITestCategories.IsEnabled)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 46458, "Grid.IsEnabled property is not working", PlatformAffected.Android)]
-	public class Bugzilla46458 : TestContentPage 
+	public class Bugzilla46458 : TestContentPage
 	{
 		protected override void Init()
 		{

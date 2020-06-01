@@ -14,6 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Issue(IssueTracker.Github, 4684, "[Android] don't clear shell content because native page isn't visible",
 		PlatformAffected.Android)]
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(UITestCategories.Shell)]
 #endif
 	public sealed partial class Issue4684 : TestShell

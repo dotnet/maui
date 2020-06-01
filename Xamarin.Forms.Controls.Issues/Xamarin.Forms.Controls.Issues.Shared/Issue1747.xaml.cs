@@ -16,6 +16,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Issue(IssueTracker.Github, 1747, "Binding to Switch.IsEnabled has no effect", PlatformAffected.WinPhone)]
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.Switch)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 #endif
 	public partial class Issue1747 : TestContentPage
 	{

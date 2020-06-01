@@ -5,6 +5,9 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 39853, "BorderRadius ignored on UWP", PlatformAffected.UWP)]
 	public class Bugzilla39853 : TestContentPage
@@ -85,8 +88,11 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var layout = new StackLayout();
 
-			var instructions = new Label { Text = "The button below should be round. " 
-												+ "If it has any right angles, the test has failed."};
+			var instructions = new Label
+			{
+				Text = "The button below should be round. "
+												+ "If it has any right angles, the test has failed."
+			};
 
 			layout.Children.Add(instructions);
 			layout.Children.Add(new RoundedButton(100));

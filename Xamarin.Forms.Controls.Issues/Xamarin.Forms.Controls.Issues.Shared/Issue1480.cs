@@ -10,6 +10,9 @@ using Xamarin.Forms.Core.UITests;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1480, "[iOS] Change CALayer.Transform in MainThread", PlatformAffected.iOS)]
 	public class Issue1480 : TestContentPage
@@ -36,7 +39,8 @@ namespace Xamarin.Forms.Controls.Issues
 </html>"
 				}
 			};
-			var checkPage = new ContentPage {
+			var checkPage = new ContentPage
+			{
 				Content = checkWebView
 			};
 			checkPage.Appearing += (s, e) => checkWebView.TranslateTo(0, 100);

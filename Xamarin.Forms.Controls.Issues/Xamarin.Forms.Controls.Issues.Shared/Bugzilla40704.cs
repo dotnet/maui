@@ -17,11 +17,12 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.ListView)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 40704, "Strange duplication of listview headers when collapsing/expanding sections")]
-	public class Bugzilla40704 : TestContentPage 
+	public class Bugzilla40704 : TestContentPage
 	{
 		ListView listview;
 		int count = 2;

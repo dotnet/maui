@@ -9,6 +9,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 36651, "ScrollToAsync fails to scroll on Windows Phone 8.1 RT", PlatformAffected.WinRT)]
 	public class Bugzilla36651 : TestNavigationPage

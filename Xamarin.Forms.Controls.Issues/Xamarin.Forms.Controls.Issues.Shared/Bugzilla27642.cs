@@ -10,14 +10,18 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 27642, "[Windows Phone] Adding a ScrollView control to a ContentView, remove it and re-add it will cause an exception on Windows Phone")]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 27642, "[Windows Phone] Adding a ScrollView control to a ContentView, remove it and re-add it will cause an exception on Windows Phone")]
 	public class Bugzilla27642 : TestContentPage // or TestMasterDetailPage, etc ...
 	{
 		ContentView _mainContent;
-		protected override void Init ()
+		protected override void Init()
 		{
-			var rootGrid = new Grid {
+			var rootGrid = new Grid
+			{
 				RowDefinitions = new RowDefinitionCollection
 														  {
 															 new RowDefinition { Height = new GridLength(1, GridUnitType.Star) },
@@ -27,24 +31,24 @@ namespace Xamarin.Forms.Controls.Issues
 
 
 			_mainContent = new ContentView { Content = new ScrollView { Content = new Label { Text = Description } } };
-			rootGrid.AddChild (_mainContent, 0, 0);
+			rootGrid.AddChild(_mainContent, 0, 0);
 
 
 			var buttons = new StackLayout { Orientation = StackOrientation.Horizontal };
 
 			var button1A = new Button { Text = "View 1A" };
-			button1A.Clicked += (sender, args) => ShowView (_view1A);
-			buttons.Children.Add (button1A);
+			button1A.Clicked += (sender, args) => ShowView(_view1A);
+			buttons.Children.Add(button1A);
 
 			var button1B = new Button { Text = "View 1B" };
-			button1B.Clicked += (sender, args) => ShowView (_view1B);
-			buttons.Children.Add (button1B);
+			button1B.Clicked += (sender, args) => ShowView(_view1B);
+			buttons.Children.Add(button1B);
 
 			var button2 = new Button { Text = "View 2" };
-			button2.Clicked += (sender, args) => ShowView (_view2);
-			buttons.Children.Add (button2);
+			button2.Clicked += (sender, args) => ShowView(_view2);
+			buttons.Children.Add(button2);
 
-			rootGrid.AddChild (buttons, 0, 1);
+			rootGrid.AddChild(buttons, 0, 1);
 
 
 			Content = rootGrid;
@@ -58,43 +62,45 @@ namespace Xamarin.Forms.Controls.Issues
 								+ "View2 doesn't contain a ScrollView and therefore can be called again without problems.\n\n"
 								+ "The Error-Message-View contains a ScrollView, too but will be re-created every time.";
 
-		readonly View1A _view1A = new View1A ();  // always same instance, simulates Singleton from IoC
-		readonly View1B _view1B = new View1B ();  // -"-
-		readonly View2 _view2 = new View2 ();     // -"-
+		readonly View1A _view1A = new View1A();  // always same instance, simulates Singleton from IoC
+		readonly View1B _view1B = new View1B();  // -"-
+		readonly View2 _view2 = new View2();     // -"-
 
-		void ShowView (ExtendedContentView view)
+		void ShowView(ExtendedContentView view)
 		{
-			try {
-				view.Activating ();    // implemented only for View1B
+			try
+			{
+				view.Activating();    // implemented only for View1B
 				_mainContent.Content = view;
 			}
-			catch (Exception ex) {
-				_mainContent.Content = new ErrorView (ex);
+			catch (Exception ex)
+			{
+				_mainContent.Content = new ErrorView(ex);
 			}
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class ExtendedContentView : ContentView
 		{
-			public virtual void Activating ()
+			public virtual void Activating()
 			{
 			}
 		}
-	
-		[Preserve (AllMembers = true)]
+
+		[Preserve(AllMembers = true)]
 		public class View1A : ExtendedContentView
 		{
-			public View1A ()
+			public View1A()
 			{
 
 				BackgroundColor = Color.Olive;
-				var scrollView = new ScrollView ();
-				var sb = new StringBuilder ();
+				var scrollView = new ScrollView();
+				var sb = new StringBuilder();
 				for (var i = 0; i < 100; i++)
-					sb.Append ("View 1a with ScrollView +++ ");
+					sb.Append("View 1a with ScrollView +++ ");
 
 #pragma warning disable 618
-				var label = new Label { Text = sb.ToString (), HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center, XAlign = TextAlignment.Center, };
+				var label = new Label { Text = sb.ToString(), HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center, XAlign = TextAlignment.Center, };
 #pragma warning restore 618
 
 				scrollView.Content = label;
@@ -105,23 +111,23 @@ namespace Xamarin.Forms.Controls.Issues
 
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class View1B : ExtendedContentView
 		{
-			public View1B ()
+			public View1B()
 			{
 				BackgroundColor = Color.Navy;
 			}
 
-			public override void Activating ()
+			public override void Activating()
 			{
-				var scrollView = new ScrollView ();
-				var sb = new StringBuilder ();
+				var scrollView = new ScrollView();
+				var sb = new StringBuilder();
 				for (var i = 0; i < 50; i++)
-					sb.Append ("View 1b with ScrollView and recreation of content +++++ ");
+					sb.Append("View 1b with ScrollView and recreation of content +++++ ");
 
 #pragma warning disable 618
-				var label = new Label { Text = sb.ToString (), HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center, XAlign = TextAlignment.Center, };
+				var label = new Label { Text = sb.ToString(), HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center, XAlign = TextAlignment.Center, };
 #pragma warning restore 618
 
 				scrollView.Content = label;
@@ -133,7 +139,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		public class View2 : ExtendedContentView
 		{
-			public View2 ()
+			public View2()
 			{
 				BackgroundColor = Color.Teal;
 #pragma warning disable 618
@@ -142,13 +148,13 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class ErrorView : ExtendedContentView
 		{
-			public ErrorView (Exception ex)
+			public ErrorView(Exception ex)
 			{
 				BackgroundColor = Color.Maroon;
-				Content = new ScrollView { Content = new Label { Text = ex.ToString () } };
+				Content = new ScrollView { Content = new Label { Text = ex.ToString() } };
 			}
 		}
 

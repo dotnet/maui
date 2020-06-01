@@ -9,8 +9,11 @@ using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1665, "ListView full width separators on iOS", PlatformAffected.iOS)]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1665, "ListView full width separators on iOS", PlatformAffected.iOS)]
 	public class Issue1665 : TestContentPage
 	{
 		ListView _list;
@@ -22,7 +25,7 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override void Init()
 		{
 			_button = new Button();
-			_button.Margin = new Thickness {Top = 50};
+			_button.Margin = new Thickness { Top = 50 };
 			_button.Clicked += ToggleSeparatorStyle;
 
 			UpdateButtonAndRefreshList();

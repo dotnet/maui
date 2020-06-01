@@ -9,6 +9,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 60563, "ActivityIndicator in ListView causes SIGSEGV crash in iOS 8", PlatformAffected.iOS)]
 	public class Bugzilla60563 : TestNavigationPage

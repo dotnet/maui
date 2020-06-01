@@ -13,9 +13,13 @@
                                 Command="{Binding Path=Command, Source={x:Reference page}}"
                                 CommandParameter="{Binding .}">
                         <Expander.Header>
-                            <Label Text="{Binding Name}" FontSize="35" FontAttributes="Bold"/>
+                            <StackLayout Orientation="Horizontal" Spacing="0">
+                                <Label Text="{Binding Name}" HorizontalOptions="FillAndExpand" FontSize="32" FontAttributes="Bold"/>
+                                <Label Text="Enable nested:" FontSize="13" VerticalOptions="CenterAndExpand" />
+                                <Switch IsToggled="{Binding IsEnabled}" />
+                            </StackLayout>
                         </Expander.Header>
-                        <Expander>
+                        <Expander IsEnabled="{Binding IsEnabled}">
                             <Expander.Header>
                                 <Label Text="Expander Level 2" FontSize="30" FontAttributes="Bold"/>
                             </Expander.Header>

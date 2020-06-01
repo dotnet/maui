@@ -8,9 +8,12 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3342, "[Android] BoxView BackgroundColor not working on 3.2.0-pre1", PlatformAffected.Android)]
-	public class Issue3342 : TestContentPage 
+	public class Issue3342 : TestContentPage
 	{
 		protected override void Init()
 		{
@@ -48,11 +51,11 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void Issue3342Test ()
+		public void Issue3342Test()
 		{
-			RunningApp.Screenshot ("I am at Issue 3342");
+			RunningApp.Screenshot("I am at Issue 3342");
 			//RunningApp.WaitForNoElement (q => q.Marked ("FAIL"));
-			RunningApp.Screenshot ("I see the green box");
+			RunningApp.Screenshot("I see the green box");
 		}
 #endif
 	}

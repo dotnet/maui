@@ -15,6 +15,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2993, "[Android] Bottom Tab Bar with a navigation page is hiding content",
 		PlatformAffected.Android)]

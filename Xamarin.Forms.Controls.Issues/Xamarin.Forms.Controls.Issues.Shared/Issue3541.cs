@@ -10,6 +10,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3541, "[WPF] Fix Local store not persistant when restarting App", PlatformAffected.WPF)]
 	public class Issue3541 : TestContentPage
@@ -35,7 +38,7 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 			saveButton.Clicked += SaveButton_Clicked;
-			
+
 			stack.Children.Add(_entry);
 			stack.Children.Add(saveButton);
 			stack.Children.Add(new Button()

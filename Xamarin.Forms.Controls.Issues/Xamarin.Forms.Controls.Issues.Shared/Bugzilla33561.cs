@@ -6,8 +6,11 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 33561, 
+	[Issue(IssueTracker.Bugzilla, 33561,
 		"ListView Pull-to-Refresh ActivityIndicator animation stuck when navigating away and then back again")]
 	public class Bugzilla33561 : TestTabbedPage
 	{

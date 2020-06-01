@@ -5,37 +5,44 @@ namespace Xamarin.Forms.Controls.Issues
 {
 	public class MasterDetailToolbarBug : MasterDetailPage
 	{
-		public MasterDetailToolbarBug ()
+		public MasterDetailToolbarBug()
 		{
 			Title = "MasterDetailToolbarBug";
 
-			Master = new ContentPage () {
+			Master = new ContentPage()
+			{
 				Title = "Master"
 			};
-			Detail = new ContentPage () {
+			Detail = new ContentPage()
+			{
 				Title = "Detail",
 			};
-			Detail.ToolbarItems.Add (new ToolbarItem ("ToolbarItem2", "Icon.png", ()
-			                                                                      => { }));
+			Detail.ToolbarItems.Add(new ToolbarItem("ToolbarItem2", "Icon.png", ()
+																				=>
+			{ }));
 		}
 	}
-
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1598, "MasterDetailContainer does not handle adding of views which are already its children", PlatformAffected.Android)]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1598, "MasterDetailContainer does not handle adding of views which are already its children", PlatformAffected.Android)]
 	public class Issue1598 : ContentPage
 	{
-		MasterDetailToolbarBug _secondPage = new MasterDetailToolbarBug ();
+		MasterDetailToolbarBug _secondPage = new MasterDetailToolbarBug();
 
-		public Issue1598 ()
+		public Issue1598()
 		{
 			Title = "XamarinTest MainMenu";
 
-			var menu1 = new MainMenuCell ("MasterDetail - Toolbar bug", "Icon.png");
-			menu1.Tapped += (o, e) => {
-				Navigation.PushAsync (_secondPage);
+			var menu1 = new MainMenuCell("MasterDetail - Toolbar bug", "Icon.png");
+			menu1.Tapped += (o, e) =>
+			{
+				Navigation.PushAsync(_secondPage);
 			};
 
-			var menu = new TableView () {
+			var menu = new TableView()
+			{
 				VerticalOptions = LayoutOptions.FillAndExpand,
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				HasUnevenRows = true,
@@ -49,14 +56,15 @@ namespace Xamarin.Forms.Controls.Issues
 
 			Content = menu;
 
-			ToolbarItems.Add (new ToolbarItem ("ToolbarItem1", "bank.png", () => { }));
+			ToolbarItems.Add(new ToolbarItem("ToolbarItem1", "bank.png", () => { }));
 		}
 
 		class MainMenuCell : ViewCell
 		{
-			public MainMenuCell (string title, string iconFile)
+			public MainMenuCell(string title, string iconFile)
 			{
-				View = new StackLayout () {
+				View = new StackLayout()
+				{
 					HorizontalOptions = LayoutOptions.FillAndExpand,
 					VerticalOptions = LayoutOptions.FillAndExpand,
 					Orientation = StackOrientation.Horizontal,

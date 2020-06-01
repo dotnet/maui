@@ -15,6 +15,9 @@ using Xamarin.Forms.Core.UITests;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1898, "TabbedPage Page not watching icon changes", PlatformAffected.Android, issueTestNumber: 1)]
 	public class Issue1898 : TestTabbedPage

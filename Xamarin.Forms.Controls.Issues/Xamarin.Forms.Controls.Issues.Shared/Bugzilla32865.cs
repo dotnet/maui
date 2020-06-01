@@ -9,9 +9,12 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 32865, "On MasterDetailPage trying to change Icon of Master page doesn\'t work if another view is pushed and Image is renderer in blue", PlatformAffected.iOS)]
-	public class Bugzilla32865 : TestMasterDetailPage 
+	public class Bugzilla32865 : TestMasterDetailPage
 	{
 		public static Bugzilla32865 Mdp;
 
@@ -19,7 +22,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			Mdp = this;
 
-			Master = new ContentPage {Title = "Master"};
+			Master = new ContentPage { Title = "Master" };
 			Detail = new NavigationPage(new DetailView32865());
 		}
 

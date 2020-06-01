@@ -4,12 +4,15 @@ using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
 #if UITEST
-using Xamarin.UITest; 
+using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2680, "[Enhancement] Add VerticalScrollMode/HorizontalScrollMode to ListView and ScrollView", PlatformAffected.All)]
 	public class Issue2680ScrollView : TestContentPage // or TestMasterDetailPage, etc ... 
@@ -69,9 +72,9 @@ namespace Xamarin.Forms.Controls.Issues
 		const string ButtonEnabledCaption = "Enable scroll";
 
 #if UITEST
-		[Test] 
-		public void Issue2680Test_ScrollDisabled() 
-		{ 
+		[Test]
+		public void Issue2680Test_ScrollDisabled()
+		{
 			RunningApp.ScrollDown(ScrollViewMark);
 			RunningApp.ScrollDown(ScrollViewMark);
 

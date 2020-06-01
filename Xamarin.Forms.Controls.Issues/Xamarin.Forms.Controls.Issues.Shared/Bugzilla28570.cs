@@ -10,22 +10,26 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 28570, "https://bugzilla.xamarin.com/show_bug.cgi?id=28570")]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 28570, "https://bugzilla.xamarin.com/show_bug.cgi?id=28570")]
 	internal class Bugzilla28570 : TestContentPage
 	{
 		public ScrollView ScrollView;
 
-		protected override void Init ()
+		protected override void Init()
 		{
-			Label header = new Label {
+			Label header = new Label
+			{
 				Text = "ScrollView Bug",
 				FontSize = 50,
 				FontAttributes = FontAttributes.Bold,
 				HorizontalOptions = LayoutOptions.Center
 			};
 
-			Label lab1 = new Label ();
+			Label lab1 = new Label();
 			lab1.Text = "Sometimes page content fits entirely on " +
 						"the page. That's very convenient. But " +
 						"on many occasions, the content of the page " +
@@ -59,15 +63,17 @@ namespace Xamarin.Forms.Controls.Issues
 						"a StackLayout just to be sure your stuff doesn't " +
 						"go running off the bottom of the screen.";
 
-			var targetLabel = new Label {Text = "Find Me"};
+			var targetLabel = new Label { Text = "Find Me" };
 			targetLabel.AutomationId = "28570Target";
 
-			lab1.FontSize = Device.GetNamedSize (NamedSize.Small, typeof (Label));
+			lab1.FontSize = Device.GetNamedSize(NamedSize.Small, typeof(Label));
 
 
-			ScrollView = new ScrollView {
+			ScrollView = new ScrollView
+			{
 				VerticalOptions = LayoutOptions.FillAndExpand,
-				Content = new StackLayout {
+				Content = new StackLayout
+				{
 					Children = {
 						lab1,
 						targetLabel
@@ -75,7 +81,7 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			Button makeBig = new Button ();
+			Button makeBig = new Button();
 			makeBig.Text = "Tap";
 			//
 			// Clicking button first time does not scroll event though scrollView.Height is already set.
@@ -84,14 +90,16 @@ namespace Xamarin.Forms.Controls.Issues
 			// For this test to work you should make sure the text fits into the screen when the font is small
 			// and then becomes larger than the screeen when switching to the Large font.
 			//
-			makeBig.Clicked += (object sender, EventArgs e) => {
-				lab1.FontSize = Device.GetNamedSize (NamedSize.Large, typeof (Label));
-				Debug.WriteLine ("******** scrollView.Height= {0}", lab1.Height); // this shows the same updated size on all clicks, so this is not the problem.
-				ScrollView.ScrollToAsync (0, lab1.Bounds.Bottom, false);
+			makeBig.Clicked += (object sender, EventArgs e) =>
+			{
+				lab1.FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label));
+				Debug.WriteLine("******** scrollView.Height= {0}", lab1.Height); // this shows the same updated size on all clicks, so this is not the problem.
+				ScrollView.ScrollToAsync(0, lab1.Bounds.Bottom, false);
 			};
 
 			// Build the page.
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = {
 					makeBig,
 					header,
@@ -103,7 +111,7 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 		[Test]
 		[Ignore("Fails intermittently on TestCloud")]
-		public void Bugzilla28570Test ()
+		public void Bugzilla28570Test()
 		{
 #if __ANDROID__
 			RunningApp.WaitForElement (q => q.Marked ("Tap"));

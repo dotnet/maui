@@ -7,6 +7,9 @@ using System.ComponentModel;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 44525, "Listview Row Height Does Not Adapt In iOS")]
 	public class Bugzilla44525 : TestContentPage

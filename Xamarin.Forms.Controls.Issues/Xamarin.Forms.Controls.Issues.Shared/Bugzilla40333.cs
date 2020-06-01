@@ -7,6 +7,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 40333, "[Android] IllegalStateException: Recursive entry to executePendingTransactions", PlatformAffected.Android)]
 	public class Bugzilla40333 : TestNavigationPage
@@ -25,8 +28,10 @@ namespace Xamarin.Forms.Controls.Issues
 			var tabButton = new Button { Text = "Test With TabbedPage", AutomationId = StartTabPageTestId };
 			tabButton.Clicked += (sender, args) => { PushAsync(new _40333MDP(true)); };
 
-			var content = new ContentPage {
-				Content = new StackLayout {
+			var content = new ContentPage
+			{
+				Content = new StackLayout
+				{
 					Children = { navButton, tabButton }
 				}
 			};
@@ -65,14 +70,16 @@ namespace Xamarin.Forms.Controls.Issues
 				{
 					Title = title;
 
-					var openMaster = new Button {
+					var openMaster = new Button
+					{
 						Text = "Open Master",
 						AutomationId = OpenMasterId
 					};
 
 					openMaster.Clicked += (sender, args) => ((MasterDetailPage)Parent.Parent).IsPresented = true;
 
-					Content = new StackLayout() {
+					Content = new StackLayout()
+					{
 						Children = { new Label { Text = "Detail Text" }, openMaster }
 					};
 				}
@@ -111,7 +118,8 @@ namespace Xamarin.Forms.Controls.Issues
 					_listView.ItemsSource = new[] { "1", ClickThisId, StillHereId };
 					_listView.ItemTapped += OnItemTapped;
 
-					Content = new StackLayout {
+					Content = new StackLayout
+					{
 						Children = { _listView }
 					};
 				}
@@ -146,13 +154,16 @@ namespace Xamarin.Forms.Controls.Issues
 				{
 					Title = title;
 
-					_listView.ItemTemplate = new DataTemplate(() => {
+					_listView.ItemTemplate = new DataTemplate(() =>
+					{
 						var lbl = new Label();
 						lbl.SetBinding(Label.TextProperty, ".");
 						lbl.AutomationId = lbl.Text;
 
-						var result = new ViewCell {
-							View = new StackLayout {
+						var result = new ViewCell
+						{
+							View = new StackLayout
+							{
 								Orientation = StackOrientation.Horizontal,
 								Children =
 								{
@@ -167,7 +178,8 @@ namespace Xamarin.Forms.Controls.Issues
 					_listView.ItemsSource = new[] { "1", ClickThisId, StillHereId };
 					_listView.ItemTapped += OnItemTapped;
 
-					Content = new StackLayout {
+					Content = new StackLayout
+					{
 						Children = { _listView }
 					};
 				}

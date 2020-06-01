@@ -11,48 +11,52 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 30835, "Navigating to and from the Carousel page with MasterDetail page creates an Out of memory exception")]
+#if UITEST
+	[Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 30835, "Navigating to and from the Carousel page with MasterDetail page creates an Out of memory exception")]
 	public class Bugzilla30835 : TestMasterDetailPage // or TestMasterDetailPage, etc ...
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
-			var menuPage = new MenuPage ();
+			var menuPage = new MenuPage();
 
-			menuPage.Menu.ItemSelected += (sender, e) => NavigateTo (e.SelectedItem as MenuItem);
+			menuPage.Menu.ItemSelected += (sender, e) => NavigateTo(e.SelectedItem as MenuItem);
 
 			Master = menuPage;
-			Detail = new NavigationPage (new HolderCarouselPages ());
+			Detail = new NavigationPage(new HolderCarouselPages());
 		}
 
-		void NavigateTo (MenuItem menu)
+		void NavigateTo(MenuItem menu)
 		{
-			var displayPage = (Page)Activator.CreateInstance (menu.TargetType);
-			Detail = new NavigationPage (displayPage);
+			var displayPage = (Page)Activator.CreateInstance(menu.TargetType);
+			Detail = new NavigationPage(displayPage);
 			IsPresented = false;
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class HolderCarouselPages : CarouselPage
 		{
-			public HolderCarouselPages ()
+			public HolderCarouselPages()
 			{
-				Device.BeginInvokeOnMainThread (() => {
-					ItemsSource = new HolderImage[] {				
+				Device.BeginInvokeOnMainThread(() =>
+				{
+					ItemsSource = new HolderImage[] {
 						new HolderImage ("frog", "photo.jpg"),
 						new HolderImage ("history", "photo.jpg"),
-						new HolderImage ("Test", "photo.jpg"), 
-					};			
+						new HolderImage ("Test", "photo.jpg"),
+					};
 				});
 
-				ItemTemplate = new DataTemplate (() => new DisplayContentPage ());
+				ItemTemplate = new DataTemplate(() => new DisplayContentPage());
 			}
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class HolderImage
 		{
-			public HolderImage (string name, string images)
+			public HolderImage(string name, string images)
 			{
 				Name = name;
 				Homeimages = images;
@@ -62,24 +66,26 @@ namespace Xamarin.Forms.Controls.Issues
 
 			public string Homeimages { private set; get; }
 
-			public override string ToString ()
+			public override string ToString()
 			{
 				return Name;
 			}
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class DisplayContentPage : ContentPage
 		{
-			public DisplayContentPage ()
+			public DisplayContentPage()
 			{
-				var imageView = new Image {
+				var imageView = new Image
+				{
 					HorizontalOptions = LayoutOptions.Center,
 				};
 
-				Content = new StackLayout {
+				Content = new StackLayout
+				{
 					Children = {
-						new StackLayout {   
+						new StackLayout {
 							HorizontalOptions = LayoutOptions.Center,
 							VerticalOptions = LayoutOptions.StartAndExpand,
 							Children = {
@@ -88,90 +94,97 @@ namespace Xamarin.Forms.Controls.Issues
 						},
 					}
 				};
-				imageView.SetBinding (Image.SourceProperty, "Homeimages");
+				imageView.SetBinding(Image.SourceProperty, "Homeimages");
 			}
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class MenuPage : ContentPage
 		{
 			public ListView Menu { get; set; }
 
-			public MenuPage ()
+			public MenuPage()
 			{
 				IconImageSource = "bank.png";
 				Title = "Carsousel Memory Bug";
-				BackgroundColor = Color.FromHex ("#000000");
+				BackgroundColor = Color.FromHex("#000000");
 
-				Menu = new MenuListView ();
+				Menu = new MenuListView();
 
-				var menuLabel = new ContentView {
-					Padding = new Thickness (10, 36, 0, 5),
-					Content = new Label {
-						TextColor = Color.FromHex ("#FFFFFF"),
+				var menuLabel = new ContentView
+				{
+					Padding = new Thickness(10, 36, 0, 5),
+					Content = new Label
+					{
+						TextColor = Color.FromHex("#FFFFFF"),
 						Text = "Carsousel Memory Bug",
 					}
 				};
 
-				var layout = new StackLayout { 
-					Spacing = 0, 
+				var layout = new StackLayout
+				{
+					Spacing = 0,
 					VerticalOptions = LayoutOptions.FillAndExpand,
 				};
-				layout.Children.Add (menuLabel);
-				layout.Children.Add (Menu);
+				layout.Children.Add(menuLabel);
+				layout.Children.Add(Menu);
 
 				Content = layout;
 			}
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class MenuListView : ListView
 		{
-			public MenuListView ()
+			public MenuListView()
 			{
-				List<MenuItem> data = new MenuListData ();
+				List<MenuItem> data = new MenuListData();
 
 				ItemsSource = data;
 				VerticalOptions = LayoutOptions.FillAndExpand;
 				BackgroundColor = Color.Black;
 
-				var cell = new DataTemplate (typeof(ImageCell));
-				cell.SetBinding (TextCell.TextColorProperty, "TextColor");
-				cell.SetBinding (TextCell.TextProperty, "Title");
-				cell.SetBinding (ImageCell.ImageSourceProperty, "IconSource");
+				var cell = new DataTemplate(typeof(ImageCell));
+				cell.SetBinding(TextCell.TextColorProperty, "TextColor");
+				cell.SetBinding(TextCell.TextProperty, "Title");
+				cell.SetBinding(ImageCell.ImageSourceProperty, "IconSource");
 
 				ItemTemplate = cell;
-				SelectedItem = data [0];
+				SelectedItem = data[0];
 			}
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class MenuListData : List<MenuItem>
 		{
-			public MenuListData ()
+			public MenuListData()
 			{
-				Add (new MenuItem () { 
-					Title = "Carousel", 
-					IconSource = "icon.png", 
+				Add(new MenuItem()
+				{
+					Title = "Carousel",
+					IconSource = "icon.png",
 					TargetType = typeof(HolderCarouselPages),
 					TextColor = Color.White
 				});
 
-				Add (new MenuItem () { 
+				Add(new MenuItem()
+				{
 					Title = "Pic 1",
-					IconSource = "icon.png", 
+					IconSource = "icon.png",
 					TargetType = typeof(Pic1),
 					TextColor = Color.White
 				});
 
-				Add (new MenuItem () { 
-					Title = "Pic 2", 
-					IconSource = "icon.png", 
+				Add(new MenuItem()
+				{
+					Title = "Pic 2",
+					IconSource = "icon.png",
 					TargetType = typeof(Pic1),
 					TextColor = Color.White
-				});	
+				});
 
-				Add (new MenuItem () {
+				Add(new MenuItem()
+				{
 					Title = "Pic 3",
 					IconSource = "icon.png",
 					TargetType = typeof(Pic1),
@@ -180,7 +193,7 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class MenuItem
 		{
 			public string Title { get; set; }
@@ -189,15 +202,16 @@ namespace Xamarin.Forms.Controls.Issues
 
 			public Type TargetType { get; set; }
 
-			public Color TextColor { get ; set; }
+			public Color TextColor { get; set; }
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class Pic1 : ContentPage
 		{
-			public Pic1 ()
+			public Pic1()
 			{
-				Content = new StackLayout { 
+				Content = new StackLayout
+				{
 					Children = {
 						new Image { Source = "photo.jpg" }
 					}

@@ -50,7 +50,8 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		protected virtual void UpdateAfterLoading()
 		{
-			_image.IsOpaque = Element.IsOpaque;
+			if (_image.IsOpaque != Element.IsOpaque)
+				_image.IsOpaque = Element.IsOpaque;
 		}
 
 		protected override ElmSharp.Size Measure(int availableWidth, int availableHeight)
@@ -123,7 +124,16 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			if (Control != null)
 			{
-				bool success = await _image.LoadFromImageSourceAsync(source);
+				bool success;
+				if (source is FileImageSource fis)
+				{
+					success = _image.LoadFromFile(fis.File);
+				}
+				else
+				{
+					success = await _image.LoadFromImageSourceAsync(source);
+				}
+
 				if (!IsDisposed && success)
 				{
 					(Element as IVisualElementController)?.NativeSizeChanged();

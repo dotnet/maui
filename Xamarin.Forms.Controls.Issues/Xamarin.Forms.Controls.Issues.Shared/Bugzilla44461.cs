@@ -11,11 +11,14 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 44461, "ScrollToPosition.Center works differently on Android and iOS", PlatformAffected.iOS)]
 	public class Bugzilla44461 : TestContentPage
 	{
-		const string BtnPrefix= "Button";
+		const string BtnPrefix = "Button";
 
 		protected override void Init()
 		{
@@ -71,10 +74,10 @@ namespace Xamarin.Forms.Controls.Issues
 			var positions = TapButton(0);
 			Assert.AreEqual(positions.initialPosition.X, positions.finalPosition.X);
 			Assert.LessOrEqual(positions.finalPosition.X, 1);
-			RunningApp.Screenshot ("Button0 is aligned with the left side of the screen");
+			RunningApp.Screenshot("Button0 is aligned with the left side of the screen");
 		}
 
-		(AppRect initialPosition, AppRect finalPosition ) TapButton(int position)
+		(AppRect initialPosition, AppRect finalPosition) TapButton(int position)
 		{
 			var buttonText = $"{BtnPrefix}{position}";
 			RunningApp.WaitForElement(q => q.Button(buttonText));

@@ -7,6 +7,9 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Github, 1644, "ListView reappearing and selecting its item causes jobject exception", PlatformAffected.Android)]
 	public class Issue1644 : ContentPage

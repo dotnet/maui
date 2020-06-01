@@ -12,7 +12,8 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
 	[Category(UITestCategories.Gestures)]
-#endif 
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 57515, "PinchGestureRecognizer not getting called on Android ", PlatformAffected.Android)]
 	public class Bugzilla57515 : TestContentPage
@@ -56,7 +57,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		class PinchToZoomContainer : ContentView
 		{
-			public static readonly BindableProperty CurrentScaleProperty = 
+			public static readonly BindableProperty CurrentScaleProperty =
 				BindableProperty.Create("CurrentScale", typeof(double), typeof(PinchToZoomContainer), 1.0);
 
 			public double CurrentScale

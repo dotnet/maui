@@ -13,14 +13,17 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 27350, "Binding throws Null Pointer Exception when Updating Tab")]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 27350, "Binding throws Null Pointer Exception when Updating Tab")]
 	public class Bugzilla27350 : TestContentPage // or TestMasterDetailPage, etc ...
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
 			var btn = new Button { Text = "next main" };
-			btn.Clicked += async (object sender, EventArgs e) => await Navigation.PushAsync (new MainPage1 ());
+			btn.Clicked += async (object sender, EventArgs e) => await Navigation.PushAsync(new MainPage1());
 			Content = btn;
 		}
 
@@ -31,19 +34,19 @@ namespace Xamarin.Forms.Controls.Issues
 			public ObservableCollection<RecipeGroup> RecipeGroups { get; set; }
 
 #pragma warning disable 1998 // considered for removal
-			public async Task LoadRecipesAsync ()
+			public async Task LoadRecipesAsync()
 #pragma warning restore 1998
 			{
-				var groups = new  ObservableCollection<RecipeGroup> ();
-				groups.Add (new RecipeGroup { Title = "Teste 1" });
-				groups.Add (new RecipeGroup { Title = "Teste 2" });
-				groups.Add (new RecipeGroup { Title = "Teste 3" });
-				groups.Add (new RecipeGroup { Title = "Teste 4" });
-				groups.Add (new RecipeGroup { Title = "Teste 5" });
-				groups.Add (new RecipeGroup { Title = "Teste 6" });
-				groups.Add (new RecipeGroup { Title = "Teste 4" });
-				groups.Add (new RecipeGroup { Title = "Teste 5" });
-				groups.Add (new RecipeGroup { Title = "Teste 6" });
+				var groups = new ObservableCollection<RecipeGroup>();
+				groups.Add(new RecipeGroup { Title = "Teste 1" });
+				groups.Add(new RecipeGroup { Title = "Teste 2" });
+				groups.Add(new RecipeGroup { Title = "Teste 3" });
+				groups.Add(new RecipeGroup { Title = "Teste 4" });
+				groups.Add(new RecipeGroup { Title = "Teste 5" });
+				groups.Add(new RecipeGroup { Title = "Teste 6" });
+				groups.Add(new RecipeGroup { Title = "Teste 4" });
+				groups.Add(new RecipeGroup { Title = "Teste 5" });
+				groups.Add(new RecipeGroup { Title = "Teste 6" });
 
 				RecipeGroups = groups;
 			}
@@ -74,21 +77,24 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			public event PropertyChangedEventHandler PropertyChanged;
 
-			void OnPropertyChanged (string caller)
+			void OnPropertyChanged(string caller)
 			{
 				var handler = PropertyChanged;
-				if (handler != null) {
-					handler (this, new PropertyChangedEventArgs (caller));
+				if (handler != null)
+				{
+					handler(this, new PropertyChangedEventArgs(caller));
 				}
 			}
 
 			public string ID { get; set; }
 
-			public string Title {
-				get{ return _title; }
-				set {
+			public string Title
+			{
+				get { return _title; }
+				set
+				{
 					_title = value;
-					OnPropertyChanged ("Title");
+					OnPropertyChanged("Title");
 				}
 			}
 
@@ -107,44 +113,56 @@ namespace Xamarin.Forms.Controls.Issues
 
 		class MainPage1 : TabbedPage
 		{
-			public MainPage1 ()
+			public MainPage1()
 			{
-				ItemTemplate = new DataTemplate (() => {
-					var page = new ContentPage ();
-					page.SetBinding (TitleProperty, new Binding ("Title"));
-					var btn = new Button { Text = "change", Command = new Command (() => {
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var page = new ContentPage();
+					page.SetBinding(TitleProperty, new Binding("Title"));
+					var btn = new Button
+					{
+						Text = "change",
+						Command = new Command(() =>
+						{
 							(page.BindingContext as RecipeGroup).Title = "we changed";
 						})
 					};
-					var btn1 = new Button { Text = "null", Command = new Command (() => {
+					var btn1 = new Button
+					{
+						Text = "null",
+						Command = new Command(() =>
+						{
 							(page.BindingContext as RecipeGroup).Title = null;
 						})
 					};
 					page.Content = new StackLayout { Children = { btn, btn1 } };
 					return page;
 				});
-				SetBinding (ItemsSourceProperty, new Binding ("RecipeGroups"));
+				SetBinding(ItemsSourceProperty, new Binding("RecipeGroups"));
 			}
 
-			protected override async void OnAppearing ()
+			protected override async void OnAppearing()
 			{
-				base.OnAppearing ();
+				base.OnAppearing();
 
 				if (BindingContext == null)
-					BindingContext = await GetRecipeViewModelAsync ();
+					BindingContext = await GetRecipeViewModelAsync();
 			}
 
 			RecipeViewModel _rvm;
 
-			public async Task<RecipeViewModel> GetRecipeViewModelAsync ()
+			public async Task<RecipeViewModel> GetRecipeViewModelAsync()
 			{
-				if (_rvm == null) {
-					_rvm = new RecipeViewModel ();
-				} else {
-					_rvm.RecipeGroups.Clear ();
+				if (_rvm == null)
+				{
+					_rvm = new RecipeViewModel();
+				}
+				else
+				{
+					_rvm.RecipeGroups.Clear();
 				}
 
-				await _rvm.LoadRecipesAsync ();
+				await _rvm.LoadRecipesAsync();
 
 				return _rvm;
 			}

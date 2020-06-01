@@ -9,6 +9,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3049, "DisplayActionSheet freezes app in iOS custom renderer (iPad only)", PlatformAffected.iOS)]
 	public class Issue3049 : TestContentPage
@@ -56,25 +59,25 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST && __IOS__
 		[Test]
-		public void Issue3049Test ()
+		public void Issue3049Test()
 		{
-			RunningApp.WaitForElement (q => q.Marked (Button1Id));
+			RunningApp.WaitForElement(q => q.Marked(Button1Id));
 
 			if (RunningApp.Query(q => q.Marked(Skip)).Length > 0)
 				Assert.Pass("Test ignored, not relevant on phone");
 			else
 			{
-				RunningApp.Tap (q => q.Marked (Button1Id));
+				RunningApp.Tap(q => q.Marked(Button1Id));
 
-				RunningApp.WaitForElement (q => q.Marked (Action1));
+				RunningApp.WaitForElement(q => q.Marked(Action1));
 
 				// tap outside ActionSheet to dismiss it
-				RunningApp.Tap (q => q.Marked (LabelId));
+				RunningApp.Tap(q => q.Marked(LabelId));
 
-				RunningApp.WaitForElement (q => q.Marked (Button2Id));
-				RunningApp.Tap (q => q.Marked (Button2Id));
+				RunningApp.WaitForElement(q => q.Marked(Button2Id));
+				RunningApp.Tap(q => q.Marked(Button2Id));
 
-				RunningApp.WaitForElement (q => q.Marked (Success));
+				RunningApp.WaitForElement(q => q.Marked(Success));
 			}
 		}
 #endif

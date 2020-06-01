@@ -11,14 +11,16 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.ScrollView)]
+	[Category(UITestCategories.Bugzilla)]
 #endif
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 35127, "It is possible to craft a page such that it will never display on Windows")]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 35127, "It is possible to craft a page such that it will never display on Windows")]
 	public class Bugzilla35127 : TestContentPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = {
 					new Label { Text = "See me?" },
 					new ScrollView {
@@ -32,12 +34,12 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void Issue35127Test() 
+		public void Issue35127Test()
 		{
-			RunningApp.WaitForElement (q => q.Marked ("See me?"));
+			RunningApp.WaitForElement(q => q.Marked("See me?"));
 			var count = RunningApp.Query(q => q.Marked("scrollView")).Length;
 			Assert.IsTrue(count == 0);
-			RunningApp.WaitForNoElement (q => q.Marked ("Click Me?"));
+			RunningApp.WaitForNoElement(q => q.Marked("Click Me?"));
 		}
 #endif
 	}

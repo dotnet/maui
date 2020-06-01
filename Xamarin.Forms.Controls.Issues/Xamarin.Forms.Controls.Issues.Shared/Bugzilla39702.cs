@@ -14,6 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Category(UITestCategories.Entry)]
 	[Category(UITestCategories.Editor)]
 	[Category(UITestCategories.Focus)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 
 	[Preserve(AllMembers = true)]

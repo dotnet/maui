@@ -9,6 +9,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1583, "WebView fails to load from urlwebviewsource with non-ascii characters (works with Uri)", PlatformAffected.iOS, issueTestNumber: 1)]
 	public class Issue1583_1 : TestContentPage
@@ -63,17 +66,17 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public async Task Issue1583_1_WebviewTest ()
+		public async Task Issue1583_1_WebviewTest()
 		{
-			RunningApp.WaitForElement (q => q.Marked ("label"), "Could not find label", TimeSpan.FromSeconds(10), null, null);
+			RunningApp.WaitForElement(q => q.Marked("label"), "Could not find label", TimeSpan.FromSeconds(10), null, null);
 			await Task.Delay(TimeSpan.FromSeconds(3));
-			RunningApp.Screenshot ("I didn't crash and i can see Skøyen");
+			RunningApp.Screenshot("I didn't crash and i can see Skøyen");
 			RunningApp.Tap("hashButton");
 			await Task.Delay(TimeSpan.FromSeconds(3));
-			RunningApp.Screenshot ("I didn't crash and i can see the GitHub comment #issuecomment-389443737");
+			RunningApp.Screenshot("I didn't crash and i can see the GitHub comment #issuecomment-389443737");
 			RunningApp.Tap("queryButton");
 			await Task.Delay(TimeSpan.FromSeconds(3));
-			RunningApp.Screenshot ("I didn't crash and i can see google search for http://microsoft.com");
+			RunningApp.Screenshot("I didn't crash and i can see google search for http://microsoft.com");
 		}
 #endif
 	}

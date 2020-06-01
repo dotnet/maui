@@ -4,6 +4,9 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1700, "Desktop: TabStop/TabIndex support (for multiple Views)", PlatformAffected.All)]
 	public class GitHub1700 : TestContentPage
@@ -84,7 +87,8 @@ namespace Xamarin.Forms.Controls.Issues
 				Title = "[-] Picker - Tab stop disable",
 				IsTabStop = false
 			};
-			for (var i = 1; i < 3; i++) {
+			for (var i = 1; i < 3; i++)
+			{
 				pickerNotStopped.Items.Add("Sample Option " + i);
 				pickerStopped.Items.Add("Sample Option " + i);
 			}

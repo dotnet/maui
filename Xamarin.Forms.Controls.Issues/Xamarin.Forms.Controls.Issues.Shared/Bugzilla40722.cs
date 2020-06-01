@@ -5,6 +5,9 @@ using Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 40722, "Using FormsAppCompatActivity calls OnDisappearing on device sleep")]
 	public class Bugzilla40722 : TestContentPage

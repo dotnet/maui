@@ -12,11 +12,12 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Gestures)]
+	[Category(UITestCategories.Bugzilla)]
 #endif
 
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 36780, "[iOS] Multiple TapGestureRecognizers on an Object Are Not Fired", PlatformAffected.iOS)]
-	public class Bugzilla36780 : TestContentPage 
+	public class Bugzilla36780 : TestContentPage
 	{
 		const string Gesture1Success = "Gesture1Success";
 		const string Gesture2Success = "Gesture2Success";

@@ -3,8 +3,11 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 1556, "Animation tasks do not complete when Battery Saver enabled", 
+	[Issue(IssueTracker.Github, 1556, "Animation tasks do not complete when Battery Saver enabled",
 		PlatformAffected.Android)]
 	public class Issue1556 : TestContentPage
 	{
@@ -16,8 +19,8 @@ namespace Xamarin.Forms.Controls.Issues
 			var instructions = new Label
 			{
 				Text =
-					"Once the page appears, you have 30 seconds to enable Battery Saver; enabling Battery Saver " 
-					+ "should make both labels fully visible immediately. " 
+					"Once the page appears, you have 30 seconds to enable Battery Saver; enabling Battery Saver "
+					+ "should make both labels fully visible immediately. "
 					+ "If either label is not fully visible, this test has failed"
 			};
 

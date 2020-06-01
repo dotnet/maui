@@ -18,6 +18,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3524, "ICommand binding from a TapGestureRecognizer on a Span doesn't work")]
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(UITestCategories.Gestures)]
 #endif
 	public class Issue3524 : TestContentPage

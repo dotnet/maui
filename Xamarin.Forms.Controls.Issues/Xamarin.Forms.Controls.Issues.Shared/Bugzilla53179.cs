@@ -8,11 +8,15 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 53179, 
+	[Issue(IssueTracker.Bugzilla, 53179,
 		"PopAsync crashing after RemovePage when support packages are updated to 25.1.1", PlatformAffected.Android)]
 	public class Bugzilla53179 : TestNavigationPage
 	{
+
 		class TestPage : ContentPage
 		{
 			Button nextBtn, rmBtn, popBtn;

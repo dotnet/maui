@@ -12,29 +12,33 @@ using Xamarin.UITest.iOS;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Github, 2965, "CarouselPage Disappearing event does not fire on Android")]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 2965, "CarouselPage Disappearing event does not fire on Android")]
 	public class Issue2965 : TestMasterDetailPage
 	{
 		static MasterDetailPage s_mdp;
 
 		int _countAppearing;
 
-		protected override void Init ()
+		protected override void Init()
 		{
 			s_mdp = this;
-			
+
 			var lblCount = new Label { AutomationId = "lblCount" };
 
-			var myCarouselPage = new CarouselPage () {
+			var myCarouselPage = new CarouselPage()
+			{
 
 				Children = {
-					new ContentPage { 
+					new ContentPage {
 						BackgroundColor = Color.Green,
 						Content = new StackLayout {
 							Children = {
-								new Button { 
-									AutomationId = "ShowMasterBtnPage1", 
+								new Button {
+									AutomationId = "ShowMasterBtnPage1",
 									Text = "ShowMaster",
 									Command = new Command(()=> s_mdp.IsPresented = true)
 								},
@@ -42,42 +46,47 @@ namespace Xamarin.Forms.Controls.Issues
 							}
 						}
 					},
-					new ContentPage { 
+					new ContentPage {
 						BackgroundColor = Color.Red
 					},
-					new ContentPage { 
+					new ContentPage {
 						BackgroundColor = Color.Lime,
 					},
-					new ContentPage { 
+					new ContentPage {
 						BackgroundColor = Color.Purple,
 					},
 				}
 			};
 
-			var myCarouselDetailPage = new NavigationPage (myCarouselPage);
+			var myCarouselDetailPage = new NavigationPage(myCarouselPage);
 
-			var myPushButton = new Button () {
-				Text = "Push Page", 
+			var myPushButton = new Button()
+			{
+				Text = "Push Page",
 				HorizontalOptions = LayoutOptions.Start
-			}; 
-
-			myCarouselPage.Appearing += (sender, e) => {
-				_countAppearing++;
-				lblCount.Text = _countAppearing.ToString ();
 			};
-			myCarouselPage.Disappearing += (sender, e) => {
+
+			myCarouselPage.Appearing += (sender, e) =>
+			{
+				_countAppearing++;
+				lblCount.Text = _countAppearing.ToString();
+			};
+			myCarouselPage.Disappearing += (sender, e) =>
+			{
 				_countAppearing--;
 			};
 
 
-			var mySecondDetailPage = new NavigationPage (new ContentPage () { 
-				Title = "My Second Page", 
+			var mySecondDetailPage = new NavigationPage(new ContentPage()
+			{
+				Title = "My Second Page",
 
-				Content = new StackLayout () {
+				Content = new StackLayout()
+				{
 					Orientation = StackOrientation.Vertical,
 					Children = {
-						new Button { 
-							AutomationId = "ShowMasterBtnPage2", 
+						new Button {
+							AutomationId = "ShowMasterBtnPage2",
 							Text = "ShowMaster",
 							Command = new Command(()=> s_mdp.IsPresented = true)
 						},
@@ -86,12 +95,14 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			});
 
-			myPushButton.Command = new Command (() => mySecondDetailPage.Navigation.PushAsync (new ContentPage () { Title = "My Pushed Page" }));
+			myPushButton.Command = new Command(() => mySecondDetailPage.Navigation.PushAsync(new ContentPage() { Title = "My Pushed Page" }));
 
-			var myMasterPage = new ContentPage () {
-				Padding = new Thickness (0, 60, 0, 0),
+			var myMasterPage = new ContentPage()
+			{
+				Padding = new Thickness(0, 60, 0, 0),
 				Title = "Menu",
-				Content = new StackLayout () {
+				Content = new StackLayout()
+				{
 					Orientation = StackOrientation.Vertical,
 					Children = {
 						new Button () {
@@ -125,28 +136,28 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 		[Test]
 		[Ignore("Fails intermittently on TestCloud")]
-		public void Issue2965Test ()
+		public void Issue2965Test()
 		{
-			RunningApp.Screenshot ("I am at Issue 2965");
-			var element = RunningApp.WaitForElement (q => q.Marked ("lblCount"))[0];
-			Assert.That (element.Text, Is.EqualTo ("1"));
+			RunningApp.Screenshot("I am at Issue 2965");
+			var element = RunningApp.WaitForElement(q => q.Marked("lblCount"))[0];
+			Assert.That(element.Text, Is.EqualTo("1"));
 
 #if __IOS__
-			RunningApp.Tap (q => q.Marked("Menu"));
+			RunningApp.Tap(q => q.Marked("Menu"));
 #else
 			RunningApp.Tap ("ShowMasterBtnPage1");
 #endif
-			RunningApp.Tap (q => q.Marked("btnDetail2"));
+			RunningApp.Tap(q => q.Marked("btnDetail2"));
 
 #if __IOS__
-			RunningApp.Tap (q => q.Marked("Menu"));
+			RunningApp.Tap(q => q.Marked("Menu"));
 #else
 			RunningApp.Tap ("ShowMasterBtnPage2");
 #endif
-			RunningApp.Tap (q => q.Marked("btnDetail1"));
-			element = RunningApp.WaitForElement (q => q.Marked ("lblCount"))[0];
-			Assert.That (element.Text, Is.EqualTo ("1"));
+			RunningApp.Tap(q => q.Marked("btnDetail1"));
+			element = RunningApp.WaitForElement(q => q.Marked("lblCount"))[0];
+			Assert.That(element.Text, Is.EqualTo("1"));
 		}
 #endif
-		}
 	}
+}

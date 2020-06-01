@@ -14,6 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Issue(IssueTracker.Bugzilla, 40408, "MasterDetailPage and TabbedPage only firing Appearing once", PlatformAffected.WinRT)]
 #if UITEST
 	[Category(UITestCategories.Navigation)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	public class Bugzilla40408 : TestNavigationPage
 	{
@@ -29,14 +30,14 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override void Init()
 		{
 			BarBackgroundColor = Color.Red;
-			
+
 			var contentPage2 = new ContentPage();
 			contentPage2.Title = Page2;
 			contentPage2.BackgroundColor = Color.Green;
 
 			contentPage2.Appearing += ContentPage2_Appearing;
 			contentPage2.Disappearing += ContentPage2_Disappearing;
-			
+
 			var tabbedPage1 = new TabbedPage();
 			tabbedPage1.Appearing += TabbedPage1_Appearing;
 			tabbedPage1.Disappearing += TabbedPage1_Disappearing;
@@ -44,7 +45,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var contentPage3 = new ContentPage() { Title = Page3 };
 			contentPage3.BackgroundColor = Color.Pink;
 			tabbedPage1.Children.Add(contentPage3);
-			
+
 			var masterDetailPage1 = new MasterDetailPage();
 			masterDetailPage1.Title = Page3;
 			var master1 = new ContentPage();
@@ -58,7 +59,7 @@ namespace Xamarin.Forms.Controls.Issues
 			masterDetailPage1.BackgroundColor = Color.Yellow;
 			masterDetailPage1.Detail.Appearing += MasterDetailPage1_Appearing;
 			masterDetailPage1.Detail.Disappearing += MasterDetailPage1_Disappearing;
-			
+
 			var contentPage1 = new ContentPage();
 			SetHasBackButton(contentPage1, true);
 			contentPage1.BackgroundColor = Color.Blue;
@@ -75,7 +76,7 @@ namespace Xamarin.Forms.Controls.Issues
 				TextColor = Color.White,
 				HorizontalTextAlignment = TextAlignment.Center
 			});
-			
+
 			PushAsync(contentPage1);
 		}
 

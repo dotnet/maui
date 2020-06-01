@@ -14,19 +14,19 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.ListView)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 
 	// Note: Fails on UWP due to https://bugzilla.xamarin.com/show_bug.cgi?id=60521
-
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 34912, "ListView.IsEnabled has no effect on iOS")]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 34912, "ListView.IsEnabled has no effect on iOS")]
 	public class Bugzilla34912 : TestContentPage // or TestMasterDetailPage, etc ...
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
-			Padding = new Thickness (0, 20, 0, 0);
+			Padding = new Thickness(0, 20, 0, 0);
 
-			var source = SetupList ();
+			var source = SetupList();
 
 			var list = new ListView
 			{
@@ -51,16 +51,20 @@ namespace Xamarin.Forms.Controls.Issues
 				DisplayAlert(listItem.Name, "You tapped " + listItem.Name, "OK", "Cancel");
 			};
 
-			var btnDisable = new Button () {
+			var btnDisable = new Button()
+			{
 				Text = "Disable ListView",
 				AutomationId = "btnDisable"
 			};
-			btnDisable.Clicked += (object sender, EventArgs e) => {
-				if (list.IsEnabled == true){
+			btnDisable.Clicked += (object sender, EventArgs e) =>
+			{
+				if (list.IsEnabled == true)
+				{
 					list.IsEnabled = false;
 					btnDisable.Text = "Enable ListView";
 				}
-				else {
+				else
+				{
 					list.IsEnabled = true;
 					btnDisable.Text = "Disable ListView";
 				}
@@ -99,14 +103,14 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void Bugzilla34912Test ()
+		public void Bugzilla34912Test()
 		{
-			RunningApp.Tap (q => q.Marked ("Allen"));
-			RunningApp.WaitForElement (q => q.Marked ("You tapped Allen"));
-			RunningApp.Tap (q => q.Marked ("OK"));
-			RunningApp.Tap (q => q.Marked ("btnDisable"));
-			RunningApp.Tap (q => q.Marked ("Allen"));
-			RunningApp.WaitForNoElement (q => q.Marked ("You tapped Allen"));
+			RunningApp.Tap(q => q.Marked("Allen"));
+			RunningApp.WaitForElement(q => q.Marked("You tapped Allen"));
+			RunningApp.Tap(q => q.Marked("OK"));
+			RunningApp.Tap(q => q.Marked("btnDisable"));
+			RunningApp.Tap(q => q.Marked("Allen"));
+			RunningApp.WaitForNoElement(q => q.Marked("You tapped Allen"));
 		}
 #endif
 	}

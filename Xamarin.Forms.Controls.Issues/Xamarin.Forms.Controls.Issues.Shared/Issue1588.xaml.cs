@@ -4,6 +4,9 @@ using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1588, "[WPF] Stacklayout WidthRequest adds unwanted margin", PlatformAffected.WPF)]
 	public partial class Issue1588 : TestContentPage
@@ -148,7 +151,7 @@ namespace Xamarin.Forms.Controls.Issues
 			set { SetValue(PlaceholderProperty, value); }
 			get { return (string)GetValue(PlaceholderProperty); }
 		}
-		
+
 		public static readonly BindableProperty LabelTextColorProperty = BindableProperty.Create(
 			"LabelTextColor",
 			typeof(Color),
@@ -186,7 +189,7 @@ namespace Xamarin.Forms.Controls.Issues
 			set { SetValue(EntryTextColorProperty, value); }
 			get { return (Color)GetValue(EntryTextColorProperty); }
 		}
-		
+
 		public static readonly BindableProperty PlaceholderColorProperty = BindableProperty.Create(
 			"PlaceholderColor",
 			typeof(Color),
@@ -205,7 +208,7 @@ namespace Xamarin.Forms.Controls.Issues
 			set { SetValue(PlaceholderColorProperty, value); }
 			get { return (Color)GetValue(PlaceholderColorProperty); }
 		}
-		
+
 		public static readonly BindableProperty MaxLengthProperty = BindableProperty.Create(
 			"MaxLength",
 			typeof(int),
@@ -296,7 +299,7 @@ namespace Xamarin.Forms.Controls.Issues
 			set { SetValue(ColorProperty, value); }
 			get { return (Color)GetValue(ColorProperty); }
 		}
-		
+
 		public static readonly BindableProperty ThicknessProperty = BindableProperty.Create(
 		   "Thickness",
 		   typeof(double),

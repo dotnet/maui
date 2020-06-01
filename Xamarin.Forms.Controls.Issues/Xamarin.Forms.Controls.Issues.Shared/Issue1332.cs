@@ -3,9 +3,12 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1332, "Frame inside frame does not resize after visibility changed", PlatformAffected.Android)]
-	public class Issue1332: TestContentPage
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1332, "Frame inside frame does not resize after visibility changed", PlatformAffected.Android)]
+	public class Issue1332 : TestContentPage
 	{
 		protected override void Init()
 		{

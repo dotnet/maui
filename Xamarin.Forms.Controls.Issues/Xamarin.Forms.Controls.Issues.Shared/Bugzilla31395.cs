@@ -10,14 +10,19 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 31395, "Crash when switching MainPage and using a Custom Render")]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 31395, "Crash when switching MainPage and using a Custom Render")]
 	public class Bugzilla31395 : TestContentPage // or TestMasterDetailPage, etc ...
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
-			Content = new CustomContentView { // Replace with ContentView and everything works fine
-				Content = new StackLayout {
+			Content = new CustomContentView
+			{ // Replace with ContentView and everything works fine
+				Content = new StackLayout
+				{
 					VerticalOptions = LayoutOptions.Center,
 					Children = {
 						new Button {
@@ -29,26 +34,27 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 		}
 
-		void SwitchMainPage ()
+		void SwitchMainPage()
 		{
 			Application.Current.MainPage = new ContentPage { Content = new Label { Text = "Hello" } };
 		}
 
 		public class CustomContentView : ContentView
 		{
-			
+
 		}
 
-		#if UITEST
+#if UITEST
 		[Test]
-		public void Bugzilla31395Test ()
+		public void Bugzilla31395Test()
 		{
-			RunningApp.WaitForElement (q => q.Marked ("Switch Main Page"));
-			Assert.DoesNotThrow (() => {
-				RunningApp.Tap (c => c.Marked ("Switch Main Page"));
+			RunningApp.WaitForElement(q => q.Marked("Switch Main Page"));
+			Assert.DoesNotThrow(() =>
+			{
+				RunningApp.Tap(c => c.Marked("Switch Main Page"));
 			});
-			RunningApp.WaitForElement (q => q.Marked ("Hello"));
+			RunningApp.WaitForElement(q => q.Marked("Hello"));
 		}
-		#endif
+#endif
 	}
 }

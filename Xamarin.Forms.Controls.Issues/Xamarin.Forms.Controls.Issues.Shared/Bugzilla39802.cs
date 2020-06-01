@@ -5,10 +5,13 @@ using System.Collections.Generic;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 39802, "Gap between ListView cells even if SeparatorVisablity is set to none ", 
+	[Issue(IssueTracker.Bugzilla, 39802, "Gap between ListView cells even if SeparatorVisablity is set to none ",
 		PlatformAffected.iOS)]
-	public class Bugzilla39802 : TestContentPage 
+	public class Bugzilla39802 : TestContentPage
 	{
 		protected override void Init()
 		{

@@ -10,34 +10,37 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-    [Preserve(AllMembers = true)]
-    [Issue(IssueTracker.Bugzilla, 56710, "ContextActionsCell.OnMenuItemPropertyChanged throws NullReferenceException", PlatformAffected.iOS)]
-    public class Bugzilla56710 : TestNavigationPage
-    {
-        protected override void Init()
-        {
-            var root = new ContentPage
-            {
-                Content = new Button
-                {
-                    Text = "Go to Test Page",
-                    Command = new Command(() => PushAsync(new TestPage()))
-                }
-            };
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 56710, "ContextActionsCell.OnMenuItemPropertyChanged throws NullReferenceException", PlatformAffected.iOS)]
+	public class Bugzilla56710 : TestNavigationPage
+	{
+		protected override void Init()
+		{
+			var root = new ContentPage
+			{
+				Content = new Button
+				{
+					Text = "Go to Test Page",
+					Command = new Command(() => PushAsync(new TestPage()))
+				}
+			};
 
-            PushAsync(root);
-        }
+			PushAsync(root);
+		}
 
 #if UITEST
-        [Test]
-        public void Bugzilla56710Test ()
-        {
-            RunningApp.WaitForElement (q => q.Marked ("Go to Test Page"));
-            RunningApp.Tap (q => q.Marked ("Go to Test Page"));
+		[Test]
+		public void Bugzilla56710Test()
+		{
+			RunningApp.WaitForElement(q => q.Marked("Go to Test Page"));
+			RunningApp.Tap(q => q.Marked("Go to Test Page"));
 
-            RunningApp.WaitForElement(q => q.Marked("Item 3"));
-            RunningApp.Back();
-        }
+			RunningApp.WaitForElement(q => q.Marked("Item 3"));
+			RunningApp.Back();
+		}
 #endif
 	}
 

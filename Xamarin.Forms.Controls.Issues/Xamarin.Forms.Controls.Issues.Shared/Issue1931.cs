@@ -12,6 +12,7 @@ using Xamarin.Forms.Core.UITests;
 namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[Category(UITestCategories.ScrollView)]
 	[Category(UITestCategories.ListView)]
 #endif
@@ -172,7 +173,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 
-//TODO: Enable this on iOS12 again
+		//TODO: Enable this on iOS12 again
 #if UITEST && __ANDROID__
 		[Test]
 		public void ScrollViewInHeaderDisposesProperly()

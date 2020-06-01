@@ -3,9 +3,12 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1483, "Xamarin.Forms.ActivityIndicator in Forms v 2.5 doesn\'t work (UWP)", PlatformAffected.UWP)]
-	public class Issue1483 : TestNavigationPage 
+	public class Issue1483 : TestNavigationPage
 	{
 		protected override void Init()
 		{
@@ -14,11 +17,20 @@ namespace Xamarin.Forms.Controls.Issues
 
 		ContentPage CreateRootPage()
 		{
-			var activityIndicator = new ActivityIndicator {VerticalOptions = LayoutOptions.Center, 
-				IsRunning = true, IsVisible = true, WidthRequest = 200, HeightRequest = 100 };
+			var activityIndicator = new ActivityIndicator
+			{
+				VerticalOptions = LayoutOptions.Center,
+				IsRunning = true,
+				IsVisible = true,
+				WidthRequest = 200,
+				HeightRequest = 100
+			};
 
-			var instructions = new Label { Text = "A running ActivityIndicator should be visible below." 
-												+ " If the ActivityIndicator is not visible, this test has failed." };
+			var instructions = new Label
+			{
+				Text = "A running ActivityIndicator should be visible below."
+												+ " If the ActivityIndicator is not visible, this test has failed."
+			};
 
 			var page = new ContentPage();
 

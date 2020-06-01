@@ -9,6 +9,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 44047, "Memory leak when using SetBackButtonTitle on iOS", PlatformAffected.iOS)]
 	public class Bugzilla44047 : TestMasterDetailPage

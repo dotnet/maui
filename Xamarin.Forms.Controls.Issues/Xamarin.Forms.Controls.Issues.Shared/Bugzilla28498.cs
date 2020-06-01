@@ -9,15 +9,21 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 28498, "App crashes when switching between NavigationPages on a MasterDetailPage when In-Call Status Bar is visible")]
-	public class Bugzilla28498 : TestMasterDetailPage 
+#if UITEST
+	[Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 28498, "App crashes when switching between NavigationPages on a MasterDetailPage when In-Call Status Bar is visible")]
+	public class Bugzilla28498 : TestMasterDetailPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
 
 
-			var carrouselChildPage = new ContentPage { Content = new StackLayout {
+			var carrouselChildPage = new ContentPage
+			{
+				Content = new StackLayout
+				{
 					Orientation = StackOrientation.Vertical,
 					Children = {
 						new Label { Text = "Carousel Page" },
@@ -27,7 +33,10 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			var otherPage = new ContentPage { Content = new StackLayout {
+			var otherPage = new ContentPage
+			{
+				Content = new StackLayout
+				{
 					Orientation = StackOrientation.Vertical,
 					Children = {
 						new Label { Text = "Other" },
@@ -36,7 +45,7 @@ namespace Xamarin.Forms.Controls.Issues
 					Padding = 10
 				}
 			};
-				
+
 			var carousel = new NavigationPage(new CarouselPage { Children = { carrouselChildPage } });
 			var other = new NavigationPage(otherPage);
 			Detail = carousel;
@@ -60,26 +69,26 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 		[Test]
 		[Ignore("This test doesn't make a lot of sense and crashes 50% of the time; need to re-investigate it.")]
-		public void Bugzilla28498Test ()
+		public void Bugzilla28498Test()
 		{
 			RunningApp.SetOrientationPortrait();
-			RunningApp.Tap (q => q.Marked ("btnOpen"));
-			RunningApp.Tap (q => q.Marked ("btnOther"));
+			RunningApp.Tap(q => q.Marked("btnOpen"));
+			RunningApp.Tap(q => q.Marked("btnOther"));
 
-			RunningApp.SetOrientationLandscape ();
-			RunningApp.Tap (q => q.Marked ("btnOpen"));
-			RunningApp.Screenshot ("Detail open");
+			RunningApp.SetOrientationLandscape();
+			RunningApp.Tap(q => q.Marked("btnOpen"));
+			RunningApp.Screenshot("Detail open");
 
-			if (RunningApp.Query (c => c.Marked ("btnCarousel")).Length > 0)
-				Assert.DoesNotThrow (() => RunningApp.Tap (q => q.Marked ("btnCarousel")));
+			if (RunningApp.Query(c => c.Marked("btnCarousel")).Length > 0)
+				Assert.DoesNotThrow(() => RunningApp.Tap(q => q.Marked("btnCarousel")));
 			else
-				Assert.Inconclusive ("Should be button here, but rotation could take some time on XTC");
+				Assert.Inconclusive("Should be button here, but rotation could take some time on XTC");
 		}
 
 		[TearDown]
 		public override void TearDown()
 		{
-			RunningApp.SetOrientationPortrait ();
+			RunningApp.SetOrientationPortrait();
 
 			base.TearDown();
 		}

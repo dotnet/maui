@@ -10,6 +10,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 55365, "~VisualElement crashes with System.Runtime.InteropServices.COMException", PlatformAffected.UWP)]
 	public class Bugzilla55365 : TestContentPage
@@ -50,11 +53,15 @@ namespace Xamarin.Forms.Controls.Issues
 			var clearButton = new Button { Text = "Clear", Command = new Command(o => viewModel.Clear()) };
 			_layout.Children.Add(clearButton);
 
-			var collectButton = new Button { Text = "Garbage", Command = new Command(o =>
+			var collectButton = new Button
 			{
-				GarbageCollectionHelper.Collect();
-				_layout.Children.Add(new Label {Text = "Success"});
-			}) };
+				Text = "Garbage",
+				Command = new Command(o =>
+{
+GarbageCollectionHelper.Collect();
+_layout.Children.Add(new Label { Text = "Success" });
+})
+			};
 			_layout.Children.Add(collectButton);
 			_layout.Children.Add(_itemsPanel);
 

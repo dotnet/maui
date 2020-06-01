@@ -13,6 +13,9 @@ using System.Diagnostics;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1683, "Auto Capitalization Implementation")]
 	public class Issue1683 : TestContentPage

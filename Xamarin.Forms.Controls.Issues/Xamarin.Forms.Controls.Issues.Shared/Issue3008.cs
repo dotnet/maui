@@ -17,6 +17,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3008, "Setting ListView.ItemSource to null doesn't cause it clear out its contents", PlatformAffected.UWP)]
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(UITestCategories.ListView)]
 #endif
 	public class Issue3008 : TestContentPage
@@ -197,7 +198,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.Tap("Click Until Success");
 			RunningApp.WaitForElement("Not Grouped Item");
 			RunningApp.WaitForElement("Grouped Item");
-		
+
 			RunningApp.Tap("Click Until Success");
 			RunningApp.WaitForNoElement("Not Grouped Item");
 			RunningApp.WaitForNoElement("Grouped Item");

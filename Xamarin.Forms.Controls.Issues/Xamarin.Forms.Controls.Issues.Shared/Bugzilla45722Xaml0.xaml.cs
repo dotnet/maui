@@ -16,10 +16,11 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.ListView)]
 	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 45722, "Memory leak in Xamarin Forms ListView", 
+	[Issue(IssueTracker.Bugzilla, 45722, "Memory leak in Xamarin Forms ListView",
 		PlatformAffected.UWP, issueTestNumber: 1)]
 	public partial class Bugzilla45722Xaml0 : TestContentPage
 	{
@@ -29,7 +30,7 @@ namespace Xamarin.Forms.Controls.Issues
 		const string Update = "Refresh";
 		const string Collect = "GC";
 
-		public Bugzilla45722Xaml0 ()
+		public Bugzilla45722Xaml0()
 		{
 #if APP
 			InitializeComponent ();
@@ -81,7 +82,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			for (int n = 0; n < ItemCount; n++)
 			{
-				var group = new _45722Group($"{n}", new []
+				var group = new _45722Group($"{n}", new[]
 				{
 					new _45722Item($"{n}-1", $"{n}-1 description"),
 					new _45722Item($"{n}-2", $"{n}-2 description"),
@@ -107,7 +108,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement(Success);
 		}
 #endif
-		
+
 	}
 
 	public class _45722Group : ObservableCollection<_45722Item>
@@ -127,7 +128,7 @@ namespace Xamarin.Forms.Controls.Issues
 			ListName = listName;
 			ListDescription = listDescription;
 		}
-	
+
 		public string ListName { get; set; }
 		public string ListDescription { get; set; }
 	}

@@ -10,8 +10,11 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1734, "Add support for Label line height", PlatformAffected.All)]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1734, "Add support for Label line height", PlatformAffected.All)]
 	public class Issue1734
 		: TestContentPage
 	{
@@ -35,19 +38,22 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var stackLayout = new StackLayout
 			{
-				Children = { new Label() { Text = "Line height" }, lineHeight, _label, _spannedLabel},
+				Children = { new Label() { Text = "Line height" }, lineHeight, _label, _spannedLabel },
 				Padding = new Thickness() { Top = 20, Left = 10, Right = 100 }
 			};
-			
+
 			Content = new ScrollView { Content = stackLayout };
 		}
 
-		private void LineHeightChanged(object sender, TextChangedEventArgs e) {
+		private void LineHeightChanged(object sender, TextChangedEventArgs e)
+		{
 			var nr = ((Entry)sender).Text;
 			try
 			{
 				_label.LineHeight = double.Parse(nr);
-			} catch (FormatException fe) {
+			}
+			catch (FormatException fe)
+			{
 				Debug.WriteLine($"Could not parse {nr}. {fe.Message}");
 			}
 		}

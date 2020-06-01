@@ -17,7 +17,7 @@ using Xamarin.UITest;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
+	[Preserve(AllMembers = true)]
 	public class Issue2470ViewModelBase : INotifyPropertyChanged
 	{
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -25,29 +25,30 @@ namespace Xamarin.Forms.Controls.Issues
 		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			PropertyChangedEventHandler handler = PropertyChanged;
-			if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+			if (handler != null)
+				handler(this, new PropertyChangedEventArgs(propertyName));
 		}
 	}
 
-	[Preserve (AllMembers = true)]
+	[Preserve(AllMembers = true)]
 	public class EntryViewModel : ViewModelBase
 	{
 		string _name;
 		public string Name
 		{
 			get { return _name; }
-			set { _name = value; OnPropertyChanged (); }
+			set { _name = value; OnPropertyChanged(); }
 		}
 
 		bool _selected;
 		public bool Selected
 		{
 			get { return _selected; }
-			set { _selected = value; OnPropertyChanged (); }
+			set { _selected = value; OnPropertyChanged(); }
 		}
 	}
 
-	[Preserve (AllMembers = true)]
+	[Preserve(AllMembers = true)]
 	public class Issue2470MainViewModel : Issue2470ViewModelBase
 	{
 		public ObservableCollection<EntryViewModel> Entries { get; private set; }
@@ -59,8 +60,8 @@ namespace Xamarin.Forms.Controls.Issues
 			set
 			{
 				_desiredCount = value;
-				OnPropertyChanged ();
-				GenerateEntries ();
+				OnPropertyChanged();
+				GenerateEntries();
 			}
 		}
 
@@ -71,33 +72,37 @@ namespace Xamarin.Forms.Controls.Issues
 			set
 			{
 				_twoOrFive = value;
-				OnPropertyChanged ();
+				OnPropertyChanged();
 				DesiredCount = _twoOrFive ? 5 : 2;
 			}
 		}
 
-		public Issue2470MainViewModel ()
+		public Issue2470MainViewModel()
 		{
-			Entries = new ObservableCollection<EntryViewModel> ();
+			Entries = new ObservableCollection<EntryViewModel>();
 			TwoOrFive = false; // prime
 		}
 
-		void GenerateEntries ()
+		void GenerateEntries()
 		{
-			Entries.Clear ();
-			for (var i = 0; i < DesiredCount; i++) {
-				Entries.Add (new EntryViewModel { Name = "Entry " + i + " of " + DesiredCount });
+			Entries.Clear();
+			for (var i = 0; i < DesiredCount; i++)
+			{
+				Entries.Add(new EntryViewModel { Name = "Entry " + i + " of " + DesiredCount });
 			}
 		}
 	}
 
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 2470, "ObservableCollection changes do not update ListView", PlatformAffected.Android)]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 2470, "ObservableCollection changes do not update ListView", PlatformAffected.Android)]
 	public partial class Issue2470 : TestTabbedPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
-			var mainViewModel = new Issue2470MainViewModel ();
+			var mainViewModel = new Issue2470MainViewModel();
 			BindingContext = mainViewModel;
 		}
 
@@ -111,45 +116,45 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void OnservableCollectionChangeListView ()
+		public void OnservableCollectionChangeListView()
 		{
 			// Tab 1
-			RunningApp.Tap (q => q.Marked ("Switch"));
-			RunningApp.Screenshot ("Switch On");
-			RunningApp.Tap (q => q.Marked ("Results"));
+			RunningApp.Tap(q => q.Marked("Switch"));
+			RunningApp.Screenshot("Switch On");
+			RunningApp.Tap(q => q.Marked("Results"));
 
 			// Tab 2
-			RunningApp.WaitForElement (q => q.Marked ("Entry 0 of 5"));
-			RunningApp.WaitForElement (q => q.Marked ("Entry 1 of 5"));
-			RunningApp.WaitForElement (q => q.Marked ("Entry 2 of 5"));
-			RunningApp.WaitForElement (q => q.Marked ("Entry 3 of 5"));
-			RunningApp.WaitForElement (q => q.Marked ("Entry 4 of 5"));
-			RunningApp.Screenshot ("Should be 5 elements");
-			RunningApp.Tap (q => q.Marked ("Generate"));
-			
+			RunningApp.WaitForElement(q => q.Marked("Entry 0 of 5"));
+			RunningApp.WaitForElement(q => q.Marked("Entry 1 of 5"));
+			RunningApp.WaitForElement(q => q.Marked("Entry 2 of 5"));
+			RunningApp.WaitForElement(q => q.Marked("Entry 3 of 5"));
+			RunningApp.WaitForElement(q => q.Marked("Entry 4 of 5"));
+			RunningApp.Screenshot("Should be 5 elements");
+			RunningApp.Tap(q => q.Marked("Generate"));
+
 			// Tab 1
-			RunningApp.Tap (q => q.Marked ("Switch"));	
-			RunningApp.Screenshot ("Switch Off");
-			RunningApp.Tap (q => q.Marked ("Results"));
+			RunningApp.Tap(q => q.Marked("Switch"));
+			RunningApp.Screenshot("Switch Off");
+			RunningApp.Tap(q => q.Marked("Results"));
 
 			// Tab 2
-			RunningApp.WaitForElement (q => q.Marked ("Entry 0 of 2"));
-			RunningApp.WaitForElement (q => q.Marked ("Entry 1 of 2"));
-			RunningApp.Screenshot ("Should be 2 elements");
-			
+			RunningApp.WaitForElement(q => q.Marked("Entry 0 of 2"));
+			RunningApp.WaitForElement(q => q.Marked("Entry 1 of 2"));
+			RunningApp.Screenshot("Should be 2 elements");
+
 			// Tab 1
-			RunningApp.Tap (q => q.Marked ("Generate"));
-			RunningApp.Tap (q => q.Marked ("Switch"));
-			RunningApp.Screenshot ("Switch On");
-			RunningApp.Tap (q => q.Marked ("Results"));
+			RunningApp.Tap(q => q.Marked("Generate"));
+			RunningApp.Tap(q => q.Marked("Switch"));
+			RunningApp.Screenshot("Switch On");
+			RunningApp.Tap(q => q.Marked("Results"));
 
 			// Tab 2
-			RunningApp.WaitForElement (q => q.Marked ("Entry 0 of 5"));
-			RunningApp.WaitForElement (q => q.Marked ("Entry 1 of 5"));
-			RunningApp.WaitForElement (q => q.Marked ("Entry 2 of 5"));
-			RunningApp.WaitForElement (q => q.Marked ("Entry 3 of 5"));
-			RunningApp.WaitForElement (q => q.Marked ("Entry 4 of 5"));
-			RunningApp.Screenshot ("Should be 5 elements");
+			RunningApp.WaitForElement(q => q.Marked("Entry 0 of 5"));
+			RunningApp.WaitForElement(q => q.Marked("Entry 1 of 5"));
+			RunningApp.WaitForElement(q => q.Marked("Entry 2 of 5"));
+			RunningApp.WaitForElement(q => q.Marked("Entry 3 of 5"));
+			RunningApp.WaitForElement(q => q.Marked("Entry 4 of 5"));
+			RunningApp.Screenshot("Should be 5 elements");
 		}
 #endif
 	}

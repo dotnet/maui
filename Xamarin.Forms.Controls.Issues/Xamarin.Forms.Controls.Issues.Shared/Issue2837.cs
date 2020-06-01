@@ -8,6 +8,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2837, " Exception thrown during NavigationPage.Navigation.PopAsync", PlatformAffected.Android)]
 	public class Issue2837 : TestNavigationPage // or TestMasterDetailPage, etc ...
@@ -32,7 +35,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void Issue2837Test()
 		{
-			RunningApp.WaitForElement(q => q.Text (_labelText));
+			RunningApp.WaitForElement(q => q.Text(_labelText));
 		}
 #endif
 	}

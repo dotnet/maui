@@ -10,6 +10,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 40185, "[UWP] ContentPage does not have proper right bounds in landscape", PlatformAffected.WinRT)]
 	public class Bugzilla40185 : TestContentPage

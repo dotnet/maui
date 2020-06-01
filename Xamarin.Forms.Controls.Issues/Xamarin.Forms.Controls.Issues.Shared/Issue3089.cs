@@ -20,6 +20,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3089, "TextCell text doesn't change when using Recycling on ListViews")]
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(UITestCategories.ListView)]
 	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
 #endif
@@ -30,7 +31,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-			var oc = new ObservableCollection<string>(new[] { $"Click {reload}","and this text should go away" });
+			var oc = new ObservableCollection<string>(new[] { $"Click {reload}", "and this text should go away" });
 
 			Enumerable.Range(0, 100).ForEach(x => oc.Add(x.ToString()));
 

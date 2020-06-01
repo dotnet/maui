@@ -11,22 +11,24 @@ using NUnit.Framework;
 namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
+	[Category(UITestCategories.Bugzilla)]
 	[Category(UITestCategories.Cells)]
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
+	[Category(UITestCategories.UwpIgnore)]
 #endif
 
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 32040, "EntryCell.Tapped or SwitchCell.Tapped does not fire when within a TableView ")]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 32040, "EntryCell.Tapped or SwitchCell.Tapped does not fire when within a TableView ")]
 	public class Bugzilla32040 : TestContentPage // or TestMasterDetailPage, etc ...
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
 			var switchCell = new SwitchCell { Text = "blahblah" };
 			switchCell.Tapped += (s, e) =>
 			{
 				switchCell.Text = "Tapped";
 			};
-			switchCell.OnChanged += (sender, e) => {
+			switchCell.OnChanged += (sender, e) =>
+			{
 				switchCell.Text = "Switched";
 			};
 
@@ -39,14 +41,16 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				entryCell.Text = "Tapped";
 			};
-			entryCell.Completed += (sender, e) => {
+			entryCell.Completed += (sender, e) =>
+			{
 				entryCell.Text = "Completed";
 			};
 
 			// The root page of your application
-			Content = new TableView {
+			Content = new TableView
+			{
 				Intent = TableIntent.Form,
-				Root = new TableRoot ("Table Title") {
+				Root = new TableRoot("Table Title") {
 					new TableSection ("Section 1 Title") {
 						switchCell,
 						entryCell
@@ -56,11 +60,11 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 #if UITEST
 		[Test]
-		public void TappedWorksForEntryAndSwithCellTest ()
+		public void TappedWorksForEntryAndSwithCellTest()
 		{
-			RunningApp.Tap (q => q.Marked ("blahblah"));
-			RunningApp.Tap (q => q.Marked ("Click Here"));
-			Assert.GreaterOrEqual (RunningApp.Query (q => q.Marked ("Tapped")).Length, 2);
+			RunningApp.Tap(q => q.Marked("blahblah"));
+			RunningApp.Tap(q => q.Marked("Click Here"));
+			Assert.GreaterOrEqual(RunningApp.Query(q => q.Marked("Tapped")).Length, 2);
 		}
 #endif
 	}

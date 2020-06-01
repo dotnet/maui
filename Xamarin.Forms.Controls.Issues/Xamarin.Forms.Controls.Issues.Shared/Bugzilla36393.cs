@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 36393, "[A] Default Entry/Editor/SearchBar Font Size is 14 instead of 18")]
-	public class Bugzilla36393 : TestContentPage 
+	public class Bugzilla36393 : TestContentPage
 	{
 		protected override void Init()
 		{

@@ -4,9 +4,11 @@ using Xamarin.Forms.Internals;
 namespace Xamarin.Forms.Controls.Issues
 {
 	// Manual test to verify that ScrollOrientation.Both scrolls at the correct speed horizontally
-
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 60774, "[Android] ScrollOrientation.Both doubles the distance of scrolling", 
+	[Issue(IssueTracker.Bugzilla, 60774, "[Android] ScrollOrientation.Both doubles the distance of scrolling",
 		PlatformAffected.Android, issueTestNumber: 1)]
 	public class Bugzilla60774_1 : TestContentPage
 	{
@@ -31,8 +33,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var instructions = new Label
 			{
-				Text = "Scroll the text horizontally. Tap 'Change Orientation' to change the ScrollView orientation " 
-						+ "to 'Both'. Scroll the text horizontally again - the text should scroll at the same rate. " 
+				Text = "Scroll the text horizontally. Tap 'Change Orientation' to change the ScrollView orientation "
+						+ "to 'Both'. Scroll the text horizontally again - the text should scroll at the same rate. "
 						+ "If the text scrolls more quickly in one orientation, the test has failed."
 			};
 

@@ -9,7 +9,11 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+
 #if APP
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Github, 1653, "ScrollView exceeding bounds", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.WinPhone)]
 	public partial class Issue1653 : ContentPage

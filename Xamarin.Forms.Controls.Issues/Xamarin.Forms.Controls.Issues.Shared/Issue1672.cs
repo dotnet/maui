@@ -5,13 +5,16 @@ using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1672, "UWP: Button: AccessKey support", PlatformAffected.UWP)]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1672, "UWP: Button: AccessKey support", PlatformAffected.UWP)]
 	public class Issue1672 : TestTabbedPage
 	{
 		ContentPage _tab2;
 
-		protected override void Init ()
+		protected override void Init()
 		{
 			Title = "Issue 1672";
 			var label1 = new Label
@@ -25,14 +28,14 @@ namespace Xamarin.Forms.Controls.Issues
 				Text = "Access  key B"
 			};
 			label2.On<PlatformConfiguration.Windows>().SetAccessKey("B");
-			
-			var button1 = new Button() 
+
+			var button1 = new Button()
 			{
 				Text = "Access key C"
 			};
 			button1.On<PlatformConfiguration.Windows>().SetAccessKey("C");
 
-			var button2 = new Button() 
+			var button2 = new Button()
 			{
 				Text = "Toggle Access key I/X on tab 2"
 			};
@@ -56,7 +59,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var button5 = new Button()
 			{
-				Text = "Add new Tab", Margin = new Thickness(20)
+				Text = "Add new Tab",
+				Margin = new Thickness(20)
 			};
 			button5.On<PlatformConfiguration.Windows>()
 				.SetAccessKey("G")
@@ -84,10 +88,10 @@ namespace Xamarin.Forms.Controls.Issues
 
 			_tab2 = new ContentPage() { Title = "Tab2", Content = new StackLayout() { Children = { new Label() { Text = "Inside tab2" } } } };
 			_tab2.On<PlatformConfiguration.Windows>().SetAccessKey("I");
-			
+
 			var tab3 = new ContentPage() { Title = "Tab3", Content = new StackLayout() { Children = { new Label() { Text = "Inside tab3" } } } };
 			tab3.On<PlatformConfiguration.Windows>().SetAccessKey("J");
-			
+
 			Children.Add(tab1);
 			Children.Add(_tab2);
 			Children.Add(tab3);
@@ -98,7 +102,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var tab = new ContentPage() { Title = title, Content = new StackLayout() { Children = { new Label() { Text = $"Inside {title} with access key {accessKey}" } } } };
 			Children.Add(tab);
-			return tab.On<PlatformConfiguration.Windows>().SetAccessKey(accessKey);			
+			return tab.On<PlatformConfiguration.Windows>().SetAccessKey(accessKey);
 		}
 
 		void ToggleAccessKeyOnSecondTab(object sender, System.EventArgs e)

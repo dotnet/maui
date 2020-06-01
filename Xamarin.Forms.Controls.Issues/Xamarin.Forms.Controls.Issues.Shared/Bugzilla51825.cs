@@ -8,6 +8,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 51825, "[iOS] Korean input in SearchBar doesn't work", PlatformAffected.iOS)]
 	public class Bugzilla51815 : TestContentPage
@@ -47,13 +50,13 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void Bugzilla51825Test ()
+		public void Bugzilla51825Test()
 		{
-			RunningApp.WaitForElement (q => q.Marked ("Bugzilla51825SearchBar"));
+			RunningApp.WaitForElement(q => q.Marked("Bugzilla51825SearchBar"));
 			RunningApp.EnterText(q => q.Marked("Bugzilla51825SearchBar"), "Hello");
-			RunningApp.WaitForElement (q => q.Text ("Hello"));
+			RunningApp.WaitForElement(q => q.Text("Hello"));
 			RunningApp.Tap("Bugzilla51825Button");
-			RunningApp.WaitForElement (q => q.Text ("Test"));
+			RunningApp.WaitForElement(q => q.Text("Test"));
 		}
 #endif
 	}

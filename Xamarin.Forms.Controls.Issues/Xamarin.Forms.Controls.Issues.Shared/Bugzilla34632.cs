@@ -10,69 +10,81 @@ using Xamarin.UITest.iOS;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 34632, "Can't change IsPresented when setting SplitOnLandscape ")]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 34632, "Can't change IsPresented when setting SplitOnLandscape ")]
 	public class Bugzilla34632 : TestMasterDetailPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
 			if (Device.RuntimePlatform == Device.UWP)
 				MasterBehavior = MasterBehavior.Split;
 			else
 				MasterBehavior = MasterBehavior.SplitOnLandscape;
 
-			Master = new ContentPage { Title = "Main Page", 
-				Content = new Button { Text = "Master", AutomationId = "btnMaster", 
-					Command = new Command (() => {
+			Master = new ContentPage
+			{
+				Title = "Main Page",
+				Content = new Button
+				{
+					Text = "Master",
+					AutomationId = "btnMaster",
+					Command = new Command(() =>
+					{
 						//If we're in potrait toggle hide the menu on click
-						if (Width < Height || Device.Idiom == TargetIdiom.Phone) {
+						if (Width < Height || Device.Idiom == TargetIdiom.Phone)
+						{
 							IsPresented = false;
 						}
 					})
-				}	
+				}
 			};
 
-			Detail = new NavigationPage (new ModalRotationIssue ());
-			NavigationPage.SetHasBackButton (Detail, false);
+			Detail = new NavigationPage(new ModalRotationIssue());
+			NavigationPage.SetHasBackButton(Detail, false);
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class ModalRotationIssue : ContentPage
 		{
-			public ModalRotationIssue ()
+			public ModalRotationIssue()
 			{
-				var btn = new Button { Text = "Open Modal", AutomationId = "btnModal"  };
+				var btn = new Button { Text = "Open Modal", AutomationId = "btnModal" };
 				btn.Clicked += OnButtonClicked;
 				Content = btn;
 			}
 
-			async void OnButtonClicked (object sender, EventArgs e)
+			async void OnButtonClicked(object sender, EventArgs e)
 			{
 				var testButton = new Button { Text = "Rotate Before Clicking", AutomationId = "btnDismissModal" };
-				testButton.Clicked += (async (snd, args) => await Navigation.PopModalAsync ());
+				testButton.Clicked += (async (snd, args) => await Navigation.PopModalAsync());
 
-				var testModal = new ContentPage () {
+				var testModal = new ContentPage()
+				{
 					Content = testButton
 				};
 
-				await Navigation.PushModalAsync (testModal);
+				await Navigation.PushModalAsync(testModal);
 			}
 		}
 
-		#if UITEST && __IOS__
+#if UITEST && __IOS__
 		[Test]
-		public void Bugzilla34632Test ()
+		public void Bugzilla34632Test()
 		{
-			if (RunningApp.IsTablet()) {
-				RunningApp.SetOrientationPortrait ();
-				RunningApp.Tap (q => q.Marked ("btnModal"));
-				RunningApp.SetOrientationLandscape ();
-				RunningApp.Tap (q => q.Marked ("btnDismissModal"));
-				RunningApp.Tap (q => q.Marked ("btnModal"));
-				RunningApp.SetOrientationPortrait ();
-				RunningApp.Tap (q => q.Marked ("btnDismissModal"));
+			if (RunningApp.IsTablet())
+			{
+				RunningApp.SetOrientationPortrait();
+				RunningApp.Tap(q => q.Marked("btnModal"));
+				RunningApp.SetOrientationLandscape();
+				RunningApp.Tap(q => q.Marked("btnDismissModal"));
+				RunningApp.Tap(q => q.Marked("btnModal"));
+				RunningApp.SetOrientationPortrait();
+				RunningApp.Tap(q => q.Marked("btnDismissModal"));
 				RunningApp.Tap("Main Page");
-				RunningApp.Tap (q => q.Marked ("btnMaster"));
+				RunningApp.Tap(q => q.Marked("btnMaster"));
 				RunningApp.WaitForNoElement("btnMaster");
 			}
 			else
@@ -84,12 +96,12 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		[TearDown]
-		public override void TearDown() 
+		public override void TearDown()
 		{
-			RunningApp.SetOrientationPortrait ();
+			RunningApp.SetOrientationPortrait();
 
 			base.TearDown();
 		}
-		#endif
+#endif
 	}
 }

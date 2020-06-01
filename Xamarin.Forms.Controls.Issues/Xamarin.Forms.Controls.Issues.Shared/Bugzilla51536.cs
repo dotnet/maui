@@ -4,6 +4,9 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 51536, "[iOS] Xamarin.Forms ListView Row Height Does Not Adapt")]
 	public class Bugzilla51536 : TestContentPage
@@ -18,10 +21,10 @@ namespace Xamarin.Forms.Controls.Issues
 			const string InstructionsShort = "On iOS, all the list items below will have different height defined by this text.";
 
 			var listItems = Enumerable.Range(1, 100).Select(i => new ItemViewModel
-																 {
-																	 Name = "Item" + i,
-																	 Description = i % 2 == 0 ? (InstructionsLong + i) : (InstructionsShort + i)
-																 }).ToArray();
+			{
+				Name = "Item" + i,
+				Description = i % 2 == 0 ? (InstructionsLong + i) : (InstructionsShort + i)
+			}).ToArray();
 
 			var listView = new ListView(ListViewCachingStrategy.RecycleElement)
 			{

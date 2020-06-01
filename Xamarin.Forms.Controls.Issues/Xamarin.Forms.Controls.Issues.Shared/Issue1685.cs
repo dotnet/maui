@@ -17,14 +17,17 @@ using Xamarin.Forms.Core.UITests;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1685, "Entry clears when upadting text from native with one-way binding", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.WinPhone, NavigationBehavior.PushModalAsync)]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1685, "Entry clears when upadting text from native with one-way binding", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.WinPhone, NavigationBehavior.PushModalAsync)]
 	public class Issue1685 : TestContentPage
 	{
 		const string ButtonId = "Button1685";
 		const string Success = "Success";
 
-		[Preserve (AllMembers=true)]
+		[Preserve(AllMembers = true)]
 		class Test : INotifyPropertyChanged
 		{
 			public event PropertyChangedEventHandler PropertyChanged;
@@ -43,7 +46,8 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			}
 
-			void OnPropertyChanged(string caller) {
+			void OnPropertyChanged(string caller)
+			{
 				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(caller));
 			}
 		}
@@ -51,27 +55,30 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override void Init()
 		{
 			Title = "EntryBindingBug";
-            On<iOS>().SetUseSafeArea(true);
+			On<iOS>().SetUseSafeArea(true);
 
 			BindingContext = new Test();
 
-			var entry = new Entry() {
+			var entry = new Entry()
+			{
 				Placeholder = "Entry"
 			};
 			entry.SetBinding(Entry.TextProperty, "EntryValue", BindingMode.OneWay);
 
-			var button = new Button() {
+			var button = new Button()
+			{
 				Text = "Click me",
 				AutomationId = ButtonId
 			};
 
-			button.Clicked += (sender, e) => 
+			button.Clicked += (sender, e) =>
 			{
 				var context = BindingContext as Test;
 				context.EntryValue = Success;
 			};
 
-			var root = new StackLayout() {
+			var root = new StackLayout()
+			{
 				VerticalOptions = LayoutOptions.FillAndExpand,
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				Children = {

@@ -15,8 +15,11 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1777, "Adding picker items when picker is in a ViewCell breaks", PlatformAffected.WinPhone)]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1777, "Adding picker items when picker is in a ViewCell breaks", PlatformAffected.WinPhone)]
 	public class Issue1777 : TestContentPage
 	{
 		Picker _pickerTable = null;
@@ -24,7 +27,7 @@ namespace Xamarin.Forms.Controls.Issues
 		string _pickerTableId = "pickerTableId";
 		string _btnText = "do magic";
 
-		protected override void Init ()
+		protected override void Init()
 		{
 			StackLayout stackLayout = new StackLayout();
 			Content = stackLayout;
@@ -37,7 +40,7 @@ namespace Xamarin.Forms.Controls.Issues
 			stackLayout.Children.Add(instructions);
 
 			TableView tableView = new TableView();
-			stackLayout.Children.Add( tableView);
+			stackLayout.Children.Add(tableView);
 
 			TableRoot tableRoot = new TableRoot();
 			tableView.Root = tableRoot;
@@ -45,39 +48,39 @@ namespace Xamarin.Forms.Controls.Issues
 			TableSection tableSection = new TableSection("Table");
 			tableRoot.Add(tableSection);
 
-			ViewCell viewCell = new ViewCell ();
-			tableSection.Add (viewCell);
+			ViewCell viewCell = new ViewCell();
+			tableSection.Add(viewCell);
 
-			ContentView contentView = new ContentView ();
+			ContentView contentView = new ContentView();
 			contentView.HorizontalOptions = LayoutOptions.FillAndExpand;
 			viewCell.View = contentView;
 
-			_pickerTable = new Picker ();
+			_pickerTable = new Picker();
 			_pickerTable.AutomationId = _pickerTableId;
 			_pickerTable.HorizontalOptions = LayoutOptions.FillAndExpand;
 			contentView.Content = _pickerTable;
 
-			Label label = new Label ();
+			Label label = new Label();
 			label.Text = "Normal";
-			stackLayout.Children.Add (label);
+			stackLayout.Children.Add(label);
 
-			_pickerNormal = new Picker ();
-			stackLayout.Children.Add (_pickerNormal);
+			_pickerNormal = new Picker();
+			stackLayout.Children.Add(_pickerNormal);
 
-			Button button = new Button ();
+			Button button = new Button();
 			button.Clicked += button_Clicked;
 			button.Text = _btnText;
-			stackLayout.Children.Add (button);
+			stackLayout.Children.Add(button);
 
 			//button_Clicked(button, EventArgs.Empty);
 			_pickerTable.SelectedIndex = 0;
 			_pickerNormal.SelectedIndex = 0;
 		}
 
-		void button_Clicked (object sender, EventArgs e)
+		void button_Clicked(object sender, EventArgs e)
 		{
-			_pickerTable.Items.Add ("test " + _pickerTable.Items.Count);
-			_pickerNormal.Items.Add ("test " + _pickerNormal.Items.Count);
+			_pickerTable.Items.Add("test " + _pickerTable.Items.Count);
+			_pickerNormal.Items.Add("test " + _pickerNormal.Items.Count);
 		}
 
 #if UITEST && __WINDOWS__
@@ -91,5 +94,5 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.Screenshot("Picker is displayed correctly in the ViewCell");
 		}
 #endif
-    }
+	}
 }

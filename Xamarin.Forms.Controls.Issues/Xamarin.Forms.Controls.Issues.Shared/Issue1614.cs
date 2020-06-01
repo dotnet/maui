@@ -8,6 +8,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1614, "iOS 11 prevents InputAccessoryView from showing in landscape mode", PlatformAffected.iOS)]
 	public class Issue1614 : TestContentPage
@@ -39,7 +42,7 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override bool Isolate => true;
 
 		[Test]
-		public void Issue1614Test ()
+		public void Issue1614Test()
 		{
 			RunningApp.SetOrientationPortrait();
 
