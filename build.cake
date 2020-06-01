@@ -50,7 +50,7 @@ string artifactStagingDirectory = Argument("Build_ArtifactStagingDirectory", (st
 var ANDROID_HOME = EnvironmentVariable("ANDROID_HOME") ??
     (IsRunningOnWindows () ? "C:\\Program Files (x86)\\Android\\android-sdk\\" : "");
 
-string[] androidSdkManagerInstalls =  new string[0];//new [] { "platforms;android-24", "platforms;android-28", "platforms;android-29", "build-tools;29.0.3"};
+string[] androidSdkManagerInstalls = new [] { "platforms;android-28", "platforms;android-29", "build-tools;29.0.3"};
 
 (string name, string location)[] windowsSdksInstalls = new (string name, string location)[]
 {
@@ -60,11 +60,27 @@ string[] androidSdkManagerInstalls =  new string[0];//new [] { "platforms;androi
     ("10.0.14393.0", "https://go.microsoft.com/fwlink/p/?LinkId=838916")
 };
 
-// these don't run on CI
 string[] netFrameworkSdksLocalInstall = new string[]
 {
-    "https://download.microsoft.com/download/F/1/D/F1DEB8DB-D277-4EF9-9F48-3A65D4D8F965/NDP461-DevPack-KB3105179-ENU.exe",
-    "https://go.microsoft.com/fwlink/?linkid=874338", //NET472
+    "https://go.microsoft.com/fwlink/?linkid=2099470", //NET461 SDK
+    "https://go.microsoft.com/fwlink/?linkid=874338" //NET472 SDK
+};
+
+// these don't run on CI
+(string msiUrl, string cabUrl)[] netframeworkMSI = new (string msiUrl, string cabUrl)[]
+{
+    (
+        "https://download.visualstudio.microsoft.com/download/pr/34dae2b3-314f-465e-aba0-0a862c29638e/b2bc986f304acdd76fcd8f910012b656/sdk_tools462.msi",
+        "https://download.visualstudio.microsoft.com/download/pr/6283f4a0-36b3-4336-a6f2-c5afd9f8fdbb/ffbe35e429f7d5c1d3777d03b2f38a24/sdk_tools462.cab"
+    ),
+    (
+        "https://download.visualstudio.microsoft.com/download/pr/0d63c72c-9341-4de6-b493-dc7ad0d01246/f16b6402b8f8fb3b95dde5c1c2e5a2b4/sdk_tools461.msi",
+        "https://download.visualstudio.microsoft.com/download/pr/3dc58ffd-d515-43a4-87bd-2aba395eab17/5bff8f781c9843d64bd2367898395c5e/sdk_tools461.cab"
+    ),
+    (
+        "https://download.visualstudio.microsoft.com/download/pr/9d14aa59-3f7f-4fe6-85e9-3bc31031e1f2/88b90ec9d096ec382a001e1fbd4a6be8/sdk_tools472.msi",
+        "https://download.visualstudio.microsoft.com/download/pr/77f1d250-f253-4c48-849c-0f08c9c11e77/ab2aa8f856e686cd4ad1c921742f2eeb/sdk_tools472.cab"
+    )
 };
 
 Information ("XamarinFormsVersion: {0}", XamarinFormsVersion);
@@ -278,12 +294,13 @@ Task("provision-windowssdk")
             {
                 string sdkPath = System.IO.Path.Combine(@"C:\Program Files (x86)\Windows Kits\10\Platforms\UAP", windowsSdk.name);
                 if(DirectoryExists(sdkPath) && GetFiles(System.IO.Path.Combine(sdkPath, "*.*")).Count() > 0)
+                {
+                    Information("Already Installed: {0}", sdkPath);
                     continue;
+                }
 
 
-                Information(sdkPath);
-                Information(DirectoryExists(sdkPath).ToString());
-                Information(GetFiles(sdkPath).Count().ToString());
+                Information("Installing: {0}", sdkPath);
                 string installUrl = windowsSdk.location;
                 string installerPath = $"{System.IO.Path.GetTempPath()}" + $"WindowsSDK{i}.exe";
                 DownloadFile(installUrl, installerPath);
@@ -303,11 +320,27 @@ Task("provision-netsdk-local")
     .Description("Install .NET SDK")
     .Does(() =>
     {
-        if(IsRunningOnWindows() && !isCIBuild)
+        if(IsRunningOnWindows() && (!isCIBuild || target == "provision-netsdk-local"))
         {
+            foreach(var installUrl in netframeworkMSI)
+            {
+                string msiUrl = installUrl.msiUrl;
+                string cabUrl = installUrl.cabUrl;
+
+
+                string cabName = cabUrl.Split('/').Last();
+                string msiName = msiUrl.Split('/').Last();                
+                string cabPath = $"{System.IO.Path.GetTempPath()}{cabName}";
+
+                Information("Downloading: {0} to {1}", cabUrl, cabPath);
+                DownloadFile(cabUrl, cabPath);
+                InstallMsi(msiUrl, null, msiName);
+            }
+
             int i = 0;
             foreach(var installUrl in netFrameworkSdksLocalInstall)
             {
+                Information("Installing: {0}", installUrl);
                 string installerPath = $"{System.IO.Path.GetTempPath()}" + $"netSDKS{i}.exe";
                 DownloadFile(installUrl, installerPath);
 
@@ -331,7 +364,10 @@ Task("provision-uitests-uwp")
             string installPath = Argument("WinAppDriverPath", @"C:\Program Files (x86)\");
             string driverPath = System.IO.Path.Combine(installPath, "Windows Application Driver");
             if(!DirectoryExists(driverPath))
+            {
                 InstallMsi("https://github.com/microsoft/WinAppDriver/releases/download/v1.2-RC/WindowsApplicationDriver.msi", installPath);
+            }
+
 
             var info = new System.Diagnostics.ProcessStartInfo
             {
@@ -345,30 +381,41 @@ Task("provision-uitests-uwp")
         
     });
 
-void InstallMsi(string msiFile, string installTo)
+void InstallMsi(string msiFile, string installTo, string fileName = "InstallFile.msi")
 {
-    string installerPath = $"{System.IO.Path.GetTempPath()}" + "InstallFile.msi";
+    string installerPath = $"{System.IO.Path.GetTempPath()}{fileName}";
         
-    try{
+    try
+    {
         Information ("Installing: {0}", msiFile);
-        Information("Installing into: {0}", installTo);
         DownloadFile(msiFile, installerPath);
         Information("File Downloaded To: {0}", installerPath);
 
-        var result = StartProcess("msiexec", new ProcessSettings {
-            Arguments = new ProcessArgumentBuilder()
-
-                .Append(@"/a")
+        var argumentBuilder = 
+            new ProcessArgumentBuilder()
+                .Append("/a")
                 .Append(installerPath)
-                .Append("TARGETDIR=\"" + installTo + "\"")
-                .Append("/qn")
-            }
-        );
+                .Append("/qn");
+
+        if(!String.IsNullOrWhiteSpace(installTo))
+        {
+            Information("Installing into: {0}", installTo);
+            argumentBuilder = argumentBuilder.Append("TARGETDIR=\"" + installTo + "\"");
+        }
+
+        var result = StartProcess("msiexec", new ProcessSettings {
+            Arguments = argumentBuilder
+        });
 
         if(result != 0)
             throw new Exception("Failed to install: " + msiFile);
 
         Information("File Installed: {0}", result);
+    }
+    catch(Exception exc)
+    {
+        Information("Failed to install {0} make sure you are running script as admin {1}", msiFile, exc);
+        throw;
     }
     finally{
         DeleteFile(installerPath);
@@ -381,6 +428,8 @@ Task("provision")
     .IsDependentOn("provision-macsdk")
     .IsDependentOn("provision-iossdk")
     .IsDependentOn("provision-androidsdk")
+    .IsDependentOn("provision-netsdk-local")
+    .IsDependentOn("provision-windowssdk")
     .IsDependentOn("provision-monosdk"); // always provision monosdk last otherwise CI might fail
 
 Task("NuGetPack")
