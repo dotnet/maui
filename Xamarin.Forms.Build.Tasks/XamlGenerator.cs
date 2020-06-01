@@ -408,6 +408,8 @@ namespace Xamarin.Forms.Build.Tasks
 
 		bool AssemblyIsSystem(string name)
 		{
+			if (name.StartsWith("System.Maui", StringComparison.CurrentCultureIgnoreCase))
+				return false;
 			if (name.StartsWith("System.", StringComparison.CurrentCultureIgnoreCase))
 				return true;
 			else if (name.Equals("mscorlib.dll", StringComparison.CurrentCultureIgnoreCase))
@@ -430,7 +432,7 @@ namespace Xamarin.Forms.Build.Tasks
 				(typeInfo) =>
 				{
 					ModuleDefinition module = null;
-					if (!_xmlnsModules.TryGetValue(typeInfo.AssemblyName, out module))
+					if (typeInfo.AssemblyName == null || !_xmlnsModules.TryGetValue(typeInfo.AssemblyName, out module))
 						return null;
 					string typeName = typeInfo.TypeName.Replace('+', '/'); //Nested types
 					string fullName = $"{typeInfo.ClrNamespace}.{typeInfo.TypeName}";
