@@ -9,6 +9,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 38112, "Switch becomes reenabled when previous ViewCell is removed from TableView", PlatformAffected.Android)]
 	public class Bugzilla38112 : TestContentPage

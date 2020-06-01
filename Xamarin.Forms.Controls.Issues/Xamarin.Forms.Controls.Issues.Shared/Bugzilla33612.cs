@@ -10,8 +10,11 @@ using Xamarin.UITest;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 33612,
+#if UITEST
+	[Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 33612,
 		"(A) Removing a page from the navigation stack causes an 'Object reference' exception in Android only",
 		PlatformAffected.Android)]
 	public class Bugzilla33612 : TestNavigationPage
@@ -127,33 +130,33 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 		}
 
-		protected override void Init ()
+		protected override void Init()
 		{
-			var page1 = new Page1 ();
+			var page1 = new Page1();
 
-			PushAsync (page1);
+			PushAsync(page1);
 		}
 
 #if UITEST
 		[Test]
-		[UiTest (typeof(NavigationPage))]
-		public void Issue33612RemovePagesWithoutRenderers ()
+		[UiTest(typeof(NavigationPage))]
+		public void Issue33612RemovePagesWithoutRenderers()
 		{
-			RunningApp.WaitForElement (q => q.Marked ("Go To Page 2"));
-			RunningApp.Tap (q => q.Marked("Go To Page 2"));
+			RunningApp.WaitForElement(q => q.Marked("Go To Page 2"));
+			RunningApp.Tap(q => q.Marked("Go To Page 2"));
 
-			RunningApp.WaitForElement (q => q.Marked("This is Page 2"));
-			RunningApp.Screenshot ("At Page 2"); 
-			RunningApp.Tap (q => q.Marked("Go to Page 3"));
+			RunningApp.WaitForElement(q => q.Marked("This is Page 2"));
+			RunningApp.Screenshot("At Page 2");
+			RunningApp.Tap(q => q.Marked("Go to Page 3"));
 
-			RunningApp.WaitForElement ("This is Page 3");
-			RunningApp.WaitForElement (q => q.Marked ("Return To Page 2"),
-				timeout: TimeSpan.FromSeconds (15));
+			RunningApp.WaitForElement("This is Page 3");
+			RunningApp.WaitForElement(q => q.Marked("Return To Page 2"),
+				timeout: TimeSpan.FromSeconds(15));
 			RunningApp.Screenshot("At Page 3");
-			RunningApp.Tap (q => q.Marked("Return To Page 2"));
+			RunningApp.Tap(q => q.Marked("Return To Page 2"));
 
-			RunningApp.WaitForElement ("If you're seeing this, nothing crashed. Yay!");
-			RunningApp.Screenshot ("Success Page");
+			RunningApp.WaitForElement("If you're seeing this, nothing crashed. Yay!");
+			RunningApp.Screenshot("Success Page");
 		}
 #endif
 	}

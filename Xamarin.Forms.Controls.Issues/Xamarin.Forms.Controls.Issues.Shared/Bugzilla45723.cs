@@ -10,6 +10,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 45723, "Entry / Editor and a Button. Tapping the button dismisses the keyboard", PlatformAffected.iOS)]
 	public class Bugzilla45723 : TestNavigationPage // or TestMasterDetailPage, etc ...

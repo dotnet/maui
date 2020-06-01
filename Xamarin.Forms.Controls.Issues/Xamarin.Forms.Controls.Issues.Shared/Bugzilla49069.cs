@@ -8,6 +8,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 49069, "Java.Lang.ArrayIndexOutOfBoundsException when rendering long Label on Android", PlatformAffected.Default)]
 	public class Bugzilla49069 : TestContentPage // or TestMasterDetailPage, etc ...
@@ -16,7 +19,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			Label longLabelWithHorizontalTextAlignmentOfEndAndHeadTruncation = new Label
 			{
-                AutomationId = "lblLong",
+				AutomationId = "lblLong",
 				TextColor = Color.Black,
 				BackgroundColor = Color.Pink,
 				Text = "This is a long string that should hopefully truncate. It has HeadTruncation enabled and HorizontalTextAlignment = End",
@@ -46,14 +49,14 @@ namespace Xamarin.Forms.Controls.Issues
 				Orientation = ScrollOrientation.Vertical
 			};
 
-            Content = sv;
+			Content = sv;
 		}
 
 #if UITEST
 		[Test]
-		public void Bugzilla49069Test ()
+		public void Bugzilla49069Test()
 		{
-			RunningApp.WaitForElement (q => q.Marked ("lblLong"));
+			RunningApp.WaitForElement(q => q.Marked("lblLong"));
 		}
 #endif
 	}

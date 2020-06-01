@@ -3,6 +3,9 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 53362, "Layout regression in Grid on iOS: HorizontalOption = Center does not center", PlatformAffected.iOS)]
 	public class Bugzilla53362 : TestContentPage

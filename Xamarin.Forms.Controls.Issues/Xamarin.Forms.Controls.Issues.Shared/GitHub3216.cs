@@ -3,6 +3,9 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3216, "[macOS] Editor still displays white background when BackgroundColor set to Transparent", PlatformAffected.macOS)]
 	public class GitHub3216 : TestContentPage

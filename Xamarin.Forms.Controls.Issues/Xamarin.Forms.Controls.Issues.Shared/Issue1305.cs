@@ -5,11 +5,14 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1305, "ToolbarItems on NavigationPage broken", PlatformAffected.Android, NavigationBehavior.PushAsync)]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1305, "ToolbarItems on NavigationPage broken", PlatformAffected.Android, NavigationBehavior.PushAsync)]
 	public class Issue1305 : ContentPage
 	{
-		public Issue1305 ()
+		public Issue1305()
 		{
 			var settings = new ToolbarItem
 			{
@@ -34,11 +37,11 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 	}
 
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1305, "ToolbarItems on NavigationPage broken", PlatformAffected.Android)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1305, "ToolbarItems on NavigationPage broken", PlatformAffected.Android)]
 	public class Issue13052 : ContentPage
 	{
-		public Issue13052 ()
+		public Issue13052()
 		{
 			Content = new ContentView { Content = new Label { Text = "Settings..." } };
 

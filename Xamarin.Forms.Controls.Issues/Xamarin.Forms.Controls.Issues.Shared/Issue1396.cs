@@ -4,9 +4,12 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 1396, 
-		"Label TextAlignment is not kept when resuming application", 
+	[Issue(IssueTracker.Github, 1396,
+		"Label TextAlignment is not kept when resuming application",
 		PlatformAffected.Android)]
 	public class Issue1396 : TestContentPage
 	{
@@ -16,7 +19,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var instructions = new Label
 			{
-				Text = "Tap the 'Change Text' button. Tap the Overview button. Resume the application. If the label" 
+				Text = "Tap the 'Change Text' button. Tap the Overview button. Resume the application. If the label"
 						+ " text is no longer centered, the test has failed."
 			};
 
@@ -27,7 +30,7 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 			_label = new Label
-			{ 
+			{
 				HeightRequest = 400,
 				BackgroundColor = Color.Gold,
 				Text = "I should be centered in the gold area",
@@ -35,19 +38,19 @@ namespace Xamarin.Forms.Controls.Issues
 				HorizontalTextAlignment = TextAlignment.Center
 			};
 
-			var layout = new StackLayout 
+			var layout = new StackLayout
 			{
 				Children =
 				{
-					instructions, 
+					instructions,
 					button,
 					_label
 				}
 			};
 
-			var content = new ContentPage 
+			var content = new ContentPage
 			{
-				Content = layout 
+				Content = layout
 			};
 
 			Content = new Label { Text = "Shouldn't see this" };

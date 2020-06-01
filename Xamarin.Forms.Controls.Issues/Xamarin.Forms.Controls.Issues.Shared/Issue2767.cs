@@ -9,7 +9,8 @@ using Xamarin.Forms.Core.UITests;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-#if UITEST 
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
 #endif
 	[Preserve(AllMembers = true)]
@@ -35,7 +36,7 @@ namespace Xamarin.Forms.Controls.Issues
 			grid.AddChild(new Label { Text = "Collapsed" }, 0, 1);
 			grid.AddChild(new Label { Text = "Collapsed" }, 1, 0);
 			grid.AddChild(new Label { Text = "Label 1:1" }, 1, 1);
-			
+
 			Content = new Frame
 			{
 				HorizontalOptions = LayoutOptions.CenterAndExpand,

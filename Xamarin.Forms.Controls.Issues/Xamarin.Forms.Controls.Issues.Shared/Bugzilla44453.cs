@@ -6,14 +6,11 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-// Apply the default category of "Issues" to all of the tests in this assembly
-// We use this as a catch-all for tests which haven't been individually categorized
-#if UITEST
-[assembly: NUnit.Framework.Category("Issues")]
-#endif
-
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 44453, "[UWP] ToolbarItem Text hard to see when BarTextColor is light", PlatformAffected.WinRT)]
 	public class Bugzilla44453 : TestMasterDetailPage
@@ -37,7 +34,7 @@ namespace Xamarin.Forms.Controls.Issues
 					}
 				}
 			};
-			
+
 			MasterBehavior = MasterBehavior.Popover;
 			Master = new ContentPage
 			{
@@ -49,7 +46,8 @@ namespace Xamarin.Forms.Controls.Issues
 				BarTextColor = Color.White
 			};
 
-			Detail.ToolbarItems.Add(new ToolbarItem("Test Secondary Item", null, delegate { }, ToolbarItemOrder.Secondary));
+			Detail.ToolbarItems.Add(new ToolbarItem("Test Secondary Item", null, delegate
+			{ }, ToolbarItemOrder.Secondary));
 		}
 	}
 }

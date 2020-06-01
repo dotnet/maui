@@ -16,6 +16,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 60699, "ListView Bindings fire multiple times on Android SDK 24+", PlatformAffected.Android)]
 	public class Bugzilla60699 : TestContentPage // or TestMasterDetailPage, etc ...
@@ -146,7 +149,7 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 
 			protected bool SetProperty<T>(ref T backingStore, T value,
-				[CallerMemberName]string propertyName = "",
+				[CallerMemberName] string propertyName = "",
 				Action onChanged = null)
 			{
 				if (EqualityComparer<T>.Default.Equals(backingStore, value))

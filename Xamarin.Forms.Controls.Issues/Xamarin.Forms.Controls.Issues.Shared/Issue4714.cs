@@ -10,6 +10,7 @@ using NUnit.Framework;
 namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[Category(Core.UITests.UITestCategories.Gestures)]
 #endif
 	[Preserve(AllMembers = true)]
@@ -26,7 +27,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var tapGesture = new TapGestureRecognizer { NumberOfTapsRequired = 1 };
 			tapGesture.SetBinding(TapGestureRecognizer.CommandProperty, "TapCommand");
-			
+
 			var label = new Label()
 			{
 				AutomationId = InitialText,
@@ -59,7 +60,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void Issue4714Test() 
+		public void Issue4714Test()
 		{
 			RunningApp.WaitForElement(InitialText);
 			RunningApp.DoubleTap(InitialText);

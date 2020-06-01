@@ -1006,6 +1006,14 @@ namespace Xamarin.Forms
 
 		protected override bool OnBackButtonPressed()
 		{
+			if(GetVisiblePage() is Page page)
+			{
+				if(!page.SendBackButtonPressed())
+				{
+					return false;
+				}
+			}
+
 			var currentContent = CurrentItem?.CurrentItem;
 			if (currentContent != null && currentContent.Stack.Count > 1)
 			{

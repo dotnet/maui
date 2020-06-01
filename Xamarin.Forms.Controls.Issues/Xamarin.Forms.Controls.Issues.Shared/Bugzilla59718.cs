@@ -15,6 +15,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 59718, "Multiple issues with listview and navigation in UWP", PlatformAffected.UWP)]
 	public class Bugzilla59718 : TestContentPage
@@ -89,7 +92,8 @@ namespace Xamarin.Forms.Controls.Issues
 				new Grouping<string, string>("Games", new string[] {"Online", "Offline" }),
 				new Grouping<string, string>("Test", new string[] {"test1", "test2" }),
 				new Grouping<string, string>("Variable", new string[] {"String", "Int" }),
-			}; ;
+			};
+			;
 
 			base.OnAppearing();
 		}

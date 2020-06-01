@@ -14,47 +14,54 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Github, 2948, "MasterDetailPage Detail is interactive even when Master is open when in Landscape")]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 2948, "MasterDetailPage Detail is interactive even when Master is open when in Landscape")]
 	public class Issue2948 : TestMasterDetailPage
 	{
 		static MasterDetailPage s_mdp;
 
-		protected override void Init ()
+		protected override void Init()
 		{
 			s_mdp = this;
-			var menuPage = new MenuPage ();
+			var menuPage = new MenuPage();
 
-			menuPage.Menu.ItemSelected += (sender, e) => NavigateTo (e.SelectedItem as MenuItem);
+			menuPage.Menu.ItemSelected += (sender, e) => NavigateTo(e.SelectedItem as MenuItem);
 
 			Master = menuPage;
-			Detail = new NavigationPage (new ContractsPage ());
+			Detail = new NavigationPage(new ContractsPage());
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class MenuListData : List<MenuItem>
 		{
-			public MenuListData ()
+			public MenuListData()
 			{
-				Add (new MenuItem () { 
-					Title = "Contracts", 
-					IconSource = "bank.png", 
+				Add(new MenuItem()
+				{
+					Title = "Contracts",
+					IconSource = "bank.png",
 					TargetType = typeof(ContractsPage)
 				});
 
-				Add (new MenuItem () { 
-					Title = "Leads", 
-					IconSource = "bank.png", 
+				Add(new MenuItem()
+				{
+					Title = "Leads",
+					IconSource = "bank.png",
 					TargetType = typeof(ContractsPage)
 				});
 
-				Add (new MenuItem () { 
-					Title = "Accounts", 
-					IconSource = "bank.png", 
+				Add(new MenuItem()
+				{
+					Title = "Accounts",
+					IconSource = "bank.png",
 					TargetType = typeof(ContractsPage)
 				});
 
-				Add (new MenuItem () {
+				Add(new MenuItem()
+				{
 					Title = "Opportunities",
 					IconSource = "bank.png",
 					TargetType = typeof(ContractsPage)
@@ -62,10 +69,10 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class ContractsPage : ContentPage
 		{
-			public ContractsPage ()
+			public ContractsPage()
 			{
 				Title = "Contracts";
 				IconImageSource = "bank.png";
@@ -74,32 +81,38 @@ namespace Xamarin.Forms.Controls.Issues
 				grid.ColumnDefinitions.Add(new ColumnDefinition());
 				grid.ColumnDefinitions.Add(new ColumnDefinition());
 
-				var btn = new Button {
+				var btn = new Button
+				{
 					HeightRequest = 300,
 					HorizontalOptions = LayoutOptions.End,
 					BackgroundColor = Color.Pink,
 					AutomationId = "btnOnDetail"
 				};
 
-				btn.Clicked+= (object sender, EventArgs e) => {
-					DisplayAlert("Clicked","I was clicked","Ok");
+				btn.Clicked += (object sender, EventArgs e) =>
+				{
+					DisplayAlert("Clicked", "I was clicked", "Ok");
 				};
 
-				Grid.SetColumn(btn,1);
+				Grid.SetColumn(btn, 1);
 
 				grid.Children.Add(btn);
 
-				var showMasterButton = new Button {
+				var showMasterButton = new Button
+				{
 					AutomationId = "ShowMasterBtn",
 					Text = "Show Master"
 				};
-				showMasterButton.Clicked += (sender, e) => {
+				showMasterButton.Clicked += (sender, e) =>
+				{
 					s_mdp.IsPresented = true;
 				};
 
-				Content = new ScrollView {
+				Content = new ScrollView
+				{
 
-					Content = new StackLayout {
+					Content = new StackLayout
+					{
 						Children = {
 							showMasterButton,
 							grid,
@@ -130,23 +143,23 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class MenuListView : ListView
 		{
-			public MenuListView ()
+			public MenuListView()
 			{
-				List<MenuItem> data = new MenuListData ();
+				List<MenuItem> data = new MenuListData();
 
 				ItemsSource = data;
 				VerticalOptions = LayoutOptions.FillAndExpand;
 				BackgroundColor = Color.Transparent;
 
-				var cell = new DataTemplate (typeof(ImageCell));
-				cell.SetBinding (TextCell.TextProperty, "Title");
-				cell.SetBinding (ImageCell.ImageSourceProperty, "IconSource");
+				var cell = new DataTemplate(typeof(ImageCell));
+				cell.SetBinding(TextCell.TextProperty, "Title");
+				cell.SetBinding(ImageCell.ImageSourceProperty, "IconSource");
 
 				ItemTemplate = cell;
-				SelectedItem = data [0];
+				SelectedItem = data[0];
 			}
 		}
 
@@ -154,41 +167,44 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			public ListView Menu { get; set; }
 
-			public MenuPage ()
+			public MenuPage()
 			{
 				Title = "Menu";
-				BackgroundColor = Color.FromHex ("333333");
+				BackgroundColor = Color.FromHex("333333");
 
-				Menu = new MenuListView ();
+				Menu = new MenuListView();
 
-				var menuLabel = new ContentView {
-					Padding = new Thickness (10, 36, 0, 5),
-					Content = new Label {
-						TextColor = Color.FromHex ("AAAAAA"),
-						Text = "MENU", 
+				var menuLabel = new ContentView
+				{
+					Padding = new Thickness(10, 36, 0, 5),
+					Content = new Label
+					{
+						TextColor = Color.FromHex("AAAAAA"),
+						Text = "MENU",
 					}
 				};
 
-				var layout = new StackLayout { 
-					Spacing = 0, 
+				var layout = new StackLayout
+				{
+					Spacing = 0,
 					VerticalOptions = LayoutOptions.FillAndExpand
 				};
-				layout.Children.Add (menuLabel);
-				layout.Children.Add (Menu);
+				layout.Children.Add(menuLabel);
+				layout.Children.Add(Menu);
 
 				Content = layout;
 			}
 		}
 
-		void NavigateTo (MenuItem menu)
+		void NavigateTo(MenuItem menu)
 		{
-			var displayPage = (Page)Activator.CreateInstance (menu.TargetType);
+			var displayPage = (Page)Activator.CreateInstance(menu.TargetType);
 
-			Detail = new NavigationPage (displayPage);
+			Detail = new NavigationPage(displayPage);
 
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class MenuItem
 		{
 			public string Title { get; set; }
@@ -200,20 +216,22 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void Issue2948Test ()
+		public void Issue2948Test()
 		{
-			RunningApp.Screenshot ("I am at Issue 2948");
-			RunningApp.SetOrientationLandscape ();
-			Thread.Sleep (5000);
-			if (ShouldRunTest ()) {
-				OpenMDP ();
-				var btns = RunningApp.Query (c => c.Marked ("btnOnDetail"));
-				if (btns.Length > 0) {
+			RunningApp.Screenshot("I am at Issue 2948");
+			RunningApp.SetOrientationLandscape();
+			Thread.Sleep(5000);
+			if (ShouldRunTest())
+			{
+				OpenMDP();
+				var btns = RunningApp.Query(c => c.Marked("btnOnDetail"));
+				if (btns.Length > 0)
+				{
 					// on iOS the button could be out of screen
-					RunningApp.Tap (c => c.Marked ("btnOnDetail"));
-					RunningApp.Screenshot ("I in landscape and master is open");
+					RunningApp.Tap(c => c.Marked("btnOnDetail"));
+					RunningApp.Screenshot("I in landscape and master is open");
 				}
-				RunningApp.WaitForNoElement (c => c.Marked ("Clicked"),"Time out",new TimeSpan(0,0,1));
+				RunningApp.WaitForNoElement(c => c.Marked("Clicked"), "Time out", new TimeSpan(0, 0, 1));
 			}
 		}
 
@@ -223,13 +241,15 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.SetOrientationPortrait();
 		}
 
-		public bool ShouldRunTest() {
-			var isMasterVisible = RunningApp.Query (q => q.Marked ("Leads")).Length > 0;
+		public bool ShouldRunTest()
+		{
+			var isMasterVisible = RunningApp.Query(q => q.Marked("Leads")).Length > 0;
 			return !isMasterVisible;
 		}
-		public void OpenMDP() {
+		public void OpenMDP()
+		{
 #if __IOS__
-			RunningApp.Tap (q => q.Marked ("Menu"));
+			RunningApp.Tap(q => q.Marked("Menu"));
 #else
 			RunningApp.Tap ("ShowMasterBtn");
 #endif

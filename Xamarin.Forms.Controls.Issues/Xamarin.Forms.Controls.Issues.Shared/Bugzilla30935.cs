@@ -9,16 +9,21 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 30935, "NullReferenceException in ViewRenderer<TView, TNativeView> (Xamarin.Forms.Platform.Android)")]
+	[Issue(IssueTracker.Bugzilla, 30935, "NullReferenceException in ViewRenderer<TView, TNativeView> (Xamarin.Forms.Platform.Android)")]
 	public class Bugzilla30935 : TestContentPage
 	{
 		Entry _entry;
-		protected override void Init ()
+		protected override void Init()
 		{
 			_entry = new Entry { AutomationId = "entry" };
 			// Initialize ui here instead of ctor
-			Content = new StackLayout { Children = { new Label {
+			Content = new StackLayout
+			{
+				Children = { new Label {
 						AutomationId = "IssuePageLabel",
 						Text = "See if I'm here"
 					},_entry
@@ -26,19 +31,19 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 		}
 
-		protected override void OnAppearing ()
+		protected override void OnAppearing()
 		{
-			_entry.Focus ();
+			_entry.Focus();
 			Content = null;
-			base.OnAppearing ();
+			base.OnAppearing();
 		}
 
 #if UITEST
 		[Test]
-		public void Bugzilla30935DoesntThrowException ()
+		public void Bugzilla30935DoesntThrowException()
 		{
-			RunningApp.WaitForNoElement (q => q.Marked ("IssuePageLabel"));
-			RunningApp.WaitForNoElement (q => q.Marked ("entry"));
+			RunningApp.WaitForNoElement(q => q.Marked("IssuePageLabel"));
+			RunningApp.WaitForNoElement(q => q.Marked("entry"));
 		}
 #endif
 	}

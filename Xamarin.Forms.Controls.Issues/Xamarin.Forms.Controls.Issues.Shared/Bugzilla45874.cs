@@ -8,6 +8,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 45874, "Effect not attaching to ScrollView", PlatformAffected.iOS | PlatformAffected.Android)]
 	public class Bugzilla45874 : TestContentPage

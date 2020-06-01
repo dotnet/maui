@@ -3,6 +3,9 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 36014, "Picker Control Is Not Rendered Correctly", PlatformAffected.WinPhone)]
 	public class Bugzilla36014 : TestContentPage
@@ -13,7 +16,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var label = new Label
 			{
 				Text =
-					"This test is successful if the picker below spans the width of the screen. If the picker is " 
+					"This test is successful if the picker below spans the width of the screen. If the picker is "
 					+ "just a sliver on the left edge of the screen, this test has failed."
 			};
 

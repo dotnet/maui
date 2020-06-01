@@ -10,6 +10,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 41842, "Set MasterDetailPage.Detail = New Page() twice will crash the application when set MasterBehavior = MasterBehavior.Split", PlatformAffected.WinRT)]
 	public class Bugzilla41842 : TestMasterDetailPage

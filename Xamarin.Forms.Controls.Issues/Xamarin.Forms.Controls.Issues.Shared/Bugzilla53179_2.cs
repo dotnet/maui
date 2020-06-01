@@ -12,6 +12,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Navigation)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 
 	[Preserve(AllMembers = true)]
@@ -28,18 +29,18 @@ namespace Xamarin.Forms.Controls.Issues
 				var nav = new NavigationPage(Root());
 				Application.Current.MainPage = nav;
 				await nav.PushAsync(Intermediate());
-				await nav.PushAsync(new PageWhichRemovesAnEarlierPageOnAppearing());	
+				await nav.PushAsync(new PageWhichRemovesAnEarlierPageOnAppearing());
 			};
 		}
 
 		static ContentPage Root()
 		{
-			return new ContentPage { Content = new Label {Text = "Root"} };
+			return new ContentPage { Content = new Label { Text = "Root" } };
 		}
 
 		static ContentPage Intermediate()
 		{
-			return new ContentPage { Content = new Label {Text = "Intermediate page"} };
+			return new ContentPage { Content = new Label { Text = "Intermediate page" } };
 		}
 
 		[Preserve(AllMembers = true)]

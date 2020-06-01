@@ -4,6 +4,9 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 6926, "[iOS] iOS - Using VoiceOver will crash when a ContentPage has no Content", PlatformAffected.iOS)]
 	public class GitHub6926 : TestContentPage

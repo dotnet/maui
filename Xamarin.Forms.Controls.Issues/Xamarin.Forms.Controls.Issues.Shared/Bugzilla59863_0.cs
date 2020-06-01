@@ -12,6 +12,7 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[Category(UITestCategories.Gestures)]
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 59863, "TapGestureRecognizer extremely finicky", PlatformAffected.Android)]
@@ -26,12 +27,12 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var instructions = new Label
 			{
-				Text = "Tap the box below several times quickly. " 
+				Text = "Tap the box below several times quickly. "
 				+ "The number displayed below should match the number of times you tap the box."
 			};
 
-			var singleTapCounter = new Label {Text = $"{_singleTaps} {Singles}"};
-			
+			var singleTapCounter = new Label { Text = $"{_singleTaps} {Singles}" };
+
 			var singleTapBox = new BoxView
 			{
 				WidthRequest = 100,
@@ -54,13 +55,14 @@ namespace Xamarin.Forms.Controls.Issues
 			Content = new StackLayout
 			{
 				Margin = 40,
-				HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill,
+				HorizontalOptions = LayoutOptions.Fill,
+				VerticalOptions = LayoutOptions.Fill,
 				Children = { instructions, singleTapBox, singleTapCounter }
 			};
 		}
 
 #if UITEST
-		[Test] 
+		[Test]
 		public void TapsCountShouldMatch()
 		{
 			// Gonna add this test because we'd want to know if it _did_ start failing

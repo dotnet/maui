@@ -3,6 +3,9 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2598, "Replacing page in CarouselPage does not work the first time", PlatformAffected.All)]
 	public class GitHub2598 : TestCarouselPage
@@ -44,7 +47,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var secondPage = CreatePage("Page 2", Color.Red);
 			Children.Add(secondPage);
 
-			CurrentPage = firstPage;			
+			CurrentPage = firstPage;
 		}
 	}
 }

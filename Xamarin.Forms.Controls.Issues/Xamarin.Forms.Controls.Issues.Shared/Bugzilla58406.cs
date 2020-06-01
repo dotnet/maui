@@ -12,10 +12,11 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[Category(UITestCategories.Effects)]
 	[Category(UITestCategories.Label)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 58406, 
+	[Issue(IssueTracker.Bugzilla, 58406,
 		"Effect is never attached to Label, but is attached to Label subclass (Android)", PlatformAffected.Android)]
 	public class Bugzilla58406 : TestContentPage
 	{
@@ -46,7 +47,7 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 		}
 
-#if UITEST 
+#if UITEST
 		[Test]
 		public void EffectAppliesToLabel()
 		{

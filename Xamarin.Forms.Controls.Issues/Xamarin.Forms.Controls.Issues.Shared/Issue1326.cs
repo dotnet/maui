@@ -5,6 +5,9 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1326, "ListView word wrap in Label causing ViewCells to overlap", PlatformAffected.iOS)]
 	public class Issue1326 : TestContentPage

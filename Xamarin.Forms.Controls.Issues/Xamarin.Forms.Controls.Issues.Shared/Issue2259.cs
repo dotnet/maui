@@ -12,11 +12,14 @@ using Xamarin.UITest;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 2259, "ListView.ScrollTo crashes app", PlatformAffected.iOS)]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 2259, "ListView.ScrollTo crashes app", PlatformAffected.iOS)]
 	public class Issue2259 : TestContentPage
 	{
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class Person
 		{
 			public string Name { private set; get; }
@@ -25,7 +28,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			public Color FavoriteColor { private set; get; }
 
-			public Person (string name, DateTime birthday, Color favoriteColor)
+			public Person(string name, DateTime birthday, Color favoriteColor)
 			{
 				Name = name;
 				Birthday = birthday;
@@ -35,7 +38,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		int _count = 1;
 
-		protected override void Init ()
+		protected override void Init()
 		{
 			var people = new ObservableCollection<Person> {
 				new Person ("Abigail", new DateTime (1975, 1, 15), Color.Aqua),
@@ -46,25 +49,29 @@ namespace Xamarin.Forms.Controls.Issues
 #pragma warning restore 618
 			};
 
-			var buttonAdd = new Button {
+			var buttonAdd = new Button
+			{
 				Text = "Add",
 				HorizontalOptions = LayoutOptions.Start,
 				VerticalOptions = LayoutOptions.Center,
 			};
 
-			var buttonRemove = new Button {
+			var buttonRemove = new Button
+			{
 				Text = "Remove",
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,
 			};
 
-			var buttonScrollToBottom = new Button {
+			var buttonScrollToBottom = new Button
+			{
 				Text = "Bottom",
 				HorizontalOptions = LayoutOptions.Start,
 				VerticalOptions = LayoutOptions.Center,
 			};
 
-			var buttonStack = new StackLayout {
+			var buttonStack = new StackLayout
+			{
 				Orientation = StackOrientation.Horizontal,
 				Children = {
 					buttonAdd,
@@ -73,21 +80,23 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			var listView = new ListView {
+			var listView = new ListView
+			{
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				VerticalOptions = LayoutOptions.FillAndExpand,
 				ItemsSource = people,
-				ItemTemplate = new DataTemplate (() =>
-				{
-					var nameLabel = new Label ();
-					var birthdayLabel = new Label ();
-					var boxView = new BoxView ();
+				ItemTemplate = new DataTemplate(() =>
+			   {
+				   var nameLabel = new Label();
+				   var birthdayLabel = new Label();
+				   var boxView = new BoxView();
 
-					var stack = new StackLayout {
-						Padding = new Thickness (0, 5),
-						Orientation = StackOrientation.Horizontal,
-						BackgroundColor = Color.Black,
-						Children = {
+				   var stack = new StackLayout
+				   {
+					   Padding = new Thickness(0, 5),
+					   Orientation = StackOrientation.Horizontal,
+					   BackgroundColor = Color.Black,
+					   Children = {
 							boxView,
 							new StackLayout {
 								VerticalOptions = LayoutOptions.Center,
@@ -97,42 +106,44 @@ namespace Xamarin.Forms.Controls.Issues
 									birthdayLabel
 								}
 							}
-						}
-					};
+					   }
+				   };
 
-					nameLabel.SetBinding (Label.TextProperty, "Name");
-					birthdayLabel.SetBinding (Label.TextProperty, new Binding ("Birthday", BindingMode.OneWay, null, null, "Born {0:d}"));
-					boxView.SetBinding (BoxView.ColorProperty, "FavoriteColor");
-					stack.SetBinding (BackgroundColorProperty, "BackgroundColor");
+				   nameLabel.SetBinding(Label.TextProperty, "Name");
+				   birthdayLabel.SetBinding(Label.TextProperty, new Binding("Birthday", BindingMode.OneWay, null, null, "Born {0:d}"));
+				   boxView.SetBinding(BoxView.ColorProperty, "FavoriteColor");
+				   stack.SetBinding(BackgroundColorProperty, "BackgroundColor");
 
-					return new ViewCell {
-						View = stack
-					};
-				})
+				   return new ViewCell
+				   {
+					   View = stack
+				   };
+			   })
 			};
 
 			buttonAdd.Clicked += (sender, e) =>
 			{
-				var person = new Person (string.Format ("Name {0}", _count++), DateTime.Today, Color.Blue);
+				var person = new Person(string.Format("Name {0}", _count++), DateTime.Today, Color.Blue);
 
-				people.Add (person);
+				people.Add(person);
 
-				listView.ScrollTo (person, ScrollToPosition.End, true);
+				listView.ScrollTo(person, ScrollToPosition.End, true);
 
 			};
 
-			buttonRemove.Clicked += (sender, e) => people.RemoveAt (people.Count - 1);
+			buttonRemove.Clicked += (sender, e) => people.RemoveAt(people.Count - 1);
 
 			buttonScrollToBottom.Clicked += (sender, e) =>
 			{
 				var person = people[people.Count - 1];
 
-				listView.ScrollTo (person, ScrollToPosition.End, true);
+				listView.ScrollTo(person, ScrollToPosition.End, true);
 			};
 
 			Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(10, 20, 10, 5) : new Thickness(10, 0, 10, 5);
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Orientation = StackOrientation.Vertical,
 				Children = {
 					buttonStack,
@@ -140,16 +151,17 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 		}
-	
+
 #if UITEST
 		[Test]
-		[UiTest (typeof(ListView), "ScrollTo")]
-		public void Issue2259Tests ()
+		[UiTest(typeof(ListView), "ScrollTo")]
+		public void Issue2259Tests()
 		{
-			for (int i = 0; i < 20; i++) {
-				RunningApp.Tap (q => q.Button ("Add"));
-				RunningApp.WaitForElement (q => q.Marked ("Name " + (i + 1).ToString ()));
-				RunningApp.Screenshot ("Added Cell");
+			for (int i = 0; i < 20; i++)
+			{
+				RunningApp.Tap(q => q.Button("Add"));
+				RunningApp.WaitForElement(q => q.Marked("Name " + (i + 1).ToString()));
+				RunningApp.Screenshot("Added Cell");
 			}
 		}
 #endif

@@ -13,6 +13,7 @@ using Xamarin.UITest;
 namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Layout)]
 #endif
 	[Preserve(AllMembers = true)]
@@ -22,7 +23,7 @@ namespace Xamarin.Forms.Controls.Issues
 		string _withoutCompressionBtnId = "button1";
 		string _withCompressionBtnId = "button2";
 		string _titleLabelId = "Label1";
-		
+
 		public static string BackButtonId = "back";
 		public static int ItemsCount = 150;
 		public static string ElapsedLabelId = "elapsed";
@@ -32,7 +33,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var withoutCompressionBtn = new Button
 			{
-				Text    = "Without Layout Compression",
+				Text = "Without Layout Compression",
 				Command = new Command(async () => await Navigation.PushAsync(new CompressionPage())),
 				AutomationId = _withoutCompressionBtnId
 
@@ -40,7 +41,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var withCompressionBtn = new Button
 			{
-				Text    = "With Layout Compression",
+				Text = "With Layout Compression",
 				Command = new Command(async () => await Navigation.PushAsync(new CompressionPage(true))),
 				AutomationId = _withCompressionBtnId
 			};
@@ -77,7 +78,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			RunningApp.Tap(BackButtonId);
 			RunningApp.WaitForElement(_withCompressionBtnId);
-			
+
 			RunningApp.Tap(_withCompressionBtnId);
 			RunningApp.WaitForElement(DoneLabelId);
 			RunningApp.Screenshot("With Layout Compression");
@@ -106,8 +107,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 		public CompressionPage(bool shouldUseLayoutCompression = false)
 		{
-			_summaryLabel = new Label { HorizontalOptions = LayoutOptions.Center, BackgroundColor = Color.Silver, AutomationId = Issue3475.ElapsedLabelId};
-			var backButton = new Button { AutomationId = Issue3475.BackButtonId, Text ="Back", Command = new Command(() => Navigation.PopAsync()) };
+			_summaryLabel = new Label { HorizontalOptions = LayoutOptions.Center, BackgroundColor = Color.Silver, AutomationId = Issue3475.ElapsedLabelId };
+			var backButton = new Button { AutomationId = Issue3475.BackButtonId, Text = "Back", Command = new Command(() => Navigation.PopAsync()) };
 			_scrollStack = new StackLayout();
 
 			var scrollView = new ScrollView
@@ -115,12 +116,15 @@ namespace Xamarin.Forms.Controls.Issues
 				Content = _scrollStack
 			};
 
-			var mainStack = new StackLayout { Children =
+			var mainStack = new StackLayout
+			{
+				Children =
 			{
 				_summaryLabel,
 				scrollView,
 				backButton
-			} };
+			}
+			};
 
 			for (int i = 0; i < Issue3475.ItemsCount; i++)
 			{
@@ -145,7 +149,7 @@ namespace Xamarin.Forms.Controls.Issues
 			base.OnAppearing();
 			_sw.Stop();
 			_summaryLabel.Text = $"Showing {Issue3475.ItemsCount} items took: {_sw.ElapsedMilliseconds} ms";
-			_scrollStack.Children.Insert(0, new Label{Text = "Done", HorizontalOptions = LayoutOptions.Center, AutomationId = Issue3475.DoneLabelId});
+			_scrollStack.Children.Insert(0, new Label { Text = "Done", HorizontalOptions = LayoutOptions.Center, AutomationId = Issue3475.DoneLabelId });
 		}
 	}
 }

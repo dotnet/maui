@@ -8,6 +8,9 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 47971, "UWP doesn't display list items when binding a CommandParameter to BindingContext in a DataTemplate and including a CanExecute method", PlatformAffected.WinRT)]
 	public class Bugzilla47971 : TestContentPage
@@ -33,7 +36,7 @@ namespace Xamarin.Forms.Controls.Issues
 			});
 
 			var layout = new StackLayout { Spacing = 10 };
-			var instructions = new Label {Text = "The ListView below should display three items (Item1, Item2, and Item3). If it does not, this test has failed." };
+			var instructions = new Label { Text = "The ListView below should display three items (Item1, Item2, and Item3). If it does not, this test has failed." };
 
 			layout.Children.Add(instructions);
 			layout.Children.Add(lv);

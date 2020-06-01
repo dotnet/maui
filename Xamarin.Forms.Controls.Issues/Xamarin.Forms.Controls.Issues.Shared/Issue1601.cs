@@ -12,6 +12,9 @@ using Xamarin.Forms.Core.UITests;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1601, "Exception thrown when `Removing Content Using LayoutCompression", PlatformAffected.Android)]
 	public class Issue1601 : TestContentPage
@@ -37,7 +40,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var button = new Button { Text = "CRASH!" };
 			stack.Children.Add(button);
 			grid.Children.Add(stack, 0, 1);
-			
+
 			button.Clicked += (s, e) => Content = null;
 
 			Content = grid;
@@ -50,7 +53,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.Screenshot("Start G1601");
 			RunningApp.WaitForElement(q => q.Marked("CRASH!"));
 			RunningApp.Screenshot("I see the button");
-			RunningApp.Tap (q => q.Marked ("CRASH!"));
+			RunningApp.Tap(q => q.Marked("CRASH!"));
 			RunningApp.Screenshot("Didn't crash!");
 		}
 #endif

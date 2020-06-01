@@ -15,6 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[Category(UITestCategories.Gestures)]
 	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 
 	[Preserve(AllMembers = true)]
@@ -43,7 +44,8 @@ namespace Xamarin.Forms.Controls.Issues
 			var view = new _57114View
 			{
 				AutomationId = ViewAutomationId,
-				HeightRequest = 200, WidthRequest = 200,
+				HeightRequest = 200,
+				WidthRequest = 200,
 				BackgroundColor = Color.Aqua,
 				HorizontalOptions = LayoutOptions.Fill,
 				VerticalOptions = LayoutOptions.Fill

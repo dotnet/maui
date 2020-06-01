@@ -10,6 +10,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 41038, "MasterDetailPage loses menu icon on iOS after reusing NavigationPage as Detail")]
 	public class Bugzilla41038 : TestMasterDetailPage // or TestMasterDetailPage, etc ...
@@ -36,7 +39,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			Master = master;
 			Detail = _navPage;
-	
+
 		}
 
 		private async void Button_Clicked(object sender, EventArgs e)
@@ -53,7 +56,7 @@ namespace Xamarin.Forms.Controls.Issues
 			else
 				newRoot = new ViewB();
 
-				
+
 			await _navPage.Navigation.PushAsync(newRoot);
 			_navPage.Navigation.RemovePage(root);
 			IsPresented = false;
@@ -65,11 +68,11 @@ namespace Xamarin.Forms.Controls.Issues
 			public ViewA()
 			{
 				Title = "ViewA";
-				Content = new Label() 
-				{ 
-					 Text = "Verify that the hamburger icon is visible. Click the icon and switch to ViewB. If the icon does not disappear, the test has passed.", 
-					 HorizontalTextAlignment = TextAlignment.Center, 
-					 VerticalTextAlignment = TextAlignment.Center 
+				Content = new Label()
+				{
+					Text = "Verify that the hamburger icon is visible. Click the icon and switch to ViewB. If the icon does not disappear, the test has passed.",
+					HorizontalTextAlignment = TextAlignment.Center,
+					VerticalTextAlignment = TextAlignment.Center
 				};
 			}
 		}
@@ -83,7 +86,7 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 		}
 
-		#if UITEST &&  __IOS__
+#if UITEST && __IOS__
 		[Test]
 		public void Bugzilla41038Test()
 		{
@@ -94,6 +97,6 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement("Master");
 			RunningApp.Screenshot("I see the master toggle");
 		}
-		#endif
+#endif
 	}
 }

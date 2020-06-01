@@ -14,12 +14,13 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[Category(UITestCategories.DisplayAlert)]
 	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 #endif
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 2809, "Secondary ToolbarItems cause app to hang during PushAsync", PlatformAffected.iOS)]
-	public class Issue2809: TestContentPage
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 2809, "Secondary ToolbarItems cause app to hang during PushAsync", PlatformAffected.iOS)]
+	public class Issue2809 : TestContentPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
 			ToolbarItems.Add(new ToolbarItem("Item 1", string.Empty,
 				DummyAction, ToolbarItemOrder.Secondary));
@@ -34,25 +35,25 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void TestPageDoesntCrash ()
+		public void TestPageDoesntCrash()
 		{
 			ShouldShowMenu();
-			RunningApp.Tap (c => c.Marked ("Item 1"));
-			RunningApp.Screenshot ("Didn't crash");
+			RunningApp.Tap(c => c.Marked("Item 1"));
+			RunningApp.Screenshot("Didn't crash");
 		}
 
-		void ShouldShowMenu ()
+		void ShouldShowMenu()
 		{
 #if __ANDROID__
 			//show secondary menu
 			RunningApp.TapOverflowMenuButton();
-#elif __WINDOWS__ 
+#elif __WINDOWS__
 			RunningApp.Tap ("MoreButton");
 #endif
 		}
 
 #endif
 
-		}
+	}
 }
 

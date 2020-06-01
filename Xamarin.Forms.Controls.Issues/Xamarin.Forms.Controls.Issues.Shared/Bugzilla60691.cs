@@ -15,6 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	// this doesn't fail on Uwp but it leaves a browser window open and breaks later tests
 	[Category(UITestCategories.UwpIgnore)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	public class Bugzilla60691 : TestContentPage
 	{

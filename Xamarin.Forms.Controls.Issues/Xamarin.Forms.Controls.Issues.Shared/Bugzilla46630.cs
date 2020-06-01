@@ -9,6 +9,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 46630, "[Xamarin.Forms, Android] Context menu of the Editor control is not working in the ListView", PlatformAffected.Android)]
 	public class Bugzilla46630 : TestContentPage

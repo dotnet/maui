@@ -15,6 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.ListView)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 
 	[Preserve(AllMembers = true)]
@@ -119,7 +120,7 @@ namespace Xamarin.Forms.Controls.Issues
 			public _42329_FrameWithListView()
 			{
 				var lv = new ListView();
-				var label = new Label() { Text =  LabelPage1};
+				var label = new Label() { Text = LabelPage1 };
 				label.GestureRecognizers.Add(new TapGestureRecognizer
 				{
 					Command = new Command(OpenMaster)

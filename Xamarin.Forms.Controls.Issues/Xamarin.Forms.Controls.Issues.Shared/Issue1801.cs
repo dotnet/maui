@@ -9,16 +9,19 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1801, "[Enhancement] Add SelectionMode property to ListView", PlatformAffected.All)]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1801, "[Enhancement] Add SelectionMode property to ListView", PlatformAffected.All)]
 	public class Issue1801
 		: TestContentPage
 	{
 		protected override void Init()
 		{
 			var list = new ListView { SelectionMode = ListViewSelectionMode.Single };
-//			var list = new ListView { SelectionMode = ListViewSelectionMode.None };
-			list.ItemsSource = new [] { "A1", "A2", "A3", "A4" };
+			//			var list = new ListView { SelectionMode = ListViewSelectionMode.None };
+			list.ItemsSource = new[] { "A1", "A2", "A3", "A4" };
 			var label = new Label { Text = "SelectionMode == " + list.SelectionMode };
 			var toggle = new Switch { IsToggled = list.SelectionMode == ListViewSelectionMode.Single };
 			var log = new Editor { HeightRequest = 200 };

@@ -9,14 +9,17 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 28240, "Problems with a NavigationPage as Master+Detail of a MasterDetailPage", PlatformAffected.Android)]
+#if UITEST
+	[Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 28240, "Problems with a NavigationPage as Master+Detail of a MasterDetailPage", PlatformAffected.Android)]
 	public class Bugzilla28240 : TestMasterDetailPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
-			Detail = new NavigationPage( new ContentPage { Title = "DetailPage", BackgroundColor = Color.Red });
-			Master = new NavigationPage( new ContentPage { Title = "MasterPage", BackgroundColor = Color.Blue }) { Title =" Master" };
+			Detail = new NavigationPage(new ContentPage { Title = "DetailPage", BackgroundColor = Color.Red });
+			Master = new NavigationPage(new ContentPage { Title = "MasterPage", BackgroundColor = Color.Blue }) { Title = " Master" };
 		}
 
 		protected override async void OnAppearing()

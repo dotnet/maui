@@ -11,6 +11,9 @@ using Xamarin.Forms.Core.UITests;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3652, "Loses the correct reference to the cell after adding and removing items to a ListView", PlatformAffected.UWP)]
 	public class Issue3652 : TestContentPage
@@ -114,7 +117,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void TestRemovingContextMenuItems()
 		{
-			for(int i = 1; i <= 3; i++)
+			for (int i = 1; i <= 3; i++)
 			{
 				string searchFor = $"Remove me using the context menu. #{i}";
 				RunningApp.WaitForElement(searchFor);

@@ -4,6 +4,9 @@ using System;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 54036, "[UWP] MasterPage - Bad Rendering", PlatformAffected.UWP)]
 	public class Bugzilla54036 : TestMasterDetailPage

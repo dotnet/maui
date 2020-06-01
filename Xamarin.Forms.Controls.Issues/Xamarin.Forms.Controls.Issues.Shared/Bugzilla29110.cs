@@ -14,6 +14,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 29110, "[WinRT/UWP] VerticalOptions = LayoutOptions.Center or CenterAndExpand on Sliders does not result in centered display", PlatformAffected.WinRT)]
 	public class Bugzilla29110 : TestContentPage

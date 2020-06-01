@@ -12,9 +12,12 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 42620, " Grid.Children.AddHorizontal does not span all rows", PlatformAffected.Default)]
-	public class Bugzilla42620 : TestContentPage 
+	public class Bugzilla42620 : TestContentPage
 	{
 		public static IEnumerator<Color> Colors = ColorGenerator().GetEnumerator();
 		public static Color GetColor()
@@ -170,10 +173,14 @@ namespace Xamarin.Forms.Controls.Issues
 				clearButton.SendClicked();
 				foreach (var x in batchEntry.Text)
 				{
-					if (x == 'H') addHorizontal.SendClicked();
-					if (x == 'V') addVertical.SendClicked();
-					if (x == 'C') addColumn.SendClicked();
-					if (x == 'R') addRow.SendClicked();
+					if (x == 'H')
+						addHorizontal.SendClicked();
+					if (x == 'V')
+						addVertical.SendClicked();
+					if (x == 'C')
+						addColumn.SendClicked();
+					if (x == 'R')
+						addRow.SendClicked();
 				}
 				batchLabel.Text = $"Batch: {batchEntry.Text}";
 				update();
@@ -331,10 +338,14 @@ namespace Xamarin.Forms.Controls.Issues
 
 			foreach (var c in command)
 			{
-				if (c == 'H') AddHorizontal();
-				if (c == 'V') AddVertical();
-				if (c == 'R') AddRowDef();
-				if (c == 'C') AddColumnDef();
+				if (c == 'H')
+					AddHorizontal();
+				if (c == 'V')
+					AddVertical();
+				if (c == 'R')
+					AddRowDef();
+				if (c == 'C')
+					AddColumnDef();
 			}
 
 			Execute();

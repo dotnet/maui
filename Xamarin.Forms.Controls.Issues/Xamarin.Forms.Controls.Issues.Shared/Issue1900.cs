@@ -13,6 +13,7 @@ using Xamarin.Forms.Core.UITests;
 namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[Category(UITestCategories.ListView)] 
 	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
 #endif

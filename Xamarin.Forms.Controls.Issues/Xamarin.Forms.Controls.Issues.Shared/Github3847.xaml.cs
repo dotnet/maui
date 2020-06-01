@@ -12,6 +12,9 @@ using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3847, "RelativeSource Binding",
 		PlatformAffected.All)]
@@ -45,7 +48,7 @@ namespace Xamarin.Forms.Controls.Issues
 						LastName = "Claus",
 					}
 				}
-		};		
+		};
 	}
 
 	public class PersonViewModel

@@ -10,6 +10,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2740, "System.NotSupportedException: Unable to activate instance of type Xamarin.Forms.Platform.Android.PageContainer from native handle", PlatformAffected.Android)]
 	public class Issue2740 : TestMasterDetailPage // or TestMasterDetailPage, etc ...
@@ -65,13 +68,13 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void Issue2740Test ()
+		public void Issue2740Test()
 		{
-			RunningApp.WaitForElement (q => q.Marked ("1"));
-			RunningApp.Tap (q => q.Marked ("1"));
-			RunningApp.WaitForElement (q => q.Marked ("Switch"));
-			RunningApp.Tap (q => q.Marked ("Switch"));
-			RunningApp.WaitForElement (q => q.Marked ("1"));
+			RunningApp.WaitForElement(q => q.Marked("1"));
+			RunningApp.Tap(q => q.Marked("1"));
+			RunningApp.WaitForElement(q => q.Marked("Switch"));
+			RunningApp.Tap(q => q.Marked("Switch"));
+			RunningApp.WaitForElement(q => q.Marked("1"));
 		}
 #endif
 	}

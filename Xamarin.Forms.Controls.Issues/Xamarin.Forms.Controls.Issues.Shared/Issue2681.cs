@@ -13,6 +13,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2681, "[UWP] Label inside Listview gets stuck inside infinite loop",
 		PlatformAffected.UWP)]

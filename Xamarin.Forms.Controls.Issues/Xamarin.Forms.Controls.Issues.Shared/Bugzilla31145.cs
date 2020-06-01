@@ -5,17 +5,20 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 31145, "Picker cause memory leak holding entire Page in memory after it popped (WP8 SL only)", PlatformAffected.WinPhone)]
-	public class Bugzilla31145 : TestContentPage 
+	public class Bugzilla31145 : TestContentPage
 	{
 		WeakReference _page2Tracker;
 		Label _resultLabel;
 
 		protected override void Init()
 		{
-			var instructions = new Label () { Text = "The counter below should say 'Page2 IsAlive = false' after a short period of time. If the counter does not say that within 5 seconds, this test has failed." };
-			_resultLabel = new Label ();
+			var instructions = new Label() { Text = "The counter below should say 'Page2 IsAlive = false' after a short period of time. If the counter does not say that within 5 seconds, this test has failed." };
+			_resultLabel = new Label();
 			Content = new StackLayout { Children = { instructions, _resultLabel } };
 		}
 
@@ -42,7 +45,7 @@ namespace Xamarin.Forms.Controls.Issues
 			while (_page2Tracker.IsAlive)
 			{
 				_resultLabel.Text = $"Page2 IsAlive = {_page2Tracker.IsAlive} ({n++})";
-                await Task.Delay(1000);
+				await Task.Delay(1000);
 				GarbageCollectionHelper.Collect();
 			}
 

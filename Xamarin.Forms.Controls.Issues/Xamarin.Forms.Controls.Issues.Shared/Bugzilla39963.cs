@@ -12,10 +12,11 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 39963, "iOS WebView has wrong scrolling size when loading local html content with images")]
-	public class Bugzilla39963 : TestContentPage 
+	public class Bugzilla39963 : TestContentPage
 	{
 		protected override void Init()
 		{
@@ -34,8 +35,10 @@ namespace Xamarin.Forms.Controls.Issues
 						</body></html>";
 #pragma warning restore 0219
 
-			WebView webView = new WebView {
-				Source = new HtmlWebViewSource() {
+			WebView webView = new WebView
+			{
+				Source = new HtmlWebViewSource()
+				{
 					Html = notWorkingHtml
 				},
 				VerticalOptions = LayoutOptions.FillAndExpand,

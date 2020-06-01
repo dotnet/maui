@@ -6,14 +6,17 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 41029, "Slider default hitbox is larger than the control")]
 	public class Bugzilla41029 : TestContentPage // or TestMasterDetailPage, etc ...
 	{
 		protected override void Init()
 		{
-			var stackLayout = new StackLayout 
-			{ 
+			var stackLayout = new StackLayout
+			{
 				VerticalOptions = LayoutOptions.Center,
 				BackgroundColor = Color.Beige
 			};

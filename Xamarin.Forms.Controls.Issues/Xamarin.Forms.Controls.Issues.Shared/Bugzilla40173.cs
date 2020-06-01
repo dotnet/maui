@@ -11,6 +11,7 @@ using Xamarin.Forms.Core.UITests;
 namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 	[Category(UITestCategories.BoxView)]
 	[Category(UITestCategories.InputTransparent)]
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]

@@ -15,6 +15,9 @@ using Xamarin.UITest;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Github, 465, "Change in Navigation.PushModal", PlatformAffected.All)]
 	public class Issue465 : TestTabbedPage

@@ -8,6 +8,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2339, "Picker not shown when .Focus() is called")]
 	public class Issue2339 : TestContentPage
@@ -77,23 +80,23 @@ namespace Xamarin.Forms.Controls.Issues
 					picker
 				}
 			};
-		} 
+		}
 
 #if UITEST
 		[Test]
 #if __WINDOWS__
 		[Ignore("Focus Behavior is different on UWP")]
 #endif
-		public void FocusAndUnFocusMultipleTimes ()
+		public void FocusAndUnFocusMultipleTimes()
 		{
 			RunningApp.WaitForElement("btnFocusThenUnFocus");
-			RunningApp.Tap (c => c.Marked ("btnFocusThenUnFocus"));
+			RunningApp.Tap(c => c.Marked("btnFocusThenUnFocus"));
 			RunningApp.WaitForElement(cw => cw.Marked("Picker Focused: 1"));
-			RunningApp.WaitForElement(cw => cw.Marked("Picker UnFocused: 1")); 
-			RunningApp.Tap (c => c.Marked ("btnFocusThenUnFocus"));
+			RunningApp.WaitForElement(cw => cw.Marked("Picker UnFocused: 1"));
+			RunningApp.Tap(c => c.Marked("btnFocusThenUnFocus"));
 			RunningApp.WaitForElement(cw => cw.Marked("Picker Focused: 2"));
-			RunningApp.WaitForElement(cw => cw.Marked("Picker UnFocused: 2")); 
-		} 
+			RunningApp.WaitForElement(cw => cw.Marked("Picker UnFocused: 2"));
+		}
 #endif
 	}
 }

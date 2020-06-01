@@ -6,8 +6,11 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1680, "Disposed object updating ListView ItemSource", PlatformAffected.Android)]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1680, "Disposed object updating ListView ItemSource", PlatformAffected.Android)]
 	public class Issue1680 : ContentPage
 	{
 		XamarinListViewBug _page1 = new XamarinListViewBug();
@@ -16,9 +19,10 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var button1 = new Button { Text = "PAGE1" };
 
-			button1.Clicked += (sender, e) => Navigation.PushAsync (_page1);
+			button1.Clicked += (sender, e) => Navigation.PushAsync(_page1);
 
-			var root = new StackLayout {
+			var root = new StackLayout
+			{
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				VerticalOptions = LayoutOptions.FillAndExpand,
 				Children = {
@@ -39,14 +43,15 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				_collection.Clear();
 
-				for (int i = 0; i < 100; i++) {
-					var item = new Tuple<string, string> (
-						string.Format ("{0} {0} {0} {0} {0} {0}", _flag ? i : 100 - i),
-						string.Format ("---- i ----{0} {0} {0} {0} {0} {0}", _flag ? i : 100 - i)
+				for (int i = 0; i < 100; i++)
+				{
+					var item = new Tuple<string, string>(
+						string.Format("{0} {0} {0} {0} {0} {0}", _flag ? i : 100 - i),
+						string.Format("---- i ----{0} {0} {0} {0} {0} {0}", _flag ? i : 100 - i)
 						);
 
 
-					_collection.Add (item);
+					_collection.Add(item);
 				}
 
 				_flag = !_flag;
@@ -59,15 +64,17 @@ namespace Xamarin.Forms.Controls.Issues
 				SearchBar search = new SearchBar();
 				search.SearchButtonPressed += (sender, e) => FillTheList();
 
-				ListView list = new ListView {
+				ListView list = new ListView
+				{
 					HorizontalOptions = LayoutOptions.FillAndExpand,
 					VerticalOptions = LayoutOptions.FillAndExpand,
 					HasUnevenRows = true,
 					ItemsSource = _collection,
-					ItemTemplate = new DataTemplate (typeof (CellTemplate))
+					ItemTemplate = new DataTemplate(typeof(CellTemplate))
 				};
 
-				StackLayout root = new StackLayout {
+				StackLayout root = new StackLayout
+				{
 					HorizontalOptions = LayoutOptions.FillAndExpand,
 					VerticalOptions = LayoutOptions.FillAndExpand,
 					Children = {
@@ -77,7 +84,8 @@ namespace Xamarin.Forms.Controls.Issues
 				};
 
 				Master = new ContentPage { Title = "Master" };
-				Detail = new ContentPage {
+				Detail = new ContentPage
+				{
 					Title = "Detail",
 					Content = root
 				};
@@ -87,13 +95,15 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				public CellTemplate()
 				{
-					Label cellLabel = new Label{
+					Label cellLabel = new Label
+					{
 						HorizontalOptions = LayoutOptions.FillAndExpand,
 					};
 
-					cellLabel.SetBinding (Label.TextProperty, new Binding ("Item1", BindingMode.OneWay));
+					cellLabel.SetBinding(Label.TextProperty, new Binding("Item1", BindingMode.OneWay));
 
-					StackLayout root = new StackLayout {
+					StackLayout root = new StackLayout
+					{
 						Children = {
 							cellLabel
 						}

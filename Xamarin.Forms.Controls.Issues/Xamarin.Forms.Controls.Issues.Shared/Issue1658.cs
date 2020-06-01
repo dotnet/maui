@@ -19,6 +19,7 @@ namespace Xamarin.Forms.Controls.Issues
 		PlatformAffected.macOS)]
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.ListView)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 #endif
 	public class Issue1658 : TestNavigationPage
 	{
@@ -30,7 +31,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			page.Content = new ListView()
 			{
-				ItemsSource = new [] {"1"},
+				ItemsSource = new[] { "1" },
 				ItemTemplate = new DataTemplate(() =>
 				{
 					ViewCell cells = new ViewCell();
@@ -41,7 +42,8 @@ namespace Xamarin.Forms.Controls.Issues
 						AutomationId = "coffee.png"
 					});
 
-					var box = new BoxView {
+					var box = new BoxView
+					{
 						WidthRequest = 30,
 						HeightRequest = 30,
 						Color = Color.Red,
@@ -49,7 +51,8 @@ namespace Xamarin.Forms.Controls.Issues
 					};
 
 					var gr = new TapGestureRecognizer();
-					gr.Command = new Command(() => {
+					gr.Command = new Command(() =>
+					{
 						box.Color = box.Color == Color.Red ? Color.Yellow : Color.Red;
 					});
 					box.GestureRecognizers.Add(gr);

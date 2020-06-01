@@ -12,6 +12,7 @@ using System.Linq;
 namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[Category(UITestCategories.Editor)]
 #endif
 	[Preserve(AllMembers = true)]
@@ -115,9 +116,9 @@ namespace Xamarin.Forms.Controls.Issues
 		public void Issue2104Test()
 		{
 			RunningApp.WaitForElement(q => q.Marked("Clear"));
-			RunningApp.Tap(q => q.Marked("Clear"));			
-			RunningApp.Tap(q => q.Marked("FillUp")); 
-			RunningApp.Tap(q => q.Marked("Test")); 
+			RunningApp.Tap(q => q.Marked("Clear"));
+			RunningApp.Tap(q => q.Marked("FillUp"));
+			RunningApp.Tap(q => q.Marked("Test"));
 
 			var errorMessage = RunningApp.Query(x => x.Marked(ErrorMessage)).First().Text;
 			Assert.IsTrue(String.IsNullOrWhiteSpace(errorMessage), errorMessage);

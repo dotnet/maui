@@ -7,15 +7,18 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1703, "Memory leak when navigating a page off of a navigation stack", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.WinPhone)]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1703, "Memory leak when navigating a page off of a navigation stack", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.WinPhone)]
 	public class Issue1703 : NavigationPage
 	{
 		static List<WeakReference> s_pageRefs = new List<WeakReference>();
 
-		public Issue1703 ()
+		public Issue1703()
 		{
-			Navigation.PushAsync (GetMainPage ());
+			Navigation.PushAsync(GetMainPage());
 		}
 
 		public static Page GetMainPage()

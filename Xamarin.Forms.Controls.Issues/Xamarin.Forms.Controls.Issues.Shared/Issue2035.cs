@@ -8,9 +8,12 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2035, "App crashes when setting CurrentPage on TabbedPage in ctor in 2.5.1pre1", PlatformAffected.Android)]
-	public class Issue2035 : TestTabbedPage 
+	public class Issue2035 : TestTabbedPage
 	{
 		const string Success = "Success";
 		protected override void Init()
@@ -26,7 +29,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void Issue2035Test()
 		{
-			RunningApp.WaitForElement (q => q.Marked (Success));
+			RunningApp.WaitForElement(q => q.Marked(Success));
 			//if it doesn't crash, we're good.
 		}
 #endif

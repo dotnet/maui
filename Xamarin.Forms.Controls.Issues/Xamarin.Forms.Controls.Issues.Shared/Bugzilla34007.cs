@@ -11,29 +11,35 @@ using Xamarin.UITest;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 34007, "Z order drawing of children views are different on Android, iOS, Win", PlatformAffected.Android | PlatformAffected.iOS)]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 34007, "Z order drawing of children views are different on Android, iOS, Win", PlatformAffected.Android | PlatformAffected.iOS)]
 	public class Bugzilla34007 : TestContentPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
-			var grid = new Grid ();
+			var grid = new Grid();
 
-			var button0 = new Button {
+			var button0 = new Button
+			{
 				Text = "Button 0",
 				HorizontalOptions = LayoutOptions.Fill,
 				VerticalOptions = LayoutOptions.Fill
 			};
 
-			var button1 = new Button {
+			var button1 = new Button
+			{
 				Text = "Button 1",
 				HorizontalOptions = LayoutOptions.Fill,
 				VerticalOptions = LayoutOptions.Fill
 			};
 
-			var lastButtonTappedLabel = new Label ();
+			var lastButtonTappedLabel = new Label();
 
-			Action reorder = () => {
+			Action reorder = () =>
+			{
 				// Get the last item in the grid
 				var item = grid.Children[1];
 
@@ -44,36 +50,39 @@ namespace Xamarin.Forms.Controls.Issues
 				grid.Children.Insert(0, item);
 			};
 
-			button0.Clicked += (sender, args) => {
+			button0.Clicked += (sender, args) =>
+			{
 				lastButtonTappedLabel.Text = "Button 0 was tapped last";
 			};
 
-			button1.Clicked += (sender, args) => {
+			button1.Clicked += (sender, args) =>
+			{
 				lastButtonTappedLabel.Text = "Button 1 was tapped last";
 
-				reorder ();
+				reorder();
 			};
 
 			grid.Children.Add(button0, 0, 0);
 			grid.Children.Add(button1, 0, 0);
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = { grid, lastButtonTappedLabel }
 			};
 		}
 
 #if UITEST
 		[Test]
-		[UiTest (typeof (Grid))]
-		public void Issue34007TestFirstElementHasLowestZOrder ()
+		[UiTest(typeof(Grid))]
+		public void Issue34007TestFirstElementHasLowestZOrder()
 		{
-			var buttonLocations = RunningApp.WaitForElement (q => q.Marked ("Button 0"));
+			var buttonLocations = RunningApp.WaitForElement(q => q.Marked("Button 0"));
 
-			var x = buttonLocations [0].Rect.CenterX;
-			var y = buttonLocations [0].Rect.CenterY;
+			var x = buttonLocations[0].Rect.CenterX;
+			var y = buttonLocations[0].Rect.CenterY;
 
 			// Button 1 was the last item added to the grid; it should be tappable
-			RunningApp.Tap (q => q.Button ("Button 1"));
+			RunningApp.Tap(q => q.Button("Button 1"));
 
 			// The label should indicate that Button 1 was the last button tapped
 			RunningApp.WaitForElement(q => q.Marked("Button 1 was tapped last"));

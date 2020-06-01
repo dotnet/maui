@@ -14,10 +14,11 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Gestures)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 #endif
 
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 1331, "[Android] ViewCell shows ContextActions on tap instead of long press", 
+	[Issue(IssueTracker.Github, 1331, "[Android] ViewCell shows ContextActions on tap instead of long press",
 		PlatformAffected.Android)]
 	public partial class GitHub1331 : TestContentPage
 	{
@@ -25,7 +26,7 @@ namespace Xamarin.Forms.Controls.Issues
 		const string ActionItemTapped = "Action Item Tapped";
 		const string CellItem = "item 1";
 
-		public GitHub1331 ()
+		public GitHub1331()
 		{
 #if APP
 			InitializeComponent ();

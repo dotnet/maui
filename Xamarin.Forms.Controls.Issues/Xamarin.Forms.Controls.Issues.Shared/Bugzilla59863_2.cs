@@ -12,10 +12,11 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
 	[Category(UITestCategories.Gestures)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 59863, "TapGestureRecognizer extremely finicky", PlatformAffected.Android, 
+	[Issue(IssueTracker.Bugzilla, 59863, "TapGestureRecognizer extremely finicky", PlatformAffected.Android,
 		issueTestNumber: 2)]
 	public class Bugzilla59863_2 : TestContentPage
 	{
@@ -30,13 +31,13 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var instructions = new Label
 			{
-				Text = "Tap the box below once. The single tap counter should increment. " 
-				+ "Double tap the box. The double tap counter should increment, " 
+				Text = "Tap the box below once. The single tap counter should increment. "
+				+ "Double tap the box. The double tap counter should increment, "
 				+ "but the single tap counter should not."
 			};
 
-			var mixedSingleTapCounter = new Label {Text = $"{_mixedSingleTaps} {Singles}"};
-			var mixedDoubleTapCounter = new Label {Text = $"{_mixedDoubleTaps} {Doubles}"};
+			var mixedSingleTapCounter = new Label { Text = $"{_mixedSingleTaps} {Singles}" };
+			var mixedDoubleTapCounter = new Label { Text = $"{_mixedDoubleTaps} {Doubles}" };
 
 			var mixedTapBox = new BoxView
 			{
@@ -70,9 +71,10 @@ namespace Xamarin.Forms.Controls.Issues
 			mixedTapBox.GestureRecognizers.Add(mixedSingleTap);
 
 			Content = new StackLayout
-			{	
+			{
 				Margin = 40,
-				HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill,
+				HorizontalOptions = LayoutOptions.Fill,
+				VerticalOptions = LayoutOptions.Fill,
 				Children = { instructions, mixedTapBox, mixedSingleTapCounter, mixedDoubleTapCounter }
 			};
 		}

@@ -58,6 +58,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.ExpanderGalleries
 		public sealed class Item: INotifyPropertyChanged {
 			public event PropertyChangedEventHandler PropertyChanged;
 			bool _isExpanded;
+			bool _isEnabled = true;
 
 			public string Name { get; set; }
 			public bool IsExpanded
@@ -66,14 +67,25 @@ namespace Xamarin.Forms.Controls.GalleryPages.ExpanderGalleries
 				set
 				{
 					if(value == _isExpanded)
-					{
 						return;
-					}
+
 					_isExpanded = value;
 					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsExpanded)));
 				}
 			}
 
+			public bool IsEnabled
+			{
+				get => _isEnabled;
+				set
+				{
+					if (value == _isEnabled)
+						return;
+
+					_isEnabled = value;
+					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsEnabled)));
+				}
+			}
 		}
 	}
 }

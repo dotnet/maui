@@ -11,6 +11,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 32206, "ContextActions cause memory leak: Page is never destroyed", PlatformAffected.iOS)]
 	public class Bugzilla32206 : TestNavigationPage

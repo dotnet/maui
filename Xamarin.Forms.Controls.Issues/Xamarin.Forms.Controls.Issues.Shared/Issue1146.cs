@@ -12,11 +12,14 @@ using Xamarin.UITest;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1146, "Disabled Switch in Button Gallery not rendering on all devices", PlatformAffected.Android)]
 	public class Issue1146 : TestContentPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
 			Content = new ScrollView
 			{
@@ -33,13 +36,13 @@ namespace Xamarin.Forms.Controls.Issues
 					}
 				}
 			};
-		} 
+		}
 
 #if UITEST
 		[Test]
 		public void TestSwitchDisable()
 		{
-			RunningApp.WaitForElement (c => c.Marked ("switch"));
+			RunningApp.WaitForElement(c => c.Marked("switch"));
 			RunningApp.Screenshot("Is the button here?");
 		}
 #endif

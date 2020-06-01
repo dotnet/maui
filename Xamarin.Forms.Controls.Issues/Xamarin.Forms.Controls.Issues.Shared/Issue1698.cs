@@ -5,11 +5,14 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1698, "ActionSheet extra buttons are not accessible", PlatformAffected.Android | PlatformAffected.WinPhone)]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1698, "ActionSheet extra buttons are not accessible", PlatformAffected.Android | PlatformAffected.WinPhone)]
 	public class Issue1698 : ContentPage
 	{
-		public Issue1698 ()
+		public Issue1698()
 		{
 			Button btn = new Button
 			{

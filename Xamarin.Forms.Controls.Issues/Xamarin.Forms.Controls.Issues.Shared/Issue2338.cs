@@ -15,6 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(UITestCategories.LifeCycle)]
 	[NUnit.Framework.Category(UITestCategories.Navigation)]
 #endif

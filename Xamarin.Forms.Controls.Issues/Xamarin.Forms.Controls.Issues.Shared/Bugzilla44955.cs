@@ -9,6 +9,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 44955, "[WinRT/UWP] Setting Entry BackgroundColor via Behavior results in sticky unfocused background color", PlatformAffected.WinRT)]
 	public class Bugzilla44955 : TestContentPage

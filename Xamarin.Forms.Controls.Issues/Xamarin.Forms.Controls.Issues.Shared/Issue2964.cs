@@ -13,20 +13,25 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Github, 2964, "TabbedPage toolbar item crash")]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 2964, "TabbedPage toolbar item crash")]
 	public class Issue2964 : TestMasterDetailPage
 	{
 		public class ModalPage : ContentPage
 		{
-			public ModalPage ()
+			public ModalPage()
 			{
-				Content = new Button {
+				Content = new Button
+				{
 					AutomationId = "ModalPagePopButton",
-					Text ="Pop Me",
-					Command = new Command (async () => {
-						MessagingCenter.Send (this, "update");
-						await Navigation.PopModalAsync ();
+					Text = "Pop Me",
+					Command = new Command(async () =>
+					{
+						MessagingCenter.Send(this, "update");
+						await Navigation.PopModalAsync();
 					})
 				};
 			}
@@ -34,68 +39,74 @@ namespace Xamarin.Forms.Controls.Issues
 
 		public class Page1 : ContentPage
 		{
-			public Page1 ()
+			public Page1()
 			{
 				Title = "Testpage 1";
 
-				MessagingCenter.Subscribe<ModalPage> (this, "update", sender => {
-					BlowUp ();
+				MessagingCenter.Subscribe<ModalPage>(this, "update", sender =>
+				{
+					BlowUp();
 				});
 
-				Content = new Button {
+				Content = new Button
+				{
 					AutomationId = "Page1PushModalButton",
 					Text = "press me",
-					Command = new Command (async () => await Navigation.PushModalAsync (new ModalPage ()))
+					Command = new Command(async () => await Navigation.PushModalAsync(new ModalPage()))
 				};
 			}
 
-			void BlowUp ()
+			void BlowUp()
 			{
-				Content = new Label { 
+				Content = new Label
+				{
 					AutomationId = "Page1Label",
-					Text = "Page1" 
+					Text = "Page1"
 				};
 			}
 		}
 
-		protected override void Init ()
+		protected override void Init()
 		{
 			Title = "Test";
 
-			Master = new ContentPage {
+			Master = new ContentPage
+			{
 				Title = "Master",
-				Content = new Button { 
+				Content = new Button
+				{
 					AutomationId = "MasterButton",
 					Text = "Make a new page",
-					Command= new Command(() => {
-						Detail = new Page1 ();
+					Command = new Command(() =>
+					{
+						Detail = new Page1();
 						IsPresented = false;
 					})
 				}
 			};
 
-			Detail = new Page1 ();
+			Detail = new Page1();
 
 			IsPresented = true;
 		}
 
 #if UITEST
 		[Test]
-		public void Issue2964Test ()
+		public void Issue2964Test()
 		{
-			RunningApp.Screenshot ("I am at Issue 2964");
+			RunningApp.Screenshot("I am at Issue 2964");
 
-			RunningApp.Tap (q => q.Marked ("MasterButton"));
-			RunningApp.Screenshot ("Create new Detail instance");
+			RunningApp.Tap(q => q.Marked("MasterButton"));
+			RunningApp.Screenshot("Create new Detail instance");
 
-			RunningApp.Tap (q => q.Marked ("Page1PushModalButton"));
-			RunningApp.Screenshot ("Modal is pushed");
+			RunningApp.Tap(q => q.Marked("Page1PushModalButton"));
+			RunningApp.Screenshot("Modal is pushed");
 
-			RunningApp.Tap (q => q.Marked ("ModalPagePopButton"));
-			RunningApp.Screenshot ("Modal is popped");
+			RunningApp.Tap(q => q.Marked("ModalPagePopButton"));
+			RunningApp.Screenshot("Modal is popped");
 
-			RunningApp.WaitForElement (q => q.Marked ("Page1Label"));
-			RunningApp.Screenshot ("Didn't blow up! :)");
+			RunningApp.WaitForElement(q => q.Marked("Page1Label"));
+			RunningApp.Screenshot("Didn't blow up! :)");
 		}
 #endif
 	}

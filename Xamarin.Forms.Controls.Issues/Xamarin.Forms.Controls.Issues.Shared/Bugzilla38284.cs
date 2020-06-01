@@ -7,6 +7,9 @@ using Xamarin.Forms.Maps;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 38284, "when creating a map in iOS, if the map is not visible when the page is created the zoom level is offn")]
 	public class Bugzilla38284 : TestContentPage // or TestMasterDetailPage, etc ...

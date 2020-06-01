@@ -123,7 +123,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				if (Forms.IsiOS13OrNewer)
 					return UIColor.SystemRedColor;
 #endif
-				return UIColor.FromRGBA(1, 0, 0, 1);
+				return UIColor.FromRGBA(255, 0, 0, 255);
 			}
 		}
 

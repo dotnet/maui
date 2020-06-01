@@ -9,8 +9,11 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1677, "[Enhancement] Entry: Control over text-prediction", PlatformAffected.All)]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1677, "[Enhancement] Entry: Control over text-prediction", PlatformAffected.All)]
 	public class Issue1677
 		: TestContentPage
 	{

@@ -10,6 +10,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 39486, "HasUnevenRows=true ignored in Forms iOS project in TableView with CustomCell; row heights are not auto-sized")]
 	public class Bugzilla39486 : TestContentPage // or TestMasterDetailPage, etc ...

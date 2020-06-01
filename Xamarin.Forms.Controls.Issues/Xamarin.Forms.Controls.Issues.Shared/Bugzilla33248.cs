@@ -10,6 +10,9 @@ using Xamarin.UITest;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 33248, "Entry.Completed calling Editor.Focus() inserts new line to the focused Editor in iOS", PlatformAffected.iOS)]
 	public class Bugzilla33248 : TestContentPage

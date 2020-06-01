@@ -11,6 +11,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 42277, "DataTemplate System.InvalidCastException crash in 2.3.1-pre1")]
 	public class Bugzilla42277 : TestContentPage
@@ -71,12 +74,18 @@ namespace Xamarin.Forms.Controls.Issues
 				switch (number)
 				{
 					default:
-					case 0: return _1Template;
-					case 1: return _2Template;
-					case 2: return _3Template;
-					case 3: return _4Template;
-					case 4: return _5Template;
-					case 5: return _6Template;
+					case 0:
+						return _1Template;
+					case 1:
+						return _2Template;
+					case 2:
+						return _3Template;
+					case 3:
+						return _4Template;
+					case 4:
+						return _5Template;
+					case 5:
+						return _6Template;
 				}
 			}
 		}

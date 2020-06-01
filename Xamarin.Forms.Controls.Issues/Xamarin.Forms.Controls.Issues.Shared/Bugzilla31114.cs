@@ -13,12 +13,13 @@ using NUnit.Framework;
 namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
+	[Category(UITestCategories.Bugzilla)]
 	[Category(UITestCategories.ListView)]
 #endif
 
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 31114, "iOS ContextAction leaves blank line after swiping in ListView")]
-	public class Bugzilla31114 : TestContentPage 
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 31114, "iOS ContextAction leaves blank line after swiping in ListView")]
+	public class Bugzilla31114 : TestContentPage
 	{
 		ObservableCollection<ListItem> _items = new ObservableCollection<ListItem>();
 		ListView _listView;
@@ -26,9 +27,9 @@ namespace Xamarin.Forms.Controls.Issues
 		public Command RefreshListCommand;
 		bool _isBusy = false;
 
-		protected override void Init ()
+		protected override void Init()
 		{
-			
+
 			RefreshListCommand = new Command(LoadItemsFromCommand, CanRefreshList);
 			_listView = new ListView();
 			_listView.ItemsSource = _items;
@@ -42,7 +43,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 			LoadItems();
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				VerticalOptions = LayoutOptions.FillAndExpand,
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				Children = {
@@ -51,10 +53,10 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 		}
 
-		protected override void OnDisappearing ()
+		protected override void OnDisappearing()
 		{
 			TaskItemTemplate.RefreshFromQuickComplete -= TaskListPageRefreshFromQuickComplete;
-			base.OnDisappearing ();
+			base.OnDisappearing();
 		}
 
 		bool CanRefreshList()
@@ -77,7 +79,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		void LoadItems()
 		{
-			isBusy = true; 
+			isBusy = true;
 
 			Random random = new Random(DateTime.Now.Millisecond);
 
@@ -93,7 +95,7 @@ namespace Xamarin.Forms.Controls.Issues
 					EntityTypeId = 1350,
 					BackgroundColor = "00aa00",
 					TextColor = "FFFFFF",
-					PrimaryText = "PIPE #"+(i+1000).ToString(),
+					PrimaryText = "PIPE #" + (i + 1000).ToString(),
 					CircleColor = "0000aa",
 					Icon = "",
 					OtherText = random.Next(100, 200).ToString() + " ft",
@@ -120,7 +122,7 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class ListItem
 		{
 			public string Id { get; set; }
@@ -149,7 +151,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			public bool SupportsQuickComplete { get; set; }
 
-			public ListItem ()
+			public ListItem()
 			{
 			}
 
@@ -203,7 +205,7 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class TaskItemTemplate : ViewCell
 		{
 			Image _photo;
@@ -235,7 +237,7 @@ namespace Xamarin.Forms.Controls.Issues
 				_photo = new Image
 				{
 					HeightRequest = 52,
-					WidthRequest = 52,                
+					WidthRequest = 52,
 				};
 
 
@@ -251,8 +253,8 @@ namespace Xamarin.Forms.Controls.Issues
 				_distanceLabel.SetBinding(Label.TextProperty, "OtherLabelText");
 
 				_statusCircle = new Label()
-				{                
-					HorizontalOptions = LayoutOptions.EndAndExpand, 
+				{
+					HorizontalOptions = LayoutOptions.EndAndExpand,
 					FontSize = 30,
 					TranslationY = 0,
 				};
@@ -262,16 +264,16 @@ namespace Xamarin.Forms.Controls.Issues
 					HorizontalOptions = LayoutOptions.StartAndExpand,
 					Orientation = StackOrientation.Vertical,
 					Children =
-					{                            
+					{
 						_mainLabel,
 						_secondaryLabel,
-					},                    
+					},
 					Padding = new Thickness(12, 0, 0, 0),
 				};
 
 				_secondaryContent = new StackLayout()
 				{
-					MinimumWidthRequest = 50, 
+					MinimumWidthRequest = 50,
 					HorizontalOptions = LayoutOptions.EndAndExpand,
 					Children =
 					{
@@ -290,7 +292,7 @@ namespace Xamarin.Forms.Controls.Issues
 						_primaryContent,
 						_secondaryContent,
 					},
-					Padding = new Thickness(5, 0, 0, 0) 
+					Padding = new Thickness(5, 0, 0, 0)
 				};
 
 				if (!fast)
@@ -377,7 +379,7 @@ namespace Xamarin.Forms.Controls.Issues
 						}
 					}
 				}
-				catch 
+				catch
 				{
 				}
 			}
@@ -407,21 +409,22 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST && __IOS__
 		[Test]
 		[Ignore("Fails sometimes - needs a better test")]
-		public void Bugzilla31114Test ()
+		public void Bugzilla31114Test()
 		{
-			for (int i = 0; i < 5; i++) {
-				RunningApp.DragCoordinates (10, 300, 10, 10);
+			for (int i = 0; i < 5; i++)
+			{
+				RunningApp.DragCoordinates(10, 300, 10, 10);
 			}
-			RunningApp.Tap (q => q.Marked ("btnLoad"));
-			RunningApp.DragCoordinates (10, 300, 10, 10);
-			RunningApp.WaitForElement (q => q.Marked ("PIPE #1007"));
-			RunningApp.WaitForElement (q => q.Marked ("PIPE #1008"));
-			RunningApp.WaitForElement (q => q.Marked ("PIPE #1009"));
-			RunningApp.DragCoordinates (10, 300, 10, 10);
-			RunningApp.WaitForElement (q => q.Marked ("PIPE #1010"));
-			RunningApp.WaitForElement (q => q.Marked ("PIPE #1011"));
-			RunningApp.WaitForElement (q => q.Marked ("PIPE #1012"));
-			RunningApp.WaitForElement (q => q.Marked ("PIPE #1013"));
+			RunningApp.Tap(q => q.Marked("btnLoad"));
+			RunningApp.DragCoordinates(10, 300, 10, 10);
+			RunningApp.WaitForElement(q => q.Marked("PIPE #1007"));
+			RunningApp.WaitForElement(q => q.Marked("PIPE #1008"));
+			RunningApp.WaitForElement(q => q.Marked("PIPE #1009"));
+			RunningApp.DragCoordinates(10, 300, 10, 10);
+			RunningApp.WaitForElement(q => q.Marked("PIPE #1010"));
+			RunningApp.WaitForElement(q => q.Marked("PIPE #1011"));
+			RunningApp.WaitForElement(q => q.Marked("PIPE #1012"));
+			RunningApp.WaitForElement(q => q.Marked("PIPE #1013"));
 		}
 #endif
 	}

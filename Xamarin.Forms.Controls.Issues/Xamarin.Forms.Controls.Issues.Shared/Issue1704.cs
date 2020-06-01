@@ -69,31 +69,36 @@ namespace Xamarin.Forms.Controls.Issues
 
 		public OnLoadAnimationPage()
 		{
-			_referenceImageLabel = new Label {
+			_referenceImageLabel = new Label
+			{
 				Text = "Reference image (no animation).",
 				FontSize = 12,
 				FontAttributes = FontAttributes.Bold,
 				Margin = new Thickness(0, 12, 0, 12)
 			};
 
-			_referenceImage = new Image {
+			_referenceImage = new Image
+			{
 				Source = "GifTwo.gif",
 				HorizontalOptions = LayoutOptions.Start
 			};
-						
-			_animatedImageLabel = new Label {
+
+			_animatedImageLabel = new Label
+			{
 				Text = "Animated image (if this image isn't animating make sure you are using Fast Renderers).",
 				FontSize = 12,
 				FontAttributes = FontAttributes.Bold,
 				Margin = new Thickness(0, 12, 0, 12)
 			};
 
-			_animatedImage = new Image {
+			_animatedImage = new Image
+			{
 				Source = "GifTwo.gif",
 				HorizontalOptions = LayoutOptions.Start
 			};
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Padding = new Thickness(0, 16),
 				Children = {
 					_referenceImageLabel,
@@ -122,26 +127,30 @@ namespace Xamarin.Forms.Controls.Issues
 
 		public OnStartAnimationPage()
 		{
-			_referenceImageLabel = new Label {
+			_referenceImageLabel = new Label
+			{
 				Text = "Reference image (no animation).",
 				FontSize = 12,
 				FontAttributes = FontAttributes.Bold,
 				Margin = new Thickness(0, 12, 0, 12)
 			};
 
-			_referenceImage = new Image {
+			_referenceImage = new Image
+			{
 				Source = "GifOne.gif",
 				HorizontalOptions = LayoutOptions.Start
 			};
 
-			_animatedImageLabel = new Label {
+			_animatedImageLabel = new Label
+			{
 				Text = "Animated image.",
 				FontSize = 12,
 				FontAttributes = FontAttributes.Bold,
 				Margin = new Thickness(0, 12, 0, 12)
 			};
 
-			_animatedImage = new Image {
+			_animatedImage = new Image
+			{
 				Source = "GifOne.gif",
 				HorizontalOptions = LayoutOptions.Start
 			};
@@ -152,8 +161,9 @@ namespace Xamarin.Forms.Controls.Issues
 					OnAnimationFinishedPlaying(sender, args);
 			};
 
-			_startStopButton = new Button { Text = "Start Animation", Margin = new Thickness(0, 20, 0, 0 ) };
-			_startStopButton.Clicked += (object sender, EventArgs e) => {
+			_startStopButton = new Button { Text = "Start Animation", Margin = new Thickness(0, 20, 0, 0) };
+			_startStopButton.Clicked += (object sender, EventArgs e) =>
+			{
 				if (!_animatedImage.IsAnimationPlaying)
 				{
 					_animatedImage.IsAnimationPlaying = true;
@@ -226,25 +236,29 @@ namespace Xamarin.Forms.Controls.Issues
 
 		public LoadImageSourceAnimationPage()
 		{
-			_animatedImageLabel = new Label {
+			_animatedImageLabel = new Label
+			{
 				Text = "Animated image.",
 				FontSize = 12,
 				FontAttributes = FontAttributes.Bold,
 				Margin = new Thickness(0, 12, 0, 12)
 			};
 
-			_animatedImage = new Image {
+			_animatedImage = new Image
+			{
 				HorizontalOptions = LayoutOptions.Start,
 			};
 
 			_imageSource = new Entry { Placeholder = "Image Source" };
 
-			_imageSource.Focused += (object sender, FocusEventArgs e) => {
+			_imageSource.Focused += (object sender, FocusEventArgs e) =>
+			{
 				_imageSource.TextColor = Color.Default;
 			};
 
 			_loadImageButton = new Button { Text = "Load Image" };
-			_loadImageButton.Clicked += (object sender, EventArgs e) => {
+			_loadImageButton.Clicked += (object sender, EventArgs e) =>
+			{
 				if (!string.IsNullOrEmpty(_imageSource.Text) && !_animatedImage.IsLoading)
 				{
 					try
@@ -256,7 +270,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 						_animatedImage.Source = ImageSource.FromUri(new Uri(_imageSource.Text));
 
-						var timerContext = new TimerContextData {
+						var timerContext = new TimerContextData
+						{
 							AnimationImage = _animatedImage,
 							ImageSource = _imageSource,
 							LoadButton = _loadImageButton,
@@ -277,7 +292,8 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			_loadingIndicator = new ActivityIndicator {
+			_loadingIndicator = new ActivityIndicator
+			{
 				IsVisible = false,
 				IsRunning = false
 			};
@@ -326,7 +342,8 @@ namespace Xamarin.Forms.Controls.Issues
 						context.LoadButton = null;
 						context.LoadIndicator = null;
 
-						Device.BeginInvokeOnMainThread(() => {
+						Device.BeginInvokeOnMainThread(() =>
+						{
 							if (loadButton != null)
 								loadButton.IsEnabled = true;
 
@@ -379,36 +396,42 @@ namespace Xamarin.Forms.Controls.Issues
 
 		public MiscPage()
 		{
-			_noAnimationFallbackLabel = new Label {
+			_noAnimationFallbackLabel = new Label
+			{
 				Text = "No animation error fallback.",
 				FontSize = 12,
 				FontAttributes = FontAttributes.Bold,
 				Margin = new Thickness(0, 12, 0, 12)
 			};
 
-			_noAnimationFallbackImage = new Image {
+			_noAnimationFallbackImage = new Image
+			{
 				Source = "coffee.png",
 				HorizontalOptions = LayoutOptions.Start
 			};
 
-			_initNoAnimationLabel = new Label {
+			_initNoAnimationLabel = new Label
+			{
 				Text = "Initial loaded without animation.",
 				FontSize = 12,
 				FontAttributes = FontAttributes.Bold,
 				Margin = new Thickness(0, 12, 0, 12)
 			};
 
-			_initNoAnimationImage = new Image {
+			_initNoAnimationImage = new Image
+			{
 				Source = "GifTwo.gif",
 				HorizontalOptions = LayoutOptions.Start
 			};
 
-			_initNoAnimationButton = new Button {
+			_initNoAnimationButton = new Button
+			{
 				Text = "Start Animation",
 				Margin = new Thickness(0, 12, 0, 12)
 			};
 
-			_initNoAnimationButton.Clicked += (object sender, EventArgs e) => {
+			_initNoAnimationButton.Clicked += (object sender, EventArgs e) =>
+			{
 
 				if (!_initNoAnimationImage.IsAnimationPlaying)
 				{
@@ -426,14 +449,16 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			_stressTestLabel = new Label {
+			_stressTestLabel = new Label
+			{
 				Text = "Image loading stress test.",
 				FontSize = 12,
 				FontAttributes = FontAttributes.Bold,
 				Margin = new Thickness(0, 24, 0, 0)
 			};
 
-			_stressTestIterationLabel = new Label {
+			_stressTestIterationLabel = new Label
+			{
 				Text = "Test iterations:",
 				FontSize = 12,
 				FontAttributes = FontAttributes.Bold
@@ -441,18 +466,21 @@ namespace Xamarin.Forms.Controls.Issues
 
 			_stressTestItertionEntry = new Entry { Text = _stressTestIterationCount.ToString() };
 
-			_stressTestImage = new Image {
+			_stressTestImage = new Image
+			{
 				Source = "GifTwo.gif",
 				HorizontalOptions = LayoutOptions.Start,
 				IsVisible = false
 			};
 
-			_startStressTestButton = new Button {
+			_startStressTestButton = new Button
+			{
 				Text = "Run Stress Test",
 				Margin = new Thickness(0, 12, 0, 12)
 			};
 
-			_startStressTestButton.Clicked += (object sender, EventArgs e) => {
+			_startStressTestButton.Clicked += (object sender, EventArgs e) =>
+			{
 
 				_startStressTestButton.Text = "Running...";
 				_startStressTestButton.IsEnabled = false;
@@ -464,24 +492,28 @@ namespace Xamarin.Forms.Controls.Issues
 #if __UWP__
 				Task.Run(runStressTest);
 #else
-				ThreadPool.QueueUserWorkItem(delegate { runStressTest(); });
+				ThreadPool.QueueUserWorkItem(delegate
+				{ runStressTest(); });
 #endif
 			};
 
 			_stressTestProgressBar = new ProgressBar();
 
-			_stopStressTestButton = new Button {
+			_stopStressTestButton = new Button
+			{
 				Text = "Stop Stress Test",
 				IsEnabled = false,
 				Margin = new Thickness(0, 12, 0, 12)
 			};
 
-			_stopStressTestButton.Clicked += (object sender, EventArgs e) => {
+			_stopStressTestButton.Clicked += (object sender, EventArgs e) =>
+			{
 				_stopStressTestButton.IsEnabled = false;
 				_abortStressTest = true;
 			};
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Padding = new Thickness(0, 16),
 				Children = {
 					_noAnimationFallbackLabel,
@@ -504,7 +536,8 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			for (int i = 0; i < _stressTestIterationCount && !_abortStressTest; i++)
 			{
-				Device.BeginInvokeOnMainThread(() => {
+				Device.BeginInvokeOnMainThread(() =>
+				{
 					if (i % 2 == 0)
 					{
 						_stressTestImage.Source = "GifTwo.gif";
@@ -527,7 +560,8 @@ namespace Xamarin.Forms.Controls.Issues
 				await Task.Delay(10).ConfigureAwait(false);
 			}
 
-			Device.BeginInvokeOnMainThread(() => {
+			Device.BeginInvokeOnMainThread(() =>
+			{
 				_startStressTestButton.Text = "Run Stress Test";
 				_startStressTestButton.IsEnabled = true;
 				_stopStressTestButton.IsEnabled = false;

@@ -13,14 +13,15 @@ using NUnit.Framework;
 namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
+	[Category(UITestCategories.Bugzilla)]
 	[Category(UITestCategories.ListView)]
 #endif
 
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 26032, " ListView ItemTapped doesn't get called for the selected item ", PlatformAffected.iOS)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 26032, " ListView ItemTapped doesn't get called for the selected item ", PlatformAffected.iOS)]
 	public partial class Bugzilla26032 : TestContentPage
 	{
-		#if APP
+#if APP
 		public Bugzilla26032 ()
 		{
 			
@@ -42,38 +43,38 @@ namespace Xamarin.Forms.Controls.Issues
 			Log.Text = string.Format("Item '{0}' selected\n{1}", e.SelectedItem, Log.Text);
 		}
 
-		#endif
+#endif
 
-		protected override void Init ()
+		protected override void Init()
 		{
 		}
 
 
-		#if UITEST
+#if UITEST
 		[Test]
-		public void SelectedItemTap ()
+		public void SelectedItemTap()
 		{
 			var id = "1";
 			var idContext = "1 Context";
 			var initalLog = "Item '{0}' tapped\nItem '{0}' selected\n";
 
-			var forId1 = string.Format (initalLog, id);
-			RunningApp.WaitForElement (q => q.Marked (id));
-			RunningApp.Tap (q => q.Marked (id));
-			RunningApp.WaitForElement (q => q.Text (forId1));
-			RunningApp.Tap (q => q.Marked (id));
-			forId1 = string.Format ( "Item '{0}' tapped\n" + initalLog, id);
-			RunningApp.WaitForElement (q => q.Text (forId1));
+			var forId1 = string.Format(initalLog, id);
+			RunningApp.WaitForElement(q => q.Marked(id));
+			RunningApp.Tap(q => q.Marked(id));
+			RunningApp.WaitForElement(q => q.Text(forId1));
+			RunningApp.Tap(q => q.Marked(id));
+			forId1 = string.Format("Item '{0}' tapped\n" + initalLog, id);
+			RunningApp.WaitForElement(q => q.Text(forId1));
 
-			var forIdContext = string.Format (initalLog, idContext);
-			RunningApp.WaitForElement (q => q.Marked (idContext));
-			RunningApp.Tap (q => q.Marked (idContext));
-			RunningApp.WaitForElement (q => q.Text (forIdContext + forId1));
-			RunningApp.Tap (q => q.Marked (idContext));
-			forIdContext = string.Format ( "Item '{0}' tapped\n" + initalLog, idContext);
-			RunningApp.WaitForElement (q => q.Text (forIdContext + forId1));
+			var forIdContext = string.Format(initalLog, idContext);
+			RunningApp.WaitForElement(q => q.Marked(idContext));
+			RunningApp.Tap(q => q.Marked(idContext));
+			RunningApp.WaitForElement(q => q.Text(forIdContext + forId1));
+			RunningApp.Tap(q => q.Marked(idContext));
+			forIdContext = string.Format("Item '{0}' tapped\n" + initalLog, idContext);
+			RunningApp.WaitForElement(q => q.Text(forIdContext + forId1));
 		}
-		#endif
+#endif
 	}
 }
 
