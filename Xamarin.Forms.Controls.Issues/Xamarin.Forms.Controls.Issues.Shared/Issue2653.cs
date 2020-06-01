@@ -16,6 +16,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2653, "[UWP] Grid insert z-order on UWP broken in Forms 3",
 		PlatformAffected.UWP)]
@@ -70,7 +73,7 @@ namespace Xamarin.Forms.Controls.Issues
 			this.On<iOS>().SetUseSafeArea(true);
 
 			var labelInstructions = new Label { Text = instructions };
-			
+
 			Content = new StackLayout()
 			{
 				Children =
@@ -148,7 +151,7 @@ namespace Xamarin.Forms.Controls.Issues
 			return true;
 		}
 
-// https://github.com/xamarin/Xamarin.Forms/issues/2989
+		// https://github.com/xamarin/Xamarin.Forms/issues/2989
 #if UITEST
 		[Test]
 		public void ZIndexWhenInsertingChildren()
@@ -167,16 +170,16 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.Tap(x => x.Marked(ButtonText));
 			RunningApp.Tap(x => x.Marked(ClickShouldAddText));
 
-		#if __IOS__
+#if __IOS__
 			RunningApp.WaitForNoElement(x => x.Marked(ButtonText));
-		#else
+#else
 			RunningApp.Tap(x => x.Marked(ButtonText));
 			RunningApp.Tap(x => x.Marked(TestForButtonClicked));
 			RunningApp.WaitForElement(x => x.Marked(BoxViewIsOverlappingButton));
-		#endif
-			
+#endif
+
 		}
-		
+
 
 
 		[Test]

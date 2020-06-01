@@ -14,32 +14,33 @@ using Xamarin.Forms.Core.UITests;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-    [Preserve(AllMembers = true)]
-    [Issue(IssueTracker.Github, 4138, "[iOS] NavigationPage.TitleIcon no longer centered",
-        PlatformAffected.iOS)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 4138, "[iOS] NavigationPage.TitleIcon no longer centered",
+		PlatformAffected.iOS)]
 #if UITEST
-    [NUnit.Framework.Category(UITestCategories.Navigation)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+	[NUnit.Framework.Category(UITestCategories.Navigation)]
 #endif
-    public class Issue4138 : TestNavigationPage
-    {
-        protected override void Init()
-        {
-            ContentPage contentPage = new ContentPage();
+	public class Issue4138 : TestNavigationPage
+	{
+		protected override void Init()
+		{
+			ContentPage contentPage = new ContentPage();
 
-            NavigationPage.SetTitleIconImageSource(contentPage, "coffee.png");
+			NavigationPage.SetTitleIconImageSource(contentPage, "coffee.png");
 
-            PushAsync(contentPage);
-        }
+			PushAsync(contentPage);
+		}
 
 
 #if UITEST && __IOS__
 		[Test]
-        public void TitleIconIsCentered()
-        {
-            var element = RunningApp.WaitForElement("coffee.png")[0];
+		public void TitleIconIsCentered()
+		{
+			var element = RunningApp.WaitForElement("coffee.png")[0];
 			var rect = RunningApp.RootViewRect();
 			Assert.AreEqual(element.Rect.CenterX, rect.CenterX);
-        }
+		}
 #endif
-    }
+	}
 }

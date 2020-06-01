@@ -9,8 +9,11 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1567, "NRE in NavigationProxy.set_Inner", PlatformAffected.iOS)]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1567, "NRE in NavigationProxy.set_Inner", PlatformAffected.iOS)]
 	public class Issue1567
 		: ContentPage
 	{
@@ -19,15 +22,20 @@ namespace Xamarin.Forms.Controls.Issues
 			Title = "Test";
 			var label = new Label { Text = "Whatever" };
 
-			ToolbarItems.Add (new ToolbarItem ("Modal", null, async () => {
-				var cp2 = new ContentPage () {
-						Title = "Modal",
-						Content = new Label (){ Text = "Second screen" },
+			ToolbarItems.Add(new ToolbarItem("Modal", null, async () =>
+			{
+				var cp2 = new ContentPage()
+				{
+					Title = "Modal",
+					Content = new Label() { Text = "Second screen" },
 				};
 				//var np2 = new NavigationPage(cp2) { Title = "Modal" };
-				try {
-					await Navigation.PushModalAsync (cp2);
-				} catch (InvalidOperationException ex) {
+				try
+				{
+					await Navigation.PushModalAsync(cp2);
+				}
+				catch (InvalidOperationException ex)
+				{
 					label.Text = "Exception properly thrown: " + ex.Message;
 				}
 			}));

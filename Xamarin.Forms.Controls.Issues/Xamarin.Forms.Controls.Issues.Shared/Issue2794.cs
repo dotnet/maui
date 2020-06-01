@@ -8,8 +8,11 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 2794, "TableView does not react on underlying collection change", PlatformAffected.Android)]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 2794, "TableView does not react on underlying collection change", PlatformAffected.Android)]
 	public class Issue2794 : TestContentPage
 	{
 		TableSection _dataSection;
@@ -19,7 +22,8 @@ namespace Xamarin.Forms.Controls.Issues
 			var tableView = new TableView();
 			_dataSection = new TableSection();
 			var cell1 = new TextCell { Text = "Cell1" };
-			cell1.ContextActions.Add (new MenuItem {
+			cell1.ContextActions.Add(new MenuItem
+			{
 				Text = "Delete me after",
 				IsDestructive = true,
 				Command = new Command(Delete),
@@ -27,7 +31,8 @@ namespace Xamarin.Forms.Controls.Issues
 			});
 
 			var cell2 = new TextCell { Text = "Cell2" };
-			cell2.ContextActions.Add(new MenuItem {
+			cell2.ContextActions.Add(new MenuItem
+			{
 				Text = "Delete me first",
 				IsDestructive = true,
 				Command = new Command(Delete),

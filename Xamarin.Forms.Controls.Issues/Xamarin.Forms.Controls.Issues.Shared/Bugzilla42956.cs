@@ -16,6 +16,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 42956, "ListView with DataTemplateSelector can have only 17 Templates, even with CachingStrategy=RetainElement", PlatformAffected.Android)]
 	public class Bugzilla42956 : TestContentPage

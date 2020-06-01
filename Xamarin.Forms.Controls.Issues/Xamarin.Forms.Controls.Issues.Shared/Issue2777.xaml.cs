@@ -14,73 +14,80 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Github, 2777, "When add GroupHeaderTemplate in XAML the group header does not show up")]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 2777, "When add GroupHeaderTemplate in XAML the group header does not show up")]
 	public partial class Issue2777 : TestContentPage
 	{
-		public Issue2777 ()
+		public Issue2777()
 		{
-			#if APP
+#if APP
 			InitializeComponent ();
 			var list = SetupList ();
 			itemListView.ItemsSource = list;
-			#endif
-		
+#endif
+
 		}
 
-		protected override void Init ()
+		protected override void Init()
 		{
-			
+
 		}
 
-		internal void OnItemTapped (object sender, ItemTappedEventArgs ea)
+		internal void OnItemTapped(object sender, ItemTappedEventArgs ea)
 		{
 			var listItem = (ListItemValue)ea.Item;
-			DisplayAlert (listItem.Name, "You tapped " + listItem.Name, "OK", "Cancel");
+			DisplayAlert(listItem.Name, "You tapped " + listItem.Name, "OK", "Cancel");
 		}
 
-		ObservableCollection<ListItemCollection> SetupList ()
+		ObservableCollection<ListItemCollection> SetupList()
 		{
-			var allListItemGroups = new ObservableCollection<ListItemCollection> ();
+			var allListItemGroups = new ObservableCollection<ListItemCollection>();
 
-			foreach (var item in ListItemCollection.GetSortedData()) {
+			foreach (var item in ListItemCollection.GetSortedData())
+			{
 				// Attempt to find any existing groups where theg group title matches the first char of our ListItem's name.
-				var listItemGroup = allListItemGroups.FirstOrDefault (g => g.Title == item.Label);
+				var listItemGroup = allListItemGroups.FirstOrDefault(g => g.Title == item.Label);
 
 				// If the list group does not exist, we create it.
-				if (listItemGroup == null) {
-					listItemGroup = new ListItemCollection (item.Label);
-					listItemGroup.Add (item);
-					allListItemGroups.Add (listItemGroup);
-				} else { // If the group does exist, we simply add the demo to the existing group.
-					listItemGroup.Add (item);
+				if (listItemGroup == null)
+				{
+					listItemGroup = new ListItemCollection(item.Label);
+					listItemGroup.Add(item);
+					allListItemGroups.Add(listItemGroup);
+				}
+				else
+				{ // If the group does exist, we simply add the demo to the existing group.
+					listItemGroup.Add(item);
 				}
 			}
 			return allListItemGroups;
 		}
 
 		// Represents a group of items in our list.
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class ListItemCollection : ObservableCollection<ListItemValue>
 		{
 			public string Title { get; private set; }
 
 			public string LongTitle { get { return "The letter " + Title; } }
 
-			public ListItemCollection (string title)
+			public ListItemCollection(string title)
 			{
 				Title = title;
 			}
 
-			public static List<ListItemValue> GetSortedData ()
+			public static List<ListItemValue> GetSortedData()
 			{
 				var items = ListItems;
-				items.Sort ();
+				items.Sort();
 				return items;
 			}
 
 			// Data used to populate our list.
-			static readonly List<ListItemValue> ListItems = new List<ListItemValue> () {
+			static readonly List<ListItemValue> ListItems = new List<ListItemValue>() {
 				new ListItemValue ("Babbage"),
 				new ListItemValue ("Boole"),
 				new ListItemValue ("Berners-Lee"),
@@ -96,38 +103,40 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		// Represents one item in our list.
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class ListItemValue : IComparable<ListItemValue>
 		{
 			public string Name { get; private set; }
 
 
-			public ListItemValue (string name)
+			public ListItemValue(string name)
 			{
 				Name = name;
 			}
 
-			int IComparable<ListItemValue>.CompareTo (ListItemValue value)
+			int IComparable<ListItemValue>.CompareTo(ListItemValue value)
 			{
-				return Name.CompareTo (value.Name);
+				return Name.CompareTo(value.Name);
 			}
 
-			public string Label {
-				get {
-					return Name [0].ToString ();
+			public string Label
+			{
+				get
+				{
+					return Name[0].ToString();
 				}
 			}
 		}
-	
 
-		#if UITEST
+
+#if UITEST
 		[Test]
-		public void Issue2777Test ()
+		public void Issue2777Test()
 		{
-			RunningApp.Screenshot ("I am at Issue 2965");
-			RunningApp.WaitForElement (q => q.Marked ("The letter A"));
+			RunningApp.Screenshot("I am at Issue 2965");
+			RunningApp.WaitForElement(q => q.Marked("The letter A"));
 		}
-		#endif
+#endif
 	}
 
 	// Note: this fails on UWP because we can't currently inspect listview headers

@@ -8,6 +8,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 37290, "[WinRT/UWP] Setting ActivityIndicator.IsRunning=\"false\" shows the ActivityIndicator", PlatformAffected.WinRT)]
 	public class Bugzilla37290 : TestContentPage

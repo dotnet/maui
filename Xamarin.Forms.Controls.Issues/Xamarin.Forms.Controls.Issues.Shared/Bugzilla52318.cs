@@ -8,6 +8,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 52318, "OnAppearing/Disappearing triggers for all pages in navigationstack backgrounding/foregrounding app", PlatformAffected.Android)]
 	public class Bugzilla52318 : TestMasterDetailPage // or TestMasterDetailPage, etc ...

@@ -15,6 +15,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2829, "[Android] Renderers associated with ListView cells are occasionaly not being disposed of which causes left over events to propagate to disposed views",
 		PlatformAffected.Android)]

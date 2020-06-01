@@ -10,9 +10,12 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 
-			59172, "[iOS] Popped page does not appear on top of current navigation stack, please file a bug.", 
+	[Issue(IssueTracker.Bugzilla,
+			59172, "[iOS] Popped page does not appear on top of current navigation stack, please file a bug.",
 			PlatformAffected.iOS)]
 	public class Bugzilla59172 : TestNavigationPage
 	{
@@ -70,7 +73,8 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 				catch (Exception ex)
 				{
-					if (!safe) { throw; }
+					if (!safe)
+					{ throw; }
 
 					parent.navigationErrorLabel.Text = ex.Message;
 				}

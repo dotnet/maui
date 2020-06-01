@@ -8,6 +8,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 52299, "[Android] Using a physical keyboard, setting Focus from an Entry's Completed handler fails", PlatformAffected.Android)]
 	public class Bugzilla52299 : TestContentPage

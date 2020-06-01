@@ -18,6 +18,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Issue(IssueTracker.Github, 1975, "[iOS] ListView throws NRE when grouping enabled and data changed",
 		PlatformAffected.iOS)]
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(UITestCategories.ListView)]
 #endif
 	public class Issue1975 : TestNavigationPage

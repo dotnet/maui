@@ -3,7 +3,10 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-    [Preserve (AllMembers = true)]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
+	[Preserve (AllMembers = true)]
     [Issue (IssueTracker.Bugzilla, 37601, "ToolbarItem throws error when navigating to TabbedPage ",
         PlatformAffected.WinPhone)]
     public class Bugzilla37601 : TestNavigationPage

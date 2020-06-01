@@ -13,6 +13,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 35132, "Pages are not collected when using a Navigationpage (FormsApplicationActivity)")]
 	public class Bugzilla35132 : TestNavigationPage
@@ -69,21 +72,21 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 		}
 
-#if UITEST 
+#if UITEST
 		[Test]
 		public void PagesAreCollected()
 		{
-			RunningApp.WaitForElement (q => q.Marked ("Open"));
-			RunningApp.Tap(q => q.Marked ("Open"));
-			RunningApp.WaitForElement (q => q.Marked ("Testing..."));
+			RunningApp.WaitForElement(q => q.Marked("Open"));
+			RunningApp.Tap(q => q.Marked("Open"));
+			RunningApp.WaitForElement(q => q.Marked("Testing..."));
 			RunningApp.Back();
-			RunningApp.WaitForElement (q => q.Marked ("Open"));
-			RunningApp.Tap(q => q.Marked ("Open"));
-			RunningApp.WaitForElement (q => q.Marked ("Testing..."));
+			RunningApp.WaitForElement(q => q.Marked("Open"));
+			RunningApp.Tap(q => q.Marked("Open"));
+			RunningApp.WaitForElement(q => q.Marked("Testing..."));
 			RunningApp.Back();
-			RunningApp.WaitForElement (q => q.Marked ("Open"));
-			RunningApp.Tap(q => q.Marked ("Open"));
-			RunningApp.WaitForElement (q => q.Marked ("Success"));
+			RunningApp.WaitForElement(q => q.Marked("Open"));
+			RunningApp.Tap(q => q.Marked("Open"));
+			RunningApp.WaitForElement(q => q.Marked("Success"));
 		}
 #endif
 	}

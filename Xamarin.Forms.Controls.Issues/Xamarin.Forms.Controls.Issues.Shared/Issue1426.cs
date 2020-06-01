@@ -9,13 +9,16 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1426, "SetHasNavigationBar screen height wrong", PlatformAffected.iOS)]
 	public class Issue1426 : TestTabbedPage
 	{
 		protected override void Init()
 		{
-			Children.Add(new NavigationPage(new HomePage()) { Title = "Home", BarBackgroundColor = Color.Red }) ;
+			Children.Add(new NavigationPage(new HomePage()) { Title = "Home", BarBackgroundColor = Color.Red });
 		}
 
 		class HomePage : ContentPage
@@ -34,10 +37,10 @@ namespace Xamarin.Forms.Controls.Issues
 				{
 					BackgroundColor = Color.Pink,
 					Text = "NextButtonID",
-					AutomationId ="NextButtonID",
+					AutomationId = "NextButtonID",
 					Command = new Command(async () =>
 					{
-						var btnPop = new Button { Text = "PopButtonId",AutomationId ="PopButtonId", Command = new Command(async () => await Navigation.PopAsync()) };
+						var btnPop = new Button { Text = "PopButtonId", AutomationId = "PopButtonId", Command = new Command(async () => await Navigation.PopAsync()) };
 						var page = new ContentPage
 						{
 							Title = "Detail",
@@ -45,13 +48,13 @@ namespace Xamarin.Forms.Controls.Issues
 							BackgroundColor = Color.Yellow
 						};
 						//This breaks layout when you pop!
-						NavigationPage.SetHasNavigationBar(page, false); 
+						NavigationPage.SetHasNavigationBar(page, false);
 						await Navigation.PushAsync(page);
 					})
 				};
 
 				grd.Children.Add(btn, 0, 1);
-				var image = new Image() { Source = "coffee.png",AutomationId ="CoffeeImageId", BackgroundColor = Color.Yellow };
+				var image = new Image() { Source = "coffee.png", AutomationId = "CoffeeImageId", BackgroundColor = Color.Yellow };
 				image.VerticalOptions = LayoutOptions.End;
 				grd.Children.Add(image, 0, 2);
 				Content = grd;
@@ -61,16 +64,16 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void Github1426Test ()
+		public void Github1426Test()
 		{
-			RunningApp.Screenshot ("You can see the coffe mug");
-			RunningApp.WaitForElement (q => q.Marked ("CoffeeImageId"));
-			RunningApp.WaitForElement (q => q.Marked ("NextButtonID"));
-			RunningApp.Tap (q => q.Marked ("NextButtonID"));
-			RunningApp.WaitForElement (q => q.Marked ("PopButtonId"));
-			RunningApp.Tap (q => q.Marked ("PopButtonId"));
-			RunningApp.WaitForElement (q => q.Marked ("CoffeeImageId"));
-			RunningApp.Screenshot ("Coffe mug Image is still there on the bottom");
+			RunningApp.Screenshot("You can see the coffe mug");
+			RunningApp.WaitForElement(q => q.Marked("CoffeeImageId"));
+			RunningApp.WaitForElement(q => q.Marked("NextButtonID"));
+			RunningApp.Tap(q => q.Marked("NextButtonID"));
+			RunningApp.WaitForElement(q => q.Marked("PopButtonId"));
+			RunningApp.Tap(q => q.Marked("PopButtonId"));
+			RunningApp.WaitForElement(q => q.Marked("CoffeeImageId"));
+			RunningApp.Screenshot("Coffe mug Image is still there on the bottom");
 		}
 #endif
 	}

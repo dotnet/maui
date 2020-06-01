@@ -9,6 +9,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 52419, "[A] OnAppearing called for previous pages in a tab's navigation when switching active tabs", PlatformAffected.Android)]
 	public class Bugzilla52419 : TestTabbedPage

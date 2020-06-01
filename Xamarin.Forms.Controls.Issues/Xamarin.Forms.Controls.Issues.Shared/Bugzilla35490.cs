@@ -3,20 +3,25 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 35490, "Label Text Misaligned in Windows Phone 8.1 and WinRT",
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 35490, "Label Text Misaligned in Windows Phone 8.1 and WinRT",
 		PlatformAffected.WinPhone | PlatformAffected.WinRT)]
 	public class Bugzilla35490 : TestContentPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
-			var instructions = new Label {
+			var instructions = new Label
+			{
 				Text =
 					"The label in the red box below should be centered horizontally and vertically. If it's not, this test has failed."
 			};
 
 
-			var label = new Label {
+			var label = new Label
+			{
 				BackgroundColor = Color.Red,
 				TextColor = Color.White,
 				HorizontalTextAlignment = TextAlignment.Center,
@@ -27,7 +32,8 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				HorizontalOptions = LayoutOptions.Fill,
 				VerticalOptions = LayoutOptions.Fill,
 				Children = {

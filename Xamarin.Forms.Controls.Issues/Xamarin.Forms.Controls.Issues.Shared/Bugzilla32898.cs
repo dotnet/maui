@@ -11,8 +11,11 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 32898, "Memory leak when TabbedPage is popped out ")]
+#if UITEST
+	[Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 32898, "Memory leak when TabbedPage is popped out ")]
 	public class Bugzilla32898 : TestContentPage
 	{
 		WeakReference _page2Tracker;
@@ -21,7 +24,7 @@ namespace Xamarin.Forms.Controls.Issues
 		Label _result;
 		const string Success = "Success";
 		const string Fail = "Fail";
-		const int Timeout = 10000; 
+		const int Timeout = 10000;
 
 		protected override void Init()
 		{
@@ -68,9 +71,9 @@ namespace Xamarin.Forms.Controls.Issues
 			watch.Start();
 
 			// We'll let this run until the references are dead or timeout has passed
-			while (_page2Tracker.IsAlive && _tabTracker.IsAlive && watch.ElapsedMilliseconds < Timeout) 
+			while (_page2Tracker.IsAlive && _tabTracker.IsAlive && watch.ElapsedMilliseconds < Timeout)
 			{
-				await Task.Delay (1000);
+				await Task.Delay(1000);
 				GarbageCollectionHelper.Collect();
 			}
 

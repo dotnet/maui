@@ -13,6 +13,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 44886, "UWP Listview ItemSelected event triggered twice for each selection", PlatformAffected.UWP)]
@@ -62,7 +63,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			_CountLabel.SetBinding(Label.TextProperty, nameof(MyViewModel.Count));
 
-				var listView = new ListView
+			var listView = new ListView
 			{
 				ItemsSource = new List<string> { Item1, "Item 2", "Item 3", "Item 4", "Item 5" }
 			};

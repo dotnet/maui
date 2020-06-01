@@ -12,26 +12,30 @@ using Xamarin.UITest;
 namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
 #endif
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Github, 264, "PopModal NRE", PlatformAffected.Android | PlatformAffected.iOS)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 264, "PopModal NRE", PlatformAffected.Android | PlatformAffected.iOS)]
 	public class Issue264 : TestContentPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
-			var aboutBtn = new Button {
+			var aboutBtn = new Button
+			{
 				Text = "About"
 			};
 
-			aboutBtn.Clicked += (s, e) => Navigation.PushModalAsync (new AboutPage ());
+			aboutBtn.Clicked += (s, e) => Navigation.PushModalAsync(new AboutPage());
 
-			var popButton = new Button {
+			var popButton = new Button
+			{
 				Text = "Pop me",
-				Command = new Command (async () => await Navigation.PopAsync ())
+				Command = new Command(async () => await Navigation.PopAsync())
 			};
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = {
 					new Label {Text = "Home"},
 					aboutBtn,
@@ -44,23 +48,23 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void Issue264TestsPushAndPopModal ()
+		public void Issue264TestsPushAndPopModal()
 		{
-			RunningApp.WaitForElement (q => q.Marked ("Home"));
-			RunningApp.WaitForElement (q => q.Button ("About"));
-			RunningApp.Screenshot ("All elements present");
+			RunningApp.WaitForElement(q => q.Marked("Home"));
+			RunningApp.WaitForElement(q => q.Button("About"));
+			RunningApp.Screenshot("All elements present");
 
-			RunningApp.Tap (q => q.Button ("About"));
-			RunningApp.WaitForElement (q => q.Button ("Close"));
-			RunningApp.Screenshot ("Modal pushed");
+			RunningApp.Tap(q => q.Button("About"));
+			RunningApp.WaitForElement(q => q.Button("Close"));
+			RunningApp.Screenshot("Modal pushed");
 
-			RunningApp.Tap (q => q.Button ("Close"));
-			RunningApp.WaitForElement (q => q.Button ("About"));
-			RunningApp.Screenshot ("Modal popped");
+			RunningApp.Tap(q => q.Button("Close"));
+			RunningApp.WaitForElement(q => q.Button("About"));
+			RunningApp.Screenshot("Modal popped");
 
-			RunningApp.Tap (q => q.Button ("Pop me"));
-			RunningApp.WaitForElement (q => q.Marked ("Bug Repro's"));
-			RunningApp.Screenshot ("No crash");
+			RunningApp.Tap(q => q.Button("Pop me"));
+			RunningApp.WaitForElement(q => q.Marked("Bug Repro's"));
+			RunningApp.Screenshot("No crash");
 		}
 #endif
 	}
@@ -70,7 +74,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public AboutPage()
 		{
 			BackgroundColor = Color.Bisque;
-			Content = new Button { Text = "Close", Command = new Command (() => Navigation.PopModalAsync ()) };
+			Content = new Button { Text = "Close", Command = new Command(() => Navigation.PopModalAsync()) };
 
 		}
 	}

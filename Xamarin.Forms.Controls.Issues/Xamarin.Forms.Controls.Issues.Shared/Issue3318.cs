@@ -18,7 +18,9 @@ namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3318, "[MAC] ScrollTo method is not working in Xamarin.Forms for mac platform", PlatformAffected.macOS)]
-
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	public class Issue3318 : TestContentPage
 	{
 		protected override void Init()
@@ -75,10 +77,10 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void Issue3318Test()
 		{
-			RunningApp.WaitForElement (q => q.Marked ("End"));
-			RunningApp.Tap (q => q.Marked ("End"));
-			RunningApp.WaitForElement (q => q.Marked ("Item 19"));
-			RunningApp.Back ();
+			RunningApp.WaitForElement(q => q.Marked("End"));
+			RunningApp.Tap(q => q.Marked("End"));
+			RunningApp.WaitForElement(q => q.Marked("Item 19"));
+			RunningApp.Back();
 		}
 #endif
 	}

@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1702, "[Enhancement] Padding on Buttons", PlatformAffected.All)]
 	public class GitHub1702 : TestContentPage

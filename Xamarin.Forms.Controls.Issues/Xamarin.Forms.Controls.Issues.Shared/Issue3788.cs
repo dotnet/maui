@@ -20,6 +20,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Issue(IssueTracker.Github, 3788, "[UWP] ListView with observable collection always seems to refresh the entire list",
 		PlatformAffected.UWP)]
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(UITestCategories.ListView)]
 #endif
 	public class Issue3788 : TestContentPage

@@ -3,6 +3,9 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 33450, "[iOS] Cell with ContextAction has a different layout")]
 	public class Bugzilla33450 : TestContentPage // or TestMasterDetailPage, etc ...

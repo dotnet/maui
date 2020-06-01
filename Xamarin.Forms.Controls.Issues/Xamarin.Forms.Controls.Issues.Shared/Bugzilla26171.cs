@@ -14,54 +14,59 @@ namespace Xamarin.Forms.Controls.Issues
 {
 
 #if UITEST
-	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
+	[Category(UITestCategories.UwpIgnore)]
+	[Category(UITestCategories.Bugzilla)]
 #endif
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 26171, "Xamarin.Forms.Maps is not updating VisibleRegion property when layout is changed")]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 26171, "Xamarin.Forms.Maps is not updating VisibleRegion property when layout is changed")]
 	public class Bugzilla26171 : TestContentPage // or TestMasterDetailPage, etc ...
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
-			var map = MakeMap ();
+			var map = MakeMap();
 
-			var label = new Label  { AutomationId = "lblValue" };
+			var label = new Label { AutomationId = "lblValue" };
 
 			var buttonLayout = new Button { Text = "Change layout" };
-			buttonLayout.Clicked += async (a, e) => {
+			buttonLayout.Clicked += async (a, e) =>
+			{
 				map.VerticalOptions = LayoutOptions.Start;
-				await Print (map,label);
+				await Print(map, label);
 			};
 
-			var stack = new StackLayout {
+			var stack = new StackLayout
+			{
 				Spacing = 0,
-				Padding = new Thickness (30, 0)
+				Padding = new Thickness(30, 0)
 			};
 
-			stack.Children.Add (label);
-			stack.Children.Add (map);
-			stack.Children.Add (buttonLayout);
+			stack.Children.Add(label);
+			stack.Children.Add(map);
+			stack.Children.Add(buttonLayout);
 
 			Content = new ScrollView { Content = stack };
 
-			Appearing += async (sender, e) => await Print (map, label);
+			Appearing += async (sender, e) => await Print(map, label);
 
 		}
 
-		static async Task Print (Map map, Label label)
-		{	
+		static async Task Print(Map map, Label label)
+		{
 			await Task.Delay(500);
-			if (map.VisibleRegion != null) {
-				label.Text = map.VisibleRegion.Radius.Kilometers.ToString ();
+			if (map.VisibleRegion != null)
+			{
+				label.Text = map.VisibleRegion.Radius.Kilometers.ToString();
 			}
 		}
 
-		public static Map MakeMap ()
+		public static Map MakeMap()
 		{
 			Pin colosseum = null;
 			Pin pantheon = null;
 			Pin chapel = null;
 
-			var map = new Map {
+			var map = new Map
+			{
 				IsShowingUser = false,
 				VerticalOptions = LayoutOptions.FillAndExpand,
 				HeightRequest = 100,
@@ -92,9 +97,9 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void Bugzilla26171Test ()
+		public void Bugzilla26171Test()
 		{
-			RunningApp.WaitForElement (q => q.Marked ("lblValue"));
+			RunningApp.WaitForElement(q => q.Marked("lblValue"));
 		}
 #endif
 	}

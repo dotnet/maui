@@ -19,6 +19,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Issue(IssueTracker.Bugzilla, 56771, "Multi-item add in INotifyCollectionChanged causes a NSInternalInconsistencyException in bindings on iOS", PlatformAffected.iOS)]
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.ListView)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	public class Bugzilla56771 : TestContentPage
 	{
@@ -96,7 +97,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public void Bugzilla56771Test()
 		{
 			RunningApp.WaitForElement(q => q.Marked(BtnAdd));
-			RunningApp.Tap(q => q.Marked(BtnAdd)); 
+			RunningApp.Tap(q => q.Marked(BtnAdd));
 			RunningApp.WaitForElement(q => q.Marked(Success));
 		}
 #endif

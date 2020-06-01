@@ -15,6 +15,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 44940, "[WinRT/UWP] ScrollView.ScrollToAsync does not return from await", PlatformAffected.WinRT)]
 	public class Bugzilla44940 : TestContentPage
@@ -74,7 +77,7 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 			Content = _scrollView;
-			
+
 			Device.BeginInvokeOnMainThread(async () =>
 			{
 				await Task.Delay(100);

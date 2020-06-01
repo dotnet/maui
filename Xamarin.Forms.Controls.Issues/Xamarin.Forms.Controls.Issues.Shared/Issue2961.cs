@@ -13,6 +13,7 @@ using Xamarin.UITest.iOS;
 namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[Ignore("This test is looking for an invalid behavior; the second tap *should* keep the drawer open.")] 
 #endif
 	[Preserve (AllMembers = true)]

@@ -9,6 +9,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3001, "[macOS] Navigating back from a complex page is highly inefficient", PlatformAffected.macOS)]
 	public class Issue3001 : TestContentPage

@@ -10,6 +10,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3548, "Cannot attach effect to Frame", PlatformAffected.Android)]
 	public class Issue3548 : TestContentPage

@@ -12,7 +12,7 @@ using NUnit.Framework;
 namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
-	[Category(UITestCategories.Editor)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
 #endif
 	[Preserve(AllMembers = true)]
@@ -301,5 +301,5 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 #endif
-    }
+	}
 }

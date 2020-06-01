@@ -9,6 +9,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 51503, "NullReferenceException on VisualElement Finalize", PlatformAffected.All)]
 	public class Bugzilla51503 : TestNavigationPage
@@ -26,7 +29,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Button button = new Button
 				{
 					AutomationId = "Button",
-					Text = "Open"					
+					Text = "Open"
 				};
 
 				button.Clicked += Button_Clicked;
@@ -51,7 +54,7 @@ namespace Xamarin.Forms.Controls.Issues
 				{
 					AutomationId = "VisualElement",
 					Text = "Navigate 3 times to this page",
-					Triggers = 
+					Triggers =
 					{
 						new EventTrigger()
 					}
@@ -60,13 +63,13 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 #if UITEST
-[Test]
+		[Test]
 		public void Issue51503Test()
 		{
 			for (int i = 0; i < 3; i++)
 			{
 				RunningApp.WaitForElement(q => q.Marked("Button"));
-				
+
 				RunningApp.Tap(q => q.Marked("Button"));
 
 				RunningApp.WaitForElement(q => q.Marked("VisualElement"));

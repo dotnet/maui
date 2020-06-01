@@ -17,10 +17,11 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.Slider)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	public class Bugzilla41619 : TestContentPage
 	{
-		const double _success = 6; 
+		const double _success = 6;
 		protected override void Init()
 		{
 			var vm = new Bugzilla41619ViewModel();
@@ -71,7 +72,7 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 		[Test]
 		public void SliderBinding()
-		{ 
+		{
 			RunningApp.WaitForElement(_success.ToString());
 		}
 #endif

@@ -9,6 +9,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 58645, "[iOS] NRE Thrown When ListView Items Are Replaced By Items With a Different Template", PlatformAffected.iOS)]
 	public class Bugzilla58645 : TestContentPage

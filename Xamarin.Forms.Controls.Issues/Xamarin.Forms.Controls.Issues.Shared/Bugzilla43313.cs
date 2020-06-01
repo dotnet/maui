@@ -8,6 +8,9 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	public abstract class Bugzilla43313_Template : ContentPage
 	{
@@ -186,7 +189,7 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override void Init()
 		{
 			var root = new ContentPage();
-			
+
 			var layout = new StackLayout();
 
 			var knownHeightButton = new Button() { Text = "Known Height (original bug report test case)" };

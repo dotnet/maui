@@ -12,6 +12,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 44166, "MasterDetailPage instances do not get disposed upon GC")]
 	public class Bugzilla44166 : TestContentPage
@@ -127,7 +130,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			Master = new _44166Master();
 			Detail = new _44166Detail();
-        }
+		}
 
 		~_44166MDP()
 		{
@@ -147,7 +150,7 @@ namespace Xamarin.Forms.Controls.Issues
 			Debug.WriteLine($"++++++++ {nameof(_44166Master)} constructor, {Counter} allocated");
 
 			Title = "Master";
-			var goButton = new Button { Text = "Return", AutomationId = "Return"};
+			var goButton = new Button { Text = "Return", AutomationId = "Return" };
 			goButton.Clicked += (sender, args) => Application.Current.MainPage = new Bugzilla44166();
 
 			Content = new StackLayout

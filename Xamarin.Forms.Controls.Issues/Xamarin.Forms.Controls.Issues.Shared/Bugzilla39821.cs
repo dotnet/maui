@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 39821, "ViewExtension.TranslateTo cannot be invoked on Main thread")]
-	public class Bugzilla39821 : TestContentPage 
+	public class Bugzilla39821 : TestContentPage
 	{
 		protected override void Init()
 		{
@@ -47,7 +47,8 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			button.Clicked += async (sender, args) => {
+			button.Clicked += async (sender, args) =>
+			{
 				// Run a bunch of animations from the thread pool 
 				await Task.WhenAll(
 					Task.Run(async () => await Translate(box)),
@@ -125,7 +126,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public void DoesNotCrash()
 		{
 			RunningApp.Tap(q => q.Marked("Animate"));
-			RunningApp.WaitForElement(q => q.Marked("Success"), timeout:TimeSpan.FromSeconds(25));
+			RunningApp.WaitForElement(q => q.Marked("Success"), timeout: TimeSpan.FromSeconds(25));
 		}
 #endif
 	}

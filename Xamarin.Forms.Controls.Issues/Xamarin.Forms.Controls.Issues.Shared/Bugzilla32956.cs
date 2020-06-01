@@ -10,6 +10,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 32956, "Setting ListView.SelectedItem to null does not remove list item highlight when list item is tapped multiple times quickly", PlatformAffected.Android | PlatformAffected.iOS)]
 	public class Bugzilla32956 : TestNavigationPage
@@ -17,7 +20,7 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override void Init()
 		{
 			var list = new List<int>();
-			for(var i=0; i<10; i++)
+			for (var i = 0; i < 10; i++)
 				list.Add(i);
 
 			var listView = new ListView

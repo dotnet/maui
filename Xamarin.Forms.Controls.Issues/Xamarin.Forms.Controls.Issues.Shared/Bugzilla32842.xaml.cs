@@ -6,6 +6,9 @@ using Xamarin.Forms.Internals;
 namespace Xamarin.Forms.Controls.Issues
 {
 #if APP
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 32842,
 	"[WinRT] ItemSelected Not Ignored When a ListView Item Contains a TapGestureRecognizer", PlatformAffected.WinRT)]

@@ -15,6 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Issue(IssueTracker.Bugzilla, 41205, "UWP CreateDefault passes string instead of object")]
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.ListView)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	public class Bugzilla41205 : TestContentPage
 	{

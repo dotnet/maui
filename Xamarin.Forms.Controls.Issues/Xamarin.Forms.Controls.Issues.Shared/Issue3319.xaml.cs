@@ -15,26 +15,30 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Github, 3319, "[iOS] Clear and adding rows exception")]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 3319, "[iOS] Clear and adding rows exception")]
 	public partial class Issue3319 : TestContentPage
 	{
-		#if UITEST
+#if UITEST
 		[Test]
-		public void Issue3319Test ()
+		public void Issue3319Test()
 		{
-			RunningApp.WaitForElement (q => q.Marked ("Will this repo work?"));
-			
-		}
-		#endif
+			RunningApp.WaitForElement(q => q.Marked("Will this repo work?"));
 
-		FavoritesViewModel ViewModel {
+		}
+#endif
+
+		FavoritesViewModel ViewModel
+		{
 			get { return BindingContext as FavoritesViewModel; }
 		}
 
-		public Issue3319 ()
+		public Issue3319()
 		{
-			#if APP
+#if APP
 			InitializeComponent ();
 			BindingContext = new FavoritesViewModel ();
 
@@ -48,17 +52,17 @@ namespace Xamarin.Forms.Controls.Issues
 				//do nothing anyway
 				return;
 			};
-			#endif
+#endif
 
 		}
 
-		protected override void Init ()
+		protected override void Init()
 		{
-	
+
 		}
 
 #pragma warning disable 1998 // considered for removal
-		public async void OnDelete (object sender, EventArgs e)
+		public async void OnDelete(object sender, EventArgs e)
 #pragma warning restore 1998
 		{
 			var mi = ((MenuItem)sender);
@@ -72,57 +76,62 @@ namespace Xamarin.Forms.Controls.Issues
 			// So leaving it out unless someone comes up with a really good reason to add it.
 			// (see https://github.com/xamarin/Xamarin.Forms/pull/65#discussion-diff-59305011) 
 			if (articlelistingitem != null)
-				DisplayAlert ("Alert", "I'm not deleting just refreshing...", "Ok");
+				DisplayAlert("Alert", "I'm not deleting just refreshing...", "Ok");
 #pragma warning restore 4014
-			ViewModel.LoadFavoritesCommand.Execute (null);
+			ViewModel.LoadFavoritesCommand.Execute(null);
 		}
 
 
-		protected override void OnAppearing ()
+		protected override void OnAppearing()
 		{
-			base.OnAppearing ();
+			base.OnAppearing();
 			if (ViewModel == null || !ViewModel.CanLoadMore || ViewModel.IsBusy)
 				return;
 
-			Device.BeginInvokeOnMainThread (() => {
-				ViewModel.LoadFavoritesCommand.Execute (null);
+			Device.BeginInvokeOnMainThread(() =>
+			{
+				ViewModel.LoadFavoritesCommand.Execute(null);
 			});
 		}
 
-		[Preserve (AllMembers = true)]
-		public class FavoritesViewModel :BaseViewModelF
+		[Preserve(AllMembers = true)]
+		public class FavoritesViewModel : BaseViewModelF
 		{
 			public ObservableCollection<ArticleListing> FavoriteArticles { get; set; }
 
-			public FavoritesViewModel ()
+			public FavoritesViewModel()
 			{
 				Title = "Favorites";
-				FavoriteArticles = new ObservableCollection<ArticleListing> ();
+				FavoriteArticles = new ObservableCollection<ArticleListing>();
 			}
 
 			Command _loadFavoritesCommand;
 
-			public Command LoadFavoritesCommand {
-				get {
+			public Command LoadFavoritesCommand
+			{
+				get
+				{
 					return _loadFavoritesCommand ??
-					(_loadFavoritesCommand = new Command (async () => {
-						await ExecuteFavoritesCommand ();
-					}, () => {
+					(_loadFavoritesCommand = new Command(async () =>
+					{
+						await ExecuteFavoritesCommand();
+					}, () =>
+					{
 						return !IsBusy;
 					}));
 				}
 			}
 
 #pragma warning disable 1998 // considered for removal
-			public async Task ExecuteFavoritesCommand ()
+			public async Task ExecuteFavoritesCommand()
 #pragma warning restore 1998
 			{
 				if (IsBusy)
 					return;
 
 				IsBusy = true;
-				LoadFavoritesCommand.ChangeCanExecute ();
-				FavoriteArticles.Clear ();
+				LoadFavoritesCommand.ChangeCanExecute();
+				FavoriteArticles.Clear();
 				var articles = new ObservableCollection<ArticleListing> {
 					new ArticleListing {
 						ArticleTitle = "Will this repo work?",
@@ -135,15 +144,16 @@ namespace Xamarin.Forms.Controls.Issues
 						FormattedPostedDate = "7-28-2015"
 					}
 				};
-				var templist = new ObservableCollection<ArticleListing> ();
-				foreach (var article in articles) {
+				var templist = new ObservableCollection<ArticleListing>();
+				foreach (var article in articles)
+				{
 					//templist.Add(article);
-					FavoriteArticles.Add (article);
+					FavoriteArticles.Add(article);
 				}
 				//FavoriteArticles = templist;
-				OnPropertyChanged ("FavoriteArticles");
+				OnPropertyChanged("FavoriteArticles");
 				IsBusy = false;
-				LoadFavoritesCommand.ChangeCanExecute ();
+				LoadFavoritesCommand.ChangeCanExecute();
 			}
 
 		}
@@ -151,7 +161,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 	public class BaseViewModelF : INotifyPropertyChanged
 	{
-		public BaseViewModelF ()
+		public BaseViewModelF()
 		{
 		}
 
@@ -162,9 +172,10 @@ namespace Xamarin.Forms.Controls.Issues
 		/// Gets or sets the "Title" property
 		/// </summary>
 		/// <value>The title.</value>
-		public string Title {
+		public string Title
+		{
 			get { return _title; }
-			set { SetProperty (ref _title, value, TitlePropertyName); }
+			set { SetProperty(ref _title, value, TitlePropertyName); }
 		}
 
 		string _subTitle = string.Empty;
@@ -173,9 +184,10 @@ namespace Xamarin.Forms.Controls.Issues
 		/// </summary>
 		public const string SubtitlePropertyName = "Subtitle";
 
-		public string Subtitle {
+		public string Subtitle
+		{
 			get { return _subTitle; }
-			set { SetProperty (ref _subTitle, value, SubtitlePropertyName); }
+			set { SetProperty(ref _subTitle, value, SubtitlePropertyName); }
 		}
 
 		string _icon = null;
@@ -184,9 +196,10 @@ namespace Xamarin.Forms.Controls.Issues
 		/// </summary>
 		public const string IconPropertyName = "Icon";
 
-		public string Icon {
+		public string Icon
+		{
 			get { return _icon; }
-			set { SetProperty (ref _icon, value, IconPropertyName); }
+			set { SetProperty(ref _icon, value, IconPropertyName); }
 		}
 
 		bool _isBusy;
@@ -195,9 +208,10 @@ namespace Xamarin.Forms.Controls.Issues
 		/// </summary>
 		public const string IsBusyPropertyName = "IsBusy";
 
-		public bool IsBusy {
+		public bool IsBusy
+		{
 			get { return _isBusy; }
-			set { SetProperty (ref _isBusy, value, IsBusyPropertyName); }
+			set { SetProperty(ref _isBusy, value, IsBusyPropertyName); }
 		}
 
 		bool _canLoadMore = true;
@@ -206,26 +220,27 @@ namespace Xamarin.Forms.Controls.Issues
 		/// </summary>
 		public const string CanLoadMorePropertyName = "CanLoadMore";
 
-		public bool CanLoadMore {
+		public bool CanLoadMore
+		{
 			get { return _canLoadMore; }
-			set { SetProperty (ref _canLoadMore, value, CanLoadMorePropertyName); }
+			set { SetProperty(ref _canLoadMore, value, CanLoadMorePropertyName); }
 		}
 
-		protected void SetProperty<T> (
+		protected void SetProperty<T>(
 			ref T backingStore, T value,
 			string propertyName,
 			Action onChanged = null)
 		{
 
-			if (EqualityComparer<T>.Default.Equals (backingStore, value))
+			if (EqualityComparer<T>.Default.Equals(backingStore, value))
 				return;
 
 			backingStore = value;
 
 			if (onChanged != null)
-				onChanged ();
+				onChanged();
 
-			OnPropertyChanged (propertyName);
+			OnPropertyChanged(propertyName);
 		}
 
 		#region INotifyPropertyChanged implementation
@@ -234,20 +249,20 @@ namespace Xamarin.Forms.Controls.Issues
 
 		#endregion
 
-		public void OnPropertyChanged (string propertyName)
+		public void OnPropertyChanged(string propertyName)
 		{
 			if (PropertyChanged == null)
 				return;
 
-			PropertyChanged (this, new PropertyChangedEventArgs (propertyName));
+			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 		}
 
 	}
 
-	[Preserve (AllMembers = true)]
+	[Preserve(AllMembers = true)]
 	public class ArticleListing
 	{
-		public ArticleListing ()
+		public ArticleListing()
 		{
 		}
 

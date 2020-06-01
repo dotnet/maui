@@ -12,11 +12,12 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[Category(UITestCategories.Gestures)]
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 59863, "TapGestureRecognizer extremely finicky", PlatformAffected.Android, 
-		issueTestNumber:1)]
+	[Issue(IssueTracker.Bugzilla, 59863, "TapGestureRecognizer extremely finicky", PlatformAffected.Android,
+		issueTestNumber: 1)]
 	public class Bugzilla59863_1 : TestContentPage
 	{
 		int _doubleTaps;
@@ -28,11 +29,11 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var instructions = new Label
 			{
-				Text = "Tap the box below once. The counter should not increment. " 
+				Text = "Tap the box below once. The counter should not increment. "
 						+ "Double tap the box. The counter should increment."
 			};
 
-			var doubleTapCounter = new Label {Text = $"{_doubleTaps} {Doubles} on {DoubleTapBoxId}"};
+			var doubleTapCounter = new Label { Text = $"{_doubleTaps} {Doubles} on {DoubleTapBoxId}" };
 
 			var doubleTapBox = new BoxView
 			{
@@ -55,9 +56,10 @@ namespace Xamarin.Forms.Controls.Issues
 			doubleTapBox.GestureRecognizers.Add(doubleTap);
 
 			Content = new StackLayout
-			{	
+			{
 				Margin = 40,
-				HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill,
+				HorizontalOptions = LayoutOptions.Fill,
+				VerticalOptions = LayoutOptions.Fill,
 				Children = { instructions, doubleTapBox, doubleTapCounter }
 			};
 		}

@@ -9,6 +9,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1461, "Cannot change TimePicker format", PlatformAffected.Android)]
 	public class Github1461 : TestContentPage // or TestMasterDetailPage, etc ...

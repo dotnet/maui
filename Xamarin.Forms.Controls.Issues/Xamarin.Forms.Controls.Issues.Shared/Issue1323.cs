@@ -8,6 +8,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1323, "tabbed page BarTextColor is not pervasive and can't be applied after instantiation", PlatformAffected.iOS)]
 	public class Issue1323 : TestTabbedPage // or TestMasterDetailPage, etc ...

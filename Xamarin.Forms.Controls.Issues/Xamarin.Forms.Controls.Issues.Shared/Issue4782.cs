@@ -18,6 +18,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Issue(IssueTracker.Github, 4782, "[Android] Null drawable crashes Image Button",
 		PlatformAffected.iOS)]
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(UITestCategories.ImageButton)]
 #endif
 	public class Issue4782 : TestContentPage

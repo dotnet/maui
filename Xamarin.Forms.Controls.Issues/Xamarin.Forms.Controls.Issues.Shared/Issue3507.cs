@@ -19,6 +19,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Issue(IssueTracker.Github, 3507, "[UWP] Scrollview with null content crashes on UWP",
 		PlatformAffected.UWP)]
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(UITestCategories.ListView)]
 #endif
 	public class Issue3507 : TestContentPage

@@ -21,12 +21,13 @@ namespace Xamarin.Forms.Controls.Issues
 	[Issue(IssueTracker.Github, 2004, "[Android] Xamarin caused by: android.runtime.JavaProxyThrowable: System.ObjectDisposedException: Cannot access a disposed object",
 		PlatformAffected.Android)]
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(UITestCategories.LifeCycle)]
 #endif
 	public class Issue2004 : TestContentPage
 	{
 #if UITEST
-		protected override void Init(){}
+		protected override void Init() { }
 #else
 		static internal NavigationPage settingsPage = new NavigationPage(new SettingsView());
 		static internal NavigationPage addressesPage = new NavigationPage(new AddressListView());

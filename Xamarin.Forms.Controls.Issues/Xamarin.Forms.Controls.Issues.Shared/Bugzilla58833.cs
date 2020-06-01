@@ -15,6 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Category(UITestCategories.Gestures)]
 	[Category(UITestCategories.ListView)]
 	[Category(UITestCategories.Cells)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 
 	[Preserve(AllMembers = true)]
@@ -114,7 +115,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement("2 Action");
 #if __ANDROID__
 			RunningApp.Back();
-#else 
+#else
 			RunningApp.Tap(q => q.Marked("Item #3"));
 #endif
 
@@ -122,11 +123,11 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement("1 Action");
 #if __ANDROID__
 			RunningApp.Back();
-#else 
+#else
 			RunningApp.Tap(q => q.Marked("Item #3"));
 #endif
 
 		}
 #endif
-		}
+	}
 }

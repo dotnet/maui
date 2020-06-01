@@ -11,6 +11,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Navigation)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 
 	[Preserve(AllMembers = true)]
@@ -47,11 +48,11 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void Issue45702Test() 
+		public void Issue45702Test()
 		{
-			RunningApp.WaitForElement (q => q.Marked ("Click me"));
-			RunningApp.Tap (q => q.Marked ("Click me"));
-			RunningApp.WaitForElement (q => q.Marked ("Success"));
+			RunningApp.WaitForElement(q => q.Marked("Click me"));
+			RunningApp.Tap(q => q.Marked("Click me"));
+			RunningApp.WaitForElement(q => q.Marked("Success"));
 		}
 #endif
 	}

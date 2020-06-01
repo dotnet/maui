@@ -12,10 +12,11 @@ using NUnit.Framework;
 namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
-    [Category(UITestCategories.Image)]
+	[Category(UITestCategories.Image)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 
-    [Preserve(AllMembers = true)]
+	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 51173, "ImageRenderer, async void SetImage - Cannot catch exceptions", PlatformAffected.All)]
 	public class Bugzilla51173 : TestContentPage
 	{
@@ -23,7 +24,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test(Description = "Attempt to load an image from a URI which does not exist")]
 		public void Bugzilla51173_NonexistentUri()
 		{
-			
+
 			RunningApp.WaitForElement(q => q.Marked(UriDoesNotExist));
 
 			RunningApp.Tap(UriDoesNotExist);
@@ -35,7 +36,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public void Bugzilla51173_HandlerThrowsException()
 		{
 			RunningApp.WaitForElement(q => q.Marked(HandlerThrows));
-			
+
 			RunningApp.Tap(HandlerThrows);
 			RunningApp.WaitForElement(q => q.Marked(ErrorLogged));
 			RunningApp.WaitForElement(q => q.Marked(NotLoading));
@@ -114,7 +115,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-			_results = new Label { Margin = 10, FontAttributes = FontAttributes.Bold, BackgroundColor = Color.Silver, HorizontalTextAlignment = TextAlignment.Center};
+			_results = new Label { Margin = 10, FontAttributes = FontAttributes.Bold, BackgroundColor = Color.Silver, HorizontalTextAlignment = TextAlignment.Center };
 
 			var errorMessage = new Label();
 
@@ -124,7 +125,7 @@ namespace Xamarin.Forms.Controls.Issues
 					_results.Text = ErrorLogged;
 					errorMessage.Text = m;
 				})));
-			
+
 			var instructions = new Label
 			{
 				Text =
@@ -139,7 +140,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var legit = CreateTest(() => _image.Source = ImageSource.FromFile("coffee.png"), ValidImage);
 
-			var invalidImageFileName = CreateTest(() => _image.Source = ImageSource.FromFile("fake.png"), ImageDoesNotExist); 
+			var invalidImageFileName = CreateTest(() => _image.Source = ImageSource.FromFile("fake.png"), ImageDoesNotExist);
 
 			var invalidImageFile = CreateTest(() => _image.Source = ImageSource.FromFile("invalidimage.jpg"), ImageIsInvalid);
 

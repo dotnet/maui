@@ -9,6 +9,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2818, "Right-to-Left MasterDetail in Xamarin.Forms Hamburger icon issue", PlatformAffected.Android)]
 	public class Issue2818 : TestMasterDetailPage
@@ -119,7 +122,7 @@ namespace Xamarin.Forms.Controls.Issues
 			// This behavior is currently broken on a phone device Issue 7270
 			if (idiom[0].ReadText() != "Tablet")
 				return;
-		
+
 			RunningApp.SetOrientationLandscape();
 			RunningApp.Tap("CloseMasterView");
 			RunningApp.Tap("ShowLeftToRight");

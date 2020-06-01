@@ -10,9 +10,12 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-    [Preserve(AllMembers = true)]
-    [Issue(IssueTracker.Bugzilla, 51642, "Delayed BindablePicker UWP", PlatformAffected.All)]
-    public partial class Bugzilla51642 : ContentPage
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 51642, "Delayed BindablePicker UWP", PlatformAffected.All)]
+	public partial class Bugzilla51642 : ContentPage
 	{
 #if APP
 		public Bugzilla51642 ()
@@ -33,13 +36,15 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	}
 
-	[Preserve(AllMembers=true)]
-    class Bz51642VM
-    {
-        public IList<string> Items {
-            get {
-                return new List<String> { "Foo", "Bar", "Baz" };
-            }
-        }
-    }
+	[Preserve(AllMembers = true)]
+	class Bz51642VM
+	{
+		public IList<string> Items
+		{
+			get
+			{
+				return new List<String> { "Foo", "Bar", "Baz" };
+			}
+		}
+	}
 }

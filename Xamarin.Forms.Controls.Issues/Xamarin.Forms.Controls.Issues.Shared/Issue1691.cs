@@ -15,33 +15,37 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Ignore("Temporarily ignoring until we can investigate intermittent failures")]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 #endif
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Github, 1691, "CarouselPage iOS CurrentPage bug")]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1691, "CarouselPage iOS CurrentPage bug")]
 	public class Issue1691 : TestCarouselPage
 	{
 		int _currentIndex;
 		int _page = 9;
 
-		protected override void Init ()
+		protected override void Init()
 		{
 			_currentIndex = 10;
 			ItemsSource = new ObservableCollection<int>() { _currentIndex };
 			SelectedItem = ((ObservableCollection<int>)ItemsSource)[0];
 		}
 
-		protected override ContentPage CreateDefault (object item)
+		protected override ContentPage CreateDefault(object item)
 		{
 			var currentInt = item as int?;
 
-			var label = new Label {
+			var label = new Label
+			{
 				Text = "Page " + currentInt,
-			}; 
+			};
 
-			return new ContentPage {
-				Content = new StackLayout {
+			return new ContentPage
+			{
+				Content = new StackLayout
+				{
 					Children = {
-						label, 
+						label,
 						new Button {
 							AutomationId = "CreatePreviousPage" + currentInt,
 							Text = "Create previous page",
@@ -65,16 +69,16 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void Issue1691Test ()
+		public void Issue1691Test()
 		{
-			RunningApp.Screenshot ("I am at Issue 1691");
-			RunningApp.Tap (q => q.Marked ("CreatePreviousPage10"));
-			RunningApp.WaitForElement (q => q.Marked ("Page Created"));
-			RunningApp.Screenshot ("I should be on the same page with a new page created to the left");
-			RunningApp.Tap (q => q.Marked ("GoToPreviousPage10"));
-			RunningApp.WaitForNoElement (q => q.Marked ("GoToPreviousPage10"));
-			RunningApp.Screenshot ("I should be on page 9");
-			RunningApp.WaitForElement (q => q.Marked ("GoToPreviousPage9"));
+			RunningApp.Screenshot("I am at Issue 1691");
+			RunningApp.Tap(q => q.Marked("CreatePreviousPage10"));
+			RunningApp.WaitForElement(q => q.Marked("Page Created"));
+			RunningApp.Screenshot("I should be on the same page with a new page created to the left");
+			RunningApp.Tap(q => q.Marked("GoToPreviousPage10"));
+			RunningApp.WaitForNoElement(q => q.Marked("GoToPreviousPage10"));
+			RunningApp.Screenshot("I should be on page 9");
+			RunningApp.WaitForElement(q => q.Marked("GoToPreviousPage9"));
 		}
 #endif
 	}

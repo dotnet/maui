@@ -9,6 +9,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 40161, "Issue Description", PlatformAffected.Default)]
 	public class Bugzilla40161 : TestContentPage
@@ -71,7 +74,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			bool flipSwap = false;
 			var swap = new Button() { Text = "SWAP" };
-			swap.Clicked += (object sender, EventArgs e) => 
+			swap.Clicked += (object sender, EventArgs e) =>
 			{
 				if (flipSwap)
 					image.Source = imageA;
@@ -84,7 +87,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			bool flipLayout = false;
 			var layout = new Button() { Text = "LAYOUT" };
-			layout.Clicked += (object sender, EventArgs e) => 
+			layout.Clicked += (object sender, EventArgs e) =>
 			{
 				if (flipLayout)
 				{
@@ -101,9 +104,9 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 			stack.Children.Add(layout);
 
-			var counter = new Label() { Text = "counter", AutomationId="counter" };
-			var height = new Label() { Text = "height", AutomationId="height" };
-			var width = new Label() { Text = "width", AutomationId= "width" };
+			var counter = new Label() { Text = "counter", AutomationId = "counter" };
+			var height = new Label() { Text = "height", AutomationId = "height" };
+			var width = new Label() { Text = "width", AutomationId = "width" };
 			stack.Children.Add(counter);
 			stack.Children.Add(height);
 			stack.Children.Add(width);
@@ -123,16 +126,16 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void Issue1Test ()
+		public void Issue1Test()
 		{
-			RunningApp.Screenshot ("I am at Issue 40161");
-			RunningApp.WaitForElement (q => q.Marked ("REFRESH"));
-			RunningApp.Screenshot ("I see the first image");
+			RunningApp.Screenshot("I am at Issue 40161");
+			RunningApp.WaitForElement(q => q.Marked("REFRESH"));
+			RunningApp.Screenshot("I see the first image");
 
-			RunningApp.Tap ("SWAP");
-			RunningApp.Tap ("REFRESH");
+			RunningApp.Tap("SWAP");
+			RunningApp.Tap("REFRESH");
 			RunningApp.WaitForElement(q => q.Marked("step=0"));
-			RunningApp.Screenshot ("I swap the image");
+			RunningApp.Screenshot("I swap the image");
 			RunningApp.WaitForElement(q => q.Marked("w=50"));
 		}
 #endif

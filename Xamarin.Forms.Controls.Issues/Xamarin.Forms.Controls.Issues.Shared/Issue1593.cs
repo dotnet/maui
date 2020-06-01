@@ -7,37 +7,44 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1593, "Android reports zero minimum size for almost all controls", PlatformAffected.Android)]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1593, "Android reports zero minimum size for almost all controls", PlatformAffected.Android)]
 	public class Issue1593 : ContentPage
 	{
-		public Issue1593 ()
+		public Issue1593()
 		{
-			var title = new Label {
+			var title = new Label
+			{
 				Text = "Select League",
 #pragma warning disable 618
-				Font = Font.SystemFontOfSize (NamedSize.Large),
+				Font = Font.SystemFontOfSize(NamedSize.Large),
 #pragma warning restore 618
 				TextColor = Color.White
 			};
 
-			# region Season Filter
+			#region Season Filter
 
-			var seasonLabel = new Label {
+			var seasonLabel = new Label
+			{
 				Text = "Season",
 #pragma warning disable 618
-				Font = Font.SystemFontOfSize (NamedSize.Small),
+				Font = Font.SystemFontOfSize(NamedSize.Small),
 #pragma warning restore 618
 				TextColor = Color.White
 			};
 
-			var seasonPicker = new Picker {
+			var seasonPicker = new Picker
+			{
 				WidthRequest = 140,
 				Title = "Season",
-				Items = { "Test 1", "Test 2"}
+				Items = { "Test 1", "Test 2" }
 			};
 
-			var seasonPanel = new StackLayout {
+			var seasonPanel = new StackLayout
+			{
 				Children = {
 					seasonLabel,
 					seasonPicker
@@ -46,23 +53,26 @@ namespace Xamarin.Forms.Controls.Issues
 
 			#endregion
 
-			# region Sport Filter
+			#region Sport Filter
 
-			var sportLabel = new Label {
+			var sportLabel = new Label
+			{
 				Text = "Sport",
 #pragma warning disable 618
-				Font = Font.SystemFontOfSize (NamedSize.Small),
+				Font = Font.SystemFontOfSize(NamedSize.Small),
 #pragma warning restore 618
 				TextColor = Color.White
 			};
 
-			var sportPicker = new Picker {
+			var sportPicker = new Picker
+			{
 				WidthRequest = 140,
 				Title = "Sport",
-				Items = { "Test 1", "Test 2"}
+				Items = { "Test 1", "Test 2" }
 			};
 
-			var sportPanel = new StackLayout {
+			var sportPanel = new StackLayout
+			{
 				Children = {
 					sportLabel,
 					sportPicker
@@ -71,8 +81,9 @@ namespace Xamarin.Forms.Controls.Issues
 
 			#endregion
 
-			var filtersPanel = new StackLayout {
-				Padding = new Thickness (0, 10, 0, 0),
+			var filtersPanel = new StackLayout
+			{
+				Padding = new Thickness(0, 10, 0, 0),
 				Orientation = StackOrientation.Horizontal,
 				HorizontalOptions = LayoutOptions.Fill,
 				Children = {
@@ -81,9 +92,10 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			var leagues = new ListView {
+			var leagues = new ListView
+			{
 				MinimumHeightRequest = 100,
-				ItemsSource = new [] {
+				ItemsSource = new[] {
 					"Test 1",
 					"Test 2",
 					"Test 3",
@@ -101,20 +113,23 @@ namespace Xamarin.Forms.Controls.Issues
 					"Test 15",
 				},
 				BackgroundColor = Color.Gray,
-				ItemTemplate = new DataTemplate (() => {
-					var leagueName = new Label {
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var leagueName = new Label
+					{
 #pragma warning disable 618
-						Font = Font.SystemFontOfSize (NamedSize.Large),
+						Font = Font.SystemFontOfSize(NamedSize.Large),
 #pragma warning restore 618
 						BackgroundColor = Color.Transparent,
 						TextColor = Color.White,
 						VerticalOptions = LayoutOptions.CenterAndExpand,
 						LineBreakMode = LineBreakMode.WordWrap
 					};
-					leagueName.SetBinding (Label.TextProperty, ".");
+					leagueName.SetBinding(Label.TextProperty, ".");
 
-					var row = new StackLayout {
-						Padding = new Thickness (5, 0, 5, 0),
+					var row = new StackLayout
+					{
+						Padding = new Thickness(5, 0, 5, 0),
 						BackgroundColor = Color.Transparent,
 						Orientation = StackOrientation.Horizontal,
 						VerticalOptions = LayoutOptions.CenterAndExpand,
@@ -123,19 +138,22 @@ namespace Xamarin.Forms.Controls.Issues
 						}
 					};
 
-					return new ViewCell {
+					return new ViewCell
+					{
 						View = row
 					};
 				})
 			};
 
-			var activityIndicator = new ActivityIndicator {
+			var activityIndicator = new ActivityIndicator
+			{
 				VerticalOptions =
 					LayoutOptions.CenterAndExpand,
-					IsVisible = false
+				IsVisible = false
 			};
 
-			var titlePanel = new StackLayout {
+			var titlePanel = new StackLayout
+			{
 				Orientation = StackOrientation.Horizontal,
 				Spacing = 50,
 				Children = {
@@ -144,17 +162,20 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			var standingsButton = new Button {
+			var standingsButton = new Button
+			{
 				Text = "Standings",
 				HorizontalOptions = LayoutOptions.CenterAndExpand
 			};
 
-			var scheduleButton = new Button {
+			var scheduleButton = new Button
+			{
 				Text = "Schedule",
 				HorizontalOptions = LayoutOptions.CenterAndExpand
 			};
 
-			var buttonPanel = new StackLayout {
+			var buttonPanel = new StackLayout
+			{
 				Orientation = StackOrientation.Horizontal,
 				HorizontalOptions = LayoutOptions.CenterAndExpand,
 				Children = {
@@ -163,7 +184,8 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Padding = 20,
 				Children = {
 					titlePanel,

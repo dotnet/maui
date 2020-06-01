@@ -9,8 +9,11 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1259, "Layout issue with SwitchCell", PlatformAffected.Android)]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1259, "Layout issue with SwitchCell", PlatformAffected.Android)]
 	public class Issue1259
 		: ContentPage
 	{
@@ -97,7 +100,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				Text = "Ok",
 			};
-			next.Clicked +=next_Clicked;
+			next.Clicked += next_Clicked;
 
 			st.Children.Add(next);
 

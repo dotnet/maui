@@ -10,6 +10,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 58779, "[MacOS] DisplayActionSheet on MacOS needs scroll bars if list is long", PlatformAffected.All)]
 	public class Bugzilla58779 : TestContentPage
@@ -30,7 +33,8 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 			// The root page of your application
-			var content = new StackLayout {
+			var content = new StackLayout
+			{
 				VerticalOptions = LayoutOptions.Center,
 				Children = {
 					new Label {
@@ -46,9 +50,10 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			button.Clicked += (sender, e) => {
-				String[] string_array = {"1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"};
-				this.DisplayActionSheet("title",CancelId,"destruction",string_array);
+			button.Clicked += (sender, e) =>
+			{
+				String[] string_array = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15" };
+				this.DisplayActionSheet("title", CancelId, "destruction", string_array);
 			};
 
 			Content = content;
@@ -61,7 +66,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			RunningApp.WaitForElement(q => q.Marked(ButtonId));
 			RunningApp.Tap(q => q.Marked(ButtonId));
-			RunningApp.Screenshot ("Check list fits on screen");
+			RunningApp.Screenshot("Check list fits on screen");
 			RunningApp.WaitForElement(q => q.Marked(CancelId));
 			RunningApp.Tap(q => q.Marked(CancelId));
 		}

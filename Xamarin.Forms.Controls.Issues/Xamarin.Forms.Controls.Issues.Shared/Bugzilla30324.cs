@@ -11,6 +11,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Category(Core.UITests.UITestCategories.MasterDetailPage)]
+	[Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 30324, "Detail view of MasterDetailPage does not get appearance events on Android when whole MasterDetailPage disappears/reappears")]

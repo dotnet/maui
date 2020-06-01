@@ -31,16 +31,16 @@ namespace Xamarin.Forms.Controls.Issues
 
 			Content = new StackLayout
 			{
-				Children = { label,box}
+				Children = { label, box }
 			};
 		}
 
 #if UITEST
 		[Test]
 		[Category(UITestCategories.ManualReview)]
-		public void Issue3884Test() 
+		public void Issue3884Test()
 		{
-			RunningApp.Screenshot ("I see a blue circle");
+			RunningApp.Screenshot("I see a blue circle");
 		}
 #endif
 	}

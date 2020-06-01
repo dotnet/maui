@@ -4,23 +4,26 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 26868, "GroupHeaders do not extend on Windows Phone")]
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 26868, "GroupHeaders do not extend on Windows Phone")]
 	public class Bugzilla26868 : TestContentPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
-			List<GroupedData> groups = new List<GroupedData> ();
+			List<GroupedData> groups = new List<GroupedData>();
 
 			var group1 = new GroupedData { GroupName = "Group #1" };
-			group1.Add (new GroupItem { DisplayText = "Text for ListView item 1.1" });
-			group1.Add (new GroupItem { DisplayText = "Text for ListView item 1.2" });
-			groups.Add (group1);
+			group1.Add(new GroupItem { DisplayText = "Text for ListView item 1.1" });
+			group1.Add(new GroupItem { DisplayText = "Text for ListView item 1.2" });
+			groups.Add(group1);
 
 			var group2 = new GroupedData { GroupName = "Group #2" };
-			group2.Add (new GroupItem { DisplayText = "Text for ListVIew item 2.1" });
-			group2.Add (new GroupItem { DisplayText = "Text for ListView item 2.2" });
-			groups.Add (group2);
+			group2.Add(new GroupItem { DisplayText = "Text for ListVIew item 2.1" });
+			group2.Add(new GroupItem { DisplayText = "Text for ListView item 2.2" });
+			groups.Add(group2);
 
 			var itemTemplate = new DataTemplate(typeof(GroupItemTemplate));
 			itemTemplate.CreateContent();
@@ -28,7 +31,8 @@ namespace Xamarin.Forms.Controls.Issues
 			var groupHeaderTemplate = new DataTemplate(typeof(GroupHeaderTemplate));
 			groupHeaderTemplate.CreateContent();
 
-			var listView = new ListView {
+			var listView = new ListView
+			{
 				IsGroupingEnabled = true,
 				GroupDisplayBinding = new Binding("GroupName"),
 				GroupShortNameBinding = new Binding("GroupName"),
@@ -40,7 +44,8 @@ namespace Xamarin.Forms.Controls.Issues
 				ItemsSource = groups
 			};
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				VerticalOptions = LayoutOptions.Center,
 				Children = {
 					new Label {
@@ -55,19 +60,19 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class GroupItem
 		{
 			public string DisplayText { get; set; }
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class GroupedData : List<GroupItem>
 		{
 			public string GroupName { get; set; }
 		}
 
-		[Preserve (AllMembers=true)]
+		[Preserve(AllMembers = true)]
 		public class GroupItemTemplate : ViewCell
 		{
 			public GroupItemTemplate()
@@ -79,7 +84,7 @@ namespace Xamarin.Forms.Controls.Issues
 				{
 					Orientation = StackOrientation.Horizontal,
 					Padding = new Thickness(8),
-					Children = { title } 
+					Children = { title }
 				};
 			}
 		}

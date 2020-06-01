@@ -72,7 +72,9 @@ namespace Xamarin.Forms.Controls.Issues
 			((Entry)sender).TextColor = isValid ? Color.Default : Color.Red;
 		}
 	}
-
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 41054, "Cannot update Entry.Text from attached Behavior on UWP", PlatformAffected.Default)]
 	public class Bugzilla41054 : TestContentPage

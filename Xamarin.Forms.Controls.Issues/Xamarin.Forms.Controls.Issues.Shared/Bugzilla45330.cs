@@ -6,9 +6,12 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 45330, "System.ObjectDisposedException: Cannot access a disposed object. Object name: 'Android.Views.GestureDetector'.", PlatformAffected.Android)]
-	public class Bugzilla45330 : TestContentPage 
+	public class Bugzilla45330 : TestContentPage
 	{
 		ObservableCollection<_45330Notification> _feed;
 
@@ -38,7 +41,8 @@ namespace Xamarin.Forms.Controls.Issues
 				base.OnBindingContextChanged();
 
 				var item = BindingContext as _45330Notification;
-				if (item == null) return;
+				if (item == null)
+					return;
 
 				View = new StackLayout()
 				{
@@ -77,7 +81,8 @@ namespace Xamarin.Forms.Controls.Issues
 			listview.ItemAppearing += (sender, e) =>
 			{
 				var currentItem = e.Item as _45330Notification;
-				if (currentItem == null) return;
+				if (currentItem == null)
+					return;
 				var item = Feed.Last();
 				if (currentItem.UniqueId == item.UniqueId)
 				{
@@ -88,8 +93,8 @@ namespace Xamarin.Forms.Controls.Issues
 			var layout = new StackLayout();
 
 			var instructions = new Label { Text = @"The bug can be intermittently reproduced by pulling the list down to refresh it and immediately tapping one of the cells. 
-Leaving this test page in for reference purposes, and possibly as a base for a future UI test if we get a way to accurately/consistently simulate the events which cause the crash."};
-			
+Leaving this test page in for reference purposes, and possibly as a base for a future UI test if we get a way to accurately/consistently simulate the events which cause the crash." };
+
 			layout.Children.Add(instructions);
 			layout.Children.Add(listview);
 

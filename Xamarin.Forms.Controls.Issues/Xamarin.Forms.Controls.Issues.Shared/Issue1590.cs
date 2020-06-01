@@ -16,8 +16,11 @@ using Xamarin.Forms.Core.UITests;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1590, "ListView.IsGroupingEnabled results ins ArguementOutOfRangeException", 
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1590, "ListView.IsGroupingEnabled results ins ArguementOutOfRangeException",
 		PlatformAffected.Android)]
 	public class Issue1590 : TestContentPage
 	{
@@ -61,28 +64,28 @@ namespace Xamarin.Forms.Controls.Issues
 
 	}
 
-	[Preserve (AllMembers=true)]
+	[Preserve(AllMembers = true)]
 	public class RootPageViewModel
 	{
 		public IEnumerable MediaSections
 		{
 			get
 			{
-				var titles = new[] {"First", "Second", "Third", "Fourth", "Fifth"};
+				var titles = new[] { "First", "Second", "Third", "Fourth", "Fifth" };
 
 				return titles.Select(section => new MediaListSection(section)
 				{
-					new FooViewModel {Title = "Foo", Description = "description for foo"}, 
-					new FooViewModel {Title = "Bar", Description = "description for bar"}, 
-					new FooViewModel {Title = "Baz", Description = "description for baz"}, 
-					new FooViewModel {Title = "Fiz", Description = "description for fiz"}, 
+					new FooViewModel {Title = "Foo", Description = "description for foo"},
+					new FooViewModel {Title = "Bar", Description = "description for bar"},
+					new FooViewModel {Title = "Baz", Description = "description for baz"},
+					new FooViewModel {Title = "Fiz", Description = "description for fiz"},
 					new FooViewModel {Title = "Buz", Description = "description for buz"},
 				}).ToList();
 			}
 		}
 	}
 
-	[Preserve (AllMembers=true)]
+	[Preserve(AllMembers = true)]
 	public class MediaListSection : ObservableCollection<FooViewModel>
 	{
 		public string SectionName { get; private set; }
@@ -93,14 +96,14 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 	}
 
-	[Preserve (AllMembers=true)]
+	[Preserve(AllMembers = true)]
 	public class FooViewModel
 	{
 		public string Title { get; set; }
 		public string Description { get; set; }
 	}
 
-	[Preserve (AllMembers=true)]
+	[Preserve(AllMembers = true)]
 	public class ModuleMediaListItemTemplate : ViewCell
 	{
 		public ModuleMediaListItemTemplate()
@@ -119,12 +122,12 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				Orientation = StackOrientation.Horizontal,
 				Padding = new Thickness(8),
-				Children = { title, description } 
+				Children = { title, description }
 			};
 		}
 	}
 
-	[Preserve (AllMembers=true)]
+	[Preserve(AllMembers = true)]
 	public class ModuleMediaListHeaderTemplate : ViewCell
 	{
 		public ModuleMediaListHeaderTemplate()

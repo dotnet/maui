@@ -8,6 +8,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1648, "MasterDetailPage throws ArgumentOutOfRangeException", PlatformAffected.UWP)]
 	public class GitHub1648 : TestNavigationPage
@@ -32,7 +35,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		class SimplePage : ContentPage
 		{
-			public SimplePage ()
+			public SimplePage()
 			{
 				Content = new StackLayout()
 				{

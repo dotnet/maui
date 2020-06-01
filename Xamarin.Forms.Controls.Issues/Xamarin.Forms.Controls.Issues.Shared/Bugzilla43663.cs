@@ -18,6 +18,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.Navigation)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	public class Bugzilla43663 : TestNavigationPage
 	{

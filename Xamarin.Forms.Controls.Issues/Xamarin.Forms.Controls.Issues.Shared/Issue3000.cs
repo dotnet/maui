@@ -13,6 +13,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3000, "Horizontal ScrollView breaks scrolling when flowdirection is set to rtl")]
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(UITestCategories.ScrollView)]
 #endif
 	public class Issue3000 : TestContentPage

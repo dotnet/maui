@@ -9,6 +9,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1760, "Content set after an await is not visible", PlatformAffected.Android)]
 	public class Issue1760 : TestMasterDetailPage
@@ -40,7 +43,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 				menuView.ItemSelected += OnMenuClicked;
 
-				Content = new StackLayout{Children = { instructions, menuView }};
+				Content = new StackLayout { Children = { instructions, menuView } };
 				Title = "GH 1760 Test App";
 
 				_scrollEnabled = scrollEnabled;
@@ -62,11 +65,11 @@ namespace Xamarin.Forms.Controls.Issues
 			public async Task DisplayPage()
 			{
 				IsBusy = true;
-				HeaderPageContent = new Label {Text = Before, TextColor = Color.Black};
+				HeaderPageContent = new Label { Text = Before, TextColor = Color.Black };
 
 				await Task.Delay(Wait * 1000);
 
-				HeaderPageContent = new Label { Text = After, TextColor = Color.Black};
+				HeaderPageContent = new Label { Text = After, TextColor = Color.Black };
 				IsBusy = false;
 			}
 

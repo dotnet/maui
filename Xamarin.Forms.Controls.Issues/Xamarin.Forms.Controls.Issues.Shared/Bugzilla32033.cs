@@ -3,11 +3,14 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 32033, "WebView on Windows does not display local HTML files", PlatformAffected.WinRT)]
-	public class Bugzilla32033 : TestNavigationPage 
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 32033, "WebView on Windows does not display local HTML files", PlatformAffected.WinRT)]
+	public class Bugzilla32033 : TestNavigationPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
 			PushAsync(Menu());
 		}
@@ -18,13 +21,13 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var layout = new StackLayout();
 
-			var buttonLocal = new Button() {Text = "Local HTML file"};
+			var buttonLocal = new Button() { Text = "Local HTML file" };
 			buttonLocal.Clicked += (sender, args) => Navigation.PushAsync(LocalUrl());
-			
-			var buttonHtmlString = new Button() {Text = "HTML string with links/refs to local files"};
+
+			var buttonHtmlString = new Button() { Text = "HTML string with links/refs to local files" };
 			buttonHtmlString.Clicked += (sender, args) => Navigation.PushAsync(HtmlString());
 
-			var buttonHtmlStringNoHead = new Button() {Text = "HTML string with links/refs to local files (no <head>)"};
+			var buttonHtmlStringNoHead = new Button() { Text = "HTML string with links/refs to local files (no <head>)" };
 			buttonHtmlStringNoHead.Clicked += (sender, args) => Navigation.PushAsync(HtmlStringNoHead());
 
 			layout.Children.Add(buttonLocal);
@@ -94,7 +97,7 @@ Clicking that link should navigate to a page with the heading 'Xamarin Forms' an
 			};
 
 
-			var layout = new StackLayout {HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill,  Children = { instructions, webView } };
+			var layout = new StackLayout { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill, Children = { instructions, webView } };
 			page.Content = layout;
 
 			return page;
@@ -132,7 +135,7 @@ Clicking that link should navigate to a page with the heading 'Xamarin Forms' an
 			};
 
 
-			var layout = new StackLayout {HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill,  Children = { instructions, webView } };
+			var layout = new StackLayout { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill, Children = { instructions, webView } };
 			page.Content = layout;
 
 			return page;

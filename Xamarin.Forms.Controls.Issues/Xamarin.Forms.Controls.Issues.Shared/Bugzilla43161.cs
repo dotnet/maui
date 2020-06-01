@@ -9,7 +9,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 43161, "[iOS] Setting Accessory in ViewCellRenderer breaks layout", PlatformAffected.iOS)]
 	public class Bugzilla43161 : TestContentPage
@@ -37,8 +39,8 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				var label = new Label();
 				label.SetBinding(Label.TextProperty, ".");
-				View = label; 
-				
+				View = label;
+
 				var delete = new MenuItem { Text = "Delete" };
 				ContextActions.Add(delete);
 			}

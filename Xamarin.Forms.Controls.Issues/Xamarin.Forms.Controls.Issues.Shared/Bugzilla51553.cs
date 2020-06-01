@@ -9,6 +9,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 51553, "[UWP] Toolbar not shown on first Detail page", PlatformAffected.WinRT)]
 	public class Bugzilla51553 : TestMasterDetailPage

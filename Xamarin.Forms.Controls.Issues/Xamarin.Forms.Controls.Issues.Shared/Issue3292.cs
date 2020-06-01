@@ -14,30 +14,31 @@ using NUnit.Framework;
 namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
 #endif
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Github, 3292, "TableSection.Title property binding fails in XAML")]
-	public class Issue3292 : TestContentPage 
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 3292, "TableSection.Title property binding fails in XAML")]
+	public class Issue3292 : TestContentPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
-			var vm = new SomePageViewModel ();
+			var vm = new SomePageViewModel();
 			BindingContext = vm;
 
-			var tableview = new TableView ();
-			var section = new TableSection ();
-			section.SetBinding (TableSectionBase.TitleProperty, new Binding ("SectionTitle"));
-			var root = new TableRoot ();
-			root.Add (section);
+			var tableview = new TableView();
+			var section = new TableSection();
+			section.SetBinding(TableSectionBase.TitleProperty, new Binding("SectionTitle"));
+			var root = new TableRoot();
+			root.Add(section);
 			tableview.Root = root;
 
 			Content = tableview;
 
-			vm.Init ();
+			vm.Init();
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class SomePageViewModel : INotifyPropertyChanged
 		{
 			string _sectionTitle;
@@ -51,7 +52,8 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				Task.Delay(1000).ContinueWith(t =>
 					{
-						Device.BeginInvokeOnMainThread(() => {
+						Device.BeginInvokeOnMainThread(() =>
+						{
 							SectionTitle = "Hello World Changed";
 						});
 					});
@@ -72,15 +74,16 @@ namespace Xamarin.Forms.Controls.Issues
 			protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
 			{
 				var handler = PropertyChanged;
-				if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+				if (handler != null)
+					handler(this, new PropertyChangedEventArgs(propertyName));
 			}
 		}
 
 #if UITEST
 		[Test]
-		public void Issue3292Test ()
+		public void Issue3292Test()
 		{
-			RunningApp.WaitForElement (q => q.Marked ("Hello World Changed"));
+			RunningApp.WaitForElement(q => q.Marked("Hello World Changed"));
 		}
 #endif
 	}

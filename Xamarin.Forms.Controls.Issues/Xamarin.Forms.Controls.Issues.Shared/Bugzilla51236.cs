@@ -8,6 +8,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 51236, "[WinRT/UWP] Setting a MasterDetailPage's IsPresented to false should not be allowed in Split mode", PlatformAffected.WinRT)]
 	public class Bugzilla51236 : TestMasterDetailPage

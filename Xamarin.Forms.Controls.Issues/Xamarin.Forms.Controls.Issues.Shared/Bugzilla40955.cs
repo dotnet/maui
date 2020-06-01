@@ -17,6 +17,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Issue(IssueTracker.Bugzilla, 40955, "Memory leak with FormsAppCompatActivity and NavigationPage", PlatformAffected.Android)]
 #if UITEST
 	[Category(UITestCategories.Performance)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 	public class Bugzilla40955 : TestMasterDetailPage
 	{

@@ -18,6 +18,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Issue(IssueTracker.Github, 3509, "[iOS] NavigationPage.Popped called twice when Navigation.PopAsync is called",
 		PlatformAffected.iOS)]
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(UITestCategories.Navigation)]
 #endif
 	public class Issue3509 : TestNavigationPage
@@ -79,7 +80,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 			internal void Popped()
 			{
-				if (_popped) throw new Exception("Already popped");
+				if (_popped)
+					throw new Exception("Already popped");
 
 				_popped = true;
 			}

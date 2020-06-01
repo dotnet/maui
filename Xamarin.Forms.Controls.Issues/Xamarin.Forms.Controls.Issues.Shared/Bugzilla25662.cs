@@ -11,16 +11,17 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Cells)]
+	[Category(UITestCategories.Bugzilla)]
 #endif
 
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 25662, "Setting IsEnabled does not disable SwitchCell")]
-    public class Bugzilla25662 : TestContentPage
-    {
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 25662, "Setting IsEnabled does not disable SwitchCell")]
+	public class Bugzilla25662 : TestContentPage
+	{
 		[Preserve(AllMembers = true)]
 		class MySwitch : SwitchCell
 		{
-			public MySwitch ()
+			public MySwitch()
 			{
 				IsEnabled = false;
 				SetBinding(SwitchCell.TextProperty, new Binding("."));
@@ -28,13 +29,14 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 		}
 
-		protected override void Init ()
+		protected override void Init()
 		{
-			var list = new ListView {
+			var list = new ListView
+			{
 				ItemsSource = new[] {
 					"One", "Two", "Three"
 				},
-				ItemTemplate = new DataTemplate (typeof (MySwitch))
+				ItemTemplate = new DataTemplate(typeof(MySwitch))
 			};
 
 			Content = list;
@@ -42,9 +44,9 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void Bugzilla25662Test ()
+		public void Bugzilla25662Test()
 		{
-            RunningApp.WaitForElement (q => q.Marked ("One"));
+			RunningApp.WaitForElement(q => q.Marked("One"));
 			RunningApp.Tap(q => q.Marked("One"));
 			RunningApp.WaitForNoElement(q => q.Marked("FAIL"));
 		}

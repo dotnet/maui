@@ -12,6 +12,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Gestures)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 
 	[Preserve(AllMembers = true)]
@@ -31,7 +32,7 @@ namespace Xamarin.Forms.Controls.Issues
 			layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
 			layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
 
-			var testGrid = new Grid { BackgroundColor = Color.Red, AutomationId = "testgrid"};
+			var testGrid = new Grid { BackgroundColor = Color.Red, AutomationId = "testgrid" };
 			var gridLabel = new Label
 			{
 				AutomationId = GridLabelId,
@@ -42,7 +43,7 @@ namespace Xamarin.Forms.Controls.Issues
 			Grid.SetRow(testGrid, 1);
 			testGrid.Children.Add(gridLabel);
 
-			var testStack = new StackLayout { BackgroundColor = Color.Default, AutomationId = "teststack"};
+			var testStack = new StackLayout { BackgroundColor = Color.Default, AutomationId = "teststack" };
 			var stackLabel = new Label
 			{
 				AutomationId = StackLabelId,

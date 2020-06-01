@@ -3,6 +3,9 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1878, "[UWP] Setting SearchBar.CancelButtonColor affects all SearchBars on page", PlatformAffected.UWP)]
 	public class GitHub1878 : TestContentPage
@@ -11,9 +14,9 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var layout = new StackLayout();
 
-			var instructions = new Label 
-			{ 
-				Text = "The SearchBars below should have different cancel button colors. " 
+			var instructions = new Label
+			{
+				Text = "The SearchBars below should have different cancel button colors. "
 						+ "If they each have the same cancel button color, this test has failed."
 			};
 

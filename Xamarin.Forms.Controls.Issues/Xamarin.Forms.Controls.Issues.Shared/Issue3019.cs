@@ -17,6 +17,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3019, "Grouped ListView Header empty for adding items", PlatformAffected.UWP)]
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[Category(UITestCategories.ListView)]
 #endif
 	public class Issue3019 : TestContentPage

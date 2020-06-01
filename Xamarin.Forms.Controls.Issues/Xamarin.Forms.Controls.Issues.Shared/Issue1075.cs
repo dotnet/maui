@@ -12,18 +12,22 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.BoxView)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 #endif
 
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 1075, "Does not update Color", PlatformAffected.Android | PlatformAffected.WinPhone)]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1075, "Does not update Color", PlatformAffected.Android | PlatformAffected.WinPhone)]
 	public class Issue1075 : ContentPage
 	{
 		// Issue1075
 		// BoxView doesn't update color
-		public Issue1075 ()
+		public Issue1075()
 		{
-			var instructions = new Label { Text = "Tap the 'Change to blue' button below. If the BoxView does not " +
-				"turn blue, this test has failed." };
+			var instructions = new Label
+			{
+				Text = "Tap the 'Change to blue' button below. If the BoxView does not " +
+				"turn blue, this test has failed."
+			};
 
 			Label header = new Label
 			{
@@ -61,9 +65,10 @@ namespace Xamarin.Forms.Controls.Issues
 				VerticalOptions = LayoutOptions.CenterAndExpand
 			};
 
-			var button = new Button {
+			var button = new Button
+			{
 				Text = "Change to blue",
-				Command = new Command (() => boxView.BackgroundColor = Color.Blue)
+				Command = new Command(() => boxView.BackgroundColor = Color.Blue)
 			};
 
 			picker.SelectedIndexChanged += (sender, args) =>
@@ -86,7 +91,7 @@ namespace Xamarin.Forms.Controls.Issues
 			// Build the page.
 			Content = new StackLayout
 			{
-				Children = 
+				Children =
 				{
 					instructions,
 					header,
@@ -97,5 +102,5 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 		}
 	}
-		
+
 }

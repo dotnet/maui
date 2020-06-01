@@ -9,6 +9,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 60123, "Rui's issue", PlatformAffected.Default)]
 	public class Bugzilla60123 : TestContentPage // or TestMasterDetailPage, etc ...
@@ -22,7 +25,7 @@ namespace Xamarin.Forms.Controls.Issues
 				items.Add(i.ToString());
 			}
 
-			var listView = new ListView(ListViewCachingStrategy.RecycleElement) 
+			var listView = new ListView(ListViewCachingStrategy.RecycleElement)
 			{
 				BackgroundColor = Color.Yellow,
 				AutomationId = "ListView"
@@ -35,9 +38,9 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void Issue1Test ()
+		public void Issue1Test()
 		{
-			RunningApp.WaitForElement (q => q.Marked ("ListView"));
+			RunningApp.WaitForElement(q => q.Marked("ListView"));
 			RunningApp.ScrollDown("ListView");
 			RunningApp.WaitForElement(q => q.Marked("ListView"));
 		}

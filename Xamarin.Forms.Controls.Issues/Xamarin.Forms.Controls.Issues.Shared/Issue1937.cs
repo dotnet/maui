@@ -11,6 +11,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1937, "[UWP] Choppy animation", PlatformAffected.UWP)]
 	public class Issue1937 : TestContentPage

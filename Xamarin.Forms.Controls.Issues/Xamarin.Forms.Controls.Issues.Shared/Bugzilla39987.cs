@@ -10,6 +10,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 39987, "Bug 39987 - MapView not working correctly on iOS 9.3")]
 	public class Bugzilla39987 : TestTabbedPage // or TestMasterDetailPage, etc ...
@@ -72,7 +75,7 @@ namespace Xamarin.Forms.Controls.Issues
 			for (int i = 1; i <= 3; i++)
 			{
 				RunningApp.WaitForElement(TestMap);
-				RunningApp.Tap($"{TabTitle} {i}"); 
+				RunningApp.Tap($"{TabTitle} {i}");
 			}
 		}
 #endif
