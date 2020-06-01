@@ -42,6 +42,9 @@
     <AndroidResource Link="Resources\Layout\ShellContent.axml" Include="Resources\Layout\Android\ShellContent.axml" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Resources\values\attrs.xml" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="..\Xamarin.Forms.Core\Crc64.cs" Link="Crc64.cs" />
     <Compile Include="..\Xamarin.Forms.Core\StreamWrapper.cs" Link="StreamWrapper.cs" />
   </ItemGroup>
