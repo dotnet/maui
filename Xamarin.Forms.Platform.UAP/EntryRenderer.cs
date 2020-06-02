@@ -66,6 +66,9 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateReturnType();
 				UpdateIsReadOnly();
 				UpdateInputScope();
+				UpdateClearButtonVisibility();
+
+
 
 				if (_cursorPositionChangePending)
 					UpdateCursorPosition();
@@ -148,6 +151,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateSelectionLength();
 			else if (e.PropertyName == InputView.IsReadOnlyProperty.PropertyName)
 				UpdateIsReadOnly();
+			else if (e.PropertyName == Entry.ClearButtonVisibilityProperty.PropertyName)
+				UpdateClearButtonVisibility();
 		}
 
 		protected override void UpdateBackgroundColor()
@@ -234,6 +239,11 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateCharacterSpacing()
 		{
 			Control.CharacterSpacing = Element.CharacterSpacing.ToEm();
+		}
+
+		void UpdateClearButtonVisibility()
+		{
+			Control.ClearButtonVisible = Element.ClearButtonVisibility == ClearButtonVisibility.WhileEditing;
 		}
 
 		void UpdateInputScope()

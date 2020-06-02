@@ -42,9 +42,15 @@ namespace Xamarin.Forms.Platform.UWP
 		public new static readonly DependencyProperty TextProperty = DependencyProperty.Register(nameof(Text),
 			typeof(string), typeof(FormsTextBox), new PropertyMetadata("", TextPropertyChanged));
 
+		public static readonly DependencyProperty ClearButtonVisibleProperty = DependencyProperty.Register(nameof(ClearButtonVisible),
+			typeof(bool), typeof(FormsTextBox), new PropertyMetadata(true, ClearButtonVisibleChanged));
+
 		InputScope _passwordInputScope;
 		InputScope _numericPasswordInputScope;
 		Border _borderElement;
+		Windows.UI.Xaml.Controls.Grid _rootGrid;
+		Windows.UI.Xaml.VisualState _DeleteButtonVisibleState;
+		Windows.UI.Xaml.VisualStateGroup _DeleteButtonVisibleStateGroups;
 		InputScope _cachedInputScope;
 		bool _cachedPredictionsSetting;
 		bool _cachedSpellCheckSetting;
@@ -62,6 +68,12 @@ namespace Xamarin.Forms.Platform.UWP
 		void OnIsEnabledChanged(object sender, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
 		{
 			UpdateEnabled();
+		}
+
+		public bool ClearButtonVisible
+		{
+			get { return (bool)GetValue(ClearButtonVisibleProperty); }
+			set { SetValue(ClearButtonVisibleProperty, value);}
 		}
 
 		public Brush BackgroundFocusBrush
@@ -145,6 +157,15 @@ namespace Xamarin.Forms.Platform.UWP
 				// If we're on the phone, we need to grab this from the template
 				// so we can manually handle its background when focused
 				_borderElement = (Border)GetTemplateChild("BorderElement");
+			}
+			
+			_rootGrid = (Windows.UI.Xaml.Controls.Grid)GetTemplateChild("RootGrid");
+			if (_rootGrid != null)
+			{
+				var stateGroups = WVisualStateManager.GetVisualStateGroups(_rootGrid).ToList();
+				_DeleteButtonVisibleStateGroups = stateGroups.SingleOrDefault(sg => sg.Name == "ButtonStates");
+				if (_DeleteButtonVisibleStateGroups != null)
+					_DeleteButtonVisibleState = _DeleteButtonVisibleStateGroups.States.SingleOrDefault(s => s.Name == "ButtonVisible");
 			}
 		}
 
@@ -344,6 +365,21 @@ namespace Xamarin.Forms.Platform.UWP
 			base.Text = IsPassword ? Obfuscate(Text) : Text;
 
 			SelectionStart = base.Text.Length;
+		}
+
+		static void ClearButtonVisibleChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
+		{
+			var textBox = (FormsTextBox)dependencyObject;
+			var visibleState = textBox._DeleteButtonVisibleState;
+			var states = textBox._DeleteButtonVisibleStateGroups?.States;
+
+			if (states != null && visibleState != null)
+			{
+				if (textBox.ClearButtonVisible && !states.Contains(visibleState))
+					states.Add(visibleState);
+				else
+					states.Remove(visibleState);
+			}
 		}
 
 		static void TextPropertyChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
