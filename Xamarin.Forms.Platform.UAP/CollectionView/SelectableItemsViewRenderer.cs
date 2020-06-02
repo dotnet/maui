@@ -141,7 +141,7 @@ namespace Xamarin.Forms.Platform.UWP
 			
 		void UpdateFormsSelection()
 		{
-			if (_ignoreNativeSelectionChange)
+			if (_ignoreNativeSelectionChange || ItemsView == null)
 			{
 				return;
 			}
