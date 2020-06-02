@@ -1,35 +1,28 @@
 using ElmSharp;
+using ElmSharp.Wearable;
 
-namespace Xamarin.Forms.Platform.Tizen.Native
+namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 {
-	/// <summary>
-	/// Extends the ListView class to provide TableView class implementation.
-	/// </summary>
-	public class TableView : ListView, ITableView
+	public class WatchTableView : WatchListView, ITableView
 	{
-
 		static readonly SectionCellRenderer _sectionCellRenderer = new SectionCellRenderer();
-		/// <summary>
-		/// Initializes a new instance of the TableView class.
-		/// </summary>
-		public TableView(EvasObject parent)
-			: base(parent)
+
+		public WatchTableView(EvasObject parent, CircleSurface surface) : base(parent, surface)
 		{
 		}
 
-		/// <summary>
-		/// Sets the root of the table.
-		/// </summary>
-		/// <param name="root">TableRoot, which is parent to one or more TableSections.</param>
 		public void ApplyTableRoot(TableRoot root)
 		{
 			Clear();
+			var cls = new PaddingItemClass();
+			Append(cls, null);
 			foreach (TableSection ts in root)
 			{
 				if (!string.IsNullOrEmpty(ts.Title))
 					AddSectionTitle(ts.Title, ts.TextColor);
 				AddSource(ts);
 			}
+			Append(cls, null);
 		}
 
 		protected override CellRenderer GetCellRenderer(Cell cell, bool isGroup = false)
@@ -41,9 +34,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			return base.GetCellRenderer(cell, isGroup);
 		}
 
-		/// <summary>
-		/// Sets the section title.
-		/// </summary>
 		void AddSectionTitle(string title, Color textColor)
 		{
 			Cell cell = new SectionCell()
@@ -65,6 +55,12 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		class SectionCell : TextCell
 		{
 		}
+
+		class PaddingItemClass : GenItemClass
+		{
+			public PaddingItemClass() : base("padding")
+			{
+			}
+		}
 	}
 }
-
