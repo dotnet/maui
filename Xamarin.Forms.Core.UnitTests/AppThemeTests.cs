@@ -65,7 +65,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		void SetAppTheme(OSAppTheme theme)
 		{
 			((MockPlatformServices)Device.PlatformServices).RequestedTheme = theme;
-			Application.Current.OnRequestedThemeChanged(new AppThemeChangedEventArgs(theme));
+			Application.Current.TriggerThemeChanged(new AppThemeChangedEventArgs(theme));
 		}
 	}
 }

@@ -157,7 +157,16 @@ namespace Xamarin.Forms
 			}
 		}
 
-		public OSAppTheme RequestedTheme => Device.PlatformServices.RequestedTheme;
+		public OSAppTheme UserAppTheme
+		{
+			get => _userAppTheme;
+			set
+			{
+				_userAppTheme = value;
+				TriggerThemeChangedActual(new AppThemeChangedEventArgs(value));
+			}
+		}
+		public OSAppTheme RequestedTheme => UserAppTheme == OSAppTheme.Unspecified ? Device.PlatformServices.RequestedTheme : UserAppTheme;
 
 		public event EventHandler<AppThemeChangedEventArgs> RequestedThemeChanged
 		{
@@ -167,10 +176,18 @@ namespace Xamarin.Forms
 
 		bool _themeChangedFiring;
 		OSAppTheme _lastAppTheme;
+		OSAppTheme _userAppTheme = OSAppTheme.Unspecified;
 
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void OnRequestedThemeChanged(AppThemeChangedEventArgs args)
+		public void TriggerThemeChanged(AppThemeChangedEventArgs args)
+		{
+			if (UserAppTheme != OSAppTheme.Unspecified)
+				return;
+			TriggerThemeChangedActual(args);
+		}
+
+		void TriggerThemeChangedActual(AppThemeChangedEventArgs args)
 		{
 			if (Device.Flags == null || Device.Flags.IndexOf(ExperimentalFlags.AppThemeExperimental) == -1)
 				return;
