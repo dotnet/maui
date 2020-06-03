@@ -26,7 +26,7 @@
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="uwp:FormsTextBox">
-					<Grid>
+					<Grid x:Name="RootGrid">
 						<Grid.Resources>
 							<Style x:Name="DeleteButtonStyle" TargetType="Button">
 								<Setter Property="Template">

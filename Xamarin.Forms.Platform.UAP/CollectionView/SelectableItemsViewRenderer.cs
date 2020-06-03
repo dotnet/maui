@@ -7,6 +7,7 @@ using UWPSelectionChangedEventArgs = Windows.UI.Xaml.Controls.SelectionChangedEv
 
 namespace Xamarin.Forms.Platform.UWP
 {
+
 	public class SelectableItemsViewRenderer<TItemsView> : StructuredItemsViewRenderer<TItemsView>
 		where TItemsView : SelectableItemsView
 	{
@@ -140,7 +141,7 @@ namespace Xamarin.Forms.Platform.UWP
 			
 		void UpdateFormsSelection()
 		{
-			if (_ignoreNativeSelectionChange)
+			if (_ignoreNativeSelectionChange || ItemsView == null)
 			{
 				return;
 			}
@@ -157,6 +158,14 @@ namespace Xamarin.Forms.Platform.UWP
 					break;
 				default:
 					break;
+			}
+
+			var formsItemContentControls = ListViewBase.GetChildren<ItemContentControl>();
+
+			foreach (var formsItemContentControl in formsItemContentControls)
+			{
+				bool isSelected = ItemsView.SelectedItem == formsItemContentControl.FormsDataContext || ItemsView.SelectedItems.Contains(formsItemContentControl.FormsDataContext);
+				formsItemContentControl.UpdateIsSelected(isSelected);
 			}
 		}
 

@@ -10,9 +10,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 		CircleGenList _circleGenList;
 		CircleSurface _surface;
 
-		GenItem _headerPadding;
-		GenItem _footerPadding;
-
 		public IntPtr CircleHandle => _circleGenList.CircleHandle;
 
 		public CircleGenList CircleGenList => _circleGenList;
@@ -20,6 +17,9 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 		public CircleSurface CircleSurface => _surface;
 
 		public IRotaryActionWidget RotaryWidget { get => this; }
+
+		GenItemClass _paddingItemClass;
+		protected GenItemClass PaddingItemTemplate => _paddingItemClass ?? (_paddingItemClass = new PaddingItemClass());
 
 		public override ScrollBarVisiblePolicy VerticalScrollBarVisibility
 		{
@@ -36,63 +36,54 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 			Scroller.Scrolled += OnScrolled;
 		}
 
-		public override void SetHeader(VisualElement header)
+		protected override void UpdateHeader()
 		{
-			if (_headerPadding != null)
-				RemovePaddingItem(_headerPadding);
-			
-			base.SetHeader(header);
-
-			if (!HasHeader())
-				AddHeaderPadding();
+			if (GetHeader() != null)
+			{
+				base.UpdateHeader();
+			}
+			else
+			{
+				var paddingTemplate = PaddingItemTemplate;
+				if (!HasHeaderContext())
+				{
+					InitializeHeaderItemContext(PaddingItemTemplate);
+				}
+				else
+				{
+					(HeaderItemContext.Item as GenListItem).UpdateItemClass(paddingTemplate, HeaderItemContext);
+				}
+				HeaderItemContext.Element = null;
+			}
 		}
 
-		public override void SetFooter(VisualElement footer)
+		protected override void UpdateFooter()
 		{
-			if(_footerPadding != null)
-				RemovePaddingItem(_footerPadding);
-
-			base.SetFooter(footer);
-
-			if (!HasFooter())
-				AddFooterPadding();
+			if (GetHeader() != null)
+			{
+				base.UpdateFooter();
+			}
+			else
+			{
+				var paddingTemplate = PaddingItemTemplate;
+				if (!HasFooterContext())
+				{
+					InitializeFooterItemContext(PaddingItemTemplate);
+				}
+				else
+				{
+					(FooterItemContext.Item as GenListItem).UpdateItemClass(paddingTemplate, FooterItemContext);
+				}
+				FooterItemContext.Element = null;
+			}
 		}
+
 
 		protected override IntPtr CreateHandle(EvasObject parent)
 		{
 			_circleGenList = new CircleGenList(parent, _surface);
 			RealHandle = _circleGenList.RealHandle;
 			return _circleGenList.Handle;
-		}
-
-		void RemovePaddingItem(GenItem item)
-		{
-			item?.Delete();
-			item = null;
-		}
-
-		void AddHeaderPadding()
-		{
-			var cls = new WatchListView.PaddingItemClass();
-
-			if (FirstItem == null)
-			{
-				_headerPadding = Append(cls, null);
-			}
-			else
-			{
-				_headerPadding = InsertBefore(cls, null, FirstItem);
-			}
-		}
-
-		void AddFooterPadding()
-		{
-			var cls = new WatchListView.PaddingItemClass();
-
-			if (Count > 1)
-			{
-				_footerPadding = Append(cls, null);
-			}
 		}
 
 		class PaddingItemClass : GenItemClass

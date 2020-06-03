@@ -1,5 +1,6 @@
 if (IsMac)
 {
+	System.Net.Http.HttpClient client = new System.Net.Http.HttpClient (new System.Net.Http.HttpClientHandler { AllowAutoRedirect = true });
 	if (!Directory.Exists ("/Library/Frameworks/Mono.framework/Versions/Current/Commands/"))
 	{
 		Item ("Mono", "6.8.0.123")
@@ -20,34 +21,25 @@ if (IsMac)
 
 	if(!String.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable ("MONO_SDK_MAC")))
 	{
-		Item ("Mono")
-      		.Source (_ => Environment.GetEnvironmentVariable ("MONO_SDK_MAC"));
-
+		await ResolveUrl (Environment.GetEnvironmentVariable ("MONO_SDK_MAC"));
 		specificSdkSet = true;
 	}
 
 	if(!String.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable ("ANDROID_SDK_MAC")))
 	{
-		Item ("Xamarin.Android")
-      		.Source (_ => Environment.GetEnvironmentVariable ("ANDROID_SDK_MAC"));
-
+		await ResolveUrl (Environment.GetEnvironmentVariable ("ANDROID_SDK_MAC"));
 		specificSdkSet = true;
 	}
 
 	if(!String.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable ("IOS_SDK_MAC")))
 	{
-		Item ("Xamarin.iOS")
-      		.Source (_ => Environment.GetEnvironmentVariable ("IOS_SDK_MAC"));
-
-
+		await ResolveUrl (Environment.GetEnvironmentVariable ("IOS_SDK_MAC"));
 		specificSdkSet = true;
 	}
 
 	if(!String.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable ("MAC_SDK_MAC")))
 	{
-		Item ("Xamarin.Mac")
-      		.Source (_ => Environment.GetEnvironmentVariable ("MAC_SDK_MAC"));
-
+		await ResolveUrl (Environment.GetEnvironmentVariable ("MAC_SDK_MAC"));
 		specificSdkSet = true;
 	}
 	
@@ -55,12 +47,9 @@ if (IsMac)
 	{
 		if(releaseChannel == "Beta")
 		{
-			Item ("Xamarin.Mac")
-				.Source (_ => "https://xamci.azurewebsites.net/dl/xamarin/xamarin-macios/d16-5-xcode11.5/PKG-Xamarin.Mac-notarized");
-
-			Item ("Xamarin.iOS")
-				.Source (_ => "https://xamci.azurewebsites.net/dl/xamarin/xamarin-macios/d16-5-xcode11.5/PKG-Xamarin.iOS-notarized");
-
+			Console.WriteLine("Installing Beta Channel");			
+			await ResolveUrl ("https://xamci.azurewebsites.net/dl/xamarin/xamarin-macios/d16-6/PKG-Xamarin.Mac-notarized");
+			await ResolveUrl ("https://xamci.azurewebsites.net/dl/xamarin/xamarin-macios/d16-6/PKG-Xamarin.iOS-notarized");
 		}
 		else if(releaseChannel == "Preview")
 		{
@@ -69,6 +58,14 @@ if (IsMac)
 		else if(releaseChannel == "Stable")
 		{
 			XamarinChannel("Stable");
+		}
+	}
+
+	async System.Threading.Tasks.Task ResolveUrl (string url)
+	{
+		using (var response = await client.GetAsync (url, System.Net.Http.HttpCompletionOption.ResponseHeadersRead)) {
+			response.EnsureSuccessStatusCode ();
+			Item(response.RequestMessage.RequestUri.ToString());
 		}
 	}
 }

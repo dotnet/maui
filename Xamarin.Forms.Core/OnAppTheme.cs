@@ -2,29 +2,14 @@
 
 namespace Xamarin.Forms
 {
-	public class OnAppTheme<T> : BindingBase
+	class OnAppTheme<T> : BindingBase
 	{
 		WeakReference<BindableObject> _weakTarget;
 		BindableProperty _targetProperty;
-		
-		public OnAppTheme()
-		{
-			Application.Current.RequestedThemeChanged += ThemeChanged;
-		}
 
-		void ThemeChanged(object sender, AppThemeChangedEventArgs e)
-		{
-			Device.BeginInvokeOnMainThread(() => ApplyCore());
-		}
-		public new BindingMode Mode
-		{
-			get => base.Mode;
-			private set { }
-		}
-		internal override BindingBase Clone()
-		{
-			return new OnAppTheme<T> { Light = Light, Dark = Dark, Default = Default };
-		}
+		public OnAppTheme() => Application.Current.RequestedThemeChanged += (o,e) => Device.BeginInvokeOnMainThread(() => ApplyCore());
+
+		internal override BindingBase Clone() => new OnAppTheme<T> { Light = Light, Dark = Dark, Default = Default };
 
 		internal override void Apply(bool fromTarget)
 		{
@@ -39,6 +24,14 @@ namespace Xamarin.Forms
 			base.Apply(context, bindObj, targetProperty, fromBindingContextChanged);
 			ApplyCore();
 		}
+
+		internal override void Unapply(bool fromBindingContextChanged = false)
+		{
+			base.Unapply(fromBindingContextChanged);
+			_weakTarget = null;
+			_targetProperty = null;
+		}
+
 		void ApplyCore()
 		{
 			if (_weakTarget == null || !_weakTarget.TryGetTarget(out var target))
@@ -63,6 +56,7 @@ namespace Xamarin.Forms
 				_isLightSet = true;
 			}
 		}
+
 		public T Dark
 		{
 			get => _dark;
@@ -72,6 +66,7 @@ namespace Xamarin.Forms
 				_isDarkSet = true;
 			}
 		}
+
 		public T Default
 		{
 			get => _default;
@@ -81,13 +76,6 @@ namespace Xamarin.Forms
 				_isDefaultSet = true;
 			}
 		}
-
-		public static implicit operator T(OnAppTheme<T> onAppTheme)
-		{
-			return onAppTheme.GetValue();
-		}
-
-		public T Value => GetValue();
 
 		T GetValue()
 		{

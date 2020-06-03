@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Xaml
 			else if (match == "OnIdiom")
 				markupExtension = new OnIdiomExtension();
 			else if (match == "OnAppTheme")
-				markupExtension = new OnAppThemeExtension();
+				markupExtension = new AppThemeBindingExtension();
 			else if (match == "DataTemplate")
 				markupExtension = new DataTemplateExtension();
 			else

@@ -98,7 +98,7 @@ namespace Xamarin.Forms.Platform.UWP
 			get => (Thickness)GetValue(ItemSpacingProperty);
 			set => SetValue(ItemSpacingProperty, value);
 		}
-
+				
 		protected override void OnContentChanged(object oldContent, object newContent)
 		{
 			base.OnContentChanged(oldContent, newContent);
@@ -140,6 +140,18 @@ namespace Xamarin.Forms.Platform.UWP
 			Content = _renderer.ContainerElement;
 
 			itemsView?.AddLogicalChild(view);
+		}
+
+		internal void UpdateIsSelected(bool isSelected)
+		{
+			var formsElement = _renderer?.Element;
+
+			if (formsElement == null)
+				return;
+
+			VisualStateManager.GoToState(formsElement, isSelected
+				? VisualStateManager.CommonStates.Selected
+				: VisualStateManager.CommonStates.Normal);
 		}
 
 		void ContentLoaded(object sender, RoutedEventArgs e)

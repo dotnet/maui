@@ -1,11 +1,29 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android" 
   xmlns:app="http://schemas.android.com/apk/res-auto">
-  <style name="collectionViewStyle" android:id="@+id/collectionViewStyle">
+
+  <!-- 
+    The collectionViewScrollBars style will be used as the default style for ItemsViewRenderer (the base renderer
+    for CollectionView and CarouselView. We have to use a style to set up the scrollbars because there is currently
+    no way to add them via code.
+    
+    When the renderer is created, we wrap its Context's theme with collectionViewTheme; that way, the 
+    collectionViewScrollBars style will be defined. With the style defined (and with the collectionViewStyle 
+    attribute defined in attrs.xml), we can apply the collectionViewScrollBars style explicitly to the renderer we are
+    creating (and avoid forcing every child control to have scrollbars).
+  -->
+  
+  <style name="collectionViewScrollBars">
     <item name="android:scrollbars">vertical|horizontal</item>
   </style>
+  
+  <style name="collectionViewTheme">
+    <item name="collectionViewStyle">@style/collectionViewScrollBars</item>
+  </style>
+
   <style name="MainTheme" parent="MainTheme.Base">
   </style>
+  
   <!-- Base theme applied no matter what API -->
   <style name="MainTheme.Base" parent="Theme.AppCompat.DayNight.DarkActionBar">
     <!--If you are using revision 22.1 please use just windowNoTitle. Without android:-->
