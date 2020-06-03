@@ -22,13 +22,6 @@ namespace Xamarin.Forms.Controls.GalleryPages.AppThemeGalleries
 			BuildColors();
 		}
 
-		protected override void OnRequestedThemeChanged(OSAppTheme newValue)
-		{
-			base.OnRequestedThemeChanged(newValue);
-
-			BuildColors();
-		}
-
 		void BuildColors()
 		{
 			if (_colors == null || _colors.Length == 0)
