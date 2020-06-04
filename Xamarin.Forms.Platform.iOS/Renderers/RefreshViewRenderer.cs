@@ -145,6 +145,34 @@ namespace Xamarin.Forms.Platform.iOS
 			return false;
 		}
 
+		bool TryRemoveRefresh(UIView view, int index = 0)
+		{
+			_refreshControlParent = view;
+
+			if (_refreshControl.Superview != null)
+				_refreshControl.RemoveFromSuperview();
+
+			if (view is UIScrollView scrollView)
+			{
+				if (CanUseRefreshControlProperty())
+					scrollView.RefreshControl = null;
+
+				return true;
+			}
+
+			if (view.Subviews == null)
+				return false;
+
+			for (int i = 0; i < view.Subviews.Length; i++)
+			{
+				var control = view.Subviews[i];
+				if (TryRemoveRefresh(control, i))
+					return true;
+			}
+
+			return false;
+		}
+
 		bool TryInsertRefresh(UIView view, int index = 0)
 		{
 			_refreshControlParent = view;
@@ -212,10 +240,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (isRefreshViewEnabled)
 				TryInsertRefresh(_refreshControlParent);
 			else
-			{
-				if (_refreshControl.Superview != null)
-					_refreshControl.RemoveFromSuperview();
-			}
+				TryRemoveRefresh(_refreshControlParent);
 
 			UserInteractionEnabled = true;
 		}
