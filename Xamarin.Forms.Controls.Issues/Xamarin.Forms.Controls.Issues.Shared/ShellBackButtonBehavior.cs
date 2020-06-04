@@ -120,9 +120,27 @@ namespace Xamarin.Forms.Controls.Issues
 					AutomationId = PushPageId
 				});
 
-				
-				Content = layout;
+				layout.Children.Add(new Button()
+				{
+					Text = "Toggle Flyout Behavior",
+					Command = new Command(ToggleFlyoutBehavior)
+				});
+
+
+				Content = new ScrollView() { Content = layout };
 				ToggleBehavior();
+			}
+
+			void ToggleFlyoutBehavior(object obj)
+			{
+				var behavior = (int)(Shell.Current.FlyoutBehavior);
+				behavior++;
+
+				if (Enum.GetValues(typeof(FlyoutBehavior)).Length <= behavior)
+					behavior = 0;
+
+				Shell.Current.FlyoutBehavior = (FlyoutBehavior)behavior;
+
 			}
 
 			async void PushPage(object obj)
@@ -181,7 +199,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 
-#if UITEST && (__IOS__ || __ANDROID__)
+#if UITEST && (__SHELL__)
 		[Test]
 		public void CommandTest()
 		{
@@ -196,6 +214,18 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.Tap(ToggleCommandCanExecuteId);
 
 			commandResult = RunningApp.WaitForElement(CommandResultId)[0].ReadText();
+			Assert.AreEqual(commandResult, "parameter");
+		}
+
+		[Test]
+		public void CommandWorksWhenItsTheOnlyThingSet()
+		{
+			RunningApp.Tap(PushPageId);
+			RunningApp.Tap(ToggleCommandId);
+			RunningApp.EnterText(EntryCommandParameter, "parameter");
+			TapBackArrow();
+
+			var commandResult = RunningApp.WaitForElement(CommandResultId)[0].ReadText();
 			Assert.AreEqual(commandResult, "parameter");
 		}
 #endif

@@ -82,9 +82,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected virtual async void OnBackButtonBehaviorPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == BackButtonBehavior.CommandProperty.PropertyName)
-				return;
-			else if (e.PropertyName == BackButtonBehavior.CommandParameterProperty.PropertyName)
+			if (e.PropertyName == BackButtonBehavior.CommandParameterProperty.PropertyName)
 				return;
 			else if (e.PropertyName == BackButtonBehavior.IsEnabledProperty.PropertyName)
 			{
@@ -94,7 +92,7 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 			}
 
-			await UpdateToolbarItems().ConfigureAwait(false);
+			await UpdateLeftToolbarItems().ConfigureAwait(false);
 		}
 
 		protected virtual void OnPagePropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -163,7 +161,7 @@ namespace Xamarin.Forms.Platform.iOS
 				{
 					await UpdateToolbarItems().ConfigureAwait(false);
 				}
-				catch(Exception exc)
+				catch (Exception exc)
 				{
 					Internals.Log.Warning(nameof(ShellPageRendererTracker), $"Failed to update toolbar items: {exc}");
 				}
@@ -230,15 +228,22 @@ namespace Xamarin.Forms.Platform.iOS
 
 			NavigationItem.SetRightBarButtonItems(primaries == null ? new UIBarButtonItem[0] : primaries.ToArray(), false);
 
+			await UpdateLeftToolbarItems().ConfigureAwait(false);
+
+		}
+
+		async Task UpdateLeftToolbarItems()
+		{
 			var behavior = BackButtonBehavior;
 
 			var image = behavior.GetPropertyIfSet<ImageSource>(BackButtonBehavior.IconOverrideProperty, null);
 			var enabled = behavior.GetPropertyIfSet(BackButtonBehavior.IsEnabledProperty, true);
-			var text = behavior.GetPropertyIfSet(BackButtonBehavior.TextOverrideProperty, String.Empty);
-			
+			var text = behavior.GetPropertyIfSet<string>(BackButtonBehavior.TextOverrideProperty, null);
+			var command = behavior.GetPropertyIfSet<object>(BackButtonBehavior.CommandProperty, null);
+
 			UIImage icon = null;
 
-			if (image == null && String.IsNullOrWhiteSpace(text) && (!IsRootPage || _flyoutBehavior != FlyoutBehavior.Flyout))
+			if(IsRootPage && _flyoutBehavior != FlyoutBehavior.Flyout)
 			{
 				NavigationItem.LeftBarButtonItem = null;
 			}
@@ -260,29 +265,36 @@ namespace Xamarin.Forms.Platform.iOS
 
 				if (image != null)
 					icon = await image.GetNativeImageAsync();
-				else if (String.IsNullOrWhiteSpace(text))
+				else if (String.IsNullOrWhiteSpace(text) && IsRootPage)
 					icon = DrawHamburger();
 
-				if (icon == null)
+				if (icon != null)
+				{
+					NavigationItem.LeftBarButtonItem =
+						new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, IsRootPage)) { Enabled = enabled };
+				}
+				else if (!String.IsNullOrWhiteSpace(text))
 				{
 					NavigationItem.LeftBarButtonItem =
 						new UIBarButtonItem(text, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, IsRootPage)) { Enabled = enabled };
 				}
 				else
 				{
-					NavigationItem.LeftBarButtonItem =
-						new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, IsRootPage)) { Enabled = enabled };
+					NavigationItem.LeftBarButtonItem = null;
 				}
 
-				if (String.IsNullOrWhiteSpace(image?.AutomationId))
-					NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = "OK";
-				else
-					NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = image.AutomationId;
-
-				if (image != null)
+				if (NavigationItem.LeftBarButtonItem != null)
 				{
-					NavigationItem.LeftBarButtonItem.SetAccessibilityHint(image);
-					NavigationItem.LeftBarButtonItem.SetAccessibilityLabel(image);
+					if (String.IsNullOrWhiteSpace(image?.AutomationId))
+						NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = "OK";
+					else
+						NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = image.AutomationId;
+
+					if (image != null)
+					{
+						NavigationItem.LeftBarButtonItem.SetAccessibilityHint(image);
+						NavigationItem.LeftBarButtonItem.SetAccessibilityLabel(image);
+					}
 				}
 			}
 		}
