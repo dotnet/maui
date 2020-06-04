@@ -345,8 +345,6 @@ namespace Xamarin.Forms.Build.Tasks
 				rootnode.Accept(new SetResourcesVisitor(visitorContext), null);
 				rootnode.Accept(new SetPropertiesVisitor(visitorContext, true), null);
 
-				il.Append(SetPropertiesVisitor.RegisterSourceInfo(visitorContext, rootnode));
-
 				il.Emit(Ret);
 				initComp.Body = body;
 				exception = null;

@@ -150,6 +150,11 @@ namespace Xamarin.Forms.Xaml
 					name = name.Substring(name.LastIndexOf(':') + 1);
 				XamlLoader.ValueCreatedCallback(new XamlLoader.CallbackTypeInfo { XmlNamespace = node.XmlType.NamespaceUri, XmlTypeName = name }, value);
 			}
+
+			var assemblyName = (Context.RootAssembly ?? Context.RootElement?.GetType().GetTypeInfo().Assembly)?.GetName().Name;
+			if (assemblyName != null && value != null && !value.GetType().GetTypeInfo().IsValueType && XamlFilePathAttribute.GetFilePathForObject(Context.RootElement) is string path)
+				Diagnostics.VisualDiagnostics.RegisterSourceInfo(value, new Uri($"{path};assembly={assemblyName}", UriKind.Relative), ((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition);
+
 		}
 
 		public void Visit(RootNode node, INode parentNode)
@@ -163,6 +168,10 @@ namespace Xamarin.Forms.Xaml
 				else
 					NameScope.SetNameScope(bindable, node.NameScopeRef?.NameScope);
 			}
+
+			var assemblyName = (Context.RootAssembly ?? Context.RootElement.GetType().GetTypeInfo().Assembly)?.GetName().Name;
+			if (rnode.Root != null && !rnode.Root.GetType().GetTypeInfo().IsValueType && XamlFilePathAttribute.GetFilePathForObject(Context.RootElement) is string path)
+				Diagnostics.VisualDiagnostics.RegisterSourceInfo(rnode.Root, new Uri($"{path};assembly={assemblyName}", UriKind.Relative), ((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition);
 		}
 
 		public void Visit(ListNode node, INode parentNode)

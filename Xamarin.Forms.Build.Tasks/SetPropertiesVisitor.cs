@@ -892,66 +892,19 @@ namespace Xamarin.Forms.Build.Tasks
 
 			//If it's a BP, SetValue ()
 			if (CanSetValue(bpRef, attached, valueNode, iXmlLineInfo, context))
-				return SetValue(parent, bpRef, valueNode, iXmlLineInfo, context).Concat(RegisterSourceInfo(context, valueNode));
+				return SetValue(parent, bpRef, valueNode, iXmlLineInfo, context);
 
 			//If it's a property, set it
 			if (CanSet(parent, localName, valueNode, context))
-				return Set(parent, localName, valueNode, iXmlLineInfo, context).Concat(RegisterSourceInfo(context, valueNode));
+				return Set(parent, localName, valueNode, iXmlLineInfo, context);
 
 			//If it's an already initialized property, add to it
 			if (CanAdd(parent, propertyName, valueNode, iXmlLineInfo, context))
-				return Add(parent, propertyName, valueNode, iXmlLineInfo, context).Concat(RegisterSourceInfo(context, valueNode));
+				return Add(parent, propertyName, valueNode, iXmlLineInfo, context);
 
 			throw new XamlParseException($"No property, bindable property, or event found for '{localName}', or mismatching type between value and property.", iXmlLineInfo);
 		}
 
-		internal static IEnumerable<Instruction> RegisterSourceInfo(ILContext context, INode valueNode)
-		{
-			if (!context.DefineDebug)
-				yield break;
-			if (!(valueNode is IXmlLineInfo lineInfo))
-				yield break;
-			if (!(valueNode is IElementNode elementNode))
-				yield break;
-			if (context.Variables[elementNode].VariableType.IsValueType)
-				yield break;
-
-			var module = context.Body.Method.Module;
-
-			yield return Create(Ldloc, context.Variables[elementNode]);		//target
-
-			yield return Create(Ldstr, context.XamlFilePath);
-			yield return Create(Ldstr, ";assembly=");
-			yield return Create(Ldstr, context.Module.Assembly.Name.Name);
-			yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "String"),
-																   methodName: "Concat",
-																   parameterTypes: new[] {
-																	   ("mscorlib", "System", "String"),
-																	   ("mscorlib", "System", "String"),
-																	   ("mscorlib", "System", "String"),
-																   },
-																   isStatic: true));
-
-
-			yield return Create(Ldc_I4, (int)UriKind.RelativeOrAbsolute);
-			yield return Create(Newobj, module.ImportCtorReference(("System", "System", "Uri"),
-																   parameterTypes: new[] {
-																	   ("mscorlib", "System", "String"),
-																	   ("System", "System", "UriKind"),
-																   }));		//uri
-
-			yield return Create(Ldc_I4, lineInfo.LineNumber);				//lineNumber
-			yield return Create(Ldc_I4, lineInfo.LinePosition);             //linePosition
-
-			yield return Create(Call, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml.Diagnostics", "VisualDiagnostics"),
-																   methodName: "RegisterSourceInfo",
-																   parameterTypes: new[] {
-																	   ("mscorlib", "System", "Object"),
-																	   ("System", "System", "Uri"),
-																	   ("mscorlib", "System", "Int32"),
-																	   ("mscorlib", "System", "Int32")},
-																   isStatic: true));
-		}
 
 		public static IEnumerable<Instruction> GetPropertyValue(VariableDefinition parent, XmlName propertyName, ILContext context, IXmlLineInfo lineInfo, out TypeReference propertyType)
 		{
