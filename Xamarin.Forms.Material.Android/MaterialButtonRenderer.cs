@@ -23,6 +23,7 @@ using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
 using Xamarin.Forms.Platform.Android;
+using System.Threading.Tasks;
 
 namespace Xamarin.Forms.Material.Android
 {
@@ -44,6 +45,7 @@ namespace Xamarin.Forms.Material.Android
 		VisualElementRenderer _visualElementRenderer;
 		ButtonLayoutManager _buttonLayoutManager;
 		readonly AutomationPropertiesProvider _automationPropertiesProvider;
+		bool _hasDrawnOnce = false;
 
 		public MaterialButtonRenderer(Context context)
 			: this(MaterialContextThemeWrapper.Create(context), null) { }
@@ -110,6 +112,13 @@ namespace Xamarin.Forms.Material.Android
 
 		public override void Draw(Canvas canvas)
 		{
+			_hasDrawnOnce = true;
+			if (Element.IsEnabled != Enabled)
+			{
+				Enabled = Element.IsEnabled;
+				return;
+			}
+
 			if(Element == null || Element.CornerRadius <= 0)
 			{
 				base.Draw(canvas);
@@ -340,6 +349,19 @@ namespace Xamarin.Forms.Material.Android
 			LetterSpacing = Element.CharacterSpacing.ToEm();
 		}
 
+		public override bool Enabled
+		{
+			get => base.Enabled;
+			set
+			{
+				// if this control is disabled before the first draw is called it can cause the shadow to
+				// draw incorrectly on the parent
+				// See Issue4435 for recreation
+				if (_hasDrawnOnce)
+					base.Enabled = value;
+			}
+		}
+
 		IPlatformElementConfiguration<PlatformConfiguration.Android, Button> OnThisPlatform() =>
 			_platformElementConfiguration ?? (_platformElementConfiguration = Element.OnThisPlatform());
 
@@ -347,8 +369,11 @@ namespace Xamarin.Forms.Material.Android
 		void IOnAttachStateChangeListener.OnViewAttachedToWindow(AView attachedView) =>
 			_buttonLayoutManager?.OnViewAttachedToWindow(attachedView);
 
-		void IOnAttachStateChangeListener.OnViewDetachedFromWindow(AView detachedView) =>
+		void IOnAttachStateChangeListener.OnViewDetachedFromWindow(AView detachedView)
+		{
+			_hasDrawnOnce = false;
 			_buttonLayoutManager?.OnViewDetachedFromWindow(detachedView);
+		}
 
 		// IOnFocusChangeListener
 		void IOnFocusChangeListener.OnFocusChange(AView v, bool hasFocus) =>

@@ -187,7 +187,8 @@ namespace Xamarin.Forms.Platform.Android
 								if (elevation > elevationToSet)
 									elevationToSet = elevation;
 
-								r.View.Elevation = elevationToSet;
+								if(r.View.Elevation != elevationToSet)
+									r.View.Elevation = elevationToSet;
 							}
 						}
 
