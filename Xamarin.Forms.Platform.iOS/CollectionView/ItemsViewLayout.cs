@@ -175,19 +175,6 @@ namespace Xamarin.Forms.Platform.iOS
 				}
 			}
 
-			if (Forms.IsiOS11OrNewer)
-			{
-				return base.ShouldInvalidateLayout(preferredAttributes, originalAttributes);
-			}
-
-			// For iOS 10 and lower, we have to invalidate on header/footer changes here; otherwise, all of the 
-			// headers and footers will draw on top of one another
-			if (preferredAttributes.RepresentedElementKind == UICollectionElementKindSectionKey.Header
-				|| preferredAttributes.RepresentedElementKind == UICollectionElementKindSectionKey.Footer)
-			{
-				return true;
-			}
-
 			return base.ShouldInvalidateLayout(preferredAttributes, originalAttributes);
 		}
 
@@ -421,18 +408,6 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			return new UICollectionViewFlowLayoutInvalidationContext();
-		}
-
-		public override UICollectionViewLayoutAttributes LayoutAttributesForSupplementaryView(NSString kind, NSIndexPath indexPath)
-		{
-			if (Forms.IsiOS11OrNewer)
-			{
-				return base.LayoutAttributesForSupplementaryView(kind, indexPath);
-			}
-
-			// iOS 10 and lower doesn't create these and will throw an exception in GetViewForSupplementaryElement 
-			// without them, so we need to do it manually here
-			return UICollectionViewLayoutAttributes.CreateForSupplementaryView(kind, indexPath);
 		}
 
 		public override void PrepareLayout()
