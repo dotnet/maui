@@ -49,7 +49,6 @@ namespace Xamarin.Forms.Platform.UWP
 				StartStopAnimation(renderer, controller);
 		}
 
-
 		static void StartStopAnimation(IImageVisualElementRenderer renderer, IImageElement controller)
 		{
 			if (renderer.IsDisposed || controller == null)
@@ -89,8 +88,6 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateAspect(renderer, controller);
 			}
 		}
-
-
 
 		static void OnControlChanged(object sender, EventArgs e)
 		{
@@ -151,11 +148,8 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 			}
 
-			ImageSource placeholderError = null;
-
 			if (imageElement is Image img)
 			{
-				placeholderError = img.ErrorPlaceholder;
 				var source = await img.LoadingPlaceholder.ToWindowsImageSourceAsync();
 				renderer.SetImage(source);
 			}
@@ -163,13 +157,21 @@ namespace Xamarin.Forms.Platform.UWP
 			var imageController = Element as IImageController;
 
 			imageController?.SetIsLoading(true);
+			
 			try
 			{
+				// If it's a url image source and ToWindowsImageSourceAsync returns null, that was an error
+
 				var imagesource = await imageElement.Source.ToWindowsImageSourceAsync();
+
+				if (imageElement.Source is UriImageSource && imagesource == null)
+				{
+					await DisplayErrorImage(renderer);
+					return;
+				}
 
 				if (renderer.IsDisposed)
 					return;
-
 
 				if (imagesource is BitmapImage bitmapImage && _nativeAnimationSupport)
 					bitmapImage.AutoPlay = false;
@@ -178,19 +180,28 @@ namespace Xamarin.Forms.Platform.UWP
 					renderer.SetImage(imagesource);
 
 				RefreshImage(renderer);
-
-				// The ImageFailed event don't trigger when the local ImageSource is invalid, so we need to check the size.
-				var size = renderer.GetDesiredSize(double.PositiveInfinity, double.PositiveInfinity);
-				if (size.Request.IsZero && imageElement is Image)
-				{
-					imagesource = await placeholderError.ToWindowsImageSourceAsync();
-					renderer.SetImage(imagesource);
-				}
 			}
 			finally
 			{
 				imageController?.SetIsLoading(false);
 			}
+		}
+
+		internal static async Task DisplayErrorImage(IImageVisualElementRenderer renderer) 
+		{
+			if (!(renderer?.Element is Image image))
+			{
+				return;
+			}
+
+			ImageSource placeholderError = image.ErrorPlaceholder;
+			if (placeholderError == null)
+			{
+				return;
+			}
+
+			var imagesource = await placeholderError.ToWindowsImageSourceAsync();
+			renderer.SetImage(imagesource);
 		}
 
 		static internal void RefreshImage(IImageVisualElementRenderer renderer)

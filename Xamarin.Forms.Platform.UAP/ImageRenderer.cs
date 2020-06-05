@@ -78,7 +78,6 @@ namespace Xamarin.Forms.Platform.UWP
 				await TryUpdateSource().ConfigureAwait(false);
 		}
 
-
 		void OnImageOpened(object sender, RoutedEventArgs routedEventArgs)
 		{
 			if (_measured)
@@ -89,12 +88,12 @@ namespace Xamarin.Forms.Platform.UWP
 			Element?.SetIsLoading(false);
 		}
 
-		protected virtual void OnImageFailed(object sender, ExceptionRoutedEventArgs exceptionRoutedEventArgs)
+		protected virtual async void OnImageFailed(object sender, ExceptionRoutedEventArgs exceptionRoutedEventArgs)
 		{
 			Log.Warning("Image Loading", $"Image failed to load: {exceptionRoutedEventArgs.ErrorMessage}");
+			await ImageElementManager.DisplayErrorImage(this).ConfigureAwait(false);
 			Element?.SetIsLoading(false);
 		}
-
 
 		protected virtual async Task TryUpdateSource()
 		{
@@ -131,7 +130,6 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				Log.Warning("Update image source after app resume", 
 					$"ImageSource failed to update after app resume: {exception.Message}");
-				
 			}
 		}
 
