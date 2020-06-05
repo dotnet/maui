@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Threading.Tasks;
 using Foundation;
 using UIKit;
 using Xamarin.Forms.Internals;
@@ -1105,20 +1104,21 @@ namespace Xamarin.Forms.Platform.iOS
 
 			public override UIView GetViewForHeader(UITableView tableView, nint section)
 			{
-				UIView view = null;
-
 				if (!List.IsGroupingEnabled)
-					return view;
+					return null;
 
 				var cell = TemplatedItemsView.TemplatedItems[(int)section];
 				if (cell.HasContextActions)
 					throw new NotSupportedException("Header cells do not support context actions");
 
-				var renderer = (CellRenderer)Internals.Registrar.Registered.GetHandlerForObject<IRegisterable>(cell);
-				view = new HeaderWrapperView { Cell = cell };
-				view.AddSubview(renderer.GetCell(cell, null, tableView));
+				const string reuseIdentifier = "HeaderWrapper";
+				var header = (HeaderWrapperView)tableView.DequeueReusableHeaderFooterView(reuseIdentifier) ?? new HeaderWrapperView(reuseIdentifier);
+				header.Cell = cell;
 
-				return view;
+				var renderer = (CellRenderer)Internals.Registrar.Registered.GetHandlerForObject<IRegisterable>(cell);
+				header.SetTableViewCell(renderer.GetCell(cell, null, tableView));
+
+				return header;
 			}
 
 			public override void HeaderViewDisplayingEnded(UITableView tableView, UIView headerView, nint section)
@@ -1457,9 +1457,24 @@ namespace Xamarin.Forms.Platform.iOS
 		}
 	}
 
-	internal class HeaderWrapperView : UIView
+	class HeaderWrapperView : UITableViewHeaderFooterView
 	{
+		public HeaderWrapperView(string reuseIdentifier) : base((NSString)reuseIdentifier)
+		{
+		}
+
+		UITableViewCell _tableViewCell;
+
 		public Cell Cell { get; set; }
+
+		public void SetTableViewCell(UITableViewCell value)
+		{
+			if (ReferenceEquals(_tableViewCell, value)) return;
+			_tableViewCell?.RemoveFromSuperview();
+			_tableViewCell = value;
+			AddSubview(value);
+		}
+
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
