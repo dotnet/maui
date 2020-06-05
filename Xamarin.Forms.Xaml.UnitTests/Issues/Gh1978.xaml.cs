@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using Xamarin.Forms;
+using Xamarin.Forms.Build.Tasks;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -26,7 +27,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			{
 				if (!useCompiledXaml)
 					return;
-				Assert.Throws<XamlParseException>(() => MockCompiler.Compile(typeof(Gh1978)));
+				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh1978)));
 			}
 		}
 	}

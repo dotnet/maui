@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Core.XamlC
 			var module = context.Body.Method.Module;
 
 			if (IsNullOrEmpty(value))
-				throw new XamlParseException($"Cannot convert \"{value}\" into {typeof(Binding)}", node);
+				throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Binding));
 
 			yield return Instruction.Create(OpCodes.Ldstr, value);
 			yield return Instruction.Create(OpCodes.Ldc_I4, (int)BindingMode.Default);

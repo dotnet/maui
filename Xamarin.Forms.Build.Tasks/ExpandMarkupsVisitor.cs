@@ -85,13 +85,13 @@ namespace Xamarin.Forms.Build.Tasks
 				return new ValueNode(expression.Substring(2), null);
 
 			if (expression[expression.Length - 1] != '}')
-				throw new XamlParseException("Markup expression missing its closing tag", xmlLineInfo);
+				throw new BuildException(BuildExceptionCode.MarkupNotClosed, xmlLineInfo, null);
 
 			if (!MarkupExpressionParser.MatchMarkup(out var match, expression, out var len))
-				throw new XamlParseException("Error while parsing markup expression", xmlLineInfo);
+				throw new BuildException(BuildExceptionCode.MarkupParsingFailed, xmlLineInfo, null);
 			expression = expression.Substring(len).TrimStart();
 			if (expression.Length == 0)
-				throw new XamlParseException("Markup expression not closed", xmlLineInfo);
+				throw new BuildException(BuildExceptionCode.MarkupNotClosed, xmlLineInfo, null);
 
 			var provider = new XamlServiceProvider(null, null);
 			provider.Add(typeof (ILContextProvider), new ILContextProvider(context));
@@ -131,7 +131,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 				var namespaceuri = nsResolver.LookupNamespace(prefix) ?? "";
 				if (!string.IsNullOrEmpty(prefix) && string.IsNullOrEmpty(namespaceuri))
-					throw new XamlParseException($"Undeclared xmlns prefix '{prefix}'", xmlLineInfo);
+					throw new BuildException(BuildExceptionCode.XmlnsUndeclared, xmlLineInfo, null, prefix);
 
 				IList<XmlType> typeArguments = null;
 				var childnodes = new List<(XmlName, INode)>();
@@ -146,8 +146,11 @@ namespace Xamarin.Forms.Build.Tasks
 					Property parsed;
 					do
 					{
-						parsed = ParseProperty(serviceProvider, ref remaining);
-
+						try {
+							parsed = ParseProperty(serviceProvider, ref remaining);
+						} catch (XamlParseException xpe) {
+							throw new BuildException(BuildExceptionCode.MarkupParsingFailed, xmlLineInfo, xpe);
+						}
 						XmlName childname;
 
 						if (parsed.name == null)
@@ -181,16 +184,9 @@ namespace Xamarin.Forms.Build.Tasks
 				}
 
 				//The order of lookup is to look for the Extension-suffixed class name first and then look for the class name without the Extension suffix.
-				XmlType type;
-				try
-				{
-					type = new XmlType(namespaceuri, name + "Extension", typeArguments);
-					type.GetTypeReference(contextProvider.Context.Module, null);
-				}
-				catch (XamlParseException)
-				{
+				XmlType type = new XmlType(namespaceuri, name + "Extension", typeArguments);
+				if (!type.TryGetTypeReference(contextProvider.Context.Module, null, out _))
 					type = new XmlType(namespaceuri, name, typeArguments);
-				}
 
 				if (type == null)
 					throw new NotSupportedException();

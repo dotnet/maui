@@ -102,11 +102,7 @@ namespace Xamarin.Forms.Build.Tasks
 																			!md.methodDef.IsStatic &&
 																			md.methodDef.HasParameters &&
 																			md.methodDef.MatchXArguments(node, typeref, Module, Context)).methodDef;
-				if (factoryCtorInfo == null) {
-					throw new XamlParseException(
-						string.Format("No constructors found for {0} with matching x:Arguments", typedef.FullName), node);
-				}
-				ctorInfo = factoryCtorInfo;
+				ctorInfo = factoryCtorInfo ?? throw new BuildException(BuildExceptionCode.ConstructorXArgsMissing, node, null, typedef.FullName);
 				if (!typedef.IsValueType) //for ctor'ing typedefs, we first have to ldloca before the params
 					Context.IL.Append(PushCtorXArguments(factoryCtorInfo.ResolveGenericParameters(typeref, Module), node));
 			} else if (node.Properties.ContainsKey(XmlName.xFactoryMethod)) {
@@ -115,10 +111,9 @@ namespace Xamarin.Forms.Build.Tasks
 																			  md.methodDef.Name == factoryMethod &&
 																			  md.methodDef.IsStatic &&
 																			  md.methodDef.MatchXArguments(node, typeref, Module, Context)).methodDef;
-				if (factoryMethodInfo == null) {
-					throw new XamlParseException(
-						String.Format("No static method found for {0}::{1} ({2})", typedef.FullName, factoryMethod, null), node);
-				}
+				if (factoryMethodInfo == null)
+					throw new BuildException(BuildExceptionCode.MethodStaticMissing, node, null, typedef.FullName, factoryMethod, null);
+					
 				Context.IL.Append(PushCtorXArguments(factoryMethodInfo.ResolveGenericParameters(typeref, Module), node));
 			}
 			if (ctorInfo == null && factoryMethodInfo == null) {
@@ -141,7 +136,7 @@ namespace Xamarin.Forms.Build.Tasks
 			ctorInfo = ctorInfo ?? typedef.Methods.FirstOrDefault(md => md.IsConstructor && !md.HasParameters && !md.IsStatic);
 			if (parameterizedCtorInfo != null && ctorInfo == null)
 				//there was a parameterized ctor, we didn't use it
-				throw new XamlParseException($"The Property '{missingCtorParameter}' is required to create a '{typedef.FullName}' object.", node);
+				throw new BuildException(BuildExceptionCode.PropertyMissing, node, null, missingCtorParameter, typedef.FullName);
 			var ctorinforef = ctorInfo?.ResolveGenericParameters(typeref, Module);
 			var factorymethodinforef = factoryMethodInfo?.ResolveGenericParameters(typeref, Module);
 			var implicitOperatorref = typedef.Methods.FirstOrDefault(md =>
@@ -151,7 +146,7 @@ namespace Xamarin.Forms.Build.Tasks
 				md.Name == "op_Implicit" && md.Parameters [0].ParameterType.FullName == "System.String");
 
 			if (!typedef.IsValueType && ctorInfo == null && factoryMethodInfo == null)
-				throw new XamlParseException($"Missing default constructor for '{typedef.FullName}'.", node);
+				throw new BuildException(BuildExceptionCode.ConstructorDefaultMissing, node, null, typedef.FullName);
 
 			if (ctorinforef != null || factorymethodinforef != null || typedef.IsValueType) {
 				VariableDefinition vardef = new VariableDefinition(typeref);

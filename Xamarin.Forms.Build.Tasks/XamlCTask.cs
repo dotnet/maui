@@ -194,12 +194,14 @@ namespace Xamarin.Forms.Build.Tasks
 								success = false;
 								LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}failed.");
 								(thrownExceptions = thrownExceptions ?? new List<Exception>()).Add(e);
-								if (e is XamlParseException xpe)
-									LoggingHelper.LogError(null, null, null, xamlFilePath, xpe.XmlInfo.LineNumber, xpe.XmlInfo.LinePosition, 0, 0, xpe.Message, xpe.HelpLink, xpe.Source);
+								if (e is BuildException be) 
+									LoggingHelper.LogError("XamlC", be.Code.Code, be.HelpLink, xamlFilePath, be.XmlInfo?.LineNumber ?? 0, be.XmlInfo?.LinePosition ?? 0, 0, 0, ErrorMessages.ResourceManager.GetString(be.Code.ErrorMessageKey), be.MessageArgs);
+								else if (e is XamlParseException xpe) //shouldn't happen anymore
+									LoggingHelper.LogError("XamlC", null, xpe.HelpLink, xamlFilePath, xpe.XmlInfo.LineNumber, xpe.XmlInfo.LinePosition, 0, 0, xpe.Message);
 								else if (e is XmlException xe)
-									LoggingHelper.LogError(null, null, null, xamlFilePath, xe.LineNumber, xe.LinePosition, 0, 0, xe.Message, xe.HelpLink, xe.Source);
+									LoggingHelper.LogError("XamlC", null, xe.HelpLink, xamlFilePath, xe.LineNumber, xe.LinePosition, 0, 0, xe.Message);
 								else
-									LoggingHelper.LogError(null, null, null, xamlFilePath, 0, 0, 0, 0, e.Message, e.HelpLink, e.Source);
+									LoggingHelper.LogError("XamlC", null, e.HelpLink, xamlFilePath, 0, 0, 0, 0, e.Message);
 								LoggingHelper.LogMessage(Low, e.StackTrace);
 								continue;
 							}

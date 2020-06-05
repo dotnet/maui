@@ -46,6 +46,8 @@ steps:
     displayName: 'NuGet restore'
     inputs:
       restoreSolution: $(slnPath)
+      feedsToUse: config
+      nugetConfigPath: 'DevopsNuget.config'
 
   - task: Bash@3
     displayName: 'Build solution Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj'

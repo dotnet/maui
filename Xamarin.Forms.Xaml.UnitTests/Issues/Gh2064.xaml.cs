@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 
 using Xamarin.Forms;
+using Xamarin.Forms.Build.Tasks;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -27,7 +28,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void ReportMissingTargetTypeOnStyle(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
-					Assert.Throws<XamlParseException>(() => MockCompiler.Compile(typeof(Gh2064)));
+					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh2064)));
 				else
 					Assert.Throws<XamlParseException>(()=> new Gh2064(useCompiledXaml));
 			}

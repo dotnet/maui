@@ -28,10 +28,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TestCase (true)]
 			public void ShouldThrow (bool useCompiledXaml)
 			{
-				if (!useCompiledXaml)
-					Assert.Throws(new XamlParseExceptionConstraint(10, 13), () => new SetterOnNonBP(useCompiledXaml));
+				if (useCompiledXaml)
+					Assert.Throws(new BuildExceptionConstraint(10, 13), () => MockCompiler.Compile(typeof(SetterOnNonBP)));
 				else
-					Assert.Throws(new XamlParseExceptionConstraint(10, 13), () => MockCompiler.Compile(typeof(SetterOnNonBP)));
+					Assert.Throws(new XamlParseExceptionConstraint(10, 13), () => new SetterOnNonBP(useCompiledXaml));
 			}
 		}
 	}

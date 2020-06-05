@@ -74,6 +74,8 @@ jobs:
         displayName: 'NuGet restore ${{ parameters.slnPath }}'
         inputs:
           restoreSolution:  ${{ parameters.slnPath }}
+          feedsToUse: config
+          nugetConfigPath: 'DevopsNuget.config'
 
       - task: MSBuild@1
         displayName: 'Build ${{ parameters.buildTaskPath  }}'

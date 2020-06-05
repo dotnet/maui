@@ -149,6 +149,10 @@ namespace Xamarin.Forms.Build.Tasks
 				} catch (System.Reflection.TargetInvocationException tie) when (tie.InnerException is XamlParseException) {
 					throw tie.InnerException;
 				}
+				catch (System.Reflection.TargetInvocationException tie) when (tie.InnerException is BuildException)
+				{
+					throw tie.InnerException;
+				}
 				foreach (var i in instructions)
 					yield return i;
 				if (targetTypeRef.IsValueType && boxValueTypes)
@@ -320,8 +324,7 @@ namespace Xamarin.Forms.Build.Tasks
 							b |= (byte)field.Constant;
 							break;
 						case "System.SByte":
-							if (found)
-								throw new XamlParseException($"Multi-valued enums are not valid on sbyte enum types", lineInfo);
+								if (found) throw new BuildException(BuildExceptionCode.SByteEnums, lineInfo, null);
 							sb = (sbyte)field.Constant;
 							break;
 						case "System.Int16":
@@ -349,8 +352,8 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 
 			if (!found)
-				throw new XamlParseException($"Enum value not found for {value}", lineInfo);
-				
+				throw new BuildException(BuildExceptionCode.EnumValueMissing, lineInfo, null, value);
+
 			switch (typeRef.FullName) {
 			case "System.Byte":
 				return Instruction.Create(OpCodes.Ldc_I4, (int)b);
@@ -369,7 +372,7 @@ namespace Xamarin.Forms.Build.Tasks
 			case "System.UInt64":
 				return Instruction.Create(OpCodes.Ldc_I4, (ulong)ul);
 			default:
-				throw new XamlParseException($"Enum value not found for {value}", lineInfo);
+				throw new BuildException(BuildExceptionCode.EnumValueMissing, lineInfo, null, value);
 			}
 		}
 

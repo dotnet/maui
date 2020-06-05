@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using Xamarin.Forms.Build.Tasks;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -22,7 +23,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void DetailedErrorMessageOnMissingXmlnsDeclaration(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
-					Assert.Throws<XamlParseException>(() => MockCompiler.Compile(typeof(Gh2063)));
+					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh2063)));
 				else
 					Assert.Throws<XamlParseException>(() => new Gh2063(useCompiledXaml));
 			}

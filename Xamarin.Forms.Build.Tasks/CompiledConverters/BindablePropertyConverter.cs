@@ -8,6 +8,7 @@ using Xamarin.Forms.Build.Tasks;
 using Xamarin.Forms.Xaml;
 
 using static System.String;
+using static Xamarin.Forms.Build.Tasks.BuildExceptionCode;
 
 namespace Xamarin.Forms.Core.XamlC
 {
@@ -31,42 +32,52 @@ namespace Xamarin.Forms.Core.XamlC
 			string typeName = null, propertyName = null;
 
 			var parts = value.Split('.');
-			if (parts.Length == 1) {
+			if (parts.Length == 1)
+			{
 				var parent = node.Parent?.Parent as IElementNode ?? (node.Parent?.Parent as IListNode)?.Parent as IElementNode;
-				if (   (node.Parent as ElementNode)?.XmlType.NamespaceUri == XamlParser.XFUri
-				    && (   (node.Parent as ElementNode)?.XmlType.Name == nameof(Setter)
-				        || (node.Parent as ElementNode)?.XmlType.Name == nameof(PropertyCondition))) {
+				if ((node.Parent as ElementNode)?.XmlType.NamespaceUri == XamlParser.XFUri
+					&& ((node.Parent as ElementNode)?.XmlType.Name == nameof(Setter)
+						|| (node.Parent as ElementNode)?.XmlType.Name == nameof(PropertyCondition)))
+				{
 					if (parent.XmlType.NamespaceUri == XamlParser.XFUri &&
-					    (   parent.XmlType.Name == nameof(Trigger)
-					     || parent.XmlType.Name == nameof(DataTrigger)
-					     || parent.XmlType.Name == nameof(MultiTrigger)
-					     || parent.XmlType.Name == nameof(Style))) {
-						var ttnode = (parent as ElementNode).Properties [new XmlName("", "TargetType")];
+						(parent.XmlType.Name == nameof(Trigger)
+						 || parent.XmlType.Name == nameof(DataTrigger)
+						 || parent.XmlType.Name == nameof(MultiTrigger)
+						 || parent.XmlType.Name == nameof(Style)))
+					{
+						var ttnode = (parent as ElementNode).Properties[new XmlName("", "TargetType")];
 						if (ttnode is ValueNode)
 							typeName = (ttnode as ValueNode).Value as string;
 						else if (ttnode is IElementNode)
-							typeName = ((ttnode as IElementNode).CollectionItems.FirstOrDefault() as ValueNode)?.Value as string ?? ((ttnode as IElementNode).Properties [new XmlName("", "TypeName")] as ValueNode)?.Value as string;
-					} else if (parent.XmlType.NamespaceUri == XamlParser.XFUri && parent.XmlType.Name == nameof(VisualState)) {
+							typeName = ((ttnode as IElementNode).CollectionItems.FirstOrDefault() as ValueNode)?.Value as string ?? ((ttnode as IElementNode).Properties[new XmlName("", "TypeName")] as ValueNode)?.Value as string;
+					}
+					else if (parent.XmlType.NamespaceUri == XamlParser.XFUri && parent.XmlType.Name == nameof(VisualState))
+					{
 						typeName = FindTypeNameForVisualState(parent, node);
 					}
-				} else if ((node.Parent as ElementNode)?.XmlType.NamespaceUri == XamlParser.XFUri && (node.Parent as ElementNode)?.XmlType.Name == nameof(Trigger))
-					typeName = ((node.Parent as ElementNode).Properties [new XmlName("", "TargetType")] as ValueNode).Value as string;
-				propertyName = parts [0];
-			} else if (parts.Length == 2) {
-				typeName = parts [0];
-				propertyName = parts [1];
-			} else
-				throw new XamlParseException($"Cannot convert \"{value}\" into {typeof(BindableProperty)}", node);
+				}
+				else if ((node.Parent as ElementNode)?.XmlType.NamespaceUri == XamlParser.XFUri && (node.Parent as ElementNode)?.XmlType.Name == nameof(Trigger))
+					typeName = ((node.Parent as ElementNode).Properties[new XmlName("", "TargetType")] as ValueNode).Value as string;
+				propertyName = parts[0];
+			}
+			else if (parts.Length == 2)
+			{
+				typeName = parts[0];
+				propertyName = parts[1];
+			}
+			else
+				throw new BuildException(Conversion, node, null, value, typeof(BindableProperty));
 
 			if (typeName == null || propertyName == null)
-				throw new XamlParseException($"Cannot convert \"{value}\" into {typeof(BindableProperty)}", node);
+				throw new BuildException(Conversion, node, null, value, typeof(BindableProperty));
 
 			var typeRef = XmlTypeExtensions.GetTypeReference(typeName, module, node);
 			if (typeRef == null)
-				throw new XamlParseException($"Can't resolve {typeName}", node);
+				throw new BuildException(TypeResolution, node, null, typeName);
+
 			bpRef = GetBindablePropertyFieldReference(typeRef, propertyName, module);
 			if (bpRef == null)
-				throw new XamlParseException($"Can't resolve {propertyName} on {typeRef.Name}", node);
+				throw new BuildException(PropertyResolution, node, null, propertyName, typeRef.Name);
 			return bpRef;
 		}
 

@@ -59,8 +59,7 @@ namespace Xamarin.Forms.Core.XamlC
 					}
 				}
 			} while (false);
-
-			throw new XamlParseException($"Cannot convert \"{value}\" into {typeof(Color)}", node);
+			throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Color));
 		}
 	}
 }

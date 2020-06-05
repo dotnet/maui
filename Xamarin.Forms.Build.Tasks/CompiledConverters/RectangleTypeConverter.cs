@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Core.XamlC
 			var module = context.Body.Method.Module;
 
 			if (string.IsNullOrEmpty(value))
-				throw new XamlParseException($"Cannot convert \"{value}\" into {typeof(Rectangle)}", node);
+				throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Rectangle));
 			double x, y, w, h;
 			var xywh = value.Split(',');
 			if (xywh.Length != 4 ||
@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Core.XamlC
 				!double.TryParse(xywh [1], NumberStyles.Number, CultureInfo.InvariantCulture, out y) ||
 				!double.TryParse(xywh [2], NumberStyles.Number, CultureInfo.InvariantCulture, out w) ||
 				!double.TryParse(xywh [3], NumberStyles.Number, CultureInfo.InvariantCulture, out h))
-				throw new XamlParseException($"Cannot convert \"{value}\" into {typeof(Rectangle)}", node);
+				throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Rectangle));
 
 			return GenerateIL(x, y, w, h, module);
 		}
