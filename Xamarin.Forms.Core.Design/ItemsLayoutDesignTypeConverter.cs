@@ -32,7 +32,7 @@
 		{
 			if (Values == null)
 			{
-				var names = new List<string>() { "VerticalList", "HorizontalList" };
+				var names = new List<string>() { "VerticalList", "HorizontalList", "VerticalGrid", "HorizontalGrid" };
 				Values = new StandardValuesCollection(names);
 			}
 
