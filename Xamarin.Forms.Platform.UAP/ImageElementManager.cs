@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.UWP;
+using WStretch = Windows.UI.Xaml.Media.Stretch;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -123,17 +124,17 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		static Stretch GetStretch(Aspect aspect)
+		static WStretch GetStretch(Aspect aspect)
 		{
 			switch (aspect)
 			{
 				case Aspect.Fill:
-					return Stretch.Fill;
+					return WStretch.Fill;
 				case Aspect.AspectFill:
-					return Stretch.UniformToFill;
+					return WStretch.UniformToFill;
 				default:
 				case Aspect.AspectFit:
-					return Stretch.Uniform;
+					return WStretch.Uniform;
 			}
 		}
 

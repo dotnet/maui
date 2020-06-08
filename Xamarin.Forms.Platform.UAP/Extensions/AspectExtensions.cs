@@ -1,27 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.UI.Xaml.Media;
+﻿using WStretch = Windows.UI.Xaml.Media.Stretch;
 
 namespace Xamarin.Forms.Platform.UWP
 {
 	internal static class AspectExtensions
 	{
-		public static Stretch ToStretch(this Aspect aspect)
+		public static WStretch ToStretch(this Aspect aspect)
 		{
 			switch (aspect)
 			{
 				case Aspect.Fill:
-					return Stretch.Fill;
+					return WStretch.Fill;
 
 				case Aspect.AspectFill:
-					return Stretch.UniformToFill;
+					return WStretch.UniformToFill;
 
 				case Aspect.AspectFit:
 				default:
-					return Stretch.Uniform;
+					return WStretch.Uniform;
 			}
 		}
 	}

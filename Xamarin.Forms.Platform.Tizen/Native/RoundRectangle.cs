@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using ElmSharp;
+using EPolygon = ElmSharp.Polygon;
+using ERect = ElmSharp.Rect;
 
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
-	public class RoundRectangle : Polygon
+	public class RoundRectangle : EPolygon
 	{
 		readonly int[] _radius = new int[4];
 		public RoundRectangle(EvasObject parent) : base(parent)
@@ -40,7 +42,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			DrawPoints();
 		}
 
-		public void Draw(Rect bound)
+		public void Draw(ERect bound)
 		{
 			X = bound.X;
 			Y = bound.Y;

@@ -1,5 +1,5 @@
 using System;
-using ElmSharp;
+using ERect = ElmSharp.Rect;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(Shell.FlyoutIsPresentedProperty, UpdateFlyoutIsPresented);
 		}
 
-		public override Rect GetNativeContentGeometry()
+		public override ERect GetNativeContentGeometry()
 		{
 			var rect = base.GetNativeContentGeometry();
 			rect.X = 0;

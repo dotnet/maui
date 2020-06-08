@@ -1,5 +1,5 @@
-﻿using ElmSharp;
-using EColor = ElmSharp.Color;
+﻿using EColor = ElmSharp.Color;
+using EPolygon = ElmSharp.Polygon;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -12,8 +12,8 @@ namespace Xamarin.Forms.Platform.Tizen
 		static readonly EColor s_DefaultColor = Device.Idiom == TargetIdiom.TV || Device.Idiom == TargetIdiom.Watch ? EColor.Gray : EColor.Black;
 		static readonly EColor s_ShadowColor = EColor.FromRgba(80, 80, 80, 50);
 
-		Polygon _shadow = null;
-		Polygon _frame = null;
+		EPolygon _shadow = null;
+		EPolygon _frame = null;
 
 		public FrameRenderer()
 		{
@@ -27,11 +27,11 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				SetNativeControl(new Native.Canvas(Forms.NativeParent));
 
-				_shadow = new Polygon(NativeView);
+				_shadow = new EPolygon(NativeView);
 				_shadow.Color = s_ShadowColor;
 				Control.Children.Add(_shadow);
 
-				_frame = new Polygon(NativeView);
+				_frame = new EPolygon(NativeView);
 				_frame.Show();
 				Control.Children.Add(_frame);
 				Control.LayoutUpdated += OnLayoutUpdated;
@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			base.Dispose(disposing);
 		}
 
-		static void DrawFrame(Polygon frame, int left, int top, int right, int bottom, int thickness)
+		static void DrawFrame(EPolygon frame, int left, int top, int right, int bottom, int thickness)
 		{
 			frame.ClearPoints();
 			if (left + thickness >= right || top + thickness >= bottom)

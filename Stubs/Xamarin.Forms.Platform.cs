@@ -174,6 +174,23 @@ namespace Xamarin.Forms.Platform
 
 	[RenderWith(typeof(SwipeViewRenderer))]
 	internal class _SwipeViewRenderer { }
+
+#if !TIZEN4_0
+	[RenderWith(typeof(EllipseRenderer))]
+	internal class _EllipseRenderer { }
+
+	[RenderWith(typeof(LineRenderer))]
+	internal class _LineRenderer { }
+
+	[RenderWith(typeof(PolylineRenderer))]
+	internal class _PolylineRenderer { }
+
+	[RenderWith(typeof(PolygonRenderer))]
+	internal class _PolygonRenderer { }
+
+	[RenderWith(typeof(RectangleRenderer))]
+	internal class _RectangleRenderer { }
+#endif
 }
 
 

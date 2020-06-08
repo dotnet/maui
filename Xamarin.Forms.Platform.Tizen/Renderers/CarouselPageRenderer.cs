@@ -1,5 +1,6 @@
 ﻿using System;
 using ElmSharp;
+using ERect = ElmSharp.Rect;
 using ESize = ElmSharp.Size;
 
 namespace Xamarin.Forms.Platform.Tizen
@@ -113,7 +114,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			_layoutBound = _innerContainer.Geometry.Size;
 
 			int baseX = _innerContainer.Geometry.X;
-			Rect bound = _scroller.Geometry;
+			ERect bound = _scroller.Geometry;
 			int index = 0;
 			foreach (var page in Element.Children)
 			{

@@ -1,8 +1,8 @@
-﻿using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Windows;
+﻿using System.Windows;
 using Xamarin.Forms;
-using Xamarin.Forms.Platform.WPF; 
+using Xamarin.Forms.Platform.WPF;
+using Xamarin.Forms.Shapes;
+using Rectangle = Xamarin.Forms.Shapes.Rectangle;
 
 [assembly: ThemeInfo(ResourceDictionaryLocation.None, ResourceDictionaryLocation.SourceAssembly)]
 
@@ -33,6 +33,11 @@ using Xamarin.Forms.Platform.WPF;
 [assembly: ExportRenderer(typeof(OpenGLView), typeof(OpenGLViewRenderer))]
 [assembly: ExportRenderer(typeof(MediaElement), typeof(MediaElementRenderer))]
 [assembly: ExportRenderer(typeof(ImageButton), typeof(ImageButtonRenderer))]
+[assembly: ExportRenderer(typeof(Ellipse), typeof(EllipseRenderer))]
+[assembly: ExportRenderer(typeof(Line), typeof(LineRenderer))]
+[assembly: ExportRenderer(typeof(Polygon), typeof(PolygonRenderer))]
+[assembly: ExportRenderer(typeof(Polyline), typeof(PolylineRenderer))]
+[assembly: ExportRenderer(typeof(Rectangle), typeof(RectangleRenderer))]
 
 // Control doesn't exist natively in WPF Platform
 [assembly: ExportRenderer(typeof(TableView), typeof(TableViewRenderer))]

@@ -16,6 +16,13 @@
     <Compile Include="..\Xamarin.Forms.Core\Crc64.cs">
       <Link>Crc64.cs</Link>
     </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.UAP\PointCollectionExtensions.cs" Link="Extensions\PointCollectionExtensions.cs" />
+    <Compile Include="..\Xamarin.Forms.Platform.UAP\Shapes\EllipseRenderer.cs" Link="Shapes\EllipseRenderer.cs" />
+    <Compile Include="..\Xamarin.Forms.Platform.UAP\Shapes\LineRenderer.cs" Link="Shapes\LineRenderer.cs" />
+    <Compile Include="..\Xamarin.Forms.Platform.UAP\Shapes\PolygonRenderer.cs" Link="Shapes\PolygonRenderer.cs" />
+    <Compile Include="..\Xamarin.Forms.Platform.UAP\Shapes\PolylineRenderer.cs" Link="Shapes\PolylineRenderer.cs" />
+    <Compile Include="..\Xamarin.Forms.Platform.UAP\Shapes\RectangleRenderer.cs" Link="Shapes\RectangleRenderer.cs" />
+    <Compile Include="..\Xamarin.Forms.Platform.UAP\Shapes\ShapeRenderer.cs" Link="Shapes\ShapeRenderer.cs" />
     <Compile Include="..\Xamarin.Forms.Platform.UAP\TextBlockExtensions.cs">
       <Link>Extensions\TextBlockExtensions.cs</Link>
     </Compile>
@@ -23,5 +30,8 @@
   <ItemGroup>
     <PackageReference Include="OpenTK" Version="3.0.1" />
     <PackageReference Include="OpenTK.GLControl" Version="3.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Shapes\" />
   </ItemGroup>
 </Project>

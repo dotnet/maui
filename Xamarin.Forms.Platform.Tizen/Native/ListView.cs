@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Xamarin.Forms.Internals;
 using ElmSharp;
+using ERect = ElmSharp.Rect;
 using EScroller = ElmSharp.Scroller;
 
 namespace Xamarin.Forms.Platform.Tizen.Native
@@ -112,7 +113,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// <summary>
 		/// Gets the current region in the content object that is visible through the Scroller.
 		/// </summary>
-		public virtual Rect CurrentRegion => Scroller?.CurrentRegion ?? new Rect();
+		public virtual ERect CurrentRegion => Scroller?.CurrentRegion ?? new ERect();
 
 		/// <summary>
 		/// Sets or gets the value of VerticalScrollBarVisibility

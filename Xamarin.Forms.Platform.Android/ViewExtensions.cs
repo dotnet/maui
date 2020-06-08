@@ -8,6 +8,7 @@ using Android.Support.V4.Content;
 #endif
 using Android.Util;
 using Android.Views;
+using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
 using AColor = Android.Graphics.Color;
 using Android.Graphics;
@@ -131,7 +132,7 @@ namespace Xamarin.Forms.Platform.Android
 				viewGroup.SetClipChildren(false);
 
 				// But if IsClippedToBounds is true, they _should_ enforce clipping at their own edges
-				viewGroup.ClipBounds = shouldClip ? new Rect(0, 0, viewGroup.Width, viewGroup.Height) : null;
+				viewGroup.ClipBounds = shouldClip ? new ARect(0, 0, viewGroup.Width, viewGroup.Height) : null;
 			}
 			else
 			{

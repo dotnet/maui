@@ -262,8 +262,16 @@
     <Compile Include="Renderers\ShellNavBarAppearanceTracker.cs" />
     <Compile Include="Renderers\IndicatorViewRenderer.cs" />
     <Compile Include="Renderers\SwipeViewRenderer.cs" />
+    <Compile Include="Extensions\PointCollectionExtensions.cs" />
+    <Compile Include="Extensions\DoubleCollectionExtensions.cs" />
     <Compile Include="Extensions\UIApplicationExtensions.cs" />
     <Compile Include="Extensions\UICollectionViewExtensions.cs" />
+    <Compile Include="Shapes\EllipseRenderer.cs" />
+    <Compile Include="Shapes\LineRenderer.cs" />
+    <Compile Include="Shapes\PolygonRenderer.cs" />
+    <Compile Include="Shapes\PolylineRenderer.cs" />
+    <Compile Include="Shapes\RectangleRenderer.cs" />
+    <Compile Include="Shapes\ShapeRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\StringResources.ar.resx" />
@@ -319,5 +327,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Condition="'$(CI)' == 'true'" Include="Xamarin.Build.TypeRedirector" Version="0.1.2-preview" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Shapes\" />
   </ItemGroup>
 </Project>

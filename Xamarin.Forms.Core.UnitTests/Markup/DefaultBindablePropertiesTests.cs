@@ -7,6 +7,7 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Markup.UnitTests
 {
+	using Xamarin.Forms.Shapes;
 	using XamarinFormsMarkupUnitTestsDefaultBindablePropertiesViews;
 
 	[TestFixture(true)]
@@ -77,7 +78,14 @@ namespace Xamarin.Forms.Markup.UnitTests
 				{ typeof(ShellItem), tbd },
 				{ typeof(ShellSection), tbd },
 				{ typeof(Tab), tbd },
-				{ typeof(TabBar), tbd }
+				{ typeof(TabBar), tbd },
+
+				{ typeof(Ellipse), tbd },
+				{ typeof(Line), tbd },
+				{ typeof(Polygon), tbd },
+				{ typeof(Polyline), tbd },
+				{ typeof(Rectangle), tbd },
+				{ typeof(Shape), tbd }
 			};
 
 			var failMessage = new StringBuilder();

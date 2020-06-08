@@ -36,7 +36,9 @@ using Xamarin.Forms.StyleSheets;
 [assembly: InternalsVisibleTo("Xamarin.Forms.DualScreen.UnitTests")]
 [assembly: Preserve]
 
+[assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms", "Xamarin.Forms.Shapes")]
 [assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms", "Xamarin.Forms")]
+[assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms/design", "Xamarin.Forms.Shapes")]
 [assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms/design", "Xamarin.Forms")]
 [assembly: XmlnsPrefix("http://xamarin.com/schemas/2014/forms", "xf")]
 [assembly: XmlnsPrefix("http://xamarin.com/schemas/2014/forms/design", "d")]

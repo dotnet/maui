@@ -19,6 +19,7 @@ namespace Xamarin.Forms
 		internal const string AppThemeExperimental = "AppTheme_Experimental";
 		internal const string ExpanderExperimental = "Expander_Experimental";
 		internal const string RadioButtonExperimental = "RadioButton_Experimental";
+		internal const string ShapesExperimental = "Shapes_Experimental";
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void VerifyFlagEnabled(

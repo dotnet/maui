@@ -241,6 +241,10 @@
     <Compile Include="FlexOrderTests.cs" />
     <Compile Include="FontAttributeConverterUnitTests.cs" />
     <Compile Include="AppThemeTests.cs" />
+    <Compile Include="PolygonTests.cs" />
+    <Compile Include="PolylineTests.cs" />
+    <Compile Include="RectangleTests.cs" />
+    <Compile Include="LineTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">

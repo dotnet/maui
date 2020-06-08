@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Collections.Generic;
 using ElmSharp;
 using EBox = ElmSharp.Box;
+using ERect = ElmSharp.Rect;
 using EScroller = ElmSharp.Scroller;
 using ESize = ElmSharp.Size;
 using EPoint = ElmSharp.Point;
@@ -123,7 +124,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 		protected ESize AllocatedSize { get; set; }
 
-		Rect ViewPort => Scroller.CurrentRegion;
+		ERect ViewPort => Scroller.CurrentRegion;
 
 		public void ScrollTo(int index, ScrollToPosition position = ScrollToPosition.MakeVisible, bool animate = true)
 		{
@@ -491,7 +492,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			RequestLayoutItems();
 		}
 
-		Rect _lastGeometry;
+		ERect _lastGeometry;
 		void OnLayout()
 		{
 			if (_lastGeometry == Geometry)

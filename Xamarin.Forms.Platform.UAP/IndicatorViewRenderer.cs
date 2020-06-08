@@ -1,25 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Shapes;
-using Xamarin.Forms.Platform.UWP;
+using WEllipse = Windows.UI.Xaml.Shapes.Ellipse;
+using WRectangle = Windows.UI.Xaml.Shapes.Rectangle;
+using WShape = Windows.UI.Xaml.Shapes.Shape;
 
 namespace Xamarin.Forms.Platform.UWP
 {
 	class IndicatorViewRenderer : ViewRenderer<IndicatorView, FrameworkElement>
 	{
 		const int DefaultPadding = 4;
+
 		SolidColorBrush _selectedColor;
 		SolidColorBrush _fillColor;
-		ObservableCollection<Shape> _dots;
+		ObservableCollection<WShape> _dots;
 
 		public IndicatorViewRenderer()
 		{
@@ -87,7 +85,7 @@ namespace Xamarin.Forms.Platform.UWP
 			int i = 0;
 			foreach (var item in (Control as ItemsControl).Items)
 			{
-				((Shape)item).Fill = i == position ? _selectedColor : _fillColor;
+				((WShape)item).Fill = i == position ? _selectedColor : _fillColor;
 				i++;
 			}
 		}
@@ -109,7 +107,7 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 
 			var position = Element.Position;
-			var indicators = new List<Shape>();
+			var indicators = new List<WShape>();
 
 			if (Element.ItemsSource != null && Element.Count > 0)
 			{
@@ -121,16 +119,16 @@ namespace Xamarin.Forms.Platform.UWP
 				}
 			}
 
-			_dots = new ObservableCollection<Shape>(indicators);
+			_dots = new ObservableCollection<WShape>(indicators);
 			(Control as ItemsControl).ItemsSource = _dots;
 		}
 
-		Shape CreateIndicator(int i, int position)
+		WShape CreateIndicator(int i, int position)
 		{
 			var indicatorSize = Element.IndicatorSize;
 			if (Element.IndicatorsShape == IndicatorShape.Circle)
 			{
-				return new Ellipse()
+				return new WEllipse()
 				{
 					Fill = i == position ? _selectedColor : _fillColor,
 					Height = indicatorSize,
@@ -140,7 +138,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 			else
 			{
-				return new Windows.UI.Xaml.Shapes.Rectangle()
+				return new WRectangle()
 				{
 					Fill = i == position ? _selectedColor : _fillColor,
 					Height = indicatorSize,

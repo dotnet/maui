@@ -7,6 +7,7 @@ using EButton = ElmSharp.Button;
 using EColor = ElmSharp.Color;
 using EImage = ElmSharp.Image;
 using ELayout = ElmSharp.Layout;
+using ERect = ElmSharp.Rect;
 using EWidget = ElmSharp.Widget;
 
 namespace Xamarin.Forms.Platform.Tizen.Watch
@@ -492,7 +493,7 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 			_drawerIcon.Orientation = ImageOrientation.None;
 		}
 
-		Task RunMoveAnimation(EvasObject target, Rect dest, uint length, Easing easing = null)
+		Task RunMoveAnimation(EvasObject target, ERect dest, uint length, Easing easing = null)
 		{
 			var tcs = new TaskCompletionSource<bool>();
 

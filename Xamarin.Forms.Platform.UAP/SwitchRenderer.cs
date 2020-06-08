@@ -7,6 +7,7 @@ using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Shapes;
 using WColor = Windows.UI.Color;
 using WGrid = Windows.UI.Xaml.Controls.Grid;
+using WEllipse = Windows.UI.Xaml.Shapes.Ellipse;
 using WRectangle = Windows.UI.Xaml.Shapes.Rectangle;
 using WVisualStateManager = Windows.UI.Xaml.VisualStateManager;
 
@@ -210,7 +211,7 @@ namespace Xamarin.Forms.Platform.UWP
 				}
 			}
 
-			if (grid.FindName(ToggleSwitchKnobOn) is Ellipse thumb)
+			if (grid.FindName(ToggleSwitchKnobOn) is WEllipse thumb)
 			{
 				if (_originalThumbOnBrush == null)
 					_originalThumbOnBrush = thumb.Fill;

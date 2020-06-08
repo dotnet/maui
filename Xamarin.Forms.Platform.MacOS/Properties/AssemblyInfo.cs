@@ -1,6 +1,8 @@
 ﻿using Xamarin.Forms;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.MacOS;
+using Xamarin.Forms.Shapes;
+using Rectangle = Xamarin.Forms.Shapes.Rectangle;
 
 [assembly: Dependency(typeof(Deserializer))]
 [assembly: Dependency(typeof(ResourcesProvider))]
@@ -38,6 +40,11 @@ using Xamarin.Forms.Platform.MacOS;
 [assembly: ExportRenderer(typeof(TableView), typeof(TableViewRenderer))]
 [assembly: ExportRenderer(typeof(NativeViewWrapper), typeof(NativeViewWrapperRenderer))]
 [assembly: ExportRenderer(typeof(Layout), typeof(LayoutRenderer))]
+[assembly: ExportRenderer(typeof(Ellipse), typeof(EllipseRenderer))]
+[assembly: ExportRenderer(typeof(Line), typeof(LineRenderer))]
+[assembly: ExportRenderer(typeof(Polygon), typeof(PolygonRenderer))]
+[assembly: ExportRenderer(typeof(Polyline), typeof(PolylineRenderer))]
+[assembly: ExportRenderer(typeof(Rectangle), typeof(RectangleRenderer))]
 [assembly: ExportCell(typeof(Cell), typeof(CellRenderer))]
 [assembly: ExportCell(typeof(TextCell), typeof(TextCellRenderer))]
 [assembly: ExportCell(typeof(ImageCell), typeof(ImageCellRenderer))]

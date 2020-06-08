@@ -1,6 +1,7 @@
 ﻿using System;
 using ElmSharp;
 using EButton = ElmSharp.Button;
+using ERect = ElmSharp.Rect;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -104,7 +105,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			var height = outter.Height - Forms.ConvertToScaledPixel(Element.Padding.VerticalThickness);
 			var left = outter.Left + Forms.ConvertToScaledPixel(Element.Padding.Left);
 			var top = outter.Top + Forms.ConvertToScaledPixel(Element.Padding.Top);
-			var imageBound = new Rect(left, top, width, height);
+			var imageBound = new ERect(left, top, width, height);
 
 			_image.Geometry = imageBound;
 			_button.Geometry = outter;

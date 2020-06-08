@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using ElmSharp;
 using ElmSharp.Wearable;
+using ERect = ElmSharp.Rect;
 
 namespace Xamarin.Forms.Platform.Tizen.Watch
 {
@@ -26,7 +27,7 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 		List<ItemHolder> _items = new List<ItemHolder>();
 
 		int _currentIndex = -1;
-		Rect _lastLayoutBound;
+		ERect _lastLayoutBound;
 		int _updateByCode;
 		bool _isScrolling;
 
@@ -119,7 +120,7 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 			_items.Clear();
 			_indexIndicator.Clear();
 			_innerContainer.UnPackAll();
-			_lastLayoutBound = default(Rect);
+			_lastLayoutBound = default(ERect);
 
 			foreach (var item in ShellSection.Items)
 			{
@@ -293,7 +294,7 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 			var layoutBound = _innerContainer.Geometry.Size;
 			int baseX = _innerContainer.Geometry.X;
 
-			Rect bound = _scroller.Geometry;
+			ERect bound = _scroller.Geometry;
 			int index = 0;
 			foreach (var item in _items)
 			{
@@ -340,7 +341,7 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 		class ItemHolder
 		{
 			public bool IsRealized { get; set; }
-			public Rect Bound { get; set; }
+			public ERect Bound { get; set; }
 			public EvasObject NativeView { get; set; }
 			public IndexItem IndexItem { get; set; }
 			public ShellContent Item { get; set; }
