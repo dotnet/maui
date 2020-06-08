@@ -37,7 +37,7 @@
       <group targetFramework="uap10.0.16299">
         <dependency id="Microsoft.NETCore.UniversalWindowsPlatform" version="6.0.15" />
         <dependency id="Win2D.uwp" version="1.20.0" />
-        <dependency id="Microsoft.UI.Xaml" version="2.3.191211002" />
+        <dependency id="Microsoft.UI.Xaml" version="2.4.2" />
       </group>
       <group targetFramework="tizen40">
         <dependency id="Tizen.NET" version="4.0.0"/>
