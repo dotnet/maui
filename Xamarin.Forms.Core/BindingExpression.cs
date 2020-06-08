@@ -148,7 +148,7 @@ namespace Xamarin.Forms
 
 				if (!TryConvert(ref value, property, property.ReturnType, true))
 				{
-					Log.Warning("Binding", "{0} can not be converted to type '{1}'", value, property.ReturnType);
+					Log.Warning("Binding", "'{0}' can not be converted to type '{1}'.", value, property.ReturnType);
 					return;
 				}
 
@@ -160,7 +160,7 @@ namespace Xamarin.Forms
 
 				if (!TryConvert(ref value, property, part.SetterType, false))
 				{
-					Log.Warning("Binding", "{0} can not be converted to type '{1}'", value, part.SetterType);
+					Log.Warning("Binding", "'{0}' can not be converted to type '{1}'.", value, part.SetterType);
 					return;
 				}
 
@@ -431,8 +431,12 @@ namespace Xamarin.Forms
 		{
 			if (value == null)
 				return !convertTo.GetTypeInfo().IsValueType || Nullable.GetUnderlyingType(convertTo) != null;
-			if ((toTarget && targetProperty.TryConvert(ref value)) || (!toTarget && convertTo.IsInstanceOfType(value)))
-				return true;
+			try {
+				if ((toTarget && targetProperty.TryConvert(ref value)) || (!toTarget && convertTo.IsInstanceOfType(value)))
+					return true;
+			} catch (InvalidOperationException) { //that's what TypeConverters ususally throw
+				return false;
+			}
 
 			object original = value;
 			try {
@@ -455,7 +459,7 @@ namespace Xamarin.Forms
 				value = Convert.ChangeType(value, convertTo, CultureInfo.InvariantCulture);
 				return true;
 			}
-			catch (Exception ex) when (ex is InvalidCastException || ex is FormatException || ex is OverflowException) {
+			catch (Exception ex) when (ex is InvalidCastException || ex is FormatException || ex is InvalidOperationException || ex is OverflowException) {
 				value = original;
 				return false;
 			}

@@ -2259,5 +2259,16 @@ namespace Xamarin.Forms.Core.UnitTests
 			page.Title = "Bar";
 			Assert.That(label.Text, Is.EqualTo("Bar"));
 		}
+
+		[Test]
+		//https://github.com/xamarin/Xamarin.Forms/issues/10405
+		public void TypeConversionExceptionIsCaughtAndLogged()
+		{
+			var label = new Label();
+			label.SetBinding(Label.TextColorProperty, "color");
+
+			Assert.DoesNotThrow(() => label.BindingContext = new { color = "" });
+			Assert.That(log.Messages.Count, Is.EqualTo(1),"No error logged");
+		}
 	}
 }
