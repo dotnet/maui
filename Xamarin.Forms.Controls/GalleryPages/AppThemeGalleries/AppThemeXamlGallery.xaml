@@ -14,8 +14,7 @@
                 </Label.TextColor>
             </Label>
             <Label Style="{DynamicResource Key=OSThemeStyle}">DynamicResource Style</Label>
-            <Label TextColor="{DynamicResource MyColor}">DynamicResource Color</Label>
-            <Label TextColor="{StaticResource MyColor}">StaticResource</Label>
+            <Label TextColor="{AppThemeBinding Light=HotPink, Dark=Yellow}">Color using AppThemeBinding</Label>
             <Label>Image with OnAppThemeExtension</Label>
             <Image Source="{AppThemeBinding Light=xamarinlogo.png, Dark=Fruits.jpg}" />
         </StackLayout>
