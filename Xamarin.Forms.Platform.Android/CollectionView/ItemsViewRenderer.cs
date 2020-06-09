@@ -14,6 +14,7 @@ using Android.Views;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android.CollectionView;
 using Xamarin.Forms.Platform.Android.FastRenderers;
+using ARect = Android.Graphics.Rect;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -65,7 +66,7 @@ namespace Xamarin.Forms.Platform.Android
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			base.OnLayout(changed, l, t, r, b);
-			AViewCompat.SetClipBounds(this, new Rect(0, 0, Width, Height));
+			AViewCompat.SetClipBounds(this, new ARect(0, 0, Width, Height));
 
 			// After a direct (non-animated) scroll operation, we may need to make adjustments
 			// to align the target item; if an adjustment is pending, execute it here.

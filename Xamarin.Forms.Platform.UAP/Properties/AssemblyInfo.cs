@@ -1,6 +1,8 @@
 ﻿using System.Reflection;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.UWP;
+using Xamarin.Forms.Shapes;
+using Rectangle = Xamarin.Forms.Shapes.Rectangle;
 
 [assembly: Dependency(typeof(WindowsSerializer))]
 
@@ -36,6 +38,12 @@ using Xamarin.Forms.Platform.UWP;
 [assembly: ExportRenderer(typeof(MediaElement), typeof(MediaElementRenderer))]
 [assembly: ExportRenderer(typeof(RefreshView), typeof(RefreshViewRenderer))]
 [assembly: ExportRenderer(typeof(Shell), typeof(ShellRenderer))]
+[assembly: ExportRenderer(typeof(Path), typeof(PathRenderer))]
+[assembly: ExportRenderer(typeof(Ellipse), typeof(EllipseRenderer))]
+[assembly: ExportRenderer(typeof(Line), typeof(LineRenderer))]
+[assembly: ExportRenderer(typeof(Polygon), typeof(PolygonRenderer))]
+[assembly: ExportRenderer(typeof(Polyline), typeof(PolylineRenderer))]
+[assembly: ExportRenderer(typeof(Rectangle), typeof(RectangleRenderer))]
 [assembly: ExportRenderer(typeof(IndicatorView), typeof(IndicatorViewRenderer))]
 
 //ImageSources

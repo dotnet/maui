@@ -5,6 +5,7 @@ using System.Linq;
 using ElmSharp;
 using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
 using EColor = ElmSharp.Color;
+using ERect = ElmSharp.Rect;
 using EToolbarItem = ElmSharp.ToolbarItem;
 using EToolbarItemEventArgs = ElmSharp.ToolbarItemEventArgs;
 
@@ -164,7 +165,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				return;
 
 			int baseX = _innerBox.Geometry.X;
-			Rect bound = _scroller.Geometry;
+			ERect bound = _scroller.Geometry;
 			int index = 0;
 			foreach (var page in Element.Children)
 			{

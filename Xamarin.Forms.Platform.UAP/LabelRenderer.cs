@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Documents;
 using Xamarin.Forms.Platform.UAP;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.Label;
+using WRect = Windows.Foundation.Rect;
 using WThickness = Windows.UI.Xaml.Thickness;
 
 namespace Xamarin.Forms.Platform.UWP
@@ -68,7 +69,7 @@ namespace Xamarin.Forms.Platform.UWP
 				return finalSize;
 
 			double childHeight = Math.Max(0, Math.Min(Element.Height, Control.DesiredSize.Height));
-			var rect = new Rect();
+			var rect = new WRect();
 
 			switch (Element.VerticalTextAlignment)
 			{

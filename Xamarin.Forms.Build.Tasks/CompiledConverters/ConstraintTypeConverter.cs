@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Core.XamlC
 			double size;
 
 			if (string.IsNullOrEmpty(value) || !double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out size))
-				throw new XamlParseException($"Cannot convert \"{value}\" into {typeof(Constraint)}", node);
+				throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Constraint));
 
 			yield return Create(Ldc_R8, size);
 			yield return Create(Call, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Constraint"),

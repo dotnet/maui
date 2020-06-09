@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using Xamarin.Forms.CustomAttributes;
-using System.IO;
+using IOPath = System.IO.Path;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -61,7 +61,7 @@ namespace Xamarin.Forms.Controls
 #if __ANDROID__
 		static IApp InitializeAndroidApp()
 		{
-			var fullApkPath = Path.Combine(TestContext.CurrentContext.TestDirectory, AppPaths.ApkPath);
+			var fullApkPath = IOPath.Combine(TestContext.CurrentContext.TestDirectory, AppPaths.ApkPath);
 			var app = ConfigureApp.Android.ApkFile(fullApkPath).Debug().StartApp(UITest.Configuration.AppDataMode.DoNotClear);
 
 			if (bool.Parse((string)app.Invoke("IsPreAppCompat")))

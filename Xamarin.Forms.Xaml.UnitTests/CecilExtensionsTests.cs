@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using Mono.Cecil;
 using NUnit.Framework;
 using Xamarin.Forms.Build.Tasks;
+using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		[SetUp]
-		public void SetUp ()
+		public void SetUp()
 		{
 			assembly = AssemblyDefinition.ReadAssembly(GetType().Assembly.Location, readerParameters);
 			assemblies.Add(assembly);
@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 		public AssemblyDefinition Resolve(AssemblyNameReference name)
 		{
-			var path = Path.Combine(Path.GetDirectoryName(GetType().Assembly.Location), name.Name + ".dll");
+			var path = IOPath.Combine(IOPath.GetDirectoryName(GetType().Assembly.Location), name.Name + ".dll");
 			var assembly = AssemblyDefinition.ReadAssembly(path, readerParameters);
 			assemblies.Add(assembly);
 			return assembly;
@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 		public AssemblyDefinition Resolve(AssemblyNameReference name, ReaderParameters parameters)
 		{
-			var path = Path.Combine(Path.GetDirectoryName(GetType().Assembly.Location), name.Name + ".dll");
+			var path = IOPath.Combine(IOPath.GetDirectoryName(GetType().Assembly.Location), name.Name + ".dll");
 			var assembly = AssemblyDefinition.ReadAssembly(path, parameters);
 			assemblies.Add(assembly);
 			return assembly;
@@ -56,7 +56,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			assemblies.Clear();
 		}
 
-		EmbeddedResource GetResource (string name)
+		EmbeddedResource GetResource(string name)
 		{
 			var resourceName = $"{testNamespace}.{name}.xaml";
 			foreach (EmbeddedResource res in assembly.MainModule.Resources)
@@ -74,8 +74,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			"X2009Primitives",
 		};
 
-		[Test, TestCaseSource (nameof (IsXamlTrueSource))]
-		public void IsXamlTrue (string name)
+		[Test, TestCaseSource(nameof(IsXamlTrueSource))]
+		public void IsXamlTrue(string name)
 		{
 			var resource = GetResource(name);
 			Assert.IsTrue(resource.IsXaml(assembly.MainModule, out string className), $"IsXaml should return true for '{name}'.");

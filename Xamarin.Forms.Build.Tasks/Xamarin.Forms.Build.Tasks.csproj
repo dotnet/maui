@@ -27,11 +27,31 @@
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.8.166" />
     <PackageReference Include="StrongNamer" Version="0.0.8" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+     <PackageReference Include="XliffTasks" Version="1.0.0-beta.20206.1" PrivateAssets="all" />
   </ItemGroup>
+
+  <PropertyGroup>
+     <UpdateXlfOnBuild Condition="'$(CI)' != 'true'">true</UpdateXlfOnBuild>
+  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj" />
     <ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="ErrorMessages.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ErrorMessages.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="ErrorMessages.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ErrorMessages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
 	<PropertyGroup Condition="'$(SnExe)' == '' And '$(OS)' != 'Windows_NT'">

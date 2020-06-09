@@ -5,6 +5,7 @@ using NUnit.Framework;
 using Xamarin.Forms.Build.Tasks;
 using Xamarin.Forms.Core.UnitTests;
 using Microsoft.Build.Utilities;
+using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -18,7 +19,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					<ContentPage.Content></ContentPage.Content> 
 				</ContentPage>";
 
-			string fileName = Path.GetTempFileName ();
+			string fileName = IOPath.GetTempFileName ();
 			File.WriteAllText (fileName, xaml);
 
 			return fileName;

@@ -9,13 +9,12 @@ using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.WindowsUniversal;
 using Xamarin.Forms.Controls;
 using Xamarin.Forms.Platform.UWP;
-
+using WRectangleGeometry = Windows.UI.Xaml.Media.RectangleGeometry;
+using WRect = Windows.Foundation.Rect;
 
 namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 {
@@ -119,17 +118,17 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 
 					// The broken control always tries to size itself to the screen width
 					// So figure that out and we'll know how far off it's laying itself out
-					Rect bounds = ApplicationView.GetForCurrentView().VisibleBounds;
+					WRect bounds = ApplicationView.GetForCurrentView().VisibleBounds;
 					double scaleFactor = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
 					var screenWidth = new Size(bounds.Width * scaleFactor, bounds.Height * scaleFactor);
 
 					// We can re-center it by offsetting it during the Arrange call
 					double diff = Math.Abs(screenWidth.Width - finalSize.Width) / -2;
-					frameworkElement.Arrange(new Rect(diff, 0, finalSize.Width - diff, finalSize.Height));
+					frameworkElement.Arrange(new WRect(diff, 0, finalSize.Width - diff, finalSize.Height));
 
 					// Arranging the control to the left will make it show up past the edge of the stack layout
 					// We can fix that by clipping it manually
-					var clip = new RectangleGeometry { Rect = new Rect(-diff, 0, finalSize.Width, finalSize.Height) };
+					var clip = new RectangleGeometry { Rect = new WRect(-diff, 0, finalSize.Width, finalSize.Height) };
 					frameworkElement.Clip = clip;
 
 					return finalSize;

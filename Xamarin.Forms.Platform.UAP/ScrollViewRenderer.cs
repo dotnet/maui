@@ -1,9 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using WRect = Windows.Foundation.Rect;
 using UwpScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility;
 
 namespace Xamarin.Forms.Platform.UWP
@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			Element.IsInNativeLayout = true;
 
-			Control?.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
+			Control?.Arrange(new WRect(0, 0, finalSize.Width, finalSize.Height));
 
 			Element.IsInNativeLayout = false;
 

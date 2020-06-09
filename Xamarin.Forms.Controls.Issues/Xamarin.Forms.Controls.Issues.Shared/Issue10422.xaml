@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Xamarin.Forms.Controls.Issues.Issue10422" xmlns:bug="clr-namespace:Xamarin.Forms.Controls.Issues">
+	<StackLayout BackgroundColor="PaleVioletRed">
+        <Label Text="If the frame is dragged without any stuttering or artifacts, this test passed" />
+        <bug:FrameSubclass BackgroundColor="White" 
+                           BorderColor="Red" 
+                           HeightRequest="400"
+                           WidthRequest="200" 
+                           HorizontalOptions="Center" 
+                           VerticalOptions="Center">
+        </bug:FrameSubclass>
+    </StackLayout>
+</ContentPage>

@@ -1,5 +1,5 @@
 ﻿using System;
-using System.IO;
+using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -55,7 +55,7 @@ namespace Xamarin.Forms.Platform.Tizen
 					"\n[{6:yyyy-MM-dd HH:mm:ss.ffff} {0}/{1}]\n{2}: {3}({4}) > {5}",
 					level,  // 0
 					tag,  // 1
-					Path.GetFileName(f.AbsolutePath),  // 2
+					IOPath.GetFileName(f.AbsolutePath),  // 2
 					func,  // 3
 					line,  // 4
 					message,  // 5

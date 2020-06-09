@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ElmSharp;
 using EColor = ElmSharp.Color;
 using EImage = ElmSharp.Image;
+using ERect = ElmSharp.Rect;
 using NBox = Xamarin.Forms.Platform.Tizen.Native.Box;
 
 namespace Xamarin.Forms.Platform.Tizen
@@ -264,9 +265,9 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (_header != null)
 			{
 				headerHeight = _header.MinimumHeight;
-				_header.Geometry = new Rect(Geometry.X, Geometry.Y, Geometry.Width, headerHeight);
+				_header.Geometry = new ERect(Geometry.X, Geometry.Y, Geometry.Width, headerHeight);
 			}
-			_menu.Geometry = new Rect(Geometry.X, Geometry.Y + headerHeight, Geometry.Width, Geometry.Height - headerHeight);
+			_menu.Geometry = new ERect(Geometry.X, Geometry.Y + headerHeight, Geometry.Width, Geometry.Height - headerHeight);
 		}
 	}
 

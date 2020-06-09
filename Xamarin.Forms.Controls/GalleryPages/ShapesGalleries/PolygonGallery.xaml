@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Xamarin.Forms.Controls.GalleryPages.ShapesGalleries.PolygonGallery"
+    Title="Polygon Gallery">
+   <ContentPage.Resources>
+        <ResourceDictionary>
+
+            <Style x:Key="EvenOddPolygon" TargetType="Polygon">
+                <Setter Property="Points"
+                        Value="0 48, 0 150, 96 150, 96 0, 200 0, 200 100, 48 96, 48 192, 144 192 144 48" />
+                <Setter Property="Fill"
+                        Value="Blue" />
+                <Setter Property="Stroke"
+                        Value="Red" />
+                <Setter Property="StrokeThickness"
+                        Value="3" />
+            </Style>
+
+            <Style x:Key="NonzeroPolygon" TargetType="Polygon">
+                <Setter Property="Points"
+                    Value="0 48, 0 144, 96 150, 100 0, 192 0, 192 96, 50 96, 48 192, 150 200 144 48" />
+                <Setter Property="Fill"
+                        Value="Black" />
+                <Setter Property="Stroke"
+                        Value="Yellow" />
+                <Setter Property="StrokeThickness"
+                        Value="3" />
+            </Style>
+
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ContentPage.Content>
+        <ScrollView>
+            <StackLayout
+                Padding="12">
+                <Label
+                    Text="A basic Polygon"/>
+                    <Polygon
+                        HeightRequest="100"
+                        WidthRequest="200"
+                        Fill ="AliceBlue"
+                        StrokeThickness ="5" 
+                        Stroke ="Green" 
+                        Points ="40,10 70,80 10,50" />
+                <Label
+                    Text="A dash Polygon"/>
+                    <Polygon
+                        HeightRequest="100"
+                        WidthRequest="200"
+                        Fill ="AliceBlue"
+                        StrokeThickness ="5" 
+                        Stroke ="Green"
+                        StrokeDashArray="1 1"
+                        StrokeDashOffset="6"
+                        Points ="40,10 70,80 10,50" />
+                <Label
+                    Text="EvenOdd Polygon"/>
+                <Polygon
+                    HeightRequest="200"
+                    WidthRequest="200"
+                    Style="{StaticResource EvenOddPolygon}"
+                    FillRule="EvenOdd" />
+                <Label
+                    Text="NonZero Polygon"/>
+                <Polygon
+                    HeightRequest="200"
+                    WidthRequest="200"
+                    Style="{StaticResource NonzeroPolygon}"
+                    FillRule="Nonzero" />
+            </StackLayout>
+        </ScrollView>
+    </ContentPage.Content>
+</ContentPage>

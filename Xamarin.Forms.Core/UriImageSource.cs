@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
+using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms
 {
@@ -113,7 +113,7 @@ namespace Xamarin.Forms
 
 		static async Task<DateTime?> GetLastWriteTimeUtcAsync(string key)
 		{
-			string path = Path.Combine(CacheName, key);
+			string path = IOPath.Combine(CacheName, key);
 			if (!await Store.GetFileExistsAsync(path).ConfigureAwait(false))
 				return null;
 
@@ -155,7 +155,7 @@ namespace Xamarin.Forms
 					int backoff;
 					try
 					{
-						Stream result = await Store.OpenFileAsync(Path.Combine(CacheName, key), FileMode.Open, FileAccess.Read).ConfigureAwait(false);
+						Stream result = await Store.OpenFileAsync(IOPath.Combine(CacheName, key), FileMode.Open, FileAccess.Read).ConfigureAwait(false);
 						return result;
 					}
 					catch (IOException)
@@ -194,14 +194,14 @@ namespace Xamarin.Forms
 
 			try
 			{
-				Stream writeStream = await Store.OpenFileAsync(Path.Combine(CacheName, key), FileMode.Create, FileAccess.Write).ConfigureAwait(false);
+				Stream writeStream = await Store.OpenFileAsync(IOPath.Combine(CacheName, key), FileMode.Create, FileAccess.Write).ConfigureAwait(false);
 				await stream.CopyToAsync(writeStream, 16384, cancellationToken).ConfigureAwait(false);
 				if (writeStream != null)
 					writeStream.Dispose();
 
 				stream.Dispose();
 
-				return await Store.OpenFileAsync(Path.Combine(CacheName, key), FileMode.Open, FileAccess.Read).ConfigureAwait(false);
+				return await Store.OpenFileAsync(IOPath.Combine(CacheName, key), FileMode.Open, FileAccess.Read).ConfigureAwait(false);
 			}
 			catch (Exception ex)
 			{

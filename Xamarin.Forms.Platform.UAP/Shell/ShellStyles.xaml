@@ -3,6 +3,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:winui="using:Microsoft.UI.Xaml.Controls"
     xmlns:contract4Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,4)"
+    xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives"
+    xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
+    xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
+    xmlns:primitiveContract7Present="using:Microsoft.UI.Xaml.Controls.Primitives?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:xf="using:Xamarin.Forms.Platform.UWP">
     <DataTemplate x:Key="ShellFlyoutBaseShellItemTemplate">
         <winui:NavigationViewItem x:Name="navItem">
@@ -114,17 +118,12 @@
                                 <VisualState x:Name="ListSizeFull"/>
                                 <VisualState x:Name="ListSizeCompact">
                                     <VisualState.Setters>
-                                        <Setter Target="MenuItemsHost.HorizontalAlignment" Value="Left"/>
-                                        <!-- This is essentially a TemplateBinding: -->
-                                        <Setter Target="MenuItemsHost.Width" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CompactPaneLength}"/>
+                                        <Setter Target="PaneContentGrid.Width" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CompactPaneLength}"/>
                                         <Setter Target="SettingsNavPaneItem.HorizontalAlignment" Value="Left"/>
-                                        <Setter Target="SettingsNavPaneItem.Width" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CompactPaneLength}"/>
                                         <Setter Target="PaneTitleTextBlock.Visibility" Value="Collapsed" />
                                         <Setter Target="PaneHeaderContentBorder.Visibility" Value="Collapsed" />
                                         <Setter Target="PaneCustomContentBorder.HorizontalAlignment" Value="Left"/>
-                                        <Setter Target="PaneCustomContentBorder.Width" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CompactPaneLength}"/>
                                         <Setter Target="FooterContentBorder.HorizontalAlignment" Value="Left"/>
-                                        <Setter Target="FooterContentBorder.Width" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CompactPaneLength}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -170,6 +169,7 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
+                        <!-- Button grid -->
                         <Grid
                             x:Name="PaneToggleButtonGrid"
                             Margin="0,0,0,8"
@@ -207,7 +207,7 @@
                                 <Button
                                     x:Name="TogglePaneButton"
                                     Style="{TemplateBinding PaneToggleButtonStyle}"
-                                    AutomationProperties.LandmarkType="Navigation"
+                                    AutomationProperties.LandmarkType="Navigation" HorizontalAlignment="Center"
                                     Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.PaneToggleButtonVisibility}"
                                     VerticalAlignment="Top">
                                     <TextBlock
@@ -231,12 +231,14 @@
                             </Grid>
                         </Grid>
 
+                        <!-- Content layouts -->
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
 
+                            <!-- DisplayMode top -->
                             <StackPanel
                                 x:Name="TopNavArea"
                                 Background="{ThemeResource NavigationViewTopPaneBackground}"
@@ -284,32 +286,25 @@
                                         HorizontalContentAlignment="Stretch"
                                         Grid.Column="2"/>
 
-                                    <!-- Top nav list -->
-                                    <winui:NavigationViewList
-                                        AutomationProperties.LandmarkType="Navigation"
-                                        AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
-                                        x:Name="TopNavMenuItemsHost"
-                                        Grid.Column="3"
-                                        SelectionMode="Single"
-                                        IsItemClickEnabled="True"
-                                        ItemTemplate="{TemplateBinding MenuItemTemplate}"
-                                        ItemTemplateSelector="{TemplateBinding MenuItemTemplateSelector}"
-                                        ItemContainerStyle="{TemplateBinding MenuItemContainerStyle}"
-                                        ItemContainerStyleSelector="{TemplateBinding MenuItemContainerStyleSelector}"
-                                        ScrollViewer.HorizontalScrollMode="Disabled"
-                                        ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                                        ScrollViewer.VerticalScrollMode="Disabled"
-                                        ScrollViewer.VerticalScrollBarVisibility="Hidden"
-                                        SingleSelectionFollowsFocus="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SingleSelectionFollowsFocus}">
-                                        <ListView.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <ItemsStackPanel Orientation="Horizontal"/>
-                                            </ItemsPanelTemplate>
-                                        </ListView.ItemsPanel>
-                                        <ListView.ItemContainerTransitions>
-                                            <TransitionCollection />
-                                        </ListView.ItemContainerTransitions>
-                                    </winui:NavigationViewList>
+                                    <!-- Top nav ItemsRepeater -->
+                                    <winui:ItemsRepeaterScrollHost
+                                            Grid.Column="3">
+                                        <ScrollViewer
+                                            HorizontalScrollMode="Disabled"
+                                            HorizontalScrollBarVisibility="Hidden"
+                                            VerticalScrollMode="Disabled"
+                                            VerticalScrollBarVisibility="Hidden">
+                                            <winui:ItemsRepeater 
+                                                AutomationProperties.LandmarkType="Navigation"
+                                                AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
+                                                AutomationProperties.AccessibilityView = "Content"
+                                                x:Name="TopNavMenuItemsHost">
+                                                <winui:ItemsRepeater.Layout>
+                                                    <winui:StackLayout Orientation="Horizontal"/>
+                                                </winui:ItemsRepeater.Layout>
+                                            </winui:ItemsRepeater>
+                                        </ScrollViewer>
+                                    </winui:ItemsRepeaterScrollHost>
 
                                     <Button 
                                         x:Name="TopNavOverflowButton"
@@ -319,7 +314,10 @@
                                         Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.OverflowButtonVisibility}">
 
                                         <Button.Flyout>
-                                            <Flyout Placement="Bottom" ElementSoundMode="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=ElementSoundMode}">
+                                            <Flyout
+                                                contract7NotPresent:Placement="Bottom"
+                                                contract7Present:Placement="BottomEdgeAlignedRight"
+                                                ElementSoundMode="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=ElementSoundMode}">
                                                 <Flyout.FlyoutPresenterStyle>
                                                     <Style TargetType="FlyoutPresenter">
                                                         <Setter Property="Padding" Value="0,8" />
@@ -327,19 +325,17 @@
                                                         <Setter Property="Margin" Value="0,-4,0,0" />
                                                     </Style>
                                                 </Flyout.FlyoutPresenterStyle>
-                                                <winui:NavigationViewList                                                     
-                                                    x:Name="TopNavMenuItemsOverflowHost" 
-                                                    ItemTemplate="{TemplateBinding MenuItemTemplate}"
-                                                    ItemTemplateSelector="{TemplateBinding MenuItemTemplateSelector}"
-                                                    ItemContainerStyle="{TemplateBinding MenuItemContainerStyle}"
-                                                    ItemContainerStyleSelector="{TemplateBinding MenuItemContainerStyleSelector}"
-                                                    SingleSelectionFollowsFocus="False"
-                                                    IsItemClickEnabled="True"
-                                                    ElementSoundMode="{TemplateBinding ElementSoundMode}">
-                                                    <ListView.ItemContainerTransitions>
-                                                        <TransitionCollection />
-                                                    </ListView.ItemContainerTransitions>
-                                                </winui:NavigationViewList>
+                                                <winui:ItemsRepeaterScrollHost>
+                                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                                        <winui:ItemsRepeater
+                                                                    AutomationProperties.AccessibilityView = "Content"
+                                                                    x:Name="TopNavMenuItemsOverflowHost">
+                                                            <winui:ItemsRepeater.Layout>
+                                                                <winui:StackLayout Orientation="Vertical"/>
+                                                            </winui:ItemsRepeater.Layout>
+                                                        </winui:ItemsRepeater>
+                                                    </ScrollViewer>
+                                                </winui:ItemsRepeaterScrollHost>
                                             </Flyout>
                                         </Button.Flyout>
                                     </Button>
@@ -386,6 +382,7 @@
                                     Child="{TemplateBinding ContentOverlay}" />
                             </StackPanel>
 
+                            <!-- Displaymode (compact/minimal/normal) left -->
                             <xf:ShellSplitView
                                 x:Name="RootSplitView"
                                 Background="{TemplateBinding Background}"
@@ -401,6 +398,7 @@
                                 <SplitView.Pane>
                                     <Grid 
                                         x:Name="PaneContentGrid"
+                                        HorizontalAlignment="Left"
                                         Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.LeftPaneVisibility}">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
@@ -466,21 +464,26 @@
                                             HorizontalContentAlignment="Stretch"
                                             Grid.Row="4" />
 
-                                        <!-- Left nav list -->
-                                        <winui:NavigationViewList
-                                            x:Name="MenuItemsHost"
-                                            AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
+                                        <!-- Left nav ItemsRepeater -->
+                                        <winui:ItemsRepeaterScrollHost
                                             Grid.Row="6"
                                             Margin="0,0,0,20"
-                                            SelectionMode="Single"
-                                            IsItemClickEnabled="True"
                                             HorizontalAlignment="Stretch"
-                                            SelectedItem="{TemplateBinding SelectedItem}"
-                                            ItemTemplate="{TemplateBinding MenuItemTemplate}"
-                                            ItemTemplateSelector="{TemplateBinding MenuItemTemplateSelector}"
-                                            ItemContainerStyle="{TemplateBinding MenuItemContainerStyle}"
-                                            ItemContainerStyleSelector="{TemplateBinding MenuItemContainerStyleSelector}"
-                                            SingleSelectionFollowsFocus="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SingleSelectionFollowsFocus}"/>
+                                            VerticalAlignment="Top">
+                                            <ScrollViewer
+                                                TabNavigation="Once"
+                                                VerticalScrollBarVisibility="Auto">
+                                                <winui:ItemsRepeater
+                                                        x:Name="MenuItemsHost"
+                                                        AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
+                                                        AutomationProperties.AccessibilityView = "Content">
+                                                    <winui:ItemsRepeater.Layout>
+                                                        <winui:StackLayout Orientation="Vertical"/>
+                                                    </winui:ItemsRepeater.Layout>
+                                                </winui:ItemsRepeater>
+                                            </ScrollViewer>
+                                        </winui:ItemsRepeaterScrollHost>
+
 
                                         <ContentControl
                                             x:Name="FooterContentBorder"

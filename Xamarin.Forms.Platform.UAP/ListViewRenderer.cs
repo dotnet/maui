@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Media;
 using WListView = Windows.UI.Xaml.Controls.ListView;
 using WBinding = Windows.UI.Xaml.Data.Binding;
 using WApp = Windows.UI.Xaml.Application;
+using WRect = Windows.Foundation.Rect;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ListView;
@@ -624,9 +625,9 @@ namespace Xamarin.Forms.Platform.UWP
 							double tHeight = content.DesiredSize.Height;
 
 							if (toPosition == ScrollToPosition.Center)
-								semanticLocation.Bounds = new Rect(0, viewportHeight / 2 - tHeight / 2, 0, 0);
+								semanticLocation.Bounds = new WRect(0, viewportHeight / 2 - tHeight / 2, 0, 0);
 							else
-								semanticLocation.Bounds = new Rect(0, viewportHeight - tHeight, 0, 0);
+								semanticLocation.Bounds = new WRect(0, viewportHeight - tHeight, 0, 0);
 
 							break;
 						}

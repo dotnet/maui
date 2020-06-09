@@ -5,7 +5,9 @@ using System.Threading;
 using CoreAnimation;
 using CoreGraphics;
 using Xamarin.Forms.Internals;
+
 #if __MOBILE__
+using UIKit;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 
 namespace Xamarin.Forms.Platform.iOS
@@ -16,6 +18,8 @@ namespace Xamarin.Forms.Platform.MacOS
 {
 	public class VisualElementTracker : IDisposable
 	{
+		const string ClipShapeLayer = "ClipShapeLayer";
+
 		readonly EventHandler<EventArg<VisualElement>> _batchCommittedHandler;
 
 		readonly PropertyChangedEventHandler _propertyChangedHandler;
@@ -109,6 +113,10 @@ namespace Xamarin.Forms.Platform.MacOS
 				e.PropertyName == Layout.CascadeInputTransparentProperty.PropertyName)
 			{
 				UpdateNativeControl(); // poorly optimized
+			}
+			else if (e.PropertyName == VisualElement.ClipProperty.PropertyName)
+			{
+				UpdateClip();
 			}
 		}
 
@@ -375,8 +383,79 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			OnUpdateNativeControl(_layer);
 
+			UpdateClip();
+
 			NativeControlUpdated?.Invoke(this, EventArgs.Empty);
 			Performance.Stop(reference);
+		}
+
+		void UpdateClip()
+		{
+			var element = Renderer.Element;
+			var uiview = Renderer.NativeView;
+
+			var formsGeometry = element.Clip;
+			var nativeGeometry = formsGeometry.ToCGPath();
+
+			var maskLayer = new CAShapeLayer
+			{
+				Name = ClipShapeLayer,
+				Path = nativeGeometry.Data,
+				FillRule = nativeGeometry.IsNonzeroFillRule ? CAShapeLayer.FillRuleNonZero : CAShapeLayer.FillRuleEvenOdd
+			};
+#if __MOBILE__
+			if (Forms.IsiOS11OrNewer)
+			{
+				if (formsGeometry != null)
+					uiview.Layer.Mask = maskLayer;
+				else
+				{
+					var isClipShapeLayer =
+						uiview.Layer.Mask != null &&
+						uiview.Layer.Mask.Name.Equals(ClipShapeLayer);
+
+					if (isClipShapeLayer)
+						uiview.Layer.Mask = null;
+				}
+			}
+			else
+			{
+				if (formsGeometry != null)
+				{
+					var maskView = new UIView
+					{
+						Frame = uiview.Frame,
+						BackgroundColor = UIColor.Black
+					};
+
+					maskView.Layer.Mask = maskLayer;
+
+					uiview.MaskView = maskView;
+				}
+				else
+				{
+					var isClipShapeLayer =
+						uiview.MaskView != null &&
+						uiview.MaskView.Layer.Mask != null &&
+						uiview.MaskView.Layer.Mask.Name.Equals(ClipShapeLayer);
+
+					if (isClipShapeLayer)
+						uiview.MaskView = null;
+				}
+			}
+#else
+			if (formsGeometry != null)
+				uiview.Layer.Mask = maskLayer;
+			else
+			{
+				var isClipShapeLayer =
+					uiview.Layer.Mask != null &&
+					uiview.Layer.Mask.Name.Equals(ClipShapeLayer);
+
+				if (isClipShapeLayer)
+					uiview.Layer.Mask = null;
+			}
+#endif
 		}
 	}
 }

@@ -18,12 +18,12 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		protected readonly TItemsView ItemsView;
 		readonly Func<View, Context, ItemContentView> _createItemContentView;
-		internal TItemsViewSource ItemsSource;
+		protected internal TItemsViewSource ItemsSource;
 
 		bool _disposed;
 		bool _usingItemTemplate = false;
 
-		internal ItemsViewAdapter(TItemsView itemsView, Func<View, Context, ItemContentView> createItemContentView = null)
+		protected internal ItemsViewAdapter(TItemsView itemsView, Func<View, Context, ItemContentView> createItemContentView = null)
 		{
 			ItemsView = itemsView ?? throw new ArgumentNullException(nameof(itemsView));
 

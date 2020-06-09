@@ -2,6 +2,7 @@
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using ERect = ElmSharp.Rect;
 using TWebView = Tizen.WebView.WebView;
 
 namespace Xamarin.Forms.Platform.Tizen
@@ -204,7 +205,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			Control.Children.Add(_refreshLayoutRenderer.NativeView);
 			var measured = _refreshLayout.Measure(Element.Width, Element.Height);
 			var parentBound = NativeView.Geometry;
-			var bound = new Rect
+			var bound = new ERect
 			{
 				X = parentBound.X,
 				Y = parentBound.Y,

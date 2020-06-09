@@ -1,7 +1,8 @@
 ﻿using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using UWPApp = Windows.UI.Xaml.Application;
-using UWPControlTemplate = Windows.UI.Xaml.Controls.ControlTemplate;
+using UwpApp = Windows.UI.Xaml.Application;
+using UwpControlTemplate = Windows.UI.Xaml.Controls.ControlTemplate;
+using UwpScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -13,7 +14,10 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public FormsListView()
 		{
-			Template = (UWPControlTemplate)UWPApp.Current.Resources["FormsListViewTemplate"];
+			Template = (UwpControlTemplate)UwpApp.Current.Resources["FormsListViewTemplate"];
+
+			ScrollViewer.SetHorizontalScrollBarVisibility(this, UwpScrollBarVisibility.Disabled);
+			ScrollViewer.SetVerticalScrollBarVisibility(this, UwpScrollBarVisibility.Auto);
 		}
 
 		public static readonly DependencyProperty EmptyViewVisibilityProperty =

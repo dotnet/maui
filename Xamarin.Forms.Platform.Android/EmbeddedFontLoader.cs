@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using Xamarin.Forms.Internals;
+using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -11,8 +12,8 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		public (bool success, string filePath) LoadFont(EmbeddedFont font)
 		{
-			var tmpdir = Path.GetTempPath();
-			var filePath = Path.Combine(tmpdir, font.FontName);
+			var tmpdir = IOPath.GetTempPath();
+			var filePath = IOPath.Combine(tmpdir, font.FontName);
 			if (File.Exists(filePath))
 				return (true, filePath);
 			try

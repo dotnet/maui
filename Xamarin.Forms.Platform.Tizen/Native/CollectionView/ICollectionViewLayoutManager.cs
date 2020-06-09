@@ -1,4 +1,4 @@
-using ElmSharp;
+using ERect = ElmSharp.Rect;
 using ESize = ElmSharp.Size;
 
 namespace Xamarin.Forms.Platform.Tizen.Native
@@ -13,9 +13,9 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 		ESize GetScrollCanvasSize();
 
-		void LayoutItems(Rect bound, bool force = false);
+		void LayoutItems(ERect bound, bool force = false);
 
-		Rect GetItemBound(int index);
+		ERect GetItemBound(int index);
 
 		void ItemInserted(int index);
 

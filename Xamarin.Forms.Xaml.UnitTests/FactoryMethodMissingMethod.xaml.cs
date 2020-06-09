@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void Throw(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
-					Assert.Throws(new XamlParseExceptionConstraint(8, 4), () => MockCompiler.Compile(typeof(FactoryMethodMissingMethod)));
+					Assert.Throws(new BuildExceptionConstraint(8, 4), () => MockCompiler.Compile(typeof(FactoryMethodMissingMethod)));
 				else
 					Assert.Throws<MissingMemberException>(() => new FactoryMethodMissingMethod(useCompiledXaml));
 			}

@@ -10,8 +10,8 @@ using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls.Maps;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Shapes;
 using Xamarin.Forms.Platform.UWP;
+using WEllipse = Windows.UI.Xaml.Shapes.Ellipse;
 
 namespace Xamarin.Forms.Maps.UWP
 {
@@ -121,7 +121,7 @@ namespace Xamarin.Forms.Maps.UWP
 		}
 
 		bool _disposed;
-		Ellipse _userPositionCircle;
+		WEllipse _userPositionCircle;
 		DispatcherTimer _timer;
 
 		void OnPinCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -516,7 +516,7 @@ namespace Xamarin.Forms.Maps.UWP
 
 			if (_userPositionCircle == null)
 			{
-				_userPositionCircle = new Ellipse
+				_userPositionCircle = new WEllipse
 				{
 					Stroke = new SolidColorBrush(Colors.White),
 					Fill = new SolidColorBrush(Colors.Blue),

@@ -8,6 +8,9 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
+using WCompositeTransform = Windows.UI.Xaml.Media.CompositeTransform;
+using WRectangleGeometry = Windows.UI.Xaml.Media.RectangleGeometry;
+using WScaleTransform = Windows.UI.Xaml.Media.ScaleTransform;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -225,6 +228,10 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				UpdateInputTransparent(Element, Container);
 			}
+			else if (e.PropertyName == VisualElement.ClipProperty.PropertyName)
+			{
+				UpdateClip(Element, Container);
+			}
 		}
 
 		protected virtual void UpdateNativeControl()
@@ -236,6 +243,7 @@ namespace Xamarin.Forms.Platform.UWP
 			UpdateOpacity(Element, Container);
 			UpdateScaleAndRotation(Element, Container);
 			UpdateInputTransparent(Element, Container);
+			UpdateClip(Element, Container);
 
 			if (_invalidateArrangeNeeded)
 			{
@@ -513,6 +521,21 @@ namespace Xamarin.Forms.Platform.UWP
 			frameworkElement.IsHitTestVisible = view.IsEnabled && !view.InputTransparent;
 		}
 
+		static void UpdateClip(VisualElement view, FrameworkElement frameworkElement)
+		{
+			var geometry = view.Clip;
+			var wGeometry = geometry.ToWindows();
+
+			// UIElement.Clip only support rectangle geometry to be used for clipping area sizing.
+			// If the used Build is 17763 or higher, we use Composition's APIs (CompositionGeometricClip) to allow Clip complex geometries.
+#if UWP_18362
+			frameworkElement.Clip(geometry);
+#else
+			if (wGeometry is WRectangleGeometry wRectangleGeometry)
+				frameworkElement.Clip = wRectangleGeometry;
+#endif
+		}
+	
 		static void UpdateOpacity(VisualElement view, FrameworkElement frameworkElement)
 		{
 			frameworkElement.Opacity = view.Opacity;
@@ -557,7 +580,7 @@ namespace Xamarin.Forms.Platform.UWP
 				}
 				else
 				{
-					frameworkElement.RenderTransform = new CompositeTransform
+					frameworkElement.RenderTransform = new WCompositeTransform
 					{
 						CenterX = anchorX,
 						CenterY = anchorY,
@@ -576,7 +599,7 @@ namespace Xamarin.Forms.Platform.UWP
 			double anchorX = view.AnchorX;
 			double anchorY = view.AnchorY;
 			frameworkElement.RenderTransformOrigin = new Windows.Foundation.Point(anchorX, anchorY);
-			frameworkElement.RenderTransform = new ScaleTransform { ScaleX = view.Scale * view.ScaleX, ScaleY = view.Scale * view.ScaleY };
+			frameworkElement.RenderTransform = new WScaleTransform { ScaleX = view.Scale * view.ScaleX, ScaleY = view.Scale * view.ScaleY };
 
 			UpdateRotation(view, frameworkElement);
 		}

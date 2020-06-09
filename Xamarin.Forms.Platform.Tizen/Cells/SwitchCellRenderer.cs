@@ -59,6 +59,13 @@ namespace Xamarin.Forms.Platform.Tizen
 				{
 					nativeView.PropagateEvents = false;
 				}
+
+				_cacheCandidate[nativeView] = toggle;
+				nativeView.Deleted += (sender, e) =>
+				{
+					_cacheCandidate.Remove(sender as EvasObject);
+				};
+
 				return nativeView;
 			}
 			return null;

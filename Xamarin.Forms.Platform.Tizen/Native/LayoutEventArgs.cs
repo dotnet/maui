@@ -1,5 +1,5 @@
 ﻿using System;
-using ElmSharp;
+using ERect = ElmSharp.Rect;
 
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// <summary>
 		/// Geometry of the layout area, absolute coordinate
 		/// </summary>
-		public Rect Geometry
+		public ERect Geometry
 		{
 			get;
 			internal set;

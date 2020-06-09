@@ -196,7 +196,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				y = itemPosition.Y;
 			}
 
-			Rect region = new Rectangle(x, y, Element.Width, Element.Height).ToPixel();
+			ERect region = new Rectangle(x, y, Element.Width, Element.Height).ToPixel();
 			await Control.ScrollToAsync(region, e.ShouldAnimate);
 			Element.SendScrollFinished();
 		}

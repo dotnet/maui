@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using Xamarin.Forms;
+using Xamarin.Forms.Build.Tasks;
 using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
@@ -25,7 +26,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void KeylessResourceThrowsMeaningfulException([Values(false, true)]bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
-					Assert.Throws<XamlParseException>(() => MockCompiler.Compile(typeof(AB946693)));
+					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(AB946693)));
 				else
 					Assert.Throws<XamlParseException>(() => new AB946693(useCompiledXaml));
 			}

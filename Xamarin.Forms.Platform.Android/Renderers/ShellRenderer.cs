@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
 using AColor = Android.Graphics.Color;
+using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
 
@@ -393,9 +394,9 @@ namespace Xamarin.Forms.Platform.Android
 
 					paint.Color = Color;
 
-					canvas.DrawRect(new Rect(0, 0, bounds.Right, TopSize), paint);
+					canvas.DrawRect(new ARect(0, 0, bounds.Right, TopSize), paint);
 
-					canvas.DrawRect(new Rect(0, bounds.Bottom - BottomSize, bounds.Right, bounds.Bottom), paint);
+					canvas.DrawRect(new ARect(0, bounds.Bottom - BottomSize, bounds.Right, bounds.Bottom), paint);
 
 					paint.Dispose();
 				}

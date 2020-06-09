@@ -1,9 +1,8 @@
 using System;
-using Android.App;
 using Android.Content;
-using Android.Graphics;
 using Android.Views;
 using Android.Widget;
+using ARect = Android.Graphics.Rect;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -26,7 +25,7 @@ namespace Xamarin.Forms.Platform.Android
 			return base.OnKeyPreIme(keyCode, e);
 		}
 
-		protected override void OnFocusChanged(bool gainFocus, FocusSearchDirection direction, Rect previouslyFocusedRect)
+		protected override void OnFocusChanged(bool gainFocus, FocusSearchDirection direction, ARect previouslyFocusedRect)
 		{
 			Window window = Context.GetActivity().Window;
 			if (gainFocus)

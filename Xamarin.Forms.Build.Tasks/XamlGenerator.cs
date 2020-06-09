@@ -11,6 +11,7 @@ using Microsoft.CSharp;
 using Xamarin.Forms.Xaml;
 using Xamarin.Forms.Internals;
 using Mono.Cecil;
+using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms.Build.Tasks
 {
@@ -173,7 +174,7 @@ namespace Xamarin.Forms.Build.Tasks
 		void GenerateCode()
 		{
 			//Create the target directory if required
-			Directory.CreateDirectory(Path.GetDirectoryName(OutputFile));
+			Directory.CreateDirectory(IOPath.GetDirectoryName(OutputFile));
 
 			var ccu = new CodeCompileUnit();
 			ccu.AssemblyCustomAttributes.Add(
@@ -390,7 +391,7 @@ namespace Xamarin.Forms.Build.Tasks
 			string[] paths = References.Split(';').Distinct().ToArray();
 
 			foreach (var path in paths) {
-				string asmName = Path.GetFileName(path);
+				string asmName = IOPath.GetFileName(path);
 				if (AssemblyIsSystem(asmName))
 					// Skip the myriad "System." assemblies and others
 					continue;				
@@ -441,7 +442,7 @@ namespace Xamarin.Forms.Build.Tasks
 				out potentialTypes);
 
 			if (typeReference == null)
-				throw new Exception($"Type {xmlType.Name} not found in xmlns {xmlType.NamespaceUri}");
+				throw new BuildException(BuildExceptionCode.TypeResolution, null, null, xmlType.Name);
 
 			return new CodeTypeReference(typeReference.FullName);
 		}

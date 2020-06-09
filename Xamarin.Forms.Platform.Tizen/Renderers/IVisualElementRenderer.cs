@@ -1,5 +1,6 @@
 using System;
 using ElmSharp;
+using ERect = ElmSharp.Rect;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -36,6 +37,6 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateLayout();
 
-		Rect GetNativeContentGeometry();
+		ERect GetNativeContentGeometry();
 	}
 }

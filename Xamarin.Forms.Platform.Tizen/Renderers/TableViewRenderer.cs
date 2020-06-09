@@ -1,9 +1,10 @@
 ﻿using System;
 using ElmSharp;
+using Xamarin.Forms.Platform.Tizen.Native;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
-	public class TableViewRenderer : ViewRenderer<TableView, Native.TableView>
+	public class TableViewRenderer : ViewRenderer<TableView, Native.ListView>
 	{
 		internal static BindableProperty PresentationProperty = BindableProperty.Create("Presentation", typeof(View), typeof(TableSectionBase), null, BindingMode.OneWay, null, null, null, null, null as BindableProperty.CreateDefaultValueDelegate);
 
@@ -17,7 +18,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Native.TableView(Forms.NativeParent));
+				SetNativeControl(CreateNativeControl(Forms.NativeParent));
 				Control.ItemSelected += OnSelected;
 			}
 
@@ -29,10 +30,22 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (e.NewElement != null)
 			{
 				e.NewElement.ModelChanged += OnRootPropertyChanged;
-				Control.ApplyTableRoot(e.NewElement.Root);
+				(Control as ITableView)?.ApplyTableRoot(e.NewElement.Root);
 			}
 
 			base.OnElementChanged(e);
+		}
+
+		protected virtual Native.ListView CreateNativeControl(EvasObject parent)
+		{
+			if (Device.Idiom == TargetIdiom.Watch)
+			{
+				return new Native.Watch.WatchTableView(parent, Forms.CircleSurface);
+			}
+			else
+			{
+				return new Native.TableView(parent);
+			}
 		}
 
 		protected override void Dispose(bool disposing)
@@ -71,7 +84,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Element != null)
 			{
-				Control.ApplyTableRoot(Element.Root);
+				(Control as ITableView)?.ApplyTableRoot(Element.Root);
 			}
 		}
 

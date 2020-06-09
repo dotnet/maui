@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Xamarin.Forms.Internals;
 using ElmSharp;
+using ERect = ElmSharp.Rect;
 using EScroller = ElmSharp.Scroller;
 
 namespace Xamarin.Forms.Platform.Tizen.Native
@@ -112,7 +113,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// <summary>
 		/// Gets the current region in the content object that is visible through the Scroller.
 		/// </summary>
-		public virtual Rect CurrentRegion => Scroller?.CurrentRegion ?? new Rect();
+		public virtual ERect CurrentRegion => Scroller?.CurrentRegion ?? new ERect();
 
 		/// <summary>
 		/// Sets or gets the value of VerticalScrollBarVisibility
@@ -391,11 +392,11 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			}
 		}
 
-		protected void InitializeFooterItemContext(GenItemClass headerTemplate)
+		protected void InitializeFooterItemContext(GenItemClass footerTemplate)
 		{
 			var context = new HeaderFooterItemContext();
 			context.Element = GetFooter();
-			context.Item = Append(headerTemplate, context);
+			context.Item = Append(footerTemplate, context);
 			context.Item.SelectionMode = GenItemSelectionMode.None;
 			context.Item.Deleted += OnFooterItemDeleted;
 			FooterItemContext = context;
@@ -508,7 +509,11 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			Type type = cell.GetType();
 			var cache = isGroup ? _groupCellRendererCache : _cellRendererCache;
 			if (cache.ContainsKey(type))
-				return cache[type];
+			{
+				var cacheCellRenderer = cache[type];
+				cacheCellRenderer.SendCreatedCell(cell, isGroup);
+				return cacheCellRenderer;
+			}
 
 			CellRenderer renderer = null;
 			renderer = Forms.GetHandler<CellRenderer>(type);
@@ -520,7 +525,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			}
 
 			renderer.SetGroupMode(isGroup);
-
+			renderer.SendCreatedCell(cell, isGroup);
 			return cache[type] = renderer;
 		}
 

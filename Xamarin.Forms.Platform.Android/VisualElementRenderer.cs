@@ -8,6 +8,7 @@ using AView = Android.Views.View;
 using Xamarin.Forms.Platform.Android.FastRenderers;
 using Android.Runtime;
 using Android.Content.Res;
+using Android.Graphics;
 #if __ANDROID_29__
 using AndroidX.Core.View;
 #else
@@ -392,6 +393,13 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 
 			UpdateLayout(((IElementController)Element).LogicalChildren);
+		}
+
+		public override void Draw(Canvas canvas)
+		{
+			canvas.ClipShape(Context, Element);
+
+			base.Draw(canvas);
 		}
 
 		static void UpdateLayout(IEnumerable<Element> children)

@@ -1,11 +1,10 @@
-﻿
-using System;
+﻿using System;
 using Android.Content;
-using Android.Graphics;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Xamarin.Forms.Platform.Android;
+using ARect = Android.Graphics.Rect;
 
 namespace Xamarin.Forms.Material.Android
 {
@@ -27,7 +26,7 @@ namespace Xamarin.Forms.Material.Android
 			return base.OnTouchEvent(e); // raises the OnClick event if focus is already received
 		}
 
-		protected override void OnFocusChanged(bool gainFocus, [GeneratedEnum] FocusSearchDirection direction, Rect previouslyFocusedRect)
+		protected override void OnFocusChanged(bool gainFocus, [GeneratedEnum] FocusSearchDirection direction, ARect previouslyFocusedRect)
 		{
 			base.OnFocusChanged(gainFocus, direction, previouslyFocusedRect);
 			PickerManager.OnFocusChanged(gainFocus, this, (IPopupTrigger)Parent.Parent);

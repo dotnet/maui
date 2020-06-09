@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ElmSharp;
+using ERect = ElmSharp.Rect;
 using ESize = ElmSharp.Size;
-
 
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 	{
 		ESize _allocatedSize;
 		bool _isLayouting;
-		Rect _last;
+		ERect _last;
 		Dictionary<int, RealizedItem> _realizedItem = new Dictionary<int, RealizedItem>();
 		List<int> _itemSizes;
 		List<bool> _cached;
@@ -94,7 +94,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		int ItemWidthConstraint => IsHorizontal ? _allocatedSize.Width * 100 : _allocatedSize.Width;
 		int ItemHeightConstraint => IsHorizontal ? _allocatedSize.Height : _allocatedSize.Height * 100;
 
-		bool ShouldRearrange(Rect viewport)
+		bool ShouldRearrange(ERect viewport)
 		{
 			if (_isLayouting)
 				return false;
@@ -108,7 +108,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			return false;
 		}
 
-		public void LayoutItems(Rect bound, bool force)
+		public void LayoutItems(ERect bound, bool force)
 		{
 			if (_allocatedSize.Width <= 0 || _allocatedSize.Height <= 0)
 				return;
@@ -228,7 +228,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			}
 		}
 
-		public Rect GetItemBound(int index)
+		public ERect GetItemBound(int index)
 		{
 			int itemSize = 0;
 			int startPoint = 0;
@@ -240,7 +240,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			}
 			else if (index >= _itemSizes.Count)
 			{
-				return new Rect(0, 0, 0, 0);
+				return new ERect(0, 0, 0, 0);
 			}
 			else if (_cached[index])
 			{
@@ -264,8 +264,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			}
 
 			return IsHorizontal ?
-				new Rect(startPoint, 0, itemSize, _allocatedSize.Height) :
-				new Rect(0, startPoint, _allocatedSize.Width, itemSize);
+				new ERect(startPoint, 0, itemSize, _allocatedSize.Height) :
+				new ERect(0, startPoint, _allocatedSize.Width, itemSize);
 		}
 
 		public void Reset()
@@ -336,12 +336,12 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			}
 		}
 
-		int GetStartIndex(Rect bound, int itemSize)
+		int GetStartIndex(ERect bound, int itemSize)
 		{
 			return ViewPortStartPoint(bound) / itemSize;
 		}
 
-		int GetStartIndex(Rect bound)
+		int GetStartIndex(ERect bound)
 		{
 			if (!_hasUnevenRows)
 			{
@@ -351,12 +351,12 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			return FindFirstGreaterOrEqualTo(_accumulatedItemSizes, ViewPortStartPoint(bound));
 		}
 
-		int GetEndIndex(Rect bound, int itemSize)
+		int GetEndIndex(ERect bound, int itemSize)
 		{
 			return (int)Math.Ceiling(ViewPortEndPoint(bound) / (double)itemSize);
 		}
 
-		int GetEndIndex(Rect bound)
+		int GetEndIndex(ERect bound)
 		{
 			if (!_hasUnevenRows)
 			{
@@ -366,17 +366,17 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			return FindFirstGreaterOrEqualTo(_accumulatedItemSizes, ViewPortEndPoint(bound));
 		}
 
-		int ViewPortStartPoint(Rect viewPort)
+		int ViewPortStartPoint(ERect viewPort)
 		{
 			return IsHorizontal ? viewPort.X : viewPort.Y;
 		}
 
-		int ViewPortEndPoint(Rect viewPort)
+		int ViewPortEndPoint(ERect viewPort)
 		{
 			return ViewPortStartPoint(viewPort) + ViewPortSize(viewPort);
 		}
 
-		int ViewPortSize(Rect viewPort)
+		int ViewPortSize(ERect viewPort)
 		{
 			return IsHorizontal ? viewPort.Width : viewPort.Height;
 		}

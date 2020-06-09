@@ -10,7 +10,7 @@ using Xamarin.Forms.Core.UITests;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	public partial class VisualControlsPage : ContentPage
+	public partial class VisualControlsPage : TestShell
 	{
 		bool isVisible = false;
 		double percentage = 0.0;
@@ -20,7 +20,9 @@ namespace Xamarin.Forms.Controls.Issues
 #if APP
 			InitializeComponent();
 #endif
-
+		}
+		protected override void Init()
+		{
 			BindingContext = this;
 		}
 
@@ -61,54 +63,38 @@ namespace Xamarin.Forms.Controls.Issues
 
 			base.OnDisappearing();
 		}
-	}
 
 
 
-	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 4435, "Visual Gallery Loads",
-		PlatformAffected.iOS | PlatformAffected.Android)]
+
+		[Preserve(AllMembers = true)]
+		[Issue(IssueTracker.Github, 4435, "Visual Gallery Loads",
+			PlatformAffected.iOS | PlatformAffected.Android)]
 #if UITEST
-	[NUnit.Framework.Category(UITestCategories.Visual)]
+		[NUnit.Framework.Category(UITestCategories.Visual)]
 #endif
-	public class Issue4435 : TestNavigationPage
-	{
-		const string Success = "Success";
-		Label successLabel;
-		protected override void Init()
+		public class Issue4435 : VisualControlsPage
 		{
-			var vg = new VisualControlsPage();
-			successLabel = new Label();
-			vg.Appearing += Vg_Appearing;
-			PushAsync(new ContentPage()
+			protected override void Init()
 			{
-				Content = new StackLayout()
-				{
-					Children =
-					{
-						successLabel
-					}
-				}
-			});
-
-			PushAsync(vg);
-		}
-
-		private void Vg_Appearing(object sender, EventArgs e)
-		{
-			Device.BeginInvokeOnMainThread(() =>
-			{
-				PopAsync();
-				successLabel.Text = Success;
-			});
-		}
+			}
 
 #if UITEST && !__WINDOWS__
-		[Test]
-		public void LoadingVisualGalleryPageDoesNotCrash()
-		{
-			RunningApp.WaitForElement(Success);
-		}
+			[Test]
+			public void LoadingVisualGalleryPageDoesNotCrash()
+			{
+				RunningApp.WaitForElement("Activity Indicators");
+			}
+
+			[Test]
+			[NUnit.Framework.Category(UITestCategories.ManualReview)]
+			public void DisabledButtonTest()
+			{
+				TapInFlyout("Disabled Button Test");
+				RunningApp.WaitForElement("If either button looks odd this test has failed.");
+				RunningApp.Screenshot("If either button looks off (wrong shadow, border drawn inside button) the test has failed.");
+			}
 #endif
+		}
 	}
 }

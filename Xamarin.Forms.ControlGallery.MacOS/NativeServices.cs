@@ -5,6 +5,7 @@ using Xamarin.Forms;
 using Xamarin.Forms.ControlGallery.MacOS;
 using Xamarin.Forms.Controls;
 using Xamarin.Forms.Platform.MacOS;
+using IOPath = System.IO.Path;
 
 [assembly: Dependency(typeof(TestCloudService))]
 [assembly: Dependency(typeof(CacheService))]
@@ -19,7 +20,7 @@ namespace Xamarin.Forms.ControlGallery.MacOS
 		public void ClearImageCache()
 		{
 			var documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-			var cache = Path.Combine(documents, ".config", ".isolated-storage", "ImageLoaderCache");
+			var cache = IOPath.Combine(documents, ".config", ".isolated-storage", "ImageLoaderCache");
 			foreach (var file in Directory.GetFiles(cache))
 			{
 				File.Delete(file);

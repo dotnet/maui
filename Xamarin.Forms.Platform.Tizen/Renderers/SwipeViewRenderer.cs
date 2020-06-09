@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using ElmSharp;
 using Xamarin.Forms.Internals;
+using ERect = ElmSharp.Rect;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -320,7 +321,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			_itemsRenderer = itemsRenderer;
 		}
 
-		static Task AnimatedMove(IAnimatable animatable, EvasObject target, Rect dest, Easing easing = null, uint length = 120)
+		static Task AnimatedMove(IAnimatable animatable, EvasObject target, ERect dest, Easing easing = null, uint length = 120)
 		{
 			var tcs = new TaskCompletionSource<bool>();
 
@@ -329,7 +330,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			new Animation((progress) =>
 			{
-				var toMove = dest;
+				ERect toMove = dest;
 				toMove.X += (int)(dx * (1 - progress));
 				toMove.Y += (int)(dy * (1 - progress));
 				target.Geometry = toMove;

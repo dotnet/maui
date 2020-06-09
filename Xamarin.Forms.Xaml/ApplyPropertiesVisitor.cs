@@ -344,27 +344,17 @@ namespace Xamarin.Forms.Xaml
 			if (xpe == null && TrySetBinding(xamlelement, property, localName, value, lineInfo, out xpe))
 				return;
 
-			var assemblyName = (context.RootAssembly ?? rootElement.GetType().GetTypeInfo().Assembly)?.GetName().Name;
 			//If it's a BindableProberty, SetValue
-			if (xpe == null && TrySetValue(xamlelement, property, attached, value, lineInfo, serviceProvider, out xpe)) {
-				if (!(node is ValueNode) && value != null && !value.GetType().GetTypeInfo().IsValueType && XamlFilePathAttribute.GetFilePathForObject(context.RootElement) is string path)
-					VisualDiagnostics.RegisterSourceInfo(value, new Uri($"{path};assembly={assemblyName}", UriKind.Relative), ((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition);
+			if (xpe == null && TrySetValue(xamlelement, property, attached, value, lineInfo, serviceProvider, out xpe))
 				return;
-			}
 
 			//If we can assign that value to a normal property, let's do it
-			if (xpe == null && TrySetProperty(xamlelement, localName, value, lineInfo, serviceProvider, context, out xpe)) {
-				if (!(node is ValueNode) && value != null && !value.GetType().GetTypeInfo().IsValueType && XamlFilePathAttribute.GetFilePathForObject(context.RootElement) is string path)
-					VisualDiagnostics.RegisterSourceInfo(value, new Uri($"{path};assembly={assemblyName}", UriKind.Relative), ((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition);
+			if (xpe == null && TrySetProperty(xamlelement, localName, value, lineInfo, serviceProvider, context, out xpe))
 				return;
-			}
 
 			//If it's an already initialized property, add to it
-			if (xpe == null && TryAddToProperty(xamlelement, propertyName, value, xKey, lineInfo, serviceProvider, context, out xpe)) {
-				if (!(node is ValueNode) && value != null && !value.GetType().GetTypeInfo().IsValueType && XamlFilePathAttribute.GetFilePathForObject(context.RootElement) is string path)
-					VisualDiagnostics.RegisterSourceInfo(value, new Uri($"{path};assembly={assemblyName}", UriKind.Relative), ((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition);
+			if (xpe == null && TryAddToProperty(xamlelement, propertyName, value, xKey, lineInfo, serviceProvider, context, out xpe))
 				return;
-			}
 
 			xpe = xpe ?? new XamlParseException($"Cannot assign property \"{localName}\": Property does not exist, or is not assignable, or mismatching type between value and property", lineInfo);
 			if (context.ExceptionHandler != null)

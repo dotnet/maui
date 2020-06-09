@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
+using WRect = Windows.Foundation.Rect;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -20,8 +16,8 @@ namespace Xamarin.Forms.Platform.UWP
 			if (element.Visibility != Visibility.Visible)
 				return false;
 
-			var elementBounds = element.TransformToVisual(container).TransformBounds(new Rect(0, 0, element.ActualWidth, element.ActualHeight));
-			var containerBounds = new Rect(0, 0, container.ActualWidth, container.ActualHeight);
+			var elementBounds = element.TransformToVisual(container).TransformBounds(new WRect(0, 0, element.ActualWidth, element.ActualHeight));
+			var containerBounds = new WRect(0, 0, container.ActualWidth, container.ActualHeight);
 
 			switch (itemsLayoutOrientation)
 			{

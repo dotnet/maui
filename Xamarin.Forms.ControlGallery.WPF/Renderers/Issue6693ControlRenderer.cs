@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Media;
 using Xamarin.Forms.ControlGallery.WPF.Renderers;
 using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Platform.WPF;
-using WColor = System.Windows.Media.Color;
+using WRect = System.Windows.Rect;
 
-[assembly:ExportRenderer(typeof(Issue6693Control), typeof(Issue6693ControlRenderer))]
+[assembly: ExportRenderer(typeof(Issue6693Control), typeof(Issue6693ControlRenderer))]
 namespace Xamarin.Forms.ControlGallery.WPF.Renderers
 {
 	public class Issue6693ControlRenderer:ViewRenderer<Issue6693Control,WIssue6693Control>
@@ -35,7 +29,7 @@ namespace Xamarin.Forms.ControlGallery.WPF.Renderers
 
 		protected override void OnRender(DrawingContext drawingContext)
 		{
-			drawingContext.DrawRectangle(Brushes.LightGray, new Pen(Brushes.Black, 1), new Rect(0,0,ActualWidth, ActualHeight));
+			drawingContext.DrawRectangle(Brushes.LightGray, new Pen(Brushes.Black, 1), new WRect(0,0,ActualWidth, ActualHeight));
 			var isEnabledText = IsEnabled ? "I'm enabled :)" : "I'm disabled :(";
 			drawingContext.DrawText(new FormattedText(isEnabledText, 
 				System.Globalization.CultureInfo.CurrentCulture, 

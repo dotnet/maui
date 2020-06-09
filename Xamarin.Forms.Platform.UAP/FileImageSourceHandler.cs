@@ -1,10 +1,10 @@
 ﻿using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -53,17 +53,20 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateImageDirectory(FileImageSource fileSource)
 		{
+			if (fileSource == null || fileSource.File == null)
+				return;
+
 			var imageDirectory = Application.Current.OnThisPlatform().GetImageDirectory();
 
 			if (!string.IsNullOrEmpty(imageDirectory))
 			{
 				var filePath = fileSource.File;
 
-				var directory = Path.GetDirectoryName(filePath);
+				var directory = IOPath.GetDirectoryName(filePath);
 
-				if (string.IsNullOrEmpty(directory) || !Path.GetFullPath(directory).Equals(Path.GetFullPath(imageDirectory)))
+				if (string.IsNullOrEmpty(directory) || !IOPath.GetFullPath(directory).Equals(IOPath.GetFullPath(imageDirectory)))
 				{
-					filePath = Path.Combine(imageDirectory, filePath);
+					filePath = IOPath.Combine(imageDirectory, filePath);
 					fileSource.File = filePath;
 				}
 			}

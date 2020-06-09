@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.Shapes;
 
 namespace Xamarin.Forms
 {
@@ -56,6 +57,8 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty ScaleYProperty = BindableProperty.Create(nameof(ScaleY), typeof(double), typeof(VisualElement), 1d);
 
 		internal static readonly BindableProperty TransformProperty = BindableProperty.Create("Transform", typeof(string), typeof(VisualElement), null, propertyChanged: OnTransformChanged);
+
+		public static readonly BindableProperty ClipProperty = BindableProperty.Create(nameof(Clip), typeof(Geometry), typeof(VisualElement), null);
 
 		public static readonly BindableProperty VisualProperty =
 			BindableProperty.Create(nameof(Visual), typeof(IVisual), typeof(VisualElement), Forms.VisualMarker.MatchParent,
@@ -464,6 +467,13 @@ namespace Xamarin.Forms
 		{
 			get { return _mockY == -1 ? (double)GetValue(YProperty) : _mockY; }
 			private set { SetValue(YPropertyKey, value); }
+		}
+
+		[TypeConverter(typeof(PathGeometryConverter))]
+		public Geometry Clip
+		{
+			get { return (Geometry)GetValue(ClipProperty); }
+			set { SetValue(ClipProperty, value); }
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]

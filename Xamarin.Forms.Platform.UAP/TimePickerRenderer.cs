@@ -6,6 +6,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Text;
 using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
+using Windows.UI.Xaml.Controls.Primitives;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -50,6 +51,18 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateCharacterSpacing();
 				UpdateFlowDirection();
 			}
+		}
+
+		internal override void OnElementFocusChangeRequested(object sender, VisualElement.FocusRequestArgs args)
+		{
+			base.OnElementFocusChangeRequested(sender, args);
+
+			// Show a picker fly out on focus to match iOS and Android behavior
+			var flyout = new TimePickerFlyout { Placement = FlyoutPlacementMode.Bottom, Time = Control.Time };
+			flyout.TimePicked += (p, e) => Control.Time = p.Time;
+			if (!Element.IsVisible)
+				flyout.Placement = FlyoutPlacementMode.Full;
+			flyout.ShowAt(Control);
 		}
 
 		void ControlOnLoaded(object sender, RoutedEventArgs routedEventArgs)

@@ -98,7 +98,7 @@ namespace Xamarin.Forms.Controls.Issues
 			this.Content = stack;
 		}
 #if UITEST
-		[Test]
+	//	[Test]
 		public void Issue32871Test()
 		{
 			RunningApp.WaitForElement(q => q.Marked(Ids.BindButton));

@@ -5,6 +5,8 @@ using NUnit.Framework;
 
 using Xamarin.Forms.Core.UnitTests;
 using Xamarin.Forms;
+using Xamarin.Forms.Build.Tasks;
+
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	[XamlCompilation(XamlCompilationOptions.Skip)]
@@ -40,7 +42,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void ErrorOnUnknownXmlnsForDataType(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
-					Assert.Throws<XamlParseException>(() => MockCompiler.Compile(typeof(Gh2549)));
+					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh2549)));
 			}
 		}
 	}
