@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using Xamarin.Forms;
+using Xamarin.Forms.Build.Tasks;
 using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
@@ -24,7 +25,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void ReportSyntaxError([Values(false, true)]bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
-					Assert.Throws<XamlParseException>(() => MockCompiler.Compile(typeof(Gh5378_1)));
+					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh5378_1)));
 				else
 					Assert.Throws<XamlParseException>(() => new Gh5378_1(useCompiledXaml));
 			}

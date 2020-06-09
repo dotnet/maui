@@ -442,7 +442,7 @@ namespace Xamarin.Forms.Build.Tasks
 				out potentialTypes);
 
 			if (typeReference == null)
-				throw new Exception($"Type {xmlType.Name} not found in xmlns {xmlType.NamespaceUri}");
+				throw new BuildException(BuildExceptionCode.TypeResolution, null, null, xmlType.Name);
 
 			return new CodeTypeReference(typeReference.FullName);
 		}

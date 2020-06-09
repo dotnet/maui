@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Core.XamlC
 			//fail early
 			var resourceId = XamlCTask.GetResourceIdForPath(module, resourcePath);
 			if (resourceId == null)
-				throw new XamlParseException($"Resource '{value}' not found.", node);
+				throw new BuildException(BuildExceptionCode.ResourceMissing, node, null, value);
 
 			var resourceDictionaryType = ("Xamarin.Forms.Core", "Xamarin.Forms", "ResourceDictionary");
 

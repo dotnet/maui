@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using Xamarin.Forms.Build.Tasks;
 using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
@@ -35,10 +36,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TestCase(false)]
 			public void DoesNotAllowGridRowDefinition(bool useCompiledXaml)
 			{
-				if (!useCompiledXaml)
-					Assert.Throws<XamlParseException>(() => new Bz43450(useCompiledXaml));
+				if (useCompiledXaml)
+					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Bz43450)));
 				else
-					Assert.Throws<XamlParseException>(() => MockCompiler.Compile(typeof(Bz43450)));
+					Assert.Throws<XamlParseException>(() => new Bz43450(useCompiledXaml));
 			}
 		}
 	}

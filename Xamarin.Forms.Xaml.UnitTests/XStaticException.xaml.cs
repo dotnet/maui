@@ -51,10 +51,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TestCase(true)]
 			public void ThrowOnInstanceProperty(bool useCompiledXaml)
 			{
-				if (!useCompiledXaml)
-					Assert.Throws(new XamlParseExceptionConstraint(7, 6), () => new XStaticException(useCompiledXaml));
+				if (useCompiledXaml)
+					Assert.Throws(new BuildExceptionConstraint(7, 6), () => MockCompiler.Compile(typeof(XStaticException)));
 				else
-					Assert.Throws(new XamlParseExceptionConstraint(7, 6), () => MockCompiler.Compile(typeof(XStaticException)));
+					Assert.Throws(new XamlParseExceptionConstraint(7, 6), () => new XStaticException(useCompiledXaml));
 			}
 		}
 	}

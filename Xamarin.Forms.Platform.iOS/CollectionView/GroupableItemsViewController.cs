@@ -166,7 +166,7 @@ namespace Xamarin.Forms.Platform.iOS
 				return CGSize.Empty;
 			}
 
-			if (section > ItemsSource.GroupCount - 1)
+			if (ItemsSource.GroupCount < 1 || section > ItemsSource.GroupCount - 1)
 			{
 				return CGSize.Empty;
 			}
@@ -249,7 +249,6 @@ namespace Xamarin.Forms.Platform.iOS
 		}
 
 		// These measurement methods are only necessary for iOS 10 and lower
-
 		CGSize MeasureTemplatedSupplementaryCell(NSString elementKind, nint section, NSString reuseId)
 		{
 			if (_measurementCellTemplated == null)

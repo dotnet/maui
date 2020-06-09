@@ -36,7 +36,7 @@ namespace Xamarin.Forms.Core.XamlC
 				}
 			} while (false);
 
-			throw new XamlParseException(String.Format("Cannot convert \"{0}\" into {1}", value, typeof(LayoutOptions)), node);
+			throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(LayoutOptions));
 		}
 	}
 }

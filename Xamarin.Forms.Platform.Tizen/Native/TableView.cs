@@ -5,7 +5,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 	/// <summary>
 	/// Extends the ListView class to provide TableView class implementation.
 	/// </summary>
-	public class TableView : ListView
+	public class TableView : ListView, ITableView
 	{
 
 		static readonly SectionCellRenderer _sectionCellRenderer = new SectionCellRenderer();

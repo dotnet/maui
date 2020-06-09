@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 using NUnit.Framework;
-
+using Xamarin.Forms.Build.Tasks;
 using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void ErrorOnMissingDefaultCtor([Values (false, true)]bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
-					Assert.Throws<XamlParseException>(() => MockCompiler.Compile(typeof(Gh4751)));
+					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh4751)));
 				else
 					Assert.Throws<XamlParseException>(() => new Gh4751(useCompiledXaml));
 			}

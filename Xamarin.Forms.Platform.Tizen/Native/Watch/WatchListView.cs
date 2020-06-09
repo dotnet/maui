@@ -59,7 +59,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 
 		protected override void UpdateFooter()
 		{
-			if (GetHeader() != null)
+			if (GetFooter() != null)
 			{
 				base.UpdateFooter();
 			}

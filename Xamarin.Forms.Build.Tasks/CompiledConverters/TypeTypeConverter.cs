@@ -44,7 +44,7 @@ namespace Xamarin.Forms.Core.XamlC
 			yield break;
 
 		error:
-			throw new XamlParseException($"Cannot convert \"{value}\" into {typeof(Type)}", node);
+			throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Type));
 		}
 	}
 }

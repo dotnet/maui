@@ -300,7 +300,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			RestoreIfNeeded(projectFile, sdkStyle);
 
 			string log = Build(projectFile, additionalArgs: "/p:XFXamlCValidateOnly=True", shouldSucceed: false);
-			StringAssert.Contains("MainPage.xaml(7,6): error : Position 7:6. Type NotARealThing not found", log);
+			StringAssert.Contains("MainPage.xaml(7,6): XamlC error XFC0000: Cannot resolve type \"NotARealThing\".", log);
 		}
 
 		/// <summary>
