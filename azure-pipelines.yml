@@ -51,7 +51,7 @@ jobs:
           msbuildArguments: '/t:Pack /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
 #      - task: DotNetCoreCLI@2
 #        displayName: Publish to GitHub NuGet Packages
-#        condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))
+#        condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/main'))
 #        inputs:
 #          command: 'custom'
 #          custom: 'nuget'
