@@ -6,7 +6,7 @@
     <RootNamespace>Xamarin.Essentials</RootNamespace>
     <PackageId>Xamarin.Essentials</PackageId>
     <!-- PackageIcon>icon.png</PackageIcon -->
-    <PackageIconUrl>https://raw.githubusercontent.com/xamarin/Essentials/master/Assets/xamarin.essentials_128x128.png</PackageIconUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/xamarin/Essentials/main/Assets/xamarin.essentials_128x128.png</PackageIconUrl>
     <Summary>Xamarin.Essentials: a kit of essential API's for your apps</Summary>
     <PackageTags>xamarin, windows, uwp, ios, android, watchos, tvos, tizen, toolkit, xamarin.forms, Xamarin.Essentials, kit</PackageTags>
     <Title>Xamarin.Essentials</Title>
