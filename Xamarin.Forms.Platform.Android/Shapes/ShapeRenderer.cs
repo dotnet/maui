@@ -171,6 +171,8 @@ namespace Xamarin.Forms.Platform.Android
 
         Stretch _aspect;
 
+        AMatrix _transform;
+
         public ShapeView(Context context) : base(context)
         {
             _drawable = new ShapeDrawable(null);
@@ -223,6 +225,13 @@ namespace Xamarin.Forms.Platform.Android
         {
             _path = path;
             UpdatePathShape();
+        }
+
+        public void UpdateShapeTransform(AMatrix matrix)
+        {
+            _transform = matrix;
+            _path.Transform(_transform);
+            Invalidate();
         }
 
         public SizeRequest GetDesiredSize()

@@ -155,6 +155,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		public override void Draw(Canvas canvas)
 		{
+			canvas.ClipShape(Context, Element);
+
 			if (_backgroundTracker?.BackgroundDrawable != null)
 				_backgroundTracker.BackgroundDrawable.DrawCircle(canvas, canvas.Width, canvas.Height, base.Draw);
 			else

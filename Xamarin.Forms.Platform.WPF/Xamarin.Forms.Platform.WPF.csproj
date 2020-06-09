@@ -16,6 +16,9 @@
     <Compile Include="..\Xamarin.Forms.Core\Crc64.cs">
       <Link>Crc64.cs</Link>
     </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.UAP\Extensions\TransformExtensions.cs" Link="Extensions\TransformExtensions.cs" />
+    <Compile Include="..\Xamarin.Forms.Platform.UAP\PointExtensions.cs" Link="Extensions\PointExtensions.cs" />
+    <Compile Include="..\Xamarin.Forms.Platform.UAP\Shapes\PathRenderer.cs" Link="Shapes\PathRenderer.cs" />
     <Compile Include="..\Xamarin.Forms.Platform.UAP\PointCollectionExtensions.cs" Link="Extensions\PointCollectionExtensions.cs" />
     <Compile Include="..\Xamarin.Forms.Platform.UAP\Shapes\EllipseRenderer.cs" Link="Shapes\EllipseRenderer.cs" />
     <Compile Include="..\Xamarin.Forms.Platform.UAP\Shapes\LineRenderer.cs" Link="Shapes\LineRenderer.cs" />

@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Core;
-using Windows.ApplicationModel.LockScreen;
 using Windows.Security.Cryptography;
 using Windows.Security.Cryptography.Core;
 using Windows.Storage;
@@ -22,6 +21,7 @@ using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
+using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -66,7 +66,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				try
 				{
-					Assembly assembly = Assembly.Load(new AssemblyName { Name = Path.GetFileNameWithoutExtension(file.Name) });
+					Assembly assembly = Assembly.Load(new AssemblyName { Name = IOPath.GetFileNameWithoutExtension(file.Name) });
 
 					assemblies.Add(assembly);
 				}

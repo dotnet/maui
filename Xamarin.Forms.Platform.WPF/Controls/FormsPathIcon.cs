@@ -1,15 +1,15 @@
 ﻿using System.Windows;
-using System.Windows.Media;
+using WGeometry = System.Windows.Media.Geometry;
 
 namespace Xamarin.Forms.Platform.WPF.Controls
 {
 	public class FormsPathIcon : FormsElementIcon
 	{
-		public static readonly DependencyProperty DataProperty = DependencyProperty.Register("Data", typeof(Geometry), typeof(FormsPathIcon));
+		public static readonly DependencyProperty DataProperty = DependencyProperty.Register("Data", typeof(WGeometry), typeof(FormsPathIcon));
 
-		public Geometry Data
+		public WGeometry Data
 		{
-			get { return (Geometry)GetValue(DataProperty); }
+			get { return (WGeometry)GetValue(DataProperty); }
 			set { SetValue(DataProperty, value); }
 		}
 

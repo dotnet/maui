@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Globalization;
-using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using Xamarin.Forms.Platform.WPF.Controls;
 using Xamarin.Forms.Platform.WPF.Enums;
+using IOPath = System.IO.Path;
+using WGeometry = System.Windows.Media.Geometry;
 
 namespace Xamarin.Forms.Platform.WPF.Converters
 {
@@ -16,9 +17,9 @@ namespace Xamarin.Forms.Platform.WPF.Converters
 			{
 				if (Enum.TryParse(imageSource.File, true, out Symbol symbol))
 					return new FormsSymbolIcon() { Symbol = symbol };
-				else if (TryParseGeometry(imageSource.File, out Geometry geometry))
+				else if (TryParseGeometry(imageSource.File, out WGeometry geometry))
 					return new FormsPathIcon() { Data = geometry };
-				else if (Path.GetExtension(imageSource.File) != null)
+				else if (IOPath.GetExtension(imageSource.File) != null)
 					return new FormsBitmapIcon() { UriSource = new Uri(imageSource.File, UriKind.RelativeOrAbsolute) };
 			}
 			else if (value is FontImageSource fontsource)
@@ -34,12 +35,12 @@ namespace Xamarin.Forms.Platform.WPF.Converters
 			throw new NotImplementedException();
 		}
 
-		private bool TryParseGeometry(string value, out Geometry geometry)
+		private bool TryParseGeometry(string value, out WGeometry geometry)
 		{
 			geometry = null;
 			try
 			{
-				geometry = Geometry.Parse(value);
+				geometry = WGeometry.Parse(value);
 				return true;
 			}
 			catch (Exception)

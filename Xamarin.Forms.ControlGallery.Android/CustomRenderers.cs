@@ -30,9 +30,9 @@ using NestedScrollView = global::AndroidX.Core.Widget.NestedScrollView;
 using FragmentTransaction = Android.Support.V4.App.FragmentTransaction;
 using NestedScrollView = global::Android.Support.V4.Widget.NestedScrollView;
 #endif
-using System.IO;
 using AMenuItemCompat = global::Android.Support.V4.View.MenuItemCompat;
 using Android.Support.V4.Content;
+using IOPath = System.IO.Path;
 
 [assembly: ExportRenderer(typeof(Issue5461.ScrollbarFadingEnabledFalseScrollView), typeof(ScrollbarFadingEnabledFalseScrollViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue1942.CustomGrid), typeof(Issue1942GridRenderer))]
@@ -104,7 +104,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 				if (toolBarItem.IconImageSource is FileImageSource fileImageSource)
 				{
-					var name = Path.GetFileNameWithoutExtension(fileImageSource.File);
+					var name = IOPath.GetFileNameWithoutExtension(fileImageSource.File);
 					var id = Xamarin.Forms.Platform.Android.ResourceManager.GetDrawableByName(name);
 					if (id != 0)
 					{

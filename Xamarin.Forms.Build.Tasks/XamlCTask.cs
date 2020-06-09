@@ -5,14 +5,12 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using Microsoft.Build.Framework;
-
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-
 using Xamarin.Forms.Xaml;
-
 using static Microsoft.Build.Framework.MessageImportance;
 using static Mono.Cecil.Cil.OpCodes;
+using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms.Build.Tasks
 {
@@ -65,7 +63,7 @@ namespace Xamarin.Forms.Build.Tasks
 					if (!string.IsNullOrEmpty(ReferencePath)) {
 						var paths = ReferencePath.Replace("//", "/").Split(';').Distinct();
 						foreach (var p in paths) {
-							var searchpath = Path.GetDirectoryName(p);
+							var searchpath = IOPath.GetDirectoryName(p);
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 2)}Adding searchpath {searchpath}");
 							xamlCResolver.AddSearchDirectory(searchpath);
 						}
@@ -82,7 +80,7 @@ namespace Xamarin.Forms.Build.Tasks
 					ReadSymbols = debug && !ValidateOnly, // We don't need symbols for ValidateOnly, since we won't be writing
 				};
 
-				using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(Path.GetFullPath(Assembly),readerParameters)) {
+				using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(IOPath.GetFullPath(Assembly),readerParameters)) {
 					CustomAttribute xamlcAttr;
 					if (assemblyDefinition.HasCustomAttributes &&
 						(xamlcAttr =

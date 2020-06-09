@@ -3,6 +3,7 @@ using System.Linq;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using AColor = Android.Graphics.Color;
+using APath = Android.Graphics.Path;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -185,7 +186,7 @@ namespace Xamarin.Forms.Platform.Android
 		void DrawBackground(Canvas canvas, int width, int height, bool pressed)
 		{
 			var paint = new Paint { AntiAlias = true };
-			var path = new Path();
+			var path = new APath();
 
 			float borderRadius = ConvertCornerRadiusToPixels();
 
@@ -193,7 +194,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			rect.Inset(PaddingLeft, PaddingTop);
 
-			path.AddRoundRect(rect, borderRadius, borderRadius, Path.Direction.Cw);
+			path.AddRoundRect(rect, borderRadius, borderRadius, APath.Direction.Cw);
 
 			paint.Color = pressed ? PressedBackgroundColor.ToAndroid() : BackgroundColor.ToAndroid();
 			paint.SetStyle(Paint.Style.Fill);
@@ -232,7 +233,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				var borderThickness = _convertToPixels(BorderElement.BorderWidth);
 
-				using (var path = new Path())
+				using (var path = new APath())
 				{
 					float borderWidth = _convertToPixels(BorderElement.BorderWidth);
 					float inset = borderWidth / 2;
@@ -242,7 +243,7 @@ namespace Xamarin.Forms.Platform.Android
 
 					RectF rect = new RectF(0, 0, width , height);
 					rect.Inset(PaddingLeft, PaddingTop);
-					path.AddRoundRect(rect, borderRadius, borderRadius, Path.Direction.Ccw);
+					path.AddRoundRect(rect, borderRadius, borderRadius, APath.Direction.Ccw);
 
 					canvas.Save();
 					canvas.ClipPath(path);
@@ -267,7 +268,7 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 
 			using (var paint = new Paint { AntiAlias = true })
-			using (var path = new Path())
+			using (var path = new APath())
 			{
 				float borderWidth = _convertToPixels(BorderElement.BorderWidth);
 				float inset = borderWidth / 2;
@@ -278,7 +279,7 @@ namespace Xamarin.Forms.Platform.Android
 				RectF rect = new RectF(0, 0, width, height);
 				rect.Inset(inset + PaddingLeft, inset + PaddingTop);
 
-				path.AddRoundRect(rect, borderRadius, borderRadius, Path.Direction.Cw);
+				path.AddRoundRect(rect, borderRadius, borderRadius, APath.Direction.Cw);
 				paint.StrokeWidth = borderWidth;
 				paint.SetStyle(Paint.Style.Stroke);
 				paint.Color = BorderElement.BorderColor.ToAndroid();

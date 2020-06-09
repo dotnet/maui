@@ -3,8 +3,8 @@ using NUnit.Framework;
 using System.Threading;
 using System.IO;
 using System.Threading.Tasks;
-using System.Reflection;
 using System.IO.IsolatedStorage;
+using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms.Core.UnitTests
 {
@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			string cacheName = "ImageLoaderCache";
 			if (NativeStore.DirectoryExists (cacheName)) {
 				foreach (var f in NativeStore.GetFileNames (cacheName + "/*"))
-					NativeStore.DeleteFile (Path.Combine (cacheName, f));
+					NativeStore.DeleteFile (IOPath.Combine (cacheName, f));
 			}
 			NativeStore.Dispose ();
 			NativeStore = null;

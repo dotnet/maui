@@ -4,9 +4,8 @@ using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Views;
-using AButton = Android.Widget.Button;
 using ACanvas = Android.Graphics.Canvas;
-using GlobalResource = Android.Resource;
+using APath = Android.Graphics.Path;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -175,8 +174,8 @@ namespace Xamarin.Forms.Platform.Android
 			void DrawBackground(ACanvas canvas, int width, int height, float cornerRadius, bool pressed)
 			{
 				using (var paint = new Paint { AntiAlias = true })
-				using (var path = new Path())
-				using (Path.Direction direction = Path.Direction.Cw)
+				using (var path = new APath())
+				using (APath.Direction direction = APath.Direction.Cw)
 				using (Paint.Style style = Paint.Style.Fill)
 				using (var rect = new RectF(0, 0, width, height))
 				{
@@ -196,8 +195,8 @@ namespace Xamarin.Forms.Platform.Android
 			void DrawOutline(ACanvas canvas, int width, int height, float cornerRadius)
 			{
 				using (var paint = new Paint { AntiAlias = true })
-				using (var path = new Path())
-				using (Path.Direction direction = Path.Direction.Cw)
+				using (var path = new APath())
+				using (APath.Direction direction = APath.Direction.Cw)
 				using (Paint.Style style = Paint.Style.Stroke)
 				using (var rect = new RectF(0, 0, width, height))
 				{

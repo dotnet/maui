@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Xml;
-
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms.Build.Tasks
 {
@@ -38,9 +38,9 @@ namespace Xamarin.Forms.Build.Tasks
 			for (int i = 0; i < XamlFiles.Length; i++) {
 				var xamlFile = XamlFiles[i];
 				var outputFile = OutputFiles[i].ItemSpec;
-				if (Path.DirectorySeparatorChar == '/' && outputFile.Contains(@"\"))
+				if (IOPath.DirectorySeparatorChar == '/' && outputFile.Contains(@"\"))
 					outputFile = outputFile.Replace('\\','/');
-				else if (Path.DirectorySeparatorChar == '\\' && outputFile.Contains(@"/"))
+				else if (IOPath.DirectorySeparatorChar == '\\' && outputFile.Contains(@"/"))
 					outputFile = outputFile.Replace('/', '\\');
 	
 				var generator = new XamlGenerator(xamlFile, Language, AssemblyName, outputFile, References, Log);

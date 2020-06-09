@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
+using IOPath = System.IO.Path;
 using TApplication = Tizen.Applications.Application;
 
 namespace Xamarin.Forms.Platform.Tizen
@@ -19,7 +20,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (path == null)
 				throw new ArgumentNullException(nameof(path));
-			Directory.CreateDirectory(Path.Combine(_rootPath, path));
+			Directory.CreateDirectory(IOPath.Combine(_rootPath, path));
 		}
 
 		public Task CreateDirectoryAsync(string path)
@@ -35,7 +36,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (dest == null)
 				throw new ArgumentNullException(nameof(dest));
 
-			File.Move(Path.Combine(_rootPath, source), Path.Combine(_rootPath, dest));
+			File.Move(IOPath.Combine(_rootPath, source), IOPath.Combine(_rootPath, dest));
 		}
 
 		public void DeleteFile(string path)
@@ -45,14 +46,14 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (path.Trim().Length == 0)
 				throw new ArgumentException("An empty path is not valid.");
 
-			File.Delete(Path.Combine(_rootPath, path));
+			File.Delete(IOPath.Combine(_rootPath, path));
 		}
 
 		public bool DirectoryExists(string path)
 		{
 			if (path == null)
 				throw new ArgumentNullException(nameof(path));
-			return Directory.Exists(Path.Combine(_rootPath, path));
+			return Directory.Exists(IOPath.Combine(_rootPath, path));
 		}
 
 		public Task<bool> GetDirectoryExistsAsync(string path)
@@ -64,7 +65,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (path == null)
 				throw new ArgumentNullException(nameof(path));
-			return File.Exists(Path.Combine(_rootPath, path));
+			return File.Exists(IOPath.Combine(_rootPath, path));
 		}
 
 		public Task<bool> GetFileExistsAsync(string path)
@@ -79,7 +80,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (path.Trim().Length == 0)
 				throw new ArgumentException("An empty path is not valid.");
 
-			string fullPath = Path.Combine(_rootPath, path);
+			string fullPath = IOPath.Combine(_rootPath, path);
 			if (File.Exists(fullPath))
 				return File.GetLastWriteTime(fullPath);
 
@@ -108,7 +109,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (path.Trim().Length == 0)
 				throw new ArgumentException("An empty path is not valid.");
 
-			string fullPath = Path.Combine(_rootPath, path);
+			string fullPath = IOPath.Combine(_rootPath, path);
 			return new FileStream(fullPath, mode, access, share);
 		}
 

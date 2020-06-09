@@ -37,6 +37,7 @@ using UIKit;
 [assembly: ExportRenderer(typeof(Page), typeof(PageRenderer))]
 [assembly: ExportRenderer(typeof(MasterDetailPage), typeof(PhoneMasterDetailRenderer), UIUserInterfaceIdiom.Phone)]
 [assembly: ExportRenderer(typeof(RefreshView), typeof(RefreshViewRenderer))]
+[assembly: ExportRenderer(typeof(Path), typeof(PathRenderer))]
 #endif
 
 [assembly: ExportRenderer(typeof(MasterDetailPage), typeof(TabletMasterDetailRenderer), UIUserInterfaceIdiom.Pad)]

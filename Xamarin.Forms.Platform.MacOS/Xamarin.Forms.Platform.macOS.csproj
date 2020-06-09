@@ -272,6 +272,15 @@
     <Compile Include="..\Xamarin.Forms.Platform.iOS\Extensions\DoubleCollectionExtensions.cs">
       <Link>Extensions\DoubleCollectionExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.iOS\Extensions\GeometryExtensions.cs">
+      <Link>Extensions\GeometryExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.iOS\Extensions\TransformExtensions.cs">
+      <Link>Extensions\TransformExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.iOS\Shapes\PathRenderer.cs">
+      <Link>Shapes\PathRenderer.cs</Link>
+    </Compile>
     <Compile Include="..\Xamarin.Forms.Platform.iOS\Extensions\PointCollectionExtensions.cs">
       <Link>Extensions\PointCollectionExtensions.cs</Link>
     </Compile>

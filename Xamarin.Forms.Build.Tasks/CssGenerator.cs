@@ -1,12 +1,11 @@
 ﻿using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.IO;
-
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.CSharp;
-
 using Xamarin.Forms.Xaml;
+using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms.Build.Tasks
 {
@@ -79,7 +78,7 @@ namespace Xamarin.Forms.Build.Tasks
 		void GenerateCode()
 		{
 			//Create the target directory if required
-			Directory.CreateDirectory(Path.GetDirectoryName(OutputFile));
+			Directory.CreateDirectory(IOPath.GetDirectoryName(OutputFile));
 
 			var ccu = new CodeCompileUnit();
 			ccu.AssemblyCustomAttributes.Add(

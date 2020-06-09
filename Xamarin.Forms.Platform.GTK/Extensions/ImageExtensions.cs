@@ -1,10 +1,10 @@
 ﻿using Gdk;
 using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.GTK.Renderers;
+using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms.Platform.GTK.Extensions
 {
@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Platform.GTK.Extensions
 
 					if (!string.IsNullOrEmpty(file))
 					{
-						var imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, file);
+						var imagePath = IOPath.Combine(AppDomain.CurrentDomain.BaseDirectory, file);
 
 						image = size.HasValue
 							? new Pixbuf(imagePath, (int)size.Value.Width, (int)size.Value.Height)

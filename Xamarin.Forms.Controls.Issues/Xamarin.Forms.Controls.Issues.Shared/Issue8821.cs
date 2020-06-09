@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
+using IOPath = System.IO.Path;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -79,7 +80,7 @@ namespace Xamarin.Forms.Controls.Issues
 #else
 			path = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
 #endif
-			SecondImageSource = Path.Combine(path, "Issue8821.gif");
+			SecondImageSource = IOPath.Combine(path, "Issue8821.gif");
 			File.WriteAllBytes(SecondImageSource, bytes);
 
 			_image.Source = SecondImageSource;

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using Windows.Storage;
+using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -49,8 +50,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 		static string CleanseFilePath(string filePath)
 		{
-			var fontName = Path.GetFileName(filePath);
-			filePath = Path.Combine("local", _fontCacheFolderName, fontName);
+			var fontName = IOPath.GetFileName(filePath);
+			filePath = IOPath.Combine("local", _fontCacheFolderName, fontName);
 			var baseUri = new Uri("ms-appdata://");
 			var uri = new Uri(baseUri, filePath);
 			var relativePath = uri.ToString().TrimEnd('/');

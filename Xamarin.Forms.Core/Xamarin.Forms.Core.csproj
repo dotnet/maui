@@ -22,7 +22,6 @@
 	</ItemGroup>	
 	<ItemGroup>
 	  <Folder Include="Xaml\Diagnostics\" />
-	  <Folder Include="Shapes\" />
 	</ItemGroup>
 	<PropertyGroup>
     <GitInfoReportImportance>high</GitInfoReportImportance>

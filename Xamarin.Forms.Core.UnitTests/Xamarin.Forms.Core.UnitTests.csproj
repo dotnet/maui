@@ -241,6 +241,9 @@
     <Compile Include="FlexOrderTests.cs" />
     <Compile Include="FontAttributeConverterUnitTests.cs" />
     <Compile Include="AppThemeTests.cs" />
+    <Compile Include="DoubleCollectionTests.cs" />
+    <Compile Include="PointCollectionTests.cs" />
+    <Compile Include="PathFigureCollectionTests.cs" />
     <Compile Include="PolygonTests.cs" />
     <Compile Include="PolylineTests.cs" />
     <Compile Include="RectangleTests.cs" />

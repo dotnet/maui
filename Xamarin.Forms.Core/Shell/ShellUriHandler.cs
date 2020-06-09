@@ -2,8 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
+using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms
 {
@@ -17,7 +17,7 @@ namespace Xamarin.Forms
 		{
 			if (path.OriginalString.StartsWith("..") && shell?.CurrentState != null)
 			{
-				var result = Path.Combine(shell.CurrentState.FullLocation.OriginalString, path.OriginalString);
+				var result = IOPath.Combine(shell.CurrentState.FullLocation.OriginalString, path.OriginalString);
 				var returnValue = ConvertToStandardFormat("scheme", "host", null, new Uri(result, UriKind.Relative));
 				return new Uri(FormatUri(returnValue.PathAndQuery), UriKind.Relative);
 			}

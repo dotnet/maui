@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Forms.Platform.GTK.Extensions;
 using DrawingFont = System.Drawing.Font;
+using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms.Platform.GTK.Renderers
 {
@@ -152,7 +153,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				var file = filesource.File;
 				if (!string.IsNullOrEmpty(file))
 				{
-					var imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, file);
+					var imagePath = IOPath.Combine(AppDomain.CurrentDomain.BaseDirectory, file);
 
 					if (File.Exists(imagePath))
 					{

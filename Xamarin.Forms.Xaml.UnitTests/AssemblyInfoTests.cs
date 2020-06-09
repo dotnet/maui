@@ -1,9 +1,9 @@
 using NUnit.Framework;
-using System.Collections.Generic;
 using System;
 using System.IO;
 using System.Reflection;
 using System.Diagnostics;
+using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms.MSBuild.UnitTests
 {
@@ -69,7 +69,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 
 		static string GetFileFromRoot(string file)
 		{
-			var gitInfoFile = Path.Combine(TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", file);
+			var gitInfoFile = IOPath.Combine(TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", file);
 			if (!File.Exists(gitInfoFile))
 			{
 				//NOTE: VSTS may be running tests in a staging directory, so we can use an environment variable to find the source
@@ -77,7 +77,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 				var sourcesDirectory = Environment.GetEnvironmentVariable("BUILD_SOURCESDIRECTORY");
 				if (!string.IsNullOrEmpty(sourcesDirectory))
 				{
-					gitInfoFile = Path.Combine(sourcesDirectory, file);
+					gitInfoFile = IOPath.Combine(sourcesDirectory, file);
 					if (!File.Exists(gitInfoFile))
 					{
 						Assert.Fail($"Unable to find {file} at path: {gitInfoFile}");

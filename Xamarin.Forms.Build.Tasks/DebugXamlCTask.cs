@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
-
 using static Microsoft.Build.Framework.MessageImportance;
+using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms.Build.Tasks
 {
@@ -28,7 +26,7 @@ namespace Xamarin.Forms.Build.Tasks
 			if (!string.IsNullOrEmpty(ReferencePath)) {
 				var paths = ReferencePath.Replace("//", "/").Split(';');
 				foreach (var p in paths) {
-					var searchpath = Path.GetDirectoryName(p);
+					var searchpath = IOPath.GetDirectoryName(p);
 					LoggingHelper.LogMessage(Low, $"{new string(' ', 2)}Adding searchpath {searchpath}");
 					resolver.AddSearchDirectory(searchpath);
 				}

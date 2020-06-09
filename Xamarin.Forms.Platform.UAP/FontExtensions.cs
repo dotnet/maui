@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using Windows.UI.Text;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
-using Xamarin.Forms.Core;
 using Xamarin.Forms.Internals;
+using IOPath = System.IO.Path;
 using WApplication = Windows.UI.Xaml.Application;
 
 namespace Xamarin.Forms.Platform.UWP
@@ -112,7 +111,7 @@ namespace Xamarin.Forms.Platform.UWP
 			var (hasFontAlias, fontPostScriptName) = FontRegistrar.HasFont(fontFamily);
 			if (hasFontAlias)
 			{
-				var file = FontFile.FromString(Path.GetFileName(fontPostScriptName));
+				var file = FontFile.FromString(IOPath.GetFileName(fontPostScriptName));
 				var formated = $"{fontPostScriptName}#{file.GetPostScriptNameWithSpaces()}";
 				yield return formated;
 				yield return fontFamily;

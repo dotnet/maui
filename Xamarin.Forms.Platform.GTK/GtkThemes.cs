@@ -1,8 +1,8 @@
 ﻿using Gtk;
 using System;
-using System.Diagnostics;
 using System.IO;
 using Xamarin.Forms.Platform.GTK.Helpers;
+using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms.Platform.GTK
 {
@@ -60,7 +60,7 @@ namespace Xamarin.Forms.Platform.GTK
 				return false;
 			}
 
-			var path = Path.Combine(location, @"bin");
+			var path = IOPath.Combine(location, @"bin");
 			try
 			{
 				if (SetDllDirectory(path))

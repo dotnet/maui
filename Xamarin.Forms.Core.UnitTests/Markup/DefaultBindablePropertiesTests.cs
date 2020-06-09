@@ -80,12 +80,37 @@ namespace Xamarin.Forms.Markup.UnitTests
 				{ typeof(Tab), tbd },
 				{ typeof(TabBar), tbd },
 
+				{ typeof(ArcSegment), tbd },
+				{ typeof(BezierSegment), tbd },
+				{ typeof(CompositeTransform), tbd },
+				{ typeof(EllipseGeometry), tbd },
+				{ typeof(Geometry), tbd },
+				{ typeof(GeometryGroup), tbd },
+				{ typeof(LineGeometry), tbd },
+				{ typeof(LineSegment), tbd },
+				{ typeof(MatrixTransform), tbd },
+				{ typeof(Path), tbd },
+				{ typeof(PathFigure), tbd },
+				{ typeof(PathGeometry), tbd },
+				{ typeof(PathSegment), tbd },
+				{ typeof(PolyBezierSegment), tbd },
+				{ typeof(PolyLineSegment), tbd },
+				{ typeof(PolyQuadraticBezierSegment), tbd },
+				{ typeof(QuadraticBezierSegment), tbd },
+				{ typeof(RectangleGeometry), tbd },
+				{ typeof(RotateTransform), tbd },
+				{ typeof(ScaleTransform), tbd },
+				{ typeof(SkewTransform), tbd },
+
+				{ typeof(Shape), tbd },
+				{ typeof(Transform), tbd },
+				{ typeof(TransformGroup), tbd },
+				{ typeof(TranslateTransform), tbd },
 				{ typeof(Ellipse), tbd },
 				{ typeof(Line), tbd },
 				{ typeof(Polygon), tbd },
 				{ typeof(Polyline), tbd },
 				{ typeof(Rectangle), tbd },
-				{ typeof(Shape), tbd }
 			};
 
 			var failMessage = new StringBuilder();
