@@ -139,6 +139,9 @@
     <Compile Include="ApiLabelRenderer.cs" />
     <Compile Include="CustomRenderers\CustomSearchBarRenderer.cs" />
     <Compile Include="_9767CustomRenderer.cs" />
+    <Compile Include="CustomRenderers\_9774CustomRenderer.cs" />
+    <Compile Include="CustomRenderers\_CustomFrame10348Renderer.cs" />
+    <Compile Include="CustomEffects\FooEffect.cs" />
     <Compile Include="_10337CustomRenderer.cs" />
   </ItemGroup>
   <ItemGroup>

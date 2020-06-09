@@ -53,6 +53,9 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateImageDirectory(FileImageSource fileSource)
 		{
+			if (fileSource == null || fileSource.File == null)
+				return;
+
 			var imageDirectory = Application.Current.OnThisPlatform().GetImageDirectory();
 
 			if (!string.IsNullOrEmpty(imageDirectory))
