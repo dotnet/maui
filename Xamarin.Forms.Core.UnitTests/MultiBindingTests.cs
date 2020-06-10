@@ -33,16 +33,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void TestChildOneWayOverridesMultiTwoWay()
+		public void TestChildOneWayOnMultiTwoWay()
 		{
-			// This tests a weird edge case where the MultiBinding is TwoWay but
-			// one of the child bindings is OneWay. This results in a situation where
-			// you actually can't change the target value to be inconsistent with the
-			// the source value for the OneWay because ConvertBack causes Convert
-			// to get re-evaluated (and this effectively negates the change to the
-			// target). This ensures that the target and source never go out of sync,
-			// as the overall binding is still TwoWay.
-
 			var group = new GroupViewModel();
 			var stack = new StackLayout
 			{
@@ -71,8 +63,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual(oldName, label.Text);
 			Assert.AreEqual(oldName, group.Person1.FullName);
 
-			label.Text = $"{oldFirstName.ToUpper()} {oldMiddleName} {oldLastName.ToUpper()}";
-			Assert.AreEqual($"{oldFirstName} {oldMiddleName} {oldLastName.ToUpper()}", label.Text);
+			label.SetValueCore(Label.TextProperty, $"{oldFirstName.ToUpper()} {oldMiddleName} {oldLastName.ToUpper()}", Internals.SetValueFlags.None);
 			Assert.AreEqual($"{oldFirstName} {oldMiddleName} {oldLastName.ToUpper()}", group.Person1.FullName);
 		}
 
@@ -100,7 +91,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual("Courier New 12 Italic", entry1.Text);
 			// Our unit test's ConvertBack should throw an exception below because the desired
 			// return types aren't all strings
-			Assert.Throws<Exception>(new TestDelegate(() => entry1.Text = "Arial 12 Italic"));
+			Assert.Throws<Exception>(() => entry1.SetValueCore(Entry.TextProperty, "Arial 12 Italic", Internals.SetValueFlags.None));
 
 			// FindAncestor and FindAncestorBindingContext
 			// are already tested in TestNestedMultiBindings
@@ -137,14 +128,10 @@ namespace Xamarin.Forms.Core.UnitTests
 			var checkBox = new CheckBox();
 			checkBox.SetBinding(
 				CheckBox.IsCheckedProperty,
-				new MultiBinding
-				{
-					Bindings = new Collection<BindingBase>
-					{
-						new MultiBinding
-						{
-							Bindings = new Collection<BindingBase>
-							{
+				new MultiBinding {
+					Bindings = {
+						new MultiBinding {
+							Bindings = {
 								new Binding(nameof(PersonViewModel.IsOver16)),
 								new Binding(nameof(PersonViewModel.HasPassedTest)),
 								new Binding(nameof(PersonViewModel.IsSuspended), converter: new Inverter()),
@@ -162,7 +149,8 @@ namespace Xamarin.Forms.Core.UnitTests
 							$"{nameof(Element.BindingContext)}.{nameof(GroupViewModel.PardonAllSuspensions)}",
 							source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, typeof(StackLayout))),
 					},
-					Converter = new AnyTrueMultiConverter()
+					Converter = new AnyTrueMultiConverter(),
+					FallbackValue = false,
 				});
 
 			// ^^
@@ -235,22 +223,22 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			var label2 = GenerateNameLabel(nameof(group.Person2), BindingMode.TwoWay);
 			stack.Children.Add(label2);
-			label2.Text = $"DoNothing {oldMiddleName} {oldLastName.ToUpper()}";
+			label2.SetValueCore(Label.TextProperty, $"DoNothing {oldMiddleName} {oldLastName.ToUpper()}", Internals.SetValueFlags.None);
 			Assert.AreEqual($"{oldFirstName} {oldMiddleName} {oldLastName.ToUpper()}", group.Person2.FullName);
-			Assert.AreEqual(group.Person2.FullName, label2.Text);
+			Assert.AreEqual($"DoNothing {oldMiddleName} {oldLastName.ToUpper()}", label2.Text);
 
 			label2.Text = oldName;
 			Assert.AreEqual(oldName, group.Person2.FullName);
 			Assert.AreEqual(oldName, label2.Text);
 			// Any UnsetValue prevents any changes to source but target accepts value
-			label2.Text = $"{oldFirstName.ToUpper()} UnsetValue {oldLastName}";
-			Assert.AreEqual(oldName, group.Person2.FullName);
+			label2.SetValueCore(Label.TextProperty, $"{oldFirstName.ToUpper()} UnsetValue {oldLastName}");
+			Assert.AreEqual($"{oldFirstName.ToUpper()} {oldMiddleName} {oldLastName}", group.Person2.FullName);
 			Assert.AreEqual($"{oldFirstName.ToUpper()} UnsetValue {oldLastName}", label2.Text);
 
 			label2.Text = oldName;
 			Assert.AreEqual(oldName, group.Person2.FullName);
 			Assert.AreEqual(oldName, label2.Text);
-			label2.Text = "null";
+			label2.SetValueCore(Label.TextProperty, "null");
 			// Returning null prevents changes to source but target accepts value
 			Assert.AreEqual(oldName, group.Person2.FullName);
 			Assert.AreEqual("null", label2.Text);
@@ -259,67 +247,65 @@ namespace Xamarin.Forms.Core.UnitTests
 			label2.Text = oldName;
 			Assert.AreEqual(oldName, group.Person2.FullName);
 			Assert.AreEqual(oldName, label2.Text);
-			label2.Text = $"Duck Duck";
+			label2.SetValueCore(Label.TextProperty, $"Duck Duck", Internals.SetValueFlags.None);
 			Assert.AreEqual($"Duck Duck {oldLastName}", group.Person2.FullName);
-			// Target can't go out of sync with source
-			Assert.AreEqual($"Duck Duck {oldLastName}", label2.Text);
+			Assert.AreEqual($"Duck Duck", label2.Text);
 			
 			// Too many members are no problem either 
 			label2.Text = oldName;
 			Assert.AreEqual(oldName, group.Person2.FullName);
-			label2.Text = oldName + " Extra";			
+			label2.SetValueCore(Label.TextProperty, oldName + " Extra", Internals.SetValueFlags.None);	
 			Assert.AreEqual(oldName, group.Person2.FullName);
-			// Target still won't go out of sync with source
-			Assert.AreEqual(oldName, label2.Text);
+			Assert.AreEqual(oldName + " Extra", label2.Text);
 		}
 
-		[Test]
-		public void TestEfficiency()
-		{
-			var group = new GroupViewModel();
-			var stack = new StackLayout
-			{
-				BindingContext = group.Person1
-			};
+		//[Test]
+		//public void TestEfficiency()
+		//{
+		//	var group = new GroupViewModel();
+		//	var stack = new StackLayout
+		//	{
+		//		BindingContext = group.Person1
+		//	};
 
-			string oldName = group.Person1.FullName;
+		//	string oldName = group.Person1.FullName;
 
-			var converter = new StringConcatenationConverter();
+		//	var converter = new StringConcatenationConverter();
 
-			var label = new Label();
-			label.SetBinding(Label.TextProperty, new MultiBinding
-			{
-				Bindings = new Collection<BindingBase>
-				{
-					new Binding(nameof(PersonViewModel.FirstName)),
-					new Binding(nameof(PersonViewModel.MiddleName)),
-					new Binding(nameof(PersonViewModel.LastName)),
-				},
-				Converter = converter,
-				Mode = BindingMode.TwoWay,
-			});
+		//	var label = new Label();
+		//	label.SetBinding(Label.TextProperty, new MultiBinding
+		//	{
+		//		Bindings = new Collection<BindingBase>
+		//		{
+		//			new Binding(nameof(PersonViewModel.FirstName)),
+		//			new Binding(nameof(PersonViewModel.MiddleName)),
+		//			new Binding(nameof(PersonViewModel.LastName)),
+		//		},
+		//		Converter = converter,
+		//		Mode = BindingMode.TwoWay,
+		//	});
 
-			// Initial binding should result in 1 Convert, no ConvertBack's
-			Assert.AreEqual(1, converter.Converts);
-			Assert.AreEqual(0, converter.ConvertBacks);
+		//	// Initial binding should result in 1 Convert, no ConvertBack's
+		//	Assert.AreEqual(1, converter.Converts);
+		//	Assert.AreEqual(0, converter.ConvertBacks);
 
-			// Parenting results in bctx change; should be 1 additional Convert, no ConvertBack's
-			stack.Children.Add(label);
-			Assert.AreEqual(group.Person1.FullName, label.Text);
-			Assert.AreEqual(2, converter.Converts);
-			Assert.AreEqual(0, converter.ConvertBacks);
+		//	// Parenting results in bctx change; should be 1 additional Convert, no ConvertBack's
+		//	stack.Children.Add(label);
+		//	Assert.AreEqual(group.Person1.FullName, label.Text);
+		//	Assert.AreEqual(2, converter.Converts);
+		//	Assert.AreEqual(0, converter.ConvertBacks);
 
-			// Source change results in 1 additional Convert, no ConvertBack's
-			group.Person1.FirstName = group.Person1.FullName.ToUpper();
-			Assert.AreEqual(3, converter.Converts);
-			Assert.AreEqual(0, converter.ConvertBacks);
+		//	// Source change results in 1 additional Convert, no ConvertBack's
+		//	group.Person1.FirstName = group.Person1.FullName.ToUpper();
+		//	Assert.AreEqual(3, converter.Converts);
+		//	Assert.AreEqual(0, converter.ConvertBacks);
 
-			// Target change results in 1 ConvertBack, one additional Convert
-			label.Text = oldName;
-			Assert.AreEqual(oldName, group.Person1.FullName);
-			Assert.AreEqual(4, converter.Converts);
-			Assert.AreEqual(1, converter.ConvertBacks);
-		}
+		//	// Target change results in 1 ConvertBack, one additional Convert
+		//	label.Text = oldName;
+		//	Assert.AreEqual(oldName, group.Person1.FullName);
+		//	Assert.AreEqual(4, converter.Converts);
+		//	Assert.AreEqual(1, converter.ConvertBacks);
+		//}
 
 		[Test]
 		public void TestBindingModes()
@@ -335,7 +321,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			stack.Children.Add(label1W);
 			Assert.AreEqual(group.Person1.FullName, label1W.Text);
 			label1W.SetValueCore(Label.TextProperty, "don't change source", Internals.SetValueFlags.None);
-			Assert.AreEqual("don't change source", label1W.Text);
 			Assert.AreEqual(oldName, group.Person1.FullName);
 
 			var label2W = GenerateNameLabel(nameof(group.Person2), BindingMode.TwoWay);
@@ -347,10 +332,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			oldName = group.Person3.FullName;
 			var label1WTS = GenerateNameLabel(nameof(group.Person3), BindingMode.OneWayToSource);
 			stack.Children.Add(label1WTS);
-			// Initial value is target fallback
-			Assert.AreEqual(c_Fallback, label1WTS.Text);
-			Assert.AreEqual(c_Fallback, group.Person3.FullName);
-			label1WTS.Text = oldName;
+			Assert.AreEqual(Label.TextProperty.DefaultValue, label1WTS.Text);
+			label1WTS.SetValueCore(Label.TextProperty, oldName, Internals.SetValueFlags.None);
 			Assert.AreEqual(oldName, label1WTS.Text);
 			Assert.AreEqual(oldName, group.Person3.FullName);
 
@@ -367,6 +350,24 @@ namespace Xamarin.Forms.Core.UnitTests
 			group.Person4 = group.Person1;
 			// changing the bctx should trigger update
 			Assert.AreEqual(group.Person1.FullName, label1T.Text);
+		}
+
+		[Test]
+		public void TestStringFormat()
+		{
+			var property = BindableProperty.Create("foo", typeof(string), typeof(MockBindable), null);
+			var bindable = new MockBindable();
+			var multibinding = new MultiBinding {
+				Bindings = {
+					new Binding ("foo"),
+					new Binding ("bar"),
+					new Binding ("baz"),
+				},
+				StringFormat = "{0} - {1} - {2}"
+			};
+			Assert.DoesNotThrow(()=>bindable.SetBinding(property, multibinding));
+			Assert.DoesNotThrow(()=>bindable.BindingContext = new { foo = "FOO", bar = 42, baz = "BAZ" });
+			Assert.That(bindable.GetValue(property), Is.EqualTo("FOO - 42 - BAZ"));
 		}
 
 		private Label GenerateNameLabel(string person, BindingMode mode)
@@ -479,7 +480,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 				if (values is null)
 					return null;
-				string concatenator = parameter as string ?? " ";
+				string separator = parameter as string ?? " ";
 				StringBuilder sb = new StringBuilder();
 				int i = 0;
 
@@ -495,8 +496,8 @@ namespace Xamarin.Forms.Core.UnitTests
 					if (value as string == "null")
 						return null;
 
-					if (i != 0 && concatenator != null)
-						sb.Append(concatenator);
+					if (i != 0 && separator != null)
+						sb.Append(separator);
 					sb.Append(value?.ToString());
 					i++;
 				}
@@ -511,13 +512,13 @@ namespace Xamarin.Forms.Core.UnitTests
 				if (s == "null" || string.IsNullOrEmpty(s))
 					return null;
 
-				string concatenator = parameter as string ?? " ";
+				string separator = parameter as string ?? " ";
 
-				if (!targetTypes.All(t => t == typeof(string)))
+				if (!targetTypes.All(t=>t==typeof(object)) && !targetTypes.All(t => t == typeof(string)))
 					// Normally we'd return null but throw exception just for unit test to catch
 					throw new Exception("Invalid targetTypes");
 
-				var array = s.Split(new string[] { concatenator }, StringSplitOptions.RemoveEmptyEntries).Cast<object>().ToArray();
+				var array = s.Split(new string[] { separator }, StringSplitOptions.RemoveEmptyEntries).Cast<object>().ToArray();
 				for (int i = 0; i < array.Length; i++)
 				{
 					var str = array[i] as string;
@@ -858,12 +859,12 @@ namespace Xamarin.Forms.Core.UnitTests
 					source: new RelativeBindingSource(RelativeBindingSourceMode.TemplatedParent)));
 				cp.SetBinding(ContentPresenter.IsVisibleProperty, new MultiBinding
 				{
-					Bindings = new Collection<BindingBase>
-					{
+					Bindings = {
 						new Binding(nameof(ExpanderControl.IsEnabled), source: RelativeBindingSource.TemplatedParent),
 						new Binding(nameof(ExpanderControl.IsExpanded), source: RelativeBindingSource.TemplatedParent)
 					},
-					Converter = new AllTrueMultiConverter()
+					Converter = new AllTrueMultiConverter(),
+					FallbackValue = false
 				});
 				this.Children.Add(cp);
 			}

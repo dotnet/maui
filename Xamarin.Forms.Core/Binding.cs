@@ -148,7 +148,7 @@ namespace Xamarin.Forms
 			if (!(Source is RelativeBindingSource relativeSource))
 				return;
 
-			var relativeSourceTarget = this.RelativeSourceTargetOverride ?? targetObject as Element;
+			var relativeSourceTarget = RelativeSourceTargetOverride ?? targetObject as Element;
 			if (!(relativeSourceTarget is Element))
 				throw new InvalidOperationException();
 
