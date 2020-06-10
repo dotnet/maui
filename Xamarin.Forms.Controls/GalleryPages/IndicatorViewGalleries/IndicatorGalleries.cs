@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Xamarin.Forms.Controls.GalleryPages
+﻿namespace Xamarin.Forms.Controls.GalleryPages
 {
 	public class IndicatorGalleries : ContentPage
 	{
@@ -11,13 +9,6 @@ namespace Xamarin.Forms.Controls.GalleryPages
 
 			Title = "IndicatorView Galleries";
 
-			var button = new Button
-			{
-				Text = "Enable IndicatorView",
-				AutomationId = "EnableIndicator"
-			};
-			button.Clicked += ButtonClicked;
-
 			Content = new ScrollView
 			{
 				Content = new StackLayout
@@ -25,7 +16,6 @@ namespace Xamarin.Forms.Controls.GalleryPages
 					Children =
 					{
 						descriptionLabel,
-						button,
 						GalleryBuilder.NavButton("IndicatorView Gallery", () =>
 							new IndicatorsSample(), Navigation),
 						GalleryBuilder.NavButton("Indicator MaxVisible Gallery", () =>
@@ -33,17 +23,6 @@ namespace Xamarin.Forms.Controls.GalleryPages
 					}
 				}
 			};
-		}
-
-		void ButtonClicked(object sender, EventArgs e)
-		{
-			var button = sender as Button;
-
-			button.Text = "IndicatorView Enabled!";
-			button.TextColor = Color.Black;
-			button.IsEnabled = false;
-
-			Device.SetFlags(new[] { ExperimentalFlags.IndicatorViewExperimental });
 		}
 	}
 }
