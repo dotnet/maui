@@ -307,15 +307,15 @@ namespace Xamarin.Forms.Controls.XamStore
 			Content = new ScrollView { Content = grid };
 
 
-			grid.Children.Add(MakeButton("FlyoutBackdrop Color",
-					() =>
-					{
-						if (Shell.GetFlyoutBackdropColor(Shell.Current) == Color.Default)
-							Shell.SetFlyoutBackdropColor(Shell.Current, Color.Purple);
-						else
-							Shell.SetFlyoutBackdropColor(Shell.Current, Color.Default);
-					}),
-				0, 21);
+			//grid.Children.Add(MakeButton("FlyoutBackdrop Color",
+			//		() =>
+			//		{
+			//			if (Shell.GetFlyoutBackdropColor(Shell.Current) == Color.Default)
+			//				Shell.SetFlyoutBackdropColor(Shell.Current, Color.Purple);
+			//			else
+			//				Shell.SetFlyoutBackdropColor(Shell.Current, Color.Default);
+			//		}),
+			//	0, 21);
 
 			grid.Children.Add(MakeButton("Hide Nav Shadow",
                     () => Shell.SetNavBarHasShadow(this, false)),
