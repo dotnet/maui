@@ -10,7 +10,6 @@ namespace Xamarin.Forms
 	internal static class ExperimentalFlags
 	{
 		internal const string StateTriggersExperimental = "StateTriggers_Experimental";
-		internal const string IndicatorViewExperimental = "IndicatorView_Experimental";
 		internal const string ShellUWPExperimental = "Shell_UWP_Experimental";
 		internal const string CarouselViewExperimental = "CarouselView_Experimental";
 		internal const string SwipeViewExperimental = "SwipeView_Experimental";

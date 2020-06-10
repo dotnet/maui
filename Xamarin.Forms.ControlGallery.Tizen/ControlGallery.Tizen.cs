@@ -22,7 +22,7 @@ namespace Xamarin.Forms.ControlGallery.Tizen
 		{
 			var app = new MainApplication();
 			FormsMaps.Init("HERE", "write-your-API-key-here");
-			Forms.SetFlags("CollectionView_Experimental", "Shell_Experimental", "MediaElement_Experimental", "IndicatorView_Experimental");
+			Forms.SetFlags("CollectionView_Experimental", "Shell_Experimental", "MediaElement_Experimental");
 			Forms.Init(app);
 			FormsMaterial.Init();
 			app.Run(args);

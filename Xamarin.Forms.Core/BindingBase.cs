@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Runtime.CompilerServices;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
@@ -42,7 +43,6 @@ namespace Xamarin.Forms
 			set
 			{
 				ThrowIfApplied();
-
 				_stringFormat = value;
 			}
 		}
@@ -109,18 +109,12 @@ namespace Xamarin.Forms
 		protected void ThrowIfApplied()
 		{
 			if (IsApplied)
-				throw new InvalidOperationException("Can not change a binding while it's applied");
+				throw new InvalidOperationException("Cannot change a binding while it's applied");
 		}
 
-		internal virtual void Apply(bool fromTarget)
-		{
-			IsApplied = true;
-		}
+		internal virtual void Apply(bool fromTarget) => IsApplied = true;
 
-		internal virtual void Apply(object context, BindableObject bindObj, BindableProperty targetProperty, bool fromBindingContextChanged = false)
-		{
-			IsApplied = true;
-		}
+		internal virtual void Apply(object context, BindableObject bindObj, BindableProperty targetProperty, bool fromBindingContextChanged = false) => IsApplied = true;
 
 		internal abstract BindingBase Clone();
 
@@ -129,16 +123,38 @@ namespace Xamarin.Forms
 			if (value == null && TargetNullValue != null)
 				return TargetNullValue;
 
-			if (StringFormat != null)
-				return string.Format(StringFormat, value);
+			if (StringFormat != null && TryFormat(StringFormat, value, out var formatted))
+				return formatted;
 
 			return value;
 		}
 
-		internal virtual object GetTargetValue(object value, Type sourcePropertyType)
+		internal bool TryFormat(string format, object arg0, out string value)
 		{
-			return value;
+			try {
+				value = string.Format(format, arg0);
+				return true;
+			} catch (FormatException) {
+				value = null;
+				Log.Warning("Binding", "FormatException");
+				return false;
+			}
 		}
+
+		internal bool TryFormat(string format, object[] args, out string value)
+		{
+			try {
+				value = string.Format(format, args);
+				return true;
+			}
+			catch (FormatException) {
+				value = null;
+				Log.Warning("Binding", "FormatException");
+				return false;
+			}
+		}
+
+		internal virtual object GetTargetValue(object value, Type sourcePropertyType) => value;
 
 		internal static bool TryGetSynchronizedCollection(IEnumerable collection, out CollectionSynchronizationContext synchronizationContext)
 		{
@@ -148,9 +164,6 @@ namespace Xamarin.Forms
 			return SynchronizedCollections.TryGetValue(collection, out synchronizationContext);
 		}
 
-		internal virtual void Unapply(bool fromBindingContextChanged = false)
-		{
-			IsApplied = false;
-		}
+		internal virtual void Unapply(bool fromBindingContextChanged = false) => IsApplied = false;
 	}
 }

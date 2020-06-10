@@ -39,7 +39,7 @@ namespace Xamarin.Forms
 
 		public IndicatorView()
 		{
-			ExperimentalFlags.VerifyFlagEnabled(nameof(IndicatorView), ExperimentalFlags.IndicatorViewExperimental);
+
 		}
 
 		public IndicatorShape IndicatorsShape

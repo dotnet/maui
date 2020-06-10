@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
-
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
@@ -13,12 +10,12 @@ namespace Xamarin.Forms
 	{
 		IMultiValueConverter _converter;
 		object _converterParameter;
-		BindingExpression _expression;
 		IList<BindingBase> _bindings;
 		BindableProperty _targetProperty;
-		bool _isApplying;
-		bool _isCreating;
-		bool _hasSuccessfullyConverted;
+		BindableObject _targetObject;
+		BindableObject _proxyObject;
+		BindableProperty[] _bpProxies;
+		bool _applying;
 
 		public IMultiValueConverter Converter
 		{
@@ -50,17 +47,16 @@ namespace Xamarin.Forms
 			}
 		}
 
-		internal List<MultiBindingProxy> SourceProxies { get; private set; }
-
-		internal MultiBindingProxy TargetProxy { get; private set; }
-
 		internal override BindingBase Clone()
 		{
-			return new MultiBinding()
-			{
+			var bindingsclone = new List<BindingBase>(Bindings.Count);
+			foreach (var b in Bindings)
+				bindingsclone.Add(b.Clone());
+
+			return new MultiBinding() {
 				Converter = Converter,
 				ConverterParameter = ConverterParameter,
-				Bindings = new Collection<BindingBase>(this.Bindings),
+				Bindings = bindingsclone,
 				FallbackValue = FallbackValue,
 				Mode = Mode,
 				TargetNullValue = TargetNullValue,
@@ -70,238 +66,147 @@ namespace Xamarin.Forms
 
 		internal override void Apply(bool fromTarget)
 		{
-			VerifyConverterBeforeApply();
-
-			base.Apply(fromTarget);		
-
-			if (_hasSuccessfullyConverted && this.GetRealizedMode(_targetProperty) == BindingMode.OneTime)
+			if (_applying)
 				return;
 
-			if (_expression == null)
-				_expression = new BindingExpression(this, Binding.SelfPath);
-
-			if (fromTarget && _isApplying)
+			base.Apply(fromTarget);
+			
+			if (this.GetRealizedMode(_targetProperty) == BindingMode.OneTime)
 				return;
 
-			_expression.Apply(fromTarget);			
-			ApplyBindingProxyValues(fromTarget ? TargetProxy : null, false);			
-		}
+			if (fromTarget && this.GetRealizedMode(_targetProperty) == BindingMode.OneWay)
+				return;
 
-		internal override void Apply(
-			object context, 
-			BindableObject bindObj, 
-			BindableProperty targetProperty, 
-			bool fromBindingContextChanged = false)
-		{
-			VerifyConverterBeforeApply();
-
-			base.Apply(context, bindObj, targetProperty, fromBindingContextChanged);
-
-			if (IsApplied && fromBindingContextChanged)
+			if (!fromTarget && this.GetRealizedMode(_targetProperty) == BindingMode.OneWayToSource)
+				return;
+			
+			if (!fromTarget)
 			{
-				bool childContextChanged = false;
-				foreach (var proxy in SourceProxies)
-				{
-					if (!object.ReferenceEquals(proxy.BindingContext, context))
+				var value = GetSourceValue(GetValueArray(), _targetProperty.ReturnType);
+				if (value != Binding.DoNothing) {
+					_applying = true;
+					_targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted);
+					_applying = false;
+				}
+			}
+			else
+			{
+				try {
+					_applying = true;
+
+					//https://docs.microsoft.com/en-us/dotnet/api/system.windows.data.imultivalueconverter.convertback?view=netframework-4.8#remarks
+					if (!(GetTargetValue(_targetObject.GetValue(_targetProperty), null) is object[] values)) //converter failed
+						return;
+					for (var i = 0; i < Math.Min(_bpProxies.Length, values.Length); i++)
 					{
-						childContextChanged = true;
-						proxy.SetValueSilent(Element.BindingContextProperty, context);
+						if (ReferenceEquals(values[i], Binding.DoNothing) || ReferenceEquals(values[i], BindableProperty.UnsetValue))
+							continue;
+						_proxyObject.SetValueCore(_bpProxies[i], values[i], SetValueFlags.None);
 					}
 				}
-				if ( childContextChanged )
-					ApplyBindingProxyValues(null, true);
+				finally {
+					_applying = false;
+				}
+
+			}
+		}
+
+		internal override void Apply(object context, BindableObject targetObject, BindableProperty targetProperty, bool fromBindingContextChanged = false)
+		{
+			if (_bindings == null)
+				throw new InvalidOperationException("Bindings is null");
+
+			base.Apply(context, targetObject, targetProperty, fromBindingContextChanged);
+
+			if (!ReferenceEquals(_targetObject, targetObject)) {
+				_targetObject = targetObject;
+				_proxyObject = new ProxyElement() { Parent = targetObject as Element };
+				_targetProperty = targetProperty;
+
+				if (_bpProxies == null) {
+					_bpProxies = new BindableProperty[Bindings.Count];
+					_applying = true;
+					var bindingMode = Mode == BindingMode.Default ? targetProperty.DefaultBindingMode : Mode;
+					for (var i = 0; i < Bindings.Count; i++) {
+						var binding = Bindings[i];
+						binding.RelativeSourceTargetOverride = targetObject as Element;
+						var bp = _bpProxies[i] = BindableProperty.Create($"mb-proxy{i}", typeof(object), typeof(MultiBinding), null, bindingMode, propertyChanged: OnBindingChanged);
+						_proxyObject.SetBinding(bp, binding);
+					}
+					_applying = false;
+				}
+			}
+			_proxyObject.BindingContext = context;
+
+			if (this.GetRealizedMode(_targetProperty) == BindingMode.OneWayToSource)
 				return;
-			}
-		
-			_targetProperty = targetProperty;
-			
-			if (_expression == null)
-				_expression = new BindingExpression(this, nameof(MultiBindingProxy.Value));
 
-			CreateBindingProxies(bindObj, context);
+			var value = GetSourceValue(GetValueArray(), _targetProperty.ReturnType);
+			if (value != Binding.DoNothing) {
+				_applying = true;
+				_targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted);
+				_applying = false;
+			}
+		}
 
-			_isApplying = true;			
-			try
-			{
-				ApplyBindingProxyValues(TargetProxy, reapplyExpression: false, firstApplication: true);
-				_expression.Apply(TargetProxy, bindObj, targetProperty);
-				if (this.GetRealizedMode(_targetProperty) == BindingMode.OneWayToSource &&
-					 this.FallbackValue != null)
-					bindObj.SetValue(targetProperty, this.FallbackValue);
+		class ProxyElement : Element
+		{
+		}
+
+		object[] GetValueArray()
+		{
+			var valuearray = new object[_bpProxies.Length];
+			for (var i = 0; i < _bpProxies.Length; i++)
+				valuearray[i] = _proxyObject.GetValue(_bpProxies[i]);
+			return valuearray;
+		}
+
+		internal override object GetSourceValue(object value, Type targetPropertyType)
+		{
+			var valuearray = value as object[];
+			if (valuearray != null && Converter != null)
+				value = Converter.Convert(valuearray, targetPropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+
+			if (valuearray != null && StringFormat != null && TryFormat(StringFormat, valuearray, out var formatted))
+				return formatted;
+
+			if (ReferenceEquals(BindableProperty.UnsetValue, value))
+				return FallbackValue;
+
+			return base.GetSourceValue(value, targetPropertyType);
+		}
+
+		internal override object GetTargetValue(object value, Type sourcePropertyType)
+		{
+			if (Converter != null) {
+				var values = GetValueArray();
+				var types = new Type[_bpProxies.Length];
+				for (var i = 0; i < _bpProxies.Length; i++)
+					types[i] = values[i]?.GetType() ?? typeof(object);
+				return Converter.ConvertBack(value, types, ConverterParameter, CultureInfo.CurrentUICulture);
 			}
-			finally
-			{
-				_isApplying = false;
-			}
+
+			return base.GetTargetValue(value, sourcePropertyType);
+		}
+
+		void OnBindingChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (!_applying)
+				Apply(fromTarget: false);
 		}
 
 		internal override void Unapply(bool fromBindingContextChanged = false)
 		{
-			if (fromBindingContextChanged && IsApplied)
-				return;
+			if (!fromBindingContextChanged) {
+				if (_bpProxies != null && _proxyObject != null)
+					foreach (var proxybp in _bpProxies)
+						_proxyObject.RemoveBinding(proxybp);
+
+				_bpProxies = null;
+				_proxyObject = null;
+			}
 
 			base.Unapply(fromBindingContextChanged: fromBindingContextChanged);
-
-			if (_expression != null)
-				_expression.Unapply();
-
-			TargetProxy.RemoveBinding(MultiBindingProxy.ValueProperty);
-			if (this.SourceProxies?.Count > 0)
-			{
-				foreach (var proxy in this.SourceProxies)
-					proxy.RemoveBinding(MultiBindingProxy.ValueProperty);
-			}
-
-			TargetProxy = null;
-			SourceProxies = null;
-		}
-
-		internal void ApplyBindingProxyValues(MultiBindingProxy trigger, bool reapplyExpression = true, bool firstApplication = false)
-		{
-			if (_isCreating)
-				return;
-
-			BindingMode mode = this.GetRealizedMode(_targetProperty);
-			bool convertBackFailed = false;
-			if (trigger?.IsTarget == true && 
-				!trigger.SuspendValueChangeNotification &&
-				(!firstApplication || mode == BindingMode.OneWayToSource) &&
-				(mode == BindingMode.TwoWay || mode == BindingMode.OneWayToSource))
-			{
-				// triggered because the target property was updated
-				convertBackFailed = !ApplyTargetValueUpdate();
-			}
-
-			if (mode != BindingMode.OneWayToSource && 
-				!convertBackFailed &&
-				(trigger?.IsTarget != true || !TargetProxy.SuspendValueChangeNotification))
-			{
-				object newTargetValue = BindableProperty.UnsetValue;
-				if (this.Converter != null)
-				{
-					newTargetValue = this.Converter.Convert(
-							SourceProxies.Select(p => p.Value).ToArray(),
-							_targetProperty.ReturnType,
-							this.ConverterParameter,
-							CultureInfo.CurrentUICulture);
-					if (newTargetValue == Binding.DoNothing)
-						return;
-				}
-
-				if (newTargetValue == BindableProperty.UnsetValue)
-					newTargetValue = this.FallbackValue ?? _targetProperty.DefaultValue;
-				else if (newTargetValue == null)
-					newTargetValue = this.TargetNullValue ?? _targetProperty.DefaultValue;
-				else
-					_hasSuccessfullyConverted = true;
-					
-				TargetProxy.SetValueSilent(MultiBindingProxy.ValueProperty, newTargetValue);										
-			}
-
-			if (reapplyExpression)
-			{
-				bool wasApplying = _isApplying;
-				_isApplying = true;
-				_expression.Apply();
-				_isApplying = wasApplying;
-			}
-			return;
-		}
-
-		bool ApplyTargetValueUpdate()
-		{
-			var types = SourceProxies
-				.Select(p => p.Value?.GetType() ?? _targetProperty.ReturnType)
-				.ToArray();
-			var convertedValues = this.Converter?.ConvertBack(
-				TargetProxy.Value,
-				types,
-				this.ConverterParameter,
-				CultureInfo.CurrentUICulture);
-
-			if (convertedValues == null || convertedValues.Any(val=>object.ReferenceEquals(val, BindableProperty.UnsetValue)))
-			{
-				// https://docs.microsoft.com/en-us/dotnet/api/system.windows.data.imultivalueconverter.convertback?view=netframework-4.8
-				// Return null to indicate that the converter cannot perform the 
-				// conversion or that it does not support conversion in this direction.		
-				// Return DependencyProperty.UnsetValue at position i to indicate that 
-				// the converter is unable to provide a value for the source binding at 
-				// index i, and that no value is to be set on it.
-				return false;
-			}
-
-			int count = Math.Min(convertedValues.Length, this.SourceProxies.Count);
-			for (int i = 0; i < count; i++)
-			{
-				// https://docs.microsoft.com/en-us/dotnet/api/system.windows.data.imultivalueconverter.convertback?view=netframework-4.8
-				// Return DoNothing at position i to indicate that no value is to 
-				// be set on the source binding at index i.
-				if (convertedValues[i] == Binding.DoNothing)
-					continue;
-
-				var childMode = this.SourceProxies[i].RealizedMode;
-				if (childMode != BindingMode.TwoWay && childMode != BindingMode.OneWayToSource)
-					continue;
-				this.SourceProxies[i].SetValueSilent(MultiBindingProxy.ValueProperty, convertedValues[i]);
-			}
-			return true;
-		}
-
-		void CreateBindingProxies(BindableObject target, object context)
-		{
-			_hasSuccessfullyConverted = false;
-			_isCreating = true;
-			try
-			{
-				TargetProxy = new MultiBindingProxy(this, true);
-				SourceProxies = new List<MultiBindingProxy>();
-
-				if (this.Bindings.Count == 0)
-					return;
-
-				var mode = this.GetRealizedMode(_targetProperty);
-
-				if (mode == BindingMode.OneWayToSource)
-					TargetProxy.Value = this.FallbackValue;
-
-				foreach (var binding in _bindings)
-				{
-					var proxy = new MultiBindingProxy(this, false);
-					proxy.BindingContext = context;
-
-					// Bind proxy's Value property using the source binding settings
-					var proxyBinding = binding.Clone();
-
-					// Ensures that RelativeSource bindings resolve using the
-					// MultiBinding's BindableObject target rather than the proxy.
-					if (target is MultiBindingProxy)
-						proxyBinding.RelativeSourceTargetOverride = this.RelativeSourceTargetOverride;
-					else if (target is Element e)
-						proxyBinding.RelativeSourceTargetOverride = e;
-
-					// OneWayToSource, OneTime, or OneWay mode on the MultiBinding effectively
-					// override the childrens' modes 
-					if ( mode == BindingMode.OneWayToSource ||
-						 mode == BindingMode.OneTime ||
-						 mode == BindingMode.OneWay ||
-						 proxyBinding.Mode == BindingMode.Default)
-						proxyBinding.Mode = mode;
-					
-					proxy.SetBinding(MultiBindingProxy.ValueProperty, proxyBinding);
-					proxy.RealizedMode = proxyBinding.Mode;
-					SourceProxies.Add(proxy);
-				}
-			}
-			finally
-			{
-				_isCreating = false;
-			}
-		}
-
-		void VerifyConverterBeforeApply()
-		{
-			if (this.Converter == null)
-				throw new InvalidOperationException($"{nameof(MultiBinding)} requires {nameof(Converter)} be set.");
 		}
 	}
 }

@@ -146,9 +146,9 @@ namespace Xamarin.Forms
 			BindableProperty.CreateAttached("UnselectedColor", typeof(Color), typeof(Shell), Color.Default,
 				propertyChanged: OnColorValueChanged);
 
-		public static readonly BindableProperty FlyoutBackdropColorProperty =
-			BindableProperty.CreateAttached("FlyoutBackdropColor", typeof(Color), typeof(Shell), Color.Default,
-				propertyChanged: OnColorValueChanged);
+		//public static readonly BindableProperty FlyoutBackdropColorProperty =
+		//	BindableProperty.CreateAttached("FlyoutBackdropColor", typeof(Color), typeof(Shell), Color.Default,
+		//		propertyChanged: OnColorValueChanged);
 
 		public static Color GetBackgroundColor(BindableObject obj) => (Color)obj.GetValue(BackgroundColorProperty);
 		public static void SetBackgroundColor(BindableObject obj, Color value) => obj.SetValue(BackgroundColorProperty, value);
@@ -180,8 +180,8 @@ namespace Xamarin.Forms
 		public static Color GetUnselectedColor(BindableObject obj) => (Color)obj.GetValue(UnselectedColorProperty);
 		public static void SetUnselectedColor(BindableObject obj, Color value) => obj.SetValue(UnselectedColorProperty, value);
 
-		public static Color GetFlyoutBackdropColor(BindableObject obj) => (Color)obj.GetValue(FlyoutBackdropColorProperty);
-		public static void SetFlyoutBackdropColor(BindableObject obj, Color value) => obj.SetValue(FlyoutBackdropColorProperty, value);
+		//public static Color GetFlyoutBackdropColor(BindableObject obj) => (Color)obj.GetValue(FlyoutBackdropColorProperty);
+		//public static void SetFlyoutBackdropColor(BindableObject obj, Color value) => obj.SetValue(FlyoutBackdropColorProperty, value);
 
 		static void OnColorValueChanged(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -843,11 +843,11 @@ namespace Xamarin.Forms
 			set => SetValue(FlyoutBackgroundColorProperty, value);
 		}
 
-		public Color FlyoutBackdropColor
-		{
-			get => (Color)GetValue(FlyoutBackdropColorProperty);
-			set => SetValue(FlyoutBackdropColorProperty, value);
-		}
+		//public Color FlyoutBackdropColor
+		//{
+		//	get => (Color)GetValue(FlyoutBackdropColorProperty);
+		//	set => SetValue(FlyoutBackdropColorProperty, value);
+		//}
 
 		public FlyoutBehavior FlyoutBehavior
 		{
@@ -1218,15 +1218,14 @@ namespace Xamarin.Forms
 				(o) => rootItem = rootItem ?? o as ShellItem);
 		}
 
-		T GetEffectiveValue<T>(BindableProperty property, T defaultValue)
+		internal T GetEffectiveValue<T>(BindableProperty property, T defaultValue)
 		{
-			return GetEffectiveValue(property, () => defaultValue, null);
+			return GetEffectiveValue<T>(property, () => defaultValue, null);
 		}
-		
-		T GetEffectiveValue<T>(BindableProperty property, Func<T> defaultValue, Action<Element> observer)
-		{
-			Element element = GetVisiblePage() ?? CurrentContent;
 
+		internal T GetEffectiveValue<T>(BindableProperty property, Func<T> defaultValue, Action<Element> observer, Element element = null)
+		{
+			element = element ?? GetVisiblePage() ?? CurrentContent;
 			while (element != this && element != null)
 			{
 				observer?.Invoke(element);

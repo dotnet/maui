@@ -18,7 +18,7 @@ namespace Xamarin.Forms
 			Shell.TabBarUnselectedColorProperty,
 			Shell.TitleColorProperty,
 			Shell.UnselectedColorProperty,
-			Shell.FlyoutBackdropColorProperty
+			//Shell.FlyoutBackdropColorProperty
 		};
 
 		Color?[] _colorArray = new Color?[s_ingestArray.Length];
@@ -43,7 +43,7 @@ namespace Xamarin.Forms
 
 		public Color UnselectedColor => _colorArray[9].Value;
 
-		public Color FlyoutBackdropColor => _colorArray[10].Value;
+		//public Color FlyoutBackdropColor => _colorArray[10].Value;
 
 		Color IShellAppearanceElement.EffectiveTabBarBackgroundColor =>
 			!TabBarBackgroundColor.IsDefault ? TabBarBackgroundColor : BackgroundColor;

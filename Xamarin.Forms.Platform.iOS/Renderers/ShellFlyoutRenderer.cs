@@ -14,10 +14,10 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
-			if (appearance == null)
+			//if (appearance == null)
 				_backdropColor = Color.Default;
-			else
-				_backdropColor = appearance.FlyoutBackdropColor;
+			//else
+			//	_backdropColor = appearance.FlyoutBackdropColor;
 
 			UpdateTapoffViewBackgroundColor();
 		}

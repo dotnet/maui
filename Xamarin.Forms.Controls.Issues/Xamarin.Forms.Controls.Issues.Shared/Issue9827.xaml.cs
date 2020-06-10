@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public Issue9827()
 		{
 #if APP
-			Device.SetFlags(new List<string>(Device.Flags ?? new List<string>()) { ExperimentalFlags.IndicatorViewExperimental, ExperimentalFlags.CarouselViewExperimental });
+			Device.SetFlags(new List<string>(Device.Flags ?? new List<string>()) { ExperimentalFlags.CarouselViewExperimental });
 			InitializeComponent();
 #endif
 		}

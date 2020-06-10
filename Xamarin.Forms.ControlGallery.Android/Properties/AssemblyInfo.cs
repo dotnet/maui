@@ -12,7 +12,6 @@ using Xamarin.Forms.Controls;
 [assembly: UsesPermission(Android.Manifest.Permission.Internet)]
 [assembly: UsesPermission(Android.Manifest.Permission.WriteExternalStorage)]
 
-[assembly: Android.App.MetaData("com.google.android.maps.v2.API_KEY", Value = "AIzaSyAdstcJQswxEjzX5YjLaMcu2aRVEBJw39Y")]
 [assembly: Xamarin.Forms.ResolutionGroupName(Xamarin.Forms.Controls.Issues.Effects.ResolutionGroupName)]
 
 // Deliberately broken image source and handler so we can test handling of image loading errors
