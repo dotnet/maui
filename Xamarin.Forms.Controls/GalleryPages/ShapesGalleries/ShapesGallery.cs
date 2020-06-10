@@ -16,28 +16,31 @@ namespace Xamarin.Forms.Controls.GalleryPages.ShapesGalleries
             };
             button.Clicked += ButtonClicked;
 
-            Content = new StackLayout
+            Content = new ScrollView
             {
-                Children =
-				{
-					button,
-                    GalleryBuilder.NavButton("Path Gallery", () => new PathGallery(), Navigation),
-					GalleryBuilder.NavButton("Path Aspect Gallery", () => new PathAspectGallery(), Navigation),
-					GalleryBuilder.NavButton("Path LayoutOptions Gallery", () => new PathLayoutOptionsGallery(), Navigation),
-					GalleryBuilder.NavButton("Transform Playground", () => new TransformPlaygroundGallery(), Navigation),
-					GalleryBuilder.NavButton("Path Transform using string (TypeConverter) Gallery", () => new PathTransformStringGallery(), Navigation),    
-					GalleryBuilder.NavButton("Clip Gallery", () => new ClipGallery(), Navigation),
-					GalleryBuilder.NavButton("Clip Views Gallery", () => new ClipViewsGallery(), Navigation),
-                    GalleryBuilder.NavButton("Add/Remove Clip Gallery", () => new AddRemoveClipGallery(), Navigation),
-                    GalleryBuilder.NavButton("Clip Performance Gallery", () => new ClipPerformanceGallery(), Navigation),
-					GalleryBuilder.NavButton("Ellipse Gallery", () => new EllipseGallery(), Navigation),
-					GalleryBuilder.NavButton("Line Gallery", () => new LineGallery(), Navigation),
-					GalleryBuilder.NavButton("Polygon Gallery", () => new PolygonGallery(), Navigation),
-					GalleryBuilder.NavButton("Polyline Gallery", () => new PolylineGallery(), Navigation),
-					GalleryBuilder.NavButton("Rectangle Gallery", () => new RectangleGallery(), Navigation),
-					GalleryBuilder.NavButton("LineCap Gallery", () => new LineCapGallery(), Navigation),
-					GalleryBuilder.NavButton("LineJoin Gallery", () => new LineJoinGallery(), Navigation),
-					GalleryBuilder.NavButton("AutoSize Shapes Gallery", () => new AutoSizeShapesGallery(), Navigation)
+                Content = new StackLayout
+                {
+                    Children =
+                    {
+                        button,
+                        GalleryBuilder.NavButton("Ellipse Gallery", () => new EllipseGallery(), Navigation),
+                        GalleryBuilder.NavButton("Line Gallery", () => new LineGallery(), Navigation),
+                        GalleryBuilder.NavButton("Polygon Gallery", () => new PolygonGallery(), Navigation),
+                        GalleryBuilder.NavButton("Polyline Gallery", () => new PolylineGallery(), Navigation),
+                        GalleryBuilder.NavButton("Rectangle Gallery", () => new RectangleGallery(), Navigation),
+                        GalleryBuilder.NavButton("LineCap Gallery", () => new LineCapGallery(), Navigation),
+                        GalleryBuilder.NavButton("LineJoin Gallery", () => new LineJoinGallery(), Navigation),
+                        GalleryBuilder.NavButton("AutoSize Shapes Gallery", () => new AutoSizeShapesGallery(), Navigation),
+                        GalleryBuilder.NavButton("Path Gallery", () => new PathGallery(), Navigation),
+                        GalleryBuilder.NavButton("Path Aspect Gallery", () => new PathAspectGallery(), Navigation),
+                        GalleryBuilder.NavButton("Path LayoutOptions Gallery", () => new PathLayoutOptionsGallery(), Navigation),
+                        GalleryBuilder.NavButton("Transform Playground", () => new TransformPlaygroundGallery(), Navigation),
+                        GalleryBuilder.NavButton("Path Transform using string (TypeConverter) Gallery", () => new PathTransformStringGallery(), Navigation),
+                        GalleryBuilder.NavButton("Clip Gallery", () => new ClipGallery(), Navigation),
+                        GalleryBuilder.NavButton("Clip Views Gallery", () => new ClipViewsGallery(), Navigation),
+                        GalleryBuilder.NavButton("Add/Remove Clip Gallery", () => new AddRemoveClipGallery(), Navigation),
+                        GalleryBuilder.NavButton("Clip Performance Gallery", () => new ClipPerformanceGallery(), Navigation)
+                    }
                 }
             };
         }
