@@ -109,7 +109,6 @@
     <Compile Include="Tests\TestingPlatformService.cs" />
     <Compile Include="Tests\PlatformTestSettings.cs" />
     <Compile Include="PreApplicationClassActivity.cs" />
-    <Compile Include="Properties\MapsKey.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RegistrarValidationService.cs" />
     <Compile Include="CustomRenderers.cs" />
@@ -408,12 +407,9 @@
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>
+  <ItemGroup Condition="Exists('Properties\MapsKey.cs')">  
+    <Compile Include="Properties\MapsKey.cs" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <Target Name="BeforeBuild">
-    <CreateItem Include="Properties\MapsKey.cs.blank">
-      <Output TaskParameter="Include" ItemName="MapsKey" />
-    </CreateItem>
-    <Copy SourceFiles="@(MapsKey)" DestinationFiles="Properties\MapsKey.cs" Condition="!Exists('Properties\MapsKey.cs')" />
-  </Target>
 </Project>

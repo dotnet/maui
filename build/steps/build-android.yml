@@ -77,18 +77,12 @@ jobs:
           feedsToUse: config
           nugetConfigPath: 'DevopsNuget.config'
 
-      - task: MSBuild@1
-        displayName: 'Build ${{ parameters.buildTaskPath  }}'
-        inputs:
-          solution: ${{ parameters.buildTaskPath }}
-          configuration: ${{ parameters.buildConfiguration }}
-
-      - task: MSBuild@1
+      - task: Bash@3
         displayName: 'Build Android $(renderers)'
         inputs:
-          solution: ${{ parameters.androidProjectPath }}
-          configuration: ${{ parameters.buildConfiguration }}
-          msbuildArguments: '/t:"Rebuild;SignAndroidPackage" /p:ANDROID_RENDERERS="$(renderers)" /bl:$(Build.ArtifactStagingDirectory)/android-$(renderers).binlog'
+          targetType: 'filePath'
+          filePath: 'build.sh'
+          arguments: --target cg-android --ANDROID_RENDERERS="$(renderers)" --GoogleMapsAPIKey="$(GoogleMapsAPIKey)"
 
       - task: CopyFiles@2
         displayName: 'Copy $(renderers)'
