@@ -277,7 +277,7 @@ namespace Xamarin.Forms
 
 		internal override ReadOnlyCollection<Element> LogicalChildrenInternal => _logicalChildrenReadOnly ?? (_logicalChildrenReadOnly = new ReadOnlyCollection<Element>(_logicalChildren));
 
-		Page DisplayedPage
+		internal Page DisplayedPage
 		{
 			get { return _displayedPage; }
 			set

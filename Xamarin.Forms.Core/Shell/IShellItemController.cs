@@ -9,5 +9,6 @@ namespace Xamarin.Forms
 
 		ReadOnlyCollection<ShellSection> GetItems();
 		event NotifyCollectionChangedEventHandler ItemsCollectionChanged;
+		bool ShowTabs { get; }
 	}
 }

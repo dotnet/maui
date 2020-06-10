@@ -93,6 +93,23 @@ namespace Xamarin.Forms
 			remove { ((ShellSectionCollection)Items).VisibleItemsChanged -= value; }
 		}
 
+		bool IShellItemController.ShowTabs
+		{
+			get
+			{
+				var displayedPage = CurrentItem?.DisplayedPage;
+				if (displayedPage == null)
+					return true;
+
+				Shell shell = Parent as Shell;
+				if (shell == null)
+					return true;
+
+				bool defaultShow = ShellItemController.GetItems().Count > 1;
+				return shell.GetEffectiveValue<bool>(Shell.TabBarIsVisibleProperty, () => defaultShow, null, displayedPage);
+			}
+		}
+
 		#endregion IShellItemController
 
 		#region IPropertyPropagationController
