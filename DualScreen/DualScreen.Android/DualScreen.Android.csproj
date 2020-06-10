@@ -119,8 +119,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xamarin.AndroidX.MediaRouter" Version="1.1.0" />
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.1.0" />
+    <PackageReference Include="Xamarin.AndroidX.MediaRouter" Version="1.1.0.1" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.1.0.1" />
     <PackageReference Include="Xamarin.Google.Android.Material" Version="1.1.0-rc3" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
