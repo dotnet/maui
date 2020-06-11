@@ -47,6 +47,8 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
+		public override bool FlipsHorizontallyInOppositeLayoutDirection => true;
+
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
