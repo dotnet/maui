@@ -175,6 +175,52 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual("edit", request.Request.GlobalRoutes.First());
 		}
 
+		[TestCase(true, 2)]
+		[TestCase(false, 2)]
+		[TestCase(true, 3)]
+		[TestCase(false, 3)]
+		public async Task ShellItemContentRouteWithGlobalRouteRelative(bool modal, int depth)
+		{
+			var shell = new Shell();
+			var item1 = CreateShellItem<FlyoutItem>(asImplicit: true, shellItemRoute: "animals", shellContentRoute: "monkeys");
+
+			string route = "monkeys/details";
+
+			if(depth == 3)
+			{
+				route = "animals/monkeys/details";
+			}
+
+			if (modal)
+				Routing.RegisterRoute(route, typeof(ShellModalTests.ModalTestPage));
+			else
+				Routing.RegisterRoute(route, typeof(ContentPage));
+
+			shell.Items.Add(item1);
+
+			await shell.GoToAsync("details");
+			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("//animals/monkeys/details"));
+		}
+
+		[TestCase(true)]
+		[TestCase(false)]
+		public async Task GotoSameGlobalRoutesCollapsesUriCorrectly(bool modal)
+		{
+			var shell = new Shell();
+			var item1 = CreateShellItem<FlyoutItem>(asImplicit: true, shellItemRoute: "animals", shellContentRoute: "monkeys");
+
+			if(modal)
+				Routing.RegisterRoute("details", typeof(ShellModalTests.ModalTestPage));
+			else
+				Routing.RegisterRoute("details", typeof(ContentPage));
+
+			shell.Items.Add(item1);
+
+			await shell.GoToAsync("details");
+			await shell.GoToAsync("details");
+			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("//animals/monkeys/details/details"));
+		}
+
 
 		[Test]
 		public async Task ShellSectionWithRelativeEditUpOneLevel()
@@ -294,6 +340,20 @@ namespace Xamarin.Forms.Core.UnitTests
 				"//animals/domestic/cats/catdetails",
 				shell.CurrentState.FullLocation.ToString()
 				);
+		}
+
+		[Test]
+		public async Task RelativeNavigationToShellElementThrows()
+		{
+			var shell = new Shell();
+
+			var item1 = CreateShellItem(asImplicit: true, shellContentRoute: "dogs");
+			var item2 = CreateShellItem(asImplicit: true, shellSectionRoute: "domestic", shellContentRoute: "cats", shellItemRoute: "animals");
+
+			shell.Items.Add(item1);
+			shell.Items.Add(item2);
+
+			Assert.That(async () => await shell.GoToAsync($"domestic"), Throws.Exception);
 		}
 
 		[Test]
