@@ -26,7 +26,7 @@ namespace Xamarin.Essentials
                     var resultUri = new Uri(r.ResponseData.ToString());
                     return new WebAuthenticatorResult(resultUri);
                 case WebAuthenticationStatus.UserCancel:
-                    return null;
+                    throw new TaskCanceledException();
                 case WebAuthenticationStatus.ErrorHttp:
                     throw new UnauthorizedAccessException();
                 default:
