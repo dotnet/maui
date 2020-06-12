@@ -6,6 +6,7 @@ using System.Linq;
 using Xamarin.Forms.Build.Tasks;
 
 using Xamarin.Forms.Core.UnitTests;
+using IOPath = System.IO.Path;
 
 namespace Xamarin.Forms.MSBuild.UnitTests
 {
@@ -24,7 +25,16 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 
 			var reader = new StringReader (xaml);
 
-			var generator = new XamlGenerator();
+			var references = string.Join(";",
+					IOPath.GetFullPath(
+						IOPath.Combine(
+							TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Controls.dll")),
+					IOPath.GetFullPath(
+						IOPath.Combine(
+							TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Core.dll"))
+					);
+
+			var generator = new XamlGenerator(null, null, null, null, null, null, references);
 			generator.ParseXaml(reader);
 			Assert.NotNull(generator.RootType);
 			Assert.NotNull(generator.RootClrNamespace);
@@ -51,7 +61,16 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 
 			var reader = new StringReader (xaml);
 
-			var generator = new XamlGenerator();
+			var references = string.Join(";",
+								IOPath.GetFullPath(
+									IOPath.Combine(
+										TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Controls.dll")),
+								IOPath.GetFullPath(
+									IOPath.Combine(
+										TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Core.dll"))
+								);
+
+			var generator = new XamlGenerator(null, null, null, null, null, null, references);
 			generator.ParseXaml(reader);
 			Assert.NotNull(generator.RootType);
 			Assert.NotNull(generator.RootClrNamespace);
@@ -88,7 +107,16 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 
 			var reader = new StringReader (xaml);
 
-			var generator = new XamlGenerator();
+			var references = string.Join(";",
+								IOPath.GetFullPath(
+									IOPath.Combine(
+										TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Controls.dll")),
+								IOPath.GetFullPath(
+									IOPath.Combine(
+										TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Core.dll"))
+								);
+
+			var generator = new XamlGenerator(null, null, null, null, null, null, references);
 			generator.ParseXaml(reader);
 
 			Assert.AreEqual (2, generator.NamedFields.Count());
@@ -118,7 +146,16 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 						</StackLayout>";
 			var reader = new StringReader (xaml);
 
-			var generator = new XamlGenerator();
+			var references = string.Join(";",
+								IOPath.GetFullPath(
+									IOPath.Combine(
+										TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Controls.dll")),
+								IOPath.GetFullPath(
+									IOPath.Combine(
+										TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Core.dll"))
+								);
+
+			var generator = new XamlGenerator(null, null, null, null, null, null, references);
 			generator.ParseXaml(reader);
 
 			Assert.Contains ("included", generator.NamedFields.Select(cmf => cmf.Name).ToList());
@@ -147,7 +184,16 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 						</StackLayout>";
 			var reader = new StringReader (xaml);
 
-			var generator = new XamlGenerator();
+			var references = string.Join(";",
+								IOPath.GetFullPath(
+									IOPath.Combine(
+										TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Controls.dll")),
+								IOPath.GetFullPath(
+									IOPath.Combine(
+										TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Core.dll"))
+								);
+
+			var generator = new XamlGenerator(null, null, null, null, null, null, references);
 			generator.ParseXaml(reader);
 
 			Assert.False (generator.NamedFields.Select(cmf => cmf.Name).Contains ("notincluded"));
@@ -157,7 +203,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 		[Test]
 		public void xTypeArgumentsOnRootElement ()
 		{
-			var xaml = @"<Foo 
+			var xaml = @"<Layout 
 						    xmlns=""http://xamarin.com/schemas/2014/forms""
 						    xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							x:Class=""FooBar"" 
@@ -165,11 +211,20 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			/>";
 			var reader = new StringReader (xaml);
 
-			var generator = new XamlGenerator();
+			var references = string.Join(";",
+								IOPath.GetFullPath(
+									IOPath.Combine(
+										TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Controls.dll")),
+								IOPath.GetFullPath(
+									IOPath.Combine(
+										TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Core.dll"))
+								);
+
+			var generator = new XamlGenerator(null, null, null, null, null, null, references);
 			generator.ParseXaml(reader);
 
 			Assert.AreEqual("FooBar", generator.RootType);
-			Assert.AreEqual ("Xamarin.Forms.Foo`1", generator.BaseType.BaseType);
+			Assert.AreEqual ("Xamarin.Forms.Layout`1", generator.BaseType.BaseType);
 			Assert.AreEqual (1, generator.BaseType.TypeArguments.Count);
 			Assert.AreEqual ("System.String", generator.BaseType.TypeArguments [0].BaseType);
 		}
@@ -177,7 +232,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 		[Test]
 		public void MulipleXTypeArgumentsOnRootElement ()
 		{
-			var xaml = @"<Foo 
+			var xaml = @"<ObservableWrapper 
 						    xmlns=""http://xamarin.com/schemas/2014/forms""
 						    xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							x:Class=""FooBar"" 
@@ -185,11 +240,20 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			/>";
 			var reader = new StringReader (xaml);
 
-			var generator = new XamlGenerator();
+			var references = string.Join(";",
+								IOPath.GetFullPath(
+									IOPath.Combine(
+										TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Controls.dll")),
+								IOPath.GetFullPath(
+									IOPath.Combine(
+										TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Core.dll"))
+								);
+
+			var generator = new XamlGenerator(null, null, null, null, null, null, references);
 			generator.ParseXaml(reader);
 
 			Assert.AreEqual ("FooBar", generator.RootType);
-			Assert.AreEqual ("Xamarin.Forms.Foo`2", generator.BaseType.BaseType);
+			Assert.AreEqual ("Xamarin.Forms.ObservableWrapper`2", generator.BaseType.BaseType);
 			Assert.AreEqual (2, generator.BaseType.TypeArguments.Count);
 			Assert.AreEqual ("System.String", generator.BaseType.TypeArguments [0].BaseType);
 			Assert.AreEqual ("System.Int32", generator.BaseType.TypeArguments [1].BaseType);
@@ -198,7 +262,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 		[Test]
 		public void MulipleXTypeArgumentsOnRootElementWithWhitespace ()
 		{
-			var xaml = @"<Foo 
+			var xaml = @"<ObservableWrapper 
 						    xmlns=""http://xamarin.com/schemas/2014/forms""
 						    xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							x:Class=""FooBar"" 
@@ -206,11 +270,20 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			/>";
 			var reader = new StringReader (xaml);
 
-			var generator = new XamlGenerator();
+			var references = string.Join(";",
+								IOPath.GetFullPath(
+									IOPath.Combine(
+										TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Controls.dll")),
+								IOPath.GetFullPath(
+									IOPath.Combine(
+										TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Core.dll"))
+								);
+
+			var generator = new XamlGenerator(null, null, null, null, null, null, references);
 			generator.ParseXaml(reader);
 
 			Assert.AreEqual ("FooBar", generator.RootType);
-			Assert.AreEqual ("Xamarin.Forms.Foo`2", generator.BaseType.BaseType);
+			Assert.AreEqual ("Xamarin.Forms.ObservableWrapper`2", generator.BaseType.BaseType);
 			Assert.AreEqual (2, generator.BaseType.TypeArguments.Count);
 			Assert.AreEqual ("System.String", generator.BaseType.TypeArguments [0].BaseType);
 			Assert.AreEqual ("System.Int32", generator.BaseType.TypeArguments [1].BaseType);
@@ -219,7 +292,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 		[Test]
 		public void MulipleXTypeArgumentsMulitpleNamespacesOnRootElement ()
 		{
-			var xaml = @"<Foo 
+			var xaml = @"<ObservableWrapper 
 						    xmlns=""http://xamarin.com/schemas/2014/forms""
 						    xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							x:Class=""FooBar"" 
@@ -230,11 +303,20 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			/>";
 			var reader = new StringReader (xaml);
 
-			var generator = new XamlGenerator();
+			var references = string.Join(";",
+								IOPath.GetFullPath(
+									IOPath.Combine(
+										TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Controls.dll")),
+								IOPath.GetFullPath(
+									IOPath.Combine(
+										TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Core.dll"))
+								);
+
+			var generator = new XamlGenerator(null, null, null, null, null, null, references);
 			generator.ParseXaml(reader);
 
 			Assert.AreEqual ("FooBar", generator.RootType);
-			Assert.AreEqual ("Xamarin.Forms.Foo`2", generator.BaseType.BaseType);
+			Assert.AreEqual ("Xamarin.Forms.ObservableWrapper`2", generator.BaseType.BaseType);
 			Assert.AreEqual (2, generator.BaseType.TypeArguments.Count);
 			Assert.AreEqual ("Xamarin.Forms.Xaml.UnitTests.Bugzilla24258.Interfaces.IDummyInterface", generator.BaseType.TypeArguments [0].BaseType);
 			Assert.AreEqual ("Xamarin.Forms.Xaml.UnitTests.Bugzilla24258.InterfacesTwo.IDummyInterfaceTwo", generator.BaseType.TypeArguments [1].BaseType);
@@ -243,7 +325,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 		[Test]
 		public void MulipleXTypeArgumentsMulitpleNamespacesOnRootElementWithWhitespace ()
 		{
-			var xaml = @"<Foo 
+			var xaml = @"<ObservableWrapper 
 						    xmlns=""http://xamarin.com/schemas/2014/forms""
 						    xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							x:Class=""FooBar"" 
@@ -254,11 +336,20 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			/>";
 			var reader = new StringReader (xaml);
 
-			var generator = new XamlGenerator();
+			var references = string.Join(";",
+								IOPath.GetFullPath(
+									IOPath.Combine(
+										TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Controls.dll")),
+								IOPath.GetFullPath(
+									IOPath.Combine(
+										TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Core.dll"))
+								);
+
+			var generator = new XamlGenerator(null, null, null, null, null, null, references);
 			generator.ParseXaml(reader);
 
 			Assert.AreEqual ("FooBar", generator.RootType);
-			Assert.AreEqual ("Xamarin.Forms.Foo`2", generator.BaseType.BaseType);
+			Assert.AreEqual ("Xamarin.Forms.ObservableWrapper`2", generator.BaseType.BaseType);
 			Assert.AreEqual (2, generator.BaseType.TypeArguments.Count);
 			Assert.AreEqual ("Xamarin.Forms.Xaml.UnitTests.Bugzilla24258.Interfaces.IDummyInterface", generator.BaseType.TypeArguments [0].BaseType);
 			Assert.AreEqual ("Xamarin.Forms.Xaml.UnitTests.Bugzilla24258.InterfacesTwo.IDummyInterfaceTwo", generator.BaseType.TypeArguments [1].BaseType);
@@ -276,8 +367,16 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 				<Label x:Name=""label0""/>
 			</ContentPage>";
 			using (var reader = new StringReader (xaml)) {
+				var references = string.Join(";",
+					IOPath.GetFullPath(
+						IOPath.Combine(
+							TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Controls.dll")),
+					IOPath.GetFullPath(
+						IOPath.Combine(
+							TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Core.dll"))
+					);
 
-				var generator = new XamlGenerator();
+				var generator = new XamlGenerator(null,null,null,null,null,null, references);
 				generator.ParseXaml(reader);
 
 				Assert.IsTrue (generator.BaseType.Options.HasFlag (CodeTypeReferenceOptions.GlobalReference));
@@ -302,8 +401,16 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 
 			using (var reader = new StringReader(xaml))
 			{
+				var references = string.Join(";",
+					IOPath.GetFullPath(
+						IOPath.Combine(
+							TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Controls.dll")),
+					IOPath.GetFullPath(
+						IOPath.Combine(
+							TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Core.dll"))
+					);
 
-				var generator = new XamlGenerator();
+				var generator = new XamlGenerator(null, null, null, null, null, null, references);
 				generator.ParseXaml(reader);
 
 				Assert.That(generator.NamedFields.First(cmf => cmf.Name == "privateLabel").Attributes, Is.EqualTo(MemberAttributes.Private));
@@ -323,7 +430,16 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 		x:Name=""bar"">
 	</ContentPage>";
 
-			var generator = new XamlGenerator();
+			var references = string.Join(";",
+								IOPath.GetFullPath(
+									IOPath.Combine(
+										TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Controls.dll")),
+								IOPath.GetFullPath(
+									IOPath.Combine(
+										TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Core.dll"))
+								);
+
+			var generator = new XamlGenerator(null, null, null, null, null, null, references);
 			generator.ParseXaml(new StringReader(xaml));
 
 			Assert.AreEqual(1, generator.NamedFields.Count());
