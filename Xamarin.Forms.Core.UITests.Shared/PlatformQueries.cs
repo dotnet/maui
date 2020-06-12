@@ -77,6 +77,7 @@ namespace Xamarin.Forms.Core.UITests
 		public static readonly string Picker = "UITextField";
 		public static readonly string Pin = "MKPinAnnotationView";
 		public static readonly string ProgressBar = "UIProgressView";
+		public static readonly string RadioButton = "Xamarin_Forms_Platform_iOS_RadioButtonRenderer";
 		public static readonly string SearchBar = "UISearchBar";
 		public static readonly string Slider = "UISlider";
 		public static readonly string Stepper = "UIStepper";
@@ -102,6 +103,7 @@ namespace Xamarin.Forms.Core.UITests
 		public static readonly string Picker = "android.widget.EditText";
 		public static readonly string Pin = "android.gms.maps.model.Marker";
 		public static readonly string ProgressBar = "android.widget.ProgressBar";
+		public static readonly string RadioButton = "android.widget.RadioButton";
 		public static readonly string SearchBar = "android.widget.SearchView";
 		public static readonly string Slider = "android.widget.SeekBar";
 		public static readonly string Stepper = "button marked:'+'";

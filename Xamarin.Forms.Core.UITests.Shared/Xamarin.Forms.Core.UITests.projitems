@@ -62,5 +62,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\ViewInspector.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tests\CollectionViewUITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tests\CarouselViewUITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tests\RadioButtonUITests.cs" />
   </ItemGroup>
 </Project>
