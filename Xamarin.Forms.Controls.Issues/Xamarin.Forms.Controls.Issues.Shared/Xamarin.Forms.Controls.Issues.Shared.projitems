@@ -1413,6 +1413,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue9555.xaml.cs">
       <DependentUpon>Issue9555.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Issue10940.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">

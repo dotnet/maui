@@ -132,6 +132,7 @@
     <Compile Include="ApiLabelRenderer.cs" />
     <Compile Include="Issue7249SwitchRenderer.cs" />
     <Compile Include="_9087CustomRenderer.cs" />
+    <Compile Include="_10940CustomRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <AndroidAsset Include="Assets\default.css" />
