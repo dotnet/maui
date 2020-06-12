@@ -116,6 +116,9 @@ namespace Xamarin.Forms
 			if (_bindings == null)
 				throw new InvalidOperationException("Bindings is null");
 
+			if (Converter == null && StringFormat == null)
+				throw new InvalidOperationException("Cannot apply MultiBinding because both Converter and StringFormat are null.");
+
 			base.Apply(context, targetObject, targetProperty, fromBindingContextChanged);
 
 			if (!ReferenceEquals(_targetObject, targetObject)) {
