@@ -99,7 +99,7 @@ namespace Xamarin.Forms.Xaml
 				}
 			}
 
-			var binding = new OnAppTheme<object>();
+			var binding = new AppThemeBinding();
 			if (converterProvider != null)
 			{
 				if (_haslight) binding.Light = converterProvider.Convert(Light, propertyType, minforetriever, serviceProvider);
