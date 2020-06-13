@@ -151,18 +151,6 @@ namespace Xamarin.Forms.Platform.MacOS
 			{
 				return;
 			}
-			
-			ImageSource errorPlaceholderSource = null;
-			if (imageElement is Image img)
-			{
-				var loadingPlaceholderSource = img.LoadingPlaceholder;
-				if(loadingPlaceholderSource != null)
-				{
-					var uiImage = await loadingPlaceholderSource.GetNativeImageAsync();
-					renderer.SetImage(uiImage);
-				}
-				errorPlaceholderSource = img.ErrorPlaceholder;
-			}
 
 			var imageController = imageElement as IImageController;
 
@@ -242,9 +230,6 @@ namespace Xamarin.Forms.Platform.MacOS
 					if (renderer.IsDisposed)
 						return;
 
-					if (uiimage == null && errorPlaceholderSource != null)
-						uiimage = await errorPlaceholderSource.GetNativeImageAsync();
-
 					// only set if we are still on the same image
 					if (Control != null && imageElement.Source == source)
 						renderer.SetImage(uiimage);
@@ -265,8 +250,8 @@ namespace Xamarin.Forms.Platform.MacOS
 #if __MOBILE__
 		static void OnAnimationStopped(object sender, CAAnimationStateEventArgs e)
 		{
-			if(sender is FormsUIImageView imageView && 
-				e.Finished && 
+			if (sender is FormsUIImageView imageView &&
+				e.Finished &&
 				imageView.Superview is IImageVisualElementRenderer renderer &&
 				renderer.Element is IElementController imageController)
 			{

@@ -88,10 +88,9 @@ namespace Xamarin.Forms.Platform.UWP
 			Element?.SetIsLoading(false);
 		}
 
-		protected virtual async void OnImageFailed(object sender, ExceptionRoutedEventArgs exceptionRoutedEventArgs)
+		protected virtual void OnImageFailed(object sender, ExceptionRoutedEventArgs exceptionRoutedEventArgs)
 		{
 			Log.Warning("Image Loading", $"Image failed to load: {exceptionRoutedEventArgs.ErrorMessage}");
-			await ImageElementManager.DisplayErrorImage(this).ConfigureAwait(false);
 			Element?.SetIsLoading(false);
 		}
 
@@ -129,7 +128,7 @@ namespace Xamarin.Forms.Platform.UWP
 			catch (Exception exception)
 			{
 				Log.Warning("Update image source after app resume", 
-					$"ImageSource failed to update after app resume: {exception.Message}");
+					$"ImageSource failed to update after app resume: {exception.Message}");				
 			}
 		}
 
