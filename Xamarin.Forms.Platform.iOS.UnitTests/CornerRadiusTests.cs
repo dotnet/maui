@@ -46,7 +46,7 @@ namespace Xamarin.Forms.Platform.iOS.UnitTests
 			{
 				HeightRequest = 100,
 				WidthRequest = 200,
-				CornerRadius = 15,
+				CornerRadius = 40,
 				BackgroundColor = backgroundColor,
 				BorderColor = Color.Brown,
 				Content = new Label { Text = "Hey" }
