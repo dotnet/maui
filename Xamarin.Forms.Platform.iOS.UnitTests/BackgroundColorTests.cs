@@ -37,9 +37,9 @@ namespace Xamarin.Forms.Platform.iOS.UnitTests
 		public async Task FrameBackgroundColorConsistent()
 		{
 			var frame = new Frame { BackgroundColor = Color.AliceBlue };
-			var expected = frame.BackgroundColor.ToUIColor();
-			var actual = await GetRendererProperty(frame, r => r.NativeView.BackgroundColor);
-			Assert.That(actual, Is.EqualTo(expected));
+			var expectedColor = frame.BackgroundColor.ToUIColor();
+			var screenshot = await GetRendererProperty(frame, (ver) => ver.NativeView.ToBitmap(), requiresLayout: true);
+			screenshot.AssertColorAtCenter(expectedColor);
 		}
 
 		[Test, Category("BackgroundColor"), Category("Label")]
