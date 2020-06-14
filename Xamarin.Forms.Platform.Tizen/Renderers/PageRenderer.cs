@@ -150,6 +150,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		MoreOption CreateMoreOption()
 		{
 			var moreOption = new MoreOption(_page);
+			moreOption.Geometry = _page.Geometry;
 			_page.Children.Add(moreOption);
 			moreOption.Show();
 			moreOption.Clicked += OnMoreOptionItemClicked;
@@ -170,10 +171,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void OnToolbarCollectionChanged(object sender, EventArgs eventArgs)
 		{
-			if (Element.ToolbarItems.Count > 0 || _moreOption.IsValueCreated)
-			{
-				UpdateToolbarItems(false);
-			}
+			UpdateToolbarItems(false);
 		}
 
 		void UpdateToolbarItems(bool initialize)
@@ -184,9 +182,17 @@ namespace Xamarin.Forms.Platform.Tizen
 				_moreOption.Value.Items.Clear();
 			}
 
-			foreach (var item in Element.ToolbarItems)
+			if (Element.ToolbarItems.Count > 0)
 			{
-				_moreOption.Value.Items.Add(CreateMoreOptionItem(item));
+				_moreOption.Value.Show();
+				foreach (var item in Element.ToolbarItems)
+				{
+					_moreOption.Value.Items.Add(CreateMoreOptionItem(item));
+				}
+			}
+			else
+			{
+				_moreOption.Value.Hide();
 			}
 		}
 

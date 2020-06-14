@@ -67,6 +67,10 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				UpdateItemsUpdatingScrollMode();
 			}
+			else if (changedProperty.Is(VisualElement.FlowDirectionProperty))
+			{
+				UpdateFlowDirection();
+			}
 		}
 
 		protected abstract ItemsViewLayout SelectLayout();
@@ -96,6 +100,7 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateHorizontalScrollBarVisibility();
 			UpdateVerticalScrollBarVisibility();
 			UpdateItemsUpdatingScrollMode();
+			UpdateFlowDirection();
 
 			// Listen for ScrollTo requests
 			newElement.ScrollToRequested += ScrollToRequested;
@@ -119,6 +124,17 @@ namespace Xamarin.Forms.Platform.iOS
 		protected virtual void UpdateItemsUpdatingScrollMode()
 		{
 			_layout.ItemsUpdatingScrollMode = ItemsView.ItemsUpdatingScrollMode;
+		}
+
+		protected virtual void UpdateFlowDirection()
+		{
+			if (Element == null)
+			{
+				return;
+			}
+
+			Controller.CollectionView.UpdateFlowDirection(Element);
+			Controller.Layout.InvalidateLayout();
 		}
 
 		protected virtual void UpdateItemsSource()

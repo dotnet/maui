@@ -32,6 +32,7 @@ namespace Xamarin.Forms.Core.UITests
 		public const string OpenGLViewGallery = "* marked:'OpenGLView Gallery'";
 		public const string PickerGallery = "* marked:'Picker Gallery'";
 		public const string ProgressBarGallery = "* marked:'ProgressBar Gallery'";
+		public const string RadioButtonGallery = "* marked:'RadioButton Core Gallery'";
 		public const string ScrollViewGallery = "* marked:'ScrollView Gallery'";
 		public const string ScrollViewGalleryHorizontal = "* marked:'ScrollView Gallery Horizontal'";
 		public const string SearchBarGallery = "* marked:'SearchBar Gallery'";
@@ -47,7 +48,6 @@ namespace Xamarin.Forms.Core.UITests
 		public const string RootPagesGallery = "* marked:'RootPages Gallery'";
 		public const string AppearingGallery = "* marked:'Appearing Gallery'";
 		public const string PlatformAutomatedTestsGallery = "* marked:'Platform Automated Tests'";
-		
 
 		// Legacy galleries
 		public const string CellsGalleryLegacy = "* marked:'Cells Gallery - Legacy'";
@@ -97,6 +97,7 @@ namespace Xamarin.Forms.Core.UITests
 		public static readonly string Picker = PlatformViews.Picker;
 		public static readonly string Pin = PlatformViews.Pin;
 		public static readonly string ProgressBar = PlatformViews.ProgressBar;
+		public static readonly string RadioButton = PlatformViews.RadioButton;
 		public static readonly string SearchBar = PlatformViews.SearchBar;
 		public static readonly string Slider = PlatformViews.Slider;
 		public static readonly string Stepper = PlatformViews.Stepper;
