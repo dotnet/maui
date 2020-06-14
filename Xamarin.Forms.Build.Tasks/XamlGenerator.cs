@@ -352,8 +352,6 @@ namespace Xamarin.Forms.Build.Tasks
 
 		static string GetClrNamespace(string namespaceuri)
 		{
-			if (namespaceuri == XamlParser.XFUri)
-				return "Xamarin.Forms";
 			if (namespaceuri == XamlParser.X2009Uri)
 				return "System";
 			if (namespaceuri != XamlParser.X2006Uri && 

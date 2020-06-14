@@ -96,6 +96,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				return;
 			}
+
 			AImageView.ScaleType type = Element.Aspect.ToScaleType();
 			Control.SetScaleType(type);
 		}

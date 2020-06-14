@@ -30,6 +30,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public bool IsDisposed { get; private set; }
 
+		[Preserve(Conditional = true)]
 		public RadioButtonRenderer() : base()
 		{
 			BorderElementManager.Init(this);

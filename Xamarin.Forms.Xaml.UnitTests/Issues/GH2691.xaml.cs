@@ -114,9 +114,14 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					"Release";
 #endif
 
-				var dir = IOPath.GetFullPath(
+				var references = string.Join(";",
+					IOPath.GetFullPath(
 						IOPath.Combine(
-							TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Controls.dll"));
+							TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Controls.dll")),
+					IOPath.GetFullPath(
+						IOPath.Combine(
+							TestContext.CurrentContext.TestDirectory, "Xamarin.Forms.Core.dll"))
+					);
 				var xamlg = new XamlGTask()
 				{
 					BuildEngine = new DummyBuildEngine(),
@@ -124,7 +129,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					Language = "C#",
 					XamlFiles = new[] { item },
 					OutputFiles = new[] { new TaskItem(xamlOutputFile) },
-					References = dir
+					References = references
 				};
 
 				var generator = new XamlGenerator(item, xamlg.Language, xamlg.AssemblyName, xamlOutputFile, xamlg.References, null);

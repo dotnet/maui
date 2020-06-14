@@ -2,15 +2,29 @@
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Hosting;
 using Xamarin.Forms.Shapes;
+using WRectangleGeometry = Windows.UI.Xaml.Media.RectangleGeometry;
+
+#if UWP_18362
 using WVector2 = System.Numerics.Vector2;
+#endif
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	internal static class CompositionExtensions
+	internal static class ClipExtensions
 	{
-#if UWP_18362
 		public static void Clip(this FrameworkElement frameworkElement, Geometry geometry)
 		{
+			var wGeometry = geometry.ToWindows();
+
+			if (wGeometry is WRectangleGeometry wRectangleGeometry && frameworkElement.Clip != wRectangleGeometry)
+				frameworkElement.Clip = wRectangleGeometry;
+		}
+
+		public static void ClipVisual(this FrameworkElement frameworkElement, Geometry geometry)
+		{
+			// UIElement.Clip only support rectangle geometry to be used for clipping area sizing.
+			// If the used Build is 17763 or higher, we use Composition's APIs (CompositionGeometricClip) to allow Clip complex geometries.
+#if UWP_18362
 			var compositor = Window.Current.Compositor;
 			var visual = ElementCompositionPreview.GetElementVisual(frameworkElement);
 
@@ -43,9 +57,10 @@ namespace Xamarin.Forms.Platform.UWP
 
 				compositionClip = compositor.CreateGeometricClip(compositionRectangleGeometry);
 			}
-	
-			visual.Clip = compositionClip;
-		}
+
+			if (visual.Clip != compositionClip)
+				visual.Clip = compositionClip;
 #endif
+		}
 	}
 }

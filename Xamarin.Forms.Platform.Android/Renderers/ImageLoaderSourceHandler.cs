@@ -21,7 +21,6 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (bitmap == null)
 			{
-
 				Log.Warning(nameof(ImageLoaderSourceHandler), "Could not retrieve image or image data was invalid: {0}", imageLoader);
 			}
 

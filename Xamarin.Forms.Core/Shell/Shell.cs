@@ -631,28 +631,24 @@ namespace Xamarin.Forms
 
 		ShellNavigationState GetNavigationState(ShellItem shellItem, ShellSection shellSection, ShellContent shellContent, IReadOnlyList<Page> sectionStack, IReadOnlyList<Page> modalStack)
 		{
-			StringBuilder stateBuilder = new StringBuilder($"//");
-			Dictionary<string, string> queryData = new Dictionary<string, string>();
+			List<string> routeStack = new List<string>();
 
 			bool stackAtRoot = sectionStack == null || sectionStack.Count <= 1;
 
 			if (shellItem != null)
 			{
 				var shellItemRoute = shellItem.Route;
-				stateBuilder.Append(shellItemRoute);
-				stateBuilder.Append("/");
+				routeStack.Add(shellItemRoute);
 
 				if (shellSection != null)
 				{
 					var shellSectionRoute = shellSection.Route;
-					stateBuilder.Append(shellSectionRoute);
-					stateBuilder.Append("/");
+					routeStack.Add(shellSectionRoute);
 
 					if (shellContent != null)
 					{
 						var shellContentRoute = shellContent.Route;
-						stateBuilder.Append(shellContentRoute);
-						stateBuilder.Append("/");
+						routeStack.Add(shellContentRoute);
 					}
 
 					if (!stackAtRoot)
@@ -660,37 +656,63 @@ namespace Xamarin.Forms
 						for (int i = 1; i < sectionStack.Count; i++)
 						{
 							var page = sectionStack[i];
-							stateBuilder.Append(Routing.GetRoute(page));
-							if (i < sectionStack.Count - 1)
-								stateBuilder.Append("/");
+							routeStack.AddRange(CollapsePath(Routing.GetRoute(page), routeStack));
 						}
 					}
 
 					if (modalStack != null && modalStack.Count > 0)
 					{
-						if (!stackAtRoot && sectionStack.Count > 0)
-							stateBuilder.Append("/");
-
 						for (int i = 0; i < modalStack.Count; i++)
 						{
 							var topPage = modalStack[i];
 
-							if (i > 0)
-								stateBuilder.Append("/");
-
-							stateBuilder.Append(Routing.GetRoute(topPage));
+							routeStack.AddRange(CollapsePath(Routing.GetRoute(topPage), routeStack));
 
 							for (int j = 1; j < topPage.Navigation.NavigationStack.Count; j++)
 							{
-								stateBuilder.Append("/");
-								stateBuilder.Append(Routing.GetRoute(topPage.Navigation.NavigationStack[j]));
+								routeStack.AddRange(CollapsePath(Routing.GetRoute(topPage.Navigation.NavigationStack[j]), routeStack));
 							}
 						}
 					}
 				}
 			}
 
-			return stateBuilder.ToString();
+			if(routeStack.Count > 0)
+				routeStack.Insert(0, "/");
+
+			return String.Join("/", routeStack);
+
+
+			List<string> CollapsePath(string myRoute, List<string> currentRouteStack)
+			{
+				for (var i = currentRouteStack.Count - 1; i >= 0; i--)
+				{
+					var route = currentRouteStack[i];
+					if (Routing.IsImplicit(route) || Routing.IsDefault(route))
+						currentRouteStack.RemoveAt(i);
+				}
+
+				var paths = myRoute.Split('/').ToList();
+
+				// collapse similar leaves
+				int walkBackCurrentStackIndex = currentRouteStack.Count - (paths.Count - 1);
+
+				while(paths.Count > 1 && walkBackCurrentStackIndex >= 0)
+				{
+					if (paths[0] == currentRouteStack[walkBackCurrentStackIndex])
+					{
+						paths.RemoveAt(0);
+					}
+					else
+					{
+						break;
+					}
+
+					walkBackCurrentStackIndex++;
+				}
+
+				return paths;
+			}
 		}
 
 		public static readonly BindableProperty CurrentItemProperty =

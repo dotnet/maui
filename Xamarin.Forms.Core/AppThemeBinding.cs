@@ -2,14 +2,19 @@
 
 namespace Xamarin.Forms
 {
-	class OnAppTheme<T> : BindingBase
+	class AppThemeBinding : BindingBase
 	{
 		WeakReference<BindableObject> _weakTarget;
 		BindableProperty _targetProperty;
 
-		public OnAppTheme() => Application.Current.RequestedThemeChanged += (o,e) => Device.BeginInvokeOnMainThread(() => ApplyCore());
+		public AppThemeBinding() => Application.Current.RequestedThemeChanged += (o,e) => Device.BeginInvokeOnMainThread(() => ApplyCore());
 
-		internal override BindingBase Clone() => new OnAppTheme<T> { Light = Light, Dark = Dark, Default = Default };
+		internal override BindingBase Clone() => new AppThemeBinding {
+			Light = Light,
+			_isLightSet = _isLightSet,
+			Dark = Dark,
+			_isDarkSet = _isDarkSet,
+			Default = Default };
 
 		internal override void Apply(bool fromTarget)
 		{
@@ -40,14 +45,12 @@ namespace Xamarin.Forms
 			target?.SetValueCore(_targetProperty, GetValue());
 		}
 
-		T _light;
-		T _dark;
-		T _default;
+		object _light;
+		object _dark;
 		bool _isLightSet;
 		bool _isDarkSet;
-		bool _isDefaultSet;
 
-		public T Light
+		public object Light
 		{
 			get => _light;
 			set
@@ -57,7 +60,7 @@ namespace Xamarin.Forms
 			}
 		}
 
-		public T Dark
+		public object Dark
 		{
 			get => _dark;
 			set
@@ -67,25 +70,16 @@ namespace Xamarin.Forms
 			}
 		}
 
-		public T Default
-		{
-			get => _default;
-			set
-			{
-				_default = value;
-				_isDefaultSet = true;
-			}
-		}
+		public object Default { get; set; }
 
-		T GetValue()
+		object GetValue()
 		{
-			switch (Application.Current.RequestedTheme)
-			{
-				default:
-				case OSAppTheme.Light:
-					return _isLightSet ? Light : (_isDefaultSet ? Default : default);
-				case OSAppTheme.Dark:
-					return _isDarkSet ? Dark : (_isDefaultSet ? Default : default);
+			switch (Application.Current.RequestedTheme) {
+			default:
+			case OSAppTheme.Light:
+				return _isLightSet ? Light :  Default;
+			case OSAppTheme.Dark:
+				return _isDarkSet ? Dark : Default;
 			}
 		}
 	}

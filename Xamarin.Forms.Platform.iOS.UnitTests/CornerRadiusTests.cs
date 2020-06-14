@@ -38,7 +38,6 @@ namespace Xamarin.Forms.Platform.iOS.UnitTests
 		}
 
 		[Test, Category("CornerRadius"), Category("Frame")]
-		[Ignore("Will not pass until https://github.com/xamarin/Xamarin.Forms/issues/9265 is fixed")]
 		public async Task FrameCornerRadius()
 		{
 			var backgroundColor = Color.CadetBlue;
@@ -47,7 +46,7 @@ namespace Xamarin.Forms.Platform.iOS.UnitTests
 			{
 				HeightRequest = 100,
 				WidthRequest = 200,
-				CornerRadius = 15,
+				CornerRadius = 40,
 				BackgroundColor = backgroundColor,
 				BorderColor = Color.Brown,
 				Content = new Label { Text = "Hey" }
