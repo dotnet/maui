@@ -3,8 +3,6 @@ variables:
   value: 'any cpu'
 - name: ApkName
   value: AndroidControlGallery.AndroidControlGallery.apk
-- name: IpaName
-  value: XamarinFormsControlGalleryiOS.ipa
 - name: SolutionFile
   value: Xamarin.Forms.sln
 - name: BuildVersion
