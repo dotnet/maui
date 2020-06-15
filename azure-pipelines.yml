@@ -1,12 +1,8 @@
 variables:
-- name: DefaultBuildConfiguration
-  value: Debug
 - name: DefaultBuildPlatform
   value: 'any cpu'
 - name: ApkName
   value: AndroidControlGallery.AndroidControlGallery.apk
-- name: IpaName
-  value: XamarinFormsControlGalleryiOS.ipa
 - name: SolutionFile
   value: Xamarin.Forms.sln
 - name: BuildVersion
@@ -155,6 +151,7 @@ stages:
         parameters:
           vmImage: $(macOSXVmImage)
           provisionatorPath : 'build/provisioning/provisioning.csx'
+          buildConfiguration : $(DefaultBuildConfiguration)
 
 
   - stage: build_osx

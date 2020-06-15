@@ -48,8 +48,8 @@ if (IsMac)
 		if(releaseChannel == "Beta")
 		{
 			Console.WriteLine("Installing Beta Channel");			
-			await ResolveUrl ("https://xamci.azurewebsites.net/dl/xamarin/xamarin-macios/d16-6/PKG-Xamarin.Mac-notarized");
-			await ResolveUrl ("https://xamci.azurewebsites.net/dl/xamarin/xamarin-macios/d16-6/PKG-Xamarin.iOS-notarized");
+			await ResolveUrl ("https://xamci.azurewebsites.net/dl/xamarin/xamarin-macios/d16-6-xcode11.6/PKG-Xamarin.Mac-notarized");
+			await ResolveUrl ("https://xamci.azurewebsites.net/dl/xamarin/xamarin-macios/d16-6-xcode11.6/PKG-Xamarin.iOS-notarized");
 		}
 		else if(releaseChannel == "Preview")
 		{
@@ -63,9 +63,17 @@ if (IsMac)
 
 	async System.Threading.Tasks.Task ResolveUrl (string url)
 	{
-		using (var response = await client.GetAsync (url, System.Net.Http.HttpCompletionOption.ResponseHeadersRead)) {
-			response.EnsureSuccessStatusCode ();
-			Item(response.RequestMessage.RequestUri.ToString());
+		// When downloading a package using the xamci we have to use the following code to 
+		// install updates otherwise provionator can't tell the difference between a new package or an old one
+		try
+		{
+			using (var response = await client.GetAsync (url, System.Net.Http.HttpCompletionOption.ResponseHeadersRead)) {
+				response.EnsureSuccessStatusCode ();
+				Item(response.RequestMessage.RequestUri.ToString());
+			}
+		}
+		catch{
+			Item(url);
 		}
 	}
 }

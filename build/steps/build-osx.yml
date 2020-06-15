@@ -49,14 +49,6 @@ steps:
       feedsToUse: config
       nugetConfigPath: 'DevopsNuget.config'
 
-  - task: Bash@3
-    displayName: 'Build solution Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj'
-    condition: or(eq(variables['provisioningCake'], 'true'), eq(variables['buildForVS2017'], 'true'))
-    inputs:
-      targetType: 'filePath'
-      filePath: 'build.sh'
-      arguments: --target BuildTasks
-
   - task: InstallAppleCertificate@2
     displayName: 'Install an Apple certificate'
     inputs:
@@ -68,13 +60,26 @@ steps:
     inputs:
       provProfileSecureFile: 'Xamarin Forms iOS Provisioning.mobileprovision'
 
-  - task: XamariniOS@2
-    displayName: 'Build Xamarin.iOS solution $(slnPath)'
+  - task: Bash@3
+    displayName: 'Build Control Gallery IPA'
     inputs:
-      solutionFile: $(slnPath)
-      configuration: $(buildConfiguration)
-      args: /bl:$(Build.ArtifactStagingDirectory)/ios-2017_$(buildForVS2017).binlog
+      targetType: 'filePath'
+      filePath: 'build.sh'
+      arguments: --target cg-ios --buildForVS2017=$(buildForVS2017) --BUILD_CONFIGURATION=$(buildConfiguration) --MSBuildArguments='${{ variables.MSBuildArguments_cg_ios }}'
 
+  - task: MSBuild@1
+    displayName: 'Build iOS Tests'
+    inputs:
+      solution: 'Xamarin.Forms.Core.iOS.UITests/Xamarin.Forms.Core.iOS.UITests.csproj'
+      configuration: $(buildConfiguration)
+      msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/ios-uitests-2017_$(buildForVS2017).binlog
+
+  - task: MSBuild@1
+    displayName: 'Build Android Tests'
+    inputs:
+      solution: 'Xamarin.Forms.Core.Android.UITests/Xamarin.Forms.Core.Android.UITests.csproj'
+      configuration: $(buildConfiguration)
+      msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/android-uitests-2017_$(buildForVS2017).binlog
 
   - task: CopyFiles@2
     displayName: 'Copy test-cloud.exe'
@@ -86,13 +91,13 @@ steps:
       OverWrite: true
       flattenFolders: true
 
-
   - task: CopyFiles@2
     displayName: 'Copy iOS Files for UITest'
     condition: eq(variables['buildForVS2017'], 'false')
     inputs:
       Contents: |
-        **/$(IpaName)
+        **/XamarinFormsControlGalleryiOS.ipa
+        **/*.dSYM
         Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
         Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/nunit.*
         Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/NUnit3.*
