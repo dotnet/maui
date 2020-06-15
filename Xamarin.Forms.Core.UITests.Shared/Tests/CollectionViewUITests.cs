@@ -291,7 +291,7 @@ namespace Xamarin.Forms.Core.UITests
 		}
 
 		[TestCase("DataTemplate Galleries", "DataTemplateSelector")]
-		void VisitAndCheckForItems(string collectionTestName, string subGallery)
+		public void VisitAndCheckForItems(string collectionTestName, string subGallery)
 		{
 			VisitInitialGallery(collectionTestName);
 
