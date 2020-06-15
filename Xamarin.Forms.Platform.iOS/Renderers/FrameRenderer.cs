@@ -72,7 +72,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				// BackgroundColor gets set on the base class too which messes with
 				// the corner radius, shadow, etc. so override that behaviour here
-				BackgroundColor = null;
+				BackgroundColor = UIColor.Clear;
 				_actualView.Layer.BackgroundColor = Element.BackgroundColor.ToCGColor();
 			}
 
