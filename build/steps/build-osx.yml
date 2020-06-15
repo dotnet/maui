@@ -64,13 +64,6 @@ steps:
       feedsToUse: config
       nugetConfigPath: 'DevopsNuget.config'
 
-  - task: MSBuild@1
-    displayName: 'Build solution Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj'
-    inputs:
-      solution: Xamarin.Forms.Build.Tasks/Xamarin.Forms.Build.Tasks.csproj
-      configuration: $(buildConfiguration)
-      msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/tasks.binlog
-
   - task: InstallAppleCertificate@2
     displayName: 'Install an Apple certificate'
     inputs:
@@ -82,12 +75,12 @@ steps:
     inputs:
       provProfileSecureFile: 'Xamarin Forms iOS Provisioning.mobileprovision'
 
-  - task: MSBuild@1
+  - task: Bash@3
     displayName: 'Build Control Gallery IPA'
     inputs:
-      solution: 'Xamarin.Forms.ControlGallery.iOS/Xamarin.Forms.ControlGallery.iOS.csproj'
-      configuration: $(buildConfiguration)
-      msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/ios-cg-2017_$(buildForVS2017).binlog /p:BuildIpa=true
+      targetType: 'filePath'
+      filePath: 'build.sh'
+      arguments: --target cg-ios --buildForVS2017=$(buildForVS2017) --BUILD_CONFIGURATION=$(buildConfiguration) --MSBuildArguments='${{ variables.MSBuildArguments_cg_ios }}'
 
   - task: MSBuild@1
     displayName: 'Build iOS Tests'
@@ -118,13 +111,13 @@ steps:
     condition: eq(variables['buildForVS2017'], 'false')
     inputs:
       Contents: |
-       **/$(IpaName)
-       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
-       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/nunit.*
-       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/NUnit3.*
-       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Plugin.*
-       Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Xamarin.*
-
+        **/XamarinFormsControlGalleryiOS.ipa
+        **/*.dSYM
+        Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
+        Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/nunit.*
+        Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/NUnit3.*
+        Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Plugin.*
+        Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Xamarin.*
       TargetFolder: '$(build.artifactstagingdirectory)/ios'
       CleanTargetFolder: true
       flattenFolders: true

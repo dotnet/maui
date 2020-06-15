@@ -34,10 +34,11 @@ PowerShell:
 // ARGUMENTS
 //////////////////////////////////////////////////////////////////////
 
+var target = Argument("target", "Default");
+
 var ANDROID_RENDERERS = Argument("ANDROID_RENDERERS", "FAST");
 var XamarinFormsVersion = Argument("XamarinFormsVersion", "");
-var target = Argument("target", "Default");
-var configuration = Argument("configuration", "Debug");
+var configuration = Argument("BUILD_CONFIGURATION", "Debug");
 var packageVersion = Argument("packageVersion", "");
 var releaseChannelArg = Argument("CHANNEL", "Stable");
 releaseChannelArg = EnvironmentVariable("CHANNEL") ?? releaseChannelArg;
@@ -47,10 +48,12 @@ string agentName = EnvironmentVariable("AGENT_NAME", "");
 bool isHostedAgent = agentName.StartsWith("Azure Pipelines");
 bool isCIBuild = !String.IsNullOrWhiteSpace(agentName);
 string artifactStagingDirectory = EnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY", ".");
+
 var ANDROID_HOME = EnvironmentVariable("ANDROID_HOME") ??
     (IsRunningOnWindows () ? "C:\\Program Files (x86)\\Android\\android-sdk\\" : "");
-
 string[] androidSdkManagerInstalls = new [] { "platforms;android-28", "platforms;android-29", "build-tools;29.0.3"};
+
+var IOS_BUILD_IPA = Argument("IOS_BUILD_IPA", false || isCIBuild);
 
 (string name, string location)[] windowsSdksInstalls = new (string name, string location)[]
 {
@@ -63,7 +66,9 @@ string[] androidSdkManagerInstalls = new [] { "platforms;android-28", "platforms
 string[] netFrameworkSdksLocalInstall = new string[]
 {
     "https://go.microsoft.com/fwlink/?linkid=2099470", //NET461 SDK
-    "https://go.microsoft.com/fwlink/?linkid=874338" //NET472 SDK
+    "https://go.microsoft.com/fwlink/?linkid=874338", //NET472 SDK
+    "https://go.microsoft.com/fwlink/?linkid=2099465", //NET47
+    "https://download.microsoft.com/download/A/1/D/A1D07600-6915-4CB8-A931-9A980EF47BB7/NDP47-DevPack-KB3186612-ENU.exe" //net47 targeting pack
 };
 
 // these don't run on CI
@@ -614,7 +619,7 @@ Task("cg-android")
             };
 
             buildSettings.BinaryLogger = binaryLogger;
-            binaryLogger.FileName = $"{artifactStagingDirectory}/android-{ANDROID_RENDERERS}.binlog";
+            binaryLogger.FileName = $"{artifactStagingDirectory}/android-{ANDROID_RENDERERS}_{buildForVS2017}.binlog";
         }
         else
         {
@@ -637,7 +642,26 @@ Task("cg-ios")
     .IsDependentOn("BuildTasks")
     .Does(() =>
     {   
-        MSBuild("./Xamarin.Forms.ControlGallery.iOS/Xamarin.Forms.ControlGallery.iOS.csproj", GetMSBuildSettings().WithRestore());
+        var buildSettings = 
+            GetMSBuildSettings(null)
+            .WithProperty("BuildIpa", $"{IOS_BUILD_IPA}");
+
+        if(isCIBuild)
+        {
+            var binaryLogger = new MSBuildBinaryLogSettings {
+                Enabled  = true
+            };
+
+            buildSettings.BinaryLogger = binaryLogger;
+            binaryLogger.FileName = $"{artifactStagingDirectory}/ios-cg-2017_{buildForVS2017}.binlog";
+        }
+        else
+        {
+            buildSettings = buildSettings.WithRestore();
+        }
+
+        MSBuild("./Xamarin.Forms.ControlGallery.iOS/Xamarin.Forms.ControlGallery.iOS.csproj", 
+            buildSettings);
     });
 
 Task("cg-ios-vs")
@@ -721,10 +745,10 @@ void StartVisualStudio(string sln = "Xamarin.Forms.sln")
          StartProcess("open", new ProcessSettings{ Arguments = "Xamarin.Forms.sln" });
 }
 
-MSBuildSettings GetMSBuildSettings()
+MSBuildSettings GetMSBuildSettings(PlatformTarget? platformTarget = PlatformTarget.MSIL)
 {
     var buildSettings =  new MSBuildSettings {
-        PlatformTarget = PlatformTarget.MSIL,
+        PlatformTarget = platformTarget,
         MSBuildPlatform = Cake.Common.Tools.MSBuild.MSBuildPlatform.x86,
         Configuration = configuration,
     };
