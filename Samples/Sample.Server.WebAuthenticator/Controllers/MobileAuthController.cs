@@ -33,7 +33,7 @@ namespace Sample.Server.WebAuthenticator
             {
                var claims = auth.Principal.Identities.FirstOrDefault()?.Claims;
                     string email = string.Empty;
-                    email = claims?.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+                    email = claims?.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
                 // Get parameters to send back to the callback
                 var qs = new Dictionary<string, string>
             {
