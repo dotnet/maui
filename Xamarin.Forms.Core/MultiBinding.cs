@@ -85,6 +85,11 @@ namespace Xamarin.Forms
 				var value = GetSourceValue(GetValueArray(), _targetProperty.ReturnType);
 				if (value != Binding.DoNothing) {
 					_applying = true;
+					if (!BindingExpression.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
+					{
+						Log.Warning("MultiBinding", "'{0}' can not be converted to type '{1}'.", value, _targetProperty.ReturnType);
+						return;
+					}
 					_targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted);
 					_applying = false;
 				}
@@ -147,6 +152,11 @@ namespace Xamarin.Forms
 			var value = GetSourceValue(GetValueArray(), _targetProperty.ReturnType);
 			if (value != Binding.DoNothing) {
 				_applying = true;
+				if (!BindingExpression.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
+				{
+					Log.Warning("MultiBinding", "'{0}' can not be converted to type '{1}'.", value, _targetProperty.ReturnType);
+					return;
+				}
 				_targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted);
 				_applying = false;
 			}
