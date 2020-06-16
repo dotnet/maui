@@ -22,12 +22,17 @@ namespace Xamarin.Forms.Platform.WPF
 			else
 				self.FontFamily = (FontFamily)System.Windows.Application.Current.Resources["FontFamilySemiBold"];
 
-			if (font.FontAttributes.HasFlag(FontAttributes.Italic))
+			ApplyFontAttributes(self, font.FontAttributes);
+		}
+
+		public static void ApplyFontAttributes(this Control self, FontAttributes fontAttributes)
+		{
+			if (fontAttributes.HasFlag(FontAttributes.Italic))
 				self.FontStyle = FontStyles.Italic;
 			else
 				self.FontStyle = FontStyles.Normal;
 
-			if (font.FontAttributes.HasFlag(FontAttributes.Bold))
+			if (fontAttributes.HasFlag(FontAttributes.Bold))
 				self.FontWeight = FontWeights.Bold;
 			else
 				self.FontWeight = FontWeights.Normal;

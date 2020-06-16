@@ -38,13 +38,16 @@ namespace Xamarin.Forms.Controls
 				case Device.iOS:
 					fontFamilyContainer.View.FontFamily = "Courier";
 					break;
+				case Device.WPF:
+					fontFamilyContainer.View.FontFamily = "Comic Sans MS";
+					break;
 				default:
 					fontFamilyContainer.View.FontFamily = "Garamond";
 					break;
 			}
 
 			var fontSizeContainer = new ViewContainer<DatePicker>(Test.DatePicker.FontSize, 
-				new DatePicker { FontSize = 24 });
+				new DatePicker { FontSize = 32 });
 
 			Add(dateContainer);
 			Add(dateSelectedContainer);
