@@ -79,6 +79,13 @@ namespace Xamarin.Forms.Platform.WPF
 			if (double.IsInfinity(elementDesiredWidth) || double.IsPositiveInfinity(elementDesiredHeight))
 			{
 				Size request = Element.Measure(elementDesiredWidth, elementDesiredHeight, MeasureFlags.IncludeMargins).Request;
+				
+				if (request.Width == -1)
+					request.Width = 0.0;
+
+				if (request.Height == -1)
+					request.Height = 0.0;
+
 				result = new System.Windows.Size(request.Width, request.Height);
 			}
 			else

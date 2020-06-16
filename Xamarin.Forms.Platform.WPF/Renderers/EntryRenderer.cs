@@ -24,6 +24,7 @@ namespace Xamarin.Forms.Platform.WPF
 					Control.LostFocus += OnTextBoxUnfocused;
 					Control.TextChanged += TextBoxOnTextChanged;
 					Control.KeyUp += TextBoxOnKeyUp;
+					Control.SelectionChanged += TextBoxOnSelectionChanged;
 				}
 
 				// Update Control properties
@@ -38,6 +39,7 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdatePlaceholderColor();
 				UpdateMaxLength();
 				UpdateIsReadOnly();
+				UpdateCursorPosition();
 			}
 
 			base.OnElementChanged(e);
@@ -70,12 +72,14 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateVerticalTextAlignment();
 			else if (e.PropertyName == Entry.PlaceholderColorProperty.PropertyName)
 				UpdatePlaceholderColor();
+			else if (e.PropertyName == Entry.CursorPositionProperty.PropertyName)
+				UpdateCursorPosition();
 			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
 				UpdateMaxLength();
 			else if (e.PropertyName == InputView.IsReadOnlyProperty.PropertyName)
 				UpdateIsReadOnly();
 		}
-		
+
 		internal override void OnModelFocusChangeRequested(object sender, VisualElement.FocusRequestArgs args)
 		{
 			if (args.Focus)
@@ -128,6 +132,12 @@ namespace Xamarin.Forms.Platform.WPF
 			}
 
 			_ignoreTextChange = false;
+		}
+
+		private void TextBoxOnSelectionChanged(object sender, RoutedEventArgs e)
+		{
+			if (Control != null && Element != null)
+				Element.CursorPosition = Control.CaretIndex;
 		}
 
 		void UpdateHorizontalTextAlignment()
@@ -200,7 +210,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			Control.InputScope = Element.Keyboard.ToInputScope();
 		}
-		
+
 		void UpdateIsPassword()
 		{
 			Control.IsPassword = Element.IsPassword;
@@ -219,7 +229,7 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				if (_placeholderDefaultBrush == null)
 				{
-					_placeholderDefaultBrush = (Brush)WControl.ForegroundProperty.GetMetadata(typeof(FormsTextBox)).DefaultValue; 
+					_placeholderDefaultBrush = (Brush)WControl.ForegroundProperty.GetMetadata(typeof(FormsTextBox)).DefaultValue;
 				}
 
 				// Use the cached default brush
@@ -275,6 +285,7 @@ namespace Xamarin.Forms.Platform.WPF
 					Control.LostFocus -= OnTextBoxUnfocused;
 					Control.TextChanged -= TextBoxOnTextChanged;
 					Control.KeyUp -= TextBoxOnKeyUp;
+					Control.SelectionChanged -= TextBoxOnSelectionChanged;
 				}
 			}
 
@@ -285,6 +296,12 @@ namespace Xamarin.Forms.Platform.WPF
 		void UpdateIsReadOnly()
 		{
 			Control.IsReadOnly = Element.IsReadOnly;
+		}
+
+		void UpdateCursorPosition()
+		{
+			if (Control.CaretIndex != Element.CursorPosition)
+				Control.CaretIndex = Element.CursorPosition;
 		}
 	}
 }
