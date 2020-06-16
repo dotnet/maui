@@ -129,10 +129,12 @@ namespace Xamarin.Forms
 
 		void UpdateSwipeItemsParent(SwipeItems swipeItems)
 		{
-			swipeItems.Parent = this;
+			if (swipeItems.Parent == null)
+				swipeItems.Parent = this;
 
-			foreach (var swipeItem in swipeItems)
-				((Element)swipeItem).Parent = swipeItems;
+			foreach (var item in swipeItems)
+				if (item is Element swipeItem && swipeItem.Parent == null)
+					swipeItem.Parent = swipeItems;
 		}
 	}
 }

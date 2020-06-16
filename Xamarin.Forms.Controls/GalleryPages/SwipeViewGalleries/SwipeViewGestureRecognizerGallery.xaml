@@ -121,8 +121,19 @@
         </ResourceDictionary>
     </ContentPage.Resources>
     <ContentPage.Content>
-        <Grid>
+        <Grid
+            RowSpacing="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Label
+                Grid.Row="0"
+                BackgroundColor="Black"
+                TextColor="White"
+                Text="The SwipeView has a TapGestureRecognizer. Tap two times the SwipeView to show a dialog."/>
             <CollectionView
+                Grid.Row="1"
                 x:Name="SwipeCollectionView"
                 ItemsSource="{Binding Messages}"
                 ItemTemplate="{StaticResource MessageTemplate}"/>
