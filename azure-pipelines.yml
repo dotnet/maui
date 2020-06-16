@@ -111,6 +111,7 @@ stages:
         displayName: Nuget Phase
         dependsOn:
         - win_hosted
+        - pages_hosted
         condition: succeeded()
         pool:
           name: $(vs2019VmPool)
@@ -177,6 +178,7 @@ stages:
         displayName: Nuget Phase
         dependsOn:
         - win_bots
+        - pages_bots
         condition: succeeded()
         pool:
           name: $(vs2019VmPool)
