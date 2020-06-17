@@ -111,6 +111,7 @@ stages:
         displayName: Nuget Phase
         dependsOn:
         - win_hosted
+        - pages_hosted
         condition: succeeded()
         pool:
           name: $(vs2019VmPool)
@@ -177,6 +178,7 @@ stages:
         displayName: Nuget Phase
         dependsOn:
         - win_bots
+        - pages_bots
         condition: succeeded()
         pool:
           name: $(vs2019VmPool)
@@ -205,14 +207,13 @@ stages:
           provisionatorPath : 'build/provisioning/provisioning.csx'
           buildForVS2017: false
           buildConfiguration: $(DefaultBuildConfiguration)
+          ${{ if ne(variables['MSBuildArguments_cg_android'], '') }}:
+            MSBuildArguments_cg_android: $(MSBuildArguments_cg_android)
 
   - stage: android_2017
     displayName: Build Android 2017
-    condition: eq(variables['System.TeamProject'], 'devdiv')
-    ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-      dependsOn: windows
-    ${{ if eq(variables['System.TeamProject'], 'public') }}:
-      dependsOn: []
+    condition: and(succeeded(), eq(variables['System.TeamProject'], 'devdiv'))
+    dependsOn: windows
     jobs:
       - template: build/steps/build-android.yml
         parameters:
@@ -235,6 +236,7 @@ stages:
         workspace:
           clean: all
         displayName: OSX Phase
+        timeoutInMinutes: 120
         pool:
           name:  $(osx2019VmPool)
           vmImage: $(macOSXVmImage)

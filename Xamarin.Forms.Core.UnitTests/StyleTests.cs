@@ -909,6 +909,34 @@ namespace Xamarin.Forms.Core.UnitTests
 			}
 
 			await Task.WhenAll(tasks);
-		} 
+		}
+
+		[Test]
+		public async Task ApplyAndRemoveStyleOffMainThreadShouldNotCrash()
+		{
+			List<Task> tasks = new List<Task>();
+
+			var style = new Style(typeof(VisualElement))
+			{
+				Setters = {
+					new Setter { Property = Label.TextProperty, Value = "foo" },
+					new Setter { Property = VisualElement.BackgroundColorProperty, Value = Color.Pink },
+				}
+			};
+
+			for (int n = 0; n < 10000; n++)
+			{
+				tasks.Add(Task.Run(() => {
+					var label = new Label
+					{
+						Style = style
+					};
+
+					label.Style = null;
+				}));
+			}
+
+			await Task.WhenAll(tasks);
+		}
 	}
 }

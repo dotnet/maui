@@ -111,7 +111,7 @@ namespace Xamarin.Forms
 				_targets.RemoveAll(wr =>
 				{
 					BindableObject target;
-					return wr.TryGetTarget(out target) && target == bindable;
+					return wr != null && wr.TryGetTarget(out target) && target == bindable;
 				});
 			}
 		}

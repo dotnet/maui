@@ -51,7 +51,25 @@ string artifactStagingDirectory = EnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRE
 
 var ANDROID_HOME = EnvironmentVariable("ANDROID_HOME") ??
     (IsRunningOnWindows () ? "C:\\Program Files (x86)\\Android\\android-sdk\\" : "");
-string[] androidSdkManagerInstalls = new [] { "platforms;android-28", "platforms;android-29", "build-tools;29.0.3"};
+
+string MSBuildArgumentsENV = EnvironmentVariable("MSBuildArguments", "");
+string MSBuildArgumentsARGS = Argument("MSBuildArguments", "");
+string MSBuildArguments;
+
+if(buildForVS2017)
+    MSBuildArguments = String.Empty;
+else
+    MSBuildArguments = $"{MSBuildArgumentsENV} {MSBuildArgumentsARGS}";
+    
+Information("MSBuildArguments: {0}", MSBuildArguments);
+
+string androidSdks = EnvironmentVariable("ANDROID_API_SDKS", "platforms;android-28,platforms;android-29,build-tools;29.0.3");
+
+if(buildForVS2017)
+    androidSdks = "platforms;android-28,platforms;android-29,build-tools;29.0.3";
+
+Information("ANDROID_API_SDKS: {0}", androidSdks);
+string[] androidSdkManagerInstalls = androidSdks.Split(',');
 
 var IOS_BUILD_IPA = Argument("IOS_BUILD_IPA", false || isCIBuild);
 
@@ -235,6 +253,7 @@ Task("provision-androidsdk")
 
         if(androidSdkManagerInstalls.Length > 0)
         {
+            Information("Updating Android SDKs");
             var androidSdkSettings = new AndroidSdkManagerToolSettings {
                 SkipVersionCheck = true
             };
@@ -245,32 +264,48 @@ Task("provision-androidsdk")
             try{
                 AcceptLicenses (androidSdkSettings);
             }
-            catch{}
+            catch(Exception exc)
+            {
+                Information("AcceptLicenses: {0}", exc);
+            }
 
             try{
                 AndroidSdkManagerUpdateAll (androidSdkSettings);
             }
-            catch{}
+            catch(Exception exc)
+            {
+                Information("AndroidSdkManagerUpdateAll: {0}", exc);
+            }
             
             try{
                 AcceptLicenses (androidSdkSettings);
             }
-            catch{}
+            catch(Exception exc)
+            {
+                Information("AcceptLicenses: {0}", exc);
+            }
 
             try{
                 AndroidSdkManagerInstall (androidSdkManagerInstalls, androidSdkSettings);
             }
-            catch{}
+            catch(Exception exc)
+            {
+                Information("AndroidSdkManagerInstall: {0}", exc);
+            }
         }
 
         if (!IsRunningOnWindows ()) {
             if(!String.IsNullOrWhiteSpace(androidSDK))
+            {
                 await Boots (androidSDK);
+            }
             else
                 await Boots (Product.XamarinAndroid, releaseChannel);
         }
         else if(!String.IsNullOrWhiteSpace(androidSDK))
-            await Boots(androidSDK);
+        {
+            await Boots (androidSDK);
+        }
     });
 
 Task("provision-monosdk")
@@ -478,7 +513,6 @@ Task("_NuGetPack")
         NuGetPack(nugetFilePaths, nuGetPackSettings);
     });
 
-
 Task("Restore")
     .Description("Restore target on Xamarin.Forms.sln")
     .Does(() =>
@@ -590,17 +624,18 @@ Task("Android100")
     .Description("Builds Monodroid10.0 targets")
     .Does(() =>
     {
-            MSBuild("Xamarin.Forms.sln",
-                    GetMSBuildSettings()
-                        .WithRestore()
-                        .WithProperty("AndroidTargetFrameworks", "MonoAndroid90;MonoAndroid10.0"));
+        MSBuild("Xamarin.Forms.sln",
+                GetMSBuildSettings()
+                    .WithRestore()
+                    .WithProperty("AndroidTargetFrameworks", "MonoAndroid90;MonoAndroid10.0"));
     });
 
 Task("VSMAC")
     .Description("Builds projects necessary so solution compiles on VSMAC")
+    .IsDependentOn("BuildTasks")
     .Does(() =>
     {
-        StartProcess("open", new ProcessSettings{ Arguments = "Xamarin.Forms.sln" });
+        StartVisualStudio();
     });
 
 Task("cg-android")
@@ -758,7 +793,7 @@ MSBuildSettings GetMSBuildSettings(PlatformTarget? platformTarget = PlatformTarg
         buildSettings = buildSettings.WithProperty("XamarinFormsVersion", XamarinFormsVersion);
     }
     
-    buildSettings.ArgumentCustomization = args => args.Append("/nowarn:VSX1000");
+    buildSettings.ArgumentCustomization = args => args.Append($"/nowarn:VSX1000 {MSBuildArguments}");
     return buildSettings;
 }
 

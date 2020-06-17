@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Xamarin.Forms.Shapes;
 using Shape = Xamarin.Forms.Shapes.Shape;
 
 #if WINDOWS_UWP

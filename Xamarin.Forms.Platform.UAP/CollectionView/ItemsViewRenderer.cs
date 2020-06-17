@@ -6,9 +6,9 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Xamarin.Forms.Internals;
+using UwpApp = Windows.UI.Xaml.Application;
+using UwpDataTemplate = Windows.UI.Xaml.DataTemplate;
 using UwpScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility;
-using UWPApp = Windows.UI.Xaml.Application;
-using UWPDataTemplate = Windows.UI.Xaml.DataTemplate;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -27,8 +27,8 @@ namespace Xamarin.Forms.Platform.UWP
 		internal double _previousVerticalOffset;
 
 		protected ListViewBase ListViewBase { get; private set; }
-		protected UWPDataTemplate ViewTemplate => (UWPDataTemplate)UWPApp.Current.Resources["View"];
-		protected UWPDataTemplate ItemsViewTemplate => (UWPDataTemplate)UWPApp.Current.Resources["ItemsViewDefaultTemplate"];
+		protected UwpDataTemplate ViewTemplate => (UwpDataTemplate)UwpApp.Current.Resources["View"];
+		protected UwpDataTemplate ItemsViewTemplate => (UwpDataTemplate)UwpApp.Current.Resources["ItemsViewDefaultTemplate"];
 
 		protected ItemsViewRenderer()
 		{
@@ -390,6 +390,31 @@ namespace Xamarin.Forms.Platform.UWP
 			(ListViewBase as IEmptyView)?.SetEmptyView(_emptyView, _formsEmptyView);
 			
 			UpdateEmptyViewVisibility();
+		}
+
+		protected virtual void UpdateItemsLayout()
+		{
+			if (_scrollViewer != null)
+				_scrollViewer.ViewChanged -= OnScrollViewChanged;
+
+			if (ListViewBase != null)
+			{
+				ListViewBase.ItemsSource = null;
+				ListViewBase = null;
+			}
+
+			ListViewBase = SelectListViewBase();
+			ListViewBase.IsSynchronizedWithCurrentItem = false;
+
+			FindScrollViewer(ListViewBase);
+
+			SetNativeControl(ListViewBase);
+
+			UpdateItemTemplate();
+			UpdateItemsSource();
+			UpdateVerticalScrollBarVisibility();
+			UpdateHorizontalScrollBarVisibility();
+			UpdateEmptyView();
 		}
 
 		FrameworkElement RealizeEmptyViewTemplate(object bindingContext, DataTemplate emptyViewTemplate)

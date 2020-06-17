@@ -12,6 +12,11 @@
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
+    <!-- 
+        This is needed for non SDK style project so the IDE will pick the correct LangVersion.
+        Once this is an SDK style project it will pick this up from the Directory.Build.Props file correctly
+     -->
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

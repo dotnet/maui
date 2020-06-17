@@ -1,10 +1,8 @@
 <Project>
+
   <PropertyGroup>
     <EnvironmentBuildPropsImported>true</EnvironmentBuildPropsImported>
   </PropertyGroup>
-
-
-
 
   <PropertyGroup Condition="'$(CI)' == ''">
     <CI>false</CI>
@@ -35,6 +33,12 @@
     <Use2017 Condition="'$(Use2017)' == '' AND '$(MSBuildAssemblyVersion)' &lt; '16.0'">true</Use2017>
     <Use2017 Condition="'$(Use2017)' == ''">false</Use2017>
   </PropertyGroup>
+  
+  <PropertyGroup>
+    <LangVersion Condition="'$(Use2017)' == 'true'">7.3</LangVersion>
+    <LangVersion Condition="'$(LangVersion)' == ''">7.3</LangVersion>
+  </PropertyGroup>
+
   <!-- This is used by the libraries -->
   <PropertyGroup Condition="'$(AndroidTargetFrameworks)' == ''">
     <AndroidTargetFrameworks Condition="'$(Use2017)' == 'true'">MonoAndroid90;</AndroidTargetFrameworks>

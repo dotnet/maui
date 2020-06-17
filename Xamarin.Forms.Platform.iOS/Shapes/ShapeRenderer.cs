@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using CoreAnimation;
 using CoreGraphics;
+using Xamarin.Forms.Shapes;
 using Shape = Xamarin.Forms.Shapes.Shape;
 
 #if __MOBILE__

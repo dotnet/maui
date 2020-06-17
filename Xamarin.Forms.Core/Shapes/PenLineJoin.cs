@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms
+﻿namespace Xamarin.Forms.Shapes
 {
     public enum PenLineJoin
     {

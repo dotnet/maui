@@ -150,7 +150,7 @@ namespace Xamarin.Forms.Core.UnitTests
 							source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, typeof(StackLayout))),
 					},
 					Converter = new AnyTrueMultiConverter(),
-					FallbackValue = false,
+					FallbackValue = "false", //use a string literal here to test xaml conversion
 				});
 
 			// ^^
