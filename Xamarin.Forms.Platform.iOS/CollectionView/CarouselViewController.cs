@@ -215,6 +215,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateFromCurrentItem()
 		{
+			if (Carousel.CurrentItem == null)
+				return;
+
 			var currentItemPosition = GetIndexForItem(Carousel.CurrentItem).Row;
 
 			ScrollToPosition(currentItemPosition, Carousel.Position, Carousel.AnimateCurrentItemChanges);
