@@ -43,6 +43,10 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				UpdateFooter();
 			}
+			else if (changedProperty.Is(StructuredItemsView.ItemsLayoutProperty))
+			{
+				UpdateItemsLayout();
+			}
 		}
 
 		protected override ListViewBase SelectListViewBase()
