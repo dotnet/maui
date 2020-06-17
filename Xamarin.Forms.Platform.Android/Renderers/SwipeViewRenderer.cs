@@ -668,6 +668,10 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 
 			var items = GetSwipeItemsByDirection();
+
+			if (items == null || items.Count == 0)
+				return;
+
 			int i = 0;
 			int previousWidth = 0;
 
