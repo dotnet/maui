@@ -112,7 +112,6 @@ steps:
     inputs:
       Contents: |
         **/XamarinFormsControlGalleryiOS.ipa
-        **/*.dSYM
         Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
         Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/nunit.*
         Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/NUnit3.*
@@ -121,6 +120,16 @@ steps:
       TargetFolder: '$(build.artifactstagingdirectory)/ios'
       CleanTargetFolder: true
       flattenFolders: true
+
+  - task: CopyFiles@2
+    displayName: 'Copy iOS dSYM'
+    condition: eq(variables['buildForVS2017'], 'false')
+    inputs:
+      Contents: |
+        **/*.dSYM/**/*.*
+      TargetFolder: '$(build.artifactstagingdirectory)/ios'
+      CleanTargetFolder: false
+      flattenFolders: false
 
   - task: CopyFiles@2
     displayName: 'Copy iOS Files for UITest 2017'

@@ -98,8 +98,22 @@ else
 
 }
 
-AndroidSdk()
-	.ApiLevel((AndroidApiLevel)24)
-	.ApiLevel((AndroidApiLevel)28)
-	.ApiLevel((AndroidApiLevel)29)
-	.SdkManagerPackage ("build-tools;29.0.3");
+string ANDROID_API_SDKS = Environment.GetEnvironmentVariable ("ANDROID_API_SDKS");
+
+if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
+{
+	AndroidSdk()
+		.ApiLevel((AndroidApiLevel)24)
+		.ApiLevel((AndroidApiLevel)28)
+		.ApiLevel((AndroidApiLevel)29)
+		.SdkManagerPackage ("build-tools;29.0.3");
+}
+else{
+
+	var androidSDK = AndroidSdk();
+	foreach(var sdk in ANDROID_API_SDKS.Split(','))
+	{
+		Console.WriteLine("Installing SDK: {0}", sdk);
+		androidSDK = androidSDK.SdkManagerPackage (sdk);
+	}
+}
