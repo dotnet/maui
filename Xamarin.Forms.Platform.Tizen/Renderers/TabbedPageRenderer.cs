@@ -155,6 +155,10 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				_toolbar.Style = style;
 				((IVisualElementController)Element).NativeSizeChanged();
+				UpdateBackgroundColor(false);
+				UpdateBarBackgroundColor(false);
+				UpdateSelectedTabColor(false);
+				UpdateUnselectedTabColor(false);
 			}
 		}
 

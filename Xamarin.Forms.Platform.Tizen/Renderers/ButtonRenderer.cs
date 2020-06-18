@@ -63,6 +63,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				(Control as IButton)?.UpdateStyle(style);
 				((IVisualElementController)Element).NativeSizeChanged();
+				UpdateBackgroundColor(false);
 			}
 		}
 
