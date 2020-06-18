@@ -341,6 +341,7 @@ namespace Xamarin.Forms
 
 		public static void Init(InitializationOptions options)
 		{
+			s_useDeviceIndependentPixel = options?.UseDeviceIndependentPixel ?? false;
 			SetupInit(options.Context, options);
 		}
 
@@ -397,7 +398,6 @@ namespace Xamarin.Forms
 			{
 				if (options != null)
 				{
-					s_useDeviceIndependentPixel = options.UseDeviceIndependentPixel;
 					s_platformType = options.PlatformType;
 					s_useMessagingCenter = options.UseMessagingCenter;
 
