@@ -211,6 +211,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void PlayedToEnd(NSNotification notification)
 		{
+			if (Element == null)
+			{
+				return;
+			}
+
 			if (Element.IsLooping)
 			{
 				_avPlayerViewController.Player.Seek(CMTime.Zero);
@@ -226,7 +231,10 @@ namespace Xamarin.Forms.Platform.iOS
 				{
 					Device.BeginInvokeOnMainThread(Controller.OnMediaEnded);
 				}
-				catch { }
+				catch (Exception e)
+				{
+					Log.Warning("MediaElement", $"Failed to play media to end: {e}");
+				}
 			}
 		}
 		
