@@ -140,11 +140,6 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 				propertyGroup.Add (NewElement ("TargetFrameworkVersion").WithValue ("v4.7"));
 				propertyGroup.Add(NewElement("RootNamespace").WithValue("test"));
 			}
-			var refpath = string.Join(";",
-				IOPath.Combine("..", "..", "Xamarin.Forms.Core.dll"),
-				IOPath.Combine("..", "..", "Xamarin.Forms.Xaml.dll"));
-			propertyGroup.Add(NewElement("_ReferencedAssemblies").WithValue($"{refpath}"));
-
 			propertyGroup.Add(NewElement("_XFBuildTasksLocation").WithValue($"{testDirectory}\\"));
 
 

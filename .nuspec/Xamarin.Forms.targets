@@ -84,8 +84,7 @@
 		Inputs="@(_XamlGInputs)"
 		Outputs="@(_XamlGOutputs)">
 		<PropertyGroup>
-			<ReferencedAssemblies Condition="'$(_ReferencedAssemblies)'==''">@(ReferencePath)</ReferencedAssemblies>
-      <ReferencedAssemblies Condition="'$(_ReferencedAssemblies)'!=''">$(_ReferencedAssemblies)</ReferencedAssemblies>
+			<ReferencedAssemblies>@(ReferencePath)</ReferencedAssemblies>
 		</PropertyGroup>
 		<XamlGTask
 			XamlFiles="@(_XamlGInputs)"
