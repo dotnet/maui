@@ -69,6 +69,9 @@ namespace Xamarin.Forms.Platform.Tizen
 					break;
 			}
 			((IVisualElementController)Element).NativeSizeChanged();
+			UpdateBackgroundColor(false);
+			UpdateOnColor(false);
+			UpdateColor();
 		}
 
 		protected virtual void UpdateColor()

@@ -56,7 +56,11 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			var themeStyle = SpecificVE.GetStyle(Element);
 			if (!string.IsNullOrEmpty(themeStyle))
+			{
 				Control.Style = themeStyle;
+				UpdateBackgroundColor(false);
+				UpdateProgressColor(false);
+			}
 		}
 
 		void UpdateAll()
