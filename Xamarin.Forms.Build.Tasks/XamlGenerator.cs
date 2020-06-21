@@ -383,10 +383,10 @@ namespace Xamarin.Forms.Build.Tasks
 			_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 			_xmlnsModules = new Dictionary<string, ModuleDefinition>();
 
-			if (string.IsNullOrEmpty(References))
-				return;
-
-			string[] paths = References.Split(';').Distinct().ToArray();
+			var paths = References?.Split(';').Distinct().ToList() ?? new List<string>();
+			//Load xmlnsdef from Core and Xaml
+			paths.Add(typeof(Label).Assembly.Location);
+			paths.Add(typeof(Xamarin.Forms.Xaml.Extensions).Assembly.Location);
 
 			foreach (var path in paths) {
 				string asmName = IOPath.GetFileName(path);
@@ -430,9 +430,9 @@ namespace Xamarin.Forms.Build.Tasks
 				null,
 				(typeInfo) =>
 				{
-					ModuleDefinition module = null;
-					if (typeInfo.AssemblyName == null || !_xmlnsModules.TryGetValue(typeInfo.AssemblyName, out module))
+					if (typeInfo.AssemblyName == null || !_xmlnsModules.TryGetValue(typeInfo.AssemblyName, out ModuleDefinition module))
 						return null;
+
 					string typeName = typeInfo.TypeName.Replace('+', '/'); //Nested types
 					string fullName = $"{typeInfo.ClrNamespace}.{typeInfo.TypeName}";
 					return module.Types.Where(t => t.FullName == fullName).FirstOrDefault();
