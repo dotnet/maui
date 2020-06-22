@@ -48,6 +48,7 @@ namespace Xamarin.Forms.Controls
 					toolbarInstructions = $"The Toolbar should have a coffee cup icon. Activating the coffee cup should read aloud \"{toolbarItemName}\". The Toolbar should also show the text \"{toolbarItem2Text}\". Activating this item should read aloud \"{toolbarItem2Text}. {toolbarItemHint2}\".";
 					break;
 				case Device.UWP:
+				case Device.WPF:
 					screenReader = "Narrator";
 					scrollFingers = "two fingers";
 					explore = "Use three fingers to swipe up the screen to read all of the elements on this page.";

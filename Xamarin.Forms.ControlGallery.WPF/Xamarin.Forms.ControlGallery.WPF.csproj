@@ -146,5 +146,11 @@
   <ItemGroup>
     <Resource Include="crimson.jpg" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="GifOne.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="photo.jpg" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

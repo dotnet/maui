@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using WControl = System.Windows.Controls.Control;
+using WAutomationProperties = System.Windows.Automation.AutomationProperties;
 
 namespace Xamarin.Forms.Platform.WPF
 {
@@ -147,6 +148,14 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateTabStop();
 			else if (e.PropertyName == VisualElement.TabIndexProperty.PropertyName)
 				UpdateTabIndex();
+			else if (e.PropertyName == Xamarin.Forms.Element.AutomationIdProperty.PropertyName)
+				UpdateAutomationId();
+			else if (e.PropertyName == AutomationProperties.NameProperty.PropertyName)
+				UpdateAutomationName();
+			else if (e.PropertyName == AutomationProperties.LabeledByProperty.PropertyName)
+				UpdateAutomationLabeledBy();
+			else if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
+				UpdateAutomationHelpText();
 		}
 
 		protected virtual void OnGotFocus(object sender, RoutedEventArgs args)
@@ -235,6 +244,14 @@ namespace Xamarin.Forms.Platform.WPF
 			UpdateEnabled();
 			UpdateTabStop();
 			UpdateTabIndex();
+			UpdateAutomationId();
+			var isInAccessibleTree = AutomationProperties.GetIsInAccessibleTree(Element);
+			if (!(isInAccessibleTree.HasValue && !isInAccessibleTree.Value))
+			{
+				UpdateAutomationLabeledBy();
+				UpdateAutomationName();
+				UpdateAutomationHelpText();
+			}
 		}
 
 		internal virtual void OnModelFocusChangeRequested(object sender, VisualElement.FocusRequestArgs args)
@@ -280,6 +297,41 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			if (Control is WControl wControl)
 				wControl.TabIndex = Element.TabIndex;
+		}
+
+		protected void UpdateAutomationId()
+		{
+			if (!string.IsNullOrEmpty(Element.AutomationId))
+			{
+				WAutomationProperties.SetAutomationId(Control, Element.AutomationId);
+			}
+		}
+
+		protected void UpdateAutomationName()
+		{
+			var name = AutomationProperties.GetName(Element);
+			if (!string.IsNullOrEmpty(name))
+			{
+				WAutomationProperties.SetName(Control, name);
+			}
+		}
+
+		protected void UpdateAutomationLabeledBy()
+		{
+			var label = AutomationProperties.GetLabeledBy(Element);
+			if(label != null)
+			{
+				WAutomationProperties.SetLabeledBy(Control, Platform.GetRenderer(label)?.GetNativeElement());
+			}
+		}
+
+		protected void UpdateAutomationHelpText()
+		{
+			var helpText = AutomationProperties.GetHelpText(Element);
+			if (!string.IsNullOrEmpty(helpText))
+			{
+				WAutomationProperties.SetHelpText(Control, helpText);
+			}
 		}
 
 		protected virtual void UpdateEnabled()

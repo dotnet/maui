@@ -9,6 +9,7 @@ using Xamarin.Forms.Platform.WPF.Controls;
 using WButton = System.Windows.Controls.Button;
 using WImage = System.Windows.Controls.Image;
 using WThickness = System.Windows.Thickness;
+using WAutomationProperties = System.Windows.Automation.AutomationProperties;
 
 namespace Xamarin.Forms.Platform.WPF
 {
@@ -134,6 +135,10 @@ namespace Xamarin.Forms.Platform.WPF
 				VerticalAlignment = VerticalAlignment.Center,
 				HorizontalAlignment = HorizontalAlignment.Center
 			};
+
+			// narrator doesn't pick up text content when nested in a layout so set automation name unless set explicitly
+			if(string.IsNullOrEmpty(WAutomationProperties.GetName(Control)))
+				WAutomationProperties.SetName(Control, text);
 
 			var spacing = layout.Spacing;
 

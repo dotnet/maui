@@ -70,7 +70,13 @@ namespace Xamarin.Forms.Controls
 			var alert = new Button { Text = "Alert" };
 			var alertSingle = new Button {Text = "Alert Single"};
 			var image = new Button { Text = "Image Button", ImageSource = new FileImageSource {File = "bank.png"}, BackgroundColor = Color.Blue.WithLuminosity (.8) };
+			AutomationProperties.SetName(image, "Image Automation Name");
 			var gif = new Button { ImageSource = "GifOne.gif" };
+			var automation = new Button { Text = "Display Name" };
+			AutomationProperties.SetName(automation, "Automation Name");
+			var labeledBy = new Button { Text = "Labeled By" };
+			var autoLabel = new Label { Text = "Label Text" };
+			AutomationProperties.SetLabeledBy(labeledBy, autoLabel);
 
 			themedButton.Clicked += (sender, args) => themedButton.Font = Font.Default;
 
@@ -125,7 +131,10 @@ namespace Xamarin.Forms.Controls
 						alert,
 						alertSingle,
 						image,
-						gif
+						gif,
+						automation,
+						autoLabel,
+						labeledBy
 					}
 				}
 			};
