@@ -131,6 +131,7 @@
     <Compile Include="RotationTests.cs" />
     <Compile Include="ScaleTests.cs" />
     <Compile Include="ScrollBarVisibilityTests.cs" />
+    <Compile Include="ShellTests.cs" />
     <EmbeddedResource Include="Properties\Xamarin.Forms.Platform.UAP.UnitTests.rd.xml" />
   </ItemGroup>
   <ItemGroup>
