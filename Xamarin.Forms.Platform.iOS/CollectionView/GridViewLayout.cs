@@ -39,7 +39,9 @@ namespace Xamarin.Forms.Platform.iOS
 					? _itemsLayout.HorizontalItemSpacing
 					: _itemsLayout.VerticalItemSpacing);
 
-			spacing = spacing * (_itemsLayout.Span - 1);
+			spacing = ReduceSpacingToFitIfNeeded(availableSpace, spacing, _itemsLayout.Span);
+
+			spacing *= (_itemsLayout.Span - 1);
 
 			ConstrainedDimension = (availableSpace - spacing) / _itemsLayout.Span;
 
@@ -171,6 +173,19 @@ namespace Xamarin.Forms.Platform.iOS
 			return invalidationContext;
 		}
 
+		public override nfloat GetMinimumInteritemSpacingForSection(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
+		{
+			var requestedSpacing = ScrollDirection == UICollectionViewScrollDirection.Horizontal
+				? (nfloat)_itemsLayout.VerticalItemSpacing
+				: (nfloat)_itemsLayout.HorizontalItemSpacing;
+
+			var availableSpace = ScrollDirection == UICollectionViewScrollDirection.Horizontal
+				? collectionView.Frame.Height
+				: collectionView.Frame.Width;
+
+			return ReduceSpacingToFitIfNeeded(availableSpace, requestedSpacing, _itemsLayout.Span);
+		}
+
 		void CenterAlignCellsInColumn(UICollectionViewLayoutAttributes preferredAttributes) 
 		{
 			// Determine the set of cells above this one
@@ -263,6 +278,17 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			return true;
+		}
+
+		static nfloat ReduceSpacingToFitIfNeeded(nfloat available, nfloat requestedSpacing, int span) 
+		{
+			if (span == 1)
+			{
+				return requestedSpacing;
+			}
+
+			var maxSpacing = (available - span) / (span - 1);
+			return (nfloat)Math.Min(requestedSpacing, maxSpacing);
 		}
 	}
 }
