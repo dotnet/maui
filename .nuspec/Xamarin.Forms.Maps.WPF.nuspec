@@ -18,7 +18,7 @@
         <dependency id="Xamarin.Forms" version="$version$"/>
         <dependency id="Xamarin.Forms.Maps" version="$version$"/>
       </group>
-      <group targetFramework="net45">
+      <group targetFramework="net461">
         <dependency id="Microsoft.Maps.MapControl.WPF" version="1.0.0.3"/>
       </group>
     </dependencies>
@@ -26,7 +26,7 @@
   <files>
     <!--Icon-->
     <file src="..\Assets\xamarin_128x128.png" target="Assets\" />
-    <file src="..\Xamarin.Forms.Maps.WPF\bin\$Configuration$\Xamarin.Forms.Maps.WPF.dll" target="lib\net45" />
-    <file src="..\Xamarin.Forms.Maps.WPF\bin\$Configuration$\Xamarin.Forms.Maps.WPF.*pdb" target="lib\net45" />
+    <file src="..\Xamarin.Forms.Maps.WPF\bin\$Configuration$\net461\Xamarin.Forms.Maps.WPF.dll" target="lib\net461" />
+    <file src="..\Xamarin.Forms.Maps.WPF\bin\$Configuration$\net461\Xamarin.Forms.Maps.WPF.*pdb" target="lib\net461" />
   </files>
 </package>

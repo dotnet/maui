@@ -29,11 +29,18 @@ namespace Xamarin.Forms.ControlGallery.WPF.Renderers
 
 		protected override void OnRender(DrawingContext drawingContext)
 		{
-			drawingContext.DrawRectangle(Brushes.LightGray, new Pen(Brushes.Black, 1), new WRect(0,0,ActualWidth, ActualHeight));
+			drawingContext.DrawRectangle(Brushes.LightGray, new Pen(Brushes.Black, 1), new Rect(0, 0, ActualWidth, ActualHeight));
 			var isEnabledText = IsEnabled ? "I'm enabled :)" : "I'm disabled :(";
+#if NET461
 			drawingContext.DrawText(new FormattedText(isEnabledText, 
 				System.Globalization.CultureInfo.CurrentCulture, 
-				System.Windows.FlowDirection.LeftToRight, new Typeface("Arial"), 14, Brushes.Green), new System.Windows.Point(10,10));
+				System.Windows.FlowDirection.LeftToRight, new Typeface("Arial"), 14, Brushes.Green), new System.Windows.Point(10, 10));
+#else
+			var dpi = VisualTreeHelper.GetDpi(System.Windows.Application.Current.MainWindow).PixelsPerDip;
+			drawingContext.DrawText(new FormattedText(isEnabledText,
+				System.Globalization.CultureInfo.CurrentCulture,
+				System.Windows.FlowDirection.LeftToRight, new Typeface("Arial"), 14, Brushes.Green, dpi), new System.Windows.Point(10, 10));
+#endif
 		}
 
 		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
