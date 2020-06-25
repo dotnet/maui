@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
@@ -29,6 +30,8 @@ namespace Xamarin.Forms.Platform.UWP
 		bool _isPinching;
 		bool _wasPanGestureStartedSent;
 		bool _wasPinchGestureStartedSent;
+
+		static bool HasClip;
 
 		public VisualElementTracker()
 		{
@@ -522,14 +525,35 @@ namespace Xamarin.Forms.Platform.UWP
 
 		static void UpdateClip(VisualElement view, FrameworkElement frameworkElement)
 		{
+			if (!ShouldUpdateClip(view, frameworkElement))
+				return;
+
 			var geometry = view.Clip;
+
+			HasClip = geometry != null;
 
 			if (CompositionHelper.IsCompositionGeometryTypePresent)
 				frameworkElement.ClipVisual(geometry);
 			else
 				frameworkElement.Clip(geometry);
 		}
-	
+
+		static bool ShouldUpdateClip(VisualElement view, FrameworkElement frameworkElement)
+		{
+			if (view == null || frameworkElement == null)
+				return false;
+
+			var formsGeometry = view.Clip;
+
+			if (formsGeometry != null)
+				return true;
+
+			if (formsGeometry == null && HasClip)
+				return true;
+
+			return false;
+		}
+
 		static void UpdateOpacity(VisualElement view, FrameworkElement frameworkElement)
 		{
 			frameworkElement.Opacity = view.Opacity;
