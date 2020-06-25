@@ -370,8 +370,17 @@ namespace Xamarin.Forms.Platform.iOS
 			return null;
 		}
 
+		public override void ViewWillLayoutSubviews()
+		{
+			UpdateTabBarHidden();
+			base.ViewWillLayoutSubviews();
+		}
+
 		void SetTabBarHidden(bool hidden)
 		{
+			if (TabBar.Hidden == hidden)
+				return;
+
 			TabBar.Hidden = hidden;
 
 			if (CurrentRenderer == null)
@@ -393,11 +402,10 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_displayedPage == null || ShellItem == null)
 				return;
 
-			var hidden = !Shell.GetTabBarIsVisible(_displayedPage);
-			if (ShellItemController.GetItems().Count > 1)
-			{
-				SetTabBarHidden(hidden);
-			}
+			var hidden = !(ShellItemController.GetItems().Count > 1 &&
+				Shell.GetTabBarIsVisible(_displayedPage));
+
+			SetTabBarHidden(hidden);
 		}
 	}
 }
