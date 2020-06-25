@@ -18,7 +18,7 @@
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
   </PropertyGroup>
-  <ItemGroup  Condition=" '$(OS)' == 'Windows_NT' ">
+  <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
     <EmbeddedResource Include="Properties\Xamarin.Forms.Maps.UWP.rd.xml" />
   </ItemGroup>
   <ItemGroup>

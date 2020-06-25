@@ -15,8 +15,8 @@
     <dependencies>
       <group>
         <dependency id="Xamarin.Forms.Pages" version="$version$"/>
-        <dependency id="Newtonsoft.Json" version="10.0.3"/>
-        <dependency id="Microsoft.Azure.Mobile.Client" version="4.0.2" />
+        <dependency id="Newtonsoft.Json" version="12.0.3"/>
+        <dependency id="Microsoft.Azure.Mobile.Client" version="4.1.2" />
       </group>
     </dependencies>
   </metadata>

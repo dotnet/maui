@@ -15,7 +15,7 @@
     <dependencies>
       <group>
         <dependency id="Xamarin.Forms" version="$version$"/>
-        <dependency id="Newtonsoft.Json" version="10.0.3"/>
+        <dependency id="Newtonsoft.Json" version="12.0.3"/>
       </group>
     </dependencies>
   </metadata>

@@ -7,7 +7,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2">
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3">
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
