@@ -9,6 +9,12 @@ namespace Xamarin.Forms.Platform.MacOS
 {
     public class EllipseRenderer : ShapeRenderer<Ellipse, EllipseView>
     {
+        [Internals.Preserve(Conditional = true)]
+        public EllipseRenderer()
+        {
+
+        }
+
         protected override void OnElementChanged(ElementChangedEventArgs<Ellipse> args)
         {
             if (Control == null)

@@ -10,6 +10,12 @@ namespace Xamarin.Forms.Platform.MacOS
 {
     public class PathRenderer : ShapeRenderer<Path, PathView>
     {
+        [Internals.Preserve(Conditional = true)]
+        public PathRenderer()
+        {
+
+        }
+
         protected override void OnElementChanged(ElementChangedEventArgs<Path> args)
         {
             if (Control == null)

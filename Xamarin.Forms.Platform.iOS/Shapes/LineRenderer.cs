@@ -11,6 +11,12 @@ namespace Xamarin.Forms.Platform.MacOS
 {
     public class LineRenderer : ShapeRenderer<Line, LineView>
     {
+        [Internals.Preserve(Conditional = true)]
+        public LineRenderer()
+        {
+
+        }
+
         protected override void OnElementChanged(ElementChangedEventArgs<Line> args)
         {
             if (Control == null)

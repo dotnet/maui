@@ -10,6 +10,12 @@ namespace Xamarin.Forms.Platform.MacOS
 {
     public class PolylineRenderer : ShapeRenderer<Polyline, PolylineView>
     {
+        [Internals.Preserve(Conditional = true)]
+        public PolylineRenderer()
+        {
+
+        }
+
         protected override void OnElementChanged(ElementChangedEventArgs<Polyline> args)
         {
             if (Control == null)

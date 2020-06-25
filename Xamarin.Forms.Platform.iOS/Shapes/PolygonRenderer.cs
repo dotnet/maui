@@ -10,6 +10,12 @@ namespace Xamarin.Forms.Platform.MacOS
 {
     public class PolygonRenderer : ShapeRenderer<Polygon, PolygonView>
     {
+        [Internals.Preserve(Conditional = true)]
+        public PolygonRenderer()
+        {
+
+        }
+
         protected override void OnElementChanged(ElementChangedEventArgs<Polygon> args)
         {
             if (Control == null)
