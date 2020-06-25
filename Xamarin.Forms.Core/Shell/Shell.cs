@@ -1028,24 +1028,31 @@ namespace Xamarin.Forms
 
 		protected override bool OnBackButtonPressed()
 		{
-			if(GetVisiblePage() is Page page)
-			{
-				if(!page.SendBackButtonPressed())
-				{
-					return false;
-				}
-			}
+			if (GetVisiblePage() is Page page && page.SendBackButtonPressed())
+				return true;
 
 			var currentContent = CurrentItem?.CurrentItem;
 			if (currentContent != null && currentContent.Stack.Count > 1)
 			{
-				currentContent.Navigation.PopAsync();
+				NavigationPop();
 				return true;
 			}
 
 			var args = new ShellNavigatingEventArgs(this.CurrentState, "", ShellNavigationSource.Pop, true);
 			OnNavigating(args);
 			return args.Cancelled;
+
+			async void NavigationPop()
+			{
+				try
+				{
+					await currentContent.Navigation.PopAsync();
+				}
+				catch(Exception exc)
+				{
+					Internals.Log.Warning(nameof(Shell), $"Failed to Navigate Back: {exc}");
+				}
+			}
 		}
 
 		bool ValidDefaultShellItem(Element child) => !(child is MenuShellItem);

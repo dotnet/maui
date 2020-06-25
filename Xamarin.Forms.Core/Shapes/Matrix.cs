@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 
 namespace Xamarin.Forms.Shapes
 {
@@ -12,7 +11,6 @@ namespace Xamarin.Forms.Shapes
     }
 
     [TypeConverter(typeof(MatrixTypeConverter))]
-    [EditorBrowsable(EditorBrowsableState.Never)]
     public struct Matrix
     {
         internal double _m11;

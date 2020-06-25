@@ -104,7 +104,9 @@
     <Compile Include="DisposeLabelRenderer.cs" />
     <Compile Include="DisposePageRenderer.cs" />
     <Compile Include="FormsAppCompatActivity.cs" />
+    <Compile Include="Issue10182Activity.cs" />
     <Compile Include="MainApplication.cs" />
+    <Compile Include="MultiWindowService.cs" />
     <Compile Include="PerformanceTrackerRenderer.cs" />
     <Compile Include="PlatformSpecificCoreGalleryFactory.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />

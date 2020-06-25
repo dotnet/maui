@@ -400,7 +400,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (_needMainPageAssign)
 			{
 				_needMainPageAssign = false;
-
+				SettingMainPage();
 				SetMainPage();
 			}
 

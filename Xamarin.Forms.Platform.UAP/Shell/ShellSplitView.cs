@@ -24,6 +24,9 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			var dismissLayer = ((WRectangle)GetTemplateChild("LightDismissLayer"));
 
+			if (dismissLayer == null)
+				return;
+
 			if (_defaultBrush == null)
 				_defaultBrush = dismissLayer.Fill;
 

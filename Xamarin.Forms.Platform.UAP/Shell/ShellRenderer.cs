@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Platform.UWP
 		const string NavigationViewBackButton = "NavigationViewBackButton";
 		internal const string ShellStyle = "ShellNavigationView";
 		Shell _shell;
-
+		FlyoutBehavior _flyoutBehavior;
 		ShellItemRenderer ItemRenderer { get; }
 
 		public ShellRenderer()
@@ -65,7 +65,9 @@ namespace Xamarin.Forms.Platform.UWP
 			UpdatePaneButtonColor(NavigationViewBackButton, false);
 			UpdateFlyoutBackgroundColor();
 			UpdateFlyoutBackdropColor();
-			ShellSplitView.UpdateFlyoutBackdropColor();
+
+			if(_flyoutBehavior == FlyoutBehavior.Flyout)
+				ShellSplitView.UpdateFlyoutBackdropColor();
 		}
 
 		void OnPaneClosed()
@@ -179,6 +181,9 @@ namespace Xamarin.Forms.Platform.UWP
 
 		protected virtual void UpdateFlyoutBackdropColor()
 		{
+			if (_flyoutBehavior != FlyoutBehavior.Flyout)
+				return;
+
 			var splitView = ShellSplitView;
 			if (splitView != null)
 			{
@@ -295,9 +300,10 @@ namespace Xamarin.Forms.Platform.UWP
 		}
 
 		#endregion IAppearanceObserver
-
+		
 		void IFlyoutBehaviorObserver.OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
 		{
+			_flyoutBehavior = behavior;
 			switch (behavior)
 			{
 				case FlyoutBehavior.Disabled:

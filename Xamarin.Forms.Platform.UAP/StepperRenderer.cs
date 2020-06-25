@@ -5,6 +5,8 @@ namespace Xamarin.Forms.Platform.UWP
 {
 	public class StepperRenderer : ViewRenderer<Stepper, StepperControl>, ITabStopOnDescendants
 	{
+		bool _isDisposed;
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Stepper> e)
 		{
 			base.OnElementChanged(e);
@@ -79,6 +81,20 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateValue()
 		{
 			Control.Value = Element.Value;
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (_isDisposed)
+				return;
+
+			if (disposing && Control != null)
+			{
+				Control.ValueChanged -= OnControlValue;
+			}
+
+			_isDisposed = true;
+			base.Dispose(disposing);
 		}
 	}
 }
