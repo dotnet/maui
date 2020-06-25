@@ -368,6 +368,12 @@ namespace Xamarin.Forms.Platform.iOS
 			return null;
 		}
 
+		public override void ViewWillLayoutSubviews()
+		{
+			UpdateTabBarHidden();
+			base.ViewWillLayoutSubviews();
+		}
+
 		void UpdateTabBarHidden()
 		{
 			if (ShellItemController == null)

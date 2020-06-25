@@ -36,6 +36,15 @@ namespace Xamarin.Forms.Core.UnitTests
 			return navPage;
 		}
 
+		protected T GetVisiblePage<T>(Shell shell)
+			where T : Page
+		{
+			if (shell?.CurrentItem?.CurrentItem is IShellSectionController scc)
+				return (T)scc.PresentedPage;
+
+			return default(T);
+		}
+
 		protected IEnumerable<Element> GetParentsPath(Element self)
 		{
 			Element current = self;
@@ -96,6 +105,9 @@ namespace Xamarin.Forms.Core.UnitTests
 			protected override bool OnBackButtonPressed()
 			{
 				if (CancelNavigationOnBackButtonPressed == "true")
+					return true;
+
+				if (CancelNavigationOnBackButtonPressed == "false")
 					return false;
 
 				return base.OnBackButtonPressed();
@@ -260,10 +272,17 @@ namespace Xamarin.Forms.Core.UnitTests
 				OnNavigatingCount++;
 			}
 
+			public Func<bool> OnBackButtonPressedFunc;
 			protected override bool OnBackButtonPressed()
 			{
+				var result = OnBackButtonPressedFunc?.Invoke() ?? false;
+
 				OnBackButtonPressedCount++;
-				return base.OnBackButtonPressed();
+
+				if(!result)
+					result = base.OnBackButtonPressed();
+
+				return result;
 			}
 
 			public void Reset()

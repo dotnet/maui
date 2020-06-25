@@ -104,7 +104,9 @@
     <Compile Include="DisposeLabelRenderer.cs" />
     <Compile Include="DisposePageRenderer.cs" />
     <Compile Include="FormsAppCompatActivity.cs" />
+    <Compile Include="Issue10182Activity.cs" />
     <Compile Include="MainApplication.cs" />
+    <Compile Include="MultiWindowService.cs" />
     <Compile Include="PerformanceTrackerRenderer.cs" />
     <Compile Include="PlatformSpecificCoreGalleryFactory.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
@@ -407,7 +409,7 @@
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>
-  <ItemGroup Condition="Exists('Properties\MapsKey.cs')">  
+  <ItemGroup Condition="Exists('Properties\MapsKey.cs')">
     <Compile Include="Properties\MapsKey.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />

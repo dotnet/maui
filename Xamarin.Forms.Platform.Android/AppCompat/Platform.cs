@@ -254,8 +254,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		internal void SettingNewPage()
 		{
-			_previousNavModel = _navModel;
-			_navModel = new NavigationModel();
+			if (Page != null)
+			{
+				_previousNavModel = _navModel;
+				_navModel = new NavigationModel();
+			}
 		}
 
 		internal void SetPage(Page newRoot)

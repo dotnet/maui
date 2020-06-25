@@ -92,6 +92,8 @@ namespace Xamarin.Forms.ControlGallery.Android
 				return null;
 			});
 
+			DependencyService.Register<IMultiWindowService, MultiWindowService>();
+			
 			LoadApplication(_app);
 
 #if !TEST_EXPERIMENTAL_RENDERERS
@@ -101,6 +103,11 @@ namespace Xamarin.Forms.ControlGallery.Android
 				Window.SetStatusBarColor(Color.MediumPurple.ToAndroid());
 			}
 #endif
+		}
+
+		public void ReloadApplication()
+		{
+			LoadApplication(_app);
 		}
 
 		protected override void OnResume()
@@ -113,6 +120,25 @@ namespace Xamarin.Forms.ControlGallery.Android
 		public bool IsPreAppCompat()
 		{
 			return false;
+		}
+
+		[Java.Interop.Export("BackgroundApp")]
+		public void BackgroundApp()
+		{
+			Intent intent = new Intent();
+			intent.SetAction(Intent.ActionMain);
+			intent.AddCategory(Intent.CategoryHome);
+			this.StartActivity(intent);
+		}
+
+		[Java.Interop.Export("ForegroundApp")]
+		public void ForegroundApp()
+		{
+			// this only works pre API 29
+			Intent intent = new Intent(ApplicationContext, typeof(Activity1));
+			intent.SetAction(Intent.ActionMain);
+			intent.AddCategory(Intent.CategoryLauncher);
+			this.ApplicationContext.StartActivity(intent);
 		}
 	}
 }
