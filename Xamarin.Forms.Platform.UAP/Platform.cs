@@ -319,6 +319,14 @@ namespace Xamarin.Forms.Platform.UWP
 					else
 					{
 						RemovePage(previousPage);
+
+						if(!modal && _modalBackgroundPage != null)
+						{
+							RemovePage(_modalBackgroundPage);
+							_modalBackgroundPage.Cleanup();
+							_modalBackgroundPage.Parent = null;
+						}
+						
 						_modalBackgroundPage = null;
 					}
 
