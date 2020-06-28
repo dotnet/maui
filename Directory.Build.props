@@ -14,7 +14,9 @@
     <LangVersion>7.3</LangVersion>
     <ProduceReferenceAssembly Condition="'$(UsingMicrosoftNETSdk)' == 'True' AND '$(Configuration)' == 'Debug'">True</ProduceReferenceAssembly>
   </PropertyGroup>
-  
+  <PropertyGroup>
+    <GitDefaultBranch>main</GitDefaultBranch>
+  </PropertyGroup>
   <Import Condition="'$(SampleProject)' != 'True'" Project="SourceLink.Build.props" />
   <!-- This target is replaced by GitInfo when restored. Allows Version.targets to rely on it before restore. -->
   <Target Name="GitVersion" />
