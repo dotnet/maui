@@ -27,8 +27,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
             if (args.NewElement != null)
             {
-                UpdateData();
-                UpdateRenderTransform();
+                UpdatePath();
             }
         }
 
@@ -36,21 +35,13 @@ namespace Xamarin.Forms.Platform.MacOS
         {
             base.OnElementPropertyChanged(sender, args);
 
-            if (args.PropertyName == Path.DataProperty.PropertyName)
-                UpdateData();
-            else if (args.PropertyName == Path.RenderTransformProperty.PropertyName)
-                UpdateRenderTransform();
+            if (args.PropertyName == Path.DataProperty.PropertyName || args.PropertyName == Path.RenderTransformProperty.PropertyName)
+                UpdatePath();
         }
 
-        void UpdateData()
+        void UpdatePath()
         {
-            Control.UpdateData(Element.Data.ToCGPath());
-        }
-
-        void UpdateRenderTransform()
-        {
-            if (Element.RenderTransform != null)
-                Control.UpdateTransform(Element.RenderTransform.ToCGAffineTransform());
+            Control.UpdatePath(Element.Data.ToCGPath(Element.RenderTransform));
         }
     }
 
@@ -62,20 +53,10 @@ namespace Xamarin.Forms.Platform.MacOS
 
     public class PathView : ShapeView
     {
-        public void UpdateData(PathData path)
+        public void UpdatePath(PathData path)
         {
             ShapeLayer.UpdateShape(path.Data);
-            ShapeLayer.UpdateFillMode(path == null ? false : path.IsNonzeroFillRule);
-        }
-
-		public void UpdateTransform(CGAffineTransform transform)
-        {
-#if __MOBILE__
-            Transform = transform;
-#else
-            WantsLayer = true;
-            Layer.AffineTransform = transform;
-#endif
+            ShapeLayer.UpdateFillMode(path != null && path.IsNonzeroFillRule);
         }
     }
 }
