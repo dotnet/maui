@@ -13,7 +13,8 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 		{
 			base.OnElementChanged(e);
 
-			System.Diagnostics.Debug.WriteLine($"{e.NewElement.GetType()} is replaced by _2489CustomRenderer");
+			if (e.NewElement != null)
+				System.Diagnostics.Debug.WriteLine($"{e.NewElement.GetType()} is replaced by _2489CustomRenderer");
 		}
 	}
 }
