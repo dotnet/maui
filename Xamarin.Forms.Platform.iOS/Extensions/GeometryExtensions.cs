@@ -12,14 +12,19 @@ namespace Xamarin.Forms.Platform.MacOS
 {
     public static class GeometryExtensions
     {
-        public static PathData ToCGPath(this Geometry geometry)
+        public static PathData ToCGPath(this Geometry geometry, Transform renderTransform = null)
         {
 			PathData pathData = new PathData
 			{
 				Data = new CGPath()
 			};
 
-			CGAffineTransform transform = CGAffineTransform.MakeIdentity();
+            CGAffineTransform transform;
+
+            if (renderTransform == null)
+                transform = CGAffineTransform.MakeIdentity();
+            else
+                transform = renderTransform.ToCGAffineTransform();
 
             if (geometry is LineGeometry)
             {
@@ -52,7 +57,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
                 foreach (Geometry child in geometryGroup.Children)
                 {
-                    PathData pathChild = child.ToCGPath();
+                    PathData pathChild = child.ToCGPath(renderTransform);
                     pathData.Data.AddPath(pathChild.Data);
                 }
             }
