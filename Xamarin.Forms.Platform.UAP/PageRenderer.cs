@@ -19,23 +19,28 @@ namespace Xamarin.Forms.Platform.UWP
 
 		protected override void Dispose(bool disposing)
 		{
-			if (!disposing || _disposed)
+			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
-			if (Element != null)
+			if (disposing)
 			{
-				ReadOnlyCollection<Element> children = ((IElementController)Element).LogicalChildren;
-				for (var i = 0; i < children.Count; i++)
+				if (Element != null)
 				{
-					var visualChild = children[i] as VisualElement;
-					visualChild?.Cleanup();
+					ReadOnlyCollection<Element> children = ((IElementController)Element).LogicalChildren;
+					for (var i = 0; i < children.Count; i++)
+					{
+						var visualChild = children[i] as VisualElement;
+						visualChild?.Cleanup();
+					}
+					Element?.SendDisappearing();
 				}
-				Element?.SendDisappearing();
 			}
 
-			base.Dispose();
+			base.Dispose(disposing);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Page> e)
