@@ -78,10 +78,23 @@ namespace Xamarin.Forms.Controls
 #if __IOS__
 		static IApp InitializeiOSApp()
 		{
+			string UDID = null;
+
+			if(TestContext.Parameters.Exists("UDID"))
+			{
+				UDID = TestContext.Parameters["UDID"];
+			}
+
 			// Running on a device
-			var app = ConfigureApp.iOS.InstalledApp(AppPaths.BundleId).Debug()
-				//Uncomment to run from a specific iOS SIM, get the ID from XCode -> Devices
-				.StartApp(Xamarin.UITest.Configuration.AppDataMode.DoNotClear);
+			var appConfiguration = ConfigureApp.iOS.InstalledApp(AppPaths.BundleId).Debug();
+
+			if(!String.IsNullOrWhiteSpace(UDID))
+			{
+				appConfiguration = appConfiguration.DeviceIdentifier(UDID);
+			}
+
+			var app = appConfiguration.StartApp(Xamarin.UITest.Configuration.AppDataMode.DoNotClear);
+
 			int _iosVersion;
 			if (int.TryParse(app.Invoke("iOSVersion").ToString(), out _iosVersion))
 			{

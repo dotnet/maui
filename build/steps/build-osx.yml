@@ -67,12 +67,45 @@ steps:
       filePath: 'build.sh'
       arguments: --target cg-ios --buildForVS2017=$(buildForVS2017) --BUILD_CONFIGURATION=$(buildConfiguration) --MSBuildArguments='${{ variables.MSBuildArguments_cg_ios }}'
 
-  - task: MSBuild@1
+  - task: Bash@3
     displayName: 'Build iOS Tests'
     inputs:
-      solution: 'Xamarin.Forms.Core.iOS.UITests/Xamarin.Forms.Core.iOS.UITests.csproj'
-      configuration: $(buildConfiguration)
-      msbuildArguments: /bl:$(Build.ArtifactStagingDirectory)/ios-uitests-2017_$(buildForVS2017).binlog
+      targetType: 'filePath'
+      filePath: 'build.sh'
+      arguments: --target cg-ios-build-tests --buildForVS2017=$(buildForVS2017) --BUILD_CONFIGURATION=$(buildConfiguration) --MSBuildArguments='${{ variables.MSBuildArguments_cg_ios }}'
+
+  - task: CopyFiles@2
+    displayName: 'Copy iOS Files for UITest'
+    condition: eq(variables['buildForVS2017'], 'false')
+    inputs:
+      Contents: |
+        **/XamarinFormsControlGalleryiOS.ipa
+        Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
+        Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/nunit.*
+        Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/NUnit3.*
+        Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Plugin.*
+        Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Xamarin.*
+      TargetFolder: '$(build.artifactstagingdirectory)/ios'
+      CleanTargetFolder: true
+      flattenFolders: true
+      
+  - task: CopyFiles@2
+    displayName: 'Copy iOS dSYM'
+    condition: eq(variables['buildForVS2017'], 'false')
+    inputs:
+      SourceFolder: Xamarin.Forms.ControlGallery.iOS/bin/iPhone/$(BuildConfiguration)/XamarinFormsControlGalleryiOS.app.dSYM/
+      TargetFolder: '$(build.artifactstagingdirectory)/ios/iPhone/XamarinFormsControlGalleryiOS.app.dSYM/'
+      CleanTargetFolder: false
+      flattenFolders: false
+      
+  - task: CopyFiles@2
+    displayName: 'Copy iOS App'
+    condition: eq(variables['buildForVS2017'], 'false')
+    inputs:
+      SourceFolder: Xamarin.Forms.ControlGallery.iOS/bin/iPhoneSimulator/$(BuildConfiguration)/XamarinFormsControlGalleryiOS.app/
+      TargetFolder: '$(build.artifactstagingdirectory)/ios/iPhoneSimulator/XamarinFormsControlGalleryiOS.app/'
+      CleanTargetFolder: false
+      flattenFolders: false
 
   - task: MSBuild@1
     displayName: 'Build Android Tests'
@@ -92,23 +125,6 @@ steps:
       flattenFolders: true
 
   - task: CopyFiles@2
-    displayName: 'Copy iOS Files for UITest'
-    condition: eq(variables['buildForVS2017'], 'false')
-    inputs:
-      Contents: |
-        **/XamarinFormsControlGalleryiOS.ipa
-        **/*.dSYM
-        Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Newtonsoft.Json.*
-        Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/nunit.*
-        Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/NUnit3.*
-        Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Plugin.*
-        Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/Xamarin.*
-      TargetFolder: '$(build.artifactstagingdirectory)/ios'
-      CleanTargetFolder: true
-      flattenFolders: true
-
-
-  - task: CopyFiles@2
     displayName: 'Copy Android Files for UITest'
     condition: eq(variables['buildForVS2017'], 'false')
     inputs:
@@ -122,6 +138,14 @@ steps:
       CleanTargetFolder: true
       flattenFolders: true
 
+  - task: CopyFiles@2
+    displayName: 'Copy Cake File'
+    inputs:
+      Contents: |
+        build.cake
+      TargetFolder: '$(build.artifactstagingdirectory)'
+      CleanTargetFolder: false
+      flattenFolders: false
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: iOS'

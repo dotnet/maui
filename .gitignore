@@ -72,3 +72,4 @@ caketools/
 .XamarinFormsVersionFile.txt
 .idea
 Visual Studio 2019/**
+TestResult.xml
