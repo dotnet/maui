@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Core.UITests.Shared
 		[Category(UITestCategories.ViewBaseTests)]
 		public void AutomatedTests()
 		{
-			App.WaitForElement("SUCCESS", timeout: TimeSpan.FromMinutes(1));
+			App.WaitForElement("SUCCESS", timeout: TimeSpan.FromMinutes(2));
 		}
 	}
 }
