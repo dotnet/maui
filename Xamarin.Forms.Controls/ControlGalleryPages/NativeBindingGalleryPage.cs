@@ -5,7 +5,7 @@ namespace Xamarin.Forms.Controls
 {
 	public class NativeBindingGalleryPage : ContentPage
 	{
-		public StackLayout Layout { get; set; }
+		public new StackLayout Layout { get; set; }
 		public bool NativeControlsAdded { get; set; }
 
 		NestedNativeViewModel ViewModel { get; set; }

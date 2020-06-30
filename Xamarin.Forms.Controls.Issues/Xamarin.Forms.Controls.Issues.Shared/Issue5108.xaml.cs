@@ -7,10 +7,12 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if APP
 	[XamlCompilation(XamlCompilationOptions.Compile)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 5108, "iOS: Frame with HasShadow set to true and BackgroundColor alpha < 1 casts shadow on all child views", PlatformAffected.iOS)]
 	public partial class Issue5108 : TestContentPage
 	{
+#if APP
 		public Issue5108()
 		{
 			InitializeComponent();
@@ -19,11 +21,6 @@ namespace Xamarin.Forms.Controls.Issues
 			RadiusButton.Clicked += RadiusButton_Clicked;
 			BackgroundButton.Clicked += BackgroundButton_Clicked;
 		}
-
-		protected override void Init()
-		{
-		}
-
 
 		void MarginButton_Clicked(object sender, EventArgs e)
 		{
@@ -57,6 +54,11 @@ namespace Xamarin.Forms.Controls.Issues
 			else
 				myframe.BackgroundColor = initialColor.Value;
 		}
-	}
 #endif
+
+		protected override void Init()
+		{
+		}
+
+	}
 }

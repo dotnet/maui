@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Controls
 
 		protected StateViewContainer<T> IsEnabledStateViewContainer { get; private set; }
 
-		protected StackLayout Layout { get; private set; }
+		protected new StackLayout Layout { get; private set; }
 
 		internal CoreGalleryPage()
 		{

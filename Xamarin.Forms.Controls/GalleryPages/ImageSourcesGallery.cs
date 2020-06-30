@@ -99,7 +99,7 @@ namespace Xamarin.Forms.Controls
 			public Func<ImageSource> Getter { get; set; }
 		}
 
-		class RootPage : ContentPage
+		new class RootPage : ContentPage
 		{
 			public RootPage()
 			{

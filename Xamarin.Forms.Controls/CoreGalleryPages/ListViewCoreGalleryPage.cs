@@ -52,7 +52,7 @@ namespace Xamarin.Forms.Controls
 				get { return _rowHeight; }
 				set
 				{
-					if (value != null && value != _rowHeight)
+					if (value != _rowHeight)
 					{
 						_rowHeight = value;
 						OnPropertyChanged();
