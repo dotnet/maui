@@ -2,10 +2,6 @@ namespace Xamarin.Forms.Controls
 {
 	public class MainPageLifeCycleTests : ContentPage
 	{
-		int _numTimesStarted;
-		int _numTimesSlept;
-		int _numTimesResumed;
-
 		readonly StackLayout _numTimesStartedLayout;
 		readonly StackLayout _numTimesSleptLayout;
 		readonly StackLayout _numTimesResumedLayout;

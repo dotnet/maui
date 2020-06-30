@@ -70,7 +70,6 @@ namespace Xamarin.Forms.Controls.Issues
 
 		static Issue6698LongLifecycleModel _longLifecycleModel;
 		AbsoluteLayout _container;
-		ListView _listView;
 
 		static Issue6698LongLifecycleModel GetLongLifecycleModel() =>
 			_longLifecycleModel ?? (_longLifecycleModel = new Issue6698LongLifecycleModel());

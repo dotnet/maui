@@ -105,8 +105,10 @@ namespace Xamarin.Forms
 				if (shell == null)
 					return true;
 
-				bool defaultShow = ShellItemController.GetItems().Count > 1;
-				return shell.GetEffectiveValue<bool>(Shell.TabBarIsVisibleProperty, () => defaultShow, null, displayedPage);
+				if (ShellItemController.GetItems().Count <= 1)
+					return false;
+
+				return shell.GetEffectiveValue<bool>(Shell.TabBarIsVisibleProperty, () => true, null, displayedPage);
 			}
 		}
 

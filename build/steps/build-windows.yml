@@ -13,6 +13,7 @@ parameters:
 steps:
   - checkout: self
     clean: true
+
   - script: build.cmd -Target provision
     displayName: 'Cake Provision'
     condition: eq(variables['provisioningCake'], 'true')
@@ -190,6 +191,49 @@ steps:
         **/*.binlog
 
       TargetFolder: ${{ parameters.artifactsTargetFolder }}
+  
+  - script: build.cmd -Target cg-uwp-build-tests  -ScriptArgs '-BUILD_CONFIGURATION="$(BuildConfiguration)"'
+    condition: eq(variables['BuildConfiguration'], 'Debug')
+    displayName: 'Build Tests and APPX'
+
+  - task: CopyFiles@2
+    displayName: 'Copy Appx Packages'
+    condition: eq(variables['BuildConfiguration'], 'Debug')
+    inputs:
+      Contents: |
+        Xamarin.Forms.ControlGallery.WindowsUniversal/AppPackages/*/*
+        Xamarin.Forms.ControlGallery.WindowsUniversal/AppPackages/*/Add-AppDevPackage.resources/**
+        Xamarin.Forms.ControlGallery.WindowsUniversal/AppPackages/*/TelemetryDependencies/**
+        Xamarin.Forms.ControlGallery.WindowsUniversal/AppPackages/*/Dependencies/x86/**
+      TargetFolder: '$(build.artifactstagingdirectory)'
+      CleanTargetFolder: false
+      flattenFolders: false
+
+  - task: CopyFiles@2
+    displayName: 'Copy Cake File'
+    inputs:
+      Contents: |
+        build.cake
+      TargetFolder: '${{ parameters.artifactsTargetFolder }}'
+      CleanTargetFolder: false
+      flattenFolders: false
+
+  - task: CopyFiles@2
+    displayName: 'Copy UITest Files'
+    condition: eq(variables['BuildConfiguration'], 'Debug')
+    inputs:
+      SourceFolder: Xamarin.Forms.Core.Windows.UITests/bin/$(BuildConfiguration)/
+      TargetFolder: '$(build.artifactstagingdirectory)/UITests'
+
+  - task: CopyFiles@2
+    displayName: 'Copy Certificate File'
+    condition: eq(variables['BuildConfiguration'], 'Debug')
+    inputs:
+      Contents: |
+        Xamarin.Forms.ControlGallery.WindowsUniversal\Xamarin.Forms.ControlGallery.WindowsUniversal_TemporaryKey.pfx
+      TargetFolder: '$(build.artifactstagingdirectory)'
+      CleanTargetFolder: false
+      flattenFolders: false
 
   - task: CopyFiles@2
     displayName: 'Copy Pages Files dlls'
