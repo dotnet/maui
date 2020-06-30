@@ -26,10 +26,11 @@
     <NoWarn>0114;0108;4014;0649;0169;0168;0219;NU1201</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;__IOS__;UITEST</DefineConstants>
+    <DefineConstants>TRACE;__IOS__;UITEST;__SHELL__</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoWarn>0114;0108;4014;0649;0169;0168;0219</NoWarn>

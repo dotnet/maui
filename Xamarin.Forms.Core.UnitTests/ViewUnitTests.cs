@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 using NUnit.Framework;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.Shapes;
 
 namespace Xamarin.Forms.Core.UnitTests
 {
@@ -837,6 +838,44 @@ namespace Xamarin.Forms.Core.UnitTests
 			var request = view.GetSizeRequest (double.PositiveInfinity, double.PositiveInfinity);
 
 			Assert.AreEqual (new Size (40, 20), request.Request);
+		}
+
+		[Test]
+		public void TestClip()
+		{
+			var view = new View
+			{
+				HeightRequest = 100,
+				WidthRequest = 100,
+
+				Clip = new RectangleGeometry
+				{
+					Rect = new Rectangle(0, 0, 50, 50)
+				}
+			};
+
+			Assert.NotNull(view.Clip);
+		}
+
+		[Test]
+		public void TestRemoveClip()
+		{
+			var view = new View
+			{
+				HeightRequest = 100,
+				WidthRequest = 100,
+
+				Clip = new RectangleGeometry
+				{
+					Rect = new Rectangle(0, 0, 50, 50)
+				}
+			};
+
+			Assert.NotNull(view.Clip);
+
+			view.Clip = null;
+
+			Assert.Null(view.Clip);
 		}
 	}
 }
