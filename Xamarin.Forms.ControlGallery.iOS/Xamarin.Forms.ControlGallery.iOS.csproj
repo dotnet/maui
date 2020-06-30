@@ -145,6 +145,7 @@
     <Compile Include="CustomRenderers\_CustomFrame10348Renderer.cs" />
     <Compile Include="CustomEffects\FooEffect.cs" />
     <Compile Include="_10337CustomRenderer.cs" />
+    <Compile Include="_11132CustomRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Controls\Xamarin.Forms.Controls.csproj">

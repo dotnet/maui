@@ -391,6 +391,9 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void UpdateClip()
 		{
+			if (!ShouldUpdateClip())
+				return;
+
 			var element = Renderer.Element;
 			var uiview = Renderer.NativeView;
 
@@ -409,14 +412,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				if (formsGeometry != null)
 					uiview.Layer.Mask = maskLayer;
 				else
-				{
-					var isClipShapeLayer =
-						uiview.Layer.Mask != null &&
-						uiview.Layer.Mask.Name.Equals(ClipShapeLayer);
-
-					if (isClipShapeLayer)
-						uiview.Layer.Mask = null;
-				}
+					uiview.Layer.Mask = null;
 			}
 			else
 			{
@@ -429,33 +425,57 @@ namespace Xamarin.Forms.Platform.MacOS
 					};
 
 					maskView.Layer.Mask = maskLayer;
-
 					uiview.MaskView = maskView;
 				}
 				else
-				{
-					var isClipShapeLayer =
-						uiview.MaskView != null &&
-						uiview.MaskView.Layer.Mask != null &&
-						uiview.MaskView.Layer.Mask.Name.Equals(ClipShapeLayer);
-
-					if (isClipShapeLayer)
-						uiview.MaskView = null;
-				}
+					uiview.MaskView = null;
 			}
 #else
 			if (formsGeometry != null)
 				uiview.Layer.Mask = maskLayer;
 			else
-			{
-				var isClipShapeLayer =
-					uiview.Layer.Mask != null &&
-					uiview.Layer.Mask.Name.Equals(ClipShapeLayer);
-
-				if (isClipShapeLayer)
-					uiview.Layer.Mask = null;
-			}
+				uiview.Layer.Mask = null;
 #endif
 		}
+
+		bool ShouldUpdateClip()
+		{
+			var element = Renderer?.Element;
+			var uiview = Renderer?.NativeView;
+
+			if (element == null || uiview == null)
+				return false;
+
+			bool hasClipShapeLayer = false;
+#if __MOBILE__
+			if (Forms.IsiOS11OrNewer)
+				hasClipShapeLayer =
+					uiview.Layer != null &&
+					uiview.Layer.Mask != null &&
+					uiview.Layer.Mask.Name.Equals(ClipShapeLayer);
+			else
+			{
+				hasClipShapeLayer =
+					uiview.MaskView != null &&
+					uiview.MaskView.Layer.Mask != null &&
+					uiview.MaskView.Layer.Mask.Name.Equals(ClipShapeLayer);
+			}
+#else
+			hasClipShapeLayer =
+				uiview.Layer != null &&
+				uiview.Layer.Mask != null &&
+				uiview.Layer.Mask.Name.Equals(ClipShapeLayer);
+#endif
+
+			var formsGeometry = element.Clip;
+
+			if (formsGeometry != null)
+				return true;
+
+			if (formsGeometry == null && hasClipShapeLayer)
+				return true;
+
+			return false;
+		}	
 	}
 }
