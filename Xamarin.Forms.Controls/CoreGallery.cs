@@ -503,18 +503,10 @@ namespace Xamarin.Forms.Controls
 			SetValue(AutomationProperties.NameProperty, "Core Pages");
 		}
 
-		NavigationBehavior navigationBehavior;
 
 		async Task PushPage(Page contentPage)
 		{
-			if (navigationBehavior == NavigationBehavior.PushModalAsync)
-			{
-				await Navigation.PushModalAsync(contentPage);
-			}
-			else
-			{
-				await Navigation.PushAsync(contentPage);
-			}
+			await Navigation.PushAsync(contentPage);
 		}
 
 		readonly Dictionary<string, GalleryPageFactory> _titleToPage;

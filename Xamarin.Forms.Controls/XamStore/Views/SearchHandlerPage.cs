@@ -22,8 +22,6 @@ namespace Xamarin.Forms.Controls.XamStore
 		{
 			On<iOS>().SetUseSafeArea(true);
 
-			var searchHandlerKey = nameof(SearchHandler);
-
 			TestedTypes.Add(SearchHandlerKey, (AddSearchHandler, new NamedAction[] { new NamedAction { Name = nameof(Focus), Action = FocusUnfocusSearchHandler } }));
 
 			_searchHandler = TestedTypes[SearchHandlerKey].ctor() as SearchHandler;

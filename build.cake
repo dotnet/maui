@@ -50,6 +50,11 @@ var IOS_BUNDLE_ID = "com.xamarin.quickui.controlgallery";
 var IOS_BUILD_IPA = Argument("IOS_BUILD_IPA", (target == "cg-ios-deploy") ? true : (false || isCIBuild) );
 var NUNIT_TEST_WHERE = Argument("NUNIT_TEST_WHERE", "cat == Issues && cat != ManualReview");
 
+var UWP_PACKAGE_ID = "0d4424f6-1e29-4476-ac00-ba22c3789cb6";
+var UWP_TEST_LIBRARY = Argument("UWP_TEST_LIBRARY", $"./Xamarin.Forms.Core.Windows.UITests/bin/{configuration}/Xamarin.Forms.Core.Windows.UITests.dll");
+var UWP_PFX_PATH = Argument("UWP_PFX_PATH", "Xamarin.Forms.ControlGallery.WindowsUniversal\\Xamarin.Forms.ControlGallery.WindowsUniversal_TemporaryKey.pfx");
+var UWP_APP_PACKAGES_PATH = Argument("UWP_APP_PACKAGES_PATH", "*/AppPackages/");
+
 var ANDROID_RENDERERS = Argument("ANDROID_RENDERERS", "FAST");
 var XamarinFormsVersion = Argument("XamarinFormsVersion", "");
 var packageVersion = Argument("packageVersion", "");
@@ -369,6 +374,87 @@ Task("provision-netsdk-local")
         }
     });
 
+Task ("cg-uwp")
+    .IsDependentOn("BuildTasks")
+    .Does (() =>
+{
+    MSBuild ("Xamarin.Forms.ControlGallery.WindowsUniversal\\Xamarin.Forms.ControlGallery.WindowsUniversal.csproj", 
+        GetMSBuildSettings().WithRestore());
+});
+
+Task ("cg-uwp-build-tests")
+    .IsDependentOn("BuildTasks")
+    .Does (() =>
+{
+    MSBuild ("Xamarin.Forms.ControlGallery.WindowsUniversal\\Xamarin.Forms.ControlGallery.WindowsUniversal.csproj", 
+        GetMSBuildSettings(null)
+            .WithProperty("AppxBundlePlatforms", "x86")
+            .WithProperty("AppxBundle", "Always")
+            .WithProperty("UapAppxPackageBuildMode", "StoreUpload")
+            .WithProperty("AppxPackageSigningEnabled", "true")
+            .WithProperty("PackageCertificateThumbprint", "a59087cc92a9a8117ffdb5255eaa155748f9f852")
+            .WithProperty("PackageCertificateKeyFile", "Xamarin.Forms.ControlGallery.WindowsUniversal_TemporaryKey.pfx")
+            .WithProperty("PackageCertificatePassword", "")
+            .WithRestore()
+    );
+
+    MSBuild("Xamarin.Forms.Core.Windows.UITests\\Xamarin.Forms.Core.Windows.UITests.csproj", 
+        GetMSBuildSettings().WithRestore());
+});
+
+Task ("cg-uwp-deploy")
+    .WithCriteria(IsRunningOnWindows())
+    .Does (() =>
+{
+    var uninstallPS = new Action (() => {
+        try {
+            StartProcess ("powershell",
+                "$app = Get-AppxPackage -Name " + UWP_PACKAGE_ID + "; if ($app) { Remove-AppxPackage -Package $app.PackageFullName }");
+        } catch { }
+    });
+    // Try to uninstall the app if it exists from before
+    uninstallPS();
+
+    StartProcess("certutil", "-f -p \"\" -importpfx \"" + UWP_PFX_PATH + "\"");
+    
+    // Install the appx
+    var dependencies = GetFiles(UWP_APP_PACKAGES_PATH + "*/Dependencies/x86/*.appx");
+    foreach (var dep in dependencies) {
+        try
+        {
+            Information("Installing Dependency appx: {0}", dep);
+            StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(dep).FullPath + "\"");
+        }
+        catch(Exception exc)
+        {
+            Information("Error: {0}", exc);
+        }
+    }
+
+    var appxBundlePath = GetFiles(UWP_APP_PACKAGES_PATH + "*/*.appxbundle").First ();
+    Information("Installing appx: {0}", appxBundlePath);
+    StartProcess ("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(appxBundlePath).FullPath + "\"");
+});
+
+Task("cg-uwp-run-tests")
+    .Does(() =>
+    {
+        NUnit3(new [] { UWP_TEST_LIBRARY },
+            new NUnit3Settings {
+                Params = new Dictionary<string, string>()
+                {
+                },
+                Where = NUNIT_TEST_WHERE
+            });
+    });
+
+Task("cg-uwp-run-tests-ci")
+    .IsDependentOn("cg-uwp-deploy")
+    .IsDependentOn("cg-uwp-run-tests")
+    .Does(() =>
+    {
+    });
+
 Task("provision-uitests-uwp")
     .Description("Installs and Starts WindowsApplicationDriver. Use WinAppDriverPath to specify WinAppDriver Location.")
     .Does(() =>
@@ -516,21 +602,81 @@ Task("WriteGoogleMapsAPIKey")
     });
 
 Task("BuildForNuget")
+    .IsDependentOn("BuildTasks")
     .Description("Builds all necessary projects to create Nuget Packages")
     .Does(() =>
 {
-    try{
+    try
+    {
 
         var msbuildSettings = GetMSBuildSettings();
         var binaryLogger = new MSBuildBinaryLogSettings {
-            Enabled  = true
+            Enabled  = isCIBuild
         };
 
         msbuildSettings.BinaryLogger = binaryLogger;
         binaryLogger.FileName = $"{artifactStagingDirectory}/win-{configuration}.binlog";
-
         MSBuild("./Xamarin.Forms.sln", msbuildSettings);
+        
+        // // This currently fails on CI will revisit later
+        // if(isCIBuild)
+        // {        
+        //     MSBuild("./Xamarin.Forms.Xaml.UnitTests/Xamarin.Forms.Xaml.UnitTests.csproj", GetMSBuildSettings().WithTarget("Restore"));
+        //     MSBuild("./Xamarin.Forms.Xaml.UnitTests/Xamarin.Forms.Xaml.UnitTests.csproj", GetMSBuildSettings());
+        // }
 
+        // MSBuild("./Xamarin.Forms.sln", GetMSBuildSettings().WithTarget("Restore"));
+        // MSBuild("./Xamarin.Forms.DualScreen.sln", GetMSBuildSettings().WithTarget("Restore"));
+
+        // if(isCIBuild)
+        // {       
+        //     foreach(var platformProject in GetFiles("./Xamarin.*.UnitTests/*.csproj").Select(x=> x.FullPath))
+        //     {
+        //         if(platformProject.Contains("Xamarin.Forms.Xaml.UnitTests"))
+        //             continue;
+
+        //         Information("Building: {0}", platformProject);
+        //         MSBuild(platformProject,
+        //                 GetMSBuildSettings().WithRestore());
+        //     }
+        // }
+
+        // MSBuild("./Xamarin.Forms.sln", GetMSBuildSettings().WithTarget("Restore"));
+        // MSBuild("./Xamarin.Forms.DualScreen.sln", GetMSBuildSettings().WithTarget("Restore"));
+        
+        // msbuildSettings.BinaryLogger = binaryLogger;
+        
+        // var platformProjects = 
+        //     GetFiles("./Xamarin.Forms.Platform.*/*.csproj")
+        //         .Union(GetFiles("./Stubs/*/*.csproj"))
+        //         .Union(GetFiles("./Xamarin.Forms.Maps.*/*.csproj"))
+        //         .Union(GetFiles("./Xamarin.Forms.Pages.*/*.csproj"))
+        //         .Union(GetFiles("./Xamarin.Forms.Material.*/*.csproj"))
+        //         .Union(GetFiles("./Xamarin.Forms.Core.Design/*.csproj"))
+        //         .Union(GetFiles("./Xamarin.Forms.Xaml.Design/*.csproj"))
+        //         .Select(x=> x.FullPath).Distinct()
+        //         .ToList();
+
+        // foreach(var platformProject in platformProjects)
+        // {
+        //     if(platformProject.Contains("UnitTests"))
+        //         continue;
+                
+        //     msbuildSettings = GetMSBuildSettings();
+        //     string projectName = platformProject
+        //         .Replace(' ', '_')
+        //         .Split('/')
+        //         .Last();
+
+        //     binaryLogger.FileName = $"{artifactStagingDirectory}/{projectName}-{configuration}.binlog";
+        //     msbuildSettings.BinaryLogger = binaryLogger;
+
+        //     Information("Building: {0}", platformProject);
+        //     MSBuild(platformProject,
+        //             msbuildSettings);
+        // }
+
+        // dual screen
         msbuildSettings = GetMSBuildSettings();
         msbuildSettings.BinaryLogger = binaryLogger;
         binaryLogger.FileName = $"{artifactStagingDirectory}/dualscreen-{configuration}-csproj.binlog";
