@@ -23,7 +23,7 @@ PowerShell:
 #addin "nuget:?package=Cake.Git&version=0.21.0"
 #addin "nuget:?package=Cake.Android.SdkManager&version=3.0.2"
 #addin "nuget:?package=Cake.Boots&version=1.0.2.437"
-
+#addin "nuget:?package=Cake.AppleSimulator&version=0.2.0"
 #addin "nuget:?package=Cake.FileHelpers&version=3.2.1"
 //////////////////////////////////////////////////////////////////////
 // TOOLS
@@ -34,20 +34,30 @@ PowerShell:
 // ARGUMENTS
 //////////////////////////////////////////////////////////////////////
 
+string agentName = EnvironmentVariable("AGENT_NAME", "");
+bool isCIBuild = !String.IsNullOrWhiteSpace(agentName);
+string artifactStagingDirectory = EnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY", ".");
+string workingDirectory = EnvironmentVariable("SYSTEM_DEFAULTWORKINGDIRECTORY", ".");
+var configuration = Argument("BUILD_CONFIGURATION", "Debug");
+
 var target = Argument("target", "Default");
+var IOS_SIM_NAME = Argument("IOS_SIM_NAME", "iPhone 8");
+var IOS_SIM_RUNTIME = Argument("IOS_SIM_RUNTIME", "com.apple.CoreSimulator.SimRuntime.iOS-13-5");
+var IOS_TEST_PROJ = "./Xamarin.Forms.Core.iOS.UITests/Xamarin.Forms.Core.iOS.UITests.csproj";
+var IOS_TEST_LIBRARY = Argument("IOS_TEST_LIBRARY", $"./Xamarin.Forms.Core.iOS.UITests/bin/{configuration}/Xamarin.Forms.Core.iOS.UITests.dll");
+var IOS_IPA_PATH = Argument("IOS_IPA_PATH", $"./Xamarin.Forms.ControlGallery.iOS/bin/iPhoneSimulator/{configuration}/XamarinFormsControlGalleryiOS.app");
+var IOS_BUNDLE_ID = "com.xamarin.quickui.controlgallery";
+var IOS_BUILD_IPA = Argument("IOS_BUILD_IPA", (target == "cg-ios-deploy") ? true : (false || isCIBuild) );
+var NUNIT_TEST_WHERE = Argument("NUNIT_TEST_WHERE", "cat == Issues && cat != ManualReview");
 
 var ANDROID_RENDERERS = Argument("ANDROID_RENDERERS", "FAST");
 var XamarinFormsVersion = Argument("XamarinFormsVersion", "");
-var configuration = Argument("BUILD_CONFIGURATION", "Debug");
 var packageVersion = Argument("packageVersion", "");
 var releaseChannelArg = Argument("CHANNEL", "Stable");
 releaseChannelArg = EnvironmentVariable("CHANNEL") ?? releaseChannelArg;
 var teamProject = Argument("TeamProject", "");
 bool buildForVS2017 = Convert.ToBoolean(Argument("buildForVS2017", "false"));
-string agentName = EnvironmentVariable("AGENT_NAME", "");
 bool isHostedAgent = agentName.StartsWith("Azure Pipelines");
-bool isCIBuild = !String.IsNullOrWhiteSpace(agentName);
-string artifactStagingDirectory = EnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY", ".");
 
 var ANDROID_HOME = EnvironmentVariable("ANDROID_HOME") ??
     (IsRunningOnWindows () ? "C:\\Program Files (x86)\\Android\\android-sdk\\" : "");
@@ -70,8 +80,6 @@ if(buildForVS2017)
 
 Information("ANDROID_API_SDKS: {0}", androidSdks);
 string[] androidSdkManagerInstalls = androidSdks.Split(',');
-
-var IOS_BUILD_IPA = Argument("IOS_BUILD_IPA", false || isCIBuild);
 
 (string name, string location)[] windowsSdksInstalls = new (string name, string location)[]
 {
@@ -115,6 +123,7 @@ Information ("buildForVS2017: {0}", buildForVS2017);
 Information ("Agent.Name: {0}", agentName);
 Information ("isCIBuild: {0}", isCIBuild);
 Information ("artifactStagingDirectory: {0}", artifactStagingDirectory);
+Information("workingDirectory: {0}", workingDirectory);
 
 var releaseChannel = ReleaseChannel.Stable;
 if(releaseChannelArg == "Preview")
@@ -676,10 +685,10 @@ Task("cg-ios")
     .Description("Builds iOS Control Gallery and open VS")
     .IsDependentOn("BuildTasks")
     .Does(() =>
-    {   
+    {
         var buildSettings = 
             GetMSBuildSettings(null)
-            .WithProperty("BuildIpa", $"{IOS_BUILD_IPA}");
+                .WithProperty("BuildIpa", $"{IOS_BUILD_IPA}");
 
         if(isCIBuild)
         {
@@ -707,21 +716,85 @@ Task("cg-ios-vs")
         StartVisualStudio();
     });
 
-/*
-Task("Deploy")
-    .IsDependentOn("DeployiOS")
-    .IsDependentOn("DeployAndroid");
-
-
-// TODO? Not sure how to make this work
-Task("DeployiOS")
+Task("cg-ios-build-tests")
+    .IsDependentOn("BuildTasks")
     .Does(() =>
     {
-        // not sure how to get this to deploy to iOS
-        BuildiOSIpa("./Xamarin.Forms.sln", platform:"iPhoneSimulator", configuration:"Debug");
+        // the UI Tests all reference the galleries so those get built as a side effect of building the
+        // ui tests
+        var buildSettings = 
+            GetMSBuildSettings(null, configuration)
+                .WithProperty("MtouchArch", "x86_64")
+                .WithProperty("iOSPlatform", "iPhoneSimulator")
+                .WithProperty("BuildIpa", $"true")
+                .WithRestore();
 
+        if(isCIBuild)
+        {
+            var binaryLogger = new MSBuildBinaryLogSettings {
+                Enabled  = true,
+                FileName = $"{artifactStagingDirectory}/ios-uitests-2017_{buildForVS2017}.binlog"
+            };
+
+            buildSettings.BinaryLogger = binaryLogger;
+        }
+
+        MSBuild(IOS_TEST_PROJ, buildSettings);
     });
-*/
+
+Task("cg-ios-run-tests")
+    .Does(() =>
+    {
+        var sim = GetIosSimulator();
+        NUnit3(new [] { IOS_TEST_LIBRARY }, 
+            new NUnit3Settings {
+                Params = new Dictionary<string, string>()
+                {
+                    {"UDID", GetIosSimulator().UDID}
+                },
+                Where = NUNIT_TEST_WHERE
+            });
+    });
+
+Task("cg-ios-run-tests-ci")
+    .IsDependentOn("cg-ios-deploy")
+    .IsDependentOn("cg-ios-run-tests")
+    .Does(() =>
+    {
+    });
+
+Task ("cg-ios-deploy")
+    .Does (() =>
+{
+    // Look for a matching simulator on the system
+    var sim = GetIosSimulator();
+
+    // Boot the simulator
+    Information("Booting: {0} ({1} - {2})", sim.Name, sim.Runtime, sim.UDID);
+    if (!sim.State.ToLower().Contains ("booted"))
+        BootAppleSimulator (sim.UDID);
+
+    // Wait for it to be booted
+    var booted = false;
+    for (int i = 0; i < 100; i++) {
+        if (ListAppleSimulators().Any (s => s.UDID == sim.UDID && s.State.ToLower().Contains("booted"))) {
+            booted = true;
+            break;
+        }
+        System.Threading.Thread.Sleep(1000);
+    }
+
+    // Install the IPA that was previously built
+    var ipaPath = new FilePath(IOS_IPA_PATH);
+    Information ("Installing: {0}", ipaPath);
+    InstalliOSApplication(sim.UDID, MakeAbsolute(ipaPath).FullPath);
+
+
+    // Launch the IPA
+    Information("Launching: {0}", IOS_BUNDLE_ID);
+    LaunchiOSApplication(sim.UDID, IOS_BUNDLE_ID);
+});
+
 Task("DeployAndroid")
     .Description("Builds and deploy Android Control Gallery")
     .Does(() =>
@@ -780,12 +853,12 @@ void StartVisualStudio(string sln = "Xamarin.Forms.sln")
          StartProcess("open", new ProcessSettings{ Arguments = "Xamarin.Forms.sln" });
 }
 
-MSBuildSettings GetMSBuildSettings(PlatformTarget? platformTarget = PlatformTarget.MSIL)
+MSBuildSettings GetMSBuildSettings(PlatformTarget? platformTarget = PlatformTarget.MSIL, string buildConfiguration = null)
 {
     var buildSettings =  new MSBuildSettings {
         PlatformTarget = platformTarget,
         MSBuildPlatform = Cake.Common.Tools.MSBuild.MSBuildPlatform.x86,
-        Configuration = configuration,
+        Configuration = buildConfiguration ?? configuration,
     };
 
     if(!String.IsNullOrWhiteSpace(XamarinFormsVersion))
@@ -822,4 +895,12 @@ bool IsXcodeVersionOver(string version)
     }
 
     return true;
+}
+
+AppleSimulator GetIosSimulator()
+{
+    var sims = ListAppleSimulators ();
+    // Look for a matching simulator on the system
+    var sim = sims.First (s => s.Name == IOS_SIM_NAME && s.Runtime == IOS_SIM_RUNTIME);
+    return sim;
 }

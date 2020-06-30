@@ -4,8 +4,8 @@
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="..\Environment.Build.props" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' And '$(BuildIpa)' == 'True' ">iPhone</Platform>
-    <Platform Condition=" '$(Platform)' == '' ">iPhoneSimulator</Platform>
+    <iOSPlatform Condition=" '$(iOSPlatform)' == '' ">iPhone</iOSPlatform>
+    <Platform Condition=" '$(Platform)' == '' ">$(iOSPlatform)</Platform>
     <ProjectGuid>{C7131F14-274F-4B55-ACA9-E81731AD012F}</ProjectGuid>
     <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Exe</OutputType>
@@ -102,7 +102,7 @@
     <MtouchLink>Full</MtouchLink>
     <BuildIpa>True</BuildIpa>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(TF_BUILD)' == 'true' OR '$(CI)' == 'true'">
+  <PropertyGroup Condition="'$(CI)' == 'true'">
     <MtouchLink>Full</MtouchLink>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
