@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Controls.Issues
 				{
 					ClearImageCache();
 					image.Source =
-						"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/banner.png";
+						"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/banner.png";
 					btnSetOrClear.Text = KClearImageSource;
 				}
 				else

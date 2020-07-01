@@ -68,7 +68,7 @@ namespace Xamarin.Forms.Controls
 			{
 				albums[n] =
 					string.Format(
-						"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Xamarin.Forms.Controls/coffee.png?ticks={0}", n);
+						"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/Xamarin.Forms.Controls/coffee.png?ticks={0}", n);
 			}
 
 			var label = new Label { Text = "I have not been selected" };

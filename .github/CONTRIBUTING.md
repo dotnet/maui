@@ -72,6 +72,6 @@ Once a pull request has two approvals, it will receive an "approved" label. As l
 Bug fixes should be targeted at the earliest appropriate branch.
 - The _current stable branch_ corresponds to the latest stable version available on NuGet.org. This branch will now only accept regressions or fixes that meet a very high bar and low risk.
 - The _current prerelease branch_ corresponds to the latest prerelease version available on NuGet.org. This branch will only accept bug fixes without API changes or breaking changes, with the exception of any API that is under an experimental flag.
-- _Master_ corresponds to a version that is not yet tagged. This is also the "nightly" branch. This is where anything that doesn't fit into the stable or prerelease branches should be targeted.
+- _Main_ corresponds to a version that is not yet tagged. This is also the "nightly" branch. This is where anything that doesn't fit into the stable or prerelease branches should be targeted.
 
-Commits will be merged up from stable to prerelease to master branches on a regular basis (typically every Monday and whenever a new release is tagged).
+Commits will be merged up from stable to prerelease to main branches on a regular basis (typically every Monday and whenever a new release is tagged).

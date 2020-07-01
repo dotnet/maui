@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Controls.Issues
         {
             int retry = 5;
             while (retry-- >= 0) {
-                var imageUri = new Uri ("https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Xamarin.Forms.ControlGallery.Android/Assets/WebImages/XamarinLogo.png");
+                var imageUri = new Uri ("https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/Xamarin.Forms.ControlGallery.Android/Assets/WebImages/XamarinLogo.png");
                 Content = new Image () { Source = new UriImageSource () { Uri = imageUri }, BackgroundColor = Color.Black, AutomationId = "success" };
 
                 await Task.Delay (50);

@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		async Task ShowLocation(string locationString)
 		{
-			var stringUri = $"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/README.md?l=en&px_location={Uri.EscapeDataString(locationString)}";
+			var stringUri = $"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/README.md?l=en&px_location={Uri.EscapeDataString(locationString)}";
 
 			var uri = new Uri(stringUri);
 			var webPage = new ContentPage

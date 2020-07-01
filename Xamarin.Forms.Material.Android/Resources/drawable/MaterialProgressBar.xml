@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- 
-From original drawable https://github.com/aosp-mirror/platform_frameworks_base/blob/master/core/res/res/drawable/progress_horizontal_material.xml
+From original drawable https://github.com/aosp-mirror/platform_frameworks_base/blob/main/core/res/res/drawable/progress_horizontal_material.xml
 with removed rounded corners. And, following some of the drawable/color links.
 -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">

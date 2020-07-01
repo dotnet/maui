@@ -121,11 +121,11 @@ namespace Xamarin.Forms.Controls.Issues
 			var source = new ObservableCollection<_7128Model>();
 
 			var images = new string[] {
-				"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Xamarin.Forms.ControlGallery.iOS/oasis.jpg",
-				"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Xamarin.Forms.ControlGallery.iOS/photo.jpg",
-				"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Xamarin.Forms.ControlGallery.iOS/xamarinstore.jpg",
-				"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Xamarin.Forms.ControlGallery.iOS/crimson.jpg",
-				"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Xamarin.Forms.ControlGallery.WindowsUniversal/cover1.jpg"
+				"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/Xamarin.Forms.ControlGallery.iOS/oasis.jpg",
+				"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/Xamarin.Forms.ControlGallery.iOS/photo.jpg",
+				"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/Xamarin.Forms.ControlGallery.iOS/xamarinstore.jpg",
+				"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/Xamarin.Forms.ControlGallery.iOS/crimson.jpg",
+				"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/Xamarin.Forms.ControlGallery.WindowsUniversal/cover1.jpg"
 			};
 
 			for (int n = 0; n < 35; n++)

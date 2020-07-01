@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var image = new Image
 			{
-				Source = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/banner.png",
+				Source = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/banner.png",
 				Aspect = Aspect.AspectFill,
 				Opacity = 0.5,
 			};

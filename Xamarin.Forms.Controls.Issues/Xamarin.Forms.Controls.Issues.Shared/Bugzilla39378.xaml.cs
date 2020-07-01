@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Controls.Issues
 			
 			public ImageController39378()
 			{
-				HomeImage = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/banner.png";
+				HomeImage = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/banner.png";
 				BackgroundColor = "#f5f5dc";
 			}
 
