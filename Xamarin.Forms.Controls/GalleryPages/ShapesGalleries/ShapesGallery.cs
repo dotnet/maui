@@ -36,6 +36,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.ShapesGalleries
                         GalleryBuilder.NavButton("Path LayoutOptions Gallery", () => new PathLayoutOptionsGallery(), Navigation),
                         GalleryBuilder.NavButton("Transform Playground", () => new TransformPlaygroundGallery(), Navigation),
                         GalleryBuilder.NavButton("Path Transform using string (TypeConverter) Gallery", () => new PathTransformStringGallery(), Navigation),
+                        GalleryBuilder.NavButton("Animate Shape Gallery", () => new AnimateShapeGallery(), Navigation),
                         GalleryBuilder.NavButton("Clip Gallery", () => new ClipGallery(), Navigation),
                         GalleryBuilder.NavButton("Clip Views Gallery", () => new ClipViewsGallery(), Navigation),
                         GalleryBuilder.NavButton("Add/Remove Clip Gallery", () => new AddRemoveClipGallery(), Navigation),
