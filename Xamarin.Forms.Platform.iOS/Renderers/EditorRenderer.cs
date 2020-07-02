@@ -42,7 +42,9 @@ namespace Xamarin.Forms.Platform.iOS
 				// create label so it can get updated during the initial setup loop
 				_placeholderLabel = new UILabel
 				{
-					BackgroundColor = UIColor.Clear
+					BackgroundColor = UIColor.Clear,
+					Frame = new RectangleF(0, 0, Frame.Width, Frame.Height),
+					Lines = 0
 				};
 			}
 
@@ -63,6 +65,8 @@ namespace Xamarin.Forms.Platform.iOS
 		protected internal override void UpdatePlaceholderText()
 		{
 			_placeholderLabel.Text = Element.Placeholder;
+
+			_placeholderLabel.SizeToFit();
 		}
 
 		protected internal override void UpdateCharacterSpacing()
@@ -72,7 +76,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if(textAttr != null)
 				TextView.AttributedText = textAttr;
 
-			var placeHolder = TextView.AttributedText.AddCharacterSpacing(Element.Placeholder, Element.CharacterSpacing);
+			var placeHolder = _placeholderLabel.AttributedText.AddCharacterSpacing(Element.Placeholder, Element.CharacterSpacing);
 
 			if(placeHolder != null)
 				_placeholderLabel.AttributedText = placeHolder;
@@ -112,7 +116,7 @@ namespace Xamarin.Forms.Platform.iOS
 					new NSObject[] { _placeholderLabel }, new NSObject[] { new NSString("_placeholderLabel") })
 			);
 
-			_placeholderLabel.TranslatesAutoresizingMaskIntoConstraints = false;
+			_placeholderLabel.TranslatesAutoresizingMaskIntoConstraints = true;
 			_placeholderLabel.AttributedText = _placeholderLabel.AttributedText.AddCharacterSpacing(Element.Placeholder, Element.CharacterSpacing);
 
 			Control.AddConstraints(hConstraints);
