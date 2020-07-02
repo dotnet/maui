@@ -14,11 +14,11 @@ variables:
 - name: BuildVersion44
   value: $[counter('xf-nuget-counter', 992000)]
 - name: NUGET_VERSION
-  value: 5.4.0
+  value: 5.6.0
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
   value: true
 - name: DOTNET_VERSION
-  value: 3.1.100
+  value: 3.1.301
 
 resources:
   repositories:
@@ -30,7 +30,7 @@ resources:
 trigger:
   branches:
     include:
-    - master
+    - main
     - 3.*
     - 4.*
   tags:
@@ -44,7 +44,7 @@ pr:
   autoCancel: false
   branches:
     include:
-    - master
+    - main
     - 4.*
     - 3.*
 
@@ -53,7 +53,7 @@ schedules:
   displayName: Daily midnight build
   branches:
     include:
-    - master
+    - main
 
 stages:
   - stage: windows
