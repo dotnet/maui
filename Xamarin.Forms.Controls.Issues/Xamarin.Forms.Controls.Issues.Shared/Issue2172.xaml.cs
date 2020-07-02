@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			public string Number => "Bound Text";
 		}
-
+#if APP
 		void Button_OnClicked(object sender, EventArgs e)
 		{
 			BoundEntry.HeightRequest = 100;
@@ -37,8 +37,8 @@ namespace Xamarin.Forms.Controls.Issues
 			BoundEntry.VerticalTextAlignment = newAlignment;
 			NestedEntry.VerticalTextAlignment = newAlignment;
 			EmptyEntry.VerticalTextAlignment = newAlignment;
-			
 		}
+#endif
 	}
 
 	public class Issue2172OldEntry : Entry
