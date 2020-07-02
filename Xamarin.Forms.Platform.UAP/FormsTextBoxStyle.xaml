@@ -211,8 +211,7 @@
 						                  ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}"
 						                  Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}" FontWeight="Normal"
 						                  Margin="0,0,0,8" Grid.Row="0" Visibility="Collapsed" x:DeferLoadStrategy="Lazy" />
-						<ScrollViewer x:Name="ContentElement" AutomationProperties.AccessibilityView="Raw"
-                                     
+                        <ScrollViewer x:Name="ContentElement" AutomationProperties.AccessibilityView="Raw"
 						              HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
 						              HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
 						              IsTabStop="False" IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
@@ -221,7 +220,7 @@
 						              Margin="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" Grid.Row="1"
 						              VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
 						              VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}" ZoomMode="Disabled"
-                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
 						<ContentControl x:Name="PlaceholderTextContentPresenter" Grid.ColumnSpan="2"
 						                Content="{TemplateBinding PlaceholderText}"
 						                Foreground="{TemplateBinding PlaceholderForegroundBrush}" IsHitTestVisible="False"
