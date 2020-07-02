@@ -48,6 +48,7 @@ namespace Xamarin.Forms.Platform.UWP
 		InputScope _passwordInputScope;
 		InputScope _numericPasswordInputScope;
 		Border _borderElement;
+		Windows.UI.Xaml.Controls.ScrollViewer _scrollViewer;
 		Windows.UI.Xaml.Controls.Grid _rootGrid;
 		Windows.UI.Xaml.VisualState _DeleteButtonVisibleState;
 		Windows.UI.Xaml.VisualStateGroup _DeleteButtonVisibleStateGroups;
@@ -63,12 +64,16 @@ namespace Xamarin.Forms.Platform.UWP
 			TextChanged += OnTextChanged;
 			SelectionChanged += OnSelectionChanged;
 			IsEnabledChanged += OnIsEnabledChanged;
+			Loaded += OnLoaded;
+			RegisterPropertyChangedCallback(VerticalContentAlignmentProperty, OnVerticalContentAlignmentChanged);
 		}
 
 		void OnIsEnabledChanged(object sender, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
 		{
 			UpdateEnabled();
 		}
+
+		public bool UpdateVerticalAlignmentOnLoad { get; set; } = true;
 
 		public bool ClearButtonVisible
 		{
@@ -166,6 +171,30 @@ namespace Xamarin.Forms.Platform.UWP
 				_DeleteButtonVisibleStateGroups = stateGroups.SingleOrDefault(sg => sg.Name == "ButtonStates");
 				if (_DeleteButtonVisibleStateGroups != null)
 					_DeleteButtonVisibleState = _DeleteButtonVisibleStateGroups.States.SingleOrDefault(s => s.Name == "ButtonVisible");
+			}
+
+			_scrollViewer= (Windows.UI.Xaml.Controls.ScrollViewer)GetTemplateChild("ContentElement");
+		}
+
+		void OnLoaded(object sender, RoutedEventArgs e)
+		{
+			// Set the vertical alignment on load, because setting it in the FormsTextBoxStyle causes text display issues
+			// But the editor has display issues if you do set the vertical alignment here, so the flag allows renderer using
+			// the text box to control this
+			UpdateTemplateScrollViewerVerticalAlignment();
+		}
+
+		void OnVerticalContentAlignmentChanged(DependencyObject sender, DependencyProperty dp)
+		{
+			UpdateTemplateScrollViewerVerticalAlignment();
+		}
+
+		void UpdateTemplateScrollViewerVerticalAlignment()
+		{
+			if (_scrollViewer != null && UpdateVerticalAlignmentOnLoad)
+			{
+				_scrollViewer.VerticalAlignment = VerticalContentAlignment;
+				Focus(FocusState.Programmatic);
 			}
 		}
 
