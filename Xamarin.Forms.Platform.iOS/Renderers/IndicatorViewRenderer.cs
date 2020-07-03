@@ -186,7 +186,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (UIPager == null)
 				return;
 
-      UIPager.Pages = GetMaximumVisible();
+			UIPager.Pages = GetMaximumVisible();
 
 			UpdateCurrentPage();
 		}

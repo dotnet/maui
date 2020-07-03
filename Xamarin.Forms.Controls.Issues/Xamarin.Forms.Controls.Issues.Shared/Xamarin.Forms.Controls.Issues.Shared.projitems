@@ -1423,6 +1423,7 @@
       <DependentUpon>Issue9555.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue11031.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue11018.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue10940.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue10908.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue11132.cs" />
