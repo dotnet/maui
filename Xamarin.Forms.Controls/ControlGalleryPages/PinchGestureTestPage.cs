@@ -86,7 +86,6 @@ namespace Xamarin.Forms.Controls
 			Content = new StackLayout { Children = { btn, btnRemove, new Grid { Children = { zoomContainer }, Padding = new Thickness (20) } } };
 		}
 
-		double _currentScale = 1;
 	}
 }
 

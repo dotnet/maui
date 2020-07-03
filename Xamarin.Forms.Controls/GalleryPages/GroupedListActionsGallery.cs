@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -25,7 +26,7 @@ namespace Xamarin.Forms.Controls
 
 			string _name;
 			string _shortName;
-			public event PropertyChangedEventHandler PropertyChanged;
+			public new event PropertyChangedEventHandler PropertyChanged;
 
 			public string Name
 			{

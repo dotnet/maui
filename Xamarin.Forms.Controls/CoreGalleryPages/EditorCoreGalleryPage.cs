@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Controls
 			var textFontSizeContainer = new ViewContainer<Editor>(Test.Editor.FontSize, new Editor { Text = "I have default size text" });
 			var textFontSizeDefaultContainer = new ViewContainer<Editor>(Test.Editor.FontSize, new Editor { Text = "I also have default size text" });
 			textFontSizeDefaultContainer.View.FontSize = Device.GetNamedSize(NamedSize.Default, textFontSizeDefaultContainer.View);
-			var textFontSizeLargeContainer = new ViewContainer<Editor>(Test.Editor.FontSize, new Editor { Text = "I have size 48 (huge) text", FontSize = 48 });
+			var textFontSizeLargeContainer = new ViewContainer<Editor>(Test.Editor.FontSize, new Editor { Text = "I have size 48 (huge) text", FontSize = 48, Placeholder = "This is a placeholder" });
 
 			var textColorContainer = new ViewContainer<Editor>(Test.Editor.TextColor,
 				new Editor { Text = "I should have red text", TextColor = Color.Red });

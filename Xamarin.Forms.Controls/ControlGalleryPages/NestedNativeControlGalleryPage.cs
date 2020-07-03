@@ -2,7 +2,7 @@ namespace Xamarin.Forms.Controls
 {
 	public partial class NestedNativeControlGalleryPage : ContentPage
 	{
-		public StackLayout Layout { get; set; }
+		public new StackLayout Layout { get; set; }
 
 		public bool NativeControlsAdded { get; set; }
 

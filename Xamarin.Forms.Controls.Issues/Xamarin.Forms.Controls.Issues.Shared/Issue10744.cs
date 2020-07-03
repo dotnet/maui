@@ -65,7 +65,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void UpdatingSourceOfDisposedListViewDoesNotCrash()
+		public void WebViewEvalCrashesOnAndroidWithLongString()
 		{
 			RunningApp.WaitForElement("navigatedLabel");
 		}

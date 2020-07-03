@@ -37,6 +37,7 @@ namespace Xamarin.Forms.Platform.Android
                 UpdateStroke();
                 UpdateStrokeThickness();
                 UpdateStrokeDashArray();
+                UpdateStrokeDashOffset();
                 UpdateStrokeLineCap();
                 UpdateStrokeLineJoin();
             }
@@ -66,6 +67,8 @@ namespace Xamarin.Forms.Platform.Android
                 UpdateStrokeThickness();
             else if (args.PropertyName == Shape.StrokeDashArrayProperty.PropertyName)
                 UpdateStrokeDashArray();
+            else if (args.PropertyName == Shape.StrokeDashOffsetProperty.PropertyName)
+                UpdateStrokeDashOffset();
             else if (args.PropertyName == Shape.StrokeLineCapProperty.PropertyName)
                 UpdateStrokeLineCap();
             else if (args.PropertyName == Shape.StrokeLineJoinProperty.PropertyName)
@@ -110,6 +113,11 @@ namespace Xamarin.Forms.Platform.Android
         void UpdateStrokeDashArray()
         {
             Control.UpdateStrokeDashArray(Element.StrokeDashArray.ToArray());
+        }
+
+        void UpdateStrokeDashOffset()
+        {
+            Control.UpdateStrokeDashOffset((float)Element.StrokeDashOffset);
         }
 
         void UpdateStrokeLineCap()
@@ -169,6 +177,7 @@ namespace Xamarin.Forms.Platform.Android
 
         float _strokeWidth;
         float[] _strokeDash;
+        float _strokeDashOffset;
 
         Stretch _aspect;
 
@@ -269,13 +278,23 @@ namespace Xamarin.Forms.Platform.Android
         {
             _strokeWidth = _density * strokeWidth;
             _drawable.Paint.StrokeWidth = _strokeWidth;
-            UpdatePathStrokeBounds();
+            UpdateStrokeDash();
         }
 
         public void UpdateStrokeDashArray(float[] dash)
         {
             _strokeDash = dash;
+            UpdateStrokeDash();
+        }
 
+        public void UpdateStrokeDashOffset(float strokeDashOffset)
+		{
+            _strokeDashOffset = strokeDashOffset;
+            UpdateStrokeDash();
+        }
+
+        public void UpdateStrokeDash()
+        {
             if (_strokeDash != null && _strokeDash.Length > 1)
             {
                 float[] strokeDash = new float[_strokeDash.Length];
@@ -283,7 +302,7 @@ namespace Xamarin.Forms.Platform.Android
                 for (int i = 0; i < _strokeDash.Length; i++)
                     strokeDash[i] = _strokeDash[i] * _strokeWidth;
 
-                _drawable.Paint.SetPathEffect(new DashPathEffect(strokeDash, 0));
+                _drawable.Paint.SetPathEffect(new DashPathEffect(strokeDash, _strokeDashOffset * _strokeWidth));
             }
             else
                 _drawable.Paint.SetPathEffect(null);
