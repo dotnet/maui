@@ -48,13 +48,12 @@ var IOS_TEST_LIBRARY = Argument("IOS_TEST_LIBRARY", $"./Xamarin.Forms.Core.iOS.U
 var IOS_IPA_PATH = Argument("IOS_IPA_PATH", $"./Xamarin.Forms.ControlGallery.iOS/bin/iPhoneSimulator/{configuration}/XamarinFormsControlGalleryiOS.app");
 var IOS_BUNDLE_ID = "com.xamarin.quickui.controlgallery";
 var IOS_BUILD_IPA = Argument("IOS_BUILD_IPA", (target == "cg-ios-deploy") ? true : (false || isCIBuild) );
-var NUNIT_TEST_WHERE = Argument("NUNIT_TEST_WHERE", "cat == Issues && cat != ManualReview");
 
 var UWP_PACKAGE_ID = "0d4424f6-1e29-4476-ac00-ba22c3789cb6";
-var UWP_TEST_LIBRARY = Argument("UWP_TEST_LIBRARY", $"./Xamarin.Forms.Core.Windows.UITests/bin/{configuration}/Xamarin.Forms.Core.Windows.UITests.dll");
+var UWP_TEST_LIBRARY = GetBuildVariable("UWP_TEST_LIBRARY", $"./Xamarin.Forms.Core.Windows.UITests/bin/{configuration}/Xamarin.Forms.Core.Windows.UITests.dll");
 var UWP_PFX_PATH = Argument("UWP_PFX_PATH", "Xamarin.Forms.ControlGallery.WindowsUniversal\\Xamarin.Forms.ControlGallery.WindowsUniversal_TemporaryKey.pfx");
 var UWP_APP_PACKAGES_PATH = Argument("UWP_APP_PACKAGES_PATH", "*/AppPackages/");
-
+var UWP_APP_DRIVER_INSTALL_PATH = Argument("UWP_APP_DRIVER_INSTALL_PATH", "https://github.com/microsoft/WinAppDriver/releases/download/v1.2-RC/WindowsApplicationDriver.msi");
 var ANDROID_RENDERERS = Argument("ANDROID_RENDERERS", "FAST");
 var XamarinFormsVersion = Argument("XamarinFormsVersion", "");
 var packageVersion = Argument("packageVersion", "");
@@ -62,7 +61,41 @@ var releaseChannelArg = Argument("CHANNEL", "Stable");
 releaseChannelArg = EnvironmentVariable("CHANNEL") ?? releaseChannelArg;
 var teamProject = Argument("TeamProject", "");
 bool buildForVS2017 = Convert.ToBoolean(Argument("buildForVS2017", "false"));
-bool isHostedAgent = agentName.StartsWith("Azure Pipelines");
+bool isHostedAgent = agentName.StartsWith("Azure Pipelines") || agentName.StartsWith("Hosted Agent");
+
+
+var NUNIT_TEST_WHERE = Argument("NUNIT_TEST_WHERE", "cat != Shell && cat != CollectionView && cat != UwpIgnore && cat != CarouselView");
+var ExcludeCategory = GetBuildVariable("ExcludeCategory", "")?.Replace("\"", "");
+var ExcludeCategory2 = GetBuildVariable("ExcludeCategory2", "")?.Replace("\"", "");
+var IncludeCategory = GetBuildVariable("IncludeCategory", "")?.Replace("\"", "");
+
+// Replace Azure devops syntax for unit tests to Nunit3 filters
+if(!String.IsNullOrWhiteSpace(ExcludeCategory))
+{
+    ExcludeCategory = String.Join(" && cat != ", ExcludeCategory.Split(new string[] { "--exclude-category" }, StringSplitOptions.None));
+    if(!ExcludeCategory.StartsWith("cat"))
+        ExcludeCategory = $" cat !=  {ExcludeCategory}";
+
+    NUNIT_TEST_WHERE = $"{NUNIT_TEST_WHERE} && {ExcludeCategory}";
+}
+
+if(!String.IsNullOrWhiteSpace(ExcludeCategory2))
+{
+    ExcludeCategory2 = String.Join(" && cat != ", ExcludeCategory2.Split(new string[] { "--exclude-category" }, StringSplitOptions.None));
+    if(!ExcludeCategory2.StartsWith("cat"))
+        ExcludeCategory2 = $" cat !=  {ExcludeCategory2}";
+
+    NUNIT_TEST_WHERE = $"{NUNIT_TEST_WHERE} && {ExcludeCategory2}";
+}
+
+if(!String.IsNullOrWhiteSpace(IncludeCategory))
+{
+    IncludeCategory = String.Join(" || cat == ", IncludeCategory.Split(new string[] { "--include-category" }, StringSplitOptions.None));
+    if(!IncludeCategory.StartsWith("cat"))
+        IncludeCategory = $" cat ==  {IncludeCategory}";
+
+    NUNIT_TEST_WHERE = $"({NUNIT_TEST_WHERE}) && ({IncludeCategory})";
+}
 
 var ANDROID_HOME = EnvironmentVariable("ANDROID_HOME") ??
     (IsRunningOnWindows () ? "C:\\Program Files (x86)\\Android\\android-sdk\\" : "");
@@ -419,6 +452,7 @@ Task ("cg-uwp-deploy")
     
     // Install the appx
     var dependencies = GetFiles(UWP_APP_PACKAGES_PATH + "*/Dependencies/x86/*.appx");
+
     foreach (var dep in dependencies) {
         try
         {
@@ -437,18 +471,48 @@ Task ("cg-uwp-deploy")
 });
 
 Task("cg-uwp-run-tests")
+    .IsDependentOn("provision-uitests-uwp")
     .Does(() =>
     {
-        NUnit3(new [] { UWP_TEST_LIBRARY },
-            new NUnit3Settings {
-                Params = new Dictionary<string, string>()
+        System.Diagnostics.Process process = null;
+        if(!isHostedAgent)
+        {
+            try
+            {
+                var info = new System.Diagnostics.ProcessStartInfo(@"C:\Program Files (x86)\Windows Application Driver\WinAppDriver.exe")
                 {
-                },
-                Where = NUNIT_TEST_WHERE
-            });
+                };
+
+                process =  System.Diagnostics.Process.Start(info);
+            }
+            catch(Exception exc)
+            {
+                Information("Failed: {0}", exc);
+            }
+        }
+
+        try
+        {
+            NUnit3(new [] { UWP_TEST_LIBRARY },
+                new NUnit3Settings {
+                    Params = new Dictionary<string, string>()
+                    {
+                    },
+                    Where = NUNIT_TEST_WHERE
+                });
+        }
+        finally
+        {
+            try
+            {
+                process?.Kill();
+            }
+            catch{}
+        }
     });
 
 Task("cg-uwp-run-tests-ci")
+    .IsDependentOn("provision-windowssdk")
     .IsDependentOn("cg-uwp-deploy")
     .IsDependentOn("cg-uwp-run-tests")
     .Does(() =>
@@ -456,29 +520,16 @@ Task("cg-uwp-run-tests-ci")
     });
 
 Task("provision-uitests-uwp")
+    .WithCriteria(IsRunningOnWindows() && !isHostedAgent)
     .Description("Installs and Starts WindowsApplicationDriver. Use WinAppDriverPath to specify WinAppDriver Location.")
     .Does(() =>
     {
-        if(IsRunningOnWindows())
+        string installPath = Argument("WinAppDriverPath", @"C:\Program Files (x86)\");
+        string driverPath = System.IO.Path.Combine(installPath, "Windows Application Driver");
+        if(!DirectoryExists(driverPath))
         {
-            string installPath = Argument("WinAppDriverPath", @"C:\Program Files (x86)\");
-            string driverPath = System.IO.Path.Combine(installPath, "Windows Application Driver");
-            if(!DirectoryExists(driverPath))
-            {
-                InstallMsi("https://github.com/microsoft/WinAppDriver/releases/download/v1.2-RC/WindowsApplicationDriver.msi", installPath);
-            }
-
-
-            var info = new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = "WinAppDriver",
-                WorkingDirectory = driverPath
-            };
-
-            Information("Starting: {0}", driverPath);
-            System.Diagnostics.Process.Start(info);
+            InstallMsi(UWP_APP_DRIVER_INSTALL_PATH, installPath);
         }
-        
     });
 
 void InstallMsi(string msiFile, string installTo, string fileName = "InstallFile.msi")
@@ -952,6 +1003,11 @@ Task("Default")
 //////////////////////////////////////////////////////////////////////
 
 RunTarget(target);
+
+T GetBuildVariable<T>(string key, T defaultValue)
+{
+    return Argument(key, EnvironmentVariable(key, defaultValue));
+}
 
 void StartVisualStudio(string sln = "Xamarin.Forms.sln")
 {

@@ -65,7 +65,7 @@ stages:
         workspace:
           clean: all
         displayName: Build Windows Phase
-        timeoutInMinutes: 120
+        timeoutInMinutes: 60
         pool:
           name: $(vs2019VmPool)
           vmImage: $(vs2019VmImage)
@@ -105,7 +105,7 @@ stages:
         workspace:
           clean: all
         displayName: Build Windows Phase Bots
-        timeoutInMinutes: 120
+        timeoutInMinutes: 60
         pool:
           name: $(vs2019VmPool)
           vmImage: $(vs2019VmImage)
@@ -201,6 +201,32 @@ stages:
         buildForVS2017: 'true'
       steps:
         - template: build/steps/build-osx.yml
+
+    # My purpose is to enable quick testing of UI Tests when we need to debug 
+    # why tests are failing. Full test suite runs as part of release
+  - stage: windows_tests
+    displayName: Run Windows Tests
+    condition: 'false'
+    dependsOn: []
+    jobs:
+      - job: win_hosted_tests
+        workspace:
+          clean: all
+        displayName: Run UWP Tests
+        timeoutInMinutes: 500
+        pool:
+          name: 'Azure Pipelines'
+          vmImage: 'windows-2019'
+          demands: 
+            msbuild
+        strategy:
+          matrix:
+            debug:
+              BuildConfiguration:  'Debug'
+        steps:
+          - template: build/steps/run-windows-tests.yml
+            parameters:
+              provisionatorPath : 'build/provisioning/provisioning.csx'
 
   # only sign using the private server
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:

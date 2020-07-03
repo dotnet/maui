@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Xamarin.Forms.CustomAttributes;
+using System.Threading.Tasks;
 
 namespace Xamarin.Forms.Controls
 {
@@ -192,9 +193,15 @@ namespace Xamarin.Forms.Controls
 				FilterIssues(_filter);
 			}
 
-			public void FilterIssues(string filter = null)
+			public async void FilterIssues(string filter = null)
 			{
+				filter = filter?.Trim();
 				_filter = filter;
+				
+				// Deeeee bounce
+				await Task.Delay(10);
+				if (_filter != filter)
+					return;
 
 				PageToAction.Clear();
 				if(String.IsNullOrWhiteSpace(filter) && !Controls.App.PreloadTestCasesIssuesList)
@@ -281,7 +288,7 @@ namespace Xamarin.Forms.Controls
 				AutomationId = "SearchButton",
 				Command = new Command (() => {
 					try {
-						TestCaseScreen.PageToAction[searchBar.Text] ();
+						TestCaseScreen.PageToAction[searchBar.Text?.Trim()] ();
 					} catch (Exception e) {
 						System.Diagnostics.Debug.WriteLine (e.Message);
 					}
