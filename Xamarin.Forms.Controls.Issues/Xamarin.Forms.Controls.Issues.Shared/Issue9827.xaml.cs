@@ -18,6 +18,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.ManualReview)]
+	[Category(UITestCategories.CarouselView)]
 #endif
 #if APP
 	[XamlCompilation(XamlCompilationOptions.Compile)]

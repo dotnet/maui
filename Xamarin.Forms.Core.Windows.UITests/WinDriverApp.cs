@@ -7,7 +7,10 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
+using NUnit.Framework;
+using NUnit.Framework.Interfaces;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
@@ -21,6 +24,7 @@ namespace Xamarin.Forms.Core.UITests
 	public class WinDriverApp : IApp
 	{
 		public const string AppName = "Xamarin.Forms.ControlGallery.WindowsUniversal";
+		public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
 		readonly Dictionary<string, string> _controlNameToTag = new Dictionary<string, string>
 		{
@@ -57,6 +61,12 @@ namespace Xamarin.Forms.Core.UITests
 			Init(WindowsTestBase.CreateWindowsDriver());
 		}
 
+		public void RestartApp()
+		{
+			_session.CloseApp();
+			Init(WindowsTestBase.CreateWindowsDriver());
+		}
+
 		public void Back()
 		{
 			QueryWindows("Back").First().Click();
@@ -64,7 +74,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		public void ClearText(Func<AppQuery, AppQuery> query)
 		{
-			QueryWindows(query).First().Clear();
+			SwapInUsefulElement(QueryWindows(query).First()).Clear();
 		}
 
 		public void ClearText(Func<AppQuery, AppWebQuery> query)
@@ -74,7 +84,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		public void ClearText(string marked)
 		{
-			QueryWindows(marked).First().Clear();
+			SwapInUsefulElement(QueryWindows(marked).First()).Clear();
 		}
 
 		public void ClearText()
@@ -126,16 +136,25 @@ namespace Xamarin.Forms.Core.UITests
 					.Perform();
 		}
 
+		static RemoteWebElement SwapInUsefulElement(WindowsElement element)
+		{
+			// AutoSuggestBox on UWP has some interaction issues with WebDriver
+			// The AutomationID is set on the control group not the actual TextBox
+			// This retrieves the actual TextBox which makes the behavior more consistent
+			var isAutoSuggest = element?.FindElementsByXPath("//*[contains(@AutomationId,'_AutoSuggestBox')]")?.FirstOrDefault();
+			return isAutoSuggest ?? element;
+		}
+
 		public void EnterText(Func<AppQuery, AppQuery> query, string text)
 		{
 			var result = QueryWindows(query).First();
-			result.SendKeys(text);
+			SwapInUsefulElement(result).SendKeys(text);
 		}
 
 		public void EnterText(string marked, string text)
 		{
-			var results = QueryWindows(marked).First();
-			results.SendKeys(text);
+			var result = QueryWindows(marked).First();
+			SwapInUsefulElement(result).SendKeys(text);
 		}
 
 		public void EnterText(Func<AppQuery, AppWebQuery> query, string text)
@@ -287,6 +306,20 @@ namespace Xamarin.Forms.Core.UITests
 			throw new NotImplementedException();
 		}
 
+
+		public void ScreenshotFailure()
+		{
+			if (TestContext.CurrentContext.Result.Outcome.Status == TestStatus.Failed)
+			{
+				string filename = $"{TestContext.CurrentContext.Test.FullName}.png";
+				Screenshot screenshot = _session.GetScreenshot();
+				screenshot.SaveAsFile(filename, ScreenshotImageFormat.Png);
+				var file = new FileInfo(filename);
+
+				TestContext.AddTestAttachment(file.FullName, TestContext.CurrentContext.Test.FullName);
+			}
+		}
+
 		public FileInfo Screenshot(string title)
 		{
 			// TODO hartez 2017/07/18 10:16:56 Verify that this is working; seems a bit too simple	
@@ -294,7 +327,10 @@ namespace Xamarin.Forms.Core.UITests
 
 			Screenshot screenshot = _session.GetScreenshot();
 			screenshot.SaveAsFile(filename, ScreenshotImageFormat.Png);
-			return new FileInfo(filename);
+			var file = new FileInfo(filename);
+
+			TestContext.AddTestAttachment(file.FullName, title);
+			return file;
 		}
 
 		public void ScrollDown(Func<AppQuery, AppQuery> withinQuery = null, ScrollStrategy strategy = ScrollStrategy.Auto,
@@ -786,7 +822,12 @@ namespace Xamarin.Forms.Core.UITests
 			}
 
 			ReadOnlyCollection<WindowsElement> candidates = QueryWindows(AppName);
-			_viewPort = candidates[3]; // We really just want the viewport; skip the full window, title bar, min/max buttons...
+
+			// When you go full screen there are less candidates because certain elements go away on the window
+			if (candidates.Count >= 4)
+				_viewPort = candidates[3]; // We really just want the viewport; skip the full window, title bar, min/max buttons...
+			else
+				_viewPort = candidates.Last();
 
 			int xOffset = _viewPort.Coordinates.LocationInViewport.X;
 
@@ -887,7 +928,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		void ScrollTo(WinQuery toQuery, WinQuery withinQuery, TimeSpan? timeout = null, bool down = true)
 		{
-			timeout = timeout ?? TimeSpan.FromSeconds(5);
+			timeout = timeout ?? DefaultTimeout;
 			DateTime start = DateTime.Now;
 
 			while (true)
@@ -969,7 +1010,7 @@ namespace Xamarin.Forms.Core.UITests
 			{
 				Rect = ToAppRect(windowsElement),
 				Label = windowsElement.Id, // Not entirely sure about this one
-				Description = windowsElement.Text, // or this one
+				Description = SwapInUsefulElement(windowsElement).Text, // or this one
 				Enabled = windowsElement.Enabled,
 				Id = windowsElement.Id
 			};
@@ -980,7 +1021,7 @@ namespace Xamarin.Forms.Core.UITests
 			string timeoutMessage = null,
 			TimeSpan? timeout = null, TimeSpan? retryFrequency = null)
 		{
-			timeout = timeout ?? TimeSpan.FromSeconds(5);
+			timeout = timeout ?? DefaultTimeout;
 			retryFrequency = retryFrequency ?? TimeSpan.FromMilliseconds(500);
 			timeoutMessage = timeoutMessage ?? "Timed out on query.";
 
@@ -994,7 +1035,7 @@ namespace Xamarin.Forms.Core.UITests
 				if (elapsed >= timeout.Value.Ticks)
 				{
 					Debug.WriteLine($">>>>> {elapsed} ticks elapsed, timeout value is {timeout.Value.Ticks}");
-
+					
 					throw new TimeoutException(timeoutMessage);
 				}
 
