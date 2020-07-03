@@ -446,6 +446,40 @@ namespace Xamarin.Forms.Controls
 			get { return _app.TestServer; }
 		}
 
+		public void TestSetup(Type testType, bool isolate)
+		{
+			if (isolate)
+			{
+				AppSetup.BeginIsolate();
+			}
+			else
+			{
+				AppSetup.EnsureMemory();
+				AppSetup.EnsureConnection();
+			}
+
+			AppSetup.NavigateToIssue(testType, this);
+		}
+
+		public void TestTearDown(bool isolate)
+		{
+			if (isolate)
+			{
+				AppSetup.EndIsolate();
+			}
+
+#if __WINDOWS__
+			ScreenshotFailure();
+#endif
+		}
+
+#if __WINDOWS__
+		public void ScreenshotFailure()
+		{
+			(_app as Core.UITests.WinDriverApp).ScreenshotFailure();
+		}
+#endif
+
 #if __IOS__
 
 		public bool IsTablet

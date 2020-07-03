@@ -14,11 +14,11 @@ variables:
 - name: BuildVersion44
   value: $[counter('xf-nuget-counter', 992000)]
 - name: NUGET_VERSION
-  value: 5.4.0
+  value: 5.6.0
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
   value: true
 - name: DOTNET_VERSION
-  value: 3.1.100
+  value: 3.1.301
 
 resources:
   repositories:
@@ -30,7 +30,7 @@ resources:
 trigger:
   branches:
     include:
-    - master
+    - main
     - 3.*
     - 4.*
   tags:
@@ -44,7 +44,7 @@ pr:
   autoCancel: false
   branches:
     include:
-    - master
+    - main
     - 4.*
     - 3.*
 
@@ -53,7 +53,7 @@ schedules:
   displayName: Daily midnight build
   branches:
     include:
-    - master
+    - main
 
 stages:
   - stage: windows
@@ -64,7 +64,7 @@ stages:
         workspace:
           clean: all
         displayName: Build Windows Phase
-        timeoutInMinutes: 120
+        timeoutInMinutes: 60
         pool:
           name: $(vs2019VmPool)
           vmImage: $(vs2019VmImage)
@@ -128,8 +128,8 @@ stages:
         condition: ne(variables['vs2019VmPool'], 'Azure Pipelines')
         workspace:
           clean: all
-        displayName: Build Windows Phase
-        timeoutInMinutes: 120
+        displayName: Build Windows Phase Bots
+        timeoutInMinutes: 60
         pool:
           name: $(vs2019VmPool)
           vmImage: $(vs2019VmImage)
@@ -274,6 +274,32 @@ stages:
           buildForVS2017: 'true'
         steps:
           - template: build/steps/build-osx.yml
+
+    # My purpose is to enable quick testing of UI Tests when we need to debug 
+    # why tests are failing. Full test suite runs as part of release
+  - stage: windows_tests
+    displayName: Run Windows Tests
+    condition: 'false'
+    dependsOn: []
+    jobs:
+      - job: win_hosted_tests
+        workspace:
+          clean: all
+        displayName: Run UWP Tests
+        timeoutInMinutes: 500
+        pool:
+          name: 'Azure Pipelines'
+          vmImage: 'windows-2019'
+          demands: 
+            msbuild
+        strategy:
+          matrix:
+            debug:
+              BuildConfiguration:  'Debug'
+        steps:
+          - template: build/steps/run-windows-tests.yml
+            parameters:
+              provisionatorPath : 'build/provisioning/provisioning.csx'
 
   # only sign using the private server
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
