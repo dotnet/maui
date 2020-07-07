@@ -120,6 +120,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		[Test]
 		[UiTest(typeof(VisualElement), "Opacity")]
+		[Category(UITestCategories.UwpIgnore)]
 		public virtual void _Opacity()
 		{
 			var remote = new ViewContainerRemote(App, Test.VisualElement.Opacity, PlatformViewType);
@@ -138,6 +139,7 @@ namespace Xamarin.Forms.Core.UITests
 		[Test]
 		[UiTest(typeof(VisualElement), "Rotation")]
 		[UiTestBroken(BrokenReason.CalabashBug, "Calabash bug")]
+		[Category(UITestCategories.UwpIgnore)]
 		public virtual void _Rotation()
 		{
 			var remote = new ViewContainerRemote(App, Test.VisualElement.Rotation, PlatformViewType);
@@ -159,6 +161,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		[Test]
 		[UiTest(typeof(VisualElement), "RotationX")]
+		[Category(UITestCategories.UwpIgnore)]
 		public virtual void _RotationX()
 		{
 			var remote = new ViewContainerRemote(App, Test.VisualElement.RotationX, PlatformViewType);
@@ -180,6 +183,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		[Test]
 		[UiTest(typeof(VisualElement), "RotationY")]
+		[Category(UITestCategories.UwpIgnore)]
 		public virtual void _RotationY()
 		{
 			var remote = new ViewContainerRemote(App, Test.VisualElement.RotationY, PlatformViewType);
@@ -201,6 +205,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		[Test]
 		[UiTest(typeof(VisualElement), "Scale")]
+		[Category(UITestCategories.UwpIgnore)]
 		public virtual void _Scale()
 		{
 			var remote = new ViewContainerRemote(App, Test.VisualElement.Scale, PlatformViewType);
@@ -220,6 +225,7 @@ namespace Xamarin.Forms.Core.UITests
 		[Test]
 		[UiTest(typeof(VisualElement), "TranslationX")]
 		[Category(UITestCategories.ManualReview)]
+		[Category(UITestCategories.UwpIgnore)]
 		public virtual void _TranslationX()
 		{
 			var remote = new ViewContainerRemote(App, Test.VisualElement.TranslationX, PlatformViewType);
@@ -232,6 +238,7 @@ namespace Xamarin.Forms.Core.UITests
 		[Test]
 		[UiTest(typeof(VisualElement), "TranslationY")]
 		[Category(UITestCategories.ManualReview)]
+		[Category(UITestCategories.UwpIgnore)]
 		public virtual void _TranslationY()
 		{
 			var remote = new ViewContainerRemote(App, Test.VisualElement.TranslationY, PlatformViewType);

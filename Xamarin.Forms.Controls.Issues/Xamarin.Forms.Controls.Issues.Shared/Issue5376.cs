@@ -88,7 +88,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void Issue5376Test() 
 		{
-			RunningApp.WaitForElement ("Success");
+			RunningApp.WaitForFirstElement ("Success");
 		}
 #endif
 	}
