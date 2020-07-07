@@ -528,7 +528,13 @@ Task("provision-uitests-uwp")
         string driverPath = System.IO.Path.Combine(installPath, "Windows Application Driver");
         if(!DirectoryExists(driverPath))
         {
-            InstallMsi(UWP_APP_DRIVER_INSTALL_PATH, installPath);
+            try{
+                InstallMsi(UWP_APP_DRIVER_INSTALL_PATH, installPath);
+            }
+            catch(Exception e)
+            {
+                Information("Failed to Install Win App Driver: {0}", e);
+            }
         }
     });
 

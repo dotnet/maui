@@ -84,12 +84,23 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 #if UITEST
+
+		void AssertSafeAreaText(string text)
+		{
+			var element =
+				RunningApp
+					.WaitForFirstElement(_safeAreaAutomationId);
+
+			element.AssertHasText(text);
+		}
+
 		[Test]
+		[Category(UITestCategories.UwpIgnore)]
 		public void SafeAreaInsetsBreaksAndroidPadding()
 		{
 			// ensure initial paddings are honored
-			RunningApp.WaitForElement($"{_safeAreaText}{true}");
-			var element = RunningApp.WaitForElement(_paddingLabel).First();
+			AssertSafeAreaText($"{_safeAreaText}{true}");
+			var element = RunningApp.WaitForFirstElement(_paddingLabel);
 
 			bool usesSafeAreaInsets = false;
 			if (element.ReadText() != "25, 25, 25, 25")
@@ -101,15 +112,15 @@ namespace Xamarin.Forms.Controls.Issues
 
 			// disable Safe Area Insets
 			RunningApp.Tap(_safeAreaAutomationId);
-			RunningApp.WaitForElement($"{_safeAreaText}{false}");
-			element = RunningApp.WaitForElement(_paddingLabel).First();
+			AssertSafeAreaText($"{_safeAreaText}{false}");
+			element = RunningApp.WaitForFirstElement(_paddingLabel);
 
 			Assert.AreEqual(element.ReadText(), "25, 25, 25, 25");
 
 			// enable Safe Area insets
 			RunningApp.Tap(_safeAreaAutomationId);
-			RunningApp.WaitForElement($"{_safeAreaText}{true}");
-			element = RunningApp.WaitForElement(_paddingLabel).First();
+			AssertSafeAreaText($"{_safeAreaText}{true}");
+			element = RunningApp.WaitForFirstElement(_paddingLabel);
 			Assert.AreNotEqual(element.ReadText(), "0, 0, 0, 0");
 
 			if (!usesSafeAreaInsets)
@@ -119,8 +130,8 @@ namespace Xamarin.Forms.Controls.Issues
 			// Set Padding and then disable safe area insets
 			RunningApp.Tap(_setPagePadding);
 			RunningApp.Tap(_safeAreaAutomationId);
-			RunningApp.WaitForElement($"{_safeAreaText}{false}");
-			element = RunningApp.WaitForElement(_paddingLabel).First();
+			AssertSafeAreaText($"{_safeAreaText}{false}");
+			element = RunningApp.WaitForFirstElement(_paddingLabel);
 			Assert.AreEqual(element.ReadText(), "25, 25, 25, 25");
 
 		}

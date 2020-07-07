@@ -35,6 +35,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test, TestCaseSource(nameof(TestCases))]
+		[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
 		public void VerifyTapBubbling(string menuItem, bool frameShouldRegisterTap)
 		{
 			var results = RunningApp.WaitForElement(q => q.Marked(menuItem));
