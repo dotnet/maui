@@ -1,3 +1,4 @@
+using System;
 using ElmSharp;
 using EScroller = ElmSharp.Scroller;
 using ESize = ElmSharp.Size;
@@ -10,11 +11,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		{
 			SelectionMode = CollectionViewSelectionMode.Single;
 			Scroll.ScrollBlock = ScrollBlock.None;
-			Scroll.HorizontalPageScrollLimit = 1;
-			Scroll.VerticalPageScrollLimit = 1;
-			Scroll.SetPageSize(1.0, 1.0);
-			Scroll.HorizontalScrollBarVisiblePolicy = ScrollBarVisiblePolicy.Invisible;
-			Scroll.VerticalScrollBarVisiblePolicy = ScrollBarVisiblePolicy.Invisible;
 		}
 
 		public EScroller Scroll => base.Scroller;
@@ -27,7 +23,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				SelectedColor = ElmSharp.Color.Transparent,
 			};
 		}
-
 		ESize ICollectionViewController.GetItemSize(int widthConstraint, int heightConstraint)
 		{
 			return AllocatedSize;
