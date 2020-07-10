@@ -84,7 +84,7 @@ namespace System.Maui.Platform.Android
 
 			if (Id == NoId)
 			{
-				Id = Platform.GenerateViewId();
+				Id = AppCompat.Platform.GenerateViewId();
 			}
 
 			UpdateBackground(false);

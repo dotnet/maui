@@ -198,19 +198,9 @@ namespace System.Maui.Controls.Issues
 
 #if __ANDROID__ // These tests don't work in iOS for unrelated reasons (see https://bugzilla.xamarin.com/show_bug.cgi?id=41085)
 
-		static void IgnoreFormsApplicationActivity()
-		{
-			if (AppSetup.IsFormsApplicationActivity)
-			{
-				Assert.Ignore("This test only applies to FormsAppCompatActivity.");
-			}
-		}
-
 		[Test]
 		public void ClickingOnMenuItemInMasterDoesNotCrash_NavPageVersion()
 		{
-			IgnoreFormsApplicationActivity();
-
 			RunningApp.Tap(q => q.Marked(StartNavPageTestId));
 			RunningApp.WaitForElement(q => q.Marked(OpenMasterId));
 
@@ -224,8 +214,6 @@ namespace System.Maui.Controls.Issues
 		[Test]
 		public void ClickingOnMenuItemInMasterDoesNotCrash_TabPageVersion()
 		{
-			IgnoreFormsApplicationActivity();
-
 			RunningApp.Tap(q => q.Marked(StartTabPageTestId));
 			RunningApp.WaitForElement(q => q.Marked(OpenMasterId));
 

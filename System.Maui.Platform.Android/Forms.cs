@@ -6,8 +6,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Http;
 using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
@@ -98,7 +96,7 @@ namespace System.Maui
 				return s_is29OrNewer.Value;
 			}
 		}
-		
+
 		internal static bool IsJellyBeanMr1OrNewer
 		{
 			get
@@ -431,7 +429,7 @@ namespace System.Maui
 			}
 
 			s_flags = (string[])flags.Clone();
-			if (s_flags.Contains ("Profile"))
+			if (s_flags.Contains("Profile"))
 				Profile.Enable();
 			FlagsSet = true;
 		}
@@ -918,22 +916,22 @@ namespace System.Maui
 
 			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 			{
-				return Platform.Android.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
+				return Platform.Android.AppCompat.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
 			}
 
 			public OSAppTheme RequestedTheme
-            {
-                get
-                {
-                    var nightMode = _context.Resources.Configuration.UiMode & UiMode.NightMask;
-                    switch (nightMode)
-                    {
-                        case UiMode.NightYes:
-                            return OSAppTheme.Dark;
-                        case UiMode.NightNo:
-                            return OSAppTheme.Light;
-                        default:
-                            return OSAppTheme.Unspecified;
+			{
+				get
+				{
+					var nightMode = _context.Resources.Configuration.UiMode & UiMode.NightMask;
+					switch (nightMode)
+					{
+						case UiMode.NightYes:
+							return OSAppTheme.Dark;
+						case UiMode.NightNo:
+							return OSAppTheme.Light;
+						default:
+							return OSAppTheme.Unspecified;
 					};
 				}
 			}

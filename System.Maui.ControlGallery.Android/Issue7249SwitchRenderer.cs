@@ -1,13 +1,13 @@
+using System.Maui.Controls.Issues;
+using System.Maui.Platform.Android;
 using Android.Content;
 using Android.Graphics;
 using Android.OS;
-using System.Maui.Platform.Android;
-using System.Maui.Controls.Issues;
 using static Android.Widget.CompoundButton;
 
 namespace System.Maui.ControlGallery.Android
 {
-	public class Issue7249SwitchRenderer : SwitchRenderer
+	public class Issue7249SwitchRenderer : Platform.Android.AppCompat.SwitchRenderer
 	{
 		Issue7249Switch _view;
 

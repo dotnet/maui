@@ -64,15 +64,9 @@ namespace System.Maui.Controls
 			var fullApkPath = Path.Combine(TestContext.CurrentContext.TestDirectory, AppPaths.ApkPath);
 			var app = ConfigureApp.Android.ApkFile(fullApkPath).Debug().StartApp(Xamarin.UITest.Configuration.AppDataMode.DoNotClear);
 
-			if (bool.Parse((string)app.Invoke("IsPreAppCompat")))
-			{
-				IsFormsApplicationActivity = true;
-			}
-
 			return app;
 		}
 
-		public static bool IsFormsApplicationActivity { get; private set; }
 #endif
 
 #if __IOS__

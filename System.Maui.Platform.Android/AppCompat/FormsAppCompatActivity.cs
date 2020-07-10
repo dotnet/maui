@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using Android.App;
 using Android.Content;
-using Android.Content.Res;
 using Android.OS;
 using Android.Runtime;
 #if __ANDROID_29__
@@ -21,7 +20,6 @@ using System.Maui.PlatformConfiguration.AndroidSpecific.AppCompat;
 using AColor = Android.Graphics.Color;
 using ARelativeLayout = Android.Widget.RelativeLayout;
 using System.Maui.Internals;
-using System.Runtime.CompilerServices;
 
 namespace System.Maui.Platform.Android
 {
@@ -125,9 +123,6 @@ namespace System.Maui.Platform.Android
 		// This is currently being used by the previewer please do not change or remove this
 		static void RegisterHandlers()
 		{
-			RegisterHandler(typeof(NavigationPage), typeof(NavigationPageRenderer), typeof(NavigationRenderer));
-			RegisterHandler(typeof(TabbedPage), typeof(TabbedPageRenderer), typeof(TabbedRenderer));
-			RegisterHandler(typeof(MasterDetailPage), typeof(MasterDetailPageRenderer), typeof(MasterDetailRenderer));
 			RegisterHandler(typeof(Switch), typeof(AppCompat.SwitchRenderer), typeof(SwitchRenderer));
 			RegisterHandler(typeof(Picker), typeof(AppCompat.PickerRenderer), typeof(PickerRenderer));
 			RegisterHandler(typeof(CarouselPage), typeof(AppCompat.CarouselPageRenderer), typeof(CarouselPageRenderer));
@@ -212,7 +207,7 @@ namespace System.Maui.Platform.Android
 		}
 
 		void OnCreate(
-			Bundle savedInstanceState, 
+			Bundle savedInstanceState,
 			ActivationFlags flags)
 		{
 			Profile.FrameBegin();
@@ -282,7 +277,7 @@ namespace System.Maui.Platform.Android
 					throw new InvalidOperationException("ToolbarResource must be set to a androidx.appcompat.widget.Toolbar");
 #endif
 			}
-			else 
+			else
 			{
 				bar = new AToolbar(this);
 			}
@@ -355,9 +350,9 @@ namespace System.Maui.Platform.Android
 
 			if (_powerSaveReceiverRegistered && System.Maui.Maui.IsLollipopOrNewer)
 			{
-					// Don't listen for power save mode changes while we're paused
-					UnregisterReceiver(_powerSaveModeBroadcastReceiver);
-					_powerSaveReceiverRegistered = false;
+				// Don't listen for power save mode changes while we're paused
+				UnregisterReceiver(_powerSaveModeBroadcastReceiver);
+				_powerSaveReceiverRegistered = false;
 			}
 
 			// Stop animations or other ongoing actions that could consume CPU
@@ -488,7 +483,7 @@ namespace System.Maui.Platform.Android
 				SettingMainPage();
 			}
 		}
-		
+
 		void CheckForAppLink(Intent intent)
 		{
 			string action = intent.Action;
@@ -526,7 +521,7 @@ namespace System.Maui.Platform.Android
 
 			if (_previousState == AndroidApplicationLifecycleState.OnCreate && _currentState == AndroidApplicationLifecycleState.OnStart)
 				_application.SendStart();
-			else if (_previousState == AndroidApplicationLifecycleState.OnRestart && _currentState == AndroidApplicationLifecycleState.OnStart)	
+			else if (_previousState == AndroidApplicationLifecycleState.OnRestart && _currentState == AndroidApplicationLifecycleState.OnStart)
 				_application.SendResume();
 			else if (_previousState == AndroidApplicationLifecycleState.OnPause && _currentState == AndroidApplicationLifecycleState.OnStop)
 				_application.SendSleep();
@@ -542,7 +537,7 @@ namespace System.Maui.Platform.Android
 		{
 			InternalSetPage(_application.MainPage);
 		}
-				
+
 		void SettingMainPage()
 		{
 			Platform.SettingNewPage();
@@ -576,7 +571,7 @@ namespace System.Maui.Platform.Android
 		{
 		}
 
-#region Statics
+		#region Statics
 
 		public static event BackButtonPressedEventHandler BackPressed;
 
@@ -584,6 +579,6 @@ namespace System.Maui.Platform.Android
 
 		public static int ToolbarResource { get; set; }
 
-#endregion
+		#endregion
 	}
 }

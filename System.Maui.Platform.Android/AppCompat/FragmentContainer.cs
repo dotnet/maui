@@ -1,4 +1,3 @@
-using System;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
@@ -52,7 +51,7 @@ namespace System.Maui.Platform.Android.AppCompat
 			_onCreateCallback = callback;
 		}
 
-		protected virtual PageContainer CreatePageContainer (Context context, IVisualElementRenderer child, bool inFragment)
+		protected virtual PageContainer CreatePageContainer(Context context, IVisualElementRenderer child, bool inFragment)
 		{
 			return new PageContainer(context, child, inFragment);
 		}
@@ -61,8 +60,8 @@ namespace System.Maui.Platform.Android.AppCompat
 		{
 			if (Page != null)
 			{
-				_visualElementRenderer = Android.Platform.CreateRenderer(Page, ChildFragmentManager, inflater.Context);
-				Android.Platform.SetRenderer(Page, _visualElementRenderer);
+				_visualElementRenderer = Platform.CreateRenderer(Page, ChildFragmentManager, inflater.Context);
+				Platform.SetRenderer(Page, _visualElementRenderer);
 
 				_pageContainer = CreatePageContainer(inflater.Context, _visualElementRenderer, true);
 
@@ -93,7 +92,7 @@ namespace System.Maui.Platform.Android.AppCompat
 				// onAnimationEnd handler requires to properly clean things up)
 				// Instead, we let the garbage collector pick it up later, when we can be sure it's safe
 
-				Page?.ClearValue(Android.Platform.RendererProperty);
+				Page?.ClearValue(Platform.RendererProperty);
 			}
 
 			_onCreateCallback = null;
@@ -148,7 +147,7 @@ namespace System.Maui.Platform.Android.AppCompat
 			var pageContainer = (masterDetailPage != null ? masterDetailPage.Detail : Application.Current.MainPage) as IPageContainer<Page>;
 			Page currentPage = pageContainer?.CurrentPage;
 
-			if(!(currentPage == null || currentPage == PageController))
+			if (!(currentPage == null || currentPage == PageController))
 				return;
 
 #if __ANDROID_29__
@@ -157,7 +156,7 @@ namespace System.Maui.Platform.Android.AppCompat
 			if (isAppearing && UserVisibleHint)
 #endif
 				PageController?.SendAppearing();
-			else if(!isAppearing)
+			else if (!isAppearing)
 				PageController?.SendDisappearing();
 		}
 	}

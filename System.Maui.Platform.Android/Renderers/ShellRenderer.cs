@@ -238,7 +238,7 @@ namespace System.Maui.Platform.Android
 			_frameLayout = new CustomFrameLayout(AndroidContext)
 			{
 				LayoutParameters = new LP(LP.MatchParent, LP.MatchParent),
-				Id = Platform.GenerateViewId(),
+				Id = AppCompat.Platform.GenerateViewId(),
 			};
 
 			Profile.FramePartition("SetFitsSystemWindows");

@@ -220,8 +220,8 @@ namespace System.Maui.Platform.Android
 				{
 					UnsubscribeFromEvents(Element as MediaElement);
 
-					if (Platform.GetRenderer(Element) == this)
-						Element.ClearValue(Platform.RendererProperty);
+					if (AppCompat.Platform.GetRenderer(Element) == this)
+						Element.ClearValue(AppCompat.Platform.RendererProperty);
 				}
 			}
 
@@ -341,7 +341,7 @@ namespace System.Maui.Platform.Android
 					}
 					else if (uriSource.Uri.Scheme == "ms-appdata")
 					{
-						string filePath = Platform.ResolveMsAppDataUri(uriSource.Uri);
+						string filePath = AppCompat.Platform.ResolveMsAppDataUri(uriSource.Uri);
 
 						if (string.IsNullOrEmpty(filePath))
 							throw new ArgumentException("Invalid Uri", "Source");

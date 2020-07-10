@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -34,8 +33,6 @@ using Android.Util;
 using Android.Views;
 using System.Maui.Internals;
 using AView = Android.Views.View;
-
-using Object = Java.Lang.Object;
 using static System.Maui.PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage;
 using static Android.Views.View;
 using Android.Widget;
@@ -210,14 +207,14 @@ namespace System.Maui.Platform.Android.AppCompat
 					trans.CommitAllowingStateLossEx();
 					fm.ExecutePendingTransactionsEx();
 				}
-				
+
 				_toolbar.RemoveView(_titleView);
 				_titleView?.Dispose();
 				_titleView = null;
 
 				if (_titleViewRenderer != null)
 				{
-					Android.Platform.ClearRenderer(_titleViewRenderer.View);
+					Platform.ClearRenderer(_titleViewRenderer.View);
 					_titleViewRenderer.Dispose();
 					_titleViewRenderer = null;
 				}
@@ -256,7 +253,7 @@ namespace System.Maui.Platform.Android.AppCompat
 					_toolbar.Menu.Clear();
 
 					RemoveView(_toolbar);
-				
+
 					_toolbar.Dispose();
 					_toolbar = null;
 				}
@@ -299,7 +296,7 @@ namespace System.Maui.Platform.Android.AppCompat
 						if (child == null)
 							continue;
 
-						IVisualElementRenderer renderer = Android.Platform.GetRenderer(child);
+						IVisualElementRenderer renderer = Platform.GetRenderer(child);
 						renderer?.Dispose();
 					}
 				}
@@ -410,7 +407,7 @@ namespace System.Maui.Platform.Android.AppCompat
 			AToolbar bar = _toolbar;
 			// make sure bar stays on top of everything
 			bar.BringToFront();
-			
+
 			int barHeight = ActionBarHeight();
 
 			if (Element.IsSet(BarHeightProperty))
@@ -673,7 +670,7 @@ namespace System.Maui.Platform.Android.AppCompat
 			if (((IMasterDetailPageController)_masterDetailPage).ShouldShowSplitMode)
 				return;
 
-			var renderer = Android.Platform.GetRenderer(_masterDetailPage) as MasterDetailPageRenderer;
+			var renderer = Platform.GetRenderer(_masterDetailPage) as MasterDetailPageRenderer;
 			if (renderer == null)
 				return;
 
@@ -761,7 +758,7 @@ namespace System.Maui.Platform.Android.AppCompat
 
 			if (_titleViewRenderer != null)
 			{
-				Android.Platform.ClearRenderer(_titleViewRenderer.View);
+				Platform.ClearRenderer(_titleViewRenderer.View);
 				_titleViewRenderer.Dispose();
 				_titleViewRenderer = null;
 			}
@@ -1096,7 +1093,7 @@ namespace System.Maui.Platform.Android.AppCompat
 				{
 					if (_titleView != null)
 						_titleView.Child = null;
-					Android.Platform.ClearRenderer(_titleViewRenderer.View);
+					Platform.ClearRenderer(_titleViewRenderer.View);
 					_titleViewRenderer.Dispose();
 					_titleViewRenderer = null;
 				}
@@ -1109,7 +1106,7 @@ namespace System.Maui.Platform.Android.AppCompat
 				_titleViewRenderer.SetElement(titleView);
 			else
 			{
-				_titleViewRenderer = Android.Platform.CreateRenderer(titleView, Context);
+				_titleViewRenderer = Platform.CreateRenderer(titleView, Context);
 
 				if (_titleView == null)
 				{
@@ -1120,7 +1117,7 @@ namespace System.Maui.Platform.Android.AppCompat
 				_titleView.Child = _titleViewRenderer;
 			}
 
-			Android.Platform.SetRenderer(titleView, _titleViewRenderer);
+			Platform.SetRenderer(titleView, _titleViewRenderer);
 		}
 
 		void AddTransitionTimer(TaskCompletionSource<bool> tcs, Fragment fragment, FragmentManager fragmentManager, IReadOnlyCollection<Fragment> fragmentsToRemove, int duration, bool shouldUpdateToolbar)

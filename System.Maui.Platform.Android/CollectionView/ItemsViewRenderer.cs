@@ -153,9 +153,9 @@ namespace System.Maui.Platform.Android
 				{
 					TearDownOldElement(Element as ItemsView);
 
-					if (Platform.GetRenderer(Element) == this)
+					if (AppCompat.Platform.GetRenderer(Element) == this)
 					{
-						Element.ClearValue(Platform.RendererProperty);
+						Element.ClearValue(AppCompat.Platform.RendererProperty);
 					}
 				}
 			}

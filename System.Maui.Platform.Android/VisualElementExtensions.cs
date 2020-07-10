@@ -11,7 +11,7 @@ namespace System.Maui.Platform.Android
 			if (self == null)
 				throw new ArgumentNullException(nameof(self));
 
-			IVisualElementRenderer renderer = Platform.GetRenderer(self);
+			IVisualElementRenderer renderer = AppCompat.Platform.GetRenderer(self);
 
 			return renderer;
 		}

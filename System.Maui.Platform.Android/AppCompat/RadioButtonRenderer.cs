@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Graphics;
@@ -16,7 +15,6 @@ using System.Maui.Platform.Android.FastRenderers;
 using System.Maui.PlatformConfiguration.AndroidSpecific;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
-using Android.Graphics.Drawables;
 using Android.Widget;
 
 namespace System.Maui.Platform.Android
@@ -181,8 +179,8 @@ namespace System.Maui.Platform.Android
 
 				if (Element != null)
 				{
-					if (Platform.GetRenderer(Element) == this)
-						Element.ClearValue(Platform.RendererProperty);
+					if (AppCompat.Platform.GetRenderer(Element) == this)
+						Element.ClearValue(AppCompat.Platform.RendererProperty);
 				}
 			}
 

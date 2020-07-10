@@ -191,7 +191,7 @@ namespace System.Maui.Controls
         }
     }
 
-    public class ReferenceTime
+    public static class ReferenceTime
     {
         private static DateTime reference_time;
         private static bool reference_time_set = false;

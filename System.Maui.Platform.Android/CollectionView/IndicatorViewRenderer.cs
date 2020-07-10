@@ -114,9 +114,9 @@ namespace System.Maui.Platform.Android
 				{
 					TearDownOldElement(Element as IndicatorView);
 
-					if (Platform.GetRenderer(Element) == this)
+					if (AppCompat.Platform.GetRenderer(Element) == this)
 					{
-						Element.ClearValue(Platform.RendererProperty);
+						Element.ClearValue(AppCompat.Platform.RendererProperty);
 					}
 				}
 			}
@@ -286,8 +286,8 @@ namespace System.Maui.Platform.Android
 			if (IndicatorView.IndicatorLayout == null)
 				return;
 
-			var renderer = IndicatorView.IndicatorLayout.GetRenderer() ?? Platform.CreateRendererWithContext(IndicatorView.IndicatorLayout, Context);
-			Platform.SetRenderer(IndicatorView.IndicatorLayout, renderer);
+			var renderer = IndicatorView.IndicatorLayout.GetRenderer() ?? AppCompat.Platform.CreateRendererWithContext(IndicatorView.IndicatorLayout, Context);
+			AppCompat.Platform.SetRenderer(IndicatorView.IndicatorLayout, renderer);
 
 			RemoveAllViews();
 			AddView(renderer.View);

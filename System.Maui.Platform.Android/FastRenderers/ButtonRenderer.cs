@@ -192,8 +192,8 @@ namespace System.Maui.Platform.Android.FastRenderers
 
 				if (Element != null)
 				{
-					if (Platform.GetRenderer(Element) == this)
-						Element.ClearValue(Platform.RendererProperty);
+					if (AppCompat.Platform.GetRenderer(Element) == this)
+						Element.ClearValue(AppCompat.Platform.RendererProperty);
 				}
 			}
 

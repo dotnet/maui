@@ -85,7 +85,7 @@ namespace System.Maui.Platform.Android
 			{
 				var id = Control.Id;
 				if (id == -1)
-					id = Control.Id = Platform.GenerateViewId();
+					id = Control.Id = AppCompat.Platform.GenerateViewId();
 
 				var renderer = elemValue?.GetRenderer();
 				renderer?.SetLabelFor(id);

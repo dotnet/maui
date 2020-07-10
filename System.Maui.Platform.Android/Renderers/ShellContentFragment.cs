@@ -123,8 +123,8 @@ namespace System.Maui.Platform.Android
 
 			_toolbar = _root.FindViewById<Toolbar>(Resource.Id.shellcontent_toolbar);
 
-			_renderer = Platform.CreateRenderer(_page, Context);
-			Platform.SetRenderer(_page, _renderer);
+			_renderer = AppCompat.Platform.CreateRenderer(_page, Context);
+			AppCompat.Platform.SetRenderer(_page, _renderer);
 
 			_shellPageContainer = new ShellPageContainer(Context, _renderer);
 
@@ -153,7 +153,7 @@ namespace System.Maui.Platform.Android
 			if (_shellContent != null)
 			{
 				((IShellContentController)_shellContent).RecyclePage(_page);
-				_page.ClearValue(Platform.RendererProperty);
+				_page.ClearValue(AppCompat.Platform.RendererProperty);
 				_page = null;
 			}
 

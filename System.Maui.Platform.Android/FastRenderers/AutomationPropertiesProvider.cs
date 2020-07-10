@@ -110,7 +110,7 @@ namespace System.Maui.Platform.Android.FastRenderers
 			{
 				var id = control.Id;
 				if (id == AView.NoId)
-					id = control.Id = Platform.GenerateViewId();
+					id = control.Id = AppCompat.Platform.GenerateViewId();
 
 				var renderer = elemValue?.GetRenderer();
 				renderer?.SetLabelFor(id);

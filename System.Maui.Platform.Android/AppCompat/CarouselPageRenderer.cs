@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Android.Content;
@@ -15,7 +14,7 @@ using Android.Support.V4.View;
 
 namespace System.Maui.Platform.Android.AppCompat
 {
-	
+
 	public class CarouselPageRenderer : VisualElementRenderer<CarouselPage>, ViewPager.IOnPageChangeListener, IManageFragments
 	{
 		bool _disposed;
@@ -92,14 +91,14 @@ namespace System.Maui.Platform.Android.AppCompat
 				{
 					foreach (ContentPage pageToRemove in Element.Children)
 					{
-						IVisualElementRenderer pageRenderer = Android.Platform.GetRenderer(pageToRemove);
+						IVisualElementRenderer pageRenderer = Platform.GetRenderer(pageToRemove);
 						if (pageRenderer != null)
 						{
 							pageRenderer.View.RemoveFromParent();
 							pageRenderer.Dispose();
 						}
 
-						pageToRemove.ClearValue(Android.Platform.RendererProperty);
+						pageToRemove.ClearValue(Platform.RendererProperty);
 					}
 				}
 			}

@@ -60,8 +60,8 @@ namespace System.Maui.Platform.Android.FastRenderers
 
 				if (_element != null)
 				{
-					if (Platform.GetRenderer(_element) == this)
-						_element.ClearValue(Platform.RendererProperty);
+					if (AppCompat.Platform.GetRenderer(_element) == this)
+						_element.ClearValue(AppCompat.Platform.RendererProperty);
 				}
 			}
 

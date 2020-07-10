@@ -1,6 +1,4 @@
-using System;
 using System.ComponentModel;
-using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Views;
@@ -28,7 +26,7 @@ namespace System.Maui.Platform.Android
 				app.MainPage = view;
 			}
 
-			var platform = new Platform(context, true);
+			var platform = new AppCompat.Platform(context);
 			platform.SetPage(view);
 
 			var vg = platform.GetViewGroup();
@@ -39,7 +37,7 @@ namespace System.Maui.Platform.Android
 		class EmbeddedFragment : Fragment
 		{
 			readonly ViewGroup _content;
-			readonly Platform _platform;
+			readonly AppCompat.Platform _platform;
 			bool _disposed;
 
 			// ReSharper disable once UnusedMember.Local (Android uses this on configuration change
@@ -47,7 +45,7 @@ namespace System.Maui.Platform.Android
 			{
 			}
 
-			public EmbeddedFragment(ViewGroup content, Platform platform)
+			public EmbeddedFragment(ViewGroup content, AppCompat.Platform platform)
 			{
 				_content = content;
 				_platform = platform;
@@ -88,7 +86,7 @@ namespace System.Maui.Platform.Android
 				app.MainPage = view;
 			}
 
-			var platform = new Platform(context, true);
+			var platform = new AppCompat.Platform(context);
 			platform.SetPage(view);
 
 			var vg = platform.GetViewGroup();
@@ -103,7 +101,7 @@ namespace System.Maui.Platform.Android
 		class EmbeddedSupportFragment : Fragment
 		{
 			readonly ViewGroup _content;
-			readonly Platform _platform;
+			readonly AppCompat.Platform _platform;
 			bool _disposed;
 
 			// ReSharper disable once UnusedMember.Local (Android uses this on configuration change
@@ -111,7 +109,7 @@ namespace System.Maui.Platform.Android
 			{
 			}
 
-			public EmbeddedSupportFragment(ViewGroup content, Platform platform)
+			public EmbeddedSupportFragment(ViewGroup content, AppCompat.Platform platform)
 			{
 				_content = content;
 				_platform = platform;

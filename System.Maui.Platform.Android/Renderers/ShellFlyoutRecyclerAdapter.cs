@@ -138,7 +138,7 @@ namespace System.Maui.Platform.Android
 				do
 				{
 					element = element.FindNextElement(forwardDirection, tabIndexes, ref tabIndex);
-					var renderer = (element as BindableObject).GetValue(Platform.RendererProperty);
+					var renderer = (element as BindableObject).GetValue(AppCompat.Platform.RendererProperty);
 					control = (renderer as ITabStop)?.TabStop;
 				} while (!(control?.Focusable == true || ++attempt >= maxAttempts));
 
@@ -264,7 +264,7 @@ namespace System.Maui.Platform.Android
 
 					if (_element != null && _element is BaseShellItem)
 					{
-						_element.ClearValue(Platform.RendererProperty);
+						_element.ClearValue(AppCompat.Platform.RendererProperty);
 						_element.PropertyChanged -= OnElementPropertyChanged;
 					}
 
@@ -273,7 +273,7 @@ namespace System.Maui.Platform.Android
 
 					if (_element != null)
 					{
-						_element.SetValue(Platform.RendererProperty, _itemView);
+						_element.SetValue(AppCompat.Platform.RendererProperty, _itemView);
 						_element.PropertyChanged += OnElementPropertyChanged;
 						UpdateVisualState();
 					}

@@ -270,7 +270,7 @@ namespace System.Maui.Platform.Android.AppCompat
 
 				if (Element != null)
 				{
-					Element.ClearValue(Android.Platform.RendererProperty);
+					Element.ClearValue(Platform.RendererProperty);
 					Element = null;
 				}
 			}

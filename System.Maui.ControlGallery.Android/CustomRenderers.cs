@@ -1,9 +1,7 @@
-using System;
 using Android.Widget;
 using Android.App;
 using System.Collections.Generic;
 using Android.Views;
-using System.Collections;
 using System.ComponentModel;
 using System.Linq;
 using System.Maui.Controls;
@@ -15,9 +13,7 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Runtime;
 using Android.Util;
-using AButton = Android.Widget.Button;
 using AView = Android.Views.View;
-using AViewGroup = Android.Views.ViewGroup;
 using Android.OS;
 using System.Reflection;
 using Android.Text;
@@ -32,7 +28,7 @@ using NestedScrollView = global::Android.Support.V4.Widget.NestedScrollView;
 #endif
 using System.IO;
 using AMenuItemCompat = global::Android.Support.V4.View.MenuItemCompat;
-using Android.Support.V4.Content;
+using AndroidX.AppCompat.Widget;
 
 [assembly: ExportRenderer(typeof(Issue5461.ScrollbarFadingEnabledFalseScrollView), typeof(ScrollbarFadingEnabledFalseScrollViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue1942.CustomGrid), typeof(Issue1942GridRenderer))]
@@ -128,7 +124,7 @@ namespace System.Maui.ControlGallery.Android
 		}
 	}
 
-	public class NonAppCompatSwitchRenderer : System.Maui.Platform.Android.SwitchRenderer
+	public class NonAppCompatSwitchRenderer : System.Maui.Platform.Android.AppCompat.SwitchRenderer
 	{
 		public NonAppCompatSwitchRenderer(Context context) : base(context)
 		{
@@ -605,7 +601,7 @@ namespace System.Maui.ControlGallery.Android
 	}
 
 	[Preserve]
-	public class CustomNativeButton : AButton
+	public class CustomNativeButton : AppCompatButton
 	{
 		public CustomNativeButton(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
@@ -622,19 +618,15 @@ namespace System.Maui.ControlGallery.Android
 		public CustomNativeButton(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 		{
 		}
-
-		public CustomNativeButton(Context context, IAttributeSet attrs, int defStyleAttr, int defStyleRes) : base(context, attrs, defStyleAttr, defStyleRes)
-		{
-		}
 	}
 
-	public class CustomButtonRenderer : ButtonRenderer
+	public class CustomButtonRenderer : Platform.Android.AppCompat.ButtonRenderer
 	{
 		public CustomButtonRenderer(Context context) : base(context)
 		{
 		}
 
-		protected override AButton CreateNativeControl()
+		protected override AppCompatButton CreateNativeControl()
 		{
 			return new CustomNativeButton(Context);
 		}
@@ -1019,7 +1011,7 @@ namespace System.Maui.ControlGallery.Android
 		{
 			base.Dispose(disposing);
 
-			if(disposing)
+			if (disposing)
 				SetOnTouchListener(null);
 
 			paint = null;

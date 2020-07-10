@@ -21,15 +21,15 @@ namespace System.Maui.ControlGallery.Android
 			if (element == null)
 				return true;
 
-			var renderer = Platform.Android.Platform.CreateRendererWithContext(element, _context);
+			//var renderer = Platform.Android.AppCompat.Platform.CreateRendererWithContext(element, _context);
 
-			if (renderer == null
-				|| renderer.GetType().Name == "DefaultRenderer"
-				)
-			{
-				message = $"Failed to load Android renderer for {element.GetType().Name}";
-				return false;
-			}
+			//if (renderer == null
+			//	|| renderer.GetType().Name == "DefaultRenderer"
+			//	)
+			//{
+			//	message = $"Failed to load Android renderer for {element.GetType().Name}";
+			//	return false;
+			//}
 
 			return true;
 		}

@@ -307,8 +307,8 @@ namespace System.Maui.Platform.Android
 
 		AView CreateContent()
 		{
-			var renderer = Platform.CreateRenderer(Element.Content, _context);
-			Platform.SetRenderer(Element.Content, renderer);
+			var renderer = AppCompat.Platform.CreateRenderer(Element.Content, _context);
+			AppCompat.Platform.SetRenderer(Element.Content, renderer);
 
 			return renderer?.View;
 		}
@@ -766,8 +766,8 @@ namespace System.Maui.Platform.Android
 
 		AView CreateSwipeItemView(SwipeItemView swipeItemView)
 		{
-			var renderer = Platform.CreateRenderer(swipeItemView, _context);
-			Platform.SetRenderer(swipeItemView, renderer);
+			var renderer = AppCompat.Platform.CreateRenderer(swipeItemView, _context);
+			AppCompat.Platform.SetRenderer(swipeItemView, renderer);
 			var swipeItem = renderer?.View;
 			swipeItem.Visibility = swipeItemView.IsVisible ? ViewStates.Visible : ViewStates.Gone;
 
