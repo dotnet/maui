@@ -56,6 +56,18 @@ namespace Xamarin.Forms.Core.UITests
 			TestServer = new WindowsTestServer(_session, this);
 		}
 
+		public void RestartIfAppIsClosed()
+		{
+			try
+			{
+				var handle = _session.CurrentWindowHandle;
+			}
+			catch
+			{
+				RestartFromCrash();
+			}
+		}
+
 		public void RestartFromCrash()
 		{
 			Init(WindowsTestBase.CreateWindowsDriver());

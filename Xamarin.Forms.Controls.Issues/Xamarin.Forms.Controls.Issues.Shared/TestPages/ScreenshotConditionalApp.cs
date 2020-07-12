@@ -1,5 +1,6 @@
 #if UITEST
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
@@ -462,6 +463,10 @@ namespace Xamarin.Forms.Controls
 
 		public void TestSetup(Type testType, bool isolate)
 		{
+#if __WINDOWS__
+
+			(_app as WinDriverApp).RestartIfAppIsClosed();
+#endif
 			if (isolate)
 			{
 				AppSetup.BeginIsolate();
@@ -495,7 +500,14 @@ namespace Xamarin.Forms.Controls
 
 			if (file != null)
 			{
-				TestContext.AddTestAttachment(file.FullName, TestContext.CurrentContext.Test.FullName);
+				try
+				{
+					TestContext.AddTestAttachment(file.FullName, TestContext.CurrentContext.Test.FullName);
+				}
+				catch(Exception exc)
+				{
+					Debug.WriteLine($"Failed to write {file?.FullName} {exc}");
+				}
 			}
 		}
 

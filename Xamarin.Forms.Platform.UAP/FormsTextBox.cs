@@ -194,7 +194,6 @@ namespace Xamarin.Forms.Platform.UWP
 			if (_scrollViewer != null && UpdateVerticalAlignmentOnLoad)
 			{
 				_scrollViewer.VerticalAlignment = VerticalContentAlignment;
-				Focus(FocusState.Programmatic);
 			}
 		}
 
