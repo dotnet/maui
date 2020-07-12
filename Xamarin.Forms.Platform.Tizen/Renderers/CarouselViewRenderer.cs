@@ -42,6 +42,22 @@ namespace Xamarin.Forms.Platform.Tizen
 			UpdateCurrentItemFromElement(false);
 		}
 
+		protected override void UpdateHorizontalScrollBarVisibility()
+		{
+			var visibility = Element.HorizontalScrollBarVisibility;
+			if (visibility == ScrollBarVisibility.Default)
+				visibility = ScrollBarVisibility.Never;
+			Control.HorizontalScrollBarVisiblePolicy = visibility.ToNative();
+		}
+
+		protected override void UpdateVerticalScrollBarVisibility()
+		{
+			var visibility = Element.VerticalScrollBarVisibility;
+			if (visibility == ScrollBarVisibility.Default)
+				visibility = ScrollBarVisibility.Never;
+			Control.VerticalScrollBarVisiblePolicy = visibility.ToNative();
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
@@ -58,24 +74,24 @@ namespace Xamarin.Forms.Platform.Tizen
 			base.Dispose(disposing);
 		}
 
-		void OnDragStart(object sender, System.EventArgs e)
+		void OnDragStart(object sender, EventArgs e)
 		{
 			Element.SetIsDragging(true);
 			Element.IsScrolling = true;
 		}
 
-		void OnDragStop(object sender, System.EventArgs e)
+		void OnDragStop(object sender, EventArgs e)
 		{
 			Element.SetIsDragging(false);
 			Element.IsScrolling = false;
 		}
 
-		void OnScrollStart(object sender, System.EventArgs e)
+		void OnScrollStart(object sender, EventArgs e)
 		{
 			Element.IsScrolling = true;
 		}
 
-		void OnScrollStop(object sender, System.EventArgs e)
+		void OnScrollStop(object sender, EventArgs e)
 		{
 			var scrollerIndex = Control.LayoutManager.IsHorizontal ? Control.Scroll.HorizontalPageIndex : Control.Scroll.VerticalPageIndex;
 			Element.SetValueFromRenderer(CarouselView.PositionProperty, scrollerIndex);

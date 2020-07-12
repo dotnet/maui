@@ -1,6 +1,11 @@
 #if UITEST
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using NUnit.Framework;
+using NUnit.Framework.Interfaces;
+using Xamarin.Forms.Core.UITests;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 
@@ -209,6 +214,16 @@ namespace Xamarin.Forms.Controls
 			TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
 			return _app.WaitForElement(query, timeoutMessage, timeout, retryFrequency, postTimeout);
+		}
+
+		public AppResult WaitForFirstElement(string marked, string timeoutMessage = "Timed out waiting for element...",
+			TimeSpan? timeout = null, TimeSpan? retryFrequency = null)
+		{
+#if __WINDOWS__
+			return (_app as WinDriverApp).WaitForFirstElement(marked, timeoutMessage, timeout, retryFrequency);
+#else
+			return _app.WaitForElement(marked, timeoutMessage, timeout, retryFrequency).FirstOrDefault();
+#endif
 		}
 
 		public void WaitForNoElement(Func<AppQuery, AppQuery> query, string timeoutMessage = "Timed out waiting for no element...",
@@ -448,6 +463,10 @@ namespace Xamarin.Forms.Controls
 
 		public void TestSetup(Type testType, bool isolate)
 		{
+#if __WINDOWS__
+
+			(_app as WinDriverApp).RestartIfAppIsClosed();
+#endif
 			if (isolate)
 			{
 				AppSetup.BeginIsolate();
@@ -468,17 +487,35 @@ namespace Xamarin.Forms.Controls
 				AppSetup.EndIsolate();
 			}
 
-#if __WINDOWS__
-			ScreenshotFailure();
-#endif
+			AttachScreenshotIfOutcomeFailed();
 		}
 
-#if __WINDOWS__
-		public void ScreenshotFailure()
+		public void AttachScreenshotToTestContext(string title = null)
 		{
-			(_app as Core.UITests.WinDriverApp).ScreenshotFailure();
+			title = title ?? TestContext.CurrentContext.Test.FullName
+				.Replace(".", "_")
+				.Replace(" ", "_");
+
+			FileInfo file = _app.Screenshot(title);
+
+			if (file != null)
+			{
+				try
+				{
+					TestContext.AddTestAttachment(file.FullName, TestContext.CurrentContext.Test.FullName);
+				}
+				catch(Exception exc)
+				{
+					Debug.WriteLine($"Failed to write {file?.FullName} {exc}");
+				}
+			}
 		}
-#endif
+
+		public void AttachScreenshotIfOutcomeFailed()
+		{
+			if (TestContext.CurrentContext.Result.Outcome.Status == TestStatus.Failed)
+				AttachScreenshotToTestContext();
+		}
 
 #if __IOS__
 

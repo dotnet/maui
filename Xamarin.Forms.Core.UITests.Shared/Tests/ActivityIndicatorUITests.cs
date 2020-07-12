@@ -48,6 +48,7 @@ namespace Xamarin.Forms.Core.UITests
 		// ActivityIndicator tests
 		[Test]
 		[UiTest(typeof(ActivityIndicator), "IsRunning")]
+		[Category(UITestCategories.UwpIgnore)]
 		public void IsRunning()
 		{
 			var remote = new ViewContainerRemote(App, Test.ActivityIndicator.IsRunning, PlatformViewType);

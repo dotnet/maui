@@ -16,6 +16,7 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.ListView)]
 	[NUnit.Framework.Category(UITestCategories.Label)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
 #endif
 
 	[Preserve(AllMembers = true)]

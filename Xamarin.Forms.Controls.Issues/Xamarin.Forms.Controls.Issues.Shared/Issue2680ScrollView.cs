@@ -82,6 +82,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		[Test]
+		[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
 		public void Issue2680Test_ScrollEnabled()
 		{
 			RunningApp.Tap(q => q.Button(ToggleButtonMark));

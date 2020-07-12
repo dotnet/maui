@@ -51,6 +51,7 @@ namespace Xamarin.Forms.Core.UITests
 		[TearDown]
 		protected virtual void TestTearDown()
 		{
+			App.AttachScreenshotIfOutcomeFailed();
 		}
 
 		protected abstract void NavigateToGallery();
@@ -87,6 +88,7 @@ namespace Xamarin.Forms.Core.UITests
 					}
 					else
 					{
+						App.AttachScreenshotToTestContext("NavigateToGallery Failed");
 						// But if it's still not working after [maxAttempts], we've got assume this is a legit
 						// problem that restarting won't fix
 						throw;

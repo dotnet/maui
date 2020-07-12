@@ -140,6 +140,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		[Test]
+		[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
 		public void IsRefreshingAndCommandTest_SwipeDown()
 		{
 			RunningApp.WaitForElement(q => q.Marked("IsRefreshing: False"));
@@ -152,6 +153,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		[Test]
+		[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
 		public void RefreshDisablesWithCommand()
 		{
 			RunningApp.WaitForElement("IsRefreshing: False");

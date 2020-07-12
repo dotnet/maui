@@ -13,6 +13,19 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		public static string ReadText(this AppResult result) =>
 			result.Text ?? result.Description;
+
+
+		public static void AssertHasText(this AppResult result, string text)
+		{
+			if(String.Equals(result.Description, text, StringComparison.OrdinalIgnoreCase) ||
+				String.Equals(result.Text, text, StringComparison.OrdinalIgnoreCase) ||
+				String.Equals(result.Label, text, StringComparison.OrdinalIgnoreCase))
+			{
+				return;
+			}
+
+			Assert.Fail();
+		}
 	}
 }
 

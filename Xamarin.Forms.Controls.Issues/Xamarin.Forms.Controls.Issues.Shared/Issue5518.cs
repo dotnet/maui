@@ -13,6 +13,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 5518, "Frame Tap Gesture not working when using Visual=\"Material\" in iOS", PlatformAffected.iOS)]
 	public class Issue5518 : TestContentPage

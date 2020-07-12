@@ -30,5 +30,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		void ItemMeasureInvalidated(int index);
 
 		int GetVisibleItemIndex(int x, int y);
+
+		int GetScrollBlockSize();
 	}
 }

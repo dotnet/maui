@@ -48,6 +48,7 @@ namespace Xamarin.Forms.Controls.Issues
 		const string AddRangeWithCleanCommandId = "AddRangeWithCleanCommandId";
 
 		[Test]
+		[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
 		public  void Issue7167Test()
 		{
 			// arrange
