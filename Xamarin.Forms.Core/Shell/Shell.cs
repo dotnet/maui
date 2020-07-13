@@ -791,10 +791,31 @@ namespace Xamarin.Forms
 					try
 					{
 						var location = CurrentState.Location;
-						if (ShellUriHandler.GetNavigationRequest(this, ((ShellNavigationState)location).FullLocation, false) != null)
-							await GoToAsync(location, false);
+						var navRequest = ShellUriHandler.GetNavigationRequest(this, ((ShellNavigationState)location).FullLocation, false);
 
-						return;
+						if (navRequest != null)
+						{
+							var item = navRequest.Request.Item;
+							var section = navRequest.Request.Section;
+							var Content = navRequest.Request.Content;
+
+							if (IsValidRoute(item) && IsValidRoute(section) && IsValidRoute(Content))
+							{
+								await GoToAsync(location, false);
+								return;
+							}
+
+							bool IsValidRoute(BaseShellItem baseShellItem)
+							{
+								if (baseShellItem == null)
+									return true;
+
+								if (!baseShellItem.IsVisible)
+									return false;
+
+								return baseShellItem.IsPartOfVisibleTree();
+							}
+						}
 					}
 					catch (Exception exc)
 					{
@@ -974,18 +995,27 @@ namespace Xamarin.Forms
 
 			foreach (var shellItem in ShellController.GetItems())
 			{
+				if (!FlyoutItem.GetIsVisible(shellItem))
+					continue;
+
 				if (shellItem.FlyoutDisplayOptions == FlyoutDisplayOptions.AsMultipleItems)
 				{
 					IncrementGroup();
 
 					foreach (var shellSection in (shellItem as IShellItemController).GetItems())
 					{
+						if (!FlyoutItem.GetIsVisible(shellSection))
+							continue;
+
 						if (shellSection.FlyoutDisplayOptions == FlyoutDisplayOptions.AsMultipleItems)
 						{
 							IncrementGroup();
 
 							foreach (var shellContent in shellSection.Items)
 							{
+								if (!FlyoutItem.GetIsVisible(shellContent))
+									continue;
+
 								currentGroup.Add(shellContent);
 								if (shellContent == shellSection.CurrentItem)
 								{

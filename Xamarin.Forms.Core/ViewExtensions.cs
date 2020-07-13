@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Xamarin.Forms
@@ -158,6 +160,27 @@ namespace Xamarin.Forms
 				(f, a) => tcs.SetResult(a));
 
 			return tcs.Task;
+		}
+
+		internal static T FindParentOfType<T>(this Element element)
+		{
+			var navPage = element
+				.GetParentsPath()
+				.OfType<T>()
+				.FirstOrDefault();
+
+			return navPage;
+		}
+
+		internal static IEnumerable<Element> GetParentsPath(this Element self)
+		{
+			Element current = self;
+
+			while (!Application.IsApplicationOrNull(current.RealParent))
+			{
+				current = current.RealParent;
+				yield return current;
+			}
 		}
 	}
 }
