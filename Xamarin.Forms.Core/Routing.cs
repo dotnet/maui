@@ -32,6 +32,19 @@ namespace Xamarin.Forms
 			return source.StartsWith(DefaultPrefix, StringComparison.Ordinal);
 		}
 
+		internal static bool IsDefault(BindableObject source)
+		{
+			return IsDefault(GetRoute(source));
+		}
+
+		internal static bool IsUserDefined(BindableObject source)
+		{
+			if (source == null)
+				return false;
+
+			return !(IsDefault(source) || IsImplicit(source));
+		}
+
 		internal static void Clear()
 		{
 			s_routes.Clear();

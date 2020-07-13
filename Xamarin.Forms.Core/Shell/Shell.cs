@@ -634,6 +634,10 @@ namespace Xamarin.Forms
 			List<string> routeStack = new List<string>();
 
 			bool stackAtRoot = sectionStack == null || sectionStack.Count <= 1;
+			bool hasUserDefinedRoute =
+				(Routing.IsUserDefined(shellItem)) ||
+				(Routing.IsUserDefined(shellSection)) ||
+				(Routing.IsUserDefined(shellContent));
 
 			if (shellItem != null)
 			{
@@ -656,7 +660,7 @@ namespace Xamarin.Forms
 						for (int i = 1; i < sectionStack.Count; i++)
 						{
 							var page = sectionStack[i];
-							routeStack.AddRange(CollapsePath(Routing.GetRoute(page), routeStack));
+							routeStack.AddRange(CollapsePath(Routing.GetRoute(page), routeStack, hasUserDefinedRoute));
 						}
 					}
 
@@ -666,11 +670,11 @@ namespace Xamarin.Forms
 						{
 							var topPage = modalStack[i];
 
-							routeStack.AddRange(CollapsePath(Routing.GetRoute(topPage), routeStack));
+							routeStack.AddRange(CollapsePath(Routing.GetRoute(topPage), routeStack, hasUserDefinedRoute));
 
 							for (int j = 1; j < topPage.Navigation.NavigationStack.Count; j++)
 							{
-								routeStack.AddRange(CollapsePath(Routing.GetRoute(topPage.Navigation.NavigationStack[j]), routeStack));
+								routeStack.AddRange(CollapsePath(Routing.GetRoute(topPage.Navigation.NavigationStack[j]), routeStack, hasUserDefinedRoute));
 							}
 						}
 					}
@@ -683,12 +687,16 @@ namespace Xamarin.Forms
 			return String.Join("/", routeStack);
 
 
-			List<string> CollapsePath(string myRoute, List<string> currentRouteStack)
+			List<string> CollapsePath(
+				string myRoute, 
+				List<string> currentRouteStack,
+				bool userDefinedRoute)
 			{
 				for (var i = currentRouteStack.Count - 1; i >= 0; i--)
 				{
 					var route = currentRouteStack[i];
-					if (Routing.IsImplicit(route) || Routing.IsDefault(route))
+					if (Routing.IsImplicit(route) || 
+						(Routing.IsDefault(route) && userDefinedRoute))
 						currentRouteStack.RemoveAt(i);
 				}
 
