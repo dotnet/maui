@@ -29,6 +29,9 @@
         public static readonly BindableProperty StrokeLineJoinProperty =
 			BindableProperty.Create(nameof(StrokeLineJoin), typeof(PenLineJoin), typeof(Shape), PenLineJoin.Miter);
 
+        public static readonly BindableProperty StrokeMiterLimitProperty =
+            BindableProperty.Create(nameof(StrokeMiterLimit), typeof(double), typeof(Shape), 10.0);
+
         public static readonly BindableProperty AspectProperty =
 			BindableProperty.Create(nameof(Aspect), typeof(Stretch), typeof(Shape), Stretch.None);
 
@@ -72,6 +75,12 @@
         {
             set { SetValue(StrokeLineJoinProperty, value); }
             get { return (PenLineJoin)GetValue(StrokeLineJoinProperty); }
+        }
+
+        public double StrokeMiterLimit
+        {
+            set { SetValue(StrokeMiterLimitProperty, value); }
+            get { return (double)GetValue(StrokeMiterLimitProperty); }
         }
 
         public Stretch Aspect

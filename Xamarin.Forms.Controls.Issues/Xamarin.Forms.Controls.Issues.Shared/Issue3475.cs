@@ -15,6 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Layout)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3475, "[iOS] LayoutCompression Performance Issues", PlatformAffected.iOS)]

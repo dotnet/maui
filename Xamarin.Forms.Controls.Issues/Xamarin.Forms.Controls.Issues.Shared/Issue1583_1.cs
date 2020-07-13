@@ -66,6 +66,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
+		[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
 		public async Task Issue1583_1_WebviewTest()
 		{
 			RunningApp.WaitForElement(q => q.Marked("label"), "Could not find label", TimeSpan.FromSeconds(10), null, null);

@@ -26,12 +26,14 @@ namespace Xamarin.Forms
 
 		protected override void OnElementControllerInserting(IElementController element)
 		{
+			base.OnElementControllerInserting(element);
 			if (element is IShellContentController controller)
 				controller.IsPageVisibleChanged += OnIsPageVisibleChanged;
 		}
 
 		protected override void OnElementControllerRemoving(IElementController element)
 		{
+			base.OnElementControllerRemoving(element);
 			if (element is IShellContentController controller)
 				controller.IsPageVisibleChanged -= OnIsPageVisibleChanged;
 		}

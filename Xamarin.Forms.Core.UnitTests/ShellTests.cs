@@ -368,6 +368,25 @@ namespace Xamarin.Forms.Core.UnitTests
 			*/
 		}
 
+		[Test]
+		public async Task DefaultRoutesMaintainedIfThatsAllThereIs()
+		{
+			Routing.RegisterRoute(nameof(DefaultRoutesMaintainedIfThatsAllThereIs), typeof(ContentPage));
+			var shell = new Shell();
+			var shellContent = new ShellContent();
+			FlyoutItem flyoutItem = new FlyoutItem()
+			{
+				Items =
+				{
+					shellContent
+				}
+			};
+			shell.Items.Add(flyoutItem);
+
+			await shell.GoToAsync(nameof(DefaultRoutesMaintainedIfThatsAllThereIs));
+			Assume.That(shell.CurrentState.Location.ToString(), Is.EqualTo($"//{Routing.GetRoute(shellContent)}/{nameof(DefaultRoutesMaintainedIfThatsAllThereIs)}"));
+			await shell.GoToAsync("..");
+		}
 
 		[Test]
 		public async Task DotDotNavigationPassesParameters()
@@ -1071,7 +1090,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public async Task ShellItemNotVisible()
+		public async Task ShellItemNotVisibleWhenContentPageNotVisible()
 		{
 			var shell = new Shell();
 			var item1 = CreateShellItem(new ContentPage() { IsVisible = false });
@@ -1082,6 +1101,74 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.IsFalse(GetItems(shell).Contains(item1));
 			Assert.IsTrue(GetItems(shell).Contains(item2));
+		}
+
+		[Test]
+		public async Task BaseShellItemNotVisible()
+		{
+			var shell = new Shell();
+			var item1 = CreateShellItem();
+			var item2 = CreateShellItem();
+
+			shell.Items.Add(item1);
+			shell.Items.Add(item2);
+
+			item1.IsVisible = false;
+			Assert.IsFalse(GetItems(shell).Contains(item1));
+			Assert.IsTrue(GetItems(shell).Contains(item2));
+
+			item1.IsVisible = true;
+			Assert.IsTrue(GetItems(shell).Contains(item1));
+
+			item1.Items[0].IsVisible = false;
+			Assert.IsFalse(GetItems(shell).Contains(item1));
+			item1.Items[0].IsVisible = true;
+			Assert.IsTrue(GetItems(shell).Contains(item1));
+
+			item1.Items[0].Items[0].IsVisible = false;
+			Assert.IsFalse(GetItems(shell).Contains(item1));
+			item1.Items[0].Items[0].IsVisible = true;
+			Assert.IsTrue(GetItems(shell).Contains(item1));
+		}
+
+		[Test]
+		public async Task CantNavigateToNotVisibleShellItem()
+		{
+			var shell = new Shell();
+			var item1 = CreateShellItem(shellItemRoute:"NotVisible");
+			var item2 = CreateShellItem();
+
+			shell.Items.Add(item1);
+			shell.Items.Add(item2);
+
+			item1.IsVisible = false;
+
+			Assert.That(async () => await shell.GoToAsync($"//NotVisible"), Throws.Exception);
+
+			Assert.AreEqual(shell.CurrentItem, item2);
+		}
+
+
+		[Test]
+		public async Task FlyoutItemVisible()
+		{
+			var shell = new Shell();
+			var item1 = CreateShellItem<FlyoutItem>(shellItemRoute: "NotVisible");
+			var item2 = CreateShellItem();
+
+			shell.Items.Add(item1);
+			shell.Items.Add(item2);
+
+			FlyoutItem.SetIsVisible(item1, false);
+			Assert.IsTrue(GetItems(shell).Contains(item1));
+
+			bool hasFlyoutItem =
+				(shell as IShellController)
+					.GenerateFlyoutGrouping()
+					.SelectMany(i => i)
+					.Contains(item1);
+
+			Assert.IsFalse(hasFlyoutItem);
 		}
 
 		[Test]
@@ -1455,6 +1542,29 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.IsNotNull(item.CurrentItem);
 			Assert.IsNotNull(item.CurrentItem.CurrentItem);
+		}
+
+		[Test]
+		public async Task HotReloadStaysOnActiveItem()
+		{
+			Shell shell = new Shell();
+
+			shell.Items.Add(CreateShellItem(shellItemRoute: "item1"));
+			shell.Items.Add(CreateShellItem(shellItemRoute: "item2"));
+			shell.Items.Add(CreateShellItem(shellItemRoute: "item3"));
+
+			await shell.GoToAsync("//item3");
+			Assert.AreEqual("//item3", shell.CurrentState.Location.ToString());
+
+			shell.Items.Add(CreateShellItem(shellItemRoute: "item1"));
+			shell.Items.Add(CreateShellItem(shellItemRoute: "item2"));
+			shell.Items.Add(CreateShellItem(shellItemRoute: "item3"));
+
+			shell.Items.RemoveAt(0);
+			shell.Items.RemoveAt(0);
+			shell.Items.RemoveAt(0);
+
+			Assert.AreEqual("//item3", shell.CurrentState.Location.ToString());
 		}
 
 		[TestCase("ContentPage")]

@@ -3,6 +3,7 @@
 namespace Xamarin.Forms.Core.UITests
 {
 	[Category(UITestCategories.ExpanderView)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
 	internal class ExpanderViewUITests : BaseTestFixture
 	{
 		protected override void NavigateToGallery()

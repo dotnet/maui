@@ -530,8 +530,8 @@ namespace Xamarin.Forms
 				case ShellContent content:
 					results = new object[0];
 					break;
-				case GlobalRouteItem routeITem:
-					results = routeITem.Items;
+				case GlobalRouteItem routeItem:
+					results = routeItem.Items;
 					break;
 			}
 

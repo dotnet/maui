@@ -125,6 +125,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			if (!string.IsNullOrEmpty(hint) && setHint)
 				Control.Hint = string.Empty;
 
+			var hc = MeasureSpec.GetSize(heightConstraint);
+
 			Measure(widthConstraint, heightConstraint);
 			var result = new SizeRequest(new Size(MeasuredWidth, MeasuredHeight), new Size());
 

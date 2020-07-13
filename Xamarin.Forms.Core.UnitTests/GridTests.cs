@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void ThrowsOnNullAdd ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
 			Assert.Throws<ArgumentNullException> (() => layout.Children.Add (null));
 		}
@@ -34,9 +34,112 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void ThrowsOnNullRemove ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
 			Assert.Throws<ArgumentNullException> (() => layout.Children.Remove (null));
+		}
+
+		[Test]
+		public void StarColumnsHaveEqualWidths()
+		{
+			var grid = new Grid
+			{
+				VerticalOptions = LayoutOptions.Start,
+				ColumnSpacing = 12
+			};
+
+			grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Star });
+			grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Star });
+			grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(5, GridUnitType.Star) });
+
+			grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+
+			var label = new ColumnTestLabel
+			{
+				VerticalOptions = LayoutOptions.Start,
+				LineBreakMode = LineBreakMode.WordWrap,
+				Text = "There's a 104 days of summer vacation 'til school comes along just to end it. So the annual problem for our generation is finding a good way to spend it."
+			};
+
+			grid.Children.Add(label, 1, 0);
+
+			var gridWidth = 411;
+			grid.Measure(gridWidth, 1000);
+			var column0Width = grid.ColumnDefinitions[0].ActualWidth;
+			var column1Width = grid.ColumnDefinitions[1].ActualWidth;
+
+			Assert.That(column0Width, Is.EqualTo(column1Width));
+			Assert.That(column0Width, Is.LessThan(gridWidth));
+		}
+
+		[Test]
+		public void StarRowsHaveEqualHeights()
+		{
+			var grid = new Grid
+			{
+				VerticalOptions = LayoutOptions.Start,
+				RowSpacing = 12
+			};
+
+			grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Star });
+			grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Star });
+			grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(5, GridUnitType.Star) });
+
+			grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
+
+			var label = new RowTestLabel
+			{
+				VerticalOptions = LayoutOptions.Start,
+				LineBreakMode = LineBreakMode.WordWrap,
+				Text = "There's a 104 days of summer vacation 'til school comes along just to end it. So the annual problem for our generation is finding a good way to spend it."
+			};
+
+			grid.Children.Add(label, 1, 0);
+
+			var gridHeight = 411;
+
+			grid.Measure(1000, gridHeight);
+			var column0Height = grid.RowDefinitions[0].ActualHeight;
+			var column1Height = grid.RowDefinitions[1].ActualHeight;
+
+			Assert.That(column0Height, Is.EqualTo(column1Height));
+			Assert.That(column0Height, Is.LessThan(gridHeight));
+		}
+
+		class ColumnTestLabel : Label
+		{
+			public ColumnTestLabel() 
+			{
+				IsPlatformEnabled = true;
+			}
+			
+			protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
+			{
+				var minimumSize = new Size(20, 20);
+				var height = 10000 / widthConstraint;
+				return new SizeRequest(new Size(widthConstraint, height), minimumSize);
+			}
+		}
+
+		class RowTestLabel : Label
+		{
+			public RowTestLabel()
+			{
+				IsPlatformEnabled = true;
+			}
+
+			protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
+			{
+				var minimumSize = new Size(20, 20);
+
+				if (double.IsInfinity(heightConstraint))
+				{
+					heightConstraint = 1000;
+				}
+
+				var width = 10000 / heightConstraint;
+				return new SizeRequest(new Size(width, heightConstraint), minimumSize);
+			}
 		}
 
 		[TestFixture]
@@ -199,11 +302,11 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestBasicVerticalLayout ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
-			var label1 = new Label {IsPlatformEnabled = true};
-			var label2 = new Label {IsPlatformEnabled = true};
-			var label3 = new Label {IsPlatformEnabled = true};
+			var label1 = new Label { IsPlatformEnabled = true};
+			var label2 = new Label { IsPlatformEnabled = true};
+			var label3 = new Label { IsPlatformEnabled = true};
 
 			layout.Children.AddVertical (new View[] {
 				label1,
@@ -211,24 +314,24 @@ namespace Xamarin.Forms.Core.UnitTests
 				label3
 			});
 
-			layout.Layout (new Rectangle (0, 0, 912, 912));
+			layout.Layout (new Rectangle(0, 0, 912, 912));
 
 			Assert.AreEqual (912, layout.Width);
 			Assert.AreEqual (912, layout.Height);
 
-			Assert.AreEqual (new Rectangle (0, 0, 912, 300), label1.Bounds);
-			Assert.AreEqual (new Rectangle (0, 306, 912, 300), label2.Bounds);
-			Assert.AreEqual (new Rectangle (0, 612, 912, 300), label3.Bounds);
+			Assert.AreEqual (new Rectangle(0, 0, 912, 300), label1.Bounds);
+			Assert.AreEqual (new Rectangle(0, 306, 912, 300), label2.Bounds);
+			Assert.AreEqual (new Rectangle(0, 612, 912, 300), label3.Bounds);
 		}
 
 		[Test]
 		public void TestBasicHorizontalLayout ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
-			var label1 = new Label {IsPlatformEnabled = true};
-			var label2 = new Label {IsPlatformEnabled = true};
-			var label3 = new Label {IsPlatformEnabled = true};
+			var label1 = new Label { IsPlatformEnabled = true};
+			var label2 = new Label { IsPlatformEnabled = true};
+			var label3 = new Label { IsPlatformEnabled = true};
 
 			layout.Children.AddHorizontal (new View[] {
 				label1,
@@ -236,23 +339,23 @@ namespace Xamarin.Forms.Core.UnitTests
 				label3
 			});
 
-			layout.Layout (new Rectangle (0, 0, 912, 912));
+			layout.Layout (new Rectangle(0, 0, 912, 912));
 
 			Assert.AreEqual (912, layout.Width);
 			Assert.AreEqual (912, layout.Height);
 
-			Assert.AreEqual (new Rectangle (0, 0, 300, 912), label1.Bounds);
-			Assert.AreEqual (new Rectangle (306, 0, 300, 912), label2.Bounds);
-			Assert.AreEqual (new Rectangle (612, 0, 300, 912), label3.Bounds);
+			Assert.AreEqual (new Rectangle(0, 0, 300, 912), label1.Bounds);
+			Assert.AreEqual (new Rectangle(306, 0, 300, 912), label2.Bounds);
+			Assert.AreEqual (new Rectangle(612, 0, 300, 912), label3.Bounds);
 		}
 
 		[Test]
 		public void TestVerticalExpandStart ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
-			var label1 = new Label {IsPlatformEnabled = true};
-			var label2 = new Label {IsPlatformEnabled = true};
+			var label1 = new Label { IsPlatformEnabled = true};
+			var label2 = new Label { IsPlatformEnabled = true};
 
 			layout.RowDefinitions = new RowDefinitionCollection {
 				new RowDefinition { Height = new GridLength (1, GridUnitType.Star) },
@@ -261,19 +364,19 @@ namespace Xamarin.Forms.Core.UnitTests
 			layout.Children.Add (label1, 0, 0);
 			layout.Children.Add (label2, 0, 1);
 
-			layout.Layout (new Rectangle (0, 0, 1000, 1000));
+			layout.Layout (new Rectangle(0, 0, 1000, 1000));
 
 			Assert.AreEqual (1000, layout.Width);
 			Assert.AreEqual (1000, layout.Height);
 
-			Assert.AreEqual (new Rectangle (0, 0, 1000, 1000 - 20 - layout.RowSpacing), label1.Bounds);
-			Assert.AreEqual (new Rectangle (0, 1000 - 20, 1000, 20), label2.Bounds);
+			Assert.AreEqual (new Rectangle(0, 0, 1000, 1000 - 20 - layout.RowSpacing), label1.Bounds);
+			Assert.AreEqual (new Rectangle(0, 1000 - 20, 1000, 20), label2.Bounds);
 		}
 
 		[Test]
 		public void TestHorizontalExpandStart ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
 			var label1 = new Label { IsPlatformEnabled = true };
 			var label2 = new Label { IsPlatformEnabled = true };
@@ -285,22 +388,22 @@ namespace Xamarin.Forms.Core.UnitTests
 			layout.Children.Add (label1, 0, 0);
 			layout.Children.Add (label2, 1, 0);
 
-			layout.Layout (new Rectangle (0, 0, 1000, 1000));
+			layout.Layout (new Rectangle(0, 0, 1000, 1000));
 
 			Assert.AreEqual (1000, layout.Width);
 			Assert.AreEqual (1000, layout.Height);
 
-			Assert.AreEqual (new Rectangle (0, 0, 1000 - 106, 1000), label1.Bounds);
-			Assert.AreEqual (new Rectangle (1000 - 100, 0, 100, 1000), label2.Bounds);
+			Assert.AreEqual (new Rectangle(0, 0, 1000 - 106, 1000), label1.Bounds);
+			Assert.AreEqual (new Rectangle(1000 - 100, 0, 100, 1000), label2.Bounds);
 		}
 
 		[Test]
 		public void TestVerticalExpandEnd ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
-			var label1 = new Label {IsPlatformEnabled = true};
-			var label2 = new Label {IsPlatformEnabled = true};
+			var label1 = new Label { IsPlatformEnabled = true};
+			var label2 = new Label { IsPlatformEnabled = true};
 
 			layout.RowDefinitions = new RowDefinitionCollection {
 				new RowDefinition { Height = GridLength.Auto},
@@ -309,22 +412,22 @@ namespace Xamarin.Forms.Core.UnitTests
 			layout.Children.Add (label1, 0, 0);
 			layout.Children.Add (label2, 0, 1);
 
-			layout.Layout (new Rectangle (0, 0, 1000, 1000));
+			layout.Layout (new Rectangle(0, 0, 1000, 1000));
 
 			Assert.AreEqual (1000, layout.Width);
 			Assert.AreEqual (1000, layout.Height);
 
-			Assert.AreEqual (new Rectangle (0, 0, 1000, 20), label1.Bounds);
-			Assert.AreEqual (new Rectangle (0, 26, 1000, 1000 - 26), label2.Bounds);
+			Assert.AreEqual (new Rectangle(0, 0, 1000, 20), label1.Bounds);
+			Assert.AreEqual (new Rectangle(0, 26, 1000, 1000 - 26), label2.Bounds);
 		}
 
 		[Test]
 		public void TestHorizontalExpandEnd ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
-			var label1 = new Label {IsPlatformEnabled = true};
-			var label2 = new Label {IsPlatformEnabled = true};
+			var label1 = new Label { IsPlatformEnabled = true};
+			var label2 = new Label { IsPlatformEnabled = true};
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection {
 				new ColumnDefinition { Width = GridLength.Auto },
@@ -334,23 +437,23 @@ namespace Xamarin.Forms.Core.UnitTests
 			layout.Children.Add (label1, 0, 0);
 			layout.Children.Add (label2, 1, 0);
 
-			layout.Layout (new Rectangle (0, 0, 1000, 1000));
+			layout.Layout (new Rectangle(0, 0, 1000, 1000));
 
 			Assert.AreEqual (1000, layout.Width);
 			Assert.AreEqual (1000, layout.Height);
 
-			Assert.AreEqual (new Rectangle (0, 0, 100, 1000), label1.Bounds);
-			Assert.AreEqual (new Rectangle (106, 0, 1000 - 106, 1000), label2.Bounds);
+			Assert.AreEqual (new Rectangle(0, 0, 100, 1000), label1.Bounds);
+			Assert.AreEqual (new Rectangle(106, 0, 1000 - 106, 1000), label2.Bounds);
 		}
 
 		[Test]
 		public void TestVerticalExpandMiddle ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
-			var label1 = new Label {IsPlatformEnabled = true};
-			var label2 = new Label {IsPlatformEnabled = true};
-			var label3 = new Label {IsPlatformEnabled = true};
+			var label1 = new Label { IsPlatformEnabled = true};
+			var label2 = new Label { IsPlatformEnabled = true};
+			var label3 = new Label { IsPlatformEnabled = true};
 
 			layout.RowDefinitions = new RowDefinitionCollection {
 				new RowDefinition { Height = GridLength.Auto},
@@ -361,24 +464,24 @@ namespace Xamarin.Forms.Core.UnitTests
 			layout.Children.Add (label2, 0, 1);
 			layout.Children.Add (label3, 0, 2);
 
-			layout.Layout (new Rectangle (0, 0, 1000, 1000));
+			layout.Layout (new Rectangle(0, 0, 1000, 1000));
 
 			Assert.AreEqual (1000, layout.Width);
 			Assert.AreEqual (1000, layout.Height);
 
-			Assert.AreEqual (new Rectangle (0, 0, 1000, 20), label1.Bounds);
-			Assert.AreEqual (new Rectangle (0, 26, 1000, 1000 - 52), label2.Bounds);
-			Assert.AreEqual (new Rectangle (0, 980, 1000, 20), label3.Bounds);
+			Assert.AreEqual (new Rectangle(0, 0, 1000, 20), label1.Bounds);
+			Assert.AreEqual (new Rectangle(0, 26, 1000, 1000 - 52), label2.Bounds);
+			Assert.AreEqual (new Rectangle(0, 980, 1000, 20), label3.Bounds);
 		}
 
 		[Test]
 		public void TestHorizontalExpandMiddle ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
-			var label1 = new Label {IsPlatformEnabled = true};
-			var label2 = new Label {IsPlatformEnabled = true};
-			var label3 = new Label {IsPlatformEnabled = true};
+			var label1 = new Label { IsPlatformEnabled = true};
+			var label2 = new Label { IsPlatformEnabled = true};
+			var label3 = new Label { IsPlatformEnabled = true};
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection {
 				new ColumnDefinition { Width = GridLength.Auto },
@@ -390,25 +493,25 @@ namespace Xamarin.Forms.Core.UnitTests
 			layout.Children.Add (label2, 1, 0);
 			layout.Children.Add (label3, 2, 0);
 
-			layout.Layout (new Rectangle (0, 0, 1000, 1000));
+			layout.Layout (new Rectangle(0, 0, 1000, 1000));
 
 			Assert.AreEqual (1000, layout.Width);
 			Assert.AreEqual (1000, layout.Height);
 
-			Assert.AreEqual (new Rectangle (0, 0, 100, 1000), label1.Bounds);
-			Assert.AreEqual (new Rectangle (106, 0, 1000 - 212, 1000), label2.Bounds);
-			Assert.AreEqual (new Rectangle (900, 0, 100, 1000), label3.Bounds);
+			Assert.AreEqual (new Rectangle(0, 0, 100, 1000), label1.Bounds);
+			Assert.AreEqual (new Rectangle(106, 0, 1000 - 212, 1000), label2.Bounds);
+			Assert.AreEqual (new Rectangle(900, 0, 100, 1000), label3.Bounds);
 		}
 
 		[Test]
 		public void TestTableNoExpand ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
-			var label1 = new Label {IsPlatformEnabled = true};
-			var label2 = new Label {IsPlatformEnabled = true};
-			var label3 = new Label {IsPlatformEnabled = true};
-			var label4 = new Label {IsPlatformEnabled = true};
+			var label1 = new Label { IsPlatformEnabled = true};
+			var label2 = new Label { IsPlatformEnabled = true};
+			var label3 = new Label { IsPlatformEnabled = true};
+			var label4 = new Label { IsPlatformEnabled = true};
 
 			layout.Children.Add (label1, 0, 0);
 			layout.Children.Add (label2, 1, 0);
@@ -424,26 +527,26 @@ namespace Xamarin.Forms.Core.UnitTests
 				new RowDefinition { Height = GridLength.Auto}
 			};
 
-			layout.Layout (new Rectangle (0, 0, 1000, 1000));
+			layout.Layout (new Rectangle(0, 0, 1000, 1000));
 
 			Assert.AreEqual (1000, layout.Width);
 			Assert.AreEqual (1000, layout.Height);
 
-			Assert.AreEqual (new Rectangle (0, 0, 100, 20), label1.Bounds);
-			Assert.AreEqual (new Rectangle (106, 0, 100, 20), label2.Bounds);
-			Assert.AreEqual (new Rectangle (0, 26, 100, 20), label3.Bounds);
-			Assert.AreEqual (new Rectangle (106, 26, 100, 20), label4.Bounds);
+			Assert.AreEqual (new Rectangle(0, 0, 100, 20), label1.Bounds);
+			Assert.AreEqual (new Rectangle(106, 0, 100, 20), label2.Bounds);
+			Assert.AreEqual (new Rectangle(0, 26, 100, 20), label3.Bounds);
+			Assert.AreEqual (new Rectangle(106, 26, 100, 20), label4.Bounds);
 		}
 
 		[Test]
 		public void TestTableExpand ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
-			var label1 = new Label {IsPlatformEnabled = true};
-			var label2 = new Label {IsPlatformEnabled = true};
-			var label3 = new Label {IsPlatformEnabled = true};
-			var label4 = new Label {IsPlatformEnabled = true};
+			var label1 = new Label { IsPlatformEnabled = true};
+			var label2 = new Label { IsPlatformEnabled = true};
+			var label3 = new Label { IsPlatformEnabled = true};
+			var label4 = new Label { IsPlatformEnabled = true};
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection { 
 				new ColumnDefinition { Width = GridLength.Auto },
@@ -455,25 +558,25 @@ namespace Xamarin.Forms.Core.UnitTests
 			layout.Children.Add (label3, 0, 1);
 			layout.Children.Add (label4, 1, 1);
 
-			layout.Layout (new Rectangle (0, 0, 1000, 1000));
+			layout.Layout (new Rectangle(0, 0, 1000, 1000));
 
 			Assert.AreEqual (1000, layout.Width);
 			Assert.AreEqual (1000, layout.Height);
 
-			Assert.AreEqual (new Rectangle (0, 0, 100, 497), label1.Bounds);
-			Assert.AreEqual (new Rectangle (106, 0, 894, 497), label2.Bounds);
-			Assert.AreEqual (new Rectangle (0, 503, 100, 497), label3.Bounds);
-			Assert.AreEqual (new Rectangle (106, 503, 894, 497), label4.Bounds);
+			Assert.AreEqual (new Rectangle(0, 0, 100, 497), label1.Bounds);
+			Assert.AreEqual (new Rectangle(106, 0, 894, 497), label2.Bounds);
+			Assert.AreEqual (new Rectangle(0, 503, 100, 497), label3.Bounds);
+			Assert.AreEqual (new Rectangle(106, 503, 894, 497), label4.Bounds);
 		}
 
 		[Test]
 		public void TestTableSpan ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
-			var label1 = new Label {IsPlatformEnabled = true};
-			var label2 = new Label {IsPlatformEnabled = true};
-			var label3 = new Label {IsPlatformEnabled = true};
+			var label1 = new Label { IsPlatformEnabled = true};
+			var label2 = new Label { IsPlatformEnabled = true};
+			var label3 = new Label { IsPlatformEnabled = true};
 
 			layout.Children.Add (label1, 0, 2, 0, 1);
 			layout.Children.Add (label2, 0, 1, 1, 2);
@@ -488,24 +591,24 @@ namespace Xamarin.Forms.Core.UnitTests
 				new RowDefinition { Height = GridLength.Auto}
 			};
 
-			layout.Layout (new Rectangle (0, 0, 1000, 1000));
+			layout.Layout (new Rectangle(0, 0, 1000, 1000));
 
 			Assert.AreEqual (1000, layout.Width);
 			Assert.AreEqual (1000, layout.Height);
 
-			Assert.AreEqual (new Rectangle (0, 0, 206, 20), label1.Bounds);
-			Assert.AreEqual (new Rectangle (0, 26, 100, 20), label2.Bounds);
-			Assert.AreEqual (new Rectangle (106, 26, 100, 20), label3.Bounds);
+			Assert.AreEqual (new Rectangle(0, 0, 206, 20), label1.Bounds);
+			Assert.AreEqual (new Rectangle(0, 26, 100, 20), label2.Bounds);
+			Assert.AreEqual (new Rectangle(106, 26, 100, 20), label3.Bounds);
 		}
 
 		[Test]
 		public void TestTableExpandedSpan ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
-			var label1 = new Label {IsPlatformEnabled = true};
-			var label2 = new Label {IsPlatformEnabled = true};
-			var label3 = new Label {IsPlatformEnabled = true};
+			var label1 = new Label { IsPlatformEnabled = true};
+			var label2 = new Label { IsPlatformEnabled = true};
+			var label3 = new Label { IsPlatformEnabled = true};
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection { 
 				new ColumnDefinition { Width = new GridLength (1, GridUnitType.Star) },
@@ -520,22 +623,22 @@ namespace Xamarin.Forms.Core.UnitTests
 			layout.Children.Add (label2, 0, 1, 1, 2);
 			layout.Children.Add (label3, 1, 2, 1, 2);
 
-			layout.Layout (new Rectangle (0, 0, 1000, 1000));
+			layout.Layout (new Rectangle(0, 0, 1000, 1000));
 
 			Assert.AreEqual (1000, layout.Width);
 			Assert.AreEqual (1000, layout.Height);
 
-			Assert.AreEqual (new Rectangle (0, 0, 1000, 20), label1.Bounds);
-			Assert.AreEqual (new Rectangle (0, 26, 497, 20), label2.Bounds);
-			Assert.AreEqual (new Rectangle (503, 26, 497, 20), label3.Bounds);
+			Assert.AreEqual (new Rectangle(0, 0, 1000, 20), label1.Bounds);
+			Assert.AreEqual (new Rectangle(0, 26, 497, 20), label2.Bounds);
+			Assert.AreEqual (new Rectangle(503, 26, 497, 20), label3.Bounds);
 		}
 
 		[Test]
 		public void TestInvalidSet ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
-			var label1 = new Label {IsPlatformEnabled = true};
+			var label1 = new Label { IsPlatformEnabled = true};
 
 			bool thrown = false;
 
@@ -551,9 +654,9 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestCentering ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
-			var label1 = new Label {IsPlatformEnabled = true, HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center };
+			var label1 = new Label { IsPlatformEnabled = true, HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center };
 			layout.ColumnDefinitions = new ColumnDefinitionCollection { 
 				new ColumnDefinition () {Width = new GridLength (1, GridUnitType.Star)},
 			};
@@ -563,15 +666,15 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			layout.Children.Add (label1);
 
-			layout.Layout (new Rectangle (0, 0, 1000, 1000));
+			layout.Layout (new Rectangle(0, 0, 1000, 1000));
 
-			Assert.AreEqual (new Rectangle (450, 490, 100, 20), label1.Bounds);
+			Assert.AreEqual (new Rectangle(450, 490, 100, 20), label1.Bounds);
 		}
 
 		[Test]
 		public void TestStart ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
 			var label1 = new Label { IsPlatformEnabled = true, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.StartAndExpand };
 
@@ -583,15 +686,15 @@ namespace Xamarin.Forms.Core.UnitTests
 				new RowDefinition () {Height = new GridLength (1,GridUnitType.Star)},
 			};
 
-			layout.Layout (new Rectangle (0, 0, 1000, 1000));
+			layout.Layout (new Rectangle(0, 0, 1000, 1000));
 
-			Assert.AreEqual (new Rectangle (0, 0, 100, 20), label1.Bounds);
+			Assert.AreEqual (new Rectangle(0, 0, 100, 20), label1.Bounds);
 		}
 
 		[Test]
 		public void TestEnd ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
 			var label1 = new Label { IsPlatformEnabled = true, HorizontalOptions = LayoutOptions.End, VerticalOptions = LayoutOptions.EndAndExpand };
 
@@ -603,15 +706,15 @@ namespace Xamarin.Forms.Core.UnitTests
 				new RowDefinition () {Height = new GridLength (1,GridUnitType.Star)},
 			};
 
-			layout.Layout (new Rectangle (0, 0, 1000, 1000));
+			layout.Layout (new Rectangle(0, 0, 1000, 1000));
 
-			Assert.AreEqual (new Rectangle (900, 980, 100, 20), label1.Bounds);
+			Assert.AreEqual (new Rectangle(900, 980, 100, 20), label1.Bounds);
 		}
 
 		[Test]
 		public void TestDefaultRowSpacing ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
 			bool preferredSizeChanged = false;
 			layout.MeasureInvalidated += (sender, args) => {
@@ -630,7 +733,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestDefaultColumnSpacing ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
 			bool preferredSizeChanged = false;
 			layout.MeasureInvalidated += (sender, args) => {
@@ -649,13 +752,13 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestAddCell ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 			bool preferredSizeChanged = false;
 			layout.MeasureInvalidated += (sender, args) => preferredSizeChanged = true;
 
 			Assert.False (preferredSizeChanged);
 
-			layout.Children.Add (new Label (), 0, 0);
+			layout.Children.Add (new Label(), 0, 0);
 
 			Assert.True (preferredSizeChanged);
 		}
@@ -663,8 +766,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestMoveCell ()
 		{
-			var layout = new Grid ();
-			var label = new Label ();
+			var layout = new Grid();
+			var label = new Label();
 			layout.Children.Add (label, 0, 0);
 
 			bool preferredSizeChanged = false;
@@ -695,9 +798,9 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestInvalidBottomAdd ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
-			Assert.Throws<ArgumentOutOfRangeException> (() => layout.Children.Add (new View (), 0, 1, 1, 0));
+			Assert.Throws<ArgumentOutOfRangeException> (() => layout.Children.Add (new View(), 0, 1, 1, 0));
 		}
 
 		[Test]
@@ -705,15 +808,15 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			Assert.AreEqual (new Size (0, 0), layout.GetSizeRequest (0, 0).Request);
-			Assert.AreEqual (new Size (0, 0), layout.GetSizeRequest (0, 10).Request);
-			Assert.AreEqual (new Size (0, 0), layout.GetSizeRequest (10, 0).Request);
+			Assert.AreEqual (new Size(0, 0), layout.GetSizeRequest (0, 0).Request);
+			Assert.AreEqual (new Size(0, 0), layout.GetSizeRequest (0, 10).Request);
+			Assert.AreEqual (new Size(0, 0), layout.GetSizeRequest (10, 0).Request);
 		}
 
 		[Test]
 		public void TestSizeRequest ()
 		{
-			var layout = new Grid {IsPlatformEnabled = true};
+			var layout = new Grid { IsPlatformEnabled = true};
 			layout.Children.AddVertical (new[] {
 				new View {IsPlatformEnabled = true},
 				new View {IsPlatformEnabled = true},
@@ -721,13 +824,13 @@ namespace Xamarin.Forms.Core.UnitTests
 			});
 
 			var result = layout.GetSizeRequest (double.PositiveInfinity, double.PositiveInfinity).Request;
-			Assert.AreEqual (new Size (100, 72), result);
+			Assert.AreEqual (new Size(100, 72), result);
 		}
 
 		[Test]
 		public void TestLimitedSizeRequest ()
 		{
-			var layout = new Grid {IsPlatformEnabled = true};
+			var layout = new Grid { IsPlatformEnabled = true};
 			layout.Children.AddVertical (new[] {
 				new View {IsPlatformEnabled = true},
 				new View {IsPlatformEnabled = true},
@@ -735,13 +838,13 @@ namespace Xamarin.Forms.Core.UnitTests
 			});
 
 			var result = layout.GetSizeRequest (10, 10).Request;
-			Assert.AreEqual (new Size (100, 72), result);
+			Assert.AreEqual (new Size(100, 72), result);
 		}
 
 		[Test]
 		public void TestLimitedWidthSizeRequest ()
 		{
-			var layout = new Grid {IsPlatformEnabled = true};
+			var layout = new Grid { IsPlatformEnabled = true};
 			layout.Children.AddVertical (new[] {
 				new View {IsPlatformEnabled = true},
 				new View {IsPlatformEnabled = true},
@@ -749,14 +852,14 @@ namespace Xamarin.Forms.Core.UnitTests
 			});
 
 			var result = layout.GetSizeRequest (10, double.PositiveInfinity).Request;
-			Assert.AreEqual (new Size (100, 72), result);
+			Assert.AreEqual (new Size(100, 72), result);
 		}
 
 		[Test]
 		public void TestLimitedHeightSizeRequest ()
 		{
 
-			var layout = new Grid {IsPlatformEnabled = true};
+			var layout = new Grid { IsPlatformEnabled = true};
 			layout.Children.AddVertical (new[] {
 				new View {IsPlatformEnabled = true},
 				new View {IsPlatformEnabled = true},
@@ -764,7 +867,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			});
 
 			var result = layout.GetSizeRequest (double.PositiveInfinity, 10).Request;
-			Assert.AreEqual (new Size (100, 72), result);
+			Assert.AreEqual (new Size(100, 72), result);
 		}
 
 		[Test]
@@ -786,19 +889,19 @@ namespace Xamarin.Forms.Core.UnitTests
 				new RowDefinition { Height = GridLength.Auto},
 			};
 
-			layout.Layout (new Rectangle (0, 0, 1000, 1000));
+			layout.Layout (new Rectangle(0, 0, 1000, 1000));
 
 			Assert.AreEqual (1000, layout.Width);
 			Assert.AreEqual (1000, layout.Height);
 
-			Assert.AreEqual (new Rectangle (0, 0, -1, -1), label1.Bounds);
-			Assert.AreEqual (new Rectangle (0, 6, 100, 20), label2.Bounds);
+			Assert.AreEqual (new Rectangle(0, 0, -1, -1), label1.Bounds);
+			Assert.AreEqual (new Rectangle(0, 6, 100, 20), label2.Bounds);
 		}
 
 		[Test]
 		public void TestSizeRequestWithPadding ()
 		{
-			var layout = new Grid {IsPlatformEnabled = true, Padding = new Thickness(20, 10, 15, 5)};
+			var layout = new Grid { IsPlatformEnabled = true, Padding = new Thickness(20, 10, 15, 5)};
 			layout.Children.AddVertical (new[] {
 				new View {IsPlatformEnabled = true},
 				new View {IsPlatformEnabled = true},
@@ -806,32 +909,33 @@ namespace Xamarin.Forms.Core.UnitTests
 			});
 
 			var result = layout.GetSizeRequest (double.PositiveInfinity, double.PositiveInfinity).Request;
-			Assert.AreEqual (new Size (135, 87), result);
+			Assert.AreEqual (new Size(135, 87), result);
 		}
 
 		[Test]
 		public void InvalidCallsToStaticMethods ()
 		{
-			Assert.Throws<ArgumentException> (() => Grid.SetRow (new Label (), -1));
-			Assert.Throws<ArgumentException> (() => Grid.SetColumn (new Label (), -1));
-			Assert.Throws<ArgumentException> (() => Grid.SetRowSpan (new Label (), 0));
-			Assert.Throws<ArgumentException> (() => Grid.SetColumnSpan (new Label (), 0));
+			Assert.Throws<ArgumentException> (() => Grid.SetRow (new Label(), -1));
+			Assert.Throws<ArgumentException> (() => Grid.SetColumn (new Label(), -1));
+			Assert.Throws<ArgumentException> (() => Grid.SetRowSpan (new Label(), 0));
+			Assert.Throws<ArgumentException> (() => Grid.SetColumnSpan (new Label(), 0));
 		}
 
 		[Test]
 		public void TestAddedBP ()
 		{
-			var labela0 = new Label {IsPlatformEnabled = true};
-			var labela1 = new Label {IsPlatformEnabled = true };
+			var labela0 = new Label { IsPlatformEnabled = true};
+			var labela1 = new Label { IsPlatformEnabled = true };
 			Grid.SetColumn (labela1, 1);
-			var labelb1 = new Label {IsPlatformEnabled = true};
+			var labelb1 = new Label { IsPlatformEnabled = true};
 			Grid.SetRow (labelb1, 1);
 			Grid.SetColumn (labelb1, 1);
-			var labelc = new Label {IsPlatformEnabled = true};
+			var labelc = new Label { IsPlatformEnabled = true};
 			Grid.SetRow (labelc, 2);
 			Grid.SetColumnSpan (labelc, 2);
 
-			var layout = new Grid {
+			var layout = new Grid
+			{
 				Children = {
 					labela0,
 					labela1,
@@ -850,15 +954,15 @@ namespace Xamarin.Forms.Core.UnitTests
 				new RowDefinition { Height = GridLength.Auto},
 			};
 
-			layout.Layout (new Rectangle (0, 0, 1000, 1000));
+			layout.Layout (new Rectangle(0, 0, 1000, 1000));
 
 			Assert.AreEqual (1000, layout.Width);
 			Assert.AreEqual (1000, layout.Height);
 
-			Assert.AreEqual (new Rectangle (0, 0, 100, 20), labela0.Bounds);
-			Assert.AreEqual (new Rectangle (106, 0, 100, 20), labela1.Bounds);
-			Assert.AreEqual (new Rectangle (106, 26, 100, 20), labelb1.Bounds);
-			Assert.AreEqual (new Rectangle (0, 52, 206, 20), labelc.Bounds);
+			Assert.AreEqual (new Rectangle(0, 0, 100, 20), labela0.Bounds);
+			Assert.AreEqual (new Rectangle(106, 0, 100, 20), labela1.Bounds);
+			Assert.AreEqual (new Rectangle(106, 26, 100, 20), labelb1.Bounds);
+			Assert.AreEqual (new Rectangle(0, 52, 206, 20), labelc.Bounds);
 		}
 
 		[Test]
@@ -874,7 +978,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			Grid.SetRow(labelc, 2);
 			Grid.SetColumnSpan(labelc, 2);
 
-			var layout = new Grid {
+			var layout = new Grid
+			{
 				Children = {
 					labela0,
 					labela1,
@@ -890,11 +995,11 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestAbsoluteLayout ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
-			var label1 = new Label {IsPlatformEnabled = true};
-			var label2 = new Label {IsPlatformEnabled = true};
-			var label3 = new Label {IsPlatformEnabled = true};
+			var label1 = new Label { IsPlatformEnabled = true};
+			var label2 = new Label { IsPlatformEnabled = true};
+			var label3 = new Label { IsPlatformEnabled = true};
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection { 
 				new ColumnDefinition {Width = new GridLength (150)},
@@ -911,24 +1016,24 @@ namespace Xamarin.Forms.Core.UnitTests
 			layout.Children.Add (label3, 2, 2);
 
 
-			layout.Layout (new Rectangle (0, 0, 1000, 1000));
+			layout.Layout (new Rectangle(0, 0, 1000, 1000));
 
 			Assert.AreEqual (1000, layout.Width);
 			Assert.AreEqual (1000, layout.Height);
 
-			Assert.AreEqual (new Rectangle (0, 0, 150, 30), label1.Bounds);
-			Assert.AreEqual (new Rectangle (156, 36, 150, 30), label2.Bounds);
-			Assert.AreEqual (new Rectangle (312, 72, 150, 30), label3.Bounds);
+			Assert.AreEqual (new Rectangle(0, 0, 150, 30), label1.Bounds);
+			Assert.AreEqual (new Rectangle(156, 36, 150, 30), label2.Bounds);
+			Assert.AreEqual (new Rectangle(312, 72, 150, 30), label3.Bounds);
 		}
 
 		[Test]
 		public void TestAbsoluteLayoutWithSpans ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
-			var label1 = new Label {IsPlatformEnabled = true};
-			var label2 = new Label {IsPlatformEnabled = true};
-			var label3 = new Label {IsPlatformEnabled = true};
+			var label1 = new Label { IsPlatformEnabled = true};
+			var label2 = new Label { IsPlatformEnabled = true};
+			var label3 = new Label { IsPlatformEnabled = true};
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection { 
 				new ColumnDefinition {Width = new GridLength (150)},
@@ -945,24 +1050,24 @@ namespace Xamarin.Forms.Core.UnitTests
 			layout.Children.Add (label3, 1, 2);
 
 
-			layout.Layout (new Rectangle (0, 0, 1000, 1000));
+			layout.Layout (new Rectangle(0, 0, 1000, 1000));
 
 			Assert.AreEqual (1000, layout.Width);
 			Assert.AreEqual (1000, layout.Height);
 
-			Assert.AreEqual (new Rectangle (0, 0, 306, 30), label1.Bounds);
-			Assert.AreEqual (new Rectangle (312, 0, 150, 66), label2.Bounds);
-			Assert.AreEqual (new Rectangle (156, 72, 150, 30), label3.Bounds);
+			Assert.AreEqual (new Rectangle(0, 0, 306, 30), label1.Bounds);
+			Assert.AreEqual (new Rectangle(312, 0, 150, 66), label2.Bounds);
+			Assert.AreEqual (new Rectangle(156, 72, 150, 30), label3.Bounds);
 		}
 
 		[Test]
 		public void TestStarLayout ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
-			var label1 = new Label {IsPlatformEnabled = true};
-			var label2 = new Label {IsPlatformEnabled = true};
-			var label3 = new Label {IsPlatformEnabled = true};
+			var label1 = new Label { IsPlatformEnabled = true};
+			var label2 = new Label { IsPlatformEnabled = true};
+			var label3 = new Label { IsPlatformEnabled = true};
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection { 
 				new ColumnDefinition {Width = new GridLength (1, GridUnitType.Star)},
@@ -982,23 +1087,23 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual (312, request.Request.Width);
 			Assert.AreEqual (72, request.Request.Height);
 
-			layout.Layout (new Rectangle (0, 0, 1002, 462));
+			layout.Layout (new Rectangle(0, 0, 1002, 462));
 			Assert.AreEqual (1002, layout.Width);
 			Assert.AreEqual (462, layout.Height);
 
-			Assert.AreEqual (new Rectangle (0, 0, 330, 150), label1.Bounds);
-			Assert.AreEqual (new Rectangle (336, 156, 330, 150), label2.Bounds);
-			Assert.AreEqual (new Rectangle (672, 312, 330, 150), label3.Bounds);
+			Assert.AreEqual (new Rectangle(0, 0, 330, 150), label1.Bounds);
+			Assert.AreEqual (new Rectangle(336, 156, 330, 150), label2.Bounds);
+			Assert.AreEqual (new Rectangle(672, 312, 330, 150), label3.Bounds);
 		}
 
 		[Test]
 		public void TestStarLayoutWithSpans ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
-			var label1 = new Label {IsPlatformEnabled = true};
-			var label2 = new Label {IsPlatformEnabled = true};
-			var label3 = new Label {IsPlatformEnabled = true};
+			var label1 = new Label { IsPlatformEnabled = true};
+			var label2 = new Label { IsPlatformEnabled = true};
+			var label3 = new Label { IsPlatformEnabled = true};
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection { 
 				new ColumnDefinition {Width = new GridLength (1, GridUnitType.Star)},
@@ -1014,24 +1119,24 @@ namespace Xamarin.Forms.Core.UnitTests
 			layout.Children.Add (label2, 2, 3, 0, 2);
 			layout.Children.Add (label3, 1, 2);
 
-			layout.Layout (new Rectangle (0, 0, 1002, 462));
+			layout.Layout (new Rectangle(0, 0, 1002, 462));
 
 			Assert.AreEqual (1002, layout.Width);
 			Assert.AreEqual (462, layout.Height);
 
-			Assert.AreEqual (new Rectangle (0, 0, 666, 150), label1.Bounds);
-			Assert.AreEqual (new Rectangle (672, 0, 330, 306), label2.Bounds);
-			Assert.AreEqual (new Rectangle (336, 312, 330, 150), label3.Bounds);
+			Assert.AreEqual (new Rectangle(0, 0, 666, 150), label1.Bounds);
+			Assert.AreEqual (new Rectangle(672, 0, 330, 306), label2.Bounds);
+			Assert.AreEqual (new Rectangle(336, 312, 330, 150), label3.Bounds);
 		}
 
 		[Test]
 		public void TestAutoLayout ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
-			var label1 = new Label {IsPlatformEnabled = true};
-			var label2 = new Label {IsPlatformEnabled = true};
-			var label3 = new Label {IsPlatformEnabled = true};
+			var label1 = new Label { IsPlatformEnabled = true};
+			var label2 = new Label { IsPlatformEnabled = true};
+			var label3 = new Label { IsPlatformEnabled = true};
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection { 
 				new ColumnDefinition {Width = GridLength.Auto},
@@ -1048,20 +1153,20 @@ namespace Xamarin.Forms.Core.UnitTests
 			layout.Children.Add (label3, 2, 2);
 
 
-			layout.Layout (new Rectangle (0, 0, 1000, 1000));
+			layout.Layout (new Rectangle(0, 0, 1000, 1000));
 
 			Assert.AreEqual (1000, layout.Width);
 			Assert.AreEqual (1000, layout.Height);
 
-			Assert.AreEqual (new Rectangle (0, 0, 100, 20), label1.Bounds);
-			Assert.AreEqual (new Rectangle (106, 26, 100, 20), label2.Bounds);
-			Assert.AreEqual (new Rectangle (212, 52, 100, 20), label3.Bounds);
+			Assert.AreEqual (new Rectangle(0, 0, 100, 20), label1.Bounds);
+			Assert.AreEqual (new Rectangle(106, 26, 100, 20), label2.Bounds);
+			Assert.AreEqual (new Rectangle(212, 52, 100, 20), label3.Bounds);
 		}
 
 		[Test]
 		public void TestAutoLayoutWithSpans ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
 			var label1 = new Label { IsPlatformEnabled = true, WidthRequest = 150, Text = "label1" };
 			var label2 = new Label { IsPlatformEnabled = true, HeightRequest = 50, Text = "label2" };
@@ -1081,27 +1186,27 @@ namespace Xamarin.Forms.Core.UnitTests
 			layout.Children.Add (label2, 2, 3, 0, 2);
 			layout.Children.Add (label3, 1, 2);
 
-			layout.Layout (new Rectangle (0, 0, 1002, 462));
+			layout.Layout (new Rectangle(0, 0, 1002, 462));
 
 			Assert.AreEqual (1002, layout.Width);
 			Assert.AreEqual (462, layout.Height);
 
-			Assert.AreEqual (new Rectangle (0, 0, 150, 20), label1.Bounds);
-			Assert.AreEqual (new Rectangle (156, 0, 100, 50), label2.Bounds);
-			Assert.AreEqual (new Rectangle (50, 56, 100, 20), label3.Bounds);
+			Assert.AreEqual (new Rectangle(0, 0, 150, 20), label1.Bounds);
+			Assert.AreEqual (new Rectangle(156, 0, 100, 50), label2.Bounds);
+			Assert.AreEqual (new Rectangle(50, 56, 100, 20), label3.Bounds);
 		}
 
 		[Test]
 		public void AutoLayoutWithComplexSpans ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
-			var label1 = new Label {IsPlatformEnabled = true};
-			var label2 = new Label {IsPlatformEnabled = true};
-			var label3 = new Label {IsPlatformEnabled = true};
-			var label4 = new Label {IsPlatformEnabled = true, WidthRequest = 206};
-			var label5 = new Label {IsPlatformEnabled = true, WidthRequest = 312};
-			var label6 = new Label {IsPlatformEnabled = true, WidthRequest = 312};
+			var label1 = new Label { IsPlatformEnabled = true};
+			var label2 = new Label { IsPlatformEnabled = true};
+			var label3 = new Label { IsPlatformEnabled = true};
+			var label4 = new Label { IsPlatformEnabled = true, WidthRequest = 206};
+			var label5 = new Label { IsPlatformEnabled = true, WidthRequest = 312};
+			var label6 = new Label { IsPlatformEnabled = true, WidthRequest = 312};
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection { 
 				new ColumnDefinition {Width = GridLength.Auto},
@@ -1118,7 +1223,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			layout.Children.Add (label5, 0, 3, 0, 1);
 			layout.Children.Add (label6, 2, 6, 0, 1);
 
-			layout.Layout (new Rectangle (0, 0, 1000, 500));
+			layout.Layout (new Rectangle(0, 0, 1000, 500));
 
 			Assert.AreEqual (100, layout.ColumnDefinitions [0].ActualWidth);
 			Assert.AreEqual (100, layout.ColumnDefinitions [1].ActualWidth);
@@ -1130,11 +1235,11 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void AutoLayoutExpandColumns ()
 		{
-			var layout = new Grid ();
+			var layout = new Grid();
 
-			var label1 = new Label {IsPlatformEnabled = true};
-			var label2 = new Label {IsPlatformEnabled = true};
-			var label3 = new Label {IsPlatformEnabled = true, WidthRequest = 300};
+			var label1 = new Label { IsPlatformEnabled = true};
+			var label2 = new Label { IsPlatformEnabled = true};
+			var label3 = new Label { IsPlatformEnabled = true, WidthRequest = 300};
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection { 
 				new ColumnDefinition { Width = GridLength.Auto },
@@ -1145,7 +1250,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			layout.Children.Add (label2, 1, 0);
 			layout.Children.Add (label3, 0, 2, 0, 1);
 
-			layout.Layout (new Rectangle (0, 0, 1000, 500));
+			layout.Layout (new Rectangle(0, 0, 1000, 500));
 
 			Assert.AreEqual (100, layout.ColumnDefinitions [0].ActualWidth);
 			Assert.AreEqual (194, layout.ColumnDefinitions [1].ActualWidth);
@@ -1154,7 +1259,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void GridHasDefaultDefinitions ()
 		{
-			var grid = new Grid ();
+			var grid = new Grid();
 			Assert.NotNull (grid.ColumnDefinitions);
 			Assert.NotNull (grid.RowDefinitions);
 		}
@@ -1162,11 +1267,11 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void DefaultDefinitionsArentSharedAccrossInstances ()
 		{
-			var grid0 = new Grid ();
+			var grid0 = new Grid();
 			var coldefs = grid0.ColumnDefinitions;
 			var rowdefs = grid0.RowDefinitions;
 
-			var grid1 = new Grid ();
+			var grid1 = new Grid();
 			Assert.AreNotSame (grid0, grid1);
 			Assert.AreNotSame (coldefs, grid1.ColumnDefinitions);
 			Assert.AreNotSame (rowdefs, grid1.RowDefinitions);
@@ -1175,27 +1280,29 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void ChildrenLayoutRespectAlignment ()
 		{
-			var grid = new Grid { 
-				ColumnDefinitions = { new ColumnDefinition { Width = new GridLength (300) } },
-				RowDefinitions = { new RowDefinition { Height = new GridLength (100) } },
+			var grid = new Grid
+			{ 
+				ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(300) } },
+				RowDefinitions = { new RowDefinition { Height = new GridLength(100) } },
 			};
-			var label = new Label { 
+			var label = new Label
+			{ 
 				IsPlatformEnabled = true,
 				VerticalOptions = LayoutOptions.Center,
 				HorizontalOptions = LayoutOptions.End,
 			};
 
 			grid.Children.Add (label);
-			grid.Layout (new Rectangle (0, 0, 500, 500));
+			grid.Layout (new Rectangle(0, 0, 500, 500));
 
-			Assert.AreEqual (new Rectangle (200, 40, 100, 20), label.Bounds);
+			Assert.AreEqual (new Rectangle(200, 40, 100, 20), label.Bounds);
 		}
 
 		[Test]
 		public void BothChildrenPropertiesUseTheSameBackendStore ()
 		{
-			var view = new View ();
-			var grid = new Grid ();
+			var view = new View();
+			var grid = new Grid();
 			Assert.AreEqual (0, grid.Children.Count);
 			(grid as Layout<View>).Children.Add (view);
 			Assert.AreEqual (1, grid.Children.Count);
@@ -1208,29 +1315,32 @@ namespace Xamarin.Forms.Core.UnitTests
 		//Issue 1384
 		public void ImageInAutoCellIsProperlyConstrained ()
 		{
-			var content = new Image { 
+			var content = new Image
+			{ 
 				Aspect= Aspect.AspectFit,
 				IsPlatformEnabled = true 
 			};
-			var grid = new Grid {
+			var grid = new Grid
+			{
 				IsPlatformEnabled = true,
 				BackgroundColor = Color.Red, 
-				VerticalOptions=LayoutOptions.Start,
+				VerticalOptions= LayoutOptions.Start,
 				Children = {
 					content
 				},
 				RowDefinitions = { new RowDefinition { Height = GridLength.Auto} },
 				ColumnDefinitions = { new ColumnDefinition { Width = GridLength.Auto } }
 			};
-			var view = new ContentView {
+			var view = new ContentView
+			{
 				IsPlatformEnabled = true,
 				Content = grid,
 			};
-			view.Layout (new Rectangle (0, 0, 100, 100));
+			view.Layout (new Rectangle(0, 0, 100, 100));
 			Assert.AreEqual (100, grid.Width);
 			Assert.AreEqual (20, grid.Height);
 
-			view.Layout (new Rectangle (0, 0, 50, 50));
+			view.Layout (new Rectangle(0, 0, 50, 50));
 			Assert.AreEqual (50, grid.Width);
 			Assert.AreEqual (10, grid.Height);
 		}
@@ -1239,29 +1349,32 @@ namespace Xamarin.Forms.Core.UnitTests
 		//Issue 1384
 		public void ImageInStarCellIsProperlyConstrained ()
 		{
-			var content = new Image { 
+			var content = new Image
+			{ 
 				Aspect= Aspect.AspectFit,
 				MinimumHeightRequest = 10,
 				MinimumWidthRequest = 50,
 				IsPlatformEnabled = true 
 			};
-			var grid = new Grid {
+			var grid = new Grid
+			{
 				IsPlatformEnabled = true,
 				BackgroundColor = Color.Red, 
-				VerticalOptions=LayoutOptions.Start,
+				VerticalOptions= LayoutOptions.Start,
 				Children = {
 					content
 				}
 			};
-			var view = new ContentView {
+			var view = new ContentView
+			{
 				IsPlatformEnabled = true,
 				Content = grid,
 			};
-			view.Layout (new Rectangle (0, 0, 100, 100));
+			view.Layout (new Rectangle(0, 0, 100, 100));
 			Assert.AreEqual (100, grid.Width);
 			Assert.AreEqual (20, grid.Height);
 
-			view.Layout (new Rectangle (0, 0, 50, 50));
+			view.Layout (new Rectangle(0, 0, 50, 50));
 			Assert.AreEqual (50, grid.Width);
 			Assert.AreEqual (10, grid.Height);
 		}
@@ -1269,7 +1382,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void SizeRequestForStar ()
 		{
-			var grid = new Grid{ 
+			var grid = new Grid
+			{ 
 				RowDefinitions = new RowDefinitionCollection {
 					new RowDefinition {Height = new GridLength (1, GridUnitType.Star)},
 					new RowDefinition {Height = GridLength.Auto},
@@ -1279,10 +1393,10 @@ namespace Xamarin.Forms.Core.UnitTests
 					new ColumnDefinition {Width = GridLength.Auto},
 				}
 			};
-			grid.Children.Add (new Label {BackgroundColor = Color.Lime, Text="Foo", IsPlatformEnabled = true});
-			grid.Children.Add (new Label {Text = "Bar", IsPlatformEnabled = true},0,1);
-			grid.Children.Add (new Label {Text="Baz",XAlign = TextAlignment.End, IsPlatformEnabled = true},1,0);
-			grid.Children.Add (new Label {Text="Qux", XAlign = TextAlignment.End, IsPlatformEnabled = true},1,1);
+			grid.Children.Add (new Label { BackgroundColor = Color.Lime, Text="Foo", IsPlatformEnabled = true});
+			grid.Children.Add (new Label { Text = "Bar", IsPlatformEnabled = true},0,1);
+			grid.Children.Add (new Label { Text = "Baz", XAlign = TextAlignment.End, IsPlatformEnabled = true},1,0);
+			grid.Children.Add (new Label { Text = "Qux", XAlign = TextAlignment.End, IsPlatformEnabled = true},1,1);
 
 			var request = grid.GetSizeRequest (double.PositiveInfinity, double.PositiveInfinity);
 			Assert.AreEqual (206, request.Request.Width);
@@ -1297,15 +1411,18 @@ namespace Xamarin.Forms.Core.UnitTests
 		//Issue 1497
 		public void StarRowsShouldOccupyTheSpace ()
 		{
-			var label = new Label { 
+			var label = new Label
+			{ 
 				IsPlatformEnabled = true,
 			};
-			var Button = new Button {
+			var Button = new Button
+			{
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				VerticalOptions = LayoutOptions.EndAndExpand,
 				IsPlatformEnabled = true,
 			};
-			var grid = new Grid {
+			var grid = new Grid
+			{
 				RowDefinitions = new RowDefinitionCollection {
 					new RowDefinition { Height = GridLength.Auto },
 					new RowDefinition { Height = new GridLength (1, GridUnitType.Star) },
@@ -1319,14 +1436,15 @@ namespace Xamarin.Forms.Core.UnitTests
 			grid.Children.Add (label);
 			grid.Children.Add (Button, 0, 1);
 
-			grid.Layout (new Rectangle (0, 0, 300, 300));
-			Assert.AreEqual (new Rectangle (0, 280, 300, 20), Button.Bounds);
+			grid.Layout (new Rectangle(0, 0, 300, 300));
+			Assert.AreEqual (new Rectangle(0, 280, 300, 20), Button.Bounds);
 		}
 
 		[Test]
 		public void StarColumnsWithSpansDoNotExpandAutos ()
 		{
-			var grid = new Grid {
+			var grid = new Grid
+			{
 				RowDefinitions = {
 					new RowDefinition {Height = GridLength.Auto},
 					new RowDefinition {Height = GridLength.Auto},
@@ -1339,10 +1457,10 @@ namespace Xamarin.Forms.Core.UnitTests
 				IsPlatformEnabled = true
 			};
 
-			var spanBox = new BoxView {WidthRequest = 70, HeightRequest = 20, IsPlatformEnabled = true};
-			var box1 = new BoxView {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true};
-			var box2 = new BoxView {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true};
-			var box3 = new BoxView {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true};
+			var spanBox = new BoxView { WidthRequest = 70, HeightRequest = 20, IsPlatformEnabled = true};
+			var box1 = new BoxView { WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true};
+			var box2 = new BoxView { WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true};
+			var box3 = new BoxView { WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true};
 
 			grid.Children.Add (spanBox, 0, 3, 0, 1);
 			grid.Children.Add (box1, 0, 1);
@@ -1351,21 +1469,21 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			grid.Layout (new Rectangle(0, 0, 300, 46));
 
-			Assert.AreEqual (new Rectangle (0, 0, 300, 20), spanBox.Bounds);
-			Assert.AreEqual (new Rectangle (0, 26, 20, 20), box1.Bounds);
-			Assert.AreEqual (new Rectangle (26, 26, 20, 20), box2.Bounds);
-			Assert.AreEqual (new Rectangle (52, 26, 248, 20), box3.Bounds);
+			Assert.AreEqual (new Rectangle(0, 0, 300, 20), spanBox.Bounds);
+			Assert.AreEqual (new Rectangle(0, 26, 20, 20), box1.Bounds);
+			Assert.AreEqual (new Rectangle(26, 26, 20, 20), box2.Bounds);
+			Assert.AreEqual (new Rectangle(52, 26, 248, 20), box3.Bounds);
 		}
 
 		static SizeRequest GetResizableSize (VisualElement view, double widthconstraint, double heightconstraint)
 		{
 			if (!(view is Editor))
-				return new SizeRequest(new Size (100, 20));
+				return new SizeRequest(new Size(100, 20));
 			if (widthconstraint < 100)
-				return new SizeRequest(new Size (widthconstraint, 2000/widthconstraint));
+				return new SizeRequest(new Size(widthconstraint, 2000/widthconstraint));
 			if (heightconstraint < 20)
-				return new SizeRequest(new Size (2000/heightconstraint, heightconstraint));
-			return new SizeRequest(new Size (100, 20));
+				return new SizeRequest(new Size(2000/heightconstraint, heightconstraint));
+			return new SizeRequest(new Size(100, 20));
 		}
 			
 		[Test]
@@ -1374,7 +1492,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			Device.PlatformServices = new MockPlatformServices(getNativeSizeFunc:GetResizableSize);
 
-			var grid0 = new Grid {
+			var grid0 = new Grid
+			{
 				ColumnDefinitions = {
 					new ColumnDefinition { Width = GridLength.Auto },
 					new ColumnDefinition { Width = new GridLength (1, GridUnitType.Star) },
@@ -1391,10 +1510,11 @@ namespace Xamarin.Forms.Core.UnitTests
 			grid0.Children.Add (label0, 0, 0);
 			grid0.Children.Add (editor0, 1, 2, 0, 2);
 
-			grid0.Layout (new Rectangle (0, 0, 156, 200));
-			Assert.AreEqual (new Rectangle (106, 0, 50, 40), editor0.Bounds);
+			grid0.Layout (new Rectangle(0, 0, 156, 200));
+			Assert.AreEqual (new Rectangle(106, 0, 50, 40), editor0.Bounds);
 
-			var grid1 = new Grid {
+			var grid1 = new Grid
+			{
 				ColumnDefinitions = {
 					new ColumnDefinition { Width = GridLength.Auto },
 					new ColumnDefinition { Width = new GridLength (1, GridUnitType.Star) },
@@ -1410,8 +1530,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			grid1.Children.Add (label1, 0, 0);
 			grid1.Children.Add (editor1, 1, 0);
 
-			grid1.Layout (new Rectangle (0, 0, 156, 200));
-			Assert.AreEqual (new Rectangle (106, 0, 50, 40), editor1.Bounds);
+			grid1.Layout (new Rectangle(0, 0, 156, 200));
+			Assert.AreEqual (new Rectangle(106, 0, 50, 40), editor1.Bounds);
 		}
 
 		[Test]
@@ -1419,7 +1539,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			Device.PlatformServices = new MockPlatformServices(getNativeSizeFunc:GetResizableSize);
 
-			var grid = new Grid {
+			var grid = new Grid
+			{
 				ColumnDefinitions = {
 					new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
 					new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }
@@ -1433,9 +1554,9 @@ namespace Xamarin.Forms.Core.UnitTests
 				ColumnSpacing = 0,
 			};
 
-			var topLabel = new Editor {IsPlatformEnabled = true};
-			var leftLabel = new Label {IsPlatformEnabled = true, WidthRequest = 10};
-			var rightLabel = new Label {IsPlatformEnabled = true, WidthRequest = 10};
+			var topLabel = new Editor { IsPlatformEnabled = true};
+			var leftLabel = new Label { IsPlatformEnabled = true, WidthRequest = 10};
+			var rightLabel = new Label { IsPlatformEnabled = true, WidthRequest = 10};
 
 			grid.Children.Add (topLabel, 0, 2, 0, 1);
 			grid.Children.Add (leftLabel, 0, 1);
@@ -1444,17 +1565,18 @@ namespace Xamarin.Forms.Core.UnitTests
 			var unboundRequest = grid.GetSizeRequest (double.PositiveInfinity, double.PositiveInfinity);
 			var widthBoundRequest = grid.GetSizeRequest (50, double.PositiveInfinity);
 
-			Assert.AreEqual (new SizeRequest (new Size (20, 120), new Size (0, 120)), unboundRequest);
-			Assert.AreEqual (new SizeRequest (new Size (50, 60), new Size (0, 60)), widthBoundRequest);
+			Assert.AreEqual (new SizeRequest(new Size(20, 120), new Size(0, 120)), unboundRequest);
+			Assert.AreEqual (new SizeRequest(new Size(50, 60), new Size(0, 60)), widthBoundRequest);
 		}
 
 		[Test]
 		//https://bugzilla.xamarin.com/show_bug.cgi?id=31608
 		public void ColAndRowDefinitionsAreActuallyBindable ()
 		{
-			var rowdef = new RowDefinition ();
+			var rowdef = new RowDefinition();
 			rowdef.SetBinding (RowDefinition.HeightProperty, "Height");
-			var grid = new Grid {
+			var grid = new Grid
+			{
 				RowDefinitions = new RowDefinitionCollection { rowdef },
 			};
 			Assert.AreEqual (RowDefinition.HeightProperty.DefaultValue, rowdef.Height);
@@ -1466,9 +1588,10 @@ namespace Xamarin.Forms.Core.UnitTests
 		//https://bugzilla.xamarin.com/show_bug.cgi?id=31967
 		public void ChangingRowHeightViaBindingTriggersRedraw ()
 		{
-			var rowdef = new RowDefinition ();
+			var rowdef = new RowDefinition();
 			rowdef.SetBinding (RowDefinition.HeightProperty, "Height");
-			var grid = new Grid {
+			var grid = new Grid
+			{
 //				RowDefinitions = new RowDefinitionCollection {
 //					new RowDefinition { Height = GridLength.Auto },
 //					rowdef
@@ -1488,15 +1611,15 @@ namespace Xamarin.Forms.Core.UnitTests
 			grid.Children.Add (label0);
 			grid.Children.Add (label1);
 
-			Assert.AreEqual (new SizeRequest (new Size (100, 20), new Size (0, 20)), grid.GetSizeRequest (double.PositiveInfinity, double.PositiveInfinity));
+			Assert.AreEqual (new SizeRequest(new Size(100, 20), new Size(0, 20)), grid.GetSizeRequest (double.PositiveInfinity, double.PositiveInfinity));
 			grid.BindingContext = new {Height = 42};
-			Assert.AreEqual (new SizeRequest (new Size (100, 62), new Size (0, 62)), grid.GetSizeRequest (double.PositiveInfinity, double.PositiveInfinity));
+			Assert.AreEqual (new SizeRequest(new Size(100, 62), new Size(0, 62)), grid.GetSizeRequest (double.PositiveInfinity, double.PositiveInfinity));
 		}
 
 		[Test]
 		public void InvalidationBlockedForAbsoluteCell ()
 		{
-			var grid = new Grid () {
+			var grid = new Grid() {
 				IsPlatformEnabled = true,
 				RowDefinitions = {
 					new RowDefinition { Height = new GridLength (100, GridUnitType.Absolute) }
@@ -1697,7 +1820,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		[TestCase (HackLayoutConstraint.Fixed, GridUnitType.Auto, GridUnitType.Auto, ExpectedResult = false)]
 		public bool InvalidationPropogationTests (HackLayoutConstraint gridConstraint, GridUnitType horizontalType, GridUnitType verticalType)
 		{
-			var grid = new Grid {
+			var grid = new Grid
+			{
 				ComputedConstraint = (LayoutConstraint) gridConstraint,
 				IsPlatformEnabled = true,
 				RowDefinitions = {
@@ -1744,16 +1868,19 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void NestedInvalidateMeasureDoesNotCrash ()
 		{
-			var grid = new Grid {
+			var grid = new Grid
+			{
 				IsPlatformEnabled = true
 			};
 
-			var child = new Label {
+			var child = new Label
+			{
 				IsPlatformEnabled = true
 			};
 			grid.Children.Add (child);
 
-			var child2 = new Label {
+			var child2 = new Label
+			{
 				IsPlatformEnabled = true
 			};
 			grid.Children.Add (child2);
@@ -1765,7 +1892,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				fire = false;
 			};
 
-			grid.Layout (new Rectangle (0, 0, 100, 100));
+			grid.Layout (new Rectangle(0, 0, 100, 100));
 
 			foreach (var delayAction in delayActions) {
 				delayAction ();

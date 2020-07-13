@@ -150,6 +150,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
+		[Category(UITestCategories.UwpIgnore)]
 		public void Bugzilla31330Test()
 		{
 			RunningApp.WaitForElement(c => c.Marked("Something 2"));

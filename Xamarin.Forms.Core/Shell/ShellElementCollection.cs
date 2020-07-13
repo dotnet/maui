@@ -173,9 +173,9 @@ namespace Xamarin.Forms
 			}
 		}
 
-		protected virtual void CheckVisibility(BaseShellItem element)
+		protected void CheckVisibility(BaseShellItem element)
 		{
-			if (IsShellElementVisible(element))
+			if (IsBaseShellItemVisible(element))
 			{
 				if (VisibleItems.Contains(element))
 					return;
@@ -185,7 +185,7 @@ namespace Xamarin.Forms
 				{
 					var item = Inner[i];
 
-					if (!IsShellElementVisible(element))
+					if (!IsBaseShellItemVisible(element))
 						continue;
 
 					if (item == element)
@@ -202,16 +202,24 @@ namespace Xamarin.Forms
 			{
 				VisibleItems.Remove(element);
 			}
+
+			bool IsBaseShellItemVisible(BaseShellItem item)
+			{
+				if (!item.IsVisible)
+					return false;
+
+				if (item is ShellGroupItem sgi)
+				{
+					return (sgi.ShellElementCollection.VisibleItemsReadOnly.Count > 0) ||
+						item is IMenuItemController;
+				}
+
+				return IsShellElementVisible(item);
+			}
 		}
 
 		protected virtual bool IsShellElementVisible(BaseShellItem item)
 		{
-			if (item is ShellGroupItem sgi)
-			{
-				return (sgi.ShellElementCollection.VisibleItemsReadOnly.Count > 0) ||
-					item is IMenuItemController;
-			}
-
 			return false;
 		}
 
@@ -222,6 +230,9 @@ namespace Xamarin.Forms
 			{
 				sgi.ShellElementCollection.VisibleItemsChangedInternal += OnShellElementControllerItemsCollectionChanged;
 			}
+
+			if(controller is BaseShellItem bsi)
+				bsi.PropertyChanged += BaseShellItemPropertyChanged;
 		}
 
 		protected virtual void OnElementControllerRemoving(IElementController controller)
@@ -230,23 +241,32 @@ namespace Xamarin.Forms
 			{
 				sgi.ShellElementCollection.VisibleItemsChangedInternal -= OnShellElementControllerItemsCollectionChanged;
 			}
+
+			if (controller is BaseShellItem bsi)
+				bsi.PropertyChanged -= BaseShellItemPropertyChanged;
+		}
+
+		void BaseShellItemPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if(e.PropertyName == nameof(BaseShellItem.IsVisible))
+				CheckVisibility((BaseShellItem)sender);
 		}
 
 		void OnShellElementControllerItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			foreach (BaseShellItem section in (e.NewItems ?? e.OldItems ?? (IList)Inner))
+			foreach (BaseShellItem bsi in (e.NewItems ?? e.OldItems ?? Inner))
 			{
-				if (section.Parent == null)
-					section.ParentSet += OnParentSet;
+				if (bsi.Parent == null)
+					bsi.ParentSet += OnParentSet;
 				else
-					CheckVisibility(section.Parent as BaseShellItem);
+					CheckVisibility(bsi.Parent as BaseShellItem);
 			}
 
 			void OnParentSet(object s, System.EventArgs __)
 			{
-				var shellSection = (BaseShellItem)s;
-				shellSection.ParentSet -= OnParentSet;
-				CheckVisibility(shellSection.Parent as BaseShellItem);
+				var baseShellItem = (BaseShellItem)s;
+				baseShellItem.ParentSet -= OnParentSet;
+				CheckVisibility(baseShellItem.Parent as BaseShellItem);
 			}
 		}
 

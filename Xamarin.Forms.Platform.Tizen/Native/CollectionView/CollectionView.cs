@@ -48,7 +48,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 		public IRotaryActionWidget RotaryWidget { get => Scroller as IRotaryActionWidget; }
 
-
 		public CollectionViewSelectionMode SelectionMode
 		{
 			get => _selectionMode;
@@ -104,6 +103,18 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				_adaptor = value;
 				OnAdaptorChanged();
 			}
+		}
+
+		public ScrollBarVisiblePolicy VerticalScrollBarVisiblePolicy
+		{
+			get => Scroller.VerticalScrollBarVisiblePolicy;
+			set => Scroller.VerticalScrollBarVisiblePolicy = value;
+		}
+
+		public ScrollBarVisiblePolicy HorizontalScrollBarVisiblePolicy
+		{
+			get => Scroller.HorizontalScrollBarVisiblePolicy;
+			set => Scroller.HorizontalScrollBarVisiblePolicy = value;
 		}
 
 		int ICollectionViewController.Count
@@ -380,6 +391,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			_itemSize = new ESize(-1, -1);
 			_layoutManager.CollectionView = this;
 			_layoutManager.SizeAllocated(AllocatedSize);
+			UpdateSnapPointsType(SnapPointsType);
 			RequestLayoutItems();
 		}
 
@@ -406,7 +418,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			_itemSize = new ESize(-1, -1);
 			Adaptor.CollectionView = this;
 			(Adaptor as INotifyCollectionChanged).CollectionChanged += OnCollectionChanged;
-			
+
+			UpdateSnapPointsType(SnapPointsType);
 			LayoutManager?.ItemSourceUpdated();
 			RequestLayoutItems();
 
@@ -510,6 +523,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			{
 				_layoutManager?.SizeAllocated(Geometry.Size);
 				_layoutManager?.LayoutItems(ViewPort);
+
+				UpdateSnapPointsType(SnapPointsType);
 			}
 		}
 
@@ -564,25 +579,37 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 		void UpdateSnapPointsType(SnapPointsType snapPoints)
 		{
-			var itemSize = new ESize(0, 0);
+			if (LayoutManager == null)
+				return;
+
+			int itemSize = 0;
 			switch (snapPoints)
 			{
 				case SnapPointsType.None:
 					Scroller.HorizontalPageScrollLimit = 0;
 					Scroller.VerticalPageScrollLimit = 0;
+					itemSize = 0;
 					break;
 				case SnapPointsType.MandatorySingle:
 					Scroller.HorizontalPageScrollLimit = 1;
 					Scroller.VerticalPageScrollLimit = 1;
-					itemSize = (this as ICollectionViewController).GetItemSize();
+					itemSize = LayoutManager.GetScrollBlockSize();
 					break;
 				case SnapPointsType.Mandatory:
 					Scroller.HorizontalPageScrollLimit = 0;
 					Scroller.VerticalPageScrollLimit = 0;
-					itemSize = (this as ICollectionViewController).GetItemSize();
+					itemSize = LayoutManager.GetScrollBlockSize();
 					break;
 			}
-			Scroller.SetPageSize(itemSize.Width, itemSize.Height);
+
+			if (LayoutManager.IsHorizontal)
+			{
+				Scroller.SetPageSize(itemSize , 0);
+			}
+			else
+			{
+				Scroller.SetPageSize(0, itemSize);
+			}
 		}
 
 		void CreateEmptyView()
