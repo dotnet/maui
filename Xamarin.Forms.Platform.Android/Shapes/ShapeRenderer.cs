@@ -40,6 +40,7 @@ namespace Xamarin.Forms.Platform.Android
                 UpdateStrokeDashOffset();
                 UpdateStrokeLineCap();
                 UpdateStrokeLineJoin();
+                UpdateStrokeMiterLimit();
             }
         }
 
@@ -73,6 +74,8 @@ namespace Xamarin.Forms.Platform.Android
                 UpdateStrokeLineCap();
             else if (args.PropertyName == Shape.StrokeLineJoinProperty.PropertyName)
                 UpdateStrokeLineJoin();
+            else if (args.PropertyName == Shape.StrokeMiterLimitProperty.PropertyName)
+                UpdateStrokeMiterLimit();
         }
 
         public override SizeRequest GetDesiredSize(int widthConstraint, int heightConstraint)
@@ -160,6 +163,11 @@ namespace Xamarin.Forms.Platform.Android
             }
 
             Control.UpdateStrokeLineJoin(aLineJoin);
+        }
+
+        void UpdateStrokeMiterLimit()
+        {
+            Control.UpdateStrokeMiterLimit((float)Element.StrokeMiterLimit);
         }
     }
 
@@ -320,6 +328,12 @@ namespace Xamarin.Forms.Platform.Android
         {
             _drawable.Paint.StrokeJoin = strokeJoin;
             Invalidate();
+        }
+
+        public void UpdateStrokeMiterLimit(float strokeMiterLimit)
+        {
+            _drawable.Paint.StrokeMiter = strokeMiterLimit * 2;
+            UpdatePathStrokeBounds();
         }
 
         public void UpdateSize(double width, double height)
