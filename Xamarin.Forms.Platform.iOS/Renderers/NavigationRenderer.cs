@@ -148,9 +148,6 @@ namespace Xamarin.Forms.Platform.iOS
 			base.ViewWillAppear(animated);
 
 			SetStatusBarStyle();
-
-			if (Forms.IsiOS13OrNewer)
-				UpdateBarBackgroundColor();
 		}
 
 		public override void ViewDidDisappear(bool animated)
