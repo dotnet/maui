@@ -83,10 +83,15 @@ namespace Xamarin.Forms.Platform.Android.UnitTests
 
 		protected IVisualElementRenderer GetRenderer(VisualElement element)
 		{
+			return GetRenderer(element, Context);
+		}
+
+		protected IVisualElementRenderer GetRenderer(VisualElement element, Context context)
+		{
 			var renderer = element.GetRenderer();
 			if (renderer == null)
 			{
-				renderer = Platform.CreateRendererWithContext(element, Context);
+				renderer = Platform.CreateRendererWithContext(element, context);
 				Platform.SetRenderer(element, renderer);
 			}
 
