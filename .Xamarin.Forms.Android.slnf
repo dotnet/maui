@@ -2,9 +2,6 @@
   "solution": {
     "path": "Xamarin.Forms.sln",
     "projects": [
-      "EmbeddingTestBeds\\Embedding.Droid\\Embedding.Droid.csproj",
-      "PagesGallery\\PagesGallery.Droid\\PagesGallery.Droid.csproj",
-      "PagesGallery\\PagesGallery\\PagesGallery.csproj",
       "Stubs\\Xamarin.Forms.Platform.Android\\Xamarin.Forms.Platform.Android (Forwarders).csproj",
       "XFCorePostProcessor.Tasks\\XFCorePostProcessor.Tasks.csproj",
       "Xamarin.Flex\\Xamarin.Flex.shproj",
@@ -22,14 +19,12 @@
       "Xamarin.Forms.Maps\\Xamarin.Forms.Maps.csproj",
       "Xamarin.Forms.Material.Android\\Xamarin.Forms.Material.Android.csproj",
       "Xamarin.Forms.Pages.Azure\\Xamarin.Forms.Pages.Azure.csproj",
-      "Xamarin.Forms.Pages.UnitTests\\Xamarin.Forms.Pages.UnitTests.csproj",
       "Xamarin.Forms.Pages\\Xamarin.Forms.Pages.csproj",
       "Xamarin.Forms.Platform.Android.AppLinks\\Xamarin.Forms.Platform.Android.AppLinks.csproj",
       "Xamarin.Forms.Platform.Android.FormsViewGroup\\Xamarin.Forms.Platform.Android.FormsViewGroup.csproj",
+      "Xamarin.Forms.Platform.Android.UnitTests\\Xamarin.Forms.Platform.Android.UnitTests.csproj",
       "Xamarin.Forms.Platform.Android\\Xamarin.Forms.Platform.Android.csproj",
       "Xamarin.Forms.Platform\\Xamarin.Forms.Platform.csproj",
-      "Xamarin.Forms.Sandbox.Android\\Xamarin.Forms.Sandbox.Android.csproj",
-      "Xamarin.Forms.Sandbox\\Xamarin.Forms.Sandbox.csproj",
       "Xamarin.Forms.Xaml.Design\\Xamarin.Forms.Xaml.Design.csproj",
       "Xamarin.Forms.Xaml.UnitTests\\Xamarin.Forms.Xaml.UnitTests.csproj",
       "Xamarin.Forms.Xaml\\Xamarin.Forms.Xaml.csproj"

@@ -46,6 +46,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue8766.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue8797.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue8801.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue9279.xaml.cs">
       <DependentUpon>Issue9279.xaml</DependentUpon>
