@@ -183,15 +183,67 @@ namespace Xamarin.Forms.Core.UnitTests
 			var stepper = new Stepper(0, 10, 0, 0.5);
 
 			for (int i = steps; i < steps; i++)
-			{
 				stepper.Value += stepper.Increment;
-			}
+			
 			for (int i = steps; i < steps; i--)
-			{
 				stepper.Value += stepper.Increment;
-			}
 
 			Assert.AreEqual(0.0, stepper.Value);
+		}
+
+		[TestCase(100, .5, 0, 100)]
+		[TestCase(100, .3, 0, 100)]
+		[TestCase(100, .03, 0, 100)]
+		[TestCase(100, .003, 0, 100)]
+		[TestCase(100, .0003, 0, 100)]
+		[TestCase(100, .0000003, 0, 100)]
+		[TestCase(100, .0000000003, 0, 100)]
+		[TestCase(100, .0000000000003, 0, 100)]
+		[TestCase(100, .5, -10000, 10000)]
+		[TestCase(100, .3, -10000, 10000)]
+		[TestCase(100, .03, -10000, 10000)]
+		[TestCase(100, .003, -10000, 10000)]
+		[TestCase(100, .0003, -10000, 10000)]
+		[TestCase(100, .0000003, -10000, 10000)]
+		[TestCase(100, .0000000003, -10000, 10000)]
+		[TestCase(100, .0000000000003, -10000, 10000)]
+		[TestCase(100, .00003456, -10000, 10000)] //we support 4 significant digits for the increment. no less, no more
+		//https://github.com/xamarin/Xamarin.Forms/issues/5168
+		public void SmallIncrements(int steps, double increment, double min, double max)
+		{
+			var stepper = new Stepper(min, max, 0, increment);
+			int digits = Math.Max(1, Math.Min(15, (int)(-Math.Log10((double)increment) + 4))); //logic copied from the Stepper code
+
+			Assert.AreEqual(0.0, stepper.Value);
+
+			for (var i = 0; i < steps; i++)
+				stepper.Value += stepper.Increment;
+
+			Assert.AreEqual(Math.Round(stepper.Increment * steps, digits), stepper.Value);
+
+			for (var i = 0; i < steps; i++)
+				stepper.Value -= stepper.Increment;
+
+			Assert.AreEqual(0.0, stepper.Value);
+		}
+
+		[Test]
+		//https://github.com/xamarin/Xamarin.Forms/issues/10032
+		public void InitialValue()
+		{
+			var increment = .1;
+			var stepper = new Stepper(0, 10, 4.99, increment);
+
+			Assert.AreEqual(4.99, stepper.Value);
+
+			stepper.Value += stepper.Increment;
+			Assert.AreEqual(5.09, stepper.Value);
+			stepper.Value += stepper.Increment;
+			Assert.AreEqual(5.19, stepper.Value);
+			stepper.Value += stepper.Increment;
+			Assert.AreEqual(5.29, stepper.Value);
+			stepper.Value += stepper.Increment;
+			Assert.AreEqual(5.39, stepper.Value);
 		}
 	}
 }
