@@ -538,6 +538,16 @@ namespace Xamarin.Forms.Platform.iOS
 				_self = renderer;
 			}
 
+			// This is currently working around a Mono Interpreter bug
+			// if you remove this code please verify that hot restart still works
+			// https://github.com/xamarin/Xamarin.Forms/issues/10519
+			[Export("navigationController:animationControllerForOperation:fromViewController:toViewController:")]
+			[Foundation.Preserve(Conditional = true)]
+			public new IUIViewControllerAnimatedTransitioning GetAnimationControllerForOperation(UINavigationController navigationController, UINavigationControllerOperation operation, UIViewController fromViewController, UIViewController toViewController)
+			{
+				return null;
+			}
+
 			public override void DidShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
 			{
 				var tasks = _self._completionTasks;
