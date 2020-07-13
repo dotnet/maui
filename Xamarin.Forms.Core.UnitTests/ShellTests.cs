@@ -368,6 +368,25 @@ namespace Xamarin.Forms.Core.UnitTests
 			*/
 		}
 
+		[Test]
+		public async Task DefaultRoutesMaintainedIfThatsAllThereIs()
+		{
+			Routing.RegisterRoute(nameof(DefaultRoutesMaintainedIfThatsAllThereIs), typeof(ContentPage));
+			var shell = new Shell();
+			var shellContent = new ShellContent();
+			FlyoutItem flyoutItem = new FlyoutItem()
+			{
+				Items =
+				{
+					shellContent
+				}
+			};
+			shell.Items.Add(flyoutItem);
+
+			await shell.GoToAsync(nameof(DefaultRoutesMaintainedIfThatsAllThereIs));
+			Assume.That(shell.CurrentState.Location.ToString(), Is.EqualTo($"//{Routing.GetRoute(shellContent)}/{nameof(DefaultRoutesMaintainedIfThatsAllThereIs)}"));
+			await shell.GoToAsync("..");
+		}
 
 		[Test]
 		public async Task DotDotNavigationPassesParameters()
