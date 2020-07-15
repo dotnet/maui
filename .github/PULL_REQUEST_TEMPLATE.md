@@ -1,6 +1,6 @@
 <!-- WAIT! 
 
-After July 15, 2020, feature related pull requests will be considered for the .NET MAUI release rather than Xamarin.Forms 5.0. See the [transition to .NET MAUI](https://github.com/xamarin/Xamarin.Forms/wiki/Feature-Roadmap#transition-to-net-maui) for more information.
+After July 15, 2020, feature related pull requests cannot be guaranteed to merge by Xamarin.Forms 5.0. They will be labeled "maui" for transition to dotnet/maui. See the [transition to .NET MAUI](https://github.com/xamarin/Xamarin.Forms/wiki/Feature-Roadmap#transition-to-net-maui) for more information.
 
 Before you submit this PR, make sure you're building on and targeting the right branch!
      - If this is an enhancement or contains API changes or breaking changes, target main.
