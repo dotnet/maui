@@ -143,9 +143,11 @@ steps:
     inputs:
       Contents: |
         build.cake
+        build/provisioning/provisioning.csx
+        build/provisioning/xcode.csx
       TargetFolder: '$(build.artifactstagingdirectory)'
       CleanTargetFolder: false
-      flattenFolders: false
+      flattenFolders: true
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: iOS'

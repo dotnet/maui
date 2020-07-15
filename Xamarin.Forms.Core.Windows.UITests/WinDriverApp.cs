@@ -56,6 +56,18 @@ namespace Xamarin.Forms.Core.UITests
 			TestServer = new WindowsTestServer(_session, this);
 		}
 
+		public void RestartIfAppIsClosed()
+		{
+			try
+			{
+				var handle = _session.CurrentWindowHandle;
+			}
+			catch
+			{
+				RestartFromCrash();
+			}
+		}
+
 		public void RestartFromCrash()
 		{
 			Init(WindowsTestBase.CreateWindowsDriver());
@@ -311,12 +323,9 @@ namespace Xamarin.Forms.Core.UITests
 			try
 			{
 				string filename = $"{title}.png";
-
 				Screenshot screenshot = _session.GetScreenshot();
 				screenshot.SaveAsFile(filename, ScreenshotImageFormat.Png);
 				var file = new FileInfo(filename);
-
-				TestContext.AddTestAttachment(file.FullName, title);
 				return file;
 			}
 			catch (OpenQA.Selenium.WebDriverException we)

@@ -48,6 +48,7 @@ var IOS_TEST_LIBRARY = Argument("IOS_TEST_LIBRARY", $"./Xamarin.Forms.Core.iOS.U
 var IOS_IPA_PATH = Argument("IOS_IPA_PATH", $"./Xamarin.Forms.ControlGallery.iOS/bin/iPhoneSimulator/{configuration}/XamarinFormsControlGalleryiOS.app");
 var IOS_BUNDLE_ID = "com.xamarin.quickui.controlgallery";
 var IOS_BUILD_IPA = Argument("IOS_BUILD_IPA", (target == "cg-ios-deploy") ? true : (false || isCIBuild) );
+Guid IOS_SIM_UDID = Argument("IOS_SIM_UDID", Guid.Empty);
 
 var UWP_PACKAGE_ID = "0d4424f6-1e29-4476-ac00-ba22c3789cb6";
 var UWP_TEST_LIBRARY = GetBuildVariable("UWP_TEST_LIBRARY", $"./Xamarin.Forms.Core.Windows.UITests/bin/{configuration}/Xamarin.Forms.Core.Windows.UITests.dll");
@@ -63,8 +64,12 @@ var teamProject = Argument("TeamProject", "");
 bool buildForVS2017 = Convert.ToBoolean(Argument("buildForVS2017", "false"));
 bool isHostedAgent = agentName.StartsWith("Azure Pipelines") || agentName.StartsWith("Hosted Agent");
 
+string defaultUnitTestWhere = "";
 
-var NUNIT_TEST_WHERE = Argument("NUNIT_TEST_WHERE", "cat != Shell && cat != CollectionView && cat != UwpIgnore && cat != CarouselView");
+if(target.Contains("uwp", StringComparison.OrdinalIgnoreCase))
+    defaultUnitTestWhere = "cat != Shell && cat != CollectionView && cat != UwpIgnore && cat != CarouselView";
+
+var NUNIT_TEST_WHERE = Argument("NUNIT_TEST_WHERE", defaultUnitTestWhere);
 var ExcludeCategory = GetBuildVariable("ExcludeCategory", "")?.Replace("\"", "");
 var ExcludeCategory2 = GetBuildVariable("ExcludeCategory2", "")?.Replace("\"", "");
 var IncludeCategory = GetBuildVariable("IncludeCategory", "")?.Replace("\"", "");
@@ -144,6 +149,7 @@ Information ("Agent.Name: {0}", agentName);
 Information ("isCIBuild: {0}", isCIBuild);
 Information ("artifactStagingDirectory: {0}", artifactStagingDirectory);
 Information("workingDirectory: {0}", workingDirectory);
+Information("NUNIT_TEST_WHERE: {0}", NUNIT_TEST_WHERE);
 
 var releaseChannel = ReleaseChannel.Stable;
 if(releaseChannelArg == "Preview")
@@ -493,13 +499,19 @@ Task("cg-uwp-run-tests")
 
         try
         {
-            NUnit3(new [] { UWP_TEST_LIBRARY },
-                new NUnit3Settings {
-                    Params = new Dictionary<string, string>()
-                    {
-                    },
-                    Where = NUNIT_TEST_WHERE
-                });
+            var settings = new NUnit3Settings {
+                Params = new Dictionary<string, string>()
+                {
+                    {"IncludeScreenShots", "true"}
+                }
+            };
+
+            if(!String.IsNullOrWhiteSpace(NUNIT_TEST_WHERE))
+            {
+                settings.Where = NUNIT_TEST_WHERE;
+            }
+
+            NUnit3(new [] { UWP_TEST_LIBRARY }, settings);
         }
         finally
         {
@@ -914,14 +926,21 @@ Task("cg-ios-run-tests")
     .Does(() =>
     {
         var sim = GetIosSimulator();
-        NUnit3(new [] { IOS_TEST_LIBRARY }, 
-            new NUnit3Settings {
+
+        var settings = new NUnit3Settings {
                 Params = new Dictionary<string, string>()
                 {
-                    {"UDID", GetIosSimulator().UDID}
-                },
-                Where = NUNIT_TEST_WHERE
-            });
+                    {"UDID", GetIosSimulator().UDID},
+                    {"IncludeScreenShots", "true"}
+                }
+            };
+
+        if(!String.IsNullOrWhiteSpace(NUNIT_TEST_WHERE))
+        {
+            settings.Where = NUNIT_TEST_WHERE;
+        }
+
+        NUnit3(new [] { IOS_TEST_LIBRARY }, settings);
     });
 
 Task("cg-ios-run-tests-ci")
@@ -1070,10 +1089,27 @@ bool IsXcodeVersionOver(string version)
     return true;
 }
 
+IReadOnlyList<AppleSimulator> iosSimulators = null;
 AppleSimulator GetIosSimulator()
 {
-    var sims = ListAppleSimulators ();
+    if(iosSimulators == null)
+    {
+        iosSimulators = ListAppleSimulators ();
+        foreach (var s in iosSimulators)
+        {
+            Information("Info: {0} ({1} - {2} - {3})", s.Name, s.Runtime, s.UDID, s.Availability);
+        }
+
+        StartProcess("xcrun", new ProcessSettings {
+                    Arguments = new ProcessArgumentBuilder()
+                        .Append(@"simctl list")
+                    }
+                );
+    }
+        
+    if(IOS_SIM_UDID != Guid.Empty)
+        return iosSimulators.First (s => Guid.Parse(s.UDID) == IOS_SIM_UDID);
+
     // Look for a matching simulator on the system
-    var sim = sims.First (s => s.Name == IOS_SIM_NAME && s.Runtime == IOS_SIM_RUNTIME);
-    return sim;
+    return iosSimulators.First (s => s.Name == IOS_SIM_NAME && s.Runtime == IOS_SIM_RUNTIME);
 }

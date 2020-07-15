@@ -63,7 +63,16 @@ namespace Xamarin.Forms.Controls
 		static IApp InitializeAndroidApp()
 		{
 			var fullApkPath = Path.Combine(TestContext.CurrentContext.TestDirectory, AppPaths.ApkPath);
-			var app = ConfigureApp.Android.ApkFile(fullApkPath).Debug().StartApp(UITest.Configuration.AppDataMode.DoNotClear);
+
+			var appConfiguration = ConfigureApp.Android.ApkFile(fullApkPath).Debug();
+
+			if (TestContext.Parameters.Exists("IncludeScreenShots") &&
+				Convert.ToBoolean(TestContext.Parameters["IncludeScreenShots"]))
+			{
+				appConfiguration = appConfiguration.EnableLocalScreenshots();
+			}
+
+			var app = appConfiguration.StartApp(UITest.Configuration.AppDataMode.DoNotClear);
 
 			if (bool.Parse((string)app.Invoke("IsPreAppCompat")))
 			{
@@ -92,6 +101,12 @@ namespace Xamarin.Forms.Controls
 			if(!String.IsNullOrWhiteSpace(UDID))
 			{
 				appConfiguration = appConfiguration.DeviceIdentifier(UDID);
+			}
+
+			if (TestContext.Parameters.Exists("IncludeScreenShots") &&
+				Convert.ToBoolean(TestContext.Parameters["IncludeScreenShots"]))
+			{
+				appConfiguration = appConfiguration.EnableLocalScreenshots();
 			}
 
 			var app = appConfiguration.StartApp(Xamarin.UITest.Configuration.AppDataMode.DoNotClear);
