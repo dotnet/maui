@@ -30,8 +30,9 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void Issue1Test() 
+		public void Issue1Test()
 		{
+			RunningApp.WaitForElement("Issue1Label");
 			// Delete this and all other UITEST sections if there is no way to automate the test. Otherwise, be sure to rename the test and update the Category attribute on the class. Note that you can add multiple categories.
 			RunningApp.Screenshot("I am at Issue1");
 			RunningApp.WaitForElement(q => q.Marked("Issue1Label"));

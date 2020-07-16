@@ -59,6 +59,7 @@
     <Compile Include="CornerRadiusTests.cs" />
     <Compile Include="EmbeddingTests.cs" />
     <Compile Include="FlowDirectionTests.cs" />
+    <Compile Include="FrameTests.cs" />
     <Compile Include="HtmlLabelTests.cs" />
     <Compile Include="ImageButtonTests.cs" />
     <Compile Include="IsEnabledTests.cs" />

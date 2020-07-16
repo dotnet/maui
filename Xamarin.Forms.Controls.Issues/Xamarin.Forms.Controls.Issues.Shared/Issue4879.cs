@@ -31,7 +31,8 @@ namespace Xamarin.Forms.Controls.Issues
 					VerticalOptions = LayoutOptions.End,
 					ImageSource = "coffee.png",
 					Padding = new Thickness(10),
-					BackgroundColor = Color.Green
+					BackgroundColor = Color.Green,
+					AutomationId = "TestReady"
 				};
 				// Add BorderWidth to ImageButtons to match border of Button and allow for easier size comparisons
 				ImageButton ib1 = new ImageButton
@@ -79,6 +80,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Category(UITestCategories.ManualReview)]
 		public void Issue4879Test()
 		{
+			RunningApp.WaitForElement("TestReady");
 			RunningApp.Screenshot("I am at Issue 4879 - All buttons/images should be the same size.");
 		}
 #endif

@@ -38,7 +38,7 @@ namespace Xamarin.Forms.ControlGallery.iOS
 					Path = clipPath
 				};
 				layer.Mask = clipShapeLayer;
-                layer.Mask.Name = "test";
+                layer.Mask.Name = null;
 
                 Debug.WriteLine($"_11132CustomRenderer Layer Name { layer.Mask.Name}");
             }
