@@ -492,6 +492,12 @@ namespace Xamarin.Forms.Controls
 
 		public void AttachScreenshotToTestContext(string title = null)
 		{
+			if(!TestContext.Parameters.Exists("IncludeScreenShots") ||
+				!Convert.ToBoolean(TestContext.Parameters["IncludeScreenShots"]))
+			{
+				return;
+			}
+			
 			title = title ?? TestContext.CurrentContext.Test.FullName
 				.Replace(".", "_")
 				.Replace(" ", "_");

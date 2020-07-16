@@ -69,10 +69,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 		}
 
-#if UITEST
-#if !(__ANDROID__ || __IOS__)
-		[Ignore("Shell test is only supported on Android and iOS")]
-#endif
+#if UITEST && __SHELL__
 		[Test]
 		public void CollectionViewRenderingWhenLeavingAndReturningViaFlyout()
 		{

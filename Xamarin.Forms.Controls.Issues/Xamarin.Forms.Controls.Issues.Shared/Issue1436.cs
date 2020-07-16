@@ -29,7 +29,8 @@ namespace Xamarin.Forms.Controls.Issues
 				Text = "Button",
 				HorizontalOptions = LayoutOptions.End,
 				BorderColor = Color.AliceBlue,
-				BorderWidth = 5
+				BorderWidth = 5,
+				AutomationId = "TestReady"
 			}, 0, 0);
 
 			grid.Children.Add(new Button
@@ -102,6 +103,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Category(UITestCategories.ManualReview)]
 		public void Issue1436Test()
 		{
+			RunningApp.WaitForElement("TestReady");
 			RunningApp.Screenshot("I am at Issue 1436");
 		}
 #endif
