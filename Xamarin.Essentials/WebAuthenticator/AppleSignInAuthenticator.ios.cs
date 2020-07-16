@@ -44,6 +44,8 @@ namespace Xamarin.Essentials
 
             var appleAccount = new WebAuthenticatorResult();
             appleAccount.Properties.Add("id_token", new NSString(creds.IdentityToken, NSStringEncoding.UTF8).ToString());
+            appleAccount.Properties.Add("authorization_code", new NSString(creds.AuthorizationCode, NSStringEncoding.UTF8).ToString());
+            appleAccount.Properties.Add("state", creds.State);
             appleAccount.Properties.Add("email", creds.Email);
             appleAccount.Properties.Add("user_id", creds.User);
             appleAccount.Properties.Add("name", NSPersonNameComponentsFormatter.GetLocalizedString(creds.FullName, NSPersonNameComponentsFormatterStyle.Default, NSPersonNameComponentsFormatterOptions.Phonetic));
