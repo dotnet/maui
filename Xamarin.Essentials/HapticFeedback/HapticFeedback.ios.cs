@@ -23,7 +23,7 @@ namespace Xamarin.Essentials
 
         static void PlatformClick()
         {
-            if (UIDevice.CurrentDevice.CheckSystemVersion(10, 0))
+            if (Platform.HasOSVersion(10, 0))
             {
                 var impact = new UIImpactFeedbackGenerator(UIImpactFeedbackStyle.Light);
                 impact.Prepare();
@@ -34,11 +34,11 @@ namespace Xamarin.Essentials
 
         static void PlatformLongPress()
         {
-            if (UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
+            if (Platform.HasOSVersion(10, 0))
             {
-                var impact = new UISelectionFeedbackGenerator();
+                var impact = new UIImpactFeedbackGenerator(UIImpactFeedbackStyle.Medium);
                 impact.Prepare();
-                impact.SelectionChanged();
+                impact.ImpactOccurred();
                 impact.Dispose();
             }
         }
