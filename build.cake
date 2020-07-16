@@ -41,8 +41,8 @@ string workingDirectory = EnvironmentVariable("SYSTEM_DEFAULTWORKINGDIRECTORY", 
 var configuration = Argument("BUILD_CONFIGURATION", "Debug");
 
 var target = Argument("target", "Default");
-var IOS_SIM_NAME = Argument("IOS_SIM_NAME", "iPhone 8");
-var IOS_SIM_RUNTIME = Argument("IOS_SIM_RUNTIME", "com.apple.CoreSimulator.SimRuntime.iOS-13-5");
+var IOS_SIM_NAME = Argument("IOS_SIM_NAME", "iPhone 7");
+var IOS_SIM_RUNTIME = Argument("IOS_SIM_RUNTIME", "com.apple.CoreSimulator.SimRuntime.iOS-12-4");
 var IOS_TEST_PROJ = "./Xamarin.Forms.Core.iOS.UITests/Xamarin.Forms.Core.iOS.UITests.csproj";
 var IOS_TEST_LIBRARY = Argument("IOS_TEST_LIBRARY", $"./Xamarin.Forms.Core.iOS.UITests/bin/{configuration}/Xamarin.Forms.Core.iOS.UITests.dll");
 var IOS_IPA_PATH = Argument("IOS_IPA_PATH", $"./Xamarin.Forms.ControlGallery.iOS/bin/iPhoneSimulator/{configuration}/XamarinFormsControlGalleryiOS.app");
@@ -477,7 +477,12 @@ Task ("cg-uwp-deploy")
 });
 
 Task("cg-uwp-run-tests")
+    .IsDependentOn("cg-uwp-build-tests")
+    .IsDependentOn("cg-uwp-deploy")
     .IsDependentOn("provision-uitests-uwp")
+    .IsDependentOn("_cg-uwp-run-tests");
+
+Task("_cg-uwp-run-tests")
     .Does(() =>
     {
         System.Diagnostics.Process process = null;
@@ -526,7 +531,7 @@ Task("cg-uwp-run-tests")
 Task("cg-uwp-run-tests-ci")
     .IsDependentOn("provision-windowssdk")
     .IsDependentOn("cg-uwp-deploy")
-    .IsDependentOn("cg-uwp-run-tests")
+    .IsDependentOn("_cg-uwp-run-tests")
     .Does(() =>
     {
     });
@@ -923,6 +928,11 @@ Task("cg-ios-build-tests")
     });
 
 Task("cg-ios-run-tests")
+    .IsDependentOn("cg-ios-build-tests")
+    .IsDependentOn("cg-ios-deploy")
+    .IsDependentOn("_cg-ios-run-tests");
+
+Task("_cg-ios-run-tests")
     .Does(() =>
     {
         var sim = GetIosSimulator();
@@ -945,7 +955,7 @@ Task("cg-ios-run-tests")
 
 Task("cg-ios-run-tests-ci")
     .IsDependentOn("cg-ios-deploy")
-    .IsDependentOn("cg-ios-run-tests")
+    .IsDependentOn("_cg-ios-run-tests")
     .Does(() =>
     {
     });

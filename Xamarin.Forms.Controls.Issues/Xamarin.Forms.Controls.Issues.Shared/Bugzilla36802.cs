@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Controls.Issues
 
         protected override void Init()
         {
-            var label = new Label { Text = Instructions };
+            var label = new Label { Text = Instructions, AutomationId = "TestReady" };
             grouped = new ObservableCollection<GroupedItem>();
             lstView = new ListView(ListViewCachingStrategy.RecycleElement) {
                 IsGroupingEnabled = true,
@@ -73,6 +73,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Category(UITestCategories.ManualReview)]
         public void Bugzilla36802Test()
         {
+			RunningApp.WaitForElement("TestReady");
             RunningApp.Screenshot("AccessoryView partially hidden test");
         }
 #endif

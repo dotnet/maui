@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-			var label = new Label { Text = Instructions };
+			var label = new Label { Text = Instructions, AutomationId = "TestReady" };
 			lstView = new ListView(ListViewCachingStrategy.RecycleElement)
 			{
 				ItemTemplate = new DataTemplate(typeof(ExtendedEntryCell)),
@@ -49,6 +49,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Category(UITestCategories.ManualReview)]
         public void Issue5830Test()
         {
+			RunningApp.WaitForElement("TestReady");
             RunningApp.Screenshot("EntryTableViewCell Test with custom Text and TextColor");
         }
 #endif

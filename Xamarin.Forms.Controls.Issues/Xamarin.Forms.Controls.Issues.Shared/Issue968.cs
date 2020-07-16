@@ -23,7 +23,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var layout = new StackLayout {
 				Padding = new Thickness (20),
-				BackgroundColor = Color.Gray
+				BackgroundColor = Color.Gray,
+				AutomationId = "TestReady"
 			};
 
 			layout.Children.Add (new BoxView {
@@ -45,6 +46,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[UiTest (typeof(StackLayout))]
 		public void Issue968TestsRotationRelayoutIssue ()
 		{
+			RunningApp.WaitForElement("TestReady");
 			RunningApp.SetOrientationLandscape ();
 			RunningApp.Screenshot ("Rotated to Landscape");
 			RunningApp.WaitForElement (q => q.Marked ("You should see me after rotating"));

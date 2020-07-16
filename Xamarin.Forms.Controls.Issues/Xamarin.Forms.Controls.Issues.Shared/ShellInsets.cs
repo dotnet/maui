@@ -35,6 +35,7 @@ namespace Xamarin.Forms.Controls.Issues
 		
 		const string EntrySuccess = "EntrySuccess";
 		const string ResetKeyboard = "Hide Keyboard";
+		const string ResetKeyboard2 = "Hide Keyboard 2";
 		const string Reset = "Reset";
 
 		const string ToggleSafeArea = "ToggleSafeArea";
@@ -286,7 +287,8 @@ namespace Xamarin.Forms.Controls.Issues
 							},
 							new Button()
 							{
-								Text = ResetKeyboard
+								Text = ResetKeyboard,
+								AutomationId = ResetKeyboard2
 
 							},
 							new Button()
@@ -346,7 +348,7 @@ namespace Xamarin.Forms.Controls.Issues
 					Assert.LessOrEqual(entry[0].Rect.Y, originalPosition.Y);
 			}
 
-			RunningApp.Tap(ResetKeyboard);
+			RunningApp.Tap(ResetKeyboard2);
 			var finalPosition = RunningApp.WaitForElement(EntrySuccess)[0].Rect;
 
 			// verify that label has returned to about the same spot

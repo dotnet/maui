@@ -28,7 +28,8 @@ namespace Xamarin.Forms.Controls.Issues
 			var label = new Label
 			{
 				Text = "Click the button below to animate the BoxView using individual ScaleXTo and ScaleYTo extension methods.",
-				TextColor = Color.Black
+				TextColor = Color.Black,
+				AutomationId = "TestReady"
 			};
 
 			var button = new Button
@@ -74,6 +75,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public async Task AnimateScaleOfBoxView()
 		{
+			RunningApp.WaitForElement("TestReady");
 			RunningApp.Screenshot("Small blue box");
 
 			// Check the box and button elements.
