@@ -38,7 +38,7 @@ namespace Xamarin.Essentials
             {
 #if __ANDROID_29__
                 if (Platform.HasApiLevelP)
-                    return PackageInfoCompat.GetLongVersionCode(info).ToString();
+                    return PackageInfoCompat.GetLongVersionCode(info).ToString(CultureInfo.InvariantCulture);
 #endif
 #pragma warning disable CS0618 // Type or member is obsolete
                 return info.VersionCode.ToString(CultureInfo.InvariantCulture);
