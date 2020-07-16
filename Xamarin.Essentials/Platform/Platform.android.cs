@@ -221,7 +221,9 @@ namespace Xamarin.Essentials
                 return config.Locales.Get(0);
 #endif
 
+#pragma warning disable CS0618 // Type or member is obsolete
             return config.Locale;
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         internal static void SetLocale(Java.Util.Locale locale)
@@ -230,10 +232,14 @@ namespace Xamarin.Essentials
             var resources = AppContext.Resources;
             var config = resources.Configuration;
 
+#if __ANDROID_24__
             if (HasApiLevelN)
                 config.SetLocale(locale);
             else
+#endif
+#pragma warning disable CS0618 // Type or member is obsolete
                 config.Locale = locale;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 #pragma warning disable CS0618 // Type or member is obsolete
             resources.UpdateConfiguration(config, resources.DisplayMetrics);
