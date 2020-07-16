@@ -66,7 +66,7 @@ bool isHostedAgent = agentName.StartsWith("Azure Pipelines") || agentName.Starts
 
 string defaultUnitTestWhere = "";
 
-if(target.Contains("uwp", StringComparison.OrdinalIgnoreCase))
+if(target.ToLower().Contains("uwp"))
     defaultUnitTestWhere = "cat != Shell && cat != CollectionView && cat != UwpIgnore && cat != CarouselView";
 
 var NUNIT_TEST_WHERE = Argument("NUNIT_TEST_WHERE", defaultUnitTestWhere);
