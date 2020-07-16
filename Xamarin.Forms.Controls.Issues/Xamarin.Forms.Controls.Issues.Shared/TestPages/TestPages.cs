@@ -671,32 +671,6 @@ namespace Xamarin.Forms.Controls
 			return item;
 		}
 
-		public TabBar CreateTabBar(string shellItemTitle)
-		{
-			shellItemTitle = shellItemTitle ?? $"Item: {Items.Count}";
-			ContentPage page = new ContentPage();
-			TabBar item = new TabBar()
-			{
-				Title = shellItemTitle,
-				Items =
-				{
-					new ShellSection()
-					{
-						Items =
-						{
-							new ShellContent()
-							{
-								ContentTemplate = new DataTemplate(() => page),
-							}
-						}
-					}
-				}
-			};
-
-			Items.Add(item);
-			return item;
-		}
-
 		public ContentPage CreateContentPage(string shellItemTitle = null)
 			=> CreateContentPage<ShellItem, ShellSection>(shellItemTitle);
 
