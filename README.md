@@ -42,7 +42,7 @@ Active development is happening today to build Android and iOS SDKs against the 
 |---------|---------|---------|
 |**Platforms**     |         |         |
 |Android     |API 19+        |API 21+        |
-|iOS     |9-14         |10+         |
+|iOS     |9-15         |10+         |
 |Linux     |Community         |Community         |
 |macOS     |Community         |Microsoft         |
 |Tizen     |Samsung           |Samsung           |
