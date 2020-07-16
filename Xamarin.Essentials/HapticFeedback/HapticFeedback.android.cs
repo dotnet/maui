@@ -12,25 +12,22 @@ namespace Xamarin.Essentials
         static void PlatformPerform(HapticFeedbackType type)
         {
             Permissions.EnsureDeclared<Permissions.Vibrate>();
+
             try
             {
                 Platform.CurrentActivity?.Window?.DecorView?.PerformHapticFeedback(ConvertType(type));
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($" -- Droid -- {ex.Message}");
+                Debug.WriteLine($"HapticFeedback Exception: {ex.Message}");
             }
         }
 
-        static FeedbackConstants ConvertType(HapticFeedbackType type)
-        {
-            switch (type)
+        static FeedbackConstants ConvertType(HapticFeedbackType type) =>
+            type switch
             {
-                case HapticFeedbackType.LongPress:
-                    return FeedbackConstants.LongPress;
-                default:
-                    return FeedbackConstants.ContextClick;
-            }
-        }
+                HapticFeedbackType.LongPress => FeedbackConstants.LongPress,
+                _ => FeedbackConstants.ContextClick
+            };
     }
 }
