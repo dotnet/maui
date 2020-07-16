@@ -111,7 +111,34 @@ namespace Xamarin.Forms.Platform.MacOS
 
         void UpdateStrokeDashArray()
         {
-            Control.ShapeLayer.UpdateStrokeDash(Element.StrokeDashArray.ToArray());
+            if (Element.StrokeDashArray == null || Element.StrokeDashArray.Count == 0)
+                Control.ShapeLayer.UpdateStrokeDash(new nfloat[0]);
+            else
+            {
+				nfloat[] dashArray;
+				double[] array;
+
+				if (Element.StrokeDashArray.Count % 2 == 0)
+				{
+					array = new double[Element.StrokeDashArray.Count];
+                    dashArray = new nfloat[Element.StrokeDashArray.Count];
+					Element.StrokeDashArray.CopyTo(array, 0);
+				}
+				else
+				{
+					array = new double[2 * Element.StrokeDashArray.Count];
+                    dashArray = new nfloat[2 * Element.StrokeDashArray.Count];
+					Element.StrokeDashArray.CopyTo(array, 0);
+					Element.StrokeDashArray.CopyTo(array, Element.StrokeDashArray.Count);
+				}
+
+				double thickness = Element.StrokeThickness;
+
+                for (int i = 0; i < array.Length; i++)
+                    dashArray[i] = new nfloat(thickness * array[i]);
+                
+                Control.ShapeLayer.UpdateStrokeDash(dashArray);
+            }
         }
 
         void UpdateStrokeDashOffset()
@@ -222,6 +249,11 @@ namespace Xamarin.Forms.Platform.MacOS
 
         public ShapeLayer()
         {
+#if __MOBILE__
+            ContentsScale = UIScreen.MainScreen.Scale;
+#else
+            ContentsScale = NSScreen.MainScreen.BackingScaleFactor;
+#endif
             _fillMode = false;
             _stretch = Stretch.None;
             _strokeLineCap = CGLineCap.Butt;
@@ -427,16 +459,8 @@ namespace Xamarin.Forms.Platform.MacOS
             CATransaction.Begin();
             CATransaction.DisableActions = true;
 
-            var lengths = new nfloat[0];
-
-            if (_strokeDash.Length > 0)
-                lengths = new nfloat[_strokeDash.Length];
-
-            for (int i = 0; i < _strokeDash.Length; i++)
-                lengths[i] = new nfloat(_dashOffset * _strokeDash[i]);
-
             graphics.SetLineWidth(_strokeWidth);
-            graphics.SetLineDash(_dashOffset * _strokeWidth, lengths);
+            graphics.SetLineDash(_dashOffset * _strokeWidth, _strokeDash);
             graphics.SetLineCap(_strokeLineCap);
             graphics.SetLineJoin(_strokeLineJoin);
             graphics.SetMiterLimit(_strokeMiterLimit * _strokeWidth / 4);

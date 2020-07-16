@@ -64,5 +64,6 @@
 		public const string Github5000 = "Github5000";
 		public const string Github10000 = "Github10000";
 		public const string RadioButton = "RadioButton";
+		public const string Shape = "Shape";
 	}
 }
