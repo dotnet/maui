@@ -7,9 +7,9 @@ namespace DeviceTests
     public class HapticFeedback_Tests
     {
         [Fact]
-        public void Click() => HapticFeedback.Execute(HapticFeedbackType.Click);
+        public void Click() => HapticFeedback.Perform(HapticFeedbackType.Click);
 
         [Fact]
-        public void LongPress() => HapticFeedback.Execute(HapticFeedbackType.LongPress);
+        public void LongPress() => HapticFeedback.Perform(HapticFeedbackType.LongPress);
     }
 }

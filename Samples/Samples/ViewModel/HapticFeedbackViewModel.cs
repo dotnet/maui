@@ -29,7 +29,7 @@ namespace Samples.ViewModel
         {
             try
             {
-                HapticFeedback.Execute(HapticFeedbackType.Click);
+                HapticFeedback.Perform(HapticFeedbackType.Click);
             }
             catch (FeatureNotSupportedException)
             {
@@ -45,7 +45,7 @@ namespace Samples.ViewModel
         {
             try
             {
-                HapticFeedback.Execute(HapticFeedbackType.LongPress);
+                HapticFeedback.Perform(HapticFeedbackType.LongPress);
             }
             catch (FeatureNotSupportedException)
             {

@@ -9,7 +9,7 @@ namespace Xamarin.Essentials
     {
         internal static bool IsSupported => true;
 
-        static async void PlatformExecute(HapticFeedbackType type)
+        static async void PlatformPerform(HapticFeedbackType type)
         {
             try
             {
