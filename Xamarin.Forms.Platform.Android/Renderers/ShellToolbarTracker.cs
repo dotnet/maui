@@ -211,9 +211,16 @@ namespace Xamarin.Forms.Platform.Android
 			return new ShellSearchView(context, _shellContext);
 		}
 
-		protected virtual void OnNavigateBack()
+		protected async virtual void OnNavigateBack()
 		{
-			Page.Navigation.PopAsync();
+			try
+			{
+				await Page.Navigation.PopAsync();
+			}
+			catch(Exception exc)
+			{
+				Internals.Log.Warning(nameof(Shell), $"Failed to Navigate Back: {exc}");
+			}
 		}
 
 		protected virtual void OnPageChanged(Page oldPage, Page newPage)

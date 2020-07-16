@@ -29,11 +29,16 @@
     </ItemsPanelTemplate>
     <DataTemplate x:Key="ShellToolbarItemTemplate">
         <xf:ShellToolbarItemRenderer ToolbarItem="{Binding}" Margin="0" Background="Transparent" BorderThickness="1"
-                      IsEnabled="{Binding IsEnabled}" Command="{Binding Command}" CommandParameter="{Binding CommandParameter}" >
-            <Image Grid.Column="0" Grid.RowSpan="2" MaxHeight="32"
-				DataContext="{Binding Icon, Converter={StaticResource ImageConverter}}"
-				Source="{Binding Value}"
-				VerticalAlignment="Center" />
+                      IsEnabled="{Binding IsEnabled}" Command="{Binding Command}" CommandParameter="{Binding CommandParameter}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Image
+				    Source="{Binding IconImageSource, Converter={StaticResource ImageConverter}}" VerticalAlignment="Center" />
+                <TextBlock Grid.Row="1" Foreground="White" VerticalAlignment="Center" Text="{Binding Text}"></TextBlock>
+            </Grid>
         </xf:ShellToolbarItemRenderer>
     </DataTemplate>
 

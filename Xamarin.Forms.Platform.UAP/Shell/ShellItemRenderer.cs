@@ -115,11 +115,14 @@ namespace Xamarin.Forms.Platform.UWP
 			double inset = 10;
 			if (ShellContext.IsPaneToggleButtonVisible)
 				inset += 45;
-			if (Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Controls.NavigationView", "IsBackButtonVisible"))
+
+			if (Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.Controls.NavigationView", "IsBackButtonVisible"))
 			{
-				if (ShellContext.IsBackButtonVisible != Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible.Collapsed)
+				if (ShellContext.IsBackButtonVisible != Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible.Collapsed &&
+					ShellContext.IsBackEnabled)
 					inset += 45;
 			}
+
 			_HeaderArea.Padding = new UwpThickness(inset, 0, 0, 0);
 		}
 
@@ -316,7 +319,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (section.CurrentItem == null)
 				throw new InvalidOperationException($"Content not found for active {section} - {section.Title}.");
 
-			SectionRenderer.NavigateToShellSection(source, section, animate);
+			SectionRenderer.NavigateToShellSection(source, section, page, animate);
 		}
 
 		Page DisplayedPage { get; set; }
