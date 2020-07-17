@@ -2,14 +2,9 @@
 using CoreGraphics;
 using MaterialComponents;
 using UIKit;
-using MTextField = MaterialComponents.TextField;
-using MTextInputControllerFilled = MaterialComponents.TextInputControllerFilled;
-using MTextInputControllerBase = MaterialComponents.TextInputControllerBase;
-using System.Collections.Generic;
-using ObjCRuntime;
-using Foundation;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.iOS;
+using MTextInputControllerFilled = MaterialComponents.TextInputControllerFilled;
 
 namespace Xamarin.Forms.Material.iOS
 {
@@ -63,11 +58,42 @@ namespace Xamarin.Forms.Material.iOS
 			textField.ActiveTextInputController.FloatingPlaceholderNormalColor = placeHolderColors.InlineColor;
 			textField.ActiveTextInputController.FloatingPlaceholderActiveColor = placeHolderColors.FloatingColor;
 
-			// BackgroundColor
-			textField.ActiveTextInputController.BorderFillColor = MaterialColors.CreateEntryFilledInputBackgroundColor(element.BackgroundColor, element.TextColor);
+			var brush = element.Background;
 
+			if (Brush.IsNullOrEmpty(brush))
+			{
+				// BackgroundColor
+				textField.ActiveTextInputController.BorderFillColor = MaterialColors.CreateEntryFilledInputBackgroundColor(element.BackgroundColor, element.TextColor);
+			}
+			else
+			{
+				// Background
+				if (textField is UITextField || textField is MultilineTextField)
+				{
+					var backgroundImage = ((UIView)textField).GetBackgroundImage(brush);
+					textField.BackgroundSize = backgroundImage?.Size;
+					var color = UIColor.FromPatternImage(backgroundImage);
+					textField.ActiveTextInputController.BorderFillColor = color;
+				}
+			}
 			textField.ActiveTextInputController.ActiveColor = underlineColors.FocusedColor;
 			textField.ActiveTextInputController.NormalColor = underlineColors.UnFocusedColor;
+		}
+
+		public static void ApplyThemeIfNeeded(IMaterialTextField textField, IMaterialEntryRenderer element)
+		{
+			var bgBrush = element.Background;
+
+			if (Brush.IsNullOrEmpty(bgBrush))
+				return;
+
+			UIImage backgroundImage = null;
+
+			if (textField is UITextField || textField is MultilineTextField)
+				backgroundImage = ((UIView)textField).GetBackgroundImage(bgBrush);
+
+			if (textField.BackgroundSize != null && textField.BackgroundSize != backgroundImage?.Size)
+				ApplyTheme(textField, element);
 		}
 
 		public static void UpdatePlaceholder(IMaterialTextField textField, IMaterialEntryRenderer element)

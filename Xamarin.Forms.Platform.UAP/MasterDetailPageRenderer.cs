@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Automation.Peers;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.MasterDetailPage;
+using WBrush = Windows.UI.Xaml.Media.Brush;
 using WImageSource = Windows.UI.Xaml.Media.ImageSource;
 
 namespace Xamarin.Forms.Platform.UWP
@@ -54,12 +54,12 @@ namespace Xamarin.Forms.Platform.UWP
 				SetElement(null);
 		}
 
-		Brush ITitleProvider.BarBackgroundBrush
+		WBrush ITitleProvider.BarBackgroundBrush
 		{
 			set { Control.ToolbarBackground = value; }
 		}
 
-		Brush ITitleProvider.BarForegroundBrush
+		WBrush ITitleProvider.BarForegroundBrush
 		{
 			set { Control.ToolbarForeground = value; }
 		}
@@ -177,7 +177,7 @@ namespace Xamarin.Forms.Platform.UWP
 				if (!string.IsNullOrEmpty(e.NewElement.AutomationId))
 					Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, e.NewElement.AutomationId);
 
-				((ITitleProvider)this).BarBackgroundBrush = (Brush)Windows.UI.Xaml.Application.Current.Resources["SystemControlBackgroundChromeMediumLowBrush"];
+				((ITitleProvider)this).BarBackgroundBrush = (WBrush)Windows.UI.Xaml.Application.Current.Resources["SystemControlBackgroundChromeMediumLowBrush"];
 				UpdateToolbarPlacement();
 				UpdateToolbarDynamicOverflowEnabled();
 

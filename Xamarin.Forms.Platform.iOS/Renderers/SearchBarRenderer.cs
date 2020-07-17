@@ -160,6 +160,17 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateCancelButton();
 		}
 
+		protected override void SetBackground(Brush brush)
+		{
+			base.SetBackground(brush);
+
+			if (Control == null)
+				return;
+
+			if (brush is SolidColorBrush solidColorBrush)
+				Control.BarTintColor = solidColorBrush.Color.ToUIColor(_defaultTintColor);
+		}
+
 		public override CoreGraphics.CGSize SizeThatFits(CoreGraphics.CGSize size)
 		{
 			if (nfloat.IsInfinity(size.Width))

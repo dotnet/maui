@@ -190,7 +190,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			if (e.PropertyName == nameof(TabbedPage.CurrentPage))
 				UpdateCurrentPage();
-			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
 				UpdateBackground();
 			else if (e.PropertyName == Page.BackgroundImageSourceProperty.PropertyName)
 				UpdateBackground();
@@ -211,6 +211,9 @@ namespace Xamarin.Forms.Platform.MacOS
 				{
 					Color bgColor = Element.BackgroundColor;
 					View.Layer.BackgroundColor = bgColor.IsDefault ? NSColor.White.CGColor : bgColor.ToCGColor();
+
+					Brush background = Element.Background;
+					View.UpdateBackground(background);
 				}
 			});
 		}

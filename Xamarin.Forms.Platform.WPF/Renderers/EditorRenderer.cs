@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
+using WBrush = System.Windows.Media.Brush;
 using WpfScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility;
 using WControl = System.Windows.Controls.Control;
 
@@ -9,7 +9,7 @@ namespace Xamarin.Forms.Platform.WPF
 {
 	public class EditorRenderer : ViewRenderer<Editor, FormsTextBox>
 	{
-		Brush _placeholderDefaultBrush;
+		WBrush _placeholderDefaultBrush;
 		bool _fontApplied;
 		string _transformedText;
 
@@ -79,7 +79,7 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				if (_placeholderDefaultBrush == null)
 				{
-					_placeholderDefaultBrush = (Brush)WControl.ForegroundProperty.GetMetadata(typeof(FormsTextBox)).DefaultValue;
+					_placeholderDefaultBrush = (WBrush)WControl.ForegroundProperty.GetMetadata(typeof(FormsTextBox)).DefaultValue;
 				}
 
 				// Use the cached default brush
@@ -120,11 +120,11 @@ namespace Xamarin.Forms.Platform.WPF
 
 			if (editorIsDefault)
 			{
-				Control.ClearValue(System.Windows.Controls.Control.FontStyleProperty);
-				Control.ClearValue(System.Windows.Controls.Control.FontSizeProperty);
-				Control.ClearValue(System.Windows.Controls.Control.FontFamilyProperty);
-				Control.ClearValue(System.Windows.Controls.Control.FontWeightProperty);
-				Control.ClearValue(System.Windows.Controls.Control.FontStretchProperty);
+				Control.ClearValue(WControl.FontStyleProperty);
+				Control.ClearValue(WControl.FontSizeProperty);
+				Control.ClearValue(WControl.FontFamilyProperty);
+				Control.ClearValue(WControl.FontWeightProperty);
+				Control.ClearValue(WControl.FontStretchProperty);
 			}
 			else
 				Control.ApplyFont(editor);
@@ -151,7 +151,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 		void UpdateTextColor()
 		{
-			Control.UpdateDependencyColor(System.Windows.Controls.Control.ForegroundProperty, Element.TextColor);
+			Control.UpdateDependencyColor(WControl.ForegroundProperty, Element.TextColor);
 		}
 
 		void UpdateMaxLength()

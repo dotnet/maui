@@ -9,9 +9,20 @@ namespace Xamarin.Forms.Controls.GalleryPages.ShapesGalleries
 
         public SpiralDemoPage()
         {
-            polyline = new Polyline
+			var strokeBrush = new LinearGradientBrush
+			{
+				StartPoint = new Point(0, 0),
+				EndPoint = new Point(1, 0),
+				GradientStops = new GradientStopCollection
+			    {
+				    new GradientStop { Color = Color.Orange, Offset = 0.2f },
+				    new GradientStop { Color = Color.OrangeRed, Offset = 0.8f }
+			    }
+			};
+
+			polyline = new Polyline
             {
-                Stroke = Color.Orange,
+                Stroke = strokeBrush,
                 StrokeThickness = 5
             };
             Content = polyline;

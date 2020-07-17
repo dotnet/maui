@@ -105,10 +105,22 @@ namespace Xamarin.Forms.Platform.MacOS
 		protected override void SetBackgroundColor(Color color)
 		{
 			base.SetBackgroundColor(color);
+
 			if (_table == null)
 				return;
 
 			_table.BackgroundColor = color.ToNSColor(NSColor.White);
+		}
+
+		protected override void SetBackground(Brush brush)
+		{
+			base.SetBackground(brush);
+
+			if (_table == null)
+				return;
+
+			var backgroundImage = this.GetBackgroundImage(brush);
+			_table.BackgroundColor = backgroundImage != null ? NSColor.FromPatternImage(backgroundImage) : NSColor.Clear;
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<ListView> e)

@@ -9,12 +9,14 @@ using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using Specifics = Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using SizeF = CoreGraphics.CGSize;
 using PreserveAttribute = Foundation.PreserveAttribute;
+using CoreGraphics;
 
 namespace Xamarin.Forms.Platform.iOS
 {
 	public class ButtonRenderer : ViewRenderer<Button, UIButton>, IImageVisualElementRenderer, IButtonLayoutRenderer
 	{
 		bool _isDisposed;
+		SizeF _previousSize;
 		UIColor _buttonTextColorDefaultDisabled;
 		UIColor _buttonTextColorDefaultHighlighted;
 		UIColor _buttonTextColorDefaultNormal;
@@ -70,6 +72,24 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			base.Dispose(disposing);
+		}
+
+		public override void Draw(CGRect rect)
+		{
+			base.Draw(rect);
+
+			_previousSize = Bounds.Size;
+		}
+
+		public override void LayoutSubviews()
+		{
+			if (_previousSize != Bounds.Size)
+			{
+				SetBackground(Element.Background);
+				SetNeedsDisplay();
+			}
+
+			base.LayoutSubviews();
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Button> e)
@@ -130,6 +150,28 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			base.SetAccessibilityLabel();
+		}
+
+		protected override void SetBackground(Brush brush)
+		{
+			if (Control == null)
+				return;
+
+			UIColor backgroundColor = Element.BackgroundColor == Color.Default ? null : Element.BackgroundColor.ToUIColor();
+
+			if (!Brush.IsNullOrEmpty(brush))
+			{
+				if (brush is SolidColorBrush solidColorBrush)
+					backgroundColor = solidColorBrush.Color.ToUIColor();
+				else
+				{
+					var backgroundImage = this.GetBackgroundImage(brush);
+					if (backgroundImage != null)
+						backgroundColor = UIColor.FromPatternImage(backgroundImage);
+				}
+			}
+
+			Control.BackgroundColor = backgroundColor;
 		}
 
 		void SetControlPropertiesFromProxy()

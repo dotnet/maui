@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
+using Xamarin.Forms.Platform.WPF.Extensions;
 using WThickness = System.Windows.Thickness;
 
 namespace Xamarin.Forms.Platform.WPF
@@ -116,7 +117,12 @@ namespace Xamarin.Forms.Platform.WPF
 
 		protected override void UpdateBackground()
 		{
-			Control.UpdateDependencyColor(Border.BackgroundProperty, Element.BackgroundColor);
+			Brush background = Element.Background;
+
+			if (Brush.IsNullOrEmpty(background))
+				Control.UpdateDependencyColor(Border.BackgroundProperty, Element.BackgroundColor);
+			else
+				Control.Background = background.ToBrush();
 		}
 
 		void UpdateCornerRadius()

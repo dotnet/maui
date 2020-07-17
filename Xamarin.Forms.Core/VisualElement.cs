@@ -155,6 +155,46 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create("BackgroundColor", typeof(Color), typeof(VisualElement), Color.Default);
 
+		public static readonly BindableProperty BackgroundProperty = BindableProperty.Create(nameof(Background), typeof(Brush), typeof(VisualElement), Brush.Default,
+			propertyChanging: (bindable, oldvalue, newvalue) =>
+			{
+				if (oldvalue != null)
+					(bindable as VisualElement)?.StopNotifyingBackgroundChanges();
+			},
+			propertyChanged: (bindable, oldvalue, newvalue) =>
+			{
+				if (newvalue != null)
+					(bindable as VisualElement)?.NotifyBackgroundChanges();
+			});
+
+		void NotifyBackgroundChanges()
+		{
+			if (Background != null)
+			{
+				Background.PropertyChanging += OnBackgroundChanging;
+				Background.PropertyChanged += OnBackgroundChanged;
+			}
+		}
+
+		void StopNotifyingBackgroundChanges()
+		{
+			if (Background != null)
+			{
+				Background.PropertyChanged -= OnBackgroundChanged;
+				Background.PropertyChanging -= OnBackgroundChanging;
+			}
+		}
+
+		void OnBackgroundChanging(object sender, PropertyChangingEventArgs e)
+		{
+			OnPropertyChanging(nameof(Background));
+		}
+
+		void OnBackgroundChanged(object sender, PropertyChangedEventArgs e)
+		{
+			OnPropertyChanged(nameof(Background));
+		}
+
 		internal static readonly BindablePropertyKey BehaviorsPropertyKey = BindableProperty.CreateReadOnly("Behaviors", typeof(IList<Behavior>), typeof(VisualElement), default(IList<Behavior>),
 			defaultValueCreator: bindable =>
 			{
@@ -296,6 +336,13 @@ namespace Xamarin.Forms
 		{
 			get { return (Color)GetValue(BackgroundColorProperty); }
 			set { SetValue(BackgroundColorProperty, value); }
+		}
+
+		[TypeConverter(typeof(BrushTypeConverter))]
+		public Brush Background
+		{
+			get { return (Brush)GetValue(BackgroundProperty); }
+			set { SetValue(BackgroundProperty, value); }
 		}
 
 		public IList<Behavior> Behaviors

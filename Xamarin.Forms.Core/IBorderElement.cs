@@ -9,12 +9,14 @@ namespace Xamarin.Forms
 		Color BorderColor { get; }
 		int CornerRadius { get; }
 		Color BackgroundColor { get; }
+		Brush Background { get; }
 		double BorderWidth { get; }
 
 		//note to implementor: but implement the methods explicitly
 		void OnBorderColorPropertyChanged(Color oldValue, Color newValue);
 		bool IsCornerRadiusSet();
 		bool IsBackgroundColorSet();
+		bool IsBackgroundSet();
 		bool IsBorderColorSet();
 		bool IsBorderWidthSet();
 		int CornerRadiusDefaultValue { get; }

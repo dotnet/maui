@@ -17,6 +17,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (e.NewElement != null)
 			{
 				UpdateBackgroundColor();
+				UpdateBackground();
 				UpdateFlowDirection();
 			}
 		}

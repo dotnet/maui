@@ -96,12 +96,12 @@ namespace Xamarin.Forms.Platform.MacOS
 
         void UpdateFill()
         {
-            Control.ShapeLayer.UpdateFill(Element.Fill.ToCGColor());
+            Control.ShapeLayer.UpdateFill(Element.Fill);
         }
 
         void UpdateStroke()
         {
-            Control.ShapeLayer.UpdateStroke(Element.Stroke.ToCGColor());
+            Control.ShapeLayer.UpdateStroke(Element.Stroke);
         }
 
         void UpdateStrokeThickness()
@@ -231,11 +231,13 @@ namespace Xamarin.Forms.Platform.MacOS
         CGRect _pathStrokeBounds;
 
         CGPath _renderPath;
+        CGRect _renderPathFill;
+        CGRect _renderPathStroke;
 
         bool _fillMode;
 
-        CGColor _stroke;
-        CGColor _fill;
+        Brush _stroke;
+        Brush _fill;
 
         nfloat _strokeWidth;
         nfloat[] _strokeDash;
@@ -304,13 +306,13 @@ namespace Xamarin.Forms.Platform.MacOS
             BuildRenderPath();
         }
 
-        public void UpdateFill(CGColor fill)
+        public void UpdateFill(Brush fill)
         {
             _fill = fill;
             SetNeedsDisplay();
         }
 
-        public void UpdateStroke(CGColor stroke)
+        public void UpdateStroke(Brush stroke)
         {
             _stroke = stroke;
             SetNeedsDisplay();
@@ -360,6 +362,8 @@ namespace Xamarin.Forms.Platform.MacOS
             if (_path == null)
             {
                 _renderPath = null;
+                _renderPathFill = new CGRect();
+                _renderPathStroke = new CGRect();
                 return;
             }
 
@@ -443,6 +447,9 @@ namespace Xamarin.Forms.Platform.MacOS
                 }
             }
 
+            _renderPathFill = _renderPath.PathBoundingBox;
+            _renderPathStroke = _renderPath.CopyByStrokingPath(_strokeWidth, _strokeLineCap, _strokeLineJoin, _strokeMiterLimit).PathBoundingBox;
+
             CATransaction.Commit();
 
             SetNeedsDisplay();
@@ -465,12 +472,98 @@ namespace Xamarin.Forms.Platform.MacOS
             graphics.SetLineJoin(_strokeLineJoin);
             graphics.SetMiterLimit(_strokeMiterLimit * _strokeWidth / 4);
 
-            graphics.AddPath(_renderPath);
-            graphics.SetStrokeColor(_stroke);
-            graphics.SetFillColor(_fill);
-            graphics.DrawPath(_fillMode ? CGPathDrawingMode.FillStroke : CGPathDrawingMode.EOFillStroke);
+            if (_fill is GradientBrush fillGradientBrush)
+            {
+                graphics.AddPath(_renderPath);
+
+                if (_fillMode)
+                    graphics.Clip();
+                else
+                    graphics.EOClip();
+
+                RenderBrush(graphics, _renderPathFill, fillGradientBrush);
+            }
+            else
+            {
+                CGColor fillColor =
+#if __MOBILE__
+                    UIColor.Clear.CGColor;
+#else
+                    NSColor.Clear.CGColor;
+#endif
+                if (_fill is SolidColorBrush solidColorBrush && solidColorBrush.Color != Color.Default)
+                    fillColor = solidColorBrush.Color.ToCGColor();
+
+                graphics.AddPath(_renderPath);
+                graphics.SetFillColor(fillColor);
+                graphics.DrawPath(_fillMode ? CGPathDrawingMode.FillStroke : CGPathDrawingMode.EOFillStroke);
+            }
+
+            if (_stroke is GradientBrush strokeGradientBrush)
+            {
+                graphics.AddPath(_renderPath);
+                graphics.ReplacePathWithStrokedPath();
+                graphics.Clip();
+                RenderBrush(graphics, _renderPathStroke, strokeGradientBrush);
+            }
+            else
+            {
+                CGColor strokeColor =
+#if __MOBILE__
+                    UIColor.Clear.CGColor;
+#else
+                    NSColor.Clear.CGColor;
+#endif
+                if (_stroke is SolidColorBrush solidColorBrush && solidColorBrush.Color != Color.Default)
+                    strokeColor = solidColorBrush.Color.ToCGColor();
+
+                graphics.AddPath(_renderPath);
+                graphics.SetStrokeColor(strokeColor);
+                graphics.DrawPath(CGPathDrawingMode.Stroke);
+            }
 
             CATransaction.Commit();
+        }
+
+        void RenderBrush(CGContext graphics, CGRect pathBounds, GradientBrush brush)
+        {
+            if (brush == null)
+                return;
+
+            using (CGColorSpace rgb = CGColorSpace.CreateDeviceRGB())
+            {
+                CGColor[] colors = new CGColor[brush.GradientStops.Count];
+                nfloat[] locations = new nfloat[brush.GradientStops.Count];
+
+                for (int index = 0; index < brush.GradientStops.Count; index++)
+                {
+                    Color color = brush.GradientStops[index].Color;
+                    colors[index] = new CGColor(new nfloat(color.R), new nfloat(color.G), new nfloat(color.B), new nfloat(color.A));
+                    locations[index] = new nfloat(brush.GradientStops[index].Offset);
+                }
+
+                CGGradient gradient = new CGGradient(rgb, colors, locations);
+
+                if (brush is LinearGradientBrush linearGradientBrush)
+                {
+                    graphics.DrawLinearGradient(
+                        gradient,
+                        new CGPoint(pathBounds.Left + linearGradientBrush.StartPoint.X * pathBounds.Width, pathBounds.Top + linearGradientBrush.StartPoint.Y * pathBounds.Height),
+                        new CGPoint(pathBounds.Left + linearGradientBrush.EndPoint.X * pathBounds.Width, pathBounds.Top + linearGradientBrush.EndPoint.Y * pathBounds.Height),
+                        CGGradientDrawingOptions.DrawsBeforeStartLocation | CGGradientDrawingOptions.DrawsAfterEndLocation);
+                }
+
+                if (brush is RadialGradientBrush radialGradientBrush)
+                {
+                    graphics.DrawRadialGradient(
+                        gradient,
+                        new CGPoint(radialGradientBrush.Center.X * pathBounds.Width + pathBounds.Left, radialGradientBrush.Center.Y * pathBounds.Height + pathBounds.Top),
+                        0.0f,
+                        new CGPoint(radialGradientBrush.Center.X * pathBounds.Width + pathBounds.Left, radialGradientBrush.Center.Y * pathBounds.Height + pathBounds.Top),
+                        (nfloat)(radialGradientBrush.Radius * Math.Max(pathBounds.Height, pathBounds.Width)),
+                        CGGradientDrawingOptions.DrawsBeforeStartLocation | CGGradientDrawingOptions.DrawsAfterEndLocation);
+                }
+            }
         }
 
         void UpdatePathStrokeBounds()

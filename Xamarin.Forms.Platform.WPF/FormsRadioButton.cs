@@ -1,24 +1,23 @@
-﻿using WContentPresenter = System.Windows.Controls.ContentPresenter;
-using System.Windows;
-using System.Windows.Media;
+﻿using System.Windows;
 using Xamarin.Forms.Platform.WPF.Controls;
+using WBrush = System.Windows.Media.Brush;
 
 namespace Xamarin.Forms.Platform.WPF
 {
 	public class FormsRadioButton : System.Windows.Controls.RadioButton
 	{
-		public static readonly DependencyProperty BorderRadiusProperty = DependencyProperty.Register(nameof(BorderRadius), typeof(int), typeof(FormsButton),
-	new PropertyMetadata(default(int), OnBorderRadiusChanged));
+		public static readonly DependencyProperty BorderRadiusProperty = DependencyProperty.Register(nameof(BorderRadius), typeof(int), typeof(FormsButton),	
+			new PropertyMetadata(default(int), OnBorderRadiusChanged));
 
-		public static readonly DependencyProperty BackgroundColorProperty = DependencyProperty.Register(nameof(BackgroundColor), typeof(Brush), typeof(FormsButton),
-			new PropertyMetadata(default(Brush), OnBackgroundColorChanged));
+		public static readonly DependencyProperty BackgroundColorProperty = DependencyProperty.Register(nameof(BackgroundColor), typeof(WBrush), typeof(FormsButton),
+			new PropertyMetadata(default(WBrush), OnBackgroundColorChanged));
 
-		
-		public Brush BackgroundColor
+
+		public WBrush BackgroundColor
 		{
 			get
 			{
-				return (Brush)GetValue(BackgroundColorProperty);
+				return (WBrush)GetValue(BackgroundColorProperty);
 			}
 			set
 			{
@@ -42,7 +41,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			base.OnApplyTemplate();
 
-			UpdateBackgroundColor();			
+			UpdateBackgroundColor();
 		}
 
 		static void OnBackgroundColorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -52,7 +51,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 		static void OnBorderRadiusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
-			
+
 		}
 
 		void UpdateBackgroundColor()
@@ -62,6 +61,6 @@ namespace Xamarin.Forms.Platform.WPF
 
 			Background = BackgroundColor;
 		}
-		
+
 	}
 }

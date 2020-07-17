@@ -95,6 +95,14 @@ namespace Xamarin.Forms.Platform.iOS
 			_refreshControl.BackgroundColor = color != Color.Default ? color.ToUIColor() : null;
 		}
 
+		protected override void SetBackground(Brush brush)
+		{
+			if (_refreshControl == null)
+				return;
+
+			_refreshControl.UpdateBackground(brush);
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
@@ -220,6 +228,7 @@ namespace Xamarin.Forms.Platform.iOS
 				_refreshControl.TintColor = Element.RefreshColor.ToUIColor();
 
 			SetBackgroundColor(Element.BackgroundColor);
+			SetBackground(Element.Background);
 		}
 
 		void UpdateIsRefreshing()

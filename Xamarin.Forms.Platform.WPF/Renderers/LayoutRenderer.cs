@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using Xamarin.Forms.Platform.WPF.Extensions;
 using Xamarin.Forms.Platform.WPF.Helpers;
 
 namespace Xamarin.Forms.Platform.WPF
@@ -112,7 +113,12 @@ namespace Xamarin.Forms.Platform.WPF
 
 		protected override void UpdateBackground()
 		{
-			Control.UpdateDependencyColor(FormsPanel.BackgroundProperty, Element.BackgroundColor);
+			Brush background = Element.Background;
+
+			if (Brush.IsNullOrEmpty(background))
+				Control.UpdateDependencyColor(FormsPanel.BackgroundProperty, Element.BackgroundColor);
+			else
+				Control.Background = background.ToBrush();
 		}
 
 		void UpdateClipToBounds()

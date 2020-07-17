@@ -23,6 +23,7 @@
 	<uwp:HeightConverter x:Key="HeightConverter" />
 	<uwp:CollapseWhenEmptyConverter x:Key="CollapseWhenEmpty" />
 	<uwp:BoolToVisibilityConverter x:Key="BoolVisibilityConverter" />
+    <uwp:BrushConverter x:Key="BrushConverter" />
 	<uwp:BoolToVisibilityConverter x:Key="InvertedBoolVisibilityConverter" FalseIsVisible="True" />
 	<uwp:PageToRenderedElementConverter x:Key="PageToRenderer" />
 	<uwp:ImageConverter x:Key="ImageConverter" />

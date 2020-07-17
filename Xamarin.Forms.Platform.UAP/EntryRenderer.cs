@@ -5,9 +5,9 @@ using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using WBrush = Windows.UI.Xaml.Media.Brush;
 using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.InputView;
 
 namespace Xamarin.Forms.Platform.UWP
@@ -15,11 +15,11 @@ namespace Xamarin.Forms.Platform.UWP
 	public class EntryRenderer : ViewRenderer<Entry, FormsTextBox>
 	{
 		bool _fontApplied;
-		Brush _backgroundColorFocusedDefaultBrush;
-		Brush _placeholderDefaultBrush;
-		Brush _textDefaultBrush;
-		Brush _defaultTextColorFocusBrush;
-		Brush _defaultPlaceholderColorFocusBrush;
+		WBrush _backgroundColorFocusedDefaultBrush;
+		WBrush _placeholderDefaultBrush;
+		WBrush _textDefaultBrush;
+		WBrush _defaultTextColorFocusBrush;
+		WBrush _defaultPlaceholderColorFocusBrush;
 		bool _cursorPositionChangePending;
 		bool _selectionLengthChangePending;
 		bool _nativeSelectionIsUpdating;

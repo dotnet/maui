@@ -4,12 +4,13 @@ using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Shapes;
 using Xamarin.Forms.ControlGallery.WindowsUniversal;
 using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Platform.UWP;
 using WEllipse = Windows.UI.Xaml.Shapes.Ellipse;
 using WShape = Windows.UI.Xaml.Shapes.Shape;
+using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
 
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.Issues.Bugzilla42602.TextBoxView), typeof(Xamarin.Forms.ControlGallery.WindowsUniversal.TextBoxViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue1683.EntryKeyboardFlags), typeof(EntryRendererKeyboardFlags))]
@@ -137,7 +138,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			{
 				Width = 200,
 				Height = 200,
-				Background = new SolidColorBrush(Windows.UI.Color.FromArgb(0, 255, 255, 255)),
+				Background = new WSolidColorBrush(Windows.UI.Color.FromArgb(0, 255, 255, 255)),
 				IsHitTestVisible = false
 			};
 
@@ -148,7 +149,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			{
 				Width = 100,
 				Height = 100,
-				Fill = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 0, 0)),
+				Fill = new WSolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 0, 0)),
 
 			};
 			Canvas.SetLeft(ellipse, 0);
@@ -161,7 +162,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 				FontSize = 50,
 				FontWeight = Windows.UI.Text.FontWeights.Normal,
 				Text = "hello world",
-				Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 0, 0))
+				Foreground = new WSolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 0, 0))
 			};
 			Canvas.SetLeft(text, 0);
 			Canvas.SetTop(text, 150);

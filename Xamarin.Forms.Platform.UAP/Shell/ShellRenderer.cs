@@ -4,7 +4,8 @@ using System.ComponentModel;
 using Windows.Foundation.Metadata;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
+using WBrush = Windows.UI.Xaml.Media.Brush;
+using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -56,9 +57,9 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		public Brush FlyoutBackgroundColor
+		public WBrush FlyoutBackgroundColor
 		{
-			get => (Brush)GetValue(FlyoutBackgroundColorProperty);
+			get => (WBrush)GetValue(FlyoutBackgroundColorProperty);
 			set => SetValue(FlyoutBackgroundColorProperty, value);
 		}
 
@@ -217,10 +218,10 @@ namespace Xamarin.Forms.Platform.UWP
 					color = Resources["NavigationViewDefaultPaneBackground"];
 
 
-				if (color is Brush brush)
+				if (color is WBrush brush)
 					FlyoutBackgroundColor = brush;
 				else if (color is Windows.UI.Color uiColor)
-					new SolidColorBrush(uiColor);
+					new WSolidColorBrush(uiColor);
 			}
 			else
 				FlyoutBackgroundColor = _shell.FlyoutBackgroundColor.ToBrush();
@@ -336,7 +337,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				var titleBar = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TitleBar;
 				if (overrideColor)
-					toggleButton.Foreground = new SolidColorBrush(titleBar.ButtonForegroundColor.Value);
+					toggleButton.Foreground = new WSolidColorBrush(titleBar.ButtonForegroundColor.Value);
 				else
 					toggleButton.ClearValue(Control.ForegroundProperty);
 			}

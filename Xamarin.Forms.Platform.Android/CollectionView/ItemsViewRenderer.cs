@@ -227,6 +227,10 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				UpdateBackgroundColor();
 			}
+			else if (changedProperty.Is(VisualElement.BackgroundProperty))
+			{
+				UpdateBackground();
+			}
 			else if (changedProperty.Is(VisualElement.FlowDirectionProperty))
 			{
 				UpdateFlowDirection();
@@ -322,6 +326,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			UpdateSnapBehavior();
 			UpdateBackgroundColor();
+			UpdateBackground();
 			UpdateFlowDirection();
 			UpdateItemSpacing();
 
@@ -465,6 +470,19 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			SetBackgroundColor((color ?? Element.BackgroundColor).ToAndroid());
+		}
+
+		protected virtual void UpdateBackground(Brush brush = null)
+		{
+			if (Element == null)
+				return;
+
+			if (!(this is RecyclerView recyclerView))
+				return;
+
+			Brush background = Element.Background;
+
+			recyclerView.UpdateBackground(background);
 		}
 
 		protected virtual void UpdateFlowDirection()

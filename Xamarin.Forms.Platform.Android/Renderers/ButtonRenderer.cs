@@ -158,6 +158,14 @@ namespace Xamarin.Forms.Platform.Android
 			_backgroundTracker?.UpdateDrawable();
 		}
 
+		protected override void UpdateBackground()
+		{
+			if (Element == null || Control == null)
+				return;
+
+			_backgroundTracker?.UpdateDrawable();
+		}
+
 		void UpdateAll()
 		{
 			UpdateFont();

@@ -7,7 +7,6 @@ using UIKit;
 using Xamarin.Forms.Platform.iOS;
 using MActivityIndicator = MaterialComponents.ActivityIndicator;
 
-
 namespace Xamarin.Forms.Material.iOS
 {
 	public class MaterialActivityIndicatorRenderer : ViewRenderer<ActivityIndicator, MActivityIndicator>
@@ -81,7 +80,6 @@ namespace Xamarin.Forms.Material.iOS
 			if (Control == null) return;
 			// try get the radius for this size
 			var min = NMath.Min(Control.Bounds.Width, Control.Bounds.Height);
-			var stroke = min / _strokeRatio;
 			var radius = min / 2;
 
 			// but, in the end use the limit set by the control
@@ -129,6 +127,17 @@ namespace Xamarin.Forms.Material.iOS
 
 			_backgroundLayer.Hidden = color.IsDefault;
 			_backgroundLayer.StrokeColor = color.ToCGColor();
+		}
+
+		protected override void SetBackground(Brush brush)
+		{
+			if (_backgroundLayer == null)
+				return;
+
+			var backgroundImage = this.GetBackgroundImage(brush);
+
+			_backgroundLayer.Hidden = brush == null || brush.IsEmpty;
+			_backgroundLayer.StrokeColor = backgroundImage != null ? UIColor.FromPatternImage(backgroundImage).CGColor : UIColor.Clear.CGColor;
 		}
 
 		void UpdateColor() => _colorScheme.PrimaryColor = Element.Color.IsDefault ? _defaultColorScheme.PrimaryColor : Element.Color.ToUIColor();

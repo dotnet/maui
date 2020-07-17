@@ -4,9 +4,9 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using Xamarin.Forms.Platform.WPF.Helpers;
 using Xamarin.Forms.Platform.WPF.Interfaces;
+using WBrush = System.Windows.Media.Brush;
 
 namespace Xamarin.Forms.Platform.WPF.Controls
 {
@@ -21,18 +21,18 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 		public static readonly DependencyProperty PrimaryBottomBarCommandsProperty = DependencyProperty.Register("PrimaryBottomBarCommands", typeof(ObservableCollection<FrameworkElement>), typeof(FormsPage));
 		public static readonly DependencyProperty SecondaryBottomBarCommandsProperty = DependencyProperty.Register("SecondaryBottomBarCommands", typeof(ObservableCollection<FrameworkElement>), typeof(FormsPage));
 		public static readonly DependencyProperty ContentBottomBarProperty = DependencyProperty.Register("ContentBottomBar", typeof(object), typeof(FormsPage));
-		public static readonly DependencyProperty TitleBarBackgroundColorProperty = DependencyProperty.Register("TitleBarBackgroundColor", typeof(Brush), typeof(FormsPage));
-		public static readonly DependencyProperty TitleBarTextColorProperty = DependencyProperty.Register("TitleBarTextColor", typeof(Brush), typeof(FormsPage));
+		public static readonly DependencyProperty TitleBarBackgroundColorProperty = DependencyProperty.Register("TitleBarBackgroundColor", typeof(WBrush), typeof(FormsPage));
+		public static readonly DependencyProperty TitleBarTextColorProperty = DependencyProperty.Register("TitleBarTextColor", typeof(WBrush), typeof(FormsPage));
 
-		public Brush TitleBarBackgroundColor
+		public WBrush TitleBarBackgroundColor
 		{
-			get { return (Brush)GetValue(TitleBarBackgroundColorProperty); }
+			get { return (WBrush)GetValue(TitleBarBackgroundColorProperty); }
 			set { SetValue(TitleBarBackgroundColorProperty, value); }
 		}
 
-		public Brush TitleBarTextColor
+		public WBrush TitleBarTextColor
 		{
-			get { return (Brush)GetValue(TitleBarTextColorProperty); }
+			get { return (WBrush)GetValue(TitleBarTextColorProperty); }
 			set { SetValue(TitleBarTextColorProperty, value); }
 		}
 
@@ -175,12 +175,12 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 			return this.HasNavigationBar;
 		}
 
-		public virtual Brush GetTitleBarBackgroundColor()
+		public virtual WBrush GetTitleBarBackgroundColor()
 		{
 			return this.TitleBarBackgroundColor;
 		}
 
-		public virtual Brush GetTitleBarTextColor()
+		public virtual WBrush GetTitleBarTextColor()
 		{
 			return this.TitleBarTextColor;
 		}

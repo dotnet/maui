@@ -5,14 +5,15 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
+using WBrush = Windows.UI.Xaml.Media.Brush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
 	public class SliderRenderer : ViewRenderer<Slider, FormsSlider>
 	{
-		Brush defaultforegroundcolor;
-		Brush defaultbackgroundcolor;
-		Brush _defaultThumbColor;
+		WBrush defaultforegroundcolor;
+		WBrush defaultbackgroundcolor;
+		WBrush _defaultThumbColor;
 
 		PointerEventHandler _pointerPressedHandler;
 		PointerEventHandler _pointerReleasedHandler;
@@ -195,6 +196,23 @@ namespace Xamarin.Forms.Platform.UWP
 				else
 				{
 					Control.ClearValue(Windows.UI.Xaml.Controls.Control.BackgroundProperty);
+				}
+			}
+		}
+
+		protected override void UpdateBackground()
+		{
+			if (Control != null)
+			{
+				if (!Brush.IsNullOrEmpty(Element.Background))
+				{
+					Control.Background = Element.Background.ToBrush();
+				}
+				else
+				{
+					Color backgroundColor = Element.BackgroundColor;
+					if (backgroundColor.IsDefault)
+						Control.ClearValue(Windows.UI.Xaml.Controls.Control.BackgroundProperty);
 				}
 			}
 		}

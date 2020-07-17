@@ -1,8 +1,9 @@
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Xamarin.Forms.ControlGallery.WindowsUniversal;
 using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Platform.UWP;
+using WBrush = Windows.UI.Xaml.Media.Brush;
+using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
 
 [assembly: ExportRenderer(typeof(Bugzilla57114._57114View), typeof(_57114Renderer))]
 
@@ -27,9 +28,9 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			}
 		}
 
-		Brush ColorToBrush(Color color)
+		WBrush ColorToBrush(Color color)
 		{
-			return new SolidColorBrush(Windows.UI.Color.FromArgb((byte)(color.A * 255), (byte)(color.R * 255), (byte)(color.G * 255), (byte)(color.B * 255)));
+			return new WSolidColorBrush(Windows.UI.Color.FromArgb((byte)(color.A * 255), (byte)(color.R * 255), (byte)(color.G * 255), (byte)(color.B * 255)));
 		}
 	}
 

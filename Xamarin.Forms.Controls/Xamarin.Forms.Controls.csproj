@@ -91,6 +91,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Update="GalleryPages\GradientGalleries\LinearGradientPointsGallery.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
     <EmbeddedResource Update="GalleryPages\TwoPaneViewGalleries\GridUsingDualScreenInfo.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>

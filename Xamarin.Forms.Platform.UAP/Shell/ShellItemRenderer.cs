@@ -16,6 +16,7 @@ using UwpThickness = Windows.UI.Xaml.Thickness;
 using UwpStyle = Windows.UI.Xaml.Style;
 using Windows.UI.Xaml.Media;
 using UwpApplication = Windows.UI.Xaml.Application;
+using UwpSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -205,9 +206,9 @@ namespace Xamarin.Forms.Platform.UWP
 					titleColor = appearance.TitleColor.ToWindowsColor();
 			}
 			_BottomBarArea.Background = _HeaderArea.Background =
-				new SolidColorBrush(tabBarBackgroundColor);
-			_Title.Foreground = new SolidColorBrush(titleColor);
-			var tabbarForeground = new SolidColorBrush(tabBarForegroundColor);
+				new UwpSolidColorBrush(tabBarBackgroundColor);
+			_Title.Foreground = new UwpSolidColorBrush(titleColor);
+			var tabbarForeground = new UwpSolidColorBrush(tabBarForegroundColor);
 			foreach (var button in _BottomBar.Children.OfType<AppBarButton>())
 				button.Foreground = tabbarForeground;
 			if (SectionRenderer is IAppearanceObserver iao)

@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-using Foundation;
-using UIKit;
+﻿using Foundation;
 using Xamarin.Forms.Platform.iOS;
 
 namespace Xamarin.Forms.Material.iOS
@@ -9,6 +7,7 @@ namespace Xamarin.Forms.Material.iOS
 	{
 		protected override MaterialTextField CreateNativeControl() => new ReadOnlyMaterialTextField(this, Element);
 		protected override void SetBackgroundColor(Color color) => ApplyTheme();
+		protected override void SetBackground(Brush brush) => ApplyTheme();
 
 		protected internal override void UpdateFont()
 		{
@@ -18,6 +17,7 @@ namespace Xamarin.Forms.Material.iOS
 
 		protected internal override void UpdateTextColor() => Control?.UpdateTextColor(this);
 		protected virtual void ApplyTheme() => Control?.ApplyTheme(this);
+		protected virtual void ApplyThemeIfNeeded() => Control?.ApplyThemeIfNeeded(this);
 		protected internal override void UpdatePlaceholder() => Control?.UpdatePlaceholder(this);
 
 		protected override void UpdateAttributedPlaceholder(NSAttributedString nSAttributedString)
@@ -37,9 +37,17 @@ namespace Xamarin.Forms.Material.iOS
 			}
 		}
 
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			ApplyThemeIfNeeded();
+		}
+
 		string IMaterialEntryRenderer.Placeholder => Element?.Title;
 		Color IMaterialEntryRenderer.PlaceholderColor => Element?.TitleColor ?? Color.Default;
 		Color IMaterialEntryRenderer.TextColor => Element?.TextColor ?? Color.Default;
 		Color IMaterialEntryRenderer.BackgroundColor => Element?.BackgroundColor ?? Color.Default;
+		Brush IMaterialEntryRenderer.Background => Element?.Background ?? Brush.Default;
 	}
 }

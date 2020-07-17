@@ -125,7 +125,7 @@ namespace Xamarin.Forms.Platform.MacOS
 					e.PropertyName == Button.CornerRadiusProperty.PropertyName ||
 					e.PropertyName == Button.BorderColorProperty.PropertyName)
 				UpdateBorder();
-			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
 				UpdateBackgroundVisibility();
 			else if (e.PropertyName == Button.ImageSourceProperty.PropertyName)
 				UpdateImage();
@@ -143,9 +143,28 @@ namespace Xamarin.Forms.Platform.MacOS
 		void UpdateBackgroundVisibility()
 		{
 			var model = Element;
-			var shouldDrawImage = model.BackgroundColor == Color.Default;
+			var backgroundColor = model.BackgroundColor;
+			var background = model.Background;
+
+			var shouldDrawImage = backgroundColor == Color.Default && background == null;
+
 			if (!shouldDrawImage)
-				Control.Cell.BackgroundColor = model.BackgroundColor.ToNSColor();
+			{
+				if (background != null)
+				{
+					var backgroundLayer = this.GetBackgroundLayer(background);
+
+					if (backgroundLayer != null)
+					{
+						Layer.BackgroundColor = NSColor.Clear.CGColor;
+						Layer.InsertBackgroundLayer(backgroundLayer, 0);
+					}
+					else
+						Layer.RemoveBackgroundLayer();
+				}
+				else
+					Control.Cell.BackgroundColor = backgroundColor.ToNSColor();
+			}
 		}
 
 		void UpdateBorder()
@@ -217,6 +236,5 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			Element?.SendReleased();
 		}
-
 	}
 }

@@ -53,10 +53,22 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
-		public void SetBackgroundColor(Color color)
+		public void SetBackground(Color color, Brush brush)
 		{
-			_backgroudColor = color.IsDefault ? AColor.Transparent : color.ToAndroid();
-			(Background as GradientDrawable)?.SetColor(_backgroudColor);
+			if (Background is GradientDrawable gradientDrawable)
+			{
+				GradientDrawable backgroundDrawable = gradientDrawable.GetConstantState().NewDrawable() as GradientDrawable;
+
+				if (!Brush.IsNullOrEmpty(brush))
+					backgroundDrawable.UpdateBackground(brush, Height, Width);
+				else
+				{
+					_backgroudColor = color.IsDefault ? AColor.Transparent : color.ToAndroid();
+					backgroundDrawable.SetColor(_backgroudColor);
+				}
+
+				Background = backgroundDrawable;
+			}
 		}
 
 		AnimatedVectorDrawable AnimatedDrawable => IndeterminateDrawable.Current as AnimatedVectorDrawable;

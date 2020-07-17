@@ -258,6 +258,7 @@ namespace Xamarin.Forms.CustomAttributes
 			IsVisible,
 			Opacity,
 			BackgroundColor,
+			Background,
 			IsFocused,
 			Focus,
 			Unfocus,

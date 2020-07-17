@@ -4,19 +4,19 @@ using System.ComponentModel;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Markup;
-using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Shapes;
 using WEllipse = Windows.UI.Xaml.Shapes.Ellipse;
 using WRectangle = Windows.UI.Xaml.Shapes.Rectangle;
 using WShape = Windows.UI.Xaml.Shapes.Shape;
+using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
 	class IndicatorViewRenderer : ViewRenderer<IndicatorView, FrameworkElement>
 	{
 		const int DefaultPadding = 4;
-
-		SolidColorBrush _selectedColor;
-		SolidColorBrush _fillColor;
+		WSolidColorBrush _selectedColor;
+		WSolidColorBrush _fillColor;
 		ObservableCollection<WShape> _dots;
 
 		public IndicatorViewRenderer()
@@ -34,9 +34,10 @@ namespace Xamarin.Forms.Platform.UWP
 				{
 					UpdateControl();
 				}
-				_fillColor = new SolidColorBrush(Element.IndicatorColor.ToWindowsColor());
 
-				_selectedColor = new SolidColorBrush(Element.SelectedIndicatorColor.ToWindowsColor());
+				_fillColor = new WSolidColorBrush(Element.IndicatorColor.ToWindowsColor());
+
+				_selectedColor = new WSolidColorBrush(Element.SelectedIndicatorColor.ToWindowsColor());
 
 				CreateIndicators();
 			}
@@ -79,8 +80,8 @@ namespace Xamarin.Forms.Platform.UWP
 			if (!(Control is ItemsControl))
 				return;
 			
-			_fillColor = new SolidColorBrush(Element.IndicatorColor.ToWindowsColor());
-			_selectedColor = new SolidColorBrush(Element.SelectedIndicatorColor.ToWindowsColor());
+			_fillColor = new WSolidColorBrush(Element.IndicatorColor.ToWindowsColor());
+			_selectedColor = new WSolidColorBrush(Element.SelectedIndicatorColor.ToWindowsColor());
 			var position = Element.Position;
 			int i = 0;
 			foreach (var item in (Control as ItemsControl).Items)

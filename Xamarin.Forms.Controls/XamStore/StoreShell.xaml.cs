@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Xamarin.Forms;
+﻿using System.Collections.Generic;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml;
 
@@ -14,9 +8,12 @@ namespace Xamarin.Forms.Controls.XamStore
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class StoreShell : TestShell
 	{
-		public StoreShell() 
+		public StoreShell()
 		{
 			InitializeComponent();
+
+			Device.SetFlags(new List<string> { ExperimentalFlags.BrushExperimental });
+
 			CurrentItem = _storeItem;
 		}
 

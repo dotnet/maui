@@ -1,5 +1,5 @@
 ﻿using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
+using WBrush = Windows.UI.Xaml.Media.Brush;
 using WContentPresenter = Windows.UI.Xaml.Controls.ContentPresenter;
 
 namespace Xamarin.Forms.Platform.UWP
@@ -9,16 +9,16 @@ namespace Xamarin.Forms.Platform.UWP
 		public static readonly DependencyProperty BorderRadiusProperty = DependencyProperty.Register(nameof(BorderRadius), typeof(int), typeof(FormsButton),
 	new PropertyMetadata(default(int), OnBorderRadiusChanged));
 
-		public static readonly DependencyProperty BackgroundColorProperty = DependencyProperty.Register(nameof(BackgroundColor), typeof(Brush), typeof(FormsButton),
-			new PropertyMetadata(default(Brush), OnBackgroundColorChanged));
+		public static readonly DependencyProperty BackgroundColorProperty = DependencyProperty.Register(nameof(BackgroundColor), typeof(WBrush), typeof(FormsButton),
+			new PropertyMetadata(default(WBrush), OnBackgroundColorChanged));
 
 		WContentPresenter _contentPresenter;
 
-		public Brush BackgroundColor
+		public WBrush BackgroundColor
 		{
 			get
 			{
-				return (Brush)GetValue(BackgroundColorProperty);
+				return (WBrush)GetValue(BackgroundColorProperty);
 			}
 			set
 			{

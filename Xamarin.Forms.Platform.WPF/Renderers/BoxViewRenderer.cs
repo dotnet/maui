@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Xamarin.Forms.Platform.WPF.Extensions;
 using WRectangle = System.Windows.Shapes.Rectangle;
 
 namespace Xamarin.Forms.Platform.WPF
@@ -42,7 +43,9 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == BoxView.ColorProperty.PropertyName)
+			if (e.PropertyName == BoxView.ColorProperty.PropertyName || 
+				e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || 
+				e.PropertyName == VisualElement.BackgroundProperty.PropertyName )
 				UpdateBackground();
 			else if (e.PropertyName == BoxView.CornerRadiusProperty.PropertyName)
 				UpdateCornerRadius();
@@ -57,8 +60,15 @@ namespace Xamarin.Forms.Platform.WPF
 
 		protected override void UpdateBackground()
 		{
-			Color color = Element.Color != Color.Default ? Element.Color : Element.BackgroundColor;
-			_border.UpdateDependencyColor(Border.BackgroundProperty, color);
+			Brush background = Element.Background;
+
+			if (Brush.IsNullOrEmpty(background))
+			{
+				Color color = Element.Color != Color.Default ? Element.Color : Element.BackgroundColor;
+				_border.UpdateDependencyColor(Border.BackgroundProperty, color);
+			}
+			else
+				_border.Background = background.ToBrush();
 		}
 
 		void UpdateCornerRadius()

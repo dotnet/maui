@@ -11,6 +11,8 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Xamarin.Forms.Internals;
+using WBrush = Windows.UI.Xaml.Media.Brush;
+using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -24,7 +26,7 @@ namespace Xamarin.Forms.Platform.UWP
 		internal static readonly BindableProperty MeasuredEstimateProperty = BindableProperty.Create("MeasuredEstimate", typeof(double), typeof(ListView), -1d);
 		readonly Lazy<ListView> _listView;
 		readonly PropertyChangedEventHandler _propertyChangedHandler;
-		Brush _defaultOnColor;
+		WBrush _defaultOnColor;
 
 		IList<MenuItem> _contextActions;
 		Windows.UI.Xaml.DataTemplate _currentTemplate;
@@ -156,7 +158,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			var color = switchCell.OnColor == Color.Default
 				? _defaultOnColor
-				: new SolidColorBrush(switchCell.OnColor.ToWindowsColor());
+				: new WSolidColorBrush(switchCell.OnColor.ToWindowsColor());
 
 			var nativeSwitch = FrameworkElementExtensions.GetFirstDescendant<ToggleSwitch>(this);
 

@@ -275,6 +275,7 @@
     </Compile>
     <Compile Include="Extensions\NSAttributedStringExtensions.cs" />
     <Compile Include="EmbeddedFontLoader.cs" />
+    <Compile Include="Extensions\BrushExtensions.cs" />
     <Compile Include="..\Xamarin.Forms.Platform.iOS\Extensions\DoubleCollectionExtensions.cs">
       <Link>Extensions\DoubleCollectionExtensions.cs</Link>
     </Compile>

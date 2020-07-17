@@ -1,5 +1,5 @@
 ﻿using System;
-using Windows.UI.Xaml.Media;
+using WBrush = Windows.UI.Xaml.Media.Brush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Platform.UWP
 		/// <param name="defaultbrush">The renderer's cache for the default brush</param>
 		/// <param name="getter">Delegate for retrieving the Control's current Brush</param>
 		/// <param name="setter">Delegate for setting the Control's Brush</param>
-		public static void UpdateColor(Color color, ref Brush defaultbrush, Func<Brush> getter, Action<Brush> setter)
+		public static void UpdateColor(Color color, ref WBrush defaultbrush, Func<WBrush> getter, Action<WBrush> setter)
 		{
 			if (color.IsDefault)
 			{
@@ -32,6 +32,27 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 
 			setter(color.ToBrush());
+		}
+
+		public static void UpdateBrush(Brush brush, ref WBrush defaultbrush, Func<WBrush> getter, Action<WBrush> setter)
+		{
+			if (Brush.IsNullOrEmpty(brush))
+			{
+				if (defaultbrush == null)
+				{
+					return;
+				}
+
+				setter(defaultbrush);
+				return;
+			}
+
+			if (defaultbrush == null)
+			{
+				defaultbrush = getter();
+			}
+
+			setter(brush.ToBrush());
 		}
 	}
 }

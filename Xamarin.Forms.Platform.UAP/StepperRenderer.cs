@@ -51,6 +51,12 @@ namespace Xamarin.Forms.Platform.UWP
 				Control.ButtonBackgroundColor = Element.BackgroundColor;
 		}
 
+		protected override void UpdateBackground()
+		{
+			if (Control != null)
+				Control.ButtonBackground = Element.Background;
+		}
+
 		protected override bool PreventGestureBubbling { get; set; } = true;
 
 		void OnControlValue(object sender, EventArgs e)

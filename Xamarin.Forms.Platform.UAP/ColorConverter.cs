@@ -1,6 +1,7 @@
 ﻿using System;
 using Windows.UI;
-using Windows.UI.Xaml.Media;
+using WBrush = Windows.UI.Xaml.Media.Brush;
+using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -11,7 +12,7 @@ namespace Xamarin.Forms.Platform.UWP
 			var color = (Color)value;
 			var defaultColorKey = (string)parameter;
 
-			Brush defaultBrush = defaultColorKey != null ? (Brush)Windows.UI.Xaml.Application.Current.Resources[defaultColorKey] : new SolidColorBrush(Colors.Transparent);
+			WBrush defaultBrush = defaultColorKey != null ? (WBrush)Windows.UI.Xaml.Application.Current.Resources[defaultColorKey] : new WSolidColorBrush(Colors.Transparent);
 
 			return color == Color.Default ? defaultBrush : color.ToBrush();
 		}

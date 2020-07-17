@@ -74,6 +74,18 @@ namespace Xamarin.Forms.Platform.Android.UnitTests
 			}
 		}
 
+		[SetUp]
+		public virtual void Setup()
+		{
+
+		}
+
+		[TearDown]
+		public virtual void TearDown()
+		{
+
+		}
+
 		protected static void ToggleRTLSupport(Context context, bool enabled)
 		{
 			context.ApplicationInfo.Flags = enabled
@@ -449,6 +461,14 @@ namespace Xamarin.Forms.Platform.Android.UnitTests
 					return getProperty(control);
 				}
 			});
+		}
+
+		protected bool AreColorsSimilar(AColor c1, AColor c2, int tolerance)
+		{
+			return
+				Math.Abs(c1.R - c2.R) < tolerance &&
+				Math.Abs(c1.G - c2.G) < tolerance &&
+				Math.Abs(c1.B - c2.B) < tolerance;
 		}
 	}
 }

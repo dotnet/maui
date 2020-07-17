@@ -14,7 +14,6 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:FormsTabbedPage">
-
                     <Grid  HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalAlignment}"
                             Background="{TemplateBinding Background}">
@@ -22,15 +21,13 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-
-                        <Grid Height="40" VerticalAlignment="Center" Background="{Binding BarBackgroundColor,  RelativeSource={RelativeSource TemplatedParent}}">
-                            
+                        <Grid Height="40" VerticalAlignment="Center" Background="{Binding BarBackgroundColor, RelativeSource={RelativeSource TemplatedParent}}">
                             <ListBox x:Name="ChildrenList" ItemsSource="{TemplateBinding ItemsSource}" 
                                          SelectedItem="{Binding SelectedItem, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                          SelectedIndex="{Binding SelectedIndex, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                 ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                                 ScrollViewer.VerticalScrollBarVisibility="Hidden" BorderBrush="{Binding BarBackgroundColor,  RelativeSource={RelativeSource TemplatedParent}}"
-                                 ScrollViewer.CanContentScroll="False" Background="{Binding BarBackgroundColor, RelativeSource={RelativeSource TemplatedParent}}" 
+                                 ScrollViewer.VerticalScrollBarVisibility="Hidden" BorderBrush="Transparent"
+                                 ScrollViewer.CanContentScroll="False" Background="Transparent" 
                                  ScrollViewer.PanningMode="Both"  HorizontalAlignment="Center">
                                 <ListBox.ItemContainerStyle>
                                     <Style TargetType="ListBoxItem">

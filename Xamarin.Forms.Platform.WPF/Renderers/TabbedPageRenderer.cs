@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.ComponentModel;
 using Xamarin.Forms.Platform.WPF.Controls;
+using Xamarin.Forms.Platform.WPF.Extensions;
 
 namespace Xamarin.Forms.Platform.WPF
 {
@@ -21,6 +16,7 @@ namespace Xamarin.Forms.Platform.WPF
 				}
 
 				UpdateBarBackgroundColor();
+				UpdateBarBackground();
 				UpdateBarTextColor();
 			}
 
@@ -33,6 +29,8 @@ namespace Xamarin.Forms.Platform.WPF
 			
 			if (e.PropertyName == TabbedPage.BarBackgroundColorProperty.PropertyName)
 				UpdateBarBackgroundColor();
+			else if (e.PropertyName == TabbedPage.BarBackgroundProperty.PropertyName)
+				UpdateBarBackground();
 			else if (e.PropertyName == TabbedPage.BarTextColorProperty.PropertyName)
 				UpdateBarTextColor();
 		}
@@ -40,6 +38,11 @@ namespace Xamarin.Forms.Platform.WPF
 		void UpdateBarBackgroundColor()
 		{
 			Control.UpdateDependencyColor(FormsTabbedPage.BarBackgroundColorProperty, Element.BarBackgroundColor);
+		}
+
+		void UpdateBarBackground()
+		{
+			Control.BarBackgroundColor = Element.BarBackground.ToBrush();
 		}
 
 		void UpdateBarTextColor()

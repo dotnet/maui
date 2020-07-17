@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using CoreGraphics;
-using Foundation;
 using MaterialComponents;
 using UIKit;
 using Xamarin.Forms.Platform.iOS;
@@ -17,6 +16,7 @@ namespace Xamarin.Forms.Material.iOS
 		ButtonScheme _defaultButtonScheme;
 		ButtonScheme _buttonScheme;
 		ButtonLayoutManager _buttonLayoutManager;
+		CGSize? _backgroundSize;
 
 		public MaterialButtonRenderer()
 		{
@@ -80,6 +80,14 @@ namespace Xamarin.Forms.Material.iOS
 			}
 		}
 
+
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			ApplyThemeIfNeeded();
+		}
+
 		protected virtual ButtonScheme CreateButtonScheme()
 		{
 			return new ButtonScheme
@@ -103,6 +111,19 @@ namespace Xamarin.Forms.Material.iOS
 				Control.SetTitleColor(MaterialColors.Light.DisabledColor, UIControlState.Disabled);
 			else
 				Control.SetTitleColor(textColor.ToUIColor(), UIControlState.Disabled);
+		}
+
+		protected virtual void ApplyThemeIfNeeded()
+		{
+			var bgBrush = Element.Background;
+
+			if (Brush.IsNullOrEmpty(bgBrush))
+				return;
+
+			var backgroundImage = this.GetBackgroundImage(bgBrush);
+
+			if (_backgroundSize != null && _backgroundSize != backgroundImage?.Size)
+				UpdateBackground();
 		}
 
 		protected override MButton CreateNativeControl() => new MButton();
@@ -161,16 +182,41 @@ namespace Xamarin.Forms.Material.iOS
 
 		protected override void SetBackgroundColor(Color color)
 		{
+			UpdateBackground();
+		}
+
+		protected override void SetBackground(Brush brush)
+		{
+			UpdateBackground();
+		}
+
+		void UpdateBackground()
+		{
 			if (_buttonScheme?.ColorScheme is SemanticColorScheme colorScheme)
 			{
-				if (color.IsDefault)
+				var color = Element.BackgroundColor;
+				var brush = Element.Background;
+
+				if (Brush.IsNullOrEmpty(brush))
 				{
-					colorScheme.PrimaryColor = _defaultButtonScheme.ColorScheme.PrimaryColor;
-					colorScheme.OnSurfaceColor = _defaultButtonScheme.ColorScheme.OnSurfaceColor;
+					if (color.IsDefault)
+					{
+						colorScheme.PrimaryColor = _defaultButtonScheme.ColorScheme.PrimaryColor;
+						colorScheme.OnSurfaceColor = _defaultButtonScheme.ColorScheme.OnSurfaceColor;
+					}
+					else
+					{
+						UIColor uiColor = color.ToUIColor();
+
+						colorScheme.PrimaryColor = uiColor;
+						colorScheme.OnSurfaceColor = uiColor;
+					}
 				}
 				else
 				{
-					UIColor uiColor = color.ToUIColor();
+					var backgroundImage = Control.GetBackgroundImage(brush);
+					_backgroundSize = backgroundImage?.Size;
+					UIColor uiColor = UIColor.FromPatternImage(backgroundImage);
 
 					colorScheme.PrimaryColor = uiColor;
 					colorScheme.OnSurfaceColor = uiColor;

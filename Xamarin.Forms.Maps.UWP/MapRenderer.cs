@@ -10,8 +10,10 @@ using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls.Maps;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Shapes;
 using Xamarin.Forms.Platform.UWP;
 using WEllipse = Windows.UI.Xaml.Shapes.Ellipse;
+using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
 
 namespace Xamarin.Forms.Maps.UWP
 {
@@ -518,8 +520,8 @@ namespace Xamarin.Forms.Maps.UWP
 			{
 				_userPositionCircle = new WEllipse
 				{
-					Stroke = new SolidColorBrush(Colors.White),
-					Fill = new SolidColorBrush(Colors.Blue),
+					Stroke = new WSolidColorBrush(Colors.White),
+					Fill = new WSolidColorBrush(Colors.Blue),
 					StrokeThickness = 2,
 					Height = 20,
 					Width = 20,
