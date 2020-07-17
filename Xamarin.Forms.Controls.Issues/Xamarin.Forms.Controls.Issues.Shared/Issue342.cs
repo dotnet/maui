@@ -50,8 +50,10 @@ namespace Xamarin.Forms.Controls.Issues
 
 			_image = new Image ();
 
-			Content = new StackLayout {
-				Children = { 
+			Content = new StackLayout
+			{
+				AutomationId = "TestReady",
+				Children = {
 					new Label {
 						Text = "Delayed image"
 					},
@@ -78,7 +80,8 @@ namespace Xamarin.Forms.Controls.Issues
 		[Category(UITestCategories.ManualReview)]
 		public void Issue342DelayedLoadTestsImageLoads ()
 		{
-			RunningApp.Screenshot ("Should not crash");
+			RunningApp.WaitForElement("TestReady");
+			RunningApp.Screenshot("Should not crash");
 		}
 #endif
 	}

@@ -28,7 +28,8 @@ namespace Xamarin.Forms.Controls.Issues
 				HorizontalOptions = LayoutOptions.Center,
 				TextColor = Color.White,
 				VerticalOptions = LayoutOptions.Center,
-				WidthRequest = 64
+				WidthRequest = 64,
+				AutomationId = "TestReady"
 			};
 
 			button.On<Android>().SetUseDefaultPadding(true).SetUseDefaultShadow(true);
@@ -60,6 +61,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Category(UITestCategories.ManualReview)]
 		public void Issue1909Test()
 		{
+			RunningApp.WaitForElement("TestReady");
 			RunningApp.Screenshot("I am at Issue 1909");
 		}
 #endif

@@ -58,7 +58,9 @@ namespace Xamarin.Forms.Controls.Issues
 				ItemTemplate = new DataTemplate (typeof(ContextActionsCell))
 			};
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
+				AutomationId = "TestReady",
 				Children = {
 					list,
 					listTransparent,
@@ -113,8 +115,9 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void Issue2775Test ()
 		{
-			RunningApp.Screenshot ("I am at Issue 2775");
-			RunningApp.Screenshot ("I see the Label");
+			RunningApp.WaitForElement("TestReady");
+			RunningApp.Screenshot("I am at Issue 2775");
+			RunningApp.Screenshot("I see the Label");
 		}
 #endif
 	}
