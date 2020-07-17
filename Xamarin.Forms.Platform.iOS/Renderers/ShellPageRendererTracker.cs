@@ -353,11 +353,6 @@ namespace Xamarin.Forms.Platform.iOS
 			return img;
 		}
 
-		void OnMenuButtonPressed(object sender, EventArgs e)
-		{
-			_context.Shell.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, true);
-		}
-
 		async void OnToolbarItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			await UpdateToolbarItems().ConfigureAwait(false);
