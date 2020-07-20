@@ -12,7 +12,7 @@ namespace Xamarin.Essentials
             (await PlatformPickAsync(options))?.FirstOrDefault();
 
         public static Task<IEnumerable<FilePickerResult>> PickMultipleAsync(PickOptions options = null) =>
-            PlatformPickAsync(options ?? PickOptions.Default);
+            PlatformPickAsync(options ?? PickOptions.Default, true);
     }
 
     public partial class FilePickerFileType
