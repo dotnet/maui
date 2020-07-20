@@ -9,12 +9,15 @@ namespace Xamarin.Essentials
 {
     public static partial class FilePicker
     {
-        static Task<FilePickerResult> PlatformPickFileAsync(PickOptions options)
+        static Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options)
         {
+            if (options.AllowMultiple)
+                throw new FeatureNotSupportedException();
+
             Permissions.EnsureDeclared<Permissions.LaunchApp>();
             Permissions.EnsureDeclared<Permissions.StorageRead>();
 
-            var tcs = new TaskCompletionSource<FilePickerResult>();
+            var tcs = new TaskCompletionSource<IEnumerable<FilePickerResult>>();
 
             var appControl = new AppControl();
             appControl.Operation = AppControlOperations.Pick;
@@ -22,32 +25,28 @@ namespace Xamarin.Essentials
             appControl.LaunchMode = AppControlLaunchMode.Single;
 
             var fileType = options?.FileTypes?.Value?.FirstOrDefault();
-            if (fileType == null)
-            {
-                appControl.Mime = "*/*";
-            }
-            else
-            {
-                appControl.Mime = fileType;
-            }
+            appControl.Mime = fileType ?? "*/*";
+
+            var fileResults = new List<FilePickerResult>();
 
             AppControl.SendLaunchRequest(appControl, (request, reply, result) =>
             {
-                var pr = new FilePickerResult(new List<string>());
+                var resultFiles = new List<FilePickerResult>();
+
                 if (result == AppControlReplyResult.Succeeded)
                 {
                     if (reply.ExtraData.Count() > 0)
                     {
-                        pr = new FilePickerResult(reply.ExtraData.Get<IEnumerable<string>>(AppControlData.Selected).ToList());
+                        var info = reply.ExtraData.Get<IEnumerable<string>>(AppControlData.Selected).ToList();
+                        resultFiles.Add(new FilePickerResult(info));
                     }
                 }
-                tcs.TrySetResult(pr);
+
+                tcs.TrySetResult(resultFiles);
             });
+
             return tcs.Task;
         }
-
-        static Task<IEnumerable<FilePickerResult>> PlatformPickMultipleFilesAsync(PickOptions options)
-            => throw new NotImplementedInReferenceAssemblyException();
     }
 
     public partial class FilePickerFileType

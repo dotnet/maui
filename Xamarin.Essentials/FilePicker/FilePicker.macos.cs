@@ -9,36 +9,12 @@ namespace Xamarin.Essentials
 {
     public static partial class FilePicker
     {
-        static Task<FilePickerResult> PlatformPickFileAsync(PickOptions options)
+        static Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options)
         {
             var openPanel = new NSOpenPanel
             {
                 CanChooseFiles = true,
-                AllowsMultipleSelection = false,
-                CanChooseDirectories = false
-            };
-
-            if (options.PickerTitle != null)
-                openPanel.Title = options.PickerTitle;
-
-            SetFileTypes(options, openPanel);
-
-            FilePickerResult result = null;
-            var panelResult = openPanel.RunModal();
-            if (panelResult == (nint)(long)NSModalResponse.OK)
-            {
-                result = new FilePickerResult(openPanel.Urls[0].Path);
-            }
-
-            return Task.FromResult(result);
-        }
-
-        static Task<IEnumerable<FilePickerResult>> PlatformPickMultipleFilesAsync(PickOptions options)
-        {
-            var openPanel = new NSOpenPanel
-            {
-                CanChooseFiles = true,
-                AllowsMultipleSelection = true,
+                AllowsMultipleSelection = options.AllowMultiple,
                 CanChooseDirectories = false
             };
 
@@ -52,9 +28,7 @@ namespace Xamarin.Essentials
             if (panelResult == (nint)(long)NSModalResponse.OK)
             {
                 foreach (var url in openPanel.Urls)
-                {
                     resultList.Add(new FilePickerResult(url.Path));
-                }
             }
 
             return Task.FromResult<IEnumerable<FilePickerResult>>(resultList);

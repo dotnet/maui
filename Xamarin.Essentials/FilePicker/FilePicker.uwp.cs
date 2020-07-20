@@ -11,7 +11,7 @@ namespace Xamarin.Essentials
 {
     public static partial class FilePicker
     {
-        static async Task<FilePickerResult> PlatformPickFileAsync(PickOptions options)
+        static async Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options)
         {
             var picker = new FileOpenPicker
             {
@@ -21,33 +21,25 @@ namespace Xamarin.Essentials
 
             SetFileTypes(options, picker);
 
-            var file = await picker.PickSingleFileAsync();
-            if (file == null)
-                return null;
+            var resultList = new List<StorageFile>();
 
-            StorageApplicationPermissions.FutureAccessList.Add(file);
-
-            return new FilePickerResult(file);
-        }
-
-        static async Task<IEnumerable<FilePickerResult>> PlatformPickMultipleFilesAsync(PickOptions options)
-        {
-            var picker = new FileOpenPicker
+            if (options.AllowMultiple)
             {
-                ViewMode = PickerViewMode.List,
-                SuggestedStartLocation = PickerLocationId.DocumentsLibrary
-            };
+                var fileList = await picker.PickMultipleFilesAsync();
+                if (fileList != null)
+                    resultList.AddRange(fileList);
+            }
+            else
+            {
+                var file = await picker.PickSingleFileAsync();
+                if (file != null)
+                    resultList.Add(file);
+            }
 
-            SetFileTypes(options, picker);
-
-            var fileList = await picker.PickMultipleFilesAsync();
-            if (fileList == null)
-                return Enumerable.Empty<FilePickerResult>();
-
-            foreach (var file in fileList)
+            foreach (var file in resultList)
                 StorageApplicationPermissions.FutureAccessList.Add(file);
 
-            return fileList.Select((storageFile) => new FilePickerResult(storageFile));
+            return resultList.Select(storageFile => new FilePickerResult(storageFile));
         }
 
         static void SetFileTypes(PickOptions options, FileOpenPicker picker)

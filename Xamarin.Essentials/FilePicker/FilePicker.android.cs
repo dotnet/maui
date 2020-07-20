@@ -6,31 +6,27 @@ using System.Net;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
-using Android.OS;
 using Android.Provider;
 
 namespace Xamarin.Essentials
 {
     public static partial class FilePicker
     {
-        const int requestCodeFilePicker = 12345;
+        const int requestCodeFilePicker = 12347;
 
-        static async Task<FilePickerResult> PlatformPickFileAsync(PickOptions options)
+        static async Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options)
         {
             // we only need the permission when accessing the file, but it's more natural
             // to ask the user first, then show the picker.
             await Permissions.RequestAsync<Permissions.StorageRead>();
 
-            // starting with KitKat, Android 5.0, we can use ActionOpenDocument
-            var action = Build.VERSION.SdkInt < BuildVersionCodes.Kitkat ? Intent.ActionGetContent : Intent.ActionOpenDocument;
+            // Essentials supports >= API 19 where this action is available
+            var action = Intent.ActionOpenDocument;
 
             var intent = new Intent(action);
             intent.SetType("*/*");
-
-            if (Build.VERSION.SdkInt < BuildVersionCodes.Kitkat)
-                intent.AddCategory(Intent.CategoryOpenable);
-            else
-                intent.AddFlags(ActivityFlags.GrantPersistableUriPermission);
+            intent.AddFlags(ActivityFlags.GrantPersistableUriPermission);
+            intent.PutExtra(Intent.ExtraAllowMultiple, true);
 
             var allowedTypes = options?.FileTypes?.Value?.ToArray();
             if (allowedTypes?.Length > 0)
@@ -41,92 +37,32 @@ namespace Xamarin.Essentials
             try
             {
                 var result = await IntermediateActivity.StartAsync(pickerIntent, requestCodeFilePicker);
-                var contentUri = result.Data;
+                var resultList = new List<FilePickerResult>();
 
-                if (Build.VERSION.SdkInt >= BuildVersionCodes.Kitkat)
+                var clipData = new List<global::Android.Net.Uri>();
+
+                if (result.ClipData == null)
+                {
+                    clipData.Add(result.Data);
+                }
+                else
+                {
+                    for (var i = 0; i < result.ClipData.ItemCount; i++)
+                        clipData.Add(result.ClipData.GetItemAt(i).Uri);
+                }
+
+                foreach (var contentUri in clipData)
                 {
                     Platform.AppContext.ContentResolver.TakePersistableUriPermission(
                         contentUri,
                         ActivityFlags.GrantReadUriPermission);
-                }
-
-                return new FilePickerResult(contentUri);
-            }
-            catch (System.OperationCanceledException)
-            {
-                return null;
-            }
-        }
-
-        static async Task<IEnumerable<FilePickerResult>> PlatformPickMultipleFilesAsync(PickOptions options)
-        {
-            if ((int)global::Android.OS.Build.VERSION.SdkInt < 18)
-                throw new FeatureNotSupportedException("multiple files picking is only available from API level 18 (Android 4.3) on");
-
-            // we only need the permission when accessing the file, but it's more natural
-            // to ask the user first, then show the picker.
-            await Permissions.RequestAsync<Permissions.StorageRead>();
-
-            // starting with KitKat, Android 5.0, we can use ActionOpenDocument
-            var action = Build.VERSION.SdkInt < BuildVersionCodes.Kitkat ? Intent.ActionGetContent : Intent.ActionOpenDocument;
-
-            var intent = new Intent(action);
-            intent.SetType("*/*");
-
-            if (Build.VERSION.SdkInt < BuildVersionCodes.Kitkat)
-                intent.AddCategory(Intent.CategoryOpenable);
-            else
-                intent.AddFlags(ActivityFlags.GrantPersistableUriPermission);
-
-            intent.PutExtra(Intent.ExtraAllowMultiple, true);
-
-            var allowedTypes = options?.FileTypes?.Value?.ToArray();
-            if (allowedTypes?.Length > 0)
-                intent.PutExtra(Intent.ExtraMimeTypes, allowedTypes);
-
-            var pickerIntent = Intent.CreateChooser(intent, options?.PickerTitle ?? "Select files");
-
-            try
-            {
-                var result = await IntermediateActivity.StartAsync(pickerIntent, requestCodeFilePicker);
-
-                var resultList = new List<FilePickerResult>();
-
-                if (result.ClipData == null)
-                {
-                    var contentUri = result.Data;
-
-                    if (Build.VERSION.SdkInt >= BuildVersionCodes.Kitkat)
-                    {
-                        Platform.AppContext.ContentResolver.TakePersistableUriPermission(
-                            contentUri,
-                            ActivityFlags.GrantReadUriPermission);
-                    }
 
                     resultList.Add(new FilePickerResult(contentUri));
-                }
-                else
-                {
-                    for (var index = 0; index < result.ClipData.ItemCount; index++)
-                    {
-                        var data = result.ClipData.GetItemAt(index);
-
-                        var contentUri = data.Uri;
-
-                        if (Build.VERSION.SdkInt >= BuildVersionCodes.Kitkat)
-                        {
-                            Platform.AppContext.ContentResolver.TakePersistableUriPermission(
-                                contentUri,
-                                ActivityFlags.GrantReadUriPermission);
-                        }
-
-                        resultList.Add(new FilePickerResult(contentUri));
-                    }
                 }
 
                 return resultList;
             }
-            catch (System.OperationCanceledException)
+            catch (OperationCanceledException)
             {
                 return null;
             }
