@@ -49,11 +49,7 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST && __SHELL__
 		public void NavigateBack()
 		{
-#if __IOS__
-			RunningApp.Tap(c => c.Marked("BackButtonImage"));
-#else
-			RunningApp.Tap(FlyoutIconAutomationId);
-#endif
+			RunningApp.Tap("BackButtonImage");
 		}
 
 		[Test]
