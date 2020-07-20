@@ -72,7 +72,7 @@ namespace Xamarin.Forms.Material.iOS
 				{
 					var backgroundImage = ((UIView)textField).GetBackgroundImage(brush);
 					textField.BackgroundSize = backgroundImage?.Size;
-					var color = UIColor.FromPatternImage(backgroundImage);
+					var color = backgroundImage != null ? UIColor.FromPatternImage(backgroundImage) : UIColor.Clear;
 					textField.ActiveTextInputController.BorderFillColor = color;
 				}
 			}

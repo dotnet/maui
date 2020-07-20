@@ -216,7 +216,7 @@ namespace Xamarin.Forms.Material.iOS
 				{
 					var backgroundImage = Control.GetBackgroundImage(brush);
 					_backgroundSize = backgroundImage?.Size;
-					UIColor uiColor = UIColor.FromPatternImage(backgroundImage);
+					UIColor uiColor = backgroundImage != null ? UIColor.FromPatternImage(backgroundImage) : UIColor.Clear;
 
 					colorScheme.PrimaryColor = uiColor;
 					colorScheme.OnSurfaceColor = uiColor;

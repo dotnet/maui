@@ -19,8 +19,6 @@ namespace Xamarin.Forms.Material.iOS
 		VisualElementPackager _packager;
 		VisualElementTracker _tracker;
 		EventTracker _events;
-		CGSize? _backgroundSize;
-
 		bool _disposed = false;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
@@ -133,6 +131,15 @@ namespace Xamarin.Forms.Material.iOS
 			base.Dispose(disposing);
 		}
 
+		protected virtual void ApplyThemeIfNeeded()
+		{
+			var bgBrush = Element.Background;
+
+			if (Brush.IsNullOrEmpty(bgBrush))
+				return;
+
+			UpdateBackground();
+		}
 
 		protected virtual CardScheme CreateCardScheme()
 		{
@@ -171,19 +178,6 @@ namespace Xamarin.Forms.Material.iOS
 				// this is set in the theme, so we must always disable it		
 				Interactable = false;
 			}
-		}
-
-		protected virtual void ApplyThemeIfNeeded()
-		{
-			var bgBrush = Element.Background;
-
-			if (Brush.IsNullOrEmpty(bgBrush))
-				return;
-
-			var backgroundImage = this.GetBackgroundImage(bgBrush);
-
-			if (_backgroundSize != null && _backgroundSize != backgroundImage?.Size)
-				ApplyTheme();
 		}
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -275,9 +269,20 @@ namespace Xamarin.Forms.Material.iOS
 				}
 				else
 				{
-					var backgroundImage = this.GetBackgroundImage(bgBrush);
-					_backgroundSize = backgroundImage?.Size;
-					colorScheme.SurfaceColor = UIColor.FromPatternImage(backgroundImage);
+					var backgroundLayer = this.GetBackgroundLayer(bgBrush);
+
+					if (backgroundLayer != null)
+					{
+						Layer.BackgroundColor = UIColor.Clear.CGColor;
+						Layer.InsertBackgroundLayer(backgroundLayer, 0);
+
+						var cornerRadius = Element.CornerRadius;
+						if (cornerRadius < 0)
+							cornerRadius = _defaultCornerRadius;
+
+						backgroundLayer.CornerRadius = cornerRadius;
+						backgroundLayer.BorderColor = Element.BorderColor.ToCGColor();
+					}
 				}
 			}
 		}
@@ -294,7 +299,6 @@ namespace Xamarin.Forms.Material.iOS
 		void IVisualElementRenderer.SetElementSize(Size size)
 		{
 			Layout.LayoutChildIntoBoundingRegion(Element, new Rectangle(Element.X, Element.Y, size.Width, size.Height));
-			UpdateBackground();
 		}
 	}
 }
