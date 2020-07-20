@@ -8,6 +8,8 @@ namespace Xamarin.Forms.Platform.MacOS
 {
 	public class ButtonRenderer : ViewRenderer<Button, NSButton>
 	{
+		const float DefaultCornerRadius = 6;
+
 		class FormsNSButton : NSButton
 		{
 			class FormsNSButtonCell : NSButtonCell
@@ -94,7 +96,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				{
 					var btn = new FormsNSButton();
 					btn.SetButtonType(NSButtonType.MomentaryPushIn);
-					btn.BezelStyle = NSBezelStyle.Rounded;
+					btn.BezelStyle = NSBezelStyle.RoundRect;
 					btn.Pressed += HandleButtonPressed;
 					btn.Released += HandleButtonReleased;
 					SetNativeControl(btn);
@@ -155,7 +157,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				uiButton.Layer.BorderColor = button.BorderColor.ToCGColor();
 
 			uiButton.Layer.BorderWidth = (float)button.BorderWidth;
-			uiButton.Layer.CornerRadius = button.CornerRadius;
+			uiButton.Layer.CornerRadius = button.CornerRadius > 0 ? button.CornerRadius : DefaultCornerRadius;
 
 			UpdateBackgroundVisibility();
 		}
@@ -214,6 +216,5 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			Element?.SendReleased();
 		}
-
 	}
 }
