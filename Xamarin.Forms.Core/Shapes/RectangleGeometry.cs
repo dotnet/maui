@@ -1,16 +1,14 @@
-﻿using FormsRect = Xamarin.Forms.Rectangle;
-
-namespace Xamarin.Forms.Shapes
+﻿namespace Xamarin.Forms.Shapes
 {
     public class RectangleGeometry : Geometry
     {
         public static readonly BindableProperty RectProperty =
-            BindableProperty.Create(nameof(Rect), typeof(FormsRect), typeof(RectangleGeometry), new FormsRect());
+            BindableProperty.Create(nameof(Rect), typeof(Rect), typeof(RectangleGeometry), new Rect());
 
-        public FormsRect Rect
+        public Rect Rect
         {
             set { SetValue(RectProperty, value); }
-            get { return (FormsRect)GetValue(RectProperty); }
+            get { return (Rect)GetValue(RectProperty); }
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel;
-using Rect = Xamarin.Forms.Shapes.Rectangle;
+using FormsRectangle = Xamarin.Forms.Shapes.Rectangle;
 
 #if WINDOWS_UWP
 using WRectangle = Windows.UI.Xaml.Shapes.Rectangle;
@@ -11,9 +11,9 @@ using WRectangle = System.Windows.Shapes.Rectangle;
 namespace Xamarin.Forms.Platform.WPF
 #endif
 {
-	public class RectangleRenderer : ShapeRenderer<Rect, WRectangle>
+	public class RectangleRenderer : ShapeRenderer<FormsRectangle, WRectangle>
 	{
-		protected override void OnElementChanged(ElementChangedEventArgs<Rect> args)
+		protected override void OnElementChanged(ElementChangedEventArgs<FormsRectangle> args)
 		{
 			if (Control == null && args.NewElement != null)
 			{
@@ -33,9 +33,9 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			base.OnElementPropertyChanged(sender, args);
 
-			if (args.PropertyName == Rect.RadiusXProperty.PropertyName)
+			if (args.PropertyName == FormsRectangle.RadiusXProperty.PropertyName)
 				UpdateRadiusX();
-			else if (args.PropertyName == Rect.RadiusYProperty.PropertyName)
+			else if (args.PropertyName == FormsRectangle.RadiusYProperty.PropertyName)
 				UpdateRadiusY();
 		}
 

@@ -1,19 +1,19 @@
 ﻿using System.ComponentModel;
 using Android.Content;
 using Android.Graphics;
-using Rect = Xamarin.Forms.Shapes.Rectangle;
 using APath = Android.Graphics.Path;
+using FormsRectangle = Xamarin.Forms.Shapes.Rectangle;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public class RectangleRenderer : ShapeRenderer<Rect, RectView>
+	public class RectangleRenderer : ShapeRenderer<FormsRectangle, RectView>
     {
         public RectangleRenderer(Context context) : base(context)
         {
 
         }
 
-        protected override void OnElementChanged(ElementChangedEventArgs<Rect> args)
+        protected override void OnElementChanged(ElementChangedEventArgs<FormsRectangle> args)
         {
             if (Control == null)
             {
@@ -33,9 +33,9 @@ namespace Xamarin.Forms.Platform.Android
         {
             base.OnElementPropertyChanged(sender, args);
 
-            if (args.PropertyName == Rect.RadiusXProperty.PropertyName)
+            if (args.PropertyName == FormsRectangle.RadiusXProperty.PropertyName)
                 UpdateRadiusX();
-            else if (args.PropertyName == Rect.RadiusYProperty.PropertyName)
+            else if (args.PropertyName == FormsRectangle.RadiusYProperty.PropertyName)
                 UpdateRadiusY();
         }
 

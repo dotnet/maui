@@ -3,7 +3,7 @@ using Android.Content;
 using Android.Graphics;
 using Xamarin.Forms.Shapes;
 using APath = Android.Graphics.Path;
-using Rect = Xamarin.Forms.Rectangle;
+using FormsRectangle = Xamarin.Forms.Rectangle;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.Android
             }
             else if (geometry is RectangleGeometry)
             {
-                Rect rect = (geometry as RectangleGeometry).Rect;
+                FormsRectangle rect = (geometry as RectangleGeometry).Rect;
 
                 path.AddRect(
                     density * (float)rect.Left,
