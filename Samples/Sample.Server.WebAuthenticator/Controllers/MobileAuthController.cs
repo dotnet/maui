@@ -31,17 +31,18 @@ namespace Sample.Server.WebAuthenticator
             }
             else
             {
-               var claims = auth.Principal.Identities.FirstOrDefault()?.Claims;
-                    string email = string.Empty;
-                    email = claims?.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+                var claims = auth.Principal.Identities.FirstOrDefault()?.Claims;
+                var email = string.Empty;
+                email = claims?.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+
                 // Get parameters to send back to the callback
                 var qs = new Dictionary<string, string>
-            {
-                { "access_token", auth.Properties.GetTokenValue("access_token") },
-                { "refresh_token", auth.Properties.GetTokenValue("refresh_token") ?? string.Empty },
-                { "expires", (auth.Properties.ExpiresUtc?.ToUnixTimeSeconds() ?? -1).ToString() },
-                {"email", email}
-            };
+                {
+                    { "access_token", auth.Properties.GetTokenValue("access_token") },
+                    { "refresh_token", auth.Properties.GetTokenValue("refresh_token") ?? string.Empty },
+                    { "expires", (auth.Properties.ExpiresUtc?.ToUnixTimeSeconds() ?? -1).ToString() },
+                    { "email", email }
+                };
 
                 // Build the result url
                 var url = callbackScheme + "://#" + string.Join(

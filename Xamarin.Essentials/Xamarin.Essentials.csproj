@@ -5,8 +5,8 @@
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <RootNamespace>Xamarin.Essentials</RootNamespace>
     <PackageId>Xamarin.Essentials</PackageId>
-    <!-- PackageIcon>icon.png</PackageIcon -->
-    <PackageIconUrl>https://raw.githubusercontent.com/xamarin/Essentials/master/Assets/xamarin.essentials_128x128.png</PackageIconUrl>
+    <PackageIcon>icon.png</PackageIcon>
+    <!-- <PackageIconUrl>https://raw.githubusercontent.com/xamarin/Essentials/master/Assets/xamarin.essentials_128x128.png</PackageIconUrl> -->
     <Summary>Xamarin.Essentials: a kit of essential API's for your apps</Summary>
     <PackageTags>xamarin, windows, uwp, ios, android, watchos, tvos, tizen, toolkit, xamarin.forms, Xamarin.Essentials, kit</PackageTags>
     <Title>Xamarin.Essentials</Title>
@@ -74,8 +74,8 @@
   <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) ">
     <Compile Include="**\*.android.cs" />
     <Compile Include="**\*.android.*.cs" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors" />
+    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />    
+    <Reference Include="System.Numerics"/>
     <AndroidResource Include="Resources\xml\*.xml" />
   </ItemGroup>
   <!-- NOTE: When Android 11.x comes out we neeed to make this check more robust -->
@@ -92,22 +92,22 @@
   <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
     <Compile Include="**\*.ios.cs" />
     <Compile Include="**\*.ios.*.cs" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors" />
+    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
+    <Reference Include="System.Numerics"/>
     <Reference Include="OpenTK-1.0" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.TVOS')) ">
     <Compile Include="**\*.tvos.cs" />
     <Compile Include="**\*.tvos.*.cs" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors" />
+    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
+    <Reference Include="System.Numerics"/>
     <Reference Include="OpenTK-1.0" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.WatchOS')) ">
     <Compile Include="**\*.watchos.cs" />
     <Compile Include="**\*.watchos.*.cs" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors" />
+    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
+    <Reference Include="System.Numerics"/>
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('tizen')) ">
     <PackageReference Include="Tizen.NET" Version="4.0.0" />

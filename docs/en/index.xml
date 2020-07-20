@@ -93,7 +93,7 @@
           <AttributeName>System.Runtime.Versioning.TargetFramework("MonoAndroid,Version=v10.0", FrameworkDisplayName="Xamarin.Android v10.0 Support")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+ce8bdd11acabf23b62c1c4d1ad243c7bfb2fa5e4")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+205dad63475a814da84490cbfd444821c2d68550")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>
@@ -163,6 +163,8 @@
       <Type Name="Gyroscope" Kind="Class" />
       <Type Name="GyroscopeChangedEventArgs" Kind="Class" />
       <Type Name="GyroscopeData" Kind="Structure" />
+      <Type Name="HapticFeedback" Kind="Class" />
+      <Type Name="HapticFeedbackType" Kind="Enumeration" />
       <Type Name="Launcher" Kind="Class" />
       <Type Name="Locale" Kind="Class" />
       <Type Name="Location" Kind="Class" />
