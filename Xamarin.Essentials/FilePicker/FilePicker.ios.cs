@@ -23,32 +23,30 @@ namespace Xamarin.Essentials
                 "public.data"
             };
 
+            var tcs = new TaskCompletionSource<IEnumerable<FilePickerResult>>();
+
             // Note: Importing (UIDocumentPickerMode.Import) makes a local copy of the document,
             // while opening (UIDocumentPickerMode.Open) opens the document directly. We do the
             // latter, so the user accesses the original file.
-            var documentPicker = new DocumentPicker(allowedUtis, UIDocumentPickerMode.Open);
+            var documentPicker = new UIDocumentPickerViewController(allowedUtis, UIDocumentPickerMode.Open);
             documentPicker.AllowsMultipleSelection = allowMultiple;
-
-            var tcs = new TaskCompletionSource<IEnumerable<FilePickerResult>>();
-
-            documentPicker.Picked += (sender, e) =>
+            documentPicker.Delegate = new PickerDelegate
             {
-                // there was a cancellation
-                if (e == null || e.Urls.Length == 0)
+                PickHandler = urls =>
                 {
-                    tcs.TrySetResult(Enumerable.Empty<FilePickerResult>());
-                    return;
-                }
-
-                try
-                {
-                    var resultList = e.Urls.Select(url => new FilePickerResult(url));
-                    tcs.TrySetResult(resultList);
-                }
-                catch (Exception ex)
-                {
-                    // pass exception to task so that it doesn't get lost in the UI main loop
-                    tcs.SetException(ex);
+                    try
+                    {
+                        // there was a cancellation
+                        if (urls?.Any() ?? false)
+                            tcs.TrySetResult(urls.Select(url => new FilePickerResult(url)));
+                        else
+                            tcs.TrySetResult(Enumerable.Empty<FilePickerResult>());
+                    }
+                    catch (Exception ex)
+                    {
+                        // pass exception to task so that it doesn't get lost in the UI main loop
+                        tcs.SetException(ex);
+                    }
                 }
             };
 
@@ -59,27 +57,18 @@ namespace Xamarin.Essentials
             return tcs.Task;
         }
 
-        class DocumentPicker : UIDocumentPickerViewController
+        class PickerDelegate : UIDocumentPickerDelegate
         {
-            public DocumentPicker(string[] allowedUTIs, UIDocumentPickerMode mode)
-                : base(allowedUTIs, mode)
-            {
-                // this is called starting from iOS 11.
-                DidPickDocumentAtUrls += OnUrlsPicked;
-                DidPickDocument += OnDocumentPicked;
-                WasCancelled += OnCancelled;
-            }
+            public Action<IEnumerable<NSUrl>> PickHandler { get; set; }
 
-            public event EventHandler<UIDocumentPickedAtUrlsEventArgs> Picked;
+            public override void WasCancelled(UIDocumentPickerViewController controller)
+                => PickHandler?.Invoke(null);
 
-            void OnUrlsPicked(object sender, UIDocumentPickedAtUrlsEventArgs e) =>
-                Picked?.Invoke(this, e);
+            public override void DidPickDocument(UIDocumentPickerViewController controller, NSUrl[] urls)
+                => PickHandler?.Invoke(urls);
 
-            void OnDocumentPicked(object sender, UIDocumentPickedEventArgs e) =>
-                Picked?.Invoke(this, new UIDocumentPickedAtUrlsEventArgs(new NSUrl[] { e.Url }));
-
-            void OnCancelled(object sender, EventArgs args) =>
-                Picked?.Invoke(this, null);
+            public override void DidPickDocument(UIDocumentPickerViewController controller, NSUrl url)
+                => PickHandler?.Invoke(new List<NSUrl> { url });
         }
     }
 
