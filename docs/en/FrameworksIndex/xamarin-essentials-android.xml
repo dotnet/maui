@@ -437,6 +437,13 @@
       <Member Id="M:Xamarin.Essentials.GyroscopeData.ToString" />
       <Member Id="P:Xamarin.Essentials.GyroscopeData.AngularVelocity" />
     </Type>
+    <Type Name="Xamarin.Essentials.HapticFeedback" Id="T:Xamarin.Essentials.HapticFeedback">
+      <Member Id="M:Xamarin.Essentials.HapticFeedback.Perform(Xamarin.Essentials.HapticFeedbackType)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.HapticFeedbackType" Id="T:Xamarin.Essentials.HapticFeedbackType">
+      <Member Id="F:Xamarin.Essentials.HapticFeedbackType.Click" />
+      <Member Id="F:Xamarin.Essentials.HapticFeedbackType.LongPress" />
+    </Type>
     <Type Name="Xamarin.Essentials.Launcher" Id="T:Xamarin.Essentials.Launcher">
       <Member Id="M:Xamarin.Essentials.Launcher.CanOpenAsync(System.String)" />
       <Member Id="M:Xamarin.Essentials.Launcher.CanOpenAsync(System.Uri)" />
@@ -785,6 +792,7 @@
       <Member Id="M:Xamarin.Essentials.SecureStorage.Remove(System.String)" />
       <Member Id="M:Xamarin.Essentials.SecureStorage.RemoveAll" />
       <Member Id="M:Xamarin.Essentials.SecureStorage.SetAsync(System.String,System.String)" />
+      <Member Id="P:Xamarin.Essentials.SecureStorage.LegacyKeyHashFallback" />
     </Type>
     <Type Name="Xamarin.Essentials.SensorSpeed" Id="T:Xamarin.Essentials.SensorSpeed">
       <Member Id="F:Xamarin.Essentials.SensorSpeed.Default" />

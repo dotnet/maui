@@ -76,10 +76,7 @@ namespace Xamarin.Essentials
                 if (!string.IsNullOrWhiteSpace(content))
                     return content;
             }
-
-            // we haven't been able to determine this
-            // leave it up to the sender
-            return null;
+            return "application/octet-stream";
         }
 
         string fileName;

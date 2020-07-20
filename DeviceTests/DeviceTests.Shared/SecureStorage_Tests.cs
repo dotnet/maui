@@ -160,5 +160,23 @@ namespace DeviceTests
             Assert.Equal(expected, v);
         }
 #endif
+
+#if __ANDROID__
+        [Theory]
+        [InlineData("test-key", "value1")]
+        public async Task Legacy_Key(string key, string data)
+        {
+            var ks = new AndroidKeyStore(Platform.AppContext, SecureStorage.Alias, SecureStorage.AlwaysUseAsymmetricKeyStorage);
+            var encryptedData = ks.Encrypt(data);
+
+            var encStr = System.Convert.ToBase64String(encryptedData);
+            Preferences.Set(SecureStorage.Md5Hash(key), encStr, SecureStorage.Alias);
+
+            // Ensure we read back out the right key
+            var c = await SecureStorage.GetAsync(key);
+
+            Assert.Equal(data, c);
+        }
+#endif
     }
 }

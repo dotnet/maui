@@ -24,6 +24,10 @@ namespace Xamarin.Essentials
         static TaskCompletionSource<WebAuthenticatorResult> tcsResponse;
         static UIViewController currentViewController;
         static Uri redirectUri;
+#if __IOS__
+        static ASWebAuthenticationSession was;
+        static SFAuthenticationSession sf;
+#endif
 
         internal static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(Uri url, Uri callbackUrl)
         {
@@ -55,7 +59,7 @@ namespace Xamarin.Essentials
 
                 if (UIDevice.CurrentDevice.CheckSystemVersion(12, 0))
                 {
-                    var was = new ASWebAuthenticationSession(new NSUrl(url.OriginalString), scheme, AuthSessionCallback);
+                    was = new ASWebAuthenticationSession(new NSUrl(url.OriginalString), scheme, AuthSessionCallback);
 
                     if (UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
                     {
@@ -63,15 +67,21 @@ namespace Xamarin.Essentials
                         void_objc_msgSend_IntPtr(was.Handle, ObjCRuntime.Selector.GetHandle("setPresentationContextProvider:"), ctx.Handle);
                     }
 
-                    was.Start();
-                    return await tcsResponse.Task;
+                    using (was)
+                    {
+                        was.Start();
+                        return await tcsResponse.Task;
+                    }
                 }
 
                 if (UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
                 {
-                    var sf = new SFAuthenticationSession(new NSUrl(url.OriginalString), scheme, AuthSessionCallback);
-                    sf.Start();
-                    return await tcsResponse.Task;
+                    sf = new SFAuthenticationSession(new NSUrl(url.OriginalString), scheme, AuthSessionCallback);
+                    using (sf)
+                    {
+                        sf.Start();
+                        return await tcsResponse.Task;
+                    }
                 }
 
                 // THis is only on iOS9+ but we only support 10+ in Essentials anyway

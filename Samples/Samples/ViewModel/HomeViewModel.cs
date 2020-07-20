@@ -211,6 +211,12 @@ namespace Samples.ViewModel
                     "Quickly and easily make the device vibrate.",
                     new[] { "vibration", "vibrate", "hardware", "device" }),
                 new SampleItem(
+                    "📳",
+                    "Haptic Feedback",
+                    typeof(HapticFeedbackPage),
+                    "Quickly and easily make the device provide haptic feedback",
+                    new[] { "haptic", "feedback", "hardware", "device" }),
+                new SampleItem(
                     "🔓",
                     "Web Authenticator",
                     typeof(WebAuthenticatorPage),

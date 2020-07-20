@@ -11,7 +11,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>Exception that occures when calling an API that requires a specific exception</summary>
+    <summary>Exception that occures when calling an API that requires a specific permission.</summary>
     <remarks>
       <para></para>
     </remarks>
