@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Xamarin.Essentials
 {
     public static partial class FilePicker
     {
-        public static Task<IEnumerable<FilePickerResult>> PickAsync() =>
-            PlatformPickAsync(PickOptions.Default);
+        public static async Task<FilePickerResult> PickAsync(PickOptions options = null) =>
+            (await PlatformPickAsync(options))?.FirstOrDefault();
 
-        public static Task<IEnumerable<FilePickerResult>> PickAsync(PickOptions options) =>
+        public static Task<IEnumerable<FilePickerResult>> PickMultipleAsync(PickOptions options = null) =>
             PlatformPickAsync(options ?? PickOptions.Default);
     }
 
@@ -56,8 +57,6 @@ namespace Xamarin.Essentials
         public string PickerTitle { get; set; }
 
         public FilePickerFileType FileTypes { get; set; }
-
-        public bool AllowMultiple { get; set; }
     }
 
     public partial class FilePickerResult : FileBase

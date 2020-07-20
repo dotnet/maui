@@ -118,7 +118,7 @@ namespace Samples.ViewModel
         {
             try
             {
-                var result = await FilePicker.PickFileAsync(options);
+                var result = await FilePicker.PickAsync(options);
 
                 if (result != null)
                 {
@@ -155,8 +155,7 @@ namespace Samples.ViewModel
         {
             try
             {
-                var options = PickOptions.Default;
-                var resultList = await FilePicker.PickMultipleFilesAsync(options);
+                var resultList = await FilePicker.PickMultipleAsync();
 
                 if (resultList != null && resultList.Any())
                 {

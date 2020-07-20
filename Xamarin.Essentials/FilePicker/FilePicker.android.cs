@@ -14,7 +14,7 @@ namespace Xamarin.Essentials
     {
         const int requestCodeFilePicker = 12347;
 
-        static async Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options)
+        static async Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
         {
             // we only need the permission when accessing the file, but it's more natural
             // to ask the user first, then show the picker.
@@ -26,7 +26,7 @@ namespace Xamarin.Essentials
             var intent = new Intent(action);
             intent.SetType("*/*");
             intent.AddFlags(ActivityFlags.GrantPersistableUriPermission);
-            intent.PutExtra(Intent.ExtraAllowMultiple, true);
+            intent.PutExtra(Intent.ExtraAllowMultiple, allowMultiple);
 
             var allowedTypes = options?.FileTypes?.Value?.ToArray();
             if (allowedTypes?.Length > 0)

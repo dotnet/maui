@@ -11,7 +11,7 @@ namespace Xamarin.Essentials
 {
     public static partial class FilePicker
     {
-        static async Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options)
+        static async Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
         {
             var picker = new FileOpenPicker
             {
@@ -23,7 +23,7 @@ namespace Xamarin.Essentials
 
             var resultList = new List<StorageFile>();
 
-            if (options.AllowMultiple)
+            if (allowMultiple)
             {
                 var fileList = await picker.PickMultipleFilesAsync();
                 if (fileList != null)

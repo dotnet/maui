@@ -9,12 +9,12 @@ namespace Xamarin.Essentials
 {
     public static partial class FilePicker
     {
-        static Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options)
+        static Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
         {
             var openPanel = new NSOpenPanel
             {
                 CanChooseFiles = true,
-                AllowsMultipleSelection = options.AllowMultiple,
+                AllowsMultipleSelection = allowMultiple,
                 CanChooseDirectories = false
             };
 

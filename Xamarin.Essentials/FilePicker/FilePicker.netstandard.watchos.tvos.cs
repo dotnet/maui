@@ -6,7 +6,7 @@ namespace Xamarin.Essentials
 {
     public static partial class FilePicker
     {
-        static Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options)
+        static Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
             => throw new NotImplementedInReferenceAssemblyException();
     }
 

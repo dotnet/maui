@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Tizen;
 using Tizen.Applications;
 
 namespace Xamarin.Essentials
 {
     public static partial class FilePicker
     {
-        static Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options)
+        static Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
         {
-            if (options.AllowMultiple)
-                throw new FeatureNotSupportedException();
+            if (allowMultiple)
+                Debug.WriteLine("Tizen does not support picking multiple files");
 
             Permissions.EnsureDeclared<Permissions.LaunchApp>();
             Permissions.EnsureDeclared<Permissions.StorageRead>();

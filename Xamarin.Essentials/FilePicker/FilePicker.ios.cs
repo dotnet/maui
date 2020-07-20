@@ -11,9 +11,9 @@ namespace Xamarin.Essentials
 {
     public static partial class FilePicker
     {
-        static Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options)
+        static Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
         {
-            if (!Platform.HasOSVersion(11, 0))
+            if (allowMultiple && !Platform.HasOSVersion(11, 0))
                 throw new FeatureNotSupportedException("Multiple file picking is only available on iOS 11 or later.");
 
             var allowedUtis = options?.FileTypes?.Value?.ToArray() ?? new string[]
@@ -27,7 +27,7 @@ namespace Xamarin.Essentials
             // while opening (UIDocumentPickerMode.Open) opens the document directly. We do the
             // latter, so the user accesses the original file.
             var documentPicker = new DocumentPicker(allowedUtis, UIDocumentPickerMode.Open);
-            documentPicker.AllowsMultipleSelection = options.AllowMultiple;
+            documentPicker.AllowsMultipleSelection = allowMultiple;
 
             var tcs = new TaskCompletionSource<IEnumerable<FilePickerResult>>();
 
