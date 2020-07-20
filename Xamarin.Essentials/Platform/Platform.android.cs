@@ -234,15 +234,12 @@ namespace Xamarin.Essentials
 
 #if __ANDROID_24__
             if (HasApiLevelN)
-            {
                 config.SetLocale(locale);
-            }
             else
-            {
+#endif
 #pragma warning disable CS0618 // Type or member is obsolete
                 config.Locale = locale;
 #pragma warning restore CS0618 // Type or member is obsolete
-            }
 
 #pragma warning disable CS0618 // Type or member is obsolete
             resources.UpdateConfiguration(config, resources.DisplayMetrics);
