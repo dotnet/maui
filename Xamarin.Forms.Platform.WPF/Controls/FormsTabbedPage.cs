@@ -1,22 +1,22 @@
 ﻿using System.Windows;
-using System.Windows.Media;
+using WBrush = System.Windows.Media.Brush;
 
 namespace Xamarin.Forms.Platform.WPF.Controls
 {
 	public class FormsTabbedPage : FormsMultiPage
 	{
-		public static readonly DependencyProperty BarBackgroundColorProperty = DependencyProperty.Register("BarBackgroundColor", typeof(Brush), typeof(FormsTabbedPage));
-		public static readonly DependencyProperty BarTextColorProperty = DependencyProperty.Register("BarTextColor", typeof(Brush), typeof(FormsTabbedPage));
+		public static readonly DependencyProperty BarBackgroundColorProperty = DependencyProperty.Register("BarBackgroundColor", typeof(WBrush), typeof(FormsTabbedPage));
+		public static readonly DependencyProperty BarTextColorProperty = DependencyProperty.Register("BarTextColor", typeof(WBrush), typeof(FormsTabbedPage));
 
-		public Brush BarBackgroundColor
+		public WBrush BarBackgroundColor
 		{
-			get { return (Brush)GetValue(BarBackgroundColorProperty); }
+			get { return (WBrush)GetValue(BarBackgroundColorProperty); }
 			set { SetValue(BarBackgroundColorProperty, value); }
 		}
 
-		public Brush BarTextColor
+		public WBrush BarTextColor
 		{
-			get { return (Brush)GetValue(BarTextColorProperty); }
+			get { return (WBrush)GetValue(BarTextColorProperty); }
 			set { SetValue(BarTextColorProperty, value); }
 		}
 

@@ -3,9 +3,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using WBrush = System.Windows.Media.Brush;
 
 namespace Xamarin.Forms.Platform.WPF
 {
@@ -20,8 +20,8 @@ namespace Xamarin.Forms.Platform.WPF
 		public static readonly DependencyProperty PlaceholderTextProperty = DependencyProperty.Register("PlaceholderText", typeof(string), typeof(FormsTextBox),
 			new PropertyMetadata(string.Empty));
 
-		public static readonly DependencyProperty PlaceholderForegroundBrushProperty = DependencyProperty.Register("PlaceholderForegroundBrush", typeof(Brush), typeof(FormsTextBox),
-			new PropertyMetadata(default(Brush)));
+		public static readonly DependencyProperty PlaceholderForegroundBrushProperty = DependencyProperty.Register("PlaceholderForegroundBrush", typeof(WBrush), typeof(FormsTextBox),
+			new PropertyMetadata(default(WBrush)));
 
 		public static readonly DependencyProperty IsPasswordProperty = DependencyProperty.Register("IsPassword", typeof(bool), typeof(FormsTextBox),
 			new PropertyMetadata(default(bool), OnIsPasswordChanged));
@@ -56,9 +56,9 @@ namespace Xamarin.Forms.Platform.WPF
 			set { SetValue(PlaceholderTextProperty, value); }
 		}
 
-		public Brush PlaceholderForegroundBrush
+		public WBrush PlaceholderForegroundBrush
 		{
-			get { return (Brush)GetValue(PlaceholderForegroundBrushProperty); }
+			get { return (WBrush)GetValue(PlaceholderForegroundBrushProperty); }
 			set { SetValue(PlaceholderForegroundBrushProperty, value); }
 		}
 

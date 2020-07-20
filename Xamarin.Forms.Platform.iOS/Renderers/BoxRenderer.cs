@@ -46,7 +46,10 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void LayoutSubviews()
 		{
 			if (_previousSize != Bounds.Size)
+			{
+				SetBackground(Element.Background);
 				SetNeedsDisplay();
+			}
 
 			base.LayoutSubviews();
 		}
@@ -79,10 +82,32 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			var elementColor = Element.Color;
+
 			if (!elementColor.IsDefault)
 				_colorToRenderer = elementColor.ToUIColor();
 			else
 				_colorToRenderer = color.ToUIColor();
+
+			SetNeedsDisplay();
+		}
+
+		protected override void SetBackground(Brush brush)
+		{
+			if (Element == null)
+				return;
+
+			if (Brush.IsNullOrEmpty(brush))
+				SetBackgroundColor(Element.BackgroundColor);
+			else
+			{
+				if (brush is SolidColorBrush solidColorBrush)
+					_colorToRenderer = solidColorBrush.Color.ToUIColor();
+				else
+				{
+					var backgroundImage = this.GetBackgroundImage(brush);
+					_colorToRenderer = backgroundImage != null ? UIColor.FromPatternImage(backgroundImage) : UIColor.Clear;
+				}
+			}
 
 			SetNeedsDisplay();
 		}

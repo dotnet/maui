@@ -1,6 +1,4 @@
-﻿using CoreGraphics;
-using Foundation;
-using UIKit;
+﻿using Foundation;
 using Xamarin.Forms.Platform.iOS;
 
 namespace Xamarin.Forms.Material.iOS
@@ -9,8 +7,10 @@ namespace Xamarin.Forms.Material.iOS
 	{
 		protected override MaterialTextField CreateNativeControl() => new MaterialTextField(this, Element);
 		protected override void SetBackgroundColor(Color color) => ApplyTheme();
+		protected override void SetBackground(Brush brush) => ApplyTheme();
 		protected override void UpdateColor() => Control?.UpdateTextColor(this);
 		protected virtual void ApplyTheme() => Control?.ApplyTheme(this);
+		protected virtual void ApplyThemeIfNeeded() => Control?.ApplyThemeIfNeeded(this);
 		protected override void UpdatePlaceholder() => Control?.UpdatePlaceholder(this);
 		protected override void UpdateAttributedPlaceholder(NSAttributedString nsAttributedString)
 		{
@@ -24,9 +24,17 @@ namespace Xamarin.Forms.Material.iOS
 			Control?.ApplyTypographyScheme(Element);
 		}
 
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			ApplyThemeIfNeeded();
+		}
+
 		Color IMaterialEntryRenderer.TextColor => Element?.TextColor ?? Color.Default;
 		Color IMaterialEntryRenderer.PlaceholderColor => Element?.PlaceholderColor ?? Color.Default;
 		Color IMaterialEntryRenderer.BackgroundColor => Element?.BackgroundColor ?? Color.Default;
+		Brush IMaterialEntryRenderer.Background => Element?.Background ?? Brush.Default;
 		string IMaterialEntryRenderer.Placeholder => Element?.Placeholder ?? string.Empty;
 	}
 }

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Windows.Input;
-using System.Windows.Media;
+using WBrush = System.Windows.Media.Brush;
 using WControl = System.Windows.Controls.Control;
 
 namespace Xamarin.Forms.Platform.WPF
@@ -8,8 +8,8 @@ namespace Xamarin.Forms.Platform.WPF
 	public class SearchBarRenderer : ViewRenderer<SearchBar, FormsTextBox>
 	{
 		const string DefaultPlaceholder = "Search";
-		Brush _defaultPlaceholderColorBrush;
-		Brush _defaultTextColorBrush;
+		WBrush _defaultPlaceholderColorBrush;
+		WBrush _defaultTextColorBrush;
 		bool _fontApplied;
 		string _transformedText;
 
@@ -133,7 +133,7 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				if (_defaultPlaceholderColorBrush == null)
 				{
-					_defaultPlaceholderColorBrush = (Brush)WControl.ForegroundProperty.GetMetadata(typeof(FormsTextBox)).DefaultValue;
+					_defaultPlaceholderColorBrush = (WBrush)WControl.ForegroundProperty.GetMetadata(typeof(FormsTextBox)).DefaultValue;
 				}
 				Control.PlaceholderForegroundBrush = _defaultPlaceholderColorBrush;
 				return;

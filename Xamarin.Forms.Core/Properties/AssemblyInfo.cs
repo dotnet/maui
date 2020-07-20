@@ -44,6 +44,7 @@ using Xamarin.Forms.StyleSheets;
 [assembly: XmlnsPrefix("http://xamarin.com/schemas/2014/forms/design", "d")]
 
 [assembly: StyleProperty("background-color", typeof(VisualElement), nameof(VisualElement.BackgroundColorProperty))]
+[assembly: StyleProperty("background", typeof(VisualElement), nameof(VisualElement.BackgroundProperty))]
 [assembly: StyleProperty("background-image", typeof(Page), nameof(Page.BackgroundImageSourceProperty))]
 [assembly: StyleProperty("border-color", typeof(IBorderElement), nameof(BorderElement.BorderColorProperty))]
 [assembly: StyleProperty("border-radius", typeof(ICornerElement), nameof(CornerElement.CornerRadiusProperty))]

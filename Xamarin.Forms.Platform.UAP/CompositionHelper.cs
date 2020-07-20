@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Linq;
+using System.Reflection;
 using Windows.UI.Composition;
 
 namespace Xamarin.Forms.Platform.UWP
@@ -14,8 +16,11 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (!SetTypePresent)
 				{
-					MethodInfo methodInfo = typeof(Compositor).GetMethod("CreateEllipseGeometry");
-					IsTypePresent = methodInfo != null;
+					var compositorMethods = typeof(Compositor).GetMethods();
+					var createGeometricClipExists = compositorMethods.Any(m => m.Name == "CreateGeometricClip");
+					var createEllipseGeometryExists = compositorMethods.Any(m => m.Name == "CreateEllipseGeometry");
+
+					IsTypePresent = createGeometricClipExists && createEllipseGeometryExists;
 					SetTypePresent = true;
 				}
 

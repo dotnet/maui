@@ -79,10 +79,12 @@ namespace Xamarin.Forms.Platform.Android
 
 			bool cornerRadiusIsDefault = !BorderElement.IsCornerRadiusSet() || (BorderElement.CornerRadius == (int)BorderElement.CornerRadiusDefaultValue || BorderElement.CornerRadius == BorderDrawable.DefaultCornerRadius);
 			bool backgroundColorIsDefault = !BorderElement.IsBackgroundColorSet() || BorderElement.BackgroundColor == (Color)VisualElement.BackgroundColorProperty.DefaultValue;
+			bool backgroundIsDefault = !BorderElement.IsBackgroundSet() || BorderElement.Background == (Brush)VisualElement.BackgroundProperty.DefaultValue;
 			bool borderColorIsDefault = !BorderElement.IsBorderColorSet() || BorderElement.BorderColor == (Color)BorderElement.BorderColorDefaultValue;
 			bool borderWidthIsDefault = !BorderElement.IsBorderWidthSet() || BorderElement.BorderWidth == (double)BorderElement.BorderWidthDefaultValue;
 
 			if (backgroundColorIsDefault
+				&& backgroundIsDefault
 				&& cornerRadiusIsDefault
 				&& borderColorIsDefault
 				&& borderWidthIsDefault)
@@ -150,7 +152,6 @@ namespace Xamarin.Forms.Platform.Android
 					if (Forms.IsLollipopOrNewer)
 					{
 						var rippleColor = _backgroundDrawable.PressedBackgroundColor.ToAndroid();
-
 						_rippleDrawable = new RippleDrawable(ColorStateList.ValueOf(rippleColor), _backgroundDrawable, null);
 						Control.SetBackground(_rippleDrawable);
 					}
@@ -227,6 +228,7 @@ namespace Xamarin.Forms.Platform.Android
 				e.PropertyName.Equals(Button.BorderWidthProperty.PropertyName) ||
 				e.PropertyName.Equals(Button.CornerRadiusProperty.PropertyName) ||
 				e.PropertyName.Equals(VisualElement.BackgroundColorProperty.PropertyName) ||
+				e.PropertyName.Equals(VisualElement.BackgroundProperty.PropertyName) ||
 				e.PropertyName.Equals(Specifics.Button.UseDefaultPaddingProperty.PropertyName) ||
 				e.PropertyName.Equals(Specifics.Button.UseDefaultShadowProperty.PropertyName) ||
 				e.PropertyName.Equals(Specifics.ImageButton.IsShadowEnabledProperty.PropertyName) ||
@@ -238,6 +240,5 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateDrawable();
 			}
 		}
-
 	}
 }

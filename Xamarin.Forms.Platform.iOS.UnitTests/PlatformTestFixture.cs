@@ -36,6 +36,18 @@ namespace Xamarin.Forms.Platform.iOS.UnitTests
 			}
 		}
 
+		[SetUp]
+		public virtual void Setup()
+		{
+
+		}
+
+		[TearDown]
+		public virtual void TearDown()
+		{
+
+		}
+
 		protected static TestCaseData CreateTestCase(VisualElement element)
 		{
 			// We set the element type as a category on the test so that if you 
@@ -196,6 +208,31 @@ namespace Xamarin.Forms.Platform.iOS.UnitTests
 					}
 				}
 			});
+		}
+
+		protected bool AreColorsSimilar(UIColor c1, UIColor c2, int tolerance)
+		{
+			c1.GetRGBA(out nfloat c1R, out nfloat c1G, out nfloat c1B, out nfloat c1A);
+
+			c1R *= 255;
+			c1G *= 255;
+			c1B *= 255;
+
+			c2.GetRGBA(out nfloat c2R, out nfloat c2G, out nfloat c2B, out nfloat c2A);
+
+			c2R *= 255;
+			c2G *= 255;
+			c2B *= 255;
+
+			var t = 
+				Math.Abs(c1R - c2R) < tolerance &&
+				Math.Abs(c1G - c2G) < tolerance &&
+				Math.Abs(c1B - c2B) < tolerance;
+			System.Diagnostics.Debug.WriteLine($"TEST {t}");
+			return
+				Math.Abs(c1R - c2R) < tolerance &&
+				Math.Abs(c1G - c2G) < tolerance &&
+				Math.Abs(c1B - c2B) < tolerance;
 		}
 	}
 }

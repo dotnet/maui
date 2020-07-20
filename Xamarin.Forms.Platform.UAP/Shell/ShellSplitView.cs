@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
+﻿using Windows.UI.Xaml.Controls;
+using WBrush = Windows.UI.Xaml.Media.Brush;
 using WRectangle = Windows.UI.Xaml.Shapes.Rectangle;
 
 namespace Xamarin.Forms.Platform.UWP
@@ -13,7 +7,7 @@ namespace Xamarin.Forms.Platform.UWP
 	public class ShellSplitView : SplitView
 	{
 		Color _flyoutBackdropColor;
-		Brush _defaultBrush;
+		WBrush _defaultBrush;
 		LightDismissOverlayMode? _defaultLightDismissOverlayMode;
 		public ShellSplitView()
 		{

@@ -7,15 +7,15 @@ namespace Xamarin.Forms.Material.iOS
 {
 	internal class ReadOnlyMaterialTextField : NoCaretMaterialTextField
 	{
-		readonly HashSet<string> enableActions;
+		readonly HashSet<string> _enableActions;
 
 		public ReadOnlyMaterialTextField(IMaterialEntryRenderer element, IFontElement fontElement) : base(element, fontElement)
 		{
 			string[] actions = { "copy:", "select:", "selectAll:" };
-			enableActions = new HashSet<string>(actions);
+			_enableActions = new HashSet<string>(actions);
 		}
 
 		public override bool CanPerform(Selector action, NSObject withSender)
-			=> enableActions.Contains(action.Name);
+			=> _enableActions.Contains(action.Name);
 	}
 }

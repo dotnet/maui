@@ -42,8 +42,8 @@ namespace Xamarin.Forms.Controls.Issues
 			var path = new Path
 			{
 				BackgroundColor = Color.LightGray,
-				Stroke = Color.Black,
-				Fill = Color.Blue,
+				Stroke = Brush.Black,
+				Fill = Brush.Blue,
 				StrokeThickness = 4,
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,

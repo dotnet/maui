@@ -2,27 +2,27 @@
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using WBrush = Windows.UI.Xaml.Media.Brush;
 using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.SearchBar;
 
 namespace Xamarin.Forms.Platform.UWP
 {
 	public class SearchBarRenderer : ViewRenderer<SearchBar, AutoSuggestBox>, ITabStopOnDescendants
 	{
-		Brush _defaultPlaceholderColorBrush;
-		Brush _defaultPlaceholderColorFocusBrush;
-		Brush _defaultTextColorBrush;
-		Brush _defaultTextColorFocusBrush;
+		WBrush _defaultPlaceholderColorBrush;
+		WBrush _defaultPlaceholderColorFocusBrush;
+		WBrush _defaultTextColorBrush;
+		WBrush _defaultTextColorFocusBrush;
 
 		bool _fontApplied;
 		bool _isDisposed;
 
 		FormsTextBox _queryTextBox;
 		FormsCancelButton _cancelButton;
-		Brush _defaultDeleteButtonForegroundColorBrush;
-		Brush _defaultDeleteButtonBackgroundColorBrush;
+		WBrush _defaultDeleteButtonForegroundColorBrush;
+		WBrush _defaultDeleteButtonBackgroundColorBrush;
 
 		protected override void OnElementChanged(ElementChangedEventArgs<SearchBar> e)
 		{
@@ -110,6 +110,7 @@ namespace Xamarin.Forms.Platform.UWP
 			UpdateTextColor();
 			UpdatePlaceholderColor();
 			UpdateBackgroundColor();
+			UpdateBackground();
 			UpdateIsSpellCheckEnabled();
 			UpdateInputScope();
 			UpdateMaxLength();
@@ -325,6 +326,23 @@ namespace Xamarin.Forms.Platform.UWP
 			else
 			{
 				_queryTextBox.ClearValue(Windows.UI.Xaml.Controls.Control.BackgroundProperty);
+			}
+		}
+
+		protected override void UpdateBackground()
+		{
+			if (_queryTextBox == null)
+				return;
+
+			if (!Brush.IsNullOrEmpty(Element.Background))
+			{
+				_queryTextBox.Background = Element.Background.ToBrush();
+			}
+			else
+			{
+				Color backgroundColor = Element.BackgroundColor;
+				if (backgroundColor.IsDefault)
+					_queryTextBox.ClearValue(Windows.UI.Xaml.Controls.Control.BackgroundProperty);
 			}
 		}
 

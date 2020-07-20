@@ -3,9 +3,9 @@ using System.ComponentModel;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using WBrush = Windows.UI.Xaml.Media.Brush;
 using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.InputView;
 
 namespace Xamarin.Forms.Platform.UWP
@@ -13,11 +13,11 @@ namespace Xamarin.Forms.Platform.UWP
 	public class EditorRenderer : ViewRenderer<Editor, FormsTextBox>
 	{
 		bool _fontApplied;
-		Brush _backgroundColorFocusedDefaultBrush;
-		Brush _textDefaultBrush;
-		Brush _defaultTextColorFocusBrush;
-		Brush _defaultPlaceholderColorFocusBrush;
-		Brush _placeholderDefaultBrush;
+		WBrush _backgroundColorFocusedDefaultBrush;
+		WBrush _textDefaultBrush;
+		WBrush _defaultTextColorFocusBrush;
+		WBrush _defaultPlaceholderColorFocusBrush;
+		WBrush _placeholderDefaultBrush;
 		string _transformedText;
 
 		IEditorController ElementController => Element;
@@ -61,6 +61,7 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateText();
 				UpdateInputScope();
 				UpdateTextColor();
+				UpdateBackground();
 				UpdateCharacterSpacing();
 				UpdateFont();
 				UpdateFlowDirection();
@@ -139,6 +140,19 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdatePlaceholderColor();
 			else if (e.PropertyName == InputView.IsReadOnlyProperty.PropertyName)
 				UpdateIsReadOnly();
+		}
+
+		protected override void UpdateBackground()
+		{
+			base.UpdateBackground();
+
+			if (Control == null)
+			{
+				return;
+			}
+
+			BrushHelpers.UpdateBrush(Element.Background, ref _backgroundColorFocusedDefaultBrush,
+			   () => Control.BackgroundFocusBrush, brush => Control.BackgroundFocusBrush = brush);
 		}
 
 		void OnLostFocus(object sender, RoutedEventArgs e)

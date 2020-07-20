@@ -1,7 +1,6 @@
 ﻿using UIKit;
 using MaterialComponents;
 using System;
-using Foundation;
 using Xamarin.Forms.Platform.iOS;
 
 namespace Xamarin.Forms.Material.iOS
@@ -14,9 +13,11 @@ namespace Xamarin.Forms.Material.iOS
 		protected IntrinsicHeightTextView IntrinsicHeightTextView => (IntrinsicHeightTextView)TextView;
 		protected override UITextView TextView => Control?.TextView;
 		protected override void SetBackgroundColor(Color color) => ApplyTheme();
+		protected override void SetBackground(Brush brush) => ApplyTheme();
 
 		protected internal override void UpdateTextColor() => Control?.UpdateTextColor(this);
 		protected virtual void ApplyTheme() => Control?.ApplyTheme(this);
+		protected virtual void ApplyThemeIfNeeded() => Control?.ApplyThemeIfNeeded(this);
 
 		protected internal override void UpdateFont()
 		{
@@ -61,6 +62,13 @@ namespace Xamarin.Forms.Material.iOS
 				InitialPlaceholderSetupHack();
 		}
 
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			ApplyThemeIfNeeded();
+		}
+
 		protected internal override void UpdateAutoSizeOption()
 		{
 			base.UpdateAutoSizeOption();
@@ -98,5 +106,6 @@ namespace Xamarin.Forms.Material.iOS
 		Color IMaterialEntryRenderer.TextColor => Element?.TextColor ?? Color.Default;
 		Color IMaterialEntryRenderer.PlaceholderColor => Element?.PlaceholderColor ?? Color.Default;
 		Color IMaterialEntryRenderer.BackgroundColor => Element?.BackgroundColor ?? Color.Default;
+		Brush IMaterialEntryRenderer.Background => Element?.Background ?? Brush.Default;
 	}
 }

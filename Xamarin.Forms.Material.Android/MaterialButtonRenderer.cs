@@ -211,11 +211,11 @@ namespace Xamarin.Forms.Material.Android
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == Button.BorderWidthProperty.PropertyName || e.PropertyName == Button.BorderColorProperty.PropertyName || e.PropertyName == Button.CornerRadiusProperty.PropertyName)
+			if (e.IsOneOf(Button.BorderWidthProperty, Button.BorderColorProperty, Button.CornerRadiusProperty))
 				UpdateBorder();
 			else if (e.PropertyName == Button.FontProperty.PropertyName)
 				UpdateFont();
-			else if (e.PropertyName == Button.TextColorProperty.PropertyName || e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+			else if (e.IsOneOf(Button.TextColorProperty, VisualElement.BackgroundColorProperty, VisualElement.BackgroundProperty))
 				UpdatePrimaryColors();
 			else if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
 				UpdateInputTransparent();

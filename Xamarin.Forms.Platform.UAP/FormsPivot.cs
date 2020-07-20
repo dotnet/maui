@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using WBrush = Windows.UI.Xaml.Media.Brush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -10,9 +10,9 @@ namespace Xamarin.Forms.Platform.UWP
 	{
 		public static readonly DependencyProperty TitleVisibilityProperty = DependencyProperty.Register(nameof(TitleVisibility), typeof(Visibility), typeof(FormsPivot), new PropertyMetadata(Visibility.Collapsed));
 
-		public static readonly DependencyProperty ToolbarForegroundProperty = DependencyProperty.Register(nameof(ToolbarForeground), typeof(Brush), typeof(FormsPivot), new PropertyMetadata(default(Brush)));
+		public static readonly DependencyProperty ToolbarForegroundProperty = DependencyProperty.Register(nameof(ToolbarForeground), typeof(WBrush), typeof(FormsPivot), new PropertyMetadata(default(WBrush)));
 
-		public static readonly DependencyProperty ToolbarBackgroundProperty = DependencyProperty.Register(nameof(ToolbarBackground), typeof(Brush), typeof(FormsPivot), new PropertyMetadata(default(Brush)));
+		public static readonly DependencyProperty ToolbarBackgroundProperty = DependencyProperty.Register(nameof(ToolbarBackground), typeof(WBrush), typeof(FormsPivot), new PropertyMetadata(default(WBrush)));
 
 		CommandBar _commandBar;
 
@@ -28,15 +28,15 @@ namespace Xamarin.Forms.Platform.UWP
 	    ToolbarPlacement _toolbarPlacement;
 		bool _toolbarDynamicOverflowEnabled = true;
 
-		public Brush ToolbarBackground
+		public WBrush ToolbarBackground
 		{
-			get { return (Brush)GetValue(ToolbarBackgroundProperty); }
+			get { return (WBrush)GetValue(ToolbarBackgroundProperty); }
 			set { SetValue(ToolbarBackgroundProperty, value); }
 		}
 
-		public Brush ToolbarForeground
+		public WBrush ToolbarForeground
 		{
-			get { return (Brush)GetValue(ToolbarForegroundProperty); }
+			get { return (WBrush)GetValue(ToolbarForegroundProperty); }
 			set { SetValue(ToolbarForegroundProperty, value); }
 		}
 

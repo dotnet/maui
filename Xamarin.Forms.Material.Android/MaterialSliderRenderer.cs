@@ -1,4 +1,3 @@
-
 using System;
 using System.ComponentModel;
 using Android.Content;
@@ -138,7 +137,7 @@ namespace Xamarin.Forms.Material.Android
 
 			if (e.IsOneOf(Slider.ValueProperty, Slider.MinimumProperty, Slider.MaximumProperty))
 				UpdateValue();
-			else if (e.IsOneOf(VisualElement.BackgroundColorProperty, Slider.MaximumTrackColorProperty, Slider.MinimumTrackColorProperty, Slider.ThumbColorProperty))
+			else if (e.IsOneOf(VisualElement.BackgroundColorProperty, VisualElement.BackgroundProperty, Slider.MaximumTrackColorProperty, Slider.MinimumTrackColorProperty, Slider.ThumbColorProperty))
 				UpdateColors();
 			else if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
 				UpdateInputTransparent();

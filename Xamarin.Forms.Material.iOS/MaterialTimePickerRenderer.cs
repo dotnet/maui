@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-using UIKit;
-using Xamarin.Forms.Platform.iOS;
+﻿using Xamarin.Forms.Platform.iOS;
 
 namespace Xamarin.Forms.Material.iOS
 {
@@ -16,8 +14,10 @@ namespace Xamarin.Forms.Material.iOS
 
 		protected override MaterialTextField CreateNativeControl() => new NoCaretMaterialTextField(this, Element);
 		protected override void SetBackgroundColor(Color color) => ApplyTheme();
+		protected override void SetBackground(Brush brush) => ApplyTheme();
 		protected internal override void UpdateTextColor() => Control?.UpdateTextColor(this);
 		protected virtual void ApplyTheme() => Control?.ApplyTheme(this);
+		protected virtual void ApplyThemeIfNeeded() => Control?.ApplyThemeIfNeeded(this);
 
 		protected override void OnElementChanged(ElementChangedEventArgs<TimePicker> e)
 		{
@@ -27,9 +27,17 @@ namespace Xamarin.Forms.Material.iOS
 				UpdatePlaceholder();
 		}
 
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			ApplyThemeIfNeeded();
+		}
+
 		string IMaterialEntryRenderer.Placeholder => string.Empty;
 		Color IMaterialEntryRenderer.PlaceholderColor => Color.Default;
 		Color IMaterialEntryRenderer.TextColor => Element?.TextColor ?? Color.Default;
 		Color IMaterialEntryRenderer.BackgroundColor => Element?.BackgroundColor ?? Color.Default;
+		Brush IMaterialEntryRenderer.Background => Element?.Background ?? Brush.Default;
 	}
 }

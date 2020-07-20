@@ -84,6 +84,7 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateIsSwipeEnabled();
 				UpdateSwipeTransitionMode();
 				UpdateBackgroundColor();
+				UpdateBackground();
 			}
 
 			if (e.OldElement != null)
@@ -108,6 +109,8 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateContent();
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackgroundColor();
+			else if (e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
+				UpdateBackground();
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
 				UpdateIsSwipeEnabled();
 			else if (e.PropertyName == Specifics.SwipeTransitionModeProperty.PropertyName)
@@ -154,6 +157,16 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (_contentView != null && _contentView.Background == null)
 				_contentView?.SetWindowBackground();
+		}
+
+		protected override void UpdateBackground()
+		{
+			Brush background = Element.Background;
+
+			this.UpdateBackground(background);
+
+			if (Element.Content == null)
+				_contentView?.UpdateBackground(background);
 		}
 
 		protected override void OnAttachedToWindow()

@@ -8,6 +8,7 @@ using System.Windows.Input;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Xamarin.Forms.Platform.WPF.Helpers;
+using Xamarin.Forms.Platform.WPF.Extensions;
 using WList = System.Windows.Controls.ListView;
 using WGrid = System.Windows.Controls.Grid;
 using WpfScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility;
@@ -27,14 +28,14 @@ namespace Xamarin.Forms.Platform.WPF
 				scrollViewer?.ScrollToVerticalOffset((double)e.NewValue);
 			}
 		}
-		
+
 		ITemplatedItemsView<Cell> TemplatedItemsView => Element;
 		WpfScrollBarVisibility? _defaultHorizontalScrollVisibility;
 		WpfScrollBarVisibility? _defaultVerticalScrollVisibility;
 		ScrollViewer _scrollViewer;
 
 		// Header and Footer
-        readonly WGrid _grid = new WGrid(); 
+		readonly WGrid _grid = new WGrid();
 		WList _listview = null;
 		IVisualElementRenderer _headerRenderer;
 		IVisualElementRenderer _footerRenderer;
@@ -64,13 +65,13 @@ namespace Xamarin.Forms.Platform.WPF
 					_listview.StylusUp -= OnNativeStylusUp;
 					_listview.Loaded -= ControlOnLoaded;
 				}
-				
+
 				if (_scrollViewer != null)
 				{
 					_scrollViewer.ScrollChanged -= SendScrolled;
 				}
 
-				if(Control is object)
+				if (Control is object)
 				{
 					Control.SizeChanged -= Grid_SizeChanged;
 				}
@@ -92,7 +93,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 					VirtualizingPanel.SetVirtualizationMode(_listview, VirtualizationMode.Recycling);
 					VirtualizingPanel.SetScrollUnit(_listview, ScrollUnit.Pixel);
-					
+
 					SetNativeControl(_grid);
 
 					// Setup grid for header/listview/footer
@@ -101,7 +102,7 @@ namespace Xamarin.Forms.Platform.WPF
 					Control.RowDefinitions.Add(new System.Windows.Controls.RowDefinition { Height = System.Windows.GridLength.Auto });
 
 					WGrid.SetRow(_listview, 1);
-					
+
 					Control.Children.Add(_listview);
 
 					_listview.MouseUp += OnNativeMouseUp;
@@ -117,7 +118,7 @@ namespace Xamarin.Forms.Platform.WPF
 				templatedItems.GroupedCollectionChanged += OnGroupedCollectionChanged;
 
 				Control.SizeChanged += Grid_SizeChanged;
-								
+
 				// Update control properties
 				UpdateHeader();
 				UpdateFooter();
@@ -176,13 +177,13 @@ namespace Xamarin.Forms.Platform.WPF
 
 			_headerRenderer = Platform.CreateRenderer(headerView);
 			Platform.SetRenderer(headerView, _headerRenderer);
-		
+
 			WGrid.SetRow(_headerRenderer.GetNativeElement(), 0);
 			Control.Children.Add(_headerRenderer.GetNativeElement());
 
 		}
-		
-		void UpdateFooter() 
+
+		void UpdateFooter()
 		{
 			var footer = Element.FooterElement;
 			var footerView = (VisualElement)footer;
@@ -244,6 +245,16 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				UpdateFooter();
 			}
+		}
+
+		protected override void UpdateBackground()
+		{
+			Brush background = Element.Background;
+
+			if (Brush.IsNullOrEmpty(background))
+				Control.UpdateDependencyColor(WList.BackgroundProperty, Element.BackgroundColor);
+			else
+				Control.Background = background.ToBrush();
 		}
 
 		void UpdateItemSource()

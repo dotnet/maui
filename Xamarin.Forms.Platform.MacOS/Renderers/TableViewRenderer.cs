@@ -85,6 +85,12 @@ namespace Xamarin.Forms.Platform.MacOS
 				UpdateBackgroundView();
 		}
 
+		protected override void SetBackground(Brush brush)
+		{
+			TableView.UpdateBackground(brush);
+			base.SetBackground(brush);
+		}
+
 		void SetSource()
 		{
 			var modeledView = Element;
@@ -93,6 +99,13 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void UpdateBackgroundView()
 		{
+			if (Element.BackgroundColor == Color.Default)
+			{
+				if (TableView.BackgroundColor != NSColor.Clear)
+					TableView.BackgroundColor = NSColor.Clear;
+			}
+			else
+				TableView.BackgroundColor = Element.BackgroundColor.ToNSColor();
 		}
 
 		void UpdateRowHeight()

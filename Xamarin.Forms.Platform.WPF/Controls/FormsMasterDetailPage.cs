@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.Windows;
-using System.Windows.Media;
 using Xamarin.Forms.Platform.WPF.Interfaces;
+using WBrush = System.Windows.Media.Brush;
 
 namespace Xamarin.Forms.Platform.WPF.Controls
 {
@@ -64,7 +60,7 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 			return this.Title;
 		}
 
-		public override Brush GetTitleBarBackgroundColor()
+		public override WBrush GetTitleBarBackgroundColor()
 		{
 			if (lightDetailContentControl != null && lightDetailContentControl.Content is FormsPage page)
 			{
@@ -73,7 +69,7 @@ namespace Xamarin.Forms.Platform.WPF.Controls
 			return this.TitleBarBackgroundColor;
 		}
 
-		public override Brush GetTitleBarTextColor()
+		public override WBrush GetTitleBarTextColor()
 		{
 			if (lightDetailContentControl != null && lightDetailContentControl.Content is FormsPage page)
 			{

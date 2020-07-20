@@ -2,10 +2,9 @@
 using CoreGraphics;
 using MaterialComponents;
 using UIKit;
-using MTextField = MaterialComponents.TextField;
-using MTextInputControllerFilled = MaterialComponents.TextInputControllerFilled;
-using MTextInputControllerBase = MaterialComponents.TextInputControllerBase;
 using Xamarin.Forms.Internals;
+using MTextField = MaterialComponents.TextField;
+using MTextInputControllerBase = MaterialComponents.TextInputControllerBase;
 
 namespace Xamarin.Forms.Material.iOS
 {
@@ -16,6 +15,8 @@ namespace Xamarin.Forms.Material.iOS
 		public TypographyScheme TypographyScheme { get; set; }
 		public MTextInputControllerBase ActiveTextInputController { get; set; }
 		public ITextInput TextInput => this;
+		public CGSize? BackgroundSize { get; set; }
+
 		public MaterialTextField(IMaterialEntryRenderer element, IFontElement fontElement)
 		{
 			ContainerScheme = new ContainerScheme();
@@ -35,6 +36,7 @@ namespace Xamarin.Forms.Material.iOS
 		internal void ApplyTypographyScheme(IFontElement fontElement) =>
 			MaterialTextManager.ApplyTypographyScheme(this, fontElement);
 		internal void ApplyTheme(IMaterialEntryRenderer element) => MaterialTextManager.ApplyTheme(this, element);
+		internal void ApplyThemeIfNeeded(IMaterialEntryRenderer element) => MaterialTextManager.ApplyThemeIfNeeded(this, element);
 		internal void UpdatePlaceholder(IMaterialEntryRenderer element) => MaterialTextManager.UpdatePlaceholder(this, element);
 		internal void UpdateTextColor(IMaterialEntryRenderer element) => MaterialTextManager.UpdateTextColor(this, element);
 	}

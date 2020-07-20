@@ -211,9 +211,16 @@ namespace Xamarin.Forms.Platform.Android
 			return new ShellSearchView(context, _shellContext);
 		}
 
-		protected virtual void OnNavigateBack()
+		protected async virtual void OnNavigateBack()
 		{
-			Page.Navigation.PopAsync();
+			try
+			{
+				await Page.Navigation.PopAsync();
+			}
+			catch(Exception exc)
+			{
+				Internals.Log.Warning(nameof(Shell), $"Failed to Navigate Back: {exc}");
+			}
 		}
 
 		protected virtual void OnPageChanged(Page oldPage, Page newPage)
@@ -276,7 +283,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		void OnBackButtonBehaviorChanged(object sender, PropertyChangedEventArgs e)
 		{
-			UpdateLeftBarButtonItem();
+			if(!e.Is(BackButtonBehavior.CommandParameterProperty))
+				UpdateLeftBarButtonItem();
 		}
 
 
@@ -312,6 +320,26 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
+		ImageSource GetFlyoutIcon(BackButtonBehavior backButtonHandler, Page page)
+		{
+			var image = backButtonHandler.GetPropertyIfSet<ImageSource>(BackButtonBehavior.IconOverrideProperty, null);
+			if (image == null)
+			{
+				Element item = page;
+				while (!Application.IsApplicationOrNull(item))
+				{
+					if (item is IShellController shell)
+					{
+						image = shell.FlyoutIcon;
+						break;
+					}
+					item = item?.Parent;
+				}
+			}
+
+			return image;
+		}
+
 		protected virtual async void UpdateLeftBarButtonItem(Context context, Toolbar toolbar, DrawerLayout drawerLayout, Page page)
 		{
 			if (_drawerToggle == null && !context.IsDesignerContext())
@@ -328,27 +356,13 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			var backButtonHandler = Shell.GetBackButtonBehavior(page);
-
-			var image = backButtonHandler.GetPropertyIfSet<ImageSource>(BackButtonBehavior.IconOverrideProperty, null);
 			var text = backButtonHandler.GetPropertyIfSet(BackButtonBehavior.TextOverrideProperty, String.Empty);
 			var command = backButtonHandler.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
 			bool isEnabled = _backButtonBehavior.GetPropertyIfSet(BackButtonBehavior.IsEnabledProperty, true);
-
-			if (image == null)
-			{
-				Element item = page;
-				while (!Application.IsApplicationOrNull(item))
-				{
-					if (item is IShellController shell)
-					{
-						image = shell.FlyoutIcon;
-						break;
-					}
-					item = item?.Parent;
-				}
-			}
+			var image = GetFlyoutIcon(backButtonHandler, page);
 
 			DrawerArrowDrawable icon = null;
+			bool defaultDrawerArrowDrawable = false;
 
 			var tintColor = Color.White;
 			if (TintColor != Color.Default)
@@ -356,38 +370,64 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (image != null)
 			{
-				var customIcon = await context.GetFormsDrawableAsync(image);
+				FlyoutIconDrawerDrawable fid = toolbar.NavigationIcon as FlyoutIconDrawerDrawable;
+				Drawable customIcon;
+
+				if (fid?.IconBitmapSource == image)
+					customIcon = fid.IconBitmap;
+				else
+					customIcon = await context.GetFormsDrawableAsync(image);
 
 				if (customIcon != null)
-					icon = new FlyoutIconDrawerDrawable(context, tintColor, customIcon, text);
+				{
+					if (fid == null)
+					{
+						fid = new FlyoutIconDrawerDrawable(context, tintColor, customIcon, text);
+					}
+					else
+					{
+						fid.TintColor = tintColor;
+						fid.IconBitmap = customIcon;
+						fid.Text = text;
+					}
+
+					fid.IconBitmapSource = image;
+					icon = fid;
+				}
 			}
 
 			if (!string.IsNullOrWhiteSpace(text) && icon == null)
-				icon = new FlyoutIconDrawerDrawable(context, tintColor, icon, text);
+			{
+				icon = new FlyoutIconDrawerDrawable(context, tintColor, null, text);
+			}
 
-			if (icon == null)
+			if (icon == null && _flyoutBehavior == FlyoutBehavior.Flyout)
 			{
 				icon = new DrawerArrowDrawable(context.GetThemedContext());
 				icon.SetColorFilter(tintColor, FilterMode.SrcAtop);
+				defaultDrawerArrowDrawable = true;
 			}
 
-			icon.Progress = (CanNavigateBack) ? 1 : 0;
+			if(icon != null)
+				icon.Progress = (CanNavigateBack) ? 1 : 0;
 
 			if (command != null || CanNavigateBack)
 			{
 				_drawerToggle.DrawerIndicatorEnabled = false;
 				toolbar.NavigationIcon = icon;
 			}
-			else if (_flyoutBehavior == FlyoutBehavior.Flyout)
+			else if(_flyoutBehavior == FlyoutBehavior.Flyout || !defaultDrawerArrowDrawable)
 			{
-				_drawerToggle.DrawerIndicatorEnabled = isEnabled;
-				if (isEnabled)
+				bool drawerEnabled = isEnabled && icon != null;
+				_drawerToggle.DrawerIndicatorEnabled = drawerEnabled;
+				if (drawerEnabled)
 				{
 					_drawerToggle.DrawerArrowDrawable = icon;
-					toolbar.NavigationIcon = null;
 				}
 				else
+				{
 					toolbar.NavigationIcon = icon;
+				}
 			}
 			else
 			{
@@ -395,6 +435,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			_drawerToggle.SyncState();
+
 
 			//this needs to be set after SyncState
 			UpdateToolbarIconAccessibilityText(toolbar, _shellContext.Shell);
@@ -408,12 +449,18 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual void UpdateToolbarIconAccessibilityText(Toolbar toolbar, Shell shell)
 		{
+			var backButtonHandler = Shell.GetBackButtonBehavior(Page);
+			var image = GetFlyoutIcon(backButtonHandler, Page);
+			var text = backButtonHandler.GetPropertyIfSet(BackButtonBehavior.TextOverrideProperty, String.Empty);
+			var automationId = image?.AutomationId ?? text;
+
 			//if AutomationId was specified the user wants to use UITests and interact with FlyoutIcon
-			if (!string.IsNullOrEmpty(shell.FlyoutIcon?.AutomationId))
+			if (!string.IsNullOrEmpty(automationId))
 			{
-				toolbar.NavigationContentDescription = shell.FlyoutIcon.AutomationId;
+				toolbar.NavigationContentDescription = automationId;
 			}
-			else if (toolbar.SetNavigationContentDescription(_shellContext.Shell.FlyoutIcon) == null)
+			else if (image == null ||
+				toolbar.SetNavigationContentDescription(image) == null)
 			{
 				toolbar.SetNavigationContentDescription(R.String.Ok);
 			}
@@ -615,49 +662,50 @@ namespace Xamarin.Forms.Platform.Android
 
 		class FlyoutIconDrawerDrawable : DrawerArrowDrawable
 		{
-			Drawable _iconBitmap;
-			string _text;
-			Color _defaultColor;
+			public Drawable IconBitmap { get; set; }
+			public string Text { get; set; }
+			public Color TintColor { get; set; }
+			public ImageSource IconBitmapSource { get; set; }
 			float _defaultSize;
 
-			Color _pressedBackgroundColor => _defaultColor.AddLuminosity(-.12);//<item name="highlight_alpha_material_light" format="float" type="dimen">0.12</item>
+			Color _pressedBackgroundColor => TintColor.AddLuminosity(-.12);//<item name="highlight_alpha_material_light" format="float" type="dimen">0.12</item>
 
 			protected override void Dispose(bool disposing)
 			{
 				base.Dispose(disposing);
-				if (disposing && _iconBitmap != null)
+				if (disposing && IconBitmap != null)
 				{
-					_iconBitmap.Dispose();
+					IconBitmap.Dispose();
 				}
 			}
 
 			public FlyoutIconDrawerDrawable(Context context, Color defaultColor, Drawable icon, string text) : base(context)
 			{
-				_defaultColor = defaultColor;
+				TintColor = defaultColor;
 				_defaultSize = Forms.GetFontSizeNormal(context);
-				_iconBitmap = icon;
-				_text = text;
+				IconBitmap = icon;
+				Text = text;		
 			}
 
 			public override void Draw(Canvas canvas)
 			{
 				bool pressed = false;
-				if (_iconBitmap != null)
+				if (IconBitmap != null)
 				{
-					ADrawableCompat.SetTint(_iconBitmap, _defaultColor.ToAndroid());
-					ADrawableCompat.SetTintMode(_iconBitmap, PorterDuff.Mode.SrcAtop);
+					ADrawableCompat.SetTint(IconBitmap, TintColor.ToAndroid());
+					ADrawableCompat.SetTintMode(IconBitmap, PorterDuff.Mode.SrcAtop);
 
-					_iconBitmap.SetBounds(Bounds.Left, Bounds.Top, Bounds.Right, Bounds.Bottom);
-					_iconBitmap.Draw(canvas);
+					IconBitmap.SetBounds(Bounds.Left, Bounds.Top, Bounds.Right, Bounds.Bottom);
+					IconBitmap.Draw(canvas);
 				}
-				else if (!string.IsNullOrEmpty(_text))
+				else if (!string.IsNullOrEmpty(Text))
 				{
 					var paint = new Paint { AntiAlias = true };
 					paint.TextSize = _defaultSize;
-					paint.Color = pressed ? _pressedBackgroundColor.ToAndroid() : _defaultColor.ToAndroid();
+					paint.Color = pressed ? _pressedBackgroundColor.ToAndroid() : TintColor.ToAndroid();
 					paint.SetStyle(Paint.Style.Fill);
 					var y = (Bounds.Height() + paint.TextSize) / 2;
-					canvas.DrawText(_text, 0, y, paint);
+					canvas.DrawText(Text, 0, y, paint);
 				}
 			}
 		}

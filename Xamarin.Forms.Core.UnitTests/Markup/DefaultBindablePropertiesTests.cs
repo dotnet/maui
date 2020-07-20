@@ -111,6 +111,13 @@ namespace Xamarin.Forms.Markup.UnitTests
 				{ typeof(Polygon), tbd },
 				{ typeof(Polyline), tbd },
 				{ typeof(Rectangle), tbd },
+
+				{ typeof(Brush), tbd },
+				{ typeof(GradientBrush), tbd },
+				{ typeof(GradientStop), tbd },
+				{ typeof(LinearGradientBrush), tbd },
+				{ typeof(RadialGradientBrush), tbd },
+				{ typeof(SolidColorBrush), tbd }
 			};
 
 			var failMessage = new StringBuilder();

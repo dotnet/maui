@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media;
+﻿using WBrush = System.Windows.Media.Brush;
+using WSolidColorBrush = System.Windows.Media.SolidColorBrush;
 
 namespace Xamarin.Forms.Platform.WPF
-{ 
+{
 	public static class ColorExtensions
 	{
-		public static Brush ToBrush(this Color color)
+		public static WBrush ToBrush(this Color color)
 		{
-			return new SolidColorBrush(color.ToMediaColor());
+			return new WSolidColorBrush(color.ToMediaColor());
 		}
 
 		public static System.Windows.Media.Color ToMediaColor(this Color color)

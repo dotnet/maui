@@ -1,8 +1,8 @@
 ﻿﻿using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using WBrush = Windows.UI.Xaml.Media.Brush;
 using WImageSource = Windows.UI.Xaml.Media.ImageSource;
 
 namespace Xamarin.Forms.Platform.UWP
@@ -11,8 +11,8 @@ namespace Xamarin.Forms.Platform.UWP
 	{
 		public static readonly DependencyProperty TitleVisibilityProperty = DependencyProperty.Register(nameof(TitleVisibility), typeof(Visibility), typeof(PageControl), new PropertyMetadata(Visibility.Visible));
 
-		public static readonly DependencyProperty ToolbarBackgroundProperty = DependencyProperty.Register(nameof(ToolbarBackground), typeof(Brush), typeof(PageControl),
-			new PropertyMetadata(default(Brush)));
+		public static readonly DependencyProperty ToolbarBackgroundProperty = DependencyProperty.Register(nameof(ToolbarBackground), typeof(WBrush), typeof(PageControl),
+			new PropertyMetadata(default(WBrush)));
 
 		public static readonly DependencyProperty BackButtonTitleProperty = DependencyProperty.Register("BackButtonTitle", typeof(string), typeof(PageControl), new PropertyMetadata(false));
 
@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public static readonly DependencyProperty TitleInsetProperty = DependencyProperty.Register("TitleInset", typeof(double), typeof(PageControl), new PropertyMetadata(default(double)));
 
-		public static readonly DependencyProperty TitleBrushProperty = DependencyProperty.Register("TitleBrush", typeof(Brush), typeof(PageControl), new PropertyMetadata(null));
+		public static readonly DependencyProperty TitleBrushProperty = DependencyProperty.Register("TitleBrush", typeof(WBrush), typeof(PageControl), new PropertyMetadata(null));
 
 		CommandBar _commandBar;
 		FrameworkElement _titleViewPresenter;
@@ -85,9 +85,9 @@ namespace Xamarin.Forms.Platform.UWP
 			get { return _presenter != null ? _presenter.ActualWidth : 0; }
 		}
 
-		public Brush ToolbarBackground
+		public WBrush ToolbarBackground
 		{
-			get { return (Brush)GetValue(ToolbarBackgroundProperty); }
+			get { return (WBrush)GetValue(ToolbarBackgroundProperty); }
 			set { SetValue(ToolbarBackgroundProperty, value); }
 		}
 
@@ -123,9 +123,9 @@ namespace Xamarin.Forms.Platform.UWP
 			set { SetValue(TitleViewVisibilityProperty, value); }
 		}
 
-		public Brush TitleBrush
+		public WBrush TitleBrush
 		{
-			get { return (Brush)GetValue(TitleBrushProperty); }
+			get { return (WBrush)GetValue(TitleBrushProperty); }
 			set { SetValue(TitleBrushProperty, value); }
 		}
 

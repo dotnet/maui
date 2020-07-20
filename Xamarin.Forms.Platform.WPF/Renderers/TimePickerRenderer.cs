@@ -1,18 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using Xamarin.Forms.Internals;
+using WBrush = System.Windows.Media.Brush;
 
 namespace Xamarin.Forms.Platform.WPF
 {
 	public class TimePickerRenderer : ViewRenderer<Xamarin.Forms.TimePicker, FormsTimePicker>
 	{
-		Brush _defaultBrush;
+		WBrush _defaultBrush;
 		bool _fontApplied;
 		FontFamily _defaultFontFamily;
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using Windows.UI;
-using Windows.UI.Xaml.Media;
+using WBrush = Windows.UI.Xaml.Media.Brush;
+using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -20,14 +21,14 @@ namespace Xamarin.Forms.Platform.UWP
 			return Color.FromRgba(color.R, color.G, color.B, color.A);
 		}
 
-		public static Color ToFormsColor(this SolidColorBrush solidColorBrush)
+		public static Color ToFormsColor(this WSolidColorBrush solidColorBrush)
 		{
 			return solidColorBrush.Color.ToFormsColor();
 		}
 
-		public static Brush ToBrush(this Color color)
+		public static WBrush ToBrush(this Color color)
 		{
-			return new SolidColorBrush(color.ToWindowsColor());
+			return new WSolidColorBrush(color.ToWindowsColor());
 		}
 
 		public static Windows.UI.Color ToWindowsColor(this Color color)

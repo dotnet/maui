@@ -24,6 +24,8 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty BarBackgroundColorProperty = BarElement.BarBackgroundColorProperty;
 
+		public static readonly BindableProperty BarBackgroundProperty = BarElement.BarBackgroundProperty;
+
 		public static readonly BindableProperty BarTextColorProperty = BarElement.BarTextColorProperty;
 
 		public static readonly BindableProperty TitleIconImageSourceProperty = BindableProperty.CreateAttached("TitleIconImageSource", typeof(ImageSource), typeof(NavigationPage), default(ImageSource));
@@ -57,6 +59,12 @@ namespace Xamarin.Forms
 		public Color BarBackgroundColor {
 			get => (Color)GetValue(BarElement.BarBackgroundColorProperty);
 			set => SetValue(BarElement.BarBackgroundColorProperty, value);
+		}
+
+		public Brush BarBackground
+		{
+			get => (Brush)GetValue(BarElement.BarBackgroundProperty);
+			set => SetValue(BarElement.BarBackgroundProperty, value);
 		}
 
 		public Color BarTextColor {

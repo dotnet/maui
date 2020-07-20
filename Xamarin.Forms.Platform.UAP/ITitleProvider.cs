@@ -1,12 +1,12 @@
-﻿using Windows.UI.Xaml.Media;
+﻿using WBrush = Windows.UI.Xaml.Media.Brush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
 	internal interface ITitleProvider
 	{
-		Brush BarBackgroundBrush { set; }
+		WBrush BarBackgroundBrush { set; }
 
-		Brush BarForegroundBrush { set; }
+		WBrush BarForegroundBrush { set; }
 
 		bool ShowTitle { get; set; }
 

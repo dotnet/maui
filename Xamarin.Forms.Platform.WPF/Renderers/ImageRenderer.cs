@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Xamarin.Forms.Internals;
+using WBrush = System.Windows.Media.Brush;
 using WImage = System.Windows.Controls.Image;
 
 namespace Xamarin.Forms.Platform.WPF
@@ -183,18 +184,18 @@ namespace Xamarin.Forms.Platform.WPF
 			FontWeight fontWeight,
 			FontStretch fontStretch,
 			double fontSize,
-			Brush foreBrush)
-		{
-			if (fontFamily == null || string.IsNullOrEmpty(text))
-			{
-				return null;
-			}
-			var typeface = new Typeface(fontFamily, fontStyle, fontWeight, fontStretch);
-			if (!typeface.TryGetGlyphTypeface(out GlyphTypeface glyphTypeface))
-			{
-				//if it does not work 
-				return null;
-			}
+			WBrush foreBrush)
+        {
+            if (fontFamily == null || string.IsNullOrEmpty(text))
+            {
+                return null;
+            }
+            var typeface = new Typeface(fontFamily, fontStyle, fontWeight, fontStretch);
+            if (!typeface.TryGetGlyphTypeface(out GlyphTypeface glyphTypeface))
+            {
+                //if it does not work 
+                return null;
+            }
 
 			var glyphIndexes = new ushort[text.Length];
 			var advanceWidths = new double[text.Length];

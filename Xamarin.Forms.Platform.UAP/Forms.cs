@@ -5,12 +5,10 @@ using System.Linq;
 using System.Reflection;
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Resources.Core;
-using Windows.Foundation.Metadata;
-using Windows.UI.Core;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.UWP;
+using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
 
 namespace Xamarin.Forms
 {
@@ -27,7 +25,7 @@ namespace Xamarin.Forms
 			if (IsInitialized)
 				return;
 
-			var accent = (SolidColorBrush)Windows.UI.Xaml.Application.Current.Resources["SystemColorControlAccentBrush"];
+			var accent = (WSolidColorBrush)Windows.UI.Xaml.Application.Current.Resources["SystemColorControlAccentBrush"];
 			Color.SetAccent(accent.ToFormsColor());
 
 #if UWP_14393

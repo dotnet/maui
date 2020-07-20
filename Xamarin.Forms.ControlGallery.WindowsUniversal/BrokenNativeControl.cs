@@ -3,7 +3,9 @@ using Windows.UI;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
+using WGradientStop = Windows.UI.Xaml.Media.GradientStop;
+using WGradientStopCollection = Windows.UI.Xaml.Media.GradientStopCollection;
+using WLinearGradientBrush = Windows.UI.Xaml.Media.LinearGradientBrush;
 using WRect = Windows.Foundation.Rect;
 
 namespace Xamarin.Forms.ControlGallery.WindowsUniversal
@@ -24,8 +26,8 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			Children.Add (_textBlock);
 
 			Background =
-				new LinearGradientBrush (
-					new GradientStopCollection { new GradientStop { Color = Colors.Green, Offset = 0.5}, new GradientStop { Color = Colors.Blue, Offset = 1} }, 0);
+				new WLinearGradientBrush(
+					new WGradientStopCollection { new WGradientStop { Color = Colors.Green, Offset = 0.5}, new WGradientStop { Color = Colors.Blue, Offset = 1} }, 0);
 		}
 
 		public static readonly DependencyProperty TextProperty = DependencyProperty.Register (

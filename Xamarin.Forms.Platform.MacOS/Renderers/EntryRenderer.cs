@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using AppKit;
+using CoreGraphics;
 using Foundation;
 
 namespace Xamarin.Forms.Platform.MacOS
@@ -89,11 +90,22 @@ namespace Xamarin.Forms.Platform.MacOS
 		}
 
 		bool _disposed;
+		CGSize _previousSize;
 		NSColor _defaultTextColor;
 
 		IElementController ElementController => Element;
 
 		IEntryController EntryController => Element;
+
+		public override void Layout()
+		{
+			base.Layout();
+
+			if (_previousSize != Bounds.Size)
+				SetBackground(Element.Background);
+
+			_previousSize = Bounds.Size;
+		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Entry> e)
 		{
@@ -151,6 +163,17 @@ namespace Xamarin.Forms.Platform.MacOS
 			Control.BackgroundColor = color == Color.Default ? NSColor.Clear : color.ToNSColor();
 
 			base.SetBackgroundColor(color);
+		}
+
+		protected override void SetBackground(Brush brush)
+		{
+			if (Control == null)
+				return;
+
+			var backgroundImage = this.GetBackgroundImage(brush);
+			Control.BackgroundColor = backgroundImage != null ? NSColor.FromPatternImage(backgroundImage) : NSColor.Clear;
+
+			base.SetBackground(brush);
 		}
 
 		protected override void Dispose(bool disposing)
@@ -265,7 +288,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			ClearControl();
 			CreateControl();
 			UpdateControl();
-			Layout();
+			base.Layout();
 		}
 
 		void UpdateFont()

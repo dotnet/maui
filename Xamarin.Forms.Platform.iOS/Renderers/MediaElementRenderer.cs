@@ -24,9 +24,7 @@ namespace Xamarin.Forms.Platform.iOS
 		[Internals.Preserve(Conditional = true)]
 		public MediaElementRenderer()
 		{
-			Xamarin.Forms.MediaElement.VerifyMediaElementFlagEnabled(nameof(MediaElementRenderer));
-
-			_playedToEndObserver = NSNotificationCenter.DefaultCenter.AddObserver(AVPlayerItem.DidPlayToEndTimeNotification, PlayedToEnd);
+			MediaElement.VerifyMediaElementFlagEnabled(nameof(MediaElementRenderer));
 		}
 
 		void SetKeepScreenOn(bool value)

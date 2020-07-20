@@ -56,7 +56,7 @@
                                         </uwp:FormsCommandBar.Resources>
                                         <uwp:FormsCommandBar.Content>
 											<Border x:Name="TitleArea" Height="{ThemeResource TitleBarHeight}" Visibility="{TemplateBinding DetailTitleVisibility}" HorizontalAlignment="Stretch">
-												<Grid x:Name="TitleViewPresenter" VerticalAlignment="Center" Background="{TemplateBinding ToolbarBackground}" HorizontalAlignment="Stretch">
+                                                <Grid x:Name="TitleViewPresenter" VerticalAlignment="Center" HorizontalAlignment="Stretch">
 
 													<Grid.ColumnDefinitions>
 														<ColumnDefinition Width="Auto"/>

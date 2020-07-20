@@ -160,7 +160,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
 				UpdateBackground();
 			else if (e.PropertyName == Page.BackgroundImageSourceProperty.PropertyName)
 				UpdateBackground();
@@ -180,8 +180,15 @@ namespace Xamarin.Forms.Platform.MacOS
 				}
 				else
 				{
-					Color bgColor = Element.BackgroundColor;
-					View.Layer.BackgroundColor = bgColor.IsDefault ? NSColor.White.CGColor : bgColor.ToCGColor();
+					Brush background = Element.Background;
+
+					if (!Brush.IsNullOrEmpty(background))
+						NativeView.UpdateBackground(Element.Background);
+					else
+					{
+						Color bgColor = Element.BackgroundColor;
+						View.Layer.BackgroundColor = bgColor.IsDefault ? NSColor.White.CGColor : bgColor.ToCGColor();
+					}
 				}
 			});
 		}

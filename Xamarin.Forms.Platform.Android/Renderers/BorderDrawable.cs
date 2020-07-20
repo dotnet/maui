@@ -200,6 +200,12 @@ namespace Xamarin.Forms.Platform.Android
 			paint.SetStyle(Paint.Style.Fill);
 			paint.SetShadowLayer(_shadowRadius, _shadowDx, _shadowDy, _shadowColor);
 
+			if (BorderElement.IsBackgroundSet())
+			{
+				Brush background = BorderElement.Background;
+				paint.UpdateBackground(background, height, width);
+			}
+
 			canvas.DrawPath(path, paint);
 		}
 

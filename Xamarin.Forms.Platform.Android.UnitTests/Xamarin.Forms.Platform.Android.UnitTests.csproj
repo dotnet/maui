@@ -66,6 +66,7 @@
     <Compile Include="TextTests.cs" />
     <Compile Include="TranslationTests.cs" />
     <Compile Include="ButtonTests.cs" />
+    <Compile Include="BackgroundTests.cs" />
     <Compile Include="TestActivity.cs" />
   </ItemGroup>
   <ItemGroup>

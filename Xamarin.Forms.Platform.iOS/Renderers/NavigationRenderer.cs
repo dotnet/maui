@@ -221,7 +221,7 @@ namespace Xamarin.Forms.Platform.iOS
 			navPage.InsertPageBeforeRequested += OnInsertPageBeforeRequested;
 
 			UpdateTint();
-			UpdateBarBackgroundColor();
+			UpdateBarBackground();
 			UpdateBarTextColor();
 			UpdateHideNavigationBarSeparator();
 			UpdateUseLargeTitles();
@@ -435,9 +435,10 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				UpdateTint();
 			}
-			else if (e.PropertyName == NavigationPage.BarBackgroundColorProperty.PropertyName)
+			else if (e.PropertyName == NavigationPage.BarBackgroundColorProperty.PropertyName ||
+				e.PropertyName == NavigationPage.BarBackgroundProperty.PropertyName)
 			{
-				UpdateBarBackgroundColor();
+				UpdateBarBackground();
 			}
 			else if (e.PropertyName == NavigationPage.BarTextColorProperty.PropertyName
 				  || e.PropertyName == StatusBarTextColorModeProperty.PropertyName)
@@ -653,7 +654,7 @@ namespace Xamarin.Forms.Platform.iOS
 			View.BackgroundColor = color.ToUIColor();
 		}
 
-		void UpdateBarBackgroundColor()
+		void UpdateBarBackground()
 		{
 			var barBackgroundColor = NavPage.BarBackgroundColor;
 
@@ -676,6 +677,10 @@ namespace Xamarin.Forms.Platform.iOS
 					navigationBarAppearance.BackgroundColor = barBackgroundColor.ToUIColor();
 				}
 
+				var barBackgroundBrush = NavPage.BarBackground;
+				var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
+				navigationBarAppearance.BackgroundImage = backgroundImage;
+
 				NavigationBar.CompactAppearance = navigationBarAppearance;
 				NavigationBar.StandardAppearance = navigationBarAppearance;
 				NavigationBar.ScrollEdgeAppearance = navigationBarAppearance;
@@ -685,8 +690,12 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				// Set navigation bar background color
 				NavigationBar.BarTintColor = barBackgroundColor == Color.Default
-				? UINavigationBar.Appearance.BarTintColor
-				: barBackgroundColor.ToUIColor();
+					? UINavigationBar.Appearance.BarTintColor
+					: barBackgroundColor.ToUIColor();
+
+				var barBackgroundBrush = NavPage.BarBackground;
+				var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
+				NavigationBar.SetBackgroundImage(backgroundImage, UIBarMetrics.Default);
 			}
 		}
 
@@ -737,7 +746,7 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			// set Tint color (i. e. Back Button arrow and Text)
-			var iconColor = NavigationPage.GetIconColor(Current);
+			var iconColor = Current != null ? NavigationPage.GetIconColor(Current) : Color.Default;
 			if (iconColor.IsDefault)
 				iconColor = barTextColor;
 

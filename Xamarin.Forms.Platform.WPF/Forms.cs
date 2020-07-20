@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Windows.Media;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.WPF;
+using WSolidColorBrush = System.Windows.Media.SolidColorBrush;
 
 namespace Xamarin.Forms
 {
@@ -29,7 +29,7 @@ namespace Xamarin.Forms
 				Source = new Uri(string.Format("/{0};component/WPFResources.xaml", assemblyName), UriKind.Relative)
 			});
 
-			var accentColor = (SolidColorBrush)System.Windows.Application.Current.Resources["AccentColor"];
+			var accentColor = (WSolidColorBrush)System.Windows.Application.Current.Resources["AccentColor"];
 			Color.SetAccent(Color.FromRgba(accentColor.Color.R, accentColor.Color.G, accentColor.Color.B, accentColor.Color.A));
 
 			Log.Listeners.Add(new DelegateLogListener((c, m) => Console.WriteLine("[{0}] {1}", m, c)));

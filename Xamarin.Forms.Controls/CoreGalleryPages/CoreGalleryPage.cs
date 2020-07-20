@@ -21,6 +21,8 @@ namespace Xamarin.Forms.Controls
 
 		internal CoreGalleryPage()
 		{
+			Device.SetFlags(new[] { ExperimentalFlags.BrushExperimental });
+
 			Layout = new StackLayout
 			{
 				Padding = new Thickness(20)
@@ -118,6 +120,17 @@ namespace Xamarin.Forms.Controls
 			_viewContainers = new List<ViewContainer<T>> {
 				isFocusedStateViewContainer,
 				new ViewContainer<T> (Test.VisualElement.BackgroundColor, new T { BackgroundColor = Color.Blue }),
+				new ViewContainer<T>(Test.VisualElement.Background, new T { Background = new LinearGradientBrush
+				{
+					StartPoint = new Point(0, 0),
+					EndPoint = new Point(1, 0),
+					GradientStops = new GradientStopCollection
+					{
+						new GradientStop(Color.Yellow, 0.0f),
+						new GradientStop(Color.Orange, 0.5f),
+						new GradientStop(Color.Red, 1.0f)
+					}
+				} }),
 				focusStateViewContainer,
 				gestureRecognizerEventViewContainer,
 				new LayeredViewContainer<T> (Test.VisualElement.InputTransparent, new T { InputTransparent = true }),

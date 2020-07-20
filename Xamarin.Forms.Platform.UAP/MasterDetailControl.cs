@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using WBrush = Windows.UI.Xaml.Media.Brush;
 using WImageSource = Windows.UI.Xaml.Media.ImageSource;
 
 namespace Xamarin.Forms.Platform.UWP
@@ -38,11 +38,11 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public static readonly DependencyProperty DetailTitleViewProperty = DependencyProperty.Register(nameof(DetailTitleView), typeof(View), typeof(MasterDetailControl), new PropertyMetadata(default(View), OnTitleViewPropertyChanged));
 
-		public static readonly DependencyProperty ToolbarForegroundProperty = DependencyProperty.Register("ToolbarForeground", typeof(Brush), typeof(MasterDetailControl),
-			new PropertyMetadata(default(Brush)));
+		public static readonly DependencyProperty ToolbarForegroundProperty = DependencyProperty.Register("ToolbarForeground", typeof(WBrush), typeof(MasterDetailControl),
+			new PropertyMetadata(default(WBrush)));
 
-		public static readonly DependencyProperty ToolbarBackgroundProperty = DependencyProperty.Register("ToolbarBackground", typeof(Brush), typeof(MasterDetailControl),
-			new PropertyMetadata(default(Brush)));
+		public static readonly DependencyProperty ToolbarBackgroundProperty = DependencyProperty.Register("ToolbarBackground", typeof(WBrush), typeof(MasterDetailControl),
+			new PropertyMetadata(default(WBrush)));
 
 		public static readonly DependencyProperty MasterTitleVisibilityProperty = DependencyProperty.Register("MasterTitleVisibility", typeof(Visibility), typeof(MasterDetailControl),
 			new PropertyMetadata(default(Visibility)));
@@ -243,15 +243,15 @@ namespace Xamarin.Forms.Platform.UWP
 			set { SetValue(CollapsedPaneWidthProperty, value); }
 		}
 
-		public Brush ToolbarBackground
+		public WBrush ToolbarBackground
 		{
-			get { return (Brush)GetValue(ToolbarBackgroundProperty); }
+			get { return (WBrush)GetValue(ToolbarBackgroundProperty); }
 			set { SetValue(ToolbarBackgroundProperty, value); }
 		}
 
-		public Brush ToolbarForeground
+		public WBrush ToolbarForeground
 		{
-			get { return (Brush)GetValue(ToolbarForegroundProperty); }
+			get { return (WBrush)GetValue(ToolbarForegroundProperty); }
 			set { SetValue(ToolbarForegroundProperty, value); }
 		}
 

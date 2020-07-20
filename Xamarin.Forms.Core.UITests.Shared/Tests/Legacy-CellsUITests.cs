@@ -34,7 +34,14 @@ namespace Xamarin.Forms.Core.UITests
 				new Drag(ScreenBounds, Drag.Direction.BottomToTop, Drag.DragLength.Medium));
 #endif
 			App.WaitForElement(q => q.Marked(testName));
-			App.Tap(q => q.Marked(testName));
+
+			// This code was added to work around an issue
+			// UI Test was having clicking the first two items in the List
+			for(int i = 0; i < 5 && App.Query(q => q.Marked(testName)).Length > 0; i++)
+			{
+				App.Tap(q => q.Marked(testName));
+				Thread.Sleep(500);
+			}
 		}
 
 		[Test]

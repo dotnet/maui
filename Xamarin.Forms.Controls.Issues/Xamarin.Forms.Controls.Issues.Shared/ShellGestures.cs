@@ -158,7 +158,8 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			TapInFlyout(TableViewTitle);
 			RunningApp.WaitForElement(TableViewId);
-			RunningApp.ScrollDownTo("entry30", TableViewId, ScrollStrategy.Gesture);
+
+			RunningApp.ScrollDownTo("entry30", TableViewId, ScrollStrategy.Gesture, swipePercentage: 0.20, timeout: TimeSpan.FromMinutes(1));
 		}
 
 		[NUnit.Framework.Category(UITestCategories.ListView)]
@@ -167,7 +168,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			TapInFlyout(ListViewTitle);
 			RunningApp.WaitForElement(ListViewId);
-			RunningApp.ScrollDownTo("30 Entry", ListViewId, ScrollStrategy.Gesture);
+			RunningApp.ScrollDownTo("30 Entry", ListViewId, ScrollStrategy.Gesture, swipePercentage: 0.20, timeout: TimeSpan.FromMinutes(1));
 		}
 
 #if __ANDROID__

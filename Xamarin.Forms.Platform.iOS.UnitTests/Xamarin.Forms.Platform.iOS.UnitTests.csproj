@@ -59,6 +59,7 @@
     <Compile Include="CornerRadiusTests.cs" />
     <Compile Include="EmbeddingTests.cs" />
     <Compile Include="FlowDirectionTests.cs" />
+    <Compile Include="FrameTests.cs" />
     <Compile Include="HtmlLabelTests.cs" />
     <Compile Include="ImageButtonTests.cs" />
     <Compile Include="IsEnabledTests.cs" />
@@ -70,6 +71,7 @@
     <Compile Include="RotationTests.cs" />
     <Compile Include="ScaleTests.cs" />
     <Compile Include="TextTests.cs" />
+    <Compile Include="BackgroundTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">

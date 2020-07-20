@@ -1,12 +1,12 @@
 ﻿using System.ComponentModel;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
+using WBrush = Windows.UI.Xaml.Media.Brush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
 	public class CheckBoxRenderer : ViewRenderer<CheckBox, FormsCheckBox>
 	{
-		static Brush _tintDefaultBrush = Color.Blue.ToBrush();
+		static WBrush _tintDefaultBrush = Color.Blue.ToBrush();
 		bool _disposed = false;
 
 		protected virtual FormsCheckBox CreateNativeControl()

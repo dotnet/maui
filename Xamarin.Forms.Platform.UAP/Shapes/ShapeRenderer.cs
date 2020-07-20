@@ -14,6 +14,7 @@ using WStretch = Windows.UI.Xaml.Media.Stretch;
 namespace Xamarin.Forms.Platform.UWP
 #else
 using System.Windows;
+using Xamarin.Forms.Platform.WPF.Extensions;
 using WDoubleCollection = System.Windows.Media.DoubleCollection;
 using WPenLineCap = System.Windows.Media.PenLineCap;
 using WPenLineJoin = System.Windows.Media.PenLineJoin;

@@ -8,12 +8,13 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
+using WBrush = Windows.UI.Xaml.Media.Brush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
 	public class DatePickerRenderer : ViewRenderer<DatePicker, Windows.UI.Xaml.Controls.DatePicker>, ITabStopOnDescendants
 	{
-		Brush _defaultBrush;
+		WBrush _defaultBrush;
 		bool _fontApplied;
 		FontFamily _defaultFontFamily;
 
@@ -64,6 +65,7 @@ namespace Xamarin.Forms.Platform.UWP
 			_defaultFontFamily = Control.FontFamily;
 			UpdateFont();
 			UpdateTextColor();
+			UpdateBackground();
 		}
 
 		internal override void OnElementFocusChangeRequested(object sender, VisualElement.FocusRequestArgs args)

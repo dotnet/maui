@@ -81,7 +81,7 @@ namespace Xamarin.Forms.Material.iOS
 
 		protected override void SetBackgroundColor(Color color)
 		{
-			// don't call base
+			// Don't call base
 		}
 
 		void UpdateButtons()

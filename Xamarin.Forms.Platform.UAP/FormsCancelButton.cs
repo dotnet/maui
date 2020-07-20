@@ -1,6 +1,6 @@
 ﻿using System;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
+using WBrush = Windows.UI.Xaml.Media.Brush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -9,13 +9,13 @@ namespace Xamarin.Forms.Platform.UWP
 		TextBlock _cancelButtonGlyph;
 		Border _cancelButtonBackground;
 
-		public Brush ForegroundBrush 
+		public WBrush ForegroundBrush 
 		{
 			get => _cancelButtonGlyph.Foreground;
 			set => _cancelButtonGlyph.Foreground = value;
 		}
 
-		public Brush BackgroundBrush
+		public WBrush BackgroundBrush
 		{
 			get => _cancelButtonBackground.Background;
 			set => _cancelButtonBackground.Background = value;

@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Platform.Android
 	public class FrameRenderer : VisualElementRenderer<Frame>
 	{
 		bool _disposed;
-		FrameDrawable _drawable;
+		FrameDrawable _backgroundDrawable;
 		readonly MotionEventHelper _motionEventHelper = new MotionEventHelper();
 
 		public FrameRenderer(Context context) : base(context)
@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (disposing && !_disposed)
 			{
-				_drawable?.Dispose();
+				_backgroundDrawable?.Dispose();
 				_disposed = true;
 			}
 		}
@@ -59,16 +59,16 @@ namespace Xamarin.Forms.Platform.Android
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			base.OnElementPropertyChanged(sender, e);
-			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == Frame.CornerRadiusProperty.PropertyName)
+			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == VisualElement.BackgroundProperty.PropertyName || e.PropertyName == Frame.CornerRadiusProperty.PropertyName)
 			{
-				UpdateBackground();
+				UpdateFrameBackground();
 			}
 		}
 
-		void UpdateBackground()
+		void UpdateFrameBackground()
 		{
-			_drawable?.Dispose();
-			this.SetBackground(_drawable = new FrameDrawable(Element, Context.ToPixels));
+			_backgroundDrawable?.Dispose();
+			this.SetBackground(_backgroundDrawable = new FrameDrawable(Element, Context.ToPixels));
 		}
 
 		class FrameDrawable : Drawable
@@ -183,10 +183,18 @@ namespace Xamarin.Forms.Platform.Android
 					float ry = _convertToPixels(cornerRadius);
 					path.AddRoundRect(rect, rx, ry, direction);
 
-					global::Android.Graphics.Color color = _frame.BackgroundColor.ToAndroid();
-
 					paint.SetStyle(style);
-					paint.Color = color;
+
+					if (!Brush.IsNullOrEmpty(_frame.Background))
+					{
+						Brush background = _frame.Background;
+						paint.UpdateBackground(background, height, width);
+					}
+					else
+					{
+						global::Android.Graphics.Color color = _frame.BackgroundColor.ToAndroid();
+						paint.Color = color;
+					}
 
 					canvas.DrawPath(path, paint);
 				}

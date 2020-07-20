@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-			var label = new Label { Text = Instructions };
+			var label = new Label { Text = Instructions, };
 			grouped = new ObservableCollection<GroupedItem>();
 			lstView = new ListView()
 			{
@@ -57,6 +57,7 @@ namespace Xamarin.Forms.Controls.Issues
 				ItemTemplate = new DataTemplate(typeof(MyViewCell)),
 				GroupHeaderTemplate = new DataTemplate(typeof(MyHeaderViewCell)),
 				ItemsSource = grouped,
+				AutomationId = "TestReady"
 			};
 
 			var grp1 = new GroupedItem() { LongName = "Group 1", ShortName = "1" };
@@ -87,6 +88,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Category(UITestCategories.ManualReview)]
 		public void Bugzilla53834Test()
 		{
+			RunningApp.WaitForElement("TestReady");
 			RunningApp.Screenshot("incorrect row heights test");
 		}
 #endif

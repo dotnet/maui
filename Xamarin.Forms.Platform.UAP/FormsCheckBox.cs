@@ -1,20 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
+﻿using Windows.UI.Xaml;
+using WBrush = Windows.UI.Xaml.Media.Brush;
 using WindowsCheckbox = Windows.UI.Xaml.Controls.CheckBox;
-
 
 namespace Xamarin.Forms.Platform.UWP
 {
 	public class FormsCheckBox : WindowsCheckbox
 	{
 		public static readonly DependencyProperty TintBrushProperty =
-			DependencyProperty.Register(nameof(TintBrush), typeof(Brush), typeof(FormsCheckBox),
-				new PropertyMetadata(default(Brush), OnTintBrushPropertyChanged));
+			DependencyProperty.Register(nameof(TintBrush), typeof(WBrush), typeof(FormsCheckBox),
+				new PropertyMetadata(default(WBrush), OnTintBrushPropertyChanged));
 
 		static void OnTintBrushPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
@@ -26,28 +20,28 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 			else
 			{
-				checkBox.DefaultFillBrush = (Brush)e.NewValue;
+				checkBox.DefaultFillBrush = (WBrush)e.NewValue;
 			}
 		}
 
 		public static readonly DependencyProperty DefaultFillBrushProperty =
-			DependencyProperty.Register(nameof(DefaultFillBrush), typeof(Brush), typeof(FormsCheckBox),
-				new PropertyMetadata(default(Brush)));
+			DependencyProperty.Register(nameof(DefaultFillBrush), typeof(WBrush), typeof(FormsCheckBox),
+				new PropertyMetadata(default(WBrush)));
 
 		public FormsCheckBox()
 		{
 			
 		}
 
-		public Brush TintBrush
+		public WBrush TintBrush
 		{
-			get { return (Brush)GetValue(TintBrushProperty); }
+			get { return (WBrush)GetValue(TintBrushProperty); }
 			set { SetValue(TintBrushProperty, value);  }
 		}
 
-		public Brush DefaultFillBrush
+		public WBrush DefaultFillBrush
 		{
-			get { return (Brush)GetValue(DefaultFillBrushProperty); }
+			get { return (WBrush)GetValue(DefaultFillBrushProperty); }
 			set { SetValue(DefaultFillBrushProperty, value); }
 		}
 	}

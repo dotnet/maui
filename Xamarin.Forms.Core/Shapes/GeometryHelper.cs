@@ -320,7 +320,7 @@ namespace Xamarin.Forms.Shapes
             matx.Invert();
 
             // Calculate number of points for polyline approximation
-            int max = (int)((4 * (radiusX + radiusY) * Math.Abs(angle2 - angle1) / (2 * Math.PI)) / tolerance);
+            int max = (int)(4 * (radiusX + radiusY) * Math.Abs(angle2 - angle1) / (2 * Math.PI) / tolerance);
 
             for (int i = 0; i <= max; i++)
             {

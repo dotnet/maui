@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
 using static System.String;
+using WBrush = System.Windows.Media.Brush;
 using WControl = System.Windows.Controls.Control;
 
 namespace Xamarin.Forms.Platform.WPF
@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Platform.WPF
 	{
 		bool _fontApplied;
 		bool _ignoreTextChange;
-		Brush _placeholderDefaultBrush;
+		WBrush _placeholderDefaultBrush;
 		string _transformedText;
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Entry> e)
@@ -167,14 +167,14 @@ namespace Xamarin.Forms.Platform.WPF
 				if (!entry.TextColor.IsDefault)
 					Control.Foreground = entry.TextColor.ToBrush();
 				else
-					Control.Foreground = (Brush)WControl.ForegroundProperty.GetMetadata(typeof(FormsTextBox)).DefaultValue;
+					Control.Foreground = (WBrush)WControl.ForegroundProperty.GetMetadata(typeof(FormsTextBox)).DefaultValue;
 
 				// Force the PhoneTextBox control to do some internal bookkeeping
 				// so the colors change immediately and remain changed when the control gets focus
 				Control.OnApplyTemplate();
 			}
 			else
-				Control.Foreground = (Brush)WControl.ForegroundProperty.GetMetadata(typeof(FormsTextBox)).DefaultValue;
+				Control.Foreground = (WBrush)WControl.ForegroundProperty.GetMetadata(typeof(FormsTextBox)).DefaultValue;
 		}
 
 		void UpdateFont()
@@ -229,7 +229,7 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				if (_placeholderDefaultBrush == null)
 				{
-					_placeholderDefaultBrush = (Brush)WControl.ForegroundProperty.GetMetadata(typeof(FormsTextBox)).DefaultValue;
+					_placeholderDefaultBrush = (WBrush)WControl.ForegroundProperty.GetMetadata(typeof(FormsTextBox)).DefaultValue; 
 				}
 
 				// Use the cached default brush

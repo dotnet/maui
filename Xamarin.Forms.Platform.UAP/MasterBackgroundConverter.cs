@@ -3,6 +3,7 @@ using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
+using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -13,7 +14,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{
-			SolidColorBrush brush = null;
+			WSolidColorBrush brush = null;
 
 			var element = value as FrameworkElement;
 			if (element != null)
@@ -24,7 +25,7 @@ namespace Xamarin.Forms.Platform.UWP
 					if (property != null)
 					{
 						value = element.GetValue(property);
-						brush = value as SolidColorBrush;
+						brush = value as WSolidColorBrush;
 						if (brush != null && brush.Color == Colors.Transparent)
 							brush = null;
 					}
@@ -33,7 +34,7 @@ namespace Xamarin.Forms.Platform.UWP
 				}
 			}
 
-			brush = value as SolidColorBrush;
+			brush = value as WSolidColorBrush;
 			if (brush != null)
 			{
 				Color color = brush.ToFormsColor();
@@ -44,7 +45,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 				color = color.AddLuminosity(delta);
 
-				return new SolidColorBrush(color.ToWindowsColor());
+				return new WSolidColorBrush(color.ToWindowsColor());
 			}
 
 			return null;

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Linq;
 using Xamarin.Forms.Platform.WPF.Controls;
+using Xamarin.Forms.Platform.WPF.Extensions;
 
 namespace Xamarin.Forms.Platform.WPF
 {
@@ -46,6 +47,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 				// Update control property 
 				UpdateBarBackgroundColor();
+				UpdateBarBackground();
 				UpdateBarTextColor();
 
 				// Suscribe element event
@@ -65,6 +67,8 @@ namespace Xamarin.Forms.Platform.WPF
 
 			if (e.PropertyName == NavigationPage.BarBackgroundColorProperty.PropertyName)
 				UpdateBarBackgroundColor();
+			else if (e.PropertyName == NavigationPage.BarBackgroundProperty.PropertyName)
+				UpdateBarBackground();
 			else if (e.PropertyName == NavigationPage.BarTextColorProperty.PropertyName)
 				UpdateBarTextColor();
 		}
@@ -112,6 +116,11 @@ namespace Xamarin.Forms.Platform.WPF
 		void UpdateBarBackgroundColor()
 		{
 			Control.UpdateDependencyColor(FormsNavigationPage.TitleBarBackgroundColorProperty, Element.BarBackgroundColor);
+		}
+
+		void UpdateBarBackground()
+		{
+			Control.TitleBarBackgroundColor = Element.BarBackground.ToBrush();
 		}
 
 		void UpdateBarTextColor()

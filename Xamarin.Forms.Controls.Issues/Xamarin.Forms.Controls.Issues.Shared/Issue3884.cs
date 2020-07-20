@@ -21,6 +21,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var label = new Label { Text = "You should see a blue circle" };
 			var box = new BoxView
 			{
+				AutomationId = "TestReady",
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,
 				BackgroundColor = Color.Blue,
@@ -40,6 +41,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Category(UITestCategories.ManualReview)]
 		public void Issue3884Test()
 		{
+			RunningApp.WaitForElement("TestReady");
 			RunningApp.Screenshot("I see a blue circle");
 		}
 #endif

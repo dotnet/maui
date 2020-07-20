@@ -274,8 +274,17 @@ namespace Xamarin.Forms.Controls.XamStore
 			grid.Children.Add(MakeButton("bg color",
 				() => Shell.Current.FlyoutBackgroundColor = Color.DarkGreen),
 			1, 18);
-			grid.Children.Add(MakeButton("bg aFit",
-				() => Shell.Current.FlyoutBackgroundImageAspect = Aspect.AspectFit),
+			grid.Children.Add(MakeButton("bg brush",
+				() => Shell.Current.FlyoutBackground = new LinearGradientBrush
+				{
+					StartPoint = new Point(0, 0),
+					EndPoint = new Point(1, 0),
+					GradientStops = new GradientStopCollection
+					{
+						new GradientStop { Color = Color.Orange, Offset = 0.2f },
+						new GradientStop { Color = Color.OrangeRed, Offset = 0.8f }
+					}
+				}),
 			2, 18);
 			grid.Children.Add(MakeButton("bg aFill",
 				() => Shell.Current.FlyoutBackgroundImageAspect = Aspect.AspectFill),

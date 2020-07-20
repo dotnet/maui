@@ -249,6 +249,10 @@
     <Compile Include="PolylineTests.cs" />
     <Compile Include="RectangleTests.cs" />
     <Compile Include="LineTests.cs" />
+    <Compile Include="BrushUnitTests.cs" />
+    <Compile Include="LinearGradientBrushTests.cs" />
+    <Compile Include="SolidColorBrushTests.cs" />
+    <Compile Include="RadialGradientBrushTests.cs" />
     <Compile Include="SwipeViewTests.cs" />
   </ItemGroup>
   <ItemGroup>

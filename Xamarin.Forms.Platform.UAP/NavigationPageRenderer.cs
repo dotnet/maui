@@ -8,15 +8,13 @@ using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
-using Xamarin.Forms.Internals;
-using static Xamarin.Forms.PlatformConfiguration.WindowsSpecific.Page;
-using WImageSource = Windows.UI.Xaml.Media.ImageSource;
-
-
 using Windows.UI.Core;
 using Windows.UI.Xaml.Data;
+using Xamarin.Forms.Internals;
+using static Xamarin.Forms.PlatformConfiguration.WindowsSpecific.Page;
+using WBrush = Windows.UI.Xaml.Media.Brush;
+using WImageSource = Windows.UI.Xaml.Media.ImageSource;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -62,7 +60,7 @@ namespace Xamarin.Forms.Platform.UWP
 			Dispose(true);
 		}
 
-		Brush ITitleProvider.BarBackgroundBrush
+		WBrush ITitleProvider.BarBackgroundBrush
 		{
 			set
 			{
@@ -71,7 +69,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		Brush ITitleProvider.BarForegroundBrush
+		WBrush ITitleProvider.BarForegroundBrush
 		{
 			set
 			{
@@ -204,7 +202,12 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdatePadding();
 				LookupRelevantParents();
 				UpdateTitleColor();
-				UpdateNavigationBarBackground();
+
+				if (Brush.IsNullOrEmpty(Element.BarBackground))
+					UpdateNavigationBarBackgroundColor();
+				else
+					UpdateNavigationBarBackground();
+
 				UpdateToolbarPlacement();
 				UpdateToolbarDynamicOverflowEnabled();
 				UpdateTitleIcon();
@@ -271,20 +274,34 @@ namespace Xamarin.Forms.Platform.UWP
 				changed(this, e);
 		}
 
-		Brush GetBarBackgroundBrush()
+		WBrush GetBarBackgroundColorBrush()
 		{
 			object defaultColor = GetDefaultColor();
 
 			if (Element.BarBackgroundColor.IsDefault && defaultColor != null)
-				return (Brush)defaultColor;
+				return (WBrush)defaultColor;
 			return Element.BarBackgroundColor.ToBrush();
 		}
 
-		Brush GetBarForegroundBrush()
+		WBrush GetBarBackgroundBrush()
+		{
+			var barBackground = Element.BarBackground;
+			object defaultColor = GetDefaultColor();
+
+			if (!Brush.IsNullOrEmpty(barBackground))
+				return barBackground.ToBrush();
+
+			if (defaultColor != null)
+				return (WBrush)defaultColor;
+
+			return null;
+		}
+
+		WBrush GetBarForegroundBrush()
 		{
 			object defaultColor = Windows.UI.Xaml.Application.Current.Resources["ApplicationForegroundThemeBrush"];
 			if (Element.BarTextColor.IsDefault)
-				return (Brush)defaultColor;
+				return (WBrush)defaultColor;
 			return Element.BarTextColor.ToBrush();
 		}
 
@@ -365,6 +382,8 @@ namespace Xamarin.Forms.Platform.UWP
 			if (e.PropertyName == NavigationPage.BarTextColorProperty.PropertyName)
 				UpdateTitleColor();
 			else if (e.PropertyName == NavigationPage.BarBackgroundColorProperty.PropertyName)
+				UpdateNavigationBarBackgroundColor();
+			else if (e.PropertyName == NavigationPage.BarBackgroundProperty.PropertyName)
 				UpdateNavigationBarBackground();
 			else if (e.PropertyName == Page.PaddingProperty.PropertyName)
 				UpdatePadding();
@@ -508,6 +527,11 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateContainerArea()
 		{
 			Element.ContainerArea = new Rectangle(0, 0, _container.ContentWidth, _container.ContentHeight);
+		}
+
+		void UpdateNavigationBarBackgroundColor()
+		{
+			(this as ITitleProvider).BarBackgroundBrush = GetBarBackgroundColorBrush();
 		}
 
 		void UpdateNavigationBarBackground()
@@ -662,7 +686,12 @@ namespace Xamarin.Forms.Platform.UWP
 			if (render != null && render.ShowTitle)
 			{
 				render.Title = _currentPage.Title;
-				render.BarBackgroundBrush = GetBarBackgroundBrush();
+
+				if (!Brush.IsNullOrEmpty(Element.BarBackground))
+					render.BarBackgroundBrush = GetBarBackgroundBrush();
+				else
+					render.BarBackgroundBrush = GetBarBackgroundColorBrush();
+
 				render.BarForegroundBrush = GetBarForegroundBrush();
 			}
 

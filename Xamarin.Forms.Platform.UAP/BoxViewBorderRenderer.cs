@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
 using WShape = Windows.UI.Xaml.Shapes.Shape;
@@ -24,6 +23,7 @@ namespace Xamarin.Forms.Platform.UWP
 					SetNativeControl(rect);
 				}
 
+				SetColor(Element.Color);
 				SetCornerRadius(Element.CornerRadius);
 			}
 		}
@@ -32,7 +32,9 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == BoxView.CornerRadiusProperty.PropertyName)
+			if (e.PropertyName == BoxView.ColorProperty.PropertyName)
+				SetColor(Element.Color);
+			else if (e.PropertyName == BoxView.CornerRadiusProperty.PropertyName)
 				SetCornerRadius(Element.CornerRadius);
 			else if (e.PropertyName == BoxView.ColorProperty.PropertyName)
 				UpdateBackgroundColor();
@@ -52,9 +54,9 @@ namespace Xamarin.Forms.Platform.UWP
 
 		protected override void UpdateBackgroundColor()
 		{
-			//background color change must be handled separately
-			//because the background would protrude through the border if the corners are rounded
-			//as the background would be applied to the renderer's FrameworkElement
+			// BackgroundColor change must be handled separately	
+			// because the background would protrude through the border if the corners are rounded
+			// as the background would be applied to the renderer's FrameworkElement
 			if (Control == null)
 				return;
 			Color backgroundColor = Element.Color;
@@ -64,6 +66,37 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 
 			Control.Background = backgroundColor.IsDefault ? null : backgroundColor.ToBrush();
+		}
+
+		protected override void UpdateBackground()
+		{
+			if (Control == null)
+				return;
+
+			Brush background = Element.Background;
+
+			if (Brush.IsNullOrEmpty(background))
+			{
+				Color backgroundColor = Element.BackgroundColor;
+
+				if (!backgroundColor.IsDefault)
+					Control.Background = backgroundColor.ToBrush();
+				else
+				{
+					if (Element.Color.IsDefault)
+						Control.Background = null;
+				}
+			}
+			else
+				Control.Background = background.ToBrush();
+		}
+
+		void SetColor(Color color)
+		{
+			if (color.IsDefault)
+				UpdateBackground();
+			else
+				Control.Background = color.ToBrush();
 		}
 
 		void SetCornerRadius(CornerRadius cornerRadius)

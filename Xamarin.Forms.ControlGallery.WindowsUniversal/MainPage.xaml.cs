@@ -15,6 +15,7 @@ using Xamarin.Forms.Controls;
 using Xamarin.Forms.Platform.UWP;
 using WRectangleGeometry = Windows.UI.Xaml.Media.RectangleGeometry;
 using WRect = Windows.Foundation.Rect;
+using WSolidColorBrush = Windows.UI.Xaml.Media.SolidColorBrush;
 
 namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 {
@@ -159,7 +160,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			};
 
 			var btnColor = new Windows.UI.Xaml.Controls.Button { Content = "Toggle Label Color", Height = 80 };
-			btnColor.Click += (sender, args) => txbLabel.Foreground = new SolidColorBrush(Windows.UI.Colors.Pink);
+			btnColor.Click += (sender, args) => txbLabel.Foreground = new WSolidColorBrush(Windows.UI.Colors.Pink);
 
 			var btnTextBox = new Windows.UI.Xaml.Controls.Button { Content = "Change text textbox", Height = 80 };
 			btnTextBox.Click += (sender, args) => txbBox.Text = "Hello 2 way native";
@@ -185,15 +186,15 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 			{
 				if (value is Color)
-					return new SolidColorBrush(ToWindowsColor((Color)value));
+					return new WSolidColorBrush(ToWindowsColor((Color)value));
 
 				return null;
 			}
 
 			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 			{
-				if (value is SolidColorBrush)
-					return ToColor(((SolidColorBrush)value).Color);
+				if (value is WSolidColorBrush)
+					return ToColor(((WSolidColorBrush)value).Color);
 
 				return null;
 			}

@@ -460,6 +460,8 @@ namespace Xamarin.Forms.Platform.iOS
 				ToggleMaster();
 			else if (e.PropertyName == Xamarin.Forms.MasterDetailPage.IsGestureEnabledProperty.PropertyName)
 				base.PresentsWithGesture = this.MasterDetailPage.IsGestureEnabled;
+			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
+				UpdateBackground();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateFlowDirection();
 			else if (e.Is(MasterDetailPage.MasterBehaviorProperty))
@@ -510,10 +512,20 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (bgImage != null)
 					View.BackgroundColor = UIColor.FromPatternImage(bgImage);
-				else if (Element.BackgroundColor == Color.Default)
-					View.BackgroundColor = ColorExtensions.BackgroundColor;
 				else
-					View.BackgroundColor = Element.BackgroundColor.ToUIColor();
+				{
+					Brush background = Element.Background;
+
+					if (!Brush.IsNullOrEmpty(background))
+						View.UpdateBackground(Element.Background);
+					else
+					{
+						if (Element.BackgroundColor == Color.Default)
+							View.BackgroundColor = UIColor.White;
+						else
+							View.BackgroundColor = Element.BackgroundColor.ToUIColor();
+					}
+				}
 			});
 		}
 

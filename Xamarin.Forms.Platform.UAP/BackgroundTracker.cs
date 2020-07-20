@@ -21,7 +21,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		protected override void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == Page.BackgroundImageSourceProperty.PropertyName)
+			if (e.IsOneOf(VisualElement.BackgroundColorProperty, VisualElement.BackgroundProperty, Page.BackgroundImageSourceProperty))
 			{
 				UpdateBackground();
 			}
@@ -47,22 +47,30 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 
 			var backgroundImage = await Element.BackgroundImageSource.ToWindowsImageSourceAsync();
+
 			if (backgroundImage != null)
 			{
 				element.SetValue(_backgroundProperty, new ImageBrush { ImageSource = backgroundImage });
 			}
 			else
 			{
-				Color backgroundColor = Element.BackgroundColor;
-				if (!backgroundColor.IsDefault)
+				if (!Element.Background.IsEmpty)
 				{
-					element.SetValue(_backgroundProperty, backgroundColor.ToBrush());
+					element.SetValue(_backgroundProperty, Element.Background.ToBrush());
 				}
 				else
 				{
-					object localBackground = element.ReadLocalValue(_backgroundProperty);
-					if (localBackground != null && localBackground != DependencyProperty.UnsetValue)
-						element.ClearValue(_backgroundProperty);
+					Color backgroundColor = Element.BackgroundColor;
+					if (!backgroundColor.IsDefault)
+					{
+						element.SetValue(_backgroundProperty, backgroundColor.ToBrush());
+					}
+					else
+					{
+						object localBackground = element.ReadLocalValue(_backgroundProperty);
+						if (localBackground != null && localBackground != DependencyProperty.UnsetValue)
+							element.ClearValue(_backgroundProperty);
+					}
 				}
 			}
 
