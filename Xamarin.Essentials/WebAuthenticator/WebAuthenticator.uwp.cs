@@ -25,6 +25,8 @@ namespace Xamarin.Essentials
                     // For GET requests this is a URI:
                     var resultUri = new Uri(r.ResponseData.ToString());
                     return new WebAuthenticatorResult(resultUri);
+                case WebAuthenticationStatus.UserCancel:
+                    throw new TaskCanceledException();
                 case WebAuthenticationStatus.ErrorHttp:
                     throw new UnauthorizedAccessException();
                 default:

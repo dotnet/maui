@@ -292,7 +292,9 @@
         <summary>Degrees relative to true north.</summary>
         <value>0..360 in degrees relative to true north. null if unavailable.</value>
         <remarks>
-          <para></para>
+          <para>
+          Requires a high accuracy query of location and may not be returned by Geolocation.GetLastKnownLocationAsync 
+          </para>
         </remarks>
       </Docs>
     </Member>

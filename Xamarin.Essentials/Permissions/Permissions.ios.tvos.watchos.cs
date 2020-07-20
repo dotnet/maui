@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using CoreLocation;
 using Foundation;
@@ -131,6 +132,9 @@ namespace Xamarin.Essentials
 
             internal static Task<PermissionStatus> RequestLocationAsync(bool whenInUse, Action<CLLocationManager> invokeRequest)
             {
+                if (!CLLocationManager.LocationServicesEnabled)
+                    return Task.FromResult(PermissionStatus.Disabled);
+
                 locationManager = new CLLocationManager();
 
                 var tcs = new TaskCompletionSource<PermissionStatus>(locationManager);
@@ -148,30 +152,51 @@ namespace Xamarin.Essentials
                     if (e.Status == CLAuthorizationStatus.NotDetermined)
                         return;
 
-                    if (previousState == CLAuthorizationStatus.AuthorizedWhenInUse && !whenInUse)
+                    try
                     {
-                        if (e.Status == CLAuthorizationStatus.AuthorizedWhenInUse)
+                        if (previousState == CLAuthorizationStatus.AuthorizedWhenInUse && !whenInUse)
                         {
-                            Utils.WithTimeout(tcs.Task, LocationTimeout).ContinueWith(t =>
+                            if (e.Status == CLAuthorizationStatus.AuthorizedWhenInUse)
                             {
-                                // Wait for a timeout to see if the check is complete
-                                if (!tcs.Task.IsCompleted)
+                                Utils.WithTimeout(tcs.Task, LocationTimeout).ContinueWith(t =>
                                 {
-                                    locationManager.AuthorizationChanged -= LocationAuthCallback;
-                                    tcs.TrySetResult(GetLocationStatus(whenInUse));
-                                    locationManager.Dispose();
-                                    locationManager = null;
-                                }
-                            });
-                            return;
+                                    try
+                                    {
+                                        // Wait for a timeout to see if the check is complete
+                                        if (tcs != null && !tcs.Task.IsCompleted)
+                                        {
+                                            locationManager.AuthorizationChanged -= LocationAuthCallback;
+                                            tcs.TrySetResult(GetLocationStatus(whenInUse));
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Debug.WriteLine($"Exception processing location permission: {ex.Message}");
+                                        tcs?.TrySetException(ex);
+                                    }
+                                    finally
+                                    {
+                                        locationManager?.Dispose();
+                                        locationManager = null;
+                                    }
+                                });
+                                return;
+                            }
                         }
+
+                        locationManager.AuthorizationChanged -= LocationAuthCallback;
+
+                        tcs.TrySetResult(GetLocationStatus(whenInUse));
+                        locationManager?.Dispose();
+                        locationManager = null;
                     }
-
-                    locationManager.AuthorizationChanged -= LocationAuthCallback;
-
-                    tcs.TrySetResult(GetLocationStatus(whenInUse));
-                    locationManager.Dispose();
-                    locationManager = null;
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Exception processing location permission: {ex.Message}");
+                        tcs?.TrySetException(ex);
+                        locationManager?.Dispose();
+                        locationManager = null;
+                    }
                 }
             }
         }

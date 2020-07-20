@@ -232,6 +232,7 @@ namespace Xamarin.Essentials
             var resources = AppContext.Resources;
             var config = resources.Configuration;
 
+#if __ANDROID_24__
             if (HasApiLevelN)
             {
                 config.SetLocale(locale);

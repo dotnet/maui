@@ -69,7 +69,7 @@ namespace Xamarin.Essentials
 
             void TryCancel()
             {
-                speechSynthesizer.Value?.StopSpeaking(AVSpeechBoundary.Word);
+                speechSynthesizer.Value?.StopSpeaking(AVSpeechBoundary.Immediate);
                 tcsUtterance?.TrySetResult(true);
             }
 
