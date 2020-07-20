@@ -389,7 +389,7 @@
       <Member Id="P:Xamarin.Essentials.GyroscopeData.AngularVelocity" />
     </Type>
     <Type Name="Xamarin.Essentials.HapticFeedback" Id="T:Xamarin.Essentials.HapticFeedback">
-      <Member Id="M:Xamarin.Essentials.HapticFeedback.Execute(Xamarin.Essentials.HapticFeedbackType)" />
+      <Member Id="M:Xamarin.Essentials.HapticFeedback.Perform(Xamarin.Essentials.HapticFeedbackType)" />
     </Type>
     <Type Name="Xamarin.Essentials.HapticFeedbackType" Id="T:Xamarin.Essentials.HapticFeedbackType">
       <Member Id="F:Xamarin.Essentials.HapticFeedbackType.Click" />

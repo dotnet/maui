@@ -17,10 +17,10 @@
     </remarks>
   </Docs>
   <Members>
-    <Member MemberName="Execute">
-      <MemberSignature Language="C#" Value="public static void Execute (Xamarin.Essentials.HapticFeedbackType type = Xamarin.Essentials.HapticFeedbackType.Click);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Execute(valuetype Xamarin.Essentials.HapticFeedbackType type) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.HapticFeedback.Execute(Xamarin.Essentials.HapticFeedbackType)" />
+    <Member MemberName="Perform">
+      <MemberSignature Language="C#" Value="public static void Perform (Xamarin.Essentials.HapticFeedbackType type = Xamarin.Essentials.HapticFeedbackType.Click);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Perform(valuetype Xamarin.Essentials.HapticFeedbackType type) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.HapticFeedback.Perform(Xamarin.Essentials.HapticFeedbackType)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
