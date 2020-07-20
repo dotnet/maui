@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Windows.Input;
+using Samples.Helpers;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 
@@ -23,8 +24,8 @@ namespace Samples.ViewModel
 
         public ShareViewModel()
         {
-            RequestCommand = new Command(OnRequest);
-            RequestFileCommand = new Command(OnFileRequest);
+            RequestCommand = new Command<Xamarin.Forms.View>(OnRequest);
+            RequestFileCommand = new Command<Xamarin.Forms.View>(OnFileRequest);
         }
 
         public bool ShareText
@@ -81,35 +82,40 @@ namespace Samples.ViewModel
             set => SetProperty(ref shareFileAttachmentName, value);
         }
 
-        async void OnRequest()
+        async void OnRequest(Xamarin.Forms.View element)
         {
+            var bounds = element.GetAbsoluteBounds();
+
             await Share.RequestAsync(new ShareTextRequest
             {
                 Subject = Subject,
                 Text = ShareText ? Text : null,
                 Uri = ShareUri ? Uri : null,
-                Title = Title
+                Title = Title,
+                PresentationSourceBounds = bounds.ToSystemRectangle()
             });
         }
 
-        async void OnFileRequest()
+        async void OnFileRequest(Xamarin.Forms.View element)
         {
-            if (!string.IsNullOrWhiteSpace(ShareFileAttachmentContents))
-            {
-                // create a temprary file
-                var fn = string.IsNullOrWhiteSpace(ShareFileAttachmentName) ? "Attachment.txt" : ShareFileAttachmentName.Trim();
-                var file = Path.Combine(FileSystem.CacheDirectory, fn);
-                File.WriteAllText(file, ShareFileAttachmentContents);
+            if (string.IsNullOrWhiteSpace(ShareFileAttachmentContents))
+                return;
 
-                await Share.RequestAsync(new ShareFileRequest
-                {
-                    Title = Title,
-                    File = new ShareFile(file),
-                    PresentationSourceBounds = Device.RuntimePlatform == Device.iOS && Device.Idiom == TargetIdiom.Tablet
-                                            ? new System.Drawing.Rectangle(0, 20, 0, 0)
-                                            : System.Drawing.Rectangle.Empty
-                });
-            }
+            // create a temprary file
+            var fn = string.IsNullOrWhiteSpace(ShareFileAttachmentName)
+                ? "Attachment.txt"
+                : ShareFileAttachmentName.Trim();
+            var file = Path.Combine(FileSystem.CacheDirectory, fn);
+            File.WriteAllText(file, ShareFileAttachmentContents);
+
+            var bounds = element.GetAbsoluteBounds();
+
+            await Share.RequestAsync(new ShareFileRequest
+            {
+                Title = Title,
+                File = new ShareFile(file),
+                PresentationSourceBounds = bounds.ToSystemRectangle()
+            });
         }
     }
 }

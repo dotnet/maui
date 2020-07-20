@@ -15,7 +15,7 @@
     </Interface>
   </Interfaces>
   <Attributes>
-    <Attribute FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp;xamarin-essentials-tvos;xamarin-essentials-watchos">
+    <Attribute FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos">
       <AttributeName>System.Runtime.CompilerServices.IsReadOnly</AttributeName>
     </Attribute>
   </Attributes>
@@ -147,6 +147,24 @@
       <Docs>
         <summary>Gets the iOS platform.</summary>
         <value>The iOS Platform</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="macOS">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DevicePlatform macOS { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.DevicePlatform macOS" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DevicePlatform.macOS" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DevicePlatform</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
