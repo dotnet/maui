@@ -461,12 +461,20 @@ namespace Xamarin.Forms.Controls
 			get { return _app.TestServer; }
 		}
 
+#if __WINDOWS__
+		public void RestartIfAppIsClosed()
+		{
+			(_app as WinDriverApp).RestartIfAppIsClosed();
+		}
+#endif
+
 		public void TestSetup(Type testType, bool isolate)
 		{
-#if __WINDOWS__
 
-			(_app as WinDriverApp).RestartIfAppIsClosed();
+#if __WINDOWS__
+			RestartIfAppIsClosed();
 #endif
+
 			if (isolate)
 			{
 				AppSetup.BeginIsolate();

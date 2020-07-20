@@ -3,6 +3,7 @@ using System.Reflection;
 using Xamarin.Forms.CustomAttributes;
 using IOPath = System.IO.Path;
 using NUnit.Framework.Interfaces;
+using Xamarin.Forms.Controls.Issues;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -169,7 +170,9 @@ namespace Xamarin.Forms.Controls
 
 			int maxAttempts = 2;
 			int attempts = 0;
-
+#if __WINDOWS__
+			bool attemptOneRestart = false;
+#endif
 			while (attempts < maxAttempts)
 			{
 				attempts += 1;
@@ -197,6 +200,7 @@ namespace Xamarin.Forms.Controls
 					// So we're just going to use the 'Reset' method to bounce the app to the opening screen
 					// and then fall back to the old manual navigation
 					WindowsTestBase.Reset();
+					app.RestartIfAppIsClosed();
 #endif
 				}
 				catch (Exception ex)
@@ -220,6 +224,15 @@ namespace Xamarin.Forms.Controls
 
 					return;
 				}
+#if __WINDOWS__
+				catch (Exception we)
+				when (we.IsWindowClosedException() && !attemptOneRestart)
+				{
+					attemptOneRestart = true;
+					attempts--;
+					app.RestartIfAppIsClosed();
+				}
+#endif
 				catch (Exception ex)
 				{
 					var debugMessage = $"Both navigation methods failed. {ex}";

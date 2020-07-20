@@ -78,6 +78,7 @@ namespace Xamarin.Forms.Core.UITests
 
 					Debug.WriteLine(debugMessage);
 					Console.WriteLine(debugMessage);
+					App.AttachScreenshotToTestContext(TestContext.CurrentContext?.Test?.FullName ?? "NavigateToGalleryFailed");
 
 					if (attempts < maxAttempts)
 					{
@@ -88,7 +89,6 @@ namespace Xamarin.Forms.Core.UITests
 					}
 					else
 					{
-						App.AttachScreenshotToTestContext("NavigateToGallery Failed");
 						// But if it's still not working after [maxAttempts], we've got assume this is a legit
 						// problem that restarting won't fix
 						throw;

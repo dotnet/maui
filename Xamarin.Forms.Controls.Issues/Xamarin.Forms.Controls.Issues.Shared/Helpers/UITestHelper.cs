@@ -11,6 +11,15 @@ namespace Xamarin.Forms.Controls.Issues
 {
 	public static class UITestHelper
 	{
+		public static bool IsWindowClosedException(this Exception exc)
+		{
+#if __WINDOWS__
+			return exc.Message?.Contains("Currently selected window has been closed") ?? false;
+#else
+			return false;
+#endif
+		}
+
 		public static string ReadText(this AppResult result) =>
 			result.Text ?? result.Description;
 
