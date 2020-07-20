@@ -5,6 +5,8 @@ using Android.Content.Res;
 using Android.Provider;
 #if __ANDROID_29__
 using AndroidX.Core.Content.PM;
+#else
+using Android.Support.V4.Content.PM;
 #endif
 
 namespace Xamarin.Essentials
@@ -36,13 +38,13 @@ namespace Xamarin.Essentials
             var packageName = Platform.AppContext.PackageName;
             using (var info = pm.GetPackageInfo(packageName, PackageInfoFlags.MetaData))
             {
-#if __ANDROID_29__
-                if (Platform.HasApiLevelP)
-                    return PackageInfoCompat.GetLongVersionCode(info).ToString(CultureInfo.InvariantCulture);
-#endif
+#if __ANDROID_28__
+                return PackageInfoCompat.GetLongVersionCode(info).ToString(CultureInfo.InvariantCulture);
+#else
 #pragma warning disable CS0618 // Type or member is obsolete
                 return info.VersionCode.ToString(CultureInfo.InvariantCulture);
 #pragma warning restore CS0618 // Type or member is obsolete
+#endif
             }
         }
 

@@ -20,7 +20,11 @@ namespace Xamarin.Essentials
                 throw new ArgumentNullException(nameof(filename));
 
             filename = filename.Replace('\\', Path.DirectorySeparatorChar);
-            var file = Path.Combine(NSBundle.MainBundle.BundlePath, filename);
+            var root = NSBundle.MainBundle.BundlePath;
+#if __MACOS__
+            root = Path.Combine(root, "Contents", "Resources");
+#endif
+            var file = Path.Combine(root, filename);
             return Task.FromResult((Stream)File.OpenRead(file));
         }
 

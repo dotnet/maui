@@ -38,6 +38,9 @@ namespace Xamarin.Essentials
 
         internal static Uri EscapeUri(Uri uri)
         {
+            if (uri == null)
+                throw new ArgumentNullException(nameof(uri));
+
 #if NETSTANDARD1_0
             return uri;
 #else

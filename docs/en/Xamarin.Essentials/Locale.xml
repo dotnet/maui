@@ -7,8 +7,7 @@
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>System.ValueType</BaseTypeName>
-    <BaseTypeName FrameworkAlternate="xamarin-essentials">System.Object</BaseTypeName>
+    <BaseTypeName>System.Object</BaseTypeName>
   </Base>
   <Interfaces />
   <Docs>

@@ -146,47 +146,7 @@ namespace Xamarin.Essentials
             if (UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
                 return true;
 
-            var cleansed = scheme.Replace("://", string.Empty);
-            var schemes = GetCFBundleURLSchemes().ToList();
-            return schemes.Any(x => x != null && x.Equals(cleansed, StringComparison.InvariantCultureIgnoreCase));
-        }
-
-        static IEnumerable<string> GetCFBundleURLSchemes()
-        {
-            var schemes = new List<string>();
-
-            NSObject nsobj = null;
-            if (!NSBundle.MainBundle.InfoDictionary.TryGetValue((NSString)"CFBundleURLTypes", out nsobj))
-                return schemes;
-
-            var array = nsobj as NSArray;
-
-            if (array == null)
-                return schemes;
-
-            for (nuint i = 0; i < array.Count; i++)
-            {
-                var d = array.GetItem<NSDictionary>(i);
-                if (d == null || !d.Any())
-                    continue;
-
-                if (!d.TryGetValue((NSString)"CFBundleURLSchemes", out nsobj))
-                    continue;
-
-                var a = nsobj as NSArray;
-                var urls = ConvertToIEnumerable<NSString>(a).Select(x => x.ToString()).ToArray();
-                foreach (var url in urls)
-                    schemes.Add(url);
-            }
-
-            return schemes;
-        }
-
-        static IEnumerable<T> ConvertToIEnumerable<T>(NSArray array)
-            where T : class, ObjCRuntime.INativeObject
-        {
-            for (nuint i = 0; i < array.Count; i++)
-                yield return array.GetItem<T>(i);
+            return AppInfo.VerifyHasUrlScheme(scheme);
         }
 
 #if __IOS__
