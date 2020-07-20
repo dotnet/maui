@@ -667,7 +667,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
-				ScrollTo(new ScrollToRequestEventArgs(ItemsViewAdapter.ItemCount, 0,
+				ScrollTo(new ScrollToRequestEventArgs(GetLayoutManager().ItemCount, 0,
 					Xamarin.Forms.ScrollToPosition.MakeVisible, true));
 			}
 			else if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)

@@ -54,6 +54,7 @@
     <Compile Include="IsEnabledTests.cs" />
     <Compile Include="Issues.cs" />
     <Compile Include="IsVisibleTests.cs" />
+    <Compile Include="ObservrableItemsSourceTests.cs" />
     <Compile Include="OpacityTests.cs" />
     <Compile Include="RendererTests.cs" />
     <Compile Include="PlatformTestFixture.cs" />

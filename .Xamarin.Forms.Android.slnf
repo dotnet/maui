@@ -2,6 +2,8 @@
   "solution": {
     "path": "Xamarin.Forms.sln",
     "projects": [
+      "PagesGallery\\PagesGallery.Droid\\PagesGallery.Droid.csproj",
+      "PagesGallery\\PagesGallery\\PagesGallery.csproj",
       "Stubs\\Xamarin.Forms.Platform.Android\\Xamarin.Forms.Platform.Android (Forwarders).csproj",
       "XFCorePostProcessor.Tasks\\XFCorePostProcessor.Tasks.csproj",
       "Xamarin.Flex\\Xamarin.Flex.shproj",
