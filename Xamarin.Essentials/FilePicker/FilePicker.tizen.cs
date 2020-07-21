@@ -13,9 +13,6 @@ namespace Xamarin.Essentials
     {
         static Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
         {
-            if (allowMultiple)
-                Debug.WriteLine("Tizen does not support picking multiple files");
-
             Permissions.EnsureDeclared<Permissions.LaunchApp>();
             Permissions.EnsureDeclared<Permissions.StorageRead>();
 
@@ -23,7 +20,7 @@ namespace Xamarin.Essentials
 
             var appControl = new AppControl();
             appControl.Operation = AppControlOperations.Pick;
-            appControl.ExtraData.Add(AppControlData.SectionMode, "single");
+            appControl.ExtraData.Add(AppControlData.SectionMode, allowMultiple ? "multiple" : "single");
             appControl.LaunchMode = AppControlLaunchMode.Single;
 
             var fileType = options?.FileTypes?.Value?.FirstOrDefault();
