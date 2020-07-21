@@ -24,6 +24,7 @@ namespace Xamarin.Forms.Platform.Android
 		int _gotoPosition = -1;
 		bool _noNeedForScroll;
 		bool _initialized;
+		bool _isVisible;
 
 		List<View> _oldViews;
 		CarouselViewwOnGlobalLayoutListener _carouselViewLayoutListener;
@@ -305,6 +306,14 @@ namespace Xamarin.Forms.Platform.Android
 			Carousel.ScrollTo(_oldPosition, position: Xamarin.Forms.ScrollToPosition.Center, animate: Carousel.AnimatePositionChanges);
 		}
 
+		void UpdatePositionFromVisibilityChanges()
+		{
+			if (_isVisible != Carousel.IsVisible)
+				UpdateInitialPosition();
+
+			_isVisible = Carousel.IsVisible;
+		}
+
 		void UpdateVisualStates()
 		{
 			if (!(GetLayoutManager() is LinearLayoutManager layoutManager))
@@ -456,10 +465,11 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				UpdateInitialPosition();
 				Carousel.Scrolled += CarouselViewScrolled;
-
 				_initialized = true;
+				_isVisible = Carousel.IsVisible;
 			}
 
+			UpdatePositionFromVisibilityChanges();
 			UpdateVisualStates();
 		}
 

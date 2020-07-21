@@ -5,6 +5,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
+using Xamarin.Forms.Controls.Issues;
 using Xamarin.UITest;
 
 namespace Xamarin.Forms.Core.UITests
@@ -37,7 +38,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		internal static void HandleAppClosed(Exception ex)
 		{
-			if (ex is InvalidOperationException && ex.Message == "Currently selected window has been closed")
+			if (ex.IsWindowClosedException())
 			{
 				Session = null;
 			}

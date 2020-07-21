@@ -60,7 +60,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public override bool DispatchTouchEvent(MotionEvent e)
 		{
-			if (InputTransparent && _cascadeInputTransparent)
+			if (Element == null || (InputTransparent && _cascadeInputTransparent))
 			{
 				// If the Element is InputTransparent, this ViewGroup will be marked InputTransparent
 				// If we're InputTransparent and our transparency should be applied to our child controls,

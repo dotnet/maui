@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Collections.Generic;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 #if UITEST
@@ -18,6 +19,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public VisualControlsPage()
 		{
 #if APP
+			Device.SetFlags(new List<string> { ExperimentalFlags.BrushExperimental, ExperimentalFlags.ShapesExperimental });
 			InitializeComponent();
 #endif
 		}

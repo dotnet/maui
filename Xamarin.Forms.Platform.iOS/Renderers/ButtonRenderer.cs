@@ -166,8 +166,7 @@ namespace Xamarin.Forms.Platform.iOS
 				else
 				{
 					var backgroundImage = this.GetBackgroundImage(brush);
-					if (backgroundImage != null)
-						backgroundColor = UIColor.FromPatternImage(backgroundImage);
+					backgroundColor = backgroundImage != null ? UIColor.FromPatternImage(backgroundImage) : UIColor.Clear;
 				}
 			}
 

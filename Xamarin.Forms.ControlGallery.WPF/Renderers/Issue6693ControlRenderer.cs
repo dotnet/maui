@@ -15,8 +15,6 @@ namespace Xamarin.Forms.ControlGallery.WPF.Renderers
 			base.OnElementChanged(e);
 
 			SetNativeControl(new WIssue6693Control());
-
-
 		}
 	}
 
@@ -29,7 +27,7 @@ namespace Xamarin.Forms.ControlGallery.WPF.Renderers
 
 		protected override void OnRender(DrawingContext drawingContext)
 		{
-			drawingContext.DrawRectangle(Brushes.LightGray, new Pen(Brushes.Black, 1), new Rect(0, 0, ActualWidth, ActualHeight));
+			drawingContext.DrawRectangle(Brushes.LightGray, new Pen(Brushes.Black, 1), new WRect(0, 0, ActualWidth, ActualHeight));
 			var isEnabledText = IsEnabled ? "I'm enabled :)" : "I'm disabled :(";
 #if NET461
 			drawingContext.DrawText(new FormattedText(isEnabledText, 

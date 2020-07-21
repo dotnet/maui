@@ -7,6 +7,20 @@
 
     <Shell.Resources>
         <ResourceDictionary>
+
+            <Color x:Key="DarkBlue">#0091FF</Color>
+            <Color x:Key="LightBlue">#32C5FF</Color>
+
+            <LinearGradientBrush x:Key="BlueGradient" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="{StaticResource DarkBlue}" Offset="0.0"/>
+                <GradientStop Color="{StaticResource LightBlue}" Offset="1.0"/>
+            </LinearGradientBrush>
+
+            <LinearGradientBrush x:Key="GreenGradient" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#6DD400" Offset="0.0"/>
+                <GradientStop Color="#44D7B6" Offset="1.0"/>
+            </LinearGradientBrush>
+
             <Color x:Key="PrimaryColor">#673AB7</Color>
             <Color x:Key="SecondaryColor">#448AFF</Color>
             <Color x:Key="SecondaryTextColor">#757575</Color>
@@ -38,6 +52,14 @@
                     <StackLayout Orientation="Horizontal">
                         <ActivityIndicator HeightRequest="200" BackgroundColor="{StaticResource SecondaryColor}" IsRunning="true" HorizontalOptions="FillAndExpand" />
                         <ActivityIndicator HeightRequest="200" BackgroundColor="{StaticResource SecondaryColor}" IsRunning="false" HorizontalOptions="FillAndExpand" />
+                    </StackLayout>
+
+                    <Label Text="Gradient Background Color" Margin="0,0,0,-10" />
+                    <StackLayout Orientation="Horizontal">
+                        <ActivityIndicator Background="{StaticResource BlueGradient}" IsRunning="true" HorizontalOptions="FillAndExpand" />
+                        <ActivityIndicator Background="{StaticResource BlueGradient}" IsRunning="False" HorizontalOptions="FillAndExpand" />
+                        <ActivityIndicator Background="{StaticResource GreenGradient}" IsRunning="false" HorizontalOptions="FillAndExpand" />
+                        <ActivityIndicator Background="{StaticResource GreenGradient}" IsRunning="True" HorizontalOptions="FillAndExpand" />
                     </StackLayout>
 
                     <Label Text="Custom + Height 144 (Max)" Margin="0,0,0,-10" />
@@ -74,6 +96,9 @@
 
                     <Label Text="Height 20" Margin="0,0,0,-10" />
                     <ProgressBar Progress="0.5" HeightRequest="20" ProgressColor="{StaticResource PrimaryColor}" BackgroundColor="{StaticResource SecondaryColor}" />
+
+                    <Label Text="Gradient Background" Margin="0,0,0,-10" />
+                    <ProgressBar Progress="0.5" Background="{StaticResource BlueGradient}" />
 
 
                     <Label Text="Buttons" FontSize="Large" />
@@ -112,6 +137,12 @@
                     <StackLayout Orientation="Horizontal">
                         <Button Text="Enabled" BackgroundColor="{StaticResource PrimaryColor}" BorderColor="{StaticResource SecondaryColor}" BorderWidth="1" HorizontalOptions="FillAndExpand" />
                         <Button Text="Disabled" BackgroundColor="{StaticResource PrimaryColor}" BorderColor="{StaticResource SecondaryColor}" BorderWidth="1" IsEnabled="false" HorizontalOptions="FillAndExpand" />
+                    </StackLayout>
+
+                    <Label Text="Background Gradient" Margin="0,0,0,-10" />
+                    <StackLayout Orientation="Horizontal">
+                        <Button Text="Enabled" Background="{StaticResource BlueGradient}" HorizontalOptions="FillAndExpand" />
+                        <Button Text="Disabled" Background="{StaticResource GreenGradient}" HorizontalOptions="FillAndExpand" />
                     </StackLayout>
 
 
@@ -182,7 +213,30 @@
                             <Button Text="more" HorizontalOptions="End" BackgroundColor="{StaticResource PrimaryColor}" />
                         </StackLayout>
                     </Frame>
+                    
+                    <Frame
+                        CornerRadius="20"
+                        Background="{StaticResource GreenGradient}">
+                        <StackLayout Spacing="16" Margin="0" Padding="0">
+                            <Label Text="Green Gradient Background" FontSize="24" />
+                            <Image Source="photo.jpg" Margin="-16,0" Aspect="AspectFit" />
+                            <Label Text="This card has a few changes to its appearance to test whether or not changing properties is supported."
+                           TextColor="{StaticResource SecondaryTextColor}" FontSize="14" />
+                            <Button Text="more" HorizontalOptions="End" BackgroundColor="{StaticResource PrimaryColor}" />
+                        </StackLayout>
+                     </Frame>
 
+                    <Frame
+                        CornerRadius="20"
+                        Background="{StaticResource BlueGradient}">
+                        <StackLayout Spacing="16" Margin="0" Padding="0">
+                            <Label Text="Blue Gradient Background" FontSize="24" />
+                            <Image Source="photo.jpg" Margin="-16,0" Aspect="AspectFit" />
+                            <Label Text="This card has a few changes to its appearance to test whether or not changing properties is supported."
+                           TextColor="{StaticResource SecondaryTextColor}" FontSize="14" />
+                            <Button Text="more" HorizontalOptions="End" BackgroundColor="{StaticResource PrimaryColor}" />
+                        </StackLayout>
+                     </Frame>
 
                     <Label Text="Entries" FontSize="Large" />
                     <Label Text="Default" Margin="0,0,0,-10" />
@@ -218,7 +272,13 @@
                         <Entry BackgroundColor="Yellow" Text="Yellow Background Color" HorizontalOptions="FillAndExpand"  />
                         <Entry BackgroundColor="Cyan" Text="Cyan Background Color"  HorizontalOptions="FillAndExpand"  />
                     </StackLayout>
+                    
+                    <Label Text="Background Color Gradient" Margin="0,0,0,-10" />
 
+                    <StackLayout Orientation="Horizontal">
+                        <Entry Background="{StaticResource GreenGradient}" Text="Green Gradient" HorizontalOptions="FillAndExpand"  />
+                        <Entry Background="{StaticResource BlueGradient}" Text="Blue Gradient"  HorizontalOptions="FillAndExpand"  />
+                    </StackLayout>
 
 
                     <Label Text="Sliders" FontSize="Large" />
@@ -245,7 +305,10 @@
                     <Label Text="Custom (Disabled)" Margin="0,0,0,-10" />
                     <Slider Minimum="-100" Maximum="100" IsEnabled="false"
                     ThumbColor="{StaticResource DarkRedColor}" MaximumTrackColor="{StaticResource SecondaryColor}" MinimumTrackColor="{StaticResource PrimaryColor}" />
-
+                    
+                    <Label Text="Gradient Background Color" Margin="0,0,0,-10" />
+                    <Slider Minimum="-100" Maximum="100" Background="{StaticResource GreenGradient}" />
+                    <Slider Minimum="-100" Maximum="100" Background="{StaticResource BlueGradient}" />
 
                     <Label Text="Pickers" FontSize="Large"></Label>
                     <Label Text="Date Picker" Margin="0,0,0,-10" />
@@ -282,6 +345,9 @@
                     <Editor HeightRequest="200"></Editor>
                     <Label Text="Place Holder" Margin="0,0,0,-10" />
                     <Editor Placeholder="Place Holder" HeightRequest="200"></Editor>
+                    <Label Text="GradientColor" Margin="0,0,0,-10" />
+                    <Editor Background="{StaticResource GreenGradient}" />
+                    <Editor Background="{StaticResource BlueGradient}"  />
 
                     <Label Text="CheckBox" FontSize="Large"></Label>
                     <Label Text="Normal" Margin="0,0,0,-10" />
@@ -292,6 +358,9 @@
                     <CheckBox IsEnabled="False" />
                     <Label Text="Disabled Checked" Margin="0,0,0,-10" />
                     <CheckBox IsEnabled="False" IsChecked="True" />
+                    <Label Text="Background GradientColor" Margin="0,0,0,-10" />
+                    <CheckBox Background="{StaticResource GreenGradient}" IsChecked="True" />
+                    <CheckBox Background="{StaticResource BlueGradient}" IsChecked="True" />
 
                 </StackLayout>
             </ScrollView>

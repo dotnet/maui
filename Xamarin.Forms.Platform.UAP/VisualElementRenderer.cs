@@ -148,7 +148,10 @@ namespace Xamarin.Forms.Platform.UWP
 				// Disabled until reason for crashes with unhandled exceptions is discovered
 				// Without this some layouts may end up with improper sizes, however their children
 				// will position correctly
-				//Loaded += (sender, args) => {
+				// Consider using Loading vs Loaded if this is added back, calling in Loaded appears to be to late in the layout cycle
+				// and may cause issues
+				//Loaded += (sender, args) =>
+				//{
 				if (Packager != null)
 					Packager.Load();
 				//};

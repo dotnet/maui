@@ -75,9 +75,10 @@ namespace Xamarin.Forms
 
 		public override bool Equals(object obj)
 		{
-			if (ReferenceEquals(null, obj))
+			if (obj is null)
 				return false;
-			return obj is Rectangle && Equals((Rectangle)obj);
+
+			return obj is Rectangle rectangle && Equals(rectangle) || obj is Rect rect && Equals(rect);
 		}
 
 		public override int GetHashCode()
@@ -247,6 +248,11 @@ namespace Xamarin.Forms
 			y = Y;
 			width = Width;
 			height = Height;
+		}
+
+		public static implicit operator Rectangle(Rect rect)
+		{
+			return new Rectangle(rect.X, rect.Y, rect.Width, rect.Height);
 		}
 	}
 }

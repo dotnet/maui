@@ -115,7 +115,7 @@
       <Name>Xamarin.Forms.Xaml</Name>
     </ProjectReference>
     <ProjectReference Include="..\PagesGallery\PagesGallery.csproj">
-      <Project>{343ebf1b-f26d-4d4d-b7d9-f6e25247af31}</Project>
+      <Project>{7B5F9E6A-6334-4C74-9B77-A55B3DA60E41}</Project>
       <Name>PagesGallery</Name>
     </ProjectReference>
   </ItemGroup>

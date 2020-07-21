@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void AbsolutePositionAndSize ()
+		public void AbsolutePositionAndSizeUsingRectangle ()
 		{
 			var abs = new AbsoluteLayout {
 				IsPlatformEnabled = true
@@ -44,6 +44,23 @@ namespace Xamarin.Forms.Core.UnitTests
 			abs.Layout (new Rectangle (0, 0, 100, 100));
 
 			Assert.AreEqual (new Rectangle (10, 20, 30, 40), child.Bounds);
+		}
+
+		[Test]
+		public void AbsolutePositionAndSizeUsingRect()
+		{
+			var abs = new AbsoluteLayout
+			{
+				IsPlatformEnabled = true
+			};
+
+			var child = new View { IsPlatformEnabled = true };
+
+			abs.Children.Add(child, new Rect(10, 20, 30, 40));
+
+			abs.Layout(new Rect(0, 0, 100, 100));
+
+			Assert.AreEqual(new Rect(10, 20, 30, 40), child.Bounds);
 		}
 
 		[Test]
