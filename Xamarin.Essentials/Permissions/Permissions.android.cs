@@ -319,6 +319,14 @@ namespace Xamarin.Essentials
                     if (IsDeclaredInManifest(Manifest.Permission.UseSip))
                         permissions.Add((Manifest.Permission.UseSip, true));
 
+#if __ANDROID_26__
+                    if (Platform.HasApiLevelO)
+                    {
+                        if (IsDeclaredInManifest(Manifest.Permission.AnswerPhoneCalls))
+                            permissions.Add((Manifest.Permission.AnswerPhoneCalls, true));
+                    }
+#endif
+
 #pragma warning disable CS0618 // Type or member is obsolete
                     if (IsDeclaredInManifest(Manifest.Permission.ProcessOutgoingCalls))
                     {
