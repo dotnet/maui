@@ -12,7 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>File picking options.</summary>
-    <remarks>This file picking options object can be passed to a call to PickFileAsync().</remarks>
+    <remarks>This file picking options object can be passed to a call to PickAsync().</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">

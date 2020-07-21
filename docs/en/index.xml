@@ -99,7 +99,7 @@
           <AttributeName>System.Runtime.Versioning.TargetFramework("Xamarin.Mac,Version=v2.0", FrameworkDisplayName="Xamarin.Mac")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+205dad63475a814da84490cbfd444821c2d68550")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+ed1281b320c4ff8fcd73f1cba0d94a1eceda9ce3")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>
@@ -222,7 +222,6 @@
       <Type Name="Permissions+Vibrate" Kind="Class" />
       <Type Name="PermissionStatus" Kind="Enumeration" />
       <Type Name="PhoneDialer" Kind="Class" />
-      <Type Name="PickerResultBase" Kind="Class" />
       <Type Name="PickOptions" Kind="Class" />
       <Type Name="Placemark" Kind="Class" />
       <Type Name="PlacemarkExtensions" Kind="Class" />

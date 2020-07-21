@@ -1,6 +1,6 @@
 <Type Name="FilePickerResult" FullName="Xamarin.Essentials.FilePickerResult">
-  <TypeSignature Language="C#" Value="public class FilePickerResult : Xamarin.Essentials.PickerResultBase" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit FilePickerResult extends Xamarin.Essentials.PickerResultBase" />
+  <TypeSignature Language="C#" Value="public class FilePickerResult : Xamarin.Essentials.FileBase" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit FilePickerResult extends Xamarin.Essentials.FileBase" />
   <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.FilePickerResult" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -8,11 +8,47 @@
   </AssemblyInfo>
   <Base>
     <BaseTypeName>Xamarin.Essentials.PickerResultBase</BaseTypeName>
+    <BaseTypeName FrameworkAlternate="xamarin-essentials">Xamarin.Essentials.FileBase</BaseTypeName>
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary></summary>
+    <remarks></remarks>
   </Docs>
-  <Members />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public FilePickerResult ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.FilePickerResult.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary></summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="OpenReadStreamAsync">
+      <MemberSignature Language="C#" Value="public System.Threading.Tasks.Task&lt;System.IO.Stream&gt; OpenReadStreamAsync ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance class System.Threading.Tasks.Task`1&lt;class System.IO.Stream&gt; OpenReadStreamAsync() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.FilePickerResult.OpenReadStreamAsync" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;System.IO.Stream&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Opens a read-only stream to the underlying file or content picked.</summary>
+        <returns></returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
 </Type>

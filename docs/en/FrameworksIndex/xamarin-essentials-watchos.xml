@@ -344,8 +344,8 @@
       <Member Id="P:Xamarin.Essentials.FileBase.FullPath" />
     </Type>
     <Type Name="Xamarin.Essentials.FilePicker" Id="T:Xamarin.Essentials.FilePicker">
-      <Member Id="M:Xamarin.Essentials.FilePicker.PickFileAsync" />
-      <Member Id="M:Xamarin.Essentials.FilePicker.PickFileAsync(Xamarin.Essentials.PickOptions)" />
+      <Member Id="M:Xamarin.Essentials.FilePicker.PickAsync(Xamarin.Essentials.PickOptions)" />
+      <Member Id="M:Xamarin.Essentials.FilePicker.PickMultipleAsync(Xamarin.Essentials.PickOptions)" />
     </Type>
     <Type Name="Xamarin.Essentials.FilePickerFileType" Id="T:Xamarin.Essentials.FilePickerFileType">
       <Member Id="F:Xamarin.Essentials.FilePickerFileType.Images" />
@@ -357,7 +357,10 @@
       <Member Id="M:Xamarin.Essentials.FilePickerFileType.PlatformPngFileType" />
       <Member Id="P:Xamarin.Essentials.FilePickerFileType.Value" />
     </Type>
-    <Type Name="Xamarin.Essentials.FilePickerResult" Id="T:Xamarin.Essentials.FilePickerResult" />
+    <Type Name="Xamarin.Essentials.FilePickerResult" Id="T:Xamarin.Essentials.FilePickerResult">
+      <Member Id="M:Xamarin.Essentials.FilePickerResult.#ctor" />
+      <Member Id="M:Xamarin.Essentials.FilePickerResult.OpenReadStreamAsync" />
+    </Type>
     <Type Name="Xamarin.Essentials.FileSystem" Id="T:Xamarin.Essentials.FileSystem">
       <Member Id="M:Xamarin.Essentials.FileSystem.OpenAppPackageFileAsync(System.String)" />
       <Member Id="P:Xamarin.Essentials.FileSystem.AppDataDirectory" />
@@ -677,10 +680,6 @@
     </Type>
     <Type Name="Xamarin.Essentials.PhoneDialer" Id="T:Xamarin.Essentials.PhoneDialer">
       <Member Id="M:Xamarin.Essentials.PhoneDialer.Open(System.String)" />
-    </Type>
-    <Type Name="Xamarin.Essentials.PickerResultBase" Id="T:Xamarin.Essentials.PickerResultBase">
-      <Member Id="M:Xamarin.Essentials.PickerResultBase.OpenReadStreamAsync" />
-      <Member Id="P:Xamarin.Essentials.PickerResultBase.FileName" />
     </Type>
     <Type Name="Xamarin.Essentials.PickOptions" Id="T:Xamarin.Essentials.PickOptions">
       <Member Id="M:Xamarin.Essentials.PickOptions.#ctor" />
