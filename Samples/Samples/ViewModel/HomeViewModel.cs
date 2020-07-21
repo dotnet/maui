@@ -92,6 +92,12 @@ namespace Samples.ViewModel
                     new[] { "email", "share", "communication", "message" }),
                 new SampleItem(
                     "📁",
+                    "File Picker",
+                    typeof(FilePickerPage),
+                    "Easily pick files from storage.",
+                    new[] { "files", "picking", "filesystem", "storage" }),
+                new SampleItem(
+                    "📁",
                     "File System",
                     typeof(FileSystemPage),
                     "Easily save files to app data.",
@@ -204,6 +210,12 @@ namespace Samples.ViewModel
                     typeof(VibrationPage),
                     "Quickly and easily make the device vibrate.",
                     new[] { "vibration", "vibrate", "hardware", "device" }),
+                new SampleItem(
+                    "📳",
+                    "Haptic Feedback",
+                    typeof(HapticFeedbackPage),
+                    "Quickly and easily make the device provide haptic feedback",
+                    new[] { "haptic", "feedback", "hardware", "device" }),
                 new SampleItem(
                     "🔓",
                     "Web Authenticator",

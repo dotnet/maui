@@ -20,7 +20,7 @@ namespace DeviceTests.Shared
             Assert.False(FileProvider.IsFileInPublicLocation(file));
 
             // Actually get a safe shareable file uri
-            var shareableUri = Platform.GetShareableFileUri(file);
+            var shareableUri = Platform.GetShareableFileUri(new ReadOnlyFile(file));
 
             // Launch an intent to let tye user pick where to open this content
             var intent = new Android.Content.Intent(Android.Content.Intent.ActionSend);
@@ -232,7 +232,7 @@ namespace DeviceTests.Shared
                 FileProvider.TemporaryLocation = location;
 
                 // get the uri
-                return Platform.GetShareableFileUri(file);
+                return Platform.GetShareableFileUri(new ReadOnlyFile(file));
             }
             finally
             {

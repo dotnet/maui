@@ -1,0 +1,164 @@
+<Type Name="FilePickerFileType" FullName="Xamarin.Essentials.FilePickerFileType">
+  <TypeSignature Language="C#" Value="public class FilePickerFileType" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit FilePickerFileType extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.FilePickerFileType" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="protected FilePickerFileType ();" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.FilePickerFileType.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public FilePickerFileType (System.Collections.Generic.IDictionary&lt;Xamarin.Essentials.DevicePlatform,System.Collections.Generic.IEnumerable&lt;string&gt;&gt; fileTypes);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class System.Collections.Generic.IDictionary`2&lt;valuetype Xamarin.Essentials.DevicePlatform, class System.Collections.Generic.IEnumerable`1&lt;string&gt;&gt; fileTypes) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.FilePickerFileType.#ctor(System.Collections.Generic.IDictionary{Xamarin.Essentials.DevicePlatform,System.Collections.Generic.IEnumerable{System.String}})" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="fileTypes" Type="System.Collections.Generic.IDictionary&lt;Xamarin.Essentials.DevicePlatform,System.Collections.Generic.IEnumerable&lt;System.String&gt;&gt;" />
+      </Parameters>
+      <Docs>
+        <param name="fileTypes">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetPlatformFileType">
+      <MemberSignature Language="C#" Value="protected virtual System.Collections.Generic.IEnumerable&lt;string&gt; GetPlatformFileType (Xamarin.Essentials.DevicePlatform platform);" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig newslot virtual instance class System.Collections.Generic.IEnumerable`1&lt;string&gt; GetPlatformFileType(valuetype Xamarin.Essentials.DevicePlatform platform) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.FilePickerFileType.GetPlatformFileType(Xamarin.Essentials.DevicePlatform)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Collections.Generic.IEnumerable&lt;System.String&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="platform" Type="Xamarin.Essentials.DevicePlatform" />
+      </Parameters>
+      <Docs>
+        <param name="platform">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Images">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Essentials.FilePickerFileType Images;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Essentials.FilePickerFileType Images" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.FilePickerFileType.Images" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.FilePickerFileType</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="PlatformImageFileType">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.FilePickerFileType PlatformImageFileType ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Essentials.FilePickerFileType PlatformImageFileType() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.FilePickerFileType.PlatformImageFileType" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.FilePickerFileType</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="PlatformPngFileType">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.FilePickerFileType PlatformPngFileType ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Essentials.FilePickerFileType PlatformPngFileType() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.FilePickerFileType.PlatformPngFileType" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.FilePickerFileType</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Png">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Essentials.FilePickerFileType Png;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Essentials.FilePickerFileType Png" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.FilePickerFileType.Png" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.FilePickerFileType</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Value">
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.IEnumerable&lt;string&gt; Value { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.IEnumerable`1&lt;string&gt; Value" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.FilePickerFileType.Value" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Collections.Generic.IEnumerable&lt;System.String&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

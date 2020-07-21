@@ -32,19 +32,19 @@ namespace Xamarin.Essentials
                 Zip = placemark.PostalCode
             }.Dictionary;
 #else
-            var address = new NSDictionary
+            var address = new NSMutableDictionary
             {
-                [Contacts.CNPostalAddressKey.City] = new NSString(placemark.Locality),
-                [Contacts.CNPostalAddressKey.Country] = new NSString(placemark.CountryName),
-                [Contacts.CNPostalAddressKey.State] = new NSString(placemark.AdminArea),
-                [Contacts.CNPostalAddressKey.Street] = new NSString(placemark.Thoroughfare),
-                [Contacts.CNPostalAddressKey.PostalCode] = new NSString(placemark.PostalCode),
-                [Contacts.CNPostalAddressKey.IsoCountryCode] = new NSString(placemark.CountryCode)
+                [Contacts.CNPostalAddressKey.City] = new NSString(placemark.Locality ?? string.Empty),
+                [Contacts.CNPostalAddressKey.Country] = new NSString(placemark.CountryName ?? string.Empty),
+                [Contacts.CNPostalAddressKey.State] = new NSString(placemark.AdminArea ?? string.Empty),
+                [Contacts.CNPostalAddressKey.Street] = new NSString(placemark.Thoroughfare ?? string.Empty),
+                [Contacts.CNPostalAddressKey.PostalCode] = new NSString(placemark.PostalCode ?? string.Empty),
+                [Contacts.CNPostalAddressKey.IsoCountryCode] = new NSString(placemark.CountryCode ?? string.Empty)
             };
 #endif
 
             var coder = new CLGeocoder();
-            CLPlacemark[] placemarks = null;
+            CLPlacemark[] placemarks;
             try
             {
                 placemarks = await coder.GeocodeAddressAsync(address);

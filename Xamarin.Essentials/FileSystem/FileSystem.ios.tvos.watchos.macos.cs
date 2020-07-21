@@ -20,7 +20,11 @@ namespace Xamarin.Essentials
                 throw new ArgumentNullException(nameof(filename));
 
             filename = filename.Replace('\\', Path.DirectorySeparatorChar);
-            var file = Path.Combine(NSBundle.MainBundle.BundlePath, filename);
+            var root = NSBundle.MainBundle.BundlePath;
+#if __MACOS__
+            root = Path.Combine(root, "Contents", "Resources");
+#endif
+            var file = Path.Combine(root, filename);
             return Task.FromResult((Stream)File.OpenRead(file));
         }
 
@@ -50,7 +54,7 @@ namespace Xamarin.Essentials
 
             var id = UTType.CreatePreferredIdentifier(UTType.TagClassFilenameExtension, extension, null);
             var mimeTypes = UTType.CopyAllTags(id, UTType.TagClassMIMEType);
-            return mimeTypes.Length > 0 ? mimeTypes[0] : null;
+            return mimeTypes?.Length > 0 ? mimeTypes[0] : null;
         }
 
         internal void PlatformInit(FileBase file)

@@ -34,7 +34,7 @@ namespace Xamarin.Essentials
 
             async Task<PermissionStatus> CheckPrivilegeAsync(bool ask)
             {
-                if (!RequiredPrivileges.Any())
+                if (RequiredPrivileges == null || !RequiredPrivileges.Any())
                     return PermissionStatus.Granted;
 
                 EnsureDeclared();
@@ -73,12 +73,17 @@ namespace Xamarin.Essentials
 
             public override void EnsureDeclared()
             {
+                if (RequiredPrivileges == null)
+                    return;
+
                 foreach (var (tizenPrivilege, isRuntime) in RequiredPrivileges)
                 {
                     if (!IsPrivilegeDeclared(tizenPrivilege))
                         throw new PermissionException($"You need to declare the privilege: `{tizenPrivilege}` in your tizen-manifest.xml");
                 }
             }
+
+            public override bool ShouldShowRationale() => false;
         }
 
         public partial class Battery : BasePlatformPermission

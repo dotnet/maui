@@ -54,7 +54,7 @@
         <ReturnType>System.Drawing.Point</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="point" Type="CoreGraphics.CGPoint" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos" />
+        <Parameter Name="point" Type="CoreGraphics.CGPoint" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos" />
       </Parameters>
       <Docs>
         <param name="point">The point to convert.</param>
@@ -126,7 +126,7 @@
         <ReturnType>System.Drawing.PointF</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="point" Type="CoreGraphics.CGPoint" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos" />
+        <Parameter Name="point" Type="CoreGraphics.CGPoint" RefType="this" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos" />
       </Parameters>
       <Docs>
         <param name="point">The point to convert.</param>

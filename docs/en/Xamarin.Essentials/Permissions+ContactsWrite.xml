@@ -68,6 +68,24 @@
         <remarks>The request will be prompted to the user if it hasn't been granted. iOS only allows the permission to be requested once, any additional requests will return immediatelly.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="RequiredDeclarations">
+      <MemberSignature Language="C#" Value="protected override Func&lt;System.Collections.Generic.IEnumerable&lt;string&gt;&gt; RequiredDeclarations { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Func`1&lt;class System.Collections.Generic.IEnumerable`1&lt;string&gt;&gt; RequiredDeclarations" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Permissions.ContactsWrite.RequiredDeclarations" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Func&lt;System.Collections.Generic.IEnumerable&lt;System.String&gt;&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="RequiredInfoPlistKeys">
       <MemberSignature Language="C#" Value="protected override Func&lt;System.Collections.Generic.IEnumerable&lt;string&gt;&gt; RequiredInfoPlistKeys { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance class System.Func`1&lt;class System.Collections.Generic.IEnumerable`1&lt;string&gt;&gt; RequiredInfoPlistKeys" />
