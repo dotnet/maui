@@ -1,5 +1,6 @@
 ﻿using System;
 using OpenQA.Selenium.Appium.Windows;
+using Xamarin.Forms.Controls.Issues;
 using Xamarin.UITest;
 
 namespace Xamarin.Forms.Core.UITests
@@ -34,7 +35,7 @@ namespace Xamarin.Forms.Core.UITests
 					return _session.CurrentWindowHandle;
 				}
 				catch (OpenQA.Selenium.WebDriverException we)
-				when (we.Message.Contains("Currently selected window has been closed"))
+				when (we.IsWindowClosedException())
 				{
 					_winDriverApp.RestartFromCrash();
 				}
