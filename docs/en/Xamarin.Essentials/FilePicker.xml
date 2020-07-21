@@ -59,28 +59,6 @@
         <Parameter Name="options" Type="Xamarin.Essentials.PickOptions" />
       </Parameters>
       <Docs>
-        <param name="options">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="PickMultipleAsync">
-      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;Xamarin.Essentials.FilePickerResult&gt; PickMultipleAsync (Xamarin.Essentials.PickOptions options);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class Xamarin.Essentials.FilePickerResult&gt; PickMultipleAsync(class Xamarin.Essentials.PickOptions options) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.FilePicker.PickMultipleAsync(Xamarin.Essentials.PickOptions)" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Threading.Tasks.Task&lt;Xamarin.Essentials.FilePickerResult&gt;</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="options" Type="Xamarin.Essentials.PickOptions" />
-      </Parameters>
-      <Docs>
         <param name="options">File picker options to use; may be null</param>
         <summary>Starts file picker for selecting a single file.</summary>
         <returns>File picking result object, or null when picking was cancelled by the user.</returns>
