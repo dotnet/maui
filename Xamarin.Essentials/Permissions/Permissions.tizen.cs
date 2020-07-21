@@ -34,7 +34,7 @@ namespace Xamarin.Essentials
 
             async Task<PermissionStatus> CheckPrivilegeAsync(bool ask)
             {
-                if (!RequiredPrivileges.Any())
+                if (RequiredPrivileges == null || !RequiredPrivileges.Any())
                     return PermissionStatus.Granted;
 
                 EnsureDeclared();
@@ -73,6 +73,9 @@ namespace Xamarin.Essentials
 
             public override void EnsureDeclared()
             {
+                if (RequiredPrivileges == null)
+                    return;
+
                 foreach (var (tizenPrivilege, isRuntime) in RequiredPrivileges)
                 {
                     if (!IsPrivilegeDeclared(tizenPrivilege))

@@ -22,14 +22,19 @@ namespace Xamarin.Essentials
 
         string contentType;
 
+        // The caller must setup FullPath at least!!!
+        internal FileBase()
+        {
+        }
+
         internal FileBase(string fullPath)
         {
             if (fullPath == null)
                 throw new ArgumentNullException(nameof(fullPath));
             if (string.IsNullOrWhiteSpace(fullPath))
-                throw new ArgumentException("The attachment file path cannot be an empty string.", nameof(fullPath));
+                throw new ArgumentException("The file path cannot be an empty string.", nameof(fullPath));
             if (string.IsNullOrWhiteSpace(Path.GetFileName(fullPath)))
-                throw new ArgumentException("The attachment file path must be a file path.", nameof(fullPath));
+                throw new ArgumentException("The file path must be a file path.", nameof(fullPath));
 
             FullPath = fullPath;
         }
@@ -38,6 +43,7 @@ namespace Xamarin.Essentials
         {
             FullPath = file.FullPath;
             ContentType = file.ContentType;
+            FileName = file.FileName;
             PlatformInit(file);
         }
 
@@ -48,7 +54,7 @@ namespace Xamarin.Essentials
             ContentType = contentType;
         }
 
-        public string FullPath { get; }
+        public string FullPath { get; internal set; }
 
         public string ContentType
         {
@@ -73,26 +79,26 @@ namespace Xamarin.Essentials
             return "application/octet-stream";
         }
 
-        string attachmentName;
+        string fileName;
 
-        internal string AttachmentName
+        public string FileName
         {
-            get => GetAttachmentName();
-            set => attachmentName = value;
+            get => GetFileName();
+            set => fileName = value;
         }
 
-        internal string GetAttachmentName()
+        internal string GetFileName()
         {
             // try the provided file name
-            if (!string.IsNullOrWhiteSpace(attachmentName))
-                return attachmentName;
+            if (!string.IsNullOrWhiteSpace(fileName))
+                return fileName;
 
             // try get from the path
             if (!string.IsNullOrWhiteSpace(FullPath))
                 return Path.GetFileName(FullPath);
 
             // this should never happen as the path is validated in the constructor
-            throw new InvalidOperationException($"Unable to determine the attachment file name from '{FullPath}'.");
+            throw new InvalidOperationException($"Unable to determine the file name from '{FullPath}'.");
         }
     }
 
