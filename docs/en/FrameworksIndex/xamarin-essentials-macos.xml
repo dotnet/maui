@@ -340,7 +340,25 @@
     <Type Name="Xamarin.Essentials.FileBase" Id="T:Xamarin.Essentials.FileBase">
       <Member Id="M:Xamarin.Essentials.FileBase.#ctor(Xamarin.Essentials.FileBase)" />
       <Member Id="P:Xamarin.Essentials.FileBase.ContentType" />
+      <Member Id="P:Xamarin.Essentials.FileBase.FileName" />
       <Member Id="P:Xamarin.Essentials.FileBase.FullPath" />
+    </Type>
+    <Type Name="Xamarin.Essentials.FilePicker" Id="T:Xamarin.Essentials.FilePicker">
+      <Member Id="M:Xamarin.Essentials.FilePicker.PickAsync(Xamarin.Essentials.PickOptions)" />
+      <Member Id="M:Xamarin.Essentials.FilePicker.PickMultipleAsync(Xamarin.Essentials.PickOptions)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.FilePickerFileType" Id="T:Xamarin.Essentials.FilePickerFileType">
+      <Member Id="F:Xamarin.Essentials.FilePickerFileType.Images" />
+      <Member Id="F:Xamarin.Essentials.FilePickerFileType.Png" />
+      <Member Id="M:Xamarin.Essentials.FilePickerFileType.#ctor" />
+      <Member Id="M:Xamarin.Essentials.FilePickerFileType.#ctor(System.Collections.Generic.IDictionary{Xamarin.Essentials.DevicePlatform,System.Collections.Generic.IEnumerable{System.String}})" />
+      <Member Id="M:Xamarin.Essentials.FilePickerFileType.GetPlatformFileType(Xamarin.Essentials.DevicePlatform)" />
+      <Member Id="M:Xamarin.Essentials.FilePickerFileType.PlatformImageFileType" />
+      <Member Id="M:Xamarin.Essentials.FilePickerFileType.PlatformPngFileType" />
+      <Member Id="P:Xamarin.Essentials.FilePickerFileType.Value" />
+    </Type>
+    <Type Name="Xamarin.Essentials.FilePickerResult" Id="T:Xamarin.Essentials.FilePickerResult">
+      <Member Id="M:Xamarin.Essentials.FilePickerResult.OpenReadStreamAsync" />
     </Type>
     <Type Name="Xamarin.Essentials.FileSystem" Id="T:Xamarin.Essentials.FileSystem">
       <Member Id="M:Xamarin.Essentials.FileSystem.OpenAppPackageFileAsync(System.String)" />
@@ -398,6 +416,13 @@
       <Member Id="M:Xamarin.Essentials.GyroscopeData.op_Inequality(Xamarin.Essentials.GyroscopeData,Xamarin.Essentials.GyroscopeData)" />
       <Member Id="M:Xamarin.Essentials.GyroscopeData.ToString" />
       <Member Id="P:Xamarin.Essentials.GyroscopeData.AngularVelocity" />
+    </Type>
+    <Type Name="Xamarin.Essentials.HapticFeedback" Id="T:Xamarin.Essentials.HapticFeedback">
+      <Member Id="M:Xamarin.Essentials.HapticFeedback.Perform(Xamarin.Essentials.HapticFeedbackType)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.HapticFeedbackType" Id="T:Xamarin.Essentials.HapticFeedbackType">
+      <Member Id="F:Xamarin.Essentials.HapticFeedbackType.Click" />
+      <Member Id="F:Xamarin.Essentials.HapticFeedbackType.LongPress" />
     </Type>
     <Type Name="Xamarin.Essentials.Launcher" Id="T:Xamarin.Essentials.Launcher">
       <Member Id="M:Xamarin.Essentials.Launcher.CanOpenAsync(System.String)" />
@@ -537,6 +562,7 @@
       <Member Id="M:Xamarin.Essentials.Permissions.CheckStatusAsync``1" />
       <Member Id="M:Xamarin.Essentials.Permissions.IsKeyDeclaredInInfoPlist(System.String)" />
       <Member Id="M:Xamarin.Essentials.Permissions.RequestAsync``1" />
+      <Member Id="M:Xamarin.Essentials.Permissions.ShouldShowRationale``1" />
       <Member Id="P:Xamarin.Essentials.Permissions.LocationTimeout" />
     </Type>
     <Type Name="Xamarin.Essentials.Permissions/BasePermission" Id="T:Xamarin.Essentials.Permissions.BasePermission">
@@ -544,12 +570,14 @@
       <Member Id="M:Xamarin.Essentials.Permissions.BasePermission.CheckStatusAsync" />
       <Member Id="M:Xamarin.Essentials.Permissions.BasePermission.EnsureDeclared" />
       <Member Id="M:Xamarin.Essentials.Permissions.BasePermission.RequestAsync" />
+      <Member Id="M:Xamarin.Essentials.Permissions.BasePermission.ShouldShowRationale" />
     </Type>
     <Type Name="Xamarin.Essentials.Permissions/BasePlatformPermission" Id="T:Xamarin.Essentials.Permissions.BasePlatformPermission">
       <Member Id="M:Xamarin.Essentials.Permissions.BasePlatformPermission.#ctor" />
       <Member Id="M:Xamarin.Essentials.Permissions.BasePlatformPermission.CheckStatusAsync" />
       <Member Id="M:Xamarin.Essentials.Permissions.BasePlatformPermission.EnsureDeclared" />
       <Member Id="M:Xamarin.Essentials.Permissions.BasePlatformPermission.RequestAsync" />
+      <Member Id="M:Xamarin.Essentials.Permissions.BasePlatformPermission.ShouldShowRationale" />
       <Member Id="P:Xamarin.Essentials.Permissions.BasePlatformPermission.RecommendedInfoPlistKeys" />
       <Member Id="P:Xamarin.Essentials.Permissions.BasePlatformPermission.RequiredInfoPlistKeys" />
     </Type>
@@ -637,6 +665,13 @@
     </Type>
     <Type Name="Xamarin.Essentials.PhoneDialer" Id="T:Xamarin.Essentials.PhoneDialer">
       <Member Id="M:Xamarin.Essentials.PhoneDialer.Open(System.String)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.PickOptions" Id="T:Xamarin.Essentials.PickOptions">
+      <Member Id="M:Xamarin.Essentials.PickOptions.#ctor" />
+      <Member Id="P:Xamarin.Essentials.PickOptions.Default" />
+      <Member Id="P:Xamarin.Essentials.PickOptions.FileTypes" />
+      <Member Id="P:Xamarin.Essentials.PickOptions.Images" />
+      <Member Id="P:Xamarin.Essentials.PickOptions.PickerTitle" />
     </Type>
     <Type Name="Xamarin.Essentials.Placemark" Id="T:Xamarin.Essentials.Placemark">
       <Member Id="M:Xamarin.Essentials.Placemark.#ctor" />
