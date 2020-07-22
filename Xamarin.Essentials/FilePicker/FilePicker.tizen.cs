@@ -11,8 +11,6 @@ namespace Xamarin.Essentials
 {
     public static partial class FilePicker
     {
-        static List<FilePickerResult> resultFiles = new List<FilePickerResult>();
-
         static async Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
         {
             Permissions.EnsureDeclared<Permissions.LaunchApp>();
@@ -36,16 +34,16 @@ namespace Xamarin.Essentials
                 {
                     if (reply.ExtraData.Count() > 0)
                     {
-                        var info = reply.ExtraData.Get<IEnumerable<string>>(AppControlData.Selected).ToList();
-                        resultFiles.Add(new FilePickerResult(info));
+                        var selectedFiles = reply.ExtraData.Get<IEnumerable<string>>(AppControlData.Selected).ToList();
+                        fileResults.AddRange(selectedFiles.Select(f => new FilePickerResult(f)));
                     }
                 }
 
-                tcs.TrySetResult(resultFiles);
+                tcs.TrySetResult(fileResults);
             });
 
             await tcs.Task;
-            return resultFiles;
+            return fileResults;
         }
     }
 
@@ -66,33 +64,16 @@ namespace Xamarin.Essentials
 
     public partial class FilePickerResult
     {
-        readonly string fullPath;
-
-        internal FilePickerResult(IList<string> list)
-            : base()
+        internal FilePickerResult(string fullPath)
+            : base(fullPath)
         {
-            if (list == null || list.Count <= 0)
-                throw new ArgumentNullException(nameof(list));
-
-            if (list != null)
-            {
-                foreach (var path in list)
-                {
-                    fullPath = path;
-                    FileName = string.Empty;
-                    if (path.Count() > 0)
-                    {
-                        FileName = Path.GetFileName(path);
-                    }
-                }
-            }
         }
 
         async Task<Stream> PlatformOpenReadStreamAsync()
         {
             await Permissions.RequestAsync<Permissions.StorageRead>();
 
-            var stream = File.Open(fullPath, FileMode.Open, FileAccess.Read);
+            var stream = File.Open(FullPath, FileMode.Open, FileAccess.Read);
             return Task.FromResult<Stream>(stream).Result;
         }
     }
