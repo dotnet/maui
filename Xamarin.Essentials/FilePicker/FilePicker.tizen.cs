@@ -42,8 +42,7 @@ namespace Xamarin.Essentials
                 tcs.TrySetResult(fileResults);
             });
 
-            await tcs.Task;
-            return fileResults;
+            return await tcs.Task;
         }
     }
 
