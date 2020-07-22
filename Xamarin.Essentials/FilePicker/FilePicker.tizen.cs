@@ -11,10 +11,12 @@ namespace Xamarin.Essentials
 {
     public static partial class FilePicker
     {
-        static Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
+        static List<FilePickerResult> resultFiles = new List<FilePickerResult>();
+
+        static async Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
         {
             Permissions.EnsureDeclared<Permissions.LaunchApp>();
-            Permissions.EnsureDeclared<Permissions.StorageRead>();
+            await Permissions.EnsureGrantedAsync<Permissions.StorageRead>();
 
             var tcs = new TaskCompletionSource<IEnumerable<FilePickerResult>>();
 
@@ -30,8 +32,6 @@ namespace Xamarin.Essentials
 
             AppControl.SendLaunchRequest(appControl, (request, reply, result) =>
             {
-                var resultFiles = new List<FilePickerResult>();
-
                 if (result == AppControlReplyResult.Succeeded)
                 {
                     if (reply.ExtraData.Count() > 0)
@@ -44,7 +44,8 @@ namespace Xamarin.Essentials
                 tcs.TrySetResult(resultFiles);
             });
 
-            return tcs.Task;
+            await tcs.Task;
+            return resultFiles;
         }
     }
 
