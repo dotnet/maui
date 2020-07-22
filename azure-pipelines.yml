@@ -1,12 +1,15 @@
 
 variables:
-  CurrentSemanticVersionBase: '1.0.0'
-  CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(Build.BuildNumber)'
+  CurrentSemanticVersionBase: '1.5.3'
+  PreviewNumber: $[counter(variables['CurrentSemanticVersionBase'], 1001)]
+  CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(PreviewNumber)'
   NugetPackageVersion: '$(CurrentSemanticVersion)'
-  MONO_VERSION: 5_16_0
-  XCODE_VERSION: 10.1
-  IOS_SIM_NAME: 'iPhone X'
-  IOS_SIM_RUNTIME: 'iOS 12.1'
+  MONO_VERSION: 6_8_0
+  XCODE_VERSION: 11.3
+  NETCORE_VERSION: '3.1.x'
+  NETCORE_TEST_VERSION: '2.2.x'
+  IOS_SIM_NAME: 'iPhone 11'
+  IOS_SIM_RUNTIME: 'com.apple.CoreSimulator.SimRuntime.iOS-13-3'
   ANDROID_EMU_TARGET: 'system-images;android-26;google_apis;x86'
   ANDROID_EMU_DEVICE: 'Nexus 5X'
   RunPoliCheck: 'false'
@@ -23,7 +26,7 @@ jobs:
   - job: build_windows
     displayName: Build Windows Library
     pool:
-      vmImage: vs2017-win2016
+      vmImage: windows-2019
     steps:
       # if this is a tagged build, then update the version number
       - powershell: |
@@ -46,7 +49,15 @@ jobs:
           solution: Xamarin.Essentials/Xamarin.Essentials.csproj
           configuration: Release
           msbuildArguments: '/t:Pack /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
+#      - task: DotNetCoreCLI@2
+#        displayName: Publish to GitHub NuGet Packages
+#        condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))
+#        inputs:
+#          command: 'custom'
+#          custom: 'nuget'
+#          arguments: 'push --source https://nuget.pkg.github.com/xamarin/index.json --api-key $(GitHub.NuGet.Token) "$(Build.ArtifactStagingDirectory)\nuget\*.nupkg"'
       - task: DotNetCoreCLI@2
+        displayName: Run Tests
         inputs:
           command: test
           projects: 'Tests/Tests.csproj'
@@ -76,7 +87,7 @@ jobs:
   - job: build_macos
     displayName: Build macOS Library
     pool:
-      vmImage: macos-10.13
+      vmImage: macos-10.14
     steps:
       # if this is a tagged build, then update the version number
       - powershell: |
@@ -92,6 +103,16 @@ jobs:
       - bash: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XCODE_VERSION).app;sudo xcode-select --switch /Applications/Xcode_$(XCODE_VERSION).app/Contents/Developer
         displayName: Switch to the latest Xcode
       # restore, build and pack the packages
+      - task: UseDotNet@2
+        displayName: 'Use .Net Core sdk'
+        inputs:
+          version: $(NETCORE_VERSION)
+          includePreviewVersions: false
+      - task: UseDotNet@2
+        displayName: 'Use .Net Core sdk'
+        inputs:
+          version: $(NETCORE_TEST_VERSION)
+          includePreviewVersions: false
       - task: MSBuild@1
         displayName: Build Solution
         inputs:
@@ -105,6 +126,7 @@ jobs:
           configuration: Release
           msbuildArguments: '/t:Pack /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
       - task: DotNetCoreCLI@2
+        displayName: Run Tests
         inputs:
           command: test
           projects: 'Tests/Tests.csproj'
@@ -113,7 +135,7 @@ jobs:
   - job: build_samples
     displayName: Build Samples
     pool:
-      vmImage: vs2017-win2016
+      vmImage: windows-2019
     steps:
       # restore, build and pack the packages
       - task: MSBuild@1
@@ -131,7 +153,7 @@ jobs:
     # skip for now
     condition: and(succeeded(), not(succeeded()))
     pool:
-      vmImage: vs2017-win2016
+      vmImage: windows-2019
     steps:
       - script: 'certutil -importpfx $(Build.SourcesDirectory)\DeviceTests\DeviceTests.UWP\DeviceTests.UWP_TemporaryKey.pfx'
         displayName: 'Run certutil'
@@ -152,12 +174,22 @@ jobs:
       - build_windows
       - build_macos
     pool:
-      vmImage: macos-10.13
+      vmImage: macos-10.14
     steps:
       - bash: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh $(MONO_VERSION)
         displayName: Switch to the latest Xamarin SDK
       - bash: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XCODE_VERSION).app;sudo xcode-select --switch /Applications/Xcode_$(XCODE_VERSION).app/Contents/Developer
         displayName: Switch to the latest Xcode
+      - task: UseDotNet@2
+        displayName: 'Use .Net Core sdk'
+        inputs:
+          version: $(NETCORE_VERSION)
+          includePreviewVersions: false
+      - task: UseDotNet@2
+        displayName: 'Use .Net Core sdk'
+        inputs:
+          version: $(NETCORE_TEST_VERSION)
+          includePreviewVersions: false
       - task: InstallAppleCertificate@2
         displayName: 'Install an Apple certificate'
         inputs:
@@ -168,7 +200,8 @@ jobs:
           provProfileSecureFile: 'Components iOS Provisioning.mobileprovision'
       - bash: |
           cd DeviceTests
-          sh ./build.sh --target=test-ios-emu --settings_skipverification=true --verbosity=diagnostic
+          dotnet tool install -g cake.tool --version 0.36.0
+          dotnet cake --target=test-ios-emu --settings_skipverification=true --verbosity=diagnostic
         displayName: 'Run Device Tests - iOS'
       - task: PublishTestResults@2
         displayName: 'Publish Test Results'
@@ -183,19 +216,30 @@ jobs:
       - build_windows
       - build_macos
     pool:
-      vmImage: macos-10.13
+      vmImage: macos-10.14
     steps:
       - bash: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh $(MONO_VERSION)
         displayName: Switch to the latest Xamarin SDK
       - bash: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XCODE_VERSION).app;sudo xcode-select --switch /Applications/Xcode_$(XCODE_VERSION).app/Contents/Developer
         displayName: Switch to the latest Xcode
+      - task: UseDotNet@2
+        displayName: 'Use .Net Core sdk'
+        inputs:
+          version: $(NETCORE_VERSION)
+          includePreviewVersions: false
+      - task: UseDotNet@2
+        displayName: 'Use .Net Core sdk'
+        inputs:
+          version: $(NETCORE_TEST_VERSION)
+          includePreviewVersions: false
       - bash: sh -c "echo \"y\" | $ANDROID_HOME/tools/bin/sdkmanager \"$ANDROID_EMU_TARGET\""
         displayName: Install the Android emulators
       - bash: |
           PATH="$ANDROID_HOME/tools/bin:$PATH"
           PATH="$ANDROID_HOME/emulator:$PATH"
           cd DeviceTests
-          sh ./build.sh --target=test-android-emu --settings_skipverification=true --verbosity=diagnostic
+          dotnet tool install -g cake.tool --version 0.36.0
+          dotnet cake --target=test-android-emu --settings_skipverification=true --verbosity=diagnostic
         displayName: 'Run Device Tests - Android'
       - task: PublishTestResults@2
         displayName: 'Publish Test Results'
@@ -226,4 +270,3 @@ jobs:
           inputs:
             artifactName: nuget-signed
             pathToPublish: '$(Build.ArtifactStagingDirectory)/signed'
-

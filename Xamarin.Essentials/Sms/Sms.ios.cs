@@ -26,7 +26,7 @@ namespace Xamarin.Essentials
             messageController.Finished += (sender, e) =>
             {
                 messageController.DismissViewController(true, null);
-                tcs.TrySetResult(e.Result == MessageComposeResult.Sent);
+                tcs?.TrySetResult(e.Result == MessageComposeResult.Sent);
             };
             controller.PresentViewController(messageController, true, null);
 

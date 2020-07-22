@@ -1,0 +1,34 @@
+<Type Name="Permissions+Maps" FullName="Xamarin.Essentials.Permissions+Maps">
+  <TypeSignature Language="C#" Value="public class Permissions.Maps : Xamarin.Essentials.Permissions.BasePlatformPermission" />
+  <TypeSignature Language="ILAsm" Value=".class nested public auto ansi beforefieldinit Permissions/Maps extends Xamarin.Essentials.Permissions/BasePlatformPermission" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Permissions.Maps" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>Xamarin.Essentials.Permissions+BasePlatformPermission</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Permission to access maps.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Maps ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Permissions.Maps.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Public constructor for permission.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

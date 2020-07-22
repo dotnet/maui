@@ -28,10 +28,24 @@ namespace Xamarin.Essentials
                     {
                         sfViewController.PopoverPresentationController.SourceView = vc.View;
                     }
+
+                    if (options.HasFlag(BrowserLaunchFlags.PresentAsFormSheet))
+                        sfViewController.ModalPresentationStyle = UIModalPresentationStyle.FormSheet;
+                    else if (options.HasFlag(BrowserLaunchFlags.PresentAsPageSheet))
+                        sfViewController.ModalPresentationStyle = UIModalPresentationStyle.PageSheet;
+
                     await vc.PresentViewControllerAsync(sfViewController, true);
                     break;
                 case BrowserLaunchMode.External:
-                    return await UIApplication.SharedApplication.OpenUrlAsync(nativeUrl, new UIApplicationOpenUrlOptions());
+                    if (Platform.HasOSVersion(10, 0))
+                    {
+                        return await UIApplication.SharedApplication.OpenUrlAsync(nativeUrl, new UIApplicationOpenUrlOptions());
+                    }
+                    else
+                    {
+                        UIApplication.SharedApplication.OpenUrl(nativeUrl);
+                    }
+                    break;
             }
 
             return true;

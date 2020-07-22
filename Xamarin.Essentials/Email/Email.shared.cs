@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -29,15 +28,15 @@ namespace Xamarin.Essentials
 
             var parts = new List<string>();
             if (!string.IsNullOrEmpty(message?.Body))
-                parts.Add("body=" + Uri.EscapeUriString(message.Body));
+                parts.Add("body=" + Uri.EscapeDataString(message.Body));
             if (!string.IsNullOrEmpty(message?.Subject))
-                parts.Add("subject=" + Uri.EscapeUriString(message.Subject));
-            if (message?.To.Count > 0)
-                parts.Add("to=" + string.Join(",", message.To));
-            if (message?.Cc.Count > 0)
-                parts.Add("cc=" + string.Join(",", message.Cc));
-            if (message?.Bcc.Count > 0)
-                parts.Add("bcc=" + string.Join(",", message.Bcc));
+                parts.Add("subject=" + Uri.EscapeDataString(message.Subject));
+            if (message?.To?.Count > 0)
+                parts.Add("to=" + Uri.EscapeDataString(string.Join(",", message.To)));
+            if (message?.Cc?.Count > 0)
+                parts.Add("cc=" + Uri.EscapeDataString(string.Join(",", message.Cc)));
+            if (message?.Bcc?.Count > 0)
+                parts.Add("bcc=" + Uri.EscapeDataString(string.Join(",", message.Bcc)));
 
             var uri = "mailto:";
             if (parts.Count > 0)
@@ -85,41 +84,16 @@ namespace Xamarin.Essentials
         public EmailAttachment(string fullPath)
             : base(fullPath)
         {
-            ExperimentalFeatures.VerifyEnabled(ExperimentalFeatures.EmailAttachments);
         }
 
         public EmailAttachment(string fullPath, string contentType)
             : base(fullPath, contentType)
         {
-            ExperimentalFeatures.VerifyEnabled(ExperimentalFeatures.EmailAttachments);
         }
 
         public EmailAttachment(FileBase file)
             : base(file)
         {
-            ExperimentalFeatures.VerifyEnabled(ExperimentalFeatures.EmailAttachments);
-        }
-
-        string attachmentName;
-
-        public string AttachmentName
-        {
-            get => GetAttachmentName();
-            set => attachmentName = value;
-        }
-
-        internal string GetAttachmentName()
-        {
-            // try the provided file name
-            if (!string.IsNullOrWhiteSpace(attachmentName))
-                return attachmentName;
-
-            // try get from the path
-            if (!string.IsNullOrWhiteSpace(FullPath))
-                return Path.GetFileName(FullPath);
-
-            // this should never happen as the path is validated in the constructor
-            throw new InvalidOperationException($"Unable to determine the attachment file name from '{FullPath}'.");
         }
     }
 }

@@ -27,7 +27,8 @@
                     <Switch HorizontalOptions="End" IsToggled="{Binding ShareText}" VerticalOptions="End" />
                 </StackLayout>
 
-                <Entry Text="{Binding Text}" Placeholder="Enter text to share here." />
+                <Editor Text="{Binding Text}" Placeholder="Enter text to share here."
+                        Keyboard="Chat" AutoSize="TextChanges" />
 
                 <StackLayout Orientation="Horizontal">
                     <Label Text="URI" HorizontalOptions="StartAndExpand" VerticalOptions="End" />
@@ -36,7 +37,7 @@
 
                 <Entry Text="{Binding Uri}" Placeholder="Enter URI to share here." />
 
-                <Button Text="Share Text" Command="{Binding RequestCommand}" />
+                <Button Text="Share Text" Command="{Binding RequestCommand}" CommandParameter="{Binding Source={RelativeSource Self}}" />
 
                 <BoxView Margin="0,4,0,4" HeightRequest="1" BackgroundColor="Gray" HorizontalOptions="FillAndExpand" />
 
@@ -48,10 +49,10 @@
                 <Label Text="File Name:" />
                 <Entry Text="{Binding ShareFileAttachmentName}" />
                 <Label Text="File Contents:" />
-                <Editor Text="{Binding ShareFileAttachmentContents}" Keyboard="Chat"
-                        VerticalOptions="FillAndExpand" HeightRequest="200" />
+                <Editor Text="{Binding ShareFileAttachmentContents}"
+                        Keyboard="Chat" AutoSize="TextChanges" />
 
-                <Button Text="Share File" Command="{Binding RequestFileCommand}" />
+                <Button Text="Share File" Command="{Binding RequestFileCommand}" CommandParameter="{Binding Source={RelativeSource Self}}" />
 
             </StackLayout>
         </ScrollView>

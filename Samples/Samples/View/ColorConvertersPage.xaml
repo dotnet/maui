@@ -1,0 +1,58 @@
+﻿<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:views="clr-namespace:Samples.View"
+                xmlns:viewmodels="clr-namespace:Samples.ViewModel"
+                x:Class="Samples.View.ColorConvertersPage"
+                Title="Color Converters">
+    <views:BasePage.BindingContext>
+        <viewmodels:ColorConvertersViewModel />
+    </views:BasePage.BindingContext>
+
+    <StackLayout>
+        <Label Text="Create, convert, and adjust colors." FontAttributes="Bold" Margin="12" />
+
+        <ScrollView>
+            <Grid Padding="12,0,12,12" RowSpacing="16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Label Text="Hex Color: " VerticalOptions="Center" Grid.Row="0" Grid.Column="0"/>
+                <Entry Text="{Binding Hex}" HorizontalOptions="FillAndExpand" VerticalOptions="Center" Grid.Row="0" Grid.Column="1"/>
+
+                <BoxView CornerRadius="8" HeightRequest="24" BackgroundColor="{Binding RegularColor}" Grid.Row="1" Grid.ColumnSpan="2"/>
+
+                <Label Text="Complementary Color:" Grid.Row="2" VerticalOptions="Center"/>
+                <BoxView CornerRadius="8" HeightRequest="24" BackgroundColor="{Binding ComplementColor}" Grid.Row="2" Grid.Column="1" VerticalOptions="Center"/>
+
+                <Label Text="{Binding Alpha, StringFormat='Alpha: {0:F0}'}" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"/>
+                <Slider Minimum="0" Maximum="255" Value="{Binding Alpha}" Grid.Row="5" Grid.Column="0" VerticalOptions="Center"/>
+                <BoxView CornerRadius="8" HeightRequest="24" BackgroundColor="{Binding AlphaColor}" Grid.Row="5" Grid.Column="1"/>
+
+                <Label Text="{Binding Hue, StringFormat='Hue: {0:F0}'}" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"/>
+                <Slider Minimum="0" Maximum="360" Value="{Binding Hue}" Grid.Row="7" Grid.Column="0" VerticalOptions="Center"/>
+                <BoxView CornerRadius="8" HeightRequest="24" BackgroundColor="{Binding HueColor}" Grid.Row="7" Grid.Column="1"/>
+
+                <Label Text="{Binding Luminosity, StringFormat='Luminosity: {0:F0}'}" Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2"/>
+                <Slider Minimum="0" Maximum="100" Value="{Binding Luminosity}" Grid.Row="9" Grid.Column="0" VerticalOptions="Center"/>
+                <BoxView CornerRadius="8" HeightRequest="24" BackgroundColor="{Binding LuminosityColor}" Grid.Row="9" Grid.Column="1"/>
+
+                <Label Text="{Binding Saturation, StringFormat='Saturation: {0:F0}'}" Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="2"/>
+                <Slider Minimum="0" Maximum="100" Value="{Binding Saturation}" Grid.Row="11" Grid.Column="0" VerticalOptions="Center"/>
+                <BoxView CornerRadius="8" HeightRequest="24" BackgroundColor="{Binding SaturationColor}" Grid.Row="11" Grid.Column="1"/>
+            </Grid>
+        </ScrollView>
+    </StackLayout>
+
+</views:BasePage>

@@ -68,6 +68,17 @@ namespace DeviceTests
             Assert.True(await Launcher.CanOpenAsync(new Uri(uri)));
         }
 
+#if __IOS__
+        [Theory]
+        [InlineData("https://maps.apple.com/maps?q=Ole Vigs Gate 8B", "https://maps.apple.com/maps?q=Ole%20Vigs%20Gate%208B")]
+        [InlineData("https://maps.apple.com", "https://maps.apple.com")]
+        public void GetNativeUrl(string uri, string expected)
+        {
+            var url = Launcher.GetNativeUrl(new Uri(uri));
+            Assert.Equal(expected, url.AbsoluteString);
+        }
+#endif
+
         [Theory]
         [InlineData("Not Valid Uri")]
         public async Task InvalidUri(string uri)
@@ -87,6 +98,36 @@ namespace DeviceTests
         public async Task CanNotOpen(string uri)
         {
             Assert.False(await Launcher.CanOpenAsync(uri));
+        }
+
+        [Theory]
+        [InlineData("http://www.example.com")]
+        [InlineData("http://example.com/?query=blah")]
+        [InlineData("https://example.com/?query=blah")]
+        [InlineData("mailto://someone@microsoft.com")]
+        [InlineData("mailto://someone@microsoft.com?subject=test")]
+        [InlineData("tel:+1 555 010 9999")]
+        [InlineData("sms:5550109999")]
+        [Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
+        public async Task TryOpen(string uri)
+        {
+#if __IOS__
+            if (DeviceInfo.DeviceType == DeviceType.Virtual && (uri.Contains("tel:") || uri.Contains("mailto:")))
+            {
+                Assert.False(await Launcher.TryOpenAsync(uri));
+                return;
+            }
+#endif
+
+            Assert.True(await Launcher.TryOpenAsync(uri));
+        }
+
+        [Theory]
+        [InlineData("ms-invalidurifortest:abc")]
+        [Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
+        public async Task CanNotTryOpen(string uri)
+        {
+            Assert.False(await Launcher.TryOpenAsync(new Uri(uri)));
         }
     }
 }

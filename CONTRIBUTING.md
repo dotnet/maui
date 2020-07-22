@@ -78,7 +78,7 @@ We do "nothing":
 
 This project uses [mdoc](http://www.mono-project.com/docs/tools+libraries/tools/monodoc/generating-documentation/) to document types, members, and to add small code snippets and examples.  mdoc files are simple xml files and there is an msbuild target you can invoke to help generate the xml placeholders.
 
-Read the [Documenting your code with mdoc wiki page](wiki/Documenting-your-code-with-mdoc) for more information on this process.
+Read the [Documenting your code with mdoc wiki page](https://github.com/xamarin/Essentials/wiki/Documenting-your-code-with-mdoc) for more information on this process.
 
 Every pull request which affects public types or members should include corresponding mdoc xml file changes.
 
@@ -87,7 +87,7 @@ Every pull request which affects public types or members should include correspo
 
 If you're looking for something to fix, please browse [open issues](https://github.com/xamarin/Essentials/issues). 
 
-Follow the style used by the [.NET Foundation](https://github.com/dotnet/corefx/blob/master/Documentation/coding-guidelines/coding-style.md), with two primary exceptions:
+Follow the style used by the [.NET Foundation](https://github.com/dotnet/runtime/blob/master/docs/coding-guidelines/coding-style.md), with two primary exceptions:
 
 - We do not use the `private` keyword as it is the default accessibility level in C#.
 - We will **not** use `_` or `s_` as a prefix for internal or private field names

@@ -15,7 +15,7 @@
     </Interface>
   </Interfaces>
   <Attributes>
-    <Attribute FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp">
+    <Attribute FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos">
       <AttributeName>System.Runtime.CompilerServices.IsReadOnly</AttributeName>
     </Attribute>
   </Attributes>
@@ -23,7 +23,9 @@
     <summary>
       <para>Contains the orientation of the user's device.</para>
     </summary>
-    <remarks></remarks>
+    <remarks>
+      <para></para>
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -39,8 +41,8 @@
         <Parameter Name="headingMagneticNorth" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="headingMagneticNorth">To be added.</param>
-        <summary>To be added.</summary>
+        <param name="headingMagneticNorth">A reading of compass data for heading magnetic north.</param>
+        <summary>Public constructor.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -64,7 +66,7 @@
         <summary>If equal to another object</summary>
         <returns>If equal</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -91,7 +93,7 @@
         <summary>Compares the underlying doubles.</summary>
         <returns>True if they are equal, otherwise false.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -112,7 +114,7 @@
         <summary>Get the hash code for object.</summary>
         <returns>The hash code</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -132,7 +134,7 @@
         <summary>The heading (measured in degrees) relative to magnetic north.</summary>
         <value>The magnetic north heading.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -158,7 +160,7 @@
         <summary>Equality operator for equals</summary>
         <returns>If equal</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -184,7 +186,7 @@
         <summary>Inequality check</summary>
         <returns>If not equal</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -202,8 +204,10 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <summary>Current string representation of the data.</summary>
+        <returns>
+          <para />
+        </returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

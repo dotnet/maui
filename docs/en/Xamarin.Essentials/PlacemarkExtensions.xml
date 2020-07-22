@@ -11,7 +11,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Extensions for the placemark.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -31,9 +31,11 @@
         <Parameter Name="placemark" Type="Xamarin.Essentials.Placemark" RefType="this" />
       </Parameters>
       <Docs>
-        <param name="placemark">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="placemark">The placemark to open the map to.</param>
+        <summary>Open the map to the placemark.</summary>
+        <returns>
+          <para />
+        </returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -54,9 +56,9 @@
         <Parameter Name="options" Type="Xamarin.Essentials.MapLaunchOptions" />
       </Parameters>
       <Docs>
-        <param name="placemark">To be added.</param>
-        <param name="options">To be added.</param>
-        <summary>To be added.</summary>
+        <param name="placemark">A placemark to open the map to.</param>
+        <param name="options">Options for opening the map.</param>
+        <summary>Open the map to the placemark with options.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

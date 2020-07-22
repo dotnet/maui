@@ -1,0 +1,28 @@
+﻿<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:views="clr-namespace:Samples.View"
+                xmlns:viewmodels="clr-namespace:Samples.ViewModel"
+                x:Class="Samples.View.FilePickerPage"
+                Title="File Picker">
+    <views:BasePage.BindingContext>
+        <viewmodels:FilePickerViewModel />
+    </views:BasePage.BindingContext>
+
+    <StackLayout Padding="12" Spacing="6">
+        <Label Text="Pick files from storage." FontAttributes="Bold" />
+
+        <FlexLayout Direction="Row" Wrap="Wrap">
+            <Button Text="Pick file" Command="{Binding PickFileCommand}" HorizontalOptions="FillAndExpand" />
+            <Button Text="Pick image" Command="{Binding PickImageCommand}" HorizontalOptions="FillAndExpand" />
+            <Button Text="Pick custom type" Command="{Binding PickCustomTypeCommand}" HorizontalOptions="FillAndExpand" />
+            <Button Text="Pick image and send email" Command="{Binding PickAndSendCommand}" HorizontalOptions="FillAndExpand" />
+            <Button Text="Pick multiple files" Command="{Binding PickMultipleFilesCommand}" HorizontalOptions="FillAndExpand" />
+        </FlexLayout>
+
+        <Label Text="{Binding Text}" HorizontalOptions="FillAndExpand" />
+
+        <Image Source="{Binding Image}" IsVisible="{Binding IsImageVisible}"
+               HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" />
+    </StackLayout>
+
+</views:BasePage>

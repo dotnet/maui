@@ -131,10 +131,10 @@ namespace Xamarin.Essentials
             Acceleration.Equals(other.Acceleration);
 
         public static bool operator ==(AccelerometerData left, AccelerometerData right) =>
-            Equals(left, right);
+            left.Equals(right);
 
         public static bool operator !=(AccelerometerData left, AccelerometerData right) =>
-           !Equals(left, right);
+           !left.Equals(right);
 
         public override int GetHashCode() =>
             Acceleration.GetHashCode();

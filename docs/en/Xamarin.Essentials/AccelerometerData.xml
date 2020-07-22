@@ -15,13 +15,15 @@
     </Interface>
   </Interfaces>
   <Attributes>
-    <Attribute FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp">
+    <Attribute FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos">
       <AttributeName>System.Runtime.CompilerServices.IsReadOnly</AttributeName>
     </Attribute>
   </Attributes>
   <Docs>
     <summary>Data representing the devies' three accelerometers.</summary>
-    <remarks></remarks>
+    <remarks>
+      <para></para>
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -39,10 +41,10 @@
         <Parameter Name="z" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="x">To be added.</param>
-        <param name="y">To be added.</param>
-        <param name="z">To be added.</param>
-        <summary>To be added.</summary>
+        <param name="x">X data</param>
+        <param name="y">Y data</param>
+        <param name="z">Z data</param>
+        <summary>Public constructor for accelerometer data.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -61,10 +63,10 @@
         <Parameter Name="z" Type="System.Single" />
       </Parameters>
       <Docs>
-        <param name="x">To be added.</param>
-        <param name="y">To be added.</param>
-        <param name="z">To be added.</param>
-        <summary>To be added.</summary>
+        <param name="x">X data</param>
+        <param name="y">Y data</param>
+        <param name="z">X data</param>
+        <summary>Public constructor for accelerometer data.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -82,8 +84,12 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the acceleration vector in G's (gravitational force). </summary>
-        <value></value>
-        <remarks></remarks>
+        <value>
+          <para />
+        </value>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Equals">
@@ -106,7 +112,7 @@
         <summary>If equal to another object</summary>
         <returns>If equal</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -133,7 +139,7 @@
         <summary>Compares the underlying Vector3 instances.</summary>
         <returns>True if they are equal, otherwise false.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -154,7 +160,7 @@
         <summary>Get the hash code for object.</summary>
         <returns>The hash code</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -180,7 +186,7 @@
         <summary>Equality operator for equals</summary>
         <returns>If equal</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -206,7 +212,7 @@
         <summary>Inequality check</summary>
         <returns>If not equal</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

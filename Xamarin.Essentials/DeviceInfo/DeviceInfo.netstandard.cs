@@ -2,13 +2,13 @@
 {
     public static partial class DeviceInfo
     {
-        static string GetModel() => throw new NotImplementedInReferenceAssemblyException();
+        static string GetModel() => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-        static string GetManufacturer() => throw new NotImplementedInReferenceAssemblyException();
+        static string GetManufacturer() => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-        static string GetDeviceName() => throw new NotImplementedInReferenceAssemblyException();
+        static string GetDeviceName() => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-        static string GetVersionString() => throw new NotImplementedInReferenceAssemblyException();
+        static string GetVersionString() => throw ExceptionUtils.NotSupportedOrImplementedException;
 
         static DevicePlatform GetPlatform() => DevicePlatform.Unknown;
 

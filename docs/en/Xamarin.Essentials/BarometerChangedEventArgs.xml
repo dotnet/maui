@@ -12,7 +12,9 @@
   <Interfaces />
   <Docs>
     <summary>The current pressure information from the change event.</summary>
-    <remarks></remarks>
+    <remarks>
+      <para />
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -28,8 +30,8 @@
         <Parameter Name="reading" Type="Xamarin.Essentials.BarometerData" />
       </Parameters>
       <Docs>
-        <param name="reading">To be added.</param>
-        <summary>To be added.</summary>
+        <param name="reading">The current reading</param>
+        <summary>Public constructor for barometer changed event args.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -48,7 +50,9 @@
       <Docs>
         <summary>Gets the current barometer pressure data</summary>
         <value>Pressure in hPA</value>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
   </Members>

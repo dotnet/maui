@@ -13,7 +13,7 @@ if ($IsMacOS) {
 } else {
     $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'
     $msbuild = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
-    $msbuild = join-path $msbuild 'MSBuild\15.0\Bin\MSBuild.exe'
+    $msbuild = join-path $msbuild 'MSBuild\Current\Bin\MSBuild.exe'
     $cibuild = "true"
 }
 

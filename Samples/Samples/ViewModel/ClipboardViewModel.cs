@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿using System;
+using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 
@@ -7,6 +8,7 @@ namespace Samples.ViewModel
     class ClipboardViewModel : BaseViewModel
     {
         string fieldValue;
+        string lastCopied;
 
         public ClipboardViewModel()
         {
@@ -22,6 +24,39 @@ namespace Samples.ViewModel
         {
             get => fieldValue;
             set => SetProperty(ref fieldValue, value);
+        }
+
+        public string LastCopied
+        {
+            get => lastCopied;
+            set => SetProperty(ref lastCopied, value);
+        }
+
+        public override void OnAppearing()
+        {
+            try
+            {
+                Clipboard.ClipboardContentChanged += OnClipboardContentChanged;
+            }
+            catch (FeatureNotSupportedException)
+            {
+            }
+        }
+
+        public override void OnDisappearing()
+        {
+            try
+            {
+                Clipboard.ClipboardContentChanged -= OnClipboardContentChanged;
+            }
+            catch (FeatureNotSupportedException)
+            {
+            }
+        }
+
+        void OnClipboardContentChanged(object sender, EventArgs args)
+        {
+            LastCopied = $"Last copied text at {DateTime.UtcNow:T}";
         }
 
         async void OnCopy() => await Clipboard.SetTextAsync(FieldValue);

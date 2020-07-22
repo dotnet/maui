@@ -13,7 +13,7 @@
   <Docs>
     <summary>Exception that occurs when executed from a reference assembly. This usually means that the NuGet was not installed into the app project.</summary>
     <remarks>
-      <para />
+      <para></para>
     </remarks>
   </Docs>
   <Members>
@@ -30,7 +30,7 @@
       <Docs>
         <summary>Default constructor.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

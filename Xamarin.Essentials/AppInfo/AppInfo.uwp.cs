@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using Windows.ApplicationModel;
+using Windows.UI.Xaml;
 
 namespace Xamarin.Essentials
 {
@@ -20,5 +21,8 @@ namespace Xamarin.Essentials
 
         static void PlatformShowSettingsUI() =>
             Windows.System.Launcher.LaunchUriAsync(new System.Uri("ms-settings:appsfeatures-app")).WatchForError();
+
+        static AppTheme PlatformRequestedTheme() =>
+            Application.Current.RequestedTheme == ApplicationTheme.Dark ? AppTheme.Dark : AppTheme.Light;
     }
 }

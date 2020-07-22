@@ -15,7 +15,7 @@
     </Interface>
   </Interfaces>
   <Attributes>
-    <Attribute FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp">
+    <Attribute FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp;xamarin-essentials-tvos;xamarin-essentials-watchos;xamarin-essentials-macos">
       <AttributeName>System.Runtime.CompilerServices.IsReadOnly</AttributeName>
     </Attribute>
   </Attributes>
@@ -42,10 +42,14 @@
         <Parameter Name="deviceIdiom" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="deviceIdiom">To be added.</param>
+        <param name="deviceIdiom">The idiom name of the device</param>
         <summary>Creates a new device idiom.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <returns>
+          <para />
+        </returns>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Desktop">
@@ -62,7 +66,9 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the desktop idiom.</summary>
-        <value>To be added.</value>
+        <value>
+          <para></para>
+        </value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -82,9 +88,9 @@
         <Parameter Name="obj" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="obj">To be added.</param>
+        <param name="obj">The object ot compare.</param>
         <summary>Checks the equality of the idiom.</summary>
-        <returns>To be added.</returns>
+        <returns>If the values are equal</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -107,9 +113,9 @@
         <Parameter Name="other" Type="Xamarin.Essentials.DeviceIdiom" />
       </Parameters>
       <Docs>
-        <param name="other">To be added.</param>
+        <param name="other">The object ot compare.</param>
         <summary>Checks the equality of the idiom.</summary>
-        <returns>To be added.</returns>
+        <returns>If the values are equal</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -128,7 +134,7 @@
       <Parameters />
       <Docs>
         <summary>Gets the hash code for the idom.</summary>
-        <returns>To be added.</returns>
+        <returns>The hashc ode</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -149,10 +155,10 @@
         <Parameter Name="right" Type="Xamarin.Essentials.DeviceIdiom" />
       </Parameters>
       <Docs>
-        <param name="left">To be added.</param>
-        <param name="right">To be added.</param>
+        <param name="left">The left idiom to compare.</param>
+        <param name="right">The right idiom to compare.</param>
         <summary>Checks the equality of the idiom.</summary>
-        <returns>To be added.</returns>
+        <returns>If they are equal</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -173,10 +179,10 @@
         <Parameter Name="right" Type="Xamarin.Essentials.DeviceIdiom" />
       </Parameters>
       <Docs>
-        <param name="left">To be added.</param>
-        <param name="right">To be added.</param>
+        <param name="left">The left idiom to compare.</param>
+        <param name="right">The right idiom to compare.</param>
         <summary>Checks the equality of the idiom.</summary>
-        <returns>To be added.</returns>
+        <returns>If they are inequal</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -194,7 +200,7 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the phone idiom.</summary>
-        <value>To be added.</value>
+        <value>The phone idiom</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -212,7 +218,7 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the tablet idiom.</summary>
-        <value>To be added.</value>
+        <value>The tablet idiom</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -231,7 +237,7 @@
       <Parameters />
       <Docs>
         <summary>String representation of the idiom.</summary>
-        <returns>To be added.</returns>
+        <returns>String representation of the idiom.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -249,7 +255,7 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the TV idiom.</summary>
-        <value>To be added.</value>
+        <value>The TV idiom</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -267,7 +273,7 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the unknown idiom.</summary>
-        <value>To be added.</value>
+        <value>An unknown idiom.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -285,7 +291,7 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the watch idiom.</summary>
-        <value>To be added.</value>
+        <value>The watch idiom</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

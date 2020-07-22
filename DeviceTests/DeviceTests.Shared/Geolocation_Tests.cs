@@ -13,6 +13,11 @@ namespace DeviceTests
         [Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
         public async Task Get_LastKnownLocation_Is_Something()
         {
+            await MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+            });
+
             var location = await Geolocation.GetLastKnownLocationAsync();
 
             Assert.NotNull(location);
@@ -33,6 +38,11 @@ namespace DeviceTests
         [Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
         public async Task Get_Location_Is_Something()
         {
+            await MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+            });
+
             var location = await Geolocation.GetLocationAsync();
 
             Assert.NotNull(location);
@@ -53,6 +63,11 @@ namespace DeviceTests
         [Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
         public async Task Get_Location_With_Request_Is_Something()
         {
+            await MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+            });
+
             var request = new GeolocationRequest(GeolocationAccuracy.Best);
             var location = await Geolocation.GetLocationAsync(request);
 

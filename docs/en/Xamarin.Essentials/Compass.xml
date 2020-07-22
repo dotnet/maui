@@ -13,7 +13,7 @@
   <Docs>
     <summary>Monitor changes to the orientation of the user's device.</summary>
     <remarks>
-      <para />
+      <para></para>
     </remarks>
   </Docs>
   <Members>
@@ -32,7 +32,9 @@
       <Docs>
         <summary>Gets if compass is actively being monitored.</summary>
         <value>If compass is being monitored.</value>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ReadingChanged">
@@ -50,7 +52,7 @@
       <Docs>
         <summary>Event triggered when compass reading changes.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -131,7 +133,9 @@
       <Parameters />
       <Docs>
         <summary>Stop monitoring for changes to the compass.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
   </Members>

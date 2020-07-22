@@ -21,6 +21,6 @@ namespace Tests
 
         [Fact]
         public async Task Request_File_Request_NetStandard() =>
-            await Assert.ThrowsAsync<InvalidOperationException>(() => Share.RequestAsync(new ShareFileRequest()));
+            await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => Share.RequestAsync(new ShareFileRequest()));
     }
 }

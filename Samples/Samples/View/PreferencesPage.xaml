@@ -14,7 +14,8 @@
         <ScrollView>
             <StackLayout Padding="12,0,12,12" Spacing="6">
                 <Label Text="Enter some text to save:" />
-                <Entry Placeholder="Enter text..." Text="{Binding PreferenceValue}" />
+                <Editor Placeholder="Enter text..." Text="{Binding PreferenceValue}"
+                        AutoSize="TextChanges" />
             </StackLayout>
         </ScrollView>
     </StackLayout>

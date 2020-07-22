@@ -1,0 +1,75 @@
+<Type Name="FilePicker" FullName="Xamarin.Essentials.FilePicker">
+  <TypeSignature Language="C#" Value="public static class FilePicker" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit FilePicker extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.FilePicker" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Lets the user pick a file from the device's storage.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="PickAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;Xamarin.Essentials.FilePickerResult&gt; PickAsync (Xamarin.Essentials.PickOptions options = null);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class Xamarin.Essentials.FilePickerResult&gt; PickAsync(class Xamarin.Essentials.PickOptions options) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.FilePicker.PickAsync(Xamarin.Essentials.PickOptions)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;Xamarin.Essentials.FilePickerResult&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="options" Type="Xamarin.Essentials.PickOptions" />
+      </Parameters>
+      <Docs>
+        <param name="options">File picker options to use; may be null</param>
+        <summary>Starts file picker for selecting a single file.</summary>
+        <returns>File picking result object, or null when picking was cancelled by the user.</returns>
+        <remarks>
+          File types can be specified in order to limit files that can be selected, using a
+          PickOptions object. Note that this method may re-throw platform specific exceptions that
+          occured during file picking. When calling PickAsync() again while showing a file
+          picker, the Task object that was returned from the first call is cancelled. Be sure to
+          also handle the TaskCanceledException in this case.
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="PickMultipleAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.FilePickerResult&gt;&gt; PickMultipleAsync (Xamarin.Essentials.PickOptions options = null);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class System.Collections.Generic.IEnumerable`1&lt;class Xamarin.Essentials.FilePickerResult&gt;&gt; PickMultipleAsync(class Xamarin.Essentials.PickOptions options) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.FilePicker.PickMultipleAsync(Xamarin.Essentials.PickOptions)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.FilePickerResult&gt;&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="options" Type="Xamarin.Essentials.PickOptions" />
+      </Parameters>
+      <Docs>
+        <param name="options">File picker options to use; may be null</param>
+        <summary>Starts file picker for selecting a single file.</summary>
+        <returns>File picking result object, or null when picking was cancelled by the user.</returns>
+        <remarks>
+          File types can be specified in order to limit files that can be selected, using a
+          PickOptions object. Note that this method may re-throw platform specific exceptions that
+          occured during file picking. When calling PickMultipleAsync() again while showing a file
+          picker, the Task object that was returned from the first call is cancelled. Be sure to
+          also handle the TaskCanceledException in this case.
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

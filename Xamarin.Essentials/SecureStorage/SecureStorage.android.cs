@@ -14,14 +14,43 @@ namespace Xamarin.Essentials
 {
     public static partial class SecureStorage
     {
+        public static bool LegacyKeyHashFallback { get; set; } = true;
+
         static readonly object locker = new object();
 
         static Task<string> PlatformGetAsync(string key)
         {
             var context = Platform.AppContext;
 
-            string defaultEncStr = null;
-            var encStr = Preferences.Get(Utils.Md5Hash(key), defaultEncStr, Alias);
+            string encStr = default;
+            var foundLegacyValue = false;
+
+            if (LegacyKeyHashFallback)
+            {
+                // If not found, could have been previously stored with md5 key
+                if (!Preferences.ContainsKey(key, Alias))
+                {
+                    // If previously stored with md5 key, save with new key
+                    var md5Key = Md5Hash(key);
+                    if (Preferences.ContainsKey(md5Key, Alias))
+                    {
+                        encStr = Preferences.Get(md5Key, null, Alias);
+                        Preferences.Set(key, encStr, Alias);
+                        foundLegacyValue = true;
+
+                        try
+                        {
+                            Preferences.Remove(md5Key, Alias);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+            }
+
+            if (!foundLegacyValue)
+                encStr = Preferences.Get(key, null, Alias);
 
             string decryptedData = null;
             if (!string.IsNullOrEmpty(encStr))
@@ -57,7 +86,9 @@ namespace Xamarin.Essentials
             }
 
             var encStr = Convert.ToBase64String(encryptedData);
-            Preferences.Set(Utils.Md5Hash(key), encStr, Alias);
+            Preferences.Set(key, encStr, Alias);
+
+            CheckForAndRemoveLegacyKey(key);
 
             return Task.CompletedTask;
         }
@@ -66,16 +97,48 @@ namespace Xamarin.Essentials
         {
             var context = Platform.AppContext;
 
-            key = Utils.Md5Hash(key);
             Preferences.Remove(key, Alias);
 
-            return false;
+            CheckForAndRemoveLegacyKey(key);
+
+            return true;
+        }
+
+        static void CheckForAndRemoveLegacyKey(string key)
+        {
+            if (LegacyKeyHashFallback)
+            {
+                var md5Key = Md5Hash(key);
+
+                if (Preferences.ContainsKey(md5Key, Alias))
+                {
+                    try
+                    {
+                        Preferences.Remove(md5Key, Alias);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
         }
 
         static void PlatformRemoveAll() =>
             Preferences.Clear(Alias);
 
         internal static bool AlwaysUseAsymmetricKeyStorage { get; set; } = false;
+
+        internal static string Md5Hash(string input)
+        {
+            var hash = new StringBuilder();
+            var md5provider = new System.Security.Cryptography.MD5CryptoServiceProvider();
+            var bytes = md5provider.ComputeHash(Encoding.UTF8.GetBytes(input));
+
+            for (var i = 0; i < bytes.Length; i++)
+                hash.Append(bytes[i].ToString("x2"));
+
+            return hash.ToString();
+        }
     }
 
     class AndroidKeyStore

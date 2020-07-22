@@ -23,7 +23,7 @@ namespace Xamarin.Essentials
         Medium = 3,
 
         // iOS:     NearestTenMeters        (10m)
-        // Android: ACCURACY_HI, POWER_MED  (0-100m)
+        // Android: ACCURACY_HI, POWER_HI   (0-100m)
         // UWP:     High                    (<=10m)
         High = 4,
 

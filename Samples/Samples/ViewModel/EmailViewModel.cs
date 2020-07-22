@@ -17,6 +17,7 @@ namespace Samples.ViewModel
         string recipientsBcc;
         string attachmentContents;
         string attachmentName;
+        bool hasMultipleAttachements;
         bool isHtml;
 
         public EmailViewModel()
@@ -68,6 +69,12 @@ namespace Samples.ViewModel
             set => SetProperty(ref attachmentName, value);
         }
 
+        public bool HasMultipleAttachements
+        {
+            get => hasMultipleAttachements;
+            set => SetProperty(ref hasMultipleAttachements, value);
+        }
+
         public bool IsHtml
         {
             get => isHtml;
@@ -100,6 +107,15 @@ namespace Samples.ViewModel
                     File.WriteAllText(file, AttachmentContents);
 
                     message.Attachments.Add(new EmailAttachment(file));
+
+                    if (HasMultipleAttachements)
+                    {
+                        fn = "1" + fn;
+                        file = Path.Combine(FileSystem.CacheDirectory, fn);
+                        File.WriteAllText(file, AttachmentContents);
+
+                        message.Attachments.Add(new EmailAttachment(file));
+                    }
                 }
 
                 await Email.ComposeAsync(message);

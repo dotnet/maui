@@ -3,6 +3,7 @@ using Android.Content;
 using Android.Content.Res;
 using Android.Provider;
 using Android.Runtime;
+using Android.Util;
 using Android.Views;
 
 namespace Xamarin.Essentials
@@ -32,7 +33,9 @@ namespace Xamarin.Essentials
 
         static DisplayInfo GetMainDisplayInfo()
         {
-            var displayMetrics = Platform.AppContext.Resources?.DisplayMetrics;
+            using var displayMetrics = new DisplayMetrics();
+            using var display = GetDefaultDisplay();
+            display?.GetRealMetrics(displayMetrics);
 
             return new DisplayInfo(
                 width: displayMetrics?.WidthPixels ?? 0,
@@ -63,48 +66,35 @@ namespace Xamarin.Essentials
 
         static DisplayRotation CalculateRotation()
         {
-            var service = Platform.AppContext.GetSystemService(Context.WindowService);
-            var display = service?.JavaCast<IWindowManager>()?.DefaultDisplay;
+            using var display = GetDefaultDisplay();
 
-            if (display != null)
+            return display?.Rotation switch
             {
-                switch (display.Rotation)
-                {
-                    case SurfaceOrientation.Rotation270:
-                        return DisplayRotation.Rotation270;
-                    case SurfaceOrientation.Rotation180:
-                        return DisplayRotation.Rotation180;
-                    case SurfaceOrientation.Rotation90:
-                        return DisplayRotation.Rotation90;
-                    case SurfaceOrientation.Rotation0:
-                        return DisplayRotation.Rotation0;
-                }
-            }
-
-            return DisplayRotation.Unknown;
+                SurfaceOrientation.Rotation270 => DisplayRotation.Rotation270,
+                SurfaceOrientation.Rotation180 => DisplayRotation.Rotation180,
+                SurfaceOrientation.Rotation90 => DisplayRotation.Rotation90,
+                SurfaceOrientation.Rotation0 => DisplayRotation.Rotation0,
+                _ => DisplayRotation.Unknown,
+            };
         }
 
         static DisplayOrientation CalculateOrientation()
         {
-            var config = Platform.AppContext.Resources?.Configuration;
-
-            if (config != null)
+            return Platform.AppContext.Resources?.Configuration?.Orientation switch
             {
-                switch (config.Orientation)
-                {
-                    case Orientation.Landscape:
-                        return DisplayOrientation.Landscape;
-                    case Orientation.Portrait:
-                    case Orientation.Square:
-                        return DisplayOrientation.Portrait;
-                }
-            }
-
-            return DisplayOrientation.Unknown;
+                Orientation.Landscape => DisplayOrientation.Landscape,
+                Orientation.Portrait => DisplayOrientation.Portrait,
+                Orientation.Square => DisplayOrientation.Portrait,
+                _ => DisplayOrientation.Unknown
+            };
         }
 
-        static string GetSystemSetting(string name)
-           => Settings.System.GetString(Platform.AppContext.ContentResolver, name);
+        static Display GetDefaultDisplay()
+        {
+            using var service = Platform.AppContext.GetSystemService(Context.WindowService);
+            using var windowManager = service?.JavaCast<IWindowManager>();
+            return windowManager?.DefaultDisplay;
+        }
     }
 
     class Listener : OrientationEventListener

@@ -13,7 +13,7 @@
   <Docs>
     <summary>The current connectivity information from the change event.</summary>
     <remarks>
-      <para />
+      <para></para>
     </remarks>
   </Docs>
   <Members>
@@ -31,10 +31,12 @@
         <Parameter Name="connectionProfiles" Type="System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ConnectionProfile&gt;" />
       </Parameters>
       <Docs>
-        <param name="access">To be added.</param>
-        <param name="connectionProfiles">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="access">The current access of the network</param>
+        <param name="connectionProfiles">The connection profiles of the events changing</param>
+        <summary>Public constructor</summary>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ConnectionProfiles">
@@ -53,7 +55,7 @@
         <summary>Gets the active connectivity types for the device.</summary>
         <value>List of all connection profiles.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -72,7 +74,9 @@
       <Docs>
         <summary>Gets the current state of network access. Does not guarantee full access to the internet.</summary>
         <value>The current network access state.</value>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ToString">
@@ -89,9 +93,13 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <summary>The string representation of the event.</summary>
+        <returns>
+          <para />
+        </returns>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
   </Members>

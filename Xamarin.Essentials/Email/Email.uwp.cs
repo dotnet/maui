@@ -38,7 +38,7 @@ namespace Xamarin.Essentials
                     var file = attachment.File ?? await StorageFile.GetFileFromPathAsync(path);
 
                     var stream = RandomAccessStreamReference.CreateFromFile(file);
-                    var nativeAttachment = new NativeEmailAttachment(attachment.AttachmentName, stream);
+                    var nativeAttachment = new NativeEmailAttachment(attachment.FileName, stream);
 
                     if (!string.IsNullOrEmpty(attachment.ContentType))
                         nativeAttachment.MimeType = attachment.ContentType;

@@ -31,10 +31,16 @@ namespace Xamarin.Essentials
             var currentIdiom = DeviceIdiom.Unknown;
 
             // first try UIModeManager
-            using (var uiModeManager = UiModeManager.FromContext(Essentials.Platform.AppContext))
+            using var uiModeManager = UiModeManager.FromContext(Essentials.Platform.AppContext);
+
+            try
             {
                 var uiMode = uiModeManager?.CurrentModeType ?? UiMode.TypeUndefined;
                 currentIdiom = DetectIdiom(uiMode);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Unable to detect using UiModeManager: {ex.Message}");
             }
 
             // then try Configuration
@@ -43,28 +49,20 @@ namespace Xamarin.Essentials
                 var configuration = Essentials.Platform.AppContext.Resources?.Configuration;
                 if (configuration != null)
                 {
-                    var uiMode = configuration.UiMode;
-                    currentIdiom = DetectIdiom(uiMode);
-
-                    // now just guess
-                    if (currentIdiom == DeviceIdiom.Unknown)
+                    var minWidth = configuration.SmallestScreenWidthDp;
+                    var isWide = minWidth >= tabletCrossover;
+                    currentIdiom = isWide ? DeviceIdiom.Tablet : DeviceIdiom.Phone;
+                }
+                else
+                {
+                    // start clutching at straws
+                    using var metrics = Essentials.Platform.AppContext.Resources?.DisplayMetrics;
+                    if (metrics != null)
                     {
-                        var minWidth = configuration.SmallestScreenWidthDp;
-                        var isWide = minWidth >= tabletCrossover;
+                        var minSize = Math.Min(metrics.WidthPixels, metrics.HeightPixels);
+                        var isWide = minSize * metrics.Density >= tabletCrossover;
                         currentIdiom = isWide ? DeviceIdiom.Tablet : DeviceIdiom.Phone;
                     }
-                }
-            }
-
-            // start clutching at straws
-            if (currentIdiom == DeviceIdiom.Unknown)
-            {
-                var metrics = Essentials.Platform.AppContext.Resources?.DisplayMetrics;
-                if (metrics != null)
-                {
-                    var minSize = Math.Min(metrics.WidthPixels, metrics.HeightPixels);
-                    var isWide = minSize * metrics.Density >= tabletCrossover;
-                    currentIdiom = isWide ? DeviceIdiom.Tablet : DeviceIdiom.Phone;
                 }
             }
 
@@ -74,13 +72,13 @@ namespace Xamarin.Essentials
 
         static DeviceIdiom DetectIdiom(UiMode uiMode)
         {
-            if (uiMode.HasFlag(UiMode.TypeNormal))
+            if (uiMode == UiMode.TypeNormal)
                 return DeviceIdiom.Unknown;
-            else if (uiMode.HasFlag(UiMode.TypeTelevision))
+            else if (uiMode == UiMode.TypeTelevision)
                 return DeviceIdiom.TV;
-            else if (uiMode.HasFlag(UiMode.TypeDesk))
+            else if (uiMode == UiMode.TypeDesk)
                 return DeviceIdiom.Desktop;
-            else if (Essentials.Platform.HasApiLevel(BuildVersionCodes.KitkatWatch) && uiMode.HasFlag(UiMode.TypeWatch))
+            else if (Essentials.Platform.HasApiLevel(BuildVersionCodes.KitkatWatch) && uiMode == UiMode.TypeWatch)
                 return DeviceIdiom.Watch;
 
             return DeviceIdiom.Unknown;
@@ -89,15 +87,23 @@ namespace Xamarin.Essentials
         static DeviceType GetDeviceType()
         {
             var isEmulator =
+                (Build.Brand.StartsWith("generic", StringComparison.InvariantCulture) && Build.Device.StartsWith("generic", StringComparison.InvariantCulture)) ||
                 Build.Fingerprint.StartsWith("generic", StringComparison.InvariantCulture) ||
                 Build.Fingerprint.StartsWith("unknown", StringComparison.InvariantCulture) ||
+                Build.Hardware.Contains("goldfish") ||
+                Build.Hardware.Contains("ranchu") ||
                 Build.Model.Contains("google_sdk") ||
                 Build.Model.Contains("Emulator") ||
                 Build.Model.Contains("Android SDK built for x86") ||
                 Build.Manufacturer.Contains("Genymotion") ||
                 Build.Manufacturer.Contains("VS Emulator") ||
-                (Build.Brand.StartsWith("generic", StringComparison.InvariantCulture) && Build.Device.StartsWith("generic", StringComparison.InvariantCulture)) ||
-                Build.Product.Equals("google_sdk", StringComparison.InvariantCulture);
+                Build.Product.Contains("emulator") ||
+                Build.Product.Contains("google_sdk") ||
+                Build.Product.Contains("sdk") ||
+                Build.Product.Contains("sdk_google") ||
+                Build.Product.Contains("sdk_x86") ||
+                Build.Product.Contains("simulator") ||
+                Build.Product.Contains("vbox86p");
 
             if (isEmulator)
                 return DeviceType.Virtual;

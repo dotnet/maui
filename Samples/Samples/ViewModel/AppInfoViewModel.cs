@@ -13,6 +13,8 @@ namespace Samples.ViewModel
 
         public string AppBuild => AppInfo.BuildString;
 
+        public string AppTheme => AppInfo.RequestedTheme.ToString();
+
         public Command ShowSettingsUICommand { get; }
 
         public AppInfoViewModel()

@@ -10,7 +10,15 @@ namespace Xamarin.Essentials
 
         public static DevicePlatform iOS { get; } = new DevicePlatform(nameof(iOS));
 
+        public static DevicePlatform macOS { get; } = new DevicePlatform(nameof(macOS));
+
+        public static DevicePlatform tvOS { get; } = new DevicePlatform(nameof(tvOS));
+
+        public static DevicePlatform Tizen { get; } = new DevicePlatform(nameof(Tizen));
+
         public static DevicePlatform UWP { get; } = new DevicePlatform(nameof(UWP));
+
+        public static DevicePlatform watchOS { get; } = new DevicePlatform(nameof(watchOS));
 
         public static DevicePlatform Unknown { get; } = new DevicePlatform(nameof(Unknown));
 
@@ -47,6 +55,6 @@ namespace Xamarin.Essentials
             left.Equals(right);
 
         public static bool operator !=(DevicePlatform left, DevicePlatform right) =>
-            !(left == right);
+            !left.Equals(right);
     }
 }

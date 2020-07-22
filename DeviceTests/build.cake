@@ -1,12 +1,12 @@
-#addin nuget:?package=Cake.AppleSimulator
-#addin nuget:?package=Cake.Android.Adb&version=2.0.6
-#addin nuget:?package=Cake.Android.AvdManager&version=1.0.3
+#addin nuget:?package=Cake.AppleSimulator&version=0.2.0
+#addin nuget:?package=Cake.Android.Adb&version=3.2.0
+#addin nuget:?package=Cake.Android.AvdManager&version=2.2.0
 #addin nuget:?package=Cake.FileHelpers
 
 var TARGET = Argument("target", "Default");
 
-var IOS_SIM_NAME = EnvironmentVariable("IOS_SIM_NAME") ?? "iPhone X";
-var IOS_SIM_RUNTIME = EnvironmentVariable("IOS_SIM_RUNTIME") ?? "iOS 12.0";
+var IOS_SIM_NAME = EnvironmentVariable("IOS_SIM_NAME") ?? "iPhone 11";
+var IOS_SIM_RUNTIME = EnvironmentVariable("IOS_SIM_RUNTIME") ?? "com.apple.CoreSimulator.SimRuntime.iOS-13-1";
 var IOS_PROJ = "./DeviceTests.iOS/DeviceTests.iOS.csproj";
 var IOS_BUNDLE_ID = "com.xamarin.essentials.devicetests";
 var IOS_IPA_PATH = "./DeviceTests.iOS/bin/iPhoneSimulator/Release/XamarinEssentialsDeviceTestsiOS.app";
@@ -17,14 +17,14 @@ var ANDROID_APK_PATH = "./DeviceTests.Android/bin/Release/com.xamarin.essentials
 var ANDROID_TEST_RESULTS_PATH = "./xunit-android.xml";
 var ANDROID_AVD = EnvironmentVariable("ANDROID_AVD") ?? "CABOODLE";
 var ANDROID_PKG_NAME = "com.xamarin.essentials.devicetests";
-var ANDROID_EMU_TARGET = EnvironmentVariable("ANDROID_EMU_TARGET") ?? "system-images;android-26;google_apis;x86";
-var ANDROID_EMU_DEVICE = EnvironmentVariable("ANDROID_EMU_DEVICE") ?? "Nexus 5X";
+var ANDROID_EMU_TARGET = EnvironmentVariable("ANDROID_EMU_TARGET") ?? "system-images;android-29;google_apis_playstore;x86_64";
+var ANDROID_EMU_DEVICE = EnvironmentVariable("ANDROID_EMU_DEVICE") ?? "pixel";
 
 var UWP_PROJ = "./DeviceTests.UWP/DeviceTests.UWP.csproj";
 var UWP_TEST_RESULTS_PATH = "./xunit-uwp.xml";
 var UWP_PACKAGE_ID = "ec0cc741-fd3e-485c-81be-68815c480690";
 
-var TCP_LISTEN_TIMEOUT = 120;
+var TCP_LISTEN_TIMEOUT = 240;
 var TCP_LISTEN_PORT = 10578;
 var TCP_LISTEN_HOST = System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName())
         .AddressList.First(f => f.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).ToString();
@@ -106,11 +106,14 @@ Task ("test-ios-emu")
     .IsDependentOn ("build-ios")
     .Does (() =>
 {
+    var sims = ListAppleSimulators ();
+    foreach (var s in sims)
+    {
+        Information("Info: {0} ({1} - {2} - {3})", s.Name, s.Runtime, s.UDID, s.Availability);
+    }
+
     // Look for a matching simulator on the system
-    var sim = ListAppleSimulators ()
-        .First (s => (s.Availability.Contains("available") || s.Availability.Contains("booted"))
-                && !s.Availability.Contains("unavailable")
-                && s.Name == IOS_SIM_NAME && s.Runtime == IOS_SIM_RUNTIME);
+    var sim = sims.First (s => s.Name == IOS_SIM_NAME && s.Runtime == IOS_SIM_RUNTIME);
 
     // Boot the simulator
     Information("Booting: {0} ({1} - {2})", sim.Name, sim.Runtime, sim.UDID);
@@ -177,37 +180,19 @@ Task ("test-android-emu")
     .Does (() =>
 {
     var avdSettings = new AndroidAvdManagerToolSettings  { SdkRoot = ANDROID_HOME };
-    Information ("Available AVDs:");
-    foreach (var avd in AndroidAvdListAvds (avdSettings)) {
-        Information (" - " + avd);
-    }
+    var emuSettings = new AndroidEmulatorToolSettings { SdkRoot = ANDROID_HOME };
 
-    // Create the AVD if necessary
-    if (EnvironmentVariable("ANDROID_SKIP_AVD_CREATE") == null) {
-        Information ("Creating AVD if necessary: {0}...", ANDROID_AVD);
-        if (!AndroidAvdListAvds (avdSettings).Any (a => a.Name == ANDROID_AVD))
-            AndroidAvdCreate (ANDROID_AVD, ANDROID_EMU_TARGET, ANDROID_EMU_DEVICE, force: true, settings: avdSettings);
-    }
+    // Delete AVD first, if it exists
+    Information ("Deleting AVD if exists: {0}...", ANDROID_AVD);
+    try { AndroidAvdDelete(ANDROID_AVD, avdSettings); }
+    catch { }
 
-    // We need to find `emulator` and the best way is to try within a specified ANDROID_HOME
-    var emulatorExt = IsRunningOnWindows() ? ".bat" : "";
-    string emulatorPath = "emulator" + emulatorExt;
-
-    if (ANDROID_HOME != null) {
-        var andHome = new DirectoryPath(ANDROID_HOME);
-        if (DirectoryExists(andHome)) {
-            emulatorPath = MakeAbsolute(andHome.Combine("tools").CombineWithFilePath("emulator" + emulatorExt)).FullPath;
-            if (!FileExists(emulatorPath))
-                emulatorPath = MakeAbsolute(andHome.Combine("emulator").CombineWithFilePath("emulator" + emulatorExt)).FullPath;
-            if (!FileExists(emulatorPath))
-                emulatorPath = "emulator" + emulatorExt;
-        }
-    }
-
-    // Start up the emulator by name
+    // Create the AVD
+    Information ("Creating AVD: {0}...", ANDROID_AVD);
+    AndroidAvdCreate (ANDROID_AVD, ANDROID_EMU_TARGET, ANDROID_EMU_DEVICE, force: true, settings: avdSettings);
+    
     Information ("Starting Emulator: {0}...", ANDROID_AVD);
-    var emu = StartAndReturnProcess (emulatorPath, new ProcessSettings { 
-        Arguments = $"-avd {ANDROID_AVD}" });
+    var emulatorProcess = AndroidEmulatorStart(ANDROID_AVD, emuSettings);
 
     var adbSettings = new AdbToolSettings { SdkRoot = ANDROID_HOME };
 
@@ -262,8 +247,16 @@ Task ("test-android-emu")
 
     AddPlatformToTestResults(ANDROID_TEST_RESULTS_PATH, "Android");
 
-    // Close emulator
-    emu.Kill();
+    // Stop / cleanup the emulator
+    AdbEmuKill(adbSettings);
+
+    System.Threading.Thread.Sleep(5000);
+
+    // Finally kill the process if it's not exited already
+    try { emulatorProcess.Kill(); }
+    catch { }
+
+    Information("Done Tests");
 });
 
 

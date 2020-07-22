@@ -54,7 +54,7 @@ namespace Xamarin.Essentials
         }
     }
 
-    internal class TextToSpeechImplementation : Java.Lang.Object, AndroidTextToSpeech.IOnInitListener,
+    class TextToSpeechImplementation : Java.Lang.Object, AndroidTextToSpeech.IOnInitListener,
 #pragma warning disable CS0618
         AndroidTextToSpeech.IOnUtteranceCompletedListener
 #pragma warning restore CS0618
@@ -145,6 +145,8 @@ namespace Xamarin.Essentials
             else
                 tts.SetPitch(TextToSpeech.PitchDefault);
 
+            tts.SetSpeechRate(1.0f);
+
             var parts = text.SplitSpeak(max);
 
             numExpectedUtterances = parts.Count;
@@ -204,7 +206,7 @@ namespace Xamarin.Essentials
                 .Select(g => g.First());
         }
 
-        private bool IsLocaleAvailable(JavaLocale l)
+        bool IsLocaleAvailable(JavaLocale l)
         {
             try
             {

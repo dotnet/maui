@@ -17,7 +17,8 @@
                 <Entry Placeholder="Enter key..." Text="{Binding Key}" />
 
                 <Label Text="Value:" />
-                <Entry Placeholder="Enter text..." Text="{Binding SecuredValue}" />
+                <Editor Placeholder="Enter text..." Text="{Binding SecuredValue}"
+                        AutoSize="TextChanges" />
 
                 <Button Text="Load" Command="{Binding LoadCommand}" IsEnabled="{Binding IsNotBusy}" />
                 <Button Text="Save" Command="{Binding SaveCommand}" IsEnabled="{Binding IsNotBusy}" />

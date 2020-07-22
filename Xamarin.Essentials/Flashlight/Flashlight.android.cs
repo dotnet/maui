@@ -41,7 +41,7 @@ namespace Xamarin.Essentials
             if (!IsSupported)
                 throw new FeatureNotSupportedException();
 
-            await Permissions.RequireAsync(PermissionType.Flashlight);
+            await Permissions.EnsureGrantedAsync<Permissions.Flashlight>();
         }
 
         static Task ToggleTorchAsync(bool switchOn)
@@ -70,6 +70,7 @@ namespace Xamarin.Essentials
                             if (surface == null)
                                 surface = new SurfaceTexture(0);
 
+#pragma warning disable CS0618 // Camera types are deprecated in Android 10+
                             camera = Camera.Open();
 
                             // Nexus 5 and some devices require a preview texture
@@ -77,9 +78,10 @@ namespace Xamarin.Essentials
                         }
 
                         var param = camera.GetParameters();
-#pragma warning disable CS0618
+
+                        // Deprecated in an earlier android version
                         param.FlashMode = switchOn ? Camera.Parameters.FlashModeTorch : Camera.Parameters.FlashModeOff;
-#pragma warning restore CS0618
+
                         camera.SetParameters(param);
 
                         if (switchOn)
@@ -91,6 +93,7 @@ namespace Xamarin.Essentials
                             camera.StopPreview();
                             camera.Release();
                             camera.Dispose();
+#pragma warning restore CS0618 // Type or member is obsolete
                             camera = null;
                             surface.Dispose();
                             surface = null;

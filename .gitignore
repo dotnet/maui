@@ -4,6 +4,7 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 Output/
+**/Resources/Resource.designer.cs
 
 # Cake tools
 tools/
@@ -163,6 +164,8 @@ publish/
 # checkin your Azure Web App publish settings, but sensitive information contained
 # in these scripts will be unencrypted
 PublishScripts/
+
+appsettings.Development.json
 
 # NuGet Packages
 *.nupkg

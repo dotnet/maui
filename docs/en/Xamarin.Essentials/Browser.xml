@@ -113,7 +113,7 @@
         <summary>Open the browser to specified uri.</summary>
         <returns>Completed task when browser is launched, but not necessarily closed.  Result indicates if launching was successful or not.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -139,7 +139,7 @@
         <summary>Open the browser to specified uri.</summary>
         <returns>Completed task when browser is launched, but not necessarily closed.  Result indicates if launching was successful or not.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -165,7 +165,7 @@
         <summary>Open the browser to specified uri.</summary>
         <returns>Completed task when browser is launched, but not necessarily closed.  Result indicates if launching was successful or not.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
