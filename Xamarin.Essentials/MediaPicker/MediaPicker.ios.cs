@@ -58,6 +58,7 @@ namespace Xamarin.Essentials
         {
             PHAsset phAsset = null;
             NSUrl assetUrl;
+
             if (Platform.HasOSVersion(11, 0))
             {
                 assetUrl = info[UIImagePickerController.ImageUrl] as NSUrl;
@@ -82,15 +83,11 @@ namespace Xamarin.Essentials
                 return null;
 
             string originalFilename;
+
             if (Platform.HasOSVersion(9, 0))
-            {
-                var phRes = PHAssetResource.GetAssetResources(phAsset).FirstOrDefault();
-                originalFilename = phRes.OriginalFilename;
-            }
+                originalFilename = PHAssetResource.GetAssetResources(phAsset).FirstOrDefault()?.OriginalFilename;
             else
-            {
                 originalFilename = phAsset.ValueForKey(new NSString("filename")) as NSString;
-            }
 
             return new MediaPickerResult(assetUrl, phAsset, originalFilename);
         }
@@ -134,9 +131,7 @@ namespace Xamarin.Essentials
                 var tcsStream = new TaskCompletionSource<Stream>();
 
                 PHImageManager.DefaultManager.RequestImageData(phAsset, null, new PHImageDataHandler((data, str, orientation, dict) =>
-                {
-                    tcsStream.TrySetResult(data.AsStream());
-                }));
+                    tcsStream.TrySetResult(data.AsStream())));
 
                 return tcsStream.Task;
             }
