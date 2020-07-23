@@ -6,10 +6,10 @@ namespace Xamarin.Essentials
 {
     public static partial class MediaPicker
     {
-        public static Task<MediaFile> ShowPhotoPickerAsync() =>
+        public static Task<MediaPickerResult> ShowPhotoPickerAsync() =>
             PlatformShowPhotoPickerAsync(null);
 
-        public static Task<MediaFile> ShowPhotoPickerAsync(MediaPickerOptions options) =>
+        public static Task<MediaPickerResult> ShowPhotoPickerAsync(MediaPickerOptions options) =>
             PlatformShowPhotoPickerAsync(options);
     }
 
@@ -18,19 +18,19 @@ namespace Xamarin.Essentials
         public string Title { get; set; }
     }
 
-    public partial class MediaFile : FileBase
+    public partial class MediaPickerResult : FileBase
     {
-        public MediaFile(string fullPath)
+        public MediaPickerResult(string fullPath)
             : base(fullPath)
         {
         }
 
-        public MediaFile(string fullPath, string contentType)
+        public MediaPickerResult(string fullPath, string contentType)
             : base(fullPath, contentType)
         {
         }
 
-        public MediaFile(FileBase file)
+        public MediaPickerResult(FileBase file)
             : base(file)
         {
         }

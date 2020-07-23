@@ -11,7 +11,7 @@ namespace Xamarin.Essentials
 {
     public static partial class MediaPicker
     {
-        static async Task<MediaFile> PlatformShowPhotoPickerAsync(MediaPickerOptions options)
+        static async Task<MediaPickerResult> PlatformShowPhotoPickerAsync(MediaPickerOptions options)
         {
             if (!UIImagePickerController.IsSourceTypeAvailable(UIImagePickerControllerSourceType.PhotoLibrary))
                 throw new FeatureNotSupportedException();

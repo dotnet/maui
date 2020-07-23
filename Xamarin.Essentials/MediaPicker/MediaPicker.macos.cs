@@ -7,8 +7,8 @@ namespace Xamarin.Essentials
 {
     public static partial class MediaPicker
     {
-        static async Task<MediaFile> PlatformShowPhotoPickerAsync(MediaPickerOptions options)
-            => new MediaFile(await FilePicker.PickAsync(new PickOptions
+        static async Task<MediaPickerResult> PlatformShowPhotoPickerAsync(MediaPickerOptions options)
+            => new MediaPickerResult(await FilePicker.PickAsync(new PickOptions
             {
                  FileTypes = FilePickerFileType.Images
             }));

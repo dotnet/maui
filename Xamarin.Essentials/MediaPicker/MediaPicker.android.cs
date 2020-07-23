@@ -13,7 +13,7 @@ namespace Xamarin.Essentials
     {
         const int requestCodeMediaPicker = 12348;
 
-        static async Task<MediaFile> PlatformShowPhotoPickerAsync(MediaPickerOptions options)
+        static async Task<MediaPickerResult> PlatformShowPhotoPickerAsync(MediaPickerOptions options)
         {
             // we only need the permission when accessing the file, but it's more natural
             // to ask the user first, then show the picker.
@@ -28,7 +28,9 @@ namespace Xamarin.Essentials
             {
                 var result = await IntermediateActivity.StartAsync(pickerIntent, requestCodeMediaPicker);
 
-                return new MediaFile(result.Data);
+                var mf = new MediaPickerResult(result.Data);
+
+                return mf;
             }
             catch (OperationCanceledException)
             {
@@ -37,9 +39,9 @@ namespace Xamarin.Essentials
         }
     }
 
-    public partial class MediaFile
+    public partial class MediaPickerResult
     {
-        internal MediaFile(global::Android.Net.Uri contentUri)
+        internal MediaPickerResult(global::Android.Net.Uri contentUri)
             : base(contentUri)
         {
         }

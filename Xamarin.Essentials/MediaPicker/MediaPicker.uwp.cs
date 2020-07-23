@@ -11,7 +11,7 @@ namespace Xamarin.Essentials
         static readonly string[] defaultVideoFileTypes = new[] { ".mp4", ".wmv", ".avi" };
         static readonly string[] defaultImageFileTypes = new[] { ".jpeg", ".jpg", ".png", ".gif", ".bmp" };
 
-        static async Task<MediaFile> PlatformShowPhotoPickerAsync(MediaPickerOptions options)
+        static async Task<MediaPickerResult> PlatformShowPhotoPickerAsync(MediaPickerOptions options)
         {
             var picker = new FileOpenPicker();
 
@@ -29,13 +29,13 @@ namespace Xamarin.Essentials
                 return null;
 
             // picked
-            return new MediaFile(result);
+            return new MediaPickerResult(result);
         }
     }
 
-    public partial class MediaFile
+    public partial class MediaPickerResult
     {
-        internal MediaFile(IStorageFile file)
+        internal MediaPickerResult(IStorageFile file)
            : this(file?.Path)
         {
             File = file;
