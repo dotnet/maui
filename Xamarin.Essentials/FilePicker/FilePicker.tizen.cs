@@ -87,7 +87,7 @@ namespace Xamarin.Essentials
             }
         }
 
-        async Task<Stream> PlatformOpenReadStreamAsync()
+        async Task<Stream> PlatformOpenReadAsync()
         {
             await Permissions.RequestAsync<Permissions.StorageRead>();
 

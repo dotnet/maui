@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
 using MobileCoreServices;
+using Photos;
 using UIKit;
 
 namespace Xamarin.Essentials
@@ -19,9 +20,9 @@ namespace Xamarin.Essentials
 
             // permission is not required on iOS 11 for the picker
             if (!Platform.HasOSVersion(11, 0))
-                await Permissions.RequestAsync(PermissionType.Photos);
+                await Permissions.EnsureGrantedAsync<Permissions.Photos>();
 
-            var vc = Platform.GetCurrentViewController();
+            var vc = Platform.GetCurrentViewController(true);
 
             var picker = new UIImagePickerController();
             picker.SourceType = UIImagePickerControllerSourceType.PhotoLibrary;
@@ -33,10 +34,8 @@ namespace Xamarin.Essentials
 
             if (DeviceInfo.Idiom == DeviceIdiom.Tablet)
             {
-                if (picker.PopoverPresentationController != null)
-                {
+                if (picker.PopoverPresentationController != null && vc.View != null)
                     picker.PopoverPresentationController.SourceView = vc.View;
-                }
             }
 
             await vc.PresentViewControllerAsync(picker, true);
@@ -46,26 +45,19 @@ namespace Xamarin.Essentials
 
         class PhotoPickerDelegate : UIImagePickerControllerDelegate
         {
-            TaskCompletionSource<MediaFile> tcs;
+            readonly TaskCompletionSource<MediaFile> tcs;
 
-            public PhotoPickerDelegate(TaskCompletionSource<MediaFile> tcs)
-            {
+            public PhotoPickerDelegate(TaskCompletionSource<MediaFile> tcs) =>
                 this.tcs = tcs;
-            }
 
             public override void FinishedPickingMedia(UIImagePickerController picker, NSDictionary info)
             {
-                // TODO: investgate iOS 11 and it's suggestion of
-                //       using `(PHAsset)info[UIImagePickerController.PHAsset];`
-
                 var url = (NSUrl)info[UIImagePickerController.ReferenceUrl];
-                tcs.SetResult(new MediaFile(url?.AbsoluteString));
+                tcs.TrySetResult(new MediaFile(url?.AbsoluteString));
             }
 
             public override void Canceled(UIImagePickerController picker)
-            {
-                tcs.SetResult(null);
-            }
+                => tcs.TrySetResult(null);
         }
     }
 }

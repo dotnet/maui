@@ -100,6 +100,9 @@ namespace Xamarin.Essentials
             // this should never happen as the path is validated in the constructor
             throw new InvalidOperationException($"Unable to determine the file name from '{FullPath}'.");
         }
+
+        public Task<Stream> OpenReadAsync()
+            => PlatformOpenReadAsync();
     }
 
     public class ReadOnlyFile : FileBase
@@ -118,8 +121,5 @@ namespace Xamarin.Essentials
             : base(file)
         {
         }
-
-        public Task<Stream> OpenReadAsync()
-            => PlatformOpenReadAsync();
     }
 }

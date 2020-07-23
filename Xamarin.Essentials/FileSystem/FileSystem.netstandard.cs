@@ -22,5 +22,8 @@ namespace Xamarin.Essentials
 
         internal void PlatformInit(FileBase file) =>
             throw ExceptionUtils.NotSupportedOrImplementedException;
+
+        internal Task<Stream> PlatformOpenReadAsync()
+            => throw ExceptionUtils.NotSupportedOrImplementedException;
     }
 }

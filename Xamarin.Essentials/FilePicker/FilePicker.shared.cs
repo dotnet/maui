@@ -61,7 +61,5 @@ namespace Xamarin.Essentials
 
     public partial class FilePickerResult : FileBase
     {
-        public Task<Stream> OpenReadStreamAsync()
-            => PlatformOpenReadStreamAsync();
     }
 }

@@ -15,6 +15,7 @@ namespace Xamarin.Essentials
 
     public class MediaPickerOptions
     {
+        public string Title { get; set; }
     }
 
     public partial class MediaFile : FileBase
@@ -22,19 +23,16 @@ namespace Xamarin.Essentials
         public MediaFile(string fullPath)
             : base(fullPath)
         {
-            ExperimentalFeatures.VerifyEnabled(ExperimentalFeatures.MediaPicker);
         }
 
         public MediaFile(string fullPath, string contentType)
             : base(fullPath, contentType)
         {
-            ExperimentalFeatures.VerifyEnabled(ExperimentalFeatures.MediaPicker);
         }
 
         public MediaFile(FileBase file)
             : base(file)
         {
-            ExperimentalFeatures.VerifyEnabled(ExperimentalFeatures.MediaPicker);
         }
     }
 }

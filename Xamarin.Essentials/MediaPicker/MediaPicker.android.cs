@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
@@ -9,76 +11,37 @@ namespace Xamarin.Essentials
 {
     public static partial class MediaPicker
     {
-        enum RequestCode
-        {
-            Base = 10010,
-
-            PickPhoto = Base + 1,
-            TakePhoto = Base + 2,
-            PickVideo = Base + 3,
-            TakeVideo = Base + 4,
-
-            Min = PickPhoto,
-            Max = TakeVideo,
-        }
+        const int requestCodeMediaPicker = 12348;
 
         static async Task<MediaFile> PlatformShowPhotoPickerAsync(MediaPickerOptions options)
         {
-            // make sure we have permission and an activity
-            await Permissions.RequireAsync(PermissionType.ExternalStorage);
+            // we only need the permission when accessing the file, but it's more natural
+            // to ask the user first, then show the picker.
+            await Permissions.RequestAsync<Permissions.StorageRead>();
 
-            var intent = new Intent(Intent.ActionPick);
+            var intent = new Intent(Intent.ActionGetContent);
             intent.SetType("image/*");
+
+            var pickerIntent = Intent.CreateChooser(intent, options?.Title);
 
             try
             {
-                // launch the picker intent via the intermediate activity
-                var data = await IntermediateActivity.StartAsync(intent, (int)RequestCode.PickPhoto);
+                var result = await IntermediateActivity.StartAsync(pickerIntent, requestCodeMediaPicker);
 
-                // process the task response
-                return ProcessPickerIntent((int)RequestCode.PickPhoto, data);
+                return new MediaFile(result.Data);
             }
             catch (OperationCanceledException)
             {
                 return null;
             }
         }
+    }
 
-        static MediaFile ProcessPickerIntent(int requestCode, Intent data)
+    public partial class MediaFile
+    {
+        internal MediaFile(global::Android.Net.Uri contentUri)
+            : base(contentUri)
         {
-            // this is a result of a pick
-            if (requestCode == (int)RequestCode.PickPhoto || requestCode == (int)RequestCode.PickVideo)
-            {
-                string imagePath = null;
-
-                var imageUri = data?.Data;
-                if (imageUri.Scheme == "file")
-                {
-                    imagePath = imageUri.GetAbsolutePath();
-                }
-                else if (imageUri.Scheme == "content")
-                {
-                    var projection = new[] { MediaStore.MediaColumns.Data };
-                    using (var cursor = Platform.AppContext.ContentResolver.Query(imageUri, projection, null, null, null))
-                    {
-                        if (cursor?.MoveToFirst() == true)
-                        {
-                            var idx = cursor.GetColumnIndex(projection[0]);
-                            imagePath = cursor.GetString(idx);
-                        }
-                    }
-                }
-
-                return new MediaFile(imagePath);
-            }
-
-            // this is a result of a camera operation
-            if (requestCode == (int)RequestCode.TakePhoto || requestCode == (int)RequestCode.TakeVideo)
-            {
-            }
-
-            // something went wrong
-            return null;
         }
     }
 }
