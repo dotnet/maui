@@ -55,8 +55,6 @@ namespace Xamarin.Essentials
             }
         }
 
-        internal static event Action<int, Result, Intent> ActivityResult;
-
         internal static Activity GetCurrentActivity(bool throwOnNull)
         {
             var activity = lifecycleListener?.Activity;

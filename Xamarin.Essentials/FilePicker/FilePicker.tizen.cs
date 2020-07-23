@@ -67,13 +67,5 @@ namespace Xamarin.Essentials
             : base(fullPath)
         {
         }
-
-        async Task<Stream> PlatformOpenReadAsync()
-        {
-            await Permissions.RequestAsync<Permissions.StorageRead>();
-
-            var stream = File.Open(FullPath, FileMode.Open, FileAccess.Read);
-            return Task.FromResult<Stream>(stream).Result;
-        }
     }
 }

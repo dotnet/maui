@@ -34,5 +34,13 @@ namespace Xamarin.Essentials
         internal void PlatformInit(FileBase file)
         {
         }
+
+        async Task<Stream> PlatformOpenReadAsync()
+        {
+            await Permissions.RequestAsync<Permissions.StorageRead>();
+
+            var stream = File.Open(FullPath, FileMode.Open, FileAccess.Read);
+            return Task.FromResult<Stream>(stream).Result;
+        }
     }
 }
