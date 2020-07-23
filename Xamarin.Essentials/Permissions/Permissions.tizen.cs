@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Tizen.Security;
 
@@ -43,7 +42,8 @@ namespace Xamarin.Essentials
 
                 foreach (var (tizenPrivilege, isRuntime) in tizenPrivileges)
                 {
-                    if (PrivacyPrivilegeManager.CheckPermission(tizenPrivilege) == CheckResult.Ask)
+                    var checkResult = PrivacyPrivilegeManager.CheckPermission(tizenPrivilege);
+                    if (checkResult == CheckResult.Ask)
                     {
                         if (ask)
                         {
@@ -63,7 +63,7 @@ namespace Xamarin.Essentials
                         }
                         return PermissionStatus.Denied;
                     }
-                    else if (PrivacyPrivilegeManager.CheckPermission(tizenPrivilege) == CheckResult.Deny)
+                    else if (checkResult == CheckResult.Deny)
                     {
                         return PermissionStatus.Denied;
                     }
@@ -193,10 +193,14 @@ namespace Xamarin.Essentials
 
         public partial class StorageRead : BasePlatformPermission
         {
+            public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
+                new[] { ("http://tizen.org/privilege/mediastorage", true) };
         }
 
         public partial class StorageWrite : BasePlatformPermission
         {
+            public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
+                new[] { ("http://tizen.org/privilege/mediastorage", true) };
         }
 
         public partial class Vibrate : BasePlatformPermission
