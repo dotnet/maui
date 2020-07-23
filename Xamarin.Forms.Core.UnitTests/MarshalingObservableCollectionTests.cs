@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Reflection;
@@ -50,7 +51,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			// Add an item from a threadpool thread
 			await Task.Run(() => 
 			{
-				var x = Thread.CurrentThread.ManagedThreadId;
 				source.Add(1);
 				countFromThreadPool = moc.Count;
 			});
@@ -232,12 +232,11 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			int _threadId;
 			bool _running;
-			BlockingCollection<Action> _todo = new BlockingCollection<Action>();
+			Queue<Action> _todo = new Queue<Action>();
 
 			public void Stop()
 			{
 				_running = false;
-				_todo.CompleteAdding();
 			}
 
 			public void Start()
@@ -254,7 +253,11 @@ namespace Xamarin.Forms.Core.UnitTests
 					{
 						try
 						{
-							_todo.Take()?.Invoke();
+							Thread.Sleep(100);
+							while (_todo.Count > 0)
+							{
+								_todo.Dequeue().Invoke();
+							}
 						}
 						catch (Exception ex)
 						{
@@ -268,7 +271,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			public void BeginInvokeOnMainThread(Action action)
 			{
-				_todo.Add(action);
+				_todo.Enqueue(action);
 			}
 
 			public OSAppTheme RequestedTheme { get; }
