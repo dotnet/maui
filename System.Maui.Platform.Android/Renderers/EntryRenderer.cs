@@ -17,6 +17,10 @@ using Android.Widget;
 using Java.Lang;
 using System.Maui.PlatformConfiguration.AndroidSpecific;
 
+#if !__MAUI__
+using ITextInput = global::System.Maui.Entry;
+#endif
+
 namespace System.Maui.Platform.Android
 {
 	public partial class EntryRenderer : EntryRendererBase<FormsEditText>

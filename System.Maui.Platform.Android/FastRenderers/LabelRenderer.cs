@@ -13,6 +13,9 @@ using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AView = Android.Views.View;
+#if !__MAUI__
+using ILabel = global::System.Maui.Label;
+#endif
 
 namespace System.Maui.Platform.Android.FastRenderers
 {
