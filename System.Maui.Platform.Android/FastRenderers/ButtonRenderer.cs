@@ -18,7 +18,7 @@ using AView = Android.Views.View;
 
 namespace System.Maui.Platform.Android.FastRenderers
 {
-	public class ButtonRenderer : AppCompatButton,
+	public partial class ButtonRenderer : AppCompatButton,
 		IBorderVisualElementRenderer, IButtonLayoutRenderer, IVisualElementRenderer, IViewRenderer, ITabStop,
 		AView.IOnAttachStateChangeListener, AView.IOnFocusChangeListener, AView.IOnClickListener, AView.IOnTouchListener
 	{

@@ -34,6 +34,8 @@ using System.Maui.StyleSheets;
 [assembly: InternalsVisibleTo("System.Maui.CarouselView")]
 [assembly: InternalsVisibleTo("System.Maui.DualScreen")]
 [assembly: InternalsVisibleTo("System.Maui.DualScreen.UnitTests")]
+
+
 [assembly: Preserve]
 
 [assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms", "System.Maui")]

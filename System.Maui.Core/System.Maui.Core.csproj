@@ -1,11 +1,23 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;netstandard1.0</TargetFrameworks>
-	</PropertyGroup>
+    <MauiBuild>true</MauiBuild>
+    <TargetFrameworks>netstandard2.0;netstandard1.0</TargetFrameworks>
+    <!--<TargetFrameworks Condition=" '$(MauiBuild)' == 'true' ">netstandard2.1</TargetFrameworks>-->
+  </PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
 	</PropertyGroup>
+  <PropertyGroup Condition="'$(MauiBuild)' == 'true'">
+    <LangVersion>8.0</LangVersion>
+    <DefineConstants>$(DefineConstants);__MAUI__</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="$(MauiBuild) != true ">
+    <Compile Remove="Maui\**\*.cs" />
+    <None Include="Maui\**\*.Ios.cs" />
+  </ItemGroup>
+  
+  
 	<ItemGroup>
 		<ProjectReference Include="..\System.Maui.Platform\System.Maui.Platform.csproj" />
 	</ItemGroup>
@@ -14,6 +26,8 @@
 		<EmbeddedResource Remove="Internals\Legacy\**" />
 		<None Remove="Internals\Legacy\**" />
 	</ItemGroup>
+
+  
 	<ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
 		<Compile Include="Internals\Legacy\**" />
 		<PackageReference Include="System.ComponentModel" Version="4.3.0" />

@@ -16,7 +16,7 @@ using AView = Android.Views.View;
 
 namespace System.Maui.Platform.Android.FastRenderers
 {
-	public class LabelRenderer : FormsTextView, IVisualElementRenderer, IViewRenderer, ITabStop
+	public partial class LabelRenderer : FormsTextView, IVisualElementRenderer, IViewRenderer, ITabStop
 	{
 		int? _defaultLabelFor;
 		bool _disposed;
@@ -390,45 +390,51 @@ namespace System.Maui.Platform.Android.FastRenderers
 
 		void UpdateText()
 		{
+			UpdateText(Element, this);
+		}
+
+		internal static void UpdateText(ILabel Element, FormsTextView formsTextView)
+		{
+			var renderer = (LabelRenderer)formsTextView;
 			if (Element.FormattedText != null)
 			{
 				FormattedString formattedText = Element.FormattedText ?? Element.Text;
 #pragma warning disable 618 // We will need to update this when .Font goes away
-				TextFormatted = _spannableString = formattedText.ToAttributed(Element.Font, Element.TextColor, this);
+				formsTextView.TextFormatted = renderer._spannableString = formattedText.ToAttributed(Element.Font, Element.TextColor, renderer);
 #pragma warning restore 618
-				_wasFormatted = true;
+				renderer._wasFormatted = true;
 			}
 			else
 			{
-				if (_wasFormatted)
+				if (renderer._wasFormatted)
 				{
-					SetTextColor(_labelTextColorDefault);
-					_lastUpdateColor = Color.Default;
+					renderer.SetTextColor(renderer._labelTextColorDefault);
+					renderer._lastUpdateColor = Color.Default;
 				}
 
 				switch (Element.TextType)
 				{
 					case TextType.Html:
 						if (System.Maui.Maui.IsNougatOrNewer)
-							Control.SetText(Html.FromHtml(Element.Text ?? string.Empty, FromHtmlOptions.ModeCompact), BufferType.Spannable);
+							renderer.SetText(Html.FromHtml(Element.Text ?? string.Empty, FromHtmlOptions.ModeCompact), BufferType.Spannable);
 						else
 #pragma warning disable CS0618 // Type or member is obsolete
-							Control.SetText(Html.FromHtml(Element.Text ?? string.Empty), BufferType.Spannable);
+							renderer.SetText(Html.FromHtml(Element.Text ?? string.Empty), BufferType.Spannable);
 #pragma warning restore CS0618 // Type or member is obsolete
 						break;
 
 					default:
-							Text = Element.UpdateFormsText(Element.Text, Element.TextTransform);
+						renderer.Text = Element.UpdateFormsText(Element.Text, Element.TextTransform);
 						break;
 				}
-				
-				UpdateColor();
-				UpdateFont();
 
-				_wasFormatted = false;
+				renderer.UpdateColor();
+				renderer.UpdateFont();
+
+				renderer._wasFormatted = false;
 			}
 
-			_lastSizeRequest = null;
+			renderer._lastSizeRequest = null;
 		}
 
 		void UpdateLineHeight()

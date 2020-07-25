@@ -19,7 +19,7 @@ using System.Maui.PlatformConfiguration.AndroidSpecific;
 
 namespace System.Maui.Platform.Android
 {
-	public class EntryRenderer : EntryRendererBase<FormsEditText>
+	public partial class EntryRenderer : EntryRendererBase<FormsEditText>
 	{
 		TextColorSwitcher _hintColorSwitcher;
 		TextColorSwitcher _textColorSwitcher;
@@ -179,7 +179,7 @@ namespace System.Maui.Platform.Android
 			_selectionLengthChangePending = Element.IsSet(Entry.SelectionLengthProperty);
 
 			UpdatePlaceHolderText();
-			UpdateText();
+			UpdateText(Element, EditText);
 			UpdateInputType();
 			UpdateColor();
 			UpdateCharacterSpacing();
@@ -245,7 +245,7 @@ namespace System.Maui.Platform.Android
 			else if (e.PropertyName == Entry.IsPasswordProperty.PropertyName)
 				UpdateInputType();
 			else if (e.IsOneOf(Entry.TextProperty, Entry.TextTransformProperty))
-				UpdateText();
+				UpdateText(Element, EditText);
 			else if (e.PropertyName == Entry.TextColorProperty.PropertyName)
 				UpdateColor();
 			else if (e.PropertyName == InputView.KeyboardProperty.PropertyName)
@@ -532,7 +532,7 @@ namespace System.Maui.Platform.Android
 			EditText.Focusable = isReadOnly;
 		}
 
-		void UpdateText()
+		internal static void UpdateText(ITextInput Element, EditText EditText)
 		{
 			var text = Element.UpdateFormsText(Element.Text, Element.TextTransform);
 			

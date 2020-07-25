@@ -1,4 +1,4 @@
-<Project Sdk="MSBuild.Sdk.Extras">
+﻿<Project Sdk="MSBuild.Sdk.Extras">
   <PropertyGroup>
     <Description>Android Backend for System.Maui</Description>
     <AssemblyName>System.Maui.Platform.Android</AssemblyName>
@@ -7,6 +7,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <RootNamespace>System.Maui.Platform.Android</RootNamespace>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <MauiBuild>true</MauiBuild>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -15,6 +16,16 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>bin\$(Configuration)\$(TargetFramework)</OutputPath>
   </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(MauiBuild)' == 'true'">
+    <DefineConstants>$(DefineConstants);__MAUI__</DefineConstants>
+    <LangVersion>8.0</LangVersion>
+  </PropertyGroup>
+  <ItemGroup Condition="$(MauiBuild) != true ">
+    <Compile Remove="Maui\**\*.cs" />
+    <None Include="Maui\**\*.Ios.cs" />
+  </ItemGroup>
+  
   <ItemGroup>
     <Compile Remove="AppCompat\Resource.cs" />
   </ItemGroup>

@@ -7,7 +7,7 @@ using System.Maui.Platform;
 namespace System.Maui
 {
 	[RenderWith(typeof(_EntryRenderer))]
-	public class Entry : InputView, IFontElement, ITextAlignmentElement, IEntryController, IElementConfiguration<Entry>
+	public partial class Entry : InputView, IFontElement, ITextAlignmentElement, IEntryController, IElementConfiguration<Entry>
 	{
 		public static readonly BindableProperty ReturnTypeProperty = BindableProperty.Create(nameof(ReturnType), typeof(ReturnType), typeof(Entry), ReturnType.Default);
 
