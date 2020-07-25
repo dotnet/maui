@@ -62,7 +62,7 @@ namespace Xamarin.Forms
 			get
 			{
 				if (info == null)
-					throw new InvalidOperationException("You MUST call Xamarin.Forms.Init(); prior to using it.");
+					throw new InvalidOperationException("You must call Xamarin.Forms.Forms.Init(); prior to using this property.");
 				return info;
 			}
 			set { info = value; }
@@ -84,7 +84,7 @@ namespace Xamarin.Forms
 			get
 			{
 				if (s_platformServices == null)
-					throw new InvalidOperationException("You MUST call Xamarin.Forms.Init(); prior to using it.");
+					throw new InvalidOperationException("You must call Xamarin.Forms.Forms.Init(); prior to using this property.");
 				return s_platformServices;
 			}
 			set { s_platformServices = value; }
