@@ -110,6 +110,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 #if UITEST
+		[Category(UITestCategories.CollectionView)]
 		[Test]
 		public void AddingItemsToGroupedCollectionViewShouldNotCrash()
 		{
