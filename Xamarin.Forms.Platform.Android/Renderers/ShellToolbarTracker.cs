@@ -401,7 +401,7 @@ namespace Xamarin.Forms.Platform.Android
 				icon = new FlyoutIconDrawerDrawable(context, tintColor, null, text);
 			}
 
-			if (icon == null && _flyoutBehavior == FlyoutBehavior.Flyout)
+			if (icon == null && (_flyoutBehavior == FlyoutBehavior.Flyout || CanNavigateBack))
 			{
 				icon = new DrawerArrowDrawable(context.GetThemedContext());
 				icon.SetColorFilter(tintColor, FilterMode.SrcAtop);
