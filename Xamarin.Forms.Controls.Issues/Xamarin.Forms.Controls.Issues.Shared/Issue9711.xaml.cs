@@ -65,8 +65,9 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 
-#if UITEST		
+#if UITEST
 		[Category(UITestCategories.ListView)]
+		[Category(UITestCategories.UwpIgnore)]
 		[Test]
 		public void TestTappingHeaderDoesNotCrash()
 		{

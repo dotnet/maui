@@ -57,16 +57,19 @@ namespace Xamarin.Forms.Core.UITests
 			TestServer = new WindowsTestServer(_session, this);
 		}
 
-		public void RestartIfAppIsClosed()
+		public bool RestartIfAppIsClosed()
 		{
 			try
 			{
 				var handle = _session.CurrentWindowHandle;
+				return false;
 			}
 			catch
 			{
 				RestartFromCrash();
 			}
+
+			return true;
 		}
 
 		public void RestartFromCrash()
