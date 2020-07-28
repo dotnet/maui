@@ -105,9 +105,12 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement ("Start Editor");
 			RunningApp.Tap ("Start Editor");
 
-			RunningApp.EnterText ("123A");
+			RunningApp.EnterText ("123");
 
 			var editor = RunningApp.Query (q => q.Text("123"));
+			Assert.That(editor.Length, Is.GreaterThanOrEqualTo(1), "The editor text should be '123'.");
+			RunningApp.EnterText("A");
+			editor = RunningApp.Query(q => q.Text("123"));
 			Assert.That(editor.Length, Is.GreaterThanOrEqualTo(1), "The editor text should be '123'.");
 
 			var failedEditor = RunningApp.Query (q => q.Text("123A"));
