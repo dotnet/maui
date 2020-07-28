@@ -32,6 +32,7 @@ namespace Xamarin.Forms
 {
 	[DebuggerDisplay("X={X}, Y={Y}, Width={Width}, Height={Height}")]
 	[TypeConverter(typeof(RectangleTypeConverter))]
+	//[Obsolete("Xamarin.Forms.Rectangle is obsolete in 4.8. use Xamarin.Forms.Rect instead")]
 	public struct Rectangle
 	{
 		public double X { get; set; }
@@ -250,9 +251,8 @@ namespace Xamarin.Forms
 			height = Height;
 		}
 
-		public static implicit operator Rectangle(Rect rect)
-		{
-			return new Rectangle(rect.X, rect.Y, rect.Width, rect.Height);
-		}
+		public static implicit operator Rect(Rectangle rectangle) => new Rect(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
+
+		public static implicit operator Rectangle(Rect rect) => new Rectangle(rect.X, rect.Y, rect.Width, rect.Height);
 	}
 }
