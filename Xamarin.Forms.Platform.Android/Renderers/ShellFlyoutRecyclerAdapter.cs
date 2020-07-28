@@ -273,6 +273,7 @@ namespace Xamarin.Forms.Platform.Android
 
 					if (_element != null)
 					{
+						FastRenderers.AutomationPropertiesProvider.AccessibilitySettingsChanged(_itemView, value);
 						_element.SetValue(Platform.RendererProperty, _itemView);
 						_element.PropertyChanged += OnElementPropertyChanged;
 						UpdateVisualState();

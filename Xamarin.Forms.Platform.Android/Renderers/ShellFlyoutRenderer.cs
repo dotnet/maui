@@ -168,6 +168,9 @@ namespace Xamarin.Forms.Platform.Android
 			((IShellController)context.Shell).AddFlyoutBehaviorObserver(this);
 
 			Profile.FrameEnd();
+
+			if (Shell.FlyoutIsPresented)
+				OpenDrawer(_flyoutContent.AndroidView, false);
 		}
 
 		protected virtual void OnShellPropertyChanged(object sender, PropertyChangedEventArgs e)

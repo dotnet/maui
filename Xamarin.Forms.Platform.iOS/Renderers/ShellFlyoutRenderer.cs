@@ -68,6 +68,7 @@ namespace Xamarin.Forms.Platform.iOS
 			};
 						
 			ShellController.AddAppearanceObserver(this, Shell);
+			IsOpen = Shell.FlyoutIsPresented;
 		}
 
 		bool IsSwipeView(UIView view)
@@ -200,7 +201,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (IsOpen != isPresented)
 				{
 					IsOpen = isPresented;
-					LayoutSidebar(true);
+					LayoutSidebar(true, true);
 				}
 			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
@@ -352,10 +353,16 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
-		void LayoutSidebar(bool animate)
+		void LayoutSidebar(bool animate, bool cancelExisting = false)
 		{
 			if (_gestureActive)
 				return;
+
+			if(cancelExisting && _flyoutAnimation != null)
+			{
+				_flyoutAnimation.StopAnimation(true);
+				_flyoutAnimation = null;
+			}
 
 			if (animate && _flyoutAnimation != null)
 				return;

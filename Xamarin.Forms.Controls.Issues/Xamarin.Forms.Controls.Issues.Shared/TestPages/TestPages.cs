@@ -661,6 +661,13 @@ namespace Xamarin.Forms.Controls
 			return page;
 		}
 
+		public ContentPage AddFlyoutItem(string title)
+		{
+			ContentPage page = new ContentPage() { Title = title };
+			AddFlyoutItem(page, title);
+			return page;
+		}
+
 		public FlyoutItem AddFlyoutItem(ContentPage page, string title)
 		{
 			var item = new FlyoutItem
