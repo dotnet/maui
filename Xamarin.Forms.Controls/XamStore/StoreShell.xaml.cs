@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Controls.XamStore
 		{
 			InitializeComponent();
 
-			Device.SetFlags(new List<string> { ExperimentalFlags.BrushExperimental });
+			Device.SetFlags(new List<string> { ExperimentalFlags.BrushExperimental, ExperimentalFlags.ShellUWPExperimental });
 
 			CurrentItem = _storeItem;
 		}

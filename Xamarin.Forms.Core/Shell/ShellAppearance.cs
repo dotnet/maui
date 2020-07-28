@@ -17,11 +17,16 @@ namespace Xamarin.Forms
 			Shell.TabBarTitleColorProperty,
 			Shell.TabBarUnselectedColorProperty,
 			Shell.TitleColorProperty,
-			Shell.UnselectedColorProperty,
-			//Shell.FlyoutBackdropColorProperty
+			Shell.UnselectedColorProperty
+		};
+
+		static readonly BindableProperty[] s_ingestBrushArray = new[]
+		{
+			Shell.FlyoutBackdropProperty
 		};
 
 		Color?[] _colorArray = new Color?[s_ingestArray.Length];
+		Brush[] _brushArray = new Brush[s_ingestBrushArray.Length];
 
 		public Color BackgroundColor => _colorArray[0].Value;
 
@@ -43,7 +48,7 @@ namespace Xamarin.Forms
 
 		public Color UnselectedColor => _colorArray[9].Value;
 
-		//public Color FlyoutBackdropColor => _colorArray[10].Value;
+		public Brush FlyoutBackdrop => _brushArray[0];
 
 		Color IShellAppearanceElement.EffectiveTabBarBackgroundColor =>
 			!TabBarBackgroundColor.IsDefault ? TabBarBackgroundColor : BackgroundColor;
@@ -62,7 +67,8 @@ namespace Xamarin.Forms
 
 		internal ShellAppearance()
 		{
-
+			for (int i = 0; i < _brushArray.Length; i++)
+				_brushArray[0] = Brush.Default;
 		}
 
 		public override bool Equals(object obj)
@@ -76,6 +82,12 @@ namespace Xamarin.Forms
 					return false;
 			}
 
+			for (int i = 0; i < _brushArray.Length; i++)
+			{
+				if (!EqualityComparer<Brush>.Default.Equals(_brushArray[i], appearance._brushArray[i]))
+					return false;
+			}
+
 			return true;
 		}
 
@@ -84,6 +96,9 @@ namespace Xamarin.Forms
 			var hashCode = -1988429770;
 			for (int i = 0; i < _colorArray.Length; i++)
 				hashCode = hashCode * -1521134295 + EqualityComparer<Color>.Default.GetHashCode(_colorArray[i].Value);
+
+			for (int i = 0; i < _brushArray.Length; i++)
+				hashCode = hashCode * -1521134295 + EqualityComparer<Brush>.Default.GetHashCode(_brushArray[i]);
 
 			return hashCode;
 		}
@@ -99,6 +114,16 @@ namespace Xamarin.Forms
 				{
 					anySet = true;
 					_colorArray[i] = dataSet[i].Value;
+				}
+			}
+
+			var brushDataSet = pivot.GetValues<Brush>(s_ingestBrushArray);
+			for (int i = 0; i < s_ingestBrushArray.Length; i++)
+			{
+				if (_brushArray[i] != Brush.Default && brushDataSet[i].IsSet)
+				{
+					anySet = true;
+					_brushArray[i] = brushDataSet[i].Value;
 				}
 			}
 
