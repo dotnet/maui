@@ -4,6 +4,23 @@ namespace Xamarin.Forms.Shapes
 {
     public class RotateTransform : Transform
     {
+        public RotateTransform()
+		{
+
+		}
+
+        public RotateTransform(double angle)
+		{
+            Angle = angle;
+		}
+
+        public RotateTransform(double angle, double centerX, double centerY)
+        {
+            Angle = angle;
+            CenterX = centerX;
+            CenterY = centerY;
+        }
+
         public static readonly BindableProperty AngleProperty =
             BindableProperty.Create(nameof(Angle), typeof(double), typeof(RotateTransform), 0.0,
 				propertyChanged: OnTransformPropertyChanged);

@@ -4,6 +4,25 @@ namespace Xamarin.Forms.Shapes
 {
     public class SkewTransform : Transform
     {
+        public SkewTransform()
+		{
+
+        }
+
+        public SkewTransform(double angleX, double angleY)
+        {
+            AngleX = angleX;
+            AngleY = angleY;
+        }
+
+        public SkewTransform(double angleX, double angleY, double centerX, double centerY)
+        {
+            AngleX = angleX;
+            AngleY = angleY;
+            CenterX = centerX;
+            CenterY = centerY;
+        }
+
         public static readonly BindableProperty AngleXProperty =
             BindableProperty.Create(nameof(AngleX), typeof(double), typeof(SkewTransform), 0.0,
 				propertyChanged: OnTransformPropertyChanged);
