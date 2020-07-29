@@ -34,6 +34,7 @@ using Rectangle = Xamarin.Forms.Shapes.Rectangle;
 [assembly: ExportRenderer(typeof(OpenGLView), typeof(OpenGLViewRenderer))]
 [assembly: ExportRenderer(typeof(MediaElement), typeof(MediaElementRenderer))]
 [assembly: ExportRenderer(typeof(ImageButton), typeof(ImageButtonRenderer))]
+[assembly: ExportRenderer(typeof(EmbeddedFont), typeof(EmbeddedFontLoader))]
 [assembly: ExportRenderer(typeof(Path), typeof(PathRenderer))]
 [assembly: ExportRenderer(typeof(Ellipse), typeof(EllipseRenderer))]
 [assembly: ExportRenderer(typeof(Line), typeof(LineRenderer))]

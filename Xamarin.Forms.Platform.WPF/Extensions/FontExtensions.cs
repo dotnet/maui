@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing.Text;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,6 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using Xamarin.Forms.Core;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.WPF
@@ -17,10 +20,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			self.FontSize = font.UseNamedSize ? GetFontSize(font.NamedSize) : font.FontSize;
 
-			if (!string.IsNullOrEmpty(font.FontFamily))
-				self.FontFamily = new FontFamily(new Uri("pack://application:,,,/"), font.FontFamily);
-			else
-				self.FontFamily = (FontFamily)System.Windows.Application.Current.Resources["FontFamilySemiBold"];
+			self.FontFamily = font.FontFamily.ToFontFamily("FontFamilySemiBold");
 
 			ApplyFontAttributes(self, font.FontAttributes);
 		}
@@ -42,12 +42,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			self.FontSize = font.UseNamedSize ? GetFontSize(font.NamedSize) : font.FontSize;
 
-			if (!string.IsNullOrEmpty(font.FontFamily))
-				self.FontFamily = new FontFamily(new Uri("pack://application:,,,/"), font.FontFamily);
-			else
-			{
-				self.FontFamily = (FontFamily)System.Windows.Application.Current.Resources["FontFamilyNormal"];
-			}
+			self.FontFamily = font.FontFamily.ToFontFamily("FontFamilyNormal");
 
 			if (font.FontAttributes.HasFlag(FontAttributes.Italic))
 				self.FontStyle = FontStyles.Italic;
@@ -64,10 +59,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			self.FontSize = font.UseNamedSize ? GetFontSize(font.NamedSize) : font.FontSize;
 
-			if (!string.IsNullOrEmpty(font.FontFamily))
-				self.FontFamily = new FontFamily(new Uri("pack://application:,,,/"), font.FontFamily);
-			else
-				self.FontFamily = (FontFamily)System.Windows.Application.Current.Resources["FontFamilyNormal"];
+			self.FontFamily = font.FontFamily.ToFontFamily("FontFamilyNormal");
 
 			if (font.FontAttributes.HasFlag(FontAttributes.Italic))
 				self.FontStyle = FontStyles.Italic;
@@ -84,10 +76,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			self.FontSize = element.FontSize;
 
-			if (!string.IsNullOrEmpty(element.FontFamily))
-				self.FontFamily = new FontFamily(new Uri("pack://application:,,,/"), element.FontFamily);
-			else
-				self.FontFamily = (FontFamily)System.Windows.Application.Current.Resources["FontFamilySemiBold"];
+			self.FontFamily = element.FontFamily.ToFontFamily();
 
 			if (element.FontAttributes.HasFlag(FontAttributes.Italic))
 				self.FontStyle = FontStyles.Italic;
@@ -123,6 +112,145 @@ namespace Xamarin.Forms.Platform.WPF
 		internal static bool IsDefault(this IFontElement self)
 		{
 			return self.FontFamily == null && self.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(Label), true) && self.FontAttributes == FontAttributes.None;
+		}
+
+		static Dictionary<string, FontFamily> FontFamilies = new Dictionary<string, FontFamily>();
+
+
+		public static FontFamily ToFontFamily(this string fontFamily, string defaultFontResource = "FontFamilySemiBold")
+		{
+			if(string.IsNullOrWhiteSpace(fontFamily))
+				return (FontFamily)System.Windows.Application.Current.Resources[defaultFontResource];
+
+			if (FontFamilies.TryGetValue(fontFamily, out var f))
+			{
+				return f;
+			}
+
+			var embeddedResult = fontFamily.TryGetFromAssets();
+
+			if (embeddedResult.success)
+				return FontFamilies[fontFamily] = embeddedResult.fontFamily;
+			//self.FontFamily = new FontFamily(new Uri("pack://application:,,,/"), fontFamily);
+
+				//Cache this puppy!
+			var formatted = string.Join(", ", GetAllFontPossibilities(fontFamily));
+			var font = new FontFamily(formatted);
+			FontFamilies[fontFamily] = font;
+			return font;
+
+		}
+
+		static FontFamily CreateFromFile(string file)
+		{
+			var collection = new PrivateFontCollection();
+			collection.AddFontFile(file);
+			var family = collection.Families[0];
+			var dir = Path.GetDirectoryName(file);
+			var urlPath = $"file:////{file}";
+			//var uri = new Uri(urlPath);
+			return new FontFamily($"{urlPath}#{family.Name}");
+		}
+
+		static (bool success, FontFamily fontFamily) TryGetFromAssets(this string fontName)
+		{
+			//First check Alias
+			var (hasFontAlias, fontPostScriptName) = FontRegistrar.HasFont(fontName);
+			if (hasFontAlias)
+				return (true, CreateFromFile(fontPostScriptName));
+
+			var folders = new[]
+			{
+				"",
+				"Fonts/",
+				"fonts/",
+			};
+
+
+			//copied text
+			var fontFile = FontFile.FromString(fontName);
+
+			if (!string.IsNullOrWhiteSpace(fontFile.Extension))
+			{
+				var (hasFont, fontPath) = FontRegistrar.HasFont(fontFile.FileNameWithExtension());
+				if (hasFont)
+				{
+					return (true, CreateFromFile(fontPath));
+				}
+			}
+			else
+			{
+				foreach (var ext in FontFile.Extensions)
+				{
+					var formated = fontFile.FileNameWithExtension(ext);
+					var (hasFont, fontPath) = FontRegistrar.HasFont(formated);
+					if (hasFont)
+					{
+						return (true, CreateFromFile(fontPath));
+					}
+				}
+			}
+
+			return (false, null);
+		}
+
+
+		static IEnumerable<string> GetAllFontPossibilities(string fontFamily)
+		{
+			//First check Alias
+			var (hasFontAlias, fontPostScriptName) = FontRegistrar.HasFont(fontFamily);
+			if (hasFontAlias)
+			{
+				var file = FontFile.FromString(Path.GetFileName(fontPostScriptName));
+				var formated = $"{fontPostScriptName}#{file.GetPostScriptNameWithSpaces()}";
+				yield return formated;
+				yield return fontFamily;
+				yield break;
+			}
+
+			const string path = "Assets/Fonts/";
+			string[] extensions = new[]
+			{
+				".ttf",
+				".otf",
+			};
+
+			var fontFile = FontFile.FromString(fontFamily);
+			//If the extension is provided, they know what they want!
+			var hasExtension = !string.IsNullOrWhiteSpace(fontFile.Extension);
+			if (hasExtension)
+			{
+				var (hasFont, filePath) = FontRegistrar.HasFont(fontFile.FileNameWithExtension());
+				if (hasFont)
+				{
+					var formated = $"{filePath}#{fontFile.GetPostScriptNameWithSpaces()}";
+					yield return formated;
+					yield break;
+				}
+				else
+				{
+					yield return $"{path}{fontFile.FileNameWithExtension()}";
+				}
+			}
+			foreach (var ext in extensions)
+			{
+				var (hasFont, filePath) = FontRegistrar.HasFont(fontFile.FileNameWithExtension(ext));
+				if (hasFont)
+				{
+					var formatted = $"{filePath}#{fontFile.GetPostScriptNameWithSpaces()}";
+					yield return formatted;
+					yield break;
+				}
+			}
+
+			//Always send the base back
+			yield return fontFamily;
+
+			foreach (var ext in extensions)
+			{
+				var formatted = $"{path}{fontFile.FileNameWithExtension(ext)}#{fontFile.GetPostScriptNameWithSpaces()}";
+				yield return formatted;
+			}
 		}
 	}
 }
