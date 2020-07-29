@@ -85,5 +85,10 @@ namespace Xamarin.Forms.Platform.iOS
 			element?.SendReleased();
 			element?.SendClicked();
 		}
+
+		internal static void OnButtonTouchUpOutside(IButtonController element)
+		{
+			element?.SendReleased();
+		}
 	}
 }
