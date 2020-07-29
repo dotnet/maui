@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<local:TestContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="using:Xamarin.Forms.Controls"
+             xmlns:effects="clr-namespace:Xamarin.Forms.Controls.Issues"
+             mc:Ignorable="d"
+             Title="Test 11374"
+             x:Class="Xamarin.Forms.Controls.Issues.Issue11374">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Label
+            Padding="12"
+            BackgroundColor="Black"
+            TextColor="White"
+            Text="Swipe an Item to the right or left. If you can open the SwipeView, the test has passed."/>
+        <ListView
+            x:Name="ItemsListView"
+            Grid.Row="1"
+            ItemsSource="{Binding Items}"
+            VerticalOptions="FillAndExpand"
+            HasUnevenRows="true"
+            SelectionMode="Single"
+            SeparatorVisibility="None"
+            CachingStrategy="RecycleElementAndDataTemplate">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell Height="64">
+                        <SwipeView>
+                            <SwipeView.LeftItems>
+                                <SwipeItems
+                                    SwipeBehaviorOnInvoked="Close">
+                                    <SwipeItemView>
+                                        <Label
+                                            Text="Left Swipe"
+                                            Padding="25,0,25,0"
+                                            VerticalOptions="FillAndExpand"
+                                            VerticalTextAlignment="Center">
+                                        </Label>
+                                    </SwipeItemView>
+                                </SwipeItems>
+                            </SwipeView.LeftItems>
+                            <SwipeView.RightItems>
+                                <SwipeItems SwipeBehaviorOnInvoked="Close">
+                                    <SwipeItemView>
+                                        <Label
+                                            Text="Right Swipe"
+                                            Padding="25,0,25,0"
+                                            VerticalOptions="FillAndExpand"
+                                            VerticalTextAlignment="Center">
+                                        </Label>
+                                    </SwipeItemView>
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+                            <ContentView
+                                BackgroundColor="White">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.Effects>
+                                        <effects:RippleEffect />
+                                    </Grid.Effects>
+                                    <StackLayout Padding="10">
+                                        <Label
+                                            Text="{Binding .}"
+                                            d:Text="{Binding .}"
+                                            LineBreakMode="NoWrap"
+                                            FontSize="16" />
+                                    </StackLayout>
+                                </Grid>
+                            </ContentView>
+                        </SwipeView>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+</local:TestContentPage>
