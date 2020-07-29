@@ -352,6 +352,8 @@ namespace Xamarin.Forms.Platform.UWP
 					backgroundColor = appearance.BackgroundColor.ToWindowsColor();
 				if (!appearance.TitleColor.IsDefault)
 					titleColor = appearance.TitleColor.ToWindowsColor();
+
+				_flyoutBackdrop = appearance.FlyoutBackdrop;
 			}
 
 			var titleBar = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TitleBar;
@@ -360,7 +362,6 @@ namespace Xamarin.Forms.Platform.UWP
 			UpdatePaneButtonColor(TogglePaneButton, !IsPaneOpen);
 			UpdatePaneButtonColor(NavigationViewBackButton, !IsPaneOpen);
 
-			_flyoutBackdrop = appearance.FlyoutBackdrop;
 			UpdateFlyoutBackdrop();
 		}
 
