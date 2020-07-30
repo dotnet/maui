@@ -290,7 +290,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public override bool OnInterceptTouchEvent(MotionEvent e)
 		{
-			return false;
+			return ShouldInterceptTouch(e);
 		}
 
 		public override bool DispatchTouchEvent(MotionEvent e)

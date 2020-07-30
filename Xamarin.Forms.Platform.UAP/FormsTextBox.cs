@@ -47,8 +47,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		InputScope _passwordInputScope;
 		InputScope _numericPasswordInputScope;
-		Border _borderElement;
-		Windows.UI.Xaml.Controls.ScrollViewer _scrollViewer;
+		ScrollViewer _scrollViewer;
 		Windows.UI.Xaml.Controls.Grid _rootGrid;
 		Windows.UI.Xaml.VisualState _DeleteButtonVisibleState;
 		Windows.UI.Xaml.VisualStateGroup _DeleteButtonVisibleStateGroups;
@@ -157,14 +156,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			base.OnApplyTemplate();
 
-			if (Device.Idiom == TargetIdiom.Phone)
-			{
-				// If we're on the phone, we need to grab this from the template
-				// so we can manually handle its background when focused
-				_borderElement = (Border)GetTemplateChild("BorderElement");
-			}
-			
-			_rootGrid = (Windows.UI.Xaml.Controls.Grid)GetTemplateChild("RootGrid");
+			_rootGrid = GetTemplateChild("RootGrid") as Windows.UI.Xaml.Controls.Grid;
 			if (_rootGrid != null)
 			{
 				var stateGroups = WVisualStateManager.GetVisualStateGroups(_rootGrid).ToList();
@@ -173,7 +165,7 @@ namespace Xamarin.Forms.Platform.UWP
 					_DeleteButtonVisibleState = _DeleteButtonVisibleStateGroups.States.SingleOrDefault(s => s.Name == "ButtonVisible");
 			}
 
-			_scrollViewer= (Windows.UI.Xaml.Controls.ScrollViewer)GetTemplateChild("ContentElement");
+			_scrollViewer= GetTemplateChild("ContentElement") as ScrollViewer;
 		}
 
 		void OnSizeChanged(object sender, SizeChangedEventArgs e)
