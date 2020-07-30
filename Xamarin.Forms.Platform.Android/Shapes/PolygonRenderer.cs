@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Specialized;
+using System.ComponentModel;
 using Android.Content;
 using Xamarin.Forms.Shapes;
 using static Android.Graphics.Path;
@@ -24,6 +25,9 @@ namespace Xamarin.Forms.Platform.Android
 
             if (args.NewElement != null)
             {
+                var points = args.NewElement.Points;
+                points.CollectionChanged += OnCollectionChanged;
+
                 UpdatePoints();
                 UpdateFillRule();
             }
@@ -39,6 +43,20 @@ namespace Xamarin.Forms.Platform.Android
                 UpdateFillRule();
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if (disposing)
+            {
+                if (Element != null)
+                {
+                    var points = Element.Points;
+                    points.CollectionChanged -= OnCollectionChanged;
+                }
+            }
+        }
+
         void UpdatePoints()
         {
             Control.UpdatePoints(Element.Points);
@@ -47,6 +65,11 @@ namespace Xamarin.Forms.Platform.Android
         void UpdateFillRule()
         {
             Control.UpdateFillMode(Element.FillRule == FillRule.Nonzero);
+        }
+
+        void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            UpdatePoints();
         }
     }
 
