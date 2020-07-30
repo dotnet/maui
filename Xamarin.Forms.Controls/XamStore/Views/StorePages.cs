@@ -316,15 +316,34 @@ namespace Xamarin.Forms.Controls.XamStore
 			Content = new ScrollView { Content = grid };
 
 
-			//grid.Children.Add(MakeButton("FlyoutBackdrop Color",
-			//		() =>
-			//		{
-			//			if (Shell.GetFlyoutBackdropColor(Shell.Current) == Color.Default)
-			//				Shell.SetFlyoutBackdropColor(Shell.Current, Color.Purple);
-			//			else
-			//				Shell.SetFlyoutBackdropColor(Shell.Current, Color.Default);
-			//		}),
-			//	0, 21);
+			Brush nextBrush = SolidColorBrush.Purple;
+			grid.Children.Add(MakeButton("FlyoutBackdrop Brush",
+					() =>
+					{
+						if(nextBrush == SolidColorBrush.Purple)
+						{
+							LinearGradientBrush linearGradientBrush = new LinearGradientBrush();
+							linearGradientBrush.StartPoint = new Point(0, 0);
+							linearGradientBrush.EndPoint = new Point(1, 1);
+
+							linearGradientBrush.GradientStops.Add(new GradientStop(Color.FromHex("#8A2387"), 0.1f));
+							linearGradientBrush.GradientStops.Add(new GradientStop(Color.FromHex("#E94057"), 0.6f));
+							linearGradientBrush.GradientStops.Add(new GradientStop(Color.FromHex("#F27121"), 1.0f));
+
+							nextBrush = linearGradientBrush;
+						}
+						else if(nextBrush is LinearGradientBrush)
+						{
+							nextBrush = Brush.Default;
+						}
+						else
+						{
+							nextBrush = SolidColorBrush.Purple;
+						}
+
+						Shell.SetFlyoutBackdrop(Shell.Current, nextBrush);
+					}),
+				0, 21);
 
 			grid.Children.Add(MakeButton("Hide Nav Shadow",
                     () => Shell.SetNavBarHasShadow(this, false)),

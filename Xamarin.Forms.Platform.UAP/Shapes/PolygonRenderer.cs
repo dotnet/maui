@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using Xamarin.Forms.Shapes;
+using System.Collections.Specialized;
 
 #if WINDOWS_UWP
 using WFillRule = Windows.UI.Xaml.Media.FillRule;
@@ -27,6 +28,9 @@ namespace Xamarin.Forms.Platform.WPF
 
 			if (args.NewElement != null)
 			{
+				var points = args.NewElement.Points;
+				points.CollectionChanged += OnCollectionChanged;
+
 				UpdatePoints();
 				UpdateFillRule();
 			}
@@ -42,6 +46,20 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateFillRule();
 		}
 
+		protected override void Dispose(bool disposing)
+		{
+			base.Dispose(disposing);
+
+			if (disposing)
+			{
+				if (Element != null)
+				{
+					var points = Element.Points;
+					points.CollectionChanged -= OnCollectionChanged;
+				}
+			}
+		}
+
 		void UpdatePoints()
 		{
 			Control.Points = Element.Points.ToWindows();
@@ -52,6 +70,11 @@ namespace Xamarin.Forms.Platform.WPF
 			Control.FillRule = Element.FillRule == FillRule.EvenOdd ?
 				WFillRule.EvenOdd :
 				WFillRule.Nonzero;
+		}
+
+		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			UpdatePoints();
 		}
 	}
 }

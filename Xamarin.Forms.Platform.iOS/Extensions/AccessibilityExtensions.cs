@@ -11,6 +11,17 @@ namespace Xamarin.Forms.Platform.MacOS
 {
 	public static class AccessibilityExtensions
 	{
+		public static void SetAccessibilityProperties(this NativeView nativeViewElement, Element element)
+		{
+			if (element == null)
+				return;
+
+			nativeViewElement.AccessibilityIdentifier = element?.AutomationId;
+			SetAccessibilityLabel(nativeViewElement, element);
+			SetAccessibilityHint(nativeViewElement, element);
+			SetIsAccessibilityElement(nativeViewElement, element);
+		}
+
 		public static string SetAccessibilityHint(this NativeView Control, Element Element, string _defaultAccessibilityHint = null)
 		{
 			if (Element == null || Control == null)

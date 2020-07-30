@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using Android.Content;
@@ -16,8 +17,8 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		IVisualElementRenderer _renderer;
 		readonly Lazy<ScaleGestureDetector> _scaleDetector;
-		readonly Lazy<GestureDetector> _tapAndPanAndSwipeDetector;
-
+		readonly Lazy<TapAndPanGestureDetector> _tapAndPanAndSwipeDetector;
+		readonly Lazy<DragAndDropGestureHandler> _dragAndDropGestureHandler;
 		bool _disposed;
 		bool _inputTransparent;
 		bool _isEnabled;
@@ -33,8 +34,16 @@ namespace Xamarin.Forms.Platform.Android
 			_renderer = renderer;
 			_renderer.ElementChanged += OnElementChanged;
 
-			_tapAndPanAndSwipeDetector = new Lazy<GestureDetector>(InitializeTapAndPanAndSwipeDetector);
+			_tapAndPanAndSwipeDetector = new Lazy<TapAndPanGestureDetector>(InitializeTapAndPanAndSwipeDetector);
 			_scaleDetector = new Lazy<ScaleGestureDetector>(InitializeScaleDetector);
+			_dragAndDropGestureHandler = new Lazy<DragAndDropGestureHandler>(InitializeDragAndDropHandler);
+			UpdateDragAndDrop();
+
+			if (_renderer.Element is View ov &&
+				ov.GestureRecognizers is INotifyCollectionChanged incc)
+			{
+				incc.CollectionChanged += GestureCollectionChanged;
+			}
 		}
 
 		public bool OnTouchEvent(MotionEvent e)
@@ -72,10 +81,10 @@ namespace Xamarin.Forms.Platform.Android
 			public TapAndPanGestureDetector(Context context, InnerGestureListener listener) : base(context, listener)
 			{
 				_listener = listener;
-				InitializeLongPressSettings();
+				UpdateLongPressSettings();
 			}
 
-			void InitializeLongPressSettings()
+			public void UpdateLongPressSettings()
 			{
 				// Right now this just disables long press, since we don't support a long press gesture
 				// in Forms. If we ever do, we'll need to selectively enable it, probably by hooking into the 
@@ -84,7 +93,7 @@ namespace Xamarin.Forms.Platform.Android
 				// on by default).
 				// Also, since the property is virtual we shouldn't just set it from the constructor.
 
-				IsLongpressEnabled = false;
+				IsLongpressEnabled = _listener.EnableLongPressGestures;
 			}
 
 			public override bool OnTouchEvent(MotionEvent ev)
@@ -137,18 +146,26 @@ namespace Xamarin.Forms.Platform.Android
 			return true;
 		}
 
-		GestureDetector InitializeTapAndPanAndSwipeDetector()
+		DragAndDropGestureHandler InitializeDragAndDropHandler()
+		{
+			return new DragAndDropGestureHandler(() => View, () => Control);
+		}
+
+		TapAndPanGestureDetector InitializeTapAndPanAndSwipeDetector()
 		{
 			var context = Control.Context;
-			var listener = new InnerGestureListener(new TapGestureHandler(() => View, () =>
-			{
-				if (Element is View view)
-					return view.GetChildElements(Point.Zero) ?? new List<GestureElement>();
+			var listener = new InnerGestureListener(
+				new TapGestureHandler(() => View, () =>
+				{
+					if (Element is View view)
+						return view.GetChildElements(Point.Zero) ?? new List<GestureElement>();
 
-				return new List<GestureElement>();
-			}),
+					return new List<GestureElement>();
+				}),
 				new PanGestureHandler(() => View, context.FromPixels),
-			    	new SwipeGestureHandler(() => View, context.FromPixels));
+				new SwipeGestureHandler(() => View, context.FromPixels),
+				InitializeDragAndDropHandler()
+			);
 
 			return new TapAndPanGestureDetector(context, listener);
 		}
@@ -173,15 +190,42 @@ namespace Xamarin.Forms.Platform.Android
 			if (e.OldElement != null)
 			{
 				e.OldElement.PropertyChanged -= OnElementPropertyChanged;
+
+				if (e.OldElement is View ov &&
+					ov.GestureRecognizers is INotifyCollectionChanged incc)
+				{
+					incc.CollectionChanged -= GestureCollectionChanged;
+				}
 			}
 
 			if (e.NewElement != null)
 			{
 				e.NewElement.PropertyChanged += OnElementPropertyChanged;
+
+				if (e.NewElement is View ov &&
+					ov.GestureRecognizers is INotifyCollectionChanged incc)
+				{
+					incc.CollectionChanged += GestureCollectionChanged;
+				}
 			}
 
 			UpdateInputTransparent();
 			UpdateIsEnabled();
+			UpdateDragAndDrop();
+		}
+
+		void GestureCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			UpdateDragAndDrop();
+
+			if (_tapAndPanAndSwipeDetector.IsValueCreated)
+				_tapAndPanAndSwipeDetector.Value.UpdateLongPressSettings();
+		}
+
+		void UpdateDragAndDrop()
+		{
+			if (View?.GestureRecognizers?.Count > 0)
+				_dragAndDropGestureHandler.Value.SetupHandlerForDrop();
 		}
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -208,6 +252,12 @@ namespace Xamarin.Forms.Platform.Android
 				if (Element != null)
 				{
 					Element.PropertyChanged -= OnElementPropertyChanged;
+
+					if (Element is View ov &&
+						ov.GestureRecognizers is INotifyCollectionChanged incc)
+					{
+						incc.CollectionChanged -= GestureCollectionChanged;
+					}
 				}
 
 				if (_tapAndPanAndSwipeDetector.IsValueCreated)

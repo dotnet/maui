@@ -170,8 +170,10 @@ namespace Xamarin.Forms.Controls
 
 			int maxAttempts = 2;
 			int attempts = 0;
+
 #if __WINDOWS__
 			bool attemptOneRestart = false;
+			bool waitNoElementAttempt = false;
 #endif
 			while (attempts < maxAttempts)
 			{
@@ -222,7 +224,25 @@ namespace Xamarin.Forms.Controls
 					app.WaitForElement(q => q.Raw("* marked:'SearchButton'"));
 					app.Tap(q => q.Raw("* marked:'SearchButton'"));
 
-					return;
+#if __WINDOWS__
+					try
+					{
+						if (!waitNoElementAttempt)
+						{
+							waitNoElementAttempt = true;
+							app.WaitForNoElement(q => q.Raw("* marked:'TestCasesIssueList'"), timeout: TimeSpan.FromMinutes(1));
+						}
+					}
+					catch
+					{
+						app.Restart();
+						attempts--;
+						throw;
+					}
+#endif
+
+					if (!app.RestartIfAppIsClosed())
+						return;
 				}
 #if __WINDOWS__
 				catch (Exception we)
@@ -658,6 +678,13 @@ namespace Xamarin.Forms.Controls
 					}
 				}
 			});
+			return page;
+		}
+
+		public ContentPage AddFlyoutItem(string title)
+		{
+			ContentPage page = new ContentPage() { Title = title };
+			AddFlyoutItem(page, title);
 			return page;
 		}
 

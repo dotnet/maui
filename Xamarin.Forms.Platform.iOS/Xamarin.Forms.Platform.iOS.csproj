@@ -167,6 +167,7 @@
     <Compile Include="CollectionView\WidthConstrainedTemplatedCell.cs" />
     <Compile Include="CollectionView\VerticalSupplementaryView.cs" />
     <Compile Include="DisposeHelpers.cs" />
+    <Compile Include="DragAndDropDelegate.cs" />
     <Compile Include="EffectUtilities.cs" />
     <Compile Include="ExportCellAttribute.cs" />
     <Compile Include="ExportImageSourceHandlerAttribute.cs" />

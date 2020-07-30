@@ -142,7 +142,7 @@ namespace Xamarin.Forms.Build.Tasks
 				if (CanAddToResourceDictionary(parentVar, parentVar.VariableType, node, node, Context))
 				{
 					Context.IL.Append(parentVar.LoadAs(Module.GetTypeDefinition(("Xamarin.Forms.Core", "Xamarin.Forms", "ResourceDictionary")), Module));
-					Context.IL.Append(AddToResourceDictionary(node, node, Context));
+					Context.IL.Append(AddToResourceDictionary(parentVar, node, node, Context));
 				}
 				// Collection element, implicit content, or implicit collection element.
 				else if (parentVar.VariableType.ImplementsInterface(Module.ImportReference(("mscorlib", "System.Collections", "IEnumerable")))
@@ -192,7 +192,7 @@ namespace Xamarin.Forms.Build.Tasks
 				Context.IL.Append(GetPropertyValue(parent, parentList.XmlName, Context, node, out propertyType));
 
 				if (CanAddToResourceDictionary(parent, propertyType, node, node, Context)) {
-					Context.IL.Append(AddToResourceDictionary(node, node, Context));
+					Context.IL.Append(AddToResourceDictionary(parent, node, node, Context));
 					return;
 				} 
 				var adderTuple = propertyType.GetMethods(md => md.Name == "Add" && md.Parameters.Count == 1, Module).FirstOrDefault() ??
@@ -1326,24 +1326,37 @@ namespace Xamarin.Forms.Build.Tasks
 				};
 		}
 
-		static bool CanAdd(VariableDefinition parent, XmlName propertyName, INode node, IXmlLineInfo lineInfo, ILContext context)
+		static bool CanAdd(VariableDefinition parent, XmlName propertyName, INode valueNode, IXmlLineInfo lineInfo, ILContext context)
 		{
 			var module = context.Body.Method.Module;
 			var localName = propertyName.LocalName;
-			bool attached;
-			var bpRef = GetBindablePropertyReference(parent, propertyName.NamespaceURI, ref localName, out attached, context, lineInfo);
-			TypeReference propertyType;
+			var bpRef = GetBindablePropertyReference(parent, propertyName.NamespaceURI, ref localName, out var attached, context, lineInfo);
 
-			if (   !CanGetValue(parent, bpRef, attached, null, context, out propertyType)
+			if (!(valueNode is IElementNode elementNode))
+				return false;
+
+			if (   !CanGetValue(parent, bpRef, attached, null, context, out TypeReference propertyType)
 				&& !CanGet(parent, localName, context, out propertyType))
 				return false;
 
-			//TODO check md.Parameters[0] type
-			var adderTuple = propertyType.GetMethods(md => md.Name == "Add" && md.Parameters.Count == 1, module).FirstOrDefault();
+			if (!context.Variables.TryGetValue(elementNode, out VariableDefinition varValue))
+				return false;
+
+			var adderTuple = propertyType.GetMethods(md => md.Name == "Add"
+														&& md.Parameters.Count == 1, module).FirstOrDefault();
 			if (adderTuple == null)
 				return false;
 
-			return true;
+			var adderRef = module.ImportReference(adderTuple.Item1);
+			adderRef = module.ImportReference(adderRef.ResolveGenericParameters(adderTuple.Item2, module));
+			var paramType = adderRef.Parameters[0].ParameterType.ResolveGenericParameters(adderRef);
+			if (varValue.VariableType.InheritsFromOrImplements(paramType))
+				return true;
+
+			if (varValue.VariableType.GetImplicitOperatorTo(paramType, module) != null)
+				return true;
+
+			return CanAddToResourceDictionary(parent, propertyType, elementNode, lineInfo, context);
 		}
 
 		static Dictionary<VariableDefinition, IList<string>> resourceNamesInUse = new Dictionary<VariableDefinition, IList<string>>();
@@ -1353,14 +1366,12 @@ namespace Xamarin.Forms.Build.Tasks
 				&& collectionType.ResolveCached().BaseType?.FullName != "Xamarin.Forms.ResourceDictionary")
 				return false;
 
-
 			if (node.Properties.ContainsKey(XmlName.xKey)) {
 				var key = (node.Properties[XmlName.xKey] as ValueNode).Value as string;
 				if (!resourceNamesInUse.TryGetValue(parent, out var names))
 					resourceNamesInUse[parent] = (names = new List<string>());
 				if (names.Contains(key))
 					throw new BuildException(ResourceDictDuplicateKey, lineInfo, null, key);
-				names.Add(key);
 				return true;
 			}
 
@@ -1385,7 +1396,7 @@ namespace Xamarin.Forms.Build.Tasks
 				yield return instruction;
 
 			if (CanAddToResourceDictionary(parent, propertyType, elementNode, iXmlLineInfo, context)) {
-				foreach (var instruction in AddToResourceDictionary(elementNode, iXmlLineInfo, context))
+				foreach (var instruction in AddToResourceDictionary(parent, elementNode, iXmlLineInfo, context))
 					yield return instruction;
 				yield break;
 			}
@@ -1401,15 +1412,19 @@ namespace Xamarin.Forms.Build.Tasks
 				yield return Instruction.Create(OpCodes.Pop);
 		}
 
-		static IEnumerable<Instruction> AddToResourceDictionary(IElementNode node, IXmlLineInfo lineInfo, ILContext context)
+		static IEnumerable<Instruction> AddToResourceDictionary(VariableDefinition parent, IElementNode node, IXmlLineInfo lineInfo, ILContext context)
 		{
 			var module = context.Body.Method.Module;
 
 			if (node.Properties.ContainsKey(XmlName.xKey)) {
+				var names = resourceNamesInUse[parent];
+				var key = (node.Properties[XmlName.xKey] as ValueNode).Value as string;
+				names.Add(key);
+
 //				IL_0014:  ldstr "key"
 //				IL_0019:  ldstr "foo"
 //				IL_001e:  callvirt instance void class [Xamarin.Forms.Core]Xamarin.Forms.ResourceDictionary::Add(string, object)
-				yield return Create(Ldstr, (node.Properties[XmlName.xKey] as ValueNode).Value as string);
+				yield return Create(Ldstr, (key));
 				foreach (var instruction in context.Variables[node].LoadAs(module.TypeSystem.Object, module))
 					yield return instruction;
 				yield return Create(Callvirt, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms", "ResourceDictionary"),

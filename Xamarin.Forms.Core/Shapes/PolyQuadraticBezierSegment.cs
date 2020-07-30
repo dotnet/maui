@@ -7,6 +7,11 @@
             Points = new PointCollection();
         }
 
+        public PolyQuadraticBezierSegment(PointCollection points)
+        {
+            Points = points;
+        }
+
         public static readonly BindableProperty PointsProperty =
             BindableProperty.Create(nameof(Points), typeof(PointCollection), typeof(PolyQuadraticBezierSegment), null);
 

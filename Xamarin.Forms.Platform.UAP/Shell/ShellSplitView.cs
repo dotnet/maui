@@ -6,7 +6,8 @@ namespace Xamarin.Forms.Platform.UWP
 {
 	public class ShellSplitView : SplitView
 	{
-		Color _flyoutBackdropColor;
+		Brush _flyoutBackdrop;
+		WBrush _flyoutPlatformBrush;
 		WBrush _defaultBrush;
 		LightDismissOverlayMode? _defaultLightDismissOverlayMode;
 		public ShellSplitView()
@@ -14,7 +15,7 @@ namespace Xamarin.Forms.Platform.UWP
 		}
 
 
-		internal void UpdateFlyoutBackdropColor()
+		internal void UpdateFlyoutBackdrop()
 		{
 			var dismissLayer = ((WRectangle)GetTemplateChild("LightDismissLayer"));
 
@@ -24,29 +25,29 @@ namespace Xamarin.Forms.Platform.UWP
 			if (_defaultBrush == null)
 				_defaultBrush = dismissLayer.Fill;
 
-			if (_flyoutBackdropColor == Color.Default)
+			if (Brush.IsNullOrEmpty(_flyoutBackdrop))
 			{
 				dismissLayer.Fill = _defaultBrush;
 			}
 			else
 			{
-				dismissLayer.Fill = _flyoutBackdropColor.ToBrush();
+				dismissLayer.Fill = _flyoutPlatformBrush ?? _defaultBrush;
 			}
 		}
 
-		internal Color FlyoutBackdropColor
+		internal Brush FlyoutBackdrop
 		{
 			set
 			{
-				if (_flyoutBackdropColor == value)
+				if (_flyoutBackdrop == value)
 					return;
 
-				_flyoutBackdropColor = value;
+				_flyoutBackdrop = value;
 
 				if (_defaultLightDismissOverlayMode == null)
 					_defaultLightDismissOverlayMode = LightDismissOverlayMode;
 
-				if (value == Color.Default)
+				if (value == Brush.Default)
 				{
 					LightDismissOverlayMode = _defaultLightDismissOverlayMode ?? LightDismissOverlayMode.Auto;
 				}
@@ -54,6 +55,11 @@ namespace Xamarin.Forms.Platform.UWP
 				{
 					LightDismissOverlayMode = LightDismissOverlayMode.On;
 				}
+
+				if (_flyoutBackdrop != null)
+					_flyoutPlatformBrush = _flyoutBackdrop.ToBrush();
+				else
+					_flyoutPlatformBrush = _defaultBrush;
 			}
 		}
 	}

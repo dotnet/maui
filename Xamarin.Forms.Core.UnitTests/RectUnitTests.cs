@@ -27,12 +27,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual(4, rect.Width);
 			Assert.AreEqual(5, rect.Height);
 
-			var rectangle = new Rectangle(2, 3, 4, 5);
-			rect = new Rect(rectangle);
-			Assert.AreEqual(2, rect.X);
-			Assert.AreEqual(3, rect.Y);
-			Assert.AreEqual(4, rect.Width);
-			Assert.AreEqual(5, rect.Height);
 		}
 
 		[Test]
@@ -56,18 +50,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual(new Point(2, 3), rect.Location);
 
 			Assert.AreEqual(new Point(4, 5.5), rect.Center);
-
-			rect.Left = 1;
-			Assert.AreEqual(1, rect.X);
-
-			rect.Right = 3;
-			Assert.AreEqual(2, rect.Width);
-
-			rect.Top = 1;
-			Assert.AreEqual(1, rect.Y);
-
-			rect.Bottom = 2;
-			Assert.AreEqual(1, rect.Height);
 		}
 
 		[Test]

@@ -2,6 +2,25 @@
 {
     public class ScaleTransform : Transform
     {
+        public ScaleTransform()
+		{
+
+		}
+
+        public ScaleTransform(double scaleX, double scaleY)
+        {
+            ScaleX = scaleX;
+            ScaleY = scaleY;
+        }
+
+        public ScaleTransform(double scaleX, double scaleY, double centerX, double centerY)
+        {
+            ScaleX = scaleX;
+            ScaleY = scaleY;
+            CenterX = centerX;
+            CenterY = centerY;
+        }
+
         public static readonly BindableProperty ScaleXProperty =
             BindableProperty.Create(nameof(ScaleX), typeof(double), typeof(ScaleTransform), 1.0,
 				propertyChanged: OnTransformPropertyChanged);

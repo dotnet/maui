@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[Test]
 			public void RectangleGeometryDoesntThrow([Values(false, true)] bool useCompiledXaml)
 			{
-				var layout = new Gh11541(useCompiledXaml);
+				Assert.DoesNotThrow(()=> new Gh11541(useCompiledXaml));
 			}
 		}
 	}

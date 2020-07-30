@@ -2,6 +2,17 @@
 {
     public class TranslateTransform : Transform
     {
+        public TranslateTransform()
+		{
+
+		}
+
+        public TranslateTransform(double x, double y)
+		{
+            X = x;
+            Y = y;
+		}
+
         public static readonly BindableProperty XProperty =
             BindableProperty.Create(nameof(X), typeof(double), typeof(TranslateTransform), 0.0,
 				propertyChanged: OnTransformPropertyChanged);

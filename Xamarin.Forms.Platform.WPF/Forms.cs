@@ -40,7 +40,7 @@ namespace Xamarin.Forms
 			Device.Info = new WPFDeviceInfo();
 			ExpressionSearch.Default = new WPFExpressionSearch();
 
-			Registrar.RegisterAll(new[] { typeof(ExportRendererAttribute), typeof(ExportCellAttribute), typeof(ExportImageSourceHandlerAttribute) });
+			Registrar.RegisterAll(new[] { typeof(ExportRendererAttribute), typeof(ExportCellAttribute), typeof(ExportImageSourceHandlerAttribute), typeof(ExportFontAttribute) });
 
 			Ticker.SetDefault(new WPFTicker());
 			Device.SetIdiom(TargetIdiom.Desktop);
