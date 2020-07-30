@@ -19,6 +19,7 @@ namespace Xamarin.Forms
 		internal const string RadioButtonExperimental = "RadioButton_Experimental";
 		internal const string ShapesExperimental = "Shapes_Experimental";
 		internal const string BrushExperimental = "Brush_Experimental";
+		internal const string DragAndDropExperimental = "DragAndDrop_Experimental";
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void VerifyFlagEnabled(

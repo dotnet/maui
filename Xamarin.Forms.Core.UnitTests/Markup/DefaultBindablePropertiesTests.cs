@@ -34,6 +34,8 @@ namespace Xamarin.Forms.Markup.UnitTests
 				{ typeof(CompareStateTrigger), na },
 				{ typeof(DataTrigger), na },
 				{ typeof(DeviceStateTrigger), na },
+				{ typeof(DragGestureRecognizer), na },
+				{ typeof(DropGestureRecognizer), na },
 				{ typeof(Element), na },
 				{ typeof(EventTrigger), na },
 				{ typeof(FontImageSource), na },

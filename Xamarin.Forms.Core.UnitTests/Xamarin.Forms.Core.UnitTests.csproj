@@ -76,6 +76,9 @@
     <Compile Include="CommandSourceTests.cs" />
     <Compile Include="CommandTests.cs" />
     <Compile Include="DependencyResolutionTests.cs" />
+    <Compile Include="DataPackageTests.cs" />
+    <Compile Include="DropGestureRecognizerTests.cs" />
+    <Compile Include="DragGestureRecognizerTests.cs" />
     <Compile Include="ItemsLayoutTypeConverterTests.cs" />
     <Compile Include="MultiBindingTests.cs" />
     <Compile Include="Markup\DefaultBindablePropertiesTests.cs" />

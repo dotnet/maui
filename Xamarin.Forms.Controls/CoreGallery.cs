@@ -20,6 +20,7 @@ using Xamarin.Forms.Controls.GalleryPages.ExpanderGalleries;
 using Xamarin.Forms.Controls.GalleryPages.RadioButtonGalleries;
 using Xamarin.Forms.Controls.GalleryPages.ShapesGalleries;
 using Xamarin.Forms.Controls.GalleryPages.GradientGalleries;
+using Xamarin.Forms.Controls.GalleryPages.DragAndDropGalleries;
 
 namespace Xamarin.Forms.Controls
 {
@@ -344,6 +345,7 @@ namespace Xamarin.Forms.Controls
 				new GalleryPageFactory(() => new ButtonBorderBackgroundGalleryPage(VisualMarker.Material), "Button Border & Background Gallery (Material)"),
 				new GalleryPageFactory(() => new CheckBoxCoreGalleryPage(), "CheckBox Gallery"),
 				new GalleryPageFactory(() => new DatePickerCoreGalleryPage(), "DatePicker Gallery"),
+				new GalleryPageFactory(() => new DragAndDropGallery(), "Drag and Drop Gallery"),
 				new GalleryPageFactory(() => new EditorCoreGalleryPage(), "Editor Gallery"),
 				new GalleryPageFactory(() => new FrameCoreGalleryPage(), "Frame Gallery"),
 				new GalleryPageFactory(() => new GradientsGallery(), "Brushes Gallery"),
@@ -499,7 +501,13 @@ namespace Xamarin.Forms.Controls
 				var item = args.SelectedItem;
 				var page = item as GalleryPageFactory;
 				if (page != null)
-					await PushPage(page.Realize());
+				{
+					var realize = page.Realize();
+					if (realize is Shell)
+						Application.Current.MainPage = realize;
+					else
+						await PushPage(realize);
+				}
 
 				SelectedItem = null;
 			};

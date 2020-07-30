@@ -12,6 +12,7 @@ namespace Xamarin.Forms.Platform.Android
 		TapGestureHandler _tapGestureHandler;
 		PanGestureHandler _panGestureHandler;
 		SwipeGestureHandler _swipeGestureHandler;
+		DragAndDropGestureHandler _dragAndDropGestureHandler;
 		bool _isScrolling;		
 		float _lastX;
 		float _lastY;
@@ -25,26 +26,21 @@ namespace Xamarin.Forms.Platform.Android
 		Func<int, Point, bool> _tapDelegate;
 		Func<int, IEnumerable<TapGestureRecognizer>> _tapGestureRecognizers;
 
-		public InnerGestureListener(TapGestureHandler tapGestureHandler, PanGestureHandler panGestureHandler, SwipeGestureHandler swipeGestureHandler)
+		public InnerGestureListener(
+			TapGestureHandler tapGestureHandler, 
+			PanGestureHandler panGestureHandler, 
+			SwipeGestureHandler swipeGestureHandler,
+			DragAndDropGestureHandler dragAndDropGestureHandler)
 		{
-			if (tapGestureHandler == null)
-			{
-				throw new ArgumentNullException(nameof(tapGestureHandler));
-			}
-
-			if (panGestureHandler == null)
-			{
-				throw new ArgumentNullException(nameof(panGestureHandler));
-			}
-
-			if (swipeGestureHandler == null)
-			{
-				throw new ArgumentNullException(nameof(swipeGestureHandler));
-			}
+			_ = tapGestureHandler ?? throw new ArgumentNullException(nameof(tapGestureHandler));
+			_ = panGestureHandler ?? throw new ArgumentNullException(nameof(panGestureHandler));
+			_ = swipeGestureHandler ?? throw new ArgumentNullException(nameof(swipeGestureHandler));
+			_ = dragAndDropGestureHandler ?? throw new ArgumentNullException(nameof(dragAndDropGestureHandler));
 
 			_tapGestureHandler = tapGestureHandler;
 			_panGestureHandler = panGestureHandler;
 			_swipeGestureHandler = swipeGestureHandler;
+			_dragAndDropGestureHandler = dragAndDropGestureHandler;
 
 			_tapDelegate = tapGestureHandler.OnTap;
 			_tapGestureRecognizers = tapGestureHandler.TapGestureRecognizers;
@@ -54,6 +50,9 @@ namespace Xamarin.Forms.Platform.Android
 			_swipeDelegate = swipeGestureHandler.OnSwipe;
 			_swipeCompletedDelegate = swipeGestureHandler.OnSwipeComplete;
 		}
+
+		public bool EnableLongPressGestures =>
+			_dragAndDropGestureHandler.HasAnyDragGestures();
 
 		bool HasAnyGestures()
 		{
@@ -118,6 +117,7 @@ namespace Xamarin.Forms.Platform.Android
 		void GestureDetector.IOnGestureListener.OnLongPress(MotionEvent e)
 		{
 			SetStartingPosition(e);
+			_dragAndDropGestureHandler.OnLongPress(e);
 		}
 
 		bool GestureDetector.IOnGestureListener.OnScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY)
@@ -190,6 +190,8 @@ namespace Xamarin.Forms.Platform.Android
 				_scrollCompleteDelegate = null;
 				_swipeDelegate = null;
 				_swipeCompletedDelegate = null;
+				_dragAndDropGestureHandler?.Dispose();
+				_dragAndDropGestureHandler = null;
 			}
 
 			base.Dispose(disposing);
@@ -216,7 +218,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			return _scrollDelegate(totalX, totalY, e2.PointerCount) || _swipeDelegate(totalX, totalY);
 		}
-
+			
 		internal void EndScrolling()
 		{
 			if (_isScrolling && _scrollCompleteDelegate != null)

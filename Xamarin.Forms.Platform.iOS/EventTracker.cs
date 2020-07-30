@@ -29,12 +29,14 @@ namespace Xamarin.Forms.Platform.MacOS
 		readonly Dictionary<IGestureRecognizer, NativeGestureRecognizer> _gestureRecognizers = new Dictionary<IGestureRecognizer, NativeGestureRecognizer>();
 
 		readonly IVisualElementRenderer _renderer;
+
 		bool _disposed;
 		NativeView _handler;
 
 		double _previousScale = 1.0;
 #if __MOBILE__
 		UITouchEventArgs _shouldReceiveTouch;
+		DragAndDropDelegate _dragAndDropDelegate;
 #endif
 
 		public EventTracker(IVisualElementRenderer renderer)
@@ -561,6 +563,25 @@ namespace Xamarin.Forms.Platform.MacOS
 			}
 #endif
 
+#if __MOBILE__
+			UIDragInteraction uIDragInteraction = null;
+			UIDropInteraction uIDropInteraction = null;
+
+			if (_dragAndDropDelegate != null)
+			{
+				foreach(var interaction in _renderer.NativeView.Interactions)
+				{
+					if (interaction is UIDragInteraction uIDrag && uIDrag.Delegate == _dragAndDropDelegate)
+						uIDragInteraction = uIDrag;
+
+					if (interaction is UIDropInteraction uiDrop && uiDrop.Delegate == _dragAndDropDelegate)
+						uIDropInteraction = uiDrop;
+				}
+			}
+
+			bool dragFound = false;
+			bool dropFound = false;
+#endif
 			for (int i = 0; i < ElementGestureRecognizers.Count; i++)
 			{
 				IGestureRecognizer recognizer = ElementGestureRecognizers[i];
@@ -577,7 +598,40 @@ namespace Xamarin.Forms.Platform.MacOS
 
 					_gestureRecognizers[recognizer] = nativeRecognizer;
 				}
+
+#if __MOBILE__
+				if(Forms.IsiOS11OrNewer && recognizer is DragGestureRecognizer)
+				{
+					dragFound = true;
+					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate();
+					if (uIDragInteraction == null)
+					{
+						var interaction = new UIDragInteraction(_dragAndDropDelegate);
+						interaction.Enabled = true;
+						_renderer.NativeView.AddInteraction(interaction);
+					}
+				}
+
+				if (Forms.IsiOS11OrNewer && recognizer is DropGestureRecognizer)
+				{
+					dropFound = true;
+					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate();
+					if (uIDropInteraction == null)
+					{
+						var interaction = new UIDropInteraction(_dragAndDropDelegate);
+						_renderer.NativeView.AddInteraction(interaction);
+					}
+				}
+#endif
 			}
+
+#if __MOBILE__
+			if (!dragFound && uIDragInteraction != null)
+				_renderer.NativeView.RemoveInteraction(uIDragInteraction);
+
+			if (!dropFound && uIDropInteraction != null)
+				_renderer.NativeView.RemoveInteraction(uIDropInteraction);
+#endif
 
 			var toRemove = _gestureRecognizers.Keys.Where(key => !ElementGestureRecognizers.Contains(key)).ToArray();
 
