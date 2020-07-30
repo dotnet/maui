@@ -85,8 +85,8 @@ namespace Xamarin.Forms.Controls
 				//{
 				//	CredentialStore = new InMemoryCredentialStore
 				//	{
-				//		ConsumerKey = "ZTmEODUCChOhLXO4lnUCEbH2I",
-				//		ConsumerSecret = "Y8z2Wouc5ckFb1a0wjUDT9KAI6DUat5tFNdmIkPLl8T4Nyaa2J",
+				//		ConsumerKey = "",
+				//		ConsumerSecret = "",
 				//	},
 				//};
 				//await auth.AuthorizeAsync();

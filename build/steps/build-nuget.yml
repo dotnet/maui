@@ -15,7 +15,6 @@ steps:
       SourceFolder: '$(Build.ArtifactsDirectory)/win_build'
       TargetFolder: '$(System.DefaultWorkingDirectory)'
 
-
   - task: PowerShell@1
     displayName: 'Generate docs from docs repo'
     inputs:

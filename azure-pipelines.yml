@@ -277,32 +277,75 @@ stages:
         steps:
           - template: build/steps/build-osx.yml
 
-    # My purpose is to enable quick testing of UI Tests when we need to debug 
-    # why tests are failing. Full test suite runs as part of release
-  - stage: windows_tests
-    displayName: Run Windows Tests
-    condition: 'false'
-    dependsOn: []
+  - stage: PoliCheck
+    displayName: 'Code Analysis'
+    dependsOn: windows
     jobs:
-      - job: win_hosted_tests
-        workspace:
-          clean: all
-        displayName: Run UWP Tests
-        timeoutInMinutes: 500
+      - job: run_poli_check
+        displayName: 'Policheck And Credentials Compliance'
         pool:
-          name: 'Azure Pipelines'
-          vmImage: 'windows-2019'
-          demands: 
-            msbuild
-        strategy:
-          matrix:
-            debug:
-              BuildConfiguration:  'Debug'
+          name: $(vs2019VmPool)
+          vmImage: $(vs2019VmImage)
+        timeoutInMinutes: 60
+        cancelTimeoutInMinutes: 5
         steps:
-          - template: build/steps/run-windows-tests.yml
+          - checkout: self
+          
+          - template: security/policheck/v1.yml@xamarin-templates 
+          
+          - template: security/credscan/v2.yml@xamarin-templates
             parameters:
-              provisionatorPath : 'build/provisioning/provisioning.csx'
+              suppressionsFile: $(System.DefaultWorkingDirectory)\build\automation\CredScanSuppressions.json
+          
+          - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@3
+            displayName: Run AntiMalware (Defender) Scan
+            inputs:
+              FileDirPath: $(System.DefaultWorkingDirectory)
+              EnableServices: true
+            condition: succeededOrFailed()
+          
+          - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@1
+            displayName: Create Security Analysis Report
+            inputs:
+              CredScan: true
+              PoliCheck: true
+            condition: succeededOrFailed()
 
+          - task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
+            displayName: Publish Security Analysis Logs
+            inputs:
+              ArtifactName: CodeAnalysisLogs
+            condition: succeededOrFailed()
+
+          - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
+            displayName: Fail Job if Security Issues are Detected
+            inputs:
+              CredScan: true
+              PoliCheck: true
+            condition: succeededOrFailed()
+
+      # - job: api_scan
+      #   displayName: APIScan Compliance
+      #   pool:
+      #     name: $(corpVmImage)
+      #   steps:
+      #     - checkout: none
+      #       clean: true
+          
+      #     - task: DownloadBuildArtifacts@0
+      #       displayName: 'Download build artifact win_build'
+      #       inputs:
+      #         artifactName: win_build
+      #         downloadPath: $(Build.StagingDirectory)
+
+      #     - task: securedevelopmentteam.vss-secure-development-tools.build-task-apiscan.APIScan@2
+      #       displayName: 'Run APIScan'
+      #       inputs:
+      #         softwareFolder: '$(Build.StagingDirectory)\win_build'
+      #         softwareName: Xamarin.Forms
+      #         softwareVersionNum: $(Build.BuildNumber)
+      #         isLargeApp: false
+          
   # only sign using the private server
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - stage: nuget_signing
