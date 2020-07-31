@@ -33,6 +33,7 @@ trigger:
     - main
     - 3.*
     - 4.*
+    - 5.*
   tags:
     include:
     - '*'
@@ -45,8 +46,9 @@ pr:
   branches:
     include:
     - main
-    - 4.*
     - 3.*
+    - 4.*
+    - 5.*
 
 schedules:
 - cron: "0 0 * * *"
