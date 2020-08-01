@@ -10,8 +10,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			base.Setup();
 			Application.Current = new MockApplication();
-
-			Device.SetFlags(new[] { ExperimentalFlags.AppThemeExperimental });
 		}
 
 		[Test]

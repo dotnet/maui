@@ -42,8 +42,6 @@
 			button.Text = "AppTheme Enabled!";
 			button.TextColor = Color.Black;
 			button.IsEnabled = false;
-
-			Device.SetFlags(new[] { ExperimentalFlags.AppThemeExperimental });
 		}
 	}
 }
