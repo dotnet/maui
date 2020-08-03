@@ -14,11 +14,6 @@ namespace Xamarin.Forms.Xaml
 		object _dark;
 		bool _hasdark;
 
-		public AppThemeBindingExtension()
-		{
-			ExperimentalFlags.VerifyFlagEnabled(nameof(AppThemeBindingExtension), ExperimentalFlags.AppThemeExperimental, nameof(AppThemeBindingExtension));
-		}
-
 		public object Default
 		{
 			get => _default; set
