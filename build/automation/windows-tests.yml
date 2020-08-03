@@ -1,0 +1,34 @@
+resources:
+  repositories:
+    - repository: xamarin-templates
+      type: github
+      name: xamarin/yaml-templates
+      endpoint: xamarin
+
+
+stages:
+   # My purpose is to enable quick testing of UI Tests when we need to debug 
+    # why tests are failing. Full test suite runs as part of release
+  - stage: windows_tests
+    displayName: Run Windows Tests
+    condition: 'false'
+    dependsOn: []
+    jobs:
+      - job: win_hosted_tests
+        workspace:
+          clean: all
+        displayName: Run UWP Tests
+        timeoutInMinutes: 500
+        pool:
+          name: 'Azure Pipelines'
+          vmImage: 'windows-2019'
+          demands: 
+            msbuild
+        strategy:
+          matrix:
+            debug:
+              BuildConfiguration:  'Debug'
+        steps:
+          - template: build/steps/run-windows-tests.yml
+            parameters:
+              provisionatorPath : 'build/provisioning/provisioning.csx'

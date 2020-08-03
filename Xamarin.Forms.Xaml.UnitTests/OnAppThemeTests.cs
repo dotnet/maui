@@ -11,7 +11,6 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public override void Setup()
 		{
 			base.Setup();
-			Device.SetFlags(new[] { "AppTheme_Experimental" });
 			Application.Current = new MockApplication();
 		}
 

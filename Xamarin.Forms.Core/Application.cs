@@ -189,9 +189,6 @@ namespace Xamarin.Forms
 
 		void TriggerThemeChangedActual(AppThemeChangedEventArgs args)
 		{
-			if (Device.Flags == null || Device.Flags.IndexOf(ExperimentalFlags.AppThemeExperimental) == -1)
-				return;
-
 			// On iOS the event is triggered more than once.
 			// To minimize that for us, we only do it when the theme actually changes and it's not currently firing
 			if (_themeChangedFiring || RequestedTheme == _lastAppTheme)
