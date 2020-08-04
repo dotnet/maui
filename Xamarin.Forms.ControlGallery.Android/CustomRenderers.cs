@@ -58,6 +58,7 @@ using IOPath = System.IO.Path;
 [assembly: ExportRenderer(typeof(Issue9360.Issue9360NavigationPage), typeof(Issue9360NavigationPageRenderer))]
 [assembly: ExportRenderer(typeof(Issue8801.PopupStackLayout), typeof(Issue8801StackLayoutRenderer))]
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.Tests.TestClasses.CustomButton), typeof(CustomButtonRenderer))]
+[assembly: ExportRenderer(typeof(ScrolView11185), typeof(ScrollViewFadeRenderer))]
 
 #if PRE_APPLICATION_CLASS
 #elif FORMS_APPLICATION_ACTIVITY
@@ -66,6 +67,15 @@ using IOPath = System.IO.Path;
 #endif
 namespace Xamarin.Forms.ControlGallery.Android
 {
+	public sealed class ScrollViewFadeRenderer : ScrollViewRenderer
+	{
+		public ScrollViewFadeRenderer(Context context) : base(context)
+		{
+			HorizontalFadingEdgeEnabled = true;
+			SetFadingEdgeLength(200);
+		}
+	}
+
 	public class Issue8801StackLayoutRenderer : VisualElementRenderer<StackLayout>
 	{
 		public Issue8801StackLayoutRenderer(Context context) : base(context)

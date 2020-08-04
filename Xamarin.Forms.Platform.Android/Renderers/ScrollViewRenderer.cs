@@ -493,6 +493,8 @@ namespace Xamarin.Forms.Platform.Android
 				if (_hScrollView == null)
 				{
 					_hScrollView = new AHorizontalScrollView(Context, this);
+					_hScrollView.HorizontalFadingEdgeEnabled = HorizontalFadingEdgeEnabled;
+					_hScrollView.SetFadingEdgeLength(HorizontalFadingEdgeLength);
 					UpdateFlowDirection();
 				}
 
