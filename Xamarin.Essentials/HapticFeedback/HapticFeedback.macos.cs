@@ -11,7 +11,7 @@ namespace Xamarin.Essentials
         static void PlatformPerform(HapticFeedbackType type)
         {
             if (type == HapticFeedbackType.LongPress)
-                NSHapticFeedbackManager.DefaultPerformer.PerformFeedback(NSHapticFeedbackPattern.Alignment, NSHapticFeedbackPerformanceTime.Default);
+                NSHapticFeedbackManager.DefaultPerformer.PerformFeedback(NSHapticFeedbackPattern.Generic, NSHapticFeedbackPerformanceTime.Default);
         }
     }
 }
