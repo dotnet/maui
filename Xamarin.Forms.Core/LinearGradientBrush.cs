@@ -38,7 +38,7 @@
 		}
 
 		public static readonly BindableProperty EndPointProperty = BindableProperty.Create(
-			nameof(EndPoint), typeof(Point), typeof(LinearGradientBrush), new Point(1, 0));
+			nameof(EndPoint), typeof(Point), typeof(LinearGradientBrush), new Point(1, 1));
 
 		public Point EndPoint
 		{
