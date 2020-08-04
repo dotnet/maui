@@ -1,6 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
+
 using Windows.UI.Xaml.Controls;
+
 using UWPApp = Windows.UI.Xaml.Application;
 using WListView = Windows.UI.Xaml.Controls.ListView;
 using WScrollMode = Windows.UI.Xaml.Controls.ScrollMode;
@@ -61,7 +63,7 @@ namespace Xamarin.Forms.Platform.UWP
 					return CreateHorizontalListView(listItemsLayout);
 			}
 
-			throw new NotImplementedException("The layout is not implemented");			
+			throw new NotImplementedException("The layout is not implemented");
 		}
 
 		protected virtual void UpdateHeader()
@@ -220,10 +222,10 @@ namespace Xamarin.Forms.Platform.UWP
 				ItemsPanel = (ItemsPanelTemplate)UWPApp.Current.Resources["HorizontalListItemsPanel"],
 				ItemContainerStyle = GetHorizontalItemContainerStyle(listItemsLayout)
 			};
-
+			ScrollViewer.SetVerticalScrollBarVisibility(horizontalListView, Windows.UI.Xaml.Controls.ScrollBarVisibility.Hidden);
+			ScrollViewer.SetVerticalScrollMode(horizontalListView, WScrollMode.Disabled);
 			ScrollViewer.SetHorizontalScrollMode(horizontalListView, WScrollMode.Auto);
-			ScrollViewer.SetHorizontalScrollBarVisibility(horizontalListView,
-				Windows.UI.Xaml.Controls.ScrollBarVisibility.Auto);
+			ScrollViewer.SetHorizontalScrollBarVisibility(horizontalListView, Windows.UI.Xaml.Controls.ScrollBarVisibility.Auto);
 
 			return horizontalListView;
 		}
