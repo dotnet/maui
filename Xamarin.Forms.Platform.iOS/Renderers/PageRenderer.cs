@@ -396,6 +396,9 @@ namespace Xamarin.Forms.Platform.iOS
 			if (!IsPartOfShell && !Forms.IsiOS11OrNewer)
 				return;
 
+			if (IsPartOfShell && !_appeared)
+				return;
+
 			var tabThickness = _tabThickness;
 			if (!_isInItems)
 				tabThickness = 0;
