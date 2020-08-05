@@ -81,6 +81,8 @@ namespace Xamarin.Forms.Platform.iOS
 			_pageController.SendDisappearing();
 		}
 
+		public bool Appeared => _appeared;
+
 		bool CheckIfWeAreTheCurrentPage()
 		{
 			if (_pageController.RealParent is IPageContainer<Page> multipage)
