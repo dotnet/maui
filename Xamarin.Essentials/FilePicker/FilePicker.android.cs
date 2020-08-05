@@ -82,6 +82,12 @@ namespace Xamarin.Essentials
             {
                 { DevicePlatform.Android, new[] { "image/png" } }
             });
+
+        public static FilePickerFileType PlatformVideoFileType() =>
+            new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+            {
+                { DevicePlatform.Android, new[] { "video/*" } }
+            });
     }
 
     public partial class FilePickerResult

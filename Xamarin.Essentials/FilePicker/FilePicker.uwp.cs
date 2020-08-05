@@ -68,7 +68,7 @@ namespace Xamarin.Essentials
         public static FilePickerFileType PlatformImageFileType() =>
             new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
             {
-                { DevicePlatform.UWP, new[] { "*.png", "*.jpg", "*.jpeg" } }
+                { DevicePlatform.UWP, new[] { "*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp" } }
             });
 
         public static FilePickerFileType PlatformPngFileType() =>
@@ -76,6 +76,12 @@ namespace Xamarin.Essentials
             {
                 { DevicePlatform.UWP, new[] { "*.png" } }
             });
+
+        public static FilePickerFileType PlatformVideoFileType() =>
+           new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+           {
+                { DevicePlatform.UWP, new[] { "*.mp4", "*.mov", "*.avi", "*.wmv", "*.m4v", "*.mpg", "*.mpeg", "*.mp2", "*.mkv", "*.flv", "*.gifv", "*.qt" } }
+           });
     }
 
     public partial class FilePickerResult

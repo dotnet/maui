@@ -12,10 +12,13 @@ namespace Xamarin.Essentials
 
     public partial class FilePickerFileType
     {
-        public static FilePickerFileType PlatformImageFileType()
+        static FilePickerFileType PlatformImageFileType()
             => throw new NotImplementedInReferenceAssemblyException();
 
-        public static FilePickerFileType PlatformPngFileType()
+        static FilePickerFileType PlatformPngFileType()
+            => throw new NotImplementedInReferenceAssemblyException();
+
+        static FilePickerFileType PlatformVideoFileType()
             => throw new NotImplementedInReferenceAssemblyException();
     }
 

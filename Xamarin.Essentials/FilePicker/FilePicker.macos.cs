@@ -63,6 +63,12 @@ namespace Xamarin.Essentials
             {
                 { DevicePlatform.macOS, new string[] { UTType.PNG } }
             });
+
+        public static FilePickerFileType PlatformVideoFileType() =>
+            new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+            {
+                { DevicePlatform.macOS, new string[] { UTType.MPEG4, UTType.Video, UTType.AVIMovie, UTType.AppleProtectedMPEG4Video, "mp4", "m4v", "mpg", "mpeg", "mp2", "mov", "avi", "mkv", "flv", "gifv", "qt" } }
+            });
     }
 
     public partial class FilePickerResult
