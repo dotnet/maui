@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace Xamarin.Forms
@@ -64,8 +65,11 @@ namespace Xamarin.Forms
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public async void SendDrop(DropEventArgs args, VisualElement element)
+		public async Task SendDrop(DropEventArgs args, VisualElement element)
 		{
+			if (!AllowDrop)
+				return;
+
 			DropCommand?.Execute(DropCommandParameter);
 			Drop?.Invoke(this, args);
 
@@ -86,18 +90,7 @@ namespace Xamarin.Forms
 
 					if (String.IsNullOrWhiteSpace(text))
 					{
-						if (dragSource is Label label)
-							text = label.Text;
-						else if (dragSource is Entry entry)
-							text = entry.Text;
-						else if (dragSource is Editor editor)
-							text = editor.Text;
-						else if (dragSource is TimePicker tp)
-							text = tp.Time.ToString();
-						else if (dragSource is DatePicker dp)
-							text = dp.Date.ToString();
-						else if (dragSource is CheckBox cb)
-							text = cb.IsChecked.ToString();
+						text = dragSource.GetStringValue();
 					}
 				}
 
@@ -108,18 +101,10 @@ namespace Xamarin.Forms
 					image.Source = sourceTarget;
 				else if (Parent is ImageButton ib)
 					ib.Source = sourceTarget;
-				else if (Parent is Label label)
-					label.Text = text;
-				else if (Parent is Entry entry)
-					entry.Text = text;
-				else if (Parent is Editor editor)
-					editor.Text = text;
-				else if (Parent is CheckBox cb && bool.TryParse(text, out bool result))
-					cb.IsChecked = result;
-				else if (Parent is TimePicker tp && TimeSpan.TryParse(text, out TimeSpan tpResult))
-					tp.Time = tpResult;
-				else if (Parent is DatePicker dp && DateTime.TryParse(text, out DateTime dpResult))
-					dp.Date = dpResult;
+				else if (Parent is Button b)
+					b.ImageSource = sourceTarget;
+				
+				Parent?.TrySetValue(text);
 			}
 		}
 	}

@@ -11,6 +11,6 @@ namespace Xamarin.Forms
 		}
 
 		public DataPackageView Data { get; }
-		public bool Handled { get; private set; }
+		public bool Handled { get; set; }
 	}
 }

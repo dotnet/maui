@@ -125,14 +125,13 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public UIDragItem[] HandleDragStarting(View element, IVisualElementRenderer renderer)
 		{
-			var args = new DragStartingEventArgs();
 			UIDragItem[] returnValue = null;
 			SendEventArgs<DragGestureRecognizer>(rec =>
 			{
 				if (!rec.CanDrag)
 					return;
 
-				rec.SendDragStarting(args, element);
+				var args = rec.SendDragStarting(element);
 
 				if (args.Cancel)
 					return;
@@ -151,32 +150,20 @@ namespace Xamarin.Forms.Platform.iOS
 						else
 							itemProvider = new NSItemProvider(new NSString(""));
 
-						if (renderer.Element is IImageElement imageElement)
+						if (args.Data.Image == null && renderer.Element is IImageElement imageElement)
 							args.Data.Image = imageElement.Source;
 					}
 					else
 					{
-						string text = clipDescription;
+						string text = args.Data.Text ?? clipDescription;
 
-						if (element is Label label)
-							text = label.Text;
-						else if (element is Entry entry)
-							text = entry.Text;
-						else if (element is Editor editor)
-							text = editor.Text;
-						else if (element is TimePicker tp)
-							text = tp.Time.ToString();
-						else if (element is DatePicker dp)
-							text = dp.Date.ToString();
-
-						if(String.IsNullOrWhiteSpace(text))
+						if (String.IsNullOrWhiteSpace(text))
 						{
 							itemProvider = new NSItemProvider(renderer.NativeView.ConvertToImage());
 						}
 						else
 						{
 							itemProvider = new NSItemProvider(new NSString(text));
-							args.Data.Text = text;
 						}
 					}
 
@@ -223,12 +210,19 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			var args = new DropEventArgs(datapackage?.View);
-			SendEventArgs<DropGestureRecognizer>(rec =>
+			SendEventArgs<DropGestureRecognizer>(async rec =>
 			{
 				if (!rec.AllowDrop)
 					return;
 
-				rec.SendDrop(args, element);
+				try
+				{
+					await rec.SendDrop(args, element);
+				}
+				catch (Exception e)
+				{
+					Internals.Log.Warning(nameof(DropGestureRecognizer), $"{e}");
+				}
 			}, (View)element);
 		}
 	}

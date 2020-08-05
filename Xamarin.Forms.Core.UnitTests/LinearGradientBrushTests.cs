@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			LinearGradientBrush linearGradientBrush = new LinearGradientBrush();
 
 			Assert.AreEqual(1.0d, linearGradientBrush.EndPoint.X, "EndPoint.X");
-			Assert.AreEqual(0.0d, linearGradientBrush.EndPoint.Y, "EndPoint.Y");
+			Assert.AreEqual(1.0d, linearGradientBrush.EndPoint.Y, "EndPoint.Y");
 		}
 
 		[Test]
