@@ -910,7 +910,6 @@ namespace Xamarin.Forms.Build.Tasks
 			throw new BuildException(MemberResolution, iXmlLineInfo, null, localName);
 		}
 
-
 		public static IEnumerable<Instruction> GetPropertyValue(VariableDefinition parent, XmlName propertyName, ILContext context, IXmlLineInfo lineInfo, out TypeReference propertyType)
 		{
 			var module = context.Body.Method.Module;
@@ -1316,13 +1315,13 @@ namespace Xamarin.Forms.Build.Tasks
 
 			if (parent.VariableType.IsValueType)
 				return new[] {
-					Instruction.Create(OpCodes.Ldloca, parent),
-					Instruction.Create(OpCodes.Call, propertyGetterRef),
+					Create(Ldloca, parent),
+					Create(Call, propertyGetterRef),
 				};
 			else
 				return new[] {
-					Instruction.Create(OpCodes.Ldloc, parent),
-					Instruction.Create(OpCodes.Callvirt, propertyGetterRef),
+					Create(Ldloc, parent),
+					Create(Callvirt, propertyGetterRef),
 				};
 		}
 
@@ -1354,6 +1353,9 @@ namespace Xamarin.Forms.Build.Tasks
 				return true;
 
 			if (varValue.VariableType.GetImplicitOperatorTo(paramType, module) != null)
+				return true;
+
+			if (paramType.FullName == "System.Object" && varValue.VariableType.IsValueType)
 				return true;
 
 			return CanAddToResourceDictionary(parent, propertyType, elementNode, lineInfo, context);

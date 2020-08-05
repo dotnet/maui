@@ -260,9 +260,6 @@ namespace Xamarin.Forms.Platform.UWP
 
 				var textColor = GetSwipeItemColor(formsSwipeItem.BackgroundColor);
 				windowsSwipeItem.Foreground = textColor.ToBrush();
-
-				windowsSwipeItem.Command = formsSwipeItem.Command;
-				windowsSwipeItem.CommandParameter = formsSwipeItem.CommandParameter;
 			}
 		}
 
@@ -333,8 +330,6 @@ namespace Xamarin.Forms.Platform.UWP
 						Foreground = textColor.ToBrush(),
 						IconSource = formsSwipeItem.IconImageSource.ToWindowsIconSource(),
 						Text = formsSwipeItem.Text,
-						Command = formsSwipeItem.Command,
-						CommandParameter = formsSwipeItem.CommandParameter,
 						BehaviorOnInvoked = GetSwipeBehaviorOnInvoked(items.SwipeBehaviorOnInvoked)
 					};
 

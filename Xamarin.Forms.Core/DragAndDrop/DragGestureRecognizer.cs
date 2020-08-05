@@ -68,7 +68,26 @@ namespace Xamarin.Forms
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendDragStarting(DragStartingEventArgs args, VisualElement element)
+		public DragStartingEventArgs SendDragStarting(VisualElement element)
+		{
+			var args = new DragStartingEventArgs();
+
+			SendDragStarting(args, element);
+
+			if (args.Cancel || args.Handled)
+				return args;
+
+			if (element is IImageElement ie)
+			{
+				args.Data.Image = ie.Source;
+			}
+
+			args.Data.Text = element.GetStringValue();
+
+			return args;
+		}
+
+		void SendDragStarting(DragStartingEventArgs args, VisualElement element)
 		{
 			_ = args ?? throw new ArgumentNullException(nameof(args));
 
