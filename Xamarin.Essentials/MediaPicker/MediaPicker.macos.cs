@@ -7,10 +7,25 @@ namespace Xamarin.Essentials
 {
     public static partial class MediaPicker
     {
-        static async Task<MediaPickerResult> PlatformShowPhotoPickerAsync(MediaPickerOptions options)
+        static bool PlatformIsPhotoCaptureAvailable
+            => false;
+
+        static async Task<MediaPickerResult> PlatformPickPhotoAsync(MediaPickerOptions options)
             => new MediaPickerResult(await FilePicker.PickAsync(new PickOptions
             {
                  FileTypes = FilePickerFileType.Images
             }));
+
+        static Task<MediaPickerResult> PlatformCapturePhotoAsync(MediaPickerOptions options)
+            => PlatformPickPhotoAsync(options);
+
+        static async Task<MediaPickerResult> PlatformPickVideoAsync(MediaPickerOptions options)
+            => new MediaPickerResult(await FilePicker.PickAsync(new PickOptions
+            {
+                FileTypes = FilePickerFileType.Videos
+            }));
+
+        static Task<MediaPickerResult> PlatformCaptureVideoAsync(MediaPickerOptions options)
+            => PlatformPickVideoAsync(options);
     }
 }

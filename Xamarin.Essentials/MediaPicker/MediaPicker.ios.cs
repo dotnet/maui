@@ -14,26 +14,48 @@ namespace Xamarin.Essentials
     {
         static UIImagePickerController picker;
 
-        static async Task<MediaPickerResult> PlatformShowPhotoPickerAsync(MediaPickerOptions options)
+        static bool PlatformIsPhotoCaptureAvailable
+            => UIImagePickerController.IsSourceTypeAvailable(UIImagePickerControllerSourceType.Camera);
+
+        static Task<MediaPickerResult> PlatformPickPhotoAsync(MediaPickerOptions options)
+            => PhotoAsync(options, true, true);
+
+        static Task<MediaPickerResult> PlatformCapturePhotoAsync(MediaPickerOptions options)
+            => PhotoAsync(options, true, false);
+
+        static Task<MediaPickerResult> PlatformPickVideoAsync(MediaPickerOptions options)
+            => PhotoAsync(options, false, true);
+
+        static Task<MediaPickerResult> PlatformCaptureVideoAsync(MediaPickerOptions options)
+            => PhotoAsync(options, false, false);
+
+        static async Task<MediaPickerResult> PhotoAsync(MediaPickerOptions options, bool photo, bool pickExisting)
         {
-            if (!UIImagePickerController.IsSourceTypeAvailable(UIImagePickerControllerSourceType.PhotoLibrary))
+            var sourceType = pickExisting ? UIImagePickerControllerSourceType.PhotoLibrary : UIImagePickerControllerSourceType.Camera;
+
+            if (!UIImagePickerController.IsSourceTypeAvailable(sourceType))
                 throw new FeatureNotSupportedException();
-            if (!UIImagePickerController.AvailableMediaTypes(UIImagePickerControllerSourceType.PhotoLibrary).Contains(UTType.Image))
+            if (!UIImagePickerController.AvailableMediaTypes(sourceType).Contains(photo ? UTType.Image : UTType.Movie))
                 throw new FeatureNotSupportedException();
 
             // permission is not required on iOS 11 for the picker
             if (!Platform.HasOSVersion(11, 0))
+            {
                 await Permissions.EnsureGrantedAsync<Permissions.Photos>();
+            }
 
             var vc = Platform.GetCurrentViewController(true);
 
             picker = new UIImagePickerController();
-            picker.SourceType = UIImagePickerControllerSourceType.PhotoLibrary;
-            picker.MediaTypes = new string[] { UTType.Image };
+            picker.SourceType = sourceType;
+            picker.MediaTypes = new string[] { photo ? UTType.Image : UTType.Movie };
             picker.AllowsEditing = false;
 
+            if (!string.IsNullOrWhiteSpace(options?.Title))
+                picker.Title = options.Title;
+
             if (DeviceInfo.Idiom == DeviceIdiom.Tablet && picker.PopoverPresentationController != null && vc.View != null)
-                picker.PopoverPresentationController.SourceView = vc.View;
+                picker.PopoverPresentationController.SourceRect = vc.View.Bounds;
 
             var tcs = new TaskCompletionSource<MediaPickerResult>(picker);
             picker.Delegate = new PhotoPickerDelegate
@@ -57,7 +79,7 @@ namespace Xamarin.Essentials
         static MediaPickerResult DictionaryToMediaFile(NSDictionary info)
         {
             PHAsset phAsset = null;
-            NSUrl assetUrl;
+            NSUrl assetUrl = null;
 
             if (Platform.HasOSVersion(11, 0))
             {
@@ -71,12 +93,21 @@ namespace Xamarin.Essentials
                     phAsset = info.ValueForKey(UIImagePickerController.PHAsset) as PHAsset;
                 }
             }
-            else
+
+            if (phAsset == null)
             {
                 assetUrl = info[UIImagePickerController.ReferenceUrl] as NSUrl;
 
                 if (assetUrl != null)
                     phAsset = PHAsset.FetchAssets(new NSUrl[] { assetUrl }, null)?.LastObject as PHAsset;
+            }
+
+            if (phAsset == null || assetUrl == null)
+            {
+                var img = info.ValueForKey(UIImagePickerController.OriginalImage) as UIImage;
+
+                if (img != null)
+                    return new MediaPickerResult(img);
             }
 
             if (phAsset == null || assetUrl == null)
@@ -107,6 +138,7 @@ namespace Xamarin.Essentials
     public partial class MediaPickerResult
     {
         PHAsset phAsset;
+        UIImage uiImage;
 
         internal MediaPickerResult(NSUrl url)
             : base()
@@ -124,8 +156,18 @@ namespace Xamarin.Essentials
             phAsset = asset;
         }
 
+        internal MediaPickerResult(UIImage image)
+        {
+            FullPath = Guid.NewGuid().ToString() + ".png";
+            FileName = FullPath;
+            uiImage = image;
+        }
+
         internal override Task<Stream> PlatformOpenReadAsync()
         {
+            if (uiImage != null)
+                return Task.FromResult<Stream>(uiImage.AsPNG().AsStream());
+
             if (phAsset != null)
             {
                 var tcsStream = new TaskCompletionSource<Stream>();
