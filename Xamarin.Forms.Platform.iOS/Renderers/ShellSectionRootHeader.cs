@@ -104,6 +104,7 @@ namespace Xamarin.Forms.Platform.iOS
 			else
 				headerCell.Selected = false;
 
+			headerCell.SetAccessibilityProperties(shellContent);
 			return headerCell;
 		}
 
