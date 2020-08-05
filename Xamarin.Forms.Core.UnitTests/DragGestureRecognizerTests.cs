@@ -55,7 +55,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			dragRec.DragStartingCommand = cmd;
 			dragRec.DragStartingCommandParameter = parameter;
-			dragRec.SendDragStarting(new DragStartingEventArgs(), new Label());
+			dragRec.SendDragStarting(new Label());
 
 			Assert.AreEqual(commandExecuted, parameter);
 		}
@@ -73,6 +73,37 @@ namespace Xamarin.Forms.Core.UnitTests
 			dragRec.SendDropCompleted(new DropCompletedEventArgs());
 
 			Assert.AreEqual(commandExecuted, parameter);
+		}
+
+		[TestCase(typeof(Entry), "EntryTest")]
+		[TestCase(typeof(Label), "LabelTest")]
+		[TestCase(typeof(Editor), "EditorTest")]
+		[TestCase(typeof(TimePicker), "01:00:00")]
+		[TestCase(typeof(DatePicker), "12/12/2020 12:00:00 AM")]
+		[TestCase(typeof(CheckBox), "True")]
+		[TestCase(typeof(Switch), "True")]
+		[TestCase(typeof(RadioButton), "True")]
+		public void TextPackageCorrectlyExtractedFromCompatibleElement(Type fieldType, string result)
+		{
+			var dragRec = new DragGestureRecognizer();
+			var element = (VisualElement)Activator.CreateInstance(fieldType);
+			Assert.IsTrue(element.TrySetValue(result));
+			var args = dragRec.SendDragStarting(element);
+			Assert.AreEqual(result, args.Data.Text);
+		}
+
+		[Test]
+		public void HandledTest()
+		{
+			string testString = "test String";
+			var dragRec = new DragGestureRecognizer();
+			var element = new Label() { Text = testString };
+			element.Text = "Text Shouldn't change";
+			var args = new DragStartingEventArgs();
+			args.Handled = true;
+			args.Data.Text = "Text Shouldn't change";
+			dragRec.SendDragStarting(element);
+			Assert.AreNotEqual(args.Data.Text, testString);
 		}
 	}
 }

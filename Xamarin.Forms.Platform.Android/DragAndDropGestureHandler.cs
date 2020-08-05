@@ -8,6 +8,7 @@ using AView = Android.Views.View;
 using ADragFlags = Android.Views.DragFlags;
 using System.IO;
 using Android.Sax;
+using Javax.Xml.Transform;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -203,9 +204,19 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			var args = new DropEventArgs(datapackage?.View);
-			SendEventArgs<DropGestureRecognizer>(rec =>
+			SendEventArgs<DropGestureRecognizer>(async rec =>
 			{
-				rec.SendDrop(args, element);
+				if (!rec.AllowDrop)
+					return;
+
+				try
+				{
+					await rec.SendDrop(args, element);
+				}
+				catch(Exception e)
+				{
+					Internals.Log.Warning(nameof(DropGestureRecognizer), $"{e}");
+				}
 			});
 		}
 
@@ -214,7 +225,6 @@ namespace Xamarin.Forms.Platform.Android
 			if (!HasAnyDragGestures())
 				return;
 
-			var args = new DragStartingEventArgs();
 			SendEventArgs<DragGestureRecognizer>(rec =>
 			{
 				if (!rec.CanDrag)
@@ -227,7 +237,7 @@ namespace Xamarin.Forms.Platform.Android
 				if (v.Handle == IntPtr.Zero)
 					return;
 
-				rec.SendDragStarting(args, element);
+				var args = rec.SendDragStarting(element);
 
 				if (args.Cancel)
 					return;
@@ -239,26 +249,14 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (!args.Handled)
 				{
-					if (element is IImageElement ie)
+					if (args.Data.Image != null)
 					{						
 						mimeTypes.Add("image/jpeg");						
-						item = ConvertToClipDataItem(ie.Source, mimeTypes);
+						item = ConvertToClipDataItem(args.Data.Image, mimeTypes);
 					}
 					else
 					{
-						string text = clipDescription;
-
-						if (element is Label label)
-							text = label.Text;
-						else if (element is Entry entry)
-							text = entry.Text;
-						else if (element is Editor editor)
-							text = editor.Text;
-						else if (element is TimePicker tp)
-							text = tp.Time.ToString();
-						else if (element is DatePicker dp)
-							text = dp.Date.ToString();
-
+						string text = clipDescription ?? args.Data.Text;
 						if (Uri.TryCreate(text, UriKind.Absolute, out _))
 						{
 							item = new ClipData.Item(AUri.Parse(text));
@@ -267,7 +265,7 @@ namespace Xamarin.Forms.Platform.Android
 						else
 						{
 							item = new ClipData.Item(text);
-							mimeTypes.Add(ClipDescription.MimetypeTextHtml);
+							mimeTypes.Add(ClipDescription.MimetypeTextPlain);
 						}
 					}
 				}

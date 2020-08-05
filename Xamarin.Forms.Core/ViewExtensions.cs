@@ -182,5 +182,74 @@ namespace Xamarin.Forms
 				yield return current;
 			}
 		}
+
+		internal static string GetStringValue(this Element element)
+		{
+			string text = null;
+			if (element is Label label)
+				text = label.Text;
+			else if (element is Entry entry)
+				text = entry.Text;
+			else if (element is Editor editor)
+				text = editor.Text;
+			else if (element is TimePicker tp)
+				text = tp.Time.ToString();
+			else if (element is DatePicker dp)
+				text = dp.Date.ToString();
+			else if (element is CheckBox cb)
+				text = cb.IsChecked.ToString();
+			else if (element is Switch sw)
+				text = sw.IsToggled.ToString();
+			else if (element is RadioButton rb)
+				text = rb.IsChecked.ToString();
+
+			return text;
+		}
+
+		internal static bool TrySetValue(this Element element, string text)
+		{
+			if (element is Label label)
+			{
+				label.Text = text;
+				return true;
+			}
+			else if (element is Entry entry)
+			{
+				entry.Text = text;
+				return true;
+			}
+			else if (element is Editor editor)
+			{
+				editor.Text = text;
+				return true;
+			}
+			else if (element is CheckBox cb && bool.TryParse(text, out bool result))
+			{
+				cb.IsChecked = result;
+				return true;
+			}
+			else if (element is Switch sw && bool.TryParse(text, out bool swResult))
+			{
+				sw.IsToggled = swResult;
+				return true;
+			}
+			else if (element is RadioButton rb && bool.TryParse(text, out bool rbResult))
+			{
+				rb.IsChecked = rbResult;
+				return true;
+			}
+			else if (element is TimePicker tp && TimeSpan.TryParse(text, out TimeSpan tpResult))
+			{
+				tp.Time = tpResult;
+				return true;
+			}
+			else if (element is DatePicker dp && DateTime.TryParse(text, out DateTime dpResult))
+			{
+				dp.Date = dpResult;
+				return true;
+			}
+
+			return false;
+		}
 	}
 }
