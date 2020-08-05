@@ -378,7 +378,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateUseSafeArea()
 		{
-			if (Element == null)
+			if (Element == null || _pageLifecycleManager == null)
 				return;
 
 			if (_userOverriddenSafeArea)
@@ -387,7 +387,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (!IsPartOfShell && !Forms.IsiOS11OrNewer)
 				return;
 
-			if (IsPartOfShell && !_appeared)
+			if (IsPartOfShell && !_pageLifecycleManager.Appeared)
 				return;
 
 			var tabThickness = _tabThickness;
