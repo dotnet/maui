@@ -9,8 +9,8 @@ namespace Xamarin.Essentials
 {
     public static partial class MediaPicker
     {
-        static bool PlatformIsPhotoCaptureAvailable
-               => false;
+        static bool PlatformIsCaptureAvailable
+               => true;
 
         static async Task<MediaPickerResult> PlatformPickPhotoAsync(MediaPickerOptions options)
             => new MediaPickerResult(await FilePicker.PickAsync(new PickOptions

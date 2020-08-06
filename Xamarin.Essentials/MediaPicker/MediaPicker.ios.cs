@@ -14,7 +14,7 @@ namespace Xamarin.Essentials
     {
         static UIImagePickerController picker;
 
-        static bool PlatformIsPhotoCaptureAvailable
+        static bool PlatformIsCaptureAvailable
             => UIImagePickerController.IsSourceTypeAvailable(UIImagePickerControllerSourceType.Camera);
 
         static Task<MediaPickerResult> PlatformPickPhotoAsync(MediaPickerOptions options)

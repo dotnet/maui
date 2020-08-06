@@ -16,7 +16,7 @@ namespace Xamarin.Essentials
         const int requestCodeMediaPicker = 12348;
         const int requestCodeMediaCapture = 12349;
 
-        static bool PlatformIsPhotoCaptureAvailable
+        static bool PlatformIsCaptureAvailable
             => Platform.AppContext.PackageManager.HasSystemFeature(PackageManager.FeatureCameraAny);
 
         static Task<MediaPickerResult> PlatformPickPhotoAsync(MediaPickerOptions options)
