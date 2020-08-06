@@ -78,6 +78,9 @@ namespace Xamarin.Essentials
 
         static MediaPickerResult DictionaryToMediaFile(NSDictionary info)
         {
+            if (info == null)
+                return null;
+
             PHAsset phAsset = null;
             NSUrl assetUrl = null;
 
