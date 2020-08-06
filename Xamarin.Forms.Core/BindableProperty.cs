@@ -38,6 +38,7 @@ namespace Xamarin.Forms
 		{
 			{ typeof(Uri), new UriTypeConverter() },
 			{ typeof(Color), new ColorTypeConverter() },
+			{ typeof(Easing), new EasingTypeConverter() },
 		};
 
 		static readonly Dictionary<Type, IValueConverter> KnownIValueConverters = new Dictionary<Type, IValueConverter>
