@@ -21,16 +21,45 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 		}
 
+		void AddPage(string title)
+		{
+			var page = AddFlyoutItem(title);
+
+			page.Content = new Grid()
+			{
+				Children =
+				{
+					new ScrollView()
+					{
+						Content =
+							new StackLayout()
+							{
+								Children =
+								{
+									new Button()
+									{
+										Text = "Learn More",
+										Margin = new Thickness(0,10,0,0),
+										BackgroundColor = Color.Purple,
+										TextColor = Color.White
+									}
+								}
+							}
+					}
+				}
+			};
+		}
+
 		protected override void Init()
 		{
 			FlyoutBehavior = FlyoutBehavior.Locked;
 
-			AddFlyoutItem("Click");
-			AddFlyoutItem("Between");
-			AddFlyoutItem("These Flyouts");
-			AddFlyoutItem("Really Fast");
-			AddFlyoutItem("If it doesn't");
-			AddFlyoutItem("Lock test has passed");
+			AddPage("Click");
+			AddPage("Between");
+			AddPage("These Flyouts");
+			AddPage("Really Fast");
+			AddPage("If it doesn't");
+			AddPage("Lock test has passed");
 
 			int i = 0;
 			foreach(var item in Items)
@@ -71,7 +100,7 @@ namespace Xamarin.Forms.Controls.Issues
 			Items[1].FlyoutDisplayOptions = FlyoutDisplayOptions.AsMultipleItems;
 		}
 
-#if UITEST
+#if UITEST && __SHELL__
 		[Test]
 		[Category(UITestCategories.Shell)]
 		public void ShellWithTopTabsFreezesWhenNavigatingFlyoutItems()
