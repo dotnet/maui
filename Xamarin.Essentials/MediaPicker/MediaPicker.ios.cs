@@ -88,6 +88,10 @@ namespace Xamarin.Essentials
             {
                 assetUrl = info[UIImagePickerController.ImageUrl] as NSUrl;
 
+                // Try the MediaURL sometimes used for videos
+                if (assetUrl == null)
+                    assetUrl = info[UIImagePickerController.MediaURL] as NSUrl;
+
                 if (assetUrl != null)
                 {
                     if (!assetUrl.Scheme.Equals("assets-library", StringComparison.InvariantCultureIgnoreCase))
