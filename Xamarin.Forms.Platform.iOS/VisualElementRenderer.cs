@@ -328,7 +328,7 @@ namespace Xamarin.Forms.Platform.MacOS
 					Superview.Add(_blur);
 			}
 
-			bool hasBackground = Element.Background != null && !Element.Background.IsEmpty;
+			bool hasBackground = Element?.Background != null && !Element.Background.IsEmpty;
 
 			if (hasBackground)
 				NativeView.UpdateBackgroundLayer();
