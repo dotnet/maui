@@ -82,9 +82,11 @@
 	<string>Get Location</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Get Location</string>
-  <key>NSPhotoLibraryAddUsageDescription</key>
-  <string>Pick Photos</string>
-  <key>NSPhotoLibraryUsageDescription</key>
-  <string>Pick Photos</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Pick Photos</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Pick Photos</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Catpure Video</string>
 </dict>
 </plist>
