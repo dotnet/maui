@@ -38,6 +38,9 @@ namespace Xamarin.Essentials
             if (!UIImagePickerController.AvailableMediaTypes(sourceType).Contains(photo ? UTType.Image : UTType.Movie))
                 throw new FeatureNotSupportedException();
 
+            if (!photo)
+                await Permissions.EnsureGrantedAsync<Permissions.Microphone>();
+
             // permission is not required on iOS 11 for the picker
             if (!Platform.HasOSVersion(11, 0))
             {
@@ -50,6 +53,8 @@ namespace Xamarin.Essentials
             picker.SourceType = sourceType;
             picker.MediaTypes = new string[] { photo ? UTType.Image : UTType.Movie };
             picker.AllowsEditing = false;
+            if (!photo)
+                picker.CameraCaptureMode = UIImagePickerControllerCameraCaptureMode.Video;
 
             if (!string.IsNullOrWhiteSpace(options?.Title))
                 picker.Title = options.Title;
