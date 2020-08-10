@@ -106,7 +106,12 @@
 		</CompileDependsOn>
 	</PropertyGroup>
 
-	<Target Name="XamlC" AfterTargets="AfterCompile" Inputs="$(IntermediateOutputPath)$(TargetFileName)" Outputs="$(IntermediateOutputPath)XamlC.stamp" Condition=" '$(DesignTimeBuild)' != 'True'">
+	<Target Name="XamlC"
+		AfterTargets="AfterCompile"
+		DependsOnTargets="_FindXamlGFiles"
+		Inputs="$(IntermediateOutputPath)$(TargetFileName)"
+		Outputs="$(IntermediateOutputPath)XamlC.stamp"
+		Condition=" '$(DesignTimeBuild)' != 'True' AND '@(_XamlGInputs->Count())' != '0' ">
 	    <PropertyGroup>
 		<_XFXamlCValidateOnly>$(XFXamlCValidateOnly)</_XFXamlCValidateOnly>
 		<_XFXamlCValidateOnly Condition="'$(BuildingForLiveUnitTesting)' == 'True' ">True</_XFXamlCValidateOnly>

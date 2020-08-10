@@ -28,6 +28,7 @@ using System;
 
 namespace Xamarin.Forms
 {
+	[TypeConverter(typeof(EasingTypeConverter))]
 	public class Easing
 	{
 		public static readonly Easing Linear = new Easing(x => x);
