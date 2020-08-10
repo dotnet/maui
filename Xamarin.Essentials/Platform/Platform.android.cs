@@ -27,6 +27,22 @@ namespace Xamarin.Essentials
 
         public static event EventHandler<ActivityStateChangedEventArgs> ActivityStateChanged;
 
+        internal const int requestCodeFilePicker = 11001;
+        internal const int requestCodeMediaPicker = 11002;
+        internal const int requestCodeMediaCapture = 11003;
+
+        internal const int requestCodeStart = 12000;
+
+        static int requestCode = requestCodeStart;
+
+        internal static int NextRequestCode()
+        {
+            if (++requestCode >= 12999)
+                requestCode = requestCodeStart;
+
+            return requestCode;
+        }
+
         internal static void OnActivityStateChanged(Activity activity, ActivityState ev)
             => ActivityStateChanged?.Invoke(null, new ActivityStateChangedEventArgs(activity, ev));
 

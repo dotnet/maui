@@ -13,9 +13,6 @@ namespace Xamarin.Essentials
 {
     public static partial class MediaPicker
     {
-        const int requestCodeMediaPicker = 12348;
-        const int requestCodeMediaCapture = 12349;
-
         static bool PlatformIsCaptureAvailable
             => Platform.AppContext.PackageManager.HasSystemFeature(PackageManager.FeatureCameraAny);
 
@@ -38,7 +35,7 @@ namespace Xamarin.Essentials
 
             try
             {
-                var result = await IntermediateActivity.StartAsync(pickerIntent, requestCodeMediaPicker);
+                var result = await IntermediateActivity.StartAsync(pickerIntent, Platform.requestCodeMediaPicker);
 
                 return new MediaPickerResult(result.Data);
             }
@@ -73,7 +70,7 @@ namespace Xamarin.Essentials
                     capturePhotoIntent.AddFlags(ActivityFlags.GrantReadUriPermission);
                     capturePhotoIntent.AddFlags(ActivityFlags.GrantWriteUriPermission);
 
-                    var result = await IntermediateActivity.StartAsync(capturePhotoIntent, requestCodeMediaCapture, tmpFile);
+                    var result = await IntermediateActivity.StartAsync(capturePhotoIntent, Platform.requestCodeMediaCapture, tmpFile);
 
                     var outputUri = result.GetParcelableExtra(IntermediateActivity.OutputUriExtra) as global::Android.Net.Uri;
 

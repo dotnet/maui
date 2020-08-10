@@ -12,8 +12,6 @@ namespace Xamarin.Essentials
 {
     public static partial class FilePicker
     {
-        const int requestCodeFilePicker = 12347;
-
         static async Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
         {
             // we only need the permission when accessing the file, but it's more natural
@@ -36,7 +34,7 @@ namespace Xamarin.Essentials
 
             try
             {
-                var result = await IntermediateActivity.StartAsync(pickerIntent, requestCodeFilePicker);
+                var result = await IntermediateActivity.StartAsync(pickerIntent, Platform.requestCodeFilePicker);
                 var resultList = new List<FilePickerResult>();
 
                 var clipData = new List<global::Android.Net.Uri>();
