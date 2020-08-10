@@ -103,7 +103,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (e.PropertyName == Switch.OnColorProperty.PropertyName)
 				UpdateOnColor();
-			else if (e.PropertyName == Slider.ThumbColorProperty.PropertyName)
+			else if (e.PropertyName == Switch.ThumbColorProperty.PropertyName)
 				UpdateThumbColor();
 		}
 

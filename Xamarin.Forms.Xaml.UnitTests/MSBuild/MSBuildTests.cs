@@ -1,6 +1,7 @@
 ﻿using Microsoft.Build.Locator;
 using Mono.Cecil;
 using NUnit.Framework;
+using NUnit.Framework.Interfaces;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -100,6 +101,10 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 		[TearDown]
 		public void TearDown ()
 		{
+			// Leave log files behind on test failures
+			if (TestContext.CurrentContext.Result.Outcome.Status == TestStatus.Failed)
+				return;
+
 			//NOTE: Windows can throw IOException: The process cannot access the file XYZ because it is being used by another process.
 			//A simple retry-and-give-up approach should be good enough
 			for (int i = 0; i < 3; i++) {
@@ -199,7 +204,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			}
 		}
 
-		string Build (string projectFile, string target = "Build", string additionalArgs = "", bool shouldSucceed = true)
+		string Build (string projectFile, string target = "Build", string verbosity = "normal", string additionalArgs = "", bool shouldSucceed = true)
 		{
 			var builder = new StringBuilder();
 			void onData(object s, DataReceivedEventArgs e)
@@ -214,7 +219,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 
 			var psi = new ProcessStartInfo {
 				FileName = FindMSBuild (),
-				Arguments = $"/v:normal /nologo {projectFile} /t:{target} /bl {additionalArgs}",
+				Arguments = $"/v:{verbosity} /nologo {projectFile} /t:{target} /bl {additionalArgs}",
 				CreateNoWindow = true,
 				WindowStyle = ProcessWindowStyle.Hidden,
 				UseShellExecute = false,
@@ -404,7 +409,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 
 			//NOTE: CompileDesignTime target only exists on Windows
 			var target = Environment.OSVersion.Platform == PlatformID.Win32NT ? "CompileDesignTime" : "Compile";
-			Build (projectFile, target, "/p:DesignTimeBuild=True /p:BuildingInsideVisualStudio=True /p:SkipCompilerExecution=True /p:ProvideCommandLineArgs=True");
+			Build (projectFile, target, additionalArgs: "/p:DesignTimeBuild=True /p:BuildingInsideVisualStudio=True /p:SkipCompilerExecution=True /p:ProvideCommandLineArgs=True");
 
 			var assembly = IOPath.Combine (intermediateDirectory, "test.dll");
 			var mainPageXamlG = IOPath.Combine (intermediateDirectory, "Pages", "MainPage.xaml.g.cs");
@@ -557,6 +562,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 		public void RandomEmbeddedResource ([Values (false, true)] bool sdkStyle)
 		{
 			var project = NewProject (sdkStyle);
+			project.Add (AddFile ("MainPage.xaml", "EmbeddedResource", Xaml.MainPage));
 			project.Add (AddFile ("MainPage.txt", "EmbeddedResource", "notxmlatall"));
 			var projectFile = IOPath.Combine (tempDirectory, "test.csproj");
 			project.Save (projectFile);
@@ -566,6 +572,17 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			AssertExists (IOPath.Combine (intermediateDirectory, "test.dll"), nonEmpty: true);
 			AssertDoesNotExist (IOPath.Combine (intermediateDirectory, "MainPage.txt.g.cs"));
 			AssertExists (IOPath.Combine (intermediateDirectory, "XamlC.stamp"));
+		}
+
+		[Test]
+		public void NoXamlFiles([Values(false, true)] bool sdkStyle)
+		{
+			var project = NewProject(sdkStyle);
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+			RestoreIfNeeded(projectFile, sdkStyle);
+			var log = Build(projectFile, verbosity: "diagnostic");
+			Assert.IsTrue(log.Contains("Target \"XamlC\" skipped"), "XamlC should be skipped if there are no .xaml files.");
 		}
 	}
 }
