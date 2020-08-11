@@ -15,6 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Category(UITestCategories.ListView)]
 	[Category(UITestCategories.Cells)]
 	[Category(UITestCategories.ContextActions)]
+	[Category(UITestCategories.UwpIgnore)]
 	[NUnit.Framework.Category(Core.UITests.UITestCategories.Bugzilla)]
 #endif
 
