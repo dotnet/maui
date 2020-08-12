@@ -61,12 +61,6 @@ namespace Samples.ViewModel
 
         async void OnCopy()
         {
-            if (FieldValue == null)
-            {
-                await DisplayAlertAsync($"Text is null");
-                return;
-            }
-
             await Clipboard.SetTextAsync(FieldValue);
         }
 
