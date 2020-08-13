@@ -323,7 +323,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			if (_blur != null && Superview != null)
 			{
-				_blur.Frame = Bounds;
+				_blur.Frame = Frame;
 				if (_blur.Superview == null)
 					Superview.Add(_blur);
 			}
