@@ -170,6 +170,7 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				Control.Children.Remove(_headerRenderer.GetNativeElement());
 				_headerRenderer.Dispose();
+				_headerRenderer = null;
 			}
 
 			if (headerView is null)
