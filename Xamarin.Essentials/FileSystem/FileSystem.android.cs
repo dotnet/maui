@@ -31,14 +31,6 @@ namespace Xamarin.Essentials
                 throw new FileNotFoundException(ex.Message, filename, ex);
             }
         }
-
-        internal static string GetAbsolutePath(this global::Android.Net.Uri uri)
-        {
-            using (var file = new Java.IO.File(uri.ToString()))
-            {
-                return file.AbsolutePath;
-            }
-        }
     }
 
     public partial class FileBase
