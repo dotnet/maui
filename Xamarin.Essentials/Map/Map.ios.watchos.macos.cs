@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Contacts;
 using CoreLocation;
 using Foundation;
 using MapKit;
@@ -34,12 +35,12 @@ namespace Xamarin.Essentials
 #else
             var address = new NSMutableDictionary
             {
-                [Contacts.CNPostalAddressKey.City] = new NSString(placemark.Locality ?? string.Empty),
-                [Contacts.CNPostalAddressKey.Country] = new NSString(placemark.CountryName ?? string.Empty),
-                [Contacts.CNPostalAddressKey.State] = new NSString(placemark.AdminArea ?? string.Empty),
-                [Contacts.CNPostalAddressKey.Street] = new NSString(placemark.Thoroughfare ?? string.Empty),
-                [Contacts.CNPostalAddressKey.PostalCode] = new NSString(placemark.PostalCode ?? string.Empty),
-                [Contacts.CNPostalAddressKey.IsoCountryCode] = new NSString(placemark.CountryCode ?? string.Empty)
+                [CNPostalAddressKey.City] = new NSString(placemark.Locality ?? string.Empty),
+                [CNPostalAddressKey.Country] = new NSString(placemark.CountryName ?? string.Empty),
+                [CNPostalAddressKey.State] = new NSString(placemark.AdminArea ?? string.Empty),
+                [CNPostalAddressKey.Street] = new NSString(placemark.Thoroughfare ?? string.Empty),
+                [CNPostalAddressKey.PostalCode] = new NSString(placemark.PostalCode ?? string.Empty),
+                [CNPostalAddressKey.IsoCountryCode] = new NSString(placemark.CountryCode ?? string.Empty)
             };
 #endif
 
