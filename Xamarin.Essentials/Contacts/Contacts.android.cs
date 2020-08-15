@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
-using Android.Database;
 using Android.Provider;
 using Net = Android.Net;
 
@@ -15,37 +12,16 @@ namespace Xamarin.Essentials
     {
         static Activity Activity => Platform.GetCurrentActivity(true);
 
-        internal static Action<Contact?> CallBack { get; set; }
-
-        internal static Action<Exception> ErrorCallBack { get; set; }
-
-        static Task<Contact?> PlatformPickContactAsync()
+        static async Task<Contact?> PlatformPickContactAsync()
         {
-            var source = new TaskCompletionSource<Contact?>();
-            try
-            {
-                var contactPicker = new Intent(Activity, typeof(ContactActivity));
-                contactPicker.SetFlags(ActivityFlags.NewTask);
-                Activity.StartActivity(contactPicker);
+            using var intent = new Intent(Intent.ActionPick);
+            intent.SetType(ContactsContract.CommonDataKinds.Phone.ContentType);
+            var result = await IntermediateActivity.StartAsync(intent, 101).ConfigureAwait(false);
 
-                CallBack = (phoneContact) =>
-                {
-                    var tcs = Interlocked.Exchange(ref source, null);
-                    tcs?.SetResult(phoneContact);
-                };
+            if (result?.Data != null)
+                return PlatformGetContacts(result.Data);
 
-                ErrorCallBack = (ex) =>
-                {
-                    var tcs = Interlocked.Exchange(ref source, null);
-                    tcs?.SetException(ex);
-                };
-            }
-            catch (Exception ex)
-            {
-                source.SetException(ex);
-            }
-
-            return source.Task;
+            return null;
         }
 
         internal static Contact PlatformGetContacts(Net.Uri contactUri)
@@ -128,10 +104,10 @@ namespace Xamarin.Essentials
                      + " AND " + ContactsContract.CommonDataKinds.Event.InterfaceConsts.ContactId + "=?";
 
                 cursor = context.Query(ContactsContract.Data.ContentUri, null, query, idQ, null);
+
                 if (cursor.MoveToFirst())
-                {
                     bDate = cursor.GetString(cursor.GetColumnIndex(ContactsContract.CommonDataKinds.Event.StartDate));
-                }
+
                 cursor.Close();
                 DateTime.TryParse(bDate, out var birthday);
                 cursor?.Dispose();
