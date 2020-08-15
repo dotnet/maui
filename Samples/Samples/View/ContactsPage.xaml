@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<view:BasePage
+    x:Class="Samples.View.ContactsPage"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:view="clr-namespace:Samples.View"
+    xmlns:viewmodel="clr-namespace:Samples.ViewModel"
+    Title="Contact Page">
+
+    <view:BasePage.BindingContext>
+        <viewmodel:ContactsViewModel />
+    </view:BasePage.BindingContext>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="1" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Label FontAttributes="Bold" Text="Name:" />
+
+            <Label
+                Grid.Column="1"
+                HorizontalTextAlignment="Start"
+                Text="{Binding Name}" />
+
+            <Label
+                Grid.Row="1"
+                FontAttributes="Bold"
+                Text="Birthday:" />
+
+            <Label
+                Grid.Row="1"
+                Grid.Column="1"
+                HorizontalTextAlignment="Start"
+                Text="{Binding Birthday}" />
+
+            <Label
+                Grid.Row="2"
+                FontAttributes="Bold"
+                Text="Numbers:" />
+
+            <Label
+                Grid.Row="2"
+                Grid.Column="1"
+                HorizontalTextAlignment="Start"
+                Text="{Binding Phones}" />
+
+            <Label
+                Grid.Row="3"
+                FontAttributes="Bold"
+                Text="Emails:" />
+
+            <Label
+                Grid.Row="3"
+                Grid.Column="1"
+                HorizontalTextAlignment="Start"
+                Text="{Binding Emails}" />
+
+            <Label
+                Grid.Row="4"
+                FontAttributes="Bold"
+                Text="Contact Type:" />
+
+            <Label
+                Grid.Row="4"
+                Grid.Column="1"
+                HorizontalTextAlignment="Start"
+                Text="{Binding ContactType}" />
+
+            <Button
+                Grid.Row="5"
+                Grid.ColumnSpan="2"
+                Command="{Binding GetContactCommand}"
+                Text="Get Contact" />
+        </Grid>
+    </Grid>
+</view:BasePage>

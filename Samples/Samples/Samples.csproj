@@ -24,4 +24,10 @@
     <ProjectReference Include="..\..\Xamarin.Essentials\Xamarin.Essentials.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Update="View\ContactsPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>
