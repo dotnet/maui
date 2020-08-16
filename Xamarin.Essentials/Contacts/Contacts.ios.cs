@@ -60,19 +60,12 @@ namespace Xamarin.Essentials
                 var phones = new List<ContactPhone>();
 
                 foreach (var item in contact.PhoneNumbers)
-                {
-                    var type = ToPhoneContact(item?.Label);
-                    phones.Add(new ContactPhone(item?.Value?.StringValue, type));
-                }
+                    phones.Add(new ContactPhone(item?.Value?.StringValue, contactType));
 
                 var emails = new List<ContactEmail>();
 
                 foreach (var item in contact.EmailAddresses)
-                {
-                    var type = ToPhoneContact(item?.Label);
-
-                    emails.Add(new ContactEmail(item?.Value?.ToString(), type));
-                }
+                    emails.Add(new ContactEmail(item?.Value?.ToString(), contactType));
 
                 var name = string.Empty;
 
@@ -105,24 +98,6 @@ namespace Xamarin.Essentials
             CNContactType.Organization => ContactType.Work,
             _ => ContactType.Unknown,
         };
-
-        static ContactType ToPhoneContact(string contactType)
-        {
-            // _$!<Work>!$_
-            if (contactType.StartsWith("_$!<"))
-            {
-                contactType = contactType.Split('<')[1];
-                contactType = contactType.Split('>')[0];
-            }
-
-            return contactType switch
-            {
-                "Main" => ContactType.Personal,
-                "Work" => ContactType.Work,
-                "Home" => ContactType.Personal,
-                _ => ContactType.Unknown
-            };
-        }
     }
 
     public class ContactPickerDelegate : CNContactPickerDelegate
