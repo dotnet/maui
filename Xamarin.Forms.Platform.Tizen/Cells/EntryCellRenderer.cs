@@ -2,15 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using ElmSharp;
-using EColor = ElmSharp.Color;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
 	public class EntryCellRenderer : ViewCellRenderer
 	{
-		static readonly double s_defaultHeight = 65;
-		static readonly EColor s_defaultLabelColor = EColor.Black;
-
 		readonly Dictionary<EvasObject, VisualElement> _cacheCandidate = new Dictionary<EvasObject, VisualElement>();
 
 		public EntryCellRenderer()
@@ -23,7 +19,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				var entryCell = cell as EntryCell;
 				int pixelHeight = Forms.ConvertToScaledPixel(entryCell.RenderHeight);
-				pixelHeight = pixelHeight > 0 ? pixelHeight : Forms.ConvertToPixel(s_defaultHeight);
+				pixelHeight = pixelHeight > 0 ? pixelHeight : this.GetDefaultHeightPixel();
 
 				var label = new Label()
 				{
@@ -90,7 +86,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			var layout = _cacheCandidate[old];
 			layout.BindingContext = cell;
 			int height = Forms.ConvertToScaledPixel(cell.RenderHeight);
-			height = height > 0 ? height : Forms.ConvertToPixel(s_defaultHeight);
+			height = height > 0 ? height : this.GetDefaultHeightPixel();
 			old.MinimumHeight = height;
 			return old;
 		}
@@ -99,7 +95,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 			{
-				return ((Color)value).IsDefault ? s_defaultLabelColor : value;
+				return ((Color)value).IsDefault ? ThemeConstants.EntryCell.ColorClass.DefaultLabelColor : value;
 			}
 
 			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

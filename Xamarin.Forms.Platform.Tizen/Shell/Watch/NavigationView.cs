@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 {
 	public class NavigationView : ELayout
 	{
-		readonly int _dafaultIconSize = 60;
+		readonly int _defaultIconSize = ThemeConstants.Shell.Resources.Watch.DefaultNavigationViewIconSize;
 
 		class Item : INotifyPropertyChanged
 		{
@@ -96,18 +96,18 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 		public event EventHandler<DraggedEventArgs> Dragged;
 
 
-		EColor _backgroundColor = EColor.Black;
+		EColor _backgroundColor = ThemeConstants.Shell.ColorClass.Watch.DefaultNavigationViewBackgroundColor;
 		public override EColor BackgroundColor
 		{
 			get => _backgroundColor;
 			set
 			{
-				_backgroundColor = value.IsDefault ? EColor.Black : value;
+				_backgroundColor = value.IsDefault ? ThemeConstants.Shell.ColorClass.Watch.DefaultNavigationViewBackgroundColor : value;
 				UpdateBackgroundColor();
 			}
 		}
 
-		EColor _foregroundColor = EColor.Default;
+		EColor _foregroundColor = ThemeConstants.Shell.ColorClass.Watch.DefaultNavigationViewForegroundColor;
 		public EColor ForegroundColor
 		{
 			get => _foregroundColor;
@@ -222,11 +222,11 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 
 			_surfaceLayout.StackAbove(_naviMenu);
 
-			_defaultClass = new GenItemClass("1icon_2text")
+			_defaultClass = new GenItemClass(ThemeConstants.GenItemClass.Styles.Watch.Text1Icon1)
 			{
 				GetTextHandler = (obj, part) =>
 				{
-					if (part == "elm.text")
+					if (part == ThemeConstants.GenItemClass.Parts.Text)
 					{
 						var text = (obj as Item).Text;
 						if (_foregroundColor != EColor.Default)
@@ -238,7 +238,7 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 				},
 				GetContentHandler = (obj, part) =>
 				{
-					if (part == "elm.swallow.icon" && obj is Item menuItem && !string.IsNullOrEmpty(menuItem.Icon))
+					if (part == ThemeConstants.GenItemClass.Parts.Watch.Icon && obj is Item menuItem && !string.IsNullOrEmpty(menuItem.Icon))
 					{
 						var icon = new ElmSharp.Image(Xamarin.Forms.Forms.NativeParent)
 						{
@@ -246,8 +246,8 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 							AlignmentY = -1,
 							WeightX = 1.0,
 							WeightY = 1.0,
-							MinimumWidth = _dafaultIconSize,
-							MinimumHeight = _dafaultIconSize,
+							MinimumWidth = _defaultIconSize,
+							MinimumHeight = _defaultIconSize,
 						};
 						icon.Show();
 						icon.Load(menuItem.Icon);

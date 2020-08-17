@@ -56,10 +56,10 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 		internal class SectionCellRenderer : TextCellRenderer
 		{
-			public SectionCellRenderer() : this("group_index")
+			public SectionCellRenderer() : this(ThemeConstants.GenItemClass.Styles.GroupIndex)
 			{
-				DetailPart = "null";
 			}
+
 			protected SectionCellRenderer(string style) : base(style) { }
 		}
 		class SectionCell : TextCell

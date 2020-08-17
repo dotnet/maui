@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			WeightY = 1;
 			BackgroundColor = ShellRenderer.DefaultBackgroundColor.ToNative();
 			ItemSelected += OnItemSelected;
-			_defaultClass = new GenItemClass("full")
+			_defaultClass = new GenItemClass(ThemeConstants.GenItemClass.Styles.Full)
 			{
 				GetContentHandler = GetContent,
 			};

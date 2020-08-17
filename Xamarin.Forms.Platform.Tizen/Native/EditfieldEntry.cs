@@ -18,8 +18,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 		public EditfieldEntry(EvasObject parent, string style) : base(parent)
 		{
-			if (!string.IsNullOrEmpty(style))
-				_editfieldLayout.SetTheme("layout", "editfield", style);
+			if (!string.IsNullOrEmpty(style) && _editfieldLayout is FormsLayout formsLayout)
+				formsLayout.SetTheme(formsLayout.ThemeClass, formsLayout.ThemeGroup, style);
 		}
 
 		public bool IsTextBlockFocused { get; private set; }
@@ -48,15 +48,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 		public EColor ClearButtonColor
 		{
-			get => _clearButton?.GetPartColor("icon") ?? EColor.Default;
-			set
-			{
-				if (_clearButton != null)
-				{
-					_clearButton.SetPartColor("icon", value);
-					_clearButton.SetPartColor("icon_pressed", value);
-				}
-			}
+			get => _clearButton.GetIconColor();
+			set => _clearButton.SetIconColor(value);
 		}
 
 		public void SetFocusOnTextBlock(bool isFocused)
@@ -100,41 +93,33 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			}
 			Handle = handle;
 
-			if (!_editfieldLayout.SetPartContent("elm.swallow.content", this))
-			{
-				// Restore theme to default if editfield style is not available
-				_editfieldLayout.SetTheme("layout", "application", "default");
-				_editfieldLayout.SetPartContent("elm.swallow.content", this);
-			}
-
-			_heightPadding = _editfieldLayout.EdjeObject["elm.swallow.content"].Geometry.Height;
+			_editfieldLayout.SetContentPart(this);
+			_heightPadding = _editfieldLayout.GetContentPartEdjeObject().Geometry.Height;
 			return _editfieldLayout;
 		}
 
 		protected override void OnTextChanged(string oldValue, string newValue)
 		{
 			base.OnTextChanged(oldValue, newValue);
-			if (EnableClearButton)
+			if (EnableClearButton && _editfieldLayout is EditFieldEntryLayout layout)
 			{
-				var emission = string.IsNullOrEmpty(newValue) ? "elm,action,hide,button" : "elm,action,show,button";
-				_editfieldLayout.SignalEmit(emission, "");
+				layout.SendButtonActionSignal(!string.IsNullOrEmpty(newValue));
 			}
 		}
 
 		protected virtual ELayout CreateEditFieldLayout(EvasObject parent)
 		{
-			var layout = new ELayout(parent);
-			layout.SetTheme("layout", "editfield", "singleline");
+			var layout = new EditFieldEntryLayout(parent, EditFieldEntryLayout.Styles.SingleLine);
 			layout.AllowFocus(true);
 			layout.Unfocused += (s, e) =>
 			{
 				SetFocusOnTextBlock(false);
-				layout.SignalEmit("elm,state,unfocused", "");
+				layout.SendFocusStateSignal(false);
 				OnEntryLayoutUnfocused();
 			};
 			layout.Focused += (s, e) =>
 			{
-				layout.SignalEmit("elm,state,focused", "");
+				layout.SendFocusStateSignal(true);
 				OnEntryLayoutFocused();
 			};
 
@@ -154,12 +139,12 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			Focused += (s, e) =>
 			{
 				layout.RaiseTop();
-				layout.SignalEmit("elm,state,focused", "");
+				layout.SendFocusStateSignal(true);
 			};
 
 			Unfocused += (s, e) =>
 			{
-				layout.SignalEmit("elm,state,unfocused", "");
+				layout.SendFocusStateSignal(false);
 			};
 
 			return layout;
@@ -167,22 +152,22 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 		protected virtual void UpdateEnableClearButton()
 		{
-			if (EnableClearButton)
+			if (_editfieldLayout is EditFieldEntryLayout layout)
 			{
-				_clearButton = new Button(_editfieldLayout)
+				if (EnableClearButton)
 				{
-					Style = "editfield_clear"
-				};
-				_clearButton.AllowFocus(false);
-				_clearButton.Clicked += OnClearButtonClicked;
+					_clearButton = (Button)new Button(_editfieldLayout).SetEditFieldClearStyle();
+					_clearButton.AllowFocus(false);
+					_clearButton.Clicked += OnClearButtonClicked;
 
-				_editfieldLayout.SetPartContent("elm.swallow.button", _clearButton);
-				_editfieldLayout.SignalEmit("elm,action,show,button", "");
-			}
-			else
-			{
-				_editfieldLayout.SetPartContent("elm.swallow.button", null);
-				_clearButton = null;
+					layout.SetButtonPart(_clearButton);
+					layout.SendFocusStateSignal(true);
+				}
+				else
+				{
+					layout.SetButtonPart(null);
+					_clearButton = null;
+				}
 			}
 		}
 

@@ -6,9 +6,9 @@ namespace Xamarin.Forms.Platform.Tizen
 	public class ViewCellRenderer : CellRenderer
 	{
 		readonly Dictionary<EvasObject, ViewCell> _cacheCandidate = new Dictionary<EvasObject, ViewCell>();
-		public ViewCellRenderer() : base("full")
+		public ViewCellRenderer() : base(ThemeManager.GetViewCellRendererStyle())
 		{
-			MainContentPart = "elm.swallow.content";
+			MainContentPart = this.GetMainContentPart();
 		}
 
 		protected string MainContentPart { get; set; }

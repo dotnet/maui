@@ -183,7 +183,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			foreach (EToolbarItem item in _toolbarItemList)
 			{
-				item.SetPartColor("bg", color);
+				item.SetBackgroundColor(color);
 			}
 		}
 
@@ -193,11 +193,11 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				if (item != _tabs.SelectedItem)
 				{
-					item.SetPartColor("underline", EColor.Transparent);
+					item.DeleteUnderlineColor();
 				}
 				else
 				{
-					item.SetPartColor("underline", color);
+					item.SetUnderlineColor(color);
 				}
 			}
 		}
@@ -217,12 +217,10 @@ namespace Xamarin.Forms.Platform.Tizen
 		EToolbarItem InsertToolbarItem(ShellContent content)
 		{
 			EToolbarItem item = _tabs.Append(content.Title, null);
-			item.SetPartColor("bg", _backgroundColor);
-
+			item.SetBackgroundColor(_backgroundColor);
 			_toolbarItemList.AddLast(item);
 			_itemToContent.Add(item, content);
 			_contentToItem.Add(content, item);
-
 			return item;
 		}
 

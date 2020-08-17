@@ -3,18 +3,15 @@ using ElmSharp;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 
-using ELayout = ElmSharp.Layout;
-
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
-	public class LayoutCanvas : ELayout, IContainable<EvasObject>
+	public class LayoutCanvas : WidgetLayout, IContainable<EvasObject>
 	{
 		readonly ObservableCollection<EvasObject> _children = new ObservableCollection<EvasObject>();
 		Box _box;
 
 		public LayoutCanvas(EvasObject parent) : base(parent)
 		{
-			SetTheme("layout", "elm_widget", "default");
 			_box = new Box(parent);
 			SetContent(_box);
 

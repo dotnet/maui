@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		ShellTabsType _type;
 		public ShellTabs(EvasObject parent) : base(parent)
 		{
-			Style = "material";
+			Style = ThemeConstants.Toolbar.Styles.Material;
 		}
 
 		public ShellTabsType Type

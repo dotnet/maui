@@ -34,8 +34,8 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (Control == null)
 			{
 				var entry = CreateNativeControl();
-				entry.SetVerticalTextAlignment("elm.text", 0.5);
-				entry.SetVerticalTextAlignment("elm.guide", 0.5);
+				entry.SetVerticalTextAlignment(0.5);
+				entry.SetVerticalPlaceHolderTextAlignment(0.5);
 				entry.Activated += OnCompleted;
 				entry.CursorChanged += OnCursorChanged;
 

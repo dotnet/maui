@@ -11,10 +11,10 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 		}
 
-		public SwitchCellRenderer() : this(Device.Idiom == TargetIdiom.Watch ? "1text.1icon.1" : "default")
+		public SwitchCellRenderer() : this(ThemeManager.GetSwitchCellRendererStyle())
 		{
-			MainPart = "elm.text";
-			SwitchPart = Device.Idiom == TargetIdiom.Watch ? "elm.icon" : "elm.swallow.end";
+			MainPart = this.GetMainPart();
+			SwitchPart = this.GetSwitchPart();
 		}
 
 		protected string MainPart { get; set; }

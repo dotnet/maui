@@ -26,8 +26,8 @@ namespace Xamarin.Forms.Platform.Tizen
 		EColor _foregroudColor = ShellRenderer.DefaultForegroundColor.ToNative();
 
 		// The source of icon resources is https://materialdesignicons.com/
-		const string _menuIcon = "Xamarin.Forms.Platform.Tizen.Resource.menu.png";
-		const string _backIcon = "Xamarin.Forms.Platform.Tizen.Resource.arrow_left.png";
+		const string _menuIcon = ThemeConstants.Shell.Resources.MenuIcon;
+		const string _backIcon = ThemeConstants.Shell.Resources.BackIcon;
 
 		bool _hasBackButton = false;
 
@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			_menu.Show();
 			_menuButton.Show();
 
-			_menuButton.SetPartContent("icon", _menu);
+			_menuButton.SetIconPart(_menu);
 
 			_title = new Native.Label(Forms.NativeParent)
 			{

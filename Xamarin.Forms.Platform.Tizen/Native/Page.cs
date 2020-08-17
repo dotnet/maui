@@ -12,7 +12,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// <summary>
 		/// The name of the part to be used when setting content.
 		/// </summary>
-		public const string ContentPartName = "overlay";
+		[Obsolete("ContentPartName is obsolete. Please use the ThemeConstants.Background.Parts.Overlay instead.")]
+		public const string ContentPartName = ThemeConstants.Background.Parts.Overlay;
 
 		/// <summary>
 		/// Exposes the Children property, mapping it to the _canvas' Children property.
@@ -33,7 +34,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		public Page(EvasObject parent) : base(parent)
 		{
 			_canvas = new Canvas(this);
-			SetPartContent(ContentPartName, _canvas);
+			this.SetOverlayPart(_canvas);
 		}
 
 		/// <summary>

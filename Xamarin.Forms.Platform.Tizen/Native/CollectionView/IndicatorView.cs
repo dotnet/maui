@@ -14,9 +14,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		{
 			AutoHide = false;
 			IsHorizontal = true;
-			Style = "pagecontrol";
-			if (Device.Idiom == TargetIdiom.Watch)
-				Style = "circle";
+			this.SetStyledIndex();
 		}
 
 		public event EventHandler<SelectedPositionChangedEventArgs> SelectedPosition;
@@ -55,18 +53,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		{
 			foreach (var item in _list)
 			{
-				if (_list.Count % 2 == 0)
-				{
-					int position = EvenMiddleItem - (_list.Count / 2) + _list.IndexOf(item);
-					string itemStyle = "item/even_" + position;
-					item.Style = itemStyle;
-				}
-				else
-				{
-					int position = OddMiddleItem - (_list.Count / 2) + _list.IndexOf(item);
-					string itemStyle = "item/odd_" + position;
-					item.Style = itemStyle;
-				}
+				item.SetIndexItemStyle(_list.Count, _list.IndexOf(item), EvenMiddleItem, OddMiddleItem);
 			}
 		}
 

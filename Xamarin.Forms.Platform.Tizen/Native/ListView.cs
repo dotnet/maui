@@ -658,7 +658,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		{
 			if (_headerFooterItemClass == null)
 			{
-				_headerFooterItemClass = new GenItemClass("full")
+				_headerFooterItemClass = new GenItemClass(ThemeConstants.GenItemClass.Styles.Full)
 				{
 					GetContentHandler = (data, part) =>
 					{

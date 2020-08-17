@@ -87,7 +87,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				AlignmentY = -1,
 				WeightX = 1,
 				WeightY = 1,
-				BackgroundColor = new ElmSharp.Color(0, 0, 0, 82)
+				BackgroundColor = ThemeConstants.Shell.ColorClass.DefaultDrawerDimBackgroundColor
 			};
 
 			PackEnd(_dimArea);

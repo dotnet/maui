@@ -7,12 +7,12 @@ namespace Xamarin.Forms.Platform.Tizen
 	{
 		bool _groupMode = false;
 		// TextCell.Detail property is not supported on TV profile due to UX limitation.
-		public TextCellRenderer() : this(Device.Idiom == TargetIdiom.Phone || Device.Idiom == TargetIdiom.Watch ? "double_label" : "default") { }
+		public TextCellRenderer() : this(ThemeManager.GetTextCellRendererStyle()) { }
 
 		protected TextCellRenderer(string style) : base(style)
 		{
-			MainPart = "elm.text";
-			DetailPart = "elm.text.sub";
+			MainPart = this.GetMainPart();
+			DetailPart = this.GetDetailPart();
 		}
 
 		protected string MainPart { get; set; }
@@ -24,18 +24,9 @@ namespace Xamarin.Forms.Platform.Tizen
 				return;
 
 			_groupMode = enable;
-			if (enable)
-			{
-				Class = null;
-				Style = "group_index";
-				DetailPart = "elm.text.end";
-			}
-			else
-			{
-				Class = null;
-				Style = Device.Idiom == TargetIdiom.Phone ? "double_label" : "default";
-				DetailPart = "elm.text.sub";
-			}
+			Class = null;
+			Style = ThemeManager.GetTextCellGroupModeStyle(enable);
+			DetailPart = this.GetDetailPart();
 		}
 
 		protected override Span OnGetText(Cell cell, string part)

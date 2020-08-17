@@ -10,7 +10,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 	/// </summary>
 	public class Span
 	{
-		static EColor s_defaultLineColor = EColor.Black;
 		string _text;
 
 		/// <summary>
@@ -200,13 +199,13 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			if (Underline)
 			{
 				_formattingString.AppendFormat("underline=on underline_color={0} ",
-					ForegroundColor.IsDefault ? s_defaultLineColor.ToHex() : ForegroundColor.ToHex());
+					ForegroundColor.IsDefault ? ThemeConstants.Span.ColorClass.DefaultUnderLineColor.ToHex() : ForegroundColor.ToHex());
 			}
 
 			if (Strikethrough)
 			{
 				_formattingString.AppendFormat("strikethrough=on strikethrough_color={0} ",
-					ForegroundColor.IsDefault ? s_defaultLineColor.ToHex() : ForegroundColor.ToHex());
+					ForegroundColor.IsDefault ? ThemeConstants.Span.ColorClass.DefaultUnderLineColor.ToHex() : ForegroundColor.ToHex());
 			}
 
 			switch (HorizontalTextAlignment)

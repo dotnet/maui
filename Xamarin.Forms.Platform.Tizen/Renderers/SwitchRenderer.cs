@@ -9,14 +9,8 @@ namespace Xamarin.Forms.Platform.Tizen
 {
 	public class SwitchRenderer : ViewRenderer<Switch, Check>
 	{
-		readonly string _onColorPart;
-		readonly bool _isTV;
-		string _onColorEdjePart;
-
 		public SwitchRenderer()
 		{
-			_isTV = Device.Idiom == TargetIdiom.TV;
-			_onColorPart = _isTV ? "slider_on" : Device.Idiom == TargetIdiom.Watch ? "outer_bg_on" : "bg_on";
 			RegisterPropertyHandler(Switch.IsToggledProperty, HandleToggled);
 			RegisterPropertyHandler(Switch.OnColorProperty, UpdateOnColor);
 			RegisterPropertyHandler(SpecificSwitch.ColorProperty, UpdateColor);
@@ -31,7 +25,6 @@ namespace Xamarin.Forms.Platform.Tizen
 					Style = SwitchStyle.Toggle
 				});
 				Control.StateChanged += OnStateChanged;
-				_onColorEdjePart = Control.ClassName.ToLower().Replace("elm_", "") + "/" + _onColorPart;
 			}
 			base.OnElementChanged(e);
 		}
@@ -90,16 +83,11 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			if (Element.OnColor.IsDefault)
 			{
-				Control.EdjeObject.DeleteColorClass(_onColorEdjePart);
-				if (_isTV)
-					Control.EdjeObject.DeleteColorClass(_onColorEdjePart.Replace(_onColorPart, "slider_focused_on"));
+				Control.DeleteOnColors();
 			}
 			else
 			{
-				EColor color = Element.OnColor.ToNative();
-				Control.SetPartColor(_onColorPart, color);
-				if (_isTV)
-					Control.SetPartColor("slider_focused_on", color);
+				Control.SetOnColors(Element.OnColor.ToNative());
 			}
 		}
 

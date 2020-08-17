@@ -15,43 +15,39 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 		/// </summary>
 		public WatchDialog(EvasObject parent, bool hasAcceptButton) : base(parent)
 		{
-			Style = "circle";
-
-			_popupLayout = new ELayout(this)
+			this.SetWatchCircleStyle();
+			_hasAcceptButton = hasAcceptButton;
+			_popupLayout = new PopupLayout(this, hasAcceptButton ? PopupLayout.Styles.Buttons2 : PopupLayout.Styles.Circle)
 			{
 				AlignmentX = -1,
 				AlignmentY = -1,
 				WeightX = 1,
 				WeightY = 1
 			};
-
-			_hasAcceptButton = hasAcceptButton;
-
-			var style = hasAcceptButton ? "content/circle/buttons2" : "content/circle";
-
-			_popupLayout.SetTheme("layout", "popup", style);
 			_popupLayout.Show();
-
 			SetContent(_popupLayout);
 		}
 
 		protected override void ApplyButton(ButtonPosition position, EButton button)
 		{
-			string style = "";
-			string part = "";
-			EColor color = EColor.Default;
 
 			switch (position)
 			{
 				case ButtonPosition.Neutral:
-					style = "popup/circle/right_check";
-					part = "button2";
+					this.SetButton2Part(button.SetWatchPopupRightStyle());
 					break;
 
 				case ButtonPosition.Negative:
-					style = _hasAcceptButton ? "popup/circle/left_delete" : "bottom";
-					color = _hasAcceptButton ? EColor.Default : new EColor(0, 47, 66, 255);
-					part = "button1";
+					if (_hasAcceptButton)
+					{
+						button.BackgroundColor = EColor.Default;
+						this.SetButton1Part(button.SetWatchPopupLeftStyle());
+					}
+					else
+					{
+						button.BackgroundColor = new EColor(0, 47, 66, 255);
+						this.SetButton1Part(button.SetBottomStyle());
+					}
 					break;
 
 				case ButtonPosition.Positive:
@@ -59,13 +55,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 					// Due to ux limiation, nothing to do
 					break;
 			}
-
-			if (button != null)
-			{
-				button.Style = style;
-				button.BackgroundColor = color;
-			}
-			SetPartContent(part, button);
 		}
 
 		protected override void ApplyContent(EvasObject content)
@@ -75,17 +64,23 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 
 		protected override void ApplyTitle(string title)
 		{
-			_popupLayout.SetPartText("elm.text.title", title);
+			if (_popupLayout is PopupLayout layout)
+			{
+				layout.SetTitleText(title);
+			}
 		}
 
 		protected override void ApplyTitleColor(EColor color)
 		{
-			_popupLayout.SetPartColor("text_title", color);
+			if (_popupLayout is PopupLayout layout)
+			{
+				layout.SetTitleColor(color);
+			}
 		}
 
 		protected override void ApplyMessage(string message)
 		{
-			_popupLayout.SetPartText("elm.text", message);
+			_popupLayout.SetTextPart(message);
 		}
 	}
 }
