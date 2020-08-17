@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.ComponentModel;
-using System.Linq;
-using System.Security.AccessControl;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Media;
 using WDatePicker = System.Windows.Controls.DatePicker;
 
@@ -15,15 +9,22 @@ namespace Xamarin.Forms.Platform.WPF
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<DatePicker> e)
 		{
+			if (e.OldElement != null)
+			{
+				if (Control != null)
+				{
+					Control.GotKeyboardFocus -= OnGotKeyboardFocus;
+					Control.SelectedDateChanged -= OnNativeSelectedDateChanged;
+				}
+			}
+
 			if (e.NewElement != null)
 			{
-				if (Control == null) // construct and SetNativeControl and suscribe control event
-				{
-					SetNativeControl(new WDatePicker());
-					Control.SelectedDateChanged += OnNativeSelectedDateChanged;
-				}
+				SetNativeControl(new WDatePicker());
+				Control.GotKeyboardFocus += OnGotKeyboardFocus;
+				Control.SelectedDateChanged += OnNativeSelectedDateChanged;
 
-				// Update control property 
+				// Update control properties 
 				UpdateDate();
 				UpdateMinimumDate();
 				UpdateMaximumDate();
@@ -34,6 +35,12 @@ namespace Xamarin.Forms.Platform.WPF
 			}
 
 			base.OnElementChanged(e);
+		}
+
+		void OnGotKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
+		{
+			if (!Control.IsDropDownOpen)
+				Control.IsDropDownOpen = true;
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -55,7 +62,7 @@ namespace Xamarin.Forms.Platform.WPF
 			else if (e.PropertyName == DatePicker.FontAttributesProperty.PropertyName)
 				UpdateFontAttributes();
 		}
-		
+
 		void UpdateDate()
 		{
 			Control.SelectedDate = Element.Date;
