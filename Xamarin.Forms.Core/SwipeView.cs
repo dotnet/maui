@@ -133,8 +133,10 @@ namespace Xamarin.Forms
 				swipeItems.Parent = this;
 
 			foreach (var item in swipeItems)
+			{
 				if (item is Element swipeItem && swipeItem.Parent == null)
 					swipeItem.Parent = swipeItems;
+			}
 		}
 	}
 }
