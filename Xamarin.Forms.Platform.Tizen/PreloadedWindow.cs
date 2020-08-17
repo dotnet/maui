@@ -1,4 +1,5 @@
 ﻿using ElmSharp;
+using Xamarin.Forms.Platform.Tizen.Native;
 using ELayout = ElmSharp.Layout;
 
 namespace Xamarin.Forms.Platform.Tizen
@@ -24,8 +25,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			var conformant = new Conformant(this);
 			conformant.Show();
 
-			var layout = new ELayout(conformant);
-			layout.SetTheme("layout", "application", "default");
+			var layout = new ApplicationLayout(conformant);
 			layout.Show();
 
 			BaseLayout = layout;

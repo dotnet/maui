@@ -381,8 +381,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			_drawer.SetContent(null, true);
 			_drawer.Hide();
 
-			_splitPane.SetPartContent("left", null, true);
-			_splitPane.SetPartContent("right", null, true);
+			_splitPane.SetLeftPart(null, true);
+			_splitPane.SetRightPart(null, true);
 			_splitPane.Hide();
 
 			UnPackAll();
@@ -390,8 +390,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			// the structure for split mode and for popover mode looks differently
 			if (IsSplit)
 			{
-				_splitPane.SetPartContent("left", _masterCanvas, true);
-				_splitPane.SetPartContent("right", _detailCanvas, true);
+				_splitPane.SetLeftPart(_masterCanvas, true);
+				_splitPane.SetRightPart(_detailCanvas, true);
 				_splitPane.Show();
 				_mainWidget = _splitPane;
 				PackEnd(_splitPane);

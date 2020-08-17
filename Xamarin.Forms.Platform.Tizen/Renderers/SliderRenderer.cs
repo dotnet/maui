@@ -20,9 +20,9 @@ namespace Xamarin.Forms.Platform.Tizen
 				Control.ValueChanged += OnValueChanged;
 				Control.DragStarted += OnDragStarted;
 				Control.DragStopped += OnDragStopped;
-				_defaultMinColor = Control.GetPartColor("bar");
-				_defaultMaxColor = Control.GetPartColor("bg");
-				_defaultThumbColor = Control.GetPartColor("handler");
+				_defaultMinColor = Control.GetBarColor();
+				_defaultMaxColor = Control.GetBackgroundColor();
+				_defaultThumbColor = Control.GetHandlerColor();
 			}
 			UpdateMinimum();
 			UpdateMaximum();
@@ -112,20 +112,18 @@ namespace Xamarin.Forms.Platform.Tizen
 		protected void UpdateMinimumTrackColor()
 		{
 			var color = Element.MinimumTrackColor.IsDefault ? _defaultMinColor : Element.MinimumTrackColor.ToNative();
-			Control.SetPartColor("bar", color);
-			Control.SetPartColor("bar_pressed", color);
+			Control.SetBarColor(color);
 		}
 
 		protected void UpdateMaximumTrackColor()
 		{
-			Control.SetPartColor("bg", Element.MaximumTrackColor.IsDefault ? _defaultMaxColor : Element.MaximumTrackColor.ToNative());
+			Control.SetBackgroundColor(Element.MaximumTrackColor.IsDefault ? _defaultMaxColor : Element.MaximumTrackColor.ToNative());
 		}
 
 		protected virtual void UpdateThumbColor()
 		{
 			var color = Element.ThumbColor.IsDefault ? _defaultThumbColor : Element.ThumbColor.ToNative();
-			Control.SetPartColor("handler", color);
-			Control.SetPartColor("handler_pressed", color);
+			Control.SetHandlerColor(color);
 		}
 
 		protected void UpdateSliderColors()

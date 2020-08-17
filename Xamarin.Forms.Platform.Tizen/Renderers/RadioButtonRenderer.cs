@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			var size = Control.Geometry;
 			Control.Resize(availableWidth, size.Height);
-			var formattedSize = Control.EdjeObject["elm.text"].TextBlockFormattedSize;
+			var formattedSize = Control.GetTextBlockFormattedSize();
 			Control.Resize(size.Width, size.Height);
 			return new ESize()
 			{
@@ -97,21 +97,16 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void SetInternalTextAndStyle(string formattedText, string textStyle)
 		{
-			string emission = "elm,state,text,visible";
+			bool isVisible = true;
 			if (string.IsNullOrEmpty(formattedText))
 			{
 				formattedText = null;
 				textStyle = null;
-				emission = "elm,state,text,hidden";
+				isVisible = false;
 			}
 			Control.Text = formattedText;
-
-			var textblock = Control.EdjeObject["elm.text"];
-			if (textblock != null)
-			{
-				textblock.TextStyle = textStyle;
-			}
-			Control.EdjeObject.EmitSignal(emission, "elm");
+			Control.SetTextBlockStyle(textStyle);
+			Control.SendTextVisibleSignal(isVisible);
 		}
 	}
 }

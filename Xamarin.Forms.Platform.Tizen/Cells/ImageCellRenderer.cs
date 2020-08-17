@@ -5,11 +5,9 @@ namespace Xamarin.Forms.Platform.Tizen
 {
 	public class ImageCellRenderer : TextCellRenderer
 	{
-		const int _defaultHeight = 55;
-
-		public ImageCellRenderer() : this(Device.Idiom == TargetIdiom.Watch ? "1icon_2text" : (Device.Idiom == TargetIdiom.Phone ? "double_label" : "default"))
+		public ImageCellRenderer() : this(ThemeManager.GetImageCellRendererStyle())
 		{
-			ImagePart = "elm.swallow.icon";
+			ImagePart = this.GetImagePart();
 		}
 
 		protected ImageCellRenderer(string style) : base(style)
@@ -26,7 +24,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				int pixelSize = Forms.ConvertToScaledPixel(imgCell.RenderHeight);
 				if (pixelSize <= 0)
 				{
-					pixelSize = Forms.ConvertToPixel(_defaultHeight);
+					pixelSize = this.GetDefaultHeightPixel();
 				}
 
 				var image = new Native.Image(Forms.NativeParent)

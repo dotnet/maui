@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			{
 				Log.Error("textable should be ElmSharp.Layout");
 			}
-			EdjeTextPartObject textPart = widget?.EdjeObject["elm.text"];
+			EdjeTextPartObject textPart = widget?.EdjeObject[ThemeConstants.Common.Parts.Text];
 			if (textPart == null)
 			{
 				Log.Error("There is no elm.text part");

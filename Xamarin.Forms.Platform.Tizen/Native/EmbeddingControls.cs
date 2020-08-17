@@ -10,9 +10,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 {
 	public class EmbeddingControls : ContentView
 	{
-		static readonly string PlayImagePath = "Xamarin.Forms.Platform.Tizen.Resource.img_button_play.png";
-		static readonly string PauseImagePath = "Xamarin.Forms.Platform.Tizen.Resource.img_button_pause.png";
-
 		public ImageButton PlayImage { get; private set; }
 		public ImageButton PauseImage { get; private set; }
 
@@ -20,7 +17,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		{
 			PlayImage = new ImageButton
 			{
-				Source = ImageSource.FromResource(PlayImagePath, typeof(EmbeddingControls).Assembly),
+				Source = ImageSource.FromResource(ThemeConstants.MediaPlayer.Resources.PlayImagePath, typeof(EmbeddingControls).Assembly),
 				IsVisible = false
 			};
 			PlayImage.Clicked += OnImageButtonClicked;
@@ -29,7 +26,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 			PauseImage = new ImageButton
 			{
-				Source = ImageSource.FromResource(PauseImagePath, typeof(EmbeddingControls).Assembly),
+				Source = ImageSource.FromResource(ThemeConstants.MediaPlayer.Resources.PauseImagePath, typeof(EmbeddingControls).Assembly),
 				IsVisible = false
 			};
 			PauseImage.Clicked += OnImageButtonClicked;
@@ -40,7 +37,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			{
 				FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label), false),
 				HorizontalTextAlignment = XTextAlignment.Center,
-				TextColor = Color.FromHex("#eeeeeeee")
+				TextColor = ThemeConstants.MediaPlayer.ColorClass.DefaultProgressLabelColor
 			};
 			bufferingLabel.SetBinding(XLabel.TextProperty, new Binding
 			{
@@ -56,7 +53,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 			var progressBoxView = new BoxView
 			{
-				Color = Color.FromHex($"#4286f4")
+				Color = ThemeConstants.MediaPlayer.ColorClass.DefaultProgressBarColor
 			};
 			progressBoxView.SetBinding(AbsoluteLayout.LayoutBoundsProperty, new Binding
 			{
@@ -97,7 +94,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			{
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				HeightRequest = 23,
-				BackgroundColor = Color.FromHex("#80000000"),
+				BackgroundColor = ThemeConstants.MediaPlayer.ColorClass.DefaultProgressAreaColor,
 				Children =
 				{
 					progressBoxView,
@@ -116,7 +113,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 						Margin =  Device.Idiom == TargetIdiom.Watch ? new Thickness(80, 0, 80, 0) : 20,
 						VerticalOptions = LayoutOptions.End,
 						HorizontalOptions = LayoutOptions.FillAndExpand,
-						BackgroundColor = Color.FromHex("#50000000"),
+						BackgroundColor = ThemeConstants.MediaPlayer.ColorClass.DefaultProgressAreaBackgroundColor,
 						Children = { progressInnerLayout }
 					}
 				}

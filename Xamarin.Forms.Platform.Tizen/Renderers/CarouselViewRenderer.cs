@@ -1,4 +1,5 @@
 ﻿using System;
+using ElmSharp;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -33,9 +34,9 @@ namespace Xamarin.Forms.Platform.Tizen
 				Control.Scrolled += OnScrolled;
 				Control.Scroll.DragStart += OnDragStart;
 				Control.Scroll.DragStop += OnDragStop;
-				_animationStart = new ElmSharp.SmartEvent(Control.Scroll, Control.Scroll.RealHandle, "scroll,anim,start");
+				_animationStart = new SmartEvent(Control.Scroll, Control.Scroll.RealHandle, ThemeConstants.Scroller.Signals.StartScrollAnimation);
 				_animationStart.On += OnScrollStart;
-				_animationStop = new ElmSharp.SmartEvent(Control.Scroll, Control.Scroll.RealHandle, "scroll,anim,stop");
+				_animationStop = new SmartEvent(Control.Scroll, Control.Scroll.RealHandle, ThemeConstants.Scroller.Signals.StopScrollAnimation);
 				_animationStop.On += OnScrollStop;
 			}
 			UpdatePositionFromElement(false);
@@ -166,17 +167,17 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Element.IsSwipeEnabled)
 			{
-				Control.Scroll.ScrollBlock = ElmSharp.ScrollBlock.None;
+				Control.Scroll.ScrollBlock = ScrollBlock.None;
 			}
 			else
 			{
 				if (Control.LayoutManager.IsHorizontal)
 				{
-					Control.Scroll.ScrollBlock = ElmSharp.ScrollBlock.Horizontal;
+					Control.Scroll.ScrollBlock = ScrollBlock.Horizontal;
 				}
 				else
 				{
-					Control.Scroll.ScrollBlock = ElmSharp.ScrollBlock.Vertical;
+					Control.Scroll.ScrollBlock = ScrollBlock.Vertical;
 				}
 			}
 		}

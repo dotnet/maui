@@ -30,8 +30,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		bool _disposed = false;
 		EColor _backgroudColor = ShellRenderer.DefaultBackgroundColor.ToNative();
-		// The source of icon resources is https://materialdesignicons.com/
-		const string _dotsIcon = "Xamarin.Forms.Platform.Tizen.Resource.dots_horizontal.png";
+		const string _dotsIcon = ThemeConstants.Shell.Resources.DotsIcon;
 
 		public ShellItemRenderer(IFlyoutController flyoutController, ShellItem item)
 		{
@@ -190,11 +189,11 @@ namespace Xamarin.Forms.Platform.Tizen
 			UpdateToolbarBackgroudColor(appearance.BackgroundColor.ToNative());
 		}
 
-		void UpdateToolbarBackgroudColor(ElmSharp.Color color)
+		void UpdateToolbarBackgroudColor(EColor color)
 		{
 			foreach (EToolbarItem item in _toolbarItemList)
 			{
-				item.SetPartColor("bg", color);
+				item.SetBackgroundColor(color);
 			}
 		}
 
@@ -323,8 +322,8 @@ namespace Xamarin.Forms.Platform.Tizen
 
 				if (item != null)
 				{
-					item.SetPartColor("bg", _backgroudColor);
-					item.SetPartColor("underline", EColor.Transparent);
+					item.SetBackgroundColor(_backgroudColor);
+					item.DeleteUnderlineColor();
 
 					_toolbarItemList.AddLast(item);
 					_itemToSection.Add(item, section);
@@ -361,9 +360,9 @@ namespace Xamarin.Forms.Platform.Tizen
 			Native.Image icon = new Native.Image(Forms.NativeParent);
 			var task = icon.LoadFromImageSourceAsync(src);
 
-			item.SetPartContent("elm.swallow.icon", icon);
-			item.SetPartColor("bg", _backgroudColor);
-			item.SetPartColor("underline", EColor.Transparent);
+			item.SetIconPart(icon);
+			item.SetBackgroundColor(_backgroudColor);
+			item.DeleteUnderlineColor();
 		}
 
 		EToolbarItem CreateTabsItem(string text)

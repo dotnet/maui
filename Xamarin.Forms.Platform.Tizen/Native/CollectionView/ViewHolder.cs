@@ -15,9 +15,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 	public class ViewHolder : Box
 	{
-		static readonly EColor s_defaultFocusEffectColor = EColor.FromRgba(244, 244, 244, 200);
-		static readonly EColor s_defaultSelectedColor = EColor.FromRgba(227, 242, 253, 200);
-
 		ERectangle _background;
 		Button _focusArea;
 		EvasObject _content;
@@ -32,8 +29,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		public EColor FocusedColor { get; set; }
 		public EColor SelectedColor { get; set; }
 
-		EColor EffectiveFocusedColor => FocusedColor == EColor.Default ? s_defaultFocusEffectColor : FocusedColor;
-		EColor EffectiveSelectedColor => SelectedColor == EColor.Default ? s_defaultSelectedColor : FocusedColor;
+		EColor EffectiveFocusedColor => FocusedColor == EColor.Default ? ThemeConstants.CollectionView.ColorClass.DefaultFocusedColor : FocusedColor;
+		EColor EffectiveSelectedColor => SelectedColor == EColor.Default ? ThemeConstants.CollectionView.ColorClass.DefaultSelectedColor : SelectedColor;
 
 		EColor FocusSelectedColor
 		{
@@ -107,7 +104,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			_focusArea = new Button(parent);
 			_focusArea.Color = EColor.Transparent;
 			_focusArea.BackgroundColor = EColor.Transparent;
-			_focusArea.SetPartColor("effect", EColor.Transparent);
+			_focusArea.SetEffectColor(EColor.Transparent);
 			_focusArea.Clicked += OnClicked;
 			_focusArea.Focused += OnFocused;
 			_focusArea.Unfocused += OnFocused;

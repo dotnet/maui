@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (Control == null)
 			{
 				var entry = CreateNativeControl();
-				entry.SetVerticalTextAlignment("elm.text", 0.5);
+				entry.SetVerticalTextAlignment(0.5);
 				if (entry is IEntry ie)
 				{
 					ie.TextBlockFocused += OnTextBlockFocused;

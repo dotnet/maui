@@ -9,9 +9,9 @@ namespace Xamarin.Forms.Platform.Tizen
 		INavigationView _navigationView;
 		ShellItemRenderer _shellItem;
 
-		public static readonly Color DefaultBackgroundColor = Color.FromRgb(33, 150, 243);
-		public static readonly Color DefaultForegroundColor = Color.White;
-		public static readonly Color DefaultTitleColor = Color.White;
+		public static readonly Color DefaultBackgroundColor = ThemeConstants.Shell.ColorClass.DefaultBackgroundColor;
+		public static readonly Color DefaultForegroundColor = ThemeConstants.Shell.ColorClass.DefaultForegroundColor;
+		public static readonly Color DefaultTitleColor = ThemeConstants.Shell.ColorClass.DefaultTitleColor;
 
 		public ShellRenderer()
 		{

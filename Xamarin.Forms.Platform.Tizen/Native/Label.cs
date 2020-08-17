@@ -288,7 +288,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			// README: It only work on Tizen 4.0
 			get
 			{
-				double valign = GetVerticalTextAlignment("elm.text");
+				double valign = this.GetVerticalTextAlignment();
 				if (valign == 0.0)
 				{
 					return TextAlignment.Start;
@@ -325,7 +325,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 						valign = 1.0;
 						break;
 				}
-				SetVerticalTextAlignment("elm.text", valign);
+				this.SetVerticalTextAlignment(valign);
 			}
 		}
 
@@ -383,7 +383,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 			Resize(availableWidth, size.Height);
 
-			var formattedSize = Native.TextHelper.GetFormattedTextBlockSize(this);
+			var formattedSize = this.GetTextBlockFormattedSize();
 			Resize(size.Width, size.Height);
 
 			// Set bottom padding for lower case letters that have segments below the bottom line of text (g, j, p, q, y).

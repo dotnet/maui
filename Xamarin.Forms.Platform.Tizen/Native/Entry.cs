@@ -333,19 +333,18 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 			ESize rawSize;
 			ESize formattedSize;
-			var edjeTextBlock = EdjeObject["elm.guide"];
 
 			// if there's no text, but there's a placeholder, use it for measurements
-			if (string.IsNullOrEmpty(Text) && !string.IsNullOrEmpty(Placeholder) && edjeTextBlock != null)
+			if (string.IsNullOrEmpty(Text) && !string.IsNullOrEmpty(Placeholder))
 			{
-				rawSize = edjeTextBlock.TextBlockNativeSize;
-				formattedSize = edjeTextBlock.TextBlockFormattedSize;
+				rawSize = this.GetPlaceHolderTextBlockNativeSize();
+				formattedSize = this.GetPlaceHolderTextBlockFormattedSize();
 			}
 			else
 			{
 				// there's text in the entry, use it instead
-				rawSize = TextHelper.GetRawTextBlockSize(this);
-				formattedSize = TextHelper.GetFormattedTextBlockSize(this);
+				rawSize = this.GetTextBlockNativeSize();
+				formattedSize = this.GetTextBlockFormattedSize();
 			}
 
 			// restore the original size
@@ -518,7 +517,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 #if __MATERIAL__
 			base.Label = markupText;
 #else
-			SetPartText("elm.guide", markupText ?? "");
+			this.SetPlaceHolderTextPart(markupText ?? "");
 #endif
 		}
 	}

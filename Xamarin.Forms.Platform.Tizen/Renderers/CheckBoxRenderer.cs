@@ -6,13 +6,8 @@ namespace Xamarin.Forms.Platform.Tizen
 {
 	public class CheckBoxRenderer : ViewRenderer<CheckBox, Check>
 	{
-		readonly string[] _onColorParts;
-		readonly string[] _onColorEdjeParts;
-
 		public CheckBoxRenderer()
 		{
-			_onColorParts = Device.Idiom == TargetIdiom.Watch ? new string[] {"outer_bg_on", "outer_bg_on_pressed", "check_on", "check_on_pressed"} : new string[] {"bg_on", "stroke"};
-			_onColorEdjeParts = new string[_onColorParts.Length];
 			RegisterPropertyHandler(CheckBox.IsCheckedProperty, UpdateIsChecked);
 			RegisterPropertyHandler(CheckBox.ColorProperty, UpdateOnColor);
 		}
@@ -23,10 +18,6 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				SetNativeControl(new Check(Forms.NativeParent));
 				Control.StateChanged += OnStateChanged;
-				for (int i=0; i<_onColorParts.Length; i++)
-				{
-					_onColorEdjeParts[i] = Control.ClassName.ToLower().Replace("elm_", "") + "/" + _onColorParts[i];
-				}
 			}
 			base.OnElementChanged(e);
 		}
@@ -60,18 +51,11 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			if (Element.Color.IsDefault)
 			{
-				foreach(string s in _onColorEdjeParts)
-				{
-					Control.EdjeObject.DeleteColorClass(s);
-				}
+				Control.DeleteOnColors();
 			}
 			else
 			{
-				EColor color = Element.Color.ToNative();
-				foreach (string s in _onColorParts)
-				{
-					Control.SetPartColor(s, color);
-				}
+				Control.SetOnColors(Element.Color.ToNative());
 			}
 		}
 	}

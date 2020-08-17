@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 				MinimumWidth = MinimumWidth < 40 ? 40 : MinimumWidth;
 				if (Image != null)
 					MinimumWidth += Image.Geometry.Width;
-				var rawSize = TextHelper.GetRawTextBlockSize(this);
+				var rawSize = this.GetTextBlockNativeSize();
 				return new ESize(rawSize.Width + MinimumWidth, Math.Max(MinimumHeight, rawSize.Height));
 			}
 			else

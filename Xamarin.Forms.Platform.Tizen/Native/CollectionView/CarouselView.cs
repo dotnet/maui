@@ -19,8 +19,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		{
 			return new ViewHolder(this)
 			{
-				FocusedColor = ElmSharp.Color.Transparent,
-				SelectedColor = ElmSharp.Color.Transparent,
+				FocusedColor = ThemeConstants.CarouselView.ColorClass.DefaultFocusedColor,
+				SelectedColor = ThemeConstants.CarouselView.ColorClass.DefaultSelectedColor,
 			};
 		}
 		ESize ICollectionViewController.GetItemSize(int widthConstraint, int heightConstraint)
