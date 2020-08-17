@@ -11,12 +11,12 @@ namespace Xamarin.Essentials
 {
     public static partial class FilePicker
     {
-        static async Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
+        static async Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
         {
             Permissions.EnsureDeclared<Permissions.LaunchApp>();
             await Permissions.EnsureGrantedAsync<Permissions.StorageRead>();
 
-            var tcs = new TaskCompletionSource<IEnumerable<FilePickerResult>>();
+            var tcs = new TaskCompletionSource<IEnumerable<FileResult>>();
 
             var appControl = new AppControl();
             appControl.Operation = AppControlOperations.Pick;
@@ -26,7 +26,7 @@ namespace Xamarin.Essentials
             var fileType = options?.FileTypes?.Value?.FirstOrDefault();
             appControl.Mime = fileType ?? "*/*";
 
-            var fileResults = new List<FilePickerResult>();
+            var fileResults = new List<FileResult>();
 
             AppControl.SendLaunchRequest(appControl, (request, reply, result) =>
             {
@@ -35,7 +35,7 @@ namespace Xamarin.Essentials
                     if (reply.ExtraData.Count() > 0)
                     {
                         var selectedFiles = reply.ExtraData.Get<IEnumerable<string>>(AppControlData.Selected).ToList();
-                        fileResults.AddRange(selectedFiles.Select(f => new FilePickerResult(f)));
+                        fileResults.AddRange(selectedFiles.Select(f => new FileResult(f)));
                     }
                 }
 
@@ -65,13 +65,5 @@ namespace Xamarin.Essentials
             {
                 { DevicePlatform.Tizen, new[] { "video/*" } }
             });
-    }
-
-    public partial class FilePickerResult
-    {
-        internal FilePickerResult(string fullPath)
-            : base(fullPath)
-        {
-        }
     }
 }

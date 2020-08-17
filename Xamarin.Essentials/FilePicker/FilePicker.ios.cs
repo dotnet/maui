@@ -11,7 +11,7 @@ namespace Xamarin.Essentials
 {
     public static partial class FilePicker
     {
-        static Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
+        static Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
         {
             if (allowMultiple && !Platform.HasOSVersion(11, 0))
                 throw new FeatureNotSupportedException("Multiple file picking is only available on iOS 11 or later.");
@@ -23,7 +23,7 @@ namespace Xamarin.Essentials
                 "public.data"
             };
 
-            var tcs = new TaskCompletionSource<IEnumerable<FilePickerResult>>();
+            var tcs = new TaskCompletionSource<IEnumerable<FileResult>>();
 
             // Note: Importing (UIDocumentPickerMode.Import) makes a local copy of the document,
             // while opening (UIDocumentPickerMode.Open) opens the document directly. We do the
@@ -38,9 +38,9 @@ namespace Xamarin.Essentials
                     {
                         // there was a cancellation
                         if (urls?.Any() ?? false)
-                            tcs.TrySetResult(urls.Select(url => new FilePickerResult(url)));
+                            tcs.TrySetResult(urls.Select(url => new UIDocumentFileResult(url)));
                         else
-                            tcs.TrySetResult(Enumerable.Empty<FilePickerResult>());
+                            tcs.TrySetResult(Enumerable.Empty<FileResult>());
                     }
                     catch (Exception ex)
                     {
@@ -91,33 +91,5 @@ namespace Xamarin.Essentials
             {
                 { DevicePlatform.iOS, new string[] { UTType.MPEG4, UTType.Video, UTType.AVIMovie, UTType.AppleProtectedMPEG4Video, "mp4", "m4v", "mpg", "mpeg", "mp2", "mov", "avi", "mkv", "flv", "gifv", "qt" } }
             });
-    }
-
-    public partial class FilePickerResult
-    {
-        Stream fileStream;
-
-        internal FilePickerResult(NSUrl url)
-            : base()
-        {
-            url.StartAccessingSecurityScopedResource();
-
-            var doc = new UIDocument(url);
-            FullPath = doc.FileUrl?.Path;
-            FileName = doc.LocalizedName ?? Path.GetFileName(FullPath);
-
-            url.StopAccessingSecurityScopedResource();
-
-            // immediately open a file stream, in case iOS cleans up the picked file
-            fileStream = File.OpenRead(FullPath);
-        }
-
-        Task<Stream> PlatformOpenReadStreamAsync()
-        {
-            // make sure we are at he beginning
-            fileStream.Seek(0, SeekOrigin.Begin);
-
-            return Task.FromResult(fileStream);
-        }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -121,7 +120,7 @@ namespace Samples.ViewModel
             }
         }
 
-        async Task LoadPhotoAsync(MediaPickerResult photo)
+        async Task LoadPhotoAsync(FileResult photo)
         {
             // canceled
             if (photo == null)
@@ -143,7 +142,7 @@ namespace Samples.ViewModel
             ShowPhoto = true;
         }
 
-        async Task LoadVideoAsync(MediaPickerResult video)
+        async Task LoadVideoAsync(FileResult video)
         {
             // canceled
             if (video == null)
@@ -163,6 +162,14 @@ namespace Samples.ViewModel
             VideoPath = newFile;
             ShowVideo = true;
             ShowPhoto = false;
+        }
+
+        public override void OnDisappearing()
+        {
+            PhotoPath = null;
+            VideoPath = null;
+
+            base.OnDisappearing();
         }
     }
 }

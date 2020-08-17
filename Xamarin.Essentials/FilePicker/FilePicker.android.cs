@@ -12,7 +12,7 @@ namespace Xamarin.Essentials
 {
     public static partial class FilePicker
     {
-        static async Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
+        static async Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
         {
             // we only need the permission when accessing the file, but it's more natural
             // to ask the user first, then show the picker.
@@ -35,7 +35,7 @@ namespace Xamarin.Essentials
             try
             {
                 var result = await IntermediateActivity.StartAsync(pickerIntent, Platform.requestCodeFilePicker);
-                var resultList = new List<FilePickerResult>();
+                var resultList = new List<FileResult>();
 
                 var clipData = new List<global::Android.Net.Uri>();
 
@@ -55,7 +55,7 @@ namespace Xamarin.Essentials
                         contentUri,
                         ActivityFlags.GrantReadUriPermission);
 
-                    resultList.Add(new FilePickerResult(contentUri));
+                    resultList.Add(new FileResult(contentUri));
                 }
 
                 return resultList;
@@ -86,13 +86,5 @@ namespace Xamarin.Essentials
             {
                 { DevicePlatform.Android, new[] { "video/*" } }
             });
-    }
-
-    public partial class FilePickerResult
-    {
-        internal FilePickerResult(global::Android.Net.Uri contentUri)
-            : base(contentUri)
-        {
-        }
     }
 }

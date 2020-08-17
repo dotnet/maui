@@ -112,7 +112,7 @@ namespace Xamarin.Essentials
         {
         }
 
-        Task<Stream> PlatformOpenReadAsync()
+        internal virtual Task<Stream> PlatformOpenReadAsync()
         {
             if (contentUri.Scheme == "content")
             {
@@ -122,6 +122,14 @@ namespace Xamarin.Essentials
 
             var stream = File.OpenRead(FullPath);
             return Task.FromResult<Stream>(stream);
+        }
+    }
+
+    public partial class FileResult
+    {
+        internal FileResult(global::Android.Net.Uri contentUri)
+            : base(contentUri)
+        {
         }
     }
 }

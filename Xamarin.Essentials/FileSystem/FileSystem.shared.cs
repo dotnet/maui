@@ -122,4 +122,27 @@ namespace Xamarin.Essentials
         {
         }
     }
+
+    public partial class FileResult : FileBase
+    {
+        // The caller must setup FullPath at least!!!
+        internal FileResult()
+        {
+        }
+
+        public FileResult(string fullPath)
+            : base(fullPath)
+        {
+        }
+
+        public FileResult(string fullPath, string contentType)
+            : base(fullPath, contentType)
+        {
+        }
+
+        public FileResult(FileBase file)
+            : base(file)
+        {
+        }
+    }
 }

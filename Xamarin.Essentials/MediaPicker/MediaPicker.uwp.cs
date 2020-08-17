@@ -1,15 +1,8 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Graphics.Imaging;
 using Windows.Media.Capture;
-using Windows.Media.MediaProperties;
-using Windows.Storage;
-using Windows.Storage.FileProperties;
 using Windows.Storage.Pickers;
-using Windows.Storage.Streams;
 
 namespace Xamarin.Essentials
 {
@@ -18,13 +11,13 @@ namespace Xamarin.Essentials
         static bool PlatformIsCaptureAvailable
             => true;
 
-        static Task<MediaPickerResult> PlatformPickPhotoAsync(MediaPickerOptions options)
+        static Task<FileResult> PlatformPickPhotoAsync(MediaPickerOptions options)
             => PickAsync(options, true);
 
-        static Task<MediaPickerResult> PlatformPickVideoAsync(MediaPickerOptions options)
+        static Task<FileResult> PlatformPickVideoAsync(MediaPickerOptions options)
             => PickAsync(options, false);
 
-        static async Task<MediaPickerResult> PickAsync(MediaPickerOptions options, bool photo)
+        static async Task<FileResult> PickAsync(MediaPickerOptions options, bool photo)
         {
             var picker = new FileOpenPicker();
 
@@ -44,16 +37,16 @@ namespace Xamarin.Essentials
                 return null;
 
             // picked
-            return new MediaPickerResult(result);
+            return new FileResult(result);
         }
 
-        static Task<MediaPickerResult> PlatformCapturePhotoAsync(MediaPickerOptions options)
+        static Task<FileResult> PlatformCapturePhotoAsync(MediaPickerOptions options)
             => CaptureAsync(options, false);
 
-        static Task<MediaPickerResult> PlatformCaptureVideoAsync(MediaPickerOptions options)
+        static Task<FileResult> PlatformCaptureVideoAsync(MediaPickerOptions options)
             => CaptureAsync(options, false);
 
-        static async Task<MediaPickerResult> CaptureAsync(MediaPickerOptions options, bool photo)
+        static async Task<FileResult> CaptureAsync(MediaPickerOptions options, bool photo)
         {
             var captureUi = new CameraCaptureUI();
 
@@ -65,19 +58,9 @@ namespace Xamarin.Essentials
             var file = await captureUi.CaptureFileAsync(photo ? CameraCaptureUIMode.Photo : CameraCaptureUIMode.Video);
 
             if (file != null)
-                return new MediaPickerResult(file);
+                return new FileResult(file);
 
             return null;
-        }
-    }
-
-    public partial class MediaPickerResult
-    {
-        internal MediaPickerResult(IStorageFile file)
-           : this(file?.Path)
-        {
-            File = file;
-            ContentType = file?.ContentType;
         }
     }
 }

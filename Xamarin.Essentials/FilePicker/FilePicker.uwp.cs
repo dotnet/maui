@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Storage;
@@ -11,7 +10,7 @@ namespace Xamarin.Essentials
 {
     public static partial class FilePicker
     {
-        static async Task<IEnumerable<FilePickerResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
+        static async Task<IEnumerable<FileResult>> PlatformPickAsync(PickOptions options, bool allowMultiple = false)
         {
             var picker = new FileOpenPicker
             {
@@ -39,7 +38,7 @@ namespace Xamarin.Essentials
             foreach (var file in resultList)
                 StorageApplicationPermissions.FutureAccessList.Add(file);
 
-            return resultList.Select(storageFile => new FilePickerResult(storageFile));
+            return resultList.Select(storageFile => new FileResult(storageFile));
         }
 
         static void SetFileTypes(PickOptions options, FileOpenPicker picker)
@@ -82,23 +81,5 @@ namespace Xamarin.Essentials
            {
                 { DevicePlatform.UWP, new[] { "*.mp4", "*.mov", "*.avi", "*.wmv", "*.m4v", "*.mpg", "*.mpeg", "*.mp2", "*.mkv", "*.flv", "*.gifv", "*.qt" } }
            });
-    }
-
-    public partial class FilePickerResult
-    {
-        internal FilePickerResult(IStorageFile storageFile)
-            : base(storageFile)
-        {
-            this.storageFile = storageFile;
-            FileName = storageFile.Name;
-        }
-
-        readonly IStorageFile storageFile;
-
-        // we can make this assumption because
-        // the only way to construct this object
-        // is with an IStorageFile
-        Task<Stream> PlatformOpenReadStreamAsync()
-            => storageFile.OpenStreamForReadAsync();
     }
 }

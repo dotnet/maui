@@ -16,13 +16,13 @@ namespace Xamarin.Essentials
         static bool PlatformIsCaptureAvailable
             => Platform.AppContext.PackageManager.HasSystemFeature(PackageManager.FeatureCameraAny);
 
-        static Task<MediaPickerResult> PlatformPickPhotoAsync(MediaPickerOptions options)
+        static Task<FileResult> PlatformPickPhotoAsync(MediaPickerOptions options)
             => PlatformPickAsync(options, true);
 
-        static Task<MediaPickerResult> PlatformPickVideoAsync(MediaPickerOptions options)
+        static Task<FileResult> PlatformPickVideoAsync(MediaPickerOptions options)
             => PlatformPickAsync(options, false);
 
-        static async Task<MediaPickerResult> PlatformPickAsync(MediaPickerOptions options, bool photo)
+        static async Task<FileResult> PlatformPickAsync(MediaPickerOptions options, bool photo)
         {
             // we only need the permission when accessing the file, but it's more natural
             // to ask the user first, then show the picker.
@@ -37,7 +37,7 @@ namespace Xamarin.Essentials
             {
                 var result = await IntermediateActivity.StartAsync(pickerIntent, Platform.requestCodeMediaPicker);
 
-                return new MediaPickerResult(result.Data);
+                return new FileResult(result.Data);
             }
             catch (OperationCanceledException)
             {
@@ -45,13 +45,13 @@ namespace Xamarin.Essentials
             }
         }
 
-        static Task<MediaPickerResult> PlatformCapturePhotoAsync(MediaPickerOptions options)
+        static Task<FileResult> PlatformCapturePhotoAsync(MediaPickerOptions options)
             => PlatformCaptureAsync(options, true);
 
-        static Task<MediaPickerResult> PlatformCaptureVideoAsync(MediaPickerOptions options)
+        static Task<FileResult> PlatformCaptureVideoAsync(MediaPickerOptions options)
             => PlatformCaptureAsync(options, false);
 
-        static async Task<MediaPickerResult> PlatformCaptureAsync(MediaPickerOptions options, bool photo)
+        static async Task<FileResult> PlatformCaptureAsync(MediaPickerOptions options, bool photo)
         {
             await Permissions.EnsureGrantedAsync<Permissions.Camera>();
             await Permissions.EnsureGrantedAsync<Permissions.StorageWrite>();
@@ -74,7 +74,7 @@ namespace Xamarin.Essentials
 
                     var outputUri = result.GetParcelableExtra(IntermediateActivity.OutputUriExtra) as global::Android.Net.Uri;
 
-                    return new MediaPickerResult(outputUri);
+                    return new FileResult(outputUri);
                 }
                 catch (OperationCanceledException)
                 {
@@ -83,14 +83,6 @@ namespace Xamarin.Essentials
             }
 
             return null;
-        }
-    }
-
-    public partial class MediaPickerResult
-    {
-        internal MediaPickerResult(global::Android.Net.Uri contentUri)
-            : base(contentUri)
-        {
         }
     }
 }

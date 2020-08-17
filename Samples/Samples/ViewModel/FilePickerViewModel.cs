@@ -114,7 +114,7 @@ namespace Samples.ViewModel
             });
         }
 
-        async Task<FilePickerResult> PickAndShow(PickOptions options)
+        async Task<FileResult> PickAndShow(PickOptions options)
         {
             try
             {

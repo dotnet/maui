@@ -43,8 +43,10 @@ namespace Xamarin.Essentials
     public partial class FileBase
     {
         internal FileBase(NSUrl file)
-            : this(file?.Path) =>
-                FileName = NSFileManager.DefaultManager.DisplayName(file?.Path);
+            : this(file?.Path)
+        {
+            FileName = NSFileManager.DefaultManager.DisplayName(file?.Path);
+        }
 
         internal static string PlatformGetContentType(string extension)
         {

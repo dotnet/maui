@@ -9,16 +9,16 @@ namespace Xamarin.Essentials
         static bool PlatformIsCaptureAvailable =>
             throw new NotImplementedInReferenceAssemblyException();
 
-        static Task<MediaPickerResult> PlatformPickPhotoAsync(MediaPickerOptions options) =>
+        static Task<FileResult> PlatformPickPhotoAsync(MediaPickerOptions options) =>
             throw new NotImplementedInReferenceAssemblyException();
 
-        static Task<MediaPickerResult> PlatformCapturePhotoAsync(MediaPickerOptions options) =>
+        static Task<FileResult> PlatformCapturePhotoAsync(MediaPickerOptions options) =>
             throw new NotImplementedInReferenceAssemblyException();
 
-        static Task<MediaPickerResult> PlatformPickVideoAsync(MediaPickerOptions options) =>
+        static Task<FileResult> PlatformPickVideoAsync(MediaPickerOptions options) =>
             throw new NotImplementedInReferenceAssemblyException();
 
-        static Task<MediaPickerResult> PlatformCaptureVideoAsync(MediaPickerOptions options) =>
+        static Task<FileResult> PlatformCaptureVideoAsync(MediaPickerOptions options) =>
             throw new NotImplementedInReferenceAssemblyException();
     }
 }
