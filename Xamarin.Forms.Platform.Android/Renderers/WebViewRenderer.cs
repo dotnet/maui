@@ -116,7 +116,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override AWebView CreateNativeControl()
 		{
-			return new AWebView(Context);
+			var webView = new AWebView(Context);
+			webView.Settings.SetSupportMultipleWindows(true);
+			return webView;
 		}
 
 		internal WebNavigationEvent GetCurrentWebNavigationEvent()
@@ -342,13 +344,13 @@ namespace Xamarin.Forms.Platform.Android
 			LoadUrl("javascript:" + eventArg.Script, false);
 		}
 
-		async Task<string> OnEvaluateJavaScriptRequested(string script)
+		Task<string> OnEvaluateJavaScriptRequested(string script)
 		{
 			var jsr = new JavascriptResult();
 
 			Control.EvaluateJavascript(script, jsr);
 
-			return await jsr.JsResult.ConfigureAwait(false);
+			return jsr.JsResult;
 		}
 
 		void OnGoBackRequested(object sender, EventArgs eventArgs)
