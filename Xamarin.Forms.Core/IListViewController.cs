@@ -14,7 +14,9 @@ namespace Xamarin.Forms
 		Cell CreateDefaultCell(object item);
 		string GetDisplayTextFromGroup(object cell);
 		void NotifyRowTapped(int index, int inGroupIndex, Cell cell);
+		void NotifyRowTapped(int index, int inGroupIndex, Cell cell, bool isContextMenuRequested);
 		void NotifyRowTapped(int index, Cell cell);
+		void NotifyRowTapped(int index, Cell cell, bool isContextMenuRequested);
 		void SendCellAppearing(Cell cell);
 		void SendCellDisappearing(Cell cell);
 		void SendRefreshing();

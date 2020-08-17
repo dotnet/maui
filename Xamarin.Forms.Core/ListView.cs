@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Windows.Input;
 using Xamarin.Forms.Internals;
@@ -448,6 +447,36 @@ namespace Xamarin.Forms
 
 			cell?.OnTapped();
 
+			ItemTapped?.Invoke(this, new ItemTappedEventArgs(ItemsSource.Cast<object>().ElementAt(groupIndex), cell?.BindingContext, TemplatedItems.GetGlobalIndexOfItem(cell?.BindingContext)));
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void NotifyRowTapped(int groupIndex, int inGroupIndex, Cell cell, bool isContextMenuRequested)
+		{
+			var group = TemplatedItems.GetGroup(groupIndex);
+
+			bool changed = _previousGroupSelected != groupIndex || _previousRowSelected != inGroupIndex;
+
+			_previousRowSelected = inGroupIndex;
+			_previousGroupSelected = groupIndex;
+
+			// A11y: Keyboards and screen readers can deselect items, allowing -1 to be possible
+			if (cell == null && inGroupIndex != -1)
+			{
+				cell = group[inGroupIndex];
+			}
+
+			// Set SelectedItem before any events so we don't override any changes they may have made.
+			if (SelectionMode != ListViewSelectionMode.None)
+				SetValueCore(SelectedItemProperty, cell?.BindingContext, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource | (changed ? SetValueFlags.RaiseOnEqual : 0));
+
+			if (isContextMenuRequested || cell == null)
+			{
+				return;
+			}
+
+			cell.OnTapped();
+
 			var itemSource = ItemsSource?.Cast<object>().ToList();
 			object tappedGroup = null;
 			if (itemSource?.Count > groupIndex)
@@ -455,7 +484,9 @@ namespace Xamarin.Forms
 				tappedGroup = itemSource.ElementAt(groupIndex);
 			}
 
-			ItemTapped?.Invoke(this, new ItemTappedEventArgs(tappedGroup, cell?.BindingContext, TemplatedItems.GetGlobalIndexOfItem(cell?.BindingContext)));
+			ItemTapped?.Invoke(this,
+				new ItemTappedEventArgs(tappedGroup, cell.BindingContext,
+					TemplatedItems.GetGlobalIndexOfItem(cell?.BindingContext)));
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -470,6 +501,20 @@ namespace Xamarin.Forms
 			}
 			else
 				NotifyRowTapped(0, index, cell);
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void NotifyRowTapped(int index, Cell cell, bool isContextmenuRequested)
+		{
+			if (IsGroupingEnabled)
+			{
+				int leftOver;
+				int groupIndex = TemplatedItems.GetGroupIndexFromGlobal(index, out leftOver);
+
+				NotifyRowTapped(groupIndex, leftOver - 1, cell, isContextmenuRequested);
+			}
+			else
+				NotifyRowTapped(0, index, cell, isContextmenuRequested);
 		}
 
 		internal override void OnIsPlatformEnabledChanged()
