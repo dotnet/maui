@@ -138,8 +138,11 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.LayoutSubviews();
 
-			if (Element.Content != null)
-				Element.Content.Layout(Bounds.ToRectangle());
+			if (Bounds.X < 0 || Bounds.Y < 0)
+				Bounds = new CGRect(0, 0, Bounds.Width, Bounds.Height);
+
+			if (_contentView != null && _contentView.Frame.IsEmpty)
+				_contentView.Frame = Bounds;
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -488,6 +491,9 @@ namespace Xamarin.Forms.Platform.iOS
 			if (items == null || items.Count == 0)
 				return;
 
+			if (_originalBounds == CGRect.Empty)
+				_originalBounds = _contentView.Frame;
+
 			int i = 0;
 			float previousWidth = 0;
 
@@ -503,12 +509,12 @@ namespace Xamarin.Forms.Platform.iOS
 					switch (_swipeDirection)
 					{
 						case SwipeDirection.Left:
-							child.Frame = new CGRect(_contentView.Frame.Width - (swipeItemWidth + previousWidth), 0, i + 1 * swipeItemWidth, swipeItemHeight);
+							child.Frame = new CGRect(_contentView.Frame.Width - (swipeItemWidth + previousWidth), _originalBounds.Y, i + 1 * swipeItemWidth, swipeItemHeight);
 							break;
 						case SwipeDirection.Right:
 						case SwipeDirection.Up:
 						case SwipeDirection.Down:
-							child.Frame = new CGRect(previousWidth, 0, i + 1 * swipeItemWidth, swipeItemHeight);
+							child.Frame = new CGRect(previousWidth, _originalBounds.Y, i + 1 * swipeItemWidth, swipeItemHeight);
 							break;
 					}
 
@@ -772,9 +778,6 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			_isTouchDown = false;
 
-			if (CanProcessTouchSwipeItems(point))
-				ProcessTouchSwipeItems(point);
-
 			if (!_isSwiping)
 				return;
 
@@ -847,7 +850,6 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_contentView == null)
 				return;
 
-			_originalBounds = _contentView.Bounds;
 			var offset = ValidateSwipeOffset(_swipeOffset);
 			_isOpen = offset != 0;
 
@@ -976,6 +978,7 @@ namespace Xamarin.Forms.Platform.iOS
 			_swipeItems.Clear();
 			_swipeThreshold = 0;
 			_swipeOffset = 0;
+			_originalBounds = CGRect.Empty;
 
 			if (_actionView != null)
 			{
