@@ -9,8 +9,7 @@ namespace Xamarin.Forms.Platform.MacOS
 {
 	internal class CellNSView : NSView, INativeElementView
 	{
-		static readonly NSColor s_defaultChildViewsBackground = NSColor.Clear;
-		static readonly CGColor s_defaultHeaderViewsBackground = NSColor.LightGray.CGColor;
+		readonly NSColor s_defaultChildViewsBackground = NSColor.Clear;
 		Cell _cell;
 		readonly NSTableViewCellStyle _style;
 
@@ -107,6 +106,50 @@ namespace Xamarin.Forms.Platform.MacOS
 			base.Layout();
 		}
 
+		public override void UpdateLayer()
+		{
+			base.UpdateLayer();
+
+			UpdateBackground();
+			UpdateTextColor();
+		}
+
+		void UpdateBackground()
+		{
+			if (_cell == null)
+				return;
+
+			var bgColor = ColorExtensions.ControlBackgroundColor;
+			var element = _cell.RealParent as VisualElement;
+			if (element != null)
+				bgColor = element.BackgroundColor == Color.Default ? bgColor : element.BackgroundColor.ToNSColor();
+
+			Layer.BackgroundColor = bgColor.CGColor;
+		}
+
+		void UpdateTextColor()
+		{
+			if (TextLabel == null)
+				return;
+
+			var textColor = ColorExtensions.TextColor;
+			var textCell = _cell.RealParent as TextCell;
+			if (textCell != null)
+				textColor = textCell.TextColor == Color.Default ? textColor : textCell.TextColor.ToNSColor();
+
+			TextLabel.TextColor = textColor;
+
+			if (DetailTextLabel == null)
+				return;
+
+			var detailTextColor = ColorExtensions.SecondaryLabelColor;
+			var element = _cell.RealParent as TextCell;
+			if (element != null)
+				detailTextColor = element.TextColor == Color.Default ? textColor : element.TextColor.ToNSColor();
+
+			DetailTextLabel.TextColor = detailTextColor;
+		}
+
 		internal static NSView GetNativeCell(NSTableView tableView, Cell cell, string templateId = "", bool isHeader = false,
 			bool isRecycle = false)
 		{
@@ -126,7 +169,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				nativeCell.Identifier = templateId;
 
 			if (!isHeader) return nativeCell;
-			if (nativeCell.Layer != null) nativeCell.Layer.BackgroundColor = s_defaultHeaderViewsBackground;
+			if (nativeCell.Layer != null) nativeCell.Layer.BackgroundColor = ColorExtensions.GroupedBackground.CGColor;
 			return nativeCell;
 		}
 

@@ -160,7 +160,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			if (Control == null)
 				return;
-			Control.BackgroundColor = color == Color.Default ? NSColor.Clear : color.ToNSColor();
+			Control.BackgroundColor = color == Color.Default ? ColorExtensions.ControlBackgroundColor : color.ToNSColor();
 
 			base.SetBackgroundColor(color);
 		}
@@ -201,7 +201,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			SetNativeControl(textField);
 
-			_defaultTextColor = textField.TextColor;
+			_defaultTextColor = ColorExtensions.TextColor;
 
 			textField.Changed += OnChanged;
 			textField.EditingBegan += OnEditingBegan;
@@ -311,10 +311,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			var targetColor = Element.PlaceholderColor;
 
-			// Placeholder default color is 70% gray
-			// https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UITextField_Class/index.html#//apple_ref/occ/instp/UITextField/placeholder
-
-			var color = Element.IsEnabled && !targetColor.IsDefault ? targetColor : ColorExtensions.SeventyPercentGrey.ToColor();
+			var color = Element.IsEnabled && !targetColor.IsDefault ? targetColor : ColorExtensions.PlaceholderColor.ToColor(NSColorSpace.DeviceRGBColorSpace);
 
 			Control.PlaceholderAttributedString = formatted.ToAttributed(Element, color, Element.HorizontalTextAlignment);
 		}

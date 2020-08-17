@@ -109,7 +109,14 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (_table == null)
 				return;
 
-			_table.BackgroundColor = color.ToNSColor(NSColor.White);
+			_table.BackgroundColor = color.ToNSColor(ColorExtensions.ControlBackgroundColor);
+		}
+
+		// When OS Theme changes, reload data to update all the colors
+		public override void ViewDidChangeEffectiveAppearance()
+		{
+			base.ViewDidChangeEffectiveAppearance();
+			NativeTableView?.ReloadData();
 		}
 
 		protected override void SetBackground(Brush brush)
