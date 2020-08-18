@@ -6,14 +6,7 @@ namespace Xamarin.Essentials
     public static partial class Clipboard
     {
         public static Task SetTextAsync(string text)
-        {
-            if (text == null)
-            {
-                text = string.Empty;
-            }
-
-            return PlatformSetTextAsync(text);
-        }
+            => PlatformSetTextAsync(text ?? string.Empty);
 
         public static bool HasText
             => PlatformHasText;
