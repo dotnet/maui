@@ -1,4 +1,3 @@
-using System;
 using ElmSharp;
 using EScroller = ElmSharp.Scroller;
 using ESize = ElmSharp.Size;

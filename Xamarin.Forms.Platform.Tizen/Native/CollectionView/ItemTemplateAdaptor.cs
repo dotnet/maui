@@ -47,7 +47,9 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 	{
 		Dictionary<EvasObject, View> _nativeFormsTable = new Dictionary<EvasObject, View>();
 		Dictionary<object, View> _dataBindedViewTable = new Dictionary<object, View>();
-		ItemsView _itemsView;
+		protected ItemsView _itemsView;
+		protected View _headerCache;
+		protected View _footerCache;
 
 		public ItemTemplateAdaptor(ItemsView itemsView) : base(itemsView.ItemsSource)
 		{
@@ -63,9 +65,19 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 		protected DataTemplate ItemTemplate { get; set; }
 
-		protected View GetTemplatedView(EvasObject evasObject)
+		public View GetTemplatedView(EvasObject evasObject)
 		{
 			return _nativeFormsTable[evasObject];
+		}
+
+		public View GetTemplatedView(int index)
+		{
+
+			if (Count > index && _dataBindedViewTable.TryGetValue(this[index], out View view))
+			{
+				return view;
+			}
+			return null;
 		}
 
 		public override object GetViewCategory(int index)
@@ -89,7 +101,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				view = ItemTemplate.CreateContent() as View;
 			}
 			var renderer = Platform.GetOrCreateRenderer(view);
-			var native = Platform.GetOrCreateRenderer(view).NativeView;
+			var native = renderer.NativeView;
 			view.Parent = _itemsView;
 			(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
 
@@ -100,6 +112,32 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		public override EvasObject CreateNativeView(EvasObject parent)
 		{
 			return CreateNativeView(0, parent);
+		}
+
+		public override EvasObject GetHeaderView(EvasObject parent)
+		{
+			_headerCache = CreateHeaderView();
+			if (_headerCache != null)
+			{
+				_headerCache.Parent = _itemsView;
+				var renderer = Platform.GetOrCreateRenderer(_headerCache);
+				(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
+				return renderer.NativeView;
+			}
+			return null;
+		}
+
+		public override EvasObject GetFooterView(EvasObject parent)
+		{
+			_footerCache = CreateFooterView();
+			if (_footerCache != null)
+			{
+				_footerCache.Parent = _itemsView;
+				var renderer = Platform.GetOrCreateRenderer(_footerCache);
+				(renderer as LayoutRenderer).RegisterOnLayoutUpdated();
+				return renderer.NativeView;
+			}
+			return null;
 		}
 
 		public override void RemoveNativeView(EvasObject native)
@@ -162,6 +200,60 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				var request = view.Measure(Forms.ConvertToScaledDP(widthConstraint), Forms.ConvertToScaledDP(heightConstraint), MeasureFlags.IncludeMargins).Request;
 				return request.ToPixel();
 			}
+		}
+
+		public override ESize MeasureHeader(int widthConstraint, int heightConstraint)
+		{
+			return _headerCache?.Measure(Forms.ConvertToScaledDP(widthConstraint), Forms.ConvertToScaledDP(heightConstraint)).Request.ToPixel() ?? new ESize(0, 0);
+		}
+
+		public override ESize MeasureFooter(int widthConstraint, int heightConstraint)
+		{
+			return _footerCache?.Measure(Forms.ConvertToScaledDP(widthConstraint), Forms.ConvertToScaledDP(heightConstraint)).Request.ToPixel() ?? new ESize(0, 0);
+		}
+
+		protected virtual View CreateHeaderView()
+		{
+			if (_itemsView is StructuredItemsView structuredItemsView)
+			{
+				if (structuredItemsView.Header != null)
+				{
+					View header = null;
+					if (structuredItemsView.Header is View view)
+					{
+						header = view;
+					}
+					else if (structuredItemsView.HeaderTemplate != null)
+					{
+						header = structuredItemsView.HeaderTemplate.CreateContent() as View;
+						header.BindingContext = structuredItemsView.Header;
+					}
+					return header;
+				}
+			}
+			return null;
+		}
+
+		protected virtual View CreateFooterView()
+		{
+			if (_itemsView is StructuredItemsView structuredItemsView)
+			{
+				if (structuredItemsView.Footer != null)
+				{
+					View footer = null;
+					if (structuredItemsView.Footer is View view)
+					{
+						footer = view;
+					}
+					else if (structuredItemsView.FooterTemplate != null)
+					{
+						footer = structuredItemsView.FooterTemplate.CreateContent() as View;
+						footer.BindingContext = structuredItemsView.Footer;
+					}
+					return footer;
+				}
+			}
+			return null;
 		}
 
 		void ResetBindedView(View view)

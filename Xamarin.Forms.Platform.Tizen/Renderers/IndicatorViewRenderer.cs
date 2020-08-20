@@ -1,12 +1,10 @@
-﻿using System.Collections;
-
-namespace Xamarin.Forms.Platform.Tizen
+﻿namespace Xamarin.Forms.Platform.Tizen
 {
 	public class IndicatorViewRenderer : ViewRenderer<IndicatorView, Native.IndicatorView>
 	{
 		public IndicatorViewRenderer()
 		{
-			RegisterPropertyHandler(IndicatorView.CountProperty, UpdateItemsSource);
+			RegisterPropertyHandler(IndicatorView.CountProperty, UpdateCount);
 			RegisterPropertyHandler(IndicatorView.PositionProperty, UpdatePosition);
 		}
 
@@ -32,23 +30,12 @@ namespace Xamarin.Forms.Platform.Tizen
 			Element.SetValueFromRenderer(IndicatorView.PositionProperty, (int)e.SelectedPosition);
 		}
 
-		void UpdateItemsSource()
+		void UpdateCount()
 		{
 			Control.ClearIndex();
-			int count = 0;
-			if (Element.ItemsSource is ICollection collection)
-			{
-				count = collection.Count;
-			}
-			else
-			{
-				var enumerator = Element.ItemsSource.GetEnumerator();
-				while (enumerator?.MoveNext() ?? false)
-				{
-					count++;
-				}
-			}
-			Control.AppendIndex(count);
+			Control.AppendIndex(Element.Count);
+			Control.Update(0);
+			UpdatePosition();
 		}
 
 		void UpdatePosition()
