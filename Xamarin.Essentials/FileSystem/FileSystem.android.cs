@@ -6,8 +6,6 @@ using Android.App;
 using Android.Provider;
 using Android.Webkit;
 
-using Bitmap = global::Android.Graphics.Bitmap;
-
 namespace Xamarin.Essentials
 {
     public partial class FileSystem
