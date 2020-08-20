@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Android.Content;
 using Android.Content.PM;
 using Android.Content.Res;
@@ -14,19 +15,19 @@ namespace Xamarin.Essentials
         internal static bool PlatformIsSupported
             => Platform.HasApiLevelNMr1;
 
-        static IEnumerable<AppAction> PlatformGetActions()
+        static Task<IEnumerable<AppAction>> PlatformGetAsync()
         {
             if (!IsSupported)
                 throw new FeatureNotSupportedException();
 
 #if __ANDROID_25__
-            return Platform.ShortcutManager.DynamicShortcuts.Select(s => s.ToAppAction());
+            return Task.FromResult(Platform.ShortcutManager.DynamicShortcuts.Select(s => s.ToAppAction()));
 #else
-            return null;
+            return Task.FromResult<IEnumerable<AppAction>>>(null);
 #endif
         }
 
-        static void PlatformSetActions(IEnumerable<AppAction> actions)
+        static Task PlatformSetAsync(IEnumerable<AppAction> actions)
         {
             if (!IsSupported)
                 throw new FeatureNotSupportedException();
@@ -34,14 +35,27 @@ namespace Xamarin.Essentials
 #if __ANDROID_25__
             Platform.ShortcutManager.SetDynamicShortcuts(actions.Select(a => a.ToShortcutInfo()).ToList());
 #endif
+            return Task.CompletedTask;
         }
 
         static AppAction ToAppAction(this ShortcutInfo shortcutInfo) =>
-            new AppAction(shortcutInfo.Id, shortcutInfo.ShortLabel, shortcutInfo.LongLabel);
+            new AppAction(shortcutInfo.ShortLabel, shortcutInfo.LongLabel, shortcutInfo.Id);
+
+        const string extraAppActionId = "EXTRA_XE_APP_ACTION_ID";
+        const string extraAppActionTitle = "EXTRA_XE_APP_ACTION_TITLE";
+        const string extraAppActionSubtitle = "EXTRA_XE_APP_ACTION_SUBTITLE";
+        const string extraAppActionIcon = "EXTRA_XE_APP_ACTION_ICON";
+
+        internal static AppAction ToAppAction(this Intent intent)
+            => new AppAction(
+                intent.GetStringExtra(extraAppActionTitle),
+                intent.GetStringExtra(extraAppActionId),
+                intent.GetStringExtra(extraAppActionSubtitle),
+                intent.GetStringExtra(extraAppActionIcon));
 
         static ShortcutInfo ToShortcutInfo(this AppAction action)
         {
-            var shortcut = new ShortcutInfo.Builder(Platform.AppContext, action.ActionType)
+            var shortcut = new ShortcutInfo.Builder(Platform.AppContext, action.Id)
                 .SetShortLabel(action.Title);
 
             if (!string.IsNullOrWhiteSpace(action.Subtitle))
@@ -56,14 +70,15 @@ namespace Xamarin.Essentials
                 shortcut.SetIcon(Icon.CreateWithResource(Platform.AppContext, iconResId));
             }
 
-            if (action.Uri != null)
-            {
-                shortcut.SetIntent(new Intent(Intent.ActionView, AndroidUri.Parse(action.Uri.ToString())));
-            }
-            else
-            {
-                shortcut.SetIntent(new Intent(action.ActionType));
-            }
+            var intent = new Intent(Platform.Intent.ActionAppAction);
+            intent.SetPackage(Platform.AppContext.PackageName);
+            intent.SetFlags(ActivityFlags.ClearTop | ActivityFlags.SingleTop);
+            intent.PutExtra(extraAppActionId, action.Id);
+            intent.PutExtra(extraAppActionTitle, action.Title);
+            intent.PutExtra(extraAppActionSubtitle, action.Subtitle);
+            intent.PutExtra(extraAppActionIcon, action.Icon);
+
+            shortcut.SetIntent(intent);
 
             return shortcut.Build();
         }

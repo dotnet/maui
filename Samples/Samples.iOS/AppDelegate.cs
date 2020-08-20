@@ -13,6 +13,7 @@ namespace Samples.iOS
         {
             Xamarin.Forms.Forms.Init();
             Xamarin.Forms.FormsMaterial.Init();
+
             Distribute.DontCheckForUpdatesInDebug();
             LoadApplication(new App());
 
@@ -28,23 +29,6 @@ namespace Samples.iOS
         }
 
         public override void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
-        {
-            var uri = shortcutItem.UserInfo?["uri"] as NSString;
-
-            if (!string.IsNullOrWhiteSpace(uri))
-            {
-                Xamarin.Forms.Application.Current.SendOnAppLinkRequestReceived(new Uri(uri));
-            }
-            else
-            {
-                // Handle shortcuts without a Uri here
-
-                if (shortcutItem.Type == "battery")
-                {
-                    Xamarin.Forms.Application.Current.MainPage.Navigation.PopToRootAsync();
-                    Xamarin.Forms.Application.Current.MainPage.Navigation.PushAsync(new BatteryPage());
-                }
-            }
-        }
+            => Xamarin.Essentials.Platform.PerformActionForShortcutItem(application, shortcutItem, completionHandler);
     }
 }

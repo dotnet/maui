@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
@@ -22,16 +23,14 @@ namespace Samples
         {
             InitializeComponent();
 
-            AddAppActions();
-
-            // Enable currently experimental features
-
             VersionTracking.Track();
 
             MainPage = new NavigationPage(new HomePage());
+
+            AppActions.OnAppAction += AppActions_OnAppAction;
         }
 
-        protected override void OnStart()
+        protected override async void OnStart()
         {
             if ((Device.RuntimePlatform == Device.Android && CommonConstants.AppCenterAndroid != "AC_ANDROID") ||
                (Device.RuntimePlatform == Device.iOS && CommonConstants.AppCenteriOS != "AC_IOS") ||
@@ -45,6 +44,29 @@ namespace Samples
                 typeof(Crashes),
                 typeof(Distribute));
             }
+
+            await AppActions.SetAsync(
+                new AppAction("App Info", id: "app_info", icon: "app_info_action_icon"),
+                new AppAction("Battery Info", id: "battery_info"));
+        }
+
+        void AppActions_OnAppAction(object sender, AppActionEventArgs e)
+        {
+            Device.BeginInvokeOnMainThread(async () =>
+            {
+                var page = e.AppAction.Id switch
+                {
+                    "battery_info" => new BatteryPage(),
+                    "app_info" => new AppInfoPage(),
+                    _ => default(Page)
+                };
+
+                if (page != null)
+                {
+                    await Xamarin.Forms.Application.Current.MainPage.Navigation.PopToRootAsync();
+                    await Xamarin.Forms.Application.Current.MainPage.Navigation.PushAsync(page);
+                }
+            });
         }
 
         protected override void OnSleep()
@@ -55,41 +77,6 @@ namespace Samples
         protected override void OnResume()
         {
             // Handle when your app resumes
-        }
-
-        protected override void OnAppLinkRequestReceived(Uri uri)
-        {
-            if (uri?.Scheme != "xam")
-            {
-                base.OnAppLinkRequestReceived(uri);
-                return;
-            }
-
-            MainPage.Navigation.PopToRootAsync();
-
-            var page = uri.Segments.Last();
-
-            switch (page)
-            {
-                case "appInfo":
-                    MainPage.Navigation.PushAsync(new AppInfoPage());
-                    break;
-                case "deviceInfo":
-                    MainPage.Navigation.PushAsync(new DeviceInfoPage());
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        void AddAppActions()
-        {
-            AppActions.Actions = new List<AppAction>
-            {
-                new AppAction("app_info", "App Info", uri: new Uri("xam://samples/appInfo"), icon: "app_info_action_icon"),
-                new AppAction("device_info", "Device Info", uri: new Uri("xam://samples/deviceInfo")), // Sample without an icon
-                new AppAction("battery", "Battery", icon: "battery_action_icon") // Sample without a Uri - will require manually handling in AppDelegate and MainActivity
-            };
         }
     }
 }

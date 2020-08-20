@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Foundation;
 using ObjCRuntime;
 using UIKit;
@@ -19,6 +20,18 @@ namespace Xamarin.Essentials
 #if __IOS__ || __TVOS__
         public static bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)
             => WebAuthenticator.OpenUrl(new Uri(url.AbsoluteString));
+#endif
+
+#if __IOS__
+        public static void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
+        {
+            if (shortcutItem.Type == AppActions.Type)
+            {
+                var appAction = shortcutItem.ToAppAction();
+
+                AppActions.InvokeOnAppAction(application, shortcutItem.ToAppAction());
+            }
+        }
 #endif
 
 #if __IOS__

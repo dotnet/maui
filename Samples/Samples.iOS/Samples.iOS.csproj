@@ -118,14 +118,30 @@
     <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />
   </ItemGroup>
   <ItemGroup>
-    <ImageAsset Include="Assets.xcassets\battery_action_icon.imageset\Contents.json" />
-    <ImageAsset Include="Assets.xcassets\battery_action_icon.imageset\battery_action_icon.png" />
-    <ImageAsset Include="Assets.xcassets\battery_action_icon.imageset\battery_action_icon%402x.png" />
-    <ImageAsset Include="Assets.xcassets\battery_action_icon.imageset\battery_action_icon%403x.png" />
-    <ImageAsset Include="Assets.xcassets\app_info_action_icon.imageset\Contents.json" />
-    <ImageAsset Include="Assets.xcassets\app_info_action_icon.imageset\app_info_action_icon.png" />
-    <ImageAsset Include="Assets.xcassets\app_info_action_icon.imageset\app_info_action_icon%402x.png" />
-    <ImageAsset Include="Assets.xcassets\app_info_action_icon.imageset\app_info_action_icon%403x.png" />
+    <ImageAsset Include="Assets.xcassets\battery_action_icon.imageset\Contents.json">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\battery_action_icon.imageset\battery_action_icon.png">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\battery_action_icon.imageset\battery_action_icon%402x.png">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\battery_action_icon.imageset\battery_action_icon%403x.png">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\app_info_action_icon.imageset\Contents.json">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\app_info_action_icon.imageset\app_info_action_icon.png">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\app_info_action_icon.imageset\app_info_action_icon%402x.png">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\app_info_action_icon.imageset\app_info_action_icon%403x.png">
+      <Visible>false</Visible>
+    </ImageAsset>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Assets.xcassets\battery_action_icon.imageset\" />

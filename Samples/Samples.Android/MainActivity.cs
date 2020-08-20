@@ -10,12 +10,8 @@ namespace Samples.Droid
 {
     [Activity(Label = "@string/app_name", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
     [IntentFilter(
-        new[] { Intent.ActionView },
-        Categories = new[] { Intent.CategoryDefault },
-        DataScheme = "xam")] // Shortcuts with a xam:// Uri (Automatically passed to Xamarin.Forms OnAppLinkRequestReceived()
-    [IntentFilter(
-        new[] { "battery" },
-        Categories = new[] { Intent.CategoryDefault })] // Shortcuts without a Uri
+        new[] { Xamarin.Essentials.Platform.Intent.ActionAppAction },
+        Categories = new[] { Intent.CategoryDefault })]
     public class MainActivity : Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
         protected override void OnCreate(Bundle bundle)
@@ -32,6 +28,8 @@ namespace Samples.Droid
             Xamarin.Essentials.Platform.ActivityStateChanged += Platform_ActivityStateChanged;
 
             LoadApplication(new App());
+
+            Xamarin.Essentials.Platform.OnCreate(this);
         }
 
         protected override void OnResume()
@@ -39,19 +37,19 @@ namespace Samples.Droid
             base.OnResume();
 
             Xamarin.Essentials.Platform.OnResume();
+        }
 
-            // Handle shortcuts without a Uri here
+        protected override void OnNewIntent(Intent intent)
+        {
+            base.OnNewIntent(intent);
 
-            if (Intent?.Action == "battery")
-            {
-                Xamarin.Forms.Application.Current.MainPage.Navigation.PopToRootAsync();
-                Xamarin.Forms.Application.Current.MainPage.Navigation.PushAsync(new BatteryPage());
-            }
+            Xamarin.Essentials.Platform.OnNewIntent(intent);
         }
 
         protected override void OnDestroy()
         {
             base.OnDestroy();
+
             Xamarin.Essentials.Platform.ActivityStateChanged -= Platform_ActivityStateChanged;
         }
 

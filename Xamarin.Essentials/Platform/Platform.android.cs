@@ -11,6 +11,8 @@ using Android.Locations;
 using Android.Net;
 using Android.Net.Wifi;
 using Android.OS;
+using Android.Util;
+using AndroidIntent = Android.Content.Intent;
 using AndroidUri = Android.Net.Uri;
 
 namespace Xamarin.Essentials
@@ -78,8 +80,25 @@ namespace Xamarin.Essentials
         public static void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults) =>
             Permissions.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        public static void OnResume() =>
-            WebAuthenticator.OnResume(null);
+        public static void OnNewIntent(AndroidIntent intent)
+            => CheckAppActions(intent);
+
+        public static void OnResume()
+            => WebAuthenticator.OnResume(null);
+
+        public static void OnCreate(Activity activity)
+            => CheckAppActions(activity?.Intent);
+
+        static void CheckAppActions(AndroidIntent intent)
+        {
+            if (intent?.Action == Intent.ActionAppAction)
+            {
+                var appAction = intent.ToAppAction();
+
+                if (!string.IsNullOrEmpty(appAction?.Id))
+                    AppActions.InvokeOnAppAction(Platform.CurrentActivity, appAction);
+            }
+        }
 
         internal static bool HasSystemFeature(string systemFeature)
         {
@@ -92,7 +111,7 @@ namespace Xamarin.Essentials
             return false;
         }
 
-        internal static bool IsIntentSupported(Intent intent)
+        internal static bool IsIntentSupported(AndroidIntent intent)
         {
             var manager = AppContext.PackageManager;
             var activities = manager.QueryIntentActivities(intent, PackageInfoFlags.MatchDefaultOnly);
@@ -251,6 +270,11 @@ namespace Xamarin.Essentials
 #pragma warning disable CS0618 // Type or member is obsolete
             resources.UpdateConfiguration(config, resources.DisplayMetrics);
 #pragma warning restore CS0618 // Type or member is obsolete
+        }
+
+        public static class Intent
+        {
+            public const string ActionAppAction = "ACTION_XE_APP_ACTION";
         }
     }
 

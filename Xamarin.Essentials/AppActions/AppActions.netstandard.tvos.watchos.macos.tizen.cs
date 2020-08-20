@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Xamarin.Essentials
 {
@@ -8,10 +9,10 @@ namespace Xamarin.Essentials
         internal static bool PlatformIsSupported
             => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-        static IEnumerable<AppAction> PlatformGetActions() =>
+        static Task<IEnumerable<AppAction>> PlatformGetAsync() =>
             throw ExceptionUtils.NotSupportedOrImplementedException;
 
-        static void PlatformSetActions(IEnumerable<AppAction> actions) =>
+        static Task PlatformSetAsync(IEnumerable<AppAction> actions) =>
             throw ExceptionUtils.NotSupportedOrImplementedException;
     }
 }
