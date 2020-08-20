@@ -14,6 +14,10 @@ namespace Xamarin.Essentials
 
     public partial class ScreenshotResult
     {
+        ScreenshotResult()
+        {
+        }
+
         internal Task<Stream> PlatformOpenReadAsync(ScreenshotFormat format) =>
             throw ExceptionUtils.NotSupportedOrImplementedException;
     }

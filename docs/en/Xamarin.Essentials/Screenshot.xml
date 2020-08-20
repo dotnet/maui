@@ -53,6 +53,25 @@
         <remarks>Be sure to copy the resulting file to a file you control.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="CaptureAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;Xamarin.Essentials.ScreenshotResult&gt; CaptureAsync ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class Xamarin.Essentials.ScreenshotResult&gt; CaptureAsync() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Screenshot.CaptureAsync" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;Xamarin.Essentials.ScreenshotResult&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="IsCaptureAvailable">
       <MemberSignature Language="C#" Value="public static bool IsCaptureAvailable { get; }" />
       <MemberSignature Language="ILAsm" Value=".property bool IsCaptureAvailable" />
