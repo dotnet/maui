@@ -129,6 +129,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			RemoveStatusObserver();
 
+			_avPlayerViewController?.Player?.Pause();
 			_avPlayerViewController?.Player?.ReplaceCurrentItemWithPlayerItem(null);
 
 			base.Dispose(disposing);
