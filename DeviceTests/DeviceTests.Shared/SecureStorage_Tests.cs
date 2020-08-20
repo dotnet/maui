@@ -45,6 +45,18 @@ namespace DeviceTests
             Assert.Equal(data, c);
         }
 
+        [Theory]
+        [InlineData("test.txt", "data1", "data2")]
+        public async Task Saves_Same_Key_Twice(string key, string data1, string data2)
+        {
+            await SecureStorage.SetAsync(key, data1);
+            await SecureStorage.SetAsync(key, data2);
+
+            var c = await SecureStorage.GetAsync(key);
+
+            Assert.Equal(data2, c);
+        }
+
 #if __ANDROID__
         [Theory]
         [InlineData("test.txt", "data")]
@@ -146,6 +158,24 @@ namespace DeviceTests
             SecureStorage.RemoveAll();
 
             Assert.Equal(expected, v);
+        }
+#endif
+
+#if __ANDROID__
+        [Theory]
+        [InlineData("test-key", "value1")]
+        public async Task Legacy_Key(string key, string data)
+        {
+            var ks = new AndroidKeyStore(Platform.AppContext, SecureStorage.Alias, SecureStorage.AlwaysUseAsymmetricKeyStorage);
+            var encryptedData = ks.Encrypt(data);
+
+            var encStr = System.Convert.ToBase64String(encryptedData);
+            Preferences.Set(SecureStorage.Md5Hash(key), encStr, SecureStorage.Alias);
+
+            // Ensure we read back out the right key
+            var c = await SecureStorage.GetAsync(key);
+
+            Assert.Equal(data, c);
         }
 #endif
     }

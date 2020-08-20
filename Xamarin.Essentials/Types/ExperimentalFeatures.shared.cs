@@ -18,13 +18,14 @@ namespace Xamarin.Essentials
         [EditorBrowsable(EditorBrowsableState.Never)]
         [Obsolete("ExperimentalFeatures.EmailAttachments is obsolete as of version 1.3.0 and no longer required to use the feature.")]
         public const string EmailAttachments = "EmailAttachments_Experimental";
+        public const string MediaPicker = "MediaPicker_Experimental";
 
-        static List<string> enabledFeatures;
+        static HashSet<string> enabledFeatures;
 
         public static void Enable(params string[] featureNames)
         {
             if (enabledFeatures == null)
-                enabledFeatures = new List<string>();
+                enabledFeatures = new HashSet<string>();
 
             foreach (var featureName in featureNames)
             {

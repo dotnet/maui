@@ -165,6 +165,8 @@ publish/
 # in these scripts will be unencrypted
 PublishScripts/
 
+appsettings.Development.json
+
 # NuGet Packages
 *.nupkg
 # The packages folder can be ignored because of Package Restore

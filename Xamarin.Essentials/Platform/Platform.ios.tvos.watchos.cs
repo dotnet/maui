@@ -16,6 +16,11 @@ namespace Xamarin.Essentials
 {
     public static partial class Platform
     {
+#if __IOS__ || __TVOS__
+        public static bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)
+            => WebAuthenticator.OpenUrl(new Uri(url.AbsoluteString));
+#endif
+
 #if __IOS__
         [DllImport(Constants.SystemLibrary, EntryPoint = "sysctlbyname")]
 #else
@@ -61,7 +66,7 @@ namespace Xamarin.Essentials
 
             var window = UIApplication.SharedApplication.KeyWindow;
 
-            if (window.WindowLevel == UIWindowLevel.Normal)
+            if (window != null && window.WindowLevel == UIWindowLevel.Normal)
                 viewController = window.RootViewController;
 
             if (viewController == null)
@@ -71,19 +76,40 @@ namespace Xamarin.Essentials
                     .OrderByDescending(w => w.WindowLevel)
                     .FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
 
-                if (window == null)
+                if (window == null && throwIfNull)
                     throw new InvalidOperationException("Could not find current view controller.");
                 else
-                    viewController = window.RootViewController;
+                    viewController = window?.RootViewController;
             }
 
-            while (viewController.PresentedViewController != null)
+            while (viewController?.PresentedViewController != null)
                 viewController = viewController.PresentedViewController;
 
             if (throwIfNull && viewController == null)
                 throw new InvalidOperationException("Could not find current view controller.");
 
             return viewController;
+        }
+
+        internal static UIWindow GetCurrentWindow(bool throwIfNull = true)
+        {
+            var window = UIApplication.SharedApplication.KeyWindow;
+
+            if (window != null && window.WindowLevel == UIWindowLevel.Normal)
+                return window;
+
+            if (window == null)
+            {
+                window = UIApplication.SharedApplication
+                    .Windows
+                    .OrderByDescending(w => w.WindowLevel)
+                    .FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
+            }
+
+            if (throwIfNull && window == null)
+                throw new InvalidOperationException("Could not find current window.");
+
+            return window;
         }
 #endif
 

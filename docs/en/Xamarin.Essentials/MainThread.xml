@@ -33,7 +33,9 @@
       <Docs>
         <param name="action">Action to execute.</param>
         <summary>Invokes an action on the main thread of the application.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="GetMainThreadSynchronizationContextAsync">
@@ -50,8 +52,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <summary>Gets the main thread synchonization context</summary>
+        <returns>The syncrhonization context for the main thread</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -71,9 +73,9 @@
         <Parameter Name="action" Type="System.Action" />
       </Parameters>
       <Docs>
-        <param name="action">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="action">Action to invoke</param>
+        <summary>Invoke the main thread aysnc</summary>
+        <returns>A task that can be awaited</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -93,9 +95,9 @@
         <Parameter Name="funcTask" Type="System.Func&lt;System.Threading.Tasks.Task&gt;" />
       </Parameters>
       <Docs>
-        <param name="funcTask">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="funcTask">A function task to execute</param>
+        <summary>Invoke the main thread aysnc</summary>
+        <returns>A task that can be awaited</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -119,9 +121,9 @@
       </Parameters>
       <Docs>
         <typeparam name="T">To be added.</typeparam>
-        <param name="funcTask">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="funcTask">A function task to execute</param>
+        <summary>Invoke the main thread aysnc</summary>
+        <returns>A task that can be awaited</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -145,9 +147,9 @@
       </Parameters>
       <Docs>
         <typeparam name="T">To be added.</typeparam>
-        <param name="func">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="func">A function to execute</param>
+        <summary>Invoke the main thread aysnc</summary>
+        <returns>A task that can be awaited</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -167,7 +169,7 @@
         <summary>Gets if it is the current main UI thread.</summary>
         <value>If main thread.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

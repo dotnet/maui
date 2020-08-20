@@ -75,7 +75,7 @@
     </PropertyGroup>
     <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
       <MDocReferenceAssembly Include="$(FrameworkReferenceAssemblyPath)\MonoAndroid\v1.0" />
-      <MDocReferenceAssembly Include="$(FrameworkReferenceAssemblyPath)\MonoAndroid\v9.0" />
+      <MDocReferenceAssembly Include="$(FrameworkReferenceAssemblyPath)\MonoAndroid\v10.0" />
       <MDocReferenceAssembly Include="$(FrameworkReferenceAssemblyPath)\Xamarin.iOS\v1.0" />
       <MDocReferenceAssembly Include="$(FrameworkReferenceAssemblyPath)\Xamarin.TVOS\v1.0" />
       <MDocReferenceAssembly Include="$(FrameworkReferenceAssemblyPath)\Xamarin.WatchOS\v1.0" />
@@ -89,7 +89,7 @@
       <TmpDir>$(MSBuildProjectDirectory)\tmp\</TmpDir>
     </PropertyGroup>
     <ItemGroup>
-      <MDocReferenceAssembly Include="$(BinConfigDir)monoandroid90" />
+      <MDocReferenceAssembly Include="$(BinConfigDir)monoandroid10.0" />
     </ItemGroup>
     <PropertyGroup>
       <MDocReferenceAssemblies>@(MDocReferenceAssembly -> '--lib=&quot;%(Identity)&quot;', ' ')</MDocReferenceAssemblies>
@@ -98,8 +98,9 @@
     <MakeDir Directories="$(TmpDir)" />
     <Copy SourceFiles="$(MDocDocumentationDirectory)\..\frameworks.xml" DestinationFolder="$(TmpDir)" />
     <Copy SourceFiles="$(BinConfigDir)netstandard2.0\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials" />
-    <Copy SourceFiles="$(BinConfigDir)monoandroid90\90\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-android" />
+    <Copy SourceFiles="$(BinConfigDir)monoandroid10.0\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-android" />
     <Copy SourceFiles="$(BinConfigDir)xamarin.ios10\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-ios" />
+    <Copy SourceFiles="$(BinConfigDir)xamarin.mac20\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-macos" />
     <Copy SourceFiles="$(BinConfigDir)xamarin.tvos10\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-tvos" />
     <Copy SourceFiles="$(BinConfigDir)xamarin.watchos10\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-watchos" />
     <Copy SourceFiles="$(BinConfigDir)uap10.0.16299\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-uwp" />

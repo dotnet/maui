@@ -20,7 +20,7 @@ namespace DeviceTests.Shared
             Assert.False(FileProvider.IsFileInPublicLocation(file));
 
             // Actually get a safe shareable file uri
-            var shareableUri = Platform.GetShareableFileUri(file);
+            var shareableUri = Platform.GetShareableFileUri(new ReadOnlyFile(file));
 
             // Launch an intent to let tye user pick where to open this content
             var intent = new Android.Content.Intent(Android.Content.Intent.ActionSend);
@@ -185,7 +185,11 @@ namespace DeviceTests.Shared
         public void Get_Existing_External_Shareable_Uri(FileProviderLocation location)
         {
             // Save an external directory file
+
+            #if !__ANDROID_29__
             var externalRoot = AndroidEnvironment.ExternalStorageDirectory.AbsolutePath;
+            #endif
+
             var root = Platform.AppContext.GetExternalFilesDir(null).AbsolutePath;
             var file = CreateFile(root);
 
@@ -200,10 +204,12 @@ namespace DeviceTests.Shared
             Assert.Equal("content", shareableUri.Scheme);
             Assert.Equal("com.xamarin.essentials.devicetests.fileProvider", shareableUri.Authority);
 
+            #if !__ANDROID_29__
             // replace the real root with the providers "root"
             var segements = Path.Combine(root.Replace(externalRoot, "external_files"), Path.GetFileName(file));
 
             Assert.Equal(segements.Split(Path.DirectorySeparatorChar), shareableUri.PathSegments);
+            #endif
         }
 
         static string CreateFile(string root, string name = "the-file.txt")
@@ -226,7 +232,7 @@ namespace DeviceTests.Shared
                 FileProvider.TemporaryLocation = location;
 
                 // get the uri
-                return Platform.GetShareableFileUri(file);
+                return Platform.GetShareableFileUri(new ReadOnlyFile(file));
             }
             finally
             {

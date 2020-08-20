@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using CoreLocation;
 using Foundation;
@@ -39,6 +40,8 @@ namespace Xamarin.Essentials
                         throw new PermissionException($"You must set `{requiredInfoPlistKey}` in your Info.plist file to use the Permission: {GetType().Name}.");
                 }
             }
+
+            public override bool ShouldShowRationale() => false;
 
             internal void EnsureMainThread()
             {
@@ -100,7 +103,7 @@ namespace Xamarin.Essentials
                 EnsureDeclared();
 
                 var status = GetLocationStatus(true);
-                if (status == PermissionStatus.Granted)
+                if (status == PermissionStatus.Granted || status == PermissionStatus.Disabled)
                     return status;
 
                 EnsureMainThread();
@@ -125,9 +128,14 @@ namespace Xamarin.Essentials
                 };
             }
 
+            static CLLocationManager locationManager;
+
             internal static Task<PermissionStatus> RequestLocationAsync(bool whenInUse, Action<CLLocationManager> invokeRequest)
             {
-                var locationManager = new CLLocationManager();
+                if (!CLLocationManager.LocationServicesEnabled)
+                    return Task.FromResult(PermissionStatus.Disabled);
+
+                locationManager = new CLLocationManager();
 
                 var tcs = new TaskCompletionSource<PermissionStatus>(locationManager);
 
@@ -144,26 +152,51 @@ namespace Xamarin.Essentials
                     if (e.Status == CLAuthorizationStatus.NotDetermined)
                         return;
 
-                    if (previousState == CLAuthorizationStatus.AuthorizedWhenInUse && !whenInUse)
+                    try
                     {
-                        if (e.Status == CLAuthorizationStatus.AuthorizedWhenInUse)
+                        if (previousState == CLAuthorizationStatus.AuthorizedWhenInUse && !whenInUse)
                         {
-                            Utils.WithTimeout(tcs.Task, LocationTimeout).ContinueWith(t =>
+                            if (e.Status == CLAuthorizationStatus.AuthorizedWhenInUse)
                             {
-                                // Wait for a timeout to see if the check is complete
-                                if (!tcs.Task.IsCompleted)
+                                Utils.WithTimeout(tcs.Task, LocationTimeout).ContinueWith(t =>
                                 {
-                                    locationManager.AuthorizationChanged -= LocationAuthCallback;
-                                    tcs.TrySetResult(GetLocationStatus(whenInUse));
-                                }
-                            });
-                            return;
+                                    try
+                                    {
+                                        // Wait for a timeout to see if the check is complete
+                                        if (tcs != null && !tcs.Task.IsCompleted)
+                                        {
+                                            locationManager.AuthorizationChanged -= LocationAuthCallback;
+                                            tcs.TrySetResult(GetLocationStatus(whenInUse));
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Debug.WriteLine($"Exception processing location permission: {ex.Message}");
+                                        tcs?.TrySetException(ex);
+                                    }
+                                    finally
+                                    {
+                                        locationManager?.Dispose();
+                                        locationManager = null;
+                                    }
+                                });
+                                return;
+                            }
                         }
+
+                        locationManager.AuthorizationChanged -= LocationAuthCallback;
+
+                        tcs.TrySetResult(GetLocationStatus(whenInUse));
+                        locationManager?.Dispose();
+                        locationManager = null;
                     }
-
-                    locationManager.AuthorizationChanged -= LocationAuthCallback;
-
-                    tcs.TrySetResult(GetLocationStatus(whenInUse));
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Exception processing location permission: {ex.Message}");
+                        tcs?.TrySetException(ex);
+                        locationManager?.Dispose();
+                        locationManager = null;
+                    }
                 }
             }
         }
@@ -201,6 +234,10 @@ namespace Xamarin.Essentials
         }
 
         public partial class Sensors : BasePlatformPermission
+        {
+        }
+
+        public partial class Speech : BasePlatformPermission
         {
         }
 

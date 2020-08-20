@@ -65,7 +65,7 @@
         <summary>Creates a new Color from hue, saturation, and lightness.</summary>
         <returns>A new color from the Hsla.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -95,7 +95,7 @@
         <summary>Creates a new Color from hue, saturation, luminosity, and alpha.</summary>
         <returns>A new color from the Hsla.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -119,31 +119,7 @@
         <summary>Creates a new Color from an UInt.</summary>
         <returns>A new color from the Uint</returns>
         <remarks>
-          <para />
-        </remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="GetComplementary">
-      <MemberSignature Language="C#" Value="public static System.Drawing.Color GetComplementary (System.Drawing.Color original);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Drawing.Color GetComplementary(valuetype System.Drawing.Color original) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ColorConverters.GetComplementary(System.Drawing.Color)" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Drawing.Color</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="original" Type="System.Drawing.Color" />
-      </Parameters>
-      <Docs>
-        <param name="original">A color to obtain the complement for.</param>
-        <summary>Returns a new color that is on the opposite side of the color wheel from the original.</summary>
-        <returns>A color that is the complement of the value passed in.</returns>
-        <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

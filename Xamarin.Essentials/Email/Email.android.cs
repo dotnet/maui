@@ -5,6 +5,7 @@ using Android.Content;
 using Android.OS;
 using Android.Text;
 using Android.Webkit;
+using Uri = Android.Net.Uri;
 
 namespace Xamarin.Essentials
 {
@@ -18,9 +19,13 @@ namespace Xamarin.Essentials
 
         static Task PlatformComposeAsync(EmailMessage message)
         {
-            var intent = CreateIntent(message)
-                .SetFlags(ActivityFlags.ClearTop)
-                .SetFlags(ActivityFlags.NewTask);
+            var intent = CreateIntent(message);
+            var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
+#if __ANDROID_24__
+            if (Platform.HasApiLevelN)
+                flags |= ActivityFlags.LaunchAdjacent;
+#endif
+            intent.SetFlags(flags);
 
             Platform.AppContext.StartActivity(intent);
 
@@ -29,9 +34,18 @@ namespace Xamarin.Essentials
 
         static Intent CreateIntent(EmailMessage message)
         {
-            var action = message?.Attachments?.Count > 1 ? Intent.ActionSendMultiple : Intent.ActionSend;
+            var action = (message?.Attachments?.Count ?? 0) switch
+            {
+                0 => Intent.ActionSendto,
+                1 => Intent.ActionSend,
+                _ => Intent.ActionSendMultiple
+            };
             var intent = new Intent(action);
-            intent.SetType("message/rfc822");
+
+            if (action == Intent.ActionSendto)
+                intent.SetData(Uri.Parse("mailto:"));
+            else
+                intent.SetType("message/rfc822");
 
             if (!string.IsNullOrEmpty(message?.Body))
             {
@@ -71,7 +85,7 @@ namespace Xamarin.Essentials
                 var uris = new List<IParcelable>();
                 foreach (var attachment in message.Attachments)
                 {
-                    uris.Add(Platform.GetShareableFileUri(attachment.FullPath));
+                    uris.Add(Platform.GetShareableFileUri(attachment));
                 }
 
                 if (uris.Count > 1)

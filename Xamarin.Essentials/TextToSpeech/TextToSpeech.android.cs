@@ -54,7 +54,7 @@ namespace Xamarin.Essentials
         }
     }
 
-    internal class TextToSpeechImplementation : Java.Lang.Object, AndroidTextToSpeech.IOnInitListener,
+    class TextToSpeechImplementation : Java.Lang.Object, AndroidTextToSpeech.IOnInitListener,
 #pragma warning disable CS0618
         AndroidTextToSpeech.IOnUtteranceCompletedListener
 #pragma warning restore CS0618
@@ -80,7 +80,7 @@ namespace Xamarin.Essentials
             }
             catch (Exception e)
             {
-                tcsInitialize.SetException(e);
+                tcsInitialize.TrySetException(e);
             }
 
             return tcsInitialize.Task;
@@ -206,7 +206,7 @@ namespace Xamarin.Essentials
                 .Select(g => g.First());
         }
 
-        private bool IsLocaleAvailable(JavaLocale l)
+        bool IsLocaleAvailable(JavaLocale l)
         {
             try
             {

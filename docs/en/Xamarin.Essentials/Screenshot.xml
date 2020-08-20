@@ -15,22 +15,23 @@
     <remarks>Output is always a PNG file.</remarks>
   </Docs>
   <Members>
-    <Member MemberName="CanCapture">
-      <MemberSignature Language="C#" Value="public static bool CanCapture { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property bool CanCapture" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Screenshot.CanCapture" />
-      <MemberType>Property</MemberType>
+    <Member MemberName="CaptureAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;Xamarin.Essentials.FileResult&gt; CaptureAsync ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class Xamarin.Essentials.FileResult&gt; CaptureAsync() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Screenshot.CaptureAsync" />
+      <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
+        <ReturnType>System.Threading.Tasks.Task&lt;Xamarin.Essentials.FileResult&gt;</ReturnType>
       </ReturnValue>
+      <Parameters />
       <Docs>
-        <summary>Indicates whether a screen capture is possible.</summary>
-        <value>True if taking a screenshot is possible, otherwise false.</value>
-        <remarks>May be prevented from taking a screenshot on Android.</remarks>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CaptureAsync">
@@ -50,6 +51,24 @@
         <summary>Takes a screenshot of the current view and saves it to a temporary file.</summary>
         <returns>The screenshot saved to a file.</returns>
         <remarks>Be sure to copy the resulting file to a file you control.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="IsCaptureAvailable">
+      <MemberSignature Language="C#" Value="public static bool IsCaptureAvailable { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property bool IsCaptureAvailable" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Screenshot.IsCaptureAvailable" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

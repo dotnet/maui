@@ -7,9 +7,9 @@ namespace Xamarin.Essentials
     {
         const int length = 10;
 
+        readonly Queue<float> history = new Queue<float>(length);
         float sin;
         float cos;
-        Queue<float> history = new Queue<float>(length);
 
         internal void Add(float radians)
         {

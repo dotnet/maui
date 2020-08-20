@@ -61,6 +61,12 @@ namespace Samples.ViewModel
                     "Quickly and easily use the clipboard.",
                     new[] { "clipboard", "copy", "paste" }),
                 new SampleItem(
+                    "🎨",
+                    "Color Converters",
+                    typeof(ColorConvertersPage),
+                    "Convert and adjust colors.",
+                    new[] { "color", "drawing", "style" }),
+                new SampleItem(
                     "🧭",
                     "Compass",
                     typeof(CompassPage),
@@ -84,6 +90,12 @@ namespace Samples.ViewModel
                     typeof(EmailPage),
                     "Easily send email messages.",
                     new[] { "email", "share", "communication", "message" }),
+                new SampleItem(
+                    "📁",
+                    "File Picker",
+                    typeof(FilePickerPage),
+                    "Easily pick files from storage.",
+                    new[] { "files", "picking", "filesystem", "storage" }),
                 new SampleItem(
                     "📁",
                     "File System",
@@ -145,6 +157,12 @@ namespace Samples.ViewModel
                     "Retrieve orientation of the device in 3D space.",
                     new[] { "orientation", "sensors", "hardware", "device" }),
                 new SampleItem(
+                    "📷",
+                    "Media Picker",
+                    typeof(MediaPickerPage),
+                    "Pick or capture a photo or video.",
+                    new[] { "media", "picker", "video", "picture", "photo", "image", "movie" }),
+                new SampleItem(
                     "🔒",
                     "Permissions",
                     typeof(PermissionsPage),
@@ -204,6 +222,18 @@ namespace Samples.ViewModel
                     typeof(VibrationPage),
                     "Quickly and easily make the device vibrate.",
                     new[] { "vibration", "vibrate", "hardware", "device" }),
+                new SampleItem(
+                    "📳",
+                    "Haptic Feedback",
+                    typeof(HapticFeedbackPage),
+                    "Quickly and easily make the device provide haptic feedback",
+                    new[] { "haptic", "feedback", "hardware", "device" }),
+                new SampleItem(
+                    "🔓",
+                    "Web Authenticator",
+                    typeof(WebAuthenticatorPage),
+                    "Quickly and easily authenticate and wait for a callback.",
+                    new[] { "auth", "authenticate", "authenticator", "web", "webauth" }),
             };
             filteredItems = samples;
             filterText = string.Empty;

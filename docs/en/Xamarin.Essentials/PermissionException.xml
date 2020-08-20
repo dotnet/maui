@@ -11,9 +11,9 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>Exception that occures when calling an API that requires a specific exception</summary>
+    <summary>Exception that occures when calling an API that requires a specific permission.</summary>
     <remarks>
-      <para />
+      <para></para>
     </remarks>
   </Docs>
   <Members>
@@ -33,7 +33,7 @@
         <param name="message">Permission that is required.</param>
         <summary>Constructor with permission information.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

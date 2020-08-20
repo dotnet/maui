@@ -38,6 +38,13 @@
       <Member Id="P:Xamarin.Essentials.ActivityStateChangedEventArgs.Activity" />
       <Member Id="P:Xamarin.Essentials.ActivityStateChangedEventArgs.State" />
     </Type>
+    <Type Name="Xamarin.Essentials.AltitudeReferenceSystem" Id="T:Xamarin.Essentials.AltitudeReferenceSystem">
+      <Member Id="F:Xamarin.Essentials.AltitudeReferenceSystem.Ellipsoid" />
+      <Member Id="F:Xamarin.Essentials.AltitudeReferenceSystem.Geoid" />
+      <Member Id="F:Xamarin.Essentials.AltitudeReferenceSystem.Surface" />
+      <Member Id="F:Xamarin.Essentials.AltitudeReferenceSystem.Terrain" />
+      <Member Id="F:Xamarin.Essentials.AltitudeReferenceSystem.Unspecified" />
+    </Type>
     <Type Name="Xamarin.Essentials.AppInfo" Id="T:Xamarin.Essentials.AppInfo">
       <Member Id="M:Xamarin.Essentials.AppInfo.ShowSettingsUI" />
       <Member Id="P:Xamarin.Essentials.AppInfo.BuildString" />
@@ -46,6 +53,14 @@
       <Member Id="P:Xamarin.Essentials.AppInfo.RequestedTheme" />
       <Member Id="P:Xamarin.Essentials.AppInfo.Version" />
       <Member Id="P:Xamarin.Essentials.AppInfo.VersionString" />
+    </Type>
+    <Type Name="Xamarin.Essentials.AppleSignInAuthenticator" Id="T:Xamarin.Essentials.AppleSignInAuthenticator">
+      <Member Id="M:Xamarin.Essentials.AppleSignInAuthenticator.AuthenticateAsync(Xamarin.Essentials.AppleSignInAuthenticator.Options)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.AppleSignInAuthenticator/Options" Id="T:Xamarin.Essentials.AppleSignInAuthenticator.Options">
+      <Member Id="M:Xamarin.Essentials.AppleSignInAuthenticator.Options.#ctor" />
+      <Member Id="P:Xamarin.Essentials.AppleSignInAuthenticator.Options.IncludeEmailScope" />
+      <Member Id="P:Xamarin.Essentials.AppleSignInAuthenticator.Options.IncludeFullNameScope" />
     </Type>
     <Type Name="Xamarin.Essentials.AppTheme" Id="T:Xamarin.Essentials.AppTheme">
       <Member Id="F:Xamarin.Essentials.AppTheme.Dark" />
@@ -110,12 +125,19 @@
       <Member Id="M:Xamarin.Essentials.Browser.OpenAsync(System.Uri,Xamarin.Essentials.BrowserLaunchMode)" />
       <Member Id="M:Xamarin.Essentials.Browser.OpenAsync(System.Uri,Xamarin.Essentials.BrowserLaunchOptions)" />
     </Type>
+    <Type Name="Xamarin.Essentials.BrowserLaunchFlags" Id="T:Xamarin.Essentials.BrowserLaunchFlags">
+      <Member Id="F:Xamarin.Essentials.BrowserLaunchFlags.LaunchAdjacent" />
+      <Member Id="F:Xamarin.Essentials.BrowserLaunchFlags.None" />
+      <Member Id="F:Xamarin.Essentials.BrowserLaunchFlags.PresentAsFormSheet" />
+      <Member Id="F:Xamarin.Essentials.BrowserLaunchFlags.PresentAsPageSheet" />
+    </Type>
     <Type Name="Xamarin.Essentials.BrowserLaunchMode" Id="T:Xamarin.Essentials.BrowserLaunchMode">
       <Member Id="F:Xamarin.Essentials.BrowserLaunchMode.External" />
       <Member Id="F:Xamarin.Essentials.BrowserLaunchMode.SystemPreferred" />
     </Type>
     <Type Name="Xamarin.Essentials.BrowserLaunchOptions" Id="T:Xamarin.Essentials.BrowserLaunchOptions">
       <Member Id="M:Xamarin.Essentials.BrowserLaunchOptions.#ctor" />
+      <Member Id="P:Xamarin.Essentials.BrowserLaunchOptions.Flags" />
       <Member Id="P:Xamarin.Essentials.BrowserLaunchOptions.LaunchMode" />
       <Member Id="P:Xamarin.Essentials.BrowserLaunchOptions.PreferredControlColor" />
       <Member Id="P:Xamarin.Essentials.BrowserLaunchOptions.PreferredToolbarColor" />
@@ -137,11 +159,13 @@
       <Member Id="M:Xamarin.Essentials.ColorConverters.FromHsl(System.Single,System.Single,System.Single)" />
       <Member Id="M:Xamarin.Essentials.ColorConverters.FromHsla(System.Single,System.Single,System.Single,System.Int32)" />
       <Member Id="M:Xamarin.Essentials.ColorConverters.FromUInt(System.UInt32)" />
-      <Member Id="M:Xamarin.Essentials.ColorConverters.GetComplementary(System.Drawing.Color)" />
     </Type>
     <Type Name="Xamarin.Essentials.ColorExtensions" Id="T:Xamarin.Essentials.ColorExtensions">
       <Member Id="M:Xamarin.Essentials.ColorExtensions.AddLuminosity(System.Drawing.Color,System.Single)" />
+      <Member Id="M:Xamarin.Essentials.ColorExtensions.FromHsva(System.Double,System.Double,System.Double,System.Double)" />
+      <Member Id="M:Xamarin.Essentials.ColorExtensions.GetComplementary(System.Drawing.Color)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.MultiplyAlpha(System.Drawing.Color,System.Single)" />
+      <Member Id="M:Xamarin.Essentials.ColorExtensions.ToHsv(System.Drawing.Color)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.ToInt(System.Drawing.Color)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.ToSystemColor(Android.Graphics.Color)" />
       <Member Id="M:Xamarin.Essentials.ColorExtensions.ToUInt(System.Drawing.Color)" />
@@ -229,6 +253,7 @@
       <Member Id="M:Xamarin.Essentials.DevicePlatform.ToString" />
       <Member Id="P:Xamarin.Essentials.DevicePlatform.Android" />
       <Member Id="P:Xamarin.Essentials.DevicePlatform.iOS" />
+      <Member Id="P:Xamarin.Essentials.DevicePlatform.macOS" />
       <Member Id="P:Xamarin.Essentials.DevicePlatform.Tizen" />
       <Member Id="P:Xamarin.Essentials.DevicePlatform.tvOS" />
       <Member Id="P:Xamarin.Essentials.DevicePlatform.Unknown" />
@@ -311,6 +336,7 @@
     </Type>
     <Type Name="Xamarin.Essentials.ExperimentalFeatures" Id="T:Xamarin.Essentials.ExperimentalFeatures">
       <Member Id="F:Xamarin.Essentials.ExperimentalFeatures.EmailAttachments" />
+      <Member Id="F:Xamarin.Essentials.ExperimentalFeatures.MediaPicker" />
       <Member Id="F:Xamarin.Essentials.ExperimentalFeatures.OpenFileRequest" />
       <Member Id="F:Xamarin.Essentials.ExperimentalFeatures.ShareFileRequest" />
       <Member Id="M:Xamarin.Essentials.ExperimentalFeatures.Enable(System.String[])" />
@@ -327,8 +353,26 @@
     </Type>
     <Type Name="Xamarin.Essentials.FileBase" Id="T:Xamarin.Essentials.FileBase">
       <Member Id="M:Xamarin.Essentials.FileBase.#ctor(Xamarin.Essentials.FileBase)" />
+      <Member Id="M:Xamarin.Essentials.FileBase.OpenReadAsync" />
       <Member Id="P:Xamarin.Essentials.FileBase.ContentType" />
+      <Member Id="P:Xamarin.Essentials.FileBase.FileName" />
       <Member Id="P:Xamarin.Essentials.FileBase.FullPath" />
+    </Type>
+    <Type Name="Xamarin.Essentials.FilePicker" Id="T:Xamarin.Essentials.FilePicker">
+      <Member Id="M:Xamarin.Essentials.FilePicker.PickAsync(Xamarin.Essentials.PickOptions)" />
+      <Member Id="M:Xamarin.Essentials.FilePicker.PickMultipleAsync(Xamarin.Essentials.PickOptions)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.FilePickerFileType" Id="T:Xamarin.Essentials.FilePickerFileType">
+      <Member Id="F:Xamarin.Essentials.FilePickerFileType.Images" />
+      <Member Id="F:Xamarin.Essentials.FilePickerFileType.Png" />
+      <Member Id="F:Xamarin.Essentials.FilePickerFileType.Videos" />
+      <Member Id="M:Xamarin.Essentials.FilePickerFileType.#ctor" />
+      <Member Id="M:Xamarin.Essentials.FilePickerFileType.#ctor(System.Collections.Generic.IDictionary{Xamarin.Essentials.DevicePlatform,System.Collections.Generic.IEnumerable{System.String}})" />
+      <Member Id="M:Xamarin.Essentials.FilePickerFileType.GetPlatformFileType(Xamarin.Essentials.DevicePlatform)" />
+      <Member Id="M:Xamarin.Essentials.FilePickerFileType.PlatformImageFileType" />
+      <Member Id="M:Xamarin.Essentials.FilePickerFileType.PlatformPngFileType" />
+      <Member Id="M:Xamarin.Essentials.FilePickerFileType.PlatformVideoFileType" />
+      <Member Id="P:Xamarin.Essentials.FilePickerFileType.Value" />
     </Type>
     <Type Name="Xamarin.Essentials.FileProvider" Id="T:Xamarin.Essentials.FileProvider">
       <Member Id="M:Xamarin.Essentials.FileProvider.#ctor" />
@@ -338,6 +382,11 @@
       <Member Id="F:Xamarin.Essentials.FileProviderLocation.External" />
       <Member Id="F:Xamarin.Essentials.FileProviderLocation.Internal" />
       <Member Id="F:Xamarin.Essentials.FileProviderLocation.PreferExternal" />
+    </Type>
+    <Type Name="Xamarin.Essentials.FileResult" Id="T:Xamarin.Essentials.FileResult">
+      <Member Id="M:Xamarin.Essentials.FileResult.#ctor(System.String)" />
+      <Member Id="M:Xamarin.Essentials.FileResult.#ctor(System.String,System.String)" />
+      <Member Id="M:Xamarin.Essentials.FileResult.#ctor(Xamarin.Essentials.FileBase)" />
     </Type>
     <Type Name="Xamarin.Essentials.FileSystem" Id="T:Xamarin.Essentials.FileSystem">
       <Member Id="M:Xamarin.Essentials.FileSystem.OpenAppPackageFileAsync(System.String)" />
@@ -396,6 +445,13 @@
       <Member Id="M:Xamarin.Essentials.GyroscopeData.ToString" />
       <Member Id="P:Xamarin.Essentials.GyroscopeData.AngularVelocity" />
     </Type>
+    <Type Name="Xamarin.Essentials.HapticFeedback" Id="T:Xamarin.Essentials.HapticFeedback">
+      <Member Id="M:Xamarin.Essentials.HapticFeedback.Perform(Xamarin.Essentials.HapticFeedbackType)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.HapticFeedbackType" Id="T:Xamarin.Essentials.HapticFeedbackType">
+      <Member Id="F:Xamarin.Essentials.HapticFeedbackType.Click" />
+      <Member Id="F:Xamarin.Essentials.HapticFeedbackType.LongPress" />
+    </Type>
     <Type Name="Xamarin.Essentials.Launcher" Id="T:Xamarin.Essentials.Launcher">
       <Member Id="M:Xamarin.Essentials.Launcher.CanOpenAsync(System.String)" />
       <Member Id="M:Xamarin.Essentials.Launcher.CanOpenAsync(System.Uri)" />
@@ -423,12 +479,14 @@
       <Member Id="M:Xamarin.Essentials.Location.ToString" />
       <Member Id="P:Xamarin.Essentials.Location.Accuracy" />
       <Member Id="P:Xamarin.Essentials.Location.Altitude" />
+      <Member Id="P:Xamarin.Essentials.Location.AltitudeReferenceSystem" />
       <Member Id="P:Xamarin.Essentials.Location.Course" />
       <Member Id="P:Xamarin.Essentials.Location.IsFromMockProvider" />
       <Member Id="P:Xamarin.Essentials.Location.Latitude" />
       <Member Id="P:Xamarin.Essentials.Location.Longitude" />
       <Member Id="P:Xamarin.Essentials.Location.Speed" />
       <Member Id="P:Xamarin.Essentials.Location.Timestamp" />
+      <Member Id="P:Xamarin.Essentials.Location.VerticalAccuracy" />
     </Type>
     <Type Name="Xamarin.Essentials.LocationExtensions" Id="T:Xamarin.Essentials.LocationExtensions">
       <Member Id="M:Xamarin.Essentials.LocationExtensions.CalculateDistance(Xamarin.Essentials.Location,System.Double,System.Double,Xamarin.Essentials.DistanceUnits)" />
@@ -479,6 +537,17 @@
       <Member Id="P:Xamarin.Essentials.MapLaunchOptions.Name" />
       <Member Id="P:Xamarin.Essentials.MapLaunchOptions.NavigationMode" />
     </Type>
+    <Type Name="Xamarin.Essentials.MediaPicker" Id="T:Xamarin.Essentials.MediaPicker">
+      <Member Id="M:Xamarin.Essentials.MediaPicker.CapturePhotoAsync(Xamarin.Essentials.MediaPickerOptions)" />
+      <Member Id="M:Xamarin.Essentials.MediaPicker.CaptureVideoAsync(Xamarin.Essentials.MediaPickerOptions)" />
+      <Member Id="M:Xamarin.Essentials.MediaPicker.PickPhotoAsync(Xamarin.Essentials.MediaPickerOptions)" />
+      <Member Id="M:Xamarin.Essentials.MediaPicker.PickVideoAsync(Xamarin.Essentials.MediaPickerOptions)" />
+      <Member Id="P:Xamarin.Essentials.MediaPicker.IsCaptureAvailable" />
+    </Type>
+    <Type Name="Xamarin.Essentials.MediaPickerOptions" Id="T:Xamarin.Essentials.MediaPickerOptions">
+      <Member Id="M:Xamarin.Essentials.MediaPickerOptions.#ctor" />
+      <Member Id="P:Xamarin.Essentials.MediaPickerOptions.Title" />
+    </Type>
     <Type Name="Xamarin.Essentials.NavigationMode" Id="T:Xamarin.Essentials.NavigationMode">
       <Member Id="F:Xamarin.Essentials.NavigationMode.Bicycling" />
       <Member Id="F:Xamarin.Essentials.NavigationMode.Default" />
@@ -528,8 +597,131 @@
     <Type Name="Xamarin.Essentials.PermissionException" Id="T:Xamarin.Essentials.PermissionException">
       <Member Id="M:Xamarin.Essentials.PermissionException.#ctor(System.String)" />
     </Type>
+    <Type Name="Xamarin.Essentials.Permissions" Id="T:Xamarin.Essentials.Permissions">
+      <Member Id="M:Xamarin.Essentials.Permissions.CheckStatusAsync``1" />
+      <Member Id="M:Xamarin.Essentials.Permissions.IsDeclaredInManifest(System.String)" />
+      <Member Id="M:Xamarin.Essentials.Permissions.RequestAsync``1" />
+      <Member Id="M:Xamarin.Essentials.Permissions.ShouldShowRationale``1" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/BasePermission" Id="T:Xamarin.Essentials.Permissions.BasePermission">
+      <Member Id="M:Xamarin.Essentials.Permissions.BasePermission.#ctor" />
+      <Member Id="M:Xamarin.Essentials.Permissions.BasePermission.CheckStatusAsync" />
+      <Member Id="M:Xamarin.Essentials.Permissions.BasePermission.EnsureDeclared" />
+      <Member Id="M:Xamarin.Essentials.Permissions.BasePermission.RequestAsync" />
+      <Member Id="M:Xamarin.Essentials.Permissions.BasePermission.ShouldShowRationale" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/BasePlatformPermission" Id="T:Xamarin.Essentials.Permissions.BasePlatformPermission">
+      <Member Id="M:Xamarin.Essentials.Permissions.BasePlatformPermission.#ctor" />
+      <Member Id="M:Xamarin.Essentials.Permissions.BasePlatformPermission.CheckStatusAsync" />
+      <Member Id="M:Xamarin.Essentials.Permissions.BasePlatformPermission.EnsureDeclared" />
+      <Member Id="M:Xamarin.Essentials.Permissions.BasePlatformPermission.RequestAsync" />
+      <Member Id="M:Xamarin.Essentials.Permissions.BasePlatformPermission.ShouldShowRationale" />
+      <Member Id="P:Xamarin.Essentials.Permissions.BasePlatformPermission.RequiredPermissions" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Battery" Id="T:Xamarin.Essentials.Permissions.Battery">
+      <Member Id="M:Xamarin.Essentials.Permissions.Battery.#ctor" />
+      <Member Id="M:Xamarin.Essentials.Permissions.Battery.CheckStatusAsync" />
+      <Member Id="P:Xamarin.Essentials.Permissions.Battery.RequiredPermissions" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/CalendarRead" Id="T:Xamarin.Essentials.Permissions.CalendarRead">
+      <Member Id="M:Xamarin.Essentials.Permissions.CalendarRead.#ctor" />
+      <Member Id="P:Xamarin.Essentials.Permissions.CalendarRead.RequiredPermissions" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/CalendarWrite" Id="T:Xamarin.Essentials.Permissions.CalendarWrite">
+      <Member Id="M:Xamarin.Essentials.Permissions.CalendarWrite.#ctor" />
+      <Member Id="P:Xamarin.Essentials.Permissions.CalendarWrite.RequiredPermissions" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Camera" Id="T:Xamarin.Essentials.Permissions.Camera">
+      <Member Id="M:Xamarin.Essentials.Permissions.Camera.#ctor" />
+      <Member Id="P:Xamarin.Essentials.Permissions.Camera.RequiredPermissions" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/ContactsRead" Id="T:Xamarin.Essentials.Permissions.ContactsRead">
+      <Member Id="M:Xamarin.Essentials.Permissions.ContactsRead.#ctor" />
+      <Member Id="P:Xamarin.Essentials.Permissions.ContactsRead.RequiredPermissions" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/ContactsWrite" Id="T:Xamarin.Essentials.Permissions.ContactsWrite">
+      <Member Id="M:Xamarin.Essentials.Permissions.ContactsWrite.#ctor" />
+      <Member Id="P:Xamarin.Essentials.Permissions.ContactsWrite.RequiredPermissions" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Flashlight" Id="T:Xamarin.Essentials.Permissions.Flashlight">
+      <Member Id="M:Xamarin.Essentials.Permissions.Flashlight.#ctor" />
+      <Member Id="P:Xamarin.Essentials.Permissions.Flashlight.RequiredPermissions" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/LaunchApp" Id="T:Xamarin.Essentials.Permissions.LaunchApp">
+      <Member Id="M:Xamarin.Essentials.Permissions.LaunchApp.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/LocationAlways" Id="T:Xamarin.Essentials.Permissions.LocationAlways">
+      <Member Id="M:Xamarin.Essentials.Permissions.LocationAlways.#ctor" />
+      <Member Id="P:Xamarin.Essentials.Permissions.LocationAlways.RequiredPermissions" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/LocationWhenInUse" Id="T:Xamarin.Essentials.Permissions.LocationWhenInUse">
+      <Member Id="M:Xamarin.Essentials.Permissions.LocationWhenInUse.#ctor" />
+      <Member Id="P:Xamarin.Essentials.Permissions.LocationWhenInUse.RequiredPermissions" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Maps" Id="T:Xamarin.Essentials.Permissions.Maps">
+      <Member Id="M:Xamarin.Essentials.Permissions.Maps.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Media" Id="T:Xamarin.Essentials.Permissions.Media">
+      <Member Id="M:Xamarin.Essentials.Permissions.Media.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Microphone" Id="T:Xamarin.Essentials.Permissions.Microphone">
+      <Member Id="M:Xamarin.Essentials.Permissions.Microphone.#ctor" />
+      <Member Id="P:Xamarin.Essentials.Permissions.Microphone.RequiredPermissions" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/NetworkState" Id="T:Xamarin.Essentials.Permissions.NetworkState">
+      <Member Id="M:Xamarin.Essentials.Permissions.NetworkState.#ctor" />
+      <Member Id="P:Xamarin.Essentials.Permissions.NetworkState.RequiredPermissions" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Phone" Id="T:Xamarin.Essentials.Permissions.Phone">
+      <Member Id="M:Xamarin.Essentials.Permissions.Phone.#ctor" />
+      <Member Id="P:Xamarin.Essentials.Permissions.Phone.RequiredPermissions" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Photos" Id="T:Xamarin.Essentials.Permissions.Photos">
+      <Member Id="M:Xamarin.Essentials.Permissions.Photos.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Reminders" Id="T:Xamarin.Essentials.Permissions.Reminders">
+      <Member Id="M:Xamarin.Essentials.Permissions.Reminders.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Sensors" Id="T:Xamarin.Essentials.Permissions.Sensors">
+      <Member Id="M:Xamarin.Essentials.Permissions.Sensors.#ctor" />
+      <Member Id="P:Xamarin.Essentials.Permissions.Sensors.RequiredPermissions" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Sms" Id="T:Xamarin.Essentials.Permissions.Sms">
+      <Member Id="M:Xamarin.Essentials.Permissions.Sms.#ctor" />
+      <Member Id="P:Xamarin.Essentials.Permissions.Sms.RequiredPermissions" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Speech" Id="T:Xamarin.Essentials.Permissions.Speech">
+      <Member Id="M:Xamarin.Essentials.Permissions.Speech.#ctor" />
+      <Member Id="P:Xamarin.Essentials.Permissions.Speech.RequiredPermissions" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/StorageRead" Id="T:Xamarin.Essentials.Permissions.StorageRead">
+      <Member Id="M:Xamarin.Essentials.Permissions.StorageRead.#ctor" />
+      <Member Id="P:Xamarin.Essentials.Permissions.StorageRead.RequiredPermissions" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/StorageWrite" Id="T:Xamarin.Essentials.Permissions.StorageWrite">
+      <Member Id="M:Xamarin.Essentials.Permissions.StorageWrite.#ctor" />
+      <Member Id="P:Xamarin.Essentials.Permissions.StorageWrite.RequiredPermissions" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Permissions/Vibrate" Id="T:Xamarin.Essentials.Permissions.Vibrate">
+      <Member Id="M:Xamarin.Essentials.Permissions.Vibrate.#ctor" />
+      <Member Id="P:Xamarin.Essentials.Permissions.Vibrate.RequiredPermissions" />
+    </Type>
+    <Type Name="Xamarin.Essentials.PermissionStatus" Id="T:Xamarin.Essentials.PermissionStatus">
+      <Member Id="F:Xamarin.Essentials.PermissionStatus.Denied" />
+      <Member Id="F:Xamarin.Essentials.PermissionStatus.Disabled" />
+      <Member Id="F:Xamarin.Essentials.PermissionStatus.Granted" />
+      <Member Id="F:Xamarin.Essentials.PermissionStatus.Restricted" />
+      <Member Id="F:Xamarin.Essentials.PermissionStatus.Unknown" />
+    </Type>
     <Type Name="Xamarin.Essentials.PhoneDialer" Id="T:Xamarin.Essentials.PhoneDialer">
       <Member Id="M:Xamarin.Essentials.PhoneDialer.Open(System.String)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.PickOptions" Id="T:Xamarin.Essentials.PickOptions">
+      <Member Id="M:Xamarin.Essentials.PickOptions.#ctor" />
+      <Member Id="P:Xamarin.Essentials.PickOptions.Default" />
+      <Member Id="P:Xamarin.Essentials.PickOptions.FileTypes" />
+      <Member Id="P:Xamarin.Essentials.PickOptions.Images" />
+      <Member Id="P:Xamarin.Essentials.PickOptions.PickerTitle" />
     </Type>
     <Type Name="Xamarin.Essentials.Placemark" Id="T:Xamarin.Essentials.Placemark">
       <Member Id="M:Xamarin.Essentials.Placemark.#ctor" />
@@ -556,6 +748,7 @@
       <Member Id="M:Xamarin.Essentials.Platform.Init(Android.App.Activity,Android.OS.Bundle)" />
       <Member Id="M:Xamarin.Essentials.Platform.Init(Android.App.Application)" />
       <Member Id="M:Xamarin.Essentials.Platform.OnRequestPermissionsResult(System.Int32,System.String[],Android.Content.PM.Permission[])" />
+      <Member Id="M:Xamarin.Essentials.Platform.OnResume" />
       <Member Id="M:Xamarin.Essentials.Platform.WaitForActivityAsync(System.Threading.CancellationToken)" />
       <Member Id="P:Xamarin.Essentials.Platform.AppContext" />
       <Member Id="P:Xamarin.Essentials.Platform.CurrentActivity" />
@@ -611,20 +804,14 @@
     </Type>
     <Type Name="Xamarin.Essentials.Screenshot" Id="T:Xamarin.Essentials.Screenshot">
       <Member Id="M:Xamarin.Essentials.Screenshot.CaptureAsync" />
-      <Member Id="P:Xamarin.Essentials.Screenshot.CanCapture" />
-    </Type>
-    <Type Name="Xamarin.Essentials.ScreenshotFile" Id="T:Xamarin.Essentials.ScreenshotFile">
-      <Member Id="M:Xamarin.Essentials.ScreenshotFile.Dispose" />
-      <Member Id="M:Xamarin.Essentials.ScreenshotFile.Dispose(System.Boolean)" />
-      <Member Id="M:Xamarin.Essentials.ScreenshotFile.Finalize" />
-      <Member Id="M:Xamarin.Essentials.ScreenshotFile.PlatformOpenReadStreamAsync" />
-      <Member Id="P:Xamarin.Essentials.ScreenshotFile.Disposed" />
+      <Member Id="P:Xamarin.Essentials.Screenshot.IsCaptureAvailable" />
     </Type>
     <Type Name="Xamarin.Essentials.SecureStorage" Id="T:Xamarin.Essentials.SecureStorage">
       <Member Id="M:Xamarin.Essentials.SecureStorage.GetAsync(System.String)" />
       <Member Id="M:Xamarin.Essentials.SecureStorage.Remove(System.String)" />
       <Member Id="M:Xamarin.Essentials.SecureStorage.RemoveAll" />
       <Member Id="M:Xamarin.Essentials.SecureStorage.SetAsync(System.String,System.String)" />
+      <Member Id="P:Xamarin.Essentials.SecureStorage.LegacyKeyHashFallback" />
     </Type>
     <Type Name="Xamarin.Essentials.SensorSpeed" Id="T:Xamarin.Essentials.SensorSpeed">
       <Member Id="F:Xamarin.Essentials.SensorSpeed.Default" />
@@ -744,6 +931,27 @@
       <Member Id="M:Xamarin.Essentials.Vibration.Vibrate" />
       <Member Id="M:Xamarin.Essentials.Vibration.Vibrate(System.Double)" />
       <Member Id="M:Xamarin.Essentials.Vibration.Vibrate(System.TimeSpan)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.WebAuthenticator" Id="T:Xamarin.Essentials.WebAuthenticator">
+      <Member Id="M:Xamarin.Essentials.WebAuthenticator.AuthenticateAsync(System.Uri,System.Uri)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.WebAuthenticatorCallbackActivity" Id="T:Xamarin.Essentials.WebAuthenticatorCallbackActivity">
+      <Member Id="M:Xamarin.Essentials.WebAuthenticatorCallbackActivity.#ctor" />
+      <Member Id="M:Xamarin.Essentials.WebAuthenticatorCallbackActivity.OnCreate(Android.OS.Bundle)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.WebAuthenticatorResult" Id="T:Xamarin.Essentials.WebAuthenticatorResult">
+      <Member Id="M:Xamarin.Essentials.WebAuthenticatorResult.#ctor" />
+      <Member Id="M:Xamarin.Essentials.WebAuthenticatorResult.#ctor(System.Collections.Generic.IDictionary{System.String,System.String})" />
+      <Member Id="M:Xamarin.Essentials.WebAuthenticatorResult.#ctor(System.Uri)" />
+      <Member Id="M:Xamarin.Essentials.WebAuthenticatorResult.Get(System.String)" />
+      <Member Id="M:Xamarin.Essentials.WebAuthenticatorResult.Put(System.String,System.String)" />
+      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.AccessToken" />
+      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.ExpiresIn" />
+      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.IdToken" />
+      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.Properties" />
+      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.RefreshToken" />
+      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.RefreshTokenExpiresIn" />
+      <Member Id="P:Xamarin.Essentials.WebAuthenticatorResult.Timestamp" />
     </Type>
   </Namespace>
 </Framework>

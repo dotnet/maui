@@ -2,59 +2,29 @@
 using System.IO;
 using System.Threading.Tasks;
 using Foundation;
-using MobileCoreServices;
+using UIKit;
 
 namespace Xamarin.Essentials
 {
-    public static partial class FileSystem
+    class UIImageFileResult : FileResult
     {
-        static string PlatformCacheDirectory
-            => GetDirectory(NSSearchPathDirectory.CachesDirectory);
+        readonly UIImage uiImage;
+        NSData data;
 
-        static string PlatformAppDataDirectory
-            => GetDirectory(NSSearchPathDirectory.LibraryDirectory);
-
-        static Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
+        internal UIImageFileResult(UIImage image)
+            : base()
         {
-            if (filename == null)
-                throw new ArgumentNullException(nameof(filename));
+            uiImage = image;
 
-            filename = filename.Replace('\\', Path.DirectorySeparatorChar);
-            var file = Path.Combine(NSBundle.MainBundle.BundlePath, filename);
-            return Task.FromResult((Stream)File.OpenRead(file));
+            FullPath = Guid.NewGuid().ToString() + ".png";
+            FileName = FullPath;
         }
 
-        static string GetDirectory(NSSearchPathDirectory directory)
+        internal override Task<Stream> PlatformOpenReadAsync()
         {
-            var dirs = NSSearchPath.GetDirectories(directory, NSSearchPathDomain.User);
-            if (dirs == null || dirs.Length == 0)
-            {
-                // this should never happen...
-                return null;
-            }
-            return dirs[0];
-        }
-    }
+            data ??= uiImage.AsPNG();
 
-    public partial class FileBase
-    {
-        internal FileBase(NSUrl file)
-            : this(NSFileManager.DefaultManager.DisplayName(file?.Path))
-        {
-        }
-
-        internal static string PlatformGetContentType(string extension)
-        {
-            // ios does not like the extensions
-            extension = extension?.TrimStart('.');
-
-            var id = UTType.CreatePreferredIdentifier(UTType.TagClassFilenameExtension, extension, null);
-            var mimeTypes = UTType.CopyAllTags(id, UTType.TagClassMIMEType);
-            return mimeTypes.Length > 0 ? mimeTypes[0] : null;
-        }
-
-        internal void PlatformInit(FileBase file)
-        {
+            return Task.FromResult(data.AsStream());
         }
     }
 }

@@ -98,8 +98,10 @@ namespace Samples.ViewModel
             return
                 $"Latitude: {location.Latitude}\n" +
                 $"Longitude: {location.Longitude}\n" +
-                $"Accuracy: {location.Accuracy}\n" +
+                $"HorizontalAccuracy: {location.Accuracy}\n" +
                 $"Altitude: {(location.Altitude.HasValue ? location.Altitude.Value.ToString() : notAvailable)}\n" +
+                $"AltitudeRefSys: {location.AltitudeReferenceSystem.ToString()}\n" +
+                $"VerticalAccuracy: {(location.VerticalAccuracy.HasValue ? location.VerticalAccuracy.Value.ToString() : notAvailable)}\n" +
                 $"Heading: {(location.Course.HasValue ? location.Course.Value.ToString() : notAvailable)}\n" +
                 $"Speed: {(location.Speed.HasValue ? location.Speed.Value.ToString() : notAvailable)}\n" +
                 $"Date (UTC): {location.Timestamp:d}\n" +

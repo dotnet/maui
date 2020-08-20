@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Windows.Devices.Geolocation;
 using Windows.Services.Maps;
+using WindowsARS = Windows.Devices.Geolocation.AltitudeReferenceSystem;
 
 namespace Xamarin.Essentials
 {
@@ -14,6 +15,7 @@ namespace Xamarin.Essentials
                 Latitude = mapLocation.Point.Position.Latitude,
                 Longitude = mapLocation.Point.Position.Longitude,
                 Altitude = mapLocation.Point.Position.Altitude,
+                AltitudeReferenceSystem = mapLocation.Point.AltitudeReferenceSystem.ToEssentials(),
                 Timestamp = DateTimeOffset.UtcNow
             };
 
@@ -31,9 +33,11 @@ namespace Xamarin.Essentials
                 Timestamp = location.Coordinate.Timestamp,
                 Altitude = location.Coordinate.Point.Position.Altitude,
                 Accuracy = location.Coordinate.Accuracy,
+                VerticalAccuracy = location.Coordinate.AltitudeAccuracy,
                 Speed = (!location.Coordinate.Speed.HasValue || double.IsNaN(location.Coordinate.Speed.Value)) ? default : location.Coordinate.Speed,
                 Course = (!location.Coordinate.Heading.HasValue || double.IsNaN(location.Coordinate.Heading.Value)) ? default : location.Coordinate.Heading,
-                IsFromMockProvider = false
+                IsFromMockProvider = false,
+                AltitudeReferenceSystem = location.Coordinate.Point.AltitudeReferenceSystem.ToEssentials()
             };
 
         internal static Location ToLocation(this Geocoordinate coordinate) =>
@@ -44,8 +48,20 @@ namespace Xamarin.Essentials
                  Timestamp = coordinate.Timestamp,
                  Altitude = coordinate.Point.Position.Altitude,
                  Accuracy = coordinate.Accuracy,
+                 VerticalAccuracy = coordinate.AltitudeAccuracy,
                  Speed = (!coordinate.Speed.HasValue || double.IsNaN(coordinate.Speed.Value)) ? default : coordinate.Speed,
-                 Course = (!coordinate.Heading.HasValue || double.IsNaN(coordinate.Heading.Value)) ? default : coordinate.Heading
+                 Course = (!coordinate.Heading.HasValue || double.IsNaN(coordinate.Heading.Value)) ? default : coordinate.Heading,
+                 AltitudeReferenceSystem = coordinate.Point.AltitudeReferenceSystem.ToEssentials()
              };
+
+        internal static AltitudeReferenceSystem ToEssentials(this WindowsARS altitudeReferenceSystem) =>
+            altitudeReferenceSystem switch
+            {
+                WindowsARS.Ellipsoid => AltitudeReferenceSystem.Ellipsoid,
+                WindowsARS.Geoid => AltitudeReferenceSystem.Geoid,
+                WindowsARS.Surface => AltitudeReferenceSystem.Surface,
+                WindowsARS.Terrain => AltitudeReferenceSystem.Terrain,
+                _ => AltitudeReferenceSystem.Unspecified
+            };
     }
 }

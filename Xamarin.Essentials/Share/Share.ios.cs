@@ -29,7 +29,7 @@ namespace Xamarin.Essentials
             {
                 activityController.PopoverPresentationController.SourceView = vc.View;
 
-                if (request.PresentationSourceBounds != Rectangle.Empty)
+                if (request.PresentationSourceBounds != Rectangle.Empty || Platform.HasOSVersion(13, 0))
                     activityController.PopoverPresentationController.SourceRect = request.PresentationSourceBounds.ToPlatformRectangle();
             }
 

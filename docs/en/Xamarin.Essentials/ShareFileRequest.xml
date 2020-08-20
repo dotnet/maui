@@ -30,7 +30,7 @@
       <Docs>
         <summary>Default constructor.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -49,7 +49,9 @@
       <Docs>
         <param name="file">Existing file.</param>
         <summary>Share request with an existing file.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -67,7 +69,9 @@
       <Docs>
         <param name="file">Existing file.</param>
         <summary>Share request with an existing file.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -87,7 +91,9 @@
         <param name="title">Title to use on the share user interface.</param>
         <param name="file">Existing file.</param>
         <summary>Share request with an existing file.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -107,7 +113,9 @@
         <param name="title">Title to use on the share user interface.</param>
         <param name="file">Existing file.</param>
         <summary>Share requerst with an existing file.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="File">
@@ -125,10 +133,10 @@
       <Docs>
         <summary>Gets or sets the file to share.</summary>
         <value>
-          <para />
+          <para></para>
         </value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

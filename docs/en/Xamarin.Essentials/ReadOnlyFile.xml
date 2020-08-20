@@ -53,7 +53,7 @@
         <param name="file">File to use for ReadOnlyFile</param>
         <summary>Construct a file taking in file.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -75,7 +75,7 @@
         <param name="contentType">Content type (MIME type) of the file (eg: `image/png`).</param>
         <summary>Construct a file taking in file path and content type (MIME type).</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

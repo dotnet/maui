@@ -7,7 +7,7 @@ namespace Xamarin.Essentials
         static bool PlatformCanCapture =>
             throw ExceptionUtils.NotSupportedOrImplementedException;
 
-        static Task<ScreenshotFile> PlatformCaptureAsync() =>
+        static Task<FileResult> PlatformCaptureAsync() =>
             throw ExceptionUtils.NotSupportedOrImplementedException;
     }
 }

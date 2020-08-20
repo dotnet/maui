@@ -93,7 +93,7 @@
         <summary>Get the currently visible UIViewController.</summary>
         <returns>The visible UIViewController or null if not found.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -115,7 +115,9 @@
       <Docs>
         <param name="application">Application to initialize with.</param>
         <summary>Initialize Xamarin.Essentials with Android's application class.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Init">
@@ -138,7 +140,9 @@
         <param name="activity">Activity to use for initialization.</param>
         <param name="bundle">Bundle of the activity.</param>
         <summary>Initialize Xamarin.Essentials with Android's activity and bundle.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="MapServiceToken">
@@ -186,6 +190,50 @@
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="OnResume">
+      <MemberSignature Language="C#" Value="public static void OnResume ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void OnResume() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Platform.OnResume" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Pass Resume lifecycle events of your main activity to be used for internal API handling.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="OpenUrl">
+      <MemberSignature Language="C#" Value="public static bool OpenUrl (UIKit.UIApplication app, Foundation.NSUrl url, Foundation.NSDictionary options);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool OpenUrl(class UIKit.UIApplication app, class Foundation.NSUrl url, class Foundation.NSDictionary options) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Platform.OpenUrl(UIKit.UIApplication,Foundation.NSUrl,Foundation.NSDictionary)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="app" Type="UIKit.UIApplication" Index="0" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos" />
+        <Parameter Name="url" Type="Foundation.NSUrl" Index="1" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos" />
+        <Parameter Name="options" Type="Foundation.NSDictionary" Index="2" FrameworkAlternate="xamarin-essentials-ios;xamarin-essentials-tvos" />
+      </Parameters>
+      <Docs>
+        <param name="app">To be added.</param>
+        <param name="url">To be added.</param>
+        <param name="options">To be added.</param>
+        <summary>Passes the OpenUrl callback of your app to be used for internal API handling.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="WaitForActivityAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;Android.App.Activity&gt; WaitForActivityAsync (System.Threading.CancellationToken cancelToken = null);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class Android.App.Activity&gt; WaitForActivityAsync(valuetype System.Threading.CancellationToken cancelToken) cil managed" />
@@ -206,7 +254,7 @@
         <summary>Wait for an Activity to be create or active.</summary>
         <returns>The current Android Activity.</returns>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

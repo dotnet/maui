@@ -12,9 +12,22 @@ namespace Xamarin.Essentials
             where TPermission : BasePermission, new() =>
                 new TPermission().RequestAsync();
 
+        public static void ShouldShowRationale<TPermission>()
+            where TPermission : BasePermission, new() =>
+                new TPermission().ShouldShowRationale();
+
         internal static void EnsureDeclared<TPermission>()
             where TPermission : BasePermission, new() =>
                 new TPermission().EnsureDeclared();
+
+        internal static async Task EnsureGrantedAsync<TPermission>()
+            where TPermission : BasePermission, new()
+        {
+            var status = await RequestAsync<TPermission>();
+
+            if (status != PermissionStatus.Granted)
+                throw new PermissionException($"{typeof(TPermission).Name} permission was not granted: {status}");
+        }
 
         public abstract partial class BasePermission
         {
@@ -28,6 +41,8 @@ namespace Xamarin.Essentials
             public abstract Task<PermissionStatus> RequestAsync();
 
             public abstract void EnsureDeclared();
+
+            public abstract bool ShouldShowRationale();
         }
 
         public partial class Battery

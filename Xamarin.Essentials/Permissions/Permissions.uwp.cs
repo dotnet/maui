@@ -13,24 +13,23 @@ namespace Xamarin.Essentials
 {
     public static partial class Permissions
     {
-        const string appManifestFilename = "AppxManifest.xml";
-        const string appManifestXmlns = "http://schemas.microsoft.com/appx/manifest/foundation/windows10";
-
         public static bool IsCapabilityDeclared(string capabilityName)
         {
-            var doc = XDocument.Load(appManifestFilename, LoadOptions.None);
+            var doc = XDocument.Load(Platform.AppManifestFilename, LoadOptions.None);
             var reader = doc.CreateReader();
             var namespaceManager = new XmlNamespaceManager(reader.NameTable);
-            namespaceManager.AddNamespace("x", appManifestXmlns);
+            namespaceManager.AddNamespace("x", Platform.AppManifestXmlns);
+            namespaceManager.AddNamespace("uap", Platform.AppManifestUapXmlns);
 
             // If the manifest doesn't contain a capability we need, throw
-            return (!doc.Root.XPathSelectElements($"//x:DeviceCapability[@Name='{capabilityName}']", namespaceManager)?.Any() ?? false) &&
-                (!doc.Root.XPathSelectElements($"//x:Capability[@Name='{capabilityName}']", namespaceManager)?.Any() ?? false);
+            return (doc.Root.XPathSelectElements($"//x:DeviceCapability[@Name='{capabilityName}']", namespaceManager)?.Any() ?? false) ||
+                (doc.Root.XPathSelectElements($"//x:Capability[@Name='{capabilityName}']", namespaceManager)?.Any() ?? false) ||
+                (doc.Root.XPathSelectElements($"//uap:Capability[@Name='{capabilityName}']", namespaceManager)?.Any() ?? false);
         }
 
         public abstract partial class BasePlatformPermission : BasePermission
         {
-            protected virtual Func<IEnumerable<string>> RequiredDeclarations { get; }
+            protected virtual Func<IEnumerable<string>> RequiredDeclarations { get; } = () => Array.Empty<string>();
 
             public override Task<PermissionStatus> CheckStatusAsync()
             {
@@ -49,6 +48,8 @@ namespace Xamarin.Essentials
                         throw new PermissionException($"You need to declare the capability `{d}` in your AppxManifest.xml file");
                 }
             }
+
+            public override bool ShouldShowRationale() => false;
         }
 
         public partial class Battery : BasePlatformPermission
@@ -57,10 +58,14 @@ namespace Xamarin.Essentials
 
         public partial class CalendarRead : BasePlatformPermission
         {
+            protected override Func<IEnumerable<string>> RequiredDeclarations => () =>
+                new[] { "appointments" };
         }
 
         public partial class CalendarWrite : BasePlatformPermission
         {
+            protected override Func<IEnumerable<string>> RequiredDeclarations => () =>
+                new[] { "appointments" };
         }
 
         public partial class Camera : BasePlatformPermission
@@ -69,8 +74,12 @@ namespace Xamarin.Essentials
 
         public partial class ContactsRead : BasePlatformPermission
         {
+            protected override Func<IEnumerable<string>> RequiredDeclarations => () =>
+                new[] { "contacts" };
+
             public override async Task<PermissionStatus> CheckStatusAsync()
             {
+                EnsureDeclared();
                 var accessStatus = await ContactManager.RequestStoreAsync(ContactStoreAccessType.AppContactsReadWrite);
 
                 if (accessStatus == null)
@@ -82,8 +91,12 @@ namespace Xamarin.Essentials
 
         public partial class ContactsWrite : BasePlatformPermission
         {
+            protected override Func<IEnumerable<string>> RequiredDeclarations => () =>
+                   new[] { "contacts" };
+
             public override async Task<PermissionStatus> CheckStatusAsync()
             {
+                EnsureDeclared();
                 var accessStatus = await ContactManager.RequestStoreAsync(ContactStoreAccessType.AppContactsReadWrite);
 
                 if (accessStatus == null)
@@ -106,8 +119,11 @@ namespace Xamarin.Essentials
             protected override Func<IEnumerable<string>> RequiredDeclarations => () =>
                 new[] { "location" };
 
-            public override Task<PermissionStatus> CheckStatusAsync() =>
-                RequestLocationPermissionAsync();
+            public override Task<PermissionStatus> CheckStatusAsync()
+            {
+                EnsureDeclared();
+                return RequestLocationPermissionAsync();
+            }
 
             internal static async Task<PermissionStatus> RequestLocationPermissionAsync()
             {
@@ -129,8 +145,11 @@ namespace Xamarin.Essentials
             protected override Func<IEnumerable<string>> RequiredDeclarations => () =>
                 new[] { "location" };
 
-            public override Task<PermissionStatus> CheckStatusAsync() =>
-                LocationWhenInUse.RequestLocationPermissionAsync();
+            public override Task<PermissionStatus> CheckStatusAsync()
+            {
+                EnsureDeclared();
+                return LocationWhenInUse.RequestLocationPermissionAsync();
+            }
         }
 
         public partial class Maps : BasePlatformPermission
