@@ -59,7 +59,7 @@ namespace Xamarin.Essentials
                 _ => Bitmap.CompressFormat.Png,
             };
 
-            await bmp.CompressAsync(f, 100, stream);
+            await bmp.CompressAsync(f, 100, stream).ConfigureAwait(false);
             stream.Position = 0;
 
             return stream;

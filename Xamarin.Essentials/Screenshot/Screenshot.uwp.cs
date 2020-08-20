@@ -21,7 +21,7 @@ namespace Xamarin.Essentials
                 throw new InvalidOperationException("Unable to find main window content.");
 
             var bmp = new RenderTargetBitmap();
-            await bmp.RenderAsync(element);
+            await bmp.RenderAsync(element).AsTask().ConfigureAwait(false);
 
             return new ScreenshotResult(bmp);
         }
@@ -44,7 +44,7 @@ namespace Xamarin.Essentials
         {
             if (bytes == null)
             {
-                var pixels = await bmp.GetPixelsAsync();
+                var pixels = await bmp.GetPixelsAsync().AsTask().ConfigureAwait(false);
                 bytes = pixels.ToArray();
             }
 
@@ -56,9 +56,9 @@ namespace Xamarin.Essentials
 
             var ms = new InMemoryRandomAccessStream();
 
-            var encoder = await BitmapEncoder.CreateAsync(f, ms);
+            var encoder = await BitmapEncoder.CreateAsync(f, ms).AsTask().ConfigureAwait(false);
             encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore, (uint)bmp.PixelWidth, (uint)bmp.PixelHeight, 96, 96, bytes);
-            await encoder.FlushAsync();
+            await encoder.FlushAsync().AsTask().ConfigureAwait(false);
 
             return ms.AsStreamForRead();
         }
