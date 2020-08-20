@@ -11,6 +11,8 @@ namespace Xamarin.Essentials
     {
         const string appActionPrefix = "XE_APP_ACTIONS-";
 
+        public static string IconDirectory { get; set; } = "Assets";
+
         internal static bool PlatformIsSupported
            => true;
 
@@ -82,8 +84,12 @@ namespace Xamarin.Essentials
             if (!string.IsNullOrEmpty(action.Subtitle))
                 item.Description = action.Subtitle;
 
-            // if (!string.IsNullOrEmpty(action.Icon))
-            //    item.Logo = new Uri("ms-appx://Assets/" + action.Icon + ".png");
+            if (!string.IsNullOrEmpty(action.Icon))
+            {
+                var dir = IconDirectory.Trim('/', '\\');
+
+                item.Logo = new Uri($"ms-appx:///{dir}/" + action.Icon + ".png");
+            }
 
             return item;
         }
