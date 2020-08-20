@@ -2,10 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Android.Graphics;
-using Android.Util;
 using Android.Views;
-
-using Path = System.IO.Path;
 
 namespace Xamarin.Essentials
 {
@@ -14,15 +11,14 @@ namespace Xamarin.Essentials
         static bool PlatformCanCapture =>
             Platform.WindowManager.DefaultDisplay?.Flags.HasFlag(DisplayFlags.Secure) == false;
 
-        static async Task<FileResult> PlatformCaptureAsync()
+        static Task<ScreenshotResult> PlatformCaptureAsync()
         {
             var view = Platform.GetCurrentActivity(true)?.Window?.DecorView?.RootView;
             if (view == null)
                 throw new NullReferenceException("Unable to find the main window.");
 
-            var path = Path.Combine(FileSystem.CacheDirectory, Guid.NewGuid().ToString() + ".png");
+            var bitmap = Bitmap.CreateBitmap(view.Width, view.Height, Bitmap.Config.Argb8888);
 
-            using (var bitmap = Bitmap.CreateBitmap(view.Width, view.Height, Bitmap.Config.Argb8888))
             using (var canvas = new Canvas(bitmap))
             {
                 var drawable = view.Background;
@@ -32,14 +28,41 @@ namespace Xamarin.Essentials
                     canvas.DrawColor(Color.White);
 
                 view.Draw(canvas);
-
-                using var stream = File.Create(path);
-                var success = await bitmap.CompressAsync(Bitmap.CompressFormat.Png, 100, stream);
-                if (!success)
-                    throw new AndroidException("Unable to save screenshot file.");
             }
 
-            return new FileResult(path);
+            var result = new ScreenshotResult(bitmap);
+
+            return Task.FromResult(result);
+        }
+    }
+
+    public partial class ScreenshotResult
+    {
+        readonly Bitmap bmp;
+
+        internal ScreenshotResult(Bitmap bmp)
+            : base()
+        {
+            this.bmp = bmp;
+
+            Width = bmp.Width;
+            Height = bmp.Height;
+        }
+
+        internal async Task<Stream> PlatformOpenReadAsync(ScreenshotFormat format)
+        {
+            var stream = new MemoryStream();
+
+            var f = format switch
+            {
+                ScreenshotFormat.Jpeg => Bitmap.CompressFormat.Jpeg,
+                _ => Bitmap.CompressFormat.Png,
+            };
+
+            await bmp.CompressAsync(f, 100, stream);
+            stream.Position = 0;
+
+            return stream;
         }
     }
 }

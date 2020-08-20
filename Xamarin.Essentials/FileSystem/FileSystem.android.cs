@@ -6,6 +6,8 @@ using Android.App;
 using Android.Provider;
 using Android.Webkit;
 
+using Bitmap = global::Android.Graphics.Bitmap;
+
 namespace Xamarin.Essentials
 {
     public partial class FileSystem
@@ -114,7 +116,7 @@ namespace Xamarin.Essentials
 
         internal virtual Task<Stream> PlatformOpenReadAsync()
         {
-            if (contentUri.Scheme == "content")
+            if (contentUri?.Scheme == "content")
             {
                 var content = Application.Context.ContentResolver.OpenInputStream(contentUri);
                 return Task.FromResult(content);

@@ -1,8 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Graphics.Imaging;
-using Windows.Storage;
+using Windows.Storage.Streams;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media.Imaging;
 
@@ -13,29 +14,53 @@ namespace Xamarin.Essentials
         internal static bool PlatformCanCapture =>
             true;
 
-        static async Task<FileResult> PlatformCaptureAsync()
+        static async Task<ScreenshotResult> PlatformCaptureAsync()
         {
             var element = Window.Current?.Content as FrameworkElement;
             if (element == null)
                 throw new InvalidOperationException("Unable to find main window content.");
 
-            var cacheFolder = ApplicationData.Current.LocalCacheFolder;
-            var fileOnDisk = await cacheFolder.CreateFileAsync(Guid.NewGuid().ToString() + ".png");
+            var bmp = new RenderTargetBitmap();
+            await bmp.RenderAsync(element);
 
-            var renderTargetBitmap = new RenderTargetBitmap();
-            await renderTargetBitmap.RenderAsync(element, (int)element.ActualWidth, (int)element.ActualHeight);
-            var pixels = await renderTargetBitmap.GetPixelsAsync();
-            var bytes = pixels.ToArray();
+            return new ScreenshotResult(bmp);
+        }
+    }
 
-            using (var stream = await fileOnDisk.OpenAsync(FileAccessMode.ReadWrite))
+    public partial class ScreenshotResult
+    {
+        readonly RenderTargetBitmap bmp;
+        byte[] bytes;
+
+        internal ScreenshotResult(RenderTargetBitmap bmp)
+        {
+            this.bmp = bmp;
+
+            Width = bmp.PixelWidth;
+            Height = bmp.PixelHeight;
+        }
+
+        internal async Task<Stream> PlatformOpenReadAsync(ScreenshotFormat format)
+        {
+            if (bytes == null)
             {
-                var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, stream);
-                encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore, (uint)element.ActualWidth, (uint)element.ActualHeight, 96, 96, bytes);
-
-                await encoder.FlushAsync();
+                var pixels = await bmp.GetPixelsAsync();
+                bytes = pixels.ToArray();
             }
 
-            return new FileResult(fileOnDisk);
+            var f = format switch
+            {
+                ScreenshotFormat.Jpeg => BitmapEncoder.JpegEncoderId,
+                _ => BitmapEncoder.PngEncoderId
+            };
+
+            var ms = new InMemoryRandomAccessStream();
+
+            var encoder = await BitmapEncoder.CreateAsync(f, ms);
+            encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore, (uint)bmp.PixelWidth, (uint)bmp.PixelHeight, 96, 96, bytes);
+            await encoder.FlushAsync();
+
+            return ms.AsStreamForRead();
         }
     }
 }

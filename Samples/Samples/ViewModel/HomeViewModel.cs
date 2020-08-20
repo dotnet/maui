@@ -184,7 +184,7 @@ namespace Samples.ViewModel
                     "📷",
                     "Screenshot",
                     typeof(ScreenshotPage),
-                    "Quickly and easily take screenshots.",
+                    "Quickly and easily take screenshots of your app.",
                     new[] { "screenshot", "picture", "media", "display" }),
                 new SampleItem(
                     "🔒",
