@@ -35,6 +35,28 @@ namespace Xamarin.Essentials
         }
     }
 
+    class UIImageFileResult : FileResult
+    {
+        readonly UIImage uiImage;
+        NSData data;
+
+        internal UIImageFileResult(UIImage image)
+            : base()
+        {
+            uiImage = image;
+
+            FullPath = Guid.NewGuid().ToString() + ".png";
+            FileName = FullPath;
+        }
+
+        internal override Task<Stream> PlatformOpenReadAsync()
+        {
+            data ??= uiImage.AsPNG();
+
+            return Task.FromResult(data.AsStream());
+        }
+    }
+
     class PHAssetFileResult : FileResult
     {
         readonly PHAsset phAsset;
@@ -56,28 +78,6 @@ namespace Xamarin.Essentials
                 tcsStream.TrySetResult(data.AsStream())));
 
             return tcsStream.Task;
-        }
-    }
-
-    class UIImageFileResult : FileResult
-    {
-        readonly UIImage uiImage;
-        NSData data;
-
-        internal UIImageFileResult(UIImage image)
-            : base()
-        {
-            uiImage = image;
-
-            FullPath = Guid.NewGuid().ToString() + ".png";
-            FileName = FullPath;
-        }
-
-        internal override Task<Stream> PlatformOpenReadAsync()
-        {
-            data ??= uiImage.AsPNG();
-
-            return Task.FromResult(data.AsStream());
         }
     }
 }
