@@ -26,7 +26,7 @@ namespace Xamarin.Forms
 			set { SetValue(PeekAreaInsetsProperty, value); }
 		}
 
-		static readonly BindablePropertyKey VisibleViewsPropertyKey = BindableProperty.CreateReadOnly(nameof(VisibleViews), typeof(ObservableCollection<View>), typeof(CarouselView), new ObservableCollection<View>());
+		static readonly BindablePropertyKey VisibleViewsPropertyKey = BindableProperty.CreateReadOnly(nameof(VisibleViews), typeof(ObservableCollection<View>), typeof(CarouselView), null, defaultValueCreator: (b) => new ObservableCollection<View>());
 
 		public static readonly BindableProperty VisibleViewsProperty = VisibleViewsPropertyKey.BindableProperty;
 
