@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		protected virtual EEntry CreateNativeControl()
 		{
 			// Multiline EditField style is only available on Mobile and TV profile
-			var entry = Device.Idiom == TargetIdiom.Phone || Device.Idiom == TargetIdiom.TV ? new Native.EditfieldEntry(Forms.NativeParent, "multiline") : new Native.Entry(Forms.NativeParent)
+			var entry = Device.Idiom == TargetIdiom.Phone || Device.Idiom == TargetIdiom.TV ? new EditfieldEntry(Forms.NativeParent, EditFieldEntryLayout.Styles.MulitLine) : new Native.Entry(Forms.NativeParent)
 			{
 				IsSingleLine = false,
 			};

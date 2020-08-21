@@ -1,14 +1,13 @@
 ﻿using System;
 using System.ComponentModel;
 using AppKit;
-using CoreGraphics;
 using Foundation;
 
 namespace Xamarin.Forms.Platform.MacOS
 {
 	public class EntryCellRenderer : CellRenderer
 	{
-		static readonly Color s_defaultTextColor = Color.Black;
+		readonly Color s_defaultTextColor = ColorExtensions.TextColor.ToColor(NSColorSpace.DeviceRGBColorSpace);
 
 		public override NSView GetCell(Cell item, NSView reusableView, NSTableView tv)
 		{
@@ -63,7 +62,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			base.UpdateBackgroundChild(cell, backgroundColor);
 		}
 
-		static void OnCellPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void OnCellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			var entryCell = (EntryCell)sender;
 			var realCell = (CellNSView)GetRealCell(entryCell);
@@ -84,7 +83,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				UpdateHorizontalTextAlignment(realCell, entryCell);
 		}
 
-		static void OnTextFieldTextChanged(object sender, EventArgs eventArgs)
+		void OnTextFieldTextChanged(object sender, EventArgs eventArgs)
 		{
 			var notification = (NSNotification)sender;
 			var view = (NSView)notification.Object;
@@ -101,7 +100,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				((EntryCell)realCell.Cell).Text = field.StringValue;
 		}
 
-		static void UpdateHorizontalTextAlignment(CellNSView cell, EntryCell entryCell)
+		void UpdateHorizontalTextAlignment(CellNSView cell, EntryCell entryCell)
 		{
 			IVisualElementController viewController = entryCell.Parent as VisualElement;
 
@@ -110,7 +109,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				nsTextField.Alignment = entryCell.HorizontalTextAlignment.ToNativeTextAlignment(viewController?.EffectiveFlowDirection ?? default(EffectiveFlowDirection));
 		}
 
-		static void UpdateIsEnabled(CellNSView cell, EntryCell entryCell)
+		void UpdateIsEnabled(CellNSView cell, EntryCell entryCell)
 		{
 			cell.TextLabel.Enabled = entryCell.IsEnabled;
 			var nsTextField = cell.AccessoryView.Subviews[0] as NSTextField;
@@ -118,24 +117,24 @@ namespace Xamarin.Forms.Platform.MacOS
 				nsTextField.Enabled = entryCell.IsEnabled;
 		}
 
-		static void UpdateLabel(CellNSView cell, EntryCell entryCell)
+		void UpdateLabel(CellNSView cell, EntryCell entryCell)
 		{
 			cell.TextLabel.StringValue = entryCell.Label ?? "";
 		}
 
-		static void UpdateLabelColor(CellNSView cell, EntryCell entryCell)
+		void UpdateLabelColor(CellNSView cell, EntryCell entryCell)
 		{
 			cell.TextLabel.TextColor = entryCell.LabelColor.ToNSColor(s_defaultTextColor);
 		}
 
-		static void UpdatePlaceholder(CellNSView cell, EntryCell entryCell)
+		void UpdatePlaceholder(CellNSView cell, EntryCell entryCell)
 		{
 			var nsTextField = cell.AccessoryView.Subviews[0] as NSTextField;
 			if (nsTextField != null)
 				nsTextField.PlaceholderString = entryCell.Placeholder ?? "";
 		}
 
-		static void UpdateText(CellNSView cell, EntryCell entryCell)
+		void UpdateText(CellNSView cell, EntryCell entryCell)
 		{
 			var nsTextField = cell.AccessoryView.Subviews[0] as NSTextField;
 			if (nsTextField != null && nsTextField.StringValue == entryCell.Text)

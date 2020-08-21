@@ -154,8 +154,86 @@ namespace Xamarin.Forms.Platform.MacOS
 #else
 		internal static readonly NSColor Black = NSColor.Black;
 		internal static readonly NSColor SeventyPercentGrey = NSColor.FromRgba(0.7f, 0.7f, 0.7f, 1);
-		internal static readonly NSColor LabelColor = NSColor.Black.UsingColorSpace("NSCalibratedRGBColorSpace");
 		internal static readonly NSColor AccentColor = Color.FromRgba(50, 79, 133, 255).ToNSColor();
+
+		internal static NSColor LabelColor
+		{
+			get
+			{
+				if (Forms.IsMojaveOrNewer)
+					return NSColor.LabelColor;
+
+				return NSColor.Black.UsingColorSpace("NSCalibratedRGBColorSpace");
+			}
+		}
+
+		internal static NSColor TextColor
+		{
+			get
+			{
+				if (Forms.IsMojaveOrNewer)
+					return NSColor.Text;
+
+				return NSColor.Black;
+			}
+		}
+
+		internal static NSColor ControlBackgroundColor
+		{
+			get
+			{
+				if (Forms.IsMojaveOrNewer)
+					return NSColor.ControlBackground;
+
+				return NSColor.Clear;
+			}
+		}
+
+		internal static NSColor WindowBackgroundColor
+		{
+			get
+			{
+				if (Forms.IsMojaveOrNewer)
+					return NSColor.WindowBackground;
+
+				return NSColor.White;
+			}
+		}
+
+		internal static NSColor PlaceholderColor
+		{
+			get
+			{
+				if (Forms.IsMojaveOrNewer)
+					return NSColor.PlaceholderTextColor;
+
+				return SeventyPercentGrey;
+			}
+		}
+
+		internal static NSColor SecondaryLabelColor
+		{
+			get
+			{
+#if __XCODE11__
+				if (Forms.IsMojaveOrNewer)
+					return NSColor.SecondaryLabelColor;
+#endif
+				return new Color(.32, .4, .57).ToNSColor();
+			}
+		}
+
+		internal static NSColor GroupedBackground
+		{
+			get
+			{
+#if __XCODE11__
+				if (Forms.IsMojaveOrNewer)
+					return NSColor.SystemGrayColor;
+#endif
+				return Color.LightGray.ToNSColor();
+			}
+		}
 #endif
 
 		public static CGColor ToCGColor(this Color color)

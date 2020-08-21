@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		protected void UpdateBackground(NSView tableViewCell, Cell cell)
 		{
 			tableViewCell.WantsLayer = true;
-			var bgColor = NSColor.White;
+			var bgColor = ColorExtensions.ControlBackgroundColor;
 			var element = cell.RealParent as VisualElement;
 			if (element != null)
 				bgColor = element.BackgroundColor == Color.Default ? bgColor : element.BackgroundColor.ToNSColor();

@@ -1,7 +1,6 @@
 using System;
 using ElmSharp;
 using ElmSharp.Wearable;
-using TizenDotnetUtil = Tizen.Common.DotnetUtil;
 
 namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 {
@@ -17,18 +16,9 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 
 		public WatchSpinner(EvasObject parent, CircleSurface surface) : base(parent, surface)
 		{
-			Style = "circle";
-
-			if (TizenDotnetUtil.TizenAPIVersion == 4)
-			{
-				_wheelAppeared = new ElmSharp.SmartEvent(this, "genlist,show");
-				_wheelDisappeared = new ElmSharp.SmartEvent(this, "genlist,hide");
-			}
-			else
-			{
-				_wheelAppeared = new ElmSharp.SmartEvent(this, "list,show");
-				_wheelDisappeared = new ElmSharp.SmartEvent(this, "list,hide");
-			}
+			Style = ThemeConstants.CircleSpinner.Styles.Circle;
+			_wheelAppeared = new SmartEvent(this, ThemeConstants.CircleSpinner.Signals.ShowList);
+			_wheelDisappeared = new SmartEvent(this, ThemeConstants.CircleSpinner.Signals.HideList);
 
 			_wheelAppeared.On += (s, e) => WheelAppeared?.Invoke(this, EventArgs.Empty);
 			_wheelDisappeared.On += (s, e) => WheelDisappeared?.Invoke(this, EventArgs.Empty);

@@ -7,11 +7,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 {
 	public class ToolbarItemButton : Button
 	{
-		const string StyleDefault = "default";
-		const string StyleDefaultToolbarIcon = "naviframe/drawers";
-		const string StyleLeftToolBarButton = "naviframe/title_left";
-		const string StyleRightToolbarButton = "naviframe/title_right";
-
 		ToolbarItem _item;
 		string _defaultAccessibilityName;
 		string _defaultAccessibilityDescription;
@@ -115,19 +110,19 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				if (string.IsNullOrEmpty(_item.Text))
 				{
 					// We assumed the default toolbar icon is "naviframe/drawer" if there are no icon and text.
-					Style = StyleDefaultToolbarIcon;
+					this.SetNavigationDrawerStyle();
 				}
 				else
 				{
 					if (_item.Order == ToolbarItemOrder.Primary)
-						Style = StyleRightToolbarButton;
+						this.SetNavigationTitleRightStyle();
 					else
-						Style = StyleLeftToolBarButton;
+						this.SetNavigationTitleLeftStyle();
 				}
 			}
 			else
 			{
-				Style = StyleDefault;
+				this.SetDefaultStyle();
 			}
 		}
 

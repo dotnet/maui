@@ -34,6 +34,26 @@ namespace Xamarin.Forms.Platform.MacOS
 			base.Layout();
 		}
 
+		public override void UpdateLayer()
+		{
+			base.UpdateLayer();
+
+			UpdateBackground();
+		}
+
+		void UpdateBackground()
+		{
+			if (_viewCell == null)
+				return;
+
+			var bgColor = ColorExtensions.ControlBackgroundColor;
+			var element = _viewCell.RealParent as VisualElement;
+			if (element != null)
+				bgColor = element.BackgroundColor == Color.Default ? bgColor : element.BackgroundColor.ToNSColor();
+
+			Layer.BackgroundColor = bgColor.CGColor;
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)

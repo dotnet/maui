@@ -21,8 +21,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		protected override void OnRealized()
 		{
 			base.OnRealized();
-			new SmartEvent(this, RealHandle, "scroll,anim,start").On += (s, e) => _isAnimation = true;
-			new SmartEvent(this, RealHandle, "scroll,anim,stop").On += (s, e) =>
+			new SmartEvent(this, RealHandle, ThemeConstants.Scroller.Signals.StartScrollAnimation).On += (s, e) => _isAnimation = true;
+			new SmartEvent(this, RealHandle, ThemeConstants.Scroller.Signals.StopScrollAnimation).On += (s, e) =>
 			{
 				if (_animationTaskComplateSource != null)
 				{

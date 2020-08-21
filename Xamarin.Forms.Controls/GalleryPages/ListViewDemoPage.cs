@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 
@@ -44,7 +45,7 @@ namespace Xamarin.Forms.Controls
 				    boxView.SetBinding (BoxView.ColorProperty, "FavoriteColor");
 
 				    // Return an assembled ViewCell.
-				    return new ViewCell {
+				    var viewCell = new ViewCell {
 					    View = new StackLayout {
 						    Padding = new Thickness (0, 5),
 						    Orientation = StackOrientation.Horizontal,
@@ -69,7 +70,13 @@ namespace Xamarin.Forms.Controls
 						    }
 					    }
 				    };
-			    });
+
+				    viewCell.ContextActions.Add(new MenuItem()
+				    {
+					    Text = "Even Action"
+				    });
+				    return viewCell;
+				});
 
 			    _oddTemplate = new DataTemplate (() => {
 				    // Create views with bindings for displaying each property.
@@ -85,9 +92,9 @@ namespace Xamarin.Forms.Controls
 				    boxView.SetBinding (BoxView.ColorProperty, "FavoriteColor");
 
 				    // Return an assembled ViewCell.
-				    return new ViewCell {
-					    View = new StackLayout {
-						    Padding = new Thickness (0, 5),
+				    var viewCell = new ViewCell {
+						View = new StackLayout {
+							Padding = new Thickness (0, 5),
 						    Orientation = StackOrientation.Horizontal,
 						    Children = {
 							    new Image {
@@ -111,10 +118,21 @@ namespace Xamarin.Forms.Controls
 						    }
 					    }
 				    };
+				    viewCell.Tapped += ViewCell_Tapped;
+				    viewCell.ContextActions.Add(new MenuItem()
+				    {
+					    Text = "Odd Action"
+				    });
+				    return viewCell;
 			    });
 		    }
 
-		    protected override DataTemplate OnSelectTemplate (object item, BindableObject container)
+			void ViewCell_Tapped(object sender, EventArgs e)
+			{
+				Debug.WriteLine("Item tapped");
+			}
+
+			protected override DataTemplate OnSelectTemplate (object item, BindableObject container)
 		    {
 			    return ((Person)item).Birthday.Month % 2 == 0 ? _evenTemplate : _oddTemplate;
 		    }
@@ -224,7 +242,7 @@ namespace Xamarin.Forms.Controls
 		        listView.SelectedItem = null;
 	        };
 
-            // Accomodate iPhone status bar.
+			// Accomodate iPhone status bar.
 			Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(10, 20, 10, 5) : new Thickness(10, 0, 10, 5);
             // Build the page.
             Content = new StackLayout

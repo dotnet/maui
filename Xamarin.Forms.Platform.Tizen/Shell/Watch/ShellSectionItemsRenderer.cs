@@ -8,12 +8,6 @@ using ERect = ElmSharp.Rect;
 
 namespace Xamarin.Forms.Platform.Tizen.Watch
 {
-	internal static class IndexStyle
-	{
-		public const string Thumbnail = "thumbnail";
-		public const string Circle = "circle";
-	}
-
 	public class ShellSectionItemsRenderer : IShellItemRenderer
 	{
 		const int ItemMaxCount = 20;
@@ -77,8 +71,7 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 			{
 				IsHorizontal = true,
 				AutoHide = false,
-				Style = IndexStyle.Circle,
-			};
+			}.SetStyledIndex();
 			_indexIndicator.Show();
 
 			_scroller = new Scroller(_mainBox);
@@ -86,7 +79,7 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 			_scroller.PageScrolled += OnScrollStop;
 
 			//PageScrolled event is not invoked when a user scrolls beyond the end using bezel
-			var scrollAnimationStop = new SmartEvent(_scroller, "scroll,anim,stop");
+			var scrollAnimationStop = new SmartEvent(_scroller, ThemeConstants.Scroller.Signals.StopScrollAnimation);
 			scrollAnimationStop.On += OnScrollStop;
 
 			_scroller.Focused += OnFocused;
@@ -125,7 +118,7 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 			foreach (var item in ShellSection.Items)
 			{
 				var indexItem = _indexIndicator.Append(null);
-				indexItem.Style = GetItemStyle(ShellSection.Items.Count, _items.Count);
+				indexItem.SetIndexItemStyle(ShellSection.Items.Count, _items.Count, EvenMiddleItem, OddMiddleItem);
 				_items.Add(new ItemHolder
 				{
 					IsRealized = false,
@@ -315,27 +308,6 @@ namespace Xamarin.Forms.Platform.Tizen.Watch
 				_scroller.ScrollTo(_currentIndex, 0, false);
 				_updateByCode--;
 			}
-		}
-
-		static string GetItemStyle(int itemCount, int offset)
-		{
-			string returnValue = string.Empty;
-			int startItem;
-			int styleNumber;
-
-			if (itemCount % 2 == 0)  //Item count is even.
-			{
-				startItem = EvenMiddleItem - itemCount / 2;
-				styleNumber = startItem + offset;
-				returnValue = "item/even_" + styleNumber;
-			}
-			else  //Item count is odd.
-			{
-				startItem = OddMiddleItem - itemCount / 2;
-				styleNumber = startItem + offset;
-				returnValue = "item/odd_" + styleNumber;
-			}
-			return returnValue;
 		}
 
 		class ItemHolder

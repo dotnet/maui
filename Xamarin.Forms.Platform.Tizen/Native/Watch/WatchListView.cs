@@ -88,7 +88,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 
 		class PaddingItemClass : GenItemClass
 		{
-			public PaddingItemClass() : base("padding")
+			public PaddingItemClass() : base(ThemeConstants.GenItemClass.Styles.Watch.Padding)
 			{
 			}
 		}

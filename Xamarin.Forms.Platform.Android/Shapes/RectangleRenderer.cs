@@ -21,32 +21,36 @@ namespace Xamarin.Forms.Platform.Android
             }
 
             base.OnElementChanged(args);
-
-            if (args.NewElement != null)
-            {
-                UpdateRadiusX();
-                UpdateRadiusY();
-            }
         }
 
         protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs args)
         {
             base.OnElementPropertyChanged(sender, args);
 
-            if (args.PropertyName == FormsRectangle.RadiusXProperty.PropertyName)
+            if (args.IsOneOf(VisualElement.HeightProperty, VisualElement.WidthProperty))
+                UpdateRadius();
+            else if (args.PropertyName == FormsRectangle.RadiusXProperty.PropertyName)
                 UpdateRadiusX();
             else if (args.PropertyName == FormsRectangle.RadiusYProperty.PropertyName)
                 UpdateRadiusY();
         }
 
+        void UpdateRadius()
+		{
+            UpdateRadiusX();
+            UpdateRadiusY();
+        }
+
         void UpdateRadiusX()
         {
-            Control.UpdateRadiusX(Element.RadiusX / Element.WidthRequest);
+            if (Element.Width > 0)
+                Control.UpdateRadiusX(Element.RadiusX / Element.Width);
         }
 
         void UpdateRadiusY()
         {
-            Control.UpdateRadiusY(Element.RadiusY / Element.HeightRequest);
+            if (Element.Height > 0)
+                Control.UpdateRadiusY(Element.RadiusY / Element.Height);
         }
     }
 
@@ -63,7 +67,7 @@ namespace Xamarin.Forms.Platform.Android
 
         void UpdateShape()
         {
-			var path = new APath();
+			      var path = new APath();
             path.AddRoundRect(new RectF(0, 0, 1, 1), RadiusX, RadiusY, APath.Direction.Cw);
             UpdateShape(path);
         }

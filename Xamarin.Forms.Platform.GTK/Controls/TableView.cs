@@ -1,4 +1,5 @@
 ﻿using Gtk;
+using OpenTK.Input;
 using System;
 using System.Collections.Generic;
 using Xamarin.Forms.Platform.GTK.Cells;
@@ -180,7 +181,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 								{
 									var selectedCell = gtkCell.Cell;
 
-									OnItemTapped?.Invoke(this, new ItemTappedEventArgs(selectedCell));
+									OnItemTapped?.Invoke(this, new ItemTappedEventArgs(selectedCell, (MouseButton)args.Event.Button - 1));
 								}
 							};
 							_cells.Add(nativeCell);

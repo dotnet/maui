@@ -9,9 +9,8 @@ namespace Xamarin.Forms.Platform.Tizen
 		const int _shadow_shift = 2;
 		const int _shadow_thickness = _thickness + 2;
 
-		static readonly EColor s_DefaultColor = Device.Idiom == TargetIdiom.TV || Device.Idiom == TargetIdiom.Watch ? EColor.Gray : EColor.Black;
-		static readonly EColor s_ShadowColor = EColor.FromRgba(80, 80, 80, 50);
-
+		static readonly EColor s_DefaultColor = ThemeConstants.Frame.ColorClass.DefaultBorderColor;
+		static readonly EColor s_ShadowColor = ThemeConstants.Frame.ColorClass.DefaultShadowColor;
 		EPolygon _shadow = null;
 		EPolygon _frame = null;
 

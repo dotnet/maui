@@ -9,9 +9,9 @@ namespace Xamarin.Forms.Platform.Tizen
 {
 	class RefreshIcon : ContentView
 	{
-		public static readonly int IconSize = 48;
-		static readonly Color DefaultColor = Color.FromHex("#6200EE");
-		static readonly string IconPath = "Xamarin.Forms.Platform.Tizen.Resource.refresh_48dp.png";
+		public const int IconSize = ThemeConstants.RefreshView.Resources.IconSize;
+		static readonly Color DefaultColor = ThemeConstants.RefreshView.ColorClass.DefaultColor;
+		const string IconPath = ThemeConstants.RefreshView.Resources.IconPath;
 
 		bool _isPlaying;
 		Image _icon;

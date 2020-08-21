@@ -66,7 +66,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				else if (Device.Idiom == TargetIdiom.TV)
 				{
 					//According to TV UX Guideline, toolbar style should be set to "tabbar_with_title" in case of TabbedPage only for TV profile.
-					_toolbar.Style = "tabbar_with_title";
+					_toolbar.SetTVTabBarWithTitleStyle();
 				}
 
 				_toolbar.Show();
@@ -449,48 +449,16 @@ namespace Xamarin.Forms.Platform.Tizen
 				switch (type)
 				{
 					case BarItemColorType.Background:
-						item.SetPartColor("bg", color);
+						item.SetBackgroundColor(color);
 						break;
 					case BarItemColorType.Text:
-						if (string.IsNullOrEmpty(item.Icon))
-						{
-							item.SetPartColor("text", color);
-							item.SetPartColor("text_pressed", color);
-							item.SetPartColor("text_selected", color);
-						}
-						else
-						{
-							item.SetPartColor("text_under_icon", color);
-							item.SetPartColor("text_under_icon_pressed", color);
-							item.SetPartColor("text_under_icon_selected", color);
-						}
-						item.SetPartColor("underline", color);
+						item.SetTextColor(color);
 						break;
 					case BarItemColorType.SelectedTab:
-						if (string.IsNullOrEmpty(item.Icon))
-						{
-							item.SetPartColor("text_selected", color);
-						}
-						else
-						{
-							item.SetPartColor("text_under_icon_selected", color);
-							item.SetPartColor("icon_selected", color);
-						}
-						item.SetPartColor("underline", color);
+						item.SetSelectedTabColor(color);
 						break;
 					case BarItemColorType.UnselectedTab:
-						if (string.IsNullOrEmpty(item.Icon))
-						{
-							item.SetPartColor("text", color);
-							item.SetPartColor("text_pressed", color);
-						}
-						else
-						{
-							item.SetPartColor("text_under_icon", color);
-							item.SetPartColor("text_under_icon_pressed", color);
-							item.SetPartColor("icon", color);
-							item.SetPartColor("icon_pressed", color);
-						}
+						item.SetUnselectedTabColor(color);
 						break;
 					default:
 						break;
@@ -503,48 +471,16 @@ namespace Xamarin.Forms.Platform.Tizen
 			switch (type)
 			{
 				case BarItemColorType.Background:
-					item.DeletePartColor("bg");
+					item.DeleteBackgroundColor();
 					break;
 				case BarItemColorType.Text:
-					if (string.IsNullOrEmpty(item.Icon))
-					{
-						item.DeletePartColor("text");
-						item.DeletePartColor("text_pressed");
-						item.DeletePartColor("text_selected");
-					}
-					else
-					{
-						item.DeletePartColor("text_under_icon");
-						item.DeletePartColor("text_under_icon_pressed");
-						item.DeletePartColor("text_under_icon_selected");
-					}
-					item.DeletePartColor("underline");
+					item.DeleteTextColor();
 					break;
 				case BarItemColorType.SelectedTab:
-					if (string.IsNullOrEmpty(item.Icon))
-					{
-						item.DeletePartColor("text_selected");
-					}
-					else
-					{
-						item.DeletePartColor("text_under_icon_selected");
-						item.DeletePartColor("icon_selected");
-					}
-					item.DeletePartColor("underline");
+					item.DeleteSelectedTabColor();
 					break;
 				case BarItemColorType.UnselectedTab:
-					if (string.IsNullOrEmpty(item.Icon))
-					{
-						item.DeletePartColor("text");
-						item.DeletePartColor("text_pressed");
-					}
-					else
-					{
-						item.DeletePartColor("text_under_icon");
-						item.DeletePartColor("text_under_icon_pressed");
-						item.DeletePartColor("icon");
-						item.DeletePartColor("icon_pressed");
-					}
+					item.DeleteUnselectedTabColor();
 					break;
 				default:
 					break;

@@ -5,7 +5,7 @@ namespace Xamarin.Forms.Platform.Tizen
 {
 	public class ActivityIndicatorRenderer : ViewRenderer<ActivityIndicator, EProgressBar>
 	{
-		static readonly EColor s_defaultColor = new EColor(129, 198, 255);
+		static readonly EColor s_defaultColor = ThemeConstants.ProgressBar.ColorClass.Default;
 
 		public ActivityIndicatorRenderer()
 		{
@@ -19,9 +19,9 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				SetNativeControl(new EProgressBar(Forms.NativeParent)
 				{
-					Style = "process_small",
 					IsPulseMode = true,
-				});
+				}
+				.SetSmallStyle());
 			}
 			base.OnElementChanged(e);
 		}

@@ -30,8 +30,8 @@ namespace Xamarin.Forms.Platform.MacOS
 					};
 					_picker.ValidateProposedDateValue += HandleValueChanged;
 					(_picker as FormsNSDatePicker).FocusChanged += ControlFocusChanged;
-					_defaultTextColor = _picker.TextColor;
-					_defaultBackgroundColor = _picker.BackgroundColor;
+					_defaultTextColor = ColorExtensions.TextColor;
+					_defaultBackgroundColor = ColorExtensions.ControlBackgroundColor;
 
 					SetNativeControl(_picker);
 				}

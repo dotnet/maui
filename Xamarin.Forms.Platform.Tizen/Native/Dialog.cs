@@ -236,12 +236,12 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// <param name="title">New dialog title.</param>
 		protected virtual void ApplyTitle(string title)
 		{
-			SetPartText("title,text", title);
+			this.SetTitleTextPart(title);
 		}
 
 		protected virtual void ApplyTitleColor(EColor color)
 		{
-			SetPartColor(Device.Idiom == TargetIdiom.TV ? "text_title" : "text_maintitle", color);
+			this.SetTitleColor(color);
 		}
 
 		/// <summary>
@@ -253,26 +253,23 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		{
 			if (button != null)
 			{
-				button.Style = "popup";
+				button.SetPopupStyle();
 			}
 
-			string part;
 			switch (position)
 			{
 				case ButtonPosition.Positive:
-					part = "button3";
+					this.SetButton3Part(button, true);
 					break;
 
 				case ButtonPosition.Neutral:
-					part = "button2";
+					this.SetButton2Part(button, true);
 					break;
 
 				default:
-					part = "button1";
+					this.SetButton1Part(button, true);
 					break;
 			}
-
-			SetPartContent(part, button, true);
 		}
 
 		/// <summary>
@@ -281,7 +278,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// <param name="content">New dialog content.</param>
 		protected virtual void ApplyContent(EvasObject content)
 		{
-			SetPartContent("default", content, true);
+			this.SetContentPart(content, true);
 		}
 
 		protected virtual void ApplyMessage(string message)

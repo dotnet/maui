@@ -46,9 +46,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 
 		internal class SectionCellRenderer : TextCellRenderer
 		{
-			public SectionCellRenderer() : this("group_index")
+			public SectionCellRenderer() : this(ThemeConstants.GenItemClass.Styles.GroupIndex)
 			{
-				DetailPart = "null";
 			}
 			protected SectionCellRenderer(string style) : base(style) { }
 		}
@@ -58,7 +57,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 
 		class PaddingItemClass : GenItemClass
 		{
-			public PaddingItemClass() : base("padding")
+			public PaddingItemClass() : base(ThemeConstants.GenItemClass.Styles.Watch.Padding)
 			{
 			}
 		}

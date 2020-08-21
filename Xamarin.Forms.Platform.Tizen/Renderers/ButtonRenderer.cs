@@ -103,7 +103,6 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateFontSize()
 		{
-			//(Control as IButton).FontSize = Element.FontSize;
 			if (Control is IButton ib)
 			{
 				ib.FontSize = Element.FontSize;

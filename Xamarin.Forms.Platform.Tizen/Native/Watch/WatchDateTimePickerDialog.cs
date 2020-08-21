@@ -10,7 +10,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 	public class WatchDateTimePickerDialog : Popup, IDateTimeDialog
 	{
 		ELayout _surfaceLayout;
-		ELayout _datetimeLayout;
+		DateTimeLayout _datetimeLayout;
 		CircleSurface _surface;
 		EButton _doneButton;
 		Box _container;
@@ -19,23 +19,22 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 
 		public WatchDateTimePickerDialog(EvasObject parent) : base(parent)
 		{
+			this.SetWatchCircleStyle();
 			AlignmentX = -1;
 			AlignmentY = -1;
 			WeightX = 1.0;
 			WeightY = 1.0;
-			Style = "circle";
 
 			_container = new Box(parent) { AlignmentX = -1, AlignmentY = -1, WeightX = 1, WeightY = 1 };
 			_container.BackgroundColor = ElmSharp.Color.Blue;
 			_container.SetLayoutCallback(OnContainerLayout);
 
-			_datetimeLayout = new ELayout(parent);
+			_datetimeLayout = new DateTimeLayout(parent);
 			_surfaceLayout = new ELayout(parent);
 
 			_container.PackEnd(_datetimeLayout);
 			_container.PackEnd(_surfaceLayout);
 
-			_datetimeLayout.SetTheme("layout", "circle", "datetime");
 			_surface = new CircleSurface(_surfaceLayout);
 
 			_picker = new WatchDateTimePicker(parent, _surface);
@@ -45,9 +44,9 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 			_doneButton = new Button(parent)
 			{
 				Text = "Set",
-				Style = "bottom",
 			};
-			_datetimeLayout.SetPartContent("elm.swallow.btn", _doneButton);
+			_doneButton.SetBottomStyle();
+			_datetimeLayout.SetBottomButtonPart(_doneButton);
 			_doneButton.Clicked += OnDoneClicked;
 
 			ActivateRotaryInteraction();
@@ -67,7 +66,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 			set
 			{
 				_title = value;
-				_datetimeLayout.SetPartText("elm.text", _title);
+				_datetimeLayout.SetTextPart(_title);
 			}
 		}
 
@@ -118,8 +117,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 
 		void OnDoneClicked(object sender, EventArgs e)
 		{
-			System.Console.WriteLine("Done clicked");
-			System.Console.WriteLine("Picker.DateTime - {0} ", _picker.DateTime);
 			DateTimeChanged?.Invoke(this, new DateChangedEventArgs(_picker.DateTime));
 			Hide();
 			PickerClosed?.Invoke(this, EventArgs.Empty);

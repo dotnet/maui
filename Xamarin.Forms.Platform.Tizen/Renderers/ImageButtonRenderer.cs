@@ -33,10 +33,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				_border.Show();
 				_image = new Native.Image(Forms.NativeParent);
 				_image.Show();
-				_button = new EButton(Forms.NativeParent)
-				{
-					Style = "transparent"
-				};
+				_button = new EButton(Forms.NativeParent).SetTransparentStyle();
 				_button.Clicked += OnClicked;
 				_button.Pressed += OnPressed;
 				_button.Released += OnReleased;

@@ -29,6 +29,7 @@ namespace Xamarin.Forms
 			if (Command != null && Command.CanExecute(CommandParameter))
 				Command.Execute(CommandParameter);
 
+			OnClicked();
 			Invoked?.Invoke(this, EventArgs.Empty);
 		}
 	}

@@ -151,7 +151,7 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 #endif
 
-		#region CreateMySwipeView
+#region CreateMySwipeView
 
 		public SwipeView CreateMySwipeView()
 		{

@@ -21,14 +21,6 @@ namespace Xamarin.Forms.Platform.Tizen
 			Right
 		};
 
-		const string PartTitle = "default";
-		const string PartBackButton = "elm.swallow.prev_btn";
-		const string PartLeftToolbar = "title_left_btn";
-		const string PartRightToolbar = "title_right_btn";
-		const string PartNavigationBar = "navigationbar";
-		const string StyleBackButton = "naviframe/back_btn/default";
-		const string StyleNavigationBar = "navigationbar";
-
 		readonly List<Widget> _naviItemContentPartList = new List<Widget>();
 		Naviframe _naviFrame = null;
 		Page _previousPage = null;
@@ -184,11 +176,8 @@ namespace Xamarin.Forms.Platform.Tizen
 				}
 				return;
 			}
-			//According to TV UX Guideline, item style should be set to "tabbar" in case of TabbedPage only for TV profile.
-			if (Device.Idiom == TargetIdiom.TV)
-			{
-				item.Style = page is TabbedPage ? "tabbar" : "default";
-			}
+
+			item.SetTabBarStyle();
 			item.TitleBarVisible = (bool)page.GetValue(NavigationPage.HasNavigationBarProperty);
 			UpdateToolbarItem(page, item);
 			UpdateBarBackgroundColor(item);
@@ -204,10 +193,10 @@ namespace Xamarin.Forms.Platform.Tizen
 				return;
 
 			Native.Button rightButton = GetToolbarButton(ToolbarButtonPosition.Right);
-			item.SetPartContent(PartRightToolbar, rightButton);
+			item.SetRightToolbarButton(rightButton);
 
 			Native.Button leftButton = GetToolbarButton(ToolbarButtonPosition.Left);
-			item.SetPartContent(PartLeftToolbar, leftButton);
+			item.SetLeftToolbarButton(leftButton);
 			UpdateHasBackButton(page, item);
 		}
 
@@ -222,7 +211,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				button = CreateNavigationButton((string)page.GetValue(NavigationPage.BackButtonTitleProperty));
 			}
-			item.SetPartContent(PartBackButton, button);
+			item.SetBackButton(button);
 		}
 
 		void UpdateTitle(Page page, NaviItem item = null)
@@ -230,7 +219,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (item == null)
 				item = GetNaviItemForPage(page);
 
-			item.SetPartText(PartTitle, SpanTitle(page.Title));
+			item.SetTitle(SpanTitle(page.Title));
 		}
 
 		string SpanTitle(string Title)
@@ -262,30 +251,29 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Element.OnThisPlatform().HasBreadCrumbsBar())
 			{
-				item.Style = StyleNavigationBar;
-				item.SetPartContent(PartNavigationBar, GetBreadCrumbsBar());
+				item.SetNavigationBarStyle();
+				item.SetNavigationBar(GetBreadCrumbsBar());
 			}
 			else
 			{
-				item.SetPartContent(PartNavigationBar, null, false);
+				item.SetNavigationBar(null, false);
 			}
 		}
 
 		EButton CreateNavigationButton(string text)
 		{
-			EButton button = new EButton(Forms.NativeParent);
+			EButton button = new EButton(Forms.NativeParent)
+			{
+				Text = text
+			};
+			button.SetNavigationBackStyle();
 			button.Clicked += (sender, e) =>
 			{
 				if (!Element.SendBackButtonPressed())
 					Forms.Context.Exit();
 			};
-
-			button.Style = StyleBackButton;
-			button.Text = text;
-
 			_naviItemContentPartList.Add(button);
 			button.Deleted += NaviItemPartContentDeletedHandler;
-
 			return button;
 		}
 
@@ -322,11 +310,11 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			EToolbar toolbar = new EToolbar(Forms.NativeParent)
 			{
-				Style = StyleNavigationBar,
 				ItemAlignment = 0,
 				Homogeneous = false,
 				ShrinkMode = ToolbarShrinkMode.Scroll
 			};
+			toolbar.SetNavigationBarStyle();
 
 			foreach (var p in Element.Navigation.NavigationStack)
 			{
