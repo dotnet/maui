@@ -88,7 +88,7 @@ namespace Xamarin.Essentials
             {
                 var dir = IconDirectory.Trim('/', '\\');
 
-                item.Logo = new Uri($"ms-appx:///{dir}/" + action.Icon + ".png");
+                item.Logo = new Uri($"ms-appx:///{dir}/{action.Icon}.png");
             }
 
             return item;

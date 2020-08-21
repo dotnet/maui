@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
@@ -32,8 +31,14 @@ namespace Xamarin.Essentials
             return Task.CompletedTask;
         }
 
-        internal static AppAction ToAppAction(this UIApplicationShortcutItem shortcutItem) =>
-            new AppAction(shortcutItem.Type, shortcutItem.LocalizedTitle, shortcutItem.LocalizedSubtitle);
+        internal static AppAction ToAppAction(this UIApplicationShortcutItem shortcutItem)
+        {
+            string id = null;
+            if (shortcutItem.UserInfo.TryGetValue((NSString)"id", out var idObj))
+                id = idObj?.ToString();
+
+            return new AppAction(shortcutItem.Type, id, shortcutItem.LocalizedTitle, shortcutItem.LocalizedSubtitle);
+        }
 
         static UIApplicationShortcutItem ToShortcutItem(this AppAction action) =>
             new UIApplicationShortcutItem(
