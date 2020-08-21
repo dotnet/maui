@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.StartScreen;
@@ -70,23 +71,22 @@ namespace Xamarin.Essentials
         static string ArgumentsToId(string arguments)
         {
             if (arguments?.StartsWith(appActionPrefix) ?? false)
-                return System.Text.Encoding.Default.GetString(Convert.FromBase64String(arguments.Substring(appActionPrefix.Length)));
+                return Encoding.Default.GetString(Convert.FromBase64String(arguments.Substring(appActionPrefix.Length)));
 
             return default;
         }
 
         static JumpListItem ToJumpListItem(this AppAction action)
         {
-            var a = appActionPrefix + Convert.ToBase64String(System.Text.Encoding.Default.GetBytes(action.Id.ToString()));
-
-            var item = JumpListItem.CreateWithArguments(a, action.Title);
+            var id = appActionPrefix + Convert.ToBase64String(Encoding.Default.GetBytes(action.Id));
+            var item = JumpListItem.CreateWithArguments(id, action.Title);
 
             if (!string.IsNullOrEmpty(action.Subtitle))
                 item.Description = action.Subtitle;
 
             if (!string.IsNullOrEmpty(action.Icon))
             {
-                var dir = IconDirectory.Trim('/', '\\');
+                var dir = IconDirectory.Trim('/', '\\').Replace('\\', '/');
 
                 item.Logo = new Uri($"ms-appx:///{dir}/{action.Icon}.png");
             }
