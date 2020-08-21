@@ -1680,9 +1680,9 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8958.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue10679.xaml">        
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue10679.xaml">
       <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>    
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue10735.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>

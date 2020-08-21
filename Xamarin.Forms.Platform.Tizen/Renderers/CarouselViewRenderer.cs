@@ -1,10 +1,16 @@
 ﻿using System;
 using ElmSharp;
+using System.Collections.Generic;
+using System.ComponentModel;
+using Xamarin.Forms.Platform.Tizen.Native;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
 	public class CarouselViewRenderer : ItemsViewRenderer<CarouselView, Native.CarouselView>
 	{
+		List<View> _oldViews = new List<View>();
+		SmartEvent _animationStart;
+
 		public CarouselViewRenderer()
 		{
 			RegisterPropertyHandler(CarouselView.ItemsLayoutProperty, UpdateItemsLayout);
@@ -14,7 +20,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(CarouselView.CurrentItemProperty, UpdateCurrentItemFromElement);
 		}
 
-		protected override Native.CarouselView CreateNativeControl(ElmSharp.EvasObject parent)
+		protected override Native.CarouselView CreateNativeControl(EvasObject parent)
 		{
 			return new Native.CarouselView(parent);
 		}
@@ -24,8 +30,6 @@ namespace Xamarin.Forms.Platform.Tizen
 			return Element.ItemsLayout;
 		}
 
-		ElmSharp.SmartEvent _animationStart;
-		ElmSharp.SmartEvent _animationStop;
 		protected override void OnElementChanged(ElementChangedEventArgs<CarouselView> e)
 		{
 			base.OnElementChanged(e);
@@ -36,8 +40,6 @@ namespace Xamarin.Forms.Platform.Tizen
 				Control.Scroll.DragStop += OnDragStop;
 				_animationStart = new SmartEvent(Control.Scroll, Control.Scroll.RealHandle, ThemeConstants.Scroller.Signals.StartScrollAnimation);
 				_animationStart.On += OnScrollStart;
-				_animationStop = new SmartEvent(Control.Scroll, Control.Scroll.RealHandle, ThemeConstants.Scroller.Signals.StopScrollAnimation);
-				_animationStop.On += OnScrollStop;
 			}
 			UpdatePositionFromElement(false);
 			UpdateCurrentItemFromElement(false);
@@ -59,6 +61,15 @@ namespace Xamarin.Forms.Platform.Tizen
 			Control.VerticalScrollBarVisiblePolicy = visibility.ToNative();
 		}
 
+		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			base.OnElementPropertyChanged(sender, e);
+			if (e.PropertyName == nameof(Element.ItemsSource))
+			{
+				Element.Position = 0;
+			}
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
@@ -69,7 +80,6 @@ namespace Xamarin.Forms.Platform.Tizen
 					Control.Scroll.DragStart -= OnDragStart;
 					Control.Scroll.DragStop -= OnDragStop;
 					_animationStart.On -= OnScrollStart;
-					_animationStop.On -= OnScrollStop;
 				}
 			}
 			base.Dispose(disposing);
@@ -92,23 +102,67 @@ namespace Xamarin.Forms.Platform.Tizen
 			Element.IsScrolling = true;
 		}
 
-		void OnScrollStop(object sender, EventArgs e)
-		{
-			var scrollerIndex = Control.LayoutManager.IsHorizontal ? Control.Scroll.HorizontalPageIndex : Control.Scroll.VerticalPageIndex;
-			Element.SetValueFromRenderer(CarouselView.PositionProperty, scrollerIndex);
-			Element.SetValueFromRenderer(CarouselView.CurrentItemProperty, Control.Adaptor[scrollerIndex]);
-			Control.Adaptor.RequestItemSelected(Control.Adaptor[scrollerIndex]);
-			Element.IsScrolling = false;
-		}
-
 		void OnScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
-			if (!Element.IsScrolling)
-				Element.IsScrolling = true;
+			var scrolledIndex = e.CenterItemIndex;
+			Element.SetValueFromRenderer(CarouselView.PositionProperty, scrolledIndex);
+			Element.SetValueFromRenderer(CarouselView.CurrentItemProperty, Control.Adaptor[scrolledIndex]);
+			Control.Adaptor.RequestItemSelected(Control.Adaptor[scrolledIndex]);
+			Element.IsScrolling = false;
 
-			if (Element.IsDragging)
-				if (Element.Position != e.CenterItemIndex)
-					Element.SetValueFromRenderer(CarouselView.PositionProperty, e.CenterItemIndex);
+			if (Control.Adaptor is ItemTemplateAdaptor adaptor)
+			{
+				var newViews = new List<View>();
+				var carouselPosition = Element.Position;
+				var previousPosition = carouselPosition - 1;
+				var nextPosition = carouselPosition + 1;
+
+				for (int i = e.FirstVisibleItemIndex; i <= e.LastVisibleItemIndex; i++)
+				{
+					var itemView = adaptor.GetTemplatedView(i);
+					if (itemView == null)
+					{
+						continue;
+					}
+
+					if (i == carouselPosition)
+					{
+						VisualStateManager.GoToState(itemView, CarouselView.CurrentItemVisualState);
+					}
+					else if (i == previousPosition)
+					{
+						VisualStateManager.GoToState(itemView, CarouselView.PreviousItemVisualState);
+					}
+					else if (i == nextPosition)
+					{
+						VisualStateManager.GoToState(itemView, CarouselView.NextItemVisualState);
+					}
+					else
+					{
+						VisualStateManager.GoToState(itemView, CarouselView.DefaultItemVisualState);
+					}
+
+					newViews.Add(itemView);
+
+					if (!Element.VisibleViews.Contains(itemView))
+					{
+						Element.VisibleViews.Add(itemView);
+					}
+				}
+
+				foreach (var itemView in _oldViews)
+				{
+					if (!newViews.Contains(itemView))
+					{
+						VisualStateManager.GoToState(itemView, CarouselView.DefaultItemVisualState);
+						if (Element.VisibleViews.Contains(itemView))
+						{
+							Element.VisibleViews.Remove(itemView);
+						}
+					}
+				}
+				_oldViews = newViews;
+			}
 		}
 
 		void UpdateCurrentItemFromElement(bool isInitializing)

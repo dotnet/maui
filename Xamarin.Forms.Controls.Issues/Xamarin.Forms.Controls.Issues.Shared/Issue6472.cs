@@ -160,6 +160,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST && __IOS__
 		[Test]
+		[Ignore("Fails occasionally on iOS 12 https://github.com/xamarin/Xamarin.Forms/issues/6472")]
 		public void ListViewDoesNotThrowExceptionWithObservableCollection() 
 		{
 			RunningApp.WaitForElement (ListViewAutomationId);

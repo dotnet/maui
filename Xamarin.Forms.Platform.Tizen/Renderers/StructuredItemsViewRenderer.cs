@@ -10,6 +10,10 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(SelectableItemsView.SelectedItemProperty, UpdateSelectedItem);
 			RegisterPropertyHandler(SelectableItemsView.SelectionModeProperty, UpdateSelectionMode);
 			RegisterPropertyHandler(StructuredItemsView.ItemSizingStrategyProperty, UpdateSizingStrategy);
+			RegisterPropertyHandler(StructuredItemsView.HeaderProperty, UpdateHeaderFooter);
+			RegisterPropertyHandler(StructuredItemsView.HeaderTemplateProperty, UpdateHeaderFooter);
+			RegisterPropertyHandler(StructuredItemsView.FooterProperty, UpdateHeaderFooter);
+			RegisterPropertyHandler(StructuredItemsView.FooterTemplateProperty, UpdateHeaderFooter);
 		}
 
 		protected override Native.CollectionView CreateNativeControl(ElmSharp.EvasObject parent)
@@ -60,6 +64,14 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (Element is SelectableItemsView selectable)
 			{
 				Control.SelectionMode = selectable.SelectionMode == SelectionMode.None ? CollectionViewSelectionMode.None : CollectionViewSelectionMode.Single;
+			}
+		}
+
+		void UpdateHeaderFooter(bool init)
+		{
+			if (!init)
+			{
+				UpdateAdaptor(false);
 			}
 		}
 	}
