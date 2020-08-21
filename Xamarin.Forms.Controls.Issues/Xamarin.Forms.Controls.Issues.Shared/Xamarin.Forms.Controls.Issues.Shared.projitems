@@ -269,7 +269,6 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue9833.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue9929.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Issue9525.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue9088.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RefreshViewTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue7338.cs" />
