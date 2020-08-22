@@ -122,9 +122,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Maps.GTK", "X
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Platform.WPF", "Xamarin.Forms.Platform.WPF\Xamarin.Forms.Platform.WPF.csproj", "{140BC260-8B15-4D3A-B1B0-DDD8072918CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Maps.WPF", "Xamarin.Forms.Maps.WPF\Xamarin.Forms.Maps.WPF.csproj", "{89B0DB73-A32E-447C-9390-A2A59D89B2E4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Maps.WPF", "Xamarin.Forms.Maps.WPF\Xamarin.Forms.Maps.WPF.csproj", "{89B0DB73-A32E-447C-9390-A2A59D89B2E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.ControlGallery.WPF", "Xamarin.Forms.ControlGallery.WPF\Xamarin.Forms.ControlGallery.WPF.csproj", "{411B960D-6D30-4079-83B2-ABB9987D2EDF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.ControlGallery.WPF", "Xamarin.Forms.ControlGallery.WPF\Xamarin.Forms.ControlGallery.WPF.csproj", "{411B960D-6D30-4079-83B2-ABB9987D2EDF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.ControlGallery.Tizen", "Xamarin.Forms.ControlGallery.Tizen\Xamarin.Forms.ControlGallery.Tizen.csproj", "{8C7F0087-4031-4297-A651-6ED55F7B88BA}"
 EndProject
@@ -161,11 +161,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Platform.UAP.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Platform.iOS.UnitTests", "Xamarin.Forms.Platform.iOS.UnitTests\Xamarin.Forms.Platform.iOS.UnitTests.csproj", "{52C50E88-7F15-45FE-A63C-8E7C76CA2BAE}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Common", "Common\Common.shproj", "{E34DCEA3-A6A3-46D4-A277-7A95AD5B1C0B}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{0a39a74b-6f7a-4d41-84f2-b0ccdce899df}*SharedItemsImports = 4
 		Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.projitems*{0a39a74b-6f7a-4d41-84f2-b0ccdce899df}*SharedItemsImports = 4
+		Common.Android\Common.Android.projitems*{0e16e70a-d6dd-4323-ad5d-363abff42d6a}*SharedItemsImports = 5
 		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{0f0db9cc-ea65-429c-9363-38624bf8f49c}*SharedItemsImports = 13
+		Common\Common.projitems*{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}*SharedItemsImports = 5
 		Xamarin.Flex\Xamarin.Flex.projitems*{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}*SharedItemsImports = 5
 		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{9db0cabb-24cc-4538-88ec-6e0a0fe40248}*SharedItemsImports = 4
 		Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.projitems*{9db0cabb-24cc-4538-88ec-6e0a0fe40248}*SharedItemsImports = 4
@@ -174,6 +178,7 @@ Global
 		Xamarin.Flex\Xamarin.Flex.projitems*{a6703c7d-d362-452a-a7a5-73771194d38c}*SharedItemsImports = 13
 		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{cb9c96ce-125c-4a68-b6a1-c3ff1fbf93e1}*SharedItemsImports = 5
 		Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.projitems*{e175485b-3c8c-47d7-8dd5-f7fed627eb25}*SharedItemsImports = 13
+		Common\Common.projitems*{e34dcea3-a6a3-46d4-a277-7a95ad5b1c0b}*SharedItemsImports = 13
 		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{eadd8100-b3ae-4a31-92c4-267a64a1c6eb}*SharedItemsImports = 4
 		Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.projitems*{eadd8100-b3ae-4a31-92c4-267a64a1c6eb}*SharedItemsImports = 4
 	EndGlobalSection
@@ -1610,6 +1615,7 @@ Global
 		{A4C57790-71D1-467C-A69E-2BD84CB6666C} = {60B64BCC-378A-4354-9E9F-BBB45169EDBD}
 		{8F245976-F555-4814-B935-9AD58F4D2871} = {60B64BCC-378A-4354-9E9F-BBB45169EDBD}
 		{52C50E88-7F15-45FE-A63C-8E7C76CA2BAE} = {60B64BCC-378A-4354-9E9F-BBB45169EDBD}
+		{E34DCEA3-A6A3-46D4-A277-7A95AD5B1C0B} = {9AD757F5-E57A-459D-A0A7-E0675E045B84}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {650AE971-2F29-46A8-822C-FB4FCDC6A9A0}
