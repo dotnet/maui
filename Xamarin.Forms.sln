@@ -163,12 +163,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Platform.iOS.
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Common", "Common\Common.shproj", "{E34DCEA3-A6A3-46D4-A277-7A95AD5B1C0B}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Common.Android", "Common.Android\Common.Android.shproj", "{546BF705-FF68-4974-B437-841D07F2DAD7}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{0a39a74b-6f7a-4d41-84f2-b0ccdce899df}*SharedItemsImports = 4
 		Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.projitems*{0a39a74b-6f7a-4d41-84f2-b0ccdce899df}*SharedItemsImports = 4
 		Common.Android\Common.Android.projitems*{0e16e70a-d6dd-4323-ad5d-363abff42d6a}*SharedItemsImports = 5
 		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{0f0db9cc-ea65-429c-9363-38624bf8f49c}*SharedItemsImports = 13
+		Common.Android\Common.Android.projitems*{546bf705-ff68-4974-b437-841d07f2dad7}*SharedItemsImports = 13
 		Common\Common.projitems*{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}*SharedItemsImports = 5
 		Xamarin.Flex\Xamarin.Flex.projitems*{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}*SharedItemsImports = 5
 		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{9db0cabb-24cc-4538-88ec-6e0a0fe40248}*SharedItemsImports = 4
@@ -1616,6 +1619,7 @@ Global
 		{8F245976-F555-4814-B935-9AD58F4D2871} = {60B64BCC-378A-4354-9E9F-BBB45169EDBD}
 		{52C50E88-7F15-45FE-A63C-8E7C76CA2BAE} = {60B64BCC-378A-4354-9E9F-BBB45169EDBD}
 		{E34DCEA3-A6A3-46D4-A277-7A95AD5B1C0B} = {9AD757F5-E57A-459D-A0A7-E0675E045B84}
+		{546BF705-FF68-4974-B437-841D07F2DAD7} = {29AC50BF-B4FB-450B-9386-0C5AD4B84226}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {650AE971-2F29-46A8-822C-FB4FCDC6A9A0}
