@@ -19,7 +19,7 @@ using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public class EntryRenderer : EntryRendererBase<FormsEditText>
+	public partial class EntryRenderer : EntryRendererBase<FormsEditText>
 	{
 		TextColorSwitcher _hintColorSwitcher;
 		TextColorSwitcher _textColorSwitcher;
@@ -67,7 +67,8 @@ namespace Xamarin.Forms.Platform.Android
 		}
 	}
 
-	public abstract partial class EntryRendererBase<TControl> : ViewRenderer<Entry, TControl>, ITextWatcher, TextView.IOnEditorActionListener
+	public abstract partial class EntryRendererBase<TControl> 
+		: ViewRenderer<Entry, TControl>, ITextWatcher, TextView.IOnEditorActionListener
 		where TControl : global::Android.Views.View
 	{
 		bool _disposed;
@@ -534,23 +535,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateText()
 		{
-			var text = Element.UpdateFormsText(Element.Text, Element.TextTransform);
-			
-			if (EditText.Text == text)
-				return;
-			
-			EditText.Text = text;
-			if (EditText.IsFocused)
-			{
-				EditText.SetSelection(text.Length);
-				EditText.ShowKeyboard();
-			}
+			FormsEditText.UpdateText(Element, EditText);
 		}
-	}
 
-	// Entry clear button management
-	public abstract partial class EntryRendererBase<TControl>
-	{
 		Drawable _clearBtn;
 		internal override void OnNativeFocusChanged(bool hasFocus)
 		{

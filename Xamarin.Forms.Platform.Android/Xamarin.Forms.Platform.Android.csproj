@@ -77,4 +77,6 @@
   <ItemGroup>
     <Folder Include="Shapes\" />
   </ItemGroup>
+
+  <Import Project="..\Common.Android\Common.Android.projitems" Label="Shared" />
 </Project>

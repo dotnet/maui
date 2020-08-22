@@ -1,0 +1,19 @@
+﻿<Project Sdk="MSBuild.Sdk.Extras">
+
+  <PropertyGroup>
+    <TargetFrameworks>MonoAndroid10.0;</TargetFrameworks>
+    <DefineConstants>$(DefineConstants);__MAUI__</DefineConstants>
+  </PropertyGroup>
+
+  <Import Project="..\System.Maui.Platform.Core\System.Maui.Platform.Core.projitems" Label="Shared" />
+
+  <Import Project="..\System.Maui.Interfaces\System.Maui.Interfaces.projitems" Label="Shared" />
+
+  <Import Project="..\Common.Android\Common.Android.projitems" Label="Shared" />
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'MonoAndroid10.0'">
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.1.0" />
+    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.0.0" />
+    <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" Version="1.0.0" />
+  </ItemGroup>
+</Project>

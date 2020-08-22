@@ -11,6 +11,14 @@ using Android.Support.V4.Graphics.Drawable;
 #endif
 using ARect = Android.Graphics.Rect;
 
+#if !__MAUI__
+using AEditText = Android.Widget.EditText;
+using ITextInput = global::Xamarin.Forms.Entry;
+#else
+using AEditText = AndroidX.AppCompat.Widget.AppCompatEditText;
+using ITextInput = global::System.Maui.ITextInput;
+#endif
+
 namespace Xamarin.Forms.Platform.Android
 {
 	public class FormsEditText : FormsEditTextBase, IFormsEditText
@@ -52,9 +60,25 @@ namespace Xamarin.Forms.Platform.Android
 			add => _selectionChanged += value;
 			remove => _selectionChanged -= value;
 		}
+
+
+		internal static void UpdateText(ITextInput Element, EditText EditText)
+		{
+			var text = Element.UpdateFormsText(Element.Text, Element.TextTransform);
+
+			if (EditText.Text == text)
+				return;
+
+			EditText.Text = text;
+			if (EditText.IsFocused)
+			{
+				EditText.SetSelection(text.Length);
+				EditText.ShowKeyboard();
+			}
+		}
 	}
 
-	public class FormsEditTextBase : EditText, IDescendantFocusToggler
+	public class FormsEditTextBase : AEditText, IDescendantFocusToggler
 	{
 		DescendantFocusToggler _descendantFocusToggler;
 

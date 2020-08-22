@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>390bff71-88d3-4121-9ab9-8544cdc518d8</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>System.Maui.SlimRenderers.Common</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AbstractViewRenderer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)EntryRenderer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IPropertyMapperView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LabelRenderer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MauiRenderer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PropertyMapper.cs" />
+  </ItemGroup>
+</Project>

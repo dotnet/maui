@@ -21,6 +21,7 @@ namespace Xamarin.Forms.Platform.Android
 			return new AColor((byte)(byte.MaxValue * self.R), (byte)(byte.MaxValue * self.G), (byte)(byte.MaxValue * self.B), (byte)(byte.MaxValue * self.A));
 		}
 
+#if !__MAUI__
 		[Obsolete("ToAndroid(this Color, int) is obsolete as of version 2.5. Please use ToAndroid(this Color, int, Context) instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static AColor ToAndroid(this Color self, int defaultColorResourceId)
@@ -32,6 +33,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			return ToAndroid(self);
 		}
+#endif
 
 		public static AColor ToAndroid(this Color self, int defaultColorResourceId, Context context)
 		{

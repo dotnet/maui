@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>5f1afed8-8eaf-4be7-84a1-ebeb54aac4c3</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>System.Maui.Interfaces</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)IFrameworkElement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ILabel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IText.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ITextInput.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IViewRenderer.cs" />
+  </ItemGroup>
+</Project>
