@@ -347,9 +347,9 @@ stages:
       #         softwareName: Xamarin.Forms
       #         softwareVersionNum: $(Build.BuildNumber)
       #         isLargeApp: false
-          
-  # only sign using the private server
-  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+
+  # only sign using the private server and not sigining Maui for now
+  - ${{ if and(eq(variables['System.TeamProject'], 'devdiv'), ne(variables['System.DefinitionId'], '13330')) }}:
     - stage: nuget_signing
       dependsOn: windows
       displayName: Sign Nuget
