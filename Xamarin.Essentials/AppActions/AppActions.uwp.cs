@@ -14,6 +14,8 @@ namespace Xamarin.Essentials
 
         public static string IconDirectory { get; set; } = "Assets";
 
+        public static string IconExtension { get; set; } = "png";
+
         internal static bool PlatformIsSupported
            => true;
 
@@ -88,7 +90,9 @@ namespace Xamarin.Essentials
             {
                 var dir = IconDirectory.Trim('/', '\\').Replace('\\', '/');
 
-                item.Logo = new Uri($"ms-appx:///{dir}/{action.Icon}.png");
+                var ext = IconExtension.TrimStart('.');
+
+                item.Logo = new Uri($"ms-appx:///{dir}/{action.Icon}.{ext}");
             }
 
             return item;
