@@ -19,6 +19,8 @@ namespace Xamarin.Forms.Core.UITests
 		{
 			if (Session == null)
 				Session = CreateWindowsDriver();
+			else
+				Reset();
 
 			return new WinDriverApp(Session);
 		}

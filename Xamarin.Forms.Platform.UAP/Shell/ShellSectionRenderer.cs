@@ -162,43 +162,6 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		internal class ShellPageWrapper : Windows.UI.Xaml.Controls.Page
-		{
-			public ShellPageWrapper()
-			{
-			}
-
-			public Page Page { get; set; }
-			protected override void OnNavigatedTo(Windows.UI.Xaml.Navigation.NavigationEventArgs e)
-			{
-				base.OnNavigatedTo(e);
-				LoadPage();
-			}
-
-			protected override void OnNavigatedFrom(Windows.UI.Xaml.Navigation.NavigationEventArgs e)
-			{
-				base.OnNavigatedFrom(e);
-				Content = null;
-			}
-
-			public void LoadPage()
-			{
-				if (Page != null)
-				{
-					var container = Page.GetOrCreateRenderer().ContainerElement;
-					Content = container;
-					container.Loaded -= OnPageLoaded;
-					container.Loaded += OnPageLoaded;
-				}
-			}
-
-			private void OnPageLoaded(object sender, RoutedEventArgs e)
-			{
-				var frameworkElement = sender as FrameworkElement;
-				Page.Layout(new Rectangle(0, 0, frameworkElement.ActualWidth, frameworkElement.ActualHeight));
-			}
-		}
-
 		NavigationTransitionInfo GetTransitionInfo(ShellNavigationSource navSource)
 		{
 			switch (navSource)
