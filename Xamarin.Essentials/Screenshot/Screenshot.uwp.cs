@@ -57,7 +57,7 @@ namespace Xamarin.Essentials
             var ms = new InMemoryRandomAccessStream();
 
             var encoder = await BitmapEncoder.CreateAsync(f, ms).AsTask().ConfigureAwait(false);
-            encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore, (uint)bmp.PixelWidth, (uint)bmp.PixelHeight, 96, 96, bytes);
+            encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore, (uint)Width, (uint)Height, 96, 96, bytes);
             await encoder.FlushAsync().AsTask().ConfigureAwait(false);
 
             return ms.AsStreamForRead();
