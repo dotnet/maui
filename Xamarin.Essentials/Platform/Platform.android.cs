@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -118,13 +119,13 @@ namespace Xamarin.Essentials
             return activities.Any();
         }
 
-        internal static AndroidUri GetShareableFileUri(string filename)
+        internal static AndroidUri GetShareableFileUri(FileBase file)
         {
             Java.IO.File sharedFile;
-            if (FileProvider.IsFileInPublicLocation(filename))
+            if (FileProvider.IsFileInPublicLocation(file.FullPath))
             {
                 // we are sharing a file in a "shared/public" location
-                sharedFile = new Java.IO.File(filename);
+                sharedFile = new Java.IO.File(file.FullPath);
             }
             else
             {
@@ -136,9 +137,20 @@ namespace Xamarin.Essentials
                 tmpDir.DeleteOnExit();
 
                 // create the new temprary file
-                var tmpFile = new Java.IO.File(tmpDir, System.IO.Path.GetFileName(filename));
-                System.IO.File.Copy(filename, tmpFile.CanonicalPath);
+                var tmpFile = new Java.IO.File(tmpDir, file.FileName);
                 tmpFile.DeleteOnExit();
+
+                var fileUri = AndroidUri.Parse(file.FullPath);
+                if (fileUri.Scheme == "content")
+                {
+                    using var stream = Application.Context.ContentResolver.OpenInputStream(fileUri);
+                    using var destStream = System.IO.File.Create(tmpFile.CanonicalPath);
+                    stream.CopyTo(destStream);
+                }
+                else
+                {
+                    System.IO.File.Copy(file.FullPath, tmpFile.CanonicalPath);
+                }
 
                 sharedFile = tmpFile;
             }
@@ -256,16 +268,14 @@ namespace Xamarin.Essentials
             var resources = AppContext.Resources;
             var config = resources.Configuration;
 
+#if __ANDROID_24__
             if (HasApiLevelN)
-            {
                 config.SetLocale(locale);
-            }
             else
-            {
+#endif
 #pragma warning disable CS0618 // Type or member is obsolete
                 config.Locale = locale;
 #pragma warning restore CS0618 // Type or member is obsolete
-            }
 
 #pragma warning disable CS0618 // Type or member is obsolete
             resources.UpdateConfiguration(config, resources.DisplayMetrics);
@@ -344,5 +354,92 @@ namespace Xamarin.Essentials
 
         void Application.IActivityLifecycleCallbacks.OnActivityStopped(Activity activity) =>
             Platform.OnActivityStateChanged(activity, ActivityState.Stopped);
+    }
+
+    [Activity(ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
+    class IntermediateActivity : Activity
+    {
+        const string launchedExtra = "launched";
+        const string actualIntentExtra = "actual_intent";
+        const string guidExtra = "guid";
+        const string requestCodeExtra = "request_code";
+
+        static readonly ConcurrentDictionary<string, TaskCompletionSource<Intent>> pendingTasks =
+            new ConcurrentDictionary<string, TaskCompletionSource<Intent>>();
+
+        bool launched;
+        Intent actualIntent;
+        string guid;
+        int requestCode;
+
+        protected override void OnCreate(Bundle savedInstanceState)
+        {
+            base.OnCreate(savedInstanceState);
+
+            var extras = savedInstanceState ?? Intent.Extras;
+
+            // read the values
+            launched = extras.GetBoolean(launchedExtra, false);
+            actualIntent = extras.GetParcelable(actualIntentExtra) as Intent;
+            guid = extras.GetString(guidExtra);
+            requestCode = extras.GetInt(requestCodeExtra, -1);
+
+            // if this is the first time, lauch the real activity
+            if (!launched)
+                StartActivityForResult(actualIntent, requestCode);
+        }
+
+        protected override void OnSaveInstanceState(Bundle outState)
+        {
+            // make sure we mark this activity as launched
+            outState.PutBoolean(launchedExtra, true);
+
+            // save the values
+            outState.PutParcelable(actualIntentExtra, actualIntent);
+            outState.PutString(guidExtra, guid);
+            outState.PutInt(requestCodeExtra, requestCode);
+
+            base.OnSaveInstanceState(outState);
+        }
+
+        protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
+        {
+            base.OnActivityResult(requestCode, resultCode, data);
+
+            // we have a valid GUID, so handle the task
+            if (!string.IsNullOrEmpty(guid) && pendingTasks.TryRemove(guid, out var tcs) && tcs != null)
+            {
+                if (resultCode == Result.Canceled)
+                    tcs.TrySetCanceled();
+                else
+                    tcs.TrySetResult(data);
+            }
+
+            // close the intermediate activity
+            Finish();
+        }
+
+        public static Task<Intent> StartAsync(Intent intent, int requestCode)
+        {
+            // make sure we have the activity
+            var activity = Platform.GetCurrentActivity(true);
+
+            var tcs = new TaskCompletionSource<Intent>();
+
+            // create a new task
+            var guid = Guid.NewGuid().ToString();
+            pendingTasks[guid] = tcs;
+
+            // create the intermediate intent, and add the real intent to it
+            var intermediateIntent = new Intent(activity, typeof(IntermediateActivity));
+            intermediateIntent.PutExtra(actualIntentExtra, intent);
+            intermediateIntent.PutExtra(guidExtra, guid);
+            intermediateIntent.PutExtra(requestCodeExtra, requestCode);
+
+            // start the intermediate activity
+            activity.StartActivityForResult(intermediateIntent, requestCode);
+
+            return tcs.Task;
+        }
     }
 }

@@ -67,21 +67,21 @@ namespace Xamarin.Essentials
                         void_objc_msgSend_IntPtr(was.Handle, ObjCRuntime.Selector.GetHandle("setPresentationContextProvider:"), ctx.Handle);
                     }
 
-                    was.Start();
-                    var result = await tcsResponse.Task;
-                    was?.Dispose();
-                    was = null;
-                    return result;
+                    using (was)
+                    {
+                        was.Start();
+                        return await tcsResponse.Task;
+                    }
                 }
 
                 if (UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
                 {
                     sf = new SFAuthenticationSession(new NSUrl(url.OriginalString), scheme, AuthSessionCallback);
-                    sf.Start();
-                    var result = await tcsResponse.Task;
-                    sf?.Dispose();
-                    sf = null;
-                    return result;
+                    using (sf)
+                    {
+                        sf.Start();
+                        return await tcsResponse.Task;
+                    }
                 }
 
                 // THis is only on iOS9+ but we only support 10+ in Essentials anyway

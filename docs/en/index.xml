@@ -99,7 +99,7 @@
           <AttributeName>System.Runtime.Versioning.TargetFramework("Xamarin.Mac,Version=v2.0", FrameworkDisplayName="Xamarin.Mac")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+7ca82b58401f37750f9bc7e2c2003da56cc4dfa1")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+ed1281b320c4ff8fcd73f1cba0d94a1eceda9ce3")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>
@@ -159,6 +159,9 @@
       <Type Name="FeatureNotEnabledException" Kind="Class" />
       <Type Name="FeatureNotSupportedException" Kind="Class" />
       <Type Name="FileBase" Kind="Class" />
+      <Type Name="FilePicker" Kind="Class" />
+      <Type Name="FilePickerFileType" Kind="Class" />
+      <Type Name="FilePickerResult" Kind="Class" />
       <Type Name="FileProvider" Kind="Class" />
       <Type Name="FileProviderLocation" Kind="Enumeration" />
       <Type Name="FileSystem" Kind="Class" />
@@ -170,6 +173,8 @@
       <Type Name="Gyroscope" Kind="Class" />
       <Type Name="GyroscopeChangedEventArgs" Kind="Class" />
       <Type Name="GyroscopeData" Kind="Structure" />
+      <Type Name="HapticFeedback" Kind="Class" />
+      <Type Name="HapticFeedbackType" Kind="Enumeration" />
       <Type Name="Launcher" Kind="Class" />
       <Type Name="Locale" Kind="Class" />
       <Type Name="Location" Kind="Class" />
@@ -217,6 +222,7 @@
       <Type Name="Permissions+Vibrate" Kind="Class" />
       <Type Name="PermissionStatus" Kind="Enumeration" />
       <Type Name="PhoneDialer" Kind="Class" />
+      <Type Name="PickOptions" Kind="Class" />
       <Type Name="Placemark" Kind="Class" />
       <Type Name="PlacemarkExtensions" Kind="Class" />
       <Type Name="Platform" Kind="Class" />

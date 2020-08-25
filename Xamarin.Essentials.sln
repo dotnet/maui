@@ -29,7 +29,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{6330
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{EE4495FA-9869-45CF-A11D-69F2218C6F62}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Server.WebAuthenticator", "Samples\Sample.Server.WebAuthenticator\Sample.Server.WebAuthenticator.csproj", "{553D51A8-8E79-40D9-9FB3-9FC2386FF886}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.Server.WebAuthenticator", "Samples\Sample.Server.WebAuthenticator\Sample.Server.WebAuthenticator.csproj", "{553D51A8-8E79-40D9-9FB3-9FC2386FF886}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Mac", "Samples\Samples.Mac\Samples.Mac.csproj", "{89899D16-4BD1-49B1-9903-9F6BB26C5DC5}"
 EndProject

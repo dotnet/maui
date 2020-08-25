@@ -44,7 +44,7 @@ namespace Xamarin.Essentials
                 foreach (var attachment in message.Attachments)
                 {
                     var data = NSData.FromFile(attachment.FullPath);
-                    controller.AddAttachmentData(data, attachment.ContentType, attachment.AttachmentName);
+                    controller.AddAttachmentData(data, attachment.ContentType, attachment.FileName);
                 }
             }
 

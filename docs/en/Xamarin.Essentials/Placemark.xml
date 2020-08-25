@@ -168,7 +168,7 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the location of the placemark.</summary>
-        <value>The location of the palcemark.</value>
+        <value>The location of the placemark.</value>
         <remarks>
           <para />
         </remarks>

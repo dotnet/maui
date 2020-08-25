@@ -54,7 +54,7 @@ namespace Xamarin.Essentials
 
             var id = UTType.CreatePreferredIdentifier(UTType.TagClassFilenameExtension, extension, null);
             var mimeTypes = UTType.CopyAllTags(id, UTType.TagClassMIMEType);
-            return mimeTypes.Length > 0 ? mimeTypes[0] : null;
+            return mimeTypes?.Length > 0 ? mimeTypes[0] : null;
         }
 
         internal void PlatformInit(FileBase file)
