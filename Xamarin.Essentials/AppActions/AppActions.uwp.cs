@@ -90,9 +90,11 @@ namespace Xamarin.Essentials
             {
                 var dir = IconDirectory.Trim('/', '\\').Replace('\\', '/');
 
-                var ext = IconExtension.TrimStart('.');
+                var ext = IconExtension;
+                if (!string.IsNullOrEmpty(ext) && !ext.StartsWith("."))
+                    ext = "." + ext;
 
-                item.Logo = new Uri($"ms-appx:///{dir}/{action.Icon}.{ext}");
+                item.Logo = new Uri($"ms-appx:///{dir}/{action.Icon}{ext}");
             }
 
             return item;
