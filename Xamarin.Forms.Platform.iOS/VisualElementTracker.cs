@@ -65,6 +65,21 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		public event EventHandler NativeControlUpdated;
 
+		internal void Disconnect()
+		{
+			Disconnect(_element);
+		}
+
+		void Disconnect(VisualElement oldElement)
+		{
+			if (oldElement == null)
+				return;
+
+			oldElement.PropertyChanged -= _propertyChangedHandler;
+			oldElement.SizeChanged -= _sizeChangedEventHandler;
+			oldElement.BatchCommitted -= _batchCommittedHandler;
+		}
+
 		protected virtual void Dispose(bool disposing)
 		{
 			if (_disposed)
@@ -344,9 +359,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			if (oldElement != null)
 			{
-				oldElement.PropertyChanged -= _propertyChangedHandler;
-				oldElement.SizeChanged -= _sizeChangedEventHandler;
-				oldElement.BatchCommitted -= _batchCommittedHandler;
+				Disconnect(oldElement);
 			}
 
 			_element = newElement;
