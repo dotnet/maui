@@ -214,6 +214,8 @@ namespace Xamarin.Forms.Platform.Tizen
 			public class ColorClass
 			{
 				public const string Title = "text_maintitle";
+				public const string TitleBackground = "bg_title";
+				public const string ContentBackground = "bg_content";
 
 				public class TV
 				{

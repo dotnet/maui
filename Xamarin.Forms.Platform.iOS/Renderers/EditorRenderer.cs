@@ -116,7 +116,7 @@ namespace Xamarin.Forms.Platform.iOS
 					new NSObject[] { _placeholderLabel }, new NSObject[] { new NSString("_placeholderLabel") })
 			);
 
-			_placeholderLabel.TranslatesAutoresizingMaskIntoConstraints = true;
+			_placeholderLabel.TranslatesAutoresizingMaskIntoConstraints = false;
 			_placeholderLabel.AttributedText = _placeholderLabel.AttributedText.AddCharacterSpacing(Element.Placeholder, Element.CharacterSpacing);
 
 			Control.AddConstraints(hConstraints);

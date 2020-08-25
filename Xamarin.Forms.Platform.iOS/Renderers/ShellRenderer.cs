@@ -249,6 +249,7 @@ namespace Xamarin.Forms.Platform.iOS
 		protected async void SetCurrentShellItemController(IShellItemRenderer value)
 		{
 			var oldRenderer = _currentShellItemRenderer;
+			(oldRenderer as IDisconnectable)?.Disconnect();
 			var newRenderer = value;
 
 			_currentShellItemRenderer = value;
@@ -258,7 +259,7 @@ namespace Xamarin.Forms.Platform.iOS
 			View.SendSubviewToBack(newRenderer.ViewController.View);
 
 			newRenderer.ViewController.View.Frame = View.Bounds;
-
+			
 			if (oldRenderer != null)
 			{
 				var transition = CreateShellItemTransition();

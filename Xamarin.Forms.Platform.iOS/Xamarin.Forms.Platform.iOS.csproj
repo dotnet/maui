@@ -283,6 +283,7 @@
     <Compile Include="Shapes\PolylineRenderer.cs" />
     <Compile Include="Shapes\RectangleRenderer.cs" />
     <Compile Include="Extensions\BrushExtensions.cs" />
+    <Compile Include="Renderers\IDisconnectable.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\StringResources.ar.resx" />

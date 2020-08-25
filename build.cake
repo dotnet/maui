@@ -470,11 +470,13 @@ Task ("cg-uwp-build-tests")
             .WithProperty("PackageCertificateThumbprint", "a59087cc92a9a8117ffdb5255eaa155748f9f852")
             .WithProperty("PackageCertificateKeyFile", "Xamarin.Forms.ControlGallery.WindowsUniversal_TemporaryKey.pfx")
             .WithProperty("PackageCertificatePassword", "")
+            // The platform unit tests can't run when UseDotNetNativeToolchain is set to true so we force it off here
+            .WithProperty("UseDotNetNativeToolchain", "false")
             .WithRestore()
     );
 
     MSBuild("Xamarin.Forms.Core.Windows.UITests\\Xamarin.Forms.Core.Windows.UITests.csproj", 
-        GetMSBuildSettings().WithRestore());
+        GetMSBuildSettings(buildConfiguration:"Debug").WithRestore());
 });
 
 Task ("cg-uwp-deploy")

@@ -59,6 +59,12 @@ namespace Xamarin.Forms.Platform.MacOS
 			}
 		}
 
+		internal void Disconnect()
+		{
+			if (ElementGestureRecognizers != null)
+				ElementGestureRecognizers.CollectionChanged -= _collectionChangedHandler;
+		}
+
 		public void Dispose()
 		{
 			if (_disposed)
@@ -77,8 +83,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			_gestureRecognizers.Clear();
 
-			if (ElementGestureRecognizers != null)
-				ElementGestureRecognizers.CollectionChanged -= _collectionChangedHandler;
+			Disconnect();
 
 			_handler = null;
 		}
