@@ -10,6 +10,7 @@ namespace Xamarin.Forms.Platform.iOS
 			TaskCompletionSource<bool> task = new TaskCompletionSource<bool>();
 			var oldView = oldRenderer.ViewController.View;
 			var newView = newRenderer.ViewController.View;
+			oldView.Layer.RemoveAllAnimations();
 			newView.Alpha = 0;
 
 			newView.Superview.InsertSubviewAbove(newView, oldView);

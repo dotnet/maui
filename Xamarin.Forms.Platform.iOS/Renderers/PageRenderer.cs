@@ -9,7 +9,7 @@ using PageSpecific = Xamarin.Forms.PlatformConfiguration.iOSSpecific.Page;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	public class PageRenderer : UIViewController, IVisualElementRenderer, IEffectControlProvider, IAccessibilityElementsController, IShellContentInsetObserver
+	public class PageRenderer : UIViewController, IVisualElementRenderer, IEffectControlProvider, IAccessibilityElementsController, IShellContentInsetObserver, IDisconnectable
 	{
 		bool _appeared;
 		bool _disposed;
@@ -110,7 +110,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			get { return _disposed ? null : View; }
 		}
-
+		
 		public void SetElement(VisualElement element)
 		{
 			VisualElement oldElement = Element;
@@ -172,7 +172,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.ViewDidLayoutSubviews();
 
-			if (_disposed)
+			if (_disposed || Element == null)
 				return;
 
 			if (Element.Parent is BaseShellItem)
@@ -195,7 +195,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.ViewDidAppear(animated);
 
-			if (_appeared || _disposed)
+			if (_appeared || _disposed || Element == null)
 				return;
 
 			_appeared = true;
@@ -213,7 +213,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.ViewDidDisappear(animated);
 
-			if (!_appeared || _disposed)
+			if (!_appeared || _disposed || Element == null)
 				return;
 
 			_appeared = false;
@@ -221,7 +221,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (Element.Parent is CarouselPage)
 				return;
 
-			Page.SendDisappearing();
+			Page?.SendDisappearing();
 		}
 
 		public override void ViewDidLoad()
@@ -260,6 +260,25 @@ namespace Xamarin.Forms.Platform.iOS
 			NativeView?.Window?.EndEditing(true);
 		}
 
+		void IDisconnectable.Disconnect()
+		{
+			if (_shellSection != null)
+			{
+				((IShellSectionController)_shellSection).RemoveContentInsetObserver(this);
+				_shellSection = null;
+			}
+
+			if (Element != null)
+			{
+				Element.PropertyChanged -= OnHandlePropertyChanged;
+				Platform.SetRenderer(Element, null);
+				Element = null;
+			}
+
+			_events?.Disconnect();
+			_packager?.Disconnect();
+			_tracker?.Disconnect();
+		}
 
 		protected override void Dispose(bool disposing)
 		{
@@ -268,36 +287,19 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (disposing)
 			{
-				if (_shellSection != null)
-				{
-					((IShellSectionController)_shellSection).RemoveContentInsetObserver(this);
-					_shellSection = null;
-				}
+				var page = Page;
+				(this as IDisconnectable).Disconnect();
 
-				Element.PropertyChanged -= OnHandlePropertyChanged;
-				Platform.SetRenderer(Element, null);
 				if (_appeared)
-					Page.SendDisappearing();
+					page?.SendDisappearing();
 
 				_appeared = false;
-
-				if (_events != null)
-				{
-					_events.Dispose();
-					_events = null;
-				}
-
-				if (_packager != null)
-				{
-					_packager.Dispose();
-					_packager = null;
-				}
-
-				if (_tracker != null)
-				{
-					_tracker.Dispose();
-					_tracker = null;
-				}
+				_events?.Dispose();
+				_packager?.Dispose();
+				_tracker?.Dispose();
+				_events = null;
+				_packager = null;
+				_tracker = null;
 
 				Element = null;
 				Container?.Dispose();
@@ -394,9 +396,6 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			if (!IsPartOfShell && !Forms.IsiOS11OrNewer)
-				return;
-
-			if (IsPartOfShell && !_appeared)
 				return;
 
 			var tabThickness = _tabThickness;
