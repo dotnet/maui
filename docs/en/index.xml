@@ -99,7 +99,7 @@
           <AttributeName>System.Runtime.Versioning.TargetFramework("Xamarin.Mac,Version=v2.0", FrameworkDisplayName="Xamarin.Mac")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+8d4059cef65a561c98d278a56bc703c341e098e8")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+2524e04723e5feabe2c96f3152d6395a03925b90")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>
@@ -232,6 +232,9 @@
       <Type Name="Preferences" Kind="Class" />
       <Type Name="ReadOnlyFile" Kind="Class" />
       <Type Name="RectangleExtensions" Kind="Class" />
+      <Type Name="Screenshot" Kind="Class" />
+      <Type Name="ScreenshotFormat" Kind="Enumeration" />
+      <Type Name="ScreenshotResult" Kind="Class" />
       <Type Name="SecureStorage" Kind="Class" />
       <Type Name="SensorSpeed" Kind="Enumeration" />
       <Type Name="Share" Kind="Class" />

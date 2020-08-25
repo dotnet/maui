@@ -13,6 +13,8 @@ using Android.Net;
 using Android.Net.Wifi;
 using Android.OS;
 using Android.Provider;
+using Android.Views;
+
 using AndroidUri = Android.Net.Uri;
 
 namespace Xamarin.Essentials
@@ -240,6 +242,9 @@ namespace Xamarin.Essentials
 
         internal static PowerManager PowerManager =>
             AppContext.GetSystemService(Context.PowerService) as PowerManager;
+
+        internal static IWindowManager WindowManager =>
+            AppContext.GetSystemService(Context.WindowService) as IWindowManager;
 
         internal static Java.Util.Locale GetLocale()
         {
