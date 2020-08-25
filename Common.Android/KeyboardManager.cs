@@ -88,6 +88,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		internal static void PostShowKeyboard(this AView view)
 		{
+
+#if !__MAUI__
 			void ShowKeyboard()
 			{
 				// Since we're posting this on the queue, it's possible something else will have disposed of the view
@@ -99,8 +101,8 @@ namespace Xamarin.Forms.Platform.Android
 
 				view.ShowKeyboard();
 			};
-
 			Device.BeginInvokeOnMainThread(ShowKeyboard);
+#endif
 		}
 	}
 }

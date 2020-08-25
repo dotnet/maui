@@ -7,8 +7,7 @@ using Xamarin.Forms.Internals;
 namespace Xamarin.Forms
 {
 	[DebuggerDisplay("R={R}, G={G}, B={B}, A={A}, Hue={Hue}, Saturation={Saturation}, Luminosity={Luminosity}")]
-	[TypeConverter(typeof(ColorTypeConverter))]
-	public struct Color
+	public partial struct Color
 	{
 		readonly Mode _mode;
 
@@ -478,7 +477,7 @@ namespace Xamarin.Forms
 			return FromRgba(color.R, color.G, color.B, color.A);
 		}
 #endif
-		#region Color Definitions
+#region Color Definitions
 
 		// matches colors in WPF's System.Windows.Media.Colors
 		public static readonly Color AliceBlue = new Color(240, 248, 255);
@@ -626,6 +625,6 @@ namespace Xamarin.Forms
 		public static readonly Color Yellow = new Color(255, 255, 0);
 		public static readonly Color YellowGreen = new Color(154, 205, 50);
 
-		#endregion
+#endregion
 	}
 }

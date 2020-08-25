@@ -5,8 +5,7 @@ using System.Globalization;
 namespace Xamarin.Forms
 {
 	[DebuggerDisplay("X={X}, Y={Y}")]
-	[TypeConverter(typeof(PointTypeConverter))]
-	public struct Point
+	public partial struct Point
 	{
 		public double X { get; set; }
 

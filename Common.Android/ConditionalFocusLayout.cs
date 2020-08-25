@@ -23,9 +23,9 @@ namespace Xamarin.Forms.Platform.Android
 			return false;
 		}
 
+#if !__MAUI__
 		internal void ApplyTouchListenersToSpecialCells(Cell item)
 		{
-#if !__MAUI__
 			DescendantFocusability = DescendantFocusability.BlockDescendants;
 
 			global::Android.Views.View aView = GetChildAt(0);
@@ -46,8 +46,8 @@ namespace Xamarin.Forms.Platform.Android
 				renderer = Platform.GetRenderer(element);
 				GetEditText(renderer)?.SetOnTouchListener(this);
 			}
-#endif
 		}
+#endif
 #if !__MAUI__
 		internal EditText GetEditText(IVisualElementRenderer renderer)
 		{

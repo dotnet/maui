@@ -5,8 +5,7 @@ using System.Globalization;
 namespace Xamarin.Forms
 {
 	[DebuggerDisplay("X={X}, Y={Y}, Width={Width}, Height={Height}")]
-	[TypeConverter(typeof(RectTypeConverter))]
-	public struct Rect
+	public partial struct Rect
 	{
 		public Rect(double x, double y, double width, double height) : this()
 		{

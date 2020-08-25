@@ -3,8 +3,7 @@ using System.ComponentModel;
 
 namespace Xamarin.Forms
 {
-	[TypeConverter(typeof(FontTypeConverter))]
-	public struct Font
+	public partial struct Font
 	{
 		public string FontFamily { get; private set; }
 

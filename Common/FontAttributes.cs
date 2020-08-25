@@ -3,7 +3,9 @@ using System;
 namespace Xamarin.Forms
 {
 	[Flags]
+#if __MVVM__
 	[TypeConverter(typeof(FontAttributesConverter))]
+#endif
 	public enum FontAttributes
 	{
 		None = 0,
@@ -11,6 +13,7 @@ namespace Xamarin.Forms
 		Italic = 1 << 1
 	}
 
+#if __MVVM__
 	[Xaml.TypeConversion(typeof(FontAttributes))]
 	public sealed class FontAttributesConverter : TypeConverter
 	{
@@ -47,4 +50,5 @@ namespace Xamarin.Forms
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", originalvalue, typeof(FontAttributes)));
 		}
 	}
+#endif
 }

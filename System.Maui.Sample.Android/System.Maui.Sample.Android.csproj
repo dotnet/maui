@@ -108,6 +108,10 @@
     <PackageReference Include="Xamarin.Essentials" Version="1.5.3.2" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\System.Maui.Boring.Android\System.Maui.Boring.Android.csproj">
+      <Project>{383dd80f-68ed-40fd-ae48-70ea3aee3d9e}</Project>
+      <Name>System.Maui.Boring.Android</Name>
+    </ProjectReference>
     <ProjectReference Include="..\System.Maui.MVVM.Android\System.Maui.MVVM.Android.csproj">
       <Project>{160e4033-e771-46f9-8ce2-84677e42082f}</Project>
       <Name>System.Maui.MVVM.Android</Name>

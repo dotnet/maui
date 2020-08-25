@@ -15,23 +15,45 @@ namespace System.Maui.Sample.Android
     {
         protected override void OnCreate(Bundle savedInstanceState)
         {
-			// Just a stand in to get everything started up for now
-			MvvmMauiApplication
-				.Current
-				.InitWindow(this);
 
-            base.OnCreate(savedInstanceState);
+			base.OnCreate(savedInstanceState);
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             SetContentView(Resource.Layout.activity_main);
 			
 			Toolbar toolbar = FindViewById<Toolbar>(Resource.Id.toolbar);
 
-			var contentLayout = FindViewById<ViewGroup>(Resource.Id.contentLayout);
 
 			SetSupportActionBar(toolbar);
 
-			var entry = new Entry().ToNative(this);
+
+			//InitMvvmApp();
+			InitBoringApp();
+		}
+
+		void InitMvvmApp()
+		{
+			// Just a stand in to get everything started up for now
+			MvvmMauiApplication
+				.Current
+				.InitWindow(this);
+			var contentLayout = FindViewById<ViewGroup>(Resource.Id.contentLayout);
+			var entry = new Entry() { Text = "Initial Text" }.ToNative(this);
 			contentLayout.AddView(entry);
+
+		}
+
+		void InitBoringApp()
+		{
+
+
+			BoringMauiApplication
+				.Current
+				.InitWindow(this);
+
+			var contentLayout = FindViewById<ViewGroup>(Resource.Id.contentLayout);
+			var entry = new Boring.Android.BoringEntry() { Text = "Initial Text" }.ToNative(this);
+			contentLayout.AddView(entry);
+
 		}
 
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] global::Android.Content.PM.Permission[] grantResults)

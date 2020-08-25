@@ -159,8 +159,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)FlyoutBehavior.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FlyoutHeaderBehavior.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FocusEventArgs.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Font.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)FontAttributes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FontElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FontFile.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FontImageSource.cs" />
@@ -418,7 +416,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)MultiBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MultiPage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NamedPlatformColor.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)NamedSize.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NameScopeExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NativeBindingHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NavigationEventArgs.cs" />
@@ -525,7 +522,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)PlatformConfiguration\WindowsSpecific\VisualElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PlatformConfiguration\WindowsSpecific\WebView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PlatformEffect.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Point.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PointTypeConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PoppedToRootEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Profiler.cs" />
@@ -538,8 +534,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)RadioButton.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ReadOnlyCastingList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ReadOnlyListAdapter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Rect.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Rectangle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RectangleTypeConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RectTypeConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ReferenceTypeConverter.cs" />
@@ -658,8 +652,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Shell\ShellSection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Shell\ShellSectionCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Shell\ShellUriHandler.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Size.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SizeRequest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SizeTypeConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Slider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SolidColorBrush.cs" />
@@ -720,8 +712,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)TextChangedEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TextElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TextKeyboard.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TextTransform.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TextType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Thickness.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ThicknessTypeConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TimePicker.cs" />
