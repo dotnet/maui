@@ -5,12 +5,16 @@ namespace Xamarin.Forms.Core.UnitTests
 {
 	public class PathSegmentTests : BaseTestFixture
 	{
+		PointCollectionConverter _pointCollectionConverter;
+
 		[SetUp]
 		public override void Setup()
 		{
 			base.Setup();
 
 			Device.SetFlags(new[] { ExperimentalFlags.ShapesExperimental });
+
+			_pointCollectionConverter = new PointCollectionConverter();
 		}
 
 		[Test]
@@ -54,37 +58,62 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual(50, lineSegment2.Point.Y);
 		}
 
-		[Test]
-		public void TestPolyBezierSegmentConstructor()
+		[TestCase("", 0)]
+		[TestCase("0 48", 1)]
+		[TestCase("0 48, 0 144", 2)]
+		[TestCase("0 48, 0 144, 96 150", 3)]
+		[TestCase("0 48, 0 144, 96 150, 100 0", 4)]
+		[TestCase("0 48, 0 144, 96 150, 100 0, 192 0", 5)]
+		[TestCase("0 48, 0 144, 96 150, 100 0, 192 0, 192 96", 6)]
+		[TestCase("0 48, 0 144, 96 150, 100 0, 192 0, 192 96, 50 96", 7)]
+		[TestCase("0 48, 0 144, 96 150, 100 0, 192 0, 192 96, 50 96, 48 192", 8)]
+		[TestCase("0 48, 0 144, 96 150, 100 0, 192 0, 192 96, 50 96, 48 192, 150 200", 9)]
+		[TestCase("0 48, 0 144, 96 150, 100 0, 192 0, 192 96, 50 96, 48 192, 150 200 144 48", 10)]
+		public void TestPolyBezierSegmentConstructor(string points, int count)
 		{
-			var polyBezierSegment1 = new PolyBezierSegment();
-			Assert.IsNotNull(polyBezierSegment1);
+			var pointCollection = (PointCollection)_pointCollectionConverter.ConvertFromInvariantString(points);
 
-			var polyBezierSegment2 = new PolyBezierSegment(new PointCollection { new Point(0, 0), new Point(1, 1) });
-			Assert.IsNotNull(polyBezierSegment2);
-			Assert.AreEqual(2, polyBezierSegment2.Points.Count);
+			var polyBezierSegment = new PolyBezierSegment(pointCollection);
+			Assert.IsNotNull(polyBezierSegment);
+			Assert.AreEqual(count, polyBezierSegment.Points.Count);
 		}
 
-		[Test]
-		public void TestPolyLineSegmentConstructor()
+		[TestCase("", 0)]
+		[TestCase("0 48", 1)]
+		[TestCase("0 48, 0 144", 2)]
+		[TestCase("0 48, 0 144, 96 150", 3)]
+		[TestCase("0 48, 0 144, 96 150, 100 0", 4)]
+		[TestCase("0 48, 0 144, 96 150, 100 0, 192 0", 5)]
+		[TestCase("0 48, 0 144, 96 150, 100 0, 192 0, 192 96", 6)]
+		[TestCase("0 48, 0 144, 96 150, 100 0, 192 0, 192 96, 50 96", 7)]
+		[TestCase("0 48, 0 144, 96 150, 100 0, 192 0, 192 96, 50 96, 48 192", 8)]
+		[TestCase("0 48, 0 144, 96 150, 100 0, 192 0, 192 96, 50 96, 48 192, 150 200", 9)]
+		[TestCase("0 48, 0 144, 96 150, 100 0, 192 0, 192 96, 50 96, 48 192, 150 200 144 48", 10)]
+		public void TestPolyLineSegmentConstructor(string points, int count)
 		{
-			var polyLineSegment1 = new PolyLineSegment();
-			Assert.IsNotNull(polyLineSegment1);
-
-			var polyLineSegment2 = new PolyLineSegment(new PointCollection { new Point(0, 0), new Point(1, 1) });
-			Assert.IsNotNull(polyLineSegment2);
-			Assert.AreEqual(2, polyLineSegment2.Points.Count);
+			var pointCollection = (PointCollection)_pointCollectionConverter.ConvertFromInvariantString(points);
+			var polyLineSegment = new PolyLineSegment(pointCollection);
+			Assert.IsNotNull(polyLineSegment);
+			Assert.AreEqual(count, polyLineSegment.Points.Count);
 		}
 
-		[Test]
-		public void TestPolyQuadraticBezierSegmentConstructor()
+		[TestCase("", 0)]
+		[TestCase("0 48", 1)]
+		[TestCase("0 48, 0 144", 2)]
+		[TestCase("0 48, 0 144, 96 150", 3)]
+		[TestCase("0 48, 0 144, 96 150, 100 0", 4)]
+		[TestCase("0 48, 0 144, 96 150, 100 0, 192 0", 5)]
+		[TestCase("0 48, 0 144, 96 150, 100 0, 192 0, 192 96", 6)]
+		[TestCase("0 48, 0 144, 96 150, 100 0, 192 0, 192 96, 50 96", 7)]
+		[TestCase("0 48, 0 144, 96 150, 100 0, 192 0, 192 96, 50 96, 48 192", 8)]
+		[TestCase("0 48, 0 144, 96 150, 100 0, 192 0, 192 96, 50 96, 48 192, 150 200", 9)]
+		[TestCase("0 48, 0 144, 96 150, 100 0, 192 0, 192 96, 50 96, 48 192, 150 200 144 48", 10)]
+		public void TestPolyQuadraticBezierSegmentConstructor(string points, int count)
 		{
-			var polyQuadraticBezierSegment1 = new PolyQuadraticBezierSegment();
-			Assert.IsNotNull(polyQuadraticBezierSegment1);
-
-			var polyQuadraticBezierSegment2 = new PolyQuadraticBezierSegment(new PointCollection { new Point(0, 0), new Point(1, 1) });
-			Assert.IsNotNull(polyQuadraticBezierSegment2);
-			Assert.AreEqual(2, polyQuadraticBezierSegment2.Points.Count);
+			var pointCollection = (PointCollection)_pointCollectionConverter.ConvertFromInvariantString(points);
+			var polyQuadraticBezierSegment = new PolyQuadraticBezierSegment(pointCollection);
+			Assert.IsNotNull(polyQuadraticBezierSegment);
+			Assert.AreEqual(count, polyQuadraticBezierSegment.Points.Count);
 		}
 
 		[Test]

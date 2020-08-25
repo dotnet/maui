@@ -290,8 +290,8 @@ namespace Xamarin.Forms.Platform.MacOS
         public SizeRequest GetDesiredSize()
         {
             return new SizeRequest(new Size(
-                Math.Max(0, _pathStrokeBounds.Right),
-                Math.Max(0, _pathStrokeBounds.Bottom)));
+                Math.Max(0, nfloat.IsNaN(_pathStrokeBounds.Right) ? 0 : _pathStrokeBounds.Right),
+                Math.Max(0, nfloat.IsNaN(_pathStrokeBounds.Bottom) ? 0 : _pathStrokeBounds.Bottom)));
         }
 
         public void UpdateSize(CGSize size)
