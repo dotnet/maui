@@ -11,5 +11,8 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Entry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Label.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)VisualElement.cs" />
+    <Compile Include="..\System.Maui.MVVM\MvvmMauiApplication.cs" />
   </ItemGroup>
 </Project>

@@ -24,7 +24,7 @@ namespace System.Maui.Platform
 			return new FormsEditText(Context);
 		}
 
-		static void MapPropertyText(IMauiRenderer arg1, ITextInput arg2)
+		static void MapPropertyText(IViewRenderer arg1, ITextInput arg2)
 		{
 			FormsEditText.UpdateText(arg2, arg1.NativeView as EditText);
 		}

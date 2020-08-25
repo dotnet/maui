@@ -7,7 +7,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
-	public class View : VisualElement, IViewController, IGestureController, IGestureRecognizers
+	public partial class View : VisualElement, IViewController, IGestureController, IGestureRecognizers
 	{
 		protected internal IGestureController GestureController => this;
 

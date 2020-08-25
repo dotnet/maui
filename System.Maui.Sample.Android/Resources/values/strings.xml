@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">System.Maui.Sample.Android</string>
+    <string name="action_settings">Settings</string>
+</resources>

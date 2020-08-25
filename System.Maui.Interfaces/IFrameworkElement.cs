@@ -9,18 +9,18 @@ namespace System.Maui
 	{
 		//bool IsEnabled { get; }
 		//Color BackgroundColor { get; }
-		//Rectangle Frame { get; }
-		//IViewRenderer Renderer { get; set; }
-		//IFrameworkElement Parent { get; }
+		Rectangle Frame { get; }
+		IViewRenderer Renderer { get; set; }
+		IFrameworkElement Parent { get; }
 
-		//void Arrange(Rectangle bounds);
-		//SizeRequest Measure(double widthConstraint, double heightConstraint);
+		void Arrange(Rectangle bounds);
+		SizeRequest Measure(double widthConstraint, double heightConstraint);
 
-		//SizeRequest DesiredSize { get; }
-		//bool IsMeasureValid { get; }
-		//bool IsArrangeValid { get; }
+		SizeRequest DesiredSize { get; }
+		bool IsMeasureValid { get; }
+		bool IsArrangeValid { get; }
 
-		//void InvalidateMeasure();
-		//void InvalidateArrange();
+		void InvalidateMeasure();
+		void InvalidateArrange();
 	}
 }

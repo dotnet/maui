@@ -13,7 +13,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)EntryRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IPropertyMapperView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LabelRenderer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)MauiRenderer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PropertyMapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Registrar.cs" />
   </ItemGroup>
 </Project>

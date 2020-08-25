@@ -2,6 +2,8 @@
 using System.Runtime.Versioning;
 using Android.Content;
 using Android.Views;
+using Xamarin.Forms;
+using Xamarin.Forms.Platform.Android;
 
 namespace System.Maui.Platform
 {
@@ -28,7 +30,7 @@ namespace System.Maui.Platform
 		//	var right = Context.ToPixels(frame.Right);
 		//	var width = Context.ToPixels(frame.Width);
 		//	var height = Context.ToPixels(frame.Height);
-			
+
 		//	if (nativeView.LayoutParameters == null)
 		//	{
 		//		nativeView.LayoutParameters = new ViewGroup.LayoutParams((int)width, (int)height);
@@ -42,32 +44,32 @@ namespace System.Maui.Platform
 		//	nativeView.Layout((int)left, (int)top, (int)right, (int)bottom);
 		//}
 
-		//public virtual SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
-		//{
-		//	if (TypedNativeView == null)
-		//	{
-		//		return new SizeRequest(Size.Zero);
-		//	}
+		public virtual SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			if (TypedNativeView == null)
+			{
+				return new SizeRequest(Size.Zero);
+			}
 
-		//	var deviceWidthConstraint = Context.ToPixels(widthConstraint);
-		//	var deviceHeightConstraint = Context.ToPixels(heightConstraint);
+			var deviceWidthConstraint = Context.ToPixels(widthConstraint);
+			var deviceHeightConstraint = Context.ToPixels(heightConstraint);
 
-		//	var widthSpec = MeasureSpecMode.AtMost.MakeMeasureSpec((int)deviceWidthConstraint);
-		//	var heightSpec = MeasureSpecMode.AtMost.MakeMeasureSpec((int)deviceHeightConstraint);
+			var widthSpec = MeasureSpecMode.AtMost.MakeMeasureSpec((int)deviceWidthConstraint);
+			var heightSpec = MeasureSpecMode.AtMost.MakeMeasureSpec((int)deviceHeightConstraint);
 
-		//	TypedNativeView.Measure(widthSpec, heightSpec);
+			TypedNativeView.Measure(widthSpec, heightSpec);
 
-		//	var deviceIndependentSize = Context.FromPixels(TypedNativeView.MeasuredWidth, TypedNativeView.MeasuredHeight);
+			var deviceIndependentSize = Context.FromPixels(TypedNativeView.MeasuredWidth, TypedNativeView.MeasuredHeight);
 
-		//	return new SizeRequest(deviceIndependentSize);
-		//}
+			return new SizeRequest(deviceIndependentSize);
+		}
 
 		//void SetupContainer () {
 		//	ContainerView = new Core.Controls.ContainerView (this.Context) {
 		//		MainView = this.TypedNativeView,
 		//	};
 		//}
-		
+
 		//void RemoveContainer () {
 		//}
 	}

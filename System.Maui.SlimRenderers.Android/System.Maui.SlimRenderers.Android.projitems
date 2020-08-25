@@ -11,8 +11,10 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AbstractViewRenderer.Android.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\EntryRenderer.Android.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)IViewRenderer.Android.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IAndroidViewRenderer.Android.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Label\LabelRenderer.Android.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)MauiRenderer.Android.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MeasureSpecExtensions.Android.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewRenderer.Android.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RendererExtensions.Android.cs" />
   </ItemGroup>
 </Project>

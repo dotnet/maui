@@ -13,7 +13,7 @@ namespace System.Maui.Platform
 		//	//[nameof(ILabel.Color)] = MapPropertyColor,
 		//};
 
-		public static PropertyMapper<ILabel> Mapper = new PropertyMapper<ILabel>(MauiRenderer.ViewMapper)
+		public static PropertyMapper<ILabel> Mapper = new PropertyMapper<ILabel>(ViewRenderer.ViewMapper)
 		{
 			//[nameof(ILabel.Text)] = MapPropertyText,
 			//[nameof(ILabel.Color)] = MapPropertyColor,

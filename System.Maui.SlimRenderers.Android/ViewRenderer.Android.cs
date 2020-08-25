@@ -5,15 +5,16 @@ using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
 
 namespace System.Maui.Platform {
-	public partial class MauiRenderer {
-		public static void MapPropertyIsEnabled (IMauiRenderer renderer, IView view)
+	public partial class ViewRenderer
+	{
+		public static void MapPropertyIsEnabled (IViewRenderer renderer, IView view)
 		{
 			var nativeView = renderer.NativeView as AView;
 			if (nativeView != null)
 				nativeView.Enabled = view.IsEnabled;
 		}
 
-		public static void MapBackgroundColor (IMauiRenderer renderer, IView view)
+		public static void MapBackgroundColor (IViewRenderer renderer, IView view)
 		{
 			var aview = renderer.NativeView as AView;
 			Color backgroundColor = view.BackgroundColor;

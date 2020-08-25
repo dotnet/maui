@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ColorExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConditionalFocusLayout.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ContextExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DescendantFocusToggler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FormsEditText.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IDescendantFocusToggler.cs" />

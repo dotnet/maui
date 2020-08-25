@@ -5,7 +5,7 @@ namespace System.Maui.Platform
 {
 	public partial class EntryRenderer
 	{
-		public static PropertyMapper<ITextInput> EntryMapper = new PropertyMapper<ITextInput>(MauiRenderer.ViewMapper)
+		public static PropertyMapper<ITextInput> EntryMapper = new PropertyMapper<ITextInput>(ViewRenderer.ViewMapper)
 		{
 			[nameof(IText.Text)] = MapPropertyText,
 

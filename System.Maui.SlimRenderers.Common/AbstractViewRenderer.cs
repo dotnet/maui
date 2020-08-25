@@ -14,7 +14,7 @@ using NativeView = System.Object;
 
 namespace System.Maui.Platform
 {
-	public abstract partial class AbstractViewRenderer<TVirtualView, TNativeView> : IMauiRenderer
+	public abstract partial class AbstractViewRenderer<TVirtualView, TNativeView> : IViewRenderer
 		where TVirtualView : class, IFrameworkElement
 #if !NETSTANDARD
 		where TNativeView : NativeView

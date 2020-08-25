@@ -2,7 +2,7 @@
 
 
 namespace System.Maui.Platform {
-	public partial class MauiRenderer
+	public partial class ViewRenderer
 	{
 		public static PropertyMapper<IView> ViewMapper = new PropertyMapper<IView> {
 			[nameof(IView.IsEnabled)] = MapPropertyIsEnabled,

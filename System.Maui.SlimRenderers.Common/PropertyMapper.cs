@@ -6,21 +6,21 @@ using System.Linq;
 namespace System.Maui
 {
 	public class PropertyMapper {
-		internal Dictionary<string, (Action<IMauiRenderer, IFrameworkElement> Action, bool RunOnUpdateAll)> genericMap = new Dictionary<string, (Action<IMauiRenderer, IFrameworkElement> action, bool runOnUpdateAll)> ();
-		protected virtual void UpdateProperty (string key, IMauiRenderer viewRenderer, IFrameworkElement virtualView)
+		internal Dictionary<string, (Action<IViewRenderer, IFrameworkElement> Action, bool RunOnUpdateAll)> genericMap = new Dictionary<string, (Action<IViewRenderer, IFrameworkElement> action, bool runOnUpdateAll)> ();
+		protected virtual void UpdateProperty (string key, IViewRenderer viewRenderer, IFrameworkElement virtualView)
 		{
 			if (genericMap.TryGetValue(key, out var action))
 			{
 				action.Action?.Invoke(viewRenderer, virtualView);
 			}
 		}
-		public void UpdateProperty (IMauiRenderer viewRenderer, IFrameworkElement virtualView, string property)
+		public void UpdateProperty (IViewRenderer viewRenderer, IFrameworkElement virtualView, string property)
 		{
 			if (virtualView == null)
 				return;
 			UpdateProperty (property, viewRenderer, virtualView);
 		}
-		public void UpdateProperties (IMauiRenderer viewRenderer, IFrameworkElement virtualView)
+		public void UpdateProperties (IViewRenderer viewRenderer, IFrameworkElement virtualView)
 		{
 			if (virtualView == null)
 				return;
@@ -50,7 +50,7 @@ namespace System.Maui
 
 		public bool IsReadOnly => false;
 
-		public Action<IMauiRenderer, TVirtualView> this [string key] {
+		public Action<IViewRenderer, TVirtualView> this [string key] {
 			set => genericMap [key] = ((r, v) => value?.Invoke (r, (TVirtualView)v),true);
 		}
 
@@ -69,7 +69,7 @@ namespace System.Maui
 
 		
 
-		protected override void UpdateProperty (string key, IMauiRenderer viewRenderer, IFrameworkElement virtualView)
+		protected override void UpdateProperty (string key, IViewRenderer viewRenderer, IFrameworkElement virtualView)
 		{
 			if (genericMap.TryGetValue (key, out var action))
 				action.Action?.Invoke (viewRenderer, virtualView);
@@ -77,10 +77,10 @@ namespace System.Maui
 				Chained?.UpdateProperty (viewRenderer, virtualView, key);
 		}
 
-		public void Add (string key, Action<IMauiRenderer, TVirtualView> action)
+		public void Add (string key, Action<IViewRenderer, TVirtualView> action)
 			=> this [key] = action;
 
-		public void Add(string key, Action<IMauiRenderer, TVirtualView> action, bool ignoreOnStartup)
+		public void Add(string key, Action<IViewRenderer, TVirtualView> action, bool ignoreOnStartup)
 			=>genericMap[key] = ((r, v) => action?.Invoke(r, (TVirtualView)v), ignoreOnStartup);
 
 		
@@ -98,7 +98,7 @@ namespace System.Maui
 
 			public PropertyMapper<TView> PropertyMapper { get; }
 
-			public Action<IMauiRenderer, TView> this[string key]
+			public Action<IViewRenderer, TView> this[string key]
 			{
 				set => PropertyMapper.genericMap[key] = ((r, v) => value?.Invoke(r, (TView)v), false);
 			}
