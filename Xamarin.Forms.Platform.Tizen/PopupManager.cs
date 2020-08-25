@@ -57,19 +57,15 @@ namespace Xamarin.Forms.Platform.Tizen
 
 				if (Device.Idiom == TargetIdiom.Phone)
 				{
-					_pageBusyDialog.SetPartColor("bg_title", EColor.Transparent);
-					_pageBusyDialog.SetPartColor("bg_content", EColor.Transparent);
+					_pageBusyDialog.SetTitleBackgroundColor(EColor.Transparent);
+					_pageBusyDialog.SetContentBackgroundColor(EColor.Transparent);
 				}
 				else if (Device.Idiom == TargetIdiom.Watch)
 				{
-					_pageBusyDialog.Style = "circle";
+					_pageBusyDialog.SetWatchCircleStyle();
 				}
 
-				var activity = new EProgressBar(_pageBusyDialog)
-				{
-					Style = "process_large",
-					IsPulseMode = true,
-				};
+				var activity = new EProgressBar(_pageBusyDialog) { IsPulseMode = true }.SetLargeStyle();
 				activity.PlayPulse();
 				activity.Show();
 
@@ -97,7 +93,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			var alert = Native.Dialog.CreateDialog(Forms.NativeParent, (arguments.Accept != null));
 
 			alert.Title = arguments.Title;
-			var message = arguments.Message.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace(Environment.NewLine, "<br>");
+			var message = arguments.Message?.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace(Environment.NewLine, "<br>");
 			alert.Message = message;
 
 			var cancel = new EButton(alert) { Text = arguments.Cancel };

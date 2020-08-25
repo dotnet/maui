@@ -291,6 +291,16 @@ namespace Xamarin.Forms.Platform.Tizen
 			popup.SetPartColor(Device.Idiom == TargetIdiom.TV ? ThemeConstants.Popup.ColorClass.TV.Title : ThemeConstants.Popup.ColorClass.Title, color);
 		}
 
+		public static void SetTitleBackgroundColor(this Popup popup, EColor color)
+		{
+			popup.SetPartColor(ThemeConstants.Popup.ColorClass.TitleBackground, color);
+		}
+
+		public static void SetContentBackgroundColor(this Popup popup, EColor color)
+		{
+			popup.SetPartColor(ThemeConstants.Popup.ColorClass.ContentBackground, color);
+		}
+
 		public static bool SetTitleTextPart(this Popup popup, string title)
 		{
 			return popup.SetPartText(ThemeConstants.Popup.Parts.Title, title);
