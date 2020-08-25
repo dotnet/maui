@@ -11,7 +11,7 @@ namespace Xamarin.Essentials
 {
     public static partial class Screenshot
     {
-        internal static bool PlatformCanCapture =>
+        internal static bool PlatformIsCaptureSupported =>
             true;
 
         static async Task<ScreenshotResult> PlatformCaptureAsync()

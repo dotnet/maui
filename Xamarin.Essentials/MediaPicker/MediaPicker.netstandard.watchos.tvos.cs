@@ -6,7 +6,7 @@ namespace Xamarin.Essentials
 {
     public static partial class MediaPicker
     {
-        static bool PlatformIsCaptureAvailable =>
+        static bool PlatformIsCaptureSupported =>
             throw new NotImplementedInReferenceAssemblyException();
 
         static Task<FileResult> PlatformPickPhotoAsync(MediaPickerOptions options) =>

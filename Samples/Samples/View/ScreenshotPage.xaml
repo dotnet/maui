@@ -22,7 +22,7 @@
                 <Image VerticalOptions="FillAndExpand"
                        MinimumHeightRequest="400"
                        MinimumWidthRequest="400"
-                       Source="{Binding Screenshot}" />
+                       Source="{Binding Image}" />
 
             </StackLayout>
         </ScrollView>
