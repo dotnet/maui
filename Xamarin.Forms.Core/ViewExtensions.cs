@@ -7,7 +7,7 @@ namespace Xamarin.Forms
 {
 	public static class ViewExtensions
 	{
-		public static void CancelAnimations(VisualElement view)
+		public static void CancelAnimations(this VisualElement view)
 		{
 			if (view == null)
 				throw new ArgumentNullException(nameof(view));

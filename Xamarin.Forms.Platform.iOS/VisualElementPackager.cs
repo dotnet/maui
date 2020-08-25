@@ -49,6 +49,21 @@ namespace Xamarin.Forms.Platform.MacOS
 					OnChildAdded(child);
 			}
 		}
+		
+		internal void Disconnect()
+		{
+			Disconnect(_element);
+		}
+
+		void Disconnect(VisualElement oldElement)
+		{
+			if (oldElement == null)
+				return;
+
+			oldElement.ChildAdded -= OnChildAdded;
+			oldElement.ChildRemoved -= OnChildRemoved;
+			oldElement.ChildrenReordered -= UpdateChildrenOrder;
+		}
 
 		protected virtual void Dispose(bool disposing)
 		{
@@ -182,9 +197,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			if (oldElement != null)
 			{
-				oldElement.ChildAdded -= OnChildAdded;
-				oldElement.ChildRemoved -= OnChildRemoved;
-				oldElement.ChildrenReordered -= UpdateChildrenOrder;
+				Disconnect(oldElement);
 
 				if (newElement != null)
 				{

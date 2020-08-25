@@ -179,10 +179,13 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		EvasObject GetOrCreatePage(Page page)
 		{
-			Native.Page native = Platform.GetOrCreateRenderer(page).NativeView as Native.Page;
+			var native = Platform.GetOrCreateRenderer(page).NativeView;
 			_pageToNative[page] = native;
 			_nativeToPage[native] = page;
-			native.BackgroundColor = (page.BackgroundColor != Xamarin.Forms.Color.Default ? page.BackgroundColor.ToNative() : ElmSharp.Color.White);
+			if(native is Native.Page np)
+			{
+				np.BackgroundColor = (page.BackgroundColor != Xamarin.Forms.Color.Default ? page.BackgroundColor.ToNative() : ElmSharp.Color.White);
+			}
 			PackEnd(native);
 			return native;
 		}

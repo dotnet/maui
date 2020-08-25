@@ -44,7 +44,8 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 #endif
 
-#if UITEST
+#if UITEST && __ANDROID__
+
 		[Test]
 		[Category(UITestCategories.SwipeView)]
 		public void SwipeWithChildGestureRecognizer()

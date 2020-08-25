@@ -19,13 +19,11 @@ namespace Xamarin.Forms.Platform.Tizen
 	{
 		ITizenPlatform _platform;
 		Application _application;
-		bool _isInitialStart;
 		Window _window;
 		bool _useBezelInteration;
 
 		protected FormsApplication()
 		{
-			_isInitialStart = true;
 		}
 
 		/// <summary>
@@ -91,17 +89,6 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				_platform.Dispose();
 			}
-		}
-
-		protected override void OnAppControlReceived(AppControlReceivedEventArgs e)
-		{
-			base.OnAppControlReceived(e);
-
-			if (!_isInitialStart && _application != null)
-			{
-				_application.SendResume();
-			}
-			_isInitialStart = false;
 		}
 
 		protected override void OnPause()

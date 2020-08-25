@@ -119,12 +119,15 @@ namespace Xamarin.Forms.Platform.Android
                             PolyBezierSegment polyBezierSegment = pathSegment as PolyBezierSegment;
                             PointCollection points = polyBezierSegment.Points;
 
-                            for (int i = 0; i < points.Count; i += 3)
+                            if (points.Count >= 3)
                             {
-                                path.CubicTo(
-                                    density * (float)points[i + 0].X, density * (float)points[i + 0].Y,
-                                    density * (float)points[i + 1].X, density * (float)points[i + 1].Y,
-                                    density * (float)points[i + 2].X, density * (float)points[i + 2].Y);
+                                for (int i = 0; i < points.Count; i += 3)
+                                {
+                                    path.CubicTo(
+                                        density * (float)points[i + 0].X, density * (float)points[i + 0].Y,
+                                        density * (float)points[i + 1].X, density * (float)points[i + 1].Y,
+                                        density * (float)points[i + 2].X, density * (float)points[i + 2].Y);
+                                }
                             }
 
                             lastPoint = points[points.Count - 1];
@@ -146,11 +149,14 @@ namespace Xamarin.Forms.Platform.Android
                             PolyQuadraticBezierSegment polyBezierSegment = pathSegment as PolyQuadraticBezierSegment;
                             PointCollection points = polyBezierSegment.Points;
 
-                            for (int i = 0; i < points.Count; i += 2)
+                            if (points.Count >= 2)
                             {
-                                path.QuadTo(
-                                    density * (float)points[i + 0].X, density * (float)points[i + 0].Y,
-                                    density * (float)points[i + 1].X, density * (float)points[i + 1].Y);
+                                for (int i = 0; i < points.Count; i += 2)
+                                {
+                                    path.QuadTo(
+                                        density * (float)points[i + 0].X, density * (float)points[i + 0].Y,
+                                        density * (float)points[i + 1].X, density * (float)points[i + 1].Y);
+                                }
                             }
 
                             lastPoint = points[points.Count - 1];
@@ -162,7 +168,8 @@ namespace Xamarin.Forms.Platform.Android
 
                             List<Point> points = new List<Point>();
 
-                            GeometryHelper.FlattenArc(points,
+                            GeometryHelper.FlattenArc(
+                                points,
                                 lastPoint,
                                 arcSegment.Point,
                                 arcSegment.Size.Width,

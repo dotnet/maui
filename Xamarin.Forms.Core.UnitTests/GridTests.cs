@@ -106,6 +106,171 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That(column0Height, Is.LessThan(gridHeight));
 		}
 
+		[Test(Description = "Columns with a Star width less than one should not cause the Grid to contract below the target width; see https://github.com/xamarin/Xamarin.Forms/issues/11742")]
+		public void StarWidthsLessThanOneShouldNotContractGrid()
+		{
+			var grid = new Grid
+			{
+				VerticalOptions = LayoutOptions.Start,
+				ColumnSpacing = 12
+			};
+
+			grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(0.8, GridUnitType.Star) });
+			grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Star });
+
+			grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+
+			var label0 = new ColumnTestLabel
+			{
+				VerticalOptions = LayoutOptions.Start,
+				LineBreakMode = LineBreakMode.WordWrap,
+				Text = "This should wrap a bit"
+			};
+
+			var label1 = new ColumnTestLabel
+			{
+				VerticalOptions = LayoutOptions.Start,
+				LineBreakMode = LineBreakMode.WordWrap,
+				Text = "This ought to fit in the space just fine."
+			};
+
+			grid.Children.Add(label0, 0, 0);
+			grid.Children.Add(label1, 1, 0);
+
+			var gridWidth = 411;
+			grid.Measure(gridWidth, 1000);
+			var column0Width = grid.ColumnDefinitions[0].ActualWidth;
+			var column1Width = grid.ColumnDefinitions[1].ActualWidth;
+
+			Assert.That(column0Width, Is.LessThan(column1Width)); 
+
+			// Having a first column which is a fraction of a Star width should not cause the grid
+			// to contract below the target width
+			Assert.That(column0Width + column1Width, Is.GreaterThanOrEqualTo(gridWidth));
+		}
+
+		[Test]
+		public void ContractionAppliedEquallyOnMultiStarColumns()
+		{
+			var grid = new Grid { ColumnSpacing = 0 };
+
+			grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) });
+			grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(2, GridUnitType.Star) });
+
+			grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+
+			var smaller = new Size(100, 10);
+			var larger = new Size(200, 10);
+			var min = new Size(0, 10);
+
+			var label0 = new FixedSizeLabel(min, smaller)
+			{
+				Text = "label0"
+			};
+
+			var label1 = new FixedSizeLabel(min, larger)
+			{
+				Text = "label1"
+			};
+
+			grid.Children.Add(label0, 0, 0);
+			grid.Children.Add(label1, 1, 0);
+
+			// requested total width is 300, so this will force a contraction to 200
+			grid.Measure(200, 100);
+			var column0Width = grid.ColumnDefinitions[0].ActualWidth;
+			var column1Width = grid.ColumnDefinitions[1].ActualWidth;
+
+			Assert.That(column0Width, Is.EqualTo(column1Width / 2));
+		}
+
+		[Test]
+		public void AllStarColumnsCanOnlyContractToTheLargestMinimum()
+		{
+			var grid = new Grid { ColumnSpacing = 0 };
+
+			grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) });
+			grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) });
+
+			grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+
+			var leftColumn = new Size(100, 10);
+			var rightColumn = new Size(100, 10);
+			var largerMin = new Size(75, 10);
+			var smallerMin = new Size(50, 10);
+
+			var leftLabel = new FixedSizeLabel(largerMin, leftColumn)
+			{
+				Text = "label0"
+			};
+
+			var rightLabel = new FixedSizeLabel(smallerMin, rightColumn)
+			{
+				Text = "label1"
+			};
+
+			grid.Children.Add(leftLabel, 0, 0);
+			grid.Children.Add(rightLabel, 1, 0);
+
+			// requested total width is 200, so this will force an attemped contraction to 100
+			grid.Measure(100, 100);
+			var column0Width = grid.ColumnDefinitions[0].ActualWidth;
+			var column1Width = grid.ColumnDefinitions[1].ActualWidth;
+
+			Assert.That(column0Width, Is.EqualTo(column1Width));
+		}
+
+		[Test]
+		public void ContractionAppliedEquallyOnMultiStarRows()
+		{
+			var grid = new Grid { ColumnSpacing = 0, RowSpacing = 0 };
+
+			grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Star) });
+			grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(2, GridUnitType.Star) });
+
+			var smaller = new Size(100, 100);
+			var larger = new Size(100, 200);
+			var min = new Size(100, 0);
+
+			var label0 = new FixedSizeLabel(min, smaller)
+			{
+				Text = "label0"
+			};
+
+			var label1 = new FixedSizeLabel(min, larger)
+			{
+				Text = "label1"
+			};
+
+			grid.Children.Add(label0, 0, 0);
+			grid.Children.Add(label1, 1, 0);
+
+			// requested total height is 300, so this will force a contraction to 200
+			grid.Measure(200, 200); 
+			var column0Height = grid.RowDefinitions[0].ActualHeight;
+			var column1Height = grid.RowDefinitions[1].ActualHeight;
+
+			Assert.That(column0Height, Is.EqualTo(column1Height / 2));
+		}
+
+		class FixedSizeLabel : Label 
+		{
+			readonly Size _minimumSize;
+			readonly Size _requestedSize;
+
+			public FixedSizeLabel(Size minimumSize, Size requestedSize) 
+			{
+				IsPlatformEnabled = true;
+				_minimumSize = minimumSize;
+				_requestedSize = requestedSize;
+			}
+
+			protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
+			{
+				return new SizeRequest(_requestedSize, _minimumSize);
+			}
+		}
+
 		class ColumnTestLabel : Label
 		{
 			public ColumnTestLabel() 

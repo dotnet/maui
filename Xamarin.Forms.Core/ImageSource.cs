@@ -94,6 +94,11 @@ namespace Xamarin.Forms
 			return new StreamImageSource { Stream = token => Task.Run(stream, token) };
 		}
 
+		public static ImageSource FromStream(Func<CancellationToken, Task<Stream>> stream)
+		{
+			return new StreamImageSource { Stream = stream };
+		}
+
 		public static ImageSource FromUri(Uri uri)
 		{
 			if (!uri.IsAbsoluteUri)
