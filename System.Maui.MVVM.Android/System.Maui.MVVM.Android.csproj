@@ -4,6 +4,7 @@
     <TargetFrameworks>MonoAndroid10.0;</TargetFrameworks>
     <DefineConstants>$(DefineConstants);__MAUI__;__MVVM__</DefineConstants>
     <LangVersion>8.0</LangVersion>
+    <AssemblyName>System.Maui.MVVM</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'MonoAndroid10.0'">

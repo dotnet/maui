@@ -9,8 +9,11 @@
     <Import_RootNamespace>System.Maui.Interfaces</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)IEditor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IFrameworkElement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IButton.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ILabel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ISearch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IText.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ITextInput.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IView.cs" />

@@ -70,7 +70,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)CollectionSynchronizationCallback.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionSynchronizationContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ColorElement.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ColorTypeConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ColumnDefinition.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ColumnDefinitionCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ColumnDefinitionCollectionTypeConverter.cs" />
@@ -90,7 +89,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)CornerElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CornerRadius.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CornerRadiusTypeConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Crc64.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomKeyboard.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataTemplateExtensions.cs" />
@@ -128,7 +126,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Easing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EasingTypeConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Editor.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)EditorAutoSizeOption.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Effect.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EffectiveFlowDirection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EffectiveFlowDirectionExtensions.cs" />
@@ -200,7 +197,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)IDecorableTextElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IDefinition.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IDeserializer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)IDispatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IDispatcherProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IEditorController.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IEffectControlProvider.cs" />
@@ -219,7 +215,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)IGridController.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IImageController.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IImageElement.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)IIsolatedStorageFile.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IItemsView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IItemViewController.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ILayout.cs" />
@@ -281,7 +276,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Internals\PropertyPropagationExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Internals\ResourceLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Internals\TextTransformUtilites.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Internals\Ticker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Internals\ToolbarTracker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)InvalidationEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)InvalidNavigationException.cs" />
@@ -293,7 +287,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)IPinchGestureController.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IPlaceholderElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IPlatformElementConfiguration.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)IPlatformServices.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IPropertyPropagationController.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IProvideParentValues.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IProvideValueTarget.cs" />
@@ -381,8 +374,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)ListViewSelectionMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LockableObservableListWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LockingSemaphore.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Log.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)LogListener.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Markup\BindableObjectExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Markup\DefaultBindableProperties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Markup\ElementExtensions.cs" />
@@ -415,7 +406,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)ModalPushingEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MultiBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MultiPage.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)NamedPlatformColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NameScopeExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NativeBindingHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NavigationEventArgs.cs" />
@@ -431,7 +421,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)OpenGLView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OrderedDictionary.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OrientationStateTrigger.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)OSAppTheme.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PaddingElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Page.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PanGestureRecognizer.cs" />
@@ -522,19 +511,16 @@
     <Compile Include="$(MSBuildThisFileDirectory)PlatformConfiguration\WindowsSpecific\VisualElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PlatformConfiguration\WindowsSpecific\WebView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PlatformEffect.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)PointTypeConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PoppedToRootEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Profiler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ProgressBar.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PromptArguments.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PropertyChangingEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PropertyChangingEventHandler.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ProvideCompiledAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RadialGradientBrush.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RadioButton.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ReadOnlyCastingList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ReadOnlyListAdapter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)RectangleTypeConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RectTypeConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ReferenceTypeConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ReflectionExtensions.cs" />
@@ -652,7 +638,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Shell\ShellSection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Shell\ShellSectionCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Shell\ShellUriHandler.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SizeTypeConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Slider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SolidColorBrush.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Span.cs" />
@@ -662,7 +647,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)StateTriggerBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Stepper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StreamImageSource.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)StreamWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Stretch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Style.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StyleSheets\CharExtensions.cs" />
@@ -687,7 +671,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)SwipeMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SwipeView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Switch.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SynchronizedList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TabbedPage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TabIndexExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableIntent.cs" />
@@ -722,9 +705,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)ToStringValueConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TrackableCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tweener.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TypeConversionAttribute.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TypeConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TypeConverterAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TypedBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TypeTypeConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnsolvableConstraintsException.cs" />

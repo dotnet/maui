@@ -85,7 +85,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Maui.Sample.Android"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Boring", "Boring", "{CDE7D946-2AED-4B6B-AB7B-6231A991FEF7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Maui.Boring.Android", "System.Maui.Boring.Android\System.Maui.Boring.Android.csproj", "{383DD80F-68ED-40FD-AE48-70EA3AEE3D9E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "System.Maui.Boring.Android", "System.Maui.Boring.Android\System.Maui.Boring.Android.csproj", "{383DD80F-68ED-40FD-AE48-70EA3AEE3D9E}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution

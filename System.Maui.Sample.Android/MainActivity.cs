@@ -44,8 +44,6 @@ namespace System.Maui.Sample.Android
 
 		void InitBoringApp()
 		{
-
-
 			BoringMauiApplication
 				.Current
 				.InitWindow(this);

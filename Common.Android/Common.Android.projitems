@@ -9,15 +9,20 @@
     <Import_RootNamespace>Common.Android</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AndroidPlatformServices.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AndroidTicker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ColorExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConditionalFocusLayout.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ContextExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Crc64.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DescendantFocusToggler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Forms.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FormsEditText.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IDescendantFocusToggler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IFormsEditText.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JavaObjectExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)KeyboardManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)StreamWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TextColorSwitcher.cs" />
   </ItemGroup>
 </Project>
