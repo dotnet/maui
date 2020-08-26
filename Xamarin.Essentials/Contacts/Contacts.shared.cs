@@ -10,7 +10,11 @@ namespace Xamarin.Essentials
         public static async Task<Contact> PickContactAsync()
         {
             if (DeviceInfo.Platform != DevicePlatform.iOS)
-                await Permissions.RequestAsync<Permissions.ContactsRead>();
+            {
+                var permissionStatus = await Permissions.RequestAsync<Permissions.ContactsRead>();
+                if (permissionStatus != PermissionStatus.Granted)
+                    return null;
+            }
 
             return await PlatformPickContactAsync();
         }
