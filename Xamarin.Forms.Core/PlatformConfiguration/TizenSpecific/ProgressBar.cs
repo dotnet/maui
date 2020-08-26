@@ -1,7 +1,7 @@
 
 namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
 {
-	using FormsElement = Forms.ProgressBar;
+	using FormsElement = Xamarin.Forms.ProgressBar;
 
 	public static class ProgressBar
 	{

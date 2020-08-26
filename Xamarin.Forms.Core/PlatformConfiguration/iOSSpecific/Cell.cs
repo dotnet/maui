@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
 {
-	using FormsElement = Forms.Cell;
+	using FormsElement = Xamarin.Forms.Cell;
 
 	public static class Cell
 	{

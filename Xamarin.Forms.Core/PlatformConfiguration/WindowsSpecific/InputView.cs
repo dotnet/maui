@@ -2,7 +2,7 @@
 
 namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
 {
-	using FormsElement = Forms.InputView;
+	using FormsElement = Xamarin.Forms.InputView;
 
 	public static class InputView
 	{

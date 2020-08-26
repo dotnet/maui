@@ -1,7 +1,7 @@
 ﻿
 namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
 {
-	using FormsElement = Forms.WebView;
+	using FormsElement = Xamarin.Forms.WebView;
 
     public static class WebView
     {

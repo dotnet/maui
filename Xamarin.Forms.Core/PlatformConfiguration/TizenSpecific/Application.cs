@@ -1,7 +1,7 @@
 ﻿namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
 {
 	using System.ComponentModel;
-	using FormsElement = Forms.Application;
+	using FormsElement = Xamarin.Forms.Application;
 
 	public static class Application
 	{

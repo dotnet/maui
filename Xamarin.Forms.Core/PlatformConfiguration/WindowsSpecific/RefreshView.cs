@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
 {
-	using FormsElement = Forms.RefreshView;
+	using FormsElement = Xamarin.Forms.RefreshView;
 
 	public static class RefreshView
 	{

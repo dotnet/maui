@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.Forms.PlatformConfiguration.macOSSpecific
 {
-	using FormsElement = Forms.Page;
+	using FormsElement = Xamarin.Forms.Page;
 
 	public static class Page
 	{

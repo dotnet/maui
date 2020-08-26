@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
 {
-	using FormsElement = Forms.ScrollView;
+	using FormsElement = Xamarin.Forms.ScrollView;
 
 	public static class ScrollView
 	{

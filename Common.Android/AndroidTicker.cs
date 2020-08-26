@@ -46,6 +46,7 @@ namespace Xamarin.Forms.Platform.Android
 				return ValueAnimator.AreAnimatorsEnabled();
 			}
 
+#if !__MAUI__
 			if (Forms.IsLollipopOrNewer)
 			{
 				// For API levels which support power saving but not AreAnimatorsEnabled, we can check the
@@ -56,6 +57,7 @@ namespace Xamarin.Forms.Platform.Android
 					return false;
 				}
 			}
+#endif
 
 			// If we're not in power save mode (or don't support it), we still need to check the AnimatorDurationScale;
 			// animations might be disabled by developer mode
@@ -94,6 +96,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void DisableTimer()
 		{
+#if !__MAUI__
 			if (Device.IsInvokeRequired)
 			{
 				Device.BeginInvokeOnMainThread(new Action(() =>
@@ -102,6 +105,7 @@ namespace Xamarin.Forms.Platform.Android
 				}));
 			}
 			else
+#endif
 			{
 				_val?.Cancel();
 			}

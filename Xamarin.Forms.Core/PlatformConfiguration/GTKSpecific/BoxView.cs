@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.Forms.PlatformConfiguration.GTKSpecific
 {
-    using FormsElement = Forms.BoxView;
+    using FormsElement = Xamarin.Forms.BoxView;
 
     public static class BoxView
     {

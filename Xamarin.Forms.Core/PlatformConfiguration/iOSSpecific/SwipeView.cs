@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
 {
-	using FormsElement = Forms.SwipeView;
+	using FormsElement = Xamarin.Forms.SwipeView;
 
 	public enum SwipeTransitionMode
 	{

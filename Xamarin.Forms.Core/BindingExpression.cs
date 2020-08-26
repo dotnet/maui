@@ -663,7 +663,7 @@ namespace Xamarin.Forms
 			public BindingExpressionPart(BindingExpression expression, string content, bool isIndexer = false)
 			{
 				_expression = expression;
-				IsSelf = content == Forms.Binding.SelfPath;
+				IsSelf = content == Xamarin.Forms.Binding.SelfPath;
 				Content = content;
 				IsIndexer = isIndexer;
 

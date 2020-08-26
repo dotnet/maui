@@ -1,7 +1,7 @@
 ﻿namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
 {
 	using System.ComponentModel;
-	using FormsElement = Forms.Page;
+	using FormsElement = Xamarin.Forms.Page;
 
 	public static class Page
 	{

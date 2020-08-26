@@ -86,6 +86,13 @@ namespace Xamarin.Forms
 			Flags = flags;
 		}
 
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static bool IsInvokeRequired
+		{
+			get { return PlatformServices.IsInvokeRequired; }
+		}
+
 		public static void BeginInvokeOnMainThread(Action action)
 		{
 			PlatformServices.BeginInvokeOnMainThread(action);

@@ -2,7 +2,7 @@
 
 namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
 {
-	using FormsElement = Forms.Entry;
+	using FormsElement = Xamarin.Forms.Entry;
 
 	public static class Entry
 	{

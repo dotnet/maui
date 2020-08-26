@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
 {
-	using FormsElement = Forms.Application;
+	using FormsElement = Xamarin.Forms.Application;
 
 	public static class Application
 	{

@@ -1,7 +1,7 @@
 ﻿
 namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific
 {
-	using FormsElement = Forms.WebView;
+	using FormsElement = Xamarin.Forms.WebView;
 
 	public enum MixedContentHandling
 	{

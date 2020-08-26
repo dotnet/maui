@@ -1,11 +1,11 @@
 ﻿namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific
 {
-	using FormsImageButton = Forms.ImageButton;
+	using FormsImageButton = Xamarin.Forms.ImageButton;
 
 	public static class ImageButton
 	{
 		#region Shadow
-		public static readonly BindableProperty IsShadowEnabledProperty = BindableProperty.Create("IsShadowEnabled", typeof(bool), typeof(Forms.ImageButton), false);
+		public static readonly BindableProperty IsShadowEnabledProperty = BindableProperty.Create("IsShadowEnabled", typeof(bool), typeof(Xamarin.Forms.ImageButton), false);
 
 		public static bool GetIsShadowEnabled(BindableObject element)
 		{

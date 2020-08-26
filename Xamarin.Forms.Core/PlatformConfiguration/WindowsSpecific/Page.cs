@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
 {
-	using FormsElement = Forms.Page;
+	using FormsElement = Xamarin.Forms.Page;
 
 	public static class Page
 	{

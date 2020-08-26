@@ -1,7 +1,7 @@
 
 namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
 {
-	using FormsElement = Forms.NavigationPage;
+	using FormsElement = Xamarin.Forms.NavigationPage;
 
 	public static class NavigationPage
 	{

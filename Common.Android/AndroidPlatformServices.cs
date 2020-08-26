@@ -22,14 +22,16 @@ using Resource = Android.Resource;
 using Trace = System.Diagnostics.Trace;
 using System.ComponentModel;
 using AColor = Android.Graphics.Color;
-using AndroidX.Core.Content;
 
 #if __MAUI__
+using AndroidX.Core.Content;
 using Label = System.Maui.ILabel;
 using Entry = System.Maui.ITextInput;
 using Button = System.Maui.IButton;
 using Editor = System.Maui.IEditor;
 using SearchBar = System.Maui.ISearch;
+#else
+using Android.Support.V4.Content;
 #endif
 
 namespace Xamarin.Forms
@@ -263,11 +265,13 @@ namespace Xamarin.Forms
 			return new _IsolatedStorageFile(IsolatedStorageFile.GetUserStoreForApplication());
 		}
 
+
+		public static bool InvokeRequired() => Looper.MainLooper != Looper.MyLooper();
 		public bool IsInvokeRequired
 		{
 			get
 			{
-				return Looper.MainLooper != Looper.MyLooper();
+				return InvokeRequired();
 			}
 		}
 

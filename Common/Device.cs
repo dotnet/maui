@@ -18,11 +18,5 @@ namespace Xamarin.Forms
 		public const string GTK = "GTK";
 		public const string Tizen = "Tizen";
 		public const string WPF = "WPF";
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static bool IsInvokeRequired
-		{
-			get { return PlatformServices.IsInvokeRequired; }
-		}
 	}
 }

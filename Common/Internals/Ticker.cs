@@ -50,12 +50,17 @@ namespace Xamarin.Forms.Internals
 			}
 			get
 			{
+
+#if !__MAUI__
 				if (s_ticker == null)
 				{
 					s_ticker = Device.PlatformServices.CreateTicker();
 				}
 
 				return s_ticker.GetTickerInstance(); 
+#else
+				throw new NotImplementedException();
+#endif
 			}
 		}
 
@@ -82,10 +87,14 @@ namespace Xamarin.Forms.Internals
 
 		public virtual void Remove(int handle)
 		{
+#if !__MAUI__
 			Device.BeginInvokeOnMainThread(() =>
 			{
 				RemoveTimeout(handle);
 			});
+#else
+			throw new NotImplementedException();
+#endif
 		}
 
 		public virtual void Remove(int handle, IDispatcher dispatcher)

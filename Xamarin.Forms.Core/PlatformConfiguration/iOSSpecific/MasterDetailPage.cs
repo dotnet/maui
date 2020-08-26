@@ -1,7 +1,7 @@
 
 namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
 {
-	using FormsElement = Forms.MasterDetailPage;
+	using FormsElement = Xamarin.Forms.MasterDetailPage;
 
 	public static class MasterDetailPage
 	{

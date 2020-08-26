@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
 {
-	using FormsElement = Forms.Slider;
+	using FormsElement = Xamarin.Forms.Slider;
 
 	public static class Slider
 	{

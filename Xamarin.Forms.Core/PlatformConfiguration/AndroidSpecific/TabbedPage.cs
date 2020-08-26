@@ -2,7 +2,7 @@
 {
 	using System;
 	using System.ComponentModel;
-	using FormsElement = Forms.TabbedPage;
+	using FormsElement = Xamarin.Forms.TabbedPage;
 
 	public static class TabbedPage
 	{

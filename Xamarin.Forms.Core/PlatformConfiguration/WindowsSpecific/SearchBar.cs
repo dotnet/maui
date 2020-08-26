@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
 {
-	using FormsElement = Forms.SearchBar;
+	using FormsElement = Xamarin.Forms.SearchBar;
 
 	public static class SearchBar
 	{

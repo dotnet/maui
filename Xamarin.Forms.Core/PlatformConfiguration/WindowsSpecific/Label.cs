@@ -2,7 +2,7 @@
 
 namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
 {
-	using FormsElement = Forms.Label;
+	using FormsElement = Xamarin.Forms.Label;
 
 	public static class Label
 	{

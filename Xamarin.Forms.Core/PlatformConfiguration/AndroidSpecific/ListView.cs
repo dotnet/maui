@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific
 {
-	using FormsElement = Forms.ListView;
+	using FormsElement = Xamarin.Forms.ListView;
 
 	public static class ListView
 	{

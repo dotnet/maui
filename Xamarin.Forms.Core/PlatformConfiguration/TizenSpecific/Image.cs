@@ -1,6 +1,6 @@
 namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
 {
-	using FormsElement = Forms.Image;
+	using FormsElement = Xamarin.Forms.Image;
 
 	public static class Image
 	{

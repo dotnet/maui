@@ -1,6 +1,6 @@
 namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
 {
-	using FormsElement = Forms.Entry;
+	using FormsElement = Xamarin.Forms.Entry;
 
 	public static class Entry
 	{

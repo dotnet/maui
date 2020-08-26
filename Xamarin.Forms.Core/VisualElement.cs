@@ -61,7 +61,7 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty ClipProperty = BindableProperty.Create(nameof(Clip), typeof(Geometry), typeof(VisualElement), null);
 
 		public static readonly BindableProperty VisualProperty =
-			BindableProperty.Create(nameof(Visual), typeof(IVisual), typeof(VisualElement), Forms.VisualMarker.MatchParent,
+			BindableProperty.Create(nameof(Visual), typeof(IVisual), typeof(VisualElement), Xamarin.Forms.VisualMarker.MatchParent,
 									validateValue: (b, v) => v != null, propertyChanged: OnVisualChanged);
 
 		static IVisual _defaultVisual = Xamarin.Forms.VisualMarker.Default;
@@ -842,6 +842,7 @@ namespace Xamarin.Forms
 		{
 		}
 
+#if !__MAUI__
 		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		protected virtual SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
@@ -853,6 +854,14 @@ namespace Xamarin.Forms
 
 			return Device.PlatformServices.GetNativeSize(this, widthConstraint, heightConstraint);
 		}
+#else
+		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		protected virtual SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
+		{
+			throw new NotImplementedException();
+		}
+#endif
 
 		protected void SizeAllocated(double width, double height)
 		{

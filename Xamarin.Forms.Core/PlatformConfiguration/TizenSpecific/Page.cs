@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
 {
-	using FormsElement = Forms.Page;
+	using FormsElement = Xamarin.Forms.Page;
 
 	public static class Page
 	{

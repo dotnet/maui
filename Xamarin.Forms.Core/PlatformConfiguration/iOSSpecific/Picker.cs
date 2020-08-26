@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
 {
-	using FormsElement = Forms.Picker;
+	using FormsElement = Xamarin.Forms.Picker;
 
 	public static class Picker
 	{

@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific
 {
-	using FormsElement = Forms.Button;
+	using FormsElement = Xamarin.Forms.Button;
 
 	public static class Button
 	{

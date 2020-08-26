@@ -2,7 +2,7 @@ using System;
 
 namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
 {
-	using FormsElement = Forms.MasterDetailPage;
+	using FormsElement = Xamarin.Forms.MasterDetailPage;
 
 	public static class MasterDetailPage
 	{

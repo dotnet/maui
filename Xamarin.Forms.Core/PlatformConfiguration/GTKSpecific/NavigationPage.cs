@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.Forms.PlatformConfiguration.GTKSpecific
 {
-    using FormsElement = Forms.NavigationPage;
+    using FormsElement = Xamarin.Forms.NavigationPage;
 
     public static class NavigationPage
     {

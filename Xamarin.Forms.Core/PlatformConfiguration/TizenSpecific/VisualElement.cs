@@ -2,7 +2,7 @@ using System.ComponentModel;
 
 namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
 {
-	using FormsElement = Forms.VisualElement;
+	using FormsElement = Xamarin.Forms.VisualElement;
 	public static class VisualElement
 	{
 		public static readonly BindableProperty StyleProperty = BindableProperty.Create("ThemeStyle", typeof(string), typeof(VisualElement), default(string));

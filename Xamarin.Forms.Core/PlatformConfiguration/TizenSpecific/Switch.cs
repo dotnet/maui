@@ -1,7 +1,7 @@
 
 namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
 {
-	using FormsElement = Forms.Switch;
+	using FormsElement = Xamarin.Forms.Switch;
 
 	public static class Switch
 	{

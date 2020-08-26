@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific
 {
-	using FormsElement = Forms.ShellItem;
+	using FormsElement = Xamarin.Forms.ShellItem;
 
 	public static class ShellItem
 	{

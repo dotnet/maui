@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat
 {
-	using FormsElement = Forms.NavigationPage;
+	using FormsElement = Xamarin.Forms.NavigationPage;
 
 	public static class NavigationPage
 	{

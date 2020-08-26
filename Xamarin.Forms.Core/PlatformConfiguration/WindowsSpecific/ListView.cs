@@ -2,7 +2,7 @@
 
 namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
 {
-	using FormsElement = Forms.ListView;
+	using FormsElement = Xamarin.Forms.ListView;
 
 	public static class ListView
 	{
