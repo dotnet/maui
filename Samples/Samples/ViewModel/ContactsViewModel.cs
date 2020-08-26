@@ -72,10 +72,10 @@ namespace Samples.ViewModel
                     return;
 
                 foreach (var number in contact?.Numbers)
-                    Phones += number.PhoneNumber + number.ContactType + Environment.NewLine;
+                    Phones += $"{number.PhoneNumber} ({number.ContactType})" + Environment.NewLine;
 
                 foreach (var email in contact?.Emails)
-                    Emails += email.EmailAddress + email.ContactType + Environment.NewLine;
+                    Emails += $"{email.EmailAddress} ({email.ContactType})" + Environment.NewLine;
 
                 Name = contact?.Name;
                 Birthday = contact?.Birthday.ToString();
