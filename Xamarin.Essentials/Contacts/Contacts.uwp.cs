@@ -18,7 +18,7 @@ namespace Xamarin.Essentials
                 var contactSelected = await contactPicker.PickContactAsync();
 
                 if (contactSelected == null)
-                    throw new Exception("We can't get the contact!");
+                    return null;
 
                 var contactManager = await ContactManager.RequestStoreAsync();
                 var contact = await contactManager.FindContactsAsync(contactSelected.Name);
