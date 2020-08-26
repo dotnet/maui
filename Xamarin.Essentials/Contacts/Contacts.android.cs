@@ -109,7 +109,9 @@ namespace Xamarin.Essentials
                     bDate = cursor.GetString(cursor.GetColumnIndex(ContactsContract.CommonDataKinds.Event.StartDate));
 
                 cursor.Close();
-                DateTime.TryParse(bDate, out var birthday);
+                DateTime? birthday = default;
+                if (DateTime.TryParse(bDate, out var b))
+                    birthday = b;
                 cursor?.Dispose();
 
                 return new Contact(

@@ -39,7 +39,7 @@ namespace Xamarin.Essentials
 
                 var b = phoneContact.ImportantDates.FirstOrDefault(x => x.Kind == ContactDateKind.Birthday);
 
-                var birthday = (b == null) ? default :
+                var birthday = (b == null) ? (DateTime?)null :
                     new DateTime((int)b?.Year, (int)b?.Month, (int)b?.Day, 0, 0, 0);
 
                 return new Contact(
