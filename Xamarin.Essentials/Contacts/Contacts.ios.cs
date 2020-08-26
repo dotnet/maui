@@ -11,41 +11,22 @@ namespace Xamarin.Essentials
 {
     public static partial class Contacts
     {
-        internal static Action<Contact?> CallBack { get; set; }
-
-        internal static Action<Exception> ErrorCallBack { get; set; }
-
         static Task<Contact> PlatformPickContactAsync()
         {
             var uiView = Platform.GetCurrentViewController();
             if (uiView == null)
                 throw new ArgumentNullException($"The View Controller can't be null.");
 
+            var source = new TaskCompletionSource<Contact>();
+
             using var picker = new CNContactPickerViewController
             {
-                Delegate = new ContactPickerDelegate()
+                Delegate = new ContactPickerDelegate(phoneContact =>
+                    source?.TrySetResult(Contacts.GetContact(phoneContact)))
             };
 
             uiView.PresentViewController(picker, true, null);
-            var source = new TaskCompletionSource<Contact?>();
-            try
-            {
-                CallBack = (phoneContact) =>
-                {
-                    var tcs = Interlocked.Exchange(ref source, null);
-                    tcs?.SetResult(phoneContact);
-                };
 
-                ErrorCallBack = (ex) =>
-                {
-                    var tcs = Interlocked.Exchange(ref source, null);
-                    tcs?.SetException(ex);
-                };
-            }
-            catch (Exception ex)
-            {
-                source.SetException(ex);
-            }
             return source.Task;
         }
 
@@ -75,12 +56,7 @@ namespace Xamarin.Essentials
                     name = $"{contact.GivenName} {contact.MiddleName} {contact.FamilyName}";
 
                 var birthday = contact.Birthday?.Date.ToDateTime().Date;
-                return new Contact(
-                                    name,
-                                    phones,
-                                    emails,
-                                    birthday,
-                                    contactType);
+                return new Contact(name, phones, emails, birthday, contactType);
             }
             catch (Exception)
             {
@@ -102,24 +78,25 @@ namespace Xamarin.Essentials
 
     public class ContactPickerDelegate : CNContactPickerDelegate
     {
-        public ContactPickerDelegate()
-        {
-        }
+        public ContactPickerDelegate(Action<CNContact> didSelectContactHandler) =>
+            DidSelectContactHandler = didSelectContactHandler;
 
         public ContactPickerDelegate(IntPtr handle)
             : base(handle)
         {
         }
 
+        public Action<CNContact> DidSelectContactHandler { get; }
+
         public override void ContactPickerDidCancel(CNContactPickerViewController picker)
         {
-            Contacts.CallBack(default);
+            DidSelectContactHandler?.Invoke(default);
             picker.DismissModalViewController(true);
         }
 
         public override void DidSelectContact(CNContactPickerViewController picker, CNContact contact)
         {
-            Contacts.CallBack(Contacts.GetContact(contact));
+            DidSelectContactHandler?.Invoke(contact);
             picker.DismissModalViewController(true);
         }
 
