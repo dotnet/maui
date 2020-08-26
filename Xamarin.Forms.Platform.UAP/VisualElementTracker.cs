@@ -108,6 +108,23 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
+		void HandleDragLeave(object sender, Windows.UI.Xaml.DragEventArgs e)
+		{
+			var package = e.DataView.Properties["_XFPropertes_DONTUSE"] as DataPackage;
+			var dragEventArgs = new DragEventArgs(package);
+			
+			SendEventArgs<DropGestureRecognizer>(rec =>
+			{
+				if (!rec.AllowDrop)
+				{
+					return;
+				}
+
+				e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
+				rec.SendDragLeave(dragEventArgs);
+			});
+		}
+
 		void HandleDragOver(object sender, Windows.UI.Xaml.DragEventArgs e)
 		{
 			var package = e.DataView.Properties["_XFPropertes_DONTUSE"] as DataPackage;
@@ -150,7 +167,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 				try
 				{
-					await rec.SendDrop(args, element);
+					await rec.SendDrop(args);
 				}
 				catch (Exception dropExc)
 				{
@@ -778,6 +795,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				_container.DragOver += HandleDragOver;
 				_container.Drop += HandleDrop;
+				_container.DragLeave += HandleDragLeave;
 			}
 		}
 

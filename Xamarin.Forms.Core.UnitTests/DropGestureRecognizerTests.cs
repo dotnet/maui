@@ -70,7 +70,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			dropRec.DropCommand = cmd;
 			dropRec.DropCommandParameter = parameter;
-			await dropRec.SendDrop(new DropEventArgs(new DataPackageView(new DataPackage())), new Label());
+			await dropRec.SendDrop(new DropEventArgs(new DataPackageView(new DataPackage())));
 
 			Assert.AreEqual(commandExecuted, parameter);
 		}
@@ -89,7 +89,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var element = (View)Activator.CreateInstance(fieldType);
 			element.GestureRecognizers.Add(dropRec);
 			var args = new DropEventArgs(new DataPackageView(new DataPackage() { Text = result }));
-			await dropRec.SendDrop(args, element);
+			await dropRec.SendDrop(args);
 			Assert.AreEqual(element.GetStringValue(), result);
 		}
 
@@ -102,7 +102,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			element.Text = "Text Shouldn't change";
 			var args = new DropEventArgs(new DataPackageView(new DataPackage() { Text = testString }));
 			args.Handled = true;
-			await dropTec.SendDrop(args, element);
+			await dropTec.SendDrop(args);
 			Assert.AreNotEqual(element.Text, testString);
 		}
 	}

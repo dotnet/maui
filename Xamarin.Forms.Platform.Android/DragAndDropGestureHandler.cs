@@ -7,15 +7,13 @@ using AUri = Android.Net.Uri;
 using AView = Android.Views.View;
 using ADragFlags = Android.Views.DragFlags;
 using System.IO;
-using Android.Sax;
-using Javax.Xml.Transform;
 
 namespace Xamarin.Forms.Platform.Android
 {
 	internal class DragAndDropGestureHandler : Java.Lang.Object, AView.IOnDragListener
 	{
 		bool _isDisposed;
-		static Dictionary<VisualElement, DataPackage> _dragSource;
+		CustomLocalStateData _currentCustomLocalStateData;
 
 		public DragAndDropGestureHandler(Func<View> getView, Func<AView> getControl)
 		{
@@ -25,9 +23,6 @@ namespace Xamarin.Forms.Platform.Android
 			GetView = getView;
 			GetControl = getControl;
 			SetupHandlerForDrop();
-
-			if (_dragSource == null)
-				_dragSource = new Dictionary<VisualElement, DataPackage>();
 		}
 
 		Func<View> GetView { get; }
@@ -76,16 +71,11 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (disposing)
 			{
+				_currentCustomLocalStateData = null;
 				var control = GetControl();
 				if (control.IsAlive())
 				{
 					control.SetOnDragListener(null);
-				}
-
-				var view = GetView();
-				if(view != null && _dragSource.ContainsKey(view))
-				{
-					_dragSource.Remove(view);
 				}
 			}
 
@@ -96,9 +86,8 @@ namespace Xamarin.Forms.Platform.Android
 		void SendEventArgs<TRecognizer>(Action<TRecognizer> func, View view = null)
 		{
 			view = view ?? GetView();
-			var renderer = Platform.GetRenderer(view);
 
-			if (!renderer.View.IsAlive() && view != null)
+			if (view == null)
 				return;
 
 			var gestures =
@@ -118,54 +107,71 @@ namespace Xamarin.Forms.Platform.Android
 		public bool OnDrag(AView v, DragEvent e)
 		{
 			DataPackage package = null;
-			if (e.LocalState is IVisualElementRenderer renderer &&
-				_dragSource.ContainsKey(renderer.Element))
+			CustomLocalStateData localStateData = (e.LocalState as CustomLocalStateData) ?? _currentCustomLocalStateData ?? new CustomLocalStateData();
+			_currentCustomLocalStateData = localStateData;
+			IVisualElementRenderer dragSourceRenderer = localStateData?.SourceNativeView as IVisualElementRenderer;
+			package = localStateData?.DataPackage;
+			var dragSourceElement = _currentCustomLocalStateData?.SourceElement ?? dragSourceRenderer?.Element;
+
+			if(package == null)
 			{
-				package = _dragSource[renderer.Element];
+				package = new DataPackage();
+				_currentCustomLocalStateData.DataPackage = package;
 			}
-			else
-				renderer = null;
 
 			switch (e.Action)
 			{
-				case DragAction.Started:
-					return HandleDragOver(package);
-				case DragAction.Drop:
-					{
-						HandleDrop(e.LocalState, package, e.ClipData);
-						if (renderer != null && _dragSource.ContainsKey(renderer.Element))
-						{
-							HandleDropCompleted(renderer.Element as View);
-							_dragSource.Remove(renderer.Element);
-						}
-
-						return true;
-					}
 				case DragAction.Ended:
 					{
-						if (renderer != null && _dragSource.ContainsKey(renderer.Element))
+						_currentCustomLocalStateData = null;
+						if (dragSourceElement is View vSource)
 						{
-							HandleDropCompleted(renderer.Element as View);
-							_dragSource.Remove(renderer.Element);
+							HandleDropCompleted(vSource);
 						}
 					}
 					break;
-				case DragAction.Entered:
-					{
-						return HandleDragOver(package);
-					}
+				case DragAction.Started:
+					break;
 				case DragAction.Location:
+					HandleDragOver(package);
+					break;
+				case DragAction.Drop:
+					{
+						HandleDrop(e, _currentCustomLocalStateData);
+						break;
+					}
+				case DragAction.Entered:
+					HandleDragOver(package);
+					break;
 				case DragAction.Exited:
-					return true;
+					HandleDragLeave(package);
+					break;
 			}
 
-			return false;
+			return true;
 		}
 
 		void HandleDropCompleted(View element)
 		{
 			var args = new DropCompletedEventArgs();
 			SendEventArgs<DragGestureRecognizer>(rec => rec.SendDropCompleted(args), element);
+		}
+
+		bool HandleDragLeave(DataPackage package)
+		{
+			var dragEventArgs = new DragEventArgs(package);
+			bool validTarget = false;
+			SendEventArgs<DropGestureRecognizer>(rec =>
+			{
+				if (!rec.AllowDrop)
+					return;
+
+				rec.SendDragLeave(dragEventArgs);
+				validTarget = validTarget || dragEventArgs.AcceptedOperation != DataPackageOperation.None;
+				_currentCustomLocalStateData.AcceptedOperation = dragEventArgs.AcceptedOperation;
+			});
+
+			return validTarget;
 		}
 
 		bool HandleDragOver(DataPackage package)
@@ -179,28 +185,41 @@ namespace Xamarin.Forms.Platform.Android
 
 				rec.SendDragOver(dragEventArgs);
 				validTarget = validTarget || dragEventArgs.AcceptedOperation != DataPackageOperation.None;
+				_currentCustomLocalStateData.AcceptedOperation = dragEventArgs.AcceptedOperation;
 			});
 
 			return validTarget;
 		}
 
-		void HandleDrop(object sender, DataPackage datapackage, ClipData clipData)
+		void HandleDrop(DragEvent e, CustomLocalStateData customLocalStateData)
 		{
-			if(datapackage == null)
+			if (customLocalStateData.AcceptedOperation == DataPackageOperation.None)
+				return;
+
+			var datapackage = customLocalStateData.DataPackage;
+			if (e.LocalState == null)
 			{
-				var clipItem = clipData.GetItemAt(0);
+				string text = String.Empty;
+				if (e.ClipData?.ItemCount > 0)
+				{
+					var clipData = e.ClipData.GetItemAt(0);
+					var control = GetControl();
 
-				var uri = clipItem.Uri;
-				var text = clipItem.Text;
-				datapackage = new DataPackage();
-				datapackage.Text = text ?? uri.ToString();
-			}
+					if (control?.Context != null)
+						text = clipData.CoerceToText(control?.Context);
+					else
+						text = clipData.Text;
+				}
+				else
+				{
+					text = e.ClipDescription?.Label;
+				}
 
-			VisualElement element = null;
+				if(String.IsNullOrWhiteSpace(datapackage.Text))
+					datapackage.Text = text;
 
-			if (sender is IVisualElementRenderer renderer)
-			{
-				element = renderer.Element;
+				if(datapackage.Image == null)
+					datapackage.Image = text;
 			}
 
 			var args = new DropEventArgs(datapackage?.View);
@@ -211,11 +230,11 @@ namespace Xamarin.Forms.Platform.Android
 
 				try
 				{
-					await rec.SendDrop(args, element);
+					await rec.SendDrop(args);
 				}
-				catch(Exception e)
+				catch (Exception exc)
 				{
-					Internals.Log.Warning(nameof(DropGestureRecognizer), $"{e}");
+					Internals.Log.Warning(nameof(DropGestureRecognizer), $"{exc}");
 				}
 			});
 		}
@@ -242,7 +261,10 @@ namespace Xamarin.Forms.Platform.Android
 				if (args.Cancel)
 					return;
 
-				_dragSource[element] = args.Data;
+				CustomLocalStateData customLocalStateData = new CustomLocalStateData();
+				customLocalStateData.DataPackage = args.Data;
+
+				//_dragSource[element] = args.Data;
 				string clipDescription = FastRenderers.AutomationPropertiesProvider.ConcatenateNameAndHelpText(element) ?? String.Empty;
 				ClipData.Item item = null;
 				List<string> mimeTypes = new List<string>();
@@ -250,8 +272,8 @@ namespace Xamarin.Forms.Platform.Android
 				if (!args.Handled)
 				{
 					if (args.Data.Image != null)
-					{						
-						mimeTypes.Add("image/jpeg");						
+					{
+						mimeTypes.Add("image/jpeg");
 						item = ConvertToClipDataItem(args.Data.Image, mimeTypes);
 					}
 					else
@@ -291,11 +313,14 @@ namespace Xamarin.Forms.Platform.Android
 
 				var dragShadowBuilder = new AView.DragShadowBuilder(v);
 
-				if(Forms.IsNougatOrNewer)
-					v.StartDragAndDrop(data, dragShadowBuilder, v, (int)ADragFlags.Global | (int)ADragFlags.GlobalUriRead);
+				customLocalStateData.SourceNativeView = v;
+				customLocalStateData.SourceElement = renderer?.Element;
+
+				if (Forms.IsNougatOrNewer)
+					v.StartDragAndDrop(data, dragShadowBuilder, customLocalStateData, (int)ADragFlags.Global | (int)ADragFlags.GlobalUriRead);
 				else
 #pragma warning disable CS0618 // Type or member is obsolete
-					v.StartDrag(data, dragShadowBuilder, v, (int)ADragFlags.Global | (int)ADragFlags.GlobalUriRead);
+					v.StartDrag(data, dragShadowBuilder, customLocalStateData, (int)ADragFlags.Global | (int)ADragFlags.GlobalUriRead);
 #pragma warning restore CS0618 // Type or member is obsolete
 			});
 		}
@@ -304,7 +329,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (source is UriImageSource uriImageSource)
 			{
-				if(!mimeTypes.Contains(ClipDescription.MimetypeTextUrilist))
+				if (!mimeTypes.Contains(ClipDescription.MimetypeTextUrilist))
 					mimeTypes.Add(ClipDescription.MimetypeTextUrilist);
 
 				var aUri = AUri.Parse(uriImageSource.Uri.ToString());
@@ -318,6 +343,14 @@ namespace Xamarin.Forms.Platform.Android
 
 			return new ClipData.Item(source?.ToString() ?? String.Empty);
 
+		}
+
+		class CustomLocalStateData : Java.Lang.Object
+		{
+			public AView SourceNativeView { get; set; }
+			public DataPackage DataPackage { get; set; }
+			public DataPackageOperation AcceptedOperation { get; set; } = DataPackageOperation.Copy;
+			public VisualElement SourceElement { get; set; }
 		}
 	}
 }
