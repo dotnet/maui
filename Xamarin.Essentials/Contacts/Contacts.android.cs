@@ -10,8 +10,6 @@ namespace Xamarin.Essentials
 {
     public static partial class Contacts
     {
-        static Activity Activity => Platform.GetCurrentActivity(true);
-
         static async Task<Contact> PlatformPickContactAsync()
         {
             using var intent = new Intent(Intent.ActionPick);
@@ -29,7 +27,7 @@ namespace Xamarin.Essentials
             if (contactUri == null)
                 return default;
 
-            using var context = Activity.ContentResolver;
+            using var context = Platform.GetCurrentActivity(true).ContentResolver;
 
             using var cur = context.Query(contactUri, null, null, null, null);
             var emails = new List<ContactEmail>();
@@ -47,8 +45,8 @@ namespace Xamarin.Essentials
 
                 var projection = new string[2]
                 {
-                        ContactsContract.CommonDataKinds.Phone.Number,
-                        ContactsContract.CommonDataKinds.Phone.InterfaceConsts.Type,
+                    ContactsContract.CommonDataKinds.Phone.Number,
+                    ContactsContract.CommonDataKinds.Phone.InterfaceConsts.Type,
                 };
 
                 var cursor = context.Query(
@@ -75,8 +73,8 @@ namespace Xamarin.Essentials
 
                 projection = new string[2]
                 {
-                        ContactsContract.CommonDataKinds.Email.Address,
-                        ContactsContract.CommonDataKinds.Email.InterfaceConsts.Type
+                    ContactsContract.CommonDataKinds.Email.Address,
+                    ContactsContract.CommonDataKinds.Email.InterfaceConsts.Type
                 };
 
                 cursor = context.Query(ContactsContract.CommonDataKinds.Email.ContentUri, null, ContactsContract.CommonDataKinds.Email.InterfaceConsts.ContactId + "=?", idQ, null);
@@ -95,9 +93,9 @@ namespace Xamarin.Essentials
 
                 projection = new string[3]
                 {
-                            ContactsContract.CommonDataKinds.StructuredPostal.Street,
-                            ContactsContract.CommonDataKinds.StructuredPostal.City,
-                            ContactsContract.CommonDataKinds.StructuredPostal.Postcode
+                    ContactsContract.CommonDataKinds.StructuredPostal.Street,
+                    ContactsContract.CommonDataKinds.StructuredPostal.City,
+                    ContactsContract.CommonDataKinds.StructuredPostal.Postcode
                 };
 
                 var query = ContactsContract.CommonDataKinds.CommonColumns.Type + "=" + 3
@@ -114,12 +112,7 @@ namespace Xamarin.Essentials
                     birthday = b;
                 cursor?.Dispose();
 
-                return new Contact(
-                                name,
-                                phones,
-                                emails,
-                                birthday,
-                                ContactType.Personal);
+                return new Contact(name, phones, emails, birthday, ContactType.Personal);
             }
 
             return default;

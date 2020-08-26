@@ -56,22 +56,17 @@ namespace Xamarin.Essentials
         }
 
         static ContactType GetPhoneContactType(ContactPhoneKind type)
-        {
-            switch (type)
+            => type switch
             {
-                case ContactPhoneKind.Home:
-                case ContactPhoneKind.HomeFax:
-                case ContactPhoneKind.Mobile:
-                    return ContactType.Personal;
-                case ContactPhoneKind.Work:
-                case ContactPhoneKind.Pager:
-                case ContactPhoneKind.BusinessFax:
-                case ContactPhoneKind.Company:
-                    return ContactType.Work;
-                default:
-                    return ContactType.Unknown;
-            }
-        }
+                ContactPhoneKind.Home => ContactType.Personal,
+                ContactPhoneKind.HomeFax => ContactType.Personal,
+                ContactPhoneKind.Mobile => ContactType.Personal,
+                ContactPhoneKind.Work => ContactType.Work,
+                ContactPhoneKind.Pager => ContactType.Work,
+                ContactPhoneKind.BusinessFax => ContactType.Work,
+                ContactPhoneKind.Company => ContactType.Work,
+                _ => ContactType.Unknown
+            };
 
         static ContactType GetEmailContactType(ContactEmailKind type) => type switch
         {
