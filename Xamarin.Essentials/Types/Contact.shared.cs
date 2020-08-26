@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Xamarin.Essentials
 {
-    public readonly struct Contact : IEquatable<Contact>
+    public class Contact
     {
         public string Name { get; }
 
@@ -29,27 +29,9 @@ namespace Xamarin.Essentials
             Numbers = numbers;
             ContactType = contactType;
         }
-
-        public static bool operator ==(Contact left, Contact right) =>
-            left.Equals(right);
-
-        public static bool operator !=(Contact left, Contact right) =>
-            !left.Equals(right);
-
-        public override bool Equals(object obj) =>
-            (obj is Contact contact) && Equals(contact);
-
-        public bool Equals(Contact other) =>
-            Name.Equals(other.Name) &&
-            Numbers.Equals(other.Numbers) &&
-            Emails.Equals(other.Emails) &&
-            Birthday.Equals(other.Birthday);
-
-        public override int GetHashCode() =>
-            (Name, Numbers, Emails, Birthday).GetHashCode();
     }
 
-    public readonly struct ContactEmail : IEquatable<ContactEmail>
+    public class ContactEmail
     {
         public string EmailAddress { get; }
 
@@ -60,24 +42,9 @@ namespace Xamarin.Essentials
             EmailAddress = email;
             ContactType = contactType;
         }
-
-        public bool Equals(ContactEmail other) =>
-            (EmailAddress, ContactType) == (other.EmailAddress, other.ContactType);
-
-        public static bool operator ==(ContactEmail left, ContactEmail right) =>
-            left.Equals(right);
-
-        public static bool operator !=(ContactEmail left, ContactEmail right) =>
-            !left.Equals(right);
-
-        public override bool Equals(object obj) =>
-            (obj is ContactEmail contactEmail) && Equals(contactEmail);
-
-        public override int GetHashCode() =>
-            (EmailAddress, ContactType).GetHashCode();
     }
 
-    public readonly struct ContactPhone : IEquatable<ContactPhone>
+    public class ContactPhone
     {
         public string PhoneNumber { get; }
 
@@ -88,20 +55,5 @@ namespace Xamarin.Essentials
             PhoneNumber = phoneNumber;
             ContactType = contactType;
         }
-
-        public bool Equals(ContactPhone other) =>
-            (PhoneNumber, ContactType) == (other.PhoneNumber, other.ContactType);
-
-        public static bool operator ==(ContactPhone left, ContactPhone right) =>
-            left.Equals(right);
-
-        public static bool operator !=(ContactPhone left, ContactPhone right) =>
-            !left.Equals(right);
-
-        public override bool Equals(object obj) =>
-            (obj is ContactPhone contactPhone) && Equals(contactPhone);
-
-        public override int GetHashCode() =>
-            (PhoneNumber, ContactType).GetHashCode();
     }
 }

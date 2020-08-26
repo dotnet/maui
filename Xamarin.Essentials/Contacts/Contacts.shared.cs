@@ -7,7 +7,7 @@ namespace Xamarin.Essentials
 {
     public static partial class Contacts
     {
-        public static async Task<Contact?> PickContactAsync()
+        public static async Task<Contact> PickContactAsync()
         {
             if (DeviceInfo.Platform != DevicePlatform.iOS)
                 await Permissions.RequestAsync<Permissions.ContactsRead>();

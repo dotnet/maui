@@ -7,6 +7,6 @@ namespace Xamarin.Essentials
 {
     public static partial class Contacts
     {
-        static Task<Contact?> PlatformPickContactAsync() => throw ExceptionUtils.NotSupportedOrImplementedException;
+        static Task<Contact> PlatformPickContactAsync() => throw ExceptionUtils.NotSupportedOrImplementedException;
     }
 }

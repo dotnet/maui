@@ -15,7 +15,7 @@ namespace Xamarin.Essentials
 
         internal static Action<Exception> ErrorCallBack { get; set; }
 
-        static Task<Contact?> PlatformPickContactAsync()
+        static Task<Contact> PlatformPickContactAsync()
         {
             var uiView = Platform.GetCurrentViewController();
             if (uiView == null)

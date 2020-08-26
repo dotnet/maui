@@ -12,7 +12,7 @@ namespace Xamarin.Essentials
     {
         static Activity Activity => Platform.GetCurrentActivity(true);
 
-        static async Task<Contact?> PlatformPickContactAsync()
+        static async Task<Contact> PlatformPickContactAsync()
         {
             using var intent = new Intent(Intent.ActionPick);
             intent.SetType(ContactsContract.CommonDataKinds.Phone.ContentType);
