@@ -61,6 +61,36 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		public void UserSpecifiedTextIsntOverwritten()
+		{
+			var dragRec = new DragGestureRecognizer();
+			var element = new Label() { Text = "WRONG TEXT" };
+			dragRec.DragStarting += (_, args) =>
+			{
+				args.Data.Text = "Right Text";
+			};
+
+			var returnedArgs = dragRec.SendDragStarting(element);
+			Assert.AreEqual("Right Text", returnedArgs.Data.Text);
+		}
+
+		[Test]
+		public void UserSpecifiedImageIsntOverwritten()
+		{
+			var dragRec = new DragGestureRecognizer();
+			var element = new Image() { Source = "http://www.someimage.com" };
+			FileImageSource fileImageSource = new FileImageSource() { File = "yay.jpg" };
+
+			dragRec.DragStarting += (_, args) =>
+			{
+				args.Data.Image = fileImageSource;
+			};
+
+			var returnedArgs = dragRec.SendDragStarting(element);
+			Assert.AreEqual(fileImageSource, returnedArgs.Data.Image);
+		}
+
+		[Test]
 		public void DropCompletedCommandFires()
 		{
 			var dragRec = new DragGestureRecognizer();
@@ -68,11 +98,28 @@ namespace Xamarin.Forms.Core.UnitTests
 			object commandExecuted = null;
 			Command cmd = new Command(() => commandExecuted = parameter);
 
+			dragRec.SendDragStarting(new Label());
 			dragRec.DropCompletedCommand = cmd;
 			dragRec.DropCompletedCommandParameter = parameter;
 			dragRec.SendDropCompleted(new DropCompletedEventArgs());
 
 			Assert.AreEqual(commandExecuted, parameter);
+		}
+
+		[Test]
+		public void DropCompletedCommandFiresOnce()
+		{
+			int counter = 0;
+			var dragRec = new DragGestureRecognizer();
+			Command cmd = new Command(() => counter++);
+
+			dragRec.SendDragStarting(new Label());
+			dragRec.DropCompletedCommand = cmd;
+			dragRec.SendDropCompleted(new DropCompletedEventArgs());
+			dragRec.SendDropCompleted(new DropCompletedEventArgs());
+			dragRec.SendDropCompleted(new DropCompletedEventArgs());
+
+			Assert.AreEqual(1, counter);
 		}
 
 		[TestCase(typeof(Entry), "EntryTest")]

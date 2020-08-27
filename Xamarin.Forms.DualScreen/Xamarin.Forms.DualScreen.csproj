@@ -42,7 +42,7 @@
     <Compile Include="**\*.uwp.*.cs" />
     <ProjectReference Include="..\Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj">
     </ProjectReference>
-    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.0.15" />
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.2.10" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) ">
     <Compile Include="**\*.android.cs" />
