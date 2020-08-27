@@ -11,18 +11,6 @@ namespace DualScreen
             InitializeComponent();
 
             MainPage = new NavigationPage(new TwoPaneViewGallery());
-        }
-
-        protected override void OnStart()
-        {
-        }
-
-        protected override void OnSleep()
-        {
-        }
-
-        protected override void OnResume()
-        {
-        }
+		}
     }
 }

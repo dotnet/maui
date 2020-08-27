@@ -18,7 +18,7 @@ namespace DualScreen
 		public DualScreenInfoGallery()
 		{
 			InitializeComponent();
-			info = new DualScreenInfo(tpv);
+			info = new DualScreenInfo(slContainer);
 		}
 
 		protected override void OnAppearing()

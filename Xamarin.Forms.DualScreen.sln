@@ -46,7 +46,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Platform.GTK"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Platform.Tizen", "Xamarin.Forms.Platform.Tizen\Xamarin.Forms.Platform.Tizen.csproj", "{83790029-272E-45AF-A41D-E7716684E5B8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Platform.WPF", "Xamarin.Forms.Platform.WPF\Xamarin.Forms.Platform.WPF.csproj", "{140BC260-8B15-4D3A-B1B0-DDD8072918CC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Platform.WPF", "Xamarin.Forms.Platform.WPF\Xamarin.Forms.Platform.WPF.csproj", "{140BC260-8B15-4D3A-B1B0-DDD8072918CC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Platform", "Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj", "{D31A6537-ED9C-4EBD-B231-A8D4FE44126A}"
 EndProject
@@ -720,6 +720,7 @@ Global
 		{022CB56A-43F7-4F7B-8FF6-0AF9CB7F168C}.Debug|ARM64.ActiveCfg = Debug|iPhone
 		{022CB56A-43F7-4F7B-8FF6-0AF9CB7F168C}.Debug|iPhone.ActiveCfg = Debug|iPhone
 		{022CB56A-43F7-4F7B-8FF6-0AF9CB7F168C}.Debug|iPhone.Build.0 = Debug|iPhone
+		{022CB56A-43F7-4F7B-8FF6-0AF9CB7F168C}.Debug|iPhone.Deploy.0 = Debug|iPhone
 		{022CB56A-43F7-4F7B-8FF6-0AF9CB7F168C}.Debug|iPhoneSimulator.ActiveCfg = Debug|iPhoneSimulator
 		{022CB56A-43F7-4F7B-8FF6-0AF9CB7F168C}.Debug|iPhoneSimulator.Build.0 = Debug|iPhoneSimulator
 		{022CB56A-43F7-4F7B-8FF6-0AF9CB7F168C}.Debug|x64.ActiveCfg = Debug|iPhone
