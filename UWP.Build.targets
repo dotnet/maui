@@ -13,6 +13,6 @@
     </SDKReference>
   </ItemGroup>
   <ItemGroup  Condition="$(TargetFramework.StartsWith('uap10.0')) AND '$(OS)' == 'Windows_NT' ">
-    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.0.15" />
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.2.10" />
   </ItemGroup>
 </Project>
