@@ -41,17 +41,6 @@
                 Text="{Binding Name}" />
 
             <Label
-                Grid.Row="1"
-                FontAttributes="Bold"
-                Text="Birthday:" />
-
-            <Label
-                Grid.Row="1"
-                Grid.Column="1"
-                HorizontalTextAlignment="Start"
-                Text="{Binding Birthday}" />
-
-            <Label
                 Grid.Row="2"
                 FontAttributes="Bold"
                 Text="Numbers:" />

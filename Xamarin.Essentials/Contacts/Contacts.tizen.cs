@@ -75,7 +75,7 @@ namespace Xamarin.Essentials
                                 phones.Add(new ContactPhone(number, GetContactType(type)));
                             }
 
-                            contact = new Contact(name, phones, emails, null, ContactType.Unknown);
+                            contact = new Contact(name, phones, emails, ContactType.Unknown);
                         }
                     }
                 }

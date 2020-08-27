@@ -47,14 +47,9 @@ namespace Xamarin.Essentials
 
                 GetEmails(ref idQ, ref cursor, emails, context);
 
-                GetBirthday(ref idQ, ref cursor, ref bDate, context);
-
-                DateTime? birthday = default;
-                if (DateTime.TryParse(bDate, out var b))
-                    birthday = b;
                 cursor?.Dispose();
 
-                return new Contact(name, phones, emails, birthday, GetPhoneContactType(typeOfContact));
+                return new Contact(name, phones, emails, GetPhoneContactType(typeOfContact));
             }
 
             return default;
@@ -109,24 +104,6 @@ namespace Xamarin.Essentials
 
                     emails.Add(new ContactEmail(email, contactType));
                 }
-
-                cursor.Close();
-            }
-
-            static void GetBirthday(ref string[] idQ, ref global::Android.Database.ICursor cursor, ref string bDate, ContentResolver context)
-            {
-                var projection = new string[2]
-                {
-                     ContactsContract.Contacts.InterfaceConsts.Id,
-                     ContactsContract.CommonDataKinds.Event.StartDate
-                };
-
-                var query = ContactsContract.CommonDataKinds.CommonColumns.Type + "=" + 3;
-
-                cursor = context.Query(ContactsContract.Data.ContentUri, null, query, idQ, null);
-
-                if (cursor.MoveToFirst())
-                    bDate = cursor.GetString(cursor.GetColumnIndex(ContactsContract.CommonDataKinds.Event.StartDate));
 
                 cursor.Close();
             }

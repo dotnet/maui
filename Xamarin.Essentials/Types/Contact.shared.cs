@@ -14,17 +14,13 @@ namespace Xamarin.Essentials
 
         public IReadOnlyList<ContactEmail> Emails { get; }
 
-        public DateTime? Birthday { get; }
-
         internal Contact(
             string name,
             List<ContactPhone> numbers,
             List<ContactEmail> email,
-            DateTime? bd,
             ContactType contactType)
         {
             Name = name;
-            Birthday = bd;
             Emails = email;
             Numbers = numbers;
             ContactType = contactType;

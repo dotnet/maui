@@ -15,14 +15,6 @@ namespace Samples.ViewModel
             set => SetProperty(ref name, value);
         }
 
-        string birthday;
-
-        public string Birthday
-        {
-            get => birthday;
-            set => SetProperty(ref birthday, value);
-        }
-
         string phones;
 
         public string Phones
@@ -64,7 +56,6 @@ namespace Samples.ViewModel
                 Phones = string.Empty;
                 Emails = string.Empty;
                 Name = string.Empty;
-                Birthday = string.Empty;
                 ContactType = string.Empty;
 
                 var contact = await Contacts.PickContactAsync();
@@ -78,7 +69,6 @@ namespace Samples.ViewModel
                     Emails += $"{email.EmailAddress} ({email.ContactType})" + Environment.NewLine;
 
                 Name = contact?.Name;
-                Birthday = contact?.Birthday.ToString();
                 ContactType = contact?.ContactType.ToString();
             }
             catch (Exception ex)

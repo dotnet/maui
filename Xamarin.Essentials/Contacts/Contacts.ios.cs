@@ -55,8 +55,7 @@ namespace Xamarin.Essentials
                 else
                     name = $"{contact.GivenName} {contact.MiddleName} {contact.FamilyName}";
 
-                var birthday = contact.Birthday?.Date.ToDateTime().Date;
-                return new Contact(name, phones, emails, birthday, contactType);
+                return new Contact(name, phones, emails, contactType);
             }
             catch (Exception)
             {
