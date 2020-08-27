@@ -4,7 +4,7 @@ using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	internal class PageLifecycleManager : IDisposable
+	internal class PageLifecycleManager : IDisposable, IDisconnectable
 	{
 		NSObject _activateObserver;
 		NSObject _resignObserver;
@@ -36,24 +36,29 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (disposing)
 			{
-				if (_activateObserver != null)
-				{
-					NSNotificationCenter.DefaultCenter.RemoveObserver(_activateObserver);
-					_activateObserver = null;
-				}
-
-				if (_resignObserver != null)
-				{
-					NSNotificationCenter.DefaultCenter.RemoveObserver(_resignObserver);
-					_resignObserver = null;
-				}
-
-				HandlePageDisappearing();
-
-				_pageController = null;
+				(this as IDisconnectable).Disconnect();
 			}
 
 			_disposed = true;
+		}
+
+		void IDisconnectable.Disconnect()
+		{
+			if (_activateObserver != null)
+			{
+				NSNotificationCenter.DefaultCenter.RemoveObserver(_activateObserver);
+				_activateObserver = null;
+			}
+
+			if (_resignObserver != null)
+			{
+				NSNotificationCenter.DefaultCenter.RemoveObserver(_resignObserver);
+				_resignObserver = null;
+			}
+
+			HandlePageDisappearing();
+
+			_pageController = null;
 		}
 
 		public void Dispose()
@@ -85,8 +90,12 @@ namespace Xamarin.Forms.Platform.iOS
 
 		bool CheckIfWeAreTheCurrentPage()
 		{
+			if (_pageController == null)
+				return false;
+
 			if (_pageController.RealParent is IPageContainer<Page> multipage)
 				return multipage.CurrentPage == _pageController;
+
 			return true;
 		}
 	}
