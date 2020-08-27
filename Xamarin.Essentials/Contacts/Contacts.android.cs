@@ -14,7 +14,7 @@ namespace Xamarin.Essentials
         {
             using var intent = new Intent(Intent.ActionPick);
             intent.SetType(ContactsContract.CommonDataKinds.Phone.ContentType);
-            var result = await IntermediateActivity.StartAsync(intent, 101).ConfigureAwait(false);
+            var result = await IntermediateActivity.StartAsync(intent, Platform.requestCodePickContact).ConfigureAwait(false);
 
             if (result?.Data != null)
                 return PlatformGetContacts(result.Data);

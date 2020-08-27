@@ -26,6 +26,8 @@ namespace Xamarin.Essentials
 
         public static event EventHandler<ActivityStateChangedEventArgs> ActivityStateChanged;
 
+        internal const int requestCodePickContact = 11004;
+
         internal static void OnActivityStateChanged(Activity activity, ActivityState ev)
             => ActivityStateChanged?.Invoke(null, new ActivityStateChangedEventArgs(activity, ev));
 
