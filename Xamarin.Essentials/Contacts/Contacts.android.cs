@@ -41,14 +41,33 @@ namespace Xamarin.Essentials
                 var name = cur.GetString(cur.GetColumnIndex(ContactsContract.Contacts.InterfaceConsts.DisplayName));
                 var id = cur.GetString(cur.GetColumnIndex(ContactsContract.CommonDataKinds.Email.InterfaceConsts.ContactId));
                 var idQ = new string[1] { id };
+                global::Android.Database.ICursor cursor = null;
 
+                GetPhones(ref idQ, ref cursor, phones, context);
+
+                GetEmails(ref idQ, ref cursor, emails, context);
+
+                GetBirthday(ref idQ, ref cursor, ref bDate, context);
+
+                DateTime? birthday = default;
+                if (DateTime.TryParse(bDate, out var b))
+                    birthday = b;
+                cursor?.Dispose();
+
+                return new Contact(name, phones, emails, birthday, GetPhoneContactType(typeOfContact));
+            }
+
+            return default;
+
+            static void GetPhones(ref string[] idQ, ref global::Android.Database.ICursor cursor, List<ContactPhone> phones, ContentResolver context)
+            {
                 var projection = new string[2]
                 {
                     ContactsContract.CommonDataKinds.Phone.Number,
                     ContactsContract.CommonDataKinds.Phone.InterfaceConsts.Type,
                 };
 
-                var cursor = context.Query(
+                cursor = context.Query(
                    ContactsContract.CommonDataKinds.Phone.ContentUri,
                    null,
                    ContactsContract.CommonDataKinds.Phone.InterfaceConsts.ContactId + "=?",
@@ -69,8 +88,11 @@ namespace Xamarin.Essentials
                     while (cursor.MoveToNext());
                 }
                 cursor.Close();
+            }
 
-                projection = new string[2]
+            static void GetEmails(ref string[] idQ, ref global::Android.Database.ICursor cursor, List<ContactEmail> emails, ContentResolver context)
+            {
+                var projection = new string[2]
                 {
                     ContactsContract.CommonDataKinds.Email.Address,
                     ContactsContract.CommonDataKinds.Email.InterfaceConsts.Type
@@ -89,9 +111,17 @@ namespace Xamarin.Essentials
                 }
 
                 cursor.Close();
+            }
 
-                var query = ContactsContract.CommonDataKinds.CommonColumns.Type + "=" + 3
-                     + " AND " + ContactsContract.CommonDataKinds.Event.InterfaceConsts.ContactId + "=?";
+            static void GetBirthday(ref string[] idQ, ref global::Android.Database.ICursor cursor, ref string bDate, ContentResolver context)
+            {
+                var projection = new string[2]
+                {
+                     ContactsContract.Contacts.InterfaceConsts.Id,
+                     ContactsContract.CommonDataKinds.Event.StartDate
+                };
+
+                var query = ContactsContract.CommonDataKinds.CommonColumns.Type + "=" + 3;
 
                 cursor = context.Query(ContactsContract.Data.ContentUri, null, query, idQ, null);
 
@@ -99,15 +129,7 @@ namespace Xamarin.Essentials
                     bDate = cursor.GetString(cursor.GetColumnIndex(ContactsContract.CommonDataKinds.Event.StartDate));
 
                 cursor.Close();
-                DateTime? birthday = default;
-                if (DateTime.TryParse(bDate, out var b))
-                    birthday = b;
-                cursor?.Dispose();
-
-                return new Contact(name, phones, emails, birthday, GetPhoneContactType(typeOfContact));
             }
-
-            return default;
         }
 
         static ContactType GetPhoneContactType(string type)
