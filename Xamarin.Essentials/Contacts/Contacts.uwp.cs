@@ -20,30 +20,26 @@ namespace Xamarin.Essentials
                 if (contactSelected == null)
                     return null;
 
-                var contactManager = await ContactManager.RequestStoreAsync();
-                var contact = await contactManager.FindContactsAsync(contactSelected.Name);
-
-                var phoneContact = contact[0];
                 var phones = new List<ContactPhone>();
                 var emails = new List<ContactEmail>();
 
-                foreach (var item in phoneContact.Phones)
+                foreach (var item in contactSelected.Phones)
                     phones.Add(new ContactPhone(item.Number, GetPhoneContactType(item.Kind)));
 
                 phones = phones.Distinct().ToList();
 
-                foreach (var item in phoneContact.Emails)
+                foreach (var item in contactSelected.Emails)
                     emails.Add(new ContactEmail(item.Address, GetEmailContactType(item.Kind)));
 
                 emails = emails.Distinct().ToList();
 
-                var b = phoneContact.ImportantDates.FirstOrDefault(x => x.Kind == ContactDateKind.Birthday);
+                var b = contactSelected.ImportantDates.FirstOrDefault(x => x.Kind == ContactDateKind.Birthday);
 
                 var birthday = (b == null) ? (DateTime?)null :
                     new DateTime((int)b?.Year, (int)b?.Month, (int)b?.Day, 0, 0, 0);
 
                 return new Contact(
-                                    phoneContact.Name,
+                                    contactSelected.Name,
                                     phones,
                                     emails,
                                     birthday,
