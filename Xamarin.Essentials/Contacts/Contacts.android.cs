@@ -27,7 +27,7 @@ namespace Xamarin.Essentials
             if (contactUri == null)
                 return default;
 
-            using var context = Platform.GetCurrentActivity(true).ContentResolver;
+            using var context = Platform.AppContext.ContentResolver;
 
             using var cur = context.Query(contactUri, null, null, null, null);
             var emails = new List<ContactEmail>();
@@ -39,9 +39,7 @@ namespace Xamarin.Essentials
                 var typeOfContact = cur.GetString(cur.GetColumnIndex(ContactsContract.CommonDataKinds.Phone.InterfaceConsts.Type));
 
                 var name = cur.GetString(cur.GetColumnIndex(ContactsContract.Contacts.InterfaceConsts.DisplayName));
-                string id;
-
-                id = cur.GetString(cur.GetColumnIndex(ContactsContract.CommonDataKinds.Email.InterfaceConsts.ContactId));
+                var id = cur.GetString(cur.GetColumnIndex(ContactsContract.CommonDataKinds.Email.InterfaceConsts.ContactId));
                 var idQ = new string[1] { id };
 
                 var projection = new string[2]
@@ -91,13 +89,6 @@ namespace Xamarin.Essentials
                 }
 
                 cursor.Close();
-
-                projection = new string[3]
-                {
-                    ContactsContract.CommonDataKinds.StructuredPostal.Street,
-                    ContactsContract.CommonDataKinds.StructuredPostal.City,
-                    ContactsContract.CommonDataKinds.StructuredPostal.Postcode
-                };
 
                 var query = ContactsContract.CommonDataKinds.CommonColumns.Type + "=" + 3
                      + " AND " + ContactsContract.CommonDataKinds.Event.InterfaceConsts.ContactId + "=?";

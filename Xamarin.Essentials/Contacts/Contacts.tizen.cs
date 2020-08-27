@@ -56,37 +56,23 @@ namespace Xamarin.Essentials
                             }
 
                             var emailCount = record.GetChildRecordCount(TizenContact.Email);
-                            if (emailCount > 0)
+                            for (var i = 0; i < emailCount; i++)
                             {
-                                for (var i = 0; i < emailCount; i++)
-                                {
-                                    var item = record.GetChildRecord(TizenContact.Email, i);
-                                    var addr = item.Get<string>(TizenEmail.Address);
-                                    var type = item.Get<int>(TizenEmail.Type);
+                                var item = record.GetChildRecord(TizenContact.Email, i);
+                                var addr = item.Get<string>(TizenEmail.Address);
+                                var type = (TizenEmail.Types)item.Get<int>(TizenEmail.Type);
 
-                                    var emailType = TizenEmail.Types.Other;
-                                    if (Enum.IsDefined(typeof(TizenEmail.Types), type))
-                                        emailType = (TizenEmail.Types)type;
-
-                                    emails.Add(new ContactEmail(addr, GetContactType(emailType)));
-                                }
+                                emails.Add(new ContactEmail(addr, GetContactType(type)));
                             }
 
                             var phoneCount = record.GetChildRecordCount(TizenContact.Number);
-                            if (phoneCount > 0)
+                            for (var i = 0; i < phoneCount; i++)
                             {
-                                for (var i = 0; i < phoneCount; i++)
-                                {
-                                    var item = record.GetChildRecord(TizenContact.Number, i);
-                                    var number = item.Get<string>(TizenNumber.NumberData);
-                                    var type = item.Get<int>(TizenNumber.Type);
+                                var item = record.GetChildRecord(TizenContact.Number, i);
+                                var number = item.Get<string>(TizenNumber.NumberData);
+                                var type = (TizenNumber.Types)item.Get<int>(TizenNumber.Type);
 
-                                    var numberType = TizenNumber.Types.Other;
-                                    if (Enum.IsDefined(typeof(TizenNumber.Types), type))
-                                        numberType = (TizenNumber.Types)type;
-
-                                    phones.Add(new ContactPhone(number, GetContactType(numberType)));
-                                }
+                                phones.Add(new ContactPhone(number, GetContactType(type)));
                             }
 
                             contact = new Contact(name, phones, emails, null, ContactType.Unknown);
