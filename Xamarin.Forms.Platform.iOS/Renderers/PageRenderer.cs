@@ -267,6 +267,7 @@ namespace Xamarin.Forms.Platform.iOS
 				Element = null;
 			}
 
+			(_pageLifecycleManager as IDisconnectable)?.Disconnect();
 			_events?.Disconnect();
 			_packager?.Disconnect();
 			_tracker?.Disconnect();
@@ -279,7 +280,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (disposing)
 			{
-				var page = Page;
 				(this as IDisconnectable).Disconnect();
 
 				_pageLifecycleManager?.Dispose();
