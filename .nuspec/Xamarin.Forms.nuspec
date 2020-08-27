@@ -29,13 +29,11 @@
       </group>
       <group targetFramework="uap10.0.14393">
         <dependency id="NETStandard.Library" version="2.0.1"/>
-        <dependency id="Microsoft.NETCore.UniversalWindowsPlatform" version="6.2.10" />
         <dependency id="Win2D.uwp" version="1.20.0" />
         <dependency id="Microsoft.UI.Xaml" version="2.1.190606001" />
         <dependency id="System.ValueTuple" version="4.5.0" />
       </group>
       <group targetFramework="uap10.0.16299">
-        <dependency id="Microsoft.NETCore.UniversalWindowsPlatform" version="6.2.10" />
         <dependency id="Win2D.uwp" version="1.20.0" />
         <dependency id="Microsoft.UI.Xaml" version="2.4.2" />
       </group>
