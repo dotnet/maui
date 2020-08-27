@@ -36,11 +36,12 @@ namespace Xamarin.Essentials
 
             if (cur.MoveToFirst())
             {
+                var typeOfContact = cur.GetString(cur.GetColumnIndex(ContactsContract.CommonDataKinds.Phone.InterfaceConsts.Type));
+
                 var name = cur.GetString(cur.GetColumnIndex(ContactsContract.Contacts.InterfaceConsts.DisplayName));
                 string id;
 
                 id = cur.GetString(cur.GetColumnIndex(ContactsContract.CommonDataKinds.Email.InterfaceConsts.ContactId));
-
                 var idQ = new string[1] { id };
 
                 var projection = new string[2]
@@ -112,7 +113,7 @@ namespace Xamarin.Essentials
                     birthday = b;
                 cursor?.Dispose();
 
-                return new Contact(name, phones, emails, birthday, ContactType.Personal);
+                return new Contact(name, phones, emails, birthday, GetPhoneContactType(typeOfContact));
             }
 
             return default;
