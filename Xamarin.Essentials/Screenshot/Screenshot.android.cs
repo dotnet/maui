@@ -14,7 +14,7 @@ namespace Xamarin.Essentials
         static Task<ScreenshotResult> PlatformCaptureAsync()
         {
             if (Platform.WindowManager?.DefaultDisplay?.Flags.HasFlag(DisplayFlags.Secure) == true)
-                throw new FeatureNotSupportedException("Unable to take a screenshot of a secure window.");
+                throw new UnauthorizedAccessException("Unable to take a screenshot of a secure window.");
 
             var view = Platform.GetCurrentActivity(true)?.Window?.DecorView?.RootView;
             if (view == null)
