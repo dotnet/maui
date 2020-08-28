@@ -79,6 +79,12 @@ namespace Samples.ViewModel
                     "Check connectivity state and detect changes.",
                     new[] { "connectivity", "internet", "wifi" }),
                 new SampleItem(
+                    "👶",
+                    "Contacts",
+                    typeof(ContactsPage),
+                    "Get and add contacts in your device.",
+                    new[] { "contacts", "people", "device" }),
+                new SampleItem(
                     "📱",
                     "Device Info",
                     typeof(DeviceInfoPage),
