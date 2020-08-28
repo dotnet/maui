@@ -62,8 +62,10 @@ namespace Xamarin.Essentials
                     ContactsContract.CommonDataKinds.Phone.InterfaceConsts.Type,
                 };
 
+                var uri = ContactsContract.CommonDataKinds.Phone.ContentUri.BuildUpon().AppendQueryParameter(ContactsContract.RemoveDuplicateEntries, "1").Build();
+
                 cursor = context.Query(
-                   ContactsContract.CommonDataKinds.Phone.ContentUri,
+                   uri,
                    null,
                    ContactsContract.CommonDataKinds.Phone.InterfaceConsts.ContactId + "=?",
                    idQ,
@@ -93,7 +95,9 @@ namespace Xamarin.Essentials
                     ContactsContract.CommonDataKinds.Email.InterfaceConsts.Type
                 };
 
-                cursor = context.Query(ContactsContract.CommonDataKinds.Email.ContentUri, null, ContactsContract.CommonDataKinds.Email.InterfaceConsts.ContactId + "=?", idQ, null);
+                var uri = ContactsContract.CommonDataKinds.Email.ContentUri.BuildUpon().AppendQueryParameter(ContactsContract.RemoveDuplicateEntries, "1").Build();
+
+                cursor = context.Query(uri, null, ContactsContract.CommonDataKinds.Email.InterfaceConsts.ContactId + "=?", idQ, null);
 
                 while (cursor.MoveToNext())
                 {
