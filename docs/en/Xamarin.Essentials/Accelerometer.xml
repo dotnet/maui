@@ -32,7 +32,7 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets if acceleromter is being monitored.</summary>
+        <summary>Gets if accelerometer is being monitored.</summary>
         <value>If monitoring.</value>
         <remarks>
           <para />
@@ -96,7 +96,7 @@
         <param name="sensorSpeed">
           <para>Speed to monitor the sensor.</para>
         </param>
-        <summary>Start monitoring for changes to acceleromter.</summary>
+        <summary>Start monitoring for changes to accelerometer.</summary>
         <remarks>Will throw FeatureNotSupportedException if not supported on device. Will throw ArgumentNullException if handler is null.</remarks>
       </Docs>
     </Member>
@@ -114,7 +114,7 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>Stop monitoring for changes to acceleromter.</summary>
+        <summary>Stop monitoring for changes to accelerometer.</summary>
         <remarks>
           <para></para>
         </remarks>
