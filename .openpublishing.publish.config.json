@@ -80,5 +80,8 @@
       "target_framework": "net45",
       "version": "latest"
     }
-  ]
+  ],
+  "docs_build_engine": {
+    "name": "docfx_v3"
+  }
 }
