@@ -172,7 +172,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			container.Children.Add(sizeOption);
 
-
+			var valueConverter = new InvariantConverter();
 
 			editors.ForEach(e =>
 			{
@@ -183,11 +183,11 @@ namespace Xamarin.Forms.Controls.Issues
 				automationLabelId.SetBinding(Label.TextProperty, new Binding(nameof(Editor.AutomationId), source: e));
 
 				Label width = new Label();
-				width.SetBinding(Label.TextProperty, new Binding(nameof(Editor.Width), source: e));
+				width.SetBinding(Label.TextProperty, new Binding(nameof(Editor.Width), source: e, converter: valueConverter));
 				width.AutomationId = e.AutomationId + "_width";
 
 				Label height = new Label();
-				height.SetBinding(Label.TextProperty, new Binding(nameof(Editor.Height), source: e));
+				height.SetBinding(Label.TextProperty, new Binding(nameof(Editor.Height), source: e, converter: valueConverter));
 				height.AutomationId = e.AutomationId + "_height";
 
 				commandLayout.Children.Add(automationLabelId);
@@ -201,6 +201,19 @@ namespace Xamarin.Forms.Controls.Issues
 			content.Children.Add(commands);
 
 			Content = content;
+		}
+
+		class InvariantConverter : IValueConverter
+		{
+			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+			{
+				return ((double)value).ToString(CultureInfo.InvariantCulture);
+			}
+
+			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+			{
+				throw new NotImplementedException();
+			}
 		}
 
 #if UITEST
