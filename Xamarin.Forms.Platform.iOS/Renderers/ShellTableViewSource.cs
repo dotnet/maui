@@ -123,7 +123,6 @@ namespace Xamarin.Forms.Platform.iOS
 				return 1;
 			return 0;
 		}
-
 		public override UIView GetViewForFooter(UITableView tableView, nint section)
 		{
 			return new SeparatorView();

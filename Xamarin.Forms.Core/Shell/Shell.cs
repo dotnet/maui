@@ -1001,16 +1001,6 @@ namespace Xamarin.Forms
 			var result = new List<List<Element>>();
 
 			var currentGroup = new List<Element>();
-			result.Add(currentGroup);
-
-			void IncrementGroup()
-			{
-				if (currentGroup.Count > 0)
-				{
-					currentGroup = new List<Element>();
-					result.Add(currentGroup);
-				}
-			}
 
 			foreach (var shellItem in ShellController.GetItems())
 			{
@@ -1067,6 +1057,16 @@ namespace Xamarin.Forms
 			IncrementGroup();
 
 			return result;
+
+
+			void IncrementGroup()
+			{
+				if (currentGroup.Count > 0)
+				{
+					result.Add(currentGroup);
+					currentGroup = new List<Element>();
+				}
+			}
 		}
 
 		internal void SendStructureChanged()
