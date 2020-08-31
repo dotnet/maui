@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2027
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30413.136
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xamarin.Forms", "Xamarin.Forms", "{9AD757F5-E57A-459D-A0A7-E0675E045B84}"
 EndProject
@@ -23,8 +23,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuspec", ".nuspec", "{7E12
 		.nuspec\Xamarin.Forms.Maps.nuspec = .nuspec\Xamarin.Forms.Maps.nuspec
 		.nuspec\Xamarin.Forms.Maps.WPF.nuspec = .nuspec\Xamarin.Forms.Maps.WPF.nuspec
 		.nuspec\Xamarin.Forms.nuspec = .nuspec\Xamarin.Forms.nuspec
-		.nuspec\Xamarin.Forms.Pages.Azure.nuspec = .nuspec\Xamarin.Forms.Pages.Azure.nuspec
-		.nuspec\Xamarin.Forms.Pages.nuspec = .nuspec\Xamarin.Forms.Pages.nuspec
 		.nuspec\Xamarin.Forms.Platform.GTK.nuspec = .nuspec\Xamarin.Forms.Platform.GTK.nuspec
 		.nuspec\Xamarin.Forms.Platform.WPF.nuspec = .nuspec\Xamarin.Forms.Platform.WPF.nuspec
 		.nuspec\Xamarin.Forms.props = .nuspec\Xamarin.Forms.props
@@ -49,15 +47,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Forwarders", "Forwarders", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xamarin.Forms.Controls.Issues", "Xamarin.Forms.Controls.Issues", "{B2927DF0-F98E-45C8-A917-27941B2B6838}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Platform.UAP", "Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj", "{00D8D049-FFAA-4759-8FC9-1ECA30777F72}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Platform.UAP", "Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj", "{00D8D049-FFAA-4759-8FC9-1ECA30777F72}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Maps.UWP", "Xamarin.Forms.Maps.UWP\Xamarin.Forms.Maps.UWP.csproj", "{04D89A60-78EF-4A32-AE17-87E47E0233A5}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Pages", "Xamarin.Forms.Pages\Xamarin.Forms.Pages.csproj", "{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Maps.UWP", "Xamarin.Forms.Maps.UWP\Xamarin.Forms.Maps.UWP.csproj", "{04D89A60-78EF-4A32-AE17-87E47E0233A5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pages Gallery", "Pages Gallery", "{80BAC3FB-357A-4D05-A050-9F234DF49C97}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Pages.Azure", "Xamarin.Forms.Pages.Azure\Xamarin.Forms.Pages.Azure.csproj", "{C9696465-7657-4843-872E-3C01891C4A9B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EmbeddingTestBeds", "EmbeddingTestBeds", "{406DE4B0-F541-4092-B0EE-F0A20E9A89F5}"
 EndProject
@@ -73,6 +67,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Xaml.Design",
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Xamarin.Flex\Xamarin.Flex.projitems*{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}*SharedItemsImports = 5
 		Xamarin.Flex\Xamarin.Flex.projitems*{a6703c7d-d362-452a-a7a5-73771194d38c}*SharedItemsImports = 13
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -226,54 +221,6 @@ Global
 		{04D89A60-78EF-4A32-AE17-87E47E0233A5}.Release|x64.Build.0 = Release|Any CPU
 		{04D89A60-78EF-4A32-AE17-87E47E0233A5}.Release|x86.ActiveCfg = Release|Any CPU
 		{04D89A60-78EF-4A32-AE17-87E47E0233A5}.Release|x86.Build.0 = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|ARM.Build.0 = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|iPhone.ActiveCfg = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|iPhone.Build.0 = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|x64.Build.0 = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|x86.Build.0 = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|ARM.ActiveCfg = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|ARM.Build.0 = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|iPhone.ActiveCfg = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|iPhone.Build.0 = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|x64.ActiveCfg = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|x64.Build.0 = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|x86.ActiveCfg = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|x86.Build.0 = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|ARM.Build.0 = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|iPhone.ActiveCfg = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|iPhone.Build.0 = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|x64.Build.0 = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|x86.Build.0 = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|ARM.ActiveCfg = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|ARM.Build.0 = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|iPhone.ActiveCfg = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|iPhone.Build.0 = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|x64.ActiveCfg = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|x64.Build.0 = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|x86.ActiveCfg = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|x86.Build.0 = Release|Any CPU
 		{D31A6537-ED9C-4EBD-B231-A8D4FE44126A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D31A6537-ED9C-4EBD-B231-A8D4FE44126A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D31A6537-ED9C-4EBD-B231-A8D4FE44126A}.Debug|ARM.ActiveCfg = Debug|Any CPU
@@ -359,8 +306,6 @@ Global
 		{B2927DF0-F98E-45C8-A917-27941B2B6838} = {4F5E2D21-17F6-4A42-B8FB-D03D82E24EC8}
 		{00D8D049-FFAA-4759-8FC9-1ECA30777F72} = {29AC50BF-B4FB-450B-9386-0C5AD4B84226}
 		{04D89A60-78EF-4A32-AE17-87E47E0233A5} = {132FB9A4-613F-44CE-95D5-758D32D231DD}
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31} = {9AD757F5-E57A-459D-A0A7-E0675E045B84}
-		{C9696465-7657-4843-872E-3C01891C4A9B} = {9AD757F5-E57A-459D-A0A7-E0675E045B84}
 		{D31A6537-ED9C-4EBD-B231-A8D4FE44126A} = {29AC50BF-B4FB-450B-9386-0C5AD4B84226}
 		{A6703C7D-D362-452A-A7A5-73771194D38C} = {CA1DF598-3650-4A7B-A065-492C26009295}
 		{98637471-8E5C-4DDE-89CA-2EAA664FB0EF} = {9AD757F5-E57A-459D-A0A7-E0675E045B84}

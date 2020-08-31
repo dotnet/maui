@@ -25,8 +25,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuspec", ".nuspec", "{7E12
 		.nuspec\Xamarin.Forms.Maps.nuspec = .nuspec\Xamarin.Forms.Maps.nuspec
 		.nuspec\Xamarin.Forms.Maps.WPF.nuspec = .nuspec\Xamarin.Forms.Maps.WPF.nuspec
 		.nuspec\Xamarin.Forms.nuspec = .nuspec\Xamarin.Forms.nuspec
-		.nuspec\Xamarin.Forms.Pages.Azure.nuspec = .nuspec\Xamarin.Forms.Pages.Azure.nuspec
-		.nuspec\Xamarin.Forms.Pages.nuspec = .nuspec\Xamarin.Forms.Pages.nuspec
 		.nuspec\Xamarin.Forms.Platform.GTK.nuspec = .nuspec\Xamarin.Forms.Platform.GTK.nuspec
 		.nuspec\Xamarin.Forms.Platform.WPF.nuspec = .nuspec\Xamarin.Forms.Platform.WPF.nuspec
 		.nuspec\Xamarin.Forms.props = .nuspec\Xamarin.Forms.props
@@ -64,13 +62,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Platform.Andr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xamarin.Forms.Controls.Issues", "Xamarin.Forms.Controls.Issues", "{B2927DF0-F98E-45C8-A917-27941B2B6838}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Pages", "Xamarin.Forms.Pages\Xamarin.Forms.Pages.csproj", "{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pages Gallery", "Pages Gallery", "{80BAC3FB-357A-4D05-A050-9F234DF49C97}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Platform.Android.AppLinks", "Xamarin.Forms.Platform.Android.AppLinks\Xamarin.Forms.Platform.Android.AppLinks.csproj", "{42DB052E-0909-45D2-8240-187F99F393FB}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Pages.Azure", "Xamarin.Forms.Pages.Azure\Xamarin.Forms.Pages.Azure.csproj", "{C9696465-7657-4843-872E-3C01891C4A9B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EmbeddingTestBeds", "EmbeddingTestBeds", "{406DE4B0-F541-4092-B0EE-F0A20E9A89F5}"
 EndProject
@@ -88,7 +82,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Material.Andr
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{cb9c96ce-125c-4a68-b6a1-c3ff1fbf93e1}*SharedItemsImports = 4
+		Xamarin.Flex\Xamarin.Flex.projitems*{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}*SharedItemsImports = 5
+		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{cb9c96ce-125c-4a68-b6a1-c3ff1fbf93e1}*SharedItemsImports = 5
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -345,30 +340,6 @@ Global
 		{6E53FEB1-1100-46AE-8013-17BBA35CC197}.Release|x64.Build.0 = Release|Any CPU
 		{6E53FEB1-1100-46AE-8013-17BBA35CC197}.Release|x86.ActiveCfg = Release|Any CPU
 		{6E53FEB1-1100-46AE-8013-17BBA35CC197}.Release|x86.Build.0 = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|ARM.Build.0 = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|iPhone.ActiveCfg = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|iPhone.Build.0 = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|x64.Build.0 = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Debug|x86.Build.0 = Debug|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|ARM.ActiveCfg = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|ARM.Build.0 = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|iPhone.ActiveCfg = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|iPhone.Build.0 = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|x64.ActiveCfg = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|x64.Build.0 = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|x86.ActiveCfg = Release|Any CPU
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31}.Release|x86.Build.0 = Release|Any CPU
 		{42DB052E-0909-45D2-8240-187F99F393FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{42DB052E-0909-45D2-8240-187F99F393FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{42DB052E-0909-45D2-8240-187F99F393FB}.Debug|ARM.ActiveCfg = Debug|Any CPU
@@ -393,30 +364,6 @@ Global
 		{42DB052E-0909-45D2-8240-187F99F393FB}.Release|x64.Build.0 = Release|Any CPU
 		{42DB052E-0909-45D2-8240-187F99F393FB}.Release|x86.ActiveCfg = Release|Any CPU
 		{42DB052E-0909-45D2-8240-187F99F393FB}.Release|x86.Build.0 = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|ARM.Build.0 = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|iPhone.ActiveCfg = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|iPhone.Build.0 = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|x64.Build.0 = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Debug|x86.Build.0 = Debug|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|ARM.ActiveCfg = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|ARM.Build.0 = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|iPhone.ActiveCfg = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|iPhone.Build.0 = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|x64.ActiveCfg = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|x64.Build.0 = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|x86.ActiveCfg = Release|Any CPU
-		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|x86.Build.0 = Release|Any CPU
 		{D31A6537-ED9C-4EBD-B231-A8D4FE44126A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D31A6537-ED9C-4EBD-B231-A8D4FE44126A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D31A6537-ED9C-4EBD-B231-A8D4FE44126A}.Debug|ARM.ActiveCfg = Debug|Any CPU
@@ -530,9 +477,7 @@ Global
 		{5A2DADBC-9510-4DD1-BE58-01501F2DF65D} = {29AC50BF-B4FB-450B-9386-0C5AD4B84226}
 		{6E53FEB1-1100-46AE-8013-17BBA35CC197} = {5A2DADBC-9510-4DD1-BE58-01501F2DF65D}
 		{B2927DF0-F98E-45C8-A917-27941B2B6838} = {4F5E2D21-17F6-4A42-B8FB-D03D82E24EC8}
-		{D6133DBD-6C60-4BD5-BEA2-07E0A3927C31} = {9AD757F5-E57A-459D-A0A7-E0675E045B84}
 		{42DB052E-0909-45D2-8240-187F99F393FB} = {29AC50BF-B4FB-450B-9386-0C5AD4B84226}
-		{C9696465-7657-4843-872E-3C01891C4A9B} = {9AD757F5-E57A-459D-A0A7-E0675E045B84}
 		{D31A6537-ED9C-4EBD-B231-A8D4FE44126A} = {29AC50BF-B4FB-450B-9386-0C5AD4B84226}
 		{98637471-8E5C-4DDE-89CA-2EAA664FB0EF} = {9AD757F5-E57A-459D-A0A7-E0675E045B84}
 		{65BC4888-CC59-428A-9B75-540CF1C09480} = {32F608E2-6406-4DCF-9105-E2A7CB7085CF}

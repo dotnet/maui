@@ -1,3 +1,0 @@
-<Project>
-  <Import Project="Android10.Build.targets" Condition="'$(TargetFrameworkVersion)' != 'v9.0'" />
-</Project>

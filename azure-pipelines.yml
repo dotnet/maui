@@ -82,38 +82,13 @@ stages:
           - template: build/steps/build-windows.yml
             parameters:
               provisionatorPath : 'build/provisioning/provisioning.csx'
-      - job: pages_hosted
-        condition: eq(variables['vs2019VmPool'], 'Azure Pipelines')
-        workspace:
-          clean: all
-        displayName: Build Pages Phase
-        timeoutInMinutes: 120
-        pool:
-          name: $(vs2019VmPool)
-          vmImage: $(vs2019VmImage)
-          demands:
-            msbuild
-        strategy:
-          matrix:
-            debug:
-              BuildConfiguration:  'Debug'
-            release:
-              BuildConfiguration:  'Release'
-        steps:
-          - template: build/steps/build-windows.yml
-            parameters:
-              slnPath: build/Xamarin.Forms.Pages.sln
-              includeUwp: false
-              includeAndroid: false
-              includeNonUwpAndNonAndroid: false
-              includePages: true
+     
       - job: nuget_pack_hosted
         workspace:
           clean: all
         displayName: Nuget Phase
         dependsOn:
         - win_hosted
-        - pages_hosted
         condition: succeeded()
         pool:
           name: $(vs2019VmPool)
@@ -148,39 +123,12 @@ stages:
           - template: build/steps/build-windows.yml
             parameters:
               provisionatorPath : 'build/provisioning/provisioning.csx'
-      - job: pages_bots
-        condition: ne(variables['vs2019VmPool'], 'Azure Pipelines')
-        workspace:
-          clean: all
-        displayName: Build Pages Phase
-        timeoutInMinutes: 120
-        pool:
-          name: $(vs2019VmPool)
-          vmImage: $(vs2019VmImage)
-          demands:
-            - Agent.OS -equals Windows_NT
-            - msbuild
-        strategy:
-          matrix:
-            debug:
-              BuildConfiguration:  'Debug'
-            release:
-              BuildConfiguration:  'Release'
-        steps:
-          - template: build/steps/build-windows.yml
-            parameters:
-              slnPath: build/Xamarin.Forms.Pages.sln
-              includeUwp: false
-              includeAndroid: false
-              includeNonUwpAndNonAndroid: false
-              includePages: true
       - job: nuget_pack_bots
         workspace:
           clean: all
         displayName: Nuget Phase
         dependsOn:
         - win_bots
-        - pages_bots
         condition: succeeded()
         pool:
           name: $(vs2019VmPool)
