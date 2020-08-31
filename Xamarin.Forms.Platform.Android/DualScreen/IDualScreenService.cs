@@ -14,5 +14,6 @@ namespace Xamarin.Forms.Platform.Android.DualScreen
 		object WatchForChangesOnLayout(VisualElement visualElement, Action action);
 		void StopWatchingForChangesOnLayout(VisualElement visualElement, object handle);
 		Task<int> GetHingeAngleAsync();
+		bool IsDualScreenDevice { get; }
 	}
 }

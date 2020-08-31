@@ -18,7 +18,7 @@ namespace DualScreen
 
 			var twoPaneView = new TwoPaneView()
 			{
-				MinTallModeHeight  = 0,
+				MinTallModeHeight = 0,
 				MinWideModeWidth = 0
 			};
 
@@ -31,6 +31,7 @@ namespace DualScreen
 					NavButton("Companion Pane", () => new CompanionPane(), Navigation),
 					NavButton("ExtendCanvas Sample", () => new ExtendCanvas(), Navigation),
 					NavButton("DualViewMapPage Sample", () => new DualViewMapPage(), Navigation),
+					NavButton("Lots of TwoPaneViews", () => new TwoPaneViewBonanza(), Navigation),
 				}
 			};
 
@@ -43,6 +44,7 @@ namespace DualScreen
 					NavButton("DualScreenInfo with non TwoPaneView", () => new GridUsingDualScreenInfo(), Navigation),
 					NavButton("eReader Samples", () => new TwoPage(), Navigation),
 					NavButton("Dual Screen Info Samples", () => new DualScreenInfoGallery(), Navigation),
+					StyleButton(new Button(){ Text = "Collect Garbage", Command = new Command(OnCollectGarbage) })
 				}
 			};
 
@@ -52,10 +54,26 @@ namespace DualScreen
 			Content = twoPaneView;
 		}
 
+		void OnCollectGarbage(object obj)
+		{
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+		}
+
+		public static Button StyleButton(Button button)
+		{
+			button.FontSize = 10;
+			button.HeightRequest = Device.RuntimePlatform == Device.Android ? 40 : 30;
+
+			return button;
+		}
+
 		public static Button NavButton(string galleryName, Func<Page> gallery, INavigation nav)
 		{
 			var automationId = System.Text.RegularExpressions.Regex.Replace(galleryName, " |\\(|\\)", string.Empty);
-			var button = new Button { Text = $"{galleryName}", AutomationId = automationId, FontSize = 10, HeightRequest = Device.RuntimePlatform == Device.Android ? 40 : 30 };
+			var button = StyleButton(new Button { Text = $"{galleryName}", AutomationId = automationId });
 			button.Clicked += (sender, args) => { nav.PushAsync(gallery()); };
 			return button;
 		}

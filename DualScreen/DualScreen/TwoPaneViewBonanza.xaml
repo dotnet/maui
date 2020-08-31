@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:dualScreen="clr-namespace:Xamarin.Forms.DualScreen;assembly=Xamarin.Forms.DualScreen"
+             x:Class="DualScreen.TwoPaneViewBonanza"
+             x:Name="contentPage">
+    <ContentPage.Content>
+        <CollectionView x:Name="cvData" ItemSizingStrategy="MeasureAllItems">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <StackLayout>
+                        <BoxView HeightRequest="2" BackgroundColor="Green"></BoxView>
+                        <dualScreen:TwoPaneView HeightRequest="100">
+                            <dualScreen:TwoPaneView.Pane1>
+                                <StackLayout>
+                                    <Label Text="Hello There"></Label>
+                                </StackLayout>
+                            </dualScreen:TwoPaneView.Pane1>
+                            <dualScreen:TwoPaneView.Pane2>
+                                <StackLayout>
+                                    <Button Text="Reset CollectionView" Clicked="OnResetCollectionView"></Button>
+                                </StackLayout>
+                            </dualScreen:TwoPaneView.Pane2>
+                        </dualScreen:TwoPaneView>
+                        <BoxView HeightRequest="2" BackgroundColor="Purple"></BoxView>
+                    </StackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </ContentPage.Content>
+</ContentPage>

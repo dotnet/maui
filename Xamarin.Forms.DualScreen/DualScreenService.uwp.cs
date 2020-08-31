@@ -23,7 +23,7 @@ namespace Xamarin.Forms.DualScreen
 {
     internal partial class DualScreenService : IDualScreenService, Platform.UWP.DualScreen.IDualScreenService
 	{
-		public event EventHandler OnScreenChanged;
+		readonly WeakEventManager _onScreenChangedEventManager = new WeakEventManager();
 
 		public DualScreenService()
         {
@@ -31,6 +31,12 @@ namespace Xamarin.Forms.DualScreen
 			{
 				Window.Current.SizeChanged += OnCurrentSizeChanged;
 			}
+		}
+
+		public event EventHandler OnScreenChanged
+		{
+			add { _onScreenChangedEventManager.AddEventHandler(value); }
+			remove { _onScreenChangedEventManager.RemoveEventHandler(value); }
 		}
 
 		public async Task<int> GetHingeAngleAsync()
@@ -55,7 +61,7 @@ namespace Xamarin.Forms.DualScreen
 
 		void OnCurrentSizeChanged(object sender, Windows.UI.Core.WindowSizeChangedEventArgs e)
 		{
-			OnScreenChanged?.Invoke(this, EventArgs.Empty);
+			_onScreenChangedEventManager.HandleEvent(this, EventArgs.Empty, nameof(OnScreenChanged));
 		}
 
 		public bool IsSpanned

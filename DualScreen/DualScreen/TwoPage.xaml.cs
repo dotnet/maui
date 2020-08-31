@@ -39,7 +39,7 @@ namespace DualScreen
             DualScreenLayoutInfo.PropertyChanged += OnFormsWindowPropertyChanged;
             DualScreenInfo.Current.PropertyChanged += OnFormsWindowPropertyChanged;
             SetupColletionViewLayout();
-        }
+		}
 
         protected override void OnDisappearing()
         {

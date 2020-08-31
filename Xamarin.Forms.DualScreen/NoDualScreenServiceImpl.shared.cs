@@ -11,9 +11,12 @@ namespace Xamarin.Forms.DualScreen
         static Lazy<NoDualScreenServiceImpl> _Instance = new Lazy<NoDualScreenServiceImpl>(() => new NoDualScreenServiceImpl());
         public static NoDualScreenServiceImpl Instance => _Instance.Value;
 
-        public NoDualScreenServiceImpl()
+		readonly WeakEventManager _onScreenChangedEventManager = new WeakEventManager();
+		public NoDualScreenServiceImpl()
         {
-        }
+			Device.info.PropertyChanged += OnDeviceInfoChanged;
+
+		}
 
 		public Task<int> GetHingeAngleAsync() => Task.FromResult(0);
 
@@ -23,9 +26,11 @@ namespace Xamarin.Forms.DualScreen
 
 		public DeviceInfo DeviceInfo => Device.info;
 
-#pragma warning disable CS0067
-		public event EventHandler OnScreenChanged;
-#pragma warning restore CS0067
+		public event EventHandler OnScreenChanged
+		{
+			add { _onScreenChangedEventManager.AddEventHandler(value); }
+			remove { _onScreenChangedEventManager.RemoveEventHandler(value); }
+		}
 
 		public void Dispose()
         {
@@ -58,11 +63,13 @@ namespace Xamarin.Forms.DualScreen
 
 		public void StopWatchingForChangesOnLayout(VisualElement visualElement, object handle)
 		{
-			if (handle == null)
-				return;
-
 			if (handle is EventHandler<EventArg<VisualElement>> handler)
 				visualElement.BatchCommitted -= handler;
+		}
+
+		void OnDeviceInfoChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			_onScreenChangedEventManager.HandleEvent(this, e, nameof(OnScreenChanged));
 		}
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -29,25 +30,30 @@ namespace Xamarin.Forms.DualScreen
 		IDualScreenService DualScreenService =>
 			_dualScreenService ?? DependencyService.Get<IDualScreenService>() ?? NoDualScreenServiceImpl.Instance;
 
+		internal VisualElement Element { get; }
+
 		static Lazy<DualScreenInfo> _dualScreenInfo { get; } = new Lazy<DualScreenInfo>(OnCreate);
 
 		public static DualScreenInfo Current => _dualScreenInfo.Value;
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		public DualScreenInfo(VisualElement layout) : this(layout, null)
+		public DualScreenInfo(VisualElement element) : this(element, null)
 		{
 		}
 
-		internal DualScreenInfo(VisualElement layout, IDualScreenService dualScreenService)
+		internal DualScreenInfo(VisualElement element, IDualScreenService dualScreenService)
 		{
+			_spanningBounds = new Rectangle[0];
+			Element = element;
 			_dualScreenService = dualScreenService;
-			if (layout == null)
+
+			if (element == null)
 			{
 				_twoPaneViewLayoutGuide = TwoPaneViewLayoutGuide.Instance;
 			}
 			else
 			{
-				_twoPaneViewLayoutGuide = new TwoPaneViewLayoutGuide(layout, dualScreenService);
+				_twoPaneViewLayoutGuide = new TwoPaneViewLayoutGuide(element, dualScreenService);
 				_twoPaneViewLayoutGuide.PropertyChanged += OnTwoPaneViewLayoutGuideChanged;				
 			}
 		}
@@ -75,7 +81,15 @@ namespace Xamarin.Forms.DualScreen
 			get => GetSpanningBounds();
 			set
 			{
-				SetProperty(ref _spanningBounds, value);
+				if (_spanningBounds == null && value == null)
+					return;
+
+				if (_spanningBounds == null ||
+					value == null ||
+					!Enumerable.SequenceEqual(_spanningBounds, value))
+				{
+					SetProperty(ref _spanningBounds, value);
+				}
 			}
 		}
 
