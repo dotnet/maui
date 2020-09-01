@@ -84,11 +84,13 @@ namespace Xamarin.Essentials
         public static void OnNewIntent(AndroidIntent intent)
             => CheckAppActions(intent);
 
-        public static void OnResume()
-            => WebAuthenticator.OnResume(null);
+        public static void OnResume(Activity activity = null)
+        {
+            if (activity != null)
+                CheckAppActions(activity.Intent);
 
-        public static void OnCreate(Activity activity)
-            => CheckAppActions(activity?.Intent);
+            WebAuthenticator.OnResume(null);
+        }
 
         static void CheckAppActions(AndroidIntent intent)
         {

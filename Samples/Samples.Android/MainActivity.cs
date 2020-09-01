@@ -28,15 +28,13 @@ namespace Samples.Droid
             Xamarin.Essentials.Platform.ActivityStateChanged += Platform_ActivityStateChanged;
 
             LoadApplication(new App());
-
-            Xamarin.Essentials.Platform.OnCreate(this);
         }
 
         protected override void OnResume()
         {
             base.OnResume();
 
-            Xamarin.Essentials.Platform.OnResume();
+            Xamarin.Essentials.Platform.OnResume(this);
         }
 
         protected override void OnNewIntent(Intent intent)
