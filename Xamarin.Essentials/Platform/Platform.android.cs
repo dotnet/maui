@@ -32,6 +32,7 @@ namespace Xamarin.Essentials
         internal const int requestCodeFilePicker = 11001;
         internal const int requestCodeMediaPicker = 11002;
         internal const int requestCodeMediaCapture = 11003;
+        internal const int requestCodePickContact = 11004;
 
         internal const int requestCodeStart = 12000;
 
