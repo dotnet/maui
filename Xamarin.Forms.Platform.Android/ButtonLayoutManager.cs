@@ -16,6 +16,7 @@ using Xamarin.Forms.Internals;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
 using AButton = Android.Widget.Button;
+using Android.Text;	
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -191,6 +192,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (!UpdateTextAndImage())
 				UpdateImage();
 			UpdatePadding();
+			UpdateLineBreakMode();
 		}
 
 		void OnElementChanged(object sender, VisualElementChangedEventArgs e)
@@ -223,6 +225,8 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateTextAndImage();
 			else if (e.PropertyName == Button.BorderWidthProperty.PropertyName && _borderAdjustsPadding)
 				_element.InvalidateMeasureNonVirtual(InvalidationTrigger.MeasureChanged);
+			else if (e.PropertyName == Button.LineBreakModeProperty.PropertyName)
+				UpdateLineBreakMode();
 		}
 
 		void UpdatePadding()
@@ -354,6 +358,17 @@ namespace Xamarin.Forms.Platform.Android
 						_element?.InvalidateMeasureNonVirtual(InvalidationTrigger.MeasureChanged);
 				});
 			}
+		}
+
+		void UpdateLineBreakMode()
+		{
+			AButton view = View;
+
+			if (view == null || _element == null || _renderer?.View == null)
+				return;
+
+			view.SetLineBreakMode(_element);
+			_renderer.View.SetAllCaps(_element.TextTransform == TextTransform.Default);
 		}
 	}
 }

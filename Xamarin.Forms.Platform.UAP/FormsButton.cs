@@ -76,10 +76,10 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			var radius = BorderRadius == -1 ? 0 : BorderRadius;
 			var cornerRadius = new Windows.UI.Xaml.CornerRadius(radius);
-			if (_contentPresenter != null)						
-				_contentPresenter.CornerRadius = cornerRadius;				
-			
-			if(_rootGrid != null)
+			if (_contentPresenter != null)
+				_contentPresenter.CornerRadius = cornerRadius;
+
+			if (_rootGrid != null)
 				_rootGrid.CornerRadius = cornerRadius;
 		}
 
@@ -90,21 +90,32 @@ namespace Xamarin.Forms.Platform.UWP
 			if (_contentPresenter != null)
 				_contentPresenter.CharacterSpacing = CharacterSpacing;
 
-			if(Content is TextBlock tb)
+			var textBlock = GetTextBlock(Content);
+			
+			if (textBlock != null)
+				textBlock.CharacterSpacing = CharacterSpacing;
+
+		}
+
+		public TextBlock GetTextBlock(object content)
+		{
+			if (content is TextBlock tb)
 			{
-				tb.CharacterSpacing = CharacterSpacing;
+				return tb;
 			}
 
-			if (Content is StackPanel sp)
+			if (content is StackPanel sp)
 			{
 				foreach (var item in sp.Children)
 				{
 					if (item is TextBlock textBlock)
 					{
-						textBlock.CharacterSpacing = CharacterSpacing;
+						return textBlock;
 					}
 				}
 			}
+
+			return null;
 		}
 	}
 }
