@@ -360,10 +360,8 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.TraitCollectionDidChange(previousTraitCollection);
 
-#if __XCODE11__
 			if (Forms.IsiOS13OrNewer && previousTraitCollection.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				Application.Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Application.Current.RequestedTheme));
-#endif
 		}
 
 		bool ShouldUseSafeArea()

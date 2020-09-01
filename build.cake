@@ -62,7 +62,6 @@ var packageVersion = Argument("packageVersion", "");
 var releaseChannelArg = Argument("CHANNEL", "Stable");
 releaseChannelArg = EnvironmentVariable("CHANNEL") ?? releaseChannelArg;
 var teamProject = Argument("TeamProject", "");
-bool buildForVS2017 = Convert.ToBoolean(Argument("buildForVS2017", "false"));
 bool isHostedAgent = agentName.StartsWith("Azure Pipelines") || agentName.StartsWith("Hosted Agent");
 
 string defaultUnitTestWhere = "";
@@ -110,17 +109,11 @@ string MSBuildArgumentsENV = EnvironmentVariable("MSBuildArguments", "");
 string MSBuildArgumentsARGS = Argument("MSBuildArguments", "");
 string MSBuildArguments;
 
-if(buildForVS2017)
-    MSBuildArguments = String.Empty;
-else
-    MSBuildArguments = $"{MSBuildArgumentsENV} {MSBuildArgumentsARGS}";
+MSBuildArguments = $"{MSBuildArgumentsENV} {MSBuildArgumentsARGS}";
     
 Information("MSBuildArguments: {0}", MSBuildArguments);
 
 string androidSdks = EnvironmentVariable("ANDROID_API_SDKS", "platform-tools,platforms;android-28,platforms;android-29,build-tools;29.0.3,platforms;android-30");
-
-if(buildForVS2017)
-    androidSdks = "platforms;android-28,platforms;android-29,build-tools;29.0.3";
 
 Information("ANDROID_API_SDKS: {0}", androidSdks);
 string[] androidSdkManagerInstalls = androidSdks.Split(',');
@@ -164,7 +157,6 @@ Information ("ANDROID_RENDERERS: {0}", ANDROID_RENDERERS);
 Information ("configuration: {0}", configuration);
 Information ("ANDROID_HOME: {0}", ANDROID_HOME);
 Information ("Team Project: {0}", teamProject);
-Information ("buildForVS2017: {0}", buildForVS2017);
 Information ("Agent.Name: {0}", agentName);
 Information ("isCIBuild: {0}", isCIBuild);
 Information ("artifactStagingDirectory: {0}", artifactStagingDirectory);
@@ -187,17 +179,7 @@ string monoPatchVersion = "";
 string monoMajorVersion = "";
 string monoVersion = "";
 
-if(buildForVS2017)
-{
-    // VS2017
-    monoMajorVersion = "5.18.1";
-    monoPatchVersion = "";
-    androidSDK_macos = "https://aka.ms/xamarin-android-commercial-d15-9-macos";
-    iOSSDK_macos = $"https://bosstoragemirror.blob.core.windows.net/wrench/jenkins/xcode10.2/9c8d8e0a50e68d9abc8cd48fcd47a669e981fcc9/53/package/xamarin.ios-12.4.0.64.pkg";
-    macSDK_macos = $"https://bosstoragemirror.blob.core.windows.net/wrench/jenkins/xcode10.2/9c8d8e0a50e68d9abc8cd48fcd47a669e981fcc9/53/package/xamarin.mac-5.4.0.64.pkg";
-
-}
-else if(releaseChannel == ReleaseChannel.Stable)
+if(releaseChannel == ReleaseChannel.Stable)
 {
     if(IsXcodeVersionOver("11.4"))
     {
@@ -235,18 +217,16 @@ string iOSSDK_windows = "";
 string monoSDK_windows = "";
 string macSDK_windows = "";
 
-if(!buildForVS2017)
-{
-    androidSDK_macos = EnvironmentVariable("ANDROID_SDK_MAC", androidSDK_macos);
-    iOSSDK_macos = EnvironmentVariable("IOS_SDK_MAC", iOSSDK_macos);
-    monoSDK_macos = EnvironmentVariable("MONO_SDK_MAC", monoSDK_macos);
-    macSDK_macos = EnvironmentVariable("MAC_SDK_MAC", macSDK_macos);
 
-    androidSDK_windows = EnvironmentVariable("ANDROID_SDK_WINDOWS", "");
-    iOSSDK_windows = EnvironmentVariable("IOS_SDK_WINDOWS", "");
-    monoSDK_windows = EnvironmentVariable("MONO_SDK_WINDOWS", "");
-    macSDK_windows = EnvironmentVariable("MAC_SDK_WINDOWS", "");
-}
+androidSDK_macos = EnvironmentVariable("ANDROID_SDK_MAC", androidSDK_macos);
+iOSSDK_macos = EnvironmentVariable("IOS_SDK_MAC", iOSSDK_macos);
+monoSDK_macos = EnvironmentVariable("MONO_SDK_MAC", monoSDK_macos);
+macSDK_macos = EnvironmentVariable("MAC_SDK_MAC", macSDK_macos);
+
+androidSDK_windows = EnvironmentVariable("ANDROID_SDK_WINDOWS", "");
+iOSSDK_windows = EnvironmentVariable("IOS_SDK_WINDOWS", "");
+monoSDK_windows = EnvironmentVariable("MONO_SDK_WINDOWS", "");
+macSDK_windows = EnvironmentVariable("MAC_SDK_WINDOWS", "");
 
 string androidSDK = IsRunningOnWindows() ? androidSDK_windows : androidSDK_macos;
 string monoSDK = IsRunningOnWindows() ? monoSDK_windows : monoSDK_macos;
@@ -833,16 +813,14 @@ Task("BuildForNuget")
         binaryLogger.FileName = $"{artifactStagingDirectory}/ios-{configuration}-csproj.binlog";
         MSBuild("./Xamarin.Forms.Platform.iOS/Xamarin.Forms.Platform.iOS.csproj",
                     msbuildSettings
-                        .WithTarget("rebuild")
-                        .WithProperty("USE2017", "true"));
+                        .WithTarget("rebuild"));
 
         msbuildSettings = GetMSBuildSettings();
         msbuildSettings.BinaryLogger = binaryLogger;
         binaryLogger.FileName = $"{artifactStagingDirectory}/macos-{configuration}-csproj.binlog";
         MSBuild("./Xamarin.Forms.Platform.MacOS/Xamarin.Forms.Platform.MacOS.csproj",
                     msbuildSettings
-                        .WithTarget("rebuild")
-                        .WithProperty("USE2017", "true"));
+                        .WithTarget("rebuild"));
 
     }
     catch(Exception)
@@ -881,7 +859,7 @@ Task("Android100")
         MSBuild("Xamarin.Forms.sln",
                 GetMSBuildSettings()
                     .WithRestore()
-                    .WithProperty("AndroidTargetFrameworks", "MonoAndroid90;MonoAndroid10.0"));
+                    .WithProperty("AndroidTargetFrameworks", "MonoAndroid10.0"));
     });
 
 Task("VSMAC")
@@ -908,7 +886,7 @@ Task("cg-android")
             };
 
             buildSettings.BinaryLogger = binaryLogger;
-            binaryLogger.FileName = $"{artifactStagingDirectory}/android-{ANDROID_RENDERERS}_{buildForVS2017}.binlog";
+            binaryLogger.FileName = $"{artifactStagingDirectory}/android-{ANDROID_RENDERERS}.binlog";
         }
         else
         {
@@ -942,7 +920,7 @@ Task("cg-ios")
             };
 
             buildSettings.BinaryLogger = binaryLogger;
-            binaryLogger.FileName = $"{artifactStagingDirectory}/ios-cg-2017_{buildForVS2017}.binlog";
+            binaryLogger.FileName = $"{artifactStagingDirectory}/ios-cg.binlog";
         }
         else
         {
@@ -978,7 +956,7 @@ Task("cg-ios-build-tests")
         {
             var binaryLogger = new MSBuildBinaryLogSettings {
                 Enabled  = true,
-                FileName = $"{artifactStagingDirectory}/ios-uitests-2017_{buildForVS2017}.binlog"
+                FileName = $"{artifactStagingDirectory}/ios-uitests.binlog"
             };
 
             buildSettings.BinaryLogger = binaryLogger;

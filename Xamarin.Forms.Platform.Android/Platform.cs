@@ -10,14 +10,8 @@ using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.OS;
-#if __ANDROID_29__
-using AndroidX.Fragment.App;
 using FragmentManager = AndroidX.Fragment.App.FragmentManager;
 using AndroidX.Legacy.App;
-#else
-using Android.Support.V4.App;
-using FragmentManager = Android.Support.V4.App.FragmentManager;
-#endif
 using Android.Util;
 using Android.Views;
 using Android.Widget;

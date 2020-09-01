@@ -3,7 +3,6 @@ using Android.Widget;
 using Android.App;
 using System.Collections.Generic;
 using Android.Views;
-using System.Collections;
 using System.ComponentModel;
 using System.Linq;
 using Xamarin.Forms.Controls;
@@ -17,21 +16,14 @@ using Android.Runtime;
 using Android.Util;
 using AButton = Android.Widget.Button;
 using AView = Android.Views.View;
-using AViewGroup = Android.Views.ViewGroup;
 using Android.OS;
 using System.Reflection;
 using Android.Text;
 using Android.Text.Method;
 using Xamarin.Forms.Controls.Issues;
-#if __ANDROID_29__
 using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
 using NestedScrollView = global::AndroidX.Core.Widget.NestedScrollView;
-#else
-using FragmentTransaction = Android.Support.V4.App.FragmentTransaction;
-using NestedScrollView = global::Android.Support.V4.Widget.NestedScrollView;
-#endif
 using AMenuItemCompat = global::Android.Support.V4.View.MenuItemCompat;
-using Android.Support.V4.Content;
 using IOPath = System.IO.Path;
 
 [assembly: ExportRenderer(typeof(Issue5461.ScrollbarFadingEnabledFalseScrollView), typeof(ScrollbarFadingEnabledFalseScrollViewRenderer))]

@@ -5,11 +5,6 @@ using System;
 using NUnit.Framework;
 using System.IO;
 
-#if __ANDROID_29__
-#else
-using Android.Support.V7.Widget;
-#endif
-
 namespace Xamarin.Forms.Platform.Android.UnitTests
 {
 	internal static class AssertionExtensions

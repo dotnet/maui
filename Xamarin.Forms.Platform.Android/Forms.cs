@@ -22,11 +22,7 @@ using Resource = Android.Resource;
 using Trace = System.Diagnostics.Trace;
 using System.ComponentModel;
 using AColor = Android.Graphics.Color;
-#if __ANDROID_29__
 using AndroidX.Core.Content;
-#else
-using Android.Support.V4.Content;
-#endif
 
 namespace Xamarin.Forms
 {

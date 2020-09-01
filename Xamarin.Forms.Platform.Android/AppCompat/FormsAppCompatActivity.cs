@@ -7,13 +7,8 @@ using Android.Content;
 using Android.Content.Res;
 using Android.OS;
 using Android.Runtime;
-#if __ANDROID_29__
 using AndroidX.AppCompat.App;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
-#else
-using Android.Support.V7.App;
-using AToolbar = Android.Support.V7.Widget.Toolbar;
-#endif
 using Android.Views;
 using Xamarin.Forms.Platform.Android.AppCompat;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
@@ -21,7 +16,6 @@ using Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat;
 using AColor = Android.Graphics.Color;
 using ARelativeLayout = Android.Widget.RelativeLayout;
 using Xamarin.Forms.Internals;
-using System.Runtime.CompilerServices;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -231,7 +225,6 @@ namespace Xamarin.Forms.Platform.Android
 			Profile.FramePartition("SetSupportActionBar");
 			AToolbar bar = null;
 
-#if __ANDROID_29__
 			if (ToolbarResource == 0)
 			{
 				ToolbarResource = Resource.Layout.Toolbar;
@@ -241,7 +234,6 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				TabLayoutResource = Resource.Layout.Tabbar;
 			}
-#endif
 
 			if (ToolbarResource != 0)
 			{
@@ -249,7 +241,6 @@ namespace Xamarin.Forms.Platform.Android
 				{
 					bar = LayoutInflater.Inflate(ToolbarResource, null).JavaCast<AToolbar>();
 				}
-#if __ANDROID_29__
 				catch (global::Android.Views.InflateException ie)
 				{
 					if ((ie.Cause is Java.Lang.ClassNotFoundException || ie.Cause.Cause is Java.Lang.ClassNotFoundException) &&
@@ -268,19 +259,10 @@ namespace Xamarin.Forms.Platform.Android
 					}
 					else
 						throw;
-#else
-				catch
-				{
-					throw;
-#endif
 				}
 
 				if (bar == null)
-#if __ANDROID_29__
-					throw new InvalidOperationException("ToolbarResource must be set to a Android.Support.V7.Widget.Toolbar");
-#else
 					throw new InvalidOperationException("ToolbarResource must be set to a androidx.appcompat.widget.Toolbar");
-#endif
 			}
 			else 
 			{

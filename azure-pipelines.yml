@@ -7,12 +7,6 @@ variables:
   value: Xamarin.Forms.sln
 - name: BuildVersion
   value: $[counter('nuget-counter', 126)]
-- name: BuildVersion42
-  value: $[counter('xf-nuget-counter', 992000)]
-- name: BuildVersion43
-  value: $[counter('xf-nuget-counter', 992000)]
-- name: BuildVersion44
-  value: $[counter('xf-nuget-counter', 992000)]
 - name: NUGET_VERSION
   value: 5.6.0
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
@@ -155,23 +149,9 @@ stages:
           vmPool: $[coalesce(variables.macAndroid2019VmPool, 'Azure Pipelines')]
           vmImage: $[coalesce(variables.macAndroid2019VmImage, 'macOS-10.15')]
           provisionatorPath : 'build/provisioning/provisioning.csx'
-          buildForVS2017: false
           buildConfiguration: $(DefaultBuildConfiguration)
           ${{ if ne(variables['MSBuildArguments_cg_android'], '') }}:
             MSBuildArguments_cg_android: $(MSBuildArguments_cg_android)
-
-  - stage: android_2017
-    displayName: Build Android 2017
-    condition: and(succeeded(), eq(variables['System.TeamProject'], 'devdiv'))
-    dependsOn: windows
-    jobs:
-      - template: build/steps/build-android.yml
-        parameters:
-          vmPool: $[coalesce(variables.macAndroid2017VmPool, 'Azure Pipelines')]
-          vmImage: 'macOS-10.14'
-          provisionatorPath : 'build/provisioning/provisioning.csx'
-          buildForVS2017: true
-          buildConfiguration: $(DefaultBuildConfiguration)
 
   - stage: build_osx
     displayName: Build OSX
@@ -196,34 +176,6 @@ stages:
           buildConfiguration: $(DefaultBuildConfiguration)
           iOSCertSecureFileName: 'Xamarin Forms iOS Certificate.p12'
           iOSProvisioningSecureFileName: 'Xamarin Forms iOS Provisioning.mobileprovision'
-          buildForVS2017: 'false'
-        steps:
-          - template: build/steps/build-osx.yml
-
-  - stage: build_osx_2017
-    displayName: Build OSX 2017
-    ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-      dependsOn: windows
-    ${{ if eq(variables['System.TeamProject'], 'public') }}:
-      dependsOn: []
-    jobs:
-      - job: osx
-        workspace:
-          clean: all
-        displayName: OSX Phase 2017
-        pool:
-          name:  $(osx2017VmPool)
-          vmImage: 'macOS-10.14'
-          demands:
-            - sh
-            - Xamarin.iOS
-        variables:
-          provisionator.osxPath : 'build/provisioning/provisioning.csx'
-          buildConfiguration: $(DefaultBuildConfiguration)
-          slnPath: $(SolutionFile)
-          iOSCertSecureFileName: 'Xamarin Forms iOS Certificate.p12'
-          iOSProvisioningSecureFileName: 'Xamarin Forms iOS Provisioning.mobileprovision'
-          buildForVS2017: 'true'
         steps:
           - template: build/steps/build-osx.yml
 

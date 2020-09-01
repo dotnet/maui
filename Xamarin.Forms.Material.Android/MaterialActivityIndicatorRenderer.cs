@@ -1,16 +1,10 @@
 using System;
 using System.ComponentModel;
 using Android.Content;
-#if __ANDROID_29__
 using AndroidX.Core.View;
-#else
-using Android.Support.V4.View;
-#endif
 using Android.Views;
 using Android.Widget;
-using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android.FastRenderers;
-using Xamarin.Forms.Material.Android;
 using Xamarin.Forms.Platform.Android;
 using AProgressBar = Android.Widget.ProgressBar;
 using AView = Android.Views.View;

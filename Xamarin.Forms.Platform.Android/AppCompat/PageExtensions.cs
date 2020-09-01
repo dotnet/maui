@@ -4,11 +4,7 @@ using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Views;
-#if __ANDROID_29__
 using Fragment = AndroidX.Fragment.App.Fragment;
-#else
-using Fragment = global::Android.Support.V4.App.Fragment;
-#endif
 
 namespace Xamarin.Forms.Platform.Android
 {

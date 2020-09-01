@@ -3,13 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Android.Content;
-#if __ANDROID_29__
 using AndroidX.RecyclerView.Widget;
-#else
-using Android.Support.V7.Widget;
-#endif
 using Android.Views;
-using Java.Interop;
 using FormsCarouselView = Xamarin.Forms.CarouselView;
 using Xamarin.Forms.Platform.Android.CollectionView;
 

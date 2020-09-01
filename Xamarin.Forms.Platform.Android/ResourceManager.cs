@@ -10,11 +10,7 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Xamarin.Forms.Internals;
 using IOPath = System.IO.Path;
-#if __ANDROID_29__
 using AndroidAppCompat = AndroidX.AppCompat.Content.Res.AppCompatResources;
-#else
-using AndroidAppCompat = Android.Support.V7.Content.Res.AppCompatResources;
-#endif
 using System.ComponentModel;
 
 namespace Xamarin.Forms.Platform.Android

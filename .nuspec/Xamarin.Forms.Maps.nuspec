@@ -27,11 +27,6 @@
         <dependency id="Xamarin.Forms" version="$version$"/>
         <dependency id="Xamarin.Android.Support.v4" version="28.0.0.3"/>
       </group>
-      <group targetFramework="MonoAndroid90">
-        <dependency id="Xamarin.GooglePlayServices.Maps" version="71.1610.0"/>
-        <dependency id="Xamarin.Android.Support.v7.AppCompat" version="28.0.0.3"/>
-        <dependency id="Xamarin.Forms" version="$version$"/>
-      </group>
       <group targetFramework="tizen40">
         <dependency id="Tizen.NET" version="4.0.0"/>
       </group>
@@ -45,10 +40,6 @@
 
     <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\netstandard2.0" />
     <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\netstandard2.0" />
-
-    <file src="..\Xamarin.Forms.Maps.Android\bin\$Configuration$\MonoAndroid90\Xamarin.Forms.Maps.Android.dll" target="lib\MonoAndroid90" />
-    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\MonoAndroid90" />
-    <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\MonoAndroid90" />
 
     <file src="..\Xamarin.Forms.Maps.Android\bin\$Configuration$\MonoAndroid10.0\Xamarin.Forms.Maps.Android.dll" target="lib\MonoAndroid10.0" />
     <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\MonoAndroid10.0" />

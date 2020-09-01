@@ -252,11 +252,9 @@ namespace Xamarin.Forms.Platform.MacOS
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
 			base.TraitCollectionDidChange(previousTraitCollection);
-#if __XCODE11__
 			// Make sure the control adheres to changes in UI theme
 			if (Forms.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				Control?.SetNeedsDisplay();
-#endif
 		}
 
 		internal override void SendVisualElementInitialized(VisualElement element, NativeView nativeView)

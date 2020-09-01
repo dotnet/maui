@@ -1,17 +1,9 @@
 using System;
 using System.ComponentModel;
 using Android.Content;
-using Android.Graphics;
 using Android.Graphics.Drawables;
-#if __ANDROID_29__
 using AndroidX.Core.View;
 using AndroidX.Core.Widget;
-using AndroidX.AppCompat.Widget;
-#else
-using Android.Support.V4.View;
-using Android.Support.V4.Widget;
-using Android.Support.V7.Widget;
-#endif
 using Xamarin.Forms.Internals;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;

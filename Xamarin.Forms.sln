@@ -124,10 +124,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.ControlGaller
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.Platform", "Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj", "{D31A6537-ED9C-4EBD-B231-A8D4FE44126A}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xamarin.Flex", "Xamarin.Flex", "{CA1DF598-3650-4A7B-A065-492C26009295}"
-EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Xamarin.Flex", "Xamarin.Flex\Xamarin.Flex.shproj", "{A6703C7D-D362-452A-A7A5-73771194D38C}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Core.Design", "Xamarin.Forms.Core.Design\Xamarin.Forms.Core.Design.csproj", "{98637471-8E5C-4DDE-89CA-2EAA664FB0EF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Xaml.Design", "Xamarin.Forms.Xaml.Design\Xamarin.Forms.Xaml.Design.csproj", "{65BC4888-CC59-428A-9B75-540CF1C09480}"
@@ -160,12 +156,10 @@ Global
 		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{0a39a74b-6f7a-4d41-84f2-b0ccdce899df}*SharedItemsImports = 4
 		Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.projitems*{0a39a74b-6f7a-4d41-84f2-b0ccdce899df}*SharedItemsImports = 4
 		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{0f0db9cc-ea65-429c-9363-38624bf8f49c}*SharedItemsImports = 13
-		Xamarin.Flex\Xamarin.Flex.projitems*{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}*SharedItemsImports = 5
 		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{9db0cabb-24cc-4538-88ec-6e0a0fe40248}*SharedItemsImports = 4
 		Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.projitems*{9db0cabb-24cc-4538-88ec-6e0a0fe40248}*SharedItemsImports = 4
 		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{a34ebe01-25bf-4e69-a2dc-2288dc625541}*SharedItemsImports = 4
 		Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.projitems*{a34ebe01-25bf-4e69-a2dc-2288dc625541}*SharedItemsImports = 4
-		Xamarin.Flex\Xamarin.Flex.projitems*{a6703c7d-d362-452a-a7a5-73771194d38c}*SharedItemsImports = 13
 		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{cb9c96ce-125c-4a68-b6a1-c3ff1fbf93e1}*SharedItemsImports = 5
 		Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.projitems*{e175485b-3c8c-47d7-8dd5-f7fed627eb25}*SharedItemsImports = 13
 		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{eadd8100-b3ae-4a31-92c4-267a64a1c6eb}*SharedItemsImports = 4
@@ -1538,7 +1532,6 @@ Global
 		{411B960D-6D30-4079-83B2-ABB9987D2EDF} = {4F5E2D21-17F6-4A42-B8FB-D03D82E24EC8}
 		{8C7F0087-4031-4297-A651-6ED55F7B88BA} = {4F5E2D21-17F6-4A42-B8FB-D03D82E24EC8}
 		{D31A6537-ED9C-4EBD-B231-A8D4FE44126A} = {29AC50BF-B4FB-450B-9386-0C5AD4B84226}
-		{A6703C7D-D362-452A-A7A5-73771194D38C} = {CA1DF598-3650-4A7B-A065-492C26009295}
 		{98637471-8E5C-4DDE-89CA-2EAA664FB0EF} = {9AD757F5-E57A-459D-A0A7-E0675E045B84}
 		{65BC4888-CC59-428A-9B75-540CF1C09480} = {32F608E2-6406-4DCF-9105-E2A7CB7085CF}
 		{39B3457F-01D8-43D0-8E84-D8C4F73CF48E} = {5A2DADBC-9510-4DD1-BE58-01501F2DF65D}

@@ -16,12 +16,10 @@
     <AndroidApplication>True</AndroidApplication>
     <AndroidResgenFile>Resources\Resource.Designer.cs</AndroidResgenFile>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
-    <AndroidTargetFrameworkVersion Condition="'$(AndroidTargetFrameworkVersion)' == '' AND '$(Use2017)' == 'true'">v9.0</AndroidTargetFrameworkVersion>
     <AndroidTargetFrameworkVersion Condition="'$(AndroidTargetFrameworkVersion)' == ''">v10.0</AndroidTargetFrameworkVersion>
     <TargetFrameworkVersion>$(AndroidTargetFrameworkVersion)</TargetFrameworkVersion>
     <AndroidManifest Condition="$(AndroidTargetFrameworkVersion) == 'v10.0.99'">Properties\AndroidManifest30.xml</AndroidManifest>
     <AndroidManifest Condition="$(AndroidTargetFrameworkVersion) == 'v10.0'">Properties\AndroidManifest.xml</AndroidManifest>
-    <AndroidManifest Condition="$(AndroidTargetFrameworkVersion) == 'v9.0'">Properties\AndroidManifest28.xml</AndroidManifest>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
   </PropertyGroup>
@@ -90,7 +88,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\AndroidManifest.xml" />
-    <None Include="Properties\AndroidManifest28.xml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Stubs\Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android %28Forwarders%29.csproj">

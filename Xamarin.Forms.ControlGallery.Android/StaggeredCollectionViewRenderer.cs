@@ -1,11 +1,6 @@
 ﻿using System;
 using Android.Content;
-#if __ANDROID_29__
-using AndroidX.AppCompat.Widget;
 using AndroidX.RecyclerView.Widget;
-#else
-using Android.Support.V7.Widget;
-#endif
 using Xamarin.Forms;
 using Xamarin.Forms.ControlGallery.Android;
 using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.AlternateLayoutGalleries;

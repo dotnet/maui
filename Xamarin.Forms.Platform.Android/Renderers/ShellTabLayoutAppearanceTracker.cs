@@ -1,9 +1,5 @@
 ﻿using Android.Graphics.Drawables;
-#if __ANDROID_29__
 using Google.Android.Material.Tabs;
-#else
-using Android.Support.Design.Widget;
-#endif
 
 namespace Xamarin.Forms.Platform.Android
 {

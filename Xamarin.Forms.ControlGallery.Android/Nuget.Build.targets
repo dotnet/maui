@@ -4,7 +4,7 @@
             <Version>0.10.0</Version>
         </PackageReference>
     </ItemGroup>
-    <ItemGroup Condition="'$(TargetFrameworkVersion)' != 'v9.0'">
+    <ItemGroup>
         <PackageReference Include="Xamarin.AndroidX.Migration">
             <Version>1.0.0</Version>
         </PackageReference>

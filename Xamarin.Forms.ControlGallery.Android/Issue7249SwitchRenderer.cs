@@ -55,19 +55,11 @@ namespace Xamarin.Forms.ControlGallery.Android
 			if (Control.Checked)
 			{
 
-#if __ANDROID_29__
 				Control.TrackDrawable.SetColorFilter(new BlendModeColorFilter(_view.SwitchOffColor.ToAndroid(), BlendMode.SrcAtop));
-#else
-				Control.TrackDrawable.SetColorFilter(_view.SwitchOnColor.ToAndroid(), PorterDuff.Mode.SrcAtop);
-#endif
 			}
 			else
 			{
-#if __ANDROID_29__
 				Control.TrackDrawable.SetColorFilter(new BlendModeColorFilter(_view.SwitchOffColor.ToAndroid(), BlendMode.SrcAtop));
-#else
-				Control.TrackDrawable.SetColorFilter(_view.SwitchOffColor.ToAndroid(), PorterDuff.Mode.SrcAtop);
-#endif
 			}
 		}
 	}

@@ -17,9 +17,6 @@
       <group>
         <dependency id="Xamarin.Forms" version="$version$"/>
       </group>
-      <group targetFramework="MonoAndroid90">
-        <dependency id="Xamarin.DuoSdk" version="0.0.3.4" />
-      </group>
       <group targetFramework="MonoAndroid10.0">
         <dependency id="Xamarin.DuoSdk" version="0.0.3.4" />
       </group>
@@ -37,11 +34,6 @@
     <file src="..\Xamarin.Forms.DualScreen\bin\$Configuration$\netstandard2.0\Xamarin.Forms.DualScreen.dll" target="lib\netstandard2.0" />
     <file src="..\Xamarin.Forms.DualScreen\bin\$Configuration$\netstandard2.0\Xamarin.Forms.DualScreen.*pdb" target="lib\netstandard2.0" />
     <file src="..\Xamarin.Forms.DualScreen\bin\$Configuration$\netstandard2.0\Xamarin.Forms.DualScreen.*mdb" target="lib\netstandard2.0" />
-
-    <!--Android 90-->
-    <file src="..\Xamarin.Forms.DualScreen\bin\$Configuration$\monoandroid90\Xamarin.Forms.DualScreen.dll" target="lib\MonoAndroid90" />
-    <file src="..\Xamarin.Forms.DualScreen\bin\$Configuration$\monoandroid90\Xamarin.Forms.DualScreen.*pdb" target="lib\MonoAndroid90" />
-    <file src="..\Xamarin.Forms.DualScreen\bin\$Configuration$\monoandroid90\Xamarin.Forms.DualScreen.*mdb" target="lib\MonoAndroid90" />
     
     <!--Android 10.0-->
     <file src="..\Xamarin.Forms.DualScreen\bin\$Configuration$\monoandroid10.0\Xamarin.Forms.DualScreen.dll" target="lib\MonoAndroid10.0" />
