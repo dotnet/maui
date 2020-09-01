@@ -1,5 +1,7 @@
-﻿using Foundation;
+﻿using System;
+using Foundation;
 using Microsoft.AppCenter.Distribute;
+using Samples.View;
 using UIKit;
 
 namespace Samples.iOS
@@ -11,6 +13,7 @@ namespace Samples.iOS
         {
             Xamarin.Forms.Forms.Init();
             Xamarin.Forms.FormsMaterial.Init();
+
             Distribute.DontCheckForUpdatesInDebug();
             LoadApplication(new App());
 
@@ -24,5 +27,8 @@ namespace Samples.iOS
 
             return base.OpenUrl(app, url, options);
         }
+
+        public override void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
+            => Xamarin.Essentials.Platform.PerformActionForShortcutItem(application, shortcutItem, completionHandler);
     }
 }

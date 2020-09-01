@@ -13,8 +13,9 @@ using Android.Net;
 using Android.Net.Wifi;
 using Android.OS;
 using Android.Provider;
+using Android.Util;
 using Android.Views;
-
+using AndroidIntent = Android.Content.Intent;
 using AndroidUri = Android.Net.Uri;
 
 namespace Xamarin.Essentials
@@ -99,8 +100,27 @@ namespace Xamarin.Essentials
         public static void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults) =>
             Permissions.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        public static void OnResume() =>
+        public static void OnNewIntent(AndroidIntent intent)
+            => CheckAppActions(intent);
+
+        public static void OnResume(Activity activity = null)
+        {
+            if (activity != null)
+                CheckAppActions(activity.Intent);
+
             WebAuthenticator.OnResume(null);
+        }
+
+        static void CheckAppActions(AndroidIntent intent)
+        {
+            if (intent?.Action == Intent.ActionAppAction)
+            {
+                var appAction = intent.ToAppAction();
+
+                if (!string.IsNullOrEmpty(appAction?.Id))
+                    AppActions.InvokeOnAppAction(Platform.CurrentActivity, appAction);
+            }
+        }
 
         internal static bool HasSystemFeature(string systemFeature)
         {
@@ -113,7 +133,7 @@ namespace Xamarin.Essentials
             return false;
         }
 
-        internal static bool IsIntentSupported(Intent intent)
+        internal static bool IsIntentSupported(AndroidIntent intent)
         {
             var manager = AppContext.PackageManager;
             var activities = manager.QueryIntentActivities(intent, PackageInfoFlags.MatchDefaultOnly);
@@ -244,6 +264,11 @@ namespace Xamarin.Essentials
         internal static PowerManager PowerManager =>
             AppContext.GetSystemService(Context.PowerService) as PowerManager;
 
+#if __ANDROID_25__
+        internal static ShortcutManager ShortcutManager =>
+            AppContext.GetSystemService(Context.ShortcutService) as ShortcutManager;
+#endif
+
         internal static IWindowManager WindowManager =>
             AppContext.GetSystemService(Context.WindowService) as IWindowManager;
 
@@ -279,6 +304,11 @@ namespace Xamarin.Essentials
 #pragma warning disable CS0618 // Type or member is obsolete
             resources.UpdateConfiguration(config, resources.DisplayMetrics);
 #pragma warning restore CS0618 // Type or member is obsolete
+        }
+
+        public static class Intent
+        {
+            public const string ActionAppAction = "ACTION_XE_APP_ACTION";
         }
     }
 

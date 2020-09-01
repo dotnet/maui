@@ -159,6 +159,8 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\app_info_action_icon.png" />
+    <Content Include="Assets\battery_action_icon.png" />
     <Content Include="FileSystemTemplate.txt" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-100.png" />

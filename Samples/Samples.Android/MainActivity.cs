@@ -4,10 +4,14 @@ using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
 using Android.Widget;
+using Samples.View;
 
 namespace Samples.Droid
 {
     [Activity(Label = "@string/app_name", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [IntentFilter(
+        new[] { Xamarin.Essentials.Platform.Intent.ActionAppAction },
+        Categories = new[] { Intent.CategoryDefault })]
     public class MainActivity : Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
         protected override void OnCreate(Bundle bundle)
@@ -30,12 +34,20 @@ namespace Samples.Droid
         {
             base.OnResume();
 
-            Xamarin.Essentials.Platform.OnResume();
+            Xamarin.Essentials.Platform.OnResume(this);
+        }
+
+        protected override void OnNewIntent(Intent intent)
+        {
+            base.OnNewIntent(intent);
+
+            Xamarin.Essentials.Platform.OnNewIntent(intent);
         }
 
         protected override void OnDestroy()
         {
             base.OnDestroy();
+
             Xamarin.Essentials.Platform.ActivityStateChanged -= Platform_ActivityStateChanged;
         }
 

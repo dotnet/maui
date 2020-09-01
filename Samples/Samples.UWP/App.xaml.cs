@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
@@ -14,13 +15,6 @@ namespace Samples.UWP
         {
             InitializeComponent();
             Suspending += OnSuspending;
-
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                Console.WriteLine("Success!");
-            });
-
-            var test = DeviceInfo.DeviceType;
         }
 
         protected override void OnLaunched(LaunchActivatedEventArgs e)
@@ -57,6 +51,8 @@ namespace Samples.UWP
 
             // Ensure the current window is active
             Window.Current.Activate();
+
+            Xamarin.Essentials.Platform.OnLaunched(e);
         }
 
         void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
