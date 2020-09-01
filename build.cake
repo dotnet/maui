@@ -117,7 +117,7 @@ else
     
 Information("MSBuildArguments: {0}", MSBuildArguments);
 
-string androidSdks = EnvironmentVariable("ANDROID_API_SDKS", "platforms;android-28,platforms;android-29,build-tools;29.0.3");
+string androidSdks = EnvironmentVariable("ANDROID_API_SDKS", "platform-tools,platforms;android-28,platforms;android-29,build-tools;29.0.3,platforms;android-30");
 
 if(buildForVS2017)
     androidSdks = "platforms;android-28,platforms;android-29,build-tools;29.0.3";
@@ -125,12 +125,12 @@ if(buildForVS2017)
 Information("ANDROID_API_SDKS: {0}", androidSdks);
 string[] androidSdkManagerInstalls = androidSdks.Split(',');
 
-(string name, string location)[] windowsSdksInstalls = new (string name, string location)[]
+(string name, string location, string featureList)[] windowsSdksInstalls = new (string name, string location, string featureList)[]
 {
-    ("10.0.19041.0", "https://go.microsoft.com/fwlink/p/?linkid=2120843"), 
-    ("10.0.18362.0", "https://go.microsoft.com/fwlink/?linkid=2083338"),
-    ("10.0.16299.0", "https://go.microsoft.com/fwlink/p/?linkid=864422"),
-    ("10.0.14393.0", "https://go.microsoft.com/fwlink/p/?LinkId=838916")
+    ("10.0.19041.0", "https://go.microsoft.com/fwlink/p/?linkid=2120843", "OptionId.WindowsPerformanceToolkit OptionId.WindowsDesktopDebuggers OptionId.AvrfExternal OptionId.WindowsSoftwareLogoToolkit OptionId.MSIInstallTools OptionId.SigningTools OptionId.UWPManaged OptionId.UWPCPP OptionId.UWPLocalized OptionId.DesktopCPPx86 OptionId.DesktopCPPx64 OptionId.DesktopCPParm OptionId.DesktopCPParm64"), 
+    ("10.0.18362.0", "https://go.microsoft.com/fwlink/?linkid=2083338", "+"),
+    ("10.0.16299.0", "https://go.microsoft.com/fwlink/p/?linkid=864422", "+"),
+    ("10.0.14393.0", "https://go.microsoft.com/fwlink/p/?LinkId=838916", "+")
 };
 
 string[] netFrameworkSdksLocalInstall = new string[]
@@ -138,7 +138,8 @@ string[] netFrameworkSdksLocalInstall = new string[]
     "https://go.microsoft.com/fwlink/?linkid=2099470", //NET461 SDK
     "https://go.microsoft.com/fwlink/?linkid=874338", //NET472 SDK
     "https://go.microsoft.com/fwlink/?linkid=2099465", //NET47
-    "https://download.microsoft.com/download/A/1/D/A1D07600-6915-4CB8-A931-9A980EF47BB7/NDP47-DevPack-KB3186612-ENU.exe" //net47 targeting pack
+    "https://download.microsoft.com/download/A/1/D/A1D07600-6915-4CB8-A931-9A980EF47BB7/NDP47-DevPack-KB3186612-ENU.exe", //net47 targeting pack
+    "https://go.microsoft.com/fwlink/?linkid=2088517", //NET48 SDK
 };
 
 // these don't run on CI
@@ -401,7 +402,9 @@ Task("provision-windowssdk")
 
                 var result = StartProcess(installerPath, new ProcessSettings {
                     Arguments = new ProcessArgumentBuilder()
-                        .Append(@"/features + /q")
+                        .Append(@"/features ")
+                        .Append(windowsSdk.featureList)
+                        .Append(@" /q")
                     }
                 );
 
