@@ -18,10 +18,10 @@ namespace Samples.ViewModel
         public MediaPickerViewModel()
         {
             PickPhotoCommand = new Command(DoPickPhoto);
-            CapturePhotoCommand = new Command(DoCapturePhoto);
+            CapturePhotoCommand = new Command(DoCapturePhoto, () => MediaPicker.IsCaptureSupported);
 
             PickVideoCommand = new Command(DoPickVideo);
-            CaptureVideoCommand = new Command(DoCaptureVideo);
+            CaptureVideoCommand = new Command(DoCaptureVideo, () => MediaPicker.IsCaptureSupported);
         }
 
         public ICommand PickPhotoCommand { get; }

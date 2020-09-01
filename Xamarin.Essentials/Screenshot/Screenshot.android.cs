@@ -8,11 +8,14 @@ namespace Xamarin.Essentials
 {
     public static partial class Screenshot
     {
-        static bool PlatformCanCapture =>
-            Platform.WindowManager.DefaultDisplay?.Flags.HasFlag(DisplayFlags.Secure) == false;
+        static bool PlatformIsCaptureSupported =>
+            true;
 
         static Task<ScreenshotResult> PlatformCaptureAsync()
         {
+            if (Platform.WindowManager?.DefaultDisplay?.Flags.HasFlag(DisplayFlags.Secure) == true)
+                throw new UnauthorizedAccessException("Unable to take a screenshot of a secure window.");
+
             var view = Platform.GetCurrentActivity(true)?.Window?.DecorView?.RootView;
             if (view == null)
                 throw new NullReferenceException("Unable to find the main window.");

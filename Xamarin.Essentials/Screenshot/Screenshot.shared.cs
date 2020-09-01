@@ -5,11 +5,16 @@ namespace Xamarin.Essentials
 {
     public static partial class Screenshot
     {
-        public static bool IsCaptureAvailable
-            => PlatformCanCapture;
+        public static bool IsCaptureSupported
+            => PlatformIsCaptureSupported;
 
         public static Task<ScreenshotResult> CaptureAsync()
-            => PlatformCaptureAsync();
+        {
+            if (!IsCaptureSupported)
+                throw new FeatureNotSupportedException();
+
+            return PlatformCaptureAsync();
+        }
     }
 
     public partial class ScreenshotResult
