@@ -54,7 +54,7 @@ namespace Xamarin.Forms.Platform.Android
 			HorizontalScrollBarEnabled = false;
 		}
 
-		ScrollHelper ScrollHelper => _scrollHelper = _scrollHelper ?? new ScrollHelper(this);
+		internal ScrollHelper ScrollHelper => _scrollHelper = _scrollHelper ?? new ScrollHelper(this);
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
@@ -602,6 +602,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual void ScrollTo(ScrollToRequestEventArgs args)
 		{
+			if (ItemsView == null)
+				return;
+
 			var position = DetermineTargetPosition(args);
 
 			if (args.IsAnimated)

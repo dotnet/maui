@@ -26,7 +26,7 @@
                 AutomationId="TheCarouselView"
                 x:Name="Carousel"
                 ItemsSource="{Binding Items}"
-                Position="{Binding Position}">
+                Position="1">
             <CarouselView.ItemTemplate>
                 <DataTemplate>
                    <Grid

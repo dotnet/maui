@@ -8,16 +8,10 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 	[Preserve(AllMembers = true)]
 	public partial class CarouselXamlGallery : ContentPage
 	{
-		public CarouselXamlGallery()
+		public CarouselXamlGallery(bool useLooping)
 		{
 			InitializeComponent();
-			BindingContext = new CarouselViewModel(CarouselXamlSampleType.Peek);
-		}
-
-		protected override void OnAppearing()
-		{
-			base.OnAppearing();
-			//(BindingContext as CarouselViewModel).Position = 2;
+			BindingContext = new CarouselViewModel(CarouselXamlSampleType.Peek, useLooping);
 		}
 	}
 
@@ -31,12 +25,14 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 	[Preserve(AllMembers = true)]
 	internal class CarouselViewModel : ViewModelBase2
 	{
+		bool _isLoop;
 		int _count;
 		int _position;
 		ObservableCollection<CarouselItem> _items;
 		CarouselXamlSampleType _type;
-		public CarouselViewModel(CarouselXamlSampleType type, int initialItems = 5)
+		public CarouselViewModel(CarouselXamlSampleType type, bool loop, int initialItems = 5)
 		{
+			IsLoop = loop;
 			_type = type;
 
 			var items = new List<CarouselItem>();
@@ -57,6 +53,12 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 
 			Items = new ObservableCollection<CarouselItem>(items);
 			Count = Items.Count - 1;
+		}
+
+		public bool IsLoop
+		{
+			get { return _isLoop; }
+			set { SetProperty(ref _isLoop, value); }
 		}
 
 		public int Count
@@ -98,6 +100,11 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 				var newItem = Items[indexCurrent - 1];
 				Selected = newItem;
 			}
+			if (indexCurrent == 0)
+			{
+				var newItem = Items[Items.Count - 1];
+				Selected = newItem;
+			}
 		});
 
 		public ICommand NextCommand => new Command(() =>
@@ -106,6 +113,11 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			if (indexCurrent < Items.Count - 1)
 			{
 				var newItem = Items[indexCurrent + 1];
+				Selected = newItem;
+			}
+			if (indexCurrent == Items.Count - 1)
+			{
+				var newItem = Items[0];
 				Selected = newItem;
 			}
 		});

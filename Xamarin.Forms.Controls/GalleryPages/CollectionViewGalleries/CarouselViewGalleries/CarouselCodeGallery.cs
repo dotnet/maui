@@ -26,11 +26,11 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			{
 				RowDefinitions = new RowDefinitionCollection
 				{
-					new RowDefinition { Height = 40 },
-					new RowDefinition { Height = 80 },
-					new RowDefinition { Height = 30},
-					new RowDefinition { Height = 20},
-					new RowDefinition { Height = 20},
+					new RowDefinition { Height = GridLength.Auto },
+					new RowDefinition { Height = GridLength.Auto },
+					new RowDefinition { Height = GridLength.Auto },
+					new RowDefinition { Height = GridLength.Auto },
+					new RowDefinition { Height = GridLength.Auto },
 					new RowDefinition { Height = GridLength.Auto },
 					new RowDefinition { Height = GridLength.Star }
 				}
@@ -48,9 +48,10 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			{
 				ItemsLayout = itemsLayout,
 				ItemTemplate = itemTemplate,
-				Margin = new Thickness(0,10,0,10),
+				Margin = new Thickness(0, 10, 0, 10),
 				BackgroundColor = Color.Red,
-				AutomationId = "TheCarouselView"
+				AutomationId = "TheCarouselView",
+				//Loop = false
 			};
 
 			if (orientation == ItemsLayoutOrientation.Horizontal)

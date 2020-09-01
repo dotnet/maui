@@ -7,7 +7,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
 {
- 	[Preserve(AllMembers = true)]
+	[Preserve(AllMembers = true)]
 	public class CollectionCarouselViewGallery : ContentPage
 	{
 		public CollectionCarouselViewGallery()
@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			Title = "Working with ObservableCollections and CarouselView";
 
 			BindingContext = new CollectionCarouselViewGalleryViewModel();
-   
+
 			var layout = new Grid
 			{
 				RowDefinitions = new RowDefinitionCollection
@@ -41,7 +41,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 				ItemsLayout = itemsLayout,
 				ItemTemplate = itemTemplate,
 				IsScrollAnimated = true,
-				IsBounceEnabled = true
+				IsBounceEnabled = true,
+				AutomationId = "TheCarouselView",
 			};
 
 			carouselView.SetBinding(ItemsView.ItemsSourceProperty, "Items");
@@ -49,6 +50,26 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			var scroll = new ScrollView();
 			var stack = new StackLayout();
 			scroll.Content = stack;
+
+			var lblPosition = new Label
+			{
+				HorizontalOptions = LayoutOptions.Center,
+				BindingContext = carouselView,
+				AutomationId = "lblPosition"
+			};
+			var lblCenterIndex = new Label
+			{
+				HorizontalOptions = LayoutOptions.Center,
+				BindingContext = carouselView,
+				AutomationId = "lblCenterIndex"
+			};
+
+			lblPosition.SetBinding(Label.TextProperty, nameof(CarouselView.Position));
+
+			carouselView.Scrolled += (s, e) =>
+			{
+				lblCenterIndex.Text = $"First {e.FirstVisibleItemIndex} CenterIndex: {e.CenterItemIndex} Last: {e.LastVisibleItemIndex}";
+			};
 
 			var clearButton = new Button
 			{
@@ -59,14 +80,16 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 
 			var newObservableButton = new Button
 			{
-				Text = "Set new ObservableCollection"
+				Text = "Set new ObservableCollection",
+				AutomationId = "btnNewObservable"
 			};
 
 			newObservableButton.SetBinding(Button.CommandProperty, "NewObservableCommand");
 
 			var addObservableButton = new Button
 			{
-				Text = "Add new Items to ObservableCollection"
+				Text = "Add new Items to ObservableCollection",
+				AutomationId = "btnAddObservable"
 			};
 
 			addObservableButton.SetBinding(Button.CommandProperty, "NewItemsObservableCommand");
@@ -78,6 +101,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 
 			threadObservableButton.SetBinding(Button.CommandProperty, "TheadCommand");
 
+			stack.Children.Add(lblPosition);
+			stack.Children.Add(lblCenterIndex);
 			stack.Children.Add(clearButton);
 			stack.Children.Add(newObservableButton);
 			stack.Children.Add(addObservableButton);
@@ -86,7 +111,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 			layout.Children.Add(carouselView, 0, 0);
 			layout.Children.Add(scroll, 0, 1);
 
-   			Content = layout;
+			Content = layout;
 		}
 
 		internal DataTemplate GetCarouselTemplate()
@@ -139,7 +164,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 				OnPropertyChanged();
 			}
 		}
-  
+
 		public ICommand ClearCommand => new Command(Clear);
 		public ICommand NewObservableCommand => new Command(NewObservable);
 		public ICommand NewItemsObservableCommand => new Command(NewItemsObservable);
@@ -149,7 +174,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 		{
 			Items?.Clear();
 		}
-		  
+
 		void NewObservable()
 		{
 			Clear();
@@ -167,7 +192,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 
 			Items = new ObservableCollection<CarouselData>(items);
 		}
-  
+
 		void NewItemsObservable()
 		{
 			Clear();
@@ -190,19 +215,19 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 
 			await Task.Delay(500);
 
-   			Device.BeginInvokeOnMainThread(() =>
-			{
-				Items = new ObservableCollection<CarouselData>();
+			Device.BeginInvokeOnMainThread(() =>
+		 {
+			 Items = new ObservableCollection<CarouselData>();
 
-				for (int n = 0; n < 5; n++)
-				{
-					Items.Add(new CarouselData
-					{
-						Color = Color.FromRgb(_random.Next(0, 255), _random.Next(0, 255), _random.Next(0, 255)),
-						Name = $"Thead {n + 1}"
-					});
-				}
-			});
+			 for (int n = 0; n < 5; n++)
+			 {
+				 Items.Add(new CarouselData
+				 {
+					 Color = Color.FromRgb(_random.Next(0, 255), _random.Next(0, 255), _random.Next(0, 255)),
+					 Name = $"Thead {n + 1}"
+				 });
+			 }
+		 });
 		}
 	}
 }

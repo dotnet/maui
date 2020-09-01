@@ -59,7 +59,7 @@ namespace Xamarin.Forms.Platform.Android
 				};
 
 				// And kick off the scroll operation
-				_recyclerView.GetLayoutManager().StartSmoothScroll(smoothScroller);
+				_recyclerView.GetLayoutManager()?.StartSmoothScroll(smoothScroller);
 			}
 		}
 

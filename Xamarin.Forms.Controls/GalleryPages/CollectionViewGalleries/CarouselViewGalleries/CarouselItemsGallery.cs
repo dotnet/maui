@@ -132,7 +132,10 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 				_viewModel.Items.Clear();
 			};
 
-			var lbl = new Label();
+			var lbl = new Label
+			{
+				AutomationId = "lblPosition"
+			};
 			lbl.SetBinding(Label.TextProperty, nameof(CarouselView.Position));
 			lbl.BindingContext = carouselView;
 
@@ -149,7 +152,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselVi
 
 		protected override void OnAppearing()
 		{
-			if (_viewModel.CarouselPosition != 3)
+			if (_viewModel.CarouselPosition != 3 && _setPositionOnAppering)
 				_viewModel.CarouselPosition = 3;
 
 			base.OnAppearing();

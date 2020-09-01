@@ -6,6 +6,8 @@ using UwpScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility;
 
 namespace Xamarin.Forms.Platform.UWP
 {
+	
+
 	internal class FormsListView : Windows.UI.Xaml.Controls.ListView, IEmptyView
 	{
 		ContentControl _emptyViewContentControl;
@@ -68,5 +70,7 @@ namespace Xamarin.Forms.Platform.UWP
 			GroupFooterItemTemplateContext.EnsureSelectionDisabled(element, item);
 			base.PrepareContainerForItemOverride(element, item);
 		}
+
+		
 	}
 }

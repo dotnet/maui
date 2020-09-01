@@ -39,5 +39,31 @@ namespace Xamarin.Forms.Platform.Android
 
 			return firstVisibleItemIndex;
 		}
+
+		public static AView GetCenteredView(this RecyclerView recyclerView)
+		{
+			if (!(recyclerView.GetLayoutManager() is LinearLayoutManager linearLayoutManager))
+				return null;
+
+			AView centeredView;
+			if (linearLayoutManager.Orientation == LinearLayoutManager.Horizontal)
+			{
+				float centerX = linearLayoutManager.Width / 2;
+				float centerY = linearLayoutManager.Height / 2;
+
+				centeredView = recyclerView.FindChildViewUnder(centerX, centerY);
+			}
+			else
+			{
+				float centerY = linearLayoutManager.Height / 2;
+				float centerX = linearLayoutManager.Width / 2;
+
+				centeredView = recyclerView.FindChildViewUnder(centerX, centerY);
+			}
+			return centeredView;
+		}
+
+
 	}
+
 }

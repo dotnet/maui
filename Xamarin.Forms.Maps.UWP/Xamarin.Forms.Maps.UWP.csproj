@@ -1,7 +1,4 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
-  <PropertyGroup Condition="$(TargetFramework) == 'uap10.0.14393'">
-    <DefineConstants>$(DefineConstants);UWP_14393</DefineConstants>
-  </PropertyGroup>
   <PropertyGroup>
     <RootNamespace>Xamarin.Forms.Maps.UWP</RootNamespace>
     <AssemblyName>Xamarin.Forms.Maps.UWP</AssemblyName>

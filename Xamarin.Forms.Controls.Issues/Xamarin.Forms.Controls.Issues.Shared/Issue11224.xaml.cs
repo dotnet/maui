@@ -57,7 +57,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			RunningApp.WaitForElement(q => q.Marked("AppearButton"));
 			RunningApp.Tap(q => q.Marked("AppearButton"));
-			RunningApp.WaitForElement("The test has passed");
+			RunningApp.WaitForElement("Item 4");
 			RunningApp.Screenshot("Success");
 		}
 #endif
